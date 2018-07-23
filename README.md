@@ -7,6 +7,7 @@ Frame capture analysis tool
 * UI design
 * Advanced statistical methods and algorithm validation
 * OCAT interface
-* Database management 
+* Database management
+* WIX installer
 * First beta phase
 * Next steps?

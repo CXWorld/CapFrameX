@@ -5,18 +5,18 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:CapFrameX"
         mc:Ignorable="d"
-        Title="MainWindow" Height="350" Width="525">
+        Title="MainWindow" Height="768" Width="1024">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
-            <RowDefinition Height="160" />
+            <RowDefinition Height="100" />
         </Grid.RowDefinitions>
         <Canvas Grid.Row="0" Name="FrameTestCanvas">
 
         </Canvas>
         <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Grid.Row="1" Orientation="Horizontal">
-            <Button Content="Start" Height="50" Width="80"></Button>
-            <Button Content="Stop" Height="50" Width="80"></Button>
+            <Button Content="Start" Height="50" Width="80" Click="Button_Click_Start"></Button>
+            <Button Content="Stop" Height="50" Width="80" Click="Button_Click_End"></Button>
         </StackPanel>
     </Grid>
 </Window>
