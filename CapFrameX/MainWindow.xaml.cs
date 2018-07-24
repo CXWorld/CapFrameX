@@ -13,6 +13,8 @@ namespace CapFrameX
     public partial class MainWindow : Window
     {
         private CancellationTokenSource _tokenSource;
+        private int _stepWidth;
+        private int _refreshRate;
 
         public MainWindow()
         {
@@ -21,10 +23,12 @@ namespace CapFrameX
 
         private void Button_Click_Start(object sender, RoutedEventArgs e)
         {
+            _stepWidth = 2;
+            _refreshRate = 6;
             _tokenSource = new CancellationTokenSource();
             CancellationToken token = _tokenSource.Token;
 
-            int xPos = 100;
+            int xPos = 20;
 
             // Going to make this better with Observables later 
             Task.Run(async () =>
@@ -55,15 +59,15 @@ namespace CapFrameX
                     });
 
                     // Refresh rate
-                    await Task.Delay(6);
+                    await Task.Delay(_refreshRate);
 
                     // Update the UI on the UI thread
                     Dispatcher.Invoke(() => FrameTestCanvas.Children.Clear());
 
                     // Refresh rate and this parameter defines velocity of the sliding object
-                    xPos += 2;
+                    xPos += _stepWidth;
 
-                    if (xPos > FrameTestCanvas.ActualWidth - 100)
+                    if (xPos > FrameTestCanvas.ActualWidth - 120)
                         xPos = 100;
                 }
             });
@@ -73,6 +77,20 @@ namespace CapFrameX
         {
             _tokenSource?.Cancel();
             FrameTestCanvas.Children.Clear();
+        }
+
+        private void Slider_Stepwidth_ValueChanged(object sender,
+            RoutedPropertyChangedEventArgs<double> e)
+        {
+            var slider = sender as Slider;
+            _stepWidth = (int)slider.Value;
+        }
+
+        private void Slider_Refreshrate_ValueChanged(object sender,
+          RoutedPropertyChangedEventArgs<double> e)
+        {
+            var slider = sender as Slider;
+            _refreshRate = (int)slider.Value;
         }
     }
 }
