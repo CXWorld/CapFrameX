@@ -26,13 +26,14 @@ namespace CapFrameX
 
             int xPos = 100;
 
+            // Going to make this better with Observables later 
             Task.Run(async () =>
             {
                 while (!token.IsCancellationRequested)
                 {
                     Point p = new Point(xPos, 100);
 
-                    // update the UI on the UI thread
+                    // Update the UI on the UI thread
                     Dispatcher.Invoke(() =>
                     {
                         // Initialize a new Rectangle
@@ -46,7 +47,7 @@ namespace CapFrameX
                             Fill = Brushes.Black
                         };
 
-                        // Set up the position in the window, at mouse coordonate
+                        // Set up the position in the canvas control
                         Canvas.SetTop(r, p.Y);
                         Canvas.SetLeft(r, p.X);
 
@@ -56,7 +57,7 @@ namespace CapFrameX
                     // Refresh rate
                     await Task.Delay(6);
 
-                    // update the UI on the UI thread
+                    // Update the UI on the UI thread
                     Dispatcher.Invoke(() => FrameTestCanvas.Children.Clear());
 
                     // Refresh rate and this parameter defines velocity of the sliding object
@@ -65,7 +66,6 @@ namespace CapFrameX
                     if (xPos > FrameTestCanvas.ActualWidth - 100)
                         xPos = 100;
                 }
-
             });
         }
 
