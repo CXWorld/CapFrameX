@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("SequenceGenerator")]
+[assembly: AssemblyTitle("CapFrameX.Database")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("SequenceGenerator")]
+[assembly: AssemblyProduct("CapFrameX.Database")]
 [assembly: AssemblyCopyright("Copyright ©  2018")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("3cc383d7-c9cb-49ef-a233-9e7f26a8bfa2")]
+[assembly: Guid("cbb52502-aee3-4c65-8da5-b3e07c151cef")]
 
 // Version information for an assembly consists of the following four values:
 //
