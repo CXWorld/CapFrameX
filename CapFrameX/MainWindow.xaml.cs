@@ -1,5 +1,6 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
+﻿using System;
+using System.Reactive.Linq;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -12,9 +13,10 @@ namespace CapFrameX
     /// </summary>
     public partial class MainWindow : Window
     {
-        private CancellationTokenSource _tokenSource;
         private int _stepWidth;
         private int _refreshRate;
+        private int _xPos;
+        private IDisposable _disposableSequence;
 
         public MainWindow()
         {
@@ -25,57 +27,55 @@ namespace CapFrameX
         {
             _stepWidth = 2;
             _refreshRate = 6;
-            _tokenSource = new CancellationTokenSource();
-            CancellationToken token = _tokenSource.Token;
+            _xPos = 2;
 
-            int xPos = 20;
+            var context = SynchronizationContext.Current;
 
-            // Going to make this better with Observables later 
-            Task.Run(async () =>
+            _disposableSequence?.Dispose();
+            _disposableSequence = Observable.Generate(
+                                    0, // initialState
+                                    x => true, //condition
+                                    x => x, //iterate
+                                    x => x, //resultSelector
+                                    x => TimeSpan.FromMilliseconds(_refreshRate))
+                                //.ObserveOn(Scheduler.Default)
+                                .ObserveOn(context)
+                                .SubscribeOn(context)
+                                .Subscribe(x => UpdateRectangle());
+        }
+
+        private void UpdateRectangle()
+        {
+            FrameTestCanvas.Children.Clear();
+
+            Point p = new Point(_xPos, 100);
+
+            // Initialize a new Rectangle
+            Rectangle r = new Rectangle
             {
-                while (!token.IsCancellationRequested)
-                {
-                    Point p = new Point(xPos, 100);
+                // Set up rectangle's size
+                Width = 100,
+                Height = 300,
 
-                    // Update the UI on the UI thread
-                    Dispatcher.Invoke(() =>
-                    {
-                        // Initialize a new Rectangle
-                        Rectangle r = new Rectangle
-                        {
-                            // Set up rectangle's size
-                            Width = 100,
-                            Height = 300,
+                // Set up the Background color
+                Fill = Brushes.Black
+            };
 
-                            // Set up the Background color
-                            Fill = Brushes.Black
-                        };
+            // Set up the position in the canvas control
+            Canvas.SetTop(r, p.Y);
+            Canvas.SetLeft(r, p.X);
 
-                        // Set up the position in the canvas control
-                        Canvas.SetTop(r, p.Y);
-                        Canvas.SetLeft(r, p.X);
+            FrameTestCanvas.Children.Add(r);
 
-                        FrameTestCanvas.Children.Add(r);
-                    });
+            _xPos += _stepWidth;
 
-                    // Refresh rate
-                    await Task.Delay(_refreshRate);
-
-                    // Update the UI on the UI thread
-                    Dispatcher.Invoke(() => FrameTestCanvas.Children.Clear());
-
-                    // Refresh rate and this parameter defines velocity of the sliding object
-                    xPos += _stepWidth;
-
-                    if (xPos > FrameTestCanvas.ActualWidth - 120)
-                        xPos = 100;
-                }
-            });
+            if (_xPos > FrameTestCanvas.ActualWidth - 120)
+                _xPos = 100;
         }
 
         private void Button_Click_End(object sender, RoutedEventArgs e)
         {
-            _tokenSource?.Cancel();
+            _disposableSequence?.Dispose();
             FrameTestCanvas.Children.Clear();
         }
 
@@ -91,6 +91,7 @@ namespace CapFrameX
         {
             var slider = sender as Slider;
             _refreshRate = (int)slider.Value;
+            FpsCounterTextBox.Text = Math.Round(1000d / _refreshRate, 0).ToString();
         }
     }
 }

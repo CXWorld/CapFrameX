@@ -1,9 +1,9 @@
 # CapFrameX
-Frame capture analysis tool
+Frame capture analysis tool (in the process of developing)
 
 # Dev Roadmap
-* Experimental animated frame time test
-* Application architecture based on MVVM pattern und DI
+* Experimental animated frame time test (work in progess)
+* Application architecture based on MVVM pattern und DI (work in progess)
 * UI design
 * Advanced statistical methods and algorithm validation
 * OCAT interface
@@ -22,3 +22,4 @@ Features:
 * Push real-world data (data from OCAT)
 * Watch parallel live chart
 * Watching smoothness/stuttering and aliasing effects at high-contrast transitions due to low FPS
+* What about SharpDX (D2D)?

@@ -11,13 +11,15 @@
             <RowDefinition Height="*" />
             <RowDefinition Height="100" />
         </Grid.RowDefinitions>
-        <Canvas Grid.Row="0" Name="FrameTestCanvas">
-
-        </Canvas>
+        <StackPanel VerticalAlignment="Top" Grid.Row="0"  Margin="10 0 0 0" Orientation="Horizontal">
+            <TextBox Name="FpsCounterTextBox" VerticalContentAlignment="Center" BorderThickness="0" FontSize="30" Height="50" />
+            <Label Height="50" VerticalContentAlignment="Center" FontSize="30">FPS</Label>
+        </StackPanel>
+        <Canvas Grid.Row="0" Name="FrameTestCanvas"/>
         <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Grid.Row="1" Orientation="Horizontal">
             <DockPanel DockPanel.Dock="Right" Margin="0,0,100,0">
                 <Label DockPanel.Dock="Left" VerticalAlignment="Center" FontWeight="Bold">Refresh rate (ms):</Label>
-                <Slider VerticalAlignment="Center" Width="250"
+                <Slider Name="RefreshRateSlider" VerticalAlignment="Center" Width="250"
                         Minimum="1"
                         Maximum="100"
                         Value="2"
