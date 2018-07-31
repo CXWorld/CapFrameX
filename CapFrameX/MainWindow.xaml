@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:CapFrameX"
+        xmlns:mvvm="clr-namespace:CapFrameX.MVVM;assembly=CapFrameX.MVVM"
         mc:Ignorable="d"
         Title="MainWindow" Height="768" Width="1280">
     <Grid>
@@ -12,29 +13,30 @@
             <RowDefinition Height="100" />
         </Grid.RowDefinitions>
         <StackPanel VerticalAlignment="Top" Grid.Row="0"  Margin="10 0 0 0" Orientation="Horizontal">
-            <TextBox Name="FpsCounterTextBox" VerticalContentAlignment="Center" BorderThickness="0" FontSize="30" Height="50" />
+            <TextBox Text="{Binding FpsCounter}" VerticalContentAlignment="Center" BorderThickness="0" FontSize="30" Height="50" />
             <Label Height="50" VerticalContentAlignment="Center" FontSize="30">FPS</Label>
         </StackPanel>
         <Canvas Grid.Row="0" Name="FrameTestCanvas"/>
+
         <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Grid.Row="1" Orientation="Horizontal">
             <DockPanel DockPanel.Dock="Right" Margin="0,0,100,0">
                 <Label DockPanel.Dock="Left" VerticalAlignment="Center" FontWeight="Bold">Refresh rate (ms):</Label>
-                <Slider Name="RefreshRateSlider" VerticalAlignment="Center" Width="250"
+                <Slider mvvm:SliderValueChangedBehaviour.Command="{Binding RefreshRateChangedCommand}" VerticalAlignment="Center" Width="250"
                         Minimum="1"
                         Maximum="100"
                         Value="2"
                         IsSnapToTickEnabled="True"
-                        TickFrequency="1" ValueChanged="Slider_Refreshrate_ValueChanged"/>
+                        TickFrequency="1"/>
             </DockPanel>
-            <Button Content="Start" Height="50" Width="80" Click="Button_Click_Start"></Button>
-            <Button Content="Stop" Height="50" Width="80" Click="Button_Click_End"></Button>
+            <Button Content="Start" Height="50" Width="80" Command="{Binding Path=StartAnimationCommand}"></Button>
+            <Button Content="Stop" Height="50" Width="80" Command="{Binding Path=StopAnimationCommand}"></Button>
             <DockPanel Margin="100,0,0,0">
                 <Label DockPanel.Dock="Left" VerticalAlignment="Center" FontWeight="Bold">Step width (pixel):</Label>
-                <Slider DockPanel.Dock="Right" VerticalAlignment="Center" Width="250" 
+                <Slider mvvm:SliderValueChangedBehaviour.Command="{Binding StepWidthChangedCommand}" DockPanel.Dock="Right" VerticalAlignment="Center" Width="250" 
                         Minimum="1"
                         Maximum="50"
                         Value="6"
-                        IsSnapToTickEnabled="True" ValueChanged="Slider_Stepwidth_ValueChanged"/>
+                        IsSnapToTickEnabled="True"/>
             </DockPanel>
         </StackPanel>
     </Grid>
