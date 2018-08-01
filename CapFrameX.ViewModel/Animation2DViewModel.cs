@@ -9,15 +9,15 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
 
-namespace CapFrameX
+namespace CapFrameX.ViewModel
 {
-    public class MainViewModel : BindableBase
+    public class Animation2DViewModel : BindableBase
     {
         private int _stepWidth;
         private int _refreshRate;
         private int _xPos;
         private IDisposable _disposableSequence;
-        private MainWindow _mainWindow;
+        private Canvas _frameTestCanvas;
         private int _fpsCounter;
 
         public int FpsCounter
@@ -34,9 +34,9 @@ namespace CapFrameX
 
         public ICommand StepWidthChangedCommand { get; }
 
-        public MainViewModel(MainWindow mainWindow)
+        public Animation2DViewModel(Canvas frameTestCanvas)
         {
-            _mainWindow = mainWindow;
+            _frameTestCanvas = frameTestCanvas;
 
             StartAnimationCommand = new DelegateCommand(OnStartAnimation);
             StopAnimationCommand = new DelegateCommand(OnStopAnimation);
@@ -67,13 +67,11 @@ namespace CapFrameX
                                 .Subscribe(x => UpdateRectangle());
         }
 
-
         private void OnStopAnimation()
         {
             _disposableSequence?.Dispose();
-            _mainWindow.FrameTestCanvas.Children.Clear();
+            _frameTestCanvas.Children.Clear();
         }
-
 
         private void OnRefreshRateChanged(object value)
         {
@@ -88,7 +86,7 @@ namespace CapFrameX
 
         private void UpdateRectangle()
         {
-            _mainWindow.FrameTestCanvas.Children.Clear();
+            _frameTestCanvas.Children.Clear();
 
             Point p = new Point(_xPos, 100);
 
@@ -107,11 +105,11 @@ namespace CapFrameX
             Canvas.SetTop(r, p.Y);
             Canvas.SetLeft(r, p.X);
 
-            _mainWindow.FrameTestCanvas.Children.Add(r);
+            _frameTestCanvas.Children.Add(r);
 
             _xPos += _stepWidth;
 
-            if (_xPos > _mainWindow.FrameTestCanvas.ActualWidth - 120)
+            if (_xPos > _frameTestCanvas.ActualWidth - 120)
                 _xPos = 100;
         }
     }

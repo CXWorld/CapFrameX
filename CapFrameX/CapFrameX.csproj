@@ -44,8 +44,8 @@
     <Reference Include="DryIoc.CommonServiceLocator, Version=3.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\DryIoc.CommonServiceLocator.dll.3.0.0\lib\net40-Client\DryIoc.CommonServiceLocator.dll</HintPath>
     </Reference>
-    <Reference Include="Prism, Version=6.3.0.0, Culture=neutral, PublicKeyToken=40ee6c3a2184dc59, processorArchitecture=MSIL">
-      <HintPath>..\packages\Prism.Core.6.3.0\lib\net45\Prism.dll</HintPath>
+    <Reference Include="Prism, Version=7.0.0.396, Culture=neutral, PublicKeyToken=40ee6c3a2184dc59, processorArchitecture=MSIL">
+      <HintPath>..\packages\Prism.Core.7.0.0.396\lib\net45\Prism.dll</HintPath>
     </Reference>
     <Reference Include="Prism.DryIoc.Wpf, Version=6.3.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Prism.DryIoc.6.3.0\lib\net45\Prism.DryIoc.Wpf.dll</HintPath>
@@ -90,7 +90,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Bootstrapper.cs" />
-    <Compile Include="MainViewModel.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -127,6 +126,14 @@
     <ProjectReference Include="..\CapFrameX.MVVM\CapFrameX.MVVM.csproj">
       <Project>{cfb57d81-1886-45d2-aa16-ede1dd17a9ca}</Project>
       <Name>CapFrameX.MVVM</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CapFrameX.ViewModel\CapFrameX.ViewModel.csproj">
+      <Project>{ad4536b2-c977-4cb8-8540-866928671c2d}</Project>
+      <Name>CapFrameX.ViewModel</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CapFrameX.View\CapFrameX.View.csproj">
+      <Project>{5cb56a44-8340-48f5-a9ec-ddf9ad3e10f0}</Project>
+      <Name>CapFrameX.View</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -9,8 +9,7 @@ namespace CapFrameX
     {
         public MainWindow()
         {
-            InitializeComponent();
-            DataContext = new MainViewModel(this);
+            InitializeComponent();            
         }
     }
 }
