@@ -7,6 +7,6 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="768" Width="1280">
     <Grid>
-        <view:Animation2DView/>
+        <view:Animation3DView/>
     </Grid>
 </Window>
