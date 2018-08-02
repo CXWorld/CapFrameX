@@ -59,12 +59,19 @@
     <Compile Include="Animation2DView.xaml.cs">
       <DependentUpon>Animation2DView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Animation3DView.xaml.cs">
+      <DependentUpon>Animation3DView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <Page Include="Animation2DView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Animation3DView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
   <ItemGroup>
