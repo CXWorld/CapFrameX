@@ -2,7 +2,7 @@
 Frame capture analysis tool (in process of developing)
 
 # Dev Roadmap
-* Experimental animated frame time test (work in progess)
+* Experimental 2D/3D animated frame time test (work in progess)
 * Application architecture based on MVVM pattern und DI (work in progess)
 * UI design
 * Advanced statistical methods and algorithm validation
@@ -20,6 +20,7 @@ What am I gonna do here is to provide a visualization of frame times. This could
 Features:
 * Push various synthetic sequences
 * Push real-world data (data from OCAT)
-* Watch synchronous live chart
+* Watch simultaneous live chart
 * Watching smoothness/stuttering and aliasing effects at high-contrast transitions due to low FPS
-* What about SharpDX (D2D)? Would like to try that...
+* 2D/3D animation
+* 3D animation using adaptive sync
