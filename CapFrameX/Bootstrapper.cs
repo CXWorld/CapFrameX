@@ -26,10 +26,10 @@ namespace CapFrameX
 
         protected override void ConfigureContainer()
         {
-            // Prism
-            Container.Register<IRegionManager, RegionManager>(Reuse.Singleton);
-
             base.ConfigureContainer();
+
+            // Prism
+            Container.Register<IRegionManager, RegionManager>(Reuse.Singleton, null, null, IfAlreadyRegistered.Replace, Guid.NewGuid());            
         }
 
         /// <summary>
@@ -37,6 +37,8 @@ namespace CapFrameX
         /// </summary>
         protected override void ConfigureViewModelLocator()
         {
+            base.ConfigureViewModelLocator();
+
             ViewModelLocationProvider.SetDefaultViewTypeToViewModelTypeResolver(x =>
             {
                 var viewName = x.FullName;
@@ -54,8 +56,7 @@ namespace CapFrameX
                 return t;
             });
 
-            base.ConfigureViewModelLocator();
-            ViewModelLocationProvider.SetDefaultViewModelFactory(type => Container.Resolve(type, IfUnresolved.ReturnDefault));
+            ViewModelLocationProvider.SetDefaultViewModelFactory(type => Container.Resolve(type, IfUnresolved.Throw));
         }
 
         protected override void ConfigureModuleCatalog()

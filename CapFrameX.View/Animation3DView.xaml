@@ -5,8 +5,10 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:hx="http://helix-toolkit.org/wpf/SharpDX"
              xmlns:local="clr-namespace:CapFrameX.View"
+             xmlns:prism="http://prismlibrary.com/"
              mc:Ignorable="d" 
-             d:DesignHeight="300" d:DesignWidth="300">
+             d:DesignHeight="300" d:DesignWidth="300"
+             prism:ViewModelLocator.AutoWireViewModel="True">
     <Grid>
         <hx:Viewport3DX
             Camera="{Binding Camera}"

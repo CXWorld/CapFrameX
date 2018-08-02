@@ -1,9 +1,5 @@
 ﻿using HelixToolkit.Wpf.SharpDX;
 using Media3D = System.Windows.Media.Media3D;
-using Media = System.Windows.Media;
-using Color = System.Windows.Media.Color;
-using Colors = System.Windows.Media.Colors;
-using Vector3D = System.Windows.Media.Media3D.Vector3D;
 
 namespace CapFrameX.ViewModel
 {

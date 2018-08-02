@@ -1,4 +1,5 @@
 ﻿using CapFrameX.ViewModel;
+using System.ComponentModel;
 using System.Windows.Controls;
 
 namespace CapFrameX.View
@@ -11,7 +12,12 @@ namespace CapFrameX.View
         public Animation2DView()
         {
             InitializeComponent();
-            DataContext = new Animation2DViewModel(FrameTestCanvas);
+
+            // Design time!
+            if (DesignerProperties.GetIsInDesignMode(this))
+            {
+                DataContext = new Animation2DViewModel(FrameTestCanvas);
+            }            
         }
     }
 }
