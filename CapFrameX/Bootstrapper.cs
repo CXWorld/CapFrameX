@@ -39,14 +39,14 @@ namespace CapFrameX
         {
             base.ConfigureViewModelLocator();
 
-            ViewModelLocationProvider.SetDefaultViewTypeToViewModelTypeResolver(x =>
+            ViewModelLocationProvider.SetDefaultViewTypeToViewModelTypeResolver(viewType =>
             {
-                var viewName = x.FullName;
+                var viewName = viewType.FullName;
 
                 // Convention
                 viewName = viewName.Replace(".View.", ".ViewModel.");
                 viewName = viewName.Replace(".Views.", ".ViewModels.");
-                var viewAssemblyName = x.GetTypeInfo().Assembly.FullName;
+                var viewAssemblyName = viewType.GetTypeInfo().Assembly.FullName;
 
                 // Saving ViewModels in another assembly.
                 viewAssemblyName = viewAssemblyName.Replace("View", "ViewModel");

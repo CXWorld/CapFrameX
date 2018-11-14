@@ -4,21 +4,16 @@ using System.Windows;
 
 namespace CapFrameX
 {
-    public class RegionController
+    public class RegionManagerWrapper
     {
-        public RegionController()
+        public static RegionManagerWrapper Singleton { get; } = new RegionManagerWrapper();
+
+        internal IRegionManager RegionManager { get; }
+
+        public RegionManagerWrapper()
         {
             RegionManager = Prism.Regions.RegionManager.GetRegionManager(Application.Current.MainWindow);
         }
-
-        public RegionController(IRegionManager regionManager)
-        {
-            RegionManager = regionManager;
-        }
-
-        public static RegionController Singleton { get; } = new RegionController();
-
-        internal IRegionManager RegionManager { get; }
 
         public static void ActivateView(string region, string view)
         {
