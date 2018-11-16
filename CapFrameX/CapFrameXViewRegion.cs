@@ -8,7 +8,7 @@ namespace CapFrameX
         public void Initialize()
         {
             //RegionController.Singleton.RegisterViewWithRegion("MainRegion", typeof(Animation2DView));
-            RegionManagerWrapper.Singleton.RegisterViewWithRegion("MainRegion", typeof(Animation3DView));
+            RegionManagerWrapper.Singleton.RegisterViewWithRegion("MainRegion", typeof(MainView));
         }
     }
 }
