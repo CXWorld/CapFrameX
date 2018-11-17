@@ -4,9 +4,9 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 
-namespace CapFrameX.Record
+namespace CapFrameX.OcatInterface
 {
-    class RecordManager
+    public class RecordManager
     {
         public Session LoadData(string csvFile)
         {

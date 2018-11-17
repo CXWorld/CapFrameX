@@ -27,7 +27,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.Configuration", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.MVVM", "CapFrameX.MVVM\CapFrameX.MVVM.csproj", "{CFB57D81-1886-45D2-AA16-EDE1DD17A9CA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.Record", "CapFrameX.Record\CapFrameX.Record.csproj", "{E0C86D4A-F253-4FB4-B690-716C11A6444F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.Contracts", "CapFrameX.Contracts\CapFrameX.Contracts.csproj", "{4C3B8B5C-54D7-46A1-91A1-32BF82FD42CD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -83,10 +83,10 @@ Global
 		{CFB57D81-1886-45D2-AA16-EDE1DD17A9CA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CFB57D81-1886-45D2-AA16-EDE1DD17A9CA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CFB57D81-1886-45D2-AA16-EDE1DD17A9CA}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E0C86D4A-F253-4FB4-B690-716C11A6444F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E0C86D4A-F253-4FB4-B690-716C11A6444F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E0C86D4A-F253-4FB4-B690-716C11A6444F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E0C86D4A-F253-4FB4-B690-716C11A6444F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4C3B8B5C-54D7-46A1-91A1-32BF82FD42CD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4C3B8B5C-54D7-46A1-91A1-32BF82FD42CD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4C3B8B5C-54D7-46A1-91A1-32BF82FD42CD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4C3B8B5C-54D7-46A1-91A1-32BF82FD42CD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

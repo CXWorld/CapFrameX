@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace CapFrameX.Record
+namespace CapFrameX.OcatInterface
 {
     public class Session
     {

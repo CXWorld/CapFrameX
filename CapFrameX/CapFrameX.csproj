@@ -164,10 +164,6 @@
       <Project>{cfb57d81-1886-45d2-aa16-ede1dd17a9ca}</Project>
       <Name>CapFrameX.MVVM</Name>
     </ProjectReference>
-    <ProjectReference Include="..\CapFrameX.Record\CapFrameX.Record.csproj">
-      <Project>{e0c86d4a-f253-4fb4-b690-716c11a6444f}</Project>
-      <Name>CapFrameX.Record</Name>
-    </ProjectReference>
     <ProjectReference Include="..\CapFrameX.ViewModel\CapFrameX.ViewModel.csproj">
       <Project>{ad4536b2-c977-4cb8-8540-866928671c2d}</Project>
       <Name>CapFrameX.ViewModel</Name>

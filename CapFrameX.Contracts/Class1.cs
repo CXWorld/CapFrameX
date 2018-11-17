@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CapFrameX.OcatInterface
+namespace CapFrameX.Contracts
 {
     public class Class1
     {
