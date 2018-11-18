@@ -1,4 +1,6 @@
-﻿using DryIoc;
+﻿using CapFrameX.Contracts.OcatInterface;
+using CapFrameX.OcatInterface;
+using DryIoc;
 using Prism.DryIoc;
 using Prism.Modularity;
 using Prism.Mvvm;
@@ -29,7 +31,10 @@ namespace CapFrameX
             base.ConfigureContainer();
 
             // Prism
-            Container.Register<IRegionManager, RegionManager>(Reuse.Singleton, null, null, IfAlreadyRegistered.Replace, Guid.NewGuid());            
+            Container.Register<IRegionManager, RegionManager>(Reuse.Singleton, null, null, IfAlreadyRegistered.Replace, "RegionManager");
+
+            // Core components
+            Container.Register<IRecordDirectoryObserver, RecordDirectoryObserver>(Reuse.Singleton);
         }
 
         /// <summary>

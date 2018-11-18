@@ -109,6 +109,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\CapFrameX.Contracts\CapFrameX.Contracts.csproj">
+      <Project>{4C3B8B5C-54D7-46A1-91A1-32BF82FD42CD}</Project>
+      <Name>CapFrameX.Contracts</Name>
+    </ProjectReference>
     <ProjectReference Include="..\CapFrameX.OcatInterface\CapFrameX.OcatInterface.csproj">
       <Project>{E61AD1FC-514F-43FD-BC20-31E9900CDFD7}</Project>
       <Name>CapFrameX.OcatInterface</Name>

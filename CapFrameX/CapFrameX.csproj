@@ -160,9 +160,17 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\CapFrameX.Contracts\CapFrameX.Contracts.csproj">
+      <Project>{4C3B8B5C-54D7-46A1-91A1-32BF82FD42CD}</Project>
+      <Name>CapFrameX.Contracts</Name>
+    </ProjectReference>
     <ProjectReference Include="..\CapFrameX.MVVM\CapFrameX.MVVM.csproj">
       <Project>{cfb57d81-1886-45d2-aa16-ede1dd17a9ca}</Project>
       <Name>CapFrameX.MVVM</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CapFrameX.OcatInterface\CapFrameX.OcatInterface.csproj">
+      <Project>{E61AD1FC-514F-43FD-BC20-31E9900CDFD7}</Project>
+      <Name>CapFrameX.OcatInterface</Name>
     </ProjectReference>
     <ProjectReference Include="..\CapFrameX.ViewModel\CapFrameX.ViewModel.csproj">
       <Project>{ad4536b2-c977-4cb8-8540-866928671c2d}</Project>

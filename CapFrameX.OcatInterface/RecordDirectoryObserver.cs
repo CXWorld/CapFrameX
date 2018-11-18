@@ -1,11 +1,14 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using System.Collections.Generic;
+using CapFrameX.Contracts.OcatInterface;
 
 namespace CapFrameX.OcatInterface
 {
-    public class RecordDirectoryObserver
+    public class RecordDirectoryObserver : IRecordDirectoryObserver
     {
         private readonly string _recordDirectory;
         private readonly FileSystemWatcher _fileSystemWatcher;
@@ -49,6 +52,12 @@ namespace CapFrameX.OcatInterface
             Console.WriteLine("Deleted, FULLPATH: " + e.FullPath);
 
             _recordDeletedStream.OnNext(e.FullPath);
+        }
+
+        public IEnumerable<FileInfo> GetAllRecordFileInfo()
+        {
+            return Directory.GetFiles(_recordDirectory, "*.csv",
+                                         SearchOption.TopDirectoryOnly).Select(file => new FileInfo(file));
         }
     }
 }

@@ -1,17 +1,14 @@
-﻿using CapFrameX.OcatInterface;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using CapFrameX.Contracts.OcatInterface;
 
 namespace CapFrameX.ViewModel
 {
     public class MainViewModel
     {
-        public MainViewModel()
+        private readonly IRecordDirectoryObserver _recordObserver;
+
+        public MainViewModel(IRecordDirectoryObserver recordObserver)
         {
-            RecordDirectoryObserver recordObserver = new RecordDirectoryObserver();
+            _recordObserver = recordObserver;
         }
     }
 }
