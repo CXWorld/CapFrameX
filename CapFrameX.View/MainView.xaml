@@ -77,7 +77,7 @@
                                         Header="Date"
                                         IsReadOnly="True"/>
                                 <DataGridTextColumn Binding="{Binding RecordTime}"
-                                        Header="Time"
+                                        Header="Record time"
                                         IsReadOnly="True"/>
                             </DataGrid.Columns>
                         </DataGrid>

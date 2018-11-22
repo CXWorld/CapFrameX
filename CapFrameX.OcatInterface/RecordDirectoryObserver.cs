@@ -17,14 +17,18 @@ namespace CapFrameX.OcatInterface
 
         public bool IsActive { get; set; }
 
-        public IObservable<string> RecordCreatedStream => _recordCreatedStream.Where(p => IsActive).AsObservable();
+        public IObservable<FileInfo> RecordCreatedStream 
+            => _recordCreatedStream.Where(p => IsActive).Select(path => new FileInfo(path)).AsObservable();
 
-        public IObservable<string> RecordDeletedStream => _recordDeletedStream.Where(p => IsActive).AsObservable();
+        public IObservable<FileInfo> RecordDeletedStream 
+            => _recordDeletedStream.Where(p => IsActive).Select(path => new FileInfo(path)).AsObservable();
 
         public RecordDirectoryObserver()
         {
             // ToDo: Get from config
-            _recordDirectory = @"C:\Users\marcf\OneDrive\Dokumente\OCAT\Recordings";
+            var documentFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            _recordDirectory = Path.Combine(documentFolder, @"OCAT\Recordings");
+
             _fileSystemWatcher = new FileSystemWatcher(_recordDirectory);
             _fileSystemWatcher.Created += new FileSystemEventHandler(WatcherCreated);
             _fileSystemWatcher.Deleted += new FileSystemEventHandler(WatcherDeleted);

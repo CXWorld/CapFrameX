@@ -8,9 +8,9 @@ namespace CapFrameX.Contracts.OcatInterface
     {
         bool IsActive { get; set; }
 
-        IObservable<string> RecordCreatedStream { get; }
+        IObservable<FileInfo> RecordCreatedStream { get; }
 
-        IObservable<string> RecordDeletedStream { get; }
+        IObservable<FileInfo> RecordDeletedStream { get; }
 
         IEnumerable<FileInfo> GetAllRecordFileInfo();
     }
