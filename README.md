@@ -4,7 +4,7 @@ Frame capture analysis tool (in process of developing)
 # Dev Roadmap
 * Experimental 2D/3D animated frame time test (work in progess)
 * Application architecture based on MVVM pattern und DI (work in progess)
-* UI design
+* UI design (work in progess)
 * Advanced statistical methods and algorithm validation
 * OCAT interface
 * Database management
