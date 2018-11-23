@@ -6,9 +6,9 @@ using System.Linq;
 
 namespace CapFrameX.OcatInterface
 {
-    public class RecordManager
+    public static class RecordManager
     {
-        public Session LoadData(string csvFile)
+        public static Session LoadData(string csvFile)
         {
             if (csvFile == null || csvFile == "")
             {

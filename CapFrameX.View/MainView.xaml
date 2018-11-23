@@ -67,7 +67,7 @@
                             <ColumnDefinition Width="1*" />
                             <ColumnDefinition Width="2*" />
                         </Grid.ColumnDefinitions>
-                        <DataGrid Grid.Column="0" Margin="0 0 0 0" ItemsSource="{Binding RecordInfoList}" CanUserSortColumns="True" CanUserAddRows="False" AutoGenerateColumns="False"
+						<DataGrid Grid.Column="0" Margin="0 0 0 0" ItemsSource="{Binding RecordInfoList}" SelectedItem="{Binding SelectedRecordInfo}" CanUserSortColumns="True" CanUserAddRows="False" AutoGenerateColumns="False"
                           materialDesign:DataGridAssist.CellPadding="13 8 8 8" materialDesign:DataGridAssist.ColumnHeaderPadding="8">
                             <DataGrid.Columns>
                                 <DataGridTextColumn Binding="{Binding GameName}"
