@@ -5,7 +5,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:prism="http://prismlibrary.com/"
-             xmlns:local="clr-namespace:CapFrameX.View"
+             xmlns:geared="clr-namespace:LiveCharts.Geared;assembly=LiveCharts.Geared"
 			 xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
 			 xmlns:mvvm="clr-namespace:CapFrameX.MVVM.Converter;assembly=CapFrameX.MVVM"
              mc:Ignorable="d" 
@@ -67,7 +67,7 @@
 				<ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
 					<Grid>
 						<Grid.ColumnDefinitions>
-							<ColumnDefinition Width="1*" />
+							<ColumnDefinition Width="Auto" />
 							<ColumnDefinition Width="2*" />
 						</Grid.ColumnDefinitions>
 						<DataGrid Grid.Column="0" Margin="0 0 0 0" ItemsSource="{Binding RecordInfoList}" SelectedItem="{Binding SelectedRecordInfo}" CanUserSortColumns="True" CanUserAddRows="False" AutoGenerateColumns="False"
@@ -89,10 +89,13 @@
 								<RowDefinition Height="*"></RowDefinition>
 								<RowDefinition Height="Auto"></RowDefinition>
 							</Grid.RowDefinitions>
-							<lvc:CartesianChart Grid.Row="0" Series="{Binding SeriesCollection}" Zoom="{Binding ZoomingMode}" >
+							<lvc:CartesianChart Series="{Binding SeriesCollection}" Grid.Row="0" Zoom="{Binding ZoomingMode}" >
+								<!--<lvc:CartesianChart.Series>
+									--><!--Notice we are using GLineSeries, instead of LineSeries--><!--
+									<geared:GLineSeries Values="{Binding FrametimeValues}" />
+								</lvc:CartesianChart.Series>-->
 								<lvc:CartesianChart.AxisX>
-									<lvc:Axis Name="X" LabelFormatter="{Binding XFormatter}" 
-                          Separator="{x:Static lvc:DefaultAxes.CleanSeparator}"/>
+									<lvc:Axis Name="X" LabelFormatter="{Binding XFormatter}" Separator="{x:Static lvc:DefaultAxes.CleanSeparator}"/>
 								</lvc:CartesianChart.AxisX>
 								<lvc:CartesianChart.AxisY>
 									<lvc:Axis Name="Y" LabelFormatter="{Binding YFormatter}"/>
@@ -104,7 +107,7 @@
 										<TextBlock Text="{Binding ZoomingMode, Converter={StaticResource ZoomingModeConverter}}"/>
 									</TextBlock>
 								</Button>
-								<Button Command="{Binding ResetZoomCommand}">Reset Zoom</Button>
+								<Button Click="ResetZoomOnClick">Reset Zoom</Button>
 							</StackPanel>
 						</Grid>
 					</Grid>
