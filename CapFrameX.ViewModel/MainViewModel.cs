@@ -7,6 +7,7 @@ using System.Collections.ObjectModel;
 using System.Threading;
 using System.Reactive.Linq;
 using System.Linq;
+using LiveCharts;
 
 namespace CapFrameX.ViewModel
 {
@@ -14,6 +15,7 @@ namespace CapFrameX.ViewModel
 	{
 		private readonly IRecordDirectoryObserver _recordObserver;
 		private OcatRecordInfo _selectedRecordInfo;
+		private ZoomingOptions _zoomingMode;
 
 		public ObservableCollection<OcatRecordInfo> RecordInfoList { get; } 
 			= new ObservableCollection<OcatRecordInfo>();
@@ -29,9 +31,20 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
+		public ZoomingOptions ZoomingMode
+		{
+			get { return _zoomingMode; }
+			set
+			{
+				_zoomingMode = value;
+				RaisePropertyChanged();
+			}
+		}
+
 		public MainViewModel(IRecordDirectoryObserver recordObserver)
 		{
 			_recordObserver = recordObserver;
+			
 			// ToDo: check wether to do this async
 			var initialRecordList = _recordObserver.GetAllRecordFileInfo();
 
@@ -41,11 +54,15 @@ namespace CapFrameX.ViewModel
 			}
 
 			var context = SynchronizationContext.Current;
-			_recordObserver.RecordCreatedStream.ObserveOn(context).SubscribeOn(context).Subscribe(OnRecordCreated);
-			_recordObserver.RecordDeletedStream.ObserveOn(context).SubscribeOn(context).Subscribe(OnRecordDeleted);
+			_recordObserver.RecordCreatedStream.ObserveOn(context).SubscribeOn(context)
+							.Subscribe(OnRecordCreated);
+			_recordObserver.RecordDeletedStream.ObserveOn(context).SubscribeOn(context)
+							.Subscribe(OnRecordDeleted);
 
 			// Turn streams now on
 			_recordObserver.IsActive = true;
+
+			ZoomingMode = ZoomingOptions.X;
 		}
 
 		private void AddToRecordInfoList(FileInfo fileInfo)

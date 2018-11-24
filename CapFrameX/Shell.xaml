@@ -6,7 +6,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:CapFrameX"
         mc:Ignorable="d"
-        Title="Shell" Height="300" Width="300">
+        Height="720" Width="1280">
     <Grid>
         <ContentControl Name="Main" prism:RegionManager.RegionName="MainRegion" />
     </Grid>
