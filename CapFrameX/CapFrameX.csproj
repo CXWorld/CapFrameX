@@ -194,5 +194,9 @@
   <ItemGroup>
     <Resource Include="Icons\CX_Icon.png" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="HardwareInfo\AMDGraphicCards.txt" />
+    <Resource Include="HardwareInfo\NividaGraphicCards.txt" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
