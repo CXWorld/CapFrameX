@@ -22,6 +22,7 @@
 				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.DataGrid.xaml" />
 			</ResourceDictionary.MergedDictionaries>
 			<mvvm:ZoomingModeConverter x:Key="ZoomingModeConverter"></mvvm:ZoomingModeConverter>
+			<CollectionViewSource x:Key="RecordInfoListKey" Source="{Binding RecordInfoList}" Filter="RecordInfoListOnFilter"/>
 		</ResourceDictionary>
 	</UserControl.Resources>
 	<!--<materialDesign:DialogHost Identifier="RootDialog" SnackbarMessageQueue="{Binding ElementName=MainSnackbar, Path=MessageQueue}">-->
@@ -70,7 +71,9 @@
 							<ColumnDefinition Width="Auto" />
 							<ColumnDefinition Width="2*" />
 						</Grid.ColumnDefinitions>
-						<DataGrid Grid.Column="0" Margin="0 0 0 0" ItemsSource="{Binding RecordInfoList}" SelectedItem="{Binding SelectedRecordInfo}" CanUserSortColumns="True" CanUserAddRows="False" AutoGenerateColumns="False"
+						<StackPanel>
+							<TextBox Margin="10 10 10 0" Background="#e6e6e6" Name="RecordSearchBox" materialDesign:HintAssist.Hint="Search" />
+							<DataGrid Background="#F5F5F5" Grid.Column="0" Margin="10" ItemsSource="{Binding Source={StaticResource RecordInfoListKey}}" SelectedItem="{Binding SelectedRecordInfo}" CanUserSortColumns="True" CanUserAddRows="False" AutoGenerateColumns="False"
                           materialDesign:DataGridAssist.CellPadding="13 8 8 8" materialDesign:DataGridAssist.ColumnHeaderPadding="8">
 							<DataGrid.Columns>
 								<DataGridTextColumn Binding="{Binding GameName}"
@@ -84,12 +87,13 @@
                                         IsReadOnly="True"/>
 							</DataGrid.Columns>
 						</DataGrid>
-						<Grid Grid.Column="1">
+						</StackPanel>
+						<Grid Background="#F5F5F5" Margin="10" Grid.Column="1">
 							<Grid.RowDefinitions>
 								<RowDefinition Height="*"></RowDefinition>
 								<RowDefinition Height="Auto"></RowDefinition>
 							</Grid.RowDefinitions>
-							<lvc:CartesianChart Series="{Binding SeriesCollection}" Grid.Row="0" Zoom="{Binding ZoomingMode}" >
+							<lvc:CartesianChart DisableAnimations="True" Series="{Binding SeriesCollection}" Grid.Row="0" Zoom="{Binding ZoomingMode}" >
 								<!--<lvc:CartesianChart.Series>
 									--><!--Notice we are using GLineSeries, instead of LineSeries--><!--
 									<geared:GLineSeries Values="{Binding FrametimeValues}" />

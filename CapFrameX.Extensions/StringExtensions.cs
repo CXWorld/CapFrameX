@@ -30,5 +30,13 @@ namespace CapFrameX.Extensions
             var subString = @this.Substring(startIndex, endIndex - startIndex);
             return subString;
         }
-    }
+
+		public static bool NullSafeContains(this string source, string search, bool ignoreCase = false)
+		{
+			if (source == null) return false;
+
+			var comparer = ignoreCase ? StringComparison.CurrentCultureIgnoreCase : StringComparison.CurrentCulture;
+			return source.IndexOf(search, comparer) >= 0;
+		}
+	}
 }

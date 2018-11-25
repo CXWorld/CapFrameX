@@ -8,62 +8,74 @@ using System.ComponentModel;
 using System.Windows.Controls.Primitives;
 using CapFrameX.ViewModel;
 using CapFrameX.OcatInterface;
+using System.Windows.Data;
+using System.Reactive.Linq;
+using CapFrameX.Extensions;
 
 namespace CapFrameX.View
 {
-    /// <summary>
-    /// Interaktionslogik für MainView.xaml
-    /// </summary>
-    public partial class MainView : UserControl
-    {
-        public MainView()
-        {
-            InitializeComponent();
+	/// <summary>
+	/// Interaktionslogik für MainView.xaml
+	/// </summary>
+	public partial class MainView : UserControl
+	{
+		private const int SEARCH_REFRESH_DELAY_MS = 200;
+		private readonly CollectionViewSource _recordInfoCollection;
 
-            // Design time!
-            if (DesignerProperties.GetIsInDesignMode(this))
-            {
-                DataContext = new MainViewModel(new RecordDirectoryObserver());
-            }
-        }
+		public MainView()
+		{
+			InitializeComponent();
 
-        private void UIElement_OnPreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
-        {
-            //until we had a StaysOpen glag to Drawer, this will help with scroll bars
-            var dependencyObject = Mouse.Captured as DependencyObject;
-            while (dependencyObject != null)
-            {
-                if (dependencyObject is ScrollBar) return;
-                dependencyObject = VisualTreeHelper.GetParent(dependencyObject);
-            }
+			_recordInfoCollection = (CollectionViewSource)Resources["RecordInfoListKey"];
+			Observable.FromEventPattern<TextChangedEventArgs>(RecordSearchBox, "TextChanged")
+				.Throttle(TimeSpan.FromMilliseconds(SEARCH_REFRESH_DELAY_MS))
+				.ObserveOnDispatcher()
+				.Subscribe(t => _recordInfoCollection.View.Refresh());
 
-            MenuToggleButton.IsChecked = false;
-        }
+			// Design time!
+			if (DesignerProperties.GetIsInDesignMode(this))
+			{
+				DataContext = new MainViewModel(new RecordDirectoryObserver());
+			}
+		}
 
-        private async void MenuPopupButton_OnClick(object sender, RoutedEventArgs e)
-        {
-            //var sampleMessageDialog = new SampleMessageDialog
-            //{
-            //    Message = { Text = ((ButtonBase)sender).Content.ToString() }
-            //};
+		private void UIElement_OnPreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+		{
+			//until we had a StaysOpen glag to Drawer, this will help with scroll bars
+			var dependencyObject = Mouse.Captured as DependencyObject;
+			while (dependencyObject != null)
+			{
+				if (dependencyObject is ScrollBar) return;
+				dependencyObject = VisualTreeHelper.GetParent(dependencyObject);
+			}
 
-            //await DialogHost.Show(sampleMessageDialog, "RootDialog");
-        }
+			MenuToggleButton.IsChecked = false;
+		}
 
-        private void OnCopy(object sender, ExecutedRoutedEventArgs e)
-        {
-            if (e.Parameter is string stringValue)
-            {
-                try
-                {
-                    Clipboard.SetDataObject(stringValue);
-                }
-                catch (Exception ex)
-                {
-                    Trace.WriteLine(ex.ToString());
-                }
-            }
-        }
+		private async void MenuPopupButton_OnClick(object sender, RoutedEventArgs e)
+		{
+			//var sampleMessageDialog = new SampleMessageDialog
+			//{
+			//    Message = { Text = ((ButtonBase)sender).Content.ToString() }
+			//};
+
+			//await DialogHost.Show(sampleMessageDialog, "RootDialog");
+		}
+
+		private void OnCopy(object sender, ExecutedRoutedEventArgs e)
+		{
+			if (e.Parameter is string stringValue)
+			{
+				try
+				{
+					Clipboard.SetDataObject(stringValue);
+				}
+				catch (Exception ex)
+				{
+					Trace.WriteLine(ex.ToString());
+				}
+			}
+		}
 
 		private void ResetZoomOnClick(object sender, RoutedEventArgs e)
 		{
@@ -74,6 +86,12 @@ namespace CapFrameX.View
 			X.MaxValue = double.NaN;
 			Y.MinValue = double.NaN;
 			Y.MaxValue = double.NaN;
+		}
+
+		private void RecordInfoListOnFilter(object sender, FilterEventArgs e)
+		{
+			e.FilterCollectionByText<OcatRecordInfo>(RecordSearchBox.Text,
+										(record, word) => record.FullPath.NullSafeContains(word, true));
 		}
 	}
 }
