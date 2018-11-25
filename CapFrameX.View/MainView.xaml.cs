@@ -19,7 +19,7 @@ namespace CapFrameX.View
 	/// </summary>
 	public partial class MainView : UserControl
 	{
-		private const int SEARCH_REFRESH_DELAY_MS = 200;
+		private const int SEARCH_REFRESH_DELAY_MS = 100;
 		private readonly CollectionViewSource _recordInfoCollection;
 
 		public MainView()
