@@ -14,6 +14,8 @@ using System.Windows;
 using System.Windows.Media;
 using System.Collections.Generic;
 using LiveCharts.Geared;
+using LiveCharts.Wpf;
+using MathNet.Numerics.Statistics;
 
 namespace CapFrameX.ViewModel
 {
@@ -23,8 +25,32 @@ namespace CapFrameX.ViewModel
 		private OcatRecordInfo _selectedRecordInfo;
 		private ZoomingOptions _zoomingMode;
 		private SeriesCollection _seriesCollection;
+		private SeriesCollection _statisticCollection;
 		private Func<double, string> _xFormatter;
 		private Func<double, string> _yFormatter;
+		private string[] _parameterLabels;
+
+		public Func<double, string> ParameterFormatter { get; set; } = value => value.ToString("N");
+
+		public string[] ParameterLabels
+		{
+			get { return _parameterLabels; }
+			set
+			{
+				_parameterLabels = value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public SeriesCollection StatisticCollection
+		{
+			get { return _statisticCollection; }
+			set
+			{
+				_statisticCollection = value;
+				RaisePropertyChanged();
+			}
+		}
 
 		public SeriesCollection SeriesCollection
 		{
@@ -55,9 +81,6 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-		public ObservableCollection<OcatRecordInfo> RecordInfoList { get; }
-			= new ObservableCollection<OcatRecordInfo>();
-
 		public OcatRecordInfo SelectedRecordInfo
 		{
 			get { return _selectedRecordInfo; }
@@ -78,6 +101,9 @@ namespace CapFrameX.ViewModel
 				RaisePropertyChanged();
 			}
 		}
+
+		public ObservableCollection<OcatRecordInfo> RecordInfoList { get; }
+		= new ObservableCollection<OcatRecordInfo>();
 
 		public ICommand ToogleZoomingModeCommand { get; }
 
@@ -156,17 +182,19 @@ namespace CapFrameX.ViewModel
 		private void OnSelectedRecordInfoChanged()
 		{
 			var session = RecordManager.LoadData(SelectedRecordInfo.FullPath);
-			SetChart(session.FrameTimes);
+			SetFrametimeChart(session.FrameTimes);
+			SetStaticChart(session.FrameTimes);
 		}
 
-		private void SetChart(IList<double> frametimes)
+		private void SetFrametimeChart(IList<double> frametimes)
 		{
 			var gradientBrush = new LinearGradientBrush
 			{
 				StartPoint = new Point(0, 0),
 				EndPoint = new Point(0, 1)
 			};
-			gradientBrush.GradientStops.Add(new GradientStop(Color.FromRgb(33, 148, 241), 0));
+			
+			gradientBrush.GradientStops.Add(new GradientStop(Color.FromRgb(139, 35, 35), 0));
 			gradientBrush.GradientStops.Add(new GradientStop(Colors.Transparent, 1));
 
 			var values = new GearedValues<double>();
@@ -179,6 +207,7 @@ namespace CapFrameX.ViewModel
 				{
 					Values = values,
 					Fill = gradientBrush,
+					Stroke = new SolidColorBrush(Color.FromRgb(139,35,35)),
 					StrokeThickness = 1,
 					LineSmoothness= 0,
 					PointGeometrySize = 0
@@ -187,6 +216,29 @@ namespace CapFrameX.ViewModel
 
 			//XFormatter = val => new DateTime((long)val).ToString("dd MMM");
 			//YFormatter = val => val.ToString("C");
+		}
+
+
+		private void SetStaticChart(List<double> frameTimes)
+		{
+			var fps = frameTimes.Select(ft => 1000 / ft);
+			var average = Math.Round(fps.Average(), 0);
+			var p1_quantile = Math.Round(fps.Quantile(0.01), 0);
+			var p5_quantile = Math.Round(fps.Quantile(0.05), 0);
+			var min = Math.Round(fps.Min(), 0);
+
+			StatisticCollection = new SeriesCollection
+			{
+				new RowSeries
+				{
+					Title = SelectedRecordInfo.GameName,
+					Fill = new SolidColorBrush(Color.FromRgb(83,104,114)),
+					Values = new ChartValues<double> { min, p1_quantile, p5_quantile, average },
+					DataLabels = true
+				}
+			};
+
+			ParameterLabels = new[] { "Min", "1%", "5%", "Average"};
 		}
 	}
 }

@@ -5,7 +5,6 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:prism="http://prismlibrary.com/"
-             xmlns:geared="clr-namespace:LiveCharts.Geared;assembly=LiveCharts.Geared"
 			 xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
 			 xmlns:mvvm="clr-namespace:CapFrameX.MVVM.Converter;assembly=CapFrameX.MVVM"
              mc:Ignorable="d" 
@@ -88,16 +87,13 @@
 							</DataGrid.Columns>
 						</DataGrid>
 						</StackPanel>
-						<Grid Background="#F5F5F5" Margin="10" Grid.Column="1">
+						<Grid Margin="10" Grid.Column="1">
 							<Grid.RowDefinitions>
-								<RowDefinition Height="*"></RowDefinition>
+								<RowDefinition Height="5*"></RowDefinition>
 								<RowDefinition Height="Auto"></RowDefinition>
+								<RowDefinition Height="3*"></RowDefinition>
 							</Grid.RowDefinitions>
-							<lvc:CartesianChart DisableAnimations="True" Series="{Binding SeriesCollection}" Grid.Row="0" Zoom="{Binding ZoomingMode}" >
-								<!--<lvc:CartesianChart.Series>
-									--><!--Notice we are using GLineSeries, instead of LineSeries--><!--
-									<geared:GLineSeries Values="{Binding FrametimeValues}" />
-								</lvc:CartesianChart.Series>-->
+							<lvc:CartesianChart Background="#F5F5F5" DisableAnimations="True" Series="{Binding SeriesCollection}" Grid.Row="0" Zoom="{Binding ZoomingMode}" >
 								<lvc:CartesianChart.AxisX>
 									<lvc:Axis Name="X" LabelFormatter="{Binding XFormatter}" Separator="{x:Static lvc:DefaultAxes.CleanSeparator}"/>
 								</lvc:CartesianChart.AxisX>
@@ -105,14 +101,34 @@
 									<lvc:Axis Name="Y" LabelFormatter="{Binding YFormatter}"/>
 								</lvc:CartesianChart.AxisY>
 							</lvc:CartesianChart>
-							<StackPanel Grid.Row="1">
-								<Button Command="{Binding ToogleZoomingModeCommand}">
-									<TextBlock>Toggle zoming mode, current is: 
+							<Expander Background="#F5F5F5" Margin="0 10 0 10" Header="Chart Settings" Grid.Row="1" HorizontalAlignment="Stretch">
+								<StackPanel Orientation="Horizontal" >
+									<Button Command="{Binding ToogleZoomingModeCommand}">
+										<TextBlock>Toggle zoming mode, current is: 
 										<TextBlock Text="{Binding ZoomingMode, Converter={StaticResource ZoomingModeConverter}}"/>
 									</TextBlock>
-								</Button>
-								<Button Click="ResetZoomOnClick">Reset Zoom</Button>
-							</StackPanel>
+									</Button>
+									<Button Margin="10 0 0 0" Click="ResetZoomOnClick">Reset Zoom</Button>
+								</StackPanel>
+							</Expander>
+							<Grid Background="#F5F5F5" Grid.Row="2">
+								<lvc:CartesianChart Margin="0 10 0 10" Series="{Binding StatisticCollection}" LegendLocation="Bottom">
+									<lvc:CartesianChart.AxisX>
+										<lvc:Axis Title="FPS" LabelFormatter="{Binding ParameterFormatter}"></lvc:Axis>
+									</lvc:CartesianChart.AxisX>
+									<lvc:CartesianChart.AxisY>
+										<lvc:Axis Title="Statistical Parameters" Labels="{Binding ParameterLabels}">
+											<lvc:Axis.Separator>
+											<!--step 1 forces the axis to display all labels, disabling it makes it invisible-->
+											<lvc:Separator Step="1" IsEnabled="False"></lvc:Separator>
+											</lvc:Axis.Separator>
+										</lvc:Axis>
+									</lvc:CartesianChart.AxisY>
+									<!--<lvc:CartesianChart.DataTooltip>
+										<lvc:DefaultTooltip SelectionMode="SharedYValues"></lvc:DefaultTooltip>
+									</lvc:CartesianChart.DataTooltip>-->
+								</lvc:CartesianChart>
+							</Grid>
 						</Grid>
 					</Grid>
 				</ScrollViewer>
