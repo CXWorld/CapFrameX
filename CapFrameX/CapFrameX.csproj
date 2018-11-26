@@ -196,7 +196,9 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="HardwareInfo\AMDGraphicCards.txt" />
-    <Resource Include="HardwareInfo\NividaGraphicCards.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="HardwareInfo\NvidiaGraphicCards.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
