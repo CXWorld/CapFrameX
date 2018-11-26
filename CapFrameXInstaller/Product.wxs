@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+	<?define VersionNumber="!(bind.FileVersion.fil728C156E08C89BB8D6F48ADCA3FDB05E)" ?>
+	<Product Id="*" Name="Open Analytics Tool (CapFrameX) $(var.VersionNumber)" Language="1033" Version="$(var.VersionNumber)" Manufacturer="DevTechProfile" UpgradeCode="05dc3ab5-bc82-4feb-8624-61c39d0ac204">
+		<Package InstallerVersion="500" Compressed="yes" InstallScope="perMachine" InstallPrivileges="elevated" Platform="x64"/>
+
+		<!--<MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />-->
+		<MajorUpgrade AllowDowngrades="yes"/>
+		<Media Id="1" Cabinet="CapFrameX.cab" EmbedCab="yes" CompressionLevel="high" />
+
+		<Feature Id="ProductFeature" Title="CapFrameX" Level="1">
+			<ComponentGroupRef Id="CapFrameXBinaries" />
+			<ComponentRef Id="ApplicationShortcut"/>
+		</Feature>
+	</Product>
+
+	<Fragment>
+		<Directory Id="TARGETDIR" Name="SourceDir">
+			<Directory Id="ProgramFiles64Folder">
+				<Directory Id="INSTALLFOLDER" Name="CapFrameX" />
+				<Directory Id="BINFOLDER" Name="Bin"/>
+			</Directory>
+			<Directory Id="ProgramMenuFolder">
+				<Directory Id="ApplicationProgramsFolder" Name="CapFrameX"/>
+			</Directory>
+		</Directory>		
+		<DirectoryRef Id="ApplicationProgramsFolder">
+			<Component Id="ApplicationShortcut" Guid="*" Win64="yes">
+				<Shortcut Id="ApplicationStartMenuShortcut"
+						  Name="CapFrameX"
+						  Description="Open Analytics Tool"
+						  Target="[INSTALLFOLDER]\CapFrameX.exe"
+						  WorkingDirectory="INSTALLFOLDER"/>				
+				<RemoveFolder Id="ApplicationProgramsFolder" On="uninstall"/>
+				<RegistryValue Root="HKMU" Key="Software\CapFrameX" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
+				<RegistryValue Root="HKMU" Key="Software\CapFrameX" Name="InstallDir" Type="string" Value="[INSTALLFOLDER]"/>
+			</Component>
+		</DirectoryRef>
+	</Fragment>
+
+	<!--<Fragment>
+		<ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
+			--><!-- TODO: Remove the comments around this Component element and the ComponentRef below in order to add resources to this installer. --><!--
+			--><!-- <Component Id="ProductComponent"> --><!--
+				--><!-- TODO: Insert files, registry keys, and other resources here. --><!--
+			--><!-- </Component> --><!--
+		</ComponentGroup>
+	</Fragment>-->
+</Wix>
