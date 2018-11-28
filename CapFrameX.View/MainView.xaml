@@ -19,6 +19,7 @@
 				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Shadows.xaml" />
 				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ToggleButton.xaml" />
 				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.DataGrid.xaml" />
+				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Slider.xaml" />
 			</ResourceDictionary.MergedDictionaries>
 			<mvvm:ZoomingModeConverter x:Key="ZoomingModeConverter"></mvvm:ZoomingModeConverter>
 			<CollectionViewSource x:Key="RecordInfoListKey" Source="{Binding RecordInfoList}" Filter="RecordInfoListOnFilter"/>
@@ -74,18 +75,18 @@
 							<TextBox Margin="10 10 10 0" Background="#e6e6e6" Name="RecordSearchBox" materialDesign:HintAssist.Hint="Search" />
 							<DataGrid Background="#F5F5F5" Grid.Column="0" Margin="10" ItemsSource="{Binding Source={StaticResource RecordInfoListKey}}" SelectedItem="{Binding SelectedRecordInfo}" CanUserSortColumns="True" CanUserAddRows="False" AutoGenerateColumns="False"
                           materialDesign:DataGridAssist.CellPadding="13 8 8 8" materialDesign:DataGridAssist.ColumnHeaderPadding="8">
-							<DataGrid.Columns>
-								<DataGridTextColumn Binding="{Binding GameName}"
+								<DataGrid.Columns>
+									<DataGridTextColumn Binding="{Binding GameName}"
                                         Header="Game"
                                         IsReadOnly="True"/>
-								<DataGridTextColumn Binding="{Binding CreationDate}"
+									<DataGridTextColumn Binding="{Binding CreationDate}"
                                         Header="Date"
                                         IsReadOnly="True"/>
-								<DataGridTextColumn Binding="{Binding RecordTime}"
+									<DataGridTextColumn Binding="{Binding RecordTime}"
                                         Header="Record time"
                                         IsReadOnly="True"/>
-							</DataGrid.Columns>
-						</DataGrid>
+								</DataGrid.Columns>
+							</DataGrid>
 						</StackPanel>
 						<Grid Margin="10" Grid.Column="1">
 							<Grid.RowDefinitions>
@@ -102,14 +103,40 @@
 								</lvc:CartesianChart.AxisY>
 							</lvc:CartesianChart>
 							<Expander Background="#F5F5F5" Margin="0 10 0 10" Header="Chart Settings" Grid.Row="1" HorizontalAlignment="Stretch">
-								<StackPanel Orientation="Horizontal" >
-									<Button Command="{Binding ToogleZoomingModeCommand}">
-										<TextBlock>Toggle zoming mode, current is: 
+								<Grid>
+									<Grid.ColumnDefinitions>
+										<ColumnDefinition Width="1*" />
+										<ColumnDefinition Width="1*" />
+									</Grid.ColumnDefinitions>
+									<StackPanel Margin="10 10 0 10" Grid.Column="0" Orientation="Horizontal" >
+										<Button Command="{Binding ToogleZoomingModeCommand}">
+											<TextBlock>Toggle zoming mode, current is: 
 										<TextBlock Text="{Binding ZoomingMode, Converter={StaticResource ZoomingModeConverter}}"/>
 									</TextBlock>
-									</Button>
-									<Button Margin="10 0 0 0" Click="ResetZoomOnClick">Reset Zoom</Button>
-								</StackPanel>
+										</Button>
+										<Button Margin="10 0 0 0" Click="ResetZoomOnClick">Reset Zoom</Button>
+									</StackPanel>
+									<StackPanel Margin="0 10 0 10" Grid.Column="1">
+										<StackPanel Orientation="Horizontal">
+											<TextBlock VerticalAlignment="Bottom">First n frames</TextBlock>
+											<Slider Margin="8 0 0 0" Minimum="0"
+													Maximum="100"
+													Value="{Binding FirstNFrames}"
+													Style="{StaticResource MaterialDesignDiscreteSlider}"
+													ToolTip="Cut first n frames"
+													Width="280" />
+										</StackPanel>
+										<StackPanel Orientation="Horizontal">
+											<TextBlock VerticalAlignment="Bottom">Last n frames</TextBlock>
+											<Slider Margin="8 0 0 0" Minimum="0"
+													Maximum="100"
+													Value="{Binding LastNFrames}"
+													Style="{StaticResource MaterialDesignDiscreteSlider}"
+													ToolTip="Cut last n frames"
+													Width="280" />
+										</StackPanel>
+									</StackPanel>
+								</Grid>
 							</Expander>
 							<Grid Background="#F5F5F5" Grid.Row="2">
 								<lvc:CartesianChart Margin="0 10 0 10" Series="{Binding StatisticCollection}" LegendLocation="Bottom">
@@ -119,8 +146,8 @@
 									<lvc:CartesianChart.AxisY>
 										<lvc:Axis Title="Statistical Parameters" Labels="{Binding ParameterLabels}">
 											<lvc:Axis.Separator>
-											<!--step 1 forces the axis to display all labels, disabling it makes it invisible-->
-											<lvc:Separator Step="1" IsEnabled="False"></lvc:Separator>
+												<!--step 1 forces the axis to display all labels, disabling it makes it invisible-->
+												<lvc:Separator Step="1" IsEnabled="False"></lvc:Separator>
 											</lvc:Axis.Separator>
 										</lvc:Axis>
 									</lvc:CartesianChart.AxisY>

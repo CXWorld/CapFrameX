@@ -22,6 +22,7 @@ namespace CapFrameX.ViewModel
 	public class MainViewModel : BindableBase
 	{
 		private readonly IRecordDirectoryObserver _recordObserver;
+
 		private OcatRecordInfo _selectedRecordInfo;
 		private ZoomingOptions _zoomingMode;
 		private SeriesCollection _seriesCollection;
@@ -29,6 +30,9 @@ namespace CapFrameX.ViewModel
 		private Func<double, string> _xFormatter;
 		private Func<double, string> _yFormatter;
 		private string[] _parameterLabels;
+		private int _firstNFrames;
+		private int _lastNFrames;
+		private Session _session;
 
 		public Func<double, string> ParameterFormatter { get; set; } = value => value.ToString("N");
 
@@ -102,8 +106,30 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
+		public int FirstNFrames
+		{
+			get { return _firstNFrames; }
+			set
+			{
+				_firstNFrames = value;
+				RaisePropertyChanged();
+				UpdateCharts();
+			}
+		}
+
+		public int LastNFrames
+		{
+			get { return _lastNFrames; }
+			set
+			{
+				_lastNFrames = value;
+				RaisePropertyChanged();
+				UpdateCharts();
+			}
+		}
+
 		public ObservableCollection<OcatRecordInfo> RecordInfoList { get; }
-		= new ObservableCollection<OcatRecordInfo>();
+			= new ObservableCollection<OcatRecordInfo>();
 
 		public ICommand ToogleZoomingModeCommand { get; }
 
@@ -181,9 +207,9 @@ namespace CapFrameX.ViewModel
 
 		private void OnSelectedRecordInfoChanged()
 		{
-			var session = RecordManager.LoadData(SelectedRecordInfo.FullPath);
-			SetFrametimeChart(session.FrameTimes);
-			SetStaticChart(session.FrameTimes);
+			_session = RecordManager.LoadData(SelectedRecordInfo.FullPath);
+			SetFrametimeChart(_session.FrameTimes);
+			SetStaticChart(_session.FrameTimes);
 		}
 
 		private void SetFrametimeChart(IList<double> frametimes)
@@ -193,7 +219,7 @@ namespace CapFrameX.ViewModel
 				StartPoint = new Point(0, 0),
 				EndPoint = new Point(0, 1)
 			};
-			
+
 			gradientBrush.GradientStops.Add(new GradientStop(Color.FromRgb(139, 35, 35), 0));
 			gradientBrush.GradientStops.Add(new GradientStop(Colors.Transparent, 1));
 
@@ -238,7 +264,20 @@ namespace CapFrameX.ViewModel
 				}
 			};
 
-			ParameterLabels = new[] { "Min", "1%", "5%", "Average"};
+			ParameterLabels = new[] { "Min", "1%", "5%", "Average" };
+		}
+
+		private void UpdateCharts()
+		{
+			var subset = new List<double>();
+
+			for (int i = FirstNFrames; i < _session.FrameTimes.Count - LastNFrames; i++)
+			{
+				subset.Add(_session.FrameTimes[i]);
+			}
+
+			SetFrametimeChart(subset);
+			SetStaticChart(subset);
 		}
 	}
 }
