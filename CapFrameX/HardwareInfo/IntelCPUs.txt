@@ -41,6 +41,9 @@ Pentium G4600
 Pentium G4560
 Celeron G3950
 Celeron G3930
+i7-6950X
+i7-6900K 
+i7-6850K
 i7-6700K
 i7-6700
 i5-6600K
