@@ -50,8 +50,50 @@ i5-6400
 i3-6320
 i3-6300
 i3-6100
-Pentium	G4520
-Pentium	G4500
-Pentium	G4400
-Celeron	G3920
-Celeron	G3900
+Pentium G4520
+Pentium G4500
+Pentium G4400
+Celeron G3920
+Celeron G3900
+i7 Extreme 5960X
+i7 Extreme 5930K
+i7 Extreme 5820K
+i7-4790K
+i7-4790
+i7-4770K
+i7-4770
+i5-4690K
+i5-4690
+i5-4670
+i5-4590
+i5-4460
+i5-4440
+i5-4430
+i3-4370
+i3-4360
+i3-4350
+i3-4340
+i3-4330
+i3-4170
+i3-4160
+i3-4150
+i3-4130
+Pentium G3470
+Pentium G3460
+Pentium G3450
+Pentium G3440
+Pentium G3430
+Pentium G3420
+Pentium G3260
+Pentium G3250
+Pentium G3240
+Pentium G3220
+Celeron G1850
+Celeron G1840
+Celeron G1830
+Celeron G1820
+
+
+
+
+
