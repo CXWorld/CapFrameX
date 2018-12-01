@@ -35,9 +35,6 @@
             </Component>
             
             
-            <Component Id="cmp7497E0B354AEA7F54D987BCDF7301E52" Guid="*" Win64="yes">
-                <File Id="fil553C5E9BD821B2301960E964847F4481" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CommonServiceLocator.dll" />
-            </Component>
             <Component Id="cmp471A60C7DB0BF5428D9A6BE2EF6D9976" Guid="*" Win64="yes">
                 <File Id="fil797E40D765838013F75C84F3A45F3E4D" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Cyotek.Drawing.BitmapFont.dll" />
             </Component>
@@ -157,7 +154,6 @@
             <ComponentRef Id="cmpFEE96F5622FF620341562487C27BDBFE" />
             
             
-            <ComponentRef Id="cmp7497E0B354AEA7F54D987BCDF7301E52" />
             <ComponentRef Id="cmp471A60C7DB0BF5428D9A6BE2EF6D9976" />
             
             <ComponentRef Id="cmpB54AA7145F7DD7C9F4F5BCED9FE3DD87" />

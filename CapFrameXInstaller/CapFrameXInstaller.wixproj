@@ -13,6 +13,8 @@
     <OutputPath>bin\$(Configuration)\</OutputPath>
     <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
     <DefineConstants>Debug;CapFrameXInstaller.BinaryDir=$(SolutionDir)CapFrameX\bin\$(Configuration)</DefineConstants>
+    <SuppressValidation>False</SuppressValidation>
+    <SuppressIces>ICE57</SuppressIces>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <OutputPath>bin\$(Configuration)\</OutputPath>
