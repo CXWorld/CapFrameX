@@ -1,5 +1,6 @@
 ﻿using CapFrameX.Contracts.OcatInterface;
 using CapFrameX.OcatInterface;
+using CapFrameX.Statistics;
 using DryIoc;
 using Prism.DryIoc;
 using Prism.Modularity;
@@ -35,7 +36,8 @@ namespace CapFrameX
 
             // Core components
             Container.Register<IRecordDirectoryObserver, RecordDirectoryObserver>(Reuse.Singleton);
-        }
+			Container.Register<IStatisticProvider, FrametimeStatisticProvider>(Reuse.Singleton);
+		}
 
         /// <summary>
         /// https://www.c-sharpcorner.com/forums/using-ioc-with-wpf-prism-in-mvvm

@@ -11,6 +11,7 @@ using CapFrameX.OcatInterface;
 using System.Windows.Data;
 using System.Reactive.Linq;
 using CapFrameX.Extensions;
+using CapFrameX.Statistics;
 
 namespace CapFrameX.View
 {
@@ -35,7 +36,7 @@ namespace CapFrameX.View
 			// Design time!
 			if (DesignerProperties.GetIsInDesignMode(this))
 			{
-				DataContext = new MainViewModel(new RecordDirectoryObserver());
+				DataContext = new MainViewModel(new RecordDirectoryObserver(), new FrametimeStatisticProvider());
 			}
 		}
 

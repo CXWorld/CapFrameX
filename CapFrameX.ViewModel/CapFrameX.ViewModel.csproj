@@ -72,6 +72,9 @@
     <Reference Include="MaterialDesignThemes.Wpf, Version=2.5.0.1205, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\MaterialDesignThemes.2.5.0.1205\lib\net45\MaterialDesignThemes.Wpf.dll</HintPath>
     </Reference>
+    <Reference Include="MathNet.Filtering, Version=0.6.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\MathNet.Filtering.0.6.0\lib\net461\MathNet.Filtering.dll</HintPath>
+    </Reference>
     <Reference Include="MathNet.Numerics, Version=4.7.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\MathNet.Numerics.4.7.0\lib\net461\MathNet.Numerics.dll</HintPath>
     </Reference>
@@ -152,6 +155,10 @@
     <ProjectReference Include="..\CapFrameX.OcatInterface\CapFrameX.OcatInterface.csproj">
       <Project>{E61AD1FC-514F-43FD-BC20-31E9900CDFD7}</Project>
       <Name>CapFrameX.OcatInterface</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CapFrameX.Statistics\CapFrameX.Statistics.csproj">
+      <Project>{788F49CD-ABCB-4C7C-B1B6-BF9DC2482432}</Project>
+      <Name>CapFrameX.Statistics</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

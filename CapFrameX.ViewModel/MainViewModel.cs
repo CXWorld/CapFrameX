@@ -15,24 +15,25 @@ using System.Windows.Media;
 using System.Collections.Generic;
 using LiveCharts.Geared;
 using LiveCharts.Wpf;
-using MathNet.Numerics.Statistics;
+using CapFrameX.Statistics;
 
 namespace CapFrameX.ViewModel
 {
 	public class MainViewModel : BindableBase
 	{
 		private readonly IRecordDirectoryObserver _recordObserver;
+		private readonly IStatisticProvider _frametimeStatisticProvider;
 
 		private OcatRecordInfo _selectedRecordInfo;
 		private ZoomingOptions _zoomingMode;
 		private SeriesCollection _seriesCollection;
 		private SeriesCollection _statisticCollection;
-		private Func<double, string> _xFormatter;
-		private Func<double, string> _yFormatter;
 		private string[] _parameterLabels;
 		private int _firstNFrames;
 		private int _lastNFrames;
 		private Session _session;
+		private bool _removeOutliers;
+		private bool _useAdaptiveVariance;
 
 		public Func<double, string> ParameterFormatter { get; set; } = value => value.ToString("N");
 
@@ -62,25 +63,6 @@ namespace CapFrameX.ViewModel
 			set
 			{
 				_seriesCollection = value;
-				RaisePropertyChanged();
-			}
-		}
-
-		public Func<double, string> XFormatter
-		{
-			get { return _xFormatter; }
-			set
-			{
-				_xFormatter = value;
-				RaisePropertyChanged();
-			}
-		}
-		public Func<double, string> YFormatter
-		{
-			get { return _yFormatter; }
-			set
-			{
-				_yFormatter = value;
 				RaisePropertyChanged();
 			}
 		}
@@ -128,14 +110,37 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
+		public bool RemoveOutliers
+		{
+			get { return _removeOutliers; }
+			set
+			{
+				_removeOutliers = value;
+				RaisePropertyChanged();
+				UpdateCharts();
+			}
+		}
+
+		public bool UseAdaptiveVariance
+		{
+			get { return _useAdaptiveVariance; }
+			set
+			{
+				_useAdaptiveVariance = value;
+				RaisePropertyChanged();
+				UpdateCharts();
+			}
+		}
+
 		public ObservableCollection<OcatRecordInfo> RecordInfoList { get; }
 			= new ObservableCollection<OcatRecordInfo>();
 
 		public ICommand ToogleZoomingModeCommand { get; }
 
-		public MainViewModel(IRecordDirectoryObserver recordObserver)
+		public MainViewModel(IRecordDirectoryObserver recordObserver, IStatisticProvider frametimeStatisticProvider)
 		{
 			_recordObserver = recordObserver;
+			_frametimeStatisticProvider = frametimeStatisticProvider;
 
 			// ToDo: check wether to do this async
 			var initialRecordList = _recordObserver.GetAllRecordFileInfo();
@@ -208,8 +213,34 @@ namespace CapFrameX.ViewModel
 		private void OnSelectedRecordInfoChanged()
 		{
 			_session = RecordManager.LoadData(SelectedRecordInfo.FullPath);
-			SetFrametimeChart(_session.FrameTimes);
-			SetStaticChart(_session.FrameTimes);
+
+			if (_session.FrameTimes != null && _session.FrameTimes.Any())
+			{
+				if (FirstNFrames != 0 || LastNFrames != 0)
+				{
+					var subset = GetFrametimesSubset();
+					SetFrametimeChart(subset);
+					SetStaticChart(subset);
+				}
+				else
+				{
+					SetFrametimeChart(GetFrametimes());
+					SetStaticChart(GetFrametimes());
+				}
+			}
+		}
+
+		private IList<double> GetFrametimes()
+		{
+			if (RemoveOutliers)
+			{
+				// ToDo: Make method selectable
+				return _frametimeStatisticProvider.GetOutlierAdjustedSequence(_session.FrameTimes, ERemoveOutlierMethod.DeciPercentile);
+			}
+			else
+			{
+				return _session.FrameTimes;
+			}
 		}
 
 		private void SetFrametimeChart(IList<double> frametimes)
@@ -239,18 +270,14 @@ namespace CapFrameX.ViewModel
 					PointGeometrySize = 0
 				}
 			};
-
-			//XFormatter = val => new DateTime((long)val).ToString("dd MMM");
-			//YFormatter = val => val.ToString("C");
 		}
 
-
-		private void SetStaticChart(List<double> frameTimes)
+		private void SetStaticChart(IList<double> frameTimes)
 		{
-			var fps = frameTimes.Select(ft => 1000 / ft);
+			var fps = frameTimes.Select(ft => 1000 / ft).ToList();
 			var average = Math.Round(fps.Average(), 0);
-			var p1_quantile = Math.Round(fps.Quantile(0.01), 0);
-			var p5_quantile = Math.Round(fps.Quantile(0.05), 0);
+			var p1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.01), 0);
+			var p5_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.05), 0);
 			var min = Math.Round(fps.Min(), 0);
 
 			StatisticCollection = new SeriesCollection
@@ -269,15 +296,25 @@ namespace CapFrameX.ViewModel
 
 		private void UpdateCharts()
 		{
-			var subset = new List<double>();
-
-			for (int i = FirstNFrames; i < _session.FrameTimes.Count - LastNFrames; i++)
-			{
-				subset.Add(_session.FrameTimes[i]);
-			}
-
+			var subset = GetFrametimesSubset();
 			SetFrametimeChart(subset);
 			SetStaticChart(subset);
+		}
+
+		private List<double> GetFrametimesSubset()
+		{
+			var subset = new List<double>();
+			var frametimes = GetFrametimes();
+
+			if (frametimes != null && frametimes.Any())
+			{
+				for (int i = FirstNFrames; i < frametimes.Count - LastNFrames; i++)
+				{
+					subset.Add(frametimes[i]);
+				}
+			}
+
+			return subset;
 		}
 	}
 }

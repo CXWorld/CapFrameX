@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace CapFrameX.OcatInterface
 {
@@ -22,5 +23,5 @@ namespace CapFrameX.OcatInterface
         public int ValidReproFrames { get; set; }
         public double LastFrameTime { get; set; }
         public double LastReprojectionTime { get; set; }
-    }
+	}
 }
