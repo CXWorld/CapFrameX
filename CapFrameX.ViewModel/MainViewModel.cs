@@ -33,7 +33,8 @@ namespace CapFrameX.ViewModel
 		private int _lastNFrames;
 		private Session _session;
 		private bool _removeOutliers;
-		private bool _useAdaptiveVariance;
+		private bool _useAdaptiveStandardDeviation;
+		private int _selectWindowSize;
 
 		public Func<double, string> ParameterFormatter { get; set; } = value => value.ToString("N");
 
@@ -121,16 +122,29 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-		public bool UseAdaptiveVariance
+		public bool UseAdaptiveStandardDeviation
 		{
-			get { return _useAdaptiveVariance; }
+			get { return _useAdaptiveStandardDeviation; }
 			set
 			{
-				_useAdaptiveVariance = value;
+				_useAdaptiveStandardDeviation = value;
 				RaisePropertyChanged();
 				UpdateCharts();
 			}
 		}
+
+		public int SelectWindowSize
+		{
+			get { return _selectWindowSize; }
+			set
+			{
+				_selectWindowSize = value;
+				RaisePropertyChanged();
+				UpdateCharts();
+			}
+		}
+
+		public IList<int> WindowSizes { get; }
 
 		public ObservableCollection<OcatRecordInfo> RecordInfoList { get; }
 			= new ObservableCollection<OcatRecordInfo>();
@@ -162,6 +176,8 @@ namespace CapFrameX.ViewModel
 			ToogleZoomingModeCommand = new DelegateCommand(OnToogleZoomingMode);
 
 			ZoomingMode = ZoomingOptions.Y;
+			WindowSizes = new List<int>(Enumerable.Range(4, 100 - 4));
+			SelectWindowSize = 10;
 		}
 
 		private void OnToogleZoomingMode()
@@ -235,11 +251,11 @@ namespace CapFrameX.ViewModel
 			if (RemoveOutliers)
 			{
 				// ToDo: Make method selectable
-				return _frametimeStatisticProvider.GetOutlierAdjustedSequence(_session.FrameTimes, ERemoveOutlierMethod.DeciPercentile);
+				return _frametimeStatisticProvider?.GetOutlierAdjustedSequence(_session.FrameTimes, ERemoveOutlierMethod.DeciPercentile);
 			}
 			else
 			{
-				return _session.FrameTimes;
+				return _session?.FrameTimes;
 			}
 		}
 
@@ -254,17 +270,34 @@ namespace CapFrameX.ViewModel
 			gradientBrush.GradientStops.Add(new GradientStop(Color.FromRgb(139, 35, 35), 0));
 			gradientBrush.GradientStops.Add(new GradientStop(Colors.Transparent, 1));
 
-			var values = new GearedValues<double>();
-			values.AddRange(frametimes);
-			values.WithQuality(Quality.High);
+			var frametimeValues = new GearedValues<double>();
+			frametimeValues.AddRange(frametimes);
+			frametimeValues.WithQuality(Quality.High);
 
-			SeriesCollection = new SeriesCollection
+			var movingAverageValues = new GearedValues<double>();
+
+			if (UseAdaptiveStandardDeviation)
+			{
+				movingAverageValues.AddRange(_frametimeStatisticProvider.GetMovingAverage(frametimes, SelectWindowSize));
+				movingAverageValues.WithQuality(Quality.High);
+			}
+
+			SeriesCollection = new SeriesCollection()
 			{
 				new GLineSeries
 				{
-					Values = values,
+					Values = frametimeValues,
 					Fill = gradientBrush,
 					Stroke = new SolidColorBrush(Color.FromRgb(139,35,35)),
+					StrokeThickness = 1,
+					LineSmoothness= 0,
+					PointGeometrySize = 0
+				},
+				new GLineSeries
+				{
+					Values = movingAverageValues,
+					Fill = gradientBrush,
+					Stroke = new SolidColorBrush(Color.FromRgb(35, 139, 123)),
 					StrokeThickness = 1,
 					LineSmoothness= 0,
 					PointGeometrySize = 0
@@ -274,11 +307,33 @@ namespace CapFrameX.ViewModel
 
 		private void SetStaticChart(IList<double> frameTimes)
 		{
+			if (frameTimes == null || !frameTimes.Any())
+				return;
+
 			var fps = frameTimes.Select(ft => 1000 / ft).ToList();
 			var average = Math.Round(fps.Average(), 0);
 			var p1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.01), 0);
 			var p5_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.05), 0);
 			var min = Math.Round(fps.Min(), 0);
+
+			IChartValues values = null;
+
+			if (!UseAdaptiveStandardDeviation)
+				values = new ChartValues<double> { min, p1_quantile, p5_quantile, average };
+			else
+			{
+				var frametimes = GetFrametimes();
+				var movingAverage = _frametimeStatisticProvider.GetMovingAverage(frametimes, SelectWindowSize);
+
+				if (movingAverage.Count != frametimes.Count)
+				{
+					throw new InvalidDataException("Different sample count data vs. filtered data");
+				}
+
+				var adaptiveStandardDeviation = frametimes.Select((val, i) => (1000 / val - 1000 / movingAverage[i]) * (1000 / val - 1000 / movingAverage[i])).Sum();
+				adaptiveStandardDeviation = Math.Round(Math.Sqrt(adaptiveStandardDeviation / (frametimes.Count - 1)), 0);
+				values = new ChartValues<double> { adaptiveStandardDeviation, min, p1_quantile, p5_quantile, average };
+			}
 
 			StatisticCollection = new SeriesCollection
 			{
@@ -286,19 +341,26 @@ namespace CapFrameX.ViewModel
 				{
 					Title = SelectedRecordInfo.GameName,
 					Fill = new SolidColorBrush(Color.FromRgb(83,104,114)),
-					Values = new ChartValues<double> { min, p1_quantile, p5_quantile, average },
+					Values = values,
 					DataLabels = true
 				}
 			};
 
-			ParameterLabels = new[] { "Min", "1%", "5%", "Average" };
+			if (!UseAdaptiveStandardDeviation)
+				ParameterLabels = new[] { "Min", "1%", "5%", "Average" };
+			else
+				ParameterLabels = new[] { "Adaptive STD", "Min", "1%", "5%", "Average" };
 		}
 
 		private void UpdateCharts()
 		{
 			var subset = GetFrametimesSubset();
-			SetFrametimeChart(subset);
-			SetStaticChart(subset);
+
+			if (subset != null)
+			{
+				SetFrametimeChart(subset);
+				SetStaticChart(subset);
+			}
 		}
 
 		private List<double> GetFrametimesSubset()

@@ -102,7 +102,7 @@
 									<lvc:Axis Name="Y" LabelFormatter="{Binding YFormatter}"/>
 								</lvc:CartesianChart.AxisY>
 							</lvc:CartesianChart>
-							<Expander Background="#F5F5F5" Margin="0 10 0 10" Header="Chart Settings" Grid.Row="1" HorizontalAlignment="Stretch">
+							<Expander Background="#F5F5F5" Margin="0 10 0 10" Header="Data/Chart Settings" Grid.Row="1" HorizontalAlignment="Stretch">
 								<Grid>
 									<Grid.ColumnDefinitions>
 										<ColumnDefinition Width="1*" />
@@ -144,10 +144,29 @@
 											Remove outliers
 										</CheckBox>
 										<CheckBox IsThreeState="False"
-													IsChecked="{Binding UseAdaptiveVariance}"
+													IsChecked="{Binding UseAdaptiveStandardDeviation}"
 													Margin="0 0 0 0">
-											Adaptive variance
+											Adaptive standard deviation
 										</CheckBox>
+										<ComboBox materialDesign:HintAssist.Hint="(editable)"
+												  Width="40"
+												  Margin="0 0 0 0"
+												  HorizontalAlignment="Left"
+												  VerticalAlignment="Center"
+												  IsEditable="True"
+												  ItemsSource="{Binding WindowSizes}">
+											<ComboBox.Text>
+												<Binding Path="SelectWindowSize"
+														Mode="TwoWay"
+														UpdateSourceTrigger="PropertyChanged">
+												</Binding>
+											</ComboBox.Text>
+											<ComboBox.ItemsPanel>
+												<ItemsPanelTemplate>
+													<VirtualizingStackPanel />
+												</ItemsPanelTemplate>
+											</ComboBox.ItemsPanel>
+										</ComboBox>
 									</StackPanel>
 								</Grid>
 							</Expander>

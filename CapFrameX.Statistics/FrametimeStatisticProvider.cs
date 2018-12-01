@@ -1,10 +1,18 @@
 ﻿using MathNet.Numerics.Statistics;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace CapFrameX.Statistics
 {
 	public class FrametimeStatisticProvider : IStatisticProvider
 	{
+		private const double TAU = 0.999;
+
+		public IList<double> GetMovingAverage(IList<double> sequence, int windowSize)
+		{
+			return sequence.MovingAverage(windowSize).ToList();
+		}
+
 		public IList<double> GetOutlierAdjustedSequence(IList<double> sequence, ERemoveOutlierMethod method)
 		{
 			IList<double> adjustedSequence = null;
@@ -13,7 +21,7 @@ namespace CapFrameX.Statistics
 			{
 				case ERemoveOutlierMethod.DeciPercentile:
 					{
-						var deciPercentile = sequence.Quantile(0.999);
+						var deciPercentile = sequence.Quantile(TAU);
 						adjustedSequence = new List<double>();
 
 						foreach (var element in sequence)

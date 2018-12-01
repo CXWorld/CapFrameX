@@ -223,5 +223,11 @@
   <ItemGroup>
     <Resource Include="HardwareInfo\NvidiaGraphicCards.txt" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="HardwareInfo\IntelCPUs.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="HardwareInfo\AMDCPUs.txt" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
