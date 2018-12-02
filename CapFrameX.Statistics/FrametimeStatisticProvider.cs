@@ -1,5 +1,7 @@
 ﻿using MathNet.Numerics.Statistics;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace CapFrameX.Statistics
@@ -7,6 +9,19 @@ namespace CapFrameX.Statistics
 	public class FrametimeStatisticProvider : IStatisticProvider
 	{
 		private const double TAU = 0.999;
+
+		public double GetAdaptiveStandardDeviation(IList<double> sequence, int windowSize)
+		{
+			var movingAverage = sequence.MovingAverage(windowSize).ToList();
+
+			if (movingAverage.Count != sequence.Count)
+			{
+				throw new InvalidDataException("Different sample count data vs. filtered data");
+			}
+
+			var adaptiveSTD = sequence.Select((val, i) => Math.Pow(val - movingAverage[i], 2)).Sum();
+			return Math.Sqrt(adaptiveSTD / (sequence.Count - 1));
+		}
 
 		public IList<double> GetMovingAverage(IList<double> sequence, int windowSize)
 		{
@@ -26,7 +41,7 @@ namespace CapFrameX.Statistics
 
 						foreach (var element in sequence)
 						{
-							if(element < deciPercentile)
+							if (element < deciPercentile)
 								adjustedSequence.Add(element);
 						}
 					}

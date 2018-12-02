@@ -267,6 +267,7 @@ namespace CapFrameX.ViewModel
 				EndPoint = new Point(0, 1)
 			};
 
+			// ToDo: Get color from ressources
 			gradientBrush.GradientStops.Add(new GradientStop(Color.FromRgb(139, 35, 35), 0));
 			gradientBrush.GradientStops.Add(new GradientStop(Colors.Transparent, 1));
 
@@ -310,28 +311,19 @@ namespace CapFrameX.ViewModel
 			if (frameTimes == null || !frameTimes.Any())
 				return;
 
-			var fps = frameTimes.Select(ft => 1000 / ft).ToList();
-			var average = Math.Round(fps.Average(), 0);
-			var p1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.01), 0);
-			var p5_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.05), 0);
-			var min = Math.Round(fps.Min(), 0);
+			var fpsSequence = frameTimes.Select(ft => 1000 / ft).ToList();
+			var average = Math.Round(fpsSequence.Average(), 0);
+			var p1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fpsSequence, 0.01), 0);
+			var p5_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fpsSequence, 0.05), 0);
+			var min = Math.Round(fpsSequence.Min(), 0);
 
 			IChartValues values = null;
 
 			if (!UseAdaptiveStandardDeviation)
 				values = new ChartValues<double> { min, p1_quantile, p5_quantile, average };
 			else
-			{
-				var frametimes = GetFrametimes();
-				var movingAverage = _frametimeStatisticProvider.GetMovingAverage(frametimes, SelectWindowSize);
-
-				if (movingAverage.Count != frametimes.Count)
-				{
-					throw new InvalidDataException("Different sample count data vs. filtered data");
-				}
-
-				var adaptiveStandardDeviation = frametimes.Select((val, i) => (1000 / val - 1000 / movingAverage[i]) * (1000 / val - 1000 / movingAverage[i])).Sum();
-				adaptiveStandardDeviation = Math.Round(Math.Sqrt(adaptiveStandardDeviation / (frametimes.Count - 1)), 0);
+			{				
+				var adaptiveStandardDeviation = Math.Round(_frametimeStatisticProvider.GetAdaptiveStandardDeviation(fpsSequence, SelectWindowSize), 0);
 				values = new ChartValues<double> { adaptiveStandardDeviation, min, p1_quantile, p5_quantile, average };
 			}
 
