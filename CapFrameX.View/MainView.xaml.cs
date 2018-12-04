@@ -83,10 +83,15 @@ namespace CapFrameX.View
 			//Use the axis MinValue/MaxValue properties to specify the values to display.
 			//use double.Nan to clear it.
 
-			X.MinValue = double.NaN;
-			X.MaxValue = double.NaN;
-			Y.MinValue = double.NaN;
-			Y.MaxValue = double.NaN;
+			FrametimesX.MinValue = double.NaN;
+			FrametimesX.MaxValue = double.NaN;
+			FrametimesY.MinValue = double.NaN;
+			FrametimesY.MaxValue = double.NaN;
+
+			LShapeX.MinValue = double.NaN;
+			LShapeX.MaxValue = double.NaN;
+			LShapeY.MinValue = double.NaN;
+			LShapeY.MaxValue = double.NaN;
 		}
 
 		private void RecordInfoListOnFilter(object sender, FilterEventArgs e)

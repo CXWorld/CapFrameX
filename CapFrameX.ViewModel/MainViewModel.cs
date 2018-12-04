@@ -16,11 +16,16 @@ using System.Collections.Generic;
 using LiveCharts.Geared;
 using LiveCharts.Wpf;
 using CapFrameX.Statistics;
+using System.Globalization;
+using LiveCharts.Defaults;
 
 namespace CapFrameX.ViewModel
 {
 	public class MainViewModel : BindableBase
 	{
+		private static readonly double[] _lShapeQuantiles 
+			= new [] { 90.0, 91.0, 92.0, 93.0, 94.0, 95.0, 96.0, 97.0, 98.0, 99.0, 99.5, 99.8, 99.9, 99.95};
+
 		private readonly IRecordDirectoryObserver _recordObserver;
 		private readonly IStatisticProvider _frametimeStatisticProvider;
 
@@ -28,13 +33,15 @@ namespace CapFrameX.ViewModel
 		private ZoomingOptions _zoomingMode;
 		private SeriesCollection _seriesCollection;
 		private SeriesCollection _statisticCollection;
+		private SeriesCollection _lShapeCollection;
 		private string[] _parameterLabels;
+		private string[] _lShapeLabels;
+		private int _selectWindowSize;
 		private int _firstNFrames;
 		private int _lastNFrames;
 		private Session _session;
 		private bool _removeOutliers;
 		private bool _useAdaptiveStandardDeviation;
-		private int _selectWindowSize;
 
 		public Func<double, string> ParameterFormatter { get; set; } = value => value.ToString("N");
 
@@ -48,12 +55,32 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
+		public string[] LShapeLabels
+		{
+			get { return _lShapeLabels; }
+			set
+			{
+				_lShapeLabels = value;
+				RaisePropertyChanged();
+			}
+		}
+
 		public SeriesCollection StatisticCollection
 		{
 			get { return _statisticCollection; }
 			set
 			{
 				_statisticCollection = value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public SeriesCollection LShapeCollection
+		{
+			get { return _lShapeCollection; }
+			set
+			{
+				_lShapeCollection = value;
 				RaisePropertyChanged();
 			}
 		}
@@ -237,11 +264,13 @@ namespace CapFrameX.ViewModel
 					var subset = GetFrametimesSubset();
 					SetFrametimeChart(subset);
 					SetStaticChart(subset);
+					SetLShapeChart(subset);
 				}
 				else
 				{
 					SetFrametimeChart(GetFrametimes());
 					SetStaticChart(GetFrametimes());
+					SetLShapeChart(GetFrametimes());
 				}
 			}
 		}
@@ -322,7 +351,7 @@ namespace CapFrameX.ViewModel
 			if (!UseAdaptiveStandardDeviation)
 				values = new ChartValues<double> { min, p1_quantile, p5_quantile, average };
 			else
-			{				
+			{
 				var adaptiveStandardDeviation = Math.Round(_frametimeStatisticProvider.GetAdaptiveStandardDeviation(fpsSequence, SelectWindowSize), 0);
 				values = new ChartValues<double> { adaptiveStandardDeviation, min, p1_quantile, p5_quantile, average };
 			}
@@ -342,6 +371,36 @@ namespace CapFrameX.ViewModel
 				ParameterLabels = new[] { "Min", "1%", "5%", "Average" };
 			else
 				ParameterLabels = new[] { "Adaptive STD", "Min", "1%", "5%", "Average" };
+
+			var stutteringPercentage = _frametimeStatisticProvider.GetStutteringPercentage(fpsSequence);
+		}
+
+
+		private void SetLShapeChart(IList<double> frametimes)
+		{
+			if (frametimes == null || !frametimes.Any())
+				return;
+
+			var quantiles = _lShapeQuantiles.Select(q => new ObservablePoint(q, _frametimeStatisticProvider.GetPQuantileSequence(frametimes, q / 100)));
+			var quantileValues = new ChartValues<ObservablePoint>();
+			quantileValues.AddRange(quantiles);
+
+			LShapeCollection = new SeriesCollection()
+			{
+				new LineSeries
+				{
+					Values = quantileValues,
+					Stroke = new SolidColorBrush(Color.FromRgb(139,35,35)),
+					Fill = Brushes.Transparent,
+					StrokeThickness = 1,
+					LineSmoothness= 1,
+					PointGeometrySize = 10,
+					PointGeometry = DefaultGeometries.Diamond,
+					//DataLabels = true
+				}
+			};
+
+			LShapeLabels = _lShapeQuantiles.Select(q => q.ToString(CultureInfo.InvariantCulture)).ToArray();
 		}
 
 		private void UpdateCharts()
@@ -352,6 +411,7 @@ namespace CapFrameX.ViewModel
 			{
 				SetFrametimeChart(subset);
 				SetStaticChart(subset);
+				SetLShapeChart(subset);
 			}
 		}
 

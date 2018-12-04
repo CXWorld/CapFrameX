@@ -12,6 +12,7 @@ namespace CapFrameX.OcatInterface
 		public string GameName { get; private set; }
 		public string CreationDate { get; private set; }
 		public string RecordTime { get; private set; }
+		public string CreationTime { get; private set; }
 		public string FullPath { get; private set; }
 
 		private OcatRecordInfo(FileInfo fileInfo)
@@ -19,6 +20,7 @@ namespace CapFrameX.OcatInterface
 			GameName = fileInfo.Name.Substring("OCAT-", ".exe");
 			CreationDate = fileInfo.Name.Substring("exe-", "T");
 			RecordTime = fileInfo.Name.Substring(CreationDate + "T", ".csv");
+			CreationTime = fileInfo.CreationTime.ToString("HH:mm:ss");
 
 			FullPath = fileInfo.FullName;
 		}

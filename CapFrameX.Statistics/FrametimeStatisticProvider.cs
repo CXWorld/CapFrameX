@@ -19,8 +19,16 @@ namespace CapFrameX.Statistics
 				throw new InvalidDataException("Different sample count data vs. filtered data");
 			}
 
-			var adaptiveSTD = sequence.Select((val, i) => Math.Pow(val - movingAverage[i], 2)).Sum();
-			return Math.Sqrt(adaptiveSTD / (sequence.Count - 1));
+			var sumResidualSquares = sequence.Select((val, i) => Math.Pow(val - movingAverage[i], 2)).Sum();
+			return Math.Sqrt(sumResidualSquares / (sequence.Count - 1));
+		}
+
+		public double GetStutteringPercentage(IList<double> sequence)
+		{
+			var average = sequence.Average();
+			var stutteringCount = sequence.Count(element => element > 3 * average);
+
+			return Math.Round(100 * (double)stutteringCount / sequence.Count, 2);
 		}
 
 		public IList<double> GetMovingAverage(IList<double> sequence, int windowSize)

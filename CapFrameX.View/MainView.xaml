@@ -23,6 +23,9 @@
 			</ResourceDictionary.MergedDictionaries>
 			<mvvm:ZoomingModeConverter x:Key="ZoomingModeConverter"></mvvm:ZoomingModeConverter>
 			<CollectionViewSource x:Key="RecordInfoListKey" Source="{Binding RecordInfoList}" Filter="RecordInfoListOnFilter"/>
+			<Style x:Key="CleanSeparator" TargetType="lvc:Separator">
+				<Setter Property="IsEnabled" Value="False"></Setter>
+			</Style>
 		</ResourceDictionary>
 	</UserControl.Resources>
 	<!--<materialDesign:DialogHost Identifier="RootDialog" SnackbarMessageQueue="{Binding ElementName=MainSnackbar, Path=MessageQueue}">-->
@@ -65,92 +68,113 @@
 					<RowDefinition Height="Auto" />
 					<RowDefinition Height="*" />
 				</Grid.RowDefinitions>
-				<ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
-					<Grid>
-						<Grid.ColumnDefinitions>
-							<ColumnDefinition Width="Auto" />
-							<ColumnDefinition Width="2*" />
-						</Grid.ColumnDefinitions>
-						<StackPanel>
-							<TextBox Margin="10 10 10 0" Background="#e6e6e6" Name="RecordSearchBox" materialDesign:HintAssist.Hint="Search" />
-							<DataGrid Background="#F5F5F5" Grid.Column="0" Margin="10" ItemsSource="{Binding Source={StaticResource RecordInfoListKey}}" SelectedItem="{Binding SelectedRecordInfo}" CanUserSortColumns="True" CanUserAddRows="False" AutoGenerateColumns="False"
-                          materialDesign:DataGridAssist.CellPadding="13 8 8 8" materialDesign:DataGridAssist.ColumnHeaderPadding="8">
-								<DataGrid.Columns>
-									<DataGridTextColumn Binding="{Binding GameName}"
+				<!--<ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">-->
+				<Grid Grid.Row="1">
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="Auto" />
+						<ColumnDefinition Width="2*" />
+					</Grid.ColumnDefinitions>
+					<StackPanel>
+						<TextBox Margin="10 10 10 0" Background="#e6e6e6" Name="RecordSearchBox" materialDesign:HintAssist.Hint="Search" />
+						<DataGrid Height="600" Grid.Column="0" Background="#F5F5F5" Margin="10" ItemsSource="{Binding Source={StaticResource RecordInfoListKey}}" SelectedItem="{Binding SelectedRecordInfo}" CanUserSortColumns="True" CanUserAddRows="False" AutoGenerateColumns="False"
+									  materialDesign:DataGridAssist.CellPadding="13 8 8 8" materialDesign:DataGridAssist.ColumnHeaderPadding="8"
+									  ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True">
+							<DataGrid.Columns>
+								<DataGridTextColumn Binding="{Binding GameName}"
                                         Header="Game"
                                         IsReadOnly="True"/>
-									<DataGridTextColumn Binding="{Binding CreationDate}"
+								<DataGridTextColumn Binding="{Binding CreationDate}"
                                         Header="Date"
                                         IsReadOnly="True"/>
-									<DataGridTextColumn Binding="{Binding RecordTime}"
-                                        Header="Record time"
+								<DataGridTextColumn Binding="{Binding CreationTime}"
+                                        Header="Time"
                                         IsReadOnly="True"/>
-								</DataGrid.Columns>
-							</DataGrid>
-						</StackPanel>
-						<Grid Margin="10" Grid.Column="1">
-							<Grid.RowDefinitions>
-								<RowDefinition Height="5*"></RowDefinition>
-								<RowDefinition Height="Auto"></RowDefinition>
-								<RowDefinition Height="3*"></RowDefinition>
-							</Grid.RowDefinitions>
-							<lvc:CartesianChart Background="#F5F5F5" DisableAnimations="True" Series="{Binding SeriesCollection}" Grid.Row="0" Zoom="{Binding ZoomingMode}" >
-								<lvc:CartesianChart.AxisX>
-									<lvc:Axis Name="X" LabelFormatter="{Binding XFormatter}" Separator="{x:Static lvc:DefaultAxes.CleanSeparator}"/>
-								</lvc:CartesianChart.AxisX>
-								<lvc:CartesianChart.AxisY>
-									<lvc:Axis Name="Y" LabelFormatter="{Binding YFormatter}"/>
-								</lvc:CartesianChart.AxisY>
-							</lvc:CartesianChart>
-							<Expander Background="#F5F5F5" Margin="0 10 0 10" Header="Data/Chart Settings" Grid.Row="1" HorizontalAlignment="Stretch">
-								<Grid>
-									<Grid.ColumnDefinitions>
-										<ColumnDefinition Width="1*" />
-										<ColumnDefinition Width="1*" />
-										<ColumnDefinition Width="1*" />
-									</Grid.ColumnDefinitions>
-									<StackPanel VerticalAlignment="Center" Margin="10 10 0 10" Grid.Column="0" Orientation="Horizontal" >
-										<Button Command="{Binding ToogleZoomingModeCommand}">
-											<TextBlock>Toggle zoming mode, current is: 
+							</DataGrid.Columns>
+						</DataGrid>
+					</StackPanel>
+					<Grid Margin="10" Grid.Column="1">
+						<Grid.RowDefinitions>
+							<RowDefinition Height="5*"></RowDefinition>
+							<RowDefinition Height="Auto"></RowDefinition>
+							<RowDefinition Height="3*"></RowDefinition>
+						</Grid.RowDefinitions>
+						<TabControl Grid.Row="0" Background="#F5F5F5" >
+							<TabItem Header="Frametimes">
+								<lvc:CartesianChart DisableAnimations="True" Series="{Binding SeriesCollection}" Zoom="{Binding ZoomingMode}" >
+									<lvc:CartesianChart.AxisX>
+										<lvc:Axis Name="FrametimesX" Separator="{x:Static lvc:DefaultAxes.CleanSeparator}"/>
+									</lvc:CartesianChart.AxisX>
+									<lvc:CartesianChart.AxisY>
+										<lvc:Axis Name="FrametimesY"/>
+									</lvc:CartesianChart.AxisY>
+								</lvc:CartesianChart>
+							</TabItem>
+							<TabItem Header="L-Shape">
+								<lvc:CartesianChart Series="{Binding LShapeCollection}" Zoom="{Binding ZoomingMode}" >
+									<lvc:CartesianChart.AxisX>
+										<lvc:Axis Name="LShapeX">
+											<lvc:Axis.Separator >
+												<lvc:Separator Step="1"></lvc:Separator>
+											</lvc:Axis.Separator>
+										</lvc:Axis>
+									</lvc:CartesianChart.AxisX>
+									<lvc:CartesianChart.AxisY>
+										<lvc:Axis Name="LShapeY" />
+									</lvc:CartesianChart.AxisY>
+								</lvc:CartesianChart>
+							</TabItem>
+						</TabControl>
+						<Expander Background="#F5F5F5" Margin="0 10 0 10" Header="Data/Chart Settings" Grid.Row="1" HorizontalAlignment="Stretch">
+							<Grid>
+								<Grid.ColumnDefinitions>
+									<ColumnDefinition Width="Auto" />
+									<ColumnDefinition Width="1*" />
+									<ColumnDefinition Width="1*" />
+								</Grid.ColumnDefinitions>
+								<StackPanel VerticalAlignment="Center" Margin="10 10 0 10" Grid.Column="0" Orientation="Horizontal" >
+									<Button Command="{Binding ToogleZoomingModeCommand}">
+										<TextBlock>Toggle zoming mode, current is: 
 												<TextBlock Text="{Binding ZoomingMode, Converter={StaticResource ZoomingModeConverter}}"/>
 											</TextBlock>
-										</Button>
-										<Button Margin="10 0 0 0" Click="ResetZoomOnClick">Reset Zoom</Button>
-									</StackPanel>
-									<StackPanel VerticalAlignment="Center" Margin="10 10 10 10" Grid.Column="1">
-										<StackPanel Orientation="Horizontal">
-											<TextBlock VerticalAlignment="Bottom"  Height="12"> First n frames</TextBlock>
-											<Slider Margin="0 0 0 0" Minimum="0"
+									</Button>
+									<Button Margin="10 0 0 0" Click="ResetZoomOnClick">Reset Zoom</Button>
+								</StackPanel>
+								<!--<StackPanel VerticalAlignment="Center" Margin="10 10 10 10" Grid.Column="1">
+									<StackPanel Orientation="Horizontal">
+										<TextBlock VerticalAlignment="Bottom" Height="12"> First n frames</TextBlock>
+										<Slider Margin="0 0 0 0" Minimum="0"
 													Maximum="100"
 													Value="{Binding FirstNFrames}"
 													Style="{StaticResource MaterialDesignDiscreteSlider}"
 													ToolTip="Cut first n frames"
 													Width="280" />
-										</StackPanel>
-										<StackPanel Orientation="Horizontal">
-											<TextBlock VerticalAlignment="Bottom" Height="12">Last n frames</TextBlock>
-											<Slider Margin="0 0 0 0" Minimum="0"
+									</StackPanel>
+									<StackPanel Orientation="Horizontal">
+										<TextBlock VerticalAlignment="Bottom" Height="12">Last n frames</TextBlock>
+										<Slider Margin="0 0 0 0" Minimum="0"
 													Maximum="100"
 													Value="{Binding LastNFrames}"
 													Style="{StaticResource MaterialDesignDiscreteSlider}"
 													ToolTip="Cut last n frames"
 													Width="280" />
-										</StackPanel>
 									</StackPanel>
-									<StackPanel VerticalAlignment="Center" Margin="0 10 0 10" Grid.Column="2">
-										<CheckBox IsThreeState="False"
+								</StackPanel>-->
+								<StackPanel VerticalAlignment="Center" Margin="0 10 0 10" Grid.Column="2">
+									<CheckBox IsThreeState="False"
 													IsChecked="{Binding RemoveOutliers}"
 													Margin="0 0 0 0">
-											Remove outliers
-										</CheckBox>
-										<CheckBox IsThreeState="False"
+										Remove outliers
+									</CheckBox>
+									<CheckBox IsThreeState="False"
 													IsChecked="{Binding UseAdaptiveStandardDeviation}"
 													Margin="0 0 0 0">
-											Adaptive standard deviation
-										</CheckBox>
+										Adaptive standard deviation
+									</CheckBox>
+									<StackPanel Orientation="Horizontal">
+										<TextBlock VerticalAlignment="Bottom" Height="12">Window size</TextBlock>
 										<ComboBox materialDesign:HintAssist.Hint="(editable)"
 												  Width="40"
-												  Margin="0 0 0 0"
+												  Margin="10 0 0 0"
 												  HorizontalAlignment="Left"
 												  VerticalAlignment="Center"
 												  IsEditable="True"
@@ -168,29 +192,30 @@
 											</ComboBox.ItemsPanel>
 										</ComboBox>
 									</StackPanel>
-								</Grid>
-							</Expander>
-							<Grid Background="#F5F5F5" Grid.Row="2">
-								<lvc:CartesianChart Margin="0 10 0 10" Series="{Binding StatisticCollection}" LegendLocation="Bottom">
-									<lvc:CartesianChart.AxisX>
-										<lvc:Axis Title="FPS" LabelFormatter="{Binding ParameterFormatter}"></lvc:Axis>
-									</lvc:CartesianChart.AxisX>
-									<lvc:CartesianChart.AxisY>
-										<lvc:Axis Title="Statistical Parameters" Labels="{Binding ParameterLabels}">
-											<lvc:Axis.Separator>
-												<!--step 1 forces the axis to display all labels, disabling it makes it invisible-->
-												<lvc:Separator Step="1" IsEnabled="False"></lvc:Separator>
-											</lvc:Axis.Separator>
-										</lvc:Axis>
-									</lvc:CartesianChart.AxisY>
-									<!--<lvc:CartesianChart.DataTooltip>
+								</StackPanel>
+							</Grid>
+						</Expander>
+						<Grid Background="#F5F5F5" Grid.Row="2">
+							<lvc:CartesianChart Margin="0 10 0 10" Series="{Binding StatisticCollection}" LegendLocation="Bottom">
+								<lvc:CartesianChart.AxisX>
+									<lvc:Axis Title="FPS" LabelFormatter="{Binding ParameterFormatter}"></lvc:Axis>
+								</lvc:CartesianChart.AxisX>
+								<lvc:CartesianChart.AxisY>
+									<lvc:Axis Title="Statistical Parameters" Labels="{Binding ParameterLabels}">
+										<lvc:Axis.Separator>
+											<!--step 1 forces the axis to display all labels, disabling it makes it invisible-->
+											<lvc:Separator Step="1" IsEnabled="False"></lvc:Separator>
+										</lvc:Axis.Separator>
+									</lvc:Axis>
+								</lvc:CartesianChart.AxisY>
+								<!--<lvc:CartesianChart.DataTooltip>
 										<lvc:DefaultTooltip SelectionMode="SharedYValues"></lvc:DefaultTooltip>
 									</lvc:CartesianChart.DataTooltip>-->
-								</lvc:CartesianChart>
-							</Grid>
+							</lvc:CartesianChart>
 						</Grid>
 					</Grid>
-				</ScrollViewer>
+				</Grid>
+				<!--</ScrollViewer>-->
 			</Grid>
 		</DockPanel>
 	</materialDesign:DrawerHost>
