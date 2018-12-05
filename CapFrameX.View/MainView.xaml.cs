@@ -36,7 +36,7 @@ namespace CapFrameX.View
 			// Design time!
 			if (DesignerProperties.GetIsInDesignMode(this))
 			{
-				DataContext = new MainViewModel(new RecordDirectoryObserver(), new FrametimeStatisticProvider());
+				DataContext = new MainViewModel(new RecordDirectoryObserver(), new FrametimeStatisticProvider(), new FrametimeAnalyzer());
 			}
 		}
 

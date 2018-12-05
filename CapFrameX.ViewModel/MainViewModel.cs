@@ -23,11 +23,9 @@ namespace CapFrameX.ViewModel
 {
 	public class MainViewModel : BindableBase
 	{
-		private static readonly double[] _lShapeQuantiles 
-			= new [] { 90.0, 91.0, 92.0, 93.0, 94.0, 95.0, 96.0, 97.0, 98.0, 99.0, 99.5, 99.8, 99.9, 99.95};
-
 		private readonly IRecordDirectoryObserver _recordObserver;
 		private readonly IStatisticProvider _frametimeStatisticProvider;
+		private readonly IFrametimeAnalyzer _frametimeAnalyzer;
 
 		private OcatRecordInfo _selectedRecordInfo;
 		private ZoomingOptions _zoomingMode;
@@ -178,10 +176,12 @@ namespace CapFrameX.ViewModel
 
 		public ICommand ToogleZoomingModeCommand { get; }
 
-		public MainViewModel(IRecordDirectoryObserver recordObserver, IStatisticProvider frametimeStatisticProvider)
+		public MainViewModel(IRecordDirectoryObserver recordObserver,
+			IStatisticProvider frametimeStatisticProvider, IFrametimeAnalyzer frametimeAnalyzer)
 		{
 			_recordObserver = recordObserver;
 			_frametimeStatisticProvider = frametimeStatisticProvider;
+			_frametimeAnalyzer = frametimeAnalyzer;
 
 			// ToDo: check wether to do this async
 			var initialRecordList = _recordObserver.GetAllRecordFileInfo();
@@ -381,7 +381,9 @@ namespace CapFrameX.ViewModel
 			if (frametimes == null || !frametimes.Any())
 				return;
 
-			var quantiles = _lShapeQuantiles.Select(q => new ObservablePoint(q, _frametimeStatisticProvider.GetPQuantileSequence(frametimes, q / 100)));
+			var lShapeQuantiles = _frametimeAnalyzer.GetLShapeQunantiles();
+			double action(double q) => _frametimeStatisticProvider.GetPQuantileSequence(frametimes, q / 100);
+			var quantiles = lShapeQuantiles.Select(q => new ObservablePoint(q, action(q)));
 			var quantileValues = new ChartValues<ObservablePoint>();
 			quantileValues.AddRange(quantiles);
 
@@ -396,11 +398,12 @@ namespace CapFrameX.ViewModel
 					LineSmoothness= 1,
 					PointGeometrySize = 10,
 					PointGeometry = DefaultGeometries.Diamond,
-					//DataLabels = true
+					DataLabels = true,
+					LabelPoint = point => point.X + "%," + Math.Round(point.Y, 0) + " ms"
 				}
 			};
 
-			LShapeLabels = _lShapeQuantiles.Select(q => q.ToString(CultureInfo.InvariantCulture)).ToArray();
+			LShapeLabels = lShapeQuantiles.Select(q => q.ToString(CultureInfo.InvariantCulture)).ToArray();
 		}
 
 		private void UpdateCharts()

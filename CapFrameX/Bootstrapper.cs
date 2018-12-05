@@ -37,6 +37,8 @@ namespace CapFrameX
             // Core components
             Container.Register<IRecordDirectoryObserver, RecordDirectoryObserver>(Reuse.Singleton);
 			Container.Register<IStatisticProvider, FrametimeStatisticProvider>(Reuse.Singleton);
+			Container.Register<IFrametimeAnalyzer, FrametimeAnalyzer>(Reuse.Singleton);
+			
 		}
 
         /// <summary>
