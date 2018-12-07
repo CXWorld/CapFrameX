@@ -2,6 +2,6 @@
 {
 	public interface IFrametimeAnalyzer
 	{
-		double[] GetLShapeQunantiles();
+		double[] GetLShapeQuantiles();
 	}
 }

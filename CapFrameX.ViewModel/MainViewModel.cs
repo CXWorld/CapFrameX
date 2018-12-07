@@ -381,7 +381,7 @@ namespace CapFrameX.ViewModel
 			if (frametimes == null || !frametimes.Any())
 				return;
 
-			var lShapeQuantiles = _frametimeAnalyzer.GetLShapeQunantiles();
+			var lShapeQuantiles = _frametimeAnalyzer.GetLShapeQuantiles();
 			double action(double q) => _frametimeStatisticProvider.GetPQuantileSequence(frametimes, q / 100);
 			var quantiles = lShapeQuantiles.Select(q => new ObservablePoint(q, action(q)));
 			var quantileValues = new ChartValues<ObservablePoint>();
