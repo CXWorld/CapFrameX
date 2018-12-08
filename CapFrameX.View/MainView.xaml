@@ -28,7 +28,6 @@
 			</Style>
 		</ResourceDictionary>
 	</UserControl.Resources>
-	<!--<materialDesign:DialogHost Identifier="RootDialog" SnackbarMessageQueue="{Binding ElementName=MainSnackbar, Path=MessageQueue}">-->
 	<materialDesign:DrawerHost IsLeftDrawerOpen="{Binding ElementName=MenuToggleButton, Path=IsChecked}">
 		<materialDesign:DrawerHost.LeftDrawerContent>
 			<DockPanel MinWidth="212">
@@ -74,9 +73,9 @@
 						<ColumnDefinition Width="Auto" />
 						<ColumnDefinition Width="2*" />
 					</Grid.ColumnDefinitions>
-					<StackPanel>
+					<StackPanel Grid.Column="0">
 						<TextBox Margin="10 10 10 0" Background="#e6e6e6" Name="RecordSearchBox" materialDesign:HintAssist.Hint="Search" />
-						<DataGrid Height="600" Grid.Column="0" Background="#F5F5F5" Margin="10" ItemsSource="{Binding Source={StaticResource RecordInfoListKey}}" SelectedItem="{Binding SelectedRecordInfo}" CanUserSortColumns="True" CanUserAddRows="False" AutoGenerateColumns="False"
+						<DataGrid Height="600" Background="#F5F5F5" Margin="10" ItemsSource="{Binding Source={StaticResource RecordInfoListKey}}" SelectedItem="{Binding SelectedRecordInfo}" CanUserSortColumns="True" CanUserAddRows="False" AutoGenerateColumns="False"
 									  materialDesign:DataGridAssist.CellPadding="13 8 8 8" materialDesign:DataGridAssist.ColumnHeaderPadding="8"
 									  ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True">
 							<DataGrid.Columns>
@@ -219,5 +218,4 @@
 			</Grid>
 		</DockPanel>
 	</materialDesign:DrawerHost>
-	<!--</materialDesign:DialogHost>-->
 </UserControl>

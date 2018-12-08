@@ -6,7 +6,17 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
         Height="720" Width="1280" Icon="Icons/CX_Icon.png">
-    <Grid>
-        <ContentControl Name="Main" prism:RegionManager.RegionName="MainRegion" />
-    </Grid>
+	<Grid>
+		<DockPanel>
+			<ContentControl Name="Colorbar" DockPanel.Dock="Top" prism:RegionManager.RegionName="ColorbarRegion" />
+			<Grid>
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="Auto" />
+					<ColumnDefinition Width="1*" />
+				</Grid.ColumnDefinitions>
+				<ContentControl Grid.Column="0" Name="Control" prism:RegionManager.RegionName="ControlRegion" />
+				<ContentControl Grid.Column="1" Name="Data" prism:RegionManager.RegionName="DataRegion" />
+			</Grid>
+		</DockPanel>
+	</Grid>
 </Window>

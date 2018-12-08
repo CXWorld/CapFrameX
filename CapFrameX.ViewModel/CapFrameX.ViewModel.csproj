@@ -135,6 +135,9 @@
     <Compile Include="Animation2DViewModel.cs" />
     <Compile Include="Animation3DViewModel.cs" />
     <Compile Include="Base3DViewModel.cs" />
+    <Compile Include="ColorbarViewModel.cs" />
+    <Compile Include="ControlViewModel.cs" />
+    <Compile Include="DataViewModel.cs" />
     <Compile Include="MainViewModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ViewModel3D.cs" />

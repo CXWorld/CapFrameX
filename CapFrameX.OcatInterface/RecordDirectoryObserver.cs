@@ -8,60 +8,65 @@ using CapFrameX.Contracts.OcatInterface;
 
 namespace CapFrameX.OcatInterface
 {
-    public class RecordDirectoryObserver : IRecordDirectoryObserver
-    {
-        private readonly string _recordDirectory;
-        private readonly FileSystemWatcher _fileSystemWatcher;
-        private readonly ISubject<string> _recordCreatedStream;
-        private readonly ISubject<string> _recordDeletedStream;
+	public class RecordDirectoryObserver : IRecordDirectoryObserver
+	{
+		private readonly string _recordDirectory;
+		private readonly FileSystemWatcher _fileSystemWatcher;
+		private readonly ISubject<string> _recordCreatedStream;
+		private readonly ISubject<string> _recordDeletedStream;
 
-        public bool IsActive { get; set; }
+		public bool IsActive { get; set; }
 
-        public IObservable<FileInfo> RecordCreatedStream 
-            => _recordCreatedStream.Where(p => IsActive).Select(path => new FileInfo(path)).AsObservable();
+		public IObservable<FileInfo> RecordCreatedStream
+			=> _recordCreatedStream.Where(p => IsActive).Select(path => new FileInfo(path)).AsObservable();
 
-        public IObservable<FileInfo> RecordDeletedStream 
-            => _recordDeletedStream.Where(p => IsActive).Select(path => new FileInfo(path)).AsObservable();
+		public IObservable<FileInfo> RecordDeletedStream
+			=> _recordDeletedStream.Where(p => IsActive).Select(path => new FileInfo(path)).AsObservable();
 
-        public RecordDirectoryObserver()
-        {
-            // ToDo: Get from config
-            var documentFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-            _recordDirectory = Path.Combine(documentFolder, @"OCAT\Recordings");
+		public RecordDirectoryObserver()
+		{
+			// ToDo: Get from config
+			var documentFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+			_recordDirectory = Path.Combine(documentFolder, @"OCAT\Recordings");
 
-            _fileSystemWatcher = new FileSystemWatcher(_recordDirectory);
-            _fileSystemWatcher.Created += new FileSystemEventHandler(WatcherCreated);
-            _fileSystemWatcher.Deleted += new FileSystemEventHandler(WatcherDeleted);
-            _fileSystemWatcher.EnableRaisingEvents = true;
-            _fileSystemWatcher.IncludeSubdirectories = false;
+			if (!Directory.Exists(_recordDirectory))
+			{
+				Directory.CreateDirectory(_recordDirectory);
+			}
 
-            IsActive = false;
-            _recordCreatedStream = new Subject<string>();
-            _recordDeletedStream = new Subject<string>();
-        }
+			_fileSystemWatcher = new FileSystemWatcher(_recordDirectory);
+			_fileSystemWatcher.Created += new FileSystemEventHandler(WatcherCreated);
+			_fileSystemWatcher.Deleted += new FileSystemEventHandler(WatcherDeleted);
+			_fileSystemWatcher.EnableRaisingEvents = true;
+			_fileSystemWatcher.IncludeSubdirectories = false;
 
-        private void WatcherCreated(object sender, FileSystemEventArgs e)
-        {
-            // ToDo: Remove test output
-            Console.WriteLine("Created, NAME: " + e.Name);
-            Console.WriteLine("Created, FULLPATH: " + e.FullPath);
+			IsActive = false;
+			_recordCreatedStream = new Subject<string>();
+			_recordDeletedStream = new Subject<string>();
+		}
 
-            _recordCreatedStream.OnNext(e.FullPath);
-        }
+		private void WatcherCreated(object sender, FileSystemEventArgs e)
+		{
+			// ToDo: Remove test output
+			Console.WriteLine("Created, NAME: " + e.Name);
+			Console.WriteLine("Created, FULLPATH: " + e.FullPath);
 
-        private void WatcherDeleted(object sender, FileSystemEventArgs e)
-        {
-            // ToDo: Remove test output
-            Console.WriteLine("Deleted, NAME: " + e.Name);
-            Console.WriteLine("Deleted, FULLPATH: " + e.FullPath);
+			_recordCreatedStream.OnNext(e.FullPath);
+		}
 
-            _recordDeletedStream.OnNext(e.FullPath);
-        }
+		private void WatcherDeleted(object sender, FileSystemEventArgs e)
+		{
+			// ToDo: Remove test output
+			Console.WriteLine("Deleted, NAME: " + e.Name);
+			Console.WriteLine("Deleted, FULLPATH: " + e.FullPath);
 
-        public IEnumerable<FileInfo> GetAllRecordFileInfo()
-        {
-            return Directory.GetFiles(_recordDirectory, "*.csv",
-                                         SearchOption.TopDirectoryOnly).Select(file => new FileInfo(file));
-        }
-    }
+			_recordDeletedStream.OnNext(e.FullPath);
+		}
+
+		public IEnumerable<FileInfo> GetAllRecordFileInfo()
+		{
+			return Directory.GetFiles(_recordDirectory, "*.csv",
+										 SearchOption.TopDirectoryOnly).Select(file => new FileInfo(file));
+		}
+	}
 }

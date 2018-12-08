@@ -229,5 +229,8 @@
   <ItemGroup>
     <Resource Include="HardwareInfo\AMDCPUs.txt" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\cx_icon_BUC_icon.ico" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

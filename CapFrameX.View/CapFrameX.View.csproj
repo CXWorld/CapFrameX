@@ -142,6 +142,15 @@
       <DependentUpon>Animation3DView.xaml</DependentUpon>
     </Compile>
     <Compile Include="CollectionViewUtils.cs" />
+    <Compile Include="ColorbarView.xaml.cs">
+      <DependentUpon>ColorbarView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ControlView.xaml.cs">
+      <DependentUpon>ControlView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="DataView.xaml.cs">
+      <DependentUpon>DataView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="MainView.xaml.cs">
       <DependentUpon>MainView.xaml</DependentUpon>
     </Compile>
@@ -153,6 +162,18 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Animation3DView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ColorbarView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ControlView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="DataView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
