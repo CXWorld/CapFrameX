@@ -6,7 +6,7 @@
 
 		<!--<MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />-->
 		<MajorUpgrade AllowDowngrades="yes"/>
-		<Media Id="1" Cabinet="CapFrameX.cab" EmbedCab="yes" CompressionLevel="high" />
+		<Media Id="1" Cabinet="CapFrameX.cab" EmbedCab="yes" CompressionLevel="high" />		
 
 		<Feature Id="ProductFeature" Title="CapFrameX" Level="1">
 			<ComponentGroupRef Id="CapFrameXBinaries" />
@@ -30,7 +30,9 @@
 						  Name="CapFrameX"
 						  Description="Open Analytics Tool"
 						  Target="[INSTALLFOLDER]\CapFrameX.exe"
-						  WorkingDirectory="INSTALLFOLDER"/>				
+						  WorkingDirectory="INSTALLFOLDER">
+					<Icon Id="CapFrameXIconID" SourceFile="..\CapFrameX\Icons\cx_icon_BUC_icon.ico"></Icon>
+				</Shortcut>			
 				<RemoveFolder Id="ApplicationProgramsFolder" On="uninstall"/>
 				<RegistryValue Root="HKMU" Key="Software\CapFrameX" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
 				<RegistryValue Root="HKMU" Key="Software\CapFrameX" Name="InstallDir" Type="string" Value="[INSTALLFOLDER]"/>

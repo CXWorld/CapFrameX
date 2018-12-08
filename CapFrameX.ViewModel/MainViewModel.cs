@@ -39,7 +39,7 @@ namespace CapFrameX.ViewModel
 		private int _lastNFrames;
 		private Session _session;
 		private bool _removeOutliers;
-		private bool _useAdaptiveStandardDeviation;
+		private bool _useAdaptiveStandardDeviation = true;
 
 		public Func<double, string> ParameterFormatter { get; set; } = value => value.ToString("N");
 

@@ -19,7 +19,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <OutputPath>bin\$(Configuration)\</OutputPath>
     <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
-    <DefineConstants>CapFrameXInstaller.BinaryDir=$(SolutionDir)CapFrameX\bin\$(Configuration)</DefineConstants>
+    <DefineConstants>CapFrameXInstaller.BinaryDir=$(SolutionDir)CapFrameX\bin\x64\$(Configuration)</DefineConstants>
     <SuppressIces>ICE57</SuppressIces>
   </PropertyGroup>
   <ItemGroup>
@@ -55,7 +55,7 @@
     <Error Text="The WiX Toolset v3.11 (or newer) build tools must be installed to build this project. To download the WiX Toolset, see http://wixtoolset.org/releases/" />
   </Target>
   <PropertyGroup>
-    <PreBuildEvent>"%25WIX%25\bin\heat.exe" dir "$(SolutionDir)CapFrameX\bin\$(ConfigurationName)" -var var.CapFrameXInstaller.BinaryDir -dr INSTALLFOLDER -ag -cg CapFrameXBinaries -scom -sreg -sfrag -srd -o "$(SolutionDir)CapFrameXInstaller\CapFrameX.Binaries.wxs" -t "$(SolutionDir)CapFrameXInstaller\filter.xslt"</PreBuildEvent>
+    <PreBuildEvent>"%25WIX%25\bin\heat.exe" dir "$(SolutionDir)CapFrameX\bin\x64\$(ConfigurationName)" -var var.CapFrameXInstaller.BinaryDir -dr INSTALLFOLDER -ag -cg CapFrameXBinaries -scom -sreg -sfrag -srd -o "$(SolutionDir)CapFrameXInstaller\CapFrameX.Binaries.wxs" -t "$(SolutionDir)CapFrameXInstaller\filter.xslt"</PreBuildEvent>
   </PropertyGroup>
   <!--
 	To modify your build process, add your task inside one of the targets below and uncomment it.

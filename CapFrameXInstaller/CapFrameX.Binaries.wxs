@@ -25,6 +25,10 @@
             </Component>
             
             
+            <Component Id="cmp0FB30BFBF10002FEB8B1F262B927DE5E" Guid="*" Win64="yes">
+                <File Id="fil60A491409F9FE309FF63B17A92C963ED" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.Statistics.dll" />
+            </Component>
+            
             <Component Id="cmp18FAC930D57ECB5DA84BC4EF8F1FF236" Guid="*" Win64="yes">
                 <File Id="fil5A22FA3F9BADD87BBA07D3CFC2BB585C" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.View.dll" />
             </Component>
@@ -147,6 +151,8 @@
             
             <ComponentRef Id="cmp0BC04E42480312383CC58CC4C1F2772D" />
             
+            
+            <ComponentRef Id="cmp0FB30BFBF10002FEB8B1F262B927DE5E" />
             
             <ComponentRef Id="cmp18FAC930D57ECB5DA84BC4EF8F1FF236" />
             
