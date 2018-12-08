@@ -1,7 +1,7 @@
 # CapFrameX
 Frame capture analysis tool (in process of developing)
 
-<img src="https://github.com/DevTechProfile/CapFrameX/tree/master/Images/CX_UI.png" width="660" height="400" />
+![Screenshot](Images/CX_UI.png)
 
 # Current feature list
 * Automatic file record (OCAT) management/directory observer
