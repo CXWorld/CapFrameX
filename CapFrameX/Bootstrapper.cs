@@ -5,6 +5,7 @@ using DryIoc;
 using Prism.DryIoc;
 using Prism.Modularity;
 using Prism.Mvvm;
+using Prism.Events;
 using Prism.Regions;
 using System;
 using System.Globalization;
@@ -31,14 +32,16 @@ namespace CapFrameX
         {
             base.ConfigureContainer();
 
-            // Prism
-            Container.Register<IRegionManager, RegionManager>(Reuse.Singleton, null, null, IfAlreadyRegistered.Replace, "RegionManager");
+			// Vertical components
+			Container.Register<IEventAggregator, EventAggregator>(Reuse.Singleton, null, null, IfAlreadyRegistered.Replace, "EventAggregator");
+
+			// Prism
+			Container.Register<IRegionManager, RegionManager>(Reuse.Singleton, null, null, IfAlreadyRegistered.Replace, "RegionManager");
 
             // Core components
             Container.Register<IRecordDirectoryObserver, RecordDirectoryObserver>(Reuse.Singleton);
 			Container.Register<IStatisticProvider, FrametimeStatisticProvider>(Reuse.Singleton);
-			Container.Register<IFrametimeAnalyzer, FrametimeAnalyzer>(Reuse.Singleton);
-			
+			Container.Register<IFrametimeAnalyzer, FrametimeAnalyzer>(Reuse.Singleton);			
 		}
 
         /// <summary>
