@@ -1,6 +1,6 @@
 ﻿using CapFrameX.ViewModel;
+using Prism.Regions;
 using System.ComponentModel;
-using System.Windows;
 using System.Windows.Controls;
 
 namespace CapFrameX.View
@@ -17,18 +17,8 @@ namespace CapFrameX.View
 			// Design time!
 			if (DesignerProperties.GetIsInDesignMode(this))
 			{
-				DataContext = new ColorbarViewModel();
+				DataContext = new ColorbarViewModel(new RegionManager());
 			}
-		}
-
-		private async void MenuPopupButton_OnClick(object sender, RoutedEventArgs e)
-		{
-			//var sampleMessageDialog = new SampleMessageDialog
-			//{
-			//    Message = { Text = ((ButtonBase)sender).Content.ToString() }
-			//};
-
-			//await DialogHost.Show(sampleMessageDialog, "RootDialog");
 		}
 	}
 }

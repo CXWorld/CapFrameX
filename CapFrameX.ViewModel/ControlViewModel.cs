@@ -37,9 +37,7 @@ namespace CapFrameX.ViewModel
 		public ControlViewModel(IRecordDirectoryObserver recordObserver, IEventAggregator eventAggregator)
 		{
 			_recordObserver = recordObserver;
-			_eventAggregator = eventAggregator;
-
-			SetAggregatorEvents();
+			_eventAggregator = eventAggregator;			
 
 			// ToDo: check wether to do this async
 			var initialRecordList = _recordObserver.GetAllRecordFileInfo();
@@ -57,12 +55,17 @@ namespace CapFrameX.ViewModel
 
 			// Turn streams now on
 			_recordObserver.IsActive = true;
+
+			SetAggregatorEvents();
 		}
 
 		private void OnSelectedRecordInfoChanged()
 		{
-			var session = RecordManager.LoadData(SelectedRecordInfo.FullPath);
-			_updateSessionEvent.Publish(new ViewMessages.UpdateSession(session, SelectedRecordInfo));
+			if (SelectedRecordInfo != null && _updateSessionEvent != null)
+			{
+				var session = RecordManager.LoadData(SelectedRecordInfo.FullPath);
+				_updateSessionEvent.Publish(new ViewMessages.UpdateSession(session, SelectedRecordInfo));
+			}
 		}
 
 		private void AddToRecordInfoList(FileInfo fileInfo)
