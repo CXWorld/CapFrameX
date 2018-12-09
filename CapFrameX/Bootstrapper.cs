@@ -14,23 +14,23 @@ using System.Windows;
 
 namespace CapFrameX
 {
-    public class Bootstrapper : DryIocBootstrapper
-    {
-        protected override DependencyObject CreateShell()
-        {
-            return Container.Resolve<Shell>();
-        }
+	public class Bootstrapper : DryIocBootstrapper
+	{
+		protected override DependencyObject CreateShell()
+		{
+			return Container.Resolve<Shell>();
+		}
 
-        protected override void InitializeShell()
-        {
-            base.InitializeShell();
-            Application.Current.MainWindow = (Window)Shell;
-            Application.Current.MainWindow.Show();
-        }
+		protected override void InitializeShell()
+		{
+			base.InitializeShell();
+			Application.Current.MainWindow = (Window)Shell;
+			Application.Current.MainWindow.Show();
+		}
 
-        protected override void ConfigureContainer()
-        {
-            base.ConfigureContainer();
+		protected override void ConfigureContainer()
+		{
+			base.ConfigureContainer();
 
 			// Vertical components
 			Container.Register<IEventAggregator, EventAggregator>(Reuse.Singleton, null, null, IfAlreadyRegistered.Replace, "EventAggregator");
@@ -38,45 +38,45 @@ namespace CapFrameX
 			// Prism
 			Container.Register<IRegionManager, RegionManager>(Reuse.Singleton, null, null, IfAlreadyRegistered.Replace, "RegionManager");
 
-            // Core components
-            Container.Register<IRecordDirectoryObserver, RecordDirectoryObserver>(Reuse.Singleton);
+			// Core components
+			Container.Register<IRecordDirectoryObserver, RecordDirectoryObserver>(Reuse.Singleton);
 			Container.Register<IStatisticProvider, FrametimeStatisticProvider>(Reuse.Singleton);
-			Container.Register<IFrametimeAnalyzer, FrametimeAnalyzer>(Reuse.Singleton);			
+			Container.Register<IFrametimeAnalyzer, FrametimeAnalyzer>(Reuse.Singleton);
 		}
 
-        /// <summary>
-        /// https://www.c-sharpcorner.com/forums/using-ioc-with-wpf-prism-in-mvvm
-        /// </summary>
-        protected override void ConfigureViewModelLocator()
-        {
-            base.ConfigureViewModelLocator();
+		/// <summary>
+		/// https://www.c-sharpcorner.com/forums/using-ioc-with-wpf-prism-in-mvvm
+		/// </summary>
+		protected override void ConfigureViewModelLocator()
+		{
+			base.ConfigureViewModelLocator();
 
-            ViewModelLocationProvider.SetDefaultViewTypeToViewModelTypeResolver(viewType =>
-            {
-                var viewName = viewType.FullName;
+			ViewModelLocationProvider.SetDefaultViewTypeToViewModelTypeResolver(viewType =>
+			{
+				var viewName = viewType.FullName;
 
-                // Convention
-                viewName = viewName.Replace(".View.", ".ViewModel.");
-                viewName = viewName.Replace(".Views.", ".ViewModels.");
-                var viewAssemblyName = viewType.GetTypeInfo().Assembly.FullName;
+				// Convention
+				viewName = viewName.Replace(".View.", ".ViewModel.");
+				viewName = viewName.Replace(".Views.", ".ViewModels.");
+				var viewAssemblyName = viewType.GetTypeInfo().Assembly.FullName;
 
-                // Saving ViewModels in another assembly.
-                viewAssemblyName = viewAssemblyName.Replace("View", "ViewModel");
-                var suffix = viewName.EndsWith("View", StringComparison.Ordinal) ? "Model" : "ViewModel";
-                var viewModelName = string.Format(CultureInfo.InvariantCulture, "{0}{1}, {2}", viewName, suffix, viewAssemblyName);
-                var t = Type.GetType(viewModelName);
-                return t;
-            });
+				// Saving ViewModels in another assembly.
+				viewAssemblyName = viewAssemblyName.Replace("View", "ViewModel");
+				var suffix = viewName.EndsWith("View", StringComparison.Ordinal) ? "Model" : "ViewModel";
+				var viewModelName = string.Format(CultureInfo.InvariantCulture, "{0}{1}, {2}", viewName, suffix, viewAssemblyName);
+				var t = Type.GetType(viewModelName);
+				return t;
+			});
 
-            ViewModelLocationProvider.SetDefaultViewModelFactory(type => Container.Resolve(type, IfUnresolved.Throw));
-        }
+			ViewModelLocationProvider.SetDefaultViewModelFactory(type => Container.Resolve(type, IfUnresolved.Throw));
+		}
 
-        protected override void ConfigureModuleCatalog()
-        {
-            base.ConfigureModuleCatalog();
+		protected override void ConfigureModuleCatalog()
+		{
+			base.ConfigureModuleCatalog();
 
-            ModuleCatalog moduleCatalog = (ModuleCatalog)ModuleCatalog;
-            moduleCatalog.AddModule(typeof(CapFrameXViewRegion));
-        }
-    }
+			ModuleCatalog moduleCatalog = (ModuleCatalog)ModuleCatalog;
+			moduleCatalog.AddModule(typeof(CapFrameXViewRegion));
+		}
+	}
 }

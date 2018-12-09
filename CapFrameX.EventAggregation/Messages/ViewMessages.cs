@@ -7,10 +7,12 @@ namespace CapFrameX.EventAggregation.Messages
 		public class UpdateSession
 		{
 			public Session OcatSession { get; }
+			public OcatRecordInfo RecordInfo { get; }
 
-			public UpdateSession(Session ocatSession)
+			public UpdateSession(Session ocatSession, OcatRecordInfo recordInfo)
 			{
 				OcatSession = ocatSession;
+				RecordInfo = recordInfo;
 			}
 		}
 	}

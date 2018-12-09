@@ -135,10 +135,10 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Animation2DView.xaml.cs">
+    <Compile Include="Inactive\Animation2DView.xaml.cs">
       <DependentUpon>Animation2DView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Animation3DView.xaml.cs">
+    <Compile Include="Inactive\Animation3DView.xaml.cs">
       <DependentUpon>Animation3DView.xaml</DependentUpon>
     </Compile>
     <Compile Include="CollectionViewUtils.cs" />
@@ -151,17 +151,17 @@
     <Compile Include="DataView.xaml.cs">
       <DependentUpon>DataView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="MainView.xaml.cs">
+    <Compile Include="Inactive\MainView.xaml.cs">
       <DependentUpon>MainView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Page Include="Animation2DView.xaml">
+    <Page Include="Inactive\Animation2DView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Animation3DView.xaml">
+    <Page Include="Inactive\Animation3DView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -177,7 +177,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="MainView.xaml">
+    <Page Include="Inactive\MainView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

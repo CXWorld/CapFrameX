@@ -1,8 +1,8 @@
-﻿using Prism.Mvvm;
-using Prism.Events;
-using CapFrameX.OcatInterface;
-using CapFrameX.Contracts.OcatInterface;
+﻿using CapFrameX.Contracts.OcatInterface;
 using CapFrameX.EventAggregation.Messages;
+using CapFrameX.OcatInterface;
+using Prism.Events;
+using Prism.Mvvm;
 using System;
 using System.IO;
 using System.Linq;
@@ -62,7 +62,7 @@ namespace CapFrameX.ViewModel
 		private void OnSelectedRecordInfoChanged()
 		{
 			var session = RecordManager.LoadData(SelectedRecordInfo.FullPath);
-			_updateSessionEvent.Publish(new ViewMessages.UpdateSession(session));
+			_updateSessionEvent.Publish(new ViewMessages.UpdateSession(session, SelectedRecordInfo));
 		}
 
 		private void AddToRecordInfoList(FileInfo fileInfo)

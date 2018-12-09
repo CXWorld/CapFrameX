@@ -375,7 +375,6 @@ namespace CapFrameX.ViewModel
 			var stutteringPercentage = _frametimeStatisticProvider.GetStutteringPercentage(fpsSequence);
 		}
 
-
 		private void SetLShapeChart(IList<double> frametimes)
 		{
 			if (frametimes == null || !frametimes.Any())
