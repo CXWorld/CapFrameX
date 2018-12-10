@@ -9,6 +9,7 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Collections.ObjectModel;
+using GongSolutions.Wpf.DragDrop;
 
 namespace CapFrameX.ViewModel
 {
@@ -37,7 +38,7 @@ namespace CapFrameX.ViewModel
 		public ControlViewModel(IRecordDirectoryObserver recordObserver, IEventAggregator eventAggregator)
 		{
 			_recordObserver = recordObserver;
-			_eventAggregator = eventAggregator;			
+			_eventAggregator = eventAggregator;
 
 			// ToDo: check wether to do this async
 			var initialRecordList = _recordObserver.GetAllRecordFileInfo();
@@ -57,6 +58,7 @@ namespace CapFrameX.ViewModel
 			_recordObserver.IsActive = true;
 
 			SetAggregatorEvents();
+			SubscribeToResetRecord();
 		}
 
 		private void OnSelectedRecordInfoChanged()
@@ -96,6 +98,15 @@ namespace CapFrameX.ViewModel
 		private void SetAggregatorEvents()
 		{
 			_updateSessionEvent = _eventAggregator.GetEvent<PubSubEvent<ViewMessages.UpdateSession>>();
+		}
+
+		private void SubscribeToResetRecord()
+		{
+			_eventAggregator.GetEvent<PubSubEvent<ViewMessages.ResetRecord>>()
+							.Subscribe(msg =>
+							{
+								SelectedRecordInfo = null;
+							});
 		}
 	}
 }

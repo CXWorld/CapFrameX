@@ -360,6 +360,11 @@ namespace CapFrameX.ViewModel
 		public void OnNavigatedFrom(NavigationContext navigationContext)
 		{
 			_useUpdateSession = false;
+
+			//Reset data
+			SeriesCollection?.Clear();
+			LShapeCollection?.Clear();
+			StatisticCollection?.Clear();
 		}
 	}
 }

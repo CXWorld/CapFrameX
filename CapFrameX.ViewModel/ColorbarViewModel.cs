@@ -1,4 +1,6 @@
-﻿using Prism.Mvvm;
+﻿using CapFrameX.EventAggregation.Messages;
+using Prism.Events;
+using Prism.Mvvm;
 using Prism.Regions;
 
 namespace CapFrameX.ViewModel
@@ -6,7 +8,9 @@ namespace CapFrameX.ViewModel
 	public class ColorbarViewModel : BindableBase
 	{
 		private readonly IRegionManager _regionManager;
+		private readonly IEventAggregator _eventAggregator;
 
+		private PubSubEvent<ViewMessages.ResetRecord> _resetRecordEvent;
 		private bool _singleRecordIsChecked = true;
 		private bool _recordComparisonIsChecked;
 		private bool _reportIsChecked;
@@ -50,25 +54,36 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-		public ColorbarViewModel(IRegionManager regionManager)
+		public ColorbarViewModel(IRegionManager regionManager, IEventAggregator eventAggregator)
 		{
 			_regionManager = regionManager;
+			_eventAggregator = eventAggregator;
+
+			SetAggregatorEvents();
 		}
 
 
 		private void OnSingleRecordIsCheckedChanged()
 		{
 			_regionManager.RequestNavigate("DataRegion", "DataView");
+			_resetRecordEvent.Publish(new ViewMessages.ResetRecord());
 		}
 
 		private void OnRecordComparisonIsCheckedChanged()
 		{
 			_regionManager.RequestNavigate("DataRegion", "ComparisonDataView");
+			_resetRecordEvent.Publish(new ViewMessages.ResetRecord());
 		}
 
 		private void OnReportIsCheckedChanged()
 		{
 			_regionManager.RequestNavigate("DataRegion", "ReportDataView");
+			_resetRecordEvent.Publish(new ViewMessages.ResetRecord());
+		}
+
+		private void SetAggregatorEvents()
+		{
+			_resetRecordEvent = _eventAggregator.GetEvent<PubSubEvent<ViewMessages.ResetRecord>>();
 		}
 	}
 }

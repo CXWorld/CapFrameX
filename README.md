@@ -1,5 +1,5 @@
 # CapFrameX
-Frame capture analysis tool (in process of developing)
+Frametimes analysis tool compatible with OCAT (in process of developing)
 
 ![Screenshot](Images/CX_UI.png)
 

@@ -15,5 +15,7 @@ namespace CapFrameX.EventAggregation.Messages
 				RecordInfo = recordInfo;
 			}
 		}
+
+		public class ResetRecord { }
 	}
 }
