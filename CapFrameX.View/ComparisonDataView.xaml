@@ -6,25 +6,39 @@
              xmlns:local="clr-namespace:CapFrameX.View"
 			 xmlns:dragdrop="urn:gong-wpf-dragdrop"
 			 xmlns:prism="http://prismlibrary.com/"
-             mc:Ignorable="d" 
+			 xmlns:mvvm="clr-namespace:CapFrameX.MVVM.Converter;assembly=CapFrameX.MVVM"
+             mc:Ignorable="d"
+			 xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
              d:DesignHeight="450" d:DesignWidth="800"
 			 prism:ViewModelLocator.AutoWireViewModel="True">
+	<UserControl.Resources>
+		<ResourceDictionary>
+			<ResourceDictionary.MergedDictionaries>
+				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Button.xaml" />
+				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Shadows.xaml" />
+				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ToggleButton.xaml" />
+				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.DataGrid.xaml" />
+				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Slider.xaml" />
+			</ResourceDictionary.MergedDictionaries>
+			<mvvm:ZoomingModeConverter x:Key="ZoomingModeConverter"></mvvm:ZoomingModeConverter>
+			<mvvm:BoolToVisibilityConverter x:Key="BoolToHiddenConverter"/>
+		</ResourceDictionary>
+	</UserControl.Resources>
 	<Grid>
-		<ItemsControl VerticalAlignment="Center"
-					  HorizontalAlignment="Center"
-					  dragdrop:DragDrop.IsDropTarget="True"
-					  dragdrop:DragDrop.DropHandler="{Binding}"
-					  dragdrop:DragDrop.UseDefaultDragAdorner="True"
-					  dragdrop:DragDrop.DropTargetAdornerBrush="White"
-					  dragdrop:DragDrop.DefaultDragAdornerOpacity="0.5"
-					  dragdrop:DragDrop.UseDefaultEffectDataTemplate="False">
-			<Border BorderThickness="0" Margin="0" Width="100" Height="100">
-				<Image Source="/CapFrameX;component/Icons/CX_Icon.png"
-                           Width="90"
-                           Height="90"
-                           Margin="0">
+		<Grid dragdrop:DragDrop.IsDropTarget="True"
+				dragdrop:DragDrop.DropHandler="{Binding}"
+				dragdrop:DragDrop.UseDefaultDragAdorner="True"
+				dragdrop:DragDrop.DropTargetAdornerBrush="White"
+				dragdrop:DragDrop.DefaultDragAdornerOpacity="0.5"
+				dragdrop:DragDrop.UseDefaultEffectDataTemplate="False">
+			<Image Visibility="{Binding InitialIconVisibility, Converter={StaticResource BoolToHiddenConverter}}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" 
+					   Source="/CapFrameX;component/Icons/CX_Icon.png"
+                        Width="100"
+                        Height="100"
+                        Margin="0">
 				</Image>
-			</Border>
-		</ItemsControl>
+			<lvc:CartesianChart Visibility="Collapsed" DisableAnimations="True" Series="{Binding SeriesCollection}" Zoom="{Binding ZoomingMode}" >
+			</lvc:CartesianChart>
+		</Grid>
 	</Grid>
 </UserControl>

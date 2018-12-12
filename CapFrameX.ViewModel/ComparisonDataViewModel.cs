@@ -3,13 +3,26 @@ using GongSolutions.Wpf.DragDrop;
 using Prism.Mvvm;
 using Prism.Regions;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Windows;
 
 namespace CapFrameX.ViewModel
 {
 	public class ComparisonDataViewModel : BindableBase, INavigationAware, IDropTarget
 	{
-		public ObservableCollection<OcatRecordInfo> Items { get; }
+		private bool _initialIconVisibility = true;
+
+		public bool InitialIconVisibility
+		{
+			get { return _initialIconVisibility; }
+			set
+			{
+				_initialIconVisibility = value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public ObservableCollection<OcatRecordInfo> CompareRecordInfoList { get; }
 			= new ObservableCollection<OcatRecordInfo>();
 
 		public ComparisonDataViewModel()
@@ -34,7 +47,14 @@ namespace CapFrameX.ViewModel
 
 		void IDropTarget.Drop(IDropInfo dropInfo)
 		{
-			//throw new System.NotImplementedException();
+			if (dropInfo != null)
+			{
+				if (dropInfo.Data is OcatRecordInfo recordInfo)
+				{
+					CompareRecordInfoList.Add(recordInfo);
+					InitialIconVisibility = !CompareRecordInfoList.Any();
+				}
+			}
 		}
 
 		void IDropTarget.DragOver(IDropInfo dropInfo)

@@ -38,7 +38,7 @@ namespace CapFrameX.ViewModel
 		public ControlViewModel(IRecordDirectoryObserver recordObserver, IEventAggregator eventAggregator)
 		{
 			_recordObserver = recordObserver;
-			_eventAggregator = eventAggregator;
+			_eventAggregator = eventAggregator;			
 
 			// ToDo: check wether to do this async
 			var initialRecordList = _recordObserver.GetAllRecordFileInfo();

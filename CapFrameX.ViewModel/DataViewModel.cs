@@ -5,6 +5,7 @@ using LiveCharts;
 using LiveCharts.Defaults;
 using LiveCharts.Geared;
 using LiveCharts.Wpf;
+using Prism.Commands;
 using Prism.Events;
 using Prism.Mvvm;
 using Prism.Regions;
@@ -38,6 +39,9 @@ namespace CapFrameX.ViewModel
 		private int _lastNFrames;
 		private bool _removeOutliers;
 		private bool _useAdaptiveStandardDeviation = true;
+		private string _selectedChartLengthValue;
+		private double _frametimeSliderMaximum;
+		private double _frametimeSliderValue;
 
 		public Func<double, string> ParameterFormatter { get; set; } = value => value.ToString("N");
 
@@ -156,7 +160,40 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
+		public string SelectedChartLengthValue
+		{
+			get { return _selectedChartLengthValue; }
+			set
+			{
+				_selectedChartLengthValue = value;
+				RaisePropertyChanged();
+				OnSelectedChartLengthValueChanged();
+			}
+		}
+
+		public double FrametimeSliderMaximum
+		{
+			get { return _frametimeSliderMaximum; }
+			set
+			{
+				_frametimeSliderMaximum = value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public double FrametimeSliderValue
+		{
+			get { return _frametimeSliderValue; }
+			set
+			{
+				_frametimeSliderValue = value;
+				RaisePropertyChanged();
+			}
+		}
+
 		public IList<int> WindowSizes { get; }
+
+		public IList<string> ChartLengthValues { get; }
 
 		public ICommand ToogleZoomingModeCommand { get; }
 
@@ -169,9 +206,33 @@ namespace CapFrameX.ViewModel
 
 			SubscribeToUpdateSession();
 
+			ToogleZoomingModeCommand = new DelegateCommand(OnToogleZoomingMode);
 			ZoomingMode = ZoomingOptions.Y;
 			WindowSizes = new List<int>(Enumerable.Range(4, 100 - 4));
 			SelectWindowSize = 10;
+			ChartLengthValues = new List<string> { "5", "10", "20", "30", "60", "120", "180", "240", "300", "600", "unlimited" };
+			SelectedChartLengthValue = ChartLengthValues.Last();
+		}
+
+		private void OnToogleZoomingMode()
+		{
+			switch (ZoomingMode)
+			{
+				case ZoomingOptions.None:
+					ZoomingMode = ZoomingOptions.X;
+					break;
+				case ZoomingOptions.X:
+					ZoomingMode = ZoomingOptions.Y;
+					break;
+				case ZoomingOptions.Y:
+					ZoomingMode = ZoomingOptions.Xy;
+					break;
+				case ZoomingOptions.Xy:
+					ZoomingMode = ZoomingOptions.None;
+					break;
+				default:
+					throw new ArgumentOutOfRangeException();
+			}
 		}
 
 		private void SubscribeToUpdateSession()
@@ -193,7 +254,7 @@ namespace CapFrameX.ViewModel
 			if (RemoveOutliers)
 			{
 				// ToDo: Make method selectable
-				return _frametimeStatisticProvider?.GetOutlierAdjustedSequence(_session.FrameTimes, 
+				return _frametimeStatisticProvider?.GetOutlierAdjustedSequence(_session.FrameTimes,
 					ERemoveOutlierMethod.DeciPercentile);
 			}
 			else
@@ -212,6 +273,11 @@ namespace CapFrameX.ViewModel
 				SetStaticChart(subset);
 				SetLShapeChart(subset);
 			}
+		}
+
+		private void OnSelectedChartLengthValueChanged()
+		{
+			
 		}
 
 		private List<double> GetFrametimesSubset()
