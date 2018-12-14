@@ -37,32 +37,34 @@
 			<RowDefinition Height="3*"></RowDefinition>
 		</Grid.RowDefinitions>
 		<TabControl Grid.Row="0" Background="#F5F5F5" >
-				<TabItem Header="Frametimes">
-					<lvc:CartesianChart Height="Auto" MouseDoubleClick="CartesianChart_MouseDoubleClick" DisableAnimations="True" Series="{Binding SeriesCollection}" Zoom="{Binding ZoomingMode}" >
-						<lvc:CartesianChart.AxisX>
-							<lvc:Axis Title="Samples" Name="FrametimesX" Separator="{x:Static lvc:DefaultAxes.CleanSeparator}" Foreground="Black"/>
-						</lvc:CartesianChart.AxisX>
-						<lvc:CartesianChart.AxisY>
-							<lvc:Axis Title="ms" Name="FrametimesY" Foreground="Black"/>
-						</lvc:CartesianChart.AxisY>
-					</lvc:CartesianChart>
-				</TabItem>
-				<TabItem Header="L-Shape">
-					<lvc:CartesianChart Series="{Binding LShapeCollection}" Zoom="{Binding ZoomingMode}" >
-						<lvc:CartesianChart.AxisX>
-							<lvc:Axis Title="Quantiles" Name="LShapeX" Foreground="Black">
-								<lvc:Axis.Separator >
-									<lvc:Separator Step="1"></lvc:Separator>
-								</lvc:Axis.Separator>
-							</lvc:Axis>
-						</lvc:CartesianChart.AxisX>
-						<lvc:CartesianChart.AxisY>
-							<lvc:Axis Title="ms" Name="LShapeY" Foreground="Black"/>
-						</lvc:CartesianChart.AxisY>
-					</lvc:CartesianChart>
-				</TabItem>
-			</TabControl>
-		<Slider Grid.Row="1" TickFrequency="5"
+			<TabItem Header="Frametimes">
+				<lvc:CartesianChart Height="Auto" MouseDoubleClick="CartesianChart_MouseDoubleClick" DisableAnimations="True" Series="{Binding SeriesCollection}" Zoom="{Binding ZoomingMode}" >
+					<lvc:CartesianChart.AxisX>
+						<lvc:Axis Title="Samples" Name="FrametimesX" Separator="{x:Static lvc:DefaultAxes.CleanSeparator}" Foreground="Black"/>
+					</lvc:CartesianChart.AxisX>
+					<lvc:CartesianChart.AxisY>
+						<lvc:Axis Title="ms" Name="FrametimesY" Foreground="Black"/>
+					</lvc:CartesianChart.AxisY>
+				</lvc:CartesianChart>
+			</TabItem>
+			<TabItem Header="L-Shape">
+				<lvc:CartesianChart Series="{Binding LShapeCollection}" Zoom="{Binding ZoomingMode}" >
+					<lvc:CartesianChart.AxisX>
+						<lvc:Axis Title="Quantiles" Name="LShapeX" Foreground="Black">
+							<lvc:Axis.Separator >
+								<lvc:Separator Step="1"></lvc:Separator>
+							</lvc:Axis.Separator>
+						</lvc:Axis>
+					</lvc:CartesianChart.AxisX>
+					<lvc:CartesianChart.AxisY>
+						<lvc:Axis Title="ms" Name="LShapeY" Foreground="Black"/>
+					</lvc:CartesianChart.AxisY>
+				</lvc:CartesianChart>
+			</TabItem>
+		</TabControl>
+		<Slider Grid.Row="1" 
+				TickFrequency="1"
+				IsSnapToTickEnabled="True"
 				Margin="0 10 0 10"
 				Orientation="Horizontal"
 				TickPlacement="BottomRight"
@@ -83,27 +85,34 @@
 							Margin="15"
 							UseLayoutRounding="True"
 							SnapsToDevicePixels="True">
-						<StackPanel Orientation="Horizontal">
-							<TextBlock VerticalAlignment="Center">Chart length(sec)</TextBlock>
-							<ComboBox materialDesign:HintAssist.Hint="(editable)"
+						<StackPanel Margin="0 10 0 10">
+							<CheckBox IsThreeState="False"
+													IsChecked="{Binding UseSlidingWindow}"
+													Margin="0 0 0 0">
+								Sliding window
+							</CheckBox>
+							<StackPanel Orientation="Horizontal">
+								<TextBlock VerticalAlignment="Center">Chart length(sec)</TextBlock>
+								<ComboBox materialDesign:HintAssist.Hint="(editable)"
 												  Width="Auto"
 												  Margin="10 0 0 0"
 												  HorizontalAlignment="Left"
 												  VerticalAlignment="Center"
 												  IsEditable="True"
 												  ItemsSource="{Binding ChartLengthValues}">
-								<ComboBox.Text>
-									<Binding Path="SelectedChartLengthValue"
+									<ComboBox.Text>
+										<Binding Path="SelectedChartLengthValue"
 														Mode="TwoWay"
 														UpdateSourceTrigger="PropertyChanged">
-									</Binding>
-								</ComboBox.Text>
-								<ComboBox.ItemsPanel>
-									<ItemsPanelTemplate>
-										<VirtualizingStackPanel />
-									</ItemsPanelTemplate>
-								</ComboBox.ItemsPanel>
-							</ComboBox>
+										</Binding>
+									</ComboBox.Text>
+									<ComboBox.ItemsPanel>
+										<ItemsPanelTemplate>
+											<VirtualizingStackPanel />
+										</ItemsPanelTemplate>
+									</ComboBox.ItemsPanel>
+								</ComboBox>
+							</StackPanel>
 						</StackPanel>
 					</GroupBox>
 				</Border>
@@ -113,7 +122,7 @@
 							Margin="15"
 							UseLayoutRounding="True"
 							SnapsToDevicePixels="True">
-						<StackPanel VerticalAlignment="Center" Margin="0 10 0 10" Grid.Column="1">
+						<StackPanel Margin="0 10 0 10">
 							<CheckBox IsThreeState="False"
 													IsChecked="{Binding RemoveOutliers}"
 													Margin="0 0 0 0">
@@ -177,7 +186,11 @@
 			</Grid>
 		</Expander>
 		<Grid Background="#F5F5F5" Grid.Row="3" Visibility="{Binding ElementName=SettingsExpander, Path=IsExpanded, Converter={StaticResource TrueToCollapsedConverter}}">
-			<lvc:CartesianChart Margin="0 10 0 10" Series="{Binding StatisticCollection}" LegendLocation="Bottom">
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="1*" />
+				<ColumnDefinition Width="1*" />
+			</Grid.ColumnDefinitions>
+			<lvc:CartesianChart Grid.Column="0" Margin="0 10 0 10" Series="{Binding StatisticCollection}" LegendLocation="Bottom">
 				<lvc:CartesianChart.AxisX>
 					<lvc:Axis Title="FPS" LabelFormatter="{Binding ParameterFormatter}" Foreground="Black"></lvc:Axis>
 				</lvc:CartesianChart.AxisX>
@@ -189,9 +202,20 @@
 						</lvc:Axis.Separator>
 					</lvc:Axis>
 				</lvc:CartesianChart.AxisY>
-				<!--<lvc:CartesianChart.DataTooltip>
-					<lvc:DefaultTooltip SelectionMode="SharedYValues"></lvc:DefaultTooltip>
-				</lvc:CartesianChart.DataTooltip>-->
+			</lvc:CartesianChart>
+
+			<lvc:CartesianChart Grid.Column="1" Margin="10 10 0 10" Series="{Binding AdvancedStatisticCollection}" LegendLocation="Bottom">
+				<lvc:CartesianChart.AxisX>
+					<lvc:Axis Title="Values" LabelFormatter="{Binding ParameterFormatter}" Foreground="Black"></lvc:Axis>
+				</lvc:CartesianChart.AxisX>
+				<lvc:CartesianChart.AxisY>
+					<lvc:Axis Title="Statistical Parameters" Labels="{Binding AdvancedParameterLabels}" Foreground="Black">
+						<lvc:Axis.Separator>
+							<!--step 1 forces the axis to display all labels, disabling it makes it invisible-->
+							<lvc:Separator Step="1" IsEnabled="False"></lvc:Separator>
+						</lvc:Axis.Separator>
+					</lvc:Axis>
+				</lvc:CartesianChart.AxisY>
 			</lvc:CartesianChart>
 		</Grid>
 	</Grid>

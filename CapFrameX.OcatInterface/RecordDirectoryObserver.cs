@@ -27,7 +27,7 @@ namespace CapFrameX.OcatInterface
 		{
 			// ToDo: Get from config
 			var documentFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-			_recordDirectory = Path.Combine(documentFolder, @"OCAT\Recordings");
+			_recordDirectory = Path.Combine(documentFolder, @"OCAT\Captures");
 
 			if (!Directory.Exists(_recordDirectory))
 			{

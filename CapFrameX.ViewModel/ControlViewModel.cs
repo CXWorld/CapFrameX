@@ -9,7 +9,6 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Collections.ObjectModel;
-using GongSolutions.Wpf.DragDrop;
 
 namespace CapFrameX.ViewModel
 {

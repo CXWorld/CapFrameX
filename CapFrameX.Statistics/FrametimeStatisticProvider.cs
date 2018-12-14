@@ -26,9 +26,9 @@ namespace CapFrameX.Statistics
 		public double GetStutteringPercentage(IList<double> sequence)
 		{
 			var average = sequence.Average();
-			var stutteringCount = sequence.Count(element => element > 3 * average);
+			var stutteringCount = sequence.Count(element => element > 2.5 * average);
 
-			return Math.Round(100 * (double)stutteringCount / sequence.Count, 2);
+			return Math.Round(100 * (double)stutteringCount / sequence.Count, 3);
 		}
 
 		public IList<double> GetMovingAverage(IList<double> sequence, int windowSize)

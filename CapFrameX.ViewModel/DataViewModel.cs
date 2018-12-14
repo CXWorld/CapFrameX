@@ -32,13 +32,16 @@ namespace CapFrameX.ViewModel
 		private SeriesCollection _seriesCollection;
 		private SeriesCollection _statisticCollection;
 		private SeriesCollection _lShapeCollection;
+		private SeriesCollection _advancedStatisticCollection;
 		private string[] _parameterLabels;
 		private string[] _lShapeLabels;
+		private string[] _advancedParameterLabels;
 		private int _selectWindowSize;
 		private int _firstNFrames;
 		private int _lastNFrames;
 		private bool _removeOutliers;
 		private bool _useAdaptiveStandardDeviation = true;
+		private bool _useSlidingWindow = false;
 		private string _selectedChartLengthValue;
 		private double _frametimeSliderMaximum;
 		private double _frametimeSliderValue;
@@ -65,6 +68,16 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
+		public string[] AdvancedParameterLabels
+		{
+			get { return _advancedParameterLabels; }
+			set
+			{
+				_advancedParameterLabels = value;
+				RaisePropertyChanged();
+			}
+		}
+		
 		public SeriesCollection StatisticCollection
 		{
 			get { return _statisticCollection; }
@@ -91,6 +104,16 @@ namespace CapFrameX.ViewModel
 			set
 			{
 				_seriesCollection = value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public SeriesCollection AdvancedStatisticCollection
+		{
+			get { return _advancedStatisticCollection; }
+			set
+			{
+				_advancedStatisticCollection = value;
 				RaisePropertyChanged();
 			}
 		}
@@ -188,8 +211,22 @@ namespace CapFrameX.ViewModel
 			{
 				_frametimeSliderValue = value;
 				RaisePropertyChanged();
+				OnFrametimeSliderValueChanged();
 			}
 		}
+
+		public bool UseSlidingWindow
+		{
+			get { return _useSlidingWindow; }
+			set
+			{
+				_useSlidingWindow = value;
+				RaisePropertyChanged();
+				OnSelectedChartLengthValueChanged();
+				OnFrametimeSliderValueChanged();
+			}
+		}
+
 
 		public IList<int> WindowSizes { get; }
 
@@ -210,8 +247,8 @@ namespace CapFrameX.ViewModel
 			ZoomingMode = ZoomingOptions.Y;
 			WindowSizes = new List<int>(Enumerable.Range(4, 100 - 4));
 			SelectWindowSize = 10;
-			ChartLengthValues = new List<string> { "5", "10", "20", "30", "60", "120", "180", "240", "300", "600", "unlimited" };
-			SelectedChartLengthValue = ChartLengthValues.Last();
+			ChartLengthValues = new List<string> { "5", "10", "20", "30", "60", "120", "180", "240", "300", "600" };
+			SelectedChartLengthValue = "10";
 		}
 
 		private void OnToogleZoomingMode()
@@ -251,16 +288,42 @@ namespace CapFrameX.ViewModel
 
 		private IList<double> GetFrametimes()
 		{
-			if (RemoveOutliers)
+			IList<double> frametimes = new List<double>();
+
+			if (_session?.FrameTimes == null || !_session.FrameTimes.Any())
+				return frametimes;
+
+			if (!UseSlidingWindow)
 			{
-				// ToDo: Make method selectable
-				return _frametimeStatisticProvider?.GetOutlierAdjustedSequence(_session.FrameTimes,
-					ERemoveOutlierMethod.DeciPercentile);
+				if (RemoveOutliers)
+				{
+					// ToDo: Make method selectable
+					frametimes = _frametimeStatisticProvider?.GetOutlierAdjustedSequence(_session.FrameTimes,
+						ERemoveOutlierMethod.DeciPercentile);
+				}
+				else
+				{
+					frametimes = _session?.FrameTimes;
+				}
 			}
 			else
 			{
-				return _session?.FrameTimes;
+				if (Double.TryParse(SelectedChartLengthValue, NumberStyles.Any, CultureInfo.InvariantCulture, out double length))
+				{
+					double startTime = (_session.LastFrameTime - length) * FrametimeSliderValue / 100;
+					double endTime = startTime + length;
+
+					for (int i = 0; i < _session.FrameTimes.Count; i++)
+					{
+						if (_session.FrameStart[i] >= startTime && _session.FrameStart[i] <= endTime)
+						{
+							frametimes.Add(_session.FrameTimes[i]);
+						}
+					}
+				}
 			}
+
+			return frametimes;
 		}
 
 		private void UpdateCharts()
@@ -271,13 +334,37 @@ namespace CapFrameX.ViewModel
 			{
 				SetFrametimeChart(subset);
 				SetStaticChart(subset);
+				SetAdvancedStaticChart(subset);
 				SetLShapeChart(subset);
 			}
 		}
 
 		private void OnSelectedChartLengthValueChanged()
 		{
-			
+			if (UseSlidingWindow)
+			{
+				if (Double.TryParse(SelectedChartLengthValue, NumberStyles.Any, CultureInfo.InvariantCulture, out double length))
+				{
+					// Slider parameter
+					FrametimeSliderMaximum = length < _session.LastFrameTime ? 100 : 0;
+					FrametimeSliderValue = 0;
+				}
+			}
+			else
+			{
+				FrametimeSliderMaximum = 0;
+				FrametimeSliderValue = 0;
+			}
+		}
+
+		private void OnFrametimeSliderValueChanged()
+		{
+			var subset = GetFrametimesSubset();
+
+			if (subset != null)
+			{
+				SetFrametimeChart(subset);
+			}
 		}
 
 		private List<double> GetFrametimesSubset()
@@ -378,9 +465,31 @@ namespace CapFrameX.ViewModel
 			if (!UseAdaptiveStandardDeviation)
 				ParameterLabels = new[] { "Min", "1%", "5%", "Average" };
 			else
-				ParameterLabels = new[] { "Adaptive STD", "Min", "1%", "5%", "Average" };
+				ParameterLabels = new[] { "Adaptive STD", "Min", "1%", "5%", "Average" };			
+		}
 
+		private void SetAdvancedStaticChart(IList<double> frameTimes)
+		{
+			if (frameTimes == null || !frameTimes.Any())
+				return;
+
+			var fpsSequence = frameTimes.Select(ft => 1000 / ft).ToList();
 			var stutteringPercentage = _frametimeStatisticProvider.GetStutteringPercentage(fpsSequence);
+
+			IChartValues values = new ChartValues<double> { stutteringPercentage };
+
+			AdvancedStatisticCollection = new SeriesCollection
+			{
+				new RowSeries
+				{
+					Title = _recordInfo.GameName,
+					Fill = new SolidColorBrush(Color.FromRgb(83,104,114)),
+					Values = values,
+					DataLabels = true
+				}
+			};
+
+			AdvancedParameterLabels = new[] { "Stuttering %" };
 		}
 
 		private void SetLShapeChart(IList<double> frametimes)
@@ -406,7 +515,7 @@ namespace CapFrameX.ViewModel
 					PointGeometrySize = 10,
 					PointGeometry = DefaultGeometries.Diamond,
 					DataLabels = true,
-					LabelPoint = point => point.X + "%," + Math.Round(point.Y, 0) + " ms"
+					LabelPoint = point => point.X + "%," + Math.Round(point.Y, 1) + " ms"
 				}
 			};
 

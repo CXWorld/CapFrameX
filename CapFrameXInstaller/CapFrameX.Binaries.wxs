@@ -6,6 +6,10 @@
                 <File Id="filC5232FFF55D7F9A2D288A591C3B2723E" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.Contracts.dll" />
             </Component>
             
+            <Component Id="cmp7C9CAFF9FE2A171191AA280A316C5B90" Guid="*" Win64="yes">
+                <File Id="filE854C05B7FCBEF9D80C9CD3447FD3B5E" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.EventAggregation.dll" />
+            </Component>
+            
             <Component Id="cmp82AD45B10466B02AA709E58F5BE28DFA" Guid="*" Win64="yes">
                 <File Id="fil728C156E08C89BB8D6F48ADCA3FDB05E" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.exe" />
             </Component>
@@ -39,6 +43,10 @@
             </Component>
             
             
+            <Component Id="cmp9110E4565D76564E9BC2F34625854902" Guid="*" Win64="yes">
+                <File Id="filAC751AB8116CEF372F8CFDA54B395D08" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\ControlzEx.dll" />
+            </Component>
+            
             <Component Id="cmp471A60C7DB0BF5428D9A6BE2EF6D9976" Guid="*" Win64="yes">
                 <File Id="fil797E40D765838013F75C84F3A45F3E4D" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Cyotek.Drawing.BitmapFont.dll" />
             </Component>
@@ -50,6 +58,11 @@
             <Component Id="cmp3A3DCB2CB767F63098FA411AE7BB90A7" Guid="*" Win64="yes">
                 <File Id="filC88A84AAA7679BB1CC51240EFA2EB406" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\DryIoc.dll" />
             </Component>
+            
+            <Component Id="cmp781EEA928029B571EC5B4E7090BD7946" Guid="*" Win64="yes">
+                <File Id="fil093D81EF2D0F558E4AF6DBB696C8B611" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\GongSolutions.Wpf.DragDrop.dll" />
+            </Component>
+            
             
             <Component Id="cmp5FF899298FD9B40BBC534496F89342A9" Guid="*" Win64="yes">
                 <File Id="fil8CD418B1E35D08E053665F20D510F660" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\HelixToolkit.dll" />
@@ -72,6 +85,11 @@
                 <File Id="filCBE997A6CD849E4DF004F21120DE6B94" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\LiveCharts.Wpf.dll" />
             </Component>
             
+            
+            
+            <Component Id="cmp223D4754378C01052DA8253A843FD297" Guid="*" Win64="yes">
+                <File Id="filBC562C5B3D9848A2114F0AF7275FF1E6" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\MahApps.Metro.dll" />
+            </Component>
             
             
             <Component Id="cmpF79A41B26948F126556619AD15586E53" Guid="*" Win64="yes">
@@ -143,6 +161,8 @@
         <ComponentGroup Id="CapFrameXBinaries">
             <ComponentRef Id="cmpA4C1EAD31D80CA7A469C61E5F7BF0BE7" />
             
+            <ComponentRef Id="cmp7C9CAFF9FE2A171191AA280A316C5B90" />
+            
             <ComponentRef Id="cmp82AD45B10466B02AA709E58F5BE28DFA" />
             <ComponentRef Id="cmp2E59BC59B11729E95EB8C057C580BD11" />
             <ComponentRef Id="cmp197CCAFDD9C330A4C91CAF35F0619382" />
@@ -160,11 +180,16 @@
             <ComponentRef Id="cmpFEE96F5622FF620341562487C27BDBFE" />
             
             
+            <ComponentRef Id="cmp9110E4565D76564E9BC2F34625854902" />
+            
             <ComponentRef Id="cmp471A60C7DB0BF5428D9A6BE2EF6D9976" />
             
             <ComponentRef Id="cmpB54AA7145F7DD7C9F4F5BCED9FE3DD87" />
             
             <ComponentRef Id="cmp3A3DCB2CB767F63098FA411AE7BB90A7" />
+            
+            <ComponentRef Id="cmp781EEA928029B571EC5B4E7090BD7946" />
+            
             
             <ComponentRef Id="cmp5FF899298FD9B40BBC534496F89342A9" />
             
@@ -177,6 +202,9 @@
             
             <ComponentRef Id="cmpB80EB57EF2904D1A74E508B15C150404" />
             
+            
+            
+            <ComponentRef Id="cmp223D4754378C01052DA8253A843FD297" />
             
             
             <ComponentRef Id="cmpF79A41B26948F126556619AD15586E53" />
