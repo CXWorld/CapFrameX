@@ -474,7 +474,7 @@ namespace CapFrameX.ViewModel
 				return;
 
 			var fpsSequence = frameTimes.Select(ft => 1000 / ft).ToList();
-			var stutteringPercentage = _frametimeStatisticProvider.GetStutteringPercentage(fpsSequence);
+			var stutteringPercentage = _frametimeStatisticProvider.GetStutteringPercentage(frameTimes);
 
 			IChartValues values = new ChartValues<double> { stutteringPercentage };
 
