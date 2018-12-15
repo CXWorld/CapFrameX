@@ -21,6 +21,7 @@ namespace CapFrameX.ViewModel
 {
 	public class DataViewModel : BindableBase, INavigationAware
 	{
+		private const int SCALE_RESOLUTION = 200;
 		private readonly IStatisticProvider _frametimeStatisticProvider;
 		private readonly IFrametimeAnalyzer _frametimeAnalyzer;
 		private readonly IEventAggregator _eventAggregator;
@@ -310,7 +311,7 @@ namespace CapFrameX.ViewModel
 			{
 				if (Double.TryParse(SelectedChartLengthValue, NumberStyles.Any, CultureInfo.InvariantCulture, out double length))
 				{
-					double startTime = (_session.LastFrameTime - length) * FrametimeSliderValue / 100;
+					double startTime = (_session.LastFrameTime - length) * FrametimeSliderValue / SCALE_RESOLUTION;
 					double endTime = startTime + length;
 
 					for (int i = 0; i < _session.FrameTimes.Count; i++)
@@ -346,7 +347,7 @@ namespace CapFrameX.ViewModel
 				if (Double.TryParse(SelectedChartLengthValue, NumberStyles.Any, CultureInfo.InvariantCulture, out double length))
 				{
 					// Slider parameter
-					FrametimeSliderMaximum = length < _session.LastFrameTime ? 100 : 0;
+					FrametimeSliderMaximum = length < _session.LastFrameTime ? SCALE_RESOLUTION : 0;
 					FrametimeSliderValue = 0;
 				}
 			}
@@ -436,7 +437,9 @@ namespace CapFrameX.ViewModel
 				return;
 
 			var fpsSequence = frameTimes.Select(ft => 1000 / ft).ToList();
+			var max = Math.Round(fpsSequence.Max(), 0);
 			var average = Math.Round(fpsSequence.Average(), 0);
+			var p0dot1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fpsSequence, 0.001), 0);
 			var p1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fpsSequence, 0.01), 0);
 			var p5_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fpsSequence, 0.05), 0);
 			var min = Math.Round(fpsSequence.Min(), 0);
@@ -444,11 +447,11 @@ namespace CapFrameX.ViewModel
 			IChartValues values = null;
 
 			if (!UseAdaptiveStandardDeviation)
-				values = new ChartValues<double> { min, p1_quantile, p5_quantile, average };
+				values = new ChartValues<double> { min, p0dot1_quantile, p1_quantile, p5_quantile, average, max };
 			else
 			{
 				var adaptiveStandardDeviation = Math.Round(_frametimeStatisticProvider.GetAdaptiveStandardDeviation(fpsSequence, SelectWindowSize), 0);
-				values = new ChartValues<double> { adaptiveStandardDeviation, min, p1_quantile, p5_quantile, average };
+				values = new ChartValues<double> { adaptiveStandardDeviation, min, p0dot1_quantile, p1_quantile, p5_quantile, average, max };
 			}
 
 			StatisticCollection = new SeriesCollection
@@ -463,9 +466,9 @@ namespace CapFrameX.ViewModel
 			};
 
 			if (!UseAdaptiveStandardDeviation)
-				ParameterLabels = new[] { "Min", "1%", "5%", "Average" };
+				ParameterLabels = new[] { "Min", "0.1%", "1%", "5%", "Average", "Max" };
 			else
-				ParameterLabels = new[] { "Adaptive STD", "Min", "1%", "5%", "Average" };			
+				ParameterLabels = new[] { "Adaptive STD", "Min", "0.1%", "1%", "5%", "Average", "Max" };			
 		}
 
 		private void SetAdvancedStaticChart(IList<double> frameTimes)
@@ -540,6 +543,7 @@ namespace CapFrameX.ViewModel
 			SeriesCollection?.Clear();
 			LShapeCollection?.Clear();
 			StatisticCollection?.Clear();
+			AdvancedStatisticCollection?.Clear();
 		}
 	}
 }
