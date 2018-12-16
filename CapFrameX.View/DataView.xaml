@@ -25,6 +25,7 @@
 			</ResourceDictionary.MergedDictionaries>
 			<mvvm:ZoomingModeConverter x:Key="ZoomingModeConverter"></mvvm:ZoomingModeConverter>
 			<mvvm:BoolToVisibilityConverter x:Key="TrueToCollapsedConverter" TrueValue="Collapsed" FalseValue="Visible"/>
+			<mvvm:BoolToVisibilityConverter x:Key="FalseToCollapsedConverter" TrueValue="Visible" FalseValue="Collapsed"/>
 			<Style x:Key="CleanSeparator" TargetType="lvc:Separator">
 				<Setter Property="IsEnabled" Value="False"></Setter>
 			</Style>
@@ -44,7 +45,11 @@
 						<ColumnDefinition Width="1*"></ColumnDefinition>
 						<ColumnDefinition Width="Auto"></ColumnDefinition>
 					</Grid.ColumnDefinitions>
-					<lvc:CartesianChart Grid.Column="0" Height="Auto" MouseDoubleClick="ResetChart_MouseDoubleClick" DisableAnimations="True" Series="{Binding SeriesCollection}" Zoom="{Binding ZoomingMode}" >
+					<Grid.RowDefinitions>
+						<RowDefinition Height="1*"></RowDefinition>
+						<RowDefinition Height="Auto"></RowDefinition>
+					</Grid.RowDefinitions>
+					<lvc:CartesianChart Grid.Column="0" Grid.Row="0" MouseDoubleClick="ResetChart_MouseDoubleClick" DisableAnimations="True" Series="{Binding SeriesCollection}" Zoom="{Binding ZoomingMode}" >
 						<lvc:CartesianChart.AxisX>
 							<lvc:Axis Title="Samples" Name="FrametimesX" Separator="{x:Static lvc:DefaultAxes.CleanSeparator}" Foreground="Black"/>
 						</lvc:CartesianChart.AxisX>
@@ -52,6 +57,16 @@
 							<lvc:Axis Title="ms" Name="FrametimesY" Foreground="Black"/>
 						</lvc:CartesianChart.AxisY>
 					</lvc:CartesianChart>
+					<Slider Grid.Column="0" Grid.Row="1" TickFrequency="1"
+							Visibility="{Binding ElementName=SlidingWindowCheckBox, Path=IsChecked, Converter={StaticResource FalseToCollapsedConverter}}"
+							IsSnapToTickEnabled="True"
+							Margin="0 10 0 10"
+							Orientation="Horizontal"
+							TickPlacement="BottomRight"
+							Minimum="0"
+							Maximum="{Binding FrametimeSliderMaximum}"
+							Value="{Binding FrametimeSliderValue}"
+							IsSelectionRangeEnabled="True" />
 					<Expander Grid.Column="1" ExpandDirection="Left">
 						<Expander.Header>
 							<TextBlock Text="System Info" RenderTransformOrigin=".5,.5">
@@ -119,16 +134,6 @@
 				</lvc:CartesianChart>
 			</TabItem>
 		</TabControl>
-		<Slider Grid.Row="1" 
-				TickFrequency="1"
-				IsSnapToTickEnabled="True"
-				Margin="0 10 0 10"
-				Orientation="Horizontal"
-				TickPlacement="BottomRight"
-				Minimum="0"
-				Maximum="{Binding FrametimeSliderMaximum}"
-				Value="{Binding FrametimeSliderValue}"
-				IsSelectionRangeEnabled="True" />
 		<Expander Grid.Row="2" Name="SettingsExpander" Background="#F5F5F5" Margin="0 10 0 10" Header="Data/Chart Settings" HorizontalAlignment="Stretch">
 			<Grid>
 				<Grid.ColumnDefinitions>
@@ -143,9 +148,9 @@
 							UseLayoutRounding="True"
 							SnapsToDevicePixels="True">
 						<StackPanel Margin="0 10 0 10">
-							<CheckBox IsThreeState="False"
-													IsChecked="{Binding UseSlidingWindow}"
-													Margin="0 0 0 0">
+							<CheckBox Name="SlidingWindowCheckBox" IsThreeState="False"
+									  IsChecked="{Binding UseSlidingWindow}"
+									  Margin="0 0 0 0">
 								Sliding window
 							</CheckBox>
 							<StackPanel Orientation="Horizontal">

@@ -289,33 +289,35 @@ namespace CapFrameX.ViewModel
 			if (_session?.FrameTimes == null || !_session.FrameTimes.Any())
 				return frametimes;
 
-			if (!UseSlidingWindow)
+			if (RemoveOutliers)
 			{
-				if (RemoveOutliers)
-				{
-					// ToDo: Make method selectable
-					frametimes = _frametimeStatisticProvider?.GetOutlierAdjustedSequence(_session.FrameTimes,
-						ERemoveOutlierMethod.DeciPercentile);
-				}
-				else
-				{
-					frametimes = _session?.FrameTimes;
-				}
+				// ToDo: Make method selectable
+				frametimes = _frametimeStatisticProvider?.GetOutlierAdjustedSequence(_session.FrameTimes,
+					ERemoveOutlierMethod.DeciPercentile);
 			}
 			else
+			{
+				frametimes = _session?.FrameTimes;
+			}
+
+			if (UseSlidingWindow)
 			{
 				if (Double.TryParse(SelectedChartLengthValue, NumberStyles.Any, CultureInfo.InvariantCulture, out double length))
 				{
 					double startTime = (_session.LastFrameTime - length) * FrametimeSliderValue / SCALE_RESOLUTION;
 					double endTime = startTime + length;
 
-					for (int i = 0; i < _session.FrameTimes.Count; i++)
+					IList<double> frametimesSubset = new List<double>();
+
+					for (int i = 0; i < frametimes.Count; i++)
 					{
 						if (_session.FrameStart[i] >= startTime && _session.FrameStart[i] <= endTime)
 						{
-							frametimes.Add(_session.FrameTimes[i]);
+							frametimesSubset.Add(frametimes[i]);
 						}
 					}
+
+					return frametimesSubset;
 				}
 			}
 
