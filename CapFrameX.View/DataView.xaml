@@ -7,6 +7,7 @@
 			 xmlns:mvvm="clr-namespace:CapFrameX.MVVM.Converter;assembly=CapFrameX.MVVM"
 			 xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              xmlns:local="clr-namespace:CapFrameX.View"
+			 xmlns:ocatinterface="clr-namespace:CapFrameX.OcatInterface;assembly=CapFrameX.OcatInterface"
 			 xmlns:prism="http://prismlibrary.com/"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800"
@@ -38,14 +39,70 @@
 		</Grid.RowDefinitions>
 		<TabControl Grid.Row="0" Background="#F5F5F5" >
 			<TabItem Header="Frametimes">
-				<lvc:CartesianChart Height="Auto" MouseDoubleClick="ResetChart_MouseDoubleClick" DisableAnimations="True" Series="{Binding SeriesCollection}" Zoom="{Binding ZoomingMode}" >
-					<lvc:CartesianChart.AxisX>
-						<lvc:Axis Title="Samples" Name="FrametimesX" Separator="{x:Static lvc:DefaultAxes.CleanSeparator}" Foreground="Black"/>
-					</lvc:CartesianChart.AxisX>
-					<lvc:CartesianChart.AxisY>
-						<lvc:Axis Title="ms" Name="FrametimesY" Foreground="Black"/>
-					</lvc:CartesianChart.AxisY>
-				</lvc:CartesianChart>
+				<Grid>
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="1*"></ColumnDefinition>
+						<ColumnDefinition Width="Auto"></ColumnDefinition>
+					</Grid.ColumnDefinitions>
+					<lvc:CartesianChart Grid.Column="0" Height="Auto" MouseDoubleClick="ResetChart_MouseDoubleClick" DisableAnimations="True" Series="{Binding SeriesCollection}" Zoom="{Binding ZoomingMode}" >
+						<lvc:CartesianChart.AxisX>
+							<lvc:Axis Title="Samples" Name="FrametimesX" Separator="{x:Static lvc:DefaultAxes.CleanSeparator}" Foreground="Black"/>
+						</lvc:CartesianChart.AxisX>
+						<lvc:CartesianChart.AxisY>
+							<lvc:Axis Title="ms" Name="FrametimesY" Foreground="Black"/>
+						</lvc:CartesianChart.AxisY>
+					</lvc:CartesianChart>
+					<Expander Grid.Column="1" ExpandDirection="Left">
+						<Expander.Header>
+							<TextBlock Text="System Info" RenderTransformOrigin=".5,.5">
+								<TextBlock.LayoutTransform>
+									<RotateTransform Angle="90" />
+								</TextBlock.LayoutTransform>
+							</TextBlock>
+						</Expander.Header>
+						<ScrollViewer VerticalScrollBarVisibility="Visible">
+							<ItemsControl ItemsSource="{Binding SystemInfos}" Grid.IsSharedSizeScope="True" Background="#e6e6e6" >
+								<ItemsControl.ItemTemplate>
+									<DataTemplate DataType="{x:Type ocatinterface:SystemInfo}">
+										<Border x:Name="Border"
+											Padding="8"
+											BorderThickness="0 0 0 1"
+											BorderBrush="{DynamicResource MaterialDesignDivider}">
+											<Grid>
+												<Grid.ColumnDefinitions>
+													<ColumnDefinition SharedSizeGroup="Checkerz" />
+													<ColumnDefinition />
+												</Grid.ColumnDefinitions>
+												<ToggleButton VerticalAlignment="Center"
+															IsChecked="False"
+															Style="{StaticResource MaterialDesignActionLightToggleButton}"
+															Content="{Binding Letter}" />
+												<StackPanel Margin="8 0 0 0"
+														Grid.Column="1">
+													<TextBlock FontWeight="Bold"
+															Text="{Binding Key}" />
+													<TextBlock Text="{Binding Value}" TextWrapping="Wrap"
+															   Width="180"
+															   LineStackingStrategy="BlockLineHeight"
+															   FontSize="12"
+															   LineHeight="14"
+															   MaxHeight="52"/>
+												</StackPanel>
+											</Grid>
+										</Border>
+										<DataTemplate.Triggers>
+											<DataTrigger Binding="{Binding IsSelected}" Value="True">
+												<Setter TargetName="Border"
+													Property="Background"
+													Value="{DynamicResource MaterialDesignSelection}" />
+											</DataTrigger>
+										</DataTemplate.Triggers>
+									</DataTemplate>
+								</ItemsControl.ItemTemplate>
+							</ItemsControl>
+						</ScrollViewer>
+					</Expander>
+				</Grid>
 			</TabItem>
 			<TabItem Header="L-Shape">
 				<lvc:CartesianChart MouseDoubleClick="ResetChart_MouseDoubleClick" Series="{Binding LShapeCollection}" Zoom="{Binding ZoomingMode}" >
@@ -127,11 +184,6 @@
 													IsChecked="{Binding RemoveOutliers}"
 													Margin="0 0 0 0">
 								Remove outliers
-							</CheckBox>
-							<CheckBox IsThreeState="False"
-													IsChecked="{Binding UseAdaptiveStandardDeviation}"
-													Margin="0 0 0 0">
-								Adaptive standard deviation
 							</CheckBox>
 							<StackPanel Orientation="Horizontal">
 								<TextBlock VerticalAlignment="Bottom" Height="12">Window size</TextBlock>

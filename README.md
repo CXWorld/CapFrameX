@@ -7,24 +7,32 @@ Frametimes analysis tool compatible with OCAT (in process of developing)
 * Automatic file record (OCAT) management/directory observer
 * Selectable records in DataGrid/ searching in DataGrid
 * Displaying frametime graph and moving average
+* Scrollable sliding window on frametime data
 * Calculating and displaying basic parameter (average, p-quantiles, min)
 * Calculating and displaying adaptive standard deviation
+* Calculating and displaying stuttering percentage
+* Displaying system info from OCAT record file
 * Removing outliers
 * Calculating and displaying L-shape curve
-* Minimal WIX installer
+* Minimal WiX installer
 
 # Requirements
 * .NET 4.7
-* OCAT (capturing frametime data)
+* OCAT 1.3 (capturing frametime data)
 
-# Dev Roadmap
+# Build requirements
+* MS Visual Studio 2017/2015 (Community Edition)
+* WiX V3.11.1
+* WiX Toolset Visual Studio 2017/2015 Extension
+
+# Dev roadmap
 * Application architecture based on MVVM pattern und DI (done)
 * UI design (work in progess)
 * OCAT interface(work in progess)
 * Advanced statistical methods (work in progess)
 * Record comparing
 * Database management
-* WIX installer(work in progess)
+* WiX installer(work in progess)
 * First beta phase
 * Special features/next steps
 

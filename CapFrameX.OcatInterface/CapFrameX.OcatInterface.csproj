@@ -80,6 +80,7 @@
     <Compile Include="RecordManager.cs" />
     <Compile Include="RecordDirectoryObserver.cs" />
     <Compile Include="Session.cs" />
+    <Compile Include="SystemInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

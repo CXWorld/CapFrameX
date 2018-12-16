@@ -41,11 +41,11 @@ namespace CapFrameX.ViewModel
 		private int _firstNFrames;
 		private int _lastNFrames;
 		private bool _removeOutliers;
-		private bool _useAdaptiveStandardDeviation = true;
 		private bool _useSlidingWindow = false;
 		private string _selectedChartLengthValue;
 		private double _frametimeSliderMaximum;
 		private double _frametimeSliderValue;
+		private List<SystemInfo> _systemInfos;
 
 		public Func<double, string> ParameterFormatter { get; set; } = value => value.ToString("N");
 
@@ -78,7 +78,7 @@ namespace CapFrameX.ViewModel
 				RaisePropertyChanged();
 			}
 		}
-		
+
 		public SeriesCollection StatisticCollection
 		{
 			get { return _statisticCollection; }
@@ -162,17 +162,6 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-		public bool UseAdaptiveStandardDeviation
-		{
-			get { return _useAdaptiveStandardDeviation; }
-			set
-			{
-				_useAdaptiveStandardDeviation = value;
-				RaisePropertyChanged();
-				UpdateCharts();
-			}
-		}
-
 		public int SelectWindowSize
 		{
 			get { return _selectWindowSize; }
@@ -228,6 +217,11 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
+		public List<SystemInfo> SystemInfos
+		{
+			get { return _systemInfos; }
+			set { _systemInfos = value; RaisePropertyChanged(); }
+		}
 
 		public IList<int> WindowSizes { get; }
 
@@ -282,6 +276,7 @@ namespace CapFrameX.ViewModel
 								{
 									_session = msg.OcatSession;
 									_recordInfo = msg.RecordInfo;
+									SystemInfos = RecordManager.GetSystemInfos(msg.OcatSession);
 									UpdateCharts();
 								}
 							});
@@ -401,12 +396,8 @@ namespace CapFrameX.ViewModel
 			frametimeValues.WithQuality(Quality.High);
 
 			var movingAverageValues = new GearedValues<double>();
-
-			if (UseAdaptiveStandardDeviation)
-			{
-				movingAverageValues.AddRange(_frametimeStatisticProvider.GetMovingAverage(frametimes, SelectWindowSize));
-				movingAverageValues.WithQuality(Quality.High);
-			}
+			movingAverageValues.AddRange(_frametimeStatisticProvider.GetMovingAverage(frametimes, SelectWindowSize));
+			movingAverageValues.WithQuality(Quality.High);
 
 			SeriesCollection = new SeriesCollection()
 			{
@@ -444,15 +435,8 @@ namespace CapFrameX.ViewModel
 			var p5_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fpsSequence, 0.05), 0);
 			var min = Math.Round(fpsSequence.Min(), 0);
 
-			IChartValues values = null;
-
-			if (!UseAdaptiveStandardDeviation)
-				values = new ChartValues<double> { min, p0dot1_quantile, p1_quantile, p5_quantile, average, max };
-			else
-			{
-				var adaptiveStandardDeviation = Math.Round(_frametimeStatisticProvider.GetAdaptiveStandardDeviation(fpsSequence, SelectWindowSize), 0);
-				values = new ChartValues<double> { adaptiveStandardDeviation, min, p0dot1_quantile, p1_quantile, p5_quantile, average, max };
-			}
+			var adaptiveStandardDeviation = Math.Round(_frametimeStatisticProvider.GetAdaptiveStandardDeviation(fpsSequence, SelectWindowSize), 0);
+			IChartValues values = new ChartValues<double> { adaptiveStandardDeviation, min, p0dot1_quantile, p1_quantile, p5_quantile, average, max };
 
 			StatisticCollection = new SeriesCollection
 			{
@@ -465,10 +449,7 @@ namespace CapFrameX.ViewModel
 				}
 			};
 
-			if (!UseAdaptiveStandardDeviation)
-				ParameterLabels = new[] { "Min", "0.1%", "1%", "5%", "Average", "Max" };
-			else
-				ParameterLabels = new[] { "Adaptive STD", "Min", "0.1%", "1%", "5%", "Average", "Max" };			
+			ParameterLabels = new[] { "Adaptive STD", "Min", "0.1%", "1%", "5%", "Average", "Max" };
 		}
 
 		private void SetAdvancedStaticChart(IList<double> frameTimes)

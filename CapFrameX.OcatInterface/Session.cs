@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace CapFrameX.OcatInterface
 {
@@ -23,5 +22,17 @@ namespace CapFrameX.OcatInterface
         public int ValidReproFrames { get; set; }
         public double LastFrameTime { get; set; }
         public double LastReprojectionTime { get; set; }
+		// System info
+		public string MotherboardName { get; set; }
+		public string OsVersion { get; set; }
+		public string ProcessorName { get; set; }
+		public string SystemRamInfo { get; set; }
+		public string BaseDriverVersion { get; set; }
+		public string DriverPackage { get; set; }
+		public string NumberGPUs { get; set; }
+		public string GraphicCardName { get; set; }
+		public string GPUCoreClock { get; set; }
+		public string GPUMemoryClock { get; set; }
+		public string GPUMemory { get; set; }
 	}
 }
