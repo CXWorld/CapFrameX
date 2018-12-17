@@ -156,7 +156,7 @@
 							<StackPanel Orientation="Horizontal">
 								<TextBlock VerticalAlignment="Center">Chart length(sec)</TextBlock>
 								<ComboBox materialDesign:HintAssist.Hint="(editable)"
-												  Width="Auto"
+												  Width="40"
 												  Margin="10 0 0 0"
 												  HorizontalAlignment="Left"
 												  VerticalAlignment="Center"
@@ -191,7 +191,7 @@
 								Remove outliers
 							</CheckBox>
 							<StackPanel Orientation="Horizontal">
-								<TextBlock VerticalAlignment="Bottom" Height="12">Window size</TextBlock>
+								<TextBlock VerticalAlignment="Center" Height="12">Window size</TextBlock>
 								<ComboBox materialDesign:HintAssist.Hint="(editable)"
 												  Width="40"
 												  Margin="10 0 0 0"

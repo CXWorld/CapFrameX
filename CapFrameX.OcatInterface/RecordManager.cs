@@ -8,6 +8,21 @@ namespace CapFrameX.OcatInterface
 {
 	public static class RecordManager
 	{
+		public static IList<double> GetFrametimesWindow(Session session, double startTime, double endTime)
+		{
+			IList<double> frametimesSubset = new List<double>();
+
+			for (int i = 0; i < session.FrameTimes.Count; i++)
+			{
+				if (session.FrameStart[i] >= startTime && session.FrameStart[i] <= endTime)
+				{
+					frametimesSubset.Add(session.FrameTimes[i]);
+				}
+			}
+
+			return frametimesSubset;
+		}
+
 		public static List<SystemInfo> GetSystemInfos(Session session)
 		{
 			var systemInfos = new List<SystemInfo>();
@@ -261,8 +276,6 @@ namespace CapFrameX.OcatInterface
 							indexNumberGPUs > 0 && indexGraphicCardName > 0 && indexGPUCoreClock > 0 &&
 							indexGPUMemoryClock > 0 && indexGPUMemory > 0)
 						{
-							session.MotherboardName = values[indexMotherboardName];
-
 							session.MotherboardName = values[indexMotherboardName];
 							session.OsVersion = values[indexOsVersion];
 							session.ProcessorName = values[indexProcessorName];

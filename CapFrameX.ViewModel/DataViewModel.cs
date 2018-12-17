@@ -291,33 +291,42 @@ namespace CapFrameX.ViewModel
 
 			if (RemoveOutliers)
 			{
-				// ToDo: Make method selectable
-				frametimes = _frametimeStatisticProvider?.GetOutlierAdjustedSequence(_session.FrameTimes,
-					ERemoveOutlierMethod.DeciPercentile);
+				if (UseSlidingWindow)
+				{
+					if (Double.TryParse(SelectedChartLengthValue, NumberStyles.Any, CultureInfo.InvariantCulture, out double length))
+					{
+						double startTime = (_session.LastFrameTime - length) * FrametimeSliderValue / SCALE_RESOLUTION;
+						double endTime = startTime + length;
+
+						var frametimesSubset = RecordManager.GetFrametimesWindow(_session, startTime, endTime);
+
+						// ToDo: Make method selectable
+						frametimes = _frametimeStatisticProvider?.GetOutlierAdjustedSequence(frametimesSubset, 
+							ERemoveOutlierMethod.DeciPercentile);
+					}
+				}
+				else
+				{
+					// ToDo: Make method selectable
+					frametimes = _frametimeStatisticProvider?.GetOutlierAdjustedSequence(_session.FrameTimes, 
+						ERemoveOutlierMethod.DeciPercentile);
+				}
 			}
 			else
 			{
-				frametimes = _session?.FrameTimes;
-			}
-
-			if (UseSlidingWindow)
-			{
-				if (Double.TryParse(SelectedChartLengthValue, NumberStyles.Any, CultureInfo.InvariantCulture, out double length))
+				if (UseSlidingWindow)
 				{
-					double startTime = (_session.LastFrameTime - length) * FrametimeSliderValue / SCALE_RESOLUTION;
-					double endTime = startTime + length;
-
-					IList<double> frametimesSubset = new List<double>();
-
-					for (int i = 0; i < frametimes.Count; i++)
+					if (Double.TryParse(SelectedChartLengthValue, NumberStyles.Any, CultureInfo.InvariantCulture, out double length))
 					{
-						if (_session.FrameStart[i] >= startTime && _session.FrameStart[i] <= endTime)
-						{
-							frametimesSubset.Add(frametimes[i]);
-						}
-					}
+						double startTime = (_session.LastFrameTime - length) * FrametimeSliderValue / SCALE_RESOLUTION;
+						double endTime = startTime + length;
 
-					return frametimesSubset;
+						frametimes = RecordManager.GetFrametimesWindow(_session, startTime, endTime);
+					}
+				}
+				else
+				{
+					frametimes = _session?.FrameTimes;
 				}
 			}
 
@@ -436,8 +445,8 @@ namespace CapFrameX.ViewModel
 			var p1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fpsSequence, 0.01), 0);
 			var p5_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fpsSequence, 0.05), 0);
 			var min = Math.Round(fpsSequence.Min(), 0);
-
 			var adaptiveStandardDeviation = Math.Round(_frametimeStatisticProvider.GetAdaptiveStandardDeviation(fpsSequence, SelectWindowSize), 0);
+
 			IChartValues values = new ChartValues<double> { adaptiveStandardDeviation, min, p0dot1_quantile, p1_quantile, p5_quantile, average, max };
 
 			StatisticCollection = new SeriesCollection

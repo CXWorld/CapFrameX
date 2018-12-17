@@ -27,6 +27,7 @@ namespace CapFrameX.OcatInterface
 		{
 			// ToDo: Get from config
 			var documentFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+			// compatible with OCAT V1.3
 			_recordDirectory = Path.Combine(documentFolder, @"OCAT\Captures");
 
 			if (!Directory.Exists(_recordDirectory))
@@ -45,23 +46,11 @@ namespace CapFrameX.OcatInterface
 			_recordDeletedStream = new Subject<string>();
 		}
 
-		private void WatcherCreated(object sender, FileSystemEventArgs e)
-		{
-			// ToDo: Remove test output
-			Console.WriteLine("Created, NAME: " + e.Name);
-			Console.WriteLine("Created, FULLPATH: " + e.FullPath);
-
-			_recordCreatedStream.OnNext(e.FullPath);
-		}
+		private void WatcherCreated(object sender, FileSystemEventArgs e) 
+			=> _recordCreatedStream.OnNext(e.FullPath);
 
 		private void WatcherDeleted(object sender, FileSystemEventArgs e)
-		{
-			// ToDo: Remove test output
-			Console.WriteLine("Deleted, NAME: " + e.Name);
-			Console.WriteLine("Deleted, FULLPATH: " + e.FullPath);
-
-			_recordDeletedStream.OnNext(e.FullPath);
-		}
+			=> _recordDeletedStream.OnNext(e.FullPath);
 
 		public IEnumerable<FileInfo> GetAllRecordFileInfo()
 		{
