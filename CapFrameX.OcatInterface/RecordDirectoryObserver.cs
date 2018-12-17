@@ -46,8 +46,11 @@ namespace CapFrameX.OcatInterface
 			_recordDeletedStream = new Subject<string>();
 		}
 
-		private void WatcherCreated(object sender, FileSystemEventArgs e) 
-			=> _recordCreatedStream.OnNext(e.FullPath);
+		private void WatcherCreated(object sender, FileSystemEventArgs e)
+		{
+			if (!e.FullPath.Contains("CapFrameX"))
+				_recordCreatedStream.OnNext(e.FullPath);
+		}
 
 		private void WatcherDeleted(object sender, FileSystemEventArgs e)
 			=> _recordDeletedStream.OnNext(e.FullPath);
@@ -55,7 +58,8 @@ namespace CapFrameX.OcatInterface
 		public IEnumerable<FileInfo> GetAllRecordFileInfo()
 		{
 			return Directory.GetFiles(_recordDirectory, "*.csv",
-										 SearchOption.TopDirectoryOnly).Select(file => new FileInfo(file));
+										 SearchOption.TopDirectoryOnly).Where(file => !file
+										 .Contains("CapFrameX")).Select(file => new FileInfo(file));
 		}
 	}
 }
