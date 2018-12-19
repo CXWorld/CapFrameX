@@ -3,13 +3,16 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:CapFrameX.View"
 			 xmlns:dragdrop="urn:gong-wpf-dragdrop"
 			 xmlns:prism="http://prismlibrary.com/"
 			 xmlns:mvvm="clr-namespace:CapFrameX.MVVM.Converter;assembly=CapFrameX.MVVM"
+			 xmlns:ocatinterface="clr-namespace:CapFrameX.OcatInterface;assembly=CapFrameX.OcatInterface"
+			 xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              mc:Ignorable="d"
 			 xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
              d:DesignHeight="450" d:DesignWidth="800"
+			 Background="{DynamicResource MaterialDesignPaper}"
+             FontFamily="{StaticResource MaterialDesignFont}"
 			 prism:ViewModelLocator.AutoWireViewModel="True">
 	<UserControl.Resources>
 		<ResourceDictionary>
@@ -21,24 +24,105 @@
 				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Slider.xaml" />
 			</ResourceDictionary.MergedDictionaries>
 			<mvvm:ZoomingModeConverter x:Key="ZoomingModeConverter"></mvvm:ZoomingModeConverter>
-			<mvvm:BoolToVisibilityConverter x:Key="BoolToHiddenConverter"/>
+			<mvvm:BoolToVisibilityConverter x:Key="FalseToCollapsedConverter" FalseValue="Collapsed" TrueValue="Visible"/>
+			<mvvm:BoolToVisibilityConverter x:Key="TrueToVisibleConverter" FalseValue="Visible" TrueValue="Collapsed"/>
 		</ResourceDictionary>
 	</UserControl.Resources>
 	<Grid>
-		<Grid dragdrop:DragDrop.IsDropTarget="True"
-				dragdrop:DragDrop.DropHandler="{Binding}"
-				dragdrop:DragDrop.UseDefaultDragAdorner="True"
-				dragdrop:DragDrop.DropTargetAdornerBrush="White"
-				dragdrop:DragDrop.DefaultDragAdornerOpacity="0.5"
-				dragdrop:DragDrop.UseDefaultEffectDataTemplate="False">
-			<Image Visibility="{Binding InitialIconVisibility, Converter={StaticResource BoolToHiddenConverter}}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" 
-					   Source="/CapFrameX;component/Icons/CX_Icon.png"
-                        Width="100"
-                        Height="100"
-                        Margin="0">
-				</Image>
-			<lvc:CartesianChart Visibility="Collapsed" DisableAnimations="True" Series="{Binding SeriesCollection}" Zoom="{Binding ZoomingMode}" >
-			</lvc:CartesianChart>
-		</Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="1*"></RowDefinition>
+			<RowDefinition Height="Auto"></RowDefinition>
+		</Grid.RowDefinitions>
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="1*"></ColumnDefinition>
+			<ColumnDefinition Width="300"></ColumnDefinition>
+		</Grid.ColumnDefinitions>
+		<StackPanel Margin="10 10 10 0" Grid.Row="0" Grid.RowSpan="2" Grid.Column="1" Orientation="Vertical">
+			<TextBox IsReadOnly="True" Background="#e6e6e6" materialDesign:HintAssist.Hint="Comparisons" />
+			<Border Margin="0 10 0 0" BorderThickness="1" BorderBrush="#CCC" Height="300">
+				<ScrollViewer VerticalScrollBarVisibility="Auto">
+					<Grid>
+						<Grid.RowDefinitions>
+							<RowDefinition Height="1*"></RowDefinition>
+							<RowDefinition Height="Auto"></RowDefinition>
+						</Grid.RowDefinitions>
+						<Border VerticalAlignment="Center" HorizontalAlignment="Center">
+							<Image Grid.Row="0" Visibility="{Binding InitialIconVisibility, Converter={StaticResource FalseToCollapsedConverter}}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" 
+								   Name="ComparisonImage"
+								   dragdrop:DragDrop.IsDropTarget="True"
+								   dragdrop:DragDrop.DropHandler="{Binding}"
+								   dragdrop:DragDrop.UseDefaultDragAdorner="True"
+								   dragdrop:DragDrop.DropTargetAdornerBrush="White"
+								   dragdrop:DragDrop.DefaultDragAdornerOpacity="0.5"
+								   dragdrop:DragDrop.UseDefaultEffectDataTemplate="False"
+								   Source="/CapFrameX;component/Icons/CX_Icon.png"
+								   Width="80"
+								   Height="80">
+							</Image>
+						</Border>
+						<ItemsControl Grid.Row="0" ItemsSource="{Binding ComparisonRecords}" Grid.IsSharedSizeScope="True" Background="#e6e6e6" 
+									  Visibility="{Binding InitialIconVisibility, Converter={StaticResource TrueToVisibleConverter}}"
+									  Name="ComparisonRecordItemControl"
+									  dragdrop:DragDrop.IsDropTarget="True"
+									  dragdrop:DragDrop.IsDragSource="True"
+									  dragdrop:DragDrop.DropHandler="{Binding}"
+									  dragdrop:DragDrop.UseDefaultDragAdorner="True"
+									  dragdrop:DragDrop.DropTargetAdornerBrush="White"
+									  dragdrop:DragDrop.DefaultDragAdornerOpacity="0.5"
+									  dragdrop:DragDrop.UseDefaultEffectDataTemplate="False">
+							<ItemsControl.ItemTemplate>
+								<DataTemplate DataType="{x:Type ocatinterface:ComparisonRecordInfo}">
+									<Border x:Name="Border"
+									Padding="8"
+									BorderThickness="0 0 0 1"
+									BorderBrush="{DynamicResource MaterialDesignDivider}">
+										<Grid>
+											<Grid.ColumnDefinitions>
+												<ColumnDefinition SharedSizeGroup="Checkerz" />
+												<ColumnDefinition />
+											</Grid.ColumnDefinitions>
+											<ToggleButton VerticalAlignment="Center"
+														  IsChecked="False"
+														  Style="{StaticResource MaterialDesignActionLightToggleButton}"
+														  Content="{Binding Letter}" />
+											<StackPanel Margin="8 0 0 0"
+														Grid.Column="1">
+												<TextBlock FontWeight="Bold" Text="{Binding Game}" />
+												<TextBlock Text="{Binding InfoText}" TextWrapping="Wrap"
+															   Width="220"
+															   LineStackingStrategy="BlockLineHeight"
+															   FontSize="12"
+															   LineHeight="14"
+															   MaxHeight="52"/>
+											</StackPanel>
+										</Grid>
+									</Border>
+									<DataTemplate.Triggers>
+										<DataTrigger Binding="{Binding IsSelected}" Value="True">
+											<Setter TargetName="Border"
+													Property="Background"
+													Value="{DynamicResource MaterialDesignSelection}" />
+										</DataTrigger>
+									</DataTemplate.Triggers>
+								</DataTemplate>
+							</ItemsControl.ItemTemplate>
+						</ItemsControl>
+						<ItemsControl Grid.Row="1" 
+									  Name="DelteRecordItemControl"
+									  dragdrop:DragDrop.IsDropTarget="True"
+									  dragdrop:DragDrop.DropHandler="{Binding}"
+									  dragdrop:DragDrop.UseDefaultEffectDataTemplate="False">
+							<Border Background="#CCC" Height="40">
+								<materialDesign:PackIcon Kind="DeleteForeverOutline" VerticalAlignment="Center" HorizontalAlignment="Center"
+														 Width="32" Height="32" />
+							</Border>
+						</ItemsControl>
+					</Grid>
+				</ScrollViewer>
+			</Border>
+		</StackPanel>
+		<lvc:CartesianChart Grid.Row="0" Grid.Column="0" Visibility="{Binding InitialIconVisibility, Converter={StaticResource TrueToVisibleConverter}}" 
+							DisableAnimations="True" Series="{Binding SeriesCollection}" Zoom="{Binding ZoomingMode}" >
+		</lvc:CartesianChart>
 	</Grid>
 </UserControl>

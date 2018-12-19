@@ -508,9 +508,9 @@ namespace CapFrameX.ViewModel
 					StrokeThickness = 1,
 					LineSmoothness= 1,
 					PointGeometrySize = 10,
-					PointGeometry = DefaultGeometries.Diamond,
+					PointGeometry = DefaultGeometries.Triangle,
 					DataLabels = true,
-					LabelPoint = point => point.X + "%," + Math.Round(point.Y, 1) + " ms"
+					LabelPoint = point => point.X + "%, " + Math.Round(point.Y, 1).ToString(CultureInfo.InvariantCulture) + " ms"
 				}
 			};
 

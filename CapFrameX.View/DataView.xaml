@@ -67,7 +67,7 @@
 							Maximum="{Binding FrametimeSliderMaximum}"
 							Value="{Binding FrametimeSliderValue}"
 							IsSelectionRangeEnabled="True" />
-					<Expander Grid.Column="1" ExpandDirection="Left">
+					<Expander Background="#e6e6e6" Grid.Column="1" Grid.Row="0" Grid.RowSpan="2" ExpandDirection="Left">
 						<Expander.Header>
 							<TextBlock Text="System Info" RenderTransformOrigin=".5,.5">
 								<TextBlock.LayoutTransform>
