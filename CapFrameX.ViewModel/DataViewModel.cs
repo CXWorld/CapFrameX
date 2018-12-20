@@ -500,7 +500,7 @@ namespace CapFrameX.ViewModel
 
 			LShapeCollection = new SeriesCollection()
 			{
-				new LineSeries
+				new GLineSeries
 				{
 					Values = quantileValues,
 					Stroke = new SolidColorBrush(Color.FromRgb(139,35,35)),
