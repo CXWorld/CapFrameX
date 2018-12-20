@@ -21,9 +21,10 @@ Frametimes analysis tool compatible with OCAT (in process of developing)
 * OCAT 1.3 (capturing frametime data)
 
 # Build requirements
-* MS Visual Studio 2017/2015 (Community Edition)
+* MS Visual Studio 2017 only (Community Edition)
 * WiX V3.11.1
-* WiX Toolset Visual Studio 2017/2015 Extension
+* WiX Toolset Visual Studio 2017 Extension
+* WiX Toolset and VS Extension: http://wixtoolset.org/releases/
 
 # Dev roadmap
 * Application architecture based on MVVM pattern und DI (done)
