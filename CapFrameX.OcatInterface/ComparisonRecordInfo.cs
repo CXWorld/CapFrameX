@@ -8,7 +8,8 @@ namespace CapFrameX.OcatInterface
 		public string Letter => Game.First().ToString();
 		public string Game { get; set; }
 		public string InfoText { get; set; }
-		public Session Session { get; set; }
+        public string DateTime { get; set; }
+        public Session Session { get; set; }
 		public SolidColorBrush Color { get; set; }
 	}
 }

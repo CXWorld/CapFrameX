@@ -1,4 +1,5 @@
-﻿using CapFrameX.ViewModel;
+﻿using CapFrameX.Statistics;
+using CapFrameX.ViewModel;
 using System.ComponentModel;
 using System.Windows.Controls;
 
@@ -16,7 +17,7 @@ namespace CapFrameX.View
 			// Design time!
 			if (DesignerProperties.GetIsInDesignMode(this))
 			{
-				DataContext = new ComparisonDataViewModel();
+				DataContext = new ComparisonDataViewModel(new FrametimeStatisticProvider());
 			}
 		}
 
