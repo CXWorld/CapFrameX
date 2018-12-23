@@ -28,6 +28,8 @@ namespace CapFrameX.ViewModel
 				new SolidColorBrush(Color.FromRgb(35, 50, 139)),
 				// kind of red
 				new SolidColorBrush(Color.FromRgb(139, 35, 50)),
+                // kind of dark red
+                new SolidColorBrush(Color.FromRgb(89, 22, 32)),
 				// kind of yellow
 				new SolidColorBrush(Color.FromRgb(139, 123, 35)),
 				// kind of pink
@@ -111,13 +113,23 @@ namespace CapFrameX.ViewModel
                     DataLabels = true
                 },
 
+                 //1% quantile
+                new ColumnSeries
+                {
+                    Title = "1%",
+                    Values = new ChartValues<double>(),
+                    // Kind of red
+                    Fill = _comparisonBrushes[2],
+                    DataLabels = true
+                },
+
                 //0.1% quantile
                 new ColumnSeries
                 {
                     Title = "0.1%",
                     Values = new ChartValues<double>(),
-                    // Kind of red
-                    Fill = _comparisonBrushes[2],
+                    // Kind of dark red
+                    Fill = _comparisonBrushes[3],
                     DataLabels = true
                 }
             };
@@ -176,13 +188,17 @@ namespace CapFrameX.ViewModel
         {
             var fps = comparisonInfo.Session.FrameTimes.Select(ft => 1000 / ft).ToList();
             var average = Math.Round(fps.Average(), 0);
+            var p1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.01));
             var p0dot1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.001));
 
             // Average
             ComparisonColumnChartSeriesCollection[0].Values.Add(average);
 
+            //1% quantile
+            ComparisonColumnChartSeriesCollection[1].Values.Add(p1_quantile);
+
             //0.1% quantile
-            ComparisonColumnChartSeriesCollection[1].Values.Add(p0dot1_quantile);
+            ComparisonColumnChartSeriesCollection[2].Values.Add(p0dot1_quantile);
 
             // What a hack, I don't like that...
             ComparisonColumnChartLabels = ComparisonRecords.Select(record =>
@@ -224,8 +240,11 @@ namespace CapFrameX.ViewModel
             // Average
             ComparisonColumnChartSeriesCollection[0].Values.Clear();
 
-            //0.1% quantile
+            //1% quantile
             ComparisonColumnChartSeriesCollection[1].Values.Clear();
+
+            //0.1% quantile
+            ComparisonColumnChartSeriesCollection[2].Values.Clear();
 
             for (int i = 0; i < ComparisonRecords.Count; i++)
             {
