@@ -39,11 +39,13 @@ namespace CapFrameX.ViewModel
             };
 
         private readonly IStatisticProvider _frametimeStatisticProvider;
+        private readonly IFrametimeAnalyzer _frametimeAnalyzer;
 
         private bool _initialIconVisibility = true;
         private SeriesCollection _comparisonSeriesCollection;
         private SeriesCollection _comparisonColumnChartSeriesCollection;
         private string[] _comparisonColumnChartLabels;
+        private SeriesCollection _comparisonLShapeCollection;
         private string _comparisonItemControlHeight = "300";
         private HashSet<SolidColorBrush> _freeColors = new HashSet<SolidColorBrush>(_comparisonBrushes);
 
@@ -77,6 +79,13 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        public SeriesCollection ComparisonLShapeCollection
+        {
+            get { return _comparisonLShapeCollection; }
+            set { _comparisonLShapeCollection = value; RaisePropertyChanged(); }
+        }
+
+
         public string[] ComparisonColumnChartLabels
         {
             get { return _comparisonColumnChartLabels; }
@@ -94,9 +103,10 @@ namespace CapFrameX.ViewModel
         public ObservableCollection<ComparisonRecordInfo> ComparisonRecords { get; }
             = new ObservableCollection<ComparisonRecordInfo>();
 
-        public ComparisonDataViewModel(IStatisticProvider frametimeStatisticProvider)
+        public ComparisonDataViewModel(IStatisticProvider frametimeStatisticProvider, IFrametimeAnalyzer frametimeAnalyzer)
         {
             _frametimeStatisticProvider = frametimeStatisticProvider;
+            _frametimeAnalyzer = frametimeAnalyzer;
 
             ComparisonSeriesCollection = new SeriesCollection();
             ComparisonColumnChartSeriesCollection = new SeriesCollection
@@ -133,6 +143,8 @@ namespace CapFrameX.ViewModel
                     DataLabels = true
                 }
             };
+
+            ComparisonLShapeCollection = new SeriesCollection();
         }
 
         public bool IsNavigationTarget(NavigationContext navigationContext)
@@ -176,12 +188,14 @@ namespace CapFrameX.ViewModel
         {
             SetColumnChart();
             SetFrametimeChart();
+            SetLShapeChart();
         }
 
         private void AddToCharts(ComparisonRecordInfo comparisonInfo)
         {
             AddToFrameTimeChart(comparisonInfo);
             AddToColumnCharts(comparisonInfo);
+            AddToLShapeChart(comparisonInfo);
         }
 
         private void AddToColumnCharts(ComparisonRecordInfo comparisonInfo)
@@ -235,6 +249,27 @@ namespace CapFrameX.ViewModel
                 });
         }
 
+        private void AddToLShapeChart(ComparisonRecordInfo comparisonInfo)
+        {
+            var lShapeQuantiles = _frametimeAnalyzer.GetLShapeQuantiles();
+            double action(double q) => _frametimeStatisticProvider.GetPQuantileSequence(comparisonInfo.Session.FrameTimes, q / 100);
+            var quantiles = lShapeQuantiles.Select(q => new ObservablePoint(q, action(q)));
+            var quantileValues = new ChartValues<ObservablePoint>();
+            quantileValues.AddRange(quantiles);
+
+            ComparisonLShapeCollection.Add(
+                new GLineSeries
+                {
+                    Values = quantileValues,
+                    Stroke = comparisonInfo.Color,
+                    Fill = Brushes.Transparent,
+                    StrokeThickness = 1,
+                    LineSmoothness = 1,
+                    PointGeometrySize = 10,
+                    PointGeometry = DefaultGeometries.Triangle,
+                });
+        }
+
         private void SetColumnChart()
         {
             // Average
@@ -261,6 +296,17 @@ namespace CapFrameX.ViewModel
                 AddToFrameTimeChart(ComparisonRecords[i]);
             }
         }
+
+        private void SetLShapeChart()
+        {
+            ComparisonLShapeCollection = new SeriesCollection();
+
+            for (int i = 0; i < ComparisonRecords.Count; i++)
+            {
+                AddToLShapeChart(ComparisonRecords[i]);
+            }            
+        }
+
 
         void IDropTarget.Drop(IDropInfo dropInfo)
         {

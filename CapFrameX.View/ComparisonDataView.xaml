@@ -61,7 +61,6 @@
 								Height="80">
                             </Image>
                         </Border>
-
                         <ItemsControl ItemsSource="{Binding ComparisonRecords}" Grid.IsSharedSizeScope="True" Background="#e6e6e6" 
 									  Visibility="{Binding InitialIconVisibility, Converter={StaticResource TrueToVisibleConverter}}"
                                       Name="ComparisonRecordItemControl"

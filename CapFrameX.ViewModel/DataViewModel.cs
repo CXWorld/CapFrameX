@@ -514,7 +514,7 @@ namespace CapFrameX.ViewModel
 				}
 			};
 
-			LShapeLabels = lShapeQuantiles.Select(q => q.ToString(CultureInfo.InvariantCulture)).ToArray();
+			// LShapeLabels = lShapeQuantiles.Select(q => q.ToString(CultureInfo.InvariantCulture)).ToArray();
 		}
 
 		public void OnNavigatedTo(NavigationContext navigationContext)
