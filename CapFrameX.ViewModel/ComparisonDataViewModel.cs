@@ -5,6 +5,7 @@ using LiveCharts;
 using LiveCharts.Defaults;
 using LiveCharts.Geared;
 using LiveCharts.Wpf;
+using Prism.Commands;
 using Prism.Mvvm;
 using Prism.Regions;
 using System;
@@ -13,6 +14,7 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Windows;
+using System.Windows.Input;
 using System.Windows.Media;
 
 namespace CapFrameX.ViewModel
@@ -48,6 +50,7 @@ namespace CapFrameX.ViewModel
         private SeriesCollection _comparisonLShapeCollection;
         private string _comparisonItemControlHeight = "300";
         private HashSet<SolidColorBrush> _freeColors = new HashSet<SolidColorBrush>(_comparisonBrushes);
+        private ZoomingOptions _zoomingMode;
 
         public bool InitialIconVisibility
         {
@@ -55,6 +58,16 @@ namespace CapFrameX.ViewModel
             set
             {
                 _initialIconVisibility = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public ZoomingOptions ZoomingMode
+        {
+            get { return _zoomingMode; }
+            set
+            {
+                _zoomingMode = value;
                 RaisePropertyChanged();
             }
         }
@@ -98,6 +111,8 @@ namespace CapFrameX.ViewModel
             set { _comparisonItemControlHeight = value; RaisePropertyChanged(); }
         }
 
+        public ICommand ToogleZoomingModeCommand { get; }
+
         public Func<double, string> ComparisonColumnChartFormatter { get; private set; } = value => value.ToString("N");
 
         public ObservableCollection<ComparisonRecordInfo> ComparisonRecords { get; }
@@ -107,6 +122,9 @@ namespace CapFrameX.ViewModel
         {
             _frametimeStatisticProvider = frametimeStatisticProvider;
             _frametimeAnalyzer = frametimeAnalyzer;
+
+            ZoomingMode = ZoomingOptions.Y;
+            ToogleZoomingModeCommand = new DelegateCommand(OnToogleZoomingMode);
 
             ComparisonSeriesCollection = new SeriesCollection();
             ComparisonColumnChartSeriesCollection = new SeriesCollection
@@ -145,6 +163,27 @@ namespace CapFrameX.ViewModel
             };
 
             ComparisonLShapeCollection = new SeriesCollection();
+        }
+
+        private void OnToogleZoomingMode()
+        {
+            switch (ZoomingMode)
+            {
+                case ZoomingOptions.None:
+                    ZoomingMode = ZoomingOptions.X;
+                    break;
+                case ZoomingOptions.X:
+                    ZoomingMode = ZoomingOptions.Y;
+                    break;
+                case ZoomingOptions.Y:
+                    ZoomingMode = ZoomingOptions.Xy;
+                    break;
+                case ZoomingOptions.Xy:
+                    ZoomingMode = ZoomingOptions.None;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
         }
 
         public bool IsNavigationTarget(NavigationContext navigationContext)
