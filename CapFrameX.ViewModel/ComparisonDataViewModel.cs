@@ -8,6 +8,7 @@ using LiveCharts.Wpf;
 using Prism.Mvvm;
 using Prism.Regions;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
@@ -42,6 +43,7 @@ namespace CapFrameX.ViewModel
         private SeriesCollection _comparisonColumnChartSeriesCollection;
         private string[] _comparisonColumnChartLabels;
         private string _comparisonItemControlHeight = "300";
+        private HashSet<SolidColorBrush> _freeColors = new HashSet<SolidColorBrush>(_comparisonBrushes);
 
         public bool InitialIconVisibility
         {
@@ -105,7 +107,8 @@ namespace CapFrameX.ViewModel
                     Title = "Average",
                     Values = new ChartValues<double>(),
                     // Kind of blue
-                    Fill = _comparisonBrushes[1]
+                    Fill = _comparisonBrushes[1],
+                    DataLabels = true
                 },
 
                 //0.1% quantile
@@ -114,7 +117,8 @@ namespace CapFrameX.ViewModel
                     Title = "0.1%",
                     Values = new ChartValues<double>(),
                     // Kind of red
-                    Fill = _comparisonBrushes[2]
+                    Fill = _comparisonBrushes[2],
+                    DataLabels = true
                 }
             };
         }
@@ -158,7 +162,6 @@ namespace CapFrameX.ViewModel
 
         private void RemoveFromCharts(ComparisonRecordInfo comparisonInfo)
         {
-            ComparisonRecords.Remove(comparisonInfo);
             SetColumnChart();
             SetFrametimeChart();
         }
@@ -254,7 +257,9 @@ namespace CapFrameX.ViewModel
                             if (ComparisonRecords.Count <= _comparisonBrushes.Count())
                             {
                                 var comparisonRecordInfo = GetComparisonRecordInfoFromOcatRecordInfo(recordInfo);
-                                comparisonRecordInfo.Color = _comparisonBrushes[ComparisonRecords.Count];
+                                var color = _freeColors.First();
+                                comparisonRecordInfo.Color = color;
+                                _freeColors.Remove(color);
                                 ComparisonRecords.Add(comparisonRecordInfo);
                                 InitialIconVisibility = !ComparisonRecords.Any();
                                 ComparisonItemControlHeight = ComparisonRecords.Any() ? "Auto" : "300";
@@ -269,6 +274,7 @@ namespace CapFrameX.ViewModel
                         if (dropInfo.Data is ComparisonRecordInfo comparisonRecordInfo)
                         {
                             ComparisonRecords.Remove(comparisonRecordInfo);
+                            _freeColors.Add(comparisonRecordInfo.Color);
                             InitialIconVisibility = !ComparisonRecords.Any();
                             ComparisonItemControlHeight = ComparisonRecords.Any() ? "Auto" : "300";
 
