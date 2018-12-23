@@ -93,6 +93,30 @@ namespace CapFrameX.ViewModel
         public ComparisonDataViewModel(IStatisticProvider frametimeStatisticProvider)
         {
             _frametimeStatisticProvider = frametimeStatisticProvider;
+
+            ComparisonSeriesCollection = new SeriesCollection();
+            ComparisonColumnChartSeriesCollection = new SeriesCollection
+            {
+
+                // Add ColumnSeries per parameter
+                // Average
+                new ColumnSeries
+                {
+                    Title = "Average",
+                    Values = new ChartValues<double>(),
+                    // Kind of blue
+                    Fill = _comparisonBrushes[1]
+                },
+
+                //0.1% quantile
+                new ColumnSeries
+                {
+                    Title = "0.1%",
+                    Values = new ChartValues<double>(),
+                    // Kind of red
+                    Fill = _comparisonBrushes[2]
+                }
+            };
         }
 
         public bool IsNavigationTarget(NavigationContext navigationContext)
@@ -132,68 +156,87 @@ namespace CapFrameX.ViewModel
             };
         }
 
-        private void SetCharts()
+        private void RemoveFromCharts(ComparisonRecordInfo comparisonInfo)
         {
-            SetFrametimeChart();
+            ComparisonRecords.Remove(comparisonInfo);
             SetColumnChart();
+            SetFrametimeChart();
+        }
+
+        private void AddToCharts(ComparisonRecordInfo comparisonInfo)
+        {
+            AddToFrameTimeChart(comparisonInfo);
+            AddToColumnCharts(comparisonInfo);
+        }
+
+        private void AddToColumnCharts(ComparisonRecordInfo comparisonInfo)
+        {
+            var fps = comparisonInfo.Session.FrameTimes.Select(ft => 1000 / ft).ToList();
+            var average = Math.Round(fps.Average(), 0);
+            var p0dot1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.001));
+
+            // Average
+            ComparisonColumnChartSeriesCollection[0].Values.Add(average);
+
+            //0.1% quantile
+            ComparisonColumnChartSeriesCollection[1].Values.Add(p0dot1_quantile);
+
+            // What a hack, I don't like that...
+            ComparisonColumnChartLabels = ComparisonRecords.Select(record =>
+            {
+                int gameNameLength = record.Game.Length;
+                int dateTimeLength = record.DateTime.Length;
+
+                int maxAlignment = gameNameLength < dateTimeLength ? dateTimeLength : gameNameLength;
+
+                var alignmentFormat = "{0," + maxAlignment.ToString() + "}";
+                var gameName = string.Format(alignmentFormat, record.Game);
+                var dateTime = string.Format(alignmentFormat, record.DateTime);
+                return gameName + Environment.NewLine + record.DateTime;
+            }).ToArray();
+        }
+
+        private void AddToFrameTimeChart(ComparisonRecordInfo comparisonInfo)
+        {
+            var session = comparisonInfo.Session;
+            var frametimePoints = session.FrameTimes.Select((val, index) => new ObservablePoint(session.FrameStart[index], val));
+            var frametimeChartValues = new GearedValues<ObservablePoint>();
+            frametimeChartValues.AddRange(frametimePoints);
+            frametimeChartValues.WithQuality(Quality.High);
+
+            ComparisonSeriesCollection.Add(
+                new GLineSeries
+                {
+                    Values = frametimeChartValues,
+                    Fill = Brushes.Transparent,
+                    Stroke = comparisonInfo.Color,
+                    StrokeThickness = 1,
+                    LineSmoothness = 0,
+                    PointGeometrySize = 0
+                });
         }
 
         private void SetColumnChart()
         {
-            // ToDo: do not always refill whole collection -> performance optimization
-            ComparisonColumnChartSeriesCollection = new SeriesCollection();
-
-            var averages = ComparisonRecords.Select(record => Math.Round(record.Session.FrameTimes.Average(ft => 1000 / ft), 0));
-            var p0dot1_quantiles = ComparisonRecords.Select(record => record.Session.FrameTimes.Select(ft => 1000 / ft))
-                                                    .Select(fps => Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps.ToList(), 0.001), 0));
-
-            // Add ColumnSeries per parameter
-
             // Average
-            ComparisonColumnChartSeriesCollection.Add(
-                new ColumnSeries
-                {
-                    Title = "Average",
-                    Values = new ChartValues<double>(averages),
-                    // Kind of blue
-                    Fill = _comparisonBrushes[1]
-                });
+            ComparisonColumnChartSeriesCollection[0].Values.Clear();
 
             //0.1% quantile
-            ComparisonColumnChartSeriesCollection.Add(
-                new ColumnSeries
-                {
-                    Title = "0.1%",
-                    Values = new ChartValues<double>(p0dot1_quantiles),
-                    // Kind of red
-                    Fill = _comparisonBrushes[2]
-                });
+            ComparisonColumnChartSeriesCollection[1].Values.Clear();
 
-            ComparisonColumnChartLabels = ComparisonRecords.Select(record => record.Game + Environment.NewLine + record.DateTime).ToArray();
+            for (int i = 0; i < ComparisonRecords.Count; i++)
+            {
+                AddToColumnCharts(ComparisonRecords[i]);
+            }
         }
 
         private void SetFrametimeChart()
         {
-            // ToDo: do not always refill whole collection -> performance optimization
             ComparisonSeriesCollection = new SeriesCollection();
 
             for (int i = 0; i < ComparisonRecords.Count; i++)
             {
-                var session = ComparisonRecords[i].Session;
-                var frametimePoints = session.FrameTimes.Select((val, index) => new ObservablePoint(session.FrameStart[index], val));
-                var frametimeChartValues = new ChartValues<ObservablePoint>();
-                frametimeChartValues.AddRange(frametimePoints);
-
-                ComparisonSeriesCollection.Add(
-                    new GLineSeries
-                    {
-                        Values = frametimeChartValues,
-                        Fill = Brushes.Transparent,
-                        Stroke = _comparisonBrushes[i],
-                        StrokeThickness = 1,
-                        LineSmoothness = 0,
-                        PointGeometrySize = 0
-                    });
+                AddToFrameTimeChart(ComparisonRecords[i]);
             }
         }
 
@@ -210,14 +253,14 @@ namespace CapFrameX.ViewModel
                         {
                             if (ComparisonRecords.Count <= _comparisonBrushes.Count())
                             {
-                                var comparisonInfo = GetComparisonRecordInfoFromOcatRecordInfo(recordInfo);
-                                comparisonInfo.Color = _comparisonBrushes[ComparisonRecords.Count];
-                                ComparisonRecords.Add(comparisonInfo);
+                                var comparisonRecordInfo = GetComparisonRecordInfoFromOcatRecordInfo(recordInfo);
+                                comparisonRecordInfo.Color = _comparisonBrushes[ComparisonRecords.Count];
+                                ComparisonRecords.Add(comparisonRecordInfo);
                                 InitialIconVisibility = !ComparisonRecords.Any();
                                 ComparisonItemControlHeight = ComparisonRecords.Any() ? "Auto" : "300";
 
                                 //Draw charts and performance parameter
-                                SetCharts();
+                                AddToCharts(comparisonRecordInfo);
                             }
                         }
                     }
@@ -230,7 +273,7 @@ namespace CapFrameX.ViewModel
                             ComparisonItemControlHeight = ComparisonRecords.Any() ? "Auto" : "300";
 
                             //Cleanup charts and performance parameter
-                            SetCharts();
+                            RemoveFromCharts(comparisonRecordInfo);
                         }
                     }
                 }
