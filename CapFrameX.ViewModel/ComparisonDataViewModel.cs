@@ -43,6 +43,7 @@ namespace CapFrameX.ViewModel
         private readonly IStatisticProvider _frametimeStatisticProvider;
         private readonly IFrametimeAnalyzer _frametimeAnalyzer;
 
+        private EComparisonContext _comparisonContext = EComparisonContext.DateTime;
         private bool _initialIconVisibility = true;
         private SeriesCollection _comparisonSeriesCollection;
         private SeriesCollection _comparisonColumnChartSeriesCollection;
@@ -113,6 +114,12 @@ namespace CapFrameX.ViewModel
 
         public ICommand ToogleZoomingModeCommand { get; }
 
+        public ICommand DateTimeContextCommand { get; }
+
+        public ICommand CpuContextCommand { get; }
+
+        public ICommand GpuContextCommand { get; }
+
         public Func<double, string> ComparisonColumnChartFormatter { get; private set; } = value => value.ToString("N");
 
         public ObservableCollection<ComparisonRecordInfo> ComparisonRecords { get; }
@@ -125,6 +132,9 @@ namespace CapFrameX.ViewModel
 
             ZoomingMode = ZoomingOptions.Y;
             ToogleZoomingModeCommand = new DelegateCommand(OnToogleZoomingMode);
+            DateTimeContextCommand = new DelegateCommand(OnDateTimeContext);
+            CpuContextCommand = new DelegateCommand(OnCpuContext);
+            GpuContextCommand = new DelegateCommand(OnGpuContex);
 
             ComparisonSeriesCollection = new SeriesCollection();
             ComparisonColumnChartSeriesCollection = new SeriesCollection
@@ -161,7 +171,6 @@ namespace CapFrameX.ViewModel
                     DataLabels = true
                 }
             };
-
             ComparisonLShapeCollection = new SeriesCollection();
         }
 
@@ -186,6 +195,24 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        private void OnGpuContex()
+        {
+            _comparisonContext = EComparisonContext.GPU;
+            SetLabelGpuContext();
+        }
+
+        private void OnCpuContext()
+        {
+            _comparisonContext = EComparisonContext.CPU;
+            SetLabelCpuContext();
+        }
+
+        private void OnDateTimeContext()
+        {
+            _comparisonContext = EComparisonContext.DateTime;
+            SetLabelDateTimeContext();
+        }
+
         public bool IsNavigationTarget(NavigationContext navigationContext)
         {
             return true;
@@ -199,6 +226,53 @@ namespace CapFrameX.ViewModel
         public void OnNavigatedTo(NavigationContext navigationContext)
         {
 
+        }
+
+        private void SetLabelDateTimeContext()
+        {
+            ComparisonColumnChartLabels = ComparisonRecords.Select(record =>
+            {
+                int gameNameLength = record.Game.Length;
+                int dateTimeLength = record.DateTime.Length;
+
+                int maxAlignment = gameNameLength < dateTimeLength ? dateTimeLength : gameNameLength;
+
+                var alignmentFormat = "{0," + maxAlignment.ToString() + "}";
+                var gameName = string.Format(alignmentFormat, record.Game);
+                var dateTime = string.Format(alignmentFormat, record.DateTime);
+                return gameName + Environment.NewLine + dateTime;
+            }).ToArray();
+        }
+
+        private void SetLabelCpuContext()
+        {
+            ComparisonColumnChartLabels = ComparisonRecords.Select(record =>
+            {
+                int gameNameLength = record.Game.Length;
+                int cpuInfoLength = record.Session.ProcessorName.Trim(new Char[] { ' ', '"' }).Length;
+
+                int maxAlignment = gameNameLength < cpuInfoLength ? cpuInfoLength : gameNameLength;
+                var alignmentFormat = "{0," + maxAlignment.ToString() + "}";
+                var gameName = string.Format(alignmentFormat, record.Game);
+                var cpuInfo = string.Format(alignmentFormat, record.Session.ProcessorName.Trim(new Char[] { ' ', '"' }));
+
+                return gameName + Environment.NewLine + cpuInfo;
+            }).ToArray();
+        }
+
+        private void SetLabelGpuContext()
+        {
+            ComparisonColumnChartLabels = ComparisonRecords.Select(record =>
+            {
+                int gameNameLength = record.Game.Length;
+                int gpuInfoLength = record.Session.GraphicCardName.Trim(new Char[] { ' ', '"' }).Length;
+
+                int maxAlignment = gameNameLength < gpuInfoLength ? gpuInfoLength : gameNameLength;
+                var alignmentFormat = "{0," + maxAlignment.ToString() + "}";
+                var gameName = string.Format(alignmentFormat, record.Game);
+                var gpuInfo = string.Format(alignmentFormat, record.Session.GraphicCardName.Trim(new Char[] { ' ', '"' }));
+                return gameName + Environment.NewLine + gpuInfo;
+            }).ToArray();
         }
 
         private ComparisonRecordInfo GetComparisonRecordInfoFromOcatRecordInfo(OcatRecordInfo ocatRecordInfo)
@@ -253,19 +327,21 @@ namespace CapFrameX.ViewModel
             //0.1% quantile
             ComparisonColumnChartSeriesCollection[2].Values.Add(p0dot1_quantile);
 
-            // What a hack, I don't like that...
-            ComparisonColumnChartLabels = ComparisonRecords.Select(record =>
+            switch (_comparisonContext)
             {
-                int gameNameLength = record.Game.Length;
-                int dateTimeLength = record.DateTime.Length;
-
-                int maxAlignment = gameNameLength < dateTimeLength ? dateTimeLength : gameNameLength;
-
-                var alignmentFormat = "{0," + maxAlignment.ToString() + "}";
-                var gameName = string.Format(alignmentFormat, record.Game);
-                var dateTime = string.Format(alignmentFormat, record.DateTime);
-                return gameName + Environment.NewLine + record.DateTime;
-            }).ToArray();
+                case EComparisonContext.DateTime:
+                    SetLabelDateTimeContext();
+                    break;
+                case EComparisonContext.CPU:
+                    SetLabelCpuContext();
+                    break;
+                case EComparisonContext.GPU:
+                    SetLabelGpuContext();
+                    break;
+                default:
+                    SetLabelDateTimeContext();
+                    break;
+            }
         }
 
         private void AddToFrameTimeChart(ComparisonRecordInfo comparisonInfo)
@@ -343,7 +419,7 @@ namespace CapFrameX.ViewModel
             for (int i = 0; i < ComparisonRecords.Count; i++)
             {
                 AddToLShapeChart(ComparisonRecords[i]);
-            }            
+            }
         }
 
 

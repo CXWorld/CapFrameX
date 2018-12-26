@@ -144,6 +144,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ComparisonDataViewModel.cs" />
+    <Compile Include="EComparisonContext.cs" />
     <Compile Include="Inactive\Animation2DViewModel.cs" />
     <Compile Include="Inactive\Animation3DViewModel.cs" />
     <Compile Include="Inactive\Base3DViewModel.cs" />
