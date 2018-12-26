@@ -283,7 +283,7 @@ namespace CapFrameX.ViewModel
             if (session != null)
             {
                 var newLine = Environment.NewLine;
-                infoText += "creation datetime: " + ocatRecordInfo.FileInfo.CreationTime.ToString() + newLine +
+                infoText += "creation datetime: " + ocatRecordInfo.FileInfo.LastWriteTime.ToString() + newLine +
                             "capture time: " + Math.Round(session.LastFrameTime, 2).ToString(CultureInfo.InvariantCulture) + " sec" + newLine +
                             "number of samples: " + session.FrameTimes.Count.ToString();
             }
@@ -292,7 +292,7 @@ namespace CapFrameX.ViewModel
             {
                 Game = ocatRecordInfo.GameName,
                 InfoText = infoText,
-                DateTime = ocatRecordInfo.FileInfo.CreationTime.ToString(),
+                DateTime = ocatRecordInfo.FileInfo.LastWriteTime.ToString(),
                 Session = session
             };
         }
