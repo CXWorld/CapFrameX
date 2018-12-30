@@ -236,7 +236,9 @@ namespace CapFrameX.ViewModel
 
         public ICommand CopyFpsValuesCommand { get; }
 
-        public DataViewModel(IStatisticProvider frametimeStatisticProvider,
+		public ICommand CopyStatisticalParameterCommand { get; }
+
+		public DataViewModel(IStatisticProvider frametimeStatisticProvider,
 			IFrametimeAnalyzer frametimeAnalyzer, IEventAggregator eventAggregator)
 		{
 			_frametimeStatisticProvider = frametimeStatisticProvider;
@@ -249,15 +251,16 @@ namespace CapFrameX.ViewModel
             CopyFrametimeValuesCommand = new DelegateCommand(OnCopyFrametimeValues);
             CopyFrametimePointsCommand = new DelegateCommand(OnCopyFrametimePoints);
             CopyFpsValuesCommand = new DelegateCommand(OnCopyFpsValues);
+			CopyStatisticalParameterCommand = new DelegateCommand(OnCopyStatisticalParameter);
 
-            ZoomingMode = ZoomingOptions.Y;
+			ZoomingMode = ZoomingOptions.Y;
 			WindowSizes = new List<int>(Enumerable.Range(4, 100 - 4));
 			SelectWindowSize = 10;
 			ChartLengthValues = new List<string> { "5", "10", "20", "30", "60", "120", "180", "240", "300", "600" };
 			SelectedChartLengthValue = "10";
-		}       
+		}
 
-        private void OnCopyFrametimeValues()
+		private void OnCopyFrametimeValues()
         {
             if (_session == null)
                 return;
@@ -302,7 +305,36 @@ namespace CapFrameX.ViewModel
             Clipboard.SetDataObject(builder.ToString(), false);
         }
 
-        private void OnToogleZoomingMode()
+		private void OnCopyStatisticalParameter()
+		{
+			if (_session == null)
+				return;
+
+			var fpsSequence = _session.FrameTimes.Select(ft => 1000 / ft).ToList();
+			var max = Math.Round(fpsSequence.Max(), 0);
+			var average = Math.Round(fpsSequence.Average(), 0);
+			var p0dot1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fpsSequence, 0.001), 0);
+			var p1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fpsSequence, 0.01), 0);
+			var p5_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fpsSequence, 0.05), 0);
+			var min = Math.Round(fpsSequence.Min(), 0);
+			var adaptiveStandardDeviation = Math.Round(_frametimeStatisticProvider.GetAdaptiveStandardDeviation(fpsSequence, SelectWindowSize), 0);
+
+			StringBuilder builder = new StringBuilder();
+
+			// Vice versa!
+			// "Adaptive STD", "Min", "0.1%", "1%", "5%", "Average", "Max"
+			builder.Append("Max" + "\t" + max + Environment.NewLine);
+			builder.Append("Average" + "\t" + average + Environment.NewLine);
+			builder.Append("5%" + "\t" + p5_quantile + Environment.NewLine);
+			builder.Append("1%" + "\t" + p1_quantile + Environment.NewLine);
+			builder.Append("0.1%" + "\t" + p0dot1_quantile + Environment.NewLine);
+			builder.Append("Min" + "\t" + min + Environment.NewLine);
+			builder.Append("Adaptive STD" + "\t" + adaptiveStandardDeviation + Environment.NewLine);
+
+			Clipboard.SetDataObject(builder.ToString(), false);
+		}
+
+		private void OnToogleZoomingMode()
 		{
 			switch (ZoomingMode)
 			{
