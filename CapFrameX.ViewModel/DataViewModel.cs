@@ -13,6 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Text;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -229,7 +230,13 @@ namespace CapFrameX.ViewModel
 
 		public ICommand ToogleZoomingModeCommand { get; }
 
-		public DataViewModel(IStatisticProvider frametimeStatisticProvider,
+        public ICommand CopyFrametimeValuesCommand { get; }
+
+        public ICommand CopyFrametimePointsCommand { get; }
+
+        public ICommand CopyFpsValuesCommand { get; }
+
+        public DataViewModel(IStatisticProvider frametimeStatisticProvider,
 			IFrametimeAnalyzer frametimeAnalyzer, IEventAggregator eventAggregator)
 		{
 			_frametimeStatisticProvider = frametimeStatisticProvider;
@@ -239,14 +246,63 @@ namespace CapFrameX.ViewModel
 			SubscribeToUpdateSession();
 
 			ToogleZoomingModeCommand = new DelegateCommand(OnToogleZoomingMode);
-			ZoomingMode = ZoomingOptions.Y;
+            CopyFrametimeValuesCommand = new DelegateCommand(OnCopyFrametimeValues);
+            CopyFrametimePointsCommand = new DelegateCommand(OnCopyFrametimePoints);
+            CopyFpsValuesCommand = new DelegateCommand(OnCopyFpsValues);
+
+            ZoomingMode = ZoomingOptions.Y;
 			WindowSizes = new List<int>(Enumerable.Range(4, 100 - 4));
 			SelectWindowSize = 10;
 			ChartLengthValues = new List<string> { "5", "10", "20", "30", "60", "120", "180", "240", "300", "600" };
 			SelectedChartLengthValue = "10";
-		}
+		}       
 
-		private void OnToogleZoomingMode()
+        private void OnCopyFrametimeValues()
+        {
+            if (_session == null)
+                return;
+
+            StringBuilder builder = new StringBuilder();
+
+            foreach (var frametime in _session.FrameTimes)
+            {
+                builder.Append(frametime + Environment.NewLine);
+            }
+
+            Clipboard.SetDataObject(builder.ToString(), false);
+        }
+
+        private void OnCopyFrametimePoints()
+        {
+            if (_session == null)
+                return;
+
+            StringBuilder builder = new StringBuilder();
+
+            for (int i = 0; i < _session.FrameTimes.Count; i++)
+            {
+                builder.Append(_session.FrameStart[i] + "\t" + _session.FrameTimes[i] + Environment.NewLine);
+            }
+
+            Clipboard.SetDataObject(builder.ToString(), false);
+        }
+
+        private void OnCopyFpsValues()
+        {
+            if (_session == null)
+                return;
+
+            StringBuilder builder = new StringBuilder();
+
+            foreach (var frametime in _session.FrameTimes)
+            {
+                builder.Append(Math.Round(1000/frametime, 0) + Environment.NewLine);
+            }
+
+            Clipboard.SetDataObject(builder.ToString(), false);
+        }
+
+        private void OnToogleZoomingMode()
 		{
 			switch (ZoomingMode)
 			{

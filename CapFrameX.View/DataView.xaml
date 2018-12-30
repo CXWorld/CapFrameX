@@ -6,7 +6,6 @@
 			 xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
 			 xmlns:mvvm="clr-namespace:CapFrameX.MVVM.Converter;assembly=CapFrameX.MVVM"
 			 xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
-             xmlns:local="clr-namespace:CapFrameX.View"
 			 xmlns:ocatinterface="clr-namespace:CapFrameX.OcatInterface;assembly=CapFrameX.OcatInterface"
 			 xmlns:prism="http://prismlibrary.com/"
              mc:Ignorable="d" 
@@ -31,7 +30,7 @@
             </Style>
         </ResourceDictionary>
     </UserControl.Resources>
-    <Grid Margin="10">
+    <Grid Margin="0 10 10 10">
         <Grid.RowDefinitions>
             <RowDefinition Height="5*"></RowDefinition>
             <RowDefinition Height="Auto"></RowDefinition>
@@ -39,7 +38,7 @@
             <RowDefinition Height="3*"></RowDefinition>
         </Grid.RowDefinitions>
         <TabControl Grid.Row="0" Background="#F5F5F5" >
-            <TabItem Header="Frametimes">
+            <TabItem Name="FrametimesTabItem" Header="Frametimes">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="49*"></ColumnDefinition>
@@ -51,7 +50,15 @@
                         <RowDefinition Height="1*"></RowDefinition>
                         <RowDefinition Height="Auto"></RowDefinition>
                     </Grid.RowDefinitions>
-                    <lvc:CartesianChart Grid.Column="0" Grid.Row="0" MouseDoubleClick="ResetChart_MouseDoubleClick" DisableAnimations="True" Series="{Binding SeriesCollection}" Zoom="{Binding ZoomingMode}" Grid.ColumnSpan="3" >
+                    <lvc:CartesianChart Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="3" Tag="{Binding ElementName=FrametimesTabItem, Path=DataContext}" 
+                                        MouseDoubleClick="ResetChart_MouseDoubleClick" DisableAnimations="True" Series="{Binding SeriesCollection}" Zoom="{Binding ZoomingMode}">
+                        <lvc:CartesianChart.ContextMenu>
+                            <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
+                                <MenuItem Header="Copy frametime values (f)" Command="{Binding CopyFrametimeValuesCommand}"/>
+                                <MenuItem Header="Copy frametime points (t, f(t))" Command="{Binding CopyFrametimePointsCommand}"/>
+                                <MenuItem Header="Copy fps values" Command="{Binding CopyFpsValuesCommand}"/>
+                            </ContextMenu>
+                        </lvc:CartesianChart.ContextMenu>
                         <lvc:CartesianChart.AxisX>
                             <lvc:Axis Title="Samples" Name="FrametimesX" Separator="{x:Static lvc:DefaultAxes.CleanSeparator}" Foreground="Black"/>
                         </lvc:CartesianChart.AxisX>
@@ -91,9 +98,9 @@
                                                     <ColumnDefinition />
                                                 </Grid.ColumnDefinitions>
                                                 <ToggleButton VerticalAlignment="Center"
-															IsChecked="False"
-															Style="{StaticResource MaterialDesignActionLightToggleButton}"
-															Content="{Binding Letter}" />
+															  IsChecked="False"
+															  Style="{StaticResource MaterialDesignActionLightToggleButton}"
+															  Content="{Binding Letter}" />
                                                 <StackPanel Margin="8 0 0 0"
 														Grid.Column="1">
                                                     <TextBlock FontWeight="Bold"

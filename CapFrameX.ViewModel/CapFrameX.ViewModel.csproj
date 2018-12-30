@@ -154,7 +154,7 @@
     <Compile Include="Inactive\MainViewModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Inactive\ViewModel3D.cs" />
-    <Compile Include="ReportDataViewModel.cs" />
+    <Compile Include="ReportViewModel.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
