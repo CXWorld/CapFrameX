@@ -18,6 +18,7 @@ namespace CapFrameX.ViewModel
 		private readonly IEventAggregator _eventAggregator;
 
 		private PubSubEvent<ViewMessages.UpdateSession> _updateSessionEvent;
+		private PubSubEvent<ViewMessages.SelectSession> _selectSessionEvent;
 		private OcatRecordInfo _selectedRecordInfo;
 
 		public OcatRecordInfo SelectedRecordInfo
@@ -37,7 +38,7 @@ namespace CapFrameX.ViewModel
 		public ControlViewModel(IRecordDirectoryObserver recordObserver, IEventAggregator eventAggregator)
 		{
 			_recordObserver = recordObserver;
-			_eventAggregator = eventAggregator;			
+			_eventAggregator = eventAggregator;
 
 			// ToDo: check wether to do this async
 			var initialRecordList = _recordObserver.GetAllRecordFileInfo();
@@ -58,6 +59,15 @@ namespace CapFrameX.ViewModel
 
 			SetAggregatorEvents();
 			SubscribeToResetRecord();
+		}
+
+		public void OnRecordSelectByDoubleClick()
+		{
+			if (SelectedRecordInfo != null && _selectSessionEvent != null)
+			{
+				var session = RecordManager.LoadData(SelectedRecordInfo.FullPath);
+				_selectSessionEvent.Publish(new ViewMessages.SelectSession(session, SelectedRecordInfo));
+			}
 		}
 
 		private void OnSelectedRecordInfoChanged()
@@ -97,6 +107,7 @@ namespace CapFrameX.ViewModel
 		private void SetAggregatorEvents()
 		{
 			_updateSessionEvent = _eventAggregator.GetEvent<PubSubEvent<ViewMessages.UpdateSession>>();
+			_selectSessionEvent = _eventAggregator.GetEvent<PubSubEvent<ViewMessages.SelectSession>>();
 		}
 
 		private void SubscribeToResetRecord()

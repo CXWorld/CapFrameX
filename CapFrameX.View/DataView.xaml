@@ -70,7 +70,7 @@
                     <Slider Grid.Column="0" Grid.Row="1" TickFrequency="1"
 							Visibility="{Binding ElementName=SlidingWindowCheckBox, Path=IsChecked, Converter={StaticResource FalseToCollapsedConverter}}"
 							IsSnapToTickEnabled="True"
-							Margin="0,10,0,-10"
+							Margin="10"
 							Orientation="Horizontal"
 							TickPlacement="BottomRight"
 							Minimum="0"
@@ -86,7 +86,13 @@
                             </TextBlock>
                         </Expander.Header>
                         <ScrollViewer VerticalScrollBarVisibility="Visible">
-                            <ItemsControl ItemsSource="{Binding SystemInfos}" Grid.IsSharedSizeScope="True" Background="#e6e6e6" >
+                            <ItemsControl ItemsSource="{Binding SystemInfos}" Grid.IsSharedSizeScope="True" Background="#e6e6e6" 
+										  Tag="{Binding ElementName=DataViewUserControl, Path=DataContext}">
+								<ItemsControl.ContextMenu>
+									<ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
+										<MenuItem Header="Copy system info" Command="{Binding CopySystemInfoCommand}"/>
+									</ContextMenu>
+								</ItemsControl.ContextMenu>
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate DataType="{x:Type ocatinterface:SystemInfo}">
                                         <Border x:Name="Border"
@@ -130,8 +136,14 @@
                 </Grid>
             </TabItem>
             <TabItem Header="L-Shape">
-                <lvc:CartesianChart MouseDoubleClick="ResetChart_MouseDoubleClick" Series="{Binding LShapeCollection}" Zoom="{Binding ZoomingMode}" >
-                    <lvc:CartesianChart.AxisX>
+                <lvc:CartesianChart MouseDoubleClick="ResetChart_MouseDoubleClick" Series="{Binding LShapeCollection}" Zoom="{Binding ZoomingMode}" 
+									Tag="{Binding ElementName=DataViewUserControl, Path=DataContext}">
+					<lvc:CartesianChart.ContextMenu>
+						<ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
+							<MenuItem Header="Copy quantiles" Command="{Binding CopyLShapeQuantilesCommand}"/>
+						</ContextMenu>
+					</lvc:CartesianChart.ContextMenu>
+					<lvc:CartesianChart.AxisX>
                         <lvc:Axis Title="Quantiles" Name="LShapeX" Foreground="Black">
                             <lvc:Axis.Separator >
                                 <lvc:Separator Step="1"></lvc:Separator>

@@ -1,4 +1,5 @@
-﻿using CapFrameX.OcatInterface;
+﻿using CapFrameX.EventAggregation.Messages;
+using CapFrameX.OcatInterface;
 using CapFrameX.Statistics;
 using GongSolutions.Wpf.DragDrop;
 using LiveCharts;
@@ -6,6 +7,7 @@ using LiveCharts.Defaults;
 using LiveCharts.Geared;
 using LiveCharts.Wpf;
 using Prism.Commands;
+using Prism.Events;
 using Prism.Mvvm;
 using Prism.Regions;
 using System;
@@ -42,8 +44,9 @@ namespace CapFrameX.ViewModel
 
         private readonly IStatisticProvider _frametimeStatisticProvider;
         private readonly IFrametimeAnalyzer _frametimeAnalyzer;
+		private readonly IEventAggregator _eventAggregator;
 
-        private EComparisonContext _comparisonContext = EComparisonContext.DateTime;
+		private EComparisonContext _comparisonContext = EComparisonContext.DateTime;
         private bool _initialIconVisibility = true;
         private SeriesCollection _comparisonSeriesCollection;
         private SeriesCollection _comparisonColumnChartSeriesCollection;
@@ -52,8 +55,9 @@ namespace CapFrameX.ViewModel
         private string _comparisonItemControlHeight = "300";
         private HashSet<SolidColorBrush> _freeColors = new HashSet<SolidColorBrush>(_comparisonBrushes);
         private ZoomingOptions _zoomingMode;
+		private bool _useEventMessages;
 
-        public bool InitialIconVisibility
+		public bool InitialIconVisibility
         {
             get { return _initialIconVisibility; }
             set
@@ -125,10 +129,12 @@ namespace CapFrameX.ViewModel
         public ObservableCollection<ComparisonRecordInfo> ComparisonRecords { get; }
             = new ObservableCollection<ComparisonRecordInfo>();
 
-        public ComparisonDataViewModel(IStatisticProvider frametimeStatisticProvider, IFrametimeAnalyzer frametimeAnalyzer)
+        public ComparisonDataViewModel(IStatisticProvider frametimeStatisticProvider, IFrametimeAnalyzer frametimeAnalyzer,
+									   IEventAggregator eventAggregator)
         {
             _frametimeStatisticProvider = frametimeStatisticProvider;
             _frametimeAnalyzer = frametimeAnalyzer;
+			_eventAggregator = eventAggregator;
 
             ZoomingMode = ZoomingOptions.Y;
             ToogleZoomingModeCommand = new DelegateCommand(OnToogleZoomingMode);
@@ -172,7 +178,10 @@ namespace CapFrameX.ViewModel
                 }
             };
             ComparisonLShapeCollection = new SeriesCollection();
-        }
+
+			SubscribeToSelectRecord();
+
+		}
 
         private void OnToogleZoomingMode()
         {
@@ -211,21 +220,6 @@ namespace CapFrameX.ViewModel
         {
             _comparisonContext = EComparisonContext.DateTime;
             SetLabelDateTimeContext();
-        }
-
-        public bool IsNavigationTarget(NavigationContext navigationContext)
-        {
-            return true;
-        }
-
-        public void OnNavigatedFrom(NavigationContext navigationContext)
-        {
-
-        }
-
-        public void OnNavigatedTo(NavigationContext navigationContext)
-        {
-
         }
 
         private void SetLabelDateTimeContext()
@@ -422,8 +416,19 @@ namespace CapFrameX.ViewModel
             }
         }
 
+		private void SubscribeToSelectRecord()
+		{
+			_eventAggregator.GetEvent<PubSubEvent<ViewMessages.SelectSession>>()
+							.Subscribe(msg =>
+							{
+								if (_useEventMessages)
+								{
+									AddComparisonRecord(msg.RecordInfo);
+								}
+							});
+		}
 
-        void IDropTarget.Drop(IDropInfo dropInfo)
+		void IDropTarget.Drop(IDropInfo dropInfo)
         {
             if (dropInfo != null)
             {
@@ -433,22 +438,10 @@ namespace CapFrameX.ViewModel
                         frameworkElement.Name == "ComparisonImage")
                     {
                         if (dropInfo.Data is OcatRecordInfo recordInfo)
-                        {
-                            if (ComparisonRecords.Count <= _comparisonBrushes.Count())
-                            {
-                                var comparisonRecordInfo = GetComparisonRecordInfoFromOcatRecordInfo(recordInfo);
-                                var color = _freeColors.First();
-                                comparisonRecordInfo.Color = color;
-                                _freeColors.Remove(color);
-                                ComparisonRecords.Add(comparisonRecordInfo);
-                                InitialIconVisibility = !ComparisonRecords.Any();
-                                ComparisonItemControlHeight = ComparisonRecords.Any() ? "Auto" : "300";
-
-                                //Draw charts and performance parameter
-                                AddToCharts(comparisonRecordInfo);
-                            }
-                        }
-                    }
+						{
+							AddComparisonRecord(recordInfo);
+						}
+					}
                     else if (frameworkElement.Name == "RemoveRecordItemControl")
                     {
                         if (dropInfo.Data is ComparisonRecordInfo comparisonRecordInfo)
@@ -466,7 +459,24 @@ namespace CapFrameX.ViewModel
             }
         }
 
-        void IDropTarget.DragOver(IDropInfo dropInfo)
+		private void AddComparisonRecord(OcatRecordInfo recordInfo)
+		{
+			if (ComparisonRecords.Count <= _comparisonBrushes.Count())
+			{
+				var comparisonRecordInfo = GetComparisonRecordInfoFromOcatRecordInfo(recordInfo);
+				var color = _freeColors.First();
+				comparisonRecordInfo.Color = color;
+				_freeColors.Remove(color);
+				ComparisonRecords.Add(comparisonRecordInfo);
+				InitialIconVisibility = !ComparisonRecords.Any();
+				ComparisonItemControlHeight = ComparisonRecords.Any() ? "Auto" : "300";
+
+				//Draw charts and performance parameter
+				AddToCharts(comparisonRecordInfo);
+			}
+		}
+
+		void IDropTarget.DragOver(IDropInfo dropInfo)
         {
             if (dropInfo != null)
             {
@@ -474,5 +484,21 @@ namespace CapFrameX.ViewModel
                 dropInfo.Effects = DragDropEffects.Move;
             }
         }
-    }
+
+
+		public bool IsNavigationTarget(NavigationContext navigationContext)
+		{
+			return true;
+		}
+
+		public void OnNavigatedFrom(NavigationContext navigationContext)
+		{
+			_useEventMessages = false;
+		}
+
+		public void OnNavigatedTo(NavigationContext navigationContext)
+		{
+			_useEventMessages = true;
+		}
+	}
 }

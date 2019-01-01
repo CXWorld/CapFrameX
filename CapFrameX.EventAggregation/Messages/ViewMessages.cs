@@ -17,5 +17,14 @@ namespace CapFrameX.EventAggregation.Messages
 		}
 
 		public class ResetRecord { }
+
+		public class SelectSession : UpdateSession
+		{
+			public SelectSession(Session ocatSession, OcatRecordInfo recordInfo) :
+				base(ocatSession, recordInfo)
+			{
+
+			}
+		}
 	}
 }

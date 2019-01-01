@@ -11,6 +11,7 @@ using Prism.Mvvm;
 using Prism.Regions;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -230,13 +231,17 @@ namespace CapFrameX.ViewModel
 
 		public ICommand ToogleZoomingModeCommand { get; }
 
-        public ICommand CopyFrametimeValuesCommand { get; }
+		public ICommand CopyFrametimeValuesCommand { get; }
 
-        public ICommand CopyFrametimePointsCommand { get; }
+		public ICommand CopyFrametimePointsCommand { get; }
 
-        public ICommand CopyFpsValuesCommand { get; }
+		public ICommand CopyFpsValuesCommand { get; }
 
 		public ICommand CopyStatisticalParameterCommand { get; }
+
+		public ICommand CopyLShapeQuantilesCommand { get; }
+
+		public ICommand CopySystemInfoCommand { get; }
 
 		public DataViewModel(IStatisticProvider frametimeStatisticProvider,
 			IFrametimeAnalyzer frametimeAnalyzer, IEventAggregator eventAggregator)
@@ -248,10 +253,12 @@ namespace CapFrameX.ViewModel
 			SubscribeToUpdateSession();
 
 			ToogleZoomingModeCommand = new DelegateCommand(OnToogleZoomingMode);
-            CopyFrametimeValuesCommand = new DelegateCommand(OnCopyFrametimeValues);
-            CopyFrametimePointsCommand = new DelegateCommand(OnCopyFrametimePoints);
-            CopyFpsValuesCommand = new DelegateCommand(OnCopyFpsValues);
+			CopyFrametimeValuesCommand = new DelegateCommand(OnCopyFrametimeValues);
+			CopyFrametimePointsCommand = new DelegateCommand(OnCopyFrametimePoints);
+			CopyFpsValuesCommand = new DelegateCommand(OnCopyFpsValues);
 			CopyStatisticalParameterCommand = new DelegateCommand(OnCopyStatisticalParameter);
+			CopyLShapeQuantilesCommand = new DelegateCommand(OnCopyQuantiles);
+			CopySystemInfoCommand = new DelegateCommand(OnCopySystemInfoCommand);
 
 			ZoomingMode = ZoomingOptions.Y;
 			WindowSizes = new List<int>(Enumerable.Range(4, 100 - 4));
@@ -261,49 +268,49 @@ namespace CapFrameX.ViewModel
 		}
 
 		private void OnCopyFrametimeValues()
-        {
-            if (_session == null)
-                return;
+		{
+			if (_session == null)
+				return;
 
-            StringBuilder builder = new StringBuilder();
+			StringBuilder builder = new StringBuilder();
 
-            foreach (var frametime in _session.FrameTimes)
-            {
-                builder.Append(frametime + Environment.NewLine);
-            }
+			foreach (var frametime in _session.FrameTimes)
+			{
+				builder.Append(frametime + Environment.NewLine);
+			}
 
-            Clipboard.SetDataObject(builder.ToString(), false);
-        }
+			Clipboard.SetDataObject(builder.ToString(), false);
+		}
 
-        private void OnCopyFrametimePoints()
-        {
-            if (_session == null)
-                return;
+		private void OnCopyFrametimePoints()
+		{
+			if (_session == null)
+				return;
 
-            StringBuilder builder = new StringBuilder();
+			StringBuilder builder = new StringBuilder();
 
-            for (int i = 0; i < _session.FrameTimes.Count; i++)
-            {
-                builder.Append(_session.FrameStart[i] + "\t" + _session.FrameTimes[i] + Environment.NewLine);
-            }
+			for (int i = 0; i < _session.FrameTimes.Count; i++)
+			{
+				builder.Append(_session.FrameStart[i] + "\t" + _session.FrameTimes[i] + Environment.NewLine);
+			}
 
-            Clipboard.SetDataObject(builder.ToString(), false);
-        }
+			Clipboard.SetDataObject(builder.ToString(), false);
+		}
 
-        private void OnCopyFpsValues()
-        {
-            if (_session == null)
-                return;
+		private void OnCopyFpsValues()
+		{
+			if (_session == null)
+				return;
 
-            StringBuilder builder = new StringBuilder();
+			StringBuilder builder = new StringBuilder();
 
-            foreach (var frametime in _session.FrameTimes)
-            {
-                builder.Append(Math.Round(1000/frametime, 0) + Environment.NewLine);
-            }
+			foreach (var frametime in _session.FrameTimes)
+			{
+				builder.Append(Math.Round(1000 / frametime, 0) + Environment.NewLine);
+			}
 
-            Clipboard.SetDataObject(builder.ToString(), false);
-        }
+			Clipboard.SetDataObject(builder.ToString(), false);
+		}
 
 		private void OnCopyStatisticalParameter()
 		{
@@ -322,14 +329,49 @@ namespace CapFrameX.ViewModel
 			StringBuilder builder = new StringBuilder();
 
 			// Vice versa!
-			// "Adaptive STD", "Min", "0.1%", "1%", "5%", "Average", "Max"
+			// "Adaptive STD", "Min", "0,1%", "1%", "5%", "Average", "Max"
 			builder.Append("Max" + "\t" + max + Environment.NewLine);
 			builder.Append("Average" + "\t" + average + Environment.NewLine);
 			builder.Append("5%" + "\t" + p5_quantile + Environment.NewLine);
 			builder.Append("1%" + "\t" + p1_quantile + Environment.NewLine);
-			builder.Append("0.1%" + "\t" + p0dot1_quantile + Environment.NewLine);
+			builder.Append("0,1%" + "\t" + p0dot1_quantile + Environment.NewLine);
 			builder.Append("Min" + "\t" + min + Environment.NewLine);
 			builder.Append("Adaptive STD" + "\t" + adaptiveStandardDeviation + Environment.NewLine);
+
+			Clipboard.SetDataObject(builder.ToString(), false);
+		}
+
+		private void OnCopyQuantiles()
+		{
+			if (_session == null)
+				return;
+
+			var lShapeQuantiles = _frametimeAnalyzer.GetLShapeQuantiles();
+			double action(double q) => Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(_session.FrameTimes, q / 100), 2);
+
+			StringBuilder builder = new StringBuilder();
+
+			foreach (var quantile in lShapeQuantiles)
+			{
+				builder.Append(quantile + "%" + "\t" + action(quantile) + Environment.NewLine);
+			}
+
+			Clipboard.SetDataObject(builder.ToString(), false);
+		}
+
+		private void OnCopySystemInfoCommand()
+		{
+			if (_session == null)
+				return;
+
+			var systemInfos = RecordManager.GetSystemInfos(_session);
+
+			StringBuilder builder = new StringBuilder();
+
+			foreach (var systemInfo in systemInfos)
+			{
+				builder.Append(systemInfo.Key + "\t" + systemInfo.Value + Environment.NewLine);
+			}
 
 			Clipboard.SetDataObject(builder.ToString(), false);
 		}
@@ -389,14 +431,14 @@ namespace CapFrameX.ViewModel
 						var frametimesSubset = RecordManager.GetFrametimesWindow(_session, startTime, endTime);
 
 						// ToDo: Make method selectable
-						frametimes = _frametimeStatisticProvider?.GetOutlierAdjustedSequence(frametimesSubset, 
+						frametimes = _frametimeStatisticProvider?.GetOutlierAdjustedSequence(frametimesSubset,
 							ERemoveOutlierMethod.DeciPercentile);
 					}
 				}
 				else
 				{
 					// ToDo: Make method selectable
-					frametimes = _frametimeStatisticProvider?.GetOutlierAdjustedSequence(_session.FrameTimes, 
+					frametimes = _frametimeStatisticProvider?.GetOutlierAdjustedSequence(_session.FrameTimes,
 						ERemoveOutlierMethod.DeciPercentile);
 				}
 			}
@@ -548,7 +590,7 @@ namespace CapFrameX.ViewModel
 				}
 			};
 
-			ParameterLabels = new[] { "Adaptive STD", "Min", "0.1%", "1%", "5%", "Average", "Max" };
+			ParameterLabels = new[] { "Adaptive STD", "Min", "0,1%", "1%", "5%", "Average", "Max" };
 		}
 
 		private void SetAdvancedStaticChart(IList<double> frameTimes)
@@ -582,15 +624,15 @@ namespace CapFrameX.ViewModel
 
 			var lShapeQuantiles = _frametimeAnalyzer.GetLShapeQuantiles();
 			double action(double q) => _frametimeStatisticProvider.GetPQuantileSequence(frametimes, q / 100);
-			var quantiles = lShapeQuantiles.Select(q => new ObservablePoint(q, action(q)));
-			var quantileValues = new ChartValues<ObservablePoint>();
-			quantileValues.AddRange(quantiles);
+			var observablePoints = lShapeQuantiles.Select(q => new ObservablePoint(q, action(q)));
+			var chartValues = new ChartValues<ObservablePoint>();
+			chartValues.AddRange(observablePoints);
 
 			LShapeCollection = new SeriesCollection()
 			{
 				new GLineSeries
 				{
-					Values = quantileValues,
+					Values = chartValues,
 					Stroke = new SolidColorBrush(Color.FromRgb(139,35,35)),
 					Fill = Brushes.Transparent,
 					StrokeThickness = 1,
@@ -624,6 +666,7 @@ namespace CapFrameX.ViewModel
 			LShapeCollection?.Clear();
 			StatisticCollection?.Clear();
 			AdvancedStatisticCollection?.Clear();
+			SystemInfos?.Clear();
 		}
 	}
 }

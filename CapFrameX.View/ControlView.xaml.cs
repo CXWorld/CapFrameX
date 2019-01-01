@@ -40,5 +40,10 @@ namespace CapFrameX.View
 			e.FilterCollectionByText<OcatRecordInfo>(RecordSearchBox.Text,
 										(record, word) => record.FullPath.NullSafeContains(word, true));
 		}
+
+		private void DataGridRow_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
+		{
+			(DataContext as ControlViewModel).OnRecordSelectByDoubleClick();
+		}
 	}
 }
