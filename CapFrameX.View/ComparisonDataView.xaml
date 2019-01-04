@@ -59,9 +59,7 @@
                                                  PlacementMode="BottomAndAlignCentres"
                                                  ToolTip="Set comparison context">
                             <materialDesign:PopupBox.ToggleCheckedContent>
-                                <materialDesign:PackIcon Kind="Pencil"
-                                                          Width="24"
-                                                          Height="24" />
+                                <materialDesign:PackIcon Kind="Pencil" Width="24" Height="24" />
                             </materialDesign:PopupBox.ToggleCheckedContent>
                             <StackPanel>
                                 <Button Command="{Binding DateTimeContextCommand}" Content="{materialDesign:PackIcon TimeTable, Size=24}" ToolTip="Date and time">
@@ -82,28 +80,27 @@
                         <Grid>
                             <Border VerticalAlignment="Center" HorizontalAlignment="Center">
                                 <Image Grid.Row="0" Visibility="{Binding InitialIconVisibility, Converter={StaticResource FalseToCollapsedConverter}}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
-                               Name="ComparisonImage"
-                               dragdrop:DragDrop.IsDropTarget="True"
-							   dragdrop:DragDrop.DropHandler="{Binding}"
-							   dragdrop:DragDrop.UseDefaultDragAdorner="True"
-							   dragdrop:DragDrop.DropTargetAdornerBrush="White"
-								dragdrop:DragDrop.DefaultDragAdornerOpacity="0.5"
-                                dragdrop:DragDrop.UseDefaultEffectDataTemplate="False"
-								Source="/CapFrameX;component/Icons/CX_Icon.png"
-								Width="80"
-								Height="80">
+									   Name="ComparisonImage"
+									   dragdrop:DragDrop.IsDropTarget="True"
+									   dragdrop:DragDrop.DropHandler="{Binding}"
+									   dragdrop:DragDrop.UseDefaultDragAdorner="True"
+									   dragdrop:DragDrop.DropTargetAdornerBrush="White"
+									   dragdrop:DragDrop.DefaultDragAdornerOpacity="0.5"
+									   dragdrop:DragDrop.UseDefaultEffectDataTemplate="False"
+									   Source="/CapFrameX;component/Icons/CX_Icon.png"
+									   Width="80" Height="80">
                                 </Image>
                             </Border>
                             <ItemsControl ItemsSource="{Binding ComparisonRecords}" Grid.IsSharedSizeScope="True" Background="#e6e6e6" 
-									  Visibility="{Binding InitialIconVisibility, Converter={StaticResource TrueToVisibleConverter}}"
-                                      Name="ComparisonRecordItemControl"
-                                      dragdrop:DragDrop.IsDropTarget="True"
-								      dragdrop:DragDrop.IsDragSource="True"
-								      dragdrop:DragDrop.DropHandler="{Binding}"
-								      dragdrop:DragDrop.UseDefaultDragAdorner="True"
-								      dragdrop:DragDrop.DropTargetAdornerBrush="White"
-								      dragdrop:DragDrop.DefaultDragAdornerOpacity="0.5"
-								      dragdrop:DragDrop.UseDefaultEffectDataTemplate="False">
+										  Visibility="{Binding InitialIconVisibility, Converter={StaticResource TrueToVisibleConverter}}"
+										  Name="ComparisonRecordItemControl"
+										  dragdrop:DragDrop.IsDropTarget="True"
+										  dragdrop:DragDrop.IsDragSource="True"
+										  dragdrop:DragDrop.DropHandler="{Binding}"
+										  dragdrop:DragDrop.UseDefaultDragAdorner="True"
+										  dragdrop:DragDrop.DropTargetAdornerBrush="White"
+										  dragdrop:DragDrop.DefaultDragAdornerOpacity="0.5"
+										  dragdrop:DragDrop.UseDefaultEffectDataTemplate="False">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate DataType="{x:Type ocatinterface:ComparisonRecordInfo}">
                                         <Border x:Name="Border"
@@ -146,13 +143,13 @@
                     </ScrollViewer>
                     <ItemsControl Grid.Row="3"
                                   VerticalAlignment="Top"
-									Name="RemoveRecordItemControl"
-									dragdrop:DragDrop.IsDropTarget="True"
-									dragdrop:DragDrop.DropHandler="{Binding}"
-									dragdrop:DragDrop.UseDefaultEffectDataTemplate="False">
+								  Name="RemoveRecordItemControl"
+								  dragdrop:DragDrop.IsDropTarget="True"
+								  dragdrop:DragDrop.DropHandler="{Binding}"
+								  dragdrop:DragDrop.UseDefaultEffectDataTemplate="False">
                         <Border Background="#CCC" Height="50">
                             <materialDesign:PackIcon Kind="DeleteForeverOutline" VerticalAlignment="Center" HorizontalAlignment="Center"
-														 Width="32" Height="32" />
+													 Width="32" Height="32" />
                         </Border>
                     </ItemsControl>
                 </Grid>
@@ -199,8 +196,8 @@
 							SnapsToDevicePixels="True">
                         <StackPanel Margin="0 10 0 10">
                             <CheckBox IsThreeState="False"
-													IsChecked="{Binding RemoveOutliers}"
-													Margin="0 0 0 0">
+									  IsChecked="{Binding RemoveOutliers}"
+									  Margin="0 0 0 0">
                                 Remove outliers
                             </CheckBox>
                         </StackPanel>

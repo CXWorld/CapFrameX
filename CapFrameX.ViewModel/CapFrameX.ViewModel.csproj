@@ -169,6 +169,10 @@
       <Project>{C3D082AE-BF05-4C83-B414-33CF7C420D4A}</Project>
       <Name>CapFrameX.EventAggregation</Name>
     </ProjectReference>
+    <ProjectReference Include="..\CapFrameX.Extensions\CapFrameX.Extensions.csproj">
+      <Project>{A4559B99-7FCB-40EF-BF97-D293A2B7D6D3}</Project>
+      <Name>CapFrameX.Extensions</Name>
+    </ProjectReference>
     <ProjectReference Include="..\CapFrameX.MVVM\CapFrameX.MVVM.csproj">
       <Project>{cfb57d81-1886-45d2-aa16-ede1dd17a9ca}</Project>
       <Name>CapFrameX.MVVM</Name>

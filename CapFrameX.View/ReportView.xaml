@@ -1,4 +1,5 @@
 ﻿<UserControl x:Class="CapFrameX.View.ReportView"
+			 Name="ReportViewControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -14,22 +15,62 @@
 			 Background="{DynamicResource MaterialDesignPaper}"
              FontFamily="{StaticResource MaterialDesignFont}"
 			 prism:ViewModelLocator.AutoWireViewModel="True">
-    <UserControl.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Button.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Shadows.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ToggleButton.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.DataGrid.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Slider.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.PopupBox.xaml" />
-            </ResourceDictionary.MergedDictionaries>
-            <mvvm:BoolToVisibilityConverter x:Key="FalseToCollapsedConverter" FalseValue="Collapsed" TrueValue="Visible"/>
-            <mvvm:BoolToVisibilityConverter x:Key="TrueToVisibleConverter" FalseValue="Visible" TrueValue="Collapsed"/>
-            <mvvm:AddValueConverter x:Key="AddValueConverter" Offset="-10"/>
-        </ResourceDictionary>
-    </UserControl.Resources>
-    <Grid>
-            
-    </Grid>
+	<UserControl.Resources>
+		<ResourceDictionary>
+			<ResourceDictionary.MergedDictionaries>
+				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Button.xaml" />
+				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Shadows.xaml" />
+				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ToggleButton.xaml" />
+				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.DataGrid.xaml" />
+				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Slider.xaml" />
+				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.PopupBox.xaml" />
+			</ResourceDictionary.MergedDictionaries>
+			<mvvm:BoolToVisibilityConverter x:Key="FalseToCollapsedConverter" FalseValue="Collapsed" TrueValue="Visible"/>
+			<mvvm:BoolToVisibilityConverter x:Key="TrueToVisibleConverter" FalseValue="Visible" TrueValue="Collapsed"/>
+			<mvvm:AddValueConverter x:Key="AddValueConverter" Offset="-110"/>
+		</ResourceDictionary>
+	</UserControl.Resources>
+	<Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto"/>
+			<RowDefinition Height="100"/>
+		</Grid.RowDefinitions>
+		<DataGrid Grid.Row="0"
+				  Margin="0 10 10 0"
+				  AutoGenerateColumns="True"
+				  AutoGeneratingColumn="OnAutoGeneratingColumn"
+				  Tag="{Binding ElementName=ReportViewControl, Path=DataContext}" 
+				  Name ="ReportDataGrid"
+				  Height="{Binding ElementName=ReportViewControl, Path=ActualHeight, Converter={StaticResource AddValueConverter}}"
+				  ItemsSource="{Binding ReportInfoCollecion}"
+				  Background="#F5F5F5" 
+				  materialDesign:DataGridAssist.CellPadding="13 8 8 8" materialDesign:DataGridAssist.ColumnHeaderPadding="8" IsSynchronizedWithCurrentItem="False"
+				  CanUserSortColumns="True"
+				  CanUserAddRows="False"
+				  ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.CanContentScroll="True"
+				  dragdrop:DragDrop.IsDropTarget="True"
+				  dragdrop:DragDrop.IsDragSource="True"
+				  dragdrop:DragDrop.DropHandler="{Binding}"
+				  dragdrop:DragDrop.UseDefaultDragAdorner="True"
+				  dragdrop:DragDrop.DropTargetAdornerBrush="White"
+				  dragdrop:DragDrop.DefaultDragAdornerOpacity="0.5"
+				  dragdrop:DragDrop.UseDefaultEffectDataTemplate="False">
+			<DataGrid.ContextMenu>
+				<ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
+					<MenuItem Header="Copy table" Command="{Binding CopyTableDataCommand}"/>
+				</ContextMenu>
+			</DataGrid.ContextMenu>
+		</DataGrid>
+		<ItemsControl Grid.Row="1" VerticalAlignment="Top"
+					  Margin="0 10 10 10"
+					  Name="RemoveRecordItemControl"
+				      dragdrop:DragDrop.IsDropTarget="True"
+				      dragdrop:DragDrop.DropHandler="{Binding}"
+					  dragdrop:DragDrop.UseDefaultEffectDataTemplate="False">
+			<Border Background="#CCC" Height="50">
+				<materialDesign:PackIcon Kind="DeleteForeverOutline" VerticalAlignment="Center" HorizontalAlignment="Center"
+													 Width="32" Height="32" />
+			</Border>
+		</ItemsControl>
+	</Grid>
 </UserControl>

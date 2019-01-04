@@ -77,7 +77,7 @@ namespace CapFrameX.ViewModel
 
 		private void OnReportIsCheckedChanged()
 		{
-			_regionManager.RequestNavigate("DataRegion", "ReportDataView");
+			_regionManager.RequestNavigate("DataRegion", "ReportView");
 			_resetRecordEvent.Publish(new ViewMessages.ResetRecord());
 		}
 

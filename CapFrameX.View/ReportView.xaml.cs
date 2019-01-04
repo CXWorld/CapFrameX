@@ -1,4 +1,6 @@
-﻿using CapFrameX.ViewModel;
+﻿using CapFrameX.Statistics;
+using CapFrameX.ViewModel;
+using Prism.Events;
 using System.ComponentModel;
 using System.Windows.Controls;
 
@@ -16,8 +18,11 @@ namespace CapFrameX.View
             // Design time!
             if (DesignerProperties.GetIsInDesignMode(this))
             {
-                DataContext = new ReportViewModel();
+                DataContext = new ReportViewModel(new FrametimeStatisticProvider(), new EventAggregator());
             }
         }
-    }
+
+		private void OnAutoGeneratingColumn(object sender, DataGridAutoGeneratingColumnEventArgs e)
+			=> e.Column.Header = ((PropertyDescriptor)e.PropertyDescriptor).DisplayName;
+	}
 }

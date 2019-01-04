@@ -90,6 +90,11 @@
             <Component Id="cmp223D4754378C01052DA8253A843FD297" Guid="*" Win64="yes">
                 <File Id="filBC562C5B3D9848A2114F0AF7275FF1E6" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\MahApps.Metro.dll" />
             </Component>
+            <Component Id="cmp92541AC2EB5E4FF723447A4B16C84B26" Guid="*" Win64="yes">
+                <File Id="fil1804F95784F7DF73708DF02E3A4A131D" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\MahApps.Metro.IconPacks.dll" />
+            </Component>
+            
+            
             
             
             <Component Id="cmpF79A41B26948F126556619AD15586E53" Guid="*" Win64="yes">
@@ -205,6 +210,9 @@
             
             
             <ComponentRef Id="cmp223D4754378C01052DA8253A843FD297" />
+            <ComponentRef Id="cmp92541AC2EB5E4FF723447A4B16C84B26" />
+            
+            
             
             
             <ComponentRef Id="cmpF79A41B26948F126556619AD15586E53" />

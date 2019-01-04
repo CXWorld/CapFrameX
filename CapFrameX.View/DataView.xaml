@@ -159,9 +159,9 @@
         <Expander Grid.Row="2" Name="SettingsExpander" Background="#F5F5F5" Margin="0 10 0 10" Header="Data/Chart Settings" HorizontalAlignment="Stretch">
             <Grid>
                 <Grid.ColumnDefinitions>
+					<ColumnDefinition Width="Auto" />
+					<ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="1*" />
-                    <ColumnDefinition Width="1*" />
-                    <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <Border Grid.Column="0" Background="#F5F5F5">
                     <GroupBox Header="Chart"
@@ -257,7 +257,7 @@
 													Width="280" />
 									</StackPanel>
 								</StackPanel>-->
-                <Button Margin="15" Grid.Column="2" VerticalAlignment="Top" Command="{Binding ToogleZoomingModeCommand}">
+                <Button Margin="15" Grid.Column="2" VerticalAlignment="Top" HorizontalAlignment="Right" Command="{Binding ToogleZoomingModeCommand}">
                     <TextBlock>Toggle zoming mode, current is: 
 						<TextBlock Text="{Binding ZoomingMode, Converter={StaticResource ZoomingModeConverter}}"/>
 					</TextBlock>
