@@ -1,4 +1,5 @@
-﻿using CapFrameX.EventAggregation.Messages;
+﻿using CapFrameX.Contracts.Configuration;
+using CapFrameX.EventAggregation.Messages;
 using CapFrameX.OcatInterface;
 using CapFrameX.Statistics;
 using LiveCharts;
@@ -27,6 +28,7 @@ namespace CapFrameX.ViewModel
 		private readonly IStatisticProvider _frametimeStatisticProvider;
 		private readonly IFrametimeAnalyzer _frametimeAnalyzer;
 		private readonly IEventAggregator _eventAggregator;
+		private readonly IAppConfiguration _appConfiguration;
 
 		private bool _useUpdateSession = true;
 		private Session _session;
@@ -170,6 +172,7 @@ namespace CapFrameX.ViewModel
 			set
 			{
 				_selectWindowSize = value;
+				_appConfiguration.MovingAverageWindowSize = value;
 				RaisePropertyChanged();
 				UpdateCharts();
 			}
@@ -244,11 +247,13 @@ namespace CapFrameX.ViewModel
 		public ICommand CopySystemInfoCommand { get; }
 
 		public DataViewModel(IStatisticProvider frametimeStatisticProvider,
-			IFrametimeAnalyzer frametimeAnalyzer, IEventAggregator eventAggregator)
+							 IFrametimeAnalyzer frametimeAnalyzer, IEventAggregator eventAggregator, 
+							 IAppConfiguration appConfiguration)
 		{
 			_frametimeStatisticProvider = frametimeStatisticProvider;
 			_frametimeAnalyzer = frametimeAnalyzer;
 			_eventAggregator = eventAggregator;
+			_appConfiguration = appConfiguration;
 
 			SubscribeToUpdateSession();
 
@@ -262,7 +267,7 @@ namespace CapFrameX.ViewModel
 
 			ZoomingMode = ZoomingOptions.Y;
 			WindowSizes = new List<int>(Enumerable.Range(4, 100 - 4));
-			SelectWindowSize = 10;
+			SelectWindowSize = _appConfiguration.MovingAverageWindowSize;
 			ChartLengthValues = new List<string> { "5", "10", "20", "30", "60", "120", "180", "240", "300", "600" };
 			SelectedChartLengthValue = "10";
 		}

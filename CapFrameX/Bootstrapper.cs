@@ -11,6 +11,8 @@ using System;
 using System.Globalization;
 using System.Reflection;
 using System.Windows;
+using CapFrameX.Contracts.Configuration;
+using CapFrameX.Configuration;
 
 namespace CapFrameX
 {
@@ -34,6 +36,7 @@ namespace CapFrameX
 
 			// Vertical components
 			Container.Register<IEventAggregator, EventAggregator>(Reuse.Singleton, null, null, IfAlreadyRegistered.Replace, "EventAggregator");
+			Container.Register<IAppConfiguration, CapFrameXConfiguration>(Reuse.Singleton);
 
 			// Prism
 			Container.Register<IRegionManager, RegionManager>(Reuse.Singleton, null, null, IfAlreadyRegistered.Replace, "RegionManager");
