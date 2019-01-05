@@ -210,7 +210,7 @@
                 </Button>
             </Grid>
         </Expander>
-        <lvc:CartesianChart Margin="0 0 10 10" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Series="{Binding ComparisonColumnChartSeriesCollection}" LegendLocation="Top"
+        <lvc:CartesianChart Margin="0 0 10 0" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Series="{Binding ComparisonColumnChartSeriesCollection}" LegendLocation="Top"
                             Visibility="{Binding InitialIconVisibility, Converter={StaticResource TrueToVisibleConverter}}" Background="#F5F5F5">
             <lvc:CartesianChart.AxisX>
                 <lvc:Axis Title="Comparisons" Labels="{Binding ComparisonColumnChartLabels}" Foreground="Black"></lvc:Axis>

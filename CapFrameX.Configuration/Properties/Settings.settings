@@ -3,7 +3,7 @@
   <Profiles />
   <Settings>
     <Setting Name="MovingAverageWindowSize" Type="System.Int32" Scope="User">
-      <Value Profile="(Default)">20</Value>
+      <Value Profile="(Default)">40</Value>
     </Setting>
   </Settings>
 </SettingsFile>
