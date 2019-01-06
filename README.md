@@ -2,7 +2,7 @@
 Frametimes analysis tool compatible with OCAT v1.3
 
 # Release
-Download-Link: https://github.com/DevTechProfile/CapFrameX/releases
+Download link: https://github.com/DevTechProfile/CapFrameX/releases
 
 # Single record analysis
 ![Screenshot](Images/Single_Record.png)
@@ -11,7 +11,7 @@ Download-Link: https://github.com/DevTechProfile/CapFrameX/releases
 ![Screenshot](Images/Record_Comparison.png)
 
 # L-shape analysis
-![Screenshot](Images/Lshape_Comparison.png.png)
+![Screenshot](Images/Lshape_Comparison.png)
 
 # Report table (Excel)
 ![Screenshot](Images/Report_Table.png)
