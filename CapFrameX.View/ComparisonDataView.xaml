@@ -27,7 +27,7 @@
             <mvvm:ZoomingModeConverter x:Key="ZoomingModeConverter"></mvvm:ZoomingModeConverter>
             <mvvm:BoolToVisibilityConverter x:Key="FalseToCollapsedConverter" FalseValue="Collapsed" TrueValue="Visible"/>
             <mvvm:BoolToVisibilityConverter x:Key="TrueToVisibleConverter" FalseValue="Visible" TrueValue="Collapsed"/>
-            <mvvm:AddValueConverter x:Key="AddValueConverter" Offset="-10"/>
+            <mvvm:AddValueConverter x:Key="AddValueConverter" Offset="-2"/>
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid>
@@ -40,9 +40,9 @@
             <ColumnDefinition Width="1*"></ColumnDefinition>
             <ColumnDefinition Width="300"></ColumnDefinition>
         </Grid.ColumnDefinitions>
-        <StackPanel Margin="10 10 10 0" Grid.Row="0" Grid.Column="1" Orientation="Vertical">
+        <StackPanel Margin="5 10 5 0" Grid.Row="0" Grid.Column="1" Orientation="Vertical">
             <TextBox IsReadOnly="True" Background="#e6e6e6" materialDesign:HintAssist.Hint="Comparisons" />
-            <Border Margin="0 10 0 0" BorderThickness="1" BorderBrush="#CCC" MinHeight="300" Height="{Binding ElementName=ComparisonChart, Path=ActualHeight, Converter={StaticResource AddValueConverter}}">
+            <Border Margin="0 5 0 0" BorderThickness="1" BorderBrush="#CCC" MinHeight="300" Height="{Binding ElementName=ComparisonChart, Path=ActualHeight, Converter={StaticResource AddValueConverter}}">
                 <Grid Background="#e6e6e6">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="40"></RowDefinition>
@@ -50,9 +50,10 @@
                         <RowDefinition Height="1*"></RowDefinition>
                         <RowDefinition Height="Auto"></RowDefinition>
                     </Grid.RowDefinitions>
-                    <StackPanel Grid.Row="0" Orientation="Horizontal">
+                    <Grid Grid.Row="0">
                         <materialDesign:PopupBox Style="{StaticResource MaterialDesignMultiFloatingActionAccentPopupBox}"
                                                  VerticalAlignment="Center"
+												 HorizontalAlignment="Left"
                                                  Width="30" Height="30"
                                                  ToggleContent="{materialDesign:PackIcon BallotOutline, Size=24}"
                                                  Margin="10 0 0 0"
@@ -72,7 +73,15 @@
                                 </Button>
                             </StackPanel>
                         </materialDesign:PopupBox>
-                    </StackPanel>
+						<Button Style="{StaticResource MaterialDesignFloatingActionMiniButton}"
+								Margin="0 0 10 0"
+								HorizontalAlignment="Right"
+								Width="30" Height="30"
+								ToolTip="Remove all comparisons"
+								Command="{Binding RemoveAllComparisonsCommand}">
+							<materialDesign:PackIcon Kind="PlaylistRemove" Height="24" Width="24" />
+						</Button>
+					</Grid>
                     <Separator Grid.Row="1"
                                Style="{StaticResource MaterialDesignDarkSeparator}"
                                Margin="5 0 5 0"/>
@@ -159,29 +168,29 @@
             <TabItem Header="Frametimes">
                 <lvc:CartesianChart Name="ComparisonChart" MouseDoubleClick="ResetChart_MouseDoubleClick" DisableAnimations="True" Series="{Binding ComparisonSeriesCollection}" Zoom="{Binding ZoomingMode}" >
                     <lvc:CartesianChart.AxisX>
-                        <lvc:Axis Title="Samples" Name="FrametimesX" Separator="{x:Static lvc:DefaultAxes.CleanSeparator}" Foreground="Black"/>
+                        <lvc:Axis Title="Recording time (sec)" Name="FrametimesX" Separator="{x:Static lvc:DefaultAxes.CleanSeparator}" Foreground="Black"/>
                     </lvc:CartesianChart.AxisX>
                     <lvc:CartesianChart.AxisY>
-                        <lvc:Axis Title="ms" Name="FrametimesY" Foreground="Black"/>
+                        <lvc:Axis Title="Frametime (ms)" Name="FrametimesY" Foreground="Black"/>
                     </lvc:CartesianChart.AxisY>
                 </lvc:CartesianChart>
             </TabItem>
             <TabItem Header="L-Shape">
                 <lvc:CartesianChart MouseDoubleClick="ResetChart_MouseDoubleClick" Series="{Binding ComparisonLShapeCollection}" Zoom="{Binding ZoomingMode}" >
                     <lvc:CartesianChart.AxisX>
-                        <lvc:Axis Title="Quantiles" Name="LShapeX" Foreground="Black">
+                        <lvc:Axis Title="Quantiles (%)" Name="LShapeX" Foreground="Black">
                             <lvc:Axis.Separator >
                                 <lvc:Separator Step="1"></lvc:Separator>
                             </lvc:Axis.Separator>
                         </lvc:Axis>
                     </lvc:CartesianChart.AxisX>
                     <lvc:CartesianChart.AxisY>
-                        <lvc:Axis Title="ms" Name="LShapeY" Foreground="Black"/>
+                        <lvc:Axis Title="Frametime (ms)" Name="LShapeY" Foreground="Black"/>
                     </lvc:CartesianChart.AxisY>
                 </lvc:CartesianChart>
             </TabItem>
         </TabControl>
-        <Expander Grid.Row="1" Grid.ColumnSpan="2" Name="SettingsExpander" Background="#F5F5F5" Margin="0 10 0 10" Header="Data/Chart Settings" HorizontalAlignment="Stretch"
+        <Expander Grid.Row="1" Grid.ColumnSpan="2" Name="SettingsExpander" Background="#F5F5F5" Margin="0 5 0 5" Header="Data/Chart Settings" HorizontalAlignment="Stretch"
                   Visibility="{Binding InitialIconVisibility, Converter={StaticResource TrueToVisibleConverter}}" >
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -210,7 +219,7 @@
                 </Button>
             </Grid>
         </Expander>
-        <lvc:CartesianChart Margin="0 0 10 0" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Series="{Binding ComparisonColumnChartSeriesCollection}" LegendLocation="Top"
+        <lvc:CartesianChart Margin="0 0 5 0" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Series="{Binding ComparisonColumnChartSeriesCollection}" LegendLocation="Top"
                             Visibility="{Binding InitialIconVisibility, Converter={StaticResource TrueToVisibleConverter}}" Background="#F5F5F5">
             <lvc:CartesianChart.AxisX>
                 <lvc:Axis Title="Comparisons" Labels="{Binding ComparisonColumnChartLabels}" Foreground="Black"></lvc:Axis>

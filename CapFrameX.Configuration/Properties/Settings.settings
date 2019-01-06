@@ -5,5 +5,14 @@
     <Setting Name="MovingAverageWindowSize" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">40</Value>
     </Setting>
+    <Setting Name="StutteringFactor" Type="System.Double" Scope="User">
+      <Value Profile="(Default)">2.5</Value>
+    </Setting>
+    <Setting Name="ObservedDirectory" Type="System.String" Scope="User">
+      <Value Profile="(Default)">MyDocuments\OCAT\Captures</Value>
+    </Setting>
+    <Setting Name="ChartQualityLevel" Type="System.String" Scope="User">
+      <Value Profile="(Default)">High</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

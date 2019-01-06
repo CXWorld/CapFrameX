@@ -70,38 +70,34 @@
 								   Margin="8,8,8,16">
 								OPTIONS
 						</TextBlock>
-						<TextBox Grid.Column="0" Grid.Row="1" materialDesign:HintAssist.Hint="Setting 1" Text="200" />
-						<TextBox Grid.Column="0" Grid.Row="2" materialDesign:HintAssist.Hint="Setting 2" Text="400" />
-						<TextBox Grid.Column="0" Grid.Row="3" materialDesign:HintAssist.Hint="Setting 3" Text="600" />
-						<CheckBox Grid.Column="1" Grid.Row="1" VerticalAlignment="Bottom" />
-						<CheckBox Grid.Column="1" Grid.Row="2" IsChecked="True" VerticalAlignment="Bottom" />
-						<CheckBox Grid.Column="1" Grid.Row="3" VerticalAlignment="Bottom" />
-						<ComboBox Grid.Column="0" Grid.Row="4" materialDesign:HintAssist.Hint="Setting 4"
-									materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="200" Margin="8 8 8 8">
-							<ComboBoxItem>
-								25%
-							</ComboBoxItem>
-							<ComboBoxItem>
-								50%
-							</ComboBoxItem>
-							<ComboBoxItem>
-								75%
-							</ComboBoxItem>
-							<ComboBoxItem>
-								100%
-							</ComboBoxItem>
-							<ComboBoxItem>
-								150%
-							</ComboBoxItem>
-							<ComboBoxItem>
-								200%
-							</ComboBoxItem>
-							<ComboBoxItem>
-								250%
-							</ComboBoxItem>
-							<ComboBoxItem>
-								501%
-							</ComboBoxItem>
+						<ComboBox Grid.Column="0" Grid.Row="1" materialDesign:HintAssist.Hint="Moving average window size"
+								  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="200" Margin="8 8 8 8"
+								  ItemsSource="{Binding WindowSizes}">
+							<ComboBox.Text>
+								<Binding Path="SelectWindowSize"
+										 Mode="TwoWay"
+										 UpdateSourceTrigger="PropertyChanged">
+								</Binding>
+							</ComboBox.Text>
+						</ComboBox>
+						<TextBox Grid.Column="0" Grid.Row="2" materialDesign:HintAssist.Hint="Stuttering factor" >
+							<TextBox.Text>
+								<Binding Path="StutteringFactor"
+										 Mode="TwoWay"
+										 UpdateSourceTrigger="LostFocus">
+								</Binding>
+							</TextBox.Text>
+						</TextBox>
+						<TextBox Grid.Column="0" Grid.Row="3" IsEnabled="False" materialDesign:HintAssist.Hint="Observed directory (OCAT V1.3)" Text="{Binding ObservedDirectory, Mode=OneWay}" />
+						<ComboBox Grid.Column="0" Grid.Row="4" materialDesign:HintAssist.Hint="Chart quality level"
+								  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="200" Margin="8 8 8 8"
+								  ItemsSource="{Binding ChartQualityLevels}">
+							<ComboBox.Text>
+								<Binding Path="SelectedChartQualityLevel"
+										 Mode="TwoWay"
+										 UpdateSourceTrigger="PropertyChanged">
+								</Binding>
+							</ComboBox.Text>
 						</ComboBox>
 					</Grid>
 				</materialDesign:PopupBox>

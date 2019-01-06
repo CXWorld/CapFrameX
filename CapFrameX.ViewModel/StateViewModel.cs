@@ -1,4 +1,5 @@
-﻿using CapFrameX.Contracts.OcatInterface;
+﻿using CapFrameX.Contracts.Configuration;
+using CapFrameX.Contracts.OcatInterface;
 using Prism.Events;
 using Prism.Mvvm;
 using System;
@@ -12,6 +13,7 @@ namespace CapFrameX.ViewModel
 	{
 		private readonly IRecordDirectoryObserver _recordObserver;
 		private readonly IEventAggregator _eventAggregator;
+		private readonly IAppConfiguration _appConfiguration;
 
 		public bool IsDirectoryObserving
 		{
@@ -28,10 +30,13 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-		public StateViewModel(IRecordDirectoryObserver recordObserver, IEventAggregator eventAggregator)
+		public StateViewModel(IRecordDirectoryObserver recordObserver, 
+							  IEventAggregator eventAggregator,
+							  IAppConfiguration appConfiguration)
 		{
 			_recordObserver = recordObserver;
 			_eventAggregator = eventAggregator;
+			_appConfiguration = appConfiguration;
 		}
 
 		private Assembly GetAssemblyByName(string name)

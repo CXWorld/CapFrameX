@@ -34,5 +34,41 @@ namespace CapFrameX.Configuration.Properties {
                 this["MovingAverageWindowSize"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("2.5")]
+        public double StutteringFactor {
+            get {
+                return ((double)(this["StutteringFactor"]));
+            }
+            set {
+                this["StutteringFactor"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("MyDocuments\\OCAT\\Captures")]
+        public string ObservedDirectory {
+            get {
+                return ((string)(this["ObservedDirectory"]));
+            }
+            set {
+                this["ObservedDirectory"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("High")]
+        public string ChartQualityLevel {
+            get {
+                return ((string)(this["ChartQualityLevel"]));
+            }
+            set {
+                this["ChartQualityLevel"] = value;
+            }
+        }
     }
 }

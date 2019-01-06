@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Windows;
 using System.Windows.Input;
+using CapFrameX.Contracts.Configuration;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Extensions;
 using CapFrameX.OcatInterface;
@@ -21,6 +22,7 @@ namespace CapFrameX.ViewModel
 	{
 		private readonly IStatisticProvider _frametimeStatisticProvider;
 		private readonly IEventAggregator _eventAggregator;
+		private readonly IAppConfiguration _appConfiguration;
 
 		private bool _useEventMessages;
 
@@ -29,10 +31,13 @@ namespace CapFrameX.ViewModel
 
 		public ICommand CopyTableDataCommand { get; }
 
-		public ReportViewModel(IStatisticProvider frametimeStatisticProvider, IEventAggregator eventAggregator)
+		public ReportViewModel(IStatisticProvider frametimeStatisticProvider, 
+							  IEventAggregator eventAggregator,
+							  IAppConfiguration appConfiguration)
 		{
 			_frametimeStatisticProvider = frametimeStatisticProvider;
 			_eventAggregator = eventAggregator;
+			_appConfiguration = appConfiguration;
 
 			CopyTableDataCommand = new DelegateCommand(OnCopyTableData);
 
@@ -120,7 +125,7 @@ namespace CapFrameX.ViewModel
 			var p1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fpsSequence, 0.01), 0);
 			var p0dot1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fpsSequence, 0.001), 0);
 			var min = Math.Round(fpsSequence.Min(), 0);
-			var adaptiveStandardDeviation = Math.Round(_frametimeStatisticProvider.GetAdaptiveStandardDeviation(fpsSequence, 20), 0);
+			var adaptiveStandardDeviation = Math.Round(_frametimeStatisticProvider.GetAdaptiveStandardDeviation(fpsSequence, _appConfiguration.MovingAverageWindowSize), 0);
 
 			var reportInfo = new ReportInfo()
 			{
@@ -129,8 +134,8 @@ namespace CapFrameX.ViewModel
 				Time = recordInfo.CreationTime,
 				NumberOfSamples = session.FrameTimes.Count,
 				RecordTime = Math.Round(session.LastFrameTime, 2).ToString(CultureInfo.InvariantCulture),
-				Cpu = session.ProcessorName.Trim(new Char[] { ' ', '"' }),
-				GraphicCard = session.GraphicCardName.Trim(new Char[] { ' ', '"' }),
+				Cpu = session.ProcessorName == null ? "-": session.ProcessorName.Trim(new Char[] { ' ', '"' }),
+				GraphicCard = session.GraphicCardName == null ? "-" : session.GraphicCardName.Trim(new Char[] { ' ', '"' }),
 				MaxFps = max,
 				AverageFps = average,
 				OnePercentQuantileFps = p1_quantile,

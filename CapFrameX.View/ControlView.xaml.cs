@@ -1,4 +1,5 @@
-﻿using CapFrameX.Extensions;
+﻿using CapFrameX.Configuration;
+using CapFrameX.Extensions;
 using CapFrameX.OcatInterface;
 using CapFrameX.ViewModel;
 using Prism.Events;
@@ -31,7 +32,8 @@ namespace CapFrameX.View
 			// Design time!
 			if (DesignerProperties.GetIsInDesignMode(this))
 			{
-				DataContext = new ControlViewModel(new RecordDirectoryObserver(), new EventAggregator());
+				var appConfiguration = new CapFrameXConfiguration();
+				DataContext = new ControlViewModel(new RecordDirectoryObserver(appConfiguration), new EventAggregator());
 			}
 		}
 

@@ -1,4 +1,5 @@
-﻿using CapFrameX.ViewModel;
+﻿using CapFrameX.Configuration;
+using CapFrameX.ViewModel;
 using Prism.Events;
 using Prism.Regions;
 using System.ComponentModel;
@@ -18,7 +19,8 @@ namespace CapFrameX.View
 			// Design time!
 			if (DesignerProperties.GetIsInDesignMode(this))
 			{
-				DataContext = new ColorbarViewModel(new RegionManager(), new EventAggregator());
+				var appConfiguration = new CapFrameXConfiguration();
+				DataContext = new ColorbarViewModel(new RegionManager(), new EventAggregator(), appConfiguration);
 			}
 		}
 	}

@@ -5,6 +5,7 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Collections.Generic;
 using CapFrameX.Contracts.OcatInterface;
+using CapFrameX.Contracts.Configuration;
 
 namespace CapFrameX.OcatInterface
 {
@@ -14,6 +15,7 @@ namespace CapFrameX.OcatInterface
 		private readonly FileSystemWatcher _fileSystemWatcher;
 		private readonly ISubject<string> _recordCreatedStream;
 		private readonly ISubject<string> _recordDeletedStream;
+		private readonly IAppConfiguration _appConfiguration;
 
 		public bool IsActive { get; set; }
 
@@ -23,12 +25,10 @@ namespace CapFrameX.OcatInterface
 		public IObservable<FileInfo> RecordDeletedStream
 			=> _recordDeletedStream.Where(p => IsActive).Select(path => new FileInfo(path)).AsObservable();
 
-		public RecordDirectoryObserver()
+		public RecordDirectoryObserver(IAppConfiguration appConfiguration)
 		{
-			// ToDo: Get from config
-			var documentFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-			// compatible with OCAT V1.3
-			_recordDirectory = Path.Combine(documentFolder, @"OCAT\Captures");
+			_appConfiguration = appConfiguration;
+			_recordDirectory = GetObservedDirectory(_appConfiguration.ObservedDirectory);
 
 			if (!Directory.Exists(_recordDirectory))
 			{
@@ -46,6 +46,26 @@ namespace CapFrameX.OcatInterface
 			_recordDeletedStream = new Subject<string>();
 		}
 
+		private string GetObservedDirectory(string observedDirectory)
+		{
+			var documentFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+			string path = null;
+
+			// >= V1.3
+			if (observedDirectory.Contains("Captures"))
+			{
+				path = Path.Combine(documentFolder, @"OCAT\Captures");
+			}
+
+			// < V1.3
+			else if (observedDirectory.Contains("Recordings"))
+			{
+				path = Path.Combine(documentFolder, @"OCAT\Recordings");
+			}
+
+			return path;
+		}
+
 		private void WatcherCreated(object sender, FileSystemEventArgs e)
 		{
 			if (!e.FullPath.Contains("CapFrameX"))
@@ -58,8 +78,11 @@ namespace CapFrameX.OcatInterface
 		public IEnumerable<FileInfo> GetAllRecordFileInfo()
 		{
 			return Directory.GetFiles(_recordDirectory, "*.csv",
-										 SearchOption.TopDirectoryOnly).Where(file => !file
-										 .Contains("CapFrameX")).Select(file => new FileInfo(file));
+										 SearchOption.TopDirectoryOnly).Where(file => 
+										 !file.Contains("CapFrameX") &&
+										 !file.Contains("SearchUI") &&
+										 !file.Contains("ShellExperienceHost")
+										 ).Select(file => new FileInfo(file));
 		}
 	}
 }

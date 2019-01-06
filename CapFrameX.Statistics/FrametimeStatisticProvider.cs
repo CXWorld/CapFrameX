@@ -23,10 +23,10 @@ namespace CapFrameX.Statistics
 			return Math.Sqrt(sumResidualSquares / (sequence.Count - 1));
 		}
 
-		public double GetStutteringPercentage(IList<double> sequence)
+		public double GetStutteringPercentage(IList<double> sequence, double stutteringFactor)
 		{
 			var average = sequence.Average();
-			var stutteringCount = sequence.Count(element => element > 2.5 * average);
+			var stutteringCount = sequence.Count(element => element > stutteringFactor * average);
 
 			return Math.Round(100 * (double)stutteringCount / sequence.Count, 3);
 		}

@@ -12,6 +12,7 @@ using System.Windows.Data;
 using System.Reactive.Linq;
 using CapFrameX.Extensions;
 using CapFrameX.Statistics;
+using CapFrameX.Configuration;
 
 namespace CapFrameX.View
 {
@@ -36,7 +37,8 @@ namespace CapFrameX.View
 			// Design time!
 			if (DesignerProperties.GetIsInDesignMode(this))
 			{
-				DataContext = new MainViewModel(new RecordDirectoryObserver(), new FrametimeStatisticProvider(), new FrametimeAnalyzer());
+				var appConfiguration = new CapFrameXConfiguration();
+				DataContext = new MainViewModel(new RecordDirectoryObserver(appConfiguration), new FrametimeStatisticProvider(), new FrametimeAnalyzer());
 			}
 		}
 

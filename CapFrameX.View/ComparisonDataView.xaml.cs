@@ -1,4 +1,5 @@
-﻿using CapFrameX.Statistics;
+﻿using CapFrameX.Configuration;
+using CapFrameX.Statistics;
 using CapFrameX.ViewModel;
 using Prism.Events;
 using System.ComponentModel;
@@ -18,7 +19,8 @@ namespace CapFrameX.View
 			// Design time!
 			if (DesignerProperties.GetIsInDesignMode(this))
 			{
-				DataContext = new ComparisonDataViewModel(new FrametimeStatisticProvider(), new FrametimeAnalyzer(), new EventAggregator());
+				var appConfiguration = new CapFrameXConfiguration();
+				DataContext = new ComparisonDataViewModel(new FrametimeStatisticProvider(), new FrametimeAnalyzer(), new EventAggregator(), appConfiguration);
 			}
 		}
 

@@ -1,5 +1,6 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using CapFrameX.EventAggregation.Messages;
+using CapFrameX.Extensions;
 using CapFrameX.OcatInterface;
 using CapFrameX.Statistics;
 using LiveCharts;
@@ -171,7 +172,6 @@ namespace CapFrameX.ViewModel
 			set
 			{
 				_selectWindowSize = value;
-				_appConfiguration.MovingAverageWindowSize = value;
 				RaisePropertyChanged();
 				UpdateCharts();
 			}
@@ -246,7 +246,8 @@ namespace CapFrameX.ViewModel
 		public ICommand CopySystemInfoCommand { get; }
 
 		public DataViewModel(IStatisticProvider frametimeStatisticProvider,
-							 IFrametimeAnalyzer frametimeAnalyzer, IEventAggregator eventAggregator, 
+							 IFrametimeAnalyzer frametimeAnalyzer, 
+							 IEventAggregator eventAggregator, 
 							 IAppConfiguration appConfiguration)
 		{
 			_frametimeStatisticProvider = frametimeStatisticProvider;
@@ -538,11 +539,11 @@ namespace CapFrameX.ViewModel
 
 			var frametimeValues = new GearedValues<double>();
 			frametimeValues.AddRange(frametimes);
-			frametimeValues.WithQuality(Quality.High);
+			frametimeValues.WithQuality(_appConfiguration.ChartQualityLevel.ConverToEnum<Quality>());
 
 			var movingAverageValues = new GearedValues<double>();
 			movingAverageValues.AddRange(_frametimeStatisticProvider.GetMovingAverage(frametimes, SelectWindowSize));
-			movingAverageValues.WithQuality(Quality.High);
+			movingAverageValues.WithQuality(_appConfiguration.ChartQualityLevel.ConverToEnum<Quality>());
 
 			SeriesCollection = new SeriesCollection()
 			{
@@ -603,7 +604,7 @@ namespace CapFrameX.ViewModel
 				return;
 
 			var fpsSequence = frameTimes.Select(ft => 1000 / ft).ToList();
-			var stutteringPercentage = _frametimeStatisticProvider.GetStutteringPercentage(frameTimes);
+			var stutteringPercentage = _frametimeStatisticProvider.GetStutteringPercentage(frameTimes, _appConfiguration.StutteringFactor);
 
 			IChartValues values = new ChartValues<double> { stutteringPercentage };
 
