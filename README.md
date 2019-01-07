@@ -1,7 +1,7 @@
 # CapFrameX
 Frametimes analysis tool compatible with OCAT v1.3
 
-# Release
+## Release
 Download link: https://github.com/DevTechProfile/CapFrameX/releases
 
 # Single record analysis
