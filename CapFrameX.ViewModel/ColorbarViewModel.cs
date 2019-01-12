@@ -8,22 +8,29 @@ using Prism.Regions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows.Input;
+using Prism.Commands;
+using Microsoft.WindowsAPICodePack.Dialogs;
+using CapFrameX.Contracts.OcatInterface;
 
 namespace CapFrameX.ViewModel
 {
 	public class ColorbarViewModel : BindableBase
 	{
 		private readonly IRegionManager _regionManager;
+		private readonly IRecordDirectoryObserver _recordDirectoryObserver;
 		private readonly IEventAggregator _eventAggregator;
 		private readonly IAppConfiguration _appConfiguration;
 
 		private PubSubEvent<ViewMessages.ResetRecord> _resetRecordEvent;
+		private PubSubEvent<AppMessages.UpdateObservedDirectory> _updateObservedFolder;
 		private Quality _selectedChartQualityLevel;
 		private bool _singleRecordIsChecked = true;
 		private bool _recordComparisonIsChecked;
 		private bool _reportIsChecked;
 		private int _selectWindowSize;
 		private double _stutteringFactor;
+		private string _observedDirectory;
 
 		public bool SingleRecordIsChecked
 		{
@@ -97,29 +104,61 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
+		public ICommand SelectObeservedFolderCommand { get; }
+
 		public IList<int> WindowSizes { get; }
 
-		public string ObservedDirectory => _appConfiguration.ObservedDirectory;
+		public string ObservedDirectory
+		{
+			get { return _observedDirectory; }
+			set
+			{
+				_observedDirectory = value;
+				RaisePropertyChanged();
+			}
+		}
 
 		public Array ChartQualityLevels => Enum.GetValues(typeof(Quality));
 
 		public ColorbarViewModel(IRegionManager regionManager,
+							     IRecordDirectoryObserver recordDirectoryObserver,
 								 IEventAggregator eventAggregator,
 								 IAppConfiguration appConfiguration)
 		{
 			_regionManager = regionManager;
+			_recordDirectoryObserver = recordDirectoryObserver;
 			_eventAggregator = eventAggregator;
 			_appConfiguration = appConfiguration;
 
 			StutteringFactor = _appConfiguration.StutteringFactor;
 			SelectWindowSize = _appConfiguration.MovingAverageWindowSize;
 			SelectedChartQualityLevel = _appConfiguration.ChartQualityLevel.ConverToEnum<Quality>();
+			ObservedDirectory = _appConfiguration.ObservedDirectory;
 			WindowSizes = new List<int>(Enumerable.Range(4, 100 - 4));
+			SelectObeservedFolderCommand = new DelegateCommand(OnSelectObeservedFolder);
 
 			SetAggregatorEvents();
 
 			SubscribeToOverlayActivate();
 			SubscribeToOverlayDeactivate();
+		}
+
+		private void OnSelectObeservedFolder()
+		{
+			var dialog = new CommonOpenFileDialog
+			{
+				IsFolderPicker = true
+			};
+
+			CommonFileDialogResult result = dialog.ShowDialog();
+
+			if (result == CommonFileDialogResult.Ok)
+			{
+				_appConfiguration.ObservedDirectory = dialog.FileName;
+				_recordDirectoryObserver.UpdateObservedDirectory(dialog.FileName);
+				ObservedDirectory = dialog.FileName;
+				_updateObservedFolder.Publish(new AppMessages.UpdateObservedDirectory(dialog.FileName));
+			}
 		}
 
 		private void OnSingleRecordIsCheckedChanged()
@@ -143,6 +182,7 @@ namespace CapFrameX.ViewModel
 		private void SetAggregatorEvents()
 		{
 			_resetRecordEvent = _eventAggregator.GetEvent<PubSubEvent<ViewMessages.ResetRecord>>();
+			_updateObservedFolder = _eventAggregator.GetEvent<PubSubEvent<AppMessages.UpdateObservedDirectory>>();
 		}
 
 		private void SubscribeToOverlayActivate()
@@ -153,7 +193,7 @@ namespace CapFrameX.ViewModel
 								var controlView = _regionManager.Regions["ControlRegion"].Views.FirstOrDefault();
 								_regionManager.Regions["ControlRegion"].Deactivate(controlView);
 								var colorbarView = _regionManager.Regions["ColorbarRegion"].Views.FirstOrDefault();
-								_regionManager.Regions["ColorbarRegion"].Deactivate(colorbarView);								
+								_regionManager.Regions["ColorbarRegion"].Deactivate(colorbarView);
 
 								var dataRegionViews = _regionManager.Regions["DataRegion"].ActiveViews;
 

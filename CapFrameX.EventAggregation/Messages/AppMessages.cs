@@ -11,5 +11,15 @@
 				IsObserving = isObserving;
 			}
 		}
+
+		public class UpdateObservedDirectory
+		{
+			public string Directory { get; }
+
+			public UpdateObservedDirectory(string directory)
+			{
+				Directory = directory;
+			}	
+		}
 	}
 }

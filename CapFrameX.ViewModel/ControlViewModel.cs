@@ -68,6 +68,7 @@ namespace CapFrameX.ViewModel
 
 			SetAggregatorEvents();
 			SubscribeToResetRecord();
+			SubscribeToObservedDiretoryUpdated();
 		}
 
 		private void OnOpenEditingDialog()
@@ -131,6 +132,22 @@ namespace CapFrameX.ViewModel
 							.Subscribe(msg =>
 							{
 								SelectedRecordInfo = null;
+							});
+		}
+
+
+		private void SubscribeToObservedDiretoryUpdated()
+		{
+			_eventAggregator.GetEvent<PubSubEvent<AppMessages.UpdateObservedDirectory>>()
+							.Subscribe(msg =>
+							{
+								SelectedRecordInfo = null;
+								RecordInfoList.Clear();
+
+								foreach (var fileInfo in _recordObserver.GetAllRecordFileInfo())
+								{
+									AddToRecordInfoList(fileInfo);
+								}
 							});
 		}
 	}

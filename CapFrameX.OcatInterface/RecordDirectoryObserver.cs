@@ -11,11 +11,12 @@ namespace CapFrameX.OcatInterface
 {
 	public class RecordDirectoryObserver : IRecordDirectoryObserver
 	{
-		private readonly string _recordDirectory;
-		private readonly FileSystemWatcher _fileSystemWatcher;
 		private readonly ISubject<string> _recordCreatedStream;
 		private readonly ISubject<string> _recordDeletedStream;
 		private readonly IAppConfiguration _appConfiguration;
+
+		private string _recordDirectory;
+		private FileSystemWatcher _fileSystemWatcher;
 
 		public bool IsActive { get; set; }
 
@@ -28,7 +29,7 @@ namespace CapFrameX.OcatInterface
 		public RecordDirectoryObserver(IAppConfiguration appConfiguration)
 		{
 			_appConfiguration = appConfiguration;
-			_recordDirectory = GetObservedDirectory(_appConfiguration.ObservedDirectory);
+			_recordDirectory = GetInitialObservedDirectory(_appConfiguration.ObservedDirectory);
 
 			if (!Directory.Exists(_recordDirectory))
 			{
@@ -46,7 +47,7 @@ namespace CapFrameX.OcatInterface
 			_recordDeletedStream = new Subject<string>();
 		}
 
-		private string GetObservedDirectory(string observedDirectory)
+		private string GetInitialObservedDirectory(string observedDirectory)
 		{
 			var documentFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
 			string path = null;
@@ -83,6 +84,20 @@ namespace CapFrameX.OcatInterface
 										 !file.Contains("SearchUI") &&
 										 !file.Contains("ShellExperienceHost")
 										 ).Select(file => new FileInfo(file));
+		}
+
+		public void UpdateObservedDirectory(string directory)
+		{
+			IsActive = false;
+
+			_recordDirectory = directory;
+			_fileSystemWatcher = new FileSystemWatcher(directory);
+			_fileSystemWatcher.Created += new FileSystemEventHandler(WatcherCreated);
+			_fileSystemWatcher.Deleted += new FileSystemEventHandler(WatcherDeleted);
+			_fileSystemWatcher.EnableRaisingEvents = true;
+			_fileSystemWatcher.IncludeSubdirectories = false;
+
+			IsActive = true;
 		}
 	}
 }

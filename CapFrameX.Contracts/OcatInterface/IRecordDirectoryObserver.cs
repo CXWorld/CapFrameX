@@ -8,10 +8,12 @@ namespace CapFrameX.Contracts.OcatInterface
     {
         bool IsActive { get; set; }
 
-        IObservable<FileInfo> RecordCreatedStream { get; }
+		IObservable<FileInfo> RecordCreatedStream { get; }
 
         IObservable<FileInfo> RecordDeletedStream { get; }
 
-        IEnumerable<FileInfo> GetAllRecordFileInfo();
+		void UpdateObservedDirectory(string directory);
+
+		IEnumerable<FileInfo> GetAllRecordFileInfo();
     }
 }
