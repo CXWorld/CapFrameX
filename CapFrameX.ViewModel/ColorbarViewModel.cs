@@ -117,6 +117,9 @@ namespace CapFrameX.ViewModel
 			WindowSizes = new List<int>(Enumerable.Range(4, 100 - 4));
 
 			SetAggregatorEvents();
+
+			SubscribeToOverlayActivate();
+			SubscribeToOverlayDeactivate();
 		}
 
 		private void OnSingleRecordIsCheckedChanged()
@@ -140,6 +143,55 @@ namespace CapFrameX.ViewModel
 		private void SetAggregatorEvents()
 		{
 			_resetRecordEvent = _eventAggregator.GetEvent<PubSubEvent<ViewMessages.ResetRecord>>();
+		}
+
+		private void SubscribeToOverlayActivate()
+		{
+			_eventAggregator.GetEvent<PubSubEvent<ViewMessages.ShowOverlay>>()
+							.Subscribe(msg =>
+							{
+								var controlView = _regionManager.Regions["ControlRegion"].Views.FirstOrDefault();
+								_regionManager.Regions["ControlRegion"].Deactivate(controlView);
+								var colorbarView = _regionManager.Regions["ColorbarRegion"].Views.FirstOrDefault();
+								_regionManager.Regions["ColorbarRegion"].Deactivate(colorbarView);								
+
+								var dataRegionViews = _regionManager.Regions["DataRegion"].ActiveViews;
+
+								foreach (var view in dataRegionViews)
+								{
+									_regionManager.Regions["DataRegion"].Deactivate(view);
+								}
+
+								_regionManager.RequestNavigate("OverlayRegion", "OverlayView");
+							});
+		}
+
+		private void SubscribeToOverlayDeactivate()
+		{
+			_eventAggregator.GetEvent<PubSubEvent<ViewMessages.HideOverlay>>()
+							.Subscribe(msg =>
+							{
+								var overlayView = _regionManager.Regions["OverlayRegion"].Views.FirstOrDefault();
+								_regionManager.Regions["OverlayRegion"].Deactivate(overlayView);
+
+								_regionManager.RequestNavigate("ControlRegion", "ControlView");
+								_regionManager.RequestNavigate("ColorbarRegion", "ColorbarView");
+
+								if (SingleRecordIsChecked)
+								{
+									_regionManager.RequestNavigate("DataRegion", "DataView");
+								}
+
+								if (RecordComparisonIsChecked)
+								{
+									_regionManager.RequestNavigate("DataRegion", "ComparisonDataView");
+								}
+
+								if (ReportIsChecked)
+								{
+									_regionManager.RequestNavigate("DataRegion", "ReportView");
+								}
+							});
 		}
 	}
 }

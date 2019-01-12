@@ -127,6 +127,8 @@ namespace CapFrameX.ViewModel
 
 		public ICommand GpuContextCommand { get; }
 
+		public ICommand CustomContextCommand { get; }		
+
 		public ICommand RemoveAllComparisonsCommand { get; }
 
 		public Func<double, string> ComparisonColumnChartFormatter { get; private set; } = value => value.ToString("N");
@@ -150,6 +152,7 @@ namespace CapFrameX.ViewModel
 			DateTimeContextCommand = new DelegateCommand(OnDateTimeContext);
 			CpuContextCommand = new DelegateCommand(OnCpuContext);
 			GpuContextCommand = new DelegateCommand(OnGpuContex);
+			CustomContextCommand = new DelegateCommand(OnCustomContex);
 			RemoveAllComparisonsCommand = new DelegateCommand(OnRemoveAllComparisons);
 
 			ComparisonSeriesCollection = new SeriesCollection();
@@ -214,6 +217,12 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
+		private void OnCustomContex()
+		{
+			_comparisonContext = EComparisonContext.Custom;
+			SetLabelCustomContext();
+		}
+
 		private void OnGpuContex()
 		{
 			_comparisonContext = EComparisonContext.GPU;
@@ -272,12 +281,12 @@ namespace CapFrameX.ViewModel
 				var processorName = record.Session.ProcessorName ?? "-";
 
 				int gameNameLength = record.Game.Length;
-				int cpuInfoLength = processorName.Trim(new Char[] { ' ', '"' }).Length;
+				int cpuInfoLength = processorName.Length;
 
 				int maxAlignment = gameNameLength < cpuInfoLength ? cpuInfoLength : gameNameLength;
 				var alignmentFormat = "{0," + maxAlignment.ToString() + "}";
 				var gameName = string.Format(alignmentFormat, record.Game);
-				var cpuInfo = string.Format(alignmentFormat, processorName.Trim(new Char[] { ' ', '"' }));
+				var cpuInfo = string.Format(alignmentFormat, processorName);
 
 				return gameName + Environment.NewLine + cpuInfo;
 			}).ToArray();
@@ -290,15 +299,32 @@ namespace CapFrameX.ViewModel
 				var graphicCardName = record.Session.GraphicCardName ?? "-";
 
 				int gameNameLength = record.Game.Length;
-				int gpuInfoLength = graphicCardName.Trim(new Char[] { ' ', '"' }).Length;
+				int gpuInfoLength = graphicCardName.Length;
 
 				int maxAlignment = gameNameLength < gpuInfoLength ? gpuInfoLength : gameNameLength;
 				var alignmentFormat = "{0," + maxAlignment.ToString() + "}";
 				var gameName = string.Format(alignmentFormat, record.Game);
-				var gpuInfo = string.Format(alignmentFormat, graphicCardName.Trim(new Char[] { ' ', '"' }));
+				var gpuInfo = string.Format(alignmentFormat, graphicCardName);
 				return gameName + Environment.NewLine + gpuInfo;
 			}).ToArray();
 		}
+
+		private void SetLabelCustomContext()
+		{
+			ComparisonColumnChartLabels = ComparisonRecords.Select(record =>
+			{
+				var comment = record.Session.Comment ?? "-";
+
+				int gameNameLength = record.Game.Length;
+				int commentLength = comment.Length;
+
+				int maxAlignment = gameNameLength < commentLength ? commentLength : gameNameLength;
+				var alignmentFormat = "{0," + maxAlignment.ToString() + "}";
+				var gameName = string.Format(alignmentFormat, record.Game);
+				var gpuInfo = string.Format(alignmentFormat, comment);
+				return gameName + Environment.NewLine + gpuInfo;
+			}).ToArray();
+		}		
 
 		private ComparisonRecordInfo GetComparisonRecordInfoFromOcatRecordInfo(OcatRecordInfo ocatRecordInfo)
 		{

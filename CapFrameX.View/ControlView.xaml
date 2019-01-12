@@ -23,21 +23,27 @@
 				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Slider.xaml" />
 			</ResourceDictionary.MergedDictionaries>
 			<CollectionViewSource x:Key="RecordInfoListKey" Source="{Binding RecordInfoList}" Filter="RecordInfoListOnFilter"/>
-            <mvvm:AddValueConverter x:Key="AddValueConverter" Offset="-43"/>
-        </ResourceDictionary>
+			<mvvm:AddValueConverter x:Key="AddValueConverter" Offset="-43"/>
+		</ResourceDictionary>
 	</UserControl.Resources>
 	<Grid>
 		<StackPanel>
 			<TextBox Margin="5 10 5 0" Background="#e6e6e6" Name="RecordSearchBox" materialDesign:HintAssist.Hint="Search" />
-            <DataGrid Height="{Binding ElementName=ControlViewControl, Path=ActualHeight, Converter={StaticResource AddValueConverter}}" Background="#F5F5F5" Margin="0 10 5 0" 
-					  ItemsSource="{Binding Source={StaticResource RecordInfoListKey}}" SelectedItem="{Binding SelectedRecordInfo}" CanUserSortColumns="True" CanUserAddRows="False" AutoGenerateColumns="False"
-					  materialDesign:DataGridAssist.CellPadding="13 8 8 8" materialDesign:DataGridAssist.ColumnHeaderPadding="8" IsSynchronizedWithCurrentItem="False"
-					  ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True"
-					  dragdrop:DragDrop.IsDragSource="True"
-					  dragdrop:DragDrop.IsDropTarget="True"
-					  dragdrop:DragDrop.UseDefaultDragAdorner="True"
-					  dragdrop:DragDrop.DefaultDragAdornerOpacity="0.5"
-					  dragdrop:DragDrop.UseDefaultEffectDataTemplate="False">
+			<DataGrid Height="{Binding ElementName=ControlViewControl, Path=ActualHeight, Converter={StaticResource AddValueConverter}}" Background="#F5F5F5" Margin="0 10 5 0" 
+						  Tag="{Binding ElementName=ControlViewControl, Path=DataContext}" 
+							ItemsSource="{Binding Source={StaticResource RecordInfoListKey}}" SelectedItem="{Binding SelectedRecordInfo}" CanUserSortColumns="True" CanUserAddRows="False" AutoGenerateColumns="False"
+							materialDesign:DataGridAssist.CellPadding="13 8 8 8" materialDesign:DataGridAssist.ColumnHeaderPadding="8" IsSynchronizedWithCurrentItem="False"
+							ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True"
+							dragdrop:DragDrop.IsDragSource="True"
+							dragdrop:DragDrop.IsDropTarget="True"
+							dragdrop:DragDrop.UseDefaultDragAdorner="True"
+							dragdrop:DragDrop.DefaultDragAdornerOpacity="0.5"
+							dragdrop:DragDrop.UseDefaultEffectDataTemplate="False">
+				<DataGrid.ContextMenu>
+					<ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
+						<MenuItem Header="Edit record data" Command="{Binding OpenEditingDialogCommand}"/>
+					</ContextMenu>
+				</DataGrid.ContextMenu>
 				<DataGrid.Resources>
 					<Style TargetType="DataGridRow">
 						<EventSetter Event="MouseDoubleClick" Handler="DataGridRow_MouseDoubleClick"/>

@@ -1,6 +1,7 @@
 ﻿using CapFrameX.Contracts.OcatInterface;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.OcatInterface;
+using CapFrameX.MVVM.Dialogs;
 using Prism.Events;
 using Prism.Mvvm;
 using System;
@@ -9,6 +10,8 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Collections.ObjectModel;
+using System.Windows.Input;
+using Prism.Commands;
 
 namespace CapFrameX.ViewModel
 {
@@ -19,6 +22,7 @@ namespace CapFrameX.ViewModel
 
 		private PubSubEvent<ViewMessages.UpdateSession> _updateSessionEvent;
 		private PubSubEvent<ViewMessages.SelectSession> _selectSessionEvent;
+		private PubSubEvent<ViewMessages.ShowOverlay> _showOverlayEvent;
 		private OcatRecordInfo _selectedRecordInfo;
 
 		public OcatRecordInfo SelectedRecordInfo
@@ -35,10 +39,15 @@ namespace CapFrameX.ViewModel
 		public ObservableCollection<OcatRecordInfo> RecordInfoList { get; }
 			= new ObservableCollection<OcatRecordInfo>();
 
+		public ICommand OpenEditingDialogCommand { get; }
+
 		public ControlViewModel(IRecordDirectoryObserver recordObserver, IEventAggregator eventAggregator)
 		{
 			_recordObserver = recordObserver;
 			_eventAggregator = eventAggregator;
+
+			//Commands
+			OpenEditingDialogCommand = new DelegateCommand(OnOpenEditingDialog);
 
 			// ToDo: check wether to do this async
 			var initialRecordList = _recordObserver.GetAllRecordFileInfo();
@@ -61,6 +70,11 @@ namespace CapFrameX.ViewModel
 			SubscribeToResetRecord();
 		}
 
+		private void OnOpenEditingDialog()
+		{
+			_showOverlayEvent.Publish(new ViewMessages.ShowOverlay());			
+		}
+
 		public void OnRecordSelectByDoubleClick()
 		{
 			if (SelectedRecordInfo != null && _selectSessionEvent != null)
@@ -74,7 +88,7 @@ namespace CapFrameX.ViewModel
 		{
 			if (SelectedRecordInfo != null && _updateSessionEvent != null)
 			{
-				var session = RecordManager.LoadData(SelectedRecordInfo.FullPath);
+				 var session = RecordManager.LoadData(SelectedRecordInfo.FullPath);
 				_updateSessionEvent.Publish(new ViewMessages.UpdateSession(session, SelectedRecordInfo));
 			}
 		}
@@ -108,6 +122,7 @@ namespace CapFrameX.ViewModel
 		{
 			_updateSessionEvent = _eventAggregator.GetEvent<PubSubEvent<ViewMessages.UpdateSession>>();
 			_selectSessionEvent = _eventAggregator.GetEvent<PubSubEvent<ViewMessages.SelectSession>>();
+			_showOverlayEvent = _eventAggregator.GetEvent<PubSubEvent<ViewMessages.ShowOverlay>>();
 		}
 
 		private void SubscribeToResetRecord()

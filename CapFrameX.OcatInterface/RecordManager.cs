@@ -8,6 +8,50 @@ namespace CapFrameX.OcatInterface
 {
 	public static class RecordManager
 	{
+		public static void UpdateCustomData(OcatRecordInfo recordInfo, string customCpuInfo, string customGpuInfo, string customComment)
+		{
+			string[] lines = File.ReadAllLines(recordInfo.FullPath);
+
+			if (!lines[0].Contains("Comment"))
+			{
+				lines[0] = lines[0] + ",Comment";
+				lines[1] = lines[1] + ",-";
+			}
+
+			int indexProcessorName = -1;
+			int indexGraphicCardName = -1;
+			int indexComment = -1;
+
+			var metrics = lines[0].Split(',');
+
+			for (int i = 0; i < metrics.Length; i++)
+			{
+				if (String.Compare(metrics[i], "Processor") == 0)
+				{
+					indexProcessorName = i;
+				}
+				if (String.Compare(metrics[i], "GPU") == 0)
+				{
+					indexGraphicCardName = i;
+				}
+				if (String.Compare(metrics[i], "Comment") == 0)
+				{
+					indexComment = i;
+				}
+			}
+
+			if (indexProcessorName < 0 || indexGraphicCardName < 0 || indexComment < 0)
+				return;
+
+			var customData = lines[1].Split(',');
+			customData[indexProcessorName] = customCpuInfo;
+			customData[indexGraphicCardName] = customGpuInfo;
+			customData[indexComment] = customComment;
+
+			lines[1] = string.Join(",", customData);
+			File.WriteAllLines(recordInfo.FullPath, lines);
+		}
+
 		public static IList<double> GetFrametimesWindow(Session session, double startTime, double endTime)
 		{
 			IList<double> frametimesSubset = new List<double>();
@@ -49,6 +93,8 @@ namespace CapFrameX.OcatInterface
 				systemInfos.Add(new SystemInfo() { Key = "GPU Memory Clock (MHz)", Value = session.GPUMemoryClock });
 			if (session.GPUMemory != null)
 				systemInfos.Add(new SystemInfo() { Key = "GPU Memory (MB)", Value = session.GPUMemory });
+			if (session.Comment != null)
+				systemInfos.Add(new SystemInfo() { Key = "Comment", Value = session.Comment });
 
 			return systemInfos;
 		}
@@ -114,6 +160,7 @@ namespace CapFrameX.OcatInterface
 					int indexGPUCoreClock = -1;
 					int indexGPUMemoryClock = -1;
 					int indexGPUMemory = -1;
+					int indexComment = -1;
 
 					var metrics = line.Split(',');
 					for (int i = 0; i < metrics.Count(); i++)
@@ -202,6 +249,10 @@ namespace CapFrameX.OcatInterface
 						{
 							indexGPUMemory = i;
 						}
+						if (String.Compare(metrics[i], "Comment") == 0)
+						{
+							indexComment = i;
+						}
 					}
 
 					int lineCount = 0;
@@ -236,7 +287,7 @@ namespace CapFrameX.OcatInterface
 						if (indexFrameEnd > 0 && indexReprojectionEnd > 0)
 						{
 							if (double.TryParse(values[indexFrameEnd], NumberStyles.Any, CultureInfo.InvariantCulture, out var frameEnd)
-							&& double.TryParse(values[indexReprojectionEnd], NumberStyles.Any, CultureInfo.InvariantCulture, out var reprojectionEnd))
+							 && double.TryParse(values[indexReprojectionEnd], NumberStyles.Any, CultureInfo.InvariantCulture, out var reprojectionEnd))
 							{
 								if (session.IsVR)
 								{
@@ -254,9 +305,9 @@ namespace CapFrameX.OcatInterface
 						if (indexReprojectionStart > 0 && indexReprojectionTimes > 0 && indexVSync > 0 && indexWarpMissed > 0)
 						{
 							if (double.TryParse(values[indexReprojectionStart], NumberStyles.Any, CultureInfo.InvariantCulture, out var reprojectionStart)
-						 && double.TryParse(values[indexReprojectionTimes], NumberStyles.Any, CultureInfo.InvariantCulture, out var reprojectionTimes)
-						 && double.TryParse(values[indexVSync], NumberStyles.Any, CultureInfo.InvariantCulture, out var vSync)
-						 && int.TryParse(values[indexWarpMissed], NumberStyles.Any, CultureInfo.InvariantCulture, out var warpMissed))
+							 && double.TryParse(values[indexReprojectionTimes], NumberStyles.Any, CultureInfo.InvariantCulture, out var reprojectionTimes)
+							 && double.TryParse(values[indexVSync], NumberStyles.Any, CultureInfo.InvariantCulture, out var vSync)
+							 && int.TryParse(values[indexWarpMissed], NumberStyles.Any, CultureInfo.InvariantCulture, out var warpMissed))
 							{
 								if (reprojectionStart > 0)
 								{
@@ -276,18 +327,22 @@ namespace CapFrameX.OcatInterface
 							indexNumberGPUs > 0 && indexGraphicCardName > 0 && indexGPUCoreClock > 0 &&
 							indexGPUMemoryClock > 0 && indexGPUMemory > 0)
 						{
-							session.MotherboardName = values[indexMotherboardName];
-							session.OsVersion = values[indexOsVersion];
-							session.ProcessorName = values[indexProcessorName];
-							session.SystemRamInfo = values[indexSystemRamInfo];
-							session.BaseDriverVersion = values[indexBaseDriverVersion];
-							session.DriverPackage = values[indexDriverPackage];
-							session.NumberGPUs = values[indexNumberGPUs];
-							session.GraphicCardName = values[indexGraphicCardName];
-							session.GPUCoreClock = values[indexGPUCoreClock];
-							session.GPUMemoryClock = values[indexGPUMemoryClock];
-							session.GPUMemory = values[indexGPUMemory];
+							session.MotherboardName = values[indexMotherboardName].Trim(new Char[] { ' ', '"' });
+							session.OsVersion = values[indexOsVersion].Trim(new Char[] { ' ', '"' });
+							session.ProcessorName = values[indexProcessorName].Trim(new Char[] { ' ', '"' });
+							session.SystemRamInfo = values[indexSystemRamInfo].Trim(new Char[] { ' ', '"' });
+							session.BaseDriverVersion = values[indexBaseDriverVersion].Trim(new Char[] { ' ', '"' });
+							session.DriverPackage = values[indexDriverPackage].Trim(new Char[] { ' ', '"' });
+							session.NumberGPUs = values[indexNumberGPUs].Trim(new Char[] { ' ', '"' });
+							session.GraphicCardName = values[indexGraphicCardName].Trim(new Char[] { ' ', '"' });
+							session.GPUCoreClock = values[indexGPUCoreClock].Trim(new Char[] { ' ', '"' });
+							session.GPUMemoryClock = values[indexGPUMemoryClock].Trim(new Char[] { ' ', '"' });
+							session.GPUMemory = values[indexGPUMemory].Trim(new Char[] { ' ', '"' });
 						}
+
+						//Custom extension
+						if (lineCount < 2 && indexComment > 0)
+							session.Comment = values[indexComment].Trim(new Char[] { ' ', '"' });
 					}
 				}
 			}

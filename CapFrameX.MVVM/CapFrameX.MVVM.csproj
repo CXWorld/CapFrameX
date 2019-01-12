@@ -93,6 +93,9 @@
     <Compile Include="Converter\BoolToVisibilityConverter.cs" />
     <Compile Include="Converter\PackIconImageSourceConverter.cs" />
     <Compile Include="Converter\ZoomingModeConverter.cs" />
+    <Compile Include="Dialogs\EditingDialog.xaml.cs">
+      <DependentUpon>EditingDialog.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SelectionChangedBehaviour.cs" />
     <Compile Include="SliderValueChangedBehaviour.cs" />
@@ -100,6 +103,17 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\CapFrameX.OcatInterface\CapFrameX.OcatInterface.csproj">
+      <Project>{E61AD1FC-514F-43FD-BC20-31E9900CDFD7}</Project>
+      <Name>CapFrameX.OcatInterface</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="Dialogs\EditingDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

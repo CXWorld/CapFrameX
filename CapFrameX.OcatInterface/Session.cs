@@ -34,5 +34,6 @@ namespace CapFrameX.OcatInterface
 		public string GPUCoreClock { get; set; }
 		public string GPUMemoryClock { get; set; }
 		public string GPUMemory { get; set; }
+		public string Comment { get; set; }
 	}
 }

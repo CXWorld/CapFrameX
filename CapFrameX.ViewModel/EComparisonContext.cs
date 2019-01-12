@@ -4,6 +4,7 @@
     {
         DateTime,
         CPU,
-        GPU
+        GPU,
+		Custom
     }
 }

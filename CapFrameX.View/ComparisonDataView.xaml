@@ -63,15 +63,15 @@
                                 <materialDesign:PackIcon Kind="Pencil" Width="24" Height="24" />
                             </materialDesign:PopupBox.ToggleCheckedContent>
                             <StackPanel>
-                                <Button Command="{Binding DateTimeContextCommand}" Content="{materialDesign:PackIcon TimeTable, Size=24}" ToolTip="Date and time">
-                                </Button>
-                                <Button Command="{Binding CpuContextCommand}" ToolTip="CPU">
+								<Button Command="{Binding DateTimeContextCommand}" Content="{materialDesign:PackIcon TimeTable, Size=24}" ToolTip="Date and time"/>
+								<Button Command="{Binding CpuContextCommand}" ToolTip="CPU">
                                     CPU
                                 </Button>
                                 <Button Command="{Binding GpuContextCommand}" ToolTip="GPU">
                                     GPU
                                 </Button>
-                            </StackPanel>
+								<Button Command="{Binding CustomContextCommand}" Content="{materialDesign:PackIcon CommentUser, Size=24}" ToolTip="Custom comments"/>
+							</StackPanel>
                         </materialDesign:PopupBox>
 						<Button Style="{StaticResource MaterialDesignFloatingActionMiniButton}"
 								Margin="0 0 10 0"
