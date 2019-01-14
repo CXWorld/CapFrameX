@@ -50,6 +50,10 @@ namespace CapFrameX.ViewModel
 		private double _frametimeSliderMaximum;
 		private double _frametimeSliderValue;
 		private List<SystemInfo> _systemInfos;
+		private bool _isCuttingModeActive;
+		private int _cutLeftSliderMaximum;
+		private int _cutRightSliderMaximum;
+		private string _cutGraphNumberSamples;
 
 		public Func<double, string> ParameterFormatter { get; set; } = value => value.ToString("N");
 
@@ -155,6 +159,18 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
+		public int CutLeftSliderMaximum
+		{
+			get { return _cutLeftSliderMaximum; }
+			set { _cutLeftSliderMaximum = value; RaisePropertyChanged(); }
+		}
+
+		public int CutRightSliderMaximum
+		{
+			get { return _cutRightSliderMaximum; }
+			set { _cutRightSliderMaximum = value; RaisePropertyChanged(); }
+		}
+
 		public bool RemoveOutliers
 		{
 			get { return _removeOutliers; }
@@ -227,6 +243,24 @@ namespace CapFrameX.ViewModel
 			set { _systemInfos = value; RaisePropertyChanged(); }
 		}
 
+		public bool IsCuttingModeActive
+		{
+			get { return _isCuttingModeActive; }
+			set
+			{
+				_isCuttingModeActive = value;
+				RaisePropertyChanged();
+				OnCuttingModeChanged();
+			}
+		}		
+
+		public string CutGraphNumberSamples
+		{
+			get { return _cutGraphNumberSamples; }
+			set { _cutGraphNumberSamples = value; RaisePropertyChanged(); }
+		}
+
+
 		public IList<int> WindowSizes { get; }
 
 		public IList<string> ChartLengthValues { get; }
@@ -246,8 +280,8 @@ namespace CapFrameX.ViewModel
 		public ICommand CopySystemInfoCommand { get; }
 
 		public DataViewModel(IStatisticProvider frametimeStatisticProvider,
-							 IFrametimeAnalyzer frametimeAnalyzer, 
-							 IEventAggregator eventAggregator, 
+							 IFrametimeAnalyzer frametimeAnalyzer,
+							 IEventAggregator eventAggregator,
 							 IAppConfiguration appConfiguration)
 		{
 			_frametimeStatisticProvider = frametimeStatisticProvider;
@@ -270,6 +304,25 @@ namespace CapFrameX.ViewModel
 			SelectWindowSize = _appConfiguration.MovingAverageWindowSize;
 			ChartLengthValues = new List<string> { "5", "10", "20", "30", "60", "120", "180", "240", "300", "600" };
 			SelectedChartLengthValue = "10";
+		}
+
+		private void OnCuttingModeChanged()
+		{
+			if (_session == null)
+				return;
+
+			if (IsCuttingModeActive)
+			{
+				CutLeftSliderMaximum = _session.FrameTimes.Count/2;
+				CutRightSliderMaximum = _session.FrameTimes.Count / 2;
+
+				CutGraphNumberSamples = _session.FrameTimes.Count.ToString();
+	}
+			else
+			{
+				FirstNFrames = 0;
+				LastNFrames = 0;
+			}
 		}
 
 		private void OnCopyFrametimeValues()
@@ -412,6 +465,8 @@ namespace CapFrameX.ViewModel
 									_session = msg.OcatSession;
 									_recordInfo = msg.RecordInfo;
 									SystemInfos = RecordManager.GetSystemInfos(msg.OcatSession);
+									FirstNFrames = 0;
+									LastNFrames = 0;
 									UpdateCharts();
 								}
 							});
@@ -471,6 +526,7 @@ namespace CapFrameX.ViewModel
 		private void UpdateCharts()
 		{
 			var subset = GetFrametimesSubset();
+			CutGraphNumberSamples = subset.Count.ToString();
 
 			if (subset != null)
 			{
