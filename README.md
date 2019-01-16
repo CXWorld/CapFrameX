@@ -17,17 +17,20 @@ Download link: https://github.com/DevTechProfile/CapFrameX/releases
 ![Screenshot](Images/Report_Table.png)
 
 # Current feature list
-* Automatic file record (OCAT) management/directory observer
-* Selectable records in DataGrid/ searching in DataGrid
+* Automatic record file (OCAT) management/directory observer
+* Selectable data source (OCAT recordings)
+* Selectable recordings in DataGrid/ searching in DataGrid
+* Displaying system info from OCAT record file
+* Editing comments and system info
 * Displaying frametime graph and moving average
 * Scrollable sliding window on frametime data
 * Calculating and displaying basic parameter (average, p-quantiles, min)
 * Calculating and displaying adaptive standard deviation
 * Calculating and displaying stuttering percentage
 * Calculating and displaying L-shape curve
+* Cutting frametime graphs ("Single Record" page)
 * Removing outliers
 * Record comparison (performance parameter, L-shape analysis)
-* Displaying system info from OCAT record file
 * Export performance parameter and graphs (Excel)
 * Export comparison table as report (Excel)
 
