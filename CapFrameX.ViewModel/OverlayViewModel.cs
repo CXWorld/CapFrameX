@@ -96,7 +96,11 @@ namespace CapFrameX.ViewModel
 		private void OnAcceptEditingDialog()
 		{
 			IsEditingDialogOpen = false;
-			RecordManager.UpdateCustomData(_recordInfo, CustomCpuDescription, CustomGpuDescription, CustomComment);
+			var adjustedCustomCpuDescription = CustomCpuDescription.Replace(",", "").Replace(";", "");
+			var adjustedCustomGpuDescription = CustomGpuDescription.Replace(",", "").Replace(";", "");
+			var adjustedCustomComment = CustomComment.Replace(",", "").Replace(";", "");
+			RecordManager.UpdateCustomData(_recordInfo, 
+				adjustedCustomCpuDescription, adjustedCustomGpuDescription, adjustedCustomComment);
 			_hideOverlayEvent.Publish(new ViewMessages.HideOverlay());
 		}
 

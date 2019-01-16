@@ -23,7 +23,8 @@
 				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.DataGrid.xaml" />
 				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Slider.xaml" />
 			</ResourceDictionary.MergedDictionaries>
-			<mvvm:ZoomingModeConverter x:Key="ZoomingModeConverter"></mvvm:ZoomingModeConverter>
+			<mvvm:ZoomingModeConverter x:Key="ZoomingModeConverter"/>
+			<mvvm:NegateBoolConverter x:Key="NegateBoolConverter"/>
 			<mvvm:BoolToVisibilityConverter x:Key="TrueToCollapsedConverter" TrueValue="Collapsed" FalseValue="Visible"/>
 			<mvvm:BoolToVisibilityConverter x:Key="FalseToCollapsedConverter" TrueValue="Visible" FalseValue="Collapsed"/>
 			<Style x:Key="CleanSeparator" TargetType="lvc:Separator">
@@ -136,7 +137,7 @@
 								Style="{StaticResource MaterialDesignDiscreteSlider}"
 								ToolTip="Cut first n frames"
 								Width="280"/>
-						<TextBox Grid.Column="1" HorizontalAlignment="Center" IsReadOnly="True"
+						<TextBox Grid.Column="1" HorizontalAlignment="Center" IsReadOnly="True" Margin="0 0 0 3"
 								 Style="{StaticResource MaterialDesignFloatingHintTextBox}" Text="{Binding CutGraphNumberSamples}">
 							<materialDesign:HintAssist.Hint>
 								<StackPanel Orientation="Horizontal" Margin="-2 0 0 0">
@@ -204,8 +205,9 @@
 				</Grid.ColumnDefinitions>
 				<StackPanel Grid.Column="0" Margin="25 10 0 10">
 					<CheckBox Name="SlidingWindowCheckBox" IsThreeState="False"
-									  IsChecked="{Binding UseSlidingWindow}"
-									  Margin="0 0 0 0">
+							  IsEnabled="{Binding Path=IsChecked, ElementName=CuttingModeActiveToggleButton, Converter={StaticResource NegateBoolConverter}}"
+							  IsChecked="{Binding UseSlidingWindow}"
+							  Margin="0 0 0 0">
 						Sliding window
 					</CheckBox>
 					<StackPanel Orientation="Horizontal">
@@ -246,8 +248,8 @@
 										  ItemsSource="{Binding WindowSizes}">
 							<ComboBox.Text>
 								<Binding Path="SelectWindowSize"
-												 Mode="TwoWay"
-												 UpdateSourceTrigger="PropertyChanged">
+										 Mode="TwoWay"
+										 UpdateSourceTrigger="PropertyChanged">
 								</Binding>
 							</ComboBox.Text>
 							<ComboBox.ItemsPanel>
@@ -261,7 +263,8 @@
 				<StackPanel VerticalAlignment="Top" Grid.Column="2" Margin="25 10 0 10" Orientation="Horizontal">
 					<TextBlock VerticalAlignment="Center">Cutting mode:</TextBlock>
 					<ToggleButton Name="CuttingModeActiveToggleButton" Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
-								  ToolTip="Cutting mode" IsChecked="{Binding IsCuttingModeActive}"/>
+								  ToolTip="Cutting mode" IsChecked="{Binding IsCuttingModeActive}"
+								  IsEnabled="{Binding Path=IsChecked, ElementName=SlidingWindowCheckBox, Converter={StaticResource NegateBoolConverter}}"/>
 				</StackPanel>
 				<Button Margin="15 0 50 0" Grid.Column="3" VerticalAlignment="Top" HorizontalAlignment="Right" Command="{Binding ToogleZoomingModeCommand}">
 					<TextBlock>Toggle zoming mode, current is: 

@@ -127,7 +127,7 @@ namespace CapFrameX.ViewModel
 
 		public ICommand GpuContextCommand { get; }
 
-		public ICommand CustomContextCommand { get; }		
+		public ICommand CustomContextCommand { get; }
 
 		public ICommand RemoveAllComparisonsCommand { get; }
 
@@ -324,7 +324,7 @@ namespace CapFrameX.ViewModel
 				var gpuInfo = string.Format(alignmentFormat, comment);
 				return gameName + Environment.NewLine + gpuInfo;
 			}).ToArray();
-		}		
+		}
 
 		private ComparisonRecordInfo GetComparisonRecordInfoFromOcatRecordInfo(OcatRecordInfo ocatRecordInfo)
 		{
@@ -365,7 +365,8 @@ namespace CapFrameX.ViewModel
 		private void AddToColumnCharts(ComparisonRecordInfo comparisonInfo)
 		{
 			var fps = comparisonInfo.Session.FrameTimes.Select(ft => 1000 / ft).ToList();
-			var average = Math.Round(fps.Average(), 0);
+			var frametimes = comparisonInfo.Session.FrameTimes;
+			var average = Math.Round(frametimes.Count * 1000 / frametimes.Sum(), 0);
 			var p1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.01));
 			var p0dot1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.001));
 

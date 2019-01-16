@@ -31,7 +31,7 @@ namespace CapFrameX.ViewModel
 
 		public ICommand CopyTableDataCommand { get; }
 
-		public ReportViewModel(IStatisticProvider frametimeStatisticProvider, 
+		public ReportViewModel(IStatisticProvider frametimeStatisticProvider,
 							  IEventAggregator eventAggregator,
 							  IAppConfiguration appConfiguration)
 		{
@@ -78,12 +78,12 @@ namespace CapFrameX.ViewModel
 						   displayNameOnePercentQuantileFps + "\t" +
 						   displayNameZeroDotOnePercentQuantileFps + "\t" +
 						   displayNameMinFps + "\t" +
-						   displayNameAdaptiveSTDFps + 
+						   displayNameAdaptiveSTDFps +
 						   Environment.NewLine);
 
 			foreach (var reportInfo in ReportInfoCollecion)
-			{				
-				builder.Append(reportInfo.Game + "\t" + 
+			{
+				builder.Append(reportInfo.Game + "\t" +
 							   reportInfo.Date + "\t" +
 							   reportInfo.Time + "\t" +
 							   reportInfo.NumberOfSamples + "\t" +
@@ -119,13 +119,13 @@ namespace CapFrameX.ViewModel
 		{
 			var session = RecordManager.LoadData(recordInfo.FullPath);
 
-			var fpsSequence = session.FrameTimes.Select(ft => 1000 / ft).ToList();
-			var max = Math.Round(fpsSequence.Max(), 0);
-			var average = Math.Round(fpsSequence.Average(), 0);
-			var p1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fpsSequence, 0.01), 0);
-			var p0dot1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fpsSequence, 0.001), 0);
-			var min = Math.Round(fpsSequence.Min(), 0);
-			var adaptiveStandardDeviation = Math.Round(_frametimeStatisticProvider.GetAdaptiveStandardDeviation(fpsSequence, _appConfiguration.MovingAverageWindowSize), 0);
+			var fps = session.FrameTimes.Select(ft => 1000 / ft).ToList();
+			var max = Math.Round(fps.Max(), 0);
+			var average = Math.Round(session.FrameTimes.Count * 1000 / session.FrameTimes.Sum(), 0);
+			var p1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.01), 0);
+			var p0dot1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.001), 0);
+			var min = Math.Round(fps.Min(), 0);
+			var adaptiveStandardDeviation = Math.Round(_frametimeStatisticProvider.GetAdaptiveStandardDeviation(fps, _appConfiguration.MovingAverageWindowSize), 0);
 
 			var reportInfo = new ReportInfo()
 			{
@@ -134,7 +134,7 @@ namespace CapFrameX.ViewModel
 				Time = recordInfo.CreationTime,
 				NumberOfSamples = session.FrameTimes.Count,
 				RecordTime = Math.Round(session.LastFrameTime, 2).ToString(CultureInfo.InvariantCulture),
-				Cpu = session.ProcessorName == null ? "-": session.ProcessorName.Trim(new Char[] { ' ', '"' }),
+				Cpu = session.ProcessorName == null ? "-" : session.ProcessorName.Trim(new Char[] { ' ', '"' }),
 				GraphicCard = session.GraphicCardName == null ? "-" : session.GraphicCardName.Trim(new Char[] { ' ', '"' }),
 				MaxFps = max,
 				AverageFps = average,

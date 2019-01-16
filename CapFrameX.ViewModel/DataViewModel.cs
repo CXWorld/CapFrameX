@@ -54,6 +54,7 @@ namespace CapFrameX.ViewModel
 		private int _cutLeftSliderMaximum;
 		private int _cutRightSliderMaximum;
 		private string _cutGraphNumberSamples;
+		private bool _doUpdateCharts = true;
 
 		public Func<double, string> ParameterFormatter { get; set; } = value => value.ToString("N");
 
@@ -252,14 +253,13 @@ namespace CapFrameX.ViewModel
 				RaisePropertyChanged();
 				OnCuttingModeChanged();
 			}
-		}		
+		}
 
 		public string CutGraphNumberSamples
 		{
 			get { return _cutGraphNumberSamples; }
 			set { _cutGraphNumberSamples = value; RaisePropertyChanged(); }
 		}
-
 
 		public IList<int> WindowSizes { get; }
 
@@ -313,11 +313,8 @@ namespace CapFrameX.ViewModel
 
 			if (IsCuttingModeActive)
 			{
-				CutLeftSliderMaximum = _session.FrameTimes.Count/2;
-				CutRightSliderMaximum = _session.FrameTimes.Count / 2;
-
-				CutGraphNumberSamples = _session.FrameTimes.Count.ToString();
-	}
+				UpdateCuttingParameter();
+			}
 			else
 			{
 				FirstNFrames = 0;
@@ -325,14 +322,22 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
+		private void UpdateCuttingParameter()
+		{
+			CutLeftSliderMaximum = _session.FrameTimes.Count / 2;
+			CutRightSliderMaximum = _session.FrameTimes.Count / 2;
+			CutGraphNumberSamples = _session.FrameTimes.Count.ToString();
+		}
+
 		private void OnCopyFrametimeValues()
 		{
 			if (_session == null)
 				return;
 
+			var frametimes = GetFrametimesSubset();
 			StringBuilder builder = new StringBuilder();
 
-			foreach (var frametime in _session.FrameTimes)
+			foreach (var frametime in frametimes)
 			{
 				builder.Append(frametime + Environment.NewLine);
 			}
@@ -345,11 +350,12 @@ namespace CapFrameX.ViewModel
 			if (_session == null)
 				return;
 
+			var frametimes = GetFrametimesSubset();
 			StringBuilder builder = new StringBuilder();
 
-			for (int i = 0; i < _session.FrameTimes.Count; i++)
+			for (int i = 0; i < frametimes.Count; i++)
 			{
-				builder.Append(_session.FrameStart[i] + "\t" + _session.FrameTimes[i] + Environment.NewLine);
+				builder.Append(_session.FrameStart[i] + "\t" + frametimes[i] + Environment.NewLine);
 			}
 
 			Clipboard.SetDataObject(builder.ToString(), false);
@@ -360,9 +366,10 @@ namespace CapFrameX.ViewModel
 			if (_session == null)
 				return;
 
+			var frametimes = GetFrametimesSubset();
 			StringBuilder builder = new StringBuilder();
 
-			foreach (var frametime in _session.FrameTimes)
+			foreach (var frametime in frametimes)
 			{
 				builder.Append(Math.Round(1000 / frametime, 0) + Environment.NewLine);
 			}
@@ -375,14 +382,15 @@ namespace CapFrameX.ViewModel
 			if (_session == null)
 				return;
 
-			var fpsSequence = _session.FrameTimes.Select(ft => 1000 / ft).ToList();
-			var max = Math.Round(fpsSequence.Max(), 0);
-			var average = Math.Round(fpsSequence.Average(), 0);
-			var p0dot1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fpsSequence, 0.001), 0);
-			var p1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fpsSequence, 0.01), 0);
-			var p5_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fpsSequence, 0.05), 0);
-			var min = Math.Round(fpsSequence.Min(), 0);
-			var adaptiveStandardDeviation = Math.Round(_frametimeStatisticProvider.GetAdaptiveStandardDeviation(fpsSequence, SelectWindowSize), 0);
+			var frametimes = GetFrametimesSubset();
+			var fps = frametimes.Select(ft => 1000 / ft).ToList();
+			var max = Math.Round(fps.Max(), 0);
+			var average = Math.Round(frametimes.Count * 1000 / frametimes.Sum(), 0);
+			var p0dot1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.001), 0);
+			var p1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.01), 0);
+			var p5_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.05), 0);
+			var min = Math.Round(fps.Min(), 0);
+			var adaptiveStandardDeviation = Math.Round(_frametimeStatisticProvider.GetAdaptiveStandardDeviation(fps, SelectWindowSize), 0);
 
 			StringBuilder builder = new StringBuilder();
 
@@ -405,7 +413,8 @@ namespace CapFrameX.ViewModel
 				return;
 
 			var lShapeQuantiles = _frametimeAnalyzer.GetLShapeQuantiles();
-			double action(double q) => Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(_session.FrameTimes, q / 100), 2);
+			var frametimes = GetFrametimesSubset();
+			double action(double q) => Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(frametimes, q / 100), 2);
 
 			StringBuilder builder = new StringBuilder();
 
@@ -465,8 +474,11 @@ namespace CapFrameX.ViewModel
 									_session = msg.OcatSession;
 									_recordInfo = msg.RecordInfo;
 									SystemInfos = RecordManager.GetSystemInfos(msg.OcatSession);
+									_doUpdateCharts = false;
 									FirstNFrames = 0;
 									LastNFrames = 0;
+									_doUpdateCharts = true;
+									UpdateCuttingParameter();
 									UpdateCharts();
 								}
 							});
@@ -525,6 +537,9 @@ namespace CapFrameX.ViewModel
 
 		private void UpdateCharts()
 		{
+			if (!_doUpdateCharts)
+				return;
+
 			var subset = GetFrametimesSubset();
 			CutGraphNumberSamples = subset.Count.ToString();
 
@@ -624,19 +639,19 @@ namespace CapFrameX.ViewModel
 			};
 		}
 
-		private void SetStaticChart(IList<double> frameTimes)
+		private void SetStaticChart(IList<double> frametimes)
 		{
-			if (frameTimes == null || !frameTimes.Any())
+			if (frametimes == null || !frametimes.Any())
 				return;
 
-			var fpsSequence = frameTimes.Select(ft => 1000 / ft).ToList();
-			var max = Math.Round(fpsSequence.Max(), 0);
-			var average = Math.Round(fpsSequence.Average(), 0);
-			var p0dot1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fpsSequence, 0.001), 0);
-			var p1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fpsSequence, 0.01), 0);
-			var p5_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fpsSequence, 0.05), 0);
-			var min = Math.Round(fpsSequence.Min(), 0);
-			var adaptiveStandardDeviation = Math.Round(_frametimeStatisticProvider.GetAdaptiveStandardDeviation(fpsSequence, SelectWindowSize), 0);
+			var fps = frametimes.Select(ft => 1000 / ft).ToList();
+			var max = Math.Round(fps.Max(), 0);
+			var average = Math.Round(frametimes.Count * 1000 / frametimes.Sum(), 0);
+			var p0dot1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.001), 0);
+			var p1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.01), 0);
+			var p5_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.05), 0);
+			var min = Math.Round(fps.Min(), 0);
+			var adaptiveStandardDeviation = Math.Round(_frametimeStatisticProvider.GetAdaptiveStandardDeviation(fps, SelectWindowSize), 0);
 
 			IChartValues values = new ChartValues<double> { adaptiveStandardDeviation, min, p0dot1_quantile, p1_quantile, p5_quantile, average, max };
 
@@ -654,14 +669,12 @@ namespace CapFrameX.ViewModel
 			ParameterLabels = new[] { "Adaptive STD", "Min", "0,1%", "1%", "5%", "Average", "Max" };
 		}
 
-		private void SetAdvancedStaticChart(IList<double> frameTimes)
+		private void SetAdvancedStaticChart(IList<double> frametimes)
 		{
-			if (frameTimes == null || !frameTimes.Any())
+			if (frametimes == null || !frametimes.Any())
 				return;
 
-			var fpsSequence = frameTimes.Select(ft => 1000 / ft).ToList();
-			var stutteringPercentage = _frametimeStatisticProvider.GetStutteringPercentage(frameTimes, _appConfiguration.StutteringFactor);
-
+			var stutteringPercentage = _frametimeStatisticProvider.GetStutteringPercentage(frametimes, _appConfiguration.StutteringFactor);
 			IChartValues values = new ChartValues<double> { stutteringPercentage };
 
 			AdvancedStatisticCollection = new SeriesCollection

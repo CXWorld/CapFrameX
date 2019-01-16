@@ -125,6 +125,14 @@
             </Component>
             
             
+            <Component Id="cmpBB1767D7C200C536ABB2D361F40F9D92" Guid="*" Win64="yes">
+                <File Id="fil4E0F4321F336BF83461A34116F3E30B7" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Microsoft.WindowsAPICodePack.dll" />
+            </Component>
+            <Component Id="cmp702FCD8F941D530EED089ED86491F3AF" Guid="*" Win64="yes">
+                <File Id="filAAF0A287D1C4C9A238DFF053ADA2B1C8" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Microsoft.WindowsAPICodePack.Shell.dll" />
+            </Component>
+            
+            
             <Component Id="cmp59564654D02343646998A8D6A6F0C25F" Guid="*" Win64="yes">
                 <File Id="fil86F2842A309A2CABD479166F2B4E0588" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Prism.dll" />
             </Component>
@@ -239,6 +247,10 @@
             <ComponentRef Id="cmp3ED5A0A4D782A8BF371C8403342D615B" />
             
             <ComponentRef Id="cmpF2F1C15A47B64F045101B1AE5B4D6054" />
+            
+            
+            <ComponentRef Id="cmpBB1767D7C200C536ABB2D361F40F9D92" />
+            <ComponentRef Id="cmp702FCD8F941D530EED089ED86491F3AF" />
             
             
             <ComponentRef Id="cmp59564654D02343646998A8D6A6F0C25F" />
