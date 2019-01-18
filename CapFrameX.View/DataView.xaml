@@ -129,7 +129,7 @@
 							<ColumnDefinition Width="1*" />
 							<ColumnDefinition Width="2*" />
 						</Grid.ColumnDefinitions>
-						<Slider Grid.Column="0" Margin="10 0 0 10" Minimum="0"
+						<Slider Grid.Column="0" Margin="20 0 0 10" Minimum="0"
 								Maximum="{Binding CutLeftSliderMaximum}"
 								HorizontalAlignment="Left"
 								VerticalAlignment="Bottom"
@@ -210,7 +210,7 @@
 							  Margin="0 0 0 0">
 						Sliding window
 					</CheckBox>
-					<StackPanel Orientation="Horizontal">
+					<StackPanel Orientation="Horizontal" IsEnabled="{Binding Path=IsChecked, ElementName=CuttingModeActiveToggleButton, Converter={StaticResource NegateBoolConverter}}">
 						<TextBlock VerticalAlignment="Center">Chart length(sec)</TextBlock>
 						<ComboBox materialDesign:HintAssist.Hint="(editable)"
 												  Width="40"

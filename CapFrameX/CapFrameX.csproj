@@ -266,18 +266,6 @@
     <Resource Include="Icons\CX_Icon.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="HardwareInfo\AMDGraphicCards.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="HardwareInfo\NvidiaGraphicCards.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="HardwareInfo\IntelCPUs.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="HardwareInfo\AMDCPUs.txt" />
-  </ItemGroup>
-  <ItemGroup>
     <Resource Include="Icons\cx_icon_BUC_icon.ico" />
   </ItemGroup>
   <ItemGroup>

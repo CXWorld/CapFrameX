@@ -82,7 +82,8 @@ namespace CapFrameX.OcatInterface
 										 SearchOption.TopDirectoryOnly).Where(file => 
 										 !file.Contains("CapFrameX") &&
 										 !file.Contains("SearchUI") &&
-										 !file.Contains("ShellExperienceHost")
+										 !file.Contains("ShellExperienceHost") &&
+										 !file.Contains("steamwebhelper")
 										 ).Select(file => new FileInfo(file));
 		}
 

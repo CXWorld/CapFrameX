@@ -120,6 +120,8 @@ namespace CapFrameX.ViewModel
 			var session = RecordManager.LoadData(recordInfo.FullPath);
 
 			var fps = session.FrameTimes.Select(ft => 1000 / ft).ToList();
+			var p99_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.99), 0);
+			var p95_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.95), 0);
 			var max = Math.Round(fps.Max(), 0);
 			var average = Math.Round(session.FrameTimes.Count * 1000 / session.FrameTimes.Sum(), 0);
 			var p1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.01), 0);
@@ -137,6 +139,8 @@ namespace CapFrameX.ViewModel
 				Cpu = session.ProcessorName == null ? "-" : session.ProcessorName.Trim(new Char[] { ' ', '"' }),
 				GraphicCard = session.GraphicCardName == null ? "-" : session.GraphicCardName.Trim(new Char[] { ' ', '"' }),
 				MaxFps = max,
+				NinetyNinePercentQuantileFps = p99_quantile,
+				NinetyFivePercentQuantileFps = p95_quantile,
 				AverageFps = average,
 				OnePercentQuantileFps = p1_quantile,
 				ZeroDotOnePercentQuantileFps = p0dot1_quantile,

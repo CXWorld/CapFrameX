@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel;
 
 namespace CapFrameX.OcatInterface
 {
@@ -25,6 +20,10 @@ namespace CapFrameX.OcatInterface
 		public string GraphicCard { get; set; }
 		[DisplayName("Max FPS")]
 		public double MaxFps { get; set; }
+		[DisplayName("99% quantile")]
+		public double NinetyNinePercentQuantileFps { get; set; }
+		[DisplayName("95% quantile")]
+		public double NinetyFivePercentQuantileFps { get; set; }
 		[DisplayName("Average FPS")]
 		public double AverageFps { get; set; }
 		[DisplayName("1% quantile")]

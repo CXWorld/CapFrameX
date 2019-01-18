@@ -385,6 +385,8 @@ namespace CapFrameX.ViewModel
 			var frametimes = GetFrametimesSubset();
 			var fps = frametimes.Select(ft => 1000 / ft).ToList();
 			var max = Math.Round(fps.Max(), 0);
+			var p99_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.99), 0);
+			var p95_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.95), 0);
 			var average = Math.Round(frametimes.Count * 1000 / frametimes.Sum(), 0);
 			var p0dot1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.001), 0);
 			var p1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.01), 0);
@@ -395,8 +397,10 @@ namespace CapFrameX.ViewModel
 			StringBuilder builder = new StringBuilder();
 
 			// Vice versa!
-			// "Adaptive STD", "Min", "0,1%", "1%", "5%", "Average", "Max"
+			// "Adaptive STD" ,"Min" ,"0,1%" ,"1%" ,"5%" ,"Average" ,"95%" ,"99%" ,"Max"
 			builder.Append("Max" + "\t" + max + Environment.NewLine);
+			builder.Append("99%" + "\t" + p99_quantile + Environment.NewLine);
+			builder.Append("95%" + "\t" + p95_quantile + Environment.NewLine);
 			builder.Append("Average" + "\t" + average + Environment.NewLine);
 			builder.Append("5%" + "\t" + p5_quantile + Environment.NewLine);
 			builder.Append("1%" + "\t" + p1_quantile + Environment.NewLine);
@@ -645,6 +649,8 @@ namespace CapFrameX.ViewModel
 				return;
 
 			var fps = frametimes.Select(ft => 1000 / ft).ToList();
+			var p99_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.99), 0);
+			var p95_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.95), 0);
 			var max = Math.Round(fps.Max(), 0);
 			var average = Math.Round(frametimes.Count * 1000 / frametimes.Sum(), 0);
 			var p0dot1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.001), 0);
@@ -653,7 +659,10 @@ namespace CapFrameX.ViewModel
 			var min = Math.Round(fps.Min(), 0);
 			var adaptiveStandardDeviation = Math.Round(_frametimeStatisticProvider.GetAdaptiveStandardDeviation(fps, SelectWindowSize), 0);
 
-			IChartValues values = new ChartValues<double> { adaptiveStandardDeviation, min, p0dot1_quantile, p1_quantile, p5_quantile, average, max };
+			IChartValues values = new ChartValues<double>
+			{
+				adaptiveStandardDeviation, min, p0dot1_quantile, p1_quantile, p5_quantile, average, p95_quantile, p99_quantile, max
+			};
 
 			StatisticCollection = new SeriesCollection
 			{
@@ -666,7 +675,7 @@ namespace CapFrameX.ViewModel
 				}
 			};
 
-			ParameterLabels = new[] { "Adaptive STD", "Min", "0,1%", "1%", "5%", "Average", "Max" };
+			ParameterLabels = new[] { "Adaptive STD", "Min", "0,1%", "1%", "5%", "Average", "95%", "99%", "Max" };
 		}
 
 		private void SetAdvancedStaticChart(IList<double> frametimes)
