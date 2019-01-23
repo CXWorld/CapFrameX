@@ -131,12 +131,11 @@
 						</Grid.ColumnDefinitions>
 						<Slider Grid.Column="0" Margin="20 0 0 10" Minimum="0"
 								Maximum="{Binding CutLeftSliderMaximum}"
-								HorizontalAlignment="Left"
+								HorizontalAlignment="Stretch"
 								VerticalAlignment="Bottom"
 								Value="{Binding FirstNFrames}"
 								Style="{StaticResource MaterialDesignDiscreteSlider}"
-								ToolTip="Cut first n frames"
-								Width="280"/>
+								ToolTip="Cut first n frames"/>
 						<TextBox Grid.Column="1" HorizontalAlignment="Center" IsReadOnly="True" Margin="0 0 0 3"
 								 Style="{StaticResource MaterialDesignFloatingHintTextBox}" Text="{Binding CutGraphNumberSamples}">
 							<materialDesign:HintAssist.Hint>
@@ -151,12 +150,11 @@
 						<Slider Grid.Column="2" Margin="0 0 10 10" Minimum="0"
 								IsDirectionReversed="True"
 								Maximum="{Binding CutRightSliderMaximum}"
-								HorizontalAlignment="Right"
+								HorizontalAlignment="Stretch"
 								VerticalAlignment="Bottom"
 								Value="{Binding LastNFrames}"
 								Style="{StaticResource MaterialDesignDiscreteSlider}"
-								ToolTip="Cut last n frames"
-								Width="280"/>
+								ToolTip="Cut last n frames"/>
 					</Grid>
 					<Slider Grid.Row="1" Grid.Column="0" TickFrequency="1"
 							Visibility="{Binding ElementName=SlidingWindowCheckBox, Path=IsChecked, Converter={StaticResource FalseToCollapsedConverter}}"

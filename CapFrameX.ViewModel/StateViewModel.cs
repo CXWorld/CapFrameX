@@ -26,7 +26,7 @@ namespace CapFrameX.ViewModel
 			get
 			{
 				Assembly assembly = GetAssemblyByName("CapFrameX");
-				return FileVersionInfo.GetVersionInfo(assembly.Location).FileVersion;
+				return FileVersionInfo.GetVersionInfo(assembly.Location).FileVersion + " Beta";
 			}
 		}
 

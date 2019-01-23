@@ -14,44 +14,44 @@
 			 Background="{DynamicResource MaterialDesignPaper}"
              FontFamily="{StaticResource MaterialDesignFont}"
 			 prism:ViewModelLocator.AutoWireViewModel="True">
-    <UserControl.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Button.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Shadows.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ToggleButton.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.DataGrid.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Slider.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.PopupBox.xaml" />
-            </ResourceDictionary.MergedDictionaries>
-            <mvvm:ZoomingModeConverter x:Key="ZoomingModeConverter"></mvvm:ZoomingModeConverter>
-            <mvvm:BoolToVisibilityConverter x:Key="FalseToCollapsedConverter" FalseValue="Collapsed" TrueValue="Visible"/>
-            <mvvm:BoolToVisibilityConverter x:Key="TrueToVisibleConverter" FalseValue="Visible" TrueValue="Collapsed"/>
-            <mvvm:AddValueConverter x:Key="AddValueConverter" Offset="-2"/>
-        </ResourceDictionary>
-    </UserControl.Resources>
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="4*"></RowDefinition>
-            <RowDefinition Height="Auto"></RowDefinition>
-            <RowDefinition Height="3*"></RowDefinition>
-        </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="1*"></ColumnDefinition>
-            <ColumnDefinition Width="300"></ColumnDefinition>
-        </Grid.ColumnDefinitions>
-        <StackPanel Margin="5 10 5 0" Grid.Row="0" Grid.Column="1" Orientation="Vertical">
-            <TextBox IsReadOnly="True" Background="#e6e6e6" materialDesign:HintAssist.Hint="Comparisons" />
-            <Border Margin="0 5 0 0" BorderThickness="1" BorderBrush="#CCC" MinHeight="300" Height="{Binding ElementName=ComparisonChart, Path=ActualHeight, Converter={StaticResource AddValueConverter}}">
-                <Grid Background="#e6e6e6">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="40"></RowDefinition>
-                        <RowDefinition Height="Auto"></RowDefinition>
-                        <RowDefinition Height="1*"></RowDefinition>
-                        <RowDefinition Height="Auto"></RowDefinition>
-                    </Grid.RowDefinitions>
-                    <Grid Grid.Row="0">
-                        <materialDesign:PopupBox Style="{StaticResource MaterialDesignMultiFloatingActionAccentPopupBox}"
+	<UserControl.Resources>
+		<ResourceDictionary>
+			<ResourceDictionary.MergedDictionaries>
+				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Button.xaml" />
+				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Shadows.xaml" />
+				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ToggleButton.xaml" />
+				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.DataGrid.xaml" />
+				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Slider.xaml" />
+				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.PopupBox.xaml" />
+			</ResourceDictionary.MergedDictionaries>
+			<mvvm:ZoomingModeConverter x:Key="ZoomingModeConverter"></mvvm:ZoomingModeConverter>
+			<mvvm:BoolToVisibilityConverter x:Key="FalseToCollapsedConverter" FalseValue="Collapsed" TrueValue="Visible"/>
+			<mvvm:BoolToVisibilityConverter x:Key="TrueToVisibleConverter" FalseValue="Visible" TrueValue="Collapsed"/>
+			<mvvm:AddValueConverter x:Key="AddValueConverter" Offset="-2"/>
+		</ResourceDictionary>
+	</UserControl.Resources>
+	<Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="4*"></RowDefinition>
+			<RowDefinition Height="Auto"></RowDefinition>
+			<RowDefinition Height="3*"></RowDefinition>
+		</Grid.RowDefinitions>
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="1*"></ColumnDefinition>
+			<ColumnDefinition Width="300"></ColumnDefinition>
+		</Grid.ColumnDefinitions>
+		<StackPanel Margin="5 10 5 0" Grid.Row="0" Grid.Column="1" Orientation="Vertical">
+			<TextBox IsReadOnly="True" Background="#e6e6e6" materialDesign:HintAssist.Hint="Comparisons" />
+			<Border Margin="0 5 0 0" BorderThickness="1" BorderBrush="#CCC" MinHeight="300" Height="{Binding ElementName=ChartAndCuttingGrid, Path=ActualHeight, Converter={StaticResource AddValueConverter}}">
+				<Grid Background="#e6e6e6">
+					<Grid.RowDefinitions>
+						<RowDefinition Height="40"></RowDefinition>
+						<RowDefinition Height="Auto"></RowDefinition>
+						<RowDefinition Height="1*"></RowDefinition>
+						<RowDefinition Height="Auto"></RowDefinition>
+					</Grid.RowDefinitions>
+					<Grid Grid.Row="0">
+						<materialDesign:PopupBox Style="{StaticResource MaterialDesignMultiFloatingActionAccentPopupBox}"
                                                  VerticalAlignment="Center"
 												 HorizontalAlignment="Left"
                                                  Width="30" Height="30"
@@ -59,20 +59,20 @@
                                                  Margin="10 0 0 0"
                                                  PlacementMode="BottomAndAlignCentres"
                                                  ToolTip="Set comparison context">
-                            <materialDesign:PopupBox.ToggleCheckedContent>
-                                <materialDesign:PackIcon Kind="Pencil" Width="24" Height="24" />
-                            </materialDesign:PopupBox.ToggleCheckedContent>
-                            <StackPanel>
+							<materialDesign:PopupBox.ToggleCheckedContent>
+								<materialDesign:PackIcon Kind="Pencil" Width="24" Height="24" />
+							</materialDesign:PopupBox.ToggleCheckedContent>
+							<StackPanel>
 								<Button Command="{Binding DateTimeContextCommand}" Content="{materialDesign:PackIcon TimeTable, Size=24}" ToolTip="Date and time"/>
 								<Button Command="{Binding CpuContextCommand}" ToolTip="CPU">
-                                    CPU
-                                </Button>
-                                <Button Command="{Binding GpuContextCommand}" ToolTip="GPU">
-                                    GPU
-                                </Button>
+									CPU
+								</Button>
+								<Button Command="{Binding GpuContextCommand}" ToolTip="GPU">
+									GPU
+								</Button>
 								<Button Command="{Binding CustomContextCommand}" Content="{materialDesign:PackIcon CommentUser, Size=24}" ToolTip="Custom comments"/>
 							</StackPanel>
-                        </materialDesign:PopupBox>
+						</materialDesign:PopupBox>
 						<Button Style="{StaticResource MaterialDesignFloatingActionMiniButton}"
 								Margin="0 0 10 0"
 								HorizontalAlignment="Right"
@@ -82,13 +82,12 @@
 							<materialDesign:PackIcon Kind="PlaylistRemove" Height="24" Width="24" />
 						</Button>
 					</Grid>
-                    <Separator Grid.Row="1"
-                               Style="{StaticResource MaterialDesignDarkSeparator}"
-                               Margin="5 0 5 0"/>
-                    <ScrollViewer VerticalScrollBarVisibility="Auto" Grid.Row="2">
-                        <Grid>
-                            <Border VerticalAlignment="Center" HorizontalAlignment="Center">
-                                <Image Grid.Row="0" Visibility="{Binding InitialIconVisibility, Converter={StaticResource FalseToCollapsedConverter}}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+					<Separator Grid.Row="1" Margin="5 0 5 0"
+                               Style="{StaticResource MaterialDesignDarkSeparator}"/>
+					<ScrollViewer VerticalScrollBarVisibility="Auto" Grid.Row="2">
+						<Grid>
+							<Border VerticalAlignment="Center" HorizontalAlignment="Center">
+								<Image Grid.Row="0" Visibility="{Binding InitialIconVisibility, Converter={StaticResource FalseToCollapsedConverter}}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
 									   Name="ComparisonImage"
 									   dragdrop:DragDrop.IsDropTarget="True"
 									   dragdrop:DragDrop.DropHandler="{Binding}"
@@ -98,9 +97,9 @@
 									   dragdrop:DragDrop.UseDefaultEffectDataTemplate="False"
 									   Source="/CapFrameX;component/Icons/CX_Icon.png"
 									   Width="80" Height="80">
-                                </Image>
-                            </Border>
-                            <ItemsControl ItemsSource="{Binding ComparisonRecords}" Grid.IsSharedSizeScope="True" Background="#e6e6e6" 
+								</Image>
+							</Border>
+							<ItemsControl ItemsSource="{Binding ComparisonRecords}" Grid.IsSharedSizeScope="True" Background="#e6e6e6" 
 										  Visibility="{Binding InitialIconVisibility, Converter={StaticResource TrueToVisibleConverter}}"
 										  Name="ComparisonRecordItemControl"
 										  dragdrop:DragDrop.IsDropTarget="True"
@@ -110,123 +109,160 @@
 										  dragdrop:DragDrop.DropTargetAdornerBrush="White"
 										  dragdrop:DragDrop.DefaultDragAdornerOpacity="0.5"
 										  dragdrop:DragDrop.UseDefaultEffectDataTemplate="False">
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate DataType="{x:Type ocatinterface:ComparisonRecordInfo}">
-                                        <Border x:Name="Border"
+								<ItemsControl.ItemTemplate>
+									<DataTemplate DataType="{x:Type ocatinterface:ComparisonRecordInfo}">
+										<Border x:Name="Border"
 								            Padding="8"
 								            BorderThickness="0 0 0 1"
 								            BorderBrush="{DynamicResource MaterialDesignDivider}">
-                                            <Grid>
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition SharedSizeGroup="Checkerz" />
-                                                    <ColumnDefinition />
-                                                </Grid.ColumnDefinitions>
-                                                <ToggleButton VerticalAlignment="Center"
+											<Grid>
+												<Grid.ColumnDefinitions>
+													<ColumnDefinition SharedSizeGroup="Checkerz" />
+													<ColumnDefinition />
+												</Grid.ColumnDefinitions>
+												<ToggleButton VerticalAlignment="Center"
 														  IsChecked="False"
 														  Style="{StaticResource MaterialDesignActionLightToggleButton}"
 														  Content="{Binding Letter}" 
 														  Background="{Binding Color}"/>
-                                                <StackPanel Margin="8 0 0 0"
+												<StackPanel Margin="8 0 0 0"
 														Grid.Column="1">
-                                                    <TextBlock FontWeight="Bold" Text="{Binding Game}" />
-                                                    <TextBlock Text="{Binding InfoText}" TextWrapping="Wrap"
+													<TextBlock FontWeight="Bold" Text="{Binding Game}" />
+													<TextBlock Text="{Binding InfoText}" TextWrapping="Wrap"
 															   Width="220"
 															   LineStackingStrategy="BlockLineHeight"
 															   FontSize="12"
 															   LineHeight="14"
 															   MaxHeight="52"/>
-                                                </StackPanel>
-                                            </Grid>
-                                        </Border>
-                                        <DataTemplate.Triggers>
-                                            <DataTrigger Binding="{Binding IsSelected}" Value="True">
-                                                <Setter TargetName="Border"
+												</StackPanel>
+											</Grid>
+										</Border>
+										<DataTemplate.Triggers>
+											<DataTrigger Binding="{Binding IsSelected}" Value="True">
+												<Setter TargetName="Border"
 													Property="Background"
 													Value="{DynamicResource MaterialDesignSelection}" />
-                                            </DataTrigger>
-                                        </DataTemplate.Triggers>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                        </Grid>
-                    </ScrollViewer>
-                    <ItemsControl Grid.Row="3"
+											</DataTrigger>
+										</DataTemplate.Triggers>
+									</DataTemplate>
+								</ItemsControl.ItemTemplate>
+							</ItemsControl>
+						</Grid>
+					</ScrollViewer>
+					<ItemsControl Grid.Row="3"
                                   VerticalAlignment="Top"
 								  Name="RemoveRecordItemControl"
 								  dragdrop:DragDrop.IsDropTarget="True"
 								  dragdrop:DragDrop.DropHandler="{Binding}"
 								  dragdrop:DragDrop.UseDefaultEffectDataTemplate="False">
-                        <Border Background="#CCC" Height="50">
-                            <materialDesign:PackIcon Kind="DeleteForeverOutline" VerticalAlignment="Center" HorizontalAlignment="Center"
+						<Border Background="#CCC" Height="50">
+							<materialDesign:PackIcon Kind="DeleteForeverOutline" VerticalAlignment="Center" HorizontalAlignment="Center"
 													 Width="32" Height="32" />
-                        </Border>
-                    </ItemsControl>
-                </Grid>
-            </Border>
-        </StackPanel>
-        <TabControl  Margin="0 10 0 0" Grid.Row="0" Grid.Column="0" Background="#F5F5F5" Visibility="{Binding InitialIconVisibility, Converter={StaticResource TrueToVisibleConverter}}" >
-            <TabItem Header="Frametimes">
-                <lvc:CartesianChart Name="ComparisonChart" MouseDoubleClick="ResetChart_MouseDoubleClick" DisableAnimations="True" Series="{Binding ComparisonSeriesCollection}" Zoom="{Binding ZoomingMode}" >
-                    <lvc:CartesianChart.AxisX>
-                        <lvc:Axis Title="Recording time (sec)" Name="FrametimesX" Separator="{x:Static lvc:DefaultAxes.CleanSeparator}" Foreground="Black"/>
-                    </lvc:CartesianChart.AxisX>
-                    <lvc:CartesianChart.AxisY>
-                        <lvc:Axis Title="Frametime (ms)" Name="FrametimesY" Foreground="Black"/>
-                    </lvc:CartesianChart.AxisY>
-                </lvc:CartesianChart>
-            </TabItem>
-            <TabItem Header="L-Shape">
-                <lvc:CartesianChart MouseDoubleClick="ResetChart_MouseDoubleClick" Series="{Binding ComparisonLShapeCollection}" Zoom="{Binding ZoomingMode}" >
-                    <lvc:CartesianChart.AxisX>
-                        <lvc:Axis Title="Quantiles (%)" Name="LShapeX" Foreground="Black">
-                            <lvc:Axis.Separator >
-                                <lvc:Separator Step="1"></lvc:Separator>
-                            </lvc:Axis.Separator>
-                        </lvc:Axis>
-                    </lvc:CartesianChart.AxisX>
-                    <lvc:CartesianChart.AxisY>
-                        <lvc:Axis Title="Frametime (ms)" Name="LShapeY" Foreground="Black"/>
-                    </lvc:CartesianChart.AxisY>
-                </lvc:CartesianChart>
-            </TabItem>
-        </TabControl>
-        <Expander Grid.Row="1" Grid.ColumnSpan="2" Name="SettingsExpander" Background="#F5F5F5" Margin="0 5 0 5" Header="Data/Chart Settings" HorizontalAlignment="Stretch"
+						</Border>
+					</ItemsControl>
+				</Grid>
+			</Border>
+		</StackPanel>
+		<TabControl  Margin="0 10 0 0" Grid.Row="0" Grid.Column="0" Background="#F5F5F5" Visibility="{Binding InitialIconVisibility, Converter={StaticResource TrueToVisibleConverter}}" >
+			<TabItem Header="Frametimes">
+				<Grid Name="ChartAndCuttingGrid">
+					<Grid.RowDefinitions>
+						<RowDefinition Height="1*"></RowDefinition>
+						<RowDefinition Height="Auto"></RowDefinition>
+					</Grid.RowDefinitions>
+					<lvc:CartesianChart Grid.Row="0" Name="ComparisonChart" MouseDoubleClick="ResetChart_MouseDoubleClick" DisableAnimations="True" Series="{Binding ComparisonSeriesCollection}" Zoom="{Binding ZoomingMode}" >
+						<lvc:CartesianChart.AxisX>
+							<lvc:Axis Title="Recording time (sec)" Name="FrametimesX" Separator="{x:Static lvc:DefaultAxes.CleanSeparator}" Foreground="Black"/>
+						</lvc:CartesianChart.AxisX>
+						<lvc:CartesianChart.AxisY>
+							<lvc:Axis Title="Frametime (ms)" Name="FrametimesY" Foreground="Black"/>
+						</lvc:CartesianChart.AxisY>
+					</lvc:CartesianChart>
+					<Grid Grid.Row="1" Grid.Column="0" Visibility="{Binding ElementName=CuttingModeActiveToggleButton, Path=IsChecked, Converter={StaticResource FalseToCollapsedConverter}}">
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="2*" />
+							<ColumnDefinition Width="1*" />
+							<ColumnDefinition Width="2*" />
+						</Grid.ColumnDefinitions>
+						<Slider Grid.Column="0" Margin="20 0 0 10" Minimum="0"
+								Maximum="{Binding CutLeftSliderMaximum}"
+								TickFrequency="0.1"
+								HorizontalAlignment="Stretch"
+								VerticalAlignment="Bottom"
+								Value="{Binding FirstSeconds}"
+								Style="{StaticResource MaterialDesignDiscreteSlider}"
+								ToolTip="Cut first seconds"/>
+						<TextBox Grid.Column="1" HorizontalAlignment="Center" IsReadOnly="True" Margin="20 0 20 3"
+								 Style="{StaticResource MaterialDesignFloatingHintTextBox}" Text="{Binding RemainingRecordingTime}">
+							<materialDesign:HintAssist.Hint>
+								<StackPanel Orientation="Horizontal" Margin="-2 0 0 0">
+									<materialDesign:PackIcon Kind="ChartLine" />
+									<TextBlock Margin="3 0 0 0">
+										remaining recording time
+									</TextBlock>
+								</StackPanel>
+							</materialDesign:HintAssist.Hint>
+						</TextBox>
+						<Slider Grid.Column="2" Margin="0 0 10 10" Minimum="0"
+								IsDirectionReversed="True"
+								Maximum="{Binding CutRightSliderMaximum}"
+								TickFrequency="0.1"
+								HorizontalAlignment="Stretch"
+								VerticalAlignment="Bottom"
+								Value="{Binding LastSeconds}"
+								Style="{StaticResource MaterialDesignDiscreteSlider}"
+								ToolTip="Cut last seconds"/>
+					</Grid>
+				</Grid>
+			</TabItem>
+			<TabItem Header="L-Shape">
+				<lvc:CartesianChart MouseDoubleClick="ResetChart_MouseDoubleClick" Series="{Binding ComparisonLShapeCollection}" Zoom="{Binding ZoomingMode}" >
+					<lvc:CartesianChart.AxisX>
+						<lvc:Axis Title="Quantiles (%)" Name="LShapeX" Foreground="Black">
+							<lvc:Axis.Separator >
+								<lvc:Separator Step="1"></lvc:Separator>
+							</lvc:Axis.Separator>
+						</lvc:Axis>
+					</lvc:CartesianChart.AxisX>
+					<lvc:CartesianChart.AxisY>
+						<lvc:Axis Title="Frametime (ms)" Name="LShapeY" Foreground="Black"/>
+					</lvc:CartesianChart.AxisY>
+				</lvc:CartesianChart>
+			</TabItem>
+		</TabControl>
+		<Expander Grid.Row="1" Grid.ColumnSpan="2" Name="SettingsExpander" Background="#F5F5F5" Margin="0 5 0 5" Header="Data/Chart Settings" HorizontalAlignment="Stretch"
                   Visibility="{Binding InitialIconVisibility, Converter={StaticResource TrueToVisibleConverter}}" >
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <Border Grid.Column="0" Background="#F5F5F5">
-                    <GroupBox Header="Data"
-							Style="{DynamicResource MaterialDesignGroupBox}"
-							Margin="15"
-							UseLayoutRounding="True"
-							SnapsToDevicePixels="True">
-                        <StackPanel Margin="0 10 0 10">
-                            <CheckBox IsThreeState="False"
-									  IsChecked="{Binding RemoveOutliers}"
-									  Margin="0 0 0 0">
-                                Remove outliers
-                            </CheckBox>
-                        </StackPanel>
-                    </GroupBox>
-                </Border>
-                <Button Margin="15" Grid.Column="1" VerticalAlignment="Top" Command="{Binding ToogleZoomingModeCommand}">
-                    <TextBlock>Toggle zoming mode, current is: 
+			<Grid Height="60">
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="Auto" />
+					<ColumnDefinition Width="Auto" />
+					<ColumnDefinition Width="1*" />
+				</Grid.ColumnDefinitions>
+				<StackPanel VerticalAlignment="Top" Grid.Column="0" Margin="25 10 0 10">
+					<CheckBox VerticalAlignment="Center" IsThreeState="False" IsChecked="{Binding RemoveOutliers}">
+						Remove outliers
+					</CheckBox>
+				</StackPanel>
+				<StackPanel VerticalAlignment="Top" Grid.Column="1" Margin="25 10 0 10" Orientation="Horizontal">
+					<TextBlock VerticalAlignment="Center">Cutting mode:</TextBlock>
+					<ToggleButton Name="CuttingModeActiveToggleButton" Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
+								  ToolTip="Cutting mode" IsChecked="{Binding IsCuttingModeActive}"/>
+				</StackPanel>
+				<Button Margin="15 0 300 0" Grid.Column="2" VerticalAlignment="Top" HorizontalAlignment="Right" Command="{Binding ToogleZoomingModeCommand}">
+					<TextBlock>Toggle zoming mode, current is: 
 						<TextBlock Text="{Binding ZoomingMode, Converter={StaticResource ZoomingModeConverter}}"/>
 					</TextBlock>
-                </Button>
-            </Grid>
-        </Expander>
-        <lvc:CartesianChart Margin="0 0 5 0" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Series="{Binding ComparisonColumnChartSeriesCollection}" LegendLocation="Top"
+				</Button>
+			</Grid>
+		</Expander>
+		<lvc:CartesianChart Margin="0 0 5 0" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Series="{Binding ComparisonColumnChartSeriesCollection}" LegendLocation="Top"
                             Visibility="{Binding InitialIconVisibility, Converter={StaticResource TrueToVisibleConverter}}" Background="#F5F5F5">
-            <lvc:CartesianChart.AxisX>
-                <lvc:Axis Title="Comparisons" Labels="{Binding ComparisonColumnChartLabels}" Foreground="Black"></lvc:Axis>
-            </lvc:CartesianChart.AxisX>
-            <lvc:CartesianChart.AxisY>
-                <lvc:Axis Title="FPS" LabelFormatter="{Binding ComparisonColumnChartFormatter}" Foreground="Black"></lvc:Axis>
-            </lvc:CartesianChart.AxisY>
-        </lvc:CartesianChart>
-    </Grid>
+			<lvc:CartesianChart.AxisX>
+				<lvc:Axis Title="Comparisons" Labels="{Binding ComparisonColumnChartLabels}" Foreground="Black"></lvc:Axis>
+			</lvc:CartesianChart.AxisX>
+			<lvc:CartesianChart.AxisY>
+				<lvc:Axis Title="FPS" LabelFormatter="{Binding ComparisonColumnChartFormatter}" Foreground="Black"></lvc:Axis>
+			</lvc:CartesianChart.AxisY>
+		</lvc:CartesianChart>
+	</Grid>
 </UserControl>

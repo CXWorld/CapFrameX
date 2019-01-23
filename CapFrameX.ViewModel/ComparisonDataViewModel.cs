@@ -59,6 +59,14 @@ namespace CapFrameX.ViewModel
 		private HashSet<SolidColorBrush> _freeColors = new HashSet<SolidColorBrush>(_comparisonBrushes);
 		private ZoomingOptions _zoomingMode;
 		private bool _useEventMessages;
+		private string _remainingRecordingTime;
+		private double _cutLeftSliderMaximum;
+		private double _cutRightSliderMaximum;
+		private double _firstSeconds;
+		private double _lastSeconds;
+		private bool _isCuttingModeActive;
+		private double _maxRecordingTime;
+		private bool _doUpdateCharts = true;
 
 		public bool InitialIconVisibility
 		{
@@ -106,7 +114,6 @@ namespace CapFrameX.ViewModel
 			set { _comparisonLShapeCollection = value; RaisePropertyChanged(); }
 		}
 
-
 		public string[] ComparisonColumnChartLabels
 		{
 			get { return _comparisonColumnChartLabels; }
@@ -117,6 +124,59 @@ namespace CapFrameX.ViewModel
 		{
 			get { return _comparisonItemControlHeight; }
 			set { _comparisonItemControlHeight = value; RaisePropertyChanged(); }
+		}
+
+		public string RemainingRecordingTime
+		{
+			get { return _remainingRecordingTime; }
+			set { _remainingRecordingTime = value; RaisePropertyChanged(); }
+		}
+
+		public double CutLeftSliderMaximum
+		{
+			get { return _cutLeftSliderMaximum; }
+			set { _cutLeftSliderMaximum = value; RaisePropertyChanged(); }
+		}
+
+		public double CutRightSliderMaximum
+		{
+			get { return _cutRightSliderMaximum; }
+			set { _cutRightSliderMaximum = value; RaisePropertyChanged(); }
+		}
+
+		public double FirstSeconds
+		{
+			get { return _firstSeconds; }
+			set
+			{
+				_firstSeconds = value;
+				RaisePropertyChanged();
+				UpdateCharts();
+				RemainingRecordingTime = Math.Round(_maxRecordingTime - LastSeconds - _firstSeconds, 2).ToString(CultureInfo.InvariantCulture) + " s";
+			}
+		}
+
+		public double LastSeconds
+		{
+			get { return _lastSeconds; }
+			set
+			{
+				_lastSeconds = value;
+				RaisePropertyChanged();
+				UpdateCharts();
+				RemainingRecordingTime = Math.Round(_maxRecordingTime - _lastSeconds - FirstSeconds, 2).ToString(CultureInfo.InvariantCulture) + " s";
+			}
+		}
+
+		public bool IsCuttingModeActive
+		{
+			get { return _isCuttingModeActive; }
+			set
+			{
+				_isCuttingModeActive = value;
+				RaisePropertyChanged();
+				OnCuttingModeChanged();
+			}
 		}
 
 		public ICommand ToogleZoomingModeCommand { get; }
@@ -145,7 +205,6 @@ namespace CapFrameX.ViewModel
 			_frametimeAnalyzer = frametimeAnalyzer;
 			_eventAggregator = eventAggregator;
 			_appConfiguration = appConfiguration;
-
 
 			ZoomingMode = ZoomingOptions.Y;
 			ToogleZoomingModeCommand = new DelegateCommand(OnToogleZoomingMode);
@@ -193,7 +252,46 @@ namespace CapFrameX.ViewModel
 			ComparisonLShapeCollection = new SeriesCollection();
 
 			SubscribeToSelectRecord();
+		}
 
+		private void OnCuttingModeChanged()
+		{
+			if (!ComparisonRecords.Any())
+				return;
+
+			if (IsCuttingModeActive)
+			{
+				UpdateCuttingParameter();
+			}
+			else
+			{
+				FirstSeconds = 0;
+				LastSeconds = 0;
+			}
+		}
+
+		private void UpdateCuttingParameter()
+		{
+			double minRecordingTime = double.MaxValue;
+			_maxRecordingTime = double.MinValue;
+
+			foreach (var record in ComparisonRecords)
+			{
+				if (record.Session.FrameStart.Last() > _maxRecordingTime)
+					_maxRecordingTime = record.Session.FrameStart.Last();
+
+				if (record.Session.FrameStart.Last() < minRecordingTime)
+					minRecordingTime = record.Session.FrameStart.Last();
+			}
+
+			_doUpdateCharts = false;
+			FirstSeconds = 0;
+			LastSeconds = 0;
+			_doUpdateCharts = true;
+
+			CutLeftSliderMaximum = minRecordingTime / 2;
+			CutRightSliderMaximum = minRecordingTime / 2 + _maxRecordingTime - minRecordingTime;
+			RemainingRecordingTime = Math.Round(_maxRecordingTime, 2).ToString(CultureInfo.InvariantCulture) + " s";
 		}
 
 		private void OnToogleZoomingMode()
@@ -335,7 +433,7 @@ namespace CapFrameX.ViewModel
 			{
 				var newLine = Environment.NewLine;
 				infoText += "creation datetime: " + ocatRecordInfo.FileInfo.LastWriteTime.ToString() + newLine +
-							"capture time: " + Math.Round(session.LastFrameTime, 2).ToString(CultureInfo.InvariantCulture) + " sec" + newLine +
+							"capture time: " + Math.Round(session.LastFrameTime, 2).ToString(CultureInfo.InvariantCulture) + " s" + newLine +
 							"number of samples: " + session.FrameTimes.Count.ToString();
 			}
 
@@ -348,8 +446,11 @@ namespace CapFrameX.ViewModel
 			};
 		}
 
-		private void RemoveFromCharts(ComparisonRecordInfo comparisonInfo)
+		private void UpdateCharts()
 		{
+			if (!_doUpdateCharts)
+				return;
+
 			SetColumnChart();
 			SetFrametimeChart();
 			SetLShapeChart();
@@ -364,9 +465,12 @@ namespace CapFrameX.ViewModel
 
 		private void AddToColumnCharts(ComparisonRecordInfo comparisonInfo)
 		{
-			var fps = comparisonInfo.Session.FrameTimes.Select(ft => 1000 / ft).ToList();
-			var frametimes = comparisonInfo.Session.FrameTimes;
-			var average = Math.Round(frametimes.Count * 1000 / frametimes.Sum(), 0);
+			double startTime = FirstSeconds;
+			double endTime = _maxRecordingTime - LastSeconds;
+			var frametimeSampleWindow = comparisonInfo.Session.GetFrametimeSamplesWindow(startTime, endTime);
+
+			var fps = frametimeSampleWindow.Select(ft => 1000 / ft).ToList();
+			var average = Math.Round(frametimeSampleWindow.Count * 1000 / frametimeSampleWindow.Sum(), 0);
 			var p1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.01));
 			var p0dot1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.001));
 
@@ -398,8 +502,12 @@ namespace CapFrameX.ViewModel
 
 		private void AddToFrameTimeChart(ComparisonRecordInfo comparisonInfo)
 		{
+			double startTime = FirstSeconds;
+			double endTime = _maxRecordingTime - LastSeconds;
 			var session = comparisonInfo.Session;
-			var frametimePoints = session.FrameTimes.Select((val, index) => new ObservablePoint(session.FrameStart[index], val));
+			var frametimePoints = session.GetFrametimePointsWindow(startTime, endTime)
+										 .Select(pnt => new ObservablePoint(pnt.X, pnt.Y));
+
 			var frametimeChartValues = new GearedValues<ObservablePoint>();
 			frametimeChartValues.AddRange(frametimePoints);
 			frametimeChartValues.WithQuality(_appConfiguration.ChartQualityLevel.ConverToEnum<Quality>());
@@ -418,8 +526,12 @@ namespace CapFrameX.ViewModel
 
 		private void AddToLShapeChart(ComparisonRecordInfo comparisonInfo)
 		{
+			double startTime = FirstSeconds;
+			double endTime = _maxRecordingTime - LastSeconds;
+			var frametimeSampleWindow = comparisonInfo.Session.GetFrametimeSamplesWindow(startTime, endTime);
+
 			var lShapeQuantiles = _frametimeAnalyzer.GetLShapeQuantiles();
-			double action(double q) => _frametimeStatisticProvider.GetPQuantileSequence(comparisonInfo.Session.FrameTimes, q / 100);
+			double action(double q) => _frametimeStatisticProvider.GetPQuantileSequence(frametimeSampleWindow, q / 100);
 			var quantiles = lShapeQuantiles.Select(q => new ObservablePoint(q, action(q)));
 			var quantileValues = new ChartValues<ObservablePoint>();
 			quantileValues.AddRange(quantiles);
@@ -482,6 +594,12 @@ namespace CapFrameX.ViewModel
 								if (_useEventMessages)
 								{
 									AddComparisonRecord(msg.RecordInfo);
+
+									// Complete redraw
+									if (IsCuttingModeActive)
+									{
+										UpdateCharts();
+									}
 								}
 							});
 		}
@@ -498,6 +616,12 @@ namespace CapFrameX.ViewModel
 						if (dropInfo.Data is OcatRecordInfo recordInfo)
 						{
 							AddComparisonRecord(recordInfo);
+
+							// Complete redraw
+							if (IsCuttingModeActive)
+							{
+								UpdateCharts();
+							}
 						}
 					}
 					else if (frameworkElement.Name == "RemoveRecordItemControl")
@@ -509,8 +633,10 @@ namespace CapFrameX.ViewModel
 							InitialIconVisibility = !ComparisonRecords.Any();
 							ComparisonItemControlHeight = ComparisonRecords.Any() ? "Auto" : "300";
 
+							UpdateCuttingParameter();
+
 							//Cleanup charts and performance parameter
-							RemoveFromCharts(comparisonRecordInfo);
+							UpdateCharts();
 						}
 					}
 				}
@@ -528,6 +654,8 @@ namespace CapFrameX.ViewModel
 				ComparisonRecords.Add(comparisonRecordInfo);
 				InitialIconVisibility = !ComparisonRecords.Any();
 				ComparisonItemControlHeight = ComparisonRecords.Any() ? "Auto" : "300";
+
+				UpdateCuttingParameter();
 
 				//Draw charts and performance parameter
 				AddToCharts(comparisonRecordInfo);

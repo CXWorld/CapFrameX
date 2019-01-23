@@ -324,6 +324,11 @@ namespace CapFrameX.ViewModel
 
 		private void UpdateCuttingParameter()
 		{
+			_doUpdateCharts = false;
+			FirstNFrames = 0;
+			LastNFrames = 0;
+			_doUpdateCharts = true;
+
 			CutLeftSliderMaximum = _session.FrameTimes.Count / 2;
 			CutRightSliderMaximum = _session.FrameTimes.Count / 2;
 			CutGraphNumberSamples = _session.FrameTimes.Count.ToString();
@@ -477,11 +482,7 @@ namespace CapFrameX.ViewModel
 								{
 									_session = msg.OcatSession;
 									_recordInfo = msg.RecordInfo;
-									SystemInfos = RecordManager.GetSystemInfos(msg.OcatSession);
-									_doUpdateCharts = false;
-									FirstNFrames = 0;
-									LastNFrames = 0;
-									_doUpdateCharts = true;
+									SystemInfos = RecordManager.GetSystemInfos(msg.OcatSession);					
 									UpdateCuttingParameter();
 									UpdateCharts();
 								}
@@ -503,11 +504,10 @@ namespace CapFrameX.ViewModel
 					{
 						double startTime = (_session.LastFrameTime - length) * FrametimeSliderValue / SCALE_RESOLUTION;
 						double endTime = startTime + length;
-
-						var frametimesSubset = RecordManager.GetFrametimesWindow(_session, startTime, endTime);
+						var frametimeSampleWindow = _session.GetFrametimeSamplesWindow(startTime, endTime);
 
 						// ToDo: Make method selectable
-						frametimes = _frametimeStatisticProvider?.GetOutlierAdjustedSequence(frametimesSubset,
+						frametimes = _frametimeStatisticProvider?.GetOutlierAdjustedSequence(frametimeSampleWindow,
 							ERemoveOutlierMethod.DeciPercentile);
 					}
 				}
@@ -526,8 +526,7 @@ namespace CapFrameX.ViewModel
 					{
 						double startTime = (_session.LastFrameTime - length) * FrametimeSliderValue / SCALE_RESOLUTION;
 						double endTime = startTime + length;
-
-						frametimes = RecordManager.GetFrametimesWindow(_session, startTime, endTime);
+						frametimes = _session.GetFrametimeSamplesWindow(startTime, endTime);
 					}
 				}
 				else
@@ -609,8 +608,8 @@ namespace CapFrameX.ViewModel
 			};
 
 			// ToDo: Get color from ressources
-			gradientBrush.GradientStops.Add(new GradientStop(Color.FromRgb(139, 35, 35), 0));
-			gradientBrush.GradientStops.Add(new GradientStop(Colors.Transparent, 1));
+			//gradientBrush.GradientStops.Add(new GradientStop(Color.FromRgb(139, 35, 35), 0));
+			//gradientBrush.GradientStops.Add(new GradientStop(Colors.Transparent, 1));
 
 			var frametimeValues = new GearedValues<double>();
 			frametimeValues.AddRange(frametimes);
@@ -625,7 +624,7 @@ namespace CapFrameX.ViewModel
 				new GLineSeries
 				{
 					Values = frametimeValues,
-					Fill = gradientBrush,
+					Fill = Brushes.Transparent,
 					Stroke = new SolidColorBrush(Color.FromRgb(139,35,35)),
 					StrokeThickness = 1,
 					LineSmoothness= 0,
@@ -634,7 +633,7 @@ namespace CapFrameX.ViewModel
 				new GLineSeries
 				{
 					Values = movingAverageValues,
-					Fill = gradientBrush,
+					Fill = Brushes.Transparent,
 					Stroke = new SolidColorBrush(Color.FromRgb(35, 139, 123)),
 					StrokeThickness = 1,
 					LineSmoothness= 0,

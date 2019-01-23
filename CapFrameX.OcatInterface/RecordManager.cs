@@ -50,22 +50,7 @@ namespace CapFrameX.OcatInterface
 
 			lines[1] = string.Join(",", customData);
 			File.WriteAllLines(recordInfo.FullPath, lines);
-		}
-
-		public static IList<double> GetFrametimesWindow(Session session, double startTime, double endTime)
-		{
-			IList<double> frametimesSubset = new List<double>();
-
-			for (int i = 0; i < session.FrameTimes.Count; i++)
-			{
-				if (session.FrameStart[i] >= startTime && session.FrameStart[i] <= endTime)
-				{
-					frametimesSubset.Add(session.FrameTimes[i]);
-				}
-			}
-
-			return frametimesSubset;
-		}
+		}		
 
 		public static List<SystemInfo> GetSystemInfos(Session session)
 		{
