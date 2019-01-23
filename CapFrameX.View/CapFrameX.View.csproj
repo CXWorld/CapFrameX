@@ -184,6 +184,9 @@
     <Compile Include="StateView.xaml.cs">
       <DependentUpon>StateView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="SynchronizationView.xaml.cs">
+      <DependentUpon>SynchronizationView.xaml</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Page Include="ComparisonDataView.xaml">
@@ -223,6 +226,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="StateView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="SynchronizationView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

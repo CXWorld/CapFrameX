@@ -28,11 +28,11 @@
 					<ColumnDefinition Width="1*"/>
 				</Grid.ColumnDefinitions>
 				<StackPanel Grid.Column="0" Orientation="Horizontal" Margin="2">
-				<RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
+					<RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
 							 Margin="5"
 							 IsChecked="{Binding SingleRecordIsChecked}"
 							 Content="SINGLE RECORD" />
-				<RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
+					<RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
 							 Margin="5"
 							 IsChecked="{Binding RecordComparisonIsChecked}"
 							 Content="RECORD COMPARISON" />
@@ -40,6 +40,10 @@
 							 Margin="5"
 							 IsChecked="{Binding ReportIsChecked}"
 							 Content="REPORT" />
+					<RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
+							 Margin="5"
+							 IsChecked="{Binding SynchronizationIsChecked}"
+							 Content="SYNCHRONISATION" />
 				</StackPanel>
 				<materialDesign:PopupBox Grid.Column="1" Margin="16,0,16,0" StaysOpen="True" PlacementMode="BottomAndAlignRightEdges"  HorizontalAlignment="Right">
 					<Grid Margin="8,8,8,8">

@@ -749,6 +749,12 @@ namespace CapFrameX.ViewModel
 			StatisticCollection?.Clear();
 			AdvancedStatisticCollection?.Clear();
 			SystemInfos?.Clear();
+
+			// Reset Slider
+			_doUpdateCharts = false;
+			FirstNFrames = 0;
+			LastNFrames = 0;
+			_doUpdateCharts = true;
 		}
 	}
 }

@@ -163,6 +163,7 @@
     <Compile Include="Inactive\ViewModel3D.cs" />
     <Compile Include="ReportViewModel.cs" />
     <Compile Include="StateViewModel.cs" />
+    <Compile Include="SynchronizationViewModel.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

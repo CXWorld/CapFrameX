@@ -31,6 +31,7 @@ namespace CapFrameX.ViewModel
 		private int _selectWindowSize;
 		private double _stutteringFactor;
 		private string _observedDirectory;
+		private bool _synchronizationIsChecked;
 
 		public bool SingleRecordIsChecked
 		{
@@ -70,6 +71,19 @@ namespace CapFrameX.ViewModel
 					OnReportIsCheckedChanged();
 			}
 		}
+
+		public bool SynchronizationIsChecked
+		{
+			get { return _synchronizationIsChecked; }
+			set
+			{
+				_synchronizationIsChecked = value;
+				RaisePropertyChanged();
+
+				if (value == true)
+					OnSynchronizationIsCheckedChanged();
+			}
+		}		
 
 		public int SelectWindowSize
 		{
@@ -179,6 +193,12 @@ namespace CapFrameX.ViewModel
 			_resetRecordEvent.Publish(new ViewMessages.ResetRecord());
 		}
 
+		private void OnSynchronizationIsCheckedChanged()
+		{
+			_regionManager.RequestNavigate("DataRegion", "SynchronizationView");
+			_resetRecordEvent.Publish(new ViewMessages.ResetRecord());
+		}		
+
 		private void SetAggregatorEvents()
 		{
 			_resetRecordEvent = _eventAggregator.GetEvent<PubSubEvent<ViewMessages.ResetRecord>>();
@@ -230,6 +250,11 @@ namespace CapFrameX.ViewModel
 								if (ReportIsChecked)
 								{
 									_regionManager.RequestNavigate("DataRegion", "ReportView");
+								}
+
+								if(SynchronizationIsChecked)
+								{
+									_regionManager.RequestNavigate("DataRegion", "SynchronizationView");									
 								}
 							});
 		}
