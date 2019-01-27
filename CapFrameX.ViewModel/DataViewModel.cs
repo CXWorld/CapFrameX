@@ -56,7 +56,12 @@ namespace CapFrameX.ViewModel
 		private string _cutGraphNumberSamples;
 		private bool _doUpdateCharts = true;
 
-		public Func<double, string> ParameterFormatter { get; set; } = value => value.ToString("N");
+		/// <summary>
+		/// https://docs.microsoft.com/en-us/dotnet/standard/base-types/standard-numeric-format-strings
+		/// </summary>
+		public Func<double, string> ParameterFormatter { get; } = value => value.ToString("F0");
+
+		public Func<double, string> AdvancedParameterFormatter { get; } = value => value.ToString("N");
 
 		public string[] ParameterLabels
 		{
@@ -482,7 +487,9 @@ namespace CapFrameX.ViewModel
 								{
 									_session = msg.OcatSession;
 									_recordInfo = msg.RecordInfo;
-									SystemInfos = RecordManager.GetSystemInfos(msg.OcatSession);					
+									SystemInfos = RecordManager.GetSystemInfos(msg.OcatSession);
+
+									// Do update actions
 									UpdateCuttingParameter();
 									UpdateCharts();
 								}
@@ -601,11 +608,11 @@ namespace CapFrameX.ViewModel
 
 		private void SetFrametimeChart(IList<double> frametimes)
 		{
-			var gradientBrush = new LinearGradientBrush
-			{
-				StartPoint = new Point(0, 0),
-				EndPoint = new Point(0, 1)
-			};
+			//var gradientBrush = new LinearGradientBrush
+			//{
+			//	StartPoint = new Point(0, 0),
+			//	EndPoint = new Point(0, 1)
+			//};
 
 			// ToDo: Get color from ressources
 			//gradientBrush.GradientStops.Add(new GradientStop(Color.FromRgb(139, 35, 35), 0));
@@ -623,6 +630,7 @@ namespace CapFrameX.ViewModel
 			{
 				new GLineSeries
 				{
+					Title = "Frametimes",
 					Values = frametimeValues,
 					Fill = Brushes.Transparent,
 					Stroke = new SolidColorBrush(Color.FromRgb(139,35,35)),
@@ -632,6 +640,7 @@ namespace CapFrameX.ViewModel
 				},
 				new GLineSeries
 				{
+					Title = string.Format("Moving average (window size = {0})", _appConfiguration.MovingAverageWindowSize),
 					Values = movingAverageValues,
 					Fill = Brushes.Transparent,
 					Stroke = new SolidColorBrush(Color.FromRgb(35, 139, 123)),

@@ -13,5 +13,7 @@ namespace CapFrameX.Statistics
 		IList<double> GetMovingAverage(IList<double> sequence, int windowSize);
 
 		double GetPQuantileSequence(IList<double> sequence, double pQuantile);
+
+		int GetOptimalHistogramBinCount(IList<double> sequence);
 	}
 }

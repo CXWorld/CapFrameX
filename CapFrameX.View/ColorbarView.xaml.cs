@@ -9,7 +9,7 @@ using System.Windows.Controls;
 namespace CapFrameX.View
 {
 	/// <summary>
-	/// Interaktionslogik für ColorbarView.xaml
+	/// Interaction logic for ColorbarView.xaml
 	/// </summary>
 	public partial class ColorbarView : UserControl
 	{

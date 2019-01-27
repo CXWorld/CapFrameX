@@ -6,7 +6,7 @@ using System.Windows.Controls;
 namespace CapFrameX.View
 {
 	/// <summary>
-	/// Interaktionslogik für OverlayView.xaml
+	/// Interaction logic for OverlayView.xaml
 	/// </summary>
 	public partial class OverlayView : UserControl
 	{

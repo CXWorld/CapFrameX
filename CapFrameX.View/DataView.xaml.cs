@@ -8,7 +8,7 @@ using System.Windows.Controls;
 namespace CapFrameX.View
 {
 	/// <summary>
-	/// Interaktionslogik für DataView.xaml
+	/// Interaction logic for DataView.xaml
 	/// </summary>
 	public partial class DataView : UserControl
 	{
@@ -19,8 +19,8 @@ namespace CapFrameX.View
 			// Design time!
 			if (DesignerProperties.GetIsInDesignMode(this))
 			{
-				var appConfiguration = new CapFrameXConfiguration();
-				DataContext = new DataViewModel(new FrametimeStatisticProvider(), new FrametimeAnalyzer(), new EventAggregator(), appConfiguration);
+				DataContext = new DataViewModel(new FrametimeStatisticProvider(), 
+					new FrametimeAnalyzer(), new EventAggregator(), new CapFrameXConfiguration());
 			}
 		}
 

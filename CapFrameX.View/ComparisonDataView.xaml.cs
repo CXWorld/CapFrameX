@@ -8,7 +8,7 @@ using System.Windows.Controls;
 namespace CapFrameX.View
 {
 	/// <summary>
-	/// Interaktionslogik für ComparisonDataView.xaml
+	/// Interaction logic for ComparisonDataView.xaml
 	/// </summary>
 	public partial class ComparisonDataView : UserControl
     {

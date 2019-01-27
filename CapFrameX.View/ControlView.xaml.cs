@@ -12,7 +12,7 @@ using System.Windows.Data;
 namespace CapFrameX.View
 {
 	/// <summary>
-	/// Interaktionslogik für ControlView.xaml
+	/// Interaction logic for ControlView.xaml
 	/// </summary>
 	public partial class ControlView : UserControl
 	{

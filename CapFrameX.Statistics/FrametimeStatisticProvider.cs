@@ -72,5 +72,76 @@ namespace CapFrameX.Statistics
 		{
 			return sequence.Quantile(pQuantile);
 		}
+
+		public int GetOptimalHistogramBinCount(IList<double> sequence)
+		{
+			var min = sequence.Min();
+			var max = sequence.Max();
+
+			var binWidth = CalculateOptimalBinWidth(sequence);
+
+			return (int)Math.Round((max - min) / binWidth, 0);
+		}
+
+		private double CalculateOptimalBinWidth(IList<double> sequence)
+		{
+			double xMax = sequence.Max(), xMin = sequence.Min();
+			int minBins = 4, maxBins = 16;
+			double[] N = Enumerable.Range(minBins, maxBins - minBins)
+				.Select(v => (double)v).ToArray();
+			double[] D = N.Select(v => (xMax - xMin) / v).ToArray();
+			double[] C = new double[D.Length];
+
+			for (int i = 0; i < N.Length; i++)
+			{
+				double[] binIntervals = LinearSpace(xMin, xMax, (int)N[i] + 1);
+				double[] ki = Histogram(sequence, binIntervals);
+				ki = ki.Skip(1).Take(ki.Length - 2).ToArray();
+
+				double mean = ki.Average();
+				double variance = ki.Select(v => Math.Pow(v - mean, 2)).Sum() / N[i];
+
+				C[i] = (2 * mean - variance) / (Math.Pow(D[i], 2));
+			}
+
+			double minC = C.Min();
+			int index = C.Select((c, ix) => new { Value = c, Index = ix })
+				.Where(c => c.Value == minC).First().Index;
+
+			// optimal bin width
+			return D[index];
+		}
+
+		private double[] Histogram(IList<double> data, double[] binEdges)
+		{
+			double[] counts = new double[binEdges.Length - 1];
+
+			for (int i = 0; i < binEdges.Length - 1; i++)
+			{
+				double lower = binEdges[i], upper = binEdges[i + 1];
+
+				for (int j = 0; j < data.Count; j++)
+				{
+					if (data[j] >= lower && data[j] <= upper)
+					{
+						counts[i]++;
+					}
+				}
+			}
+
+			return counts;
+		}
+
+		private double[] LinearSpace(double a, double b, int count)
+		{
+			double[] output = new double[count];
+
+			for (int i = 0; i < count; i++)
+			{
+				output[i] = a + ((i * (b - a)) / (count - 1));
+			}
+
+			return output;
+		}
 	}
 }

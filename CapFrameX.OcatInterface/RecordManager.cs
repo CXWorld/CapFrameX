@@ -50,7 +50,7 @@ namespace CapFrameX.OcatInterface
 
 			lines[1] = string.Join(",", customData);
 			File.WriteAllLines(recordInfo.FullPath, lines);
-		}		
+		}
 
 		public static List<SystemInfo> GetSystemInfos(Session session)
 		{
@@ -109,6 +109,7 @@ namespace CapFrameX.OcatInterface
 			session.VSync = new List<double>();
 			session.AppMissed = new List<bool>();
 			session.WarpMissed = new List<bool>();
+			session.Displaytimes = new List<double>();
 
 			session.AppMissesCount = 0;
 			session.WarpMissesCount = 0;
@@ -132,6 +133,7 @@ namespace CapFrameX.OcatInterface
 					int indexVSync = -1;
 					int indexAppMissed = -1;
 					int indexWarpMissed = -1;
+					int indexDisplayTimes = -1;
 
 					// System info
 					int indexMotherboardName = -1;
@@ -189,6 +191,11 @@ namespace CapFrameX.OcatInterface
 						{
 							indexWarpMissed = i;
 						}
+						if (String.Compare(metrics[i], "MsBetweenDisplayChange") == 0)
+						{
+							indexDisplayTimes = i;
+						}
+
 						// System info
 						if (String.Compare(metrics[i], "Motherboard") == 0)
 						{
@@ -266,6 +273,14 @@ namespace CapFrameX.OcatInterface
 
 								session.AppMissed.Add(Convert.ToBoolean(appMissed));
 								session.AppMissesCount += appMissed;
+							}
+						}
+
+						if (indexDisplayTimes > 0)
+						{
+							if (double.TryParse(values[indexDisplayTimes], NumberStyles.Any, CultureInfo.InvariantCulture, out var displayTime))
+							{
+								session.Displaytimes.Add(displayTime);
 							}
 						}
 

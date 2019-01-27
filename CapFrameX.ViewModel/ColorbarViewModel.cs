@@ -41,7 +41,7 @@ namespace CapFrameX.ViewModel
 				_singleRecordIsChecked = value;
 				RaisePropertyChanged();
 
-				if (value == true)
+				if (value)
 					OnSingleRecordIsCheckedChanged();
 			}
 		}
@@ -54,7 +54,7 @@ namespace CapFrameX.ViewModel
 				_recordComparisonIsChecked = value;
 				RaisePropertyChanged();
 
-				if (value == true)
+				if (value)
 					OnRecordComparisonIsCheckedChanged();
 			}
 		}
@@ -67,7 +67,7 @@ namespace CapFrameX.ViewModel
 				_reportIsChecked = value;
 				RaisePropertyChanged();
 
-				if (value == true)
+				if (value)
 					OnReportIsCheckedChanged();
 			}
 		}
@@ -80,10 +80,10 @@ namespace CapFrameX.ViewModel
 				_synchronizationIsChecked = value;
 				RaisePropertyChanged();
 
-				if (value == true)
+				if (value)
 					OnSynchronizationIsCheckedChanged();
 			}
-		}		
+		}
 
 		public int SelectWindowSize
 		{
@@ -135,7 +135,7 @@ namespace CapFrameX.ViewModel
 		public Array ChartQualityLevels => Enum.GetValues(typeof(Quality));
 
 		public ColorbarViewModel(IRegionManager regionManager,
-							     IRecordDirectoryObserver recordDirectoryObserver,
+								 IRecordDirectoryObserver recordDirectoryObserver,
 								 IEventAggregator eventAggregator,
 								 IAppConfiguration appConfiguration)
 		{
@@ -197,7 +197,7 @@ namespace CapFrameX.ViewModel
 		{
 			_regionManager.RequestNavigate("DataRegion", "SynchronizationView");
 			_resetRecordEvent.Publish(new ViewMessages.ResetRecord());
-		}		
+		}
 
 		private void SetAggregatorEvents()
 		{
@@ -210,6 +210,7 @@ namespace CapFrameX.ViewModel
 			_eventAggregator.GetEvent<PubSubEvent<ViewMessages.ShowOverlay>>()
 							.Subscribe(msg =>
 							{
+								// This is crap, should be refacored
 								var controlView = _regionManager.Regions["ControlRegion"].Views.FirstOrDefault();
 								_regionManager.Regions["ControlRegion"].Deactivate(controlView);
 								var colorbarView = _regionManager.Regions["ColorbarRegion"].Views.FirstOrDefault();
@@ -252,9 +253,9 @@ namespace CapFrameX.ViewModel
 									_regionManager.RequestNavigate("DataRegion", "ReportView");
 								}
 
-								if(SynchronizationIsChecked)
+								if (SynchronizationIsChecked)
 								{
-									_regionManager.RequestNavigate("DataRegion", "SynchronizationView");									
+									_regionManager.RequestNavigate("DataRegion", "SynchronizationView");
 								}
 							});
 		}
