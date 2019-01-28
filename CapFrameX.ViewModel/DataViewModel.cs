@@ -642,7 +642,7 @@ namespace CapFrameX.ViewModel
 			movingAverageValues.AddRange(_frametimeStatisticProvider.GetMovingAverage(frametimes, SelectWindowSize));
 			movingAverageValues.WithQuality(_appConfiguration.ChartQualityLevel.ConverToEnum<Quality>());
 
-			Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+			Application.Current.Dispatcher.Invoke(new Action(() =>
 			{
 				SeriesCollection = new SeriesCollection()
 				{

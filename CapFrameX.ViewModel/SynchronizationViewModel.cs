@@ -14,6 +14,8 @@ using Prism.Regions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 
@@ -38,13 +40,13 @@ namespace CapFrameX.ViewModel
 		/// <summary>
 		/// https://docs.microsoft.com/en-us/dotnet/standard/base-types/standard-numeric-format-strings
 		/// </summary>
-		public Func<double, string> HistogramFormatter { get; } = 
+		public Func<double, string> HistogramFormatter { get; } =
 			value => value.ToString("N");
 
 		/// <summary>
 		/// https://docs.microsoft.com/en-us/dotnet/standard/base-types/standard-numeric-format-strings
 		/// </summary>
-		public Func<ChartPoint, string> PieChartPointLabel { get; } = 
+		public Func<ChartPoint, string> PieChartPointLabel { get; } =
 			chartPoint => string.Format("{0} ({1:P})", chartPoint.Y, chartPoint.Participation);
 
 		public SeriesCollection FrameDisplayTimesCollection
@@ -182,9 +184,9 @@ namespace CapFrameX.ViewModel
 			if (_session == null)
 				return;
 
-			SetFrameDisplayTimesChart(_session.FrameTimes, _session.Displaytimes);
-			SetHistogramChart(_session.Displaytimes);
-			SetDroppedFramesChart(_session.AppMissed);
+			Task.Factory.StartNew(() => SetFrameDisplayTimesChart(_session.FrameTimes, _session.Displaytimes));
+			Task.Factory.StartNew(() => SetHistogramChart(_session.Displaytimes));
+			Task.Factory.StartNew(() => SetDroppedFramesChart(_session.AppMissed));
 		}
 
 		private void SetFrameDisplayTimesChart(List<double> frametimes, List<double> displaytimes)
@@ -193,37 +195,40 @@ namespace CapFrameX.ViewModel
 			frametimeValues.AddRange(frametimes);
 			frametimeValues.WithQuality(_appConfiguration.ChartQualityLevel.ConverToEnum<Quality>());
 
-			FrameDisplayTimesCollection = new SeriesCollection
+			Application.Current.Dispatcher.Invoke(new Action(() =>
 			{
-				new GLineSeries
+				FrameDisplayTimesCollection = new SeriesCollection
 				{
-					Title = "Frametimes",
-					Values = frametimeValues,
-					Fill = Brushes.Transparent,
-					Stroke = new SolidColorBrush(Color.FromRgb(139, 35, 35)),
-					StrokeThickness = 1,
-					LineSmoothness = 0,
-					PointGeometrySize = 0
-				}
-			};
+					new GLineSeries
+					{
+						Title = "Frametimes",
+						Values = frametimeValues,
+						Fill = Brushes.Transparent,
+						Stroke = new SolidColorBrush(Color.FromRgb(139, 35, 35)),
+						StrokeThickness = 1,
+						LineSmoothness = 0,
+						PointGeometrySize = 0
+					}
+				};
 
-			if (displaytimes.Any())
-			{
-				var displaytimeValues = new GearedValues<double>();
-				displaytimeValues.AddRange(displaytimes);
-				displaytimeValues.WithQuality(_appConfiguration.ChartQualityLevel.ConverToEnum<Quality>());
-
-				FrameDisplayTimesCollection.Add(new GLineSeries
+				if (displaytimes.Any())
 				{
-					Title = "Display changed times",
-					Values = displaytimeValues,
-					Fill = Brushes.Transparent,
-					Stroke = new SolidColorBrush(Color.FromArgb(128, 35, 139, 123)),
-					StrokeThickness = 1,
-					LineSmoothness = 0,
-					PointGeometrySize = 0
-				});
-			}
+					var displaytimeValues = new GearedValues<double>();
+					displaytimeValues.AddRange(displaytimes);
+					displaytimeValues.WithQuality(_appConfiguration.ChartQualityLevel.ConverToEnum<Quality>());
+
+					FrameDisplayTimesCollection.Add(new GLineSeries
+					{
+						Title = "Display changed times",
+						Values = displaytimeValues,
+						Fill = Brushes.Transparent,
+						Stroke = new SolidColorBrush(Color.FromArgb(128, 35, 139, 123)),
+						StrokeThickness = 1,
+						LineSmoothness = 0,
+						PointGeometrySize = 0
+					});
+				}				
+			}));
 		}
 
 		private void SetHistogramChart(List<double> displaytimes)
@@ -240,19 +245,22 @@ namespace CapFrameX.ViewModel
 				bins.Add(bucket.LowerBound);
 			}
 
-			HistogramCollection = new SeriesCollection
+			Application.Current.Dispatcher.BeginInvoke(new Action(() =>
 			{
-				new ColumnSeries
+				HistogramCollection = new SeriesCollection
 				{
-					Title = "Display changed time distribution",
-					Values = histogramValues,
-					// Kind of pink
-					Fill = new SolidColorBrush(Color.FromRgb(139, 35, 102)),
-					DataLabels = true,
-				}
-			};
+					new ColumnSeries
+					{
+						Title = "Display changed time distribution",
+						Values = histogramValues,
+						// Kind of pink
+						Fill = new SolidColorBrush(Color.FromRgb(139, 35, 102)),
+						DataLabels = true,
+					}
+				};
 
-			HistogramLabels = bins.Select(bin => Math.Round(bin, 2).ToString()).ToArray();
+				HistogramLabels = bins.Select(bin => Math.Round(bin, 2).ToString()).ToArray();
+			}));
 		}
 
 		private void SetDroppedFramesChart(List<bool> appMissed)
@@ -260,27 +268,30 @@ namespace CapFrameX.ViewModel
 			if (!appMissed.Any())
 				return;
 
-			DroppedFramesStatisticCollection = new SeriesCollection()
+			Application.Current.Dispatcher.BeginInvoke(new Action(() =>
 			{
-				new PieSeries
+				DroppedFramesStatisticCollection = new SeriesCollection()
 				{
-					Title = "Synced frames",
-					Values = new ChartValues<int>(){ appMissed.Count(flag => flag == false) },
-					DataLabels = true,
-					Foreground = Brushes.Black,
-					LabelPosition=PieLabelPosition.InsideSlice,
-					LabelPoint = PieChartPointLabel,
-				},
-				new PieSeries
-				{
-					Title = "Dropped frames",
-					Values = new ChartValues<int>(){ appMissed.Count(flag => flag == true) },
-					DataLabels = true,
-					Foreground = Brushes.Black,
-					LabelPosition=PieLabelPosition.InsideSlice,
-					LabelPoint = PieChartPointLabel,
-				}
-			};
+					new PieSeries
+					{
+						Title = "Synced frames",
+						Values = new ChartValues<int>(){ appMissed.Count(flag => flag == false) },
+						DataLabels = true,
+						Foreground = Brushes.Black,
+						LabelPosition=PieLabelPosition.InsideSlice,
+						LabelPoint = PieChartPointLabel,
+					},
+					new PieSeries
+					{
+						Title = "Dropped frames",
+						Values = new ChartValues<int>(){ appMissed.Count(flag => flag == true) },
+						DataLabels = true,
+						Foreground = Brushes.Black,
+						LabelPosition=PieLabelPosition.InsideSlice,
+						LabelPoint = PieChartPointLabel,
+					}
+				};
+			}));
 		}
 
 		public void OnNavigatedTo(NavigationContext navigationContext)
