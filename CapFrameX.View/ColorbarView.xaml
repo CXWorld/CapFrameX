@@ -63,6 +63,7 @@
 							<RowDefinition Height="*" />
 							<RowDefinition Height="*" />
 							<RowDefinition Height="*" />
+							<RowDefinition Height="*" />
 						</Grid.RowDefinitions>
 						<TextBlock Grid.Row="0"
 								   Style="{StaticResource MaterialDesignTitleTextBlock}"
@@ -103,6 +104,14 @@
 								</Binding>
 							</ComboBox.Text>
 						</ComboBox>
+						<TextBox Grid.Row="5" materialDesign:HintAssist.Hint="FPS values rounding digits" >
+						<TextBox.Text>
+							<Binding Path="FpsValuesRoundingDigits"
+										 Mode="TwoWay"
+										 UpdateSourceTrigger="LostFocus">
+							</Binding>
+						</TextBox.Text>
+						</TextBox>
 					</Grid>
 				</materialDesign:PopupBox>
 			</Grid>

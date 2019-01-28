@@ -55,13 +55,26 @@ namespace CapFrameX.ViewModel
 		private int _cutRightSliderMaximum;
 		private string _cutGraphNumberSamples;
 		private bool _doUpdateCharts = true;
+		private Func<double, string> _parameterFormatter;
 
 		/// <summary>
 		/// https://docs.microsoft.com/en-us/dotnet/standard/base-types/standard-numeric-format-strings
 		/// </summary>
-		public Func<double, string> ParameterFormatter { get; } = value => value.ToString("F0");
+		public Func<double, string> ParameterFormatter
+		{
+			get { return _parameterFormatter; }
+			set
+			{
+				_parameterFormatter = value;
+				RaisePropertyChanged();
+			}
+		}
 
-		public Func<double, string> AdvancedParameterFormatter { get; } = value => value.ToString("N");
+		/// <summary>
+		/// https://docs.microsoft.com/en-us/dotnet/standard/base-types/standard-numeric-format-strings
+		/// </summary>
+		public Func<double, string> AdvancedParameterFormatter { get; } = 
+			value => value.ToString("N");
 
 		public string[] ParameterLabels
 		{
@@ -304,6 +317,7 @@ namespace CapFrameX.ViewModel
 			CopyLShapeQuantilesCommand = new DelegateCommand(OnCopyQuantiles);
 			CopySystemInfoCommand = new DelegateCommand(OnCopySystemInfoCommand);
 
+			ParameterFormatter = value => value.ToString(string.Format("F{0}", _appConfiguration.FpsValuesRoundingDigits));
 			ZoomingMode = ZoomingOptions.Y;
 			WindowSizes = new List<int>(Enumerable.Range(4, 100 - 4));
 			SelectWindowSize = _appConfiguration.MovingAverageWindowSize;
@@ -381,7 +395,7 @@ namespace CapFrameX.ViewModel
 
 			foreach (var frametime in frametimes)
 			{
-				builder.Append(Math.Round(1000 / frametime, 0) + Environment.NewLine);
+				builder.Append(Math.Round(1000 / frametime, _appConfiguration.FpsValuesRoundingDigits) + Environment.NewLine);
 			}
 
 			Clipboard.SetDataObject(builder.ToString(), false);
@@ -393,16 +407,17 @@ namespace CapFrameX.ViewModel
 				return;
 
 			var frametimes = GetFrametimesSubset();
+			var roundingDigits = _appConfiguration.FpsValuesRoundingDigits;
 			var fps = frametimes.Select(ft => 1000 / ft).ToList();
-			var max = Math.Round(fps.Max(), 0);
-			var p99_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.99), 0);
-			var p95_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.95), 0);
-			var average = Math.Round(frametimes.Count * 1000 / frametimes.Sum(), 0);
-			var p0dot1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.001), 0);
-			var p1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.01), 0);
-			var p5_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.05), 0);
-			var min = Math.Round(fps.Min(), 0);
-			var adaptiveStandardDeviation = Math.Round(_frametimeStatisticProvider.GetAdaptiveStandardDeviation(fps, SelectWindowSize), 0);
+			var max = Math.Round(fps.Max(), roundingDigits);
+			var p99_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.99), roundingDigits);
+			var p95_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.95), roundingDigits);
+			var average = Math.Round(frametimes.Count * 1000 / frametimes.Sum(), roundingDigits);
+			var p0dot1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.001), roundingDigits);
+			var p1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.01), roundingDigits);
+			var p5_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.05), roundingDigits);
+			var min = Math.Round(fps.Min(), roundingDigits);
+			var adaptiveStandardDeviation = Math.Round(_frametimeStatisticProvider.GetAdaptiveStandardDeviation(fps, SelectWindowSize), roundingDigits);
 
 			StringBuilder builder = new StringBuilder();
 
@@ -656,16 +671,17 @@ namespace CapFrameX.ViewModel
 			if (frametimes == null || !frametimes.Any())
 				return;
 
+			var roundingDigits = _appConfiguration.FpsValuesRoundingDigits;
 			var fps = frametimes.Select(ft => 1000 / ft).ToList();
-			var p99_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.99), 0);
-			var p95_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.95), 0);
-			var max = Math.Round(fps.Max(), 0);
-			var average = Math.Round(frametimes.Count * 1000 / frametimes.Sum(), 0);
-			var p0dot1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.001), 0);
-			var p1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.01), 0);
-			var p5_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.05), 0);
-			var min = Math.Round(fps.Min(), 0);
-			var adaptiveStandardDeviation = Math.Round(_frametimeStatisticProvider.GetAdaptiveStandardDeviation(fps, SelectWindowSize), 0);
+			var p99_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.99), roundingDigits);
+			var p95_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.95), roundingDigits);
+			var max = Math.Round(fps.Max(), roundingDigits);
+			var average = Math.Round(frametimes.Count * 1000 / frametimes.Sum(), roundingDigits);
+			var p0dot1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.001), roundingDigits);
+			var p1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.01), roundingDigits);
+			var p5_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.05), roundingDigits);
+			var min = Math.Round(fps.Min(), roundingDigits);
+			var adaptiveStandardDeviation = Math.Round(_frametimeStatisticProvider.GetAdaptiveStandardDeviation(fps, SelectWindowSize), roundingDigits);
 
 			IChartValues values = new ChartValues<double>
 			{

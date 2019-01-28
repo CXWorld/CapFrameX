@@ -32,6 +32,7 @@ namespace CapFrameX.ViewModel
 		private double _stutteringFactor;
 		private string _observedDirectory;
 		private bool _synchronizationIsChecked;
+		private int _fpsValuesRoundingDigits;
 
 		public bool SingleRecordIsChecked
 		{
@@ -118,6 +119,17 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
+		public int FpsValuesRoundingDigits
+		{
+			get { return _fpsValuesRoundingDigits; }
+			set
+			{
+				_fpsValuesRoundingDigits = value;
+				_appConfiguration.FpsValuesRoundingDigits = value;
+				RaisePropertyChanged();
+			}
+		}
+
 		public ICommand SelectObeservedFolderCommand { get; }
 
 		public IList<int> WindowSizes { get; }
@@ -147,6 +159,7 @@ namespace CapFrameX.ViewModel
 			StutteringFactor = _appConfiguration.StutteringFactor;
 			SelectWindowSize = _appConfiguration.MovingAverageWindowSize;
 			SelectedChartQualityLevel = _appConfiguration.ChartQualityLevel.ConverToEnum<Quality>();
+			FpsValuesRoundingDigits = _appConfiguration.FpsValuesRoundingDigits;
 			ObservedDirectory = _appConfiguration.ObservedDirectory;
 			WindowSizes = new List<int>(Enumerable.Range(4, 100 - 4));
 			SelectObeservedFolderCommand = new DelegateCommand(OnSelectObeservedFolder);

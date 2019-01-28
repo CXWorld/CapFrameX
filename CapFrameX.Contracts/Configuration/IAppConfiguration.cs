@@ -9,5 +9,7 @@
 		string ObservedDirectory { get; set; }
 
 		string ChartQualityLevel { get; set; }
+
+		int FpsValuesRoundingDigits { get; set; }
 	}
 }

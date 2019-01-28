@@ -34,5 +34,7 @@ namespace CapFrameX.OcatInterface
 		public double MinFps { get; set; }
 		[DisplayName("Adaptive STD")]
 		public double AdaptiveSTDFps { get; set; }
+		[DisplayName("Comment")]
+		public string CustomComment { get; set; }
 	}
 }

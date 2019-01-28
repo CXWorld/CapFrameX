@@ -70,5 +70,17 @@ namespace CapFrameX.Configuration.Properties {
                 this["ChartQualityLevel"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("1")]
+        public int FpsValuesRoundingDigits {
+            get {
+                return ((int)(this["FpsValuesRoundingDigits"]));
+            }
+            set {
+                this["FpsValuesRoundingDigits"] = value;
+            }
+        }
     }
 }

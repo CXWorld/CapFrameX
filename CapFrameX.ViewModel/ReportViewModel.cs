@@ -65,6 +65,7 @@ namespace CapFrameX.ViewModel
 			var displayNameZeroDotOnePercentQuantileFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.ZeroDotOnePercentQuantileFps);
 			var displayNameMinFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.MinFps);
 			var displayNameAdaptiveSTDFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.AdaptiveSTDFps);
+			var displayNameCustomComment = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.CustomComment);
 
 			builder.Append(displayNameGame + "\t" +
 						   displayNameDate + "\t" +
@@ -78,7 +79,8 @@ namespace CapFrameX.ViewModel
 						   displayNameOnePercentQuantileFps + "\t" +
 						   displayNameZeroDotOnePercentQuantileFps + "\t" +
 						   displayNameMinFps + "\t" +
-						   displayNameAdaptiveSTDFps +
+						   displayNameAdaptiveSTDFps + "\t" +
+						   displayNameCustomComment +
 						   Environment.NewLine);
 
 			foreach (var reportInfo in ReportInfoCollecion)
@@ -95,7 +97,8 @@ namespace CapFrameX.ViewModel
 							   reportInfo.OnePercentQuantileFps + "\t" +
 							   reportInfo.ZeroDotOnePercentQuantileFps + "\t" +
 							   reportInfo.MinFps + "\t" +
-							   reportInfo.AdaptiveSTDFps +
+							   reportInfo.AdaptiveSTDFps + "\t" +
+							   reportInfo.CustomComment +
 							   Environment.NewLine);
 			}
 
@@ -118,16 +121,18 @@ namespace CapFrameX.ViewModel
 		private ReportInfo GetReportInfoFromRecordInfo(OcatRecordInfo recordInfo)
 		{
 			var session = RecordManager.LoadData(recordInfo.FullPath);
+			var roundingDigits = _appConfiguration.FpsValuesRoundingDigits;
 
 			var fps = session.FrameTimes.Select(ft => 1000 / ft).ToList();
-			var p99_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.99), 0);
-			var p95_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.95), 0);
+			var p99_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.99), roundingDigits);
+			var p95_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.95), roundingDigits);
 			var max = Math.Round(fps.Max(), 0);
-			var average = Math.Round(session.FrameTimes.Count * 1000 / session.FrameTimes.Sum(), 0);
-			var p1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.01), 0);
-			var p0dot1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.001), 0);
-			var min = Math.Round(fps.Min(), 0);
-			var adaptiveStandardDeviation = Math.Round(_frametimeStatisticProvider.GetAdaptiveStandardDeviation(fps, _appConfiguration.MovingAverageWindowSize), 0);
+			var average = Math.Round(session.FrameTimes.Count * 1000 / session.FrameTimes.Sum(), roundingDigits);
+			var p1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.01), roundingDigits);
+			var p0dot1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.001), roundingDigits);
+			var min = Math.Round(fps.Min(), roundingDigits);
+			var adaptiveStandardDeviation = Math.Round(_frametimeStatisticProvider
+				.GetAdaptiveStandardDeviation(fps, _appConfiguration.MovingAverageWindowSize), roundingDigits);
 
 			var reportInfo = new ReportInfo()
 			{
@@ -145,7 +150,8 @@ namespace CapFrameX.ViewModel
 				OnePercentQuantileFps = p1_quantile,
 				ZeroDotOnePercentQuantileFps = p0dot1_quantile,
 				MinFps = min,
-				AdaptiveSTDFps = adaptiveStandardDeviation
+				AdaptiveSTDFps = adaptiveStandardDeviation,
+				CustomComment = session.Comment
 			};
 
 			return reportInfo;

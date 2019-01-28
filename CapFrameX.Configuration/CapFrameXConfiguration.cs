@@ -29,5 +29,11 @@ namespace CapFrameX.Configuration
 			get { return Settings.ChartQualityLevel; }
 			set { Settings.ChartQualityLevel = value; Settings.Save(); }
 		}
+
+		public int FpsValuesRoundingDigits
+		{
+			get { return Settings.FpsValuesRoundingDigits; }
+			set { Settings.FpsValuesRoundingDigits = value; Settings.Save(); }
+		}
 	}
 }

@@ -67,6 +67,7 @@ namespace CapFrameX.ViewModel
 		private bool _isCuttingModeActive;
 		private double _maxRecordingTime;
 		private bool _doUpdateCharts = true;
+		private Func<double, string> _comparisonColumnChartFormatter;
 
 		public bool InitialIconVisibility
 		{
@@ -84,6 +85,16 @@ namespace CapFrameX.ViewModel
 			set
 			{
 				_zoomingMode = value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public Func<double, string> ComparisonColumnChartFormatter
+		{
+			get { return _comparisonColumnChartFormatter; }
+			set
+			{
+				_comparisonColumnChartFormatter = value;
 				RaisePropertyChanged();
 			}
 		}
@@ -189,9 +200,7 @@ namespace CapFrameX.ViewModel
 
 		public ICommand CustomContextCommand { get; }
 
-		public ICommand RemoveAllComparisonsCommand { get; }
-
-		public Func<double, string> ComparisonColumnChartFormatter { get; private set; } = value => value.ToString("N");
+		public ICommand RemoveAllComparisonsCommand { get; }		
 
 		public ObservableCollection<ComparisonRecordInfo> ComparisonRecords { get; }
 			= new ObservableCollection<ComparisonRecordInfo>();
@@ -214,6 +223,7 @@ namespace CapFrameX.ViewModel
 			CustomContextCommand = new DelegateCommand(OnCustomContex);
 			RemoveAllComparisonsCommand = new DelegateCommand(OnRemoveAllComparisons);
 
+			ComparisonColumnChartFormatter = value => value.ToString(string.Format("F{0}", _appConfiguration.FpsValuesRoundingDigits));
 			ComparisonSeriesCollection = new SeriesCollection();
 			ComparisonColumnChartSeriesCollection = new SeriesCollection
 			{
@@ -469,10 +479,11 @@ namespace CapFrameX.ViewModel
 			double endTime = _maxRecordingTime - LastSeconds;
 			var frametimeSampleWindow = comparisonInfo.Session.GetFrametimeSamplesWindow(startTime, endTime);
 
+			var roundingDigits = _appConfiguration.FpsValuesRoundingDigits;
 			var fps = frametimeSampleWindow.Select(ft => 1000 / ft).ToList();
-			var average = Math.Round(frametimeSampleWindow.Count * 1000 / frametimeSampleWindow.Sum(), 0);
-			var p1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.01));
-			var p0dot1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.001));
+			var average = Math.Round(frametimeSampleWindow.Count * 1000 / frametimeSampleWindow.Sum(), roundingDigits);
+			var p1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.01), roundingDigits);
+			var p0dot1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.001), roundingDigits);
 
 			// Average
 			ComparisonColumnChartSeriesCollection[0].Values.Add(average);

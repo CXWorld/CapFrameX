@@ -38,10 +38,14 @@ namespace CapFrameX.ViewModel
 		/// <summary>
 		/// https://docs.microsoft.com/en-us/dotnet/standard/base-types/standard-numeric-format-strings
 		/// </summary>
-		public Func<double, string> HistogramFormatter { get; } = value => value.ToString("N");
+		public Func<double, string> HistogramFormatter { get; } = 
+			value => value.ToString("N");
 
-		public Func<ChartPoint, string> PieChartPointLabel { get; } = chartPoint =>
-				string.Format("{0} ({1:P})", chartPoint.Y, chartPoint.Participation);
+		/// <summary>
+		/// https://docs.microsoft.com/en-us/dotnet/standard/base-types/standard-numeric-format-strings
+		/// </summary>
+		public Func<ChartPoint, string> PieChartPointLabel { get; } = 
+			chartPoint => string.Format("{0} ({1:P})", chartPoint.Y, chartPoint.Participation);
 
 		public SeriesCollection FrameDisplayTimesCollection
 		{
