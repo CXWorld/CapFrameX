@@ -16,6 +16,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -73,7 +74,7 @@ namespace CapFrameX.ViewModel
 		/// <summary>
 		/// https://docs.microsoft.com/en-us/dotnet/standard/base-types/standard-numeric-format-strings
 		/// </summary>
-		public Func<double, string> AdvancedParameterFormatter { get; } = 
+		public Func<double, string> AdvancedParameterFormatter { get; } =
 			value => value.ToString("N");
 
 		public string[] ParameterLabels
@@ -570,10 +571,10 @@ namespace CapFrameX.ViewModel
 
 			if (subset != null)
 			{
-				SetFrametimeChart(subset);
-				SetStaticChart(subset);
-				SetAdvancedStaticChart(subset);
-				SetLShapeChart(subset);
+				Task.Factory.StartNew(() => SetFrametimeChart(subset));
+				Task.Factory.StartNew(() => SetStaticChart(subset));
+				Task.Factory.StartNew(() => SetAdvancedStaticChart(subset));
+				Task.Factory.StartNew(() => SetLShapeChart(subset));
 			}
 		}
 
@@ -641,29 +642,32 @@ namespace CapFrameX.ViewModel
 			movingAverageValues.AddRange(_frametimeStatisticProvider.GetMovingAverage(frametimes, SelectWindowSize));
 			movingAverageValues.WithQuality(_appConfiguration.ChartQualityLevel.ConverToEnum<Quality>());
 
-			SeriesCollection = new SeriesCollection()
+			Application.Current.Dispatcher.BeginInvoke(new Action(() =>
 			{
-				new GLineSeries
+				SeriesCollection = new SeriesCollection()
 				{
-					Title = "Frametimes",
-					Values = frametimeValues,
-					Fill = Brushes.Transparent,
-					Stroke = new SolidColorBrush(Color.FromRgb(139,35,35)),
-					StrokeThickness = 1,
-					LineSmoothness= 0,
-					PointGeometrySize = 0
-				},
-				new GLineSeries
-				{
-					Title = string.Format("Moving average (window size = {0})", _appConfiguration.MovingAverageWindowSize),
-					Values = movingAverageValues,
-					Fill = Brushes.Transparent,
-					Stroke = new SolidColorBrush(Color.FromRgb(35, 139, 123)),
-					StrokeThickness = 1,
-					LineSmoothness= 0,
-					PointGeometrySize = 0
-				}
-			};
+					new GLineSeries
+					{
+						Title = "Frametimes",
+						Values = frametimeValues,
+						Fill = Brushes.Transparent,
+						Stroke = new SolidColorBrush(Color.FromRgb(139,35,35)),
+						StrokeThickness = 1,
+						LineSmoothness= 0,
+						PointGeometrySize = 0
+					},
+					new GLineSeries
+					{
+						Title = string.Format("Moving average (window size = {0})", _appConfiguration.MovingAverageWindowSize),
+						Values = movingAverageValues,
+						Fill = Brushes.Transparent,
+						Stroke = new SolidColorBrush(Color.FromRgb(35, 139, 123)),
+						StrokeThickness = 1,
+						LineSmoothness= 0,
+						PointGeometrySize = 0
+					}
+				};
+			}));
 		}
 
 		private void SetStaticChart(IList<double> frametimes)
@@ -688,18 +692,21 @@ namespace CapFrameX.ViewModel
 				adaptiveStandardDeviation, min, p0dot1_quantile, p1_quantile, p5_quantile, average, p95_quantile, p99_quantile, max
 			};
 
-			StatisticCollection = new SeriesCollection
+			Application.Current.Dispatcher.BeginInvoke(new Action(() =>
 			{
-				new RowSeries
+				StatisticCollection = new SeriesCollection
 				{
-					Title = _recordInfo.GameName,
-					Fill = new SolidColorBrush(Color.FromRgb(83,104,114)),
-					Values = values,
-					DataLabels = true
-				}
-			};
+					new RowSeries
+					{
+						Title = _recordInfo.GameName,
+						Fill = new SolidColorBrush(Color.FromRgb(83,104,114)),
+						Values = values,
+						DataLabels = true
+					}
+				};
 
-			ParameterLabels = new[] { "Adaptive STD", "Min", "0,1%", "1%", "5%", "Average", "95%", "99%", "Max" };
+				ParameterLabels = new[] { "Adaptive STD", "Min", "0,1%", "1%", "5%", "Average", "95%", "99%", "Max" };
+			}));
 		}
 
 		private void SetAdvancedStaticChart(IList<double> frametimes)
@@ -710,18 +717,21 @@ namespace CapFrameX.ViewModel
 			var stutteringPercentage = _frametimeStatisticProvider.GetStutteringPercentage(frametimes, _appConfiguration.StutteringFactor);
 			IChartValues values = new ChartValues<double> { stutteringPercentage };
 
-			AdvancedStatisticCollection = new SeriesCollection
+			Application.Current.Dispatcher.BeginInvoke(new Action(() =>
 			{
-				new RowSeries
+				AdvancedStatisticCollection = new SeriesCollection
 				{
-					Title = _recordInfo.GameName,
-					Fill = new SolidColorBrush(Color.FromRgb(83,104,114)),
-					Values = values,
-					DataLabels = true
-				}
-			};
+					new RowSeries
+					{
+						Title = _recordInfo.GameName,
+						Fill = new SolidColorBrush(Color.FromRgb(83,104,114)),
+						Values = values,
+						DataLabels = true
+					}
+				};
 
-			AdvancedParameterLabels = new[] { "Stuttering %" };
+				AdvancedParameterLabels = new[] { "Stuttering %" };
+			}));
 		}
 
 		private void SetLShapeChart(IList<double> frametimes)
@@ -735,23 +745,26 @@ namespace CapFrameX.ViewModel
 			var chartValues = new ChartValues<ObservablePoint>();
 			chartValues.AddRange(observablePoints);
 
-			LShapeCollection = new SeriesCollection()
+			Application.Current.Dispatcher.BeginInvoke(new Action(() =>
 			{
-				new GLineSeries
+				LShapeCollection = new SeriesCollection()
 				{
-					Values = chartValues,
-					Stroke = new SolidColorBrush(Color.FromRgb(139,35,35)),
-					Fill = Brushes.Transparent,
-					StrokeThickness = 1,
-					LineSmoothness= 1,
-					PointGeometrySize = 10,
-					PointGeometry = DefaultGeometries.Triangle,
-					DataLabels = true,
-					LabelPoint = point => point.X + "%, " + Math.Round(point.Y, 1).ToString(CultureInfo.InvariantCulture) + " ms"
-				}
-			};
+					new GLineSeries
+					{
+						Values = chartValues,
+						Stroke = new SolidColorBrush(Color.FromRgb(139,35,35)),
+						Fill = Brushes.Transparent,
+						StrokeThickness = 1,
+						LineSmoothness= 1,
+						PointGeometrySize = 10,
+						PointGeometry = DefaultGeometries.Triangle,
+						DataLabels = true,
+						LabelPoint = point => point.X + "%, " + Math.Round(point.Y, 1).ToString(CultureInfo.InvariantCulture) + " ms"
+					}
+				};
 
-			// LShapeLabels = lShapeQuantiles.Select(q => q.ToString(CultureInfo.InvariantCulture)).ToArray();
+				// LShapeLabels = lShapeQuantiles.Select(q => q.ToString(CultureInfo.InvariantCulture)).ToArray();
+			}));
 		}
 
 		public void OnNavigatedTo(NavigationContext navigationContext)

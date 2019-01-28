@@ -223,7 +223,7 @@ namespace CapFrameX.ViewModel
 			_eventAggregator.GetEvent<PubSubEvent<ViewMessages.ShowOverlay>>()
 							.Subscribe(msg =>
 							{
-								// This is crap, should be refacored
+								// This is crap, should be refactored
 								var controlView = _regionManager.Regions["ControlRegion"].Views.FirstOrDefault();
 								_regionManager.Regions["ControlRegion"].Deactivate(controlView);
 								var colorbarView = _regionManager.Regions["ColorbarRegion"].Views.FirstOrDefault();
