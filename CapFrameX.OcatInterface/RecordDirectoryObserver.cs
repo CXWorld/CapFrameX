@@ -20,6 +20,8 @@ namespace CapFrameX.OcatInterface
 
 		public bool IsActive { get; set; }
 
+		public bool HasValidSource { get; private set; }
+
 		public IObservable<FileInfo> RecordCreatedStream
 			=> _recordCreatedStream.Where(p => IsActive).Select(path => new FileInfo(path)).AsObservable();
 
@@ -31,16 +33,25 @@ namespace CapFrameX.OcatInterface
 			_appConfiguration = appConfiguration;
 			_recordDirectory = GetInitialObservedDirectory(_appConfiguration.ObservedDirectory);
 
-			if (!Directory.Exists(_recordDirectory))
+			try
 			{
-				Directory.CreateDirectory(_recordDirectory);
-			}
+				if (!Directory.Exists(_recordDirectory))
+				{
+					Directory.CreateDirectory(_recordDirectory);
+				}
 
-			_fileSystemWatcher = new FileSystemWatcher(_recordDirectory);
-			_fileSystemWatcher.Created += new FileSystemEventHandler(WatcherCreated);
-			_fileSystemWatcher.Deleted += new FileSystemEventHandler(WatcherDeleted);
-			_fileSystemWatcher.EnableRaisingEvents = true;
-			_fileSystemWatcher.IncludeSubdirectories = false;
+				_fileSystemWatcher = new FileSystemWatcher(_recordDirectory);
+				_fileSystemWatcher.Created += new FileSystemEventHandler(WatcherCreated);
+				_fileSystemWatcher.Deleted += new FileSystemEventHandler(WatcherDeleted);
+				_fileSystemWatcher.EnableRaisingEvents = true;
+				_fileSystemWatcher.IncludeSubdirectories = false;
+
+				HasValidSource = true;
+			}
+			catch
+			{
+				HasValidSource = false;
+			}
 
 			IsActive = false;
 			_recordCreatedStream = new Subject<string>();
@@ -50,16 +61,16 @@ namespace CapFrameX.OcatInterface
 		private string GetInitialObservedDirectory(string observedDirectory)
 		{
 			var documentFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-			string path = null;
+			string path = observedDirectory;
 
 			// >= V1.3
-			if (observedDirectory.Contains("Captures"))
+			if (observedDirectory.Contains(@"MyDocuments\OCAT\Captures"))
 			{
 				path = Path.Combine(documentFolder, @"OCAT\Captures");
 			}
 
 			// < V1.3
-			else if (observedDirectory.Contains("Recordings"))
+			else if (observedDirectory.Contains(@"MyDocuments\OCAT\CRecordings"))
 			{
 				path = Path.Combine(documentFolder, @"OCAT\Recordings");
 			}
@@ -78,27 +89,35 @@ namespace CapFrameX.OcatInterface
 
 		public IEnumerable<FileInfo> GetAllRecordFileInfo()
 		{
-			return Directory.GetFiles(_recordDirectory, "*.csv",
-										 SearchOption.TopDirectoryOnly).Where(file => 
-										 !file.Contains("CapFrameX") &&
-										 !file.Contains("SearchUI") &&
-										 !file.Contains("ShellExperienceHost") &&
-										 !file.Contains("steamwebhelper")
-										 ).Select(file => new FileInfo(file));
+			return HasValidSource ?  Directory.GetFiles(_recordDirectory, "*.csv",
+														 SearchOption.TopDirectoryOnly).Where(file => 
+														 !file.Contains("CapFrameX") &&
+														 !file.Contains("SearchUI") &&
+														 !file.Contains("ShellExperienceHost") &&
+														 !file.Contains("steamwebhelper")
+														 ).Select(file => new FileInfo(file)) : null;
 		}
 
 		public void UpdateObservedDirectory(string directory)
 		{
-			IsActive = false;
+			if (!Directory.Exists(directory))
+			{
+				HasValidSource = false;
+			}
+			else
+			{
+				HasValidSource = true;
+				IsActive = false;
 
-			_recordDirectory = directory;
-			_fileSystemWatcher = new FileSystemWatcher(directory);
-			_fileSystemWatcher.Created += new FileSystemEventHandler(WatcherCreated);
-			_fileSystemWatcher.Deleted += new FileSystemEventHandler(WatcherDeleted);
-			_fileSystemWatcher.EnableRaisingEvents = true;
-			_fileSystemWatcher.IncludeSubdirectories = false;
+				_recordDirectory = directory;
+				_fileSystemWatcher = new FileSystemWatcher(directory);
+				_fileSystemWatcher.Created += new FileSystemEventHandler(WatcherCreated);
+				_fileSystemWatcher.Deleted += new FileSystemEventHandler(WatcherDeleted);
+				_fileSystemWatcher.EnableRaisingEvents = true;
+				_fileSystemWatcher.IncludeSubdirectories = false;
 
-			IsActive = true;
+				IsActive = true;
+			}
 		}
 	}
 }

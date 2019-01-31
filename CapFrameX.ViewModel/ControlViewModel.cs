@@ -1,7 +1,6 @@
 ﻿using CapFrameX.Contracts.OcatInterface;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.OcatInterface;
-using CapFrameX.MVVM.Dialogs;
 using Prism.Events;
 using Prism.Mvvm;
 using System;
@@ -24,6 +23,7 @@ namespace CapFrameX.ViewModel
 		private PubSubEvent<ViewMessages.SelectSession> _selectSessionEvent;
 		private PubSubEvent<ViewMessages.ShowOverlay> _showOverlayEvent;
 		private OcatRecordInfo _selectedRecordInfo;
+		private bool _hasValidSource;
 
 		public OcatRecordInfo SelectedRecordInfo
 		{
@@ -34,6 +34,12 @@ namespace CapFrameX.ViewModel
 				RaisePropertyChanged();
 				OnSelectedRecordInfoChanged();
 			}
+		}
+
+		public bool HasValidSource
+		{
+			get { return _hasValidSource; }
+			set { _hasValidSource = value; RaisePropertyChanged(); }
 		}
 
 		public ObservableCollection<OcatRecordInfo> RecordInfoList { get; }
@@ -49,12 +55,16 @@ namespace CapFrameX.ViewModel
 			//Commands
 			OpenEditingDialogCommand = new DelegateCommand(OnOpenEditingDialog);
 
-			// ToDo: check wether to do this async
-			var initialRecordList = _recordObserver.GetAllRecordFileInfo();
+			HasValidSource = recordObserver.HasValidSource;
 
-			foreach (var fileInfo in initialRecordList)
-			{
-				AddToRecordInfoList(fileInfo);
+			if (recordObserver.HasValidSource)
+			{				
+				var initialRecordList = _recordObserver.GetAllRecordFileInfo();
+
+				foreach (var fileInfo in initialRecordList)
+				{
+					AddToRecordInfoList(fileInfo);
+				}
 			}
 
 			var context = SynchronizationContext.Current;
@@ -73,7 +83,7 @@ namespace CapFrameX.ViewModel
 
 		private void OnOpenEditingDialog()
 		{
-			_showOverlayEvent.Publish(new ViewMessages.ShowOverlay());			
+			_showOverlayEvent.Publish(new ViewMessages.ShowOverlay());
 		}
 
 		public void OnRecordSelectByDoubleClick()
@@ -89,7 +99,7 @@ namespace CapFrameX.ViewModel
 		{
 			if (SelectedRecordInfo != null && _updateSessionEvent != null)
 			{
-				 var session = RecordManager.LoadData(SelectedRecordInfo.FullPath);
+				var session = RecordManager.LoadData(SelectedRecordInfo.FullPath);
 				_updateSessionEvent.Publish(new ViewMessages.UpdateSession(session, SelectedRecordInfo));
 			}
 		}
@@ -135,7 +145,6 @@ namespace CapFrameX.ViewModel
 							});
 		}
 
-
 		private void SubscribeToObservedDiretoryUpdated()
 		{
 			_eventAggregator.GetEvent<PubSubEvent<AppMessages.UpdateObservedDirectory>>()
@@ -144,9 +153,14 @@ namespace CapFrameX.ViewModel
 								SelectedRecordInfo = null;
 								RecordInfoList.Clear();
 
-								foreach (var fileInfo in _recordObserver.GetAllRecordFileInfo())
+								HasValidSource = _recordObserver.HasValidSource;
+
+								if (_recordObserver.HasValidSource)
 								{
-									AddToRecordInfoList(fileInfo);
+									foreach (var fileInfo in _recordObserver.GetAllRecordFileInfo())
+									{
+										AddToRecordInfoList(fileInfo);
+									}
 								}
 							});
 		}

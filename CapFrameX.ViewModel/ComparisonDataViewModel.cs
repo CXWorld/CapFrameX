@@ -200,7 +200,9 @@ namespace CapFrameX.ViewModel
 
 		public ICommand CustomContextCommand { get; }
 
-		public ICommand RemoveAllComparisonsCommand { get; }		
+		public ICommand RemoveAllComparisonsCommand { get; }
+
+		public ICommand SetGraphColorCommand { get; }
 
 		public ObservableCollection<ComparisonRecordInfo> ComparisonRecords { get; }
 			= new ObservableCollection<ComparisonRecordInfo>();
@@ -222,6 +224,7 @@ namespace CapFrameX.ViewModel
 			GpuContextCommand = new DelegateCommand(OnGpuContex);
 			CustomContextCommand = new DelegateCommand(OnCustomContex);
 			RemoveAllComparisonsCommand = new DelegateCommand(OnRemoveAllComparisons);
+			SetGraphColorCommand = new DelegateCommand<ComparisonRecordInfo>(OnSetGraphColor);
 
 			ComparisonColumnChartFormatter = value => value.ToString(string.Format("F{0}", _appConfiguration.FpsValuesRoundingDigits));
 			ComparisonSeriesCollection = new SeriesCollection();
@@ -366,6 +369,11 @@ namespace CapFrameX.ViewModel
 			ComparisonItemControlHeight = "300";
 		}
 
+		private void OnSetGraphColor(ComparisonRecordInfo info)
+		{
+
+		}
+
 		private void SetLabelDateTimeContext()
 		{
 			ComparisonColumnChartLabels = ComparisonRecords.Select(record =>
@@ -442,7 +450,8 @@ namespace CapFrameX.ViewModel
 			if (session != null)
 			{
 				var newLine = Environment.NewLine;
-				infoText += "creation datetime: " + ocatRecordInfo.FileInfo.LastWriteTime.ToString() + newLine +
+				infoText += "creation date: " + ocatRecordInfo.FileInfo.LastWriteTime.ToShortDateString() + newLine +
+							"creation time: " + ocatRecordInfo.FileInfo.LastWriteTime.ToString("HH:mm:ss") + newLine +
 							"capture time: " + Math.Round(session.LastFrameTime, 2).ToString(CultureInfo.InvariantCulture) + " s" + newLine +
 							"number of samples: " + session.FrameTimes.Count.ToString();
 			}

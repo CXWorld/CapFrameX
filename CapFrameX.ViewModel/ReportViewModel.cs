@@ -126,7 +126,7 @@ namespace CapFrameX.ViewModel
 			var fps = session.FrameTimes.Select(ft => 1000 / ft).ToList();
 			var p99_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.99), roundingDigits);
 			var p95_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.95), roundingDigits);
-			var max = Math.Round(fps.Max(), 0);
+			var max = Math.Round(fps.Max(), roundingDigits);
 			var average = Math.Round(session.FrameTimes.Count * 1000 / session.FrameTimes.Sum(), roundingDigits);
 			var p1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.01), roundingDigits);
 			var p0dot1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.001), roundingDigits);

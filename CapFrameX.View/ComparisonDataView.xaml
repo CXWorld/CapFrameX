@@ -1,4 +1,5 @@
 ﻿<UserControl x:Class="CapFrameX.View.ComparisonDataView"
+			 x:Name="ComparisonDataControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -118,7 +119,8 @@
 											<Grid>
 												<Grid.ColumnDefinitions>
 													<ColumnDefinition SharedSizeGroup="Checkerz" />
-													<ColumnDefinition />
+													<ColumnDefinition Width="Auto"/>
+													<ColumnDefinition Width="Auto"/>
 												</Grid.ColumnDefinitions>
 												<ToggleButton VerticalAlignment="Center"
 														  IsChecked="False"
@@ -129,12 +131,21 @@
 														Grid.Column="1">
 													<TextBlock FontWeight="Bold" Text="{Binding Game}" />
 													<TextBlock Text="{Binding InfoText}" TextWrapping="Wrap"
-															   Width="220"
+															   Width="180"
 															   LineStackingStrategy="BlockLineHeight"
 															   FontSize="12"
 															   LineHeight="14"
-															   MaxHeight="52"/>
+															   MaxHeight="66"/>
 												</StackPanel>
+												<Button Style="{StaticResource MaterialDesignFloatingActionMiniButton}"
+														Grid.Column="2"													
+														Margin="0 0 0 0"														
+														Width="30" Height="30"
+														ToolTip="Set graph color"
+														Command="{Binding DataContext.SetGraphColorCommand, Source={x:Reference ComparisonDataControl}}"
+														CommandParameter="{Binding}">
+													<materialDesign:PackIcon Kind="ColorLens" Width="24" Height="24"/>
+												</Button>
 											</Grid>
 										</Border>
 										<DataTemplate.Triggers>

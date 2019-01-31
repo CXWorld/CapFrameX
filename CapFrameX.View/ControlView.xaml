@@ -24,10 +24,17 @@
 			</ResourceDictionary.MergedDictionaries>
 			<CollectionViewSource x:Key="RecordInfoListKey" Source="{Binding RecordInfoList}" Filter="RecordInfoListOnFilter"/>
 			<mvvm:AddValueConverter x:Key="AddValueConverter" Offset="-43"/>
+			<mvvm:BoolToVisibilityConverter x:Key="FalseToVisibleConverter" FalseValue="Visible" TrueValue="Collapsed"/>
+			<mvvm:BoolToVisibilityConverter x:Key="FalseToCollapsedConverter" FalseValue="Collapsed" TrueValue="Visible"/>
 		</ResourceDictionary>
 	</UserControl.Resources>
 	<Grid>
-		<StackPanel>
+		<Border Visibility="{Binding HasValidSource, Converter={StaticResource FalseToVisibleConverter}}" Margin="0 10 5 0" BorderBrush="#e6e6e6" BorderThickness="1" Background="#F5F5F5">
+			<TextBlock TextWrapping="Wrap" Width="220" Margin="10 0 10 0" HorizontalAlignment="Center" VerticalAlignment="Center" Style="{StaticResource MaterialDesignHeadlineTextBlock}">
+			No source defined. Maybe an error occurred. Go to settings and select a folder.
+		</TextBlock>
+		</Border>
+		<StackPanel Visibility="{Binding HasValidSource, Converter={StaticResource FalseToCollapsedConverter}}">
 			<TextBox Margin="5 10 5 0" Background="#e6e6e6" Name="RecordSearchBox" materialDesign:HintAssist.Hint="Search" />
 			<DataGrid Height="{Binding ElementName=ControlViewControl, Path=ActualHeight, Converter={StaticResource AddValueConverter}}" Background="#F5F5F5" Margin="0 10 5 0" 
 						  Tag="{Binding ElementName=ControlViewControl, Path=DataContext}" 

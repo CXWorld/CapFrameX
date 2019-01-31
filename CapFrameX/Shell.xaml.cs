@@ -12,5 +12,5 @@ namespace CapFrameX
         {
             InitializeComponent();
         }
-    }
+	}
 }

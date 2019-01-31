@@ -1,4 +1,6 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
+using System.Windows.Navigation;
 
 namespace CapFrameX
 {
@@ -11,7 +13,7 @@ namespace CapFrameX
         {
             base.OnStartup(e);
             Bootstrapper bootstrapper = new Bootstrapper();
-            bootstrapper.Run(true);
+			bootstrapper.Run(true);
         }
-    }
+	}
 }
