@@ -227,22 +227,27 @@ namespace CapFrameX.ViewModel
 						LineSmoothness = 0,
 						PointGeometrySize = 0
 					});
-				}				
+				}
 			}));
 		}
 
 		private void SetHistogramChart(List<double> displaytimes)
 		{
-			var optimalBinCount = _frametimeStatisticProvider.GetOptimalHistogramBinCount(displaytimes);
-			var histogram = new Histogram(displaytimes, optimalBinCount);
+			var discreteDistribution = _frametimeStatisticProvider.GetDiscreteDistribution(displaytimes);
+			var histogram = new Histogram(displaytimes, discreteDistribution.Length);
 
-			var histogramValues = new ChartValues<double>();
 			var bins = new List<double>();
-			for (int i = 0; i < optimalBinCount; i++)
+			var histogramValues = new ChartValues<double>();
+
+			for (int i = 0; i < discreteDistribution.Length; i++)
 			{
 				var bucket = histogram[i];
-				histogramValues.Add(bucket.Count);
-				bins.Add(bucket.LowerBound);
+				var avg = discreteDistribution[i].Count > 0 ? 
+						  discreteDistribution[i].Average() : 
+						  (bucket.UpperBound + bucket.LowerBound)/2;
+
+				bins.Add(avg);
+				histogramValues.Add(discreteDistribution[i].Count);
 			}
 
 			Application.Current.Dispatcher.BeginInvoke(new Action(() =>

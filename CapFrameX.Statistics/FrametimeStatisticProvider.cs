@@ -73,14 +73,16 @@ namespace CapFrameX.Statistics
 			return sequence.Quantile(pQuantile);
 		}
 
-		public int GetOptimalHistogramBinCount(IList<double> sequence)
+		public List<double>[] GetDiscreteDistribution(IList<double> sequence)
 		{
 			var min = sequence.Min();
 			var max = sequence.Max();
 
 			var binWidth = CalculateOptimalBinWidth(sequence);
+			int count = (int)Math.Round((max - min) / binWidth, 0);
 
-			return (int)Math.Round((max - min) / binWidth, 0);
+			double[] binIntervals = LinearSpace(min, max, count + 1);
+			return Distribution(sequence, binIntervals);
 		}
 
 		private double CalculateOptimalBinWidth(IList<double> sequence)
@@ -125,6 +127,28 @@ namespace CapFrameX.Statistics
 					if (data[j] >= lower && data[j] <= upper)
 					{
 						counts[i]++;
+					}
+				}
+			}
+
+			return counts;
+		}
+
+		private List<double>[] Distribution(IList<double> data, double[] binEdges)
+		{
+			List<double>[] counts = new List<double>[binEdges.Length - 1];
+
+			for (int i = 0; i < binEdges.Length - 1; i++)
+			{
+				counts[i] = new List<double>();
+				double lower = binEdges[i];
+				double upper = binEdges[i + 1];
+
+				for (int j = 0; j < data.Count; j++)
+				{
+					if (data[j] >= lower && data[j] <= upper)
+					{
+						counts[i].Add(data[j]);
 					}
 				}
 			}

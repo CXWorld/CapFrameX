@@ -14,6 +14,6 @@ namespace CapFrameX.Statistics
 
 		double GetPQuantileSequence(IList<double> sequence, double pQuantile);
 
-		int GetOptimalHistogramBinCount(IList<double> sequence);
+		List<double>[] GetDiscreteDistribution(IList<double> sequence);
 	}
 }
