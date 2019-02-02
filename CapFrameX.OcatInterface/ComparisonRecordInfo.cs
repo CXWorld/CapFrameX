@@ -10,6 +10,5 @@ namespace CapFrameX.OcatInterface
 		public string InfoText { get; set; }
         public string DateTime { get; set; }
         public Session Session { get; set; }
-		public SolidColorBrush Color { get; set; }
 	}
 }

@@ -241,13 +241,13 @@ namespace CapFrameX.ViewModel
 
 			for (int i = 0; i < discreteDistribution.Length; i++)
 			{
-				var bucket = histogram[i];
-				var avg = discreteDistribution[i].Count > 0 ? 
+				var count = discreteDistribution[i].Count;
+				var avg = count > 0 ? 
 						  discreteDistribution[i].Average() : 
-						  (bucket.UpperBound + bucket.LowerBound)/2;
+						  (histogram[i].UpperBound + histogram[i].LowerBound)/2;
 
 				bins.Add(avg);
-				histogramValues.Add(discreteDistribution[i].Count);
+				histogramValues.Add(count);
 			}
 
 			Application.Current.Dispatcher.BeginInvoke(new Action(() =>

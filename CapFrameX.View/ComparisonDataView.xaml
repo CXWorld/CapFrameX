@@ -6,9 +6,11 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
 			 xmlns:dragdrop="urn:gong-wpf-dragdrop"
 			 xmlns:prism="http://prismlibrary.com/"
+			 xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
 			 xmlns:mvvm="clr-namespace:CapFrameX.MVVM.Converter;assembly=CapFrameX.MVVM"
 			 xmlns:ocatinterface="clr-namespace:CapFrameX.OcatInterface;assembly=CapFrameX.OcatInterface"
 			 xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+			 xmlns:vm="clr-namespace:CapFrameX.ViewModel;assembly=CapFrameX.ViewModel"
              mc:Ignorable="d"
 			 xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
              d:DesignHeight="450" d:DesignWidth="800"
@@ -39,7 +41,7 @@
 		</Grid.RowDefinitions>
 		<Grid.ColumnDefinitions>
 			<ColumnDefinition Width="1*"></ColumnDefinition>
-			<ColumnDefinition Width="300"></ColumnDefinition>
+			<ColumnDefinition Width="360"></ColumnDefinition>
 		</Grid.ColumnDefinitions>
 		<StackPanel Margin="5 10 5 0" Grid.Row="0" Grid.Column="1" Orientation="Vertical">
 			<TextBox IsReadOnly="True" Background="#e6e6e6" materialDesign:HintAssist.Hint="Comparisons" />
@@ -83,8 +85,7 @@
 							<materialDesign:PackIcon Kind="PlaylistRemove" Height="24" Width="24" />
 						</Button>
 					</Grid>
-					<Separator Grid.Row="1" Margin="5 0 5 0"
-                               Style="{StaticResource MaterialDesignDarkSeparator}"/>
+					<Separator Grid.Row="1" Margin="5 0 5 0" Style="{StaticResource MaterialDesignDarkSeparator}"/>
 					<ScrollViewer VerticalScrollBarVisibility="Auto" Grid.Row="2">
 						<Grid>
 							<Border VerticalAlignment="Center" HorizontalAlignment="Center">
@@ -111,7 +112,7 @@
 										  dragdrop:DragDrop.DefaultDragAdornerOpacity="0.5"
 										  dragdrop:DragDrop.UseDefaultEffectDataTemplate="False">
 								<ItemsControl.ItemTemplate>
-									<DataTemplate DataType="{x:Type ocatinterface:ComparisonRecordInfo}">
+									<DataTemplate DataType="{x:Type vm:ComparisonRecordInfoWrapper}">
 										<Border x:Name="Border"
 								            Padding="8"
 								            BorderThickness="0 0 0 1"
@@ -123,29 +124,22 @@
 													<ColumnDefinition Width="Auto"/>
 												</Grid.ColumnDefinitions>
 												<ToggleButton VerticalAlignment="Center"
-														  IsChecked="False"
-														  Style="{StaticResource MaterialDesignActionLightToggleButton}"
-														  Content="{Binding Letter}" 
-														  Background="{Binding Color}"/>
+															  IsChecked="False"
+															  Style="{StaticResource MaterialDesignActionLightToggleButton}"
+															  Content="{Binding WrappedRecordInfo.Letter}" 
+															  Background="{Binding Color}"/>
 												<StackPanel Margin="8 0 0 0"
-														Grid.Column="1">
-													<TextBlock FontWeight="Bold" Text="{Binding Game}" />
-													<TextBlock Text="{Binding InfoText}" TextWrapping="Wrap"
-															   Width="180"
+															Grid.Column="1">
+													<TextBlock FontWeight="Bold" Text="{Binding WrappedRecordInfo.Game}" />
+													<TextBlock Text="{Binding WrappedRecordInfo.InfoText}" TextWrapping="Wrap"
+															   Width="150"
 															   LineStackingStrategy="BlockLineHeight"
 															   FontSize="12"
 															   LineHeight="14"
 															   MaxHeight="66"/>
 												</StackPanel>
-												<Button Style="{StaticResource MaterialDesignFloatingActionMiniButton}"
-														Grid.Column="2"													
-														Margin="0 0 0 0"														
-														Width="30" Height="30"
-														ToolTip="Set graph color"
-														Command="{Binding DataContext.SetGraphColorCommand, Source={x:Reference ComparisonDataControl}}"
-														CommandParameter="{Binding}">
-													<materialDesign:PackIcon Kind="ColorLens" Width="24" Height="24"/>
-												</Button>
+												<xctk:ColorPicker Width="120" Height="30" Grid.Column="2" Background="#e6e6e6" SelectedColor="{Binding FrametimeGraphColor}" 
+																  SelectedColorChanged="SelectedColorChanged" DisplayColorAndName="True" AvailableColorsSortingMode="HueSaturationBrightness" />
 											</Grid>
 										</Border>
 										<DataTemplate.Triggers>
@@ -226,7 +220,7 @@
 					</Grid>
 				</Grid>
 			</TabItem>
-			<TabItem Header="L-Shape">
+			<TabItem Header="L-shape">
 				<lvc:CartesianChart MouseDoubleClick="ResetChart_MouseDoubleClick" Series="{Binding ComparisonLShapeCollection}" Zoom="{Binding ZoomingMode}" >
 					<lvc:CartesianChart.AxisX>
 						<lvc:Axis Title="Quantiles (%)" Name="LShapeX" Foreground="Black">

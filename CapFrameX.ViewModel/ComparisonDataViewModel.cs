@@ -17,6 +17,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -163,7 +164,8 @@ namespace CapFrameX.ViewModel
 				_firstSeconds = value;
 				RaisePropertyChanged();
 				UpdateCharts();
-				RemainingRecordingTime = Math.Round(_maxRecordingTime - LastSeconds - _firstSeconds, 2).ToString(CultureInfo.InvariantCulture) + " s";
+				RemainingRecordingTime = Math.Round(_maxRecordingTime - LastSeconds - _firstSeconds, 2)
+					.ToString(CultureInfo.InvariantCulture) + " s";
 			}
 		}
 
@@ -175,7 +177,8 @@ namespace CapFrameX.ViewModel
 				_lastSeconds = value;
 				RaisePropertyChanged();
 				UpdateCharts();
-				RemainingRecordingTime = Math.Round(_maxRecordingTime - _lastSeconds - FirstSeconds, 2).ToString(CultureInfo.InvariantCulture) + " s";
+				RemainingRecordingTime = Math.Round(_maxRecordingTime - _lastSeconds - FirstSeconds, 2)
+					.ToString(CultureInfo.InvariantCulture) + " s";
 			}
 		}
 
@@ -202,10 +205,8 @@ namespace CapFrameX.ViewModel
 
 		public ICommand RemoveAllComparisonsCommand { get; }
 
-		public ICommand SetGraphColorCommand { get; }
-
-		public ObservableCollection<ComparisonRecordInfo> ComparisonRecords { get; }
-			= new ObservableCollection<ComparisonRecordInfo>();
+		public ObservableCollection<ComparisonRecordInfoWrapper> ComparisonRecords { get; }
+			= new ObservableCollection<ComparisonRecordInfoWrapper>();
 
 		public ComparisonDataViewModel(IStatisticProvider frametimeStatisticProvider,
 									   IFrametimeAnalyzer frametimeAnalyzer,
@@ -224,10 +225,10 @@ namespace CapFrameX.ViewModel
 			GpuContextCommand = new DelegateCommand(OnGpuContex);
 			CustomContextCommand = new DelegateCommand(OnCustomContex);
 			RemoveAllComparisonsCommand = new DelegateCommand(OnRemoveAllComparisons);
-			SetGraphColorCommand = new DelegateCommand<ComparisonRecordInfo>(OnSetGraphColor);
 
 			ComparisonColumnChartFormatter = value => value.ToString(string.Format("F{0}", _appConfiguration.FpsValuesRoundingDigits));
 			ComparisonSeriesCollection = new SeriesCollection();
+			ComparisonLShapeCollection = new SeriesCollection();
 			ComparisonColumnChartSeriesCollection = new SeriesCollection
 			{
 
@@ -290,11 +291,11 @@ namespace CapFrameX.ViewModel
 
 			foreach (var record in ComparisonRecords)
 			{
-				if (record.Session.FrameStart.Last() > _maxRecordingTime)
-					_maxRecordingTime = record.Session.FrameStart.Last();
+				if (record.WrappedRecordInfo.Session.FrameStart.Last() > _maxRecordingTime)
+					_maxRecordingTime = record.WrappedRecordInfo.Session.FrameStart.Last();
 
-				if (record.Session.FrameStart.Last() < minRecordingTime)
-					minRecordingTime = record.Session.FrameStart.Last();
+				if (record.WrappedRecordInfo.Session.FrameStart.Last() < minRecordingTime)
+					minRecordingTime = record.WrappedRecordInfo.Session.FrameStart.Last();
 			}
 
 			_doUpdateCharts = false;
@@ -361,31 +362,24 @@ namespace CapFrameX.ViewModel
 
 			ComparisonRecords.Clear();
 
-			SetColumnChart();
-			SetFrametimeChart();
-			SetLShapeChart();
+			UpdateCharts();
 
 			InitialIconVisibility = true;
 			ComparisonItemControlHeight = "300";
-		}
-
-		private void OnSetGraphColor(ComparisonRecordInfo info)
-		{
-
 		}
 
 		private void SetLabelDateTimeContext()
 		{
 			ComparisonColumnChartLabels = ComparisonRecords.Select(record =>
 			{
-				int gameNameLength = record.Game.Length;
-				int dateTimeLength = record.DateTime.Length;
+				int gameNameLength = record.WrappedRecordInfo.Game.Length;
+				int dateTimeLength = record.WrappedRecordInfo.DateTime.Length;
 
 				int maxAlignment = gameNameLength < dateTimeLength ? dateTimeLength : gameNameLength;
 
 				var alignmentFormat = "{0," + maxAlignment.ToString() + "}";
-				var gameName = string.Format(alignmentFormat, record.Game);
-				var dateTime = string.Format(alignmentFormat, record.DateTime);
+				var gameName = string.Format(alignmentFormat, record.WrappedRecordInfo.Game);
+				var dateTime = string.Format(alignmentFormat, record.WrappedRecordInfo.DateTime);
 				return gameName + Environment.NewLine + dateTime;
 			}).ToArray();
 		}
@@ -394,14 +388,14 @@ namespace CapFrameX.ViewModel
 		{
 			ComparisonColumnChartLabels = ComparisonRecords.Select(record =>
 			{
-				var processorName = record.Session.ProcessorName ?? "-";
+				var processorName = record.WrappedRecordInfo.Session.ProcessorName ?? "-";
 
-				int gameNameLength = record.Game.Length;
+				int gameNameLength = record.WrappedRecordInfo.Game.Length;
 				int cpuInfoLength = processorName.Length;
 
 				int maxAlignment = gameNameLength < cpuInfoLength ? cpuInfoLength : gameNameLength;
 				var alignmentFormat = "{0," + maxAlignment.ToString() + "}";
-				var gameName = string.Format(alignmentFormat, record.Game);
+				var gameName = string.Format(alignmentFormat, record.WrappedRecordInfo.Game);
 				var cpuInfo = string.Format(alignmentFormat, processorName);
 
 				return gameName + Environment.NewLine + cpuInfo;
@@ -412,14 +406,14 @@ namespace CapFrameX.ViewModel
 		{
 			ComparisonColumnChartLabels = ComparisonRecords.Select(record =>
 			{
-				var graphicCardName = record.Session.GraphicCardName ?? "-";
+				var graphicCardName = record.WrappedRecordInfo.Session.GraphicCardName ?? "-";
 
-				int gameNameLength = record.Game.Length;
+				int gameNameLength = record.WrappedRecordInfo.Game.Length;
 				int gpuInfoLength = graphicCardName.Length;
 
 				int maxAlignment = gameNameLength < gpuInfoLength ? gpuInfoLength : gameNameLength;
 				var alignmentFormat = "{0," + maxAlignment.ToString() + "}";
-				var gameName = string.Format(alignmentFormat, record.Game);
+				var gameName = string.Format(alignmentFormat, record.WrappedRecordInfo.Game);
 				var gpuInfo = string.Format(alignmentFormat, graphicCardName);
 				return gameName + Environment.NewLine + gpuInfo;
 			}).ToArray();
@@ -429,14 +423,14 @@ namespace CapFrameX.ViewModel
 		{
 			ComparisonColumnChartLabels = ComparisonRecords.Select(record =>
 			{
-				var comment = record.Session.Comment ?? "-";
+				var comment = record.WrappedRecordInfo.Session.Comment ?? "-";
 
-				int gameNameLength = record.Game.Length;
+				int gameNameLength = record.WrappedRecordInfo.Game.Length;
 				int commentLength = comment.Length;
 
 				int maxAlignment = gameNameLength < commentLength ? commentLength : gameNameLength;
 				var alignmentFormat = "{0," + maxAlignment.ToString() + "}";
-				var gameName = string.Format(alignmentFormat, record.Game);
+				var gameName = string.Format(alignmentFormat, record.WrappedRecordInfo.Game);
 				var gpuInfo = string.Format(alignmentFormat, comment);
 				return gameName + Environment.NewLine + gpuInfo;
 			}).ToArray();
@@ -470,23 +464,26 @@ namespace CapFrameX.ViewModel
 			if (!_doUpdateCharts)
 				return;
 
+			ComparisonSeriesCollection.Clear();
+			ComparisonLShapeCollection.Clear();
+
+			Task.Factory.StartNew(() => SetFrametimeChart());
+			Task.Factory.StartNew(() => SetLShapeChart());
 			SetColumnChart();
-			SetFrametimeChart();
-			SetLShapeChart();
 		}
 
-		private void AddToCharts(ComparisonRecordInfo comparisonInfo)
+		private void AddToCharts(ComparisonRecordInfoWrapper wrappedComparisonInfo)
 		{
-			AddToFrameTimeChart(comparisonInfo);
-			AddToColumnCharts(comparisonInfo);
-			AddToLShapeChart(comparisonInfo);
+			AddToFrameTimeChart(wrappedComparisonInfo);
+			AddToColumnCharts(wrappedComparisonInfo);
+			AddToLShapeChart(wrappedComparisonInfo);
 		}
 
-		private void AddToColumnCharts(ComparisonRecordInfo comparisonInfo)
+		private void AddToColumnCharts(ComparisonRecordInfoWrapper wrappedComparisonInfo)
 		{
 			double startTime = FirstSeconds;
 			double endTime = _maxRecordingTime - LastSeconds;
-			var frametimeSampleWindow = comparisonInfo.Session.GetFrametimeSamplesWindow(startTime, endTime);
+			var frametimeSampleWindow = wrappedComparisonInfo.WrappedRecordInfo.Session.GetFrametimeSamplesWindow(startTime, endTime);
 
 			var roundingDigits = _appConfiguration.FpsValuesRoundingDigits;
 			var fps = frametimeSampleWindow.Select(ft => 1000 / ft).ToList();
@@ -520,11 +517,11 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-		private void AddToFrameTimeChart(ComparisonRecordInfo comparisonInfo)
+		private void AddToFrameTimeChart(ComparisonRecordInfoWrapper wrappedComparisonInfo)
 		{
 			double startTime = FirstSeconds;
 			double endTime = _maxRecordingTime - LastSeconds;
-			var session = comparisonInfo.Session;
+			var session = wrappedComparisonInfo.WrappedRecordInfo.Session;
 			var frametimePoints = session.GetFrametimePointsWindow(startTime, endTime)
 										 .Select(pnt => new ObservablePoint(pnt.X, pnt.Y));
 
@@ -532,23 +529,26 @@ namespace CapFrameX.ViewModel
 			frametimeChartValues.AddRange(frametimePoints);
 			frametimeChartValues.WithQuality(_appConfiguration.ChartQualityLevel.ConverToEnum<Quality>());
 
-			ComparisonSeriesCollection.Add(
+			Application.Current.Dispatcher.Invoke(new Action(() =>
+			{
+				ComparisonSeriesCollection.Add(
 				new GLineSeries
 				{
 					Values = frametimeChartValues,
 					Fill = Brushes.Transparent,
-					Stroke = comparisonInfo.Color,
+					Stroke = wrappedComparisonInfo.Color,
 					StrokeThickness = 1,
 					LineSmoothness = 0,
 					PointGeometrySize = 0
 				});
+			}));
 		}
 
-		private void AddToLShapeChart(ComparisonRecordInfo comparisonInfo)
+		private void AddToLShapeChart(ComparisonRecordInfoWrapper wrappedComparisonInfo)
 		{
 			double startTime = FirstSeconds;
 			double endTime = _maxRecordingTime - LastSeconds;
-			var frametimeSampleWindow = comparisonInfo.Session.GetFrametimeSamplesWindow(startTime, endTime);
+			var frametimeSampleWindow = wrappedComparisonInfo.WrappedRecordInfo.Session.GetFrametimeSamplesWindow(startTime, endTime);
 
 			var lShapeQuantiles = _frametimeAnalyzer.GetLShapeQuantiles();
 			double action(double q) => _frametimeStatisticProvider.GetPQuantileSequence(frametimeSampleWindow, q / 100);
@@ -556,17 +556,20 @@ namespace CapFrameX.ViewModel
 			var quantileValues = new ChartValues<ObservablePoint>();
 			quantileValues.AddRange(quantiles);
 
-			ComparisonLShapeCollection.Add(
+			Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+			{
+				ComparisonLShapeCollection.Add(
 				new GLineSeries
 				{
 					Values = quantileValues,
-					Stroke = comparisonInfo.Color,
+					Stroke = wrappedComparisonInfo.Color,
 					Fill = Brushes.Transparent,
 					StrokeThickness = 1,
 					LineSmoothness = 1,
 					PointGeometrySize = 10,
 					PointGeometry = DefaultGeometries.Triangle,
 				});
+			}));
 		}
 
 		private void SetColumnChart()
@@ -588,8 +591,6 @@ namespace CapFrameX.ViewModel
 
 		private void SetFrametimeChart()
 		{
-			ComparisonSeriesCollection = new SeriesCollection();
-
 			for (int i = 0; i < ComparisonRecords.Count; i++)
 			{
 				AddToFrameTimeChart(ComparisonRecords[i]);
@@ -598,8 +599,6 @@ namespace CapFrameX.ViewModel
 
 		private void SetLShapeChart()
 		{
-			ComparisonLShapeCollection = new SeriesCollection();
-
 			for (int i = 0; i < ComparisonRecords.Count; i++)
 			{
 				AddToLShapeChart(ComparisonRecords[i]);
@@ -646,10 +645,11 @@ namespace CapFrameX.ViewModel
 					}
 					else if (frameworkElement.Name == "RemoveRecordItemControl")
 					{
-						if (dropInfo.Data is ComparisonRecordInfo comparisonRecordInfo)
+						if (dropInfo.Data is ComparisonRecordInfoWrapper wrappedComparisonRecordInfo)
 						{
-							ComparisonRecords.Remove(comparisonRecordInfo);
-							_freeColors.Add(comparisonRecordInfo.Color);
+							ComparisonRecords.Remove(wrappedComparisonRecordInfo);
+							UpdateIndicesAfterRemove(ComparisonRecords);
+							_freeColors.Add(wrappedComparisonRecordInfo.Color);
 							InitialIconVisibility = !ComparisonRecords.Any();
 							ComparisonItemControlHeight = ComparisonRecords.Any() ? "Auto" : "300";
 
@@ -663,23 +663,46 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
+		private void UpdateIndicesAfterRemove(ObservableCollection<ComparisonRecordInfoWrapper> comparisonRecords)
+		{
+			for (int i = 0; i < comparisonRecords.Count; i++)
+			{
+				comparisonRecords[i].CollectionIndex = i;
+			}
+		}
+
 		private void AddComparisonRecord(OcatRecordInfo recordInfo)
 		{
 			if (ComparisonRecords.Count <= _comparisonBrushes.Count())
 			{
 				var comparisonRecordInfo = GetComparisonRecordInfoFromOcatRecordInfo(recordInfo);
+				var wrappedComparisonRecordInfo = GetWrappedRecordInfo(comparisonRecordInfo);				
+
+				//Update list and index
+				ComparisonRecords.Add(wrappedComparisonRecordInfo);
+				wrappedComparisonRecordInfo.CollectionIndex = ComparisonRecords.Count - 1;
+
 				var color = _freeColors.First();
-				comparisonRecordInfo.Color = color;
 				_freeColors.Remove(color);
-				ComparisonRecords.Add(comparisonRecordInfo);
+				wrappedComparisonRecordInfo.Color = color;
+				wrappedComparisonRecordInfo.FrametimeGraphColor = color.Color;
+
 				InitialIconVisibility = !ComparisonRecords.Any();
 				ComparisonItemControlHeight = ComparisonRecords.Any() ? "Auto" : "300";
 
 				UpdateCuttingParameter();
 
 				//Draw charts and performance parameter
-				AddToCharts(comparisonRecordInfo);
+				AddToCharts(wrappedComparisonRecordInfo);
 			}
+		}
+
+		private ComparisonRecordInfoWrapper GetWrappedRecordInfo(ComparisonRecordInfo comparisonRecordInfo)
+		{
+			var wrappedRecordInfo = new ComparisonRecordInfoWrapper(comparisonRecordInfo,
+				ComparisonSeriesCollection, ComparisonLShapeCollection);
+
+			return wrappedRecordInfo;
 		}
 
 		void IDropTarget.DragOver(IDropInfo dropInfo)

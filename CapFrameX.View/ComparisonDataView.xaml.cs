@@ -2,8 +2,11 @@
 using CapFrameX.Statistics;
 using CapFrameX.ViewModel;
 using Prism.Events;
+using System;
 using System.ComponentModel;
+using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 
 namespace CapFrameX.View
 {
@@ -11,10 +14,10 @@ namespace CapFrameX.View
 	/// Interaction logic for ComparisonDataView.xaml
 	/// </summary>
 	public partial class ComparisonDataView : UserControl
-    {
-        public ComparisonDataView()
-        {
-            InitializeComponent();
+	{
+		public ComparisonDataView()
+		{
+			InitializeComponent();
 
 			// Design time!
 			if (DesignerProperties.GetIsInDesignMode(this))
@@ -39,5 +42,7 @@ namespace CapFrameX.View
 			LShapeY.MinValue = double.NaN;
 			LShapeY.MaxValue = double.NaN;
 		}
+
+		private void SelectedColorChanged(object sender, RoutedPropertyChangedEventArgs<Color?> e) { }
 	}
 }
