@@ -58,7 +58,7 @@ namespace CapFrameX.ViewModel
 			HasValidSource = recordObserver.HasValidSource;
 
 			if (recordObserver.HasValidSource)
-			{				
+			{
 				var initialRecordList = _recordObserver.GetAllRecordFileInfo();
 
 				foreach (var fileInfo in initialRecordList)
@@ -74,7 +74,8 @@ namespace CapFrameX.ViewModel
 							.Subscribe(OnRecordDeleted);
 
 			// Turn streams now on
-			_recordObserver.IsActive = true;
+			if (_recordObserver.HasValidSource)
+				_recordObserver.IsActive = true;
 
 			SetAggregatorEvents();
 			SubscribeToResetRecord();

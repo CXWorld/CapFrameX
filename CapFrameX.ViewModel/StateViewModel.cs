@@ -18,7 +18,12 @@ namespace CapFrameX.ViewModel
 		public bool IsDirectoryObserving
 		{
 			get { return _recordObserver.IsActive; }
-			set { _recordObserver.IsActive = value; RaisePropertyChanged(); }
+			set
+			{
+				_recordObserver.IsActive =
+					value && _recordObserver.HasValidSource;
+				RaisePropertyChanged();
+			}
 		}
 
 		public string VersionString
@@ -30,13 +35,16 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-		public StateViewModel(IRecordDirectoryObserver recordObserver, 
+		public StateViewModel(IRecordDirectoryObserver recordObserver,
 							  IEventAggregator eventAggregator,
 							  IAppConfiguration appConfiguration)
 		{
 			_recordObserver = recordObserver;
 			_eventAggregator = eventAggregator;
 			_appConfiguration = appConfiguration;
+
+			_recordObserver.HasValidSourceStream
+				.Subscribe(state => IsDirectoryObserving = state);
 		}
 
 		private Assembly GetAssemblyByName(string name)

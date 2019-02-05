@@ -1,7 +1,10 @@
-﻿using CapFrameX.Extensions;
-using CapFrameX.Contracts.Configuration;
+﻿using CapFrameX.Contracts.Configuration;
+using CapFrameX.Contracts.OcatInterface;
 using CapFrameX.EventAggregation.Messages;
+using CapFrameX.Extensions;
 using LiveCharts.Geared;
+using Microsoft.WindowsAPICodePack.Dialogs;
+using Prism.Commands;
 using Prism.Events;
 using Prism.Mvvm;
 using Prism.Regions;
@@ -9,9 +12,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Input;
-using Prism.Commands;
-using Microsoft.WindowsAPICodePack.Dialogs;
-using CapFrameX.Contracts.OcatInterface;
 
 namespace CapFrameX.ViewModel
 {
@@ -134,6 +134,8 @@ namespace CapFrameX.ViewModel
 
 		public IList<int> WindowSizes { get; }
 
+		public IList<int> RoundingDigits { get; }
+
 		public string ObservedDirectory
 		{
 			get { return _observedDirectory; }
@@ -162,6 +164,7 @@ namespace CapFrameX.ViewModel
 			FpsValuesRoundingDigits = _appConfiguration.FpsValuesRoundingDigits;
 			ObservedDirectory = _appConfiguration.ObservedDirectory;
 			WindowSizes = new List<int>(Enumerable.Range(4, 100 - 4));
+			RoundingDigits = new List<int>(Enumerable.Range(0, 8));
 			SelectObeservedFolderCommand = new DelegateCommand(OnSelectObeservedFolder);
 
 			SetAggregatorEvents();

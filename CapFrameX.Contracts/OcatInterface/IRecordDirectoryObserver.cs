@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Collections.Generic;
+using System.Reactive.Subjects;
 
 namespace CapFrameX.Contracts.OcatInterface
 {
@@ -9,6 +10,8 @@ namespace CapFrameX.Contracts.OcatInterface
         bool IsActive { get; set; }
 
 		bool HasValidSource { get; }
+
+		Subject<bool> HasValidSourceStream { get; }
 
 		IObservable<FileInfo> RecordCreatedStream { get; }
 

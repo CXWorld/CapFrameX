@@ -104,14 +104,16 @@
 								</Binding>
 							</ComboBox.Text>
 						</ComboBox>
-						<TextBox Grid.Row="5" materialDesign:HintAssist.Hint="FPS values rounding digits" >
-						<TextBox.Text>
-							<Binding Path="FpsValuesRoundingDigits"
+						<ComboBox Grid.Row="5" materialDesign:HintAssist.Hint="FPS values rounding digits"
+								  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="200" Margin="8 8 8 8"
+								  ItemsSource="{Binding RoundingDigits}">
+							<ComboBox.Text>
+								<Binding Path="FpsValuesRoundingDigits"
 										 Mode="TwoWay"
-										 UpdateSourceTrigger="LostFocus">
-							</Binding>
-						</TextBox.Text>
-						</TextBox>
+										 UpdateSourceTrigger="PropertyChanged">
+								</Binding>
+							</ComboBox.Text>
+						</ComboBox>
 					</Grid>
 				</materialDesign:PopupBox>
 			</Grid>

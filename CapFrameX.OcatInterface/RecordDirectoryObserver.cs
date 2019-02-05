@@ -28,10 +28,14 @@ namespace CapFrameX.OcatInterface
 		public IObservable<FileInfo> RecordDeletedStream
 			=> _recordDeletedStream.Where(p => IsActive).Select(path => new FileInfo(path)).AsObservable();
 
+		public Subject<bool> HasValidSourceStream { get; }
+
 		public RecordDirectoryObserver(IAppConfiguration appConfiguration)
 		{
 			_appConfiguration = appConfiguration;
 			_recordDirectory = GetInitialObservedDirectory(_appConfiguration.ObservedDirectory);
+
+			HasValidSourceStream = new Subject<bool>();
 
 			try
 			{
@@ -103,11 +107,11 @@ namespace CapFrameX.OcatInterface
 			if (!Directory.Exists(directory))
 			{
 				HasValidSource = false;
+				IsActive = false;				
 			}
 			else
 			{
-				HasValidSource = true;
-				IsActive = false;
+				HasValidSource = true;			
 
 				_recordDirectory = directory;
 				_fileSystemWatcher = new FileSystemWatcher(directory);
@@ -118,6 +122,8 @@ namespace CapFrameX.OcatInterface
 
 				IsActive = true;
 			}
+
+			HasValidSourceStream.OnNext(HasValidSource);
 		}
 	}
 }

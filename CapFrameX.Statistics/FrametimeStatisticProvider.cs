@@ -81,6 +81,13 @@ namespace CapFrameX.Statistics
 			var binWidth = CalculateOptimalBinWidth(sequence);
 			int count = (int)Math.Round((max - min) / binWidth, 0);
 
+			if(count == 4)
+			{
+				double[] minimalBinIntervals = LinearSpace(min, max, count + 1);
+				var histogram = Histogram(sequence, minimalBinIntervals);
+				count -= histogram.Count(bin => bin == 0);
+			}
+
 			double[] binIntervals = LinearSpace(min, max, count + 1);
 			return Distribution(sequence, binIntervals);
 		}
@@ -97,7 +104,7 @@ namespace CapFrameX.Statistics
 			for (int i = 0; i < N.Length; i++)
 			{
 				double[] binIntervals = LinearSpace(xMin, xMax, (int)N[i] + 1);
-				double[] ki = Histogram(sequence, binIntervals);
+				int[] ki = Histogram(sequence, binIntervals);
 				ki = ki.Skip(1).Take(ki.Length - 2).ToArray();
 
 				double mean = ki.Average();
@@ -114,9 +121,9 @@ namespace CapFrameX.Statistics
 			return D[index];
 		}
 
-		private double[] Histogram(IList<double> data, double[] binEdges)
+		private int[] Histogram(IList<double> data, double[] binEdges)
 		{
-			double[] counts = new double[binEdges.Length - 1];
+			int[] counts = new int[binEdges.Length - 1];
 
 			for (int i = 0; i < binEdges.Length - 1; i++)
 			{
