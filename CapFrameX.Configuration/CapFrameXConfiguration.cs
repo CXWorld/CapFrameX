@@ -35,5 +35,17 @@ namespace CapFrameX.Configuration
 			get { return Settings.FpsValuesRoundingDigits; }
 			set { Settings.FpsValuesRoundingDigits = value; Settings.Save(); }
 		}
+
+		public string RecordDataGridIgnoreList
+		{
+			get { return Settings.RecordDataGridIgnoreList; }
+			set { Settings.RecordDataGridIgnoreList = value; Settings.Save(); }
+		}
+
+		public void AddAppNameToIgnoreList(string nameToBeIgnored)
+		{
+			if (!RecordDataGridIgnoreList.Contains(nameToBeIgnored))
+				RecordDataGridIgnoreList = RecordDataGridIgnoreList + "; " + nameToBeIgnored;
+		}
 	}
 }

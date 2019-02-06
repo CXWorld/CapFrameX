@@ -11,5 +11,9 @@
 		string ChartQualityLevel { get; set; }
 
 		int FpsValuesRoundingDigits { get; set; }
+
+		string RecordDataGridIgnoreList { get; set; }
+
+		void AddAppNameToIgnoreList(string nameToBeIgnored);
 	}
 }

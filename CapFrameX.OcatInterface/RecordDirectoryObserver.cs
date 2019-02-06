@@ -93,13 +93,17 @@ namespace CapFrameX.OcatInterface
 
 		public IEnumerable<FileInfo> GetAllRecordFileInfo()
 		{
-			return HasValidSource ?  Directory.GetFiles(_recordDirectory, "*.csv",
-														 SearchOption.TopDirectoryOnly).Where(file => 
-														 !file.Contains("CapFrameX") &&
-														 !file.Contains("SearchUI") &&
-														 !file.Contains("ShellExperienceHost") &&
-														 !file.Contains("steamwebhelper")
-														 ).Select(file => new FileInfo(file)) : null;
+			var filterList = _appConfiguration.RecordDataGridIgnoreList.Split(';').ToArray();
+
+			for (int i = 0; i < filterList.Length; i++)
+			{
+				filterList[i] = filterList[i].Replace(" ", string.Empty)
+											 .Replace(Environment.NewLine, string.Empty);
+			}
+
+			return HasValidSource ?  Directory.GetFiles(_recordDirectory, "*.csv", 
+				SearchOption.TopDirectoryOnly).Where(file => filterList.All(entry => !file.Contains(entry)))
+				.Select(file => new FileInfo(file)) : null;
 		}
 
 		public void UpdateObservedDirectory(string directory)
@@ -107,7 +111,7 @@ namespace CapFrameX.OcatInterface
 			if (!Directory.Exists(directory))
 			{
 				HasValidSource = false;
-				IsActive = false;				
+				IsActive = false;
 			}
 			else
 			{

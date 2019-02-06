@@ -11,6 +11,7 @@ using System.Threading;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
 using Prism.Commands;
+using CapFrameX.Contracts.Configuration;
 
 namespace CapFrameX.ViewModel
 {
@@ -18,6 +19,7 @@ namespace CapFrameX.ViewModel
 	{
 		private readonly IRecordDirectoryObserver _recordObserver;
 		private readonly IEventAggregator _eventAggregator;
+		private readonly IAppConfiguration _appConfiguration;
 
 		private PubSubEvent<ViewMessages.UpdateSession> _updateSessionEvent;
 		private PubSubEvent<ViewMessages.SelectSession> _selectSessionEvent;
@@ -47,13 +49,19 @@ namespace CapFrameX.ViewModel
 
 		public ICommand OpenEditingDialogCommand { get; }
 
-		public ControlViewModel(IRecordDirectoryObserver recordObserver, IEventAggregator eventAggregator)
+		public ICommand AddToIgnoreListCommand { get; }
+
+		public ControlViewModel(IRecordDirectoryObserver recordObserver, 
+								IEventAggregator eventAggregator, 
+								IAppConfiguration appConfiguration)
 		{
 			_recordObserver = recordObserver;
 			_eventAggregator = eventAggregator;
+			_appConfiguration = appConfiguration;
 
 			//Commands
 			OpenEditingDialogCommand = new DelegateCommand(OnOpenEditingDialog);
+			AddToIgnoreListCommand = new DelegateCommand(OnAddToIgnoreList);
 
 			HasValidSource = recordObserver.HasValidSource;
 
@@ -82,9 +90,19 @@ namespace CapFrameX.ViewModel
 			SubscribeToObservedDiretoryUpdated();
 		}
 
+
 		private void OnOpenEditingDialog()
 		{
 			_showOverlayEvent.Publish(new ViewMessages.ShowOverlay());
+		}
+
+		private void OnAddToIgnoreList()
+		{
+			_appConfiguration.AddAppNameToIgnoreList(SelectedRecordInfo.GameName);
+
+			SelectedRecordInfo = null;
+			RecordInfoList.Clear();
+			LoadRecordList();
 		}
 
 		public void OnRecordSelectByDoubleClick()
@@ -130,6 +148,14 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
+		private void LoadRecordList()
+		{
+			foreach (var fileInfo in _recordObserver.GetAllRecordFileInfo())
+			{
+				AddToRecordInfoList(fileInfo);
+			}
+		}
+
 		private void SetAggregatorEvents()
 		{
 			_updateSessionEvent = _eventAggregator.GetEvent<PubSubEvent<ViewMessages.UpdateSession>>();
@@ -158,10 +184,7 @@ namespace CapFrameX.ViewModel
 
 								if (_recordObserver.HasValidSource)
 								{
-									foreach (var fileInfo in _recordObserver.GetAllRecordFileInfo())
-									{
-										AddToRecordInfoList(fileInfo);
-									}
+									LoadRecordList();
 								}
 							});
 		}

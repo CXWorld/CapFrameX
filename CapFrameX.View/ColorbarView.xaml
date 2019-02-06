@@ -45,7 +45,7 @@
 							 IsChecked="{Binding SynchronizationIsChecked}"
 							 Content="SYNCHRONISATION" />
 				</StackPanel>
-				<materialDesign:PopupBox Grid.Column="1" Margin="16,0,16,0" StaysOpen="True" PlacementMode="BottomAndAlignRightEdges"  HorizontalAlignment="Right">
+				<materialDesign:PopupBox Grid.Column="1" RequestBringIntoView="PopupBox_RequestBringIntoView" Margin="16,0,16,0" StaysOpen="True" PlacementMode="BottomAndAlignRightEdges"  HorizontalAlignment="Right">
 					<Grid Margin="8,8,8,8">
 						<Grid.Resources>
 							<Style TargetType="CheckBox"
@@ -58,6 +58,7 @@
 							</Style>
 						</Grid.Resources>
 						<Grid.RowDefinitions>
+							<RowDefinition Height="*" />
 							<RowDefinition Height="*" />
 							<RowDefinition Height="*" />
 							<RowDefinition Height="*" />
@@ -114,6 +115,19 @@
 								</Binding>
 							</ComboBox.Text>
 						</ComboBox>
+						<TextBox Grid.Row="6" materialDesign:HintAssist.Hint="Application ignore list" 
+								 TextWrapping="Wrap"
+								 VerticalAlignment="Stretch"
+								 AcceptsReturn="True"
+								 VerticalScrollBarVisibility="Auto"
+								 SpellCheck.IsEnabled="False">
+							<TextBox.Text>
+								<Binding Path="RecordDataGridIgnoreList"
+										 Mode="TwoWay"
+										 UpdateSourceTrigger="LostFocus">
+								</Binding>
+							</TextBox.Text>
+						</TextBox>
 					</Grid>
 				</materialDesign:PopupBox>
 			</Grid>

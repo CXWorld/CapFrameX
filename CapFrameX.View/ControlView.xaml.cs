@@ -33,7 +33,7 @@ namespace CapFrameX.View
 			if (DesignerProperties.GetIsInDesignMode(this))
 			{
 				var appConfiguration = new CapFrameXConfiguration();
-				DataContext = new ControlViewModel(new RecordDirectoryObserver(appConfiguration), new EventAggregator());
+				DataContext = new ControlViewModel(new RecordDirectoryObserver(appConfiguration), new EventAggregator(), new CapFrameXConfiguration());
 			}
 		}
 

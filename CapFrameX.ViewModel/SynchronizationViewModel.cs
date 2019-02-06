@@ -242,9 +242,9 @@ namespace CapFrameX.ViewModel
 			for (int i = 0; i < discreteDistribution.Length; i++)
 			{
 				var count = discreteDistribution[i].Count;
-				var avg = count > 0 ? 
-						  discreteDistribution[i].Average() : 
-						  (histogram[i].UpperBound + histogram[i].LowerBound)/2;
+				var avg = count > 0 ?
+						  discreteDistribution[i].Average() :
+						  (histogram[i].UpperBound + histogram[i].LowerBound) / 2;
 
 				bins.Add(avg);
 				histogramValues.Add(count);
@@ -312,6 +312,10 @@ namespace CapFrameX.ViewModel
 		public void OnNavigatedFrom(NavigationContext navigationContext)
 		{
 			_useUpdateSession = false;
+
+			FrameDisplayTimesCollection = new SeriesCollection();
+			HistogramCollection = new SeriesCollection();
+			DroppedFramesStatisticCollection = new SeriesCollection();
 		}
 	}
 }

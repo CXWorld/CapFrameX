@@ -673,7 +673,7 @@ namespace CapFrameX.ViewModel
 
 		private void AddComparisonRecord(OcatRecordInfo recordInfo)
 		{
-			if (ComparisonRecords.Count <= _comparisonBrushes.Count())
+			if (ComparisonRecords.Count < _comparisonBrushes.Count())
 			{
 				var comparisonRecordInfo = GetComparisonRecordInfoFromOcatRecordInfo(recordInfo);
 				var wrappedComparisonRecordInfo = GetWrappedRecordInfo(comparisonRecordInfo);				
@@ -723,6 +723,8 @@ namespace CapFrameX.ViewModel
 		public void OnNavigatedFrom(NavigationContext navigationContext)
 		{
 			_useEventMessages = false;
+
+			OnRemoveAllComparisons();
 		}
 
 		public void OnNavigatedTo(NavigationContext navigationContext)

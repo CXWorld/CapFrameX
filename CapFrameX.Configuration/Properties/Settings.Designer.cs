@@ -82,5 +82,17 @@ namespace CapFrameX.Configuration.Properties {
                 this["FpsValuesRoundingDigits"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("CapFrameX; SearchUI; ShellExperienceHost; steamwebhelper")]
+        public string RecordDataGridIgnoreList {
+            get {
+                return ((string)(this["RecordDataGridIgnoreList"]));
+            }
+            set {
+                this["RecordDataGridIgnoreList"] = value;
+            }
+        }
     }
 }

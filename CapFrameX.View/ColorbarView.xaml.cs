@@ -24,5 +24,10 @@ namespace CapFrameX.View
 				DataContext = new ColorbarViewModel(new RegionManager(), new RecordDirectoryObserver(appConfiguration), new EventAggregator(), appConfiguration);
 			}
 		}
+
+		private void PopupBox_RequestBringIntoView(object sender, System.Windows.RequestBringIntoViewEventArgs e)
+		{
+			(DataContext as ColorbarViewModel).UpdateSettingsParameter();
+		}
 	}
 }

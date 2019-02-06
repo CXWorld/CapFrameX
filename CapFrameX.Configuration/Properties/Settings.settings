@@ -17,5 +17,8 @@
     <Setting Name="FpsValuesRoundingDigits" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">1</Value>
     </Setting>
+    <Setting Name="RecordDataGridIgnoreList" Type="System.String" Scope="User">
+      <Value Profile="(Default)">CapFrameX; SearchUI; ShellExperienceHost; steamwebhelper</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

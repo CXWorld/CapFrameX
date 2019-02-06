@@ -33,6 +33,7 @@ namespace CapFrameX.ViewModel
 		private string _observedDirectory;
 		private bool _synchronizationIsChecked;
 		private int _fpsValuesRoundingDigits;
+		private string _recordDataGridIgnoreList;
 
 		public bool SingleRecordIsChecked
 		{
@@ -130,11 +131,18 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-		public ICommand SelectObeservedFolderCommand { get; }
-
-		public IList<int> WindowSizes { get; }
-
-		public IList<int> RoundingDigits { get; }
+		public string RecordDataGridIgnoreList
+		{
+			get { return _recordDataGridIgnoreList; }
+			set
+			{
+				_recordDataGridIgnoreList = value;
+				_appConfiguration.RecordDataGridIgnoreList = value;
+				_updateObservedFolder.Publish(
+					new AppMessages.UpdateObservedDirectory(_appConfiguration.ObservedDirectory));
+				RaisePropertyChanged();
+			}
+		}
 
 		public string ObservedDirectory
 		{
@@ -145,6 +153,12 @@ namespace CapFrameX.ViewModel
 				RaisePropertyChanged();
 			}
 		}
+
+		public ICommand SelectObeservedFolderCommand { get; }
+
+		public IList<int> WindowSizes { get; }
+
+		public IList<int> RoundingDigits { get; }		
 
 		public Array ChartQualityLevels => Enum.GetValues(typeof(Quality));
 
@@ -162,12 +176,13 @@ namespace CapFrameX.ViewModel
 			SelectWindowSize = _appConfiguration.MovingAverageWindowSize;
 			SelectedChartQualityLevel = _appConfiguration.ChartQualityLevel.ConverToEnum<Quality>();
 			FpsValuesRoundingDigits = _appConfiguration.FpsValuesRoundingDigits;
-			ObservedDirectory = _appConfiguration.ObservedDirectory;
+			ObservedDirectory = _appConfiguration.ObservedDirectory;			
 			WindowSizes = new List<int>(Enumerable.Range(4, 100 - 4));
 			RoundingDigits = new List<int>(Enumerable.Range(0, 8));
 			SelectObeservedFolderCommand = new DelegateCommand(OnSelectObeservedFolder);
 
 			SetAggregatorEvents();
+			RecordDataGridIgnoreList = _appConfiguration.RecordDataGridIgnoreList;
 
 			SubscribeToOverlayActivate();
 			SubscribeToOverlayDeactivate();
@@ -274,6 +289,11 @@ namespace CapFrameX.ViewModel
 									_regionManager.RequestNavigate("DataRegion", "SynchronizationView");
 								}
 							});
+		}
+
+		public void UpdateSettingsParameter()
+		{
+			RecordDataGridIgnoreList = _appConfiguration.RecordDataGridIgnoreList;
 		}
 	}
 }
