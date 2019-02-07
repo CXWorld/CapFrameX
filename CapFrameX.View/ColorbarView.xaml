@@ -116,7 +116,10 @@
 							</ComboBox.Text>
 						</ComboBox>
 						<TextBox Grid.Row="6" materialDesign:HintAssist.Hint="Application ignore list" 
+								 TextAlignment="Left" 
+								 HorizontalAlignment="Left"
 								 TextWrapping="Wrap"
+								 MaxWidth="450"
 								 VerticalAlignment="Stretch"
 								 AcceptsReturn="True"
 								 VerticalScrollBarVisibility="Auto"

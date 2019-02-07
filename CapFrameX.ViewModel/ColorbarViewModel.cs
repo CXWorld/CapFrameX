@@ -293,7 +293,8 @@ namespace CapFrameX.ViewModel
 
 		public void UpdateSettingsParameter()
 		{
-			RecordDataGridIgnoreList = _appConfiguration.RecordDataGridIgnoreList;
+			if(RecordDataGridIgnoreList != _appConfiguration.RecordDataGridIgnoreList)
+				RecordDataGridIgnoreList = _appConfiguration.RecordDataGridIgnoreList;
 		}
 	}
 }

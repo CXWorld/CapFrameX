@@ -80,7 +80,7 @@
                                                  VerticalAlignment="Center"												 
                                                  Width="30" Height="30"
                                                  ToggleContent="{materialDesign:PackIcon Compare, Size=24}"
-                                                 Margin="10 0 0 0"
+                                                 Margin="20 0 0 0"
                                                  PlacementMode="BottomAndAlignCentres"
                                                  ToolTip="Set absolut/relative mode">
 								<materialDesign:PopupBox.ToggleCheckedContent>
