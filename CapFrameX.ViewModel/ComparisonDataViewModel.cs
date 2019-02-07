@@ -156,7 +156,7 @@ namespace CapFrameX.ViewModel
 		{
 			get { return _cutRightSliderMaximum; }
 			set { _cutRightSliderMaximum = value; RaisePropertyChanged(); }
-		}		
+		}
 
 		public string ColumnChartYAxisTitle
 		{
@@ -630,21 +630,24 @@ namespace CapFrameX.ViewModel
 				// 0.1% quantile
 				var p0dot1_quantiles = new List<double>(ComparisonColumnChartSeriesCollection[2].Values as IList<double>);
 
-				ComparisonColumnChartSeriesCollection[0].Values.Clear();
-				ComparisonColumnChartSeriesCollection[1].Values.Clear();
-				ComparisonColumnChartSeriesCollection[2].Values.Clear();
+				if (averages.Any() && p1_quantiles.Any() && p0dot1_quantiles.Any())
+				{
+					ComparisonColumnChartSeriesCollection[0].Values.Clear();
+					ComparisonColumnChartSeriesCollection[1].Values.Clear();
+					ComparisonColumnChartSeriesCollection[2].Values.Clear();
 
-				var maxAverage = averages.Max();
-				var maxP1_quantile = p1_quantiles.Max();
-				var maxP0dot1_quantiles = p0dot1_quantiles.Max();
+					var maxAverage = averages.Max();
+					var maxP1_quantile = p1_quantiles.Max();
+					var maxP0dot1_quantiles = p0dot1_quantiles.Max();
 
-				var averagesPercent = averages.Select(x => 100d * x / maxAverage).ToList();
-				var p1_quantilesPercent = p1_quantiles.Select(x => 100d * x / maxP1_quantile).ToList();
-				var p0dot1_quantilesPercent = p0dot1_quantiles.Select(x => 100d * x / maxP0dot1_quantiles).ToList();
+					var averagesPercent = averages.Select(x => 100d * x / maxAverage).ToList();
+					var p1_quantilesPercent = p1_quantiles.Select(x => 100d * x / maxP1_quantile).ToList();
+					var p0dot1_quantilesPercent = p0dot1_quantiles.Select(x => 100d * x / maxP0dot1_quantiles).ToList();
 
-				averagesPercent.ForEach(x => ComparisonColumnChartSeriesCollection[0].Values.Add(x));
-				p1_quantilesPercent.ForEach(x => ComparisonColumnChartSeriesCollection[1].Values.Add(x));
-				p0dot1_quantilesPercent.ForEach(x => ComparisonColumnChartSeriesCollection[2].Values.Add(x));
+					averagesPercent.ForEach(x => ComparisonColumnChartSeriesCollection[0].Values.Add(x));
+					p1_quantilesPercent.ForEach(x => ComparisonColumnChartSeriesCollection[1].Values.Add(x));
+					p0dot1_quantilesPercent.ForEach(x => ComparisonColumnChartSeriesCollection[2].Values.Add(x));
+				}
 			}
 		}
 

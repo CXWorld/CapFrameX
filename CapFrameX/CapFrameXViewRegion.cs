@@ -13,6 +13,7 @@ namespace CapFrameX
 			RegionManagerWrapper.Singleton.RegisterViewWithRegion("DataRegion", typeof(ComparisonDataView));
 			RegionManagerWrapper.Singleton.RegisterViewWithRegion("DataRegion", typeof(ReportView));
 			RegionManagerWrapper.Singleton.RegisterViewWithRegion("DataRegion", typeof(SynchronizationView));
+			RegionManagerWrapper.Singleton.RegisterViewWithRegion("DataRegion", typeof(AggregationView));
 			RegionManagerWrapper.Singleton.RegisterViewWithRegion("StateRegion", typeof(StateView));
 			RegionManagerWrapper.Singleton.RegisterViewWithRegion("OverlayRegion", typeof(OverlayView));			
 		}

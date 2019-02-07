@@ -34,6 +34,7 @@ namespace CapFrameX.ViewModel
 		private bool _synchronizationIsChecked;
 		private int _fpsValuesRoundingDigits;
 		private string _recordDataGridIgnoreList;
+		private bool _aggregatioIsChecked;
 
 		public bool SingleRecordIsChecked
 		{
@@ -84,6 +85,19 @@ namespace CapFrameX.ViewModel
 
 				if (value)
 					OnSynchronizationIsCheckedChanged();
+			}
+		}
+
+		public bool AggregationIsChecked
+		{
+			get { return _aggregatioIsChecked; }
+			set
+			{
+				_aggregatioIsChecked = value;
+				RaisePropertyChanged();
+
+				if (value)
+					OnAggregationIsCheckedChanged();
 			}
 		}
 
@@ -230,6 +244,12 @@ namespace CapFrameX.ViewModel
 			_resetRecordEvent.Publish(new ViewMessages.ResetRecord());
 		}
 
+		private void OnAggregationIsCheckedChanged()
+		{
+			_regionManager.RequestNavigate("DataRegion", "AggregationView");
+			_resetRecordEvent.Publish(new ViewMessages.ResetRecord());
+		}
+
 		private void SetAggregatorEvents()
 		{
 			_resetRecordEvent = _eventAggregator.GetEvent<PubSubEvent<ViewMessages.ResetRecord>>();
@@ -287,6 +307,11 @@ namespace CapFrameX.ViewModel
 								if (SynchronizationIsChecked)
 								{
 									_regionManager.RequestNavigate("DataRegion", "SynchronizationView");
+								}
+
+								if (AggregationIsChecked)
+								{
+									_regionManager.RequestNavigate("DataRegion", "AggregationView");
 								}
 							});
 		}

@@ -149,6 +149,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AggregationViewModel.cs" />
     <Compile Include="ComparisonDataViewModel.cs" />
     <Compile Include="ComparisonRecordInfoWrapper.cs" />
     <Compile Include="EComparisonContext.cs" />

@@ -170,6 +170,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AggregationView.xaml.cs">
+      <DependentUpon>AggregationView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ComparisonDataView.xaml.cs">
       <DependentUpon>ComparisonDataView.xaml</DependentUpon>
     </Compile>
@@ -207,6 +210,10 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <Page Include="AggregationView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="ComparisonDataView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

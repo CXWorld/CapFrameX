@@ -24,7 +24,7 @@
 		<materialDesign:ColorZone Mode="PrimaryMid">
 			<Grid>
 				<Grid.ColumnDefinitions>
-					<ColumnDefinition Width="1*"/>
+					<ColumnDefinition Width="2*"/>
 					<ColumnDefinition Width="1*"/>
 				</Grid.ColumnDefinitions>
 				<StackPanel Grid.Column="0" Orientation="Horizontal" Margin="2">
@@ -44,6 +44,10 @@
 							 Margin="5"
 							 IsChecked="{Binding SynchronizationIsChecked}"
 							 Content="SYNCHRONISATION" />
+					<RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
+							 Margin="5"
+							 IsChecked="{Binding AggregationIsChecked}"
+							 Content="AGGREGATION" />
 				</StackPanel>
 				<materialDesign:PopupBox Grid.Column="1" RequestBringIntoView="PopupBox_RequestBringIntoView" Margin="16,0,16,0" StaysOpen="True" PlacementMode="BottomAndAlignRightEdges"  HorizontalAlignment="Right">
 					<Grid Margin="8,8,8,8">
