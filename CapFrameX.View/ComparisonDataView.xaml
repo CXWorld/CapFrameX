@@ -54,28 +54,46 @@
 						<RowDefinition Height="Auto"></RowDefinition>
 					</Grid.RowDefinitions>
 					<Grid Grid.Row="0">
-						<materialDesign:PopupBox Style="{StaticResource MaterialDesignMultiFloatingActionAccentPopupBox}"
-                                                 VerticalAlignment="Center"
-												 HorizontalAlignment="Left"
+						<StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+							<materialDesign:PopupBox Style="{StaticResource MaterialDesignMultiFloatingActionAccentPopupBox}"
+                                                 VerticalAlignment="Center"												 
                                                  Width="30" Height="30"
                                                  ToggleContent="{materialDesign:PackIcon BallotOutline, Size=24}"
                                                  Margin="10 0 0 0"
                                                  PlacementMode="BottomAndAlignCentres"
                                                  ToolTip="Set comparison context">
-							<materialDesign:PopupBox.ToggleCheckedContent>
-								<materialDesign:PackIcon Kind="Pencil" Width="24" Height="24" />
-							</materialDesign:PopupBox.ToggleCheckedContent>
-							<StackPanel>
-								<Button Command="{Binding DateTimeContextCommand}" Content="{materialDesign:PackIcon TimeTable, Size=24}" ToolTip="Date and time"/>
-								<Button Command="{Binding CpuContextCommand}" ToolTip="CPU">
-									CPU
-								</Button>
-								<Button Command="{Binding GpuContextCommand}" ToolTip="GPU">
-									GPU
-								</Button>
-								<Button Command="{Binding CustomContextCommand}" Content="{materialDesign:PackIcon CommentUser, Size=24}" ToolTip="Custom comments"/>
-							</StackPanel>
-						</materialDesign:PopupBox>
+								<materialDesign:PopupBox.ToggleCheckedContent>
+									<materialDesign:PackIcon Kind="Pencil" Width="24" Height="24" />
+								</materialDesign:PopupBox.ToggleCheckedContent>
+								<StackPanel>
+									<Button Command="{Binding DateTimeContextCommand}" Content="{materialDesign:PackIcon TimeTable, Size=24}" ToolTip="Date and time"/>
+									<Button Command="{Binding CpuContextCommand}" ToolTip="CPU">
+										CPU
+									</Button>
+									<Button Command="{Binding GpuContextCommand}" ToolTip="GPU">
+										GPU
+									</Button>
+									<Button Command="{Binding CustomContextCommand}" Content="{materialDesign:PackIcon CommentUser, Size=24}" ToolTip="Custom comments"/>
+								</StackPanel>
+							</materialDesign:PopupBox>
+							<materialDesign:PopupBox Style="{StaticResource MaterialDesignMultiFloatingActionAccentPopupBox}"
+                                                 VerticalAlignment="Center"												 
+                                                 Width="30" Height="30"
+                                                 ToggleContent="{materialDesign:PackIcon Compare, Size=24}"
+                                                 Margin="10 0 0 0"
+                                                 PlacementMode="BottomAndAlignCentres"
+                                                 ToolTip="Set absolut/relative mode">
+								<materialDesign:PopupBox.ToggleCheckedContent>
+									<materialDesign:PackIcon Kind="Pencil" Width="24" Height="24" />
+								</materialDesign:PopupBox.ToggleCheckedContent>
+								<StackPanel>
+									<Button FontSize="9" Command="{Binding AbsoluteModeCommand}" ToolTip="Absolute mode">
+										Absolute
+									</Button>
+									<Button Command="{Binding RelativeModeCommand}" Content="{materialDesign:PackIcon FilePercent, Size=24}" ToolTip="Relative mode"/>
+								</StackPanel>
+							</materialDesign:PopupBox>
+						</StackPanel>
 						<Button Style="{StaticResource MaterialDesignFloatingActionMiniButton}"
 								Margin="0 0 10 0"
 								HorizontalAlignment="Right"
@@ -266,7 +284,7 @@
 				<lvc:Axis Title="Comparisons" Labels="{Binding ComparisonColumnChartLabels}" Foreground="Black"></lvc:Axis>
 			</lvc:CartesianChart.AxisX>
 			<lvc:CartesianChart.AxisY>
-				<lvc:Axis Title="FPS" LabelFormatter="{Binding ComparisonColumnChartFormatter}" Foreground="Black"></lvc:Axis>
+				<lvc:Axis MinValue="0" Title="{Binding ColumnChartYAxisTitle}" LabelFormatter="{Binding ComparisonColumnChartFormatter}" Foreground="Black"></lvc:Axis>
 			</lvc:CartesianChart.AxisY>
 		</lvc:CartesianChart>
 	</Grid>

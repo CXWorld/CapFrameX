@@ -34,15 +34,15 @@ namespace CapFrameX.ViewModel
 				// kind of blue
 				new SolidColorBrush(Color.FromRgb(35, 50, 139)),
 				// kind of red
-				new SolidColorBrush(Color.FromRgb(139, 35, 50)),
-                // kind of dark red
-                new SolidColorBrush(Color.FromRgb(89, 22, 32)),
+				new SolidColorBrush(Color.FromRgb(139, 35, 50)),                
 				// kind of yellow
 				new SolidColorBrush(Color.FromRgb(139, 123, 35)),
 				// kind of pink
 				new SolidColorBrush(Color.FromRgb(139, 35, 102)),
 				// kind of brown
 				new SolidColorBrush(Color.FromRgb(139, 71, 35)),
+				// kind of dark red
+                new SolidColorBrush(Color.FromRgb(89, 22, 32))
 			};
 
 		private readonly IStatisticProvider _frametimeStatisticProvider;
@@ -51,12 +51,14 @@ namespace CapFrameX.ViewModel
 		private readonly IAppConfiguration _appConfiguration;
 
 		private EComparisonContext _comparisonContext = EComparisonContext.DateTime;
+		private EComparisonNumericMode _comparisonNumericMode = EComparisonNumericMode.Absolute;
 		private bool _initialIconVisibility = true;
 		private SeriesCollection _comparisonSeriesCollection;
 		private SeriesCollection _comparisonColumnChartSeriesCollection;
 		private string[] _comparisonColumnChartLabels;
 		private SeriesCollection _comparisonLShapeCollection;
 		private string _comparisonItemControlHeight = "300";
+		private string _columnChartYAxisTitle = "FPS";
 		private HashSet<SolidColorBrush> _freeColors = new HashSet<SolidColorBrush>(_comparisonBrushes);
 		private ZoomingOptions _zoomingMode;
 		private bool _useEventMessages;
@@ -154,6 +156,16 @@ namespace CapFrameX.ViewModel
 		{
 			get { return _cutRightSliderMaximum; }
 			set { _cutRightSliderMaximum = value; RaisePropertyChanged(); }
+		}		
+
+		public string ColumnChartYAxisTitle
+		{
+			get { return _columnChartYAxisTitle; }
+			set
+			{
+				_columnChartYAxisTitle = value;
+				RaisePropertyChanged();
+			}
 		}
 
 		public double FirstSeconds
@@ -205,6 +217,10 @@ namespace CapFrameX.ViewModel
 
 		public ICommand RemoveAllComparisonsCommand { get; }
 
+		public ICommand AbsoluteModeCommand { get; }
+
+		public ICommand RelativeModeCommand { get; }
+
 		public ObservableCollection<ComparisonRecordInfoWrapper> ComparisonRecords { get; }
 			= new ObservableCollection<ComparisonRecordInfoWrapper>();
 
@@ -225,6 +241,8 @@ namespace CapFrameX.ViewModel
 			GpuContextCommand = new DelegateCommand(OnGpuContex);
 			CustomContextCommand = new DelegateCommand(OnCustomContex);
 			RemoveAllComparisonsCommand = new DelegateCommand(OnRemoveAllComparisons);
+			AbsoluteModeCommand = new DelegateCommand(OnAbsoluteMode);
+			RelativeModeCommand = new DelegateCommand(OnRelativeMode);
 
 			ComparisonColumnChartFormatter = value => value.ToString(string.Format("F{0}", _appConfiguration.FpsValuesRoundingDigits));
 			ComparisonSeriesCollection = new SeriesCollection();
@@ -263,7 +281,6 @@ namespace CapFrameX.ViewModel
 					DataLabels = true
 				}
 			};
-			ComparisonLShapeCollection = new SeriesCollection();
 
 			SubscribeToSelectRecord();
 		}
@@ -366,6 +383,20 @@ namespace CapFrameX.ViewModel
 
 			InitialIconVisibility = true;
 			ComparisonItemControlHeight = "300";
+		}
+
+		private void OnAbsoluteMode()
+		{
+			_comparisonNumericMode = EComparisonNumericMode.Absolute;
+			SetColumnChart();
+			ColumnChartYAxisTitle = "FPS";
+		}
+
+		private void OnRelativeMode()
+		{
+			_comparisonNumericMode = EComparisonNumericMode.Relative;
+			SetColumnChart();
+			ColumnChartYAxisTitle = "%";
 		}
 
 		private void SetLabelDateTimeContext()
@@ -577,15 +608,43 @@ namespace CapFrameX.ViewModel
 			// Average
 			ComparisonColumnChartSeriesCollection[0].Values.Clear();
 
-			//1% quantile
+			// 1% quantile
 			ComparisonColumnChartSeriesCollection[1].Values.Clear();
 
-			//0.1% quantile
+			// 0.1% quantile
 			ComparisonColumnChartSeriesCollection[2].Values.Clear();
 
 			for (int i = 0; i < ComparisonRecords.Count; i++)
 			{
 				AddToColumnCharts(ComparisonRecords[i]);
+			}
+
+			if (_comparisonNumericMode == EComparisonNumericMode.Relative)
+			{
+				// Average
+				var averages = new List<double>(ComparisonColumnChartSeriesCollection[0].Values as IList<double>);
+
+				// 1% quantile
+				var p1_quantiles = new List<double>(ComparisonColumnChartSeriesCollection[1].Values as IList<double>);
+
+				// 0.1% quantile
+				var p0dot1_quantiles = new List<double>(ComparisonColumnChartSeriesCollection[2].Values as IList<double>);
+
+				ComparisonColumnChartSeriesCollection[0].Values.Clear();
+				ComparisonColumnChartSeriesCollection[1].Values.Clear();
+				ComparisonColumnChartSeriesCollection[2].Values.Clear();
+
+				var maxAverage = averages.Max();
+				var maxP1_quantile = p1_quantiles.Max();
+				var maxP0dot1_quantiles = p0dot1_quantiles.Max();
+
+				var averagesPercent = averages.Select(x => 100d * x / maxAverage).ToList();
+				var p1_quantilesPercent = p1_quantiles.Select(x => 100d * x / maxP1_quantile).ToList();
+				var p0dot1_quantilesPercent = p0dot1_quantiles.Select(x => 100d * x / maxP0dot1_quantiles).ToList();
+
+				averagesPercent.ForEach(x => ComparisonColumnChartSeriesCollection[0].Values.Add(x));
+				p1_quantilesPercent.ForEach(x => ComparisonColumnChartSeriesCollection[1].Values.Add(x));
+				p0dot1_quantilesPercent.ForEach(x => ComparisonColumnChartSeriesCollection[2].Values.Add(x));
 			}
 		}
 
@@ -676,7 +735,7 @@ namespace CapFrameX.ViewModel
 			if (ComparisonRecords.Count < _comparisonBrushes.Count())
 			{
 				var comparisonRecordInfo = GetComparisonRecordInfoFromOcatRecordInfo(recordInfo);
-				var wrappedComparisonRecordInfo = GetWrappedRecordInfo(comparisonRecordInfo);				
+				var wrappedComparisonRecordInfo = GetWrappedRecordInfo(comparisonRecordInfo);
 
 				//Update list and index
 				ComparisonRecords.Add(wrappedComparisonRecordInfo);
