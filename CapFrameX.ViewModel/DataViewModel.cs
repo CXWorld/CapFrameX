@@ -38,7 +38,7 @@ namespace CapFrameX.ViewModel
 		private SeriesCollection _seriesCollection;
 		private SeriesCollection _statisticCollection;
 		private SeriesCollection _lShapeCollection;
-		private SeriesCollection _advancedStatisticCollection;
+		private SeriesCollection _stutteringStatisticCollection;
 		private string[] _parameterLabels;
 		private string[] _lShapeLabels;
 		private string[] _advancedParameterLabels;
@@ -74,8 +74,8 @@ namespace CapFrameX.ViewModel
 		/// <summary>
 		/// https://docs.microsoft.com/en-us/dotnet/standard/base-types/standard-numeric-format-strings
 		/// </summary>
-		public Func<double, string> AdvancedParameterFormatter { get; } =
-			value => value.ToString("N");
+		public Func<ChartPoint, string> PieChartPointLabel { get; } =
+			chartPoint => string.Format(CultureInfo.InvariantCulture, "{0:0.##} ({1:P})", chartPoint.Y, chartPoint.Participation);
 
 		public string[] ParameterLabels
 		{
@@ -137,12 +137,12 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-		public SeriesCollection AdvancedStatisticCollection
+		public SeriesCollection StutteringStatisticCollection
 		{
-			get { return _advancedStatisticCollection; }
+			get { return _stutteringStatisticCollection; }
 			set
 			{
-				_advancedStatisticCollection = value;
+				_stutteringStatisticCollection = value;
 				RaisePropertyChanged();
 			}
 		}
@@ -318,7 +318,8 @@ namespace CapFrameX.ViewModel
 			CopyLShapeQuantilesCommand = new DelegateCommand(OnCopyQuantiles);
 			CopySystemInfoCommand = new DelegateCommand(OnCopySystemInfoCommand);
 
-			ParameterFormatter = value => value.ToString(string.Format("F{0}", _appConfiguration.FpsValuesRoundingDigits));
+			ParameterFormatter = value => value.ToString(string.Format("F{0}",
+				_appConfiguration.FpsValuesRoundingDigits), CultureInfo.InvariantCulture);
 			ZoomingMode = ZoomingOptions.Y;
 			WindowSizes = new List<int>(Enumerable.Range(4, 100 - 4));
 			SelectWindowSize = _appConfiguration.MovingAverageWindowSize;
@@ -417,22 +418,42 @@ namespace CapFrameX.ViewModel
 			var p0dot1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.001), roundingDigits);
 			var p1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.01), roundingDigits);
 			var p5_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.05), roundingDigits);
+			var p1_averageLow = Math.Round(_frametimeStatisticProvider.GetPAverageLowSequence(fps, 0.01), roundingDigits);
+			var p0dot1_averageLow = Math.Round(_frametimeStatisticProvider.GetPAverageLowSequence(fps, 0.001), roundingDigits);
 			var min = Math.Round(fps.Min(), roundingDigits);
 			var adaptiveStandardDeviation = Math.Round(_frametimeStatisticProvider.GetAdaptiveStandardDeviation(fps, SelectWindowSize), roundingDigits);
 
 			StringBuilder builder = new StringBuilder();
 
 			// Vice versa!
+			// "Adaptive STD" ,"Min","0.1% Low" ,"0.1%" ,"1% Low", "1%" ,"5%" ,"Average" ,"95%" ,"99%" ,"Max"
+			if (_appConfiguration.ShowLowParameter)
+			{
+				builder.Append("Max" + "\t" + max + Environment.NewLine);
+				builder.Append("99%" + "\t" + p99_quantile + Environment.NewLine);
+				builder.Append("95%" + "\t" + p95_quantile + Environment.NewLine);
+				builder.Append("Average" + "\t" + average + Environment.NewLine);
+				builder.Append("5%" + "\t" + p5_quantile + Environment.NewLine);
+				builder.Append("1%" + "\t" + p1_quantile + Environment.NewLine);
+				builder.Append("1% Low" + "\t" + p1_averageLow + Environment.NewLine);
+				builder.Append("0.1%" + "\t" + p0dot1_quantile + Environment.NewLine);
+				builder.Append("0.1% Low" + "\t" + p0dot1_averageLow + Environment.NewLine);
+				builder.Append("Min" + "\t" + min + Environment.NewLine);
+				builder.Append("Adaptive STD" + "\t" + adaptiveStandardDeviation + Environment.NewLine);
+			}
 			// "Adaptive STD" ,"Min" ,"0,1%" ,"1%" ,"5%" ,"Average" ,"95%" ,"99%" ,"Max"
-			builder.Append("Max" + "\t" + max + Environment.NewLine);
-			builder.Append("99%" + "\t" + p99_quantile + Environment.NewLine);
-			builder.Append("95%" + "\t" + p95_quantile + Environment.NewLine);
-			builder.Append("Average" + "\t" + average + Environment.NewLine);
-			builder.Append("5%" + "\t" + p5_quantile + Environment.NewLine);
-			builder.Append("1%" + "\t" + p1_quantile + Environment.NewLine);
-			builder.Append("0,1%" + "\t" + p0dot1_quantile + Environment.NewLine);
-			builder.Append("Min" + "\t" + min + Environment.NewLine);
-			builder.Append("Adaptive STD" + "\t" + adaptiveStandardDeviation + Environment.NewLine);
+			else
+			{
+				builder.Append("Max" + "\t" + max + Environment.NewLine);
+				builder.Append("99%" + "\t" + p99_quantile + Environment.NewLine);
+				builder.Append("95%" + "\t" + p95_quantile + Environment.NewLine);
+				builder.Append("Average" + "\t" + average + Environment.NewLine);
+				builder.Append("5%" + "\t" + p5_quantile + Environment.NewLine);
+				builder.Append("1%" + "\t" + p1_quantile + Environment.NewLine);
+				builder.Append("0.1%" + "\t" + p0dot1_quantile + Environment.NewLine);
+				builder.Append("Min" + "\t" + min + Environment.NewLine);
+				builder.Append("Adaptive STD" + "\t" + adaptiveStandardDeviation + Environment.NewLine);
+			}
 
 			Clipboard.SetDataObject(builder.ToString(), false);
 		}
@@ -503,11 +524,19 @@ namespace CapFrameX.ViewModel
 								{
 									_session = msg.OcatSession;
 									_recordInfo = msg.RecordInfo;
-									SystemInfos = RecordManager.GetSystemInfos(msg.OcatSession);
 
-									// Do update actions
-									UpdateCuttingParameter();
-									UpdateCharts();
+									if (_session != null)
+									{
+										SystemInfos = RecordManager.GetSystemInfos(_session);
+
+										// Do update actions
+										UpdateCuttingParameter();
+										UpdateCharts();
+									}
+									else
+									{
+										ResetData();
+									}
 								}
 							});
 		}
@@ -658,7 +687,7 @@ namespace CapFrameX.ViewModel
 					},
 					new GLineSeries
 					{
-						Title = string.Format("Moving average (window size = {0})", _appConfiguration.MovingAverageWindowSize),
+						Title = string.Format(CultureInfo.InvariantCulture, "Moving average (window size = {0})", _appConfiguration.MovingAverageWindowSize),
 						Values = movingAverageValues,
 						Fill = Brushes.Transparent,
 						Stroke = new SolidColorBrush(Color.FromRgb(35, 139, 123)),
@@ -684,13 +713,27 @@ namespace CapFrameX.ViewModel
 			var p0dot1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.001), roundingDigits);
 			var p1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.01), roundingDigits);
 			var p5_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.05), roundingDigits);
+			var p1_averageLow = Math.Round(_frametimeStatisticProvider.GetPAverageLowSequence(fps, 0.01), roundingDigits);
+			var p0dot1_averageLow = Math.Round(_frametimeStatisticProvider.GetPAverageLowSequence(fps, 0.001), roundingDigits);
 			var min = Math.Round(fps.Min(), roundingDigits);
 			var adaptiveStandardDeviation = Math.Round(_frametimeStatisticProvider.GetAdaptiveStandardDeviation(fps, SelectWindowSize), roundingDigits);
 
-			IChartValues values = new ChartValues<double>
+			IChartValues values = null;
+
+			if (!_appConfiguration.ShowLowParameter)
 			{
-				adaptiveStandardDeviation, min, p0dot1_quantile, p1_quantile, p5_quantile, average, p95_quantile, p99_quantile, max
-			};
+				values = new ChartValues<double>
+				{
+					adaptiveStandardDeviation, min, p0dot1_quantile, p1_quantile, p5_quantile, average, p95_quantile, p99_quantile, max
+				};
+			}
+			else
+			{
+				values = new ChartValues<double>
+				{
+					adaptiveStandardDeviation, min, p0dot1_averageLow, p0dot1_quantile, p1_averageLow, p1_quantile, p5_quantile, average, p95_quantile, p99_quantile, max
+				};
+			}
 
 			Application.Current.Dispatcher.BeginInvoke(new Action(() =>
 			{
@@ -705,7 +748,14 @@ namespace CapFrameX.ViewModel
 					}
 				};
 
-				ParameterLabels = new[] { "Adaptive STD", "Min", "0,1%", "1%", "5%", "Average", "95%", "99%", "Max" };
+				if (!_appConfiguration.ShowLowParameter)
+				{
+					ParameterLabels = new[] { "Adaptive STD", "Min", "0.1%", "1%", "5%", "Average", "95%", "99%", "Max" };
+				}
+				else
+				{
+					ParameterLabels = new[] { "Adaptive STD", "Min", "0.1% Low", "0.1%", "1% Low", "1%", "5%", "Average", "95%", "99%", "Max" };
+				}
 			}));
 		}
 
@@ -714,23 +764,31 @@ namespace CapFrameX.ViewModel
 			if (frametimes == null || !frametimes.Any())
 				return;
 
-			var stutteringPercentage = _frametimeStatisticProvider.GetStutteringPercentage(frametimes, _appConfiguration.StutteringFactor);
-			IChartValues values = new ChartValues<double> { stutteringPercentage };
+			var stutteringTimePercentage = _frametimeStatisticProvider.GetStutteringTimePercentage(frametimes, _appConfiguration.StutteringFactor);
 
 			Application.Current.Dispatcher.BeginInvoke(new Action(() =>
 			{
-				AdvancedStatisticCollection = new SeriesCollection
+				StutteringStatisticCollection = new SeriesCollection
 				{
-					new RowSeries
+					new PieSeries
 					{
-						Title = _recordInfo.GameName,
-						Fill = new SolidColorBrush(Color.FromRgb(83,104,114)),
-						Values = values,
-						DataLabels = true
+						Title = "Smooth time (s)",
+						Values = new ChartValues<double>(){ Math.Round((1 - stutteringTimePercentage / 100) * frametimes.Sum(), 0)/1000 },
+						DataLabels = true,
+						Foreground = Brushes.Black,
+						LabelPosition = PieLabelPosition.InsideSlice,
+						LabelPoint = PieChartPointLabel,
+					},
+					new PieSeries
+					{
+						Title = "Stuttering time (s)",
+						Values = new ChartValues<double>(){ Math.Round(stutteringTimePercentage / 100 * frametimes.Sum()) / 1000 },
+						DataLabels = true,
+						Foreground = Brushes.Black,
+						LabelPosition = PieLabelPosition.InsideSlice,
+						LabelPoint = PieChartPointLabel,
 					}
 				};
-
-				AdvancedParameterLabels = new[] { "Stuttering %" };
 			}));
 		}
 
@@ -767,6 +825,15 @@ namespace CapFrameX.ViewModel
 			}));
 		}
 
+		private void ResetData()
+		{
+			SeriesCollection?.Clear();
+			LShapeCollection?.Clear();
+			StatisticCollection?.Clear();
+			StutteringStatisticCollection?.Clear();
+			SystemInfos?.Clear();
+		}
+
 		public void OnNavigatedTo(NavigationContext navigationContext)
 		{
 			_useUpdateSession = true;
@@ -782,11 +849,7 @@ namespace CapFrameX.ViewModel
 			_useUpdateSession = false;
 
 			//Reset data
-			SeriesCollection?.Clear();
-			LShapeCollection?.Clear();
-			StatisticCollection?.Clear();
-			AdvancedStatisticCollection?.Clear();
-			SystemInfos?.Clear();
+			ResetData();
 
 			// Reset Slider
 			_doUpdateCharts = false;

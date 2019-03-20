@@ -29,6 +29,8 @@ Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "CapFrameXInstaller", "CapFr
 EndProject
 Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "CapFrameXBootstrapper", "CapFrameXBootstrapper\CapFrameXBootstrapper.wixproj", "{9E2FAB6F-117C-495A-A47B-52A15B9E9806}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.Chart", "CapFrameX.Chart\CapFrameX.Chart.csproj", "{16F0B69C-032D-4574-BAD9-3016871C34E9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -187,6 +189,18 @@ Global
 		{9E2FAB6F-117C-495A-A47B-52A15B9E9806}.Release|x64.ActiveCfg = Release|x86
 		{9E2FAB6F-117C-495A-A47B-52A15B9E9806}.Release|x86.ActiveCfg = Release|x86
 		{9E2FAB6F-117C-495A-A47B-52A15B9E9806}.Release|x86.Build.0 = Release|x86
+		{16F0B69C-032D-4574-BAD9-3016871C34E9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{16F0B69C-032D-4574-BAD9-3016871C34E9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{16F0B69C-032D-4574-BAD9-3016871C34E9}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{16F0B69C-032D-4574-BAD9-3016871C34E9}.Debug|x64.Build.0 = Debug|Any CPU
+		{16F0B69C-032D-4574-BAD9-3016871C34E9}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{16F0B69C-032D-4574-BAD9-3016871C34E9}.Debug|x86.Build.0 = Debug|Any CPU
+		{16F0B69C-032D-4574-BAD9-3016871C34E9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{16F0B69C-032D-4574-BAD9-3016871C34E9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{16F0B69C-032D-4574-BAD9-3016871C34E9}.Release|x64.ActiveCfg = Release|x64
+		{16F0B69C-032D-4574-BAD9-3016871C34E9}.Release|x64.Build.0 = Release|x64
+		{16F0B69C-032D-4574-BAD9-3016871C34E9}.Release|x86.ActiveCfg = Release|Any CPU
+		{16F0B69C-032D-4574-BAD9-3016871C34E9}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

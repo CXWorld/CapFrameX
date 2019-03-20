@@ -74,6 +74,7 @@ namespace CapFrameX.ViewModel
 		}
 
 		public ICommand AcceptEditingDialogCommand { get; }
+
 		public ICommand CancelEditingDialogCommand { get; }
 
 		public OverlayViewModel(IEventAggregator eventAggregator)

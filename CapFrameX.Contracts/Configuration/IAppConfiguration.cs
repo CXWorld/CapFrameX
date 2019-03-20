@@ -14,6 +14,8 @@
 
 		string RecordDataGridIgnoreList { get; set; }
 
+		bool ShowLowParameter { get; set; }
+
 		void AddAppNameToIgnoreList(string nameToBeIgnored);
 	}
 }

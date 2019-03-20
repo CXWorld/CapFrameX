@@ -44,10 +44,10 @@
 							 Margin="5"
 							 IsChecked="{Binding SynchronizationIsChecked}"
 							 Content="SYNCHRONISATION" />
-					<RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
+					<!--<RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
 							 Margin="5"
 							 IsChecked="{Binding AggregationIsChecked}"
-							 Content="AGGREGATION" />
+							 Content="AGGREGATION" />-->
 				</StackPanel>
 				<materialDesign:PopupBox Grid.Column="1" RequestBringIntoView="PopupBox_RequestBringIntoView" Margin="16,0,16,0" StaysOpen="True" PlacementMode="BottomAndAlignRightEdges"  HorizontalAlignment="Right">
 					<Grid Margin="8,8,8,8">
@@ -62,6 +62,7 @@
 							</Style>
 						</Grid.Resources>
 						<Grid.RowDefinitions>
+							<RowDefinition Height="*" />
 							<RowDefinition Height="*" />
 							<RowDefinition Height="*" />
 							<RowDefinition Height="*" />
@@ -135,6 +136,11 @@
 								</Binding>
 							</TextBox.Text>
 						</TextBox>
+						<StackPanel Grid.Row="7" Orientation="Horizontal" Margin="8 8 8 8">
+							<TextBlock Text="Show average low 0.1% and average low 1%" VerticalAlignment="Center"/>
+							<ToggleButton IsChecked="{Binding ShowLowParameter}" Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
+									      ToolTip="Show low parameter" />
+						</StackPanel>
 					</Grid>
 				</materialDesign:PopupBox>
 			</Grid>

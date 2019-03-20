@@ -23,12 +23,20 @@ namespace CapFrameX.Statistics
 			return Math.Sqrt(sumResidualSquares / (sequence.Count - 1));
 		}
 
-		public double GetStutteringPercentage(IList<double> sequence, double stutteringFactor)
+		public double GetStutteringCountPercentage(IList<double> sequence, double stutteringFactor)
 		{
 			var average = sequence.Average();
 			var stutteringCount = sequence.Count(element => element > stutteringFactor * average);
 
-			return Math.Round(100 * (double)stutteringCount / sequence.Count, 3);
+			return 100 * (double)stutteringCount / sequence.Count;
+		}
+
+		public double GetStutteringTimePercentage(IList<double> sequence, double stutteringFactor)
+		{
+			var average = sequence.Average();
+			var stutteringTime = sequence.Where(element => element > stutteringFactor * average).Sum();
+
+			return 100 * stutteringTime / sequence.Sum();
 		}
 
 		public IList<double> GetMovingAverage(IList<double> sequence, int windowSize)
@@ -71,6 +79,12 @@ namespace CapFrameX.Statistics
 		public double GetPQuantileSequence(IList<double> sequence, double pQuantile)
 		{
 			return sequence.Quantile(pQuantile);
+		}
+
+		public double GetPAverageLowSequence(IList<double> sequence, double pQuantile)
+		{
+			var pQuantileValue = sequence.Quantile(pQuantile);
+			return sequence.Where(element => element <= pQuantileValue).Average();
 		}
 
 		public List<double>[] GetDiscreteDistribution(IList<double> sequence)

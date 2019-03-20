@@ -52,6 +52,46 @@ namespace CapFrameX.OcatInterface
 			File.WriteAllLines(recordInfo.FullPath, lines);
 		}
 
+		internal static string GetCommentFromRecordFile(string csvFile)
+		{
+			if (string.IsNullOrWhiteSpace(csvFile))
+			{
+				return null;
+			}
+
+			string comment = string.Empty;
+
+			try
+			{
+				using (var reader = new StreamReader(csvFile))
+				{
+					var line = reader.ReadLine();
+					int indexComment = -1;
+
+					var metrics = line.Split(',');
+					for (int i = 0; i < metrics.Count(); i++)
+					{
+						if (string.Compare(metrics[i], "Comment") == 0)
+						{
+							indexComment = i;
+						}
+					}
+
+					var firstDataLineWithComment = reader.ReadLine();
+					var values = firstDataLineWithComment.Split(',');
+
+					if (indexComment > 0)
+						comment = values[indexComment].Trim(new char[] { ' ', '"' });
+
+					return comment;
+				}
+			}
+			catch (IOException)
+			{
+				return null;
+			}
+		}
+
 		public static List<SystemInfo> GetSystemInfos(Session session)
 		{
 			var systemInfos = new List<SystemInfo>();
@@ -86,7 +126,7 @@ namespace CapFrameX.OcatInterface
 
 		public static Session LoadData(string csvFile)
 		{
-			if (csvFile == null || csvFile == "")
+			if (string.IsNullOrWhiteSpace(csvFile))
 			{
 				return null;
 			}
@@ -152,96 +192,96 @@ namespace CapFrameX.OcatInterface
 					var metrics = line.Split(',');
 					for (int i = 0; i < metrics.Count(); i++)
 					{
-						if (String.Compare(metrics[i], "AppRenderStart") == 0 || String.Compare(metrics[i], "TimeInSeconds") == 0)
+						if (string.Compare(metrics[i], "AppRenderStart") == 0 || string.Compare(metrics[i], "TimeInSeconds") == 0)
 						{
 							indexFrameStart = i;
 						}
 						// MsUntilRenderComplete needs to be added to AppRenderStart to get the timestamp
-						if (String.Compare(metrics[i], "AppRenderEnd") == 0 || String.Compare(metrics[i], "MsUntilRenderComplete") == 0)
+						if (string.Compare(metrics[i], "AppRenderEnd") == 0 || string.Compare(metrics[i], "MsUntilRenderComplete") == 0)
 						{
 							indexFrameEnd = i;
 						}
-						if (String.Compare(metrics[i], "MsBetweenAppPresents") == 0 || String.Compare(metrics[i], "MsBetweenPresents") == 0)
+						if (string.Compare(metrics[i], "MsBetweenAppPresents") == 0 || string.Compare(metrics[i], "MsBetweenPresents") == 0)
 						{
 							indexFrameTimes = i;
 						}
-						if (String.Compare(metrics[i], "ReprojectionStart") == 0)
+						if (string.Compare(metrics[i], "ReprojectionStart") == 0)
 						{
 							indexReprojectionStart = i;
 						}
 						//MsUntilDisplayed needs to be added to AppRenderStart, we don't have a reprojection start timestamp in this case
-						if (String.Compare(metrics[i], "ReprojectionEnd") == 0 || String.Compare(metrics[i], "MsUntilDisplayed") == 0)
+						if (string.Compare(metrics[i], "ReprojectionEnd") == 0 || string.Compare(metrics[i], "MsUntilDisplayed") == 0)
 						{
 							indexReprojectionEnd = i;
 						}
-						if (String.Compare(metrics[i], "MsBetweenReprojections") == 0 || String.Compare(metrics[i], "MsBetweenLsrs") == 0)
+						if (string.Compare(metrics[i], "MsBetweenReprojections") == 0 || string.Compare(metrics[i], "MsBetweenLsrs") == 0)
 						{
 							indexReprojectionTimes = i;
 						}
-						if (String.Compare(metrics[i], "VSync") == 0)
+						if (string.Compare(metrics[i], "VSync") == 0)
 						{
 							indexVSync = i;
 							session.IsVR = true;
 						}
-						if (String.Compare(metrics[i], "AppMissed") == 0 || String.Compare(metrics[i], "Dropped") == 0)
+						if (string.Compare(metrics[i], "AppMissed") == 0 || string.Compare(metrics[i], "Dropped") == 0)
 						{
 							indexAppMissed = i;
 						}
-						if (String.Compare(metrics[i], "WarpMissed") == 0 || String.Compare(metrics[i], "LsrMissed") == 0)
+						if (string.Compare(metrics[i], "WarpMissed") == 0 || string.Compare(metrics[i], "LsrMissed") == 0)
 						{
 							indexWarpMissed = i;
 						}
-						if (String.Compare(metrics[i], "MsBetweenDisplayChange") == 0)
+						if (string.Compare(metrics[i], "MsBetweenDisplayChange") == 0)
 						{
 							indexDisplayTimes = i;
 						}
 
 						// System info
-						if (String.Compare(metrics[i], "Motherboard") == 0)
+						if (string.Compare(metrics[i], "Motherboard") == 0)
 						{
 							indexMotherboardName = i;
 						}
-						if (String.Compare(metrics[i], "OS") == 0)
+						if (string.Compare(metrics[i], "OS") == 0)
 						{
 							indexOsVersion = i;
 						}
-						if (String.Compare(metrics[i], "Processor") == 0)
+						if (string.Compare(metrics[i], "Processor") == 0)
 						{
 							indexProcessorName = i;
 						}
-						if (String.Compare(metrics[i], "System RAM") == 0)
+						if (string.Compare(metrics[i], "System RAM") == 0)
 						{
 							indexSystemRamInfo = i;
 						}
-						if (String.Compare(metrics[i], "Base Driver Version") == 0)
+						if (string.Compare(metrics[i], "Base Driver Version") == 0)
 						{
 							indexBaseDriverVersion = i;
 						}
-						if (String.Compare(metrics[i], "Driver Package") == 0)
+						if (string.Compare(metrics[i], "Driver Package") == 0)
 						{
 							indexDriverPackage = i;
 						}
-						if (String.Compare(metrics[i], "GPU #") == 0)
+						if (string.Compare(metrics[i], "GPU #") == 0)
 						{
 							indexNumberGPUs = i;
 						}
-						if (String.Compare(metrics[i], "GPU") == 0)
+						if (string.Compare(metrics[i], "GPU") == 0)
 						{
 							indexGraphicCardName = i;
 						}
-						if (String.Compare(metrics[i], "GPU Core Clock (MHz)") == 0)
+						if (string.Compare(metrics[i], "GPU Core Clock (MHz)") == 0)
 						{
 							indexGPUCoreClock = i;
 						}
-						if (String.Compare(metrics[i], "GPU Memory Clock (MHz)") == 0)
+						if (string.Compare(metrics[i], "GPU Memory Clock (MHz)") == 0)
 						{
 							indexGPUMemoryClock = i;
 						}
-						if (String.Compare(metrics[i], "GPU Memory (MB)") == 0)
+						if (string.Compare(metrics[i], "GPU Memory (MB)") == 0)
 						{
 							indexGPUMemory = i;
 						}
-						if (String.Compare(metrics[i], "Comment") == 0)
+						if (string.Compare(metrics[i], "Comment") == 0)
 						{
 							indexComment = i;
 						}
@@ -251,8 +291,26 @@ namespace CapFrameX.OcatInterface
 					while (!reader.EndOfStream)
 					{
 						line = reader.ReadLine();
+						var lineCharList = new List<char>();
 						lineCount++;
-						var values = line.Split(',');
+						string[] values = new string[0];
+
+						if (lineCount < 2)
+						{
+							int isInner = -1;
+							for (int i = 0; i < line.Length; i++)
+							{
+								if (line[i] == '"')
+									isInner *= -1;
+
+								if (!(line[i] == ',' && isInner == 1))
+									lineCharList.Add(line[i]);
+
+							}
+							line = new string(lineCharList.ToArray());
+						}
+
+						values = line.Split(',');
 						double frameStart = 0;
 
 						if (indexFrameStart > 0 && indexFrameTimes > 0 && indexAppMissed > 0)

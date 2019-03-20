@@ -12,6 +12,8 @@ using System.Collections.ObjectModel;
 using System.Windows.Input;
 using Prism.Commands;
 using CapFrameX.Contracts.Configuration;
+using System.Threading.Tasks;
+using System.Windows;
 
 namespace CapFrameX.ViewModel
 {
@@ -26,6 +28,9 @@ namespace CapFrameX.ViewModel
 		private PubSubEvent<ViewMessages.ShowOverlay> _showOverlayEvent;
 		private OcatRecordInfo _selectedRecordInfo;
 		private bool _hasValidSource;
+		private string _customCpuDescription;
+		private string _customGpuDescription;
+		private string _customComment;
 
 		public OcatRecordInfo SelectedRecordInfo
 		{
@@ -44,12 +49,49 @@ namespace CapFrameX.ViewModel
 			set { _hasValidSource = value; RaisePropertyChanged(); }
 		}
 
+		public string CustomCpuDescription
+		{
+			get { return _customCpuDescription; }
+			set
+			{
+				_customCpuDescription = value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public string CustomGpuDescription
+		{
+			get { return _customGpuDescription; }
+			set
+			{
+				_customGpuDescription = value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public string CustomComment
+		{
+			get { return _customComment; }
+			set
+			{
+				_customComment = value;
+				RaisePropertyChanged();
+			}
+		}
+
+
 		public ObservableCollection<OcatRecordInfo> RecordInfoList { get; }
 			= new ObservableCollection<OcatRecordInfo>();
 
 		public ICommand OpenEditingDialogCommand { get; }
 
 		public ICommand AddToIgnoreListCommand { get; }
+
+		public ICommand DeleteRecordFileCommand { get; }
+
+		public ICommand AcceptEditingDialogCommand { get; }
+
+		public ICommand CancelEditingDialogCommand { get; }
 
 		public ControlViewModel(IRecordDirectoryObserver recordObserver, 
 								IEventAggregator eventAggregator, 
@@ -62,18 +104,24 @@ namespace CapFrameX.ViewModel
 			//Commands
 			OpenEditingDialogCommand = new DelegateCommand(OnOpenEditingDialog);
 			AddToIgnoreListCommand = new DelegateCommand(OnAddToIgnoreList);
+			DeleteRecordFileCommand = new DelegateCommand(OnDeleteRecordFile);
+			AcceptEditingDialogCommand = new DelegateCommand(OnAcceptEditingDialog);
+			CancelEditingDialogCommand = new DelegateCommand(OnCancelEditingDialog);
 
 			HasValidSource = recordObserver.HasValidSource;
 
-			if (recordObserver.HasValidSource)
+			Task.Factory.StartNew(() =>
 			{
-				var initialRecordList = _recordObserver.GetAllRecordFileInfo();
-
-				foreach (var fileInfo in initialRecordList)
+				if (recordObserver.HasValidSource)
 				{
-					AddToRecordInfoList(fileInfo);
+					var initialRecordList = _recordObserver.GetAllRecordFileInfo();
+
+					foreach (var fileInfo in initialRecordList)
+					{
+						AddToRecordInfoList(fileInfo);
+					}
 				}
-			}
+			});
 
 			var context = SynchronizationContext.Current;
 			_recordObserver.RecordCreatedStream.ObserveOn(context).SubscribeOn(context)
@@ -90,19 +138,65 @@ namespace CapFrameX.ViewModel
 			SubscribeToObservedDiretoryUpdated();
 		}
 
+		private void OnDeleteRecordFile()
+		{
+			if (!RecordInfoList.Any())
+				return;
+
+			File.Delete(SelectedRecordInfo.FullPath);
+			SelectedRecordInfo = null;
+			_updateSessionEvent.Publish(new ViewMessages.UpdateSession(null, null));
+		}
 
 		private void OnOpenEditingDialog()
 		{
+			if (!RecordInfoList.Any())
+				return;
+
 			_showOverlayEvent.Publish(new ViewMessages.ShowOverlay());
 		}
 
 		private void OnAddToIgnoreList()
 		{
+			if (!RecordInfoList.Any())
+				return;
+
 			_appConfiguration.AddAppNameToIgnoreList(SelectedRecordInfo.GameName);
 
 			SelectedRecordInfo = null;
 			RecordInfoList.Clear();
 			LoadRecordList();
+		}
+
+		private void OnCancelEditingDialog()
+		{
+			// Undo
+			var session = RecordManager.LoadData(SelectedRecordInfo.FullPath);
+
+			if (session != null)
+			{
+				CustomCpuDescription = string.Copy(session.ProcessorName ?? "-");
+				CustomGpuDescription = string.Copy(session.GraphicCardName ?? "-");
+				CustomComment = string.Copy(session.Comment ?? "-");
+			}
+			else
+			{
+				CustomCpuDescription = "-";
+				CustomGpuDescription = "-";
+				CustomComment = "-";
+			}
+		}
+
+		private void OnAcceptEditingDialog()
+		{
+			if (CustomCpuDescription == null || CustomGpuDescription == null || CustomComment == null)
+				return;
+
+			var adjustedCustomCpuDescription = CustomCpuDescription.Replace(",", "").Replace(";", "");
+			var adjustedCustomGpuDescription = CustomGpuDescription.Replace(",", "").Replace(";", "");
+			var adjustedCustomComment = CustomComment.Replace(",", "").Replace(";", "");
+			RecordManager.UpdateCustomData(_selectedRecordInfo,
+				adjustedCustomCpuDescription, adjustedCustomGpuDescription, adjustedCustomComment);
 		}
 
 		public void OnRecordSelectByDoubleClick()
@@ -119,6 +213,20 @@ namespace CapFrameX.ViewModel
 			if (SelectedRecordInfo != null && _updateSessionEvent != null)
 			{
 				var session = RecordManager.LoadData(SelectedRecordInfo.FullPath);
+
+				if (session != null)
+				{
+					CustomCpuDescription = string.Copy(session.ProcessorName ?? "-");
+					CustomGpuDescription = string.Copy(session.GraphicCardName ?? "-");
+					CustomComment = string.Copy(session.Comment ?? "-");
+				}
+				else
+				{
+					CustomCpuDescription = "-";
+					CustomGpuDescription = "-";
+					CustomComment = "-";
+				}
+
 				_updateSessionEvent.Publish(new ViewMessages.UpdateSession(session, SelectedRecordInfo));
 			}
 		}
@@ -128,7 +236,10 @@ namespace CapFrameX.ViewModel
 			var recordInfo = OcatRecordInfo.Create(fileInfo);
 			if (recordInfo != null)
 			{
-				RecordInfoList.Add(recordInfo);
+				Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+				{
+					RecordInfoList.Add(recordInfo);
+				}));
 			}
 		}
 

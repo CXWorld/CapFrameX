@@ -12,9 +12,11 @@ namespace CapFrameX.OcatInterface
 		public string GameName { get; private set; }
 		public string CreationDate { get; private set; }
 		public string CreationTime { get; private set; }
+		public string Comment { get; private set; } = "-";
 		public string RecordTime { get; private set; }
 		public string FullPath { get; private set; }
 		public FileInfo FileInfo { get; private set; }
+		public string CombinedInfo { get; private set; }
 
 		private OcatRecordInfo(FileInfo fileInfo)
 		{
@@ -23,8 +25,17 @@ namespace CapFrameX.OcatInterface
 			RecordTime = fileInfo.Name.Substring(CreationDate + "T", ".csv");
 			CreationTime = fileInfo.LastWriteTime.ToString("HH:mm:ss");
 
+			var commment = RecordManager.GetCommentFromRecordFile(fileInfo.FullName);
+
+			if (commment != null)
+			{
+				Comment = commment;
+			}
+
 			FileInfo = fileInfo;
 			FullPath = fileInfo.FullName;
+
+			CombinedInfo = FullPath + Comment;
 		}
 
 		public static OcatRecordInfo Create(FileInfo fileInfo)
@@ -35,7 +46,7 @@ namespace CapFrameX.OcatInterface
 			{
 				recordInfo = new OcatRecordInfo(fileInfo);
 			}
-			catch(ArgumentException ex)
+			catch (ArgumentException ex)
 			{
 				// Log
 			}

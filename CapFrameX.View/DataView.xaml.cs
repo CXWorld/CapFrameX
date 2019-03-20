@@ -1,6 +1,8 @@
 ﻿using CapFrameX.Configuration;
 using CapFrameX.Statistics;
 using CapFrameX.ViewModel;
+using LiveCharts;
+using LiveCharts.Wpf;
 using Prism.Events;
 using System.ComponentModel;
 using System.Windows.Controls;
@@ -38,6 +40,18 @@ namespace CapFrameX.View
 			LShapeX.MaxValue = double.NaN;
 			LShapeY.MinValue = double.NaN;
 			LShapeY.MaxValue = double.NaN;
+		}
+
+		private void Chart_OnDataClick(object sender, ChartPoint chartpoint)
+		{
+			var chart = (PieChart)chartpoint.ChartView;
+
+			//clear selected slice.
+			foreach (PieSeries series in chart.Series)
+				series.PushOut = 0;
+
+			var selectedSeries = (PieSeries)chartpoint.SeriesView;
+			selectedSeries.PushOut = 8;
 		}
 	}
 }

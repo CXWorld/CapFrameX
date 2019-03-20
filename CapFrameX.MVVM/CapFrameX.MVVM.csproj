@@ -9,8 +9,9 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>CapFrameX.MVVM</RootNamespace>
     <AssemblyName>CapFrameX.MVVM</AssemblyName>
-    <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -60,12 +61,6 @@
     <Reference Include="LiveCharts.Wpf, Version=0.9.7.0, Culture=neutral, PublicKeyToken=0bc1f845d1ebb8df, processorArchitecture=MSIL">
       <HintPath>..\packages\LiveCharts.Wpf.0.9.7\lib\net45\LiveCharts.Wpf.dll</HintPath>
     </Reference>
-    <Reference Include="MahApps.Metro, Version=1.6.5.1, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\MahApps.Metro.1.6.5\lib\net47\MahApps.Metro.dll</HintPath>
-    </Reference>
-    <Reference Include="MahApps.Metro.IconPacks, Version=2.3.0.4, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\MahApps.Metro.IconPacks.2.3.0\lib\net46\MahApps.Metro.IconPacks.dll</HintPath>
-    </Reference>
     <Reference Include="MaterialDesignColors, Version=1.0.0.14576, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\MaterialDesignColors.1.1.1\lib\net45\MaterialDesignColors.dll</HintPath>
     </Reference>
@@ -95,10 +90,13 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Converter\AddSubsctractConverter.cs" />
     <Compile Include="Converter\AddValueConverter.cs" />
+    <Compile Include="Converter\InequalityToValueConverter.cs" />
     <Compile Include="Converter\NegateBoolConverter.cs" />
     <Compile Include="Converter\BoolToVisibilityConverter.cs" />
-    <Compile Include="Converter\PackIconImageSourceConverter.cs" />
+    <Compile Include="Converter\PlusHalfDifferenceConverter.cs" />
+    <Compile Include="Converter\SelectedAreaWidthRatioConverter.cs" />
     <Compile Include="Converter\ZoomingModeConverter.cs" />
     <Compile Include="Dialogs\EditingDialog.xaml.cs">
       <DependentUpon>EditingDialog.xaml</DependentUpon>
@@ -111,6 +109,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\CapFrameX.Extensions\CapFrameX.Extensions.csproj">
+      <Project>{a4559b99-7fcb-40ef-bf97-d293a2b7d6d3}</Project>
+      <Name>CapFrameX.Extensions</Name>
+    </ProjectReference>
     <ProjectReference Include="..\CapFrameX.OcatInterface\CapFrameX.OcatInterface.csproj">
       <Project>{E61AD1FC-514F-43FD-BC20-31E9900CDFD7}</Project>
       <Name>CapFrameX.OcatInterface</Name>

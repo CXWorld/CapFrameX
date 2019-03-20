@@ -35,6 +35,7 @@ namespace CapFrameX.ViewModel
 		private int _fpsValuesRoundingDigits;
 		private string _recordDataGridIgnoreList;
 		private bool _aggregatioIsChecked;
+		private bool _showLowParameter;
 
 		public bool SingleRecordIsChecked
 		{
@@ -145,6 +146,17 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
+		public bool ShowLowParameter
+		{
+			get { return _showLowParameter; }
+			set
+			{
+				_showLowParameter = value;
+				_appConfiguration.ShowLowParameter = value;
+				RaisePropertyChanged();
+			}
+		}
+
 		public string RecordDataGridIgnoreList
 		{
 			get { return _recordDataGridIgnoreList; }
@@ -190,7 +202,8 @@ namespace CapFrameX.ViewModel
 			SelectWindowSize = _appConfiguration.MovingAverageWindowSize;
 			SelectedChartQualityLevel = _appConfiguration.ChartQualityLevel.ConverToEnum<Quality>();
 			FpsValuesRoundingDigits = _appConfiguration.FpsValuesRoundingDigits;
-			ObservedDirectory = _appConfiguration.ObservedDirectory;			
+			ObservedDirectory = _appConfiguration.ObservedDirectory;
+			ShowLowParameter = _appConfiguration.ShowLowParameter;
 			WindowSizes = new List<int>(Enumerable.Range(4, 100 - 4));
 			RoundingDigits = new List<int>(Enumerable.Range(0, 8));
 			SelectObeservedFolderCommand = new DelegateCommand(OnSelectObeservedFolder);

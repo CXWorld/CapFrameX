@@ -94,5 +94,17 @@ namespace CapFrameX.Configuration.Properties {
                 this["RecordDataGridIgnoreList"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool ShowLowParameter {
+            get {
+                return ((bool)(this["ShowLowParameter"]));
+            }
+            set {
+                this["ShowLowParameter"] = value;
+            }
+        }
     }
 }

@@ -20,5 +20,8 @@
     <Setting Name="RecordDataGridIgnoreList" Type="System.String" Scope="User">
       <Value Profile="(Default)">CapFrameX; SearchUI; ShellExperienceHost; steamwebhelper</Value>
     </Setting>
+    <Setting Name="ShowLowParameter" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

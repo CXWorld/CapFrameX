@@ -15,8 +15,5 @@
                                IsOpen="{Binding IsEditingDialogOpen}"
                                DialogContent="{Binding EditingDialogContent}"
                                CloseOnClickAway="True">
-		<Grid>
-			
-		</Grid>
 	</materialDesign:DialogHost>
 </UserControl>

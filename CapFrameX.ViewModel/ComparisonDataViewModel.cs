@@ -244,7 +244,8 @@ namespace CapFrameX.ViewModel
 			AbsoluteModeCommand = new DelegateCommand(OnAbsoluteMode);
 			RelativeModeCommand = new DelegateCommand(OnRelativeMode);
 
-			ComparisonColumnChartFormatter = value => value.ToString(string.Format("F{0}", _appConfiguration.FpsValuesRoundingDigits));
+			ComparisonColumnChartFormatter = value => value.ToString(string.Format("F{0}", 
+				_appConfiguration.FpsValuesRoundingDigits), CultureInfo.InvariantCulture);
 			ComparisonSeriesCollection = new SeriesCollection();
 			ComparisonLShapeCollection = new SeriesCollection();
 			ComparisonColumnChartSeriesCollection = new SeriesCollection
@@ -409,8 +410,8 @@ namespace CapFrameX.ViewModel
 				int maxAlignment = gameNameLength < dateTimeLength ? dateTimeLength : gameNameLength;
 
 				var alignmentFormat = "{0," + maxAlignment.ToString() + "}";
-				var gameName = string.Format(alignmentFormat, record.WrappedRecordInfo.Game);
-				var dateTime = string.Format(alignmentFormat, record.WrappedRecordInfo.DateTime);
+				var gameName = string.Format(CultureInfo.InvariantCulture, alignmentFormat, record.WrappedRecordInfo.Game);
+				var dateTime = string.Format(CultureInfo.InvariantCulture, alignmentFormat, record.WrappedRecordInfo.DateTime);
 				return gameName + Environment.NewLine + dateTime;
 			}).ToArray();
 		}
@@ -426,8 +427,8 @@ namespace CapFrameX.ViewModel
 
 				int maxAlignment = gameNameLength < cpuInfoLength ? cpuInfoLength : gameNameLength;
 				var alignmentFormat = "{0," + maxAlignment.ToString() + "}";
-				var gameName = string.Format(alignmentFormat, record.WrappedRecordInfo.Game);
-				var cpuInfo = string.Format(alignmentFormat, processorName);
+				var gameName = string.Format(CultureInfo.InvariantCulture, alignmentFormat, record.WrappedRecordInfo.Game);
+				var cpuInfo = string.Format(CultureInfo.InvariantCulture, alignmentFormat, processorName);
 
 				return gameName + Environment.NewLine + cpuInfo;
 			}).ToArray();
@@ -444,8 +445,8 @@ namespace CapFrameX.ViewModel
 
 				int maxAlignment = gameNameLength < gpuInfoLength ? gpuInfoLength : gameNameLength;
 				var alignmentFormat = "{0," + maxAlignment.ToString() + "}";
-				var gameName = string.Format(alignmentFormat, record.WrappedRecordInfo.Game);
-				var gpuInfo = string.Format(alignmentFormat, graphicCardName);
+				var gameName = string.Format(CultureInfo.InvariantCulture, alignmentFormat, record.WrappedRecordInfo.Game);
+				var gpuInfo = string.Format(CultureInfo.InvariantCulture, alignmentFormat, graphicCardName);
 				return gameName + Environment.NewLine + gpuInfo;
 			}).ToArray();
 		}
@@ -461,8 +462,8 @@ namespace CapFrameX.ViewModel
 
 				int maxAlignment = gameNameLength < commentLength ? commentLength : gameNameLength;
 				var alignmentFormat = "{0," + maxAlignment.ToString() + "}";
-				var gameName = string.Format(alignmentFormat, record.WrappedRecordInfo.Game);
-				var gpuInfo = string.Format(alignmentFormat, comment);
+				var gameName = string.Format(CultureInfo.InvariantCulture, alignmentFormat, record.WrappedRecordInfo.Game);
+				var gpuInfo = string.Format(CultureInfo.InvariantCulture, alignmentFormat, comment);
 				return gameName + Environment.NewLine + gpuInfo;
 			}).ToArray();
 		}

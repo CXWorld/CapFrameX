@@ -50,7 +50,8 @@
 						<RowDefinition Height="Auto"></RowDefinition>
 					</Grid.RowDefinitions>
 					<lvc:CartesianChart Grid.Column="0" Grid.Row="0" Tag="{Binding ElementName=DataViewUserControl, Path=DataContext}" LegendLocation="Top"
-                                        MouseDoubleClick="ResetChart_MouseDoubleClick" DisableAnimations="True" Series="{Binding SeriesCollection}" Zoom="{Binding ZoomingMode}">
+                                        MouseDoubleClick="ResetChart_MouseDoubleClick" DisableAnimations="True" Series="{Binding SeriesCollection}" Zoom="{Binding ZoomingMode}"
+										TooltipTimeout="0">
 						<lvc:CartesianChart.ContextMenu>
 							<ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
 								<MenuItem Header="Copy frametime values (f)" Command="{Binding CopyFrametimeValuesCommand}"/>
@@ -190,10 +191,6 @@
 		</TabControl>
 		<Expander Grid.Row="1" Name="SettingsExpander" Background="#F5F5F5" Margin="0 5 0 5" Header="Data/Chart Settings" HorizontalAlignment="Stretch">
 			<Grid>
-				<!--<Grid.RowDefinitions>
-					<RowDefinition Height="Auto"/>
-					<RowDefinition Height="Auto"/>
-				</Grid.RowDefinitions>-->
 				<Grid.ColumnDefinitions>
 					<ColumnDefinition Width="Auto" />
 					<ColumnDefinition Width="Auto" />
@@ -294,19 +291,8 @@
 					</lvc:Axis>
 				</lvc:CartesianChart.AxisY>
 			</lvc:CartesianChart>
-			<lvc:CartesianChart Grid.Column="1" Margin="10 5 0 0" Series="{Binding AdvancedStatisticCollection}" LegendLocation="Bottom">
-				<lvc:CartesianChart.AxisX>
-					<lvc:Axis Title="Values" LabelFormatter="{Binding AdvancedParameterFormatter}" Foreground="Black"></lvc:Axis>
-				</lvc:CartesianChart.AxisX>
-				<lvc:CartesianChart.AxisY>
-					<lvc:Axis Title="Statistical Parameters" Labels="{Binding AdvancedParameterLabels}" Foreground="Black">
-						<lvc:Axis.Separator>
-							<!--step 1 forces the axis to display all labels, disabling it makes it invisible-->
-							<lvc:Separator Step="1" IsEnabled="False"></lvc:Separator>
-						</lvc:Axis.Separator>
-					</lvc:Axis>
-				</lvc:CartesianChart.AxisY>
-			</lvc:CartesianChart>
+			<lvc:PieChart Grid.Column="1" Margin="10 5 0 0" Hoverable="False" Series="{Binding StutteringStatisticCollection}" 
+						  LegendLocation="Bottom" DataClick="Chart_OnDataClick"/>
 		</Grid>
 	</Grid>
 </UserControl>

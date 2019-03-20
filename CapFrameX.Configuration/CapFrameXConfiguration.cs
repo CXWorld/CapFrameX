@@ -42,6 +42,12 @@ namespace CapFrameX.Configuration
 			set { Settings.RecordDataGridIgnoreList = value; Settings.Save(); }
 		}
 
+		public bool ShowLowParameter
+		{
+			get { return Settings.ShowLowParameter; }
+			set { Settings.ShowLowParameter = value; Settings.Save(); }
+		}
+
 		public void AddAppNameToIgnoreList(string nameToBeIgnored)
 		{
 			if (!RecordDataGridIgnoreList.Contains(nameToBeIgnored))

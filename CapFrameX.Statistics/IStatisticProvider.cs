@@ -8,11 +8,15 @@ namespace CapFrameX.Statistics
 
 		double GetAdaptiveStandardDeviation(IList<double> sequence, int windowSize);
 
-		double GetStutteringPercentage(IList<double> sequence, double stutteringFactor);
+		double GetStutteringCountPercentage(IList<double> sequence, double stutteringFactor);
+
+		double GetStutteringTimePercentage(IList<double> sequence, double stutteringFactor);
 
 		IList<double> GetMovingAverage(IList<double> sequence, int windowSize);
 
 		double GetPQuantileSequence(IList<double> sequence, double pQuantile);
+
+		double GetPAverageLowSequence(IList<double> sequence, double pQuantile);		
 
 		List<double>[] GetDiscreteDistribution(IList<double> sequence);
 	}

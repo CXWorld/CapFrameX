@@ -372,7 +372,7 @@ namespace CapFrameX.ViewModel
 			else
 				ParameterLabels = new[] { "Adaptive STD", "Min", "1%", "5%", "Average" };
 
-			var stutteringPercentage = _frametimeStatisticProvider.GetStutteringPercentage(fpsSequence, 2.5);
+			var stutteringPercentage = _frametimeStatisticProvider.GetStutteringTimePercentage(fpsSequence, 2.5);
 		}
 
 		private void SetLShapeChart(IList<double> frametimes)

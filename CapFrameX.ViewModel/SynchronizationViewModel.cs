@@ -13,6 +13,7 @@ using Prism.Mvvm;
 using Prism.Regions;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -41,13 +42,13 @@ namespace CapFrameX.ViewModel
 		/// https://docs.microsoft.com/en-us/dotnet/standard/base-types/standard-numeric-format-strings
 		/// </summary>
 		public Func<double, string> HistogramFormatter { get; } =
-			value => value.ToString("N");
+			value => value.ToString("N", CultureInfo.InvariantCulture);
 
 		/// <summary>
 		/// https://docs.microsoft.com/en-us/dotnet/standard/base-types/standard-numeric-format-strings
 		/// </summary>
 		public Func<ChartPoint, string> PieChartPointLabel { get; } =
-			chartPoint => string.Format("{0} ({1:P})", chartPoint.Y, chartPoint.Participation);
+			chartPoint => string.Format(CultureInfo.InvariantCulture, "{0} ({1:P})", chartPoint.Y, chartPoint.Participation);
 
 		public SeriesCollection FrameDisplayTimesCollection
 		{
@@ -264,7 +265,8 @@ namespace CapFrameX.ViewModel
 					}
 				};
 
-				HistogramLabels = bins.Select(bin => Math.Round(bin, 2).ToString()).ToArray();
+				HistogramLabels = bins.Select(bin => Math.Round(bin, 2)
+					.ToString(CultureInfo.InvariantCulture)).ToArray();
 			}));
 		}
 
@@ -283,7 +285,7 @@ namespace CapFrameX.ViewModel
 						Values = new ChartValues<int>(){ appMissed.Count(flag => flag == false) },
 						DataLabels = true,
 						Foreground = Brushes.Black,
-						LabelPosition=PieLabelPosition.InsideSlice,
+						LabelPosition = PieLabelPosition.InsideSlice,
 						LabelPoint = PieChartPointLabel,
 					},
 					new PieSeries
@@ -292,7 +294,7 @@ namespace CapFrameX.ViewModel
 						Values = new ChartValues<int>(){ appMissed.Count(flag => flag == true) },
 						DataLabels = true,
 						Foreground = Brushes.Black,
-						LabelPosition=PieLabelPosition.InsideSlice,
+						LabelPosition = PieLabelPosition.InsideSlice,
 						LabelPoint = PieChartPointLabel,
 					}
 				};
