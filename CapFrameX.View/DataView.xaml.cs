@@ -77,6 +77,12 @@ namespace CapFrameX.View
 
 			try
 			{
+				if (path.Contains(@"MyDocuments\OCAT\Screenshots"))
+				{
+					var documentFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+					path = Path.Combine(documentFolder, @"OCAT\Screenshots");
+				}
+
 				if (!Directory.Exists(path))
 				{
 					Directory.CreateDirectory(path);
