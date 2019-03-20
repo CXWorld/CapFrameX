@@ -24,6 +24,12 @@ namespace CapFrameX.Configuration
 			set { Settings.ObservedDirectory = value; Settings.Save(); }
 		}
 
+		public string ScreenshotDirectory
+		{
+			get { return Settings.ScreenshotDirectory; }
+			set { Settings.ScreenshotDirectory = value; Settings.Save(); }
+		}
+
 		public string ChartQualityLevel
 		{
 			get { return Settings.ChartQualityLevel; }

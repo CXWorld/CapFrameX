@@ -4,8 +4,13 @@ using CapFrameX.ViewModel;
 using LiveCharts;
 using LiveCharts.Wpf;
 using Prism.Events;
+using System;
 using System.ComponentModel;
+using System.IO;
+using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
 
 namespace CapFrameX.View
 {
@@ -21,7 +26,7 @@ namespace CapFrameX.View
 			// Design time!
 			if (DesignerProperties.GetIsInDesignMode(this))
 			{
-				DataContext = new DataViewModel(new FrametimeStatisticProvider(), 
+				DataContext = new DataViewModel(new FrametimeStatisticProvider(),
 					new FrametimeAnalyzer(), new EventAggregator(), new CapFrameXConfiguration());
 			}
 		}
@@ -52,6 +57,61 @@ namespace CapFrameX.View
 
 			var selectedSeries = (PieSeries)chartpoint.SeriesView;
 			selectedSeries.PushOut = 8;
+		}
+
+		private void GitHubButton_Click(object sender, System.Windows.RoutedEventArgs e)
+		{
+			System.Diagnostics.Process.Start("https://github.com/DevTechProfile/CapFrameX");
+		}
+
+		private void TakeScreenShotButton_Click(object sender, RoutedEventArgs e)
+		{
+			DataViewModel viewModel = DataContext as DataViewModel;
+
+			if (viewModel == null)
+			{
+				return;
+			}
+
+			string path = viewModel.AppConfiguration.ScreenshotDirectory;
+
+			try
+			{
+				if (!Directory.Exists(path))
+				{
+					Directory.CreateDirectory(path);
+				}
+
+				var filename = Path.Combine(path, viewModel.RecordInfo.GameName + "_" + DateTime.Now.ToString("yyyy-dd-M_HH-mm-ss") + "_CX_Analysis.png");
+
+				VisualBrush visualBrush = new VisualBrush(ScreenshotAreaGrid);
+
+				// Gets the size of the images (I assume each image has the same size)
+				int imageWidth = (int)ScreenshotAreaGrid.ActualWidth;
+				int imageHeight = (int)ScreenshotAreaGrid.ActualHeight;
+
+				// Draws the images into a DrawingVisual component
+				DrawingVisual drawingVisual = new DrawingVisual();
+				using (DrawingContext drawingContext = drawingVisual.RenderOpen())
+				{
+					drawingContext.DrawRectangle(visualBrush, null, new Rect(new Point(0, 0), new Point(imageWidth, imageHeight)));
+				}
+
+				// Converts the Visual (DrawingVisual) into a BitmapSource
+				RenderTargetBitmap bmp = new RenderTargetBitmap(imageWidth, imageHeight, 96, 96, PixelFormats.Pbgra32);
+				bmp.Render(drawingVisual);
+
+				PngBitmapEncoder pngImage = new PngBitmapEncoder();
+				pngImage.Frames.Add(BitmapFrame.Create(bmp));
+				using (Stream fileStream = File.Create(filename))
+				{
+					pngImage.Save(fileStream);
+				}
+			}
+			catch
+			{
+				return;
+			}
 		}
 	}
 }

@@ -106,5 +106,17 @@ namespace CapFrameX.Configuration.Properties {
                 this["ShowLowParameter"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("MyDocuments\\OCAT\\Screenshots")]
+        public string ScreenshotDirectory {
+            get {
+                return ((string)(this["ScreenshotDirectory"]));
+            }
+            set {
+                this["ScreenshotDirectory"] = value;
+            }
+        }
     }
 }

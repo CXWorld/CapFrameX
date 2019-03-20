@@ -36,6 +36,7 @@ namespace CapFrameX.ViewModel
 		private string _recordDataGridIgnoreList;
 		private bool _aggregatioIsChecked;
 		private bool _showLowParameter;
+		private string _screenshotDirectory;
 
 		public bool SingleRecordIsChecked
 		{
@@ -180,7 +181,19 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-		public ICommand SelectObeservedFolderCommand { get; }
+		public string ScreenshotDirectory
+		{
+			get { return _screenshotDirectory; }
+			set
+			{
+				_screenshotDirectory = value;
+				RaisePropertyChanged();
+			}
+		}		
+
+		public ICommand SelectObservedFolderCommand { get; }
+
+		public ICommand SelectScreenshotFolderCommand { get; }
 
 		public IList<int> WindowSizes { get; }
 
@@ -203,10 +216,12 @@ namespace CapFrameX.ViewModel
 			SelectedChartQualityLevel = _appConfiguration.ChartQualityLevel.ConverToEnum<Quality>();
 			FpsValuesRoundingDigits = _appConfiguration.FpsValuesRoundingDigits;
 			ObservedDirectory = _appConfiguration.ObservedDirectory;
+			ScreenshotDirectory = _appConfiguration.ScreenshotDirectory;
 			ShowLowParameter = _appConfiguration.ShowLowParameter;
 			WindowSizes = new List<int>(Enumerable.Range(4, 100 - 4));
 			RoundingDigits = new List<int>(Enumerable.Range(0, 8));
-			SelectObeservedFolderCommand = new DelegateCommand(OnSelectObeservedFolder);
+			SelectObservedFolderCommand = new DelegateCommand(OnSelectObeservedFolder);
+			SelectScreenshotFolderCommand = new DelegateCommand(OnSelectScreenshotFolder);
 
 			SetAggregatorEvents();
 			RecordDataGridIgnoreList = _appConfiguration.RecordDataGridIgnoreList;
@@ -230,6 +245,22 @@ namespace CapFrameX.ViewModel
 				_recordDirectoryObserver.UpdateObservedDirectory(dialog.FileName);
 				ObservedDirectory = dialog.FileName;
 				_updateObservedFolder.Publish(new AppMessages.UpdateObservedDirectory(dialog.FileName));
+			}
+		}
+
+		private void OnSelectScreenshotFolder()
+		{
+			var dialog = new CommonOpenFileDialog
+			{
+				IsFolderPicker = true
+			};
+
+			CommonFileDialogResult result = dialog.ShowDialog();
+
+			if (result == CommonFileDialogResult.Ok)
+			{
+				_appConfiguration.ScreenshotDirectory = dialog.FileName;
+				ScreenshotDirectory = dialog.FileName;
 			}
 		}
 

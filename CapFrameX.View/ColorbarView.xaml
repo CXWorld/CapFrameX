@@ -70,6 +70,7 @@
 							<RowDefinition Height="*" />
 							<RowDefinition Height="*" />
 							<RowDefinition Height="*" />
+							<RowDefinition Height="*" />
 						</Grid.RowDefinitions>
 						<TextBlock Grid.Row="0"
 								   Style="{StaticResource MaterialDesignTitleTextBlock}"
@@ -95,8 +96,8 @@
 							</TextBox.Text>
 						</TextBox>
 						<StackPanel Grid.Row="3" Orientation="Horizontal">
-							<TextBox IsEnabled="False" materialDesign:HintAssist.Hint="Observed directory (OCAT V1.3)" Text="{Binding ObservedDirectory, Mode=OneWay}" />
-							<Button Margin="20 0 0 0" Command="{Binding SelectObeservedFolderCommand}" Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}" ToolTip="Select observed folder">
+							<TextBox IsEnabled="False" materialDesign:HintAssist.Hint="Observed directory (OCAT V1.3 + 1.4)" Text="{Binding ObservedDirectory, Mode=OneWay}" />
+							<Button Margin="20 0 0 0" Command="{Binding SelectObservedFolderCommand}" Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}" ToolTip="Select observed folder">
 								<materialDesign:PackIcon Kind="Folder" Height="24" Width="24" />
 							</Button>
 						</StackPanel>
@@ -136,10 +137,15 @@
 								</Binding>
 							</TextBox.Text>
 						</TextBox>
-						<StackPanel Grid.Row="7" Orientation="Horizontal" Margin="8 8 8 8">
-							<TextBlock Text="Show average low 0.1% and average low 1%" VerticalAlignment="Center"/>
-							<ToggleButton IsChecked="{Binding ShowLowParameter}" Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
-									      ToolTip="Show low parameter" />
+						<StackPanel Grid.Row="7" Orientation="Horizontal" Margin="8 0 0 0">
+							<TextBlock Text="Show 0.1% average low and 1% average low" VerticalAlignment="Center"/>
+							<ToggleButton IsChecked="{Binding ShowLowParameter}" Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show low parameter" />
+						</StackPanel>
+						<StackPanel Grid.Row="8" Orientation="Horizontal" Margin="0 0 0 30">
+							<TextBox IsEnabled="False" materialDesign:HintAssist.Hint="Screenshot directory" Text="{Binding ScreenshotDirectory, Mode=OneWay}" />
+							<Button Margin="20 0 0 0" Command="{Binding SelectScreenshotFolderCommand}" Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}" ToolTip="Select screenshot folder">
+								<materialDesign:PackIcon Kind="Folder" Height="24" Width="24" />
+							</Button>
 						</StackPanel>
 					</Grid>
 				</materialDesign:PopupBox>

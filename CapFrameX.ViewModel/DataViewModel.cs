@@ -58,6 +58,10 @@ namespace CapFrameX.ViewModel
 		private bool _doUpdateCharts = true;
 		private Func<double, string> _parameterFormatter;
 
+		public IAppConfiguration AppConfiguration => _appConfiguration;
+
+		public OcatRecordInfo RecordInfo => _recordInfo;
+
 		/// <summary>
 		/// https://docs.microsoft.com/en-us/dotnet/standard/base-types/standard-numeric-format-strings
 		/// </summary>

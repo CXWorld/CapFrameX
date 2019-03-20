@@ -22,6 +22,7 @@
 				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ToggleButton.xaml" />
 				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.DataGrid.xaml" />
 				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Slider.xaml" />
+				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.GridSplitter.xaml" />
 			</ResourceDictionary.MergedDictionaries>
 			<mvvm:ZoomingModeConverter x:Key="ZoomingModeConverter"/>
 			<mvvm:NegateBoolConverter x:Key="NegateBoolConverter"/>
@@ -34,265 +35,312 @@
 	</UserControl.Resources>
 	<Grid Margin="0 10 0 0">
 		<Grid.RowDefinitions>
-			<RowDefinition Height="5*"></RowDefinition>
-			<RowDefinition Height="Auto"></RowDefinition>
-			<RowDefinition Height="3*"></RowDefinition>
+			<RowDefinition Height="35"></RowDefinition>
+			<RowDefinition Height="1*"></RowDefinition>
 		</Grid.RowDefinitions>
-		<TabControl Grid.Row="0" Background="#F5F5F5" >
-			<TabItem Header="Frametimes">
-				<Grid>
-					<Grid.ColumnDefinitions>
-						<ColumnDefinition Width="1*"></ColumnDefinition>
-						<ColumnDefinition Width="Auto"></ColumnDefinition>
-					</Grid.ColumnDefinitions>
-					<Grid.RowDefinitions>
-						<RowDefinition Height="1*"></RowDefinition>
-						<RowDefinition Height="Auto"></RowDefinition>
-					</Grid.RowDefinitions>
-					<lvc:CartesianChart Grid.Column="0" Grid.Row="0" Tag="{Binding ElementName=DataViewUserControl, Path=DataContext}" LegendLocation="Top"
-                                        MouseDoubleClick="ResetChart_MouseDoubleClick" DisableAnimations="True" Series="{Binding SeriesCollection}" Zoom="{Binding ZoomingMode}"
-										TooltipTimeout="0">
+		<Grid Grid.Row="0">
+			<Button Margin="0 0 0 0" Style="{DynamicResource MaterialDesignFlatButton}" HorizontalAlignment="Center" VerticalAlignment="Center"
+                    x:Name="GitHubButton" Click="GitHubButton_Click">
+				<StackPanel Orientation="Horizontal">
+					<materialDesign:PackIcon Kind="GithubCircle" />
+					<TextBlock Margin="8 0 0 0" VerticalAlignment="Center">GitHub</TextBlock>
+				</StackPanel>
+			</Button>
+			<ToggleButton Style="{StaticResource MaterialDesignActionToggleButton}"
+						  ToolTip="Switch to screenshot mode"
+						  materialDesign:ShadowAssist.ShadowDepth="Depth3"
+						  VerticalAlignment="Top"
+						  HorizontalAlignment="Right"
+						  Margin="0 0 20 0"
+						  Name="ScreenshotModeToggleButton">
+				<ToggleButton.Content>
+					<materialDesign:PackIcon
+					Kind="CellphoneScreenshot" />
+				</ToggleButton.Content>
+				<materialDesign:ToggleButtonAssist.OnContent>
+					<materialDesign:PackIcon
+						Kind="GoogleAnalytics" />
+				</materialDesign:ToggleButtonAssist.OnContent >
+			</ToggleButton>
+			<Button Visibility="{Binding ElementName=ScreenshotModeToggleButton, Path=IsChecked, Converter={StaticResource FalseToCollapsedConverter}}"
+				  Style="{StaticResource MaterialDesignFloatingActionMiniButton}"
+				  VerticalAlignment="Top"
+				  HorizontalAlignment="Right"
+			      Margin="0 0 70 0"
+				  ToolTip="Make a screenshot"
+				  Width="32" Height="32" Click="TakeScreenShotButton_Click">
+				<materialDesign:PackIcon Kind="PhotoLibrary"/>
+			</Button>
+		</Grid>
+		<Grid Grid.Row="1" x:Name="ScreenshotAreaGrid">
+			<Grid.RowDefinitions>
+				<RowDefinition Height="5*"></RowDefinition>
+				<RowDefinition Height="Auto"></RowDefinition>
+				<!--<RowDefinition Height="Auto"></RowDefinition>-->
+				<RowDefinition Height="3*"></RowDefinition>
+			</Grid.RowDefinitions>
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="1*"></ColumnDefinition>
+				<ColumnDefinition Width="Auto"></ColumnDefinition>
+			</Grid.ColumnDefinitions>
+			<TabControl Grid.Row="0" Background="#F5F5F5" >
+				<TabItem Header="Frametimes">
+					<Grid>
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="1*"></ColumnDefinition>
+						</Grid.ColumnDefinitions>
+						<Grid.RowDefinitions>
+							<RowDefinition Height="1*"></RowDefinition>
+							<RowDefinition Height="Auto"></RowDefinition>
+						</Grid.RowDefinitions>
+						<lvc:CartesianChart Grid.Column="0" Grid.Row="0" Tag="{Binding ElementName=DataViewUserControl, Path=DataContext}" LegendLocation="Top"
+											MouseDoubleClick="ResetChart_MouseDoubleClick" DisableAnimations="True" Series="{Binding SeriesCollection}" Zoom="{Binding ZoomingMode}"
+											TooltipTimeout="0">
+							<lvc:CartesianChart.ContextMenu>
+								<ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
+									<MenuItem Header="Copy frametime values (f)" Command="{Binding CopyFrametimeValuesCommand}"/>
+									<MenuItem Header="Copy frametime points (t, f(t))" Command="{Binding CopyFrametimePointsCommand}"/>
+									<MenuItem Header="Copy fps values" Command="{Binding CopyFpsValuesCommand}"/>
+								</ContextMenu>
+							</lvc:CartesianChart.ContextMenu>
+							<lvc:CartesianChart.AxisX>
+								<lvc:Axis Title="Samples" Name="FrametimesX" Separator="{x:Static lvc:DefaultAxes.CleanSeparator}" Foreground="Black"/>
+							</lvc:CartesianChart.AxisX>
+							<lvc:CartesianChart.AxisY>
+								<lvc:Axis Title="Frametime (ms)" Name="FrametimesY" Foreground="Black"/>
+							</lvc:CartesianChart.AxisY>
+						</lvc:CartesianChart>
+						<Grid Grid.Row="1" Grid.Column="0"
+							  Visibility="{Binding ElementName=CuttingModeActiveToggleButton, Path=IsChecked, Converter={StaticResource FalseToCollapsedConverter}}">
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="2*" />
+								<ColumnDefinition Width="1*" />
+								<ColumnDefinition Width="2*" />
+							</Grid.ColumnDefinitions>
+							<Slider Grid.Column="0" Margin="20 0 0 10" Minimum="0"
+									Maximum="{Binding CutLeftSliderMaximum}"
+									HorizontalAlignment="Stretch"
+									VerticalAlignment="Bottom"
+									Value="{Binding FirstNFrames}"
+									Style="{StaticResource MaterialDesignDiscreteSlider}"
+									ToolTip="Cut first n frames"/>
+							<TextBox Grid.Column="1" HorizontalAlignment="Center" IsReadOnly="True" Margin="0 0 0 3"
+									 Style="{StaticResource MaterialDesignFloatingHintTextBox}" Text="{Binding CutGraphNumberSamples}">
+								<materialDesign:HintAssist.Hint>
+									<StackPanel Orientation="Horizontal" Margin="-2 0 0 0">
+										<materialDesign:PackIcon Kind="ChartLine" />
+										<TextBlock Margin="3 0 0 0">
+											# samples
+										</TextBlock>
+									</StackPanel>
+								</materialDesign:HintAssist.Hint>
+							</TextBox>
+							<Slider Grid.Column="2" Margin="0 0 10 10" Minimum="0"
+									IsDirectionReversed="True"
+									Maximum="{Binding CutRightSliderMaximum}"
+									HorizontalAlignment="Stretch"
+									VerticalAlignment="Bottom"
+									Value="{Binding LastNFrames}"
+									Style="{StaticResource MaterialDesignDiscreteSlider}"
+									ToolTip="Cut last n frames"/>
+						</Grid>
+						<Slider Grid.Row="1" Grid.Column="0" TickFrequency="1"
+								Visibility="{Binding ElementName=SlidingWindowCheckBox, Path=IsChecked, Converter={StaticResource FalseToCollapsedConverter}}"
+								IsSnapToTickEnabled="True"
+								Margin="10"
+								Orientation="Horizontal"
+								TickPlacement="BottomRight"
+								Minimum="0"
+								Maximum="{Binding FrametimeSliderMaximum}"
+								Value="{Binding FrametimeSliderValue}"
+								IsSelectionRangeEnabled="True"/>
+					</Grid>
+				</TabItem>
+				<TabItem Header="L-shape">
+					<lvc:CartesianChart MouseDoubleClick="ResetChart_MouseDoubleClick" Series="{Binding LShapeCollection}" Zoom="{Binding ZoomingMode}" 
+										Tag="{Binding ElementName=DataViewUserControl, Path=DataContext}">
 						<lvc:CartesianChart.ContextMenu>
 							<ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
-								<MenuItem Header="Copy frametime values (f)" Command="{Binding CopyFrametimeValuesCommand}"/>
-								<MenuItem Header="Copy frametime points (t, f(t))" Command="{Binding CopyFrametimePointsCommand}"/>
-								<MenuItem Header="Copy fps values" Command="{Binding CopyFpsValuesCommand}"/>
+								<MenuItem Header="Copy quantiles" Command="{Binding CopyLShapeQuantilesCommand}"/>
 							</ContextMenu>
 						</lvc:CartesianChart.ContextMenu>
 						<lvc:CartesianChart.AxisX>
-							<lvc:Axis Title="Samples" Name="FrametimesX" Separator="{x:Static lvc:DefaultAxes.CleanSeparator}" Foreground="Black"/>
+							<lvc:Axis Title="Quantiles (%)" Name="LShapeX" Foreground="Black">
+								<lvc:Axis.Separator >
+									<lvc:Separator Step="1"></lvc:Separator>
+								</lvc:Axis.Separator>
+							</lvc:Axis>
 						</lvc:CartesianChart.AxisX>
 						<lvc:CartesianChart.AxisY>
-							<lvc:Axis Title="Frametime (ms)" Name="FrametimesY" Foreground="Black"/>
+							<lvc:Axis Title="Frametime (ms)" Name="LShapeY" Foreground="Black"/>
 						</lvc:CartesianChart.AxisY>
 					</lvc:CartesianChart>
-					<Expander Background="#e6e6e6" Grid.Row="0" Grid.RowSpan="2" Grid.Column="1" ExpandDirection="Left">
-						<Expander.Header>
-							<TextBlock Text="System Info" RenderTransformOrigin=".5,.5">
-								<TextBlock.LayoutTransform>
-									<RotateTransform Angle="90" />
-								</TextBlock.LayoutTransform>
-							</TextBlock>
-						</Expander.Header>
-						<ScrollViewer VerticalScrollBarVisibility="Visible">
-							<ItemsControl ItemsSource="{Binding SystemInfos}" Grid.IsSharedSizeScope="True" Background="#e6e6e6" 
+				</TabItem>
+			</TabControl>
+			<Expander Visibility="{Binding ElementName=ScreenshotModeToggleButton, Path=IsChecked, Converter={StaticResource TrueToCollapsedConverter}}" Grid.Row="1" Name="SettingsExpander" Background="#F5F5F5" Margin="0 5 0 5" Header="Data/Chart Settings" HorizontalAlignment="Stretch">
+				<Grid>
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="Auto" />
+						<ColumnDefinition Width="Auto" />
+						<ColumnDefinition Width="Auto" />
+						<ColumnDefinition Width="1*" />
+					</Grid.ColumnDefinitions>
+					<StackPanel Grid.Column="0" Margin="25 10 0 10">
+						<CheckBox Name="SlidingWindowCheckBox" IsThreeState="False"
+								  IsEnabled="{Binding Path=IsChecked, ElementName=CuttingModeActiveToggleButton, Converter={StaticResource NegateBoolConverter}}"
+								  IsChecked="{Binding UseSlidingWindow}"
+								  Margin="0 0 0 0">
+							Sliding window
+						</CheckBox>
+						<StackPanel Orientation="Horizontal" IsEnabled="{Binding Path=IsChecked, ElementName=CuttingModeActiveToggleButton, Converter={StaticResource NegateBoolConverter}}">
+							<TextBlock VerticalAlignment="Center">Chart length(sec)</TextBlock>
+							<ComboBox materialDesign:HintAssist.Hint="(editable)"
+													  Width="40"
+													  Margin="10 0 0 0"
+													  HorizontalAlignment="Left"
+													  VerticalAlignment="Center"
+													  IsEditable="True"
+													  ItemsSource="{Binding ChartLengthValues}">
+								<ComboBox.Text>
+									<Binding Path="SelectedChartLengthValue"
+															Mode="TwoWay"
+															UpdateSourceTrigger="PropertyChanged">
+									</Binding>
+								</ComboBox.Text>
+								<ComboBox.ItemsPanel>
+									<ItemsPanelTemplate>
+										<VirtualizingStackPanel />
+									</ItemsPanelTemplate>
+								</ComboBox.ItemsPanel>
+							</ComboBox>
+						</StackPanel>
+					</StackPanel>
+					<StackPanel Grid.Column="1" Margin="25 10 0 10">
+						<CheckBox IsThreeState="False" IsChecked="{Binding RemoveOutliers}" Margin="0 0 0 0">
+							Remove outliers
+						</CheckBox>
+						<StackPanel Orientation="Horizontal">
+							<TextBlock VerticalAlignment="Center" Height="12">Window size</TextBlock>
+							<ComboBox materialDesign:HintAssist.Hint="(editable)"
+											  Width="40"
+											  Margin="10 0 0 0"
+											  HorizontalAlignment="Left"
+									  		  VerticalAlignment="Center"
+											  IsEditable="True"
+											  ItemsSource="{Binding WindowSizes}">
+								<ComboBox.Text>
+									<Binding Path="SelectWindowSize"
+											 Mode="TwoWay"
+											 UpdateSourceTrigger="PropertyChanged">
+									</Binding>
+								</ComboBox.Text>
+								<ComboBox.ItemsPanel>
+									<ItemsPanelTemplate>
+										<VirtualizingStackPanel />
+									</ItemsPanelTemplate>
+								</ComboBox.ItemsPanel>
+							</ComboBox>
+						</StackPanel>
+					</StackPanel>
+					<StackPanel VerticalAlignment="Top" Grid.Column="2" Margin="25 10 0 10" Orientation="Horizontal">
+						<TextBlock VerticalAlignment="Center">Cutting mode:</TextBlock>
+						<ToggleButton Name="CuttingModeActiveToggleButton" Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
+									  ToolTip="Cutting mode" IsChecked="{Binding IsCuttingModeActive}"
+									  IsEnabled="{Binding Path=IsChecked, ElementName=SlidingWindowCheckBox, Converter={StaticResource NegateBoolConverter}}"/>
+					</StackPanel>
+					<Button Margin="15 0 50 0" Grid.Column="3" VerticalAlignment="Top" HorizontalAlignment="Right" Command="{Binding ToogleZoomingModeCommand}">
+						<TextBlock>Toggle zoming mode, current is: 
+							<TextBlock Text="{Binding ZoomingMode, Converter={StaticResource ZoomingModeConverter}}"/>
+						</TextBlock>
+					</Button>
+				</Grid>
+			</Expander>
+			<Grid Background="#F5F5F5" Grid.Row="2" Visibility="{Binding ElementName=SettingsExpander, Path=IsExpanded, Converter={StaticResource TrueToCollapsedConverter}}">
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="1*" />
+					<ColumnDefinition Width="1*" />
+				</Grid.ColumnDefinitions>
+				<lvc:CartesianChart Grid.Column="0" Margin="0 5 0 0" Series="{Binding StatisticCollection}" LegendLocation="Bottom"
+									Tag="{Binding ElementName=DataViewUserControl, Path=DataContext}" >
+					<lvc:CartesianChart.ContextMenu>
+						<ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
+							<MenuItem Header="Copy statistical parameter" Command="{Binding CopyStatisticalParameterCommand}"/>
+						</ContextMenu>
+					</lvc:CartesianChart.ContextMenu>
+					<lvc:CartesianChart.AxisX>
+						<lvc:Axis Title="FPS" LabelFormatter="{Binding ParameterFormatter}" Foreground="Black"></lvc:Axis>
+					</lvc:CartesianChart.AxisX>
+					<lvc:CartesianChart.AxisY>
+						<lvc:Axis Title="Statistical Parameters" Labels="{Binding ParameterLabels}" Foreground="Black">
+							<lvc:Axis.Separator>
+								<!--step 1 forces the axis to display all labels, disabling it makes it invisible-->
+								<lvc:Separator Step="1" IsEnabled="False"></lvc:Separator>
+							</lvc:Axis.Separator>
+						</lvc:Axis>
+					</lvc:CartesianChart.AxisY>
+				</lvc:CartesianChart>
+				<lvc:PieChart Grid.Column="1" Margin="10 5 0 0" Hoverable="False" Series="{Binding StutteringStatisticCollection}" 
+							  LegendLocation="Bottom" DataClick="Chart_OnDataClick"/>
+			</Grid>
+			<Expander Margin="0 20 0 0" Background="#e6e6e6" Grid.Row="0" Grid.RowSpan="3" Grid.Column="1" ExpandDirection="Left">
+				<Expander.Header>
+					<TextBlock Text="System Info" RenderTransformOrigin=".5,.5">
+						<TextBlock.LayoutTransform>
+							<RotateTransform Angle="90" />
+						</TextBlock.LayoutTransform>
+					</TextBlock>
+				</Expander.Header>
+				<ScrollViewer VerticalScrollBarVisibility="Visible">
+					<ItemsControl ItemsSource="{Binding SystemInfos}" Grid.IsSharedSizeScope="True" Background="#e6e6e6" 
 										  Tag="{Binding ElementName=DataViewUserControl, Path=DataContext}">
-								<ItemsControl.ContextMenu>
-									<ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
-										<MenuItem Header="Copy system info" Command="{Binding CopySystemInfoCommand}"/>
-									</ContextMenu>
-								</ItemsControl.ContextMenu>
-								<ItemsControl.ItemTemplate>
-									<DataTemplate DataType="{x:Type ocatinterface:SystemInfo}">
-										<Border x:Name="Border"
+						<ItemsControl.ContextMenu>
+							<ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
+								<MenuItem Header="Copy system info" Command="{Binding CopySystemInfoCommand}"/>
+							</ContextMenu>
+						</ItemsControl.ContextMenu>
+						<ItemsControl.ItemTemplate>
+							<DataTemplate DataType="{x:Type ocatinterface:SystemInfo}">
+								<Border x:Name="Border"
 											Padding="8"
 											BorderThickness="0 0 0 1"
 											BorderBrush="{DynamicResource MaterialDesignDivider}">
-											<Grid>
-												<Grid.ColumnDefinitions>
-													<ColumnDefinition SharedSizeGroup="Checkerz" />
-													<ColumnDefinition />
-												</Grid.ColumnDefinitions>
-												<ToggleButton VerticalAlignment="Center"
+									<Grid>
+										<Grid.ColumnDefinitions>
+											<ColumnDefinition SharedSizeGroup="Checkerz" />
+											<ColumnDefinition />
+										</Grid.ColumnDefinitions>
+										<ToggleButton VerticalAlignment="Center"
 															  IsChecked="False"
 															  Style="{StaticResource MaterialDesignActionLightToggleButton}"
 															  Content="{Binding Letter}" />
-												<StackPanel Margin="8 0 0 0"
+										<StackPanel Margin="8 0 0 0"
 														Grid.Column="1">
-													<TextBlock FontWeight="Bold"
+											<TextBlock FontWeight="Bold"
 															Text="{Binding Key}" />
-													<TextBlock Text="{Binding Value}" TextWrapping="Wrap"
+											<TextBlock Text="{Binding Value}" TextWrapping="Wrap"
 															   Width="180"
 															   LineStackingStrategy="BlockLineHeight"
 															   FontSize="12"
 															   LineHeight="14"
 															   MaxHeight="52"/>
-												</StackPanel>
-											</Grid>
-										</Border>
-										<DataTemplate.Triggers>
-											<DataTrigger Binding="{Binding IsSelected}" Value="True">
-												<Setter TargetName="Border"
+										</StackPanel>
+									</Grid>
+								</Border>
+								<DataTemplate.Triggers>
+									<DataTrigger Binding="{Binding IsSelected}" Value="True">
+										<Setter TargetName="Border"
 													Property="Background"
 													Value="{DynamicResource MaterialDesignSelection}" />
-											</DataTrigger>
-										</DataTemplate.Triggers>
-									</DataTemplate>
-								</ItemsControl.ItemTemplate>
-							</ItemsControl>
-						</ScrollViewer>
-					</Expander>
-					<Grid Grid.Row="1" Grid.Column="0"
-						  Visibility="{Binding ElementName=CuttingModeActiveToggleButton, Path=IsChecked, Converter={StaticResource FalseToCollapsedConverter}}">
-						<Grid.ColumnDefinitions>
-							<ColumnDefinition Width="2*" />
-							<ColumnDefinition Width="1*" />
-							<ColumnDefinition Width="2*" />
-						</Grid.ColumnDefinitions>
-						<Slider Grid.Column="0" Margin="20 0 0 10" Minimum="0"
-								Maximum="{Binding CutLeftSliderMaximum}"
-								HorizontalAlignment="Stretch"
-								VerticalAlignment="Bottom"
-								Value="{Binding FirstNFrames}"
-								Style="{StaticResource MaterialDesignDiscreteSlider}"
-								ToolTip="Cut first n frames"/>
-						<TextBox Grid.Column="1" HorizontalAlignment="Center" IsReadOnly="True" Margin="0 0 0 3"
-								 Style="{StaticResource MaterialDesignFloatingHintTextBox}" Text="{Binding CutGraphNumberSamples}">
-							<materialDesign:HintAssist.Hint>
-								<StackPanel Orientation="Horizontal" Margin="-2 0 0 0">
-									<materialDesign:PackIcon Kind="ChartLine" />
-									<TextBlock Margin="3 0 0 0">
-										# samples
-									</TextBlock>
-								</StackPanel>
-							</materialDesign:HintAssist.Hint>
-						</TextBox>
-						<Slider Grid.Column="2" Margin="0 0 10 10" Minimum="0"
-								IsDirectionReversed="True"
-								Maximum="{Binding CutRightSliderMaximum}"
-								HorizontalAlignment="Stretch"
-								VerticalAlignment="Bottom"
-								Value="{Binding LastNFrames}"
-								Style="{StaticResource MaterialDesignDiscreteSlider}"
-								ToolTip="Cut last n frames"/>
-					</Grid>
-					<Slider Grid.Row="1" Grid.Column="0" TickFrequency="1"
-							Visibility="{Binding ElementName=SlidingWindowCheckBox, Path=IsChecked, Converter={StaticResource FalseToCollapsedConverter}}"
-							IsSnapToTickEnabled="True"
-							Margin="10"
-							Orientation="Horizontal"
-							TickPlacement="BottomRight"
-							Minimum="0"
-							Maximum="{Binding FrametimeSliderMaximum}"
-							Value="{Binding FrametimeSliderValue}"
-							IsSelectionRangeEnabled="True"/>
-				</Grid>
-			</TabItem>
-			<TabItem Header="L-shape">
-				<lvc:CartesianChart MouseDoubleClick="ResetChart_MouseDoubleClick" Series="{Binding LShapeCollection}" Zoom="{Binding ZoomingMode}" 
-									Tag="{Binding ElementName=DataViewUserControl, Path=DataContext}">
-					<lvc:CartesianChart.ContextMenu>
-						<ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
-							<MenuItem Header="Copy quantiles" Command="{Binding CopyLShapeQuantilesCommand}"/>
-						</ContextMenu>
-					</lvc:CartesianChart.ContextMenu>
-					<lvc:CartesianChart.AxisX>
-						<lvc:Axis Title="Quantiles (%)" Name="LShapeX" Foreground="Black">
-							<lvc:Axis.Separator >
-								<lvc:Separator Step="1"></lvc:Separator>
-							</lvc:Axis.Separator>
-						</lvc:Axis>
-					</lvc:CartesianChart.AxisX>
-					<lvc:CartesianChart.AxisY>
-						<lvc:Axis Title="Frametime (ms)" Name="LShapeY" Foreground="Black"/>
-					</lvc:CartesianChart.AxisY>
-				</lvc:CartesianChart>
-			</TabItem>
-		</TabControl>
-		<Expander Grid.Row="1" Name="SettingsExpander" Background="#F5F5F5" Margin="0 5 0 5" Header="Data/Chart Settings" HorizontalAlignment="Stretch">
-			<Grid>
-				<Grid.ColumnDefinitions>
-					<ColumnDefinition Width="Auto" />
-					<ColumnDefinition Width="Auto" />
-					<ColumnDefinition Width="Auto" />
-					<ColumnDefinition Width="1*" />
-				</Grid.ColumnDefinitions>
-				<StackPanel Grid.Column="0" Margin="25 10 0 10">
-					<CheckBox Name="SlidingWindowCheckBox" IsThreeState="False"
-							  IsEnabled="{Binding Path=IsChecked, ElementName=CuttingModeActiveToggleButton, Converter={StaticResource NegateBoolConverter}}"
-							  IsChecked="{Binding UseSlidingWindow}"
-							  Margin="0 0 0 0">
-						Sliding window
-					</CheckBox>
-					<StackPanel Orientation="Horizontal" IsEnabled="{Binding Path=IsChecked, ElementName=CuttingModeActiveToggleButton, Converter={StaticResource NegateBoolConverter}}">
-						<TextBlock VerticalAlignment="Center">Chart length(sec)</TextBlock>
-						<ComboBox materialDesign:HintAssist.Hint="(editable)"
-												  Width="40"
-												  Margin="10 0 0 0"
-												  HorizontalAlignment="Left"
-												  VerticalAlignment="Center"
-												  IsEditable="True"
-												  ItemsSource="{Binding ChartLengthValues}">
-							<ComboBox.Text>
-								<Binding Path="SelectedChartLengthValue"
-														Mode="TwoWay"
-														UpdateSourceTrigger="PropertyChanged">
-								</Binding>
-							</ComboBox.Text>
-							<ComboBox.ItemsPanel>
-								<ItemsPanelTemplate>
-									<VirtualizingStackPanel />
-								</ItemsPanelTemplate>
-							</ComboBox.ItemsPanel>
-						</ComboBox>
-					</StackPanel>
-				</StackPanel>
-				<StackPanel Grid.Column="1" Margin="25 10 0 10">
-					<CheckBox IsThreeState="False" IsChecked="{Binding RemoveOutliers}" Margin="0 0 0 0">
-						Remove outliers
-					</CheckBox>
-					<StackPanel Orientation="Horizontal">
-						<TextBlock VerticalAlignment="Center" Height="12">Window size</TextBlock>
-						<ComboBox materialDesign:HintAssist.Hint="(editable)"
-										  Width="40"
-										  Margin="10 0 0 0"
-										  HorizontalAlignment="Left"
-									  	  VerticalAlignment="Center"
-										  IsEditable="True"
-										  ItemsSource="{Binding WindowSizes}">
-							<ComboBox.Text>
-								<Binding Path="SelectWindowSize"
-										 Mode="TwoWay"
-										 UpdateSourceTrigger="PropertyChanged">
-								</Binding>
-							</ComboBox.Text>
-							<ComboBox.ItemsPanel>
-								<ItemsPanelTemplate>
-									<VirtualizingStackPanel />
-								</ItemsPanelTemplate>
-							</ComboBox.ItemsPanel>
-						</ComboBox>
-					</StackPanel>
-				</StackPanel>
-				<StackPanel VerticalAlignment="Top" Grid.Column="2" Margin="25 10 0 10" Orientation="Horizontal">
-					<TextBlock VerticalAlignment="Center">Cutting mode:</TextBlock>
-					<ToggleButton Name="CuttingModeActiveToggleButton" Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
-								  ToolTip="Cutting mode" IsChecked="{Binding IsCuttingModeActive}"
-								  IsEnabled="{Binding Path=IsChecked, ElementName=SlidingWindowCheckBox, Converter={StaticResource NegateBoolConverter}}"/>
-				</StackPanel>
-				<Button Margin="15 0 50 0" Grid.Column="3" VerticalAlignment="Top" HorizontalAlignment="Right" Command="{Binding ToogleZoomingModeCommand}">
-					<TextBlock>Toggle zoming mode, current is: 
-						<TextBlock Text="{Binding ZoomingMode, Converter={StaticResource ZoomingModeConverter}}"/>
-					</TextBlock>
-				</Button>
-			</Grid>
-		</Expander>
-		<Grid Background="#F5F5F5" Grid.Row="2" Visibility="{Binding ElementName=SettingsExpander, Path=IsExpanded, Converter={StaticResource TrueToCollapsedConverter}}">
-			<Grid.ColumnDefinitions>
-				<ColumnDefinition Width="1*" />
-				<ColumnDefinition Width="1*" />
-			</Grid.ColumnDefinitions>
-			<lvc:CartesianChart Grid.Column="0" Margin="0 5 0 0" Series="{Binding StatisticCollection}" LegendLocation="Bottom"
-								Tag="{Binding ElementName=DataViewUserControl, Path=DataContext}" >
-				<lvc:CartesianChart.ContextMenu>
-					<ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
-						<MenuItem Header="Copy statistical parameter" Command="{Binding CopyStatisticalParameterCommand}"/>
-					</ContextMenu>
-				</lvc:CartesianChart.ContextMenu>
-				<lvc:CartesianChart.AxisX>
-					<lvc:Axis Title="FPS" LabelFormatter="{Binding ParameterFormatter}" Foreground="Black"></lvc:Axis>
-				</lvc:CartesianChart.AxisX>
-				<lvc:CartesianChart.AxisY>
-					<lvc:Axis Title="Statistical Parameters" Labels="{Binding ParameterLabels}" Foreground="Black">
-						<lvc:Axis.Separator>
-							<!--step 1 forces the axis to display all labels, disabling it makes it invisible-->
-							<lvc:Separator Step="1" IsEnabled="False"></lvc:Separator>
-						</lvc:Axis.Separator>
-					</lvc:Axis>
-				</lvc:CartesianChart.AxisY>
-			</lvc:CartesianChart>
-			<lvc:PieChart Grid.Column="1" Margin="10 5 0 0" Hoverable="False" Series="{Binding StutteringStatisticCollection}" 
-						  LegendLocation="Bottom" DataClick="Chart_OnDataClick"/>
+									</DataTrigger>
+								</DataTemplate.Triggers>
+							</DataTemplate>
+						</ItemsControl.ItemTemplate>
+					</ItemsControl>
+				</ScrollViewer>
+			</Expander>
 		</Grid>
+		<!--<GridSplitter Grid.Row="2" Margin="0 5 0 5" ShowsPreview="True" Height="2" HorizontalAlignment="Stretch"
+					  ResizeDirection="Rows"
+					  ResizeBehavior="PreviousAndNext"/>-->
 	</Grid>
 </UserControl>

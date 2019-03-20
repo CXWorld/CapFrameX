@@ -8,6 +8,8 @@
 
 		string ObservedDirectory { get; set; }
 
+		string ScreenshotDirectory { get; set; }
+
 		string ChartQualityLevel { get; set; }
 
 		int FpsValuesRoundingDigits { get; set; }
