@@ -30,7 +30,7 @@ Download link: https://github.com/DevTechProfile/CapFrameX/releases
 * Editing comments and system info
 * Direct editing comments and system info in record list
 * Displaying frametime graph and moving average
-* Displaying frametime and display time graph (G-Sync and FreeSync synced vs. dropped frames)
+* Displaying frametime and display changed time graph (G-Sync and FreeSync synced vs. dropped frames)
 * Scrollable sliding window on frametime data
 * Calculating and displaying basic parameter (average, p-quantiles, min)
 * Calculating and displaying low average parameter (0.1% and 1% low)
@@ -56,7 +56,7 @@ Download link: https://github.com/DevTechProfile/CapFrameX/releases
 
 # Dev roadmap
 * Some improvements
-* New live chats
+* New live charts
 * Approximation inputlag
 * Special features/next steps
 
