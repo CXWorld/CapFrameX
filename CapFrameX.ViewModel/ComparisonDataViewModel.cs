@@ -787,7 +787,7 @@ namespace CapFrameX.ViewModel
 		{
 			_useEventMessages = false;
 
-			OnRemoveAllComparisons();
+			//OnRemoveAllComparisons();
 		}
 
 		public void OnNavigatedTo(NavigationContext navigationContext)

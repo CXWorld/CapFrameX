@@ -852,14 +852,14 @@ namespace CapFrameX.ViewModel
 		{
 			_useUpdateSession = false;
 
-			//Reset data
-			ResetData();
+			////Reset data
+			//ResetData();
 
-			// Reset Slider
-			_doUpdateCharts = false;
-			FirstNFrames = 0;
-			LastNFrames = 0;
-			_doUpdateCharts = true;
+			//// Reset Slider
+			//_doUpdateCharts = false;
+			//FirstNFrames = 0;
+			//LastNFrames = 0;
+			//_doUpdateCharts = true;
 		}
 	}
 }

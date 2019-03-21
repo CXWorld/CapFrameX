@@ -64,11 +64,14 @@ namespace CapFrameX.View
 			System.Diagnostics.Process.Start("https://github.com/DevTechProfile/CapFrameX");
 		}
 
+		/// <summary>
+		/// Exporting png pictures
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
 		private void TakeScreenShotButton_Click(object sender, RoutedEventArgs e)
 		{
-			DataViewModel viewModel = DataContext as DataViewModel;
-
-			if (viewModel == null)
+			if (!(DataContext is DataViewModel viewModel))
 			{
 				return;
 			}
@@ -88,7 +91,8 @@ namespace CapFrameX.View
 					Directory.CreateDirectory(path);
 				}
 
-				var filename = Path.Combine(path, viewModel.RecordInfo.GameName + "_" + DateTime.Now.ToString("yyyy-dd-M_HH-mm-ss") + "_CX_Analysis.png");
+				var filename = Path.Combine(path, viewModel.RecordInfo.GameName + "_" + 
+					DateTime.Now.ToString("yyyy-dd-M_HH-mm-ss") + "_CX_Analysis.png");
 
 				VisualBrush visualBrush = new VisualBrush(ScreenshotAreaGrid);
 

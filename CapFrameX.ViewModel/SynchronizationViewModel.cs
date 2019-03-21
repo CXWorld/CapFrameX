@@ -315,9 +315,9 @@ namespace CapFrameX.ViewModel
 		{
 			_useUpdateSession = false;
 
-			FrameDisplayTimesCollection = new SeriesCollection();
-			HistogramCollection = new SeriesCollection();
-			DroppedFramesStatisticCollection = new SeriesCollection();
+			//FrameDisplayTimesCollection = new SeriesCollection();
+			//HistogramCollection = new SeriesCollection();
+			//DroppedFramesStatisticCollection = new SeriesCollection();
 		}
 	}
 }
