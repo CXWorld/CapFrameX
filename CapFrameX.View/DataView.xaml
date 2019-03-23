@@ -31,6 +31,16 @@
 			<Style x:Key="CleanSeparator" TargetType="lvc:Separator">
 				<Setter Property="IsEnabled" Value="False"></Setter>
 			</Style>
+			<Style TargetType="ToggleButton" BasedOn="{StaticResource MaterialDesignActionToggleButton}">
+				<Style.Triggers>
+					<Trigger Property="IsChecked" Value="True">
+						<Setter Property="ToolTip" Value="Switch to control mode"/>
+					</Trigger>
+					<Trigger Property="IsChecked" Value="False">
+						<Setter Property="ToolTip" Value="Switch to screenshot mode"/>
+					</Trigger>
+				</Style.Triggers>
+			</Style>
 		</ResourceDictionary>
 	</UserControl.Resources>
 	<Grid Margin="0 10 0 0">
@@ -46,9 +56,7 @@
 					<TextBlock Margin="8 0 0 0" VerticalAlignment="Center">GitHub</TextBlock>
 				</StackPanel>
 			</Button>
-			<ToggleButton Style="{StaticResource MaterialDesignActionToggleButton}"
-						  ToolTip="Switch to screenshot mode"
-						  materialDesign:ShadowAssist.ShadowDepth="Depth3"
+			<ToggleButton materialDesign:ShadowAssist.ShadowDepth="Depth3"
 						  VerticalAlignment="Top"
 						  HorizontalAlignment="Right"
 						  Margin="0 0 20 0"
