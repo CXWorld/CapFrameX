@@ -75,13 +75,13 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-		/// <summary>
-		/// https://docs.microsoft.com/en-us/dotnet/standard/base-types/standard-numeric-format-strings
-		/// </summary>
-		public Func<ChartPoint, string> PieChartPointLabel { get; } =
-			chartPoint => string.Format(CultureInfo.InvariantCulture, "{0:0.##} ({1:P})", chartPoint.Y, chartPoint.Participation);
+        /// <summary>
+        /// https://docs.microsoft.com/en-us/dotnet/standard/base-types/standard-numeric-format-strings
+        /// </summary>
+        public Func<ChartPoint, string> PieChartPointLabel { get; } =
+            chartPoint => string.Format(CultureInfo.InvariantCulture, "{0:0.##} ({1:P})", chartPoint.Y, chartPoint.Participation);
 
-		public string[] ParameterLabels
+        public string[] ParameterLabels
 		{
 			get { return _parameterLabels; }
 			set
@@ -422,9 +422,9 @@ namespace CapFrameX.ViewModel
 			var p0dot1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.001), roundingDigits);
 			var p1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.01), roundingDigits);
 			var p5_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.05), roundingDigits);
-			var p1_averageLow = Math.Round(_frametimeStatisticProvider.GetPAverageLowSequence(fps, 0.01), roundingDigits);
-			var p0dot1_averageLow = Math.Round(_frametimeStatisticProvider.GetPAverageLowSequence(fps, 0.001), roundingDigits);
-			var min = Math.Round(fps.Min(), roundingDigits);
+            var p1_averageLow = Math.Round(1000 / _frametimeStatisticProvider.GetPAverageHighSequence(frametimes, 1 - 0.01), roundingDigits);
+            var p0dot1_averageLow = Math.Round(1000 / _frametimeStatisticProvider.GetPAverageHighSequence(frametimes, 1 - 0.001), roundingDigits);
+            var min = Math.Round(fps.Min(), roundingDigits);
 			var adaptiveStandardDeviation = Math.Round(_frametimeStatisticProvider.GetAdaptiveStandardDeviation(fps, SelectWindowSize), roundingDigits);
 
 			StringBuilder builder = new StringBuilder();
@@ -717,8 +717,8 @@ namespace CapFrameX.ViewModel
 			var p0dot1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.001), roundingDigits);
 			var p1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.01), roundingDigits);
 			var p5_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.05), roundingDigits);
-			var p1_averageLow = Math.Round(_frametimeStatisticProvider.GetPAverageLowSequence(fps, 0.01), roundingDigits);
-			var p0dot1_averageLow = Math.Round(_frametimeStatisticProvider.GetPAverageLowSequence(fps, 0.001), roundingDigits);
+			var p1_averageLow = Math.Round(1000 / _frametimeStatisticProvider.GetPAverageHighSequence(frametimes, 1 - 0.01), roundingDigits);
+			var p0dot1_averageLow = Math.Round(1000 / _frametimeStatisticProvider.GetPAverageHighSequence(frametimes, 1 - 0.001), roundingDigits);
 			var min = Math.Round(fps.Min(), roundingDigits);
 			var adaptiveStandardDeviation = Math.Round(_frametimeStatisticProvider.GetAdaptiveStandardDeviation(fps, SelectWindowSize), roundingDigits);
 
@@ -748,8 +748,9 @@ namespace CapFrameX.ViewModel
 						Title = _recordInfo.GameName,
 						Fill = new SolidColorBrush(Color.FromRgb(83,104,114)),
 						Values = values,
-						DataLabels = true
-					}
+						DataLabels = true,
+                        FontSize = 11,
+                    }
 				};
 
 				if (!_appConfiguration.ShowLowParameter)
@@ -782,7 +783,8 @@ namespace CapFrameX.ViewModel
 						Foreground = Brushes.Black,
 						LabelPosition = PieLabelPosition.InsideSlice,
 						LabelPoint = PieChartPointLabel,
-					},
+                        FontSize = 12,
+                    },
 					new PieSeries
 					{
 						Title = "Stuttering time (s)",
@@ -791,6 +793,7 @@ namespace CapFrameX.ViewModel
 						Foreground = Brushes.Black,
 						LabelPosition = PieLabelPosition.InsideSlice,
 						LabelPoint = PieChartPointLabel,
+                        FontSize = 12,
 					}
 				};
 			}));
@@ -821,7 +824,8 @@ namespace CapFrameX.ViewModel
 						PointGeometrySize = 10,
 						PointGeometry = DefaultGeometries.Triangle,
 						DataLabels = true,
-						LabelPoint = point => point.X + "%, " + Math.Round(point.Y, 1).ToString(CultureInfo.InvariantCulture) + " ms"
+						LabelPoint = point => point.X.ToString(CultureInfo.InvariantCulture) + "%, " + 
+                        Math.Round(point.Y, 1).ToString(CultureInfo.InvariantCulture) + " ms"
 					}
 				};
 

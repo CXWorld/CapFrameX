@@ -78,7 +78,7 @@ namespace CapFrameX.Statistics
 
 		public double GetPQuantileSequence(IList<double> sequence, double pQuantile)
 		{
-			return sequence.Quantile(pQuantile);
+            return sequence.Quantile(pQuantile);
 		}
 
 		public double GetPAverageLowSequence(IList<double> sequence, double pQuantile)
@@ -87,7 +87,13 @@ namespace CapFrameX.Statistics
 			return sequence.Where(element => element <= pQuantileValue).Average();
 		}
 
-		public List<double>[] GetDiscreteDistribution(IList<double> sequence)
+        public double GetPAverageHighSequence(IList<double> sequence, double pQuantile)
+        {
+            var pQuantileValue = sequence.Quantile(pQuantile);
+            return sequence.Where(element => element >= pQuantileValue).Average();
+        }
+
+        public List<double>[] GetDiscreteDistribution(IList<double> sequence)
 		{
 			var min = sequence.Min();
 			var max = sequence.Max();
