@@ -175,6 +175,12 @@
     <Compile Include="ComparisonDataView.xaml.cs">
       <DependentUpon>ComparisonDataView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Controls\FpsGraphControl.xaml.cs">
+      <DependentUpon>FpsGraphControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\FrametimeGraphControl.xaml.cs">
+      <DependentUpon>FrametimeGraphControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Inactive\Animation2DView.xaml.cs">
       <DependentUpon>Animation2DView.xaml</DependentUpon>
     </Compile>
@@ -214,6 +220,14 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="ComparisonDataView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\FpsGraphControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\FrametimeGraphControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -296,5 +310,6 @@
     <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

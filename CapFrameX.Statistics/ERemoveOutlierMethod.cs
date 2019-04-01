@@ -2,6 +2,7 @@
 {
 	public enum ERemoveOutlierMethod
 	{
+		 None,
 		 DeciPercentile,
 		 InterquartileRange,
 		 ThreeSigma,

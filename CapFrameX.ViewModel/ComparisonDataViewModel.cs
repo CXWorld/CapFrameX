@@ -515,11 +515,11 @@ namespace CapFrameX.ViewModel
 		{
 			double startTime = FirstSeconds;
 			double endTime = _maxRecordingTime - LastSeconds;
-			var frametimeSampleWindow = wrappedComparisonInfo.WrappedRecordInfo.Session.GetFrametimeSamplesWindow(startTime, endTime);
+			var frametimeTimeWindow = wrappedComparisonInfo.WrappedRecordInfo.Session.GetFrametimeTimeWindow(startTime, endTime, ERemoveOutlierMethod.None);
 
 			var roundingDigits = _appConfiguration.FpsValuesRoundingDigits;
-			var fps = frametimeSampleWindow.Select(ft => 1000 / ft).ToList();
-			var average = Math.Round(frametimeSampleWindow.Count * 1000 / frametimeSampleWindow.Sum(), roundingDigits);
+			var fps = frametimeTimeWindow.Select(ft => 1000 / ft).ToList();
+			var average = Math.Round(frametimeTimeWindow.Count * 1000 / frametimeTimeWindow.Sum(), roundingDigits);
 			var p1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.01), roundingDigits);
 			var p0dot1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.001), roundingDigits);
 
@@ -554,7 +554,7 @@ namespace CapFrameX.ViewModel
 			double startTime = FirstSeconds;
 			double endTime = _maxRecordingTime - LastSeconds;
 			var session = wrappedComparisonInfo.WrappedRecordInfo.Session;
-			var frametimePoints = session.GetFrametimePointsWindow(startTime, endTime)
+			var frametimePoints = session.GetFrametimePointsTimeWindow(startTime, endTime)
 										 .Select(pnt => new ObservablePoint(pnt.X, pnt.Y));
 
 			var frametimeChartValues = new GearedValues<ObservablePoint>();
@@ -580,10 +580,10 @@ namespace CapFrameX.ViewModel
 		{
 			double startTime = FirstSeconds;
 			double endTime = _maxRecordingTime - LastSeconds;
-			var frametimeSampleWindow = wrappedComparisonInfo.WrappedRecordInfo.Session.GetFrametimeSamplesWindow(startTime, endTime);
+			var frametimeTimeWindow = wrappedComparisonInfo.WrappedRecordInfo.Session.GetFrametimeTimeWindow(startTime, endTime, ERemoveOutlierMethod.None);
 
 			var lShapeQuantiles = _frametimeAnalyzer.GetLShapeQuantiles();
-			double action(double q) => _frametimeStatisticProvider.GetPQuantileSequence(frametimeSampleWindow, q / 100);
+			double action(double q) => _frametimeStatisticProvider.GetPQuantileSequence(frametimeTimeWindow, q / 100);
 			var quantiles = lShapeQuantiles.Select(q => new ObservablePoint(q, action(q)));
 			var quantileValues = new ChartValues<ObservablePoint>();
 			quantileValues.AddRange(quantiles);

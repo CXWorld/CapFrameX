@@ -31,23 +31,7 @@ namespace CapFrameX.View
 				DataContext = new DataViewModel(new FrametimeStatisticProvider(),
 					new FrametimeAnalyzer(), new EventAggregator(), new CapFrameXConfiguration());
 			}
-		}
-
-		private void ResetChart_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
-		{
-			//Use the axis MinValue/MaxValue properties to specify the values to display.
-			//use double.Nan to clear it.
-
-			FrametimesX.MinValue = double.NaN;
-			FrametimesX.MaxValue = double.NaN;
-			FrametimesY.MinValue = double.NaN;
-			FrametimesY.MaxValue = double.NaN;
-
-			LShapeX.MinValue = double.NaN;
-			LShapeX.MaxValue = double.NaN;
-			LShapeY.MinValue = double.NaN;
-			LShapeY.MaxValue = double.NaN;
-		}
+		}		
 
 		private void Chart_OnDataClick(object sender, ChartPoint chartpoint)
 		{
@@ -64,6 +48,17 @@ namespace CapFrameX.View
 		private void GitHubButton_Click(object sender, System.Windows.RoutedEventArgs e)
 		{
 			System.Diagnostics.Process.Start("https://github.com/DevTechProfile/CapFrameX");
+		}
+
+		private void ResetChart_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
+		{
+			//Use the axis MinValue/MaxValue properties to specify the values to display.
+			//use double.Nan to clear it.
+
+			LShapeX.MinValue = double.NaN;
+			LShapeX.MaxValue = double.NaN;
+			LShapeY.MinValue = double.NaN;
+			LShapeY.MaxValue = double.NaN;
 		}
 
 		// Unused code

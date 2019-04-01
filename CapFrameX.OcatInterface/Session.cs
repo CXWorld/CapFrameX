@@ -1,10 +1,14 @@
-﻿using System.Collections.Generic;
+﻿using CapFrameX.Statistics;
+using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
 
 namespace CapFrameX.OcatInterface
 {
 	public class Session
 	{
+		IStatisticProvider _frametimeStatisticProvider;
+
 		public string Path { get; set; }
 		public string Filename { get; set; }
 		public List<double> FrameStart { get; set; }
@@ -24,6 +28,7 @@ namespace CapFrameX.OcatInterface
 		public int ValidReproFrames { get; set; }
 		public double LastFrameTime { get; set; }
 		public double LastReprojectionTime { get; set; }
+
 		// System info
 		public string MotherboardName { get; set; }
 		public string OsVersion { get; set; }
@@ -38,40 +43,79 @@ namespace CapFrameX.OcatInterface
 		public string GPUMemory { get; set; }
 		public string Comment { get; set; }
 
-		public IList<double> GetFrametimeSamplesWindow(double startTime, double endTime)
-		{
-			IList<double> frametimesWindow = new List<double>();
-
-			if (FrameTimes != null && FrameStart != null)
-			{
-				for (int i = 0; i < FrameTimes.Count; i++)
-				{
-					if (FrameStart[i] >= startTime && FrameStart[i] <= endTime)
-					{
-						frametimesWindow.Add(FrameTimes[i]);
-					}
-				}
-			}
-
-			return frametimesWindow;
+		public Session()
+		{		
+			_frametimeStatisticProvider = new FrametimeStatisticProvider();
 		}
 
-		public IList<Point> GetFrametimePointsWindow(double startTime, double endTime)
+		public IList<double> GetFrametimeSampleWindow(int startIndex, double endIndex, ERemoveOutlierMethod removeOutlierMethod)
 		{
-			IList<Point> frametimesWindow = new List<Point>();
+			var frametimesSampleWindow = new List<double>();
+			var frametimes = _frametimeStatisticProvider?.GetOutlierAdjustedSequence(FrameTimes, removeOutlierMethod);
 
-			if (FrameTimes != null && FrameStart != null)
+			if (frametimes != null && frametimes.Any())
 			{
-				for (int i = 0; i < FrameTimes.Count; i++)
+				for (int i = startIndex; i < frametimes.Count - endIndex; i++)
+				{
+					frametimesSampleWindow.Add(frametimes[i]);
+				}
+			}
+
+			return frametimesSampleWindow;
+		}
+
+		public IList<double> GetFrametimeTimeWindow(double startTime, double endTime, ERemoveOutlierMethod removeOutlierMethod)
+		{
+			IList<double> frametimesTimeWindow = new List<double>();
+			var frametimes = _frametimeStatisticProvider?.GetOutlierAdjustedSequence(FrameTimes, removeOutlierMethod);
+
+			if (frametimes != null && FrameStart != null)
+			{
+				for (int i = 0; i < frametimes.Count; i++)
 				{
 					if (FrameStart[i] >= startTime && FrameStart[i] <= endTime)
 					{
-						frametimesWindow.Add(new Point(FrameStart[i], FrameTimes[i]));
+						frametimesTimeWindow.Add(frametimes[i]);
 					}
 				}
 			}
 
-			return frametimesWindow;
+			return frametimesTimeWindow;
+		}
+
+		public IList<Point> GetFrametimePointsTimeWindow(double startTime, double endTime)
+		{
+			IList<Point> frametimesPointsWindow = new List<Point>();
+			var frametimes = _frametimeStatisticProvider?.GetOutlierAdjustedSequence(FrameTimes, ERemoveOutlierMethod.None);
+
+			if (frametimes != null && FrameStart != null)
+			{
+				for (int i = 0; i < frametimes.Count; i++)
+				{
+					if (FrameStart[i] >= startTime && FrameStart[i] <= endTime)
+					{
+						frametimesPointsWindow.Add(new Point(FrameStart[i], frametimes[i]));
+					}
+				}
+			}
+
+			return frametimesPointsWindow;
+		}
+
+		public IList<Point> GetFrametimePointsSampleWindow(int startIndex, double endIndex)
+		{
+			var frametimesPointsSampleWindow = new List<Point>();
+			var frametimes = _frametimeStatisticProvider?.GetOutlierAdjustedSequence(FrameTimes, ERemoveOutlierMethod.None);
+
+			if (frametimes != null && frametimes.Any())
+			{
+				for (int i = startIndex; i < frametimes.Count - endIndex; i++)
+				{
+					frametimesPointsSampleWindow.Add(new Point(frametimes[i], FrameStart[i]));
+				}
+			}
+
+			return frametimesPointsSampleWindow;
 		}
 	}
 }

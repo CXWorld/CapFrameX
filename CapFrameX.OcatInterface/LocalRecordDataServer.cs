@@ -1,0 +1,155 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reactive.Linq;
+using System.Reactive.Subjects;
+using System.Windows;
+using CapFrameX.Statistics;
+
+namespace CapFrameX.OcatInterface
+{
+	public class LocalRecordDataServer : IRecordDataServer
+	{
+		private const int SCALE_RESOLUTION = 200;
+		private int _startIndex;
+		private int _endIndex;
+		private double _windowLength;
+		private double _currentTime;
+		private ERemoveOutlierMethod _removeOutlierMethod;
+		private ISubject<IList<double>> _frametimeDataSubject;
+		private ISubject<IList<Point>> _frametimePointDataSubject;
+		private ISubject<IList<double>> _fpsDataSubject;
+		private ISubject<IList<Point>> _fpsPointDataSubject;
+
+		public Session CurrentSession { get; set; }
+
+		public int StartIndex
+		{
+			get => _startIndex;
+			set { _startIndex = value; DoUpdateIndexTrigger(); }
+		}
+
+		public int EndIndex
+		{
+			get => _endIndex;
+			set { _endIndex = value; DoUpdateIndexTrigger(); }
+		}
+
+		public double WindowLength
+		{
+			get => _windowLength;
+			set { _windowLength = value; DoUpdateWindowTrigger(); }
+		}
+
+		public double CurrentTime
+		{
+			get => _currentTime;
+			set { _currentTime = value; DoUpdateWindowTrigger(); }
+		}
+
+		public ERemoveOutlierMethod RemoveOutlierMethod
+		{
+			get => _removeOutlierMethod;
+			set { _removeOutlierMethod = value; DoUpdateFilterTrigger(); }
+		}
+
+		public IObservable<IList<double>> FrametimeDataStream => _frametimeDataSubject.AsObservable();
+
+		public IObservable<IList<Point>> FrametimePointDataStream => _frametimePointDataSubject.AsObservable();
+
+		public IObservable<IList<double>> FpsDataStream => _fpsDataSubject.AsObservable();
+
+		public IObservable<IList<Point>> FpsPointDataStream => _fpsPointDataSubject.AsObservable();
+
+		public LocalRecordDataServer()
+		{
+			_frametimeDataSubject = new Subject<IList<double>>();
+			_frametimePointDataSubject = new Subject<IList<Point>>();
+			_fpsDataSubject = new Subject<IList<double>>();
+			_fpsPointDataSubject = new Subject<IList<Point>>();
+		}
+
+		public IList<double> GetFrametimeTimeWindow()
+		{
+			if (CurrentSession == null)
+				return null;
+
+			double startTime = (CurrentSession.LastFrameTime - WindowLength) * CurrentTime / SCALE_RESOLUTION;
+			double endTime = startTime + WindowLength;
+			return CurrentSession.GetFrametimeTimeWindow(startTime, endTime, RemoveOutlierMethod);
+		}
+
+		public IList<double> GetFrametimeSampleWindow()
+		{
+			if (CurrentSession == null)
+				return null;
+
+			return CurrentSession.GetFrametimeSampleWindow(StartIndex, EndIndex, RemoveOutlierMethod);
+		}
+
+		public IList<Point> GetFrametimePointTimeWindow()
+		{
+			if (CurrentSession == null)
+				return null;
+
+			double startTime = (CurrentSession.LastFrameTime - WindowLength) * CurrentTime / SCALE_RESOLUTION;
+			double endTime = startTime + WindowLength;
+			return CurrentSession.GetFrametimePointsTimeWindow(startTime, endTime);
+		}
+
+		public IList<Point> GetFrametimePointSampleWindow()
+		{
+			if (CurrentSession == null)
+				return null;
+
+			return CurrentSession.GetFrametimePointsSampleWindow(StartIndex, EndIndex);
+		}
+
+		public IList<double> GetFpsTimeWindow()
+		{
+			return GetFrametimeTimeWindow()?.Select(ft => 1000 / ft).ToList();
+		}
+
+		public IList<double> GetFpsSampleWindow()
+		{
+			return GetFrametimeSampleWindow()?.Select(ft => 1000 / ft).ToList();
+		}
+
+		public IList<Point> GetFpsPointTimeWindow()
+		{
+			return GetFrametimePointTimeWindow()?.Select(pnt => new Point(pnt.X, 1000 / pnt.Y)).ToList();
+		}
+
+		public IList<Point> GetFpsPointSampleWindow()
+		{
+			return GetFrametimePointSampleWindow()?.Select(pnt => new Point(pnt.X, 1000 / pnt.Y)).ToList();
+		}
+
+		private void DoUpdateIndexTrigger()
+		{
+			if (CurrentSession == null)
+				return;
+
+			_frametimeDataSubject.OnNext(GetFrametimeSampleWindow());
+			_fpsDataSubject.OnNext(GetFpsSampleWindow());
+		}
+
+		private void DoUpdateWindowTrigger()
+		{
+			if (CurrentSession == null)
+				return;
+
+			_frametimeDataSubject.OnNext(GetFrametimeTimeWindow());
+			_fpsDataSubject.OnNext(GetFpsTimeWindow());
+		}
+
+		private void DoUpdateFilterTrigger()
+		{
+			if (CurrentSession == null)
+				return;
+
+			_frametimeDataSubject.OnNext(GetFrametimeSampleWindow());
+			_fpsDataSubject.OnNext(GetFpsSampleWindow());
+		}
+	}
+}

@@ -46,11 +46,11 @@ namespace CapFrameX.OcatInterface
 			{
 				recordInfo = new OcatRecordInfo(fileInfo);
 			}
-			catch (ArgumentException ex)
+			catch (ArgumentException)
 			{
 				// Log
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
 				// Log
 			}

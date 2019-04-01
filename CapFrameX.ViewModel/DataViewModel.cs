@@ -3,6 +3,7 @@ using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Extensions;
 using CapFrameX.OcatInterface;
 using CapFrameX.Statistics;
+using CapFrameX.ViewModel.DataContext;
 using LiveCharts;
 using LiveCharts.Defaults;
 using LiveCharts.Geared;
@@ -18,6 +19,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 
@@ -25,7 +27,6 @@ namespace CapFrameX.ViewModel
 {
 	public class DataViewModel : BindableBase, INavigationAware
 	{
-		private const int SCALE_RESOLUTION = 200;
 		private readonly IStatisticProvider _frametimeStatisticProvider;
 		private readonly IFrametimeAnalyzer _frametimeAnalyzer;
 		private readonly IEventAggregator _eventAggregator;
@@ -34,8 +35,6 @@ namespace CapFrameX.ViewModel
 		private bool _useUpdateSession = true;
 		private Session _session;
 		private OcatRecordInfo _recordInfo;
-		private ZoomingOptions _zoomingMode;
-		private SeriesCollection _seriesCollection;
 		private SeriesCollection _statisticCollection;
 		private SeriesCollection _lShapeCollection;
 		private SeriesCollection _stutteringStatisticCollection;
@@ -43,24 +42,22 @@ namespace CapFrameX.ViewModel
 		private string[] _lShapeLabels;
 		private string[] _advancedParameterLabels;
 		private int _selectWindowSize;
-		private int _firstNFrames;
-		private int _lastNFrames;
 		private bool _removeOutliers;
 		private bool _useSlidingWindow = false;
-		private string _selectedChartLengthValue;
 		private double _frametimeSliderMaximum;
-		private double _frametimeSliderValue;
 		private List<SystemInfo> _systemInfos;
 		private bool _isCuttingModeActive;
-		private int _cutLeftSliderMaximum;
-		private int _cutRightSliderMaximum;
-		private string _cutGraphNumberSamples;
 		private bool _doUpdateCharts = true;
 		private Func<double, string> _parameterFormatter;
+		private TabItem _selectedChartItem;
+		private string _selectedChartLengthValue;
+		private IRecordDataServer _localRecordDataServer;
 
 		public IAppConfiguration AppConfiguration => _appConfiguration;
 
 		public OcatRecordInfo RecordInfo => _recordInfo;
+
+		public FrametimeGraphDataContext FrametimeGraphDataContext { get; }
 
 		/// <summary>
 		/// https://docs.microsoft.com/en-us/dotnet/standard/base-types/standard-numeric-format-strings
@@ -75,13 +72,13 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-        /// <summary>
-        /// https://docs.microsoft.com/en-us/dotnet/standard/base-types/standard-numeric-format-strings
-        /// </summary>
-        public Func<ChartPoint, string> PieChartPointLabel { get; } =
-            chartPoint => string.Format(CultureInfo.InvariantCulture, "{0:0.##} ({1:P})", chartPoint.Y, chartPoint.Participation);
+		/// <summary>
+		/// https://docs.microsoft.com/en-us/dotnet/standard/base-types/standard-numeric-format-strings
+		/// </summary>
+		public Func<ChartPoint, string> PieChartPointLabel { get; } =
+			chartPoint => string.Format(CultureInfo.InvariantCulture, "{0:0.##} ({1:P})", chartPoint.Y, chartPoint.Participation);
 
-        public string[] ParameterLabels
+		public string[] ParameterLabels
 		{
 			get { return _parameterLabels; }
 			set
@@ -131,16 +128,6 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-		public SeriesCollection SeriesCollection
-		{
-			get { return _seriesCollection; }
-			set
-			{
-				_seriesCollection = value;
-				RaisePropertyChanged();
-			}
-		}
-
 		public SeriesCollection StutteringStatisticCollection
 		{
 			get { return _stutteringStatisticCollection; }
@@ -151,50 +138,6 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-		public ZoomingOptions ZoomingMode
-		{
-			get { return _zoomingMode; }
-			set
-			{
-				_zoomingMode = value;
-				RaisePropertyChanged();
-			}
-		}
-
-		public int FirstNFrames
-		{
-			get { return _firstNFrames; }
-			set
-			{
-				_firstNFrames = value;
-				RaisePropertyChanged();
-				UpdateCharts();
-			}
-		}
-
-		public int LastNFrames
-		{
-			get { return _lastNFrames; }
-			set
-			{
-				_lastNFrames = value;
-				RaisePropertyChanged();
-				UpdateCharts();
-			}
-		}
-
-		public int CutLeftSliderMaximum
-		{
-			get { return _cutLeftSliderMaximum; }
-			set { _cutLeftSliderMaximum = value; RaisePropertyChanged(); }
-		}
-
-		public int CutRightSliderMaximum
-		{
-			get { return _cutRightSliderMaximum; }
-			set { _cutRightSliderMaximum = value; RaisePropertyChanged(); }
-		}
-
 		public bool RemoveOutliers
 		{
 			get { return _removeOutliers; }
@@ -202,7 +145,18 @@ namespace CapFrameX.ViewModel
 			{
 				_removeOutliers = value;
 				RaisePropertyChanged();
-				UpdateCharts();
+				UpdateMainCharts();
+			}
+		}
+
+		public TabItem SelectedChartItem
+		{
+			get { return _selectedChartItem; }
+			set
+			{
+				_selectedChartItem = value;
+				RaisePropertyChanged();
+				OnChartItemChanged();
 			}
 		}
 
@@ -213,18 +167,17 @@ namespace CapFrameX.ViewModel
 			{
 				_selectWindowSize = value;
 				RaisePropertyChanged();
-				UpdateCharts();
+				UpdateMainCharts();
 			}
 		}
 
 		public string SelectedChartLengthValue
 		{
-			get { return _selectedChartLengthValue; }
+			get => _selectedChartLengthValue;
 			set
 			{
 				_selectedChartLengthValue = value;
 				RaisePropertyChanged();
-				OnSelectedChartLengthValueChanged();
 			}
 		}
 
@@ -238,17 +191,6 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-		public double FrametimeSliderValue
-		{
-			get { return _frametimeSliderValue; }
-			set
-			{
-				_frametimeSliderValue = value;
-				RaisePropertyChanged();
-				OnFrametimeSliderValueChanged();
-			}
-		}
-
 		public bool UseSlidingWindow
 		{
 			get { return _useSlidingWindow; }
@@ -257,7 +199,7 @@ namespace CapFrameX.ViewModel
 				_useSlidingWindow = value;
 				RaisePropertyChanged();
 				OnSelectedChartLengthValueChanged();
-				OnFrametimeSliderValueChanged();
+				//OnFrametimeSliderValueChanged();
 			}
 		}
 
@@ -278,21 +220,9 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-		public string CutGraphNumberSamples
-		{
-			get { return _cutGraphNumberSamples; }
-			set { _cutGraphNumberSamples = value; RaisePropertyChanged(); }
-		}
-
 		public IList<int> WindowSizes { get; }
 
 		public IList<string> ChartLengthValues { get; }
-
-		public ICommand ToogleZoomingModeCommand { get; }
-
-		public ICommand CopyFrametimeValuesCommand { get; }
-
-		public ICommand CopyFrametimePointsCommand { get; }
 
 		public ICommand CopyFpsValuesCommand { get; }
 
@@ -314,9 +244,6 @@ namespace CapFrameX.ViewModel
 
 			SubscribeToUpdateSession();
 
-			ToogleZoomingModeCommand = new DelegateCommand(OnToogleZoomingMode);
-			CopyFrametimeValuesCommand = new DelegateCommand(OnCopyFrametimeValues);
-			CopyFrametimePointsCommand = new DelegateCommand(OnCopyFrametimePoints);
 			CopyFpsValuesCommand = new DelegateCommand(OnCopyFpsValues);
 			CopyStatisticalParameterCommand = new DelegateCommand(OnCopyStatisticalParameter);
 			CopyLShapeQuantilesCommand = new DelegateCommand(OnCopyQuantiles);
@@ -324,11 +251,14 @@ namespace CapFrameX.ViewModel
 
 			ParameterFormatter = value => value.ToString(string.Format("F{0}",
 				_appConfiguration.FpsValuesRoundingDigits), CultureInfo.InvariantCulture);
-			ZoomingMode = ZoomingOptions.Y;
 			WindowSizes = new List<int>(Enumerable.Range(4, 100 - 4));
 			SelectWindowSize = _appConfiguration.MovingAverageWindowSize;
 			ChartLengthValues = new List<string> { "5", "10", "20", "30", "60", "120", "180", "240", "300", "600" };
 			SelectedChartLengthValue = "10";
+
+			_localRecordDataServer = new LocalRecordDataServer();
+			FrametimeGraphDataContext = new FrametimeGraphDataContext(_localRecordDataServer,
+				_appConfiguration, _frametimeStatisticProvider);
 		}
 
 		private void OnCuttingModeChanged()
@@ -338,57 +268,13 @@ namespace CapFrameX.ViewModel
 
 			if (IsCuttingModeActive)
 			{
-				UpdateCuttingParameter();
+				FrametimeGraphDataContext.InitializeCuttingParameter();
 			}
 			else
 			{
-				FirstNFrames = 0;
-				LastNFrames = 0;
+				FrametimeGraphDataContext.StartIndex = 0;
+				FrametimeGraphDataContext.EndIndex = 0;
 			}
-		}
-
-		private void UpdateCuttingParameter()
-		{
-			_doUpdateCharts = false;
-			FirstNFrames = 0;
-			LastNFrames = 0;
-			_doUpdateCharts = true;
-
-			CutLeftSliderMaximum = _session.FrameTimes.Count / 2;
-			CutRightSliderMaximum = _session.FrameTimes.Count / 2;
-			CutGraphNumberSamples = _session.FrameTimes.Count.ToString();
-		}
-
-		private void OnCopyFrametimeValues()
-		{
-			if (_session == null)
-				return;
-
-			var frametimes = GetFrametimesSubset();
-			StringBuilder builder = new StringBuilder();
-
-			foreach (var frametime in frametimes)
-			{
-				builder.Append(frametime + Environment.NewLine);
-			}
-
-			Clipboard.SetDataObject(builder.ToString(), false);
-		}
-
-		private void OnCopyFrametimePoints()
-		{
-			if (_session == null)
-				return;
-
-			var frametimes = GetFrametimesSubset();
-			StringBuilder builder = new StringBuilder();
-
-			for (int i = 0; i < frametimes.Count; i++)
-			{
-				builder.Append(_session.FrameStart[i] + "\t" + frametimes[i] + Environment.NewLine);
-			}
-
-			Clipboard.SetDataObject(builder.ToString(), false);
 		}
 
 		private void OnCopyFpsValues()
@@ -422,9 +308,9 @@ namespace CapFrameX.ViewModel
 			var p0dot1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.001), roundingDigits);
 			var p1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.01), roundingDigits);
 			var p5_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.05), roundingDigits);
-            var p1_averageLow = Math.Round(1000 / _frametimeStatisticProvider.GetPAverageHighSequence(frametimes, 1 - 0.01), roundingDigits);
-            var p0dot1_averageLow = Math.Round(1000 / _frametimeStatisticProvider.GetPAverageHighSequence(frametimes, 1 - 0.001), roundingDigits);
-            var min = Math.Round(fps.Min(), roundingDigits);
+			var p1_averageLow = Math.Round(1000 / _frametimeStatisticProvider.GetPAverageHighSequence(frametimes, 1 - 0.01), roundingDigits);
+			var p0dot1_averageLow = Math.Round(1000 / _frametimeStatisticProvider.GetPAverageHighSequence(frametimes, 1 - 0.001), roundingDigits);
+			var min = Math.Round(fps.Min(), roundingDigits);
 			var adaptiveStandardDeviation = Math.Round(_frametimeStatisticProvider.GetAdaptiveStandardDeviation(fps, SelectWindowSize), roundingDigits);
 
 			StringBuilder builder = new StringBuilder();
@@ -498,25 +384,10 @@ namespace CapFrameX.ViewModel
 			Clipboard.SetDataObject(builder.ToString(), false);
 		}
 
-		private void OnToogleZoomingMode()
+		private void OnChartItemChanged()
 		{
-			switch (ZoomingMode)
-			{
-				case ZoomingOptions.None:
-					ZoomingMode = ZoomingOptions.X;
-					break;
-				case ZoomingOptions.X:
-					ZoomingMode = ZoomingOptions.Y;
-					break;
-				case ZoomingOptions.Y:
-					ZoomingMode = ZoomingOptions.Xy;
-					break;
-				case ZoomingOptions.Xy:
-					ZoomingMode = ZoomingOptions.None;
-					break;
-				default:
-					throw new ArgumentOutOfRangeException();
-			}
+			var tabItemHeader = SelectedChartItem.Header.ToString();
+			UpdateSecondaryCharts(tabItemHeader);
 		}
 
 		private void SubscribeToUpdateSession()
@@ -534,8 +405,10 @@ namespace CapFrameX.ViewModel
 										SystemInfos = RecordManager.GetSystemInfos(_session);
 
 										// Do update actions
-										UpdateCuttingParameter();
-										UpdateCharts();
+										FrametimeGraphDataContext.InitializeCuttingParameter();
+										UpdateMainCharts();
+										var tabItemHeader = SelectedChartItem.Header.ToString();
+										UpdateSecondaryCharts(tabItemHeader);
 									}
 									else
 									{
@@ -545,68 +418,30 @@ namespace CapFrameX.ViewModel
 							});
 		}
 
-		private IList<double> GetFrametimes()
-		{
-			IList<double> frametimes = new List<double>();
-
-			if (_session?.FrameTimes == null || !_session.FrameTimes.Any())
-				return frametimes;
-
-			if (RemoveOutliers)
-			{
-				if (UseSlidingWindow)
-				{
-					if (Double.TryParse(SelectedChartLengthValue, NumberStyles.Any, CultureInfo.InvariantCulture, out double length))
-					{
-						double startTime = (_session.LastFrameTime - length) * FrametimeSliderValue / SCALE_RESOLUTION;
-						double endTime = startTime + length;
-						var frametimeSampleWindow = _session.GetFrametimeSamplesWindow(startTime, endTime);
-
-						// ToDo: Make method selectable
-						frametimes = _frametimeStatisticProvider?.GetOutlierAdjustedSequence(frametimeSampleWindow,
-							ERemoveOutlierMethod.DeciPercentile);
-					}
-				}
-				else
-				{
-					// ToDo: Make method selectable
-					frametimes = _frametimeStatisticProvider?.GetOutlierAdjustedSequence(_session.FrameTimes,
-						ERemoveOutlierMethod.DeciPercentile);
-				}
-			}
-			else
-			{
-				if (UseSlidingWindow)
-				{
-					if (Double.TryParse(SelectedChartLengthValue, NumberStyles.Any, CultureInfo.InvariantCulture, out double length))
-					{
-						double startTime = (_session.LastFrameTime - length) * FrametimeSliderValue / SCALE_RESOLUTION;
-						double endTime = startTime + length;
-						frametimes = _session.GetFrametimeSamplesWindow(startTime, endTime);
-					}
-				}
-				else
-				{
-					frametimes = _session?.FrameTimes;
-				}
-			}
-
-			return frametimes;
-		}
-
-		private void UpdateCharts()
+		private void UpdateMainCharts()
 		{
 			if (!_doUpdateCharts)
 				return;
 
 			var subset = GetFrametimesSubset();
-			CutGraphNumberSamples = subset.Count.ToString();
 
 			if (subset != null)
 			{
-				Task.Factory.StartNew(() => SetFrametimeChart(subset));
+				//Task.Factory.StartNew(() => SetFrametimeChart(subset));
 				Task.Factory.StartNew(() => SetStaticChart(subset));
 				Task.Factory.StartNew(() => SetAdvancedStaticChart(subset));
+			}
+		}
+
+		private void UpdateSecondaryCharts(string headerName)
+		{
+			var subset = GetFrametimesSubset();
+
+			if (subset == null)
+				return;
+
+			if (headerName == "L-shape")
+			{
 				Task.Factory.StartNew(() => SetLShapeChart(subset));
 			}
 		}
@@ -618,89 +453,31 @@ namespace CapFrameX.ViewModel
 				if (Double.TryParse(SelectedChartLengthValue, NumberStyles.Any, CultureInfo.InvariantCulture, out double length))
 				{
 					// Slider parameter
-					FrametimeSliderMaximum = length < _session.LastFrameTime ? SCALE_RESOLUTION : 0;
-					FrametimeSliderValue = 0;
+					FrametimeGraphDataContext.SelectedChartLength = length < _session.LastFrameTime ?
+						GraphDataContextBase.SCALE_RESOLUTION : 0;
+					FrametimeGraphDataContext.SliderValue = 0;
 				}
 			}
 			else
 			{
-				FrametimeSliderMaximum = 0;
-				FrametimeSliderValue = 0;
+				FrametimeGraphDataContext.SelectedChartLength = 0;
+				FrametimeGraphDataContext.SliderValue = 0;
 			}
 		}
 
-		private void OnFrametimeSliderValueChanged()
+		//private void OnFrametimeSliderValueChanged()
+		//{
+		//	var subset = GetFrametimesSubset();
+
+		//	if (subset != null)
+		//	{
+		//		SetFrametimeChart(subset);
+		//	}
+		//}
+
+		private IList<double> GetFrametimesSubset()
 		{
-			var subset = GetFrametimesSubset();
-
-			if (subset != null)
-			{
-				SetFrametimeChart(subset);
-			}
-		}
-
-		private List<double> GetFrametimesSubset()
-		{
-			var subset = new List<double>();
-			var frametimes = GetFrametimes();
-
-			if (frametimes != null && frametimes.Any())
-			{
-				for (int i = FirstNFrames; i < frametimes.Count - LastNFrames; i++)
-				{
-					subset.Add(frametimes[i]);
-				}
-			}
-
-			return subset;
-		}
-
-		private void SetFrametimeChart(IList<double> frametimes)
-		{
-			//var gradientBrush = new LinearGradientBrush
-			//{
-			//	StartPoint = new Point(0, 0),
-			//	EndPoint = new Point(0, 1)
-			//};
-
-			// ToDo: Get color from ressources
-			//gradientBrush.GradientStops.Add(new GradientStop(Color.FromRgb(139, 35, 35), 0));
-			//gradientBrush.GradientStops.Add(new GradientStop(Colors.Transparent, 1));
-
-			var frametimeValues = new GearedValues<double>();
-			frametimeValues.AddRange(frametimes);
-			frametimeValues.WithQuality(_appConfiguration.ChartQualityLevel.ConverToEnum<Quality>());
-
-			var movingAverageValues = new GearedValues<double>();
-			movingAverageValues.AddRange(_frametimeStatisticProvider.GetMovingAverage(frametimes, SelectWindowSize));
-			movingAverageValues.WithQuality(_appConfiguration.ChartQualityLevel.ConverToEnum<Quality>());
-
-			Application.Current.Dispatcher.Invoke(new Action(() =>
-			{
-				SeriesCollection = new SeriesCollection()
-				{
-					new GLineSeries
-					{
-						Title = "Frametimes",
-						Values = frametimeValues,
-						Fill = Brushes.Transparent,
-						Stroke = new SolidColorBrush(Color.FromRgb(139,35,35)),
-						StrokeThickness = 1,
-						LineSmoothness= 0,
-						PointGeometrySize = 0
-					},
-					new GLineSeries
-					{
-						Title = string.Format(CultureInfo.InvariantCulture, "Moving average (window size = {0})", _appConfiguration.MovingAverageWindowSize),
-						Values = movingAverageValues,
-						Fill = Brushes.Transparent,
-						Stroke = new SolidColorBrush(Color.FromRgb(35, 139, 123)),
-						StrokeThickness = 1,
-						LineSmoothness= 0,
-						PointGeometrySize = 0
-					}
-				};
-			}));
+			return _localRecordDataServer.GetFrametimeSampleWindow();
 		}
 
 		private void SetStaticChart(IList<double> frametimes)
@@ -749,8 +526,8 @@ namespace CapFrameX.ViewModel
 						Fill = new SolidColorBrush(Color.FromRgb(83,104,114)),
 						Values = values,
 						DataLabels = true,
-                        FontSize = 11,
-                    }
+						FontSize = 11,
+					}
 				};
 
 				if (!_appConfiguration.ShowLowParameter)
@@ -781,19 +558,19 @@ namespace CapFrameX.ViewModel
 						Values = new ChartValues<double>(){ Math.Round((1 - stutteringTimePercentage / 100) * frametimes.Sum(), 0)/1000 },
 						DataLabels = true,
 						Foreground = Brushes.Black,
-						LabelPosition = PieLabelPosition.InsideSlice,
+						//LabelPosition = PieLabelPosition.InsideSlice,
 						LabelPoint = PieChartPointLabel,
-                        FontSize = 12,
-                    },
+						FontSize = 12,
+					},
 					new PieSeries
 					{
 						Title = "Stuttering time (s)",
 						Values = new ChartValues<double>(){ Math.Round(stutteringTimePercentage / 100 * frametimes.Sum()) / 1000 },
 						DataLabels = true,
 						Foreground = Brushes.Black,
-						LabelPosition = PieLabelPosition.InsideSlice,
+						//LabelPosition = PieLabelPosition.InsideSlice,
 						LabelPoint = PieChartPointLabel,
-                        FontSize = 12,
+						FontSize = 12,
 					}
 				};
 			}));
@@ -824,18 +601,15 @@ namespace CapFrameX.ViewModel
 						PointGeometrySize = 10,
 						PointGeometry = DefaultGeometries.Triangle,
 						DataLabels = true,
-						LabelPoint = point => point.X.ToString(CultureInfo.InvariantCulture) + "%, " + 
-                        Math.Round(point.Y, 1).ToString(CultureInfo.InvariantCulture) + " ms"
+						LabelPoint = point => point.X.ToString(CultureInfo.InvariantCulture) + "%, " +
+						Math.Round(point.Y, 1).ToString(CultureInfo.InvariantCulture) + " ms"
 					}
 				};
-
-				// LShapeLabels = lShapeQuantiles.Select(q => q.ToString(CultureInfo.InvariantCulture)).ToArray();
 			}));
 		}
 
 		private void ResetData()
 		{
-			SeriesCollection?.Clear();
 			LShapeCollection?.Clear();
 			StatisticCollection?.Clear();
 			StutteringStatisticCollection?.Clear();
@@ -855,15 +629,6 @@ namespace CapFrameX.ViewModel
 		public void OnNavigatedFrom(NavigationContext navigationContext)
 		{
 			_useUpdateSession = false;
-
-			////Reset data
-			//ResetData();
-
-			//// Reset Slider
-			//_doUpdateCharts = false;
-			//FirstNFrames = 0;
-			//LastNFrames = 0;
-			//_doUpdateCharts = true;
 		}
 	}
 }

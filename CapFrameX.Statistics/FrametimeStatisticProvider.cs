@@ -68,6 +68,9 @@ namespace CapFrameX.Statistics
 					break;
 				case ERemoveOutlierMethod.TwoDotFiveSigma:
 					break;
+				case ERemoveOutlierMethod.None:
+					adjustedSequence = sequence;
+					break;
 				default:
 					adjustedSequence = sequence;
 					break;
