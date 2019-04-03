@@ -111,7 +111,7 @@ namespace CapFrameX.OcatInterface
 			{
 				for (int i = startIndex; i < frametimes.Count - endIndex; i++)
 				{
-					frametimesPointsSampleWindow.Add(new Point(frametimes[i], FrameStart[i]));
+					frametimesPointsSampleWindow.Add(new Point(FrameStart[i], frametimes[i]));
 				}
 			}
 
