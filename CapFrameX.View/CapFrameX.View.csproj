@@ -172,6 +172,9 @@
     <Compile Include="AggregationView.xaml.cs">
       <DependentUpon>AggregationView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="CaptureView.xaml.cs">
+      <DependentUpon>CaptureView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ComparisonDataView.xaml.cs">
       <DependentUpon>ComparisonDataView.xaml</DependentUpon>
     </Compile>
@@ -216,6 +219,10 @@
   </ItemGroup>
   <ItemGroup>
     <Page Include="AggregationView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="CaptureView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
