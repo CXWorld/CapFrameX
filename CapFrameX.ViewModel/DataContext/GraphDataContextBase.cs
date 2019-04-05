@@ -20,6 +20,7 @@ namespace CapFrameX.ViewModel.DataContext
 		private double _graphNumberSamples;
 		private int _cutLeftSliderMaximum;
 		private int _cutRightSliderMaximum;
+		private bool _isCuttingModeActive;
 
 		protected IAppConfiguration AppConfiguration { get; }
 
@@ -27,22 +28,31 @@ namespace CapFrameX.ViewModel.DataContext
 
 		protected IStatisticProvider FrametimesStatisticProvider { get; }
 
+		public bool IsCuttingModeActive
+		{
+			get { return _isCuttingModeActive; }
+			set
+			{
+				_isCuttingModeActive = value;
+				RaisePropertyChanged();
+			}
+		}
+		public bool UseSlidingWindow
+		{
+			get { return _useSlidingWindow; }
+			set
+			{
+				_useSlidingWindow = value;
+				RaisePropertyChanged();
+			}
+		}
+
 		public bool UseRemovingOutlier
 		{
 			get => _useRemovingOutlier;
 			set
 			{
 				_useRemovingOutlier = value;
-				RaisePropertyChanged();
-			}
-		}
-
-		public bool UseSlidingWindow
-		{
-			get => _useSlidingWindow;
-			set
-			{
-				_useSlidingWindow = value;
 				RaisePropertyChanged();
 			}
 		}
@@ -149,7 +159,7 @@ namespace CapFrameX.ViewModel.DataContext
 
 		public ICommand ToogleZoomingModeCommand { get; }
 
-		public GraphDataContextBase(IRecordDataServer recordDataServer, 
+		public GraphDataContextBase(IRecordDataServer recordDataServer,
 			IAppConfiguration appConfiguration, IStatisticProvider frametimesStatisticProvider)
 		{
 			RecordDataServer = recordDataServer;
@@ -161,6 +171,9 @@ namespace CapFrameX.ViewModel.DataContext
 
 		public void InitializeCuttingParameter()
 		{
+			if (RecordSession == null)
+				return;
+
 			StartIndex = 0;
 			EndIndex = 0;
 

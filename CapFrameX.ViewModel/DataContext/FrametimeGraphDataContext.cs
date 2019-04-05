@@ -41,45 +41,7 @@ namespace CapFrameX.ViewModel.DataContext
 			CopyFrametimePointsCommand = new DelegateCommand(OnCopyFrametimePoints);
 		}
 
-		private void OnCopyFrametimeValues()
-		{
-			if (RecordSession == null)
-				return;
-
-			RecordDataServer.RemoveOutlierMethod 
-				= UseRemovingOutlier ? ERemoveOutlierMethod.DeciPercentile : ERemoveOutlierMethod.None;
-			var frametimes = 
-				UseSlidingWindow ? RecordDataServer.GetFrametimeSampleWindow() : RecordDataServer.GetFrametimeSampleWindow();
-			StringBuilder builder = new StringBuilder();
-
-			foreach (var frametime in frametimes)
-			{
-				builder.Append(frametime + Environment.NewLine);
-			}
-
-			Clipboard.SetDataObject(builder.ToString(), false);
-		}
-
-		private void OnCopyFrametimePoints()
-		{
-			if (RecordSession == null)
-				return;
-
-			RecordDataServer.RemoveOutlierMethod
-				= UseRemovingOutlier ? ERemoveOutlierMethod.DeciPercentile : ERemoveOutlierMethod.None;
-			var frametimePoints =
-				UseSlidingWindow ? RecordDataServer.GetFrametimePointTimeWindow() : RecordDataServer.GetFrametimePointSampleWindow();
-			StringBuilder builder = new StringBuilder();
-
-			for (int i = 0; i < frametimePoints.Count; i++)
-			{
-				builder.Append(frametimePoints[i].X + "\t" + frametimePoints[i].Y + Environment.NewLine);
-			}
-
-			Clipboard.SetDataObject(builder.ToString(), false);
-		}
-
-		private void SetFrametimeChart(IList<double> frametimes)
+		public void SetFrametimeChart(IList<double> frametimes)
 		{
 			//var gradientBrush = new LinearGradientBrush
 			//{
@@ -125,6 +87,44 @@ namespace CapFrameX.ViewModel.DataContext
 					}
 				};
 			}));
+		}
+
+		private void OnCopyFrametimeValues()
+		{
+			if (RecordSession == null)
+				return;
+
+			RecordDataServer.RemoveOutlierMethod 
+				= UseRemovingOutlier ? ERemoveOutlierMethod.DeciPercentile : ERemoveOutlierMethod.None;
+			var frametimes = 
+				UseSlidingWindow ? RecordDataServer.GetFrametimeSampleWindow() : RecordDataServer.GetFrametimeSampleWindow();
+			StringBuilder builder = new StringBuilder();
+
+			foreach (var frametime in frametimes)
+			{
+				builder.Append(frametime + Environment.NewLine);
+			}
+
+			Clipboard.SetDataObject(builder.ToString(), false);
+		}
+
+		private void OnCopyFrametimePoints()
+		{
+			if (RecordSession == null)
+				return;
+
+			RecordDataServer.RemoveOutlierMethod
+				= UseRemovingOutlier ? ERemoveOutlierMethod.DeciPercentile : ERemoveOutlierMethod.None;
+			var frametimePoints =
+				UseSlidingWindow ? RecordDataServer.GetFrametimePointTimeWindow() : RecordDataServer.GetFrametimePointSampleWindow();
+			StringBuilder builder = new StringBuilder();
+
+			for (int i = 0; i < frametimePoints.Count; i++)
+			{
+				builder.Append(frametimePoints[i].X + "\t" + frametimePoints[i].Y + Environment.NewLine);
+			}
+
+			Clipboard.SetDataObject(builder.ToString(), false);
 		}
 	}
 }

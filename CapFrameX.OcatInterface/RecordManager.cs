@@ -10,6 +10,9 @@ namespace CapFrameX.OcatInterface
 	{
 		public static void UpdateCustomData(OcatRecordInfo recordInfo, string customCpuInfo, string customGpuInfo, string customComment)
 		{
+			if (recordInfo == null || customCpuInfo == null || customGpuInfo == null || customComment == null)
+				return;
+
 			string[] lines = File.ReadAllLines(recordInfo.FullPath);
 
 			if (!lines[0].Contains("Comment"))

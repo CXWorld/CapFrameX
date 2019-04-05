@@ -54,7 +54,7 @@
 			</lvc:CartesianChart.AxisY>
 		</lvc:CartesianChart>
 		<Grid Grid.Row="1" Grid.Column="0"
-							  Visibility="{Binding ElementName=CuttingModeActiveToggleButton, Path=IsChecked, Converter={StaticResource FalseToCollapsedConverter}}">
+			  Visibility="{Binding IsCuttingModeActive, Converter={StaticResource FalseToCollapsedConverter}}">
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition Width="2*" />
 				<ColumnDefinition Width="1*" />
@@ -88,7 +88,7 @@
 									ToolTip="Cut last n frames"/>
 		</Grid>
 		<Slider Grid.Row="1" Grid.Column="0" TickFrequency="1"
-								Visibility="{Binding ElementName=UseSlidingWindow, Path=IsChecked, Converter={StaticResource FalseToCollapsedConverter}}"
+								Visibility="{Binding UseSlidingWindow, Converter={StaticResource FalseToCollapsedConverter}}"
 								IsSnapToTickEnabled="True"
 								Margin="10"
 								Orientation="Horizontal"

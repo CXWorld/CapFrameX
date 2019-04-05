@@ -81,7 +81,7 @@
 				<materialDesign:PackIcon Kind="PhotoLibrary"/>
 			</Button>
 		</Grid>
-		<Grid Grid.Row="1" x:Name="ScreenshotAreaGrid">
+		<Grid Grid.Row="1" x:Name="ScreenshotArea">
 			<Grid.RowDefinitions>
 				<RowDefinition Height="5*"></RowDefinition>
 				<RowDefinition Height="Auto"></RowDefinition>

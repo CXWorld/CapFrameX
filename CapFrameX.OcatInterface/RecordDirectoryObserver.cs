@@ -103,7 +103,7 @@ namespace CapFrameX.OcatInterface
 
 			return HasValidSource ?  Directory.GetFiles(_recordDirectory, "*.csv", 
 				SearchOption.TopDirectoryOnly).Where(file => filterList.All(entry => !file.Contains(entry)))
-				.Select(file => new FileInfo(file)) : null;
+				.Select(file => new FileInfo(file)) : Enumerable.Empty<FileInfo>();
 		}
 
 		public void UpdateObservedDirectory(string directory)

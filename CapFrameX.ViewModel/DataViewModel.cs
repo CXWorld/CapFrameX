@@ -405,6 +405,7 @@ namespace CapFrameX.ViewModel
 										SystemInfos = RecordManager.GetSystemInfos(_session);
 
 										// Do update actions
+										FrametimeGraphDataContext.RecordSession = _session;
 										FrametimeGraphDataContext.InitializeCuttingParameter();
 										UpdateMainCharts();
 										var tabItemHeader = SelectedChartItem.Header.ToString();
@@ -427,7 +428,7 @@ namespace CapFrameX.ViewModel
 
 			if (subset != null)
 			{
-				//Task.Factory.StartNew(() => SetFrametimeChart(subset));
+				Task.Factory.StartNew(() => FrametimeGraphDataContext.SetFrametimeChart(subset));
 				Task.Factory.StartNew(() => SetStaticChart(subset));
 				Task.Factory.StartNew(() => SetAdvancedStaticChart(subset));
 			}

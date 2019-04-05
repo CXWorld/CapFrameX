@@ -45,7 +45,7 @@ namespace CapFrameX.View
 			selectedSeries.PushOut = 8;
 		}
 
-		private void GitHubButton_Click(object sender, System.Windows.RoutedEventArgs e)
+		private void GitHubButton_Click(object sender, RoutedEventArgs e)
 		{
 			System.Diagnostics.Process.Start("https://github.com/DevTechProfile/CapFrameX");
 		}
@@ -122,11 +122,11 @@ namespace CapFrameX.View
 				var filename = Path.Combine(path, viewModel.RecordInfo.GameName + "_" +
 					DateTime.Now.ToString("yyyy-dd-M_HH-mm-ss") + "_CX_Analysis.png");
 
-				VisualBrush visualBrush = new VisualBrush(ScreenshotAreaGrid);
+				VisualBrush visualBrush = new VisualBrush(ScreenshotArea);
 
 				// Gets the size of the images (I assume each image has the same size)
-				int imageWidth = (int)ScreenshotAreaGrid.ActualWidth;
-				int imageHeight = (int)ScreenshotAreaGrid.ActualHeight;
+				int imageWidth = (int)ScreenshotArea.ActualWidth;
+				int imageHeight = (int)ScreenshotArea.ActualHeight;
 
 				// Draws the images into a DrawingVisual component
 				DrawingVisual drawingVisual = new DrawingVisual();

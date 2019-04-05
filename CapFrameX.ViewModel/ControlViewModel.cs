@@ -194,9 +194,12 @@ namespace CapFrameX.ViewModel
 
 			var adjustedCustomCpuDescription = CustomCpuDescription.Replace(",", "").Replace(";", "");
 			var adjustedCustomGpuDescription = CustomGpuDescription.Replace(",", "").Replace(";", "");
-			var adjustedCustomComment = CustomComment.Replace(",", "").Replace(";", "");
+			var adjustedCustomComment = CustomComment.Replace(",", "").Replace(";", "");			
+
 			RecordManager.UpdateCustomData(_selectedRecordInfo,
 				adjustedCustomCpuDescription, adjustedCustomGpuDescription, adjustedCustomComment);
+
+			ReloadRecordList();
 		}
 
 		public void OnRecordSelectByDoubleClick()
@@ -259,9 +262,16 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
+		private void ReloadRecordList()
+		{
+			// SelectedRecordInfo = null;
+			RecordInfoList.Clear();
+			LoadRecordList();
+		}
+
 		private void LoadRecordList()
 		{
-			foreach (var fileInfo in _recordObserver.GetAllRecordFileInfo())
+			foreach (var fileInfo in _recordObserver?.GetAllRecordFileInfo())
 			{
 				AddToRecordInfoList(fileInfo);
 			}
