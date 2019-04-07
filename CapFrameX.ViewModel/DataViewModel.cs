@@ -1,6 +1,5 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using CapFrameX.EventAggregation.Messages;
-using CapFrameX.Extensions;
 using CapFrameX.OcatInterface;
 using CapFrameX.Statistics;
 using CapFrameX.ViewModel.DataContext;
@@ -30,11 +29,8 @@ namespace CapFrameX.ViewModel
 		private readonly IStatisticProvider _frametimeStatisticProvider;
 		private readonly IFrametimeAnalyzer _frametimeAnalyzer;
 		private readonly IEventAggregator _eventAggregator;
-		private readonly IAppConfiguration _appConfiguration;
-
 		private bool _useUpdateSession = true;
 		private Session _session;
-		private OcatRecordInfo _recordInfo;
 		private SeriesCollection _statisticCollection;
 		private SeriesCollection _lShapeCollection;
 		private SeriesCollection _stutteringStatisticCollection;
@@ -52,10 +48,12 @@ namespace CapFrameX.ViewModel
 		private TabItem _selectedChartItem;
 		private string _selectedChartLengthValue;
 		private IRecordDataServer _localRecordDataServer;
+		private IDisposable _frametimeWindowObservable;
+		private ZoomingOptions _zoomingMode;
 
-		public IAppConfiguration AppConfiguration => _appConfiguration;
+		public IAppConfiguration AppConfiguration { get; }
 
-		public OcatRecordInfo RecordInfo => _recordInfo;
+		public OcatRecordInfo RecordInfo { get; private set; }
 
 		public FrametimeGraphDataContext FrametimeGraphDataContext { get; }
 
@@ -145,7 +143,7 @@ namespace CapFrameX.ViewModel
 			{
 				_removeOutliers = value;
 				RaisePropertyChanged();
-				UpdateMainCharts();
+				OnRemoveOutliersChanged();
 			}
 		}
 
@@ -157,49 +155,6 @@ namespace CapFrameX.ViewModel
 				_selectedChartItem = value;
 				RaisePropertyChanged();
 				OnChartItemChanged();
-			}
-		}
-
-		public int SelectWindowSize
-		{
-			get { return _selectWindowSize; }
-			set
-			{
-				_selectWindowSize = value;
-				RaisePropertyChanged();
-				UpdateMainCharts();
-			}
-		}
-
-		public string SelectedChartLengthValue
-		{
-			get => _selectedChartLengthValue;
-			set
-			{
-				_selectedChartLengthValue = value;
-				RaisePropertyChanged();
-			}
-		}
-
-		public double FrametimeSliderMaximum
-		{
-			get { return _frametimeSliderMaximum; }
-			set
-			{
-				_frametimeSliderMaximum = value;
-				RaisePropertyChanged();
-			}
-		}
-
-		public bool UseSlidingWindow
-		{
-			get { return _useSlidingWindow; }
-			set
-			{
-				_useSlidingWindow = value;
-				RaisePropertyChanged();
-				OnSelectedChartLengthValueChanged();
-				//OnFrametimeSliderValueChanged();
 			}
 		}
 
@@ -220,9 +175,15 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-		public IList<int> WindowSizes { get; }
-
-		public IList<string> ChartLengthValues { get; }
+		public ZoomingOptions ZoomingMode
+		{
+			get { return _zoomingMode; }
+			set
+			{
+				_zoomingMode = value;
+				RaisePropertyChanged();
+			}
+		}
 
 		public ICommand CopyFpsValuesCommand { get; }
 
@@ -232,6 +193,8 @@ namespace CapFrameX.ViewModel
 
 		public ICommand CopySystemInfoCommand { get; }
 
+		public ICommand ToogleZoomingModeCommand { get; }
+
 		public DataViewModel(IStatisticProvider frametimeStatisticProvider,
 							 IFrametimeAnalyzer frametimeAnalyzer,
 							 IEventAggregator eventAggregator,
@@ -240,7 +203,7 @@ namespace CapFrameX.ViewModel
 			_frametimeStatisticProvider = frametimeStatisticProvider;
 			_frametimeAnalyzer = frametimeAnalyzer;
 			_eventAggregator = eventAggregator;
-			_appConfiguration = appConfiguration;
+			AppConfiguration = appConfiguration;
 
 			SubscribeToUpdateSession();
 
@@ -248,17 +211,45 @@ namespace CapFrameX.ViewModel
 			CopyStatisticalParameterCommand = new DelegateCommand(OnCopyStatisticalParameter);
 			CopyLShapeQuantilesCommand = new DelegateCommand(OnCopyQuantiles);
 			CopySystemInfoCommand = new DelegateCommand(OnCopySystemInfoCommand);
+			ToogleZoomingModeCommand = new DelegateCommand(OnToogleZoomingMode);
 
 			ParameterFormatter = value => value.ToString(string.Format("F{0}",
-				_appConfiguration.FpsValuesRoundingDigits), CultureInfo.InvariantCulture);
-			WindowSizes = new List<int>(Enumerable.Range(4, 100 - 4));
-			SelectWindowSize = _appConfiguration.MovingAverageWindowSize;
-			ChartLengthValues = new List<string> { "5", "10", "20", "30", "60", "120", "180", "240", "300", "600" };
-			SelectedChartLengthValue = "10";
-
+				AppConfiguration.FpsValuesRoundingDigits), CultureInfo.InvariantCulture);
 			_localRecordDataServer = new LocalRecordDataServer();
 			FrametimeGraphDataContext = new FrametimeGraphDataContext(_localRecordDataServer,
-				_appConfiguration, _frametimeStatisticProvider);
+				AppConfiguration, _frametimeStatisticProvider);
+
+			ZoomingMode = ZoomingOptions.Y;
+		}
+
+		private void OnToogleZoomingMode()
+		{
+			switch (ZoomingMode)
+			{
+				case ZoomingOptions.None:
+					ZoomingMode = ZoomingOptions.X;
+					break;
+				case ZoomingOptions.X:
+					ZoomingMode = ZoomingOptions.Y;
+					break;
+				case ZoomingOptions.Y:
+					ZoomingMode = ZoomingOptions.Xy;
+					break;
+				case ZoomingOptions.Xy:
+					ZoomingMode = ZoomingOptions.None;
+					break;
+				default:
+					throw new ArgumentOutOfRangeException();
+			}
+
+			var tabItemHeader = SelectedChartItem.Header.ToString();
+			if (string.IsNullOrWhiteSpace(tabItemHeader))
+				return;
+
+			if (tabItemHeader == "Frametimes")
+			{
+				FrametimeGraphDataContext.ZoomingMode = ZoomingMode;
+			}
 		}
 
 		private void OnCuttingModeChanged()
@@ -266,14 +257,29 @@ namespace CapFrameX.ViewModel
 			if (_session == null)
 				return;
 
+			var tabItemHeader = SelectedChartItem.Header.ToString();
+
+			if (string.IsNullOrWhiteSpace(tabItemHeader))
+				return;
+
+			if (tabItemHeader == "Frametimes")
+			{
+				FrametimeGraphDataContext.IsCuttingModeActive = IsCuttingModeActive;
+			}
+
 			if (IsCuttingModeActive)
 			{
-				FrametimeGraphDataContext.InitializeCuttingParameter();
+				_frametimeWindowObservable = _localRecordDataServer.FrametimeDataStream.Subscribe(sequence =>
+				{
+					Task.Factory.StartNew(() => SetStaticChart(sequence));
+					Task.Factory.StartNew(() => SetAdvancedStaticChart(sequence));
+				});
 			}
 			else
 			{
-				FrametimeGraphDataContext.StartIndex = 0;
-				FrametimeGraphDataContext.EndIndex = 0;
+				_frametimeWindowObservable?.Dispose();
+				UpdateMainCharts();
+				UpdateSecondaryCharts();
 			}
 		}
 
@@ -287,7 +293,7 @@ namespace CapFrameX.ViewModel
 
 			foreach (var frametime in frametimes)
 			{
-				builder.Append(Math.Round(1000 / frametime, _appConfiguration.FpsValuesRoundingDigits) + Environment.NewLine);
+				builder.Append(Math.Round(1000 / frametime, AppConfiguration.FpsValuesRoundingDigits) + Environment.NewLine);
 			}
 
 			Clipboard.SetDataObject(builder.ToString(), false);
@@ -299,7 +305,7 @@ namespace CapFrameX.ViewModel
 				return;
 
 			var frametimes = GetFrametimesSubset();
-			var roundingDigits = _appConfiguration.FpsValuesRoundingDigits;
+			var roundingDigits = AppConfiguration.FpsValuesRoundingDigits;
 			var fps = frametimes.Select(ft => 1000 / ft).ToList();
 			var max = Math.Round(fps.Max(), roundingDigits);
 			var p99_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.99), roundingDigits);
@@ -311,13 +317,13 @@ namespace CapFrameX.ViewModel
 			var p1_averageLow = Math.Round(1000 / _frametimeStatisticProvider.GetPAverageHighSequence(frametimes, 1 - 0.01), roundingDigits);
 			var p0dot1_averageLow = Math.Round(1000 / _frametimeStatisticProvider.GetPAverageHighSequence(frametimes, 1 - 0.001), roundingDigits);
 			var min = Math.Round(fps.Min(), roundingDigits);
-			var adaptiveStandardDeviation = Math.Round(_frametimeStatisticProvider.GetAdaptiveStandardDeviation(fps, SelectWindowSize), roundingDigits);
+			var adaptiveStandardDeviation = Math.Round(_frametimeStatisticProvider.GetAdaptiveStandardDeviation(fps, AppConfiguration.MovingAverageWindowSize), roundingDigits);
 
 			StringBuilder builder = new StringBuilder();
 
 			// Vice versa!
 			// "Adaptive STD" ,"Min","0.1% Low" ,"0.1%" ,"1% Low", "1%" ,"5%" ,"Average" ,"95%" ,"99%" ,"Max"
-			if (_appConfiguration.ShowLowParameter)
+			if (AppConfiguration.ShowLowParameter)
 			{
 				builder.Append("Max" + "\t" + max + Environment.NewLine);
 				builder.Append("99%" + "\t" + p99_quantile + Environment.NewLine);
@@ -386,8 +392,14 @@ namespace CapFrameX.ViewModel
 
 		private void OnChartItemChanged()
 		{
-			var tabItemHeader = SelectedChartItem.Header.ToString();
-			UpdateSecondaryCharts(tabItemHeader);
+			UpdateSecondaryCharts();
+		}
+
+		private void OnRemoveOutliersChanged()
+		{
+			_localRecordDataServer.RemoveOutlierMethod = RemoveOutliers ? ERemoveOutlierMethod.DeciPercentile : ERemoveOutlierMethod.None;
+			UpdateMainCharts();
+			UpdateSecondaryCharts();
 		}
 
 		private void SubscribeToUpdateSession()
@@ -398,7 +410,7 @@ namespace CapFrameX.ViewModel
 								if (_useUpdateSession)
 								{
 									_session = msg.OcatSession;
-									_recordInfo = msg.RecordInfo;
+									RecordInfo = msg.RecordInfo;
 
 									if (_session != null)
 									{
@@ -408,8 +420,7 @@ namespace CapFrameX.ViewModel
 										FrametimeGraphDataContext.RecordSession = _session;
 										FrametimeGraphDataContext.InitializeCuttingParameter();
 										UpdateMainCharts();
-										var tabItemHeader = SelectedChartItem.Header.ToString();
-										UpdateSecondaryCharts(tabItemHeader);
+										UpdateSecondaryCharts();
 									}
 									else
 									{
@@ -434,8 +445,9 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-		private void UpdateSecondaryCharts(string headerName)
+		private void UpdateSecondaryCharts()
 		{
+			var headerName = SelectedChartItem.Header.ToString();
 			var subset = GetFrametimesSubset();
 
 			if (subset == null)
@@ -447,35 +459,6 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-		private void OnSelectedChartLengthValueChanged()
-		{
-			if (UseSlidingWindow)
-			{
-				if (Double.TryParse(SelectedChartLengthValue, NumberStyles.Any, CultureInfo.InvariantCulture, out double length))
-				{
-					// Slider parameter
-					FrametimeGraphDataContext.SelectedChartLength = length < _session.LastFrameTime ?
-						GraphDataContextBase.SCALE_RESOLUTION : 0;
-					FrametimeGraphDataContext.SliderValue = 0;
-				}
-			}
-			else
-			{
-				FrametimeGraphDataContext.SelectedChartLength = 0;
-				FrametimeGraphDataContext.SliderValue = 0;
-			}
-		}
-
-		//private void OnFrametimeSliderValueChanged()
-		//{
-		//	var subset = GetFrametimesSubset();
-
-		//	if (subset != null)
-		//	{
-		//		SetFrametimeChart(subset);
-		//	}
-		//}
-
 		private IList<double> GetFrametimesSubset()
 		{
 			return _localRecordDataServer?.GetFrametimeSampleWindow();
@@ -486,7 +469,7 @@ namespace CapFrameX.ViewModel
 			if (frametimes == null || !frametimes.Any())
 				return;
 
-			var roundingDigits = _appConfiguration.FpsValuesRoundingDigits;
+			var roundingDigits = AppConfiguration.FpsValuesRoundingDigits;
 			var fps = frametimes.Select(ft => 1000 / ft).ToList();
 			var p99_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.99), roundingDigits);
 			var p95_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.95), roundingDigits);
@@ -498,11 +481,11 @@ namespace CapFrameX.ViewModel
 			var p1_averageLow = Math.Round(1000 / _frametimeStatisticProvider.GetPAverageHighSequence(frametimes, 1 - 0.01), roundingDigits);
 			var p0dot1_averageLow = Math.Round(1000 / _frametimeStatisticProvider.GetPAverageHighSequence(frametimes, 1 - 0.001), roundingDigits);
 			var min = Math.Round(fps.Min(), roundingDigits);
-			var adaptiveStandardDeviation = Math.Round(_frametimeStatisticProvider.GetAdaptiveStandardDeviation(fps, SelectWindowSize), roundingDigits);
+			var adaptiveStandardDeviation = Math.Round(_frametimeStatisticProvider.GetAdaptiveStandardDeviation(fps, AppConfiguration.MovingAverageWindowSize), roundingDigits);
 
 			IChartValues values = null;
 
-			if (!_appConfiguration.ShowLowParameter)
+			if (!AppConfiguration.ShowLowParameter)
 			{
 				values = new ChartValues<double>
 				{
@@ -523,7 +506,7 @@ namespace CapFrameX.ViewModel
 				{
 					new RowSeries
 					{
-						Title = _recordInfo.GameName,
+						Title = RecordInfo.GameName,
 						Fill = new SolidColorBrush(Color.FromRgb(83,104,114)),
 						Values = values,
 						DataLabels = true,
@@ -531,7 +514,7 @@ namespace CapFrameX.ViewModel
 					}
 				};
 
-				if (!_appConfiguration.ShowLowParameter)
+				if (!AppConfiguration.ShowLowParameter)
 				{
 					ParameterLabels = new[] { "Adaptive STD", "Min", "0.1%", "1%", "5%", "Average", "95%", "99%", "Max" };
 				}
@@ -547,7 +530,7 @@ namespace CapFrameX.ViewModel
 			if (frametimes == null || !frametimes.Any())
 				return;
 
-			var stutteringTimePercentage = _frametimeStatisticProvider.GetStutteringTimePercentage(frametimes, _appConfiguration.StutteringFactor);
+			var stutteringTimePercentage = _frametimeStatisticProvider.GetStutteringTimePercentage(frametimes, AppConfiguration.StutteringFactor);
 
 			Application.Current.Dispatcher.BeginInvoke(new Action(() =>
 			{

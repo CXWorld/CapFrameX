@@ -81,22 +81,26 @@ namespace CapFrameX.Statistics
 
 		public double GetPQuantileSequence(IList<double> sequence, double pQuantile)
 		{
-            return sequence.Quantile(pQuantile);
+			return sequence.Quantile(pQuantile);
 		}
 
 		public double GetPAverageLowSequence(IList<double> sequence, double pQuantile)
 		{
-			var pQuantileValue = sequence.Quantile(pQuantile);
-			return sequence.Where(element => element <= pQuantileValue).Average();
+			int count = (int)(sequence.Count * pQuantile);
+			var orderedSequence = sequence.OrderBy(x => x);
+
+			return orderedSequence.Take(count).Average();
 		}
 
-        public double GetPAverageHighSequence(IList<double> sequence, double pQuantile)
-        {
-            var pQuantileValue = sequence.Quantile(pQuantile);
-            return sequence.Where(element => element >= pQuantileValue).Average();
-        }
+		public double GetPAverageHighSequence(IList<double> sequence, double pQuantile)
+		{
+			int count = (int)(sequence.Count * (1 - pQuantile));
+			var orderedSequence = sequence.OrderByDescending(x => x);
 
-        public List<double>[] GetDiscreteDistribution(IList<double> sequence)
+			return orderedSequence.Take(count).Average();
+		}
+
+		public List<double>[] GetDiscreteDistribution(IList<double> sequence)
 		{
 			var min = sequence.Min();
 			var max = sequence.Max();
@@ -104,7 +108,7 @@ namespace CapFrameX.Statistics
 			var binWidth = CalculateOptimalBinWidth(sequence);
 			int count = (int)Math.Round((max - min) / binWidth, 0);
 
-			if(count == 4)
+			if (count == 4)
 			{
 				double[] minimalBinIntervals = LinearSpace(min, max, count + 1);
 				var histogram = Histogram(sequence, minimalBinIntervals);

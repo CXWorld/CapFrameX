@@ -21,6 +21,8 @@ namespace CapFrameX.OcatInterface
 		private ISubject<IList<double>> _fpsDataSubject;
 		private ISubject<IList<Point>> _fpsPointDataSubject;
 
+		public bool IsActive { get; set; }
+
 		public Session CurrentSession { get; set; }
 
 		public int StartIndex
@@ -38,19 +40,31 @@ namespace CapFrameX.OcatInterface
 		public double WindowLength
 		{
 			get => _windowLength;
-			set { _windowLength = value; DoUpdateWindowTrigger(); }
+			set
+			{
+				_windowLength = value;
+				DoUpdateWindowTrigger();
+			}
 		}
 
 		public double CurrentTime
 		{
 			get => _currentTime;
-			set { _currentTime = value; DoUpdateWindowTrigger(); }
+			set
+			{
+				_currentTime = value;
+				DoUpdateWindowTrigger();
+			}
 		}
 
 		public ERemoveOutlierMethod RemoveOutlierMethod
 		{
 			get => _removeOutlierMethod;
-			set { _removeOutlierMethod = value; DoUpdateFilterTrigger(); }
+			set
+			{
+				_removeOutlierMethod = value;
+				DoUpdateFilterTrigger();
+			}
 		}
 
 		public IObservable<IList<double>> FrametimeDataStream => _frametimeDataSubject.AsObservable();
@@ -67,6 +81,8 @@ namespace CapFrameX.OcatInterface
 			_frametimePointDataSubject = new Subject<IList<Point>>();
 			_fpsDataSubject = new Subject<IList<double>>();
 			_fpsPointDataSubject = new Subject<IList<Point>>();
+
+			IsActive = true;
 		}
 
 		public IList<double> GetFrametimeTimeWindow()
@@ -127,6 +143,9 @@ namespace CapFrameX.OcatInterface
 
 		private void DoUpdateIndexTrigger()
 		{
+			if (!IsActive)
+				return;
+
 			if (CurrentSession == null)
 				return;
 
@@ -136,6 +155,9 @@ namespace CapFrameX.OcatInterface
 
 		private void DoUpdateWindowTrigger()
 		{
+			if (!IsActive)
+				return;
+
 			if (CurrentSession == null)
 				return;
 
@@ -145,6 +167,9 @@ namespace CapFrameX.OcatInterface
 
 		private void DoUpdateFilterTrigger()
 		{
+			if (!IsActive)
+				return;
+
 			if (CurrentSession == null)
 				return;
 

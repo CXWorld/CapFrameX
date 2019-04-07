@@ -29,16 +29,13 @@
 		</ResourceDictionary>
 	</UserControl.Resources>
 	<Grid>
-		<Grid.ColumnDefinitions>
-			<ColumnDefinition Width="1*"></ColumnDefinition>
-		</Grid.ColumnDefinitions>
 		<Grid.RowDefinitions>
 			<RowDefinition Height="1*"></RowDefinition>
 			<RowDefinition Height="Auto"></RowDefinition>
 		</Grid.RowDefinitions>
-		<lvc:CartesianChart Grid.Column="0" Grid.Row="0" Tag="{Binding ElementName=DataViewUserControl, Path=DataContext}" LegendLocation="Top"
-											MouseDoubleClick="ResetChart_MouseDoubleClick" DisableAnimations="True" Series="{Binding FpsCollection}" Zoom="{Binding ZoomingMode}"
-											TooltipTimeout="0">
+		<lvc:CartesianChart Grid.Row="0" Tag="{Binding ElementName=DataViewUserControl, Path=DataContext}" LegendLocation="Top"
+							MouseDoubleClick="ResetChart_MouseDoubleClick" DisableAnimations="True" Series="{Binding FpsCollection}" Zoom="{Binding ZoomingMode}"
+							TooltipTimeout="0">
 			<lvc:CartesianChart.ContextMenu>
 				<ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
 					<MenuItem Header="Copy fps values" Command="{Binding CopyFpsValuesCommand}"/>
@@ -51,8 +48,7 @@
 				<lvc:Axis Title="Frames per second" Name="FpsY" Foreground="Black"/>
 			</lvc:CartesianChart.AxisY>
 		</lvc:CartesianChart>
-		<Grid Grid.Row="1" Grid.Column="0"
-							  Visibility="{Binding ElementName=CuttingModeActiveToggleButton, Path=IsChecked, Converter={StaticResource FalseToCollapsedConverter}}">
+		<Grid Grid.Row="1" Visibility="{Binding ElementName=CuttingModeActiveToggleButton, Path=IsChecked, Converter={StaticResource FalseToCollapsedConverter}}">
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition Width="2*" />
 				<ColumnDefinition Width="1*" />
@@ -71,7 +67,7 @@
 					<StackPanel Orientation="Horizontal" Margin="-2 0 0 0">
 						<materialDesign:PackIcon Kind="ChartLine" />
 						<TextBlock Margin="3 0 0 0">
-											# samples
+							# samples
 						</TextBlock>
 					</StackPanel>
 				</materialDesign:HintAssist.Hint>
@@ -85,15 +81,5 @@
 									Style="{StaticResource MaterialDesignDiscreteSlider}"
 									ToolTip="Cut last n frames"/>
 		</Grid>
-		<Slider Grid.Row="1" Grid.Column="0" TickFrequency="1"
-								Visibility="{Binding ElementName=SlidingWindowCheckBox, Path=IsChecked, Converter={StaticResource FalseToCollapsedConverter}}"
-								IsSnapToTickEnabled="True"
-								Margin="10"
-								Orientation="Horizontal"
-								TickPlacement="BottomRight"
-								Minimum="0"
-								Maximum="{Binding FrametimeSliderMaximum}"
-								Value="{Binding FrametimeSliderValue}"
-								IsSelectionRangeEnabled="True"/>
 	</Grid>
 </UserControl>

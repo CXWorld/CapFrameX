@@ -8,7 +8,6 @@ using Prism.Commands;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Text;
 using System.Windows;
 using System.Windows.Input;
@@ -34,11 +33,18 @@ namespace CapFrameX.ViewModel.DataContext
 
 		public ICommand CopyFrametimePointsCommand { get; }
 
-		public FrametimeGraphDataContext(IRecordDataServer recordDataServer, IAppConfiguration appConfiguration, IStatisticProvider frametimesStatisticProvider) : 
+		public FrametimeGraphDataContext(IRecordDataServer recordDataServer, IAppConfiguration appConfiguration, IStatisticProvider frametimesStatisticProvider) :
 			base(recordDataServer, appConfiguration, frametimesStatisticProvider)
 		{
 			CopyFrametimeValuesCommand = new DelegateCommand(OnCopyFrametimeValues);
 			CopyFrametimePointsCommand = new DelegateCommand(OnCopyFrametimePoints);
+
+			// Update Chart after changing index slider
+			RecordDataServer.FrametimeDataStream.Subscribe(sequence =>
+			{
+				SetFrametimeChart(sequence);
+				GraphNumberSamples = sequence.Count;
+			});
 		}
 
 		public void SetFrametimeChart(IList<double> frametimes)
@@ -94,9 +100,9 @@ namespace CapFrameX.ViewModel.DataContext
 			if (RecordSession == null)
 				return;
 
-			RecordDataServer.RemoveOutlierMethod 
+			RecordDataServer.RemoveOutlierMethod
 				= UseRemovingOutlier ? ERemoveOutlierMethod.DeciPercentile : ERemoveOutlierMethod.None;
-			var frametimes = 
+			var frametimes =
 				UseSlidingWindow ? RecordDataServer.GetFrametimeSampleWindow() : RecordDataServer.GetFrametimeSampleWindow();
 			StringBuilder builder = new StringBuilder();
 

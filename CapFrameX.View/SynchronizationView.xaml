@@ -62,7 +62,7 @@
 					<ColumnDefinition Width="Auto" />
 					<ColumnDefinition Width="1*" />
 				</Grid.ColumnDefinitions>
-				<Button Margin="15 0 50 0" Grid.Column="1" VerticalAlignment="Top" HorizontalAlignment="Right" Command="{Binding ToogleZoomingModeCommand}">
+				<Button Margin="15 0 50 20" Grid.Column="1" VerticalAlignment="Top" HorizontalAlignment="Right" Command="{Binding ToogleZoomingModeCommand}">
 					<TextBlock>Toggle zoming mode, current is: 
 						<TextBlock Text="{Binding ZoomingMode, Converter={StaticResource ZoomingModeConverter}}"/>
 					</TextBlock>

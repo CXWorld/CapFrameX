@@ -2,10 +2,7 @@
 using CapFrameX.OcatInterface;
 using CapFrameX.Statistics;
 using LiveCharts;
-using Prism.Commands;
 using Prism.Mvvm;
-using System;
-using System.Windows.Input;
 
 namespace CapFrameX.ViewModel.DataContext
 {
@@ -17,7 +14,7 @@ namespace CapFrameX.ViewModel.DataContext
 		private SeriesCollection _seriesCollection;
 		private bool _useRemovingOutlier;
 		private bool _useSlidingWindow;
-		private double _graphNumberSamples;
+		private int _graphNumberSamples;
 		private int _cutLeftSliderMaximum;
 		private int _cutRightSliderMaximum;
 		private bool _isCuttingModeActive;
@@ -35,8 +32,10 @@ namespace CapFrameX.ViewModel.DataContext
 			{
 				_isCuttingModeActive = value;
 				RaisePropertyChanged();
+				OnCuttingModeChanged();
 			}
 		}
+
 		public bool UseSlidingWindow
 		{
 			get { return _useSlidingWindow; }
@@ -147,7 +146,7 @@ namespace CapFrameX.ViewModel.DataContext
 			}
 		}
 
-		public double GraphNumberSamples
+		public int GraphNumberSamples
 		{
 			get { return _graphNumberSamples; }
 			set
@@ -157,16 +156,18 @@ namespace CapFrameX.ViewModel.DataContext
 			}
 		}
 
-		public ICommand ToogleZoomingModeCommand { get; }
-
 		public GraphDataContextBase(IRecordDataServer recordDataServer,
 			IAppConfiguration appConfiguration, IStatisticProvider frametimesStatisticProvider)
 		{
 			RecordDataServer = recordDataServer;
 			AppConfiguration = appConfiguration;
 			FrametimesStatisticProvider = frametimesStatisticProvider;
-			ToogleZoomingModeCommand = new DelegateCommand(OnToogleZoomingMode);
 			ZoomingMode = ZoomingOptions.Y;
+		}
+
+		private void OnCuttingModeChanged()
+		{
+			InitializeCuttingParameter();
 		}
 
 		public void InitializeCuttingParameter()
@@ -174,33 +175,16 @@ namespace CapFrameX.ViewModel.DataContext
 			if (RecordSession == null)
 				return;
 
+			RecordDataServer.IsActive = false;
+
 			StartIndex = 0;
 			EndIndex = 0;
 
 			CutLeftSliderMaximum = RecordSession.FrameTimes.Count / 2;
 			CutRightSliderMaximum = RecordSession.FrameTimes.Count / 2;
 			GraphNumberSamples = RecordSession.FrameTimes.Count;
-		}
 
-		private void OnToogleZoomingMode()
-		{
-			switch (ZoomingMode)
-			{
-				case ZoomingOptions.None:
-					ZoomingMode = ZoomingOptions.X;
-					break;
-				case ZoomingOptions.X:
-					ZoomingMode = ZoomingOptions.Y;
-					break;
-				case ZoomingOptions.Y:
-					ZoomingMode = ZoomingOptions.Xy;
-					break;
-				case ZoomingOptions.Xy:
-					ZoomingMode = ZoomingOptions.None;
-					break;
-				default:
-					throw new ArgumentOutOfRangeException();
-			}
+			RecordDataServer.IsActive = true;
 		}
 	}
 }

@@ -7,6 +7,8 @@ namespace CapFrameX.OcatInterface
 {
 	public interface IRecordDataServer
 	{
+		bool IsActive { get; set; }
+
 		int StartIndex { get; set; }
 
 		int EndIndex { get; set; }
