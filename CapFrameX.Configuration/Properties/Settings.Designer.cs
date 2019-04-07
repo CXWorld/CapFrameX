@@ -118,5 +118,137 @@ namespace CapFrameX.Configuration.Properties {
                 this["ScreenshotDirectory"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool UseMaxStatisticParameter {
+            get {
+                return ((bool)(this["UseMaxStatisticParameter"]));
+            }
+            set {
+                this["UseMaxStatisticParameter"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool UseP99QuantileStatisticParameter {
+            get {
+                return ((bool)(this["UseP99QuantileStatisticParameter"]));
+            }
+            set {
+                this["UseP99QuantileStatisticParameter"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool UseP95QuantileStatisticParameter {
+            get {
+                return ((bool)(this["UseP95QuantileStatisticParameter"]));
+            }
+            set {
+                this["UseP95QuantileStatisticParameter"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool UseAverageStatisticParameter {
+            get {
+                return ((bool)(this["UseAverageStatisticParameter"]));
+            }
+            set {
+                this["UseAverageStatisticParameter"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool UseP5QuantileStatisticParameter {
+            get {
+                return ((bool)(this["UseP5QuantileStatisticParameter"]));
+            }
+            set {
+                this["UseP5QuantileStatisticParameter"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool UseP1QuantileStatisticParameter {
+            get {
+                return ((bool)(this["UseP1QuantileStatisticParameter"]));
+            }
+            set {
+                this["UseP1QuantileStatisticParameter"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool UseP0Dot1QuantileStatisticParameter {
+            get {
+                return ((bool)(this["UseP0Dot1QuantileStatisticParameter"]));
+            }
+            set {
+                this["UseP0Dot1QuantileStatisticParameter"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool UseP1LowAverageStatisticParameter {
+            get {
+                return ((bool)(this["UseP1LowAverageStatisticParameter"]));
+            }
+            set {
+                this["UseP1LowAverageStatisticParameter"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool UseP0Dot1LowAverageStatisticParameter {
+            get {
+                return ((bool)(this["UseP0Dot1LowAverageStatisticParameter"]));
+            }
+            set {
+                this["UseP0Dot1LowAverageStatisticParameter"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool UseMinStatisticParameter {
+            get {
+                return ((bool)(this["UseMinStatisticParameter"]));
+            }
+            set {
+                this["UseMinStatisticParameter"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool UseAdaptiveSTDStatisticParameter {
+            get {
+                return ((bool)(this["UseAdaptiveSTDStatisticParameter"]));
+            }
+            set {
+                this["UseAdaptiveSTDStatisticParameter"] = value;
+            }
+        }
     }
 }

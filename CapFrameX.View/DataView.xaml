@@ -85,7 +85,6 @@
 			<Grid.RowDefinitions>
 				<RowDefinition Height="5*"></RowDefinition>
 				<RowDefinition Height="Auto"></RowDefinition>
-				<!--<RowDefinition Height="Auto"></RowDefinition>-->
 				<RowDefinition Height="3*"></RowDefinition>
 			</Grid.RowDefinitions>
 			<Grid.ColumnDefinitions>
@@ -96,9 +95,9 @@
 				<TabItem Header="Frametimes">
 					<controls:FrametimeGraphControl DataContext="{Binding Path=FrametimeGraphDataContext}"/>
 				</TabItem>
-				<!--<TabItem Header="FPS">
+				<TabItem Header="FPS">
 					<controls:FpsGraphControl DataContext="{Binding Path=FpsGraphDataContext}"/>
-				</TabItem>-->
+				</TabItem>
 				<TabItem Header="L-shape">
 					<lvc:CartesianChart MouseDoubleClick="ResetChart_MouseDoubleClick" Series="{Binding LShapeCollection}" Zoom="{Binding ZoomingMode}" 
 										Tag="{Binding ElementName=DataViewUserControl, Path=DataContext}">
@@ -158,7 +157,7 @@
 						</ContextMenu>
 					</lvc:CartesianChart.ContextMenu>
 					<lvc:CartesianChart.AxisX>
-                        <lvc:Axis Title="FPS" FontSize="11" LabelFormatter="{Binding ParameterFormatter}" Foreground="Black"></lvc:Axis>
+						<lvc:Axis Title="FPS" FontSize="11" LabelFormatter="{Binding ParameterFormatter}" Foreground="Black"></lvc:Axis>
 					</lvc:CartesianChart.AxisX>
 					<lvc:CartesianChart.AxisY>
 						<lvc:Axis Title="Statistical Parameters" FontSize="11" Labels="{Binding ParameterLabels}" Foreground="Black">
@@ -229,8 +228,5 @@
 				</ScrollViewer>
 			</Expander>
 		</Grid>
-		<!--<GridSplitter Grid.Row="2" Margin="0 5 0 5" ShowsPreview="True" Height="2" HorizontalAlignment="Stretch"
-					  ResizeDirection="Rows"
-					  ResizeBehavior="PreviousAndNext"/>-->
 	</Grid>
 </UserControl>

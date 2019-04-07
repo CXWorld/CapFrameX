@@ -48,10 +48,70 @@ namespace CapFrameX.Configuration
 			set { Settings.RecordDataGridIgnoreList = value; Settings.Save(); }
 		}
 
-		public bool ShowLowParameter
+		public bool UseMaxStatisticParameter
 		{
-			get { return Settings.ShowLowParameter; }
-			set { Settings.ShowLowParameter = value; Settings.Save(); }
+			get { return Settings.UseMaxStatisticParameter; }
+			set { Settings.UseMaxStatisticParameter = value; Settings.Save(); }
+		}
+
+		public bool UseP99QuantileStatisticParameter
+		{
+			get { return Settings.UseP99QuantileStatisticParameter; }
+			set { Settings.UseP99QuantileStatisticParameter = value; Settings.Save(); }
+		}
+
+		public bool UseP95QuantileStatisticParameter
+		{
+			get { return Settings.UseP95QuantileStatisticParameter; }
+			set { Settings.UseP95QuantileStatisticParameter = value; Settings.Save(); }
+		}
+
+		public bool UseAverageStatisticParameter
+		{
+			get { return Settings.UseAverageStatisticParameter; }
+			set { Settings.UseAverageStatisticParameter = value; Settings.Save(); }
+		}
+
+		public bool UseP5QuantileStatisticParameter
+		{
+			get { return Settings.UseP5QuantileStatisticParameter; }
+			set { Settings.UseP5QuantileStatisticParameter = value; Settings.Save(); }
+		}
+
+		public bool UseP1QuantileStatisticParameter
+		{
+			get { return Settings.UseP1QuantileStatisticParameter; }
+			set { Settings.UseP1QuantileStatisticParameter = value; Settings.Save(); }
+		}
+
+		public bool UseP0Dot1QuantileStatisticParameter
+		{
+			get { return Settings.UseP0Dot1QuantileStatisticParameter; }
+			set { Settings.UseP0Dot1QuantileStatisticParameter = value; Settings.Save(); }
+		}
+
+		public bool UseP1LowAverageStatisticParameter
+		{
+			get { return Settings.UseP1LowAverageStatisticParameter; }
+			set { Settings.UseP1LowAverageStatisticParameter = value; Settings.Save(); }
+		}
+
+		public bool UseP0Dot1LowAverageStatisticParameter
+		{
+			get { return Settings.UseP0Dot1LowAverageStatisticParameter; }
+			set { Settings.UseP0Dot1LowAverageStatisticParameter = value; Settings.Save(); }
+		}
+
+		public bool UseMinStatisticParameter
+		{
+			get { return Settings.UseMinStatisticParameter; }
+			set { Settings.UseMinStatisticParameter = value; Settings.Save(); }
+		}
+
+		public bool UseAdaptiveSTDStatisticParameter
+		{
+			get { return Settings.UseAdaptiveSTDStatisticParameter; }
+			set { Settings.UseAdaptiveSTDStatisticParameter = value; Settings.Save(); }
 		}
 
 		public void AddAppNameToIgnoreList(string nameToBeIgnored)

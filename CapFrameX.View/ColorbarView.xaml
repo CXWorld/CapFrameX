@@ -50,78 +50,73 @@
 							 Content="AGGREGATION" />-->
 				</StackPanel>
 				<materialDesign:PopupBox Grid.Column="1" RequestBringIntoView="PopupBox_RequestBringIntoView" Margin="16,0,16,0" StaysOpen="True" PlacementMode="BottomAndAlignRightEdges"  HorizontalAlignment="Right">
-					<Grid Margin="8,8,8,8">
-						<Grid.Resources>
-							<Style TargetType="CheckBox"
-								   BasedOn="{StaticResource MaterialDesignCheckBox}">
-								<Setter Property="Margin" Value="8,8,10,8" />
-							</Style>
-							<Style TargetType="TextBox" BasedOn="{StaticResource MaterialDesignTextBox}">
-								<Setter Property="materialDesign:HintAssist.IsFloating" Value="True" />
-								<Setter Property="Margin" Value="8,8,8,8" />
-							</Style>
-						</Grid.Resources>
-						<Grid.RowDefinitions>
-							<RowDefinition Height="*" />
-							<RowDefinition Height="*" />
-							<RowDefinition Height="*" />
-							<RowDefinition Height="*" />
-							<RowDefinition Height="*" />
-							<RowDefinition Height="*" />
-							<RowDefinition Height="*" />
-							<RowDefinition Height="*" />
-							<RowDefinition Height="*" />
-						</Grid.RowDefinitions>
-						<TextBlock Grid.Row="0"
-								   Style="{StaticResource MaterialDesignTitleTextBlock}"
-								   Margin="8,8,8,16">
-								OPTIONS
-						</TextBlock>
-						<ComboBox Grid.Row="1" materialDesign:HintAssist.Hint="Moving average window size"
+					<TabControl Margin="0 0 0 -10" Grid.Row="0" Background="Transparent" SelectedItem="{Binding SelectedChartItem}">
+						<TabItem Header="Settings">
+							<Grid Margin="8 8 8 8">
+								<Grid.Resources>
+									<Style TargetType="CheckBox"
+											BasedOn="{StaticResource MaterialDesignCheckBox}">
+										<Setter Property="Margin" Value="8,8,10,8" />
+									</Style>
+									<Style TargetType="TextBox" BasedOn="{StaticResource MaterialDesignTextBox}">
+										<Setter Property="materialDesign:HintAssist.IsFloating" Value="True" />
+										<Setter Property="Margin" Value="8,8,8,8" />
+									</Style>
+								</Grid.Resources>
+								<Grid.RowDefinitions>
+									<RowDefinition Height="*" />
+									<RowDefinition Height="*" />
+									<RowDefinition Height="*" />
+									<RowDefinition Height="*" />
+									<RowDefinition Height="*" />
+									<RowDefinition Height="*" />
+									<RowDefinition Height="*" />
+								</Grid.RowDefinitions>
+								<ComboBox Grid.Row="0" materialDesign:HintAssist.Hint="Moving average window size"
 								  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="200" Margin="8 8 8 8"
 								  ItemsSource="{Binding WindowSizes}">
-							<ComboBox.Text>
-								<Binding Path="SelectWindowSize"
+									<ComboBox.Text>
+										<Binding Path="SelectWindowSize"
 										 Mode="TwoWay"
 										 UpdateSourceTrigger="PropertyChanged">
-								</Binding>
-							</ComboBox.Text>
-						</ComboBox>
-						<TextBox Grid.Row="2" materialDesign:HintAssist.Hint="Stuttering factor" >
-							<TextBox.Text>
-								<Binding Path="StutteringFactor"
+										</Binding>
+									</ComboBox.Text>
+								</ComboBox>
+								<TextBox Grid.Row="1" materialDesign:HintAssist.Hint="Stuttering factor" >
+									<TextBox.Text>
+										<Binding Path="StutteringFactor"
 										 Mode="TwoWay"
 										 UpdateSourceTrigger="LostFocus">
-								</Binding>
-							</TextBox.Text>
-						</TextBox>
-						<StackPanel Grid.Row="3" Orientation="Horizontal">
-							<TextBox IsEnabled="False" materialDesign:HintAssist.Hint="Observed directory (OCAT V1.3 + 1.4)" Text="{Binding ObservedDirectory, Mode=OneWay}" />
-							<Button Margin="20 0 0 0" Command="{Binding SelectObservedFolderCommand}" Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}" ToolTip="Select observed folder">
-								<materialDesign:PackIcon Kind="Folder" Height="24" Width="24" />
-							</Button>
-						</StackPanel>
-						<ComboBox Grid.Row="4" materialDesign:HintAssist.Hint="Chart quality level"
+										</Binding>
+									</TextBox.Text>
+								</TextBox>
+								<StackPanel Grid.Row="2" Orientation="Horizontal">
+									<TextBox IsEnabled="False" materialDesign:HintAssist.Hint="Observed directory (OCAT V1.3 + 1.4)" Text="{Binding ObservedDirectory, Mode=OneWay}" />
+									<Button Margin="20 0 0 0" Command="{Binding SelectObservedFolderCommand}" Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}" ToolTip="Select observed folder">
+										<materialDesign:PackIcon Kind="Folder" Height="24" Width="24" />
+									</Button>
+								</StackPanel>
+								<ComboBox Grid.Row="3" materialDesign:HintAssist.Hint="Chart quality level"
 								  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="200" Margin="8 8 8 8"
 								  ItemsSource="{Binding ChartQualityLevels}">
-							<ComboBox.Text>
-								<Binding Path="SelectedChartQualityLevel"
+									<ComboBox.Text>
+										<Binding Path="SelectedChartQualityLevel"
 										 Mode="TwoWay"
 										 UpdateSourceTrigger="PropertyChanged">
-								</Binding>
-							</ComboBox.Text>
-						</ComboBox>
-						<ComboBox Grid.Row="5" materialDesign:HintAssist.Hint="FPS values rounding digits"
+										</Binding>
+									</ComboBox.Text>
+								</ComboBox>
+								<ComboBox Grid.Row="4" materialDesign:HintAssist.Hint="FPS values rounding digits"
 								  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="200" Margin="8 8 8 8"
 								  ItemsSource="{Binding RoundingDigits}">
-							<ComboBox.Text>
-								<Binding Path="FpsValuesRoundingDigits"
+									<ComboBox.Text>
+										<Binding Path="FpsValuesRoundingDigits"
 										 Mode="TwoWay"
 										 UpdateSourceTrigger="PropertyChanged">
-								</Binding>
-							</ComboBox.Text>
-						</ComboBox>
-						<TextBox Grid.Row="6" materialDesign:HintAssist.Hint="Application ignore list" 
+										</Binding>
+									</ComboBox.Text>
+								</ComboBox>
+								<TextBox Grid.Row="5" materialDesign:HintAssist.Hint="Application ignore list" 
 								 TextAlignment="Left" 
 								 HorizontalAlignment="Left"
 								 TextWrapping="Wrap"
@@ -130,24 +125,76 @@
 								 AcceptsReturn="True"
 								 VerticalScrollBarVisibility="Auto"
 								 SpellCheck.IsEnabled="False">
-							<TextBox.Text>
-								<Binding Path="RecordDataGridIgnoreList"
+									<TextBox.Text>
+										<Binding Path="RecordDataGridIgnoreList"
 										 Mode="TwoWay"
 										 UpdateSourceTrigger="LostFocus">
-								</Binding>
-							</TextBox.Text>
-						</TextBox>
-						<StackPanel Grid.Row="7" Orientation="Horizontal" Margin="8 0 0 0">
-							<TextBlock Text="Show 0.1% average low and 1% average low" VerticalAlignment="Center"/>
-							<ToggleButton IsChecked="{Binding ShowLowParameter}" Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show low parameter" />
-						</StackPanel>
-						<StackPanel Grid.Row="8" Orientation="Horizontal" Margin="0 0 0 30">
-							<TextBox IsEnabled="False" materialDesign:HintAssist.Hint="Screenshot directory" Text="{Binding ScreenshotDirectory, Mode=OneWay}" />
-							<Button Margin="20 0 0 0" Command="{Binding SelectScreenshotFolderCommand}" Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}" ToolTip="Select screenshot folder">
-								<materialDesign:PackIcon Kind="Folder" Height="24" Width="24" />
-							</Button>
-						</StackPanel>
-					</Grid>
+										</Binding>
+									</TextBox.Text>
+								</TextBox>
+								<StackPanel Grid.Row="6" Orientation="Horizontal" Margin="0 0 0 30">
+									<TextBox IsEnabled="False" materialDesign:HintAssist.Hint="Screenshot directory" Text="{Binding ScreenshotDirectory, Mode=OneWay}" />
+									<Button Margin="20 0 0 0" Command="{Binding SelectScreenshotFolderCommand}" Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}" ToolTip="Select screenshot folder">
+										<materialDesign:PackIcon Kind="Folder" Height="24" Width="24" />
+									</Button>
+								</StackPanel>
+							</Grid>
+						</TabItem>
+						<TabItem Header="Parameter">
+							<Grid Margin="8 8 8 8">
+								<Grid.Resources>
+									<Style TargetType="CheckBox"
+											BasedOn="{StaticResource MaterialDesignCheckBox}">
+										<Setter Property="Margin" Value="8,8,10,8" />
+									</Style>
+									<Style TargetType="TextBox" BasedOn="{StaticResource MaterialDesignTextBox}">
+										<Setter Property="materialDesign:HintAssist.IsFloating" Value="True" />
+										<Setter Property="Margin" Value="8,8,8,8" />
+									</Style>
+								</Grid.Resources>
+								<Grid.RowDefinitions>
+									<RowDefinition Height="*" />
+									<RowDefinition Height="*" />
+									<RowDefinition Height="*" />
+									<RowDefinition Height="*" />
+									<RowDefinition Height="*" />
+									<RowDefinition Height="*" />
+									<RowDefinition Height="*" />
+									<RowDefinition Height="*" />
+									<RowDefinition Height="*" />
+									<RowDefinition Height="*" />
+									<RowDefinition Height="*" />
+								</Grid.RowDefinitions>
+								<Grid.ColumnDefinitions>
+									<ColumnDefinition Width="Auto"/>
+									<ColumnDefinition Width="Auto"/>
+								</Grid.ColumnDefinitions>
+								<TextBlock Margin="5" Grid.Row="0" Grid.Column="0" Text="Use maximum" VerticalAlignment="Center"/>
+								<ToggleButton Margin="5" Grid.Row="0" Grid.Column="1" IsChecked="{Binding UseMaxStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show low parameter" />
+								<TextBlock Margin="5" Grid.Row="1" Grid.Column="0" Text="Use 0.99-quantile" VerticalAlignment="Center"/>
+								<ToggleButton Margin="5" Grid.Row="1" Grid.Column="1" IsChecked="{Binding UseP99QuantileStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show low parameter" />
+								<TextBlock Margin="5" Grid.Row="2" Grid.Column="0" Text="Use 0.95-quantile" VerticalAlignment="Center"/>
+								<ToggleButton Margin="5" Grid.Row="2" Grid.Column="1" IsChecked="{Binding UseP95QuantileStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show low parameter" />
+								<TextBlock Margin="5" Grid.Row="3" Grid.Column="0" Text="Use average" VerticalAlignment="Center"/>
+								<ToggleButton Margin="5" Grid.Row="3" Grid.Column="1" IsChecked="{Binding UseAverageStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show low parameter" />
+								<TextBlock Margin="5" Grid.Row="4" Grid.Column="0" Text="Use 0.05-quantile" VerticalAlignment="Center"/>
+								<ToggleButton Margin="5" Grid.Row="4" Grid.Column="1" IsChecked="{Binding UseP5QuantileStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show low parameter" />
+								<TextBlock Margin="5" Grid.Row="5" Grid.Column="0" Text="Use 0.01-quantile" VerticalAlignment="Center"/>
+								<ToggleButton Margin="5" Grid.Row="5" Grid.Column="1" IsChecked="{Binding UseP1QuantileStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show low parameter" />
+								<TextBlock Margin="5" Grid.Row="6" Grid.Column="0" Text="Use 0.001-quantile" VerticalAlignment="Center"/>
+								<ToggleButton Margin="5" Grid.Row="6" Grid.Column="1" IsChecked="{Binding UseP0Dot1QuantileStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show low parameter" />
+								<TextBlock Margin="5" Grid.Row="7" Grid.Column="0" Text="Use 1% low average" VerticalAlignment="Center"/>
+								<ToggleButton Margin="5" Grid.Row="7" Grid.Column="1" IsChecked="{Binding UseP1LowAverageStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show low parameter" />
+								<TextBlock Margin="5" Grid.Row="8" Grid.Column="0" Text="Use 0.1% low average" VerticalAlignment="Center"/>
+								<ToggleButton Margin="5" Grid.Row="8" Grid.Column="1" IsChecked="{Binding UseP0Dot1LowAverageStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show low parameter" />
+								<TextBlock Margin="5" Grid.Row="9" Grid.Column="0" Text="Use minimum" VerticalAlignment="Center"/>
+								<ToggleButton Margin="5" Grid.Row="9" Grid.Column="1" IsChecked="{Binding UseMinStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show low parameter" />
+								<TextBlock Margin="5" Grid.Row="10" Grid.Column="0" Text="Use adaptive STD" VerticalAlignment="Center"/>
+								<ToggleButton Margin="5" Grid.Row="10" Grid.Column="1" IsChecked="{Binding UseAdaptiveSTDStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show low parameter" />
+							</Grid>
+						</TabItem>
+					
+					</TabControl>
 				</materialDesign:PopupBox>
 			</Grid>
 		</materialDesign:ColorZone>

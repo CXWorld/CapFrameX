@@ -37,6 +37,17 @@ namespace CapFrameX.ViewModel
 		private bool _aggregatioIsChecked;
 		private bool _showLowParameter;
 		private string _screenshotDirectory;
+		private bool _useMaxStatisticParameter;
+		private bool _useP99QuantileStatisticParameter;
+		private bool _useP95QuantileStatisticParameter;
+		private bool _useAverageStatisticParameter;
+		private bool _useP5QuantileStatisticParameter;
+		private bool _useP1QuantileStatisticParameter;
+		private bool _useP0Dot1QuantileStatisticParameter;
+		private bool _useP1LowAverageStatisticParameter;
+		private bool _useP0Dot1LowAverageStatisticParameter;
+		private bool _useMinStatisticParameter;
+		private bool _useAdaptiveSTDStatisticParameter;
 
 		public bool SingleRecordIsChecked
 		{
@@ -147,16 +158,127 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-		public bool ShowLowParameter
+		public bool UseMaxStatisticParameter
 		{
-			get { return _showLowParameter; }
+			get { return _useMaxStatisticParameter; }
 			set
 			{
-				_showLowParameter = value;
-				_appConfiguration.ShowLowParameter = value;
+				_useMaxStatisticParameter = value;
+				_appConfiguration.UseMaxStatisticParameter = value;
 				RaisePropertyChanged();
 			}
 		}
+
+		public bool UseP99QuantileStatisticParameter
+		{
+			get { return _useP99QuantileStatisticParameter; }
+			set
+			{
+				_useP99QuantileStatisticParameter = value;
+				_appConfiguration.UseP99QuantileStatisticParameter = value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public bool UseP95QuantileStatisticParameter
+		{
+			get { return _useP95QuantileStatisticParameter; }
+			set
+			{
+				_useP95QuantileStatisticParameter = value;
+				_appConfiguration.UseP95QuantileStatisticParameter = value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public bool UseAverageStatisticParameter
+		{
+			get { return _useAverageStatisticParameter; }
+			set
+			{
+				_useAverageStatisticParameter = value;
+				_appConfiguration.UseAverageStatisticParameter = value;
+				RaisePropertyChanged();
+			}
+		}
+
+
+		public bool UseP5QuantileStatisticParameter
+		{
+			get { return _useP5QuantileStatisticParameter; }
+			set
+			{
+				_useP5QuantileStatisticParameter = value;
+				_appConfiguration.UseP5QuantileStatisticParameter = value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public bool UseP1QuantileStatisticParameter
+		{
+			get { return _useP1QuantileStatisticParameter; }
+			set
+			{
+				_useP1QuantileStatisticParameter = value;
+				_appConfiguration.UseP1QuantileStatisticParameter = value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public bool UseP0Dot1QuantileStatisticParameter
+		{
+			get { return _useP0Dot1QuantileStatisticParameter; }
+			set
+			{
+				_useP0Dot1QuantileStatisticParameter = value;
+				_appConfiguration.UseP0Dot1QuantileStatisticParameter = value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public bool UseP1LowAverageStatisticParameter
+		{
+			get { return _useP1LowAverageStatisticParameter; }
+			set
+			{
+				_useP1LowAverageStatisticParameter = value;
+				_appConfiguration.UseP1LowAverageStatisticParameter = value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public bool UseP0Dot1LowAverageStatisticParameter
+		{
+			get { return _useP0Dot1LowAverageStatisticParameter; }
+			set
+			{
+				_useP0Dot1LowAverageStatisticParameter = value;
+				_appConfiguration.UseP0Dot1LowAverageStatisticParameter = value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public bool UseMinStatisticParameter
+		{
+			get { return _useMinStatisticParameter; }
+			set
+			{
+				_useMinStatisticParameter = value;
+				_appConfiguration.UseMinStatisticParameter = value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public bool UseAdaptiveSTDStatisticParameter
+		{
+			get { return _useAdaptiveSTDStatisticParameter; }
+			set
+			{
+				_useAdaptiveSTDStatisticParameter = value;
+				_appConfiguration.UseAdaptiveSTDStatisticParameter = value;
+				RaisePropertyChanged();
+			}
+		}		
 
 		public string RecordDataGridIgnoreList
 		{
@@ -215,9 +337,19 @@ namespace CapFrameX.ViewModel
 			SelectWindowSize = _appConfiguration.MovingAverageWindowSize;
 			SelectedChartQualityLevel = _appConfiguration.ChartQualityLevel.ConverToEnum<Quality>();
 			FpsValuesRoundingDigits = _appConfiguration.FpsValuesRoundingDigits;
+			UseMaxStatisticParameter = _appConfiguration.UseMaxStatisticParameter;
+			UseP99QuantileStatisticParameter = _appConfiguration.UseP99QuantileStatisticParameter;
+			UseP95QuantileStatisticParameter = _appConfiguration.UseP95QuantileStatisticParameter;
+			UseAverageStatisticParameter = _appConfiguration.UseAverageStatisticParameter;
+			UseP5QuantileStatisticParameter = _appConfiguration.UseP5QuantileStatisticParameter;
+			UseP1QuantileStatisticParameter = _appConfiguration.UseP1QuantileStatisticParameter;
+			UseP0Dot1QuantileStatisticParameter = _appConfiguration.UseP0Dot1QuantileStatisticParameter;
+			UseP1LowAverageStatisticParameter = _appConfiguration.UseP1LowAverageStatisticParameter;
+			UseP0Dot1LowAverageStatisticParameter = _appConfiguration.UseP0Dot1LowAverageStatisticParameter;
+			UseMinStatisticParameter = _appConfiguration.UseMinStatisticParameter;
+			UseAdaptiveSTDStatisticParameter = _appConfiguration.UseAdaptiveSTDStatisticParameter;
 			ObservedDirectory = _appConfiguration.ObservedDirectory;
 			ScreenshotDirectory = _appConfiguration.ScreenshotDirectory;
-			ShowLowParameter = _appConfiguration.ShowLowParameter;
 			WindowSizes = new List<int>(Enumerable.Range(4, 100 - 4));
 			RoundingDigits = new List<int>(Enumerable.Range(0, 8));
 			SelectObservedFolderCommand = new DelegateCommand(OnSelectObeservedFolder);

@@ -102,8 +102,7 @@ namespace CapFrameX.ViewModel.DataContext
 
 			RecordDataServer.RemoveOutlierMethod
 				= UseRemovingOutlier ? ERemoveOutlierMethod.DeciPercentile : ERemoveOutlierMethod.None;
-			var frametimes =
-				UseSlidingWindow ? RecordDataServer.GetFrametimeSampleWindow() : RecordDataServer.GetFrametimeSampleWindow();
+			var frametimes = RecordDataServer.GetFrametimeSampleWindow();
 			StringBuilder builder = new StringBuilder();
 
 			foreach (var frametime in frametimes)
@@ -121,8 +120,7 @@ namespace CapFrameX.ViewModel.DataContext
 
 			RecordDataServer.RemoveOutlierMethod
 				= UseRemovingOutlier ? ERemoveOutlierMethod.DeciPercentile : ERemoveOutlierMethod.None;
-			var frametimePoints =
-				UseSlidingWindow ? RecordDataServer.GetFrametimePointTimeWindow() : RecordDataServer.GetFrametimePointSampleWindow();
+			var frametimePoints = RecordDataServer.GetFrametimePointSampleWindow();
 			StringBuilder builder = new StringBuilder();
 
 			for (int i = 0; i < frametimePoints.Count; i++)

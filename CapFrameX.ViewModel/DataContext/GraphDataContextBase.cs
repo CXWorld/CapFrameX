@@ -13,7 +13,6 @@ namespace CapFrameX.ViewModel.DataContext
 		private ZoomingOptions _zoomingMode;
 		private SeriesCollection _seriesCollection;
 		private bool _useRemovingOutlier;
-		private bool _useSlidingWindow;
 		private int _graphNumberSamples;
 		private int _cutLeftSliderMaximum;
 		private int _cutRightSliderMaximum;
@@ -33,16 +32,6 @@ namespace CapFrameX.ViewModel.DataContext
 				_isCuttingModeActive = value;
 				RaisePropertyChanged();
 				OnCuttingModeChanged();
-			}
-		}
-
-		public bool UseSlidingWindow
-		{
-			get { return _useSlidingWindow; }
-			set
-			{
-				_useSlidingWindow = value;
-				RaisePropertyChanged();
 			}
 		}
 

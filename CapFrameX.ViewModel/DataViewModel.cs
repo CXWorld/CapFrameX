@@ -37,16 +37,12 @@ namespace CapFrameX.ViewModel
 		private string[] _parameterLabels;
 		private string[] _lShapeLabels;
 		private string[] _advancedParameterLabels;
-		private int _selectWindowSize;
 		private bool _removeOutliers;
-		private bool _useSlidingWindow = false;
-		private double _frametimeSliderMaximum;
 		private List<SystemInfo> _systemInfos;
 		private bool _isCuttingModeActive;
 		private bool _doUpdateCharts = true;
 		private Func<double, string> _parameterFormatter;
 		private TabItem _selectedChartItem;
-		private string _selectedChartLengthValue;
 		private IRecordDataServer _localRecordDataServer;
 		private IDisposable _frametimeWindowObservable;
 		private ZoomingOptions _zoomingMode;
@@ -56,6 +52,8 @@ namespace CapFrameX.ViewModel
 		public OcatRecordInfo RecordInfo { get; private set; }
 
 		public FrametimeGraphDataContext FrametimeGraphDataContext { get; }
+
+		public FpsGraphDataContext FpsGraphDataContext { get; }
 
 		/// <summary>
 		/// https://docs.microsoft.com/en-us/dotnet/standard/base-types/standard-numeric-format-strings
@@ -218,6 +216,8 @@ namespace CapFrameX.ViewModel
 			_localRecordDataServer = new LocalRecordDataServer();
 			FrametimeGraphDataContext = new FrametimeGraphDataContext(_localRecordDataServer,
 				AppConfiguration, _frametimeStatisticProvider);
+			FpsGraphDataContext = new FpsGraphDataContext(_localRecordDataServer,
+				AppConfiguration, _frametimeStatisticProvider);
 
 			ZoomingMode = ZoomingOptions.Y;
 		}
@@ -250,6 +250,10 @@ namespace CapFrameX.ViewModel
 			{
 				FrametimeGraphDataContext.ZoomingMode = ZoomingMode;
 			}
+			else if (tabItemHeader == "FPS")
+			{
+				FpsGraphDataContext.ZoomingMode = ZoomingMode;
+			}
 		}
 
 		private void OnCuttingModeChanged()
@@ -265,6 +269,10 @@ namespace CapFrameX.ViewModel
 			if (tabItemHeader == "Frametimes")
 			{
 				FrametimeGraphDataContext.IsCuttingModeActive = IsCuttingModeActive;
+			}
+			else if (tabItemHeader == "FPS")
+			{
+				FpsGraphDataContext.IsCuttingModeActive = IsCuttingModeActive;
 			}
 
 			if (IsCuttingModeActive)
@@ -323,33 +331,28 @@ namespace CapFrameX.ViewModel
 
 			// Vice versa!
 			// "Adaptive STD" ,"Min","0.1% Low" ,"0.1%" ,"1% Low", "1%" ,"5%" ,"Average" ,"95%" ,"99%" ,"Max"
-			if (AppConfiguration.ShowLowParameter)
-			{
+			if(AppConfiguration.UseMaxStatisticParameter)
 				builder.Append("Max" + "\t" + max + Environment.NewLine);
+			if (AppConfiguration.UseP99QuantileStatisticParameter)
 				builder.Append("99%" + "\t" + p99_quantile + Environment.NewLine);
+			if (AppConfiguration.UseP95QuantileStatisticParameter)
 				builder.Append("95%" + "\t" + p95_quantile + Environment.NewLine);
+			if (AppConfiguration.UseAverageStatisticParameter)
 				builder.Append("Average" + "\t" + average + Environment.NewLine);
+			if (AppConfiguration.UseP5QuantileStatisticParameter)
 				builder.Append("5%" + "\t" + p5_quantile + Environment.NewLine);
+			if (AppConfiguration.UseP1QuantileStatisticParameter)
 				builder.Append("1%" + "\t" + p1_quantile + Environment.NewLine);
+			if (AppConfiguration.UseP1LowAverageStatisticParameter)
 				builder.Append("1% Low" + "\t" + p1_averageLow + Environment.NewLine);
+			if (AppConfiguration.UseP0Dot1QuantileStatisticParameter)
 				builder.Append("0.1%" + "\t" + p0dot1_quantile + Environment.NewLine);
+			if (AppConfiguration.UseP0Dot1LowAverageStatisticParameter)
 				builder.Append("0.1% Low" + "\t" + p0dot1_averageLow + Environment.NewLine);
+			if (AppConfiguration.UseMinStatisticParameter)
 				builder.Append("Min" + "\t" + min + Environment.NewLine);
+			if (AppConfiguration.UseAdaptiveSTDStatisticParameter)
 				builder.Append("Adaptive STD" + "\t" + adaptiveStandardDeviation + Environment.NewLine);
-			}
-			// "Adaptive STD" ,"Min" ,"0,1%" ,"1%" ,"5%" ,"Average" ,"95%" ,"99%" ,"Max"
-			else
-			{
-				builder.Append("Max" + "\t" + max + Environment.NewLine);
-				builder.Append("99%" + "\t" + p99_quantile + Environment.NewLine);
-				builder.Append("95%" + "\t" + p95_quantile + Environment.NewLine);
-				builder.Append("Average" + "\t" + average + Environment.NewLine);
-				builder.Append("5%" + "\t" + p5_quantile + Environment.NewLine);
-				builder.Append("1%" + "\t" + p1_quantile + Environment.NewLine);
-				builder.Append("0.1%" + "\t" + p0dot1_quantile + Environment.NewLine);
-				builder.Append("Min" + "\t" + min + Environment.NewLine);
-				builder.Append("Adaptive STD" + "\t" + adaptiveStandardDeviation + Environment.NewLine);
-			}
 
 			Clipboard.SetDataObject(builder.ToString(), false);
 		}
@@ -419,6 +422,8 @@ namespace CapFrameX.ViewModel
 										// Do update actions
 										FrametimeGraphDataContext.RecordSession = _session;
 										FrametimeGraphDataContext.InitializeCuttingParameter();
+										FpsGraphDataContext.RecordSession = _session;
+										FpsGraphDataContext.InitializeCuttingParameter();
 										UpdateMainCharts();
 										UpdateSecondaryCharts();
 									}
@@ -457,6 +462,11 @@ namespace CapFrameX.ViewModel
 			{
 				Task.Factory.StartNew(() => SetLShapeChart(subset));
 			}
+			else if (headerName == "FPS")
+			{
+				Task.Factory.StartNew(() =>
+					FpsGraphDataContext.SetFpsChart(_localRecordDataServer.GetFpsSampleWindow()));
+			}
 		}
 
 		private IList<double> GetFrametimesSubset()
@@ -483,22 +493,30 @@ namespace CapFrameX.ViewModel
 			var min = Math.Round(fps.Min(), roundingDigits);
 			var adaptiveStandardDeviation = Math.Round(_frametimeStatisticProvider.GetAdaptiveStandardDeviation(fps, AppConfiguration.MovingAverageWindowSize), roundingDigits);
 
-			IChartValues values = null;
+			IChartValues values = new ChartValues<double>();
 
-			if (!AppConfiguration.ShowLowParameter)
-			{
-				values = new ChartValues<double>
-				{
-					adaptiveStandardDeviation, min, p0dot1_quantile, p1_quantile, p5_quantile, average, p95_quantile, p99_quantile, max
-				};
-			}
-			else
-			{
-				values = new ChartValues<double>
-				{
-					adaptiveStandardDeviation, min, p0dot1_averageLow, p0dot1_quantile, p1_averageLow, p1_quantile, p5_quantile, average, p95_quantile, p99_quantile, max
-				};
-			}
+			if (AppConfiguration.UseAdaptiveSTDStatisticParameter)
+				values.Add(adaptiveStandardDeviation);
+			if (AppConfiguration.UseMinStatisticParameter)
+				values.Add(min);
+			if (AppConfiguration.UseP0Dot1LowAverageStatisticParameter)
+				values.Add(p0dot1_averageLow);
+			if (AppConfiguration.UseP0Dot1QuantileStatisticParameter)
+				values.Add(p0dot1_quantile);
+			if (AppConfiguration.UseP1LowAverageStatisticParameter)
+				values.Add(p1_averageLow);
+			if (AppConfiguration.UseP1QuantileStatisticParameter)
+				values.Add(p1_quantile);
+			if (AppConfiguration.UseP5QuantileStatisticParameter)
+				values.Add(p5_quantile);
+			if (AppConfiguration.UseAverageStatisticParameter)
+				values.Add(average);
+			if (AppConfiguration.UseP95QuantileStatisticParameter)
+				values.Add(p95_quantile);
+			if (AppConfiguration.UseP99QuantileStatisticParameter)
+				values.Add(p99_quantile);
+			if (AppConfiguration.UseMaxStatisticParameter)
+				values.Add(max);
 
 			Application.Current.Dispatcher.BeginInvoke(new Action(() =>
 			{
@@ -514,14 +532,33 @@ namespace CapFrameX.ViewModel
 					}
 				};
 
-				if (!AppConfiguration.ShowLowParameter)
-				{
-					ParameterLabels = new[] { "Adaptive STD", "Min", "0.1%", "1%", "5%", "Average", "95%", "99%", "Max" };
-				}
-				else
-				{
-					ParameterLabels = new[] { "Adaptive STD", "Min", "0.1% Low", "0.1%", "1% Low", "1%", "5%", "Average", "95%", "99%", "Max" };
-				}
+				var parameterLabelList = new List<string>();
+
+				//{ "Adaptive STD", "Min", "0.1% Low", "0.1%", "1% Low", "1%", "5%", "Average", "95%", "99%", "Max" }
+				if (AppConfiguration.UseAdaptiveSTDStatisticParameter)
+					parameterLabelList.Add("Adaptive STD");
+				if (AppConfiguration.UseMinStatisticParameter)
+					parameterLabelList.Add("Min");
+				if (AppConfiguration.UseP0Dot1LowAverageStatisticParameter)
+					parameterLabelList.Add("0.1% Low");
+				if (AppConfiguration.UseP0Dot1QuantileStatisticParameter)
+					parameterLabelList.Add("0.1%");
+				if (AppConfiguration.UseP1LowAverageStatisticParameter)
+					parameterLabelList.Add("1% Low");
+				if (AppConfiguration.UseP1QuantileStatisticParameter)
+					parameterLabelList.Add("1%");
+				if (AppConfiguration.UseP5QuantileStatisticParameter)
+					parameterLabelList.Add("5%");
+				if (AppConfiguration.UseAverageStatisticParameter)
+					parameterLabelList.Add("Average");
+				if (AppConfiguration.UseP95QuantileStatisticParameter)
+					parameterLabelList.Add("95%");
+				if (AppConfiguration.UseP99QuantileStatisticParameter)
+					parameterLabelList.Add("99%");
+				if (AppConfiguration.UseMaxStatisticParameter)
+					parameterLabelList.Add("Max");
+
+				ParameterLabels = parameterLabelList.ToArray();
 			}));
 		}
 
