@@ -44,10 +44,10 @@
 							 Margin="5"
 							 IsChecked="{Binding SynchronizationIsChecked}"
 							 Content="SYNCHRONISATION" />
-					<!--<RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
+					<RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
 							 Margin="5"
 							 IsChecked="{Binding AggregationIsChecked}"
-							 Content="AGGREGATION" />-->
+							 Content="AGGREGATION" />
 				</StackPanel>
 				<materialDesign:PopupBox Grid.Column="1" RequestBringIntoView="PopupBox_RequestBringIntoView" Margin="16,0,16,0" StaysOpen="True" PlacementMode="BottomAndAlignRightEdges"  HorizontalAlignment="Right">
 					<TabControl Margin="0 0 0 -10" Grid.Row="0" Background="Transparent" SelectedItem="{Binding SelectedChartItem}">

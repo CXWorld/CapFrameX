@@ -1,5 +1,4 @@
-﻿using CapFrameX.Extensions;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
@@ -12,7 +11,7 @@ using IBufferObservable = System.IObservable<System.Collections.Generic.IEnumera
 namespace CapFrameX.Chart
 {
 	/// <summary>
-	/// Interaktionslogik für ScrollableRxPlot.xaml
+	/// Interaction logic for ScrollableRxPlot.xaml
 	/// </summary>
 	public partial class ScrollableRxPlot
 	{
@@ -33,8 +32,6 @@ namespace CapFrameX.Chart
 			{
 				if (plot.IsEnabled)
 				{
-					//var start = wnd.FirstOrDefault().GetOrFallbackOnNull(s => s.X, 0U);
-					//var end = wnd.LastOrDefault().GetOrFallbackOnNull(s => s.X, 0U);
 					var start = wnd.FirstOrDefault().X;
 					var end = wnd.LastOrDefault().X;
 
@@ -93,15 +90,6 @@ namespace CapFrameX.Chart
 		{
 			get { return (double)GetValue(SelectableTimeProperty); }
 			set { SetValue(SelectableTimeProperty, value); }
-		}
-
-		public static readonly DependencyProperty RowAmplitudeProperty = DependencyProperty.Register(
-			"RowAmplitude", typeof(double), typeof(ScrollableRxPlot), new PropertyMetadata(default(double)));
-
-		public double RowAmplitude
-		{
-			get { return (double)GetValue(RowAmplitudeProperty); }
-			set { SetValue(RowAmplitudeProperty, value); }
 		}
 
 		public static readonly DependencyProperty TimeOffsetProperty = DependencyProperty.Register(

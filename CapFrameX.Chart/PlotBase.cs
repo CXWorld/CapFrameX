@@ -58,15 +58,6 @@ namespace CapFrameX.Chart
 			set { SetValue(PlotTimeProperty, value); }
 		}
 
-		public static readonly DependencyProperty RowAmplitudeProperty = DependencyProperty.Register(
-			"RowAmplitude", typeof(double), typeof(PlotBase), new PropertyMetadata(default(double)));
-
-		public double RowAmplitude
-		{
-			get { return (double)GetValue(RowAmplitudeProperty); }
-			set { SetValue(RowAmplitudeProperty, value); }
-		}
-
 		public static readonly DependencyProperty CutLineOnNegativeTimeDeltaProperty = DependencyProperty.Register(
 			"CutLineOnNegativeTimeDelta", typeof(bool), typeof(PlotBase), new PropertyMetadata(true));
 

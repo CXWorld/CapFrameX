@@ -25,7 +25,6 @@
 				<Setter Property="TotalTime" Value="{Binding PlotTime, ElementName=ScrollablePlotterRoot}" />
 				<Setter Property="TimeOffset" Value="{Binding TimeOffset, ElementName=ScrollablePlotterRoot}" />
 				<Setter Property="CutLineOnNegativeTimeDelta" Value="{Binding CutLineOnNegativeTimeDelta, ElementName=ScrollablePlotterRoot}" />
-				<Setter Property="RowAmplitude" Value="{Binding RowAmplitude, ElementName=ScrollablePlotterRoot}" />
 			</Style>
 
 			<converters:SelectedAreaWidthRatioConverter x:Key="SelectedAreaWidthConverter" />
@@ -58,7 +57,6 @@
 
 		<local:LivePlotter x:Name="Plotter" IsHitTestVisible="False"
                             Buffer="{Binding ElementName=ScrollablePlotRoot, Path=BufferObservable}" 
-                            RowAmplitude="{Binding ElementName=ScrollablePlotRoot, Path=RowAmplitude}"
                             TotalTime="{Binding ElementName=ScrollablePlotRoot, Path=PlotTime}"
                             Grid.Column="1" Grid.Row="0" Style="{StaticResource PlotterStyle}" >
 			<local:LivePlotter.TimeOffset>
