@@ -159,11 +159,11 @@ namespace CapFrameX.Chart
 			var geometry = GetGeometry(slidingWindow.Select(p => new Point(p.X - minXWindow, p.Y - minYWindow)));
 
 			//apply transformation (scale and tanslation)
-			var xScale = ActualWidth / TotalTime;
-			var yScale = -2d / 3d * ActualHeight / (slidingWindow.Max(p => p.Y) - minYWindow);
+			var xScale = XScale * ActualWidth / TotalTime;
+			var yScale = -YScale * ActualHeight / (slidingWindow.Max(p => p.Y) - minYWindow);
 			var scaleTransform = new ScaleTransform(xScale, yScale);
 
-			var translation = new TranslateTransform(0d, (2d / 3d + 1d / 6d) * ActualHeight);
+			var translation = new TranslateTransform(0d, (YScale + (1 - YScale) / 2) * ActualHeight);
 			var transfrom = new TransformGroup();
 			transfrom.Children.Add(scaleTransform);
 			transfrom.Children.Add(translation);
