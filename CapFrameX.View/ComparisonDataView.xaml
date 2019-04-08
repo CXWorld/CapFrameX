@@ -281,10 +281,10 @@
 		<lvc:CartesianChart Margin="0 0 5 0" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Series="{Binding ComparisonColumnChartSeriesCollection}" LegendLocation="Top"
                             Visibility="{Binding InitialIconVisibility, Converter={StaticResource TrueToVisibleConverter}}" Background="#F5F5F5">
 			<lvc:CartesianChart.AxisX>
-				<lvc:Axis Title="Comparisons" Labels="{Binding ComparisonColumnChartLabels}" Foreground="Black"></lvc:Axis>
+				<lvc:Axis Title="Comparisons" FontSize="11" Labels="{Binding ComparisonColumnChartLabels}" Foreground="Black"></lvc:Axis>
 			</lvc:CartesianChart.AxisX>
 			<lvc:CartesianChart.AxisY>
-				<lvc:Axis MinValue="0" Title="{Binding ColumnChartYAxisTitle}" LabelFormatter="{Binding ComparisonColumnChartFormatter}" Foreground="Black"></lvc:Axis>
+				<lvc:Axis MinValue="0" FontSize="11" Title="{Binding ColumnChartYAxisTitle}" LabelFormatter="{Binding ComparisonColumnChartFormatter}" Foreground="Black"></lvc:Axis>
 			</lvc:CartesianChart.AxisY>
 		</lvc:CartesianChart>
 	</Grid>

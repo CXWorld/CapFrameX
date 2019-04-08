@@ -7,12 +7,10 @@
     xmlns:converters="clr-namespace:CapFrameX.MVVM.Converter;assembly=CapFrameX.MVVM"
     mc:Ignorable="d">
 
-	<Pen x:Key="MinorTickPen" Brush="#505050" Thickness="0.1" />
-	<Pen x:Key="MajorTickPen" Brush="#252525" Thickness="0.3" />
+	<Pen x:Key="TickPen" Brush="#505050" Thickness="0.1" />
 
 	<Style TargetType="charting:LineGrid">
-		<Setter Property="MinorTickPen" Value="{StaticResource MinorTickPen}" />
-		<Setter Property="MajorTickPen" Value="{StaticResource MajorTickPen}" />
+		<Setter Property="TickPen" Value="{StaticResource TickPen}" />
 	</Style>
 
 	<Style x:Key="PlotSideBorderStyle" TargetType="Border">

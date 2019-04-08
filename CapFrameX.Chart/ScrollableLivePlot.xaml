@@ -52,7 +52,8 @@
 			<RowDefinition Height="Auto" />
 		</Grid.RowDefinitions>
 
-		<local:LineGrid Grid.Row="0" Grid.Column="1" MinorTicks="7" MajorTickOffsetInMinorTicks="0" IsHitTestVisible="False" />
+		<local:LineGrid Grid.Row="0" Grid.Column="1" Ticks="7" IsHitTestVisible="False" />
+		<local:AxisTick Grid.Row="0" Grid.Column="1" Ticks="7" IsHitTestVisible="False" />
 		<Border Grid.Column="1" Grid.Row="0" Style="{StaticResource PlotSideBorderStyle}" IsHitTestVisible="False"/>
 
 		<local:LivePlotter x:Name="Plotter" IsHitTestVisible="False"

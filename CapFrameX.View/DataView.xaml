@@ -160,7 +160,7 @@
 						<lvc:Axis Title="FPS" FontSize="11" LabelFormatter="{Binding ParameterFormatter}" Foreground="Black"></lvc:Axis>
 					</lvc:CartesianChart.AxisX>
 					<lvc:CartesianChart.AxisY>
-						<lvc:Axis Title="Statistical Parameters" FontSize="11" Labels="{Binding ParameterLabels}" Foreground="Black">
+						<lvc:Axis Title="Statistical Parameters" MinValue="0" FontSize="11" Labels="{Binding ParameterLabels}" Foreground="Black">
 							<lvc:Axis.Separator>
 								<!--step 1 forces the axis to display all labels, disabling it makes it invisible-->
 								<lvc:Separator Step="1" IsEnabled="False"></lvc:Separator>
@@ -190,9 +190,9 @@
 						<ItemsControl.ItemTemplate>
 							<DataTemplate DataType="{x:Type ocatinterface:SystemInfo}">
 								<Border x:Name="Border"
-											Padding="8"
-											BorderThickness="0 0 0 1"
-											BorderBrush="{DynamicResource MaterialDesignDivider}">
+										Padding="8"
+										BorderThickness="0 0 0 1"
+										BorderBrush="{DynamicResource MaterialDesignDivider}">
 									<Grid>
 										<Grid.ColumnDefinitions>
 											<ColumnDefinition SharedSizeGroup="Checkerz" />
