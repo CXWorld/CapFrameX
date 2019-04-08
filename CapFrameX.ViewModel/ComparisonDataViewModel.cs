@@ -265,7 +265,7 @@ namespace CapFrameX.ViewModel
                  //1% quantile
                 new ColumnSeries
 				{
-					Title = "1%",
+					Title = "P1",
 					Values = new ChartValues<double>(),
                     // Kind of red
                     Fill = _comparisonBrushes[2],
@@ -275,7 +275,7 @@ namespace CapFrameX.ViewModel
                 //0.1% quantile
                 new ColumnSeries
 				{
-					Title = "0.1%",
+					Title = "P0.1",
 					Values = new ChartValues<double>(),
                     // Kind of dark red
                     Fill = _comparisonBrushes[3],
@@ -786,8 +786,6 @@ namespace CapFrameX.ViewModel
 		public void OnNavigatedFrom(NavigationContext navigationContext)
 		{
 			_useEventMessages = false;
-
-			//OnRemoveAllComparisons();
 		}
 
 		public void OnNavigatedTo(NavigationContext navigationContext)

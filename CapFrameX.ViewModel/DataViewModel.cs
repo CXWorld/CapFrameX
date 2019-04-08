@@ -334,19 +334,19 @@ namespace CapFrameX.ViewModel
 			if(AppConfiguration.UseMaxStatisticParameter)
 				builder.Append("Max" + "\t" + max + Environment.NewLine);
 			if (AppConfiguration.UseP99QuantileStatisticParameter)
-				builder.Append("99%" + "\t" + p99_quantile + Environment.NewLine);
+				builder.Append("P99" + "\t" + p99_quantile + Environment.NewLine);
 			if (AppConfiguration.UseP95QuantileStatisticParameter)
-				builder.Append("95%" + "\t" + p95_quantile + Environment.NewLine);
+				builder.Append("P95" + "\t" + p95_quantile + Environment.NewLine);
 			if (AppConfiguration.UseAverageStatisticParameter)
 				builder.Append("Average" + "\t" + average + Environment.NewLine);
 			if (AppConfiguration.UseP5QuantileStatisticParameter)
-				builder.Append("5%" + "\t" + p5_quantile + Environment.NewLine);
+				builder.Append("P5" + "\t" + p5_quantile + Environment.NewLine);
 			if (AppConfiguration.UseP1QuantileStatisticParameter)
-				builder.Append("1%" + "\t" + p1_quantile + Environment.NewLine);
+				builder.Append("P1" + "\t" + p1_quantile + Environment.NewLine);
 			if (AppConfiguration.UseP1LowAverageStatisticParameter)
 				builder.Append("1% Low" + "\t" + p1_averageLow + Environment.NewLine);
 			if (AppConfiguration.UseP0Dot1QuantileStatisticParameter)
-				builder.Append("0.1%" + "\t" + p0dot1_quantile + Environment.NewLine);
+				builder.Append("P0.1" + "\t" + p0dot1_quantile + Environment.NewLine);
 			if (AppConfiguration.UseP0Dot1LowAverageStatisticParameter)
 				builder.Append("0.1% Low" + "\t" + p0dot1_averageLow + Environment.NewLine);
 			if (AppConfiguration.UseMinStatisticParameter)
@@ -542,19 +542,19 @@ namespace CapFrameX.ViewModel
 				if (AppConfiguration.UseP0Dot1LowAverageStatisticParameter)
 					parameterLabelList.Add("0.1% Low");
 				if (AppConfiguration.UseP0Dot1QuantileStatisticParameter)
-					parameterLabelList.Add("0.1%");
+					parameterLabelList.Add("P0.1");
 				if (AppConfiguration.UseP1LowAverageStatisticParameter)
 					parameterLabelList.Add("1% Low");
 				if (AppConfiguration.UseP1QuantileStatisticParameter)
-					parameterLabelList.Add("1%");
+					parameterLabelList.Add("P1");
 				if (AppConfiguration.UseP5QuantileStatisticParameter)
-					parameterLabelList.Add("5%");
+					parameterLabelList.Add("P5");
 				if (AppConfiguration.UseAverageStatisticParameter)
 					parameterLabelList.Add("Average");
 				if (AppConfiguration.UseP95QuantileStatisticParameter)
-					parameterLabelList.Add("95%");
+					parameterLabelList.Add("P95");
 				if (AppConfiguration.UseP99QuantileStatisticParameter)
-					parameterLabelList.Add("99%");
+					parameterLabelList.Add("P99");
 				if (AppConfiguration.UseMaxStatisticParameter)
 					parameterLabelList.Add("Max");
 
