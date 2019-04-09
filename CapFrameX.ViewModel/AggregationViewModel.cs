@@ -1,6 +1,8 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.OcatInterface;
 using CapFrameX.EventAggregation.Messages;
+using OxyPlot;
+using OxyPlot.Series;
 using Prism.Events;
 using Prism.Mvvm;
 using Prism.Regions;
@@ -18,9 +20,23 @@ namespace CapFrameX.ViewModel
 		private readonly IEventAggregator _eventAggregator;
 		private readonly IAppConfiguration _appConfiguration;
 
+		private PlotModel _model;
 		private bool _useUpdateSession = false;
 		private IBufferObservable _scrollObservable;
 		private double _currentOffset;
+
+		public PlotModel Model
+		{
+			get { return _model; }
+			set
+			{
+				if (_model != value)
+				{
+					_model = value;
+					RaisePropertyChanged();
+				}
+			}
+		}
 
 		public IBufferObservable ScrollObservable
 		{
@@ -61,8 +77,23 @@ namespace CapFrameX.ViewModel
 								{
 									var session = msg.OcatSession;
 									var points = session.FrameTimes.Select((ft, i) => new Point(session.FrameStart[i], ft));
-									CurrentOffset = 0;
-									ScrollObservable = Observable.Return<IEnumerable<Point>>(points);
+
+									var tmp = new PlotModel
+									{
+										PlotMargins = new OxyThickness(50, 0, 0, 40)
+									};
+
+									var ls = new LineSeries { Title = "Test" };
+									foreach (var point in points)
+									{
+										ls.Points.Add(new DataPoint(point.X, point.Y));
+									}
+
+									tmp.Series.Add(ls);
+									Model = tmp;
+
+									//CurrentOffset = 0;
+									//ScrollObservable = Observable.Return<IEnumerable<Point>>(points);
 								}
 							});
 		}

@@ -5,7 +5,8 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 			 xmlns:prism="http://prismlibrary.com/"
              xmlns:local="clr-namespace:CapFrameX.View"
-			 xmlns:charting="clr-namespace:CapFrameX.Chart;assembly=CapFrameX.Chart"
+			 xmlns:charting="clr-namespace:OxyPlot.SharpDX.Wpf;assembly=OxyPlot.SharpDX.Wpf"
+			 xmlns:bla ="http://oxyplot.org/sharpdx/wpf"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800"
 			 prism:ViewModelLocator.AutoWireViewModel="True">
@@ -27,8 +28,9 @@
 			<RowDefinition Height="3*"></RowDefinition>
 		</Grid.RowDefinitions>
 		<Grid Grid.Row="0" Background="#F5F5F5" >
-			<charting:ScrollableRxPlot BufferObservable="{Binding ScrollObservable}" 									  
-									   TimeOffset="{Binding CurrentOffset, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+			<!--<charting:ScrollableRxPlot BufferObservable="{Binding ScrollObservable}" 									  
+									   TimeOffset="{Binding CurrentOffset, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />-->
+			<charting:PlotView Model="{Binding Model}" Background="#F5F5F5"/>
 		</Grid>
 	</Grid>
 </UserControl>
