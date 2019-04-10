@@ -20,19 +20,19 @@ namespace CapFrameX.ViewModel
 		private readonly IEventAggregator _eventAggregator;
 		private readonly IAppConfiguration _appConfiguration;
 
-		private PlotModel _model;
+		private LineSeries _frametimeSeries;
 		private bool _useUpdateSession = false;
 		private IBufferObservable _scrollObservable;
 		private double _currentOffset;
 
-		public PlotModel Model
+		public LineSeries FrametimeSeries
 		{
-			get { return _model; }
+			get { return _frametimeSeries; }
 			set
 			{
-				if (_model != value)
+				if (_frametimeSeries != value)
 				{
-					_model = value;
+					_frametimeSeries = value;
 					RaisePropertyChanged();
 				}
 			}
@@ -89,9 +89,7 @@ namespace CapFrameX.ViewModel
 										ls.Points.Add(new DataPoint(point.X, point.Y));
 									}
 
-									tmp.Series.Add(ls);
-									Model = tmp;
-
+									FrametimeSeries = ls;
 									//CurrentOffset = 0;
 									//ScrollObservable = Observable.Return<IEnumerable<Point>>(points);
 								}
