@@ -117,7 +117,9 @@ namespace CapFrameX.ViewModel
 									var tmp = new PlotModel
 									{
 										PlotMargins = new OxyThickness(40, 10, 10, 40),
-										Title = "Frametime test plot"
+										Title = "Frametime test plot",
+										PlotAreaBorderColor = OxyColor.FromArgb(64, 204, 204, 204),
+										
 									};
 
 									// Frametime graph
@@ -133,7 +135,6 @@ namespace CapFrameX.ViewModel
 									tmp.Series.Add(ls);
 
 									//Axes
-
 									//X
 									tmp.Axes.Add(new LinearAxis()
 									{
@@ -142,8 +143,11 @@ namespace CapFrameX.ViewModel
 										Title = "Time [s]",
 										Minimum = _points.First().X,
 										Maximum = SELECTABLETIME,
-										MajorGridlineStyle = LineStyle.Dot,
-										MajorGridlineColor = OxyColors.Gray
+										MajorGridlineStyle = LineStyle.Solid,
+										MajorGridlineThickness = 1,
+										MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
+										MinorTickSize = 0,
+										MajorTickSize = 0
 									});
 
 									//Y
@@ -152,8 +156,11 @@ namespace CapFrameX.ViewModel
 										Key = "yAxis",
 										Position = AxisPosition.Left,
 										Title = "Frametimes [ms]",
-										MajorGridlineStyle = LineStyle.Dot,
-										MajorGridlineColor = OxyColors.Gray
+										MajorGridlineStyle = LineStyle.Solid,
+										MajorGridlineThickness = 1,
+										MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
+										MinorTickSize = 0,
+										MajorTickSize = 0
 									});
 
 									FrametimeModel = tmp;

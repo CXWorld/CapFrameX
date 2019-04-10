@@ -18,8 +18,6 @@
 				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.DataGrid.xaml" />
 				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Slider.xaml" />
 			</ResourceDictionary.MergedDictionaries>
-
-			<Color x:Key="MyColor" A="64" R="135" G="206" B="250"/>
 		</ResourceDictionary>
 	</UserControl.Resources>
 	<Grid Margin="0 10 0 0">
@@ -31,7 +29,7 @@
 		<Grid Grid.Row="0" Background="#F5F5F5" Margin="0 0 20 0">
 			<oxy:PlotView Model="{Binding FrametimeModel}"/>
 		</Grid>
-		<ScrollBar Grid.Row="1" Margin="50 0 20 0" Height="30"
+		<ScrollBar Grid.Row="1" Margin="50 0 20 0"
                    Value="{Binding TimeOffset}" 
                    Minimum="{Binding BufferStartTime}" 
                    Maximum="{Binding ScrollEndTime}" 
