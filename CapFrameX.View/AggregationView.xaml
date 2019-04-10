@@ -29,36 +29,7 @@
 			<RowDefinition Height="3*"></RowDefinition>
 		</Grid.RowDefinitions>
 		<Grid Grid.Row="0" Background="#F5F5F5" Margin="0 0 20 0">
-			<!--<charting:ScrollableRxPlot BufferObservable="{Binding ScrollObservable}" 									  
-									   TimeOffset="{Binding CurrentOffset, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />-->
-			<oxy:Plot
-				  HorizontalAlignment="Stretch"
-				  VerticalAlignment="Stretch"
-				  PlotType="XY"
-				  TitleFontSize="11"
-				  IsLegendVisible="False"
-				  Title="Sample Plot">
-				<oxy:Plot.Axes>
-					<oxy:LinearAxis Key="xAxis"
-                    Position="Bottom"
-                    MajorGridlineStyle="Dot"
-                    MajorGridlineColor="Gray"
-                    Title="Time [s]"/>
-					<oxy:LinearAxis Key="yAxis"
-                    Position="Left"
-                    MajorGridlineStyle="Dot"
-                    MajorGridlineColor="Gray"
-                    Title="Frametimes [ms]"/>
-				</oxy:Plot.Axes>
-				<oxy:Plot.Series>
-					<oxy:LineSeries ItemsSource="{Binding FrametimeSeries}"
-                        DataFieldX="X"
-                        DataFieldY="Y"
-                        StrokeThickness="1"
-                        LineStyle="Solid"
-                        Color="{StaticResource MyColor}"/>
-				</oxy:Plot.Series>
-			</oxy:Plot>
+			<oxy:PlotView Model="{Binding FrametimeModel}"/>
 		</Grid>
 		<ScrollBar Grid.Row="1" Margin="50 0 20 0" Height="30"
                    Value="{Binding TimeOffset}" 

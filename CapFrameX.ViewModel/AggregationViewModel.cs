@@ -1,7 +1,9 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.OcatInterface;
 using CapFrameX.EventAggregation.Messages;
+using CapFrameX.OcatInterface;
 using OxyPlot;
+using OxyPlot.Axes;
 using OxyPlot.Series;
 using Prism.Events;
 using Prism.Mvvm;
@@ -10,50 +12,76 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Windows;
-using IBufferObservable = System.IObservable<System.Collections.Generic.IEnumerable<System.Windows.Point>>;
 
 namespace CapFrameX.ViewModel
 {
 	public class AggregationViewModel : BindableBase, INavigationAware
 	{
+		const double SELECTABLETIME = 10d;
+
 		private readonly IRecordDirectoryObserver _recordObserver;
 		private readonly IEventAggregator _eventAggregator;
 		private readonly IAppConfiguration _appConfiguration;
 
-		private LineSeries _frametimeSeries;
+		private PlotModel _frametimeModel;
 		private bool _useUpdateSession = false;
-		private IBufferObservable _scrollObservable;
-		private double _currentOffset;
+		private double _timeOffset;
+		private double _bufferStartTime;
+		private double _selectableTime;
+		private double _scrollEndTime;
+		private Session _session;
+		private IEnumerable<Point> _points;
 
-		public LineSeries FrametimeSeries
+		public PlotModel FrametimeModel
 		{
-			get { return _frametimeSeries; }
+			get { return _frametimeModel; }
 			set
 			{
-				if (_frametimeSeries != value)
+				if (_frametimeModel != value)
 				{
-					_frametimeSeries = value;
+					_frametimeModel = value;
 					RaisePropertyChanged();
 				}
 			}
 		}
 
-		public IBufferObservable ScrollObservable
+		public double TimeOffset
 		{
-			get { return _scrollObservable; }
+			get { return _timeOffset; }
 			set
 			{
-				_scrollObservable = value;
+				_timeOffset = value;
+				RaisePropertyChanged();
+				OnTimeOffsetChanged();
+			}
+		}
+
+		public double BufferStartTime
+		{
+			get { return _bufferStartTime; }
+			set
+			{
+				_bufferStartTime = value;
 				RaisePropertyChanged();
 			}
 		}
 
-		public double CurrentOffset
+		public double ScrollEndTime
 		{
-			get { return _currentOffset; }
+			get { return _scrollEndTime; }
 			set
 			{
-				_currentOffset = value;
+				_scrollEndTime = value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public double SelectableTime
+		{
+			get { return _selectableTime; }
+			set
+			{
+				_selectableTime = value;
 				RaisePropertyChanged();
 			}
 		}
@@ -75,23 +103,60 @@ namespace CapFrameX.ViewModel
 							{
 								if (_useUpdateSession)
 								{
-									var session = msg.OcatSession;
-									var points = session.FrameTimes.Select((ft, i) => new Point(session.FrameStart[i], ft));
+									_session = msg.OcatSession;
+									_points = _session?.FrameTimes.Select((ft, i) => new Point(_session.FrameStart[i], ft));
+
+									if (_points == null || !_points.Any())
+										return;
+
+									_timeOffset = _points.First().X;
+									BufferStartTime = _points.First().X;
+									ScrollEndTime = _points.Last().X - SELECTABLETIME;
+									SelectableTime = SELECTABLETIME;
 
 									var tmp = new PlotModel
 									{
-										PlotMargins = new OxyThickness(50, 0, 0, 40)
+										PlotMargins = new OxyThickness(40, 10, 10, 40),
+										Title = "Frametime test plot"
 									};
 
-									var ls = new LineSeries { Title = "Test" };
-									foreach (var point in points)
+									// Frametime graph
+									var ls = new LineSeries { Title = "Test samples", StrokeThickness = 1, Color = OxyColor.FromRgb(139, 35, 35) };
+
+									var slidingWindow = _points.Where(p => p.X >= TimeOffset && p.X <= TimeOffset + SelectableTime);
+									double minXWindow = slidingWindow.First().X;
+									foreach (var point in slidingWindow)
 									{
-										ls.Points.Add(new DataPoint(point.X, point.Y));
+										ls.Points.Add(new DataPoint(point.X - minXWindow, point.Y));
 									}
 
-									FrametimeSeries = ls;
-									//CurrentOffset = 0;
-									//ScrollObservable = Observable.Return<IEnumerable<Point>>(points);
+									tmp.Series.Add(ls);
+
+									//Axes
+
+									//X
+									tmp.Axes.Add(new LinearAxis()
+									{
+										Key = "xAxis",
+										Position = AxisPosition.Bottom,
+										Title = "Time [s]",
+										Minimum = _points.First().X,
+										Maximum = SELECTABLETIME,
+										MajorGridlineStyle = LineStyle.Dot,
+										MajorGridlineColor = OxyColors.Gray
+									});
+
+									//Y
+									tmp.Axes.Add(new LinearAxis()
+									{
+										Key = "yAxis",
+										Position = AxisPosition.Left,
+										Title = "Frametimes [ms]",
+										MajorGridlineStyle = LineStyle.Dot,
+										MajorGridlineColor = OxyColors.Gray
+									});
+
+									FrametimeModel = tmp;
 								}
 							});
 		}
@@ -109,6 +174,26 @@ namespace CapFrameX.ViewModel
 		public void OnNavigatedFrom(NavigationContext navigationContext)
 		{
 			_useUpdateSession = false;
+		}
+
+		private void OnTimeOffsetChanged()
+		{
+			if (_points == null || !_points.Any())
+				return;			
+
+			// Update frametime graph sliding window
+			var ls = new LineSeries { Title = "Test samples", StrokeThickness = 1, Color = OxyColor.FromRgb(139, 35, 35) };
+
+			var slidingWindow = _points.Where(p => p.X >= TimeOffset && p.X <= TimeOffset + SelectableTime);
+			double minXWindow = slidingWindow.First().X;
+			foreach (var point in slidingWindow)
+			{
+				ls.Points.Add(new DataPoint(point.X - minXWindow, point.Y));
+			}
+
+			FrametimeModel.Series.Clear();
+			FrametimeModel.Series.Add(ls);
+			FrametimeModel.InvalidatePlot(true);
 		}
 	}
 }
