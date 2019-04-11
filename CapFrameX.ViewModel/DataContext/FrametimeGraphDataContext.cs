@@ -1,30 +1,30 @@
 ﻿using CapFrameX.Contracts.Configuration;
-using CapFrameX.Extensions;
 using CapFrameX.OcatInterface;
 using CapFrameX.Statistics;
-using LiveCharts;
-using LiveCharts.Geared;
+using OxyPlot;
+using OxyPlot.Axes;
+using OxyPlot.Series;
 using Prism.Commands;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Text;
 using System.Windows;
 using System.Windows.Input;
-using System.Windows.Media;
 
 namespace CapFrameX.ViewModel.DataContext
 {
 	public class FrametimeGraphDataContext : GraphDataContextBase
 	{
-		private SeriesCollection _frametimeCollection;
+		private PlotModel _frametimeModel;
 
-		public SeriesCollection FrametimeCollection
+		public PlotModel FrametimeModel
 		{
-			get { return _frametimeCollection; }
+			get { return _frametimeModel; }
 			set
 			{
-				_frametimeCollection = value;
+				_frametimeModel = value;
 				RaisePropertyChanged();
 			}
 		}
@@ -45,53 +45,70 @@ namespace CapFrameX.ViewModel.DataContext
 				SetFrametimeChart(sequence);
 				GraphNumberSamples = sequence.Count;
 			});
+
+			FrametimeModel = new PlotModel
+			{
+				PlotMargins = new OxyThickness(40, 10, 0, 40),
+				PlotAreaBorderColor = OxyColor.FromArgb(64, 204, 204, 204),
+			};
 		}
 
 		public void SetFrametimeChart(IList<double> frametimes)
 		{
-			//var gradientBrush = new LinearGradientBrush
-			//{
-			//	StartPoint = new Point(0, 0),
-			//	EndPoint = new Point(0, 1)
-			//};
+			var frametimeSeries = new LineSeries { Title = "Frametimes", StrokeThickness = 1, Color = OxyColor.FromRgb(139, 35, 35) };
+			var movingAverageSeries = new LineSeries
+			{
+				Title = string.Format(CultureInfo.InvariantCulture,
+				"Moving average (window size = {0})", AppConfiguration.MovingAverageWindowSize),
+				StrokeThickness = 1,
+				Color = OxyColor.FromRgb(35, 139, 123)
+			};
 
-			// ToDo: Get color from ressources
-			//gradientBrush.GradientStops.Add(new GradientStop(Color.FromRgb(139, 35, 35), 0));
-			//gradientBrush.GradientStops.Add(new GradientStop(Colors.Transparent, 1));
-
-			var frametimeValues = new GearedValues<double>();
-			frametimeValues.AddRange(frametimes);
-			frametimeValues.WithQuality(AppConfiguration.ChartQualityLevel.ConverToEnum<Quality>());
-
-			var movingAverageValues = new GearedValues<double>();
-			movingAverageValues.AddRange(FrametimesStatisticProvider.GetMovingAverage(frametimes, AppConfiguration.MovingAverageWindowSize));
-			movingAverageValues.WithQuality(AppConfiguration.ChartQualityLevel.ConverToEnum<Quality>());
+			frametimeSeries.Points.AddRange(frametimes.Select((x, i) => new DataPoint(i, x)));
+			var movingAverage = FrametimesStatisticProvider.GetMovingAverage(frametimes, AppConfiguration.MovingAverageWindowSize);
+			movingAverageSeries.Points.AddRange(movingAverage.Select((x, i) => new DataPoint(i, x)));
 
 			Application.Current.Dispatcher.Invoke(new Action(() =>
 			{
-				SeriesCollection = new SeriesCollection()
+				var tmp = new PlotModel
 				{
-					new GLineSeries
-					{
-						Title = "Frametimes",
-						Values = frametimeValues,
-						Fill = Brushes.Transparent,
-						Stroke = new SolidColorBrush(Color.FromRgb(139,35,35)),
-						StrokeThickness = 1,
-						LineSmoothness= 0,
-						PointGeometrySize = 0
-					},
-					new GLineSeries
-					{
-						Title = string.Format(CultureInfo.InvariantCulture, "Moving average (window size = {0})", AppConfiguration.MovingAverageWindowSize),
-						Values = movingAverageValues,
-						Fill = Brushes.Transparent,
-						Stroke = new SolidColorBrush(Color.FromRgb(35, 139, 123)),
-						StrokeThickness = 1,
-						LineSmoothness= 0,
-						PointGeometrySize = 0
-					}
+					PlotMargins = new OxyThickness(40, 10, 0, 40),
+					PlotAreaBorderColor = OxyColor.FromArgb(64, 204, 204, 204),
+					LegendPosition = LegendPosition.TopCenter,
+					LegendOrientation = LegendOrientation.Horizontal
 				};
+
+				tmp.Series.Add(frametimeSeries);
+				tmp.Series.Add(movingAverageSeries);
+
+				//Axes
+				//X
+				tmp.Axes.Add(new LinearAxis()
+				{
+					Key = "xAxis",
+					Position = OxyPlot.Axes.AxisPosition.Bottom,
+					Title = "Samples",
+					MajorGridlineStyle = LineStyle.Solid,
+					MajorGridlineThickness = 1,
+					MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
+					MinorTickSize = 0,
+					MajorTickSize = 0
+				});
+
+				//Y
+				tmp.Axes.Add(new LinearAxis()
+				{
+					Key = "yAxis",
+					Position = OxyPlot.Axes.AxisPosition.Left,
+					Title = "Frametimes [ms]",
+					MajorGridlineStyle = LineStyle.Solid,
+					MajorGridlineThickness = 1,
+					MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
+					MinorTickSize = 0,
+					MajorTickSize = 0
+				});
+
+				FrametimeModel = tmp;
 			}));
 		}
 

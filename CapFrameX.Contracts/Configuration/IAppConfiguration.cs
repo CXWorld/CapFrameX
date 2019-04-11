@@ -16,27 +16,27 @@
 
 		string RecordDataGridIgnoreList { get; set; }
 
-		bool UseMaxStatisticParameter { get; set; }
+		bool UseSingleRecordMaxStatisticParameter { get; set; }
 
-		bool UseP99QuantileStatisticParameter { get; set; }
+		bool UseSingleRecord99QuantileStatisticParameter { get; set; }
 
-		bool UseP95QuantileStatisticParameter { get; set; }
+		bool UseSingleRecordP95QuantileStatisticParameter { get; set; }
 
-		bool UseAverageStatisticParameter { get; set; }
+		bool UseSingleRecordAverageStatisticParameter { get; set; }
 
-		bool UseP5QuantileStatisticParameter { get; set; }
+		bool UseSingleRecordP5QuantileStatisticParameter { get; set; }
 
-		bool UseP1QuantileStatisticParameter { get; set; }
+		bool UseSingleRecordP1QuantileStatisticParameter { get; set; }
 
-		bool UseP0Dot1QuantileStatisticParameter { get; set; }
+		bool UseSingleRecordP0Dot1QuantileStatisticParameter { get; set; }
 
-		bool UseP1LowAverageStatisticParameter { get; set; }
+		bool UseSingleRecordP1LowAverageStatisticParameter { get; set; }
 
-		bool UseP0Dot1LowAverageStatisticParameter { get; set; }
+		bool UseSingleRecordP0Dot1LowAverageStatisticParameter { get; set; }
 
-		bool UseMinStatisticParameter { get; set; }
+		bool UseSingleRecordMinStatisticParameter { get; set; }
 
-		bool UseAdaptiveSTDStatisticParameter { get; set; }
+		bool UseSingleRecordAdaptiveSTDStatisticParameter { get; set; }
 
 		void AddAppNameToIgnoreList(string nameToBeIgnored);
 	}

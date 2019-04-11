@@ -11,7 +11,6 @@ namespace CapFrameX.ViewModel.DataContext
 		public const int SCALE_RESOLUTION = 200;
 
 		private ZoomingOptions _zoomingMode;
-		private SeriesCollection _seriesCollection;
 		private bool _useRemovingOutlier;
 		private int _graphNumberSamples;
 		private int _cutLeftSliderMaximum;
@@ -52,16 +51,6 @@ namespace CapFrameX.ViewModel.DataContext
 			{
 				RecordDataServer.CurrentSession = value;
 				InitializeCuttingParameter();
-			}
-		}
-
-		public SeriesCollection SeriesCollection
-		{
-			get { return _seriesCollection; }
-			set
-			{
-				_seriesCollection = value;
-				RaisePropertyChanged();
 			}
 		}
 

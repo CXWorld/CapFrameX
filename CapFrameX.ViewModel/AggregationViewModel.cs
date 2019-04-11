@@ -117,7 +117,6 @@ namespace CapFrameX.ViewModel
 									var tmp = new PlotModel
 									{
 										PlotMargins = new OxyThickness(40, 10, 10, 40),
-										Title = "Frametime test plot",
 										PlotAreaBorderColor = OxyColor.FromArgb(64, 204, 204, 204),
 										
 									};

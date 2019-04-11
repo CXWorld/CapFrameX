@@ -8,6 +8,7 @@
 			 xmlns:mvvm="clr-namespace:CapFrameX.MVVM.Converter;assembly=CapFrameX.MVVM"
 			 xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"	
              xmlns:local="clr-namespace:CapFrameX.View.Controls"
+			 xmlns:oxy="clr-namespace:OxyPlot.Wpf;assembly=OxyPlot.Wpf"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
 	<UserControl.Resources>
@@ -34,21 +35,16 @@
 			<RowDefinition Height="1*"></RowDefinition>
 			<RowDefinition Height="Auto"></RowDefinition>
 		</Grid.RowDefinitions>
-		<lvc:CartesianChart Grid.Row="0" Tag="{Binding ElementName=FpsGraphControlName, Path=DataContext}" LegendLocation="Top"
-							MouseDoubleClick="ResetChart_MouseDoubleClick" DisableAnimations="True" Series="{Binding FpsCollection}" Zoom="{Binding ZoomingMode}"
-							TooltipTimeout="0">
-			<lvc:CartesianChart.ContextMenu>
-				<ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
-					<MenuItem Header="Copy fps values" Command="{Binding CopyFpsValuesCommand}"/>
-				</ContextMenu>
-			</lvc:CartesianChart.ContextMenu>
-			<lvc:CartesianChart.AxisX>
-				<lvc:Axis Title="Samples" Name="FpsX" Separator="{x:Static lvc:DefaultAxes.CleanSeparator}" Foreground="Black"/>
-			</lvc:CartesianChart.AxisX>
-			<lvc:CartesianChart.AxisY>
-				<lvc:Axis Title="Frames per second" Name="FpsY" Foreground="Black"/>
-			</lvc:CartesianChart.AxisY>
-		</lvc:CartesianChart>
+		<Grid Grid.Row="0" Background="#F5F5F5" Margin="0 0 20 0">
+			<oxy:PlotView Background="#F5F5F5" x:Name="FpsPlotView" Model="{Binding FpsModel}" Tag="{Binding ElementName=FpsGraphControlName, Path=DataContext}"
+						  MouseDoubleClick="ResetChart_MouseDoubleClick">
+				<oxy:PlotView.ContextMenu>
+					<ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
+						<MenuItem Header="Copy fps values" Command="{Binding CopyFpsValuesCommand}"/>
+					</ContextMenu>
+				</oxy:PlotView.ContextMenu>
+			</oxy:PlotView>
+		</Grid>
 		<Grid Grid.Row="1" Visibility="{Binding IsCuttingModeActive, Converter={StaticResource FalseToCollapsedConverter}}">
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition Width="2*" />

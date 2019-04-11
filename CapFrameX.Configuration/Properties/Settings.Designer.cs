@@ -122,132 +122,132 @@ namespace CapFrameX.Configuration.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool UseMaxStatisticParameter {
+        public bool UseSingleRecordMaxStatisticParameter {
             get {
-                return ((bool)(this["UseMaxStatisticParameter"]));
+                return ((bool)(this["UseSingleRecordMaxStatisticParameter"]));
             }
             set {
-                this["UseMaxStatisticParameter"] = value;
+                this["UseSingleRecordMaxStatisticParameter"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool UseP99QuantileStatisticParameter {
+        public bool UseSingleRecordP99QuantileStatisticParameter {
             get {
-                return ((bool)(this["UseP99QuantileStatisticParameter"]));
+                return ((bool)(this["UseSingleRecordP99QuantileStatisticParameter"]));
             }
             set {
-                this["UseP99QuantileStatisticParameter"] = value;
+                this["UseSingleRecordP99QuantileStatisticParameter"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool UseP95QuantileStatisticParameter {
+        public bool UseSingleRecordP95QuantileStatisticParameter {
             get {
-                return ((bool)(this["UseP95QuantileStatisticParameter"]));
+                return ((bool)(this["UseSingleRecordP95QuantileStatisticParameter"]));
             }
             set {
-                this["UseP95QuantileStatisticParameter"] = value;
+                this["UseSingleRecordP95QuantileStatisticParameter"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool UseAverageStatisticParameter {
+        public bool UseSingleRecordAverageStatisticParameter {
             get {
-                return ((bool)(this["UseAverageStatisticParameter"]));
+                return ((bool)(this["UseSingleRecordAverageStatisticParameter"]));
             }
             set {
-                this["UseAverageStatisticParameter"] = value;
+                this["UseSingleRecordAverageStatisticParameter"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool UseP5QuantileStatisticParameter {
+        public bool UseSingleRecordP5QuantileStatisticParameter {
             get {
-                return ((bool)(this["UseP5QuantileStatisticParameter"]));
+                return ((bool)(this["UseSingleRecordP5QuantileStatisticParameter"]));
             }
             set {
-                this["UseP5QuantileStatisticParameter"] = value;
+                this["UseSingleRecordP5QuantileStatisticParameter"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool UseP1QuantileStatisticParameter {
+        public bool UseSingleRecordP1QuantileStatisticParameter {
             get {
-                return ((bool)(this["UseP1QuantileStatisticParameter"]));
+                return ((bool)(this["UseSingleRecordP1QuantileStatisticParameter"]));
             }
             set {
-                this["UseP1QuantileStatisticParameter"] = value;
+                this["UseSingleRecordP1QuantileStatisticParameter"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool UseP0Dot1QuantileStatisticParameter {
+        public bool UseSingleRecordP0Dot1QuantileStatisticParameter {
             get {
-                return ((bool)(this["UseP0Dot1QuantileStatisticParameter"]));
+                return ((bool)(this["UseSingleRecordP0Dot1QuantileStatisticParameter"]));
             }
             set {
-                this["UseP0Dot1QuantileStatisticParameter"] = value;
+                this["UseSingleRecordP0Dot1QuantileStatisticParameter"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool UseP1LowAverageStatisticParameter {
+        public bool UseSingleRecordP1LowAverageStatisticParameter {
             get {
-                return ((bool)(this["UseP1LowAverageStatisticParameter"]));
+                return ((bool)(this["UseSingleRecordP1LowAverageStatisticParameter"]));
             }
             set {
-                this["UseP1LowAverageStatisticParameter"] = value;
+                this["UseSingleRecordP1LowAverageStatisticParameter"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool UseP0Dot1LowAverageStatisticParameter {
+        public bool UseSingleRecordP0Dot1LowAverageStatisticParameter {
             get {
-                return ((bool)(this["UseP0Dot1LowAverageStatisticParameter"]));
+                return ((bool)(this["UseSingleRecordP0Dot1LowAverageStatisticParameter"]));
             }
             set {
-                this["UseP0Dot1LowAverageStatisticParameter"] = value;
+                this["UseSingleRecordP0Dot1LowAverageStatisticParameter"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool UseMinStatisticParameter {
+        public bool UseSingleRecordMinStatisticParameter {
             get {
-                return ((bool)(this["UseMinStatisticParameter"]));
+                return ((bool)(this["UseSingleRecordMinStatisticParameter"]));
             }
             set {
-                this["UseMinStatisticParameter"] = value;
+                this["UseSingleRecordMinStatisticParameter"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool UseAdaptiveSTDStatisticParameter {
+        public bool UseSingleRecordAdaptiveSTDStatisticParameter {
             get {
-                return ((bool)(this["UseAdaptiveSTDStatisticParameter"]));
+                return ((bool)(this["UseSingleRecordAdaptiveSTDStatisticParameter"]));
             }
             set {
-                this["UseAdaptiveSTDStatisticParameter"] = value;
+                this["UseSingleRecordAdaptiveSTDStatisticParameter"] = value;
             }
         }
     }

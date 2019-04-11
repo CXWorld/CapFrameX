@@ -48,70 +48,70 @@ namespace CapFrameX.Configuration
 			set { Settings.RecordDataGridIgnoreList = value; Settings.Save(); }
 		}
 
-		public bool UseMaxStatisticParameter
+		public bool UseSingleRecordMaxStatisticParameter
 		{
-			get { return Settings.UseMaxStatisticParameter; }
-			set { Settings.UseMaxStatisticParameter = value; Settings.Save(); }
+			get { return Settings.UseSingleRecordMaxStatisticParameter; }
+			set { Settings.UseSingleRecordMaxStatisticParameter = value; Settings.Save(); }
 		}
 
-		public bool UseP99QuantileStatisticParameter
+		public bool UseSingleRecord99QuantileStatisticParameter
 		{
-			get { return Settings.UseP99QuantileStatisticParameter; }
-			set { Settings.UseP99QuantileStatisticParameter = value; Settings.Save(); }
+			get { return Settings.UseSingleRecordP99QuantileStatisticParameter; }
+			set { Settings.UseSingleRecordP99QuantileStatisticParameter = value; Settings.Save(); }
 		}
 
-		public bool UseP95QuantileStatisticParameter
+		public bool UseSingleRecordP95QuantileStatisticParameter
 		{
-			get { return Settings.UseP95QuantileStatisticParameter; }
-			set { Settings.UseP95QuantileStatisticParameter = value; Settings.Save(); }
+			get { return Settings.UseSingleRecordP95QuantileStatisticParameter; }
+			set { Settings.UseSingleRecordP95QuantileStatisticParameter = value; Settings.Save(); }
 		}
 
-		public bool UseAverageStatisticParameter
+		public bool UseSingleRecordAverageStatisticParameter
 		{
-			get { return Settings.UseAverageStatisticParameter; }
-			set { Settings.UseAverageStatisticParameter = value; Settings.Save(); }
+			get { return Settings.UseSingleRecordAverageStatisticParameter; }
+			set { Settings.UseSingleRecordAverageStatisticParameter = value; Settings.Save(); }
 		}
 
-		public bool UseP5QuantileStatisticParameter
+		public bool UseSingleRecordP5QuantileStatisticParameter
 		{
-			get { return Settings.UseP5QuantileStatisticParameter; }
-			set { Settings.UseP5QuantileStatisticParameter = value; Settings.Save(); }
+			get { return Settings.UseSingleRecordP5QuantileStatisticParameter; }
+			set { Settings.UseSingleRecordP5QuantileStatisticParameter = value; Settings.Save(); }
 		}
 
-		public bool UseP1QuantileStatisticParameter
+		public bool UseSingleRecordP1QuantileStatisticParameter
 		{
-			get { return Settings.UseP1QuantileStatisticParameter; }
-			set { Settings.UseP1QuantileStatisticParameter = value; Settings.Save(); }
+			get { return Settings.UseSingleRecordP1QuantileStatisticParameter; }
+			set { Settings.UseSingleRecordP1QuantileStatisticParameter = value; Settings.Save(); }
 		}
 
-		public bool UseP0Dot1QuantileStatisticParameter
+		public bool UseSingleRecordP0Dot1QuantileStatisticParameter
 		{
-			get { return Settings.UseP0Dot1QuantileStatisticParameter; }
-			set { Settings.UseP0Dot1QuantileStatisticParameter = value; Settings.Save(); }
+			get { return Settings.UseSingleRecordP0Dot1QuantileStatisticParameter; }
+			set { Settings.UseSingleRecordP0Dot1QuantileStatisticParameter = value; Settings.Save(); }
 		}
 
-		public bool UseP1LowAverageStatisticParameter
+		public bool UseSingleRecordP1LowAverageStatisticParameter
 		{
-			get { return Settings.UseP1LowAverageStatisticParameter; }
-			set { Settings.UseP1LowAverageStatisticParameter = value; Settings.Save(); }
+			get { return Settings.UseSingleRecordP1LowAverageStatisticParameter; }
+			set { Settings.UseSingleRecordP1LowAverageStatisticParameter = value; Settings.Save(); }
 		}
 
-		public bool UseP0Dot1LowAverageStatisticParameter
+		public bool UseSingleRecordP0Dot1LowAverageStatisticParameter
 		{
-			get { return Settings.UseP0Dot1LowAverageStatisticParameter; }
-			set { Settings.UseP0Dot1LowAverageStatisticParameter = value; Settings.Save(); }
+			get { return Settings.UseSingleRecordP0Dot1LowAverageStatisticParameter; }
+			set { Settings.UseSingleRecordP0Dot1LowAverageStatisticParameter = value; Settings.Save(); }
 		}
 
-		public bool UseMinStatisticParameter
+		public bool UseSingleRecordMinStatisticParameter
 		{
-			get { return Settings.UseMinStatisticParameter; }
-			set { Settings.UseMinStatisticParameter = value; Settings.Save(); }
+			get { return Settings.UseSingleRecordMinStatisticParameter; }
+			set { Settings.UseSingleRecordMinStatisticParameter = value; Settings.Save(); }
 		}
 
-		public bool UseAdaptiveSTDStatisticParameter
+		public bool UseSingleRecordAdaptiveSTDStatisticParameter
 		{
-			get { return Settings.UseAdaptiveSTDStatisticParameter; }
-			set { Settings.UseAdaptiveSTDStatisticParameter = value; Settings.Save(); }
+			get { return Settings.UseSingleRecordAdaptiveSTDStatisticParameter; }
+			set { Settings.UseSingleRecordAdaptiveSTDStatisticParameter = value; Settings.Save(); }
 		}
 
 		public void AddAppNameToIgnoreList(string nameToBeIgnored)

@@ -26,37 +26,37 @@
     <Setting Name="ScreenshotDirectory" Type="System.String" Scope="User">
       <Value Profile="(Default)">MyDocuments\OCAT\Screenshots</Value>
     </Setting>
-    <Setting Name="UseMaxStatisticParameter" Type="System.Boolean" Scope="User">
+    <Setting Name="UseSingleRecordMaxStatisticParameter" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
-    <Setting Name="UseP99QuantileStatisticParameter" Type="System.Boolean" Scope="User">
+    <Setting Name="UseSingleRecordP99QuantileStatisticParameter" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
-    <Setting Name="UseP95QuantileStatisticParameter" Type="System.Boolean" Scope="User">
+    <Setting Name="UseSingleRecordP95QuantileStatisticParameter" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
-    <Setting Name="UseAverageStatisticParameter" Type="System.Boolean" Scope="User">
+    <Setting Name="UseSingleRecordAverageStatisticParameter" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
-    <Setting Name="UseP5QuantileStatisticParameter" Type="System.Boolean" Scope="User">
+    <Setting Name="UseSingleRecordP5QuantileStatisticParameter" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
-    <Setting Name="UseP1QuantileStatisticParameter" Type="System.Boolean" Scope="User">
+    <Setting Name="UseSingleRecordP1QuantileStatisticParameter" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
-    <Setting Name="UseP0Dot1QuantileStatisticParameter" Type="System.Boolean" Scope="User">
+    <Setting Name="UseSingleRecordP0Dot1QuantileStatisticParameter" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
-    <Setting Name="UseP1LowAverageStatisticParameter" Type="System.Boolean" Scope="User">
+    <Setting Name="UseSingleRecordP1LowAverageStatisticParameter" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
-    <Setting Name="UseP0Dot1LowAverageStatisticParameter" Type="System.Boolean" Scope="User">
+    <Setting Name="UseSingleRecordP0Dot1LowAverageStatisticParameter" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
-    <Setting Name="UseMinStatisticParameter" Type="System.Boolean" Scope="User">
+    <Setting Name="UseSingleRecordMinStatisticParameter" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
-    <Setting Name="UseAdaptiveSTDStatisticParameter" Type="System.Boolean" Scope="User">
+    <Setting Name="UseSingleRecordAdaptiveSTDStatisticParameter" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
   </Settings>

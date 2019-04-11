@@ -1,31 +1,29 @@
 ﻿using CapFrameX.Contracts.Configuration;
-using CapFrameX.Extensions;
 using CapFrameX.OcatInterface;
 using CapFrameX.Statistics;
-using LiveCharts;
-using LiveCharts.Geared;
+using OxyPlot;
+using OxyPlot.Axes;
+using OxyPlot.Series;
 using Prism.Commands;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Windows;
 using System.Windows.Input;
-using System.Windows.Media;
 
 namespace CapFrameX.ViewModel.DataContext
 {
 	public class FpsGraphDataContext : GraphDataContextBase
 	{
-		private SeriesCollection _fpsCollection;
+		private PlotModel _fpsModel;
 
-		public SeriesCollection FpsCollection
+		public PlotModel FpsModel
 		{
-			get { return _fpsCollection; }
+			get { return _fpsModel; }
 			set
 			{
-				_fpsCollection = value;
+				_fpsModel = value;
 				RaisePropertyChanged();
 			}
 		}
@@ -44,6 +42,12 @@ namespace CapFrameX.ViewModel.DataContext
 				SetFpsChart(sequence);
 				GraphNumberSamples = sequence.Count;
 			});
+
+			FpsModel = new PlotModel
+			{
+				PlotMargins = new OxyThickness(40, 10, 0, 40),
+				PlotAreaBorderColor = OxyColor.FromArgb(64, 204, 204, 204),
+			};
 		}
 
 		private void OnCopyFpsValues()
@@ -66,51 +70,55 @@ namespace CapFrameX.ViewModel.DataContext
 
 		public void SetFpsChart(IList<double> fps)
 		{
-			//var gradientBrush = new LinearGradientBrush
-			//{
-			//	StartPoint = new Point(0, 0),
-			//	EndPoint = new Point(0, 1)
-			//};
+			var fpsSeries = new LineSeries { Title = "FPS", StrokeThickness = 1, Color = OxyColor.FromRgb(139, 35, 35) };
+			var averageSeries = new LineSeries { Title = "Average FPS", StrokeThickness = 1, Color = OxyColor.FromRgb(35, 139, 123) };
 
-			// ToDo: Get color from ressources
-			//gradientBrush.GradientStops.Add(new GradientStop(Color.FromRgb(139, 35, 35), 0));
-			//gradientBrush.GradientStops.Add(new GradientStop(Colors.Transparent, 1));
-
-			var fpsValues = new GearedValues<double>();
-			fpsValues.AddRange(fps);
-			fpsValues.WithQuality(AppConfiguration.ChartQualityLevel.ConverToEnum<Quality>());
-
-			var averageValues = new GearedValues<double>();
+			fpsSeries.Points.AddRange(fps.Select((x, i) => new DataPoint(i, x)));
 			var frametimes = RecordDataServer.GetFrametimeSampleWindow();
 			double average = frametimes.Count * 1000 / frametimes.Sum();
-			averageValues.AddRange(Enumerable.Repeat(average, frametimes.Count));
-			averageValues.WithQuality(AppConfiguration.ChartQualityLevel.ConverToEnum<Quality>());
+			averageSeries.Points.AddRange(Enumerable.Repeat(average, frametimes.Count).Select((x, i) => new DataPoint(i, x)));
 
 			Application.Current.Dispatcher.Invoke(new Action(() =>
 			{
-				FpsCollection = new SeriesCollection()
+				var tmp = new PlotModel
 				{
-					new GLineSeries
-					{
-						Title = "FPS",
-						Values = fpsValues,
-						Fill = Brushes.Transparent,
-						Stroke = new SolidColorBrush(Color.FromRgb(139,35,35)),
-						StrokeThickness = 1,
-						LineSmoothness= 0,
-						PointGeometrySize = 0
-					},
-					new GLineSeries
-					{
-						Title = string.Format(CultureInfo.InvariantCulture, "Average FPS", AppConfiguration.MovingAverageWindowSize),
-						Values = averageValues,
-						Fill = Brushes.Transparent,
-						Stroke = new SolidColorBrush(Color.FromRgb(35, 139, 123)),
-						StrokeThickness = 1,
-						LineSmoothness= 0,
-						PointGeometrySize = 0
-					}
+					PlotMargins = new OxyThickness(40, 10, 0, 40),
+					PlotAreaBorderColor = OxyColor.FromArgb(64, 204, 204, 204),
+					LegendPosition = LegendPosition.TopCenter,
+					LegendOrientation = LegendOrientation.Horizontal
 				};
+
+				tmp.Series.Add(fpsSeries);
+				tmp.Series.Add(averageSeries);
+
+				//Axes
+				//X
+				tmp.Axes.Add(new LinearAxis()
+				{
+					Key = "xAxis",
+					Position = OxyPlot.Axes.AxisPosition.Bottom,
+					Title = "Samples",
+					MajorGridlineStyle = LineStyle.Solid,
+					MajorGridlineThickness = 1,
+					MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
+					MinorTickSize = 0,
+					MajorTickSize = 0
+				});
+
+				//Y
+				tmp.Axes.Add(new LinearAxis()
+				{
+					Key = "yAxis",
+					Position = OxyPlot.Axes.AxisPosition.Left,
+					Title = "FPS [1/s]",
+					MajorGridlineStyle = LineStyle.Solid,
+					MajorGridlineThickness = 1,
+					MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
+					MinorTickSize = 0,
+					MajorTickSize = 0
+				});
+
+				FpsModel = tmp;
 			}));
 		}
 	}

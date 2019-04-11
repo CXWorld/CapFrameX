@@ -114,7 +114,7 @@
 							</lvc:Axis>
 						</lvc:CartesianChart.AxisX>
 						<lvc:CartesianChart.AxisY>
-							<lvc:Axis Title="Frametime (ms)" Name="LShapeY" Foreground="Black"/>
+							<lvc:Axis Title="Frametime [ms]" Name="LShapeY" Foreground="Black"/>
 						</lvc:CartesianChart.AxisY>
 					</lvc:CartesianChart>
 				</TabItem>
@@ -122,6 +122,7 @@
 			<Expander Visibility="{Binding ElementName=ScreenshotModeToggleButton, Path=IsChecked, Converter={StaticResource TrueToCollapsedConverter}}" Grid.Row="1" Name="SettingsExpander" Background="#F5F5F5" Margin="0 5 0 5" Header="Data/Chart Settings" HorizontalAlignment="Stretch">
 				<Grid>
 					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="Auto" />
 						<ColumnDefinition Width="Auto" />
 						<ColumnDefinition Width="Auto" />
 						<ColumnDefinition Width="1*" />
@@ -137,7 +138,81 @@
 									  ToolTip="Cutting mode" IsChecked="{Binding IsCuttingModeActive}"
 									  IsEnabled="{Binding Path=IsChecked, ElementName=SlidingWindowCheckBox, Converter={StaticResource NegateBoolConverter}}"/>
 					</StackPanel>
-					<Button Margin="15 0 50 20" Grid.Column="2" VerticalAlignment="Top" HorizontalAlignment="Right" Command="{Binding ToogleZoomingModeCommand}">
+					<StackPanel Grid.Column="2" Margin="25 5 0 10" Orientation="Horizontal" VerticalAlignment="Top">
+						<TextBlock VerticalAlignment="Center">Statistic parameter settings:</TextBlock>
+						<materialDesign:PopupBox StaysOpen="True">
+							<materialDesign:Card Width="220" Margin="0 0 0 -10">
+								<StackPanel>
+									<Grid Margin="8 8 8 8">
+										<Grid.Resources>
+											<Style TargetType="CheckBox"
+											BasedOn="{StaticResource MaterialDesignCheckBox}">
+												<Setter Property="Margin" Value="8,8,10,8" />
+											</Style>
+											<Style TargetType="TextBox" BasedOn="{StaticResource MaterialDesignTextBox}">
+												<Setter Property="materialDesign:HintAssist.IsFloating" Value="True" />
+												<Setter Property="Margin" Value="8,8,8,8" />
+											</Style>
+										</Grid.Resources>
+										<Grid.RowDefinitions>
+											<RowDefinition Height="*" />
+											<RowDefinition Height="*" />
+											<RowDefinition Height="*" />
+											<RowDefinition Height="*" />
+											<RowDefinition Height="*" />
+											<RowDefinition Height="*" />
+											<RowDefinition Height="*" />
+											<RowDefinition Height="*" />
+											<RowDefinition Height="*" />
+											<RowDefinition Height="*" />
+											<RowDefinition Height="*" />
+										</Grid.RowDefinitions>
+										<Grid.ColumnDefinitions>
+											<ColumnDefinition Width="Auto"/>
+											<ColumnDefinition Width="Auto"/>
+										</Grid.ColumnDefinitions>
+										<TextBlock Margin="5" Grid.Row="0" Grid.Column="0" Text="Use maximum" VerticalAlignment="Center"/>
+										<ToggleButton Margin="5" Grid.Row="0" Grid.Column="1" IsChecked="{Binding UseMaxStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show low parameter" />
+										<TextBlock Margin="5" Grid.Row="1" Grid.Column="0" Text="Use 0.99-quantile" VerticalAlignment="Center"/>
+										<ToggleButton Margin="5" Grid.Row="1" Grid.Column="1" IsChecked="{Binding UseP99QuantileStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show low parameter" />
+										<TextBlock Margin="5" Grid.Row="2" Grid.Column="0" Text="Use 0.95-quantile" VerticalAlignment="Center"/>
+										<ToggleButton Margin="5" Grid.Row="2" Grid.Column="1" IsChecked="{Binding UseP95QuantileStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show low parameter" />
+										<TextBlock Margin="5" Grid.Row="3" Grid.Column="0" Text="Use average" VerticalAlignment="Center"/>
+										<ToggleButton Margin="5" Grid.Row="3" Grid.Column="1" IsChecked="{Binding UseAverageStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show low parameter" />
+										<TextBlock Margin="5" Grid.Row="4" Grid.Column="0" Text="Use 0.05-quantile" VerticalAlignment="Center"/>
+										<ToggleButton Margin="5" Grid.Row="4" Grid.Column="1" IsChecked="{Binding UseP5QuantileStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show low parameter" />
+										<TextBlock Margin="5" Grid.Row="5" Grid.Column="0" Text="Use 0.01-quantile" VerticalAlignment="Center"/>
+										<ToggleButton Margin="5" Grid.Row="5" Grid.Column="1" IsChecked="{Binding UseP1QuantileStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show low parameter" />
+										<TextBlock Margin="5" Grid.Row="6" Grid.Column="0" Text="Use 0.001-quantile" VerticalAlignment="Center"/>
+										<ToggleButton Margin="5" Grid.Row="6" Grid.Column="1" IsChecked="{Binding UseP0Dot1QuantileStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show low parameter" />
+										<TextBlock Margin="5" Grid.Row="7" Grid.Column="0" Text="Use 1% low average" VerticalAlignment="Center"/>
+										<ToggleButton Margin="5" Grid.Row="7" Grid.Column="1" IsChecked="{Binding UseP1LowAverageStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show low parameter" />
+										<TextBlock Margin="5" Grid.Row="8" Grid.Column="0" Text="Use 0.1% low average" VerticalAlignment="Center"/>
+										<ToggleButton Margin="5" Grid.Row="8" Grid.Column="1" IsChecked="{Binding UseP0Dot1LowAverageStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show low parameter" />
+										<TextBlock Margin="5" Grid.Row="9" Grid.Column="0" Text="Use minimum" VerticalAlignment="Center"/>
+										<ToggleButton Margin="5" Grid.Row="9" Grid.Column="1" IsChecked="{Binding UseMinStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show low parameter" />
+										<TextBlock Margin="5" Grid.Row="10" Grid.Column="0" Text="Use adaptive STD" VerticalAlignment="Center"/>
+										<ToggleButton Margin="5" Grid.Row="10" Grid.Column="1" IsChecked="{Binding UseAdaptiveSTDStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show low parameter" />
+									</Grid>
+									<Separator Style="{StaticResource MaterialDesignDarkSeparator}" />
+									<StackPanel
+										  Margin="8 0 8 8"
+										  Orientation="Horizontal"
+										  HorizontalAlignment="Right">
+										<Button Command="{Binding AcceptParameterSettingsCommand}"
+											HorizontalAlignment="Right"
+											Style="{StaticResource MaterialDesignToolForegroundButton}"
+											Width="30"
+											Padding="2 0 0 0"
+											materialDesign:RippleAssist.IsCentered="True">
+											<materialDesign:PackIcon Kind="CheckAll" />
+										</Button>
+									</StackPanel>
+								</StackPanel>
+							</materialDesign:Card>
+						</materialDesign:PopupBox>
+					</StackPanel>
+					<Button Margin="15 0 50 20" Grid.Column="3" VerticalAlignment="Top" HorizontalAlignment="Right" Command="{Binding ToogleZoomingModeCommand}">
 						<TextBlock>Toggle zoming mode, current is: 
 							<TextBlock Text="{Binding ZoomingMode, Converter={StaticResource ZoomingModeConverter}}"/>
 						</TextBlock>
