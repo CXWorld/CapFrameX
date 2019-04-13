@@ -48,7 +48,7 @@ namespace CapFrameX.ViewModel.DataContext
 
 			FrametimeModel = new PlotModel
 			{
-				PlotMargins = new OxyThickness(40, 10, 0, 40),
+				PlotMargins = new OxyThickness(40, 0, 0, 40),
 				PlotAreaBorderColor = OxyColor.FromArgb(64, 204, 204, 204),
 			};
 		}
@@ -65,6 +65,8 @@ namespace CapFrameX.ViewModel.DataContext
 			};
 
 			frametimeSeries.Points.AddRange(frametimes.Select((x, i) => new DataPoint(i, x)));
+			var yMin = frametimes.Min();
+			var yMax = frametimes.Max();
 			var movingAverage = FrametimesStatisticProvider.GetMovingAverage(frametimes, AppConfiguration.MovingAverageWindowSize);
 			movingAverageSeries.Points.AddRange(movingAverage.Select((x, i) => new DataPoint(i, x)));
 
@@ -72,7 +74,7 @@ namespace CapFrameX.ViewModel.DataContext
 			{
 				var tmp = new PlotModel
 				{
-					PlotMargins = new OxyThickness(40, 10, 0, 40),
+					PlotMargins = new OxyThickness(40, 0, 0, 40),
 					PlotAreaBorderColor = OxyColor.FromArgb(64, 204, 204, 204),
 					LegendPosition = LegendPosition.TopCenter,
 					LegendOrientation = LegendOrientation.Horizontal
@@ -83,24 +85,29 @@ namespace CapFrameX.ViewModel.DataContext
 
 				//Axes
 				//X
-				tmp.Axes.Add(new LinearAxis()
+				var xAxis = new LinearAxis()
 				{
 					Key = "xAxis",
-					Position = OxyPlot.Axes.AxisPosition.Bottom,
+					Position = AxisPosition.Bottom,
 					Title = "Samples",
+					Minimum = 0,
+					Maximum = frametimes.Count,
 					MajorGridlineStyle = LineStyle.Solid,
 					MajorGridlineThickness = 1,
 					MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
 					MinorTickSize = 0,
 					MajorTickSize = 0
-				});
+				};
+				tmp.Axes.Add(xAxis);
 
 				//Y
 				tmp.Axes.Add(new LinearAxis()
 				{
 					Key = "yAxis",
-					Position = OxyPlot.Axes.AxisPosition.Left,
+					Position = AxisPosition.Left,
 					Title = "Frametimes [ms]",
+					Minimum = yMin - (yMax - yMin) / 6,
+					Maximum = yMax + (yMax - yMin) / 6,
 					MajorGridlineStyle = LineStyle.Solid,
 					MajorGridlineThickness = 1,
 					MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),

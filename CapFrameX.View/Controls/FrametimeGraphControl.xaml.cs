@@ -6,11 +6,12 @@ namespace CapFrameX.View.Controls
 	/// Interaction logic for FrametimeGraphControl.xaml
 	/// </summary>
 	public partial class FrametimeGraphControl : UserControl
-    {
+	{
         public FrametimeGraphControl()
         {
             InitializeComponent();
-        }
+			OxyPlotHelper.SetYAxisZoomer(FrametimePlotView);
+		}
 
 		private void ResetChart_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
 		{

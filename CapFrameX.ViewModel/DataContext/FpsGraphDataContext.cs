@@ -74,6 +74,8 @@ namespace CapFrameX.ViewModel.DataContext
 			var averageSeries = new LineSeries { Title = "Average FPS", StrokeThickness = 1, Color = OxyColor.FromRgb(35, 139, 123) };
 
 			fpsSeries.Points.AddRange(fps.Select((x, i) => new DataPoint(i, x)));
+			var yMin = fps.Min();
+			var yMax = fps.Max();
 			var frametimes = RecordDataServer.GetFrametimeSampleWindow();
 			double average = frametimes.Count * 1000 / frametimes.Sum();
 			averageSeries.Points.AddRange(Enumerable.Repeat(average, frametimes.Count).Select((x, i) => new DataPoint(i, x)));
@@ -98,6 +100,8 @@ namespace CapFrameX.ViewModel.DataContext
 					Key = "xAxis",
 					Position = OxyPlot.Axes.AxisPosition.Bottom,
 					Title = "Samples",
+					Minimum = 0,
+					Maximum = fps.Count,
 					MajorGridlineStyle = LineStyle.Solid,
 					MajorGridlineThickness = 1,
 					MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
@@ -111,6 +115,8 @@ namespace CapFrameX.ViewModel.DataContext
 					Key = "yAxis",
 					Position = OxyPlot.Axes.AxisPosition.Left,
 					Title = "FPS [1/s]",
+					Minimum = yMin - (yMax - yMin) / 6,
+					Maximum = yMax + (yMax - yMin) / 6,
 					MajorGridlineStyle = LineStyle.Solid,
 					MajorGridlineThickness = 1,
 					MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),

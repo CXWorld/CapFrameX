@@ -17,6 +17,7 @@ namespace CapFrameX.ViewModel
 {
 	public class AggregationViewModel : BindableBase, INavigationAware
 	{
+		// make UI parameter
 		const double SELECTABLETIME = 10d;
 
 		private readonly IRecordDirectoryObserver _recordObserver;
@@ -117,14 +118,15 @@ namespace CapFrameX.ViewModel
 									var tmp = new PlotModel
 									{
 										PlotMargins = new OxyThickness(40, 10, 10, 40),
-										PlotAreaBorderColor = OxyColor.FromArgb(64, 204, 204, 204),
-										
+										PlotAreaBorderColor = OxyColor.FromArgb(64, 204, 204, 204)									
 									};
 
 									// Frametime graph
 									var ls = new LineSeries { Title = "Test samples", StrokeThickness = 1, Color = OxyColor.FromRgb(139, 35, 35) };
 
 									var slidingWindow = _points.Where(p => p.X >= TimeOffset && p.X <= TimeOffset + SelectableTime);
+									var yMin = slidingWindow.Min(pnt => pnt.Y);
+									var yMax = slidingWindow.Max(pnt => pnt.Y);
 									double minXWindow = slidingWindow.First().X;
 									foreach (var point in slidingWindow)
 									{
@@ -147,7 +149,7 @@ namespace CapFrameX.ViewModel
 										MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
 										MinorTickSize = 0,
 										MajorTickSize = 0
-									});
+									});								
 
 									//Y
 									tmp.Axes.Add(new LinearAxis()
@@ -155,6 +157,8 @@ namespace CapFrameX.ViewModel
 										Key = "yAxis",
 										Position = AxisPosition.Left,
 										Title = "Frametimes [ms]",
+										Minimum = yMin - (yMax - yMin)/ 6,
+										Maximum = yMax + (yMax - yMin) / 6,
 										MajorGridlineStyle = LineStyle.Solid,
 										MajorGridlineThickness = 1,
 										MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
