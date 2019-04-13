@@ -1,6 +1,8 @@
 ﻿using CapFrameX.OcatInterface;
 using LiveCharts;
 using LiveCharts.Geared;
+using OxyPlot;
+using OxyPlot.Series;
 using Prism.Mvvm;
 using System.Windows.Media;
 
@@ -8,7 +10,7 @@ namespace CapFrameX.ViewModel
 {
 	public class ComparisonRecordInfoWrapper : BindableBase
 	{
-		readonly SeriesCollection _frametimesCollection;
+		readonly PlotModel _frametimesmodel;
 		readonly SeriesCollection _lShapesCollection;
 
 		private Color? _frametimeGraphColor;
@@ -40,27 +42,27 @@ namespace CapFrameX.ViewModel
 		public int CollectionIndex { get; set; }
 
 		public ComparisonRecordInfoWrapper(ComparisonRecordInfo info,
-			SeriesCollection frametimesCollection, SeriesCollection lShapesCollection)
+			PlotModel frametimesmodel, SeriesCollection lShapesCollection)
 		{
 			WrappedRecordInfo = info;
 
-			_frametimesCollection = frametimesCollection;
+			_frametimesmodel = frametimesmodel;
 			_lShapesCollection = lShapesCollection;
 		}
 
 		private void OnColorChanged()
 		{
 			if (FrametimeGraphColor.HasValue && CollectionIndex >= 0 &&
-				_frametimesCollection.Count > CollectionIndex &&
+				_frametimesmodel.Series.Count > CollectionIndex &&
 				_lShapesCollection.Count > CollectionIndex)
 			{
 				Color color = FrametimeGraphColor.Value;
 
-				var frametimesChart = _frametimesCollection[CollectionIndex] as GLineSeries;
+				var frametimesChart = _frametimesmodel.Series[CollectionIndex] as LineSeries;
 				var lShapeChart = _lShapesCollection[CollectionIndex] as GLineSeries;
 
 				var solidColorBrush = new SolidColorBrush(System.Windows.Media.Color.FromArgb(color.A, color.R, color.G, color.B));
-				frametimesChart.Stroke = solidColorBrush;
+				frametimesChart.Color = OxyColor.FromArgb(color.A, color.R, color.G, color.B);
 				lShapeChart.Stroke = solidColorBrush;
 				Color = solidColorBrush;
 			}

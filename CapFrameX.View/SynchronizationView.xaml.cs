@@ -11,7 +11,7 @@ using System.Windows.Controls;
 namespace CapFrameX.View
 {
 	/// <summary>
-	/// Interaktionslogik für SynchronizationView.xaml
+	/// Interaction logic for SynchronizationView.xaml
 	/// </summary>
 	public partial class SynchronizationView : UserControl
 	{

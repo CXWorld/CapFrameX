@@ -8,6 +8,9 @@ using LiveCharts;
 using LiveCharts.Defaults;
 using LiveCharts.Geared;
 using LiveCharts.Wpf;
+using OxyPlot;
+using OxyPlot.Axes;
+using OxyPlot.Series;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Mvvm;
@@ -53,14 +56,13 @@ namespace CapFrameX.ViewModel
 		private EComparisonContext _comparisonContext = EComparisonContext.DateTime;
 		private EComparisonNumericMode _comparisonNumericMode = EComparisonNumericMode.Absolute;
 		private bool _initialIconVisibility = true;
-		private SeriesCollection _comparisonSeriesCollection;
+		private PlotModel _comparisonModel;
 		private SeriesCollection _comparisonColumnChartSeriesCollection;
 		private string[] _comparisonColumnChartLabels;
 		private SeriesCollection _comparisonLShapeCollection;
 		private string _comparisonItemControlHeight = "300";
 		private string _columnChartYAxisTitle = "FPS";
 		private HashSet<SolidColorBrush> _freeColors = new HashSet<SolidColorBrush>(_comparisonBrushes);
-		private ZoomingOptions _zoomingMode;
 		private bool _useEventMessages;
 		private string _remainingRecordingTime;
 		private double _cutLeftSliderMaximum;
@@ -82,16 +84,6 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-		public ZoomingOptions ZoomingMode
-		{
-			get { return _zoomingMode; }
-			set
-			{
-				_zoomingMode = value;
-				RaisePropertyChanged();
-			}
-		}
-
 		public Func<double, string> ComparisonColumnChartFormatter
 		{
 			get { return _comparisonColumnChartFormatter; }
@@ -102,12 +94,12 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-		public SeriesCollection ComparisonSeriesCollection
+		public PlotModel ComparisonModel
 		{
-			get { return _comparisonSeriesCollection; }
+			get { return _comparisonModel; }
 			set
 			{
-				_comparisonSeriesCollection = value;
+				_comparisonModel = value;
 				RaisePropertyChanged();
 			}
 		}
@@ -205,8 +197,6 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-		public ICommand ToogleZoomingModeCommand { get; }
-
 		public ICommand DateTimeContextCommand { get; }
 
 		public ICommand CpuContextCommand { get; }
@@ -234,8 +224,6 @@ namespace CapFrameX.ViewModel
 			_eventAggregator = eventAggregator;
 			_appConfiguration = appConfiguration;
 
-			ZoomingMode = ZoomingOptions.Y;
-			ToogleZoomingModeCommand = new DelegateCommand(OnToogleZoomingMode);
 			DateTimeContextCommand = new DelegateCommand(OnDateTimeContext);
 			CpuContextCommand = new DelegateCommand(OnCpuContext);
 			GpuContextCommand = new DelegateCommand(OnGpuContex);
@@ -246,14 +234,13 @@ namespace CapFrameX.ViewModel
 
 			ComparisonColumnChartFormatter = value => value.ToString(string.Format("F{0}", 
 				_appConfiguration.FpsValuesRoundingDigits), CultureInfo.InvariantCulture);
-			ComparisonSeriesCollection = new SeriesCollection();
 			ComparisonLShapeCollection = new SeriesCollection();
 			ComparisonColumnChartSeriesCollection = new SeriesCollection
 			{
 
                 // Add ColumnSeries per parameter
                 // Average
-                new ColumnSeries
+                new LiveCharts.Wpf.ColumnSeries
 				{
 					Title = "Average",
 					Values = new ChartValues<double>(),
@@ -263,7 +250,7 @@ namespace CapFrameX.ViewModel
 				},
 
                  //1% quantile
-                new ColumnSeries
+                new LiveCharts.Wpf.ColumnSeries
 				{
 					Title = "P1",
 					Values = new ChartValues<double>(),
@@ -273,7 +260,7 @@ namespace CapFrameX.ViewModel
 				},
 
                 //0.1% quantile
-                new ColumnSeries
+                new LiveCharts.Wpf.ColumnSeries
 				{
 					Title = "P0.1",
 					Values = new ChartValues<double>(),
@@ -283,7 +270,44 @@ namespace CapFrameX.ViewModel
 				}
 			};
 
+			InitializePlotModel();
 			SubscribeToSelectRecord();
+		}
+
+		private void InitializePlotModel()
+		{
+			ComparisonModel = new PlotModel
+			{
+				PlotMargins = new OxyThickness(40, 10, 0, 40),
+				PlotAreaBorderColor = OxyColor.FromArgb(64, 204, 204, 204),
+			};
+
+			//Axes
+			//X
+			ComparisonModel.Axes.Add(new LinearAxis()
+			{
+				Key = "xAxis",
+				Position = OxyPlot.Axes.AxisPosition.Bottom,
+				Title = "Recording time [s]",
+				MajorGridlineStyle = LineStyle.Solid,
+				MajorGridlineThickness = 1,
+				MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
+				MinorTickSize = 0,
+				MajorTickSize = 0
+			});
+
+			//Y
+			ComparisonModel.Axes.Add(new LinearAxis()
+			{
+				Key = "yAxis",
+				Position = OxyPlot.Axes.AxisPosition.Left,
+				Title = "Frametime [ms]",
+				MajorGridlineStyle = LineStyle.Solid,
+				MajorGridlineThickness = 1,
+				MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
+				MinorTickSize = 0,
+				MajorTickSize = 0
+			});
 		}
 
 		private void OnCuttingModeChanged()
@@ -324,27 +348,6 @@ namespace CapFrameX.ViewModel
 			CutLeftSliderMaximum = minRecordingTime / 2;
 			CutRightSliderMaximum = minRecordingTime / 2 + _maxRecordingTime - minRecordingTime;
 			RemainingRecordingTime = Math.Round(_maxRecordingTime, 2).ToString(CultureInfo.InvariantCulture) + " s";
-		}
-
-		private void OnToogleZoomingMode()
-		{
-			switch (ZoomingMode)
-			{
-				case ZoomingOptions.None:
-					ZoomingMode = ZoomingOptions.X;
-					break;
-				case ZoomingOptions.X:
-					ZoomingMode = ZoomingOptions.Y;
-					break;
-				case ZoomingOptions.Y:
-					ZoomingMode = ZoomingOptions.Xy;
-					break;
-				case ZoomingOptions.Xy:
-					ZoomingMode = ZoomingOptions.None;
-					break;
-				default:
-					throw new ArgumentOutOfRangeException();
-			}
 		}
 
 		private void OnCustomContex()
@@ -496,12 +499,14 @@ namespace CapFrameX.ViewModel
 			if (!_doUpdateCharts)
 				return;
 
-			ComparisonSeriesCollection.Clear();
+			ComparisonModel.Series.Clear();
 			ComparisonLShapeCollection.Clear();
 
 			Task.Factory.StartNew(() => SetFrametimeChart());
 			Task.Factory.StartNew(() => SetLShapeChart());
 			SetColumnChart();
+
+			ComparisonModel.InvalidatePlot(true);
 		}
 
 		private void AddToCharts(ComparisonRecordInfoWrapper wrappedComparisonInfo)
@@ -555,24 +560,15 @@ namespace CapFrameX.ViewModel
 			double endTime = _maxRecordingTime - LastSeconds;
 			var session = wrappedComparisonInfo.WrappedRecordInfo.Session;
 			var frametimePoints = session.GetFrametimePointsTimeWindow(startTime, endTime)
-										 .Select(pnt => new ObservablePoint(pnt.X, pnt.Y));
+										 .Select(pnt => new Point(pnt.X, pnt.Y));
 
-			var frametimeChartValues = new GearedValues<ObservablePoint>();
-			frametimeChartValues.AddRange(frametimePoints);
-			frametimeChartValues.WithQuality(_appConfiguration.ChartQualityLevel.ConverToEnum<Quality>());
+			var color = wrappedComparisonInfo.Color.Color;
+			var frametimeSeries = new OxyPlot.Series.LineSeries { Title = "Frametimes", StrokeThickness = 1, Color = OxyColor.FromRgb(color.R, color.G, color.B) };
+			frametimeSeries.Points.AddRange(frametimePoints.Select(pnt => new DataPoint(pnt.X, pnt.Y)));
 
 			Application.Current.Dispatcher.Invoke(new Action(() =>
 			{
-				ComparisonSeriesCollection.Add(
-				new GLineSeries
-				{
-					Values = frametimeChartValues,
-					Fill = Brushes.Transparent,
-					Stroke = wrappedComparisonInfo.Color,
-					StrokeThickness = 1,
-					LineSmoothness = 0,
-					PointGeometrySize = 0
-				});
+				ComparisonModel.Series.Add(frametimeSeries);
 			}));
 		}
 
@@ -763,7 +759,7 @@ namespace CapFrameX.ViewModel
 		private ComparisonRecordInfoWrapper GetWrappedRecordInfo(ComparisonRecordInfo comparisonRecordInfo)
 		{
 			var wrappedRecordInfo = new ComparisonRecordInfoWrapper(comparisonRecordInfo,
-				ComparisonSeriesCollection, ComparisonLShapeCollection);
+				ComparisonModel, ComparisonLShapeCollection);
 
 			return wrappedRecordInfo;
 		}

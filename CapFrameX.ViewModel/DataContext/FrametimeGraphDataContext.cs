@@ -104,7 +104,7 @@ namespace CapFrameX.ViewModel.DataContext
 				{
 					Key = "yAxis",
 					Position = AxisPosition.Left,
-					Title = "Frametimes [ms]",
+					Title = "Frametime [ms]",
 					Minimum = yMin - (yMax - yMin) / 6,
 					Maximum = yMax + (yMax - yMin) / 6,
 					MajorGridlineStyle = LineStyle.Solid,

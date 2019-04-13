@@ -13,6 +13,7 @@
 			 xmlns:vm="clr-namespace:CapFrameX.ViewModel;assembly=CapFrameX.ViewModel"
              mc:Ignorable="d"
 			 xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
+			 xmlns:oxy="clr-namespace:OxyPlot.Wpf;assembly=OxyPlot.Wpf"
              d:DesignHeight="450" d:DesignWidth="800"
 			 Background="{DynamicResource MaterialDesignPaper}"
              FontFamily="{StaticResource MaterialDesignFont}"
@@ -193,15 +194,18 @@
 						<RowDefinition Height="1*"></RowDefinition>
 						<RowDefinition Height="Auto"></RowDefinition>
 					</Grid.RowDefinitions>
-					<lvc:CartesianChart Grid.Row="0" Name="ComparisonChart" MouseDoubleClick="ResetChart_MouseDoubleClick" DisableAnimations="True" Series="{Binding ComparisonSeriesCollection}" Zoom="{Binding ZoomingMode}" >
+					<Grid Grid.Row="0" Background="#F5F5F5">
+						<oxy:PlotView Background="#F5F5F5" x:Name="ComparisonPlotView" Model="{Binding ComparisonModel}" MouseDoubleClick="ResetChart_MouseDoubleClick"/>
+					</Grid>
+					<!--<lvc:CartesianChart Grid.Row="0" Name="ComparisonChart" MouseDoubleClick="ResetChart_MouseDoubleClick" DisableAnimations="True" Series="{Binding ComparisonSeriesCollection}" Zoom="{Binding ZoomingMode}" >
 						<lvc:CartesianChart.AxisX>
 							<lvc:Axis Title="Recording time (sec)" Name="FrametimesX" Separator="{x:Static lvc:DefaultAxes.CleanSeparator}" Foreground="Black"/>
 						</lvc:CartesianChart.AxisX>
 						<lvc:CartesianChart.AxisY>
 							<lvc:Axis Title="Frametime (ms)" Name="FrametimesY" Foreground="Black"/>
 						</lvc:CartesianChart.AxisY>
-					</lvc:CartesianChart>
-					<Grid Grid.Row="1" Grid.Column="0" Visibility="{Binding ElementName=CuttingModeActiveToggleButton, Path=IsChecked, Converter={StaticResource FalseToCollapsedConverter}}">
+					</lvc:CartesianChart>-->
+					<Grid Grid.Row="1" Visibility="{Binding ElementName=CuttingModeActiveToggleButton, Path=IsChecked, Converter={StaticResource FalseToCollapsedConverter}}">
 						<Grid.ColumnDefinitions>
 							<ColumnDefinition Width="2*" />
 							<ColumnDefinition Width="1*" />
@@ -271,11 +275,6 @@
 					<ToggleButton Name="CuttingModeActiveToggleButton" Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
 								  ToolTip="Cutting mode" IsChecked="{Binding IsCuttingModeActive}"/>
 				</StackPanel>
-				<Button Margin="15 0 300 0" Grid.Column="2" VerticalAlignment="Top" HorizontalAlignment="Right" Command="{Binding ToogleZoomingModeCommand}">
-					<TextBlock>Toggle zoming mode, current is: 
-						<TextBlock Text="{Binding ZoomingMode, Converter={StaticResource ZoomingModeConverter}}"/>
-					</TextBlock>
-				</Button>
 			</Grid>
 		</Expander>
 		<lvc:CartesianChart Margin="0 0 5 0" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Series="{Binding ComparisonColumnChartSeriesCollection}" LegendLocation="Top"
