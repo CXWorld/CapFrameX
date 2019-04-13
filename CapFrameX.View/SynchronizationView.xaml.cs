@@ -1,5 +1,6 @@
 ﻿using CapFrameX.Configuration;
 using CapFrameX.Statistics;
+using CapFrameX.View.Controls;
 using CapFrameX.ViewModel;
 using LiveCharts;
 using LiveCharts.Wpf;
@@ -17,6 +18,7 @@ namespace CapFrameX.View
 		public SynchronizationView()
 		{
 			InitializeComponent();
+			OxyPlotHelper.SetYAxisZoomer(SynchronizationPlotView);
 
 			// Design time!
 			if (DesignerProperties.GetIsInDesignMode(this))
@@ -28,13 +30,7 @@ namespace CapFrameX.View
 
 		private void ResetChart_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
 		{
-			//Use the axis MinValue/MaxValue properties to specify the values to display.
-			//use double.Nan to clear it.
-
-			FrameDisplayChangeTimesX.MinValue = double.NaN;
-			FrameDisplayChangeTimesX.MaxValue = double.NaN;
-			FrameDisplayChangeTimesY.MinValue = double.NaN;
-			FrameDisplayChangeTimesY.MaxValue = double.NaN;
+			SynchronizationPlotView.ResetAllAxes();
 		}
 
 		private void Chart_OnDataClick(object sender, ChartPoint chartpoint)

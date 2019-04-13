@@ -8,6 +8,7 @@
 			 xmlns:prism="http://prismlibrary.com/"
 			 xmlns:mvvm="clr-namespace:CapFrameX.MVVM.Converter;assembly=CapFrameX.MVVM"
              xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
+			 xmlns:oxy="clr-namespace:OxyPlot.Wpf;assembly=OxyPlot.Wpf"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800"
 			 Background="{DynamicResource MaterialDesignPaper}"
@@ -36,37 +37,22 @@
 			<RowDefinition Height="Auto"></RowDefinition>
 			<RowDefinition Height="3*"></RowDefinition>
 		</Grid.RowDefinitions>
-		<TabControl Grid.Row="0" Background="#F5F5F5" >
-			<TabItem Header="Frame/display change times">
-				<Grid>
-					<lvc:CartesianChart Tag="{Binding ElementName=SynchronizationViewUserControl, Path=DataContext}" LegendLocation="Top"
-                                        MouseDoubleClick="ResetChart_MouseDoubleClick" DisableAnimations="True" Series="{Binding FrameDisplayTimesCollection}" Zoom="{Binding ZoomingMode}">
-						<lvc:CartesianChart.ContextMenu>
-							<ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
-								<MenuItem Header="Copy display change time values (dc)" Command="{Binding CopyDisplayChangeTimeValuesCommand}"/>
-							</ContextMenu>
-						</lvc:CartesianChart.ContextMenu>
-						<lvc:CartesianChart.AxisX>
-							<lvc:Axis Title="Samples" Name="FrameDisplayChangeTimesX" Separator="{x:Static lvc:DefaultAxes.CleanSeparator}" Foreground="Black"/>
-						</lvc:CartesianChart.AxisX>
-						<lvc:CartesianChart.AxisY>
-							<lvc:Axis Title="Frametime + display change time (ms)" Name="FrameDisplayChangeTimesY" Foreground="Black"/>
-						</lvc:CartesianChart.AxisY>
-					</lvc:CartesianChart>
-				</Grid>
-			</TabItem>
-		</TabControl>
-		<Expander Grid.Row="1" Name="SettingsExpander" Background="#F5F5F5" Margin="0 5 0 5" Header="Data/Chart Settings" HorizontalAlignment="Stretch">
+		<Grid Grid.Row="0" Background="#F5F5F5">
+			<oxy:PlotView Background="#F5F5F5" x:Name="SynchronizationPlotView" Model="{Binding SynchronizationModel}" Tag="{Binding ElementName=SynchronizationViewUserControl, Path=DataContext}"
+						  MouseDoubleClick="ResetChart_MouseDoubleClick">
+				<oxy:PlotView.ContextMenu>
+					<ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
+						<MenuItem Header="Copy display change time values (dc)" Command="{Binding CopyDisplayChangeTimeValuesCommand}"/>
+					</ContextMenu>
+				</oxy:PlotView.ContextMenu>
+			</oxy:PlotView>
+		</Grid>
+		<Expander Visibility="Collapsed" Grid.Row="1" Name="SettingsExpander" Background="#F5F5F5" Margin="0 5 0 5" Header="Data/Chart Settings" HorizontalAlignment="Stretch">
 			<Grid>
 				<Grid.ColumnDefinitions>
 					<ColumnDefinition Width="Auto" />
 					<ColumnDefinition Width="1*" />
 				</Grid.ColumnDefinitions>
-				<Button Margin="15 0 50 20" Grid.Column="1" VerticalAlignment="Top" HorizontalAlignment="Right" Command="{Binding ToogleZoomingModeCommand}">
-					<TextBlock>Toggle zoming mode, current is: 
-						<TextBlock Text="{Binding ZoomingMode, Converter={StaticResource ZoomingModeConverter}}"/>
-					</TextBlock>
-				</Button>
 			</Grid>
 		</Expander>
 		<Grid Background="#F5F5F5" Grid.Row="2" Visibility="{Binding ElementName=SettingsExpander, Path=IsExpanded, Converter={StaticResource TrueToCollapsedConverter}}">

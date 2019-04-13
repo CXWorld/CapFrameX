@@ -7,6 +7,9 @@ using LiveCharts;
 using LiveCharts.Geared;
 using LiveCharts.Wpf;
 using MathNet.Numerics.Statistics;
+using OxyPlot;
+using OxyPlot.Axes;
+using OxyPlot.Series;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Mvvm;
@@ -15,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
@@ -28,8 +32,7 @@ namespace CapFrameX.ViewModel
 		private readonly IEventAggregator _eventAggregator;
 		private readonly IAppConfiguration _appConfiguration;
 
-		private ZoomingOptions _zoomingMode;
-		private SeriesCollection _frameDisplayTimesCollection;
+		private PlotModel _synchronizationModel;
 		private SeriesCollection _histogramCollection;
 		private SeriesCollection _droppedFramesStatisticCollection;
 		private string[] _droppedFramesLabels;
@@ -50,12 +53,12 @@ namespace CapFrameX.ViewModel
 		public Func<ChartPoint, string> PieChartPointLabel { get; } =
 			chartPoint => string.Format(CultureInfo.InvariantCulture, "{0} ({1:P})", chartPoint.Y, chartPoint.Participation);
 
-		public SeriesCollection FrameDisplayTimesCollection
+		public PlotModel SynchronizationModel
 		{
-			get { return _frameDisplayTimesCollection; }
+			get { return _synchronizationModel; }
 			set
 			{
-				_frameDisplayTimesCollection = value;
+				_synchronizationModel = value;
 				RaisePropertyChanged();
 			}
 		}
@@ -100,18 +103,6 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-		public ZoomingOptions ZoomingMode
-		{
-			get { return _zoomingMode; }
-			set
-			{
-				_zoomingMode = value;
-				RaisePropertyChanged();
-			}
-		}
-
-		public ICommand ToogleZoomingModeCommand { get; }
-
 		public ICommand CopyDisplayChangeTimeValuesCommand { get; }
 
 		public ICommand CopyHistogramDataCommand { get; }
@@ -124,13 +115,16 @@ namespace CapFrameX.ViewModel
 			_eventAggregator = eventAggregator;
 			_appConfiguration = appConfiguration;
 
-			ToogleZoomingModeCommand = new DelegateCommand(OnToogleZoomingMode);
 			CopyDisplayChangeTimeValuesCommand = new DelegateCommand(OnCopyDisplayChangeTimeValues);
 			CopyHistogramDataCommand = new DelegateCommand(CopyHistogramData);
 
-			ZoomingMode = ZoomingOptions.Y;
-
 			SubscribeToUpdateSession();
+
+			SynchronizationModel = new PlotModel
+			{
+				PlotMargins = new OxyThickness(40, 10, 0, 40),
+				PlotAreaBorderColor = OxyColor.FromArgb(64, 204, 204, 204),
+			};
 		}
 
 		private void SubscribeToUpdateSession()
@@ -149,35 +143,24 @@ namespace CapFrameX.ViewModel
 							});
 		}
 
-		private void OnToogleZoomingMode()
-		{
-			switch (ZoomingMode)
-			{
-				case ZoomingOptions.None:
-					ZoomingMode = ZoomingOptions.X;
-					break;
-				case ZoomingOptions.X:
-					ZoomingMode = ZoomingOptions.Y;
-					break;
-				case ZoomingOptions.Y:
-					ZoomingMode = ZoomingOptions.Xy;
-					break;
-				case ZoomingOptions.Xy:
-					ZoomingMode = ZoomingOptions.None;
-					break;
-				default:
-					throw new ArgumentOutOfRangeException();
-			}
-		}
-
 		private void OnCopyDisplayChangeTimeValues()
 		{
-			throw new NotImplementedException();
+			if (_session == null)
+				return;
+
+			StringBuilder builder = new StringBuilder();
+
+			foreach (var dcTime in _session.Displaytimes)
+			{
+				builder.Append(dcTime + Environment.NewLine);
+			}
+
+			Clipboard.SetDataObject(builder.ToString(), false);
 		}
 
 		private void CopyHistogramData()
 		{
-			throw new NotImplementedException();
+			// throw new NotImplementedException();
 		}
 
 		private void UpdateCharts()
@@ -190,45 +173,62 @@ namespace CapFrameX.ViewModel
 			Task.Factory.StartNew(() => SetDroppedFramesChart(_session.AppMissed));
 		}
 
-		private void SetFrameDisplayTimesChart(List<double> frametimes, List<double> displaytimes)
+		private void SetFrameDisplayTimesChart(IList<double> frametimes, IList<double> displaytimes)
 		{
-			var frametimeValues = new GearedValues<double>();
-			frametimeValues.AddRange(frametimes);
-			frametimeValues.WithQuality(_appConfiguration.ChartQualityLevel.ConverToEnum<Quality>());
+			var yMin = Math.Min(frametimes.Min(), displaytimes.Min());
+			var yMax = Math.Max(frametimes.Max(), displaytimes.Max());
+
+			var frametimeSeries = new OxyPlot.Series.LineSeries { Title = "Frametimes", StrokeThickness = 1, Color = OxyColor.FromRgb(139, 35, 35) };
+			var displayChangedTimesSeries = new OxyPlot.Series.LineSeries { Title = "Display changed times", StrokeThickness = 1, Color = OxyColor.FromArgb(128, 35, 139, 123) };
+
+			frametimeSeries.Points.AddRange(frametimes.Select((x, i) => new DataPoint(i, x)));
+			displayChangedTimesSeries.Points.AddRange(displaytimes.Select((x, i) => new DataPoint(i, x)));
 
 			Application.Current.Dispatcher.Invoke(new Action(() =>
 			{
-				FrameDisplayTimesCollection = new SeriesCollection
+				var tmp = new PlotModel
 				{
-					new GLineSeries
-					{
-						Title = "Frametimes",
-						Values = frametimeValues,
-						Fill = Brushes.Transparent,
-						Stroke = new SolidColorBrush(Color.FromRgb(139, 35, 35)),
-						StrokeThickness = 1,
-						LineSmoothness = 0,
-						PointGeometrySize = 0
-					}
+					PlotMargins = new OxyThickness(40, 10, 0, 40),
+					PlotAreaBorderColor = OxyColor.FromArgb(64, 204, 204, 204),
+					LegendPosition = LegendPosition.TopCenter,
+					LegendOrientation = LegendOrientation.Horizontal
 				};
 
-				if (displaytimes.Any())
-				{
-					var displaytimeValues = new GearedValues<double>();
-					displaytimeValues.AddRange(displaytimes);
-					displaytimeValues.WithQuality(_appConfiguration.ChartQualityLevel.ConverToEnum<Quality>());
+				tmp.Series.Add(frametimeSeries);
+				tmp.Series.Add(displayChangedTimesSeries);
 
-					FrameDisplayTimesCollection.Add(new GLineSeries
-					{
-						Title = "Display changed times",
-						Values = displaytimeValues,
-						Fill = Brushes.Transparent,
-						Stroke = new SolidColorBrush(Color.FromArgb(128, 35, 139, 123)),
-						StrokeThickness = 1,
-						LineSmoothness = 0,
-						PointGeometrySize = 0
-					});
-				}
+				//Axes
+				//X
+				tmp.Axes.Add(new LinearAxis()
+				{
+					Key = "xAxis",
+					Position = OxyPlot.Axes.AxisPosition.Bottom,
+					Title = "Samples",
+					Minimum = 0,
+					Maximum = frametimes.Count,
+					MajorGridlineStyle = LineStyle.Solid,
+					MajorGridlineThickness = 1,
+					MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
+					MinorTickSize = 0,
+					MajorTickSize = 0
+				});
+
+				//Y
+				tmp.Axes.Add(new LinearAxis()
+				{
+					Key = "yAxis",
+					Position = OxyPlot.Axes.AxisPosition.Left,
+					Title = "Frametime + display change time [ms]",
+					Minimum = yMin - (yMax - yMin) / 6,
+					Maximum = yMax + (yMax - yMin) / 6,
+					MajorGridlineStyle = LineStyle.Solid,
+					MajorGridlineThickness = 1,
+					MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
+					MinorTickSize = 0,
+					MajorTickSize = 0
+				});
+
+				SynchronizationModel = tmp;
 			}));
 		}
 
@@ -255,7 +255,7 @@ namespace CapFrameX.ViewModel
 			{
 				HistogramCollection = new SeriesCollection
 				{
-					new ColumnSeries
+					new LiveCharts.Wpf.ColumnSeries
 					{
 						Title = "Display changed time distribution",
 						Values = histogramValues,
@@ -279,7 +279,7 @@ namespace CapFrameX.ViewModel
 			{
 				DroppedFramesStatisticCollection = new SeriesCollection()
 				{
-					new PieSeries
+					new LiveCharts.Wpf.PieSeries
 					{
 						Title = "Synced frames",
 						Values = new ChartValues<int>(){ appMissed.Count(flag => flag == false) },
@@ -288,7 +288,7 @@ namespace CapFrameX.ViewModel
 						LabelPosition = PieLabelPosition.InsideSlice,
 						LabelPoint = PieChartPointLabel,
 					},
-					new PieSeries
+					new LiveCharts.Wpf.PieSeries
 					{
 						Title = "Dropped frames",
 						Values = new ChartValues<int>(){ appMissed.Count(flag => flag == true) },
@@ -314,10 +314,6 @@ namespace CapFrameX.ViewModel
 		public void OnNavigatedFrom(NavigationContext navigationContext)
 		{
 			_useUpdateSession = false;
-
-			//FrameDisplayTimesCollection = new SeriesCollection();
-			//HistogramCollection = new SeriesCollection();
-			//DroppedFramesStatisticCollection = new SeriesCollection();
 		}
 	}
 }

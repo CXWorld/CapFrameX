@@ -1,7 +1,6 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using CapFrameX.OcatInterface;
 using CapFrameX.Statistics;
-using LiveCharts;
 using Prism.Mvvm;
 
 namespace CapFrameX.ViewModel.DataContext
@@ -10,7 +9,6 @@ namespace CapFrameX.ViewModel.DataContext
 	{
 		public const int SCALE_RESOLUTION = 200;
 
-		private ZoomingOptions _zoomingMode;
 		private bool _useRemovingOutlier;
 		private int _graphNumberSamples;
 		private int _cutLeftSliderMaximum;
@@ -51,16 +49,6 @@ namespace CapFrameX.ViewModel.DataContext
 			{
 				RecordDataServer.CurrentSession = value;
 				InitializeCuttingParameter();
-			}
-		}
-
-		public ZoomingOptions ZoomingMode
-		{
-			get { return _zoomingMode; }
-			set
-			{
-				_zoomingMode = value;
-				RaisePropertyChanged();
 			}
 		}
 
@@ -140,7 +128,6 @@ namespace CapFrameX.ViewModel.DataContext
 			RecordDataServer = recordDataServer;
 			AppConfiguration = appConfiguration;
 			FrametimesStatisticProvider = frametimesStatisticProvider;
-			ZoomingMode = ZoomingOptions.Y;
 		}
 
 		private void OnCuttingModeChanged()

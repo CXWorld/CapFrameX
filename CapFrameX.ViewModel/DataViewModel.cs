@@ -45,7 +45,6 @@ namespace CapFrameX.ViewModel
 		private TabItem _selectedChartItem;
 		private IRecordDataServer _localRecordDataServer;
 		private IDisposable _frametimeWindowObservable;
-		private ZoomingOptions _zoomingMode;
 
 		public IAppConfiguration AppConfiguration { get; }
 
@@ -173,16 +172,6 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-		public ZoomingOptions ZoomingMode
-		{
-			get { return _zoomingMode; }
-			set
-			{
-				_zoomingMode = value;
-				RaisePropertyChanged();
-			}
-		}
-
 		public ICommand CopyFpsValuesCommand { get; }
 
 		public ICommand CopyStatisticalParameterCommand { get; }
@@ -190,8 +179,6 @@ namespace CapFrameX.ViewModel
 		public ICommand CopyLShapeQuantilesCommand { get; }
 
 		public ICommand CopySystemInfoCommand { get; }
-
-		public ICommand ToogleZoomingModeCommand { get; }
 
 		public ICommand AcceptParameterSettingsCommand { get; }
 
@@ -211,7 +198,6 @@ namespace CapFrameX.ViewModel
 			CopyStatisticalParameterCommand = new DelegateCommand(OnCopyStatisticalParameter);
 			CopyLShapeQuantilesCommand = new DelegateCommand(OnCopyQuantiles);
 			CopySystemInfoCommand = new DelegateCommand(OnCopySystemInfoCommand);
-			ToogleZoomingModeCommand = new DelegateCommand(OnToogleZoomingMode);
 			AcceptParameterSettingsCommand = new DelegateCommand(OnAcceptParameterSettings);
 
 			ParameterFormatter = value => value.ToString(string.Format("F{0}",
@@ -222,7 +208,6 @@ namespace CapFrameX.ViewModel
 			FpsGraphDataContext = new FpsGraphDataContext(_localRecordDataServer,
 				AppConfiguration, _frametimeStatisticProvider);
 
-			ZoomingMode = ZoomingOptions.Y;
 			InitializeStatisticParameter();
 		}
 
@@ -231,40 +216,6 @@ namespace CapFrameX.ViewModel
 		private void OnAcceptParameterSettings()
 		{
 			Task.Factory.StartNew(() => SetStaticChart(GetFrametimesSubset()));
-		}
-
-		private void OnToogleZoomingMode()
-		{
-			switch (ZoomingMode)
-			{
-				case ZoomingOptions.None:
-					ZoomingMode = ZoomingOptions.X;
-					break;
-				case ZoomingOptions.X:
-					ZoomingMode = ZoomingOptions.Y;
-					break;
-				case ZoomingOptions.Y:
-					ZoomingMode = ZoomingOptions.Xy;
-					break;
-				case ZoomingOptions.Xy:
-					ZoomingMode = ZoomingOptions.None;
-					break;
-				default:
-					throw new ArgumentOutOfRangeException();
-			}
-
-			var tabItemHeader = SelectedChartItem.Header.ToString();
-			if (string.IsNullOrWhiteSpace(tabItemHeader))
-				return;
-
-			if (tabItemHeader == "Frametimes")
-			{
-				FrametimeGraphDataContext.ZoomingMode = ZoomingMode;
-			}
-			else if (tabItemHeader == "FPS")
-			{
-				FpsGraphDataContext.ZoomingMode = ZoomingMode;
-			}
 		}
 
 		private void OnCuttingModeChanged()

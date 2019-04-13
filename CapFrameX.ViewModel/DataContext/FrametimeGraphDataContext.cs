@@ -85,7 +85,7 @@ namespace CapFrameX.ViewModel.DataContext
 
 				//Axes
 				//X
-				var xAxis = new LinearAxis()
+				tmp.Axes.Add(new LinearAxis()
 				{
 					Key = "xAxis",
 					Position = AxisPosition.Bottom,
@@ -97,8 +97,7 @@ namespace CapFrameX.ViewModel.DataContext
 					MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
 					MinorTickSize = 0,
 					MajorTickSize = 0
-				};
-				tmp.Axes.Add(xAxis);
+				});
 
 				//Y
 				tmp.Axes.Add(new LinearAxis()
