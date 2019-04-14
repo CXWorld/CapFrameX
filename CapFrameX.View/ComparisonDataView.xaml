@@ -11,12 +11,13 @@
 			 xmlns:ocatinterface="clr-namespace:CapFrameX.OcatInterface;assembly=CapFrameX.OcatInterface"
 			 xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
 			 xmlns:vm="clr-namespace:CapFrameX.ViewModel;assembly=CapFrameX.ViewModel"
-             mc:Ignorable="d"
 			 xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
 			 xmlns:oxy="clr-namespace:OxyPlot.Wpf;assembly=OxyPlot.Wpf"
+			 xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
              d:DesignHeight="450" d:DesignWidth="800"
 			 Background="{DynamicResource MaterialDesignPaper}"
              FontFamily="{StaticResource MaterialDesignFont}"
+             mc:Ignorable="d"
 			 prism:ViewModelLocator.AutoWireViewModel="True">
 	<UserControl.Resources>
 		<ResourceDictionary>
@@ -36,7 +37,7 @@
 	</UserControl.Resources>
 	<Grid>
 		<Grid.RowDefinitions>
-			<RowDefinition Height="4*"></RowDefinition>
+			<RowDefinition Height="5*"></RowDefinition>
 			<RowDefinition Height="Auto"></RowDefinition>
 			<RowDefinition Height="3*"></RowDefinition>
 		</Grid.RowDefinitions>
@@ -132,35 +133,45 @@
 										  dragdrop:DragDrop.UseDefaultEffectDataTemplate="False">
 								<ItemsControl.ItemTemplate>
 									<DataTemplate DataType="{x:Type vm:ComparisonRecordInfoWrapper}">
-										<Border x:Name="Border"
+										<Grid>
+											<i:Interaction.Triggers>
+												<i:EventTrigger EventName="MouseEnter">
+													<i:InvokeCommandAction Command="{Binding MouseEnterCommand}"/>
+												</i:EventTrigger>
+												<i:EventTrigger EventName="MouseLeave">
+													<i:InvokeCommandAction Command="{Binding MouseLeaveCommand}"/>
+												</i:EventTrigger>
+											</i:Interaction.Triggers>
+											<Border x:Name="Border"
 								            Padding="8"
 								            BorderThickness="0 0 0 1"
 								            BorderBrush="{DynamicResource MaterialDesignDivider}">
-											<Grid>
-												<Grid.ColumnDefinitions>
-													<ColumnDefinition SharedSizeGroup="Checkerz" />
-													<ColumnDefinition Width="Auto"/>
-													<ColumnDefinition Width="Auto"/>
-												</Grid.ColumnDefinitions>
-												<ToggleButton VerticalAlignment="Center"
+												<Grid>
+													<Grid.ColumnDefinitions>
+														<ColumnDefinition SharedSizeGroup="Checkerz" />
+														<ColumnDefinition Width="Auto"/>
+														<ColumnDefinition Width="Auto"/>
+													</Grid.ColumnDefinitions>
+													<ToggleButton VerticalAlignment="Center"
 															  IsChecked="False"
 															  Style="{StaticResource MaterialDesignActionLightToggleButton}"
 															  Content="{Binding WrappedRecordInfo.Letter}" 
 															  Background="{Binding Color}"/>
-												<StackPanel Margin="8 0 0 0"
+													<StackPanel Margin="8 0 0 0"
 															Grid.Column="1">
-													<TextBlock FontWeight="Bold" Text="{Binding WrappedRecordInfo.Game}" />
-													<TextBlock Text="{Binding WrappedRecordInfo.InfoText}" TextWrapping="Wrap"
+														<TextBlock FontWeight="Bold" Text="{Binding WrappedRecordInfo.Game}" />
+														<TextBlock Text="{Binding WrappedRecordInfo.InfoText}" TextWrapping="Wrap"
 															   Width="150"
 															   LineStackingStrategy="BlockLineHeight"
 															   FontSize="12"
 															   LineHeight="14"
 															   MaxHeight="66"/>
-												</StackPanel>
-												<xctk:ColorPicker Width="120" Height="30" Grid.Column="2" Background="#e6e6e6" SelectedColor="{Binding FrametimeGraphColor}" 
+													</StackPanel>
+													<xctk:ColorPicker Width="120" Height="30" Grid.Column="2" Background="#e6e6e6" SelectedColor="{Binding FrametimeGraphColor}" 
 																  SelectedColorChanged="SelectedColorChanged" DisplayColorAndName="True" AvailableColorsSortingMode="HueSaturationBrightness" />
-											</Grid>
-										</Border>
+												</Grid>
+											</Border>
+										</Grid>
 										<DataTemplate.Triggers>
 											<DataTrigger Binding="{Binding IsSelected}" Value="True">
 												<Setter TargetName="Border"
@@ -197,14 +208,6 @@
 					<Grid Grid.Row="0" Background="#F5F5F5">
 						<oxy:PlotView Background="#F5F5F5" x:Name="ComparisonPlotView" Model="{Binding ComparisonModel}" MouseDoubleClick="ResetChart_MouseDoubleClick"/>
 					</Grid>
-					<!--<lvc:CartesianChart Grid.Row="0" Name="ComparisonChart" MouseDoubleClick="ResetChart_MouseDoubleClick" DisableAnimations="True" Series="{Binding ComparisonSeriesCollection}" Zoom="{Binding ZoomingMode}" >
-						<lvc:CartesianChart.AxisX>
-							<lvc:Axis Title="Recording time (sec)" Name="FrametimesX" Separator="{x:Static lvc:DefaultAxes.CleanSeparator}" Foreground="Black"/>
-						</lvc:CartesianChart.AxisX>
-						<lvc:CartesianChart.AxisY>
-							<lvc:Axis Title="Frametime (ms)" Name="FrametimesY" Foreground="Black"/>
-						</lvc:CartesianChart.AxisY>
-					</lvc:CartesianChart>-->
 					<Grid Grid.Row="1" Visibility="{Binding ElementName=CuttingModeActiveToggleButton, Path=IsChecked, Converter={StaticResource FalseToCollapsedConverter}}">
 						<Grid.ColumnDefinitions>
 							<ColumnDefinition Width="2*" />

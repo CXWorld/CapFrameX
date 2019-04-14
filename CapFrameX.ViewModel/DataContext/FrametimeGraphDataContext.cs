@@ -50,6 +50,8 @@ namespace CapFrameX.ViewModel.DataContext
 			{
 				PlotMargins = new OxyThickness(40, 0, 0, 40),
 				PlotAreaBorderColor = OxyColor.FromArgb(64, 204, 204, 204),
+				LegendPosition = LegendPosition.TopCenter,
+				LegendOrientation = LegendOrientation.Horizontal
 			};
 		}
 

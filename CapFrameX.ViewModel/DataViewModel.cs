@@ -585,7 +585,7 @@ namespace CapFrameX.ViewModel
 						PointGeometry = DefaultGeometries.Triangle,
 						DataLabels = true,
 						LabelPoint = point => point.X.ToString(CultureInfo.InvariantCulture) + "%, " +
-						Math.Round(point.Y, 1).ToString(CultureInfo.InvariantCulture) + " ms"
+							Math.Round(point.Y, 1).ToString(CultureInfo.InvariantCulture) + " ms"
 					}
 				};
 			}));
