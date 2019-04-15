@@ -380,6 +380,15 @@ namespace CapFrameX.ViewModel
 							}
 						}
 						break;
+					case EComparisonContext.Custom:
+						if (ComparisonModel.Series.Count == ComparisonRecords.Count)
+						{
+							for (int i = 0; i < ComparisonRecords.Count; i++)
+							{
+								ComparisonModel.Series[i].Title = GetLabelCustomContext(ComparisonRecords[i]);
+							}
+						}
+						break;
 					default:
 						if (ComparisonModel.Series.Count == ComparisonRecords.Count)
 						{
@@ -674,6 +683,9 @@ namespace CapFrameX.ViewModel
 				case EComparisonContext.GPU:
 					SetLabelGpuContext();
 					break;
+				case EComparisonContext.Custom:
+					SetLabelCustomContext();
+					break;
 				default:
 					SetLabelDateTimeContext();
 					break;
@@ -700,6 +712,9 @@ namespace CapFrameX.ViewModel
 					break;
 				case EComparisonContext.GPU:
 					chartTitle = GetLabelGpuContext(wrappedComparisonInfo);
+					break;
+				case EComparisonContext.Custom:
+					chartTitle = GetLabelCustomContext(wrappedComparisonInfo);
 					break;
 				default:
 					chartTitle = GetLabelDateTimeContext(wrappedComparisonInfo);
