@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace CapFrameX.Extensions
@@ -11,6 +12,15 @@ namespace CapFrameX.Extensions
 
 			var first = values.First();
 			return values.Skip(1).All(v => first.Equals(v));
+		}
+
+		public static void ForEach<T>(this IEnumerable<T> source, Action<T> action)
+		{
+			if (source == null || !source.Any())
+				return;
+
+			foreach (T element in source)
+				action(element);
 		}
 	}
 }

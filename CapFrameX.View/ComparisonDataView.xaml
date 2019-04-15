@@ -57,13 +57,13 @@
 					</Grid.RowDefinitions>
 					<Grid Grid.Row="0">
 						<StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-							<materialDesign:PopupBox Style="{StaticResource MaterialDesignMultiFloatingActionAccentPopupBox}"
-                                                 VerticalAlignment="Center"												 
-                                                 Width="30" Height="30"
-                                                 ToggleContent="{materialDesign:PackIcon BallotOutline, Size=24}"
-                                                 Margin="10 0 0 0"
-                                                 PlacementMode="BottomAndAlignCentres"
-                                                 ToolTip="Set comparison context">
+							<materialDesign:PopupBox StaysOpen="True"
+													 VerticalAlignment="Center"												 
+													 Width="30" Height="30"
+													 ToggleContent="{materialDesign:PackIcon BallotOutline, Size=24}"
+													 Margin="10 0 0 0"
+													 PlacementMode="BottomAndAlignCentres"
+													 ToolTip="Set comparison context">
 								<materialDesign:PopupBox.ToggleCheckedContent>
 									<materialDesign:PackIcon Kind="Pencil" Width="24" Height="24" />
 								</materialDesign:PopupBox.ToggleCheckedContent>
@@ -78,13 +78,13 @@
 									<Button Command="{Binding CustomContextCommand}" Content="{materialDesign:PackIcon CommentUser, Size=24}" ToolTip="Custom comments"/>
 								</StackPanel>
 							</materialDesign:PopupBox>
-							<materialDesign:PopupBox Style="{StaticResource MaterialDesignMultiFloatingActionAccentPopupBox}"
-                                                 VerticalAlignment="Center"												 
-                                                 Width="30" Height="30"
-                                                 ToggleContent="{materialDesign:PackIcon Compare, Size=24}"
-                                                 Margin="20 0 0 0"
-                                                 PlacementMode="BottomAndAlignCentres"
-                                                 ToolTip="Set absolut/relative mode">
+							<materialDesign:PopupBox StaysOpen="True"
+													 VerticalAlignment="Center"												 
+													 Width="30" Height="30"
+													 ToggleContent="{materialDesign:PackIcon Compare, Size=24}"
+													 Margin="20 0 0 0"
+													 PlacementMode="BottomAndAlignCentres"
+													 ToolTip="Set absolut/relative mode">
 								<materialDesign:PopupBox.ToggleCheckedContent>
 									<materialDesign:PackIcon Kind="Pencil" Width="24" Height="24" />
 								</materialDesign:PopupBox.ToggleCheckedContent>
@@ -268,15 +268,15 @@
 					<ColumnDefinition Width="Auto" />
 					<ColumnDefinition Width="1*" />
 				</Grid.ColumnDefinitions>
-				<StackPanel VerticalAlignment="Top" Grid.Column="0" Margin="25 10 0 10">
-					<CheckBox VerticalAlignment="Center" IsThreeState="False" IsChecked="{Binding RemoveOutliers}">
-						Remove outliers
-					</CheckBox>
-				</StackPanel>
-				<StackPanel VerticalAlignment="Top" Grid.Column="1" Margin="25 10 0 10" Orientation="Horizontal">
+				<StackPanel VerticalAlignment="Top" Grid.Column="0" Margin="25 10 0 10" Orientation="Horizontal">
 					<TextBlock VerticalAlignment="Center">Cutting mode:</TextBlock>
 					<ToggleButton Name="CuttingModeActiveToggleButton" Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
 								  ToolTip="Cutting mode" IsChecked="{Binding IsCuttingModeActive}"/>
+				</StackPanel>
+				<StackPanel VerticalAlignment="Top" Grid.Column="1" Margin="25 10 0 10" Orientation="Horizontal">
+					<TextBlock VerticalAlignment="Center">Show context legend:</TextBlock>
+					<ToggleButton Name="ContextLegendActiveToggleButton" Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
+								  ToolTip="Show context legend" IsChecked="{Binding IsContextLegendActive}"/>
 				</StackPanel>
 			</Grid>
 		</Expander>

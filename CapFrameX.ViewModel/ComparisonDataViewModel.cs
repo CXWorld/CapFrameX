@@ -10,7 +10,6 @@ using LiveCharts.Geared;
 using LiveCharts.Wpf;
 using OxyPlot;
 using OxyPlot.Axes;
-using OxyPlot.Series;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Mvvm;
@@ -70,6 +69,7 @@ namespace CapFrameX.ViewModel
 		private double _firstSeconds;
 		private double _lastSeconds;
 		private bool _isCuttingModeActive;
+		private bool _isContextLegendActive = true;
 		private double _maxRecordingTime;
 		private bool _doUpdateCharts = true;
 		private Func<double, string> _comparisonColumnChartFormatter;
@@ -197,6 +197,17 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
+		public bool IsContextLegendActive
+		{
+			get { return _isContextLegendActive; }
+			set
+			{
+				_isContextLegendActive = value;
+				RaisePropertyChanged();
+				OnShowContextLegendChanged();
+			}
+		}
+
 		public ICommand DateTimeContextCommand { get; }
 
 		public ICommand CpuContextCommand { get; }
@@ -240,7 +251,7 @@ namespace CapFrameX.ViewModel
 
                 // Add ColumnSeries per parameter
                 // Average
-                new LiveCharts.Wpf.ColumnSeries
+                new ColumnSeries
 				{
 					Title = "Average",
 					Values = new ChartValues<double>(),
@@ -250,7 +261,7 @@ namespace CapFrameX.ViewModel
 				},
 
                  //1% quantile
-                new LiveCharts.Wpf.ColumnSeries
+                new ColumnSeries
 				{
 					Title = "P1",
 					Values = new ChartValues<double>(),
@@ -327,6 +338,63 @@ namespace CapFrameX.ViewModel
 				LastSeconds = 0;
 			}
 		}
+
+
+		private void OnShowContextLegendChanged()
+		{
+			if (!ComparisonRecords.Any())
+				return;
+
+			if (!IsContextLegendActive)
+			{
+				ComparisonModel.Series.ForEach(series => series.Title = null);
+			}
+			else
+			{
+				switch (_comparisonContext)
+				{
+					case EComparisonContext.DateTime:
+						if (ComparisonModel.Series.Count == ComparisonRecords.Count)
+						{
+							for (int i = 0; i < ComparisonRecords.Count; i++)
+							{
+								ComparisonModel.Series[i].Title = GetLabelDateTimeContext(ComparisonRecords[i]);
+							}
+						}
+						break;
+					case EComparisonContext.CPU:
+						if (ComparisonModel.Series.Count == ComparisonRecords.Count)
+						{
+							for (int i = 0; i < ComparisonRecords.Count; i++)
+							{
+								ComparisonModel.Series[i].Title = GetLabelCpuContext(ComparisonRecords[i]);
+							}
+						}
+						break;
+					case EComparisonContext.GPU:
+						if (ComparisonModel.Series.Count == ComparisonRecords.Count)
+						{
+							for (int i = 0; i < ComparisonRecords.Count; i++)
+							{
+								ComparisonModel.Series[i].Title = GetLabelGpuContext(ComparisonRecords[i]);
+							}
+						}
+						break;
+					default:
+						if (ComparisonModel.Series.Count == ComparisonRecords.Count)
+						{
+							for (int i = 0; i < ComparisonRecords.Count; i++)
+							{
+								ComparisonModel.Series[i].Title = GetLabelDateTimeContext(ComparisonRecords[i]);
+							}
+						}
+						break;
+				}
+			}
+
+			ComparisonModel.InvalidatePlot(false);
+		}
+
 
 		private void UpdateCuttingParameter()
 		{

@@ -49,11 +49,10 @@
 							 IsChecked="{Binding AggregationIsChecked}"
 							 Content="AGGREGATION" />
 				</StackPanel>
-				<materialDesign:PopupBox Grid.Column="1" RequestBringIntoView="PopupBox_RequestBringIntoView" Margin="16,0,16,0" StaysOpen="True" PlacementMode="BottomAndAlignRightEdges"  HorizontalAlignment="Right">
+				<materialDesign:PopupBox Grid.Column="1" RequestBringIntoView="PopupBox_RequestBringIntoView" Margin="16,0,16,0" StaysOpen="True" PlacementMode="BottomAndAlignRightEdges" HorizontalAlignment="Right">
 					<Grid Margin="8 8 8 8">
 						<Grid.Resources>
-							<Style TargetType="CheckBox"
-											BasedOn="{StaticResource MaterialDesignCheckBox}">
+							<Style TargetType="CheckBox" BasedOn="{StaticResource MaterialDesignCheckBox}">
 								<Setter Property="Margin" Value="8,8,10,8" />
 							</Style>
 							<Style TargetType="TextBox" BasedOn="{StaticResource MaterialDesignTextBox}">

@@ -57,23 +57,25 @@ namespace CapFrameX.ViewModel.DataContext
 
 		public void SetFrametimeChart(IList<double> frametimes)
 		{
-			var frametimeSeries = new LineSeries { Title = "Frametimes", StrokeThickness = 1, Color = OxyColor.FromRgb(139, 35, 35) };
-			var movingAverageSeries = new LineSeries
-			{
-				Title = string.Format(CultureInfo.InvariantCulture,
-				"Moving average (window size = {0})", AppConfiguration.MovingAverageWindowSize),
-				StrokeThickness = 1,
-				Color = OxyColor.FromRgb(35, 139, 123)
-			};
-
-			frametimeSeries.Points.AddRange(frametimes.Select((x, i) => new DataPoint(i, x)));
+			var frameTimeDataPoints = frametimes.Select((x, i) => new DataPoint(i, x));
 			var yMin = frametimes.Min();
 			var yMax = frametimes.Max();
 			var movingAverage = FrametimesStatisticProvider.GetMovingAverage(frametimes, AppConfiguration.MovingAverageWindowSize);
-			movingAverageSeries.Points.AddRange(movingAverage.Select((x, i) => new DataPoint(i, x)));
 
 			Application.Current.Dispatcher.Invoke(new Action(() =>
 			{
+				var frametimeSeries = new LineSeries { Title = "Frametimes", StrokeThickness = 1, Color = OxyColor.FromRgb(139, 35, 35) };
+				var movingAverageSeries = new LineSeries
+				{
+					Title = string.Format(CultureInfo.InvariantCulture,
+					"Moving average (window size = {0})", AppConfiguration.MovingAverageWindowSize),
+					StrokeThickness = 1,
+					Color = OxyColor.FromRgb(35, 139, 123)
+				};
+
+				frametimeSeries.Points.AddRange(frameTimeDataPoints);
+				movingAverageSeries.Points.AddRange(movingAverage.Select((x, i) => new DataPoint(i, x)));
+
 				var tmp = new PlotModel
 				{
 					PlotMargins = new OxyThickness(40, 0, 0, 40),

@@ -6,11 +6,11 @@ using OxyPlot.Axes;
 using OxyPlot.Series;
 using Prism.Commands;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Windows;
 using System.Windows.Input;
+using System.Collections.Generic;
 
 namespace CapFrameX.ViewModel.DataContext
 {
@@ -72,18 +72,21 @@ namespace CapFrameX.ViewModel.DataContext
 
 		public void SetFpsChart(IList<double> fps)
 		{
-			var fpsSeries = new LineSeries { Title = "FPS", StrokeThickness = 1, Color = OxyColor.FromRgb(139, 35, 35) };
-			var averageSeries = new LineSeries { Title = "Average FPS", StrokeThickness = 1, Color = OxyColor.FromRgb(35, 139, 123) };
-
-			fpsSeries.Points.AddRange(fps.Select((x, i) => new DataPoint(i, x)));
+			var fpsDataPoints = fps.Select((x, i) => new DataPoint(i, x));
 			var yMin = fps.Min();
 			var yMax = fps.Max();
 			var frametimes = RecordDataServer.GetFrametimeSampleWindow();
 			double average = frametimes.Count * 1000 / frametimes.Sum();
-			averageSeries.Points.AddRange(Enumerable.Repeat(average, frametimes.Count).Select((x, i) => new DataPoint(i, x)));
+			var averageDataPoints = Enumerable.Repeat(average, frametimes.Count).Select((x, i) => new DataPoint(i, x));
 
 			Application.Current.Dispatcher.Invoke(new Action(() =>
 			{
+				var fpsSeries = new LineSeries { Title = "FPS", StrokeThickness = 1, Color = OxyColor.FromRgb(139, 35, 35) };
+				var averageSeries = new LineSeries { Title = "Average FPS", StrokeThickness = 1, Color = OxyColor.FromRgb(35, 139, 123) };
+
+				fpsSeries.Points.AddRange(fpsDataPoints);
+				averageSeries.Points.AddRange(averageDataPoints);
+
 				var tmp = new PlotModel
 				{
 					PlotMargins = new OxyThickness(40, 10, 0, 40),
@@ -100,7 +103,7 @@ namespace CapFrameX.ViewModel.DataContext
 				tmp.Axes.Add(new LinearAxis()
 				{
 					Key = "xAxis",
-					Position = OxyPlot.Axes.AxisPosition.Bottom,
+					Position = AxisPosition.Bottom,
 					Title = "Samples",
 					Minimum = 0,
 					Maximum = fps.Count,
@@ -115,7 +118,7 @@ namespace CapFrameX.ViewModel.DataContext
 				tmp.Axes.Add(new LinearAxis()
 				{
 					Key = "yAxis",
-					Position = OxyPlot.Axes.AxisPosition.Left,
+					Position = AxisPosition.Left,
 					Title = "FPS [1/s]",
 					Minimum = yMin - (yMax - yMin) / 6,
 					Maximum = yMax + (yMax - yMin) / 6,
