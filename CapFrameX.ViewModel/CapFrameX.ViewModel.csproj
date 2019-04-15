@@ -139,7 +139,6 @@
     <Compile Include="ColorbarViewModel.cs" />
     <Compile Include="ControlViewModel.cs" />
     <Compile Include="DataViewModel.cs" />
-    <Compile Include="Inactive\MainViewModel.cs" />
     <Compile Include="OverlayViewModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ReportViewModel.cs" />

@@ -84,6 +84,7 @@ namespace CapFrameX.ViewModel
 			AcceptEditingDialogCommand = new DelegateCommand(OnAcceptEditingDialog);
 			CancelEditingDialogCommand = new DelegateCommand(OnCancelEditingDialog);
 
+			_useEventMessages = false;
 			_hideOverlayEvent = _eventAggregator.GetEvent<PubSubEvent<ViewMessages.HideOverlay>>();
 			SubscribeToUpdateSession();
 		}

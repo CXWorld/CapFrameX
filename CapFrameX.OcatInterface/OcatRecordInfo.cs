@@ -18,6 +18,17 @@ namespace CapFrameX.OcatInterface
 		public FileInfo FileInfo { get; private set; }
 		public string CombinedInfo { get; private set; }
 
+		public bool IsValid
+		{
+			get
+			{
+				return !string.IsNullOrWhiteSpace(GameName) &&
+					   !string.IsNullOrWhiteSpace(CreationDate) &&
+					   !string.IsNullOrWhiteSpace(RecordTime) &&
+					   !string.IsNullOrWhiteSpace(CreationTime);
+			}
+		}
+
 		private OcatRecordInfo(FileInfo fileInfo)
 		{
 			GameName = fileInfo.Name.Substring("OCAT-", ".exe");
@@ -54,6 +65,12 @@ namespace CapFrameX.OcatInterface
 			{
 				// Log
 			}
+
+			if (recordInfo == null)
+				return null;
+
+			if (!recordInfo.IsValid)
+				return null;
 
 			return recordInfo;
 		}

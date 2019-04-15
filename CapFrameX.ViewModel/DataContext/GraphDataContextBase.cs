@@ -145,8 +145,8 @@ namespace CapFrameX.ViewModel.DataContext
 			StartIndex = 0;
 			EndIndex = 0;
 
-			CutLeftSliderMaximum = RecordSession.FrameTimes.Count / 2;
-			CutRightSliderMaximum = RecordSession.FrameTimes.Count / 2;
+			CutLeftSliderMaximum = RecordSession.FrameTimes.Count / 2 - 1;
+			CutRightSliderMaximum = RecordSession.FrameTimes.Count / 2 - 1;
 			GraphNumberSamples = RecordSession.FrameTimes.Count;
 
 			RecordDataServer.IsActive = true;

@@ -135,8 +135,7 @@
 					<StackPanel VerticalAlignment="Top" Grid.Column="1" Margin="25 10 0 10" Orientation="Horizontal">
 						<TextBlock VerticalAlignment="Center">Cutting mode:</TextBlock>
 						<ToggleButton Name="CuttingModeActiveToggleButton" Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
-									  ToolTip="Cutting mode" IsChecked="{Binding IsCuttingModeActive}"
-									  IsEnabled="{Binding Path=IsChecked, ElementName=SlidingWindowCheckBox, Converter={StaticResource NegateBoolConverter}}"/>
+									  ToolTip="Cutting mode" IsChecked="{Binding IsCuttingModeActive}"/>
 					</StackPanel>
 					<StackPanel Grid.Column="2" Margin="25 5 0 10" Orientation="Horizontal" VerticalAlignment="Top">
 						<TextBlock VerticalAlignment="Center">Statistic parameter settings:</TextBlock>
@@ -199,13 +198,9 @@
 										  Margin="8 0 8 8"
 										  Orientation="Horizontal"
 										  HorizontalAlignment="Right">
-										<Button Command="{Binding AcceptParameterSettingsCommand}"
-											HorizontalAlignment="Right"
-											Style="{StaticResource MaterialDesignToolForegroundButton}"
-											Width="30"
-											Padding="2 0 0 0"
-											materialDesign:RippleAssist.IsCentered="True">
-											<materialDesign:PackIcon Kind="CheckAll" />
+										<Button IsDefault="True" Style="{DynamicResource MaterialDesignFlatButton}"
+												Command="{Binding AcceptParameterSettingsCommand}" HorizontalAlignment="Right">
+											APPLY
 										</Button>
 									</StackPanel>
 								</StackPanel>
@@ -227,10 +222,10 @@
 						</ContextMenu>
 					</lvc:CartesianChart.ContextMenu>
 					<lvc:CartesianChart.AxisX>
-						<lvc:Axis Title="FPS" FontSize="11" LabelFormatter="{Binding ParameterFormatter}" Foreground="Black"></lvc:Axis>
+						<lvc:Axis Title="FPS" FontSize="11" MinValue="0" LabelFormatter="{Binding ParameterFormatter}" Foreground="Black"></lvc:Axis>
 					</lvc:CartesianChart.AxisX>
 					<lvc:CartesianChart.AxisY>
-						<lvc:Axis Title="Statistical Parameters" MinValue="0" FontSize="11" Labels="{Binding ParameterLabels}" Foreground="Black">
+						<lvc:Axis Title="Statistical Parameters" FontSize="11" Labels="{Binding ParameterLabels}" Foreground="Black">
 							<lvc:Axis.Separator>
 								<!--step 1 forces the axis to display all labels, disabling it makes it invisible-->
 								<lvc:Separator Step="1" IsEnabled="False"></lvc:Separator>

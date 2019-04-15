@@ -10,7 +10,7 @@ namespace CapFrameX.MVVM.Converter
 
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            return ((double)value) + Offset;
+            return Math.Abs(((double)value) + Offset);
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

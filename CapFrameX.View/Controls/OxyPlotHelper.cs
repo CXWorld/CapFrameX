@@ -34,8 +34,10 @@ namespace CapFrameX.View.Controls
 
 				plotView.Model.InvalidatePlot(false);
 			});
+
 			plotView.Controller = new PlotController();
 			plotView.Controller.BindMouseWheel(OxyModifierKeys.None, zoomer);
+			//plotView.Controller.BindMouseDown(OxyMouseButton.Right, OxyModifierKeys.None, OxyPlot.PlotCommands.PanAt);
 		}
 
 		private static DataPoint InverseTransform(OxyPlot.Axes.Axis yAxis, OxyPlot.Axes.Axis xAxis, double x, double y)

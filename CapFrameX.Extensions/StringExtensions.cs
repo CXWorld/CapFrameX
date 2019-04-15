@@ -19,16 +19,17 @@ namespace CapFrameX.Extensions
                 ? @this.IndexOf(from, comparison) + fromLength
                 : 0;
 
-            if (startIndex < fromLength) { throw new ArgumentException("from: Failed to find an instance of the first anchor"); }
+			if (startIndex < fromLength)
+				return null;
 
             var endIndex = !string.IsNullOrEmpty(until)
             ? @this.IndexOf(until, startIndex, comparison)
             : @this.Length;
 
-            if (endIndex < 0) { throw new ArgumentException("until: Failed to find an instance of the last anchor"); }
+            if (endIndex < 0)
+				return null;
 
-            var subString = @this.Substring(startIndex, endIndex - startIndex);
-            return subString;
+			return @this.Substring(startIndex, endIndex - startIndex);
         }
 
 		public static bool NullSafeContains(this string source, string search, bool ignoreCase = false)

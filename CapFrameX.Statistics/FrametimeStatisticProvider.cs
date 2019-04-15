@@ -86,18 +86,24 @@ namespace CapFrameX.Statistics
 
 		public double GetPAverageLowSequence(IList<double> sequence, double pQuantile)
 		{
-			int count = (int)(sequence.Count * pQuantile);
-			var orderedSequence = sequence.OrderBy(x => x);
+			var pQuantileValue = sequence.Quantile(pQuantile);
+			var subSequence = sequence.Where(element => element <= pQuantileValue);
 
-			return orderedSequence.Take(count).Average();
+			if (!subSequence.Any())
+				return double.NaN;
+
+			return subSequence.Average();
 		}
 
 		public double GetPAverageHighSequence(IList<double> sequence, double pQuantile)
 		{
-			int count = (int)(sequence.Count * (1 - pQuantile));
-			var orderedSequence = sequence.OrderByDescending(x => x);
+			var pQuantileValue = sequence.Quantile(pQuantile);
+			var subSequence = sequence.Where(element => element >= pQuantileValue);
 
-			return orderedSequence.Take(count).Average();
+			if (!subSequence.Any())
+				return double.NaN;
+
+			return subSequence.Average();
 		}
 
 		public List<double>[] GetDiscreteDistribution(IList<double> sequence)

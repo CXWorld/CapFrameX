@@ -293,7 +293,7 @@ namespace CapFrameX.ViewModel
 
 			// Vice versa!
 			// "Adaptive STD" ,"Min","0.1% Low" ,"0.1%" ,"1% Low", "1%" ,"5%" ,"Average" ,"95%" ,"99%" ,"Max"
-			if(AppConfiguration.UseSingleRecordMaxStatisticParameter)
+			if (AppConfiguration.UseSingleRecordMaxStatisticParameter)
 				builder.Append("Max" + "\t" + max + Environment.NewLine);
 			if (AppConfiguration.UseSingleRecord99QuantileStatisticParameter)
 				builder.Append("P99" + "\t" + p99_quantile + Environment.NewLine);
@@ -305,11 +305,11 @@ namespace CapFrameX.ViewModel
 				builder.Append("P5" + "\t" + p5_quantile + Environment.NewLine);
 			if (AppConfiguration.UseSingleRecordP1QuantileStatisticParameter)
 				builder.Append("P1" + "\t" + p1_quantile + Environment.NewLine);
-			if (AppConfiguration.UseSingleRecordP1LowAverageStatisticParameter)
+			if (AppConfiguration.UseSingleRecordP1LowAverageStatisticParameter && !double.IsNaN(p1_averageLow))
 				builder.Append("1% Low" + "\t" + p1_averageLow + Environment.NewLine);
 			if (AppConfiguration.UseSingleRecordP0Dot1QuantileStatisticParameter)
 				builder.Append("P0.1" + "\t" + p0dot1_quantile + Environment.NewLine);
-			if (AppConfiguration.UseSingleRecordP0Dot1LowAverageStatisticParameter)
+			if (AppConfiguration.UseSingleRecordP0Dot1LowAverageStatisticParameter && !double.IsNaN(p0dot1_averageLow))
 				builder.Append("0.1% Low" + "\t" + p0dot1_averageLow + Environment.NewLine);
 			if (AppConfiguration.UseSingleRecordMinStatisticParameter)
 				builder.Append("Min" + "\t" + min + Environment.NewLine);
@@ -461,11 +461,11 @@ namespace CapFrameX.ViewModel
 				values.Add(adaptiveStandardDeviation);
 			if (AppConfiguration.UseSingleRecordMinStatisticParameter)
 				values.Add(min);
-			if (AppConfiguration.UseSingleRecordP0Dot1LowAverageStatisticParameter)
+			if (AppConfiguration.UseSingleRecordP0Dot1LowAverageStatisticParameter && !double.IsNaN(p0dot1_averageLow))
 				values.Add(p0dot1_averageLow);
 			if (AppConfiguration.UseSingleRecordP0Dot1QuantileStatisticParameter)
 				values.Add(p0dot1_quantile);
-			if (AppConfiguration.UseSingleRecordP1LowAverageStatisticParameter)
+			if (AppConfiguration.UseSingleRecordP1LowAverageStatisticParameter && !double.IsNaN(p1_averageLow))
 				values.Add(p1_averageLow);
 			if (AppConfiguration.UseSingleRecordP1QuantileStatisticParameter)
 				values.Add(p1_quantile);
@@ -501,11 +501,11 @@ namespace CapFrameX.ViewModel
 					parameterLabelList.Add("Adaptive STD");
 				if (AppConfiguration.UseSingleRecordMinStatisticParameter)
 					parameterLabelList.Add("Min");
-				if (AppConfiguration.UseSingleRecordP0Dot1LowAverageStatisticParameter)
+				if (AppConfiguration.UseSingleRecordP0Dot1LowAverageStatisticParameter && !double.IsNaN(p0dot1_averageLow))
 					parameterLabelList.Add("0.1% Low");
 				if (AppConfiguration.UseSingleRecordP0Dot1QuantileStatisticParameter)
 					parameterLabelList.Add("P0.1");
-				if (AppConfiguration.UseSingleRecordP1LowAverageStatisticParameter)
+				if (AppConfiguration.UseSingleRecordP1LowAverageStatisticParameter && !double.IsNaN(p1_averageLow))
 					parameterLabelList.Add("1% Low");
 				if (AppConfiguration.UseSingleRecordP1QuantileStatisticParameter)
 					parameterLabelList.Add("P1");
