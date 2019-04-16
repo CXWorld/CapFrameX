@@ -431,6 +431,9 @@ namespace CapFrameX.ViewModel
 
 		private void UpdateAxesMinMax(bool invalidatePlot)
 		{
+			if (ComparisonRecords == null || !ComparisonRecords.Any())
+				return;
+
 			var xAxis = ComparisonModel.GetAxisOrDefault("xAxis", null);
 			var yAxis = ComparisonModel.GetAxisOrDefault("yAxis", null);
 
