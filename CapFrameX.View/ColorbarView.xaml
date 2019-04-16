@@ -68,7 +68,6 @@
 							<RowDefinition Height="*" />
 							<RowDefinition Height="*" />
 							<RowDefinition Height="*" />
-							<RowDefinition Height="*" />
 						</Grid.RowDefinitions>
 						<TextBlock Grid.Row="0"
 										   Style="{StaticResource MaterialDesignTitleTextBlock}"
@@ -99,17 +98,7 @@
 								<materialDesign:PackIcon Kind="Folder" Height="24" Width="24" />
 							</Button>
 						</StackPanel>
-						<ComboBox Grid.Row="4" materialDesign:HintAssist.Hint="Chart quality level"
-								  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="200" Margin="8 8 8 8"
-								  ItemsSource="{Binding ChartQualityLevels}">
-							<ComboBox.Text>
-								<Binding Path="SelectedChartQualityLevel"
-										 Mode="TwoWay"
-										 UpdateSourceTrigger="PropertyChanged">
-								</Binding>
-							</ComboBox.Text>
-						</ComboBox>
-						<ComboBox Grid.Row="5" materialDesign:HintAssist.Hint="FPS values rounding digits"
+						<ComboBox Grid.Row="4" materialDesign:HintAssist.Hint="FPS values rounding digits"
 								  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="200" Margin="8 8 8 8"
 								  ItemsSource="{Binding RoundingDigits}">
 							<ComboBox.Text>
@@ -119,7 +108,7 @@
 								</Binding>
 							</ComboBox.Text>
 						</ComboBox>
-						<TextBox Grid.Row="6" materialDesign:HintAssist.Hint="Application ignore list" 
+						<TextBox Grid.Row="5" materialDesign:HintAssist.Hint="Application ignore list" 
 								 TextAlignment="Left" 
 								 HorizontalAlignment="Left"
 								 TextWrapping="Wrap"
@@ -135,7 +124,7 @@
 								</Binding>
 							</TextBox.Text>
 						</TextBox>
-						<StackPanel Grid.Row="7" Orientation="Horizontal" Margin="0 0 0 30">
+						<StackPanel Grid.Row="6" Orientation="Horizontal" Margin="0 0 0 30">
 							<TextBox IsEnabled="False" materialDesign:HintAssist.Hint="Screenshot directory" Text="{Binding ScreenshotDirectory, Mode=OneWay}" />
 							<Button Margin="20 0 0 0" Command="{Binding SelectScreenshotFolderCommand}" Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}" ToolTip="Select screenshot folder">
 								<materialDesign:PackIcon Kind="Folder" Height="24" Width="24" />

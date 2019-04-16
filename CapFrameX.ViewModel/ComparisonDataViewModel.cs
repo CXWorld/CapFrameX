@@ -429,6 +429,78 @@ namespace CapFrameX.ViewModel
 			RemainingRecordingTime = Math.Round(_maxRecordingTime, 2).ToString(CultureInfo.InvariantCulture) + " s";
 		}
 
+		private void UpdateAxesMinMax(bool invalidatePlot)
+		{
+			var xAxis = ComparisonModel.GetAxisOrDefault("xAxis", null);
+			var yAxis = ComparisonModel.GetAxisOrDefault("yAxis", null);
+
+			if (xAxis == null || yAxis == null)
+				return;
+
+			double xMin = 0;
+			double xMax = 0;
+			double yMin = 0;
+			double yMax = 0;
+
+
+			if (!IsCuttingModeActive)
+			{
+				xMin = ComparisonRecords.Min(record => record.WrappedRecordInfo.Session.FrameStart.First());
+				xMax = ComparisonRecords.Max(record => record.WrappedRecordInfo.Session.FrameStart.Last());
+
+				yMin = ComparisonRecords.Min(record => record.WrappedRecordInfo.Session.FrameTimes.Min());
+				yMax = ComparisonRecords.Max(record => record.WrappedRecordInfo.Session.FrameTimes.Max());
+			}
+			else
+			{
+				double startTime = FirstSeconds;
+				double endTime = _maxRecordingTime - LastSeconds;
+
+				var sessionParallelQuery = ComparisonRecords.Select(record => record.WrappedRecordInfo.Session).AsParallel();
+
+				xMin = sessionParallelQuery.Min(session => 
+				{
+					var frametimePoints = session.GetFrametimePointsTimeWindow(startTime, endTime)
+											 .Select(pnt => new Point(pnt.X, pnt.Y));
+
+					return frametimePoints.First().X;
+				});
+
+				xMax = sessionParallelQuery.Max(session =>
+				{
+					var frametimePoints = session.GetFrametimePointsTimeWindow(startTime, endTime)
+											 .Select(pnt => new Point(pnt.X, pnt.Y));
+
+					return frametimePoints.Last().X;
+				});
+
+				yMin = sessionParallelQuery.Min(session =>
+				{
+					var frametimePoints = session.GetFrametimePointsTimeWindow(startTime, endTime)
+											 .Select(pnt => new Point(pnt.X, pnt.Y));
+
+					return frametimePoints.Min(pnt => pnt.Y);
+				});
+
+				yMax = sessionParallelQuery.Max(session =>
+				{
+					var frametimePoints = session.GetFrametimePointsTimeWindow(startTime, endTime)
+											 .Select(pnt => new Point(pnt.X, pnt.Y));
+
+					return frametimePoints.Max(pnt => pnt.Y);
+				});
+			}
+
+			xAxis.Minimum = xMin;
+			xAxis.Maximum = xMax;
+
+			yAxis.Minimum = yMin - (yMax - yMin) / 6;
+			yAxis.Maximum = yMax + (yMax - yMin) / 6;
+
+			if (invalidatePlot)
+				ComparisonModel.InvalidatePlot(true);
+		}
+
 		private void OnCustomContex()
 		{
 			_comparisonContext = EComparisonContext.Custom;
@@ -648,7 +720,7 @@ namespace CapFrameX.ViewModel
 			AddToColumnCharts(wrappedComparisonInfo);
 			AddToLShapeChart(wrappedComparisonInfo);
 
-			ComparisonModel.InvalidatePlot(true);
+			UpdateAxesMinMax(true);
 		}
 
 		private void AddToColumnCharts(ComparisonRecordInfoWrapper wrappedComparisonInfo)
@@ -811,7 +883,7 @@ namespace CapFrameX.ViewModel
 				AddToFrameTimeChart(ComparisonRecords[i]);
 			}
 
-			ComparisonModel.InvalidatePlot(true);
+			UpdateAxesMinMax(true);
 		}
 
 		private void SetLShapeChart()
