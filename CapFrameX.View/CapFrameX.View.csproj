@@ -157,6 +157,7 @@
     <Compile Include="ComparisonDataView.xaml.cs">
       <DependentUpon>ComparisonDataView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Controls\CustomPanManipulator.cs" />
     <Compile Include="Controls\FpsGraphControl.xaml.cs">
       <DependentUpon>FpsGraphControl.xaml</DependentUpon>
     </Compile>
@@ -168,6 +169,7 @@
       <DependentUpon>ColorbarView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controls\OxyPlotHelper.cs" />
+    <Compile Include="Controls\CustomZoomStepManipulator.cs" />
     <Compile Include="ControlView.xaml.cs">
       <DependentUpon>ControlView.xaml</DependentUpon>
     </Compile>
