@@ -424,8 +424,8 @@ namespace CapFrameX.ViewModel
 			LastSeconds = 0;
 			_doUpdateCharts = true;
 
-			CutLeftSliderMaximum = minRecordingTime / 2;
-			CutRightSliderMaximum = minRecordingTime / 2 + _maxRecordingTime - minRecordingTime;
+			CutLeftSliderMaximum = minRecordingTime / 2 - 0.5;
+			CutRightSliderMaximum = minRecordingTime / 2 + _maxRecordingTime - minRecordingTime - 0.5;
 			RemainingRecordingTime = Math.Round(_maxRecordingTime, 2).ToString(CultureInfo.InvariantCulture) + " s";
 		}
 
