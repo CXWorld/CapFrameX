@@ -172,8 +172,6 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-		public ICommand CopyFpsValuesCommand { get; }
-
 		public ICommand CopyStatisticalParameterCommand { get; }
 
 		public ICommand CopyLShapeQuantilesCommand { get; }
@@ -194,7 +192,6 @@ namespace CapFrameX.ViewModel
 
 			SubscribeToUpdateSession();
 
-			CopyFpsValuesCommand = new DelegateCommand(OnCopyFpsValues);
 			CopyStatisticalParameterCommand = new DelegateCommand(OnCopyStatisticalParameter);
 			CopyLShapeQuantilesCommand = new DelegateCommand(OnCopyQuantiles);
 			CopySystemInfoCommand = new DelegateCommand(OnCopySystemInfoCommand);
@@ -253,22 +250,6 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-		private void OnCopyFpsValues()
-		{
-			if (_session == null)
-				return;
-
-			var frametimes = GetFrametimesSubset();
-			StringBuilder builder = new StringBuilder();
-
-			foreach (var frametime in frametimes)
-			{
-				builder.Append(Math.Round(1000 / frametime, AppConfiguration.FpsValuesRoundingDigits) + Environment.NewLine);
-			}
-
-			Clipboard.SetDataObject(builder.ToString(), false);
-		}
-
 		private void OnCopyStatisticalParameter()
 		{
 			if (_session == null)
@@ -294,27 +275,27 @@ namespace CapFrameX.ViewModel
 			// Vice versa!
 			// "Adaptive STD" ,"Min","0.1% Low" ,"0.1%" ,"1% Low", "1%" ,"5%" ,"Average" ,"95%" ,"99%" ,"Max"
 			if (AppConfiguration.UseSingleRecordMaxStatisticParameter)
-				builder.Append("Max" + "\t" + max + Environment.NewLine);
+				builder.Append("Max" + "\t" + max.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
 			if (AppConfiguration.UseSingleRecord99QuantileStatisticParameter)
-				builder.Append("P99" + "\t" + p99_quantile + Environment.NewLine);
+				builder.Append("P99" + "\t" + p99_quantile.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
 			if (AppConfiguration.UseSingleRecordP95QuantileStatisticParameter)
-				builder.Append("P95" + "\t" + p95_quantile + Environment.NewLine);
+				builder.Append("P95" + "\t" + p95_quantile.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
 			if (AppConfiguration.UseSingleRecordAverageStatisticParameter)
-				builder.Append("Average" + "\t" + average + Environment.NewLine);
+				builder.Append("Average" + "\t" + average.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
 			if (AppConfiguration.UseSingleRecordP5QuantileStatisticParameter)
-				builder.Append("P5" + "\t" + p5_quantile + Environment.NewLine);
+				builder.Append("P5" + "\t" + p5_quantile.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
 			if (AppConfiguration.UseSingleRecordP1QuantileStatisticParameter)
-				builder.Append("P1" + "\t" + p1_quantile + Environment.NewLine);
+				builder.Append("P1" + "\t" + p1_quantile.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
 			if (AppConfiguration.UseSingleRecordP1LowAverageStatisticParameter && !double.IsNaN(p1_averageLow))
-				builder.Append("1% Low" + "\t" + p1_averageLow + Environment.NewLine);
+				builder.Append("1% Low" + "\t" + p1_averageLow.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
 			if (AppConfiguration.UseSingleRecordP0Dot1QuantileStatisticParameter)
-				builder.Append("P0.1" + "\t" + p0dot1_quantile + Environment.NewLine);
+				builder.Append("P0.1" + "\t" + p0dot1_quantile.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
 			if (AppConfiguration.UseSingleRecordP0Dot1LowAverageStatisticParameter && !double.IsNaN(p0dot1_averageLow))
-				builder.Append("0.1% Low" + "\t" + p0dot1_averageLow + Environment.NewLine);
+				builder.Append("0.1% Low" + "\t" + p0dot1_averageLow.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
 			if (AppConfiguration.UseSingleRecordMinStatisticParameter)
-				builder.Append("Min" + "\t" + min + Environment.NewLine);
+				builder.Append("Min" + "\t" + min.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
 			if (AppConfiguration.UseSingleRecordAdaptiveSTDStatisticParameter)
-				builder.Append("Adaptive STD" + "\t" + adaptiveStandardDeviation + Environment.NewLine);
+				builder.Append("Adaptive STD" + "\t" + adaptiveStandardDeviation.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
 
 			Clipboard.SetDataObject(builder.ToString(), false);
 		}
@@ -332,7 +313,7 @@ namespace CapFrameX.ViewModel
 
 			foreach (var quantile in lShapeQuantiles)
 			{
-				builder.Append(quantile + "%" + "\t" + action(quantile) + Environment.NewLine);
+				builder.Append(quantile.ToString(CultureInfo.InvariantCulture) + "%" + "\t" + action(quantile).ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
 			}
 
 			Clipboard.SetDataObject(builder.ToString(), false);

@@ -11,6 +11,7 @@ using System.Text;
 using System.Windows;
 using System.Windows.Input;
 using System.Collections.Generic;
+using System.Globalization;
 
 namespace CapFrameX.ViewModel.DataContext
 {
@@ -91,7 +92,7 @@ namespace CapFrameX.ViewModel.DataContext
 
 			foreach (var framerate in fps)
 			{
-				builder.Append(framerate + Environment.NewLine);
+				builder.Append(framerate.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
 			}
 
 			Clipboard.SetDataObject(builder.ToString(), false);

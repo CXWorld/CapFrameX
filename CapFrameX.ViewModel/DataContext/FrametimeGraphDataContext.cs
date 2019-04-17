@@ -133,7 +133,7 @@ namespace CapFrameX.ViewModel.DataContext
 
 			foreach (var frametime in frametimes)
 			{
-				builder.Append(frametime + Environment.NewLine);
+				builder.Append(frametime.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
 			}
 
 			Clipboard.SetDataObject(builder.ToString(), false);
@@ -151,7 +151,8 @@ namespace CapFrameX.ViewModel.DataContext
 
 			for (int i = 0; i < frametimePoints.Count; i++)
 			{
-				builder.Append(frametimePoints[i].X + "\t" + frametimePoints[i].Y + Environment.NewLine);
+				builder.Append(frametimePoints[i].X.ToString(CultureInfo.InvariantCulture) + "\t" + 
+					frametimePoints[i].Y.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
 			}
 
 			Clipboard.SetDataObject(builder.ToString(), false);
