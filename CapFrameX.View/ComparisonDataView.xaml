@@ -143,9 +143,9 @@
 												</i:EventTrigger>
 											</i:Interaction.Triggers>
 											<Border x:Name="Border"
-								            Padding="8"
-								            BorderThickness="0 0 0 1"
-								            BorderBrush="{DynamicResource MaterialDesignDivider}">
+													Padding="8"
+													BorderThickness="0 0 0 1"
+													BorderBrush="{DynamicResource MaterialDesignDivider}">
 												<Grid>
 													<Grid.ColumnDefinitions>
 														<ColumnDefinition SharedSizeGroup="Checkerz" />
@@ -153,19 +153,19 @@
 														<ColumnDefinition Width="Auto"/>
 													</Grid.ColumnDefinitions>
 													<ToggleButton VerticalAlignment="Center"
-															  IsChecked="False"
-															  Style="{StaticResource MaterialDesignActionLightToggleButton}"
-															  Content="{Binding WrappedRecordInfo.Letter}" 
-															  Background="{Binding Color}"/>
+																  IsChecked="False"
+																  Style="{StaticResource MaterialDesignActionLightToggleButton}"
+																  Content="{Binding WrappedRecordInfo.Letter}" 
+																  Background="{Binding Color}"/>
 													<StackPanel Margin="8 0 0 0"
 															Grid.Column="1">
 														<TextBlock FontWeight="Bold" Text="{Binding WrappedRecordInfo.Game}" />
 														<TextBlock Text="{Binding WrappedRecordInfo.InfoText}" TextWrapping="Wrap"
-															   Width="150"
-															   LineStackingStrategy="BlockLineHeight"
-															   FontSize="12"
-															   LineHeight="14"
-															   MaxHeight="66"/>
+																   Width="150"
+																   LineStackingStrategy="BlockLineHeight"
+																   FontSize="12"
+																   LineHeight="14"
+																   MaxHeight="66"/>
 													</StackPanel>
 													<xctk:ColorPicker Width="120" Height="30" Grid.Column="2" Background="#e6e6e6" SelectedColor="{Binding FrametimeGraphColor}" 
 																  SelectedColorChanged="SelectedColorChanged" DisplayColorAndName="True" AvailableColorsSortingMode="HueSaturationBrightness" />
@@ -175,8 +175,8 @@
 										<DataTemplate.Triggers>
 											<DataTrigger Binding="{Binding IsSelected}" Value="True">
 												<Setter TargetName="Border"
-													Property="Background"
-													Value="{DynamicResource MaterialDesignSelection}" />
+														Property="Background"
+														Value="{DynamicResource MaterialDesignSelection}" />
 											</DataTrigger>
 										</DataTemplate.Triggers>
 									</DataTemplate>

@@ -53,10 +53,38 @@ namespace CapFrameX.ViewModel.DataContext
 				LegendPosition = LegendPosition.TopCenter,
 				LegendOrientation = LegendOrientation.Horizontal
 			};
+
+			//Axes
+			//X
+			FrametimeModel.Axes.Add(new LinearAxis()
+			{
+				Key = "xAxis",
+				Position = AxisPosition.Bottom,
+				Title = "Samples",
+				MajorGridlineStyle = LineStyle.Solid,
+				MajorGridlineThickness = 1,
+				MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
+				MinorTickSize = 0,
+				MajorTickSize = 0
+			});
+
+			//Y
+			FrametimeModel.Axes.Add(new LinearAxis()
+			{
+				Key = "yAxis",
+				Position = AxisPosition.Left,
+				Title = "Frametime [ms]",
+				MajorGridlineStyle = LineStyle.Solid,
+				MajorGridlineThickness = 1,
+				MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
+				MinorTickSize = 0,
+				MajorTickSize = 0
+			});
 		}
 
 		public void SetFrametimeChart(IList<double> frametimes)
 		{
+			int count = frametimes.Count;
 			var frameTimeDataPoints = frametimes.Select((x, i) => new DataPoint(i, x));
 			var yMin = frametimes.Min();
 			var yMax = frametimes.Max();
@@ -64,6 +92,8 @@ namespace CapFrameX.ViewModel.DataContext
 
 			Application.Current.Dispatcher.Invoke(new Action(() =>
 			{
+				FrametimeModel.Series.Clear();
+
 				var frametimeSeries = new LineSeries { Title = "Frametimes", StrokeThickness = 1, Color = OxyColor.FromRgb(139, 35, 35) };
 				var movingAverageSeries = new LineSeries
 				{
@@ -76,49 +106,18 @@ namespace CapFrameX.ViewModel.DataContext
 				frametimeSeries.Points.AddRange(frameTimeDataPoints);
 				movingAverageSeries.Points.AddRange(movingAverage.Select((x, i) => new DataPoint(i, x)));
 
-				var tmp = new PlotModel
-				{
-					PlotMargins = new OxyThickness(40, 0, 0, 40),
-					PlotAreaBorderColor = OxyColor.FromArgb(64, 204, 204, 204),
-					LegendPosition = LegendPosition.TopCenter,
-					LegendOrientation = LegendOrientation.Horizontal
-				};
+				var xAxis = FrametimeModel.GetAxisOrDefault("xAxis", null);
+				var yAxis = FrametimeModel.GetAxisOrDefault("yAxis", null);
 
-				tmp.Series.Add(frametimeSeries);
-				tmp.Series.Add(movingAverageSeries);
+				xAxis.Minimum = 0;
+				xAxis.Maximum = count;
+				yAxis.Minimum = yMin - (yMax - yMin) / 6;
+				yAxis.Maximum = yMax + (yMax - yMin) / 6;
 
-				//Axes
-				//X
-				tmp.Axes.Add(new LinearAxis()
-				{
-					Key = "xAxis",
-					Position = AxisPosition.Bottom,
-					Title = "Samples",
-					Minimum = 0,
-					Maximum = frametimes.Count,
-					MajorGridlineStyle = LineStyle.Solid,
-					MajorGridlineThickness = 1,
-					MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
-					MinorTickSize = 0,
-					MajorTickSize = 0
-				});
+				FrametimeModel.Series.Add(frametimeSeries);
+				FrametimeModel.Series.Add(movingAverageSeries);
 
-				//Y
-				tmp.Axes.Add(new LinearAxis()
-				{
-					Key = "yAxis",
-					Position = AxisPosition.Left,
-					Title = "Frametime [ms]",
-					Minimum = yMin - (yMax - yMin) / 6,
-					Maximum = yMax + (yMax - yMin) / 6,
-					MajorGridlineStyle = LineStyle.Solid,
-					MajorGridlineThickness = 1,
-					MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
-					MinorTickSize = 0,
-					MajorTickSize = 0
-				});
-
-				FrametimeModel = tmp;
+				FrametimeModel.InvalidatePlot(true);
 			}));
 		}
 

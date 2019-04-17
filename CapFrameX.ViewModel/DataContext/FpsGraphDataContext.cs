@@ -50,6 +50,33 @@ namespace CapFrameX.ViewModel.DataContext
 				LegendPosition = LegendPosition.TopCenter,
 				LegendOrientation = LegendOrientation.Horizontal
 			};
+
+			//Axes
+			//X
+			FpsModel.Axes.Add(new LinearAxis()
+			{
+				Key = "xAxis",
+				Position = AxisPosition.Bottom,
+				Title = "Samples",
+				MajorGridlineStyle = LineStyle.Solid,
+				MajorGridlineThickness = 1,
+				MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
+				MinorTickSize = 0,
+				MajorTickSize = 0
+			});
+
+			//Y
+			FpsModel.Axes.Add(new LinearAxis()
+			{
+				Key = "yAxis",
+				Position = AxisPosition.Left,
+				Title = "FPS [1/s]",
+				MajorGridlineStyle = LineStyle.Solid,
+				MajorGridlineThickness = 1,
+				MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
+				MinorTickSize = 0,
+				MajorTickSize = 0
+			});
 		}
 
 		private void OnCopyFpsValues()
@@ -72,6 +99,7 @@ namespace CapFrameX.ViewModel.DataContext
 
 		public void SetFpsChart(IList<double> fps)
 		{
+			int count = fps.Count;
 			var fpsDataPoints = fps.Select((x, i) => new DataPoint(i, x));
 			var yMin = fps.Min();
 			var yMax = fps.Max();
@@ -81,55 +109,26 @@ namespace CapFrameX.ViewModel.DataContext
 
 			Application.Current.Dispatcher.Invoke(new Action(() =>
 			{
+				FpsModel.Series.Clear();
+
 				var fpsSeries = new LineSeries { Title = "FPS", StrokeThickness = 1, Color = OxyColor.FromRgb(139, 35, 35) };
-				var averageSeries = new LineSeries { Title = "Average FPS", StrokeThickness = 1, Color = OxyColor.FromRgb(35, 139, 123) };
+				var averageSeries = new LineSeries { Title = "Average FPS", StrokeThickness = 2, Color = OxyColor.FromRgb(35, 139, 123) };
 
 				fpsSeries.Points.AddRange(fpsDataPoints);
 				averageSeries.Points.AddRange(averageDataPoints);
 
-				var tmp = new PlotModel
-				{
-					PlotMargins = new OxyThickness(40, 10, 0, 40),
-					PlotAreaBorderColor = OxyColor.FromArgb(64, 204, 204, 204),
-					LegendPosition = LegendPosition.TopCenter,
-					LegendOrientation = LegendOrientation.Horizontal
-				};
+				var xAxis = FpsModel.GetAxisOrDefault("xAxis", null);
+				var yAxis = FpsModel.GetAxisOrDefault("yAxis", null);
 
-				tmp.Series.Add(fpsSeries);
-				tmp.Series.Add(averageSeries);
+				xAxis.Minimum = 0;
+				xAxis.Maximum = count;
+				yAxis.Minimum = yMin - (yMax - yMin) / 6;
+				yAxis.Maximum = yMax + (yMax - yMin) / 6;
 
-				//Axes
-				//X
-				tmp.Axes.Add(new LinearAxis()
-				{
-					Key = "xAxis",
-					Position = AxisPosition.Bottom,
-					Title = "Samples",
-					Minimum = 0,
-					Maximum = fps.Count,
-					MajorGridlineStyle = LineStyle.Solid,
-					MajorGridlineThickness = 1,
-					MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
-					MinorTickSize = 0,
-					MajorTickSize = 0
-				});
+				FpsModel.Series.Add(fpsSeries);
+				FpsModel.Series.Add(averageSeries);
 
-				//Y
-				tmp.Axes.Add(new LinearAxis()
-				{
-					Key = "yAxis",
-					Position = AxisPosition.Left,
-					Title = "FPS [1/s]",
-					Minimum = yMin - (yMax - yMin) / 6,
-					Maximum = yMax + (yMax - yMin) / 6,
-					MajorGridlineStyle = LineStyle.Solid,
-					MajorGridlineThickness = 1,
-					MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
-					MinorTickSize = 0,
-					MajorTickSize = 0
-				});
-
-				FpsModel = tmp;
+				FpsModel.InvalidatePlot(true);
 			}));
 		}
 	}
