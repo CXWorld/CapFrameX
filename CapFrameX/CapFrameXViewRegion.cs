@@ -9,6 +9,7 @@ namespace CapFrameX
         {
 			RegionManagerWrapper.Singleton.RegisterViewWithRegion("ColorbarRegion", typeof(ColorbarView));
 			RegionManagerWrapper.Singleton.RegisterViewWithRegion("ControlRegion", typeof(ControlView));
+			RegionManagerWrapper.Singleton.RegisterViewWithRegion("DataRegion", typeof(CaptureView));
 			RegionManagerWrapper.Singleton.RegisterViewWithRegion("DataRegion", typeof(DataView));
 			RegionManagerWrapper.Singleton.RegisterViewWithRegion("DataRegion", typeof(ComparisonDataView));
 			RegionManagerWrapper.Singleton.RegisterViewWithRegion("DataRegion", typeof(ReportView));

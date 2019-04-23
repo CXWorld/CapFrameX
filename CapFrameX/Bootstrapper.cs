@@ -13,6 +13,8 @@ using System.Reflection;
 using System.Windows;
 using CapFrameX.Contracts.Configuration;
 using CapFrameX.Configuration;
+using CapFrameX.Contracts.PresentMonInterface;
+using CapFrameX.PresentMonInterface;
 
 namespace CapFrameX
 {
@@ -45,6 +47,7 @@ namespace CapFrameX
 			Container.Register<IRecordDirectoryObserver, RecordDirectoryObserver>(Reuse.Singleton);
 			Container.Register<IStatisticProvider, FrametimeStatisticProvider>(Reuse.Singleton);
 			Container.Register<IFrametimeAnalyzer, FrametimeAnalyzer>(Reuse.Singleton);
+			Container.Register<ICaptureService, PresentMonCaptureService>(Reuse.Singleton);
 		}
 
 		/// <summary>

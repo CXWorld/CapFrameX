@@ -1,28 +1,30 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using CapFrameX.PresentMonInterface;
+using CapFrameX.ViewModel;
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace CapFrameX.View
 {
 	/// <summary>
-	/// Interaktionslogik für CaptureView.xaml
+	/// Interaction logic for CaptureView.xaml
 	/// </summary>
 	public partial class CaptureView : UserControl
 	{
 		public CaptureView()
 		{
 			InitializeComponent();
+
+			// Design time!
+			if (DesignerProperties.GetIsInDesignMode(this))
+			{
+				DataContext = new CaptureViewModel(new PresentMonCaptureService());
+			}
+		}
+
+		private void Flipper_IsFlippedChanged(object sender, RoutedPropertyChangedEventArgs<bool> e)
+		{
+			(DataContext as CaptureViewModel).OnCaptureModeChanged(e.NewValue);
 		}
 	}
 }

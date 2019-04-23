@@ -68,6 +68,9 @@
   <ItemGroup>
     <Compile Include="Configuration\IAppConfiguration.cs" />
     <Compile Include="OcatInterface\IRecordDirectoryObserver.cs" />
+    <Compile Include="PresentMonInterface\ICaptureService.cs" />
+    <Compile Include="PresentMonInterface\ICaptureServiceConfiguration.cs" />
+    <Compile Include="PresentMonInterface\IServiceStartInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

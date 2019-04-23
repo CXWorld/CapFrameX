@@ -30,6 +30,10 @@
 				<StackPanel Grid.Column="0" Orientation="Horizontal" Margin="2">
 					<RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
 							 Margin="5"
+							 IsChecked="{Binding CaptureIsChecked}"
+							 Content="CAPTURE" />
+					<RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
+							 Margin="5"
 							 IsChecked="{Binding SingleRecordIsChecked}"
 							 Content="SINGLE RECORD" />
 					<RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"

@@ -25,7 +25,8 @@ namespace CapFrameX.ViewModel
 		private PubSubEvent<ViewMessages.ResetRecord> _resetRecordEvent;
 		private PubSubEvent<AppMessages.UpdateObservedDirectory> _updateObservedFolder;
 		private Quality _selectedChartQualityLevel;
-		private bool _singleRecordIsChecked = true;
+		private bool _captureIsChecked = true;
+		private bool _singleRecordIsChecked;
 		private bool _recordComparisonIsChecked;
 		private bool _reportIsChecked;
 		private int _selectWindowSize;
@@ -36,6 +37,19 @@ namespace CapFrameX.ViewModel
 		private string _recordDataGridIgnoreList;
 		private bool _aggregatioIsChecked;
 		private string _screenshotDirectory;
+
+		public bool CaptureIsChecked
+		{
+			get { return _captureIsChecked; }
+			set
+			{
+				_captureIsChecked = value;
+				RaisePropertyChanged();
+
+				if (value)
+					OnCaptureIsCheckedChanged();
+			}
+		}
 
 		public bool SingleRecordIsChecked
 		{
@@ -251,6 +265,12 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
+		private void OnCaptureIsCheckedChanged()
+		{
+			_regionManager.RequestNavigate("DataRegion", "CaptureView");
+			_resetRecordEvent.Publish(new ViewMessages.ResetRecord());
+		}
+
 		private void OnSingleRecordIsCheckedChanged()
 		{
 			_regionManager.RequestNavigate("DataRegion", "DataView");
@@ -319,6 +339,11 @@ namespace CapFrameX.ViewModel
 
 								_regionManager.RequestNavigate("ControlRegion", "ControlView");
 								_regionManager.RequestNavigate("ColorbarRegion", "ColorbarView");
+
+								if (CaptureIsChecked)
+								{
+									_regionManager.RequestNavigate("DataRegion", "CaptureView");
+								}
 
 								if (SingleRecordIsChecked)
 								{

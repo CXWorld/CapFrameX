@@ -47,7 +47,7 @@ Download link: https://github.com/DevTechProfile/CapFrameX/releases
 
 # Requirements
 * .NET 4.7
-* OCAT v1.3 (capturing frametime data)
+* OCAT v1.3 + v1.4 (capturing frametime data)
 
 # Build requirements
 * MS Visual Studio 2017 only (Community Edition)
@@ -56,9 +56,9 @@ Download link: https://github.com/DevTechProfile/CapFrameX/releases
 * WiX Toolset and VS Extension: http://wixtoolset.org/releases/
 
 # Dev roadmap
-* Some improvements
-* New live charts
-* Approximation inputlag
+* Capture mode
+* Approximation input lag
+* Advanced comparison method
 * Special features/next steps
 
 # Special features

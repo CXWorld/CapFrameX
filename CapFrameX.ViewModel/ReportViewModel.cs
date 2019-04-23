@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
@@ -60,9 +61,14 @@ namespace CapFrameX.ViewModel
 			var displayNameCpu = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.Cpu);
 			var displayNameGraphicCard = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.GraphicCard);
 			var displayNameMaxFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.MaxFps);
+			var displayNameNinetyNinePercentQuantileFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.NinetyNinePercentQuantileFps);
+			var displayNameNinetyFivePercentQuantileFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.NinetyFivePercentQuantileFps);
 			var displayNameAverageFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.AverageFps);
+			var displayNameFivePercentQuantileFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.FivePercentQuantileFps);
 			var displayNameOnePercentQuantileFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.OnePercentQuantileFps);
+			var displayNameOnePercentLowAverageFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.OnePercentLowAverageFps);
 			var displayNameZeroDotOnePercentQuantileFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.ZeroDotOnePercentQuantileFps);
+			var displayNameZeroDotOnePercentLowAverageFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.ZeroDotOnePercentLowAverageFps);
 			var displayNameMinFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.MinFps);
 			var displayNameAdaptiveSTDFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.AdaptiveSTDFps);
 			var displayNameCustomComment = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.CustomComment);
@@ -75,9 +81,14 @@ namespace CapFrameX.ViewModel
 						   displayNameCpu + "\t" +
 						   displayNameGraphicCard + "\t" +
 						   displayNameMaxFps + "\t" +
+						   displayNameNinetyNinePercentQuantileFps + "\t" +
+						   displayNameNinetyFivePercentQuantileFps + "\t" +
 						   displayNameAverageFps + "\t" +
+						   displayNameFivePercentQuantileFps + "\t" +
 						   displayNameOnePercentQuantileFps + "\t" +
+						   displayNameOnePercentLowAverageFps + "\t" +
 						   displayNameZeroDotOnePercentQuantileFps + "\t" +
+						   displayNameZeroDotOnePercentLowAverageFps + "\t" +
 						   displayNameMinFps + "\t" +
 						   displayNameAdaptiveSTDFps + "\t" +
 						   displayNameCustomComment +
@@ -92,12 +103,17 @@ namespace CapFrameX.ViewModel
 							   reportInfo.RecordTime + "\t" +
 							   reportInfo.Cpu + "\t" +
 							   reportInfo.GraphicCard + "\t" +
-							   reportInfo.MaxFps + "\t" +
-							   reportInfo.AverageFps + "\t" +
-							   reportInfo.OnePercentQuantileFps + "\t" +
-							   reportInfo.ZeroDotOnePercentQuantileFps + "\t" +
-							   reportInfo.MinFps + "\t" +
-							   reportInfo.AdaptiveSTDFps + "\t" +
+							   reportInfo.MaxFps.ToString(CultureInfo.InvariantCulture) + "\t" +
+							   reportInfo.NinetyNinePercentQuantileFps.ToString(CultureInfo.InvariantCulture) + "\t" +
+							   reportInfo.NinetyFivePercentQuantileFps.ToString(CultureInfo.InvariantCulture) + "\t" +
+							   reportInfo.AverageFps.ToString(CultureInfo.InvariantCulture) + "\t" +
+							   reportInfo.FivePercentQuantileFps.ToString(CultureInfo.InvariantCulture) + "\t" +
+							   reportInfo.OnePercentQuantileFps.ToString(CultureInfo.InvariantCulture) + "\t" +
+							   reportInfo.OnePercentLowAverageFps.ToString(CultureInfo.InvariantCulture) + "\t" +
+							   reportInfo.ZeroDotOnePercentQuantileFps.ToString(CultureInfo.InvariantCulture) + "\t" +
+							   reportInfo.ZeroDotOnePercentLowAverageFps.ToString(CultureInfo.InvariantCulture) + "\t" +
+							   reportInfo.MinFps.ToString(CultureInfo.InvariantCulture) + "\t" +
+							   reportInfo.AdaptiveSTDFps.ToString(CultureInfo.InvariantCulture) + "\t" +
 							   reportInfo.CustomComment +
 							   Environment.NewLine);
 			}
@@ -128,11 +144,13 @@ namespace CapFrameX.ViewModel
 			var p95_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.95), roundingDigits);
 			var max = Math.Round(fps.Max(), roundingDigits);
 			var average = Math.Round(session.FrameTimes.Count * 1000 / session.FrameTimes.Sum(), roundingDigits);
+			var p5_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.05), roundingDigits);
 			var p1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.01), roundingDigits);
+			var p1_averageLow = Math.Round(1000 / _frametimeStatisticProvider.GetPAverageHighSequence(session.FrameTimes, 1 - 0.01), roundingDigits);
 			var p0dot1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.001), roundingDigits);
+			var p0dot1_averageLow = Math.Round(1000 / _frametimeStatisticProvider.GetPAverageHighSequence(session.FrameTimes, 1 - 0.001), roundingDigits);
 			var min = Math.Round(fps.Min(), roundingDigits);
-			var adaptiveStandardDeviation = Math.Round(_frametimeStatisticProvider
-				.GetAdaptiveStandardDeviation(fps, _appConfiguration.MovingAverageWindowSize), roundingDigits);
+			var adaptiveStandardDeviation = Math.Round(_frametimeStatisticProvider.GetAdaptiveStandardDeviation(fps, _appConfiguration.MovingAverageWindowSize), roundingDigits);
 
 			var reportInfo = new ReportInfo()
 			{
@@ -147,8 +165,11 @@ namespace CapFrameX.ViewModel
 				NinetyNinePercentQuantileFps = p99_quantile,
 				NinetyFivePercentQuantileFps = p95_quantile,
 				AverageFps = average,
+				FivePercentQuantileFps = p5_quantile,
 				OnePercentQuantileFps = p1_quantile,
+				OnePercentLowAverageFps = p1_averageLow,
 				ZeroDotOnePercentQuantileFps = p0dot1_quantile,
+				ZeroDotOnePercentLowAverageFps = p0dot1_averageLow,
 				MinFps = min,
 				AdaptiveSTDFps = adaptiveStandardDeviation,
 				CustomComment = session.Comment
@@ -205,6 +226,11 @@ namespace CapFrameX.ViewModel
 						if (dropInfo.Data is ReportInfo reportInfo)
 						{
 							ReportInfoCollecion.Remove(reportInfo);
+						}
+
+						if (dropInfo.Data is IEnumerable<ReportInfo> reportInfos)
+						{
+							reportInfos.ForEach(info => ReportInfoCollecion.Remove(info));
 						}
 					}
 				}

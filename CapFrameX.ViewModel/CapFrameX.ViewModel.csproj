@@ -170,6 +170,10 @@
       <Project>{E61AD1FC-514F-43FD-BC20-31E9900CDFD7}</Project>
       <Name>CapFrameX.OcatInterface</Name>
     </ProjectReference>
+    <ProjectReference Include="..\CapFrameX.PresentMonInterface\CapFrameX.PresentMonInterface.csproj">
+      <Project>{ADFBAECE-B74F-4A80-87D1-84BC990527B0}</Project>
+      <Name>CapFrameX.PresentMonInterface</Name>
+    </ProjectReference>
     <ProjectReference Include="..\CapFrameX.Statistics\CapFrameX.Statistics.csproj">
       <Project>{788F49CD-ABCB-4C7C-B1B6-BF9DC2482432}</Project>
       <Name>CapFrameX.Statistics</Name>
