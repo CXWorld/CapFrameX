@@ -15,6 +15,20 @@ namespace CapFrameX.ViewModel
 		private readonly IEventAggregator _eventAggregator;
 		private readonly IAppConfiguration _appConfiguration;
 
+		private bool IsBeta => GetBetaState();
+
+		private bool GetBetaState()
+		{
+			Assembly assembly = GetAssemblyByName("CapFrameX");
+			var metaData = assembly.GetCustomAttributes(typeof(AssemblyMetadataAttribute));
+
+			if (metaData.FirstOrDefault(attribute => (attribute as AssemblyMetadataAttribute).Key == "IsBeta") 
+				is AssemblyMetadataAttribute isBetaAttribute)
+				return Convert.ToBoolean(isBetaAttribute.Value);
+
+			return true;
+		}
+
 		public bool IsDirectoryObserving
 		{
 			get { return _recordObserver.IsActive; }
@@ -31,7 +45,9 @@ namespace CapFrameX.ViewModel
 			get
 			{
 				Assembly assembly = GetAssemblyByName("CapFrameX");
-				return FileVersionInfo.GetVersionInfo(assembly.Location).FileVersion;
+				var fileVersion = IsBeta ? string.Format(FileVersionInfo.GetVersionInfo(assembly.Location).FileVersion + "{0}", " Beta") :
+					FileVersionInfo.GetVersionInfo(assembly.Location).FileVersion;
+				return fileVersion;
 			}
 		}
 

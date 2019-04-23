@@ -463,34 +463,22 @@ namespace CapFrameX.ViewModel
 
 				xMin = sessionParallelQuery.Min(session => 
 				{
-					var frametimePoints = session.GetFrametimePointsTimeWindow(startTime, endTime)
-											 .Select(pnt => new Point(pnt.X, pnt.Y));
-
-					return frametimePoints.First().X;
+					return session.GetFrametimePointsTimeWindow(startTime, endTime).First().X;
 				});
 
 				xMax = sessionParallelQuery.Max(session =>
 				{
-					var frametimePoints = session.GetFrametimePointsTimeWindow(startTime, endTime)
-											 .Select(pnt => new Point(pnt.X, pnt.Y));
-
-					return frametimePoints.Last().X;
+					return session.GetFrametimePointsTimeWindow(startTime, endTime).Last().X;
 				});
 
 				yMin = sessionParallelQuery.Min(session =>
 				{
-					var frametimePoints = session.GetFrametimePointsTimeWindow(startTime, endTime)
-											 .Select(pnt => new Point(pnt.X, pnt.Y));
-
-					return frametimePoints.Min(pnt => pnt.Y);
+					return session.GetFrametimePointsTimeWindow(startTime, endTime).Min(pnt => pnt.Y); ;
 				});
 
 				yMax = sessionParallelQuery.Max(session =>
 				{
-					var frametimePoints = session.GetFrametimePointsTimeWindow(startTime, endTime)
-											 .Select(pnt => new Point(pnt.X, pnt.Y));
-
-					return frametimePoints.Max(pnt => pnt.Y);
+					return session.GetFrametimePointsTimeWindow(startTime, endTime).Max(pnt => pnt.Y);
 				});
 			}
 
