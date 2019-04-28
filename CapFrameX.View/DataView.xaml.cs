@@ -108,6 +108,12 @@ namespace CapFrameX.View
 
 			try
 			{
+				if (path.Contains(@"MyDocuments\CapFrameX\Screenshots"))
+				{
+					var documentFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+					path = Path.Combine(documentFolder, @"CapFrameX\Screenshots");
+				}
+
 				if (path.Contains(@"MyDocuments\OCAT\Screenshots"))
 				{
 					var documentFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);

@@ -31,7 +31,13 @@ namespace CapFrameX.OcatInterface
 
 		private OcatRecordInfo(FileInfo fileInfo)
 		{
-			GameName = fileInfo.Name.Substring("OCAT-", ".exe");
+			GameName = string.Empty;
+
+			if (fileInfo.Name.Contains("OCAT"))
+				GameName = fileInfo.Name.Substring("OCAT-", ".exe");
+			else if (fileInfo.Name.Contains("CapFrameX"))
+				GameName = fileInfo.Name.Substring("CapFrameX-", ".exe");
+
 			CreationDate = fileInfo.Name.Substring("exe-", "T");
 			RecordTime = fileInfo.Name.Substring(CreationDate + "T", ".csv");
 			CreationTime = fileInfo.LastWriteTime.ToString("HH:mm:ss");

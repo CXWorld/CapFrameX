@@ -49,7 +49,7 @@ namespace CapFrameX.Configuration.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("MyDocuments\\OCAT\\Captures")]
+        [global::System.Configuration.DefaultSettingValueAttribute("MyDocuments\\CapFrameX\\Captures")]
         public string ObservedDirectory {
             get {
                 return ((string)(this["ObservedDirectory"]));
@@ -85,7 +85,7 @@ namespace CapFrameX.Configuration.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("CapFrameX; SearchUI; ShellExperienceHost; steamwebhelper")]
+        [global::System.Configuration.DefaultSettingValueAttribute("SearchUI; ShellExperienceHost; steamwebhelper")]
         public string RecordDataGridIgnoreList {
             get {
                 return ((string)(this["RecordDataGridIgnoreList"]));
@@ -109,7 +109,7 @@ namespace CapFrameX.Configuration.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("MyDocuments\\OCAT\\Screenshots")]
+        [global::System.Configuration.DefaultSettingValueAttribute("MyDocuments\\CapFrameX\\Screenshots")]
         public string ScreenshotDirectory {
             get {
                 return ((string)(this["ScreenshotDirectory"]));

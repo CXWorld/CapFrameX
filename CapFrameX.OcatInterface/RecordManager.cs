@@ -15,6 +15,19 @@ namespace CapFrameX.OcatInterface
 
 			string[] lines = File.ReadAllLines(recordInfo.FullPath);
 
+			// Processor, GPU, Comment
+			if (!lines[0].Contains("Processor"))
+			{
+				lines[0] = lines[0] + ",Processor";
+				lines[1] = lines[1] + ",-";
+			}
+
+			if (!lines[0].Contains("GPU"))
+			{
+				lines[0] = lines[0] + ",GPU";
+				lines[1] = lines[1] + ",-";
+			}
+
 			if (!lines[0].Contains("Comment"))
 			{
 				lines[0] = lines[0] + ",Comment";
@@ -62,6 +75,11 @@ namespace CapFrameX.OcatInterface
 				return null;
 			}
 
+			if (new FileInfo(csvFile).Length == 0)
+			{
+				return null;
+			}
+
 			string comment = string.Empty;
 
 			try
@@ -81,6 +99,10 @@ namespace CapFrameX.OcatInterface
 					}
 
 					var firstDataLineWithComment = reader.ReadLine();
+
+					if (firstDataLineWithComment == null)
+						return null;
+
 					var values = firstDataLineWithComment.Split(',');
 
 					if (indexComment > 0)
@@ -134,6 +156,11 @@ namespace CapFrameX.OcatInterface
 				return null;
 			}
 
+			if (new FileInfo(csvFile).Length == 0)
+			{
+				return null;
+			}
+
 			var session = new Session
 			{
 				Path = csvFile,
@@ -167,6 +194,7 @@ namespace CapFrameX.OcatInterface
 				{
 					// header -> csv layout may differ, identify correct columns based on column title
 					var line = reader.ReadLine();
+
 					int indexFrameStart = -1;
 					int indexFrameTimes = -1;
 					int indexFrameEnd = -1;
@@ -320,9 +348,9 @@ namespace CapFrameX.OcatInterface
 						{
 							// non VR titles only have app render start and frame times metrics
 							// app render end and reprojection end get calculated based on ms until render complete and ms until displayed metric
-							if (double.TryParse(values[indexFrameStart], NumberStyles.Any, CultureInfo.InvariantCulture, out frameStart)
-								&& double.TryParse(values[indexFrameTimes], NumberStyles.Any, CultureInfo.InvariantCulture, out var frameTimes)
-								&& int.TryParse(values[indexAppMissed], NumberStyles.Any, CultureInfo.InvariantCulture, out var appMissed))
+							if (double.TryParse(GetStringFromArray(values, indexFrameStart), NumberStyles.Any, CultureInfo.InvariantCulture, out frameStart)
+								&& double.TryParse(GetStringFromArray(values, indexFrameTimes), NumberStyles.Any, CultureInfo.InvariantCulture, out var frameTimes)
+								&& int.TryParse(GetStringFromArray(values, indexAppMissed), NumberStyles.Any, CultureInfo.InvariantCulture, out var appMissed))
 							{
 								if (frameStart > 0)
 								{
@@ -339,7 +367,7 @@ namespace CapFrameX.OcatInterface
 
 						if (indexDisplayTimes > 0)
 						{
-							if (double.TryParse(values[indexDisplayTimes], NumberStyles.Any, CultureInfo.InvariantCulture, out var displayTime))
+							if (double.TryParse(GetStringFromArray(values, indexDisplayTimes), NumberStyles.Any, CultureInfo.InvariantCulture, out var displayTime))
 							{
 								session.Displaytimes.Add(displayTime);
 							}
@@ -347,8 +375,8 @@ namespace CapFrameX.OcatInterface
 
 						if (indexFrameEnd > 0 && indexReprojectionEnd > 0)
 						{
-							if (double.TryParse(values[indexFrameEnd], NumberStyles.Any, CultureInfo.InvariantCulture, out var frameEnd)
-							 && double.TryParse(values[indexReprojectionEnd], NumberStyles.Any, CultureInfo.InvariantCulture, out var reprojectionEnd))
+							if (double.TryParse(GetStringFromArray(values, indexFrameEnd), NumberStyles.Any, CultureInfo.InvariantCulture, out var frameEnd)
+							 && double.TryParse(GetStringFromArray(values, indexReprojectionEnd), NumberStyles.Any, CultureInfo.InvariantCulture, out var reprojectionEnd))
 							{
 								if (session.IsVR)
 								{
@@ -365,10 +393,10 @@ namespace CapFrameX.OcatInterface
 
 						if (indexReprojectionStart > 0 && indexReprojectionTimes > 0 && indexVSync > 0 && indexWarpMissed > 0)
 						{
-							if (double.TryParse(values[indexReprojectionStart], NumberStyles.Any, CultureInfo.InvariantCulture, out var reprojectionStart)
-							 && double.TryParse(values[indexReprojectionTimes], NumberStyles.Any, CultureInfo.InvariantCulture, out var reprojectionTimes)
-							 && double.TryParse(values[indexVSync], NumberStyles.Any, CultureInfo.InvariantCulture, out var vSync)
-							 && int.TryParse(values[indexWarpMissed], NumberStyles.Any, CultureInfo.InvariantCulture, out var warpMissed))
+							if (double.TryParse(GetStringFromArray(values, indexReprojectionStart), NumberStyles.Any, CultureInfo.InvariantCulture, out var reprojectionStart)
+							 && double.TryParse(GetStringFromArray(values, indexReprojectionTimes), NumberStyles.Any, CultureInfo.InvariantCulture, out var reprojectionTimes)
+							 && double.TryParse(GetStringFromArray(values, indexVSync), NumberStyles.Any, CultureInfo.InvariantCulture, out var vSync)
+							 && int.TryParse(GetStringFromArray(values, indexWarpMissed), NumberStyles.Any, CultureInfo.InvariantCulture, out var warpMissed))
 							{
 								if (reprojectionStart > 0)
 								{
@@ -383,27 +411,45 @@ namespace CapFrameX.OcatInterface
 							}
 						}
 
-						if (lineCount < 2 && indexMotherboardName > 0 && indexOsVersion > 0 && indexProcessorName > 0 &&
-							indexSystemRamInfo > 0 && indexBaseDriverVersion > 0 && indexDriverPackage > 0 &&
-							indexNumberGPUs > 0 && indexGraphicCardName > 0 && indexGPUCoreClock > 0 &&
-							indexGPUMemoryClock > 0 && indexGPUMemory > 0)
+						if (lineCount < 2)
 						{
-							session.MotherboardName = values[indexMotherboardName].Trim(new Char[] { ' ', '"' });
-							session.OsVersion = values[indexOsVersion].Trim(new Char[] { ' ', '"' });
-							session.ProcessorName = values[indexProcessorName].Trim(new Char[] { ' ', '"' });
-							session.SystemRamInfo = values[indexSystemRamInfo].Trim(new Char[] { ' ', '"' });
-							session.BaseDriverVersion = values[indexBaseDriverVersion].Trim(new Char[] { ' ', '"' });
-							session.DriverPackage = values[indexDriverPackage].Trim(new Char[] { ' ', '"' });
-							session.NumberGPUs = values[indexNumberGPUs].Trim(new Char[] { ' ', '"' });
-							session.GraphicCardName = values[indexGraphicCardName].Trim(new Char[] { ' ', '"' });
-							session.GPUCoreClock = values[indexGPUCoreClock].Trim(new Char[] { ' ', '"' });
-							session.GPUMemoryClock = values[indexGPUMemoryClock].Trim(new Char[] { ' ', '"' });
-							session.GPUMemory = values[indexGPUMemory].Trim(new Char[] { ' ', '"' });
+							if (indexMotherboardName > 0)
+								session.MotherboardName = GetStringFromArray(values, indexMotherboardName).Trim(new Char[] { ' ', '"' });
+
+							if (indexOsVersion > 0)
+								session.OsVersion = GetStringFromArray(values, indexOsVersion).Trim(new Char[] { ' ', '"' });
+
+							if (indexProcessorName > 0)
+								session.ProcessorName = GetStringFromArray(values, indexProcessorName).Trim(new Char[] { ' ', '"' });
+
+							if (indexSystemRamInfo > 0)
+								session.SystemRamInfo = GetStringFromArray(values, indexSystemRamInfo).Trim(new Char[] { ' ', '"' });
+
+							if (indexBaseDriverVersion > 0)
+								session.BaseDriverVersion = GetStringFromArray(values, indexBaseDriverVersion).Trim(new Char[] { ' ', '"' });
+
+							if (indexDriverPackage > 0)
+								session.DriverPackage = GetStringFromArray(values, indexDriverPackage).Trim(new Char[] { ' ', '"' });
+
+							if (indexNumberGPUs > 0)
+								session.NumberGPUs = GetStringFromArray(values, indexNumberGPUs).Trim(new Char[] { ' ', '"' });
+
+							if (indexGraphicCardName > 0)
+								session.GraphicCardName = GetStringFromArray(values, indexGraphicCardName).Trim(new Char[] { ' ', '"' });
+
+							if (indexGPUCoreClock > 0)
+								session.GPUCoreClock = GetStringFromArray(values, indexGPUCoreClock).Trim(new Char[] { ' ', '"' });
+
+							if (indexGPUMemoryClock > 0)
+								session.GPUMemoryClock = GetStringFromArray(values, indexGPUMemoryClock).Trim(new Char[] { ' ', '"' });
+
+							if (indexGPUMemory > 0)
+								session.GPUMemory = GetStringFromArray(values, indexGPUMemory).Trim(new Char[] { ' ', '"' });
 						}
 
 						//Custom extension
 						if (lineCount < 2 && indexComment > 0)
-							session.Comment = values[indexComment].Trim(new Char[] { ' ', '"' });
+							session.Comment = GetStringFromArray(values, indexComment).Trim(new Char[] { ' ', '"' });
 					}
 				}
 			}
@@ -413,6 +459,18 @@ namespace CapFrameX.OcatInterface
 			}
 
 			return session;
+		}
+
+		private static string GetStringFromArray(string[] array, int index)
+		{
+			var value = string.Empty;
+
+			if (index < array.Length)
+			{
+				value = array[index];
+			}
+
+			return value;
 		}
 	}
 }

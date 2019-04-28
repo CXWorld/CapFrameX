@@ -9,11 +9,9 @@ using CapFrameX.Contracts.PresentMonInterface;
 
 namespace CapFrameX.PresentMonInterface
 {
-	public class PresentMonCaptureService : ICaptureService, IDisposable
+	public class PresentMonCaptureService : ICaptureService
 	{
 		private readonly ISubject<string> _outputStream;
-
-		private Process _process;
 
 		public IObservable<string> RedirectedStandardOutputStream => _outputStream.AsObservable();
 
@@ -26,7 +24,7 @@ namespace CapFrameX.PresentMonInterface
 		{
 			TryKillPresentMon();
 
-			_process = new Process
+			var process = new Process
 			{
 				StartInfo = new ProcessStartInfo
 				{
@@ -42,14 +40,14 @@ namespace CapFrameX.PresentMonInterface
 
 			Task.Factory.StartNew(() =>
 			{
-				_process.EnableRaisingEvents = true;
-				_process.Start();
+				process.EnableRaisingEvents = true;
+				process.Start();
 				_outputStream.OnNext("Started process...");
-				_process.ErrorDataReceived += (sender, e) => _outputStream.OnNext(e.Data);
-				_process.OutputDataReceived += (sender, e) => _outputStream.OnNext(e.Data);
-				_process.BeginOutputReadLine();
-				_process.BeginErrorReadLine();
-				_process.WaitForExit();
+				process.ErrorDataReceived += (sender, e) => _outputStream.OnNext(e.Data);
+				process.OutputDataReceived += (sender, e) => _outputStream.OnNext(e.Data);
+				process.BeginOutputReadLine();
+				process.BeginErrorReadLine();
+				process.WaitForExit();
 			});
 
 			return true;
@@ -59,27 +57,18 @@ namespace CapFrameX.PresentMonInterface
 		{
 			try
 			{
-				_process?.Kill();
+				TryKillPresentMon();
 				return true;
 			}
 			catch { return false; }
-			
+
 		}
 
 		public IEnumerable<string> GetAllFilteredProcesses(HashSet<string> filter)
 		{
-			var allRunningProcesses = Process.GetProcesses();
+			var allRunningProcesses = Process.GetProcesses().Where(x => x.MainWindowHandle != IntPtr.Zero);
 			return allRunningProcesses.Select(process => process.ProcessName)
 				.Where(processName => !filter.Contains(processName));
-		}
-
-		public void Dispose()
-		{
-			try
-			{
-				_process?.Kill();
-			}
-			catch { }
 		}
 
 		private void TryKillPresentMon()
@@ -87,9 +76,10 @@ namespace CapFrameX.PresentMonInterface
 			try
 			{
 				Process[] proc = Process.GetProcessesByName("PresentMon64-1.3.1");
-				proc[0].Kill();
+				if (proc.Any())
+					proc[0].Kill();
 			}
-			catch{ }
+			catch { }
 		}
 	}
 }

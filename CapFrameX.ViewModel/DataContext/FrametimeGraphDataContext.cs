@@ -84,6 +84,9 @@ namespace CapFrameX.ViewModel.DataContext
 
 		public void SetFrametimeChart(IList<double> frametimes)
 		{
+			if (frametimes == null || !frametimes.Any())
+				return;
+
 			int count = frametimes.Count;
 			var frameTimeDataPoints = frametimes.Select((x, i) => new DataPoint(i, x));
 			var yMin = frametimes.Min();
@@ -151,7 +154,7 @@ namespace CapFrameX.ViewModel.DataContext
 
 			for (int i = 0; i < frametimePoints.Count; i++)
 			{
-				builder.Append(frametimePoints[i].X.ToString(CultureInfo.InvariantCulture) + "\t" + 
+				builder.Append(frametimePoints[i].X.ToString(CultureInfo.InvariantCulture) + "\t" +
 					frametimePoints[i].Y.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
 			}
 

@@ -62,7 +62,7 @@ namespace CapFrameX.OcatInterface
 			_recordDeletedStream = new Subject<string>();
 		}
 
-		private string GetInitialObservedDirectory(string observedDirectory)
+		public static string GetInitialObservedDirectory(string observedDirectory)
 		{
 			var documentFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
 			string path = observedDirectory;
@@ -74,9 +74,15 @@ namespace CapFrameX.OcatInterface
 			}
 
 			// < V1.3
-			else if (observedDirectory.Contains(@"MyDocuments\OCAT\CRecordings"))
+			else if (observedDirectory.Contains(@"MyDocuments\OCAT\Recordings"))
 			{
 				path = Path.Combine(documentFolder, @"OCAT\Recordings");
+			}
+
+			// CX captures
+			else if (observedDirectory.Contains(@"MyDocuments\CapFrameX\Captures"))
+			{
+				path = Path.Combine(documentFolder, @"CapFrameX\Captures");
 			}
 
 			return path;
@@ -84,8 +90,7 @@ namespace CapFrameX.OcatInterface
 
 		private void WatcherCreated(object sender, FileSystemEventArgs e)
 		{
-			if (!e.FullPath.Contains("CapFrameX"))
-				_recordCreatedStream.OnNext(e.FullPath);
+			_recordCreatedStream.OnNext(e.FullPath);
 		}
 
 		private void WatcherDeleted(object sender, FileSystemEventArgs e)
@@ -101,7 +106,7 @@ namespace CapFrameX.OcatInterface
 											 .Replace(Environment.NewLine, string.Empty);
 			}
 
-			return HasValidSource ?  Directory.GetFiles(_recordDirectory, "*.csv", 
+			return HasValidSource ? Directory.GetFiles(_recordDirectory, "*.csv",
 				SearchOption.TopDirectoryOnly).Where(file => filterList.All(entry => !file.Contains(entry)))
 				.Select(file => new FileInfo(file)) : Enumerable.Empty<FileInfo>();
 		}
@@ -115,7 +120,7 @@ namespace CapFrameX.OcatInterface
 			}
 			else
 			{
-				HasValidSource = true;			
+				HasValidSource = true;
 
 				_recordDirectory = directory;
 				_fileSystemWatcher = new FileSystemWatcher(directory);

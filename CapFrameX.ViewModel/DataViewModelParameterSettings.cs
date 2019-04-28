@@ -16,17 +16,17 @@
 
 		partial void InitializeStatisticParameter()
 		{
-			UseMaxStatisticParameter = AppConfiguration.UseSingleRecordMaxStatisticParameter;
-			UseP99QuantileStatisticParameter = AppConfiguration.UseSingleRecord99QuantileStatisticParameter;
-			UseP95QuantileStatisticParameter = AppConfiguration.UseSingleRecordP95QuantileStatisticParameter;
-			UseAverageStatisticParameter = AppConfiguration.UseSingleRecordAverageStatisticParameter;
-			UseP5QuantileStatisticParameter = AppConfiguration.UseSingleRecordP5QuantileStatisticParameter;
-			UseP1QuantileStatisticParameter = AppConfiguration.UseSingleRecordP1QuantileStatisticParameter;
-			UseP0Dot1QuantileStatisticParameter = AppConfiguration.UseSingleRecordP0Dot1QuantileStatisticParameter;
-			UseP1LowAverageStatisticParameter = AppConfiguration.UseSingleRecordP1LowAverageStatisticParameter;
-			UseP0Dot1LowAverageStatisticParameter = AppConfiguration.UseSingleRecordP0Dot1LowAverageStatisticParameter;
-			UseMinStatisticParameter = AppConfiguration.UseSingleRecordMinStatisticParameter;
-			UseAdaptiveSTDStatisticParameter = AppConfiguration.UseSingleRecordAdaptiveSTDStatisticParameter;
+			UseMaxStatisticParameter = _appConfiguration.UseSingleRecordMaxStatisticParameter;
+			UseP99QuantileStatisticParameter = _appConfiguration.UseSingleRecord99QuantileStatisticParameter;
+			UseP95QuantileStatisticParameter = _appConfiguration.UseSingleRecordP95QuantileStatisticParameter;
+			UseAverageStatisticParameter = _appConfiguration.UseSingleRecordAverageStatisticParameter;
+			UseP5QuantileStatisticParameter = _appConfiguration.UseSingleRecordP5QuantileStatisticParameter;
+			UseP1QuantileStatisticParameter = _appConfiguration.UseSingleRecordP1QuantileStatisticParameter;
+			UseP0Dot1QuantileStatisticParameter = _appConfiguration.UseSingleRecordP0Dot1QuantileStatisticParameter;
+			UseP1LowAverageStatisticParameter = _appConfiguration.UseSingleRecordP1LowAverageStatisticParameter;
+			UseP0Dot1LowAverageStatisticParameter = _appConfiguration.UseSingleRecordP0Dot1LowAverageStatisticParameter;
+			UseMinStatisticParameter = _appConfiguration.UseSingleRecordMinStatisticParameter;
+			UseAdaptiveSTDStatisticParameter = _appConfiguration.UseSingleRecordAdaptiveSTDStatisticParameter;
 		}
 
 		public bool UseMaxStatisticParameter
@@ -35,7 +35,7 @@
 			set
 			{
 				_useMaxStatisticParameter = value;
-				AppConfiguration.UseSingleRecordMaxStatisticParameter = value;
+				_appConfiguration.UseSingleRecordMaxStatisticParameter = value;
 				RaisePropertyChanged();
 			}
 		}
@@ -46,7 +46,7 @@
 			set
 			{
 				_useP99QuantileStatisticParameter = value;
-				AppConfiguration.UseSingleRecord99QuantileStatisticParameter = value;
+				_appConfiguration.UseSingleRecord99QuantileStatisticParameter = value;
 				RaisePropertyChanged();
 			}
 		}
@@ -57,7 +57,7 @@
 			set
 			{
 				_useP95QuantileStatisticParameter = value;
-				AppConfiguration.UseSingleRecordP95QuantileStatisticParameter = value;
+				_appConfiguration.UseSingleRecordP95QuantileStatisticParameter = value;
 				RaisePropertyChanged();
 			}
 		}
@@ -68,7 +68,7 @@
 			set
 			{
 				_useAverageStatisticParameter = value;
-				AppConfiguration.UseSingleRecordAverageStatisticParameter = value;
+				_appConfiguration.UseSingleRecordAverageStatisticParameter = value;
 				RaisePropertyChanged();
 			}
 		}
@@ -79,7 +79,7 @@
 			set
 			{
 				_useP5QuantileStatisticParameter = value;
-				AppConfiguration.UseSingleRecordP5QuantileStatisticParameter = value;
+				_appConfiguration.UseSingleRecordP5QuantileStatisticParameter = value;
 				RaisePropertyChanged();
 			}
 		}
@@ -90,7 +90,7 @@
 			set
 			{
 				_useP1QuantileStatisticParameter = value;
-				AppConfiguration.UseSingleRecordP1QuantileStatisticParameter = value;
+				_appConfiguration.UseSingleRecordP1QuantileStatisticParameter = value;
 				RaisePropertyChanged();
 			}
 		}
@@ -101,7 +101,7 @@
 			set
 			{
 				_useP0Dot1QuantileStatisticParameter = value;
-				AppConfiguration.UseSingleRecordP0Dot1QuantileStatisticParameter = value;
+				_appConfiguration.UseSingleRecordP0Dot1QuantileStatisticParameter = value;
 				RaisePropertyChanged();
 			}
 		}
@@ -112,7 +112,7 @@
 			set
 			{
 				_useP1LowAverageStatisticParameter = value;
-				AppConfiguration.UseSingleRecordP1LowAverageStatisticParameter = value;
+				_appConfiguration.UseSingleRecordP1LowAverageStatisticParameter = value;
 				RaisePropertyChanged();
 			}
 		}
@@ -123,7 +123,7 @@
 			set
 			{
 				_useP0Dot1LowAverageStatisticParameter = value;
-				AppConfiguration.UseSingleRecordP0Dot1LowAverageStatisticParameter = value;
+				_appConfiguration.UseSingleRecordP0Dot1LowAverageStatisticParameter = value;
 				RaisePropertyChanged();
 			}
 		}
@@ -134,7 +134,7 @@
 			set
 			{
 				_useMinStatisticParameter = value;
-				AppConfiguration.UseSingleRecordMinStatisticParameter = value;
+				_appConfiguration.UseSingleRecordMinStatisticParameter = value;
 				RaisePropertyChanged();
 			}
 		}
@@ -145,7 +145,7 @@
 			set
 			{
 				_useAdaptiveSTDStatisticParameter = value;
-				AppConfiguration.UseSingleRecordAdaptiveSTDStatisticParameter = value;
+				_appConfiguration.UseSingleRecordAdaptiveSTDStatisticParameter = value;
 				RaisePropertyChanged();
 			}
 		}

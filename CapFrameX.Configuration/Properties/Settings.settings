@@ -9,7 +9,7 @@
       <Value Profile="(Default)">2.5</Value>
     </Setting>
     <Setting Name="ObservedDirectory" Type="System.String" Scope="User">
-      <Value Profile="(Default)">MyDocuments\OCAT\Captures</Value>
+      <Value Profile="(Default)">MyDocuments\CapFrameX\Captures</Value>
     </Setting>
     <Setting Name="ChartQualityLevel" Type="System.String" Scope="User">
       <Value Profile="(Default)">High</Value>
@@ -18,13 +18,13 @@
       <Value Profile="(Default)">1</Value>
     </Setting>
     <Setting Name="RecordDataGridIgnoreList" Type="System.String" Scope="User">
-      <Value Profile="(Default)">CapFrameX; SearchUI; ShellExperienceHost; steamwebhelper</Value>
+      <Value Profile="(Default)">SearchUI; ShellExperienceHost; steamwebhelper</Value>
     </Setting>
     <Setting Name="ShowLowParameter" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
     <Setting Name="ScreenshotDirectory" Type="System.String" Scope="User">
-      <Value Profile="(Default)">MyDocuments\OCAT\Screenshots</Value>
+      <Value Profile="(Default)">MyDocuments\CapFrameX\Screenshots</Value>
     </Setting>
     <Setting Name="UseSingleRecordMaxStatisticParameter" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>

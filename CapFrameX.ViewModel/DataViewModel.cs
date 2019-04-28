@@ -29,6 +29,8 @@ namespace CapFrameX.ViewModel
 		private readonly IStatisticProvider _frametimeStatisticProvider;
 		private readonly IFrametimeAnalyzer _frametimeAnalyzer;
 		private readonly IEventAggregator _eventAggregator;
+		private readonly IAppConfiguration _appConfiguration;
+
 		private bool _useUpdateSession;
 		private Session _session;
 		private SeriesCollection _statisticCollection;
@@ -46,13 +48,13 @@ namespace CapFrameX.ViewModel
 		private IRecordDataServer _localRecordDataServer;
 		private IDisposable _frametimeWindowObservable;
 
-		public IAppConfiguration AppConfiguration { get; }
-
 		public OcatRecordInfo RecordInfo { get; private set; }
 
 		public FrametimeGraphDataContext FrametimeGraphDataContext { get; }
 
 		public FpsGraphDataContext FpsGraphDataContext { get; }
+
+		public IAppConfiguration AppConfiguration => _appConfiguration;
 
 		/// <summary>
 		/// https://docs.microsoft.com/en-us/dotnet/standard/base-types/standard-numeric-format-strings
@@ -188,7 +190,7 @@ namespace CapFrameX.ViewModel
 			_frametimeStatisticProvider = frametimeStatisticProvider;
 			_frametimeAnalyzer = frametimeAnalyzer;
 			_eventAggregator = eventAggregator;
-			AppConfiguration = appConfiguration;
+			_appConfiguration = appConfiguration;
 
 			SubscribeToUpdateSession();
 
@@ -198,12 +200,12 @@ namespace CapFrameX.ViewModel
 			AcceptParameterSettingsCommand = new DelegateCommand(OnAcceptParameterSettings);
 
 			ParameterFormatter = value => value.ToString(string.Format("F{0}",
-				AppConfiguration.FpsValuesRoundingDigits), CultureInfo.InvariantCulture);
+				_appConfiguration.FpsValuesRoundingDigits), CultureInfo.InvariantCulture);
 			_localRecordDataServer = new LocalRecordDataServer();
 			FrametimeGraphDataContext = new FrametimeGraphDataContext(_localRecordDataServer,
-				AppConfiguration, _frametimeStatisticProvider);
+				_appConfiguration, _frametimeStatisticProvider);
 			FpsGraphDataContext = new FpsGraphDataContext(_localRecordDataServer,
-				AppConfiguration, _frametimeStatisticProvider);
+				_appConfiguration, _frametimeStatisticProvider);
 
 			InitializeStatisticParameter();
 		}
@@ -256,7 +258,7 @@ namespace CapFrameX.ViewModel
 				return;
 
 			var frametimes = GetFrametimesSubset();
-			var roundingDigits = AppConfiguration.FpsValuesRoundingDigits;
+			var roundingDigits = _appConfiguration.FpsValuesRoundingDigits;
 			var fps = frametimes.Select(ft => 1000 / ft).ToList();
 			var max = Math.Round(fps.Max(), roundingDigits);
 			var p99_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.99), roundingDigits);
@@ -268,33 +270,33 @@ namespace CapFrameX.ViewModel
 			var p1_averageLow = Math.Round(1000 / _frametimeStatisticProvider.GetPAverageHighSequence(frametimes, 1 - 0.01), roundingDigits);
 			var p0dot1_averageLow = Math.Round(1000 / _frametimeStatisticProvider.GetPAverageHighSequence(frametimes, 1 - 0.001), roundingDigits);
 			var min = Math.Round(fps.Min(), roundingDigits);
-			var adaptiveStandardDeviation = Math.Round(_frametimeStatisticProvider.GetAdaptiveStandardDeviation(fps, AppConfiguration.MovingAverageWindowSize), roundingDigits);
+			var adaptiveStandardDeviation = Math.Round(_frametimeStatisticProvider.GetAdaptiveStandardDeviation(fps, _appConfiguration.MovingAverageWindowSize), roundingDigits);
 
 			StringBuilder builder = new StringBuilder();
 
 			// Vice versa!
 			// "Adaptive STD" ,"Min","0.1% Low" ,"0.1%" ,"1% Low", "1%" ,"5%" ,"Average" ,"95%" ,"99%" ,"Max"
-			if (AppConfiguration.UseSingleRecordMaxStatisticParameter)
+			if (_appConfiguration.UseSingleRecordMaxStatisticParameter)
 				builder.Append("Max" + "\t" + max.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
-			if (AppConfiguration.UseSingleRecord99QuantileStatisticParameter)
+			if (_appConfiguration.UseSingleRecord99QuantileStatisticParameter)
 				builder.Append("P99" + "\t" + p99_quantile.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
-			if (AppConfiguration.UseSingleRecordP95QuantileStatisticParameter)
+			if (_appConfiguration.UseSingleRecordP95QuantileStatisticParameter)
 				builder.Append("P95" + "\t" + p95_quantile.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
-			if (AppConfiguration.UseSingleRecordAverageStatisticParameter)
+			if (_appConfiguration.UseSingleRecordAverageStatisticParameter)
 				builder.Append("Average" + "\t" + average.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
-			if (AppConfiguration.UseSingleRecordP5QuantileStatisticParameter)
+			if (_appConfiguration.UseSingleRecordP5QuantileStatisticParameter)
 				builder.Append("P5" + "\t" + p5_quantile.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
-			if (AppConfiguration.UseSingleRecordP1QuantileStatisticParameter)
+			if (_appConfiguration.UseSingleRecordP1QuantileStatisticParameter)
 				builder.Append("P1" + "\t" + p1_quantile.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
-			if (AppConfiguration.UseSingleRecordP1LowAverageStatisticParameter && !double.IsNaN(p1_averageLow))
+			if (_appConfiguration.UseSingleRecordP1LowAverageStatisticParameter && !double.IsNaN(p1_averageLow))
 				builder.Append("1% Low" + "\t" + p1_averageLow.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
-			if (AppConfiguration.UseSingleRecordP0Dot1QuantileStatisticParameter)
+			if (_appConfiguration.UseSingleRecordP0Dot1QuantileStatisticParameter)
 				builder.Append("P0.1" + "\t" + p0dot1_quantile.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
-			if (AppConfiguration.UseSingleRecordP0Dot1LowAverageStatisticParameter && !double.IsNaN(p0dot1_averageLow))
+			if (_appConfiguration.UseSingleRecordP0Dot1LowAverageStatisticParameter && !double.IsNaN(p0dot1_averageLow))
 				builder.Append("0.1% Low" + "\t" + p0dot1_averageLow.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
-			if (AppConfiguration.UseSingleRecordMinStatisticParameter)
+			if (_appConfiguration.UseSingleRecordMinStatisticParameter)
 				builder.Append("Min" + "\t" + min.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
-			if (AppConfiguration.UseSingleRecordAdaptiveSTDStatisticParameter)
+			if (_appConfiguration.UseSingleRecordAdaptiveSTDStatisticParameter)
 				builder.Append("Adaptive STD" + "\t" + adaptiveStandardDeviation.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
 
 			Clipboard.SetDataObject(builder.ToString(), false);
@@ -422,7 +424,7 @@ namespace CapFrameX.ViewModel
 			if (frametimes == null || !frametimes.Any())
 				return;
 
-			var roundingDigits = AppConfiguration.FpsValuesRoundingDigits;
+			var roundingDigits = _appConfiguration.FpsValuesRoundingDigits;
 			var fps = frametimes.Select(ft => 1000 / ft).ToList();
 			var p99_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.99), roundingDigits);
 			var p95_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.95), roundingDigits);
@@ -434,31 +436,31 @@ namespace CapFrameX.ViewModel
 			var p0dot1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.001), roundingDigits);
 			var p0dot1_averageLow = Math.Round(1000 / _frametimeStatisticProvider.GetPAverageHighSequence(frametimes, 1 - 0.001), roundingDigits);
 			var min = Math.Round(fps.Min(), roundingDigits);
-			var adaptiveStandardDeviation = Math.Round(_frametimeStatisticProvider.GetAdaptiveStandardDeviation(fps, AppConfiguration.MovingAverageWindowSize), roundingDigits);
+			var adaptiveStandardDeviation = Math.Round(_frametimeStatisticProvider.GetAdaptiveStandardDeviation(fps, _appConfiguration.MovingAverageWindowSize), roundingDigits);
 
 			IChartValues values = new ChartValues<double>();
 
-			if (AppConfiguration.UseSingleRecordAdaptiveSTDStatisticParameter)
+			if (_appConfiguration.UseSingleRecordAdaptiveSTDStatisticParameter && !double.IsNaN(adaptiveStandardDeviation))
 				values.Add(adaptiveStandardDeviation);
-			if (AppConfiguration.UseSingleRecordMinStatisticParameter)
+			if (_appConfiguration.UseSingleRecordMinStatisticParameter)
 				values.Add(min);
-			if (AppConfiguration.UseSingleRecordP0Dot1LowAverageStatisticParameter && !double.IsNaN(p0dot1_averageLow))
+			if (_appConfiguration.UseSingleRecordP0Dot1LowAverageStatisticParameter && !double.IsNaN(p0dot1_averageLow))
 				values.Add(p0dot1_averageLow);
-			if (AppConfiguration.UseSingleRecordP0Dot1QuantileStatisticParameter)
+			if (_appConfiguration.UseSingleRecordP0Dot1QuantileStatisticParameter)
 				values.Add(p0dot1_quantile);
-			if (AppConfiguration.UseSingleRecordP1LowAverageStatisticParameter && !double.IsNaN(p1_averageLow))
+			if (_appConfiguration.UseSingleRecordP1LowAverageStatisticParameter && !double.IsNaN(p1_averageLow))
 				values.Add(p1_averageLow);
-			if (AppConfiguration.UseSingleRecordP1QuantileStatisticParameter)
+			if (_appConfiguration.UseSingleRecordP1QuantileStatisticParameter)
 				values.Add(p1_quantile);
-			if (AppConfiguration.UseSingleRecordP5QuantileStatisticParameter)
+			if (_appConfiguration.UseSingleRecordP5QuantileStatisticParameter)
 				values.Add(p5_quantile);
-			if (AppConfiguration.UseSingleRecordAverageStatisticParameter)
+			if (_appConfiguration.UseSingleRecordAverageStatisticParameter)
 				values.Add(average);
-			if (AppConfiguration.UseSingleRecordP95QuantileStatisticParameter)
+			if (_appConfiguration.UseSingleRecordP95QuantileStatisticParameter)
 				values.Add(p95_quantile);
-			if (AppConfiguration.UseSingleRecord99QuantileStatisticParameter)
+			if (_appConfiguration.UseSingleRecord99QuantileStatisticParameter)
 				values.Add(p99_quantile);
-			if (AppConfiguration.UseSingleRecordMaxStatisticParameter)
+			if (_appConfiguration.UseSingleRecordMaxStatisticParameter)
 				values.Add(max);
 
 			Application.Current.Dispatcher.BeginInvoke(new Action(() =>
@@ -478,27 +480,27 @@ namespace CapFrameX.ViewModel
 				var parameterLabelList = new List<string>();
 
 				//{ "Adaptive STD", "Min", "0.1% Low", "0.1%", "1% Low", "1%", "5%", "Average", "95%", "99%", "Max" }
-				if (AppConfiguration.UseSingleRecordAdaptiveSTDStatisticParameter)
+				if (_appConfiguration.UseSingleRecordAdaptiveSTDStatisticParameter && !double.IsNaN(adaptiveStandardDeviation))
 					parameterLabelList.Add("Adaptive STD");
-				if (AppConfiguration.UseSingleRecordMinStatisticParameter)
+				if (_appConfiguration.UseSingleRecordMinStatisticParameter)
 					parameterLabelList.Add("Min");
-				if (AppConfiguration.UseSingleRecordP0Dot1LowAverageStatisticParameter && !double.IsNaN(p0dot1_averageLow))
+				if (_appConfiguration.UseSingleRecordP0Dot1LowAverageStatisticParameter && !double.IsNaN(p0dot1_averageLow))
 					parameterLabelList.Add("0.1% Low");
-				if (AppConfiguration.UseSingleRecordP0Dot1QuantileStatisticParameter)
+				if (_appConfiguration.UseSingleRecordP0Dot1QuantileStatisticParameter)
 					parameterLabelList.Add("P0.1");
-				if (AppConfiguration.UseSingleRecordP1LowAverageStatisticParameter && !double.IsNaN(p1_averageLow))
+				if (_appConfiguration.UseSingleRecordP1LowAverageStatisticParameter && !double.IsNaN(p1_averageLow))
 					parameterLabelList.Add("1% Low");
-				if (AppConfiguration.UseSingleRecordP1QuantileStatisticParameter)
+				if (_appConfiguration.UseSingleRecordP1QuantileStatisticParameter)
 					parameterLabelList.Add("P1");
-				if (AppConfiguration.UseSingleRecordP5QuantileStatisticParameter)
+				if (_appConfiguration.UseSingleRecordP5QuantileStatisticParameter)
 					parameterLabelList.Add("P5");
-				if (AppConfiguration.UseSingleRecordAverageStatisticParameter)
+				if (_appConfiguration.UseSingleRecordAverageStatisticParameter)
 					parameterLabelList.Add("Average");
-				if (AppConfiguration.UseSingleRecordP95QuantileStatisticParameter)
+				if (_appConfiguration.UseSingleRecordP95QuantileStatisticParameter)
 					parameterLabelList.Add("P95");
-				if (AppConfiguration.UseSingleRecord99QuantileStatisticParameter)
+				if (_appConfiguration.UseSingleRecord99QuantileStatisticParameter)
 					parameterLabelList.Add("P99");
-				if (AppConfiguration.UseSingleRecordMaxStatisticParameter)
+				if (_appConfiguration.UseSingleRecordMaxStatisticParameter)
 					parameterLabelList.Add("Max");
 
 				ParameterLabels = parameterLabelList.ToArray();
@@ -510,7 +512,7 @@ namespace CapFrameX.ViewModel
 			if (frametimes == null || !frametimes.Any())
 				return;
 
-			var stutteringTimePercentage = _frametimeStatisticProvider.GetStutteringTimePercentage(frametimes, AppConfiguration.StutteringFactor);
+			var stutteringTimePercentage = _frametimeStatisticProvider.GetStutteringTimePercentage(frametimes, _appConfiguration.StutteringFactor);
 
 			Application.Current.Dispatcher.BeginInvoke(new Action(() =>
 			{

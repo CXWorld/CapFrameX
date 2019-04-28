@@ -9,14 +9,14 @@ namespace CapFrameX.PresentMonInterface
 	{
 		public string ProcessName { get; set; }
 
-		public string CaptureStartHotkey { get; set; }
+		public string CaptureStartHotkey { get; set; } = "F11";
 
 		/// <summary>
 		/// verbose or simple
 		/// </summary>
 		public string OutputLevelofDetail { get; set; } = "verbose";
 
-		public bool CaptureAllProcesses { get; set; } = true;
+		public bool CaptureAllProcesses { get; set; } = false;
 
 		public string OutputFilename { get; set; }
 
@@ -43,16 +43,18 @@ namespace CapFrameX.PresentMonInterface
 			{
 				arguments += "-captureall";
 				arguments += " ";
+				arguments += "-multi_csv";
+				arguments += " ";
 				arguments += "-output_file";
 				arguments += " ";
 				arguments += OutputFilename;
-				if (!string.IsNullOrWhiteSpace(CaptureStartHotkey))
-				{
-					arguments += " ";
-					arguments += "-hotkey";
-					arguments += " ";
-					arguments += CaptureStartHotkey;
-				}
+				//if (!string.IsNullOrWhiteSpace(CaptureStartHotkey))
+				//{
+				//	arguments += " ";
+				//	arguments += "-hotkey";
+				//	arguments += " ";
+				//	arguments += CaptureStartHotkey;
+				//}
 				if (!string.IsNullOrWhiteSpace(OutputLevelofDetail))
 				{
 					arguments += " ";
@@ -92,13 +94,13 @@ namespace CapFrameX.PresentMonInterface
 				arguments += "-output_file";
 				arguments += " ";
 				arguments += OutputFilename;
-				if (!string.IsNullOrWhiteSpace(CaptureStartHotkey))
-				{
-					arguments += " ";
-					arguments += "-hotkey";
-					arguments += " ";
-					arguments += CaptureStartHotkey;
-				}
+				//if (!string.IsNullOrWhiteSpace(CaptureStartHotkey))
+				//{
+				//	arguments += " ";
+				//	arguments += "-hotkey";
+				//	arguments += " ";
+				//	arguments += CaptureStartHotkey;
+				//}
 				if (!string.IsNullOrWhiteSpace(OutputLevelofDetail))
 				{
 					arguments += " ";

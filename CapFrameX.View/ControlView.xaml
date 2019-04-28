@@ -32,8 +32,8 @@
 	<Grid>
 		<Border Visibility="{Binding HasValidSource, Converter={StaticResource FalseToVisibleConverter}}" Margin="0 10 5 0" BorderBrush="#e6e6e6" BorderThickness="1" Background="#F5F5F5">
 			<TextBlock TextWrapping="Wrap" Width="220" Margin="10 0 10 0" HorizontalAlignment="Center" VerticalAlignment="Center" Style="{StaticResource MaterialDesignHeadlineTextBlock}">
-			No source defined. Maybe an error occurred. Go to settings and select a folder.
-		</TextBlock>
+				No source defined. Maybe an error occurred. Go to settings and select a folder.
+			</TextBlock>
 		</Border>
 		<StackPanel Visibility="{Binding HasValidSource, Converter={StaticResource FalseToCollapsedConverter}}">
 			<TextBox Margin="5 10 5 0" Background="#e6e6e6" Name="RecordSearchBox" materialDesign:HintAssist.Hint="Search" />
@@ -152,15 +152,32 @@
 					<RowDefinition Height="Auto"/>
 					<RowDefinition Height="Auto"/>
 				</Grid.RowDefinitions>
-				<TextBox wpf:HintAssist.Hint="Custom CPU description" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
-                 Margin="5 6 5 0" FontSize="14" Grid.Row="0" Text="{Binding CustomCpuDescription}"/>
-				<TextBox wpf:HintAssist.Hint="Custom GPU description" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
-                 Margin="5 6 5 0" FontSize="14" Grid.Row="1" Text="{Binding CustomGpuDescription}"/>
-				<TextBox wpf:HintAssist.Hint="Custom comment" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
-                 Margin="5 6 5 0" FontSize="14" Grid.Row="2" Text="{Binding CustomComment}"/>
-
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="1*"/>
+					<ColumnDefinition Width="Auto"/>
+				</Grid.ColumnDefinitions>
+				<TextBox Grid.Row="0" Grid.Column="0" wpf:HintAssist.Hint="Custom CPU description" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
+							Margin="5 6 5 0" FontSize="14" Text="{Binding CustomCpuDescription}" HorizontalAlignment="Stretch"/>
+				<Button Grid.Row="0" Grid.Column="1" Margin="5 6 5 0" Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}"
+							VerticalAlignment="Bottom" HorizontalAlignment="Right"
+							Width="20" Height="20"
+							ToolTip="Add CPU info"
+							Command="{Binding AddCpuInfoCommand}">
+					<materialDesign:PackIcon Kind="AddBox" Width="15" Height="15"/>
+				</Button>
+				<TextBox Grid.Row="1" Grid.Column="0" wpf:HintAssist.Hint="Custom GPU description" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
+							Margin="5 6 5 0" FontSize="14" Text="{Binding CustomGpuDescription}"/>
+				<Button Grid.Row="1" Grid.Column="1" Margin="5 6 5 0" Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}"
+							VerticalAlignment="Bottom" HorizontalAlignment="Right"
+							Width="20" Height="20"
+							ToolTip="Add GPU info"
+							Command="{Binding AddGpuInfoCommand}">
+					<materialDesign:PackIcon Kind="AddBox" Width="15" Height="15"/>
+				</Button>
+				<TextBox Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" wpf:HintAssist.Hint="Custom comment" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
+						 Margin="5 6 5 0" FontSize="14" Text="{Binding CustomComment}"/>
 				<StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Grid.Row="3"
-                    Margin="0 16 0 5">
+							Grid.Column="0" Grid.ColumnSpan="2" Margin="0 16 0 5">
 					<Button IsDefault="True" Style="{DynamicResource MaterialDesignFlatButton}"
                     Command="{Binding AcceptEditingDialogCommand}">
 						SAVE

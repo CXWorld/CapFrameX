@@ -14,6 +14,7 @@ using Prism.Commands;
 using CapFrameX.Contracts.Configuration;
 using System.Threading.Tasks;
 using System.Windows;
+using CapFrameX.PresentMonInterface;
 
 namespace CapFrameX.ViewModel
 {
@@ -79,7 +80,6 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-
 		public ObservableCollection<OcatRecordInfo> RecordInfoList { get; }
 			= new ObservableCollection<OcatRecordInfo>();
 
@@ -93,8 +93,12 @@ namespace CapFrameX.ViewModel
 
 		public ICommand CancelEditingDialogCommand { get; }
 
-		public ControlViewModel(IRecordDirectoryObserver recordObserver, 
-								IEventAggregator eventAggregator, 
+		public ICommand AddCpuInfoCommand { get; }
+
+		public ICommand AddGpuInfoCommand { get; }
+
+		public ControlViewModel(IRecordDirectoryObserver recordObserver,
+								IEventAggregator eventAggregator,
 								IAppConfiguration appConfiguration)
 		{
 			_recordObserver = recordObserver;
@@ -107,6 +111,8 @@ namespace CapFrameX.ViewModel
 			DeleteRecordFileCommand = new DelegateCommand(OnDeleteRecordFile);
 			AcceptEditingDialogCommand = new DelegateCommand(OnAcceptEditingDialog);
 			CancelEditingDialogCommand = new DelegateCommand(OnCancelEditingDialog);
+			AddCpuInfoCommand = new DelegateCommand(OnAddCpuInfo);
+			AddGpuInfoCommand = new DelegateCommand(OnAddGpuInfo);
 
 			HasValidSource = recordObserver.HasValidSource;
 
@@ -170,6 +176,9 @@ namespace CapFrameX.ViewModel
 
 		private void OnCancelEditingDialog()
 		{
+			if (SelectedRecordInfo == null)
+				return;
+
 			// Undo
 			var session = RecordManager.LoadData(SelectedRecordInfo.FullPath);
 
@@ -194,7 +203,7 @@ namespace CapFrameX.ViewModel
 
 			var adjustedCustomCpuDescription = CustomCpuDescription.Replace(",", "").Replace(";", "");
 			var adjustedCustomGpuDescription = CustomGpuDescription.Replace(",", "").Replace(";", "");
-			var adjustedCustomComment = CustomComment.Replace(",", "").Replace(";", "");			
+			var adjustedCustomComment = CustomComment.Replace(",", "").Replace(";", "");
 
 			RecordManager.UpdateCustomData(_selectedRecordInfo,
 				adjustedCustomCpuDescription, adjustedCustomGpuDescription, adjustedCustomComment);
@@ -234,6 +243,16 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
+		private void OnAddCpuInfo()
+		{
+			CustomCpuDescription = HardwareInfo.GetProcessorName();
+		}
+
+		private void OnAddGpuInfo()
+		{
+			CustomGpuDescription = HardwareInfo.GetGraphicCardName();
+		}
+
 		private void AddToRecordInfoList(FileInfo fileInfo)
 		{
 			var recordInfo = OcatRecordInfo.Create(fileInfo);
@@ -250,16 +269,7 @@ namespace CapFrameX.ViewModel
 
 		private void OnRecordDeleted(FileInfo fileInfo)
 		{
-			var recordInfo = OcatRecordInfo.Create(fileInfo);
-			if (recordInfo != null)
-			{
-				var match = RecordInfoList.FirstOrDefault(info => info.FullPath == fileInfo.FullName);
-
-				if (match != null)
-				{
-					RecordInfoList.Remove(match);
-				}
-			}
+			ReloadRecordList();
 		}
 
 		private void ReloadRecordList()

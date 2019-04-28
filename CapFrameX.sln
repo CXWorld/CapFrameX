@@ -31,6 +31,8 @@ Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "CapFrameXBootstrapper", "Ca
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.PresentMonInterface", "CapFrameX.PresentMonInterface\CapFrameX.PresentMonInterface.csproj", "{ADFBAECE-B74F-4A80-87D1-84BC990527B0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.Overlay", "CapFrameX.Overlay\CapFrameX.Overlay.csproj", "{624777C2-6AF6-46D5-A019-1285F699B8A7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -197,10 +199,22 @@ Global
 		{ADFBAECE-B74F-4A80-87D1-84BC990527B0}.Debug|x86.Build.0 = Debug|Any CPU
 		{ADFBAECE-B74F-4A80-87D1-84BC990527B0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{ADFBAECE-B74F-4A80-87D1-84BC990527B0}.Release|Any CPU.Build.0 = Release|Any CPU
-		{ADFBAECE-B74F-4A80-87D1-84BC990527B0}.Release|x64.ActiveCfg = Release|Any CPU
-		{ADFBAECE-B74F-4A80-87D1-84BC990527B0}.Release|x64.Build.0 = Release|Any CPU
+		{ADFBAECE-B74F-4A80-87D1-84BC990527B0}.Release|x64.ActiveCfg = Release|x64
+		{ADFBAECE-B74F-4A80-87D1-84BC990527B0}.Release|x64.Build.0 = Release|x64
 		{ADFBAECE-B74F-4A80-87D1-84BC990527B0}.Release|x86.ActiveCfg = Release|Any CPU
 		{ADFBAECE-B74F-4A80-87D1-84BC990527B0}.Release|x86.Build.0 = Release|Any CPU
+		{624777C2-6AF6-46D5-A019-1285F699B8A7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{624777C2-6AF6-46D5-A019-1285F699B8A7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{624777C2-6AF6-46D5-A019-1285F699B8A7}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{624777C2-6AF6-46D5-A019-1285F699B8A7}.Debug|x64.Build.0 = Debug|Any CPU
+		{624777C2-6AF6-46D5-A019-1285F699B8A7}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{624777C2-6AF6-46D5-A019-1285F699B8A7}.Debug|x86.Build.0 = Debug|Any CPU
+		{624777C2-6AF6-46D5-A019-1285F699B8A7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{624777C2-6AF6-46D5-A019-1285F699B8A7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{624777C2-6AF6-46D5-A019-1285F699B8A7}.Release|x64.ActiveCfg = Release|Any CPU
+		{624777C2-6AF6-46D5-A019-1285F699B8A7}.Release|x64.Build.0 = Release|Any CPU
+		{624777C2-6AF6-46D5-A019-1285F699B8A7}.Release|x86.ActiveCfg = Release|Any CPU
+		{624777C2-6AF6-46D5-A019-1285F699B8A7}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

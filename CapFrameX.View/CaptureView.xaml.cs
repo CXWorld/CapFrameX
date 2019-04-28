@@ -1,4 +1,5 @@
-﻿using CapFrameX.PresentMonInterface;
+﻿using CapFrameX.Configuration;
+using CapFrameX.PresentMonInterface;
 using CapFrameX.ViewModel;
 using System.ComponentModel;
 using System.Windows;
@@ -18,13 +19,8 @@ namespace CapFrameX.View
 			// Design time!
 			if (DesignerProperties.GetIsInDesignMode(this))
 			{
-				DataContext = new CaptureViewModel(new PresentMonCaptureService());
+				DataContext = new CaptureViewModel(new CapFrameXConfiguration(), new PresentMonCaptureService());
 			}
-		}
-
-		private void Flipper_IsFlippedChanged(object sender, RoutedPropertyChangedEventArgs<bool> e)
-		{
-			(DataContext as CaptureViewModel).OnCaptureModeChanged(e.NewValue);
 		}
 	}
 }

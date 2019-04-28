@@ -1,4 +1,5 @@
 ﻿<UserControl x:Class="CapFrameX.View.CaptureView"
+			 x:Name="CaptureViewControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -28,44 +29,66 @@
 	<Grid>
 		<Grid.RowDefinitions>
 			<RowDefinition Height="1*"></RowDefinition>
+			<RowDefinition Height="3*"></RowDefinition>
 			<RowDefinition Height="1*"></RowDefinition>
-			<RowDefinition Height="Auto"></RowDefinition>
+			<RowDefinition Height="1*"></RowDefinition>
 		</Grid.RowDefinitions>
 		<Grid.ColumnDefinitions>
 			<ColumnDefinition Width="1*"></ColumnDefinition>
-			<ColumnDefinition Width="1*"></ColumnDefinition>
+			<ColumnDefinition Width="2*"></ColumnDefinition>
+			<ColumnDefinition Width="100"></ColumnDefinition>
+			<ColumnDefinition Width="2*"></ColumnDefinition>
 			<ColumnDefinition Width="1*"></ColumnDefinition>
 		</Grid.ColumnDefinitions>
-		<materialDesign:Flipper Grid.Row="1" HorizontalAlignment="Center" Style="{StaticResource MaterialDesignCardFlipper}" 
-							    IsFlippedChanged="Flipper_IsFlippedChanged">
-			<materialDesign:Flipper.FrontContent>
-				<Button Style="{StaticResource MaterialDesignFlatButton}"
-						Command="{x:Static materialDesign:Flipper.FlipCommand}"
-						Margin="8"
-						Width="184">
-					Turn it on!
+		<StackPanel Grid.Row="1" Grid.Column="1" Orientation="Vertical" Width="240">
+			<StackPanel Orientation="Horizontal">
+				<TextBlock Style="{StaticResource MaterialDesignTitleTextBlock}">Process capture list</TextBlock>
+				<Button Padding="0 0 0 4" Width="64" Height="24"  Foreground="Black" BorderThickness="0" Background="Transparent" VerticalAlignment="Top"
+						HorizontalAlignment="Center" Command="{Binding ResetCaptureProcessCommand}" ToolTip="Reset selected process"
+						IsEnabled="{Binding IsAddToIgnoreListButtonActive}">
+					<materialDesign:PackIcon Kind="FilterRemove" Width="22" Height="22"/>
 				</Button>
-			</materialDesign:Flipper.FrontContent>
-			<materialDesign:Flipper.BackContent>
-				<Button Style="{StaticResource MaterialDesignFlatButton}"
-						Command="{x:Static materialDesign:Flipper.FlipCommand}"
-						Margin="8"
-						Width="184">
-					Turn capture mode off
-				</Button>
-			</materialDesign:Flipper.BackContent>
-		</materialDesign:Flipper>
-		<StackPanel Grid.Row="0" Grid.Column="0" Orientation="Vertical">
-			<TextBlock Style="{StaticResource MaterialDesignTitleTextBlock}">Process capture list</TextBlock>
-			<ListBox IsSynchronizedWithCurrentItem="False" ItemsSource="{Binding ProcessesToCapture}" SelectedItem="{Binding SelectedProcessToCapture}"
-					 ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True">
-			</ListBox>
+			</StackPanel>
+			<ListView IsSynchronizedWithCurrentItem="False" ItemsSource="{Binding ProcessesToCapture}" SelectedItem="{Binding SelectedProcessToCapture}"
+					  ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True" Height="280" Width="200" HorizontalAlignment="Left"
+					  IsEnabled="{Binding IsAddToIgnoreListButtonActive}">
+			</ListView>
 		</StackPanel>
-		<StackPanel Grid.Row="0" Grid.Column="1" Orientation="Vertical">
+
+		<Button Width="64" Height="64" Foreground="Black" BorderThickness="0" Background="Transparent" Grid.Row="1" Grid.Column="2" VerticalAlignment="Center"
+				HorizontalAlignment="Center" Command="{Binding AddToIgonreListCommand}" IsEnabled="{Binding IsAddToIgnoreListButtonActive}">
+			<Button.Triggers>
+				<EventTrigger RoutedEvent="MouseEnter">
+					<BeginStoryboard>
+						<Storyboard>
+							<ColorAnimation Storyboard.TargetProperty="(Button.Background).(SolidColorBrush.Color)" To="#e6e6e6"/>
+						</Storyboard>
+					</BeginStoryboard>
+				</EventTrigger>
+				<EventTrigger RoutedEvent="MouseLeave">
+					<BeginStoryboard>
+						<Storyboard>
+							<ColorAnimation Storyboard.TargetProperty="(Button.Background).(SolidColorBrush.Color)" To="Transparent"/>
+						</Storyboard>
+					</BeginStoryboard>
+				</EventTrigger>
+			</Button.Triggers>
+			<materialDesign:PackIcon Kind="ArrowRight" Width="32" Height="32"/>
+		</Button>
+		<StackPanel Grid.Row="1" Grid.Column="3" Margin="0 0 0 0" Orientation="Vertical" Width="200">
 			<TextBlock Style="{StaticResource MaterialDesignTitleTextBlock}">Process ignore list</TextBlock>
-			<ListBox IsSynchronizedWithCurrentItem="False" ItemsSource="{Binding ProcessesToIgnore}" SelectedItem="{Binding SelectedProcessToIgnore}"
-					 ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True">
-			</ListBox>
+			<ListView IsSynchronizedWithCurrentItem="False" ItemsSource="{Binding ProcessesToIgnore}" SelectedItem="{Binding SelectedProcessToIgnore}"
+					  ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True" Height="280"
+					  Tag="{Binding ElementName=CaptureViewControl, Path=DataContext}">
+				<ListView.ContextMenu>
+					<ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
+						<MenuItem Header="Remove from ignore list" Command="{Binding RemoveFromIgnoreListCommand}"/>
+					</ContextMenu>
+				</ListView.ContextMenu>
+			</ListView>
 		</StackPanel>
+
+		<TextBlock Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="3" Text="{Binding CaptureStateInfo}" FontSize="14" Style="{StaticResource MaterialDesignCaptionTextBlock}" 
+				   VerticalAlignment="Bottom" HorizontalAlignment="Center" />
 	</Grid>
 </UserControl>

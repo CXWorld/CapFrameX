@@ -1,14 +1,21 @@
 ﻿using CapFrameX.Contracts.PresentMonInterface;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Collections.Generic;
 
 namespace CapFrameX.PresentMonInterface
 {
 	public static class CaptureServiceConfiguration
 	{
-		private static readonly string _ignoreListFileName = Path.Combine("PresentMon", "ProcessIgnoreList.txt");
+		private static readonly string _ignoreListFileName 
+			= Path.Combine("PresentMon", "ProcessIgnoreList.txt");
+
+		private static readonly string _ignoreLiveListFilename =
+			Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), 
+				@"CapFrameX\Ressources\ProcessIgnoreList.txt");
+
+		private static string[] _processes;
 
 		public static IServiceStartInfo GetServiceStartInfo(string arguments)
 		{
@@ -18,7 +25,7 @@ namespace CapFrameX.PresentMonInterface
 				Arguments = arguments,
 				CreateNoWindow = true,
 				RunWithAdminRights = true,
-				RedirectStandardOutput = true,
+				RedirectStandardOutput = false,
 				UseShellExecute = false
 			};
 
@@ -27,25 +34,62 @@ namespace CapFrameX.PresentMonInterface
 
 		public static HashSet<string> GetProcessIgnoreList()
 		{
-			string[] processes = File.ReadAllLines(_ignoreListFileName);
-			return new HashSet<string>(processes);
+			var ignoreList = new HashSet<string>();
+
+			try
+			{
+				if (!File.Exists(_ignoreLiveListFilename))
+				{
+					Directory.CreateDirectory(
+						Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), 
+							@"CapFrameX\Ressources"));
+					File.Copy(_ignoreListFileName, _ignoreLiveListFilename);
+				}
+
+				if (_processes == null || !_processes.Any())
+					_processes = File.ReadAllLines(_ignoreLiveListFilename);
+
+				ignoreList = new HashSet<string>(_processes);
+			}
+			catch
+			{
+				return ignoreList;
+			}
+
+			return ignoreList;
 		}
 
 		public static void AddProcessToIgnoreList(string processName)
 		{
-			List<string> processes = File.ReadAllLines(_ignoreListFileName).ToList();
+			if (_processes == null || !_processes.Any())
+				_processes = File.ReadAllLines(_ignoreLiveListFilename);
+
+			List<string> processes = _processes.ToList();
 			processes.Add(processName);
 			var orderedList = processes.OrderBy(name => name);
+			_processes = orderedList.ToArray();
 
-			File.WriteAllLines(_ignoreListFileName, orderedList);
+			File.WriteAllLines(_ignoreLiveListFilename, orderedList);
 		}
 
 		public static void RemoveProcessFromIgnoreList(string processName)
 		{
-			List<string> processes = File.ReadAllLines(_ignoreListFileName).ToList();
-			processes.Remove(processName);
+			if (_processes == null || !_processes.Any())
+				_processes = File.ReadAllLines(_ignoreLiveListFilename);
 
-			File.WriteAllLines(_ignoreListFileName, processes);
+			List<string> processes = _processes.ToList();
+			if(processes.Contains(processName))
+				processes.Remove(processName);
+			_processes = processes.ToArray();
+
+			File.WriteAllLines(_ignoreLiveListFilename, processes);
+		}
+
+		public static string GetCaptureFilename(string processName)
+		{
+			DateTime now = DateTime.Now;
+			string dateTimeFormat = $"{now.Year}-{now.Month.ToString("d2")}-{now.Day.ToString("d2")}T{now.Hour}{now.Minute}{now.Second}";
+			return $"CapFrameX-{processName}.exe-{dateTimeFormat}.csv";
 		}
 	}
 }
