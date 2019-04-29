@@ -6,6 +6,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 			 xmlns:mvvm="clr-namespace:CapFrameX.MVVM.Converter;assembly=CapFrameX.MVVM"
 			 xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+			 xmlns:wpf="clr-namespace:MaterialDesignThemes.Wpf;assembly=MaterialDesignThemes.Wpf"
 			 xmlns:prism="http://prismlibrary.com/"	
              xmlns:local="clr-namespace:CapFrameX.View"
              mc:Ignorable="d" 
@@ -31,7 +32,6 @@
 			<RowDefinition Height="1*"></RowDefinition>
 			<RowDefinition Height="3*"></RowDefinition>
 			<RowDefinition Height="1*"></RowDefinition>
-			<RowDefinition Height="1*"></RowDefinition>
 		</Grid.RowDefinitions>
 		<Grid.ColumnDefinitions>
 			<ColumnDefinition Width="1*"></ColumnDefinition>
@@ -40,7 +40,9 @@
 			<ColumnDefinition Width="2*"></ColumnDefinition>
 			<ColumnDefinition Width="1*"></ColumnDefinition>
 		</Grid.ColumnDefinitions>
-		<StackPanel Grid.Row="1" Grid.Column="1" Orientation="Vertical" Width="240">
+		<TextBlock Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3" Margin="0 30 0 0" Text="{Binding CaptureStateInfo}" FontSize="14" Style="{StaticResource MaterialDesignCaptionTextBlock}" 
+				   VerticalAlignment="Center" HorizontalAlignment="Center" />
+		<StackPanel Margin="0 50 0 0" Grid.Row="1" Grid.Column="1" Orientation="Vertical" Width="240">
 			<StackPanel Orientation="Horizontal">
 				<TextBlock Style="{StaticResource MaterialDesignTitleTextBlock}">Process capture list</TextBlock>
 				<Button Padding="0 0 0 4" Width="64" Height="24"  Foreground="Black" BorderThickness="0" Background="Transparent" VerticalAlignment="Top"
@@ -75,7 +77,8 @@
 			</Button.Triggers>
 			<materialDesign:PackIcon Kind="ArrowRight" Width="32" Height="32"/>
 		</Button>
-		<StackPanel Grid.Row="1" Grid.Column="3" Margin="0 0 0 0" Orientation="Vertical" Width="200">
+
+		<StackPanel Margin="0 50 0 0" Grid.Row="1" Grid.Column="3" Orientation="Vertical" Width="200">
 			<TextBlock Style="{StaticResource MaterialDesignTitleTextBlock}">Process ignore list</TextBlock>
 			<ListView IsSynchronizedWithCurrentItem="False" ItemsSource="{Binding ProcessesToIgnore}" SelectedItem="{Binding SelectedProcessToIgnore}"
 					  ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True" Height="280"
@@ -88,7 +91,14 @@
 			</ListView>
 		</StackPanel>
 
-		<TextBlock Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="3" Text="{Binding CaptureStateInfo}" FontSize="14" Style="{StaticResource MaterialDesignCaptionTextBlock}" 
-				   VerticalAlignment="Bottom" HorizontalAlignment="Center" />
+		<Grid x:Name="HotkeyTextBox" Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="3" HorizontalAlignment="Stretch" VerticalAlignment="Center">
+			<TextBox Width="140" wpf:HintAssist.Hint="Capture hotkey" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
+					 Margin="0" FontSize="14" Text="{Binding CaptureHotkey, ElementName = CaptureViewControl, Mode=OneWay, TargetNullValue=&lt; not set &gt;}" HorizontalAlignment="Left"
+					 IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False" PreviewKeyDown="HotkeyTextBox_PreviewKeyDown"/>
+			<TextBox Width="140" wpf:HintAssist.Hint="Capture time in seconds" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
+							Margin="0" FontSize="14" Text="{Binding CaptureTimeString}" HorizontalAlignment="Center"/>
+			<TextBox Width="140" wpf:HintAssist.Hint="Start delay in seconds" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
+							Margin="0" FontSize="14" Text="{Binding CaptureStartDelayString}" HorizontalAlignment="Right"/>
+		</Grid>
 	</Grid>
 </UserControl>

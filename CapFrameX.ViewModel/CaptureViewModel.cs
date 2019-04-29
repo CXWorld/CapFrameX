@@ -29,6 +29,10 @@ namespace CapFrameX.ViewModel
 		private bool _isCapturing;
 		private bool _isCaptureModeActive = true;
 		private string _captureStateInfo = string.Empty;
+		private string _captureTimeString = "0";
+		private string _captureStartDelayString = "0";
+		private string _captureHotkeyString = "F12";
+		private IKeyboardMouseEvents _globalHookEvent;
 
 		public string SelectedProcessToCapture
 		{
@@ -72,6 +76,40 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
+		public string CaptureTimeString
+		{
+			get { return _captureTimeString; }
+			set
+			{
+				_captureTimeString = value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public string CaptureStartDelayString
+		{
+			get { return _captureStartDelayString; }
+			set
+			{
+				_captureStartDelayString = value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public string CaptureHotkeyString
+		{
+			get { return _captureHotkeyString; }
+			set
+			{
+				_captureHotkeyString = value;
+				OnSelectedProcessToCaptureChanged();
+				UpdateGlobalHookEvent();
+				RaisePropertyChanged();
+			}
+		}
+
+		public IAppConfiguration AppConfiguration => _appConfiguration;
+
 		public ObservableCollection<string> ProcessesToCapture { get; }
 			= new ObservableCollection<string>();
 
@@ -93,11 +131,11 @@ namespace CapFrameX.ViewModel
 			RemoveFromIgnoreListCommand = new DelegateCommand(OnRemoveFromIgnoreList);
 			ResetCaptureProcessCommand = new DelegateCommand(OnResetCaptureProcess);
 
-			CaptureStateInfo = "Capturing inactive... select process and press F12 to start.";
+			CaptureStateInfo = $"Capturing inactive... select process and press {CaptureHotkeyString} to start.";
 
 			ProcessesToIgnore.AddRange(CaptureServiceConfiguration.GetProcessIgnoreList());
 			_disposableSequence = GetUpHeartBeat();
-			SubscribeToGlobalHook();
+			SubscribeToGlobalHookEvent();
 		}
 
 		public bool IsNavigationTarget(NavigationContext navigationContext)
@@ -116,19 +154,35 @@ namespace CapFrameX.ViewModel
 			_disposableSequence?.Dispose();
 			_disposableSequence = GetUpHeartBeat();
 			_isCaptureModeActive = true;
-			SubscribeToGlobalHook();
 		}
 
-		private void SubscribeToGlobalHook()
+		private void SubscribeToGlobalHookEvent()
 		{
-			Hook.GlobalEvents().OnCombination(new Dictionary<Combination, Action>
+			SetGlobalHookEventCaptureHotkey();
+		}
+
+		private void UpdateGlobalHookEvent()
+		{
+			if (_globalHookEvent != null)
 			{
-				{Combination.FromString("F12"), () =>
+				_globalHookEvent.Dispose();
+				SetGlobalHookEventCaptureHotkey();
+			}
+		}
+
+		private void SetGlobalHookEventCaptureHotkey()
+		{
+			var onCombinationDictionary = new Dictionary<Combination, Action>
+			{
+				{Combination.FromString(CaptureHotkeyString), () =>
 				{
 					if (_isCaptureModeActive)
 						SetCaptureMode();
 				}}
-			});
+			};
+
+			_globalHookEvent = Hook.GlobalEvents();
+			_globalHookEvent.OnCombination(onCombinationDictionary);
 		}
 
 		private void SetCaptureMode()
@@ -147,7 +201,7 @@ namespace CapFrameX.ViewModel
 
 				_disposableSequence?.Dispose();
 
-				CaptureStateInfo = "Capturing startet... press F12 to stop.";
+				CaptureStateInfo = $"Capturing started... press {CaptureHotkeyString} to stop.";
 				var filename = CaptureServiceConfiguration.GetCaptureFilename(SelectedProcessToCapture);
 
 				string observedDirectory = RecordDirectoryObserver.GetInitialObservedDirectory(_appConfiguration.ObservedDirectory);
@@ -230,11 +284,11 @@ namespace CapFrameX.ViewModel
 		{
 			if (string.IsNullOrWhiteSpace(SelectedProcessToCapture))
 			{
-				CaptureStateInfo = "Capturing inactive... select process and press F12 to start.";
+				CaptureStateInfo = $"Capturing inactive... select process and press {CaptureHotkeyString} to start.";
 				return;
 			}
 
-			CaptureStateInfo = $"{SelectedProcessToCapture} selected, press F12 to start capture.";
+			CaptureStateInfo = $"{SelectedProcessToCapture} selected, press {CaptureHotkeyString} to start capture.";
 		}
 
 		private void OnSelectedProcessToIgnoreChanged()

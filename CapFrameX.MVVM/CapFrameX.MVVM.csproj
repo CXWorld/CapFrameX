@@ -101,6 +101,7 @@
     <Compile Include="Dialogs\EditingDialog.xaml.cs">
       <DependentUpon>EditingDialog.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Hotkey.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SelectionChangedBehaviour.cs" />
     <Compile Include="SliderValueChangedBehaviour.cs" />
