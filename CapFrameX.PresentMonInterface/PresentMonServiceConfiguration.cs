@@ -55,11 +55,11 @@ namespace CapFrameX.PresentMonInterface
 				//	arguments += " ";
 				//	arguments += CaptureStartHotkey;
 				//}
-				if (!string.IsNullOrWhiteSpace(OutputLevelofDetail))
-				{
-					arguments += " ";
-					arguments += "-" + OutputLevelofDetail;
-				}
+				//if (!string.IsNullOrWhiteSpace(OutputLevelofDetail))
+				//{
+				//	arguments += " ";
+				//	arguments += "-" + OutputLevelofDetail;
+				//}
 				if (CaptureTimeSeconds > 0)
 				{
 					arguments += " ";
@@ -101,11 +101,11 @@ namespace CapFrameX.PresentMonInterface
 				//	arguments += " ";
 				//	arguments += CaptureStartHotkey;
 				//}
-				if (!string.IsNullOrWhiteSpace(OutputLevelofDetail))
-				{
-					arguments += " ";
-					arguments += "-" + OutputLevelofDetail;
-				}
+				//if (!string.IsNullOrWhiteSpace(OutputLevelofDetail))
+				//{
+				//	arguments += " ";
+				//	arguments += "-" + OutputLevelofDetail;
+				//}
 				if (CaptureTimeSeconds > 0)
 				{
 					arguments += " ";

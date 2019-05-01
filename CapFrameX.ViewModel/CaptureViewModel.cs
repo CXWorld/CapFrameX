@@ -13,6 +13,8 @@ using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading;
+using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Input;
 
 namespace CapFrameX.ViewModel
@@ -102,7 +104,7 @@ namespace CapFrameX.ViewModel
 			set
 			{
 				_captureHotkeyString = value;
-				OnSelectedProcessToCaptureChanged();
+				UpdateCaptureStateInfo();
 				UpdateGlobalHookEvent();
 				RaisePropertyChanged();
 			}
@@ -215,15 +217,37 @@ namespace CapFrameX.ViewModel
 				_captureService.StartCaptureService(
 					CaptureServiceConfiguration.GetServiceStartInfo
 					(serviceConfig.ConfigParameterToArguments()));
+
+				var context = TaskScheduler.FromCurrentSynchronizationContext();
+
+				if (Convert.ToInt32(CaptureTimeString) > 0)
+				{
+					Task.Run(async () =>
+					{
+						await PutTaskDelay().ContinueWith( _ => StopCaptureService(),
+							CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, context);
+					});
+				}
 			}
 			else
 			{
-				_isCapturing = !_isCapturing;
-				System.Media.SystemSounds.Beep.Play();
-				_captureService.StopCaptureService();
-				IsAddToIgnoreListButtonActive = true;
-				_disposableSequence = GetUpHeartBeat();
+				StopCaptureService();
 			}
+		}
+
+		private async Task PutTaskDelay()
+		{
+			await Task.Delay(TimeSpan.FromSeconds(Convert.ToInt32(CaptureTimeString)));
+		}
+
+		private void StopCaptureService()
+		{
+			_isCapturing = !_isCapturing;
+			System.Media.SystemSounds.Beep.Play();
+			_captureService.StopCaptureService();
+			UpdateCaptureStateInfo();
+			IsAddToIgnoreListButtonActive = true;
+			_disposableSequence = GetUpHeartBeat();
 		}
 
 		private void OnAddToIgonreList()
@@ -281,6 +305,11 @@ namespace CapFrameX.ViewModel
 		}
 
 		private void OnSelectedProcessToCaptureChanged()
+		{
+			UpdateCaptureStateInfo();
+		}
+
+		private void UpdateCaptureStateInfo()
 		{
 			if (string.IsNullOrWhiteSpace(SelectedProcessToCapture))
 			{

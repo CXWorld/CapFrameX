@@ -253,19 +253,24 @@ namespace CapFrameX.ViewModel
 			CustomGpuDescription = HardwareInfo.GetGraphicCardName();
 		}
 
-		private void AddToRecordInfoList(FileInfo fileInfo)
+		private void AddToRecordInfoList(FileInfo fileInfo, bool insertAtFirst = false)
 		{
 			var recordInfo = OcatRecordInfo.Create(fileInfo);
 			if (recordInfo != null)
 			{
 				Application.Current.Dispatcher.BeginInvoke(new Action(() =>
 				{
-					RecordInfoList.Add(recordInfo);
+					if (insertAtFirst)
+					{
+						RecordInfoList.Insert(0, recordInfo);
+					}
+					else
+						RecordInfoList.Add(recordInfo);
 				}));
 			}
 		}
 
-		private void OnRecordCreated(FileInfo fileInfo) => AddToRecordInfoList(fileInfo);
+		private void OnRecordCreated(FileInfo fileInfo) => AddToRecordInfoList(fileInfo, true);
 
 		private void OnRecordDeleted(FileInfo fileInfo)
 		{

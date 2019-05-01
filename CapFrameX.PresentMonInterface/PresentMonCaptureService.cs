@@ -31,24 +31,24 @@ namespace CapFrameX.PresentMonInterface
 					FileName = startinfo.FileName,
 					Arguments = startinfo.Arguments,
 					UseShellExecute = startinfo.UseShellExecute,
-					RedirectStandardOutput = true,
-					RedirectStandardError = true,
+					RedirectStandardOutput = false,
+					RedirectStandardError = false,
 					CreateNoWindow = startinfo.CreateNoWindow,
 					Verb = "runas",
 				}
 			};
 
-			Task.Factory.StartNew(() =>
-			{
-				process.EnableRaisingEvents = true;
+			//Task.Factory.StartNew(() =>
+			//{
+				//process.EnableRaisingEvents = true;
 				process.Start();
-				_outputStream.OnNext("Started process...");
-				process.ErrorDataReceived += (sender, e) => _outputStream.OnNext(e.Data);
-				process.OutputDataReceived += (sender, e) => _outputStream.OnNext(e.Data);
-				process.BeginOutputReadLine();
-				process.BeginErrorReadLine();
-				process.WaitForExit();
-			});
+				//_outputStream.OnNext("Started process...");
+				//process.ErrorDataReceived += (sender, e) => _outputStream.OnNext(e.Data);
+				//process.OutputDataReceived += (sender, e) => _outputStream.OnNext(e.Data);
+				//process.BeginOutputReadLine();
+				//process.BeginErrorReadLine();
+				//process.WaitForExit();
+			//});
 
 			return true;
 		}
@@ -75,9 +75,11 @@ namespace CapFrameX.PresentMonInterface
 		{
 			try
 			{
-				Process[] proc = Process.GetProcessesByName("PresentMon64-1.3.1");
+				var proc = Process.GetProcessesByName("PresentMon64-1.3.1");
 				if (proc.Any())
+				{
 					proc[0].Kill();
+				}
 			}
 			catch { }
 		}
