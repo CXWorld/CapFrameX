@@ -19,310 +19,319 @@ using System.Windows.Input;
 
 namespace CapFrameX.ViewModel
 {
-	public class CaptureViewModel : BindableBase, INavigationAware
-	{
-		private readonly IAppConfiguration _appConfiguration;
-		private readonly ICaptureService _captureService;
+    public class CaptureViewModel : BindableBase, INavigationAware
+    {
+        private readonly IAppConfiguration _appConfiguration;
+        private readonly ICaptureService _captureService;
 
-		private IDisposable _disposableSequence;
-		private string _selectedProcessToCapture;
-		private string _selectedProcessToIgnore;
-		private bool _isAddToIgnoreListButtonActive = true;
-		private bool _isCapturing;
-		private bool _isCaptureModeActive = true;
-		private string _captureStateInfo = string.Empty;
-		private string _captureTimeString = "0";
-		private string _captureStartDelayString = "0";
-		private string _captureHotkeyString = "F12";
-		private IKeyboardMouseEvents _globalHookEvent;
+        private IDisposable _disposableSequence;
+        private string _selectedProcessToCapture;
+        private string _selectedProcessToIgnore;
+        private bool _isAddToIgnoreListButtonActive = true;
+        private bool _isCapturing;
+        private bool _isCaptureModeActive = true;
+        private string _captureStateInfo = string.Empty;
+        private string _captureTimeString = "0";
+        private string _captureStartDelayString = "0";
+        private string _captureHotkeyString = "F12";
+        private IKeyboardMouseEvents _globalHookEvent;
 
-		public string SelectedProcessToCapture
-		{
-			get { return _selectedProcessToCapture; }
-			set
-			{
-				_selectedProcessToCapture = value;
-				RaisePropertyChanged();
-				OnSelectedProcessToCaptureChanged();
-			}
-		}
+        public string SelectedProcessToCapture
+        {
+            get { return _selectedProcessToCapture; }
+            set
+            {
+                _selectedProcessToCapture = value;
+                RaisePropertyChanged();
+                OnSelectedProcessToCaptureChanged();
+            }
+        }
 
-		public string SelectedProcessToIgnore
-		{
-			get { return _selectedProcessToIgnore; }
-			set
-			{
-				_selectedProcessToIgnore = value;
-				RaisePropertyChanged();
-				OnSelectedProcessToIgnoreChanged();
-			}
-		}
+        public string SelectedProcessToIgnore
+        {
+            get { return _selectedProcessToIgnore; }
+            set
+            {
+                _selectedProcessToIgnore = value;
+                RaisePropertyChanged();
+                OnSelectedProcessToIgnoreChanged();
+            }
+        }
 
-		public bool IsAddToIgnoreListButtonActive
-		{
-			get { return _isAddToIgnoreListButtonActive; }
-			set
-			{
-				_isAddToIgnoreListButtonActive = value;
-				RaisePropertyChanged();
-			}
-		}
+        public bool IsAddToIgnoreListButtonActive
+        {
+            get { return _isAddToIgnoreListButtonActive; }
+            set
+            {
+                _isAddToIgnoreListButtonActive = value;
+                RaisePropertyChanged();
+            }
+        }
 
-		public string CaptureStateInfo
-		{
-			get { return _captureStateInfo; }
-			set
-			{
-				_captureStateInfo = value;
-				RaisePropertyChanged();
-			}
-		}
+        public string CaptureStateInfo
+        {
+            get { return _captureStateInfo; }
+            set
+            {
+                _captureStateInfo = value;
+                RaisePropertyChanged();
+            }
+        }
 
-		public string CaptureTimeString
-		{
-			get { return _captureTimeString; }
-			set
-			{
-				_captureTimeString = value;
-				RaisePropertyChanged();
-			}
-		}
+        public string CaptureTimeString
+        {
+            get { return _captureTimeString; }
+            set
+            {
+                _captureTimeString = value;
+                RaisePropertyChanged();
+            }
+        }
 
-		public string CaptureStartDelayString
-		{
-			get { return _captureStartDelayString; }
-			set
-			{
-				_captureStartDelayString = value;
-				RaisePropertyChanged();
-			}
-		}
+        public string CaptureStartDelayString
+        {
+            get { return _captureStartDelayString; }
+            set
+            {
+                _captureStartDelayString = value;
+                RaisePropertyChanged();
+            }
+        }
 
-		public string CaptureHotkeyString
-		{
-			get { return _captureHotkeyString; }
-			set
-			{
-				_captureHotkeyString = value;
-				UpdateCaptureStateInfo();
-				UpdateGlobalHookEvent();
-				RaisePropertyChanged();
-			}
-		}
+        public string CaptureHotkeyString
+        {
+            get { return _captureHotkeyString; }
+            set
+            {
+                _captureHotkeyString = value;
+                UpdateCaptureStateInfo();
+                UpdateGlobalHookEvent();
+                RaisePropertyChanged();
+            }
+        }
 
-		public IAppConfiguration AppConfiguration => _appConfiguration;
+        public IAppConfiguration AppConfiguration => _appConfiguration;
 
-		public ObservableCollection<string> ProcessesToCapture { get; }
-			= new ObservableCollection<string>();
+        public ObservableCollection<string> ProcessesToCapture { get; }
+            = new ObservableCollection<string>();
 
-		public ObservableCollection<string> ProcessesToIgnore { get; }
-			= new ObservableCollection<string>();
+        public ObservableCollection<string> ProcessesToIgnore { get; }
+            = new ObservableCollection<string>();
 
-		public ICommand AddToIgonreListCommand { get; }
+        public ICommand AddToIgonreListCommand { get; }
 
-		public ICommand RemoveFromIgnoreListCommand { get; }
+        public ICommand RemoveFromIgnoreListCommand { get; }
 
-		public ICommand ResetCaptureProcessCommand { get; }
+        public ICommand ResetCaptureProcessCommand { get; }
 
-		public CaptureViewModel(IAppConfiguration appConfiguration, ICaptureService captureService)
-		{
-			_appConfiguration = appConfiguration;
-			_captureService = captureService;
+        public CaptureViewModel(IAppConfiguration appConfiguration, ICaptureService captureService)
+        {
+            _appConfiguration = appConfiguration;
+            _captureService = captureService;
 
-			AddToIgonreListCommand = new DelegateCommand(OnAddToIgonreList);
-			RemoveFromIgnoreListCommand = new DelegateCommand(OnRemoveFromIgnoreList);
-			ResetCaptureProcessCommand = new DelegateCommand(OnResetCaptureProcess);
+            AddToIgonreListCommand = new DelegateCommand(OnAddToIgonreList);
+            RemoveFromIgnoreListCommand = new DelegateCommand(OnRemoveFromIgnoreList);
+            ResetCaptureProcessCommand = new DelegateCommand(OnResetCaptureProcess);
 
-			CaptureStateInfo = $"Capturing inactive... select process and press {CaptureHotkeyString} to start.";
+            CaptureStateInfo = $"Capturing inactive... select process and press {CaptureHotkeyString} to start.";
 
-			ProcessesToIgnore.AddRange(CaptureServiceConfiguration.GetProcessIgnoreList());
-			_disposableSequence = GetUpHeartBeat();
-			SubscribeToGlobalHookEvent();
-		}
+            ProcessesToIgnore.AddRange(CaptureServiceConfiguration.GetProcessIgnoreList());
+            _disposableSequence = GetListUpdatHeartBeat();
+            SubscribeToGlobalHookEvent();
+        }
 
-		public bool IsNavigationTarget(NavigationContext navigationContext)
-		{
-			return true;
-		}
+        public bool IsNavigationTarget(NavigationContext navigationContext)
+        {
+            return true;
+        }
 
-		public void OnNavigatedFrom(NavigationContext navigationContext)
-		{
-			_disposableSequence?.Dispose();
-			_isCaptureModeActive = false;
-		}
+        public void OnNavigatedFrom(NavigationContext navigationContext)
+        {
+            _disposableSequence?.Dispose();
+            _isCaptureModeActive = false;
+        }
 
-		public void OnNavigatedTo(NavigationContext navigationContext)
-		{
-			_disposableSequence?.Dispose();
-			_disposableSequence = GetUpHeartBeat();
-			_isCaptureModeActive = true;
-		}
+        public void OnNavigatedTo(NavigationContext navigationContext)
+        {
+            _disposableSequence?.Dispose();
+            _disposableSequence = GetListUpdatHeartBeat();
+            _isCaptureModeActive = true;
+        }
 
-		private void SubscribeToGlobalHookEvent()
-		{
-			SetGlobalHookEventCaptureHotkey();
-		}
+        private void SubscribeToGlobalHookEvent()
+        {
+            SetGlobalHookEventCaptureHotkey();
+        }
 
-		private void UpdateGlobalHookEvent()
-		{
-			if (_globalHookEvent != null)
-			{
-				_globalHookEvent.Dispose();
-				SetGlobalHookEventCaptureHotkey();
-			}
-		}
+        private void UpdateGlobalHookEvent()
+        {
+            if (_globalHookEvent != null)
+            {
+                _globalHookEvent.Dispose();
+                SetGlobalHookEventCaptureHotkey();
+            }
+        }
 
-		private void SetGlobalHookEventCaptureHotkey()
-		{
-			var onCombinationDictionary = new Dictionary<Combination, Action>
-			{
-				{Combination.FromString(CaptureHotkeyString), () =>
-				{
-					if (_isCaptureModeActive)
-						SetCaptureMode();
-				}}
-			};
+        private void SetGlobalHookEventCaptureHotkey()
+        {
+            var onCombinationDictionary = new Dictionary<Combination, Action>
+            {
+                {Combination.FromString(CaptureHotkeyString), () =>
+                {
+                    if (_isCaptureModeActive)
+                        SetCaptureMode();
+                }}
+            };
 
-			_globalHookEvent = Hook.GlobalEvents();
-			_globalHookEvent.OnCombination(onCombinationDictionary);
-		}
+            _globalHookEvent = Hook.GlobalEvents();
+            _globalHookEvent.OnCombination(onCombinationDictionary);
+        }
 
-		private void SetCaptureMode()
-		{
-			if (!_isCapturing)
-			{
-				_isCapturing = !_isCapturing;
-				IsAddToIgnoreListButtonActive = false;
+        private void SetCaptureMode()
+        {
+            if (!_isCapturing)
+            {
+                _isCapturing = !_isCapturing;
+                IsAddToIgnoreListButtonActive = false;
 
-				if (string.IsNullOrWhiteSpace(SelectedProcessToCapture))
-				{
-					_isCapturing = !_isCapturing;
-					IsAddToIgnoreListButtonActive = true;
-					return;
-				}
+                if (string.IsNullOrWhiteSpace(SelectedProcessToCapture))
+                {
+                    _isCapturing = !_isCapturing;
+                    IsAddToIgnoreListButtonActive = true;
+                    return;
+                }
 
-				_disposableSequence?.Dispose();
+                _disposableSequence?.Dispose();
 
-				CaptureStateInfo = $"Capturing started... press {CaptureHotkeyString} to stop.";
-				var filename = CaptureServiceConfiguration.GetCaptureFilename(SelectedProcessToCapture);
+                CaptureStateInfo = $"Capturing started... press {CaptureHotkeyString} to stop.";
 
-				string observedDirectory = RecordDirectoryObserver.GetInitialObservedDirectory(_appConfiguration.ObservedDirectory);
-				ICaptureServiceConfiguration serviceConfig = new PresentMonServiceConfiguration
-				{
-					OutputFilename = Path.Combine(observedDirectory, filename),
-					ProcessName = SelectedProcessToCapture + ".exe"
-				};
 
-				System.Media.SystemSounds.Beep.Play();
-				_captureService.StartCaptureService(
-					CaptureServiceConfiguration.GetServiceStartInfo
-					(serviceConfig.ConfigParameterToArguments()));
 
-				var context = TaskScheduler.FromCurrentSynchronizationContext();
+                System.Media.SystemSounds.Beep.Play();
+                
 
-				if (Convert.ToInt32(CaptureTimeString) > 0)
-				{
-					Task.Run(async () =>
-					{
-						await PutTaskDelay().ContinueWith( _ => StopCaptureService(),
-							CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, context);
-					});
-				}
-			}
-			else
-			{
-				StopCaptureService();
-			}
-		}
+                var context = TaskScheduler.FromCurrentSynchronizationContext();
 
-		private async Task PutTaskDelay()
-		{
-			await Task.Delay(TimeSpan.FromSeconds(Convert.ToInt32(CaptureTimeString)));
-		}
+                if (Convert.ToInt32(CaptureTimeString) > 0)
+                {
+                    Task.Run(async () =>
+                    {
+                        await PutTaskDelay().ContinueWith(_ => StopCaptureService(),
+                            CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, context);
+                    });
+                }
+            }
+            else
+            {
+                StopCaptureService();
+            }
+        }
 
-		private void StopCaptureService()
-		{
-			_isCapturing = !_isCapturing;
-			System.Media.SystemSounds.Beep.Play();
-			_captureService.StopCaptureService();
-			UpdateCaptureStateInfo();
-			IsAddToIgnoreListButtonActive = true;
-			_disposableSequence = GetUpHeartBeat();
-		}
+        private string GetOutputFilename()
+        {
+            var filename = CaptureServiceConfiguration.GetCaptureFilename(SelectedProcessToCapture);
+            string observedDirectory = RecordDirectoryObserver.GetInitialObservedDirectory(_appConfiguration.ObservedDirectory);
 
-		private void OnAddToIgonreList()
-		{
-			if (SelectedProcessToCapture == null)
-				return;
+            return Path.Combine(observedDirectory, filename);
+        }
 
-			CaptureServiceConfiguration.AddProcessToIgnoreList(SelectedProcessToCapture);
-			ProcessesToIgnore.Clear();
-			ProcessesToIgnore.AddRange(CaptureServiceConfiguration.GetProcessIgnoreList());
+        private ICaptureServiceConfiguration GetRedirectedServiceConfig()
+        {
+            return new PresentMonServiceConfiguration
+            {
+                RedirectOutputStream = true,
+                ProcessName = SelectedProcessToCapture + ".exe"
+            };
+        }
 
-			SelectedProcessToCapture = null;
-		}
+        private async Task PutTaskDelay()
+        {
+            await Task.Delay(TimeSpan.FromSeconds(Convert.ToInt32(CaptureTimeString)));
+        }
 
-		private void OnRemoveFromIgnoreList()
-		{
-			if (SelectedProcessToIgnore == null)
-				return;
+        private void StopCaptureService()
+        {
+            _isCapturing = !_isCapturing;
+            System.Media.SystemSounds.Beep.Play();
+            _captureService.StopCaptureService();
+            UpdateCaptureStateInfo();
+            IsAddToIgnoreListButtonActive = true;
+            _disposableSequence = GetListUpdatHeartBeat();
+        }
 
-			CaptureServiceConfiguration.RemoveProcessFromIgnoreList(SelectedProcessToIgnore);
-			ProcessesToIgnore.Clear();
-			ProcessesToIgnore.AddRange(CaptureServiceConfiguration.GetProcessIgnoreList());
-		}
+        private void OnAddToIgonreList()
+        {
+            if (SelectedProcessToCapture == null)
+                return;
 
-		private void OnResetCaptureProcess()
-		{
-			SelectedProcessToCapture = null;
-		}
+            CaptureServiceConfiguration.AddProcessToIgnoreList(SelectedProcessToCapture);
+            ProcessesToIgnore.Clear();
+            ProcessesToIgnore.AddRange(CaptureServiceConfiguration.GetProcessIgnoreList());
 
-		private IDisposable GetUpHeartBeat()
-		{
-			var context = SynchronizationContext.Current;
-			return Observable.Generate(0, // dummy initialState
-										x => true, // dummy condition
-										x => x, // dummy iterate
-										x => x, // dummy resultSelector
-										x => TimeSpan.FromSeconds(2))
-										.ObserveOn(context)
-										.SubscribeOn(context)
-										.Subscribe(x => UpdateProcessToCaptureList());
-		}
+            SelectedProcessToCapture = null;
+        }
 
-		private void UpdateProcessToCaptureList()
-		{
-			var selectedProcessToCapture = SelectedProcessToCapture;
-			ProcessesToCapture.Clear();
-			var filter = CaptureServiceConfiguration.GetProcessIgnoreList();
-			var processList = _captureService.GetAllFilteredProcesses(filter).Distinct();
-			ProcessesToCapture.AddRange(processList);
+        private void OnRemoveFromIgnoreList()
+        {
+            if (SelectedProcessToIgnore == null)
+                return;
 
-			if (!processList.Contains(selectedProcessToCapture))
-				SelectedProcessToCapture = null;
-			else
-				SelectedProcessToCapture = selectedProcessToCapture;
-		}
+            CaptureServiceConfiguration.RemoveProcessFromIgnoreList(SelectedProcessToIgnore);
+            ProcessesToIgnore.Clear();
+            ProcessesToIgnore.AddRange(CaptureServiceConfiguration.GetProcessIgnoreList());
+        }
 
-		private void OnSelectedProcessToCaptureChanged()
-		{
-			UpdateCaptureStateInfo();
-		}
+        private void OnResetCaptureProcess()
+        {
+            SelectedProcessToCapture = null;
+        }
 
-		private void UpdateCaptureStateInfo()
-		{
-			if (string.IsNullOrWhiteSpace(SelectedProcessToCapture))
-			{
-				CaptureStateInfo = $"Capturing inactive... select process and press {CaptureHotkeyString} to start.";
-				return;
-			}
+        private IDisposable GetListUpdatHeartBeat()
+        {
+            var context = SynchronizationContext.Current;
+            return Observable.Generate(0, // dummy initialState
+                                        x => true, // dummy condition
+                                        x => x, // dummy iterate
+                                        x => x, // dummy resultSelector
+                                        x => TimeSpan.FromSeconds(2))
+                                        .ObserveOn(context)
+                                        .SubscribeOn(context)
+                                        .Subscribe(x => UpdateProcessToCaptureList());
+        }
 
-			CaptureStateInfo = $"{SelectedProcessToCapture} selected, press {CaptureHotkeyString} to start capture.";
-		}
+        private void UpdateProcessToCaptureList()
+        {
+            var selectedProcessToCapture = SelectedProcessToCapture;
+            ProcessesToCapture.Clear();
+            var filter = CaptureServiceConfiguration.GetProcessIgnoreList();
+            var processList = _captureService.GetAllFilteredProcesses(filter).Distinct();
+            ProcessesToCapture.AddRange(processList);
 
-		private void OnSelectedProcessToIgnoreChanged()
-		{
-			// throw new NotImplementedException();
-		}
-	}
+            if (!processList.Contains(selectedProcessToCapture))
+                SelectedProcessToCapture = null;
+            else
+                SelectedProcessToCapture = selectedProcessToCapture;
+        }
+
+        private void OnSelectedProcessToCaptureChanged()
+        {
+            UpdateCaptureStateInfo();
+        }
+
+        private void UpdateCaptureStateInfo()
+        {
+            if (string.IsNullOrWhiteSpace(SelectedProcessToCapture))
+            {
+                CaptureStateInfo = $"Capturing inactive... select process and press {CaptureHotkeyString} to start.";
+                return;
+            }
+
+            CaptureStateInfo = $"{SelectedProcessToCapture} selected, press {CaptureHotkeyString} to start capture.";
+        }
+
+        private void OnSelectedProcessToIgnoreChanged()
+        {
+            // throw new NotImplementedException();
+        }
+    }
 }

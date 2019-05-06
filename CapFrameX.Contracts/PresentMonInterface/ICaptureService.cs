@@ -3,14 +3,16 @@ using System.Collections.Generic;
 
 namespace CapFrameX.Contracts.PresentMonInterface
 {
-	public interface ICaptureService
-	{
-		IObservable<string> RedirectedStandardOutputStream { get; }
+    public interface ICaptureService
+    {
+        IObservable<string> RedirectedOutputDataStream { get; }
 
-		bool StartCaptureService(IServiceStartInfo startinfo);
+        IObservable<string> RedirectedOutputErrorStream { get; }
 
-		bool StopCaptureService();
+        bool StartCaptureService(IServiceStartInfo startinfo);
 
-		IEnumerable<string> GetAllFilteredProcesses(HashSet<string> filter);
-	}
+        bool StopCaptureService();
+
+        IEnumerable<string> GetAllFilteredProcesses(HashSet<string> filter);
+    }
 }

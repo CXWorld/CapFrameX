@@ -6,19 +6,15 @@ namespace CapFrameX.Contracts.PresentMonInterface
 	{
 		string ProcessName { get; }
 
-		string CaptureStartHotkey { get; }
-
 		string OutputLevelofDetail { get; }
 
 		bool CaptureAllProcesses { get; }
 
 		string OutputFilename { get; }
 
-		int CaptureTimeSeconds { get; }
+        bool RedirectOutputStream { get; }
 
-		int CaptureDelaySeconds { get; }
-
-		List<string> ExcludeProcesses { get; }
+        List<string> ExcludeProcesses { get; }
 
 		string ConfigParameterToArguments();
 	}
