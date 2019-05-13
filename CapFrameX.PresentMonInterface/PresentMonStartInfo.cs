@@ -1,5 +1,4 @@
 ﻿using CapFrameX.Contracts.PresentMonInterface;
-using System;
 
 namespace CapFrameX.PresentMonInterface
 {

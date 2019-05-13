@@ -21,7 +21,7 @@ namespace CapFrameX.PresentMonInterface
 		{
 			var startInfo = new PresentMonStartInfo
 			{
-				FileName = Path.Combine("PresentMon", "PresentMon64-1.3.1.exe"),
+				FileName = Path.Combine("PresentMon", "PresentMon64-1.4.0.exe"),
 				Arguments = arguments,
 				CreateNoWindow = true,
 				RunWithAdminRights = true,

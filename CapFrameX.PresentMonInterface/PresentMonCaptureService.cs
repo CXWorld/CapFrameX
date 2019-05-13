@@ -74,7 +74,7 @@ namespace CapFrameX.PresentMonInterface
         {
             try
             {
-                var proc = Process.GetProcessesByName("PresentMon64-1.3.1");
+                var proc = Process.GetProcessesByName("PresentMon64-1.4.0");
                 if (proc.Any())
                 {
                     proc[0].Kill();

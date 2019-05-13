@@ -146,8 +146,8 @@
                 <File Id="fil3DAD59899DDA1B0FCEDF95F84CB3C475" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Xceed.Wpf.Toolkit.dll" />
             </Component>
             <Directory Id="dir853772609C50C17748AF70C12E8A0818" Name="PresentMon">
-                <Component Id="cmp5F35B1FD5F44C020091CA8810D4BF8EB" Guid="*" Win64="yes">
-                    <File Id="fil7B77263A57D9EDFE5FDD4BE7C1CBFFA3" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\PresentMon\PresentMon64-1.3.1.exe" />
+                <Component Id="cmp7358366301EC7CE9A932A5F8FBEC5A00" Guid="*" Win64="yes">
+                    <File Id="fil1ADDD4AE6DFC84D4B7876CA15289FFFA" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\PresentMon\PresentMon64-1.4.0.exe" />
                 </Component>
                 <Component Id="cmp8C1AB07795DAE387F9C0929C8DBCE953" Guid="*" Win64="yes">
                     <File Id="filE4E40086E3260C0A66358D88202CA5FF" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\PresentMon\ProcessIgnoreList.txt" />
@@ -230,7 +230,7 @@
             
             <ComponentRef Id="cmp017BFB3832A5B110A2B3A350E13F2A5C" />
             <ComponentRef Id="cmpC85BD7478E073743A39F17DF06865203" />
-            <ComponentRef Id="cmp5F35B1FD5F44C020091CA8810D4BF8EB" />
+            <ComponentRef Id="cmp7358366301EC7CE9A932A5F8FBEC5A00" />
             <ComponentRef Id="cmp8C1AB07795DAE387F9C0929C8DBCE953" />
         </ComponentGroup>
     </Fragment>

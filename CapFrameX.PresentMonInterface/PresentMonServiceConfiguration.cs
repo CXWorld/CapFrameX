@@ -69,7 +69,7 @@ namespace CapFrameX.PresentMonInterface
                     arguments += ProcessName;
                     arguments += " ";
                     // ToDo: edit here, when function is been provided
-                    arguments += "-redirect_output";
+                    arguments += "-output_stdout";
                     if (!string.IsNullOrWhiteSpace(OutputLevelofDetail))
                     {
                         arguments += " ";

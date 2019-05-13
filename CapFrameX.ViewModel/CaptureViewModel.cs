@@ -14,12 +14,11 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows;
 using System.Windows.Input;
 
 namespace CapFrameX.ViewModel
 {
-    public class CaptureViewModel : BindableBase, INavigationAware
+	public class CaptureViewModel : BindableBase, INavigationAware
     {
         private readonly IAppConfiguration _appConfiguration;
         private readonly ICaptureService _captureService;
@@ -191,7 +190,7 @@ namespace CapFrameX.ViewModel
         {
             if (!_isCapturing)
             {
-                _isCapturing = !_isCapturing;
+                _isCapturing = true;
                 IsAddToIgnoreListButtonActive = false;
 
                 if (string.IsNullOrWhiteSpace(SelectedProcessToCapture))
@@ -202,13 +201,8 @@ namespace CapFrameX.ViewModel
                 }
 
                 _disposableSequence?.Dispose();
-
                 CaptureStateInfo = $"Capturing started... press {CaptureHotkeyString} to stop.";
-
-
-
-                System.Media.SystemSounds.Beep.Play();
-                
+                System.Media.SystemSounds.Beep.Play();                
 
                 var context = TaskScheduler.FromCurrentSynchronizationContext();
 
