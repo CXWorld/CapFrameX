@@ -17,6 +17,8 @@ namespace CapFrameX.PresentMonInterface
 
 		private static string[] _processes;
 
+		public static string FILE_HEADER = "Application,ProcessID,SwapChainAddress,Runtime,SyncInterval,PresentFlags,AllowsTearing,PresentMode,WasBatched,DwmNotified,Dropped,TimeInSeconds,MsBetweenPresents,MsBetweenDisplayChange,MsInPresentAPI,MsUntilRenderComplete,MsUntilDisplayed,Processor,GPU,Motherboard,Comment";
+
 		public static IServiceStartInfo GetServiceStartInfo(string arguments)
 		{
 			var startInfo = new PresentMonStartInfo

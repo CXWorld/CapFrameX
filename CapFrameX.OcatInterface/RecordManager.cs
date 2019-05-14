@@ -105,7 +105,7 @@ namespace CapFrameX.OcatInterface
 
 					var values = firstDataLineWithComment.Split(',');
 
-					if (indexComment > 0)
+					if (indexComment > 0 && values.Length > indexComment)
 						comment = values[indexComment].Trim(new char[] { ' ', '"' });
 
 					return comment;

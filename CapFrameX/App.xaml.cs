@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CapFrameX.PresentMonInterface;
+using System;
 using System.Windows;
 using System.Windows.Navigation;
 
@@ -15,5 +16,10 @@ namespace CapFrameX
             Bootstrapper bootstrapper = new Bootstrapper();
 			bootstrapper.Run(true);
         }
+
+		private void CapFrameXExit(object sender, ExitEventArgs e)
+		{
+			PresentMonCaptureService.TryKillPresentMon();
+		}
 	}
 }

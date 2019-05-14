@@ -24,16 +24,6 @@ namespace CapFrameX.PresentMonInterface
 
         public string ConfigParameterToArguments()
         {
-            if (string.IsNullOrWhiteSpace(ProcessName))
-            {
-                throw new ArgumentException("Output filename must be set!");
-            }
-
-            if (!CaptureAllProcesses && string.IsNullOrWhiteSpace(ProcessName))
-            {
-                throw new ArgumentException("Process name must be set!");
-            }
-
             var arguments = string.Empty;
             if (CaptureAllProcesses)
             {
@@ -52,7 +42,7 @@ namespace CapFrameX.PresentMonInterface
                 if (ExcludeProcesses != null && ExcludeProcesses.Any())
                 {
                     arguments += " ";
-                    foreach (var process in ExcludeProcesses)
+                    foreach (var process in ExcludeProcesses.Where(proc => !proc.Contains(" ")))
                     {
                         arguments += "-exclude";
                         arguments += " ";
@@ -64,21 +54,33 @@ namespace CapFrameX.PresentMonInterface
             {
                 if (RedirectOutputStream)
                 {
-                    arguments += "-process_name";
-                    arguments += " ";
-                    arguments += ProcessName;
-                    arguments += " ";
-                    // ToDo: edit here, when function is been provided
-                    arguments += "-output_stdout";
+					arguments += "-stop_existing_session";
+					arguments += " ";
+					arguments += "-output_stdout";
                     if (!string.IsNullOrWhiteSpace(OutputLevelofDetail))
                     {
                         arguments += " ";
                         arguments += "-" + OutputLevelofDetail;
                     }
-                }
+					if (ExcludeProcesses != null && ExcludeProcesses.Any())
+					{
+						foreach (var process in ExcludeProcesses.Where(proc => !proc.Contains(" ")))
+						{
+							arguments += " ";
+							arguments += "-exclude";
+							arguments += " ";
+							arguments += process + ".exe";
+						}
+					}
+				}
                 else
                 {
-                    arguments += "-process_name";
+					if (string.IsNullOrWhiteSpace(ProcessName))
+					{
+						throw new ArgumentException("Process name must be set!");
+					}
+
+					arguments += "-process_name";
                     arguments += " ";
                     arguments += ProcessName;
                     arguments += " ";
