@@ -9,6 +9,7 @@ using Prism.Regions;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -17,7 +18,9 @@ using System.Reactive.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Input;
+using System.Windows.Media;
 
 namespace CapFrameX.ViewModel
 {
@@ -27,6 +30,9 @@ namespace CapFrameX.ViewModel
 
         private readonly IAppConfiguration _appConfiguration;
         private readonly ICaptureService _captureService;
+        private readonly MediaPlayer _soundPlayer = new MediaPlayer();
+        private readonly string[] _soundModes = new[] { "none", "simple sounds", "voice response" };
+        private readonly EventLoopScheduler _captureStreamScheduler = new EventLoopScheduler();
 
         private IDisposable _disposableHeartBeat;
         private IDisposable _disposableCaptureStream;
@@ -39,8 +45,13 @@ namespace CapFrameX.ViewModel
         private string _captureStateInfo = string.Empty;
         private string _captureTimeString = "0";
         private string _captureStartDelayString = "0";
-        private string _captureHotkeyString = "F12";
         private IKeyboardMouseEvents _globalHookEvent;
+        private string _selectedSoundMode;
+        private string _loggerOutput = string.Empty;
+
+        private Stopwatch _hotkeyHandleSetCaptureModeDelay;
+        private Stopwatch _soundFileLoadAndPlayDelay;
+        private Stopwatch _dataStreamManagementDelay;
 
         public string SelectedProcessToCapture
         {
@@ -106,17 +117,40 @@ namespace CapFrameX.ViewModel
 
         public string CaptureHotkeyString
         {
-            get { return _captureHotkeyString; }
+            get { return _appConfiguration.CaptureHotKey; }
             set
             {
-                _captureHotkeyString = value;
+                _appConfiguration.CaptureHotKey = value;
                 UpdateCaptureStateInfo();
                 UpdateGlobalHookEvent();
                 RaisePropertyChanged();
             }
         }
 
+        public string SelectedSoundMode
+        {
+            get { return _selectedSoundMode; }
+            set
+            {
+                _selectedSoundMode = value;
+                _appConfiguration.HotkeySoundMode = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public string LoggerOutput
+        {
+            get { return _loggerOutput; }
+            set
+            {
+                _loggerOutput = value;
+                RaisePropertyChanged();
+            }
+        }
+
         public IAppConfiguration AppConfiguration => _appConfiguration;
+
+        public string[] SoundModes => _soundModes;
 
         public ObservableCollection<string> ProcessesToCapture { get; }
             = new ObservableCollection<string>();
@@ -139,7 +173,8 @@ namespace CapFrameX.ViewModel
             RemoveFromIgnoreListCommand = new DelegateCommand(OnRemoveFromIgnoreList);
             ResetCaptureProcessCommand = new DelegateCommand(OnResetCaptureProcess);
 
-            CaptureStateInfo = $"Capturing inactive... select process and press {CaptureHotkeyString} to start.";
+            CaptureStateInfo = $"Service ready... press {CaptureHotkeyString} to start capture of the running process.";
+            SelectedSoundMode = _appConfiguration.HotkeySoundMode;
 
             ProcessesToIgnore.AddRange(CaptureServiceConfiguration.GetProcessIgnoreList());
             _disposableHeartBeat = GetListUpdatHeartBeat();
@@ -188,7 +223,11 @@ namespace CapFrameX.ViewModel
                 {Combination.FromString(CaptureHotkeyString), () =>
                 {
                     if (_isCaptureModeActive)
-                        SetCaptureMode();
+                    {
+                         _hotkeyHandleSetCaptureModeDelay = new Stopwatch();
+                        _hotkeyHandleSetCaptureModeDelay.Start();
+                        SetCaptureMode();                       
+                    }
                 }}
             };
 
@@ -198,39 +237,97 @@ namespace CapFrameX.ViewModel
 
         private void SetCaptureMode()
         {
-            System.Media.SystemSounds.Beep.Play();
+            _hotkeyHandleSetCaptureModeDelay.Stop();
+            LoggerOutput += DateTime.UtcNow.ToLongTimeString() + " delay between hotkey handle and call SetCaptureMode method in ms: " + _hotkeyHandleSetCaptureModeDelay.ElapsedMilliseconds + Environment.NewLine;
+
+            _soundFileLoadAndPlayDelay = new Stopwatch();
+            _soundFileLoadAndPlayDelay.Start();
+
+            if (!ProcessesToCapture.Any())
+            {
+                _soundPlayer.Open(new Uri("Sounds/no_process.mp3", UriKind.Relative));
+                _soundPlayer.Volume = 0.75;
+                _soundPlayer.Play();
+                return;
+            }
+
+            if (ProcessesToCapture.Count > 1 && string.IsNullOrWhiteSpace(SelectedProcessToCapture))
+            {
+                _soundPlayer.Open(new Uri("Sounds/more_than_one_process.mp3", UriKind.Relative));
+                _soundPlayer.Volume = 0.75;
+                _soundPlayer.Play();
+                return;
+            }
 
             if (!_isCapturing)
             {
+                // none -> do nothing
+                // simple sounds
+                if (SelectedSoundMode == _soundModes[1])
+                {
+                    _soundPlayer.Open(new Uri("Sounds/simple_start_sound.mp3", UriKind.Relative));
+                    _soundPlayer.Volume = 0.75;
+                    _soundPlayer.Play();
+                }
+                // voice response
+                else if (SelectedSoundMode == _soundModes[2])
+                {
+                    _soundPlayer.Open(new Uri("Sounds/capture_started.mp3", UriKind.Relative));
+                    _soundPlayer.Volume = 0.75;
+                    _soundPlayer.Play();
+                }
+
+                _soundFileLoadAndPlayDelay.Stop();
+                LoggerOutput += DateTime.UtcNow.ToLongTimeString() + " delay for loading sound files in ms: " + _soundFileLoadAndPlayDelay.ElapsedMilliseconds + Environment.NewLine;
+
+                _dataStreamManagementDelay = new Stopwatch();
+                _dataStreamManagementDelay.Start();
+
                 StartCaptureDataFromStream();
 
                 _isCapturing = !_isCapturing;
                 _disposableHeartBeat?.Dispose();
                 IsAddToIgnoreListButtonActive = false;
-                CaptureStateInfo = $"Capturing started... press {CaptureHotkeyString} to stop.";
 
-                var context = TaskScheduler.FromCurrentSynchronizationContext();
+                if (CaptureTimeString == "0" && CaptureStartDelayString == "0")
+                    CaptureStateInfo = $"Capturing in progress... press {CaptureHotkeyString} to stop capture.";
 
-                if (Convert.ToInt32(CaptureTimeString) > 0)
-                {
-                    Task.Run(async () =>
-                    {
-                        await SetTaskDelay().ContinueWith(_ =>
-                       { FinishCapturingAndUpdateUi(); },
-                            CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, context);
-                    });
-                }
+                if (CaptureTimeString != "0" && CaptureStartDelayString == "0")
+                    CaptureStateInfo = $"Capturing in progress. Capture will stop after {CaptureTimeString} seconds." + Environment.NewLine
+                       + $"Press {CaptureHotkeyString} to stop capture.";
+
+                if (CaptureTimeString != "0" && CaptureStartDelayString != "0")
+                    CaptureStateInfo = $"Capturing starts with delay of {CaptureStartDelayString} seconds. Capture will stop after {CaptureTimeString} seconds." + Environment.NewLine
+                         + $"Press {CaptureHotkeyString} to stop capture.";
             }
             else
-            {
+            {               
                 FinishCapturingAndUpdateUi();
             }
         }
 
         private void FinishCapturingAndUpdateUi()
         {
+            // none -> do nothing
+            // simple sounds
+            if (SelectedSoundMode == _soundModes[1])
+            {
+                _soundPlayer.Open(new Uri("Sounds/simple_stop_sound.mp3", UriKind.Relative));
+                _soundPlayer.Volume = 0.75;
+                _soundPlayer.Play();
+            }
+            // voice response
+            else if (SelectedSoundMode == _soundModes[2])
+            {
+                _soundPlayer.Open(new Uri("Sounds/capture_finished.mp3", UriKind.Relative));
+                _soundPlayer.Volume = 0.75;
+                _soundPlayer.Play();
+            }
+
+            _dataStreamManagementDelay = new Stopwatch();
+            _dataStreamManagementDelay.Start();
+
             StopCaptureDataFromStream();
-            System.Media.SystemSounds.Beep.Play();
 
             _isCapturing = !_isCapturing;
             _disposableHeartBeat = GetListUpdatHeartBeat();
@@ -238,20 +335,28 @@ namespace CapFrameX.ViewModel
             UpdateCaptureStateInfo();
         }
 
-        private async void StartCaptureDataFromStream()
+        private void StartCaptureDataFromStream()
         {
             _captureData = new List<string>();
             bool autoTermination = Convert.ToInt32(CaptureTimeString) > 0;
-            double captureTime = Convert.ToInt32(CaptureTimeString);
-            string firstDataLine = await _captureService.RedirectedOutputDataStream.FirstAsync();
-            var firstLineSplit = firstDataLine.Split(',');
-            double startTime = Convert.ToDouble(firstLineSplit[11], CultureInfo.InvariantCulture);
+            double delayCapture = Convert.ToInt32(CaptureStartDelayString);
+            double captureTime = Convert.ToInt32(CaptureTimeString) + delayCapture;
+            bool intializedStartTime = false;
+            bool streamStarted = false;
+            double startTime = 0;
 
             _disposableCaptureStream = _captureService.RedirectedOutputDataStream
-                .ObserveOn(new EventLoopScheduler()).Subscribe(dataLine =>
+                .ObserveOn(_captureStreamScheduler).Subscribe(dataLine =>
                 {
                     if (string.IsNullOrWhiteSpace(dataLine))
                         return;
+
+                    if (!streamStarted)
+                    {
+                        _dataStreamManagementDelay.Stop();
+                        LoggerOutput += DateTime.UtcNow.ToLongTimeString() + " delay for subscription to first element of capture data stream ms: " + _dataStreamManagementDelay.ElapsedMilliseconds + Environment.NewLine;
+                        streamStarted = true;
+                    }
 
                     if (!autoTermination)
                     {
@@ -259,12 +364,27 @@ namespace CapFrameX.ViewModel
                     }
                     else
                     {
+                        if (!intializedStartTime)
+                        {
+                            var firstLineSplit = dataLine.Split(',');
+                            startTime = Convert.ToDouble(firstLineSplit[11], CultureInfo.InvariantCulture);
+                            intializedStartTime = true;
+                        }
+
                         var currentLineSplit = dataLine.Split(',');
                         double currentTime = Convert.ToDouble(currentLineSplit[11], CultureInfo.InvariantCulture);
 
-                        if(currentTime - startTime >= captureTime)
+                        if (currentTime - startTime <= delayCapture)
+                            return;
+
+                        if (currentTime - startTime > captureTime)
                         {
-                            FinishCapturingAndUpdateUi();
+                            _captureData.Add(dataLine);
+
+                            Application.Current.Dispatcher.Invoke(new Action(() =>
+                            {
+                                FinishCapturingAndUpdateUi();
+                            }));
                         }
                         else
                         {
@@ -278,21 +398,21 @@ namespace CapFrameX.ViewModel
         {
             _disposableCaptureStream?.Dispose();
 
+            _dataStreamManagementDelay.Stop();
+            LoggerOutput += DateTime.UtcNow.ToLongTimeString() + " delay for unsubscription from capture data stream ms: " + _dataStreamManagementDelay.ElapsedMilliseconds + Environment.NewLine;
+
             // explicit hook, only one process
             if (!string.IsNullOrWhiteSpace(SelectedProcessToCapture))
             {
-                Task.Run(async () => await WriteCaptureDataToFileAync(SelectedProcessToCapture));
+                Task.Run(() => WriteCaptureDataToFile(SelectedProcessToCapture));
             }
             // auto hook with filtered process list
             else
             {
                 var filter = CaptureServiceConfiguration.GetProcessIgnoreList();
-                var processList = _captureService.GetAllFilteredProcesses(filter).Distinct();
+                var process = ProcessesToCapture.FirstOrDefault();
 
-                foreach (var multiProcess in processList)
-                {
-                    Task.Run(async () => await WriteCaptureDataToFileAync(multiProcess));
-                }
+                Task.Run(() => WriteCaptureDataToFile(process));
             }
         }
 
@@ -315,8 +435,11 @@ namespace CapFrameX.ViewModel
             return Path.Combine(observedDirectory, filename);
         }
 
-        private async Task WriteCaptureDataToFileAync(string processName)
+        private void WriteCaptureDataToFile(string processName)
         {
+            if (string.IsNullOrWhiteSpace(processName))
+                return;
+
             var filePath = GetOutputFilename(processName);
             var csv = new StringBuilder();
             csv.AppendLine(CaptureServiceConfiguration.FILE_HEADER);
@@ -327,7 +450,6 @@ namespace CapFrameX.ViewModel
             firstLineWithInfos += "," + HardwareInfo.GetGraphicCardName();
             firstLineWithInfos += "," + HardwareInfo.GetMotherboardName();
             string[] currentLineSplit = firstLineWithInfos.Split(',');
-            firstLineWithInfos += "," + "API: " + currentLineSplit[3];
 
             // normalize time
             currentLineSplit = firstLineWithInfos.Split(',');
@@ -366,7 +488,7 @@ namespace CapFrameX.ViewModel
 
             using (var sw = new StreamWriter(filePath))
             {
-                await sw.WriteAsync(csv.ToString());
+                sw.Write(csv.ToString());
             }
         }
 
@@ -377,12 +499,6 @@ namespace CapFrameX.ViewModel
                 RedirectOutputStream = true,
                 ExcludeProcesses = CaptureServiceConfiguration.GetProcessIgnoreList().ToList()
             };
-        }
-
-        private async Task SetTaskDelay()
-        {
-            // put some offset here, PresentMon seems to work not that precise 
-            await Task.Delay(TimeSpan.FromMilliseconds(PRESICE_OFFSET + 1000 * Convert.ToInt32(CaptureTimeString)));
         }
 
         private void OnAddToIgonreList()
@@ -423,7 +539,7 @@ namespace CapFrameX.ViewModel
                                         x => true, // dummy condition
                                         x => x, // dummy iterate
                                         x => x, // dummy resultSelector
-                                        x => TimeSpan.FromSeconds(2))
+                                        x => TimeSpan.FromSeconds(1))
                                         .ObserveOn(context)
                                         .SubscribeOn(context)
                                         .Subscribe(x => UpdateProcessToCaptureList());
@@ -441,6 +557,11 @@ namespace CapFrameX.ViewModel
                 SelectedProcessToCapture = null;
             else
                 SelectedProcessToCapture = selectedProcessToCapture;
+
+            Application.Current.Dispatcher.Invoke(new Action(() =>
+            {
+                UpdateCaptureStateInfo();
+            }));
         }
 
         private void OnSelectedProcessToCaptureChanged()
@@ -452,7 +573,10 @@ namespace CapFrameX.ViewModel
         {
             if (string.IsNullOrWhiteSpace(SelectedProcessToCapture))
             {
-                CaptureStateInfo = $"Capturing inactive... select process and press {CaptureHotkeyString} to start.";
+                if (ProcessesToCapture.Count <= 1)
+                    CaptureStateInfo = $"Service ready... press {CaptureHotkeyString} to start capture.";
+                else if (ProcessesToCapture.Count > 1)
+                    CaptureStateInfo = $"Service ready... multiple processes detected, select one and press {CaptureHotkeyString} to start capture.";
                 return;
             }
 

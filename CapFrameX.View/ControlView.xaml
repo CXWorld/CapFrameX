@@ -157,7 +157,7 @@
 					<ColumnDefinition Width="Auto"/>
 				</Grid.ColumnDefinitions>
 				<TextBox Grid.Row="0" Grid.Column="0" wpf:HintAssist.Hint="Custom CPU description" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
-							Margin="5 6 5 0" FontSize="14" Text="{Binding CustomCpuDescription}" HorizontalAlignment="Stretch"/>
+							Margin="5 6 5 0" FontSize="14" Text="{Binding CustomCpuDescription, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Stretch"/>
 				<Button Grid.Row="0" Grid.Column="1" Margin="5 6 5 0" Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}"
 							VerticalAlignment="Bottom" HorizontalAlignment="Right"
 							Width="20" Height="20"
@@ -166,7 +166,7 @@
 					<materialDesign:PackIcon Kind="AddBox" Width="15" Height="15"/>
 				</Button>
 				<TextBox Grid.Row="1" Grid.Column="0" wpf:HintAssist.Hint="Custom GPU description" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
-							Margin="5 6 5 0" FontSize="14" Text="{Binding CustomGpuDescription}"/>
+							Margin="5 6 5 0" FontSize="14" Text="{Binding CustomGpuDescription, UpdateSourceTrigger=PropertyChanged}"/>
 				<Button Grid.Row="1" Grid.Column="1" Margin="5 6 5 0" Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}"
 							VerticalAlignment="Bottom" HorizontalAlignment="Right"
 							Width="20" Height="20"
@@ -175,7 +175,7 @@
 					<materialDesign:PackIcon Kind="AddBox" Width="15" Height="15"/>
 				</Button>
 				<TextBox Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" wpf:HintAssist.Hint="Custom comment" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
-						 Margin="5 6 5 0" FontSize="14" Text="{Binding CustomComment}"/>
+						 Margin="5 6 5 0" FontSize="14" Text="{Binding CustomComment, UpdateSourceTrigger=PropertyChanged}"/>
 				<StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Grid.Row="3"
 							Grid.Column="0" Grid.ColumnSpan="2" Margin="0 16 0 5">
 					<Button IsDefault="True" Style="{DynamicResource MaterialDesignFlatButton}"

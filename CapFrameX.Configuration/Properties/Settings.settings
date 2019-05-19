@@ -59,5 +59,11 @@
     <Setting Name="UseSingleRecordAdaptiveSTDStatisticParameter" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
+    <Setting Name="CaptureHotKey" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Control + Shift + X</Value>
+    </Setting>
+    <Setting Name="HotkeySoundMode" Type="System.String" Scope="User">
+      <Value Profile="(Default)">voice response</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

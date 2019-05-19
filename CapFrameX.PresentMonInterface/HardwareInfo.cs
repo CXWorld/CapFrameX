@@ -2,98 +2,113 @@
 
 namespace CapFrameX.PresentMonInterface
 {
-	public static class HardwareInfo
-	{
-		public static string GetProcessorName()
-		{
-			string propertyDataValue = string.Empty;
-			const string propertyDataName = "Name";
+    public static class HardwareInfo
+    {
+        public static string GetProcessorName()
+        {
+            string propertyDataValue = string.Empty;
+            const string propertyDataName = "Name";
 
-			var win32DeviceClassName = "win32_processor";
-			var query = string.Format("select * from {0}", win32DeviceClassName);
+            var win32DeviceClassName = "win32_processor";
+            var query = string.Format("select * from {0}", win32DeviceClassName);
 
-			using (var searcher = new ManagementObjectSearcher(query))
-			{
-				ManagementObjectCollection objectCollection = searcher.Get();
+            try
+            {
+                using (var searcher = new ManagementObjectSearcher(query))
+                {
+                    ManagementObjectCollection objectCollection = searcher.Get();
 
-				foreach (ManagementBaseObject managementBaseObject in objectCollection)
-				{
-					foreach (PropertyData propertyData in managementBaseObject.Properties)
-					{
-						if (propertyData.Name == propertyDataName)
-						{
-							propertyDataValue = (string)propertyData.Value;
-							break;
-						}
-					}
-				}
-			}
-			// Name
-			return propertyDataValue;
-		}
+                    foreach (ManagementBaseObject managementBaseObject in objectCollection)
+                    {
+                        foreach (PropertyData propertyData in managementBaseObject.Properties)
+                        {
+                            if (propertyData.Name == propertyDataName)
+                            {
+                                propertyDataValue = (string)propertyData.Value;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            catch { propertyDataValue = string.Empty; }
 
-		public static string GetGraphicCardName()
-		{
-			string propertyDataValue = string.Empty;
-			const string propertyDataName = "DeviceName";
+            // Name
+            return propertyDataValue;
+        }
 
-			var win32DeviceClassName = "Win32_DisplayConfiguration";
-			var query = string.Format("select * from {0}", win32DeviceClassName);
+        public static string GetGraphicCardName()
+        {
+            string propertyDataValue = string.Empty;
+            const string propertyDataName = "DeviceName";
 
-			using (var searcher = new ManagementObjectSearcher(query))
-			{
-				ManagementObjectCollection objectCollection = searcher.Get();
+            var win32DeviceClassName = "Win32_DisplayConfiguration";
+            var query = string.Format("select * from {0}", win32DeviceClassName);
 
-				foreach (ManagementBaseObject managementBaseObject in objectCollection)
-				{
-					foreach (PropertyData propertyData in managementBaseObject.Properties)
-					{
-						if (propertyData.Name == propertyDataName)
-						{
-							propertyDataValue = (string)propertyData.Value;
-							break;
-						}
-					}
-				}
-			}
-			//DeviceName
-			return propertyDataValue;
-		}
+            try
+            {
+                using (var searcher = new ManagementObjectSearcher(query))
+                {
+                    ManagementObjectCollection objectCollection = searcher.Get();
 
-		public static string GetMotherboardName()
-		{
-			string propertyDataValueManufacturer = string.Empty;
-			const string propertyDataNameManufacturer = "Manufacturer";
-			string propertyDataValueProduct = string.Empty;
-			const string propertyDataNameProduct = "Product";
+                    foreach (ManagementBaseObject managementBaseObject in objectCollection)
+                    {
+                        foreach (PropertyData propertyData in managementBaseObject.Properties)
+                        {
+                            if (propertyData.Name == propertyDataName)
+                            {
+                                propertyDataValue = (string)propertyData.Value;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            catch { propertyDataValue = string.Empty; }
 
-			var win32DeviceClassName = "Win32_BaseBoard";
-			var query = string.Format("select * from {0}", win32DeviceClassName);
+            //DeviceName
+            return propertyDataValue;
+        }
 
-			//Manufacturer + Product
-			using (var searcher = new ManagementObjectSearcher(query))
-			{
-				ManagementObjectCollection objectCollection = searcher.Get();
+        public static string GetMotherboardName()
+        {
+            string propertyDataValueManufacturer = string.Empty;
+            const string propertyDataNameManufacturer = "Manufacturer";
+            string propertyDataValueProduct = string.Empty;
+            const string propertyDataNameProduct = "Product";
 
-				foreach (ManagementBaseObject managementBaseObject in objectCollection)
-				{
-					foreach (PropertyData propertyData in managementBaseObject.Properties)
-					{
-						if (propertyData.Name == propertyDataNameManufacturer)
-						{
-							propertyDataValueManufacturer = (string)propertyData.Value;
-						}
+            var win32DeviceClassName = "Win32_BaseBoard";
+            var query = string.Format("select * from {0}", win32DeviceClassName);
 
-						if (propertyData.Name == propertyDataNameProduct)
-						{
-							propertyDataValueProduct = (string)propertyData.Value;
+            try
+            {
+                //Manufacturer + Product
+                using (var searcher = new ManagementObjectSearcher(query))
+                {
+                    ManagementObjectCollection objectCollection = searcher.Get();
 
-						}
-					}
-				}
-			}
-			//Manufacturer + Product
-			return $"{propertyDataValueManufacturer} {propertyDataValueProduct}";
-		}
-	}
+                    foreach (ManagementBaseObject managementBaseObject in objectCollection)
+                    {
+                        foreach (PropertyData propertyData in managementBaseObject.Properties)
+                        {
+                            if (propertyData.Name == propertyDataNameManufacturer)
+                            {
+                                propertyDataValueManufacturer = (string)propertyData.Value;
+                            }
+
+                            if (propertyData.Name == propertyDataNameProduct)
+                            {
+                                propertyDataValueProduct = (string)propertyData.Value;
+
+                            }
+                        }
+                    }
+                }
+            }
+            catch { propertyDataValueManufacturer = string.Empty; propertyDataValueProduct = string.Empty; }
+
+            //Manufacturer + Product
+            return $"{propertyDataValueManufacturer} {propertyDataValueProduct}";
+        }
+    }
 }

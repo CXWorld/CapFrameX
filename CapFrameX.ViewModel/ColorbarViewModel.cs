@@ -37,8 +37,9 @@ namespace CapFrameX.ViewModel
 		private string _recordDataGridIgnoreList;
 		private bool _aggregatioIsChecked;
 		private string _screenshotDirectory;
+        private bool _playHotkeySounds;
 
-		public bool CaptureIsChecked
+        public bool CaptureIsChecked
 		{
 			get { return _captureIsChecked; }
 			set
@@ -138,7 +139,7 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-		public Quality SelectedChartQualityLevel
+        public Quality SelectedChartQualityLevel
 		{
 			get { return _selectedChartQualityLevel; }
 			set
@@ -214,7 +215,7 @@ namespace CapFrameX.ViewModel
 			_appConfiguration = appConfiguration;
 
 			StutteringFactor = _appConfiguration.StutteringFactor;
-			SelectWindowSize = _appConfiguration.MovingAverageWindowSize;
+            SelectWindowSize = _appConfiguration.MovingAverageWindowSize;
 			SelectedChartQualityLevel = _appConfiguration.ChartQualityLevel.ConverToEnum<Quality>();
 			FpsValuesRoundingDigits = _appConfiguration.FpsValuesRoundingDigits;
 			ObservedDirectory = _appConfiguration.ObservedDirectory;

@@ -32,12 +32,13 @@
 			<RowDefinition Height="1*"></RowDefinition>
 			<RowDefinition Height="3*"></RowDefinition>
 			<RowDefinition Height="1*"></RowDefinition>
-		</Grid.RowDefinitions>
+            <RowDefinition Height="Auto"></RowDefinition>
+        </Grid.RowDefinitions>
 		<Grid.ColumnDefinitions>
 			<ColumnDefinition Width="1*"></ColumnDefinition>
-			<ColumnDefinition Width="2*"></ColumnDefinition>
+			<ColumnDefinition Width="2*" MaxWidth="280"></ColumnDefinition>
 			<ColumnDefinition Width="100"></ColumnDefinition>
-			<ColumnDefinition Width="2*"></ColumnDefinition>
+            <ColumnDefinition Width="2*" MaxWidth="280"></ColumnDefinition>
 			<ColumnDefinition Width="1*"></ColumnDefinition>
 		</Grid.ColumnDefinitions>
 		<TextBlock Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3" Margin="0 30 0 0" Text="{Binding CaptureStateInfo}" FontSize="14" Style="{StaticResource MaterialDesignCaptionTextBlock}" 
@@ -92,13 +93,30 @@
 		</StackPanel>
 
 		<Grid x:Name="HotkeyTextBox" Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="3" HorizontalAlignment="Stretch" VerticalAlignment="Center">
-			<TextBox Width="140" wpf:HintAssist.Hint="Capture hotkey" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
+			<TextBox Width="152" wpf:HintAssist.Hint="Capture hotkey" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
 					 Margin="0" FontSize="14" Text="{Binding CaptureHotkey, ElementName = CaptureViewControl, Mode=OneWay, TargetNullValue=&lt; not set &gt;}" HorizontalAlignment="Left"
 					 IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False" PreviewKeyDown="HotkeyTextBox_PreviewKeyDown"/>
-			<TextBox Width="140" wpf:HintAssist.Hint="Capture time in seconds" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
-							Margin="0" FontSize="14" Text="{Binding CaptureTimeString}" HorizontalAlignment="Center"/>
-			<TextBox Width="140" wpf:HintAssist.Hint="Start delay in seconds" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
-							Margin="0" FontSize="14" Text="{Binding CaptureStartDelayString}" HorizontalAlignment="Right"/>
-		</Grid>
-	</Grid>
+            <TextBox Width="152" wpf:HintAssist.Hint="Capture time in seconds" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
+					 Margin="0" FontSize="14" Text="{Binding CaptureTimeString, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Center"
+                     PreviewMouseDown="TextBox_PreviewMouseDown" MouseLeave="TextBox_MouseLeave"/>
+            <!--<TextBox Width="152" wpf:HintAssist.Hint="Start delay in seconds" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
+					 Margin="0" FontSize="14" Text="{Binding CaptureStartDelayString, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Right"
+                     PreviewMouseDown="TextBox_PreviewMouseDown" MouseLeave="TextBox_MouseLeave"/>-->
+            <ComboBox Width="152" Margin="0" materialDesign:HintAssist.Hint="Hotkey sound mode"
+					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="200" FontSize="14" 
+					  ItemsSource="{Binding SoundModes}" HorizontalAlignment="Right">
+                <ComboBox.Text>
+                    <Binding Path="SelectedSoundMode"
+							 Mode="TwoWay"
+							 UpdateSourceTrigger="PropertyChanged">
+                    </Binding>
+                </ComboBox.Text>
+            </ComboBox>
+        </Grid>
+        <Expander HorizontalAlignment="Stretch" Header="Logger" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="5">
+            <ScrollViewer MaxHeight="200" VerticalScrollBarVisibility="Visible" Margin="20 10 20 10" >
+                <TextBlock Text="{Binding LoggerOutput}"/>
+            </ScrollViewer>
+        </Expander>
+    </Grid>
 </UserControl>

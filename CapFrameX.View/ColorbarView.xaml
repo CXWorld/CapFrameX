@@ -71,8 +71,8 @@
 							<RowDefinition Height="*" />
 							<RowDefinition Height="*" />
 							<RowDefinition Height="*" />
-							<RowDefinition Height="*" />
-						</Grid.RowDefinitions>
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
 						<TextBlock Grid.Row="0"
 										   Style="{StaticResource MaterialDesignTitleTextBlock}"
 										   Margin="8,8,8,16">
@@ -88,16 +88,16 @@
 								</Binding>
 							</ComboBox.Text>
 						</ComboBox>
-						<TextBox Grid.Row="2" materialDesign:HintAssist.Hint="Stuttering factor" >
-							<TextBox.Text>
-								<Binding Path="StutteringFactor"
+                        <TextBox Grid.Row="2" materialDesign:HintAssist.Hint="Stuttering factor" >
+                            <TextBox.Text>
+                                <Binding Path="StutteringFactor"
 										 Mode="TwoWay"
 										 UpdateSourceTrigger="LostFocus">
-								</Binding>
-							</TextBox.Text>
-						</TextBox>
-						<StackPanel Grid.Row="3" Orientation="Horizontal">
-							<TextBox IsEnabled="False" materialDesign:HintAssist.Hint="Observed directory (OCAT V1.3 + 1.4)" Text="{Binding ObservedDirectory, Mode=OneWay}" />
+                                </Binding>
+                            </TextBox.Text>
+                        </TextBox>
+                        <StackPanel Grid.Row="3" Orientation="Horizontal">
+                            <TextBox IsReadOnly="True" materialDesign:HintAssist.Hint="Observed directory (OCAT V1.3 + 1.4)" Text="{Binding ObservedDirectory, Mode=OneWay}" />
 							<Button Margin="20 0 0 0" Command="{Binding SelectObservedFolderCommand}" Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}" ToolTip="Select observed folder">
 								<materialDesign:PackIcon Kind="Folder" Height="24" Width="24" />
 							</Button>
@@ -129,7 +129,7 @@
 							</TextBox.Text>
 						</TextBox>
 						<StackPanel Grid.Row="6" Orientation="Horizontal" Margin="0 0 0 30">
-							<TextBox IsEnabled="False" materialDesign:HintAssist.Hint="Screenshot directory" Text="{Binding ScreenshotDirectory, Mode=OneWay}" />
+                            <TextBox IsReadOnly="True" materialDesign:HintAssist.Hint="Screenshot directory" Text="{Binding ScreenshotDirectory, Mode=OneWay}" />
 							<Button Margin="20 0 0 0" Command="{Binding SelectScreenshotFolderCommand}" Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}" ToolTip="Select screenshot folder">
 								<materialDesign:PackIcon Kind="Folder" Height="24" Width="24" />
 							</Button>

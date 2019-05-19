@@ -38,6 +38,10 @@
 
 		bool UseSingleRecordAdaptiveSTDStatisticParameter { get; set; }
 
-		void AddAppNameToIgnoreList(string nameToBeIgnored);
+        string CaptureHotKey { get; set; }
+
+        string HotkeySoundMode { get; set; }
+
+        void AddAppNameToIgnoreList(string nameToBeIgnored);
 	}
 }

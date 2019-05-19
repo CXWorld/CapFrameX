@@ -52,6 +52,9 @@
             </Component>
             
             
+            <Component Id="cmp6FADF1297622C6D07A448125A1E080D7" Guid="*" Win64="yes">
+                <File Id="filAB136E1D0E482C340E68F92A8525463B" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.ViewModel_sound_patch.zip" />
+            </Component>
             <Component Id="cmp9110E4565D76564E9BC2F34625854902" Guid="*" Win64="yes">
                 <File Id="filAC751AB8116CEF372F8CFDA54B395D08" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\ControlzEx.dll" />
             </Component>
@@ -153,6 +156,26 @@
                     <File Id="filE4E40086E3260C0A66358D88202CA5FF" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\PresentMon\ProcessIgnoreList.txt" />
                 </Component>
             </Directory>
+            <Directory Id="dir1450B10CD9213F91984D1913F3B466A5" Name="Sounds">
+                <Component Id="cmp3F2F9B6546AE06A5A2BC8225D157AC3C" Guid="*" Win64="yes">
+                    <File Id="fil24228021E7FD2FABAD16C57D8D6FD5E7" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Sounds\capture_finished.mp3" />
+                </Component>
+                <Component Id="cmpDF6DFD99ABED9CCF3316E293E49351AE" Guid="*" Win64="yes">
+                    <File Id="fil4353B429C610A2842E55C33C8005A575" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Sounds\capture_started.mp3" />
+                </Component>
+                <Component Id="cmp3EEE69535363E853D13D17349B078B73" Guid="*" Win64="yes">
+                    <File Id="filFC94E5A41715E7322F01FD984C55D332" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Sounds\more_than_one_process.mp3" />
+                </Component>
+                <Component Id="cmp4DB77BB5B381B587308A20C44B19BB34" Guid="*" Win64="yes">
+                    <File Id="fil081380B58D1E01F1C2A4826EA16AF369" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Sounds\no_process.mp3" />
+                </Component>
+                <Component Id="cmp2B2AD3CDCCA5134FE476F0CC03CF6E31" Guid="*" Win64="yes">
+                    <File Id="fil127C69AB83A1138534DD260DCD773CA9" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Sounds\simple_start_sound.mp3" />
+                </Component>
+                <Component Id="cmp9A52E3FF2E5E6BBC35673A92EC0A3170" Guid="*" Win64="yes">
+                    <File Id="fil604A0117FD178B502183C7B25945C2D8" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Sounds\simple_stop_sound.mp3" />
+                </Component>
+            </Directory>
         </DirectoryRef>
     </Fragment>
     <Fragment>
@@ -183,6 +206,7 @@
             <ComponentRef Id="cmpFEE96F5622FF620341562487C27BDBFE" />
             
             
+            <ComponentRef Id="cmp6FADF1297622C6D07A448125A1E080D7" />
             <ComponentRef Id="cmp9110E4565D76564E9BC2F34625854902" />
             
             <ComponentRef Id="cmp471A60C7DB0BF5428D9A6BE2EF6D9976" />
@@ -232,6 +256,12 @@
             <ComponentRef Id="cmpC85BD7478E073743A39F17DF06865203" />
             <ComponentRef Id="cmp7358366301EC7CE9A932A5F8FBEC5A00" />
             <ComponentRef Id="cmp8C1AB07795DAE387F9C0929C8DBCE953" />
+            <ComponentRef Id="cmp3F2F9B6546AE06A5A2BC8225D157AC3C" />
+            <ComponentRef Id="cmpDF6DFD99ABED9CCF3316E293E49351AE" />
+            <ComponentRef Id="cmp3EEE69535363E853D13D17349B078B73" />
+            <ComponentRef Id="cmp4DB77BB5B381B587308A20C44B19BB34" />
+            <ComponentRef Id="cmp2B2AD3CDCCA5134FE476F0CC03CF6E31" />
+            <ComponentRef Id="cmp9A52E3FF2E5E6BBC35673A92EC0A3170" />
         </ComponentGroup>
     </Fragment>
 </Wix>

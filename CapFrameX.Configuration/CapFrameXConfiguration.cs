@@ -114,7 +114,19 @@ namespace CapFrameX.Configuration
 			set { Settings.UseSingleRecordAdaptiveSTDStatisticParameter = value; Settings.Save(); }
 		}
 
-		public void AddAppNameToIgnoreList(string nameToBeIgnored)
+        public string CaptureHotKey
+        {
+            get { return Settings.CaptureHotKey; }
+            set { Settings.CaptureHotKey = value; Settings.Save(); }
+        }
+
+        public string HotkeySoundMode
+        {
+            get { return Settings.HotkeySoundMode; }
+            set { Settings.HotkeySoundMode = value; Settings.Save(); }
+        }
+
+        public void AddAppNameToIgnoreList(string nameToBeIgnored)
 		{
 			if (!RecordDataGridIgnoreList.Contains(nameToBeIgnored))
 				RecordDataGridIgnoreList = RecordDataGridIgnoreList + "; " + nameToBeIgnored;
