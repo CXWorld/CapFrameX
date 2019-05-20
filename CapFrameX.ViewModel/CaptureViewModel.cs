@@ -15,6 +15,7 @@ using System.IO;
 using System.Linq;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -27,15 +28,17 @@ namespace CapFrameX.ViewModel
     public class CaptureViewModel : BindableBase, INavigationAware
     {
         private const int PRESICE_OFFSET = 300;
+        private const int ARCHIVE_LENGTH = 1000;
 
         private readonly IAppConfiguration _appConfiguration;
         private readonly ICaptureService _captureService;
         private readonly MediaPlayer _soundPlayer = new MediaPlayer();
         private readonly string[] _soundModes = new[] { "none", "simple sounds", "voice response" };
-        private readonly EventLoopScheduler _captureStreamScheduler = new EventLoopScheduler();
+        private readonly List<string> _captureDataArchive = new List<string>(ARCHIVE_LENGTH);
 
         private IDisposable _disposableHeartBeat;
         private IDisposable _disposableCaptureStream;
+        private IDisposable _disposableArchiveStream;
         private List<string> _captureData;
         private string _selectedProcessToCapture;
         private string _selectedProcessToIgnore;
@@ -48,6 +51,10 @@ namespace CapFrameX.ViewModel
         private IKeyboardMouseEvents _globalHookEvent;
         private string _selectedSoundMode;
         private string _loggerOutput = string.Empty;
+        private bool _fillArchive = false;
+        private long _timestampStartCapture;
+        private long _timestampStopCapture;
+        private long _timestampFirstStreamElement;
 
         private Stopwatch _hotkeyHandleSetCaptureModeDelay;
         private Stopwatch _soundFileLoadAndPlayDelay;
@@ -226,7 +233,7 @@ namespace CapFrameX.ViewModel
                     {
                          _hotkeyHandleSetCaptureModeDelay = new Stopwatch();
                         _hotkeyHandleSetCaptureModeDelay.Start();
-                        SetCaptureMode();                       
+                        SetCaptureMode();
                     }
                 }}
             };
@@ -238,7 +245,9 @@ namespace CapFrameX.ViewModel
         private void SetCaptureMode()
         {
             _hotkeyHandleSetCaptureModeDelay.Stop();
-            LoggerOutput += DateTime.UtcNow.ToLongTimeString() + " delay between hotkey handle and call SetCaptureMode method in ms: " + _hotkeyHandleSetCaptureModeDelay.ElapsedMilliseconds + Environment.NewLine;
+            LoggerOutput += "Utc " + DateTime.UtcNow.ToLongTimeString() +
+                " delay between hotkey handle and call SetCaptureMode method in ms: " +
+                _hotkeyHandleSetCaptureModeDelay.ElapsedMilliseconds + Environment.NewLine;
 
             _soundFileLoadAndPlayDelay = new Stopwatch();
             _soundFileLoadAndPlayDelay.Start();
@@ -278,7 +287,9 @@ namespace CapFrameX.ViewModel
                 }
 
                 _soundFileLoadAndPlayDelay.Stop();
-                LoggerOutput += DateTime.UtcNow.ToLongTimeString() + " delay for loading sound files in ms: " + _soundFileLoadAndPlayDelay.ElapsedMilliseconds + Environment.NewLine;
+                LoggerOutput += "Utc " + DateTime.UtcNow.ToLongTimeString() +
+                    " delay for loading sound files in ms: " +
+                    _soundFileLoadAndPlayDelay.ElapsedMilliseconds + Environment.NewLine;
 
                 _dataStreamManagementDelay = new Stopwatch();
                 _dataStreamManagementDelay.Start();
@@ -301,13 +312,21 @@ namespace CapFrameX.ViewModel
                          + $"Press {CaptureHotkeyString} to stop capture.";
             }
             else
-            {               
+            {
                 FinishCapturingAndUpdateUi();
             }
         }
 
         private void FinishCapturingAndUpdateUi()
         {
+            _timestampStopCapture = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds();
+            _disposableCaptureStream?.Dispose();
+
+            _dataStreamManagementDelay.Stop();
+            LoggerOutput += "Utc " + DateTime.UtcNow.ToLongTimeString() +
+                " delay for unsubscription from capture data stream in ms: " +
+                _dataStreamManagementDelay.ElapsedMilliseconds + Environment.NewLine;
+
             // none -> do nothing
             // simple sounds
             if (SelectedSoundMode == _soundModes[1])
@@ -327,12 +346,19 @@ namespace CapFrameX.ViewModel
             _dataStreamManagementDelay = new Stopwatch();
             _dataStreamManagementDelay.Start();
 
-            StopCaptureDataFromStream();
+            WriteCaptureDataToFile();
 
             _isCapturing = !_isCapturing;
             _disposableHeartBeat = GetListUpdatHeartBeat();
             IsAddToIgnoreListButtonActive = true;
             UpdateCaptureStateInfo();
+        }
+
+
+        private async Task SetTaskDelay()
+        {
+            // put some offset here, PresentMon seems to work not that precise 
+            await Task.Delay(TimeSpan.FromMilliseconds(PRESICE_OFFSET + 1000 * Convert.ToInt32(CaptureTimeString)));
         }
 
         private void StartCaptureDataFromStream()
@@ -343,68 +369,61 @@ namespace CapFrameX.ViewModel
             double captureTime = Convert.ToInt32(CaptureTimeString) + delayCapture;
             bool intializedStartTime = false;
             bool streamStarted = false;
-            double startTime = 0;
+
+            var context = TaskScheduler.FromCurrentSynchronizationContext();
+            _timestampStartCapture = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds();
 
             _disposableCaptureStream = _captureService.RedirectedOutputDataStream
-                .ObserveOn(_captureStreamScheduler).Subscribe(dataLine =>
+                .ObserveOn(new EventLoopScheduler()).Subscribe(dataLine =>
                 {
-                    if (string.IsNullOrWhiteSpace(dataLine))
-                        return;
-
                     if (!streamStarted)
                     {
                         _dataStreamManagementDelay.Stop();
-                        LoggerOutput += DateTime.UtcNow.ToLongTimeString() + " delay for subscription to first element of capture data stream ms: " + _dataStreamManagementDelay.ElapsedMilliseconds + Environment.NewLine;
+                        LoggerOutput += "Utc " + DateTime.UtcNow.ToLongTimeString() +
+                            " delay for subscription to first element of capture data stream in ms: " +
+                            _dataStreamManagementDelay.ElapsedMilliseconds + Environment.NewLine;
                         streamStarted = true;
                     }
 
-                    if (!autoTermination)
+                    if (string.IsNullOrWhiteSpace(dataLine))
+                        return;
+
+                    _captureData.Add(dataLine);
+
+                    if (!intializedStartTime)
                     {
-                        _captureData.Add(dataLine);
+                        _timestampFirstStreamElement = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds();
+                        intializedStartTime = true;
+
+                        // stop archive
+                        _fillArchive = false;
+                        _disposableCaptureStream?.Dispose();
                     }
-                    else
-                    {
-                        if (!intializedStartTime)
-                        {
-                            var firstLineSplit = dataLine.Split(',');
-                            startTime = Convert.ToDouble(firstLineSplit[11], CultureInfo.InvariantCulture);
-                            intializedStartTime = true;
-                        }
 
-                        var currentLineSplit = dataLine.Split(',');
-                        double currentTime = Convert.ToDouble(currentLineSplit[11], CultureInfo.InvariantCulture);
-
-                        if (currentTime - startTime <= delayCapture)
-                            return;
-
-                        if (currentTime - startTime > captureTime)
-                        {
-                            _captureData.Add(dataLine);
-
-                            Application.Current.Dispatcher.Invoke(new Action(() =>
-                            {
-                                FinishCapturingAndUpdateUi();
-                            }));
-                        }
-                        else
-                        {
-                            _captureData.Add(dataLine);
-                        }
-                    }
+                    double currentTime = GetStartTimeFromDataLine(dataLine);
                 });
+
+            if (autoTermination)
+            {
+                Task.Run(async () =>
+                {
+                    await SetTaskDelay().ContinueWith(_ =>
+                   {
+                       Application.Current.Dispatcher.Invoke(new Action(() =>
+                       {
+                           FinishCapturingAndUpdateUi();
+                       }));
+                   }, CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, context);
+                });
+            }
         }
 
-        private void StopCaptureDataFromStream()
+        private void WriteCaptureDataToFile()
         {
-            _disposableCaptureStream?.Dispose();
-
-            _dataStreamManagementDelay.Stop();
-            LoggerOutput += DateTime.UtcNow.ToLongTimeString() + " delay for unsubscription from capture data stream ms: " + _dataStreamManagementDelay.ElapsedMilliseconds + Environment.NewLine;
-
             // explicit hook, only one process
             if (!string.IsNullOrWhiteSpace(SelectedProcessToCapture))
             {
-                Task.Run(() => WriteCaptureDataToFile(SelectedProcessToCapture));
+                Task.Run(() => WriteExtractedCaptureDataToFile(SelectedProcessToCapture));
             }
             // auto hook with filtered process list
             else
@@ -412,7 +431,7 @@ namespace CapFrameX.ViewModel
                 var filter = CaptureServiceConfiguration.GetProcessIgnoreList();
                 var process = ProcessesToCapture.FirstOrDefault();
 
-                Task.Run(() => WriteCaptureDataToFile(process));
+                Task.Run(() => WriteExtractedCaptureDataToFile(process));
             }
         }
 
@@ -422,9 +441,36 @@ namespace CapFrameX.ViewModel
             var startInfo = CaptureServiceConfiguration
                 .GetServiceStartInfo(serviceConfig.ConfigParameterToArguments());
             _captureService.StartCaptureService(startInfo);
+
+            StartFillArchive();
         }
 
-        private void StopCaptureService() => _captureService.StopCaptureService();
+        private void StartFillArchive()
+        {
+            _disposableArchiveStream?.Dispose();
+            _fillArchive = true;
+            ResetArchive();
+
+            _disposableArchiveStream = _captureService
+                .RedirectedOutputDataStream.Where(x => _fillArchive == true).ObserveOn(new EventLoopScheduler())
+                .Subscribe(dataLine =>
+                {
+                    AddDataLineToArchive(dataLine);
+                });
+        }
+
+        private void StopFillArchive()
+        {
+            _disposableArchiveStream?.Dispose();
+            _fillArchive = false;
+            ResetArchive();
+        }
+
+        private void StopCaptureService()
+        {
+            StopFillArchive();
+            _captureService.StopCaptureService();
+        }
 
         private string GetOutputFilename(string processName)
         {
@@ -435,7 +481,7 @@ namespace CapFrameX.ViewModel
             return Path.Combine(observedDirectory, filename);
         }
 
-        private void WriteCaptureDataToFile(string processName)
+        private void WriteExtractedCaptureDataToFile(string processName)
         {
             if (string.IsNullOrWhiteSpace(processName))
                 return;
@@ -444,41 +490,42 @@ namespace CapFrameX.ViewModel
             var csv = new StringBuilder();
             csv.AppendLine(CaptureServiceConfiguration.FILE_HEADER);
 
+            var captureData = GetAdjustedCaptureData();
+            StartFillArchive();
+
             //additional data/comment
-            string firstLineWithInfos = _captureData.First();
+            string firstLineWithInfos = captureData.First();
             firstLineWithInfos += "," + HardwareInfo.GetProcessorName();
             firstLineWithInfos += "," + HardwareInfo.GetGraphicCardName();
             firstLineWithInfos += "," + HardwareInfo.GetMotherboardName();
-            string[] currentLineSplit = firstLineWithInfos.Split(',');
+
+            //start time
+            var timeStart = GetStartTimeFromDataLine(firstLineWithInfos);
 
             // normalize time
-            currentLineSplit = firstLineWithInfos.Split(',');
-            var timeStart = currentLineSplit[11];
-            double normalizedTime = Convert.ToDouble(currentLineSplit[11], CultureInfo.InvariantCulture)
-                            - Convert.ToDouble(timeStart, CultureInfo.InvariantCulture);
-            currentLineSplit[11] = normalizedTime.ToString(CultureInfo.InvariantCulture);
+            var currentLineSplit = firstLineWithInfos.Split(',');
+            currentLineSplit[11] = "0";
 
             csv.AppendLine(string.Join(",", currentLineSplit));
 
-            foreach (var dataLine in _captureData.Skip(1))
+            foreach (var dataLine in captureData.Skip(1))
             {
-                int index = dataLine.IndexOf(".exe");
-                if (index > 0)
+                var extractedProcessName = GetProcessNameFromDataLine(dataLine);
+                if (extractedProcessName != null)
                 {
-                    var extractedProcessName = dataLine.Substring(0, index);
                     if (extractedProcessName == processName)
                     {
-                        currentLineSplit = dataLine.Split(',');
+                        double currentStartTime = GetStartTimeFromDataLine(dataLine);
 
                         // normalize time
-                        normalizedTime = Convert.ToDouble(currentLineSplit[11], CultureInfo.InvariantCulture)
-                            - Convert.ToDouble(timeStart, CultureInfo.InvariantCulture);
+                        double normalizedTime = currentStartTime - timeStart;
 
                         // cutting offset
                         int captureTime = Convert.ToInt32(CaptureTimeString);
                         if (captureTime > 0 && normalizedTime > captureTime)
                             break;
 
+                        currentLineSplit = dataLine.Split(',');
                         currentLineSplit[11] = normalizedTime.ToString(CultureInfo.InvariantCulture);
 
                         csv.AppendLine(string.Join(",", currentLineSplit));
@@ -490,6 +537,71 @@ namespace CapFrameX.ViewModel
             {
                 sw.Write(csv.ToString());
             }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static string GetProcessNameFromDataLine(string dataLine)
+        {
+            if (string.IsNullOrWhiteSpace(dataLine))
+                return null;
+
+            int index = dataLine.IndexOf(".exe");
+            string processName = null;
+
+            if (index > 0)
+            {
+                processName = dataLine.Substring(0, index);
+            }
+
+            return processName;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static double GetStartTimeFromDataLine(string dataLine)
+        {
+            if (string.IsNullOrWhiteSpace(dataLine))
+                return 0;
+
+            var lineSplit = dataLine.Split(',');
+            var startTime = lineSplit[11];
+
+            return Convert.ToDouble(startTime, CultureInfo.InvariantCulture);
+        }
+
+        private List<string> GetAdjustedCaptureData()
+        {
+            var processName = GetProcessNameFromDataLine(_captureData.First());
+            var startTimeWithOffset = GetStartTimeFromDataLine(_captureData.First());
+            var captureTime = Convert.ToDouble(CaptureTimeString, CultureInfo.InvariantCulture);
+
+            var filteredArchive = _captureDataArchive.Where(line => GetProcessNameFromDataLine(line) == processName).ToList();
+
+            // Distinct archive and live stream
+            var lastArchiveTime = GetStartTimeFromDataLine(filteredArchive.Last());
+            int distinctIndex = 0;
+            for (int i = 0; i < _captureData.Count; i++)
+            {
+                if (GetStartTimeFromDataLine(_captureData[i]) <= lastArchiveTime)
+                    distinctIndex++;
+                else
+                    break;
+            }
+
+            var unionCaptureData = filteredArchive.Concat(_captureData.Skip(distinctIndex - 1)).ToList();
+
+            var captureInterval = new List<string>();
+            double leftTimeBound = startTimeWithOffset - (_timestampFirstStreamElement - _timestampStartCapture) / 1000d;
+            double rightTimeBound = startTimeWithOffset + captureTime - (_timestampFirstStreamElement - _timestampStartCapture) / 1000d;
+
+            for (int i = 0; i < unionCaptureData.Count; i++)
+            {
+                var currentStartTime = GetStartTimeFromDataLine(unionCaptureData[i]);
+
+                if (currentStartTime >= leftTimeBound && currentStartTime <= rightTimeBound)
+                    captureInterval.Add(unionCaptureData[i]);
+            }
+
+            return captureInterval;
         }
 
         private ICaptureServiceConfiguration GetRedirectedServiceConfig()
@@ -582,6 +694,21 @@ namespace CapFrameX.ViewModel
 
             CaptureStateInfo = $"{SelectedProcessToCapture} selected, press {CaptureHotkeyString} to start capture.";
         }
+
+        private void AddDataLineToArchive(string dataLine)
+        {
+            if (_captureDataArchive.Count < ARCHIVE_LENGTH)
+            {
+                _captureDataArchive.Add(dataLine);
+            }
+            else
+            {
+                _captureDataArchive.RemoveAt(0);
+                _captureDataArchive.Add(dataLine);
+            }
+        }
+
+        private void ResetArchive() => _captureDataArchive.Clear();
 
         private void OnSelectedProcessToIgnoreChanged()
         {
