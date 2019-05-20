@@ -56,10 +56,6 @@ namespace CapFrameX.ViewModel
         private long _timestampStopCapture;
         private long _timestampFirstStreamElement;
 
-        private Stopwatch _hotkeyHandleSetCaptureModeDelay;
-        private Stopwatch _soundFileLoadAndPlayDelay;
-        private Stopwatch _dataStreamManagementDelay;
-
         public string SelectedProcessToCapture
         {
             get { return _selectedProcessToCapture; }
@@ -230,9 +226,7 @@ namespace CapFrameX.ViewModel
                 {Combination.FromString(CaptureHotkeyString), () =>
                 {
                     if (_isCaptureModeActive)
-                    {
-                         _hotkeyHandleSetCaptureModeDelay = new Stopwatch();
-                        _hotkeyHandleSetCaptureModeDelay.Start();
+                    {                        
                         SetCaptureMode();
                     }
                 }}
@@ -244,14 +238,6 @@ namespace CapFrameX.ViewModel
 
         private void SetCaptureMode()
         {
-            _hotkeyHandleSetCaptureModeDelay.Stop();
-            LoggerOutput += "Utc " + DateTime.UtcNow.ToLongTimeString() +
-                " delay between hotkey handle and call SetCaptureMode method in ms: " +
-                _hotkeyHandleSetCaptureModeDelay.ElapsedMilliseconds + Environment.NewLine;
-
-            _soundFileLoadAndPlayDelay = new Stopwatch();
-            _soundFileLoadAndPlayDelay.Start();
-
             if (!ProcessesToCapture.Any())
             {
                 _soundPlayer.Open(new Uri("Sounds/no_process.mp3", UriKind.Relative));
@@ -286,14 +272,6 @@ namespace CapFrameX.ViewModel
                     _soundPlayer.Play();
                 }
 
-                _soundFileLoadAndPlayDelay.Stop();
-                LoggerOutput += "Utc " + DateTime.UtcNow.ToLongTimeString() +
-                    " delay for loading sound files in ms: " +
-                    _soundFileLoadAndPlayDelay.ElapsedMilliseconds + Environment.NewLine;
-
-                _dataStreamManagementDelay = new Stopwatch();
-                _dataStreamManagementDelay.Start();
-
                 StartCaptureDataFromStream();
 
                 _isCapturing = !_isCapturing;
@@ -322,10 +300,8 @@ namespace CapFrameX.ViewModel
             _timestampStopCapture = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds();
             _disposableCaptureStream?.Dispose();
 
-            _dataStreamManagementDelay.Stop();
-            LoggerOutput += "Utc " + DateTime.UtcNow.ToLongTimeString() +
-                " delay for unsubscription from capture data stream in ms: " +
-                _dataStreamManagementDelay.ElapsedMilliseconds + Environment.NewLine;
+            LoggerOutput += $"Utc {DateTime.UtcNow.ToLongTimeString()} capturing stopped"
+                            + Environment.NewLine;
 
             // none -> do nothing
             // simple sounds
@@ -342,9 +318,6 @@ namespace CapFrameX.ViewModel
                 _soundPlayer.Volume = 0.75;
                 _soundPlayer.Play();
             }
-
-            _dataStreamManagementDelay = new Stopwatch();
-            _dataStreamManagementDelay.Start();
 
             WriteCaptureDataToFile();
 
@@ -363,12 +336,14 @@ namespace CapFrameX.ViewModel
 
         private void StartCaptureDataFromStream()
         {
+            LoggerOutput += $"Utc {DateTime.UtcNow.ToLongTimeString()} capturing started"
+                            + Environment.NewLine;
+
             _captureData = new List<string>();
             bool autoTermination = Convert.ToInt32(CaptureTimeString) > 0;
             double delayCapture = Convert.ToInt32(CaptureStartDelayString);
             double captureTime = Convert.ToInt32(CaptureTimeString) + delayCapture;
             bool intializedStartTime = false;
-            bool streamStarted = false;
 
             var context = TaskScheduler.FromCurrentSynchronizationContext();
             _timestampStartCapture = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds();
@@ -376,15 +351,6 @@ namespace CapFrameX.ViewModel
             _disposableCaptureStream = _captureService.RedirectedOutputDataStream
                 .ObserveOn(new EventLoopScheduler()).Subscribe(dataLine =>
                 {
-                    if (!streamStarted)
-                    {
-                        _dataStreamManagementDelay.Stop();
-                        LoggerOutput += "Utc " + DateTime.UtcNow.ToLongTimeString() +
-                            " delay for subscription to first element of capture data stream in ms: " +
-                            _dataStreamManagementDelay.ElapsedMilliseconds + Environment.NewLine;
-                        streamStarted = true;
-                    }
-
                     if (string.IsNullOrWhiteSpace(dataLine))
                         return;
 
@@ -397,14 +363,18 @@ namespace CapFrameX.ViewModel
 
                         // stop archive
                         _fillArchive = false;
-                        _disposableCaptureStream?.Dispose();
-                    }
+                        _disposableArchiveStream?.Dispose();
 
-                    double currentTime = GetStartTimeFromDataLine(dataLine);
+                        LoggerOutput += $"Utc {DateTime.UtcNow.ToLongTimeString()} stopped filling archive"
+                            + Environment.NewLine;
+                    }
                 });
 
             if (autoTermination)
             {
+                LoggerOutput += $"Utc {DateTime.UtcNow.ToLongTimeString()} starting countdown"
+                            + Environment.NewLine;
+
                 Task.Run(async () =>
                 {
                     await SetTaskDelay().ContinueWith(_ =>
@@ -537,6 +507,9 @@ namespace CapFrameX.ViewModel
             {
                 sw.Write(csv.ToString());
             }
+
+            LoggerOutput += $"Utc {DateTime.UtcNow.ToLongTimeString()} successfully written capture file into directory"
+               + Environment.NewLine;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -574,7 +547,19 @@ namespace CapFrameX.ViewModel
             var startTimeWithOffset = GetStartTimeFromDataLine(_captureData.First());
             var captureTime = Convert.ToDouble(CaptureTimeString, CultureInfo.InvariantCulture);
 
+            if (captureTime == 0)
+            {
+                // ms -> sec
+                captureTime = (_timestampStopCapture - _timestampStartCapture) / 1000d;
+            }
+
+            LoggerOutput += $"Utc {DateTime.UtcNow.ToLongTimeString()} capture time (free run or time set) in sec: " +
+                            Math.Round(captureTime, 2).ToString(CultureInfo.InvariantCulture) + Environment.NewLine;
+
             var filteredArchive = _captureDataArchive.Where(line => GetProcessNameFromDataLine(line) == processName).ToList();
+
+            LoggerOutput += $"Utc {DateTime.UtcNow.ToLongTimeString()} using archive with {filteredArchive.Count} frames" 
+                + Environment.NewLine;
 
             // Distinct archive and live stream
             var lastArchiveTime = GetStartTimeFromDataLine(filteredArchive.Last());
@@ -587,11 +572,15 @@ namespace CapFrameX.ViewModel
                     break;
             }
 
-            var unionCaptureData = filteredArchive.Concat(_captureData.Skip(distinctIndex - 1)).ToList();
+            var unionCaptureData = filteredArchive.Concat(_captureData.Skip(distinctIndex)).ToList();
 
             var captureInterval = new List<string>();
             double leftTimeBound = startTimeWithOffset - (_timestampFirstStreamElement - _timestampStartCapture) / 1000d;
             double rightTimeBound = startTimeWithOffset + captureTime - (_timestampFirstStreamElement - _timestampStartCapture) / 1000d;
+
+            var compensatedDelay = Math.Round((_timestampFirstStreamElement - _timestampStartCapture) / 1000d, 2);
+            LoggerOutput += $"Utc {DateTime.UtcNow.ToLongTimeString()} compensated {compensatedDelay.ToString(CultureInfo.InvariantCulture)} " +
+                $"seconds delay with data from archive" + Environment.NewLine;
 
             for (int i = 0; i < unionCaptureData.Count; i++)
             {

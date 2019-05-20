@@ -45,7 +45,7 @@
 				   VerticalAlignment="Center" HorizontalAlignment="Center" />
 		<StackPanel Margin="0 50 0 0" Grid.Row="1" Grid.Column="1" Orientation="Vertical" Width="240">
 			<StackPanel Orientation="Horizontal">
-				<TextBlock Style="{StaticResource MaterialDesignTitleTextBlock}">Process capture list</TextBlock>
+                <TextBlock Style="{StaticResource MaterialDesignTitleTextBlock}">Running processes</TextBlock>
 				<Button Padding="0 0 0 4" Width="64" Height="24"  Foreground="Black" BorderThickness="0" Background="Transparent" VerticalAlignment="Top"
 						HorizontalAlignment="Center" Command="{Binding ResetCaptureProcessCommand}" ToolTip="Reset selected process"
 						IsEnabled="{Binding IsAddToIgnoreListButtonActive}">
@@ -95,10 +95,11 @@
 		<Grid x:Name="HotkeyTextBox" Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="3" HorizontalAlignment="Stretch" VerticalAlignment="Center">
 			<TextBox Width="152" wpf:HintAssist.Hint="Capture hotkey" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
 					 Margin="0" FontSize="14" Text="{Binding CaptureHotkey, ElementName = CaptureViewControl, Mode=OneWay, TargetNullValue=&lt; not set &gt;}" HorizontalAlignment="Left"
-					 IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False" PreviewKeyDown="HotkeyTextBox_PreviewKeyDown"/>
+					 IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False" PreviewKeyDown="HotkeyTextBox_PreviewKeyDown"
+                     ToolTip="combinable with Ctrl/Shift/Alt"/>
             <TextBox Width="152" wpf:HintAssist.Hint="Capture time in seconds" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
 					 Margin="0" FontSize="14" Text="{Binding CaptureTimeString, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Center"
-                     PreviewMouseDown="TextBox_PreviewMouseDown" MouseLeave="TextBox_MouseLeave"/>
+                     PreviewMouseDown="TextBox_PreviewMouseDown" MouseLeave="TextBox_MouseLeave" ToolTip="0 = no limit"/>
             <!--<TextBox Width="152" wpf:HintAssist.Hint="Start delay in seconds" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
 					 Margin="0" FontSize="14" Text="{Binding CaptureStartDelayString, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Right"
                      PreviewMouseDown="TextBox_PreviewMouseDown" MouseLeave="TextBox_MouseLeave"/>-->

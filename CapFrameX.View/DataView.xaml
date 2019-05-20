@@ -170,27 +170,27 @@
 											<ColumnDefinition Width="Auto"/>
 											<ColumnDefinition Width="Auto"/>
 										</Grid.ColumnDefinitions>
-										<TextBlock Margin="5" Grid.Row="0" Grid.Column="0" Text="Use maximum" VerticalAlignment="Center"/>
+										<TextBlock Margin="5" Grid.Row="0" Grid.Column="0" Text="Maximum" VerticalAlignment="Center"/>
 										<ToggleButton Margin="5" Grid.Row="0" Grid.Column="1" IsChecked="{Binding UseMaxStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show low parameter" />
-										<TextBlock Margin="5" Grid.Row="1" Grid.Column="0" Text="Use 0.99-quantile" VerticalAlignment="Center"/>
+										<TextBlock Margin="5" Grid.Row="1" Grid.Column="0" Text="0.99-quantile" VerticalAlignment="Center"/>
 										<ToggleButton Margin="5" Grid.Row="1" Grid.Column="1" IsChecked="{Binding UseP99QuantileStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show low parameter" />
-										<TextBlock Margin="5" Grid.Row="2" Grid.Column="0" Text="Use 0.95-quantile" VerticalAlignment="Center"/>
+										<TextBlock Margin="5" Grid.Row="2" Grid.Column="0" Text="0.95-quantile" VerticalAlignment="Center"/>
 										<ToggleButton Margin="5" Grid.Row="2" Grid.Column="1" IsChecked="{Binding UseP95QuantileStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show low parameter" />
-										<TextBlock Margin="5" Grid.Row="3" Grid.Column="0" Text="Use average" VerticalAlignment="Center"/>
+										<TextBlock Margin="5" Grid.Row="3" Grid.Column="0" Text="Average" VerticalAlignment="Center"/>
 										<ToggleButton Margin="5" Grid.Row="3" Grid.Column="1" IsChecked="{Binding UseAverageStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show low parameter" />
-										<TextBlock Margin="5" Grid.Row="4" Grid.Column="0" Text="Use 0.05-quantile" VerticalAlignment="Center"/>
+										<TextBlock Margin="5" Grid.Row="4" Grid.Column="0" Text="0.05-quantile" VerticalAlignment="Center"/>
 										<ToggleButton Margin="5" Grid.Row="4" Grid.Column="1" IsChecked="{Binding UseP5QuantileStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show low parameter" />
-										<TextBlock Margin="5" Grid.Row="5" Grid.Column="0" Text="Use 0.01-quantile" VerticalAlignment="Center"/>
+										<TextBlock Margin="5" Grid.Row="5" Grid.Column="0" Text="0.01-quantile" VerticalAlignment="Center"/>
 										<ToggleButton Margin="5" Grid.Row="5" Grid.Column="1" IsChecked="{Binding UseP1QuantileStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show low parameter" />
-										<TextBlock Margin="5" Grid.Row="6" Grid.Column="0" Text="Use 0.001-quantile" VerticalAlignment="Center"/>
+										<TextBlock Margin="5" Grid.Row="6" Grid.Column="0" Text="0.001-quantile" VerticalAlignment="Center"/>
 										<ToggleButton Margin="5" Grid.Row="6" Grid.Column="1" IsChecked="{Binding UseP0Dot1QuantileStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show low parameter" />
-										<TextBlock Margin="5" Grid.Row="7" Grid.Column="0" Text="Use 1% low average" VerticalAlignment="Center"/>
+										<TextBlock Margin="5" Grid.Row="7" Grid.Column="0" Text="1% low average" VerticalAlignment="Center"/>
 										<ToggleButton Margin="5" Grid.Row="7" Grid.Column="1" IsChecked="{Binding UseP1LowAverageStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show low parameter" />
-										<TextBlock Margin="5" Grid.Row="8" Grid.Column="0" Text="Use 0.1% low average" VerticalAlignment="Center"/>
+										<TextBlock Margin="5" Grid.Row="8" Grid.Column="0" Text="0.1% low average" VerticalAlignment="Center"/>
 										<ToggleButton Margin="5" Grid.Row="8" Grid.Column="1" IsChecked="{Binding UseP0Dot1LowAverageStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show low parameter" />
-										<TextBlock Margin="5" Grid.Row="9" Grid.Column="0" Text="Use minimum" VerticalAlignment="Center"/>
+										<TextBlock Margin="5" Grid.Row="9" Grid.Column="0" Text="Minimum" VerticalAlignment="Center"/>
 										<ToggleButton Margin="5" Grid.Row="9" Grid.Column="1" IsChecked="{Binding UseMinStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show low parameter" />
-										<TextBlock Margin="5" Grid.Row="10" Grid.Column="0" Text="Use adaptive STD" VerticalAlignment="Center"/>
+										<TextBlock Margin="5" Grid.Row="10" Grid.Column="0" Text="Adaptive STD" VerticalAlignment="Center"/>
 										<ToggleButton Margin="5" Grid.Row="10" Grid.Column="1" IsChecked="{Binding UseAdaptiveSTDStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show low parameter" />
 									</Grid>
 									<Separator Style="{StaticResource MaterialDesignDarkSeparator}" />

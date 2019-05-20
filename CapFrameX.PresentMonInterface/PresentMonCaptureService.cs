@@ -12,6 +12,7 @@ namespace CapFrameX.PresentMonInterface
     {
         private readonly ISubject<string> _outputErrorStream;
         private readonly ISubject<string> _outputDataStream;
+        private readonly object _listLock = new object();
 
         private HashSet<string> _presentMonProcesses;
         private bool _isUpdating;
@@ -108,7 +109,10 @@ namespace CapFrameX.PresentMonInterface
 
                     if (!_presentMonProcesses.Contains(processName))
                     {
-                        _presentMonProcesses.Add(processName);
+                        lock (_listLock)
+                        {
+                            _presentMonProcesses.Add(processName);
+                        }
                     }
                 }
             });
@@ -119,12 +123,15 @@ namespace CapFrameX.PresentMonInterface
             _isUpdating = true;
             var updatedList = new List<string>();
 
-            foreach (var process in _presentMonProcesses)
+            lock (_listLock)
             {
-                var proc = Process.GetProcessesByName(process);
-                if (proc.Any())
+                foreach (var process in _presentMonProcesses)
                 {
-                    updatedList.Add(process);
+                    var proc = Process.GetProcessesByName(process);
+                    if (proc.Any())
+                    {
+                        updatedList.Add(process);
+                    }
                 }
             }
 
