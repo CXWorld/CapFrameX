@@ -1,8 +1,11 @@
 # CapFrameX
-Frametimes analysis tool compatible with OCAT v1.3 and 1.4
+Frametimes capture and analysis tool compatible with most common 3D APIs
 
 # Release
 Download link: https://github.com/DevTechProfile/CapFrameX/releases
+
+# Capture frametimes
+![Screenshot](Images/Capture_Page.png)
 
 # Single record analysis
 ![Screenshot](Images/Single_Record.png)
@@ -19,35 +22,48 @@ Download link: https://github.com/DevTechProfile/CapFrameX/releases
 # Report table (Excel)
 ![Screenshot](Images/Report_Table.png)
 
-# Settings dialog
-![Screenshot](Images/Settings_Dialog.png)
-
 # Current feature list
-* Automatic record file (OCAT) management/directory observer
-* Selectable data source (OCAT recordings)
+Capturing and analysing frametimes. Most common 3D APIs are supported. 
+
+## Capture frametimes
+* capture service based on PresentMon
+* high-accurate frametime recordings
+* predefined capture time
+* managing processes to capture
+* DirectX and Vulkan are supported
+* free configurable hotkeys
+* very reliable hotkey hooking
+
+## Single record analysis
 * Selectable recordings in DataGrid/ searching in DataGrid
-* Displaying system info from OCAT record file
+* Displaying system info like CPU and GPU
 * Editing comments and system info
 * Direct editing comments and system info in record list
 * Displaying frametime graph and moving average
 * Displaying FPS graph and average line graph
-* Displaying frametime and display changed time graph (G-Sync and FreeSync synced vs. dropped frames)
-* Scrollable sliding window on frametime data
+* Cutting frametime graphs ("Single Record" page)
 * Calculating and displaying basic parameter (average, p-quantiles, min)
 * Calculating and displaying low average parameter (0.1% and 1% low)
 * Calculating and displaying adaptive standard deviation
 * Calculating and displaying stuttering percentage (time)
-* Calculating and displaying L-shape curve
-* Cutting frametime graphs ("Single Record" page)
 * Removing outliers
+
+## Record comparison
 * Record comparison (performance parameter, L-shape analysis)
+
+## L-shape analysis
+* Calculating and displaying L-shape curve
+
+## Synchronization info (G-Sync, FreeSync)
+* Displaying frametime and display changed time graph (G-Sync and FreeSync synced vs. dropped frames)
+
+## Reporting
 * Export performance parameter and graphs (Excel)
 * Export comparison table as report (Excel)
 * Export PNG report picture
 
 # Requirements
 * .NET 4.7
-* OCAT v1.3 + v1.4 (capturing frametime data)
 
 # Build requirements
 * MS Visual Studio 2017 only (Community Edition)
@@ -56,16 +72,7 @@ Download link: https://github.com/DevTechProfile/CapFrameX/releases
 * WiX Toolset and VS Extension: http://wixtoolset.org/releases/
 
 # Dev roadmap
-* Capture mode
 * Approximation input lag
 * Advanced comparison method
 * Special features/next steps
-
-# Special features
-* Simulation: push various synthetic sequences
-* Simulation: push real-world data (data from OCAT)
-* Watch simultaneous live chart
-* Watching smoothness/stuttering and aliasing effects at high-contrast transitions due to low FPS
-* 2D/3D animation
-* 3D animation using adaptive sync
 
