@@ -45,7 +45,7 @@
 				   VerticalAlignment="Center" HorizontalAlignment="Center" />
 
         <materialDesign:Flipper Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3" HorizontalAlignment="Center"
-                                Style="{StaticResource MaterialDesignCardFlipper}">
+                                Style="{StaticResource MaterialDesignCardFlipper}" Background="Transparent">
             <materialDesign:Flipper.FrontContent>
                 <Grid Margin="10" >
                     <Grid.RowDefinitions>
@@ -53,7 +53,7 @@
                         <RowDefinition Height="50"></RowDefinition>
                     </Grid.RowDefinitions>
                     <Grid Grid.Row="0" >
-                        <StackPanel Margin="0 10 0 0" Orientation="Vertical" Width="240" HorizontalAlignment="Center">
+                        <StackPanel Margin="0 20 0 0" Orientation="Vertical" Width="240" HorizontalAlignment="Center">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Style="{StaticResource MaterialDesignTitleTextBlock}">Running processes</TextBlock>
                                 <Button Padding="0 0 0 4" Width="64" Height="24"  Foreground="Black" BorderThickness="0" Background="Transparent" VerticalAlignment="Top"
@@ -69,7 +69,7 @@
                         </StackPanel>
                     </Grid>
                     <Button Grid.Row="1" Margin="0 4 0 0" Width="120" Style="{StaticResource MaterialDesignFlatButton}"
-                        Command="{x:Static materialDesign:Flipper.FlipCommand}" FontSize="10">
+                            Command="{x:Static materialDesign:Flipper.FlipCommand}" FontSize="10">
                         Show ignore list
                     </Button>
                 </Grid>
@@ -86,7 +86,7 @@
                             <ColumnDefinition Width="100"></ColumnDefinition>
                             <ColumnDefinition Width="2*" MaxWidth="280"></ColumnDefinition>
                         </Grid.ColumnDefinitions>
-                        <StackPanel Grid.Column="0" Margin="0 10 0 0" Orientation="Vertical" Width="240">
+                        <StackPanel Grid.Column="0" Margin="0 20 0 0" Orientation="Vertical" Width="240">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Style="{StaticResource MaterialDesignTitleTextBlock}">Running processes</TextBlock>
                                 <Button Padding="0 0 0 4" Width="64" Height="24"  Foreground="Black" BorderThickness="0" Background="Transparent" VerticalAlignment="Top"
@@ -100,9 +100,11 @@
 					                  IsEnabled="{Binding IsAddToIgnoreListButtonActive}">
                             </ListView>
                         </StackPanel>
-                        <Button Grid.Column="1" Width="64" Height="64" Foreground="Black" BorderThickness="0" Background="Transparent" VerticalAlignment="Center"
-				                HorizontalAlignment="Center" Command="{Binding AddToIgonreListCommand}" IsEnabled="{Binding IsAddToIgnoreListButtonActive}">
-                            <Button.Triggers>
+                        <StackPanel Grid.Column="1" Orientation="Vertical" VerticalAlignment="Center">
+                            <Button Width="60" Height="50" Foreground="Black" BorderThickness="0" Background="Transparent"
+				                    HorizontalAlignment="Center" Command="{Binding AddToIgonreListCommand}" IsEnabled="{Binding IsAddToIgnoreListButtonActive}"
+                                    ToolTip="Ignore process">
+                                <Button.Triggers>
                                 <EventTrigger RoutedEvent="MouseEnter">
                                     <BeginStoryboard>
                                         <Storyboard>
@@ -120,16 +122,32 @@
                             </Button.Triggers>
                             <materialDesign:PackIcon Kind="ArrowRight" Width="32" Height="32"/>
                         </Button>
-                        <StackPanel Grid.Column="2" Margin="0 10 0 0" Orientation="Vertical" Width="200">
+                            <Button Margin="0 10 0 0" Width="60" Height="50" Foreground="Black" BorderThickness="0" Background="Transparent"
+				                    HorizontalAlignment="Center" Command="{Binding AddToProcessListCommand}" IsEnabled="{Binding IsAddToIgnoreListButtonActive}"
+                                    ToolTip="Unignore process">
+                                <Button.Triggers>
+                                    <EventTrigger RoutedEvent="MouseEnter">
+                                        <BeginStoryboard>
+                                            <Storyboard>
+                                                <ColorAnimation Storyboard.TargetProperty="(Button.Background).(SolidColorBrush.Color)" To="#e6e6e6"/>
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </EventTrigger>
+                                    <EventTrigger RoutedEvent="MouseLeave">
+                                        <BeginStoryboard>
+                                            <Storyboard>
+                                                <ColorAnimation Storyboard.TargetProperty="(Button.Background).(SolidColorBrush.Color)" To="Transparent"/>
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </EventTrigger>
+                                </Button.Triggers>
+                                <materialDesign:PackIcon Kind="ArrowLeft" Width="32" Height="32"/>
+                            </Button>
+                        </StackPanel>
+                        <StackPanel Grid.Column="2" Margin="0 20 0 0" Orientation="Vertical" Width="200">
                             <TextBlock Style="{StaticResource MaterialDesignTitleTextBlock}">Process ignore list</TextBlock>
                             <ListView IsSynchronizedWithCurrentItem="False" ItemsSource="{Binding ProcessesToIgnore}" SelectedItem="{Binding SelectedProcessToIgnore}"
-					                  ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True" Height="280"
-					                  Tag="{Binding ElementName=CaptureViewControl, Path=DataContext}">
-                                <ListView.ContextMenu>
-                                    <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
-                                        <MenuItem Header="Remove from ignore list" Command="{Binding RemoveFromIgnoreListCommand}"/>
-                                    </ContextMenu>
-                                </ListView.ContextMenu>
+					                  ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True" Height="280">
                             </ListView>
                         </StackPanel>
                     </Grid>

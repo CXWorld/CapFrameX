@@ -163,7 +163,7 @@ namespace CapFrameX.ViewModel
 
         public ICommand AddToIgonreListCommand { get; }
 
-        public ICommand RemoveFromIgnoreListCommand { get; }
+        public ICommand AddToProcessListCommand { get; }
 
         public ICommand ResetCaptureProcessCommand { get; }
 
@@ -173,7 +173,7 @@ namespace CapFrameX.ViewModel
             _captureService = captureService;
 
             AddToIgonreListCommand = new DelegateCommand(OnAddToIgonreList);
-            RemoveFromIgnoreListCommand = new DelegateCommand(OnRemoveFromIgnoreList);
+            AddToProcessListCommand = new DelegateCommand(OnAddToProcessList);
             ResetCaptureProcessCommand = new DelegateCommand(OnResetCaptureProcess);
 
             CaptureStateInfo = $"Service ready... press {CaptureHotkeyString} to start capture of the running process.";
@@ -616,7 +616,8 @@ namespace CapFrameX.ViewModel
             StartCaptureService();
         }
 
-        private void OnRemoveFromIgnoreList()
+
+        private void OnAddToProcessList()
         {
             if (SelectedProcessToIgnore == null)
                 return;
