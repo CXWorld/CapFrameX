@@ -6,6 +6,7 @@ using System.Reactive.Subjects;
 using System.Collections.Generic;
 using CapFrameX.Contracts.OcatInterface;
 using CapFrameX.Contracts.Configuration;
+using CapFrameX.PresentMonInterface;
 
 namespace CapFrameX.OcatInterface
 {
@@ -98,7 +99,7 @@ namespace CapFrameX.OcatInterface
 
 		public IEnumerable<FileInfo> GetAllRecordFileInfo()
 		{
-			var filterList = _appConfiguration.RecordDataGridIgnoreList.Split(';').ToArray();
+			var filterList = CaptureServiceConfiguration.GetProcessIgnoreList().ToArray();
 
 			for (int i = 0; i < filterList.Length; i++)
 			{

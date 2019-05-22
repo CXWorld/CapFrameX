@@ -167,7 +167,7 @@ namespace CapFrameX.ViewModel
 			if (!RecordInfoList.Any())
 				return;
 
-			_appConfiguration.AddAppNameToIgnoreList(SelectedRecordInfo.GameName);
+            CaptureServiceConfiguration.AddProcessToIgnoreList(SelectedRecordInfo.GameName);
 
 			SelectedRecordInfo = null;
 			RecordInfoList.Clear();

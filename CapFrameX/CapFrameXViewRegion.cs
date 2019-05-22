@@ -1,4 +1,5 @@
-﻿using CapFrameX.View;
+﻿using CapFrameX.PresentMonInterface;
+using CapFrameX.View;
 using Prism.Modularity;
 
 namespace CapFrameX
@@ -7,16 +8,17 @@ namespace CapFrameX
     {
         public void Initialize()
         {
-			RegionManagerWrapper.Singleton.RegisterViewWithRegion("ColorbarRegion", typeof(ColorbarView));
-			RegionManagerWrapper.Singleton.RegisterViewWithRegion("ControlRegion", typeof(ControlView));
-			RegionManagerWrapper.Singleton.RegisterViewWithRegion("DataRegion", typeof(CaptureView));
-			RegionManagerWrapper.Singleton.RegisterViewWithRegion("DataRegion", typeof(DataView));
-			RegionManagerWrapper.Singleton.RegisterViewWithRegion("DataRegion", typeof(ComparisonDataView));
-			RegionManagerWrapper.Singleton.RegisterViewWithRegion("DataRegion", typeof(ReportView));
-			RegionManagerWrapper.Singleton.RegisterViewWithRegion("DataRegion", typeof(SynchronizationView));
-			RegionManagerWrapper.Singleton.RegisterViewWithRegion("DataRegion", typeof(AggregationView));
-			RegionManagerWrapper.Singleton.RegisterViewWithRegion("StateRegion", typeof(StateView));
-			RegionManagerWrapper.Singleton.RegisterViewWithRegion("OverlayRegion", typeof(OverlayView));			
-		}
+            RegionManagerWrapper.Singleton.RegisterViewWithRegion("ColorbarRegion", typeof(ColorbarView));
+            RegionManagerWrapper.Singleton.RegisterViewWithRegion("ControlRegion", typeof(ControlView));
+            if (CaptureServiceInfo.IsCompatibleWithRunningOS)
+                RegionManagerWrapper.Singleton.RegisterViewWithRegion("DataRegion", typeof(CaptureView));
+            RegionManagerWrapper.Singleton.RegisterViewWithRegion("DataRegion", typeof(DataView));
+            RegionManagerWrapper.Singleton.RegisterViewWithRegion("DataRegion", typeof(ComparisonDataView));
+            RegionManagerWrapper.Singleton.RegisterViewWithRegion("DataRegion", typeof(ReportView));
+            RegionManagerWrapper.Singleton.RegisterViewWithRegion("DataRegion", typeof(SynchronizationView));
+            RegionManagerWrapper.Singleton.RegisterViewWithRegion("DataRegion", typeof(AggregationView));
+            RegionManagerWrapper.Singleton.RegisterViewWithRegion("StateRegion", typeof(StateView));
+            RegionManagerWrapper.Singleton.RegisterViewWithRegion("OverlayRegion", typeof(OverlayView));
+        }
     }
 }

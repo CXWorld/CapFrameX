@@ -30,6 +30,9 @@ namespace CapFrameX.PresentMonInterface
 
         public bool StartCaptureService(IServiceStartInfo startinfo)
         {
+            if (!CaptureServiceInfo.IsCompatibleWithRunningOS)
+                return false;
+
             TryKillPresentMon();
 
             var process = new Process

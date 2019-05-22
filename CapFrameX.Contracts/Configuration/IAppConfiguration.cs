@@ -10,11 +10,7 @@
 
 		string ScreenshotDirectory { get; set; }
 
-		string ChartQualityLevel { get; set; }
-
 		int FpsValuesRoundingDigits { get; set; }
-
-		string RecordDataGridIgnoreList { get; set; }
 
 		bool UseSingleRecordMaxStatisticParameter { get; set; }
 
@@ -41,7 +37,5 @@
         string CaptureHotKey { get; set; }
 
         string HotkeySoundMode { get; set; }
-
-        void AddAppNameToIgnoreList(string nameToBeIgnored);
 	}
 }

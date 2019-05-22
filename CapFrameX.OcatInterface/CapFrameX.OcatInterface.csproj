@@ -100,6 +100,10 @@
       <Project>{A4559B99-7FCB-40EF-BF97-D293A2B7D6D3}</Project>
       <Name>CapFrameX.Extensions</Name>
     </ProjectReference>
+    <ProjectReference Include="..\CapFrameX.PresentMonInterface\CapFrameX.PresentMonInterface.csproj">
+      <Project>{ADFBAECE-B74F-4A80-87D1-84BC990527B0}</Project>
+      <Name>CapFrameX.PresentMonInterface</Name>
+    </ProjectReference>
     <ProjectReference Include="..\CapFrameX.Statistics\CapFrameX.Statistics.csproj">
       <Project>{788f49cd-abcb-4c7c-b1b6-bf9dc2482432}</Project>
       <Name>CapFrameX.Statistics</Name>

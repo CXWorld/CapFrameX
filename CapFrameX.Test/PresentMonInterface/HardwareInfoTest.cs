@@ -10,7 +10,7 @@ namespace CapFrameX.Test.PresentMonInterface
 		[TestMethod]
 		public void GetCPUInfo_CorrectName()
 		{
-			Console.WriteLine(HardwareInfo.GetProcessorName());
+            Console.WriteLine(HardwareInfo.GetProcessorName());
 		}
 
 		[TestMethod]

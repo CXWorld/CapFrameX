@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 			 xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
 			 xmlns:prism="http://prismlibrary.com/"
+             xmlns:mvvm="clr-namespace:CapFrameX.MVVM.Converter;assembly=CapFrameX.MVVM"
              xmlns:local="clr-namespace:CapFrameX.View"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800"
@@ -18,6 +19,7 @@
 				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.DataGrid.xaml" />
 				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Slider.xaml" />
 			</ResourceDictionary.MergedDictionaries>
+            <mvvm:BoolToVisibilityConverter x:Key="FalseToCollapsedConverter" TrueValue="Visible" FalseValue="Collapsed"/>
 		</ResourceDictionary>
 	</UserControl.Resources>
 	<Grid>
@@ -31,7 +33,8 @@
 					<RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
 							 Margin="5"
 							 IsChecked="{Binding CaptureIsChecked}"
-							 Content="CAPTURE" />
+							 Content="CAPTURE" 
+                             Visibility="{Binding IsCompatibleWithRunningOS, Converter={StaticResource FalseToCollapsedConverter}}"/>
 					<RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
 							 Margin="5"
 							 IsChecked="{Binding SingleRecordIsChecked}"
@@ -70,7 +73,6 @@
 							<RowDefinition Height="*" />
 							<RowDefinition Height="*" />
 							<RowDefinition Height="*" />
-							<RowDefinition Height="*" />
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
 						<TextBlock Grid.Row="0"
@@ -97,38 +99,22 @@
                             </TextBox.Text>
                         </TextBox>
                         <StackPanel Grid.Row="3" Orientation="Horizontal">
-                            <TextBox IsReadOnly="True" materialDesign:HintAssist.Hint="Observed directory (OCAT V1.3 + 1.4)" Text="{Binding ObservedDirectory, Mode=OneWay}" />
+                            <TextBox IsReadOnly="True" materialDesign:HintAssist.Hint="Observed directory (OCAT compatible)" Text="{Binding ObservedDirectory, Mode=OneWay}" />
 							<Button Margin="20 0 0 0" Command="{Binding SelectObservedFolderCommand}" Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}" ToolTip="Select observed folder">
 								<materialDesign:PackIcon Kind="Folder" Height="24" Width="24" />
 							</Button>
 						</StackPanel>
-						<ComboBox Grid.Row="4" materialDesign:HintAssist.Hint="FPS values rounding digits"
+                        <ComboBox Grid.Row="4" materialDesign:HintAssist.Hint="FPS values rounding digits"
 								  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="200" Margin="8 8 8 8"
 								  ItemsSource="{Binding RoundingDigits}">
-							<ComboBox.Text>
-								<Binding Path="FpsValuesRoundingDigits"
+                            <ComboBox.Text>
+                                <Binding Path="FpsValuesRoundingDigits"
 										 Mode="TwoWay"
 										 UpdateSourceTrigger="PropertyChanged">
-								</Binding>
-							</ComboBox.Text>
-						</ComboBox>
-						<TextBox Grid.Row="5" materialDesign:HintAssist.Hint="Application ignore list" 
-								 TextAlignment="Left" 
-								 HorizontalAlignment="Left"
-								 TextWrapping="Wrap"
-								 MaxWidth="450"
-								 VerticalAlignment="Stretch"
-								 AcceptsReturn="True"
-								 VerticalScrollBarVisibility="Auto"
-								 SpellCheck.IsEnabled="False">
-							<TextBox.Text>
-								<Binding Path="RecordDataGridIgnoreList"
-										 Mode="TwoWay"
-										 UpdateSourceTrigger="LostFocus">
-								</Binding>
-							</TextBox.Text>
-						</TextBox>
-						<StackPanel Grid.Row="6" Orientation="Horizontal" Margin="0 0 0 30">
+                                </Binding>
+                            </ComboBox.Text>
+                        </ComboBox>
+                        <StackPanel Grid.Row="6" Orientation="Horizontal" Margin="0 0 0 30">
                             <TextBox IsReadOnly="True" materialDesign:HintAssist.Hint="Screenshot directory" Text="{Binding ScreenshotDirectory, Mode=OneWay}" />
 							<Button Margin="20 0 0 0" Command="{Binding SelectScreenshotFolderCommand}" Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}" ToolTip="Select screenshot folder">
 								<materialDesign:PackIcon Kind="Folder" Height="24" Width="24" />

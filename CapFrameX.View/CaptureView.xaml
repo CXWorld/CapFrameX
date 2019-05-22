@@ -47,7 +47,7 @@
         <materialDesign:Flipper Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3" HorizontalAlignment="Center"
                                 Style="{StaticResource MaterialDesignCardFlipper}" Background="Transparent">
             <materialDesign:Flipper.FrontContent>
-                <Grid Margin="10" >
+                <Grid Margin="10" Background="{DynamicResource MaterialDesignPaper}">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="1*"></RowDefinition>
                         <RowDefinition Height="50"></RowDefinition>
@@ -75,7 +75,7 @@
                 </Grid>
             </materialDesign:Flipper.FrontContent>
             <materialDesign:Flipper.BackContent>
-                <Grid Margin="10" >
+                <Grid Margin="10" Background="{DynamicResource MaterialDesignPaper}">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="1*"></RowDefinition>
                         <RowDefinition Height="50"></RowDefinition>

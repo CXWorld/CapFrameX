@@ -30,22 +30,10 @@ namespace CapFrameX.Configuration
 			set { Settings.ScreenshotDirectory = value; Settings.Save(); }
 		}
 
-		public string ChartQualityLevel
-		{
-			get { return Settings.ChartQualityLevel; }
-			set { Settings.ChartQualityLevel = value; Settings.Save(); }
-		}
-
 		public int FpsValuesRoundingDigits
 		{
 			get { return Settings.FpsValuesRoundingDigits; }
 			set { Settings.FpsValuesRoundingDigits = value; Settings.Save(); }
-		}
-
-		public string RecordDataGridIgnoreList
-		{
-			get { return Settings.RecordDataGridIgnoreList; }
-			set { Settings.RecordDataGridIgnoreList = value; Settings.Save(); }
 		}
 
 		public bool UseSingleRecordMaxStatisticParameter
@@ -125,11 +113,5 @@ namespace CapFrameX.Configuration
             get { return Settings.HotkeySoundMode; }
             set { Settings.HotkeySoundMode = value; Settings.Save(); }
         }
-
-        public void AddAppNameToIgnoreList(string nameToBeIgnored)
-		{
-			if (!RecordDataGridIgnoreList.Contains(nameToBeIgnored))
-				RecordDataGridIgnoreList = RecordDataGridIgnoreList + "; " + nameToBeIgnored;
-		}
 	}
 }

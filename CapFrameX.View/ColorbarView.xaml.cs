@@ -26,8 +26,7 @@ namespace CapFrameX.View
 		}
 
 		private void PopupBox_RequestBringIntoView(object sender, System.Windows.RequestBringIntoViewEventArgs e)
-		{
-			(DataContext as ColorbarViewModel).UpdateSettingsParameter();
+        {
 		}
 	}
 }
