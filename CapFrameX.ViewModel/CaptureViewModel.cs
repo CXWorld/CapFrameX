@@ -1,15 +1,16 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.PresentMonInterface;
+using CapFrameX.EventAggregation.Messages;
 using CapFrameX.OcatInterface;
 using CapFrameX.PresentMonInterface;
 using Gma.System.MouseKeyHook;
 using Prism.Commands;
+using Prism.Events;
 using Prism.Mvvm;
 using Prism.Regions;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -27,11 +28,14 @@ namespace CapFrameX.ViewModel
 {
     public class CaptureViewModel : BindableBase, INavigationAware
     {
-        private const int PRESICE_OFFSET = 300;
+        private const int PRESICE_OFFSET = 500;
         private const int ARCHIVE_LENGTH = 1000;
+        private const double VOICE_SOUND_LEVEL = 0.4;
+        private const double SIMPLE_SOUND_LEVEL = 0.65;
 
         private readonly IAppConfiguration _appConfiguration;
         private readonly ICaptureService _captureService;
+        private readonly IEventAggregator _eventAggregator;
         private readonly MediaPlayer _soundPlayer = new MediaPlayer();
         private readonly string[] _soundModes = new[] { "none", "simple sounds", "voice response" };
         private readonly List<string> _captureDataArchive = new List<string>(ARCHIVE_LENGTH);
@@ -167,10 +171,13 @@ namespace CapFrameX.ViewModel
 
         public ICommand ResetCaptureProcessCommand { get; }
 
-        public CaptureViewModel(IAppConfiguration appConfiguration, ICaptureService captureService)
+        public CaptureViewModel(IAppConfiguration appConfiguration,
+                                ICaptureService captureService,
+                                IEventAggregator eventAggregator)
         {
             _appConfiguration = appConfiguration;
             _captureService = captureService;
+            _eventAggregator = eventAggregator;
 
             AddToIgonreListCommand = new DelegateCommand(OnAddToIgonreList);
             AddToProcessListCommand = new DelegateCommand(OnAddToProcessList);
@@ -181,6 +188,7 @@ namespace CapFrameX.ViewModel
 
             ProcessesToIgnore.AddRange(CaptureServiceConfiguration.GetProcessIgnoreList());
             _disposableHeartBeat = GetListUpdatHeartBeat();
+            SubscribeToUpdateProcessIgnoreList();
             SubscribeToGlobalHookEvent();
             StartCaptureService();
         }
@@ -205,6 +213,16 @@ namespace CapFrameX.ViewModel
             StartCaptureService();
         }
 
+        private void SubscribeToUpdateProcessIgnoreList()
+        {
+            _eventAggregator.GetEvent<PubSubEvent<ViewMessages.UpdateProcessIgnoreList>>()
+                            .Subscribe(msg =>
+                            {
+                                ProcessesToIgnore.Clear();
+                                ProcessesToIgnore.AddRange(CaptureServiceConfiguration.GetProcessIgnoreList());
+                            });
+        }
+
         private void SubscribeToGlobalHookEvent()
         {
             SetGlobalHookEventCaptureHotkey();
@@ -226,7 +244,7 @@ namespace CapFrameX.ViewModel
                 {Combination.FromString(CaptureHotkeyString), () =>
                 {
                     if (_isCaptureModeActive)
-                    {                        
+                    {
                         SetCaptureMode();
                     }
                 }}
@@ -241,7 +259,7 @@ namespace CapFrameX.ViewModel
             if (!ProcessesToCapture.Any())
             {
                 _soundPlayer.Open(new Uri("Sounds/no_process.mp3", UriKind.Relative));
-                _soundPlayer.Volume = 0.75;
+                _soundPlayer.Volume = VOICE_SOUND_LEVEL;
                 _soundPlayer.Play();
                 return;
             }
@@ -249,7 +267,7 @@ namespace CapFrameX.ViewModel
             if (ProcessesToCapture.Count > 1 && string.IsNullOrWhiteSpace(SelectedProcessToCapture))
             {
                 _soundPlayer.Open(new Uri("Sounds/more_than_one_process.mp3", UriKind.Relative));
-                _soundPlayer.Volume = 0.75;
+                _soundPlayer.Volume = VOICE_SOUND_LEVEL;
                 _soundPlayer.Play();
                 return;
             }
@@ -261,14 +279,14 @@ namespace CapFrameX.ViewModel
                 if (SelectedSoundMode == _soundModes[1])
                 {
                     _soundPlayer.Open(new Uri("Sounds/simple_start_sound.mp3", UriKind.Relative));
-                    _soundPlayer.Volume = 0.75;
+                    _soundPlayer.Volume = SIMPLE_SOUND_LEVEL;
                     _soundPlayer.Play();
                 }
                 // voice response
                 else if (SelectedSoundMode == _soundModes[2])
                 {
                     _soundPlayer.Open(new Uri("Sounds/capture_started.mp3", UriKind.Relative));
-                    _soundPlayer.Volume = 0.75;
+                    _soundPlayer.Volume = VOICE_SOUND_LEVEL;
                     _soundPlayer.Play();
                 }
 
@@ -308,14 +326,14 @@ namespace CapFrameX.ViewModel
             if (SelectedSoundMode == _soundModes[1])
             {
                 _soundPlayer.Open(new Uri("Sounds/simple_stop_sound.mp3", UriKind.Relative));
-                _soundPlayer.Volume = 0.75;
+                _soundPlayer.Volume = SIMPLE_SOUND_LEVEL;
                 _soundPlayer.Play();
             }
             // voice response
             else if (SelectedSoundMode == _soundModes[2])
             {
                 _soundPlayer.Open(new Uri("Sounds/capture_finished.mp3", UriKind.Relative));
-                _soundPlayer.Volume = 0.75;
+                _soundPlayer.Volume = VOICE_SOUND_LEVEL;
                 _soundPlayer.Play();
             }
 
@@ -463,11 +481,19 @@ namespace CapFrameX.ViewModel
             var captureData = GetAdjustedCaptureData();
             StartFillArchive();
 
+            if (captureData == null)
+            {
+                LoggerOutput += $"Utc {DateTime.UtcNow.ToLongTimeString()} error while extracting capture data. No file will be written."
+                    + Environment.NewLine;
+                return;
+            }
+
             //additional data/comment
             string firstLineWithInfos = captureData.First();
             firstLineWithInfos += "," + HardwareInfo.GetProcessorName();
             firstLineWithInfos += "," + HardwareInfo.GetGraphicCardName();
             firstLineWithInfos += "," + HardwareInfo.GetMotherboardName();
+            firstLineWithInfos += "," + HardwareInfo.GetSystemRAMInfoName();
 
             //start time
             var timeStart = GetStartTimeFromDataLine(firstLineWithInfos);
@@ -558,7 +584,7 @@ namespace CapFrameX.ViewModel
 
             var filteredArchive = _captureDataArchive.Where(line => GetProcessNameFromDataLine(line) == processName).ToList();
 
-            LoggerOutput += $"Utc {DateTime.UtcNow.ToLongTimeString()} using archive with {filteredArchive.Count} frames" 
+            LoggerOutput += $"Utc {DateTime.UtcNow.ToLongTimeString()} using archive with {filteredArchive.Count} frames"
                 + Environment.NewLine;
 
             // Distinct archive and live stream
@@ -571,6 +597,9 @@ namespace CapFrameX.ViewModel
                 else
                     break;
             }
+
+            if (distinctIndex == 0)
+                return null;
 
             var unionCaptureData = filteredArchive.Concat(_captureData.Skip(distinctIndex)).ToList();
 

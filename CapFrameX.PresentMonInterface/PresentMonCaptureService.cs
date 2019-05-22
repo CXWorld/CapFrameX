@@ -16,6 +16,8 @@ namespace CapFrameX.PresentMonInterface
 
         private HashSet<string> _presentMonProcesses;
         private bool _isUpdating;
+        private IDisposable _hearBeatDisposable;
+        private IDisposable _processNameDisposable;
 
         public IObservable<string> RedirectedOutputDataStream => _outputDataStream.AsObservable();
         public IObservable<string> RedirectedOutputErrorStream => _outputErrorStream.AsObservable();
@@ -24,14 +26,15 @@ namespace CapFrameX.PresentMonInterface
         {
             _outputDataStream = new Subject<string>();
             _outputErrorStream = new Subject<string>();
-            _presentMonProcesses = new HashSet<string>();
-            SubscribeToPresentMonCapturedProcesses();
+            _presentMonProcesses = new HashSet<string>();            
         }
 
         public bool StartCaptureService(IServiceStartInfo startinfo)
         {
             if (!CaptureServiceInfo.IsCompatibleWithRunningOS)
                 return false;
+
+            SubscribeToPresentMonCapturedProcesses();
 
             TryKillPresentMon();
 
@@ -62,9 +65,14 @@ namespace CapFrameX.PresentMonInterface
 
         public bool StopCaptureService()
         {
+            _hearBeatDisposable?.Dispose();
+            _processNameDisposable?.Dispose();
+
             try
             {
-                _presentMonProcesses.Clear();
+                lock (_listLock)
+                    _presentMonProcesses?.Clear();
+
                 TryKillPresentMon();
                 return true;
             }
@@ -74,7 +82,8 @@ namespace CapFrameX.PresentMonInterface
 
         public IEnumerable<string> GetAllFilteredProcesses(HashSet<string> filter)
         {
-            return _presentMonProcesses?.Where(processName => !filter.Contains(processName));
+            lock (_listLock)
+                return _presentMonProcesses?.Where(processName => !filter.Contains(processName));
         }
 
         public static void TryKillPresentMon()
@@ -92,14 +101,14 @@ namespace CapFrameX.PresentMonInterface
 
         private void SubscribeToPresentMonCapturedProcesses()
         {
-            Observable.Generate(0, // dummy initialState
+            _hearBeatDisposable = Observable.Generate(0, // dummy initialState
                                         x => true, // dummy condition
                                         x => x, // dummy iterate
                                         x => x, // dummy resultSelector
                                         x => TimeSpan.FromSeconds(1))
                                         .Subscribe(x => UpdateProcessToCaptureList());
 
-            _outputDataStream.Skip(2).Where(dataLine => _isUpdating == false).Subscribe(dataLine =>
+            _processNameDisposable = _outputDataStream.Skip(2).Where(dataLine => _isUpdating == false).Subscribe(dataLine =>
             {
                 if (string.IsNullOrWhiteSpace(dataLine))
                     return;
@@ -113,9 +122,7 @@ namespace CapFrameX.PresentMonInterface
                     if (!_presentMonProcesses.Contains(processName))
                     {
                         lock (_listLock)
-                        {
                             _presentMonProcesses.Add(processName);
-                        }
                     }
                 }
             });

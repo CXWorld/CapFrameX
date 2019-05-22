@@ -52,9 +52,6 @@
             </Component>
             
             
-            <Component Id="cmp6FADF1297622C6D07A448125A1E080D7" Guid="*" Win64="yes">
-                <File Id="filAB136E1D0E482C340E68F92A8525463B" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.ViewModel_sound_patch.zip" />
-            </Component>
             <Component Id="cmp9110E4565D76564E9BC2F34625854902" Guid="*" Win64="yes">
                 <File Id="filAC751AB8116CEF372F8CFDA54B395D08" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\ControlzEx.dll" />
             </Component>
@@ -206,7 +203,6 @@
             <ComponentRef Id="cmpFEE96F5622FF620341562487C27BDBFE" />
             
             
-            <ComponentRef Id="cmp6FADF1297622C6D07A448125A1E080D7" />
             <ComponentRef Id="cmp9110E4565D76564E9BC2F34625854902" />
             
             <ComponentRef Id="cmp471A60C7DB0BF5428D9A6BE2EF6D9976" />

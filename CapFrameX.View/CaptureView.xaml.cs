@@ -3,6 +3,7 @@ using CapFrameX.Extensions;
 using CapFrameX.MVVM;
 using CapFrameX.PresentMonInterface;
 using CapFrameX.ViewModel;
+using Prism.Events;
 using System;
 using System.ComponentModel;
 using System.Windows;
@@ -61,7 +62,7 @@ namespace CapFrameX.View
             // Design time!
             if (DesignerProperties.GetIsInDesignMode(this))
             {
-                DataContext = new CaptureViewModel(new CapFrameXConfiguration(), new PresentMonCaptureService());
+                DataContext = new CaptureViewModel(new CapFrameXConfiguration(), new PresentMonCaptureService(), new EventAggregator());
             }
         }
 

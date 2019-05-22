@@ -18,311 +18,315 @@ using CapFrameX.PresentMonInterface;
 
 namespace CapFrameX.ViewModel
 {
-	public class ControlViewModel : BindableBase
-	{
-		private readonly IRecordDirectoryObserver _recordObserver;
-		private readonly IEventAggregator _eventAggregator;
-		private readonly IAppConfiguration _appConfiguration;
+    public class ControlViewModel : BindableBase
+    {
+        private readonly IRecordDirectoryObserver _recordObserver;
+        private readonly IEventAggregator _eventAggregator;
+        private readonly IAppConfiguration _appConfiguration;
 
-		private PubSubEvent<ViewMessages.UpdateSession> _updateSessionEvent;
-		private PubSubEvent<ViewMessages.SelectSession> _selectSessionEvent;
-		private PubSubEvent<ViewMessages.ShowOverlay> _showOverlayEvent;
-		private OcatRecordInfo _selectedRecordInfo;
-		private bool _hasValidSource;
-		private string _customCpuDescription;
-		private string _customGpuDescription;
-		private string _customComment;
+        private PubSubEvent<ViewMessages.UpdateSession> _updateSessionEvent;
+        private PubSubEvent<ViewMessages.SelectSession> _selectSessionEvent;
+        private PubSubEvent<ViewMessages.ShowOverlay> _showOverlayEvent;
+        private PubSubEvent<ViewMessages.UpdateProcessIgnoreList> _updateProcessIgnoreListEvent;
 
-		public OcatRecordInfo SelectedRecordInfo
-		{
-			get { return _selectedRecordInfo; }
-			set
-			{
-				_selectedRecordInfo = value;
-				RaisePropertyChanged();
-				OnSelectedRecordInfoChanged();
-			}
-		}
+        private OcatRecordInfo _selectedRecordInfo;
+        private bool _hasValidSource;
+        private string _customCpuDescription;
+        private string _customGpuDescription;
+        private string _customComment;
 
-		public bool HasValidSource
-		{
-			get { return _hasValidSource; }
-			set { _hasValidSource = value; RaisePropertyChanged(); }
-		}
+        public OcatRecordInfo SelectedRecordInfo
+        {
+            get { return _selectedRecordInfo; }
+            set
+            {
+                _selectedRecordInfo = value;
+                RaisePropertyChanged();
+                OnSelectedRecordInfoChanged();
+            }
+        }
 
-		public string CustomCpuDescription
-		{
-			get { return _customCpuDescription; }
-			set
-			{
-				_customCpuDescription = value;
-				RaisePropertyChanged();
-			}
-		}
+        public bool HasValidSource
+        {
+            get { return _hasValidSource; }
+            set { _hasValidSource = value; RaisePropertyChanged(); }
+        }
 
-		public string CustomGpuDescription
-		{
-			get { return _customGpuDescription; }
-			set
-			{
-				_customGpuDescription = value;
-				RaisePropertyChanged();
-			}
-		}
+        public string CustomCpuDescription
+        {
+            get { return _customCpuDescription; }
+            set
+            {
+                _customCpuDescription = value;
+                RaisePropertyChanged();
+            }
+        }
 
-		public string CustomComment
-		{
-			get { return _customComment; }
-			set
-			{
-				_customComment = value;
-				RaisePropertyChanged();
-			}
-		}
+        public string CustomGpuDescription
+        {
+            get { return _customGpuDescription; }
+            set
+            {
+                _customGpuDescription = value;
+                RaisePropertyChanged();
+            }
+        }
 
-		public ObservableCollection<OcatRecordInfo> RecordInfoList { get; }
-			= new ObservableCollection<OcatRecordInfo>();
+        public string CustomComment
+        {
+            get { return _customComment; }
+            set
+            {
+                _customComment = value;
+                RaisePropertyChanged();
+            }
+        }
 
-		public ICommand OpenEditingDialogCommand { get; }
+        public ObservableCollection<OcatRecordInfo> RecordInfoList { get; }
+            = new ObservableCollection<OcatRecordInfo>();
 
-		public ICommand AddToIgnoreListCommand { get; }
+        public ICommand OpenEditingDialogCommand { get; }
 
-		public ICommand DeleteRecordFileCommand { get; }
+        public ICommand AddToIgnoreListCommand { get; }
 
-		public ICommand AcceptEditingDialogCommand { get; }
+        public ICommand DeleteRecordFileCommand { get; }
 
-		public ICommand CancelEditingDialogCommand { get; }
+        public ICommand AcceptEditingDialogCommand { get; }
 
-		public ICommand AddCpuInfoCommand { get; }
+        public ICommand CancelEditingDialogCommand { get; }
 
-		public ICommand AddGpuInfoCommand { get; }
+        public ICommand AddCpuInfoCommand { get; }
 
-		public ControlViewModel(IRecordDirectoryObserver recordObserver,
-								IEventAggregator eventAggregator,
-								IAppConfiguration appConfiguration)
-		{
-			_recordObserver = recordObserver;
-			_eventAggregator = eventAggregator;
-			_appConfiguration = appConfiguration;
+        public ICommand AddGpuInfoCommand { get; }
 
-			//Commands
-			OpenEditingDialogCommand = new DelegateCommand(OnOpenEditingDialog);
-			AddToIgnoreListCommand = new DelegateCommand(OnAddToIgnoreList);
-			DeleteRecordFileCommand = new DelegateCommand(OnDeleteRecordFile);
-			AcceptEditingDialogCommand = new DelegateCommand(OnAcceptEditingDialog);
-			CancelEditingDialogCommand = new DelegateCommand(OnCancelEditingDialog);
-			AddCpuInfoCommand = new DelegateCommand(OnAddCpuInfo);
-			AddGpuInfoCommand = new DelegateCommand(OnAddGpuInfo);
+        public ControlViewModel(IRecordDirectoryObserver recordObserver,
+                                IEventAggregator eventAggregator,
+                                IAppConfiguration appConfiguration)
+        {
+            _recordObserver = recordObserver;
+            _eventAggregator = eventAggregator;
+            _appConfiguration = appConfiguration;
 
-			HasValidSource = recordObserver.HasValidSource;
+            //Commands
+            OpenEditingDialogCommand = new DelegateCommand(OnOpenEditingDialog);
+            AddToIgnoreListCommand = new DelegateCommand(OnAddToIgnoreList);
+            DeleteRecordFileCommand = new DelegateCommand(OnDeleteRecordFile);
+            AcceptEditingDialogCommand = new DelegateCommand(OnAcceptEditingDialog);
+            CancelEditingDialogCommand = new DelegateCommand(OnCancelEditingDialog);
+            AddCpuInfoCommand = new DelegateCommand(OnAddCpuInfo);
+            AddGpuInfoCommand = new DelegateCommand(OnAddGpuInfo);
 
-			Task.Factory.StartNew(() =>
-			{
-				if (recordObserver.HasValidSource)
-				{
-					var initialRecordList = _recordObserver.GetAllRecordFileInfo();
+            HasValidSource = recordObserver.HasValidSource;
 
-					foreach (var fileInfo in initialRecordList)
-					{
-						AddToRecordInfoList(fileInfo);
-					}
-				}
-			});
+            Task.Factory.StartNew(() =>
+            {
+                if (recordObserver.HasValidSource)
+                {
+                    var initialRecordList = _recordObserver.GetAllRecordFileInfo();
 
-			var context = SynchronizationContext.Current;
-			_recordObserver.RecordCreatedStream.ObserveOn(context).SubscribeOn(context)
-							.Subscribe(OnRecordCreated);
-			_recordObserver.RecordDeletedStream.ObserveOn(context).SubscribeOn(context)
-							.Subscribe(OnRecordDeleted);
+                    foreach (var fileInfo in initialRecordList)
+                    {
+                        AddToRecordInfoList(fileInfo);
+                    }
+                }
+            });
 
-			// Turn streams now on
-			if (_recordObserver.HasValidSource)
-				_recordObserver.IsActive = true;
+            var context = SynchronizationContext.Current;
+            _recordObserver.RecordCreatedStream.ObserveOn(context).SubscribeOn(context)
+                            .Subscribe(OnRecordCreated);
+            _recordObserver.RecordDeletedStream.ObserveOn(context).SubscribeOn(context)
+                            .Subscribe(OnRecordDeleted);
 
-			SetAggregatorEvents();
-			SubscribeToResetRecord();
-			SubscribeToObservedDiretoryUpdated();
-		}
+            // Turn streams now on
+            if (_recordObserver.HasValidSource)
+                _recordObserver.IsActive = true;
 
-		private void OnDeleteRecordFile()
-		{
-			if (!RecordInfoList.Any())
-				return;
+            SetAggregatorEvents();
+            SubscribeToResetRecord();
+            SubscribeToObservedDiretoryUpdated();
+        }
 
-			File.Delete(SelectedRecordInfo.FullPath);
-			SelectedRecordInfo = null;
-			_updateSessionEvent.Publish(new ViewMessages.UpdateSession(null, null));
-		}
+        private void OnDeleteRecordFile()
+        {
+            if (!RecordInfoList.Any())
+                return;
 
-		private void OnOpenEditingDialog()
-		{
-			if (!RecordInfoList.Any())
-				return;
+            File.Delete(SelectedRecordInfo.FullPath);
+            SelectedRecordInfo = null;
+            _updateSessionEvent.Publish(new ViewMessages.UpdateSession(null, null));
+        }
 
-			_showOverlayEvent.Publish(new ViewMessages.ShowOverlay());
-		}
+        private void OnOpenEditingDialog()
+        {
+            if (!RecordInfoList.Any())
+                return;
 
-		private void OnAddToIgnoreList()
-		{
-			if (!RecordInfoList.Any())
-				return;
+            _showOverlayEvent.Publish(new ViewMessages.ShowOverlay());
+        }
+
+        private void OnAddToIgnoreList()
+        {
+            if (!RecordInfoList.Any())
+                return;
 
             CaptureServiceConfiguration.AddProcessToIgnoreList(SelectedRecordInfo.GameName);
+            _updateProcessIgnoreListEvent.Publish(new ViewMessages.UpdateProcessIgnoreList());
 
-			SelectedRecordInfo = null;
-			RecordInfoList.Clear();
-			LoadRecordList();
-		}
+            SelectedRecordInfo = null;
+            RecordInfoList.Clear();
+            LoadRecordList();
+        }
 
-		private void OnCancelEditingDialog()
-		{
-			if (SelectedRecordInfo == null)
-				return;
+        private void OnCancelEditingDialog()
+        {
+            if (SelectedRecordInfo == null)
+                return;
 
-			// Undo
-			var session = RecordManager.LoadData(SelectedRecordInfo.FullPath);
+            // Undo
+            var session = RecordManager.LoadData(SelectedRecordInfo.FullPath);
 
-			if (session != null)
-			{
-				CustomCpuDescription = string.Copy(session.ProcessorName ?? "-");
-				CustomGpuDescription = string.Copy(session.GraphicCardName ?? "-");
-				CustomComment = string.Copy(session.Comment ?? "-");
-			}
-			else
-			{
-				CustomCpuDescription = "-";
-				CustomGpuDescription = "-";
-				CustomComment = "-";
-			}
-		}
+            if (session != null)
+            {
+                CustomCpuDescription = string.Copy(session.ProcessorName ?? "-");
+                CustomGpuDescription = string.Copy(session.GraphicCardName ?? "-");
+                CustomComment = string.Copy(session.Comment ?? "-");
+            }
+            else
+            {
+                CustomCpuDescription = "-";
+                CustomGpuDescription = "-";
+                CustomComment = "-";
+            }
+        }
 
-		private void OnAcceptEditingDialog()
-		{
-			if (CustomCpuDescription == null || CustomGpuDescription == null || CustomComment == null)
-				return;
+        private void OnAcceptEditingDialog()
+        {
+            if (CustomCpuDescription == null || CustomGpuDescription == null || CustomComment == null)
+                return;
 
-			var adjustedCustomCpuDescription = CustomCpuDescription.Replace(",", "").Replace(";", "");
-			var adjustedCustomGpuDescription = CustomGpuDescription.Replace(",", "").Replace(";", "");
-			var adjustedCustomComment = CustomComment.Replace(",", "").Replace(";", "");
+            var adjustedCustomCpuDescription = CustomCpuDescription.Replace(",", "").Replace(";", "");
+            var adjustedCustomGpuDescription = CustomGpuDescription.Replace(",", "").Replace(";", "");
+            var adjustedCustomComment = CustomComment.Replace(",", "").Replace(";", "");
 
-			RecordManager.UpdateCustomData(_selectedRecordInfo,
-				adjustedCustomCpuDescription, adjustedCustomGpuDescription, adjustedCustomComment);
+            RecordManager.UpdateCustomData(_selectedRecordInfo,
+                adjustedCustomCpuDescription, adjustedCustomGpuDescription, adjustedCustomComment);
 
-			ReloadRecordList();
-		}
+            ReloadRecordList();
+        }
 
-		public void OnRecordSelectByDoubleClick()
-		{
-			if (SelectedRecordInfo != null && _selectSessionEvent != null)
-			{
-				var session = RecordManager.LoadData(SelectedRecordInfo.FullPath);
-				_selectSessionEvent.Publish(new ViewMessages.SelectSession(session, SelectedRecordInfo));
-			}
-		}
+        public void OnRecordSelectByDoubleClick()
+        {
+            if (SelectedRecordInfo != null && _selectSessionEvent != null)
+            {
+                var session = RecordManager.LoadData(SelectedRecordInfo.FullPath);
+                _selectSessionEvent.Publish(new ViewMessages.SelectSession(session, SelectedRecordInfo));
+            }
+        }
 
-		private void OnSelectedRecordInfoChanged()
-		{
-			if (SelectedRecordInfo != null && _updateSessionEvent != null)
-			{
-				var session = RecordManager.LoadData(SelectedRecordInfo.FullPath);
+        private void OnSelectedRecordInfoChanged()
+        {
+            if (SelectedRecordInfo != null && _updateSessionEvent != null)
+            {
+                var session = RecordManager.LoadData(SelectedRecordInfo.FullPath);
 
-				if (session != null)
-				{
-					CustomCpuDescription = string.Copy(session.ProcessorName ?? "-");
-					CustomGpuDescription = string.Copy(session.GraphicCardName ?? "-");
-					CustomComment = string.Copy(session.Comment ?? "-");
-				}
-				else
-				{
-					CustomCpuDescription = "-";
-					CustomGpuDescription = "-";
-					CustomComment = "-";
-				}
+                if (session != null)
+                {
+                    CustomCpuDescription = string.Copy(session.ProcessorName ?? "-");
+                    CustomGpuDescription = string.Copy(session.GraphicCardName ?? "-");
+                    CustomComment = string.Copy(session.Comment ?? "-");
+                }
+                else
+                {
+                    CustomCpuDescription = "-";
+                    CustomGpuDescription = "-";
+                    CustomComment = "-";
+                }
 
-				_updateSessionEvent.Publish(new ViewMessages.UpdateSession(session, SelectedRecordInfo));
-			}
-		}
+                _updateSessionEvent.Publish(new ViewMessages.UpdateSession(session, SelectedRecordInfo));
+            }
+        }
 
-		private void OnAddCpuInfo()
-		{
-			CustomCpuDescription = HardwareInfo.GetProcessorName();
-		}
+        private void OnAddCpuInfo()
+        {
+            CustomCpuDescription = HardwareInfo.GetProcessorName();
+        }
 
-		private void OnAddGpuInfo()
-		{
-			CustomGpuDescription = HardwareInfo.GetGraphicCardName();
-		}
+        private void OnAddGpuInfo()
+        {
+            CustomGpuDescription = HardwareInfo.GetGraphicCardName();
+        }
 
-		private void AddToRecordInfoList(FileInfo fileInfo, bool insertAtFirst = false)
-		{
-			var recordInfo = OcatRecordInfo.Create(fileInfo);
-			if (recordInfo != null)
-			{
-				Application.Current.Dispatcher.BeginInvoke(new Action(() =>
-				{
-					if (insertAtFirst)
-					{
-						RecordInfoList.Insert(0, recordInfo);
-					}
-					else
-						RecordInfoList.Add(recordInfo);
-				}));
-			}
-		}
+        private void AddToRecordInfoList(FileInfo fileInfo, bool insertAtFirst = false)
+        {
+            var recordInfo = OcatRecordInfo.Create(fileInfo);
+            if (recordInfo != null)
+            {
+                Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    if (insertAtFirst)
+                    {
+                        RecordInfoList.Insert(0, recordInfo);
+                    }
+                    else
+                        RecordInfoList.Add(recordInfo);
+                }));
+            }
+        }
 
-		private void OnRecordCreated(FileInfo fileInfo) => AddToRecordInfoList(fileInfo, true);
+        private void OnRecordCreated(FileInfo fileInfo) => AddToRecordInfoList(fileInfo, true);
 
-		private void OnRecordDeleted(FileInfo fileInfo)
-		{
-			ReloadRecordList();
-		}
+        private void OnRecordDeleted(FileInfo fileInfo)
+        {
+            ReloadRecordList();
+        }
 
-		private void ReloadRecordList()
-		{
-			// SelectedRecordInfo = null;
-			RecordInfoList.Clear();
-			LoadRecordList();
-		}
+        private void ReloadRecordList()
+        {
+            // SelectedRecordInfo = null;
+            RecordInfoList.Clear();
+            LoadRecordList();
+        }
 
-		private void LoadRecordList()
-		{
-			foreach (var fileInfo in _recordObserver?.GetAllRecordFileInfo())
-			{
-				AddToRecordInfoList(fileInfo);
-			}
-		}
+        private void LoadRecordList()
+        {
+            foreach (var fileInfo in _recordObserver?.GetAllRecordFileInfo())
+            {
+                AddToRecordInfoList(fileInfo);
+            }
+        }
 
-		private void SetAggregatorEvents()
-		{
-			_updateSessionEvent = _eventAggregator.GetEvent<PubSubEvent<ViewMessages.UpdateSession>>();
-			_selectSessionEvent = _eventAggregator.GetEvent<PubSubEvent<ViewMessages.SelectSession>>();
-			_showOverlayEvent = _eventAggregator.GetEvent<PubSubEvent<ViewMessages.ShowOverlay>>();
-		}
+        private void SetAggregatorEvents()
+        {
+            _updateSessionEvent = _eventAggregator.GetEvent<PubSubEvent<ViewMessages.UpdateSession>>();
+            _selectSessionEvent = _eventAggregator.GetEvent<PubSubEvent<ViewMessages.SelectSession>>();
+            _showOverlayEvent = _eventAggregator.GetEvent<PubSubEvent<ViewMessages.ShowOverlay>>();
+            _updateProcessIgnoreListEvent = _eventAggregator.GetEvent<PubSubEvent<ViewMessages.UpdateProcessIgnoreList>>();
+        }
 
-		private void SubscribeToResetRecord()
-		{
-			_eventAggregator.GetEvent<PubSubEvent<ViewMessages.ResetRecord>>()
-							.Subscribe(msg =>
-							{
-								SelectedRecordInfo = null;
-							});
-		}
+        private void SubscribeToResetRecord()
+        {
+            _eventAggregator.GetEvent<PubSubEvent<ViewMessages.ResetRecord>>()
+                            .Subscribe(msg =>
+                            {
+                                SelectedRecordInfo = null;
+                            });
+        }
 
-		private void SubscribeToObservedDiretoryUpdated()
-		{
-			_eventAggregator.GetEvent<PubSubEvent<AppMessages.UpdateObservedDirectory>>()
-							.Subscribe(msg =>
-							{
-								SelectedRecordInfo = null;
-								RecordInfoList.Clear();
+        private void SubscribeToObservedDiretoryUpdated()
+        {
+            _eventAggregator.GetEvent<PubSubEvent<AppMessages.UpdateObservedDirectory>>()
+                            .Subscribe(msg =>
+                            {
+                                SelectedRecordInfo = null;
+                                RecordInfoList.Clear();
 
-								HasValidSource = _recordObserver.HasValidSource;
+                                HasValidSource = _recordObserver.HasValidSource;
 
-								if (_recordObserver.HasValidSource)
-								{
-									LoadRecordList();
-								}
-							});
-		}
-	}
+                                if (_recordObserver.HasValidSource)
+                                {
+                                    LoadRecordList();
+                                }
+                            });
+        }
+    }
 }

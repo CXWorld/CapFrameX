@@ -24,5 +24,11 @@ namespace CapFrameX.Test.PresentMonInterface
 		{
 			Console.WriteLine(HardwareInfo.GetMotherboardName());
 		}
+
+        [TestMethod]
+        public void GetSystemRAMInfo_CorrectInfo()
+        {
+            Console.WriteLine(HardwareInfo.GetSystemRAMInfoName());
+        }
 	}
 }

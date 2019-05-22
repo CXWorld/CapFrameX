@@ -11,12 +11,14 @@ EpicGamesLauncher
 explorer
 firefox
 HxOutlook
+iCUE
 Microsoft.Photos
 MicrosoftEdge
 MicrosoftEdgeCP
 notepad++
 NVIDIA Share
 Origin
+RadeonSettings
 ScriptedSandbox64
 SearchUI
 seccenter
@@ -27,5 +29,6 @@ steamwebhelper
 Taskmgr
 UnrealCEFSubProcess
 Video.UI
+vlc
 WeMod
 WinStore.App

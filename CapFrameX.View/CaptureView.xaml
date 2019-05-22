@@ -41,18 +41,18 @@
             <ColumnDefinition Width="2*" MaxWidth="280"></ColumnDefinition>
             <ColumnDefinition Width="1*"></ColumnDefinition>
         </Grid.ColumnDefinitions>
-        <TextBlock Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3" Margin="0 30 0 0" Text="{Binding CaptureStateInfo}" FontSize="14" Style="{StaticResource MaterialDesignCaptionTextBlock}" 
+        <TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="5" Margin="0 30 0 0" Text="{Binding CaptureStateInfo}" FontSize="14" Style="{StaticResource MaterialDesignCaptionTextBlock}" 
 				   VerticalAlignment="Center" HorizontalAlignment="Center" />
 
         <materialDesign:Flipper Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3" HorizontalAlignment="Center"
-                                Style="{StaticResource MaterialDesignCardFlipper}" Background="Transparent">
+                                Style="{StaticResource MaterialDesignCardFlipper}">
             <materialDesign:Flipper.FrontContent>
-                <Grid Margin="10" Background="{DynamicResource MaterialDesignPaper}">
+                <Grid Background="{DynamicResource MaterialDesignPaper}">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="1*"></RowDefinition>
                         <RowDefinition Height="50"></RowDefinition>
                     </Grid.RowDefinitions>
-                    <Grid Grid.Row="0" >
+                    <Grid Margin="20 0 0 0" Grid.Row="0" >
                         <StackPanel Margin="0 20 0 0" Orientation="Vertical" Width="240" HorizontalAlignment="Center">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Style="{StaticResource MaterialDesignTitleTextBlock}">Running processes</TextBlock>
@@ -75,12 +75,12 @@
                 </Grid>
             </materialDesign:Flipper.FrontContent>
             <materialDesign:Flipper.BackContent>
-                <Grid Margin="10" Background="{DynamicResource MaterialDesignPaper}">
+                <Grid Background="{DynamicResource MaterialDesignPaper}">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="1*"></RowDefinition>
                         <RowDefinition Height="50"></RowDefinition>
                     </Grid.RowDefinitions>
-                    <Grid Grid.Row="0" >
+                    <Grid Margin="20 0 20 0" Grid.Row="0" >
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="2*" MaxWidth="280"></ColumnDefinition>
                             <ColumnDefinition Width="100"></ColumnDefinition>
