@@ -59,5 +59,8 @@
     <Setting Name="HotkeySoundMode" Type="System.String" Scope="User">
       <Value Profile="(Default)">voice response</Value>
     </Setting>
+    <Setting Name="CaptureTime" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">20</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

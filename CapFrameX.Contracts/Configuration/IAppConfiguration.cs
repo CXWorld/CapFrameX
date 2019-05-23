@@ -37,5 +37,7 @@
         string CaptureHotKey { get; set; }
 
         string HotkeySoundMode { get; set; }
-	}
+
+        int CaptureTime { get; set; }
+    }
 }

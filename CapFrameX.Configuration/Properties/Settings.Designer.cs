@@ -250,5 +250,17 @@ namespace CapFrameX.Configuration.Properties {
                 this["HotkeySoundMode"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("20")]
+        public int CaptureTime {
+            get {
+                return ((int)(this["CaptureTime"]));
+            }
+            set {
+                this["CaptureTime"] = value;
+            }
+        }
     }
 }

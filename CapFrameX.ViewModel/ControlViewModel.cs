@@ -282,7 +282,6 @@ namespace CapFrameX.ViewModel
 
         private void ReloadRecordList()
         {
-            // SelectedRecordInfo = null;
             RecordInfoList.Clear();
             LoadRecordList();
         }

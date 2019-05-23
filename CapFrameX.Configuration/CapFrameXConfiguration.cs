@@ -113,5 +113,11 @@ namespace CapFrameX.Configuration
             get { return Settings.HotkeySoundMode; }
             set { Settings.HotkeySoundMode = value; Settings.Save(); }
         }
-	}
+
+        public int CaptureTime
+        {
+            get { return Settings.CaptureTime; }
+            set { Settings.CaptureTime = value; Settings.Save(); }
+        }
+    }
 }

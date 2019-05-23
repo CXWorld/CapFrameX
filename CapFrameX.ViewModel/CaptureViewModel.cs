@@ -78,7 +78,6 @@ namespace CapFrameX.ViewModel
             {
                 _selectedProcessToIgnore = value;
                 RaisePropertyChanged();
-                OnSelectedProcessToIgnoreChanged();
             }
         }
 
@@ -108,6 +107,7 @@ namespace CapFrameX.ViewModel
             set
             {
                 _captureTimeString = value;
+                _appConfiguration.CaptureTime = Convert.ToInt32(value);
                 RaisePropertyChanged();
             }
         }
@@ -185,6 +185,7 @@ namespace CapFrameX.ViewModel
 
             CaptureStateInfo = $"Service ready... press {CaptureHotkeyString} to start capture of the running process.";
             SelectedSoundMode = _appConfiguration.HotkeySoundMode;
+            CaptureTimeString = _appConfiguration.CaptureTime.ToString();
 
             ProcessesToIgnore.AddRange(CaptureServiceConfiguration.GetProcessIgnoreList());
             _disposableHeartBeat = GetListUpdatHeartBeat();
@@ -483,8 +484,8 @@ namespace CapFrameX.ViewModel
 
             if (captureData == null)
             {
-                LoggerOutput += $"Utc {DateTime.UtcNow.ToLongTimeString()} error while extracting capture data. No file will be written."
-                    + Environment.NewLine;
+                LoggerOutput += $"Utc {DateTime.UtcNow.ToLongTimeString()} error while extracting capture data. " +
+                    $"No file will be written." + Environment.NewLine;
                 return;
             }
 
@@ -728,10 +729,5 @@ namespace CapFrameX.ViewModel
         }
 
         private void ResetArchive() => _captureDataArchive.Clear();
-
-        private void OnSelectedProcessToIgnoreChanged()
-        {
-            // throw new NotImplementedException();
-        }
     }
 }
