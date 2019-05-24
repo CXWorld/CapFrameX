@@ -59,6 +59,7 @@ namespace CapFrameX.ViewModel
         private long _timestampStartCapture;
         private long _timestampStopCapture;
         private long _timestampFirstStreamElement;
+        private CancellationTokenSource _cancellationTokenSource;
 
         public string SelectedProcessToCapture
         {
@@ -310,6 +311,7 @@ namespace CapFrameX.ViewModel
             }
             else
             {
+                _cancellationTokenSource?.Cancel();
                 FinishCapturingAndUpdateUi();
             }
         }
@@ -394,6 +396,7 @@ namespace CapFrameX.ViewModel
                 LoggerOutput += $"Utc {DateTime.UtcNow.ToLongTimeString()} starting countdown"
                             + Environment.NewLine;
 
+                _cancellationTokenSource = new CancellationTokenSource();
                 Task.Run(async () =>
                 {
                     await SetTaskDelay().ContinueWith(_ =>
@@ -402,7 +405,7 @@ namespace CapFrameX.ViewModel
                        {
                            FinishCapturingAndUpdateUi();
                        }));
-                   }, CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, context);
+                   }, _cancellationTokenSource.Token, TaskContinuationOptions.ExecuteSynchronously, context);
                 });
             }
         }

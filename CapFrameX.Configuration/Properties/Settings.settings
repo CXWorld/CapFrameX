@@ -21,10 +21,10 @@
       <Value Profile="(Default)">MyDocuments\CapFrameX\Screenshots</Value>
     </Setting>
     <Setting Name="UseSingleRecordMaxStatisticParameter" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">True</Value>
+      <Value Profile="(Default)">False</Value>
     </Setting>
     <Setting Name="UseSingleRecordP99QuantileStatisticParameter" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">True</Value>
+      <Value Profile="(Default)">False</Value>
     </Setting>
     <Setting Name="UseSingleRecordP95QuantileStatisticParameter" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
@@ -33,7 +33,7 @@
       <Value Profile="(Default)">True</Value>
     </Setting>
     <Setting Name="UseSingleRecordP5QuantileStatisticParameter" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">True</Value>
+      <Value Profile="(Default)">False</Value>
     </Setting>
     <Setting Name="UseSingleRecordP1QuantileStatisticParameter" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
@@ -42,13 +42,13 @@
       <Value Profile="(Default)">True</Value>
     </Setting>
     <Setting Name="UseSingleRecordP1LowAverageStatisticParameter" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">True</Value>
+      <Value Profile="(Default)">False</Value>
     </Setting>
     <Setting Name="UseSingleRecordP0Dot1LowAverageStatisticParameter" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">True</Value>
+      <Value Profile="(Default)">False</Value>
     </Setting>
     <Setting Name="UseSingleRecordMinStatisticParameter" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">True</Value>
+      <Value Profile="(Default)">False</Value>
     </Setting>
     <Setting Name="UseSingleRecordAdaptiveSTDStatisticParameter" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
@@ -61,6 +61,9 @@
     </Setting>
     <Setting Name="CaptureTime" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">20</Value>
+    </Setting>
+    <Setting Name="UseSingleRecordP0Dot2QuantileStatisticParameter" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
     </Setting>
   </Settings>
 </SettingsFile>

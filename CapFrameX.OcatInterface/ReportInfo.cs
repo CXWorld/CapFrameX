@@ -31,9 +31,11 @@ namespace CapFrameX.OcatInterface
 		[DisplayName("1% quantile")]
 		public double OnePercentQuantileFps { get; set; }
 		[DisplayName("1% low average")]
-		public double OnePercentLowAverageFps { get; set; }
+        public double OnePercentLowAverageFps { get; set; }
+        [DisplayName("0.2 % quantile")]
+		public double ZeroDotTwoPercentQuantileFps { get; set; }
 		[DisplayName("0.1% quantile")]
-		public double ZeroDotOnePercentQuantileFps { get; set; }
+        public double ZeroDotOnePercentQuantileFps { get; set; }
 		[DisplayName("0.1% low average")]
 		public double ZeroDotOnePercentLowAverageFps { get; set; }
 		[DisplayName("Min FPS")]

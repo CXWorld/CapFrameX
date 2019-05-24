@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
 	<?define VersionNumber="!(bind.FileVersion.fil728C156E08C89BB8D6F48ADCA3FDB05E)" ?>
-	<Product Id="*" Name="Open Analytics Tool (CapFrameX) $(var.VersionNumber)" Language="1033" Version="$(var.VersionNumber)" Manufacturer="DevTechProfile" UpgradeCode="05dc3ab5-bc82-4feb-8624-61c39d0ac204">
+	<Product Id="*" Name="Open Capture and Analytics Tool (CapFrameX) $(var.VersionNumber)" Language="1033" Version="$(var.VersionNumber)" Manufacturer="DevTechProfile" UpgradeCode="05dc3ab5-bc82-4feb-8624-61c39d0ac204">
 		<Package InstallerVersion="500" Compressed="yes" InstallScope="perMachine" InstallPrivileges="elevated" Platform="x64"/>
 
 		<!--<MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />-->

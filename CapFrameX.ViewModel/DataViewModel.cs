@@ -265,7 +265,8 @@ namespace CapFrameX.ViewModel
 			var p95_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.95), roundingDigits);
 			var average = Math.Round(frametimes.Count * 1000 / frametimes.Sum(), roundingDigits);
 			var p0dot1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.001), roundingDigits);
-			var p1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.01), roundingDigits);
+            var p0dot2_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.002), roundingDigits);
+            var p1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.01), roundingDigits);
 			var p5_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.05), roundingDigits);
 			var p1_averageLow = Math.Round(1000 / _frametimeStatisticProvider.GetPAverageHighSequence(frametimes, 1 - 0.01), roundingDigits);
 			var p0dot1_averageLow = Math.Round(1000 / _frametimeStatisticProvider.GetPAverageHighSequence(frametimes, 1 - 0.001), roundingDigits);
@@ -274,9 +275,9 @@ namespace CapFrameX.ViewModel
 
 			StringBuilder builder = new StringBuilder();
 
-			// Vice versa!
-			// "Adaptive STD" ,"Min","0.1% Low" ,"0.1%" ,"1% Low", "1%" ,"5%" ,"Average" ,"95%" ,"99%" ,"Max"
-			if (_appConfiguration.UseSingleRecordMaxStatisticParameter)
+            // Vice versa!
+            // "Adaptive STD" ,"Min","0.1% Low" ,"0.1%","0.2%" ,"1% Low", "1%" ,"5%" ,"Average" ,"95%" ,"99%" ,"Max"
+            if (_appConfiguration.UseSingleRecordMaxStatisticParameter)
 				builder.Append("Max" + "\t" + max.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
 			if (_appConfiguration.UseSingleRecord99QuantileStatisticParameter)
 				builder.Append("P99" + "\t" + p99_quantile.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
@@ -290,7 +291,9 @@ namespace CapFrameX.ViewModel
 				builder.Append("P1" + "\t" + p1_quantile.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
 			if (_appConfiguration.UseSingleRecordP1LowAverageStatisticParameter && !double.IsNaN(p1_averageLow))
 				builder.Append("1% Low" + "\t" + p1_averageLow.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
-			if (_appConfiguration.UseSingleRecordP0Dot1QuantileStatisticParameter)
+            if (_appConfiguration.UseSingleRecordP0Dot2QuantileStatisticParameter)
+                builder.Append("P0.2" + "\t" + p0dot2_quantile.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
+            if (_appConfiguration.UseSingleRecordP0Dot1QuantileStatisticParameter)
 				builder.Append("P0.1" + "\t" + p0dot1_quantile.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
 			if (_appConfiguration.UseSingleRecordP0Dot1LowAverageStatisticParameter && !double.IsNaN(p0dot1_averageLow))
 				builder.Append("0.1% Low" + "\t" + p0dot1_averageLow.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
@@ -433,7 +436,8 @@ namespace CapFrameX.ViewModel
 			var p5_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.05), roundingDigits);
 			var p1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.01), roundingDigits);
 			var p1_averageLow = Math.Round(1000 / _frametimeStatisticProvider.GetPAverageHighSequence(frametimes, 1 - 0.01), roundingDigits);
-			var p0dot1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.001), roundingDigits);
+            var p0dot2_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.002), roundingDigits);
+            var p0dot1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.001), roundingDigits);
 			var p0dot1_averageLow = Math.Round(1000 / _frametimeStatisticProvider.GetPAverageHighSequence(frametimes, 1 - 0.001), roundingDigits);
 			var min = Math.Round(fps.Min(), roundingDigits);
 			var adaptiveStandardDeviation = Math.Round(_frametimeStatisticProvider.GetAdaptiveStandardDeviation(fps, _appConfiguration.MovingAverageWindowSize), roundingDigits);
@@ -448,7 +452,9 @@ namespace CapFrameX.ViewModel
 				values.Add(p0dot1_averageLow);
 			if (_appConfiguration.UseSingleRecordP0Dot1QuantileStatisticParameter)
 				values.Add(p0dot1_quantile);
-			if (_appConfiguration.UseSingleRecordP1LowAverageStatisticParameter && !double.IsNaN(p1_averageLow))
+            if (_appConfiguration.UseSingleRecordP0Dot2QuantileStatisticParameter)
+                values.Add(p0dot2_quantile);
+            if (_appConfiguration.UseSingleRecordP1LowAverageStatisticParameter && !double.IsNaN(p1_averageLow))
 				values.Add(p1_averageLow);
 			if (_appConfiguration.UseSingleRecordP1QuantileStatisticParameter)
 				values.Add(p1_quantile);
@@ -479,8 +485,8 @@ namespace CapFrameX.ViewModel
 
 				var parameterLabelList = new List<string>();
 
-				//{ "Adaptive STD", "Min", "0.1% Low", "0.1%", "1% Low", "1%", "5%", "Average", "95%", "99%", "Max" }
-				if (_appConfiguration.UseSingleRecordAdaptiveSTDStatisticParameter && !double.IsNaN(adaptiveStandardDeviation))
+                //{ "Adaptive STD", "Min", "0.1% Low", "0.1%", "0.2%", "1% Low", "1%", "5%", "Average", "95%", "99%", "Max" }
+                if (_appConfiguration.UseSingleRecordAdaptiveSTDStatisticParameter && !double.IsNaN(adaptiveStandardDeviation))
 					parameterLabelList.Add("Adaptive STD");
 				if (_appConfiguration.UseSingleRecordMinStatisticParameter)
 					parameterLabelList.Add("Min");
@@ -488,7 +494,9 @@ namespace CapFrameX.ViewModel
 					parameterLabelList.Add("0.1% Low");
 				if (_appConfiguration.UseSingleRecordP0Dot1QuantileStatisticParameter)
 					parameterLabelList.Add("P0.1");
-				if (_appConfiguration.UseSingleRecordP1LowAverageStatisticParameter && !double.IsNaN(p1_averageLow))
+                if (_appConfiguration.UseSingleRecordP0Dot2QuantileStatisticParameter)
+                    parameterLabelList.Add("P0.2");
+                if (_appConfiguration.UseSingleRecordP1LowAverageStatisticParameter && !double.IsNaN(p1_averageLow))
 					parameterLabelList.Add("1% Low");
 				if (_appConfiguration.UseSingleRecordP1QuantileStatisticParameter)
 					parameterLabelList.Add("P1");

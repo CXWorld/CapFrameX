@@ -109,5 +109,10 @@ namespace CapFrameX.View
             if (textBox.Text == string.Empty)
                 textBox.Text = "0";
         }
+
+        private void CapturePageHelp_Click(object sender, RoutedEventArgs e)
+        {
+            System.Diagnostics.Process.Start("https://www.youtube.com/watch?v=ZqMMPDxJUkk");
+        }
     }
 }

@@ -26,7 +26,9 @@
 
 		bool UseSingleRecordP0Dot1QuantileStatisticParameter { get; set; }
 
-		bool UseSingleRecordP1LowAverageStatisticParameter { get; set; }
+        bool UseSingleRecordP0Dot2QuantileStatisticParameter { get; set; }
+
+        bool UseSingleRecordP1LowAverageStatisticParameter { get; set; }
 
 		bool UseSingleRecordP0Dot1LowAverageStatisticParameter { get; set; }
 

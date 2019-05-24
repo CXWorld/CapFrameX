@@ -41,6 +41,12 @@
             <ColumnDefinition Width="2*" MaxWidth="280"></ColumnDefinition>
             <ColumnDefinition Width="1*"></ColumnDefinition>
         </Grid.ColumnDefinitions>
+
+        <Button Grid.Row="0" Grid.Column="4" Margin="0 -20 0 0" Width="60" Height="50" Style="{DynamicResource MaterialDesignFlatButton}" HorizontalAlignment="Center" VerticalAlignment="Center"
+                Click="CapturePageHelp_Click">
+            <materialDesign:PackIcon Kind="HelpOutline" Margin="0 0 0 0" Width="30" Height="30"/>
+        </Button>
+
         <TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="5" Margin="0 30 0 0" Text="{Binding CaptureStateInfo}" FontSize="14" Style="{StaticResource MaterialDesignCaptionTextBlock}" 
 				   VerticalAlignment="Center" HorizontalAlignment="Center" />
 

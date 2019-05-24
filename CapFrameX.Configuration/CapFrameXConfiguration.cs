@@ -78,7 +78,13 @@ namespace CapFrameX.Configuration
 			set { Settings.UseSingleRecordP0Dot1QuantileStatisticParameter = value; Settings.Save(); }
 		}
 
-		public bool UseSingleRecordP1LowAverageStatisticParameter
+        public bool UseSingleRecordP0Dot2QuantileStatisticParameter
+        {
+            get { return Settings.UseSingleRecordP0Dot2QuantileStatisticParameter; }
+            set { Settings.UseSingleRecordP0Dot2QuantileStatisticParameter = value; Settings.Save(); }
+        }
+
+        public bool UseSingleRecordP1LowAverageStatisticParameter
 		{
 			get { return Settings.UseSingleRecordP1LowAverageStatisticParameter; }
 			set { Settings.UseSingleRecordP1LowAverageStatisticParameter = value; Settings.Save(); }

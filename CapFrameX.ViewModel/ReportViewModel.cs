@@ -67,7 +67,8 @@ namespace CapFrameX.ViewModel
 			var displayNameFivePercentQuantileFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.FivePercentQuantileFps);
 			var displayNameOnePercentQuantileFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.OnePercentQuantileFps);
 			var displayNameOnePercentLowAverageFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.OnePercentLowAverageFps);
-			var displayNameZeroDotOnePercentQuantileFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.ZeroDotOnePercentQuantileFps);
+            var displayNameZeroDotTwoPercentQuantileFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.ZeroDotTwoPercentQuantileFps);
+            var displayNameZeroDotOnePercentQuantileFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.ZeroDotOnePercentQuantileFps);
 			var displayNameZeroDotOnePercentLowAverageFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.ZeroDotOnePercentLowAverageFps);
 			var displayNameMinFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.MinFps);
 			var displayNameAdaptiveSTDFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.AdaptiveSTDFps);
@@ -87,7 +88,8 @@ namespace CapFrameX.ViewModel
 						   displayNameFivePercentQuantileFps + "\t" +
 						   displayNameOnePercentQuantileFps + "\t" +
 						   displayNameOnePercentLowAverageFps + "\t" +
-						   displayNameZeroDotOnePercentQuantileFps + "\t" +
+                           displayNameZeroDotTwoPercentQuantileFps + "\t" +
+                           displayNameZeroDotOnePercentQuantileFps + "\t" +
 						   displayNameZeroDotOnePercentLowAverageFps + "\t" +
 						   displayNameMinFps + "\t" +
 						   displayNameAdaptiveSTDFps + "\t" +
@@ -110,8 +112,9 @@ namespace CapFrameX.ViewModel
 							   reportInfo.FivePercentQuantileFps.ToString(CultureInfo.InvariantCulture) + "\t" +
 							   reportInfo.OnePercentQuantileFps.ToString(CultureInfo.InvariantCulture) + "\t" +
 							   reportInfo.OnePercentLowAverageFps.ToString(CultureInfo.InvariantCulture) + "\t" +
+                               reportInfo.ZeroDotTwoPercentQuantileFps.ToString(CultureInfo.InvariantCulture) + "\t" +
 							   reportInfo.ZeroDotOnePercentQuantileFps.ToString(CultureInfo.InvariantCulture) + "\t" +
-							   reportInfo.ZeroDotOnePercentLowAverageFps.ToString(CultureInfo.InvariantCulture) + "\t" +
+                               reportInfo.ZeroDotOnePercentLowAverageFps.ToString(CultureInfo.InvariantCulture) + "\t" +
 							   reportInfo.MinFps.ToString(CultureInfo.InvariantCulture) + "\t" +
 							   reportInfo.AdaptiveSTDFps.ToString(CultureInfo.InvariantCulture) + "\t" +
 							   reportInfo.CustomComment +
@@ -147,7 +150,8 @@ namespace CapFrameX.ViewModel
 			var p5_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.05), roundingDigits);
 			var p1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.01), roundingDigits);
 			var p1_averageLow = Math.Round(1000 / _frametimeStatisticProvider.GetPAverageHighSequence(session.FrameTimes, 1 - 0.01), roundingDigits);
-			var p0dot1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.001), roundingDigits);
+            var p0dot2_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.002), roundingDigits);
+            var p0dot1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.001), roundingDigits);
 			var p0dot1_averageLow = Math.Round(1000 / _frametimeStatisticProvider.GetPAverageHighSequence(session.FrameTimes, 1 - 0.001), roundingDigits);
 			var min = Math.Round(fps.Min(), roundingDigits);
 			var adaptiveStandardDeviation = Math.Round(_frametimeStatisticProvider.GetAdaptiveStandardDeviation(fps, _appConfiguration.MovingAverageWindowSize), roundingDigits);
@@ -168,7 +172,8 @@ namespace CapFrameX.ViewModel
 				FivePercentQuantileFps = p5_quantile,
 				OnePercentQuantileFps = p1_quantile,
 				OnePercentLowAverageFps = p1_averageLow,
-				ZeroDotOnePercentQuantileFps = p0dot1_quantile,
+                ZeroDotTwoPercentQuantileFps = p0dot2_quantile,
+                ZeroDotOnePercentQuantileFps = p0dot1_quantile,
 				ZeroDotOnePercentLowAverageFps = p0dot1_averageLow,
 				MinFps = min,
 				AdaptiveSTDFps = adaptiveStandardDeviation,
