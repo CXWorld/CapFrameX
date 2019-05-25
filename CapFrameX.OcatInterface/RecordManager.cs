@@ -13,65 +13,70 @@ namespace CapFrameX.OcatInterface
             if (recordInfo == null || customCpuInfo == null || customGpuInfo == null || customComment == null)
                 return;
 
-            string[] lines = File.ReadAllLines(recordInfo.FullPath);
-
-            // Processor, GPU, Comment
-            if (!lines[0].Contains("Processor"))
+            try
             {
-                lines[0] = lines[0] + ",Processor";
-                lines[1] = lines[1] + ",-";
-            }
+                string[] lines = File.ReadAllLines(recordInfo.FullPath);
 
-            if (!lines[0].Contains("GPU"))
-            {
-                lines[0] = lines[0] + ",GPU";
-                lines[1] = lines[1] + ",-";
-            }
-
-            if (!lines[0].Contains("Comment"))
-            {
-                lines[0] = lines[0] + ",Comment";
-                lines[1] = lines[1] + ",-";
-            }
-
-            int indexProcessorName = -1;
-            int indexGraphicCardName = -1;
-            int indexComment = -1;
-
-            var metrics = lines[0].Split(',');
-
-            for (int i = 0; i < metrics.Length; i++)
-            {
-                if (String.Compare(metrics[i], "Processor") == 0)
+                // Processor, GPU, Comment
+                if (!lines[0].Contains("Processor"))
                 {
-                    indexProcessorName = i;
+                    lines[0] = lines[0] + ",Processor";
+                    lines[1] = lines[1] + ",-";
                 }
-                if (String.Compare(metrics[i], "GPU") == 0)
+
+                if (!lines[0].Contains("GPU"))
                 {
-                    indexGraphicCardName = i;
+                    lines[0] = lines[0] + ",GPU";
+                    lines[1] = lines[1] + ",-";
                 }
-                if (String.Compare(metrics[i], "Comment") == 0)
+
+                if (!lines[0].Contains("Comment"))
                 {
-                    indexComment = i;
+                    lines[0] = lines[0] + ",Comment";
+                    lines[1] = lines[1] + ",-";
                 }
+
+                int indexProcessorName = -1;
+                int indexGraphicCardName = -1;
+                int indexComment = -1;
+
+                var metrics = lines[0].Split(',');
+
+                for (int i = 0; i < metrics.Length; i++)
+                {
+                    if (String.Compare(metrics[i], "Processor") == 0)
+                    {
+                        indexProcessorName = i;
+                    }
+                    if (String.Compare(metrics[i], "GPU") == 0)
+                    {
+                        indexGraphicCardName = i;
+                    }
+                    if (String.Compare(metrics[i], "Comment") == 0)
+                    {
+                        indexComment = i;
+                    }
+                }
+
+                if (indexProcessorName < 0 || indexGraphicCardName < 0 || indexComment < 0)
+                    return;
+
+                var customDataLine = lines[1].Split(',');
+                var lineLength = customDataLine.Length;
+
+                customDataLine[indexProcessorName] = customCpuInfo;
+                customDataLine[indexGraphicCardName] = customGpuInfo;
+
+                if (indexComment < lineLength)
+                    customDataLine[indexComment] = customComment;
+                else
+                    customDataLine = customDataLine.Concat(new string[] { customComment }).ToArray();
+
+                lines[1] = string.Join(",", customDataLine);
+                File.WriteAllLines(recordInfo.FullPath, lines);
             }
-
-            if (indexProcessorName < 0 || indexGraphicCardName < 0 || indexComment < 0)
-                return;
-
-            var customDataLine = lines[1].Split(',');
-            var lineLength = customDataLine.Length;
-
-            customDataLine[indexProcessorName] = customCpuInfo;
-            customDataLine[indexGraphicCardName] = customGpuInfo;
-
-            if (indexComment < lineLength)
-                customDataLine[indexComment] = customComment;
-            else
-                customDataLine = customDataLine.Concat(new string[] { customComment }).ToArray();
-
-            lines[1] = string.Join(",", customDataLine);
-            File.WriteAllLines(recordInfo.FullPath, lines);
+            //Todo: write message to logger
+            catch { }
         }
 
         internal static string GetCommentFromRecordFile(string csvFile)

@@ -145,7 +145,7 @@ namespace CapFrameX.Configuration.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
         public bool UseSingleRecordP5QuantileStatisticParameter {
             get {
                 return ((bool)(this["UseSingleRecordP5QuantileStatisticParameter"]));
@@ -169,7 +169,7 @@ namespace CapFrameX.Configuration.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
         public bool UseSingleRecordP0Dot1QuantileStatisticParameter {
             get {
                 return ((bool)(this["UseSingleRecordP0Dot1QuantileStatisticParameter"]));

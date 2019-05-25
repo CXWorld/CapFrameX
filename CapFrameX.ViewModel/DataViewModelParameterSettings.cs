@@ -8,7 +8,8 @@
 		private bool _useAverageStatisticParameter;
 		private bool _useP5QuantileStatisticParameter;
 		private bool _useP1QuantileStatisticParameter;
-		private bool _useP0Dot1QuantileStatisticParameter;
+        private bool _useP0Dot2QuantileStatisticParameter;
+        private bool _useP0Dot1QuantileStatisticParameter;
 		private bool _useP1LowAverageStatisticParameter;
 		private bool _useP0Dot1LowAverageStatisticParameter;
 		private bool _useMinStatisticParameter;
@@ -22,7 +23,8 @@
 			UseAverageStatisticParameter = _appConfiguration.UseSingleRecordAverageStatisticParameter;
 			UseP5QuantileStatisticParameter = _appConfiguration.UseSingleRecordP5QuantileStatisticParameter;
 			UseP1QuantileStatisticParameter = _appConfiguration.UseSingleRecordP1QuantileStatisticParameter;
-			UseP0Dot1QuantileStatisticParameter = _appConfiguration.UseSingleRecordP0Dot1QuantileStatisticParameter;
+            UseP0Dot2QuantileStatisticParameter = _appConfiguration.UseSingleRecordP0Dot2QuantileStatisticParameter;
+            UseP0Dot1QuantileStatisticParameter = _appConfiguration.UseSingleRecordP0Dot1QuantileStatisticParameter;
 			UseP1LowAverageStatisticParameter = _appConfiguration.UseSingleRecordP1LowAverageStatisticParameter;
 			UseP0Dot1LowAverageStatisticParameter = _appConfiguration.UseSingleRecordP0Dot1LowAverageStatisticParameter;
 			UseMinStatisticParameter = _appConfiguration.UseSingleRecordMinStatisticParameter;
@@ -95,7 +97,18 @@
 			}
 		}
 
-		public bool UseP0Dot1QuantileStatisticParameter
+        public bool UseP0Dot2QuantileStatisticParameter
+        {
+            get { return _useP0Dot2QuantileStatisticParameter; }
+            set
+            {
+                _useP0Dot2QuantileStatisticParameter = value;
+                _appConfiguration.UseSingleRecordP0Dot2QuantileStatisticParameter = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public bool UseP0Dot1QuantileStatisticParameter
 		{
 			get { return _useP0Dot1QuantileStatisticParameter; }
 			set
