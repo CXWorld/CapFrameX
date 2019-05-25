@@ -229,7 +229,7 @@ namespace CapFrameX.Configuration.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("Control + Shift + X")]
+        [global::System.Configuration.DefaultSettingValueAttribute("F12")]
         public string CaptureHotKey {
             get {
                 return ((string)(this["CaptureHotKey"]));
@@ -253,7 +253,7 @@ namespace CapFrameX.Configuration.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("20")]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
         public int CaptureTime {
             get {
                 return ((int)(this["CaptureTime"]));

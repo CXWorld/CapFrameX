@@ -54,13 +54,13 @@
       <Value Profile="(Default)">True</Value>
     </Setting>
     <Setting Name="CaptureHotKey" Type="System.String" Scope="User">
-      <Value Profile="(Default)">Control + Shift + X</Value>
+      <Value Profile="(Default)">F12</Value>
     </Setting>
     <Setting Name="HotkeySoundMode" Type="System.String" Scope="User">
       <Value Profile="(Default)">voice response</Value>
     </Setting>
     <Setting Name="CaptureTime" Type="System.Int32" Scope="User">
-      <Value Profile="(Default)">20</Value>
+      <Value Profile="(Default)">0</Value>
     </Setting>
     <Setting Name="UseSingleRecordP0Dot2QuantileStatisticParameter" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
