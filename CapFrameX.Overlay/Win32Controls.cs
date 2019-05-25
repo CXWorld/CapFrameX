@@ -25,8 +25,6 @@ namespace System.Windows
 
 		static IntPtr hhook;
 
-		// Need to ensure delegate is not collected while we're using it,
-		// storing it in a class field is simplest way to do this.
 		static WinEventDelegate procDelegate = new WinEventDelegate(WinEventProc);
 
 		public static void StartListening()
