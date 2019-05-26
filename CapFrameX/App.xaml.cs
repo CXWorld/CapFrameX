@@ -1,7 +1,7 @@
 ﻿using CapFrameX.PresentMonInterface;
-using System;
+using System.Diagnostics;
+using System.Linq;
 using System.Windows;
-using System.Windows.Navigation;
 
 namespace CapFrameX
 {
@@ -14,12 +14,27 @@ namespace CapFrameX
         {
             base.OnStartup(e);
             Bootstrapper bootstrapper = new Bootstrapper();
-			bootstrapper.Run(true);
+            bootstrapper.Run(true);
         }
 
-		private void CapFrameXExit(object sender, ExitEventArgs e)
-		{
-			PresentMonCaptureService.TryKillPresentMon();
-		}
-	}
+        private void CapFrameXExit(object sender, ExitEventArgs e)
+        {
+            PresentMonCaptureService.TryKillPresentMon();
+        }
+
+
+        private void Application_Startup(object sender, StartupEventArgs e)
+        {
+
+            Process proc = Process.GetCurrentProcess();
+            var processes = Process.GetProcesses().Where(p =>
+                             p.ProcessName == proc.ProcessName);
+
+            if (processes.Any())
+            {
+                MessageBox.Show("Already an instance is running...");
+                Current.Shutdown();
+            }
+        }
+    }
 }
