@@ -96,14 +96,15 @@ namespace CapFrameX.ViewModel.DataContext
 			Application.Current.Dispatcher.Invoke(new Action(() =>
 			{
 				FrametimeModel.Series.Clear();
-
-				var frametimeSeries = new LineSeries { Title = "Frametimes", StrokeThickness = 1, Color = OxyColor.FromRgb(139, 35, 35) };
+                // old: OxyColor.FromRgb(139, 35, 35)
+                var frametimeSeries = new LineSeries { Title = "Frametimes", StrokeThickness = 1, Color = OxyColor.FromRgb(174, 234, 0) };
 				var movingAverageSeries = new LineSeries
 				{
 					Title = string.Format(CultureInfo.InvariantCulture,
 					"Moving average (window size = {0})", AppConfiguration.MovingAverageWindowSize),
 					StrokeThickness = 1,
-					Color = OxyColor.FromRgb(35, 139, 123)
+                    // old: OxyColor.FromRgb(35, 139, 123)
+                    Color = OxyColor.FromArgb(114, 60, 0, 234)
 				};
 
 				frametimeSeries.Points.AddRange(frameTimeDataPoints);
