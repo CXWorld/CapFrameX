@@ -2,9 +2,6 @@
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
     <Fragment>
         <DirectoryRef Id="INSTALLFOLDER">
-            <Component Id="cmp940C2FFD9E67BD8C025A200BBA275155" Guid="*" Win64="yes">
-                <File Id="fil6E74A1A3D87C466D6D75C54606AD4332" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.application" />
-            </Component>
             <Component Id="cmp8ACAADD5757BD9E933B8004451F42808" Guid="*" Win64="yes">
                 <File Id="fil1D123DA33C13D338799627CD54B199E4" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.Configuration.dll" />
             </Component>
@@ -23,9 +20,6 @@
             </Component>
             <Component Id="cmp2E59BC59B11729E95EB8C057C580BD11" Guid="*" Win64="yes">
                 <File Id="fil4AD54877443A07448E8AA586A7801495" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.exe.config" />
-            </Component>
-            <Component Id="cmpC02C1B32D59D6FC2D3CB05FCE4BDBCA9" Guid="*" Win64="yes">
-                <File Id="fil1671F31B06C374ED3C12CDCF93C65FE5" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.exe.manifest" />
             </Component>
             <Component Id="cmp197CCAFDD9C330A4C91CAF35F0619382" Guid="*" Win64="yes">
                 <File Id="fil3C5B48255A95C26C6661A866ABBA9A94" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.Extensions.dll" />
@@ -151,11 +145,6 @@
             <Component Id="cmpC85BD7478E073743A39F17DF06865203" Guid="*" Win64="yes">
                 <File Id="fil3DAD59899DDA1B0FCEDF95F84CB3C475" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Xceed.Wpf.Toolkit.dll" />
             </Component>
-            <Directory Id="dir00122602D311392A9D483BE33FE17DEF" Name="app.publish">
-                <Component Id="cmp6689F3DEF55FE2E9F2918986A132E4BE" Guid="*" Win64="yes">
-                    <File Id="fil65948BEAECD40F5BE1BF3866B8FDA4C2" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\app.publish\CapFrameX.exe" />
-                </Component>
-            </Directory>
             <Directory Id="dir853772609C50C17748AF70C12E8A0818" Name="PresentMon">
                 <Component Id="cmp7358366301EC7CE9A932A5F8FBEC5A00" Guid="*" Win64="yes">
                     <File Id="fil1ADDD4AE6DFC84D4B7876CA15289FFFA" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\PresentMon\PresentMon64-1.4.0.exe" />
@@ -188,7 +177,6 @@
     </Fragment>
     <Fragment>
         <ComponentGroup Id="CapFrameXBinaries">
-            <ComponentRef Id="cmp940C2FFD9E67BD8C025A200BBA275155" />
             <ComponentRef Id="cmp8ACAADD5757BD9E933B8004451F42808" />
             
             
@@ -198,7 +186,6 @@
             
             <ComponentRef Id="cmp82AD45B10466B02AA709E58F5BE28DFA" />
             <ComponentRef Id="cmp2E59BC59B11729E95EB8C057C580BD11" />
-            <ComponentRef Id="cmpC02C1B32D59D6FC2D3CB05FCE4BDBCA9" />
             <ComponentRef Id="cmp197CCAFDD9C330A4C91CAF35F0619382" />
             
             <ComponentRef Id="cmp6AE09C2CACB08476BEF8E2E045F01AF5" />
@@ -263,7 +250,6 @@
             
             <ComponentRef Id="cmp017BFB3832A5B110A2B3A350E13F2A5C" />
             <ComponentRef Id="cmpC85BD7478E073743A39F17DF06865203" />
-            <ComponentRef Id="cmp6689F3DEF55FE2E9F2918986A132E4BE" />
             <ComponentRef Id="cmp7358366301EC7CE9A932A5F8FBEC5A00" />
             <ComponentRef Id="cmp8C1AB07795DAE387F9C0929C8DBCE953" />
             <ComponentRef Id="cmp3F2F9B6546AE06A5A2BC8225D157AC3C" />
