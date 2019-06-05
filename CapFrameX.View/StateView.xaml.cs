@@ -2,6 +2,7 @@
 using CapFrameX.OcatInterface;
 using CapFrameX.ViewModel;
 using Prism.Events;
+using System;
 using System.ComponentModel;
 using System.Windows.Controls;
 
@@ -16,7 +17,9 @@ namespace CapFrameX.View
 		{
 			InitializeComponent();
 
-			if (DesignerProperties.GetIsInDesignMode(this))
+            OSMajorVersion.Text = $"OS major version: {Environment.OSVersion.Version.Major}";
+
+            if (DesignerProperties.GetIsInDesignMode(this))
 			{
 				var appConfiguration = new CapFrameXConfiguration();
 				DataContext = new StateViewModel( new RecordDirectoryObserver(appConfiguration), new EventAggregator(), appConfiguration);
