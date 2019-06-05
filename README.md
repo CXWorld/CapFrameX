@@ -52,11 +52,11 @@ Also at the top you have a screenshot button to save the view(without the record
 
 Above that is the global menu.
 
-Moving average window size = The number of frames that are used for the average line in the frametime chart.
-Stuttering factor = The factor a frametime has to be above average to be counted as stutter.
-Observed directory = The directory in which your captures are saved and also where you can put your OCAT captures.
-FPS values rounding digits = The number of decimals for the FPS values
-Screenshot directory = The directory in which your screenshots are saved.
+* Moving average window size = The number of frames that are used for the average line in the frametime chart.
+* Stuttering factor = The factor a frametime has to be above average to be counted as stutter.
+* Observed directory = The directory in which your captures are saved and also where you can put your OCAT captures.
+* FPS values rounding digits = The number of decimals for the FPS values
+* Screenshot directory = The directory in which your screenshots are saved.
 
 ## Record Comparison View
 Here you can compare up to 7 captures. You add the captures to the right list via drag and drop or a double-click. Above that list you can change the context that is shown for the captures and change between absolute FPS and relative percentage values.
