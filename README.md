@@ -47,15 +47,15 @@ With this, you can just start your game and since it'll be the only process in t
 ## Chart control
 | Action | Gesture |
 | --- | --- |
-Pan (Y-axis) $$^1$$ | Right mouse button |
-Zoom $$^1$$ | Mouse wheel |
-Zoom by rectangle $$^1$$ | Ctrl+Right mouse button, Middle mouse button |
-Reset $$^1$$ | Ctrl+Right mouse button double-click, Middle mouse button double-click |
+Pan (Y-axis) | Right mouse button |
+Zoom | Mouse wheel |
+Zoom by rectangle | Ctrl+Right mouse button, Middle mouse button |
+Reset | Ctrl+Right mouse button double-click, Middle mouse button double-click |
 Show ‘tracker’ | Left mouse button |
 Reset axes | ‘A’, Home |
 Copy values	| Right mouse button+context menu |
 
-$$^1$$ You can zoom/pan/reset a single axis by positioning the mouse cursor over the axis before starting the zoom/pan.
+You can zoom/pan/reset a single axis by positioning the mouse cursor over the axis before starting the zoom/pan.
 
 ## Single Record view
 This is where you can analyse the captures you made. You can choose between frametime graphs, FPS graphs, and L-shapes.
