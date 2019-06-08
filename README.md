@@ -31,7 +31,7 @@ It constantly observes the output directory so every capture will show up here a
 This also includes every OCAT capture you put into that directory.
 At the bottom of that list you can see and change the CPU and GPU description and also add a custom comment to every capture.
 
-## Capture View
+## Capture view
 This is the default view when starting CapFrameX. Here you can set up your capture hotkey, the capture time and the response sounds.
 An info text at the top always informs you what's going on with the capture service and tells you what to do.
 For more detailed information about the capture events, you can take a look at the logger expander which is located at the bottom.
@@ -44,7 +44,20 @@ However you wouldn't want to tab out of your game to do this. This is where the 
 With the arrow buttons you can add or remove any process from the ignore list, the ideal scenario being a completely empty running processes list at the start of CapFrameX.
 With this, you can just start your game and since it'll be the only process in the list, just push the hotkey.
 
-## Single Record View
+## Chart control
+| Action | Gesture |
+| --- | --- |
+Pan (Y-axis) $$^1$$ | Right mouse button |
+Zoom $$^1$$ | Mouse wheel |
+Zoom by rectangle $$^1$$ | Ctrl+Right mouse button, Middle mouse button |
+Reset $$^1$$ | Ctrl+Right mouse button double-click, Middle mouse button double-click |
+Show ‘tracker’ | Left mouse button |
+Reset axes | ‘A’, Home |
+Copy values	| Right mouse button+context menu |
+
+$$^1$$ You can zoom/pan/reset a single axis by positioning the mouse cursor over the axis before starting the zoom/pan.
+
+## Single Record view
 This is where you can analyse the captures you made. You can choose between frametime graphs, FPS graphs, and L-shapes.
 At the bottom you have your performance parameters like min, max, avg and percentiles. These parameters can be changed in the Data/Chart settings.
 You also have a pie chart which shows the amount of time you had stuttering, meaning frametimes above 2.5x average.
@@ -58,14 +71,13 @@ Above that is the global menu.
 * FPS values rounding digits = The number of decimals for the FPS values
 * Screenshot directory = The directory in which your screenshots are saved.
 
-## Record Comparison View
+## Record Comparison view
 Here you can compare up to 7 captures. You add the captures to the right list via drag and drop or a double-click. Above that list you can change the context that is shown for the captures and change between absolute FPS and relative percentage values.
 
-
-## Report View
+## Report view
 This is a simple view where you can add your records to see all the relevant parameters all at once. You can also just copy them with a right-click to add them into any other programm. This is also possible for the graphs and performance parameters in the single record view.
 
-## Synchronization View
+## Synchronization view
 This view shows you the quality of your synchronization methods like FreeSync or G-Sync.
 If they are working properly, the lines for "frametimes" and "Display changed times" should align pretty well, this means your monitor works at the adaptive refresh rate of your GPU.
 At the bottom you can see the distribution of the refresh times and beside it another pie chart which shows the number of dropped frames.
