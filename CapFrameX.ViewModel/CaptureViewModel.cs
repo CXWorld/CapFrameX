@@ -1,5 +1,7 @@
 ﻿using CapFrameX.Contracts.Configuration;
+using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.PresentMonInterface;
+using CapFrameX.Data;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.OcatInterface;
 using CapFrameX.PresentMonInterface;
@@ -36,6 +38,7 @@ namespace CapFrameX.ViewModel
         private readonly IAppConfiguration _appConfiguration;
         private readonly ICaptureService _captureService;
         private readonly IEventAggregator _eventAggregator;
+        private readonly IRecordDataProvider _recordDataProvider;
         private readonly MediaPlayer _soundPlayer = new MediaPlayer();
         private readonly string[] _soundModes = new[] { "none", "simple sounds", "voice response" };
         private readonly List<string> _captureDataArchive = new List<string>(ARCHIVE_LENGTH);
@@ -174,11 +177,13 @@ namespace CapFrameX.ViewModel
 
         public CaptureViewModel(IAppConfiguration appConfiguration,
                                 ICaptureService captureService,
-                                IEventAggregator eventAggregator)
+                                IEventAggregator eventAggregator,
+                                IRecordDataProvider recordDataProvider)
         {
             _appConfiguration = appConfiguration;
             _captureService = captureService;
             _eventAggregator = eventAggregator;
+            _recordDataProvider = recordDataProvider;
 
             AddToIgonreListCommand = new DelegateCommand(OnAddToIgonreList);
             AddToProcessListCommand = new DelegateCommand(OnAddToProcessList);
@@ -213,6 +218,11 @@ namespace CapFrameX.ViewModel
             _disposableHeartBeat = GetListUpdatHeartBeat();
             _isCaptureModeActive = true;
             StartCaptureService();
+        }
+
+        private void AddLoggerEntry(string entry)
+        {
+            LoggerOutput += $"{DateTime.Now.ToLongTimeString()}: {entry}" + Environment.NewLine;
         }
 
         private void SubscribeToUpdateProcessIgnoreList()
@@ -321,8 +331,7 @@ namespace CapFrameX.ViewModel
             _timestampStopCapture = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds();
             _disposableCaptureStream?.Dispose();
 
-            LoggerOutput += $"Utc {DateTime.UtcNow.ToLongTimeString()} capturing stopped"
-                            + Environment.NewLine;
+            AddLoggerEntry("Capturing stopped.");
 
             // none -> do nothing
             // simple sounds
@@ -351,14 +360,13 @@ namespace CapFrameX.ViewModel
 
         private async Task SetTaskDelay()
         {
-            // put some offset here, PresentMon seems to work not that precise 
+            // put some offset here
             await Task.Delay(TimeSpan.FromMilliseconds(PRESICE_OFFSET + 1000 * Convert.ToInt32(CaptureTimeString)));
         }
 
         private void StartCaptureDataFromStream()
         {
-            LoggerOutput += $"Utc {DateTime.UtcNow.ToLongTimeString()} capturing started"
-                            + Environment.NewLine;
+            AddLoggerEntry("Capturing started!");
 
             _captureData = new List<string>();
             bool autoTermination = Convert.ToInt32(CaptureTimeString) > 0;
@@ -386,15 +394,13 @@ namespace CapFrameX.ViewModel
                         _fillArchive = false;
                         _disposableArchiveStream?.Dispose();
 
-                        LoggerOutput += $"Utc {DateTime.UtcNow.ToLongTimeString()} stopped filling archive"
-                            + Environment.NewLine;
+                        AddLoggerEntry("Stopped filling archive.");
                     }
                 });
 
             if (autoTermination)
             {
-                LoggerOutput += $"Utc {DateTime.UtcNow.ToLongTimeString()} starting countdown"
-                            + Environment.NewLine;
+                AddLoggerEntry("Starting countdown...");
 
                 _cancellationTokenSource = new CancellationTokenSource();
                 Task.Run(async () =>
@@ -476,105 +482,28 @@ namespace CapFrameX.ViewModel
         private void WriteExtractedCaptureDataToFile(string processName)
         {
             if (string.IsNullOrWhiteSpace(processName))
-                return;
-
-            var filePath = GetOutputFilename(processName);
-            var csv = new StringBuilder();
-            csv.AppendLine(CaptureServiceConfiguration.FILE_HEADER);
+                return;            
 
             var captureData = GetAdjustedCaptureData();
             StartFillArchive();
 
             if (captureData == null)
             {
-                LoggerOutput += $"Utc {DateTime.UtcNow.ToLongTimeString()} error while extracting capture data. " +
-                    $"No file will be written." + Environment.NewLine;
+                AddLoggerEntry("Error while extracting capture data. No file will be written.");
                 return;
             }
 
-            //additional data/comment
-            string firstLineWithInfos = captureData.First();
-            firstLineWithInfos += "," + HardwareInfo.GetProcessorName();
-            firstLineWithInfos += "," + HardwareInfo.GetGraphicCardName();
-            firstLineWithInfos += "," + HardwareInfo.GetMotherboardName();
-            firstLineWithInfos += "," + HardwareInfo.GetSystemRAMInfoName();
+            var filePath = GetOutputFilename(processName);
+            int captureTime = Convert.ToInt32(CaptureTimeString);
+            _recordDataProvider.SavePresentData(captureData, filePath, processName, captureTime);            
 
-            //start time
-            var timeStart = GetStartTimeFromDataLine(firstLineWithInfos);
-
-            // normalize time
-            var currentLineSplit = firstLineWithInfos.Split(',');
-            currentLineSplit[11] = "0";
-
-            csv.AppendLine(string.Join(",", currentLineSplit));
-
-            foreach (var dataLine in captureData.Skip(1))
-            {
-                var extractedProcessName = GetProcessNameFromDataLine(dataLine);
-                if (extractedProcessName != null)
-                {
-                    if (extractedProcessName == processName)
-                    {
-                        double currentStartTime = GetStartTimeFromDataLine(dataLine);
-
-                        // normalize time
-                        double normalizedTime = currentStartTime - timeStart;
-
-                        // cutting offset
-                        int captureTime = Convert.ToInt32(CaptureTimeString);
-                        if (captureTime > 0 && normalizedTime > captureTime)
-                            break;
-
-                        currentLineSplit = dataLine.Split(',');
-                        currentLineSplit[11] = normalizedTime.ToString(CultureInfo.InvariantCulture);
-
-                        csv.AppendLine(string.Join(",", currentLineSplit));
-                    }
-                }
-            }
-
-            using (var sw = new StreamWriter(filePath))
-            {
-                sw.Write(csv.ToString());
-            }
-
-            LoggerOutput += $"Utc {DateTime.UtcNow.ToLongTimeString()} successfully written capture file into directory"
-               + Environment.NewLine;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static string GetProcessNameFromDataLine(string dataLine)
-        {
-            if (string.IsNullOrWhiteSpace(dataLine))
-                return null;
-
-            int index = dataLine.IndexOf(".exe");
-            string processName = null;
-
-            if (index > 0)
-            {
-                processName = dataLine.Substring(0, index);
-            }
-
-            return processName;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static double GetStartTimeFromDataLine(string dataLine)
-        {
-            if (string.IsNullOrWhiteSpace(dataLine))
-                return 0;
-
-            var lineSplit = dataLine.Split(',');
-            var startTime = lineSplit[11];
-
-            return Convert.ToDouble(startTime, CultureInfo.InvariantCulture);
+            AddLoggerEntry("Capture file is successfully written into directory.");
         }
 
         private List<string> GetAdjustedCaptureData()
         {
-            var processName = GetProcessNameFromDataLine(_captureData.First());
-            var startTimeWithOffset = GetStartTimeFromDataLine(_captureData.First());
+            var processName = RecordDataProvider.GetProcessNameFromDataLine(_captureData.First());
+            var startTimeWithOffset = RecordDataProvider.GetStartTimeFromDataLine(_captureData.First());
             var captureTime = Convert.ToDouble(CaptureTimeString, CultureInfo.InvariantCulture);
 
             if (captureTime == 0)
@@ -586,17 +515,16 @@ namespace CapFrameX.ViewModel
             LoggerOutput += $"Utc {DateTime.UtcNow.ToLongTimeString()} capture time (free run or time set) in sec: " +
                             Math.Round(captureTime, 2).ToString(CultureInfo.InvariantCulture) + Environment.NewLine;
 
-            var filteredArchive = _captureDataArchive.Where(line => GetProcessNameFromDataLine(line) == processName).ToList();
+            var filteredArchive = _captureDataArchive.Where(line => RecordDataProvider.GetProcessNameFromDataLine(line) == processName).ToList();
 
-            LoggerOutput += $"Utc {DateTime.UtcNow.ToLongTimeString()} using archive with {filteredArchive.Count} frames"
-                + Environment.NewLine;
+            AddLoggerEntry($"Using archive with {filteredArchive.Count} frames.");
 
             // Distinct archive and live stream
-            var lastArchiveTime = GetStartTimeFromDataLine(filteredArchive.Last());
+            var lastArchiveTime = RecordDataProvider.GetStartTimeFromDataLine(filteredArchive.Last());
             int distinctIndex = 0;
             for (int i = 0; i < _captureData.Count; i++)
             {
-                if (GetStartTimeFromDataLine(_captureData[i]) <= lastArchiveTime)
+                if (RecordDataProvider.GetStartTimeFromDataLine(_captureData[i]) <= lastArchiveTime)
                     distinctIndex++;
                 else
                     break;
@@ -612,12 +540,13 @@ namespace CapFrameX.ViewModel
             double rightTimeBound = startTimeWithOffset + captureTime - (_timestampFirstStreamElement - _timestampStartCapture) / 1000d;
 
             var compensatedDelay = Math.Round((_timestampFirstStreamElement - _timestampStartCapture) / 1000d, 2);
-            LoggerOutput += $"Utc {DateTime.UtcNow.ToLongTimeString()} compensated {compensatedDelay.ToString(CultureInfo.InvariantCulture)} " +
-                $"seconds delay with data from archive" + Environment.NewLine;
+
+            AddLoggerEntry($"Compensated {compensatedDelay.ToString(CultureInfo.InvariantCulture)} " +
+                $"seconds delay with data from archive.");
 
             for (int i = 0; i < unionCaptureData.Count; i++)
             {
-                var currentStartTime = GetStartTimeFromDataLine(unionCaptureData[i]);
+                var currentStartTime = RecordDataProvider.GetStartTimeFromDataLine(unionCaptureData[i]);
 
                 if (currentStartTime >= leftTimeBound && currentStartTime <= rightTimeBound)
                     captureInterval.Add(unionCaptureData[i]);

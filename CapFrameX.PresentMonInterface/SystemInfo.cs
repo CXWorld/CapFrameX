@@ -1,10 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Management;
 
 namespace CapFrameX.PresentMonInterface
 {
-    public static class HardwareInfo
+    public static class SystemInfo
     {
         public static string GetProcessorName()
         {
@@ -70,6 +69,45 @@ namespace CapFrameX.PresentMonInterface
 
             //DeviceName
             return propertyDataValue;
+        }
+
+        public static string GetOSVersion()
+        {
+            string propertyDataValueCaption = string.Empty;
+            const string propertyDataNameCaption = "Caption";
+            string propertyDataValueBuildNumber = string.Empty;
+            const string propertyDataNameBuildNumber = "BuildNumber";
+
+            var win32DeviceClassName = "Win32_OperatingSystem";
+            var query = string.Format("select * from {0}", win32DeviceClassName);
+
+            try
+            {
+                using (var searcher = new ManagementObjectSearcher(query))
+                {
+                    ManagementObjectCollection objectCollection = searcher.Get();
+
+                    foreach (ManagementBaseObject managementBaseObject in objectCollection)
+                    {
+                        foreach (PropertyData propertyData in managementBaseObject.Properties)
+                        {
+                            if (propertyData.Name == propertyDataNameCaption)
+                            {
+                                propertyDataValueCaption = (string)propertyData.Value;
+                            }
+
+                            if (propertyData.Name == propertyDataNameBuildNumber)
+                            {
+                                propertyDataValueBuildNumber = (string)propertyData.Value;
+
+                            }
+                        }
+                    }
+                }
+            }
+            catch { propertyDataValueCaption = "Windows OS"; }
+
+            return $"{propertyDataValueCaption} Build {propertyDataValueBuildNumber}";
         }
 
         public static string GetMotherboardName()

@@ -1,4 +1,6 @@
-﻿using System;
+﻿using CapFrameX.Contracts.Data;
+using CapFrameX.Data;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -8,154 +10,103 @@ namespace CapFrameX.OcatInterface
 {
     public static class RecordManager
     {
-        public static void UpdateCustomData(OcatRecordInfo recordInfo, string customCpuInfo, string customGpuInfo, string customComment)
+        public static void UpdateCustomData(IFileRecordInfo recordInfo, string customCpuInfo,
+            string customGpuInfo, string customGameName, string customComment)
         {
-            if (recordInfo == null || customCpuInfo == null || customGpuInfo == null || customComment == null)
+            if (recordInfo == null || customCpuInfo == null ||
+                customGpuInfo == null || customGameName == null ||
+                customComment == null)
                 return;
 
             try
             {
-                string[] lines = File.ReadAllLines(recordInfo.FullPath);
+                string[] lines = File.ReadAllLines(recordInfo.FileInfo.FullName);
 
-                // Processor, GPU, Comment
-                if (!lines[0].Contains("Processor"))
+                if (recordInfo.HasInfoHeader)
                 {
-                    lines[0] = lines[0] + ",Processor";
-                    lines[1] = lines[1] + ",-";
+                    // Processor
+                    int processorNameHeaderIndex = GetHeaderIndex(lines, "Processor");
+                    lines[processorNameHeaderIndex] = $"{FileRecordInfo.HEADER_MARKER}Processor:{customCpuInfo}";
+
+                    // GPU
+                    int graphicCardNameHeaderIndex = GetHeaderIndex(lines, "GPU");
+                    lines[graphicCardNameHeaderIndex] = $"{FileRecordInfo.HEADER_MARKER}GPU:{customGpuInfo}";
+
+                    // GameName
+                    int gameNameHeaderIndex = GetHeaderIndex(lines, "GameName");
+                    lines[gameNameHeaderIndex] = $"{FileRecordInfo.HEADER_MARKER}GameName:{customGameName}";
+
+                    // Comment
+                    int commentNameHeaderIndex = GetHeaderIndex(lines, "Comment");
+                    lines[commentNameHeaderIndex] = $"{FileRecordInfo.HEADER_MARKER}Comment:{customComment}";
+
+                    File.WriteAllLines(recordInfo.FullPath, lines);
                 }
-
-                if (!lines[0].Contains("GPU"))
-                {
-                    lines[0] = lines[0] + ",GPU";
-                    lines[1] = lines[1] + ",-";
-                }
-
-                if (!lines[0].Contains("Comment"))
-                {
-                    lines[0] = lines[0] + ",Comment";
-                    lines[1] = lines[1] + ",-";
-                }
-
-                int indexProcessorName = -1;
-                int indexGraphicCardName = -1;
-                int indexComment = -1;
-
-                var metrics = lines[0].Split(',');
-
-                for (int i = 0; i < metrics.Length; i++)
-                {
-                    if (String.Compare(metrics[i], "Processor") == 0)
-                    {
-                        indexProcessorName = i;
-                    }
-                    if (String.Compare(metrics[i], "GPU") == 0)
-                    {
-                        indexGraphicCardName = i;
-                    }
-                    if (String.Compare(metrics[i], "Comment") == 0)
-                    {
-                        indexComment = i;
-                    }
-                }
-
-                if (indexProcessorName < 0 || indexGraphicCardName < 0 || indexComment < 0)
-                    return;
-
-                var customDataLine = lines[1].Split(',');
-                var lineLength = customDataLine.Length;
-
-                customDataLine[indexProcessorName] = customCpuInfo;
-                customDataLine[indexGraphicCardName] = customGpuInfo;
-
-                if (indexComment < lineLength)
-                    customDataLine[indexComment] = customComment;
                 else
-                    customDataLine = customDataLine.Concat(new string[] { customComment }).ToArray();
+                {
+                    // Create header
+                    var headerLines = new List<string>()
+                    {
+                        $"{FileRecordInfo.HEADER_MARKER}GameName:{customGameName}",
+                        $"{FileRecordInfo.HEADER_MARKER}Application:{recordInfo.ProcessName}",
+                        $"{FileRecordInfo.HEADER_MARKER}CreationDate:{recordInfo.CreationDate}",
+                        $"{FileRecordInfo.HEADER_MARKER}CreationTime:{recordInfo.CreationTime}",
+                        $"{FileRecordInfo.HEADER_MARKER}Motherboard:{recordInfo.MotherboardName}",
+                        $"{FileRecordInfo.HEADER_MARKER}OS:{recordInfo.OsVersion}",
+                        $"{FileRecordInfo.HEADER_MARKER}Processor:{customCpuInfo}",
+                        $"{FileRecordInfo.HEADER_MARKER}System RAM:{recordInfo.SystemRamInfo}",
+                        $"{FileRecordInfo.HEADER_MARKER}Base Driver Version:{recordInfo.BaseDriverVersion}",
+                        $"{FileRecordInfo.HEADER_MARKER}Driver Package:{recordInfo.DriverPackage}",
+                        $"{FileRecordInfo.HEADER_MARKER}GPU:{customGpuInfo}",
+                        $"{FileRecordInfo.HEADER_MARKER}GPU #:{recordInfo.NumberGPUs}",
+                        $"{FileRecordInfo.HEADER_MARKER}GPU Core Clock (MHz):{recordInfo.GPUCoreClock}",
+                        $"{FileRecordInfo.HEADER_MARKER}GPU Memory Clock (MHz):{recordInfo.GPUMemoryClock}",
+                        $"{FileRecordInfo.HEADER_MARKER}GPU Memory (MB):{recordInfo.GPUMemory}",
+                        $"{FileRecordInfo.HEADER_MARKER}Comment:{customComment}"
+                    };
 
-                lines[1] = string.Join(",", customDataLine);
-                File.WriteAllLines(recordInfo.FullPath, lines);
+                    File.WriteAllLines(recordInfo.FullPath, headerLines.Concat(lines));
+                }            
             }
             //Todo: write message to logger
             catch { }
         }
 
-        internal static string GetCommentFromRecordFile(string csvFile)
+        private static int GetHeaderIndex(string[] lines, string headerEntry)
         {
-            if (string.IsNullOrWhiteSpace(csvFile))
-            {
-                return null;
-            }
-
-            if (new FileInfo(csvFile).Length == 0)
-            {
-                return null;
-            }
-
-            string comment = string.Empty;
-
-            try
-            {
-                using (var reader = new StreamReader(csvFile))
-                {
-                    var line = reader.ReadLine();
-                    int indexComment = -1;
-
-                    var metrics = line.Split(',');
-                    for (int i = 0; i < metrics.Count(); i++)
-                    {
-                        if (string.Compare(metrics[i], "Comment") == 0)
-                        {
-                            indexComment = i;
-                        }
-                    }
-
-                    var firstDataLineWithComment = reader.ReadLine();
-
-                    if (firstDataLineWithComment == null)
-                        return null;
-
-                    var values = firstDataLineWithComment.Split(',');
-
-                    if (indexComment > 0 && values.Length > indexComment)
-                        comment = values[indexComment].Trim(new char[] { ' ', '"' });
-
-                    return comment;
-                }
-            }
-            catch (IOException)
-            {
-                return null;
-            }
+            int index = 0;
+            while (!lines[index].Contains(headerEntry)) index++;
+            return index;
         }
 
-        public static List<SystemInfo> GetSystemInfos(Session session)
+        public static List<SystemInfo> GetSystemInfos(IFileRecordInfo recordInfo)
         {
             var systemInfos = new List<SystemInfo>();
 
-            if (session.MotherboardName != null)
-                systemInfos.Add(new SystemInfo() { Key = "Motherboard", Value = session.MotherboardName });
-            if (session.OsVersion != null)
-                systemInfos.Add(new SystemInfo() { Key = "OS Version", Value = session.OsVersion });
-            if (session.ProcessorName != null)
-                systemInfos.Add(new SystemInfo() { Key = "Processor", Value = session.ProcessorName });
-            if (session.SystemRamInfo != null)
-                systemInfos.Add(new SystemInfo() { Key = "System RAM Info", Value = session.SystemRamInfo });
-            if (session.BaseDriverVersion != null)
-                systemInfos.Add(new SystemInfo() { Key = "Base Driver Version", Value = session.BaseDriverVersion });
-            if (session.DriverPackage != null)
-                systemInfos.Add(new SystemInfo() { Key = "Driver Package", Value = session.DriverPackage });
-            if (session.NumberGPUs != null)
-                systemInfos.Add(new SystemInfo() { Key = "GPU #", Value = session.NumberGPUs });
-            if (session.GraphicCardName != null)
-                systemInfos.Add(new SystemInfo() { Key = "Graphic Card", Value = session.GraphicCardName });
-            if (session.GPUCoreClock != null)
-                systemInfos.Add(new SystemInfo() { Key = "GPU Core Clock (MHz)", Value = session.GPUCoreClock });
-            if (session.GPUMemoryClock != null)
-                systemInfos.Add(new SystemInfo() { Key = "GPU Memory Clock (MHz)", Value = session.GPUMemoryClock });
-            if (session.GPUMemory != null)
-                systemInfos.Add(new SystemInfo() { Key = "GPU Memory (MB)", Value = session.GPUMemory });
-            if (session.Comment != null)
-                systemInfos.Add(new SystemInfo() { Key = "Comment", Value = session.Comment });
+            if (recordInfo.MotherboardName != null)
+                systemInfos.Add(new SystemInfo() { Key = "Motherboard", Value = recordInfo.MotherboardName });
+            if (recordInfo.OsVersion != null)
+                systemInfos.Add(new SystemInfo() { Key = "OS Version", Value = recordInfo.OsVersion });
+            if (recordInfo.ProcessorName != null)
+                systemInfos.Add(new SystemInfo() { Key = "Processor", Value = recordInfo.ProcessorName });
+            if (recordInfo.SystemRamInfo != null)
+                systemInfos.Add(new SystemInfo() { Key = "System RAM Info", Value = recordInfo.SystemRamInfo });
+            if (recordInfo.BaseDriverVersion != null)
+                systemInfos.Add(new SystemInfo() { Key = "Base Driver Version", Value = recordInfo.BaseDriverVersion });
+            if (recordInfo.DriverPackage != null)
+                systemInfos.Add(new SystemInfo() { Key = "Driver Package", Value = recordInfo.DriverPackage });
+            if (recordInfo.NumberGPUs != null)
+                systemInfos.Add(new SystemInfo() { Key = "GPU #", Value = recordInfo.NumberGPUs });
+            if (recordInfo.GraphicCardName != null)
+                systemInfos.Add(new SystemInfo() { Key = "Graphic Card", Value = recordInfo.GraphicCardName });
+            if (recordInfo.GPUCoreClock != null)
+                systemInfos.Add(new SystemInfo() { Key = "GPU Core Clock (MHz)", Value = recordInfo.GPUCoreClock });
+            if (recordInfo.GPUMemoryClock != null)
+                systemInfos.Add(new SystemInfo() { Key = "GPU Memory Clock (MHz)", Value = recordInfo.GPUMemoryClock });
+            if (recordInfo.GPUMemory != null)
+                systemInfos.Add(new SystemInfo() { Key = "GPU Memory (MB)", Value = recordInfo.GPUMemory });
+            if (recordInfo.Comment != null)
+                systemInfos.Add(new SystemInfo() { Key = "Comment", Value = recordInfo.Comment });
 
             return systemInfos;
         }
@@ -217,20 +168,6 @@ namespace CapFrameX.OcatInterface
                     int indexWarpMissed = -1;
                     int indexDisplayTimes = -1;
 
-                    // System info
-                    int indexMotherboardName = -1;
-                    int indexOsVersion = -1;
-                    int indexProcessorName = -1;
-                    int indexSystemRamInfo = -1;
-                    int indexBaseDriverVersion = -1;
-                    int indexDriverPackage = -1;
-                    int indexNumberGPUs = -1;
-                    int indexGraphicCardName = -1;
-                    int indexGPUCoreClock = -1;
-                    int indexGPUMemoryClock = -1;
-                    int indexGPUMemory = -1;
-                    int indexComment = -1;
-
                     var metrics = line.Split(',');
                     for (int i = 0; i < metrics.Count(); i++)
                     {
@@ -276,56 +213,6 @@ namespace CapFrameX.OcatInterface
                         if (string.Compare(metrics[i], "MsBetweenDisplayChange") == 0)
                         {
                             indexDisplayTimes = i;
-                        }
-
-                        // System info
-                        if (string.Compare(metrics[i], "Motherboard") == 0)
-                        {
-                            indexMotherboardName = i;
-                        }
-                        if (string.Compare(metrics[i], "OS") == 0)
-                        {
-                            indexOsVersion = i;
-                        }
-                        if (string.Compare(metrics[i], "Processor") == 0)
-                        {
-                            indexProcessorName = i;
-                        }
-                        if (string.Compare(metrics[i], "System RAM") == 0)
-                        {
-                            indexSystemRamInfo = i;
-                        }
-                        if (string.Compare(metrics[i], "Base Driver Version") == 0)
-                        {
-                            indexBaseDriverVersion = i;
-                        }
-                        if (string.Compare(metrics[i], "Driver Package") == 0)
-                        {
-                            indexDriverPackage = i;
-                        }
-                        if (string.Compare(metrics[i], "GPU #") == 0)
-                        {
-                            indexNumberGPUs = i;
-                        }
-                        if (string.Compare(metrics[i], "GPU") == 0)
-                        {
-                            indexGraphicCardName = i;
-                        }
-                        if (string.Compare(metrics[i], "GPU Core Clock (MHz)") == 0)
-                        {
-                            indexGPUCoreClock = i;
-                        }
-                        if (string.Compare(metrics[i], "GPU Memory Clock (MHz)") == 0)
-                        {
-                            indexGPUMemoryClock = i;
-                        }
-                        if (string.Compare(metrics[i], "GPU Memory (MB)") == 0)
-                        {
-                            indexGPUMemory = i;
-                        }
-                        if (string.Compare(metrics[i], "Comment") == 0)
-                        {
-                            indexComment = i;
                         }
                     }
 
@@ -421,46 +308,6 @@ namespace CapFrameX.OcatInterface
                                 session.WarpMissesCount += warpMissed;
                             }
                         }
-
-                        if (lineCount < 2)
-                        {
-                            if (indexMotherboardName > 0)
-                                session.MotherboardName = GetStringFromArray(values, indexMotherboardName).Trim(new Char[] { ' ', '"' });
-
-                            if (indexOsVersion > 0)
-                                session.OsVersion = GetStringFromArray(values, indexOsVersion).Trim(new Char[] { ' ', '"' });
-
-                            if (indexProcessorName > 0)
-                                session.ProcessorName = GetStringFromArray(values, indexProcessorName).Trim(new Char[] { ' ', '"' });
-
-                            if (indexSystemRamInfo > 0)
-                                session.SystemRamInfo = GetStringFromArray(values, indexSystemRamInfo).Trim(new Char[] { ' ', '"' });
-
-                            if (indexBaseDriverVersion > 0)
-                                session.BaseDriverVersion = GetStringFromArray(values, indexBaseDriverVersion).Trim(new Char[] { ' ', '"' });
-
-                            if (indexDriverPackage > 0)
-                                session.DriverPackage = GetStringFromArray(values, indexDriverPackage).Trim(new Char[] { ' ', '"' });
-
-                            if (indexNumberGPUs > 0)
-                                session.NumberGPUs = GetStringFromArray(values, indexNumberGPUs).Trim(new Char[] { ' ', '"' });
-
-                            if (indexGraphicCardName > 0)
-                                session.GraphicCardName = GetStringFromArray(values, indexGraphicCardName).Trim(new Char[] { ' ', '"' });
-
-                            if (indexGPUCoreClock > 0)
-                                session.GPUCoreClock = GetStringFromArray(values, indexGPUCoreClock).Trim(new Char[] { ' ', '"' });
-
-                            if (indexGPUMemoryClock > 0)
-                                session.GPUMemoryClock = GetStringFromArray(values, indexGPUMemoryClock).Trim(new Char[] { ' ', '"' });
-
-                            if (indexGPUMemory > 0)
-                                session.GPUMemory = GetStringFromArray(values, indexGPUMemory).Trim(new Char[] { ' ', '"' });
-                        }
-
-                        //Custom extension
-                        if (lineCount < 2 && indexComment > 0)
-                            session.Comment = GetStringFromArray(values, indexComment).Trim(new Char[] { ' ', '"' });
                     }
                 }
             }

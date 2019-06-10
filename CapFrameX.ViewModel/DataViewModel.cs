@@ -1,4 +1,5 @@
 ﻿using CapFrameX.Contracts.Configuration;
+using CapFrameX.Contracts.Data;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.OcatInterface;
 using CapFrameX.Statistics;
@@ -48,7 +49,7 @@ namespace CapFrameX.ViewModel
 		private IRecordDataServer _localRecordDataServer;
 		private IDisposable _frametimeWindowObservable;
 
-		public OcatRecordInfo RecordInfo { get; private set; }
+		public IFileRecordInfo RecordInfo { get; private set; }
 
 		public FrametimeGraphDataContext FrametimeGraphDataContext { get; }
 
@@ -307,7 +308,7 @@ namespace CapFrameX.ViewModel
 
 		private void OnCopyQuantiles()
 		{
-			if (_session == null)
+			if (RecordInfo == null)
 				return;
 
 			var lShapeQuantiles = _frametimeAnalyzer.GetLShapeQuantiles();
@@ -326,10 +327,10 @@ namespace CapFrameX.ViewModel
 
 		private void OnCopySystemInfoCommand()
 		{
-			if (_session == null)
+			if (RecordInfo == null)
 				return;
 
-			var systemInfos = RecordManager.GetSystemInfos(_session);
+			var systemInfos = RecordManager.GetSystemInfos(RecordInfo);
 
 			StringBuilder builder = new StringBuilder();
 
@@ -363,9 +364,9 @@ namespace CapFrameX.ViewModel
 									_session = msg.OcatSession;
 									RecordInfo = msg.RecordInfo;
 
-									if (_session != null)
+									if (_session != null && RecordInfo != null)
 									{
-										SystemInfos = RecordManager.GetSystemInfos(_session);
+										SystemInfos = RecordManager.GetSystemInfos(RecordInfo);
 
 										// Do update actions
 										FrametimeGraphDataContext.RecordSession = _session;

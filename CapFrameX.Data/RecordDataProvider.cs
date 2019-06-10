@@ -1,0 +1,139 @@
+﻿using CapFrameX.Contracts.Data;
+using CapFrameX.Contracts.OcatInterface;
+using CapFrameX.PresentMonInterface;
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Text;
+
+namespace CapFrameX.Data
+{
+    public class RecordDataProvider : IRecordDataProvider
+    {
+        private static readonly string FILE_HEADER = "Application,ProcessID,SwapChainAddress,Runtime,SyncInterval,PresentFlags,AllowsTearing,PresentMode,WasBatched,DwmNotified,Dropped,TimeInSeconds,MsBetweenPresents,MsBetweenDisplayChange,MsInPresentAPI,MsUntilRenderComplete,MsUntilDisplayed";
+
+        private readonly IRecordDirectoryObserver _recordObserver;
+
+        public RecordDataProvider(IRecordDirectoryObserver recordObserver)
+        {
+            _recordObserver = recordObserver;
+        }
+
+        public IFileRecordInfo GetIFileRecordInfo(FileInfo fileInfo)
+        {
+            return FileRecordInfo.Create(fileInfo);
+        }
+
+        public IList<IFileRecordInfo> GetFileRecordInfoList()
+        {
+            return _recordObserver.GetAllRecordFileInfo()
+                .Select(fileInfo => GetIFileRecordInfo(fileInfo)).ToList();
+        }
+
+        public void SavePresentData(IList<string> recordLines, string filePath, string processName, int captureTime)
+        {
+            var csv = new StringBuilder();
+           
+            var datetime = DateTime.Now;
+
+            // Create header
+            var headerLines = new List<string>()
+            {
+                $"{FileRecordInfo.HEADER_MARKER}GameName:{string.Empty}",
+                $"{FileRecordInfo.HEADER_MARKER}Application:{processName}",
+                $"{FileRecordInfo.HEADER_MARKER}CreationDate:{datetime.ToString("yyyy-MM-dd")}",
+                $"{FileRecordInfo.HEADER_MARKER}CreationTime:{datetime.ToString("HH:mm:ss")}",
+                $"{FileRecordInfo.HEADER_MARKER}Motherboard:{SystemInfo.GetMotherboardName()}",
+                $"{FileRecordInfo.HEADER_MARKER}OS:{SystemInfo.GetOSVersion()}",
+                $"{FileRecordInfo.HEADER_MARKER}Processor:{SystemInfo.GetProcessorName()}",
+                $"{FileRecordInfo.HEADER_MARKER}System RAM:{SystemInfo.GetSystemRAMInfoName()}",
+                $"{FileRecordInfo.HEADER_MARKER}Base Driver Version:{string.Empty}",
+                $"{FileRecordInfo.HEADER_MARKER}Driver Package:{string.Empty}",
+                $"{FileRecordInfo.HEADER_MARKER}GPU:{SystemInfo.GetGraphicCardName()}",
+                $"{FileRecordInfo.HEADER_MARKER}GPU #:{string.Empty}",
+                $"{FileRecordInfo.HEADER_MARKER}GPU Core Clock (MHz):{string.Empty}",
+                $"{FileRecordInfo.HEADER_MARKER}GPU Memory Clock (MHz):{string.Empty}",
+                $"{FileRecordInfo.HEADER_MARKER}GPU Memory (MB):{string.Empty}",
+                $"{FileRecordInfo.HEADER_MARKER}Comment:{string.Empty}"
+            };
+
+            foreach (var headerLine in headerLines)
+            {
+                csv.AppendLine(headerLine);
+            }
+
+            csv.AppendLine(FILE_HEADER);
+            string firstDataLine= recordLines.First();
+
+            //start time
+            var timeStart = GetStartTimeFromDataLine(firstDataLine);
+
+            // normalize time
+            var currentLineSplit = firstDataLine.Split(',');
+            currentLineSplit[11] = "0";
+
+            csv.AppendLine(string.Join(",", currentLineSplit));
+
+            foreach (var dataLine in recordLines)
+            {
+                var extractedProcessName = GetProcessNameFromDataLine(dataLine);
+                if (extractedProcessName != null)
+                {
+                    if (extractedProcessName == processName)
+                    {
+                        double currentStartTime = GetStartTimeFromDataLine(dataLine);
+
+                        // normalize time
+                        double normalizedTime = currentStartTime - timeStart;
+
+                        // cutting offset
+                        if (captureTime > 0 && normalizedTime > captureTime)
+                            break;
+
+                        currentLineSplit = dataLine.Split(',');
+                        currentLineSplit[11] = normalizedTime.ToString(CultureInfo.InvariantCulture);
+
+                        csv.AppendLine(string.Join(",", currentLineSplit));
+                    }
+                }
+            }
+
+            using (var sw = new StreamWriter(filePath))
+            {
+                sw.Write(csv.ToString());
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static string GetProcessNameFromDataLine(string dataLine)
+        {
+            if (string.IsNullOrWhiteSpace(dataLine))
+                return null;
+
+            int index = dataLine.IndexOf(".exe");
+            string processName = null;
+
+            if (index > 0)
+            {
+                processName = dataLine.Substring(0, index);
+            }
+
+            return processName;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static double GetStartTimeFromDataLine(string dataLine)
+        {
+            if (string.IsNullOrWhiteSpace(dataLine))
+                return 0;
+
+            var lineSplit = dataLine.Split(',');
+            var startTime = lineSplit[11];
+
+            return Convert.ToDouble(startTime, CultureInfo.InvariantCulture);
+        }
+    }
+}

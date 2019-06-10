@@ -1,4 +1,6 @@
 ﻿using CapFrameX.Configuration;
+using CapFrameX.Contracts.Data;
+using CapFrameX.Data;
 using CapFrameX.Extensions;
 using CapFrameX.OcatInterface;
 using CapFrameX.ViewModel;
@@ -35,7 +37,10 @@ namespace CapFrameX.View
 			if (DesignerProperties.GetIsInDesignMode(this))
 			{
 				var appConfiguration = new CapFrameXConfiguration();
-				DataContext = new ControlViewModel(new RecordDirectoryObserver(appConfiguration), new EventAggregator(), new CapFrameXConfiguration());
+                var recordDirectoryObserver = new RecordDirectoryObserver(appConfiguration);
+
+                DataContext = new ControlViewModel(new RecordDirectoryObserver(appConfiguration), new EventAggregator(), 
+                    new CapFrameXConfiguration(), new RecordDataProvider(recordDirectoryObserver));
 			}
 		}
 
@@ -79,7 +84,7 @@ namespace CapFrameX.View
 
 		private void RecordInfoListOnFilter(object sender, FilterEventArgs e)
 		{
-			e.FilterCollectionByText<OcatRecordInfo>(RecordSearchBox.Text,
+			e.FilterCollectionByText<IFileRecordInfo>(RecordSearchBox.Text,
 										(record, word) => record.CombinedInfo.NullSafeContains(word, true));
 		}
 

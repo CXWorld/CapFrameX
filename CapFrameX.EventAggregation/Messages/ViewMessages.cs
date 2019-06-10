@@ -1,4 +1,5 @@
-﻿using CapFrameX.OcatInterface;
+﻿using CapFrameX.Contracts.Data;
+using CapFrameX.OcatInterface;
 
 namespace CapFrameX.EventAggregation.Messages
 {
@@ -7,9 +8,9 @@ namespace CapFrameX.EventAggregation.Messages
 		public class UpdateSession
 		{
 			public Session OcatSession { get; }
-			public OcatRecordInfo RecordInfo { get; }
+			public IFileRecordInfo RecordInfo { get; }
 
-			public UpdateSession(Session ocatSession, OcatRecordInfo recordInfo)
+			public UpdateSession(Session ocatSession, IFileRecordInfo recordInfo)
 			{
 				OcatSession = ocatSession;
 				RecordInfo = recordInfo;
@@ -20,7 +21,7 @@ namespace CapFrameX.EventAggregation.Messages
 
 		public class SelectSession : UpdateSession
 		{
-			public SelectSession(Session ocatSession, OcatRecordInfo recordInfo) :
+			public SelectSession(Session ocatSession, IFileRecordInfo recordInfo) :
 				base(ocatSession, recordInfo)
 			{
 

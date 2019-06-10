@@ -1,6 +1,8 @@
 ﻿using CapFrameX.Configuration;
+using CapFrameX.Data;
 using CapFrameX.Extensions;
 using CapFrameX.MVVM;
+using CapFrameX.OcatInterface;
 using CapFrameX.PresentMonInterface;
 using CapFrameX.ViewModel;
 using Prism.Events;
@@ -62,7 +64,9 @@ namespace CapFrameX.View
             // Design time!
             if (DesignerProperties.GetIsInDesignMode(this))
             {
-                DataContext = new CaptureViewModel(new CapFrameXConfiguration(), new PresentMonCaptureService(), new EventAggregator());
+                var appConfiguration = new CapFrameXConfiguration();
+                DataContext = new CaptureViewModel(appConfiguration, new PresentMonCaptureService(), 
+                    new EventAggregator(), new RecordDataProvider(new RecordDirectoryObserver(appConfiguration)));
             }
         }
 

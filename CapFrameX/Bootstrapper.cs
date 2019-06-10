@@ -15,6 +15,8 @@ using CapFrameX.Contracts.Configuration;
 using CapFrameX.Configuration;
 using CapFrameX.Contracts.PresentMonInterface;
 using CapFrameX.PresentMonInterface;
+using CapFrameX.Contracts.Data;
+using CapFrameX.Data;
 
 namespace CapFrameX
 {
@@ -48,7 +50,8 @@ namespace CapFrameX
 			Container.Register<IStatisticProvider, FrametimeStatisticProvider>(Reuse.Singleton);
 			Container.Register<IFrametimeAnalyzer, FrametimeAnalyzer>(Reuse.Singleton);
 			Container.Register<ICaptureService, PresentMonCaptureService>(Reuse.Singleton);
-		}
+            Container.Register<IRecordDataProvider, RecordDataProvider>(Reuse.Singleton);
+        }
 
 		/// <summary>
 		/// https://www.c-sharpcorner.com/forums/using-ioc-with-wpf-prism-in-mvvm

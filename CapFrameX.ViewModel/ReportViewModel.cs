@@ -7,6 +7,7 @@ using System.Text;
 using System.Windows;
 using System.Windows.Input;
 using CapFrameX.Contracts.Configuration;
+using CapFrameX.Contracts.Data;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Extensions;
 using CapFrameX.OcatInterface;
@@ -137,7 +138,7 @@ namespace CapFrameX.ViewModel
 							});
 		}
 
-		private ReportInfo GetReportInfoFromRecordInfo(OcatRecordInfo recordInfo)
+		private ReportInfo GetReportInfoFromRecordInfo(IFileRecordInfo recordInfo)
 		{
 			var session = RecordManager.LoadData(recordInfo.FullPath);
 			var roundingDigits = _appConfiguration.FpsValuesRoundingDigits;
@@ -163,8 +164,8 @@ namespace CapFrameX.ViewModel
 				Time = recordInfo.CreationTime,
 				NumberOfSamples = session.FrameTimes.Count,
 				RecordTime = Math.Round(session.LastFrameTime, 2).ToString(CultureInfo.InvariantCulture),
-				Cpu = session.ProcessorName == null ? "-" : session.ProcessorName.Trim(new Char[] { ' ', '"' }),
-				GraphicCard = session.GraphicCardName == null ? "-" : session.GraphicCardName.Trim(new Char[] { ' ', '"' }),
+				Cpu = recordInfo.ProcessorName == null ? "" : recordInfo.ProcessorName.Trim(new Char[] { ' ', '"' }),
+				GraphicCard = recordInfo.GraphicCardName == null ? "" : recordInfo.GraphicCardName.Trim(new Char[] { ' ', '"' }),
 				MaxFps = max,
 				NinetyNinePercentQuantileFps = p99_quantile,
 				NinetyFivePercentQuantileFps = p95_quantile,
@@ -177,7 +178,7 @@ namespace CapFrameX.ViewModel
 				ZeroDotOnePercentLowAverageFps = p0dot1_averageLow,
 				MinFps = min,
 				AdaptiveSTDFps = adaptiveStandardDeviation,
-				CustomComment = session.Comment
+				CustomComment = recordInfo.Comment
 			};
 
 			return reportInfo;
@@ -220,7 +221,7 @@ namespace CapFrameX.ViewModel
 				{
 					if (frameworkElement.Name == "ReportDataGrid")
 					{
-						if (dropInfo.Data is OcatRecordInfo recordInfo)
+						if (dropInfo.Data is IFileRecordInfo recordInfo)
 						{
 							ReportInfo reportInfo = GetReportInfoFromRecordInfo(recordInfo);
 							AddReportRecord(reportInfo);

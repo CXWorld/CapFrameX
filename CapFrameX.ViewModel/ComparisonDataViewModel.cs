@@ -1,4 +1,5 @@
 ﻿using CapFrameX.Contracts.Configuration;
+using CapFrameX.Contracts.Data;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Extensions;
 using CapFrameX.OcatInterface;
@@ -596,7 +597,7 @@ namespace CapFrameX.ViewModel
 
 		private string GetLabelCpuContext(ComparisonRecordInfoWrapper record)
 		{
-			var processorName = record.WrappedRecordInfo.Session.ProcessorName ?? "-";
+			var processorName = record.WrappedRecordInfo.FileRecordInfo.ProcessorName ?? "";
 
 			int gameNameLength = record.WrappedRecordInfo.Game.Length;
 			int cpuInfoLength = processorName.Length;
@@ -627,7 +628,7 @@ namespace CapFrameX.ViewModel
 
 		private string GetLabelGpuContext(ComparisonRecordInfoWrapper record)
 		{
-			var graphicCardName = record.WrappedRecordInfo.Session.GraphicCardName ?? "-";
+			var graphicCardName = record.WrappedRecordInfo.FileRecordInfo.GraphicCardName ?? "";
 
 			int gameNameLength = record.WrappedRecordInfo.Game.Length;
 			int gpuInfoLength = graphicCardName.Length;
@@ -657,7 +658,7 @@ namespace CapFrameX.ViewModel
 
 		private string GetLabelCustomContext(ComparisonRecordInfoWrapper record)
 		{
-			var comment = record.WrappedRecordInfo.Session.Comment ?? "-";
+			var comment = record.WrappedRecordInfo.FileRecordInfo.Comment ?? "";
 
 			int gameNameLength = record.WrappedRecordInfo.Game.Length;
 			int commentLength = comment.Length;
@@ -669,26 +670,27 @@ namespace CapFrameX.ViewModel
 			return gameName + Environment.NewLine + gpuInfo;
 		}
 
-		private ComparisonRecordInfo GetComparisonRecordInfoFromOcatRecordInfo(OcatRecordInfo ocatRecordInfo)
+		private ComparisonRecordInfo GetComparisonRecordInfoFromFileRecordInfo(IFileRecordInfo fileRecordInfo)
 		{
 			string infoText = string.Empty;
-			var session = RecordManager.LoadData(ocatRecordInfo.FullPath);
+			var session = RecordManager.LoadData(fileRecordInfo.FullPath);
 
 			if (session != null)
 			{
 				var newLine = Environment.NewLine;
-				infoText += "creation date: " + ocatRecordInfo.FileInfo.LastWriteTime.ToShortDateString() + newLine +
-							"creation time: " + ocatRecordInfo.FileInfo.LastWriteTime.ToString("HH:mm:ss") + newLine +
+				infoText += "creation date: " + fileRecordInfo.FileInfo.LastWriteTime.ToShortDateString() + newLine +
+							"creation time: " + fileRecordInfo.FileInfo.LastWriteTime.ToString("HH:mm:ss") + newLine +
 							"capture time: " + Math.Round(session.LastFrameTime, 2).ToString(CultureInfo.InvariantCulture) + " s" + newLine +
 							"number of samples: " + session.FrameTimes.Count.ToString();
 			}
 
 			return new ComparisonRecordInfo
 			{
-				Game = ocatRecordInfo.GameName,
+				Game = fileRecordInfo.GameName,
 				InfoText = infoText,
-				DateTime = ocatRecordInfo.FileInfo.LastWriteTime.ToString(),
-				Session = session
+				DateTime = fileRecordInfo.FileInfo.LastWriteTime.ToString(),
+				Session = session,
+                FileRecordInfo = fileRecordInfo
 			};
 		}
 
@@ -912,7 +914,7 @@ namespace CapFrameX.ViewModel
 					if (frameworkElement.Name == "ComparisonRecordItemControl" ||
 						frameworkElement.Name == "ComparisonImage")
 					{
-						if (dropInfo.Data is OcatRecordInfo recordInfo)
+						if (dropInfo.Data is IFileRecordInfo recordInfo)
 						{
 							AddComparisonRecord(recordInfo);
 
@@ -951,11 +953,11 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-		private void AddComparisonRecord(OcatRecordInfo recordInfo)
+		private void AddComparisonRecord(IFileRecordInfo recordInfo)
 		{
 			if (ComparisonRecords.Count < _comparisonBrushes.Count())
 			{
-				var comparisonRecordInfo = GetComparisonRecordInfoFromOcatRecordInfo(recordInfo);
+				var comparisonRecordInfo = GetComparisonRecordInfoFromFileRecordInfo(recordInfo);
 				var wrappedComparisonRecordInfo = GetWrappedRecordInfo(comparisonRecordInfo);
 
 				//Update list and index

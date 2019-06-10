@@ -24,7 +24,7 @@
 				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Slider.xaml" />
 			</ResourceDictionary.MergedDictionaries>
 			<CollectionViewSource x:Key="RecordInfoListKey" Source="{Binding RecordInfoList}" Filter="RecordInfoListOnFilter"/>
-			<mvvm:AddValueConverter x:Key="AddValueConverter" Offset="-238"/>
+			<mvvm:AddValueConverter x:Key="AddValueConverter" Offset="-283"/>
 			<mvvm:BoolToVisibilityConverter x:Key="FalseToVisibleConverter" FalseValue="Visible" TrueValue="Collapsed"/>
 			<mvvm:BoolToVisibilityConverter x:Key="FalseToCollapsedConverter" FalseValue="Collapsed" TrueValue="Visible"/>
 		</ResourceDictionary>
@@ -129,16 +129,19 @@
 					</Style>
 				</DataGrid.ColumnHeaderStyle>
 				<DataGrid.Columns>
-					<DataGridTextColumn Binding="{Binding GameName}"
+                    <DataGridCheckBoxColumn Binding="{Binding IsValid, Mode=OneWay}"
+                                            Header="Valid"
+                                            IsReadOnly="True" MinWidth="55"/>
+                    <DataGridTextColumn Binding="{Binding GameName, Mode=OneWay}"
                                         Header="Game"
                                         IsReadOnly="True"/>
-					<DataGridTextColumn Binding="{Binding CreationDate}"
+                    <DataGridTextColumn Binding="{Binding CreationDate, Mode=OneWay}"
                                         Header="Date"
                                         IsReadOnly="True"/>
-					<DataGridTextColumn Binding="{Binding CreationTime}"
+                    <DataGridTextColumn Binding="{Binding CreationTime, Mode=OneWay}"
                                         Header="Time"
                                         IsReadOnly="True"/>
-					<DataGridTextColumn Binding="{Binding Comment}"
+                    <DataGridTextColumn Binding="{Binding Comment, Mode=OneWay}"
 										Width="100"
                                         Header="Comment"
                                         IsReadOnly="True"/>
@@ -151,6 +154,7 @@
 					<RowDefinition Height="Auto"/>
 					<RowDefinition Height="Auto"/>
 					<RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
 				</Grid.RowDefinitions>
 				<Grid.ColumnDefinitions>
 					<ColumnDefinition Width="1*"/>
@@ -174,9 +178,11 @@
 							Command="{Binding AddGpuInfoCommand}">
 					<materialDesign:PackIcon Kind="AddBox" Width="15" Height="15"/>
 				</Button>
-				<TextBox Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" wpf:HintAssist.Hint="Custom comment" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
+                <TextBox Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" wpf:HintAssist.Hint="Game" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
+						 Margin="5 6 5 0" FontSize="14" Text="{Binding CustomGameName, UpdateSourceTrigger=PropertyChanged}"/>
+				<TextBox Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" wpf:HintAssist.Hint="Comment" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
 						 Margin="5 6 5 0" FontSize="14" Text="{Binding CustomComment, UpdateSourceTrigger=PropertyChanged}"/>
-				<StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Grid.Row="3"
+				<StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Grid.Row="4"
 							Grid.Column="0" Grid.ColumnSpan="2" Margin="0 16 0 5">
 					<Button IsDefault="True" Style="{DynamicResource MaterialDesignFlatButton}"
                     Command="{Binding AcceptEditingDialogCommand}">

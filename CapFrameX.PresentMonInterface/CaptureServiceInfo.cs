@@ -8,7 +8,7 @@ namespace CapFrameX.PresentMonInterface
 
         public static bool IsCompatibleWithRunningOS
         {
-            get { return Environment.OSVersion.Version.Major > 6; }
+            get { return Environment.OSVersion.Version.Major >= 10; }
         }
     }
 }

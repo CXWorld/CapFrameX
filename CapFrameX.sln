@@ -33,6 +33,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.PresentMonInterfa
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.Overlay", "CapFrameX.Overlay\CapFrameX.Overlay.csproj", "{624777C2-6AF6-46D5-A019-1285F699B8A7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.Data", "CapFrameX.Data\CapFrameX.Data.csproj", "{CAD10BAB-6FDE-43F4-B768-6CAFF4E6B104}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -215,6 +217,18 @@ Global
 		{624777C2-6AF6-46D5-A019-1285F699B8A7}.Release|x64.Build.0 = Release|Any CPU
 		{624777C2-6AF6-46D5-A019-1285F699B8A7}.Release|x86.ActiveCfg = Release|Any CPU
 		{624777C2-6AF6-46D5-A019-1285F699B8A7}.Release|x86.Build.0 = Release|Any CPU
+		{CAD10BAB-6FDE-43F4-B768-6CAFF4E6B104}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CAD10BAB-6FDE-43F4-B768-6CAFF4E6B104}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CAD10BAB-6FDE-43F4-B768-6CAFF4E6B104}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{CAD10BAB-6FDE-43F4-B768-6CAFF4E6B104}.Debug|x64.Build.0 = Debug|Any CPU
+		{CAD10BAB-6FDE-43F4-B768-6CAFF4E6B104}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{CAD10BAB-6FDE-43F4-B768-6CAFF4E6B104}.Debug|x86.Build.0 = Debug|Any CPU
+		{CAD10BAB-6FDE-43F4-B768-6CAFF4E6B104}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CAD10BAB-6FDE-43F4-B768-6CAFF4E6B104}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CAD10BAB-6FDE-43F4-B768-6CAFF4E6B104}.Release|x64.ActiveCfg = Release|Any CPU
+		{CAD10BAB-6FDE-43F4-B768-6CAFF4E6B104}.Release|x64.Build.0 = Release|Any CPU
+		{CAD10BAB-6FDE-43F4-B768-6CAFF4E6B104}.Release|x86.ActiveCfg = Release|Any CPU
+		{CAD10BAB-6FDE-43F4-B768-6CAFF4E6B104}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

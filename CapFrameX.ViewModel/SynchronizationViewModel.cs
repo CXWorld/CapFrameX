@@ -1,4 +1,5 @@
 ﻿using CapFrameX.Contracts.Configuration;
+using CapFrameX.Contracts.Data;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Extensions;
 using CapFrameX.OcatInterface;
@@ -39,7 +40,7 @@ namespace CapFrameX.ViewModel
 		private string[] _histogramLabels;
 		private bool _useUpdateSession;
 		private Session _session;
-		private OcatRecordInfo _recordInfo;
+		private IFileRecordInfo _recordInfo;
 
 		/// <summary>
 		/// https://docs.microsoft.com/en-us/dotnet/standard/base-types/standard-numeric-format-strings

@@ -157,6 +157,10 @@
       <Project>{4C3B8B5C-54D7-46A1-91A1-32BF82FD42CD}</Project>
       <Name>CapFrameX.Contracts</Name>
     </ProjectReference>
+    <ProjectReference Include="..\CapFrameX.Data\CapFrameX.Data.csproj">
+      <Project>{CAD10BAB-6FDE-43F4-B768-6CAFF4E6B104}</Project>
+      <Name>CapFrameX.Data</Name>
+    </ProjectReference>
     <ProjectReference Include="..\CapFrameX.EventAggregation\CapFrameX.EventAggregation.csproj">
       <Project>{C3D082AE-BF05-4C83-B414-33CF7C420D4A}</Project>
       <Name>CapFrameX.EventAggregation</Name>

@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using CapFrameX.Contracts.Data;
+using System.Linq;
 using System.Windows.Media;
 
 namespace CapFrameX.OcatInterface
@@ -10,5 +11,6 @@ namespace CapFrameX.OcatInterface
 		public string InfoText { get; set; }
         public string DateTime { get; set; }
         public Session Session { get; set; }
-	}
+        public IFileRecordInfo FileRecordInfo { get; set; }
+    }
 }

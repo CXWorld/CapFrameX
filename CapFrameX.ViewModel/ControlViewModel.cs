@@ -15,6 +15,7 @@ using CapFrameX.Contracts.Configuration;
 using System.Threading.Tasks;
 using System.Windows;
 using CapFrameX.PresentMonInterface;
+using CapFrameX.Contracts.Data;
 
 namespace CapFrameX.ViewModel
 {
@@ -23,19 +24,21 @@ namespace CapFrameX.ViewModel
         private readonly IRecordDirectoryObserver _recordObserver;
         private readonly IEventAggregator _eventAggregator;
         private readonly IAppConfiguration _appConfiguration;
+        private readonly IRecordDataProvider _recordDataProvider;
 
         private PubSubEvent<ViewMessages.UpdateSession> _updateSessionEvent;
         private PubSubEvent<ViewMessages.SelectSession> _selectSessionEvent;
         private PubSubEvent<ViewMessages.ShowOverlay> _showOverlayEvent;
         private PubSubEvent<ViewMessages.UpdateProcessIgnoreList> _updateProcessIgnoreListEvent;
 
-        private OcatRecordInfo _selectedRecordInfo;
+        private IFileRecordInfo _selectedRecordInfo;
         private bool _hasValidSource;
         private string _customCpuDescription;
         private string _customGpuDescription;
+        private string _customGameName;
         private string _customComment;
 
-        public OcatRecordInfo SelectedRecordInfo
+        public IFileRecordInfo SelectedRecordInfo
         {
             get { return _selectedRecordInfo; }
             set
@@ -72,6 +75,16 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        public string CustomGameName
+        {
+            get { return _customGameName; }
+            set
+            {
+                _customGameName = value;
+                RaisePropertyChanged();
+            }
+        }
+
         public string CustomComment
         {
             get { return _customComment; }
@@ -82,8 +95,8 @@ namespace CapFrameX.ViewModel
             }
         }
 
-        public ObservableCollection<OcatRecordInfo> RecordInfoList { get; }
-            = new ObservableCollection<OcatRecordInfo>();
+        public ObservableCollection<IFileRecordInfo> RecordInfoList { get; }
+            = new ObservableCollection<IFileRecordInfo>();
 
         public ICommand OpenEditingDialogCommand { get; }
 
@@ -101,11 +114,13 @@ namespace CapFrameX.ViewModel
 
         public ControlViewModel(IRecordDirectoryObserver recordObserver,
                                 IEventAggregator eventAggregator,
-                                IAppConfiguration appConfiguration)
+                                IAppConfiguration appConfiguration,
+                                IRecordDataProvider recordDataProvider)
         {
             _recordObserver = recordObserver;
             _eventAggregator = eventAggregator;
             _appConfiguration = appConfiguration;
+            _recordDataProvider = recordDataProvider;
 
             //Commands
             OpenEditingDialogCommand = new DelegateCommand(OnOpenEditingDialog);
@@ -122,11 +137,11 @@ namespace CapFrameX.ViewModel
             {
                 if (recordObserver.HasValidSource)
                 {
-                    var initialRecordList = _recordObserver.GetAllRecordFileInfo();
+                    var initialRecordFileInfoList = _recordDataProvider?.GetFileRecordInfoList();
 
-                    foreach (var fileInfo in initialRecordList)
+                    foreach (var recordFileInfo in initialRecordFileInfoList)
                     {
-                        AddToRecordInfoList(fileInfo);
+                        AddToRecordInfoList(recordFileInfo);
                     }
                 }
             });
@@ -179,37 +194,30 @@ namespace CapFrameX.ViewModel
 
         private void OnCancelEditingDialog()
         {
-            if (SelectedRecordInfo == null)
-                return;
-
-            // Undo
-            var session = RecordManager.LoadData(SelectedRecordInfo.FullPath);
-
-            if (session != null)
+            if (SelectedRecordInfo != null)
             {
-                CustomCpuDescription = string.Copy(session.ProcessorName ?? "-");
-                CustomGpuDescription = string.Copy(session.GraphicCardName ?? "-");
-                CustomComment = string.Copy(session.Comment ?? "-");
+                CustomCpuDescription = string.Copy(SelectedRecordInfo.ProcessorName ?? "");
+                CustomGpuDescription = string.Copy(SelectedRecordInfo.GraphicCardName ?? "");
+                CustomGameName = string.Copy(SelectedRecordInfo.GameName ?? "");
+                CustomComment = string.Copy(SelectedRecordInfo.Comment ?? "");
             }
             else
             {
-                CustomCpuDescription = "-";
-                CustomGpuDescription = "-";
-                CustomComment = "-";
+                CustomCpuDescription = "";
+                CustomGpuDescription = "";
+                CustomGameName = "";
+                CustomComment = "";
             }
         }
 
         private void OnAcceptEditingDialog()
         {
-            if (CustomCpuDescription == null || CustomGpuDescription == null || CustomComment == null)
+            if (CustomCpuDescription == null || CustomGpuDescription == null 
+                || CustomGameName == null || CustomComment == null)
                 return;
 
-            var adjustedCustomCpuDescription = CustomCpuDescription.Replace(",", "").Replace(";", "");
-            var adjustedCustomGpuDescription = CustomGpuDescription.Replace(",", "").Replace(";", "");
-            var adjustedCustomComment = CustomComment.Replace(",", "").Replace(";", "");
-
             RecordManager.UpdateCustomData(_selectedRecordInfo,
-                adjustedCustomCpuDescription, adjustedCustomGpuDescription, adjustedCustomComment);
+                CustomCpuDescription, CustomGpuDescription, CustomGameName, CustomComment);
 
             ReloadRecordList();
         }
@@ -231,15 +239,17 @@ namespace CapFrameX.ViewModel
 
                 if (session != null)
                 {
-                    CustomCpuDescription = string.Copy(session.ProcessorName ?? "-");
-                    CustomGpuDescription = string.Copy(session.GraphicCardName ?? "-");
-                    CustomComment = string.Copy(session.Comment ?? "-");
+                    CustomCpuDescription = string.Copy(SelectedRecordInfo.ProcessorName ?? "");
+                    CustomGpuDescription = string.Copy(SelectedRecordInfo.GraphicCardName ?? "");
+                    CustomGameName = string.Copy(SelectedRecordInfo.GameName ?? "");
+                    CustomComment = string.Copy(SelectedRecordInfo.Comment ?? "");
                 }
                 else
                 {
-                    CustomCpuDescription = "-";
-                    CustomGpuDescription = "-";
-                    CustomComment = "-";
+                    CustomCpuDescription = "";
+                    CustomGpuDescription = "";
+                    CustomGameName = "";
+                    CustomComment = "";
                 }
 
                 _updateSessionEvent.Publish(new ViewMessages.UpdateSession(session, SelectedRecordInfo));
@@ -248,32 +258,32 @@ namespace CapFrameX.ViewModel
 
         private void OnAddCpuInfo()
         {
-            CustomCpuDescription = HardwareInfo.GetProcessorName();
+            CustomCpuDescription = PresentMonInterface.SystemInfo.GetProcessorName();
         }
 
         private void OnAddGpuInfo()
         {
-            CustomGpuDescription = HardwareInfo.GetGraphicCardName();
+            CustomGpuDescription = PresentMonInterface.SystemInfo.GetGraphicCardName();
         }
 
-        private void AddToRecordInfoList(FileInfo fileInfo, bool insertAtFirst = false)
+        private void AddToRecordInfoList(IFileRecordInfo recordFileInfo, bool insertAtFirst = false)
         {
-            var recordInfo = OcatRecordInfo.Create(fileInfo);
-            if (recordInfo != null)
+            if (recordFileInfo != null)
             {
                 Application.Current.Dispatcher.BeginInvoke(new Action(() =>
                 {
                     if (insertAtFirst)
                     {
-                        RecordInfoList.Insert(0, recordInfo);
+                        RecordInfoList.Insert(0, recordFileInfo);
                     }
                     else
-                        RecordInfoList.Add(recordInfo);
+                        RecordInfoList.Add(recordFileInfo);
                 }));
             }
         }
 
-        private void OnRecordCreated(FileInfo fileInfo) => AddToRecordInfoList(fileInfo, true);
+        private void OnRecordCreated(FileInfo fileInfo) 
+            => AddToRecordInfoList(_recordDataProvider.GetIFileRecordInfo(fileInfo), true);
 
         private void OnRecordDeleted(FileInfo fileInfo)
         {
@@ -288,9 +298,9 @@ namespace CapFrameX.ViewModel
 
         private void LoadRecordList()
         {
-            foreach (var fileInfo in _recordObserver?.GetAllRecordFileInfo())
+            foreach (var fileRecordInfo in _recordDataProvider?.GetFileRecordInfoList())
             {
-                AddToRecordInfoList(fileInfo);
+                AddToRecordInfoList(fileRecordInfo);
             }
         }
 

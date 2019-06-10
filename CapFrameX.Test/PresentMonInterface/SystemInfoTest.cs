@@ -5,30 +5,36 @@ using System;
 namespace CapFrameX.Test.PresentMonInterface
 {
 	[TestClass]
-	public class HardwareInfoTest
+	public class SystemInfoTest
 	{
 		[TestMethod]
 		public void GetCPUInfo_CorrectName()
 		{
-            Console.WriteLine(HardwareInfo.GetProcessorName());
+            Console.WriteLine(SystemInfo.GetProcessorName());
 		}
 
 		[TestMethod]
 		public void GetGPUInfo_CorrectName()
 		{
-			Console.WriteLine(HardwareInfo.GetGraphicCardName());
+			Console.WriteLine(SystemInfo.GetGraphicCardName());
 		}
 
 		[TestMethod]
 		public void GetMotherboardInfo_CorrectName()
 		{
-			Console.WriteLine(HardwareInfo.GetMotherboardName());
+			Console.WriteLine(SystemInfo.GetMotherboardName());
 		}
 
         [TestMethod]
         public void GetSystemRAMInfo_CorrectInfo()
         {
-            Console.WriteLine(HardwareInfo.GetSystemRAMInfoName());
+            Console.WriteLine(SystemInfo.GetSystemRAMInfoName());
         }
-	}
+
+        [TestMethod]
+        public void GetOSVersion_CorrectInfo()
+        {
+            Console.WriteLine(SystemInfo.GetOSVersion());
+        }
+    }
 }

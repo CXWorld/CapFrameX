@@ -1,4 +1,5 @@
-﻿using CapFrameX.EventAggregation.Messages;
+﻿using CapFrameX.Contracts.Data;
+using CapFrameX.EventAggregation.Messages;
 using CapFrameX.MVVM.Dialogs;
 using CapFrameX.OcatInterface;
 using Prism.Commands;
@@ -9,142 +10,152 @@ using System.Windows.Input;
 
 namespace CapFrameX.ViewModel
 {
-	public class OverlayViewModel : BindableBase, INavigationAware
-	{
-		private readonly IEventAggregator _eventAggregator;
+    public class OverlayViewModel : BindableBase, INavigationAware
+    {
+        private readonly IEventAggregator _eventAggregator;
 
-		private PubSubEvent<ViewMessages.HideOverlay> _hideOverlayEvent;
-		private bool _isEditingDialogOpen;
-		private EditingDialog _editingDialogContent;
-		private bool _useEventMessages;
-		private Session _session;
-		private OcatRecordInfo _recordInfo;
-		private string _customCpuDescription;
-		private string _customGpuDescription;
-		private string _customComment;
+        private PubSubEvent<ViewMessages.HideOverlay> _hideOverlayEvent;
+        private bool _isEditingDialogOpen;
+        private EditingDialog _editingDialogContent;
+        private bool _useEventMessages;
+        private Session _session;
+        private IFileRecordInfo _recordInfo;
+        private string _customCpuDescription;
+        private string _customGpuDescription;
+        private string _customGameName;
+        private string _customComment;
 
-		public bool IsEditingDialogOpen
-		{
-			get { return _isEditingDialogOpen; }
-			set
-			{
-				_isEditingDialogOpen = value;
-				RaisePropertyChanged();
-			}
-		}
+        public bool IsEditingDialogOpen
+        {
+            get { return _isEditingDialogOpen; }
+            set
+            {
+                _isEditingDialogOpen = value;
+                RaisePropertyChanged();
+            }
+        }
 
-		public EditingDialog EditingDialogContent
-		{
-			get { return _editingDialogContent; }
-			set
-			{
-				_editingDialogContent = value;
-				RaisePropertyChanged();
-			}
-		}
+        public EditingDialog EditingDialogContent
+        {
+            get { return _editingDialogContent; }
+            set
+            {
+                _editingDialogContent = value;
+                RaisePropertyChanged();
+            }
+        }
 
-		public string CustomCpuDescription
-		{
-			get { return _customCpuDescription; }
-			set
-			{
-				_customCpuDescription = value;
-				RaisePropertyChanged();
-			}
-		}
+        public string CustomCpuDescription
+        {
+            get { return _customCpuDescription; }
+            set
+            {
+                _customCpuDescription = value;
+                RaisePropertyChanged();
+            }
+        }
 
-		public string CustomGpuDescription
-		{
-			get { return _customGpuDescription; }
-			set
-			{
-				_customGpuDescription = value;
-				RaisePropertyChanged();
-			}
-		}
+        public string CustomGpuDescription
+        {
+            get { return _customGpuDescription; }
+            set
+            {
+                _customGpuDescription = value;
+                RaisePropertyChanged();
+            }
+        }
 
-		public string CustomComment
-		{
-			get { return _customComment; }
-			set
-			{
-				_customComment = value;
-				RaisePropertyChanged();
-			}
-		}
+        public string CustomGameName
+        {
+            get { return _customGameName; }
+            set
+            {
+                _customGameName = value;
+                RaisePropertyChanged();
+            }
+        }
 
-		public ICommand AcceptEditingDialogCommand { get; }
+        public string CustomComment
+        {
+            get { return _customComment; }
+            set
+            {
+                _customComment = value;
+                RaisePropertyChanged();
+            }
+        }
 
-		public ICommand CancelEditingDialogCommand { get; }
+        public ICommand AcceptEditingDialogCommand { get; }
 
-		public OverlayViewModel(IEventAggregator eventAggregator)
-		{
-			_eventAggregator = eventAggregator;
+        public ICommand CancelEditingDialogCommand { get; }
 
-			AcceptEditingDialogCommand = new DelegateCommand(OnAcceptEditingDialog);
-			CancelEditingDialogCommand = new DelegateCommand(OnCancelEditingDialog);
+        public OverlayViewModel(IEventAggregator eventAggregator)
+        {
+            _eventAggregator = eventAggregator;
 
-			_useEventMessages = false;
-			_hideOverlayEvent = _eventAggregator.GetEvent<PubSubEvent<ViewMessages.HideOverlay>>();
-			SubscribeToUpdateSession();
-		}
+            AcceptEditingDialogCommand = new DelegateCommand(OnAcceptEditingDialog);
+            CancelEditingDialogCommand = new DelegateCommand(OnCancelEditingDialog);
 
-		private void OnCancelEditingDialog()
-		{
-			IsEditingDialogOpen = false;
-			_hideOverlayEvent.Publish(new ViewMessages.HideOverlay());
-		}
+            _useEventMessages = false;
+            _hideOverlayEvent = _eventAggregator.GetEvent<PubSubEvent<ViewMessages.HideOverlay>>();
+            SubscribeToUpdateSession();
+        }
 
-		private void OnAcceptEditingDialog()
-		{
-			IsEditingDialogOpen = false;
-			var adjustedCustomCpuDescription = CustomCpuDescription.Replace(",", "").Replace(";", "");
-			var adjustedCustomGpuDescription = CustomGpuDescription.Replace(",", "").Replace(";", "");
-			var adjustedCustomComment = CustomComment.Replace(",", "").Replace(";", "");
-			RecordManager.UpdateCustomData(_recordInfo, 
-				adjustedCustomCpuDescription, adjustedCustomGpuDescription, adjustedCustomComment);
-			_hideOverlayEvent.Publish(new ViewMessages.HideOverlay());
-		}
+        private void OnCancelEditingDialog()
+        {
+            IsEditingDialogOpen = false;
+            _hideOverlayEvent.Publish(new ViewMessages.HideOverlay());
+        }
 
-		private void SubscribeToUpdateSession()
-		{
-			_eventAggregator.GetEvent<PubSubEvent<ViewMessages.UpdateSession>>()
-							.Subscribe(msg =>
-							{
-								_session = msg.OcatSession;
-								_recordInfo = msg.RecordInfo;
-							});
-		}
+        private void OnAcceptEditingDialog()
+        {
+            IsEditingDialogOpen = false;
+            RecordManager.UpdateCustomData(_recordInfo,
+                CustomCpuDescription, CustomGpuDescription, CustomGameName, CustomComment);
+            _hideOverlayEvent.Publish(new ViewMessages.HideOverlay());
+        }
 
-		public void OnNavigatedTo(NavigationContext navigationContext)
-		{
-			_useEventMessages = true;
+        private void SubscribeToUpdateSession()
+        {
+            _eventAggregator.GetEvent<PubSubEvent<ViewMessages.UpdateSession>>()
+                            .Subscribe(msg =>
+                            {
+                                _session = msg.OcatSession;
+                                _recordInfo = msg.RecordInfo;
+                            });
+        }
 
-			if (_session != null)
-			{
-				CustomCpuDescription = string.Copy(_session.ProcessorName ?? "-");
-				CustomGpuDescription = string.Copy(_session.GraphicCardName ?? "-");
-				CustomComment = string.Copy(_session.Comment ?? "-");
-			}
-			else
-			{
-				CustomCpuDescription = "-";
-				CustomGpuDescription = "-";
-				CustomComment = "-";
-			}
+        public void OnNavigatedTo(NavigationContext navigationContext)
+        {
+            _useEventMessages = true;
 
-			EditingDialogContent = new EditingDialog();
-			IsEditingDialogOpen = true;
-		}
+            if (_session != null)
+            {
+                CustomCpuDescription = string.Copy(_recordInfo.ProcessorName ?? "");
+                CustomGpuDescription = string.Copy(_recordInfo.GraphicCardName ?? "");
+                CustomGameName = string.Copy(_recordInfo.GameName ?? "");
+                CustomComment = string.Copy(_recordInfo.Comment ?? "");
+            }
+            else
+            {
+                CustomCpuDescription = "";
+                CustomGpuDescription = "";
+                CustomGameName = "";
+                CustomComment = "";
+            }
 
-		public bool IsNavigationTarget(NavigationContext navigationContext)
-		{
-			return true;
-		}
+            EditingDialogContent = new EditingDialog();
+            IsEditingDialogOpen = true;
+        }
 
-		public void OnNavigatedFrom(NavigationContext navigationContext)
-		{
-			_useEventMessages = false;
-		}
-	}
+        public bool IsNavigationTarget(NavigationContext navigationContext)
+        {
+            return true;
+        }
+
+        public void OnNavigatedFrom(NavigationContext navigationContext)
+        {
+            _useEventMessages = false;
+        }
+    }
 }
