@@ -12,7 +12,7 @@ namespace CapFrameX.Data
 
         private string[] _lines;
 
-        public string GameName { get; private set; }
+        public string GameName { get; set; }
         public string ProcessName { get; private set; }
         public string CreationDate { get; private set; }
         public string CreationTime { get; private set; }
@@ -39,6 +39,8 @@ namespace CapFrameX.Data
         {
             if (fileInfo != null && File.Exists(fileInfo.FullName))
             {
+                FileInfo = fileInfo;
+                FullPath = fileInfo.FullName;
                 _lines = File.ReadAllLines(fileInfo.FullName);
 
                 if (_lines != null && _lines.Any())
@@ -76,7 +78,7 @@ namespace CapFrameX.Data
                             var lastDataSet = _lines.Last().Split(',');
 
                             infoKeyValueDictionary.Add("GameName", infos[0]);
-                            infoKeyValueDictionary.Add("Application", infos[0]);
+                            infoKeyValueDictionary.Add("ProcessName", infos[0]);
                             infoKeyValueDictionary.Add("CreationDate", fileInfo.LastWriteTime.ToString("yyyy-MM-dd"));
                             infoKeyValueDictionary.Add("CreationTime", fileInfo.LastWriteTime.ToString("HH:mm:ss"));
 
@@ -94,35 +96,38 @@ namespace CapFrameX.Data
                             int gPUMemoryIndex = Array.IndexOf(columnHeader, "GPU Memory (MB)");
                             int commentIndex = Array.IndexOf(columnHeader, "Comment");
 
-                            if (timeInSecondsIndex > -1)
+                            if (timeInSecondsIndex > -1 && commentIndex < infos.Length)
                                 infoKeyValueDictionary.Add("RecordTime", lastDataSet[timeInSecondsIndex]);
-                            if (motherboardNameIndex > -1)
+                            if (motherboardNameIndex > -1 && commentIndex < infos.Length)
                                 infoKeyValueDictionary.Add("MotherboardName", infos[motherboardNameIndex]);
-                            if (osVersionIndex > -1)
+                            if (osVersionIndex > -1 && commentIndex < infos.Length)
                                 infoKeyValueDictionary.Add("OsVersion", infos[osVersionIndex]);
-                            if (processorNameIndex > -1)
+                            if (processorNameIndex > -1 && commentIndex < infos.Length)
                                 infoKeyValueDictionary.Add("ProcessorName", infos[processorNameIndex]);
-                            if (systemRamInfoIndex > -1)
+                            if (systemRamInfoIndex > -1 && commentIndex < infos.Length)
                                 infoKeyValueDictionary.Add("SystemRamInfo", infos[systemRamInfoIndex]);
-                            if (baseDriverVersionIndex > -1)
+                            if (baseDriverVersionIndex > -1 && commentIndex < infos.Length)
                                 infoKeyValueDictionary.Add("BaseDriverVersion", infos[baseDriverVersionIndex]);
-                            if (driverPackageNameIndex > -1)
+                            if (driverPackageNameIndex > -1 && commentIndex < infos.Length)
                                 infoKeyValueDictionary.Add("DriverPackage", infos[driverPackageNameIndex]);
-                            if (graphicCardNameIndex > -1)
+                            if (graphicCardNameIndex > -1 && commentIndex < infos.Length)
                                 infoKeyValueDictionary.Add("GraphicCardName", infos[graphicCardNameIndex]);
-                            if (numberGPUsIndex > -1)
+                            if (numberGPUsIndex > -1 && commentIndex < infos.Length)
                                 infoKeyValueDictionary.Add("NumberGPUs", infos[numberGPUsIndex]);
-                            if (gPUCoreClockIndex > -1)
+                            if (gPUCoreClockIndex > -1 && commentIndex < infos.Length)
                                 infoKeyValueDictionary.Add("GPUCoreClock", infos[gPUCoreClockIndex]);
-                            if (gPUMemoryClockIndex > -1)
+                            if (gPUMemoryClockIndex > -1 && commentIndex < infos.Length)
                                 infoKeyValueDictionary.Add("GPUMemoryClock", infos[gPUMemoryClockIndex]);
-                            if (gPUMemoryIndex > -1)
+                            if (gPUMemoryIndex > -1 && commentIndex < infos.Length)
                                 infoKeyValueDictionary.Add("GPUMemory", infos[gPUMemoryIndex]);
-                            if (commentIndex > -1)
+                            if (commentIndex > -1 && commentIndex < infos.Length)
                                 infoKeyValueDictionary.Add("Comment", infos[commentIndex]);
                         }
 
                         SetInfoProperties(infoKeyValueDictionary);
+
+                        // set search string info
+                        CombinedInfo = $"{GameName} {ProcessName} {Comment}";
 
                         // Free record data
                         _lines = null;

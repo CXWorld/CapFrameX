@@ -4,7 +4,7 @@ namespace CapFrameX.Contracts.Data
 {
     public interface IFileRecordInfo
     {
-        string GameName { get; }
+        string GameName { get; set; }
         string ProcessName { get; }
         string CreationDate { get; }
         string CreationTime { get; }

@@ -15,16 +15,39 @@ namespace CapFrameX.Data
     {
         private static readonly string FILE_HEADER = "Application,ProcessID,SwapChainAddress,Runtime,SyncInterval,PresentFlags,AllowsTearing,PresentMode,WasBatched,DwmNotified,Dropped,TimeInSeconds,MsBetweenPresents,MsBetweenDisplayChange,MsInPresentAPI,MsUntilRenderComplete,MsUntilDisplayed";
 
+        private static readonly string _matchingNameInitialFilename
+            = Path.Combine("NameMatching", "ProcessGameNameMatchingList.txt");
+
+        private static readonly string _matchingNameLiveFilename =
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                @"CapFrameX\Ressources\ProcessGameNameMatchingList.txt");
+
         private readonly IRecordDirectoryObserver _recordObserver;
+
+        private Dictionary<string, string> _processGameMatchingDictionary = new Dictionary<string, string>();
 
         public RecordDataProvider(IRecordDirectoryObserver recordObserver)
         {
             _recordObserver = recordObserver;
+
+            try
+            {
+                if (!File.Exists(_matchingNameLiveFilename))
+                {
+                    Directory.CreateDirectory(
+                        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                            @"CapFrameX\Ressources"));
+                    File.Copy(_matchingNameInitialFilename, _matchingNameLiveFilename);
+                }
+            }
+            catch { }
         }
 
         public IFileRecordInfo GetIFileRecordInfo(FileInfo fileInfo)
         {
-            return FileRecordInfo.Create(fileInfo);
+            var fileRecordInfo = FileRecordInfo.Create(fileInfo);
+            fileRecordInfo.GameName = GetGameFromMatchingList(fileRecordInfo.ProcessName);
+            return fileRecordInfo;
         }
 
         public IList<IFileRecordInfo> GetFileRecordInfoList()
@@ -36,14 +59,14 @@ namespace CapFrameX.Data
         public void SavePresentData(IList<string> recordLines, string filePath, string processName, int captureTime)
         {
             var csv = new StringBuilder();
-           
+
             var datetime = DateTime.Now;
 
             // Create header
             var headerLines = new List<string>()
             {
                 $"{FileRecordInfo.HEADER_MARKER}GameName:{string.Empty}",
-                $"{FileRecordInfo.HEADER_MARKER}Application:{processName}",
+                $"{FileRecordInfo.HEADER_MARKER}ProcessName:{processName}",
                 $"{FileRecordInfo.HEADER_MARKER}CreationDate:{datetime.ToString("yyyy-MM-dd")}",
                 $"{FileRecordInfo.HEADER_MARKER}CreationTime:{datetime.ToString("HH:mm:ss")}",
                 $"{FileRecordInfo.HEADER_MARKER}Motherboard:{SystemInfo.GetMotherboardName()}",
@@ -66,7 +89,7 @@ namespace CapFrameX.Data
             }
 
             csv.AppendLine(FILE_HEADER);
-            string firstDataLine= recordLines.First();
+            string firstDataLine = recordLines.First();
 
             //start time
             var timeStart = GetStartTimeFromDataLine(firstDataLine);
@@ -134,6 +157,60 @@ namespace CapFrameX.Data
             var startTime = lineSplit[11];
 
             return Convert.ToDouble(startTime, CultureInfo.InvariantCulture);
+        }
+
+        public void AddGameNameToMatchingList(string processName, string gameName)
+        {
+            if (string.IsNullOrWhiteSpace(processName) ||
+                string.IsNullOrWhiteSpace(gameName))
+                return;
+
+            var matchings = File.ReadAllLines(_matchingNameLiveFilename).ToList();
+
+            _processGameMatchingDictionary = new Dictionary<string, string>
+            {
+                { processName, gameName }
+            };
+
+            foreach (var item in matchings)
+            {
+                var currentMatching = item.Split('=');
+                _processGameMatchingDictionary.Add(currentMatching.First(), currentMatching.Last());
+            }
+
+            matchings.Add($"{processName}={gameName}");
+            var orderedMatchings = matchings.OrderBy(name => name);
+
+            File.WriteAllLines(_matchingNameLiveFilename, orderedMatchings);
+        }
+
+        public string GetGameFromMatchingList(string processName)
+        {
+            if (string.IsNullOrWhiteSpace(processName))
+                return string.Empty;
+
+            var gameName = processName;
+
+            if (_processGameMatchingDictionary.Any())
+            {
+                if (_processGameMatchingDictionary.Keys.Contains(processName))
+                    gameName = _processGameMatchingDictionary[processName];
+            }
+            else
+            {
+                var matchings = File.ReadAllLines(_matchingNameLiveFilename);
+
+                foreach (var item in matchings)
+                {
+                    if (item.Contains(processName))
+                    {
+                        var currentMatching = item.Split('=');
+                        gameName = currentMatching.Last();
+                    }
+                }
+            }
+
+            return gameName;
         }
     }
 }

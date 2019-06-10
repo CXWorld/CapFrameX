@@ -17,7 +17,7 @@ namespace CapFrameX.View
 		{
 			InitializeComponent();
 
-            OSMajorVersion.Text = $"OS major version: {Environment.OSVersion.Version.Major}";
+            //OSMajorVersion.Text = $"OS major version: {Environment.OSVersion.Version.Major}";
 
             if (DesignerProperties.GetIsInDesignMode(this))
 			{

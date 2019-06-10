@@ -9,4 +9,14 @@
     <ProjectReference Include="..\CapFrameX.PresentMonInterface\CapFrameX.PresentMonInterface.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="NameMatching\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="NameMatching\ProcessGameNameMatchingList.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

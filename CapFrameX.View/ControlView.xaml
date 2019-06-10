@@ -42,7 +42,7 @@
 					  Tag="{Binding ElementName=ControlViewControl, Path=DataContext}"
 					  ItemsSource="{Binding Source={StaticResource RecordInfoListKey}}" SelectedItem="{Binding SelectedRecordInfo}" CanUserSortColumns="True" CanUserAddRows="False" AutoGenerateColumns="False"
 					  materialDesign:DataGridAssist.CellPadding="13 8 8 8" materialDesign:DataGridAssist.ColumnHeaderPadding="8" IsSynchronizedWithCurrentItem="False"
-					  ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True"
+					  ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.CanContentScroll="True"
 					  dragdrop:DragDrop.IsDragSource="True"
 					  dragdrop:DragDrop.IsDropTarget="True"
 					  dragdrop:DragDrop.UseDefaultDragAdorner="True"
@@ -128,10 +128,7 @@
 						</Setter>
 					</Style>
 				</DataGrid.ColumnHeaderStyle>
-				<DataGrid.Columns>
-                    <DataGridCheckBoxColumn Binding="{Binding IsValid, Mode=OneWay}"
-                                            Header="Valid"
-                                            IsReadOnly="True" MinWidth="55"/>
+                <DataGrid.Columns>
                     <DataGridTextColumn Binding="{Binding GameName, Mode=OneWay}"
                                         Header="Game"
                                         IsReadOnly="True"/>
@@ -145,7 +142,10 @@
 										Width="100"
                                         Header="Comment"
                                         IsReadOnly="True"/>
-				</DataGrid.Columns>
+                    <DataGridCheckBoxColumn Binding="{Binding IsValid, Mode=OneWay}"
+                                            Header="Valid"
+                                            IsReadOnly="True" MinWidth="55"/>
+                </DataGrid.Columns>
 			</DataGrid>
 			<Border Margin="0 5 5 0" BorderThickness="0 1 0 0" BorderBrush="{DynamicResource MaterialDesignDivider}" />
 			<Grid Margin="0 5 5 0" Background="#F5F5F5">

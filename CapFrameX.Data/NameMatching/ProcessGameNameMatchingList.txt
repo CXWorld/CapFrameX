@@ -1,0 +1,3 @@
+FarCry5.exe=Far Cry 5
+FarCryNewDawn.exe=Far Cry New Dawn
+bfv.exe=Battlefield V
