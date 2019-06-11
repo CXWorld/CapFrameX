@@ -26,19 +26,19 @@ namespace CapFrameX.OcatInterface
                 {
                     // Processor
                     int processorNameHeaderIndex = GetHeaderIndex(lines, "Processor");
-                    lines[processorNameHeaderIndex] = $"{FileRecordInfo.HEADER_MARKER}Processor:{customCpuInfo}";
+                    lines[processorNameHeaderIndex] = $"{FileRecordInfo.HEADER_MARKER}Processor{FileRecordInfo.INFO_SEPERATOR}{customCpuInfo}";
 
                     // GPU
                     int graphicCardNameHeaderIndex = GetHeaderIndex(lines, "GPU");
-                    lines[graphicCardNameHeaderIndex] = $"{FileRecordInfo.HEADER_MARKER}GPU:{customGpuInfo}";
+                    lines[graphicCardNameHeaderIndex] = $"{FileRecordInfo.HEADER_MARKER}GPU{FileRecordInfo.INFO_SEPERATOR}{customGpuInfo}";
 
                     // GameName
                     int gameNameHeaderIndex = GetHeaderIndex(lines, "GameName");
-                    lines[gameNameHeaderIndex] = $"{FileRecordInfo.HEADER_MARKER}GameName:{customGameName}";
+                    lines[gameNameHeaderIndex] = $"{FileRecordInfo.HEADER_MARKER}GameName{FileRecordInfo.INFO_SEPERATOR}{customGameName}";
 
                     // Comment
                     int commentNameHeaderIndex = GetHeaderIndex(lines, "Comment");
-                    lines[commentNameHeaderIndex] = $"{FileRecordInfo.HEADER_MARKER}Comment:{customComment}";
+                    lines[commentNameHeaderIndex] = $"{FileRecordInfo.HEADER_MARKER}Comment{FileRecordInfo.INFO_SEPERATOR}{customComment}";
 
                     File.WriteAllLines(recordInfo.FullPath, lines);
                 }
@@ -47,22 +47,22 @@ namespace CapFrameX.OcatInterface
                     // Create header
                     var headerLines = new List<string>()
                     {
-                        $"{FileRecordInfo.HEADER_MARKER}GameName:{customGameName}",
-                        $"{FileRecordInfo.HEADER_MARKER}Application:{recordInfo.ProcessName}",
-                        $"{FileRecordInfo.HEADER_MARKER}CreationDate:{recordInfo.CreationDate}",
-                        $"{FileRecordInfo.HEADER_MARKER}CreationTime:{recordInfo.CreationTime}",
-                        $"{FileRecordInfo.HEADER_MARKER}Motherboard:{recordInfo.MotherboardName}",
-                        $"{FileRecordInfo.HEADER_MARKER}OS:{recordInfo.OsVersion}",
-                        $"{FileRecordInfo.HEADER_MARKER}Processor:{customCpuInfo}",
-                        $"{FileRecordInfo.HEADER_MARKER}System RAM:{recordInfo.SystemRamInfo}",
-                        $"{FileRecordInfo.HEADER_MARKER}Base Driver Version:{recordInfo.BaseDriverVersion}",
-                        $"{FileRecordInfo.HEADER_MARKER}Driver Package:{recordInfo.DriverPackage}",
-                        $"{FileRecordInfo.HEADER_MARKER}GPU:{customGpuInfo}",
-                        $"{FileRecordInfo.HEADER_MARKER}GPU #:{recordInfo.NumberGPUs}",
-                        $"{FileRecordInfo.HEADER_MARKER}GPU Core Clock (MHz):{recordInfo.GPUCoreClock}",
-                        $"{FileRecordInfo.HEADER_MARKER}GPU Memory Clock (MHz):{recordInfo.GPUMemoryClock}",
-                        $"{FileRecordInfo.HEADER_MARKER}GPU Memory (MB):{recordInfo.GPUMemory}",
-                        $"{FileRecordInfo.HEADER_MARKER}Comment:{customComment}"
+                        $"{FileRecordInfo.HEADER_MARKER}GameName{FileRecordInfo.INFO_SEPERATOR}{customGameName}",
+                        $"{FileRecordInfo.HEADER_MARKER}Application{FileRecordInfo.INFO_SEPERATOR}{recordInfo.ProcessName}",
+                        $"{FileRecordInfo.HEADER_MARKER}CreationDate{FileRecordInfo.INFO_SEPERATOR}{recordInfo.CreationDate}",
+                        $"{FileRecordInfo.HEADER_MARKER}CreationTime{FileRecordInfo.INFO_SEPERATOR}{recordInfo.CreationTime}",
+                        $"{FileRecordInfo.HEADER_MARKER}Motherboard{FileRecordInfo.INFO_SEPERATOR}{recordInfo.MotherboardName}",
+                        $"{FileRecordInfo.HEADER_MARKER}OS{FileRecordInfo.INFO_SEPERATOR}{recordInfo.OsVersion}",
+                        $"{FileRecordInfo.HEADER_MARKER}Processor{FileRecordInfo.INFO_SEPERATOR}{customCpuInfo}",
+                        $"{FileRecordInfo.HEADER_MARKER}System RAM{FileRecordInfo.INFO_SEPERATOR}{recordInfo.SystemRamInfo}",
+                        $"{FileRecordInfo.HEADER_MARKER}Base Driver Version{FileRecordInfo.INFO_SEPERATOR}{recordInfo.BaseDriverVersion}",
+                        $"{FileRecordInfo.HEADER_MARKER}Driver Package{FileRecordInfo.INFO_SEPERATOR}{recordInfo.DriverPackage}",
+                        $"{FileRecordInfo.HEADER_MARKER}GPU{FileRecordInfo.INFO_SEPERATOR}{customGpuInfo}",
+                        $"{FileRecordInfo.HEADER_MARKER}GPU #{FileRecordInfo.INFO_SEPERATOR}{recordInfo.NumberGPUs}",
+                        $"{FileRecordInfo.HEADER_MARKER}GPU Core Clock (MHz){FileRecordInfo.INFO_SEPERATOR}{recordInfo.GPUCoreClock}",
+                        $"{FileRecordInfo.HEADER_MARKER}GPU Memory Clock (MHz){FileRecordInfo.INFO_SEPERATOR}{recordInfo.GPUMemoryClock}",
+                        $"{FileRecordInfo.HEADER_MARKER}GPU Memory (MB){FileRecordInfo.INFO_SEPERATOR}{recordInfo.GPUMemory}",
+                        $"{FileRecordInfo.HEADER_MARKER}Comment{FileRecordInfo.INFO_SEPERATOR}{customComment}"
                     };
 
                     File.WriteAllLines(recordInfo.FullPath, headerLines.Concat(lines));

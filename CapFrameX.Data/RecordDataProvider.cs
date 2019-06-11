@@ -59,7 +59,6 @@ namespace CapFrameX.Data
         public void SavePresentData(IList<string> recordLines, string filePath, string processName, int captureTime)
         {
             var csv = new StringBuilder();
-
             var datetime = DateTime.Now;
 
             // Create header
@@ -167,21 +166,23 @@ namespace CapFrameX.Data
 
             var matchings = File.ReadAllLines(_matchingNameLiveFilename).ToList();
 
-            _processGameMatchingDictionary = new Dictionary<string, string>
-            {
-                { processName, gameName }
-            };
+            _processGameMatchingDictionary = new Dictionary<string, string>();
 
             foreach (var item in matchings)
             {
-                var currentMatching = item.Split('=');
+                var currentMatching = item.Split(FileRecordInfo.INFO_SEPERATOR);
                 _processGameMatchingDictionary.Add(currentMatching.First(), currentMatching.Last());
             }
 
-            matchings.Add($"{processName}={gameName}");
-            var orderedMatchings = matchings.OrderBy(name => name);
+            if (!_processGameMatchingDictionary.Keys.Contains(processName))
+            {
+                _processGameMatchingDictionary.Add(processName, gameName);
 
-            File.WriteAllLines(_matchingNameLiveFilename, orderedMatchings);
+                matchings.Add($"{processName}={gameName}");
+                var orderedMatchings = matchings.OrderBy(name => name);
+
+                File.WriteAllLines(_matchingNameLiveFilename, orderedMatchings);
+            }           
         }
 
         public string GetGameFromMatchingList(string processName)

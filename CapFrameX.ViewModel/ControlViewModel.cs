@@ -219,6 +219,8 @@ namespace CapFrameX.ViewModel
             RecordManager.UpdateCustomData(_selectedRecordInfo,
                 CustomCpuDescription, CustomGpuDescription, CustomGameName, CustomComment);
 
+            _recordDataProvider.AddGameNameToMatchingList(_selectedRecordInfo.ProcessName, CustomGameName);
+
             ReloadRecordList();
         }
 
