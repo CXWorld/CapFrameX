@@ -96,29 +96,29 @@ namespace CapFrameX.Data
                             int gPUMemoryIndex = Array.IndexOf(columnHeader, "GPU Memory (MB)");
                             int commentIndex = Array.IndexOf(columnHeader, "Comment");
 
-                            if (timeInSecondsIndex > -1 && commentIndex < infos.Length)
+                            if (timeInSecondsIndex > -1 && timeInSecondsIndex < lastDataSet.Length)
                                 infoKeyValueDictionary.Add("RecordTime", lastDataSet[timeInSecondsIndex]);
-                            if (motherboardNameIndex > -1 && commentIndex < infos.Length)
+                            if (motherboardNameIndex > -1 && motherboardNameIndex < infos.Length)
                                 infoKeyValueDictionary.Add("MotherboardName", infos[motherboardNameIndex]);
-                            if (osVersionIndex > -1 && commentIndex < infos.Length)
+                            if (osVersionIndex > -1 && osVersionIndex < infos.Length)
                                 infoKeyValueDictionary.Add("OsVersion", infos[osVersionIndex]);
-                            if (processorNameIndex > -1 && commentIndex < infos.Length)
+                            if (processorNameIndex > -1 && processorNameIndex < infos.Length)
                                 infoKeyValueDictionary.Add("ProcessorName", infos[processorNameIndex]);
-                            if (systemRamInfoIndex > -1 && commentIndex < infos.Length)
+                            if (systemRamInfoIndex > -1 && systemRamInfoIndex < infos.Length)
                                 infoKeyValueDictionary.Add("SystemRamInfo", infos[systemRamInfoIndex]);
-                            if (baseDriverVersionIndex > -1 && commentIndex < infos.Length)
+                            if (baseDriverVersionIndex > -1 && baseDriverVersionIndex < infos.Length)
                                 infoKeyValueDictionary.Add("BaseDriverVersion", infos[baseDriverVersionIndex]);
-                            if (driverPackageNameIndex > -1 && commentIndex < infos.Length)
+                            if (driverPackageNameIndex > -1 && driverPackageNameIndex < infos.Length)
                                 infoKeyValueDictionary.Add("DriverPackage", infos[driverPackageNameIndex]);
-                            if (graphicCardNameIndex > -1 && commentIndex < infos.Length)
+                            if (graphicCardNameIndex > -1 && graphicCardNameIndex < infos.Length)
                                 infoKeyValueDictionary.Add("GraphicCardName", infos[graphicCardNameIndex]);
-                            if (numberGPUsIndex > -1 && commentIndex < infos.Length)
+                            if (numberGPUsIndex > -1 && numberGPUsIndex < infos.Length)
                                 infoKeyValueDictionary.Add("NumberGPUs", infos[numberGPUsIndex]);
-                            if (gPUCoreClockIndex > -1 && commentIndex < infos.Length)
+                            if (gPUCoreClockIndex > -1 && gPUCoreClockIndex < infos.Length)
                                 infoKeyValueDictionary.Add("GPUCoreClock", infos[gPUCoreClockIndex]);
-                            if (gPUMemoryClockIndex > -1 && commentIndex < infos.Length)
+                            if (gPUMemoryClockIndex > -1 && gPUMemoryClockIndex < infos.Length)
                                 infoKeyValueDictionary.Add("GPUMemoryClock", infos[gPUMemoryClockIndex]);
-                            if (gPUMemoryIndex > -1 && commentIndex < infos.Length)
+                            if (gPUMemoryIndex > -1 && gPUMemoryIndex < infos.Length)
                                 infoKeyValueDictionary.Add("GPUMemory", infos[gPUMemoryIndex]);
                             if (commentIndex > -1 && commentIndex < infos.Length)
                                 infoKeyValueDictionary.Add("Comment", infos[commentIndex]);

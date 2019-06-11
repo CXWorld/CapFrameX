@@ -68,17 +68,32 @@
     <Reference Include="System.Management" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Data\FileRecordInfoTest.cs" />
     <Compile Include="Extensions\StringExtensionsTest.cs" />
     <Compile Include="PresentMonInterface\SystemInfoTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TestHelper.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <Content Include="TestRecordFiles\CustomFilenameWithoutComment.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestRecordFiles\CustomFilenameWithoutMetaDataInFilename.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestRecordFiles\OCAT-MetroExodus.exe-2019-02-20T101522.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CapFrameX.Contracts\CapFrameX.Contracts.csproj">
       <Project>{4c3b8b5c-54d7-46a1-91a1-32bf82fd42cd}</Project>
       <Name>CapFrameX.Contracts</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CapFrameX.Data\CapFrameX.Data.csproj">
+      <Project>{cad10bab-6fde-43f4-b768-6caff4e6b104}</Project>
+      <Name>CapFrameX.Data</Name>
     </ProjectReference>
     <ProjectReference Include="..\CapFrameX.Extensions\CapFrameX.Extensions.csproj">
       <Project>{A4559B99-7FCB-40EF-BF97-D293A2B7D6D3}</Project>
