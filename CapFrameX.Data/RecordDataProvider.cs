@@ -65,22 +65,22 @@ namespace CapFrameX.Data
             // Create header
             var headerLines = new List<string>()
             {
-                $"{FileRecordInfo.HEADER_MARKER}GameName:{string.Empty}",
-                $"{FileRecordInfo.HEADER_MARKER}ProcessName:{processName}",
-                $"{FileRecordInfo.HEADER_MARKER}CreationDate:{datetime.ToString("yyyy-MM-dd")}",
-                $"{FileRecordInfo.HEADER_MARKER}CreationTime:{datetime.ToString("HH:mm:ss")}",
-                $"{FileRecordInfo.HEADER_MARKER}Motherboard:{SystemInfo.GetMotherboardName()}",
-                $"{FileRecordInfo.HEADER_MARKER}OS:{SystemInfo.GetOSVersion()}",
-                $"{FileRecordInfo.HEADER_MARKER}Processor:{SystemInfo.GetProcessorName()}",
-                $"{FileRecordInfo.HEADER_MARKER}System RAM:{SystemInfo.GetSystemRAMInfoName()}",
-                $"{FileRecordInfo.HEADER_MARKER}Base Driver Version:{string.Empty}",
-                $"{FileRecordInfo.HEADER_MARKER}Driver Package:{string.Empty}",
-                $"{FileRecordInfo.HEADER_MARKER}GPU:{SystemInfo.GetGraphicCardName()}",
-                $"{FileRecordInfo.HEADER_MARKER}GPU #:{string.Empty}",
-                $"{FileRecordInfo.HEADER_MARKER}GPU Core Clock (MHz):{string.Empty}",
-                $"{FileRecordInfo.HEADER_MARKER}GPU Memory Clock (MHz):{string.Empty}",
-                $"{FileRecordInfo.HEADER_MARKER}GPU Memory (MB):{string.Empty}",
-                $"{FileRecordInfo.HEADER_MARKER}Comment:{string.Empty}"
+                $"{FileRecordInfo.HEADER_MARKER}GameName{FileRecordInfo.INFO_SEPERATOR}{string.Empty}",
+                $"{FileRecordInfo.HEADER_MARKER}ProcessName{FileRecordInfo.INFO_SEPERATOR}{processName}",
+                $"{FileRecordInfo.HEADER_MARKER}CreationDate{FileRecordInfo.INFO_SEPERATOR}{datetime.ToString("yyyy-MM-dd")}",
+                $"{FileRecordInfo.HEADER_MARKER}CreationTime{FileRecordInfo.INFO_SEPERATOR}{datetime.ToString("HH:mm:ss")}",
+                $"{FileRecordInfo.HEADER_MARKER}Motherboard{FileRecordInfo.INFO_SEPERATOR}{SystemInfo.GetMotherboardName()}",
+                $"{FileRecordInfo.HEADER_MARKER}OS{FileRecordInfo.INFO_SEPERATOR}{SystemInfo.GetOSVersion()}",
+                $"{FileRecordInfo.HEADER_MARKER}Processor{FileRecordInfo.INFO_SEPERATOR}{SystemInfo.GetProcessorName()}",
+                $"{FileRecordInfo.HEADER_MARKER}System RAM{FileRecordInfo.INFO_SEPERATOR}{SystemInfo.GetSystemRAMInfoName()}",
+                $"{FileRecordInfo.HEADER_MARKER}Base Driver Version{FileRecordInfo.INFO_SEPERATOR}{string.Empty}",
+                $"{FileRecordInfo.HEADER_MARKER}Driver Package{FileRecordInfo.INFO_SEPERATOR}{string.Empty}",
+                $"{FileRecordInfo.HEADER_MARKER}GPU{FileRecordInfo.INFO_SEPERATOR}{SystemInfo.GetGraphicCardName()}",
+                $"{FileRecordInfo.HEADER_MARKER}GPU #{FileRecordInfo.INFO_SEPERATOR}{string.Empty}",
+                $"{FileRecordInfo.HEADER_MARKER}GPU Core Clock (MHz){FileRecordInfo.INFO_SEPERATOR}{string.Empty}",
+                $"{FileRecordInfo.HEADER_MARKER}GPU Memory Clock (MHz){FileRecordInfo.INFO_SEPERATOR}{string.Empty}",
+                $"{FileRecordInfo.HEADER_MARKER}GPU Memory (MB){FileRecordInfo.INFO_SEPERATOR}{string.Empty}",
+                $"{FileRecordInfo.HEADER_MARKER}Comment{FileRecordInfo.INFO_SEPERATOR}{string.Empty}"
             };
 
             foreach (var headerLine in headerLines)

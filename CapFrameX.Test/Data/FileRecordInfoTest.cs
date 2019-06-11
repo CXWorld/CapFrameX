@@ -55,5 +55,64 @@ namespace CapFrameX.Test.Data
             Assert.AreEqual("32 GB DDR4 3200 MT/s", fileRecordInfo.SystemRamInfo);
             Assert.AreEqual("Test", fileRecordInfo.Comment);
         }
+
+        [TestMethod]
+        public void RecordFileValidation_PresentMonTestOutputFile_IsValidTrue()
+        {
+            var fileInfo = new FileInfo(@"TestRecordFiles\PresentMonTestOutputFilename.csv");
+            var fileRecordInfo = FileRecordInfo.Create(fileInfo);
+
+            Assert.IsTrue(fileRecordInfo.IsValid);
+            Assert.IsFalse(fileRecordInfo.HasInfoHeader);
+
+            Assert.AreEqual("FarCryNewDawn.exe", fileRecordInfo.GameName);
+            Assert.AreEqual("FarCryNewDawn.exe", fileRecordInfo.ProcessName);
+        }
+
+        [TestMethod]
+        public void RecordFileValidation_ShortFile_IsValidFalse()
+        {
+            var fileInfo = new FileInfo(@"TestRecordFiles\ShortFile.csv");
+            var fileRecordInfo = FileRecordInfo.Create(fileInfo);
+
+            Assert.IsFalse(fileRecordInfo.IsValid);
+            Assert.IsFalse(fileRecordInfo.HasInfoHeader);
+        }
+
+        [TestMethod]
+        public void RecordFileValidation_InvalidColumnFile_IsValidFalse()
+        {
+            var fileInfo = new FileInfo(@"TestRecordFiles\InvalidColumnFile.csv");
+            var fileRecordInfo = FileRecordInfo.Create(fileInfo);
+
+            Assert.IsFalse(fileRecordInfo.IsValid);
+            Assert.IsFalse(fileRecordInfo.HasInfoHeader);
+        }
+
+        [TestMethod]
+        public void RecordFileValidation_CapFrameXFileWithHeader_IsValidTrue()
+        {
+            var fileInfo = new FileInfo(@"TestRecordFiles\CapFrameXFileWithHeader.csv");
+            var fileRecordInfo = FileRecordInfo.Create(fileInfo);
+
+            Assert.IsTrue(fileRecordInfo.IsValid);
+            Assert.IsTrue(fileRecordInfo.HasInfoHeader);
+            Assert.AreEqual("re2.exe", fileRecordInfo.GameName);
+            Assert.AreEqual("Resident Evil 2 Remake", fileRecordInfo.ProcessName);
+            Assert.AreEqual("2019-03-30", fileRecordInfo.CreationDate);
+            Assert.AreEqual("12:01:36", fileRecordInfo.CreationTime);
+            Assert.AreEqual("ASUSTeK COMPUTER INC. ROG MAXIMUS XI HERO", fileRecordInfo.MotherboardName);
+            Assert.AreEqual("Windows OS", fileRecordInfo.OsVersion);
+            Assert.AreEqual("Intel(R) Core(TM) i9-9900K CPU @ 3.60GHz", fileRecordInfo.ProcessorName);
+            Assert.AreEqual("NVIDIA GeForce RTX 2080 Ti", fileRecordInfo.GraphicCardName);
+            Assert.AreEqual("32 GB 3800 MT/s", fileRecordInfo.SystemRamInfo);
+            Assert.AreEqual("bla", fileRecordInfo.BaseDriverVersion);
+            Assert.AreEqual("bla", fileRecordInfo.DriverPackage);
+            Assert.AreEqual("1", fileRecordInfo.NumberGPUs);
+            Assert.AreEqual("1920", fileRecordInfo.GPUCoreClock);
+            Assert.AreEqual("7000", fileRecordInfo.GPUMemoryClock);
+            Assert.AreEqual("11278", fileRecordInfo.GPUMemory);
+            Assert.AreEqual("Test", fileRecordInfo.Comment);
+        }
     }
 }

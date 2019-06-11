@@ -9,6 +9,7 @@ namespace CapFrameX.Data
     public class FileRecordInfo : IFileRecordInfo
     {
         public static string HEADER_MARKER = "//";
+        public static readonly char INFO_SEPERATOR= '=';
 
         private string[] _lines;
 
@@ -59,7 +60,7 @@ namespace CapFrameX.Data
                             {
                                 var currentLine = _lines[headerCount];
                                 var currentLineWithoutMarker = currentLine.Replace(HEADER_MARKER, "");
-                                var infoKeyValue = currentLineWithoutMarker.Split(':');
+                                var infoKeyValue = currentLineWithoutMarker.Split(INFO_SEPERATOR);
                                 infoKeyValueDictionary.Add(infoKeyValue[0], infoKeyValue[1]);
                                 headerCount++;
                             }
@@ -148,56 +149,56 @@ namespace CapFrameX.Data
         {
             if (infoKeyValueDictionary.Any())
             {
-                if (infoKeyValueDictionary.Keys.Contains(nameof(GameName)))
-                    GameName = infoKeyValueDictionary[nameof(GameName)];
+                if (infoKeyValueDictionary.Keys.Contains("GameName"))
+                    GameName = infoKeyValueDictionary["GameName"];
 
-                if (infoKeyValueDictionary.Keys.Contains(nameof(ProcessName)))
-                    ProcessName = infoKeyValueDictionary[nameof(ProcessName)];
+                if (infoKeyValueDictionary.Keys.Contains("ProcessName"))
+                    ProcessName = infoKeyValueDictionary["ProcessName"];
 
-                if (infoKeyValueDictionary.Keys.Contains(nameof(CreationDate)))
-                    CreationDate = infoKeyValueDictionary[nameof(CreationDate)];
+                if (infoKeyValueDictionary.Keys.Contains("CreationDate"))
+                    CreationDate = infoKeyValueDictionary["CreationDate"];
 
-                if (infoKeyValueDictionary.Keys.Contains(nameof(CreationTime)))
-                    CreationTime = infoKeyValueDictionary[nameof(CreationTime)];
+                if (infoKeyValueDictionary.Keys.Contains("CreationTime"))
+                    CreationTime = infoKeyValueDictionary["CreationTime"];
 
-                if (infoKeyValueDictionary.Keys.Contains(nameof(RecordTime)))
-                    RecordTime = Convert.ToDouble(infoKeyValueDictionary[nameof(RecordTime)]);
+                if (infoKeyValueDictionary.Keys.Contains("RecordTime"))
+                    RecordTime = Convert.ToDouble(infoKeyValueDictionary["RecordTime"]);
 
-                if (infoKeyValueDictionary.Keys.Contains(nameof(MotherboardName)))
-                    MotherboardName = infoKeyValueDictionary[nameof(MotherboardName)];
+                if (infoKeyValueDictionary.Keys.Contains("Motherboard"))
+                    MotherboardName = infoKeyValueDictionary["Motherboard"];
 
-                if (infoKeyValueDictionary.Keys.Contains(nameof(OsVersion)))
-                    OsVersion = infoKeyValueDictionary[nameof(OsVersion)];
+                if (infoKeyValueDictionary.Keys.Contains("OS"))
+                    OsVersion = infoKeyValueDictionary["OS"];
 
-                if (infoKeyValueDictionary.Keys.Contains(nameof(ProcessorName)))
-                    ProcessorName = infoKeyValueDictionary[nameof(ProcessorName)];
+                if (infoKeyValueDictionary.Keys.Contains("Processor"))
+                    ProcessorName = infoKeyValueDictionary["Processor"];
 
-                if (infoKeyValueDictionary.Keys.Contains(nameof(SystemRamInfo)))
-                    SystemRamInfo = infoKeyValueDictionary[nameof(SystemRamInfo)];
+                if (infoKeyValueDictionary.Keys.Contains("System RAM"))
+                    SystemRamInfo = infoKeyValueDictionary["System RAM"];
 
-                if (infoKeyValueDictionary.Keys.Contains(nameof(BaseDriverVersion)))
-                    BaseDriverVersion = infoKeyValueDictionary[nameof(BaseDriverVersion)];
+                if (infoKeyValueDictionary.Keys.Contains("Base Driver Version"))
+                    BaseDriverVersion = infoKeyValueDictionary["Base Driver Version"];
 
-                if (infoKeyValueDictionary.Keys.Contains(nameof(DriverPackage)))
-                    DriverPackage = infoKeyValueDictionary[nameof(DriverPackage)];
+                if (infoKeyValueDictionary.Keys.Contains("Driver Package"))
+                    DriverPackage = infoKeyValueDictionary["Driver Package"];
 
-                if (infoKeyValueDictionary.Keys.Contains(nameof(NumberGPUs)))
-                    NumberGPUs = infoKeyValueDictionary[nameof(NumberGPUs)];
+                if (infoKeyValueDictionary.Keys.Contains("GPU #"))
+                    NumberGPUs = infoKeyValueDictionary["GPU #"];
 
-                if (infoKeyValueDictionary.Keys.Contains(nameof(GraphicCardName)))
-                    GraphicCardName = infoKeyValueDictionary[nameof(GraphicCardName)];
+                if (infoKeyValueDictionary.Keys.Contains("GPU"))
+                    GraphicCardName = infoKeyValueDictionary["GPU"];
 
-                if (infoKeyValueDictionary.Keys.Contains(nameof(GPUCoreClock)))
-                    GPUCoreClock = infoKeyValueDictionary[nameof(GPUCoreClock)];
+                if (infoKeyValueDictionary.Keys.Contains("GPU Core Clock (MHz)"))
+                    GPUCoreClock = infoKeyValueDictionary["GPU Core Clock (MHz)"];
 
-                if (infoKeyValueDictionary.Keys.Contains(nameof(GPUMemoryClock)))
-                    GPUMemoryClock = infoKeyValueDictionary[nameof(GPUMemoryClock)];
+                if (infoKeyValueDictionary.Keys.Contains("GPU Memory Clock (MHz)"))
+                    GPUMemoryClock = infoKeyValueDictionary["GPU Memory Clock (MHz)"];
 
-                if (infoKeyValueDictionary.Keys.Contains(nameof(GPUMemory)))
-                    GPUMemory = infoKeyValueDictionary[nameof(GPUMemory)];
+                if (infoKeyValueDictionary.Keys.Contains("GPU Memory (MB)"))
+                    GPUMemory = infoKeyValueDictionary["GPU Memory (MB)"];
 
-                if (infoKeyValueDictionary.Keys.Contains(nameof(Comment)))
-                    Comment = infoKeyValueDictionary[nameof(Comment)];
+                if (infoKeyValueDictionary.Keys.Contains("Comment"))
+                    Comment = infoKeyValueDictionary["Comment"];
             }
         }
 
@@ -217,12 +218,6 @@ namespace CapFrameX.Data
             {
                 // Log
             }
-
-            if (recordInfo == null)
-                return null;
-
-            if (!recordInfo.IsValid)
-                return null;
 
             return recordInfo;
         }
