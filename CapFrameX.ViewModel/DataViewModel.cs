@@ -532,7 +532,7 @@ namespace CapFrameX.ViewModel
                         Title = "Smooth time (s)",
                         Values = new ChartValues<double>(){ Math.Round((1 - stutteringTimePercentage / 100) * frametimes.Sum(), 0)/1000 },
                         DataLabels = true,
-                        Fill =ColorRessource.PieChartSmmoothFill,
+                        Fill = ColorRessource.PieChartSmmoothFill,
                         Foreground = Brushes.Black,
 						//LabelPosition = PieLabelPosition.InsideSlice,
 						LabelPoint = PieChartPointLabel,

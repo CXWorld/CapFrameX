@@ -37,6 +37,7 @@ namespace CapFrameX.ViewModel
         private string _customGpuDescription;
         private string _customGameName;
         private string _customComment;
+        private int _recordDataGridSelectedIndex;
 
         public IFileRecordInfo SelectedRecordInfo
         {
@@ -91,6 +92,16 @@ namespace CapFrameX.ViewModel
             set
             {
                 _customComment = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public int RecordDataGridSelectedIndex
+        {
+            get { return _recordDataGridSelectedIndex; }
+            set
+            {
+                _recordDataGridSelectedIndex = value;
                 RaisePropertyChanged();
             }
         }
@@ -223,7 +234,9 @@ namespace CapFrameX.ViewModel
 
             _recordDataProvider.AddGameNameToMatchingList(_selectedRecordInfo.ProcessName, CustomGameName);
 
+            int selectedIndex = RecordInfoList.IndexOf(SelectedRecordInfo);
             ReloadRecordList();
+            RecordDataGridSelectedIndex = selectedIndex;
         }
 
         public void OnRecordSelectByDoubleClick()
