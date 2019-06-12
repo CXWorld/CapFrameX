@@ -100,29 +100,29 @@ namespace CapFrameX.Data
                             if (timeInSecondsIndex > -1 && timeInSecondsIndex < lastDataSet.Length)
                                 infoKeyValueDictionary.Add("RecordTime", lastDataSet[timeInSecondsIndex]);
                             if (motherboardNameIndex > -1 && motherboardNameIndex < infos.Length)
-                                infoKeyValueDictionary.Add("Motherboard", infos[motherboardNameIndex]);
+                                infoKeyValueDictionary.Add("Motherboard", infos[motherboardNameIndex].Replace("\"", ""));
                             if (osVersionIndex > -1 && osVersionIndex < infos.Length)
-                                infoKeyValueDictionary.Add("Os", infos[osVersionIndex]);
+                                infoKeyValueDictionary.Add("OS", infos[osVersionIndex].Replace("\"", ""));
                             if (processorNameIndex > -1 && processorNameIndex < infos.Length)
-                                infoKeyValueDictionary.Add("Processor", infos[processorNameIndex]);
+                                infoKeyValueDictionary.Add("Processor", infos[processorNameIndex].Replace("\"", ""));
                             if (systemRamInfoIndex > -1 && systemRamInfoIndex < infos.Length)
-                                infoKeyValueDictionary.Add("System RAM", infos[systemRamInfoIndex]);
+                                infoKeyValueDictionary.Add("System RAM", infos[systemRamInfoIndex].Replace("\"", ""));
                             if (baseDriverVersionIndex > -1 && baseDriverVersionIndex < infos.Length)
-                                infoKeyValueDictionary.Add("BaseDriverVersion", infos[baseDriverVersionIndex]);
+                                infoKeyValueDictionary.Add("BaseDriverVersion", infos[baseDriverVersionIndex].Replace("\"", ""));
                             if (driverPackageNameIndex > -1 && driverPackageNameIndex < infos.Length)
-                                infoKeyValueDictionary.Add("Base Driver Version", infos[driverPackageNameIndex]);
+                                infoKeyValueDictionary.Add("Base Driver Version", infos[driverPackageNameIndex].Replace("\"", ""));
                             if (graphicCardNameIndex > -1 && graphicCardNameIndex < infos.Length)
-                                infoKeyValueDictionary.Add("GPU", infos[graphicCardNameIndex]);
+                                infoKeyValueDictionary.Add("GPU", infos[graphicCardNameIndex].Replace("\"", ""));
                             if (numberGPUsIndex > -1 && numberGPUsIndex < infos.Length)
-                                infoKeyValueDictionary.Add("GPU #", infos[numberGPUsIndex]);
+                                infoKeyValueDictionary.Add("GPU #", infos[numberGPUsIndex].Replace("\"", ""));
                             if (gPUCoreClockIndex > -1 && gPUCoreClockIndex < infos.Length)
-                                infoKeyValueDictionary.Add("GPU Core Clock (MHz)", infos[gPUCoreClockIndex]);
+                                infoKeyValueDictionary.Add("GPU Core Clock (MHz)", infos[gPUCoreClockIndex].Replace("\"", ""));
                             if (gPUMemoryClockIndex > -1 && gPUMemoryClockIndex < infos.Length)
-                                infoKeyValueDictionary.Add("GPU Memory Clock (MHz)", infos[gPUMemoryClockIndex]);
+                                infoKeyValueDictionary.Add("GPU Memory Clock (MHz)", infos[gPUMemoryClockIndex].Replace("\"", ""));
                             if (gPUMemoryIndex > -1 && gPUMemoryIndex < infos.Length)
-                                infoKeyValueDictionary.Add("GPU Memory (MB)", infos[gPUMemoryIndex]);
+                                infoKeyValueDictionary.Add("GPU Memory (MB)", infos[gPUMemoryIndex].Replace("\"", ""));
                             if (commentIndex > -1 && commentIndex < infos.Length)
-                                infoKeyValueDictionary.Add("Comment", infos[commentIndex]);
+                                infoKeyValueDictionary.Add("Comment", infos[commentIndex].Replace("\"", ""));
                         }
 
                         SetInfoProperties(infoKeyValueDictionary);

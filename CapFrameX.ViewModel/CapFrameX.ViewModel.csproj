@@ -131,6 +131,7 @@
   <ItemGroup>
     <Compile Include="AggregationViewModel.cs" />
     <Compile Include="CaptureViewModel.cs" />
+    <Compile Include="ColorRessource.cs" />
     <Compile Include="ComparisonDataViewModel.cs" />
     <Compile Include="ComparisonRecordInfoWrapper.cs" />
     <Compile Include="DataContext\FpsGraphDataContext.cs" />

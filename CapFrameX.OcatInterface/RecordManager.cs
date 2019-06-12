@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace CapFrameX.OcatInterface
 {
@@ -154,8 +155,13 @@ namespace CapFrameX.OcatInterface
             {
                 using (var reader = new StreamReader(csvFile))
                 {
-                    // header -> csv layout may differ, identify correct columns based on column title
-                    var line = reader.ReadLine();
+                    string line = reader.ReadLine();
+
+                    // skip header
+                    while (line.Contains(FileRecordInfo.HEADER_MARKER))
+                    {
+                        line = reader.ReadLine();
+                    }
 
                     int indexFrameStart = -1;
                     int indexFrameTimes = -1;
@@ -319,6 +325,7 @@ namespace CapFrameX.OcatInterface
             return session;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static string GetStringFromArray(string[] array, int index)
         {
             var value = string.Empty;

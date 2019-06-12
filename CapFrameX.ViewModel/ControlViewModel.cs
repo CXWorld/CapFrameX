@@ -212,10 +212,12 @@ namespace CapFrameX.ViewModel
 
         private void OnAcceptEditingDialog()
         {
-            if (CustomCpuDescription == null || CustomGpuDescription == null 
-                || CustomGameName == null || CustomComment == null)
+            if (CustomCpuDescription == null || CustomGpuDescription == null
+                || CustomGameName == null || CustomComment == null || _selectedRecordInfo == null)
                 return;
 
+            // hint: _selectedRecordInfo must not be uptated, because after reload
+            // it will be set to null
             RecordManager.UpdateCustomData(_selectedRecordInfo,
                 CustomCpuDescription, CustomGpuDescription, CustomGameName, CustomComment);
 
@@ -284,7 +286,7 @@ namespace CapFrameX.ViewModel
             }
         }
 
-        private void OnRecordCreated(FileInfo fileInfo) 
+        private void OnRecordCreated(FileInfo fileInfo)
             => AddToRecordInfoList(_recordDataProvider.GetIFileRecordInfo(fileInfo), true);
 
         private void OnRecordDeleted(FileInfo fileInfo)

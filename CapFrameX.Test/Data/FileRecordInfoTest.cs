@@ -47,8 +47,8 @@ namespace CapFrameX.Test.Data
             Assert.AreEqual("MetroExodus.exe", fileRecordInfo.GameName);
             Assert.AreEqual("MetroExodus.exe", fileRecordInfo.ProcessName);
 
-            Assert.AreEqual($"\"Micro-Star International Co. Ltd. MPG Z390 GAMING PRO CARBON (MS-7B17)\"", fileRecordInfo.MotherboardName);
-            Assert.AreEqual($"\"Windows 10 Pro 1809 (OS Build 17763.1.amd64fre.rs5_release.180914-1434)\"", fileRecordInfo.OsVersion);
+            Assert.AreEqual("Micro-Star International Co. Ltd. MPG Z390 GAMING PRO CARBON (MS-7B17)", fileRecordInfo.MotherboardName);
+            Assert.AreEqual("Windows 10 Pro 1809 (OS Build 17763.1.amd64fre.rs5_release.180914-1434)", fileRecordInfo.OsVersion);
 
             Assert.AreEqual("Intel(R) Core(TM) i9-9900K CPU @ 3.60GHz", fileRecordInfo.ProcessorName);
             Assert.AreEqual("GeForce RTX 2080 Ti", fileRecordInfo.GraphicCardName);

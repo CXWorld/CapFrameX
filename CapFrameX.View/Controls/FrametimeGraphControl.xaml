@@ -35,8 +35,8 @@
 			<RowDefinition Height="1*"></RowDefinition>
 			<RowDefinition Height="Auto"></RowDefinition>
 		</Grid.RowDefinitions>
-		<Grid Grid.Row="0" Background="#F5F5F5">
-			<oxy:PlotView Background="#F5F5F5" x:Name="FrametimePlotView" Model="{Binding FrametimeModel}" Tag="{Binding ElementName=FrametimeGraphControlName, Path=DataContext}"
+        <Grid Grid.Row="0" Background="#F0F0F0">
+            <oxy:PlotView Background="#F0F0F0" x:Name="FrametimePlotView" Model="{Binding FrametimeModel}" Tag="{Binding ElementName=FrametimeGraphControlName, Path=DataContext}"
 						  MouseDoubleClick="ResetChart_MouseDoubleClick">
 				<oxy:PlotView.ContextMenu>
 					<ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">

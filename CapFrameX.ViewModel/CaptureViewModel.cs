@@ -366,7 +366,7 @@ namespace CapFrameX.ViewModel
 
         private void StartCaptureDataFromStream()
         {
-            AddLoggerEntry("Capturing started!");
+            AddLoggerEntry("Capturing started.");
 
             _captureData = new List<string>();
             bool autoTermination = Convert.ToInt32(CaptureTimeString) > 0;
@@ -512,8 +512,8 @@ namespace CapFrameX.ViewModel
                 captureTime = (_timestampStopCapture - _timestampStartCapture) / 1000d;
             }
 
-            LoggerOutput += $"Utc {DateTime.UtcNow.ToLongTimeString()} capture time (free run or time set) in sec: " +
-                            Math.Round(captureTime, 2).ToString(CultureInfo.InvariantCulture) + Environment.NewLine;
+            AddLoggerEntry($"Recording time (free run or time set) in sec: " +
+                            Math.Round(captureTime, 2).ToString(CultureInfo.InvariantCulture));
 
             var filteredArchive = _captureDataArchive.Where(line => RecordDataProvider.GetProcessNameFromDataLine(line) == processName).ToList();
 

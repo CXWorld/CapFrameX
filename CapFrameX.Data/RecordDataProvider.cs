@@ -61,11 +61,13 @@ namespace CapFrameX.Data
             var csv = new StringBuilder();
             var datetime = DateTime.Now;
 
+            var processNameAdjusted = processName.Contains(".exe") ? processName : $"{processName}.exe";
+
             // Create header
             var headerLines = new List<string>()
             {
                 $"{FileRecordInfo.HEADER_MARKER}GameName{FileRecordInfo.INFO_SEPERATOR}{string.Empty}",
-                $"{FileRecordInfo.HEADER_MARKER}ProcessName{FileRecordInfo.INFO_SEPERATOR}{processName}",
+                $"{FileRecordInfo.HEADER_MARKER}ProcessName{FileRecordInfo.INFO_SEPERATOR}{processNameAdjusted}",
                 $"{FileRecordInfo.HEADER_MARKER}CreationDate{FileRecordInfo.INFO_SEPERATOR}{datetime.ToString("yyyy-MM-dd")}",
                 $"{FileRecordInfo.HEADER_MARKER}CreationTime{FileRecordInfo.INFO_SEPERATOR}{datetime.ToString("HH:mm:ss")}",
                 $"{FileRecordInfo.HEADER_MARKER}Motherboard{FileRecordInfo.INFO_SEPERATOR}{SystemInfo.GetMotherboardName()}",
@@ -99,7 +101,7 @@ namespace CapFrameX.Data
 
             csv.AppendLine(string.Join(",", currentLineSplit));
 
-            foreach (var dataLine in recordLines)
+            foreach (var dataLine in recordLines.Skip(1))
             {
                 var extractedProcessName = GetProcessNameFromDataLine(dataLine);
                 if (extractedProcessName != null)
@@ -174,15 +176,27 @@ namespace CapFrameX.Data
                 _processGameMatchingDictionary.Add(currentMatching.First(), currentMatching.Last());
             }
 
+            // Add
             if (!_processGameMatchingDictionary.Keys.Contains(processName))
             {
                 _processGameMatchingDictionary.Add(processName, gameName);
-
                 matchings.Add($"{processName}={gameName}");
-                var orderedMatchings = matchings.OrderBy(name => name);
 
-                File.WriteAllLines(_matchingNameLiveFilename, orderedMatchings);
-            }           
+                File.WriteAllLines(_matchingNameLiveFilename, matchings.OrderBy(name => name));
+            }
+            // Update
+            else
+            {
+                _processGameMatchingDictionary[processName] = gameName;
+                var newMatchings = new List<string>();
+
+                foreach (var keyValuePair in _processGameMatchingDictionary)
+                {
+                    newMatchings.Add($"{keyValuePair.Key}={keyValuePair.Value}");
+                }
+
+                File.WriteAllLines(_matchingNameLiveFilename, newMatchings.OrderBy(name => name));
+            }
         }
 
         public string GetGameFromMatchingList(string processName)
