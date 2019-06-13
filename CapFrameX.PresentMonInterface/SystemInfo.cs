@@ -163,6 +163,8 @@ namespace CapFrameX.PresentMonInterface
             var query = string.Format("select * from {0}", win32DeviceClassName);
             int formFactorSum = 0;
 
+            string test = string.Empty;
+
             try
             {
                 //Manufacturer + Product
@@ -174,21 +176,24 @@ namespace CapFrameX.PresentMonInterface
                     {
                         foreach (PropertyData propertyData in managementBaseObject.Properties)
                         {
-                            if (propertyDataNameSpeed == propertyData.Name)
-                            {
-                                var value = propertyData.Value;
 
-                                if (value != null)
-                                    propertyDataValueSpeed = value.ToString();
-                            }
+                            test += $"Name:{propertyData.Name} with value: {propertyData.Value?.ToString()}";
+                            test += Environment.NewLine;
+                            //if (propertyDataNameSpeed == propertyData.Name)
+                            //{
+                            //    var value = propertyData.Value;
 
-                            if (propertyDataNameFormFactor == propertyData.Name)
-                            {
-                                var value = propertyData.Value;
+                            //    if (value != null)
+                            //        propertyDataValueSpeed = value.ToString();
+                            //}
 
-                                if (value != null)
-                                    formFactorSum += Convert.ToInt32(value);
-                            }
+                            //if (propertyDataNameFormFactor == propertyData.Name)
+                            //{
+                            //    var value = propertyData.Value;
+
+                            //    if (value != null)
+                            //        formFactorSum += Convert.ToInt32(value);
+                            //}
                         }
                     }
                 }
@@ -196,7 +201,7 @@ namespace CapFrameX.PresentMonInterface
             catch { propertyDataValueSpeed = string.Empty; formFactorSum = 0; }
 
             //RAM size + speed
-            return $"{formFactorSum} GB {propertyDataValueSpeed} MT/s";
+            return test; //$"{formFactorSum} GB {propertyDataValueSpeed} MT/s";
         }
     }
 }
