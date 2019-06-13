@@ -23,13 +23,16 @@ Download link: https://github.com/DevTechProfile/CapFrameX/releases
 ![Screenshot](Images/Report_Table.png)
 
 # Instruction manual
-Learn how to use CapFrameX
+Learn how to use CapFrameX.
+
+## Video tutorial
+Capture page (DE): https://www.youtube.com/watch?v=ZqMMPDxJUkk
 
 ## Record list
 This list is always located at the left section, regardless of the view you're currently in.
 It constantly observes the output directory so every capture will show up here as soon as the capture has finished.
 This also includes every OCAT capture you put into that directory.
-At the bottom of that list you can see and change the CPU and GPU description and also add a custom comment to every capture.
+At the bottom of that list you can see and change the CPU and GPU description, add a custom comment to each capture and also edit the game name that will be displayed throughout CapFrameX for every process. 
 
 ## Capture view
 This is the default view when starting CapFrameX. Here you can set up your capture hotkey, the capture time and the response sounds.

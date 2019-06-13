@@ -117,7 +117,7 @@ namespace CapFrameX.View
 
         private void CapturePageHelp_Click(object sender, RoutedEventArgs e)
         {
-            System.Diagnostics.Process.Start("https://www.youtube.com/watch?v=ZqMMPDxJUkk");
+            System.Diagnostics.Process.Start("https://github.com/DevTechProfile/CapFrameX#instruction-manual");
         }
     }
 }
