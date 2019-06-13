@@ -5,6 +5,8 @@ namespace CapFrameX.PresentMonInterface
 {
     public static class SystemInfo
     {
+        private static readonly int ONE_GIB = 1073741824;
+
         public static string GetProcessorName()
         {
             string propertyDataValue = string.Empty;
@@ -152,18 +154,17 @@ namespace CapFrameX.PresentMonInterface
             return result.Replace(",", "");
         }
 
+
+
         public static string GetSystemRAMInfoName()
         {
-            string propertyDataValueRAMSize = string.Empty;
-            const string propertyDataNameFormFactor = "FormFactor";
+            const string propertyDataNameCapacity = "Capacity";
             string propertyDataValueSpeed = string.Empty;
             const string propertyDataNameSpeed = "Speed";
 
             var win32DeviceClassName = "Win32_PhysicalMemory";
             var query = string.Format("select * from {0}", win32DeviceClassName);
-            int formFactorSum = 0;
-
-            string test = string.Empty;
+            long capacitySum = 0;
 
             try
             {
@@ -176,32 +177,29 @@ namespace CapFrameX.PresentMonInterface
                     {
                         foreach (PropertyData propertyData in managementBaseObject.Properties)
                         {
+                            if (propertyDataNameSpeed == propertyData.Name)
+                            {
+                                var value = propertyData.Value;
 
-                            test += $"Name:{propertyData.Name} with value: {propertyData.Value?.ToString()}";
-                            test += Environment.NewLine;
-                            //if (propertyDataNameSpeed == propertyData.Name)
-                            //{
-                            //    var value = propertyData.Value;
+                                if (value != null)
+                                    propertyDataValueSpeed = value.ToString();
+                            }
 
-                            //    if (value != null)
-                            //        propertyDataValueSpeed = value.ToString();
-                            //}
+                            if (propertyDataNameCapacity == propertyData.Name)
+                            {
+                                var value = propertyData.Value;
 
-                            //if (propertyDataNameFormFactor == propertyData.Name)
-                            //{
-                            //    var value = propertyData.Value;
-
-                            //    if (value != null)
-                            //        formFactorSum += Convert.ToInt32(value);
-                            //}
+                                if (value != null)
+                                    capacitySum += Convert.ToInt64(value);
+                            }
                         }
                     }
                 }
             }
-            catch { propertyDataValueSpeed = string.Empty; formFactorSum = 0; }
+            catch { propertyDataValueSpeed = string.Empty; capacitySum = 0; }
 
             //RAM size + speed
-            return test; //$"{formFactorSum} GB {propertyDataValueSpeed} MT/s";
+            return $"{capacitySum/ 1073741824} GB {propertyDataValueSpeed} MT/s";
         }
     }
 }
