@@ -274,5 +274,29 @@ namespace CapFrameX.Configuration.Properties {
                 this["UseSingleRecordP0Dot2QuantileStatisticParameter"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0.4")]
+        public double VoiceSoundLevel {
+            get {
+                return ((double)(this["VoiceSoundLevel"]));
+            }
+            set {
+                this["VoiceSoundLevel"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0.6")]
+        public double SimpleSoundLevel {
+            get {
+                return ((double)(this["SimpleSoundLevel"]));
+            }
+            set {
+                this["SimpleSoundLevel"] = value;
+            }
+        }
     }
 }

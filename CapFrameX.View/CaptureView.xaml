@@ -111,23 +111,23 @@
 				                    HorizontalAlignment="Center" Command="{Binding AddToIgonreListCommand}" IsEnabled="{Binding IsAddToIgnoreListButtonActive}"
                                     ToolTip="Ignore process">
                                 <Button.Triggers>
-                                <EventTrigger RoutedEvent="MouseEnter">
-                                    <BeginStoryboard>
-                                        <Storyboard>
-                                            <ColorAnimation Storyboard.TargetProperty="(Button.Background).(SolidColorBrush.Color)" To="#e6e6e6"/>
-                                        </Storyboard>
-                                    </BeginStoryboard>
-                                </EventTrigger>
-                                <EventTrigger RoutedEvent="MouseLeave">
-                                    <BeginStoryboard>
-                                        <Storyboard>
-                                            <ColorAnimation Storyboard.TargetProperty="(Button.Background).(SolidColorBrush.Color)" To="Transparent"/>
-                                        </Storyboard>
-                                    </BeginStoryboard>
-                                </EventTrigger>
-                            </Button.Triggers>
-                            <materialDesign:PackIcon Kind="ArrowRight" Width="32" Height="32"/>
-                        </Button>
+                                    <EventTrigger RoutedEvent="MouseEnter">
+                                        <BeginStoryboard>
+                                            <Storyboard>
+                                                <ColorAnimation Storyboard.TargetProperty="(Button.Background).(SolidColorBrush.Color)" To="#e6e6e6"/>
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </EventTrigger>
+                                    <EventTrigger RoutedEvent="MouseLeave">
+                                        <BeginStoryboard>
+                                            <Storyboard>
+                                                <ColorAnimation Storyboard.TargetProperty="(Button.Background).(SolidColorBrush.Color)" To="Transparent"/>
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </EventTrigger>
+                                </Button.Triggers>
+                                <materialDesign:PackIcon Kind="ArrowRight" Width="32" Height="32"/>
+                            </Button>
                             <Button Margin="0 10 0 0" Width="60" Height="50" Foreground="Black" BorderThickness="0" Background="Transparent"
 				                    HorizontalAlignment="Center" Command="{Binding AddToProcessListCommand}" IsEnabled="{Binding IsAddToIgnoreListButtonActive}"
                                     ToolTip="Unignore process">
@@ -173,7 +173,11 @@
             <TextBox Width="152" wpf:HintAssist.Hint="Capture time in seconds" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
 					 Margin="0" FontSize="14" Text="{Binding CaptureTimeString, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Center"
                      PreviewMouseDown="TextBox_PreviewMouseDown" MouseLeave="TextBox_MouseLeave" ToolTip="0 = no limit"/>
-            <ComboBox Width="152" Margin="0" materialDesign:HintAssist.Hint="Hotkey sound mode"
+            <Button Style="{DynamicResource MaterialDesignToolButton}" Margin="0 0 160 -10" HorizontalAlignment="Right"
+                    Command="{Binding VolumeMinusCommand}">
+                <materialDesign:PackIcon Kind="VolumeMinus" Width="20" Height="20"/>
+            </Button>
+            <ComboBox Width="152" Margin="10 0 0 0" materialDesign:HintAssist.Hint="Hotkey sound mode"
 					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="200" FontSize="14" 
 					  ItemsSource="{Binding SoundModes}" HorizontalAlignment="Right">
                 <ComboBox.Text>
@@ -183,6 +187,10 @@
                     </Binding>
                 </ComboBox.Text>
             </ComboBox>
+            <Button Style="{DynamicResource MaterialDesignToolButton}" Margin="0 0 -35 -10" HorizontalAlignment="Right"
+                    Command="{Binding VolumePlusCommand}">
+                <materialDesign:PackIcon Kind="VolumePlus" Width="20" Height="20"/>
+            </Button>
         </Grid>
         <Expander HorizontalAlignment="Stretch" Header="Logger" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="5">
             <ScrollViewer MaxHeight="200" VerticalScrollBarVisibility="Visible" Margin="20 10 20 10" >

@@ -41,5 +41,9 @@
         string HotkeySoundMode { get; set; }
 
         int CaptureTime { get; set; }
+
+        double VoiceSoundLevel { get; set; }
+
+        double SimpleSoundLevel { get; set; }
     }
 }

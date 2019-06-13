@@ -125,5 +125,17 @@ namespace CapFrameX.Configuration
             get { return Settings.CaptureTime; }
             set { Settings.CaptureTime = value; Settings.Save(); }
         }
+
+        public double VoiceSoundLevel
+        {
+            get { return Settings.VoiceSoundLevel; }
+            set { Settings.VoiceSoundLevel = value; Settings.Save(); }
+        }
+
+        public double SimpleSoundLevel
+        {
+            get { return Settings.SimpleSoundLevel; }
+            set { Settings.SimpleSoundLevel = value; Settings.Save(); }
+        }
     }
 }
