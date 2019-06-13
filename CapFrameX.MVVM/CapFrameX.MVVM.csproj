@@ -52,6 +52,9 @@
     <Reference Include="ControlzEx, Version=3.0.2.4, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\ControlzEx.3.0.2.4\lib\net462\ControlzEx.dll</HintPath>
     </Reference>
+    <Reference Include="Gma.System.MouseKeyHook, Version=5.6.130.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\MouseKeyHook.5.6.0\lib\net40\Gma.System.MouseKeyHook.dll</HintPath>
+    </Reference>
     <Reference Include="LiveCharts, Version=0.9.7.0, Culture=neutral, PublicKeyToken=0bc1f845d1ebb8df, processorArchitecture=MSIL">
       <HintPath>..\packages\LiveCharts.0.9.7\lib\net45\LiveCharts.dll</HintPath>
     </Reference>
@@ -101,10 +104,11 @@
     <Compile Include="Dialogs\EditingDialog.xaml.cs">
       <DependentUpon>EditingDialog.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Hotkey.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SelectionChangedBehaviour.cs" />
     <Compile Include="SliderValueChangedBehaviour.cs" />
+    <Compile Include="Validation\HotkeyValidationRule.cs" />
+    <Compile Include="Validation\NotEmptyValidationRule.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -113,6 +117,10 @@
     <ProjectReference Include="..\CapFrameX.Extensions\CapFrameX.Extensions.csproj">
       <Project>{a4559b99-7fcb-40ef-bf97-d293a2b7d6d3}</Project>
       <Name>CapFrameX.Extensions</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CapFrameX.Hotkey\CapFrameX.Hotkey.csproj">
+      <Project>{b033a95b-c385-4a33-8992-2872df979ecd}</Project>
+      <Name>CapFrameX.Hotkey</Name>
     </ProjectReference>
     <ProjectReference Include="..\CapFrameX.OcatInterface\CapFrameX.OcatInterface.csproj">
       <Project>{E61AD1FC-514F-43FD-BC20-31E9900CDFD7}</Project>

@@ -1,6 +1,7 @@
 ﻿using CapFrameX.Configuration;
 using CapFrameX.Data;
 using CapFrameX.Extensions;
+using CapFrameX.Hotkey;
 using CapFrameX.MVVM;
 using CapFrameX.OcatInterface;
 using CapFrameX.PresentMonInterface;
@@ -20,12 +21,12 @@ namespace CapFrameX.View
     public partial class CaptureView : UserControl
     {
         public static readonly DependencyProperty CaptureHotkeyProperty =
-            DependencyProperty.Register(nameof(CaptureHotkey), typeof(Hotkey), typeof(CaptureView),
-             new FrameworkPropertyMetadata(default(Hotkey), FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+            DependencyProperty.Register(nameof(CaptureHotkey), typeof(CaptureHotkey), typeof(CaptureView),
+             new FrameworkPropertyMetadata(default(CaptureHotkey), FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
-        public Hotkey CaptureHotkey
+        public CaptureHotkey CaptureHotkey
         {
-            get => (Hotkey)GetValue(CaptureHotkeyProperty);
+            get => (CaptureHotkey)GetValue(CaptureHotkeyProperty);
             set => SetValue(CaptureHotkeyProperty, value);
         }
 
@@ -41,14 +42,14 @@ namespace CapFrameX.View
                 if (keyStrings.Length == 1)
                 {
                     var key = (Key)Enum.Parse(typeof(Key), keyStrings[0], true);
-                    CaptureHotkey = new Hotkey(key, ModifierKeys.None);
+                    CaptureHotkey = new CaptureHotkey(key, ModifierKeys.None);
                 }
                 else if (keyStrings.Length == 2)
                 {
                     var keyModifier = (ModifierKeys)Enum.Parse(typeof(ModifierKeys), keyStrings[0], true);
                     var key = (Key)Enum.Parse(typeof(Key), keyStrings[1], true);
 
-                    CaptureHotkey = new Hotkey(key, keyModifier);
+                    CaptureHotkey = new CaptureHotkey(key, keyModifier);
                 }
                 else if (keyStrings.Length == 3)
                 {
@@ -56,10 +57,10 @@ namespace CapFrameX.View
                     var keyModifierB = (ModifierKeys)Enum.Parse(typeof(ModifierKeys), keyStrings[1], true);
                     var key = (Key)Enum.Parse(typeof(Key), keyStrings[2], true);
 
-                    CaptureHotkey = new Hotkey(key, keyModifierA | keyModifierB);
+                    CaptureHotkey = new CaptureHotkey(key, keyModifierA | keyModifierB);
                 }
             }
-            catch { CaptureHotkey = new Hotkey(); }
+            catch { CaptureHotkey = new CaptureHotkey(); }
 
             // Design time!
             if (DesignerProperties.GetIsInDesignMode(this))
@@ -96,7 +97,7 @@ namespace CapFrameX.View
                 return;
             }
 
-            CaptureHotkey = new Hotkey(key, modifiers);
+            CaptureHotkey = new CaptureHotkey(key, modifiers);
             var dataContext = DataContext as CaptureViewModel;
             dataContext.CaptureHotkeyString = CaptureHotkey.ToString();
         }

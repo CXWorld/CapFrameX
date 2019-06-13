@@ -5,7 +5,7 @@ namespace CapFrameX.PresentMonInterface
 {
     public static class SystemInfo
     {
-        private static readonly int ONE_GIB = 1073741824;
+        private static readonly long ONE_GIB = 1073741824;
 
         public static string GetProcessorName()
         {
@@ -154,12 +154,10 @@ namespace CapFrameX.PresentMonInterface
             return result.Replace(",", "");
         }
 
-
-
         public static string GetSystemRAMInfoName()
         {
             const string propertyDataNameCapacity = "Capacity";
-            string propertyDataValueSpeed = string.Empty;
+            string propertyDataValueSpeed = "unknown";
             const string propertyDataNameSpeed = "Speed";
 
             var win32DeviceClassName = "Win32_PhysicalMemory";
@@ -196,10 +194,10 @@ namespace CapFrameX.PresentMonInterface
                     }
                 }
             }
-            catch { propertyDataValueSpeed = string.Empty; capacitySum = 0; }
+            catch { propertyDataValueSpeed = "unknown"; capacitySum = 0; }
 
             //RAM size + speed
-            return $"{capacitySum/ 1073741824} GB {propertyDataValueSpeed} MT/s";
+            return $"{capacitySum/ ONE_GIB} GB {propertyDataValueSpeed} MT/s";
         }
     }
 }

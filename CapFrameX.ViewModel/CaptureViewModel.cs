@@ -3,6 +3,7 @@ using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.PresentMonInterface;
 using CapFrameX.Data;
 using CapFrameX.EventAggregation.Messages;
+using CapFrameX.Hotkey;
 using CapFrameX.OcatInterface;
 using CapFrameX.PresentMonInterface;
 using Gma.System.MouseKeyHook;
@@ -129,6 +130,9 @@ namespace CapFrameX.ViewModel
             get { return _appConfiguration.CaptureHotKey; }
             set
             {
+                if (!CaptureHotkey.IsValidHotkey(value))
+                    return;
+
                 _appConfiguration.CaptureHotKey = value;
                 UpdateCaptureStateInfo();
                 UpdateGlobalHookEvent();
@@ -273,6 +277,9 @@ namespace CapFrameX.ViewModel
 
         private void SetGlobalHookEventCaptureHotkey()
         {
+            if (!CaptureHotkey.IsValidHotkey(CaptureHotkeyString))
+                return;
+
             var onCombinationDictionary = new Dictionary<Combination, Action>
             {
                 {Combination.FromString(CaptureHotkeyString), () =>

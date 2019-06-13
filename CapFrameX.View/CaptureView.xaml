@@ -5,6 +5,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 			 xmlns:mvvm="clr-namespace:CapFrameX.MVVM.Converter;assembly=CapFrameX.MVVM"
+             xmlns:validation ="clr-namespace:CapFrameX.MVVM.Validation;assembly=CapFrameX.MVVM"
 			 xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
 			 xmlns:wpf="clr-namespace:MaterialDesignThemes.Wpf;assembly=MaterialDesignThemes.Wpf"
 			 xmlns:prism="http://prismlibrary.com/"	
@@ -167,9 +168,21 @@
 
         <Grid x:Name="HotkeyTextBox" Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="3" HorizontalAlignment="Stretch" VerticalAlignment="Center">
             <TextBox Width="152" wpf:HintAssist.Hint="Capture hotkey" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
-					 Margin="0" FontSize="14" Text="{Binding CaptureHotkey, ElementName = CaptureViewControl, Mode=OneWay, TargetNullValue=&lt; not set &gt;}" HorizontalAlignment="Left"
+					 Margin="0" FontSize="14"  HorizontalAlignment="Left"
 					 IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False" PreviewKeyDown="HotkeyTextBox_PreviewKeyDown"
-                     ToolTip="combinable with Ctrl/Shift/Alt"/>
+                     ToolTip="combinable with Ctrl/Shift/Alt">
+                <!--Text="{Binding CaptureHotkey, ElementName = CaptureViewControl, Mode=OneWay, TargetNullValue=&lt; not set &gt;}"-->
+                <Binding
+                      Path="CaptureHotkey"
+                      ElementName="CaptureViewControl"
+                      Mode="OneWay"
+                      TargetNullValue="&lt; not set &gt;">
+                    <Binding.ValidationRules>
+                        <validation:HotkeyValidationRule
+                          ValidatesOnTargetUpdated="True" />
+                    </Binding.ValidationRules>
+                </Binding>
+            </TextBox>
             <TextBox Width="152" wpf:HintAssist.Hint="Capture time in seconds" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
 					 Margin="0" FontSize="14" Text="{Binding CaptureTimeString, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Center"
                      PreviewMouseDown="TextBox_PreviewMouseDown" MouseLeave="TextBox_MouseLeave" ToolTip="0 = no limit"/>

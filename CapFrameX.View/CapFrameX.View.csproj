@@ -257,6 +257,10 @@
       <Project>{a4559b99-7fcb-40ef-bf97-d293a2b7d6d3}</Project>
       <Name>CapFrameX.Extensions</Name>
     </ProjectReference>
+    <ProjectReference Include="..\CapFrameX.Hotkey\CapFrameX.Hotkey.csproj">
+      <Project>{b033a95b-c385-4a33-8992-2872df979ecd}</Project>
+      <Name>CapFrameX.Hotkey</Name>
+    </ProjectReference>
     <ProjectReference Include="..\CapFrameX.MVVM\CapFrameX.MVVM.csproj">
       <Project>{cfb57d81-1886-45d2-aa16-ede1dd17a9ca}</Project>
       <Name>CapFrameX.MVVM</Name>
