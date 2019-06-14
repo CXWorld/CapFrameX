@@ -56,7 +56,14 @@
 							 IsChecked="{Binding AggregationIsChecked}"
 							 Content="AGGREGATION" />-->
 				</StackPanel>
-				<materialDesign:PopupBox Grid.Column="1" RequestBringIntoView="PopupBox_RequestBringIntoView" Margin="16,0,16,0" StaysOpen="True" PlacementMode="BottomAndAlignRightEdges" HorizontalAlignment="Right">
+
+                <Button Grid.Column="1" Margin="0 0 60 0" Width="60" Height="50" HorizontalAlignment="Right"
+                         Foreground="White" BorderThickness="0" Background="Transparent"
+                        Click="CapturePageHelp_Click">
+                    <materialDesign:PackIcon Kind="HelpOutline" Margin="0 0 0 0" Width="30" Height="30"/>
+                </Button>
+
+                <materialDesign:PopupBox Grid.Column="1" RequestBringIntoView="PopupBox_RequestBringIntoView" Margin="16,0,16,0" StaysOpen="True" PlacementMode="BottomAndAlignRightEdges" HorizontalAlignment="Right">
 					<Grid Margin="8 8 8 8">
 						<Grid.Resources>
 							<Style TargetType="CheckBox" BasedOn="{StaticResource MaterialDesignCheckBox}">

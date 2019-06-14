@@ -4,6 +4,7 @@ using CapFrameX.ViewModel;
 using Prism.Events;
 using Prism.Regions;
 using System.ComponentModel;
+using System.Windows;
 using System.Windows.Controls;
 
 namespace CapFrameX.View
@@ -28,5 +29,10 @@ namespace CapFrameX.View
 		private void PopupBox_RequestBringIntoView(object sender, System.Windows.RequestBringIntoViewEventArgs e)
         {
 		}
-	}
+
+        private void CapturePageHelp_Click(object sender, RoutedEventArgs e)
+        {
+            System.Diagnostics.Process.Start("https://github.com/DevTechProfile/CapFrameX#instruction-manual");
+        }
+    }
 }

@@ -113,11 +113,6 @@ namespace CapFrameX.View
             var textBox = sender as TextBox;
             if (textBox.Text == string.Empty)
                 textBox.Text = "0";
-        }
-
-        private void CapturePageHelp_Click(object sender, RoutedEventArgs e)
-        {
-            System.Diagnostics.Process.Start("https://github.com/DevTechProfile/CapFrameX#instruction-manual");
-        }
+        }       
     }
 }
