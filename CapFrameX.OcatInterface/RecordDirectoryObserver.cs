@@ -7,6 +7,8 @@ using System.Collections.Generic;
 using CapFrameX.Contracts.OcatInterface;
 using CapFrameX.Contracts.Configuration;
 using CapFrameX.PresentMonInterface;
+using System.Threading.Tasks;
+using System.Threading;
 
 namespace CapFrameX.OcatInterface
 {
@@ -89,9 +91,21 @@ namespace CapFrameX.OcatInterface
             return path;
         }
 
+        private async Task SetTaskDelay()
+        {
+            // put some offset here
+            await Task.Delay(TimeSpan.FromMilliseconds(500));
+        }
+
         private void WatcherCreated(object sender, FileSystemEventArgs e)
         {
-            _recordCreatedStream.OnNext(e.FullPath);
+            Task.Run(async () =>
+            {
+                await SetTaskDelay().ContinueWith(_ =>
+                {
+                    _recordCreatedStream.OnNext(e.FullPath);
+                }, CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
+            });            
         }
 
         private void WatcherDeleted(object sender, FileSystemEventArgs e)

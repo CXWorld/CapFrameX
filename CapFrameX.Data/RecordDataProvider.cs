@@ -46,6 +46,9 @@ namespace CapFrameX.Data
         public IFileRecordInfo GetIFileRecordInfo(FileInfo fileInfo)
         {
             var fileRecordInfo = FileRecordInfo.Create(fileInfo);
+            if (fileRecordInfo == null)
+                return null;
+
             fileRecordInfo.GameName = GetGameFromMatchingList(fileRecordInfo.ProcessName);
             return fileRecordInfo;
         }
@@ -53,7 +56,8 @@ namespace CapFrameX.Data
         public IList<IFileRecordInfo> GetFileRecordInfoList()
         {
             return _recordObserver.GetAllRecordFileInfo()
-                .Select(fileInfo => GetIFileRecordInfo(fileInfo)).ToList();
+                .Select(fileInfo => GetIFileRecordInfo(fileInfo))
+                .Where(fileRecordInfo => fileRecordInfo != null).ToList();
         }
 
         public void SavePresentData(IList<string> recordLines, string filePath, string processName, int captureTime)
