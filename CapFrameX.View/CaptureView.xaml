@@ -26,6 +26,7 @@
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.GridSplitter.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Flipper.xaml" />
             </ResourceDictionary.MergedDictionaries>
+            <mvvm:BoolToVisibilityConverter x:Key="FalseToCollapsedConverter" TrueValue="Visible" FalseValue="Collapsed"/>
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid>
@@ -196,7 +197,7 @@
                     </Binding>
                 </ComboBox.Text>
             </ComboBox>
-            <Grid Grid.Row="1" Margin="0 10 0 0" Width="155" HorizontalAlignment="Right">
+            <Grid Grid.Row="1" Visibility="{Binding ShowVolumeController, Converter={StaticResource FalseToCollapsedConverter}}" Margin="0 10 0 0" Width="155" HorizontalAlignment="Right">
                 <materialDesign:PackIcon Kind="VolumeMedium" HorizontalAlignment="Left"/>
                 <Slider HorizontalAlignment="Center"
                     Minimum="0" 

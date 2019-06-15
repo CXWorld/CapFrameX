@@ -63,6 +63,7 @@ namespace CapFrameX.ViewModel
         private long _timestampFirstStreamElement;
         private CancellationTokenSource _cancellationTokenSource;
         private int _sliderSoundLevel;
+        private bool _showVolumeController;
 
         public string SelectedProcessToCapture
         {
@@ -141,26 +142,6 @@ namespace CapFrameX.ViewModel
             }
         }
 
-        public void OnSoundLevelChanged()
-        {
-            if (SelectedSoundMode == "simple sounds")
-            {
-                SimpleSoundLevel = SliderSoundLevel / 100d;
-
-                _soundPlayer.Open(new Uri("Sounds/simple_start_sound.mp3", UriKind.Relative));
-                _soundPlayer.Volume = SimpleSoundLevel;
-                _soundPlayer.Play();
-            }
-            else if (SelectedSoundMode == "voice response")
-            {
-                VoiceSoundLevel = SliderSoundLevel / 100d;
-
-                _soundPlayer.Open(new Uri("Sounds/capture_started.mp3", UriKind.Relative));
-                _soundPlayer.Volume = VoiceSoundLevel;
-                _soundPlayer.Play();
-            }
-        }
-
         public string SelectedSoundMode
         {
             get { return _selectedSoundMode; }
@@ -172,12 +153,28 @@ namespace CapFrameX.ViewModel
                 if (value == "simple sounds")
                 {
                     SliderSoundLevel = (int)Math.Round(SimpleSoundLevel * 100, 0);
+                    ShowVolumeController = true;
                 }
                 else if (value == "voice response")
                 {
                     SliderSoundLevel = (int)Math.Round(VoiceSoundLevel * 100, 0);
+                    ShowVolumeController = true;
+                }
+                else
+                {
+                    ShowVolumeController = false;
                 }
 
+                RaisePropertyChanged();
+            }
+        }
+
+        public bool ShowVolumeController
+        {
+            get { return _showVolumeController; }
+            set
+            {
+                _showVolumeController = value;
                 RaisePropertyChanged();
             }
         }
@@ -279,6 +276,26 @@ namespace CapFrameX.ViewModel
             _disposableHeartBeat = GetListUpdatHeartBeat();
             _isCaptureModeActive = true;
             StartCaptureService();
+        }
+
+        public void OnSoundLevelChanged()
+        {
+            if (SelectedSoundMode == "simple sounds")
+            {
+                SimpleSoundLevel = SliderSoundLevel / 100d;
+
+                _soundPlayer.Open(new Uri("Sounds/simple_start_sound.mp3", UriKind.Relative));
+                _soundPlayer.Volume = SimpleSoundLevel;
+                _soundPlayer.Play();
+            }
+            else if (SelectedSoundMode == "voice response")
+            {
+                VoiceSoundLevel = SliderSoundLevel / 100d;
+
+                _soundPlayer.Open(new Uri("Sounds/capture_started.mp3", UriKind.Relative));
+                _soundPlayer.Volume = VoiceSoundLevel;
+                _soundPlayer.Play();
+            }
         }
 
         private void AddLoggerEntry(string entry)

@@ -66,10 +66,10 @@
       <Value Profile="(Default)">True</Value>
     </Setting>
     <Setting Name="VoiceSoundLevel" Type="System.Double" Scope="User">
-      <Value Profile="(Default)">0.4</Value>
+      <Value Profile="(Default)">0.25</Value>
     </Setting>
     <Setting Name="SimpleSoundLevel" Type="System.Double" Scope="User">
-      <Value Profile="(Default)">0.6</Value>
+      <Value Profile="(Default)">0.5</Value>
     </Setting>
   </Settings>
 </SettingsFile>
