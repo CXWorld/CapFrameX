@@ -11,6 +11,10 @@
                 <File Id="filC5232FFF55D7F9A2D288A591C3B2723E" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.Contracts.dll" />
             </Component>
             
+            <Component Id="cmpBB82F84010B18BD471718A8F5192D809" Guid="*" Win64="yes">
+                <File Id="filF1AAE3D99497A2F202666A8EBE6BD1BE" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.Data.dll" />
+            </Component>
+            
             <Component Id="cmp7C9CAFF9FE2A171191AA280A316C5B90" Guid="*" Win64="yes">
                 <File Id="filE854C05B7FCBEF9D80C9CD3447FD3B5E" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.EventAggregation.dll" />
             </Component>
@@ -23,6 +27,10 @@
             </Component>
             <Component Id="cmp197CCAFDD9C330A4C91CAF35F0619382" Guid="*" Win64="yes">
                 <File Id="fil3C5B48255A95C26C6661A866ABBA9A94" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.Extensions.dll" />
+            </Component>
+            
+            <Component Id="cmpC53D77F304B4523D70934DE3AA929A1B" Guid="*" Win64="yes">
+                <File Id="fil8AC734A3084D24BF22E7B1C315F35D80" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.Hotkey.dll" />
             </Component>
             
             <Component Id="cmp6AE09C2CACB08476BEF8E2E045F01AF5" Guid="*" Win64="yes">
@@ -145,6 +153,11 @@
             <Component Id="cmpC85BD7478E073743A39F17DF06865203" Guid="*" Win64="yes">
                 <File Id="fil3DAD59899DDA1B0FCEDF95F84CB3C475" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Xceed.Wpf.Toolkit.dll" />
             </Component>
+            <Directory Id="dirFC3633220FD8334290F4812439E7BC6B" Name="NameMatching">
+                <Component Id="cmpDB3C9F13C3E689373E9F99E1C51AE6E5" Guid="*" Win64="yes">
+                    <File Id="fil0DAA58FB4BD6C33A6C03C3A4415C92E3" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\NameMatching\ProcessGameNameMatchingList.txt" />
+                </Component>
+            </Directory>
             <Directory Id="dir853772609C50C17748AF70C12E8A0818" Name="PresentMon">
                 <Component Id="cmp7358366301EC7CE9A932A5F8FBEC5A00" Guid="*" Win64="yes">
                     <File Id="fil1ADDD4AE6DFC84D4B7876CA15289FFFA" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\PresentMon\PresentMon64-1.4.0.exe" />
@@ -182,11 +195,15 @@
             
             <ComponentRef Id="cmpA4C1EAD31D80CA7A469C61E5F7BF0BE7" />
             
+            <ComponentRef Id="cmpBB82F84010B18BD471718A8F5192D809" />
+            
             <ComponentRef Id="cmp7C9CAFF9FE2A171191AA280A316C5B90" />
             
             <ComponentRef Id="cmp82AD45B10466B02AA709E58F5BE28DFA" />
             <ComponentRef Id="cmp2E59BC59B11729E95EB8C057C580BD11" />
             <ComponentRef Id="cmp197CCAFDD9C330A4C91CAF35F0619382" />
+            
+            <ComponentRef Id="cmpC53D77F304B4523D70934DE3AA929A1B" />
             
             <ComponentRef Id="cmp6AE09C2CACB08476BEF8E2E045F01AF5" />
             
@@ -250,6 +267,7 @@
             
             <ComponentRef Id="cmp017BFB3832A5B110A2B3A350E13F2A5C" />
             <ComponentRef Id="cmpC85BD7478E073743A39F17DF06865203" />
+            <ComponentRef Id="cmpDB3C9F13C3E689373E9F99E1C51AE6E5" />
             <ComponentRef Id="cmp7358366301EC7CE9A932A5F8FBEC5A00" />
             <ComponentRef Id="cmp8C1AB07795DAE387F9C0929C8DBCE953" />
             <ComponentRef Id="cmp3F2F9B6546AE06A5A2BC8225D157AC3C" />
