@@ -94,7 +94,7 @@ namespace CapFrameX.OcatInterface
         private async Task SetTaskDelay()
         {
             // put some offset here
-            await Task.Delay(TimeSpan.FromMilliseconds(500));
+            await Task.Delay(TimeSpan.FromMilliseconds(1000));
         }
 
         private void WatcherCreated(object sender, FileSystemEventArgs e)
