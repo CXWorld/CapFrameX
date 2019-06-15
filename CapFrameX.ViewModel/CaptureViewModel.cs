@@ -379,7 +379,7 @@ namespace CapFrameX.ViewModel
                 else if (SelectedSoundMode == _soundModes[2])
                 {
                     _soundPlayer.Open(new Uri("Sounds/capture_started.mp3", UriKind.Relative));
-                    _soundPlayer.Volume = SimpleSoundLevel;
+                    _soundPlayer.Volume = VoiceSoundLevel;
                     _soundPlayer.Play();
                 }
 
