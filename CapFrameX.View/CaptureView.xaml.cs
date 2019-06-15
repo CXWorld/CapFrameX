@@ -113,6 +113,11 @@ namespace CapFrameX.View
             var textBox = sender as TextBox;
             if (textBox.Text == string.Empty)
                 textBox.Text = "0";
-        }       
+        }
+
+        private void Slider_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
+        {
+            (DataContext as CaptureViewModel).OnSoundLevelChanged();
+        }
     }
 }

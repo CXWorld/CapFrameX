@@ -62,6 +62,7 @@ namespace CapFrameX.ViewModel
         private long _timestampStopCapture;
         private long _timestampFirstStreamElement;
         private CancellationTokenSource _cancellationTokenSource;
+        private int _sliderSoundLevel;
 
         public string SelectedProcessToCapture
         {
@@ -140,6 +141,26 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        public void OnSoundLevelChanged()
+        {
+            if (SelectedSoundMode == "simple sounds")
+            {
+                SimpleSoundLevel = SliderSoundLevel / 100d;
+
+                _soundPlayer.Open(new Uri("Sounds/simple_start_sound.mp3", UriKind.Relative));
+                _soundPlayer.Volume = SimpleSoundLevel;
+                _soundPlayer.Play();
+            }
+            else if (SelectedSoundMode == "voice response")
+            {
+                VoiceSoundLevel = SliderSoundLevel / 100d;
+
+                _soundPlayer.Open(new Uri("Sounds/capture_started.mp3", UriKind.Relative));
+                _soundPlayer.Volume = VoiceSoundLevel;
+                _soundPlayer.Play();
+            }
+        }
+
         public string SelectedSoundMode
         {
             get { return _selectedSoundMode; }
@@ -147,6 +168,16 @@ namespace CapFrameX.ViewModel
             {
                 _selectedSoundMode = value;
                 _appConfiguration.HotkeySoundMode = value;
+
+                if (value == "simple sounds")
+                {
+                    SliderSoundLevel = (int)Math.Round(SimpleSoundLevel * 100, 0);
+                }
+                else if (value == "voice response")
+                {
+                    SliderSoundLevel = (int)Math.Round(VoiceSoundLevel * 100, 0);
+                }
+
                 RaisePropertyChanged();
             }
         }
@@ -157,6 +188,16 @@ namespace CapFrameX.ViewModel
             set
             {
                 _loggerOutput = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public int SliderSoundLevel
+        {
+            get { return _sliderSoundLevel; }
+            set
+            {
+                _sliderSoundLevel = value;
                 RaisePropertyChanged();
             }
         }
@@ -195,10 +236,6 @@ namespace CapFrameX.ViewModel
 
         public ICommand ResetCaptureProcessCommand { get; }
 
-        public ICommand VolumePlusCommand { get; }
-
-        public ICommand VolumeMinusCommand { get; }
-
         public CaptureViewModel(IAppConfiguration appConfiguration,
                                 ICaptureService captureService,
                                 IEventAggregator eventAggregator,
@@ -212,8 +249,6 @@ namespace CapFrameX.ViewModel
             AddToIgonreListCommand = new DelegateCommand(OnAddToIgonreList);
             AddToProcessListCommand = new DelegateCommand(OnAddToProcessList);
             ResetCaptureProcessCommand = new DelegateCommand(OnResetCaptureProcess);
-            VolumePlusCommand = new DelegateCommand(OnVolumePlus);
-            VolumeMinusCommand = new DelegateCommand(OnVolumeMinus);
 
             CaptureStateInfo = $"Service ready... press {CaptureHotkeyString} to start capture of the running process.";
             SelectedSoundMode = _appConfiguration.HotkeySoundMode;
@@ -624,50 +659,6 @@ namespace CapFrameX.ViewModel
         private void OnResetCaptureProcess()
         {
             SelectedProcessToCapture = null;
-        }
-
-        private void OnVolumeMinus()
-        {
-            if (SelectedSoundMode == "simple sounds")
-            {
-                if (SimpleSoundLevel - 0.1 >= 0)
-                    SimpleSoundLevel -= 0.1;
-
-                _soundPlayer.Open(new Uri("Sounds/simple_start_sound.mp3", UriKind.Relative));
-                _soundPlayer.Volume = SimpleSoundLevel;
-                _soundPlayer.Play();
-            }
-            else if (SelectedSoundMode == "voice response")
-            {
-                if (SimpleSoundLevel - 0.1 >= 0)
-                    SimpleSoundLevel -= 0.1;
-
-                _soundPlayer.Open(new Uri("Sounds/capture_started.mp3", UriKind.Relative));
-                _soundPlayer.Volume = SimpleSoundLevel;
-                _soundPlayer.Play();
-            }
-        }
-
-        private void OnVolumePlus()
-        {
-            if (SelectedSoundMode == "simple sounds")
-            {
-                if (SimpleSoundLevel + 0.1 <= 1)
-                    SimpleSoundLevel += 0.1;
-
-                _soundPlayer.Open(new Uri("Sounds/simple_start_sound.mp3", UriKind.Relative));
-                _soundPlayer.Volume = SimpleSoundLevel;
-                _soundPlayer.Play();
-            }
-            else if (SelectedSoundMode == "voice response")
-            {
-                if (SimpleSoundLevel + 0.1 <= 1)
-                    SimpleSoundLevel += 0.1;
-
-                _soundPlayer.Open(new Uri("Sounds/capture_started.mp3", UriKind.Relative));
-                _soundPlayer.Volume = SimpleSoundLevel;
-                _soundPlayer.Play();
-            }
         }
 
         private IDisposable GetListUpdatHeartBeat()
