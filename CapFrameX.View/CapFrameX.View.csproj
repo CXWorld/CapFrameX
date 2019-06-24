@@ -157,6 +157,9 @@
     <Compile Include="ComparisonDataView.xaml.cs">
       <DependentUpon>ComparisonDataView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ComparisonView.xaml.cs">
+      <DependentUpon>ComparisonView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Controls\CustomPanManipulator.cs" />
     <Compile Include="Controls\FpsGraphControl.xaml.cs">
       <DependentUpon>FpsGraphControl.xaml</DependentUpon>
@@ -200,6 +203,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="ComparisonDataView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ComparisonView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

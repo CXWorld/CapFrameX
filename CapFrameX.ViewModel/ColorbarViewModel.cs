@@ -254,7 +254,7 @@ namespace CapFrameX.ViewModel
 
         private void OnRecordComparisonIsCheckedChanged()
         {
-            _regionManager.RequestNavigate("DataRegion", "ComparisonDataView");
+            _regionManager.RequestNavigate("DataRegion", "ComparisonView");
             _resetRecordEvent.Publish(new ViewMessages.ResetRecord());
         }
 
@@ -327,7 +327,7 @@ namespace CapFrameX.ViewModel
 
                                 if (RecordComparisonIsChecked)
                                 {
-                                    _regionManager.RequestNavigate("DataRegion", "ComparisonDataView");
+                                    _regionManager.RequestNavigate("DataRegion", "ComparisonView");
                                 }
 
                                 if (ReportIsChecked)

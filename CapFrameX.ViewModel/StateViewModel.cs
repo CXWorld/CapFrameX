@@ -45,11 +45,10 @@ namespace CapFrameX.ViewModel
 			get
 			{
 				Assembly assembly = GetAssemblyByName("CapFrameX");
-				var fileVersion = IsBeta ? string.Format(FileVersionInfo.GetVersionInfo(assembly.Location).FileVersion + "{0}", " Beta") :
-					FileVersionInfo.GetVersionInfo(assembly.Location).FileVersion;
+				var fileVersion = FileVersionInfo.GetVersionInfo(assembly.Location).FileVersion;
 
                 var numbers = fileVersion.Split('.');
-				return $"{numbers[0]}.{numbers[1]}.{numbers[2]}";
+				return IsBeta ? $"{numbers[0]}.{numbers[1]}.{numbers[2]} Beta" : $"{numbers[0]}.{numbers[1]}.{numbers[2]}";
 			}
 		}
 

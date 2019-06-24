@@ -13,7 +13,7 @@ namespace CapFrameX
             if (CaptureServiceInfo.IsCompatibleWithRunningOS)
                 RegionManagerWrapper.Singleton.RegisterViewWithRegion("DataRegion", typeof(CaptureView));
             RegionManagerWrapper.Singleton.RegisterViewWithRegion("DataRegion", typeof(DataView));
-            RegionManagerWrapper.Singleton.RegisterViewWithRegion("DataRegion", typeof(ComparisonDataView));
+            RegionManagerWrapper.Singleton.RegisterViewWithRegion("DataRegion", typeof(ComparisonView));
             RegionManagerWrapper.Singleton.RegisterViewWithRegion("DataRegion", typeof(ReportView));
             RegionManagerWrapper.Singleton.RegisterViewWithRegion("DataRegion", typeof(SynchronizationView));
             RegionManagerWrapper.Singleton.RegisterViewWithRegion("DataRegion", typeof(AggregationView));
