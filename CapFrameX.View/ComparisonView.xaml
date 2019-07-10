@@ -9,6 +9,8 @@
              xmlns:vm="clr-namespace:CapFrameX.ViewModel;assembly=CapFrameX.ViewModel"
              xmlns:mvvm="clr-namespace:CapFrameX.MVVM.Converter;assembly=CapFrameX.MVVM"
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
+             xmlns:oxy="clr-namespace:OxyPlot.Wpf;assembly=OxyPlot.Wpf"
              xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
              xmlns:dragdrop="urn:gong-wpf-dragdrop"
              mc:Ignorable="d"
@@ -41,6 +43,66 @@
             <ColumnDefinition Width="1*"></ColumnDefinition>
             <ColumnDefinition Width="320"></ColumnDefinition>
         </Grid.ColumnDefinitions>
+        <TabControl Margin="5 10 0 0" Grid.Row="0" Grid.Column="0" Grid.RowSpan="2" Background="#F5F5F5">
+            <TabItem Header="Bar charts">
+                <lvc:CartesianChart Grid.Row="2" Series="{Binding ComparisonRowChartSeriesCollection}">
+                    <lvc:CartesianChart.AxisY>
+                        <lvc:Axis Labels="{Binding ComparisonRowChartLabels}">
+                            <lvc:Axis.Separator>
+                                <!--step 1 forces the axis to display all labels, disabling it makes it invisible-->
+                                <lvc:Separator Step="1" IsEnabled="False"></lvc:Separator>
+                            </lvc:Axis.Separator>
+                        </lvc:Axis>
+                    </lvc:CartesianChart.AxisY>
+                </lvc:CartesianChart>
+            </TabItem>
+            <TabItem Header="Frametimes/ L-shapes">
+                <Grid Name="ChartAndCuttingGrid">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="1*"></RowDefinition>
+                        <RowDefinition Height="Auto"></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <Grid Grid.Row="0" Background="#F5F5F5">
+                        <oxy:PlotView Background="#F5F5F5" x:Name="ComparisonPlotView" Model="{Binding ComparisonModel}" MouseDoubleClick="ResetChart_MouseDoubleClick"/>
+                    </Grid>
+                    <Grid Grid.Row="1" Visibility="{Binding ElementName=CuttingModeActiveToggleButton, Path=IsChecked, Converter={StaticResource FalseToCollapsedConverter}}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="2*" />
+                            <ColumnDefinition Width="1*" />
+                            <ColumnDefinition Width="2*" />
+                        </Grid.ColumnDefinitions>
+                        <Slider Grid.Column="0" Margin="20 0 0 10" Minimum="0"
+								Maximum="{Binding CutLeftSliderMaximum}"
+								TickFrequency="0.1"
+								HorizontalAlignment="Stretch"
+								VerticalAlignment="Bottom"
+								Value="{Binding FirstSeconds}"
+								Style="{StaticResource MaterialDesignDiscreteSlider}"
+								ToolTip="Cut first seconds"/>
+                        <TextBox Grid.Column="1" HorizontalAlignment="Center" IsReadOnly="True" Margin="20 0 20 3"
+								 Style="{StaticResource MaterialDesignFloatingHintTextBox}" Text="{Binding RemainingRecordingTime}">
+                            <materialDesign:HintAssist.Hint>
+                                <StackPanel Orientation="Horizontal" Margin="-2 0 0 0">
+                                    <materialDesign:PackIcon Kind="ChartLine" />
+                                    <TextBlock Margin="3 0 0 0">
+										remaining recording time
+                                    </TextBlock>
+                                </StackPanel>
+                            </materialDesign:HintAssist.Hint>
+                        </TextBox>
+                        <Slider Grid.Column="2" Margin="0 0 10 10" Minimum="0"
+								IsDirectionReversed="True"
+								Maximum="{Binding CutRightSliderMaximum}"
+								TickFrequency="0.1"
+								HorizontalAlignment="Stretch"
+								VerticalAlignment="Bottom"
+								Value="{Binding LastSeconds}"
+								Style="{StaticResource MaterialDesignDiscreteSlider}"
+								ToolTip="Cut last seconds"/>
+                    </Grid>
+                </Grid>
+            </TabItem>
+        </TabControl>
         <StackPanel Margin="5 10 5 0" Grid.Row="0" Grid.Column="1" Orientation="Vertical">
             <TextBox IsReadOnly="True" Background="#e6e6e6" materialDesign:HintAssist.Hint="Comparisons" />
             <!--MinHeight="300" Height="{Binding ElementName=ChartAndCuttingGrid, Path=ActualHeight, Converter={StaticResource AddValueConverter}}"-->
@@ -189,13 +251,6 @@
             </Border>
         </StackPanel>
         <Expander Grid.Row="1" Grid.Column="1" Background="#F5F5F5" Margin="0 5 0 5" Header="Data/Chart Settings">
-
         </Expander>
-        <TabControl Margin="5 10 0 0" Grid.Row="0" Grid.Column="0" Grid.RowSpan="2" Background="#F5F5F5">
-            <TabItem Header="Bar charts">
-            </TabItem>
-            <TabItem Header="Frametimes/ L-shapes">
-            </TabItem>
-        </TabControl>
     </Grid>
 </UserControl>
