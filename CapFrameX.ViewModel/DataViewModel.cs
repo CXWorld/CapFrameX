@@ -6,7 +6,6 @@ using CapFrameX.Statistics;
 using CapFrameX.ViewModel.DataContext;
 using LiveCharts;
 using LiveCharts.Defaults;
-using LiveCharts.Geared;
 using LiveCharts.Wpf;
 using Prism.Commands;
 using Prism.Events;
@@ -568,7 +567,7 @@ namespace CapFrameX.ViewModel
             {
                 LShapeCollection = new SeriesCollection()
                 {
-                    new GLineSeries
+                    new LineSeries
                     {
                         Values = chartValues,
                         Stroke = ColorRessource.LShapeStroke,

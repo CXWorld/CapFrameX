@@ -2,7 +2,6 @@
 using CapFrameX.Contracts.OcatInterface;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.PresentMonInterface;
-using LiveCharts.Geared;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using Prism.Commands;
 using Prism.Events;
@@ -177,8 +176,6 @@ namespace CapFrameX.ViewModel
         public IList<int> WindowSizes { get; }
 
         public IList<int> RoundingDigits { get; }
-
-        public Array ChartQualityLevels => Enum.GetValues(typeof(Quality));
 
         public ColorbarViewModel(IRegionManager regionManager,
                                  IRecordDirectoryObserver recordDirectoryObserver,

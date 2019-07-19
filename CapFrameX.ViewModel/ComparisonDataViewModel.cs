@@ -7,7 +7,6 @@ using CapFrameX.Statistics;
 using GongSolutions.Wpf.DragDrop;
 using LiveCharts;
 using LiveCharts.Defaults;
-using LiveCharts.Geared;
 using LiveCharts.Wpf;
 using OxyPlot;
 using OxyPlot.Axes;
@@ -808,7 +807,7 @@ namespace CapFrameX.ViewModel
 			Application.Current.Dispatcher.BeginInvoke(new Action(() =>
 			{
 				ComparisonLShapeCollection.Add(
-				new GLineSeries
+				new LineSeries
 				{
 					Values = quantileValues,
 					Stroke = wrappedComparisonInfo.Color,

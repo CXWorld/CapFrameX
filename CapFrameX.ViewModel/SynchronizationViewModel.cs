@@ -5,7 +5,6 @@ using CapFrameX.Extensions;
 using CapFrameX.OcatInterface;
 using CapFrameX.Statistics;
 using LiveCharts;
-using LiveCharts.Geared;
 using LiveCharts.Wpf;
 using MathNet.Numerics.Statistics;
 using OxyPlot;

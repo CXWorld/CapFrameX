@@ -1,11 +1,9 @@
 ﻿using CapFrameX.OcatInterface;
 using LiveCharts;
-using LiveCharts.Geared;
 using OxyPlot;
 using OxyPlot.Series;
 using Prism.Commands;
 using Prism.Mvvm;
-using System;
 using System.Linq;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -90,7 +88,7 @@ namespace CapFrameX.ViewModel
 				Color color = FrametimeGraphColor.Value;
 
 				var frametimesChart = _frametimesModel.Series[CollectionIndex] as LineSeries;
-				var lShapeChart = _lShapesCollection[CollectionIndex] as GLineSeries;
+				var lShapeChart = _lShapesCollection[CollectionIndex] as LiveCharts.Wpf.LineSeries;
 
 				var solidColorBrush = new SolidColorBrush(System.Windows.Media.Color.FromArgb(color.A, color.R, color.G, color.B));
 				frametimesChart.Color = OxyColor.FromArgb(color.A, color.R, color.G, color.B);
