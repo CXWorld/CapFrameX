@@ -25,9 +25,6 @@ using System.Linq;
 
 namespace LiveCharts
 {
-    /// <summary>
-    /// 
-    /// </summary>
     public abstract class AxisWindow : IAxisWindow
     {
         public abstract double MinimumSeparatorWidth { get; }
