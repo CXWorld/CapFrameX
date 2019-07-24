@@ -100,6 +100,7 @@ namespace CapFrameX.ViewModel.DataContext
                 {
                     Title = "Frametimes",
                     StrokeThickness = 1,
+                    LegendStrokeThickness = 4,
                     Color = ColorRessource.FrametimeStroke
                 };
                 var movingAverageSeries = new LineSeries
@@ -107,6 +108,7 @@ namespace CapFrameX.ViewModel.DataContext
                     Title = string.Format(CultureInfo.InvariantCulture,
                     "Moving average (window size = {0})", AppConfiguration.MovingAverageWindowSize),
                     StrokeThickness = 2,
+                    LegendStrokeThickness = 4,
                     Color = ColorRessource.FrametimeMovingAverageStroke
                 };
 

@@ -64,6 +64,7 @@ namespace OxyPlot.Series
         public LineSeries()
         {
             this.StrokeThickness = 2;
+            this.LegendStrokeThickness = 2;
             this.LineJoin = LineJoin.Bevel;
             this.LineStyle = LineStyle.Automatic;
 
@@ -213,6 +214,12 @@ namespace OxyPlot.Series
         /// </summary>
         /// <value>The stroke thickness.</value>
         public double StrokeThickness { get; set; }
+
+        /// <summary>
+        /// Gets or sets the thickness of the legend line.
+        /// </summary>
+        /// <value>The stroke thickness.</value>
+        public double LegendStrokeThickness { get; set; }
 
         /// <summary>
         /// Gets the actual color.
@@ -365,7 +372,7 @@ namespace OxyPlot.Series
             rc.DrawLine(
                 pts,
                 this.GetSelectableColor(this.ActualColor),
-                this.StrokeThickness,
+                this.LegendStrokeThickness,
                 this.ActualDashArray);
             var midpt = new ScreenPoint(xmid, ymid);
             rc.DrawMarker(
