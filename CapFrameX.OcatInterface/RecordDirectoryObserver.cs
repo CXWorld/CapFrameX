@@ -18,10 +18,15 @@ namespace CapFrameX.OcatInterface
         private readonly ISubject<string> _recordDeletedStream;
         private readonly IAppConfiguration _appConfiguration;
 
+        private bool _isActive;
         private string _recordDirectory;
         private FileSystemWatcher _fileSystemWatcher;
 
-        public bool IsActive { get; set; }
+        public bool IsActive
+        {
+            get { return _isActive; }
+            set { _isActive = value; HasValidSourceStream.OnNext(_isActive); }
+        }
 
         public bool HasValidSource { get; private set; }
 
@@ -56,7 +61,7 @@ namespace CapFrameX.OcatInterface
                 HasValidSource = true;
             }
             catch
-            {
+            {                
                 HasValidSource = false;
             }
 

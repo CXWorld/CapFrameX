@@ -21,21 +21,24 @@ namespace CapFrameX.PresentMonInterface
 
         public IObservable<string> RedirectedOutputDataStream => _outputDataStream.AsObservable();
         public IObservable<string> RedirectedOutputErrorStream => _outputErrorStream.AsObservable();
+        public Subject<bool> IsCaptureModeActiveStream { get; }
 
         public PresentMonCaptureService()
         {
             _outputDataStream = new Subject<string>();
             _outputErrorStream = new Subject<string>();
+            IsCaptureModeActiveStream = new Subject<bool>();
             _presentMonProcesses = new HashSet<string>();            
         }
 
         public bool StartCaptureService(IServiceStartInfo startinfo)
         {
             if (!CaptureServiceInfo.IsCompatibleWithRunningOS)
+            {
                 return false;
+            }
 
             SubscribeToPresentMonCapturedProcesses();
-
             TryKillPresentMon();
 
             var process = new Process

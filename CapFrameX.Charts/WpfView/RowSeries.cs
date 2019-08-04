@@ -219,7 +219,7 @@ namespace LiveCharts.Wpf
         private void InitializeDefuaults()
         {
             SetCurrentValue(StrokeThicknessProperty, 0d);
-            SetCurrentValue(MaxRowHeigthProperty, 35d);
+            SetCurrentValue(MaxRowHeigthProperty, 20d);
             SetCurrentValue(RowPaddingProperty, 2d);
             SetCurrentValue(LabelsPositionProperty, BarLabelPosition.Top);
 

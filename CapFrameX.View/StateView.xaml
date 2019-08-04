@@ -28,8 +28,18 @@
 			<ColumnDefinition Width="1*"></ColumnDefinition>
 		</Grid.ColumnDefinitions>
 		<StackPanel HorizontalAlignment="Left" Grid.Column="0" Margin="10 0 0 0" Orientation="Horizontal">
-			<TextBlock Margin="0 0 5 0" VerticalAlignment="Center">Capture directory observer active:</TextBlock>
-			<ToggleButton Width="20" Height="20"
+            <TextBlock Margin="0 0 5 0" VerticalAlignment="Center">Capture mode active:</TextBlock>
+            <ToggleButton Width="20" Height="20" IsHitTestVisible="False"
+					  Style="{StaticResource MaterialDesignActionAccentToggleButton}"
+					  IsChecked="{Binding IsCaptureModeActive}"
+					  Content="{materialDesign:PackIcon Stop, Size=18}">
+                <materialDesign:ToggleButtonAssist.OnContent>
+                    <materialDesign:PackIcon Kind="Check"/>
+                </materialDesign:ToggleButtonAssist.OnContent>
+            </ToggleButton>
+
+            <TextBlock Margin="10 0 5 0" VerticalAlignment="Center">Directory observer active:</TextBlock>
+			<ToggleButton Width="20" Height="20" IsHitTestVisible="False"
 					  Style="{StaticResource MaterialDesignActionAccentToggleButton}"
 					  IsChecked="{Binding IsDirectoryObserving}"
 					  Content="{materialDesign:PackIcon Stop, Size=18}">

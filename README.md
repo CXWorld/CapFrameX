@@ -125,12 +125,12 @@ Capturing and analysing frametimes. Most common 3D APIs are supported.
 * Export PNG report picture
 
 # Requirements
-* .NET 4.7
+* .NET 4.7.2
 
 # Build requirements
-* MS Visual Studio 2017 only (Community Edition)
+* MS Visual Studio 2019 only (Community Edition)
 * WiX V3.11.1
-* WiX Toolset Visual Studio 2017 Extension
+* WiX Toolset Visual Studio 2019 Extension
 * WiX Toolset and VS Extension: http://wixtoolset.org/releases/
 
 # Dev roadmap

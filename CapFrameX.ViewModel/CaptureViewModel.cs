@@ -50,7 +50,6 @@ namespace CapFrameX.ViewModel
         private string _selectedProcessToIgnore;
         private bool _isAddToIgnoreListButtonActive = true;
         private bool _isCapturing;
-        private bool _isCaptureModeActive = true;
         private string _captureStateInfo = string.Empty;
         private string _captureTimeString = "0";
         private string _captureStartDelayString = "0";
@@ -64,6 +63,16 @@ namespace CapFrameX.ViewModel
         private CancellationTokenSource _cancellationTokenSource;
         private int _sliderSoundLevel;
         private bool _showVolumeController;
+
+        private bool IsCapturing
+        {
+            get { return _isCapturing; }
+            set
+            {
+                _isCapturing = value;
+                _captureService.IsCaptureModeActiveStream.OnNext(value);
+            }
+        }
 
         public string SelectedProcessToCapture
         {
@@ -112,7 +121,9 @@ namespace CapFrameX.ViewModel
             set
             {
                 _captureTimeString = value;
-                _appConfiguration.CaptureTime = Convert.ToInt32(value);
+
+                if (int.TryParse(_captureTimeString, out _))
+                    _appConfiguration.CaptureTime = Convert.ToInt32(value);
                 RaisePropertyChanged();
             }
         }
@@ -256,6 +267,8 @@ namespace CapFrameX.ViewModel
             SubscribeToUpdateProcessIgnoreList();
             SubscribeToGlobalHookEvent();
             StartCaptureService();
+
+            _captureService.IsCaptureModeActiveStream.OnNext(false);
         }
 
         public bool IsNavigationTarget(NavigationContext navigationContext)
@@ -265,17 +278,10 @@ namespace CapFrameX.ViewModel
 
         public void OnNavigatedFrom(NavigationContext navigationContext)
         {
-            _disposableHeartBeat?.Dispose();
-            _isCaptureModeActive = false;
-            StopCaptureService();
         }
 
         public void OnNavigatedTo(NavigationContext navigationContext)
         {
-            _disposableHeartBeat?.Dispose();
-            _disposableHeartBeat = GetListUpdatHeartBeat();
-            _isCaptureModeActive = true;
-            StartCaptureService();
         }
 
         public void OnSoundLevelChanged()
@@ -336,10 +342,7 @@ namespace CapFrameX.ViewModel
             {
                 {Combination.FromString(CaptureHotkeyString), () =>
                 {
-                    if (_isCaptureModeActive)
-                    {
-                        SetCaptureMode();
-                    }
+                    SetCaptureMode();
                 }}
             };
 
@@ -365,7 +368,7 @@ namespace CapFrameX.ViewModel
                 return;
             }
 
-            if (!_isCapturing)
+            if (!IsCapturing)
             {
                 // none -> do nothing
                 // simple sounds
@@ -385,7 +388,7 @@ namespace CapFrameX.ViewModel
 
                 StartCaptureDataFromStream();
 
-                _isCapturing = !_isCapturing;
+                IsCapturing = !IsCapturing;
                 _disposableHeartBeat?.Dispose();
                 IsAddToIgnoreListButtonActive = false;
 
@@ -432,7 +435,7 @@ namespace CapFrameX.ViewModel
 
             WriteCaptureDataToFile();
 
-            _isCapturing = !_isCapturing;
+            IsCapturing = !IsCapturing;
             _disposableHeartBeat = GetListUpdatHeartBeat();
             IsAddToIgnoreListButtonActive = true;
             UpdateCaptureStateInfo();

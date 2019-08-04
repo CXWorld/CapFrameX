@@ -1,3 +1,4 @@
+AMD Ryzen Master
 ApplicationFrameHost
 avpui
 Battle.net
@@ -6,10 +7,12 @@ CapFrameX
 chrome
 csrss
 devenv
+Discord
 dwm
 EpicGamesLauncher
 explorer
 firefox
+GalaxyClient Helper
 HxOutlook
 iCUE
 Microsoft.Photos
@@ -24,8 +27,12 @@ SearchUI
 seccenter
 ShellExperienceHost
 ServiceHub.Host.CLR.x86
+ServiceHub.ThreadedWaitDialog
+ShellExperienceHost
 Spotify
+StartMenuExperienceHost
 steamwebhelper
+SystemSettings
 Taskmgr
 UnrealCEFSubProcess
 Video.UI

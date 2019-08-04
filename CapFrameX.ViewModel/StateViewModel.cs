@@ -1,10 +1,12 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.OcatInterface;
+using CapFrameX.Contracts.PresentMonInterface;
 using Prism.Events;
 using Prism.Mvvm;
 using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Reactive.Linq;
 using System.Reflection;
 
 namespace CapFrameX.ViewModel
@@ -14,8 +16,12 @@ namespace CapFrameX.ViewModel
 		private readonly IRecordDirectoryObserver _recordObserver;
 		private readonly IEventAggregator _eventAggregator;
 		private readonly IAppConfiguration _appConfiguration;
+        private readonly ICaptureService _captureService;
 
-		private bool IsBeta => GetBetaState();
+        private bool _isCaptureModeActive;
+        private bool _isDirectoryObserving;
+
+        private bool IsBeta => GetBetaState();
 
 		private bool GetBetaState()
 		{
@@ -31,16 +37,26 @@ namespace CapFrameX.ViewModel
 
 		public bool IsDirectoryObserving
 		{
-			get { return _recordObserver.IsActive; }
+			get { return _isDirectoryObserving; }
 			set
 			{
-				_recordObserver.IsActive =
+                _isDirectoryObserving =
 					value && _recordObserver.HasValidSource;
 				RaisePropertyChanged();
 			}
 		}
 
-		public string VersionString
+        public bool IsCaptureModeActive
+        {
+            get { return _isCaptureModeActive; }
+            set
+            {
+                _isCaptureModeActive = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public string VersionString
 		{
 			get
 			{
@@ -54,15 +70,23 @@ namespace CapFrameX.ViewModel
 
 		public StateViewModel(IRecordDirectoryObserver recordObserver,
 							  IEventAggregator eventAggregator,
-							  IAppConfiguration appConfiguration)
+							  IAppConfiguration appConfiguration,
+                              ICaptureService captureService)
 		{
 			_recordObserver = recordObserver;
 			_eventAggregator = eventAggregator;
 			_appConfiguration = appConfiguration;
+            _captureService = captureService;
 
-			_recordObserver.HasValidSourceStream
+            IsDirectoryObserving = true;
+            IsCaptureModeActive = false;
+
+            _recordObserver.HasValidSourceStream
 				.Subscribe(state => IsDirectoryObserving = state);
-		}
+
+            _captureService.IsCaptureModeActiveStream
+                .Subscribe(state => IsCaptureModeActive = state);
+        }
 
 		private Assembly GetAssemblyByName(string name)
 		{

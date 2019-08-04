@@ -248,7 +248,6 @@ namespace CapFrameX.ViewModel
             ComparisonLShapeCollection = new SeriesCollection();
             ComparisonRowChartSeriesCollection = new SeriesCollection
             {
-
                 // Add ColumnSeries per parameter
                 // Average
                 new RowSeries
