@@ -34,7 +34,7 @@
 					  IsChecked="{Binding IsCaptureModeActive}"
 					  Content="{materialDesign:PackIcon Stop, Size=18}">
                 <materialDesign:ToggleButtonAssist.OnContent>
-                    <materialDesign:PackIcon Kind="Check"/>
+                    <materialDesign:PackIcon Kind="Play"/>
                 </materialDesign:ToggleButtonAssist.OnContent>
             </ToggleButton>
 
