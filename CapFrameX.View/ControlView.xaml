@@ -39,7 +39,7 @@
 			<TextBox Margin="5 10 5 0" Background="#e6e6e6" Name="RecordSearchBox" materialDesign:HintAssist.Hint="Search" />
 			<DataGrid Name="RecordDataGrid" Height="{Binding ElementName=ControlViewControl, Path=ActualHeight, Converter={StaticResource AddValueConverter}}" Background="#F5F5F5" Margin="0 10 5 0" 
 					  Sorting="RecordDataGrid_Sorting" SelectedIndex="{Binding RecordDataGridSelectedIndex}"
-					  Tag="{Binding ElementName=ControlViewControl, Path=DataContext}"
+					  Tag="{Binding ElementName=ControlViewControl, Path=DataContext}" FontSize="11"
 					  ItemsSource="{Binding Source={StaticResource RecordInfoListKey}}" SelectedItem="{Binding SelectedRecordInfo}" CanUserSortColumns="True" CanUserAddRows="False" AutoGenerateColumns="False"
 					  materialDesign:DataGridAssist.CellPadding="13 8 8 8" materialDesign:DataGridAssist.ColumnHeaderPadding="8" IsSynchronizedWithCurrentItem="False"
 					  ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.CanContentScroll="True"

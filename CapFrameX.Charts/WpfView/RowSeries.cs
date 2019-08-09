@@ -46,7 +46,7 @@ namespace LiveCharts.Wpf
         public RowSeries()
         {
             Model = new RowAlgorithm(this);
-            InitializeDefuaults();
+            InitializeDefaults();
         }
 
         /// <summary>
@@ -57,7 +57,7 @@ namespace LiveCharts.Wpf
         {
             Model = new RowAlgorithm(this);
             Configuration = configuration;
-            InitializeDefuaults();
+            InitializeDefaults();
         }
 
         #endregion
@@ -216,7 +216,7 @@ namespace LiveCharts.Wpf
 
         #region Private Methods
 
-        private void InitializeDefuaults()
+        private void InitializeDefaults()
         {
             SetCurrentValue(StrokeThicknessProperty, 0d);
             SetCurrentValue(MaxRowHeigthProperty, 20d);

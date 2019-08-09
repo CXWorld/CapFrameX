@@ -72,6 +72,8 @@ namespace CapFrameX.ViewModel
         private bool _isContextLegendActive = true;
         private double _maxRecordingTime;
         private bool _doUpdateCharts = true;
+        private double _barChartHeight;
+        private bool _barChartVisibility;
         private Func<double, string> _comparisonColumnChartFormatter;
 
         public bool InitialIconVisibility
@@ -156,6 +158,26 @@ namespace CapFrameX.ViewModel
             set
             {
                 _columnChartYAxisTitle = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public double BarChartHeight
+        {
+            get { return _barChartHeight; }
+            set
+            {
+                _barChartHeight = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public bool BarChartVisibility
+        {
+            get { return _barChartVisibility; }
+            set
+            {
+                _barChartVisibility = value;
                 RaisePropertyChanged();
             }
         }
@@ -531,6 +553,7 @@ namespace CapFrameX.ViewModel
             UpdateCharts();
 
             InitialIconVisibility = true;
+            BarChartVisibility = false;
             ComparisonItemControlHeight = "300";
         }
 
@@ -931,6 +954,7 @@ namespace CapFrameX.ViewModel
                             ComparisonRecords.Remove(wrappedComparisonRecordInfo);
                             UpdateIndicesAfterRemove(ComparisonRecords);
                             InitialIconVisibility = !ComparisonRecords.Any();
+                            BarChartVisibility = ComparisonRecords.Any();
                             ComparisonItemControlHeight = ComparisonRecords.Any() ? "Auto" : "300";
 
                             UpdateCuttingParameter();
@@ -952,7 +976,7 @@ namespace CapFrameX.ViewModel
         }
 
         private void AddComparisonRecord(IFileRecordInfo recordInfo)
-        {
+        {          
             if (ComparisonRecords.Count < _comparisonBrushes.Count())
             {
                 var comparisonRecordInfo = GetComparisonRecordInfoFromFileRecordInfo(recordInfo);
@@ -968,13 +992,18 @@ namespace CapFrameX.ViewModel
                 wrappedComparisonRecordInfo.FrametimeGraphColor = color.Color;
 
                 InitialIconVisibility = !ComparisonRecords.Any();
+                BarChartVisibility = ComparisonRecords.Any();
                 ComparisonItemControlHeight = ComparisonRecords.Any() ? "Auto" : "300";
+
+                //ToDo: Update height of bar chart control here
 
                 UpdateCuttingParameter();
 
                 //Draw charts and performance parameter
                 AddToCharts(wrappedComparisonRecordInfo);
             }
+
+            
         }
 
         private ComparisonRecordInfoWrapper GetWrappedRecordInfo(ComparisonRecordInfo comparisonRecordInfo)

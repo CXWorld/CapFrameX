@@ -44,17 +44,23 @@
             <ColumnDefinition Width="320"></ColumnDefinition>
         </Grid.ColumnDefinitions>
         <TabControl Margin="5 10 0 0" Grid.Row="0" Grid.Column="0" Grid.RowSpan="2" Background="#F5F5F5">
-            <TabItem Header="Bar charts">
-                <lvc:CartesianChart Grid.Row="2" Series="{Binding ComparisonRowChartSeriesCollection}">
-                    <lvc:CartesianChart.AxisY>
-                        <lvc:Axis Labels="{Binding ComparisonRowChartLabels}">
-                            <lvc:Axis.Separator>
-                                <!--step 1 forces the axis to display all labels, disabling it makes it invisible-->
-                                <lvc:Separator Step="1" IsEnabled="False"></lvc:Separator>
-                            </lvc:Axis.Separator>
-                        </lvc:Axis>
-                    </lvc:CartesianChart.AxisY>
-                </lvc:CartesianChart>
+            <TabItem Header="Bar charts" >
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <lvc:CartesianChart VerticalAlignment="Top" Series="{Binding ComparisonRowChartSeriesCollection}" Height="{Binding BarChartHeight}"
+                                        Visibility="{Binding BarChartVisibility, Converter={StaticResource FalseToCollapsedConverter}}">
+                        <lvc:CartesianChart.AxisX>
+                            <lvc:Axis Title="FPS" FontSize="11" MinValue="0" LabelFormatter="{Binding ComparisonColumnChartFormatter}" Foreground="Black"></lvc:Axis>
+                        </lvc:CartesianChart.AxisX>
+                        <lvc:CartesianChart.AxisY>
+                            <lvc:Axis Labels="{Binding ComparisonRowChartLabels}">
+                                <lvc:Axis.Separator>
+                                    <!--step 1 forces the axis to display all labels, disabling it makes it invisible-->
+                                    <lvc:Separator Step="1" IsEnabled="False"></lvc:Separator>
+                                </lvc:Axis.Separator>
+                            </lvc:Axis>
+                        </lvc:CartesianChart.AxisY>
+                    </lvc:CartesianChart>
+                </ScrollViewer>
             </TabItem>
             <TabItem Header="Frametimes/ L-shapes">
                 <Grid Name="ChartAndCuttingGrid">

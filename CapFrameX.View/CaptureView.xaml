@@ -55,34 +55,6 @@
                         <RowDefinition Height="1*"></RowDefinition>
                         <RowDefinition Height="50"></RowDefinition>
                     </Grid.RowDefinitions>
-                    <Grid Margin="20 0 0 0" Grid.Row="0" >
-                        <StackPanel Margin="0 20 0 0" Orientation="Vertical" Width="240" HorizontalAlignment="Center">
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Style="{StaticResource MaterialDesignTitleTextBlock}">Running processes</TextBlock>
-                                <Button Padding="0 0 0 4" Width="64" Height="24"  Foreground="Black" BorderThickness="0" Background="Transparent" VerticalAlignment="Top"
-						                HorizontalAlignment="Center" Command="{Binding ResetCaptureProcessCommand}" ToolTip="Reset selected process"
-						                IsEnabled="{Binding IsAddToIgnoreListButtonActive}">
-                                    <materialDesign:PackIcon Kind="FilterRemove" Width="22" Height="22"/>
-                                </Button>
-                            </StackPanel>
-                            <ListView IsSynchronizedWithCurrentItem="False" ItemsSource="{Binding ProcessesToCapture}" SelectedItem="{Binding SelectedProcessToCapture}"
-					                  ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True" Height="280" Width="200" HorizontalAlignment="Left"
-					                  IsEnabled="{Binding IsAddToIgnoreListButtonActive}">
-                            </ListView>
-                        </StackPanel>
-                    </Grid>
-                    <Button Grid.Row="1" Margin="0 4 0 0" Width="120" Style="{StaticResource MaterialDesignFlatButton}"
-                            Command="{x:Static materialDesign:Flipper.FlipCommand}" FontSize="10">
-                        Show ignore list
-                    </Button>
-                </Grid>
-            </materialDesign:Flipper.FrontContent>
-            <materialDesign:Flipper.BackContent>
-                <Grid Background="{DynamicResource MaterialDesignPaper}">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="1*"></RowDefinition>
-                        <RowDefinition Height="50"></RowDefinition>
-                    </Grid.RowDefinitions>
                     <Grid Margin="20 0 20 0" Grid.Row="0" >
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="2*" MaxWidth="280"></ColumnDefinition>
@@ -157,6 +129,34 @@
                     <Button Grid.Row="1" Margin="0 4 0 0" Width="100" Style="{StaticResource MaterialDesignFlatButton}"
                         Command="{x:Static materialDesign:Flipper.FlipCommand}" FontSize="10">
                         Hide ignore list
+                    </Button>
+                </Grid>
+            </materialDesign:Flipper.FrontContent>
+            <materialDesign:Flipper.BackContent>
+                <Grid Background="{DynamicResource MaterialDesignPaper}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="1*"></RowDefinition>
+                        <RowDefinition Height="50"></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <Grid Margin="20 0 0 0" Grid.Row="0" >
+                        <StackPanel Margin="0 20 0 0" Orientation="Vertical" Width="240" HorizontalAlignment="Center">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Style="{StaticResource MaterialDesignTitleTextBlock}">Running processes</TextBlock>
+                                <Button Padding="0 0 0 4" Width="64" Height="24"  Foreground="Black" BorderThickness="0" Background="Transparent" VerticalAlignment="Top"
+						                HorizontalAlignment="Center" Command="{Binding ResetCaptureProcessCommand}" ToolTip="Reset selected process"
+						                IsEnabled="{Binding IsAddToIgnoreListButtonActive}">
+                                    <materialDesign:PackIcon Kind="FilterRemove" Width="22" Height="22"/>
+                                </Button>
+                            </StackPanel>
+                            <ListView IsSynchronizedWithCurrentItem="False" ItemsSource="{Binding ProcessesToCapture}" SelectedItem="{Binding SelectedProcessToCapture}"
+					                  ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True" Height="280" Width="200" HorizontalAlignment="Left"
+					                  IsEnabled="{Binding IsAddToIgnoreListButtonActive}">
+                            </ListView>
+                        </StackPanel>
+                    </Grid>
+                    <Button Grid.Row="1" Margin="0 4 0 0" Width="120" Style="{StaticResource MaterialDesignFlatButton}"
+                            Command="{x:Static materialDesign:Flipper.FlipCommand}" FontSize="10">
+                        Show ignore list
                     </Button>
                 </Grid>
             </materialDesign:Flipper.BackContent>
