@@ -722,8 +722,10 @@ namespace CapFrameX.ViewModel
         {
             if (string.IsNullOrWhiteSpace(SelectedProcessToCapture))
             {
-                if (ProcessesToCapture.Count <= 1)
+                if (!ProcessesToCapture.Any())
                     CaptureStateInfo = $"Process list clear... start any game / application and press  {CaptureHotkeyString} to start capture.";
+                else if (ProcessesToCapture.Count == 1)
+                    CaptureStateInfo = $"Process auto-detected. Press {CaptureHotkeyString} to start capture.";
                 else if (ProcessesToCapture.Count > 1)
                     CaptureStateInfo = $"Multiple processes detected, select one and press {CaptureHotkeyString} to start capture.";
                 return;
