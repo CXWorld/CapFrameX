@@ -46,7 +46,7 @@
         <TabControl Margin="5 10 0 0" Grid.Row="0" Grid.Column="0" Grid.RowSpan="2" Background="#F5F5F5">
             <TabItem Header="Bar charts" >
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
-                    <lvc:CartesianChart VerticalAlignment="Top" Series="{Binding ComparisonRowChartSeriesCollection}" Height="{Binding BarChartHeight}"
+                    <lvc:CartesianChart Margin="10" VerticalAlignment="Top" Series="{Binding ComparisonRowChartSeriesCollection}" Height="{Binding BarChartHeight}"
                                         Visibility="{Binding BarChartVisibility, Converter={StaticResource FalseToCollapsedConverter}}">
                         <lvc:CartesianChart.AxisX>
                             <lvc:Axis Title="FPS" FontSize="11" MinValue="0" LabelFormatter="{Binding ComparisonColumnChartFormatter}" Foreground="Black"></lvc:Axis>

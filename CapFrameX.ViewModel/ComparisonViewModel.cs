@@ -247,6 +247,8 @@ namespace CapFrameX.ViewModel
         public ObservableCollection<ComparisonRecordInfoWrapper> ComparisonRecords { get; }
             = new ObservableCollection<ComparisonRecordInfoWrapper>();
 
+        public double BarChartMaxRowHeight { get; private set; } = 20;
+
         public ComparisonViewModel(IStatisticProvider frametimeStatisticProvider,
                                        IFrametimeAnalyzer frametimeAnalyzer,
                                        IEventAggregator eventAggregator,
@@ -278,7 +280,8 @@ namespace CapFrameX.ViewModel
                     Values = new ChartValues<double>(),
                     // Kind of blue
                     Fill = _comparisonBrushes[1],
-                    DataLabels = true
+                    DataLabels = true,
+                    MaxRowHeigth = BarChartMaxRowHeight
                 },
 
                  //1% quantile
@@ -288,7 +291,8 @@ namespace CapFrameX.ViewModel
                     Values = new ChartValues<double>(),
                     // Kind of red
                     Fill = _comparisonBrushes[2],
-                    DataLabels = true
+                    DataLabels = true,
+                    MaxRowHeigth = BarChartMaxRowHeight
                 },
 
                 ////0.1% quantile
@@ -424,7 +428,6 @@ namespace CapFrameX.ViewModel
 
             ComparisonModel.InvalidatePlot(false);
         }
-
 
         private void UpdateCuttingParameter()
         {
@@ -658,6 +661,7 @@ namespace CapFrameX.ViewModel
             var alignmentFormat = "{0," + maxAlignment.ToString() + "}";
             var gameName = string.Format(CultureInfo.InvariantCulture, alignmentFormat, record.WrappedRecordInfo.Game);
             var gpuInfo = string.Format(CultureInfo.InvariantCulture, alignmentFormat, graphicCardName);
+
             return gameName + Environment.NewLine + gpuInfo;
         }
 
@@ -688,6 +692,7 @@ namespace CapFrameX.ViewModel
             var alignmentFormat = "{0," + maxAlignment.ToString() + "}";
             var gameName = string.Format(CultureInfo.InvariantCulture, alignmentFormat, record.WrappedRecordInfo.Game);
             var gpuInfo = string.Format(CultureInfo.InvariantCulture, alignmentFormat, comment);
+
             return gameName + Environment.NewLine + gpuInfo;
         }
 
@@ -837,7 +842,7 @@ namespace CapFrameX.ViewModel
                     StrokeThickness = 1,
                     LineSmoothness = 1,
                     PointGeometrySize = 10,
-                    PointGeometry = DefaultGeometries.Triangle,
+                    PointGeometry = DefaultGeometries.Triangle
                 });
             }));
         }
@@ -976,7 +981,7 @@ namespace CapFrameX.ViewModel
         }
 
         private void AddComparisonRecord(IFileRecordInfo recordInfo)
-        {          
+        {
             if (ComparisonRecords.Count < _comparisonBrushes.Count())
             {
                 var comparisonRecordInfo = GetComparisonRecordInfoFromFileRecordInfo(recordInfo);
@@ -996,6 +1001,7 @@ namespace CapFrameX.ViewModel
                 ComparisonItemControlHeight = ComparisonRecords.Any() ? "Auto" : "300";
 
                 //ToDo: Update height of bar chart control here
+                BarChartHeight = 40 + (2 * BarChartMaxRowHeight + 10) * ComparisonRecords.Count;
 
                 UpdateCuttingParameter();
 
@@ -1003,7 +1009,7 @@ namespace CapFrameX.ViewModel
                 AddToCharts(wrappedComparisonRecordInfo);
             }
 
-            
+
         }
 
         private ComparisonRecordInfoWrapper GetWrappedRecordInfo(ComparisonRecordInfo comparisonRecordInfo)

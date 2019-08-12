@@ -12,7 +12,7 @@
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition Width="400" />
                 <ColumnDefinition Width="5" />
-				<ColumnDefinition Width="1*" />
+				<ColumnDefinition Width="1*" MinWidth="800"/>
 			</Grid.ColumnDefinitions>
 			<Grid.RowDefinitions>
 				<RowDefinition Height="Auto"></RowDefinition>
