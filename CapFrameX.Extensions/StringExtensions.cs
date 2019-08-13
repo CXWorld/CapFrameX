@@ -58,7 +58,7 @@ namespace CapFrameX.Extensions
             var curSplit = string.Empty;
             foreach (var word in words)
             {
-                if (curSplit.Length < maxPartLength)
+                if (curSplit.Length + word.Length < maxPartLength)
                     curSplit += word + ' ';
                 else
                 {
