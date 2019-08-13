@@ -28,6 +28,8 @@ namespace CapFrameX.ViewModel
 {
     public class ComparisonViewModel : BindableBase, INavigationAware, IDropTarget
     {
+        private static readonly int PART_LENGTH = 42;
+
         private static readonly SolidColorBrush[] _comparisonBrushes =
             new SolidColorBrush[]
             {
@@ -622,16 +624,23 @@ namespace CapFrameX.ViewModel
         private string GetLabelCpuContext(ComparisonRecordInfoWrapper record)
         {
             var processorName = record.WrappedRecordInfo.FileRecordInfo.ProcessorName ?? "";
-
             int gameNameLength = record.WrappedRecordInfo.Game.Length;
-            int cpuInfoLength = processorName.Length;
 
-            int maxAlignment = gameNameLength < cpuInfoLength ? cpuInfoLength : gameNameLength;
+            var cpuInfoParts = processorName.SplitWordWise(PART_LENGTH);
+            int maxAlignment = Math.Max(gameNameLength, cpuInfoParts.Max(txt => txt.Length));
             var alignmentFormat = "{0," + maxAlignment.ToString() + "}";
-            var gameName = string.Format(CultureInfo.InvariantCulture, alignmentFormat, record.WrappedRecordInfo.Game);
-            var cpuInfo = string.Format(CultureInfo.InvariantCulture, alignmentFormat, processorName);
 
-            return gameName + Environment.NewLine + cpuInfo;
+            var infoPartsFormatted = string.Empty;
+            foreach (var part in cpuInfoParts)
+            {
+                if (part == string.Empty)
+                    continue;
+
+                infoPartsFormatted += Environment.NewLine + string.Format(CultureInfo.InvariantCulture, alignmentFormat, part);
+            }
+
+            var gameName = string.Format(CultureInfo.InvariantCulture, alignmentFormat, record.WrappedRecordInfo.Game);
+            return gameName + infoPartsFormatted;
         }
 
         private void SetLabelGpuContext()
@@ -653,16 +662,23 @@ namespace CapFrameX.ViewModel
         private string GetLabelGpuContext(ComparisonRecordInfoWrapper record)
         {
             var graphicCardName = record.WrappedRecordInfo.FileRecordInfo.GraphicCardName ?? "";
-
             int gameNameLength = record.WrappedRecordInfo.Game.Length;
-            int gpuInfoLength = graphicCardName.Length;
 
-            int maxAlignment = gameNameLength < gpuInfoLength ? gpuInfoLength : gameNameLength;
+            var gpuInfoParts = graphicCardName.SplitWordWise(PART_LENGTH);
+            int maxAlignment = Math.Max(gameNameLength, gpuInfoParts.Max(txt => txt.Length));
             var alignmentFormat = "{0," + maxAlignment.ToString() + "}";
-            var gameName = string.Format(CultureInfo.InvariantCulture, alignmentFormat, record.WrappedRecordInfo.Game);
-            var gpuInfo = string.Format(CultureInfo.InvariantCulture, alignmentFormat, graphicCardName);
 
-            return gameName + Environment.NewLine + gpuInfo;
+            var infoPartsFormatted = string.Empty;
+            foreach (var part in gpuInfoParts)
+            {
+                if (part == string.Empty)
+                    continue;
+
+                infoPartsFormatted += Environment.NewLine + string.Format(CultureInfo.InvariantCulture, alignmentFormat, part);
+            }
+
+            var gameName = string.Format(CultureInfo.InvariantCulture, alignmentFormat, record.WrappedRecordInfo.Game);
+            return gameName + Environment.NewLine + infoPartsFormatted;
         }
 
         private void SetLabelCustomContext()
@@ -684,16 +700,23 @@ namespace CapFrameX.ViewModel
         private string GetLabelCustomContext(ComparisonRecordInfoWrapper record)
         {
             var comment = record.WrappedRecordInfo.FileRecordInfo.Comment ?? "";
-
             int gameNameLength = record.WrappedRecordInfo.Game.Length;
-            int commentLength = comment.Length;
 
-            int maxAlignment = gameNameLength < commentLength ? commentLength : gameNameLength;
+            var commentParts = comment.SplitWordWise(PART_LENGTH);
+            int maxAlignment = Math.Max(gameNameLength, commentParts.Max(txt => txt.Length));
             var alignmentFormat = "{0," + maxAlignment.ToString() + "}";
-            var gameName = string.Format(CultureInfo.InvariantCulture, alignmentFormat, record.WrappedRecordInfo.Game);
-            var gpuInfo = string.Format(CultureInfo.InvariantCulture, alignmentFormat, comment);
 
-            return gameName + Environment.NewLine + gpuInfo;
+            var infoPartsFormatted = string.Empty;
+            foreach (var part in commentParts)
+            {
+                if (part == string.Empty)
+                    continue;
+
+                infoPartsFormatted += Environment.NewLine + string.Format(CultureInfo.InvariantCulture, alignmentFormat, part);
+            }
+
+            var gameName = string.Format(CultureInfo.InvariantCulture, alignmentFormat, record.WrappedRecordInfo.Game);
+            return gameName + infoPartsFormatted;
         }
 
         private ComparisonRecordInfo GetComparisonRecordInfoFromFileRecordInfo(IFileRecordInfo fileRecordInfo)
@@ -1001,15 +1024,13 @@ namespace CapFrameX.ViewModel
                 ComparisonItemControlHeight = ComparisonRecords.Any() ? "Auto" : "300";
 
                 //ToDo: Update height of bar chart control here
-                BarChartHeight = 40 + (2 * BarChartMaxRowHeight + 10) * ComparisonRecords.Count;
+                BarChartHeight = 40 + (2 * BarChartMaxRowHeight + 12) * ComparisonRecords.Count;
 
                 UpdateCuttingParameter();
 
                 //Draw charts and performance parameter
                 AddToCharts(wrappedComparisonRecordInfo);
             }
-
-
         }
 
         private ComparisonRecordInfoWrapper GetWrappedRecordInfo(ComparisonRecordInfo comparisonRecordInfo)
@@ -1028,7 +1049,6 @@ namespace CapFrameX.ViewModel
                 dropInfo.Effects = DragDropEffects.Move;
             }
         }
-
 
         public bool IsNavigationTarget(NavigationContext navigationContext)
         {

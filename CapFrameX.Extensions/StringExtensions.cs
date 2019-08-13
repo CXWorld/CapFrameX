@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Windows.Input;
+using System.Collections.Generic;
 
 namespace CapFrameX.Extensions
 {
@@ -20,25 +20,57 @@ namespace CapFrameX.Extensions
                 ? @this.IndexOf(from, comparison) + fromLength
                 : 0;
 
-			if (startIndex < fromLength)
-				return null;
+            if (startIndex < fromLength)
+                return null;
 
             var endIndex = !string.IsNullOrEmpty(until)
             ? @this.IndexOf(until, startIndex, comparison)
             : @this.Length;
 
             if (endIndex < 0)
-				return null;
+                return null;
 
-			return @this.Substring(startIndex, endIndex - startIndex);
+            return @this.Substring(startIndex, endIndex - startIndex);
         }
 
-		public static bool NullSafeContains(this string source, string search, bool ignoreCase = false)
-		{
-			if (source == null) return false;
+        public static bool NullSafeContains(this string source, string search, bool ignoreCase = false)
+        {
+            if (source == null) return false;
 
-			var comparer = ignoreCase ? StringComparison.CurrentCultureIgnoreCase : StringComparison.CurrentCulture;
-			return source.IndexOf(search, comparer) >= 0;
-		}
-	}
+            var comparer = ignoreCase ? StringComparison.CurrentCultureIgnoreCase : StringComparison.CurrentCulture;
+            return source.IndexOf(search, comparer) >= 0;
+        }
+
+        public static IEnumerable<string> SplitWordWise(this string text, int maxPartLength)
+        {
+            if (text == null)
+                throw new ArgumentNullException("text is null");
+
+            if (text == string.Empty)
+                return new List<string> { string.Empty };
+
+            if (maxPartLength < 1)
+                throw new ArgumentException("part length must be greater than 0.");
+
+            var words = text.Split(new char[] { }, StringSplitOptions.RemoveEmptyEntries);
+
+            var split = new List<string>();
+            var curSplit = string.Empty;
+            foreach (var word in words)
+            {
+                if (curSplit.Length < maxPartLength)
+                    curSplit += word + ' ';
+                else
+                {
+                    split.Add(curSplit);
+                    curSplit = word + ' ';
+                }
+            }
+
+            if (curSplit.Length > 0)
+                split.Add(curSplit);
+
+            return split;
+        }
+    }
 }
