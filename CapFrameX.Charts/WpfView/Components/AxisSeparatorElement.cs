@@ -90,8 +90,10 @@ namespace LiveCharts.Wpf.Components
                   new Typeface(TextBlock.FontFamily, TextBlock.FontStyle, TextBlock.FontWeight, TextBlock.FontStretch),
                   TextBlock.FontSize, Brushes.Black);
 
-            var transform = new LabelEvaluation(axis.View.LabelsRotation,
-                formattedText.Width, formattedText.Height, axis, source);
+			var labelMargin = GetLabelMargin(axis, text);
+
+			var transform = new LabelEvaluation(axis.View.LabelsRotation,
+                formattedText.Width, formattedText.Height, axis, source, labelMargin);
 
             TextBlock.RenderTransform = Math.Abs(transform.LabelAngle) > 1
                 ? new RotateTransform(transform.LabelAngle)
@@ -102,11 +104,41 @@ namespace LiveCharts.Wpf.Components
             return transform;
         }
 
-        /// <summary>
-        /// Clears the specified chart.
-        /// </summary>
-        /// <param name="chart">The chart.</param>
-        public void Clear(IChartView chart)
+		private double GetLabelMargin(AxisCore axis, string text)
+		{
+			double maxWidth = 0;
+
+			if (text == null || axis == null || axis.Labels == null)
+				return maxWidth;
+
+			foreach (var labelText in axis.Labels)
+			{
+				var formattedText = new FormattedText(
+				  labelText,
+				  CultureInfo.CurrentUICulture,
+				  FlowDirection.LeftToRight,
+				  new Typeface(TextBlock.FontFamily, TextBlock.FontStyle, TextBlock.FontWeight, TextBlock.FontStretch),
+				  TextBlock.FontSize, Brushes.Black);
+
+				if (formattedText.Width > maxWidth)
+					maxWidth = formattedText.Width;
+			}
+
+			var currentFormattedText = new FormattedText(
+				  text,
+				  CultureInfo.CurrentUICulture,
+				  FlowDirection.LeftToRight,
+				  new Typeface(TextBlock.FontFamily, TextBlock.FontStyle, TextBlock.FontWeight, TextBlock.FontStretch),
+				  TextBlock.FontSize, Brushes.Black);
+
+			return maxWidth - currentFormattedText.Width;
+		}
+
+		/// <summary>
+		/// Clears the specified chart.
+		/// </summary>
+		/// <param name="chart">The chart.</param>
+		public void Clear(IChartView chart)
         {
             chart.RemoveFromView(TextBlock);
             chart.RemoveFromView(Line);

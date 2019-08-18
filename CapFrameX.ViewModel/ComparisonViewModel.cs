@@ -394,7 +394,7 @@ namespace CapFrameX.ViewModel
                         {
                             for (int i = 0; i < ComparisonRecords.Count; i++)
                             {
-                                ComparisonModel.Series[i].Title = GetLabelCpuContext(ComparisonRecords[i]);
+                                ComparisonModel.Series[i].Title = GetLabelCpuContext(ComparisonRecords[i], GetMaxCpuAlignment());
                             }
                         }
                         break;
@@ -403,7 +403,7 @@ namespace CapFrameX.ViewModel
                         {
                             for (int i = 0; i < ComparisonRecords.Count; i++)
                             {
-                                ComparisonModel.Series[i].Title = GetLabelGpuContext(ComparisonRecords[i]);
+                                ComparisonModel.Series[i].Title = GetLabelGpuContext(ComparisonRecords[i], GetMaxGpuAlignment());
                             }
                         }
                         break;
@@ -412,7 +412,7 @@ namespace CapFrameX.ViewModel
                         {
                             for (int i = 0; i < ComparisonRecords.Count; i++)
                             {
-                                ComparisonModel.Series[i].Title = GetLabelCustomContext(ComparisonRecords[i]);
+                                ComparisonModel.Series[i].Title = GetLabelCustomContext(ComparisonRecords[i], GetMaxContextAlignment());
                             }
                         }
                         break;
@@ -429,6 +429,33 @@ namespace CapFrameX.ViewModel
             }
 
             ComparisonModel.InvalidatePlot(false);
+        }
+
+        private int GetMaxContextAlignment()
+        {
+            var maxGameNameLength = ComparisonRecords.Max(record => record.WrappedRecordInfo.Game.Length);
+            var maxContextLength = ComparisonRecords.Max(record 
+                => record.WrappedRecordInfo.FileRecordInfo.Comment.SplitWordWise(PART_LENGTH).Max(part => part.Length));
+
+            return Math.Max(maxGameNameLength, maxContextLength);
+        }
+
+        private int GetMaxGpuAlignment()
+        {
+            var maxGameNameLength = ComparisonRecords.Max(record => record.WrappedRecordInfo.Game.Length);
+            var maxGpuLength = ComparisonRecords.Max(record 
+                => record.WrappedRecordInfo.FileRecordInfo.GraphicCardName.SplitWordWise(PART_LENGTH).Max(part => part.Length));
+
+            return Math.Max(maxGameNameLength, maxGpuLength);
+        }
+
+        private int GetMaxCpuAlignment()
+        {
+            var maxGameNameLength = ComparisonRecords.Max(record => record.WrappedRecordInfo.Game.Length);
+            var maxCpuLength = ComparisonRecords.Max(record 
+                => record.WrappedRecordInfo.FileRecordInfo.ProcessorName.SplitWordWise(PART_LENGTH).Max(part => part.Length));
+
+            return Math.Max(maxGameNameLength, maxCpuLength);
         }
 
         private void UpdateCuttingParameter()
@@ -609,25 +636,24 @@ namespace CapFrameX.ViewModel
         {
             ComparisonRowChartLabels = ComparisonRecords.Select(record =>
             {
-                return GetLabelCpuContext(record);
+                return GetLabelCpuContext(record, GetMaxCpuAlignment());
             }).ToArray();
 
             if (ComparisonModel.Series.Count == ComparisonRecords.Count)
             {
                 for (int i = 0; i < ComparisonRecords.Count; i++)
                 {
-                    ComparisonModel.Series[i].Title = GetLabelCpuContext(ComparisonRecords[i]);
+                    ComparisonModel.Series[i].Title = GetLabelCpuContext(ComparisonRecords[i], GetMaxCpuAlignment());
                 }
             }
         }
 
-        private string GetLabelCpuContext(ComparisonRecordInfoWrapper record)
+        private string GetLabelCpuContext(ComparisonRecordInfoWrapper record, int maxAlignment)
         {
             var processorName = record.WrappedRecordInfo.FileRecordInfo.ProcessorName ?? "";
             int gameNameLength = record.WrappedRecordInfo.Game.Length;
 
             var cpuInfoParts = processorName.SplitWordWise(PART_LENGTH);
-            int maxAlignment = Math.Max(gameNameLength, cpuInfoParts.Max(txt => txt.Length));
             var alignmentFormat = "{0," + maxAlignment.ToString() + "}";
 
             var infoPartsFormatted = string.Empty;
@@ -647,25 +673,24 @@ namespace CapFrameX.ViewModel
         {
             ComparisonRowChartLabels = ComparisonRecords.Select(record =>
             {
-                return GetLabelGpuContext(record);
+                return GetLabelGpuContext(record, GetMaxGpuAlignment());
             }).ToArray();
 
             if (ComparisonModel.Series.Count == ComparisonRecords.Count)
             {
                 for (int i = 0; i < ComparisonRecords.Count; i++)
                 {
-                    ComparisonModel.Series[i].Title = GetLabelGpuContext(ComparisonRecords[i]);
+                    ComparisonModel.Series[i].Title = GetLabelGpuContext(ComparisonRecords[i], GetMaxGpuAlignment());
                 }
             }
         }
 
-        private string GetLabelGpuContext(ComparisonRecordInfoWrapper record)
+        private string GetLabelGpuContext(ComparisonRecordInfoWrapper record, int maxAlignment)
         {
             var graphicCardName = record.WrappedRecordInfo.FileRecordInfo.GraphicCardName ?? "";
             int gameNameLength = record.WrappedRecordInfo.Game.Length;
 
             var gpuInfoParts = graphicCardName.SplitWordWise(PART_LENGTH);
-            int maxAlignment = Math.Max(gameNameLength, gpuInfoParts.Max(txt => txt.Length));
             var alignmentFormat = "{0," + maxAlignment.ToString() + "}";
 
             var infoPartsFormatted = string.Empty;
@@ -685,25 +710,24 @@ namespace CapFrameX.ViewModel
         {
             ComparisonRowChartLabels = ComparisonRecords.Select(record =>
             {
-                return GetLabelCustomContext(record);
+                return GetLabelCustomContext(record, GetMaxContextAlignment());
             }).ToArray();
 
             if (ComparisonModel.Series.Count == ComparisonRecords.Count)
             {
                 for (int i = 0; i < ComparisonRecords.Count; i++)
                 {
-                    ComparisonModel.Series[i].Title = GetLabelCustomContext(ComparisonRecords[i]);
+                    ComparisonModel.Series[i].Title = GetLabelCustomContext(ComparisonRecords[i], GetMaxContextAlignment());
                 }
             }
         }
 
-        private string GetLabelCustomContext(ComparisonRecordInfoWrapper record)
+        private string GetLabelCustomContext(ComparisonRecordInfoWrapper record, int maxAlignment)
         {
             var comment = record.WrappedRecordInfo.FileRecordInfo.Comment ?? "";
             int gameNameLength = record.WrappedRecordInfo.Game.Length;
 
             var commentParts = comment.SplitWordWise(PART_LENGTH);
-            int maxAlignment = Math.Max(gameNameLength, commentParts.Max(txt => txt.Length));
             var alignmentFormat = "{0," + maxAlignment.ToString() + "}";
 
             var infoPartsFormatted = string.Empty;
@@ -822,13 +846,13 @@ namespace CapFrameX.ViewModel
                     chartTitle = GetLabelDateTimeContext(wrappedComparisonInfo);
                     break;
                 case EComparisonContext.CPU:
-                    chartTitle = GetLabelCpuContext(wrappedComparisonInfo);
+                    chartTitle = GetLabelCpuContext(wrappedComparisonInfo, GetMaxContextAlignment());
                     break;
                 case EComparisonContext.GPU:
-                    chartTitle = GetLabelGpuContext(wrappedComparisonInfo);
+                    chartTitle = GetLabelGpuContext(wrappedComparisonInfo, GetMaxCpuAlignment());
                     break;
                 case EComparisonContext.Custom:
-                    chartTitle = GetLabelCustomContext(wrappedComparisonInfo);
+                    chartTitle = GetLabelCustomContext(wrappedComparisonInfo, GetMaxCpuAlignment());
                     break;
                 default:
                     chartTitle = GetLabelDateTimeContext(wrappedComparisonInfo);
