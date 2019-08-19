@@ -1,6 +1,5 @@
 ﻿using CapFrameX.Contracts.Data;
 using System.Linq;
-using System.Windows.Media;
 
 namespace CapFrameX.OcatInterface
 {
