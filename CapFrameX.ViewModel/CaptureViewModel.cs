@@ -7,6 +7,9 @@ using CapFrameX.Hotkey;
 using CapFrameX.OcatInterface;
 using CapFrameX.PresentMonInterface;
 using Gma.System.MouseKeyHook;
+using OxyPlot;
+using OxyPlot.Axes;
+using OxyPlot.Series;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Mvvm;
@@ -19,6 +22,7 @@ using System.IO;
 using System.Linq;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
@@ -63,8 +67,10 @@ namespace CapFrameX.ViewModel
         private CancellationTokenSource _cancellationTokenSource;
         private int _sliderSoundLevel;
         private bool _showVolumeController;
+		private PlotModel _frametimeModel;
+		private ISubject<string> _frametimeStream;
 
-        private bool IsCapturing
+		private bool IsCapturing
         {
             get { return _isCapturing; }
             set
@@ -210,7 +216,17 @@ namespace CapFrameX.ViewModel
             }
         }
 
-        public double VoiceSoundLevel
+		public PlotModel FrametimeModel
+		{
+			get { return _frametimeModel; }
+			set
+			{
+				_frametimeModel = value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public double VoiceSoundLevel
         {
             get { return _appConfiguration.VoiceSoundLevel; }
             set
@@ -264,14 +280,53 @@ namespace CapFrameX.ViewModel
 
             ProcessesToIgnore.AddRange(CaptureServiceConfiguration.GetProcessIgnoreList());
             _disposableHeartBeat = GetListUpdatHeartBeat();
-            SubscribeToUpdateProcessIgnoreList();
+			_frametimeStream = new Subject<string>();
+
+			SubscribeToUpdateProcessIgnoreList();
             SubscribeToGlobalHookEvent();
+			SubscribeToFrametimeStream();
+
             StartCaptureService();
 
             _captureService.IsCaptureModeActiveStream.OnNext(false);
-        }
 
-        public bool IsNavigationTarget(NavigationContext navigationContext)
+			FrametimeModel = new PlotModel
+			{
+				PlotMargins = new OxyThickness(40, 0, 0, 40),
+				PlotAreaBorderColor = OxyColor.FromArgb(64, 204, 204, 204),
+				LegendPosition = LegendPosition.TopCenter,
+				LegendOrientation = LegendOrientation.Horizontal
+			};
+
+			//Axes
+			//X
+			FrametimeModel.Axes.Add(new LinearAxis()
+			{
+				Key = "xAxis",
+				Position = AxisPosition.Bottom,
+				Title = "Samples",
+				MajorGridlineStyle = LineStyle.Solid,
+				MajorGridlineThickness = 1,
+				MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
+				MinorTickSize = 0,
+				MajorTickSize = 0
+			});
+
+			//Y
+			FrametimeModel.Axes.Add(new LinearAxis()
+			{
+				Key = "yAxis",
+				Position = AxisPosition.Left,
+				Title = "Frametime [ms]",
+				MajorGridlineStyle = LineStyle.Solid,
+				MajorGridlineThickness = 1,
+				MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
+				MinorTickSize = 0,
+				MajorTickSize = 0
+			});
+		}
+
+		public bool IsNavigationTarget(NavigationContext navigationContext)
         {
             return true;
         }
@@ -324,7 +379,59 @@ namespace CapFrameX.ViewModel
             SetGlobalHookEventCaptureHotkey();
         }
 
-        private void UpdateGlobalHookEvent()
+		private void SubscribeToFrametimeStream()
+		{
+			var context = SynchronizationContext.Current;
+			var slidingWindow = new List<DataPoint>(400);
+			//_frametimeStream.ObserveOn(new EventLoopScheduler()).Select(GetFrametimePointFromLine)
+			//	.Select(point => SetCurrentWindow(point, slidingWindow))
+			//	.ObserveOn(context).SubscribeOn(context).Subscribe(DrawCurrentSlidingWindow);
+
+			_frametimeStream.ObserveOn(context).Select(GetFrametimePointFromLine)
+				.Select(point => SetCurrentWindow(point, slidingWindow)).Subscribe(DrawCurrentSlidingWindow);
+		}
+
+		private void DrawCurrentSlidingWindow(List<DataPoint> window)
+		{
+			FrametimeModel.Series.Clear();
+			var frametimeSeries = new LineSeries
+			{
+				Title = "Frametimes",
+				StrokeThickness = 1,
+				LegendStrokeThickness = 4,
+				Color = ColorRessource.FrametimeStroke
+			};
+
+			frametimeSeries.Points.AddRange(window);
+			FrametimeModel.Series.Add(frametimeSeries);
+
+			FrametimeModel.InvalidatePlot(true);
+		}
+
+		private List<DataPoint> SetCurrentWindow(DataPoint point, List<DataPoint> slidingWindow)
+		{
+			slidingWindow.Add(point);
+			if (slidingWindow.Count >= 400)
+				slidingWindow.RemoveAt(0);
+
+			return slidingWindow;
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		private static DataPoint GetFrametimePointFromLine(string arg)
+		{
+			if (string.IsNullOrWhiteSpace(arg))
+				return new DataPoint();
+
+			var lineSplit = arg.Split(',');
+			var startTime = lineSplit[11];
+			var frameTime = lineSplit[12];
+
+			return new DataPoint(Convert.ToDouble(startTime, CultureInfo.InvariantCulture),
+				Convert.ToDouble(frameTime, CultureInfo.InvariantCulture));
+		}
+
+		private void UpdateGlobalHookEvent()
         {
             if (_globalHookEvent != null)
             {
@@ -469,6 +576,7 @@ namespace CapFrameX.ViewModel
                         return;
 
                     _captureData.Add(dataLine);
+					_frametimeStream.OnNext(dataLine);
 
                     if (!intializedStartTime)
                     {

@@ -119,5 +119,10 @@ namespace CapFrameX.View
         {
             (DataContext as CaptureViewModel).OnSoundLevelChanged();
         }
-    }
+
+		private void ResetChart_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
+		{
+			FrametimePlotView.ResetAllAxes();
+		}
+	}
 }

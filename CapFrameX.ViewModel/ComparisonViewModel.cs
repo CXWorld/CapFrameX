@@ -390,7 +390,6 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-
 		private void OnShowContextLegendChanged()
 		{
 			if (!ComparisonRecords.Any())
@@ -456,7 +455,7 @@ namespace CapFrameX.ViewModel
 		}
 
 		private void OnChartItemChanged()
-			=> ColorPickerVisibility = SelectedChartItem.Header.ToString() != "Bar charts";			
+			=> ColorPickerVisibility = SelectedChartItem.Header.ToString() != "Bar charts";
 
 		private int GetMaxContextAlignment()
 		{
@@ -524,7 +523,6 @@ namespace CapFrameX.ViewModel
 			double xMax = 0;
 			double yMin = 0;
 			double yMax = 0;
-
 
 			if (!IsCuttingModeActive)
 			{
