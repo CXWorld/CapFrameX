@@ -34,7 +34,6 @@ namespace CapFrameX.ViewModel
         private int _fpsValuesRoundingDigits;
         private bool _aggregatioIsChecked;
         private string _screenshotDirectory;
-        private bool _playHotkeySounds;
 
         public bool CaptureIsChecked
         {

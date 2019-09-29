@@ -4,7 +4,8 @@ namespace CapFrameX.PresentMonInterface
 {
     public static class CaptureServiceInfo
     {
-        public static string Version => "1.4.0";
+		// PresentMon64-1.5.2
+		public static string Version => "1.5.2";
 
         public static bool IsCompatibleWithRunningOS
         {

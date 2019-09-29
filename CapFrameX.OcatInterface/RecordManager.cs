@@ -143,6 +143,7 @@ namespace CapFrameX.OcatInterface
             session.AppMissed = new List<bool>();
             session.WarpMissed = new List<bool>();
             session.Displaytimes = new List<double>();
+			session.QPCTimes = new List<double>();
 
             session.AppMissesCount = 0;
             session.WarpMissesCount = 0;
@@ -173,8 +174,9 @@ namespace CapFrameX.OcatInterface
                     int indexAppMissed = -1;
                     int indexWarpMissed = -1;
                     int indexDisplayTimes = -1;
+					int indexQPCTimes = -1;
 
-                    var metrics = line.Split(',');
+					var metrics = line.Split(',');
                     for (int i = 0; i < metrics.Count(); i++)
                     {
                         if (string.Compare(metrics[i], "AppRenderStart") == 0 || string.Compare(metrics[i], "TimeInSeconds") == 0)
@@ -220,7 +222,11 @@ namespace CapFrameX.OcatInterface
                         {
                             indexDisplayTimes = i;
                         }
-                    }
+						if (string.Compare(metrics[i], "QPCTime") == 0)
+						{
+							indexQPCTimes = i;
+						}
+					}
 
                     int lineCount = 0;
                     while (!reader.EndOfStream)
@@ -277,7 +283,15 @@ namespace CapFrameX.OcatInterface
                             }
                         }
 
-                        if (indexFrameEnd > 0 && indexReprojectionEnd > 0)
+						if (indexQPCTimes > 0)
+						{
+							if (double.TryParse(GetStringFromArray(values, indexQPCTimes), NumberStyles.Any, CultureInfo.InvariantCulture, out var qPCTime))
+							{
+								session.Displaytimes.Add(qPCTime);
+							}
+						}
+
+						if (indexFrameEnd > 0 && indexReprojectionEnd > 0)
                         {
                             if (double.TryParse(GetStringFromArray(values, indexFrameEnd), NumberStyles.Any, CultureInfo.InvariantCulture, out var frameEnd)
                              && double.TryParse(GetStringFromArray(values, indexReprojectionEnd), NumberStyles.Any, CultureInfo.InvariantCulture, out var reprojectionEnd))

@@ -33,7 +33,8 @@ namespace CapFrameX.PresentMonInterface
                 arguments += " ";
                 arguments += "-output_file";
                 arguments += " ";
-                arguments += OutputFilename;
+				arguments += "-qpc_time";
+				arguments += OutputFilename;
                 if (!string.IsNullOrWhiteSpace(OutputLevelofDetail))
                 {
                     arguments += " ";
@@ -57,7 +58,9 @@ namespace CapFrameX.PresentMonInterface
 					arguments += "-stop_existing_session";
 					arguments += " ";
 					arguments += "-output_stdout";
-                    if (!string.IsNullOrWhiteSpace(OutputLevelofDetail))
+					arguments += " ";
+					arguments += "-qpc_time";
+					if (!string.IsNullOrWhiteSpace(OutputLevelofDetail))
                     {
                         arguments += " ";
                         arguments += "-" + OutputLevelofDetail;
@@ -87,7 +90,9 @@ namespace CapFrameX.PresentMonInterface
                     arguments += "-output_file";
                     arguments += " ";
                     arguments += OutputFilename;
-                    if (!string.IsNullOrWhiteSpace(OutputLevelofDetail))
+					arguments += " ";
+					arguments += "-qpc_time";
+					if (!string.IsNullOrWhiteSpace(OutputLevelofDetail))
                     {
                         arguments += " ";
                         arguments += "-" + OutputLevelofDetail;

@@ -13,7 +13,10 @@ namespace CapFrameX.Data
 {
     public class RecordDataProvider : IRecordDataProvider
     {
-        private static readonly string FILE_HEADER = "Application,ProcessID,SwapChainAddress,Runtime,SyncInterval,PresentFlags,AllowsTearing,PresentMode,WasBatched,DwmNotified,Dropped,TimeInSeconds,MsBetweenPresents,MsBetweenDisplayChange,MsInPresentAPI,MsUntilRenderComplete,MsUntilDisplayed";
+        private static readonly string FILE_HEADER = 
+			$"Application,ProcessID,SwapChainAddress,Runtime,SyncInterval,PresentFlags," +
+			$"AllowsTearing,PresentMode,WasBatched,DwmNotified,Dropped,TimeInSeconds,MsBetweenPresents," +
+			$"MsBetweenDisplayChange,MsInPresentAPI,MsUntilRenderComplete,MsUntilDisplayed,QPCTime";
 
         private static readonly string _matchingNameInitialFilename
             = Path.Combine("NameMatching", "ProcessGameNameMatchingList.txt");

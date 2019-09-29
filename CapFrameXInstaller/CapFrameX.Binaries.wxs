@@ -160,7 +160,7 @@
             </Directory>
             <Directory Id="dir853772609C50C17748AF70C12E8A0818" Name="PresentMon">
                 <Component Id="cmp7358366301EC7CE9A932A5F8FBEC5A00" Guid="*" Win64="yes">
-                    <File Id="fil1ADDD4AE6DFC84D4B7876CA15289FFFA" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\PresentMon\PresentMon64-1.4.0.exe" />
+                    <File Id="fil1ADDD4AE6DFC84D4B7876CA15289FFFA" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\PresentMon\PresentMon64-1.5.2.exe" />
                 </Component>
                 <Component Id="cmp8C1AB07795DAE387F9C0929C8DBCE953" Guid="*" Win64="yes">
                     <File Id="filE4E40086E3260C0A66358D88202CA5FF" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\PresentMon\ProcessIgnoreList.txt" />

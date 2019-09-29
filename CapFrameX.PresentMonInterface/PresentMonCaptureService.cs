@@ -41,7 +41,7 @@ namespace CapFrameX.PresentMonInterface
             SubscribeToPresentMonCapturedProcesses();
             TryKillPresentMon();
 
-            var process = new Process
+			Process process = new Process
             {
                 StartInfo = new ProcessStartInfo
                 {
@@ -93,7 +93,7 @@ namespace CapFrameX.PresentMonInterface
         {
             try
             {
-                var proc = Process.GetProcessesByName("PresentMon64-1.4.0");
+                var proc = Process.GetProcessesByName("PresentMon64-1.5.2");
                 if (proc.Any())
                 {
                     proc[0].Kill();

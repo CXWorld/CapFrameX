@@ -79,7 +79,7 @@
     <Compile Include="CaptureServiceConfiguration.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="PresentMon\PresentMon64-1.4.0.exe">
+    <Content Include="PresentMon\PresentMon64-1.5.2.exe">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="PresentMon\ProcessIgnoreList.txt">

@@ -382,16 +382,25 @@ namespace CapFrameX.ViewModel
 		private void SubscribeToFrametimeStream()
 		{
 			var context = SynchronizationContext.Current;
-			var slidingWindow = new List<DataPoint>(400);
-			//_frametimeStream.ObserveOn(new EventLoopScheduler()).Select(GetFrametimePointFromLine)
-			//	.Select(point => SetCurrentWindow(point, slidingWindow))
-			//	.ObserveOn(context).SubscribeOn(context).Subscribe(DrawCurrentSlidingWindow);
-
-			_frametimeStream.ObserveOn(context).Select(GetFrametimePointFromLine)
+			var slidingWindow = new List<DataLineInfo>(400);
+			
+			_frametimeStream.ObserveOn(new EventLoopScheduler()).Select(GetFrametimePointFromLine).ObserveOn(context)
 				.Select(point => SetCurrentWindow(point, slidingWindow)).Subscribe(DrawCurrentSlidingWindow);
 		}
 
-		private void DrawCurrentSlidingWindow(List<DataPoint> window)
+		// PresentFlags,AllowsTearing,PresentMode,WasBatched,DwmNotified,Dropped,TimeInSeconds,MsBetweenPresents
+		private class DataLineInfo
+		{
+			public string PresentFlags { get; set; }
+			public string AllowsTearing { get; set; }
+			public string PresentMode { get; set; }
+			public string WasBatched { get; set; }
+			public string DwmNotified { get; set; }
+			public string Dropped { get; set; }
+			public DataPoint FrametimePoint {get;set;}
+		}
+
+		private void DrawCurrentSlidingWindow(List<DataLineInfo> window)
 		{
 			FrametimeModel.Series.Clear();
 			var frametimeSeries = new LineSeries
@@ -402,33 +411,49 @@ namespace CapFrameX.ViewModel
 				Color = ColorRessource.FrametimeStroke
 			};
 
-			frametimeSeries.Points.AddRange(window);
+			frametimeSeries.Points.AddRange(window.Select(info => info.FrametimePoint));
 			FrametimeModel.Series.Add(frametimeSeries);
 
 			FrametimeModel.InvalidatePlot(true);
 		}
 
-		private List<DataPoint> SetCurrentWindow(DataPoint point, List<DataPoint> slidingWindow)
+		private List<DataLineInfo> SetCurrentWindow(DataLineInfo dataLineInfo, List<DataLineInfo> slidingWindow)
 		{
-			slidingWindow.Add(point);
+			slidingWindow.Add(dataLineInfo);
 			if (slidingWindow.Count >= 400)
 				slidingWindow.RemoveAt(0);
 
 			return slidingWindow;
 		}
 
+		//PresentFlags,AllowsTearing,PresentMode,WasBatched,DwmNotified,Dropped,TimeInSeconds,MsBetweenPresents
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		private static DataPoint GetFrametimePointFromLine(string arg)
+		private static DataLineInfo GetFrametimePointFromLine(string arg)
 		{
 			if (string.IsNullOrWhiteSpace(arg))
-				return new DataPoint();
+				return new DataLineInfo();
 
 			var lineSplit = arg.Split(',');
+			var presentFlags = lineSplit[5];
+			var allowsTearing = lineSplit[6];
+			var presentMode = lineSplit[7];
+			var wasBatched = lineSplit[8];
+			var dwmNotified = lineSplit[9];
+			var dropped = lineSplit[10];
 			var startTime = lineSplit[11];
 			var frameTime = lineSplit[12];
 
-			return new DataPoint(Convert.ToDouble(startTime, CultureInfo.InvariantCulture),
-				Convert.ToDouble(frameTime, CultureInfo.InvariantCulture));
+			return new DataLineInfo()
+			{
+				PresentFlags = presentFlags,
+				AllowsTearing = allowsTearing,
+				PresentMode = presentMode,
+				WasBatched = wasBatched,
+				DwmNotified = dwmNotified,
+				Dropped = dropped,
+				FrametimePoint = new DataPoint(Convert.ToDouble(startTime, CultureInfo.InvariantCulture),
+					Convert.ToDouble(frameTime, CultureInfo.InvariantCulture))
+			};
 		}
 
 		private void UpdateGlobalHookEvent()
@@ -856,6 +881,6 @@ namespace CapFrameX.ViewModel
             }
         }
 
-        private void ResetArchive() => _captureDataArchive.Clear();
-    }
+        private void ResetArchive() => _captureDataArchive.Clear();	
+	}
 }
