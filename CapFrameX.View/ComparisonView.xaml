@@ -30,6 +30,7 @@
 				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.PopupBox.xaml" />
 			</ResourceDictionary.MergedDictionaries>
 			<mvvm:ZoomingModeConverter x:Key="ZoomingModeConverter"></mvvm:ZoomingModeConverter>
+			<mvvm:BoolToVisibilityConverter x:Key="FalseToHiddenConverter" FalseValue="Hidden" TrueValue="Visible"/>
 			<mvvm:BoolToVisibilityConverter x:Key="FalseToCollapsedConverter" FalseValue="Collapsed" TrueValue="Visible"/>
 			<mvvm:BoolToVisibilityConverter x:Key="TrueToVisibleConverter" FalseValue="Visible" TrueValue="Collapsed"/>
 			<mvvm:AddValueConverter x:Key="AddValueConverter" Offset="200"/>
@@ -120,7 +121,6 @@
 						<RowDefinition Height="40"></RowDefinition>
 						<RowDefinition Height="Auto"></RowDefinition>
 						<RowDefinition Height="1*"></RowDefinition>
-						<RowDefinition Height="Auto"></RowDefinition>
 					</Grid.RowDefinitions>
 					<Grid Grid.Row="0">
 						<StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
@@ -217,11 +217,12 @@
 													<Grid.ColumnDefinitions>
 														<ColumnDefinition Width="Auto"/>
 														<ColumnDefinition Width="Auto"/>
+														<ColumnDefinition Width="15"/>
 													</Grid.ColumnDefinitions>
-													<StackPanel Margin="8 0 0 0" Grid.Column="0">
+													<StackPanel Margin="3 0 0 0" Grid.Column="0">
 														<TextBlock FontWeight="Bold" Text="{Binding WrappedRecordInfo.Game}" />
 														<TextBlock Text="{Binding WrappedRecordInfo.InfoText}" TextWrapping="Wrap"
-																   Width="150"
+																   Width="140"
 																   LineStackingStrategy="BlockLineHeight"
 																   FontSize="12"
 																   LineHeight="14"
@@ -229,7 +230,10 @@
 													</StackPanel>
 													<xctk:ColorPicker Width="120" Height="30" Grid.Column="1" Background="#e6e6e6" SelectedColor="{Binding FrametimeGraphColor}" 
 																      SelectedColorChanged="SelectedColorChanged" DisplayColorAndName="True" AvailableColorsSortingMode="HueSaturationBrightness" 
-																	  Visibility="{Binding ElementName=ComparisonRecordItemControl, Path=DataContext.ColorPickerVisibility, Converter={StaticResource FalseToCollapsedConverter}}"/>
+																	  Visibility="{Binding ElementName=ComparisonRecordItemControl, Path=DataContext.ColorPickerVisibility, Converter={StaticResource FalseToHiddenConverter}}"/>
+													<Button Grid.Column="2" Margin="0 -5 0 0" Padding="0" Width="12" Height="12" HorizontalAlignment="Right" VerticalAlignment="Top" BorderThickness="0" Background="Transparent" Foreground="Black"
+															Content="{materialDesign:PackIcon Close, Size=12}">
+													</Button>
 												</Grid>
 											</Border>
 										</Grid>
@@ -245,17 +249,6 @@
 							</ItemsControl>
 						</Grid>
 					</ScrollViewer>
-					<ItemsControl Grid.Row="3"
-                                  VerticalAlignment="Top"
-								  Name="RemoveRecordItemControl"
-								  dragdrop:DragDrop.IsDropTarget="True"
-								  dragdrop:DragDrop.DropHandler="{Binding}"
-								  dragdrop:DragDrop.UseDefaultEffectDataTemplate="False">
-						<Border Background="#CCC" Height="50">
-							<materialDesign:PackIcon Kind="DeleteForeverOutline" VerticalAlignment="Center" HorizontalAlignment="Center"
-													 Width="32" Height="32" />
-						</Border>
-					</ItemsControl>
 				</Grid>
 			</Border>
 		</StackPanel>

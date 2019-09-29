@@ -1016,34 +1016,34 @@ namespace CapFrameX.ViewModel
 							}
 						}
 					}
-					else if (frameworkElement.Name == "RemoveRecordItemControl")
-					{
-						if (dropInfo.Data is ComparisonRecordInfoWrapper wrappedComparisonRecordInfo)
-						{
-							_freeColors.Add(wrappedComparisonRecordInfo.Color);
-							ComparisonRecords.Remove(wrappedComparisonRecordInfo);
-							UpdateIndicesAfterRemove(ComparisonRecords);
-							InitialIconVisibility = !ComparisonRecords.Any();
-							BarChartVisibility = ComparisonRecords.Any();
-							ComparisonItemControlHeight = ComparisonRecords.Any() ? "Auto" : "300";
+					//else if (frameworkElement.Name == "RemoveRecordItemControl")
+					//{
+					//	if (dropInfo.Data is ComparisonRecordInfoWrapper wrappedComparisonRecordInfo)
+					//	{
+					//		_freeColors.Add(wrappedComparisonRecordInfo.Color);
+					//		ComparisonRecords.Remove(wrappedComparisonRecordInfo);
+					//		UpdateIndicesAfterRemove(ComparisonRecords);
+					//		InitialIconVisibility = !ComparisonRecords.Any();
+					//		BarChartVisibility = ComparisonRecords.Any();
+					//		ComparisonItemControlHeight = ComparisonRecords.Any() ? "Auto" : "300";
 
-							UpdateCuttingParameter();
+					//		UpdateCuttingParameter();
 
-							//Cleanup charts and performance parameter
-							UpdateCharts();
-						}
-					}
+					//		//Cleanup charts and performance parameter
+					//		UpdateCharts();
+					//	}
+					//}
 				}
 			}
 		}
 
-		private void UpdateIndicesAfterRemove(ObservableCollection<ComparisonRecordInfoWrapper> comparisonRecords)
-		{
-			for (int i = 0; i < comparisonRecords.Count; i++)
-			{
-				comparisonRecords[i].CollectionIndex = i;
-			}
-		}
+		//private void UpdateIndicesAfterRemove(ObservableCollection<ComparisonRecordInfoWrapper> comparisonRecords)
+		//{
+		//	for (int i = 0; i < comparisonRecords.Count; i++)
+		//	{
+		//		comparisonRecords[i].CollectionIndex = i;
+		//	}
+		//}
 
 		private void AddComparisonRecord(IFileRecordInfo recordInfo)
 		{
