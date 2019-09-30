@@ -791,10 +791,10 @@ namespace CapFrameX.ViewModel
 				return;
 
 			ComparisonModel.Series.Clear();
-			ComparisonLShapeCollection.Clear();
+			// ComparisonLShapeCollection.Clear();
 
 			SetFrametimeChart();
-			Task.Factory.StartNew(() => SetLShapeChart());
+			//Task.Factory.StartNew(() => SetLShapeChart());
 			SetColumnChart();
 		}
 
@@ -920,8 +920,8 @@ namespace CapFrameX.ViewModel
 			// 1% quantile
 			ComparisonRowChartSeriesCollection[1].Values.Clear();
 
-			// 0.1% quantile
-			ComparisonRowChartSeriesCollection[2].Values.Clear();
+			//// 0.1% quantile
+			//ComparisonRowChartSeriesCollection[2].Values.Clear();
 
 			for (int i = 0; i < ComparisonRecords.Count; i++)
 			{
@@ -937,25 +937,25 @@ namespace CapFrameX.ViewModel
 				var p1_quantiles = new List<double>(ComparisonRowChartSeriesCollection[1].Values as IList<double>);
 
 				// 0.1% quantile
-				var p0dot1_quantiles = new List<double>(ComparisonRowChartSeriesCollection[2].Values as IList<double>);
+				//var p0dot1_quantiles = new List<double>(ComparisonRowChartSeriesCollection[2].Values as IList<double>);
 
-				if (averages.Any() && p1_quantiles.Any() && p0dot1_quantiles.Any())
+				if (averages.Any() && p1_quantiles.Any() /*&& p0dot1_quantiles.Any()*/)
 				{
 					ComparisonRowChartSeriesCollection[0].Values.Clear();
 					ComparisonRowChartSeriesCollection[1].Values.Clear();
-					ComparisonRowChartSeriesCollection[2].Values.Clear();
+					// ComparisonRowChartSeriesCollection[2].Values.Clear();
 
 					var maxAverage = averages.Max();
 					var maxP1_quantile = p1_quantiles.Max();
-					var maxP0dot1_quantiles = p0dot1_quantiles.Max();
+					// var maxP0dot1_quantiles = p0dot1_quantiles.Max();
 
 					var averagesPercent = averages.Select(x => 100d * x / maxAverage).ToList();
 					var p1_quantilesPercent = p1_quantiles.Select(x => 100d * x / maxP1_quantile).ToList();
-					var p0dot1_quantilesPercent = p0dot1_quantiles.Select(x => 100d * x / maxP0dot1_quantiles).ToList();
+					// var p0dot1_quantilesPercent = p0dot1_quantiles.Select(x => 100d * x / maxP0dot1_quantiles).ToList();
 
 					averagesPercent.ForEach(x => ComparisonRowChartSeriesCollection[0].Values.Add(x));
 					p1_quantilesPercent.ForEach(x => ComparisonRowChartSeriesCollection[1].Values.Add(x));
-					p0dot1_quantilesPercent.ForEach(x => ComparisonRowChartSeriesCollection[2].Values.Add(x));
+					// p0dot1_quantilesPercent.ForEach(x => ComparisonRowChartSeriesCollection[2].Values.Add(x));
 				}
 			}
 		}
@@ -1037,13 +1037,24 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-		//private void UpdateIndicesAfterRemove(ObservableCollection<ComparisonRecordInfoWrapper> comparisonRecords)
-		//{
-		//	for (int i = 0; i < comparisonRecords.Count; i++)
-		//	{
-		//		comparisonRecords[i].CollectionIndex = i;
-		//	}
-		//}
+		public void RemoveComparisonItem(ComparisonRecordInfoWrapper wrappedComparisonRecordInfo)
+		{
+			_freeColors.Add(wrappedComparisonRecordInfo.Color);
+			ComparisonRecords.Remove(wrappedComparisonRecordInfo);
+			UpdateIndicesAfterRemove(ComparisonRecords);
+			UpdateCuttingParameter();
+
+			//Cleanup charts and performance parameter
+			UpdateCharts();
+		}
+
+		private void UpdateIndicesAfterRemove(ObservableCollection<ComparisonRecordInfoWrapper> comparisonRecords)
+		{
+			for (int i = 0; i < comparisonRecords.Count; i++)
+			{
+				comparisonRecords[i].CollectionIndex = i;
+			}
+		}
 
 		private void AddComparisonRecord(IFileRecordInfo recordInfo)
 		{
@@ -1076,12 +1087,7 @@ namespace CapFrameX.ViewModel
 		}
 
 		private ComparisonRecordInfoWrapper GetWrappedRecordInfo(ComparisonRecordInfo comparisonRecordInfo)
-		{
-			var wrappedRecordInfo = new ComparisonRecordInfoWrapper(comparisonRecordInfo,
-				ComparisonModel, ComparisonLShapeCollection);
-
-			return wrappedRecordInfo;
-		}
+			=> new ComparisonRecordInfoWrapper(comparisonRecordInfo, this);
 
 		void IDropTarget.DragOver(IDropInfo dropInfo)
 		{

@@ -231,8 +231,8 @@
 													<xctk:ColorPicker Width="120" Height="30" Grid.Column="1" Background="#e6e6e6" SelectedColor="{Binding FrametimeGraphColor}" 
 																      SelectedColorChanged="SelectedColorChanged" DisplayColorAndName="True" AvailableColorsSortingMode="HueSaturationBrightness" 
 																	  Visibility="{Binding ElementName=ComparisonRecordItemControl, Path=DataContext.ColorPickerVisibility, Converter={StaticResource FalseToHiddenConverter}}"/>
-													<Button Grid.Column="2" Margin="0 -5 0 0" Padding="0" Width="12" Height="12" HorizontalAlignment="Right" VerticalAlignment="Top" BorderThickness="0" Background="Transparent" Foreground="Black"
-															Content="{materialDesign:PackIcon Close, Size=12}">
+													<Button Grid.Column="2" Margin="0 -5 -3 0" Padding="0" Width="12" Height="12" HorizontalAlignment="Right" VerticalAlignment="Top" BorderThickness="0" Background="Transparent" Foreground="Black"
+															Content="{materialDesign:PackIcon Close, Size=12}" Command="{Binding RemoveCommand}">
 													</Button>
 												</Grid>
 											</Border>

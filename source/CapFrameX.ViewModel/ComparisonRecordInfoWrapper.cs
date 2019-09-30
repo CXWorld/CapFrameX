@@ -1,5 +1,4 @@
 ﻿using CapFrameX.OcatInterface;
-using LiveCharts;
 using OxyPlot;
 using OxyPlot.Series;
 using Prism.Commands;
@@ -12,11 +11,9 @@ namespace CapFrameX.ViewModel
 {
 	public class ComparisonRecordInfoWrapper : BindableBase
 	{
-		readonly PlotModel _frametimesModel;
-		readonly SeriesCollection _lShapesCollection;
-
 		private Color? _frametimeGraphColor;
 		private SolidColorBrush _color;
+		private ComparisonViewModel _viewModel;
 
 		public Color? FrametimeGraphColor
 		{
@@ -47,55 +44,65 @@ namespace CapFrameX.ViewModel
 
 		public ICommand MouseLeaveCommand { get; }
 
-		public ComparisonRecordInfoWrapper(ComparisonRecordInfo info,
-			PlotModel frametimesModel, SeriesCollection lShapesCollection)
+		public ICommand RemoveCommand { get; }
+
+		public ComparisonRecordInfoWrapper(ComparisonRecordInfo info, ComparisonViewModel viewModel)
 		{
 			WrappedRecordInfo = info;
-
-			_frametimesModel = frametimesModel;
-			_lShapesCollection = lShapesCollection;
+			_viewModel = viewModel;
 
 			MouseEnterCommand = new DelegateCommand(OnMouseEnter);
 			MouseLeaveCommand = new DelegateCommand(OnMouseLeave);
+			RemoveCommand = new DelegateCommand(OnRemove);
 		}
 
 		private void OnMouseEnter()
 		{
-			if (!_frametimesModel.Series.Any())
+			if (!_viewModel.ComparisonModel.Series.Any() ||
+				CollectionIndex >= _viewModel.ComparisonModel.Series.Count)
 				return;
 
-			var frametimesChart = _frametimesModel.Series[CollectionIndex] as LineSeries;
+			var frametimesChart = _viewModel.ComparisonModel.Series[CollectionIndex] as LineSeries;
 			frametimesChart.StrokeThickness = 2;
-			_frametimesModel.InvalidatePlot(true);
+			_viewModel.ComparisonModel.InvalidatePlot(true);
 		}
 
 		private void OnMouseLeave()
 		{
-			if (!_frametimesModel.Series.Any())
+			if (!_viewModel.ComparisonModel.Series.Any() ||
+				CollectionIndex >= _viewModel.ComparisonModel.Series.Count)
 				return;
 
-			var frametimesChart = _frametimesModel.Series[CollectionIndex] as LineSeries;
+			var frametimesChart = _viewModel.ComparisonModel.Series[CollectionIndex] as LineSeries;
 			frametimesChart.StrokeThickness = 1;
-			_frametimesModel.InvalidatePlot(true);
+			_viewModel.ComparisonModel.InvalidatePlot(true);
+		}
+
+		private void OnRemove()
+		{
+			if (!_viewModel.ComparisonModel.Series.Any())
+				return;
+
+			_viewModel.RemoveComparisonItem(this);
 		}
 
 		private void OnColorChanged()
 		{
 			if (FrametimeGraphColor.HasValue && CollectionIndex >= 0 &&
-				_frametimesModel.Series.Count > CollectionIndex &&
-				_lShapesCollection.Count > CollectionIndex)
+				_viewModel.ComparisonModel.Series.Count > CollectionIndex &&
+				_viewModel.ComparisonLShapeCollection.Count > CollectionIndex)
 			{
 				Color color = FrametimeGraphColor.Value;
 
-				var frametimesChart = _frametimesModel.Series[CollectionIndex] as LineSeries;
-				var lShapeChart = _lShapesCollection[CollectionIndex] as LiveCharts.Wpf.LineSeries;
+				var frametimesChart = _viewModel.ComparisonModel.Series[CollectionIndex] as LineSeries;
+				var lShapeChart = _viewModel.ComparisonLShapeCollection[CollectionIndex] as LiveCharts.Wpf.LineSeries;
 
 				var solidColorBrush = new SolidColorBrush(System.Windows.Media.Color.FromArgb(color.A, color.R, color.G, color.B));
 				frametimesChart.Color = OxyColor.FromArgb(color.A, color.R, color.G, color.B);
 				lShapeChart.Stroke = solidColorBrush;
 				Color = solidColorBrush;
 
-				_frametimesModel.InvalidatePlot(true);
+				_viewModel.ComparisonModel.InvalidatePlot(true);
 			}
 		}
 	}

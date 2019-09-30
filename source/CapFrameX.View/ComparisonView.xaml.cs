@@ -24,7 +24,7 @@ namespace CapFrameX.View
             if (DesignerProperties.GetIsInDesignMode(this))
             {
                 var appConfiguration = new CapFrameXConfiguration();
-                DataContext = new ComparisonDataViewModel(new FrametimeStatisticProvider(), new FrametimeAnalyzer(), new EventAggregator(), appConfiguration);
+                DataContext = new ComparisonViewModel(new FrametimeStatisticProvider(), new FrametimeAnalyzer(), new EventAggregator(), appConfiguration);
             }
         }
 
