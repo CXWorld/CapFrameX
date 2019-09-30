@@ -3,47 +3,47 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29001.49
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX", "CapFrameX\CapFrameX.csproj", "{AAA73D26-5CD6-4066-B84C-5BD34057B346}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX", "source\CapFrameX\CapFrameX.csproj", "{AAA73D26-5CD6-4066-B84C-5BD34057B346}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.Statistics", "CapFrameX.Statistics\CapFrameX.Statistics.csproj", "{788F49CD-ABCB-4C7C-B1B6-BF9DC2482432}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.Statistics", "source\CapFrameX.Statistics\CapFrameX.Statistics.csproj", "{788F49CD-ABCB-4C7C-B1B6-BF9DC2482432}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.View", "CapFrameX.View\CapFrameX.View.csproj", "{5CB56A44-8340-48F5-A9EC-DDF9AD3E10F0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.View", "source\CapFrameX.View\CapFrameX.View.csproj", "{5CB56A44-8340-48F5-A9EC-DDF9AD3E10F0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.ViewModel", "CapFrameX.ViewModel\CapFrameX.ViewModel.csproj", "{AD4536B2-C977-4CB8-8540-866928671C2D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.ViewModel", "source\CapFrameX.ViewModel\CapFrameX.ViewModel.csproj", "{AD4536B2-C977-4CB8-8540-866928671C2D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.OcatInterface", "CapFrameX.OcatInterface\CapFrameX.OcatInterface.csproj", "{E61AD1FC-514F-43FD-BC20-31E9900CDFD7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.OcatInterface", "source\CapFrameX.OcatInterface\CapFrameX.OcatInterface.csproj", "{E61AD1FC-514F-43FD-BC20-31E9900CDFD7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.Extensions", "CapFrameX.Extensions\CapFrameX.Extensions.csproj", "{A4559B99-7FCB-40EF-BF97-D293A2B7D6D3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.Extensions", "source\CapFrameX.Extensions\CapFrameX.Extensions.csproj", "{A4559B99-7FCB-40EF-BF97-D293A2B7D6D3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.Test", "CapFrameX.Test\CapFrameX.Test.csproj", "{55776CCE-1B05-4CCA-ACA9-20C0D84CCDCA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.Test", "source\CapFrameX.Test\CapFrameX.Test.csproj", "{55776CCE-1B05-4CCA-ACA9-20C0D84CCDCA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.EventAggregation", "CapFrameX.EventAggregation\CapFrameX.EventAggregation.csproj", "{C3D082AE-BF05-4C83-B414-33CF7C420D4A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.EventAggregation", "source\CapFrameX.EventAggregation\CapFrameX.EventAggregation.csproj", "{C3D082AE-BF05-4C83-B414-33CF7C420D4A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.Configuration", "CapFrameX.Configuration\CapFrameX.Configuration.csproj", "{D0A09FA9-D19E-4CCC-BF0E-104893CFE48B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.Configuration", "source\CapFrameX.Configuration\CapFrameX.Configuration.csproj", "{D0A09FA9-D19E-4CCC-BF0E-104893CFE48B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.MVVM", "CapFrameX.MVVM\CapFrameX.MVVM.csproj", "{CFB57D81-1886-45D2-AA16-EDE1DD17A9CA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.MVVM", "source\CapFrameX.MVVM\CapFrameX.MVVM.csproj", "{CFB57D81-1886-45D2-AA16-EDE1DD17A9CA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.Contracts", "CapFrameX.Contracts\CapFrameX.Contracts.csproj", "{4C3B8B5C-54D7-46A1-91A1-32BF82FD42CD}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.Contracts", "source\CapFrameX.Contracts\CapFrameX.Contracts.csproj", "{4C3B8B5C-54D7-46A1-91A1-32BF82FD42CD}"
 EndProject
-Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "CapFrameXInstaller", "CapFrameXInstaller\CapFrameXInstaller.wixproj", "{77416B78-A34F-4CFC-9562-A2599D054C8F}"
+Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "CapFrameXInstaller", "source\CapFrameXInstaller\CapFrameXInstaller.wixproj", "{77416B78-A34F-4CFC-9562-A2599D054C8F}"
 EndProject
-Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "CapFrameXBootstrapper", "CapFrameXBootstrapper\CapFrameXBootstrapper.wixproj", "{9E2FAB6F-117C-495A-A47B-52A15B9E9806}"
+Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "CapFrameXBootstrapper", "source\CapFrameXBootstrapper\CapFrameXBootstrapper.wixproj", "{9E2FAB6F-117C-495A-A47B-52A15B9E9806}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.PresentMonInterface", "CapFrameX.PresentMonInterface\CapFrameX.PresentMonInterface.csproj", "{ADFBAECE-B74F-4A80-87D1-84BC990527B0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.PresentMonInterface", "source\CapFrameX.PresentMonInterface\CapFrameX.PresentMonInterface.csproj", "{ADFBAECE-B74F-4A80-87D1-84BC990527B0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.Overlay", "CapFrameX.Overlay\CapFrameX.Overlay.csproj", "{624777C2-6AF6-46D5-A019-1285F699B8A7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.Overlay", "source\CapFrameX.Overlay\CapFrameX.Overlay.csproj", "{624777C2-6AF6-46D5-A019-1285F699B8A7}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CapFrameX.Data", "CapFrameX.Data\CapFrameX.Data.csproj", "{CAD10BAB-6FDE-43F4-B768-6CAFF4E6B104}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CapFrameX.Data", "source\CapFrameX.Data\CapFrameX.Data.csproj", "{CAD10BAB-6FDE-43F4-B768-6CAFF4E6B104}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.Hotkey", "CapFrameX.Hotkey\CapFrameX.Hotkey.csproj", "{B033A95B-C385-4A33-8992-2872DF979ECD}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.Hotkey", "source\CapFrameX.Hotkey\CapFrameX.Hotkey.csproj", "{B033A95B-C385-4A33-8992-2872DF979ECD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core40", "CapFrameX.Charts\Core40\Core40.csproj", "{F261C3D7-6194-4625-9516-044081B06028}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core40", "source\CapFrameX.Charts\Core40\Core40.csproj", "{F261C3D7-6194-4625-9516-044081B06028}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WpfView", "CapFrameX.Charts\WpfView\WpfView.csproj", "{4D253423-AE05-47F6-A59D-9162EC0BB1F2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WpfView", "source\CapFrameX.Charts\WpfView\WpfView.csproj", "{4D253423-AE05-47F6-A59D-9162EC0BB1F2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OxyPlot_NET40", "CapFrameX.Charts\OxyPlot\OxyPlot_NET40.csproj", "{1C1D9807-BE39-40A4-87DE-3F81E7C651E5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OxyPlot_NET40", "source\CapFrameX.Charts\OxyPlot\OxyPlot_NET40.csproj", "{1C1D9807-BE39-40A4-87DE-3F81E7C651E5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OxyPlot.Wpf_NET40", "CapFrameX.Charts\OxyPlot.Wpf\OxyPlot.Wpf_NET40.csproj", "{0D7C7710-C58B-4713-BA18-8231A2F35A12}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OxyPlot.Wpf_NET40", "source\CapFrameX.Charts\OxyPlot.Wpf\OxyPlot.Wpf_NET40.csproj", "{0D7C7710-C58B-4713-BA18-8231A2F35A12}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
