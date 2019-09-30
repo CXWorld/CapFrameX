@@ -180,13 +180,19 @@ namespace LiveCharts
         /// </value>
         public double S { get; internal set; }
 
-        #endregion
+		#endregion
 
-        #region Internal Properties
+		#region Internal Properties
 
-        public double Tab { get; set; }
+		/// <summary>
+		/// Tab
+		/// </summary>
+		public double Tab { get; set; }
 
-        public double TopLimit
+		/// <summary>
+		/// TopLimit
+		/// </summary>
+		public double TopLimit
         {
             get { return _topLimit; }
             set
