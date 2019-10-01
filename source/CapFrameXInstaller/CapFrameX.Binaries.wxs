@@ -87,9 +87,6 @@
             <Component Id="cmp60805430DA62A620ADC712537D30F06A" Guid="*" Win64="yes">
                 <File Id="filDB1D736833CDA4D30509594A7B6D0162" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\LiveCharts.dll" />
             </Component>
-            <Component Id="cmpEBE302E7BC33C7FDE3AF0A2A5D637C81" Guid="*" Win64="yes">
-                <File Id="filB4EFE346807BB480EE83C682993445BB" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\LiveCharts.Geared.dll" />
-            </Component>
             
             <Component Id="cmpB80EB57EF2904D1A74E508B15C150404" Guid="*" Win64="yes">
                 <File Id="filCBE997A6CD849E4DF004F21120DE6B94" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\LiveCharts.Wpf.dll" />
@@ -130,8 +127,6 @@
                 <File Id="filE9CE96E94505AA7F35F51DF61E20A061" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\OxyPlot.Wpf.dll" />
             </Component>
             
-            
-            
             <Component Id="cmp59564654D02343646998A8D6A6F0C25F" Guid="*" Win64="yes">
                 <File Id="fil86F2842A309A2CABD479166F2B4E0588" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Prism.dll" />
             </Component>
@@ -159,8 +154,8 @@
                 </Component>
             </Directory>
             <Directory Id="dir853772609C50C17748AF70C12E8A0818" Name="PresentMon">
-                <Component Id="cmp7358366301EC7CE9A932A5F8FBEC5A00" Guid="*" Win64="yes">
-                    <File Id="fil1ADDD4AE6DFC84D4B7876CA15289FFFA" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\PresentMon\PresentMon64-1.5.2.exe" />
+                <Component Id="cmpC9FDA2A63A64022F27649C6DD6729D8D" Guid="*" Win64="yes">
+                    <File Id="fil444A50FFAD9F4E0A482DCBC9AE37F9D5" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\PresentMon\PresentMon64-1.5.2.exe" />
                 </Component>
                 <Component Id="cmp8C1AB07795DAE387F9C0929C8DBCE953" Guid="*" Win64="yes">
                     <File Id="filE4E40086E3260C0A66358D88202CA5FF" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\PresentMon\ProcessIgnoreList.txt" />
@@ -233,7 +228,6 @@
             
             
             <ComponentRef Id="cmp60805430DA62A620ADC712537D30F06A" />
-            <ComponentRef Id="cmpEBE302E7BC33C7FDE3AF0A2A5D637C81" />
             
             <ComponentRef Id="cmpB80EB57EF2904D1A74E508B15C150404" />
             
@@ -256,8 +250,6 @@
             
             <ComponentRef Id="cmp8F4FC608131CDC6A82B59CBB8B203778" />
             
-            
-            
             <ComponentRef Id="cmp59564654D02343646998A8D6A6F0C25F" />
             <ComponentRef Id="cmp1D8C6ABF55C2B2B4242EE9F241074EAC" />
             <ComponentRef Id="cmpA9A2AB3353E22A8DA16EAAEE63473B2F" />
@@ -268,7 +260,7 @@
             <ComponentRef Id="cmp017BFB3832A5B110A2B3A350E13F2A5C" />
             <ComponentRef Id="cmpC85BD7478E073743A39F17DF06865203" />
             <ComponentRef Id="cmpDB3C9F13C3E689373E9F99E1C51AE6E5" />
-            <ComponentRef Id="cmp7358366301EC7CE9A932A5F8FBEC5A00" />
+            <ComponentRef Id="cmpC9FDA2A63A64022F27649C6DD6729D8D" />
             <ComponentRef Id="cmp8C1AB07795DAE387F9C0929C8DBCE953" />
             <ComponentRef Id="cmp3F2F9B6546AE06A5A2BC8225D157AC3C" />
             <ComponentRef Id="cmpDF6DFD99ABED9CCF3316E293E49351AE" />
