@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -762,6 +763,16 @@ namespace CapFrameX.ViewModel
 			return gameName + infoPartsFormatted;
 		}
 
+		private void ResetBarChartSeriesTitles()
+		{
+			for (int i = 0; i < ComparisonRecords.Count; i++)
+			{
+				ComparisonModel.Series[i].Title = string.Empty;
+			}
+
+			ComparisonRowChartLabels = new string[0];
+		}
+
 		private ComparisonRecordInfo GetComparisonRecordInfoFromFileRecordInfo(IFileRecordInfo fileRecordInfo)
 		{
 			string infoText = string.Empty;
@@ -790,6 +801,7 @@ namespace CapFrameX.ViewModel
 			if (!_doUpdateCharts)
 				return;
 
+			ResetBarChartSeriesTitles();
 			ComparisonModel.Series.Clear();
 			// ComparisonLShapeCollection.Clear();
 
@@ -802,7 +814,7 @@ namespace CapFrameX.ViewModel
 		{
 			AddToFrameTimeChart(wrappedComparisonInfo);
 			AddToColumnCharts(wrappedComparisonInfo);
-			AddToLShapeChart(wrappedComparisonInfo);
+			// AddToLShapeChart(wrappedComparisonInfo);
 
 			UpdateAxesMinMax(true);
 		}
@@ -1043,9 +1055,25 @@ namespace CapFrameX.ViewModel
 			ComparisonRecords.Remove(wrappedComparisonRecordInfo);
 			UpdateIndicesAfterRemove(ComparisonRecords);
 			UpdateCuttingParameter();
-
-			//Cleanup charts and performance parameter
 			UpdateCharts();
+
+			// Do with delay
+			var context = TaskScheduler.FromCurrentSynchronizationContext();
+			Task.Run(async () =>
+			{
+				await SetTaskDelay().ContinueWith(_ =>
+				{
+					Application.Current.Dispatcher.Invoke(new Action(() =>
+					{
+						BarChartHeight = 40 + (2 * BarChartMaxRowHeight + 12) * ComparisonRecords.Count;
+					}));
+				}, CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, context);
+			});
+		}
+
+		private async Task SetTaskDelay()
+		{
+			await Task.Delay(TimeSpan.FromMilliseconds(500));
 		}
 
 		private void UpdateIndicesAfterRemove(ObservableCollection<ComparisonRecordInfoWrapper> comparisonRecords)

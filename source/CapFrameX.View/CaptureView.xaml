@@ -47,13 +47,13 @@
 
 		<TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="5" Margin="0 30 0 0" Text="{Binding CaptureStateInfo}" FontSize="14" Style="{StaticResource MaterialDesignCaptionTextBlock}" 
 				   VerticalAlignment="Center" HorizontalAlignment="Center" />
-		<Grid Grid.Row="1" Grid.Column="1">
+		<Grid Grid.Row="1" Grid.Column="1" Margin="-20 0 0 0">
 			<Grid.RowDefinitions>
 				<RowDefinition Height="2*"></RowDefinition>
 				<RowDefinition Height="70"></RowDefinition>
 				<RowDefinition Height="3*"></RowDefinition>
 			</Grid.RowDefinitions>
-			<StackPanel Grid.Row="0" Margin="0 0 0 0" Orientation="Vertical" Width="200">
+			<StackPanel Grid.Row="0" Margin="0" Orientation="Vertical" Width="200">
 				<StackPanel Orientation="Horizontal">
 					<TextBlock Style="{StaticResource MaterialDesignTitleTextBlock}">Running processes</TextBlock>
 					<Button Padding="0 0 25 4" Width="64" Height="24" Foreground="Black" BorderThickness="0" Background="Transparent" VerticalAlignment="Top"
@@ -118,7 +118,7 @@
 				</ListView>
 			</StackPanel>
 		</Grid>
-		<Grid Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="2">
+		<Grid Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="2" Margin="20 0 0 0">
 			<oxy:PlotView Background="#F0F0F0" x:Name="FrametimePlotView" Model="{Binding FrametimeModel}"
 						  MouseDoubleClick="ResetChart_MouseDoubleClick" Height="200" VerticalAlignment="Top">
 			</oxy:PlotView>
