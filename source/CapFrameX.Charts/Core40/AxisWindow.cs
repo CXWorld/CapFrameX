@@ -25,17 +25,45 @@ using System.Linq;
 
 namespace LiveCharts
 {
-    public abstract class AxisWindow : IAxisWindow
+	/// <summary>
+	/// AxisWindow
+	/// </summary>
+	public abstract class AxisWindow : IAxisWindow
     {
-        public abstract double MinimumSeparatorWidth { get; }
+		/// <summary>
+		/// MinimumSeparatorWidth
+		/// </summary>
+		public abstract double MinimumSeparatorWidth { get; }
 
-        public abstract bool IsHeader(double x);
+		/// <summary>
+		/// IsHeader
+		/// </summary>
+		/// <param name="x"></param>
+		/// <returns></returns>
+		public abstract bool IsHeader(double x);
 
-        public abstract bool IsSeparator(double x);
+		/// <summary>
+		/// IsSeparator
+		/// </summary>
+		/// <param name="x"></param>
+		/// <returns></returns>
+		public abstract bool IsSeparator(double x);
 
-        public abstract string FormatAxisLabel(double x);
+		/// <summary>
+		/// FormatAxisLabel
+		/// </summary>
+		/// <param name="x"></param>
+		/// <returns></returns>
+		public abstract string FormatAxisLabel(double x);
 
-        public virtual bool TryGetSeparatorIndices(IEnumerable<double> indices, int maximumSeparatorCount, out IEnumerable<double> separators)
+		/// <summary>
+		/// TryGetSeparatorIndices
+		/// </summary>
+		/// <param name="indices"></param>
+		/// <param name="maximumSeparatorCount"></param>
+		/// <param name="separators"></param>
+		/// <returns></returns>
+		public virtual bool TryGetSeparatorIndices(IEnumerable<double> indices, int maximumSeparatorCount, out IEnumerable<double> separators)
         {
             var separatorList = new List<double>();
 

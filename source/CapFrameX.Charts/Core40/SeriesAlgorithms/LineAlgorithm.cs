@@ -47,10 +47,10 @@ namespace LiveCharts.SeriesAlgorithms
             PreferredSelectionMode = TooltipSelectionMode.SharedXValues;
         }
 
-        /// <summary>
-        /// Updates this instance.
-        /// </summary>
-        public override void Update()
+		/// <summary>
+		/// Updates this instance.
+		/// </summary>
+		public override void Update()
         {
             var points = View.ActualValues.GetPoints(View).ToArray();
 

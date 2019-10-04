@@ -42,7 +42,14 @@ namespace LiveCharts
             CleanFactor = 1.5;
         }
 
-        internal override CoreMargin PrepareChart(AxisOrientation source, ChartCore chart)
+		/// <summary>
+		/// PrepareChart
+		/// </summary>
+		/// <param name="source"></param>
+		/// <param name="chart"></param>
+		/// <returns></returns>
+		[Obsolete]
+		internal override CoreMargin PrepareChart(AxisOrientation source, ChartCore chart)
         {
             if (!(Math.Abs(TopLimit - BotLimit) > S * .01) || !ShowLabels) return new CoreMargin();
 

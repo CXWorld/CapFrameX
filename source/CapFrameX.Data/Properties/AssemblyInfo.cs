@@ -4,11 +4,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("CapFrameX.Configuration")]
+[assembly: AssemblyTitle("CapFrameX.Data")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("CapFrameX.Configuration")]
+[assembly: AssemblyProduct("CapFrameX.Data")]
 [assembly: AssemblyCopyright("Copyright ©  2019")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -19,7 +19,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("d0a09fa9-d19e-4ccc-bf0e-104893cfe48b")]
+[assembly: Guid("E75B92B7-544D-4B1F-8C34-4777EC48CE2C")]
 
 // Version information for an assembly consists of the following four values:
 //

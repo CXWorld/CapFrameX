@@ -144,7 +144,8 @@ namespace LiveCharts.Wpf.Charts.Base
             Model.Updater.Run();
         }
 
-        private void OnIsVisibleChanged(object sender, DependencyPropertyChangedEventArgs dependencyPropertyChangedEventArgs)
+		[Obsolete]
+		private void OnIsVisibleChanged(object sender, DependencyPropertyChangedEventArgs dependencyPropertyChangedEventArgs)
         {
             Model.ControlSize = new CoreSize(ActualWidth, ActualHeight);
 
@@ -1271,7 +1272,8 @@ namespace LiveCharts.Wpf.Charts.Base
         private Point _previous;
         private Rectangle ScrollBar { get; set; }
 
-        internal void PrepareScrolBar()
+		[Obsolete]
+		internal void PrepareScrolBar()
         {
             if (!IsControlLoaded) return;
 
@@ -1358,14 +1360,16 @@ namespace LiveCharts.Wpf.Charts.Base
             ((UIElement) sender).CaptureMouse();
         }
 
-        private static void ScrollModeOnChanged(DependencyObject o, DependencyPropertyChangedEventArgs e)
+		[Obsolete]
+		private static void ScrollModeOnChanged(DependencyObject o, DependencyPropertyChangedEventArgs e)
         {
             var wpfChart = (Chart) o;
             if (o == null) return;
             wpfChart.PrepareScrolBar();
         }
 
-        private static void ScrollLimitOnChanged(DependencyObject o, DependencyPropertyChangedEventArgs e)
+		[Obsolete]
+		private static void ScrollLimitOnChanged(DependencyObject o, DependencyPropertyChangedEventArgs e)
         {
             var wpfChart = (Chart)o;
             if (o == null) return;
@@ -1378,7 +1382,8 @@ namespace LiveCharts.Wpf.Charts.Base
 
         internal static Point? Ldsp;
 
-        private void DragSection(object sender, MouseEventArgs e)
+		[Obsolete]
+		private void DragSection(object sender, MouseEventArgs e)
         {
             var ax = AxisSection.Dragging;
 

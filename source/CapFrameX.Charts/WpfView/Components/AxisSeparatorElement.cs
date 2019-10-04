@@ -72,14 +72,15 @@ namespace LiveCharts.Wpf.Components
             get { return _model; }
         }
 
-        /// <summary>
-        /// Updates the label.
-        /// </summary>
-        /// <param name="text">The text.</param>
-        /// <param name="axis">The axis.</param>
-        /// <param name="source">The source.</param>
-        /// <returns></returns>
-        public LabelEvaluation UpdateLabel(string text, AxisCore axis, AxisOrientation source)
+		/// <summary>
+		/// Updates the label.
+		/// </summary>
+		/// <param name="text">The text.</param>
+		/// <param name="axis">The axis.</param>
+		/// <param name="source">The source.</param>
+		/// <returns></returns>
+		[Obsolete]
+		public LabelEvaluation UpdateLabel(string text, AxisCore axis, AxisOrientation source)
         {
             TextBlock.Text = text;
 
@@ -104,6 +105,7 @@ namespace LiveCharts.Wpf.Components
             return transform;
         }
 
+		[Obsolete]
 		private double GetLabelMargin(AxisCore axis, string text)
 		{
 			double maxWidth = 0;

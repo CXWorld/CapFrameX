@@ -38,10 +38,22 @@ namespace LiveCharts.Wpf
     /// <seealso cref="LiveCharts.Definitions.Charts.IWindowAxisView" />
     public class WindowAxis : Axis, IWindowAxisView
     {
-        public static readonly DependencyProperty WindowsProperty = DependencyProperty.Register("Windows", typeof(AxisWindowCollection), typeof(WindowAxis),new PropertyMetadata(default(AxisWindowCollection)));
-        public static readonly DependencyProperty SelectedWindowProperty = DependencyProperty.Register("SelectedWindow", typeof(IAxisWindow), typeof(WindowAxis), new PropertyMetadata(null));
-        public static readonly DependencyProperty HeaderFontWeightProperty = DependencyProperty.Register("HeaderFontWeight", typeof(FontWeight), typeof(WindowAxis), new PropertyMetadata(FontWeights.ExtraBold));
-        public static readonly DependencyProperty HeaderForegroundProperty = DependencyProperty.Register("HeaderForeground", typeof(Brush), typeof(WindowAxis), new PropertyMetadata(new SolidColorBrush(Color.FromRgb(130, 130, 130))));
+		/// <summary>
+		/// WindowsProperty
+		/// </summary>
+		public static readonly DependencyProperty WindowsProperty = DependencyProperty.Register("Windows", typeof(AxisWindowCollection), typeof(WindowAxis),new PropertyMetadata(default(AxisWindowCollection)));
+		/// <summary>
+		/// SelectedWindowProperty
+		/// </summary>
+		public static readonly DependencyProperty SelectedWindowProperty = DependencyProperty.Register("SelectedWindow", typeof(IAxisWindow), typeof(WindowAxis), new PropertyMetadata(null));
+		/// <summary>
+		/// HeaderFontWeightProperty
+		/// </summary>
+		public static readonly DependencyProperty HeaderFontWeightProperty = DependencyProperty.Register("HeaderFontWeight", typeof(FontWeight), typeof(WindowAxis), new PropertyMetadata(FontWeights.ExtraBold));
+		/// <summary>
+		/// HeaderForegroundProperty
+		/// </summary>
+		public static readonly DependencyProperty HeaderForegroundProperty = DependencyProperty.Register("HeaderForeground", typeof(Brush), typeof(WindowAxis), new PropertyMetadata(new SolidColorBrush(Color.FromRgb(130, 130, 130))));
 
         /// <summary>
         /// 
@@ -87,7 +99,13 @@ namespace LiveCharts.Wpf
             set { SetValue(HeaderForegroundProperty, value); }
         }
 
-        public override AxisCore AsCoreElement(ChartCore chart, AxisOrientation source)
+		/// <summary>
+		/// AsCoreElement
+		/// </summary>
+		/// <param name="chart"></param>
+		/// <param name="source"></param>
+		/// <returns></returns>
+		public override AxisCore AsCoreElement(ChartCore chart, AxisOrientation source)
         {
             if (Model == null) Model = new WindowAxisCore(this);
             Model.ShowLabels = ShowLabels;
@@ -105,8 +123,13 @@ namespace LiveCharts.Wpf
             ((WindowAxisCore) Model).Windows = Windows.ToList();
             return Model;
         }
-                        
-        public override void RenderSeparator(SeparatorElementCore model, ChartCore chart)
+
+		/// <summary>
+		/// RenderSeparator
+		/// </summary>
+		/// <param name="model"></param>
+		/// <param name="chart"></param>
+		public override void RenderSeparator(SeparatorElementCore model, ChartCore chart)
         {
             base.RenderSeparator(model, chart);
 
@@ -140,7 +163,11 @@ namespace LiveCharts.Wpf
             }
         }
 
-        public void SetSelectedWindow(IAxisWindow window)
+		/// <summary>
+		/// SetSelectedWindow
+		/// </summary>
+		/// <param name="window"></param>
+		public void SetSelectedWindow(IAxisWindow window)
         {
             SetCurrentValue(SelectedWindowProperty, window);
         }

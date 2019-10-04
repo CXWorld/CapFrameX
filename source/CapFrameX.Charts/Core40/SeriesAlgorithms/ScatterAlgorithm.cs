@@ -43,10 +43,10 @@ namespace LiveCharts.SeriesAlgorithms
             PreferredSelectionMode = TooltipSelectionMode.OnlySender;
         }
 
-        /// <summary>
-        /// Updates this instance.
-        /// </summary>
-        public override void Update()
+		/// <summary>
+		/// Updates this instance.
+		/// </summary>
+		public override void Update()
         {
             var bubbleSeries = (IScatterSeriesView) View;
 

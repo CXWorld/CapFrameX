@@ -51,7 +51,8 @@ namespace LiveCharts
             return FormatLabel;
         }
 
-        internal override CoreMargin PrepareChart(AxisOrientation source, ChartCore chart)
+		[Obsolete]
+		internal override CoreMargin PrepareChart(AxisOrientation source, ChartCore chart)
         {
             // Get the current configued values from the view
             _initialDateTime = ((IDateAxisView) View).InitialDateTime;

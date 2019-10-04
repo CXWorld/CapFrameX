@@ -92,7 +92,7 @@
       <Name>CapFrameX.Contracts</Name>
     </ProjectReference>
     <ProjectReference Include="..\CapFrameX.Data\CapFrameX.Data.csproj">
-      <Project>{cad10bab-6fde-43f4-b768-6caff4e6b104}</Project>
+      <Project>{D328B391-432C-4A0E-9A7E-57A58AA592D4}</Project>
       <Name>CapFrameX.Data</Name>
     </ProjectReference>
     <ProjectReference Include="..\CapFrameX.Extensions\CapFrameX.Extensions.csproj">

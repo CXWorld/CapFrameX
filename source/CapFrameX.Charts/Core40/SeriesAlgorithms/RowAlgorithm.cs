@@ -46,10 +46,10 @@ namespace LiveCharts.SeriesAlgorithms
             PreferredSelectionMode = TooltipSelectionMode.SharedYInSeries;
         }
 
-        /// <summary>
-        /// Updates this instance.
-        /// </summary>
-        public override void Update()
+		/// <summary>
+		/// Updates this instance.
+		/// </summary>
+		public override void Update()
         {
             var castedSeries = (IRowSeriesView) View;
 

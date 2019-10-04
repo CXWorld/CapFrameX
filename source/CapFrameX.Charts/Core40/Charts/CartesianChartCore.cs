@@ -47,14 +47,14 @@ namespace LiveCharts.Charts
             updater.Chart = this;
         }
 
-        #endregion
+		#endregion
 
-        #region Publics
+		#region Publics
 
-        /// <summary>
-        /// Prepares Chart Axes
-        /// </summary>
-        public override void PrepareAxes()
+		/// <summary>
+		/// Prepares Chart Axes
+		/// </summary>
+		public override void PrepareAxes()
         {
             base.PrepareAxes();
 

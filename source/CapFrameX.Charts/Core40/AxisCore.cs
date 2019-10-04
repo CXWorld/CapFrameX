@@ -201,21 +201,66 @@ namespace LiveCharts
             }
         }
 
-        public double BotLimit { get; set; }
-        public double TopSeriesLimit { get; set; }
-        public double BotSeriesLimit { get; set; }
-        public double MaxPointRadius { get; set; }
-        public double Magnitude { get; set; }
-        public double CleanFactor { get; set; }
-        public Dictionary<double, SeparatorElementCore> Cache { get; set; }
-        public double? LastAxisMax { get; set; }
-        public double? LastAxisMin { get; set; }
-        public CoreRectangle LastPlotArea { get; set; }
-        public int GarbageCollectorIndex { get; set; }
-        public double PreviousTop { get; set; }
-        public double PreviousBot { get; set; }
-        public double FirstSeparator { get; set; }
-        public double LastSeparator { get; set; }
+		/// <summary>
+		/// BotLimit
+		/// </summary>
+		public double BotLimit { get; set; }
+		/// <summary>
+		/// TopSeriesLimit
+		/// </summary>
+		public double TopSeriesLimit { get; set; }
+		/// <summary>
+		/// BotSeriesLimit
+		/// </summary>
+		public double BotSeriesLimit { get; set; }
+		/// <summary>
+		/// MaxPointRadius
+		/// </summary>
+		public double MaxPointRadius { get; set; }
+		/// <summary>
+		/// Magnitude
+		/// </summary>
+		public double Magnitude { get; set; }
+		/// <summary>
+		/// CleanFactor
+		/// </summary>
+		public double CleanFactor { get; set; }
+		/// <summary>
+		/// Cache
+		/// </summary>
+		public Dictionary<double, SeparatorElementCore> Cache { get; set; }
+		/// <summary>
+		/// LastAxisMax
+		/// </summary>
+		public double? LastAxisMax { get; set; }
+		/// <summary>
+		/// LastAxisMin
+		/// </summary>
+		public double? LastAxisMin { get; set; }
+		/// <summary>
+		/// LastPlotArea
+		/// </summary>
+		public CoreRectangle LastPlotArea { get; set; }
+		/// <summary>
+		/// GarbageCollectorIndex
+		/// </summary>
+		public int GarbageCollectorIndex { get; set; }
+		/// <summary>
+		/// PreviousTop
+		/// </summary>
+		public double PreviousTop { get; set; }
+		/// <summary>
+		/// PreviousBot
+		/// </summary>
+		public double PreviousBot { get; set; }
+		/// <summary>
+		/// FirstSeparator
+		/// </summary>
+		public double FirstSeparator { get; set; }
+		/// <summary>
+		/// LastSeparator
+		/// </summary>
+		public double LastSeparator { get; set; }
 
         #endregion
 
@@ -282,7 +327,8 @@ namespace LiveCharts
             if (Labels != null) S = S < 1 ? 1 : S;
         }
 
-        internal virtual CoreMargin PrepareChart(AxisOrientation source, ChartCore chart)
+		[Obsolete]
+		internal virtual CoreMargin PrepareChart(AxisOrientation source, ChartCore chart)
         {
             if (!(Math.Abs(TopLimit - BotLimit) > S * .01) || !ShowLabels) return new CoreMargin();
 
@@ -331,7 +377,8 @@ namespace LiveCharts
             return currentMargin;
         }
 
-        internal void UpdateSeparators(AxisOrientation source, ChartCore chart, int axisIndex)
+		[Obsolete]
+		internal void UpdateSeparators(AxisOrientation source, ChartCore chart, int axisIndex)
         {
             foreach (var element in Cache.Values.ToArray())
             {

@@ -26,56 +26,103 @@ using System.Linq;
 
 namespace LiveCharts
 {
-    public abstract class DateAxisWindow : AxisWindow
+	/// <summary>
+	/// DateAxisWindow
+	/// </summary>
+	public abstract class DateAxisWindow : AxisWindow
     {
-        public DateAxisCore DateAxisCore { get; set; }
+		/// <summary>
+		/// DateAxisCore
+		/// </summary>
+		public DateAxisCore DateAxisCore { get; set; }
 
-        public override bool IsHeader(double x)
+		/// <summary>
+		/// IsHeader
+		/// </summary>
+		/// <param name="x"></param>
+		/// <returns></returns>
+		public override bool IsHeader(double x)
         {
             var date = DateAxisCore.GetdateTime(x);
             return IsHeader(date);
         }
 
-        public override bool IsSeparator(double x)
+		/// <summary>
+		/// IsSeparator
+		/// </summary>
+		/// <param name="x"></param>
+		/// <returns></returns>
+		public override bool IsSeparator(double x)
         {
             var date = DateAxisCore.GetdateTime(x);
             return IsSeparator(date);
         }
 
-        public override string FormatAxisLabel(double x)
+		/// <summary>
+		/// FormatAxisLabel
+		/// </summary>
+		/// <param name="x"></param>
+		/// <returns></returns>
+		public override string FormatAxisLabel(double x)
         {
             var date = DateAxisCore.GetdateTime(x);
             return FormatAxisLabel(date);
         }
 
-        protected bool IsSecond(DateTime x)
+		/// <summary>
+		/// IsSecond
+		/// </summary>
+		/// <param name="x"></param>
+		/// <returns></returns>
+		protected bool IsSecond(DateTime x)
         {
             return x.Millisecond == 0;
         }
-        protected bool IsMinute(DateTime x)
+		/// <summary>
+		/// IsMinute
+		/// </summary>
+		/// <param name="x"></param>
+		/// <returns></returns>
+		protected bool IsMinute(DateTime x)
         {
             return x.Second == 0 && IsSecond(x);
         }
-        protected bool IsHour(DateTime x)
+		/// <summary>
+		/// IsHour
+		/// </summary>
+		/// <param name="x"></param>
+		/// <returns></returns>
+		protected bool IsHour(DateTime x)
         {
             return x.Minute == 0 && IsMinute(x);
         }
-        protected bool IsDay(DateTime x)
+		/// <summary>
+		/// IsDay
+		/// </summary>
+		/// <param name="x"></param>
+		/// <returns></returns>
+		protected bool IsDay(DateTime x)
         {
             return x.Hour == 0 && IsHour(x);
-        }    
-        protected bool IsYear(DateTime x)
+        }
+		/// <summary>
+		/// IsYear
+		/// </summary>
+		/// <param name="x"></param>
+		/// <returns></returns>
+		protected bool IsYear(DateTime x)
         {
             return x.DayOfYear == 1 && IsDay(x);
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="indices"></param>
-        /// <param name="separators"></param>
-        /// <returns></returns>
-        public override bool TryGetSeparatorIndices(IEnumerable<double> indices, int maximumSeparatorCount, out IEnumerable<double> separators)
+		/// <summary>
+		/// TryGetSeparatorIndices
+		/// </summary>
+		/// <param name="indices"></param>
+		/// <param name="maximumSeparatorCount"></param>
+		/// <param name="separators"></param>
+		/// <returns></returns>
+		public override bool TryGetSeparatorIndices(IEnumerable<double> indices, int maximumSeparatorCount, out IEnumerable<double> separators)
         {
             // First validate the interval between the indices
             // We expect always at least 2 indices to exist.

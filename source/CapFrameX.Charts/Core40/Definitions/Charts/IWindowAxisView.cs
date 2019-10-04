@@ -1,10 +1,14 @@
 namespace LiveCharts.Definitions.Charts
 {
-    /// <summary>
-    /// 
-    /// </summary>
-    public interface IWindowAxisView : IAxisView
+	/// <summary>
+	/// IWindowAxisView
+	/// </summary>
+	public interface IWindowAxisView : IAxisView
     {
-        void SetSelectedWindow(IAxisWindow window);
+		/// <summary>
+		/// SetSelectedWindow
+		/// </summary>
+		/// <param name="window"></param>
+		void SetSelectedWindow(IAxisWindow window);
     }
 }

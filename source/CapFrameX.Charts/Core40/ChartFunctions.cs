@@ -191,27 +191,29 @@ namespace LiveCharts
                 ToDrawMargin(point.Y, AxisOrientation.Y, chart, axisYIndex));
         }
 
-        /// <summary>
-        /// Gets the width of a unit in the chart
-        /// </summary>
-        /// <param name="source">axis orientation</param>
-        /// <param name="chart">chart model to get the scale at</param>
-        /// <param name="axis">axis index in the axes collection</param>
-        /// <returns></returns>
-        public static double GetUnitWidth(AxisOrientation source, ChartCore chart, int axis = 0)
+		/// <summary>
+		/// Gets the width of a unit in the chart
+		/// </summary>
+		/// <param name="source">axis orientation</param>
+		/// <param name="chart">chart model to get the scale at</param>
+		/// <param name="axis">axis index in the axes collection</param>
+		/// <returns></returns>
+		[Obsolete]
+		public static double GetUnitWidth(AxisOrientation source, ChartCore chart, int axis = 0)
         {
             return GetUnitWidth(source, chart,
                 (source == AxisOrientation.X ? chart.AxisX : chart.AxisY)[axis]);
         }
 
-        /// <summary>
-        /// Gets the width of a unit in the chart
-        /// </summary>
-        /// <param name="source">axis orientation</param>
-        /// <param name="chart">chart model to get the scale at</param>
-        /// <param name="axis">axis instance</param>
-        /// <returns></returns>
-        public static double GetUnitWidth(AxisOrientation source, ChartCore chart, AxisCore axis)
+		/// <summary>
+		/// Gets the width of a unit in the chart
+		/// </summary>
+		/// <param name="source">axis orientation</param>
+		/// <param name="chart">chart model to get the scale at</param>
+		/// <param name="axis">axis instance</param>
+		/// <returns></returns>
+		[Obsolete]
+		public static double GetUnitWidth(AxisOrientation source, ChartCore chart, AxisCore axis)
         {
             double min;
             double u = !double.IsNaN(axis.View.BarUnit)

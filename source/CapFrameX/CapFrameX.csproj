@@ -213,7 +213,7 @@
       <Name>CapFrameX.Contracts</Name>
     </ProjectReference>
     <ProjectReference Include="..\CapFrameX.Data\CapFrameX.Data.csproj">
-      <Project>{CAD10BAB-6FDE-43F4-B768-6CAFF4E6B104}</Project>
+      <Project>{D328B391-432C-4A0E-9A7E-57A58AA592D4}</Project>
       <Name>CapFrameX.Data</Name>
     </ProjectReference>
     <ProjectReference Include="..\CapFrameX.MVVM\CapFrameX.MVVM.csproj">

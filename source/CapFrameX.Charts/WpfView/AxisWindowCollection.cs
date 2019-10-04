@@ -3,11 +3,14 @@ using LiveCharts.Helpers;
 
 namespace LiveCharts.Wpf
 {
-    /// <summary>
-    /// 
-    /// </summary>
-    public class AxisWindowCollection : NoisyCollection<AxisWindow>
+	/// <summary>
+	/// AxisWindowCollection
+	/// </summary>
+	public class AxisWindowCollection : NoisyCollection<AxisWindow>
     {
+		/// <summary>
+		/// Ctor
+		/// </summary>
         public AxisWindowCollection()
         {
             NoisyCollectionChanged += OnNoisyCollectionChanged;

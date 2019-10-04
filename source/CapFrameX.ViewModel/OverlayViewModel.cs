@@ -17,9 +17,7 @@ namespace CapFrameX.ViewModel
         private PubSubEvent<ViewMessages.HideOverlay> _hideOverlayEvent;
         private bool _isEditingDialogOpen;
         private EditingDialog _editingDialogContent;
-        private bool _useEventMessages;
-        private Session _session;
-        private IFileRecordInfo _recordInfo;
+		private IFileRecordInfo _recordInfo;
         private string _customCpuDescription;
         private string _customGpuDescription;
         private string _customGameName;
@@ -96,7 +94,6 @@ namespace CapFrameX.ViewModel
             AcceptEditingDialogCommand = new DelegateCommand(OnAcceptEditingDialog);
             CancelEditingDialogCommand = new DelegateCommand(OnCancelEditingDialog);
 
-            _useEventMessages = false;
             _hideOverlayEvent = _eventAggregator.GetEvent<PubSubEvent<ViewMessages.HideOverlay>>();
             SubscribeToUpdateSession();
         }
@@ -120,16 +117,13 @@ namespace CapFrameX.ViewModel
             _eventAggregator.GetEvent<PubSubEvent<ViewMessages.UpdateSession>>()
                             .Subscribe(msg =>
                             {
-                                _session = msg.OcatSession;
                                 _recordInfo = msg.RecordInfo;
                             });
         }
 
         public void OnNavigatedTo(NavigationContext navigationContext)
         {
-            _useEventMessages = true;
-
-            if (_session != null)
+            if (_recordInfo != null)
             {
                 CustomCpuDescription = string.Copy(_recordInfo.ProcessorName ?? "");
                 CustomGpuDescription = string.Copy(_recordInfo.GraphicCardName ?? "");
@@ -155,7 +149,6 @@ namespace CapFrameX.ViewModel
 
         public void OnNavigatedFrom(NavigationContext navigationContext)
         {
-            _useEventMessages = false;
         }
     }
 }

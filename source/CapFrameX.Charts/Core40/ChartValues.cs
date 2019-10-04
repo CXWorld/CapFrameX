@@ -24,6 +24,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Reflection;
 using LiveCharts.Charts;
 using LiveCharts.Configurations;
 using LiveCharts.Definitions.Series;
@@ -158,30 +159,31 @@ namespace LiveCharts
 
         }
 
-        /// <summary>
-        /// Gets the current chart points in the view, the view is required as an argument, because an instance of IChartValues could hold many ISeriesView instances.
-        /// </summary>
-        /// <param name="seriesView">The series view</param>
-        /// <returns></returns>
-        public IEnumerable<ChartPoint> GetPoints(ISeriesView seriesView)
+		/// <summary>
+		/// Gets the current chart points in the view, the view is required as an argument, because an instance of IChartValues could hold many ISeriesView instances.
+		/// </summary>
+		/// <param name="seriesView">The series view</param>
+		/// <returns></returns>
+		[Obsolete]
+		public IEnumerable<ChartPoint> GetPoints(ISeriesView seriesView)
         {
             if (seriesView == null) yield break;
 
             var config = GetConfig(seriesView);
 
-#if NET40
-            var isClass = typeof(T).IsClass;
-            var isObservable = isClass && typeof(IObservableChartPoint).IsAssignableFrom(typeof(T));
-            var notifies = isClass && typeof(INotifyPropertyChanged).IsAssignableFrom(typeof(T));
+//#if NET40
+//            var isClass = typeof(T).IsClass;
+//            var isObservable = isClass && typeof(IObservableChartPoint).IsAssignableFrom(typeof(T));
+//            var notifies = isClass && typeof(INotifyPropertyChanged).IsAssignableFrom(typeof(T));
 
-#endif
-#if NET45
+//#endif
+//#if NET45
             var isClass = typeof(T).GetTypeInfo().IsClass;
             var isObservable = isClass &&
                                typeof(IObservableChartPoint).GetTypeInfo().IsAssignableFrom(typeof(T).GetTypeInfo());
             var notifies = isClass && typeof(INotifyPropertyChanged).GetTypeInfo()
                                .IsAssignableFrom(typeof(T).GetTypeInfo());
-#endif
+//#endif
 
             var tracker = GetTracker(seriesView);
             var gci = tracker.Gci;
@@ -237,12 +239,12 @@ namespace LiveCharts
         /// </summary>
         public void CollectGarbage(ISeriesView seriesView)
         {
-#if NET40
-            var isclass = typeof(T).IsClass;
-#endif
-#if NET45
+//#if NET40
+//            var isclass = typeof(T).IsClass;
+//#endif
+//#if NET45
             var isclass = typeof(T).GetTypeInfo().IsClass;
-#endif
+//#endif
 
             var tracker = GetTracker(seriesView);
 

@@ -226,10 +226,11 @@ namespace LiveCharts.Charts
             
         }
 
-        /// <summary>
-        /// Calculates the components and margin.
-        /// </summary>
-        public void CalculateComponentsAndMargin()
+		/// <summary>
+		/// Calculates the components and margin.
+		/// </summary>
+		[Obsolete]
+		public void CalculateComponentsAndMargin()
         {
             var curSize = new CoreRectangle(0, 0, ControlSize.Width, ControlSize.Height);
 

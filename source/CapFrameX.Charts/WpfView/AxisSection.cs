@@ -118,10 +118,10 @@ namespace LiveCharts.Wpf
             set { SetValue(ToValueProperty, value); }
         }
 
-        /// <summary>
-        /// The value property
-        /// </summary>
-        public static readonly DependencyProperty ValueProperty = DependencyProperty.Register(
+		/// <summary>
+		/// The value property
+		/// </summary>
+		public static readonly DependencyProperty ValueProperty = DependencyProperty.Register(
             "Value", typeof(double), typeof(AxisSection), new PropertyMetadata(default(double), UpdateSection));
         /// <summary>
         /// Gets or sets the value where the section is drawn
@@ -283,14 +283,15 @@ namespace LiveCharts.Wpf
             get { return (Brush) GetValue(DataLabelForegroundProperty); }
             set { SetValue(DataLabelForegroundProperty, value); }
         }
-        #endregion
+		#endregion
 
-        /// <summary>
-        /// Draws the or move.
-        /// </summary>
-        /// <param name="source">The source.</param>
-        /// <param name="axis">The axis.</param>
-        public void DrawOrMove(AxisOrientation source, int axis)
+		/// <summary>
+		/// Draws the or move.
+		/// </summary>
+		/// <param name="source">The source.</param>
+		/// <param name="axis">The axis.</param>
+		[Obsolete]
+		public void DrawOrMove(AxisOrientation source, int axis)
         {
             _rectangle.Fill = Fill;
             _rectangle.Stroke = Stroke;
@@ -408,7 +409,8 @@ namespace LiveCharts.Wpf
             return model;
         }
 
-        private static void UpdateSection(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs dependencyPropertyChangedEventArgs)
+		[Obsolete]
+		private static void UpdateSection(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs dependencyPropertyChangedEventArgs)
         {
             var section = (AxisSection) dependencyObject;
 
@@ -419,7 +421,8 @@ namespace LiveCharts.Wpf
             }
         }
 
-        private void PlaceLabel(string text, AxisCore axis, AxisOrientation source)
+		[Obsolete]
+		private void PlaceLabel(string text, AxisCore axis, AxisOrientation source)
         {
             _label.Text = text;
 

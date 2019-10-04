@@ -102,9 +102,9 @@
     <Compile Include="Validation\NotEmptyValidationRule.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\CapFrameX.Charts\Core40\Core40.csproj">
+    <ProjectReference Include="..\CapFrameX.Charts\Core40\Core.csproj">
       <Project>{f261c3d7-6194-4625-9516-044081b06028}</Project>
-      <Name>Core40</Name>
+      <Name>Core</Name>
     </ProjectReference>
     <ProjectReference Include="..\CapFrameX.Charts\WpfView\WpfView.csproj">
       <Project>{4d253423-ae05-47f6-a59d-9162ec0bb1f2}</Project>

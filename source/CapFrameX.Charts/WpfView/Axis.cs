@@ -542,13 +542,14 @@ namespace LiveCharts.Wpf
             ase.TextBlock.Visibility = !ShowLabels ? Visibility.Collapsed : Visibility.Visible;
         }
 
-        /// <summary>
-        /// Updates the title.
-        /// </summary>
-        /// <param name="chart">The chart.</param>
-        /// <param name="rotationAngle">The rotation angle.</param>
-        /// <returns></returns>
-        public CoreSize UpdateTitle(ChartCore chart, double rotationAngle = 0)
+		/// <summary>
+		/// Updates the title.
+		/// </summary>
+		/// <param name="chart">The chart.</param>
+		/// <param name="rotationAngle">The rotation angle.</param>
+		/// <returns></returns>
+		[Obsolete]
+		public CoreSize UpdateTitle(ChartCore chart, double rotationAngle = 0)
         {
             if (TitleBlock.Parent == null)
             {

@@ -5,10 +5,25 @@ namespace LiveCharts.Helpers
     /// </summary>
     public enum PeriodUnits
     {
-        Milliseconds,
-        Seconds,
-        Minutes,
-        Hours,
-        Days
-    }
+		/// <summary>
+		/// Milliseconds
+		/// </summary>
+		Milliseconds,
+		/// <summary>
+		/// Seconds
+		/// </summary>
+		Seconds,
+		/// <summary>
+		/// Minutes
+		/// </summary>
+		Minutes,
+		/// <summary>
+		/// Hours
+		/// </summary>
+		Hours,
+		/// <summary>
+		/// Days
+		/// </summary>
+		Days
+	}
 }

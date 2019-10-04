@@ -57,7 +57,10 @@ namespace LiveCharts
         /// </summary>
         public double YStart { get; set; }
 
-        public bool EvaluatesGantt { get; set; }
+		/// <summary>
+		/// EvaluatesGantt
+		/// </summary>
+		public bool EvaluatesGantt { get; set; }
 
         #region Gantt
 

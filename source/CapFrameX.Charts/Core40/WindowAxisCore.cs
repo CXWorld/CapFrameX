@@ -60,10 +60,11 @@ namespace LiveCharts
         {
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        internal override CoreMargin PrepareChart(AxisOrientation source, ChartCore chart)
+		/// <summary>
+		/// PrepareChart
+		/// </summary>
+		[Obsolete]
+		internal override CoreMargin PrepareChart(AxisOrientation source, ChartCore chart)
         {
             if (!(Math.Abs(TopLimit - BotLimit) > S * .01) || !ShowLabels) return new CoreMargin();
 

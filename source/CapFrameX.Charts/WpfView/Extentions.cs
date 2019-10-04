@@ -12,15 +12,16 @@ namespace LiveCharts.Wpf
     /// </summary>
     public static class Extentions
     {
-        /// <summary>
-        /// Converts a point at screen to chart values scale
-        /// </summary>
-        /// <param name="chart">Target chart</param>
-        /// <param name="screenPoint">point in screen</param>
-        /// <param name="axisX">axis x index</param>
-        /// <param name="axisY">axis y index</param>
-        /// <returns></returns>
-        public static Point ConvertToChartValues(this Chart chart, Point screenPoint, int axisX = 0, int axisY = 0)
+		/// <summary>
+		/// Converts a point at screen to chart values scale
+		/// </summary>
+		/// <param name="chart">Target chart</param>
+		/// <param name="screenPoint">point in screen</param>
+		/// <param name="axisX">axis x index</param>
+		/// <param name="axisY">axis y index</param>
+		/// <returns></returns>
+		[System.Obsolete]
+		public static Point ConvertToChartValues(this Chart chart, Point screenPoint, int axisX = 0, int axisY = 0)
         {
             if (chart.Model == null || chart.AxisX == null || chart.AxisX.Any(x => x.Model == null)) return new Point();
 
@@ -37,15 +38,16 @@ namespace LiveCharts.Wpf
                 ChartFunctions.FromPlotArea(screenPoint.Y - uw.Y, AxisOrientation.Y, chart.Model, axisY));
         }
 
-        /// <summary>
-        /// Converts a chart values pair to pixels
-        /// </summary>
-        /// <param name="chart">Target chart</param>
-        /// <param name="chartPoint">point in screen</param>
-        /// <param name="axisX">axis x index</param>
-        /// <param name="axisY">axis y index</param>
-        /// <returns></returns>
-        public static Point ConvertToPixels(this Chart chart, Point chartPoint, int axisX = 0, int axisY = 0)
+		/// <summary>
+		/// Converts a chart values pair to pixels
+		/// </summary>
+		/// <param name="chart">Target chart</param>
+		/// <param name="chartPoint">point in screen</param>
+		/// <param name="axisX">axis x index</param>
+		/// <param name="axisY">axis y index</param>
+		/// <returns></returns>
+		[System.Obsolete]
+		public static Point ConvertToPixels(this Chart chart, Point chartPoint, int axisX = 0, int axisY = 0)
         {
             if (chart.Model == null || chart.AxisX.Any(x => x.Model == null)) return new Point();
 

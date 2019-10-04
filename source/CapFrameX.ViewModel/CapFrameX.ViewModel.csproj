@@ -139,17 +139,17 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\CapFrameX.Charts\Core40\Core40.csproj">
+    <ProjectReference Include="..\CapFrameX.Charts\Core40\Core.csproj">
       <Project>{f261c3d7-6194-4625-9516-044081b06028}</Project>
-      <Name>Core40</Name>
+      <Name>Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\CapFrameX.Charts\OxyPlot.Wpf\OxyPlot.Wpf_NET40.csproj">
+    <ProjectReference Include="..\CapFrameX.Charts\OxyPlot.Wpf\OxyPlot.Wpf_NET.csproj">
       <Project>{0d7c7710-c58b-4713-ba18-8231a2f35a12}</Project>
-      <Name>OxyPlot.Wpf_NET40</Name>
+      <Name>OxyPlot.Wpf_NET</Name>
     </ProjectReference>
-    <ProjectReference Include="..\CapFrameX.Charts\OxyPlot\OxyPlot_NET40.csproj">
+    <ProjectReference Include="..\CapFrameX.Charts\OxyPlot\OxyPlot_NET.csproj">
       <Project>{1c1d9807-be39-40a4-87de-3f81e7c651e5}</Project>
-      <Name>OxyPlot_NET40</Name>
+      <Name>OxyPlot_NET</Name>
     </ProjectReference>
     <ProjectReference Include="..\CapFrameX.Charts\WpfView\WpfView.csproj">
       <Project>{4d253423-ae05-47f6-a59d-9162ec0bb1f2}</Project>
@@ -160,7 +160,7 @@
       <Name>CapFrameX.Contracts</Name>
     </ProjectReference>
     <ProjectReference Include="..\CapFrameX.Data\CapFrameX.Data.csproj">
-      <Project>{CAD10BAB-6FDE-43F4-B768-6CAFF4E6B104}</Project>
+      <Project>{D328B391-432C-4A0E-9A7E-57A58AA592D4}</Project>
       <Name>CapFrameX.Data</Name>
     </ProjectReference>
     <ProjectReference Include="..\CapFrameX.EventAggregation\CapFrameX.EventAggregation.csproj">
