@@ -144,7 +144,6 @@ namespace LiveCharts.Wpf.Charts.Base
             Model.Updater.Run();
         }
 
-		[Obsolete]
 		private void OnIsVisibleChanged(object sender, DependencyPropertyChangedEventArgs dependencyPropertyChangedEventArgs)
         {
             Model.ControlSize = new CoreSize(ActualWidth, ActualHeight);

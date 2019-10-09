@@ -295,7 +295,7 @@ namespace CapFrameX.ViewModel
 			RelativeModeCommand = new DelegateCommand(OnRelativeMode);
 
 			ComparisonColumnChartFormatter = value => value.ToString(string.Format("F{0}",
-				_appConfiguration.FpsValuesRoundingDigits), CultureInfo.InvariantCulture);
+			_appConfiguration.FpsValuesRoundingDigits), CultureInfo.InvariantCulture);
 			ComparisonLShapeCollection = new SeriesCollection();
 			ComparisonRowChartSeriesCollection = new SeriesCollection
 			{
@@ -308,7 +308,7 @@ namespace CapFrameX.ViewModel
                     // Kind of blue
                     Fill = _comparisonBrushes[1],
 					DataLabels = true,
-					MaxRowHeigth = BarChartMaxRowHeight
+					MaxRowHeigth = BarChartMaxRowHeight,
 				},
 
                  //1% quantile
@@ -319,7 +319,7 @@ namespace CapFrameX.ViewModel
                     // Kind of red
                     Fill = _comparisonBrushes[2],
 					DataLabels = true,
-					MaxRowHeigth = BarChartMaxRowHeight
+					MaxRowHeigth = BarChartMaxRowHeight,
 				},
 
                 ////0.1% quantile

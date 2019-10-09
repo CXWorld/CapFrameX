@@ -51,7 +51,7 @@
 				<ScrollViewer VerticalScrollBarVisibility="Auto">
 					<lvc:CartesianChart Margin="10" VerticalAlignment="Top" Series="{Binding ComparisonRowChartSeriesCollection}" Height="{Binding BarChartHeight}"
                                         Visibility="{Binding BarChartVisibility, Converter={StaticResource FalseToCollapsedConverter}}" DisableAnimations="True"
-										Hoverable="False">
+										Hoverable="False" DataTooltip="{x:Null}">
 						<lvc:CartesianChart.AxisX>
 							<lvc:Axis Title="FPS" FontSize="11" MinValue="0" LabelFormatter="{Binding ComparisonColumnChartFormatter}" Foreground="Black"></lvc:Axis>
 						</lvc:CartesianChart.AxisX>
@@ -233,7 +233,7 @@
 														<xctk:ColorPicker Width="120" Height="30" Grid.Column="1" Margin="0 10 0 0" Background="#e6e6e6" SelectedColor="{Binding FrametimeGraphColor}" 
 																      SelectedColorChanged="SelectedColorChanged" DisplayColorAndName="True" AvailableColorsSortingMode="HueSaturationBrightness" 
 																	  Visibility="{Binding ElementName=ComparisonRecordItemControl, Path=DataContext.ColorPickerVisibility, Converter={StaticResource FalseToHiddenConverter}}"/>
-														<Button Grid.Column="2" Margin="0 -2 -3 0" Padding="0" Width="12" Height="12" HorizontalAlignment="Right" VerticalAlignment="Top" BorderThickness="0" Background="Transparent" Foreground="Black"
+														<Button Grid.Column="2" Margin="0 -2 -2 0" Padding="0" Width="12" Height="12" HorizontalAlignment="Right" VerticalAlignment="Top" BorderThickness="0" Background="Transparent" Foreground="Black"
 															Content="{materialDesign:PackIcon Close, Size=12}" Command="{Binding RemoveCommand}">
 														</Button>
 													</Grid>
