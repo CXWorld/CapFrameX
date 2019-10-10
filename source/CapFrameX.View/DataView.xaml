@@ -274,7 +274,7 @@
 											<TextBlock FontWeight="Bold"
 															Text="{Binding Key}" />
 											<TextBlock Text="{Binding Value}" TextWrapping="Wrap"
-															   Width="180"
+															   Width="184"
 															   LineStackingStrategy="BlockLineHeight"
 															   FontSize="12"
 															   LineHeight="14"
