@@ -309,6 +309,7 @@ namespace CapFrameX.ViewModel
                     Fill = _comparisonBrushes[1],
 					DataLabels = true,
 					MaxRowHeigth = BarChartMaxRowHeight,
+					UseRelativeMode = true
 				},
 
                  //1% quantile
@@ -320,6 +321,7 @@ namespace CapFrameX.ViewModel
                     Fill = _comparisonBrushes[2],
 					DataLabels = true,
 					MaxRowHeigth = BarChartMaxRowHeight,
+					UseRelativeMode = true
 				},
 
                 ////0.1% quantile

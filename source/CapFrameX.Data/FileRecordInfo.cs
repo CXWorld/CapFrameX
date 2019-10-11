@@ -1,6 +1,7 @@
 ﻿using CapFrameX.Contracts.Data;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 
@@ -177,7 +178,7 @@ namespace CapFrameX.Data
 					CreationTime = infoKeyValueDictionary["CreationTime"];
 
 				if (infoKeyValueDictionary.Keys.Contains("RecordTime"))
-					RecordTime = Convert.ToDouble(infoKeyValueDictionary["RecordTime"]);
+					RecordTime = Convert.ToDouble(infoKeyValueDictionary["RecordTime"], CultureInfo.InvariantCulture);
 
 				if (infoKeyValueDictionary.Keys.Contains("Motherboard"))
 					MotherboardName = infoKeyValueDictionary["Motherboard"];

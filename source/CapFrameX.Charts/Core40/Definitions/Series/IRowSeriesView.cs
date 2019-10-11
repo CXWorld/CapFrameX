@@ -49,5 +49,12 @@ namespace LiveCharts.Definitions.Series
         ///   <c>true</c> if [shares position]; otherwise, <c>false</c>.
         /// </value>
         bool SharesPosition { get; set; }
+		/// <summary>
+		/// Gets or sets a value indicating whether [relative mode should be used].
+		/// </summary>
+		/// /// <value>
+		///   <c>true</c> if [relative mode should be used]; otherwise, <c>false</c>.
+		/// </value>
+		bool UseRelativeMode { get; set; }
     }
 }
