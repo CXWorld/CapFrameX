@@ -411,7 +411,8 @@ namespace CapFrameX.ViewModel
 						{
 							for (int i = 0; i < ComparisonRecords.Count; i++)
 							{
-								ComparisonModel.Series[i].Title = GetLabelDateTimeContext(ComparisonRecords[i]);
+								ComparisonModel.Series[i].Title = 
+									GetLabelDateTimeContext(ComparisonRecords[i], GetMaxDateTimeAlignment());
 							}
 						}
 						break;
@@ -420,7 +421,8 @@ namespace CapFrameX.ViewModel
 						{
 							for (int i = 0; i < ComparisonRecords.Count; i++)
 							{
-								ComparisonModel.Series[i].Title = GetLabelCpuContext(ComparisonRecords[i], GetMaxCpuAlignment());
+								ComparisonModel.Series[i].Title = 
+									GetLabelCpuContext(ComparisonRecords[i], GetMaxCpuAlignment());
 							}
 						}
 						break;
@@ -429,7 +431,8 @@ namespace CapFrameX.ViewModel
 						{
 							for (int i = 0; i < ComparisonRecords.Count; i++)
 							{
-								ComparisonModel.Series[i].Title = GetLabelGpuContext(ComparisonRecords[i], GetMaxGpuAlignment());
+								ComparisonModel.Series[i].Title = 
+									GetLabelGpuContext(ComparisonRecords[i], GetMaxGpuAlignment());
 							}
 						}
 						break;
@@ -438,7 +441,8 @@ namespace CapFrameX.ViewModel
 						{
 							for (int i = 0; i < ComparisonRecords.Count; i++)
 							{
-								ComparisonModel.Series[i].Title = GetLabelCustomContext(ComparisonRecords[i], GetMaxContextAlignment());
+								ComparisonModel.Series[i].Title = 
+									GetLabelCustomContext(ComparisonRecords[i], GetMaxCommentAlignment());
 							}
 						}
 						break;
@@ -447,7 +451,8 @@ namespace CapFrameX.ViewModel
 						{
 							for (int i = 0; i < ComparisonRecords.Count; i++)
 							{
-								ComparisonModel.Series[i].Title = GetLabelDateTimeContext(ComparisonRecords[i]);
+								ComparisonModel.Series[i].Title = 
+									GetLabelDateTimeContext(ComparisonRecords[i], GetMaxDateTimeAlignment());
 							}
 						}
 						break;
@@ -460,7 +465,15 @@ namespace CapFrameX.ViewModel
 		private void OnChartItemChanged()
 			=> ColorPickerVisibility = SelectedChartItem.Header.ToString() != "Bar charts";
 
-		private int GetMaxContextAlignment()
+		private int GetMaxDateTimeAlignment()
+		{
+			var maxGameNameLength = ComparisonRecords.Max(record => record.WrappedRecordInfo.Game.Length);
+			var maxDateTimeLength = ComparisonRecords.Max(record => record.WrappedRecordInfo.DateTime.Length);
+
+			return Math.Max(maxGameNameLength, maxDateTimeLength);
+		}
+
+		private int GetMaxCommentAlignment()
 		{
 			var maxGameNameLength = ComparisonRecords.Max(record => record.WrappedRecordInfo.Game.Length);
 			var maxContextLength = ComparisonRecords.Max(record
@@ -635,25 +648,21 @@ namespace CapFrameX.ViewModel
 		{
 			ComparisonRowChartLabels = ComparisonRecords.Select(record =>
 			{
-				return GetLabelDateTimeContext(record);
-			}).ToArray();
+				return GetLabelDateTimeContext(record, GetMaxDateTimeAlignment());
+			}).Reverse().ToArray();
 
 			if (ComparisonModel.Series.Count == ComparisonRecords.Count)
 			{
 				for (int i = 0; i < ComparisonRecords.Count; i++)
 				{
-					ComparisonModel.Series[i].Title = GetLabelDateTimeContext(ComparisonRecords[i]);
+					ComparisonModel.Series[i].Title = 
+						GetLabelDateTimeContext(ComparisonRecords[i], GetMaxDateTimeAlignment());
 				}
 			}
 		}
 
-		private string GetLabelDateTimeContext(ComparisonRecordInfoWrapper record)
+		private string GetLabelDateTimeContext(ComparisonRecordInfoWrapper record, int maxAlignment)
 		{
-			int gameNameLength = record.WrappedRecordInfo.Game.Length;
-			int dateTimeLength = record.WrappedRecordInfo.DateTime.Length;
-
-			int maxAlignment = gameNameLength < dateTimeLength ? dateTimeLength : gameNameLength;
-
 			var alignmentFormat = "{0," + maxAlignment.ToString() + "}";
 			var gameName = string.Format(CultureInfo.InvariantCulture, alignmentFormat, record.WrappedRecordInfo.Game);
 			var dateTime = string.Format(CultureInfo.InvariantCulture, alignmentFormat, record.WrappedRecordInfo.DateTime);
@@ -665,7 +674,7 @@ namespace CapFrameX.ViewModel
 			ComparisonRowChartLabels = ComparisonRecords.Select(record =>
 			{
 				return GetLabelCpuContext(record, GetMaxCpuAlignment());
-			}).ToArray();
+			}).Reverse().ToArray();
 
 			if (ComparisonModel.Series.Count == ComparisonRecords.Count)
 			{
@@ -700,7 +709,7 @@ namespace CapFrameX.ViewModel
 			ComparisonRowChartLabels = ComparisonRecords.Select(record =>
 			{
 				return GetLabelGpuContext(record, GetMaxGpuAlignment());
-			}).ToArray();
+			}).Reverse().ToArray();
 
 			if (ComparisonModel.Series.Count == ComparisonRecords.Count)
 			{
@@ -734,14 +743,14 @@ namespace CapFrameX.ViewModel
 		{
 			ComparisonRowChartLabels = ComparisonRecords.Select(record =>
 			{
-				return GetLabelCustomContext(record, GetMaxContextAlignment());
-			}).ToArray();
+				return GetLabelCustomContext(record, GetMaxCommentAlignment());
+			}).Reverse().ToArray();
 
 			if (ComparisonModel.Series.Count == ComparisonRecords.Count)
 			{
 				for (int i = 0; i < ComparisonRecords.Count; i++)
 				{
-					ComparisonModel.Series[i].Title = GetLabelCustomContext(ComparisonRecords[i], GetMaxContextAlignment());
+					ComparisonModel.Series[i].Title = GetLabelCustomContext(ComparisonRecords[i], GetMaxCommentAlignment());
 				}
 			}
 		}
@@ -834,10 +843,10 @@ namespace CapFrameX.ViewModel
 			var p0dot1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.001), roundingDigits);
 
 			// Average
-			ComparisonRowChartSeriesCollection[0].Values.Add(average);
+			ComparisonRowChartSeriesCollection[0].Values.Insert(0, average);
 
 			//1% quantile
-			ComparisonRowChartSeriesCollection[1].Values.Add(p1_quantile);
+			ComparisonRowChartSeriesCollection[1].Values.Insert(0, p1_quantile);
 
 			//0.1% quantile
 			//ComparisonColumnChartSeriesCollection[2].Values.Add(p0dot1_quantile);
@@ -875,19 +884,19 @@ namespace CapFrameX.ViewModel
 			switch (_comparisonContext)
 			{
 				case EComparisonContext.DateTime:
-					chartTitle = GetLabelDateTimeContext(wrappedComparisonInfo);
+					chartTitle = GetLabelDateTimeContext(wrappedComparisonInfo, GetMaxDateTimeAlignment());
 					break;
 				case EComparisonContext.CPU:
-					chartTitle = GetLabelCpuContext(wrappedComparisonInfo, GetMaxContextAlignment());
+					chartTitle = GetLabelCpuContext(wrappedComparisonInfo, GetMaxCpuAlignment());
 					break;
 				case EComparisonContext.GPU:
-					chartTitle = GetLabelGpuContext(wrappedComparisonInfo, GetMaxCpuAlignment());
+					chartTitle = GetLabelGpuContext(wrappedComparisonInfo, GetMaxGpuAlignment());
 					break;
 				case EComparisonContext.Custom:
-					chartTitle = GetLabelCustomContext(wrappedComparisonInfo, GetMaxCpuAlignment());
+					chartTitle = GetLabelCustomContext(wrappedComparisonInfo, GetMaxCommentAlignment());
 					break;
 				default:
-					chartTitle = GetLabelDateTimeContext(wrappedComparisonInfo);
+					chartTitle = GetLabelDateTimeContext(wrappedComparisonInfo, GetMaxDateTimeAlignment());
 					break;
 			}
 
@@ -941,37 +950,6 @@ namespace CapFrameX.ViewModel
 			{
 				AddToColumnCharts(ComparisonRecords[i]);
 			}
-
-			if (_comparisonNumericMode == EComparisonNumericMode.Relative)
-			{
-				// Average
-				var averages = new List<double>(ComparisonRowChartSeriesCollection[0].Values as IList<double>);
-
-				// 1% quantile
-				var p1_quantiles = new List<double>(ComparisonRowChartSeriesCollection[1].Values as IList<double>);
-
-				// 0.1% quantile
-				//var p0dot1_quantiles = new List<double>(ComparisonRowChartSeriesCollection[2].Values as IList<double>);
-
-				if (averages.Any() && p1_quantiles.Any() /*&& p0dot1_quantiles.Any()*/)
-				{
-					ComparisonRowChartSeriesCollection[0].Values.Clear();
-					ComparisonRowChartSeriesCollection[1].Values.Clear();
-					// ComparisonRowChartSeriesCollection[2].Values.Clear();
-
-					var maxAverage = averages.Max();
-					var maxP1_quantile = p1_quantiles.Max();
-					// var maxP0dot1_quantiles = p0dot1_quantiles.Max();
-
-					var averagesPercent = averages.Select(x => 100d * x / maxAverage).ToList();
-					var p1_quantilesPercent = p1_quantiles.Select(x => 100d * x / maxP1_quantile).ToList();
-					// var p0dot1_quantilesPercent = p0dot1_quantiles.Select(x => 100d * x / maxP0dot1_quantiles).ToList();
-
-					averagesPercent.ForEach(x => ComparisonRowChartSeriesCollection[0].Values.Add(x));
-					p1_quantilesPercent.ForEach(x => ComparisonRowChartSeriesCollection[1].Values.Add(x));
-					// p0dot1_quantilesPercent.ForEach(x => ComparisonRowChartSeriesCollection[2].Values.Add(x));
-				}
-			}
 		}
 
 		private void SetFrametimeChart()
@@ -1008,47 +986,6 @@ namespace CapFrameX.ViewModel
 									}
 								}
 							});
-		}
-
-		void IDropTarget.Drop(IDropInfo dropInfo)
-		{
-			if (dropInfo != null)
-			{
-				if (dropInfo.VisualTarget is FrameworkElement frameworkElement)
-				{
-					if (frameworkElement.Name == "ComparisonRecordItemControl" ||
-						frameworkElement.Name == "ComparisonImage")
-					{
-						if (dropInfo.Data is IFileRecordInfo recordInfo)
-						{
-							AddComparisonRecord(recordInfo);
-
-							// Complete redraw
-							if (IsCuttingModeActive)
-							{
-								UpdateCharts();
-							}
-						}
-					}
-					//else if (frameworkElement.Name == "RemoveRecordItemControl")
-					//{
-					//	if (dropInfo.Data is ComparisonRecordInfoWrapper wrappedComparisonRecordInfo)
-					//	{
-					//		_freeColors.Add(wrappedComparisonRecordInfo.Color);
-					//		ComparisonRecords.Remove(wrappedComparisonRecordInfo);
-					//		UpdateIndicesAfterRemove(ComparisonRecords);
-					//		InitialIconVisibility = !ComparisonRecords.Any();
-					//		BarChartVisibility = ComparisonRecords.Any();
-					//		ComparisonItemControlHeight = ComparisonRecords.Any() ? "Auto" : "300";
-
-					//		UpdateCuttingParameter();
-
-					//		//Cleanup charts and performance parameter
-					//		UpdateCharts();
-					//	}
-					//}
-				}
-			}
 		}
 
 		public void RemoveComparisonItem(ComparisonRecordInfoWrapper wrappedComparisonRecordInfo)
@@ -1118,6 +1055,56 @@ namespace CapFrameX.ViewModel
 
 		private ComparisonRecordInfoWrapper GetWrappedRecordInfo(ComparisonRecordInfo comparisonRecordInfo)
 			=> new ComparisonRecordInfoWrapper(comparisonRecordInfo, this);
+
+		void IDropTarget.Drop(IDropInfo dropInfo)
+		{
+			if (dropInfo != null)
+			{
+				if (dropInfo.VisualTarget is FrameworkElement frameworkElement)
+				{
+					if (frameworkElement.Name == "ComparisonRecordItemControl" ||
+						frameworkElement.Name == "ComparisonImage")
+					{
+						if (dropInfo.Data is IFileRecordInfo recordInfo)
+						{
+							AddComparisonRecord(recordInfo);
+
+							// Complete redraw
+							if (IsCuttingModeActive)
+							{
+								UpdateCharts();
+							}
+						}
+
+						if (dropInfo.Data is ComparisonRecordInfoWrapper wrappedRecordInfo)
+						{
+							// manage sorting
+							int currentIndex = ComparisonRecords.IndexOf(wrappedRecordInfo);
+
+							if (dropInfo.InsertIndex < ComparisonRecords.Count)
+							{
+								var currentWrappedRecordInfo = wrappedRecordInfo;
+								ComparisonRecords.Remove(currentWrappedRecordInfo);
+								ComparisonRecords.Insert(dropInfo.InsertIndex, currentWrappedRecordInfo);
+
+								foreach (var rowSeries in ComparisonRowChartSeriesCollection)
+								{
+									var currentChartValue = rowSeries.Values[currentIndex];
+									rowSeries.Values.RemoveAt(currentIndex);
+									rowSeries.Values.Insert(dropInfo.InsertIndex, currentChartValue);
+								}
+
+								var currentLabel = ComparisonRowChartLabels[currentIndex];
+								var labelList = ComparisonRowChartLabels.ToList();
+								labelList.RemoveAt(currentIndex);
+								labelList.Insert(dropInfo.InsertIndex, currentLabel);
+								ComparisonRowChartLabels = labelList.ToArray();
+							}
+						}
+					}
+				}
+			}
+		}
 
 		void IDropTarget.DragOver(IDropInfo dropInfo)
 		{

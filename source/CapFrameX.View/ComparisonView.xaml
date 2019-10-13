@@ -197,7 +197,6 @@
 										  dragdrop:DragDrop.IsDragSource="True"
 										  dragdrop:DragDrop.DropHandler="{Binding}"
 										  dragdrop:DragDrop.UseDefaultDragAdorner="True"
-										  dragdrop:DragDrop.DropTargetAdornerBrush="White"
 										  dragdrop:DragDrop.DefaultDragAdornerOpacity="0.5"
 										  dragdrop:DragDrop.UseDefaultEffectDataTemplate="False">
 									<ItemsControl.ItemTemplate>
