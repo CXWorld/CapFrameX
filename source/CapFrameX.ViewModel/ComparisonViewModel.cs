@@ -28,7 +28,7 @@ using System.Windows.Media;
 
 namespace CapFrameX.ViewModel
 {
-	public class ComparisonViewModel : BindableBase, INavigationAware, IDropTarget
+	public partial class ComparisonViewModel : BindableBase, INavigationAware, IDropTarget
 	{
 		private static readonly int PART_LENGTH = 42;
 
@@ -57,7 +57,6 @@ namespace CapFrameX.ViewModel
 		private readonly IAppConfiguration _appConfiguration;
 
 		private EComparisonContext _comparisonContext = EComparisonContext.DateTime;
-		private EComparisonNumericMode _comparisonNumericMode = EComparisonNumericMode.Absolute;
 		private bool _initialIconVisibility = true;
 		private PlotModel _comparisonModel;
 		private SeriesCollection _comparisonRowChartSeriesCollection;
@@ -79,6 +78,7 @@ namespace CapFrameX.ViewModel
 		private double _barChartHeight;
 		private bool _barChartVisibility;
 		private TabItem _selectedChartItem;
+		private bool _isSortModeAscendingActive;
 		private Func<double, string> _comparisonColumnChartFormatter;
 		private bool _colorPickerVisibility;
 
@@ -257,6 +257,17 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
+		public bool IsSortModeAscendingActive
+		{
+			get { return _isSortModeAscendingActive; }
+			set
+			{
+				_isSortModeAscendingActive = value;
+				RaisePropertyChanged();
+				OnSortModeChanged();
+			}
+		}
+
 		public ICommand DateTimeContextCommand { get; }
 
 		public ICommand CpuContextCommand { get; }
@@ -271,7 +282,7 @@ namespace CapFrameX.ViewModel
 
 		public ICommand RelativeModeCommand { get; }
 
-		public ObservableCollection<ComparisonRecordInfoWrapper> ComparisonRecords { get; }
+		public ObservableCollection<ComparisonRecordInfoWrapper> ComparisonRecords { get; private set; }
 			= new ObservableCollection<ComparisonRecordInfoWrapper>();
 
 		public double BarChartMaxRowHeight { get; private set; } = 20;
@@ -291,8 +302,6 @@ namespace CapFrameX.ViewModel
 			GpuContextCommand = new DelegateCommand(OnGpuContex);
 			CustomContextCommand = new DelegateCommand(OnCustomContex);
 			RemoveAllComparisonsCommand = new DelegateCommand(OnRemoveAllComparisons);
-			AbsoluteModeCommand = new DelegateCommand(OnAbsoluteMode);
-			RelativeModeCommand = new DelegateCommand(OnRelativeMode);
 
 			ComparisonColumnChartFormatter = value => value.ToString(string.Format("F{0}",
 			_appConfiguration.FpsValuesRoundingDigits), CultureInfo.InvariantCulture);
@@ -393,111 +402,26 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-		private void OnShowContextLegendChanged()
-		{
-			if (!ComparisonRecords.Any())
-				return;
-
-			if (!IsContextLegendActive)
-			{
-				ComparisonModel.Series.ForEach(series => series.Title = null);
-			}
-			else
-			{
-				switch (_comparisonContext)
-				{
-					case EComparisonContext.DateTime:
-						if (ComparisonModel.Series.Count == ComparisonRecords.Count)
-						{
-							for (int i = 0; i < ComparisonRecords.Count; i++)
-							{
-								ComparisonModel.Series[i].Title = 
-									GetLabelDateTimeContext(ComparisonRecords[i], GetMaxDateTimeAlignment());
-							}
-						}
-						break;
-					case EComparisonContext.CPU:
-						if (ComparisonModel.Series.Count == ComparisonRecords.Count)
-						{
-							for (int i = 0; i < ComparisonRecords.Count; i++)
-							{
-								ComparisonModel.Series[i].Title = 
-									GetLabelCpuContext(ComparisonRecords[i], GetMaxCpuAlignment());
-							}
-						}
-						break;
-					case EComparisonContext.GPU:
-						if (ComparisonModel.Series.Count == ComparisonRecords.Count)
-						{
-							for (int i = 0; i < ComparisonRecords.Count; i++)
-							{
-								ComparisonModel.Series[i].Title = 
-									GetLabelGpuContext(ComparisonRecords[i], GetMaxGpuAlignment());
-							}
-						}
-						break;
-					case EComparisonContext.Custom:
-						if (ComparisonModel.Series.Count == ComparisonRecords.Count)
-						{
-							for (int i = 0; i < ComparisonRecords.Count; i++)
-							{
-								ComparisonModel.Series[i].Title = 
-									GetLabelCustomContext(ComparisonRecords[i], GetMaxCommentAlignment());
-							}
-						}
-						break;
-					default:
-						if (ComparisonModel.Series.Count == ComparisonRecords.Count)
-						{
-							for (int i = 0; i < ComparisonRecords.Count; i++)
-							{
-								ComparisonModel.Series[i].Title = 
-									GetLabelDateTimeContext(ComparisonRecords[i], GetMaxDateTimeAlignment());
-							}
-						}
-						break;
-				}
-			}
-
-			ComparisonModel.InvalidatePlot(false);
-		}
-
 		private void OnChartItemChanged()
 			=> ColorPickerVisibility = SelectedChartItem.Header.ToString() != "Bar charts";
 
-		private int GetMaxDateTimeAlignment()
+		private void OnSortModeChanged()
 		{
-			var maxGameNameLength = ComparisonRecords.Max(record => record.WrappedRecordInfo.Game.Length);
-			var maxDateTimeLength = ComparisonRecords.Max(record => record.WrappedRecordInfo.DateTime.Length);
+			// manage IsSortModeAscendingActive
+		
+			IEnumerable<ComparisonRecordInfoWrapper> comparisonRecordList = null;
+			if (IsSortModeAscendingActive)
+				comparisonRecordList = ComparisonRecords
+					.Select(info => info.Clone())
+					.OrderBy(info => info.WrappedRecordInfo.SortCriteriaParameter);
+			else
+				comparisonRecordList = ComparisonRecords
+					.Select(info => info.Clone())
+					.OrderByDescending(info => info.WrappedRecordInfo.SortCriteriaParameter);
 
-			return Math.Max(maxGameNameLength, maxDateTimeLength);
-		}
-
-		private int GetMaxCommentAlignment()
-		{
-			var maxGameNameLength = ComparisonRecords.Max(record => record.WrappedRecordInfo.Game.Length);
-			var maxContextLength = ComparisonRecords.Max(record
-				=> record.WrappedRecordInfo.FileRecordInfo.Comment.SplitWordWise(PART_LENGTH).Max(part => part.Length));
-
-			return Math.Max(maxGameNameLength, maxContextLength);
-		}
-
-		private int GetMaxGpuAlignment()
-		{
-			var maxGameNameLength = ComparisonRecords.Max(record => record.WrappedRecordInfo.Game.Length);
-			var maxGpuLength = ComparisonRecords.Max(record
-				=> record.WrappedRecordInfo.FileRecordInfo.GraphicCardName.SplitWordWise(PART_LENGTH).Max(part => part.Length));
-
-			return Math.Max(maxGameNameLength, maxGpuLength);
-		}
-
-		private int GetMaxCpuAlignment()
-		{
-			var maxGameNameLength = ComparisonRecords.Max(record => record.WrappedRecordInfo.Game.Length);
-			var maxCpuLength = ComparisonRecords.Max(record
-				=> record.WrappedRecordInfo.FileRecordInfo.ProcessorName.SplitWordWise(PART_LENGTH).Max(part => part.Length));
-
-			return Math.Max(maxGameNameLength, maxCpuLength);
+			// OnRemoveAllComparisons();
+			ComparisonRecords = new ObservableCollection<ComparisonRecordInfoWrapper>(comparisonRecordList);
+			SetColumnChart();
 		}
 
 		private void UpdateCuttingParameter()
@@ -586,34 +510,6 @@ namespace CapFrameX.ViewModel
 				ComparisonModel.InvalidatePlot(true);
 		}
 
-		private void OnCustomContex()
-		{
-			_comparisonContext = EComparisonContext.Custom;
-			SetLabelCustomContext();
-			ComparisonModel.InvalidatePlot(true);
-		}
-
-		private void OnGpuContex()
-		{
-			_comparisonContext = EComparisonContext.GPU;
-			SetLabelGpuContext();
-			ComparisonModel.InvalidatePlot(true);
-		}
-
-		private void OnCpuContext()
-		{
-			_comparisonContext = EComparisonContext.CPU;
-			SetLabelCpuContext();
-			ComparisonModel.InvalidatePlot(true);
-		}
-
-		private void OnDateTimeContext()
-		{
-			_comparisonContext = EComparisonContext.DateTime;
-			SetLabelDateTimeContext();
-			ComparisonModel.InvalidatePlot(true);
-		}
-
 		private void OnRemoveAllComparisons()
 		{
 			foreach (var record in ComparisonRecords)
@@ -627,151 +523,6 @@ namespace CapFrameX.ViewModel
 
 			InitialIconVisibility = true;
 			BarChartVisibility = false;
-			ComparisonItemControlHeight = "300";
-		}
-
-		private void OnAbsoluteMode()
-		{
-			_comparisonNumericMode = EComparisonNumericMode.Absolute;
-			SetColumnChart();
-			ColumnChartYAxisTitle = "FPS";
-		}
-
-		private void OnRelativeMode()
-		{
-			_comparisonNumericMode = EComparisonNumericMode.Relative;
-			SetColumnChart();
-			ColumnChartYAxisTitle = "%";
-		}
-
-		private void SetLabelDateTimeContext()
-		{
-			ComparisonRowChartLabels = ComparisonRecords.Select(record =>
-			{
-				return GetLabelDateTimeContext(record, GetMaxDateTimeAlignment());
-			}).Reverse().ToArray();
-
-			if (ComparisonModel.Series.Count == ComparisonRecords.Count)
-			{
-				for (int i = 0; i < ComparisonRecords.Count; i++)
-				{
-					ComparisonModel.Series[i].Title = 
-						GetLabelDateTimeContext(ComparisonRecords[i], GetMaxDateTimeAlignment());
-				}
-			}
-		}
-
-		private string GetLabelDateTimeContext(ComparisonRecordInfoWrapper record, int maxAlignment)
-		{
-			var alignmentFormat = "{0," + maxAlignment.ToString() + "}";
-			var gameName = string.Format(CultureInfo.InvariantCulture, alignmentFormat, record.WrappedRecordInfo.Game);
-			var dateTime = string.Format(CultureInfo.InvariantCulture, alignmentFormat, record.WrappedRecordInfo.DateTime);
-			return gameName + Environment.NewLine + dateTime;
-		}
-
-		private void SetLabelCpuContext()
-		{
-			ComparisonRowChartLabels = ComparisonRecords.Select(record =>
-			{
-				return GetLabelCpuContext(record, GetMaxCpuAlignment());
-			}).Reverse().ToArray();
-
-			if (ComparisonModel.Series.Count == ComparisonRecords.Count)
-			{
-				for (int i = 0; i < ComparisonRecords.Count; i++)
-				{
-					ComparisonModel.Series[i].Title = GetLabelCpuContext(ComparisonRecords[i], GetMaxCpuAlignment());
-				}
-			}
-		}
-
-		private string GetLabelCpuContext(ComparisonRecordInfoWrapper record, int maxAlignment)
-		{
-			var processorName = record.WrappedRecordInfo.FileRecordInfo.ProcessorName ?? "";
-			var cpuInfoParts = processorName.SplitWordWise(PART_LENGTH);
-			var alignmentFormat = "{0," + maxAlignment.ToString() + "}";
-
-			var infoPartsFormatted = string.Empty;
-			foreach (var part in cpuInfoParts)
-			{
-				if (part == string.Empty)
-					continue;
-
-				infoPartsFormatted += Environment.NewLine + string.Format(CultureInfo.InvariantCulture, alignmentFormat, part);
-			}
-
-			var gameName = string.Format(CultureInfo.InvariantCulture, alignmentFormat, record.WrappedRecordInfo.Game);
-			return gameName + infoPartsFormatted;
-		}
-
-		private void SetLabelGpuContext()
-		{
-			ComparisonRowChartLabels = ComparisonRecords.Select(record =>
-			{
-				return GetLabelGpuContext(record, GetMaxGpuAlignment());
-			}).Reverse().ToArray();
-
-			if (ComparisonModel.Series.Count == ComparisonRecords.Count)
-			{
-				for (int i = 0; i < ComparisonRecords.Count; i++)
-				{
-					ComparisonModel.Series[i].Title = GetLabelGpuContext(ComparisonRecords[i], GetMaxGpuAlignment());
-				}
-			}
-		}
-
-		private string GetLabelGpuContext(ComparisonRecordInfoWrapper record, int maxAlignment)
-		{
-			var graphicCardName = record.WrappedRecordInfo.FileRecordInfo.GraphicCardName ?? "";
-			var gpuInfoParts = graphicCardName.SplitWordWise(PART_LENGTH);
-			var alignmentFormat = "{0," + maxAlignment.ToString() + "}";
-
-			var infoPartsFormatted = string.Empty;
-			foreach (var part in gpuInfoParts)
-			{
-				if (part == string.Empty)
-					continue;
-
-				infoPartsFormatted += Environment.NewLine + string.Format(CultureInfo.InvariantCulture, alignmentFormat, part);
-			}
-
-			var gameName = string.Format(CultureInfo.InvariantCulture, alignmentFormat, record.WrappedRecordInfo.Game);
-			return gameName + Environment.NewLine + infoPartsFormatted;
-		}
-
-		private void SetLabelCustomContext()
-		{
-			ComparisonRowChartLabels = ComparisonRecords.Select(record =>
-			{
-				return GetLabelCustomContext(record, GetMaxCommentAlignment());
-			}).Reverse().ToArray();
-
-			if (ComparisonModel.Series.Count == ComparisonRecords.Count)
-			{
-				for (int i = 0; i < ComparisonRecords.Count; i++)
-				{
-					ComparisonModel.Series[i].Title = GetLabelCustomContext(ComparisonRecords[i], GetMaxCommentAlignment());
-				}
-			}
-		}
-
-		private string GetLabelCustomContext(ComparisonRecordInfoWrapper record, int maxAlignment)
-		{
-			var comment = record.WrappedRecordInfo.FileRecordInfo.Comment ?? "";
-			var commentParts = comment.SplitWordWise(PART_LENGTH);
-			var alignmentFormat = "{0," + maxAlignment.ToString() + "}";
-
-			var infoPartsFormatted = string.Empty;
-			foreach (var part in commentParts)
-			{
-				if (part == string.Empty)
-					continue;
-
-				infoPartsFormatted += Environment.NewLine + string.Format(CultureInfo.InvariantCulture, alignmentFormat, part);
-			}
-
-			var gameName = string.Format(CultureInfo.InvariantCulture, alignmentFormat, record.WrappedRecordInfo.Game);
-			return gameName + infoPartsFormatted;
 		}
 
 		private void ResetBarChartSeriesTitles()
@@ -841,6 +592,8 @@ namespace CapFrameX.ViewModel
 			var average = Math.Round(frametimeTimeWindow.Count * 1000 / frametimeTimeWindow.Sum(), roundingDigits);
 			var p1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.01), roundingDigits);
 			var p0dot1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.001), roundingDigits);
+
+			wrappedComparisonInfo.WrappedRecordInfo.SortCriteriaParameter = average;
 
 			// Average
 			ComparisonRowChartSeriesCollection[0].Values.Insert(0, average);
@@ -1083,21 +836,20 @@ namespace CapFrameX.ViewModel
 
 							if (dropInfo.InsertIndex < ComparisonRecords.Count)
 							{
-								var currentWrappedRecordInfo = wrappedRecordInfo;
-								ComparisonRecords.Remove(currentWrappedRecordInfo);
-								ComparisonRecords.Insert(dropInfo.InsertIndex, currentWrappedRecordInfo);
+								ComparisonRecords.Move(currentIndex, dropInfo.InsertIndex);
 
 								foreach (var rowSeries in ComparisonRowChartSeriesCollection)
 								{
-									var currentChartValue = rowSeries.Values[currentIndex];
-									rowSeries.Values.RemoveAt(currentIndex);
-									rowSeries.Values.Insert(dropInfo.InsertIndex, currentChartValue);
+									var chartValueList = (rowSeries.Values as IList<double>).Reverse().ToList();
+									chartValueList.Move(currentIndex, dropInfo.InsertIndex);
+									chartValueList.Reverse();
+									rowSeries.Values.Clear();
+									rowSeries.Values.AddRange(chartValueList.Select(chartValue => chartValue as object));
 								}
 
-								var currentLabel = ComparisonRowChartLabels[currentIndex];
-								var labelList = ComparisonRowChartLabels.ToList();
-								labelList.RemoveAt(currentIndex);
-								labelList.Insert(dropInfo.InsertIndex, currentLabel);
+								var labelList = ComparisonRowChartLabels.Reverse().ToList();
+								labelList.Move(currentIndex, dropInfo.InsertIndex);
+								labelList.Reverse();
 								ComparisonRowChartLabels = labelList.ToArray();
 							}
 						}

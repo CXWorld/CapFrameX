@@ -39,13 +39,13 @@
 	<Grid x:Name="ComparisonAreaGrid">
 		<Grid.RowDefinitions>
 			<RowDefinition Height="1*"></RowDefinition>
-			<RowDefinition Height="Auto"></RowDefinition>
+			<RowDefinition Height="70"></RowDefinition>
 		</Grid.RowDefinitions>
 		<Grid.ColumnDefinitions>
 			<ColumnDefinition Width="1*"></ColumnDefinition>
 			<ColumnDefinition Width="320"></ColumnDefinition>
 		</Grid.ColumnDefinitions>
-		<TabControl Margin="5 10 0 0" Grid.Row="0" Grid.Column="0" Grid.RowSpan="2" Background="#F5F5F5"
+		<TabControl Margin="5 10 0 0" Grid.Row="0" Grid.Column="0" Background="#F5F5F5"
 					SelectedItem="{Binding SelectedChartItem}">
 			<TabItem Header="Bar charts" >
 				<ScrollViewer VerticalScrollBarVisibility="Auto">
@@ -113,9 +113,27 @@
 				</Grid>
 			</TabItem>
 		</TabControl>
-		<StackPanel Margin="5 10 5 0" Grid.Row="0" Grid.Column="1" Orientation="Vertical">
+		<Grid Grid.Row="1" Margin="5 5 0 5" Background="#e6e6e6">
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="200"></ColumnDefinition>
+				<ColumnDefinition Width="200"></ColumnDefinition>
+			</Grid.ColumnDefinitions>
+			<StackPanel VerticalAlignment="Center" Grid.Column="0" Margin="25 0 0 0" Orientation="Horizontal">
+				<TextBlock VerticalAlignment="Center">Sort mode:</TextBlock>
+				<ToggleButton Grid.Column="0" Margin="5 0 0 0" Foreground="Black" BorderThickness="1" Background="Transparent"
+							  Style="{StaticResource MaterialDesignActionAccentToggleButton}" IsChecked="{Binding IsSortModeAscendingActive}">
+					<ToggleButton.Content>
+						<materialDesign:PackIcon Kind="SortDescending" />
+					</ToggleButton.Content>
+					<materialDesign:ToggleButtonAssist.OnContent>
+						<materialDesign:PackIcon Kind="SortAscending" />
+					</materialDesign:ToggleButtonAssist.OnContent >
+				</ToggleButton>
+			</StackPanel>
+			
+		</Grid>
+		<StackPanel Margin="5 10 5 0" Grid.Row="0" Grid.RowSpan="2" Grid.Column="1" Orientation="Vertical">
 			<TextBox IsReadOnly="True" Background="#e6e6e6" materialDesign:HintAssist.Hint="Comparisons" />
-			<!--MinHeight="300" Height="{Binding ElementName=ChartAndCuttingGrid, Path=ActualHeight, Converter={StaticResource AddValueConverter}}"-->
 			<Border Margin="0 5 0 0" BorderThickness="1" BorderBrush="#CCC" VerticalAlignment="Stretch">
 				<Grid Background="#e6e6e6">
 					<Grid.RowDefinitions>
@@ -144,23 +162,6 @@
 										GPU
 									</Button>
 									<Button Command="{Binding CustomContextCommand}" Content="{materialDesign:PackIcon CommentUser, Size=24}" ToolTip="Custom comments"/>
-								</StackPanel>
-							</materialDesign:PopupBox>
-							<materialDesign:PopupBox StaysOpen="True"
-													 VerticalAlignment="Center"												 
-													 Width="30" Height="30"
-													 ToggleContent="{materialDesign:PackIcon Compare, Size=24}"
-													 Margin="20 0 0 0"
-													 PlacementMode="BottomAndAlignCentres"
-													 ToolTip="Set absolut/relative mode">
-								<materialDesign:PopupBox.ToggleCheckedContent>
-									<materialDesign:PackIcon Kind="Pencil" Width="24" Height="24" />
-								</materialDesign:PopupBox.ToggleCheckedContent>
-								<StackPanel>
-									<Button FontSize="9" Command="{Binding AbsoluteModeCommand}" ToolTip="Absolute mode">
-										Absolute
-									</Button>
-									<Button Command="{Binding RelativeModeCommand}" Content="{materialDesign:PackIcon FilePercent, Size=24}" ToolTip="Relative mode"/>
 								</StackPanel>
 							</materialDesign:PopupBox>
 						</StackPanel>

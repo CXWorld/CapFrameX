@@ -60,6 +60,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CollectionExtensions.cs" />
     <Compile Include="EnumExtensions.cs" />
     <Compile Include="LinqExtension.cs" />
     <Compile Include="ObjectExtensions.cs" />

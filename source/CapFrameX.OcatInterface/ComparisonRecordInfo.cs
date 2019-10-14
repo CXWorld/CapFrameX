@@ -10,6 +10,7 @@ namespace CapFrameX.OcatInterface
 		public string InfoText { get; set; }
         public string DateTime { get; set; }
         public Session Session { get; set; }
-        public IFileRecordInfo FileRecordInfo { get; set; }
+		public double SortCriteriaParameter { get; set; }
+		public IFileRecordInfo FileRecordInfo { get; set; }
     }
 }

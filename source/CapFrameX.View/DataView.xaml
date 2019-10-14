@@ -60,8 +60,7 @@
 			<ToggleButton materialDesign:ShadowAssist.ShadowDepth="Depth3"
 						  VerticalAlignment="Top"
 						  HorizontalAlignment="Right"
-						  Margin="0 0 20 0"
-						  Name="ScreenshotModeToggleButton">
+						  Margin="0 0 20 0">
 				<ToggleButton.Content>
 					<materialDesign:PackIcon
 					Kind="CellphoneScreenshot" />

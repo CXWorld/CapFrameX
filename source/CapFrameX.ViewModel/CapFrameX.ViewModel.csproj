@@ -119,6 +119,7 @@
     <Compile Include="ColorRessource.cs" />
     <Compile Include="ComparisonRecordInfoWrapper.cs" />
     <Compile Include="ComparisonViewModel.cs" />
+    <Compile Include="ComparisonViewModelLabel.cs" />
     <Compile Include="DataContext\FpsGraphDataContext.cs" />
     <Compile Include="DataContext\FrametimeGraphDataContext.cs" />
     <Compile Include="DataContext\GraphDataContextBase.cs" />

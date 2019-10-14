@@ -105,5 +105,8 @@ namespace CapFrameX.ViewModel
 				_viewModel.ComparisonModel.InvalidatePlot(true);
 			}
 		}
+
+		public ComparisonRecordInfoWrapper Clone() 
+			=> new ComparisonRecordInfoWrapper(WrappedRecordInfo, _viewModel);
 	}
 }

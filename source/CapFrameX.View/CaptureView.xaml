@@ -69,8 +69,8 @@
 			</StackPanel>
 			<StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center">
 				<Button Width="60" Height="50" Foreground="Black" BorderThickness="0" Background="Transparent"
-				            Command="{Binding AddToIgonreListCommand}" IsEnabled="{Binding IsAddToIgnoreListButtonActive}"
-                            ToolTip="Ignore process">
+				        Command="{Binding AddToIgonreListCommand}" IsEnabled="{Binding IsAddToIgnoreListButtonActive}"
+                        ToolTip="Ignore process">
 					<Button.Triggers>
 						<EventTrigger RoutedEvent="MouseEnter">
 							<BeginStoryboard>
