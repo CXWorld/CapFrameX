@@ -408,20 +408,27 @@ namespace CapFrameX.ViewModel
 		private void OnSortModeChanged()
 		{
 			// manage IsSortModeAscendingActive
-		
+
 			IEnumerable<ComparisonRecordInfoWrapper> comparisonRecordList = null;
 			if (IsSortModeAscendingActive)
-				comparisonRecordList = ComparisonRecords
+				comparisonRecordList = ComparisonRecords.ToList()
 					.Select(info => info.Clone())
 					.OrderBy(info => info.WrappedRecordInfo.SortCriteriaParameter);
 			else
-				comparisonRecordList = ComparisonRecords
+				comparisonRecordList = ComparisonRecords.ToList()
 					.Select(info => info.Clone())
 					.OrderByDescending(info => info.WrappedRecordInfo.SortCriteriaParameter);
 
-			// OnRemoveAllComparisons();
-			ComparisonRecords = new ObservableCollection<ComparisonRecordInfoWrapper>(comparisonRecordList);
-			SetColumnChart();
+			OnRemoveAllComparisons();
+
+			foreach (var item in comparisonRecordList)
+			{
+				ComparisonRecords.Add(item);
+			}
+
+			RaisePropertyChanged(nameof(ComparisonRecords));
+
+			//UpdateCharts();
 		}
 
 		private void UpdateCuttingParameter()
@@ -527,7 +534,7 @@ namespace CapFrameX.ViewModel
 
 		private void ResetBarChartSeriesTitles()
 		{
-			for (int i = 0; i < ComparisonRecords.Count; i++)
+			for (int i = 0; i < ComparisonModel.Series.Count; i++)
 			{
 				ComparisonModel.Series[i].Title = string.Empty;
 			}
