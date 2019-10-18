@@ -106,7 +106,14 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-		public ComparisonRecordInfoWrapper Clone() 
-			=> new ComparisonRecordInfoWrapper(WrappedRecordInfo, _viewModel);
+		public ComparisonRecordInfoWrapper Clone()
+		{
+			return new ComparisonRecordInfoWrapper(WrappedRecordInfo, _viewModel)
+			{
+				Color = Color,
+				FrametimeGraphColor = FrametimeGraphColor,
+				CollectionIndex = CollectionIndex
+			};
+		}
 	}
 }
