@@ -7,20 +7,6 @@ using System.Threading.Tasks;
 using System.Windows;
 using ComparisonCollection = System.Collections.ObjectModel.ObservableCollection<CapFrameX.ViewModel.ComparisonRecordInfoWrapper>;
 
-//Collections auf der Comparsion Page:
-
-//* ComparisonModel.Series(Frametime-Graphen)
-//* ComparisonRowChartSeriesCollection(Metriken)
-//* ComparisonRowChartSeriesCollection[i].Values(Ausprägung der Metriken)
-//* ComparisonLShapeCollection(L-Shape-Graphen)
-//* ComparisonRowChartLabels(Labels für die Metrik-Blöcke)
-
-//Anwendungsfälle für eine Manipulation der Listen:
-//* Hinzufügen
-//* Entfernen(einzeln und alle)
-//* Verschieben innerhalb der gegbenen Reihenfolge(einzeln)
-//* Sortierung(aufsteigend/absteigend gemäß Metrik)
-
 namespace CapFrameX.ViewModel
 {
 	public partial class ComparisonViewModel
