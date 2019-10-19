@@ -5,7 +5,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
-using ComparisonCollection = System.Collections.ObjectModel.ObservableCollection<CapFrameX.ViewModel.ComparisonRecordInfoWrapper>;
+using ComparisonCollection = System.Collections.ObjectModel
+	.ObservableCollection<CapFrameX.ViewModel.ComparisonRecordInfoWrapper>;
 
 namespace CapFrameX.ViewModel
 {
@@ -63,7 +64,7 @@ namespace CapFrameX.ViewModel
 			});
 		}
 
-		public void RemoveAllComparisonItems(bool manageVisibility = true)
+		public void RemoveAllComparisonItems(bool manageVisibility = true, bool resetSortMode = false)
 		{
 			foreach (var record in ComparisonRecords)
 			{
@@ -71,8 +72,10 @@ namespace CapFrameX.ViewModel
 			}
 
 			ComparisonRecords.Clear();
-
 			UpdateCharts();
+
+			if (resetSortMode)
+				IsSortModeAscendingActive = true;
 
 			if (manageVisibility)
 			{
@@ -83,6 +86,9 @@ namespace CapFrameX.ViewModel
 
 		public void SortComparisonItems()
 		{
+			if (!ComparisonRecords.Any())
+				return;
+
 			IEnumerable<ComparisonRecordInfoWrapper> comparisonRecordList = null;
 			if (IsSortModeAscendingActive)
 				comparisonRecordList = ComparisonRecords.ToList()
@@ -93,7 +99,7 @@ namespace CapFrameX.ViewModel
 					.Select(info => info.Clone())
 					.OrderByDescending(info => info.WrappedRecordInfo.SortCriteriaParameter);
 
-			RemoveAllComparisonItems(false);
+			RemoveAllComparisonItems(false, false);
 
 			foreach (var item in comparisonRecordList)
 			{

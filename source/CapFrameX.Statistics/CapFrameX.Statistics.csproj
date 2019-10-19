@@ -67,6 +67,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="EMetric.cs" />
     <Compile Include="ERemoveOutlierMethod.cs" />
     <Compile Include="FrametimeAnalyzer.cs" />
     <Compile Include="FrametimeStatisticProvider.cs" />

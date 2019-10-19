@@ -23,7 +23,8 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-using ComparisonCollection = System.Collections.ObjectModel.ObservableCollection<CapFrameX.ViewModel.ComparisonRecordInfoWrapper>;
+using ComparisonCollection = System.Collections.ObjectModel
+	.ObservableCollection<CapFrameX.ViewModel.ComparisonRecordInfoWrapper>;
 
 namespace CapFrameX.ViewModel
 {
@@ -77,9 +78,22 @@ namespace CapFrameX.ViewModel
 		private double _barChartHeight;
 		private bool _barChartVisibility;
 		private TabItem _selectedChartItem;
-		private bool _isSortModeAscendingActive;
+		private bool _isSortModeAscendingActive = true;
 		private Func<double, string> _comparisonColumnChartFormatter;
 		private bool _colorPickerVisibility;
+		private EMetric _selectSecondaryMetric = EMetric.P1;
+
+		public Array MetricItems => Enum.GetValues(typeof(EMetric));
+
+		public EMetric SelectSecondaryMetric
+		{
+			get { return _selectSecondaryMetric; }
+			set
+			{
+				_selectSecondaryMetric = value;
+				RaisePropertyChanged();
+			}
+		}
 
 		public bool InitialIconVisibility
 		{
@@ -276,10 +290,6 @@ namespace CapFrameX.ViewModel
 		public ICommand CustomContextCommand { get; }
 
 		public ICommand RemoveAllComparisonsCommand { get; }
-
-		public ICommand AbsoluteModeCommand { get; }
-
-		public ICommand RelativeModeCommand { get; }
 
 		public ComparisonCollection ComparisonRecords { get; private set; }
 			= new ComparisonCollection();
@@ -512,7 +522,7 @@ namespace CapFrameX.ViewModel
 		}
 
 		private void OnRemoveAllComparisons()
-			=> RemoveAllComparisonItems();
+			=> RemoveAllComparisonItems(true, true);
 
 		private void ResetBarChartSeriesTitles()
 		{

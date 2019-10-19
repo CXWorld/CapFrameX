@@ -29,7 +29,8 @@
 				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Slider.xaml" />
 				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.PopupBox.xaml" />
 			</ResourceDictionary.MergedDictionaries>
-			<mvvm:ZoomingModeConverter x:Key="ZoomingModeConverter"></mvvm:ZoomingModeConverter>
+			<mvvm:ZoomingModeConverter x:Key="ZoomingModeConverter"/>
+			<mvvm:EnumDescriptionConverter x:Key="EnumDescriptionConverter"/>
 			<mvvm:BoolToVisibilityConverter x:Key="FalseToHiddenConverter" FalseValue="Hidden" TrueValue="Visible"/>
 			<mvvm:BoolToVisibilityConverter x:Key="FalseToCollapsedConverter" FalseValue="Collapsed" TrueValue="Visible"/>
 			<mvvm:BoolToVisibilityConverter x:Key="TrueToVisibleConverter" FalseValue="Visible" TrueValue="Collapsed"/>
@@ -115,10 +116,10 @@
 		</TabControl>
 		<Grid Grid.Row="1" Margin="5 5 0 5" Background="#e6e6e6">
 			<Grid.ColumnDefinitions>
-				<ColumnDefinition Width="200"></ColumnDefinition>
-				<ColumnDefinition Width="200"></ColumnDefinition>
+				<ColumnDefinition Width="Auto"></ColumnDefinition>
+				<ColumnDefinition Width="180"></ColumnDefinition>
 			</Grid.ColumnDefinitions>
-			<StackPanel VerticalAlignment="Center" Grid.Column="0" Margin="25 0 0 0" Orientation="Horizontal">
+			<StackPanel VerticalAlignment="Center" Grid.Column="0" Margin="25 3 0 0" Orientation="Horizontal">
 				<TextBlock VerticalAlignment="Center">Sort mode:</TextBlock>
 				<ToggleButton Grid.Column="0" Margin="5 0 0 0" Foreground="Black" BorderThickness="1" Background="Transparent"
 							  Style="{StaticResource MaterialDesignActionAccentToggleButton}" IsChecked="{Binding IsSortModeAscendingActive}">
@@ -130,7 +131,15 @@
 					</materialDesign:ToggleButtonAssist.OnContent >
 				</ToggleButton>
 			</StackPanel>
-			
+			<ComboBox Grid.Column="1" VerticalAlignment="Center" Margin="20 0 0 15" materialDesign:HintAssist.Hint="Secondary metric"
+					materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="150"
+					ItemsSource="{Binding MetricItems}" SelectedItem="{Binding SelectSecondaryMetric}">
+				<ComboBox.ItemTemplate>
+					<DataTemplate>
+						<TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}"/>
+					</DataTemplate>
+				</ComboBox.ItemTemplate>
+			</ComboBox>
 		</Grid>
 		<StackPanel Margin="5 10 5 0" Grid.Row="0" Grid.RowSpan="2" Grid.Column="1" Orientation="Vertical">
 			<TextBox IsReadOnly="True" Background="#e6e6e6" materialDesign:HintAssist.Hint="Comparisons" />
@@ -216,24 +225,26 @@
 													BorderThickness="0 0 0 1"
 													BorderBrush="{DynamicResource MaterialDesignDivider}">
 													<Grid>
+														<Grid.RowDefinitions>
+															<RowDefinition Height="18"/>
+															<RowDefinition Height="1*"/>
+														</Grid.RowDefinitions>
 														<Grid.ColumnDefinitions>
 															<ColumnDefinition Width="140"/>
 															<ColumnDefinition Width="Auto"/>
 															<ColumnDefinition Width="15"/>
 														</Grid.ColumnDefinitions>
-														<StackPanel Margin="3 0 0 0" Grid.Column="0">
-															<TextBlock FontWeight="Bold" Text="{Binding WrappedRecordInfo.Game}" />
-															<TextBlock Text="{Binding WrappedRecordInfo.InfoText}" TextWrapping="Wrap"
-																   Width="140"
+														<TextBlock Margin="3 0 0 0" Grid.Row="0"  Grid.Column="0" Grid.ColumnSpan="2" FontWeight="Bold" Text="{Binding WrappedRecordInfo.Game}" />
+														<TextBlock Text="{Binding WrappedRecordInfo.InfoText}" TextWrapping="Wrap"
+																   Width="140" Margin="3 0 0 0" Grid.Row="1" Grid.Column="0"
 																   LineStackingStrategy="BlockLineHeight"
 																   FontSize="12"
 																   LineHeight="14"
 																   MaxHeight="52"/>
-														</StackPanel>
-														<xctk:ColorPicker Width="120" Height="30" Grid.Column="1" Margin="0 10 0 0" Background="#e6e6e6" SelectedColor="{Binding FrametimeGraphColor}" 
+														<xctk:ColorPicker Width="120" Height="30" Grid.Row="1" Grid.Column="1" Margin="0 10 0 0" Background="#e6e6e6" SelectedColor="{Binding FrametimeGraphColor}" 
 																      SelectedColorChanged="SelectedColorChanged" DisplayColorAndName="True" AvailableColorsSortingMode="HueSaturationBrightness" 
 																	  Visibility="{Binding ElementName=ComparisonRecordItemControl, Path=DataContext.ColorPickerVisibility, Converter={StaticResource FalseToHiddenConverter}}"/>
-														<Button Grid.Column="2" Margin="0 -2 -2 0" Padding="0" Width="12" Height="12" HorizontalAlignment="Right" VerticalAlignment="Top" BorderThickness="0" Background="Transparent" Foreground="Black"
+														<Button Grid.Row="0" Grid.Column="2" Margin="0 -2 -2 0" Padding="0" Width="12" Height="12" HorizontalAlignment="Right" VerticalAlignment="Top" BorderThickness="0" Background="Transparent" Foreground="Black"
 															Content="{materialDesign:PackIcon Close, Size=12}" Command="{Binding RemoveCommand}">
 														</Button>
 													</Grid>
