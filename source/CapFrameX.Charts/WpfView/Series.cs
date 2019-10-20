@@ -194,10 +194,26 @@ namespace LiveCharts.Wpf
             set { SetValue(FillProperty, value); }
         }
 
-        /// <summary>
-        /// The data labels property
-        /// </summary>
-        public static readonly DependencyProperty DataLabelsProperty = DependencyProperty.Register(
+		/// <summary>
+		/// The highlight fill property
+		/// </summary>
+		public static readonly DependencyProperty HighlightFillProperty = DependencyProperty.Register(
+			"HighlightFill", typeof(Brush), typeof(Series),
+			new PropertyMetadata(default(Brush), CallChartUpdater()));
+
+		/// <summary>
+		/// Gets or sets series highlight fill color, if this property is null then a SolidColorBrush will be assigned according to series position in collection and Chart.Colors property, also Fill property has a default opacity according to chart type.
+		/// </summary>
+		public Brush HighlightFill
+		{
+			get { return (Brush)GetValue(HighlightFillProperty); }
+			set { SetValue(HighlightFillProperty, value); }
+		}
+
+		/// <summary>
+		/// The data labels property
+		/// </summary>
+		public static readonly DependencyProperty DataLabelsProperty = DependencyProperty.Register(
             "DataLabels", typeof (bool), typeof (Series), 
             new PropertyMetadata(default(bool), CallChartUpdater()));
         /// <summary>

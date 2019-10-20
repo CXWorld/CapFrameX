@@ -353,6 +353,7 @@ namespace CapFrameX.ViewModel
 					Values = new ChartValues<double>(),
 					// 34, 151, 243 (blue)
                     Fill = new SolidColorBrush(Color.FromRgb(34, 151, 243)),
+					HighlightFill = new SolidColorBrush(Color.FromRgb(122,192,247)),
 					DataLabels = true,
 					MaxRowHeigth = BarChartMaxRowHeight,
 					UseRelativeMode = true
@@ -365,6 +366,7 @@ namespace CapFrameX.ViewModel
 					Values = new ChartValues<double>(),
 					// 241, 125, 32 (orange)
                     Fill = new SolidColorBrush(Color.FromRgb(241, 125, 32)),
+					HighlightFill = new SolidColorBrush(Color.FromRgb(245,164,98)),
 					DataLabels = true,
 					MaxRowHeigth = BarChartMaxRowHeight,
 					UseRelativeMode = true

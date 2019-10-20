@@ -1,4 +1,5 @@
 ﻿using CapFrameX.OcatInterface;
+using LiveCharts.Wpf;
 using OxyPlot;
 using OxyPlot.Series;
 using Prism.Commands;
@@ -58,24 +59,44 @@ namespace CapFrameX.ViewModel
 
 		private void OnMouseEnter()
 		{
-			if (!_viewModel.ComparisonModel.Series.Any() ||
-				CollectionIndex >= _viewModel.ComparisonModel.Series.Count)
+			if (!_viewModel.ComparisonModel.Series.Any())
 				return;
 
-			var frametimesChart = _viewModel.ComparisonModel.Series[CollectionIndex] as LineSeries;
+			var index = _viewModel.ComparisonRecords.IndexOf(this);
+
+			var frametimesChart = _viewModel.ComparisonModel.Series[index] as OxyPlot.Series.LineSeries;
 			frametimesChart.StrokeThickness = 2;
 			_viewModel.ComparisonModel.InvalidatePlot(true);
+
+			// highlight bar chart chartpoint
+			var series = _viewModel.ComparisonRowChartSeriesCollection;
+
+			foreach (var item in series)
+			{
+				var rowSeries = item as RowSeries;
+				rowSeries.HighlightChartPoint(_viewModel.ComparisonRecords.Count - index);
+			}
 		}
 
 		private void OnMouseLeave()
 		{
-			if (!_viewModel.ComparisonModel.Series.Any() ||
-				CollectionIndex >= _viewModel.ComparisonModel.Series.Count)
+			if (!_viewModel.ComparisonModel.Series.Any())
 				return;
 
-			var frametimesChart = _viewModel.ComparisonModel.Series[CollectionIndex] as LineSeries;
+			var index = _viewModel.ComparisonRecords.IndexOf(this);
+
+			var frametimesChart = _viewModel.ComparisonModel.Series[index] as OxyPlot.Series.LineSeries;
 			frametimesChart.StrokeThickness = 1;
 			_viewModel.ComparisonModel.InvalidatePlot(true);
+
+			// unhighlight bar chart chartpoint
+			var series = _viewModel.ComparisonRowChartSeriesCollection;
+
+			foreach (var item in series)
+			{
+				var rowSeries = item as RowSeries;
+				rowSeries.UnHighlightChartPoint(_viewModel.ComparisonRecords.Count - index);
+			}
 		}
 
 		private void OnRemove()
@@ -94,7 +115,7 @@ namespace CapFrameX.ViewModel
 			{
 				Color color = FrametimeGraphColor.Value;
 
-				var frametimesChart = _viewModel.ComparisonModel.Series[CollectionIndex] as LineSeries;
+				var frametimesChart = _viewModel.ComparisonModel.Series[CollectionIndex] as OxyPlot.Series.LineSeries;
 				var lShapeChart = _viewModel.ComparisonLShapeCollection[CollectionIndex] as LiveCharts.Wpf.LineSeries;
 
 				var solidColorBrush = new SolidColorBrush(System.Windows.Media.Color.FromArgb(color.A, color.R, color.G, color.B));

@@ -38,33 +38,62 @@
 		</ResourceDictionary>
 	</UserControl.Resources>
 	<Grid x:Name="ComparisonAreaGrid">
-		<Grid.RowDefinitions>
-			<RowDefinition Height="1*"></RowDefinition>
-			<RowDefinition Height="70"></RowDefinition>
-		</Grid.RowDefinitions>
 		<Grid.ColumnDefinitions>
 			<ColumnDefinition Width="1*"></ColumnDefinition>
 			<ColumnDefinition Width="320"></ColumnDefinition>
 		</Grid.ColumnDefinitions>
-		<TabControl Margin="5 10 0 0" Grid.Row="0" Grid.Column="0" Background="#F5F5F5"
+		<TabControl Margin="5 10 0 5" Grid.Column="0" Background="#F5F5F5"
 					SelectedItem="{Binding SelectedChartItem}">
 			<TabItem Header="Bar charts" >
 				<ScrollViewer VerticalScrollBarVisibility="Auto">
-					<lvc:CartesianChart Margin="10" VerticalAlignment="Top" Series="{Binding ComparisonRowChartSeriesCollection}" Height="{Binding BarChartHeight}"
+					<Grid>
+						<Grid.RowDefinitions>
+							<RowDefinition Height="1*"/>
+							<RowDefinition Height="70"/>
+						</Grid.RowDefinitions>
+						<lvc:CartesianChart Grid.Row="0" VerticalAlignment="Top" Margin="10" Series="{Binding ComparisonRowChartSeriesCollection}" Height="{Binding BarChartHeight}"
                                         Visibility="{Binding BarChartVisibility, Converter={StaticResource FalseToCollapsedConverter}}" DisableAnimations="True"
 										Hoverable="False" DataTooltip="{x:Null}" LegendLocation="Top">
-						<lvc:CartesianChart.AxisX>
-							<lvc:Axis Title="FPS" FontSize="11" MinValue="0" LabelFormatter="{Binding ComparisonColumnChartFormatter}" Foreground="Black"></lvc:Axis>
-						</lvc:CartesianChart.AxisX>
-						<lvc:CartesianChart.AxisY>
-							<lvc:Axis Labels="{Binding ComparisonRowChartLabels}">
-								<lvc:Axis.Separator>
-									<!--step 1 forces the axis to display all labels, disabling it makes it invisible-->
-									<lvc:Separator Step="1" IsEnabled="False"></lvc:Separator>
-								</lvc:Axis.Separator>
-							</lvc:Axis>
-						</lvc:CartesianChart.AxisY>
-					</lvc:CartesianChart>
+							<lvc:CartesianChart.AxisX>
+								<lvc:Axis Title="FPS" FontSize="11" MinValue="0" LabelFormatter="{Binding ComparisonColumnChartFormatter}" Foreground="Black"></lvc:Axis>
+							</lvc:CartesianChart.AxisX>
+							<lvc:CartesianChart.AxisY>
+								<lvc:Axis Labels="{Binding ComparisonRowChartLabels}">
+									<lvc:Axis.Separator>
+										<!--step 1 forces the axis to display all labels, disabling it makes it invisible-->
+										<lvc:Separator Step="1" IsEnabled="False"></lvc:Separator>
+									</lvc:Axis.Separator>
+								</lvc:Axis>
+							</lvc:CartesianChart.AxisY>
+						</lvc:CartesianChart>
+						<Grid Grid.Row="1" Margin="0" Background="#e6e6e6">
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="Auto"></ColumnDefinition>
+								<ColumnDefinition Width="180"></ColumnDefinition>
+							</Grid.ColumnDefinitions>
+							<StackPanel VerticalAlignment="Center" Grid.Column="0" Margin="25 3 0 0" Orientation="Horizontal">
+								<TextBlock VerticalAlignment="Center">Sort mode:</TextBlock>
+								<ToggleButton Grid.Column="0" Margin="5 0 0 0" Foreground="Black" BorderThickness="1" Background="Transparent"
+											  Style="{StaticResource MaterialDesignActionAccentToggleButton}" IsChecked="{Binding IsSortModeAscendingActive}">
+									<ToggleButton.Content>
+										<materialDesign:PackIcon Kind="SortDescending" />
+									</ToggleButton.Content>
+									<materialDesign:ToggleButtonAssist.OnContent>
+										<materialDesign:PackIcon Kind="SortAscending" />
+									</materialDesign:ToggleButtonAssist.OnContent >
+								</ToggleButton>
+							</StackPanel>
+							<ComboBox Grid.Column="1" VerticalAlignment="Center" Margin="20 0 0 15" materialDesign:HintAssist.Hint="Secondary metric"
+										materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="150"
+										ItemsSource="{Binding MetricItems}" SelectedItem="{Binding SelectSecondaryMetric}">
+								<ComboBox.ItemTemplate>
+									<DataTemplate>
+										<TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}"/>
+									</DataTemplate>
+								</ComboBox.ItemTemplate>
+							</ComboBox>
+						</Grid>
+					</Grid>
 				</ScrollViewer>
 			</TabItem>
 			<TabItem Header="Frametimes/ L-shapes">
@@ -114,34 +143,7 @@
 				</Grid>
 			</TabItem>
 		</TabControl>
-		<Grid Grid.Row="1" Margin="5 5 0 5" Background="#e6e6e6">
-			<Grid.ColumnDefinitions>
-				<ColumnDefinition Width="Auto"></ColumnDefinition>
-				<ColumnDefinition Width="180"></ColumnDefinition>
-			</Grid.ColumnDefinitions>
-			<StackPanel VerticalAlignment="Center" Grid.Column="0" Margin="25 3 0 0" Orientation="Horizontal">
-				<TextBlock VerticalAlignment="Center">Sort mode:</TextBlock>
-				<ToggleButton Grid.Column="0" Margin="5 0 0 0" Foreground="Black" BorderThickness="1" Background="Transparent"
-							  Style="{StaticResource MaterialDesignActionAccentToggleButton}" IsChecked="{Binding IsSortModeAscendingActive}">
-					<ToggleButton.Content>
-						<materialDesign:PackIcon Kind="SortDescending" />
-					</ToggleButton.Content>
-					<materialDesign:ToggleButtonAssist.OnContent>
-						<materialDesign:PackIcon Kind="SortAscending" />
-					</materialDesign:ToggleButtonAssist.OnContent >
-				</ToggleButton>
-			</StackPanel>
-			<ComboBox Grid.Column="1" VerticalAlignment="Center" Margin="20 0 0 15" materialDesign:HintAssist.Hint="Secondary metric"
-					materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="150"
-					ItemsSource="{Binding MetricItems}" SelectedItem="{Binding SelectSecondaryMetric}">
-				<ComboBox.ItemTemplate>
-					<DataTemplate>
-						<TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}"/>
-					</DataTemplate>
-				</ComboBox.ItemTemplate>
-			</ComboBox>
-		</Grid>
-		<StackPanel Margin="5 10 5 0" Grid.Row="0" Grid.RowSpan="2" Grid.Column="1" Orientation="Vertical">
+		<StackPanel Margin="5 10 5 0" Grid.Column="1" Orientation="Vertical">
 			<TextBox IsReadOnly="True" Background="#e6e6e6" materialDesign:HintAssist.Hint="Comparisons" />
 			<Border Margin="0 5 0 0" BorderThickness="1" BorderBrush="#CCC" VerticalAlignment="Stretch">
 				<Grid Background="#e6e6e6">

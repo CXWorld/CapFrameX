@@ -21,6 +21,7 @@
 //SOFTWARE.
 
 using System;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -142,6 +143,36 @@ namespace LiveCharts.Wpf
 		}
 
 		#endregion
+
+		#region Public Methods
+
+		public void HighlightChartPoint(int index)
+		{
+			if (index >= Values.Count)
+				return;
+
+			var chartPoints = ActualValues.GetPoints(this).ToList();
+			var pbv = (RowPointView)chartPoints[index].View;
+
+			pbv.Rectangle.Fill = HighlightFill;
+			pbv.Rectangle.StrokeThickness = 1;
+			pbv.Rectangle.Stroke = Brushes.Gray;
+		}
+
+		public void UnHighlightChartPoint(int index)
+		{
+			if (index >= Values.Count)
+				return;
+
+			var chartPoints = ActualValues.GetPoints(this).ToList();
+			var pbv = (RowPointView)chartPoints[index].View;
+
+			pbv.Rectangle.Fill = Fill;
+			pbv.Rectangle.StrokeThickness = 0;
+			pbv.Rectangle.Stroke = Brushes.Transparent;
+		}
+
+		#endregion Public Methods
 
 		#region Overridden Methods
 
