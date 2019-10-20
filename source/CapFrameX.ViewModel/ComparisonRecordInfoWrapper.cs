@@ -74,7 +74,7 @@ namespace CapFrameX.ViewModel
 			foreach (var item in series)
 			{
 				var rowSeries = item as RowSeries;
-				rowSeries.HighlightChartPoint(_viewModel.ComparisonRecords.Count - index);
+				rowSeries.HighlightChartPoint(_viewModel.ComparisonRecords.Count - index - 1);
 			}
 		}
 
@@ -95,7 +95,7 @@ namespace CapFrameX.ViewModel
 			foreach (var item in series)
 			{
 				var rowSeries = item as RowSeries;
-				rowSeries.UnHighlightChartPoint(_viewModel.ComparisonRecords.Count - index);
+				rowSeries.UnHighlightChartPoint(_viewModel.ComparisonRecords.Count - index - 1);
 			}
 		}
 
