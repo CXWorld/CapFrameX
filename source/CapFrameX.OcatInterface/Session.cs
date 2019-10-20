@@ -1,4 +1,5 @@
-﻿using CapFrameX.Statistics;
+﻿using CapFrameX.Configuration;
+using CapFrameX.Statistics;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
@@ -32,7 +33,7 @@ namespace CapFrameX.OcatInterface
 
 		public Session()
 		{		
-			_frametimeStatisticProvider = new FrametimeStatisticProvider();
+			_frametimeStatisticProvider = new FrametimeStatisticProvider(new CapFrameXConfiguration());
 		}
 
 		public IList<double> GetFrametimeSampleWindow(int startIndex, double endIndex, ERemoveOutlierMethod removeOutlierMethod)

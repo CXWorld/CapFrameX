@@ -258,22 +258,24 @@ namespace CapFrameX.ViewModel
                 return;
 
             var frametimes = GetFrametimesSubset();
-            var roundingDigits = _appConfiguration.FpsValuesRoundingDigits;
             var fps = frametimes.Select(ft => 1000 / ft).ToList();
-            var max = Math.Round(fps.Max(), roundingDigits);
-            var p99_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.99), roundingDigits);
-            var p95_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.95), roundingDigits);
-            var average = Math.Round(frametimes.Count * 1000 / frametimes.Sum(), roundingDigits);
-            var p0dot1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.001), roundingDigits);
-            var p0dot2_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.002), roundingDigits);
-            var p1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.01), roundingDigits);
-            var p5_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.05), roundingDigits);
-            var p1_averageLow = Math.Round(1000 / _frametimeStatisticProvider.GetPAverageHighSequence(frametimes, 1 - 0.01), roundingDigits);
-            var p0dot1_averageLow = Math.Round(1000 / _frametimeStatisticProvider.GetPAverageHighSequence(frametimes, 1 - 0.001), roundingDigits);
-            var min = Math.Round(fps.Min(), roundingDigits);
-            var adaptiveStandardDeviation = Math.Round(_frametimeStatisticProvider.GetAdaptiveStandardDeviation(fps, _appConfiguration.MovingAverageWindowSize), roundingDigits);
+			double GeMetricValue(IList<double> sequence, EMetric metric) => 
+				_frametimeStatisticProvider.GetFpsMetricValue(sequence, metric);
 
-            StringBuilder builder = new StringBuilder();
+			var max = GeMetricValue(fps, EMetric.Max);
+			var p99_quantile = GeMetricValue(fps, EMetric.P99);
+			var p95_quantile = GeMetricValue(fps, EMetric.P95);
+			var average = GeMetricValue(frametimes, EMetric.Average);
+			var p0dot1_quantile = GeMetricValue(fps, EMetric.P0dot1);
+			var p0dot2_quantile = GeMetricValue(fps, EMetric.P0dot2);
+			var p1_quantile = GeMetricValue(fps, EMetric.P1);
+			var p5_quantile = GeMetricValue(fps, EMetric.P5);
+			var p1_averageLow = GeMetricValue(fps, EMetric.OnePercentLow);
+			var p0dot1_averageLow = GeMetricValue(fps, EMetric.ZerodotOnePercentLow);
+			var min = GeMetricValue(fps, EMetric.Min);
+			var adaptiveStandardDeviation = GeMetricValue(fps, EMetric.AdaptiveStd);
+
+			StringBuilder builder = new StringBuilder();
 
             // Vice versa!
             // "Adaptive STD" ,"Min","0.1% Low" ,"0.1%","0.2%" ,"1% Low", "1%" ,"5%" ,"Average" ,"95%" ,"99%" ,"Max"
@@ -318,7 +320,8 @@ namespace CapFrameX.ViewModel
 
             foreach (var quantile in lShapeQuantiles)
             {
-                builder.Append(quantile.ToString(CultureInfo.InvariantCulture) + "%" + "\t" + action(quantile).ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
+                builder.Append(quantile.ToString(CultureInfo.InvariantCulture) + "%" + "\t" + action(quantile)
+					.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
             }
 
             Clipboard.SetDataObject(builder.ToString(), false);
@@ -348,7 +351,8 @@ namespace CapFrameX.ViewModel
 
         private void OnRemoveOutliersChanged()
         {
-            _localRecordDataServer.RemoveOutlierMethod = RemoveOutliers ? ERemoveOutlierMethod.DeciPercentile : ERemoveOutlierMethod.None;
+            _localRecordDataServer.RemoveOutlierMethod = RemoveOutliers ? 
+				ERemoveOutlierMethod.DeciPercentile : ERemoveOutlierMethod.None;
             UpdateMainCharts();
             UpdateSecondaryCharts();
         }
@@ -427,22 +431,24 @@ namespace CapFrameX.ViewModel
             if (frametimes == null || !frametimes.Any())
                 return;
 
-            var roundingDigits = _appConfiguration.FpsValuesRoundingDigits;
-            var fps = frametimes.Select(ft => 1000 / ft).ToList();
-            var p99_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.99), roundingDigits);
-            var p95_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.95), roundingDigits);
-            var max = Math.Round(fps.Max(), roundingDigits);
-            var average = Math.Round(frametimes.Count * 1000 / frametimes.Sum(), roundingDigits);
-            var p5_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.05), roundingDigits);
-            var p1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.01), roundingDigits);
-            var p1_averageLow = Math.Round(1000 / _frametimeStatisticProvider.GetPAverageHighSequence(frametimes, 1 - 0.01), roundingDigits);
-            var p0dot2_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.002), roundingDigits);
-            var p0dot1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.001), roundingDigits);
-            var p0dot1_averageLow = Math.Round(1000 / _frametimeStatisticProvider.GetPAverageHighSequence(frametimes, 1 - 0.001), roundingDigits);
-            var min = Math.Round(fps.Min(), roundingDigits);
-            var adaptiveStandardDeviation = Math.Round(_frametimeStatisticProvider.GetAdaptiveStandardDeviation(fps, _appConfiguration.MovingAverageWindowSize), roundingDigits);
+			var fps = frametimes.Select(ft => 1000 / ft).ToList();
+			double GeMetricValue(IList<double> sequence, EMetric metric) =>
+				_frametimeStatisticProvider.GetFpsMetricValue(sequence, metric);
 
-            IChartValues values = new ChartValues<double>();
+			var max = GeMetricValue(fps, EMetric.Max);
+			var p99_quantile = GeMetricValue(fps, EMetric.P99);
+			var p95_quantile = GeMetricValue(fps, EMetric.P95);
+			var average = GeMetricValue(frametimes, EMetric.Average);
+			var p0dot1_quantile = GeMetricValue(fps, EMetric.P0dot1);
+			var p0dot2_quantile = GeMetricValue(fps, EMetric.P0dot2);
+			var p1_quantile = GeMetricValue(fps, EMetric.P1);
+			var p5_quantile = GeMetricValue(fps, EMetric.P5);
+			var p1_averageLow = GeMetricValue(fps, EMetric.OnePercentLow);
+			var p0dot1_averageLow = GeMetricValue(fps, EMetric.ZerodotOnePercentLow);
+			var min = GeMetricValue(fps, EMetric.Min);
+			var adaptiveStandardDeviation = GeMetricValue(fps, EMetric.AdaptiveStd);
+
+			IChartValues values = new ChartValues<double>();
 
             if (_appConfiguration.UseSingleRecordAdaptiveSTDStatisticParameter && !double.IsNaN(adaptiveStandardDeviation))
                 values.Add(adaptiveStandardDeviation);
@@ -533,7 +539,6 @@ namespace CapFrameX.ViewModel
                         DataLabels = true,
                         Fill = ColorRessource.PieChartSmmoothFill,
                         Foreground = Brushes.Black,
-						//LabelPosition = PieLabelPosition.InsideSlice,
 						LabelPoint = PieChartPointLabel,
                         FontSize = 12
                     },
@@ -544,7 +549,6 @@ namespace CapFrameX.ViewModel
                         DataLabels = true,
                         Fill = ColorRessource.PieChartStutterFill,
                         Foreground = Brushes.Black,
-						//LabelPosition = PieLabelPosition.InsideSlice,
 						LabelPoint = PieChartPointLabel,
                         FontSize = 12
                     }

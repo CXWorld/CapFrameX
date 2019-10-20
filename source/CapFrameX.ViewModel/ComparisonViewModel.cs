@@ -92,6 +92,7 @@ namespace CapFrameX.ViewModel
 			{
 				_selectSecondaryMetric = value;
 				RaisePropertyChanged();
+				OnSecondaryMetricChanged();
 			}
 		}
 
@@ -138,37 +139,61 @@ namespace CapFrameX.ViewModel
 		public SeriesCollection ComparisonLShapeCollection
 		{
 			get { return _comparisonLShapeCollection; }
-			set { _comparisonLShapeCollection = value; RaisePropertyChanged(); }
+			set
+			{
+				_comparisonLShapeCollection = value;
+				RaisePropertyChanged();
+			}
 		}
 
 		public string[] ComparisonRowChartLabels
 		{
 			get { return _comparisonRowChartLabels; }
-			set { _comparisonRowChartLabels = value; RaisePropertyChanged(); }
+			set
+			{
+				_comparisonRowChartLabels = value;
+				RaisePropertyChanged();
+			}
 		}
 
 		public string ComparisonItemControlHeight
 		{
 			get { return _comparisonItemControlHeight; }
-			set { _comparisonItemControlHeight = value; RaisePropertyChanged(); }
+			set
+			{
+				_comparisonItemControlHeight = value;
+				RaisePropertyChanged();
+			}
 		}
 
 		public string RemainingRecordingTime
 		{
 			get { return _remainingRecordingTime; }
-			set { _remainingRecordingTime = value; RaisePropertyChanged(); }
+			set
+			{
+				_remainingRecordingTime = value;
+				RaisePropertyChanged();
+			}
 		}
 
 		public double CutLeftSliderMaximum
 		{
 			get { return _cutLeftSliderMaximum; }
-			set { _cutLeftSliderMaximum = value; RaisePropertyChanged(); }
+			set
+			{
+				_cutLeftSliderMaximum = value;
+				RaisePropertyChanged();
+			}
 		}
 
 		public double CutRightSliderMaximum
 		{
 			get { return _cutRightSliderMaximum; }
-			set { _cutRightSliderMaximum = value; RaisePropertyChanged(); }
+			set
+			{
+				_cutRightSliderMaximum = value;
+				RaisePropertyChanged();
+			}
 		}
 
 		public string ColumnChartYAxisTitle
@@ -323,8 +348,8 @@ namespace CapFrameX.ViewModel
 				{
 					Title = "Average",
 					Values = new ChartValues<double>(),
-                    // Kind of blue
-                    Fill = _comparisonBrushes[1],
+					// 34, 151, 243 (blue)
+                    Fill = new SolidColorBrush(Color.FromRgb(34, 151, 243)),
 					DataLabels = true,
 					MaxRowHeigth = BarChartMaxRowHeight,
 					UseRelativeMode = true
@@ -335,23 +360,13 @@ namespace CapFrameX.ViewModel
 				{
 					Title = "P1",
 					Values = new ChartValues<double>(),
-                    // Kind of red
-                    Fill = _comparisonBrushes[2],
+					// 241, 125, 32 (orange)
+                    Fill = new SolidColorBrush(Color.FromRgb(241, 125, 32)),
 					DataLabels = true,
 					MaxRowHeigth = BarChartMaxRowHeight,
 					UseRelativeMode = true
-				},
-
-                ////0.1% quantile
-                //new LiveCharts.Wpf.ColumnSeries
-                //{
-                //    Title = "P0.1",
-                //    Values = new ChartValues<double>(),
-                //    // Kind of dark red
-                //    Fill = _comparisonBrushes[3],
-                //    DataLabels = true
-                //}
-            };
+				}
+			};
 
 			InitializePlotModel();
 			SubscribeToSelectRecord();
@@ -434,6 +449,12 @@ namespace CapFrameX.ViewModel
 
 		private void OnSortModeChanged()
 			=> SortComparisonItems();
+
+		private void OnSecondaryMetricChanged()
+		{
+			if (SelectSecondaryMetric == EMetric.None)
+				ComparisonRowChartSeriesCollection.RemoveAt(1);
+		}
 
 		private void UpdateCuttingParameter()
 		{

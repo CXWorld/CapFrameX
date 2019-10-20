@@ -18,8 +18,10 @@ namespace CapFrameX.Statistics
 
 		double GetPAverageLowSequence(IList<double> sequence, double pQuantile);
 
-        double GetPAverageHighSequence(IList<double> sequence, double pQuantile);
+		double GetPAverageHighSequence(IList<double> sequence, double pQuantile);
 
-        List<double>[] GetDiscreteDistribution(IList<double> sequence);
+		double GetFpsMetricValue(IList<double> sequence, EMetric metric);
+
+		List<double>[] GetDiscreteDistribution(IList<double> sequence);
 	}
 }

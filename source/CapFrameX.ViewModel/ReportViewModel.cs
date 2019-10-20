@@ -141,21 +141,23 @@ namespace CapFrameX.ViewModel
 		private ReportInfo GetReportInfoFromRecordInfo(IFileRecordInfo recordInfo)
 		{
 			var session = RecordManager.LoadData(recordInfo.FullPath);
-			var roundingDigits = _appConfiguration.FpsValuesRoundingDigits;
 
 			var fps = session.FrameTimes.Select(ft => 1000 / ft).ToList();
-			var p99_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.99), roundingDigits);
-			var p95_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.95), roundingDigits);
-			var max = Math.Round(fps.Max(), roundingDigits);
-			var average = Math.Round(session.FrameTimes.Count * 1000 / session.FrameTimes.Sum(), roundingDigits);
-			var p5_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.05), roundingDigits);
-			var p1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.01), roundingDigits);
-			var p1_averageLow = Math.Round(1000 / _frametimeStatisticProvider.GetPAverageHighSequence(session.FrameTimes, 1 - 0.01), roundingDigits);
-            var p0dot2_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.002), roundingDigits);
-            var p0dot1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.001), roundingDigits);
-			var p0dot1_averageLow = Math.Round(1000 / _frametimeStatisticProvider.GetPAverageHighSequence(session.FrameTimes, 1 - 0.001), roundingDigits);
-			var min = Math.Round(fps.Min(), roundingDigits);
-			var adaptiveStandardDeviation = Math.Round(_frametimeStatisticProvider.GetAdaptiveStandardDeviation(fps, _appConfiguration.MovingAverageWindowSize), roundingDigits);
+			double GeMetricValue(IList<double> sequence, EMetric metric) =>
+					_frametimeStatisticProvider.GetFpsMetricValue(sequence, metric);
+
+			var max = GeMetricValue(fps, EMetric.Max);
+			var p99_quantile = GeMetricValue(fps, EMetric.P99);
+			var p95_quantile = GeMetricValue(fps, EMetric.P95);
+			var average = GeMetricValue(session.FrameTimes, EMetric.Average);
+			var p0dot1_quantile = GeMetricValue(fps, EMetric.P0dot1);
+			var p0dot2_quantile = GeMetricValue(fps, EMetric.P0dot2);
+			var p1_quantile = GeMetricValue(fps, EMetric.P1);
+			var p5_quantile = GeMetricValue(fps, EMetric.P5);
+			var p1_averageLow = GeMetricValue(fps, EMetric.OnePercentLow);
+			var p0dot1_averageLow = GeMetricValue(fps, EMetric.ZerodotOnePercentLow);
+			var min = GeMetricValue(fps, EMetric.Min);
+			var adaptiveStandardDeviation = GeMetricValue(fps, EMetric.AdaptiveStd);
 
 			var reportInfo = new ReportInfo()
 			{

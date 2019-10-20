@@ -20,7 +20,7 @@ namespace CapFrameX.View
             if (DesignerProperties.GetIsInDesignMode(this))
             {
 				var appConfiguration = new CapFrameXConfiguration();
-				DataContext = new ReportViewModel(new FrametimeStatisticProvider(), new EventAggregator(), appConfiguration);
+				DataContext = new ReportViewModel(new FrametimeStatisticProvider(appConfiguration), new EventAggregator(), appConfiguration);
             }
         }
 

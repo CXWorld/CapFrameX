@@ -28,8 +28,9 @@ namespace CapFrameX.View
 			// Design time!
 			if (DesignerProperties.GetIsInDesignMode(this))
 			{
-				DataContext = new DataViewModel(new FrametimeStatisticProvider(),
-					new FrametimeAnalyzer(), new EventAggregator(), new CapFrameXConfiguration());
+				var appConfiguration = new CapFrameXConfiguration();
+				DataContext = new DataViewModel(new FrametimeStatisticProvider(appConfiguration),
+					new FrametimeAnalyzer(), new EventAggregator(), appConfiguration);
 			}
 		}		
 

@@ -27,6 +27,8 @@ namespace CapFrameX.Statistics
 		[Description("Minimum")]
 		Min = 11,
 		[Description("Adaptive STD")]
-		AdaptiveStd = 12
+		AdaptiveStd = 12,
+		[Description("None")]
+		None = 13,
 	}
 }
