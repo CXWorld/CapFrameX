@@ -52,7 +52,7 @@
 				<ScrollViewer VerticalScrollBarVisibility="Auto">
 					<lvc:CartesianChart Margin="10" VerticalAlignment="Top" Series="{Binding ComparisonRowChartSeriesCollection}" Height="{Binding BarChartHeight}"
                                         Visibility="{Binding BarChartVisibility, Converter={StaticResource FalseToCollapsedConverter}}" DisableAnimations="True"
-										Hoverable="False" DataTooltip="{x:Null}">
+										Hoverable="False" DataTooltip="{x:Null}" LegendLocation="Right">
 						<lvc:CartesianChart.AxisX>
 							<lvc:Axis Title="FPS" FontSize="11" MinValue="0" LabelFormatter="{Binding ComparisonColumnChartFormatter}" Foreground="Black"></lvc:Axis>
 						</lvc:CartesianChart.AxisX>

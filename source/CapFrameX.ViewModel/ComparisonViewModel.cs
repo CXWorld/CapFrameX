@@ -355,7 +355,7 @@ namespace CapFrameX.ViewModel
 					UseRelativeMode = true
 				},
 
-                 //1% quantile
+                // 1% quantile (initial)
                 new RowSeries
 				{
 					Title = "P1",
@@ -453,7 +453,32 @@ namespace CapFrameX.ViewModel
 		private void OnSecondaryMetricChanged()
 		{
 			if (SelectSecondaryMetric == EMetric.None)
+			{
 				ComparisonRowChartSeriesCollection.RemoveAt(1);
+				// Cannot adjust height here, otherwise the labels will not fit
+				//BarChartHeight = 40 + (BarChartMaxRowHeight + 12) * ComparisonRecords.Count;
+			}
+			else
+			{
+				double GeMetricValue(IList<double> sequence, EMetric metric) =>
+					_frametimeStatisticProvider.GetFpsMetricValue(sequence, metric);
+
+				ComparisonRowChartSeriesCollection[1].Values.Clear();
+
+				for (int i = 0; i < ComparisonRecords.Count; i++)
+				{
+					var currentWrappedComparisonInfo = ComparisonRecords[i];
+
+					double startTime = FirstSeconds;
+					double endTime = _maxRecordingTime - LastSeconds;
+					var frametimeTimeWindow = currentWrappedComparisonInfo.WrappedRecordInfo.Session
+						.GetFrametimeTimeWindow(startTime, endTime, ERemoveOutlierMethod.None);
+					var fps = frametimeTimeWindow.Select(ft => 1000 / ft).ToList();
+
+					var secondaryMetric = GeMetricValue(fps, SelectSecondaryMetric);
+					ComparisonRowChartSeriesCollection[1].Values.Insert(0, secondaryMetric);
+				}
+			}
 		}
 
 		private void UpdateCuttingParameter()
@@ -606,23 +631,21 @@ namespace CapFrameX.ViewModel
 			double startTime = FirstSeconds;
 			double endTime = _maxRecordingTime - LastSeconds;
 			var frametimeTimeWindow = wrappedComparisonInfo.WrappedRecordInfo.Session.GetFrametimeTimeWindow(startTime, endTime, ERemoveOutlierMethod.None);
-
-			var roundingDigits = _appConfiguration.FpsValuesRoundingDigits;
 			var fps = frametimeTimeWindow.Select(ft => 1000 / ft).ToList();
-			var average = Math.Round(frametimeTimeWindow.Count * 1000 / frametimeTimeWindow.Sum(), roundingDigits);
-			var p1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.01), roundingDigits);
-			var p0dot1_quantile = Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(fps, 0.001), roundingDigits);
+
+			double GeMetricValue(IList<double> sequence, EMetric metric) =>
+					_frametimeStatisticProvider.GetFpsMetricValue(sequence, metric);
+
+			var average = GeMetricValue(frametimeTimeWindow, EMetric.Average);
+			var secondaryMetric = GeMetricValue(fps, SelectSecondaryMetric);
 
 			wrappedComparisonInfo.WrappedRecordInfo.SortCriteriaParameter = average;
 
 			// Average
 			ComparisonRowChartSeriesCollection[0].Values.Insert(0, average);
 
-			//1% quantile
-			ComparisonRowChartSeriesCollection[1].Values.Insert(0, p1_quantile);
-
-			//0.1% quantile
-			//ComparisonColumnChartSeriesCollection[2].Values.Add(p0dot1_quantile);
+			// Secondary metric
+			ComparisonRowChartSeriesCollection[1].Values.Insert(0, secondaryMetric);
 
 			switch (_comparisonContext)
 			{
