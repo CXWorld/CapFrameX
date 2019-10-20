@@ -33,7 +33,7 @@ namespace CapFrameX.ViewModel
 				ComparisonItemControlHeight = ComparisonRecords.Any() ? "Auto" : "300";
 
 				// Update height of bar chart control here
-				BarChartHeight = 40 + (2 * BarChartMaxRowHeight + 12) * ComparisonRecords.Count;
+				BarChartHeight = 60 + (2 * BarChartMaxRowHeight + 12) * ComparisonRecords.Count;
 
 				UpdateCuttingParameter();
 

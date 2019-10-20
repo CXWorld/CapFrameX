@@ -114,8 +114,7 @@ namespace CapFrameX.Statistics
 		}
 
 		/// <summary>
-		/// Calculate FPS metric values. In order to calculate
-		/// the average value, sequence must be a list of 
+		/// Calculate FPS metric values.
 		/// frametimes.
 		/// </summary>
 		/// <param name="sequence"></param>
@@ -124,43 +123,53 @@ namespace CapFrameX.Statistics
 		public double GetFpsMetricValue(IList<double> sequence, EMetric metric)
 		{
 			double metricValue;
+			IList<double> fps;
 			switch (metric)
 			{
 				case EMetric.Max:
-					metricValue = sequence.Max();
+					fps = sequence.Select(ft => 1000 / ft).ToList();
+					metricValue = fps.Max();
 					break;
 				case EMetric.P99:
-					metricValue = GetPQuantileSequence(sequence, 0.99);
+					fps = sequence.Select(ft => 1000 / ft).ToList();
+					metricValue = GetPQuantileSequence(fps, 0.99);
 					break;
 				case EMetric.P95:
-					metricValue = GetPQuantileSequence(sequence, 0.95);
+					fps = sequence.Select(ft => 1000 / ft).ToList();
+					metricValue = GetPQuantileSequence(fps, 0.95);
 					break;
 				case EMetric.Average:
 					metricValue = sequence.Count * 1000 / sequence.Sum();
 					break;
 				case EMetric.P5:
-					metricValue = GetPQuantileSequence(sequence, 0.05);
+					fps = sequence.Select(ft => 1000 / ft).ToList();
+					metricValue = GetPQuantileSequence(fps, 0.05);
 					break;
 				case EMetric.P1:
-					metricValue = GetPQuantileSequence(sequence, 0.01);
+					fps = sequence.Select(ft => 1000 / ft).ToList();
+					metricValue = GetPQuantileSequence(fps, 0.01);
 					break;
 				case EMetric.P0dot2:
-					metricValue = GetPQuantileSequence(sequence, 0.002);
+					fps = sequence.Select(ft => 1000 / ft).ToList();
+					metricValue = GetPQuantileSequence(fps, 0.002);
 					break;
 				case EMetric.P0dot1:
-					metricValue = GetPQuantileSequence(sequence, 0.001);
+					fps = sequence.Select(ft => 1000 / ft).ToList();
+					metricValue = GetPQuantileSequence(fps, 0.001);
 					break;
 				case EMetric.OnePercentLow:
-					metricValue = GetPAverageHighSequence(sequence, 1 - 0.01);
+					metricValue = 1000 / GetPAverageHighSequence(sequence, 1 - 0.01);
 					break;
 				case EMetric.ZerodotOnePercentLow:
-					metricValue = GetPAverageHighSequence(sequence, 1 - 0.001);
+					metricValue = 1000 / GetPAverageHighSequence(sequence, 1 - 0.001);
 					break;
 				case EMetric.Min:
-					metricValue = sequence.Min();
+					fps = sequence.Select(ft => 1000 / ft).ToList();
+					metricValue = fps.Min();
 					break;
 				case EMetric.AdaptiveStd:
-					metricValue = GetAdaptiveStandardDeviation(sequence, _appConfiguration.MovingAverageWindowSize);
+					fps = sequence.Select(ft => 1000 / ft).ToList();
+					metricValue = GetAdaptiveStandardDeviation(fps, _appConfiguration.MovingAverageWindowSize);
 					break;
 				default:
 					metricValue = double.NaN;

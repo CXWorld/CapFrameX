@@ -258,22 +258,21 @@ namespace CapFrameX.ViewModel
                 return;
 
             var frametimes = GetFrametimesSubset();
-            var fps = frametimes.Select(ft => 1000 / ft).ToList();
 			double GeMetricValue(IList<double> sequence, EMetric metric) => 
 				_frametimeStatisticProvider.GetFpsMetricValue(sequence, metric);
 
-			var max = GeMetricValue(fps, EMetric.Max);
-			var p99_quantile = GeMetricValue(fps, EMetric.P99);
-			var p95_quantile = GeMetricValue(fps, EMetric.P95);
+			var max = GeMetricValue(frametimes, EMetric.Max);
+			var p99_quantile = GeMetricValue(frametimes, EMetric.P99);
+			var p95_quantile = GeMetricValue(frametimes, EMetric.P95);
 			var average = GeMetricValue(frametimes, EMetric.Average);
-			var p0dot1_quantile = GeMetricValue(fps, EMetric.P0dot1);
-			var p0dot2_quantile = GeMetricValue(fps, EMetric.P0dot2);
-			var p1_quantile = GeMetricValue(fps, EMetric.P1);
-			var p5_quantile = GeMetricValue(fps, EMetric.P5);
-			var p1_averageLow = GeMetricValue(fps, EMetric.OnePercentLow);
-			var p0dot1_averageLow = GeMetricValue(fps, EMetric.ZerodotOnePercentLow);
-			var min = GeMetricValue(fps, EMetric.Min);
-			var adaptiveStandardDeviation = GeMetricValue(fps, EMetric.AdaptiveStd);
+			var p0dot1_quantile = GeMetricValue(frametimes, EMetric.P0dot1);
+			var p0dot2_quantile = GeMetricValue(frametimes, EMetric.P0dot2);
+			var p1_quantile = GeMetricValue(frametimes, EMetric.P1);
+			var p5_quantile = GeMetricValue(frametimes, EMetric.P5);
+			var p1_averageLow = GeMetricValue(frametimes, EMetric.OnePercentLow);
+			var p0dot1_averageLow = GeMetricValue(frametimes, EMetric.ZerodotOnePercentLow);
+			var min = GeMetricValue(frametimes, EMetric.Min);
+			var adaptiveStandardDeviation = GeMetricValue(frametimes, EMetric.AdaptiveStd);
 
 			StringBuilder builder = new StringBuilder();
 
@@ -431,22 +430,21 @@ namespace CapFrameX.ViewModel
             if (frametimes == null || !frametimes.Any())
                 return;
 
-			var fps = frametimes.Select(ft => 1000 / ft).ToList();
 			double GeMetricValue(IList<double> sequence, EMetric metric) =>
 				_frametimeStatisticProvider.GetFpsMetricValue(sequence, metric);
 
-			var max = GeMetricValue(fps, EMetric.Max);
-			var p99_quantile = GeMetricValue(fps, EMetric.P99);
-			var p95_quantile = GeMetricValue(fps, EMetric.P95);
+			var max = GeMetricValue(frametimes, EMetric.Max);
+			var p99_quantile = GeMetricValue(frametimes, EMetric.P99);
+			var p95_quantile = GeMetricValue(frametimes, EMetric.P95);
 			var average = GeMetricValue(frametimes, EMetric.Average);
-			var p0dot1_quantile = GeMetricValue(fps, EMetric.P0dot1);
-			var p0dot2_quantile = GeMetricValue(fps, EMetric.P0dot2);
-			var p1_quantile = GeMetricValue(fps, EMetric.P1);
-			var p5_quantile = GeMetricValue(fps, EMetric.P5);
-			var p1_averageLow = GeMetricValue(fps, EMetric.OnePercentLow);
-			var p0dot1_averageLow = GeMetricValue(fps, EMetric.ZerodotOnePercentLow);
-			var min = GeMetricValue(fps, EMetric.Min);
-			var adaptiveStandardDeviation = GeMetricValue(fps, EMetric.AdaptiveStd);
+			var p0dot1_quantile = GeMetricValue(frametimes, EMetric.P0dot1);
+			var p0dot2_quantile = GeMetricValue(frametimes, EMetric.P0dot2);
+			var p1_quantile = GeMetricValue(frametimes, EMetric.P1);
+			var p5_quantile = GeMetricValue(frametimes, EMetric.P5);
+			var p1_averageLow = GeMetricValue(frametimes, EMetric.OnePercentLow);
+			var p0dot1_averageLow = GeMetricValue(frametimes, EMetric.ZerodotOnePercentLow);
+			var min = GeMetricValue(frametimes, EMetric.Min);
+			var adaptiveStandardDeviation = GeMetricValue(frametimes, EMetric.AdaptiveStd);
 
 			IChartValues values = new ChartValues<double>();
 

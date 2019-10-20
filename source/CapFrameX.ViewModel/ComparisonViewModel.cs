@@ -83,7 +83,10 @@ namespace CapFrameX.ViewModel
 		private bool _colorPickerVisibility;
 		private EMetric _selectSecondaryMetric = EMetric.P1;
 
-		public Array MetricItems => Enum.GetValues(typeof(EMetric));
+		public Array MetricItems => Enum.GetValues(typeof(EMetric))
+										.Cast<EMetric>()
+										.Where(metric => metric != EMetric.Average)
+										.ToArray();
 
 		public EMetric SelectSecondaryMetric
 		{
@@ -358,7 +361,7 @@ namespace CapFrameX.ViewModel
                 // 1% quantile (initial)
                 new RowSeries
 				{
-					Title = "P1",
+					Title = "1% percentile",
 					Values = new ChartValues<double>(),
 					// 241, 125, 32 (orange)
                     Fill = new SolidColorBrush(Color.FromRgb(241, 125, 32)),
@@ -463,6 +466,20 @@ namespace CapFrameX.ViewModel
 				double GeMetricValue(IList<double> sequence, EMetric metric) =>
 					_frametimeStatisticProvider.GetFpsMetricValue(sequence, metric);
 
+				if (ComparisonRowChartSeriesCollection.Count < 2)
+				{
+					ComparisonRowChartSeriesCollection.Add(
+						new RowSeries
+						{
+							Values = new ChartValues<double>(),
+							// 241, 125, 32 (orange)
+							Fill = new SolidColorBrush(Color.FromRgb(241, 125, 32)),
+							DataLabels = true,
+							MaxRowHeigth = BarChartMaxRowHeight,
+							UseRelativeMode = true
+						});
+				}
+
 				ComparisonRowChartSeriesCollection[1].Values.Clear();
 
 				for (int i = 0; i < ComparisonRecords.Count; i++)
@@ -473,9 +490,9 @@ namespace CapFrameX.ViewModel
 					double endTime = _maxRecordingTime - LastSeconds;
 					var frametimeTimeWindow = currentWrappedComparisonInfo.WrappedRecordInfo.Session
 						.GetFrametimeTimeWindow(startTime, endTime, ERemoveOutlierMethod.None);
-					var fps = frametimeTimeWindow.Select(ft => 1000 / ft).ToList();
 
-					var secondaryMetric = GeMetricValue(fps, SelectSecondaryMetric);
+					var secondaryMetric = GeMetricValue(frametimeTimeWindow, SelectSecondaryMetric);
+					(ComparisonRowChartSeriesCollection[1] as RowSeries).Title = SelectSecondaryMetric.GetDescription();
 					ComparisonRowChartSeriesCollection[1].Values.Insert(0, secondaryMetric);
 				}
 			}
@@ -631,13 +648,12 @@ namespace CapFrameX.ViewModel
 			double startTime = FirstSeconds;
 			double endTime = _maxRecordingTime - LastSeconds;
 			var frametimeTimeWindow = wrappedComparisonInfo.WrappedRecordInfo.Session.GetFrametimeTimeWindow(startTime, endTime, ERemoveOutlierMethod.None);
-			var fps = frametimeTimeWindow.Select(ft => 1000 / ft).ToList();
 
 			double GeMetricValue(IList<double> sequence, EMetric metric) =>
 					_frametimeStatisticProvider.GetFpsMetricValue(sequence, metric);
 
 			var average = GeMetricValue(frametimeTimeWindow, EMetric.Average);
-			var secondaryMetric = GeMetricValue(fps, SelectSecondaryMetric);
+			var secondaryMetric = GeMetricValue(frametimeTimeWindow, SelectSecondaryMetric);
 
 			wrappedComparisonInfo.WrappedRecordInfo.SortCriteriaParameter = average;
 
