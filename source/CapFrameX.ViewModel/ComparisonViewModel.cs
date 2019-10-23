@@ -1,5 +1,6 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
+using CapFrameX.Contracts.MVVM;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Extensions;
 using CapFrameX.OcatInterface;
@@ -78,7 +79,7 @@ namespace CapFrameX.ViewModel
 		private double _barChartHeight;
 		private bool _barChartVisibility;
 		private TabItem _selectedChartItem;
-		private bool _isSortModeAscendingActive = true;
+		private bool _isSortModeAscendingActive = false;
 		private Func<double, string> _comparisonColumnChartFormatter;
 		private bool _colorPickerVisibility;
 		private EMetric _selectSecondaryMetric = EMetric.P1;

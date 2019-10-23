@@ -5,8 +5,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
-using ComparisonCollection = System.Collections.ObjectModel
-	.ObservableCollection<CapFrameX.ViewModel.ComparisonRecordInfoWrapper>;
 
 namespace CapFrameX.ViewModel
 {
@@ -21,7 +19,6 @@ namespace CapFrameX.ViewModel
 
 				//Update list and index
 				ComparisonRecords.Add(wrappedComparisonRecordInfo);
-				wrappedComparisonRecordInfo.CollectionIndex = ComparisonRecords.Count - 1;
 
 				var color = _freeColors.First();
 				_freeColors.Remove(color);
@@ -39,6 +36,8 @@ namespace CapFrameX.ViewModel
 
 				//Draw charts and performance parameter
 				AddToCharts(wrappedComparisonRecordInfo);
+
+				SortComparisonItems();
 			}
 		}
 
@@ -46,7 +45,6 @@ namespace CapFrameX.ViewModel
 		{
 			_freeColors.Add(wrappedComparisonRecordInfo.Color);
 			ComparisonRecords.Remove(wrappedComparisonRecordInfo);
-			UpdateIndicesAfterRemoveItem(ComparisonRecords);
 			UpdateCuttingParameter();
 			UpdateCharts();
 
@@ -75,7 +73,7 @@ namespace CapFrameX.ViewModel
 			UpdateCharts();
 
 			if (resetSortMode)
-				IsSortModeAscendingActive = true;
+				IsSortModeAscendingActive = false;
 
 			if (manageVisibility)
 			{
@@ -109,14 +107,6 @@ namespace CapFrameX.ViewModel
 			RaisePropertyChanged(nameof(ComparisonRecords));
 
 			UpdateCharts();
-		}
-
-		private void UpdateIndicesAfterRemoveItem(ComparisonCollection comparisonRecords)
-		{
-			for (int i = 0; i < comparisonRecords.Count; i++)
-			{
-				comparisonRecords[i].CollectionIndex = i;
-			}
 		}
 	}
 }

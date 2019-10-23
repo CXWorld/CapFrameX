@@ -9,6 +9,7 @@
              xmlns:local="clr-namespace:CapFrameX.View"
              xmlns:vm="clr-namespace:CapFrameX.ViewModel;assembly=CapFrameX.ViewModel"
              xmlns:mvvm="clr-namespace:CapFrameX.MVVM.Converter;assembly=CapFrameX.MVVM"
+			 xmlns:attached="clr-namespace:CapFrameX.MVVM.AttachedProperties;assembly=CapFrameX.MVVM"
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
              xmlns:oxy="clr-namespace:OxyPlot.Wpf;assembly=OxyPlot.Wpf"
@@ -49,7 +50,7 @@
 					<Grid>
 						<Grid.RowDefinitions>
 							<RowDefinition Height="1*"/>
-							<RowDefinition Height="70"/>
+							<RowDefinition Height="50"/>
 						</Grid.RowDefinitions>
 						<lvc:CartesianChart Grid.Row="0" VerticalAlignment="Top" Margin="10" Series="{Binding ComparisonRowChartSeriesCollection}" Height="{Binding BarChartHeight}"
                                         Visibility="{Binding BarChartVisibility, Converter={StaticResource FalseToCollapsedConverter}}" DisableAnimations="True"
@@ -69,9 +70,9 @@
 						<Grid Grid.Row="1" Margin="0" Background="#e6e6e6">
 							<Grid.ColumnDefinitions>
 								<ColumnDefinition Width="Auto"></ColumnDefinition>
-								<ColumnDefinition Width="180"></ColumnDefinition>
+								<ColumnDefinition Width="140"></ColumnDefinition>
 							</Grid.ColumnDefinitions>
-							<StackPanel VerticalAlignment="Center" Grid.Column="0" Margin="25 3 0 0" Orientation="Horizontal">
+							<StackPanel VerticalAlignment="Center" Grid.Column="0" Margin="25 8 0 0" Orientation="Horizontal">
 								<TextBlock VerticalAlignment="Center">Sort mode:</TextBlock>
 								<ToggleButton Grid.Column="0" Margin="5 0 0 0" Foreground="Black" BorderThickness="1" Background="Transparent"
 											  Style="{StaticResource MaterialDesignActionAccentToggleButton}" IsChecked="{Binding IsSortModeAscendingActive}">
@@ -83,7 +84,7 @@
 									</materialDesign:ToggleButtonAssist.OnContent >
 								</ToggleButton>
 							</StackPanel>
-							<ComboBox Grid.Column="1" VerticalAlignment="Center" Margin="20 0 0 15" materialDesign:HintAssist.Hint="Secondary metric"
+							<ComboBox Grid.Column="1" VerticalAlignment="Center" Margin="30 0 0 5" materialDesign:HintAssist.Hint="Secondary metric"
 										materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="150"
 										ItemsSource="{Binding MetricItems}" SelectedItem="{Binding SelectSecondaryMetric}">
 								<ComboBox.ItemTemplate>
@@ -216,14 +217,18 @@
 											<Border x:Name="Border"
 													BorderThickness="0 0 0 1"
 													BorderBrush="{DynamicResource MaterialDesignDivider}">
-												<i:Interaction.Triggers>
-													<i:EventTrigger EventName="MouseEnter">
-														<i:InvokeCommandAction Command="{Binding MouseEnterCommand}"/>
-													</i:EventTrigger>
-													<i:EventTrigger EventName="MouseLeave">
-														<i:InvokeCommandAction Command="{Binding MouseLeaveCommand}"/>
-													</i:EventTrigger>
-												</i:Interaction.Triggers>
+												<Border.Style>
+													<Style TargetType="Border">
+														<Style.Triggers>
+															<Trigger Property="Border.IsMouseOver" Value="True">
+																<Setter Property="attached:MouseHelper.IsMouseOver" Value="True"/>
+															</Trigger>
+															<Trigger Property="Border.IsMouseOver" Value="False">
+																<Setter Property="attached:MouseHelper.IsMouseOver" Value="False"/>
+															</Trigger>
+														</Style.Triggers>
+													</Style>
+												</Border.Style>
 												<Grid Margin="5 5 0 0">
 													<Grid.RowDefinitions>
 														<RowDefinition Height="18"/>

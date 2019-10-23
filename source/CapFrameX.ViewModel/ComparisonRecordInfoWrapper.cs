@@ -1,7 +1,7 @@
-﻿using CapFrameX.OcatInterface;
+﻿using CapFrameX.Contracts.MVVM;
+using CapFrameX.OcatInterface;
 using LiveCharts.Wpf;
 using OxyPlot;
-using OxyPlot.Series;
 using Prism.Commands;
 using Prism.Mvvm;
 using System.Linq;
@@ -10,7 +10,7 @@ using System.Windows.Media;
 
 namespace CapFrameX.ViewModel
 {
-	public class ComparisonRecordInfoWrapper : BindableBase
+	public class ComparisonRecordInfoWrapper : BindableBase, IMouseEventHandler
 	{
 		private Color? _frametimeGraphColor;
 		private SolidColorBrush _color;
@@ -37,13 +37,20 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
+		private bool _myBool;
+
+		public bool MyBool
+		{
+			get { return _myBool; }
+			set
+			{
+				_myBool = value;
+				RaisePropertyChanged();
+			}
+		}
+
+
 		public ComparisonRecordInfo WrappedRecordInfo { get; }
-
-		public int CollectionIndex { get; set; }
-
-		public ICommand MouseEnterCommand { get; }
-
-		public ICommand MouseLeaveCommand { get; }
 
 		public ICommand RemoveCommand { get; }
 
@@ -52,12 +59,48 @@ namespace CapFrameX.ViewModel
 			WrappedRecordInfo = info;
 			_viewModel = viewModel;
 
-			MouseEnterCommand = new DelegateCommand(OnMouseEnter);
-			MouseLeaveCommand = new DelegateCommand(OnMouseLeave);
 			RemoveCommand = new DelegateCommand(OnRemove);
 		}
 
-		private void OnMouseEnter()
+		private void OnRemove()
+		{
+			if (!_viewModel.ComparisonModel.Series.Any())
+				return;
+
+			_viewModel.RemoveComparisonItem(this);
+		}
+
+		private void OnColorChanged()
+		{
+			if (FrametimeGraphColor.HasValue && _viewModel.ComparisonRecords.Any()
+				&& _viewModel.ComparisonModel.Series.Any() && _viewModel.ComparisonLShapeCollection.Any())
+			{
+				Color color = FrametimeGraphColor.Value;
+				var index = _viewModel.ComparisonRecords.IndexOf(this);
+
+				var frametimesChart = _viewModel.ComparisonModel.Series[index] as OxyPlot.Series.LineSeries;
+				var lShapeChart = _viewModel.ComparisonLShapeCollection[index] as LineSeries;
+
+				var solidColorBrush = new SolidColorBrush(System.Windows.Media.Color.FromArgb(color.A, color.R, color.G, color.B));
+				frametimesChart.Color = OxyColor.FromArgb(color.A, color.R, color.G, color.B);
+				lShapeChart.Stroke = solidColorBrush;
+				Color = solidColorBrush;
+
+				_viewModel.ComparisonModel.InvalidatePlot(true);
+			}
+		}
+
+		public ComparisonRecordInfoWrapper Clone()
+		{
+			return new ComparisonRecordInfoWrapper(WrappedRecordInfo, _viewModel)
+			{
+				Color = Color,
+				FrametimeGraphColor = FrametimeGraphColor,
+			};
+		}
+
+
+		void IMouseEventHandler.OnMouseEnter()
 		{
 			if (!_viewModel.ComparisonModel.Series.Any())
 				return;
@@ -78,7 +121,7 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-		private void OnMouseLeave()
+		void IMouseEventHandler.OnMouseLeave()
 		{
 			if (!_viewModel.ComparisonModel.Series.Any())
 				return;
@@ -97,44 +140,6 @@ namespace CapFrameX.ViewModel
 				var rowSeries = item as RowSeries;
 				rowSeries.UnHighlightChartPoint(_viewModel.ComparisonRecords.Count - index - 1);
 			}
-		}
-
-		private void OnRemove()
-		{
-			if (!_viewModel.ComparisonModel.Series.Any())
-				return;
-
-			_viewModel.RemoveComparisonItem(this);
-		}
-
-		private void OnColorChanged()
-		{
-			if (FrametimeGraphColor.HasValue && CollectionIndex >= 0 &&
-				_viewModel.ComparisonModel.Series.Count > CollectionIndex &&
-				_viewModel.ComparisonLShapeCollection.Count > CollectionIndex)
-			{
-				Color color = FrametimeGraphColor.Value;
-
-				var frametimesChart = _viewModel.ComparisonModel.Series[CollectionIndex] as OxyPlot.Series.LineSeries;
-				var lShapeChart = _viewModel.ComparisonLShapeCollection[CollectionIndex] as LiveCharts.Wpf.LineSeries;
-
-				var solidColorBrush = new SolidColorBrush(System.Windows.Media.Color.FromArgb(color.A, color.R, color.G, color.B));
-				frametimesChart.Color = OxyColor.FromArgb(color.A, color.R, color.G, color.B);
-				lShapeChart.Stroke = solidColorBrush;
-				Color = solidColorBrush;
-
-				_viewModel.ComparisonModel.InvalidatePlot(true);
-			}
-		}
-
-		public ComparisonRecordInfoWrapper Clone()
-		{
-			return new ComparisonRecordInfoWrapper(WrappedRecordInfo, _viewModel)
-			{
-				Color = Color,
-				FrametimeGraphColor = FrametimeGraphColor,
-				CollectionIndex = CollectionIndex
-			};
 		}
 	}
 }

@@ -69,6 +69,7 @@
     <Compile Include="Configuration\IAppConfiguration.cs" />
     <Compile Include="Data\IFileRecordInfo.cs" />
     <Compile Include="Data\IRecordDataProvider.cs" />
+    <Compile Include="MVVM\IMouseEventHandler.cs" />
     <Compile Include="OcatInterface\IRecordDirectoryObserver.cs" />
     <Compile Include="PresentMonInterface\ICaptureService.cs" />
     <Compile Include="PresentMonInterface\ICaptureServiceConfiguration.cs" />

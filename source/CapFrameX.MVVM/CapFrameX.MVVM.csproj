@@ -84,6 +84,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AttachedProperties\MouseHelper.cs" />
     <Compile Include="Converter\AddSubsctractConverter.cs" />
     <Compile Include="Converter\AddValueConverter.cs" />
     <Compile Include="Converter\EnumDescriptionConverter.cs" />
@@ -110,6 +111,10 @@
     <ProjectReference Include="..\CapFrameX.Charts\WpfView\WpfView.csproj">
       <Project>{4d253423-ae05-47f6-a59d-9162ec0bb1f2}</Project>
       <Name>WpfView</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CapFrameX.Contracts\CapFrameX.Contracts.csproj">
+      <Project>{4C3B8B5C-54D7-46A1-91A1-32BF82FD42CD}</Project>
+      <Name>CapFrameX.Contracts</Name>
     </ProjectReference>
     <ProjectReference Include="..\CapFrameX.Extensions\CapFrameX.Extensions.csproj">
       <Project>{a4559b99-7fcb-40ef-bf97-d293a2b7d6d3}</Project>
