@@ -222,14 +222,16 @@
 														<Style.Triggers>
 															<Trigger Property="Border.IsMouseOver" Value="True">
 																<Setter Property="attached:MouseHelper.IsMouseOver" Value="True"/>
+																<Setter Property="Border.Background" Value="#cfcfcf" />
 															</Trigger>
 															<Trigger Property="Border.IsMouseOver" Value="False">
 																<Setter Property="attached:MouseHelper.IsMouseOver" Value="False"/>
+																<Setter Property="Border.Background" Value="Transparent" />
 															</Trigger>
 														</Style.Triggers>
 													</Style>
 												</Border.Style>
-												<Grid Margin="5 5 0 0">
+												<Grid Margin="5 5 0 5">
 													<Grid.RowDefinitions>
 														<RowDefinition Height="18"/>
 														<RowDefinition Height="1*"/>
