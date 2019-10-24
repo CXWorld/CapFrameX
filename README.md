@@ -8,19 +8,19 @@ Download link: https://github.com/DevTechProfile/CapFrameX/releases
 ![Screenshot](Images/Capture_Page.PNG)
 
 # Single record analysis
-![Screenshot](Images/Single_Record.png)
+![Screenshot](Images/Single_Record.PNG)
 
 # Record comparison
-![Screenshot](Images/Record_Comparison.png)
+![Screenshot](Images/Record_Comparison.PNG)
 
 # L-shape analysis
-![Screenshot](Images/Lshape_Comparison.png)
+![Screenshot](Images/Lshape_Comparison.PNG)
 
 # Synchronization info (G-Sync, FreeSync)
-![Screenshot](Images/Synchronization_info.png)
+![Screenshot](Images/Synchronization_info.PNG)
 
 # Report table (Excel)
-![Screenshot](Images/Report_Table.png)
+![Screenshot](Images/Report_Table.PNG)
 
 # Instruction manual
 Learn how to use CapFrameX.
