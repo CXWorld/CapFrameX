@@ -12,12 +12,12 @@ namespace CapFrameX.MVVM.AttachedProperties
 		public static void PropertyChangedCallback(DependencyObject depObj, DependencyPropertyChangedEventArgs args)
 		{
 			var control = depObj as FrameworkElement;
-			var eventHandler = control.DataContext as IMouseEventHandler;
+			var eventHandler = control?.DataContext as IMouseEventHandler;
 
 			if ((bool)args.NewValue)
-				eventHandler.OnMouseEnter();
+				eventHandler?.OnMouseEnter();
 			else
-				eventHandler.OnMouseLeave();
+				eventHandler?.OnMouseLeave();
 		}
 
 		public static void SetIsMouseOver(DependencyObject target, Boolean value)

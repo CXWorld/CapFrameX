@@ -80,37 +80,25 @@ namespace CapFrameX.ViewModel
 
 		private int GetMaxDateTimeAlignment()
 		{
-			var maxGameNameLength = ComparisonRecords.Max(record => record.WrappedRecordInfo.Game.Length);
-			var maxDateTimeLength = ComparisonRecords.Max(record => record.WrappedRecordInfo.DateTime.Length);
-
-			return Math.Max(maxGameNameLength, maxDateTimeLength);
+			return ComparisonRecords.Max(record => record.WrappedRecordInfo.DateTime.Length);
 		}
 
 		private int GetMaxCommentAlignment()
 		{
-			var maxGameNameLength = ComparisonRecords.Max(record => record.WrappedRecordInfo.Game.Length);
-			var maxContextLength = ComparisonRecords.Max(record
+			return ComparisonRecords.Max(record
 				=> record.WrappedRecordInfo.FileRecordInfo.Comment.SplitWordWise(PART_LENGTH).Max(part => part.Length));
-
-			return Math.Max(maxGameNameLength, maxContextLength);
 		}
 
 		private int GetMaxGpuAlignment()
 		{
-			var maxGameNameLength = ComparisonRecords.Max(record => record.WrappedRecordInfo.Game.Length);
-			var maxGpuLength = ComparisonRecords.Max(record
+			return ComparisonRecords.Max(record
 				=> record.WrappedRecordInfo.FileRecordInfo.GraphicCardName.SplitWordWise(PART_LENGTH).Max(part => part.Length));
-
-			return Math.Max(maxGameNameLength, maxGpuLength);
 		}
 
 		private int GetMaxCpuAlignment()
 		{
-			var maxGameNameLength = ComparisonRecords.Max(record => record.WrappedRecordInfo.Game.Length);
-			var maxCpuLength = ComparisonRecords.Max(record
+			return ComparisonRecords.Max(record
 				=> record.WrappedRecordInfo.FileRecordInfo.ProcessorName.SplitWordWise(PART_LENGTH).Max(part => part.Length));
-
-			return Math.Max(maxGameNameLength, maxCpuLength);
 		}
 
 		private void OnCustomContex()
@@ -161,9 +149,7 @@ namespace CapFrameX.ViewModel
 		private string GetLabelDateTimeContext(ComparisonRecordInfoWrapper record, int maxAlignment)
 		{
 			var alignmentFormat = "{0," + maxAlignment.ToString() + "}";
-			var gameName = string.Format(CultureInfo.InvariantCulture, alignmentFormat, record.WrappedRecordInfo.Game);
-			var dateTime = string.Format(CultureInfo.InvariantCulture, alignmentFormat, record.WrappedRecordInfo.DateTime);
-			return gameName + Environment.NewLine + dateTime;
+			return string.Format(CultureInfo.InvariantCulture, alignmentFormat, record.WrappedRecordInfo.DateTime);
 		}
 
 		private void SetLabelCpuContext()
@@ -194,11 +180,11 @@ namespace CapFrameX.ViewModel
 				if (part == string.Empty)
 					continue;
 
-				infoPartsFormatted += Environment.NewLine + string.Format(CultureInfo.InvariantCulture, alignmentFormat, part);
+				infoPartsFormatted += 
+					string.Format(CultureInfo.InvariantCulture, alignmentFormat, part) + Environment.NewLine;
 			}
 
-			var gameName = string.Format(CultureInfo.InvariantCulture, alignmentFormat, record.WrappedRecordInfo.Game);
-			return gameName + infoPartsFormatted;
+			return infoPartsFormatted;
 		}
 
 		private void SetLabelGpuContext()
@@ -229,11 +215,11 @@ namespace CapFrameX.ViewModel
 				if (part == string.Empty)
 					continue;
 
-				infoPartsFormatted += Environment.NewLine + string.Format(CultureInfo.InvariantCulture, alignmentFormat, part);
+				infoPartsFormatted += 
+					string.Format(CultureInfo.InvariantCulture, alignmentFormat, part) + Environment.NewLine;
 			}
 
-			var gameName = string.Format(CultureInfo.InvariantCulture, alignmentFormat, record.WrappedRecordInfo.Game);
-			return gameName + Environment.NewLine + infoPartsFormatted;
+			return infoPartsFormatted;
 		}
 
 		private void SetLabelCustomContext()
@@ -264,11 +250,11 @@ namespace CapFrameX.ViewModel
 				if (part == string.Empty)
 					continue;
 
-				infoPartsFormatted += Environment.NewLine + string.Format(CultureInfo.InvariantCulture, alignmentFormat, part);
+				infoPartsFormatted += 
+					string.Format(CultureInfo.InvariantCulture, alignmentFormat, part) + Environment.NewLine;
 			}
 
-			var gameName = string.Format(CultureInfo.InvariantCulture, alignmentFormat, record.WrappedRecordInfo.Game);
-			return gameName + infoPartsFormatted;
+			return infoPartsFormatted;
 		}
 	}
 }
