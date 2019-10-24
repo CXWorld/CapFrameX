@@ -5,22 +5,22 @@ Frametimes capture and analysis tool compatible with most common 3D APIs
 Download link: https://github.com/DevTechProfile/CapFrameX/releases
 
 # Capture frametimes
-![Screenshot](Images/Capture_Page.PNG)
+![Screenshot](Images/CX_Capture_Page.png)
 
 # Single record analysis
-![Screenshot](Images/Single_Record.PNG)
+![Screenshot](Images/CX_Single_Record.png)
 
 # Record comparison
-![Screenshot](Images/Record_Comparison.PNG)
+![Screenshot](Images/CX_Record_Comparison.png)
 
 # L-shape analysis
-![Screenshot](Images/Lshape_Comparison.PNG)
+![Screenshot](Images/CX_Lshape_Comparison.png)
 
 # Synchronization info (G-Sync, FreeSync)
-![Screenshot](Images/Synchronization_info.PNG)
+![Screenshot](Images/CX_Synchronization_info.png)
 
 # Report table (Excel)
-![Screenshot](Images/Report_Table.PNG)
+![Screenshot](Images/CX_Report_Table.png)
 
 # Instruction manual
 Learn how to use CapFrameX.
