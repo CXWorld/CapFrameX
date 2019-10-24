@@ -107,7 +107,7 @@ namespace CapFrameX.ViewModel.DataContext
                     Title = string.Format(CultureInfo.InvariantCulture,
                     "Moving average (window size = {0})", AppConfiguration.MovingAverageWindowSize),
                     StrokeThickness = 2,
-                    Color = ColorRessource.FrametimeMovingAverageStroke
+                    Color = ColorRessource.SecondaryFrametimeStroke
                 };
 
                 frametimeSeries.Points.AddRange(frameTimeDataPoints);

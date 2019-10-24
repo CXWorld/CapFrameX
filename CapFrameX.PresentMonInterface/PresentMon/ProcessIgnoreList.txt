@@ -1,34 +1,45 @@
+AMD Ryzen Master
 ApplicationFrameHost
 avpui
+balenaEtcher
 Battle.net
 Calculator
 CapFrameX
 chrome
 csrss
 devenv
+Discord
 dwm
 EpicGamesLauncher
 explorer
 firefox
+GalaxyClient Helper
+GameBar
 HxOutlook
 iCUE
 Microsoft.Photos
 MicrosoftEdge
 MicrosoftEdgeCP
 notepad++
+NVIDIA GeForce Experience
 NVIDIA Share
 Origin
 RadeonSettings
 ScriptedSandbox64
 SearchUI
+ServiceHub.ThreadedWaitDialog
 seccenter
 ShellExperienceHost
 ServiceHub.Host.CLR.x86
+SourceTree
 Spotify
+StartMenuExperienceHost
 steamwebhelper
+SystemSettings
 Taskmgr
 UnrealCEFSubProcess
 Video.UI
 vlc
 WeMod
+wgc_renderer
 WinStore.App
