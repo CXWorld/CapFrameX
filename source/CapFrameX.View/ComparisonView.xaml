@@ -59,7 +59,7 @@
 								<lvc:Axis Title="FPS" FontSize="11" MinValue="0" LabelFormatter="{Binding ComparisonColumnChartFormatter}" Foreground="Black"></lvc:Axis>
 							</lvc:CartesianChart.AxisX>
 							<lvc:CartesianChart.AxisY>
-								<lvc:Axis Labels="{Binding ComparisonRowChartLabels}">
+								<lvc:Axis Labels="{Binding ComparisonRowChartLabels}" Foreground="Black">
 									<lvc:Axis.Separator>
 										<!--step 1 forces the axis to display all labels, disabling it makes it invisible-->
 										<lvc:Separator Step="1" IsEnabled="False"></lvc:Separator>
