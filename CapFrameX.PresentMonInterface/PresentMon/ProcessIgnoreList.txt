@@ -8,6 +8,7 @@ CapFrameX
 chrome
 csrss
 devenv
+dllhost
 Discord
 dwm
 EpicGamesLauncher

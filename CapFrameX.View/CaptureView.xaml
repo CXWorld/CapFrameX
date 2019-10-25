@@ -71,7 +71,7 @@
 								</Button>
 							</StackPanel>
 							<ListView IsSynchronizedWithCurrentItem="False" ItemsSource="{Binding ProcessesToCapture}" SelectedItem="{Binding SelectedProcessToCapture}"
-					                  ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True" Height="280" Width="200" HorizontalAlignment="Left"
+					                  ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True" Height="270" Width="200" HorizontalAlignment="Left"
 					                  IsEnabled="{Binding IsAddToIgnoreListButtonActive}">
 							</ListView>
 						</StackPanel>
@@ -122,7 +122,7 @@
 						<StackPanel Grid.Column="2" Margin="0 20 0 0" Orientation="Vertical" Width="200">
 							<TextBlock Style="{StaticResource MaterialDesignTitleTextBlock}">Process ignore list</TextBlock>
 							<ListView IsSynchronizedWithCurrentItem="False" ItemsSource="{Binding ProcessesToIgnore}" SelectedItem="{Binding SelectedProcessToIgnore}"
-					                  ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True" Height="280">
+					                  ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True" Height="270">
 							</ListView>
 						</StackPanel>
 					</Grid>

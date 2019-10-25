@@ -117,7 +117,7 @@
 									   dragdrop:DragDrop.DropTargetAdornerBrush="White"
 									   dragdrop:DragDrop.DefaultDragAdornerOpacity="0.5"
 									   dragdrop:DragDrop.UseDefaultEffectDataTemplate="False"
-									   Source="/CapFrameX;component/Icons/CX_Icon.png"
+									   Source="/CapFrameX;component/Icons/CX_Logo.png"
 									   Width="80" Height="80">
 								</Image>
 							</Border>
