@@ -41,7 +41,7 @@
 	<Grid x:Name="ComparisonAreaGrid">
 		<Grid.ColumnDefinitions>
 			<ColumnDefinition Width="1*"></ColumnDefinition>
-			<ColumnDefinition Width="320"></ColumnDefinition>
+			<ColumnDefinition Width="260"></ColumnDefinition>
 		</Grid.ColumnDefinitions>
 		<TabControl Margin="5 10 0 5" Grid.Column="0" Background="#F5F5F5"
 					SelectedItem="{Binding SelectedChartItem}">
@@ -100,13 +100,28 @@
 			<TabItem Header="Frametimes/ L-shapes">
 				<Grid Name="ChartAndCuttingGrid">
 					<Grid.RowDefinitions>
+						<RowDefinition Height="2*"></RowDefinition>
 						<RowDefinition Height="1*"></RowDefinition>
 						<RowDefinition Height="Auto"></RowDefinition>
 					</Grid.RowDefinitions>
-					<Grid Grid.Row="0" Background="#F5F5F5">
-						<oxy:PlotView Background="#F5F5F5" x:Name="ComparisonPlotView" Model="{Binding ComparisonModel}" MouseDoubleClick="ResetChart_MouseDoubleClick"/>
+					<Grid Grid.Row="0">
+						<oxy:PlotView Background="#F5F5F5" x:Name="ComparisonPlotView" Model="{Binding ComparisonModel}" MouseDoubleClick="ResetFrametimeChart_MouseDoubleClick"/>
 					</Grid>
-					<Grid Grid.Row="1" Visibility="{Binding ElementName=CuttingModeActiveToggleButton, Path=IsChecked, Converter={StaticResource FalseToCollapsedConverter}}">
+					<Grid Grid.Row="1">
+						<lvc:CartesianChart MouseDoubleClick="ResetLShapeChart_MouseDoubleClick" Series="{Binding ComparisonLShapeCollection}" Zoom="Y">
+							<lvc:CartesianChart.AxisX>
+								<lvc:Axis Title="Percentiles (%)" Name="LShapeX" Foreground="Black">
+									<lvc:Axis.Separator >
+										<lvc:Separator Step="1"></lvc:Separator>
+									</lvc:Axis.Separator>
+								</lvc:Axis>
+							</lvc:CartesianChart.AxisX>
+							<lvc:CartesianChart.AxisY>
+								<lvc:Axis Title="Frametime [ms]" Name="LShapeY" Foreground="Black"/>
+							</lvc:CartesianChart.AxisY>
+						</lvc:CartesianChart>
+					</Grid>
+					<Grid Grid.Row="2" Visibility="{Binding ElementName=CuttingModeActiveToggleButton, Path=IsChecked, Converter={StaticResource FalseToCollapsedConverter}}">
 						<Grid.ColumnDefinitions>
 							<ColumnDefinition Width="2*" />
 							<ColumnDefinition Width="1*" />
@@ -197,7 +212,7 @@
 									   dragdrop:DragDrop.DropTargetAdornerBrush="White"
 									   dragdrop:DragDrop.DefaultDragAdornerOpacity="0.5"
 									   dragdrop:DragDrop.UseDefaultEffectDataTemplate="False"
-									   Source="/CapFrameX;component/Icons/CX_Icon.png"
+									   Source="/CapFrameX;component/Icons/CX_Logo.png"
 									   Width="80" Height="80">
 							</Image>
 						</Border>
@@ -238,7 +253,7 @@
 													</Grid.RowDefinitions>
 													<Grid.ColumnDefinitions>
 														<ColumnDefinition Width="140"/>
-														<ColumnDefinition Width="Auto"/>
+														<ColumnDefinition Width="80"/>
 														<ColumnDefinition Width="15"/>
 													</Grid.ColumnDefinitions>
 													<TextBlock Margin="3 0 0 0" Grid.Row="0"  Grid.Column="0" Grid.ColumnSpan="2" FontWeight="Bold" Text="{Binding WrappedRecordInfo.Game}" />
@@ -248,8 +263,8 @@
 																   FontSize="12"
 																   LineHeight="14"
 																   MaxHeight="52"/>
-													<xctk:ColorPicker Width="120" Height="30" Grid.Row="1" Grid.Column="1" Margin="0 10 0 0" Background="#e6e6e6" SelectedColor="{Binding FrametimeGraphColor}" 
-																      SelectedColorChanged="SelectedColorChanged" DisplayColorAndName="True" AvailableColorsSortingMode="HueSaturationBrightness" 
+													<xctk:ColorPicker Width="70" Height="30" Grid.Row="1" Grid.Column="1" Margin="0 10 0 0" Background="#e6e6e6" SelectedColor="{Binding FrametimeGraphColor}" 
+																      SelectedColorChanged="SelectedColorChanged" DisplayColorAndName="False" AvailableColorsSortingMode="HueSaturationBrightness" 
 																	  Visibility="{Binding ElementName=ComparisonRecordItemControl, Path=DataContext.ColorPickerVisibility, Converter={StaticResource FalseToHiddenConverter}}"/>
 													<Button Grid.Row="0" Grid.Column="2" Margin="0 -2 -2 0" Padding="0" Width="12" Height="12" HorizontalAlignment="Right" VerticalAlignment="Top" BorderThickness="0" Background="Transparent" Foreground="Black"
 															Content="{materialDesign:PackIcon Close, Size=12}" Command="{Binding RemoveCommand}">

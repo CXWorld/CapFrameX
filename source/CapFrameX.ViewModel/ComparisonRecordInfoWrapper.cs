@@ -21,9 +21,11 @@ namespace CapFrameX.ViewModel
 			get { return _frametimeGraphColor; }
 			set
 			{
+				bool onChanged = _frametimeGraphColor != null;
 				_frametimeGraphColor = value;
 				RaisePropertyChanged();
-				OnColorChanged();
+				if (onChanged)
+					OnColorChanged();
 			}
 		}
 
@@ -78,15 +80,19 @@ namespace CapFrameX.ViewModel
 				Color color = FrametimeGraphColor.Value;
 				var index = _viewModel.ComparisonRecords.IndexOf(this);
 
-				var frametimesChart = _viewModel.ComparisonModel.Series[index] as OxyPlot.Series.LineSeries;
-				var lShapeChart = _viewModel.ComparisonLShapeCollection[index] as LineSeries;
+				if (index < _viewModel.ComparisonModel.Series.Count && 
+					index < _viewModel.ComparisonLShapeCollection.Count)
+				{
+					var frametimesChart = _viewModel.ComparisonModel.Series[index] as OxyPlot.Series.LineSeries;
+					var lShapeChart = _viewModel.ComparisonLShapeCollection[index] as LineSeries;
 
-				var solidColorBrush = new SolidColorBrush(System.Windows.Media.Color.FromArgb(color.A, color.R, color.G, color.B));
-				frametimesChart.Color = OxyColor.FromArgb(color.A, color.R, color.G, color.B);
-				lShapeChart.Stroke = solidColorBrush;
-				Color = solidColorBrush;
+					var solidColorBrush = new SolidColorBrush(System.Windows.Media.Color.FromArgb(color.A, color.R, color.G, color.B));
+					frametimesChart.Color = OxyColor.FromArgb(color.A, color.R, color.G, color.B);
+					lShapeChart.Stroke = solidColorBrush;
+					Color = solidColorBrush;
 
-				_viewModel.ComparisonModel.InvalidatePlot(true);
+					_viewModel.ComparisonModel.InvalidatePlot(true);
+				}
 			}
 		}
 

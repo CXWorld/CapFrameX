@@ -630,18 +630,18 @@ namespace CapFrameX.ViewModel
 
 			ResetBarChartSeriesTitles();
 			ComparisonModel.Series.Clear();
-			// ComparisonLShapeCollection.Clear();
+			ComparisonLShapeCollection.Clear();
 
-			SetFrametimeChart();
-			//Task.Factory.StartNew(() => SetLShapeChart());
 			SetColumnChart();
+			SetFrametimeChart();
+			Task.Factory.StartNew(() => SetLShapeChart());
 		}
 
 		private void AddToCharts(ComparisonRecordInfoWrapper wrappedComparisonInfo)
 		{
-			AddToFrameTimeChart(wrappedComparisonInfo);
 			AddToColumnCharts(wrappedComparisonInfo);
-			// AddToLShapeChart(wrappedComparisonInfo);
+			AddToFrameTimeChart(wrappedComparisonInfo);
+			AddToLShapeChart(wrappedComparisonInfo);
 
 			UpdateAxesMinMax(true);
 		}
@@ -755,11 +755,8 @@ namespace CapFrameX.ViewModel
 			// Average
 			ComparisonRowChartSeriesCollection[0].Values.Clear();
 
-			// 1% quantile
+			// secondary metric
 			ComparisonRowChartSeriesCollection[1].Values.Clear();
-
-			//// 0.1% quantile
-			//ComparisonRowChartSeriesCollection[2].Values.Clear();
 
 			for (int i = 0; i < ComparisonRecords.Count; i++)
 			{
