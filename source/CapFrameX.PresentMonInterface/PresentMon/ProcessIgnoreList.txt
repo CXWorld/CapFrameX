@@ -16,6 +16,7 @@ explorer
 firefox
 GalaxyClient Helper
 GameBar
+HxAccounts
 HxOutlook
 iCUE
 Microsoft.Photos
