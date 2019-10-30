@@ -35,254 +35,261 @@ using LiveCharts.Wpf.Points;
 
 namespace LiveCharts.Wpf
 {
-	/// <summary>
-	/// The Row series plots horizontal bars in a cartesian chart
-	/// </summary>
-	public class RowSeries : Series, IRowSeriesView
-	{
-		#region Constructors
-		/// <summary>
-		/// Initializes a new instance of RowSeries class
-		/// </summary>
-		public RowSeries()
-		{
-			Model = new RowAlgorithm(this);
-			InitializeDefaults();
-		}
+    /// <summary>
+    /// The Row series plots horizontal bars in a cartesian chart
+    /// </summary>
+    public class RowSeries : Series, IRowSeriesView
+    {
+        #region Constructors
+        /// <summary>
+        /// Initializes a new instance of RowSeries class
+        /// </summary>
+        public RowSeries()
+        {
+            Model = new RowAlgorithm(this);
+            InitializeDefaults();
+        }
 
-		/// <summary>
-		/// Initializes a new instance of RowSeries class with a given mapper
-		/// </summary>
-		/// <param name="configuration"></param>
-		public RowSeries(object configuration)
-		{
-			Model = new RowAlgorithm(this);
-			Configuration = configuration;
-			InitializeDefaults();
-		}
+        /// <summary>
+        /// Initializes a new instance of RowSeries class with a given mapper
+        /// </summary>
+        /// <param name="configuration"></param>
+        public RowSeries(object configuration)
+        {
+            Model = new RowAlgorithm(this);
+            Configuration = configuration;
+            InitializeDefaults();
+        }
 
-		#endregion
+        #endregion
 
-		#region Properties
+        #region Properties
 
-		/// <summary>
-		/// The maximum row heigth property
-		/// </summary>
-		public static readonly DependencyProperty MaxRowHeigthProperty = DependencyProperty.Register(
-			"MaxRowHeigth", typeof(double), typeof(RowSeries), new PropertyMetadata(35d));
-		/// <summary>
-		/// Gets or sets the maximum row height, the height of a column will be capped at this value
-		/// </summary>
-		public double MaxRowHeigth
-		{
-			get { return (double)GetValue(MaxRowHeigthProperty); }
-			set { SetValue(MaxRowHeigthProperty, value); }
-		}
+        /// <summary>
+        /// The maximum row heigth property
+        /// </summary>
+        public static readonly DependencyProperty MaxRowHeigthProperty = DependencyProperty.Register(
+            "MaxRowHeigth", typeof(double), typeof(RowSeries), new PropertyMetadata(35d));
+        /// <summary>
+        /// Gets or sets the maximum row height, the height of a column will be capped at this value
+        /// </summary>
+        public double MaxRowHeigth
+        {
+            get { return (double)GetValue(MaxRowHeigthProperty); }
+            set { SetValue(MaxRowHeigthProperty, value); }
+        }
 
-		/// <summary>
-		/// The row padding property
-		/// </summary>
-		public static readonly DependencyProperty RowPaddingProperty = DependencyProperty.Register(
-			"RowPadding", typeof(double), typeof(RowSeries), new PropertyMetadata(2d));
-		/// <summary>
-		/// Gets or sets the padding between rows in this series
-		/// </summary>
-		public double RowPadding
-		{
-			get { return (double)GetValue(RowPaddingProperty); }
-			set { SetValue(RowPaddingProperty, value); }
-		}
+        /// <summary>
+        /// The row padding property
+        /// </summary>
+        public static readonly DependencyProperty RowPaddingProperty = DependencyProperty.Register(
+            "RowPadding", typeof(double), typeof(RowSeries), new PropertyMetadata(2d));
+        /// <summary>
+        /// Gets or sets the padding between rows in this series
+        /// </summary>
+        public double RowPadding
+        {
+            get { return (double)GetValue(RowPaddingProperty); }
+            set { SetValue(RowPaddingProperty, value); }
+        }
 
-		/// <summary>
-		/// The labels position property
-		/// </summary>
-		public static readonly DependencyProperty LabelsPositionProperty = DependencyProperty.Register(
-			"LabelsPosition", typeof(BarLabelPosition), typeof(RowSeries),
-			new PropertyMetadata(default(BarLabelPosition), CallChartUpdater()));
-		/// <summary>
-		/// Gets or sets where the label is placed
-		/// </summary>
-		public BarLabelPosition LabelsPosition
-		{
-			get { return (BarLabelPosition)GetValue(LabelsPositionProperty); }
-			set { SetValue(LabelsPositionProperty, value); }
-		}
+        /// <summary>
+        /// The labels position property
+        /// </summary>
+        public static readonly DependencyProperty LabelsPositionProperty = DependencyProperty.Register(
+            "LabelsPosition", typeof(BarLabelPosition), typeof(RowSeries),
+            new PropertyMetadata(default(BarLabelPosition), CallChartUpdater()));
+        /// <summary>
+        /// Gets or sets where the label is placed
+        /// </summary>
+        public BarLabelPosition LabelsPosition
+        {
+            get { return (BarLabelPosition)GetValue(LabelsPositionProperty); }
+            set { SetValue(LabelsPositionProperty, value); }
+        }
 
-		/// <summary>
-		/// The shares position property
-		/// </summary>
-		public static readonly DependencyProperty SharesPositionProperty = DependencyProperty.Register(
-			"SharesPosition", typeof(bool), typeof(RowSeries), new PropertyMetadata(default(bool)));
-		/// <summary>
-		/// Gets or sets a value indicating whether this row shares space with all the row series in the same position
-		/// </summary>
-		/// <value>
-		/// <c>true</c> if [shares position]; otherwise, <c>false</c>.
-		/// </value>
-		public bool SharesPosition
-		{
-			get { return (bool)GetValue(SharesPositionProperty); }
-			set { SetValue(SharesPositionProperty, value); }
-		}
+        /// <summary>
+        /// The shares position property
+        /// </summary>
+        public static readonly DependencyProperty SharesPositionProperty = DependencyProperty.Register(
+            "SharesPosition", typeof(bool), typeof(RowSeries), new PropertyMetadata(default(bool)));
+        /// <summary>
+        /// Gets or sets a value indicating whether this row shares space with all the row series in the same position
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [shares position]; otherwise, <c>false</c>.
+        /// </value>
+        public bool SharesPosition
+        {
+            get { return (bool)GetValue(SharesPositionProperty); }
+            set { SetValue(SharesPositionProperty, value); }
+        }
 
-		/// <summary>
-		/// The shares position property
-		/// </summary>
-		public static readonly DependencyProperty UseRelativeModeProperty = DependencyProperty.Register(
-			"UseRelativeMode", typeof(bool), typeof(RowSeries), new PropertyMetadata(default(bool)));
-		/// <summary>
-		/// Gets or sets a value indicating whether this row shares space with all the row series in the same position
-		/// </summary>
-		/// <value>
-		/// <c>true</c> if [shares position]; otherwise, <c>false</c>.
-		/// </value>
-		public bool UseRelativeMode
-		{
-			get { return (bool)GetValue(UseRelativeModeProperty); }
-			set { SetValue(UseRelativeModeProperty, value); }
-		}
+        /// <summary>
+        /// The shares position property
+        /// </summary>
+        public static readonly DependencyProperty UseRelativeModeProperty = DependencyProperty.Register(
+            "UseRelativeMode", typeof(bool), typeof(RowSeries), new PropertyMetadata(default(bool)));
+        /// <summary>
+        /// Gets or sets a value indicating whether this row shares space with all the row series in the same position
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [shares position]; otherwise, <c>false</c>.
+        /// </value>
+        public bool UseRelativeMode
+        {
+            get { return (bool)GetValue(UseRelativeModeProperty); }
+            set { SetValue(UseRelativeModeProperty, value); }
+        }
 
-		#endregion
+        #endregion
 
-		#region Public Methods
+        #region Public Methods
 
-		public void HighlightChartPoint(int index)
-		{
-			if (index >= Values.Count)
-				return;
+        public void HighlightChartPoint(int index)
+        {
+            if (index >= Values.Count)
+                return;
 
-			var chartPoints = ActualValues.GetPoints(this).ToList();
-			var pbv = (RowPointView)chartPoints[index].View;
+            var chartPoints = ActualValues.GetPoints(this);
 
-			pbv.Rectangle.Fill = HighlightFill;
-			pbv.Rectangle.StrokeThickness = 1;
-			pbv.Rectangle.Stroke = Brushes.Gray;
-		}
+            if (chartPoints == null)
+                return;
 
-		public void UnHighlightChartPoint(int index)
-		{
-			if (index >= Values.Count)
-				return;
+            var pbv = (RowPointView)chartPoints.ToList()[index].View;
 
-			var chartPoints = ActualValues.GetPoints(this).ToList();
-			var pbv = (RowPointView)chartPoints[index].View;
+            if (pbv != null)
+            {
+                pbv.Rectangle.Fill = HighlightFill;
+                pbv.Rectangle.StrokeThickness = 1;
+                pbv.Rectangle.Stroke = Brushes.Gray;
+            }
+        }
 
-			pbv.Rectangle.Fill = Fill;
-			pbv.Rectangle.StrokeThickness = 0;
-			pbv.Rectangle.Stroke = Brushes.Transparent;
-		}
+        public void UnHighlightChartPoint(int index)
+        {
+            if (index >= Values.Count)
+                return;
 
-		#endregion Public Methods
+            var chartPoints = ActualValues.GetPoints(this).ToList();
+            var pbv = (RowPointView)chartPoints[index].View;
 
-		#region Overridden Methods
+            pbv.Rectangle.Fill = Fill;
+            pbv.Rectangle.StrokeThickness = 0;
+            pbv.Rectangle.Stroke = Brushes.Transparent;
+        }
 
-		/// <summary>
-		/// Gets the point view.
-		/// </summary>
-		/// <param name="point">The point.</param>
-		/// <param name="label">The label.</param>
-		/// <returns></returns>
-		public override IChartPointView GetPointView(ChartPoint point, string label)
-		{
-			var pbv = (RowPointView)point.View;
+        #endregion Public Methods
 
-			if (pbv == null)
-			{
-				pbv = new RowPointView
-				{
-					IsNew = true,
-					Rectangle = new Rectangle(),
-					Data = new CoreRectangle()
-				};
+        #region Overridden Methods
 
-				Model.Chart.View.AddToDrawMargin(pbv.Rectangle);
-			}
-			else
-			{
-				pbv.IsNew = false;
-				point.SeriesView.Model.Chart.View
-					.EnsureElementBelongsToCurrentDrawMargin(pbv.Rectangle);
-				point.SeriesView.Model.Chart.View
-					.EnsureElementBelongsToCurrentDrawMargin(pbv.HoverShape);
-				point.SeriesView.Model.Chart.View
-					.EnsureElementBelongsToCurrentDrawMargin(pbv.DataLabel);
-			}
+        /// <summary>
+        /// Gets the point view.
+        /// </summary>
+        /// <param name="point">The point.</param>
+        /// <param name="label">The label.</param>
+        /// <returns></returns>
+        public override IChartPointView GetPointView(ChartPoint point, string label)
+        {
+            var pbv = (RowPointView)point.View;
 
-			// add event handler to pbv.Rectangle
-			if (UseRelativeMode)
-			{
-				var wpfChart = (Chart)Model.Chart.View;
-				wpfChart.AttachRelativeModeEventTo(pbv.Rectangle, label);
-			}
+            if (pbv == null)
+            {
+                pbv = new RowPointView
+                {
+                    IsNew = true,
+                    Rectangle = new Rectangle(),
+                    Data = new CoreRectangle()
+                };
 
-			pbv.Rectangle.Fill = Fill;
-			pbv.Rectangle.Stroke = Stroke;
-			pbv.Rectangle.StrokeThickness = StrokeThickness;
-			pbv.Rectangle.StrokeDashArray = StrokeDashArray;
-			pbv.Rectangle.Visibility = Visibility;
-			Panel.SetZIndex(pbv.Rectangle, Panel.GetZIndex(this));
+                Model.Chart.View.AddToDrawMargin(pbv.Rectangle);
+            }
+            else
+            {
+                pbv.IsNew = false;
+                point.SeriesView.Model.Chart.View
+                    .EnsureElementBelongsToCurrentDrawMargin(pbv.Rectangle);
+                point.SeriesView.Model.Chart.View
+                    .EnsureElementBelongsToCurrentDrawMargin(pbv.HoverShape);
+                point.SeriesView.Model.Chart.View
+                    .EnsureElementBelongsToCurrentDrawMargin(pbv.DataLabel);
+            }
 
-			if (Model.Chart.RequiresHoverShape && pbv.HoverShape == null)
-			{
-				pbv.HoverShape = new Rectangle
-				{
-					Fill = Brushes.Transparent,
-					StrokeThickness = 0
-				};
+            // add event handler to pbv.Rectangle
+            if (UseRelativeMode)
+            {
+                var wpfChart = (Chart)Model.Chart.View;
+                wpfChart.AttachRelativeModeEventTo(pbv.Rectangle, label);
+            }
 
-				Panel.SetZIndex(pbv.HoverShape, int.MaxValue);
+            pbv.Rectangle.Fill = Fill;
+            pbv.Rectangle.Stroke = Stroke;
+            pbv.Rectangle.StrokeThickness = StrokeThickness;
+            pbv.Rectangle.StrokeDashArray = StrokeDashArray;
+            pbv.Rectangle.Visibility = Visibility;
+            Panel.SetZIndex(pbv.Rectangle, Panel.GetZIndex(this));
 
-				var wpfChart = (Chart)Model.Chart.View;
-				wpfChart.AttachHoverableEventTo(pbv.HoverShape);
+            if (Model.Chart.RequiresHoverShape && pbv.HoverShape == null)
+            {
+                pbv.HoverShape = new Rectangle
+                {
+                    Fill = Brushes.Transparent,
+                    StrokeThickness = 0
+                };
 
-				Model.Chart.View.AddToDrawMargin(pbv.HoverShape);
-			}
+                Panel.SetZIndex(pbv.HoverShape, int.MaxValue);
 
-			if (pbv.HoverShape != null) pbv.HoverShape.Visibility = Visibility;
+                var wpfChart = (Chart)Model.Chart.View;
+                wpfChart.AttachHoverableEventTo(pbv.HoverShape);
 
-			if (DataLabels)
-			{
-				pbv.DataLabel = UpdateLabelContent(new DataLabelViewModel
-				{
-					FormattedText = label,
-					Point = point
-				}, pbv.DataLabel);
-			}
+                Model.Chart.View.AddToDrawMargin(pbv.HoverShape);
+            }
 
-			if (!DataLabels && pbv.DataLabel != null)
-			{
-				Model.Chart.View.RemoveFromDrawMargin(pbv.DataLabel);
-				pbv.DataLabel = null;
-			}
+            if (pbv.HoverShape != null) pbv.HoverShape.Visibility = Visibility;
 
-			if (point.Stroke != null) pbv.Rectangle.Stroke = (Brush)point.Stroke;
-			if (point.Fill != null) pbv.Rectangle.Fill = (Brush)point.Fill;
+            if (DataLabels)
+            {
+                pbv.DataLabel = UpdateLabelContent(new DataLabelViewModel
+                {
+                    FormattedText = label,
+                    Point = point
+                }, pbv.DataLabel);
+            }
 
-			pbv.LabelPosition = LabelsPosition;
+            if (!DataLabels && pbv.DataLabel != null)
+            {
+                Model.Chart.View.RemoveFromDrawMargin(pbv.DataLabel);
+                pbv.DataLabel = null;
+            }
 
-			return pbv;
-		}
+            if (point.Stroke != null) pbv.Rectangle.Stroke = (Brush)point.Stroke;
+            if (point.Fill != null) pbv.Rectangle.Fill = (Brush)point.Fill;
 
-		#endregion
+            pbv.LabelPosition = LabelsPosition;
 
-		#region Private Methods
+            return pbv;
+        }
 
-		private void InitializeDefaults()
-		{
-			SetCurrentValue(StrokeThicknessProperty, 0d);
-			SetCurrentValue(MaxRowHeigthProperty, 20d);
-			SetCurrentValue(RowPaddingProperty, 2d);
-			SetCurrentValue(LabelsPositionProperty, BarLabelPosition.Top);
+        #endregion
 
-			Func<ChartPoint, string> defaultLabel = x => x.EvaluatesGantt
-				? string.Format("starts {0}, ends {1}", Model.CurrentXAxis.GetFormatter()(x.XStart),
-					Model.CurrentXAxis.GetFormatter()(x.X))
-				: Model.CurrentXAxis.GetFormatter()(x.X);
-			SetCurrentValue(LabelPointProperty, defaultLabel);
+        #region Private Methods
 
-			DefaultFillOpacity = 1;
-		}
+        private void InitializeDefaults()
+        {
+            SetCurrentValue(StrokeThicknessProperty, 0d);
+            SetCurrentValue(MaxRowHeigthProperty, 20d);
+            SetCurrentValue(RowPaddingProperty, 2d);
+            SetCurrentValue(LabelsPositionProperty, BarLabelPosition.Top);
 
-		#endregion
-	}
+            Func<ChartPoint, string> defaultLabel = x => x.EvaluatesGantt
+                ? string.Format("starts {0}, ends {1}", Model.CurrentXAxis.GetFormatter()(x.XStart),
+                    Model.CurrentXAxis.GetFormatter()(x.X))
+                : Model.CurrentXAxis.GetFormatter()(x.X);
+            SetCurrentValue(LabelPointProperty, defaultLabel);
+
+            DefaultFillOpacity = 1;
+        }
+
+        #endregion
+    }
 }

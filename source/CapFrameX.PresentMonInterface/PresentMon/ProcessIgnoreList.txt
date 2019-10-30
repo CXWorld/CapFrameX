@@ -45,3 +45,4 @@ vlc
 WeMod
 wgc_renderer
 WinStore.App
+WWAHost
