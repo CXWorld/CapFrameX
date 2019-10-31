@@ -13,6 +13,7 @@ ffxv_s.exe=Final Fantasy XV
 Frostpunk.exe=Frostpunk
 GRB.exe=Ghost Recon Breakpoint
 Gw2-64.exe=Guild Wars 2
+IndianaEpicGameStore-Win64-Shipping.exe=The Outer Worlds
 KingdomCome.exe=Kingdom Come: Deliverance
 MetroExodus.exe=Metro Exodus
 ModernWarfare.exe=Call of Duty: Modern Warfare
