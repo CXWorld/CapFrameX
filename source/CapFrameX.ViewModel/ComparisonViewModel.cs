@@ -69,6 +69,9 @@ namespace CapFrameX.ViewModel
 										.Where(metric => metric != EMetric.Average)
 										.ToArray();
 
+		public ComparisonColorManager ComparisonColorManager 
+			=> _comparisonColorManager;
+
 		public EMetric SelectSecondaryMetric
 		{
 			get { return _selectSecondaryMetric; }

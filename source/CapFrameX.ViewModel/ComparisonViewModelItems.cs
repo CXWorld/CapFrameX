@@ -56,6 +56,8 @@ namespace CapFrameX.ViewModel
 					}));
 				}, CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, context);
 			});
+
+			ComparisonModel.InvalidatePlot(true);
 		}
 
 		public void RemoveAllComparisonItems(bool manageVisibility = true, bool resetSortMode = false)

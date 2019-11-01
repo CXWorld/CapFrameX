@@ -63,7 +63,9 @@ namespace CapFrameX.ViewModel
 		public void FreeColor(SolidColorBrush color)
 		{
 			int index = Array.IndexOf(_comparisonBrushes, color);
-			_usedColorDictionary[index] = false;
+
+			if (index >= 0)
+				_usedColorDictionary[index] = false;
 		}
 
 		public void FreeAllColors()

@@ -88,6 +88,8 @@ namespace CapFrameX.ViewModel
 					var solidColorBrush = new SolidColorBrush(System.Windows.Media.Color.FromArgb(color.A, color.R, color.G, color.B));
 					frametimesChart.Color = OxyColor.FromArgb(color.A, color.R, color.G, color.B);
 					lShapeChart.Stroke = solidColorBrush;
+
+					_viewModel.ComparisonColorManager.FreeColor(Color);
 					Color = solidColorBrush;
 
 					_viewModel.ComparisonModel.InvalidatePlot(true);
