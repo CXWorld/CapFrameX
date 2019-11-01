@@ -1,6 +1,5 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
-using CapFrameX.Contracts.MVVM;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Extensions;
 using CapFrameX.OcatInterface;
@@ -36,20 +35,28 @@ namespace CapFrameX.ViewModel
 		private static readonly SolidColorBrush[] _comparisonBrushes =
 			new SolidColorBrush[]
 			{
-				// kind of green
-				new SolidColorBrush(Color.FromRgb(35, 139, 123)),
-				// kind of blue
-				new SolidColorBrush(Color.FromRgb(35, 50, 139)),
-				// kind of red
-				new SolidColorBrush(Color.FromRgb(139, 35, 50)),                
-				// kind of yellow
-				new SolidColorBrush(Color.FromRgb(139, 123, 35)),
-				// kind of pink
-				new SolidColorBrush(Color.FromRgb(139, 35, 102)),
-				// kind of brown
-				new SolidColorBrush(Color.FromRgb(139, 71, 35)),
-				// kind of dark red
-                new SolidColorBrush(Color.FromRgb(89, 22, 32))
+				// CX Green
+				new SolidColorBrush(Color.FromRgb(156, 210, 0)),
+				// CX Orange
+				new SolidColorBrush(Color.FromRgb(241, 125, 32)),
+				// CX Blue
+				new SolidColorBrush(Color.FromRgb(34, 151, 243)),                
+				// Light Orange / Dark Yellow
+				new SolidColorBrush(Color.FromRgb(255, 180, 0)),
+				// Red
+				new SolidColorBrush(Color.FromRgb(200, 0, 0)),
+				// Purple
+				new SolidColorBrush(Color.FromRgb(100, 0, 160)),
+				// Pink
+                new SolidColorBrush(Color.FromRgb(220, 0, 140)),
+				// Cyan
+				new SolidColorBrush(Color.FromRgb(40, 225, 200)),
+				// Brown
+				new SolidColorBrush(Color.FromRgb(180, 130, 0)),
+				// Dark Blue
+				new SolidColorBrush(Color.FromRgb(0, 0, 180)),
+				// Black
+                new SolidColorBrush(Color.FromRgb(0, 0, 0))
 			};
 
 		private readonly IStatisticProvider _frametimeStatisticProvider;

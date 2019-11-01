@@ -64,9 +64,12 @@ namespace CapFrameX.ViewModel
 
 		public void RemoveAllComparisonItems(bool manageVisibility = true, bool resetSortMode = false)
 		{
-			foreach (var record in ComparisonRecords)
+			if (resetSortMode)
 			{
-				_freeColors.Add(record.Color);
+				foreach (var record in ComparisonRecords)
+				{
+					_freeColors.Add(record.Color);
+				}
 			}
 
 			ComparisonRecords.Clear();

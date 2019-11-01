@@ -51,7 +51,6 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-
 		public ComparisonRecordInfo WrappedRecordInfo { get; }
 
 		public ICommand RemoveCommand { get; }
