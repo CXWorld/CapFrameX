@@ -32,33 +32,6 @@ namespace CapFrameX.ViewModel
 	{
 		private static readonly int PART_LENGTH = 42;
 
-		private static readonly SolidColorBrush[] _comparisonBrushes =
-			new SolidColorBrush[]
-			{
-				// CX Green
-				new SolidColorBrush(Color.FromRgb(156, 210, 0)),
-				// CX Orange
-				new SolidColorBrush(Color.FromRgb(241, 125, 32)),
-				// CX Blue
-				new SolidColorBrush(Color.FromRgb(34, 151, 243)),                
-				// Light Orange / Dark Yellow
-				new SolidColorBrush(Color.FromRgb(255, 180, 0)),
-				// Red
-				new SolidColorBrush(Color.FromRgb(200, 0, 0)),
-				// Purple
-				new SolidColorBrush(Color.FromRgb(100, 0, 160)),
-				// Pink
-                new SolidColorBrush(Color.FromRgb(220, 0, 140)),
-				// Cyan
-				new SolidColorBrush(Color.FromRgb(40, 225, 200)),
-				// Brown
-				new SolidColorBrush(Color.FromRgb(180, 130, 0)),
-				// Dark Blue
-				new SolidColorBrush(Color.FromRgb(0, 0, 180)),
-				// Black
-                new SolidColorBrush(Color.FromRgb(0, 0, 0))
-			};
-
 		private readonly IStatisticProvider _frametimeStatisticProvider;
 		private readonly IFrametimeAnalyzer _frametimeAnalyzer;
 		private readonly IEventAggregator _eventAggregator;
@@ -72,7 +45,7 @@ namespace CapFrameX.ViewModel
 		private SeriesCollection _comparisonLShapeCollection;
 		private string _comparisonItemControlHeight = "300";
 		private string _columnChartYAxisTitle = "FPS";
-		private HashSet<SolidColorBrush> _freeColors = new HashSet<SolidColorBrush>(_comparisonBrushes);
+		private ComparisonColorManager _comparisonColorManager = new ComparisonColorManager();
 		private bool _useEventMessages;
 		private string _remainingRecordingTime;
 		private double _cutLeftSliderMaximum;

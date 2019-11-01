@@ -12,38 +12,34 @@ namespace CapFrameX.ViewModel
 	{
 		private void AddComparisonItem(IFileRecordInfo recordInfo)
 		{
-			if (ComparisonRecords.Count < _comparisonBrushes.Count())
-			{
-				var comparisonRecordInfo = GetComparisonRecordInfoFromFileRecordInfo(recordInfo);
-				var wrappedComparisonRecordInfo = GetWrappedRecordInfo(comparisonRecordInfo);
+			var comparisonRecordInfo = GetComparisonRecordInfoFromFileRecordInfo(recordInfo);
+			var wrappedComparisonRecordInfo = GetWrappedRecordInfo(comparisonRecordInfo);
 
-				//Update list and index
-				ComparisonRecords.Add(wrappedComparisonRecordInfo);
+			//Update list and index
+			ComparisonRecords.Add(wrappedComparisonRecordInfo);
 
-				var color = _freeColors.First();
-				_freeColors.Remove(color);
-				wrappedComparisonRecordInfo.Color = color;
-				wrappedComparisonRecordInfo.FrametimeGraphColor = color.Color;
+			var color = _comparisonColorManager.GetNextFreeColor();
+			wrappedComparisonRecordInfo.Color = color;
+			wrappedComparisonRecordInfo.FrametimeGraphColor = color.Color;
 
-				InitialIconVisibility = !ComparisonRecords.Any();
-				BarChartVisibility = ComparisonRecords.Any();
-				ComparisonItemControlHeight = ComparisonRecords.Any() ? "Auto" : "300";
+			InitialIconVisibility = !ComparisonRecords.Any();
+			BarChartVisibility = ComparisonRecords.Any();
+			ComparisonItemControlHeight = ComparisonRecords.Any() ? "Auto" : "300";
 
-				// Update height of bar chart control here
-				BarChartHeight = 60 + (2 * BarChartMaxRowHeight + 12) * ComparisonRecords.Count;
+			// Update height of bar chart control here
+			BarChartHeight = 60 + (2 * BarChartMaxRowHeight + 12) * ComparisonRecords.Count;
 
-				UpdateCuttingParameter();
+			UpdateCuttingParameter();
 
-				//Draw charts and performance parameter
-				AddToCharts(wrappedComparisonRecordInfo);
+			//Draw charts and performance parameter
+			AddToCharts(wrappedComparisonRecordInfo);
 
-				SortComparisonItems();
-			}
+			SortComparisonItems();
 		}
 
 		public void RemoveComparisonItem(ComparisonRecordInfoWrapper wrappedComparisonRecordInfo)
 		{
-			_freeColors.Add(wrappedComparisonRecordInfo.Color);
+			_comparisonColorManager.FreeColor(wrappedComparisonRecordInfo.Color);
 			ComparisonRecords.Remove(wrappedComparisonRecordInfo);
 			UpdateCuttingParameter();
 			UpdateCharts();
@@ -66,10 +62,7 @@ namespace CapFrameX.ViewModel
 		{
 			if (resetSortMode)
 			{
-				foreach (var record in ComparisonRecords)
-				{
-					_freeColors.Add(record.Color);
-				}
+				_comparisonColorManager.FreeAllColors();
 			}
 
 			ComparisonRecords.Clear();
