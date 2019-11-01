@@ -76,6 +76,8 @@ namespace CapFrameX.ViewModel
 				InitialIconVisibility = true;
 				BarChartVisibility = false;
 			}
+
+			ComparisonModel.InvalidatePlot(true);
 		}
 
 		public void SortComparisonItems()

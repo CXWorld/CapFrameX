@@ -41,7 +41,7 @@
 	<Grid x:Name="ComparisonAreaGrid">
 		<Grid.ColumnDefinitions>
 			<ColumnDefinition Width="1*"></ColumnDefinition>
-			<ColumnDefinition Width="260"></ColumnDefinition>
+			<ColumnDefinition Width="280"></ColumnDefinition>
 		</Grid.ColumnDefinitions>
 		<TabControl Margin="5 10 0 5" Grid.Column="0" Background="#F5F5F5"
 					SelectedItem="{Binding SelectedChartItem}">
