@@ -119,9 +119,13 @@
 			</StackPanel>
 		</Grid>
 		<Grid Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="2" Margin="20 0 0 0">
-			<oxy:PlotView Background="#F0F0F0" x:Name="FrametimePlotView" Model="{Binding FrametimeModel}"
+			<!--<oxy:PlotView Background="#F0F0F0" x:Name="FrametimePlotView" Model="{Binding FrametimeModel}"
 						  MouseDoubleClick="ResetChart_MouseDoubleClick" Height="200" VerticalAlignment="Top">
-			</oxy:PlotView>
+			</oxy:PlotView>-->
+			<Border VerticalAlignment="Center" HorizontalAlignment="Center">
+				<Image Source="/CapFrameX;component/Icons/CX_Logo.png" Width="120" Height="120">
+				</Image>
+			</Border>
 		</Grid>
 
 		<Grid x:Name="HotkeyTextBox" Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="3" HorizontalAlignment="Stretch" VerticalAlignment="Center">

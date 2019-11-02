@@ -79,6 +79,8 @@ namespace CapFrameX.ViewModel
 				BarChartVisibility = false;
 			}
 
+			RemainingRecordingTime = "0.0 s";
+			UpdateCuttingParameter();
 			ComparisonModel.InvalidatePlot(true);
 		}
 

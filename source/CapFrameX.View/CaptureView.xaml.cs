@@ -122,7 +122,7 @@ namespace CapFrameX.View
 
 		private void ResetChart_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
 		{
-			FrametimePlotView.ResetAllAxes();
+			// FrametimePlotView.ResetAllAxes();
 		}
 	}
 }

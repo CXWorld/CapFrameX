@@ -52,7 +52,6 @@ namespace CapFrameX.ViewModel
 		private double _cutRightSliderMaximum;
 		private double _firstSeconds;
 		private double _lastSeconds;
-		private bool _isCuttingModeActive;
 		private bool _isContextLegendActive = true;
 		private double _maxRecordingTime;
 		private bool _doUpdateCharts = true;
@@ -69,7 +68,7 @@ namespace CapFrameX.ViewModel
 										.Where(metric => metric != EMetric.Average)
 										.ToArray();
 
-		public ComparisonColorManager ComparisonColorManager 
+		public ComparisonColorManager ComparisonColorManager
 			=> _comparisonColorManager;
 
 		public EMetric SelectSecondaryMetric
@@ -249,17 +248,6 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-		public bool IsCuttingModeActive
-		{
-			get { return _isCuttingModeActive; }
-			set
-			{
-				_isCuttingModeActive = value;
-				RaisePropertyChanged();
-				OnCuttingModeChanged();
-			}
-		}
-
 		public bool IsContextLegendActive
 		{
 			get { return _isContextLegendActive; }
@@ -409,28 +397,9 @@ namespace CapFrameX.ViewModel
 									AddComparisonItem(msg.RecordInfo);
 
 									// Complete redraw
-									if (IsCuttingModeActive)
-									{
-										UpdateCharts();
-									}
+									UpdateCharts();
 								}
 							});
-		}
-
-		private void OnCuttingModeChanged()
-		{
-			if (!ComparisonRecords.Any())
-				return;
-
-			if (IsCuttingModeActive)
-			{
-				UpdateCuttingParameter();
-			}
-			else
-			{
-				FirstSeconds = 0;
-				LastSeconds = 0;
-			}
 		}
 
 		private void OnChartItemChanged()
@@ -505,7 +474,8 @@ namespace CapFrameX.ViewModel
 
 			CutLeftSliderMaximum = minRecordingTime / 2 - 0.5;
 			CutRightSliderMaximum = minRecordingTime / 2 + _maxRecordingTime - minRecordingTime - 0.5;
-			RemainingRecordingTime = Math.Round(_maxRecordingTime, 2).ToString(CultureInfo.InvariantCulture) + " s";
+			RemainingRecordingTime = ComparisonRecords.Any() ?
+				Math.Round(_maxRecordingTime, 2).ToString(CultureInfo.InvariantCulture) + " s" : "0.0 s"; ;
 		}
 
 		private void UpdateAxesMinMax(bool invalidatePlot)
@@ -524,41 +494,30 @@ namespace CapFrameX.ViewModel
 			double yMin = 0;
 			double yMax = 0;
 
-			if (!IsCuttingModeActive)
+			double startTime = FirstSeconds;
+			double endTime = _maxRecordingTime - LastSeconds;
+
+			var sessionParallelQuery = ComparisonRecords.Select(record => record.WrappedRecordInfo.Session).AsParallel();
+
+			xMin = sessionParallelQuery.Min(session =>
 			{
-				xMin = ComparisonRecords.Min(record => record.WrappedRecordInfo.Session.FrameStart.First());
-				xMax = ComparisonRecords.Max(record => record.WrappedRecordInfo.Session.FrameStart.Last());
+				return session.GetFrametimePointsTimeWindow(startTime, endTime).First().X;
+			});
 
-				yMin = ComparisonRecords.Min(record => record.WrappedRecordInfo.Session.FrameTimes.Min());
-				yMax = ComparisonRecords.Max(record => record.WrappedRecordInfo.Session.FrameTimes.Max());
-			}
-			else
+			xMax = sessionParallelQuery.Max(session =>
 			{
-				double startTime = FirstSeconds;
-				double endTime = _maxRecordingTime - LastSeconds;
+				return session.GetFrametimePointsTimeWindow(startTime, endTime).Last().X;
+			});
 
-				var sessionParallelQuery = ComparisonRecords.Select(record => record.WrappedRecordInfo.Session).AsParallel();
+			yMin = sessionParallelQuery.Min(session =>
+			{
+				return session.GetFrametimePointsTimeWindow(startTime, endTime).Min(pnt => pnt.Y); ;
+			});
 
-				xMin = sessionParallelQuery.Min(session =>
-				{
-					return session.GetFrametimePointsTimeWindow(startTime, endTime).First().X;
-				});
-
-				xMax = sessionParallelQuery.Max(session =>
-				{
-					return session.GetFrametimePointsTimeWindow(startTime, endTime).Last().X;
-				});
-
-				yMin = sessionParallelQuery.Min(session =>
-				{
-					return session.GetFrametimePointsTimeWindow(startTime, endTime).Min(pnt => pnt.Y); ;
-				});
-
-				yMax = sessionParallelQuery.Max(session =>
-				{
-					return session.GetFrametimePointsTimeWindow(startTime, endTime).Max(pnt => pnt.Y);
-				});
-			}
+			yMax = sessionParallelQuery.Max(session =>
+			{
+				return session.GetFrametimePointsTimeWindow(startTime, endTime).Max(pnt => pnt.Y);
+			});
 
 			xAxis.Minimum = xMin;
 			xAxis.Maximum = xMax;
@@ -787,10 +746,7 @@ namespace CapFrameX.ViewModel
 							AddComparisonItem(recordInfo);
 
 							// Complete redraw
-							if (IsCuttingModeActive)
-							{
-								UpdateCharts();
-							}
+							UpdateCharts();
 						}
 
 						if (dropInfo.Data is ComparisonRecordInfoWrapper wrappedRecordInfo)
