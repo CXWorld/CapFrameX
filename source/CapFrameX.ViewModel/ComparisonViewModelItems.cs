@@ -1,4 +1,5 @@
 ﻿using CapFrameX.Contracts.Data;
+using CapFrameX.Statistics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,26 +16,47 @@ namespace CapFrameX.ViewModel
 			var comparisonRecordInfo = GetComparisonRecordInfoFromFileRecordInfo(recordInfo);
 			var wrappedComparisonRecordInfo = GetWrappedRecordInfo(comparisonRecordInfo);
 
-			//Update list and index
-			ComparisonRecords.Add(wrappedComparisonRecordInfo);
+			// Insert into list (sorted)
+			InsertComparisonRecordsSorted(wrappedComparisonRecordInfo);
 
-			var color = _comparisonColorManager.GetNextFreeColor();
-			wrappedComparisonRecordInfo.Color = color;
-			wrappedComparisonRecordInfo.FrametimeGraphColor = color.Color;
-
-			InitialIconVisibility = !ComparisonRecords.Any();
-			BarChartVisibility = ComparisonRecords.Any();
-			ComparisonItemControlHeight = ComparisonRecords.Any() ? "Auto" : "300";
+			HasComparisonItems = ComparisonRecords.Any();
 
 			// Update height of bar chart control here
-			BarChartHeight = 60 + (2 * BarChartMaxRowHeight + 12) * ComparisonRecords.Count;
-
+			UpdateBarChartHeight();
 			UpdateCuttingParameter();
 
 			//Draw charts and performance parameter
 			AddToCharts(wrappedComparisonRecordInfo);
+		}
 
-			SortComparisonItems();
+		private void InsertComparisonRecordsSorted(ComparisonRecordInfoWrapper wrappedComparisonRecordInfo)
+		{
+			double startTime = FirstSeconds;
+			double endTime = _maxRecordingTime - LastSeconds;
+			var frametimeTimeWindow = wrappedComparisonRecordInfo.WrappedRecordInfo.Session.GetFrametimeTimeWindow(startTime, endTime, ERemoveOutlierMethod.None);
+			double GeMetricValue(IList<double> sequence, EMetric metric) =>
+					_frametimeStatisticProvider.GetFpsMetricValue(sequence, metric);
+
+			wrappedComparisonRecordInfo.WrappedRecordInfo.SortCriteriaParameter
+				= GeMetricValue(frametimeTimeWindow, EMetric.Average);
+
+			if (!ComparisonRecords.Any())
+			{
+				ComparisonRecords.Add(wrappedComparisonRecordInfo);
+				return;
+			}
+
+			var list = new List<ComparisonRecordInfoWrapper>(ComparisonRecords)
+			{
+				wrappedComparisonRecordInfo
+			};
+
+			var orderedList = IsSortModeAscending ? list.OrderBy(x => x.WrappedRecordInfo.SortCriteriaParameter).ToList() :
+				list.OrderByDescending(x => x.WrappedRecordInfo.SortCriteriaParameter).ToList();
+
+			var index = orderedList.IndexOf(wrappedComparisonRecordInfo);
+
+			ComparisonRecords.Insert(index, wrappedComparisonRecordInfo);
 		}
 
 		public void RemoveComparisonItem(ComparisonRecordInfoWrapper wrappedComparisonRecordInfo)
@@ -71,12 +93,11 @@ namespace CapFrameX.ViewModel
 			UpdateCharts();
 
 			if (resetSortMode)
-				IsSortModeAscendingActive = false;
+				IsSortModeAscending = false;
 
 			if (manageVisibility)
 			{
-				InitialIconVisibility = true;
-				BarChartVisibility = false;
+				HasComparisonItems = false;
 			}
 
 			RemainingRecordingTime = "0.0 s";
@@ -90,7 +111,7 @@ namespace CapFrameX.ViewModel
 				return;
 
 			IEnumerable<ComparisonRecordInfoWrapper> comparisonRecordList = null;
-			if (IsSortModeAscendingActive)
+			if (IsSortModeAscending)
 				comparisonRecordList = ComparisonRecords.ToList()
 					.Select(info => info.Clone())
 					.OrderBy(info => info.WrappedRecordInfo.SortCriteriaParameter);
@@ -108,7 +129,8 @@ namespace CapFrameX.ViewModel
 
 			RaisePropertyChanged(nameof(ComparisonRecords));
 
-			UpdateCharts();
+			ResetBarChartSeriesTitles();
+			SetColumnChart();
 		}
 	}
 }

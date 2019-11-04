@@ -16,6 +16,7 @@ using Prism.Mvvm;
 using Prism.Regions;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
@@ -38,7 +39,6 @@ namespace CapFrameX.ViewModel
 		private readonly IAppConfiguration _appConfiguration;
 
 		private EComparisonContext _comparisonContext = EComparisonContext.DateTime;
-		private bool _initialIconVisibility = true;
 		private PlotModel _comparisonModel;
 		private SeriesCollection _comparisonRowChartSeriesCollection;
 		private string[] _comparisonRowChartLabels;
@@ -56,9 +56,9 @@ namespace CapFrameX.ViewModel
 		private double _maxRecordingTime;
 		private bool _doUpdateCharts = true;
 		private double _barChartHeight;
-		private bool _barChartVisibility;
+		private bool _hasComparisonItems;
 		private TabItem _selectedChartItem;
-		private bool _isSortModeAscendingActive = false;
+		private bool _isSortModeAscending = false;
 		private Func<double, string> _comparisonColumnChartFormatter;
 		private bool _colorPickerVisibility;
 		private EMetric _selectSecondaryMetric = EMetric.P1;
@@ -79,16 +79,6 @@ namespace CapFrameX.ViewModel
 				_selectSecondaryMetric = value;
 				RaisePropertyChanged();
 				OnSecondaryMetricChanged();
-			}
-		}
-
-		public bool InitialIconVisibility
-		{
-			get { return _initialIconVisibility; }
-			set
-			{
-				_initialIconVisibility = value;
-				RaisePropertyChanged();
 			}
 		}
 
@@ -202,12 +192,12 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-		public bool BarChartVisibility
+		public bool HasComparisonItems
 		{
-			get { return _barChartVisibility; }
+			get { return _hasComparisonItems; }
 			set
 			{
-				_barChartVisibility = value;
+				_hasComparisonItems = value;
 				RaisePropertyChanged();
 			}
 		}
@@ -270,12 +260,12 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-		public bool IsSortModeAscendingActive
+		public bool IsSortModeAscending
 		{
-			get { return _isSortModeAscendingActive; }
+			get { return _isSortModeAscending; }
 			set
 			{
-				_isSortModeAscendingActive = value;
+				_isSortModeAscending = value;
 				RaisePropertyChanged();
 				OnSortModeChanged();
 			}
@@ -292,7 +282,7 @@ namespace CapFrameX.ViewModel
 		public ICommand RemoveAllComparisonsCommand { get; }
 
 		public ComparisonCollection ComparisonRecords { get; private set; }
-			= new ComparisonCollection();
+			= new ObservableCollection<ComparisonRecordInfoWrapper>();
 
 		public double BarChartMaxRowHeight { get; private set; } = 20;
 
@@ -395,9 +385,6 @@ namespace CapFrameX.ViewModel
 								if (_useEventMessages)
 								{
 									AddComparisonItem(msg.RecordInfo);
-
-									// Complete redraw
-									UpdateCharts();
 								}
 							});
 		}
@@ -455,6 +442,9 @@ namespace CapFrameX.ViewModel
 
 		private void UpdateCuttingParameter()
 		{
+			if (ComparisonRecords == null || !ComparisonRecords.Any())
+				return;
+
 			double minRecordingTime = double.MaxValue;
 			_maxRecordingTime = double.MinValue;
 
@@ -529,6 +519,9 @@ namespace CapFrameX.ViewModel
 				ComparisonModel.InvalidatePlot(true);
 		}
 
+		private void UpdateBarChartHeight()
+			=> BarChartHeight = 60 + (2 * BarChartMaxRowHeight + 12) * ComparisonRecords.Count;
+
 		private void OnRemoveAllComparisons()
 			=> RemoveAllComparisonItems(true, true);
 
@@ -597,13 +590,13 @@ namespace CapFrameX.ViewModel
 			double GeMetricValue(IList<double> sequence, EMetric metric) =>
 					_frametimeStatisticProvider.GetFpsMetricValue(sequence, metric);
 
-			var average = GeMetricValue(frametimeTimeWindow, EMetric.Average);
 			var secondaryMetric = GeMetricValue(frametimeTimeWindow, SelectSecondaryMetric);
 
-			wrappedComparisonInfo.WrappedRecordInfo.SortCriteriaParameter = average;
+			//Test
+			wrappedComparisonInfo.WrappedRecordInfo.InfoText = $"{wrappedComparisonInfo.WrappedRecordInfo.SortCriteriaParameter} FPS";
 
 			// Average
-			ComparisonRowChartSeriesCollection[0].Values.Insert(0, average);
+			ComparisonRowChartSeriesCollection[0].Values.Insert(0, wrappedComparisonInfo.WrappedRecordInfo.SortCriteriaParameter);
 
 			// Secondary metric
 			ComparisonRowChartSeriesCollection[1].Values.Insert(0, secondaryMetric);
@@ -686,8 +679,8 @@ namespace CapFrameX.ViewModel
 					Fill = Brushes.Transparent,
 					StrokeThickness = 1,
 					LineSmoothness = 1,
-					PointGeometrySize = 10,
-					PointGeometry = DefaultGeometries.Triangle
+					PointGeometrySize = 5,
+					PointGeometry = DefaultGeometries.Square
 				});
 			}));
 		}
@@ -730,7 +723,15 @@ namespace CapFrameX.ViewModel
 		}
 
 		private ComparisonRecordInfoWrapper GetWrappedRecordInfo(ComparisonRecordInfo comparisonRecordInfo)
-			=> new ComparisonRecordInfoWrapper(comparisonRecordInfo, this);
+		{
+			var wrappedComparisonRecordInfo = new ComparisonRecordInfoWrapper(comparisonRecordInfo, this);
+
+			var color = _comparisonColorManager.GetNextFreeColor();
+			wrappedComparisonRecordInfo.Color = color;
+			wrappedComparisonRecordInfo.FrametimeGraphColor = color.Color;
+
+			return wrappedComparisonRecordInfo;
+		}
 
 		void IDropTarget.Drop(IDropInfo dropInfo)
 		{
@@ -744,9 +745,6 @@ namespace CapFrameX.ViewModel
 						if (dropInfo.Data is IFileRecordInfo recordInfo)
 						{
 							AddComparisonItem(recordInfo);
-
-							// Complete redraw
-							UpdateCharts();
 						}
 
 						if (dropInfo.Data is ComparisonRecordInfoWrapper wrappedRecordInfo)

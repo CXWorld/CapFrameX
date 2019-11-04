@@ -33,8 +33,8 @@
 			<mvvm:ZoomingModeConverter x:Key="ZoomingModeConverter"/>
 			<mvvm:EnumDescriptionConverter x:Key="EnumDescriptionConverter"/>
 			<mvvm:BoolToVisibilityConverter x:Key="FalseToHiddenConverter" FalseValue="Hidden" TrueValue="Visible"/>
-			<mvvm:BoolToVisibilityConverter x:Key="FalseToCollapsedConverter" FalseValue="Collapsed" TrueValue="Visible"/>
-			<mvvm:BoolToVisibilityConverter x:Key="TrueToVisibleConverter" FalseValue="Visible" TrueValue="Collapsed"/>
+			<mvvm:BoolToVisibilityConverter x:Key="TrueToVisibleConverter" FalseValue="Collapsed" TrueValue="Visible"/>
+			<mvvm:BoolToVisibilityConverter x:Key="TrueToCollapsedConverter" FalseValue="Visible" TrueValue="Collapsed"/>
 			<mvvm:AddValueConverter x:Key="AddValueConverter" Offset="-100"/>
 		</ResourceDictionary>
 	</UserControl.Resources>
@@ -53,7 +53,7 @@
 							<RowDefinition Height="50"/>
 						</Grid.RowDefinitions>
 						<lvc:CartesianChart Grid.Row="0" VerticalAlignment="Top" Margin="10" Series="{Binding ComparisonRowChartSeriesCollection}" Height="{Binding BarChartHeight}"
-                                        Visibility="{Binding BarChartVisibility, Converter={StaticResource FalseToCollapsedConverter}}" DisableAnimations="True"
+                                        Visibility="{Binding HasComparisonItems, Converter={StaticResource TrueToVisibleConverter}}" DisableAnimations="True"
 										Hoverable="False" DataTooltip="{x:Null}" LegendLocation="Top">
 							<lvc:CartesianChart.AxisX>
 								<lvc:Axis Title="FPS" FontSize="11" MinValue="0" LabelFormatter="{Binding ComparisonColumnChartFormatter}" Foreground="Black"></lvc:Axis>
@@ -75,7 +75,7 @@
 							<StackPanel VerticalAlignment="Center" Grid.Column="0" Margin="25 8 0 0" Orientation="Horizontal">
 								<TextBlock VerticalAlignment="Center">Sort mode:</TextBlock>
 								<ToggleButton Grid.Column="0" Margin="5 0 0 0" Foreground="Black" BorderThickness="1" Background="Transparent"
-											  Style="{StaticResource MaterialDesignActionAccentToggleButton}" IsChecked="{Binding IsSortModeAscendingActive}">
+											  Style="{StaticResource MaterialDesignActionAccentToggleButton}" IsChecked="{Binding IsSortModeAscending}">
 									<ToggleButton.Content>
 										<materialDesign:PackIcon Kind="SortDescending" />
 									</ToggleButton.Content>
@@ -107,7 +107,7 @@
 					<Grid Grid.Row="0">
 						<oxy:PlotView Background="#F5F5F5" x:Name="ComparisonPlotView" Model="{Binding ComparisonModel}" MouseDoubleClick="ResetFrametimeChart_MouseDoubleClick"/>
 					</Grid>
-                    <Grid Grid.Row="1" Visibility="{Binding ElementName=CuttingModeActiveToggleButton, Path=IsChecked, Converter={StaticResource FalseToCollapsedConverter}}">
+					<Grid Grid.Row="1" Visibility="{Binding ElementName=CuttingModeActiveToggleButton, Path=IsChecked, Converter={StaticResource TrueToVisibleConverter}}">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="2*" />
                             <ColumnDefinition Width="1*" />
@@ -204,7 +204,7 @@
 					<Separator Grid.Row="1" Margin="5 0 5 0" Style="{StaticResource MaterialDesignDarkSeparator}"/>
 					<Grid Grid.Row="2">
 						<Border VerticalAlignment="Center" HorizontalAlignment="Center">
-							<Image Grid.Row="0" Visibility="{Binding InitialIconVisibility, Converter={StaticResource FalseToCollapsedConverter}}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+							<Image Grid.Row="0" Visibility="{Binding HasComparisonItems, Converter={StaticResource TrueToCollapsedConverter}}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
 									   Name="ComparisonImage"
 									   dragdrop:DragDrop.IsDropTarget="True"
 									   dragdrop:DragDrop.DropHandler="{Binding}"
@@ -219,7 +219,7 @@
 						<DockPanel Height="{Binding ElementName=ComparisonAreaGrid, Path=ActualHeight, Converter={StaticResource AddValueConverter}}">
 							<ScrollViewer VerticalScrollBarVisibility="Auto" CanContentScroll="True">
 								<ItemsControl ItemsSource="{Binding ComparisonRecords}" Background="#e6e6e6" 
-										  Visibility="{Binding InitialIconVisibility, Converter={StaticResource TrueToVisibleConverter}}"
+										  Visibility="{Binding HasComparisonItems, Converter={StaticResource TrueToVisibleConverter}}"
 										  x:Name="ComparisonRecordItemControl"										  
 										  dragdrop:DragDrop.IsDropTarget="True"
 										  dragdrop:DragDrop.IsDragSource="True"

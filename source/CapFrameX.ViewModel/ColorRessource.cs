@@ -9,7 +9,7 @@ namespace CapFrameX.ViewModel
 
         public readonly static SolidColorBrush PieChartStutterFill = Brushes.Red;
 
-        public readonly static SolidColorBrush LShapeStroke = new SolidColorBrush(Color.FromRgb(96, 136, 139));
+        public readonly static SolidColorBrush LShapeStroke = new SolidColorBrush(Color.FromRgb(156, 210, 0));
 
         public readonly static SolidColorBrush BarChartFill = new SolidColorBrush(Color.FromRgb(241, 125, 32));
 

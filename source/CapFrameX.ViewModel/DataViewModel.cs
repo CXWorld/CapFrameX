@@ -576,8 +576,8 @@ namespace CapFrameX.ViewModel
                         Fill = Brushes.Transparent,
                         StrokeThickness = 1,
                         LineSmoothness= 1,
-                        PointGeometrySize = 10,
-                        PointGeometry = DefaultGeometries.Triangle,
+                        PointGeometrySize = 5,
+                        PointGeometry = DefaultGeometries.Square,
                         DataLabels = true,
                         LabelPoint = point => point.X.ToString(CultureInfo.InvariantCulture) + "%, " +
                             Math.Round(point.Y, 1).ToString(CultureInfo.InvariantCulture) + " ms"
