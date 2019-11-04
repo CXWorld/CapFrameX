@@ -17,6 +17,7 @@ namespace CapFrameX.ViewModel
 			var wrappedComparisonRecordInfo = GetWrappedRecordInfo(comparisonRecordInfo);
 
 			// Insert into list (sorted)
+			SetMetrics(wrappedComparisonRecordInfo);
 			InsertComparisonRecordsSorted(wrappedComparisonRecordInfo);
 
 			HasComparisonItems = ComparisonRecords.Any();
@@ -29,7 +30,7 @@ namespace CapFrameX.ViewModel
 			AddToCharts(wrappedComparisonRecordInfo);
 		}
 
-		private void InsertComparisonRecordsSorted(ComparisonRecordInfoWrapper wrappedComparisonRecordInfo)
+		private void SetMetrics(ComparisonRecordInfoWrapper wrappedComparisonRecordInfo)
 		{
 			double startTime = FirstSeconds;
 			double endTime = _maxRecordingTime - LastSeconds;
@@ -37,9 +38,17 @@ namespace CapFrameX.ViewModel
 			double GeMetricValue(IList<double> sequence, EMetric metric) =>
 					_frametimeStatisticProvider.GetFpsMetricValue(sequence, metric);
 
-			wrappedComparisonRecordInfo.WrappedRecordInfo.SortCriteriaParameter
+			wrappedComparisonRecordInfo.WrappedRecordInfo.FirstMetric
 				= GeMetricValue(frametimeTimeWindow, EMetric.Average);
 
+			wrappedComparisonRecordInfo.WrappedRecordInfo.SecondMetric 
+				= GeMetricValue(frametimeTimeWindow, SelectSecondaryMetric);
+
+			// ToDo: implement third metric
+		}
+
+		private void InsertComparisonRecordsSorted(ComparisonRecordInfoWrapper wrappedComparisonRecordInfo)
+		{
 			if (!ComparisonRecords.Any())
 			{
 				ComparisonRecords.Add(wrappedComparisonRecordInfo);
@@ -51,11 +60,10 @@ namespace CapFrameX.ViewModel
 				wrappedComparisonRecordInfo
 			};
 
-			var orderedList = IsSortModeAscending ? list.OrderBy(x => x.WrappedRecordInfo.SortCriteriaParameter).ToList() :
-				list.OrderByDescending(x => x.WrappedRecordInfo.SortCriteriaParameter).ToList();
+			var orderedList = IsSortModeAscending ? list.OrderBy(x => x.WrappedRecordInfo.FirstMetric).ToList() :
+				list.OrderByDescending(x => x.WrappedRecordInfo.FirstMetric).ToList();
 
 			var index = orderedList.IndexOf(wrappedComparisonRecordInfo);
-
 			ComparisonRecords.Insert(index, wrappedComparisonRecordInfo);
 		}
 
@@ -105,6 +113,7 @@ namespace CapFrameX.ViewModel
 			ComparisonModel.InvalidatePlot(true);
 		}
 
+		[Obsolete]
 		public void SortComparisonItems()
 		{
 			if (!ComparisonRecords.Any())
@@ -114,11 +123,11 @@ namespace CapFrameX.ViewModel
 			if (IsSortModeAscending)
 				comparisonRecordList = ComparisonRecords.ToList()
 					.Select(info => info.Clone())
-					.OrderBy(info => info.WrappedRecordInfo.SortCriteriaParameter);
+					.OrderBy(info => info.WrappedRecordInfo.FirstMetric);
 			else
 				comparisonRecordList = ComparisonRecords.ToList()
 					.Select(info => info.Clone())
-					.OrderByDescending(info => info.WrappedRecordInfo.SortCriteriaParameter);
+					.OrderByDescending(info => info.WrappedRecordInfo.FirstMetric);
 
 			RemoveAllComparisonItems(false, false);
 

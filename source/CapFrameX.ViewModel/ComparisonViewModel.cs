@@ -583,23 +583,14 @@ namespace CapFrameX.ViewModel
 
 		private void AddToColumnCharts(ComparisonRecordInfoWrapper wrappedComparisonInfo)
 		{
-			double startTime = FirstSeconds;
-			double endTime = _maxRecordingTime - LastSeconds;
-			var frametimeTimeWindow = wrappedComparisonInfo.WrappedRecordInfo.Session.GetFrametimeTimeWindow(startTime, endTime, ERemoveOutlierMethod.None);
-
-			double GeMetricValue(IList<double> sequence, EMetric metric) =>
-					_frametimeStatisticProvider.GetFpsMetricValue(sequence, metric);
-
-			var secondaryMetric = GeMetricValue(frametimeTimeWindow, SelectSecondaryMetric);
-
 			//Test
-			wrappedComparisonInfo.WrappedRecordInfo.InfoText = $"{wrappedComparisonInfo.WrappedRecordInfo.SortCriteriaParameter} FPS";
+			wrappedComparisonInfo.WrappedRecordInfo.InfoText = $"{wrappedComparisonInfo.WrappedRecordInfo.FirstMetric} FPS";
 
-			// Average
-			ComparisonRowChartSeriesCollection[0].Values.Insert(0, wrappedComparisonInfo.WrappedRecordInfo.SortCriteriaParameter);
+			// First metric
+			ComparisonRowChartSeriesCollection[0].Values.Insert(0, wrappedComparisonInfo.WrappedRecordInfo.FirstMetric);
 
-			// Secondary metric
-			ComparisonRowChartSeriesCollection[1].Values.Insert(0, secondaryMetric);
+			// Second metric
+			ComparisonRowChartSeriesCollection[1].Values.Insert(0, wrappedComparisonInfo.WrappedRecordInfo.SecondMetric);
 
 			switch (_comparisonContext)
 			{
