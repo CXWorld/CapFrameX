@@ -20,7 +20,7 @@ namespace CapFrameX.Data
 
         private static readonly string _matchingNameLiveFilename =
             Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
-                @"CapFrameX\Ressources\ProcessGameNameMatchingList.txt");
+                @"CapFrameX\Resources\ProcessGameNameMatchingList.txt");
 
         private readonly IRecordDirectoryObserver _recordObserver;
 
@@ -36,7 +36,7 @@ namespace CapFrameX.Data
                 {
                     Directory.CreateDirectory(
                         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
-                            @"CapFrameX\Ressources"));
+                            @"CapFrameX\Resources"));
                     File.Copy(_matchingNameInitialFilename, _matchingNameLiveFilename);
                 }
             }

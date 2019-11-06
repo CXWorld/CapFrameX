@@ -693,13 +693,20 @@ namespace CapFrameX.ViewModel
 
         private void UpdateProcessToCaptureList()
         {
-            var selectedProcessToCapture = SelectedProcessToCapture;
-            ProcessesToCapture.Clear();
-            var filter = CaptureServiceConfiguration.GetProcessIgnoreList();
-            var processList = _captureService.GetAllFilteredProcesses(filter).Distinct();
-            ProcessesToCapture.AddRange(processList);
+			var selectedProcessToCapture = SelectedProcessToCapture;
+			var backupProcessList = new List<string>(ProcessesToCapture);
+			ProcessesToCapture.Clear();
+			var filter = CaptureServiceConfiguration.GetProcessIgnoreList();
+			var processList = _captureService.GetAllFilteredProcesses(filter).Distinct();
+			ProcessesToCapture.AddRange(processList);
 
-            if (!processList.Contains(selectedProcessToCapture))
+			// fire update global hook if new process is detected
+			if (backupProcessList.Count != ProcessesToCapture.Count)
+			{
+				UpdateGlobalHookEvent();
+			}
+
+			if (!processList.Contains(selectedProcessToCapture))
                 SelectedProcessToCapture = null;
             else
                 SelectedProcessToCapture = selectedProcessToCapture;

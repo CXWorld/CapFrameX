@@ -32,6 +32,7 @@ ServiceHub.ThreadedWaitDialog
 seccenter
 ShellExperienceHost
 ServiceHub.Host.CLR.x86
+SocialClubHelper
 SourceTree
 Spotify
 StartMenuExperienceHost

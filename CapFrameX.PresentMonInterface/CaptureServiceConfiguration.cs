@@ -13,7 +13,7 @@ namespace CapFrameX.PresentMonInterface
 
 		private static readonly string _ignoreLiveListFilename =
 			Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), 
-				@"CapFrameX\Ressources\ProcessIgnoreList.txt");
+				@"CapFrameX\Resources\ProcessIgnoreList.txt");
 
 		private static string[] _processes;
 
@@ -42,7 +42,7 @@ namespace CapFrameX.PresentMonInterface
 				{
 					Directory.CreateDirectory(
 						Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), 
-							@"CapFrameX\Ressources"));
+							@"CapFrameX\Resources"));
 					File.Copy(_ignoreListFileName, _ignoreLiveListFilename);
 				}
 

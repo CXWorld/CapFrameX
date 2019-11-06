@@ -38,11 +38,11 @@
 					<RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
 							 Margin="5"
 							 IsChecked="{Binding SingleRecordIsChecked}"
-							 Content="SINGLE RECORD" />
+							 Content="ANALYSIS" />
 					<RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
 							 Margin="5"
 							 IsChecked="{Binding RecordComparisonIsChecked}"
-							 Content="RECORD COMPARISON" />
+							 Content="COMPARISON" />
 					<RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
 							 Margin="5"
 							 IsChecked="{Binding ReportIsChecked}"
