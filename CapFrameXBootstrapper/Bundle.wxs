@@ -7,7 +7,7 @@
 	<?define NetFx47WebLink = http://go.microsoft.com/fwlink/?LinkId=825298 ?>
 	<?define NetFx47RedistLink = http://go.microsoft.com/fwlink/?LinkId=825302 ?>
 	<?define NetFx47EulaLink = http://referencesource.microsoft.com/license.html ?>
-	<Bundle Name="Open Capture and Analytics Tool (CapFrameX)"
+	<Bundle Name="CapFrameX Capture and Analysis Tool"
 					Version="$(var.VersionNumber)"
 			    Manufacturer="DevTechProfile"
 					UpgradeCode="D124F3FF-D15F-4B43-BD0D-CD631DD931DA"

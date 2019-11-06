@@ -50,11 +50,17 @@ namespace CapFrameX
 			{
 				var sourceFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
 						@"CapFrameX\Ressources\");
+				var destinationFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+						@"CapFrameX\Resources\");
 
 				if (Directory.Exists(sourceFolder))
 				{
-					Directory.Move(sourceFolder, Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
-						@"CapFrameX\Resources\"));
+					Directory.Move(sourceFolder, destinationFolder);
+				}
+
+				if (!Directory.Exists(destinationFolder))
+				{
+					Directory.CreateDirectory(destinationFolder);
 				}
 			}
 			catch { }
