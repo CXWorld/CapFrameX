@@ -57,7 +57,9 @@ namespace CapFrameX.Data
         {
             return _recordObserver.GetAllRecordFileInfo()
                 .Select(fileInfo => GetIFileRecordInfo(fileInfo))
-                .Where(fileRecordInfo => fileRecordInfo != null).ToList();
+                .Where(fileRecordInfo => fileRecordInfo != null)
+				.OrderBy(fileRecordInfo => fileRecordInfo.GameName)
+				.ToList();
         }
 
         public void SavePresentData(IList<string> recordLines, string filePath, string processName, int captureTime)
