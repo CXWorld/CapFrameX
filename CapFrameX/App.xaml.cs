@@ -1,4 +1,5 @@
-﻿using CapFrameX.PresentMonInterface;
+﻿using CapFrameX.Data;
+using CapFrameX.PresentMonInterface;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -92,11 +93,26 @@ namespace CapFrameX
 
 				if (File.Exists(gameNameLiveListFilename))
 				{
-					var gameNamesLive = File.ReadAllLines(gameNameLiveListFilename);
+					var gameNamesLive = File.ReadAllLines(gameNameLiveListFilename).ToList();
+					var gameNamesLiveDictionary = new Dictionary<string, string>();
+
+					foreach (var item in gameNamesLive)
+					{
+						var currentMatching = item.Split(FileRecordInfo.INFO_SEPERATOR);
+						gameNamesLiveDictionary.Add(currentMatching.First(), currentMatching.Last());
+					}
+
 					var gameNames = File.ReadAllLines(gameNameListFileName);
 
-					var unionList = gameNamesLive.Union(gameNames);
-					File.WriteAllLines(gameNameLiveListFilename, unionList.OrderBy(name => name));
+					foreach (var item in gameNames)
+					{
+						var currentMatching = item.Split(FileRecordInfo.INFO_SEPERATOR);
+
+						if (!gameNamesLiveDictionary.ContainsKey(currentMatching.First()))
+							gameNamesLive.Add(item);
+					}
+
+					File.WriteAllLines(gameNameLiveListFilename, gameNamesLive.OrderBy(name => name));
 				}
 			}
 			catch { }
