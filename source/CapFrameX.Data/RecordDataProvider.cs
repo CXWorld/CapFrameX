@@ -23,7 +23,7 @@ namespace CapFrameX.Data
 
         private static readonly string _matchingNameLiveFilename =
             Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
-                @"CapFrameX\Ressources\ProcessGameNameMatchingList.txt");
+                @"CapFrameX\Resources\ProcessGameNameMatchingList.txt");
 
         private readonly IRecordDirectoryObserver _recordObserver;
 
@@ -39,7 +39,7 @@ namespace CapFrameX.Data
                 {
                     Directory.CreateDirectory(
                         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
-                            @"CapFrameX\Ressources"));
+                            @"CapFrameX\Resources"));
                     File.Copy(_matchingNameInitialFilename, _matchingNameLiveFilename);
                 }
             }
@@ -60,8 +60,10 @@ namespace CapFrameX.Data
         {
             return _recordObserver.GetAllRecordFileInfo()
                 .Select(fileInfo => GetIFileRecordInfo(fileInfo))
-                .Where(fileRecordInfo => fileRecordInfo != null).ToList();
-        }
+				.Where(fileRecordInfo => fileRecordInfo != null)
+				.OrderBy(fileRecordInfo => fileRecordInfo.GameName)
+				.ToList();
+		}
 
         public void SavePresentData(IList<string> recordLines, string filePath, string processName, int captureTime)
         {

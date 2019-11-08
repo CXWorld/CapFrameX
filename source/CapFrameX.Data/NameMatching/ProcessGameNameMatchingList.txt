@@ -21,6 +21,7 @@ NMS.exe=No Man's Sky
 PlagueIncEvolved.exe=PlagueInc Evolved
 QuantumBreak.exe=Quantum Break
 r5apex.exe=Apex Legends
+RDR2.exe=Red Dead Redemption 2
 SC2_x64.exe=Starcraft II
 SF3ClientFinal.exe= SpellForce 3
 SOTTR.exe=Shadow of the Tomb Raider
