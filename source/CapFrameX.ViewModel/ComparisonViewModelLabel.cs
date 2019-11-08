@@ -142,7 +142,7 @@ namespace CapFrameX.ViewModel
 				{
 					ComparisonModel.Series[i].Title =
 						GetLabelDateTimeContext(ComparisonRecords[i], GetMaxDateTimeAlignment());
-				}
+				}				
 			}
 		}
 

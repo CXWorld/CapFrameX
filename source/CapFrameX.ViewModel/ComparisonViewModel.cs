@@ -572,20 +572,8 @@ namespace CapFrameX.ViewModel
 			Task.Factory.StartNew(() => SetLShapeChart());
 		}
 
-		private void AddToCharts(ComparisonRecordInfoWrapper wrappedComparisonInfo)
-		{
-			AddToColumnCharts(wrappedComparisonInfo);
-			AddToFrameTimeChart(wrappedComparisonInfo);
-			AddToLShapeChart(wrappedComparisonInfo);
-
-			UpdateAxesMinMax(true);
-		}
-
 		private void AddToColumnCharts(ComparisonRecordInfoWrapper wrappedComparisonInfo)
-		{
-			//Test
-			wrappedComparisonInfo.WrappedRecordInfo.InfoText = $"{wrappedComparisonInfo.WrappedRecordInfo.FirstMetric} FPS";
-
+		{			
 			// First metric
 			ComparisonRowChartSeriesCollection[0].Values.Insert(0, wrappedComparisonInfo.WrappedRecordInfo.FirstMetric);
 

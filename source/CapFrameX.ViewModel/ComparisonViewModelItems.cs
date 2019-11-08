@@ -27,13 +27,13 @@ namespace CapFrameX.ViewModel
 			UpdateCuttingParameter();
 
 			//Draw charts and performance parameter
-			AddToCharts(wrappedComparisonRecordInfo);
+			UpdateCharts();
 		}
 
 		private void SetMetrics(ComparisonRecordInfoWrapper wrappedComparisonRecordInfo)
 		{
 			double startTime = FirstSeconds;
-			double endTime = _maxRecordingTime - LastSeconds;
+			double endTime = wrappedComparisonRecordInfo.WrappedRecordInfo.Session.FrameStart.Last() - LastSeconds;
 			var frametimeTimeWindow = wrappedComparisonRecordInfo.WrappedRecordInfo.Session.GetFrametimeTimeWindow(startTime, endTime, ERemoveOutlierMethod.None);
 			double GeMetricValue(IList<double> sequence, EMetric metric) =>
 					_frametimeStatisticProvider.GetFpsMetricValue(sequence, metric);
@@ -71,6 +71,8 @@ namespace CapFrameX.ViewModel
 		{
 			_comparisonColorManager.FreeColor(wrappedComparisonRecordInfo.Color);
 			ComparisonRecords.Remove(wrappedComparisonRecordInfo);
+
+			HasComparisonItems = ComparisonRecords.Any();
 			UpdateCuttingParameter();
 			UpdateCharts();
 
