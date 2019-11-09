@@ -569,11 +569,12 @@ namespace CapFrameX.ViewModel
 
 			SetColumnChart();
 			SetFrametimeChart();
-			Task.Factory.StartNew(() => SetLShapeChart());
+			SetLShapeChart();
+			//Task.Factory.StartNew(() => SetLShapeChart());
 		}
 
 		private void AddToColumnCharts(ComparisonRecordInfoWrapper wrappedComparisonInfo)
-		{			
+		{
 			// First metric
 			ComparisonRowChartSeriesCollection[0].Values.Insert(0, wrappedComparisonInfo.WrappedRecordInfo.FirstMetric);
 
@@ -648,20 +649,17 @@ namespace CapFrameX.ViewModel
 			var quantileValues = new ChartValues<ObservablePoint>();
 			quantileValues.AddRange(quantiles);
 
-			Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+			ComparisonLShapeCollection.Add(
+			new LineSeries
 			{
-				ComparisonLShapeCollection.Add(
-				new LineSeries
-				{
-					Values = quantileValues,
-					Stroke = wrappedComparisonInfo.Color,
-					Fill = Brushes.Transparent,
-					StrokeThickness = 1,
-					LineSmoothness = 1,
-					PointGeometrySize = 5,
-					PointGeometry = DefaultGeometries.Square
-				});
-			}));
+				Values = quantileValues,
+				Stroke = wrappedComparisonInfo.Color,
+				Fill = Brushes.Transparent,
+				StrokeThickness = 1,
+				LineSmoothness = 1,
+				PointGeometrySize = 5,
+				PointGeometry = DefaultGeometries.Square
+			});
 		}
 
 		private void SetColumnChart()

@@ -934,9 +934,13 @@ namespace LiveCharts.Wpf.Charts.Base
 				for (int j = 0; j < chartPoints.Count; j++)
 				{
 					var pbv = (RowPointView)chartPoints[j].View;
+
+					if (pbv == null)
+						continue;
+
 					pbv.DataLabel = (Series[i] as RowSeries).UpdateLabelContent(new DataLabelViewModel
 					{
-						FormattedText = Math.Round(100 * _backupChartValues[i][j] 
+						FormattedText = Math.Round(100 * _backupChartValues[i][j]
 							/ Convert.ToDouble(label, CultureInfo.InvariantCulture), 1)
 							.ToString(CultureInfo.InvariantCulture) + "%",
 						Point = chartPoints[j]
@@ -955,6 +959,10 @@ namespace LiveCharts.Wpf.Charts.Base
 					for (int j = 0; j < chartPoints.Count; j++)
 					{
 						var pbv = (RowPointView)chartPoints[j].View;
+
+						if (pbv == null)
+							continue;
+
 						pbv.DataLabel = (Series[i] as RowSeries).UpdateLabelContent(new DataLabelViewModel
 						{
 							FormattedText = _backupChartValues[i][j].ToString(CultureInfo.InvariantCulture),

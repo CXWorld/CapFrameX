@@ -41,7 +41,7 @@ namespace CapFrameX.ViewModel
 			wrappedComparisonRecordInfo.WrappedRecordInfo.FirstMetric
 				= GeMetricValue(frametimeTimeWindow, EMetric.Average);
 
-			wrappedComparisonRecordInfo.WrappedRecordInfo.SecondMetric 
+			wrappedComparisonRecordInfo.WrappedRecordInfo.SecondMetric
 				= GeMetricValue(frametimeTimeWindow, SelectSecondaryMetric);
 
 			// ToDo: implement third metric
@@ -115,7 +115,6 @@ namespace CapFrameX.ViewModel
 			ComparisonModel.InvalidatePlot(true);
 		}
 
-		[Obsolete]
 		public void SortComparisonItems()
 		{
 			if (!ComparisonRecords.Any())
@@ -131,17 +130,16 @@ namespace CapFrameX.ViewModel
 					.Select(info => info.Clone())
 					.OrderByDescending(info => info.WrappedRecordInfo.FirstMetric);
 
-			RemoveAllComparisonItems(false, false);
+			// RemoveAllComparisonItems(false, false);
+			ComparisonRecords.Clear();
 
 			foreach (var item in comparisonRecordList)
 			{
 				ComparisonRecords.Add(item);
 			}
 
-			RaisePropertyChanged(nameof(ComparisonRecords));
-
-			ResetBarChartSeriesTitles();
-			SetColumnChart();
+			//Draw charts and performance parameter
+			UpdateCharts();
 		}
 	}
 }
