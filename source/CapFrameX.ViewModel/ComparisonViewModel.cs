@@ -19,7 +19,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -422,6 +421,7 @@ namespace CapFrameX.ViewModel
 							Values = new ChartValues<double>(),
 							// 241, 125, 32 (orange)
 							Fill = new SolidColorBrush(Color.FromRgb(241, 125, 32)),
+							HighlightFill = new SolidColorBrush(Color.FromRgb(245, 164, 98)),
 							DataLabels = true,
 							MaxRowHeigth = BarChartMaxRowHeight,
 							UseRelativeMode = true
@@ -588,7 +588,8 @@ namespace CapFrameX.ViewModel
 			ComparisonRowChartSeriesCollection[0].Values.Insert(0, wrappedComparisonInfo.WrappedRecordInfo.FirstMetric);
 
 			// Second metric
-			ComparisonRowChartSeriesCollection[1].Values.Insert(0, wrappedComparisonInfo.WrappedRecordInfo.SecondMetric);
+			if (ComparisonRowChartSeriesCollection.Count > 1)
+				ComparisonRowChartSeriesCollection[1].Values.Insert(0, wrappedComparisonInfo.WrappedRecordInfo.SecondMetric);
 
 			switch (_comparisonContext)
 			{
@@ -639,7 +640,7 @@ namespace CapFrameX.ViewModel
 					break;
 			}
 
-			var color = wrappedComparisonInfo.FrametimeGraphColor.Value;
+			var color = wrappedComparisonInfo.IsHideModeSelected ? Colors.Transparent : wrappedComparisonInfo.FrametimeGraphColor.Value;
 			var frametimeSeries = new OxyPlot.Series.LineSeries { Title = chartTitle, StrokeThickness = 1, Color = OxyColor.FromRgb(color.R, color.G, color.B) };
 			frametimeSeries.Points.AddRange(frametimePoints.Select(pnt => new DataPoint(pnt.X, pnt.Y)));
 
@@ -662,7 +663,7 @@ namespace CapFrameX.ViewModel
 			new LineSeries
 			{
 				Values = quantileValues,
-				Stroke = wrappedComparisonInfo.Color,
+				Stroke = wrappedComparisonInfo.IsHideModeSelected ? Brushes.Transparent : wrappedComparisonInfo.Color,
 				Fill = Brushes.Transparent,
 				StrokeThickness = 1,
 				LineSmoothness = 1,

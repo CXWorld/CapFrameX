@@ -4,6 +4,7 @@ using LiveCharts.Wpf;
 using OxyPlot;
 using Prism.Commands;
 using Prism.Mvvm;
+using System;
 using System.Linq;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -15,6 +16,7 @@ namespace CapFrameX.ViewModel
 		private Color? _frametimeGraphColor;
 		private SolidColorBrush _color;
 		private ComparisonViewModel _viewModel;
+		private bool _isHideModeSelected;
 
 		public Color? FrametimeGraphColor
 		{
@@ -48,6 +50,17 @@ namespace CapFrameX.ViewModel
 			{
 				_myBool = value;
 				RaisePropertyChanged();
+			}
+		}
+
+		public bool IsHideModeSelected
+		{
+			get { return _isHideModeSelected; }
+			set
+			{
+				_isHideModeSelected = value;
+				RaisePropertyChanged();
+				OnHideModeChanged();
 			}
 		}
 
@@ -91,6 +104,37 @@ namespace CapFrameX.ViewModel
 
 					_viewModel.ComparisonColorManager.FreeColor(Color);
 					Color = solidColorBrush;
+
+					_viewModel.ComparisonModel.InvalidatePlot(true);
+				}
+			}
+		}
+
+		private void OnHideModeChanged()
+		{
+			if (FrametimeGraphColor.HasValue && _viewModel.ComparisonRecords.Any()
+				&& _viewModel.ComparisonModel.Series.Any() && _viewModel.ComparisonLShapeCollection.Any())
+			{
+				var index = _viewModel.ComparisonRecords.IndexOf(this);
+
+				if (index < _viewModel.ComparisonModel.Series.Count &&
+				index < _viewModel.ComparisonLShapeCollection.Count)
+				{
+					var frametimesChart = _viewModel.ComparisonModel.Series[index] as OxyPlot.Series.LineSeries;
+					var lShapeChart = _viewModel.ComparisonLShapeCollection[index] as LineSeries;
+
+					if (IsHideModeSelected)
+					{
+						frametimesChart.Color = OxyColors.Transparent;
+						lShapeChart.Stroke = Brushes.Transparent;
+					}
+					else
+					{
+						Color color = FrametimeGraphColor.Value;
+						var solidColorBrush = new SolidColorBrush(System.Windows.Media.Color.FromArgb(color.A, color.R, color.G, color.B));
+						frametimesChart.Color = OxyColor.FromArgb(color.A, color.R, color.G, color.B);
+						lShapeChart.Stroke = solidColorBrush;
+					}
 
 					_viewModel.ComparisonModel.InvalidatePlot(true);
 				}
