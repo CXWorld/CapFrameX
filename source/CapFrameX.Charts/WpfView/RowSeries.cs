@@ -223,7 +223,7 @@ namespace LiveCharts.Wpf
 			}
 
 			// add event handler to pbv.Rectangle
-			if (UseRelativeMode)
+			if (/*UseRelativeMode*/false)
 			{
 				var wpfChart = (Chart)Model.Chart.View;
 				wpfChart.AttachRelativeModeEventTo(pbv.Rectangle, label);
