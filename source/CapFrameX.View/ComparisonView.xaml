@@ -277,7 +277,7 @@
 															<materialDesign:PackIcon Kind="HideOutline" />
 														</ToggleButton.Content>
 														<materialDesign:ToggleButtonAssist.OnContent>
-															<materialDesign:PackIcon Kind="ChartLine" />
+															<materialDesign:PackIcon Kind="EyeOutline" />
 														</materialDesign:ToggleButtonAssist.OnContent>
 													</ToggleButton>
 												</Grid>
