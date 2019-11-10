@@ -56,7 +56,7 @@
                                         Visibility="{Binding HasComparisonItems, Converter={StaticResource TrueToVisibleConverter}}" DisableAnimations="True"
 										Hoverable="False" DataTooltip="{x:Null}" LegendLocation="Top">
 							<lvc:CartesianChart.AxisX>
-								<lvc:Axis Title="FPS" FontSize="11" MinValue="0" LabelFormatter="{Binding ComparisonColumnChartFormatter}" Foreground="Black"></lvc:Axis>
+								<lvc:Axis Foreground="Transparent"></lvc:Axis>
 							</lvc:CartesianChart.AxisX>
 							<lvc:CartesianChart.AxisY>
 								<lvc:Axis Labels="{Binding ComparisonRowChartLabels}" FontSize="12" Foreground="Black">
@@ -271,13 +271,13 @@
 													</Button>
 												</Grid>
 											</Border>
-											<DataTemplate.Triggers>
+											<!--<DataTemplate.Triggers>
 												<DataTrigger Binding="{Binding IsSelected}" Value="True">
 													<Setter TargetName="Border"
 														Property="Background"
 														Value="{DynamicResource MaterialDesignSelection}" />
 												</DataTrigger>
-											</DataTemplate.Triggers>
+											</DataTemplate.Triggers>-->
 										</DataTemplate>
 									</ItemsControl.ItemTemplate>
 								</ItemsControl>

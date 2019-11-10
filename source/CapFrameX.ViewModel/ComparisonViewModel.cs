@@ -257,6 +257,7 @@ namespace CapFrameX.ViewModel
 				_selectedChartItem = value;
 				RaisePropertyChanged();
 				OnChartItemChanged();
+				UpdateCharts();
 			}
 		}
 
@@ -305,36 +306,8 @@ namespace CapFrameX.ViewModel
 			ComparisonColumnChartFormatter = value => value.ToString(string.Format("F{0}",
 			_appConfiguration.FpsValuesRoundingDigits), CultureInfo.InvariantCulture);
 			ComparisonLShapeCollection = new SeriesCollection();
-			ComparisonRowChartSeriesCollection = new SeriesCollection
-			{
-                // Add ColumnSeries per parameter
-                // Average
-                new RowSeries
-				{
-					Title = "Average",
-					Values = new ChartValues<double>(),
-					// 34, 151, 243 (blue)
-                    Fill = new SolidColorBrush(Color.FromRgb(34, 151, 243)),
-					HighlightFill = new SolidColorBrush(Color.FromRgb(122,192,247)),
-					DataLabels = true,
-					MaxRowHeigth = BarChartMaxRowHeight,
-					UseRelativeMode = true
-				},
 
-                // 1% quantile (initial)
-                new RowSeries
-				{
-					Title = "1% percentile",
-					Values = new ChartValues<double>(),
-					// 241, 125, 32 (orange)
-                    Fill = new SolidColorBrush(Color.FromRgb(241, 125, 32)),
-					HighlightFill = new SolidColorBrush(Color.FromRgb(245,164,98)),
-					DataLabels = true,
-					MaxRowHeigth = BarChartMaxRowHeight,
-					UseRelativeMode = true
-				}
-			};
-
+			SetRowSeries();
 			InitializePlotModel();
 			SubscribeToSelectRecord();
 		}
@@ -394,6 +367,39 @@ namespace CapFrameX.ViewModel
 
 		private void OnSortModeChanged()
 			=> SortComparisonItems();
+
+		private void SetRowSeries()
+		{
+			ComparisonRowChartSeriesCollection = new SeriesCollection()
+			{
+				new RowSeries
+				{
+					Title = "Average",
+					Values = new ChartValues<double>(),
+					Fill = new SolidColorBrush(Color.FromRgb(34, 151, 243)),
+					HighlightFill = new SolidColorBrush(Color.FromRgb(122, 192, 247)),
+					DataLabels = true,
+					MaxRowHeigth = BarChartMaxRowHeight,
+					UseRelativeMode = true
+				}
+			};
+
+			if (SelectSecondaryMetric != EMetric.None)
+			{
+				// second metric
+				ComparisonRowChartSeriesCollection.Add(
+				new RowSeries
+				{
+					Title = SelectSecondaryMetric.GetDescription(),
+					Values = new ChartValues<double>(),
+					Fill = new SolidColorBrush(Color.FromRgb(241, 125, 32)),
+					HighlightFill = new SolidColorBrush(Color.FromRgb(245, 164, 98)),
+					DataLabels = true,
+					MaxRowHeigth = BarChartMaxRowHeight,
+					UseRelativeMode = true
+				});
+			}
+		}
 
 		private void OnSecondaryMetricChanged()
 		{
@@ -567,10 +573,13 @@ namespace CapFrameX.ViewModel
 			ComparisonModel.Series.Clear();
 			ComparisonLShapeCollection.Clear();
 
-			SetColumnChart();
-			SetFrametimeChart();
-			SetLShapeChart();
-			//Task.Factory.StartNew(() => SetLShapeChart());
+			if (SelectedChartItem.Header.ToString() == "Bar charts")
+				SetColumnChart();
+			else
+			{
+				SetFrametimeChart();
+				SetLShapeChart();
+			}
 		}
 
 		private void AddToColumnCharts(ComparisonRecordInfoWrapper wrappedComparisonInfo)
@@ -664,11 +673,10 @@ namespace CapFrameX.ViewModel
 
 		private void SetColumnChart()
 		{
-			// Average
-			ComparisonRowChartSeriesCollection[0].Values.Clear();
-
-			// secondary metric
-			ComparisonRowChartSeriesCollection[1].Values.Clear();
+			foreach (var item in ComparisonRowChartSeriesCollection)
+			{
+				item.Values.Clear();
+			}
 
 			for (int i = 0; i < ComparisonRecords.Count; i++)
 			{
@@ -692,11 +700,6 @@ namespace CapFrameX.ViewModel
 			{
 				AddToLShapeChart(ComparisonRecords[i]);
 			}
-		}
-
-		private async Task SetTaskDelay()
-		{
-			await Task.Delay(TimeSpan.FromMilliseconds(500));
 		}
 
 		private ComparisonRecordInfoWrapper GetWrappedRecordInfo(ComparisonRecordInfo comparisonRecordInfo)

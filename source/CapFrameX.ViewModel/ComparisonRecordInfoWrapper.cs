@@ -65,7 +65,7 @@ namespace CapFrameX.ViewModel
 
 		private void OnRemove()
 		{
-			if (!_viewModel.ComparisonModel.Series.Any())
+			if (!_viewModel.ComparisonRecords.Any())
 				return;
 
 			_viewModel.RemoveComparisonItem(this);
@@ -79,7 +79,7 @@ namespace CapFrameX.ViewModel
 				Color color = FrametimeGraphColor.Value;
 				var index = _viewModel.ComparisonRecords.IndexOf(this);
 
-				if (index < _viewModel.ComparisonModel.Series.Count && 
+				if (index < _viewModel.ComparisonModel.Series.Count &&
 					index < _viewModel.ComparisonLShapeCollection.Count)
 				{
 					var frametimesChart = _viewModel.ComparisonModel.Series[index] as OxyPlot.Series.LineSeries;
@@ -106,46 +106,57 @@ namespace CapFrameX.ViewModel
 			};
 		}
 
-
 		void IMouseEventHandler.OnMouseEnter()
 		{
-			if (!_viewModel.ComparisonModel.Series.Any())
+			if (!_viewModel.ComparisonRecords.Any())
 				return;
 
 			var index = _viewModel.ComparisonRecords.IndexOf(this);
 
-			var frametimesChart = _viewModel.ComparisonModel.Series[index] as OxyPlot.Series.LineSeries;
-			frametimesChart.StrokeThickness = 2;
-			_viewModel.ComparisonModel.InvalidatePlot(true);
-
-			// highlight bar chart chartpoint
-			var series = _viewModel.ComparisonRowChartSeriesCollection;
-
-			foreach (var item in series)
+			if (_viewModel.ComparisonModel.Series.Any())
 			{
-				var rowSeries = item as RowSeries;
-				rowSeries.HighlightChartPoint(_viewModel.ComparisonRecords.Count - index - 1);
+				var frametimesChart = _viewModel.ComparisonModel.Series[index] as OxyPlot.Series.LineSeries;
+				frametimesChart.StrokeThickness = 2;
+				_viewModel.ComparisonModel.InvalidatePlot(true);
+			}
+
+			if (_viewModel.ComparisonRowChartSeriesCollection.Any())
+			{
+				// highlight bar chart chartpoint
+				var series = _viewModel.ComparisonRowChartSeriesCollection;
+
+				foreach (var item in series)
+				{
+					var rowSeries = item as RowSeries;
+					rowSeries.HighlightChartPoint(_viewModel.ComparisonRecords.Count - index - 1);
+				}
 			}
 		}
 
 		void IMouseEventHandler.OnMouseLeave()
 		{
-			if (!_viewModel.ComparisonModel.Series.Any())
+			if (!_viewModel.ComparisonRecords.Any())
 				return;
 
 			var index = _viewModel.ComparisonRecords.IndexOf(this);
 
-			var frametimesChart = _viewModel.ComparisonModel.Series[index] as OxyPlot.Series.LineSeries;
-			frametimesChart.StrokeThickness = 1;
-			_viewModel.ComparisonModel.InvalidatePlot(true);
-
-			// unhighlight bar chart chartpoint
-			var series = _viewModel.ComparisonRowChartSeriesCollection;
-
-			foreach (var item in series)
+			if (_viewModel.ComparisonModel.Series.Any())
 			{
-				var rowSeries = item as RowSeries;
-				rowSeries.UnHighlightChartPoint(_viewModel.ComparisonRecords.Count - index - 1);
+				var frametimesChart = _viewModel.ComparisonModel.Series[index] as OxyPlot.Series.LineSeries;
+				frametimesChart.StrokeThickness = 1;
+				_viewModel.ComparisonModel.InvalidatePlot(true);
+			}
+
+			if (_viewModel.ComparisonRowChartSeriesCollection.Any())
+			{
+				// unhighlight bar chart chartpoint
+				var series = _viewModel.ComparisonRowChartSeriesCollection;
+
+				foreach (var item in series)
+				{
+					var rowSeries = item as RowSeries;
+					rowSeries.UnHighlightChartPoint(_viewModel.ComparisonRecords.Count - index - 1);
+				}
 			}
 		}
 	}

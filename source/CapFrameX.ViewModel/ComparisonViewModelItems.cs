@@ -2,6 +2,7 @@
 using CapFrameX.Statistics;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,6 +14,8 @@ namespace CapFrameX.ViewModel
 	{
 		private void AddComparisonItem(IFileRecordInfo recordInfo)
 		{
+			var stopwatchData = new Stopwatch();
+			stopwatchData.Start();
 			var comparisonRecordInfo = GetComparisonRecordInfoFromFileRecordInfo(recordInfo);
 			var wrappedComparisonRecordInfo = GetWrappedRecordInfo(comparisonRecordInfo);
 
@@ -25,9 +28,15 @@ namespace CapFrameX.ViewModel
 			// Update height of bar chart control here
 			UpdateBarChartHeight();
 			UpdateCuttingParameter();
+			stopwatchData.Stop();
+			Console.WriteLine("Duration data part: " + stopwatchData.ElapsedMilliseconds);
 
+			var stopwatchChart = new Stopwatch();
+			stopwatchChart.Start();
 			//Draw charts and performance parameter
 			UpdateCharts();
+			stopwatchChart.Stop();
+			Console.WriteLine("Duration chart part: " + stopwatchChart.ElapsedMilliseconds);
 		}
 
 		private void SetMetrics(ComparisonRecordInfoWrapper wrappedComparisonRecordInfo)
@@ -75,19 +84,7 @@ namespace CapFrameX.ViewModel
 			HasComparisonItems = ComparisonRecords.Any();
 			UpdateCuttingParameter();
 			UpdateCharts();
-
-			// Do with delay
-			var context = TaskScheduler.FromCurrentSynchronizationContext();
-			Task.Run(async () =>
-			{
-				await SetTaskDelay().ContinueWith(_ =>
-				{
-					Application.Current.Dispatcher.Invoke(new Action(() =>
-					{
-						BarChartHeight = 40 + (2 * BarChartMaxRowHeight + 12) * ComparisonRecords.Count;
-					}));
-				}, CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, context);
-			});
+			BarChartHeight = 40 + (2 * BarChartMaxRowHeight + 12) * ComparisonRecords.Count;
 
 			ComparisonModel.InvalidatePlot(true);
 		}
