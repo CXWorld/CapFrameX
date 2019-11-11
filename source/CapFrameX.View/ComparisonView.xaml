@@ -56,7 +56,7 @@
                                         Visibility="{Binding HasComparisonItems, Converter={StaticResource TrueToVisibleConverter}}" DisableAnimations="True"
 										Hoverable="False" DataTooltip="{x:Null}" LegendLocation="Top">
 							<lvc:CartesianChart.AxisX>
-								<lvc:Axis Foreground="Transparent"></lvc:Axis>
+								<lvc:Axis MinValue="0" Foreground="Transparent"></lvc:Axis>
 							</lvc:CartesianChart.AxisX>
 							<lvc:CartesianChart.AxisY>
 								<lvc:Axis Labels="{Binding ComparisonRowChartLabels}" FontSize="12" Foreground="Black">
@@ -294,7 +294,7 @@
 													<Button Grid.Row="0" Grid.Column="2" Margin="0 -2 2 0" Padding="0" Width="12" Height="12" HorizontalAlignment="Right" VerticalAlignment="Top" BorderThickness="0" Background="Transparent" Foreground="Black"
 															Content="{materialDesign:PackIcon Close, Size=12}" Command="{Binding RemoveCommand}">
 													</Button>
-													<ToggleButton Grid.Row="1" Grid.Column="2" Margin="0 0 -2 2" Width="20" Height="20" HorizontalAlignment="Right" VerticalAlignment="Bottom" 
+													<ToggleButton Grid.Row="1" Grid.Column="2" Margin="0 0 -2 6" Width="20" Height="20" HorizontalAlignment="Right" VerticalAlignment="Bottom" 
 																  ToolTip="MaterialDesignActionLightToggleButton" Style="{StaticResource MaterialDesignActionToggleButton}"
 																  Visibility="{Binding ElementName=ComparisonRecordItemControl, Path=DataContext.ColorPickerVisibility, Converter={StaticResource FalseToHiddenConverter}}"
 																  IsChecked="{Binding IsHideModeSelected}">

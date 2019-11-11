@@ -640,10 +640,15 @@ namespace CapFrameX.ViewModel
 					break;
 			}
 
-			var color = wrappedComparisonInfo.IsHideModeSelected ? Colors.Transparent : wrappedComparisonInfo.FrametimeGraphColor.Value;
-			var frametimeSeries = new OxyPlot.Series.LineSeries { Title = chartTitle, StrokeThickness = 1, Color = OxyColor.FromRgb(color.R, color.G, color.B) };
-			frametimeSeries.Points.AddRange(frametimePoints.Select(pnt => new DataPoint(pnt.X, pnt.Y)));
+			var color = wrappedComparisonInfo.FrametimeGraphColor.Value;
+			var frametimeSeries = new OxyPlot.Series.LineSeries 
+			{ 
+				Title = chartTitle, StrokeThickness = 1, 
+				Color = wrappedComparisonInfo.IsHideModeSelected ?
+					OxyColors.Transparent : OxyColor.FromRgb(color.R, color.G, color.B) 
+			};
 
+			frametimeSeries.Points.AddRange(frametimePoints.Select(pnt => new DataPoint(pnt.X, pnt.Y)));
 			ComparisonModel.Series.Add(frametimeSeries);
 		}
 
