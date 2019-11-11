@@ -274,10 +274,10 @@
 																  Visibility="{Binding ElementName=ComparisonRecordItemControl, Path=DataContext.ColorPickerVisibility, Converter={StaticResource FalseToHiddenConverter}}"
 																  IsChecked="{Binding IsHideModeSelected}">
 														<ToggleButton.Content>
-															<materialDesign:PackIcon Kind="HideOutline" Width="15" Height="15"/>
+															<materialDesign:PackIcon Kind="EyeOutline" Width="15" Height="15"/>
 														</ToggleButton.Content>
 														<materialDesign:ToggleButtonAssist.OnContent>
-															<materialDesign:PackIcon Kind="EyeOutline" Width="15" Height="15"/>
+															<materialDesign:PackIcon Kind="HideOutline" Width="15" Height="15"/>
 														</materialDesign:ToggleButtonAssist.OnContent>
 													</ToggleButton>
 												</Grid>
