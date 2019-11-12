@@ -214,7 +214,7 @@
 					<ColumnDefinition Width="1*" />
 					<ColumnDefinition Width="1*" />
 				</Grid.ColumnDefinitions>
-				<lvc:CartesianChart Grid.Column="0" Margin="0 5 0 5" Series="{Binding StatisticCollection}" LegendLocation="Bottom"
+				<lvc:CartesianChart Grid.Column="0" Margin="15 10 0 5" Series="{Binding StatisticCollection}" LegendLocation="Bottom"
 									Tag="{Binding ElementName=DataViewUserControl, Path=DataContext}">
 					<lvc:CartesianChart.ContextMenu>
 						<ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
@@ -225,7 +225,7 @@
 						<lvc:Axis Title="FPS" FontSize="11" MinValue="0" LabelFormatter="{Binding ParameterFormatter}" Foreground="Black"></lvc:Axis>
 					</lvc:CartesianChart.AxisX>
 					<lvc:CartesianChart.AxisY>
-						<lvc:Axis Title="Statistical Parameters" FontSize="11" Labels="{Binding ParameterLabels}" Foreground="Black">
+						<lvc:Axis FontSize="11" Labels="{Binding ParameterLabels}" Foreground="Black">
 							<lvc:Axis.Separator>
 								<lvc:Separator Step="1" IsEnabled="False"></lvc:Separator>
 							</lvc:Axis.Separator>

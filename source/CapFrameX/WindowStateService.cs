@@ -15,7 +15,6 @@ namespace CapFrameX
 
 		static WindowStatServices()
 		{
-			// tell Jot how to track Window objects
 			Tracker.Configure<Window>()
 				.Id(w => w.Name)
 				.Properties(w => new { w.Height, w.Width, w.Left, w.Top, w.WindowState })

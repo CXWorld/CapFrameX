@@ -48,6 +48,9 @@
 					  dragdrop:DragDrop.UseDefaultDragAdorner="True"
 					  dragdrop:DragDrop.DefaultDragAdornerOpacity="0.5"
 					  dragdrop:DragDrop.UseDefaultEffectDataTemplate="False">
+				<DataGrid.InputBindings>
+					<KeyBinding Key="Delete" Command="{Binding Path=DeleteRecordCommand}" />
+				</DataGrid.InputBindings>
 				<DataGrid.ContextMenu>
 					<ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
 						<MenuItem Header="Add to ignore list" Command="{Binding AddToIgnoreListCommand}"/>

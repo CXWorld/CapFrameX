@@ -579,8 +579,7 @@ namespace CapFrameX.ViewModel
 			{
 				var newLine = Environment.NewLine;
 				infoText += $"{fileRecordInfo.FileInfo.LastWriteTime.ToShortDateString()} { fileRecordInfo.FileInfo.LastWriteTime.ToString("HH:mm:ss")}" + newLine +
-							$"{session.FrameTimes.Count} frames in {Math.Round(session.LastFrameTime, 2).ToString(CultureInfo.InvariantCulture)}s" + newLine +
-							$"context type '{SelectedComparisonContext.ToString()}'";
+							$"{session.FrameTimes.Count} frames in {Math.Round(session.LastFrameTime, 2).ToString(CultureInfo.InvariantCulture)}s";
 			}
 
 			return new ComparisonRecordInfo
@@ -702,7 +701,8 @@ namespace CapFrameX.ViewModel
 				StrokeThickness = 1,
 				LineSmoothness = 1,
 				PointGeometrySize = 5,
-				PointGeometry = DefaultGeometries.Square
+				PointGeometry = DefaultGeometries.Square,
+				LabelPoint = chartPoint => string.Format(CultureInfo.InvariantCulture, "{0:0.##}", chartPoint.Y, "ms")
 			});
 		}
 

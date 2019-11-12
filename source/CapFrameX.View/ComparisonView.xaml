@@ -96,14 +96,11 @@
 								ToolTip="Cut first seconds"/>
                         <TextBox Grid.Column="1" HorizontalAlignment="Center" IsReadOnly="True" Margin="20 0 20 3"
 								 Style="{StaticResource MaterialDesignFloatingHintTextBox}" Text="{Binding RemainingRecordingTime}">
-                            <materialDesign:HintAssist.Hint>
-                                <StackPanel Orientation="Horizontal" Margin="-2 0 0 0">
-                                    <materialDesign:PackIcon Kind="ChartLine" />
-                                    <TextBlock Margin="3 0 0 0">
-										remaining recording time
-                                    </TextBlock>
-                                </StackPanel>
-                            </materialDesign:HintAssist.Hint>
+							<materialDesign:HintAssist.Hint>
+								<TextBlock>
+									Remaining time [s]
+								</TextBlock>
+							</materialDesign:HintAssist.Hint>
                         </TextBox>
                         <Slider Grid.Column="2" Margin="0 0 10 10" Minimum="0"
 								IsDirectionReversed="True"
@@ -159,7 +156,7 @@
 					</DataTemplate>
 				</ComboBox.ItemTemplate>
 			</ComboBox>
-			<ComboBox Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0 0 30 5" materialDesign:HintAssist.Hint="Secondary metric"
+			<ComboBox Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0 0 30 5" materialDesign:HintAssist.Hint="Comparison context"
 					materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="150"
 					ItemsSource="{Binding ComparisonContextItems}" SelectedItem="{Binding SelectedComparisonContext}">
 				<ComboBox.ItemTemplate>
@@ -239,7 +236,7 @@
 																   FontSize="12"
 																   LineHeight="14"
 																   MaxHeight="52"/>
-													<xctk:ColorPicker Width="50" Height="25" Grid.Row="1" Grid.Column="1" Margin="0 10 0 0" Background="#e6e6e6" SelectedColor="{Binding FrametimeGraphColor}" 
+													<xctk:ColorPicker Width="50" Height="25" Grid.Row="1" Grid.Column="1" Margin="0 0 0 0" Background="#e6e6e6" SelectedColor="{Binding FrametimeGraphColor}" 
 																      SelectedColorChanged="SelectedColorChanged" DisplayColorAndName="False" AvailableColorsSortingMode="HueSaturationBrightness" 
 																	  Visibility="{Binding ElementName=ComparisonRecordItemControl, Path=DataContext.ColorPickerVisibility, Converter={StaticResource FalseToHiddenConverter}}">
 														<xctk:ColorPicker.ButtonStyle>

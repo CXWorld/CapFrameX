@@ -100,6 +100,9 @@ namespace CapFrameX.ViewModel.DataContext
 
 		public void SetFpsChart(IList<double> fps)
 		{
+			if (fps == null || !fps.Any())
+				return;
+
 			int count = fps.Count;
 			var fpsDataPoints = fps.Select((x, i) => new DataPoint(i, x));
 			var yMin = fps.Min();

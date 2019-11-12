@@ -123,7 +123,9 @@ namespace CapFrameX.ViewModel
 
         public ICommand AddGpuInfoCommand { get; }
 
-        public ControlViewModel(IRecordDirectoryObserver recordObserver,
+		public ICommand DeleteRecordCommand { get; }
+
+		public ControlViewModel(IRecordDirectoryObserver recordObserver,
                                 IEventAggregator eventAggregator,
                                 IAppConfiguration appConfiguration,
                                 IRecordDataProvider recordDataProvider)
@@ -141,8 +143,9 @@ namespace CapFrameX.ViewModel
             CancelEditingDialogCommand = new DelegateCommand(OnCancelEditingDialog);
             AddCpuInfoCommand = new DelegateCommand(OnAddCpuInfo);
             AddGpuInfoCommand = new DelegateCommand(OnAddGpuInfo);
+			DeleteRecordCommand = new DelegateCommand(OnPressDeleteKey);
 
-            HasValidSource = recordObserver.HasValidSource;
+			HasValidSource = recordObserver.HasValidSource;
 
             Task.Factory.StartNew(() =>
             {
@@ -179,7 +182,9 @@ namespace CapFrameX.ViewModel
 
             File.Delete(SelectedRecordInfo.FullPath);
             SelectedRecordInfo = null;
-            _updateSessionEvent.Publish(new ViewMessages.UpdateSession(null, null));
+			ResetInfoEditBoxes();
+
+			_updateSessionEvent.Publish(new ViewMessages.UpdateSession(null, null));
         }
 
         private void OnOpenEditingDialog()
@@ -214,12 +219,17 @@ namespace CapFrameX.ViewModel
             }
             else
             {
-                CustomCpuDescription = "";
-                CustomGpuDescription = "";
-                CustomGameName = "";
-                CustomComment = "";
-            }
+				ResetInfoEditBoxes();
+			}
         }
+
+		private void ResetInfoEditBoxes()
+		{
+			CustomCpuDescription = "";
+			CustomGpuDescription = "";
+			CustomGameName = "";
+			CustomComment = "";
+		}
 
         private void OnAcceptEditingDialog()
         {
@@ -283,7 +293,10 @@ namespace CapFrameX.ViewModel
             CustomGpuDescription = PresentMonInterface.SystemInfo.GetGraphicCardName();
         }
 
-        private void AddToRecordInfoList(IFileRecordInfo recordFileInfo, bool insertAtFirst = false)
+		private void OnPressDeleteKey()
+			=> OnDeleteRecordFile();
+
+		private void AddToRecordInfoList(IFileRecordInfo recordFileInfo, bool insertAtFirst = false)
         {
             if (recordFileInfo != null)
             {
