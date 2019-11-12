@@ -35,7 +35,7 @@
 			<mvvm:BoolToVisibilityConverter x:Key="FalseToHiddenConverter" FalseValue="Hidden" TrueValue="Visible"/>
 			<mvvm:BoolToVisibilityConverter x:Key="TrueToVisibleConverter" FalseValue="Collapsed" TrueValue="Visible"/>
 			<mvvm:BoolToVisibilityConverter x:Key="TrueToCollapsedConverter" FalseValue="Visible" TrueValue="Collapsed"/>
-			<mvvm:AddValueConverter x:Key="AddValueConverter" Offset="-100"/>
+			<mvvm:AddValueConverter x:Key="AddValueConverter" Offset="-105"/>
 		</ResourceDictionary>
 	</UserControl.Resources>
 	<Grid x:Name="ComparisonAreaGrid">
@@ -161,48 +161,14 @@
 		</Grid>
 		<StackPanel Margin="5 10 5 0" Grid.Column="1" Grid.RowSpan="2" Orientation="Vertical">
 			<TextBox IsReadOnly="True" Background="#e6e6e6" materialDesign:HintAssist.Hint="Comparisons" />
-			<Border Margin="0 5 0 0" BorderThickness="1" BorderBrush="#CCC" VerticalAlignment="Stretch">
+			<Border Margin="0 5 0 5" BorderThickness="1" BorderBrush="#CCC" VerticalAlignment="Stretch">
 				<Grid Background="#e6e6e6">
 					<Grid.RowDefinitions>
-						<RowDefinition Height="40"></RowDefinition>
-						<RowDefinition Height="Auto"></RowDefinition>
 						<RowDefinition Height="1*"></RowDefinition>
+						<RowDefinition Height="Auto"></RowDefinition>
+						<RowDefinition Height="40"></RowDefinition>
 					</Grid.RowDefinitions>
 					<Grid Grid.Row="0">
-						<StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-							<materialDesign:PopupBox StaysOpen="True"
-													 VerticalAlignment="Center"												 
-													 Width="30" Height="30"
-													 ToggleContent="{materialDesign:PackIcon BallotOutline, Size=24}"
-													 Margin="10 0 0 0"
-													 PlacementMode="BottomAndAlignCentres"
-													 ToolTip="Set comparison context">
-								<materialDesign:PopupBox.ToggleCheckedContent>
-									<materialDesign:PackIcon Kind="Pencil" Width="24" Height="24" />
-								</materialDesign:PopupBox.ToggleCheckedContent>
-								<StackPanel>
-									<Button Command="{Binding DateTimeContextCommand}" Content="{materialDesign:PackIcon TimeTable, Size=24}" ToolTip="Date and time"/>
-									<Button Command="{Binding CpuContextCommand}" ToolTip="CPU">
-										CPU
-									</Button>
-									<Button Command="{Binding GpuContextCommand}" ToolTip="GPU">
-										GPU
-									</Button>
-									<Button Command="{Binding CustomContextCommand}" Content="{materialDesign:PackIcon CommentUser, Size=24}" ToolTip="Custom comments"/>
-								</StackPanel>
-							</materialDesign:PopupBox>
-						</StackPanel>
-						<Button Style="{StaticResource MaterialDesignFloatingActionMiniButton}"
-								Margin="0 0 10 0"
-								HorizontalAlignment="Right"
-								Width="30" Height="30"
-								ToolTip="Remove all comparisons"
-								Command="{Binding RemoveAllComparisonsCommand}">
-							<materialDesign:PackIcon Kind="PlaylistRemove" Height="24" Width="24" />
-						</Button>
-					</Grid>
-					<Separator Grid.Row="1" Margin="5 0 5 0" Style="{StaticResource MaterialDesignDarkSeparator}"/>
-					<Grid Grid.Row="2">
 						<Border VerticalAlignment="Center" HorizontalAlignment="Center">
 							<Image Grid.Row="0" Visibility="{Binding HasComparisonItems, Converter={StaticResource TrueToCollapsedConverter}}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
 									   Name="ComparisonImage"
@@ -263,7 +229,7 @@
 																   FontSize="12"
 																   LineHeight="14"
 																   MaxHeight="52"/>
-													<xctk:ColorPicker Width="60" Height="25" Grid.Row="1" Grid.Column="1" Margin="0 10 0 0" Background="#e6e6e6" SelectedColor="{Binding FrametimeGraphColor}" 
+													<xctk:ColorPicker Width="50" Height="25" Grid.Row="1" Grid.Column="1" Margin="0 10 0 0" Background="#e6e6e6" SelectedColor="{Binding FrametimeGraphColor}" 
 																      SelectedColorChanged="SelectedColorChanged" DisplayColorAndName="False" AvailableColorsSortingMode="HueSaturationBrightness" 
 																	  Visibility="{Binding ElementName=ComparisonRecordItemControl, Path=DataContext.ColorPickerVisibility, Converter={StaticResource FalseToHiddenConverter}}">
 														<xctk:ColorPicker.ButtonStyle>
@@ -312,6 +278,41 @@
 								</ItemsControl>
 							</ScrollViewer>
 						</DockPanel>
+					</Grid>
+					<Separator Grid.Row="1" Margin="5 0 5 0" Style="{StaticResource MaterialDesignDarkSeparator}"/>
+					<Grid Grid.Row="2">
+						<!--<StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+							<materialDesign:PopupBox StaysOpen="True"
+													 VerticalAlignment="Center"												 
+													 Width="30" Height="30"
+													 ToggleContent="{materialDesign:PackIcon BallotOutline, Size=24}"
+													 Margin="10 0 0 0"
+													 PlacementMode="BottomAndAlignCentres"
+													 ToolTip="Set comparison context">
+								<materialDesign:PopupBox.ToggleCheckedContent>
+									<materialDesign:PackIcon Kind="Pencil" Width="24" Height="24" />
+								</materialDesign:PopupBox.ToggleCheckedContent>
+								<StackPanel>
+									<Button Command="{Binding DateTimeContextCommand}" Content="{materialDesign:PackIcon TimeTable, Size=24}" ToolTip="Date and time"/>
+									<Button Command="{Binding CpuContextCommand}" ToolTip="CPU">
+										CPU
+									</Button>
+									<Button Command="{Binding GpuContextCommand}" ToolTip="GPU">
+										GPU
+									</Button>
+									<Button Command="{Binding CustomContextCommand}" Content="{materialDesign:PackIcon CommentUser, Size=24}" ToolTip="Custom comments"/>
+								</StackPanel>
+							</materialDesign:PopupBox>
+						</StackPanel>-->
+						<Button Style="{StaticResource MaterialDesignFloatingActionMiniButton}"
+								Margin="0 0 10 0"
+								HorizontalAlignment="Center"
+								VerticalAlignment="Center"
+								Width="30" Height="30"
+								ToolTip="Remove all comparisons"
+								Command="{Binding RemoveAllComparisonsCommand}">
+							<materialDesign:PackIcon Kind="PlaylistRemove" Height="24" Width="24" />
+						</Button>
 					</Grid>
 				</Grid>
 			</Border>

@@ -167,7 +167,7 @@
 							Width="20" Height="20"
 							ToolTip="Add CPU info"
 							Command="{Binding AddCpuInfoCommand}">
-					<materialDesign:PackIcon Kind="AddBox" Width="15" Height="15"/>
+					<materialDesign:PackIcon Kind="Cached" Width="15" Height="15"/>
 				</Button>
 				<TextBox Grid.Row="1" Grid.Column="0" wpf:HintAssist.Hint="Custom GPU description" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
 							Margin="5 6 5 0" FontSize="14" Text="{Binding CustomGpuDescription, UpdateSourceTrigger=PropertyChanged}"/>
@@ -176,7 +176,7 @@
 							Width="20" Height="20"
 							ToolTip="Add GPU info"
 							Command="{Binding AddGpuInfoCommand}">
-					<materialDesign:PackIcon Kind="AddBox" Width="15" Height="15"/>
+					<materialDesign:PackIcon Kind="Cached" Width="15" Height="15"/>
 				</Button>
                 <TextBox Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" wpf:HintAssist.Hint="Game" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
 						 Margin="5 6 5 0" FontSize="14" Text="{Binding CustomGameName, UpdateSourceTrigger=PropertyChanged}"/>
