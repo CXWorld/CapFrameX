@@ -15,6 +15,8 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Reactive;
+using System.Reactive.Subjects;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -75,7 +77,9 @@ namespace CapFrameX.ViewModel
         public Func<ChartPoint, string> PieChartPointLabel { get; } =
             chartPoint => string.Format(CultureInfo.InvariantCulture, "{0:0.##} ({1:P})", chartPoint.Y, chartPoint.Participation);
 
-        public string[] ParameterLabels
+		public ISubject<Unit> ResetLShapeChart = new Subject<Unit>();
+
+		public string[] ParameterLabels
         {
             get { return _parameterLabels; }
             set
@@ -583,7 +587,9 @@ namespace CapFrameX.ViewModel
                             Math.Round(point.Y, 1).ToString(CultureInfo.InvariantCulture) + " ms"
                     }
                 };
-            }));
+
+				ResetLShapeChart.OnNext(default);
+			}));
         }
 
         private void ResetData()

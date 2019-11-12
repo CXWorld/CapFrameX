@@ -19,6 +19,8 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
+using System.Reactive;
+using System.Reactive.Subjects;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -70,6 +72,8 @@ namespace CapFrameX.ViewModel
 		public Array ComparisonContextItems => Enum.GetValues(typeof(EComparisonContext))
 												   .Cast<EComparisonContext>()
 												   .ToArray();
+
+		public ISubject<Unit> ResetLShapeChart = new Subject<Unit>();
 
 		public ComparisonColorManager ComparisonColorManager
 			=> _comparisonColorManager;
@@ -731,6 +735,8 @@ namespace CapFrameX.ViewModel
 			{
 				AddToLShapeChart(ComparisonRecords[i]);
 			}
+
+			ResetLShapeChart.OnNext(default);
 		}
 
 		private ComparisonRecordInfoWrapper GetWrappedRecordInfo(ComparisonRecordInfo comparisonRecordInfo)

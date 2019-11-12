@@ -9,6 +9,8 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.IO;
+using System.Reactive.Linq;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -32,6 +34,12 @@ namespace CapFrameX.View
 				DataContext = new DataViewModel(new FrametimeStatisticProvider(appConfiguration),
 					new FrametimeAnalyzer(), new EventAggregator(), appConfiguration);
 			}
+
+			var context = SynchronizationContext.Current;
+			(DataContext as DataViewModel)?.ResetLShapeChart
+				.ObserveOn(context)
+				.SubscribeOn(context)
+				.Subscribe(dummy => ResetLShapeChart());
 		}		
 
 		private void Chart_OnDataClick(object sender, ChartPoint chartpoint)
@@ -52,6 +60,9 @@ namespace CapFrameX.View
 		}
 
 		private void ResetChart_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
+			=> ResetLShapeChart();
+
+		private void ResetLShapeChart()
 		{
 			//Use the axis MinValue/MaxValue properties to specify the values to display.
 			//use double.Nan to clear it.
