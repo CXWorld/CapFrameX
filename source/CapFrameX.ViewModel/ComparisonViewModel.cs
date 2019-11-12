@@ -37,7 +37,6 @@ namespace CapFrameX.ViewModel
 		private readonly IEventAggregator _eventAggregator;
 		private readonly IAppConfiguration _appConfiguration;
 
-		private EComparisonContext _comparisonContext = EComparisonContext.DateTime;
 		private PlotModel _comparisonModel;
 		private SeriesCollection _comparisonRowChartSeriesCollection;
 		private string[] _comparisonRowChartLabels;
@@ -61,11 +60,16 @@ namespace CapFrameX.ViewModel
 		private Func<double, string> _comparisonColumnChartFormatter;
 		private bool _colorPickerVisibility;
 		private EMetric _selectSecondaryMetric = EMetric.P1;
+		private EComparisonContext _selectedComparisonContext = EComparisonContext.DateTime;
 
 		public Array MetricItems => Enum.GetValues(typeof(EMetric))
 										.Cast<EMetric>()
 										.Where(metric => metric != EMetric.Average)
 										.ToArray();
+
+		public Array ComparisonContextItems => Enum.GetValues(typeof(EComparisonContext))
+												   .Cast<EComparisonContext>()
+												   .ToArray();
 
 		public ComparisonColorManager ComparisonColorManager
 			=> _comparisonColorManager;
@@ -78,6 +82,17 @@ namespace CapFrameX.ViewModel
 				_selectSecondaryMetric = value;
 				RaisePropertyChanged();
 				OnSecondaryMetricChanged();
+			}
+		}
+
+		public EComparisonContext SelectedComparisonContext
+		{
+			get { return _selectedComparisonContext; }
+			set
+			{
+				_selectedComparisonContext = value;
+				RaisePropertyChanged();
+				OnComparisonContextChanged();
 			}
 		}
 
@@ -271,14 +286,6 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-		public ICommand DateTimeContextCommand { get; }
-
-		public ICommand CpuContextCommand { get; }
-
-		public ICommand GpuContextCommand { get; }
-
-		public ICommand CustomContextCommand { get; }
-
 		public ICommand RemoveAllComparisonsCommand { get; }
 
 		public ComparisonCollection ComparisonRecords { get; private set; }
@@ -296,10 +303,6 @@ namespace CapFrameX.ViewModel
 			_eventAggregator = eventAggregator;
 			_appConfiguration = appConfiguration;
 
-			DateTimeContextCommand = new DelegateCommand(OnDateTimeContext);
-			CpuContextCommand = new DelegateCommand(OnCpuContext);
-			GpuContextCommand = new DelegateCommand(OnGpuContex);
-			CustomContextCommand = new DelegateCommand(OnCustomContex);
 			RemoveAllComparisonsCommand = new DelegateCommand(OnRemoveAllComparisons);
 
 			ComparisonColumnChartFormatter = value => value.ToString(string.Format("F{0}",
@@ -446,6 +449,28 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
+		private void OnComparisonContextChanged()
+		{
+			switch (SelectedComparisonContext)
+			{
+				case EComparisonContext.DateTime:
+					OnDateTimeContext();
+					break;
+				case EComparisonContext.CPU:
+					OnCpuContext();
+					break;
+				case EComparisonContext.GPU:
+					OnGpuContex();
+					break;
+				case EComparisonContext.Custom:
+					OnCustomContex();
+					break;
+				default:
+					OnDateTimeContext();
+					break;
+			} 			
+		}
+
 		private void UpdateCuttingParameter()
 		{
 			if (ComparisonRecords == null || !ComparisonRecords.Any())
@@ -551,7 +576,7 @@ namespace CapFrameX.ViewModel
 				var newLine = Environment.NewLine;
 				infoText += $"{fileRecordInfo.FileInfo.LastWriteTime.ToShortDateString()} { fileRecordInfo.FileInfo.LastWriteTime.ToString("HH:mm:ss")}" + newLine +
 							$"{session.FrameTimes.Count} frames in {Math.Round(session.LastFrameTime, 2).ToString(CultureInfo.InvariantCulture)}s" + newLine +
-							$"context type '{_comparisonContext.ToString()}'";
+							$"context type '{SelectedComparisonContext.ToString()}'";
 			}
 
 			return new ComparisonRecordInfo
@@ -591,7 +616,7 @@ namespace CapFrameX.ViewModel
 			if (ComparisonRowChartSeriesCollection.Count > 1)
 				ComparisonRowChartSeriesCollection[1].Values.Insert(0, wrappedComparisonInfo.WrappedRecordInfo.SecondMetric);
 
-			switch (_comparisonContext)
+			switch (SelectedComparisonContext)
 			{
 				case EComparisonContext.DateTime:
 					SetLabelDateTimeContext();
@@ -621,7 +646,7 @@ namespace CapFrameX.ViewModel
 
 			var chartTitle = string.Empty;
 
-			switch (_comparisonContext)
+			switch (SelectedComparisonContext)
 			{
 				case EComparisonContext.DateTime:
 					chartTitle = GetLabelDateTimeContext(wrappedComparisonInfo, GetMaxDateTimeAlignment());

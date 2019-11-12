@@ -20,7 +20,7 @@ namespace CapFrameX.ViewModel
 			}
 			else
 			{
-				switch (_comparisonContext)
+				switch (_selectedComparisonContext)
 				{
 					case EComparisonContext.DateTime:
 						if (ComparisonModel.Series.Count == ComparisonRecords.Count)
@@ -103,28 +103,24 @@ namespace CapFrameX.ViewModel
 
 		private void OnCustomContex()
 		{
-			_comparisonContext = EComparisonContext.Custom;
 			SetLabelCustomContext();
 			ComparisonModel.InvalidatePlot(true);
 		}
 
 		private void OnGpuContex()
 		{
-			_comparisonContext = EComparisonContext.GPU;
 			SetLabelGpuContext();
 			ComparisonModel.InvalidatePlot(true);
 		}
 
 		private void OnCpuContext()
 		{
-			_comparisonContext = EComparisonContext.CPU;
 			SetLabelCpuContext();
 			ComparisonModel.InvalidatePlot(true);
 		}
 
 		private void OnDateTimeContext()
 		{
-			_comparisonContext = EComparisonContext.DateTime;
 			SetLabelDateTimeContext();
 			ComparisonModel.InvalidatePlot(true);
 		}

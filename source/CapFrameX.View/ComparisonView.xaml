@@ -35,13 +35,13 @@
 			<mvvm:BoolToVisibilityConverter x:Key="FalseToHiddenConverter" FalseValue="Hidden" TrueValue="Visible"/>
 			<mvvm:BoolToVisibilityConverter x:Key="TrueToVisibleConverter" FalseValue="Collapsed" TrueValue="Visible"/>
 			<mvvm:BoolToVisibilityConverter x:Key="TrueToCollapsedConverter" FalseValue="Visible" TrueValue="Collapsed"/>
-			<mvvm:AddValueConverter x:Key="AddValueConverter" Offset="-105"/>
+			<mvvm:AddValueConverter x:Key="AddValueConverter" Offset="-115"/>
 		</ResourceDictionary>
 	</UserControl.Resources>
 	<Grid x:Name="ComparisonAreaGrid">
 		<Grid.RowDefinitions>
 			<RowDefinition Height="1*"/>
-			<RowDefinition Height="50"/>
+			<RowDefinition Height="60"/>
 		</Grid.RowDefinitions>
 		<Grid.ColumnDefinitions>
 			<ColumnDefinition Width="1*"></ColumnDefinition>
@@ -136,6 +136,7 @@
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition Width="Auto"></ColumnDefinition>
 				<ColumnDefinition Width="140"></ColumnDefinition>
+				<ColumnDefinition Width="1*"></ColumnDefinition>
 			</Grid.ColumnDefinitions>
 			<StackPanel VerticalAlignment="Center" Grid.Column="0" Margin="25 8 0 0" Orientation="Horizontal">
 				<TextBlock VerticalAlignment="Center">Sort mode:</TextBlock>
@@ -158,6 +159,15 @@
 					</DataTemplate>
 				</ComboBox.ItemTemplate>
 			</ComboBox>
+			<ComboBox Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0 0 30 5" materialDesign:HintAssist.Hint="Secondary metric"
+					materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="150"
+					ItemsSource="{Binding ComparisonContextItems}" SelectedItem="{Binding SelectedComparisonContext}">
+				<ComboBox.ItemTemplate>
+					<DataTemplate>
+						<TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}"/>
+					</DataTemplate>
+				</ComboBox.ItemTemplate>
+			</ComboBox>
 		</Grid>
 		<StackPanel Margin="5 10 5 0" Grid.Column="1" Grid.RowSpan="2" Orientation="Vertical">
 			<TextBox IsReadOnly="True" Background="#e6e6e6" materialDesign:HintAssist.Hint="Comparisons" />
@@ -166,7 +176,7 @@
 					<Grid.RowDefinitions>
 						<RowDefinition Height="1*"></RowDefinition>
 						<RowDefinition Height="Auto"></RowDefinition>
-						<RowDefinition Height="40"></RowDefinition>
+						<RowDefinition Height="50"></RowDefinition>
 					</Grid.RowDefinitions>
 					<Grid Grid.Row="0">
 						<Border VerticalAlignment="Center" HorizontalAlignment="Center">
@@ -281,29 +291,6 @@
 					</Grid>
 					<Separator Grid.Row="1" Margin="5 0 5 0" Style="{StaticResource MaterialDesignDarkSeparator}"/>
 					<Grid Grid.Row="2">
-						<!--<StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-							<materialDesign:PopupBox StaysOpen="True"
-													 VerticalAlignment="Center"												 
-													 Width="30" Height="30"
-													 ToggleContent="{materialDesign:PackIcon BallotOutline, Size=24}"
-													 Margin="10 0 0 0"
-													 PlacementMode="BottomAndAlignCentres"
-													 ToolTip="Set comparison context">
-								<materialDesign:PopupBox.ToggleCheckedContent>
-									<materialDesign:PackIcon Kind="Pencil" Width="24" Height="24" />
-								</materialDesign:PopupBox.ToggleCheckedContent>
-								<StackPanel>
-									<Button Command="{Binding DateTimeContextCommand}" Content="{materialDesign:PackIcon TimeTable, Size=24}" ToolTip="Date and time"/>
-									<Button Command="{Binding CpuContextCommand}" ToolTip="CPU">
-										CPU
-									</Button>
-									<Button Command="{Binding GpuContextCommand}" ToolTip="GPU">
-										GPU
-									</Button>
-									<Button Command="{Binding CustomContextCommand}" Content="{materialDesign:PackIcon CommentUser, Size=24}" ToolTip="Custom comments"/>
-								</StackPanel>
-							</materialDesign:PopupBox>
-						</StackPanel>-->
 						<Button Style="{StaticResource MaterialDesignFloatingActionMiniButton}"
 								Margin="0 0 10 0"
 								HorizontalAlignment="Center"

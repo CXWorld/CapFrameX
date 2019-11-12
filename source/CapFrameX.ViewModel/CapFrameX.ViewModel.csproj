@@ -127,7 +127,6 @@
     <Compile Include="DataContext\GraphDataContextBase.cs" />
     <Compile Include="DataViewModelParameterSettings.cs" />
     <Compile Include="EComparisonContext.cs" />
-    <Compile Include="EComparisonNumericMode.cs" />
     <Compile Include="ColorbarViewModel.cs" />
     <Compile Include="ControlViewModel.cs" />
     <Compile Include="DataViewModel.cs" />
