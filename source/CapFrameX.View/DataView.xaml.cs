@@ -54,11 +54,6 @@ namespace CapFrameX.View
 			selectedSeries.PushOut = 8;
 		}
 
-		private void GitHubButton_Click(object sender, RoutedEventArgs e)
-		{
-			System.Diagnostics.Process.Start("https://github.com/DevTechProfile/CapFrameX");
-		}
-
 		private void ResetChart_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
 			=> ResetLShapeChart();
 

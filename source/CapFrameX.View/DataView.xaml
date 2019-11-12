@@ -50,13 +50,7 @@
 			<RowDefinition Height="1*"></RowDefinition>
 		</Grid.RowDefinitions>
 		<Grid Grid.Row="0">
-			<Button Margin="0 0 0 0" Style="{DynamicResource MaterialDesignFlatButton}" HorizontalAlignment="Center" VerticalAlignment="Center"
-                    x:Name="GitHubButton" Click="GitHubButton_Click">
-				<StackPanel Orientation="Horizontal">
-					<materialDesign:PackIcon Kind="GithubCircle" />
-					<TextBlock Margin="8 0 0 0" VerticalAlignment="Center">GitHub</TextBlock>
-				</StackPanel>
-			</Button>
+			<TextBlock HorizontalAlignment="Center" FontSize="14" VerticalAlignment="Bottom" Text="{Binding CurrentGameName}"/>
 			<ToggleButton x:Name="ScreenshotModeToggleButton"
 						  materialDesign:ShadowAssist.ShadowDepth="Depth3"
 						  VerticalAlignment="Top"
@@ -127,15 +121,7 @@
 					<ColumnDefinition Width="Auto" />
 					<ColumnDefinition Width="1*" />
 				</Grid.ColumnDefinitions>
-				<CheckBox Grid.Row="0" Margin="25 10 0 10" VerticalAlignment="Center" IsThreeState="False" IsChecked="{Binding RemoveOutliers}">
-					Remove outliers
-				</CheckBox>
-				<StackPanel Grid.Column="1" Margin="25 10 0 10" Orientation="Horizontal">
-					<TextBlock VerticalAlignment="Center">Cutting mode:</TextBlock>
-					<ToggleButton Name="CuttingModeActiveToggleButton" Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
-									  ToolTip="Cutting mode" IsChecked="{Binding IsCuttingModeActive}"/>
-				</StackPanel>
-				<StackPanel Grid.Column="2" Margin="25 10 0 10" Orientation="Horizontal">
+				<StackPanel Grid.Column="0" Margin="25 10 0 10" Orientation="Horizontal">
 					<TextBlock VerticalAlignment="Center">Statistic parameter settings:</TextBlock>
 					<materialDesign:PopupBox StaysOpen="True">
 						<materialDesign:Card Width="220" Margin="0 0 0 -10">
@@ -208,13 +194,22 @@
 						</materialDesign:Card>
 					</materialDesign:PopupBox>
 				</StackPanel>
+				<CheckBox Grid.Column="3" Margin="0 10 180 10" VerticalAlignment="Center" IsThreeState="False" IsChecked="{Binding RemoveOutliers}"
+						  HorizontalAlignment="Right">
+					Remove outliers
+				</CheckBox>
+				<StackPanel Grid.Column="3" Margin="0 10 25 10" Orientation="Horizontal" HorizontalAlignment="Right">
+					<TextBlock VerticalAlignment="Center">Cutting mode:</TextBlock>
+					<ToggleButton Name="CuttingModeActiveToggleButton" Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
+									  ToolTip="Cutting mode" IsChecked="{Binding IsCuttingModeActive}"/>
+				</StackPanel>
 			</Grid>
 			<Grid Background="#F5F5F5" Grid.Row="2">
 				<Grid.ColumnDefinitions>
 					<ColumnDefinition Width="1*" />
 					<ColumnDefinition Width="1*" />
 				</Grid.ColumnDefinitions>
-				<lvc:CartesianChart Grid.Column="0" Margin="15 10 0 5" Series="{Binding StatisticCollection}" LegendLocation="Bottom"
+				<lvc:CartesianChart Grid.Column="0" Margin="15 10 0 5" Series="{Binding StatisticCollection}" LegendLocation="None"
 									Tag="{Binding ElementName=DataViewUserControl, Path=DataContext}">
 					<lvc:CartesianChart.ContextMenu>
 						<ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">

@@ -49,6 +49,7 @@ namespace CapFrameX.ViewModel
 		private TabItem _selectedChartItem;
 		private IRecordDataServer _localRecordDataServer;
 		private IDisposable _frametimeWindowObservable;
+		private string _currentGameName;
 
 		public IFileRecordInfo RecordInfo { get; private set; }
 
@@ -178,6 +179,17 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
+		public string CurrentGameName
+		{
+			get { return _currentGameName; }
+			set
+			{
+				_currentGameName = value;
+				RaisePropertyChanged();
+			}
+		}
+
+
 		public ICommand CopyStatisticalParameterCommand { get; }
 
 		public ICommand CopyLShapeQuantilesCommand { get; }
@@ -202,7 +214,7 @@ namespace CapFrameX.ViewModel
 			CopyStatisticalParameterCommand = new DelegateCommand(OnCopyStatisticalParameter);
 			CopyLShapeQuantilesCommand = new DelegateCommand(OnCopyQuantiles);
 			CopySystemInfoCommand = new DelegateCommand(OnCopySystemInfoCommand);
-			AcceptParameterSettingsCommand = new DelegateCommand(OnAcceptParameterSettings);			
+			AcceptParameterSettingsCommand = new DelegateCommand(OnAcceptParameterSettings);
 
 			ParameterFormatter = value => value.ToString(string.Format("F{0}",
 				_appConfiguration.FpsValuesRoundingDigits), CultureInfo.InvariantCulture);
@@ -373,6 +385,7 @@ namespace CapFrameX.ViewModel
 
 									if (_session != null && RecordInfo != null)
 									{
+										CurrentGameName = RecordInfo.GameName;
 										SystemInfos = RecordManager.GetSystemInfos(RecordInfo);
 
 										// Do update actions
@@ -599,6 +612,7 @@ namespace CapFrameX.ViewModel
 			FrametimeGraphDataContext.FrametimeModel.InvalidatePlot(true);
 			FpsGraphDataContext.FpsModel.Series.Clear();
 			FpsGraphDataContext.FpsModel.InvalidatePlot(true);
+			_localRecordDataServer.CurrentSession = null;
 			LShapeCollection?.Clear();
 			StatisticCollection?.Clear();
 			StutteringStatisticCollection?.Clear();

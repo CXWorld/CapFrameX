@@ -57,7 +57,14 @@
 							 Content="AGGREGATION" />-->
 				</StackPanel>
 
-                <Button Grid.Column="1" Margin="0 0 60 0" Width="60" Height="50" HorizontalAlignment="Right"
+				<Button Grid.Column="1" Margin="0 0 110 0" HorizontalAlignment="Right" BorderThickness="0" Background="Transparent"
+                    x:Name="GitHubButton" Click="GitHubButton_Click" Width="120" Height="50">
+					<StackPanel Orientation="Horizontal">
+						<materialDesign:PackIcon Kind="GithubCircle" Height="30" Width="30" VerticalAlignment="Center"/>
+						<TextBlock Margin="8 0 0 0" VerticalAlignment="Center">GitHub</TextBlock>
+					</StackPanel>
+				</Button>
+				<Button Grid.Column="1" Margin="0 0 60 0" Width="60" Height="50" HorizontalAlignment="Right"
                          Foreground="White" BorderThickness="0" Background="Transparent"
                         Click="CapturePageHelp_Click">
                     <materialDesign:PackIcon Kind="HelpOutline" Margin="0 0 0 0" Width="30" Height="30"/>
