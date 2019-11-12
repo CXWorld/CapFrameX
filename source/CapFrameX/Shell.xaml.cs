@@ -10,6 +10,9 @@ namespace CapFrameX
         public Shell()
         {
             InitializeComponent();
-        }
+
+			// Start tracking the Window instance.
+			WindowStatServices.Tracker.Track(this);
+		}
 	}
 }

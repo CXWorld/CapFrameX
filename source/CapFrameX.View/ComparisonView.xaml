@@ -35,7 +35,7 @@
 			<mvvm:BoolToVisibilityConverter x:Key="FalseToHiddenConverter" FalseValue="Hidden" TrueValue="Visible"/>
 			<mvvm:BoolToVisibilityConverter x:Key="TrueToVisibleConverter" FalseValue="Collapsed" TrueValue="Visible"/>
 			<mvvm:BoolToVisibilityConverter x:Key="TrueToCollapsedConverter" FalseValue="Visible" TrueValue="Collapsed"/>
-			<mvvm:AddValueConverter x:Key="AddValueConverter" Offset="-115"/>
+			<mvvm:AddValueConverter x:Key="AddValueConverter" Offset="-111"/>
 		</ResourceDictionary>
 	</UserControl.Resources>
 	<Grid x:Name="ComparisonAreaGrid">
