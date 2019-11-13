@@ -46,7 +46,7 @@ namespace CapFrameX.Data
             catch { }
         }
 
-        public IFileRecordInfo GetIFileRecordInfo(FileInfo fileInfo)
+        public IFileRecordInfo GetFileRecordInfo(FileInfo fileInfo)
         {
             var fileRecordInfo = FileRecordInfo.Create(fileInfo);
             if (fileRecordInfo == null)
@@ -59,7 +59,7 @@ namespace CapFrameX.Data
         public IList<IFileRecordInfo> GetFileRecordInfoList()
         {
             return _recordObserver.GetAllRecordFileInfo()
-                .Select(fileInfo => GetIFileRecordInfo(fileInfo))
+                .Select(fileInfo => GetFileRecordInfo(fileInfo))
 				.Where(fileRecordInfo => fileRecordInfo != null)
 				.OrderBy(fileRecordInfo => fileRecordInfo.GameName)
 				.ToList();

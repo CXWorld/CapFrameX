@@ -97,8 +97,7 @@
 												</Grid.ColumnDefinitions>
 												<wpf:ListSortDirectionIndicator Grid.Column="0" Width="0" Height="14" 
                                                                 x:Name="SortDirectionIndicator"
-                                                                ListSortDirection="{TemplateBinding SortDirection}"
-                                                                />
+                                                                ListSortDirection="{TemplateBinding SortDirection}"/>
 												<ContentPresenter Height="20" Grid.Column="1" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                                                   Margin="{TemplateBinding Padding}"/>
 											</Grid>

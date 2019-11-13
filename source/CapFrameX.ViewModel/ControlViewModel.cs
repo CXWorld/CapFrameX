@@ -313,7 +313,7 @@ namespace CapFrameX.ViewModel
         }
 
         private void OnRecordCreated(FileInfo fileInfo)
-            => AddToRecordInfoList(_recordDataProvider.GetIFileRecordInfo(fileInfo), true);
+            => AddToRecordInfoList(_recordDataProvider.GetFileRecordInfo(fileInfo), true);
 
         private void OnRecordDeleted(FileInfo fileInfo)
         {
@@ -361,7 +361,7 @@ namespace CapFrameX.ViewModel
 
                                 HasValidSource = _recordObserver.HasValidSource;
 
-                                if (_recordObserver.HasValidSource)
+                                if (HasValidSource)
                                 {
                                     LoadRecordList();
                                 }

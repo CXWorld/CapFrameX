@@ -5,7 +5,7 @@ namespace CapFrameX.Contracts.Data
 {
     public interface IRecordDataProvider
     {
-        IFileRecordInfo GetIFileRecordInfo(FileInfo fileInfo);
+        IFileRecordInfo GetFileRecordInfo(FileInfo fileInfo);
 
         IList<IFileRecordInfo> GetFileRecordInfoList();
 

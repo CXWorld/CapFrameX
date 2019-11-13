@@ -578,7 +578,7 @@ namespace CapFrameX.ViewModel
 			if (session != null)
 			{
 				var newLine = Environment.NewLine;
-				infoText += $"{fileRecordInfo.FileInfo.LastWriteTime.ToShortDateString()} { fileRecordInfo.FileInfo.LastWriteTime.ToString("HH:mm:ss")}" + newLine +
+				infoText += $"{fileRecordInfo.CreationDate} { fileRecordInfo.CreationTime}" + newLine +
 							$"{session.FrameTimes.Count} frames in {Math.Round(session.LastFrameTime, 2).ToString(CultureInfo.InvariantCulture)}s";
 			}
 
@@ -736,7 +736,7 @@ namespace CapFrameX.ViewModel
 				AddToLShapeChart(ComparisonRecords[i]);
 			}
 
-			ResetLShapeChart.OnNext(default);
+			ResetLShapeChart.OnNext(default(Unit));
 		}
 
 		private ComparisonRecordInfoWrapper GetWrappedRecordInfo(ComparisonRecordInfo comparisonRecordInfo)

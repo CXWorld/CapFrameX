@@ -145,7 +145,8 @@ namespace CapFrameX.ViewModel
 		private string GetLabelDateTimeContext(ComparisonRecordInfoWrapper record, int maxAlignment)
 		{
 			var alignmentFormat = "{0," + maxAlignment.ToString() + "}";
-			return string.Format(CultureInfo.InvariantCulture, alignmentFormat, record.WrappedRecordInfo.DateTime);
+			return string.Format(CultureInfo.InvariantCulture, alignmentFormat,
+				$"{record.WrappedRecordInfo.FileRecordInfo.CreationDate} { record.WrappedRecordInfo.FileRecordInfo.CreationTime}");
 		}
 
 		private void SetLabelCpuContext()

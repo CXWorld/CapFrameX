@@ -602,7 +602,7 @@ namespace CapFrameX.ViewModel
 					}
 				};
 
-				ResetLShapeChart.OnNext(default);
+				ResetLShapeChart.OnNext(default(Unit));
 			}));
 		}
 

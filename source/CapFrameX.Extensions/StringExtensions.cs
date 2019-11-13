@@ -43,10 +43,7 @@ namespace CapFrameX.Extensions
 
         public static IEnumerable<string> SplitWordWise(this string text, int maxPartLength)
         {
-            if (text == null)
-                throw new ArgumentNullException("text is null");
-
-            if (text == string.Empty)
+            if (string.IsNullOrWhiteSpace(text))
                 return new List<string> { string.Empty };
 
             if (maxPartLength < 1)
