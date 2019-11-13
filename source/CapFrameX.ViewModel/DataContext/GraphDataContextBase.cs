@@ -2,6 +2,7 @@
 using CapFrameX.OcatInterface;
 using CapFrameX.Statistics;
 using Prism.Mvvm;
+using System.Linq;
 
 namespace CapFrameX.ViewModel.DataContext
 {
@@ -148,6 +149,7 @@ namespace CapFrameX.ViewModel.DataContext
 			CutLeftSliderMaximum = RecordSession.FrameTimes.Count / 2 - 1;
 			CutRightSliderMaximum = RecordSession.FrameTimes.Count / 2 - 1;
 			GraphNumberSamples = RecordSession.FrameTimes.Count;
+			SelectedChartLength = RecordSession.LastFrameTime;
 
 			RecordDataServer.IsActive = true;
 		}

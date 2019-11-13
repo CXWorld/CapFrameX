@@ -35,9 +35,14 @@
 				No source defined. Maybe an error occurred. Go to settings and select a folder.
 			</TextBlock>
 		</Border>
-		<StackPanel Visibility="{Binding HasValidSource, Converter={StaticResource FalseToCollapsedConverter}}">
-			<TextBox Margin="5 10 5 0" Background="#e6e6e6" Name="RecordSearchBox" materialDesign:HintAssist.Hint="Search" />
-			<DataGrid Name="RecordDataGrid" Height="{Binding ElementName=ControlViewControl, Path=ActualHeight, Converter={StaticResource AddValueConverter}}" Background="#F5F5F5" Margin="0 10 5 0" 
+		<Grid Visibility="{Binding HasValidSource, Converter={StaticResource FalseToCollapsedConverter}}">
+			<Grid.RowDefinitions>
+				<RowDefinition Height="Auto"></RowDefinition>
+				<RowDefinition Height="Auto"></RowDefinition>
+			</Grid.RowDefinitions>
+			<StackPanel Grid.Row="0" Orientation="Vertical">
+				<TextBox Margin="5 10 5 0" Background="#e6e6e6" Name="RecordSearchBox" materialDesign:HintAssist.Hint="Search" />
+				<DataGrid Name="RecordDataGrid" Height="{Binding ElementName=ControlViewControl, Path=ActualHeight, Converter={StaticResource AddValueConverter}}" Background="#F5F5F5" Margin="0 10 5 0" 
 					  Sorting="RecordDataGrid_Sorting" SelectedIndex="{Binding RecordDataGridSelectedIndex}"
 					  Tag="{Binding ElementName=ControlViewControl, Path=DataContext}" FontSize="11"
 					  ItemsSource="{Binding Source={StaticResource RecordInfoListKey}}" SelectedItem="{Binding SelectedRecordInfo}" CanUserSortColumns="True" CanUserAddRows="False" AutoGenerateColumns="False"
@@ -48,122 +53,123 @@
 					  dragdrop:DragDrop.UseDefaultDragAdorner="True"
 					  dragdrop:DragDrop.DefaultDragAdornerOpacity="0.5"
 					  dragdrop:DragDrop.UseDefaultEffectDataTemplate="False">
-				<DataGrid.InputBindings>
-					<KeyBinding Key="Delete" Command="{Binding Path=DeleteRecordCommand}" />
-				</DataGrid.InputBindings>
-				<DataGrid.ContextMenu>
-					<ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
-						<MenuItem Header="Add to ignore list" Command="{Binding AddToIgnoreListCommand}"/>
-						<MenuItem Header="Delete record file" Command="{Binding DeleteRecordFileCommand}"/>
-					</ContextMenu>
-				</DataGrid.ContextMenu>
-				<DataGrid.Resources>
-					<Style TargetType="DataGridRow">
-						<EventSetter Event="MouseDoubleClick" Handler="DataGridRow_MouseDoubleClick"/>
-					</Style>
-				</DataGrid.Resources>
-				<DataGrid.ColumnHeaderStyle>
-					<Style TargetType="{x:Type DataGridColumnHeader}">
-						<Setter Property="BorderThickness" Value="0, 0, 1, 0"/>
-						<Setter Property="BorderBrush" Value="{DynamicResource MaterialDesignDivider}" />
-						<Setter Property="VerticalContentAlignment" Value="Center"/>
-						<Setter Property="TextBlock.FontSize" Value="12" />
-						<Setter Property="TextBlock.FontWeight" Value="Medium" />
-						<Setter Property="Padding" Value="8, 5, 0, 0"/>
-						<Setter Property="Foreground" Value="{DynamicResource MaterialDesignColumnHeader}" />
-						<Setter Property="Template">
-							<Setter.Value>
-								<ControlTemplate TargetType="{x:Type DataGridColumnHeader}">
-									<ControlTemplate.Resources>
-										<Storyboard x:Key="GoToVisible">
-											<DoubleAnimationUsingKeyFrames Storyboard.TargetName="SortDirectionIndicator" Storyboard.TargetProperty="Width">
-												<EasingDoubleKeyFrame KeyTime="0:0:0.0" Value="0" />
-												<EasingDoubleKeyFrame KeyTime="0:0:0.2" Value="12" />
-											</DoubleAnimationUsingKeyFrames>
-										</Storyboard>
-										<Storyboard x:Key="GoToHidden">
-											<DoubleAnimationUsingKeyFrames Storyboard.TargetName="SortDirectionIndicator" Storyboard.TargetProperty="Width">
-												<EasingDoubleKeyFrame KeyTime="0:0:0.0" Value="12" />
-												<EasingDoubleKeyFrame KeyTime="0:0:0.2" Value="0" />
-											</DoubleAnimationUsingKeyFrames>
-										</Storyboard>
-									</ControlTemplate.Resources>
-									<Grid>
-										<Border Margin="0 5 0 5" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
-											<Grid Background="Transparent">
-												<Grid.ColumnDefinitions>
-													<ColumnDefinition Width="Auto"/>
-													<ColumnDefinition Width="*"/>
-												</Grid.ColumnDefinitions>
-												<wpf:ListSortDirectionIndicator Grid.Column="0" Width="0" Height="14" 
+					<DataGrid.InputBindings>
+						<KeyBinding Key="Delete" Command="{Binding Path=DeleteRecordCommand}" />
+					</DataGrid.InputBindings>
+					<DataGrid.ContextMenu>
+						<ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
+							<MenuItem Header="Add to ignore list" Command="{Binding AddToIgnoreListCommand}"/>
+							<MenuItem Header="Delete record file" Command="{Binding DeleteRecordFileCommand}"/>
+						</ContextMenu>
+					</DataGrid.ContextMenu>
+					<DataGrid.Resources>
+						<Style TargetType="DataGridRow">
+							<EventSetter Event="MouseDoubleClick" Handler="DataGridRow_MouseDoubleClick"/>
+						</Style>
+					</DataGrid.Resources>
+					<DataGrid.ColumnHeaderStyle>
+						<Style TargetType="{x:Type DataGridColumnHeader}">
+							<Setter Property="BorderThickness" Value="0, 0, 1, 0"/>
+							<Setter Property="BorderBrush" Value="{DynamicResource MaterialDesignDivider}" />
+							<Setter Property="VerticalContentAlignment" Value="Center"/>
+							<Setter Property="TextBlock.FontSize" Value="12" />
+							<Setter Property="TextBlock.FontWeight" Value="Medium" />
+							<Setter Property="Padding" Value="8, 5, 0, 0"/>
+							<Setter Property="Foreground" Value="{DynamicResource MaterialDesignColumnHeader}" />
+							<Setter Property="Template">
+								<Setter.Value>
+									<ControlTemplate TargetType="{x:Type DataGridColumnHeader}">
+										<ControlTemplate.Resources>
+											<Storyboard x:Key="GoToVisible">
+												<DoubleAnimationUsingKeyFrames Storyboard.TargetName="SortDirectionIndicator" Storyboard.TargetProperty="Width">
+													<EasingDoubleKeyFrame KeyTime="0:0:0.0" Value="0" />
+													<EasingDoubleKeyFrame KeyTime="0:0:0.2" Value="12" />
+												</DoubleAnimationUsingKeyFrames>
+											</Storyboard>
+											<Storyboard x:Key="GoToHidden">
+												<DoubleAnimationUsingKeyFrames Storyboard.TargetName="SortDirectionIndicator" Storyboard.TargetProperty="Width">
+													<EasingDoubleKeyFrame KeyTime="0:0:0.0" Value="12" />
+													<EasingDoubleKeyFrame KeyTime="0:0:0.2" Value="0" />
+												</DoubleAnimationUsingKeyFrames>
+											</Storyboard>
+										</ControlTemplate.Resources>
+										<Grid>
+											<Border Margin="0 5 0 5" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
+												<Grid Background="Transparent">
+													<Grid.ColumnDefinitions>
+														<ColumnDefinition Width="Auto"/>
+														<ColumnDefinition Width="*"/>
+													</Grid.ColumnDefinitions>
+													<wpf:ListSortDirectionIndicator Grid.Column="0" Width="0" Height="14" 
                                                                 x:Name="SortDirectionIndicator"
                                                                 ListSortDirection="{TemplateBinding SortDirection}"/>
-												<ContentPresenter Height="20" Grid.Column="1" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+													<ContentPresenter Height="20" Grid.Column="1" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                                                   Margin="{TemplateBinding Padding}"/>
-											</Grid>
-										</Border>
-										<Thumb x:Name="PART_LeftHeaderGripper" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignGridColumnHeaderGripper}"/>
-										<Thumb x:Name="PART_RightHeaderGripper" HorizontalAlignment="Right" Style="{StaticResource MaterialDesignGridColumnHeaderGripper}"/>
-									</Grid>
-									<ControlTemplate.Triggers>
-										<Trigger Property="IsMouseOver" Value="True">
-											<Setter Property="Foreground" Value="{DynamicResource MaterialDesignBody}" />
-										</Trigger>
-										<Trigger Property="SortDirection" Value="Ascending">
-											<Setter Property="Foreground" Value="{DynamicResource MaterialDesignBody}" />
-										</Trigger>
-										<Trigger Property="SortDirection" Value="Descending">
-											<Setter Property="Foreground" Value="{DynamicResource MaterialDesignBody}" />
-										</Trigger>
-										<Trigger SourceName="SortDirectionIndicator" Property="IsNeutral" Value="False">
-											<Trigger.EnterActions>
-												<BeginStoryboard Storyboard="{StaticResource GoToVisible}" Name="GoToVisible" />
-											</Trigger.EnterActions>
-											<Trigger.ExitActions>
-												<RemoveStoryboard BeginStoryboardName="GoToVisible" />
-												<BeginStoryboard Storyboard="{StaticResource GoToHidden}" />
-											</Trigger.ExitActions>
-										</Trigger>
-									</ControlTemplate.Triggers>
-								</ControlTemplate>
-							</Setter.Value>
-						</Setter>
-					</Style>
-				</DataGrid.ColumnHeaderStyle>
-                <DataGrid.Columns>
-                    <DataGridTextColumn Binding="{Binding GameName, Mode=OneWay}"
+												</Grid>
+											</Border>
+											<Thumb x:Name="PART_LeftHeaderGripper" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignGridColumnHeaderGripper}"/>
+											<Thumb x:Name="PART_RightHeaderGripper" HorizontalAlignment="Right" Style="{StaticResource MaterialDesignGridColumnHeaderGripper}"/>
+										</Grid>
+										<ControlTemplate.Triggers>
+											<Trigger Property="IsMouseOver" Value="True">
+												<Setter Property="Foreground" Value="{DynamicResource MaterialDesignBody}" />
+											</Trigger>
+											<Trigger Property="SortDirection" Value="Ascending">
+												<Setter Property="Foreground" Value="{DynamicResource MaterialDesignBody}" />
+											</Trigger>
+											<Trigger Property="SortDirection" Value="Descending">
+												<Setter Property="Foreground" Value="{DynamicResource MaterialDesignBody}" />
+											</Trigger>
+											<Trigger SourceName="SortDirectionIndicator" Property="IsNeutral" Value="False">
+												<Trigger.EnterActions>
+													<BeginStoryboard Storyboard="{StaticResource GoToVisible}" Name="GoToVisible" />
+												</Trigger.EnterActions>
+												<Trigger.ExitActions>
+													<RemoveStoryboard BeginStoryboardName="GoToVisible" />
+													<BeginStoryboard Storyboard="{StaticResource GoToHidden}" />
+												</Trigger.ExitActions>
+											</Trigger>
+										</ControlTemplate.Triggers>
+									</ControlTemplate>
+								</Setter.Value>
+							</Setter>
+						</Style>
+					</DataGrid.ColumnHeaderStyle>
+					<DataGrid.Columns>
+						<DataGridTextColumn Binding="{Binding GameName, Mode=OneWay}"
                                         Header="Game"
                                         IsReadOnly="True"/>
-                    <DataGridTextColumn Binding="{Binding CreationDate, Mode=OneWay}"
+						<DataGridTextColumn Binding="{Binding CreationDate, Mode=OneWay}"
                                         Header="Date"
                                         IsReadOnly="True"/>
-                    <DataGridTextColumn Binding="{Binding CreationTime, Mode=OneWay}"
+						<DataGridTextColumn Binding="{Binding CreationTime, Mode=OneWay}"
                                         Header="Time"
                                         IsReadOnly="True"/>
-                    <DataGridTextColumn Binding="{Binding Comment, Mode=OneWay}"
+						<DataGridTextColumn Binding="{Binding Comment, Mode=OneWay}"
 										Width="100"
                                         Header="Comment"
                                         IsReadOnly="True"/>
-                    <DataGridCheckBoxColumn Binding="{Binding IsValid, Mode=OneWay}"
+						<DataGridCheckBoxColumn Binding="{Binding IsValid, Mode=OneWay}"
                                             Header="Valid"
                                             IsReadOnly="True" MinWidth="55"/>
-                </DataGrid.Columns>
-			</DataGrid>
-			<Border Margin="0 5 5 0" BorderThickness="0 1 0 0" BorderBrush="{DynamicResource MaterialDesignDivider}" />
-			<Grid Margin="0 5 5 0" Background="#F5F5F5">
+					</DataGrid.Columns>
+				</DataGrid>
+				<Border Margin="0 5 5 0" BorderThickness="0 1 0 0" BorderBrush="{DynamicResource MaterialDesignDivider}" />
+			</StackPanel>
+			<Grid Grid.Row="1" Margin="0 5 5 0" Background="#F5F5F5">
 				<Grid.RowDefinitions>
 					<RowDefinition Height="Auto"/>
 					<RowDefinition Height="Auto"/>
 					<RowDefinition Height="Auto"/>
 					<RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
+					<RowDefinition Height="Auto"/>
 				</Grid.RowDefinitions>
 				<Grid.ColumnDefinitions>
 					<ColumnDefinition Width="1*"/>
 					<ColumnDefinition Width="Auto"/>
 				</Grid.ColumnDefinitions>
 				<TextBox Grid.Row="0" Grid.Column="0" wpf:HintAssist.Hint="Custom CPU description" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
-							Margin="5 6 5 0" FontSize="14" Text="{Binding CustomCpuDescription, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Stretch"/>
+							Margin="5 6 5 0" FontSize="12" Text="{Binding CustomCpuDescription, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Stretch"/>
 				<Button Grid.Row="0" Grid.Column="1" Margin="5 6 5 0" Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}"
 							VerticalAlignment="Bottom" HorizontalAlignment="Right"
 							Width="20" Height="20"
@@ -172,7 +178,7 @@
 					<materialDesign:PackIcon Kind="Cached" Width="15" Height="15"/>
 				</Button>
 				<TextBox Grid.Row="1" Grid.Column="0" wpf:HintAssist.Hint="Custom GPU description" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
-							Margin="5 6 5 0" FontSize="14" Text="{Binding CustomGpuDescription, UpdateSourceTrigger=PropertyChanged}"/>
+							Margin="5 6 5 0" FontSize="12" Text="{Binding CustomGpuDescription, UpdateSourceTrigger=PropertyChanged}"/>
 				<Button Grid.Row="1" Grid.Column="1" Margin="5 6 5 0" Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}"
 							VerticalAlignment="Bottom" HorizontalAlignment="Right"
 							Width="20" Height="20"
@@ -180,10 +186,10 @@
 							Command="{Binding AddGpuInfoCommand}">
 					<materialDesign:PackIcon Kind="Cached" Width="15" Height="15"/>
 				</Button>
-                <TextBox Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" wpf:HintAssist.Hint="Game" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
-						 Margin="5 6 5 0" FontSize="14" Text="{Binding CustomGameName, UpdateSourceTrigger=PropertyChanged}"/>
+				<TextBox Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" wpf:HintAssist.Hint="Game" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
+						 Margin="5 6 5 0" FontSize="12" Text="{Binding CustomGameName, UpdateSourceTrigger=PropertyChanged}"/>
 				<TextBox Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" wpf:HintAssist.Hint="Comment" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
-						 Margin="5 6 5 0" FontSize="14" Text="{Binding CustomComment, UpdateSourceTrigger=PropertyChanged}"/>
+						 Margin="5 6 5 0" FontSize="12" Text="{Binding CustomComment, UpdateSourceTrigger=PropertyChanged}"/>
 				<StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Grid.Row="4"
 							Grid.Column="0" Grid.ColumnSpan="2" Margin="0 16 0 5">
 					<Button IsDefault="True" Style="{DynamicResource MaterialDesignFlatButton}"
@@ -191,11 +197,11 @@
 						SAVE
 					</Button>
 					<Button IsCancel="True" Margin="8 0 0 0" Style="{DynamicResource MaterialDesignFlatButton}"
-                    Command="{Binding CancelEditingDialogCommand}">
+							Command="{Binding CancelEditingDialogCommand}">
 						RESET
 					</Button>
 				</StackPanel>
 			</Grid>
-		</StackPanel>
+		</Grid>
 	</Grid>
 </UserControl>

@@ -40,7 +40,7 @@ namespace CapFrameX.ViewModel.DataContext
             CopyFrametimePointsCommand = new DelegateCommand(OnCopyFrametimePoints);
 
             // Update Chart after changing index slider
-            RecordDataServer.FrametimeDataStream.Subscribe(sequence =>
+            RecordDataServer.FrametimePointDataStream.Subscribe(sequence =>
             {
                 SetFrametimeChart(sequence);
                 GraphNumberSamples = sequence.Count;
@@ -60,7 +60,7 @@ namespace CapFrameX.ViewModel.DataContext
             {
                 Key = "xAxis",
                 Position = AxisPosition.Bottom,
-                Title = "Samples",
+                Title = "Recording time [s]",
                 MajorGridlineStyle = LineStyle.Solid,
                 MajorGridlineThickness = 1,
                 MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
@@ -82,16 +82,18 @@ namespace CapFrameX.ViewModel.DataContext
             });
         }
 
-        public void SetFrametimeChart(IList<double> frametimes)
+        public void SetFrametimeChart(IList<Point> frametimePoints)
         {
-            if (frametimes == null || !frametimes.Any())
+            if (frametimePoints == null || !frametimePoints.Any())
                 return;
 
-            int count = frametimes.Count;
-            var frameTimeDataPoints = frametimes.Select((x, i) => new DataPoint(i, x));
-            var yMin = frametimes.Min();
-            var yMax = frametimes.Max();
-            var movingAverage = FrametimesStatisticProvider.GetMovingAverage(frametimes, AppConfiguration.MovingAverageWindowSize);
+            int count = frametimePoints.Count;
+            var frametimeDataPoints = frametimePoints.Select(pnt => new DataPoint(pnt.X, pnt.Y));
+            var yMin = frametimePoints.Min(pnt => pnt.Y);
+            var yMax = frametimePoints.Max(pnt => pnt.Y);
+            var movingAverage = FrametimesStatisticProvider
+				.GetMovingAverage(frametimePoints.Select(pnt => pnt.Y)
+				.ToList(), AppConfiguration.MovingAverageWindowSize);
 
             Application.Current.Dispatcher.Invoke(new Action(() =>
             {
@@ -112,14 +114,14 @@ namespace CapFrameX.ViewModel.DataContext
                     Color = ColorRessource.FrametimeMovingAverageStroke
                 };
 
-                frametimeSeries.Points.AddRange(frameTimeDataPoints);
-                movingAverageSeries.Points.AddRange(movingAverage.Select((x, i) => new DataPoint(i, x)));
+                frametimeSeries.Points.AddRange(frametimeDataPoints);
+                movingAverageSeries.Points.AddRange(movingAverage.Select((y, i) => new DataPoint(frametimePoints[i].X, y)));
 
                 var xAxis = FrametimeModel.GetAxisOrDefault("xAxis", null);
                 var yAxis = FrametimeModel.GetAxisOrDefault("yAxis", null);
 
-                xAxis.Minimum = 0;
-                xAxis.Maximum = count;
+                xAxis.Minimum = frametimePoints.First().X;
+                xAxis.Maximum = frametimePoints.Last().X;
                 yAxis.Minimum = yMin - (yMax - yMin) / 6;
                 yAxis.Maximum = yMax + (yMax - yMin) / 6;
 

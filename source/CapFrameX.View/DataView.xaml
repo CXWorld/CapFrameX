@@ -78,14 +78,14 @@
 		<Grid Grid.Row="1" x:Name="ScreenshotArea">
 			<Grid.RowDefinitions>
 				<RowDefinition Height="5*"></RowDefinition>
-				<RowDefinition Height="Auto"></RowDefinition>
 				<RowDefinition Height="3*"></RowDefinition>
+				<RowDefinition Height="Auto"></RowDefinition>
 			</Grid.RowDefinitions>
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition Width="1*"></ColumnDefinition>
 				<ColumnDefinition Width="Auto"></ColumnDefinition>
 			</Grid.ColumnDefinitions>
-			<TabControl Grid.Row="0" Background="#F5F5F5" SelectedItem="{Binding SelectedChartItem}">
+			<TabControl Grid.Row="0" Margin="5 0 5 5" Background="#F5F5F5" SelectedItem="{Binding SelectedChartItem}">
 				<TabItem Header="Frametimes">
 					<controls:FrametimeGraphControl DataContext="{Binding Path=FrametimeGraphDataContext}"/>
 				</TabItem>
@@ -113,7 +113,33 @@
 					</lvc:CartesianChart>
 				</TabItem>
 			</TabControl>
-			<Grid Margin="0 5 0 5" Grid.Row="1" Background="#F5F5F5"
+			<Grid Margin="5 0 5 0" Background="#F5F5F5" Grid.Row="1">
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="1*" />
+					<ColumnDefinition Width="1*" />
+				</Grid.ColumnDefinitions>
+				<lvc:CartesianChart Grid.Column="0" Margin="15 10 0 5" Series="{Binding StatisticCollection}" LegendLocation="None"
+									Tag="{Binding ElementName=DataViewUserControl, Path=DataContext}">
+					<lvc:CartesianChart.ContextMenu>
+						<ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
+							<MenuItem Header="Copy statistical parameter" Command="{Binding CopyStatisticalParameterCommand}"/>
+						</ContextMenu>
+					</lvc:CartesianChart.ContextMenu>
+					<lvc:CartesianChart.AxisX>
+						<lvc:Axis Title="FPS" FontSize="11" MinValue="0" LabelFormatter="{Binding ParameterFormatter}" Foreground="Black"></lvc:Axis>
+					</lvc:CartesianChart.AxisX>
+					<lvc:CartesianChart.AxisY>
+						<lvc:Axis FontSize="11" Labels="{Binding ParameterLabels}" Foreground="Black">
+							<lvc:Axis.Separator>
+								<lvc:Separator Step="1" IsEnabled="False"></lvc:Separator>
+							</lvc:Axis.Separator>
+						</lvc:Axis>
+					</lvc:CartesianChart.AxisY>
+				</lvc:CartesianChart>
+				<lvc:PieChart Grid.Column="1" Margin="10 5 0 5" Hoverable="False" Series="{Binding StutteringStatisticCollection}" 
+							  LegendLocation="Bottom" DataClick="Chart_OnDataClick"/>
+			</Grid>
+			<Grid Margin="5 5 5 5" Grid.Row="2" Background="#e6e6e6"
 				  Visibility="{Binding ElementName=ScreenshotModeToggleButton, Path=IsChecked, Converter={StaticResource TrueToCollapsedConverter}}">
 				<Grid.ColumnDefinitions>
 					<ColumnDefinition Width="Auto" />
@@ -203,32 +229,6 @@
 					<ToggleButton Name="CuttingModeActiveToggleButton" Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
 									  ToolTip="Cutting mode" IsChecked="{Binding IsCuttingModeActive}"/>
 				</StackPanel>
-			</Grid>
-			<Grid Background="#F5F5F5" Grid.Row="2">
-				<Grid.ColumnDefinitions>
-					<ColumnDefinition Width="1*" />
-					<ColumnDefinition Width="1*" />
-				</Grid.ColumnDefinitions>
-				<lvc:CartesianChart Grid.Column="0" Margin="15 10 0 5" Series="{Binding StatisticCollection}" LegendLocation="None"
-									Tag="{Binding ElementName=DataViewUserControl, Path=DataContext}">
-					<lvc:CartesianChart.ContextMenu>
-						<ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
-							<MenuItem Header="Copy statistical parameter" Command="{Binding CopyStatisticalParameterCommand}"/>
-						</ContextMenu>
-					</lvc:CartesianChart.ContextMenu>
-					<lvc:CartesianChart.AxisX>
-						<lvc:Axis Title="FPS" FontSize="11" MinValue="0" LabelFormatter="{Binding ParameterFormatter}" Foreground="Black"></lvc:Axis>
-					</lvc:CartesianChart.AxisX>
-					<lvc:CartesianChart.AxisY>
-						<lvc:Axis FontSize="11" Labels="{Binding ParameterLabels}" Foreground="Black">
-							<lvc:Axis.Separator>
-								<lvc:Separator Step="1" IsEnabled="False"></lvc:Separator>
-							</lvc:Axis.Separator>
-						</lvc:Axis>
-					</lvc:CartesianChart.AxisY>
-				</lvc:CartesianChart>
-				<lvc:PieChart Grid.Column="1" Margin="10 5 0 5" Hoverable="False" Series="{Binding StutteringStatisticCollection}" 
-							  LegendLocation="Bottom" DataClick="Chart_OnDataClick"/>
 			</Grid>
 			<Expander Margin="0 20 0 0" Background="#e6e6e6" Grid.Row="0" Grid.RowSpan="3" Grid.Column="1" ExpandDirection="Left">
 				<Expander.Header>

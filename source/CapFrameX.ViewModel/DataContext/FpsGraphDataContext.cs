@@ -38,7 +38,7 @@ namespace CapFrameX.ViewModel.DataContext
 			CopyFpsValuesCommand = new DelegateCommand(OnCopyFpsValues);
 
 			// Update Chart after changing index slider
-			RecordDataServer.FpsDataStream.Subscribe(sequence =>
+			RecordDataServer.FpsPointDataStream.Subscribe(sequence =>
 			{
 				SetFpsChart(sequence);
 				GraphNumberSamples = sequence.Count;
@@ -58,7 +58,7 @@ namespace CapFrameX.ViewModel.DataContext
 			{
 				Key = "xAxis",
 				Position = AxisPosition.Bottom,
-				Title = "Samples",
+				Title = "Frametime [ms]",
 				MajorGridlineStyle = LineStyle.Solid,
 				MajorGridlineThickness = 1,
 				MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
@@ -98,18 +98,18 @@ namespace CapFrameX.ViewModel.DataContext
 			Clipboard.SetDataObject(builder.ToString(), false);
 		}
 
-		public void SetFpsChart(IList<double> fps)
+		public void SetFpsChart(IList<Point> fpsPoints)
 		{
-			if (fps == null || !fps.Any())
+			if (fpsPoints == null || !fpsPoints.Any())
 				return;
 
-			int count = fps.Count;
-			var fpsDataPoints = fps.Select((x, i) => new DataPoint(i, x));
-			var yMin = fps.Min();
-			var yMax = fps.Max();
-			var frametimes = RecordDataServer.GetFrametimeSampleWindow();
+			int count = fpsPoints.Count;
+			var fpsDataPoints = fpsPoints.Select(pnt => new DataPoint(pnt.X, pnt.Y));
+			var yMin = fpsPoints.Min(pnt => pnt.Y);
+			var yMax = fpsPoints.Max(pnt => pnt.Y);
+			var frametimes = RecordDataServer.GetFrametimeTimeWindow();
 			double average = frametimes.Count * 1000 / frametimes.Sum();
-			var averageDataPoints = Enumerable.Repeat(average, frametimes.Count).Select((x, i) => new DataPoint(i, x));
+			var averageDataPoints = fpsPoints.Select(pnt => new DataPoint(pnt.X, average));
 
 			Application.Current.Dispatcher.Invoke(new Action(() =>
 			{
@@ -124,8 +124,8 @@ namespace CapFrameX.ViewModel.DataContext
 				var xAxis = FpsModel.GetAxisOrDefault("xAxis", null);
 				var yAxis = FpsModel.GetAxisOrDefault("yAxis", null);
 
-				xAxis.Minimum = 0;
-				xAxis.Maximum = count;
+				xAxis.Minimum = fpsPoints.First().X;
+				xAxis.Maximum = fpsPoints.Last().X;
 				yAxis.Minimum = yMin - (yMax - yMin) / 6;
 				yAxis.Maximum = yMax + (yMax - yMin) / 6;
 

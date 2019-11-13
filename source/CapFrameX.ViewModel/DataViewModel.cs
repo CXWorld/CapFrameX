@@ -413,7 +413,8 @@ namespace CapFrameX.ViewModel
 
 			if (subset != null)
 			{
-				Task.Factory.StartNew(() => FrametimeGraphDataContext.SetFrametimeChart(subset));
+				Task.Factory.StartNew(() => FrametimeGraphDataContext
+					.SetFrametimeChart(_localRecordDataServer?.GetFrametimePointTimeWindow()));
 				Task.Factory.StartNew(() => SetStaticChart(subset));
 				Task.Factory.StartNew(() => SetAdvancedStaticChart(subset));
 			}
@@ -434,7 +435,7 @@ namespace CapFrameX.ViewModel
 			else if (headerName == "FPS")
 			{
 				Task.Factory.StartNew(() =>
-					FpsGraphDataContext.SetFpsChart(_localRecordDataServer.GetFpsSampleWindow()));
+					FpsGraphDataContext.SetFpsChart(_localRecordDataServer?.GetFpsPointTimeWindow()));
 			}
 		}
 
