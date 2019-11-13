@@ -74,10 +74,10 @@
 				<Grid Name="ChartAndCuttingGrid">
 					<Grid.RowDefinitions>
 						<RowDefinition Height="2*"></RowDefinition>
-						<RowDefinition Height="Auto"></RowDefinition>
+						<RowDefinition Height="65"></RowDefinition>
 						<RowDefinition Height="1*"></RowDefinition>
 					</Grid.RowDefinitions>
-					<Grid Grid.Row="0">
+					<Grid Grid.Row="0" Margin="0 0 0 -10">
 						<oxy:PlotView Background="#F5F5F5" x:Name="ComparisonPlotView" Model="{Binding ComparisonModel}" MouseDoubleClick="ResetFrametimeChart_MouseDoubleClick"/>
 					</Grid>
 					<Grid Grid.Row="1" Visibility="{Binding ElementName=CuttingModeActiveToggleButton, Path=IsChecked, Converter={StaticResource TrueToVisibleConverter}}">

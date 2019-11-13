@@ -43,7 +43,7 @@ namespace CapFrameX.ViewModel.DataContext
             RecordDataServer.FrametimePointDataStream.Subscribe(sequence =>
             {
                 SetFrametimeChart(sequence);
-                GraphNumberSamples = sequence.Count;
+                //GraphNumberSamples = sequence.Count;
             });
 
             FrametimeModel = new PlotModel
@@ -137,8 +137,8 @@ namespace CapFrameX.ViewModel.DataContext
             if (RecordSession == null)
                 return;
 
-            RecordDataServer.RemoveOutlierMethod
-                = UseRemovingOutlier ? ERemoveOutlierMethod.DeciPercentile : ERemoveOutlierMethod.None;
+            //RecordDataServer.RemoveOutlierMethod
+            //    = UseRemovingOutlier ? ERemoveOutlierMethod.DeciPercentile : ERemoveOutlierMethod.None;
             var frametimes = RecordDataServer.GetFrametimeSampleWindow();
             StringBuilder builder = new StringBuilder();
 
@@ -155,8 +155,8 @@ namespace CapFrameX.ViewModel.DataContext
             if (RecordSession == null)
                 return;
 
-            RecordDataServer.RemoveOutlierMethod
-                = UseRemovingOutlier ? ERemoveOutlierMethod.DeciPercentile : ERemoveOutlierMethod.None;
+            //RecordDataServer.RemoveOutlierMethod
+            //    = UseRemovingOutlier ? ERemoveOutlierMethod.DeciPercentile : ERemoveOutlierMethod.None;
             var frametimePoints = RecordDataServer.GetFrametimePointSampleWindow();
             StringBuilder builder = new StringBuilder();
 

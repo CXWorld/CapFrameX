@@ -41,7 +41,7 @@ namespace CapFrameX.ViewModel.DataContext
 			RecordDataServer.FpsPointDataStream.Subscribe(sequence =>
 			{
 				SetFpsChart(sequence);
-				GraphNumberSamples = sequence.Count;
+				//GraphNumberSamples = sequence.Count;
 			});
 
 			FpsModel = new PlotModel
@@ -85,8 +85,8 @@ namespace CapFrameX.ViewModel.DataContext
 			if (RecordSession == null)
 				return;
 
-			RecordDataServer.RemoveOutlierMethod
-				= UseRemovingOutlier ? ERemoveOutlierMethod.DeciPercentile : ERemoveOutlierMethod.None;
+			//RecordDataServer.RemoveOutlierMethod
+			//	= UseRemovingOutlier ? ERemoveOutlierMethod.DeciPercentile : ERemoveOutlierMethod.None;
 			var fps = RecordDataServer.GetFpsSampleWindow();
 			StringBuilder builder = new StringBuilder();
 

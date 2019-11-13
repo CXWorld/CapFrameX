@@ -10,7 +10,6 @@ namespace CapFrameX.OcatInterface
 {
 	public class LocalRecordDataServer : IRecordDataServer
 	{
-		private const int SCALE_RESOLUTION = 200;
 		private int _startIndex;
 		private int _endIndex;
 		private double _windowLength;
@@ -90,7 +89,7 @@ namespace CapFrameX.OcatInterface
 			if (CurrentSession == null)
 				return null;
 
-			double startTime = (CurrentSession.LastFrameTime - WindowLength) * CurrentTime / SCALE_RESOLUTION;
+			double startTime = CurrentTime;
 			double endTime = startTime + WindowLength;
 			return CurrentSession.GetFrametimeTimeWindow(startTime, endTime, RemoveOutlierMethod);
 		}
@@ -108,7 +107,7 @@ namespace CapFrameX.OcatInterface
 			if (CurrentSession == null)
 				return null;
 
-			double startTime = (CurrentSession.LastFrameTime - WindowLength) * CurrentTime / SCALE_RESOLUTION;
+			double startTime = CurrentTime;
 			double endTime = startTime + WindowLength;
 			return CurrentSession.GetFrametimePointsTimeWindow(startTime, endTime);
 		}

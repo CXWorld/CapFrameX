@@ -48,8 +48,13 @@ namespace CapFrameX.ViewModel
 		private Func<double, string> _parameterFormatter;
 		private TabItem _selectedChartItem;
 		private IRecordDataServer _localRecordDataServer;
-		private IDisposable _frametimeWindowObservable;
 		private string _currentGameName;
+		private double _maxRecordingTime;
+		private string _remainingRecordingTime;
+		private double _cutLeftSliderMaximum;
+		private double _cutRightSliderMaximum;
+		private double _firstSeconds;
+		private double _lastSeconds;
 
 		public IFileRecordInfo RecordInfo { get; private set; }
 
@@ -189,6 +194,67 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
+		public string RemainingRecordingTime
+		{
+			get { return _remainingRecordingTime; }
+			set
+			{
+				_remainingRecordingTime = value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public double CutLeftSliderMaximum
+		{
+			get { return _cutLeftSliderMaximum; }
+			set
+			{
+				_cutLeftSliderMaximum = value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public double CutRightSliderMaximum
+		{
+			get { return _cutRightSliderMaximum; }
+			set
+			{
+				_cutRightSliderMaximum = value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public double FirstSeconds
+		{
+			get { return _firstSeconds; }
+			set
+			{
+				_firstSeconds = value;
+				RaisePropertyChanged();
+				_localRecordDataServer.CurrentTime = _firstSeconds;
+				_localRecordDataServer.WindowLength = _maxRecordingTime - LastSeconds - _firstSeconds;
+				UpdateMainCharts();
+				UpdateSecondaryCharts();
+				RemainingRecordingTime = Math.Round(_maxRecordingTime - LastSeconds - _firstSeconds, 2)
+					.ToString(CultureInfo.InvariantCulture) + " s";
+			}
+		}
+
+		public double LastSeconds
+		{
+			get { return _lastSeconds; }
+			set
+			{
+				_lastSeconds = value;
+				RaisePropertyChanged();
+				_localRecordDataServer.CurrentTime = FirstSeconds;
+				_localRecordDataServer.WindowLength = _maxRecordingTime - _lastSeconds - FirstSeconds;
+				UpdateMainCharts();
+				UpdateSecondaryCharts();
+				RemainingRecordingTime = Math.Round(_maxRecordingTime - _lastSeconds - FirstSeconds, 2)
+					.ToString(CultureInfo.InvariantCulture) + " s";
+			}
+		}
 
 		public ICommand CopyStatisticalParameterCommand { get; }
 
@@ -239,34 +305,9 @@ namespace CapFrameX.ViewModel
 			if (_session == null)
 				return;
 
-			var tabItemHeader = SelectedChartItem.Header.ToString();
-
-			if (string.IsNullOrWhiteSpace(tabItemHeader))
-				return;
-
-			if (tabItemHeader == "Frametimes")
-			{
-				FrametimeGraphDataContext.IsCuttingModeActive = IsCuttingModeActive;
-			}
-			else if (tabItemHeader == "FPS")
-			{
-				FpsGraphDataContext.IsCuttingModeActive = IsCuttingModeActive;
-			}
-
-			if (IsCuttingModeActive)
-			{
-				_frametimeWindowObservable = _localRecordDataServer.FrametimeDataStream.Subscribe(sequence =>
-				{
-					Task.Factory.StartNew(() => SetStaticChart(sequence));
-					Task.Factory.StartNew(() => SetAdvancedStaticChart(sequence));
-				});
-			}
-			else
-			{
-				_frametimeWindowObservable?.Dispose();
-				UpdateMainCharts();
-				UpdateSecondaryCharts();
-			}
+			UpdateCuttingParameter();
+			UpdateMainCharts();
+			UpdateSecondaryCharts();
 		}
 
 		private void OnCopyStatisticalParameter()
@@ -373,6 +414,24 @@ namespace CapFrameX.ViewModel
 			UpdateSecondaryCharts();
 		}
 
+		private void UpdateCuttingParameter()
+		{
+			if (_session == null)
+				return;
+
+			_maxRecordingTime = _session.FrameStart.Last();
+
+			_doUpdateCharts = false;
+			FirstSeconds = 0;
+			LastSeconds = 0;
+			_doUpdateCharts = true;
+
+			CutLeftSliderMaximum = _maxRecordingTime / 2 - 0.5;
+			CutRightSliderMaximum = _maxRecordingTime / 2 - 0.5;
+			RemainingRecordingTime = Math.Round(_maxRecordingTime, 2)
+				.ToString(CultureInfo.InvariantCulture) + " s";
+		}
+
 		private void SubscribeToUpdateSession()
 		{
 			_eventAggregator.GetEvent<PubSubEvent<ViewMessages.UpdateSession>>()
@@ -390,9 +449,9 @@ namespace CapFrameX.ViewModel
 
 										// Do update actions
 										FrametimeGraphDataContext.RecordSession = _session;
-										FrametimeGraphDataContext.InitializeCuttingParameter();
 										FpsGraphDataContext.RecordSession = _session;
-										FpsGraphDataContext.InitializeCuttingParameter();
+
+										UpdateCuttingParameter();
 										UpdateMainCharts();
 										UpdateSecondaryCharts();
 									}
@@ -440,9 +499,7 @@ namespace CapFrameX.ViewModel
 		}
 
 		private IList<double> GetFrametimesSubset()
-		{
-			return _localRecordDataServer?.GetFrametimeSampleWindow();
-		}
+			=>_localRecordDataServer?.GetFrametimeSampleWindow();
 
 		private void SetStaticChart(IList<double> frametimes)
 		{

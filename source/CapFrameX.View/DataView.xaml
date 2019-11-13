@@ -29,6 +29,7 @@
 			<mvvm:NegateBoolConverter x:Key="NegateBoolConverter"/>
 			<mvvm:BoolToVisibilityConverter x:Key="TrueToCollapsedConverter" TrueValue="Collapsed" FalseValue="Visible"/>
 			<mvvm:BoolToVisibilityConverter x:Key="FalseToCollapsedConverter" TrueValue="Visible" FalseValue="Collapsed"/>
+			<mvvm:BoolToVisibilityConverter x:Key="TrueToVisibleConverter" FalseValue="Collapsed" TrueValue="Visible"/>
 			<Style x:Key="CleanSeparator" TargetType="lvc:Separator">
 				<Setter Property="IsEnabled" Value="False"></Setter>
 			</Style>
@@ -78,6 +79,7 @@
 		<Grid Grid.Row="1" x:Name="ScreenshotArea">
 			<Grid.RowDefinitions>
 				<RowDefinition Height="5*"></RowDefinition>
+				<RowDefinition Height="Auto"></RowDefinition>
 				<RowDefinition Height="3*"></RowDefinition>
 				<RowDefinition Height="Auto"></RowDefinition>
 			</Grid.RowDefinitions>
@@ -113,7 +115,39 @@
 					</lvc:CartesianChart>
 				</TabItem>
 			</TabControl>
-			<Grid Margin="5 0 5 0" Background="#F5F5F5" Grid.Row="1">
+			<Grid Grid.Row="1" Margin="5 0 5 5" Background="#F5F5F5" Visibility="{Binding ElementName=CuttingModeActiveToggleButton, Path=IsChecked, Converter={StaticResource FalseToCollapsedConverter}}">
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="2*" />
+					<ColumnDefinition MinWidth="130" Width="1*" />
+					<ColumnDefinition Width="2*" />
+				</Grid.ColumnDefinitions>
+				<Slider Grid.Column="0" Margin="10 -35 0 0" Minimum="0"
+								Maximum="{Binding CutLeftSliderMaximum}"
+								TickFrequency="0.1"
+								HorizontalAlignment="Stretch"
+								VerticalAlignment="Center"
+								Value="{Binding FirstSeconds}"
+								Style="{StaticResource MaterialDesignDiscreteSlider}"
+								ToolTip="Cut first seconds"/>
+				<TextBox Grid.Column="1" Margin="15 0 15 10" HorizontalAlignment="Center" IsReadOnly="True"
+								 Style="{StaticResource MaterialDesignFloatingHintTextBox}" Text="{Binding RemainingRecordingTime}">
+					<materialDesign:HintAssist.Hint>
+						<TextBlock>
+							Remaining time [s]
+						</TextBlock>
+					</materialDesign:HintAssist.Hint>
+				</TextBox>
+				<Slider Grid.Column="2" Margin="0 -35 10 0" Minimum="0"
+								IsDirectionReversed="True"
+								Maximum="{Binding CutRightSliderMaximum}"
+								TickFrequency="0.1"
+								HorizontalAlignment="Stretch"
+								VerticalAlignment="Center"
+								Value="{Binding LastSeconds}"
+								Style="{StaticResource MaterialDesignDiscreteSlider}"
+								ToolTip="Cut last seconds"/>
+			</Grid>
+			<Grid Grid.Row="2" Margin="5 0 5 0" Background="#F5F5F5">
 				<Grid.ColumnDefinitions>
 					<ColumnDefinition Width="1*" />
 					<ColumnDefinition Width="1*" />
@@ -139,7 +173,7 @@
 				<lvc:PieChart Grid.Column="1" Margin="10 5 0 5" Hoverable="False" Series="{Binding StutteringStatisticCollection}" 
 							  LegendLocation="Bottom" DataClick="Chart_OnDataClick"/>
 			</Grid>
-			<Grid Margin="5 5 5 5" Grid.Row="2" Background="#e6e6e6"
+			<Grid Grid.Row="3" Margin="5 5 5 5" Background="#e6e6e6"
 				  Visibility="{Binding ElementName=ScreenshotModeToggleButton, Path=IsChecked, Converter={StaticResource TrueToCollapsedConverter}}">
 				<Grid.ColumnDefinitions>
 					<ColumnDefinition Width="Auto" />
@@ -230,7 +264,7 @@
 									  ToolTip="Cutting mode" IsChecked="{Binding IsCuttingModeActive}"/>
 				</StackPanel>
 			</Grid>
-			<Expander Margin="0 20 0 0" Background="#e6e6e6" Grid.Row="0" Grid.RowSpan="3" Grid.Column="1" ExpandDirection="Left">
+			<Expander Margin="0 20 0 0" Background="#e6e6e6" Grid.Row="0" Grid.RowSpan="4" Grid.Column="1" ExpandDirection="Left">
 				<Expander.Header>
 					<TextBlock Text="System Info" RenderTransformOrigin=".5,.5">
 						<TextBlock.LayoutTransform>

@@ -33,10 +33,9 @@
 	<Grid>
 		<Grid.RowDefinitions>
 			<RowDefinition Height="1*"></RowDefinition>
-			<RowDefinition Height="Auto"></RowDefinition>
 		</Grid.RowDefinitions>
-        <Grid Grid.Row="0" Background="#F0F0F0">
-            <oxy:PlotView Background="#F0F0F0" x:Name="FpsPlotView" Model="{Binding FpsModel}" Tag="{Binding ElementName=FpsGraphControlName, Path=DataContext}"
+		<Grid Grid.Row="0" Background="#F0F0F0">
+			<oxy:PlotView Background="#F0F0F0" x:Name="FpsPlotView" Model="{Binding FpsModel}" Tag="{Binding ElementName=FpsGraphControlName, Path=DataContext}"
 						  MouseDoubleClick="ResetChart_MouseDoubleClick">
 				<oxy:PlotView.ContextMenu>
 					<ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
@@ -44,39 +43,6 @@
 					</ContextMenu>
 				</oxy:PlotView.ContextMenu>
 			</oxy:PlotView>
-		</Grid>
-		<Grid Grid.Row="1" Visibility="{Binding IsCuttingModeActive, Converter={StaticResource FalseToCollapsedConverter}}">
-			<Grid.ColumnDefinitions>
-				<ColumnDefinition Width="2*" />
-				<ColumnDefinition Width="1*" />
-				<ColumnDefinition Width="2*" />
-			</Grid.ColumnDefinitions>
-			<Slider Grid.Column="0" Margin="20 0 0 10" Minimum="0"
-									Maximum="{Binding CutLeftSliderMaximum}"
-									HorizontalAlignment="Stretch"
-									VerticalAlignment="Bottom"
-									Value="{Binding StartIndex}"
-									Style="{StaticResource MaterialDesignDiscreteSlider}"
-									ToolTip="Cut first n frames"/>
-			<TextBox Grid.Column="1" HorizontalAlignment="Center" IsReadOnly="True" Margin="0 0 0 3"
-									 Style="{StaticResource MaterialDesignFloatingHintTextBox}" Text="{Binding GraphNumberSamples}">
-				<materialDesign:HintAssist.Hint>
-					<StackPanel Orientation="Horizontal" Margin="-2 0 0 0">
-						<materialDesign:PackIcon Kind="ChartLine" />
-						<TextBlock Margin="3 0 0 0">
-							# samples
-						</TextBlock>
-					</StackPanel>
-				</materialDesign:HintAssist.Hint>
-			</TextBox>
-			<Slider Grid.Column="2" Margin="0 0 10 10" Minimum="0"
-									IsDirectionReversed="True"
-									Maximum="{Binding CutRightSliderMaximum}"
-									HorizontalAlignment="Stretch"
-									VerticalAlignment="Bottom"
-									Value="{Binding EndIndex}"
-									Style="{StaticResource MaterialDesignDiscreteSlider}"
-									ToolTip="Cut last n frames"/>
 		</Grid>
 	</Grid>
 </UserControl>
