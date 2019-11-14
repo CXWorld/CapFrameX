@@ -231,8 +231,8 @@ namespace CapFrameX.ViewModel
 			{
 				_firstSeconds = value;
 				RaisePropertyChanged();
-				_localRecordDataServer.CurrentTime = _firstSeconds;
-				_localRecordDataServer.WindowLength = _maxRecordingTime - LastSeconds - _firstSeconds;
+				_localRecordDataServer.SetTimeWindow(_firstSeconds, 
+					_maxRecordingTime - LastSeconds - _firstSeconds);
 				UpdateMainCharts();
 				UpdateSecondaryCharts();
 				RemainingRecordingTime = Math.Round(_maxRecordingTime - LastSeconds - _firstSeconds, 2)
@@ -247,8 +247,8 @@ namespace CapFrameX.ViewModel
 			{
 				_lastSeconds = value;
 				RaisePropertyChanged();
-				_localRecordDataServer.CurrentTime = FirstSeconds;
-				_localRecordDataServer.WindowLength = _maxRecordingTime - _lastSeconds - FirstSeconds;
+				_localRecordDataServer.SetTimeWindow(FirstSeconds,
+					_maxRecordingTime - _lastSeconds - FirstSeconds);
 				UpdateMainCharts();
 				UpdateSecondaryCharts();
 				RemainingRecordingTime = Math.Round(_maxRecordingTime - _lastSeconds - FirstSeconds, 2)

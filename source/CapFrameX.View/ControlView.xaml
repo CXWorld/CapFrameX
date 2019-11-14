@@ -9,6 +9,7 @@
 			 xmlns:dragdrop="urn:gong-wpf-dragdrop"
              xmlns:mvvm="clr-namespace:CapFrameX.MVVM.Converter;assembly=CapFrameX.MVVM"	
 			 xmlns:wpf="clr-namespace:MaterialDesignThemes.Wpf;assembly=MaterialDesignThemes.Wpf"
+			 xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800"
 			 Background="{DynamicResource MaterialDesignPaper}"
@@ -53,13 +54,19 @@
 					  dragdrop:DragDrop.UseDefaultDragAdorner="True"
 					  dragdrop:DragDrop.DefaultDragAdornerOpacity="0.5"
 					  dragdrop:DragDrop.UseDefaultEffectDataTemplate="False">
+					<i:Interaction.Triggers>
+						<i:EventTrigger EventName="SelectionChanged">
+							<i:InvokeCommandAction Command="{Binding SelectedRecordingsCommand}" 
+                               CommandParameter="{Binding ElementName=RecordDataGrid, Path=SelectedItems}" />
+						</i:EventTrigger>
+					</i:Interaction.Triggers>
 					<DataGrid.InputBindings>
 						<KeyBinding Key="Delete" Command="{Binding Path=DeleteRecordCommand}" />
 					</DataGrid.InputBindings>
 					<DataGrid.ContextMenu>
 						<ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
 							<MenuItem Header="Add to ignore list" Command="{Binding AddToIgnoreListCommand}"/>
-							<MenuItem Header="Delete record file" Command="{Binding DeleteRecordFileCommand}"/>
+							<MenuItem Header="Delete recording file(s)" Command="{Binding DeleteRecordFileCommand}"/>
 						</ContextMenu>
 					</DataGrid.ContextMenu>
 					<DataGrid.Resources>

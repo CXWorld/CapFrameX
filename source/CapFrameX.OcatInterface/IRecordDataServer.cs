@@ -45,5 +45,6 @@ namespace CapFrameX.OcatInterface
 
 		IList<Point> GetFpsPointSampleWindow();
 
+		void SetTimeWindow(double currentTime, double windowLength);
 	}
 }

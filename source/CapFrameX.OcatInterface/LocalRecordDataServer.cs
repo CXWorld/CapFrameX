@@ -175,5 +175,11 @@ namespace CapFrameX.OcatInterface
 			_frametimeDataSubject.OnNext(GetFrametimeSampleWindow());
 			_fpsDataSubject.OnNext(GetFpsSampleWindow());
 		}
+
+		public void SetTimeWindow(double currentTime, double windowLength)
+		{
+			CurrentTime = currentTime;
+			WindowLength = windowLength;
+		}
 	}
 }
