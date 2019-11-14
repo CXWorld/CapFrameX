@@ -114,4 +114,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PreBuildEvent>taskkill /f /fi "pid gt 0" /im PresentMon64-1.5.2.exe</PreBuildEvent>
+  </PropertyGroup>
 </Project>

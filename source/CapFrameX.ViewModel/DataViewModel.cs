@@ -556,7 +556,7 @@ namespace CapFrameX.ViewModel
 					new RowSeries
 					{
 						Title = RecordInfo.GameName,
-						Fill = ColorRessource.BarChartFill,
+						Fill = new SolidColorBrush(Color.FromRgb(241, 125, 32)),
 						Values = values,
 						DataLabels = true,
 						FontSize = 11

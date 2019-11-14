@@ -50,7 +50,7 @@
 					<RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
 							 Margin="5"
 							 IsChecked="{Binding SynchronizationIsChecked}"
-							 Content="SYNCHRONISATION" />
+							 Content="SYNCHRONIZATION" />
 					<!--<RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
 							 Margin="5"
 							 IsChecked="{Binding AggregationIsChecked}"

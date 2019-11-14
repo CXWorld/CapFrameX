@@ -178,8 +178,8 @@ namespace CapFrameX.ViewModel
 			var yMin = Math.Min(frametimes.Min(), displaytimes.Min());
 			var yMax = Math.Max(frametimes.Max(), displaytimes.Max());
 
-			var frametimeSeries = new OxyPlot.Series.LineSeries { Title = "Frametimes", StrokeThickness = 1, Color = OxyColor.FromRgb(139, 35, 35) };
-			var displayChangedTimesSeries = new OxyPlot.Series.LineSeries { Title = "Display changed times", StrokeThickness = 1, Color = OxyColor.FromArgb(128, 35, 139, 123) };
+			var frametimeSeries = new OxyPlot.Series.LineSeries { Title = "Frametimes", StrokeThickness = 1, Color = ColorRessource.FrametimeStroke };
+			var displayChangedTimesSeries = new OxyPlot.Series.LineSeries { Title = "Display changed times", StrokeThickness = 1, Color = ColorRessource.FrametimeMovingAverageStroke };
 
 			frametimeSeries.Points.AddRange(frametimes.Select((x, i) => new DataPoint(i, x)));
 			displayChangedTimesSeries.Points.AddRange(displaytimes.Select((x, i) => new DataPoint(i, x)));
@@ -259,8 +259,7 @@ namespace CapFrameX.ViewModel
 					{
 						Title = "Display changed time distribution",
 						Values = histogramValues,
-						// Kind of pink
-						Fill = new SolidColorBrush(Color.FromRgb(139, 35, 102)),
+						Fill = new SolidColorBrush(Color.FromRgb(241, 125, 32)),
 						DataLabels = true,
 					}
 				};
@@ -287,6 +286,7 @@ namespace CapFrameX.ViewModel
 						Foreground = Brushes.Black,
 						LabelPosition = PieLabelPosition.InsideSlice,
 						LabelPoint = PieChartPointLabel,
+						FontSize = 12
 					},
 					new LiveCharts.Wpf.PieSeries
 					{
@@ -296,6 +296,7 @@ namespace CapFrameX.ViewModel
 						Foreground = Brushes.Black,
 						LabelPosition = PieLabelPosition.InsideSlice,
 						LabelPoint = PieChartPointLabel,
+						FontSize = 12
 					}
 				};
 			}));

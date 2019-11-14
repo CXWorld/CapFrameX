@@ -34,7 +34,6 @@
 	<Grid Margin="0 10 0 0">
 		<Grid.RowDefinitions>
 			<RowDefinition Height="5*"></RowDefinition>
-			<RowDefinition Height="Auto"></RowDefinition>
 			<RowDefinition Height="3*"></RowDefinition>
 		</Grid.RowDefinitions>
 		<Grid Grid.Row="0" Background="#F5F5F5">
@@ -47,15 +46,7 @@
 				</oxy:PlotView.ContextMenu>
 			</oxy:PlotView>
 		</Grid>
-		<Expander Visibility="Collapsed" Grid.Row="1" Name="SettingsExpander" Background="#F5F5F5" Margin="0 5 0 5" Header="Data/Chart Settings" HorizontalAlignment="Stretch">
-			<Grid>
-				<Grid.ColumnDefinitions>
-					<ColumnDefinition Width="Auto" />
-					<ColumnDefinition Width="1*" />
-				</Grid.ColumnDefinitions>
-			</Grid>
-		</Expander>
-		<Grid Background="#F5F5F5" Grid.Row="2" Visibility="{Binding ElementName=SettingsExpander, Path=IsExpanded, Converter={StaticResource TrueToCollapsedConverter}}">
+		<Grid Background="#F5F5F5" Grid.Row="1" Visibility="{Binding ElementName=SettingsExpander, Path=IsExpanded, Converter={StaticResource TrueToCollapsedConverter}}">
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition Width="3*" />
 				<ColumnDefinition Width="2*" />
@@ -79,7 +70,7 @@
 					<lvc:Axis Title="Distribution" Foreground="Black"/>
 				</lvc:CartesianChart.AxisY>
 			</lvc:CartesianChart>
-			<lvc:PieChart Grid.Column="1" Margin="10 5 0 5" Hoverable="False" Series="{Binding DroppedFramesStatisticCollection}" 
+			<lvc:PieChart Grid.Column="1" Margin="10 30 0 5" Hoverable="False" Series="{Binding DroppedFramesStatisticCollection}" 
 						  LegendLocation="Bottom" DataClick="Chart_OnDataClick"/>
 		</Grid>
 	</Grid>
