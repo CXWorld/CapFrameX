@@ -157,7 +157,19 @@ namespace CapFrameX.Data
             return processName;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static long GetQpcTimeFromDataLine(string dataLine)
+		{
+			if (string.IsNullOrWhiteSpace(dataLine))
+				return 0;
+
+			var lineSplit = dataLine.Split(',');
+			var qpcTime = lineSplit[17];
+
+			return Convert.ToInt64(qpcTime, CultureInfo.InvariantCulture);
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static double GetStartTimeFromDataLine(string dataLine)
         {
             if (string.IsNullOrWhiteSpace(dataLine))

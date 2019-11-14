@@ -24,7 +24,7 @@ using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Runtime.CompilerServices;
-using System.Text;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -38,6 +38,12 @@ namespace CapFrameX.ViewModel
 		private const int PRESICE_OFFSET = 500;
 		private const int ARCHIVE_LENGTH = 1000;
 
+		[DllImport("Kernel32.dll")]
+		private static extern bool QueryPerformanceCounter(out long lpPerformanceCount);
+
+		[DllImport("Kernel32.dll")]
+		private static extern bool QueryPerformanceFrequency(out long lpFrequency);
+
 		private readonly IAppConfiguration _appConfiguration;
 		private readonly ICaptureService _captureService;
 		private readonly IEventAggregator _eventAggregator;
@@ -47,6 +53,7 @@ namespace CapFrameX.ViewModel
 		private readonly List<string> _captureDataArchive = new List<string>(ARCHIVE_LENGTH);
 
 		private IDisposable _disposableHeartBeat;
+		private long _qcpTimeStart;
 		private IDisposable _disposableCaptureStream;
 		private IDisposable _disposableArchiveStream;
 		private List<string> _captureData;
@@ -61,14 +68,12 @@ namespace CapFrameX.ViewModel
 		private string _selectedSoundMode;
 		private string _loggerOutput = string.Empty;
 		private bool _fillArchive = false;
-		private long _timestampStartCapture;
-		private long _timestampStopCapture;
-		private long _timestampFirstStreamElement;
 		private CancellationTokenSource _cancellationTokenSource;
 		private int _sliderSoundLevel;
 		private bool _showVolumeController;
 		private PlotModel _frametimeModel;
 		private ISubject<string> _frametimeStream;
+		private long _qcpTimeStop;
 
 		private bool IsCapturing
 		{
@@ -501,7 +506,7 @@ namespace CapFrameX.ViewModel
 			}
 
 			if (!IsCapturing)
-			{
+			{				
 				// none -> do nothing
 				// simple sounds
 				if (SelectedSoundMode == _soundModes[1])
@@ -544,7 +549,9 @@ namespace CapFrameX.ViewModel
 
 		private void FinishCapturingAndUpdateUi()
 		{
-			_timestampStopCapture = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds();
+			_ = QueryPerformanceCounter(out long counter);
+			_qcpTimeStop = counter;
+			AddLoggerEntry($"Performance counter on stop capturing: {counter}");
 			_disposableCaptureStream?.Dispose();
 
 			AddLoggerEntry("Capturing stopped.");
@@ -592,7 +599,9 @@ namespace CapFrameX.ViewModel
 			bool intializedStartTime = false;
 
 			var context = TaskScheduler.FromCurrentSynchronizationContext();
-			_timestampStartCapture = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds();
+			_ = QueryPerformanceCounter(out long counter);
+			AddLoggerEntry($"Performance counter on start capturing: {counter}");
+			_qcpTimeStart = counter;
 
 			_disposableCaptureStream = _captureService.RedirectedOutputDataStream
 				.ObserveOn(new EventLoopScheduler()).Subscribe(dataLine =>
@@ -605,7 +614,6 @@ namespace CapFrameX.ViewModel
 
 					if (!intializedStartTime)
 					{
-						_timestampFirstStreamElement = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds();
 						intializedStartTime = true;
 
 						// stop archive
@@ -724,12 +732,6 @@ namespace CapFrameX.ViewModel
 			var startTimeWithOffset = RecordDataProvider.GetStartTimeFromDataLine(_captureData.First());
 			var captureTime = Convert.ToDouble(CaptureTimeString, CultureInfo.InvariantCulture);
 
-			if (captureTime == 0)
-			{
-				// ms -> sec
-				captureTime = (_timestampStopCapture - _timestampStartCapture) / 1000d;
-			}
-
 			AddLoggerEntry($"Recording time (free run or time set) in sec: " +
 							Math.Round(captureTime, 2).ToString(CultureInfo.InvariantCulture));
 
@@ -754,19 +756,12 @@ namespace CapFrameX.ViewModel
 			var unionCaptureData = filteredArchive.Concat(_captureData.Skip(distinctIndex)).ToList();
 
 			var captureInterval = new List<string>();
-			double leftTimeBound = startTimeWithOffset - (_timestampFirstStreamElement - _timestampStartCapture) / 1000d;
-			double rightTimeBound = startTimeWithOffset + captureTime - (_timestampFirstStreamElement - _timestampStartCapture) / 1000d;
-
-			var compensatedDelay = Math.Round((_timestampFirstStreamElement - _timestampStartCapture) / 1000d, 2);
-
-			AddLoggerEntry($"Compensated {compensatedDelay.ToString(CultureInfo.InvariantCulture)} " +
-				$"seconds delay with data from archive.");
 
 			for (int i = 0; i < unionCaptureData.Count; i++)
 			{
-				var currentStartTime = RecordDataProvider.GetStartTimeFromDataLine(unionCaptureData[i]);
+				var currentqpcTime = RecordDataProvider.GetQpcTimeFromDataLine(unionCaptureData[i]);
 
-				if (currentStartTime >= leftTimeBound && currentStartTime <= rightTimeBound)
+				if (currentqpcTime >= _qcpTimeStart && currentqpcTime <= _qcpTimeStop)
 					captureInterval.Add(unionCaptureData[i]);
 			}
 

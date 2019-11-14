@@ -19,7 +19,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <OutputPath>bin\$(Configuration)\</OutputPath>
     <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
-    <DefineConstants>CapFrameXInstaller.BinaryDir=$(SolutionDir)CapFrameX\bin\x64\$(Configuration)</DefineConstants>
+    <DefineConstants>CapFrameXInstaller.BinaryDir=$(SolutionDir)source\CapFrameX\bin\x64\$(Configuration)</DefineConstants>
     <SuppressIces>ICE57</SuppressIces>
   </PropertyGroup>
   <ItemGroup>
