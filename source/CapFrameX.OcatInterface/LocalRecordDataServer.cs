@@ -109,7 +109,7 @@ namespace CapFrameX.OcatInterface
 
 			double startTime = CurrentTime;
 			double endTime = startTime + WindowLength;
-			return CurrentSession.GetFrametimePointsTimeWindow(startTime, endTime);
+			return CurrentSession.GetFrametimePointsTimeWindow(startTime, endTime, RemoveOutlierMethod);
 		}
 
 		public IList<Point> GetFrametimePointSampleWindow()
@@ -117,7 +117,7 @@ namespace CapFrameX.OcatInterface
 			if (CurrentSession == null)
 				return null;
 
-			return CurrentSession.GetFrametimePointsSampleWindow(StartIndex, EndIndex);
+			return CurrentSession.GetFrametimePointsSampleWindow(StartIndex, EndIndex, RemoveOutlierMethod);
 		}
 
 		public IList<double> GetFpsTimeWindow()

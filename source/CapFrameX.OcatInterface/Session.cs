@@ -36,10 +36,11 @@ namespace CapFrameX.OcatInterface
 			_frametimeStatisticProvider = new FrametimeStatisticProvider(new CapFrameXConfiguration());
 		}
 
-		public IList<double> GetFrametimeSampleWindow(int startIndex, double endIndex, ERemoveOutlierMethod removeOutlierMethod)
+		public IList<double> GetFrametimeSampleWindow(int startIndex, double endIndex,
+			ERemoveOutlierMethod eRemoveOutlierMethod = ERemoveOutlierMethod.None)
 		{
 			var frametimesSampleWindow = new List<double>();
-			var frametimes = _frametimeStatisticProvider?.GetOutlierAdjustedSequence(FrameTimes, removeOutlierMethod);
+			var frametimes = _frametimeStatisticProvider?.GetOutlierAdjustedSequence(FrameTimes, eRemoveOutlierMethod);
 
 			if (frametimes != null && frametimes.Any())
 			{
@@ -52,10 +53,11 @@ namespace CapFrameX.OcatInterface
 			return frametimesSampleWindow;
 		}
 
-		public IList<double> GetFrametimeTimeWindow(double startTime, double endTime, ERemoveOutlierMethod removeOutlierMethod)
+		public IList<double> GetFrametimeTimeWindow(double startTime, double endTime,
+			ERemoveOutlierMethod eRemoveOutlierMethod = ERemoveOutlierMethod.None)
 		{
 			IList<double> frametimesTimeWindow = new List<double>();
-			var frametimes = _frametimeStatisticProvider?.GetOutlierAdjustedSequence(FrameTimes, removeOutlierMethod);
+			var frametimes = _frametimeStatisticProvider?.GetOutlierAdjustedSequence(FrameTimes, eRemoveOutlierMethod);
 
 			if (frametimes != null && FrameStart != null)
 			{
@@ -71,10 +73,11 @@ namespace CapFrameX.OcatInterface
 			return frametimesTimeWindow;
 		}
 
-		public IList<Point> GetFrametimePointsTimeWindow(double startTime, double endTime)
+		public IList<Point> GetFrametimePointsTimeWindow(double startTime, double endTime,
+			ERemoveOutlierMethod eRemoveOutlierMethod = ERemoveOutlierMethod.None)
 		{
 			IList<Point> frametimesPointsWindow = new List<Point>();
-			var frametimes = _frametimeStatisticProvider?.GetOutlierAdjustedSequence(FrameTimes, ERemoveOutlierMethod.None);
+			var frametimes = _frametimeStatisticProvider?.GetOutlierAdjustedSequence(FrameTimes, eRemoveOutlierMethod);
 
 			if (frametimes != null && FrameStart != null)
 			{
@@ -90,10 +93,11 @@ namespace CapFrameX.OcatInterface
 			return frametimesPointsWindow;
 		}
 
-		public IList<Point> GetFrametimePointsSampleWindow(int startIndex, double endIndex)
+		public IList<Point> GetFrametimePointsSampleWindow(int startIndex, double endIndex, 
+			ERemoveOutlierMethod eRemoveOutlierMethod = ERemoveOutlierMethod.None)
 		{
 			var frametimesPointsSampleWindow = new List<Point>();
-			var frametimes = _frametimeStatisticProvider?.GetOutlierAdjustedSequence(FrameTimes, ERemoveOutlierMethod.None);
+			var frametimes = _frametimeStatisticProvider?.GetOutlierAdjustedSequence(FrameTimes, eRemoveOutlierMethod);
 
 			if (frametimes != null && frametimes.Any())
 			{
