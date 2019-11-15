@@ -33,16 +33,13 @@ using System.Windows.Media;
 
 namespace CapFrameX.ViewModel
 {
-	public class CaptureViewModel : BindableBase, INavigationAware
+	public partial class CaptureViewModel : BindableBase, INavigationAware
 	{
 		private const int PRESICE_OFFSET = 500;
 		private const int ARCHIVE_LENGTH = 1000;
 
 		[DllImport("Kernel32.dll")]
 		private static extern bool QueryPerformanceCounter(out long lpPerformanceCount);
-
-		[DllImport("Kernel32.dll")]
-		private static extern bool QueryPerformanceFrequency(out long lpFrequency);
 
 		private readonly IAppConfiguration _appConfiguration;
 		private readonly ICaptureService _captureService;
@@ -289,7 +286,6 @@ namespace CapFrameX.ViewModel
 
 			SubscribeToUpdateProcessIgnoreList();
 			SubscribeToGlobalHookEvent();
-			SubscribeToFrametimeStream();
 
 			StartCaptureService();
 
@@ -384,83 +380,6 @@ namespace CapFrameX.ViewModel
 			SetGlobalHookEventCaptureHotkey();
 		}
 
-		private void SubscribeToFrametimeStream()
-		{
-			var context = SynchronizationContext.Current;
-			var slidingWindow = new List<DataLineInfo>(400);
-
-			_frametimeStream.ObserveOn(new EventLoopScheduler()).Select(GetFrametimePointFromLine).ObserveOn(context)
-				.Select(point => SetCurrentWindow(point, slidingWindow)).Subscribe(DrawCurrentSlidingWindow);
-		}
-
-		// PresentFlags,AllowsTearing,PresentMode,WasBatched,DwmNotified,Dropped,TimeInSeconds,MsBetweenPresents
-		private class DataLineInfo
-		{
-			public string PresentFlags { get; set; }
-			public string AllowsTearing { get; set; }
-			public string PresentMode { get; set; }
-			public string WasBatched { get; set; }
-			public string DwmNotified { get; set; }
-			public string Dropped { get; set; }
-			public DataPoint FrametimePoint { get; set; }
-		}
-
-		private void DrawCurrentSlidingWindow(List<DataLineInfo> window)
-		{
-			FrametimeModel.Series.Clear();
-			var frametimeSeries = new LineSeries
-			{
-				Title = "Frametimes",
-				StrokeThickness = 1,
-				LegendStrokeThickness = 4,
-				Color = ColorRessource.FrametimeStroke
-			};
-
-			frametimeSeries.Points.AddRange(window.Select(info => info.FrametimePoint));
-			FrametimeModel.Series.Add(frametimeSeries);
-
-			FrametimeModel.InvalidatePlot(true);
-		}
-
-		private List<DataLineInfo> SetCurrentWindow(DataLineInfo dataLineInfo, List<DataLineInfo> slidingWindow)
-		{
-			slidingWindow.Add(dataLineInfo);
-			if (slidingWindow.Count >= 400)
-				slidingWindow.RemoveAt(0);
-
-			return slidingWindow;
-		}
-
-		//PresentFlags,AllowsTearing,PresentMode,WasBatched,DwmNotified,Dropped,TimeInSeconds,MsBetweenPresents
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		private static DataLineInfo GetFrametimePointFromLine(string arg)
-		{
-			if (string.IsNullOrWhiteSpace(arg))
-				return new DataLineInfo();
-
-			var lineSplit = arg.Split(',');
-			var presentFlags = lineSplit[5];
-			var allowsTearing = lineSplit[6];
-			var presentMode = lineSplit[7];
-			var wasBatched = lineSplit[8];
-			var dwmNotified = lineSplit[9];
-			var dropped = lineSplit[10];
-			var startTime = lineSplit[11];
-			var frameTime = lineSplit[12];
-
-			return new DataLineInfo()
-			{
-				PresentFlags = presentFlags,
-				AllowsTearing = allowsTearing,
-				PresentMode = presentMode,
-				WasBatched = wasBatched,
-				DwmNotified = dwmNotified,
-				Dropped = dropped,
-				FrametimePoint = new DataPoint(Convert.ToDouble(startTime, CultureInfo.InvariantCulture),
-					Convert.ToDouble(frameTime, CultureInfo.InvariantCulture))
-			};
-		}
-
 		private void UpdateGlobalHookEvent()
 		{
 			if (_globalHookEvent != null)
@@ -506,7 +425,11 @@ namespace CapFrameX.ViewModel
 			}
 
 			if (!IsCapturing)
-			{				
+			{
+				_ = QueryPerformanceCounter(out long counter);
+				AddLoggerEntry($"Performance counter on start capturing: {counter}");
+				_qcpTimeStart = counter;
+
 				// none -> do nothing
 				// simple sounds
 				if (SelectedSoundMode == _soundModes[1])
@@ -588,77 +511,6 @@ namespace CapFrameX.ViewModel
 				1000 * Convert.ToInt32(CaptureTimeString)));
 		}
 
-		private void StartCaptureDataFromStream()
-		{
-			AddLoggerEntry("Capturing started.");
-
-			_captureData = new List<string>();
-			bool autoTermination = Convert.ToInt32(CaptureTimeString) > 0;
-			double delayCapture = Convert.ToInt32(CaptureStartDelayString);
-			double captureTime = Convert.ToInt32(CaptureTimeString) + delayCapture;
-			bool intializedStartTime = false;
-
-			var context = TaskScheduler.FromCurrentSynchronizationContext();
-			_ = QueryPerformanceCounter(out long counter);
-			AddLoggerEntry($"Performance counter on start capturing: {counter}");
-			_qcpTimeStart = counter;
-
-			_disposableCaptureStream = _captureService.RedirectedOutputDataStream
-				.ObserveOn(new EventLoopScheduler()).Subscribe(dataLine =>
-				{
-					if (string.IsNullOrWhiteSpace(dataLine))
-						return;
-
-					_captureData.Add(dataLine);
-					_frametimeStream.OnNext(dataLine);
-
-					if (!intializedStartTime)
-					{
-						intializedStartTime = true;
-
-						// stop archive
-						_fillArchive = false;
-						_disposableArchiveStream?.Dispose();
-
-						AddLoggerEntry("Stopped filling archive.");
-					}
-				});
-
-			if (autoTermination)
-			{
-				AddLoggerEntry("Starting countdown...");
-
-				_cancellationTokenSource = new CancellationTokenSource();
-				Task.Run(async () =>
-				{
-					await SetTaskDelay().ContinueWith(_ =>
-				   {
-					   Application.Current.Dispatcher.Invoke(new Action(() =>
-					   {
-						   FinishCapturingAndUpdateUi();
-					   }));
-				   }, _cancellationTokenSource.Token, TaskContinuationOptions.ExecuteSynchronously, context);
-				});
-			}
-		}
-
-		private void WriteCaptureDataToFile()
-		{
-			// explicit hook, only one process
-			if (!string.IsNullOrWhiteSpace(SelectedProcessToCapture))
-			{
-				Task.Run(() => WriteExtractedCaptureDataToFile(SelectedProcessToCapture));
-			}
-			// auto hook with filtered process list
-			else
-			{
-				var filter = CaptureServiceConfiguration.GetProcessIgnoreList();
-				var process = ProcessesToCapture.FirstOrDefault();
-
-				Task.Run(() => WriteExtractedCaptureDataToFile(process));
-			}
-		}
-
 		private void StartCaptureService()
 		{
 			var serviceConfig = GetRedirectedServiceConfig();
@@ -703,69 +555,6 @@ namespace CapFrameX.ViewModel
 				.GetInitialObservedDirectory(_appConfiguration.ObservedDirectory);
 
 			return Path.Combine(observedDirectory, filename);
-		}
-
-		private void WriteExtractedCaptureDataToFile(string processName)
-		{
-			if (string.IsNullOrWhiteSpace(processName))
-				return;
-
-			var captureData = GetAdjustedCaptureData();
-			StartFillArchive();
-
-			if (captureData == null)
-			{
-				AddLoggerEntry("Error while extracting capture data. No file will be written.");
-				return;
-			}
-
-			var filePath = GetOutputFilename(processName);
-			int captureTime = Convert.ToInt32(CaptureTimeString);
-			_recordDataProvider.SavePresentData(captureData, filePath, processName, captureTime);
-
-			AddLoggerEntry("Capture file is successfully written into directory.");
-		}
-
-		private List<string> GetAdjustedCaptureData()
-		{
-			var processName = RecordDataProvider.GetProcessNameFromDataLine(_captureData.First());
-			var startTimeWithOffset = RecordDataProvider.GetStartTimeFromDataLine(_captureData.First());
-			var captureTime = Convert.ToDouble(CaptureTimeString, CultureInfo.InvariantCulture);
-
-			AddLoggerEntry($"Recording time (free run or time set) in sec: " +
-							Math.Round(captureTime, 2).ToString(CultureInfo.InvariantCulture));
-
-			var filteredArchive = _captureDataArchive.Where(line => RecordDataProvider.GetProcessNameFromDataLine(line) == processName).ToList();
-
-			AddLoggerEntry($"Using archive with {filteredArchive.Count} frames.");
-
-			// Distinct archive and live stream
-			var lastArchiveTime = RecordDataProvider.GetStartTimeFromDataLine(filteredArchive.Last());
-			int distinctIndex = 0;
-			for (int i = 0; i < _captureData.Count; i++)
-			{
-				if (RecordDataProvider.GetStartTimeFromDataLine(_captureData[i]) <= lastArchiveTime)
-					distinctIndex++;
-				else
-					break;
-			}
-
-			if (distinctIndex == 0)
-				return null;
-
-			var unionCaptureData = filteredArchive.Concat(_captureData.Skip(distinctIndex)).ToList();
-
-			var captureInterval = new List<string>();
-
-			for (int i = 0; i < unionCaptureData.Count; i++)
-			{
-				var currentqpcTime = RecordDataProvider.GetQpcTimeFromDataLine(unionCaptureData[i]);
-
-				if (currentqpcTime >= _qcpTimeStart && currentqpcTime <= _qcpTimeStop)
-					captureInterval.Add(unionCaptureData[i]);
-			}
-
-			return captureInterval;
 		}
 
 		private ICaptureServiceConfiguration GetRedirectedServiceConfig()

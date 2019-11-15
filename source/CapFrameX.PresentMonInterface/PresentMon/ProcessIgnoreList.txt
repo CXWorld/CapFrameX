@@ -6,6 +6,7 @@ Battle.net
 Calculator
 CapFrameX
 chrome
+CRYENGINE_Launcher
 csrss
 devenv
 dllhost
