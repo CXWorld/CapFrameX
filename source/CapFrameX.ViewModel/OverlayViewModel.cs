@@ -136,17 +136,17 @@ namespace CapFrameX.ViewModel
         {
             if (_recordInfo != null)
             {
-                CustomCpuDescription = string.Copy(_recordInfo.ProcessorName ?? "");
-                CustomGpuDescription = string.Copy(_recordInfo.GraphicCardName ?? "");
-                CustomGameName = string.Copy(_recordInfo.GameName ?? "");
-                CustomComment = string.Copy(_recordInfo.Comment ?? "");
+                CustomCpuDescription = string.Copy(_recordInfo.ProcessorName ?? string.Empty);
+                CustomGpuDescription = string.Copy(_recordInfo.GraphicCardName ?? string.Empty);
+                CustomGameName = string.Copy(_recordInfo.GameName ?? string.Empty);
+                CustomComment = string.Copy(_recordInfo.Comment ?? string.Empty);
             }
             else
             {
-                CustomCpuDescription = "";
-                CustomGpuDescription = "";
-                CustomGameName = "";
-                CustomComment = "";
+                CustomCpuDescription = string.Empty;
+                CustomGpuDescription = string.Empty;
+                CustomGameName = string.Empty;
+                CustomComment = string.Empty;
             }
 
             EditingDialogContent = new EditingDialog();

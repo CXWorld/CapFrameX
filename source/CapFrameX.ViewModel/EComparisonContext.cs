@@ -10,7 +10,9 @@ namespace CapFrameX.ViewModel
 		CPU = 2,
 		[Description("Graphic card")]
 		GPU = 3,
+		[Description("System RAM")]
+		SystemRam = 4,
 		[Description("Context from comment")]
-		Custom = 4
+		Custom = 5
 	}
 }

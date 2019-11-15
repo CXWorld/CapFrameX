@@ -466,6 +466,9 @@ namespace CapFrameX.ViewModel
 				case EComparisonContext.GPU:
 					OnGpuContex();
 					break;
+				case EComparisonContext.SystemRam:
+					OnSystemRamContex();
+					break;
 				case EComparisonContext.Custom:
 					OnCustomContex();
 					break;

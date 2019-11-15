@@ -95,6 +95,12 @@ namespace CapFrameX.ViewModel
 				=> record.WrappedRecordInfo.FileRecordInfo.GraphicCardName.SplitWordWise(PART_LENGTH).Max(part => part.Length));
 		}
 
+		private int GetMaxSystemRamAlignment()
+		{
+			return ComparisonRecords.Max(record
+				=> record.WrappedRecordInfo.FileRecordInfo.SystemRamInfo.SplitWordWise(PART_LENGTH).Max(part => part.Length));
+		}
+
 		private int GetMaxCpuAlignment()
 		{
 			return ComparisonRecords.Max(record
@@ -110,6 +116,12 @@ namespace CapFrameX.ViewModel
 		private void OnGpuContex()
 		{
 			SetLabelGpuContext();
+			ComparisonModel.InvalidatePlot(true);
+		}
+
+		private void OnSystemRamContex()
+		{
+			SetLabelSystemRamContext();
 			ComparisonModel.InvalidatePlot(true);
 		}
 
@@ -213,6 +225,41 @@ namespace CapFrameX.ViewModel
 					continue;
 
 				infoPartsFormatted += 
+					string.Format(CultureInfo.InvariantCulture, alignmentFormat, part) + Environment.NewLine;
+			}
+
+			return infoPartsFormatted;
+		}
+
+		private void SetLabelSystemRamContext()
+		{
+			ComparisonRowChartLabels = ComparisonRecords.Select(record =>
+			{
+				return GetLabelSystemRamContext(record, GetMaxSystemRamAlignment());
+			}).Reverse().ToArray();
+
+			if (ComparisonModel.Series.Count == ComparisonRecords.Count)
+			{
+				for (int i = 0; i < ComparisonRecords.Count; i++)
+				{
+					ComparisonModel.Series[i].Title = GetLabelSystemRamContext(ComparisonRecords[i], GetMaxSystemRamAlignment());
+				}
+			}
+		}
+
+		private string GetLabelSystemRamContext(ComparisonRecordInfoWrapper record, int maxAlignment)
+		{
+			var systemRamName = record.WrappedRecordInfo.FileRecordInfo.SystemRamInfo ?? "";
+			var systemRamInfoParts = systemRamName.SplitWordWise(PART_LENGTH);
+			var alignmentFormat = "{0," + maxAlignment.ToString() + "}";
+
+			var infoPartsFormatted = string.Empty;
+			foreach (var part in systemRamInfoParts)
+			{
+				if (part == string.Empty)
+					continue;
+
+				infoPartsFormatted +=
 					string.Format(CultureInfo.InvariantCulture, alignmentFormat, part) + Environment.NewLine;
 			}
 

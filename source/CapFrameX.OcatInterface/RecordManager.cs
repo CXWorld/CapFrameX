@@ -73,8 +73,8 @@ namespace CapFrameX.OcatInterface
                     File.WriteAllLines(recordInfo.FullPath, headerLines.Concat(lines));
                 }            
             }
-            //Todo: write message to logger
-            catch { }
+			//Todo: write message to logger
+			catch { }
         }
 
         private static int GetHeaderIndex(string[] lines, string headerEntry)
