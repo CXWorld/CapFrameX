@@ -4,67 +4,13 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Reactive.Concurrency;
 using System.Reactive.Linq;
-using System.Threading;
 using System.Threading.Tasks;
-using System.Windows;
 
 namespace CapFrameX.ViewModel
 {
 	public partial class CaptureViewModel
 	{
-		private void StartCaptureDataFromStream()
-		{
-			AddLoggerEntry("Capturing started.");
-
-			_captureData = new List<string>();
-			bool autoTermination = Convert.ToInt32(CaptureTimeString) > 0;
-			double delayCapture = Convert.ToInt32(CaptureStartDelayString);
-			double captureTime = Convert.ToInt32(CaptureTimeString) + delayCapture;
-			bool intializedStartTime = false;
-
-			var context = TaskScheduler.FromCurrentSynchronizationContext();
-
-			_disposableCaptureStream = _captureService.RedirectedOutputDataStream
-				.ObserveOn(new EventLoopScheduler()).Subscribe(dataLine =>
-				{
-					if (string.IsNullOrWhiteSpace(dataLine))
-						return;
-
-					_captureData.Add(dataLine);
-					_frametimeStream.OnNext(dataLine);
-
-					if (!intializedStartTime)
-					{
-						intializedStartTime = true;
-
-						// stop archive
-						_fillArchive = false;
-						_disposableArchiveStream?.Dispose();
-
-						AddLoggerEntry("Stopped filling archive.");
-					}
-				});
-
-			if (autoTermination)
-			{
-				AddLoggerEntry("Starting countdown...");
-
-				_cancellationTokenSource = new CancellationTokenSource();
-				Task.Run(async () =>
-				{
-					await SetTaskDelay().ContinueWith(_ =>
-					{
-						Application.Current.Dispatcher.Invoke(new Action(() =>
-						{
-							FinishCapturingAndUpdateUi();
-						}));
-					}, _cancellationTokenSource.Token, TaskContinuationOptions.ExecuteSynchronously, context);
-				});
-			}
-		}
-
 		private void WriteCaptureDataToFile()
 		{
 			// explicit hook, only one process
@@ -149,7 +95,7 @@ namespace CapFrameX.ViewModel
 			{
 				double startTime = 0;
 
-				// find first dataline that fits valid interval
+				// find first dataline that fits start of valid interval
 				for (int i = 0; i < unionCaptureData.Count; i++)
 				{
 					var currentQpcTime = RecordDataProvider.GetQpcTimeFromDataLine(unionCaptureData[i]);

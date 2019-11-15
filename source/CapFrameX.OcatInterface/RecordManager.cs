@@ -12,10 +12,10 @@ namespace CapFrameX.OcatInterface
     public static class RecordManager
     {
         public static void UpdateCustomData(IFileRecordInfo recordInfo, string customCpuInfo,
-            string customGpuInfo, string customGameName, string customComment)
+            string customGpuInfo, string customRamInfo, string customGameName, string customComment)
         {
             if (recordInfo == null || customCpuInfo == null ||
-                customGpuInfo == null || customGameName == null ||
+                customGpuInfo == null || customRamInfo == null || customGameName == null ||
                 customComment == null)
                 return;
 
@@ -33,8 +33,12 @@ namespace CapFrameX.OcatInterface
                     int graphicCardNameHeaderIndex = GetHeaderIndex(lines, "GPU");
                     lines[graphicCardNameHeaderIndex] = $"{FileRecordInfo.HEADER_MARKER}GPU{FileRecordInfo.INFO_SEPERATOR}{customGpuInfo}";
 
-                    // GameName
-                    int gameNameHeaderIndex = GetHeaderIndex(lines, "GameName");
+					// RAM
+					int systemRamNameHeaderIndex = GetHeaderIndex(lines, "System RAM");
+					lines[systemRamNameHeaderIndex]  = $"{FileRecordInfo.HEADER_MARKER}System RAM{FileRecordInfo.INFO_SEPERATOR}{customRamInfo}";
+
+					// GameName
+					int gameNameHeaderIndex = GetHeaderIndex(lines, "GameName");
                     lines[gameNameHeaderIndex] = $"{FileRecordInfo.HEADER_MARKER}GameName{FileRecordInfo.INFO_SEPERATOR}{customGameName}";
 
                     // Comment

@@ -37,6 +37,7 @@ namespace CapFrameX.ViewModel
 		private bool _hasValidSource;
 		private string _customCpuDescription;
 		private string _customGpuDescription;
+		private string _customRamDescription;
 		private string _customGameName;
 		private string _customComment;
 		private int _recordDataGridSelectedIndex;
@@ -75,6 +76,16 @@ namespace CapFrameX.ViewModel
 			set
 			{
 				_customGpuDescription = value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public string CustomRamDescription
+		{
+			get { return _customRamDescription; }
+			set
+			{
+				_customRamDescription = value;
 				RaisePropertyChanged();
 			}
 		}
@@ -126,6 +137,8 @@ namespace CapFrameX.ViewModel
 
 		public ICommand AddGpuInfoCommand { get; }
 
+		public ICommand AddRamInfoCommand { get; }
+
 		public ICommand DeleteRecordCommand { get; }
 
 		public ICommand SelectedRecordingsCommand { get; }
@@ -148,7 +161,8 @@ namespace CapFrameX.ViewModel
 			CancelEditingDialogCommand = new DelegateCommand(OnCancelEditingDialog);
 			AddCpuInfoCommand = new DelegateCommand(OnAddCpuInfo);
 			AddGpuInfoCommand = new DelegateCommand(OnAddGpuInfo);
-			DeleteRecordCommand = new DelegateCommand(OnPressDeleteKey);
+			AddRamInfoCommand = new DelegateCommand(OnAddRamInfo);
+;			DeleteRecordCommand = new DelegateCommand(OnPressDeleteKey);
 			SelectedRecordingsCommand = new DelegateCommand<object>(OnSelectedRecordings);
 
 			HasValidSource = recordObserver.HasValidSource;
@@ -234,10 +248,11 @@ namespace CapFrameX.ViewModel
 		{
 			if (SelectedRecordInfo != null)
 			{
-				CustomCpuDescription = string.Copy(SelectedRecordInfo.ProcessorName ?? "");
-				CustomGpuDescription = string.Copy(SelectedRecordInfo.GraphicCardName ?? "");
-				CustomGameName = string.Copy(SelectedRecordInfo.GameName ?? "");
-				CustomComment = string.Copy(SelectedRecordInfo.Comment ?? "");
+				CustomCpuDescription = string.Copy(SelectedRecordInfo.ProcessorName ?? string.Empty);
+				CustomGpuDescription = string.Copy(SelectedRecordInfo.GraphicCardName ?? string.Empty);
+				CustomRamDescription = string.Copy(SelectedRecordInfo.SystemRamInfo ?? string.Empty);
+				CustomGameName = string.Copy(SelectedRecordInfo.GameName ?? string.Empty);
+				CustomComment = string.Copy(SelectedRecordInfo.Comment ?? string.Empty);
 			}
 			else
 			{
@@ -247,22 +262,23 @@ namespace CapFrameX.ViewModel
 
 		private void ResetInfoEditBoxes()
 		{
-			CustomCpuDescription = "";
-			CustomGpuDescription = "";
-			CustomGameName = "";
-			CustomComment = "";
+			CustomCpuDescription = string.Empty;
+			CustomGpuDescription = string.Empty;
+			CustomRamDescription = string.Empty;
+			CustomGameName = string.Empty;
+			CustomComment = string.Empty;
 		}
 
 		private void OnAcceptEditingDialog()
 		{
-			if (CustomCpuDescription == null || CustomGpuDescription == null
+			if (CustomCpuDescription == null || CustomGpuDescription == null || CustomRamDescription == null
 				|| CustomGameName == null || CustomComment == null || _selectedRecordInfo == null)
 				return;
 
 			// hint: _selectedRecordInfo must not be uptated, because after reload
 			// it will be set to null
 			RecordManager.UpdateCustomData(_selectedRecordInfo,
-				CustomCpuDescription, CustomGpuDescription, CustomGameName, CustomComment);
+				CustomCpuDescription, CustomGpuDescription, CustomRamDescription, CustomGameName, CustomComment);
 
 			_recordDataProvider.AddGameNameToMatchingList(_selectedRecordInfo.ProcessName, CustomGameName);
 
@@ -288,10 +304,11 @@ namespace CapFrameX.ViewModel
 
 				if (session != null)
 				{
-					CustomCpuDescription = string.Copy(SelectedRecordInfo.ProcessorName ?? "");
-					CustomGpuDescription = string.Copy(SelectedRecordInfo.GraphicCardName ?? "");
-					CustomGameName = string.Copy(SelectedRecordInfo.GameName ?? "");
-					CustomComment = string.Copy(SelectedRecordInfo.Comment ?? "");
+					CustomCpuDescription = string.Copy(SelectedRecordInfo.ProcessorName ?? string.Empty);
+					CustomGpuDescription = string.Copy(SelectedRecordInfo.GraphicCardName ?? string.Empty);
+					CustomRamDescription = string.Copy(SelectedRecordInfo.SystemRamInfo ?? string.Empty);
+					CustomGameName = string.Copy(SelectedRecordInfo.GameName ?? string.Empty);
+					CustomComment = string.Copy(SelectedRecordInfo.Comment ?? string.Empty);
 				}
 				else
 				{
@@ -310,6 +327,11 @@ namespace CapFrameX.ViewModel
 		private void OnAddGpuInfo()
 		{
 			CustomGpuDescription = PresentMonInterface.SystemInfo.GetGraphicCardName();
+		}
+
+		private void OnAddRamInfo()
+		{
+			CustomRamDescription= PresentMonInterface.SystemInfo.GetSystemRAMInfoName();
 		}
 
 		private void OnPressDeleteKey()

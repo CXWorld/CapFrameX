@@ -470,6 +470,57 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
+		private void StartCaptureDataFromStream()
+		{
+			AddLoggerEntry("Capturing started.");
+
+			_captureData = new List<string>();
+			bool autoTermination = Convert.ToInt32(CaptureTimeString) > 0;
+			double delayCapture = Convert.ToInt32(CaptureStartDelayString);
+			double captureTime = Convert.ToInt32(CaptureTimeString) + delayCapture;
+			bool intializedStartTime = false;
+
+			var context = TaskScheduler.FromCurrentSynchronizationContext();
+
+			_disposableCaptureStream = _captureService.RedirectedOutputDataStream
+				.ObserveOn(new EventLoopScheduler()).Subscribe(dataLine =>
+				{
+					if (string.IsNullOrWhiteSpace(dataLine))
+						return;
+
+					_captureData.Add(dataLine);
+					_frametimeStream.OnNext(dataLine);
+
+					if (!intializedStartTime)
+					{
+						intializedStartTime = true;
+
+						// stop archive
+						_fillArchive = false;
+						_disposableArchiveStream?.Dispose();
+
+						AddLoggerEntry("Stopped filling archive.");
+					}
+				});
+
+			if (autoTermination)
+			{
+				AddLoggerEntry("Starting countdown...");
+
+				_cancellationTokenSource = new CancellationTokenSource();
+				Task.Run(async () =>
+				{
+					await SetTaskDelay().ContinueWith(_ =>
+					{
+						Application.Current.Dispatcher.Invoke(new Action(() =>
+						{
+							FinishCapturingAndUpdateUi();
+						}));
+					}, _cancellationTokenSource.Token, TaskContinuationOptions.ExecuteSynchronously, context);
+				});
+			}
+		}
+
 		private void FinishCapturingAndUpdateUi()
 		{
 			_ = QueryPerformanceCounter(out long counter);

@@ -567,7 +567,7 @@ namespace CapFrameX.ViewModel
 				ComparisonModel.Series[i].Title = string.Empty;
 			}
 
-			ComparisonRowChartLabels = new string[0];
+			ComparisonRowChartLabels = Array.Empty<string>();
 		}
 
 		private ComparisonRecordInfo GetComparisonRecordInfoFromFileRecordInfo(IFileRecordInfo fileRecordInfo)

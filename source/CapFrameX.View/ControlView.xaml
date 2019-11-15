@@ -25,7 +25,7 @@
 				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Slider.xaml" />
 			</ResourceDictionary.MergedDictionaries>
 			<CollectionViewSource x:Key="RecordInfoListKey" Source="{Binding RecordInfoList}" Filter="RecordInfoListOnFilter"/>
-			<mvvm:AddValueConverter x:Key="AddValueConverter" Offset="-283"/>
+			<mvvm:AddValueConverter x:Key="AddValueConverter" Offset="-315"/>
 			<mvvm:BoolToVisibilityConverter x:Key="FalseToVisibleConverter" FalseValue="Visible" TrueValue="Collapsed"/>
 			<mvvm:BoolToVisibilityConverter x:Key="FalseToCollapsedConverter" FalseValue="Collapsed" TrueValue="Visible"/>
 		</ResourceDictionary>
@@ -38,8 +38,8 @@
 		</Border>
 		<Grid Visibility="{Binding HasValidSource, Converter={StaticResource FalseToCollapsedConverter}}">
 			<Grid.RowDefinitions>
-				<RowDefinition Height="Auto"></RowDefinition>
-				<RowDefinition Height="Auto"></RowDefinition>
+				<RowDefinition Height="1*"></RowDefinition>
+				<RowDefinition Height="270"></RowDefinition>
 			</Grid.RowDefinitions>
 			<StackPanel Grid.Row="0" Orientation="Vertical">
 				<TextBox Margin="5 10 5 0" Background="#e6e6e6" Name="RecordSearchBox" materialDesign:HintAssist.Hint="Search" />
@@ -170,11 +170,13 @@
 					<RowDefinition Height="Auto"/>
 					<RowDefinition Height="Auto"/>
 					<RowDefinition Height="Auto"/>
+					<RowDefinition Height="Auto"/>
 				</Grid.RowDefinitions>
 				<Grid.ColumnDefinitions>
 					<ColumnDefinition Width="1*"/>
 					<ColumnDefinition Width="Auto"/>
 				</Grid.ColumnDefinitions>
+				<!--CPU-->
 				<TextBox Grid.Row="0" Grid.Column="0" wpf:HintAssist.Hint="Custom CPU description" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
 							Margin="5 6 5 0" FontSize="12" Text="{Binding CustomCpuDescription, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Stretch"/>
 				<Button Grid.Row="0" Grid.Column="1" Margin="5 6 5 0" Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}"
@@ -184,6 +186,7 @@
 							Command="{Binding AddCpuInfoCommand}">
 					<materialDesign:PackIcon Kind="Cached" Width="15" Height="15"/>
 				</Button>
+				<!--GPU-->
 				<TextBox Grid.Row="1" Grid.Column="0" wpf:HintAssist.Hint="Custom GPU description" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
 							Margin="5 6 5 0" FontSize="12" Text="{Binding CustomGpuDescription, UpdateSourceTrigger=PropertyChanged}"/>
 				<Button Grid.Row="1" Grid.Column="1" Margin="5 6 5 0" Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}"
@@ -193,11 +196,22 @@
 							Command="{Binding AddGpuInfoCommand}">
 					<materialDesign:PackIcon Kind="Cached" Width="15" Height="15"/>
 				</Button>
-				<TextBox Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" wpf:HintAssist.Hint="Game" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
+				<!--RAM-->	
+				<TextBox Grid.Row="2" Grid.Column="0" wpf:HintAssist.Hint="Custom RAM description" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
+						 Margin="5 6 5 0" FontSize="12" Text="{Binding CustomRamDescription, UpdateSourceTrigger=PropertyChanged}"/>
+				<Button Grid.Row="2" Grid.Column="1" Margin="5 6 5 0" Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}"
+							VerticalAlignment="Bottom" HorizontalAlignment="Right"
+							Width="20" Height="20"
+							ToolTip="Add GPU info"
+							Command="{Binding AddRamInfoCommand}">
+					<materialDesign:PackIcon Kind="Cached" Width="15" Height="15"/>
+				</Button>
+
+				<TextBox Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" wpf:HintAssist.Hint="Game" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
 						 Margin="5 6 5 0" FontSize="12" Text="{Binding CustomGameName, UpdateSourceTrigger=PropertyChanged}"/>
-				<TextBox Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" wpf:HintAssist.Hint="Comment" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
+				<TextBox Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" wpf:HintAssist.Hint="Comment" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
 						 Margin="5 6 5 0" FontSize="12" Text="{Binding CustomComment, UpdateSourceTrigger=PropertyChanged}"/>
-				<StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Grid.Row="4"
+				<StackPanel Grid.Row="5" Orientation="Horizontal" HorizontalAlignment="Center"
 							Grid.Column="0" Grid.ColumnSpan="2" Margin="0 16 0 5">
 					<Button IsDefault="True" Style="{DynamicResource MaterialDesignFlatButton}"
                     Command="{Binding AcceptEditingDialogCommand}">

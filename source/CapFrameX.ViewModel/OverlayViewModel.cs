@@ -20,7 +20,8 @@ namespace CapFrameX.ViewModel
 		private IFileRecordInfo _recordInfo;
         private string _customCpuDescription;
         private string _customGpuDescription;
-        private string _customGameName;
+		private string _customRamDescription;
+		private string _customGameName;
         private string _customComment;
 
         public bool IsEditingDialogOpen
@@ -63,7 +64,17 @@ namespace CapFrameX.ViewModel
             }
         }
 
-        public string CustomGameName
+		public string CustomRamDescription
+		{
+			get { return _customRamDescription; }
+			set
+			{
+				_customRamDescription = value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public string CustomGameName
         {
             get { return _customGameName; }
             set
@@ -108,7 +119,7 @@ namespace CapFrameX.ViewModel
         {
             IsEditingDialogOpen = false;
             RecordManager.UpdateCustomData(_recordInfo,
-                CustomCpuDescription, CustomGpuDescription, CustomGameName, CustomComment);
+                CustomCpuDescription, CustomGpuDescription, CustomRamDescription, CustomGameName, CustomComment);
             _hideOverlayEvent.Publish(new ViewMessages.HideOverlay());
         }
 
