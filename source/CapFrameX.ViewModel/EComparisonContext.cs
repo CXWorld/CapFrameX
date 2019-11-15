@@ -8,11 +8,11 @@ namespace CapFrameX.ViewModel
 		DateTime = 1,
 		[Description("CPU")]
 		CPU = 2,
-		[Description("Graphic card")]
+		[Description("GPU")]
 		GPU = 3,
-		[Description("System RAM")]
+		[Description("RAM")]
 		SystemRam = 4,
-		[Description("Context from comment")]
+		[Description("Custom comment")]
 		Custom = 5
 	}
 }
