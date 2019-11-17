@@ -148,8 +148,10 @@ namespace CapFrameX.ViewModel
 			{
 				for (int i = 0; i < ComparisonRecords.Count; i++)
 				{
-					ComparisonModel.Series[i].Title =
-						GetLabelDateTimeContext(ComparisonRecords[i], GetMaxDateTimeAlignment());
+					var wrappedComparisonInfo = ComparisonRecords[i];
+					var chartTitle = $"{wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.CreationDate} " +
+						$"{ wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.CreationTime}";
+					ComparisonModel.Series[i].Title = chartTitle;
 				}				
 			}
 		}
@@ -172,7 +174,9 @@ namespace CapFrameX.ViewModel
 			{
 				for (int i = 0; i < ComparisonRecords.Count; i++)
 				{
-					ComparisonModel.Series[i].Title = GetLabelCpuContext(ComparisonRecords[i], GetMaxCpuAlignment());
+					var wrappedComparisonInfo = ComparisonRecords[i];
+					var chartTitle = wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.ProcessorName;
+					ComparisonModel.Series[i].Title = chartTitle;
 				}
 			}
 		}
@@ -207,7 +211,9 @@ namespace CapFrameX.ViewModel
 			{
 				for (int i = 0; i < ComparisonRecords.Count; i++)
 				{
-					ComparisonModel.Series[i].Title = GetLabelGpuContext(ComparisonRecords[i], GetMaxGpuAlignment());
+					var wrappedComparisonInfo = ComparisonRecords[i];
+					var chartTitle = wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.GraphicCardName;
+					ComparisonModel.Series[i].Title = chartTitle;
 				}
 			}
 		}
@@ -242,7 +248,9 @@ namespace CapFrameX.ViewModel
 			{
 				for (int i = 0; i < ComparisonRecords.Count; i++)
 				{
-					ComparisonModel.Series[i].Title = GetLabelSystemRamContext(ComparisonRecords[i], GetMaxSystemRamAlignment());
+					var wrappedComparisonInfo = ComparisonRecords[i];
+					var chartTitle = wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.SystemRamInfo;
+					ComparisonModel.Series[i].Title = chartTitle;
 				}
 			}
 		}
@@ -277,7 +285,9 @@ namespace CapFrameX.ViewModel
 			{
 				for (int i = 0; i < ComparisonRecords.Count; i++)
 				{
-					ComparisonModel.Series[i].Title = GetLabelCustomContext(ComparisonRecords[i], GetMaxCommentAlignment());
+					var wrappedComparisonInfo = ComparisonRecords[i];
+					var chartTitle = wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.Comment;
+					ComparisonModel.Series[i].Title = chartTitle;
 				}
 			}
 		}

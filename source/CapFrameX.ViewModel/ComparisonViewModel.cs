@@ -683,19 +683,24 @@ namespace CapFrameX.ViewModel
 			switch (SelectedComparisonContext)
 			{
 				case EComparisonContext.DateTime:
-					chartTitle = GetLabelDateTimeContext(wrappedComparisonInfo, GetMaxDateTimeAlignment());
+					chartTitle = $"{wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.CreationDate} " +
+						$"{ wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.CreationTime}";
 					break;
 				case EComparisonContext.CPU:
-					chartTitle = GetLabelCpuContext(wrappedComparisonInfo, GetMaxCpuAlignment());
+					chartTitle = wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.ProcessorName;
 					break;
 				case EComparisonContext.GPU:
-					chartTitle = GetLabelGpuContext(wrappedComparisonInfo, GetMaxGpuAlignment());
+					chartTitle = wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.GraphicCardName;
+					break;
+				case EComparisonContext.SystemRam:
+					chartTitle = wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.SystemRamInfo;
 					break;
 				case EComparisonContext.Custom:
-					chartTitle = GetLabelCustomContext(wrappedComparisonInfo, GetMaxCommentAlignment());
+					chartTitle = wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.Comment;
 					break;
 				default:
-					chartTitle = GetLabelDateTimeContext(wrappedComparisonInfo, GetMaxDateTimeAlignment());
+					chartTitle = $"{wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.CreationDate} " +
+						$"{ wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.CreationTime}";
 					break;
 			}
 
@@ -704,6 +709,7 @@ namespace CapFrameX.ViewModel
 			{
 				Title = chartTitle,
 				StrokeThickness = 1,
+				LegendStrokeThickness = 4,
 				Color = wrappedComparisonInfo.IsHideModeSelected ?
 					OxyColors.Transparent : OxyColor.FromRgb(color.R, color.G, color.B)
 			};
