@@ -63,6 +63,8 @@ namespace CapFrameX.ViewModel
 		private bool _colorPickerVisibility;
 		private EMetric _selectSecondaryMetric = EMetric.P1;
 		private EComparisonContext _selectedComparisonContext = EComparisonContext.DateTime;
+		private string _currentGameName;
+		private bool _hasUniqueGameNames;
 
 		public Array MetricItems => Enum.GetValues(typeof(EMetric))
 										.Cast<EMetric>()
@@ -274,6 +276,7 @@ namespace CapFrameX.ViewModel
 			{
 				_selectedChartItem = value;
 				RaisePropertyChanged();
+				RaisePropertyChanged(nameof(IsBarChartTabActive));
 				OnChartItemChanged();
 				UpdateCharts();
 			}
@@ -288,6 +291,31 @@ namespace CapFrameX.ViewModel
 				RaisePropertyChanged();
 				OnSortModeChanged();
 			}
+		}
+
+		public string CurrentGameName
+		{
+			get { return _currentGameName; }
+			set
+			{
+				_currentGameName = value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public bool HasUniqueGameNames
+		{
+			get { return _hasUniqueGameNames; }
+			set
+			{
+				_hasUniqueGameNames = value;
+				RaisePropertyChanged();
+			}
+		}		
+
+		public bool IsBarChartTabActive
+		{
+			get { return SelectedChartItem?.Header.ToString() == "Bar charts"; }
 		}
 
 		public ICommand RemoveAllComparisonsCommand { get; }
@@ -475,7 +503,7 @@ namespace CapFrameX.ViewModel
 				default:
 					OnDateTimeContext();
 					break;
-			} 			
+			}
 		}
 
 		private void UpdateCuttingParameter()
@@ -672,11 +700,12 @@ namespace CapFrameX.ViewModel
 			}
 
 			var color = wrappedComparisonInfo.FrametimeGraphColor.Value;
-			var frametimeSeries = new OxyPlot.Series.LineSeries 
-			{ 
-				Title = chartTitle, StrokeThickness = 1, 
+			var frametimeSeries = new OxyPlot.Series.LineSeries
+			{
+				Title = chartTitle,
+				StrokeThickness = 1,
 				Color = wrappedComparisonInfo.IsHideModeSelected ?
-					OxyColors.Transparent : OxyColor.FromRgb(color.R, color.G, color.B) 
+					OxyColors.Transparent : OxyColor.FromRgb(color.R, color.G, color.B)
 			};
 
 			frametimeSeries.Points.AddRange(frametimePoints.Select(pnt => new DataPoint(pnt.X, pnt.Y)));
