@@ -9,8 +9,6 @@ namespace CapFrameX.ViewModel
 {
 	public partial class ComparisonViewModel
 	{
-		private readonly HashSet<string> _usedGameNames = new HashSet<string>();
-
 		private void AddComparisonItem(IFileRecordInfo recordInfo)
 		{
 			var stopwatchData = new Stopwatch();
@@ -25,9 +23,8 @@ namespace CapFrameX.ViewModel
 			HasComparisonItems = ComparisonRecords.Any();
 
 			// Manage game name header
-			_usedGameNames.Add(comparisonRecordInfo.Game);
-			HasUniqueGameNames = _usedGameNames.Count == 1;
-			CurrentGameName = _usedGameNames.First();
+			HasUniqueGameNames = GetHasUniqueGameNames();
+			CurrentGameName = comparisonRecordInfo.Game;
 
 			// Update height of bar chart control here
 			UpdateBarChartHeight();
@@ -90,12 +87,10 @@ namespace CapFrameX.ViewModel
 			UpdateCharts();
 			BarChartHeight = 40 + (2 * BarChartMaxRowHeight + 12) * ComparisonRecords.Count;
 
-			// Manage game name header
-			if (!GetHasUniqueGameNames())
-				_usedGameNames.Remove(wrappedComparisonRecordInfo.WrappedRecordInfo.Game);
+			// Manage game name header		
 			HasUniqueGameNames = GetHasUniqueGameNames();
 			if (HasUniqueGameNames)
-				CurrentGameName = _usedGameNames.First();
+				CurrentGameName = ComparisonRecords.First().WrappedRecordInfo.Game;
 
 			ComparisonModel.InvalidatePlot(true);
 		}
@@ -129,7 +124,6 @@ namespace CapFrameX.ViewModel
 			}
 
 			// Manage game name header
-			_usedGameNames.Clear();
 			HasUniqueGameNames = false;
 			CurrentGameName = string.Empty;
 
