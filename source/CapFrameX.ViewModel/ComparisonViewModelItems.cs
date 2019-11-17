@@ -91,12 +91,23 @@ namespace CapFrameX.ViewModel
 			BarChartHeight = 40 + (2 * BarChartMaxRowHeight + 12) * ComparisonRecords.Count;
 
 			// Manage game name header
-			_usedGameNames.Remove(wrappedComparisonRecordInfo.WrappedRecordInfo.Game);
-			HasUniqueGameNames = _usedGameNames.Count == 1;
+			if (!GetHasUniqueGameNames())
+				_usedGameNames.Remove(wrappedComparisonRecordInfo.WrappedRecordInfo.Game);
+			HasUniqueGameNames = GetHasUniqueGameNames();
 			if (HasUniqueGameNames)
 				CurrentGameName = _usedGameNames.First();
 
 			ComparisonModel.InvalidatePlot(true);
+		}
+
+		private bool GetHasUniqueGameNames()
+		{
+			if (!ComparisonRecords.Any())
+				return false;
+
+			var firstName = ComparisonRecords.First().WrappedRecordInfo.Game;
+
+			return !ComparisonRecords.Any(record => record.WrappedRecordInfo.Game != firstName);
 		}
 
 		public void RemoveAllComparisonItems(bool manageVisibility = true, bool resetSortMode = false)
@@ -124,7 +135,7 @@ namespace CapFrameX.ViewModel
 
 			RemainingRecordingTime = "0.0 s";
 			UpdateCuttingParameter();
-			ComparisonModel.InvalidatePlot(true);			
+			ComparisonModel.InvalidatePlot(true);
 		}
 
 		public void SortComparisonItems()
