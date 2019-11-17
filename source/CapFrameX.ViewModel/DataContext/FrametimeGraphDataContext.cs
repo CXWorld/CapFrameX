@@ -136,7 +136,7 @@ namespace CapFrameX.ViewModel.DataContext
             if (RecordSession == null)
                 return;
 
-            var frametimes = RecordDataServer.GetFrametimeSampleWindow();
+            var frametimes = RecordDataServer.GetFrametimeTimeWindow();
             StringBuilder builder = new StringBuilder();
 
             foreach (var frametime in frametimes)
@@ -152,7 +152,7 @@ namespace CapFrameX.ViewModel.DataContext
             if (RecordSession == null)
                 return;
 
-            var frametimePoints = RecordDataServer.GetFrametimePointSampleWindow();
+            var frametimePoints = RecordDataServer.GetFrametimePointTimeWindow();
             StringBuilder builder = new StringBuilder();
 
             for (int i = 0; i < frametimePoints.Count; i++)

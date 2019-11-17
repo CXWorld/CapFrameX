@@ -9,10 +9,6 @@ namespace CapFrameX.OcatInterface
 	{
 		bool IsActive { get; set; }
 
-		int StartIndex { get; set; }
-
-		int EndIndex { get; set; }
-
 		double WindowLength { get; set; }
 
 		double CurrentTime { get; set; }
@@ -31,19 +27,11 @@ namespace CapFrameX.OcatInterface
 
 		IList<double> GetFrametimeTimeWindow();
 
-		IList<double> GetFrametimeSampleWindow();
-
 		IList<Point> GetFrametimePointTimeWindow();
-
-		IList<Point> GetFrametimePointSampleWindow();
 
 		IList<double> GetFpsTimeWindow();
 
-		IList<double> GetFpsSampleWindow();
-
 		IList<Point> GetFpsPointTimeWindow();
-
-		IList<Point> GetFpsPointSampleWindow();
 
 		void SetTimeWindow(double currentTime, double windowLength);
 	}

@@ -499,7 +499,7 @@ namespace CapFrameX.ViewModel
 		}
 
 		private IList<double> GetFrametimesSubset()
-			=>_localRecordDataServer?.GetFrametimeSampleWindow();
+			=>_localRecordDataServer?.GetFrametimeTimeWindow();
 
 		private void SetStaticChart(IList<double> frametimes)
 		{

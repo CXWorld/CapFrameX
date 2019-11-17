@@ -10,8 +10,6 @@ namespace CapFrameX.OcatInterface
 {
 	public class LocalRecordDataServer : IRecordDataServer
 	{
-		private int _startIndex;
-		private int _endIndex;
 		private double _windowLength;
 		private double _currentTime;
 		private ERemoveOutlierMethod _removeOutlierMethod;
@@ -23,18 +21,6 @@ namespace CapFrameX.OcatInterface
 		public bool IsActive { get; set; }
 
 		public Session CurrentSession { get; set; }
-
-		public int StartIndex
-		{
-			get => _startIndex;
-			set { _startIndex = value; DoUpdateIndexTrigger(); }
-		}
-
-		public int EndIndex
-		{
-			get => _endIndex;
-			set { _endIndex = value; DoUpdateIndexTrigger(); }
-		}
 
 		public double WindowLength
 		{
@@ -62,7 +48,6 @@ namespace CapFrameX.OcatInterface
 			set
 			{
 				_removeOutlierMethod = value;
-				DoUpdateFilterTrigger();
 			}
 		}
 
@@ -94,14 +79,6 @@ namespace CapFrameX.OcatInterface
 			return CurrentSession.GetFrametimeTimeWindow(startTime, endTime, RemoveOutlierMethod);
 		}
 
-		public IList<double> GetFrametimeSampleWindow()
-		{
-			if (CurrentSession == null)
-				return null;
-
-			return CurrentSession.GetFrametimeSampleWindow(StartIndex, EndIndex, RemoveOutlierMethod);
-		}
-
 		public IList<Point> GetFrametimePointTimeWindow()
 		{
 			if (CurrentSession == null)
@@ -112,44 +89,14 @@ namespace CapFrameX.OcatInterface
 			return CurrentSession.GetFrametimePointsTimeWindow(startTime, endTime, RemoveOutlierMethod);
 		}
 
-		public IList<Point> GetFrametimePointSampleWindow()
-		{
-			if (CurrentSession == null)
-				return null;
-
-			return CurrentSession.GetFrametimePointsSampleWindow(StartIndex, EndIndex, RemoveOutlierMethod);
-		}
-
 		public IList<double> GetFpsTimeWindow()
 		{
 			return GetFrametimeTimeWindow()?.Select(ft => 1000 / ft).ToList();
 		}
 
-		public IList<double> GetFpsSampleWindow()
-		{
-			return GetFrametimeSampleWindow()?.Select(ft => 1000 / ft).ToList();
-		}
-
 		public IList<Point> GetFpsPointTimeWindow()
 		{
 			return GetFrametimePointTimeWindow()?.Select(pnt => new Point(pnt.X, 1000 / pnt.Y)).ToList();
-		}
-
-		public IList<Point> GetFpsPointSampleWindow()
-		{
-			return GetFrametimePointSampleWindow()?.Select(pnt => new Point(pnt.X, 1000 / pnt.Y)).ToList();
-		}
-
-		private void DoUpdateIndexTrigger()
-		{
-			if (!IsActive)
-				return;
-
-			if (CurrentSession == null)
-				return;
-
-			_frametimeDataSubject.OnNext(GetFrametimeSampleWindow());
-			_fpsDataSubject.OnNext(GetFpsSampleWindow());
 		}
 
 		private void DoUpdateWindowTrigger()
@@ -162,18 +109,6 @@ namespace CapFrameX.OcatInterface
 
 			_frametimeDataSubject.OnNext(GetFrametimeTimeWindow());
 			_fpsDataSubject.OnNext(GetFpsTimeWindow());
-		}
-
-		private void DoUpdateFilterTrigger()
-		{
-			if (!IsActive)
-				return;
-
-			if (CurrentSession == null)
-				return;
-
-			_frametimeDataSubject.OnNext(GetFrametimeSampleWindow());
-			_fpsDataSubject.OnNext(GetFpsSampleWindow());
 		}
 
 		public void SetTimeWindow(double currentTime, double windowLength)

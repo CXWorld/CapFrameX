@@ -84,7 +84,7 @@ namespace CapFrameX.ViewModel.DataContext
 			if (RecordSession == null)
 				return;
 
-			var fps = RecordDataServer.GetFpsSampleWindow();
+			var fps = RecordDataServer.GetFpsTimeWindow();
 			StringBuilder builder = new StringBuilder();
 
 			foreach (var framerate in fps)

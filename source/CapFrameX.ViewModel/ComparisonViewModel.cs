@@ -643,6 +643,9 @@ namespace CapFrameX.ViewModel
 
 		private void AddToColumnCharts(ComparisonRecordInfoWrapper wrappedComparisonInfo)
 		{
+			// Update metrics
+			SetMetrics(wrappedComparisonInfo);
+
 			// First metric
 			ComparisonRowChartSeriesCollection[0].Values.Insert(0, wrappedComparisonInfo.WrappedRecordInfo.FirstMetric);
 

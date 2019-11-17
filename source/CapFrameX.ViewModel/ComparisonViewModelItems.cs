@@ -43,7 +43,8 @@ namespace CapFrameX.ViewModel
 		private void SetMetrics(ComparisonRecordInfoWrapper wrappedComparisonRecordInfo)
 		{
 			double startTime = FirstSeconds;
-			double endTime = wrappedComparisonRecordInfo.WrappedRecordInfo.Session.FrameStart.Last() - LastSeconds;
+			double lastFrameStart = wrappedComparisonRecordInfo.WrappedRecordInfo.Session.FrameStart.Last();
+			double endTime = LastSeconds > lastFrameStart ? lastFrameStart : lastFrameStart - LastSeconds;
 			var frametimeTimeWindow = wrappedComparisonRecordInfo.WrappedRecordInfo.Session.GetFrametimeTimeWindow(startTime, endTime, ERemoveOutlierMethod.None);
 			double GeMetricValue(IList<double> sequence, EMetric metric) =>
 					_frametimeStatisticProvider.GetFpsMetricValue(sequence, metric);

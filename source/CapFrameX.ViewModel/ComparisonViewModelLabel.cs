@@ -23,59 +23,27 @@ namespace CapFrameX.ViewModel
 				switch (_selectedComparisonContext)
 				{
 					case EComparisonContext.DateTime:
-						if (ComparisonModel.Series.Count == ComparisonRecords.Count)
-						{
-							for (int i = 0; i < ComparisonRecords.Count; i++)
-							{
-								ComparisonModel.Series[i].Title =
-									GetLabelDateTimeContext(ComparisonRecords[i], GetMaxDateTimeAlignment());
-							}
-						}
+						SetLabelDateTimeContext();
 						break;
 					case EComparisonContext.CPU:
-						if (ComparisonModel.Series.Count == ComparisonRecords.Count)
-						{
-							for (int i = 0; i < ComparisonRecords.Count; i++)
-							{
-								ComparisonModel.Series[i].Title =
-									GetLabelCpuContext(ComparisonRecords[i], GetMaxCpuAlignment());
-							}
-						}
+						SetLabelCpuContext();
 						break;
 					case EComparisonContext.GPU:
-						if (ComparisonModel.Series.Count == ComparisonRecords.Count)
-						{
-							for (int i = 0; i < ComparisonRecords.Count; i++)
-							{
-								ComparisonModel.Series[i].Title =
-									GetLabelGpuContext(ComparisonRecords[i], GetMaxGpuAlignment());
-							}
-						}
+						SetLabelGpuContext();
+						break;
+					case EComparisonContext.SystemRam:
+						SetLabelSystemRamContext();
 						break;
 					case EComparisonContext.Custom:
-						if (ComparisonModel.Series.Count == ComparisonRecords.Count)
-						{
-							for (int i = 0; i < ComparisonRecords.Count; i++)
-							{
-								ComparisonModel.Series[i].Title =
-									GetLabelCustomContext(ComparisonRecords[i], GetMaxCommentAlignment());
-							}
-						}
+						SetLabelCustomContext();
 						break;
 					default:
-						if (ComparisonModel.Series.Count == ComparisonRecords.Count)
-						{
-							for (int i = 0; i < ComparisonRecords.Count; i++)
-							{
-								ComparisonModel.Series[i].Title =
-									GetLabelDateTimeContext(ComparisonRecords[i], GetMaxDateTimeAlignment());
-							}
-						}
+						SetLabelDateTimeContext();
 						break;
 				}
 			}
 
-			ComparisonModel.InvalidatePlot(false);
+			ComparisonModel.InvalidatePlot(true);
 		}
 
 		private int GetMaxDateTimeAlignment()
@@ -152,7 +120,7 @@ namespace CapFrameX.ViewModel
 					var chartTitle = $"{wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.CreationDate} " +
 						$"{ wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.CreationTime}";
 					ComparisonModel.Series[i].Title = chartTitle;
-				}				
+				}
 			}
 		}
 
@@ -193,7 +161,7 @@ namespace CapFrameX.ViewModel
 				if (part == string.Empty)
 					continue;
 
-				infoPartsFormatted += 
+				infoPartsFormatted +=
 					string.Format(CultureInfo.InvariantCulture, alignmentFormat, part) + Environment.NewLine;
 			}
 
@@ -230,7 +198,7 @@ namespace CapFrameX.ViewModel
 				if (part == string.Empty)
 					continue;
 
-				infoPartsFormatted += 
+				infoPartsFormatted +=
 					string.Format(CultureInfo.InvariantCulture, alignmentFormat, part) + Environment.NewLine;
 			}
 
@@ -304,7 +272,7 @@ namespace CapFrameX.ViewModel
 				if (part == string.Empty)
 					continue;
 
-				infoPartsFormatted += 
+				infoPartsFormatted +=
 					string.Format(CultureInfo.InvariantCulture, alignmentFormat, part) + Environment.NewLine;
 			}
 

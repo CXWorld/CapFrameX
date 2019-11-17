@@ -80,7 +80,7 @@
 			<Grid.RowDefinitions>
 				<RowDefinition Height="5*"></RowDefinition>
 				<RowDefinition Height="Auto"></RowDefinition>
-				<RowDefinition Height="3*"></RowDefinition>
+				<RowDefinition Height="3*" MaxHeight="368"></RowDefinition>
 				<RowDefinition Height="Auto"></RowDefinition>
 			</Grid.RowDefinitions>
 			<Grid.ColumnDefinitions>
