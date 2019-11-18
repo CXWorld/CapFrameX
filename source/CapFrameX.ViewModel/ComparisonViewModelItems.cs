@@ -166,15 +166,18 @@ namespace CapFrameX.ViewModel
 					ComparisonRecords.ToList().Select(info => info.Clone()).OrderByDescending(x => x.WrappedRecordInfo.FirstMetric);
 			}
 
-			ComparisonRecords.Clear();
-
-			foreach (var item in comparisonRecordList)
+			if (comparisonRecordList != null)
 			{
-				ComparisonRecords.Add(item);
-			}
+				ComparisonRecords.Clear();
 
-			//Draw charts and performance parameter
-			UpdateCharts();
+				foreach (var item in comparisonRecordList)
+				{
+					ComparisonRecords.Add(item);
+				}
+
+				//Draw charts and performance parameter
+				UpdateCharts();
+			}
 		}
 	}
 }

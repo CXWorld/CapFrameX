@@ -48,31 +48,90 @@ namespace CapFrameX.ViewModel
 
 		private int GetMaxDateTimeAlignment()
 		{
-			return ComparisonRecords.Max(record => record.WrappedRecordInfo.DateTime.Length);
+			bool hasUniqueGameNames = GetHasUniqueGameNames();
+			if (hasUniqueGameNames)
+			{
+				return ComparisonRecords.Max(record => record.WrappedRecordInfo.DateTime.Length);
+			}
+			else
+			{
+				var maxGameNameLength = ComparisonRecords.Max(record => record.WrappedRecordInfo.Game.Length);
+				var maxDateTimeLength = ComparisonRecords.Max(record => record.WrappedRecordInfo.DateTime.Length);
+
+				return Math.Max(maxGameNameLength, maxDateTimeLength);
+			}
 		}
 
 		private int GetMaxCommentAlignment()
 		{
-			return ComparisonRecords.Max(record
+			bool hasUniqueGameNames = GetHasUniqueGameNames();
+			if (hasUniqueGameNames)
+			{
+				return ComparisonRecords.Max(record
 				=> record.WrappedRecordInfo.FileRecordInfo.Comment.SplitWordWise(PART_LENGTH).Max(part => part.Length));
+			}
+			else
+			{
+				var maxGameNameLength = ComparisonRecords.Max(record => record.WrappedRecordInfo.Game.Length);
+				var maxContextLength = ComparisonRecords.Max(record
+					=> record.WrappedRecordInfo.FileRecordInfo.Comment.SplitWordWise(PART_LENGTH).Max(part => part.Length));
+
+				return Math.Max(maxGameNameLength, maxContextLength);
+			}
 		}
 
 		private int GetMaxGpuAlignment()
 		{
-			return ComparisonRecords.Max(record
+			bool hasUniqueGameNames = GetHasUniqueGameNames();
+			if (hasUniqueGameNames)
+			{
+				return ComparisonRecords.Max(record
 				=> record.WrappedRecordInfo.FileRecordInfo.GraphicCardName.SplitWordWise(PART_LENGTH).Max(part => part.Length));
+			}
+			else
+			{
+				var maxGameNameLength = ComparisonRecords.Max(record => record.WrappedRecordInfo.Game.Length);
+				var maxGpuLength = ComparisonRecords.Max(record
+					=> record.WrappedRecordInfo.FileRecordInfo.GraphicCardName.SplitWordWise(PART_LENGTH).Max(part => part.Length));
+
+				return Math.Max(maxGameNameLength, maxGpuLength);
+			}
 		}
 
 		private int GetMaxSystemRamAlignment()
 		{
-			return ComparisonRecords.Max(record
+			bool hasUniqueGameNames = GetHasUniqueGameNames();
+			if (hasUniqueGameNames)
+			{
+				return ComparisonRecords.Max(record
 				=> record.WrappedRecordInfo.FileRecordInfo.SystemRamInfo.SplitWordWise(PART_LENGTH).Max(part => part.Length));
+			}
+			else
+			{
+				var maxGameNameLength = ComparisonRecords.Max(record => record.WrappedRecordInfo.Game.Length);
+				var maxSystemRamLength = ComparisonRecords.Max(record
+					=> record.WrappedRecordInfo.FileRecordInfo.SystemRamInfo.SplitWordWise(PART_LENGTH).Max(part => part.Length));
+
+				return Math.Max(maxGameNameLength, maxSystemRamLength);
+			}
 		}
 
 		private int GetMaxCpuAlignment()
 		{
-			return ComparisonRecords.Max(record
+			bool hasUniqueGameNames = GetHasUniqueGameNames();
+			if (hasUniqueGameNames)
+			{
+				return ComparisonRecords.Max(record
 				=> record.WrappedRecordInfo.FileRecordInfo.ProcessorName.SplitWordWise(PART_LENGTH).Max(part => part.Length));
+			}
+			else
+			{
+				var maxGameNameLength = ComparisonRecords.Max(record => record.WrappedRecordInfo.Game.Length);
+				var maxCpuLength = ComparisonRecords.Max(record
+					=> record.WrappedRecordInfo.FileRecordInfo.ProcessorName.SplitWordWise(PART_LENGTH).Max(part => part.Length));
+
+				return Math.Max(maxGameNameLength, maxCpuLength);
+			}
 		}
 
 		private void OnCustomContex()
@@ -127,8 +186,19 @@ namespace CapFrameX.ViewModel
 		private string GetLabelDateTimeContext(ComparisonRecordInfoWrapper record, int maxAlignment)
 		{
 			var alignmentFormat = "{0," + maxAlignment.ToString() + "}";
-			return string.Format(CultureInfo.InvariantCulture, alignmentFormat,
-				$"{record.WrappedRecordInfo.FileRecordInfo.CreationDate} { record.WrappedRecordInfo.FileRecordInfo.CreationTime}");
+
+			bool hasUniqueGameNames = GetHasUniqueGameNames();
+			if (hasUniqueGameNames)
+			{				
+				return string.Format(CultureInfo.InvariantCulture, alignmentFormat,
+					$"{record.WrappedRecordInfo.FileRecordInfo.CreationDate} { record.WrappedRecordInfo.FileRecordInfo.CreationTime}");
+			}
+			else
+			{
+				var gameName = string.Format(CultureInfo.InvariantCulture, alignmentFormat, record.WrappedRecordInfo.Game);
+				var dateTime = string.Format(CultureInfo.InvariantCulture, alignmentFormat, record.WrappedRecordInfo.DateTime);
+				return gameName + Environment.NewLine + dateTime;
+			}
 		}
 
 		private void SetLabelCpuContext()
@@ -161,11 +231,19 @@ namespace CapFrameX.ViewModel
 				if (part == string.Empty)
 					continue;
 
-				infoPartsFormatted +=
-					string.Format(CultureInfo.InvariantCulture, alignmentFormat, part) + Environment.NewLine;
+				infoPartsFormatted += Environment.NewLine + string.Format(CultureInfo.InvariantCulture, alignmentFormat, part);
 			}
 
-			return infoPartsFormatted;
+			bool hasUniqueGameNames = GetHasUniqueGameNames();
+			if (hasUniqueGameNames)
+			{
+				return infoPartsFormatted;
+			}
+			else
+			{				
+				var gameName = string.Format(CultureInfo.InvariantCulture, alignmentFormat, record.WrappedRecordInfo.Game);
+				return gameName + infoPartsFormatted;
+			}
 		}
 
 		private void SetLabelGpuContext()
@@ -198,11 +276,19 @@ namespace CapFrameX.ViewModel
 				if (part == string.Empty)
 					continue;
 
-				infoPartsFormatted +=
-					string.Format(CultureInfo.InvariantCulture, alignmentFormat, part) + Environment.NewLine;
+				infoPartsFormatted += Environment.NewLine + string.Format(CultureInfo.InvariantCulture, alignmentFormat, part);
 			}
 
-			return infoPartsFormatted;
+			bool hasUniqueGameNames = GetHasUniqueGameNames();
+			if (hasUniqueGameNames)
+			{
+				return infoPartsFormatted;
+			}
+			else
+			{			
+				var gameName = string.Format(CultureInfo.InvariantCulture, alignmentFormat, record.WrappedRecordInfo.Game);
+				return gameName + Environment.NewLine + infoPartsFormatted;
+			}
 		}
 
 		private void SetLabelSystemRamContext()
@@ -239,7 +325,16 @@ namespace CapFrameX.ViewModel
 					string.Format(CultureInfo.InvariantCulture, alignmentFormat, part) + Environment.NewLine;
 			}
 
-			return infoPartsFormatted;
+			bool hasUniqueGameNames = GetHasUniqueGameNames();
+			if (hasUniqueGameNames)
+			{
+				return infoPartsFormatted;
+			}
+			else
+			{
+				var gameName = string.Format(CultureInfo.InvariantCulture, alignmentFormat, record.WrappedRecordInfo.Game);
+				return gameName + Environment.NewLine + infoPartsFormatted;
+			}
 		}
 
 		private void SetLabelCustomContext()
@@ -272,11 +367,19 @@ namespace CapFrameX.ViewModel
 				if (part == string.Empty)
 					continue;
 
-				infoPartsFormatted +=
-					string.Format(CultureInfo.InvariantCulture, alignmentFormat, part) + Environment.NewLine;
+				infoPartsFormatted += Environment.NewLine + string.Format(CultureInfo.InvariantCulture, alignmentFormat, part);
 			}
 
-			return infoPartsFormatted;
+			bool hasUniqueGameNames = GetHasUniqueGameNames();
+			if (hasUniqueGameNames)
+			{
+				return infoPartsFormatted;
+			}
+			else
+			{				
+				var gameName = string.Format(CultureInfo.InvariantCulture, alignmentFormat, record.WrappedRecordInfo.Game);
+				return gameName + infoPartsFormatted;
+			}
 		}
 	}
 }
