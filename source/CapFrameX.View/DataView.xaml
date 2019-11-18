@@ -8,7 +8,7 @@
 			 xmlns:mvvm="clr-namespace:CapFrameX.MVVM.Converter;assembly=CapFrameX.MVVM"
 			 xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
 			 xmlns:controls="clr-namespace:CapFrameX.View.Controls"
-			 xmlns:ocatinterface="clr-namespace:CapFrameX.OcatInterface;assembly=CapFrameX.OcatInterface"
+			 xmlns:data="clr-namespace:CapFrameX.Data;assembly=CapFrameX.Data"
 			 xmlns:prism="http://prismlibrary.com/"			 
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800"
@@ -281,7 +281,7 @@
 							</ContextMenu>
 						</ItemsControl.ContextMenu>
 						<ItemsControl.ItemTemplate>
-							<DataTemplate DataType="{x:Type ocatinterface:SystemInfo}">
+							<DataTemplate DataType="{x:Type data:SystemInfo}">
 								<Border x:Name="Border"
 										Padding="8"
 										BorderThickness="0 0 0 1"

@@ -1,6 +1,6 @@
 ﻿using System.Linq;
 
-namespace CapFrameX.OcatInterface
+namespace CapFrameX.Data
 {
 	public class SystemInfo
 	{

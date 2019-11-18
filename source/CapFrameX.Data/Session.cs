@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 
-namespace CapFrameX.OcatInterface
+namespace CapFrameX.Data
 {
 	public class Session
 	{

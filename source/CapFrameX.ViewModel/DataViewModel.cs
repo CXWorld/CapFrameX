@@ -439,7 +439,7 @@ namespace CapFrameX.ViewModel
 							{
 								if (_useUpdateSession)
 								{
-									_session = msg.OcatSession;
+									_session = msg.CurrentSession;
 									RecordInfo = msg.RecordInfo;
 
 									if (_session != null && RecordInfo != null)

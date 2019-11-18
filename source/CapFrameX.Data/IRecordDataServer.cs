@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Windows;
 
-namespace CapFrameX.OcatInterface
+namespace CapFrameX.Data
 {
 	public interface IRecordDataServer
 	{

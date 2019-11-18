@@ -104,7 +104,7 @@ namespace CapFrameX.ViewModel
 							{
 								if (_useUpdateSession)
 								{
-									_session = msg.OcatSession;
+									_session = msg.CurrentSession;
 									_points = _session?.FrameTimes.Select((ft, i) => new Point(_session.FrameStart[i], ft));
 
 									if (_points == null || !_points.Any())

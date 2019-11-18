@@ -10,7 +10,7 @@ using CapFrameX.PresentMonInterface;
 using System.Threading.Tasks;
 using System.Threading;
 
-namespace CapFrameX.OcatInterface
+namespace CapFrameX.Data
 {
     public class RecordDirectoryObserver : IRecordDirectoryObserver
     {

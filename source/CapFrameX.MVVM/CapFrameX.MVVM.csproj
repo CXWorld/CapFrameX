@@ -130,10 +130,6 @@
       <Project>{b033a95b-c385-4a33-8992-2872df979ecd}</Project>
       <Name>CapFrameX.Hotkey</Name>
     </ProjectReference>
-    <ProjectReference Include="..\CapFrameX.OcatInterface\CapFrameX.OcatInterface.csproj">
-      <Project>{E61AD1FC-514F-43FD-BC20-31E9900CDFD7}</Project>
-      <Name>CapFrameX.OcatInterface</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Page Include="Dialogs\EditingDialog.xaml">

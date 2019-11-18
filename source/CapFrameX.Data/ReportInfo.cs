@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 
-namespace CapFrameX.OcatInterface
+namespace CapFrameX.Data
 {
 	public class ReportInfo
 	{

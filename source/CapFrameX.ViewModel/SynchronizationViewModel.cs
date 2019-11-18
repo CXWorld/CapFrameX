@@ -134,7 +134,7 @@ namespace CapFrameX.ViewModel
 							{
 								if (_useUpdateSession)
 								{
-									_session = msg.OcatSession;
+									_session = msg.CurrentSession;
 									_recordInfo = msg.RecordInfo;
 
 									// Do update actions

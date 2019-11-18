@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29001.49
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.902
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX", "source\CapFrameX\CapFrameX.csproj", "{AAA73D26-5CD6-4066-B84C-5BD34057B346}"
 EndProject
@@ -10,8 +10,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.View", "source\CapFrameX.View\CapFrameX.View.csproj", "{5CB56A44-8340-48F5-A9EC-DDF9AD3E10F0}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.ViewModel", "source\CapFrameX.ViewModel\CapFrameX.ViewModel.csproj", "{AD4536B2-C977-4CB8-8540-866928671C2D}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.OcatInterface", "source\CapFrameX.OcatInterface\CapFrameX.OcatInterface.csproj", "{E61AD1FC-514F-43FD-BC20-31E9900CDFD7}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.Extensions", "source\CapFrameX.Extensions\CapFrameX.Extensions.csproj", "{A4559B99-7FCB-40EF-BF97-D293A2B7D6D3}"
 EndProject
@@ -103,18 +101,6 @@ Global
 		{AD4536B2-C977-4CB8-8540-866928671C2D}.Release|x64.Build.0 = Release|x64
 		{AD4536B2-C977-4CB8-8540-866928671C2D}.Release|x86.ActiveCfg = Release|Any CPU
 		{AD4536B2-C977-4CB8-8540-866928671C2D}.Release|x86.Build.0 = Release|Any CPU
-		{E61AD1FC-514F-43FD-BC20-31E9900CDFD7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E61AD1FC-514F-43FD-BC20-31E9900CDFD7}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E61AD1FC-514F-43FD-BC20-31E9900CDFD7}.Debug|x64.ActiveCfg = Debug|x64
-		{E61AD1FC-514F-43FD-BC20-31E9900CDFD7}.Debug|x64.Build.0 = Debug|x64
-		{E61AD1FC-514F-43FD-BC20-31E9900CDFD7}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{E61AD1FC-514F-43FD-BC20-31E9900CDFD7}.Debug|x86.Build.0 = Debug|Any CPU
-		{E61AD1FC-514F-43FD-BC20-31E9900CDFD7}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E61AD1FC-514F-43FD-BC20-31E9900CDFD7}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E61AD1FC-514F-43FD-BC20-31E9900CDFD7}.Release|x64.ActiveCfg = Release|x64
-		{E61AD1FC-514F-43FD-BC20-31E9900CDFD7}.Release|x64.Build.0 = Release|x64
-		{E61AD1FC-514F-43FD-BC20-31E9900CDFD7}.Release|x86.ActiveCfg = Release|Any CPU
-		{E61AD1FC-514F-43FD-BC20-31E9900CDFD7}.Release|x86.Build.0 = Release|Any CPU
 		{A4559B99-7FCB-40EF-BF97-D293A2B7D6D3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A4559B99-7FCB-40EF-BF97-D293A2B7D6D3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A4559B99-7FCB-40EF-BF97-D293A2B7D6D3}.Debug|x64.ActiveCfg = Debug|x64

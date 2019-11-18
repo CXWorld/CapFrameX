@@ -1,7 +1,7 @@
 ﻿using CapFrameX.Contracts.Data;
 using System.Linq;
 
-namespace CapFrameX.OcatInterface
+namespace CapFrameX.Data
 {
 	public class ComparisonRecordInfo
 	{

@@ -6,7 +6,7 @@ using System.Reactive.Subjects;
 using System.Windows;
 using CapFrameX.Statistics;
 
-namespace CapFrameX.OcatInterface
+namespace CapFrameX.Data
 {
 	public class LocalRecordDataServer : IRecordDataServer
 	{

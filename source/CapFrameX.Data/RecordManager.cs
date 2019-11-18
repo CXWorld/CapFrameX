@@ -7,7 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 
-namespace CapFrameX.OcatInterface
+namespace CapFrameX.Data
 {
     public static class RecordManager
     {
