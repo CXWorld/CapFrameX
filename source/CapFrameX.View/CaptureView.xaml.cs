@@ -2,8 +2,6 @@
 using CapFrameX.Data;
 using CapFrameX.Extensions;
 using CapFrameX.Hotkey;
-using CapFrameX.MVVM;
-using CapFrameX.OcatInterface;
 using CapFrameX.PresentMonInterface;
 using CapFrameX.ViewModel;
 using Prism.Events;
@@ -15,10 +13,10 @@ using System.Windows.Input;
 
 namespace CapFrameX.View
 {
-    /// <summary>
-    /// Interaction logic for CaptureView.xaml
-    /// </summary>
-    public partial class CaptureView : UserControl
+	/// <summary>
+	/// Interaction logic for CaptureView.xaml
+	/// </summary>
+	public partial class CaptureView : UserControl
     {
         public static readonly DependencyProperty CaptureHotkeyProperty =
             DependencyProperty.Register(nameof(CaptureHotkey), typeof(CaptureHotkey), typeof(CaptureView),

@@ -281,7 +281,7 @@
 							</ContextMenu>
 						</ItemsControl.ContextMenu>
 						<ItemsControl.ItemTemplate>
-							<DataTemplate DataType="{x:Type data:SystemInfo}">
+							<DataTemplate DataType="{x:Type data:SystemInfoEntry}">
 								<Border x:Name="Border"
 										Padding="8"
 										BorderThickness="0 0 0 1"

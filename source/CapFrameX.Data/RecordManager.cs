@@ -84,34 +84,34 @@ namespace CapFrameX.Data
             return index;
         }
 
-        public static List<SystemInfo> GetSystemInfos(IFileRecordInfo recordInfo)
+        public static List<SystemInfoEntry> GetSystemInfos(IFileRecordInfo recordInfo)
         {
-            var systemInfos = new List<SystemInfo>();
+            var systemInfos = new List<SystemInfoEntry>();
 
             if (recordInfo.MotherboardName != null)
-                systemInfos.Add(new SystemInfo() { Key = "Motherboard", Value = recordInfo.MotherboardName });
+                systemInfos.Add(new SystemInfoEntry() { Key = "Motherboard", Value = recordInfo.MotherboardName });
             if (recordInfo.OsVersion != null)
-                systemInfos.Add(new SystemInfo() { Key = "OS Version", Value = recordInfo.OsVersion });
+                systemInfos.Add(new SystemInfoEntry() { Key = "OS Version", Value = recordInfo.OsVersion });
             if (recordInfo.ProcessorName != null)
-                systemInfos.Add(new SystemInfo() { Key = "Processor", Value = recordInfo.ProcessorName });
+                systemInfos.Add(new SystemInfoEntry() { Key = "Processor", Value = recordInfo.ProcessorName });
             if (recordInfo.SystemRamInfo != null)
-                systemInfos.Add(new SystemInfo() { Key = "System RAM Info", Value = recordInfo.SystemRamInfo });
+                systemInfos.Add(new SystemInfoEntry() { Key = "System RAM Info", Value = recordInfo.SystemRamInfo });
             if (recordInfo.BaseDriverVersion != null)
-                systemInfos.Add(new SystemInfo() { Key = "Base Driver Version", Value = recordInfo.BaseDriverVersion });
+                systemInfos.Add(new SystemInfoEntry() { Key = "Base Driver Version", Value = recordInfo.BaseDriverVersion });
             if (recordInfo.DriverPackage != null)
-                systemInfos.Add(new SystemInfo() { Key = "Driver Package", Value = recordInfo.DriverPackage });
+                systemInfos.Add(new SystemInfoEntry() { Key = "Driver Package", Value = recordInfo.DriverPackage });
             if (recordInfo.NumberGPUs != null)
-                systemInfos.Add(new SystemInfo() { Key = "GPU #", Value = recordInfo.NumberGPUs });
+                systemInfos.Add(new SystemInfoEntry() { Key = "GPU #", Value = recordInfo.NumberGPUs });
             if (recordInfo.GraphicCardName != null)
-                systemInfos.Add(new SystemInfo() { Key = "Graphic Card", Value = recordInfo.GraphicCardName });
+                systemInfos.Add(new SystemInfoEntry() { Key = "Graphic Card", Value = recordInfo.GraphicCardName });
             if (recordInfo.GPUCoreClock != null)
-                systemInfos.Add(new SystemInfo() { Key = "GPU Core Clock (MHz)", Value = recordInfo.GPUCoreClock });
+                systemInfos.Add(new SystemInfoEntry() { Key = "GPU Core Clock (MHz)", Value = recordInfo.GPUCoreClock });
             if (recordInfo.GPUMemoryClock != null)
-                systemInfos.Add(new SystemInfo() { Key = "GPU Memory Clock (MHz)", Value = recordInfo.GPUMemoryClock });
+                systemInfos.Add(new SystemInfoEntry() { Key = "GPU Memory Clock (MHz)", Value = recordInfo.GPUMemoryClock });
             if (recordInfo.GPUMemory != null)
-                systemInfos.Add(new SystemInfo() { Key = "GPU Memory (MB)", Value = recordInfo.GPUMemory });
+                systemInfos.Add(new SystemInfoEntry() { Key = "GPU Memory (MB)", Value = recordInfo.GPUMemory });
             if (recordInfo.Comment != null)
-                systemInfos.Add(new SystemInfo() { Key = "Comment", Value = recordInfo.Comment });
+                systemInfos.Add(new SystemInfoEntry() { Key = "Comment", Value = recordInfo.Comment });
 
             return systemInfos;
         }

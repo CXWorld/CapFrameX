@@ -1,6 +1,6 @@
 ﻿using CapFrameX.Contracts.OcatInterface;
 using CapFrameX.EventAggregation.Messages;
-using CapFrameX.OcatInterface;
+using CapFrameX.Data;
 using Prism.Events;
 using Prism.Mvvm;
 using System;

@@ -1,5 +1,5 @@
 ﻿using CapFrameX.Contracts.MVVM;
-using CapFrameX.OcatInterface;
+using CapFrameX.Data;
 using LiveCharts.Wpf;
 using OxyPlot;
 using Prism.Commands;

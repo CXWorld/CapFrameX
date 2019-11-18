@@ -1,5 +1,4 @@
 ﻿using CapFrameX.Contracts.Configuration;
-using CapFrameX.OcatInterface;
 using CapFrameX.Statistics;
 using OxyPlot;
 using OxyPlot.Axes;
@@ -12,6 +11,7 @@ using System.Windows;
 using System.Windows.Input;
 using System.Collections.Generic;
 using System.Globalization;
+using CapFrameX.Data;
 
 namespace CapFrameX.ViewModel.DataContext
 {

@@ -1,5 +1,5 @@
 ﻿using CapFrameX.Contracts.Configuration;
-using CapFrameX.OcatInterface;
+using CapFrameX.Data;
 using CapFrameX.Statistics;
 using OxyPlot;
 using OxyPlot.Axes;

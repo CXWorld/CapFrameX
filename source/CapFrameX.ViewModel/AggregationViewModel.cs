@@ -1,7 +1,7 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.OcatInterface;
 using CapFrameX.EventAggregation.Messages;
-using CapFrameX.OcatInterface;
+using CapFrameX.Data;
 using OxyPlot;
 using OxyPlot.Axes;
 using OxyPlot.Series;

@@ -7,7 +7,6 @@
 			 xmlns:dragdrop="urn:gong-wpf-dragdrop"
 			 xmlns:prism="http://prismlibrary.com/"
 			 xmlns:mvvm="clr-namespace:CapFrameX.MVVM.Converter;assembly=CapFrameX.MVVM"
-			 xmlns:ocatinterface="clr-namespace:CapFrameX.OcatInterface;assembly=CapFrameX.OcatInterface"
 			 xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              xmlns:local="clr-namespace:CapFrameX.View"
              mc:Ignorable="d" 

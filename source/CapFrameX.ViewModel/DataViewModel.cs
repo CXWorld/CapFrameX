@@ -1,7 +1,7 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
 using CapFrameX.EventAggregation.Messages;
-using CapFrameX.OcatInterface;
+using CapFrameX.Data;
 using CapFrameX.Statistics;
 using CapFrameX.ViewModel.DataContext;
 using LiveCharts;
@@ -42,7 +42,7 @@ namespace CapFrameX.ViewModel
 		private string[] _lShapeLabels;
 		private string[] _advancedParameterLabels;
 		private bool _removeOutliers;
-		private List<SystemInfo> _systemInfos;
+		private List<SystemInfoEntry> _systemInfos;
 		private bool _isCuttingModeActive;
 		private bool _doUpdateCharts = true;
 		private Func<double, string> _parameterFormatter;
@@ -167,7 +167,7 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-		public List<SystemInfo> SystemInfos
+		public List<SystemInfoEntry> SystemInfos
 		{
 			get { return _systemInfos; }
 			set { _systemInfos = value; RaisePropertyChanged(); }

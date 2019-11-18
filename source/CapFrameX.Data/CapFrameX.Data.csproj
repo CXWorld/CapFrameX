@@ -52,6 +52,11 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Reactive, Version=4.0.0.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.Reactive.4.0.0\lib\net46\System.Reactive.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Windows" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -71,7 +76,7 @@
     <Compile Include="RecordManager.cs" />
     <Compile Include="ReportInfo.cs" />
     <Compile Include="Session.cs" />
-    <Compile Include="SystemInfo.cs" />
+    <Compile Include="SystemInfoEntry.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="NameMatching\ProcessGameNameMatchingList.txt">

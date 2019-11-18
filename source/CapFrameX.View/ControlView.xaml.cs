@@ -2,7 +2,6 @@
 using CapFrameX.Contracts.Data;
 using CapFrameX.Data;
 using CapFrameX.Extensions;
-using CapFrameX.OcatInterface;
 using CapFrameX.ViewModel;
 using Prism.Events;
 using System;

@@ -2,7 +2,7 @@
 
 namespace CapFrameX.Data
 {
-	public class SystemInfo
+	public class SystemInfoEntry
 	{
 		public string Letter => Key.First().ToString();
 		public string Key { get; set; }
