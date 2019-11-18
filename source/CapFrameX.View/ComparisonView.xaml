@@ -137,13 +137,14 @@
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition Width="Auto"></ColumnDefinition>
 				<ColumnDefinition Width="Auto"></ColumnDefinition>
+				<ColumnDefinition Width="Auto"></ColumnDefinition>
 				<ColumnDefinition Width="1*"></ColumnDefinition>
 			</Grid.ColumnDefinitions>
 			<StackPanel VerticalAlignment="Center" Grid.Column="0" Margin="25 8 0 0" Orientation="Horizontal"
 						Visibility="{Binding IsBarChartTabActive, Converter={StaticResource TrueToVisibleConverter}}">
 				<TextBlock VerticalAlignment="Center">Sort mode:</TextBlock>
 				<ToggleButton Grid.Column="0" Margin="5 0 0 0" Foreground="Black" BorderThickness="1" Background="Transparent"
-											  Style="{StaticResource MaterialDesignActionAccentToggleButton}" IsChecked="{Binding IsSortModeAscending}">
+							  Style="{StaticResource MaterialDesignActionAccentToggleButton}" IsChecked="{Binding IsSortModeAscending}">
 					<ToggleButton.Content>
 						<materialDesign:PackIcon Kind="SortDescending" />
 					</ToggleButton.Content>
@@ -152,7 +153,13 @@
 					</materialDesign:ToggleButtonAssist.OnContent >
 				</ToggleButton>
 			</StackPanel>
-			<ComboBox Grid.Column="1" VerticalAlignment="Center" Margin="30 0 0 5" materialDesign:HintAssist.Hint="Secondary metric"
+			<StackPanel Grid.Column="1" Margin="20 8 0 0" VerticalAlignment="Center" Orientation="Horizontal"
+						Visibility="{Binding IsBarChartTabActive, Converter={StaticResource TrueToVisibleConverter}}">
+				<TextBlock VerticalAlignment="Center">Grouping:</TextBlock>
+				<ToggleButton Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
+							  ToolTip="Cutting mode" IsChecked="{Binding UseComparisonGrouping}"/>
+			</StackPanel>
+			<ComboBox Grid.Column="2" VerticalAlignment="Center" Margin="30 0 0 5" materialDesign:HintAssist.Hint="Secondary metric"
 					  Visibility="{Binding IsBarChartTabActive, Converter={StaticResource TrueToVisibleConverter}}"
 					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="150"
 					  ItemsSource="{Binding MetricItems}" SelectedItem="{Binding SelectSecondaryMetric}">
@@ -166,17 +173,17 @@
 						Visibility="{Binding IsBarChartTabActive, Converter={StaticResource TrueToCollapsedConverter}}">
 				<TextBlock VerticalAlignment="Center">Cutting mode:</TextBlock>
 				<ToggleButton Name="CuttingModeActiveToggleButton" Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
-									  ToolTip="Cutting mode" IsChecked="{Binding IsCuttingModeActive}"/>
+							  ToolTip="Cutting mode" IsChecked="{Binding IsCuttingModeActive}"/>
 			</StackPanel>
 
-			<StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0 8 150 0" Orientation="Horizontal"
+			<StackPanel Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0 8 150 0" Orientation="Horizontal"
 						Visibility="{Binding IsBarChartTabActive, Converter={StaticResource TrueToCollapsedConverter}}">
 				<TextBlock VerticalAlignment="Center">Show context legend:</TextBlock>
 				<ToggleButton Name="ContextLegendActiveToggleButton" Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
 								  ToolTip="Show context legend" IsChecked="{Binding IsContextLegendActive}"/>
 			</StackPanel>
 
-			<ComboBox Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0 0 30 5" materialDesign:HintAssist.Hint="Comparison context"
+			<ComboBox Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0 0 30 5" materialDesign:HintAssist.Hint="Comparison context"
 					materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="150"
 					ItemsSource="{Binding ComparisonContextItems}" SelectedItem="{Binding SelectedComparisonContext}">
 				<ComboBox.ItemTemplate>

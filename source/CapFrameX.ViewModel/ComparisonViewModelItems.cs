@@ -71,11 +71,24 @@ namespace CapFrameX.ViewModel
 				wrappedComparisonRecordInfo
 			};
 
-			var orderedList = IsSortModeAscending ? list.OrderBy(x => x.WrappedRecordInfo.FirstMetric).ToList() :
-				list.OrderByDescending(x => x.WrappedRecordInfo.FirstMetric).ToList();
+			List<ComparisonRecordInfoWrapper> orderedList = null;
 
-			var index = orderedList.IndexOf(wrappedComparisonRecordInfo);
-			ComparisonRecords.Insert(index, wrappedComparisonRecordInfo);
+			if (UseComparisonGrouping)
+			{
+				orderedList = IsSortModeAscending ? list.OrderBy(x => x.WrappedRecordInfo.Game).ThenBy(x => x.WrappedRecordInfo.FirstMetric).ToList() :
+					list.OrderBy(x => x.WrappedRecordInfo.Game).ThenByDescending(x => x.WrappedRecordInfo.FirstMetric).ToList();
+			}
+			else
+			{
+				orderedList = IsSortModeAscending ? list.OrderBy(x => x.WrappedRecordInfo.FirstMetric).ToList() :
+					list.OrderByDescending(x => x.WrappedRecordInfo.FirstMetric).ToList();
+			}
+
+			if (orderedList != null)
+			{
+				var index = orderedList.IndexOf(wrappedComparisonRecordInfo);
+				ComparisonRecords.Insert(index, wrappedComparisonRecordInfo);
+			}
 		}
 
 		public void RemoveComparisonItem(ComparisonRecordInfoWrapper wrappedComparisonRecordInfo)
@@ -139,16 +152,20 @@ namespace CapFrameX.ViewModel
 				return;
 
 			IEnumerable<ComparisonRecordInfoWrapper> comparisonRecordList = null;
-			if (IsSortModeAscending)
-				comparisonRecordList = ComparisonRecords.ToList()
-					.Select(info => info.Clone())
-					.OrderBy(info => info.WrappedRecordInfo.FirstMetric);
-			else
-				comparisonRecordList = ComparisonRecords.ToList()
-					.Select(info => info.Clone())
-					.OrderByDescending(info => info.WrappedRecordInfo.FirstMetric);
 
-			// RemoveAllComparisonItems(false, false);
+			if (UseComparisonGrouping)
+			{
+				comparisonRecordList = IsSortModeAscending ? ComparisonRecords.ToList()
+					.Select(info => info.Clone()).OrderBy(x => x.WrappedRecordInfo.Game).ThenBy(x => x.WrappedRecordInfo.FirstMetric) :
+					ComparisonRecords.ToList().Select(info => info.Clone()).OrderBy(x => x.WrappedRecordInfo.Game).ThenByDescending(x => x.WrappedRecordInfo.FirstMetric);
+			}
+			else
+			{
+				comparisonRecordList = IsSortModeAscending ? ComparisonRecords.ToList()
+					.Select(info => info.Clone()).OrderBy(x => x.WrappedRecordInfo.FirstMetric) :
+					ComparisonRecords.ToList().Select(info => info.Clone()).OrderByDescending(x => x.WrappedRecordInfo.FirstMetric);
+			}
+
 			ComparisonRecords.Clear();
 
 			foreach (var item in comparisonRecordList)

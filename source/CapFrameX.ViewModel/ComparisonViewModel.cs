@@ -65,6 +65,7 @@ namespace CapFrameX.ViewModel
 		private EComparisonContext _selectedComparisonContext = EComparisonContext.DateTime;
 		private string _currentGameName;
 		private bool _hasUniqueGameNames;
+		private bool _useComparisonGrouping;
 
 		public Array MetricItems => Enum.GetValues(typeof(EMetric))
 										.Cast<EMetric>()
@@ -311,7 +312,18 @@ namespace CapFrameX.ViewModel
 				_hasUniqueGameNames = value;
 				RaisePropertyChanged();
 			}
-		}		
+		}
+
+		public bool UseComparisonGrouping
+		{
+			get { return _useComparisonGrouping; }
+			set
+			{
+				_useComparisonGrouping = value;
+				RaisePropertyChanged();
+				OnComparisonGroupingChanged();
+			}
+		}
 
 		public bool IsBarChartTabActive
 		{
@@ -400,6 +412,9 @@ namespace CapFrameX.ViewModel
 			=> ColorPickerVisibility = SelectedChartItem.Header.ToString() != "Bar charts";
 
 		private void OnSortModeChanged()
+			=> SortComparisonItems();
+
+		private void OnComparisonGroupingChanged()
 			=> SortComparisonItems();
 
 		private void SetRowSeries()
