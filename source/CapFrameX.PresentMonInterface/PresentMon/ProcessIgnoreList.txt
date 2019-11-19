@@ -20,6 +20,7 @@ GameBar
 HxAccounts
 HxOutlook
 iCUE
+lync
 Microsoft.Photos
 MicrosoftEdge
 MicrosoftEdgeCP
@@ -48,3 +49,4 @@ WeMod
 wgc_renderer
 WinStore.App
 WWAHost
+XDesProc

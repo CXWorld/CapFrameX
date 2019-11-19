@@ -18,6 +18,7 @@ using CapFrameX.PresentMonInterface;
 using CapFrameX.Contracts.Data;
 using System.Collections.Generic;
 using System.Collections;
+using System.Reactive.Subjects;
 
 namespace CapFrameX.ViewModel
 {
@@ -27,6 +28,7 @@ namespace CapFrameX.ViewModel
 		private readonly IEventAggregator _eventAggregator;
 		private readonly IAppConfiguration _appConfiguration;
 		private readonly IRecordDataProvider _recordDataProvider;
+		private readonly ISubject<FileInfo> _recordDeleteSubStream;
 
 		private PubSubEvent<ViewMessages.UpdateSession> _updateSessionEvent;
 		private PubSubEvent<ViewMessages.SelectSession> _selectSessionEvent;
@@ -42,6 +44,7 @@ namespace CapFrameX.ViewModel
 		private string _customComment;
 		private int _recordDataGridSelectedIndex;
 		private List<IFileRecordInfo> _selectedRecordings;
+		private bool _recordDeleteStreamActive = true;
 
 		public IFileRecordInfo SelectedRecordInfo
 		{
@@ -162,7 +165,7 @@ namespace CapFrameX.ViewModel
 			AddCpuInfoCommand = new DelegateCommand(OnAddCpuInfo);
 			AddGpuInfoCommand = new DelegateCommand(OnAddGpuInfo);
 			AddRamInfoCommand = new DelegateCommand(OnAddRamInfo);
-;			DeleteRecordCommand = new DelegateCommand(OnPressDeleteKey);
+			DeleteRecordCommand = new DelegateCommand(OnPressDeleteKey);
 			SelectedRecordingsCommand = new DelegateCommand<object>(OnSelectedRecordings);
 
 			HasValidSource = recordObserver.HasValidSource;
@@ -180,11 +183,19 @@ namespace CapFrameX.ViewModel
 				}
 			});
 
+			_recordDeleteSubStream = new Subject<FileInfo>();
+
 			var context = SynchronizationContext.Current;
-			_recordObserver.RecordCreatedStream.ObserveOn(context).SubscribeOn(context)
-							.Subscribe(OnRecordCreated);
-			_recordObserver.RecordDeletedStream.ObserveOn(context).SubscribeOn(context)
-							.Subscribe(OnRecordDeleted);
+			_recordObserver.RecordCreatedStream
+						   .ObserveOn(context)
+						   .SubscribeOn(context)
+						   .Subscribe(OnRecordCreated);
+			_recordObserver.RecordDeletedStream
+						   .Merge(_recordDeleteSubStream)
+						   .Where(x => _recordDeleteStreamActive)
+						   .ObserveOn(context)
+						   .SubscribeOn(context)
+						   .Subscribe(x => OnRecordDeleted());
 
 			// Turn streams now on
 			if (_recordObserver.HasValidSource)
@@ -204,10 +215,17 @@ namespace CapFrameX.ViewModel
 			{
 				if (_selectedRecordings.Count > 1)
 				{
+					_recordDeleteStreamActive = false;
+
 					foreach (var item in _selectedRecordings)
 					{
 						File.Delete(item.FullPath);
 					}
+
+					_ = _recordObserver.RecordingFileWatcher.WaitForChanged(WatcherChangeTypes.Deleted, 1000);
+
+					_recordDeleteStreamActive = true;
+					_recordDeleteSubStream.OnNext(null);
 				}
 				else
 				{
@@ -321,17 +339,17 @@ namespace CapFrameX.ViewModel
 
 		private void OnAddCpuInfo()
 		{
-			CustomCpuDescription = PresentMonInterface.SystemInfo.GetProcessorName();
+			CustomCpuDescription = SystemInfo.GetProcessorName();
 		}
 
 		private void OnAddGpuInfo()
 		{
-			CustomGpuDescription = PresentMonInterface.SystemInfo.GetGraphicCardName();
+			CustomGpuDescription = SystemInfo.GetGraphicCardName();
 		}
 
 		private void OnAddRamInfo()
 		{
-			CustomRamDescription= PresentMonInterface.SystemInfo.GetSystemRAMInfoName();
+			CustomRamDescription = SystemInfo.GetSystemRAMInfoName();
 		}
 
 		private void OnPressDeleteKey()
@@ -364,7 +382,7 @@ namespace CapFrameX.ViewModel
 		private void OnRecordCreated(FileInfo fileInfo)
 			=> AddToRecordInfoList(_recordDataProvider.GetFileRecordInfo(fileInfo), true);
 
-		private void OnRecordDeleted(FileInfo fileInfo)
+		private void OnRecordDeleted()
 		{
 			ReloadRecordList();
 		}

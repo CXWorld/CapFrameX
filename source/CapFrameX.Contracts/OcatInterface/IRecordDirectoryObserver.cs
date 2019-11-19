@@ -11,6 +11,8 @@ namespace CapFrameX.Contracts.OcatInterface
 
 		bool HasValidSource { get; }
 
+		FileSystemWatcher RecordingFileWatcher { get; }
+
 		Subject<bool> HasValidSourceStream { get; }
 
 		IObservable<FileInfo> RecordCreatedStream { get; }

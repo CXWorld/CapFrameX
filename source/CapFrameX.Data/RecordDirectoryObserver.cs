@@ -12,147 +12,151 @@ using System.Threading;
 
 namespace CapFrameX.Data
 {
-    public class RecordDirectoryObserver : IRecordDirectoryObserver
-    {
-        private readonly ISubject<string> _recordCreatedStream;
-        private readonly ISubject<string> _recordDeletedStream;
-        private readonly IAppConfiguration _appConfiguration;
+	public class RecordDirectoryObserver : IRecordDirectoryObserver
+	{
+		private readonly ISubject<string> _recordCreatedStream;
+		private readonly ISubject<string> _recordDeletedStream;
+		private readonly IAppConfiguration _appConfiguration;
 
-        private bool _isActive;
-        private string _recordDirectory;
-        private FileSystemWatcher _fileSystemWatcher;
+		private bool _isActive;
+		private string _recordDirectory;
+		private FileSystemWatcher _fileSystemWatcher;
 
-        public bool IsActive
-        {
-            get { return _isActive; }
-            set { _isActive = value; HasValidSourceStream.OnNext(_isActive); }
-        }
+		public bool IsActive
+		{
+			get { return _isActive; }
+			set { _isActive = value; HasValidSourceStream.OnNext(_isActive); }
+		}
 
-        public bool HasValidSource { get; private set; }
+		public bool HasValidSource { get; private set; }
 
-        public IObservable<FileInfo> RecordCreatedStream
-            => _recordCreatedStream.Where(p => IsActive).Select(path => new FileInfo(path)).AsObservable();
+		public IObservable<FileInfo> RecordCreatedStream
+			=> _recordCreatedStream.Where(p => IsActive).Select(path => new FileInfo(path)).AsObservable();
 
-        public IObservable<FileInfo> RecordDeletedStream
-            => _recordDeletedStream.Where(p => IsActive).Select(path => new FileInfo(path)).AsObservable();
+		public IObservable<FileInfo> RecordDeletedStream
+			=> _recordDeletedStream.Where(p => IsActive).Select(path => new FileInfo(path)).AsObservable();
 
-        public Subject<bool> HasValidSourceStream { get; }
+		public FileSystemWatcher RecordingFileWatcher => _fileSystemWatcher;
 
-        public RecordDirectoryObserver(IAppConfiguration appConfiguration)
-        {
-            _appConfiguration = appConfiguration;
-            _recordDirectory = GetInitialObservedDirectory(_appConfiguration.ObservedDirectory);
+		public Subject<bool> HasValidSourceStream { get; }
 
-            HasValidSourceStream = new Subject<bool>();
+		public RecordDirectoryObserver(IAppConfiguration appConfiguration)
+		{
+			_appConfiguration = appConfiguration;
+			_recordDirectory = GetInitialObservedDirectory(_appConfiguration.ObservedDirectory);
 
-            try
-            {
-                if (!Directory.Exists(_recordDirectory))
-                {
-                    Directory.CreateDirectory(_recordDirectory);
-                }
+			HasValidSourceStream = new Subject<bool>();
 
-                _fileSystemWatcher = new FileSystemWatcher(_recordDirectory);
-                _fileSystemWatcher.Created += new FileSystemEventHandler(WatcherCreated);
-                _fileSystemWatcher.Deleted += new FileSystemEventHandler(WatcherDeleted);
-                _fileSystemWatcher.EnableRaisingEvents = true;
-                _fileSystemWatcher.IncludeSubdirectories = false;
+			try
+			{
+				if (!Directory.Exists(_recordDirectory))
+				{
+					Directory.CreateDirectory(_recordDirectory);
+				}
 
-                HasValidSource = true;
-            }
-            catch
-            {                
-                HasValidSource = false;
-            }
+				_fileSystemWatcher = new FileSystemWatcher(_recordDirectory);
+				_fileSystemWatcher.Created += new FileSystemEventHandler(WatcherCreated);
+				_fileSystemWatcher.Deleted += new FileSystemEventHandler(WatcherDeleted);
+				_fileSystemWatcher.EnableRaisingEvents = true;
+				_fileSystemWatcher.IncludeSubdirectories = false;
 
-            IsActive = false;
-            _recordCreatedStream = new Subject<string>();
-            _recordDeletedStream = new Subject<string>();
-        }
+				HasValidSource = true;
+			}
+			catch
+			{
+				HasValidSource = false;
+			}
 
-        public static string GetInitialObservedDirectory(string observedDirectory)
-        {
-            var documentFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-            string path = observedDirectory;
+			IsActive = false;
+			_recordCreatedStream = new Subject<string>();
+			_recordDeletedStream = new Subject<string>();
+		}
 
-            // >= V1.3
-            if (observedDirectory.Contains(@"MyDocuments\OCAT\Captures"))
-            {
-                path = Path.Combine(documentFolder, @"OCAT\Captures");
-            }
+		public static string GetInitialObservedDirectory(string observedDirectory)
+		{
+			var documentFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+			string path = observedDirectory;
 
-            // < V1.3
-            else if (observedDirectory.Contains(@"MyDocuments\OCAT\Recordings"))
-            {
-                path = Path.Combine(documentFolder, @"OCAT\Recordings");
-            }
+			// >= V1.3
+			if (observedDirectory.Contains(@"MyDocuments\OCAT\Captures"))
+			{
+				path = Path.Combine(documentFolder, @"OCAT\Captures");
+			}
 
-            // CX captures
-            else if (observedDirectory.Contains(@"MyDocuments\CapFrameX\Captures"))
-            {
-                path = Path.Combine(documentFolder, @"CapFrameX\Captures");
-            }
+			// < V1.3
+			else if (observedDirectory.Contains(@"MyDocuments\OCAT\Recordings"))
+			{
+				path = Path.Combine(documentFolder, @"OCAT\Recordings");
+			}
 
-            return path;
-        }
+			// CX captures
+			else if (observedDirectory.Contains(@"MyDocuments\CapFrameX\Captures"))
+			{
+				path = Path.Combine(documentFolder, @"CapFrameX\Captures");
+			}
 
-        private async Task SetTaskDelay()
-        {
-            // put some offset here
-            await Task.Delay(TimeSpan.FromMilliseconds(1000));
-        }
+			return path;
+		}
 
-        private void WatcherCreated(object sender, FileSystemEventArgs e)
-        {
-            Task.Run(async () =>
-            {
-                await SetTaskDelay().ContinueWith(_ =>
-                {
-                    _recordCreatedStream.OnNext(e.FullPath);
-                }, CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
-            });            
-        }
+		private async Task SetTaskDelay()
+		{
+			// put some offset here
+			await Task.Delay(TimeSpan.FromMilliseconds(1000));
+		}
 
-        private void WatcherDeleted(object sender, FileSystemEventArgs e)
-            => _recordDeletedStream.OnNext(e.FullPath);
+		private void WatcherCreated(object sender, FileSystemEventArgs e)
+		{
+			Task.Run(async () =>
+			{
+				await SetTaskDelay().ContinueWith(_ =>
+				{
+					_recordCreatedStream.OnNext(e.FullPath);
+				}, CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
+			});
+		}
 
-        public IEnumerable<FileInfo> GetAllRecordFileInfo()
-        {
-            var filterList = CaptureServiceConfiguration.GetProcessIgnoreList();
+		private void WatcherDeleted(object sender, FileSystemEventArgs e)
+		{
+			_recordDeletedStream.OnNext(e.FullPath);
+		}
 
-            if (filterList.Contains("CapFrameX"))
-                filterList.Remove("CapFrameX");
+		public IEnumerable<FileInfo> GetAllRecordFileInfo()
+		{
+			var filterList = CaptureServiceConfiguration.GetProcessIgnoreList();
 
-            return HasValidSource ? Directory.GetFiles(_recordDirectory, "*.csv",
-                SearchOption.TopDirectoryOnly).Where(
-                file =>
-                {
-                    return filterList.All(entry => !file.Contains(entry));
-                }).Select(file => new FileInfo(file)) : Enumerable.Empty<FileInfo>();
-        }
+			if (filterList.Contains("CapFrameX"))
+				filterList.Remove("CapFrameX");
 
-        public void UpdateObservedDirectory(string directory)
-        {
-            if (!Directory.Exists(directory))
-            {
-                HasValidSource = false;
-                IsActive = false;
-            }
-            else
-            {
-                HasValidSource = true;
+			return HasValidSource ? Directory.GetFiles(_recordDirectory, "*.csv",
+				SearchOption.TopDirectoryOnly).Where(
+				file =>
+				{
+					return filterList.All(entry => !file.Contains(entry));
+				}).Select(file => new FileInfo(file)) : Enumerable.Empty<FileInfo>();
+		}
 
-                _recordDirectory = directory;
-                _fileSystemWatcher = new FileSystemWatcher(directory);
-                _fileSystemWatcher.Created += new FileSystemEventHandler(WatcherCreated);
-                _fileSystemWatcher.Deleted += new FileSystemEventHandler(WatcherDeleted);
-                _fileSystemWatcher.EnableRaisingEvents = true;
-                _fileSystemWatcher.IncludeSubdirectories = false;
+		public void UpdateObservedDirectory(string directory)
+		{
+			if (!Directory.Exists(directory))
+			{
+				HasValidSource = false;
+				IsActive = false;
+			}
+			else
+			{
+				HasValidSource = true;
 
-                IsActive = true;
-            }
+				_recordDirectory = directory;
+				_fileSystemWatcher = new FileSystemWatcher(directory);
+				_fileSystemWatcher.Created += new FileSystemEventHandler(WatcherCreated);
+				_fileSystemWatcher.Deleted += new FileSystemEventHandler(WatcherDeleted);
+				_fileSystemWatcher.EnableRaisingEvents = true;
+				_fileSystemWatcher.IncludeSubdirectories = false;
 
-            HasValidSourceStream.OnNext(HasValidSource);
-        }
-    }
+				IsActive = true;
+			}
+
+			HasValidSourceStream.OnNext(HasValidSource);
+		}
+	}
 }
