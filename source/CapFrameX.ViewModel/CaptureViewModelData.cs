@@ -78,6 +78,11 @@ namespace CapFrameX.ViewModel
 				return null;
 
 			var unionCaptureData = filteredArchive.Concat(_captureData.Skip(distinctIndex)).ToList();
+			var unionCaptureDataStartTime = RecordDataProvider.GetStartTimeFromDataLine(unionCaptureData.First());
+			var unionCaptureDataEndTime = RecordDataProvider.GetStartTimeFromDataLine(unionCaptureData.Last());
+
+			AddLoggerEntry($"Length captured data + archive in sec: " +
+				$"{ Math.Round(unionCaptureDataEndTime - unionCaptureDataStartTime, 2)}");
 
 			var captureInterval = new List<string>();
 
@@ -96,9 +101,9 @@ namespace CapFrameX.ViewModel
 				double startTime = 0;
 
 				// find first dataline that fits start of valid interval
-				for (int i = 0; i < unionCaptureData.Count; i++)
+				for (int i = 0; i < unionCaptureData.Count - 1; i++)
 				{
-					var currentQpcTime = RecordDataProvider.GetQpcTimeFromDataLine(unionCaptureData[i]);
+					var currentQpcTime = RecordDataProvider.GetQpcTimeFromDataLine(unionCaptureData[i + 1]);
 
 					if (currentQpcTime >= _qcpTimeStart)
 					{
@@ -106,6 +111,9 @@ namespace CapFrameX.ViewModel
 						break;
 					}
 				}
+
+				AddLoggerEntry($"Length captured data QPCTime start to end with buffer in sec: " +
+					$"{ Math.Round(unionCaptureDataEndTime - startTime, 2)}");
 
 				for (int i = 0; i < unionCaptureData.Count; i++)
 				{

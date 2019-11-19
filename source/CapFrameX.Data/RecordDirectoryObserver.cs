@@ -127,6 +127,17 @@ namespace CapFrameX.Data
 			if (filterList.Contains("CapFrameX"))
 				filterList.Remove("CapFrameX");
 
+			//var testFile = Directory.GetFiles(_recordDirectory, "*.csv",
+			//	SearchOption.TopDirectoryOnly).First();
+
+			//foreach (var entry in filterList)
+			//{
+			//	if (testFile.Contains(entry))
+			//	{
+			//		Console.WriteLine(entry);
+			//	}
+			//}
+
 			return HasValidSource ? Directory.GetFiles(_recordDirectory, "*.csv",
 				SearchOption.TopDirectoryOnly).Where(
 				file =>

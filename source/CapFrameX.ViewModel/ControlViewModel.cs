@@ -222,7 +222,8 @@ namespace CapFrameX.ViewModel
 						File.Delete(item.FullPath);
 					}
 
-					_ = _recordObserver.RecordingFileWatcher.WaitForChanged(WatcherChangeTypes.Deleted, 1000);
+					_ = _recordObserver.RecordingFileWatcher
+						.WaitForChanged(WatcherChangeTypes.Deleted, 1000);
 
 					_recordDeleteStreamActive = true;
 					_recordDeleteSubStream.OnNext(null);

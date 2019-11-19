@@ -31,7 +31,7 @@ namespace CapFrameX.ViewModel
 {
 	public partial class CaptureViewModel : BindableBase, INavigationAware
 	{
-		private const int PRESICE_OFFSET = 500;
+		private const int PRESICE_OFFSET = 2000;
 		private const int ARCHIVE_LENGTH = 1000;
 
 		[DllImport("Kernel32.dll")]
@@ -421,11 +421,7 @@ namespace CapFrameX.ViewModel
 			}
 
 			if (!IsCapturing)
-			{
-				_ = QueryPerformanceCounter(out long counter);
-				AddLoggerEntry($"Performance counter on start capturing: {counter}");
-				_qcpTimeStart = counter;
-
+			{			
 				// none -> do nothing
 				// simple sounds
 				if (SelectedSoundMode == _soundModes[1])
@@ -476,7 +472,9 @@ namespace CapFrameX.ViewModel
 			double captureTime = Convert.ToInt32(CaptureTimeString) + delayCapture;
 			bool intializedStartTime = false;
 
-			var context = TaskScheduler.FromCurrentSynchronizationContext();
+			_ = QueryPerformanceCounter(out long counter);
+			AddLoggerEntry($"Performance counter on start capturing: {counter}");
+			_qcpTimeStart = counter;
 
 			_disposableCaptureStream = _captureService.RedirectedOutputDataStream
 				.ObserveOn(new EventLoopScheduler()).Subscribe(dataLine =>
@@ -498,6 +496,8 @@ namespace CapFrameX.ViewModel
 						AddLoggerEntry("Stopped filling archive.");
 					}
 				});
+
+			var context = TaskScheduler.FromCurrentSynchronizationContext();
 
 			if (autoTermination)
 			{
