@@ -95,7 +95,7 @@ namespace CapFrameX.ViewModel
 				{
 					var currentqpcTime = RecordDataProvider.GetQpcTimeFromDataLine(unionCaptureData[i]);
 
-					if (currentqpcTime >= _qcpTimeStart && currentqpcTime <= _qcpTimeStop)
+					if (currentqpcTime >= _qpcTimeStart && currentqpcTime <= _qpcTimeStop)
 						captureInterval.Add(unionCaptureData[i]);
 				}
 			}
@@ -104,11 +104,11 @@ namespace CapFrameX.ViewModel
 				double startTime = 0;
 
 				// find first dataline that fits start of valid interval
-				for (int i = 0; i < unionCaptureData.Count - 1; i++)
+				for (int i = 0; i < unionCaptureData.Count; i++)
 				{
-					var currentQpcTime = RecordDataProvider.GetQpcTimeFromDataLine(unionCaptureData[i + 1]);
+					var currentQpcTime = RecordDataProvider.GetQpcTimeFromDataLine(unionCaptureData[i]);
 
-					if (currentQpcTime >= _qcpTimeStart)
+					if (currentQpcTime >= _qpcTimeStart)
 					{
 						startTime = RecordDataProvider.GetStartTimeFromDataLine(unionCaptureData[i]);
 						break;

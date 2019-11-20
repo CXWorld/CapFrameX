@@ -46,7 +46,6 @@ namespace CapFrameX.ViewModel
 		private readonly List<string> _captureDataArchive = new List<string>(ARCHIVE_LENGTH);
 
 		private IDisposable _disposableHeartBeat;
-		private long _qcpTimeStart;
 		private IDisposable _disposableCaptureStream;
 		private IDisposable _disposableArchiveStream;
 		private List<string> _captureData;
@@ -66,7 +65,8 @@ namespace CapFrameX.ViewModel
 		private bool _showVolumeController;
 		private PlotModel _frametimeModel;
 		private ISubject<string> _frametimeStream;
-		private long _qcpTimeStop;
+		private long _qpcTimeStart;
+		private long _qpcTimeStop;
 
 		private bool IsCapturing
 		{
@@ -421,7 +421,11 @@ namespace CapFrameX.ViewModel
 			}
 
 			if (!IsCapturing)
-			{			
+			{
+				_ = QueryPerformanceCounter(out long counter);
+				AddLoggerEntry($"Performance counter on start capturing: {counter}");
+				_qpcTimeStart = counter;
+
 				// none -> do nothing
 				// simple sounds
 				if (SelectedSoundMode == _soundModes[1])
@@ -458,7 +462,40 @@ namespace CapFrameX.ViewModel
 			else
 			{
 				_cancellationTokenSource?.Cancel();
-				FinishCapturingAndUpdateUi();
+
+				_ = QueryPerformanceCounter(out long counter);
+				AddLoggerEntry($"Performance counter on start capturing: {counter}");
+				_qpcTimeStop = counter;
+
+				// none -> do nothing
+				// simple sounds
+				if (SelectedSoundMode == _soundModes[1])
+				{
+					_soundPlayer.Open(new Uri("Sounds/simple_stop_sound.mp3", UriKind.Relative));
+					_soundPlayer.Volume = SimpleSoundLevel;
+					_soundPlayer.Play();
+				}
+				// voice response
+				else if (SelectedSoundMode == _soundModes[2])
+				{
+					_soundPlayer.Open(new Uri("Sounds/capture_finished.mp3", UriKind.Relative));
+					_soundPlayer.Volume = VoiceSoundLevel;
+					_soundPlayer.Play();
+				}
+
+				var context = TaskScheduler.FromCurrentSynchronizationContext();
+
+				// offset timer
+				Task.Run(async () =>
+				{
+					await SetTaskDelayOffset().ContinueWith(_ =>
+					{
+						Application.Current.Dispatcher.Invoke(new Action(() =>
+						{
+							FinishCapturingAndUpdateUi();
+						}));
+					}, CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, context);
+				});
 			}
 		}
 
@@ -470,11 +507,7 @@ namespace CapFrameX.ViewModel
 			bool autoTermination = Convert.ToInt32(CaptureTimeString) > 0;
 			double delayCapture = Convert.ToInt32(CaptureStartDelayString);
 			double captureTime = Convert.ToInt32(CaptureTimeString) + delayCapture;
-			bool intializedStartTime = false;
-
-			_ = QueryPerformanceCounter(out long counter);
-			AddLoggerEntry($"Performance counter on start capturing: {counter}");
-			_qcpTimeStart = counter;
+			bool intializedStartTime = false;			
 
 			_disposableCaptureStream = _captureService.RedirectedOutputDataStream
 				.ObserveOn(new EventLoopScheduler()).Subscribe(dataLine =>
@@ -504,13 +537,42 @@ namespace CapFrameX.ViewModel
 				AddLoggerEntry("Starting countdown...");
 
 				_cancellationTokenSource = new CancellationTokenSource();
+
+				// data timer
 				Task.Run(async () =>
 				{
-					await SetTaskDelay().ContinueWith(_ =>
+					await SetTaskDelayData().ContinueWith(_ =>
 					{
 						Application.Current.Dispatcher.Invoke(new Action(() =>
 						{
 							FinishCapturingAndUpdateUi();
+						}));
+					}, _cancellationTokenSource.Token, TaskContinuationOptions.ExecuteSynchronously, context);
+				});
+
+				// sound timer
+				// data timer
+				Task.Run(async () =>
+				{
+					await SetTaskDelaySound().ContinueWith(_ =>
+					{
+						Application.Current.Dispatcher.Invoke(new Action(() =>
+						{
+							// none -> do nothing
+							// simple sounds
+							if (SelectedSoundMode == _soundModes[1])
+							{
+								_soundPlayer.Open(new Uri("Sounds/simple_stop_sound.mp3", UriKind.Relative));
+								_soundPlayer.Volume = SimpleSoundLevel;
+								_soundPlayer.Play();
+							}
+							// voice response
+							else if (SelectedSoundMode == _soundModes[2])
+							{
+								_soundPlayer.Open(new Uri("Sounds/capture_finished.mp3", UriKind.Relative));
+								_soundPlayer.Volume = VoiceSoundLevel;
+								_soundPlayer.Play();
+							}
 						}));
 					}, _cancellationTokenSource.Token, TaskContinuationOptions.ExecuteSynchronously, context);
 				});
@@ -520,28 +582,11 @@ namespace CapFrameX.ViewModel
 		private void FinishCapturingAndUpdateUi()
 		{
 			_ = QueryPerformanceCounter(out long counter);
-			_qcpTimeStop = counter;
+			_qpcTimeStop = counter;
 			AddLoggerEntry($"Performance counter on stop capturing: {counter}");
 			_disposableCaptureStream?.Dispose();
 
 			AddLoggerEntry("Capturing stopped.");
-
-			// none -> do nothing
-			// simple sounds
-			if (SelectedSoundMode == _soundModes[1])
-			{
-				_soundPlayer.Open(new Uri("Sounds/simple_stop_sound.mp3", UriKind.Relative));
-				_soundPlayer.Volume = SimpleSoundLevel;
-				_soundPlayer.Play();
-			}
-			// voice response
-			else if (SelectedSoundMode == _soundModes[2])
-			{
-				_soundPlayer.Open(new Uri("Sounds/capture_finished.mp3", UriKind.Relative));
-				_soundPlayer.Volume = VoiceSoundLevel;
-				_soundPlayer.Play();
-			}
-
 			WriteCaptureDataToFile();
 
 			IsCapturing = !IsCapturing;
@@ -550,11 +595,20 @@ namespace CapFrameX.ViewModel
 			UpdateCaptureStateInfo();
 		}
 
-
-		private async Task SetTaskDelay()
+		private async Task SetTaskDelayOffset()
 		{
-			// put some offset here
+			await Task.Delay(TimeSpan.FromMilliseconds(PRESICE_OFFSET));
+		}
+
+		private async Task SetTaskDelayData()
+		{
 			await Task.Delay(TimeSpan.FromMilliseconds(PRESICE_OFFSET +
+				1000 * Convert.ToInt32(CaptureTimeString)));
+		}
+
+		private async Task SetTaskDelaySound()
+		{
+			await Task.Delay(TimeSpan.FromMilliseconds(
 				1000 * Convert.ToInt32(CaptureTimeString)));
 		}
 
