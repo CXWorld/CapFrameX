@@ -31,7 +31,7 @@ namespace CapFrameX.ViewModel
 {
 	public partial class CaptureViewModel : BindableBase, INavigationAware
 	{
-		private const int PRESICE_OFFSET = 2000;
+		private const int PRESICE_OFFSET = 2500;
 		private const int ARCHIVE_LENGTH = 1000;
 
 		[DllImport("Kernel32.dll")]
