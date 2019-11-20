@@ -51,7 +51,7 @@
 					SelectedItem="{Binding SelectedChartItem}">
 			<TabItem Header="Bar charts" >
 				<StackPanel Orientation="Vertical">
-					<TextBlock Grid.Row="0" Margin="0 10 0 10" FontSize="14" Text="{Binding CurrentGameName}" HorizontalAlignment="Center"
+					<TextBlock Grid.Row="0" Margin="0 10 0 10" FontWeight="Bold" FontSize="16" Text="{Binding CurrentGameName}" HorizontalAlignment="Center"
 							   Visibility="{Binding HasUniqueGameNames, Converter={StaticResource TrueToVisibleConverter}}"/>
 					<ScrollViewer VerticalScrollBarVisibility="Auto">
 						<Grid>

@@ -51,7 +51,7 @@
 			<RowDefinition Height="1*"></RowDefinition>
 		</Grid.RowDefinitions>
 		<Grid Grid.Row="0">
-			<TextBlock HorizontalAlignment="Center" FontSize="14" VerticalAlignment="Bottom" Text="{Binding CurrentGameName}"/>
+			<TextBlock HorizontalAlignment="Center"  FontWeight="Bold" FontSize="16" VerticalAlignment="Bottom" Text="{Binding CurrentGameName}"/>
 			<ToggleButton x:Name="ScreenshotModeToggleButton"
 						  materialDesign:ShadowAssist.ShadowDepth="Depth3"
 						  VerticalAlignment="Top"
