@@ -4,152 +4,159 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using System.Threading.Tasks;
 using CapFrameX.Contracts.PresentMonInterface;
 
 namespace CapFrameX.PresentMonInterface
 {
-    public class PresentMonCaptureService : ICaptureService
-    {
-        private readonly ISubject<string> _outputErrorStream;
-        private readonly ISubject<string> _outputDataStream;
-        private readonly object _listLock = new object();
+	public class PresentMonCaptureService : ICaptureService
+	{
+		private readonly ISubject<string> _outputErrorStream;
+		private readonly ISubject<string> _outputDataStream;
+		private readonly object _listLock = new object();
 
-        private HashSet<string> _presentMonProcesses;
-        private bool _isUpdating;
-        private IDisposable _hearBeatDisposable;
-        private IDisposable _processNameDisposable;
+		private HashSet<string> _presentMonProcesses;
+		private bool _isUpdating;
+		private IDisposable _hearBeatDisposable;
+		private IDisposable _processNameDisposable;
 
-        public IObservable<string> RedirectedOutputDataStream => _outputDataStream.AsObservable();
-        public IObservable<string> RedirectedOutputErrorStream => _outputErrorStream.AsObservable();
-        public Subject<bool> IsCaptureModeActiveStream { get; }
+		public IObservable<string> RedirectedOutputDataStream => _outputDataStream.AsObservable();
+		public IObservable<string> RedirectedOutputErrorStream => _outputErrorStream.AsObservable();
+		public Subject<bool> IsCaptureModeActiveStream { get; }
 
-        public PresentMonCaptureService()
-        {
-            _outputDataStream = new Subject<string>();
-            _outputErrorStream = new Subject<string>();
-            IsCaptureModeActiveStream = new Subject<bool>();
-            _presentMonProcesses = new HashSet<string>();            
-        }
+		public PresentMonCaptureService()
+		{
+			_outputDataStream = new Subject<string>();
+			_outputErrorStream = new Subject<string>();
+			IsCaptureModeActiveStream = new Subject<bool>();
+			_presentMonProcesses = new HashSet<string>();
+		}
 
-        public bool StartCaptureService(IServiceStartInfo startinfo)
-        {
-            if (!CaptureServiceInfo.IsCompatibleWithRunningOS)
-            {
-                return false;
-            }
+		public bool StartCaptureService(IServiceStartInfo startinfo)
+		{
+			if (!CaptureServiceInfo.IsCompatibleWithRunningOS)
+			{
+				return false;
+			}
 
-            SubscribeToPresentMonCapturedProcesses();
-            TryKillPresentMon();
+			SubscribeToPresentMonCapturedProcesses();
+			TryKillPresentMon();
 
-			Process process = new Process
-            {
-                StartInfo = new ProcessStartInfo
-                {
-                    FileName = startinfo.FileName,
-                    Arguments = startinfo.Arguments,
-                    UseShellExecute = startinfo.UseShellExecute,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    CreateNoWindow = startinfo.CreateNoWindow,
-                    Verb = "runas",
-                }
-            };
+			Task.Factory.StartNew(() =>
+			{
+				Process process = new Process
+				{
+					StartInfo = new ProcessStartInfo
+					{
+						FileName = startinfo.FileName,
+						Arguments = startinfo.Arguments,
+						UseShellExecute = startinfo.UseShellExecute,
+						RedirectStandardOutput = true,
+						RedirectStandardError = true,
+						RedirectStandardInput = true, // is it a MUST??
+						CreateNoWindow = startinfo.CreateNoWindow,
+						Verb = "runas",
+					}
+				};
 
-            process.EnableRaisingEvents = true;
-            process.Start();
-            _outputDataStream.OnNext("Capture service started...");
-            process.OutputDataReceived += (sender, e) => _outputDataStream.OnNext(e.Data);
-            process.ErrorDataReceived += (sender, e) => _outputErrorStream.OnNext(e.Data);
-            process.BeginOutputReadLine();
-            process.BeginErrorReadLine();
+				process.PriorityClass = ProcessPriorityClass.AboveNormal;
+				process.EnableRaisingEvents = true;
+				process.OutputDataReceived += (sender, e) => _outputDataStream.OnNext(e.Data);
+				process.ErrorDataReceived += (sender, e) => _outputErrorStream.OnNext(e.Data);
 
-            return true;
-        }
+				process.Start();
+				_outputDataStream.OnNext("Capture service started...");
+				process.BeginOutputReadLine();
+				process.BeginErrorReadLine();
+			});
 
-        public bool StopCaptureService()
-        {
-            _hearBeatDisposable?.Dispose();
-            _processNameDisposable?.Dispose();
+			return true;
+		}
 
-            try
-            {
-                lock (_listLock)
-                    _presentMonProcesses?.Clear();
+		public bool StopCaptureService()
+		{
+			_hearBeatDisposable?.Dispose();
+			_processNameDisposable?.Dispose();
 
-                TryKillPresentMon();
-                return true;
-            }
-            catch { return false; }
+			try
+			{
+				lock (_listLock)
+					_presentMonProcesses?.Clear();
 
-        }
+				TryKillPresentMon();
+				return true;
+			}
+			catch { return false; }
 
-        public IEnumerable<string> GetAllFilteredProcesses(HashSet<string> filter)
-        {
-            lock (_listLock)
-                return _presentMonProcesses?.Where(processName => !filter.Contains(processName));
-        }
+		}
 
-        public static void TryKillPresentMon()
-        {
-            try
-            {
-                var proc = Process.GetProcessesByName("PresentMon64-1.5.2");
-                if (proc.Any())
-                {
-                    proc[0].Kill();
-                }
-            }
-            catch { }
-        }
+		public IEnumerable<string> GetAllFilteredProcesses(HashSet<string> filter)
+		{
+			lock (_listLock)
+				return _presentMonProcesses?.Where(processName => !filter.Contains(processName));
+		}
 
-        private void SubscribeToPresentMonCapturedProcesses()
-        {
-            _hearBeatDisposable = Observable.Generate(0, // dummy initialState
-                                        x => true, // dummy condition
-                                        x => x, // dummy iterate
-                                        x => x, // dummy resultSelector
-                                        x => TimeSpan.FromSeconds(1))
-                                        .Subscribe(x => UpdateProcessToCaptureList());
+		public static void TryKillPresentMon()
+		{
+			try
+			{
+				var proc = Process.GetProcessesByName("PresentMon64-1.5.2");
+				if (proc.Any())
+				{
+					proc[0].Kill();
+				}
+			}
+			catch { }
+		}
 
-            _processNameDisposable = _outputDataStream.Skip(2).Where(dataLine => _isUpdating == false).Subscribe(dataLine =>
-            {
-                if (string.IsNullOrWhiteSpace(dataLine))
-                    return;
+		private void SubscribeToPresentMonCapturedProcesses()
+		{
+			_hearBeatDisposable = Observable.Generate(0, // dummy initialState
+										x => true, // dummy condition
+										x => x, // dummy iterate
+										x => x, // dummy resultSelector
+										x => TimeSpan.FromSeconds(1))
+										.Subscribe(x => UpdateProcessToCaptureList());
 
-                int index = dataLine.IndexOf(".exe");
+			_processNameDisposable = _outputDataStream.Skip(2).Where(dataLine => _isUpdating == false).Subscribe(dataLine =>
+			{
+				if (string.IsNullOrWhiteSpace(dataLine))
+					return;
 
-                if (index > 0)
-                {
-                    var processName = dataLine.Substring(0, index);
+				int index = dataLine.IndexOf(".exe");
 
-                    if (!_presentMonProcesses.Contains(processName))
-                    {
-                        lock (_listLock)
-                            _presentMonProcesses.Add(processName);
-                    }
-                }
-            });
-        }
+				if (index > 0)
+				{
+					var processName = dataLine.Substring(0, index);
 
-        private void UpdateProcessToCaptureList()
-        {
-            _isUpdating = true;
-            var updatedList = new List<string>();
+					if (!_presentMonProcesses.Contains(processName))
+					{
+						lock (_listLock)
+							_presentMonProcesses.Add(processName);
+					}
+				}
+			});
+		}
 
-            lock (_listLock)
-            {
-                foreach (var process in _presentMonProcesses)
-                {
-                    var proc = Process.GetProcessesByName(process);
-                    if (proc.Any())
-                    {
-                        updatedList.Add(process);
-                    }
-                }
-            }
+		private void UpdateProcessToCaptureList()
+		{
+			_isUpdating = true;
+			var updatedList = new List<string>();
 
-            _presentMonProcesses = new HashSet<string>(updatedList);
-            _isUpdating = false;
-        }
-    }
+			lock (_listLock)
+			{
+				foreach (var process in _presentMonProcesses)
+				{
+					var proc = Process.GetProcessesByName(process);
+					if (proc.Any())
+					{
+						updatedList.Add(process);
+					}
+				}
+			}
+
+			_presentMonProcesses = new HashSet<string>(updatedList);
+			_isUpdating = false;
+		}
+	}
 }
