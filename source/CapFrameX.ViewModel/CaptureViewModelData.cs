@@ -51,6 +51,9 @@ namespace CapFrameX.ViewModel
 
 		private List<string> GetAdjustedCaptureData()
 		{
+			if (!_captureData.Any())
+				return Enumerable.Empty<string>().ToList();
+
 			var processName = RecordDataProvider.GetProcessNameFromDataLine(_captureData.First());
 			var startTimeWithOffset = RecordDataProvider.GetStartTimeFromDataLine(_captureData.First());
 			var captureTime = Convert.ToDouble(CaptureTimeString, CultureInfo.InvariantCulture);

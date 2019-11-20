@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using System.Threading.Tasks;
 using CapFrameX.Contracts.PresentMonInterface;
 
 namespace CapFrameX.PresentMonInterface
@@ -42,33 +42,30 @@ namespace CapFrameX.PresentMonInterface
 			SubscribeToPresentMonCapturedProcesses();
 			TryKillPresentMon();
 
-			Task.Factory.StartNew(() =>
+			Process process = new Process
 			{
-				Process process = new Process
+				StartInfo = new ProcessStartInfo
 				{
-					StartInfo = new ProcessStartInfo
-					{
-						FileName = startinfo.FileName,
-						Arguments = startinfo.Arguments,
-						UseShellExecute = startinfo.UseShellExecute,
-						RedirectStandardOutput = true,
-						RedirectStandardError = true,
-						RedirectStandardInput = true, // is it a MUST??
-						CreateNoWindow = startinfo.CreateNoWindow,
-						Verb = "runas",
-					}
-				};
+					FileName = startinfo.FileName,
+					Arguments = startinfo.Arguments,
+					UseShellExecute = startinfo.UseShellExecute,
+					RedirectStandardOutput = true,
+					RedirectStandardError = true,
+					RedirectStandardInput = true, // is it a MUST??
+					CreateNoWindow = startinfo.CreateNoWindow,
+					Verb = "runas",
+				}
+			};
 
-				process.PriorityClass = ProcessPriorityClass.AboveNormal;
-				process.EnableRaisingEvents = true;
-				process.OutputDataReceived += (sender, e) => _outputDataStream.OnNext(e.Data);
-				process.ErrorDataReceived += (sender, e) => _outputErrorStream.OnNext(e.Data);
+			process.EnableRaisingEvents = true;
+			process.OutputDataReceived += (sender, e) => _outputDataStream.OnNext(e.Data);
+			process.ErrorDataReceived += (sender, e) => _outputErrorStream.OnNext(e.Data);
 
-				process.Start();
-				_outputDataStream.OnNext("Capture service started...");
-				process.BeginOutputReadLine();
-				process.BeginErrorReadLine();
-			});
+			process.Start();
+			_outputDataStream.OnNext("Capture service started...");
+			process.PriorityClass = ProcessPriorityClass.AboveNormal;
+			process.BeginOutputReadLine();
+			process.BeginErrorReadLine();
 
 			return true;
 		}
@@ -118,7 +115,8 @@ namespace CapFrameX.PresentMonInterface
 										x => TimeSpan.FromSeconds(1))
 										.Subscribe(x => UpdateProcessToCaptureList());
 
-			_processNameDisposable = _outputDataStream.Skip(2).Where(dataLine => _isUpdating == false).Subscribe(dataLine =>
+			_processNameDisposable = _outputDataStream.ObserveOn(new EventLoopScheduler())
+				.Skip(2).Where(dataLine => _isUpdating == false).Subscribe(dataLine =>
 			{
 				if (string.IsNullOrWhiteSpace(dataLine))
 					return;
