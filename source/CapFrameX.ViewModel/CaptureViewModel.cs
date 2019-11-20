@@ -66,7 +66,8 @@ namespace CapFrameX.ViewModel
 		private PlotModel _frametimeModel;
 		private ISubject<string> _frametimeStream;
 		private long _qpcTimeStart;
-		private long _qpcTimeStop;
+		private long _timestampStartCapture;
+		private long _timestampStopCapture;
 
 		private bool IsCapturing
 		{
@@ -422,9 +423,11 @@ namespace CapFrameX.ViewModel
 
 			if (!IsCapturing)
 			{
-				_ = QueryPerformanceCounter(out long counter);
-				AddLoggerEntry($"Performance counter on start capturing: {counter}");
-				_qpcTimeStart = counter;
+				_ = QueryPerformanceCounter(out long startCounter);
+				AddLoggerEntry($"Performance counter on start capturing: {startCounter}");
+				_qpcTimeStart = startCounter;
+
+				_timestampStartCapture = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds();
 
 				// none -> do nothing
 				// simple sounds
@@ -461,11 +464,8 @@ namespace CapFrameX.ViewModel
 			}
 			else
 			{
+				_timestampStopCapture = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds();
 				_cancellationTokenSource?.Cancel();
-
-				_ = QueryPerformanceCounter(out long counter);
-				AddLoggerEntry($"Performance counter on start capturing: {counter}");
-				_qpcTimeStop = counter;
 
 				// none -> do nothing
 				// simple sounds
@@ -581,9 +581,6 @@ namespace CapFrameX.ViewModel
 
 		private void FinishCapturingAndUpdateUi()
 		{
-			_ = QueryPerformanceCounter(out long counter);
-			_qpcTimeStop = counter;
-			AddLoggerEntry($"Performance counter on stop capturing: {counter}");
 			_disposableCaptureStream?.Dispose();
 
 			AddLoggerEntry("Capturing stopped.");

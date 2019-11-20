@@ -2,7 +2,6 @@
 using CapFrameX.PresentMonInterface;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
@@ -56,11 +55,15 @@ namespace CapFrameX.ViewModel
 
 			var processName = RecordDataProvider.GetProcessNameFromDataLine(_captureData.First());
 			var startTimeWithOffset = RecordDataProvider.GetStartTimeFromDataLine(_captureData.First());
-			var captureTime = Convert.ToDouble(CaptureTimeString, CultureInfo.InvariantCulture);
+			var stopwatchTime = (_timestampStopCapture - _timestampStartCapture) / 1000d;
+			var definedTime = Convert.ToInt32(CaptureTimeString);
 			bool autoTermination = Convert.ToInt32(CaptureTimeString) > 0;
 
-			AddLoggerEntry($"Recording time (free run or time set) in sec: " +
-							Math.Round(captureTime, 2).ToString(CultureInfo.InvariantCulture));
+			if (autoTermination)
+			{
+				if (stopwatchTime < definedTime - 0.2 && stopwatchTime > 0)
+					autoTermination = false;
+			}			
 
 			var filteredArchive = _captureDataArchive.Where(line => RecordDataProvider.GetProcessNameFromDataLine(line) == processName).ToList();
 
@@ -89,32 +92,33 @@ namespace CapFrameX.ViewModel
 
 			var captureInterval = new List<string>();
 
+			double startTime = 0;
+
+			// find first dataline that fits start of valid interval
+			for (int i = 0; i < unionCaptureData.Count - 1; i++)
+			{
+				var currentQpcTime = RecordDataProvider.GetQpcTimeFromDataLine(unionCaptureData[i + 1]);
+
+				if (currentQpcTime >= _qpcTimeStart)
+				{
+					startTime = RecordDataProvider.GetStartTimeFromDataLine(unionCaptureData[i]);
+					break;
+				}
+			}
+
 			if (!autoTermination)
 			{
 				for (int i = 0; i < unionCaptureData.Count; i++)
 				{
 					var currentqpcTime = RecordDataProvider.GetQpcTimeFromDataLine(unionCaptureData[i]);
+					var currentTime = RecordDataProvider.GetStartTimeFromDataLine(unionCaptureData[i]);
 
-					if (currentqpcTime >= _qpcTimeStart && currentqpcTime <= _qpcTimeStop)
+					if (currentqpcTime >= _qpcTimeStart && currentTime - startTime <= stopwatchTime)
 						captureInterval.Add(unionCaptureData[i]);
 				}
 			}
 			else
 			{
-				double startTime = 0;
-
-				// find first dataline that fits start of valid interval
-				for (int i = 0; i < unionCaptureData.Count; i++)
-				{
-					var currentQpcTime = RecordDataProvider.GetQpcTimeFromDataLine(unionCaptureData[i]);
-
-					if (currentQpcTime >= _qpcTimeStart)
-					{
-						startTime = RecordDataProvider.GetStartTimeFromDataLine(unionCaptureData[i]);
-						break;
-					}
-				}
-
 				AddLoggerEntry($"Length captured data QPCTime start to end with buffer in sec: " +
 					$"{ Math.Round(unionCaptureDataEndTime - startTime, 2)}");
 
@@ -122,10 +126,21 @@ namespace CapFrameX.ViewModel
 				{
 					var currentStartTime = RecordDataProvider.GetStartTimeFromDataLine(unionCaptureData[i]);
 
-					if (currentStartTime >= startTime && currentStartTime - startTime <= captureTime)
+					if (currentStartTime >= startTime && currentStartTime - startTime <= definedTime)
 						captureInterval.Add(unionCaptureData[i]);
 				}
 			}
+
+			//if (!autoTermination)
+			//{
+			//	AddLoggerEntry($"Recording time (manual) in sec: " +
+			//				Math.Round(stopwatchTime, 2).ToString(CultureInfo.InvariantCulture));
+			//}
+			//else
+			//{
+			//	AddLoggerEntry($"Recording time (auto) in sec: " +
+			//				Math.Round(definedTime, 2).ToString(CultureInfo.InvariantCulture));
+			//}
 
 			return captureInterval;
 		}
