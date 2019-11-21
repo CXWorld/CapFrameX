@@ -11,7 +11,7 @@ namespace CapFrameX.ViewModel
 	public partial class CaptureViewModel
 	{
 		private void WriteCaptureDataToFile()
-		{
+		{	
 			// explicit hook, only one process
 			if (!string.IsNullOrWhiteSpace(SelectedProcessToCapture))
 			{

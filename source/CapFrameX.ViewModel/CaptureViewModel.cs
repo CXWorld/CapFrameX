@@ -398,10 +398,6 @@ namespace CapFrameX.ViewModel
 				{
 					if(!_dataOffsetRunning)
 						SetCaptureMode();
-					else
-					{
-
-					}
 				}}
 			};
 
@@ -470,6 +466,10 @@ namespace CapFrameX.ViewModel
 			}
 			else
 			{
+				// manual termination (hotkey triggered)
+				// turn locking on 
+				_dataOffsetRunning = true;
+
 				_timestampStopCapture = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds();
 				_cancellationTokenSource?.Cancel();
 
@@ -492,7 +492,6 @@ namespace CapFrameX.ViewModel
 				var context = TaskScheduler.FromCurrentSynchronizationContext();
 
 				// offset timer
-				_dataOffsetRunning = true;
 				CaptureStateInfo = $"Creating capture file...";
 				Task.Run(async () =>
 				{
@@ -501,6 +500,7 @@ namespace CapFrameX.ViewModel
 						Application.Current.Dispatcher.Invoke(new Action(() =>
 						{
 							FinishCapturingAndUpdateUi();
+							// turn locking off 
 							_dataOffsetRunning = false;
 						}));
 					}, CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, context);
@@ -531,8 +531,8 @@ namespace CapFrameX.ViewModel
 					{
 						intializedStartTime = true;
 
-							// stop archive
-							_fillArchive = false;
+						// stop archive
+						_fillArchive = false;
 						_disposableArchiveStream?.Dispose();
 
 						AddLoggerEntry("Stopped filling archive.");
@@ -555,6 +555,7 @@ namespace CapFrameX.ViewModel
 						Application.Current.Dispatcher.Invoke(new Action(() =>
 						{
 							FinishCapturingAndUpdateUi();
+							// turn locking off 
 							_dataOffsetRunning = false;
 						}));
 					}, _cancellationTokenSource.Token, TaskContinuationOptions.ExecuteSynchronously, context);
@@ -567,18 +568,19 @@ namespace CapFrameX.ViewModel
 					{
 						Application.Current.Dispatcher.Invoke(new Action(() =>
 						{
+							// turn locking on 
 							_dataOffsetRunning = true;
 							CaptureStateInfo = $"Creating capture file...";
-								// none -> do nothing
-								// simple sounds
-								if (SelectedSoundMode == _soundModes[1])
+							// none -> do nothing
+							// simple sounds
+							if (SelectedSoundMode == _soundModes[1])
 							{
 								_soundPlayer.Open(new Uri("Sounds/simple_stop_sound.mp3", UriKind.Relative));
 								_soundPlayer.Volume = SimpleSoundLevel;
 								_soundPlayer.Play();
 							}
-								// voice response
-								else if (SelectedSoundMode == _soundModes[2])
+							// voice response
+							else if (SelectedSoundMode == _soundModes[2])
 							{
 								_soundPlayer.Open(new Uri("Sounds/capture_finished.mp3", UriKind.Relative));
 								_soundPlayer.Volume = VoiceSoundLevel;
