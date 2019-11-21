@@ -98,7 +98,9 @@ namespace CapFrameX.View
             CaptureHotkey = new CaptureHotkey(key, modifiers);
             var dataContext = DataContext as CaptureViewModel;
             dataContext.CaptureHotkeyString = CaptureHotkey.ToString();
-        }
+
+			Keyboard.ClearFocus();
+		}
 
         private void TextBox_PreviewMouseDown(object sender, MouseButtonEventArgs e)
         {
@@ -111,7 +113,9 @@ namespace CapFrameX.View
             var textBox = sender as TextBox;
             if (textBox.Text == string.Empty)
                 textBox.Text = "0";
-        }
+
+			Keyboard.ClearFocus();
+		}
 
         private void Slider_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
         {
@@ -121,6 +125,16 @@ namespace CapFrameX.View
 		private void ResetChart_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
 		{
 			// FrametimePlotView.ResetAllAxes();
+		}
+
+		private void CaptureTimeTextBox_PreviewKeyDown(object sender, KeyEventArgs e)
+		{
+			var key = e.Key;
+
+			if (key == Key.Enter)
+			{
+				Keyboard.ClearFocus();
+			}
 		}
 	}
 }

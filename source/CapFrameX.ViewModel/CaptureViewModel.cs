@@ -396,7 +396,12 @@ namespace CapFrameX.ViewModel
 			{
 				{Combination.FromString(CaptureHotkeyString), () =>
 				{
-					SetCaptureMode();
+					if(!_dataOffsetRunning)
+						SetCaptureMode();
+					else
+					{
+
+					}
 				}}
 			};
 
@@ -422,7 +427,7 @@ namespace CapFrameX.ViewModel
 				return;
 			}
 
-			if (!IsCapturing && !_dataOffsetRunning)
+			if (!IsCapturing)
 			{
 				_ = QueryPerformanceCounter(out long startCounter);
 				AddLoggerEntry($"Performance counter on start capturing: {startCounter}");
@@ -452,8 +457,6 @@ namespace CapFrameX.ViewModel
 				_disposableHeartBeat?.Dispose();
 				IsAddToIgnoreListButtonActive = false;
 
-				
-
 				if (CaptureTimeString == "0" && CaptureStartDelayString == "0")
 					CaptureStateInfo = $"Capturing in progress... press {CaptureHotkeyString} to stop capture.";
 
@@ -462,13 +465,10 @@ namespace CapFrameX.ViewModel
 					   + $"Press {CaptureHotkeyString} to stop capture.";
 
 				if (CaptureTimeString != "0" && CaptureStartDelayString != "0")
-					CaptureStateInfo = $"Capturing starts with delay of {CaptureStartDelayString} seconds. Capture will stop after {CaptureTimeString} seconds." + Environment.NewLine
-						 + $"Press {CaptureHotkeyString} to stop capture.";
-
-
+					CaptureStateInfo = $"Capturing starts with delay of {CaptureStartDelayString} seconds. " +
+						$"Capture will stop after {CaptureTimeString} seconds." + Environment.NewLine + $"Press {CaptureHotkeyString} to stop capture.";
 			}
 			else
-			if (!_dataOffsetRunning)
 			{
 				_timestampStopCapture = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds();
 				_cancellationTokenSource?.Cancel();
@@ -493,7 +493,7 @@ namespace CapFrameX.ViewModel
 
 				// offset timer
 				_dataOffsetRunning = true;
-					CaptureStateInfo = $"Creating capture file...";
+				CaptureStateInfo = $"Creating capture file...";
 				Task.Run(async () =>
 				{
 					await SetTaskDelayOffset().ContinueWith(_ =>
@@ -516,7 +516,7 @@ namespace CapFrameX.ViewModel
 			bool autoTermination = Convert.ToInt32(CaptureTimeString) > 0;
 			double delayCapture = Convert.ToInt32(CaptureStartDelayString);
 			double captureTime = Convert.ToInt32(CaptureTimeString) + delayCapture;
-			bool intializedStartTime = false;			
+			bool intializedStartTime = false;
 
 			_disposableCaptureStream = _captureService.RedirectedOutputDataStream
 				.ObserveOn(new EventLoopScheduler()).Subscribe(dataLine =>
@@ -531,8 +531,8 @@ namespace CapFrameX.ViewModel
 					{
 						intializedStartTime = true;
 
-						// stop archive
-						_fillArchive = false;
+							// stop archive
+							_fillArchive = false;
 						_disposableArchiveStream?.Dispose();
 
 						AddLoggerEntry("Stopped filling archive.");
@@ -569,16 +569,16 @@ namespace CapFrameX.ViewModel
 						{
 							_dataOffsetRunning = true;
 							CaptureStateInfo = $"Creating capture file...";
-							// none -> do nothing
-							// simple sounds
-							if (SelectedSoundMode == _soundModes[1])
+								// none -> do nothing
+								// simple sounds
+								if (SelectedSoundMode == _soundModes[1])
 							{
 								_soundPlayer.Open(new Uri("Sounds/simple_stop_sound.mp3", UriKind.Relative));
 								_soundPlayer.Volume = SimpleSoundLevel;
 								_soundPlayer.Play();
 							}
-							// voice response
-							else if (SelectedSoundMode == _soundModes[2])
+								// voice response
+								else if (SelectedSoundMode == _soundModes[2])
 							{
 								_soundPlayer.Open(new Uri("Sounds/capture_finished.mp3", UriKind.Relative));
 								_soundPlayer.Volume = VoiceSoundLevel;

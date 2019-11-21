@@ -151,7 +151,7 @@
             </TextBox>
             <TextBox Grid.Row="0" Width="152" wpf:HintAssist.Hint="Capture time in seconds" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
 					 Margin="0" FontSize="14" Text="{Binding CaptureTimeString, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Center"
-                     PreviewMouseDown="TextBox_PreviewMouseDown" MouseLeave="TextBox_MouseLeave" ToolTip="0 = no limit"/>
+                     PreviewMouseDown="TextBox_PreviewMouseDown" PreviewKeyDown="CaptureTimeTextBox_PreviewKeyDown" MouseLeave="TextBox_MouseLeave" ToolTip="0 = no limit"/>
 
             <ComboBox Grid.Row="0" Width="152" Margin="10 0 0 0" materialDesign:HintAssist.Hint="Hotkey sound mode"
 					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="200" FontSize="14" 

@@ -66,6 +66,7 @@ namespace CapFrameX.ViewModel
 		private string _currentGameName;
 		private bool _hasUniqueGameNames;
 		private bool _useComparisonGrouping;
+		private bool _isCuttingModeActive;
 
 		public Array MetricItems => Enum.GetValues(typeof(EMetric))
 										.Cast<EMetric>()
@@ -325,6 +326,17 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
+		public bool IsCuttingModeActive
+		{
+			get { return _isCuttingModeActive; }
+			set
+			{
+				_isCuttingModeActive = value;
+				RaisePropertyChanged();
+				OnCuttingModeChanged();
+			}
+		}
+
 		public bool IsBarChartTabActive
 		{
 			get { return SelectedChartItem?.Header.ToString() == "Bar charts"; }
@@ -519,6 +531,12 @@ namespace CapFrameX.ViewModel
 					OnDateTimeContext();
 					break;
 			}
+		}
+
+		private void OnCuttingModeChanged()
+		{
+			UpdateCuttingParameter();
+			UpdateCharts();
 		}
 
 		private void UpdateCuttingParameter()

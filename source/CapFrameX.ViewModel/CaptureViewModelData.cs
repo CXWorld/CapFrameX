@@ -41,9 +41,18 @@ namespace CapFrameX.ViewModel
 				return;
 			}
 
+			if (!captureData.Any())
+			{
+				AddLoggerEntry("Error while extracting capture data. Empty list. No file will be written.");
+				return;
+			}
+
 			var filePath = GetOutputFilename(processName);
 			int captureTime = Convert.ToInt32(CaptureTimeString);
-			_recordDataProvider.SavePresentData(captureData, filePath, processName, captureTime);
+			bool checkSave = _recordDataProvider.SavePresentData(captureData, filePath, processName, captureTime);
+
+			if (!checkSave)
+				AddLoggerEntry("Error while saving capture data.");
 
 			AddLoggerEntry("Capture file is successfully written into directory.");
 		}
@@ -56,6 +65,13 @@ namespace CapFrameX.ViewModel
 			var processName = RecordDataProvider.GetProcessNameFromDataLine(_captureData.First());
 			var startTimeWithOffset = RecordDataProvider.GetStartTimeFromDataLine(_captureData.First());
 			var stopwatchTime = (_timestampStopCapture - _timestampStartCapture) / 1000d;
+
+			if (string.IsNullOrWhiteSpace(CaptureTimeString))
+			{
+				CaptureTimeString = "0";
+				AddLoggerEntry($"Wrong capture time string. Value will be set to default (0).");
+			}
+
 			var definedTime = Convert.ToInt32(CaptureTimeString);
 			bool autoTermination = Convert.ToInt32(CaptureTimeString) > 0;
 
@@ -63,11 +79,17 @@ namespace CapFrameX.ViewModel
 			{
 				if (stopwatchTime < definedTime - 0.2 && stopwatchTime > 0)
 					autoTermination = false;
-			}			
+			}
 
 			var filteredArchive = _captureDataArchive.Where(line => RecordDataProvider.GetProcessNameFromDataLine(line) == processName).ToList();
 
 			AddLoggerEntry($"Using archive with {filteredArchive.Count} frames.");
+
+			if (!filteredArchive.Any())
+			{
+				AddLoggerEntry($"Empty archive. No file will be written.");
+				return Enumerable.Empty<string>().ToList();
+			}
 
 			// Distinct archive and live stream
 			var lastArchiveTime = RecordDataProvider.GetStartTimeFromDataLine(filteredArchive.Last());
@@ -106,6 +128,12 @@ namespace CapFrameX.ViewModel
 				}
 			}
 
+			if (startTime == 0)
+			{
+				AddLoggerEntry($"Start time is invalid. Error while evaluating QPCTime start.");
+				return Enumerable.Empty<string>().ToList();
+			}
+
 			if (!autoTermination)
 			{
 				for (int i = 0; i < unionCaptureData.Count; i++)
@@ -115,6 +143,12 @@ namespace CapFrameX.ViewModel
 
 					if (currentqpcTime >= _qpcTimeStart && currentTime - startTime <= stopwatchTime)
 						captureInterval.Add(unionCaptureData[i]);
+				}
+
+				if (!captureInterval.Any())
+				{
+					AddLoggerEntry($"Empty capture interval. Error while evaluating start and end time.");
+					return Enumerable.Empty<string>().ToList();
 				}
 			}
 			else
@@ -130,17 +164,6 @@ namespace CapFrameX.ViewModel
 						captureInterval.Add(unionCaptureData[i]);
 				}
 			}
-
-			//if (!autoTermination)
-			//{
-			//	AddLoggerEntry($"Recording time (manual) in sec: " +
-			//				Math.Round(stopwatchTime, 2).ToString(CultureInfo.InvariantCulture));
-			//}
-			//else
-			//{
-			//	AddLoggerEntry($"Recording time (auto) in sec: " +
-			//				Math.Round(definedTime, 2).ToString(CultureInfo.InvariantCulture));
-			//}
 
 			return captureInterval;
 		}

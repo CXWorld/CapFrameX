@@ -276,7 +276,7 @@ namespace CapFrameX.ViewModel
 				if (part == string.Empty)
 					continue;
 
-				infoPartsFormatted += Environment.NewLine + string.Format(CultureInfo.InvariantCulture, alignmentFormat, part);
+				infoPartsFormatted += string.Format(CultureInfo.InvariantCulture, alignmentFormat, part) + Environment.NewLine;
 			}
 
 			bool hasUniqueGameNames = GetHasUniqueGameNames();
