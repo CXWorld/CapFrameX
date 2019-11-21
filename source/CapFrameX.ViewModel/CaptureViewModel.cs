@@ -68,6 +68,7 @@ namespace CapFrameX.ViewModel
 		private long _qpcTimeStart;
 		private long _timestampStartCapture;
 		private long _timestampStopCapture;
+		private bool _dataOffsetRunning;
 
 		private bool IsCapturing
 		{
@@ -421,7 +422,7 @@ namespace CapFrameX.ViewModel
 				return;
 			}
 
-			if (!IsCapturing)
+			if (!IsCapturing && !_dataOffsetRunning)
 			{
 				_ = QueryPerformanceCounter(out long startCounter);
 				AddLoggerEntry($"Performance counter on start capturing: {startCounter}");
@@ -451,6 +452,8 @@ namespace CapFrameX.ViewModel
 				_disposableHeartBeat?.Dispose();
 				IsAddToIgnoreListButtonActive = false;
 
+				
+
 				if (CaptureTimeString == "0" && CaptureStartDelayString == "0")
 					CaptureStateInfo = $"Capturing in progress... press {CaptureHotkeyString} to stop capture.";
 
@@ -461,8 +464,11 @@ namespace CapFrameX.ViewModel
 				if (CaptureTimeString != "0" && CaptureStartDelayString != "0")
 					CaptureStateInfo = $"Capturing starts with delay of {CaptureStartDelayString} seconds. Capture will stop after {CaptureTimeString} seconds." + Environment.NewLine
 						 + $"Press {CaptureHotkeyString} to stop capture.";
+
+
 			}
 			else
+			if (!_dataOffsetRunning)
 			{
 				_timestampStopCapture = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds();
 				_cancellationTokenSource?.Cancel();
@@ -486,6 +492,8 @@ namespace CapFrameX.ViewModel
 				var context = TaskScheduler.FromCurrentSynchronizationContext();
 
 				// offset timer
+				_dataOffsetRunning = true;
+					CaptureStateInfo = $"Creating capture file...";
 				Task.Run(async () =>
 				{
 					await SetTaskDelayOffset().ContinueWith(_ =>
@@ -493,6 +501,7 @@ namespace CapFrameX.ViewModel
 						Application.Current.Dispatcher.Invoke(new Action(() =>
 						{
 							FinishCapturingAndUpdateUi();
+							_dataOffsetRunning = false;
 						}));
 					}, CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, context);
 				});
@@ -546,18 +555,20 @@ namespace CapFrameX.ViewModel
 						Application.Current.Dispatcher.Invoke(new Action(() =>
 						{
 							FinishCapturingAndUpdateUi();
+							_dataOffsetRunning = false;
 						}));
 					}, _cancellationTokenSource.Token, TaskContinuationOptions.ExecuteSynchronously, context);
 				});
 
 				// sound timer
-				// data timer
 				Task.Run(async () =>
 				{
 					await SetTaskDelaySound().ContinueWith(_ =>
 					{
 						Application.Current.Dispatcher.Invoke(new Action(() =>
 						{
+							_dataOffsetRunning = true;
+							CaptureStateInfo = $"Creating capture file...";
 							// none -> do nothing
 							// simple sounds
 							if (SelectedSoundMode == _soundModes[1])
