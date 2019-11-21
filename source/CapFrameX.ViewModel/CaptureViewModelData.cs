@@ -5,13 +5,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace CapFrameX.ViewModel
 {
 	public partial class CaptureViewModel
 	{
 		private void WriteCaptureDataToFile()
-		{	
+		{
 			// explicit hook, only one process
 			if (!string.IsNullOrWhiteSpace(SelectedProcessToCapture))
 			{
@@ -34,6 +35,12 @@ namespace CapFrameX.ViewModel
 
 			var captureData = GetAdjustedCaptureData();
 			StartFillArchive();
+
+			Application.Current.Dispatcher.Invoke(new Action(() =>
+			{
+				// turn locking off 
+				_dataOffsetRunning = false;
+			}));
 
 			if (captureData == null)
 			{

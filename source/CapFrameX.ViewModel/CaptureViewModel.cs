@@ -499,9 +499,7 @@ namespace CapFrameX.ViewModel
 					{
 						Application.Current.Dispatcher.Invoke(new Action(() =>
 						{
-							FinishCapturingAndUpdateUi();
-							// turn locking off 
-							_dataOffsetRunning = false;
+							FinishCapturingAndUpdateUi();						
 						}));
 					}, CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, context);
 				});
@@ -555,8 +553,6 @@ namespace CapFrameX.ViewModel
 						Application.Current.Dispatcher.Invoke(new Action(() =>
 						{
 							FinishCapturingAndUpdateUi();
-							// turn locking off 
-							_dataOffsetRunning = false;
 						}));
 					}, _cancellationTokenSource.Token, TaskContinuationOptions.ExecuteSynchronously, context);
 				});
@@ -597,6 +593,7 @@ namespace CapFrameX.ViewModel
 			_disposableCaptureStream?.Dispose();
 
 			AddLoggerEntry("Capturing stopped.");
+			// asynchron
 			WriteCaptureDataToFile();
 
 			IsCapturing = !IsCapturing;
