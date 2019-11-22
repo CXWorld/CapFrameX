@@ -87,6 +87,8 @@ namespace CapFrameX.ViewModel
 			get { return _selectSecondaryMetric; }
 			set
 			{
+				_appConfiguration.SecondaryMetric = 
+					value.ConvertToString();
 				_selectSecondaryMetric = value;
 				RaisePropertyChanged();
 				OnSecondaryMetricChanged();
@@ -98,6 +100,8 @@ namespace CapFrameX.ViewModel
 			get { return _selectedComparisonContext; }
 			set
 			{
+				_appConfiguration.ComparisonContext = 
+					value.ConvertToString();
 				_selectedComparisonContext = value;
 				RaisePropertyChanged();
 				OnComparisonContextChanged();
@@ -360,10 +364,12 @@ namespace CapFrameX.ViewModel
 			_appConfiguration = appConfiguration;
 
 			RemoveAllComparisonsCommand = new DelegateCommand(OnRemoveAllComparisons);
+			ComparisonLShapeCollection = new SeriesCollection();
 
 			ComparisonColumnChartFormatter = value => value.ToString(string.Format("F{0}",
 			_appConfiguration.FpsValuesRoundingDigits), CultureInfo.InvariantCulture);
-			ComparisonLShapeCollection = new SeriesCollection();
+			SelectedComparisonContext = _appConfiguration.ComparisonContext.ConverToEnum<EComparisonContext>();
+			SelectSecondaryMetric = _appConfiguration.SecondaryMetric.ConverToEnum<EMetric>();
 
 			SetRowSeries();
 			InitializePlotModel();

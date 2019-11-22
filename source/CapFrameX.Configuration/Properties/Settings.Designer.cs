@@ -12,7 +12,7 @@ namespace CapFrameX.Configuration.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "15.9.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "16.3.0.0")]
     public sealed partial class Settings : global::System.Configuration.ApplicationSettingsBase {
         
         private static Settings defaultInstance = ((Settings)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new Settings())));
@@ -296,6 +296,30 @@ namespace CapFrameX.Configuration.Properties {
             }
             set {
                 this["SimpleSoundLevel"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("P1")]
+        public string SecondaryMetric {
+            get {
+                return ((string)(this["SecondaryMetric"]));
+            }
+            set {
+                this["SecondaryMetric"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("DateTime")]
+        public string ComparisonContext {
+            get {
+                return ((string)(this["ComparisonContext"]));
+            }
+            set {
+                this["ComparisonContext"] = value;
             }
         }
     }

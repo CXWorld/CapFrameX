@@ -10,7 +10,6 @@
 			 xmlns:wpf="clr-namespace:MaterialDesignThemes.Wpf;assembly=MaterialDesignThemes.Wpf"
 			 xmlns:prism="http://prismlibrary.com/"	
              xmlns:local="clr-namespace:CapFrameX.View"
-			 xmlns:oxy="clr-namespace:OxyPlot.Wpf;assembly=OxyPlot.Wpf"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800"
 			 Background="{DynamicResource MaterialDesignPaper}"
@@ -87,9 +86,6 @@
 			</StackPanel>
 		</Grid>
 		<Grid Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="2" Margin="20 0 0 0">
-			<!--<oxy:PlotView Background="#F0F0F0" x:Name="FrametimePlotView" Model="{Binding FrametimeModel}"
-						  MouseDoubleClick="ResetChart_MouseDoubleClick" Height="200" VerticalAlignment="Top">
-			</oxy:PlotView>-->
 			<Border VerticalAlignment="Center" HorizontalAlignment="Center">
 				<Image Source="/CapFrameX;component/Icons/CX_Logo.png" Width="120" Height="120">
 				</Image>
@@ -101,12 +97,11 @@
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
-            <TextBox Grid.Row="0" Width="152" wpf:HintAssist.Hint="Capture hotkey" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
+			<TextBox Grid.Row="0" Width="152" wpf:HintAssist.Hint="Capture hotkey" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
 					 Margin="0" FontSize="14"  HorizontalAlignment="Left"
 					 IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False" PreviewKeyDown="HotkeyTextBox_PreviewKeyDown"
                      ToolTip="combinable with Ctrl/Shift/Alt">
-                <!--Text="{Binding CaptureHotkey, ElementName = CaptureViewControl, Mode=OneWay, TargetNullValue=&lt; not set &gt;}"-->
-                <Binding
+				<Binding
                       Path="CaptureHotkey"
                       ElementName="CaptureViewControl"
                       Mode="OneWay"

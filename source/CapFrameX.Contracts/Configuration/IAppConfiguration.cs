@@ -26,9 +26,9 @@
 
 		bool UseSingleRecordP0Dot1QuantileStatisticParameter { get; set; }
 
-        bool UseSingleRecordP0Dot2QuantileStatisticParameter { get; set; }
+		bool UseSingleRecordP0Dot2QuantileStatisticParameter { get; set; }
 
-        bool UseSingleRecordP1LowAverageStatisticParameter { get; set; }
+		bool UseSingleRecordP1LowAverageStatisticParameter { get; set; }
 
 		bool UseSingleRecordP0Dot1LowAverageStatisticParameter { get; set; }
 
@@ -36,14 +36,18 @@
 
 		bool UseSingleRecordAdaptiveSTDStatisticParameter { get; set; }
 
-        string CaptureHotKey { get; set; }
+		string CaptureHotKey { get; set; }
 
-        string HotkeySoundMode { get; set; }
+		string HotkeySoundMode { get; set; }
 
-        int CaptureTime { get; set; }
+		int CaptureTime { get; set; }
 
-        double VoiceSoundLevel { get; set; }
+		double VoiceSoundLevel { get; set; }
 
-        double SimpleSoundLevel { get; set; }
-    }
+		double SimpleSoundLevel { get; set; }
+
+		string SecondaryMetric { get; set; }
+
+		string ComparisonContext { get; set; }
+	}
 }

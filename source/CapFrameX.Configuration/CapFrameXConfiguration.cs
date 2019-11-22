@@ -137,5 +137,17 @@ namespace CapFrameX.Configuration
             get { return Settings.SimpleSoundLevel; }
             set { Settings.SimpleSoundLevel = value; Settings.Save(); }
         }
-    }
+
+		public string SecondaryMetric 
+		{
+			get { return Settings.SecondaryMetric; }
+			set { Settings.SecondaryMetric = value; Settings.Save(); }
+		}
+
+		public string ComparisonContext
+		{
+			get { return Settings.ComparisonContext; }
+			set { Settings.ComparisonContext = value; Settings.Save(); }
+		}
+	}
 }
