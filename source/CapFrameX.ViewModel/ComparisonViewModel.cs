@@ -470,6 +470,9 @@ namespace CapFrameX.ViewModel
 
 		private void OnSecondaryMetricChanged()
 		{
+			if (ComparisonRowChartSeriesCollection == null)
+				return;
+
 			if (SelectSecondaryMetric == EMetric.None)
 			{
 				ComparisonRowChartSeriesCollection.RemoveAt(1);
