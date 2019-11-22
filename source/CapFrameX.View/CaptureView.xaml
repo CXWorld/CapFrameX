@@ -67,48 +67,16 @@
 					      IsEnabled="{Binding IsAddToIgnoreListButtonActive}">
 				</ListView>
 			</StackPanel>
-			<StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center">
-				<Button Width="60" Height="50" Foreground="Black" BorderThickness="0" Background="Transparent"
+			<StackPanel Grid.Row="1" Margin="-20 0 0 0" Orientation="Horizontal" HorizontalAlignment="Center">
+				<Button Padding="0" Width="30" Height="30" Foreground="Black" BorderThickness="0"
 				        Command="{Binding AddToIgonreListCommand}" IsEnabled="{Binding IsAddToIgnoreListButtonActive}"
-                        ToolTip="Ignore process">
-					<Button.Triggers>
-						<EventTrigger RoutedEvent="MouseEnter">
-							<BeginStoryboard>
-								<Storyboard>
-									<ColorAnimation Storyboard.TargetProperty="(Button.Background).(SolidColorBrush.Color)" To="#e6e6e6"/>
-								</Storyboard>
-							</BeginStoryboard>
-						</EventTrigger>
-						<EventTrigger RoutedEvent="MouseLeave">
-							<BeginStoryboard>
-								<Storyboard>
-									<ColorAnimation Storyboard.TargetProperty="(Button.Background).(SolidColorBrush.Color)" To="Transparent"/>
-								</Storyboard>
-							</BeginStoryboard>
-						</EventTrigger>
-					</Button.Triggers>
-					<materialDesign:PackIcon Kind="ArrowDown" Width="32" Height="32"/>
+						Style="{StaticResource MaterialDesignFloatingActionMiniButton}" ToolTip="Ignore process">
+					<materialDesign:PackIcon Kind="ArrowDown" Width="25" Height="25"/>
 				</Button>
-				<Button Margin="10 0 0 0" Width="60" Height="50" Foreground="Black" BorderThickness="0" Background="Transparent"
-				            Command="{Binding AddToProcessListCommand}" IsEnabled="{Binding IsAddToIgnoreListButtonActive}"
-                            ToolTip="Unignore process">
-					<Button.Triggers>
-						<EventTrigger RoutedEvent="MouseEnter">
-							<BeginStoryboard>
-								<Storyboard>
-									<ColorAnimation Storyboard.TargetProperty="(Button.Background).(SolidColorBrush.Color)" To="#e6e6e6"/>
-								</Storyboard>
-							</BeginStoryboard>
-						</EventTrigger>
-						<EventTrigger RoutedEvent="MouseLeave">
-							<BeginStoryboard>
-								<Storyboard>
-									<ColorAnimation Storyboard.TargetProperty="(Button.Background).(SolidColorBrush.Color)" To="Transparent"/>
-								</Storyboard>
-							</BeginStoryboard>
-						</EventTrigger>
-					</Button.Triggers>
-					<materialDesign:PackIcon Kind="ArrowUp" Width="32" Height="32"/>
+				<Button Margin="30 0 0 0" Padding="0" Width="30" Height="30" Foreground="Black" BorderThickness="0"
+				        Command="{Binding AddToProcessListCommand}" IsEnabled="{Binding IsAddToIgnoreListButtonActive}"
+					    Style="{StaticResource MaterialDesignFloatingActionMiniButton}" ToolTip="Unignore process">
+					<materialDesign:PackIcon Kind="ArrowUp" Width="25" Height="25"/>
 				</Button>
 			</StackPanel>
 			<StackPanel Grid.Row="2" Margin="0 0 0 0" Orientation="Vertical" Width="200">
