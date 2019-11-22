@@ -176,13 +176,7 @@ namespace CapFrameX.ViewModel
 			if (ComparisonModel.Series == null)
 				return false;
 
-			if(!ComparisonModel.Series.Any())
-				check = false;
-
 			if (!ComparisonRecords.Any())
-				check = false;
-
-			if (ComparisonModel.Series.Count != ComparisonRecords.Count)
 				check = false;
 
 			return check;
