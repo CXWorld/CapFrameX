@@ -266,7 +266,7 @@ namespace CapFrameX.ViewModel
 			else
 			{
 				var gameName = string.Format(CultureInfo.InvariantCulture, alignmentFormat, record.WrappedRecordInfo.Game);
-				return gameName + infoPartsFormatted;
+				return gameName + Environment.NewLine + infoPartsFormatted;
 			}
 		}
 
