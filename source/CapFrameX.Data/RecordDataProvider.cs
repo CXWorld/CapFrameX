@@ -58,9 +58,16 @@ namespace CapFrameX.Data
 
 		public IList<IFileRecordInfo> GetFileRecordInfoList()
 		{
+			var filterList = CaptureServiceConfiguration.GetProcessIgnoreList();
+
+			if (filterList.Contains("CapFrameX"))
+				filterList.Remove("CapFrameX");
+
 			return _recordObserver.GetAllRecordFileInfo()
 				.Select(fileInfo => GetFileRecordInfo(fileInfo))
 				.Where(fileRecordInfo => fileRecordInfo != null)
+				.Where(fileRecordInfo => !filterList
+					.Contains(fileRecordInfo.ProcessName.Replace(".exe", string.Empty)))
 				.OrderBy(fileRecordInfo => fileRecordInfo.GameName)
 				.ToList();
 		}
