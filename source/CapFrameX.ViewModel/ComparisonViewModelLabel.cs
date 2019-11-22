@@ -400,7 +400,7 @@ namespace CapFrameX.ViewModel
 				if (part == string.Empty)
 					continue;
 
-				infoPartsFormatted += Environment.NewLine + string.Format(CultureInfo.InvariantCulture, alignmentFormat, part);
+				infoPartsFormatted += string.Format(CultureInfo.InvariantCulture, alignmentFormat, part) + Environment.NewLine;
 			}
 
 			bool hasUniqueGameNames = GetHasUniqueGameNames();
@@ -411,7 +411,7 @@ namespace CapFrameX.ViewModel
 			else
 			{
 				var gameName = string.Format(CultureInfo.InvariantCulture, alignmentFormat, record.WrappedRecordInfo.Game);
-				return gameName + infoPartsFormatted;
+				return gameName + Environment.NewLine + infoPartsFormatted;
 			}
 		}
 	}
