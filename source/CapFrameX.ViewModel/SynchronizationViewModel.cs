@@ -20,6 +20,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
+using MathNet.Numerics.Statistics;
 
 namespace CapFrameX.ViewModel
 {
@@ -37,6 +38,7 @@ namespace CapFrameX.ViewModel
 		private bool _useUpdateSession;
 		private Session _session;
 		private IFileRecordInfo _recordInfo;
+		private string _frametimeDisplayChangedTimeCorrelation = "0%";
 
 		/// <summary>
 		/// https://docs.microsoft.com/en-us/dotnet/standard/base-types/standard-numeric-format-strings
@@ -100,6 +102,17 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
+		public string FrametimeDisplayChangedTimeCorrelation
+		{
+			get { return _frametimeDisplayChangedTimeCorrelation; }
+			set
+			{
+				_frametimeDisplayChangedTimeCorrelation = value;
+				RaisePropertyChanged();
+			}
+		}
+
+
 		public ICommand CopyDisplayChangeTimeValuesCommand { get; }
 
 		public ICommand CopyHistogramDataCommand { get; }
@@ -136,8 +149,22 @@ namespace CapFrameX.ViewModel
 
 									// Do update actions
 									UpdateCharts();
+									FrametimeDisplayChangedTimeCorrelation = 
+										GetCorrelation(msg.CurrentSession);
 								}
 							});
+		}
+
+		private string GetCorrelation(Session currentSession)
+		{
+			var frametimes = currentSession.FrameTimes;
+			var displayChangedTimes = currentSession.Displaytimes;
+
+			if (frametimes.Count != displayChangedTimes.Count)
+				return "NaN";
+
+			var correlation = Correlation.Pearson(frametimes, displayChangedTimes);
+			return Math.Round(correlation * 100, 0).ToString(CultureInfo.InvariantCulture) + "%";
 		}
 
 		private void OnCopyDisplayChangeTimeValues()
@@ -165,7 +192,8 @@ namespace CapFrameX.ViewModel
 			if (_session == null)
 				return;
 
-			Task.Factory.StartNew(() => SetFrameDisplayTimesChart(_session.FrameTimes, _session.Displaytimes));
+			// Do not run on background thread, leads to errors on analysis page
+			SetFrameDisplayTimesChart(_session.FrameTimes, _session.Displaytimes);
 			Task.Factory.StartNew(() => SetHistogramChart(_session.Displaytimes));
 			Task.Factory.StartNew(() => SetDroppedFramesChart(_session.AppMissed));
 		}
@@ -175,8 +203,21 @@ namespace CapFrameX.ViewModel
 			var yMin = Math.Min(frametimes.Min(), displaytimes.Min());
 			var yMax = Math.Max(frametimes.Max(), displaytimes.Max());
 
-			var frametimeSeries = new OxyPlot.Series.LineSeries { Title = "Frametimes", StrokeThickness = 1, Color = ColorRessource.FrametimeStroke };
-			var displayChangedTimesSeries = new OxyPlot.Series.LineSeries { Title = "Display changed times", StrokeThickness = 1, Color = ColorRessource.FrametimeMovingAverageStroke };
+			var frametimeSeries = new OxyPlot.Series.LineSeries
+			{
+				Title = "Frametimes",
+				StrokeThickness = 1,
+				LegendStrokeThickness = 4,
+				Color = ColorRessource.FrametimeStroke
+			};
+
+			var displayChangedTimesSeries = new OxyPlot.Series.LineSeries
+			{
+				Title = "Display changed times",
+				StrokeThickness = 1,
+				LegendStrokeThickness = 4,
+				Color = ColorRessource.FrametimeMovingAverageStroke
+			};
 
 			frametimeSeries.Points.AddRange(frametimes.Select((x, i) => new DataPoint(i, x)));
 			displayChangedTimesSeries.Points.AddRange(displaytimes.Select((x, i) => new DataPoint(i, x)));
