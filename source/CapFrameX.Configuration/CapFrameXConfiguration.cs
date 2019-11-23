@@ -149,5 +149,17 @@ namespace CapFrameX.Configuration
 			get { return Settings.ComparisonContext; }
 			set { Settings.ComparisonContext = value; Settings.Save(); }
 		}
+
+		public string RecordingListSortMemberPath
+		{
+			get { return Settings.RecordingListSortMemberPath; }
+			set { Settings.RecordingListSortMemberPath = value; Settings.Save(); }
+		}
+
+		public string RecordingListSortDirection
+		{
+			get { return Settings.RecordingListSortDirection; }
+			set { Settings.RecordingListSortDirection = value; Settings.Save(); }
+		}
 	}
 }

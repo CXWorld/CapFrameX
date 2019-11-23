@@ -49,5 +49,9 @@
 		string SecondaryMetric { get; set; }
 
 		string ComparisonContext { get; set; }
+
+		string RecordingListSortMemberPath { get; set; }
+
+		string RecordingListSortDirection { get; set; }
 	}
 }

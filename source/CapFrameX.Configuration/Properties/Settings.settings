@@ -77,5 +77,11 @@
     <Setting Name="ComparisonContext" Type="System.String" Scope="User">
       <Value Profile="(Default)">DateTime</Value>
     </Setting>
+    <Setting Name="RecordingListSortMemberPath" Type="System.String" Scope="User">
+      <Value Profile="(Default)">GameName</Value>
+    </Setting>
+    <Setting Name="RecordingListSortDirection" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Ascending</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

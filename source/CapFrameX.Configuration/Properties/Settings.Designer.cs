@@ -322,5 +322,29 @@ namespace CapFrameX.Configuration.Properties {
                 this["ComparisonContext"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("GameName")]
+        public string RecordingListSortMemberPath {
+            get {
+                return ((string)(this["RecordingListSortMemberPath"]));
+            }
+            set {
+                this["RecordingListSortMemberPath"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Ascending")]
+        public string RecordingListSortDirection {
+            get {
+                return ((string)(this["RecordingListSortDirection"]));
+            }
+            set {
+                this["RecordingListSortDirection"] = value;
+            }
+        }
     }
 }
