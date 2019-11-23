@@ -1,4 +1,5 @@
 ﻿using CapFrameX.Configuration;
+using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
 using CapFrameX.Data;
 using CapFrameX.Extensions;
@@ -41,12 +42,37 @@ namespace CapFrameX.View
                 DataContext = new ControlViewModel(new RecordDirectoryObserver(appConfiguration), new EventAggregator(), 
                     new CapFrameXConfiguration(), new RecordDataProvider(recordDirectoryObserver));
 			}
+
+			SetSortSettings((DataContext as ControlViewModel).AppConfiguration);
 		}
 
+		private void SetSortSettings(IAppConfiguration appConfiguration)
+		{
+			string sortMemberPath = appConfiguration.RecordingListSortMemberPath;
+			var direction = appConfiguration.RecordingListSortDirection.ConverToEnum<ListSortDirection>();
+
+			var dataGrid = RecordDataGrid;
+			var collectionView = CollectionViewSource.GetDefaultView(dataGrid.ItemsSource);
+
+			collectionView.SortDescriptions.Clear();
+			AddSortColumn(dataGrid, sortMemberPath, direction);
+
+			if (sortMemberPath == "GameName")
+			{
+				AddSortColumn(dataGrid, "CreationDate", direction);
+				AddSortColumn(dataGrid, "CreationTime", direction);
+			}
+
+			if (sortMemberPath == "CreationDate")
+			{
+				AddSortColumn(dataGrid, "CreationTime", direction);
+			}
+		}
 
 		private void RecordDataGrid_Sorting(object sender, DataGridSortingEventArgs e)
 		{
 			var dataGrid = (DataGrid)sender;
+			var appConfiguration = (DataContext as ControlViewModel).AppConfiguration;
 			var collectionView = CollectionViewSource.GetDefaultView(dataGrid.ItemsSource);
 
 			ListSortDirection direction = ListSortDirection.Ascending;
@@ -56,6 +82,9 @@ namespace CapFrameX.View
 
 			collectionView.SortDescriptions.Clear();
 			AddSortColumn((DataGrid)sender, e.Column.SortMemberPath, direction);
+
+			appConfiguration.RecordingListSortMemberPath = e.Column.SortMemberPath;
+			appConfiguration.RecordingListSortDirection = direction.ConvertToString();
 
 			if (e.Column.SortMemberPath == "GameName")
 			{

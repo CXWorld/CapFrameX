@@ -126,6 +126,8 @@ namespace CapFrameX.ViewModel
 		public ObservableCollection<IFileRecordInfo> RecordInfoList { get; }
 			= new ObservableCollection<IFileRecordInfo>();
 
+		public IAppConfiguration AppConfiguration => _appConfiguration;
+
 		public ICommand OpenEditingDialogCommand { get; }
 
 		public ICommand AddToIgnoreListCommand { get; }

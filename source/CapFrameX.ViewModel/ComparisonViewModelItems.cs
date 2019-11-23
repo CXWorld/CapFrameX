@@ -56,6 +56,8 @@ namespace CapFrameX.ViewModel
 				= GeMetricValue(frametimeTimeWindow, SelectSecondaryMetric);
 
 			// ToDo: implement third metric
+			wrappedComparisonRecordInfo.WrappedRecordInfo.ThirdMetric
+				= GeMetricValue(frametimeTimeWindow, SelectThirdMetric);
 		}
 
 		private void InsertComparisonRecordsSorted(ComparisonRecordInfoWrapper wrappedComparisonRecordInfo)
