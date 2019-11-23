@@ -48,6 +48,8 @@
 
 		string SecondaryMetric { get; set; }
 
+		string ThirdMetric { get; set; }
+
 		string ComparisonContext { get; set; }
 
 		string RecordingListSortMemberPath { get; set; }

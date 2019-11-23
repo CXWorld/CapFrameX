@@ -143,7 +143,11 @@ namespace CapFrameX.Configuration
 			get { return Settings.SecondaryMetric; }
 			set { Settings.SecondaryMetric = value; Settings.Save(); }
 		}
-
+		public string ThirdMetric
+		{
+			get { return Settings.ThirdMetric; }
+			set { Settings.ThirdMetric = value; Settings.Save(); }
+		}
 		public string ComparisonContext
 		{
 			get { return Settings.ComparisonContext; }

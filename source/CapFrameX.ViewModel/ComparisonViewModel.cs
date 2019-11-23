@@ -62,6 +62,7 @@ namespace CapFrameX.ViewModel
 		private Func<double, string> _comparisonColumnChartFormatter;
 		private bool _colorPickerVisibility;
 		private EMetric _selectSecondaryMetric = EMetric.P1;
+		private EMetric _selectThirdMetric = EMetric.P0dot1;
 		private EComparisonContext _selectedComparisonContext = EComparisonContext.DateTime;
 		private string _currentGameName;
 		private bool _hasUniqueGameNames;
@@ -95,6 +96,18 @@ namespace CapFrameX.ViewModel
 				_selectSecondaryMetric = value;
 				RaisePropertyChanged();
 				OnSecondaryMetricChanged();
+			}
+		}
+		public EMetric SelectThirdMetric
+		{
+			get { return _selectThirdMetric; }
+			set
+			{
+				_appConfiguration.ThirdMetric =
+					value.ConvertToString();
+				_selectThirdMetric = value;
+				RaisePropertyChanged();
+				OnThirdMetricChanged();
 			}
 		}
 
@@ -373,6 +386,7 @@ namespace CapFrameX.ViewModel
 			_appConfiguration.FpsValuesRoundingDigits), CultureInfo.InvariantCulture);
 			SelectedComparisonContext = _appConfiguration.ComparisonContext.ConverToEnum<EComparisonContext>();
 			SelectSecondaryMetric = _appConfiguration.SecondaryMetric.ConverToEnum<EMetric>();
+			SelectThirdMetric = _appConfiguration.ThirdMetric.ConverToEnum<EMetric>();
 
 			SetRowSeries();
 			InitializePlotModel();
@@ -469,6 +483,21 @@ namespace CapFrameX.ViewModel
 					UseRelativeMode = true
 				});
 			}
+			if (SelectThirdMetric != EMetric.None)
+			{
+				// third metric
+				ComparisonRowChartSeriesCollection.Add(
+				new RowSeries
+				{
+					Title = SelectThirdMetric.GetDescription(),
+					Values = new ChartValues<double>(),
+					Fill = new SolidColorBrush(Color.FromRgb(255, 180, 0)),
+					HighlightFill = new SolidColorBrush(Color.FromRgb(245, 217, 100)),
+					DataLabels = true,
+					MaxRowHeigth = BarChartMaxRowHeight,
+					UseRelativeMode = true
+				});
+			}
 		}
 
 		private void OnSecondaryMetricChanged()
@@ -516,6 +545,54 @@ namespace CapFrameX.ViewModel
 					var secondaryMetric = GeMetricValue(frametimeTimeWindow, SelectSecondaryMetric);
 					(ComparisonRowChartSeriesCollection[1] as RowSeries).Title = SelectSecondaryMetric.GetDescription();
 					ComparisonRowChartSeriesCollection[1].Values.Insert(0, secondaryMetric);
+				}
+			}
+		}
+		private void OnThirdMetricChanged()
+		{
+			if (ComparisonRowChartSeriesCollection == null)
+				return;
+
+			if (SelectThirdMetric == EMetric.None)
+			{
+				ComparisonRowChartSeriesCollection.RemoveAt(1);
+				// Cannot adjust height here, otherwise the labels will not fit
+				//BarChartHeight = 40 + (BarChartMaxRowHeight + 12) * ComparisonRecords.Count;
+			}
+			else
+			{
+				double GeMetricValue(IList<double> sequence, EMetric metric) =>
+					_frametimeStatisticProvider.GetFpsMetricValue(sequence, metric);
+
+				if (ComparisonRowChartSeriesCollection.Count < 2)
+				{
+					ComparisonRowChartSeriesCollection.Add(
+						new RowSeries
+						{
+							Values = new ChartValues<double>(),
+							// 255, 180, 0 (yellow)
+							Fill = new SolidColorBrush(Color.FromRgb(255, 180, 0)),
+							HighlightFill = new SolidColorBrush(Color.FromRgb(245, 164, 98)),
+							DataLabels = true,
+							MaxRowHeigth = BarChartMaxRowHeight,
+							UseRelativeMode = true
+						});
+				}
+
+				ComparisonRowChartSeriesCollection[1].Values.Clear();
+
+				for (int i = 0; i < ComparisonRecords.Count; i++)
+				{
+					var currentWrappedComparisonInfo = ComparisonRecords[i];
+
+					double startTime = FirstSeconds;
+					double endTime = _maxRecordingTime - LastSeconds;
+					var frametimeTimeWindow = currentWrappedComparisonInfo.WrappedRecordInfo.Session
+						.GetFrametimeTimeWindow(startTime, endTime, ERemoveOutlierMethod.None);
+
+					var thirdMetric = GeMetricValue(frametimeTimeWindow, SelectThirdMetric);
+					(ComparisonRowChartSeriesCollection[1] as RowSeries).Title = SelectThirdMetric.GetDescription();
+					ComparisonRowChartSeriesCollection[1].Values.Insert(0, thirdMetric);
 				}
 			}
 		}
