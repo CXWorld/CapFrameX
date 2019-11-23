@@ -50,23 +50,11 @@ namespace CapFrameX.View
 		{
 			string sortMemberPath = appConfiguration.RecordingListSortMemberPath;
 			var direction = appConfiguration.RecordingListSortDirection.ConverToEnum<ListSortDirection>();
-
-			var dataGrid = RecordDataGrid;
-			var collectionView = CollectionViewSource.GetDefaultView(dataGrid.ItemsSource);
+			var collectionView = CollectionViewSource.GetDefaultView(RecordDataGrid.ItemsSource);
 
 			collectionView.SortDescriptions.Clear();
-			AddSortColumn(dataGrid, sortMemberPath, direction);
-
-			if (sortMemberPath == "GameName")
-			{
-				AddSortColumn(dataGrid, "CreationDate", direction);
-				AddSortColumn(dataGrid, "CreationTime", direction);
-			}
-
-			if (sortMemberPath == "CreationDate")
-			{
-				AddSortColumn(dataGrid, "CreationTime", direction);
-			}
+			AddSortColumn(RecordDataGrid, sortMemberPath, direction);
+			AddSortColumnsByMemberPath(RecordDataGrid, direction, sortMemberPath);
 		}
 
 		private void RecordDataGrid_Sorting(object sender, DataGridSortingEventArgs e)
@@ -77,25 +65,16 @@ namespace CapFrameX.View
 
 			ListSortDirection direction = ListSortDirection.Ascending;
 			if (collectionView.SortDescriptions.FirstOrDefault().PropertyName == e.Column.SortMemberPath)
-				direction = collectionView.SortDescriptions.FirstOrDefault().Direction == 
+				direction = collectionView.SortDescriptions.FirstOrDefault().Direction ==
 					ListSortDirection.Descending ? ListSortDirection.Ascending : ListSortDirection.Descending;
 
 			collectionView.SortDescriptions.Clear();
 			AddSortColumn((DataGrid)sender, e.Column.SortMemberPath, direction);
+			AddSortColumnsByMemberPath((DataGrid)sender, direction, e.Column.SortMemberPath);
 
 			appConfiguration.RecordingListSortMemberPath = e.Column.SortMemberPath;
 			appConfiguration.RecordingListSortDirection = direction.ConvertToString();
 
-			if (e.Column.SortMemberPath == "GameName")
-			{
-				AddSortColumn((DataGrid)sender, "CreationDate", direction);
-				AddSortColumn((DataGrid)sender, "CreationTime", direction);
-			}
-
-			if (e.Column.SortMemberPath == "CreationDate")
-			{
-				AddSortColumn((DataGrid)sender, "CreationTime", direction);
-			}
 			e.Handled = true;
 		}
 
@@ -107,6 +86,20 @@ namespace CapFrameX.View
 			foreach (var col in sender.Columns.Where(x => x.SortMemberPath == sortColumn))
 			{
 				col.SortDirection = direction;
+			}
+		}
+
+		private void AddSortColumnsByMemberPath(DataGrid dataGrid, ListSortDirection sortDirection, string sortMemberPath)
+		{
+			if (sortMemberPath == "GameName")
+			{
+				AddSortColumn(dataGrid, "CreationDate", sortDirection);
+				AddSortColumn(dataGrid, "CreationTime", sortDirection);
+			}
+
+			if (sortMemberPath == "CreationDate")
+			{
+				AddSortColumn(dataGrid, "CreationTime", sortDirection);
 			}
 		}
 

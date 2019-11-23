@@ -82,6 +82,9 @@ namespace CapFrameX.ViewModel
 		public ComparisonColorManager ComparisonColorManager
 			=> _comparisonColorManager;
 
+		public IEventAggregator EventAggregator 
+			=> _eventAggregator;
+
 		public EMetric SelectSecondaryMetric
 		{
 			get { return _selectSecondaryMetric; }

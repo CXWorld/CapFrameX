@@ -206,6 +206,7 @@ namespace CapFrameX.ViewModel
 			SetAggregatorEvents();
 			SubscribeToResetRecord();
 			SubscribeToObservedDiretoryUpdated();
+			SubscribeToSetFileRecordInfoExternal();
 		}
 
 		private void OnDeleteRecordFile()
@@ -437,6 +438,16 @@ namespace CapFrameX.ViewModel
 								{
 									LoadRecordList();
 								}
+							});
+		}
+
+		private void SubscribeToSetFileRecordInfoExternal()
+		{
+			_eventAggregator.GetEvent<PubSubEvent<ViewMessages.SetFileRecordInfoExternal>>()
+							.Subscribe(msg =>
+							{
+								SelectedRecordInfo = msg.RecordInfo;
+								_selectedRecordings = null;
 							});
 		}
 	}

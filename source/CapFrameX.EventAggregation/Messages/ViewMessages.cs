@@ -24,7 +24,16 @@ namespace CapFrameX.EventAggregation.Messages
 			public SelectSession(Session session, IFileRecordInfo recordInfo) :
 				base(session, recordInfo)
 			{
+			}
+		}
 
+		public class SetFileRecordInfoExternal
+		{
+			public IFileRecordInfo RecordInfo { get; }
+
+			public SetFileRecordInfoExternal(IFileRecordInfo recordInfo)
+			{
+				RecordInfo = recordInfo;
 			}
 		}
 
@@ -32,6 +41,6 @@ namespace CapFrameX.EventAggregation.Messages
 
 		public class HideOverlay { }
 
-        public class UpdateProcessIgnoreList { }
-    }
+		public class UpdateProcessIgnoreList { }
+	}
 }

@@ -1,9 +1,12 @@
 ﻿using CapFrameX.Contracts.MVVM;
 using CapFrameX.Data;
+using CapFrameX.EventAggregation.Messages;
 using LiveCharts.Wpf;
 using OxyPlot;
 using Prism.Commands;
+using Prism.Events;
 using Prism.Mvvm;
+using System;
 using System.Linq;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -12,6 +15,8 @@ namespace CapFrameX.ViewModel
 {
 	public class ComparisonRecordInfoWrapper : BindableBase, IMouseEventHandler
 	{
+		private PubSubEvent<ViewMessages.SetFileRecordInfoExternal> _setFileRecordInfoExternalEvent;
+
 		private Color? _frametimeGraphColor;
 		private SolidColorBrush _color;
 		private ComparisonViewModel _viewModel;
@@ -67,13 +72,23 @@ namespace CapFrameX.ViewModel
 
 		public ICommand RemoveCommand { get; }
 
+		public ICommand MouseDownCommand { get; }
+
 		public ComparisonRecordInfoWrapper(ComparisonRecordInfo info, ComparisonViewModel viewModel)
 		{
 			WrappedRecordInfo = info;
 			_viewModel = viewModel;
 
+			_setFileRecordInfoExternalEvent = 
+				viewModel.EventAggregator.GetEvent<PubSubEvent<ViewMessages.SetFileRecordInfoExternal>>();
+
 			RemoveCommand = new DelegateCommand(OnRemove);
+			MouseDownCommand = new DelegateCommand(OnMouseDown);
 		}
+
+		private void OnMouseDown()
+			=> _setFileRecordInfoExternalEvent
+				.Publish(new ViewMessages.SetFileRecordInfoExternal(WrappedRecordInfo.FileRecordInfo));
 
 		private void OnRemove()
 		{

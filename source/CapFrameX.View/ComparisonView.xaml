@@ -232,6 +232,11 @@
 											<Border x:Name="Border"
 													BorderThickness="0 0 0 1"
 													BorderBrush="{DynamicResource MaterialDesignDivider}">
+												<i:Interaction.Triggers>
+													<i:EventTrigger EventName="MouseDown" >
+														<i:InvokeCommandAction Command="{Binding MouseDownCommand}" />
+													</i:EventTrigger>
+												</i:Interaction.Triggers>
 												<Border.Style>
 													<Style TargetType="Border">
 														<Style.Triggers>
