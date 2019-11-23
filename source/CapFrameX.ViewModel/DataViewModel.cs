@@ -231,7 +231,7 @@ namespace CapFrameX.ViewModel
 			{
 				_firstSeconds = value;
 				RaisePropertyChanged();
-				_localRecordDataServer.SetTimeWindow(_firstSeconds, 
+				_localRecordDataServer.SetTimeWindow(_firstSeconds,
 					_maxRecordingTime - LastSeconds - _firstSeconds);
 				UpdateMainCharts();
 				UpdateSecondaryCharts();
@@ -437,30 +437,35 @@ namespace CapFrameX.ViewModel
 			_eventAggregator.GetEvent<PubSubEvent<ViewMessages.UpdateSession>>()
 							.Subscribe(msg =>
 							{
+								_session = msg.CurrentSession;
+								RecordInfo = msg.RecordInfo;
+
 								if (_useUpdateSession)
 								{
-									_session = msg.CurrentSession;
-									RecordInfo = msg.RecordInfo;
-
-									if (_session != null && RecordInfo != null)
-									{
-										CurrentGameName = RecordInfo.GameName;
-										SystemInfos = RecordManager.GetSystemInfos(RecordInfo);
-
-										// Do update actions
-										FrametimeGraphDataContext.RecordSession = _session;
-										FpsGraphDataContext.RecordSession = _session;
-
-										UpdateCuttingParameter();
-										UpdateMainCharts();
-										UpdateSecondaryCharts();
-									}
-									else
-									{
-										ResetData();
-									}
+									UpdateAnalysisPage();
 								}
 							});
+		}
+
+		private void UpdateAnalysisPage()
+		{
+			if (_session != null && RecordInfo != null)
+			{
+				CurrentGameName = RecordInfo.GameName;
+				SystemInfos = RecordManager.GetSystemInfos(RecordInfo);
+
+				// Do update actions
+				FrametimeGraphDataContext.RecordSession = _session;
+				FpsGraphDataContext.RecordSession = _session;
+
+				UpdateCuttingParameter();
+				UpdateMainCharts();
+				UpdateSecondaryCharts();
+			}
+			else
+			{
+				ResetData();
+			}
 		}
 
 		private void UpdateMainCharts()
@@ -481,6 +486,9 @@ namespace CapFrameX.ViewModel
 
 		private void UpdateSecondaryCharts()
 		{
+			if (SelectedChartItem == null)
+				return;
+
 			var headerName = SelectedChartItem.Header.ToString();
 			var subset = GetFrametimesSubset();
 
@@ -499,7 +507,7 @@ namespace CapFrameX.ViewModel
 		}
 
 		private IList<double> GetFrametimesSubset()
-			=>_localRecordDataServer?.GetFrametimeTimeWindow();
+			=> _localRecordDataServer?.GetFrametimeTimeWindow();
 
 		private void SetStaticChart(IList<double> frametimes)
 		{
@@ -680,6 +688,7 @@ namespace CapFrameX.ViewModel
 		public void OnNavigatedTo(NavigationContext navigationContext)
 		{
 			_useUpdateSession = true;
+			UpdateAnalysisPage();
 		}
 
 		public bool IsNavigationTarget(NavigationContext navigationContext)

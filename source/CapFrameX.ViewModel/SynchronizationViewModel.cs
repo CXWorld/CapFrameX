@@ -20,7 +20,6 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
-using MathNet.Numerics.Statistics;
 
 namespace CapFrameX.ViewModel
 {
@@ -142,14 +141,14 @@ namespace CapFrameX.ViewModel
 			_eventAggregator.GetEvent<PubSubEvent<ViewMessages.UpdateSession>>()
 							.Subscribe(msg =>
 							{
+								_session = msg.CurrentSession;
+								_recordInfo = msg.RecordInfo;
+
 								if (_useUpdateSession)
 								{
-									_session = msg.CurrentSession;
-									_recordInfo = msg.RecordInfo;
-
 									// Do update actions
 									UpdateCharts();
-									FrametimeDisplayChangedTimeCorrelation = 
+									FrametimeDisplayChangedTimeCorrelation =
 										GetCorrelation(msg.CurrentSession);
 								}
 							});
@@ -343,6 +342,13 @@ namespace CapFrameX.ViewModel
 		public void OnNavigatedTo(NavigationContext navigationContext)
 		{
 			_useUpdateSession = true;
+
+			if (_session != null && _recordInfo != null)
+			{
+				UpdateCharts();
+				FrametimeDisplayChangedTimeCorrelation =
+					GetCorrelation(_session);
+			}
 		}
 
 		public bool IsNavigationTarget(NavigationContext navigationContext)
