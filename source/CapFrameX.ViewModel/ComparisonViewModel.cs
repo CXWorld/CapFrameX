@@ -497,7 +497,7 @@ namespace CapFrameX.ViewModel
 					Title = SelectedThirdMetric.GetDescription(),
 					Values = new ChartValues<double>(),
 					Fill = new SolidColorBrush(Color.FromRgb(255, 180, 0)),
-					HighlightFill = new SolidColorBrush(Color.FromRgb(245, 217, 100)),
+					HighlightFill = new SolidColorBrush(Color.FromRgb(245, 217, 128)),
 					DataLabels = true,
 					MaxRowHeigth = BarChartMaxRowHeight,
 					UseRelativeMode = true
