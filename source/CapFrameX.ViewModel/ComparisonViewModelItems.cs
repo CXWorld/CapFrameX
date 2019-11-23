@@ -29,15 +29,9 @@ namespace CapFrameX.ViewModel
 			// Update height of bar chart control here
 			UpdateBarChartHeight();
 			UpdateCuttingParameter();
-			stopwatchData.Stop();
-			Console.WriteLine("Duration data part: " + stopwatchData.ElapsedMilliseconds);
 
-			var stopwatchChart = new Stopwatch();
-			stopwatchChart.Start();
 			//Draw charts and performance parameter
 			UpdateCharts();
-			stopwatchChart.Stop();
-			Console.WriteLine("Duration chart part: " + stopwatchChart.ElapsedMilliseconds);
 		}
 
 		private void SetMetrics(ComparisonRecordInfoWrapper wrappedComparisonRecordInfo)
@@ -53,11 +47,10 @@ namespace CapFrameX.ViewModel
 				= GeMetricValue(frametimeTimeWindow, EMetric.Average);
 
 			wrappedComparisonRecordInfo.WrappedRecordInfo.SecondMetric
-				= GeMetricValue(frametimeTimeWindow, SelectSecondaryMetric);
+				= GeMetricValue(frametimeTimeWindow, SelectedSecondaryMetric);
 
-			// ToDo: implement third metric
 			wrappedComparisonRecordInfo.WrappedRecordInfo.ThirdMetric
-				= GeMetricValue(frametimeTimeWindow, SelectThirdMetric);
+				= GeMetricValue(frametimeTimeWindow, SelectedThirdMetric);
 		}
 
 		private void InsertComparisonRecordsSorted(ComparisonRecordInfoWrapper wrappedComparisonRecordInfo)
@@ -101,7 +94,7 @@ namespace CapFrameX.ViewModel
 			HasComparisonItems = ComparisonRecords.Any();
 			UpdateCuttingParameter();
 			UpdateCharts();
-			BarChartHeight = 40 + (2 * BarChartMaxRowHeight + 12) * ComparisonRecords.Count;
+			UpdateBarChartHeight();
 
 			// Manage game name header		
 			HasUniqueGameNames = GetHasUniqueGameNames();
