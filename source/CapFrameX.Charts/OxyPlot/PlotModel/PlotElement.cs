@@ -82,10 +82,18 @@ namespace OxyPlot
         /// </value>
         public string ToolTip { get; set; }
 
-        /// <summary>
-        /// Gets the actual font.
-        /// </summary>
-        protected internal string ActualFont
+		/// <summary>
+		/// Gets or sets the id. The default is <c>null</c>.
+		/// </summary>
+		/// <value>
+		/// The id string.
+		/// </value>
+		public string Id { get; set; }
+
+		/// <summary>
+		/// Gets the actual font.
+		/// </summary>
+		protected internal string ActualFont
         {
             get
             {

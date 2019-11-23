@@ -1,6 +1,7 @@
 ﻿using CapFrameX.Contracts.MVVM;
 using CapFrameX.Data;
 using CapFrameX.EventAggregation.Messages;
+using CapFrameX.Extensions;
 using LiveCharts.Wpf;
 using OxyPlot;
 using Prism.Commands;
@@ -79,7 +80,7 @@ namespace CapFrameX.ViewModel
 			WrappedRecordInfo = info;
 			_viewModel = viewModel;
 
-			_setFileRecordInfoExternalEvent = 
+			_setFileRecordInfoExternalEvent =
 				viewModel.EventAggregator.GetEvent<PubSubEvent<ViewMessages.SetFileRecordInfoExternal>>();
 
 			RemoveCommand = new DelegateCommand(OnRemove);
@@ -167,14 +168,15 @@ namespace CapFrameX.ViewModel
 		void IMouseEventHandler.OnMouseEnter()
 		{
 			if (!_viewModel.ComparisonRecords.Any())
-				return;
-
-			var index = _viewModel.ComparisonRecords.IndexOf(this);
+				return;			
 
 			if (_viewModel.ComparisonModel.Series.Any())
 			{
-				var frametimesChart = _viewModel.ComparisonModel.Series[index] as OxyPlot.Series.LineSeries;
+				var id = WrappedRecordInfo.FileRecordInfo.Id;
+				var frametimesChart = _viewModel.ComparisonModel.Series.FirstOrDefault(chart => chart.Id == id) as OxyPlot.Series.LineSeries;
 				frametimesChart.StrokeThickness = 2;
+				int index = _viewModel.ComparisonModel.Series.IndexOf(frametimesChart);
+				_viewModel.ComparisonModel.Series.Move(index, _viewModel.ComparisonModel.Series.Count - 1);
 				_viewModel.ComparisonModel.InvalidatePlot(true);
 			}
 
@@ -182,6 +184,7 @@ namespace CapFrameX.ViewModel
 			{
 				// highlight bar chart chartpoint
 				var series = _viewModel.ComparisonRowChartSeriesCollection;
+				var index = _viewModel.ComparisonRecords.IndexOf(this);
 
 				foreach (var item in series)
 				{
@@ -196,11 +199,11 @@ namespace CapFrameX.ViewModel
 			if (!_viewModel.ComparisonRecords.Any())
 				return;
 
-			var index = _viewModel.ComparisonRecords.IndexOf(this);
 
 			if (_viewModel.ComparisonModel.Series.Any())
 			{
-				var frametimesChart = _viewModel.ComparisonModel.Series[index] as OxyPlot.Series.LineSeries;
+				var id = WrappedRecordInfo.FileRecordInfo.Id;
+				var frametimesChart = _viewModel.ComparisonModel.Series.FirstOrDefault(chart => chart.Id == id) as OxyPlot.Series.LineSeries;
 				frametimesChart.StrokeThickness = 1;
 				_viewModel.ComparisonModel.InvalidatePlot(true);
 			}
@@ -209,6 +212,7 @@ namespace CapFrameX.ViewModel
 			{
 				// unhighlight bar chart chartpoint
 				var series = _viewModel.ComparisonRowChartSeriesCollection;
+				var index = _viewModel.ComparisonRecords.IndexOf(this);
 
 				foreach (var item in series)
 				{

@@ -26,5 +26,6 @@ namespace CapFrameX.Contracts.Data
         string Comment { get; }
         bool IsValid { get; }
         bool HasInfoHeader { get; }
+		string Id { get; }
     }
 }
