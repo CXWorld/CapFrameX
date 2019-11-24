@@ -44,7 +44,7 @@ namespace CapFrameX.ViewModel
 			var recordInfoWrapper = ComparisonRecords
 				.FirstOrDefault(info => info.WrappedRecordInfo.FileRecordInfo.Id == recordInfo.Id);
 
-			return recordInfoWrapper == null && !ComparisonRecords.Any();
+			return recordInfoWrapper != null && ComparisonRecords.Any();
 		}
 
 		private void SetMetrics(ComparisonRecordInfoWrapper wrappedComparisonRecordInfo)
