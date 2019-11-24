@@ -44,7 +44,7 @@
 			<RowDefinition Height="60"/>
 		</Grid.RowDefinitions>
 		<Grid.ColumnDefinitions>
-			<ColumnDefinition Width="1*" MinWidth="680"></ColumnDefinition>
+			<ColumnDefinition Width="1*" MinWidth="695"></ColumnDefinition>
 			<ColumnDefinition Width="285"></ColumnDefinition>
 		</Grid.ColumnDefinitions>
 		<TabControl Margin="5 10 0 5" Grid.Row="0" Grid.Column="0" Background="#F5F5F5"
