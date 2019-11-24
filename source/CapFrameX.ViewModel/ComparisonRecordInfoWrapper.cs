@@ -105,23 +105,24 @@ namespace CapFrameX.ViewModel
 				&& _viewModel.ComparisonModel.Series.Any() && _viewModel.ComparisonLShapeCollection.Any())
 			{
 				Color color = FrametimeGraphColor.Value;
-				var index = _viewModel.ComparisonRecords.IndexOf(this);
 
-				if (index < _viewModel.ComparisonModel.Series.Count &&
-					index < _viewModel.ComparisonLShapeCollection.Count)
-				{
-					var frametimesChart = _viewModel.ComparisonModel.Series[index] as OxyPlot.Series.LineSeries;
-					var lShapeChart = _viewModel.ComparisonLShapeCollection[index] as LineSeries;
+				var id = WrappedRecordInfo.FileRecordInfo.Id;
+				var frametimesChart = _viewModel.ComparisonModel
+					.Series.FirstOrDefault(chart => chart.Id == id) as OxyPlot.Series.LineSeries;
+				var lShapeChart = _viewModel.ComparisonLShapeCollection
+					.FirstOrDefault(chart => chart.Id == id) as LineSeries;
 
-					var solidColorBrush = new SolidColorBrush(System.Windows.Media.Color.FromArgb(color.A, color.R, color.G, color.B));
-					frametimesChart.Color = OxyColor.FromArgb(color.A, color.R, color.G, color.B);
-					lShapeChart.Stroke = solidColorBrush;
+				if (frametimesChart == null || lShapeChart == null)
+					return;
 
-					_viewModel.ComparisonColorManager.FreeColor(Color);
-					Color = solidColorBrush;
+				var solidColorBrush = new SolidColorBrush(System.Windows.Media.Color.FromArgb(color.A, color.R, color.G, color.B));
+				frametimesChart.Color = OxyColor.FromArgb(color.A, color.R, color.G, color.B);
+				lShapeChart.Stroke = solidColorBrush;
 
-					_viewModel.ComparisonModel.InvalidatePlot(true);
-				}
+				_viewModel.ComparisonColorManager.FreeColor(Color);
+				Color = solidColorBrush;
+
+				_viewModel.ComparisonModel.InvalidatePlot(true);
 			}
 		}
 
@@ -175,6 +176,10 @@ namespace CapFrameX.ViewModel
 				var id = WrappedRecordInfo.FileRecordInfo.Id;
 				var frametimesChart = _viewModel.ComparisonModel
 					.Series.FirstOrDefault(chart => chart.Id == id) as OxyPlot.Series.LineSeries;
+
+				if (frametimesChart == null)
+					return;
+
 				frametimesChart.StrokeThickness = 2;
 				int index = _viewModel.ComparisonModel.Series.IndexOf(frametimesChart);
 
@@ -211,6 +216,10 @@ namespace CapFrameX.ViewModel
 				var id = WrappedRecordInfo.FileRecordInfo.Id;
 				var frametimesChart = _viewModel.ComparisonModel
 					.Series.FirstOrDefault(chart => chart.Id == id) as OxyPlot.Series.LineSeries;
+
+				if (frametimesChart == null)
+					return;
+
 				frametimesChart.StrokeThickness = 1;
 
 				//Move back
