@@ -811,6 +811,7 @@ namespace CapFrameX.ViewModel
 			ComparisonLShapeCollection.Add(
 			new LineSeries
 			{
+				Id = wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.Id,
 				Values = quantileValues,
 				Stroke = wrappedComparisonInfo.IsHideModeSelected ? Brushes.Transparent : wrappedComparisonInfo.Color,
 				Fill = Brushes.Transparent,
