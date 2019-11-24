@@ -54,7 +54,7 @@
 						   Background="#e6e6e6" Text="{Binding FrametimeDisplayChangedTimeCorrelation}"/>
 			</StackPanel>
 		</Grid>
-		<Grid Background="#F5F5F5" Grid.Row="2" Visibility="{Binding ElementName=SettingsExpander, Path=IsExpanded, Converter={StaticResource TrueToCollapsedConverter}}">
+		<Grid Background="#F5F5F5" Grid.Row="2">
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition Width="3*" />
 				<ColumnDefinition Width="2*" />

@@ -222,9 +222,6 @@ namespace CapFrameX.ViewModel
 
 				frametimesChart.StrokeThickness = 1;
 
-				//Move back
-				_viewModel.ComparisonModel.Series.Move(_viewModel.ComparisonModel.Series.Count - 1, index);
-
 				// Update plot
 				_viewModel.ComparisonModel.InvalidatePlot(true);
 			}

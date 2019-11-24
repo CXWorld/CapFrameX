@@ -75,9 +75,9 @@ namespace CapFrameX.ViewModel
 										.ToArray();
 
 		public Array SecondMetricItems => Enum.GetValues(typeof(EMetric))
-										.Cast<EMetric>()
-										.Where(metric => metric != EMetric.Average && metric != EMetric.None)
-										.ToArray();
+											  .Cast<EMetric>()
+											  .Where(metric => metric != EMetric.Average && metric != EMetric.None)
+											  .ToArray();
 
 		public Array ComparisonContextItems => Enum.GetValues(typeof(EComparisonContext))
 												   .Cast<EComparisonContext>()
