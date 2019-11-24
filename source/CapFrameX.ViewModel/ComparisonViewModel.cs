@@ -27,6 +27,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using ComparisonCollection = System.Collections.ObjectModel
 	.ObservableCollection<CapFrameX.ViewModel.ComparisonRecordInfoWrapper>;
+using CapFrameX.MVVM.Dialogs;
 
 namespace CapFrameX.ViewModel
 {
@@ -68,6 +69,9 @@ namespace CapFrameX.ViewModel
 		private bool _hasUniqueGameNames;
 		private bool _useComparisonGrouping;
 		private bool _isCuttingModeActive;
+		private bool _messageDialogContentIsOpen;
+		private MessageDialog _messageDialogContent;
+		private string _messageText;
 
 		public Array MetricItems => Enum.GetValues(typeof(EMetric))
 										.Cast<EMetric>()
@@ -362,6 +366,36 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
+		public MessageDialog MessageDialogContent
+		{
+			get { return _messageDialogContent; }
+			set
+			{
+				_messageDialogContent = value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public bool MessageDialogContentIsOpen
+		{
+			get { return _messageDialogContentIsOpen; }
+			set
+			{
+				_messageDialogContentIsOpen = value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public string MessageText
+		{
+			get { return _messageText; }
+			set
+			{
+				_messageText = value;
+				RaisePropertyChanged();
+			}
+		}
+
 		public bool IsBarChartTabActive
 		{
 			get { return SelectedChartItem?.Header.ToString() == "Bar charts"; }
@@ -386,6 +420,7 @@ namespace CapFrameX.ViewModel
 
 			RemoveAllComparisonsCommand = new DelegateCommand(OnRemoveAllComparisons);
 			ComparisonLShapeCollection = new SeriesCollection();
+			MessageDialogContent = new MessageDialog();
 
 			ComparisonColumnChartFormatter = value => value.ToString(string.Format("F{0}",
 			_appConfiguration.FpsValuesRoundingDigits), CultureInfo.InvariantCulture);

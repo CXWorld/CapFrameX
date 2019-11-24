@@ -15,41 +15,41 @@
 			 Background="{DynamicResource MaterialDesignPaper}"
              FontFamily="{StaticResource MaterialDesignFont}"
              prism:ViewModelLocator.AutoWireViewModel="True">
-    <UserControl.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Button.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Shadows.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ToggleButton.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.DataGrid.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Slider.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.GridSplitter.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Flipper.xaml" />
-            </ResourceDictionary.MergedDictionaries>
-            <mvvm:BoolToVisibilityConverter x:Key="FalseToCollapsedConverter" TrueValue="Visible" FalseValue="Collapsed"/>
-        </ResourceDictionary>
-    </UserControl.Resources>
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="1*"></RowDefinition>
-            <RowDefinition Height="3*"></RowDefinition>
-            <RowDefinition Height="1*"></RowDefinition>
-            <RowDefinition Height="Auto"></RowDefinition>
-        </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="1*"></ColumnDefinition>
-            <ColumnDefinition Width="2*" MaxWidth="280"></ColumnDefinition>
-            <ColumnDefinition Width="100"></ColumnDefinition>
-            <ColumnDefinition Width="2*" MaxWidth="280"></ColumnDefinition>
-            <ColumnDefinition Width="1*"></ColumnDefinition>
-        </Grid.ColumnDefinitions>
+	<UserControl.Resources>
+		<ResourceDictionary>
+			<ResourceDictionary.MergedDictionaries>
+				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Button.xaml" />
+				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Shadows.xaml" />
+				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ToggleButton.xaml" />
+				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.DataGrid.xaml" />
+				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Slider.xaml" />
+				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.GridSplitter.xaml" />
+				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Flipper.xaml" />
+			</ResourceDictionary.MergedDictionaries>
+			<mvvm:BoolToVisibilityConverter x:Key="FalseToCollapsedConverter" TrueValue="Visible" FalseValue="Collapsed"/>
+		</ResourceDictionary>
+	</UserControl.Resources>
+	<Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="1*"></RowDefinition>
+			<RowDefinition Height="3*"></RowDefinition>
+			<RowDefinition Height="1*"></RowDefinition>
+			<RowDefinition Height="Auto"></RowDefinition>
+		</Grid.RowDefinitions>
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="1*"></ColumnDefinition>
+			<ColumnDefinition Width="2*" MaxWidth="280"></ColumnDefinition>
+			<ColumnDefinition Width="100"></ColumnDefinition>
+			<ColumnDefinition Width="2*" MaxWidth="280"></ColumnDefinition>
+			<ColumnDefinition Width="1*"></ColumnDefinition>
+		</Grid.ColumnDefinitions>
 
 		<TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="5" Margin="0 30 0 0" Text="{Binding CaptureStateInfo}" FontSize="14" Style="{StaticResource MaterialDesignCaptionTextBlock}" 
 				   VerticalAlignment="Center" HorizontalAlignment="Center" />
 		<Grid Grid.Row="1" Grid.Column="1" Margin="-20 0 0 0">
 			<Grid.RowDefinitions>
 				<RowDefinition Height="2*"></RowDefinition>
-				<RowDefinition Height="70"></RowDefinition>
+				<RowDefinition Height="30"></RowDefinition>
 				<RowDefinition Height="3*"></RowDefinition>
 			</Grid.RowDefinitions>
 			<StackPanel Grid.Row="0" Margin="0" Orientation="Vertical" Width="200">
@@ -61,12 +61,14 @@
 						<materialDesign:PackIcon Kind="FilterRemove" Width="22" Height="22"/>
 					</Button>
 				</StackPanel>
-				<ListView IsSynchronizedWithCurrentItem="False" ItemsSource="{Binding ProcessesToCapture}" SelectedItem="{Binding SelectedProcessToCapture}"
+				<Border Margin="0 10 0 0" Background="#F5F5F5" BorderThickness="0.1" BorderBrush="Black">
+					<ListView IsSynchronizedWithCurrentItem="False" ItemsSource="{Binding ProcessesToCapture}" SelectedItem="{Binding SelectedProcessToCapture}"
 					      ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True" Height="80" Width="200"
 					      IsEnabled="{Binding IsAddToIgnoreListButtonActive}">
-				</ListView>
+					</ListView>
+				</Border>
 			</StackPanel>
-			<StackPanel Grid.Row="1" Margin="-20 0 0 0" Orientation="Horizontal" HorizontalAlignment="Center">
+			<StackPanel Grid.Row="1" Margin="0 -20 0 0" Orientation="Horizontal" HorizontalAlignment="Center">
 				<Button Padding="0" Width="30" Height="30" Foreground="Black" BorderThickness="0"
 				        Command="{Binding AddToIgonreListCommand}" IsEnabled="{Binding IsAddToIgnoreListButtonActive}"
 						Style="{StaticResource MaterialDesignFloatingActionMiniButton}" ToolTip="Ignore process">
@@ -80,9 +82,11 @@
 			</StackPanel>
 			<StackPanel Grid.Row="2" Margin="0 0 0 0" Orientation="Vertical" Width="200">
 				<TextBlock Style="{StaticResource MaterialDesignTitleTextBlock}">Process ignore list</TextBlock>
+				<Border Margin="0 10 0 0" Background="#F5F5F5" BorderThickness="0.1" BorderBrush="Black">
 				<ListView IsSynchronizedWithCurrentItem="False" ItemsSource="{Binding ProcessesToIgnore}" SelectedItem="{Binding SelectedProcessToIgnore}"
 					      ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True" Height="130" Width="200">
 				</ListView>
+				</Border>
 			</StackPanel>
 		</Grid>
 		<Grid Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="2" Margin="20 0 0 0">
@@ -93,10 +97,10 @@
 		</Grid>
 
 		<Grid x:Name="HotkeyTextBox" Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="3" HorizontalAlignment="Stretch" VerticalAlignment="Center">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
+			<Grid.RowDefinitions>
+				<RowDefinition Height="*"/>
+				<RowDefinition Height="*"/>
+			</Grid.RowDefinitions>
 			<TextBox Grid.Row="0" Width="152" wpf:HintAssist.Hint="Capture hotkey" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
 					 Margin="0" FontSize="14"  HorizontalAlignment="Left"
 					 IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False" PreviewKeyDown="HotkeyTextBox_PreviewKeyDown"
@@ -106,41 +110,41 @@
                       ElementName="CaptureViewControl"
                       Mode="OneWay"
                       TargetNullValue="&lt; not set &gt;">
-                    <Binding.ValidationRules>
-                        <validation:HotkeyValidationRule
+					<Binding.ValidationRules>
+						<validation:HotkeyValidationRule
                           ValidatesOnTargetUpdated="True" />
-                    </Binding.ValidationRules>
-                </Binding>
-            </TextBox>
-            <TextBox Grid.Row="0" Width="152" wpf:HintAssist.Hint="Capture time in seconds" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
+					</Binding.ValidationRules>
+				</Binding>
+			</TextBox>
+			<TextBox Grid.Row="0" Width="152" wpf:HintAssist.Hint="Capture time in seconds" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
 					 Margin="0" FontSize="14" Text="{Binding CaptureTimeString, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Center"
                      PreviewMouseDown="TextBox_PreviewMouseDown" PreviewKeyDown="CaptureTimeTextBox_PreviewKeyDown" MouseLeave="TextBox_MouseLeave" ToolTip="0 = no limit"/>
 
-            <ComboBox Grid.Row="0" Width="152" Margin="10 0 0 0" materialDesign:HintAssist.Hint="Hotkey sound mode"
+			<ComboBox Grid.Row="0" Width="152" Margin="10 0 0 0" materialDesign:HintAssist.Hint="Hotkey sound mode"
 					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="200" FontSize="14" 
 					  ItemsSource="{Binding SoundModes}" HorizontalAlignment="Right" VerticalAlignment="Bottom">
-                <ComboBox.Text>
-                    <Binding Path="SelectedSoundMode"
+				<ComboBox.Text>
+					<Binding Path="SelectedSoundMode"
 							 Mode="TwoWay"
 							 UpdateSourceTrigger="PropertyChanged">
-                    </Binding>
-                </ComboBox.Text>
-            </ComboBox>
-            <Grid Grid.Row="1" Visibility="{Binding ShowVolumeController, Converter={StaticResource FalseToCollapsedConverter}}" Margin="0 10 0 0" Width="155" HorizontalAlignment="Right">
-                <materialDesign:PackIcon Kind="VolumeMedium" HorizontalAlignment="Left"/>
-                <Slider HorizontalAlignment="Center"
+					</Binding>
+				</ComboBox.Text>
+			</ComboBox>
+			<Grid Grid.Row="1" Visibility="{Binding ShowVolumeController, Converter={StaticResource FalseToCollapsedConverter}}" Margin="0 10 0 0" Width="155" HorizontalAlignment="Right">
+				<materialDesign:PackIcon Kind="VolumeMedium" HorizontalAlignment="Left"/>
+				<Slider HorizontalAlignment="Center"
 						Minimum="0" 
 						Maximum="100" 
 						ToolTip="Sound level control"
 						Value="{Binding SliderSoundLevel}"
 						Width="100" Thumb.DragCompleted="Slider_DragCompleted"/>
-                <TextBlock HorizontalAlignment="Right" Text="{Binding SliderSoundLevel}" Background="Transparent"/>
-            </Grid>
-        </Grid>
-        <Expander HorizontalAlignment="Stretch" Header="Infobox" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="5">
-            <ScrollViewer MaxHeight="200" VerticalScrollBarVisibility="Visible" Margin="20 10 20 10" >
-                <TextBlock Text="{Binding LoggerOutput}"/>
-            </ScrollViewer>
-        </Expander>
-    </Grid>
+				<TextBlock HorizontalAlignment="Right" Text="{Binding SliderSoundLevel}" Background="Transparent"/>
+			</Grid>
+		</Grid>
+		<Expander HorizontalAlignment="Stretch" Header="Infobox" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="5">
+			<ScrollViewer MaxHeight="200" VerticalScrollBarVisibility="Visible" Margin="20 10 20 10" >
+				<TextBlock Text="{Binding LoggerOutput}"/>
+			</ScrollViewer>
+		</Expander>
+	</Grid>
 </UserControl>

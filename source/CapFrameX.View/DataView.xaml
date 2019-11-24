@@ -131,7 +131,7 @@
 								Style="{StaticResource MaterialDesignDiscreteSlider}"
 								ToolTip="Cut first seconds"/>
 				<TextBox Grid.Column="1" Margin="15 0 15 10" HorizontalAlignment="Center" IsReadOnly="True"
-								 Style="{StaticResource MaterialDesignFloatingHintTextBox}" Text="{Binding RemainingRecordingTime}">
+						 Style="{StaticResource MaterialDesignFloatingHintTextBox}" Text="{Binding RemainingRecordingTime}">
 					<materialDesign:HintAssist.Hint>
 						<TextBlock>
 							Remaining time [s]

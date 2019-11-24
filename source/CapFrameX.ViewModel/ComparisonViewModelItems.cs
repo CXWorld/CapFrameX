@@ -2,7 +2,6 @@
 using CapFrameX.Statistics;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 
 namespace CapFrameX.ViewModel
@@ -11,8 +10,14 @@ namespace CapFrameX.ViewModel
 	{
 		private void AddComparisonItem(IFileRecordInfo recordInfo)
 		{
-			var stopwatchData = new Stopwatch();
-			stopwatchData.Start();
+			if (CheckListContains(recordInfo))
+			{
+				MessageText = $"The list already contains this record and therefore cannot be inserted. " +
+					$"Select a different record for the comparison.";
+				MessageDialogContentIsOpen = true;
+				return;
+			}
+
 			var comparisonRecordInfo = GetComparisonRecordInfoFromFileRecordInfo(recordInfo);
 			var wrappedComparisonRecordInfo = GetWrappedRecordInfo(comparisonRecordInfo);
 
@@ -32,6 +37,14 @@ namespace CapFrameX.ViewModel
 
 			//Draw charts and performance parameter
 			UpdateCharts();
+		}
+
+		private bool CheckListContains(IFileRecordInfo recordInfo)
+		{
+			var recordInfoWrapper = ComparisonRecords
+				.FirstOrDefault(info => info.WrappedRecordInfo.FileRecordInfo.Id == recordInfo.Id);
+
+			return recordInfoWrapper == null && !ComparisonRecords.Any();
 		}
 
 		private void SetMetrics(ComparisonRecordInfoWrapper wrappedComparisonRecordInfo)

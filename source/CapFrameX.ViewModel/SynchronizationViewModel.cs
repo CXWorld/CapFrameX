@@ -38,6 +38,7 @@ namespace CapFrameX.ViewModel
 		private Session _session;
 		private IFileRecordInfo _recordInfo;
 		private string _frametimeDisplayChangedTimeCorrelation = "0%";
+		private string _currentGameName;
 
 		/// <summary>
 		/// https://docs.microsoft.com/en-us/dotnet/standard/base-types/standard-numeric-format-strings
@@ -111,6 +112,15 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
+		public string CurrentGameName
+		{
+			get { return _currentGameName; }
+			set
+			{
+				_currentGameName = value;
+				RaisePropertyChanged();
+			}
+		}
 
 		public ICommand CopyDisplayChangeTimeValuesCommand { get; }
 
@@ -147,6 +157,7 @@ namespace CapFrameX.ViewModel
 								if (_useUpdateSession)
 								{
 									// Do update actions
+									CurrentGameName = msg.RecordInfo.GameName;
 									UpdateCharts();
 									FrametimeDisplayChangedTimeCorrelation =
 										GetCorrelation(msg.CurrentSession);
@@ -345,6 +356,7 @@ namespace CapFrameX.ViewModel
 
 			if (_session != null && _recordInfo != null)
 			{
+				CurrentGameName = _recordInfo.GameName;
 				UpdateCharts();
 				FrametimeDisplayChangedTimeCorrelation =
 					GetCorrelation(_session);

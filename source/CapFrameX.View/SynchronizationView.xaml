@@ -38,14 +38,17 @@
 			<RowDefinition Height="3*"></RowDefinition>
 		</Grid.RowDefinitions>
 		<Grid Grid.Row="0" Background="#F5F5F5">
-			<oxy:PlotView Background="#F5F5F5" x:Name="SynchronizationPlotView" Model="{Binding SynchronizationModel}" Tag="{Binding ElementName=SynchronizationViewUserControl, Path=DataContext}"
+			<DockPanel>
+				<TextBlock DockPanel.Dock="Top" Margin="0 20 0 0" HorizontalAlignment="Center" FontWeight="Bold" FontSize="16" VerticalAlignment="Bottom" Text="{Binding CurrentGameName}"/>
+				<oxy:PlotView Background="#F5F5F5" x:Name="SynchronizationPlotView" Model="{Binding SynchronizationModel}" Tag="{Binding ElementName=SynchronizationViewUserControl, Path=DataContext}"
 						  MouseDoubleClick="ResetChart_MouseDoubleClick">
-				<oxy:PlotView.ContextMenu>
-					<ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
-						<MenuItem Header="Copy display change time values (dc)" Command="{Binding CopyDisplayChangeTimeValuesCommand}"/>
-					</ContextMenu>
-				</oxy:PlotView.ContextMenu>
-			</oxy:PlotView>
+					<oxy:PlotView.ContextMenu>
+						<ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
+							<MenuItem Header="Copy display change time values (dc)" Command="{Binding CopyDisplayChangeTimeValuesCommand}"/>
+						</ContextMenu>
+					</oxy:PlotView.ContextMenu>
+				</oxy:PlotView>
+			</DockPanel>
 		</Grid>
 		<Grid Grid.Row="1" Background="#F5F5F5">
 			<StackPanel Margin="20 0 0 0" Orientation="Horizontal" HorizontalAlignment="Left">
