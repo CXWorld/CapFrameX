@@ -42,7 +42,6 @@ namespace CapFrameX.Data
 		{
 			if (fileInfo != null && File.Exists(fileInfo.FullName))
 			{
-				Id = Guid.NewGuid().ToString();
 				FileInfo = fileInfo;
 				FullPath = fileInfo.FullName;
 				_lines = File.ReadAllLines(fileInfo.FullName);
@@ -96,6 +95,7 @@ namespace CapFrameX.Data
 
 							var lastDataSet = _lines.Last().Split(',');
 
+							infoKeyValueDictionary.Add("Id", FullPath);
 							infoKeyValueDictionary.Add("GameName", infos[0]);
 							infoKeyValueDictionary.Add("ProcessName", infos[0]);
 							infoKeyValueDictionary.Add("CreationDate", fileInfo.LastWriteTime.ToString("yyyy-MM-dd"));
@@ -167,6 +167,11 @@ namespace CapFrameX.Data
 		{
 			if (infoKeyValueDictionary.Any())
 			{
+				if (infoKeyValueDictionary.Keys.Contains("Id"))
+					Id = infoKeyValueDictionary["Id"];
+				else
+					Id = FullPath;
+
 				if (infoKeyValueDictionary.Keys.Contains("GameName"))
 					GameName = infoKeyValueDictionary["GameName"];
 

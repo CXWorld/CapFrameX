@@ -37,6 +37,16 @@ namespace CapFrameX.EventAggregation.Messages
 			}
 		}
 
+		public class UpdateRecordInfos
+		{
+			public IFileRecordInfo RecordInfo { get; }
+
+			public UpdateRecordInfos(IFileRecordInfo recordInfo)
+			{
+				RecordInfo = recordInfo;
+			}
+		}
+
 		public class ShowOverlay { }
 
 		public class HideOverlay { }

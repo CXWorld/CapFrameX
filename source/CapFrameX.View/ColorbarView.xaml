@@ -113,7 +113,7 @@
                             </TextBox.Text>
                         </TextBox>
                         <StackPanel Grid.Row="3" Orientation="Horizontal">
-                            <TextBox IsReadOnly="True" materialDesign:HintAssist.Hint="Observed directory (OCAT compatible)" Text="{Binding ObservedDirectory, Mode=OneWay}" />
+                            <TextBox IsReadOnly="True" materialDesign:HintAssist.Hint="Observed directory (third-party compatible)" Text="{Binding ObservedDirectory, Mode=OneWay}" />
 							<Button Margin="20 0 0 0" Command="{Binding SelectObservedFolderCommand}" Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}" ToolTip="Select observed folder">
 								<materialDesign:PackIcon Kind="Folder" Height="24" Width="24" />
 							</Button>

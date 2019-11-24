@@ -396,6 +396,7 @@ namespace CapFrameX.ViewModel
 			SetRowSeries();
 			InitializePlotModel();
 			SubscribeToSelectRecord();
+			SubscribeToUpdateRecordInfos();
 		}
 
 		private void InitializePlotModel()
@@ -444,6 +445,26 @@ namespace CapFrameX.ViewModel
 								if (_useEventMessages)
 								{
 									AddComparisonItem(msg.RecordInfo);
+								}
+							});
+		}
+
+		private void SubscribeToUpdateRecordInfos()
+		{
+			_eventAggregator.GetEvent<PubSubEvent<ViewMessages.UpdateRecordInfos>>()
+							.Subscribe(msg =>
+							{
+								if (_useEventMessages)
+								{
+									var recordInfoWrapper = ComparisonRecords
+										.FirstOrDefault(info => info.WrappedRecordInfo
+										.FileRecordInfo.Id == msg.RecordInfo.Id);
+
+									if (recordInfoWrapper != null)
+									{
+										RemoveComparisonItem(recordInfoWrapper);
+										AddComparisonItem(msg.RecordInfo);
+									}
 								}
 							});
 		}

@@ -84,6 +84,7 @@ namespace CapFrameX.Data
 				// Create header
 				var headerLines = new List<string>()
 				{
+					$"{FileRecordInfo.HEADER_MARKER}Id{FileRecordInfo.INFO_SEPERATOR}{Guid.NewGuid().ToString()}",
 					$"{FileRecordInfo.HEADER_MARKER}GameName{FileRecordInfo.INFO_SEPERATOR}{string.Empty}",
 					$"{FileRecordInfo.HEADER_MARKER}ProcessName{FileRecordInfo.INFO_SEPERATOR}{processNameAdjusted}",
 					$"{FileRecordInfo.HEADER_MARKER}CreationDate{FileRecordInfo.INFO_SEPERATOR}{datetime.ToString("yyyy-MM-dd")}",
@@ -211,38 +212,42 @@ namespace CapFrameX.Data
 			if (string.IsNullOrWhiteSpace(processName) ||
 				string.IsNullOrWhiteSpace(gameName))
 				return;
-
-			var matchings = File.ReadAllLines(_matchingNameLiveFilename).ToList();
-
-			_processGameMatchingDictionary = new Dictionary<string, string>();
-
-			foreach (var item in matchings)
+			try
 			{
-				var currentMatching = item.Split(FileRecordInfo.INFO_SEPERATOR);
-				_processGameMatchingDictionary.Add(currentMatching.First(), currentMatching.Last());
-			}
+				var matchings = File.ReadAllLines(_matchingNameLiveFilename).ToList();
 
-			// Add
-			if (!_processGameMatchingDictionary.Keys.Contains(processName))
-			{
-				_processGameMatchingDictionary.Add(processName, gameName);
-				matchings.Add($"{processName}={gameName}");
+				_processGameMatchingDictionary = new Dictionary<string, string>();
 
-				File.WriteAllLines(_matchingNameLiveFilename, matchings.OrderBy(name => name));
-			}
-			// Update
-			else
-			{
-				_processGameMatchingDictionary[processName] = gameName;
-				var newMatchings = new List<string>();
-
-				foreach (var keyValuePair in _processGameMatchingDictionary)
+				foreach (var item in matchings)
 				{
-					newMatchings.Add($"{keyValuePair.Key}={keyValuePair.Value}");
+					var currentMatching = item.Split(FileRecordInfo.INFO_SEPERATOR);
+					_processGameMatchingDictionary.Add(currentMatching.First(), currentMatching.Last());
 				}
 
-				File.WriteAllLines(_matchingNameLiveFilename, newMatchings.OrderBy(name => name));
+				// Add
+				if (!_processGameMatchingDictionary.Keys.Contains(processName))
+				{
+					_processGameMatchingDictionary.Add(processName, gameName);
+					matchings.Add($"{processName}={gameName}");
+
+					File.WriteAllLines(_matchingNameLiveFilename, matchings.OrderBy(name => name));
+				}
+				// Update
+				else
+				{
+					_processGameMatchingDictionary[processName] = gameName;
+					var newMatchings = new List<string>();
+
+					foreach (var keyValuePair in _processGameMatchingDictionary)
+					{
+						newMatchings.Add($"{keyValuePair.Key}={keyValuePair.Value}");
+					}
+
+					File.WriteAllLines(_matchingNameLiveFilename, newMatchings.OrderBy(name => name));
+				}
 			}
+			// ToDo: Logger
+			catch { }
 		}
 
 		public string GetGameFromMatchingList(string processName)
