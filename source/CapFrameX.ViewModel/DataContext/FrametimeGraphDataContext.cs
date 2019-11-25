@@ -19,7 +19,7 @@ namespace CapFrameX.ViewModel.DataContext
     {
         private PlotModel _frametimeModel;
 
-        public PlotModel FrametimeModel
+		public PlotModel FrametimeModel
         {
             get { return _frametimeModel; }
             set
@@ -39,8 +39,8 @@ namespace CapFrameX.ViewModel.DataContext
             CopyFrametimeValuesCommand = new DelegateCommand(OnCopyFrametimeValues);
             CopyFrametimePointsCommand = new DelegateCommand(OnCopyFrametimePoints);
 
-            // Update Chart after changing index slider
-            RecordDataServer.FrametimePointDataStream.Subscribe(sequence =>
+			// Update Chart after changing index slider
+			RecordDataServer.FrametimePointDataStream.Subscribe(sequence =>
             {
                 SetFrametimeChart(sequence);
             });
@@ -116,13 +116,13 @@ namespace CapFrameX.ViewModel.DataContext
                 frametimeSeries.Points.AddRange(frametimeDataPoints);
                 movingAverageSeries.Points.AddRange(movingAverage.Select((y, i) => new DataPoint(frametimePoints[i].X, y)));
 
-                var xAxis = FrametimeModel.GetAxisOrDefault("xAxis", null);
-                var yAxis = FrametimeModel.GetAxisOrDefault("yAxis", null);
+                //var xAxis = FrametimeModel.GetAxisOrDefault("xAxis", null);
+                //var yAxis = FrametimeModel.GetAxisOrDefault("yAxis", null);
 
-                xAxis.Minimum = frametimePoints.First().X;
-                xAxis.Maximum = frametimePoints.Last().X;
-                yAxis.Minimum = yMin - (yMax - yMin) / 6;
-                yAxis.Maximum = yMax + (yMax - yMin) / 6;
+                //xAxis.Minimum = frametimePoints.First().X;
+                //xAxis.Maximum = frametimePoints.Last().X;
+                //yAxis.Minimum = yMin - (yMax - yMin) / 6;
+                //yAxis.Maximum = yMax + (yMax - yMin) / 6;
 
                 FrametimeModel.Series.Add(frametimeSeries);
                 FrametimeModel.Series.Add(movingAverageSeries);

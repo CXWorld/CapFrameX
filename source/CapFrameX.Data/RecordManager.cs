@@ -1,5 +1,4 @@
 ﻿using CapFrameX.Contracts.Data;
-using CapFrameX.Data;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -257,6 +256,7 @@ namespace CapFrameX.Data
 									lineCharList.Add(line[i]);
 
 							}
+
 							line = new string(lineCharList.ToArray());
 						}
 

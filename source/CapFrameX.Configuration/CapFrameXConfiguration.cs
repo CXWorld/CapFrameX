@@ -137,5 +137,33 @@ namespace CapFrameX.Configuration
             get { return Settings.SimpleSoundLevel; }
             set { Settings.SimpleSoundLevel = value; Settings.Save(); }
         }
-    }
+
+		public string SecondaryMetric 
+		{
+			get { return Settings.SecondaryMetric; }
+			set { Settings.SecondaryMetric = value; Settings.Save(); }
+		}
+		public string ThirdMetric
+		{
+			get { return Settings.ThirdMetric; }
+			set { Settings.ThirdMetric = value; Settings.Save(); }
+		}
+		public string ComparisonContext
+		{
+			get { return Settings.ComparisonContext; }
+			set { Settings.ComparisonContext = value; Settings.Save(); }
+		}
+
+		public string RecordingListSortMemberPath
+		{
+			get { return Settings.RecordingListSortMemberPath; }
+			set { Settings.RecordingListSortMemberPath = value; Settings.Save(); }
+		}
+
+		public string RecordingListSortDirection
+		{
+			get { return Settings.RecordingListSortDirection; }
+			set { Settings.RecordingListSortDirection = value; Settings.Save(); }
+		}
+	}
 }

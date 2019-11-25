@@ -20,7 +20,6 @@ namespace CapFrameX.ViewModel
         private readonly IEventAggregator _eventAggregator;
         private readonly IAppConfiguration _appConfiguration;
 
-        private PubSubEvent<ViewMessages.ResetRecord> _resetRecordEvent;
         private PubSubEvent<AppMessages.UpdateObservedDirectory> _updateObservedFolder;
         private bool _captureIsChecked = true;
         private bool _singleRecordIsChecked;
@@ -238,42 +237,35 @@ namespace CapFrameX.ViewModel
         private void OnCaptureIsCheckedChanged()
         {
             _regionManager.RequestNavigate("DataRegion", "CaptureView");
-            _resetRecordEvent.Publish(new ViewMessages.ResetRecord());
         }
 
         private void OnSingleRecordIsCheckedChanged()
         {
             _regionManager.RequestNavigate("DataRegion", "DataView");
-            _resetRecordEvent.Publish(new ViewMessages.ResetRecord());
         }
 
         private void OnRecordComparisonIsCheckedChanged()
         {
             _regionManager.RequestNavigate("DataRegion", "ComparisonView");
-            _resetRecordEvent.Publish(new ViewMessages.ResetRecord());
         }
 
         private void OnReportIsCheckedChanged()
         {
             _regionManager.RequestNavigate("DataRegion", "ReportView");
-            _resetRecordEvent.Publish(new ViewMessages.ResetRecord());
         }
 
         private void OnSynchronizationIsCheckedChanged()
         {
             _regionManager.RequestNavigate("DataRegion", "SynchronizationView");
-            _resetRecordEvent.Publish(new ViewMessages.ResetRecord());
         }
 
         private void OnAggregationIsCheckedChanged()
         {
             _regionManager.RequestNavigate("DataRegion", "AggregationView");
-            _resetRecordEvent.Publish(new ViewMessages.ResetRecord());
         }
 
         private void SetAggregatorEvents()
         {
-            _resetRecordEvent = _eventAggregator.GetEvent<PubSubEvent<ViewMessages.ResetRecord>>();
             _updateObservedFolder = _eventAggregator.GetEvent<PubSubEvent<AppMessages.UpdateObservedDirectory>>();
         }
 

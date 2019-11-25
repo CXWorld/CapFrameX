@@ -20,8 +20,10 @@ namespace CapFrameX.PresentMonInterface
 		private IDisposable _hearBeatDisposable;
 		private IDisposable _processNameDisposable;
 
-		public IObservable<string> RedirectedOutputDataStream => _outputDataStream.AsObservable();
-		public IObservable<string> RedirectedOutputErrorStream => _outputErrorStream.AsObservable();
+		public IObservable<string> RedirectedOutputDataStream 
+			=> _outputDataStream.AsObservable();
+		public IObservable<string> RedirectedOutputErrorStream 
+			=> _outputErrorStream.AsObservable();
 		public Subject<bool> IsCaptureModeActiveStream { get; }
 
 		public PresentMonCaptureService()
@@ -63,7 +65,6 @@ namespace CapFrameX.PresentMonInterface
 
 			process.Start();
 			_outputDataStream.OnNext("Capture service started...");
-			process.PriorityClass = ProcessPriorityClass.AboveNormal;
 			process.BeginOutputReadLine();
 			process.BeginErrorReadLine();
 

@@ -36,6 +36,7 @@ namespace CapFrameX.Data
 		public string Comment { get; private set; }
 		public bool IsValid { get; private set; }
 		public bool HasInfoHeader { get; private set; }
+		public string Id { get; private set; }
 
 		private FileRecordInfo(FileInfo fileInfo)
 		{
@@ -94,6 +95,7 @@ namespace CapFrameX.Data
 
 							var lastDataSet = _lines.Last().Split(',');
 
+							infoKeyValueDictionary.Add("Id", FullPath);
 							infoKeyValueDictionary.Add("GameName", infos[0]);
 							infoKeyValueDictionary.Add("ProcessName", infos[0]);
 							infoKeyValueDictionary.Add("CreationDate", fileInfo.LastWriteTime.ToString("yyyy-MM-dd"));
@@ -165,6 +167,11 @@ namespace CapFrameX.Data
 		{
 			if (infoKeyValueDictionary.Any())
 			{
+				if (infoKeyValueDictionary.Keys.Contains("Id"))
+					Id = infoKeyValueDictionary["Id"];
+				else
+					Id = FullPath;
+
 				if (infoKeyValueDictionary.Keys.Contains("GameName"))
 					GameName = infoKeyValueDictionary["GameName"];
 

@@ -55,6 +55,7 @@ namespace CapFrameX.ViewModel
 		private double _cutRightSliderMaximum;
 		private double _firstSeconds;
 		private double _lastSeconds;
+		private EChartYAxisSetting _selecetedChartYAxisSetting = EChartYAxisSetting.FullFit;
 
 		public IFileRecordInfo RecordInfo { get; private set; }
 
@@ -63,6 +64,10 @@ namespace CapFrameX.ViewModel
 		public FpsGraphDataContext FpsGraphDataContext { get; }
 
 		public IAppConfiguration AppConfiguration => _appConfiguration;
+
+		public Array ChartYAxisSettings => Enum.GetValues(typeof(EChartYAxisSetting))
+										.Cast<EChartYAxisSetting>()
+										.ToArray();
 
 		/// <summary>
 		/// https://docs.microsoft.com/en-us/dotnet/standard/base-types/standard-numeric-format-strings
@@ -231,7 +236,7 @@ namespace CapFrameX.ViewModel
 			{
 				_firstSeconds = value;
 				RaisePropertyChanged();
-				_localRecordDataServer.SetTimeWindow(_firstSeconds, 
+				_localRecordDataServer.SetTimeWindow(_firstSeconds,
 					_maxRecordingTime - LastSeconds - _firstSeconds);
 				UpdateMainCharts();
 				UpdateSecondaryCharts();
@@ -253,6 +258,17 @@ namespace CapFrameX.ViewModel
 				UpdateSecondaryCharts();
 				RemainingRecordingTime = Math.Round(_maxRecordingTime - _lastSeconds - FirstSeconds, 2)
 					.ToString(CultureInfo.InvariantCulture) + " s";
+			}
+		}
+
+		public EChartYAxisSetting SelecetedChartYAxisSetting
+		{
+			get { return _selecetedChartYAxisSetting; }
+			set
+			{
+				_selecetedChartYAxisSetting = value;
+				RaisePropertyChanged();
+				SetFrametimeChartYAxisSetting(GetYAxisSettingFromSelection(value));
 			}
 		}
 
@@ -437,30 +453,35 @@ namespace CapFrameX.ViewModel
 			_eventAggregator.GetEvent<PubSubEvent<ViewMessages.UpdateSession>>()
 							.Subscribe(msg =>
 							{
+								_session = msg.CurrentSession;
+								RecordInfo = msg.RecordInfo;
+
 								if (_useUpdateSession)
 								{
-									_session = msg.CurrentSession;
-									RecordInfo = msg.RecordInfo;
-
-									if (_session != null && RecordInfo != null)
-									{
-										CurrentGameName = RecordInfo.GameName;
-										SystemInfos = RecordManager.GetSystemInfos(RecordInfo);
-
-										// Do update actions
-										FrametimeGraphDataContext.RecordSession = _session;
-										FpsGraphDataContext.RecordSession = _session;
-
-										UpdateCuttingParameter();
-										UpdateMainCharts();
-										UpdateSecondaryCharts();
-									}
-									else
-									{
-										ResetData();
-									}
+									UpdateAnalysisPage();
 								}
 							});
+		}
+
+		private void UpdateAnalysisPage()
+		{
+			if (_session != null && RecordInfo != null)
+			{
+				CurrentGameName = RecordInfo.GameName;
+				SystemInfos = RecordManager.GetSystemInfos(RecordInfo);
+
+				// Do update actions
+				FrametimeGraphDataContext.RecordSession = _session;
+				FpsGraphDataContext.RecordSession = _session;
+
+				UpdateCuttingParameter();
+				UpdateMainCharts();
+				UpdateSecondaryCharts();
+			}
+			else
+			{
+				ResetData();
+			}
 		}
 
 		private void UpdateMainCharts()
@@ -472,15 +493,25 @@ namespace CapFrameX.ViewModel
 
 			if (subset != null)
 			{
-				Task.Factory.StartNew(() => FrametimeGraphDataContext
-					.SetFrametimeChart(_localRecordDataServer?.GetFrametimePointTimeWindow()));
+				Task.Factory.StartNew(() =>
+				{
+					FrametimeGraphDataContext
+					   .SetFrametimeChart(_localRecordDataServer?
+					   .GetFrametimePointTimeWindow());
+					SetFrametimeChartYAxisSetting(
+						GetYAxisSettingFromSelection(SelecetedChartYAxisSetting));
+				});
+
 				Task.Factory.StartNew(() => SetStaticChart(subset));
-				Task.Factory.StartNew(() => SetAdvancedStaticChart(subset));
+				Task.Factory.StartNew(() => SetStutteringChart(subset));
 			}
 		}
 
 		private void UpdateSecondaryCharts()
 		{
+			if (SelectedChartItem == null)
+				return;
+
 			var headerName = SelectedChartItem.Header.ToString();
 			var subset = GetFrametimesSubset();
 
@@ -499,7 +530,7 @@ namespace CapFrameX.ViewModel
 		}
 
 		private IList<double> GetFrametimesSubset()
-			=>_localRecordDataServer?.GetFrametimeTimeWindow();
+			=> _localRecordDataServer?.GetFrametimeTimeWindow();
 
 		private void SetStaticChart(IList<double> frametimes)
 		{
@@ -522,35 +553,35 @@ namespace CapFrameX.ViewModel
 			var min = GeMetricValue(frametimes, EMetric.Min);
 			var adaptiveStandardDeviation = GeMetricValue(frametimes, EMetric.AdaptiveStd);
 
-			IChartValues values = new ChartValues<double>();
-
-			if (_appConfiguration.UseSingleRecordAdaptiveSTDStatisticParameter && !double.IsNaN(adaptiveStandardDeviation))
-				values.Add(adaptiveStandardDeviation);
-			if (_appConfiguration.UseSingleRecordMinStatisticParameter)
-				values.Add(min);
-			if (_appConfiguration.UseSingleRecordP0Dot1LowAverageStatisticParameter && !double.IsNaN(p0dot1_averageLow))
-				values.Add(p0dot1_averageLow);
-			if (_appConfiguration.UseSingleRecordP0Dot1QuantileStatisticParameter)
-				values.Add(p0dot1_quantile);
-			if (_appConfiguration.UseSingleRecordP0Dot2QuantileStatisticParameter)
-				values.Add(p0dot2_quantile);
-			if (_appConfiguration.UseSingleRecordP1LowAverageStatisticParameter && !double.IsNaN(p1_averageLow))
-				values.Add(p1_averageLow);
-			if (_appConfiguration.UseSingleRecordP1QuantileStatisticParameter)
-				values.Add(p1_quantile);
-			if (_appConfiguration.UseSingleRecordP5QuantileStatisticParameter)
-				values.Add(p5_quantile);
-			if (_appConfiguration.UseSingleRecordAverageStatisticParameter)
-				values.Add(average);
-			if (_appConfiguration.UseSingleRecordP95QuantileStatisticParameter)
-				values.Add(p95_quantile);
-			if (_appConfiguration.UseSingleRecord99QuantileStatisticParameter)
-				values.Add(p99_quantile);
-			if (_appConfiguration.UseSingleRecordMaxStatisticParameter)
-				values.Add(max);
-
-			Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+			Application.Current.Dispatcher.Invoke(new Action(() =>
 			{
+				IChartValues values = new ChartValues<double>();
+
+				if (_appConfiguration.UseSingleRecordAdaptiveSTDStatisticParameter && !double.IsNaN(adaptiveStandardDeviation))
+					values.Add(adaptiveStandardDeviation);
+				if (_appConfiguration.UseSingleRecordMinStatisticParameter)
+					values.Add(min);
+				if (_appConfiguration.UseSingleRecordP0Dot1LowAverageStatisticParameter && !double.IsNaN(p0dot1_averageLow))
+					values.Add(p0dot1_averageLow);
+				if (_appConfiguration.UseSingleRecordP0Dot1QuantileStatisticParameter)
+					values.Add(p0dot1_quantile);
+				if (_appConfiguration.UseSingleRecordP0Dot2QuantileStatisticParameter)
+					values.Add(p0dot2_quantile);
+				if (_appConfiguration.UseSingleRecordP1LowAverageStatisticParameter && !double.IsNaN(p1_averageLow))
+					values.Add(p1_averageLow);
+				if (_appConfiguration.UseSingleRecordP1QuantileStatisticParameter)
+					values.Add(p1_quantile);
+				if (_appConfiguration.UseSingleRecordP5QuantileStatisticParameter)
+					values.Add(p5_quantile);
+				if (_appConfiguration.UseSingleRecordAverageStatisticParameter)
+					values.Add(average);
+				if (_appConfiguration.UseSingleRecordP95QuantileStatisticParameter)
+					values.Add(p95_quantile);
+				if (_appConfiguration.UseSingleRecord99QuantileStatisticParameter)
+					values.Add(p99_quantile);
+				if (_appConfiguration.UseSingleRecordMaxStatisticParameter)
+					values.Add(max);
+
 				StatisticCollection = new SeriesCollection
 				{
 					new RowSeries
@@ -595,7 +626,7 @@ namespace CapFrameX.ViewModel
 			}));
 		}
 
-		private void SetAdvancedStaticChart(IList<double> frametimes)
+		private void SetStutteringChart(IList<double> frametimes)
 		{
 			if (frametimes == null || !frametimes.Any())
 				return;
@@ -677,9 +708,74 @@ namespace CapFrameX.ViewModel
 			SystemInfos?.Clear();
 		}
 
+		private void SetFrametimeChartYAxisSetting(Tuple<double, double> setting)
+		{
+			var yAxis = FrametimeGraphDataContext
+				.FrametimeModel.Axes.FirstOrDefault(axis => axis.Key == "yAxis");
+
+			if (yAxis != null)
+			{
+				yAxis.Minimum = setting.Item1;
+				yAxis.Maximum = setting.Item2;
+				FrametimeGraphDataContext.FrametimeModel.InvalidatePlot(true);
+			}
+		}
+
+		private Tuple<double, double> GetYAxisSettingFromSelection(EChartYAxisSetting selection)
+		{
+			Tuple<double, double> setting = new Tuple<double, double>(double.NaN, double.NaN);
+
+			switch (selection)
+			{
+				case EChartYAxisSetting.FullFit:
+					{
+						var frametimes = _localRecordDataServer?
+							.GetFrametimePointTimeWindow().Select(pnt => pnt.Y);
+						var yMin = frametimes.Min();
+						var yMax = frametimes.Max();
+
+						setting = new Tuple<double, double>(yMin - (yMax - yMin) / 6, yMax + (yMax - yMin) / 6);
+					}
+					break;
+				case EChartYAxisSetting.IQR:
+					{
+						double iqr = MathNet.Numerics.Statistics.Statistics
+							.InterquartileRange(_localRecordDataServer?
+							.GetFrametimePointTimeWindow().Select(pnt => pnt.Y));
+						double median = MathNet.Numerics.Statistics.Statistics
+							.Median(_localRecordDataServer?
+							.GetFrametimePointTimeWindow().Select(pnt => pnt.Y));
+
+						setting = new Tuple<double, double>(median - 4 * iqr, median + 6 * iqr);
+					}
+					break;
+				case EChartYAxisSetting.Zero_Ten:
+					setting = new Tuple<double, double>(0, 10);
+					break;
+				case EChartYAxisSetting.Zero_Twenty:
+					setting = new Tuple<double, double>(0, 20);
+					break;
+				case EChartYAxisSetting.Zero_Forty:
+					setting = new Tuple<double, double>(0, 40);
+					break;
+				case EChartYAxisSetting.Zero_Sixty:
+					setting = new Tuple<double, double>(0, 60);
+					break;
+				case EChartYAxisSetting.Zero_Eighty:
+					setting = new Tuple<double, double>(0, 80);
+					break;
+				case EChartYAxisSetting.Zero_Hundred:
+					setting = new Tuple<double, double>(0, 100);
+					break;
+			}
+
+			return setting;
+		}
+
 		public void OnNavigatedTo(NavigationContext navigationContext)
 		{
 			_useUpdateSession = true;
+			UpdateAnalysisPage();
 		}
 
 		public bool IsNavigationTarget(NavigationContext navigationContext)

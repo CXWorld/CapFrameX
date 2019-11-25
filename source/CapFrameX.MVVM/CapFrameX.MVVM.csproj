@@ -103,6 +103,9 @@
     <Compile Include="Dialogs\EditingDialog.xaml.cs">
       <DependentUpon>EditingDialog.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Dialogs\MessageDialog.xaml.cs">
+      <DependentUpon>MessageDialog.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SelectionChangedBehaviour.cs" />
     <Compile Include="SliderValueChangedBehaviour.cs" />
@@ -133,6 +136,10 @@
   </ItemGroup>
   <ItemGroup>
     <Page Include="Dialogs\EditingDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Dialogs\MessageDialog.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

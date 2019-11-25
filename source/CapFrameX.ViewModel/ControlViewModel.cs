@@ -34,6 +34,7 @@ namespace CapFrameX.ViewModel
 		private PubSubEvent<ViewMessages.SelectSession> _selectSessionEvent;
 		private PubSubEvent<ViewMessages.ShowOverlay> _showOverlayEvent;
 		private PubSubEvent<ViewMessages.UpdateProcessIgnoreList> _updateProcessIgnoreListEvent;
+		private PubSubEvent<ViewMessages.UpdateRecordInfos> _updateRecordInfosEvent;
 
 		private IFileRecordInfo _selectedRecordInfo;
 		private bool _hasValidSource;
@@ -126,6 +127,8 @@ namespace CapFrameX.ViewModel
 		public ObservableCollection<IFileRecordInfo> RecordInfoList { get; }
 			= new ObservableCollection<IFileRecordInfo>();
 
+		public IAppConfiguration AppConfiguration => _appConfiguration;
+
 		public ICommand OpenEditingDialogCommand { get; }
 
 		public ICommand AddToIgnoreListCommand { get; }
@@ -204,6 +207,7 @@ namespace CapFrameX.ViewModel
 			SetAggregatorEvents();
 			SubscribeToResetRecord();
 			SubscribeToObservedDiretoryUpdated();
+			SubscribeToSetFileRecordInfoExternal();
 		}
 
 		private void OnDeleteRecordFile()
@@ -301,9 +305,17 @@ namespace CapFrameX.ViewModel
 
 			_recordDataProvider.AddGameNameToMatchingList(_selectedRecordInfo.ProcessName, CustomGameName);
 
-			int selectedIndex = RecordInfoList.IndexOf(SelectedRecordInfo);
+			var id = SelectedRecordInfo.Id;
 			ReloadRecordList();
-			RecordDataGridSelectedIndex = selectedIndex;
+
+			// Get recordInfo after update via id
+			var updatedRecordInfo = RecordInfoList.FirstOrDefault(info => info.Id == id);
+
+			if (updatedRecordInfo != null)
+			{
+				SelectedRecordInfo = updatedRecordInfo;
+				_updateRecordInfosEvent.Publish(new ViewMessages.UpdateRecordInfos(updatedRecordInfo));
+			}
 		}
 
 		public void OnRecordSelectByDoubleClick()
@@ -364,24 +376,19 @@ namespace CapFrameX.ViewModel
 			_selectedRecordings = new List<IFileRecordInfo>((selectedRecordings as IList).Cast<IFileRecordInfo>());
 		}
 
-		private void AddToRecordInfoList(IFileRecordInfo recordFileInfo, bool insertAtFirst = false)
+		private void AddToRecordInfoList(IFileRecordInfo recordFileInfo)
 		{
 			if (recordFileInfo != null)
 			{
-				Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+				Application.Current.Dispatcher.Invoke(new Action(() =>
 				{
-					if (insertAtFirst)
-					{
-						RecordInfoList.Insert(0, recordFileInfo);
-					}
-					else
-						RecordInfoList.Add(recordFileInfo);
+					RecordInfoList.Add(recordFileInfo);
 				}));
 			}
 		}
 
 		private void OnRecordCreated(FileInfo fileInfo)
-			=> AddToRecordInfoList(_recordDataProvider.GetFileRecordInfo(fileInfo), true);
+			=> AddToRecordInfoList(_recordDataProvider.GetFileRecordInfo(fileInfo));
 
 		private void OnRecordDeleted()
 		{
@@ -408,6 +415,7 @@ namespace CapFrameX.ViewModel
 			_selectSessionEvent = _eventAggregator.GetEvent<PubSubEvent<ViewMessages.SelectSession>>();
 			_showOverlayEvent = _eventAggregator.GetEvent<PubSubEvent<ViewMessages.ShowOverlay>>();
 			_updateProcessIgnoreListEvent = _eventAggregator.GetEvent<PubSubEvent<ViewMessages.UpdateProcessIgnoreList>>();
+			_updateRecordInfosEvent = _eventAggregator.GetEvent<PubSubEvent<ViewMessages.UpdateRecordInfos>>();
 		}
 
 		private void SubscribeToResetRecord()
@@ -435,6 +443,16 @@ namespace CapFrameX.ViewModel
 								{
 									LoadRecordList();
 								}
+							});
+		}
+
+		private void SubscribeToSetFileRecordInfoExternal()
+		{
+			_eventAggregator.GetEvent<PubSubEvent<ViewMessages.SetFileRecordInfoExternal>>()
+							.Subscribe(msg =>
+							{
+								SelectedRecordInfo = msg.RecordInfo;
+								_selectedRecordings = null;
 							});
 		}
 	}

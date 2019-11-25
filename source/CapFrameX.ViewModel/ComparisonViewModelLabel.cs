@@ -137,35 +137,56 @@ namespace CapFrameX.ViewModel
 		private void OnCustomContex()
 		{
 			SetLabelCustomContext();
-			ComparisonModel.InvalidatePlot(true);
+			ComparisonModel?.InvalidatePlot(true);
 		}
 
 		private void OnGpuContex()
 		{
 			SetLabelGpuContext();
-			ComparisonModel.InvalidatePlot(true);
+			ComparisonModel?.InvalidatePlot(true);
 		}
 
 		private void OnSystemRamContex()
 		{
 			SetLabelSystemRamContext();
-			ComparisonModel.InvalidatePlot(true);
+			ComparisonModel?.InvalidatePlot(true);
 		}
 
 		private void OnCpuContext()
 		{
 			SetLabelCpuContext();
-			ComparisonModel.InvalidatePlot(true);
+			ComparisonModel?.InvalidatePlot(true);
 		}
 
 		private void OnDateTimeContext()
 		{
 			SetLabelDateTimeContext();
-			ComparisonModel.InvalidatePlot(true);
+			ComparisonModel?.InvalidatePlot(true);
+		}
+
+		private bool CheckDataConsistency()
+		{
+			bool check = true;
+			if (ComparisonModel == null)
+				return false;
+
+			if (ComparisonRecords == null)
+				return false;
+
+			if (ComparisonModel.Series == null)
+				return false;
+
+			if (!ComparisonRecords.Any())
+				check = false;
+
+			return check;
 		}
 
 		private void SetLabelDateTimeContext()
 		{
+			if (!CheckDataConsistency())
+				return;
+
 			ComparisonRowChartLabels = ComparisonRecords.Select(record =>
 			{
 				return GetLabelDateTimeContext(record, GetMaxDateTimeAlignment());
@@ -189,7 +210,7 @@ namespace CapFrameX.ViewModel
 
 			bool hasUniqueGameNames = GetHasUniqueGameNames();
 			if (hasUniqueGameNames)
-			{				
+			{
 				return string.Format(CultureInfo.InvariantCulture, alignmentFormat,
 					$"{record.WrappedRecordInfo.FileRecordInfo.CreationDate} { record.WrappedRecordInfo.FileRecordInfo.CreationTime}");
 			}
@@ -203,6 +224,9 @@ namespace CapFrameX.ViewModel
 
 		private void SetLabelCpuContext()
 		{
+			if (!CheckDataConsistency())
+				return;
+
 			ComparisonRowChartLabels = ComparisonRecords.Select(record =>
 			{
 				return GetLabelCpuContext(record, GetMaxCpuAlignment());
@@ -231,7 +255,7 @@ namespace CapFrameX.ViewModel
 				if (part == string.Empty)
 					continue;
 
-				infoPartsFormatted += Environment.NewLine + string.Format(CultureInfo.InvariantCulture, alignmentFormat, part);
+				infoPartsFormatted += string.Format(CultureInfo.InvariantCulture, alignmentFormat, part) + Environment.NewLine;
 			}
 
 			bool hasUniqueGameNames = GetHasUniqueGameNames();
@@ -240,14 +264,17 @@ namespace CapFrameX.ViewModel
 				return infoPartsFormatted;
 			}
 			else
-			{				
+			{
 				var gameName = string.Format(CultureInfo.InvariantCulture, alignmentFormat, record.WrappedRecordInfo.Game);
-				return gameName + infoPartsFormatted;
+				return gameName + Environment.NewLine + infoPartsFormatted;
 			}
 		}
 
 		private void SetLabelGpuContext()
 		{
+			if (!CheckDataConsistency())
+				return;
+
 			ComparisonRowChartLabels = ComparisonRecords.Select(record =>
 			{
 				return GetLabelGpuContext(record, GetMaxGpuAlignment());
@@ -276,7 +303,7 @@ namespace CapFrameX.ViewModel
 				if (part == string.Empty)
 					continue;
 
-				infoPartsFormatted += Environment.NewLine + string.Format(CultureInfo.InvariantCulture, alignmentFormat, part);
+				infoPartsFormatted += string.Format(CultureInfo.InvariantCulture, alignmentFormat, part) + Environment.NewLine;
 			}
 
 			bool hasUniqueGameNames = GetHasUniqueGameNames();
@@ -285,7 +312,7 @@ namespace CapFrameX.ViewModel
 				return infoPartsFormatted;
 			}
 			else
-			{			
+			{
 				var gameName = string.Format(CultureInfo.InvariantCulture, alignmentFormat, record.WrappedRecordInfo.Game);
 				return gameName + Environment.NewLine + infoPartsFormatted;
 			}
@@ -293,6 +320,9 @@ namespace CapFrameX.ViewModel
 
 		private void SetLabelSystemRamContext()
 		{
+			if (!CheckDataConsistency())
+				return;
+
 			ComparisonRowChartLabels = ComparisonRecords.Select(record =>
 			{
 				return GetLabelSystemRamContext(record, GetMaxSystemRamAlignment());
@@ -339,6 +369,9 @@ namespace CapFrameX.ViewModel
 
 		private void SetLabelCustomContext()
 		{
+			if (!CheckDataConsistency())
+				return;
+
 			ComparisonRowChartLabels = ComparisonRecords.Select(record =>
 			{
 				return GetLabelCustomContext(record, GetMaxCommentAlignment());
@@ -367,7 +400,7 @@ namespace CapFrameX.ViewModel
 				if (part == string.Empty)
 					continue;
 
-				infoPartsFormatted += Environment.NewLine + string.Format(CultureInfo.InvariantCulture, alignmentFormat, part);
+				infoPartsFormatted += string.Format(CultureInfo.InvariantCulture, alignmentFormat, part) + Environment.NewLine;
 			}
 
 			bool hasUniqueGameNames = GetHasUniqueGameNames();
@@ -376,9 +409,9 @@ namespace CapFrameX.ViewModel
 				return infoPartsFormatted;
 			}
 			else
-			{				
+			{
 				var gameName = string.Format(CultureInfo.InvariantCulture, alignmentFormat, record.WrappedRecordInfo.Game);
-				return gameName + infoPartsFormatted;
+				return gameName + Environment.NewLine + infoPartsFormatted;
 			}
 		}
 	}

@@ -202,7 +202,7 @@
 				<Button Grid.Row="2" Grid.Column="1" Margin="5 6 5 0" Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}"
 							VerticalAlignment="Bottom" HorizontalAlignment="Right"
 							Width="20" Height="20"
-							ToolTip="Add GPU info"
+							ToolTip="Add RAM info"
 							Command="{Binding AddRamInfoCommand}">
 					<materialDesign:PackIcon Kind="Cached" Width="15" Height="15"/>
 				</Button>

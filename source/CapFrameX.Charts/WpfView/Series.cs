@@ -76,13 +76,21 @@ namespace LiveCharts.Wpf
 
         private IChartValues LastKnownValues { get; set; }
         internal double DefaultFillOpacity { get; set; }
-        /// <summary>
-        /// Gets a value indicating whether this instance is first draw.
-        /// </summary>
-        /// <value>
-        /// <c>true</c> if this instance is first draw; otherwise, <c>false</c>.
-        /// </value>
-        public bool IsFirstDraw { get; internal set; }
+
+		/// <summary>
+		/// Gets or sets the id. The default is <c>null</c>.
+		/// </summary>
+		/// <value>
+		/// The id string.
+		/// </value>
+		public string Id { get; set; }
+		/// <summary>
+		/// Gets a value indicating whether this instance is first draw.
+		/// </summary>
+		/// <value>
+		/// <c>true</c> if this instance is first draw; otherwise, <c>false</c>.
+		/// </value>
+		public bool IsFirstDraw { get; internal set; }
         /// <summary>
         /// THe Model is set by every series type, it is the motor of the series, it is the communication with the core of the library
         /// </summary>

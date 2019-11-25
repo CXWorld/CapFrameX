@@ -68,6 +68,7 @@ namespace CapFrameX.ViewModel
 		private long _qpcTimeStart;
 		private long _timestampStartCapture;
 		private long _timestampStopCapture;
+		private bool _dataOffsetRunning;
 
 		private bool IsCapturing
 		{
@@ -395,7 +396,8 @@ namespace CapFrameX.ViewModel
 			{
 				{Combination.FromString(CaptureHotkeyString), () =>
 				{
-					SetCaptureMode();
+					if(!_dataOffsetRunning)
+						SetCaptureMode();
 				}}
 			};
 
@@ -459,11 +461,15 @@ namespace CapFrameX.ViewModel
 					   + $"Press {CaptureHotkeyString} to stop capture.";
 
 				if (CaptureTimeString != "0" && CaptureStartDelayString != "0")
-					CaptureStateInfo = $"Capturing starts with delay of {CaptureStartDelayString} seconds. Capture will stop after {CaptureTimeString} seconds." + Environment.NewLine
-						 + $"Press {CaptureHotkeyString} to stop capture.";
+					CaptureStateInfo = $"Capturing starts with delay of {CaptureStartDelayString} seconds. " +
+						$"Capture will stop after {CaptureTimeString} seconds." + Environment.NewLine + $"Press {CaptureHotkeyString} to stop capture.";
 			}
 			else
 			{
+				// manual termination (hotkey triggered)
+				// turn locking on 
+				_dataOffsetRunning = true;
+
 				_timestampStopCapture = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds();
 				_cancellationTokenSource?.Cancel();
 
@@ -486,13 +492,14 @@ namespace CapFrameX.ViewModel
 				var context = TaskScheduler.FromCurrentSynchronizationContext();
 
 				// offset timer
+				CaptureStateInfo = $"Creating capture file...";
 				Task.Run(async () =>
 				{
 					await SetTaskDelayOffset().ContinueWith(_ =>
 					{
 						Application.Current.Dispatcher.Invoke(new Action(() =>
 						{
-							FinishCapturingAndUpdateUi();
+							FinishCapturingAndUpdateUi();						
 						}));
 					}, CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, context);
 				});
@@ -507,7 +514,7 @@ namespace CapFrameX.ViewModel
 			bool autoTermination = Convert.ToInt32(CaptureTimeString) > 0;
 			double delayCapture = Convert.ToInt32(CaptureStartDelayString);
 			double captureTime = Convert.ToInt32(CaptureTimeString) + delayCapture;
-			bool intializedStartTime = false;			
+			bool intializedStartTime = false;
 
 			_disposableCaptureStream = _captureService.RedirectedOutputDataStream
 				.ObserveOn(new EventLoopScheduler()).Subscribe(dataLine =>
@@ -551,13 +558,15 @@ namespace CapFrameX.ViewModel
 				});
 
 				// sound timer
-				// data timer
 				Task.Run(async () =>
 				{
 					await SetTaskDelaySound().ContinueWith(_ =>
 					{
 						Application.Current.Dispatcher.Invoke(new Action(() =>
 						{
+							// turn locking on 
+							_dataOffsetRunning = true;
+							CaptureStateInfo = $"Creating capture file...";
 							// none -> do nothing
 							// simple sounds
 							if (SelectedSoundMode == _soundModes[1])
@@ -584,6 +593,7 @@ namespace CapFrameX.ViewModel
 			_disposableCaptureStream?.Dispose();
 
 			AddLoggerEntry("Capturing stopped.");
+			// asynchron
 			WriteCaptureDataToFile();
 
 			IsCapturing = !IsCapturing;

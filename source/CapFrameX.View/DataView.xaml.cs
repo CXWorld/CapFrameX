@@ -40,7 +40,7 @@ namespace CapFrameX.View
 				.ObserveOn(context)
 				.SubscribeOn(context)
 				.Subscribe(dummy => ResetLShapeChart());
-		}		
+		}
 
 		private void Chart_OnDataClick(object sender, ChartPoint chartpoint)
 		{

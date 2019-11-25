@@ -34,19 +34,30 @@
 	<Grid Margin="0 10 0 0">
 		<Grid.RowDefinitions>
 			<RowDefinition Height="5*"></RowDefinition>
+			<RowDefinition Height="40"></RowDefinition>
 			<RowDefinition Height="3*"></RowDefinition>
 		</Grid.RowDefinitions>
 		<Grid Grid.Row="0" Background="#F5F5F5">
-			<oxy:PlotView Background="#F5F5F5" x:Name="SynchronizationPlotView" Model="{Binding SynchronizationModel}" Tag="{Binding ElementName=SynchronizationViewUserControl, Path=DataContext}"
+			<DockPanel>
+				<TextBlock DockPanel.Dock="Top" Margin="0 20 0 0" HorizontalAlignment="Center" FontWeight="Bold" FontSize="16" VerticalAlignment="Bottom" Text="{Binding CurrentGameName}"/>
+				<oxy:PlotView Background="#F5F5F5" x:Name="SynchronizationPlotView" Model="{Binding SynchronizationModel}" Tag="{Binding ElementName=SynchronizationViewUserControl, Path=DataContext}"
 						  MouseDoubleClick="ResetChart_MouseDoubleClick">
-				<oxy:PlotView.ContextMenu>
-					<ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
-						<MenuItem Header="Copy display change time values (dc)" Command="{Binding CopyDisplayChangeTimeValuesCommand}"/>
-					</ContextMenu>
-				</oxy:PlotView.ContextMenu>
-			</oxy:PlotView>
+					<oxy:PlotView.ContextMenu>
+						<ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
+							<MenuItem Header="Copy display change time values (dc)" Command="{Binding CopyDisplayChangeTimeValuesCommand}"/>
+						</ContextMenu>
+					</oxy:PlotView.ContextMenu>
+				</oxy:PlotView>
+			</DockPanel>
 		</Grid>
-		<Grid Background="#F5F5F5" Grid.Row="1" Visibility="{Binding ElementName=SettingsExpander, Path=IsExpanded, Converter={StaticResource TrueToCollapsedConverter}}">
+		<Grid Grid.Row="1" Background="#F5F5F5">
+			<StackPanel Margin="20 0 0 0" Orientation="Horizontal" HorizontalAlignment="Left">
+				<TextBlock VerticalAlignment="Center">Correlation frame- and display times:</TextBlock>
+				<TextBlock Width="40" Height="20" Margin="10 0 0 0" Padding="5 3 0 0"
+						   Background="#e6e6e6" Text="{Binding FrametimeDisplayChangedTimeCorrelation}"/>
+			</StackPanel>
+		</Grid>
+		<Grid Background="#F5F5F5" Grid.Row="2">
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition Width="3*" />
 				<ColumnDefinition Width="2*" />

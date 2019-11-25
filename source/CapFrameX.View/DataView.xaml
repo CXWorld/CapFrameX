@@ -25,6 +25,7 @@
 				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Slider.xaml" />
 				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.GridSplitter.xaml" />
 			</ResourceDictionary.MergedDictionaries>
+			<mvvm:EnumDescriptionConverter x:Key="EnumDescriptionConverter"/>
 			<mvvm:ZoomingModeConverter x:Key="ZoomingModeConverter"/>
 			<mvvm:NegateBoolConverter x:Key="NegateBoolConverter"/>
 			<mvvm:BoolToVisibilityConverter x:Key="TrueToCollapsedConverter" TrueValue="Collapsed" FalseValue="Visible"/>
@@ -130,7 +131,7 @@
 								Style="{StaticResource MaterialDesignDiscreteSlider}"
 								ToolTip="Cut first seconds"/>
 				<TextBox Grid.Column="1" Margin="15 0 15 10" HorizontalAlignment="Center" IsReadOnly="True"
-								 Style="{StaticResource MaterialDesignFloatingHintTextBox}" Text="{Binding RemainingRecordingTime}">
+						 Style="{StaticResource MaterialDesignFloatingHintTextBox}" Text="{Binding RemainingRecordingTime}">
 					<materialDesign:HintAssist.Hint>
 						<TextBlock>
 							Remaining time [s]
@@ -173,6 +174,7 @@
 				<lvc:PieChart Grid.Column="1" Margin="10 5 0 5" Hoverable="False" Series="{Binding StutteringStatisticCollection}" 
 							  LegendLocation="Bottom" DataClick="Chart_OnDataClick"/>
 			</Grid>
+			<!--Toolbar-->
 			<Grid Grid.Row="3" Margin="5 5 5 5" Background="#e6e6e6"
 				  Visibility="{Binding ElementName=ScreenshotModeToggleButton, Path=IsChecked, Converter={StaticResource TrueToCollapsedConverter}}">
 				<Grid.ColumnDefinitions>
@@ -254,14 +256,24 @@
 						</materialDesign:Card>
 					</materialDesign:PopupBox>
 				</StackPanel>
-				<CheckBox Grid.Column="3" Margin="0 10 180 10" VerticalAlignment="Center" IsThreeState="False" IsChecked="{Binding RemoveOutliers}"
-						  HorizontalAlignment="Right">
-					Remove outliers
-				</CheckBox>
-				<StackPanel Grid.Column="3" Margin="0 10 25 10" Orientation="Horizontal" HorizontalAlignment="Right">
-					<TextBlock VerticalAlignment="Center">Cutting mode:</TextBlock>
-					<ToggleButton Name="CuttingModeActiveToggleButton" Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
+				<StackPanel Grid.Column="3" Orientation="Horizontal" HorizontalAlignment="Right">
+					<ComboBox Width="110" VerticalAlignment="Center" Margin="0 8 0 8" materialDesign:HintAssist.Hint="Frametime chart y-axis"
+					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="210"
+					  ItemsSource="{Binding ChartYAxisSettings}" SelectedItem="{Binding SelecetedChartYAxisSetting}">
+						<ComboBox.ItemTemplate>
+							<DataTemplate>
+								<TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}"/>
+							</DataTemplate>
+						</ComboBox.ItemTemplate>
+					</ComboBox>
+					<CheckBox Margin="30 0 0 0" VerticalAlignment="Center" IsThreeState="False" IsChecked="{Binding RemoveOutliers}">
+						Remove outliers
+					</CheckBox>
+					<StackPanel Margin="30 0 20 0"  Orientation="Horizontal" VerticalAlignment="Center">
+						<TextBlock VerticalAlignment="Center">Cutting mode:</TextBlock>
+						<ToggleButton Name="CuttingModeActiveToggleButton" Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
 									  ToolTip="Cutting mode" IsChecked="{Binding IsCuttingModeActive}"/>
+					</StackPanel>
 				</StackPanel>
 			</Grid>
 			<Expander Margin="0 20 0 0" Background="#e6e6e6" Grid.Row="0" Grid.RowSpan="4" Grid.Column="1" ExpandDirection="Left">
