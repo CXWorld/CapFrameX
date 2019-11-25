@@ -6,7 +6,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"   
         mc:Ignorable="d"
 		Title="CapFrameX"
-        Height="780" Width="1420" Icon="Icons/CX_Icon.png">
+        Height="780" Width="1400" MinWidth="1400" Icon="Icons/CX_Icon.png">
 	<Grid>
 		<Grid>
 			<Grid.ColumnDefinitions>
