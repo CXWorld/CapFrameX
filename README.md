@@ -37,11 +37,11 @@ Also you can edit the game name, since the process name is used as default. This
 ## Options
 Located at the top right corner(three dots)
 
-Moving average window size = The number of frames that are used for the average line in the frametime chart.(Analysis View)
-Stuttering factor = The factor a frametime has to be above average to be counted as stutter.(Analysis View)
-Observed directory = The directory in which your captures are saved and also where you can put your OCAT/Presentmon captures.
-FPS values rounding digits = The number of decimals for the FPS values
-Screenshot directory = The directory in which your screenshots are saved.
+* Moving average window size = The number of frames that are used for the average line in the frametime chart.(Analysis View)
+* Stuttering factor = The factor a frametime has to be above average to be counted as stutter.(Analysis View)
+* Observed directory = The directory in which your captures are saved and also where you can put your OCAT/Presentmon captures.
+* FPS values rounding digits = The number of decimals for the FPS values
+* Screenshot directory = The directory in which your screenshots are saved.
 
 ## Capture view
 Here you can set your capture hotkey, the capture time(0=unlimited) and the response sounds.
