@@ -5,7 +5,7 @@ Frametimes capture and analysis tool compatible with most common 3D APIs
 Download link: https://github.com/DevTechProfile/CapFrameX/releases
 
 # Capture frametimes
-![Screenshot](Images/Capture_Page.PNG)
+![Screenshot](Images/Capture_Page.png)
 
 # Single record analysis
 ![Screenshot](Images/Single_Record.png)
