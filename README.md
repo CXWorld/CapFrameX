@@ -31,6 +31,7 @@ This list is always located at the left section, regardless of the view you're c
 
 It constantly observes the output directory so every capture will show up here as soon as the capture has finished.
 This also includes every OCAT or Presentmon capture you put into that directory.
+
 At the bottom of that list you can see and change the CPU, GPU and RAM description and add a custom comment to every capture.
 Also you can edit the game name, since the process name is used as default. This gets saved in a textfile that is being compared with a list we update with every new version of CapFrameX to add new games that aren't already on your list. 
 
@@ -50,9 +51,11 @@ For more detailed information about the capture events, you can take a look into
 
 ## How to make a capture
 The process you want to capture has to be present in the "Running processes" list. This list automatically lists all running processes from which frametimes can be captured.
+
 For the easiest way of just getting into a game and pressing the hotkey to start a capture, this list may only contain one single process, otherwise the service won't know which process you want captured.
 If you have more than one process detected, you can still select the one you want and capturing will work just fine.
 However you wouldn't want to tab out of your game to do this. This is where the ignore list comes into play.
+
 With the arrow buttons you can add or remove any process from the ignore list, the ideal scenario is a completely empty running processes list at the start of CapFrameX.
 With this, you can just start your game and since it'll be the only process in the list, just push the hotkey.
 
@@ -60,6 +63,7 @@ The ignore list already includes many of the most common processes and, just lik
 
 ## Analysis View
 This is where you can analyse the captures you made one by one.
+
 For the graphs you can choose between frametime graphs, FPS graphs and L-shapes.
 Below that you have your performance parameters like min, max, avg and percentiles.
 You also have a pie chart which shows the amount of time you had stuttering, meaning frametimes above 2.5x average(default).
