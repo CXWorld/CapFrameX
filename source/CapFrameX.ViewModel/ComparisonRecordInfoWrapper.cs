@@ -89,7 +89,8 @@ namespace CapFrameX.ViewModel
 
 		private void OnMouseDown()
 			=> _setFileRecordInfoExternalEvent
-				.Publish(new ViewMessages.SetFileRecordInfoExternal(WrappedRecordInfo.FileRecordInfo));
+				.Publish(new ViewMessages
+				.SetFileRecordInfoExternal(WrappedRecordInfo.FileRecordInfo));
 
 		private void OnRemove()
 		{
