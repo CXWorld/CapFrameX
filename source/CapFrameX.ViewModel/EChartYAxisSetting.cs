@@ -6,8 +6,8 @@ namespace CapFrameX.ViewModel
 	{
 		[Description("Full fit")]
 		FullFit = 1,
-		[Description("Auto")]
-		Auto = 2,
+		[Description("Interquartile range")]
+		IQR = 2,
 		[Description("0-10ms")]
 		Zero_Ten = 3,
 		[Description("0-20ms")]

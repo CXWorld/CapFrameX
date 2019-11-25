@@ -728,12 +728,20 @@ namespace CapFrameX.ViewModel
 			switch (selection)
 			{
 				case EChartYAxisSetting.FullFit:
+					{
+						var frametimes = _localRecordDataServer?
+							.GetFrametimePointTimeWindow().Select(pnt => pnt.Y);
+						var yMin = frametimes.Min();
+						var yMax = frametimes.Max();
+
+						setting = new Tuple<double, double>(yMin - (yMax - yMin) / 6, yMax + (yMax - yMin) / 6);
+					}
 					break;
-				case EChartYAxisSetting.Auto:
+				case EChartYAxisSetting.IQR:
 					{
 						double iqr = MathNet.Numerics.Statistics.Statistics
 							.InterquartileRange(_localRecordDataServer?
-							.GetFrametimePointTimeWindow().Select(pnt =>pnt.Y));
+							.GetFrametimePointTimeWindow().Select(pnt => pnt.Y));
 						double median = MathNet.Numerics.Statistics.Statistics
 							.Median(_localRecordDataServer?
 							.GetFrametimePointTimeWindow().Select(pnt => pnt.Y));
