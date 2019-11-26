@@ -228,7 +228,16 @@ namespace CapFrameX.ViewModel
 
 		private void CopyHistogramData()
 		{
-			// ToDo: implement copy to clipboard
+			StringBuilder builder = new StringBuilder();
+			var chartValues = HistogramCollection.First().Values;
+
+			foreach (var bin in HistogramLabels.Select((value, i) => new { i, value }))
+			{
+				builder.Append(bin.value.ToString(CultureInfo.InvariantCulture) + "\t" + chartValues[bin.i]
+					.ToString() + Environment.NewLine);
+			}
+
+			Clipboard.SetDataObject(builder.ToString(), false);
 		}
 
 		private void OnSyncRangeChanged()
