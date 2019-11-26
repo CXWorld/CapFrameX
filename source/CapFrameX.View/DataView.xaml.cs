@@ -46,7 +46,7 @@ namespace CapFrameX.View
 		{
 			var chart = (PieChart)chartpoint.ChartView;
 
-			//clear selected slice.
+			//clear selected slice
 			foreach (PieSeries series in chart.Series)
 				series.PushOut = 0;
 
@@ -164,12 +164,10 @@ namespace CapFrameX.View
 
 					Bitmap bitmap = new Bitmap(stream);
 					bitmap.Save(filename);
-				}				
+				}
 			}
 			catch
-			{
-				return;
-			}
+			{ return; }
 		}
 	}
 }

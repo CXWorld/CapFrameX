@@ -713,6 +713,8 @@ namespace CapFrameX.ViewModel
 			var yAxis = FrametimeGraphDataContext
 				.FrametimeModel.Axes.FirstOrDefault(axis => axis.Key == "yAxis");
 
+			FrametimeGraphDataContext.FrametimeModel.ResetAllAxes();
+
 			if (yAxis != null)
 			{
 				yAxis.Minimum = setting.Item1;
