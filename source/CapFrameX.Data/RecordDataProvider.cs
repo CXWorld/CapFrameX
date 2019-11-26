@@ -67,7 +67,7 @@ namespace CapFrameX.Data
 				.Select(fileInfo => GetFileRecordInfo(fileInfo))
 				.Where(fileRecordInfo => fileRecordInfo != null)
 				.Where(fileRecordInfo => !filterList
-					.Contains(fileRecordInfo.ProcessName.Replace(".exe", string.Empty)))
+					.Contains(fileRecordInfo.ProcessName?.Replace(".exe", string.Empty)))
 				.OrderBy(fileRecordInfo => fileRecordInfo.GameName)
 				.ToList();
 		}
