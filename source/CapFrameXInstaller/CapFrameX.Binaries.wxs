@@ -37,10 +37,6 @@
                 <File Id="fil970CA0EB49AC8565BFF0E023FC623052" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.MVVM.dll" />
             </Component>
             
-            <Component Id="cmp0BC04E42480312383CC58CC4C1F2772D" Guid="*" Win64="yes">
-                <File Id="fil061B28C68A8CA26ED756B454999ADAD3" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.OcatInterface.dll" />
-            </Component>
-            
             
             <Component Id="cmpDAC9A06508E623C2AE90DDABDC991D5D" Guid="*" Win64="yes">
                 <File Id="fil2C243491DA37F20C87730E667020244F" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.PresentMonInterface.dll" />
@@ -207,8 +203,6 @@
             <ComponentRef Id="cmpC53D77F304B4523D70934DE3AA929A1B" />
             
             <ComponentRef Id="cmp6AE09C2CACB08476BEF8E2E045F01AF5" />
-            
-            <ComponentRef Id="cmp0BC04E42480312383CC58CC4C1F2772D" />
             
             
             <ComponentRef Id="cmpDAC9A06508E623C2AE90DDABDC991D5D" />
