@@ -39,6 +39,7 @@ namespace CapFrameX.ViewModel
 		private IFileRecordInfo _recordInfo;
 		private string _frametimeDisplayChangedTimeCorrelation = "0%";
 		private string _currentGameName;
+		private string _syncRangePercentage = "0%";
 
 		/// <summary>
 		/// https://docs.microsoft.com/en-us/dotnet/standard/base-types/standard-numeric-format-strings
@@ -122,6 +123,39 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
+		public string SyncRangeLower
+		{
+			get { return _appConfiguration.SyncRangeLower; }
+			set
+			{
+				_appConfiguration.SyncRangeLower = value;
+				RaisePropertyChanged();
+				OnSyncRangeChanged();
+			}
+		}
+
+		public string SyncRangeUpper
+		{
+			get { return _appConfiguration.SyncRangeUpper; }
+			set
+			{
+				_appConfiguration.SyncRangeUpper = value;
+				RaisePropertyChanged();
+				OnSyncRangeChanged();
+			}
+		}
+
+		public string SyncRangePercentage
+		{
+			get { return _syncRangePercentage; }
+			set
+			{
+				_syncRangePercentage = value;
+				RaisePropertyChanged();
+			}
+		}
+
+
 		public ICommand CopyDisplayChangeTimeValuesCommand { get; }
 
 		public ICommand CopyHistogramDataCommand { get; }
@@ -194,8 +228,11 @@ namespace CapFrameX.ViewModel
 
 		private void CopyHistogramData()
 		{
-			// throw new NotImplementedException();
+			// ToDo: implement copy to clipboard
 		}
+
+		private void OnSyncRangeChanged()
+			=> SyncRangePercentage = CalculateSyncRangePercentage();
 
 		private void UpdateCharts()
 		{
@@ -350,6 +387,27 @@ namespace CapFrameX.ViewModel
 			}));
 		}
 
+		private string CalculateSyncRangePercentage()
+		{
+			int lowerValue = Convert.ToInt32(SyncRangeLower);
+			int upperValue = Convert.ToInt32(SyncRangeUpper);
+
+			bool IsInRange(double value)
+			{
+				int hz = (int)Math.Round(value, 0);
+
+				if (hz >= lowerValue && hz <= upperValue)
+					return true;
+				else
+					return false;
+			};
+
+			return Math.Round((double)_session
+				.Displaytimes.Select(time => 1000 / time)
+				.Count(hz => IsInRange(hz)), 0)
+				.ToString() + "%";
+		}
+
 		public void OnNavigatedTo(NavigationContext navigationContext)
 		{
 			_useUpdateSession = true;
@@ -360,6 +418,7 @@ namespace CapFrameX.ViewModel
 				UpdateCharts();
 				FrametimeDisplayChangedTimeCorrelation =
 					GetCorrelation(_session);
+				SyncRangePercentage = CalculateSyncRangePercentage();
 			}
 		}
 

@@ -165,5 +165,17 @@ namespace CapFrameX.Configuration
 			get { return Settings.RecordingListSortDirection; }
 			set { Settings.RecordingListSortDirection = value; Settings.Save(); }
 		}
+
+		public string SyncRangeLower
+		{
+			get { return Settings.SyncRangeLower; }
+			set { Settings.SyncRangeLower = value; Settings.Save(); }
+		}
+
+		public string SyncRangeUpper
+		{
+			get { return Settings.SyncRangeUpper; }
+			set { Settings.SyncRangeUpper = value; Settings.Save(); }
+		}
 	}
 }

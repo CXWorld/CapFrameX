@@ -1,5 +1,6 @@
 ACOdyssey.exe=Assassin's Creed Odyssey
 Anno1800.exe=Anno 1800
+APlagueTaleInnocence_x64.exe=A Plague Tale: Innocence
 bfv.exe=Battlefield V
 Borderlands3.exe=Borderlands 3
 Cities.exe=Cities: Skylines
@@ -25,6 +26,7 @@ MetroExodus.exe=Metro Exodus
 ModernWarfare.exe=Call of Duty: Modern Warfare
 NMS.exe=No Man's Sky
 PlagueIncEvolved.exe=PlagueInc Evolved
+PlanetZoo.exe=Planet Zoo
 QuantumBreak.exe=Quantum Break
 r5apex.exe=Apex Legends
 RDR2.exe=Red Dead Redemption 2
