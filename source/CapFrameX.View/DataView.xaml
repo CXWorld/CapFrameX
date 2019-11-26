@@ -257,7 +257,7 @@
 					</materialDesign:PopupBox>
 				</StackPanel>
 				<StackPanel Grid.Column="3" Orientation="Horizontal" HorizontalAlignment="Right">
-					<ComboBox Width="110" VerticalAlignment="Center" Margin="0 8 0 8" materialDesign:HintAssist.Hint="Frametime chart y-axis"
+					<ComboBox Width="120" VerticalAlignment="Center" Margin="0 8 0 8" materialDesign:HintAssist.Hint="Frametime chart y-axis"
 					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="210"
 					  ItemsSource="{Binding ChartYAxisSettings}" SelectedItem="{Binding SelecetedChartYAxisSetting}">
 						<ComboBox.ItemTemplate>

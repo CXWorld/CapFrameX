@@ -794,6 +794,9 @@ namespace CapFrameX.ViewModel
 				case EComparisonContext.GPU:
 					SetLabelGpuContext();
 					break;
+				case EComparisonContext.SystemRam:
+					SetLabelSystemRamContext();
+					break;
 				case EComparisonContext.Custom:
 					SetLabelCustomContext();
 					break;

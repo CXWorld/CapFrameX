@@ -451,7 +451,8 @@ namespace CapFrameX.ViewModel
 			_eventAggregator.GetEvent<PubSubEvent<ViewMessages.SetFileRecordInfoExternal>>()
 							.Subscribe(msg =>
 							{
-								SelectedRecordInfo = msg.RecordInfo;
+								SelectedRecordInfo = RecordInfoList
+									.FirstOrDefault(info => info.Id == msg.RecordInfo.Id);
 								_selectedRecordings = null;
 							});
 		}
