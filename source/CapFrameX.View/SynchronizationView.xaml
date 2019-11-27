@@ -62,9 +62,9 @@
 				<TextBlock Width="40" Height="20" Margin="10 0 0 0" Padding="5 3 0 0"
 						   Background="#e6e6e6" Text="{Binding SyncRangePercentage}"/>
 				<TextBlock Margin="5 0 0 0" VerticalAlignment="Center">(Range:</TextBlock>
-				<TextBox Height="30" Margin="5 0 0 0" Background="#e6e6e6" Text="{Binding SyncRangeLower}" materialDesign:HintAssist.Hint="Upper" />
+				<TextBox Height="25" Padding="5 0 0 0" Margin="5 0 0 0" Background="#e6e6e6" Text="{Binding SyncRangeLower, UpdateSourceTrigger=PropertyChanged}" materialDesign:HintAssist.Hint="Upper" />
 				<TextBlock Margin="5 0 0 0" VerticalAlignment="Center">-</TextBlock>
-				<TextBox Height="30" Margin="5 0 0 0" Background="#e6e6e6" Text="{Binding SyncRangeUpper}" materialDesign:HintAssist.Hint="Lower" />
+				<TextBox Height="25" Padding="5 0 0 0" Margin="5 0 0 0" Background="#e6e6e6" Text="{Binding SyncRangeUpper, UpdateSourceTrigger=PropertyChanged}" materialDesign:HintAssist.Hint="Lower" />
 				<TextBlock Margin="5 0 0 0" VerticalAlignment="Center">Hz)</TextBlock>
 			</StackPanel>
 		</Grid>

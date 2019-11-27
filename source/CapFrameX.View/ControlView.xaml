@@ -213,11 +213,11 @@
 						 Margin="5 6 5 0" FontSize="12" Text="{Binding CustomComment, UpdateSourceTrigger=PropertyChanged}"/>
 				<StackPanel Grid.Row="5" Orientation="Horizontal" HorizontalAlignment="Center"
 							Grid.Column="0" Grid.ColumnSpan="2" Margin="0 16 0 5">
-					<Button IsDefault="True" Style="{DynamicResource MaterialDesignFlatButton}"
-                    Command="{Binding AcceptEditingDialogCommand}">
+					<Button Style="{DynamicResource MaterialDesignFlatButton}"
+							Command="{Binding AcceptEditingDialogCommand}">
 						SAVE
 					</Button>
-					<Button IsCancel="True" Margin="8 0 0 0" Style="{DynamicResource MaterialDesignFlatButton}"
+					<Button Margin="8 0 0 0" Style="{DynamicResource MaterialDesignFlatButton}"
 							Command="{Binding CancelEditingDialogCommand}">
 						RESET
 					</Button>
