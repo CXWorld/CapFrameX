@@ -182,7 +182,7 @@
 				<Button Grid.Row="0" Grid.Column="1" Margin="5 6 5 0" Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}"
 							VerticalAlignment="Bottom" HorizontalAlignment="Right"
 							Width="20" Height="20"
-							ToolTip="Add CPU info"
+							ToolTip="Update CPU info"
 							Command="{Binding AddCpuInfoCommand}">
 					<materialDesign:PackIcon Kind="Cached" Width="15" Height="15"/>
 				</Button>
@@ -192,7 +192,7 @@
 				<Button Grid.Row="1" Grid.Column="1" Margin="5 6 5 0" Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}"
 							VerticalAlignment="Bottom" HorizontalAlignment="Right"
 							Width="20" Height="20"
-							ToolTip="Add GPU info"
+							ToolTip="Update GPU info"
 							Command="{Binding AddGpuInfoCommand}">
 					<materialDesign:PackIcon Kind="Cached" Width="15" Height="15"/>
 				</Button>
@@ -202,7 +202,7 @@
 				<Button Grid.Row="2" Grid.Column="1" Margin="5 6 5 0" Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}"
 							VerticalAlignment="Bottom" HorizontalAlignment="Right"
 							Width="20" Height="20"
-							ToolTip="Add RAM info"
+							ToolTip="Update RAM info"
 							Command="{Binding AddRamInfoCommand}">
 					<materialDesign:PackIcon Kind="Cached" Width="15" Height="15"/>
 				</Button>

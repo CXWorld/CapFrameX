@@ -602,30 +602,28 @@ namespace CapFrameX.ViewModel
 
 		private void OnComparisonContextChanged()
 		{
-			
-			
-				switch (SelectedComparisonContext)
-				{
-					case EComparisonContext.DateTime:
-						OnDateTimeContext();
-						break;
-					case EComparisonContext.CPU:
-						OnCpuContext();
-						break;
-					case EComparisonContext.GPU:
-						OnGpuContex();
-						break;
-					case EComparisonContext.SystemRam:
-						OnSystemRamContex();
-						break;
-					case EComparisonContext.Custom:
-						OnCustomContex();
-						break;
-					default:
-						OnDateTimeContext();
-						break;
-				}
-			
+			switch (SelectedComparisonContext)
+			{
+				case EComparisonContext.DateTime:
+					OnDateTimeContext();
+					break;
+				case EComparisonContext.CPU:
+					OnCpuContext();
+					break;
+				case EComparisonContext.GPU:
+					OnGpuContex();
+					break;
+				case EComparisonContext.SystemRam:
+					OnSystemRamContex();
+					break;
+				case EComparisonContext.Custom:
+					OnCustomContex();
+					break;
+				default:
+					OnDateTimeContext();
+					break;
+			}
+
 		}
 
 		private void OnCuttingModeChanged()
