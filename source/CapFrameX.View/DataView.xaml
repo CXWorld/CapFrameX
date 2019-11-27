@@ -24,6 +24,7 @@
 				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.DataGrid.xaml" />
 				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Slider.xaml" />
 				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.GridSplitter.xaml" />
+				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ComboBox.xaml" />
 			</ResourceDictionary.MergedDictionaries>
 			<mvvm:EnumDescriptionConverter x:Key="EnumDescriptionConverter"/>
 			<mvvm:ZoomingModeConverter x:Key="ZoomingModeConverter"/>
@@ -263,7 +264,7 @@
 				</StackPanel>
 				<StackPanel Grid.Column="3" Orientation="Horizontal" HorizontalAlignment="Right">
 					<ComboBox Width="120" VerticalAlignment="Center" Margin="0 8 0 8" materialDesign:HintAssist.Hint="Frametime chart y-axis"
-					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="210"
+					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="210" materialDesign:ComboBoxAssist.ClassicMode="True"
 					  ItemsSource="{Binding ChartYAxisSettings}" SelectedItem="{Binding SelecetedChartYAxisSetting}">
 						<ComboBox.ItemTemplate>
 							<DataTemplate>
