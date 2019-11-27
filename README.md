@@ -104,6 +104,7 @@ This is a simple view where you can add your records to see all the relevant par
 ## Synchronization view
 This view shows you the quality of your synchronization methods like FreeSync or G-Sync.
 If they are working properly, the lines for "frametimes" and "Display changed times" should align pretty well, this means your monitor works at the adaptive refresh rate of your GPU.
+Below the Graph you can see two percentage values. The first one shows the correlation of frame- and display time, the second one shows the amount of frames within valid sync range(that you can enter next to it).
 At the bottom you can see the distribution of the refresh times and beside it another pie chart which shows the number of dropped frames.
 
 ## Export options (context menu)
