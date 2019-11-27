@@ -481,9 +481,9 @@ namespace CapFrameX.ViewModel
 
 			if (!NeverShowDialog && RemoveOutliers)
 			{
-				MessageText = $"Remove outliers is a function for analyzing outlier behavior. " +
-					$"Reviewers should not use it as for analysis purposes. " +
-					$"If possible, the benchnark runs should be repeated.";
+				MessageText = $"Remove outliers is only a function to simulate how the parameters would be like if there were no outliers. " +
+					Environment.NewLine +
+					$"This doesn't qualify as a conclusive evaluation of the benchmark run.";
 				MessageDialogContentIsOpen = true;
 			}
 		}
