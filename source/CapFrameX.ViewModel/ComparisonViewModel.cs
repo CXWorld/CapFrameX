@@ -70,7 +70,7 @@ namespace CapFrameX.ViewModel
 		private bool _useComparisonGrouping;
 		private bool _isCuttingModeActive;
 		private bool _messageDialogContentIsOpen;
-		private MessageDialog _messageDialogContent;
+		private ContitionalMessageDialog _messageDialogContent;
 		private string _messageText;
 
 		public Array MetricItems => Enum.GetValues(typeof(EMetric))
@@ -366,7 +366,7 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-		public MessageDialog MessageDialogContent
+		public ContitionalMessageDialog MessageDialogContent
 		{
 			get { return _messageDialogContent; }
 			set
@@ -420,7 +420,7 @@ namespace CapFrameX.ViewModel
 
 			RemoveAllComparisonsCommand = new DelegateCommand(OnRemoveAllComparisons);
 			ComparisonLShapeCollection = new SeriesCollection();
-			MessageDialogContent = new MessageDialog();
+			MessageDialogContent = new ContitionalMessageDialog();
 
 			ComparisonColumnChartFormatter = value => value.ToString(string.Format("F{0}",
 			_appConfiguration.FpsValuesRoundingDigits), CultureInfo.InvariantCulture);

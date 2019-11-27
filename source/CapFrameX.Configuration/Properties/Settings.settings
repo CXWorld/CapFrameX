@@ -92,5 +92,8 @@
     <Setting Name="SyncRangeUpper" Type="System.String" Scope="User">
       <Value Profile="(Default)">120</Value>
     </Setting>
+    <Setting Name="ShowOutlierWarning" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

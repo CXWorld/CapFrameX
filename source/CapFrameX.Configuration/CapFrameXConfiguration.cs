@@ -177,5 +177,11 @@ namespace CapFrameX.Configuration
 			get { return Settings.SyncRangeUpper; }
 			set { Settings.SyncRangeUpper = value; Settings.Save(); }
 		}
+
+		public bool ShowOutlierWarning
+		{
+			get { return Settings.ShowOutlierWarning; }
+			set { Settings.ShowOutlierWarning = value; Settings.Save(); }
+		}
 	}
 }

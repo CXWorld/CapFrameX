@@ -59,5 +59,7 @@
 		string SyncRangeLower { get; set; }
 
 		string SyncRangeUpper { get; set; }
+
+		bool ShowOutlierWarning { get; set; }
 	}
 }

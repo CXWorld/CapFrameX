@@ -382,5 +382,17 @@ namespace CapFrameX.Configuration.Properties {
                 this["SyncRangeUpper"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool ShowOutlierWarning {
+            get {
+                return ((bool)(this["ShowOutlierWarning"]));
+            }
+            set {
+                this["ShowOutlierWarning"] = value;
+            }
+        }
     }
 }
