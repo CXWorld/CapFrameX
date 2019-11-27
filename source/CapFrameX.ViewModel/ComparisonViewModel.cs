@@ -602,26 +602,29 @@ namespace CapFrameX.ViewModel
 
 		private void OnComparisonContextChanged()
 		{
-			switch (SelectedComparisonContext)
+			if (IsContextLegendActive)
 			{
-				case EComparisonContext.DateTime:
-					OnDateTimeContext();
-					break;
-				case EComparisonContext.CPU:
-					OnCpuContext();
-					break;
-				case EComparisonContext.GPU:
-					OnGpuContex();
-					break;
-				case EComparisonContext.SystemRam:
-					OnSystemRamContex();
-					break;
-				case EComparisonContext.Custom:
-					OnCustomContex();
-					break;
-				default:
-					OnDateTimeContext();
-					break;
+				switch (SelectedComparisonContext)
+				{
+					case EComparisonContext.DateTime:
+						OnDateTimeContext();
+						break;
+					case EComparisonContext.CPU:
+						OnCpuContext();
+						break;
+					case EComparisonContext.GPU:
+						OnGpuContex();
+						break;
+					case EComparisonContext.SystemRam:
+						OnSystemRamContex();
+						break;
+					case EComparisonContext.Custom:
+						OnCustomContex();
+						break;
+					default:
+						OnDateTimeContext();
+						break;
+				}
 			}
 		}
 
@@ -783,26 +786,29 @@ namespace CapFrameX.ViewModel
 			if (ComparisonRowChartSeriesCollection.Count > 2)
 				ComparisonRowChartSeriesCollection[2].Values.Insert(0, wrappedComparisonInfo.WrappedRecordInfo.ThirdMetric);
 
-			switch (SelectedComparisonContext)
+			if (IsContextLegendActive)
 			{
-				case EComparisonContext.DateTime:
-					SetLabelDateTimeContext();
-					break;
-				case EComparisonContext.CPU:
-					SetLabelCpuContext();
-					break;
-				case EComparisonContext.GPU:
-					SetLabelGpuContext();
-					break;
-				case EComparisonContext.SystemRam:
-					SetLabelSystemRamContext();
-					break;
-				case EComparisonContext.Custom:
-					SetLabelCustomContext();
-					break;
-				default:
-					SetLabelDateTimeContext();
-					break;
+				switch (SelectedComparisonContext)
+				{
+					case EComparisonContext.DateTime:
+						SetLabelDateTimeContext();
+						break;
+					case EComparisonContext.CPU:
+						SetLabelCpuContext();
+						break;
+					case EComparisonContext.GPU:
+						SetLabelGpuContext();
+						break;
+					case EComparisonContext.SystemRam:
+						SetLabelSystemRamContext();
+						break;
+					case EComparisonContext.Custom:
+						SetLabelCustomContext();
+						break;
+					default:
+						SetLabelDateTimeContext();
+						break;
+				}
 			}
 		}
 
