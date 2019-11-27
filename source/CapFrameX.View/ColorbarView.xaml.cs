@@ -30,14 +30,9 @@ namespace CapFrameX.View
         {
 		}
 
-        private void CapturePageHelp_Click(object sender, RoutedEventArgs e)
-        {
-            System.Diagnostics.Process.Start("https://github.com/DevTechProfile/CapFrameX#instruction-manual");
-        }
-
 		private void GitHubButton_Click(object sender, RoutedEventArgs e)
 		{
-			System.Diagnostics.Process.Start("https://github.com/DevTechProfile/CapFrameX");
+			System.Diagnostics.Process.Start("https://github.com/DevTechProfile/CapFrameX#capframex");
 		}
 	}
 }

@@ -786,29 +786,26 @@ namespace CapFrameX.ViewModel
 			if (ComparisonRowChartSeriesCollection.Count > 2)
 				ComparisonRowChartSeriesCollection[2].Values.Insert(0, wrappedComparisonInfo.WrappedRecordInfo.ThirdMetric);
 
-			if (IsContextLegendActive)
+			switch (SelectedComparisonContext)
 			{
-				switch (SelectedComparisonContext)
-				{
-					case EComparisonContext.DateTime:
-						SetLabelDateTimeContext();
-						break;
-					case EComparisonContext.CPU:
-						SetLabelCpuContext();
-						break;
-					case EComparisonContext.GPU:
-						SetLabelGpuContext();
-						break;
-					case EComparisonContext.SystemRam:
-						SetLabelSystemRamContext();
-						break;
-					case EComparisonContext.Custom:
-						SetLabelCustomContext();
-						break;
-					default:
-						SetLabelDateTimeContext();
-						break;
-				}
+				case EComparisonContext.DateTime:
+					SetLabelDateTimeContext();
+					break;
+				case EComparisonContext.CPU:
+					SetLabelCpuContext();
+					break;
+				case EComparisonContext.GPU:
+					SetLabelGpuContext();
+					break;
+				case EComparisonContext.SystemRam:
+					SetLabelSystemRamContext();
+					break;
+				case EComparisonContext.Custom:
+					SetLabelCustomContext();
+					break;
+				default:
+					SetLabelDateTimeContext();
+					break;
 			}
 		}
 
@@ -822,28 +819,31 @@ namespace CapFrameX.ViewModel
 
 			var chartTitle = string.Empty;
 
-			switch (SelectedComparisonContext)
+			if (IsContextLegendActive)
 			{
-				case EComparisonContext.DateTime:
-					chartTitle = $"{wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.CreationDate} " +
-						$"{ wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.CreationTime}";
-					break;
-				case EComparisonContext.CPU:
-					chartTitle = wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.ProcessorName;
-					break;
-				case EComparisonContext.GPU:
-					chartTitle = wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.GraphicCardName;
-					break;
-				case EComparisonContext.SystemRam:
-					chartTitle = wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.SystemRamInfo;
-					break;
-				case EComparisonContext.Custom:
-					chartTitle = wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.Comment;
-					break;
-				default:
-					chartTitle = $"{wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.CreationDate} " +
-						$"{ wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.CreationTime}";
-					break;
+				switch (SelectedComparisonContext)
+				{
+					case EComparisonContext.DateTime:
+						chartTitle = $"{wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.CreationDate} " +
+							$"{ wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.CreationTime}";
+						break;
+					case EComparisonContext.CPU:
+						chartTitle = wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.ProcessorName;
+						break;
+					case EComparisonContext.GPU:
+						chartTitle = wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.GraphicCardName;
+						break;
+					case EComparisonContext.SystemRam:
+						chartTitle = wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.SystemRamInfo;
+						break;
+					case EComparisonContext.Custom:
+						chartTitle = wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.Comment;
+						break;
+					default:
+						chartTitle = $"{wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.CreationDate} " +
+							$"{ wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.CreationTime}";
+						break;
+				}
 			}
 
 			var color = wrappedComparisonInfo.FrametimeGraphColor.Value;
