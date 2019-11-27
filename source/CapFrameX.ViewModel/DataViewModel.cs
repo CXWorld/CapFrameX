@@ -23,6 +23,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using CapFrameX.MVVM.Dialogs;
 
 namespace CapFrameX.ViewModel
 {
@@ -56,6 +57,9 @@ namespace CapFrameX.ViewModel
 		private double _firstSeconds;
 		private double _lastSeconds;
 		private EChartYAxisSetting _selecetedChartYAxisSetting = EChartYAxisSetting.FullFit;
+		private ContitionalMessageDialog _messageDialogContent;
+		private bool _messageDialogContentIsOpen;
+		private string _messageText;
 
 		public IFileRecordInfo RecordInfo { get; private set; }
 
@@ -272,6 +276,46 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
+		public bool NeverShowDialog
+		{
+			get { return !_appConfiguration.ShowOutlierWarning; }
+			set
+			{
+				_appConfiguration.ShowOutlierWarning = !value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public ContitionalMessageDialog MessageDialogContent
+		{
+			get { return _messageDialogContent; }
+			set
+			{
+				_messageDialogContent = value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public bool MessageDialogContentIsOpen
+		{
+			get { return _messageDialogContentIsOpen; }
+			set
+			{
+				_messageDialogContentIsOpen = value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public string MessageText
+		{
+			get { return _messageText; }
+			set
+			{
+				_messageText = value;
+				RaisePropertyChanged();
+			}
+		}
+
 		public ICommand CopyStatisticalParameterCommand { get; }
 
 		public ICommand CopyLShapeQuantilesCommand { get; }
@@ -305,6 +349,8 @@ namespace CapFrameX.ViewModel
 				_appConfiguration, _frametimeStatisticProvider);
 			FpsGraphDataContext = new FpsGraphDataContext(_localRecordDataServer,
 				_appConfiguration, _frametimeStatisticProvider);
+
+			MessageDialogContent = new ContitionalMessageDialog();
 
 			InitializeStatisticParameter();
 		}
@@ -426,8 +472,20 @@ namespace CapFrameX.ViewModel
 		{
 			_localRecordDataServer.RemoveOutlierMethod = RemoveOutliers ?
 				ERemoveOutlierMethod.DeciPercentile : ERemoveOutlierMethod.None;
+
+			CurrentGameName = RemoveOutliers ? $"{RecordInfo.GameName} (outlier-cleaned)"
+				: RecordInfo.GameName;
+
 			UpdateMainCharts();
 			UpdateSecondaryCharts();
+
+			if (!NeverShowDialog && RemoveOutliers)
+			{
+				MessageText = $"Remove outliers is a function for analyzing outlier behavior. " +
+					$"Reviewers should not use it as for analysis purposes. " +
+					$"If possible, the benchnark runs should be repeated.";
+				MessageDialogContentIsOpen = true;
+			}
 		}
 
 		private void UpdateCuttingParameter()
@@ -467,7 +525,8 @@ namespace CapFrameX.ViewModel
 		{
 			if (_session != null && RecordInfo != null)
 			{
-				CurrentGameName = RecordInfo.GameName;
+				CurrentGameName = RemoveOutliers ? $"{RecordInfo.GameName} (outlier-cleaned)"
+					: RecordInfo.GameName;
 				SystemInfos = RecordManager.GetSystemInfos(RecordInfo);
 
 				// Do update actions

@@ -1,8 +1,9 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
+using CapFrameX.Data;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Extensions;
-using CapFrameX.Data;
+using CapFrameX.MVVM.Dialogs;
 using CapFrameX.Statistics;
 using GongSolutions.Wpf.DragDrop;
 using LiveCharts;
@@ -27,7 +28,6 @@ using System.Windows.Input;
 using System.Windows.Media;
 using ComparisonCollection = System.Collections.ObjectModel
 	.ObservableCollection<CapFrameX.ViewModel.ComparisonRecordInfoWrapper>;
-using CapFrameX.MVVM.Dialogs;
 
 namespace CapFrameX.ViewModel
 {
@@ -70,7 +70,7 @@ namespace CapFrameX.ViewModel
 		private bool _useComparisonGrouping;
 		private bool _isCuttingModeActive;
 		private bool _messageDialogContentIsOpen;
-		private ContitionalMessageDialog _messageDialogContent;
+		private MessageDialog _messageDialogContent;
 		private string _messageText;
 
 		public Array MetricItems => Enum.GetValues(typeof(EMetric))
@@ -366,7 +366,7 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-		public ContitionalMessageDialog MessageDialogContent
+		public MessageDialog MessageDialogContent
 		{
 			get { return _messageDialogContent; }
 			set
@@ -420,7 +420,7 @@ namespace CapFrameX.ViewModel
 
 			RemoveAllComparisonsCommand = new DelegateCommand(OnRemoveAllComparisons);
 			ComparisonLShapeCollection = new SeriesCollection();
-			MessageDialogContent = new ContitionalMessageDialog();
+			MessageDialogContent = new MessageDialog();
 
 			ComparisonColumnChartFormatter = value => value.ToString(string.Format("F{0}",
 			_appConfiguration.FpsValuesRoundingDigits), CultureInfo.InvariantCulture);

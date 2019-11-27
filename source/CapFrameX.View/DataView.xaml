@@ -88,7 +88,11 @@
 				<ColumnDefinition Width="1*"></ColumnDefinition>
 				<ColumnDefinition Width="Auto"></ColumnDefinition>
 			</Grid.ColumnDefinitions>
-			<TabControl Grid.Row="0" Margin="5 0 5 5" Background="#F5F5F5" SelectedItem="{Binding SelectedChartItem}">
+			<materialDesign:DialogHost Margin="5 0 5 5"
+									   IsOpen="{Binding MessageDialogContentIsOpen}"
+									   DialogContent="{Binding MessageDialogContent}"
+									   CloseOnClickAway="True">
+			<TabControl Grid.Row="0" Background="#F5F5F5" SelectedItem="{Binding SelectedChartItem}">
 				<TabItem Header="Frametimes">
 					<controls:FrametimeGraphControl DataContext="{Binding Path=FrametimeGraphDataContext}"/>
 				</TabItem>
@@ -116,6 +120,7 @@
 					</lvc:CartesianChart>
 				</TabItem>
 			</TabControl>
+			</materialDesign:DialogHost>
 			<Grid Grid.Row="1" Margin="5 0 5 5" Background="#F5F5F5" Visibility="{Binding ElementName=CuttingModeActiveToggleButton, Path=IsChecked, Converter={StaticResource FalseToCollapsedConverter}}">
 				<Grid.ColumnDefinitions>
 					<ColumnDefinition Width="2*" />

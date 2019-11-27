@@ -7,10 +7,10 @@
              xmlns:local="clr-namespace:CapFrameX.MVVM.Dialogs"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
-	<Grid Width="300" Height="150">
+	<Grid Width="380" Height="180">
 		<DockPanel>
-			<TextBlock Margin="15" DockPanel.Dock="Top" TextWrapping="Wrap" Text="{Binding MessageText}"></TextBlock>
-			<StackPanel Orientation="Horizontal" DockPanel.Dock="Bottom" Margin="0 0 0 20" VerticalAlignment="Bottom" HorizontalAlignment="Center">
+			<TextBlock Margin="15" FontSize="14" FontWeight="Bold" DockPanel.Dock="Top" TextWrapping="Wrap" Text="{Binding MessageText}"></TextBlock>
+			<StackPanel Orientation="Horizontal" DockPanel.Dock="Bottom" Margin="20 0 20 20" VerticalAlignment="Bottom" HorizontalAlignment="Center">
 				<Button Content="Close" Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}"
 						Width="128"/>
 				<CheckBox Margin="30 0 0 0" VerticalAlignment="Center" IsThreeState="False" IsChecked="{Binding NeverShowDialog}">

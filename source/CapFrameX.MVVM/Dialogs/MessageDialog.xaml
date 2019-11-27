@@ -9,7 +9,7 @@
              d:DesignHeight="450" d:DesignWidth="800">
 	<Grid Width="300" Height="150">
 		<DockPanel>
-			<TextBlock Margin="15" DockPanel.Dock="Top" TextWrapping="Wrap" Text="{Binding MessageText}"></TextBlock>
+			<TextBlock Margin="15" FontSize="14" FontWeight="Bold" DockPanel.Dock="Top" TextWrapping="Wrap" Text="{Binding MessageText}"></TextBlock>
 			<Button Content="Close" DockPanel.Dock="Bottom" Margin="0 0 0 20" VerticalAlignment="Bottom" Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}"
 			Width="128"/>
 		</DockPanel>
