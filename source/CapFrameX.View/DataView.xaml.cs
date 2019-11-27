@@ -141,6 +141,7 @@ namespace CapFrameX.View
 				int imageWidth = (int)ScreenshotArea.ActualWidth;
 				int imageHeight = (int)ScreenshotArea.ActualHeight;
 
+
 				// Draws the images into a DrawingVisual component
 				DrawingVisual drawingVisual = new DrawingVisual();
 				using (DrawingContext drawingContext = drawingVisual.RenderOpen())
@@ -148,18 +149,16 @@ namespace CapFrameX.View
 					drawingContext.DrawRectangle(visualBrush, null, new Rect(new System.Windows.Point(0, 0), new System.Windows.Point(imageWidth, imageHeight)));
 				}
 
-				// As an option? Config?
-				double dpi = 1.3 * 96;
-				double scale = dpi / 96;
 
 				// Converts the Visual (DrawingVisual) into a BitmapSource
-				RenderTargetBitmap bmp = new RenderTargetBitmap((int)(scale * imageWidth), (int)(scale * imageHeight), dpi, dpi, PixelFormats.Pbgra32);
-				bmp.Render(drawingVisual);
+				RenderTargetBitmap rtb = new RenderTargetBitmap(
+				imageWidth, imageHeight, 96, 96, PixelFormats.Pbgra32);
+				rtb.Render(drawingVisual);
 
 				using (MemoryStream stream = new MemoryStream())
 				{
 					BitmapEncoder encoder = new PngBitmapEncoder();
-					encoder.Frames.Add(BitmapFrame.Create(bmp));
+					encoder.Frames.Add(BitmapFrame.Create(rtb));
 					encoder.Save(stream);
 
 					Bitmap bitmap = new Bitmap(stream);
