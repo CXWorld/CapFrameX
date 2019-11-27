@@ -602,8 +602,8 @@ namespace CapFrameX.ViewModel
 
 		private void OnComparisonContextChanged()
 		{
-			if (IsContextLegendActive)
-			{
+			
+			
 				switch (SelectedComparisonContext)
 				{
 					case EComparisonContext.DateTime:
@@ -625,7 +625,7 @@ namespace CapFrameX.ViewModel
 						OnDateTimeContext();
 						break;
 				}
-			}
+			
 		}
 
 		private void OnCuttingModeChanged()
