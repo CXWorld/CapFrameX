@@ -60,6 +60,7 @@ namespace CapFrameX.ViewModel
 		private ContitionalMessageDialog _messageDialogContent;
 		private bool _messageDialogContentIsOpen;
 		private string _messageText;
+		private int _barMaxValue;
 
 		public IFileRecordInfo RecordInfo { get; private set; }
 
@@ -312,6 +313,16 @@ namespace CapFrameX.ViewModel
 			set
 			{
 				_messageText = value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public int BarMaxValue
+		{
+			get { return _barMaxValue; }
+			set
+			{
+				_barMaxValue = value;
 				RaisePropertyChanged();
 			}
 		}
@@ -649,9 +660,13 @@ namespace CapFrameX.ViewModel
 						Fill = new SolidColorBrush(Color.FromRgb(241, 125, 32)),
 						Values = values,
 						DataLabels = true,
-						FontSize = 11
+						FontSize = 11,
+						MaxRowHeigth = 30
 					}
 				};
+
+				double maxOffset = (values as IList<double>).Max() * 0.15;
+				BarMaxValue = (int)((values as IList<double>).Max() + maxOffset);
 
 				var parameterLabelList = new List<string>();
 

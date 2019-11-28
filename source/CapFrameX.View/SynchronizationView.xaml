@@ -74,7 +74,7 @@
 				<ColumnDefinition Width="2*" />
 			</Grid.ColumnDefinitions>
 			<!--Histogram chart-->
-			<lvc:CartesianChart Grid.Column="0" Margin="0 5 0 5" Series="{Binding HistogramCollection}" LegendLocation="Bottom"
+			<lvc:CartesianChart Grid.Column="0" Margin="0 5 0 10" Series="{Binding HistogramCollection}" LegendLocation="Bottom"
 								Tag="{Binding ElementName=SynchronizationViewUserControl, Path=DataContext}" >
 				<lvc:CartesianChart.ContextMenu>
 					<ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
@@ -92,7 +92,7 @@
 					<lvc:Axis Title="Distribution" Foreground="Black"/>
 				</lvc:CartesianChart.AxisY>
 			</lvc:CartesianChart>
-			<lvc:PieChart Grid.Column="1" Margin="10 30 0 5" Hoverable="False" Series="{Binding DroppedFramesStatisticCollection}" 
+			<lvc:PieChart Grid.Column="1" Margin="10 40 0 10" Hoverable="False" Series="{Binding DroppedFramesStatisticCollection}" 
 						  LegendLocation="Bottom" DataClick="Chart_OnDataClick"/>
 		</Grid>
 	</Grid>

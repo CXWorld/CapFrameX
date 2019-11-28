@@ -72,6 +72,7 @@ namespace CapFrameX.ViewModel
 		private bool _messageDialogContentIsOpen;
 		private MessageDialog _messageDialogContent;
 		private string _messageText;
+		private int _barMaxValue;
 
 		public Array MetricItems => Enum.GetValues(typeof(EMetric))
 										.Cast<EMetric>()
@@ -392,6 +393,16 @@ namespace CapFrameX.ViewModel
 			set
 			{
 				_messageText = value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public int BarMaxValue
+		{
+			get { return _barMaxValue; }
+			set
+			{
+				_barMaxValue = value;
 				RaisePropertyChanged();
 			}
 		}
@@ -773,16 +784,30 @@ namespace CapFrameX.ViewModel
 			// Update metrics
 			SetMetrics(wrappedComparisonInfo);
 
+			double maxFirstMetricBarValue = 0;
+			double maxSecondMetricBarValue = 0;
+			double maxThirdMetricBarValue = 0;
+
 			// First metric
 			ComparisonRowChartSeriesCollection[0].Values.Insert(0, wrappedComparisonInfo.WrappedRecordInfo.FirstMetric);
+			maxFirstMetricBarValue = (ComparisonRowChartSeriesCollection[0].Values as IList<double>).Max() * 1.15;
 
 			// Second metric
 			if (ComparisonRowChartSeriesCollection.Count > 1)
+			{
 				ComparisonRowChartSeriesCollection[1].Values.Insert(0, wrappedComparisonInfo.WrappedRecordInfo.SecondMetric);
+				maxSecondMetricBarValue = (ComparisonRowChartSeriesCollection[1].Values as IList<double>).Max() * 1.15;
+			}
 
 			// Second metric
 			if (ComparisonRowChartSeriesCollection.Count > 2)
+			{
 				ComparisonRowChartSeriesCollection[2].Values.Insert(0, wrappedComparisonInfo.WrappedRecordInfo.ThirdMetric);
+				maxThirdMetricBarValue = (ComparisonRowChartSeriesCollection[2].Values as IList<double>).Max() * 1.15;
+			}
+
+
+			BarMaxValue = (int)(new[] { maxFirstMetricBarValue, maxSecondMetricBarValue, maxThirdMetricBarValue }.Max());
 
 			switch (SelectedComparisonContext)
 			{

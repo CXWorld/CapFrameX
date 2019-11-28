@@ -49,7 +49,7 @@
 		<Grid Grid.Row="1" Grid.Column="1" Margin="-20 0 0 0">
 			<Grid.RowDefinitions>
 				<RowDefinition Height="2*"></RowDefinition>
-				<RowDefinition Height="30"></RowDefinition>
+				<RowDefinition Height="50"></RowDefinition>
 				<RowDefinition Height="3*"></RowDefinition>
 			</Grid.RowDefinitions>
 			<StackPanel Grid.Row="0" Margin="0" Orientation="Vertical" Width="200">
@@ -63,12 +63,13 @@
 				</StackPanel>
 				<Border Margin="0 10 0 0" Background="#F5F5F5" BorderThickness="0.1" BorderBrush="Black">
 					<ListView IsSynchronizedWithCurrentItem="False" ItemsSource="{Binding ProcessesToCapture}" SelectedItem="{Binding SelectedProcessToCapture}"
-					      ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True" Height="80" Width="200"
+					      ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True" Height="100" Width="200"
 					      IsEnabled="{Binding IsAddToIgnoreListButtonActive}">
 					</ListView>
 				</Border>
 			</StackPanel>
-			<StackPanel Grid.Row="1" Margin="0 -20 0 0" Orientation="Horizontal" HorizontalAlignment="Center">
+			<StackPanel Grid.Row="1" Margin="0 10 0 0" Orientation="Horizontal" HorizontalAlignment="Center"
+						VerticalAlignment="Top">
 				<Button Padding="0" Width="30" Height="30" Foreground="Black" BorderThickness="0"
 				        Command="{Binding AddToIgonreListCommand}" IsEnabled="{Binding IsAddToIgnoreListButtonActive}"
 						Style="{StaticResource MaterialDesignFloatingActionMiniButton}" ToolTip="Ignore process">
@@ -83,9 +84,9 @@
 			<StackPanel Grid.Row="2" Margin="0 0 0 0" Orientation="Vertical" Width="200">
 				<TextBlock Style="{StaticResource MaterialDesignTitleTextBlock}">Process ignore list</TextBlock>
 				<Border Margin="0 10 0 0" Background="#F5F5F5" BorderThickness="0.1" BorderBrush="Black">
-				<ListView IsSynchronizedWithCurrentItem="False" ItemsSource="{Binding ProcessesToIgnore}" SelectedItem="{Binding SelectedProcessToIgnore}"
+					<ListView IsSynchronizedWithCurrentItem="False" ItemsSource="{Binding ProcessesToIgnore}" SelectedItem="{Binding SelectedProcessToIgnore}"
 					      ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True" Height="130" Width="200">
-				</ListView>
+					</ListView>
 				</Border>
 			</StackPanel>
 		</Grid>
