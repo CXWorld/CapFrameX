@@ -596,6 +596,7 @@ namespace CapFrameX.ViewModel
 				}
 			}
 
+			SetBarMaxValue();
 			UpdateBarChartHeight();
 		}
 
@@ -784,30 +785,22 @@ namespace CapFrameX.ViewModel
 			// Update metrics
 			SetMetrics(wrappedComparisonInfo);
 
-			double maxFirstMetricBarValue = 0;
-			double maxSecondMetricBarValue = 0;
-			double maxThirdMetricBarValue = 0;
-
 			// First metric
 			ComparisonRowChartSeriesCollection[0].Values.Insert(0, wrappedComparisonInfo.WrappedRecordInfo.FirstMetric);
-			maxFirstMetricBarValue = (ComparisonRowChartSeriesCollection[0].Values as IList<double>).Max() * 1.15;
 
 			// Second metric
 			if (ComparisonRowChartSeriesCollection.Count > 1)
 			{
 				ComparisonRowChartSeriesCollection[1].Values.Insert(0, wrappedComparisonInfo.WrappedRecordInfo.SecondMetric);
-				maxSecondMetricBarValue = (ComparisonRowChartSeriesCollection[1].Values as IList<double>).Max() * 1.15;
 			}
 
 			// Second metric
 			if (ComparisonRowChartSeriesCollection.Count > 2)
 			{
 				ComparisonRowChartSeriesCollection[2].Values.Insert(0, wrappedComparisonInfo.WrappedRecordInfo.ThirdMetric);
-				maxThirdMetricBarValue = (ComparisonRowChartSeriesCollection[2].Values as IList<double>).Max() * 1.15;
 			}
 
-
-			BarMaxValue = (int)(new[] { maxFirstMetricBarValue, maxSecondMetricBarValue, maxThirdMetricBarValue }.Max());
+			SetBarMaxValue();
 
 			switch (SelectedComparisonContext)
 			{
@@ -830,6 +823,35 @@ namespace CapFrameX.ViewModel
 					SetLabelDateTimeContext();
 					break;
 			}
+		}
+
+		private void SetBarMaxValue()
+		{
+			if (!ComparisonRowChartSeriesCollection.Any())
+				return;
+
+			double maxSecondMetricBarValue = 0;
+			double maxThirdMetricBarValue = 0;
+
+			// First metric
+			if (!((ComparisonRowChartSeriesCollection[0].Values as IList<double>).Any()))
+				return;
+
+			double maxFirstMetricBarValue = (ComparisonRowChartSeriesCollection[0].Values as IList<double>).Max() * 1.15;
+
+			// Second metric
+			if (ComparisonRowChartSeriesCollection.Count > 1)
+			{
+				maxSecondMetricBarValue = (ComparisonRowChartSeriesCollection[1].Values as IList<double>).Max() * 1.15;
+			}
+
+			// Second metric
+			if (ComparisonRowChartSeriesCollection.Count > 2)
+			{
+				maxThirdMetricBarValue = (ComparisonRowChartSeriesCollection[2].Values as IList<double>).Max() * 1.15;
+			}
+
+			BarMaxValue = (int)(new[] { maxFirstMetricBarValue, maxSecondMetricBarValue, maxThirdMetricBarValue }.Max());
 		}
 
 		private void AddToFrameTimeChart(ComparisonRecordInfoWrapper wrappedComparisonInfo)
