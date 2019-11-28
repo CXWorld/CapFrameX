@@ -31,9 +31,10 @@
 	</UserControl.Resources>
 	<Grid>
 		<Grid.RowDefinitions>
-			<RowDefinition Height="Auto"/>
-			<RowDefinition Height="100"/>
-		</Grid.RowDefinitions>
+			<RowDefinition Height="1*"/>
+            <RowDefinition Height="65"/>
+           
+        </Grid.RowDefinitions>
 		<DataGrid Grid.Row="0"
 				  Margin="0 10 5 0"
 				  AutoGenerateColumns="True"
@@ -60,16 +61,16 @@
 				</ContextMenu>
 			</DataGrid.ContextMenu>
 		</DataGrid>
-		<ItemsControl Grid.Row="1" VerticalAlignment="Top"
-					  Margin="0 10 10 10"
+        <ItemsControl Grid.Row="1" VerticalAlignment="Bottom"
+					  Margin="5 5 5 5"
 					  Name="RemoveRecordItemControl"
 				      dragdrop:DragDrop.IsDropTarget="True"
 				      dragdrop:DragDrop.DropHandler="{Binding}"
 					  dragdrop:DragDrop.UseDefaultEffectDataTemplate="False">
-			<Border Background="#CCC" Height="50">
-				<materialDesign:PackIcon Kind="DeleteForeverOutline" VerticalAlignment="Center" HorizontalAlignment="Center"
+            <Border Background="#e6e6e6" Height="60"> 
+                <materialDesign:PackIcon Kind="DeleteForeverOutline" VerticalAlignment="Center" HorizontalAlignment="Center"
 													 Width="32" Height="32" />
-			</Border>
-		</ItemsControl>
-	</Grid>
+            </Border>
+        </ItemsControl>
+    </Grid>
 </UserControl>
