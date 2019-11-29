@@ -35,9 +35,11 @@ This also includes every OCAT or Presentmon capture you put into that directory.
 At the bottom of that list you can see and change the CPU, GPU and RAM description and add a custom comment to every capture.
 Also you can edit the game name, since the process name is used as default. This gets saved in a textfile that is being compared with a list we update with every new version of CapFrameX to add new games that aren't already on your list. 
 
-## Options
-Located at the top right corner(three dots)
+## Global Navigation Bar
+Located at the Top
+Contains all the different views, a screenshot button, a direct link to the CX github page and an options menu. 
 
+## Options
 * Moving average window size = The number of frames that are used for the average line in the frametime chart.(Analysis View)
 * Stuttering factor = The factor a frametime has to be above average to be counted as stutter.(Analysis View)
 * Observed directory = The directory in which your captures are saved and also where you can put your OCAT/Presentmon captures.
@@ -46,7 +48,7 @@ Located at the top right corner(three dots)
 
 ## Capture view
 Here you can set your capture hotkey, the capture time(0=unlimited) and the response sounds.
-An info text at the top always informs you what's going on with the capture service and also tells you what to do in certain situations.
+An info text always informs you what's going on with the capture service and also tells you what to do in certain situations.
 For more detailed information about the capture events, you can take a look into the log which can be expanded from the bottom.
 
 ## How to make a capture
@@ -68,7 +70,6 @@ For the graphs you can choose between frametime graphs, FPS graphs and L-shapes.
 Below that you have your performance parameters like min, max, avg and percentiles.
 You also have a pie chart which shows the amount of time you had stuttering, meaning frametimes above 2.5x average(default).
 At the bottom is a toolbar where you can change the performance parameters, adjust the Y-axis for the frametimes, remove unusual outliers from the graphs and activate a cutting mode.
-Also at the top you have a screenshot button to save the view(without the record list) as a png file.
 
 ## Comparison View
 Here you can compare multiple records.
