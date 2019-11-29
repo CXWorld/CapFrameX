@@ -26,17 +26,16 @@
 			</ResourceDictionary.MergedDictionaries>
 			<mvvm:BoolToVisibilityConverter x:Key="FalseToCollapsedConverter" FalseValue="Collapsed" TrueValue="Visible"/>
 			<mvvm:BoolToVisibilityConverter x:Key="TrueToVisibleConverter" FalseValue="Visible" TrueValue="Collapsed"/>
-			<mvvm:AddValueConverter x:Key="AddValueConverter" Offset="-110"/>
+			<mvvm:AddValueConverter x:Key="AddValueConverter" Offset="-75"/>
 		</ResourceDictionary>
 	</UserControl.Resources>
 	<Grid>
 		<Grid.RowDefinitions>
 			<RowDefinition Height="1*"/>
-            <RowDefinition Height="65"/>
-           
-        </Grid.RowDefinitions>
+			<RowDefinition Height="65"/>
+		</Grid.RowDefinitions>
 		<DataGrid Grid.Row="0"
-				  Margin="0 10 5 0"
+				  Margin="5 10 5 0"
 				  AutoGenerateColumns="True"
 				  AutoGeneratingColumn="OnAutoGeneratingColumn"
 				  Tag="{Binding ElementName=ReportViewControl, Path=DataContext}" 

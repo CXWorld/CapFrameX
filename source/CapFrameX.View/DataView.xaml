@@ -53,32 +53,9 @@
 			<RowDefinition Height="1*"></RowDefinition>
 		</Grid.RowDefinitions>
 		<Grid Grid.Row="0">
-			<TextBlock HorizontalAlignment="Center"  FontWeight="Bold" FontSize="16" VerticalAlignment="Bottom" Text="{Binding CurrentGameName}"/>
-			<ToggleButton x:Name="ScreenshotModeToggleButton"
-						  materialDesign:ShadowAssist.ShadowDepth="Depth3"
-						  VerticalAlignment="Top"
-						  HorizontalAlignment="Right"
-						  Margin="0 0 20 0">
-				<ToggleButton.Content>
-					<materialDesign:PackIcon
-					Kind="CellphoneScreenshot" />
-				</ToggleButton.Content>
-				<materialDesign:ToggleButtonAssist.OnContent>
-					<materialDesign:PackIcon
-						Kind="GoogleAnalytics" />
-				</materialDesign:ToggleButtonAssist.OnContent >
-			</ToggleButton>
-			<Button Visibility="{Binding ElementName=ScreenshotModeToggleButton, Path=IsChecked, Converter={StaticResource FalseToCollapsedConverter}}"
-				  Style="{StaticResource MaterialDesignFloatingActionMiniButton}"
-				  VerticalAlignment="Top"
-				  HorizontalAlignment="Right"
-			      Margin="0 0 70 0"
-				  ToolTip="Make a screenshot"
-				  Width="32" Height="32" Click="TakeScreenShotButton_Click">
-				<materialDesign:PackIcon Kind="PhotoLibrary"/>
-			</Button>
+			<TextBlock HorizontalAlignment="Center" FontWeight="Bold" FontSize="16" VerticalAlignment="Bottom" Text="{Binding CurrentGameName}"/>
 		</Grid>
-		<Grid Grid.Row="1" x:Name="ScreenshotArea">
+		<Grid Grid.Row="1">
 			<Grid.RowDefinitions>
 				<RowDefinition Height="5*"></RowDefinition>
 				<RowDefinition Height="Auto"></RowDefinition>
@@ -178,7 +155,7 @@
 						</lvc:Axis>
 					</lvc:CartesianChart.AxisY>
 				</lvc:CartesianChart>
-				<DockPanel Grid.Column="1" Margin="10 5 100 5" HorizontalAlignment="Right" >
+				<DockPanel Grid.Column="1" Margin="10 5 50 5" HorizontalAlignment="Right" >
 					<lvc:PieChart Width="250" Hoverable="False" Series="{Binding StutteringStatisticCollection}" 
 								  LegendLocation="Bottom" DataClick="Chart_OnDataClick"/>
 				</DockPanel>
@@ -285,7 +262,8 @@
 					</StackPanel>
 				</StackPanel>
 			</Grid>
-			<Expander Margin="0 20 0 0" Background="#e6e6e6" Grid.Row="0" Grid.RowSpan="4" Grid.Column="1" ExpandDirection="Left">
+			<Grid Margin="0 5 0 5" Grid.Row="4" Grid.Column="1" Background="#e6e6e6"/>
+			<Expander Margin="0 20 0 0" Background="#e6e6e6" Grid.Row="0" Grid.RowSpan="3" Grid.Column="1" ExpandDirection="Left">
 				<Expander.Header>
 					<TextBlock Text="System Info" RenderTransformOrigin=".5,.5">
 						<TextBlock.LayoutTransform>

@@ -4,6 +4,8 @@ namespace CapFrameX.Configuration
 {
 	public class CapFrameXConfiguration : IAppConfiguration
 	{
+		public static IAppConfiguration Instance = new CapFrameXConfiguration();
+
 		private static Properties.Settings Settings => Properties.Settings.Default;
 
 		public int MovingAverageWindowSize

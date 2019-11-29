@@ -22,6 +22,8 @@ namespace CapFrameX
 {
 	public class Bootstrapper : DryIocBootstrapper
 	{
+		public static IAppConfiguration Test { get; protected set;}
+
 		protected override DependencyObject CreateShell()
 		{
 			return Container.Resolve<Shell>();
@@ -39,6 +41,7 @@ namespace CapFrameX
 			base.ConfigureContainer();
 
 			// Vertical components
+
 			Container.Register<IEventAggregator, EventAggregator>(Reuse.Singleton, null, null, IfAlreadyRegistered.Replace, "EventAggregator");
 			Container.Register<IAppConfiguration, CapFrameXConfiguration>(Reuse.Singleton);
 
