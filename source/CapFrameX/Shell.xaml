@@ -5,6 +5,8 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 		xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+		xmlns:mvvm="clr-namespace:CapFrameX.MVVM;assembly=CapFrameX.MVVM"
+		xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
         mc:Ignorable="d"
 		Title="CapFrameX"
         Height="780" Width="1400" MinWidth="1400" Icon="Icons/CX_Icon.png">
@@ -40,9 +42,37 @@
 						  HorizontalAlignment="Right"
 						  Margin="0 0 180 0"
 						  ToolTip="Make a screenshot"
+						  materialDesign:RippleAssist.Feedback="#DD000000"
 						  Width="32" Height="32" Click="TakeScreenShotButton_Click">
 					<materialDesign:PackIcon Kind="PhotoLibrary"/>
+					<!--<Button.Triggers>
+						<EventTrigger RoutedEvent="PreviewMouseMove">
+							<BeginStoryboard>
+								<Storyboard>
+									<ColorAnimation Storyboard.TargetProperty="(Button.Background).(SolidColorBrush.Color)" To="#e6e6e6"/>
+								</Storyboard>
+							</BeginStoryboard>
+						</EventTrigger>
+						<EventTrigger RoutedEvent="MouseLeave">
+							<BeginStoryboard>
+								<Storyboard>
+									<ColorAnimation Storyboard.TargetProperty="(Button.Background).(SolidColorBrush.Color)" To="Transparent"/>
+								</Storyboard>
+							</BeginStoryboard>
+						</EventTrigger>
+					</Button.Triggers>-->
 				</Button>
+
+				<!--<ToggleButton x:Name="myButton" Margin="0 0 280 0" Style="{StaticResource MaterialDesignActionLightToggleButton}" IsChecked="True">
+					<i:Interaction.Triggers>
+						--><!--<i:EventTrigger EventName="MouseEnter">
+							<mvvm:SetPropertyAction PropertyName="IsChecked" Value="False"/>
+						</i:EventTrigger>--><!--
+						<i:EventTrigger EventName="MouseLeave">
+							<mvvm:SetPropertyAction PropertyName="IsChecked" Value="True"/>
+						</i:EventTrigger>
+					</i:Interaction.Triggers>
+				</ToggleButton>-->
 			</Grid>
 			<ContentControl Grid.Column="0" Grid.Row="1" prism:RegionManager.RegionName="ControlRegion" />
 			<ContentControl x:Name="ScreenshotArea" Grid.Column="2" Grid.Row="1" prism:RegionManager.RegionName="DataRegion" />
