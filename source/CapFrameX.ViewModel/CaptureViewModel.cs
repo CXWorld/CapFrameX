@@ -760,7 +760,7 @@ namespace CapFrameX.ViewModel
 					CaptureStateInfo = $"Process auto-detected. Press {CaptureHotkeyString} to start capture.";
 				else if (ProcessesToCapture.Count > 1)
 					//Multiple processes detected, select the one to capture or move unwanted processes to ignore list.
-					CaptureStateInfo = $"Multiple processes detected, select one and press {CaptureHotkeyString} to start capture or move unwanted processes to ignore list.";
+					CaptureStateInfo = $"Multiple processes detected, select one or move unwanted processes to ignore list.";
 				return;
 			}
 
