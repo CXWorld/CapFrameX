@@ -186,6 +186,8 @@ namespace CapFrameX.ViewModel
 				}
 			});
 
+			RecordDataGridSelectedIndex = -1;
+
 			_recordDeleteSubStream = new Subject<FileInfo>();
 
 			var context = SynchronizationContext.Current;

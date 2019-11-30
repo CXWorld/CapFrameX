@@ -161,7 +161,7 @@
 						Visibility="{Binding IsBarChartTabActive, Converter={StaticResource TrueToVisibleConverter}}">
 				<TextBlock VerticalAlignment="Center">Grouping:</TextBlock>
 				<ToggleButton Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
-							  ToolTip="Cutting mode" IsChecked="{Binding UseComparisonGrouping}"/>
+							  ToolTip="Grouping" IsChecked="{Binding UseComparisonGrouping}"/>
 			</StackPanel>
 			<ComboBox Grid.Column="2" Width="110" VerticalAlignment="Center" Margin="30 0 0 5" materialDesign:HintAssist.Hint="Second metric"
 					  Visibility="{Binding IsBarChartTabActive, Converter={StaticResource TrueToVisibleConverter}}"

@@ -161,8 +161,7 @@
 				</DockPanel>
 			</Grid>
 			<!--Toolbar-->
-			<Grid Grid.Row="3" Margin="5 5 5 5" Background="#e6e6e6"
-				  Visibility="{Binding ElementName=ScreenshotModeToggleButton, Path=IsChecked, Converter={StaticResource TrueToCollapsedConverter}}">
+			<Grid Grid.Row="3" Margin="5 5 5 5" Background="#e6e6e6">
 				<Grid.ColumnDefinitions>
 					<ColumnDefinition Width="Auto" />
 					<ColumnDefinition Width="Auto" />

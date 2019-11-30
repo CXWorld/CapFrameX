@@ -1,4 +1,5 @@
 ﻿<Window x:Class="CapFrameX.Shell"
+        x:Name="ShellWindow"
         xmlns:prism="http://www.codeplex.com/prism"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -6,6 +7,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 		xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
 		xmlns:mvvm="clr-namespace:CapFrameX.MVVM;assembly=CapFrameX.MVVM"
+        xmlns:converter="clr-namespace:CapFrameX.MVVM.Converter;assembly=CapFrameX.MVVM"
 		xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
         mc:Ignorable="d"
 		Title="CapFrameX"
@@ -20,12 +22,13 @@
 				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Slider.xaml" />
 				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.PopupBox.xaml" />
 			</ResourceDictionary.MergedDictionaries>
-		</ResourceDictionary>
+            <converter:AddValueConverter x:Key="AddValueConverter" Offset="-1000"/>
+        </ResourceDictionary>
 	</Window.Resources>
 	<Grid>
 		<Grid>
 			<Grid.ColumnDefinitions>
-				<ColumnDefinition Width="400" />
+                <ColumnDefinition Width="400" MaxWidth="{Binding ElementName=ShellWindow, Path=ActualWidth, Converter={StaticResource AddValueConverter}}"/>
                 <ColumnDefinition Width="5" />
 				<ColumnDefinition Width="1*" MinWidth="800"/>
 			</Grid.ColumnDefinitions>

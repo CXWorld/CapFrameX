@@ -90,10 +90,8 @@ namespace CapFrameX
 					bitmap.Save(filename);
 				}
 			}
-			catch (Exception ex)
-			{
-				return;
-			}
+			catch
+			{ return; }
 		}
 
 		private static Bitmap AddRectangle(Bitmap bitmap, System.Drawing.Point position, System.Drawing.Size size, System.Drawing.Brush brush)

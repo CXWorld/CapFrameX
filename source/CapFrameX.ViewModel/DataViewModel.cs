@@ -33,6 +33,7 @@ namespace CapFrameX.ViewModel
 		private readonly IFrametimeAnalyzer _frametimeAnalyzer;
 		private readonly IEventAggregator _eventAggregator;
 		private readonly IAppConfiguration _appConfiguration;
+		private readonly IRecordDataServer _localRecordDataServer;
 
 		private bool _useUpdateSession;
 		private Session _session;
@@ -48,7 +49,6 @@ namespace CapFrameX.ViewModel
 		private bool _doUpdateCharts = true;
 		private Func<double, string> _parameterFormatter;
 		private TabItem _selectedChartItem;
-		private IRecordDataServer _localRecordDataServer;
 		private string _currentGameName;
 		private double _maxRecordingTime;
 		private string _remainingRecordingTime;
@@ -765,7 +765,9 @@ namespace CapFrameX.ViewModel
 					}
 				};
 
+#pragma warning disable IDE0034 // "default"-Ausdruck vereinfachen
 				ResetLShapeChart.OnNext(default(Unit));
+#pragma warning restore IDE0034 // "default"-Ausdruck vereinfachen
 			}));
 		}
 
@@ -858,10 +860,8 @@ namespace CapFrameX.ViewModel
 			{
 				UpdateAnalysisPage();
 			}
-			catch (Exception ex)
-			{
-				return;
-			}
+			catch
+			{ return; }
 		}
 
 		public bool IsNavigationTarget(NavigationContext navigationContext)
