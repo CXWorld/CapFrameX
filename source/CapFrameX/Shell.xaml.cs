@@ -71,18 +71,21 @@ namespace CapFrameX
 					encoder.Save(stream);
 
 					Bitmap bitmap = new Bitmap(stream);
-					Image logo = (Image)Properties.Resources.ResourceManager.GetObject("CX_Screen_Logo");
+					Image logo1 = (Image)Properties.Resources.ResourceManager.GetObject("CX_Screen_Logo_Name");
+					Image logo2 = (Image)Properties.Resources.ResourceManager.GetObject("CX_Screen_Logo_Description");
+
 
 					// Add fill rectangle
-					AddFillRectangle(bitmap, new System.Drawing.Point(0, imageHeight - logo.Height),
-						new System.Drawing.Size(imageWidth, logo.Height), new SolidBrush(System.Drawing.Color.FromArgb(255, 32, 141, 228)));
+					AddFillRectangle(bitmap, new System.Drawing.Point(0, imageHeight - logo1.Height),
+						new System.Drawing.Size(imageWidth, logo1.Height), new SolidBrush(System.Drawing.Color.FromArgb(255, 32, 141, 228)));
 
 					// Add frame
 					AddRectangle(bitmap, new System.Drawing.Point(1, 1),
 						new System.Drawing.Size(imageWidth - 2, imageHeight), new SolidBrush(System.Drawing.Color.FromArgb(255, 32, 141, 228)));
 
-					// Add CX logo
-					AddLogo(bitmap, logo, new System.Drawing.Point(0, imageHeight - logo.Height));
+					// Add CX logos
+					AddLogo(bitmap, logo1, new System.Drawing.Point(0, imageHeight - logo1.Height));
+					AddLogo(bitmap, logo2, new System.Drawing.Point(imageWidth - logo2.Width, imageHeight - logo2.Height));
 
 					bitmap.Save(filename);
 				}
