@@ -7,6 +7,7 @@ Sven Bauduin for logo and text design
 
 # Remark in our own intererst
 If you are a reviewer or a youtuber using CapFrameX to get your data, please mention us and link to our software.
+If you want to use images of the CapFrameX analysis, please use the built in screenshot function so that our logo and name gets added to the images.
 
 # Release
 Download link: https://github.com/DevTechProfile/CapFrameX/releases
