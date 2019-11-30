@@ -1,4 +1,4 @@
-![Screenshot](Images/CX_Header_Logo.png)
+![Screenshot](Images/CX_Header_Logo_Wide.png)
 # CapFrameX
 Frametimes capture and analysis tool compatible with most common 3D APIs
 
