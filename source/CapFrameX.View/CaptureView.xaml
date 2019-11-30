@@ -140,7 +140,7 @@
 		</DockPanel>
         <Expander HorizontalAlignment="Stretch" Grid.Row="0" ExpandDirection="Down" Margin="0">
             <Expander.Header>
-                <TextBlock Text= "Infobox" HorizontalAlignment="Right"/>
+                <TextBlock Text= "Infobox" HorizontalAlignment="Left"/>
             </Expander.Header>
             <ScrollViewer MaxHeight="200"  VerticalScrollBarVisibility="Visible" Margin="20 10 20 10" >
                 <TextBlock Text="{Binding LoggerOutput}"/>

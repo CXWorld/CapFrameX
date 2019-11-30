@@ -73,9 +73,13 @@ namespace CapFrameX
 					Bitmap bitmap = new Bitmap(stream);
 					Image logo = (Image)Properties.Resources.ResourceManager.GetObject("CX_Screen_Logo");
 
-					// Add rectangle
-					AddRectangle(bitmap, new System.Drawing.Point(0, imageHeight - logo.Height), 
+					// Add fill rectangle
+					AddFillRectangle(bitmap, new System.Drawing.Point(0, imageHeight - logo.Height),
 						new System.Drawing.Size(imageWidth, logo.Height), new SolidBrush(System.Drawing.Color.FromArgb(255, 32, 141, 228)));
+
+					// Add frame
+					AddRectangle(bitmap, new System.Drawing.Point(1, 1),
+						new System.Drawing.Size(imageWidth - 2, imageHeight), new SolidBrush(System.Drawing.Color.FromArgb(255, 32, 141, 228)));
 
 					// Add CX logo
 					AddLogo(bitmap, logo, new System.Drawing.Point(0, imageHeight - logo.Height));
@@ -90,6 +94,17 @@ namespace CapFrameX
 		}
 
 		private static Bitmap AddRectangle(Bitmap bitmap, System.Drawing.Point position, System.Drawing.Size size, System.Drawing.Brush brush)
+		{
+			using (Graphics grf = Graphics.FromImage(bitmap))
+			{
+				Rectangle rect = new Rectangle(position, size);
+				grf.DrawRectangle(new System.Drawing.Pen(brush, 2), rect);
+			}
+
+			return bitmap;
+		}
+
+		private static Bitmap AddFillRectangle(Bitmap bitmap, System.Drawing.Point position, System.Drawing.Size size, System.Drawing.Brush brush)
 		{
 			using (Graphics grf = Graphics.FromImage(bitmap))
 			{
