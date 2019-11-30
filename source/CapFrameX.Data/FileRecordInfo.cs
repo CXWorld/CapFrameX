@@ -48,24 +48,16 @@ namespace CapFrameX.Data
 
 				if (_lines != null && _lines.Any())
 				{
+					Dictionary<string, string> infoKeyValueDictionary = new Dictionary<string, string>();
+
 					HasInfoHeader = GetHasInfoHeader(_lines[0]);
 					IsValid = GetIsValid(_lines);
 
 					if (IsValid)
-					{
-						Dictionary<string, string> infoKeyValueDictionary = new Dictionary<string, string>();
-
+					{						
 						if (HasInfoHeader)
 						{
-							int headerCount = 0;
-							while (_lines[headerCount].Contains(HEADER_MARKER))
-							{
-								var currentLine = _lines[headerCount];
-								var currentLineWithoutMarker = currentLine.Replace(HEADER_MARKER, "");
-								var infoKeyValue = currentLineWithoutMarker.Split(INFO_SEPERATOR);
-								infoKeyValueDictionary.Add(infoKeyValue[0], infoKeyValue[1]);
-								headerCount++;
-							}
+							FillPropertyDictionary(infoKeyValueDictionary);
 						}
 						else
 						{
@@ -151,6 +143,20 @@ namespace CapFrameX.Data
 						// Free record data
 						_lines = null;
 					}
+					else
+					{
+						if (HasInfoHeader)
+						{
+							FillPropertyDictionary(infoKeyValueDictionary);
+							SetInfoProperties(infoKeyValueDictionary);
+
+							// set search string info
+							CombinedInfo = $"{GameName} {ProcessName} {Comment}";
+
+							// Free record data
+							_lines = null;
+						}
+					}
 				}
 				else
 				{
@@ -160,6 +166,19 @@ namespace CapFrameX.Data
 			else
 			{
 				IsValid = false;
+			}
+		}
+
+		private void FillPropertyDictionary(Dictionary<string, string> infoKeyValueDictionary)
+		{
+			int headerCount = 0;
+			while (_lines[headerCount].Contains(HEADER_MARKER))
+			{
+				var currentLine = _lines[headerCount];
+				var currentLineWithoutMarker = currentLine.Replace(HEADER_MARKER, "");
+				var infoKeyValue = currentLineWithoutMarker.Split(INFO_SEPERATOR);
+				infoKeyValueDictionary.Add(infoKeyValue[0], infoKeyValue[1]);
+				headerCount++;
 			}
 		}
 

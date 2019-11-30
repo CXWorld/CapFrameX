@@ -58,7 +58,7 @@ namespace CapFrameX.Data
 
 		public IList<IFileRecordInfo> GetFileRecordInfoList()
 		{
-			var filterList = CaptureServiceConfiguration.GetProcessIgnoreList();
+			 var filterList = CaptureServiceConfiguration.GetProcessIgnoreList();
 
 			if (filterList.Contains("CapFrameX"))
 				filterList.Remove("CapFrameX");
@@ -66,10 +66,17 @@ namespace CapFrameX.Data
 			return _recordObserver.GetAllRecordFileInfo()
 				.Select(fileInfo => GetFileRecordInfo(fileInfo))
 				.Where(fileRecordInfo => fileRecordInfo != null)
-				.Where(fileRecordInfo => !filterList
-					.Contains(fileRecordInfo.ProcessName?.Replace(".exe", string.Empty)))
+				.Where(fileRecordInfo => CheckNotContains(filterList, fileRecordInfo.ProcessName))
 				.OrderBy(fileRecordInfo => fileRecordInfo.GameName)
 				.ToList();
+		}
+
+		private bool CheckNotContains(HashSet<string> filterList, string processName)
+		{
+			var check = !filterList
+					.Contains(processName?.Replace(".exe", string.Empty));
+
+			return check;
 		}
 
 		public bool SavePresentData(IList<string> recordLines, string filePath, string processName, int captureTime)
