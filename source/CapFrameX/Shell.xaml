@@ -9,7 +9,7 @@
 		xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
         mc:Ignorable="d"
 		Title="CapFrameX"
-        Height="780" Width="1400" MinWidth="1400" Icon="Icons/CX_Icon.png">
+        Height="780" Width="1400" MinHeight="650"  MinWidth="1400" Icon="Icons/CX_Icon.png">
 	<Window.Resources>
 		<ResourceDictionary>
 			<ResourceDictionary.MergedDictionaries>

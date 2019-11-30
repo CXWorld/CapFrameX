@@ -274,7 +274,7 @@ namespace CapFrameX.ViewModel
 			AddToProcessListCommand = new DelegateCommand(OnAddToProcessList);
 			ResetCaptureProcessCommand = new DelegateCommand(OnResetCaptureProcess);
 
-			CaptureStateInfo = $"Service ready... press {CaptureHotkeyString} to start capture of the running process.";
+			CaptureStateInfo = "Service ready..." + Environment.NewLine + $"Press {CaptureHotkeyString} to start capture of the running process.";
 			SelectedSoundMode = _appConfiguration.HotkeySoundMode;
 			CaptureTimeString = _appConfiguration.CaptureTime.ToString();
 
@@ -454,10 +454,10 @@ namespace CapFrameX.ViewModel
 				IsAddToIgnoreListButtonActive = false;
 
 				if (CaptureTimeString == "0" && CaptureStartDelayString == "0")
-					CaptureStateInfo = $"Capturing in progress... press {CaptureHotkeyString} to stop capture.";
+					CaptureStateInfo = "Capturing in progress..." + Environment.NewLine + $"Press {CaptureHotkeyString} to stop capture.";
 
 				if (CaptureTimeString != "0" && CaptureStartDelayString == "0")
-					CaptureStateInfo = $"Capturing in progress. Capture will stop after {CaptureTimeString} seconds." + Environment.NewLine
+					CaptureStateInfo = $"Capturing in progress (Set Time: {CaptureTimeString} seconds)..." + Environment.NewLine
 					   + $"Press {CaptureHotkeyString} to stop capture.";
 
 				if (CaptureTimeString != "0" && CaptureStartDelayString != "0")
@@ -492,7 +492,7 @@ namespace CapFrameX.ViewModel
 				var context = TaskScheduler.FromCurrentSynchronizationContext();
 
 				// offset timer
-				CaptureStateInfo = $"Creating capture file...";
+				CaptureStateInfo = "Creating capture file...";
 				Task.Run(async () =>
 				{
 					await SetTaskDelayOffset().ContinueWith(_ =>
@@ -566,7 +566,7 @@ namespace CapFrameX.ViewModel
 						{
 							// turn locking on 
 							_dataOffsetRunning = true;
-							CaptureStateInfo = $"Creating capture file...";
+							CaptureStateInfo = "Creating capture file...";
 							// none -> do nothing
 							// simple sounds
 							if (SelectedSoundMode == _soundModes[1])
@@ -755,16 +755,16 @@ namespace CapFrameX.ViewModel
 			if (string.IsNullOrWhiteSpace(SelectedProcessToCapture))
 			{
 				if (!ProcessesToCapture.Any())
-					CaptureStateInfo = $"Process list clear... start any game / application and press  {CaptureHotkeyString} to start capture.";
+					CaptureStateInfo = "Process list clear." + Environment.NewLine + $"Start any game / application and press  {CaptureHotkeyString} to start capture.";
 				else if (ProcessesToCapture.Count == 1)
-					CaptureStateInfo = $"Process auto-detected. Press {CaptureHotkeyString} to start capture.";
+					CaptureStateInfo = "Process auto-detected." + Environment.NewLine + $"Press {CaptureHotkeyString} to start capture.";
 				else if (ProcessesToCapture.Count > 1)
 					//Multiple processes detected, select the one to capture or move unwanted processes to ignore list.
-					CaptureStateInfo = $"Multiple processes detected, select one or move unwanted processes to ignore list.";
+					CaptureStateInfo = "Multiple processes detected." + Environment.NewLine + "Select one or move unwanted processes to ignore list.";
 				return;
 			}
 
-			CaptureStateInfo = $"{SelectedProcessToCapture} selected, press {CaptureHotkeyString} to start capture.";
+			CaptureStateInfo = $"{SelectedProcessToCapture} selected." + Environment.NewLine + $"Press {CaptureHotkeyString} to start capture.";
 		}
 
 		private void AddDataLineToArchive(string dataLine)

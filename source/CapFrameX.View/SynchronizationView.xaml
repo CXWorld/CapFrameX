@@ -36,7 +36,7 @@
 		<Grid.RowDefinitions>
             <RowDefinition Height="5*"></RowDefinition>
             <RowDefinition Height="40"></RowDefinition>
-            <RowDefinition Height="3*"></RowDefinition>
+            <RowDefinition Height="3*" MaxHeight="300"></RowDefinition>
             <RowDefinition Height="65"></RowDefinition>
         </Grid.RowDefinitions>
 		<Grid Grid.Row="0" Background="#F5F5F5">
@@ -93,9 +93,11 @@
 					<lvc:Axis Title="Distribution" Foreground="Black"/>
 				</lvc:CartesianChart.AxisY>
 			</lvc:CartesianChart>
-			<lvc:PieChart Grid.Column="1" Margin="10 40 0 10" Hoverable="False" Series="{Binding DroppedFramesStatisticCollection}" 
-						  LegendLocation="Bottom" DataClick="Chart_OnDataClick"/>
-		</Grid>
+            <DockPanel Grid.Column="1" Margin="10 5 50 5" HorizontalAlignment="Right">
+                <lvc:PieChart Width="250" Hoverable="False" Series="{Binding DroppedFramesStatisticCollection}" 
+								  LegendLocation="Bottom" DataClick="Chart_OnDataClick"/>
+            </DockPanel>
+        </Grid>
         <Grid Grid.Row="3" Margin="5 5 5 5" Background="#e6e6e6">
         </Grid>
     </Grid>
