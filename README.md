@@ -1,6 +1,9 @@
 # CapFrameX
 Frametimes capture and analysis tool compatible with most common 3D APIs
 
+## Special thanks to
+Sven Bauduin for logo and text design
+
 # Release
 Download link: https://github.com/DevTechProfile/CapFrameX/releases
 
@@ -125,4 +128,6 @@ At the bottom you can see the distribution of the refresh times and beside it an
 # Dev roadmap
 * RTSS client implementation
 * Approximation input lag
+
+##
 
