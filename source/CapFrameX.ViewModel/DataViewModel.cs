@@ -755,7 +755,7 @@ namespace CapFrameX.ViewModel
 						Values = chartValues,
 						Stroke = ColorRessource.LShapeStroke,
 						Fill = Brushes.Transparent,
-						StrokeThickness = 1,
+						StrokeThickness = 2,
 						LineSmoothness= 1,
 						PointGeometrySize = 5,
 						PointGeometry = DefaultGeometries.Square,

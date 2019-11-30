@@ -16,7 +16,6 @@ using CapFrameX.Configuration;
 using CapFrameX.Contracts.PresentMonInterface;
 using CapFrameX.PresentMonInterface;
 using CapFrameX.Contracts.Data;
-using CapFrameX.Data;
 
 namespace CapFrameX
 {

@@ -79,7 +79,7 @@
 					</TabItem>
 					<TabItem Header="L-shape">
 						<lvc:CartesianChart MouseDoubleClick="ResetChart_MouseDoubleClick" Series="{Binding LShapeCollection}" Zoom="Y" 
-										Tag="{Binding ElementName=DataViewUserControl, Path=DataContext}">
+										Tag="{Binding ElementName=DataViewUserControl, Path=DataContext}" DataTooltip="{x:Null}" >
 							<lvc:CartesianChart.ContextMenu>
 								<ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
 									<MenuItem Header="Copy quantiles" Command="{Binding CopyLShapeQuantilesCommand}"/>
@@ -137,7 +137,7 @@
 					<ColumnDefinition Width="1*" />
 				</Grid.ColumnDefinitions>
 				<lvc:CartesianChart Grid.Column="0" Margin="15 10 0 5" Series="{Binding StatisticCollection}" LegendLocation="None"
-									Tag="{Binding ElementName=DataViewUserControl, Path=DataContext}">
+									Tag="{Binding ElementName=DataViewUserControl, Path=DataContext}" DataTooltip="{x:Null}" >
 					<lvc:CartesianChart.ContextMenu>
 						<ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
 							<MenuItem Header="Copy statistical parameter" Command="{Binding CopyStatisticalParameterCommand}"/>

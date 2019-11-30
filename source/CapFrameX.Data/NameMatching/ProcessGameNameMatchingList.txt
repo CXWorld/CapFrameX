@@ -1,3 +1,4 @@
+ACOrigins.exe=Assassin's Creed Origins
 ACOdyssey.exe=Assassin's Creed Odyssey
 Anno1800.exe=Anno 1800
 APlagueTaleInnocence_x64.exe=A Plague Tale: Innocence
