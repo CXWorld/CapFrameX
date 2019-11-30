@@ -41,7 +41,7 @@
 						  VerticalAlignment="Center"
 						  HorizontalAlignment="Right"
 						  Margin="0 0 180 0"
-						  ToolTip="Make a screenshot"
+						  ToolTip="Take a screenshot"
 						  materialDesign:RippleAssist.Feedback="#DD000000"
 						  Width="32" Height="32" Click="TakeScreenShotButton_Click">
 					<materialDesign:PackIcon Kind="PhotoLibrary"/>

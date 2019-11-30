@@ -37,19 +37,20 @@ Capture page (DE): https://www.youtube.com/watch?v=ZqMMPDxJUkk
 This list is always located at the left section, regardless of the view you're currently in.
 
 It constantly observes the output directory so every capture will show up here as soon as the capture has finished.
-This also includes every OCAT or Presentmon capture you put into that directory.
+This also includes every OCAT or PresentMon capture you put into that directory.
 
 At the bottom of that list you can see and change the CPU, GPU and RAM description and add a custom comment to every capture.
 Also you can edit the game name, since the process name is used as default. This gets saved in a textfile that is being compared with a list we update with every new version of CapFrameX to add new games that aren't already on your list. 
 
 ## Global Navigation Bar
-Located at the Top
+Located at the top
 Contains all the different views, a screenshot button, a direct link to the CX github page and an options menu. 
+The screenshot button takes a screenshot of the current view excluding the record list.
 
 ## Options
 * Moving average window size = The number of frames that are used for the average line in the frametime chart.(Analysis View)
 * Stuttering factor = The factor a frametime has to be above average to be counted as stutter.(Analysis View)
-* Observed directory = The directory in which your captures are saved and also where you can put your OCAT/Presentmon captures.
+* Observed directory = The directory in which your captures are saved and also where you can put your OCAT/PresentMon captures.
 * FPS values rounding digits = The number of decimals for the FPS values
 * Screenshot directory = The directory in which your screenshots are saved.
 
