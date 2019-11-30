@@ -217,7 +217,7 @@ namespace CapFrameX.ViewModel
 
 			try
 			{
-				if (_selectedRecordings.Count > 1)
+				if (_selectedRecordings?.Count > 1)
 				{
 					_recordDeleteStreamActive = false;
 

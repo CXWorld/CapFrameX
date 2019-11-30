@@ -82,12 +82,7 @@ namespace LiveCharts.Charts
                         else xi.BotLimit = xi.MinValue;
 
                         if (double.IsNaN(xi.MaxValue)) xi.TopLimit += xi.S;
-                        else xi.TopLimit = xi.MaxValue;
-
-                        if (Math.Abs(xi.BotLimit - xi.TopLimit) < xi.S * .01 && !View.IsInDesignMode)
-                            throw new LiveChartsException("One axis has an invalid range, it is or it " +
-                                                          "tends to zero, please ensure your axis has a valid " +
-                                                          "range");
+                        else xi.TopLimit = xi.MaxValue;                 
                     }
                     else
                     {

@@ -801,6 +801,9 @@ namespace CapFrameX.ViewModel
 		{
 			Tuple<double, double> setting = new Tuple<double, double>(double.NaN, double.NaN);
 
+			if (_localRecordDataServer == null || _localRecordDataServer.CurrentSession == null)
+				return setting;
+
 			switch (selection)
 			{
 				case EChartYAxisSetting.FullFit:
@@ -851,7 +854,14 @@ namespace CapFrameX.ViewModel
 		public void OnNavigatedTo(NavigationContext navigationContext)
 		{
 			_useUpdateSession = true;
-			UpdateAnalysisPage();
+			try
+			{
+				UpdateAnalysisPage();
+			}
+			catch (Exception ex)
+			{
+				return;
+			}
 		}
 
 		public bool IsNavigationTarget(NavigationContext navigationContext)
