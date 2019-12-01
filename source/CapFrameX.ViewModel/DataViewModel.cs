@@ -23,6 +23,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using CapFrameX.MVVM.Dialogs;
 
 namespace CapFrameX.ViewModel
 {
@@ -32,6 +33,7 @@ namespace CapFrameX.ViewModel
 		private readonly IFrametimeAnalyzer _frametimeAnalyzer;
 		private readonly IEventAggregator _eventAggregator;
 		private readonly IAppConfiguration _appConfiguration;
+		private readonly IRecordDataServer _localRecordDataServer;
 
 		private bool _useUpdateSession;
 		private Session _session;
@@ -47,7 +49,6 @@ namespace CapFrameX.ViewModel
 		private bool _doUpdateCharts = true;
 		private Func<double, string> _parameterFormatter;
 		private TabItem _selectedChartItem;
-		private IRecordDataServer _localRecordDataServer;
 		private string _currentGameName;
 		private double _maxRecordingTime;
 		private string _remainingRecordingTime;
@@ -56,6 +57,10 @@ namespace CapFrameX.ViewModel
 		private double _firstSeconds;
 		private double _lastSeconds;
 		private EChartYAxisSetting _selecetedChartYAxisSetting = EChartYAxisSetting.FullFit;
+		private ContitionalMessageDialog _messageDialogContent;
+		private bool _messageDialogContentIsOpen;
+		private string _messageText;
+		private int _barMaxValue;
 
 		public IFileRecordInfo RecordInfo { get; private set; }
 
@@ -272,6 +277,56 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
+		public bool NeverShowDialog
+		{
+			get { return !_appConfiguration.ShowOutlierWarning; }
+			set
+			{
+				_appConfiguration.ShowOutlierWarning = !value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public ContitionalMessageDialog MessageDialogContent
+		{
+			get { return _messageDialogContent; }
+			set
+			{
+				_messageDialogContent = value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public bool MessageDialogContentIsOpen
+		{
+			get { return _messageDialogContentIsOpen; }
+			set
+			{
+				_messageDialogContentIsOpen = value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public string MessageText
+		{
+			get { return _messageText; }
+			set
+			{
+				_messageText = value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public int BarMaxValue
+		{
+			get { return _barMaxValue; }
+			set
+			{
+				_barMaxValue = value;
+				RaisePropertyChanged();
+			}
+		}
+
 		public ICommand CopyStatisticalParameterCommand { get; }
 
 		public ICommand CopyLShapeQuantilesCommand { get; }
@@ -305,6 +360,8 @@ namespace CapFrameX.ViewModel
 				_appConfiguration, _frametimeStatisticProvider);
 			FpsGraphDataContext = new FpsGraphDataContext(_localRecordDataServer,
 				_appConfiguration, _frametimeStatisticProvider);
+
+			MessageDialogContent = new ContitionalMessageDialog();
 
 			InitializeStatisticParameter();
 		}
@@ -426,8 +483,20 @@ namespace CapFrameX.ViewModel
 		{
 			_localRecordDataServer.RemoveOutlierMethod = RemoveOutliers ?
 				ERemoveOutlierMethod.DeciPercentile : ERemoveOutlierMethod.None;
+
+			CurrentGameName = RemoveOutliers ? $"{RecordInfo.GameName} (outlier-cleaned)"
+				: RecordInfo.GameName;
+
 			UpdateMainCharts();
 			UpdateSecondaryCharts();
+
+			if (!NeverShowDialog && RemoveOutliers)
+			{
+				MessageText = $"Remove outliers is only a function to simulate how the parameters would be like if there were no outliers. " +
+					Environment.NewLine +
+					$"This doesn't qualify as a conclusive evaluation of the benchmark run.";
+				MessageDialogContentIsOpen = true;
+			}
 		}
 
 		private void UpdateCuttingParameter()
@@ -467,7 +536,8 @@ namespace CapFrameX.ViewModel
 		{
 			if (_session != null && RecordInfo != null)
 			{
-				CurrentGameName = RecordInfo.GameName;
+				CurrentGameName = RemoveOutliers ? $"{RecordInfo.GameName} (outlier-cleaned)"
+					: RecordInfo.GameName;
 				SystemInfos = RecordManager.GetSystemInfos(RecordInfo);
 
 				// Do update actions
@@ -590,9 +660,13 @@ namespace CapFrameX.ViewModel
 						Fill = new SolidColorBrush(Color.FromRgb(241, 125, 32)),
 						Values = values,
 						DataLabels = true,
-						FontSize = 11
+						FontSize = 11,
+						MaxRowHeigth = 30
 					}
 				};
+
+				double maxOffset = (values as IList<double>).Max() * 0.15;
+				BarMaxValue = (int)((values as IList<double>).Max() + maxOffset);
 
 				var parameterLabelList = new List<string>();
 
@@ -681,7 +755,7 @@ namespace CapFrameX.ViewModel
 						Values = chartValues,
 						Stroke = ColorRessource.LShapeStroke,
 						Fill = Brushes.Transparent,
-						StrokeThickness = 1,
+						StrokeThickness = 2,
 						LineSmoothness= 1,
 						PointGeometrySize = 5,
 						PointGeometry = DefaultGeometries.Square,
@@ -691,7 +765,9 @@ namespace CapFrameX.ViewModel
 					}
 				};
 
+#pragma warning disable IDE0034 // "default"-Ausdruck vereinfachen
 				ResetLShapeChart.OnNext(default(Unit));
+#pragma warning restore IDE0034 // "default"-Ausdruck vereinfachen
 			}));
 		}
 
@@ -713,6 +789,8 @@ namespace CapFrameX.ViewModel
 			var yAxis = FrametimeGraphDataContext
 				.FrametimeModel.Axes.FirstOrDefault(axis => axis.Key == "yAxis");
 
+			FrametimeGraphDataContext.FrametimeModel.ResetAllAxes();
+
 			if (yAxis != null)
 			{
 				yAxis.Minimum = setting.Item1;
@@ -724,6 +802,9 @@ namespace CapFrameX.ViewModel
 		private Tuple<double, double> GetYAxisSettingFromSelection(EChartYAxisSetting selection)
 		{
 			Tuple<double, double> setting = new Tuple<double, double>(double.NaN, double.NaN);
+
+			if (_localRecordDataServer == null || _localRecordDataServer.CurrentSession == null)
+				return setting;
 
 			switch (selection)
 			{
@@ -775,7 +856,12 @@ namespace CapFrameX.ViewModel
 		public void OnNavigatedTo(NavigationContext navigationContext)
 		{
 			_useUpdateSession = true;
-			UpdateAnalysisPage();
+			try
+			{
+				UpdateAnalysisPage();
+			}
+			catch
+			{ return; }
 		}
 
 		public bool IsNavigationTarget(NavigationContext navigationContext)

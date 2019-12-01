@@ -186,6 +186,8 @@ namespace CapFrameX.ViewModel
 				}
 			});
 
+			RecordDataGridSelectedIndex = -1;
+
 			_recordDeleteSubStream = new Subject<FileInfo>();
 
 			var context = SynchronizationContext.Current;
@@ -217,7 +219,7 @@ namespace CapFrameX.ViewModel
 
 			try
 			{
-				if (_selectedRecordings.Count > 1)
+				if (_selectedRecordings?.Count > 1)
 				{
 					_recordDeleteStreamActive = false;
 

@@ -24,6 +24,7 @@
 				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.DataGrid.xaml" />
 				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Slider.xaml" />
 				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.GridSplitter.xaml" />
+				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ComboBox.xaml" />
 			</ResourceDictionary.MergedDictionaries>
 			<mvvm:EnumDescriptionConverter x:Key="EnumDescriptionConverter"/>
 			<mvvm:ZoomingModeConverter x:Key="ZoomingModeConverter"/>
@@ -52,70 +53,52 @@
 			<RowDefinition Height="1*"></RowDefinition>
 		</Grid.RowDefinitions>
 		<Grid Grid.Row="0">
-			<TextBlock HorizontalAlignment="Center"  FontWeight="Bold" FontSize="16" VerticalAlignment="Bottom" Text="{Binding CurrentGameName}"/>
-			<ToggleButton x:Name="ScreenshotModeToggleButton"
-						  materialDesign:ShadowAssist.ShadowDepth="Depth3"
-						  VerticalAlignment="Top"
-						  HorizontalAlignment="Right"
-						  Margin="0 0 20 0">
-				<ToggleButton.Content>
-					<materialDesign:PackIcon
-					Kind="CellphoneScreenshot" />
-				</ToggleButton.Content>
-				<materialDesign:ToggleButtonAssist.OnContent>
-					<materialDesign:PackIcon
-						Kind="GoogleAnalytics" />
-				</materialDesign:ToggleButtonAssist.OnContent >
-			</ToggleButton>
-			<Button Visibility="{Binding ElementName=ScreenshotModeToggleButton, Path=IsChecked, Converter={StaticResource FalseToCollapsedConverter}}"
-				  Style="{StaticResource MaterialDesignFloatingActionMiniButton}"
-				  VerticalAlignment="Top"
-				  HorizontalAlignment="Right"
-			      Margin="0 0 70 0"
-				  ToolTip="Make a screenshot"
-				  Width="32" Height="32" Click="TakeScreenShotButton_Click">
-				<materialDesign:PackIcon Kind="PhotoLibrary"/>
-			</Button>
+			<TextBlock HorizontalAlignment="Center" FontWeight="Bold" FontSize="16" VerticalAlignment="Bottom" Text="{Binding CurrentGameName}"/>
 		</Grid>
-		<Grid Grid.Row="1" x:Name="ScreenshotArea">
+		<Grid Grid.Row="1">
 			<Grid.RowDefinitions>
 				<RowDefinition Height="5*"></RowDefinition>
 				<RowDefinition Height="Auto"></RowDefinition>
-				<RowDefinition Height="3*" MaxHeight="368"></RowDefinition>
+				<RowDefinition Height="3*" MaxHeight="300"></RowDefinition>
 				<RowDefinition Height="Auto"></RowDefinition>
 			</Grid.RowDefinitions>
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition Width="1*"></ColumnDefinition>
 				<ColumnDefinition Width="Auto"></ColumnDefinition>
 			</Grid.ColumnDefinitions>
-			<TabControl Grid.Row="0" Margin="5 0 5 5" Background="#F5F5F5" SelectedItem="{Binding SelectedChartItem}">
-				<TabItem Header="Frametimes">
-					<controls:FrametimeGraphControl DataContext="{Binding Path=FrametimeGraphDataContext}"/>
-				</TabItem>
-				<TabItem Header="FPS">
-					<controls:FpsGraphControl DataContext="{Binding Path=FpsGraphDataContext}"/>
-				</TabItem>
-				<TabItem Header="L-shape">
-					<lvc:CartesianChart MouseDoubleClick="ResetChart_MouseDoubleClick" Series="{Binding LShapeCollection}" Zoom="Y" 
-										Tag="{Binding ElementName=DataViewUserControl, Path=DataContext}">
-						<lvc:CartesianChart.ContextMenu>
-							<ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
-								<MenuItem Header="Copy quantiles" Command="{Binding CopyLShapeQuantilesCommand}"/>
-							</ContextMenu>
-						</lvc:CartesianChart.ContextMenu>
-						<lvc:CartesianChart.AxisX>
-							<lvc:Axis Title="Percentiles (%)" Name="LShapeX" Foreground="Black">
-								<lvc:Axis.Separator >
-									<lvc:Separator Step="1"></lvc:Separator>
-								</lvc:Axis.Separator>
-							</lvc:Axis>
-						</lvc:CartesianChart.AxisX>
-						<lvc:CartesianChart.AxisY>
-							<lvc:Axis Title="Frametime [ms]" Name="LShapeY" Foreground="Black"/>
-						</lvc:CartesianChart.AxisY>
-					</lvc:CartesianChart>
-				</TabItem>
-			</TabControl>
+			<materialDesign:DialogHost Margin="5 0 5 5"
+									   IsOpen="{Binding MessageDialogContentIsOpen}"
+									   DialogContent="{Binding MessageDialogContent}"
+									   CloseOnClickAway="True">
+				<TabControl Grid.Row="0" Background="#F5F5F5" SelectedItem="{Binding SelectedChartItem}">
+					<TabItem Header="Frametimes">
+						<controls:FrametimeGraphControl DataContext="{Binding Path=FrametimeGraphDataContext}"/>
+					</TabItem>
+					<TabItem Header="FPS">
+						<controls:FpsGraphControl DataContext="{Binding Path=FpsGraphDataContext}"/>
+					</TabItem>
+					<TabItem Header="L-shape">
+						<lvc:CartesianChart MouseDoubleClick="ResetChart_MouseDoubleClick" Series="{Binding LShapeCollection}" Zoom="Y" 
+										Tag="{Binding ElementName=DataViewUserControl, Path=DataContext}" DataTooltip="{x:Null}" >
+							<lvc:CartesianChart.ContextMenu>
+								<ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
+									<MenuItem Header="Copy quantiles" Command="{Binding CopyLShapeQuantilesCommand}"/>
+								</ContextMenu>
+							</lvc:CartesianChart.ContextMenu>
+							<lvc:CartesianChart.AxisX>
+								<lvc:Axis Title="Percentiles (%)" Name="LShapeX" Foreground="Black">
+									<lvc:Axis.Separator >
+										<lvc:Separator Step="1"></lvc:Separator>
+									</lvc:Axis.Separator>
+								</lvc:Axis>
+							</lvc:CartesianChart.AxisX>
+							<lvc:CartesianChart.AxisY>
+								<lvc:Axis Title="Frametime [ms]" Name="LShapeY" Foreground="Black"/>
+							</lvc:CartesianChart.AxisY>
+						</lvc:CartesianChart>
+					</TabItem>
+				</TabControl>
+			</materialDesign:DialogHost>
 			<Grid Grid.Row="1" Margin="5 0 5 5" Background="#F5F5F5" Visibility="{Binding ElementName=CuttingModeActiveToggleButton, Path=IsChecked, Converter={StaticResource FalseToCollapsedConverter}}">
 				<Grid.ColumnDefinitions>
 					<ColumnDefinition Width="2*" />
@@ -150,18 +133,19 @@
 			</Grid>
 			<Grid Grid.Row="2" Margin="5 0 5 0" Background="#F5F5F5">
 				<Grid.ColumnDefinitions>
-					<ColumnDefinition Width="1*" />
+					<ColumnDefinition Width="1*" MaxWidth="800" />
 					<ColumnDefinition Width="1*" />
 				</Grid.ColumnDefinitions>
 				<lvc:CartesianChart Grid.Column="0" Margin="15 10 0 5" Series="{Binding StatisticCollection}" LegendLocation="None"
-									Tag="{Binding ElementName=DataViewUserControl, Path=DataContext}">
+									Tag="{Binding ElementName=DataViewUserControl, Path=DataContext}" DataTooltip="{x:Null}" >
 					<lvc:CartesianChart.ContextMenu>
 						<ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
 							<MenuItem Header="Copy statistical parameter" Command="{Binding CopyStatisticalParameterCommand}"/>
 						</ContextMenu>
 					</lvc:CartesianChart.ContextMenu>
 					<lvc:CartesianChart.AxisX>
-						<lvc:Axis Title="FPS" FontSize="11" MinValue="0" LabelFormatter="{Binding ParameterFormatter}" Foreground="Black"></lvc:Axis>
+						<lvc:Axis Title="FPS" FontSize="11" MinValue="0" MaxValue="{Binding BarMaxValue}" 
+								  LabelFormatter="{Binding ParameterFormatter}" Foreground="Black"/>
 					</lvc:CartesianChart.AxisX>
 					<lvc:CartesianChart.AxisY>
 						<lvc:Axis FontSize="11" Labels="{Binding ParameterLabels}" Foreground="Black">
@@ -171,101 +155,102 @@
 						</lvc:Axis>
 					</lvc:CartesianChart.AxisY>
 				</lvc:CartesianChart>
-				<lvc:PieChart Grid.Column="1" Margin="10 5 0 5" Hoverable="False" Series="{Binding StutteringStatisticCollection}" 
-							  LegendLocation="Bottom" DataClick="Chart_OnDataClick"/>
+				<DockPanel Grid.Column="1" Margin="10 5 50 5" HorizontalAlignment="Right" >
+					<lvc:PieChart Width="250" Hoverable="False" Series="{Binding StutteringStatisticCollection}" 
+								  LegendLocation="Bottom" DataClick="Chart_OnDataClick"/>
+				</DockPanel>
 			</Grid>
 			<!--Toolbar-->
-			<Grid Grid.Row="3" Margin="5 5 5 5" Background="#e6e6e6"
-				  Visibility="{Binding ElementName=ScreenshotModeToggleButton, Path=IsChecked, Converter={StaticResource TrueToCollapsedConverter}}">
+			<Grid Grid.Row="3" Margin="5 5 5 5" Background="#e6e6e6">
 				<Grid.ColumnDefinitions>
 					<ColumnDefinition Width="Auto" />
 					<ColumnDefinition Width="Auto" />
 					<ColumnDefinition Width="Auto" />
 					<ColumnDefinition Width="1*" />
 				</Grid.ColumnDefinitions>
-				<StackPanel Grid.Column="0" Margin="25 10 0 10" Orientation="Horizontal">
-					<TextBlock VerticalAlignment="Center">Statistic parameter settings:</TextBlock>
-					<materialDesign:PopupBox StaysOpen="True">
-						<materialDesign:Card Width="220" Margin="0 0 0 -10">
-							<StackPanel>
-								<Grid Margin="8 8 8 8">
-									<Grid.Resources>
-										<Style TargetType="CheckBox"
+				<ComboBox Grid.Column="0" Width="120" VerticalAlignment="Center" Margin="25 8 0 8" materialDesign:HintAssist.Hint="Frametime chart y-axis"
+					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="240" materialDesign:ComboBoxAssist.ClassicMode="True"
+					  ItemsSource="{Binding ChartYAxisSettings}" SelectedItem="{Binding SelecetedChartYAxisSetting}">
+					<ComboBox.ItemTemplate>
+						<DataTemplate>
+							<TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}"/>
+						</DataTemplate>
+					</ComboBox.ItemTemplate>
+				</ComboBox>
+				<StackPanel Grid.Column="3" Orientation="Horizontal" HorizontalAlignment="Right">
+					<StackPanel Margin="0 8 0 8" Orientation="Horizontal">
+						<TextBlock VerticalAlignment="Center">Statistic parameter settings:</TextBlock>
+						<materialDesign:PopupBox StaysOpen="True">
+							<materialDesign:Card Width="220" Margin="0 0 0 -10">
+								<StackPanel>
+									<Grid Margin="8 8 8 8">
+										<Grid.Resources>
+											<Style TargetType="CheckBox"
 											BasedOn="{StaticResource MaterialDesignCheckBox}">
-											<Setter Property="Margin" Value="8,8,10,8" />
-										</Style>
-										<Style TargetType="TextBox" BasedOn="{StaticResource MaterialDesignTextBox}">
-											<Setter Property="materialDesign:HintAssist.IsFloating" Value="True" />
-											<Setter Property="Margin" Value="8,8,8,8" />
-										</Style>
-									</Grid.Resources>
-									<Grid.RowDefinitions>
-										<RowDefinition Height="*" />
-										<RowDefinition Height="*" />
-										<RowDefinition Height="*" />
-										<RowDefinition Height="*" />
-										<RowDefinition Height="*" />
-										<RowDefinition Height="*" />
-										<RowDefinition Height="*" />
-										<RowDefinition Height="*" />
-										<RowDefinition Height="*" />
-										<RowDefinition Height="*" />
-										<RowDefinition Height="*" />
-										<RowDefinition Height="*" />
-									</Grid.RowDefinitions>
-									<Grid.ColumnDefinitions>
-										<ColumnDefinition Width="Auto"/>
-										<ColumnDefinition Width="Auto"/>
-									</Grid.ColumnDefinitions>
-									<TextBlock Margin="5" Grid.Row="0" Grid.Column="0" Text="Maximum" VerticalAlignment="Center"/>
-									<ToggleButton Margin="5" Grid.Row="0" Grid.Column="1" IsChecked="{Binding UseMaxStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show maximum value parameter" />
-									<TextBlock Margin="5" Grid.Row="1" Grid.Column="0" Text="99% percentile" VerticalAlignment="Center"/>
-									<ToggleButton Margin="5" Grid.Row="1" Grid.Column="1" IsChecked="{Binding UseP99QuantileStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show 99% percentile parameter" />
-									<TextBlock Margin="5" Grid.Row="2" Grid.Column="0" Text="95% percentile" VerticalAlignment="Center"/>
-									<ToggleButton Margin="5" Grid.Row="2" Grid.Column="1" IsChecked="{Binding UseP95QuantileStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show 95% percentile parameter" />
-									<TextBlock Margin="5" Grid.Row="3" Grid.Column="0" Text="Average" VerticalAlignment="Center"/>
-									<ToggleButton Margin="5" Grid.Row="3" Grid.Column="1" IsChecked="{Binding UseAverageStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show average value parameter" />
-									<TextBlock Margin="5" Grid.Row="4" Grid.Column="0" Text="5% percentile" VerticalAlignment="Center"/>
-									<ToggleButton Margin="5" Grid.Row="4" Grid.Column="1" IsChecked="{Binding UseP5QuantileStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show 5% percentile parameter" />
-									<TextBlock Margin="5" Grid.Row="5" Grid.Column="0" Text="1% percentile" VerticalAlignment="Center"/>
-									<ToggleButton Margin="5" Grid.Row="5" Grid.Column="1" IsChecked="{Binding UseP1QuantileStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show 1% percentile parameter" />
-									<TextBlock Margin="5" Grid.Row="6" Grid.Column="0" Text="0.2% percentile" VerticalAlignment="Center"/>
-									<ToggleButton Margin="5" Grid.Row="6" Grid.Column="1" IsChecked="{Binding UseP0Dot2QuantileStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show 0.2% percentile parameter" />
-									<TextBlock Margin="5" Grid.Row="7" Grid.Column="0" Text="0.1% percentile" VerticalAlignment="Center"/>
-									<ToggleButton Margin="5" Grid.Row="7" Grid.Column="1" IsChecked="{Binding UseP0Dot1QuantileStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show 0.1% parameter" />
-									<TextBlock Margin="5" Grid.Row="8" Grid.Column="0" Text="1% low average" VerticalAlignment="Center" ToolTip="average value for the lowest 1% of all frames"/>
-									<ToggleButton Margin="5" Grid.Row="8" Grid.Column="1" IsChecked="{Binding UseP1LowAverageStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show 1% low average parameter" />
-									<TextBlock Margin="5" Grid.Row="9" Grid.Column="0" Text="0.1% low average" VerticalAlignment="Center" ToolTip="average value for the lowest 0.1% of all frames"/>
-									<ToggleButton Margin="5" Grid.Row="9" Grid.Column="1" IsChecked="{Binding UseP0Dot1LowAverageStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show 0.1% low average parameter" />
-									<TextBlock Margin="5" Grid.Row="10" Grid.Column="0" Text="Minimum" VerticalAlignment="Center"/>
-									<ToggleButton Margin="5" Grid.Row="10" Grid.Column="1" IsChecked="{Binding UseMinStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show minimum value parameter" />
-									<TextBlock Margin="5" Grid.Row="11" Grid.Column="0" Text="Adaptive STD" VerticalAlignment="Center" ToolTip="standard deviation calculated with moving average instead of constant mean"/>
-									<ToggleButton Margin="5" Grid.Row="11" Grid.Column="1" IsChecked="{Binding UseAdaptiveSTDStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show adaptive standard deviation parameter" />
-								</Grid>
-								<Separator Style="{StaticResource MaterialDesignDarkSeparator}" />
-								<StackPanel
+												<Setter Property="Margin" Value="8,8,10,8" />
+											</Style>
+											<Style TargetType="TextBox" BasedOn="{StaticResource MaterialDesignTextBox}">
+												<Setter Property="materialDesign:HintAssist.IsFloating" Value="True" />
+												<Setter Property="Margin" Value="8,8,8,8" />
+											</Style>
+										</Grid.Resources>
+										<Grid.RowDefinitions>
+											<RowDefinition Height="*" />
+											<RowDefinition Height="*" />
+											<RowDefinition Height="*" />
+											<RowDefinition Height="*" />
+											<RowDefinition Height="*" />
+											<RowDefinition Height="*" />
+											<RowDefinition Height="*" />
+											<RowDefinition Height="*" />
+											<RowDefinition Height="*" />
+											<RowDefinition Height="*" />
+											<RowDefinition Height="*" />
+											<RowDefinition Height="*" />
+										</Grid.RowDefinitions>
+										<Grid.ColumnDefinitions>
+											<ColumnDefinition Width="Auto"/>
+											<ColumnDefinition Width="Auto"/>
+										</Grid.ColumnDefinitions>
+										<TextBlock Margin="5" Grid.Row="0" Grid.Column="0" Text="Maximum" VerticalAlignment="Center"/>
+										<ToggleButton Margin="5" Grid.Row="0" Grid.Column="1" IsChecked="{Binding UseMaxStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show maximum value parameter" />
+										<TextBlock Margin="5" Grid.Row="1" Grid.Column="0" Text="99% percentile" VerticalAlignment="Center"/>
+										<ToggleButton Margin="5" Grid.Row="1" Grid.Column="1" IsChecked="{Binding UseP99QuantileStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show 99% percentile parameter" />
+										<TextBlock Margin="5" Grid.Row="2" Grid.Column="0" Text="95% percentile" VerticalAlignment="Center"/>
+										<ToggleButton Margin="5" Grid.Row="2" Grid.Column="1" IsChecked="{Binding UseP95QuantileStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show 95% percentile parameter" />
+										<TextBlock Margin="5" Grid.Row="3" Grid.Column="0" Text="Average" VerticalAlignment="Center"/>
+										<ToggleButton Margin="5" Grid.Row="3" Grid.Column="1" IsChecked="{Binding UseAverageStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show average value parameter" />
+										<TextBlock Margin="5" Grid.Row="4" Grid.Column="0" Text="5% percentile" VerticalAlignment="Center"/>
+										<ToggleButton Margin="5" Grid.Row="4" Grid.Column="1" IsChecked="{Binding UseP5QuantileStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show 5% percentile parameter" />
+										<TextBlock Margin="5" Grid.Row="5" Grid.Column="0" Text="1% percentile" VerticalAlignment="Center"/>
+										<ToggleButton Margin="5" Grid.Row="5" Grid.Column="1" IsChecked="{Binding UseP1QuantileStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show 1% percentile parameter" />
+										<TextBlock Margin="5" Grid.Row="6" Grid.Column="0" Text="0.2% percentile" VerticalAlignment="Center"/>
+										<ToggleButton Margin="5" Grid.Row="6" Grid.Column="1" IsChecked="{Binding UseP0Dot2QuantileStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show 0.2% percentile parameter" />
+										<TextBlock Margin="5" Grid.Row="7" Grid.Column="0" Text="0.1% percentile" VerticalAlignment="Center"/>
+										<ToggleButton Margin="5" Grid.Row="7" Grid.Column="1" IsChecked="{Binding UseP0Dot1QuantileStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show 0.1% parameter" />
+										<TextBlock Margin="5" Grid.Row="8" Grid.Column="0" Text="1% low average" VerticalAlignment="Center" ToolTip="average value for the lowest 1% of all frames"/>
+										<ToggleButton Margin="5" Grid.Row="8" Grid.Column="1" IsChecked="{Binding UseP1LowAverageStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show 1% low average parameter" />
+										<TextBlock Margin="5" Grid.Row="9" Grid.Column="0" Text="0.1% low average" VerticalAlignment="Center" ToolTip="average value for the lowest 0.1% of all frames"/>
+										<ToggleButton Margin="5" Grid.Row="9" Grid.Column="1" IsChecked="{Binding UseP0Dot1LowAverageStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show 0.1% low average parameter" />
+										<TextBlock Margin="5" Grid.Row="10" Grid.Column="0" Text="Minimum" VerticalAlignment="Center"/>
+										<ToggleButton Margin="5" Grid.Row="10" Grid.Column="1" IsChecked="{Binding UseMinStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show minimum value parameter" />
+										<TextBlock Margin="5" Grid.Row="11" Grid.Column="0" Text="Adaptive STD" VerticalAlignment="Center" ToolTip="standard deviation calculated with moving average instead of constant mean"/>
+										<ToggleButton Margin="5" Grid.Row="11" Grid.Column="1" IsChecked="{Binding UseAdaptiveSTDStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show adaptive standard deviation parameter" />
+									</Grid>
+									<Separator Style="{StaticResource MaterialDesignDarkSeparator}" />
+									<StackPanel
 										  Margin="8 0 8 8"
 										  Orientation="Horizontal"
 										  HorizontalAlignment="Right">
-									<Button IsDefault="True" Style="{DynamicResource MaterialDesignFlatButton}"
+										<Button IsDefault="True" Style="{DynamicResource MaterialDesignFlatButton}"
 												Command="{Binding AcceptParameterSettingsCommand}" HorizontalAlignment="Right">
-										APPLY
-									</Button>
+											APPLY
+										</Button>
+									</StackPanel>
 								</StackPanel>
-							</StackPanel>
-						</materialDesign:Card>
-					</materialDesign:PopupBox>
-				</StackPanel>
-				<StackPanel Grid.Column="3" Orientation="Horizontal" HorizontalAlignment="Right">
-					<ComboBox Width="120" VerticalAlignment="Center" Margin="0 8 0 8" materialDesign:HintAssist.Hint="Frametime chart y-axis"
-					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="210"
-					  ItemsSource="{Binding ChartYAxisSettings}" SelectedItem="{Binding SelecetedChartYAxisSetting}">
-						<ComboBox.ItemTemplate>
-							<DataTemplate>
-								<TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}"/>
-							</DataTemplate>
-						</ComboBox.ItemTemplate>
-					</ComboBox>
+							</materialDesign:Card>
+						</materialDesign:PopupBox>
+					</StackPanel>
 					<CheckBox Margin="30 0 0 0" VerticalAlignment="Center" IsThreeState="False" IsChecked="{Binding RemoveOutliers}">
 						Remove outliers
 					</CheckBox>
@@ -276,7 +261,8 @@
 					</StackPanel>
 				</StackPanel>
 			</Grid>
-			<Expander Margin="0 20 0 0" Background="#e6e6e6" Grid.Row="0" Grid.RowSpan="4" Grid.Column="1" ExpandDirection="Left">
+			<Grid Margin="0 5 0 5" Grid.Row="4" Grid.Column="1" Background="#e6e6e6"/>
+			<Expander Margin="0 20 0 0" Background="#e6e6e6" Grid.Row="0" Grid.RowSpan="3" Grid.Column="1" ExpandDirection="Left">
 				<Expander.Header>
 					<TextBlock Text="System Info" RenderTransformOrigin=".5,.5">
 						<TextBlock.LayoutTransform>

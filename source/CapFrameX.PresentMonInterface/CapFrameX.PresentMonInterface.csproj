@@ -115,6 +115,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PreBuildEvent>taskkill /f /fi "pid gt 0" /im PresentMon64-1.5.2.exe</PreBuildEvent>
+    <PreBuildEvent>taskkill /f /im PresentMon64-1.5.2.exe 2&gt;nul 1&gt;nul
+Exit 0</PreBuildEvent>
   </PropertyGroup>
 </Project>

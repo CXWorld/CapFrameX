@@ -55,5 +55,11 @@
 		string RecordingListSortMemberPath { get; set; }
 
 		string RecordingListSortDirection { get; set; }
+
+		string SyncRangeLower { get; set; }
+
+		string SyncRangeUpper { get; set; }
+
+		bool ShowOutlierWarning { get; set; }
 	}
 }

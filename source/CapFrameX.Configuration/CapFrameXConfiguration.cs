@@ -4,6 +4,8 @@ namespace CapFrameX.Configuration
 {
 	public class CapFrameXConfiguration : IAppConfiguration
 	{
+		public static IAppConfiguration Instance = new CapFrameXConfiguration();
+
 		private static Properties.Settings Settings => Properties.Settings.Default;
 
 		public int MovingAverageWindowSize
@@ -164,6 +166,24 @@ namespace CapFrameX.Configuration
 		{
 			get { return Settings.RecordingListSortDirection; }
 			set { Settings.RecordingListSortDirection = value; Settings.Save(); }
+		}
+
+		public string SyncRangeLower
+		{
+			get { return Settings.SyncRangeLower; }
+			set { Settings.SyncRangeLower = value; Settings.Save(); }
+		}
+
+		public string SyncRangeUpper
+		{
+			get { return Settings.SyncRangeUpper; }
+			set { Settings.SyncRangeUpper = value; Settings.Save(); }
+		}
+
+		public bool ShowOutlierWarning
+		{
+			get { return Settings.ShowOutlierWarning; }
+			set { Settings.ShowOutlierWarning = value; Settings.Save(); }
 		}
 	}
 }

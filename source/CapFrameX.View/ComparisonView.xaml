@@ -62,7 +62,7 @@
 											Visibility="{Binding HasComparisonItems, Converter={StaticResource TrueToVisibleConverter}}" DisableAnimations="True"
 											Hoverable="False" DataTooltip="{x:Null}" LegendLocation="Top">
 									<lvc:CartesianChart.AxisX>
-										<lvc:Axis MinValue="0" Foreground="Transparent"></lvc:Axis>
+									<lvc:Axis MinValue="0" MaxValue="{Binding BarMaxValue}" Foreground="Transparent"></lvc:Axis>
 									</lvc:CartesianChart.AxisX>
 									<lvc:CartesianChart.AxisY>
 										<lvc:Axis Labels="{Binding ComparisonRowChartLabels}" FontSize="12" Foreground="Black">
@@ -161,11 +161,11 @@
 						Visibility="{Binding IsBarChartTabActive, Converter={StaticResource TrueToVisibleConverter}}">
 				<TextBlock VerticalAlignment="Center">Grouping:</TextBlock>
 				<ToggleButton Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
-							  ToolTip="Cutting mode" IsChecked="{Binding UseComparisonGrouping}"/>
+							  ToolTip="Grouping" IsChecked="{Binding UseComparisonGrouping}"/>
 			</StackPanel>
 			<ComboBox Grid.Column="2" Width="110" VerticalAlignment="Center" Margin="30 0 0 5" materialDesign:HintAssist.Hint="Second metric"
 					  Visibility="{Binding IsBarChartTabActive, Converter={StaticResource TrueToVisibleConverter}}"
-					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="300"
+					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="330" materialDesign:ComboBoxAssist.ClassicMode="True"
 					  ItemsSource="{Binding SecondMetricItems}" SelectedItem="{Binding SelectedSecondaryMetric}">
 				<ComboBox.ItemTemplate>
 					<DataTemplate>
@@ -175,7 +175,7 @@
 			</ComboBox>
 			<ComboBox Grid.Column="3" Width="110" VerticalAlignment="Center" Margin="30 0 0 5" materialDesign:HintAssist.Hint="Third metric"
 					  Visibility="{Binding IsBarChartTabActive, Converter={StaticResource TrueToVisibleConverter}}"
-					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="330"
+					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="360" materialDesign:ComboBoxAssist.ClassicMode="True"
 					  ItemsSource="{Binding MetricItems}" SelectedItem="{Binding SelectedThirdMetric}">
 				<ComboBox.ItemTemplate>
 					<DataTemplate>
@@ -198,7 +198,7 @@
 			</StackPanel>
 
 			<ComboBox Grid.Column="4" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="30 0 30 5" materialDesign:HintAssist.Hint="Comparison context"
-					materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="150"
+					materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="150" materialDesign:ComboBoxAssist.ClassicMode="True"
 					ItemsSource="{Binding ComparisonContextItems}" SelectedItem="{Binding SelectedComparisonContext}">
 				<ComboBox.ItemTemplate>
 					<DataTemplate>

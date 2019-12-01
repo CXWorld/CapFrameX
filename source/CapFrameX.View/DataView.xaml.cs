@@ -46,7 +46,7 @@ namespace CapFrameX.View
 		{
 			var chart = (PieChart)chartpoint.ChartView;
 
-			//clear selected slice.
+			//clear selected slice
 			foreach (PieSeries series in chart.Series)
 				series.PushOut = 0;
 
@@ -66,110 +66,6 @@ namespace CapFrameX.View
 			LShapeX.MaxValue = double.NaN;
 			LShapeY.MinValue = double.NaN;
 			LShapeY.MaxValue = double.NaN;
-		}
-
-		// Unused code
-		private Bitmap ResizeImage(Bitmap imgToResize, System.Drawing.Size size)
-		{
-			int sourceWidth = imgToResize.Width;
-			int sourceHeight = imgToResize.Height;
-
-			float nPercent = 0;
-			float nPercentW = 0;
-			float nPercentH = 0;
-
-			nPercentW = ((float)size.Width / (float)sourceWidth);
-			nPercentH = ((float)size.Height / (float)sourceHeight);
-
-			if (nPercentH < nPercentW)
-				nPercent = nPercentH;
-			else
-				nPercent = nPercentW;
-
-			int destWidth = (int)(sourceWidth * nPercent);
-			int destHeight = (int)(sourceHeight * nPercent);
-
-			Bitmap b = new Bitmap(destWidth, destHeight);
-			Graphics g = Graphics.FromImage(b);
-			g.InterpolationMode = InterpolationMode.NearestNeighbor;
-
-			g.DrawImage(imgToResize, 0, 0, destWidth, destHeight);
-			g.Dispose();
-
-			return b;
-		}
-
-		/// <summary>
-		/// Exporting png pictures
-		/// </summary>
-		/// <param name="sender"></param>
-		/// <param name="e"></param>
-		private void TakeScreenShotButton_Click(object sender, RoutedEventArgs e)
-		{
-			if (!(DataContext is DataViewModel viewModel))
-			{
-				return;
-			}
-
-			string path = viewModel.AppConfiguration.ScreenshotDirectory;
-
-			try
-			{
-				if (path.Contains(@"MyDocuments\CapFrameX\Screenshots"))
-				{
-					var documentFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-					path = Path.Combine(documentFolder, @"CapFrameX\Screenshots");
-				}
-
-				if (path.Contains(@"MyDocuments\OCAT\Screenshots"))
-				{
-					var documentFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-					path = Path.Combine(documentFolder, @"OCAT\Screenshots");
-				}
-
-				if (!Directory.Exists(path))
-				{
-					Directory.CreateDirectory(path);
-				}
-
-				var filename = Path.Combine(path, viewModel.RecordInfo.GameName + "_" +
-					DateTime.Now.ToString("yyyy-dd-M_HH-mm-ss") + "_CX_Analysis.png");
-
-				VisualBrush visualBrush = new VisualBrush(ScreenshotArea);
-
-				// Gets the size of the images (I assume each image has the same size)
-				int imageWidth = (int)ScreenshotArea.ActualWidth;
-				int imageHeight = (int)ScreenshotArea.ActualHeight;
-
-				// Draws the images into a DrawingVisual component
-				DrawingVisual drawingVisual = new DrawingVisual();
-				using (DrawingContext drawingContext = drawingVisual.RenderOpen())
-				{
-					drawingContext.DrawRectangle(visualBrush, null, new Rect(new System.Windows.Point(0, 0), new System.Windows.Point(imageWidth, imageHeight)));
-				}
-
-				// As an option? Config?
-				double dpi = 1.3 * 96;
-				double scale = dpi / 96;
-
-				// Converts the Visual (DrawingVisual) into a BitmapSource
-				RenderTargetBitmap bmp = new RenderTargetBitmap((int)(scale * imageWidth), (int)(scale * imageHeight), dpi, dpi, PixelFormats.Pbgra32);
-				bmp.Render(drawingVisual);
-
-				using (MemoryStream stream = new MemoryStream())
-				{
-					BitmapEncoder encoder = new PngBitmapEncoder();
-					encoder.Frames.Add(BitmapFrame.Create(bmp));
-					encoder.Save(stream);
-
-					Bitmap bitmap = new Bitmap(stream);
-					bitmap.Save(filename);
-				}				
-			}
-			catch
-			{
-				return;
-			}
 		}
 	}
 }

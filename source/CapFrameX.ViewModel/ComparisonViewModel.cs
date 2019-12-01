@@ -1,8 +1,9 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
+using CapFrameX.Data;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Extensions;
-using CapFrameX.Data;
+using CapFrameX.MVVM.Dialogs;
 using CapFrameX.Statistics;
 using GongSolutions.Wpf.DragDrop;
 using LiveCharts;
@@ -27,7 +28,6 @@ using System.Windows.Input;
 using System.Windows.Media;
 using ComparisonCollection = System.Collections.ObjectModel
 	.ObservableCollection<CapFrameX.ViewModel.ComparisonRecordInfoWrapper>;
-using CapFrameX.MVVM.Dialogs;
 
 namespace CapFrameX.ViewModel
 {
@@ -72,6 +72,7 @@ namespace CapFrameX.ViewModel
 		private bool _messageDialogContentIsOpen;
 		private MessageDialog _messageDialogContent;
 		private string _messageText;
+		private int _barMaxValue;
 
 		public Array MetricItems => Enum.GetValues(typeof(EMetric))
 										.Cast<EMetric>()
@@ -396,6 +397,16 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
+		public int BarMaxValue
+		{
+			get { return _barMaxValue; }
+			set
+			{
+				_barMaxValue = value;
+				RaisePropertyChanged();
+			}
+		}
+
 		public bool IsBarChartTabActive
 		{
 			get { return SelectedChartItem?.Header.ToString() == "Bar charts"; }
@@ -585,6 +596,7 @@ namespace CapFrameX.ViewModel
 				}
 			}
 
+			SetBarMaxValue();
 			UpdateBarChartHeight();
 		}
 
@@ -623,6 +635,7 @@ namespace CapFrameX.ViewModel
 					OnDateTimeContext();
 					break;
 			}
+
 		}
 
 		private void OnCuttingModeChanged()
@@ -777,11 +790,17 @@ namespace CapFrameX.ViewModel
 
 			// Second metric
 			if (ComparisonRowChartSeriesCollection.Count > 1)
+			{
 				ComparisonRowChartSeriesCollection[1].Values.Insert(0, wrappedComparisonInfo.WrappedRecordInfo.SecondMetric);
+			}
 
 			// Second metric
 			if (ComparisonRowChartSeriesCollection.Count > 2)
+			{
 				ComparisonRowChartSeriesCollection[2].Values.Insert(0, wrappedComparisonInfo.WrappedRecordInfo.ThirdMetric);
+			}
+
+			SetBarMaxValue();
 
 			switch (SelectedComparisonContext)
 			{
@@ -806,6 +825,35 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
+		private void SetBarMaxValue()
+		{
+			if (!ComparisonRowChartSeriesCollection.Any())
+				return;
+
+			double maxSecondMetricBarValue = 0;
+			double maxThirdMetricBarValue = 0;
+
+			// First metric
+			if (!((ComparisonRowChartSeriesCollection[0].Values as IList<double>).Any()))
+				return;
+
+			double maxFirstMetricBarValue = (ComparisonRowChartSeriesCollection[0].Values as IList<double>).Max() * 1.15;
+
+			// Second metric
+			if (ComparisonRowChartSeriesCollection.Count > 1)
+			{
+				maxSecondMetricBarValue = (ComparisonRowChartSeriesCollection[1].Values as IList<double>).Max() * 1.15;
+			}
+
+			// Second metric
+			if (ComparisonRowChartSeriesCollection.Count > 2)
+			{
+				maxThirdMetricBarValue = (ComparisonRowChartSeriesCollection[2].Values as IList<double>).Max() * 1.15;
+			}
+
+			BarMaxValue = (int)(new[] { maxFirstMetricBarValue, maxSecondMetricBarValue, maxThirdMetricBarValue }.Max());
+		}
+
 		private void AddToFrameTimeChart(ComparisonRecordInfoWrapper wrappedComparisonInfo)
 		{
 			double startTime = FirstSeconds;
@@ -816,28 +864,31 @@ namespace CapFrameX.ViewModel
 
 			var chartTitle = string.Empty;
 
-			switch (SelectedComparisonContext)
+			if (IsContextLegendActive)
 			{
-				case EComparisonContext.DateTime:
-					chartTitle = $"{wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.CreationDate} " +
-						$"{ wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.CreationTime}";
-					break;
-				case EComparisonContext.CPU:
-					chartTitle = wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.ProcessorName;
-					break;
-				case EComparisonContext.GPU:
-					chartTitle = wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.GraphicCardName;
-					break;
-				case EComparisonContext.SystemRam:
-					chartTitle = wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.SystemRamInfo;
-					break;
-				case EComparisonContext.Custom:
-					chartTitle = wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.Comment;
-					break;
-				default:
-					chartTitle = $"{wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.CreationDate} " +
-						$"{ wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.CreationTime}";
-					break;
+				switch (SelectedComparisonContext)
+				{
+					case EComparisonContext.DateTime:
+						chartTitle = $"{wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.CreationDate} " +
+							$"{ wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.CreationTime}";
+						break;
+					case EComparisonContext.CPU:
+						chartTitle = wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.ProcessorName;
+						break;
+					case EComparisonContext.GPU:
+						chartTitle = wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.GraphicCardName;
+						break;
+					case EComparisonContext.SystemRam:
+						chartTitle = wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.SystemRamInfo;
+						break;
+					case EComparisonContext.Custom:
+						chartTitle = wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.Comment;
+						break;
+					default:
+						chartTitle = $"{wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.CreationDate} " +
+							$"{ wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.CreationTime}";
+						break;
+				}
 			}
 
 			var color = wrappedComparisonInfo.FrametimeGraphColor.Value;

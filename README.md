@@ -1,5 +1,13 @@
+![Screenshot](Images/CX_Header_Logo_Wide.png)
 # CapFrameX
 Frametimes capture and analysis tool compatible with most common 3D APIs
+
+# Special thanks to
+Sven Bauduin for logo and text design
+
+# Remark in our own intererst
+If you are a reviewer or a youtuber using CapFrameX to get your data, please mention us and link to our software.
+If you want to use images of the CapFrameX analysis, please use the built in screenshot function so that our logo and name gets added to the images.
 
 # Release
 Download link: https://github.com/DevTechProfile/CapFrameX/releases
@@ -30,23 +38,26 @@ Capture page (DE): https://www.youtube.com/watch?v=ZqMMPDxJUkk
 This list is always located at the left section, regardless of the view you're currently in.
 
 It constantly observes the output directory so every capture will show up here as soon as the capture has finished.
-This also includes every OCAT or Presentmon capture you put into that directory.
+This also includes every OCAT or PresentMon capture you put into that directory.
 
 At the bottom of that list you can see and change the CPU, GPU and RAM description and add a custom comment to every capture.
 Also you can edit the game name, since the process name is used as default. This gets saved in a textfile that is being compared with a list we update with every new version of CapFrameX to add new games that aren't already on your list. 
 
-## Options
-Located at the top right corner(three dots)
+## Global Navigation Bar
+Located at the top
+Contains all the different views, a screenshot button, a direct link to the CX github page and an options menu. 
+The screenshot button takes a screenshot of the current view excluding the record list.
 
+## Options
 * Moving average window size = The number of frames that are used for the average line in the frametime chart.(Analysis View)
 * Stuttering factor = The factor a frametime has to be above average to be counted as stutter.(Analysis View)
-* Observed directory = The directory in which your captures are saved and also where you can put your OCAT/Presentmon captures.
+* Observed directory = The directory in which your captures are saved and also where you can put your OCAT/PresentMon captures.
 * FPS values rounding digits = The number of decimals for the FPS values
 * Screenshot directory = The directory in which your screenshots are saved.
 
 ## Capture view
 Here you can set your capture hotkey, the capture time(0=unlimited) and the response sounds.
-An info text at the top always informs you what's going on with the capture service and also tells you what to do in certain situations.
+An info text always informs you what's going on with the capture service and also tells you what to do in certain situations.
 For more detailed information about the capture events, you can take a look into the log which can be expanded from the bottom.
 
 ## How to make a capture
@@ -68,7 +79,6 @@ For the graphs you can choose between frametime graphs, FPS graphs and L-shapes.
 Below that you have your performance parameters like min, max, avg and percentiles.
 You also have a pie chart which shows the amount of time you had stuttering, meaning frametimes above 2.5x average(default).
 At the bottom is a toolbar where you can change the performance parameters, adjust the Y-axis for the frametimes, remove unusual outliers from the graphs and activate a cutting mode.
-Also at the top you have a screenshot button to save the view(without the record list) as a png file.
 
 ## Comparison View
 Here you can compare multiple records.
@@ -104,6 +114,7 @@ This is a simple view where you can add your records to see all the relevant par
 ## Synchronization view
 This view shows you the quality of your synchronization methods like FreeSync or G-Sync.
 If they are working properly, the lines for "frametimes" and "Display changed times" should align pretty well, this means your monitor works at the adaptive refresh rate of your GPU.
+Below the Graph you can see two percentage values. The first one shows the correlation of frame- and display time, the second one shows the amount of frames within valid sync range(that you can enter next to it).
 At the bottom you can see the distribution of the refresh times and beside it another pie chart which shows the number of dropped frames.
 
 ## Export options (context menu)
@@ -123,4 +134,6 @@ At the bottom you can see the distribution of the refresh times and beside it an
 # Dev roadmap
 * RTSS client implementation
 * Approximation input lag
+
+##
 

@@ -192,14 +192,17 @@ namespace CapFrameX.ViewModel
 				return GetLabelDateTimeContext(record, GetMaxDateTimeAlignment());
 			}).Reverse().ToArray();
 
-			if (ComparisonModel.Series.Count == ComparisonRecords.Count)
+			if (IsContextLegendActive)
 			{
-				for (int i = 0; i < ComparisonRecords.Count; i++)
+				if (ComparisonModel.Series.Count == ComparisonRecords.Count)
 				{
-					var wrappedComparisonInfo = ComparisonRecords[i];
-					var chartTitle = $"{wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.CreationDate} " +
-						$"{ wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.CreationTime}";
-					ComparisonModel.Series[i].Title = chartTitle;
+					for (int i = 0; i < ComparisonRecords.Count; i++)
+					{
+						var wrappedComparisonInfo = ComparisonRecords[i];
+						var chartTitle = $"{wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.CreationDate} " +
+							$"{ wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.CreationTime}";
+						ComparisonModel.Series[i].Title = chartTitle;
+					}
 				}
 			}
 		}
@@ -232,13 +235,16 @@ namespace CapFrameX.ViewModel
 				return GetLabelCpuContext(record, GetMaxCpuAlignment());
 			}).Reverse().ToArray();
 
-			if (ComparisonModel.Series.Count == ComparisonRecords.Count)
+			if (IsContextLegendActive)
 			{
-				for (int i = 0; i < ComparisonRecords.Count; i++)
+				if (ComparisonModel.Series.Count == ComparisonRecords.Count)
 				{
-					var wrappedComparisonInfo = ComparisonRecords[i];
-					var chartTitle = wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.ProcessorName;
-					ComparisonModel.Series[i].Title = chartTitle;
+					for (int i = 0; i < ComparisonRecords.Count; i++)
+					{
+						var wrappedComparisonInfo = ComparisonRecords[i];
+						var chartTitle = wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.ProcessorName;
+						ComparisonModel.Series[i].Title = chartTitle;
+					}
 				}
 			}
 		}
@@ -280,13 +286,16 @@ namespace CapFrameX.ViewModel
 				return GetLabelGpuContext(record, GetMaxGpuAlignment());
 			}).Reverse().ToArray();
 
-			if (ComparisonModel.Series.Count == ComparisonRecords.Count)
+			if (IsContextLegendActive)
 			{
-				for (int i = 0; i < ComparisonRecords.Count; i++)
+				if (ComparisonModel.Series.Count == ComparisonRecords.Count)
 				{
-					var wrappedComparisonInfo = ComparisonRecords[i];
-					var chartTitle = wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.GraphicCardName;
-					ComparisonModel.Series[i].Title = chartTitle;
+					for (int i = 0; i < ComparisonRecords.Count; i++)
+					{
+						var wrappedComparisonInfo = ComparisonRecords[i];
+						var chartTitle = wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.GraphicCardName;
+						ComparisonModel.Series[i].Title = chartTitle;
+					}
 				}
 			}
 		}
@@ -328,13 +337,16 @@ namespace CapFrameX.ViewModel
 				return GetLabelSystemRamContext(record, GetMaxSystemRamAlignment());
 			}).Reverse().ToArray();
 
-			if (ComparisonModel.Series.Count == ComparisonRecords.Count)
+			if (IsContextLegendActive)
 			{
-				for (int i = 0; i < ComparisonRecords.Count; i++)
+				if (ComparisonModel.Series.Count == ComparisonRecords.Count)
 				{
-					var wrappedComparisonInfo = ComparisonRecords[i];
-					var chartTitle = wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.SystemRamInfo;
-					ComparisonModel.Series[i].Title = chartTitle;
+					for (int i = 0; i < ComparisonRecords.Count; i++)
+					{
+						var wrappedComparisonInfo = ComparisonRecords[i];
+						var chartTitle = wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.SystemRamInfo;
+						ComparisonModel.Series[i].Title = chartTitle;
+					}
 				}
 			}
 		}
@@ -377,13 +389,16 @@ namespace CapFrameX.ViewModel
 				return GetLabelCustomContext(record, GetMaxCommentAlignment());
 			}).Reverse().ToArray();
 
-			if (ComparisonModel.Series.Count == ComparisonRecords.Count)
+			if (IsContextLegendActive)
 			{
-				for (int i = 0; i < ComparisonRecords.Count; i++)
+				if (ComparisonModel.Series.Count == ComparisonRecords.Count)
 				{
-					var wrappedComparisonInfo = ComparisonRecords[i];
-					var chartTitle = wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.Comment;
-					ComparisonModel.Series[i].Title = chartTitle;
+					for (int i = 0; i < ComparisonRecords.Count; i++)
+					{
+						var wrappedComparisonInfo = ComparisonRecords[i];
+						var chartTitle = wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.Comment;
+						ComparisonModel.Series[i].Title = chartTitle;
+					}
 				}
 			}
 		}

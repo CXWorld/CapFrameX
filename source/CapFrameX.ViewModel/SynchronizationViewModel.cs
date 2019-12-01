@@ -39,6 +39,9 @@ namespace CapFrameX.ViewModel
 		private IFileRecordInfo _recordInfo;
 		private string _frametimeDisplayChangedTimeCorrelation = "0%";
 		private string _currentGameName;
+		private string _syncRangePercentage = "0%";
+		private string _syncRangeLower;
+		private string _syncRangeUpper;
 
 		/// <summary>
 		/// https://docs.microsoft.com/en-us/dotnet/standard/base-types/standard-numeric-format-strings
@@ -122,6 +125,40 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
+		public string SyncRangeLower
+		{
+			get { return _syncRangeLower; }
+			set
+			{
+				_syncRangeLower = value;
+				_appConfiguration.SyncRangeLower = value;
+				RaisePropertyChanged();
+				OnSyncRangeChanged();
+			}
+		}
+
+		public string SyncRangeUpper
+		{
+			get { return _syncRangeUpper; }
+			set
+			{
+				_syncRangeUpper = value;
+				_appConfiguration.SyncRangeUpper = value;
+				RaisePropertyChanged();
+				OnSyncRangeChanged();
+			}
+		}
+
+		public string SyncRangePercentage
+		{
+			get { return _syncRangePercentage; }
+			set
+			{
+				_syncRangePercentage = value;
+				RaisePropertyChanged();
+			}
+		}
+
 		public ICommand CopyDisplayChangeTimeValuesCommand { get; }
 
 		public ICommand CopyHistogramDataCommand { get; }
@@ -136,6 +173,9 @@ namespace CapFrameX.ViewModel
 
 			CopyDisplayChangeTimeValuesCommand = new DelegateCommand(OnCopyDisplayChangeTimeValues);
 			CopyHistogramDataCommand = new DelegateCommand(CopyHistogramData);
+
+			_syncRangeLower = _appConfiguration.SyncRangeLower;
+			_syncRangeUpper = _appConfiguration.SyncRangeUpper;
 
 			SubscribeToUpdateSession();
 
@@ -161,6 +201,7 @@ namespace CapFrameX.ViewModel
 									UpdateCharts();
 									FrametimeDisplayChangedTimeCorrelation =
 										GetCorrelation(msg.CurrentSession);
+									SyncRangePercentage = CalculateSyncRangePercentage();
 								}
 							});
 		}
@@ -194,8 +235,23 @@ namespace CapFrameX.ViewModel
 
 		private void CopyHistogramData()
 		{
-			// throw new NotImplementedException();
+			if (HistogramCollection == null || HistogramLabels == null)
+				return;
+
+			StringBuilder builder = new StringBuilder();
+			var chartValues = HistogramCollection.First().Values;
+
+			foreach (var bin in HistogramLabels.Select((value, i) => new { i, value }))
+			{
+				builder.Append(bin.value.ToString(CultureInfo.InvariantCulture) + "\t" + chartValues[bin.i]
+					.ToString() + Environment.NewLine);
+			}
+
+			Clipboard.SetDataObject(builder.ToString(), false);
 		}
+
+		private void OnSyncRangeChanged()
+			=> SyncRangePercentage = CalculateSyncRangePercentage();
 
 		private void UpdateCharts()
 		{
@@ -350,6 +406,37 @@ namespace CapFrameX.ViewModel
 			}));
 		}
 
+		private string CalculateSyncRangePercentage()
+		{
+			if (_session?.Displaytimes == null)
+				return "0%";
+
+			if (string.IsNullOrWhiteSpace(SyncRangeLower) ||
+				string.IsNullOrWhiteSpace(SyncRangeUpper))
+				return "0%";
+
+			int lowerValue = Convert.ToInt32(SyncRangeLower);
+			int upperValue = Convert.ToInt32(SyncRangeUpper);
+
+			bool IsInRange(double value)
+			{
+				int hz = (int)Math.Round(value, 0);
+
+				if (hz >= lowerValue && hz <= upperValue)
+					return true;
+				else
+					return false;
+			};
+
+			int count = _session
+				.Displaytimes.Select(time => 1000d / time)
+				.Count(hz => IsInRange(hz));
+
+			return (Math.Round((double)count/ 
+				_session.Displaytimes.Count * 100, 0))
+				.ToString() + "%";
+		}
+
 		public void OnNavigatedTo(NavigationContext navigationContext)
 		{
 			_useUpdateSession = true;
@@ -360,6 +447,7 @@ namespace CapFrameX.ViewModel
 				UpdateCharts();
 				FrametimeDisplayChangedTimeCorrelation =
 					GetCorrelation(_session);
+				SyncRangePercentage = CalculateSyncRangePercentage();
 			}
 		}
 
