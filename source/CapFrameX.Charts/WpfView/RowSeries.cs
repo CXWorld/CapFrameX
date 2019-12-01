@@ -161,8 +161,8 @@ namespace LiveCharts.Wpf
 			if (pbv != null)
 			{
 				pbv.Rectangle.Fill = HighlightFill;
-				pbv.Rectangle.StrokeThickness = 1;
-				pbv.Rectangle.Stroke = Brushes.Gray;
+				pbv.Rectangle.StrokeThickness = 2;
+				pbv.Rectangle.Stroke = Brushes.Transparent;
 			}
 		}
 
@@ -181,7 +181,7 @@ namespace LiveCharts.Wpf
 			if (pbv != null)
 			{
 				pbv.Rectangle.Fill = Fill;
-				pbv.Rectangle.StrokeThickness = 0;
+				pbv.Rectangle.StrokeThickness = 2;
 				pbv.Rectangle.Stroke = Brushes.Transparent;
 			}
 		}

@@ -417,7 +417,7 @@ namespace CapFrameX.ViewModel
 		public ComparisonCollection ComparisonRecords { get; private set; }
 			= new ObservableCollection<ComparisonRecordInfoWrapper>();
 
-		public double BarChartMaxRowHeight { get; private set; } = 20;
+		public double BarChartMaxRowHeight { get; private set; } = 22;
 
 		public ComparisonViewModel(IStatisticProvider frametimeStatisticProvider,
 			IFrametimeAnalyzer frametimeAnalyzer,
@@ -534,8 +534,11 @@ namespace CapFrameX.ViewModel
 					Values = new ChartValues<double>(),
 					Fill = new SolidColorBrush(Color.FromRgb(34, 151, 243)),
 					HighlightFill = new SolidColorBrush(Color.FromRgb(122, 192, 247)),
+					Stroke= Brushes.Transparent,
+					StrokeThickness = 2,
 					DataLabels = true,
 					MaxRowHeigth = BarChartMaxRowHeight,
+					RowPadding = 0,
 					UseRelativeMode = true
 				}
 			};
@@ -550,8 +553,11 @@ namespace CapFrameX.ViewModel
 					Values = new ChartValues<double>(),
 					Fill = new SolidColorBrush(Color.FromRgb(241, 125, 32)),
 					HighlightFill = new SolidColorBrush(Color.FromRgb(245, 164, 98)),
+					Stroke = Brushes.Transparent,
+					StrokeThickness = 2,
 					DataLabels = true,
 					MaxRowHeigth = BarChartMaxRowHeight,
+					RowPadding = 0,
 					UseRelativeMode = true
 				});
 			}
@@ -565,8 +571,11 @@ namespace CapFrameX.ViewModel
 					Values = new ChartValues<double>(),
 					Fill = new SolidColorBrush(Color.FromRgb(255, 180, 0)),
 					HighlightFill = new SolidColorBrush(Color.FromRgb(245, 217, 128)),
+					Stroke = Brushes.Transparent,
+					StrokeThickness = 2,
 					DataLabels = true,
 					MaxRowHeigth = BarChartMaxRowHeight,
+					RowPadding = 0,
 					UseRelativeMode = true
 				});
 			}
@@ -725,7 +734,7 @@ namespace CapFrameX.ViewModel
 
 		private void UpdateBarChartHeight()
 			=> BarChartHeight =
-			60 + (ComparisonRowChartSeriesCollection.Count * BarChartMaxRowHeight + 12) * ComparisonRecords.Count;
+			32.5 + (ComparisonRowChartSeriesCollection.Count * BarChartMaxRowHeight + 12) * ComparisonRecords.Count;
 
 		private void OnRemoveAllComparisons()
 			=> RemoveAllComparisonItems(true, true);
