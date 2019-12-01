@@ -765,9 +765,9 @@ namespace CapFrameX.ViewModel
 					}
 				};
 
-#pragma warning disable IDE0034 // "default"-Ausdruck vereinfachen
+#pragma warning disable IDE0034 // simplify "default" expression
 				ResetLShapeChart.OnNext(default(Unit));
-#pragma warning restore IDE0034 // "default"-Ausdruck vereinfachen
+#pragma warning restore IDE0034 // simplify "default" expression
 			}));
 		}
 
