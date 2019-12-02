@@ -83,38 +83,31 @@
 							<RowDefinition Height="*" />
 							<RowDefinition Height="*" />
                             <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
-						<TextBlock Grid.Row="0"
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+						<TextBlock Grid.Row="0" Grid.Column="0"
 										   Style="{StaticResource MaterialDesignTitleTextBlock}"
 										   Margin="8,8,8,16">
 									OPTIONS
 						</TextBlock>
-						<ComboBox Grid.Row="1" materialDesign:HintAssist.Hint="Moving average window size"
-								  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="200" Margin="8 8 8 8"
+                        <ComboBox Grid.Row="1" Grid.Column="0" materialDesign:HintAssist.Hint="Moving average window" HorizontalAlignment="Left"
+								  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Width="140" Margin="20 15 15 15"
 								  ItemsSource="{Binding WindowSizes}">
-							<ComboBox.Text>
-								<Binding Path="SelectWindowSize"
+                            <ComboBox.Text>
+                                <Binding Path="SelectWindowSize"
 										 Mode="TwoWay"
 										 UpdateSourceTrigger="PropertyChanged">
-								</Binding>
-							</ComboBox.Text>
-						</ComboBox>
-                        <TextBox Grid.Row="2" materialDesign:HintAssist.Hint="Stuttering factor" >
-                            <TextBox.Text>
-                                <Binding Path="StutteringFactor"
-										 Mode="TwoWay"
-										 UpdateSourceTrigger="LostFocus">
                                 </Binding>
-                            </TextBox.Text>
-                        </TextBox>
-                        <StackPanel Grid.Row="3" Orientation="Horizontal">
-                            <TextBox IsReadOnly="True" materialDesign:HintAssist.Hint="Observed directory (third-party compatible)" Text="{Binding ObservedDirectory, Mode=OneWay}" />
-							<Button Margin="20 0 0 0" Command="{Binding SelectObservedFolderCommand}" Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}" ToolTip="Select observed folder">
-								<materialDesign:PackIcon Kind="Folder" Height="24" Width="24" />
-							</Button>
-						</StackPanel>
-                        <ComboBox Grid.Row="4" materialDesign:HintAssist.Hint="FPS values rounding digits"
-								  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="200" Margin="8 8 8 8"
+                            </ComboBox.Text>
+                        </ComboBox>
+                        <ComboBox Grid.Row="1" Grid.Column="1" materialDesign:HintAssist.Hint="FPS values decimals" HorizontalAlignment="Center"
+								  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Width="120" Margin="15 15"
 								  ItemsSource="{Binding RoundingDigits}">
                             <ComboBox.Text>
                                 <Binding Path="FpsValuesRoundingDigits"
@@ -123,13 +116,68 @@
                                 </Binding>
                             </ComboBox.Text>
                         </ComboBox>
-                        <StackPanel Grid.Row="6" Orientation="Horizontal" Margin="0 0 0 30">
-                            <TextBox IsReadOnly="True" materialDesign:HintAssist.Hint="Screenshot directory" Text="{Binding ScreenshotDirectory, Mode=OneWay}" />
-							<Button Margin="20 0 0 0" Command="{Binding SelectScreenshotFolderCommand}" Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}" ToolTip="Select screenshot folder">
-								<materialDesign:PackIcon Kind="Folder" Height="24" Width="24" />
+                        <TextBox Grid.Row="1" Grid.Column="2" materialDesign:HintAssist.Hint="Stuttering factor" HorizontalAlignment="Right" Width="90"  Margin="15 15">
+                            <TextBox.Text>
+                                <Binding Path="StutteringFactor"
+										 Mode="TwoWay"
+										 UpdateSourceTrigger="LostFocus">
+                                </Binding>
+                            </TextBox.Text>
+                        </TextBox>
+                        <StackPanel Grid.Row="2" Grid.ColumnSpan="3" Orientation="Horizontal" HorizontalAlignment="Left" Margin="10 0 0 0">
+                            <TextBox Width="350" IsReadOnly="True" materialDesign:HintAssist.Hint="Observed directory (third-party compatible)" Text="{Binding ObservedDirectory, Mode=OneWay}" />
+                            <Button Margin="15 0 0 0" Height="35" Width="35" Command="{Binding SelectObservedFolderCommand}" Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}" ToolTip="Select observed folder">
+								<materialDesign:PackIcon Kind="Folder" Height="25" Width="25" />
 							</Button>
-						</StackPanel>
-					</Grid>
+                            <Button Margin="15 0 0 0" Height="35" Width="35" Command="{Binding SelectScreenshotFolderCommand}" Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}" ToolTip="Open observed folder">
+                                <materialDesign:PackIcon Kind="Forward"  Height="25" Width="25" />
+                            </Button>
+                        </StackPanel>
+
+                        <StackPanel Grid.Row="3" Grid.ColumnSpan="3" Orientation="Horizontal" HorizontalAlignment="Left"  Margin="10 0 0 0">
+                            <TextBox Width="350" IsReadOnly="True" materialDesign:HintAssist.Hint="Screenshot directory" Text="{Binding ScreenshotDirectory, Mode=OneWay}" />
+                            <Button Margin="15 0 0 0" Height="35" Width="35" Command="{Binding SelectScreenshotFolderCommand}" Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}" ToolTip="Select screenshot folder">
+								<materialDesign:PackIcon Kind="Folder" Height="25" Width="25" />
+							</Button>
+                            <Button Margin="15 0 0 0" Height="35" Width="35" Command="{Binding SelectScreenshotFolderCommand}" Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}" ToolTip="Open screenshot folder">
+                                <materialDesign:PackIcon Kind="Forward" Height="25" Width="25" />
+                            </Button>
+                        </StackPanel>
+                        <ComboBox Grid.Row="4" Grid.Column="0" materialDesign:HintAssist.Hint="Hardware info source"
+								  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Margin="15 15 0 0"
+								  ItemsSource="{Binding RoundingDigits}">
+                            <ComboBox.Text>
+                                <Binding Path="FpsValuesRoundingDigits"
+										 Mode="TwoWay"
+										 UpdateSourceTrigger="PropertyChanged">
+                                </Binding>
+                            </ComboBox.Text>
+                        </ComboBox>
+                        <TextBox Grid.Row="5" Grid.ColumnSpan="2" materialDesign:HintAssist.Hint="CPU" Margin="15 15 0 0">
+                            <TextBox.Text>
+                                <Binding Path="StutteringFactor"
+										 Mode="TwoWay"
+										 UpdateSourceTrigger="LostFocus">
+                                </Binding>
+                            </TextBox.Text>
+                        </TextBox>
+                        <TextBox Grid.Row="6" Grid.ColumnSpan="2" materialDesign:HintAssist.Hint="GPU" Margin="15 10 0 0">
+                            <TextBox.Text>
+                                <Binding Path="StutteringFactor"
+										 Mode="TwoWay"
+										 UpdateSourceTrigger="LostFocus">
+                                </Binding>
+                            </TextBox.Text>
+                        </TextBox>
+                        <TextBox Grid.Row="7" Grid.ColumnSpan="2" materialDesign:HintAssist.Hint="RAM" Margin="15 10 0 0">
+                            <TextBox.Text>
+                                <Binding Path="StutteringFactor"
+										 Mode="TwoWay"
+										 UpdateSourceTrigger="LostFocus">
+                                </Binding>
+                            </TextBox.Text>
+                        </TextBox>
+                    </Grid>
 				</materialDesign:PopupBox>
 			</Grid>
 		</materialDesign:ColorZone>
