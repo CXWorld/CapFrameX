@@ -66,7 +66,7 @@ namespace CapFrameX
 			{
 				var viewName = viewType.FullName;
 
-				// Convention
+				// Naming convention
 				viewName = viewName.Replace(".View.", ".ViewModel.");
 				viewName = viewName.Replace(".Views.", ".ViewModels.");
 				var viewAssemblyName = viewType.GetTypeInfo().Assembly.FullName;

@@ -67,6 +67,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ComparisonRecordInfo.cs" />
+    <Compile Include="EHardwareInfoSource.cs" />
     <Compile Include="FileRecordInfo.cs" />
     <Compile Include="IRecordDataServer.cs" />
     <Compile Include="LocalRecordDataServer.cs" />

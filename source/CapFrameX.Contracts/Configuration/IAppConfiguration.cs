@@ -61,5 +61,7 @@
 		string SyncRangeUpper { get; set; }
 
 		bool ShowOutlierWarning { get; set; }
+
+		string HardwareInfoSource { get; set; }
 	}
 }

@@ -185,5 +185,11 @@ namespace CapFrameX.Configuration
 			get { return Settings.ShowOutlierWarning; }
 			set { Settings.ShowOutlierWarning = value; Settings.Save(); }
 		}
+
+		public string HardwareInfoSource
+		{
+			get { return Settings.HardwareInfoSource; }
+			set { Settings.HardwareInfoSource = value; Settings.Save(); }
+		}
 	}
 }
