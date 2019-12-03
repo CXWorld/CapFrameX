@@ -34,11 +34,11 @@
 	</UserControl.Resources>
 	<Grid Margin="0 10 0 0">
 		<Grid.RowDefinitions>
-            <RowDefinition Height="5*"></RowDefinition>
-            <RowDefinition Height="40"></RowDefinition>
-            <RowDefinition Height="3*" MaxHeight="300"></RowDefinition>
-            <RowDefinition Height="65"></RowDefinition>
-        </Grid.RowDefinitions>
+			<RowDefinition Height="5*"></RowDefinition>
+			<RowDefinition Height="40"></RowDefinition>
+			<RowDefinition Height="3*" MaxHeight="300"></RowDefinition>
+			<RowDefinition Height="65"></RowDefinition>
+		</Grid.RowDefinitions>
 		<Grid Grid.Row="0" Background="#F5F5F5">
 			<DockPanel>
 				<TextBlock DockPanel.Dock="Top" Margin="0 20 0 0" HorizontalAlignment="Center" FontWeight="Bold" FontSize="16" VerticalAlignment="Bottom" Text="{Binding CurrentGameName}"/>
@@ -55,17 +55,17 @@
 		<Grid Grid.Row="1" Background="#F5F5F5">
 			<StackPanel Margin="20 0 0 0" Orientation="Horizontal" HorizontalAlignment="Left">
 				<TextBlock VerticalAlignment="Center">Correlation frame- and display times:</TextBlock>
-                <TextBlock Width="40" Height="27" Margin="10 0 0 0" Padding="0 7 0 0" FontWeight="Bold" TextAlignment="Center"
+				<TextBlock Width="40" Height="27" Margin="10 0 0 0" Padding="0 7 0 0" FontWeight="Bold" TextAlignment="Center"
 						   Background="#e6e6e6" Text="{Binding FrametimeDisplayChangedTimeCorrelation}"/>
 			</StackPanel>
 			<StackPanel Margin="0 0 20 0" Orientation="Horizontal" HorizontalAlignment="Right">
 				<TextBlock VerticalAlignment="Center">Frames within valid sync range:</TextBlock>
-                <TextBlock Width="40" Height="27" Margin="10 0 0 0" Padding="0 7 0 0" FontWeight="Bold" TextAlignment="Center"
+				<TextBlock Width="40" Height="27" Margin="10 0 0 0" Padding="0 7 0 0" FontWeight="Bold" TextAlignment="Center"
 						   Background="#e6e6e6" Text="{Binding SyncRangePercentage}"/>
 				<TextBlock Margin="5 0 0 0" VerticalAlignment="Center">(Range:</TextBlock>
-                <TextBox Height="25" Margin="5 0 0 0" Background="#e6e6e6" TextAlignment="Center" Text="{Binding SyncRangeLower, UpdateSourceTrigger=PropertyChanged}" materialDesign:HintAssist.Hint="Upper" />
+				<TextBox Height="25" Margin="5 0 0 0" Background="#e6e6e6" TextAlignment="Center" Text="{Binding SyncRangeLower, UpdateSourceTrigger=PropertyChanged}" materialDesign:HintAssist.Hint="Upper" />
 				<TextBlock Margin="5 0 0 0" VerticalAlignment="Center">-</TextBlock>
-                <TextBox Height="25" Margin="5 0 0 0" Background="#e6e6e6" TextAlignment="Center" Text="{Binding SyncRangeUpper, UpdateSourceTrigger=PropertyChanged}" materialDesign:HintAssist.Hint="Lower" />
+				<TextBox Height="25" Margin="5 0 0 0" Background="#e6e6e6" TextAlignment="Center" Text="{Binding SyncRangeUpper, UpdateSourceTrigger=PropertyChanged}" materialDesign:HintAssist.Hint="Lower" />
 				<TextBlock Margin="5 0 0 0" VerticalAlignment="Center">Hz)</TextBlock>
 			</StackPanel>
 		</Grid>
@@ -76,8 +76,9 @@
 			</Grid.ColumnDefinitions>
 			<!--Histogram chart-->
 			<lvc:CartesianChart Grid.Column="0" Margin="0 5 0 10" Series="{Binding HistogramCollection}" LegendLocation="Bottom"
-								Tag="{Binding ElementName=SynchronizationViewUserControl, Path=DataContext}" >
+								Tag="{Binding ElementName=SynchronizationViewUserControl, Path=DataContext}" DataTooltip="{x:Null}">
 				<lvc:CartesianChart.ContextMenu>
+
 					<ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
 						<MenuItem Header="Copy histogram data" Command="{Binding CopyHistogramDataCommand}"/>
 					</ContextMenu>
@@ -93,12 +94,12 @@
 					<lvc:Axis Title="Distribution" Foreground="Black"/>
 				</lvc:CartesianChart.AxisY>
 			</lvc:CartesianChart>
-            <DockPanel Grid.Column="1" Margin="10 5 50 5" HorizontalAlignment="Right">
-                <lvc:PieChart Width="250" Hoverable="False" Series="{Binding DroppedFramesStatisticCollection}" 
+			<DockPanel Grid.Column="1" Margin="10 5 50 5" HorizontalAlignment="Right">
+				<lvc:PieChart Width="250" Hoverable="False" Series="{Binding DroppedFramesStatisticCollection}" 
 								  LegendLocation="Bottom" DataClick="Chart_OnDataClick"/>
-            </DockPanel>
-        </Grid>
-        <Grid Grid.Row="3" Margin="5 5 5 5" Background="#e6e6e6">
-        </Grid>
-    </Grid>
+			</DockPanel>
+		</Grid>
+		<Grid Grid.Row="3" Margin="5 5 5 5" Background="#e6e6e6">
+		</Grid>
+	</Grid>
 </UserControl>

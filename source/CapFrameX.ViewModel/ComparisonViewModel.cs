@@ -938,6 +938,7 @@ namespace CapFrameX.ViewModel
 				LineSmoothness = 1,
 				PointGeometrySize = 5,
 				PointGeometry = DefaultGeometries.Square,
+				PointForeground = wrappedComparisonInfo.IsHideModeSelected ? Brushes.Transparent : wrappedComparisonInfo.Color,
 				LabelPoint = chartPoint => string.Format(CultureInfo.InvariantCulture, "{0:0.##}", chartPoint.Y, "ms")
 			});
 		}

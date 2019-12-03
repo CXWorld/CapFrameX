@@ -145,6 +145,7 @@ namespace CapFrameX.ViewModel
 				{
 					frametimesChart.Color = OxyColors.Transparent;
 					lShapeChart.Stroke = Brushes.Transparent;
+					lShapeChart.PointForeground = Brushes.Transparent;
 				}
 				else
 				{
@@ -152,6 +153,7 @@ namespace CapFrameX.ViewModel
 					var solidColorBrush = new SolidColorBrush(System.Windows.Media.Color.FromArgb(color.A, color.R, color.G, color.B));
 					frametimesChart.Color = OxyColor.FromArgb(color.A, color.R, color.G, color.B);
 					lShapeChart.Stroke = solidColorBrush;
+					lShapeChart.PointForeground = solidColorBrush;
 				}
 
 				_viewModel.ComparisonModel.InvalidatePlot(true);
