@@ -17,6 +17,7 @@ using Prism.Commands;
 using Prism.Events;
 using Prism.Mvvm;
 using Prism.Regions;
+using System.Collections.Specialized;
 
 namespace CapFrameX.ViewModel
 {
@@ -25,10 +26,20 @@ namespace CapFrameX.ViewModel
 		private readonly IStatisticProvider _frametimeStatisticProvider;
 		private readonly IEventAggregator _eventAggregator;
 		private readonly IAppConfiguration _appConfiguration;
-
 		private bool _useEventMessages;
+		private bool _hasNoReportItems = true;
 
-		public ObservableCollection<ReportInfo> ReportInfoCollecion { get; }
+		public bool HasNoReportItems
+		{
+			get { return _hasNoReportItems; }
+			set
+			{
+				_hasNoReportItems = value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public ObservableCollection<ReportInfo> ReportInfoCollection { get; }
 			= new ObservableCollection<ReportInfo>();
 
 		public ICommand CopyTableDataCommand { get; }
@@ -42,13 +53,15 @@ namespace CapFrameX.ViewModel
 			_appConfiguration = appConfiguration;
 
 			CopyTableDataCommand = new DelegateCommand(OnCopyTableData);
+			ReportInfoCollection.CollectionChanged += new NotifyCollectionChangedEventHandler
+				((sender, eventArg) => HasNoReportItems = !ReportInfoCollection.Any());
 
 			SubscribeToSelectRecord();
 		}
 
 		private void OnCopyTableData()
 		{
-			if (!ReportInfoCollecion.Any())
+			if (!ReportInfoCollection.Any())
 				return;
 
 			StringBuilder builder = new StringBuilder();
@@ -68,8 +81,8 @@ namespace CapFrameX.ViewModel
 			var displayNameFivePercentQuantileFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.FivePercentQuantileFps);
 			var displayNameOnePercentQuantileFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.OnePercentQuantileFps);
 			var displayNameOnePercentLowAverageFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.OnePercentLowAverageFps);
-            var displayNameZeroDotTwoPercentQuantileFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.ZeroDotTwoPercentQuantileFps);
-            var displayNameZeroDotOnePercentQuantileFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.ZeroDotOnePercentQuantileFps);
+			var displayNameZeroDotTwoPercentQuantileFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.ZeroDotTwoPercentQuantileFps);
+			var displayNameZeroDotOnePercentQuantileFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.ZeroDotOnePercentQuantileFps);
 			var displayNameZeroDotOnePercentLowAverageFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.ZeroDotOnePercentLowAverageFps);
 			var displayNameMinFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.MinFps);
 			var displayNameAdaptiveSTDFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.AdaptiveSTDFps);
@@ -89,15 +102,15 @@ namespace CapFrameX.ViewModel
 						   displayNameFivePercentQuantileFps + "\t" +
 						   displayNameOnePercentQuantileFps + "\t" +
 						   displayNameOnePercentLowAverageFps + "\t" +
-                           displayNameZeroDotTwoPercentQuantileFps + "\t" +
-                           displayNameZeroDotOnePercentQuantileFps + "\t" +
+						   displayNameZeroDotTwoPercentQuantileFps + "\t" +
+						   displayNameZeroDotOnePercentQuantileFps + "\t" +
 						   displayNameZeroDotOnePercentLowAverageFps + "\t" +
 						   displayNameMinFps + "\t" +
 						   displayNameAdaptiveSTDFps + "\t" +
 						   displayNameCustomComment +
 						   Environment.NewLine);
 
-			foreach (var reportInfo in ReportInfoCollecion)
+			foreach (var reportInfo in ReportInfoCollection)
 			{
 				builder.Append(reportInfo.Game + "\t" +
 							   reportInfo.Date + "\t" +
@@ -113,9 +126,9 @@ namespace CapFrameX.ViewModel
 							   reportInfo.FivePercentQuantileFps.ToString(CultureInfo.InvariantCulture) + "\t" +
 							   reportInfo.OnePercentQuantileFps.ToString(CultureInfo.InvariantCulture) + "\t" +
 							   reportInfo.OnePercentLowAverageFps.ToString(CultureInfo.InvariantCulture) + "\t" +
-                               reportInfo.ZeroDotTwoPercentQuantileFps.ToString(CultureInfo.InvariantCulture) + "\t" +
+							   reportInfo.ZeroDotTwoPercentQuantileFps.ToString(CultureInfo.InvariantCulture) + "\t" +
 							   reportInfo.ZeroDotOnePercentQuantileFps.ToString(CultureInfo.InvariantCulture) + "\t" +
-                               reportInfo.ZeroDotOnePercentLowAverageFps.ToString(CultureInfo.InvariantCulture) + "\t" +
+							   reportInfo.ZeroDotOnePercentLowAverageFps.ToString(CultureInfo.InvariantCulture) + "\t" +
 							   reportInfo.MinFps.ToString(CultureInfo.InvariantCulture) + "\t" +
 							   reportInfo.AdaptiveSTDFps.ToString(CultureInfo.InvariantCulture) + "\t" +
 							   reportInfo.CustomComment +
@@ -174,8 +187,8 @@ namespace CapFrameX.ViewModel
 				FivePercentQuantileFps = p5_quantile,
 				OnePercentQuantileFps = p1_quantile,
 				OnePercentLowAverageFps = p1_averageLow,
-                ZeroDotTwoPercentQuantileFps = p0dot2_quantile,
-                ZeroDotOnePercentQuantileFps = p0dot1_quantile,
+				ZeroDotTwoPercentQuantileFps = p0dot2_quantile,
+				ZeroDotOnePercentQuantileFps = p0dot1_quantile,
 				ZeroDotOnePercentLowAverageFps = p0dot1_averageLow,
 				MinFps = min,
 				AdaptiveSTDFps = adaptiveStandardDeviation,
@@ -187,7 +200,7 @@ namespace CapFrameX.ViewModel
 
 		private void AddReportRecord(ReportInfo reportInfo)
 		{
-			ReportInfoCollecion.Add(reportInfo);
+			ReportInfoCollection.Add(reportInfo);
 		}
 
 		public bool IsNavigationTarget(NavigationContext navigationContext)
@@ -232,12 +245,12 @@ namespace CapFrameX.ViewModel
 					{
 						if (dropInfo.Data is ReportInfo reportInfo)
 						{
-							ReportInfoCollecion.Remove(reportInfo);
+							ReportInfoCollection.Remove(reportInfo);
 						}
 
 						if (dropInfo.Data is IEnumerable<ReportInfo> reportInfos)
 						{
-							reportInfos.ForEach(info => ReportInfoCollecion.Remove(info));
+							reportInfos.ForEach(info => ReportInfoCollection.Remove(info));
 						}
 					}
 				}

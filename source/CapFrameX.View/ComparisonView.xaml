@@ -217,15 +217,14 @@
 						<RowDefinition Height="50"></RowDefinition>
 					</Grid.RowDefinitions>
 					<Grid Grid.Row="0">
-						<Border VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <Border VerticalAlignment="Center" HorizontalAlignment="Center" Grid.ZIndex="1">
                             <TextBlock Visibility="{Binding HasComparisonItems, Converter={StaticResource TrueToCollapsedConverter}}"
-                                   Text="Add items to compare by double clicking them in the record list." 
+                                   Text="Drop items here or double click them in the record list." 
                                    FontSize="18" Width="250" TextAlignment="Center" TextWrapping="Wrap"/>
                         </Border>
 						<DockPanel Height="{Binding ElementName=ComparisonAreaGrid, Path=ActualHeight, Converter={StaticResource AddValueConverter}}">
 							<ScrollViewer VerticalScrollBarVisibility="Auto" CanContentScroll="True">
-								<ItemsControl ItemsSource="{Binding ComparisonRecords}" Background="#e6e6e6" 
-										  Visibility="{Binding HasComparisonItems, Converter={StaticResource TrueToVisibleConverter}}"
+								<ItemsControl ItemsSource="{Binding ComparisonRecords}" Background="#e6e6e6"  
 										  x:Name="ComparisonRecordItemControl"										  
 										  dragdrop:DragDrop.IsDropTarget="True"
 										  dragdrop:DragDrop.IsDragSource="False"

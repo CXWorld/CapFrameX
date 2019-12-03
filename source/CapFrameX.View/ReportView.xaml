@@ -16,32 +16,34 @@
 			 prism:ViewModelLocator.AutoWireViewModel="True">
 	<UserControl.Resources>
 		<ResourceDictionary>
-			<ResourceDictionary.MergedDictionaries>
-				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Button.xaml" />
-				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Shadows.xaml" />
-				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ToggleButton.xaml" />
-				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.DataGrid.xaml" />
-				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Slider.xaml" />
-				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.PopupBox.xaml" />
-			</ResourceDictionary.MergedDictionaries>
-			<mvvm:BoolToVisibilityConverter x:Key="FalseToCollapsedConverter" FalseValue="Collapsed" TrueValue="Visible"/>
-			<mvvm:BoolToVisibilityConverter x:Key="TrueToVisibleConverter" FalseValue="Visible" TrueValue="Collapsed"/>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Button.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Shadows.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ToggleButton.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.DataGrid.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Slider.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.PopupBox.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <mvvm:BoolToVisibilityConverter x:Key="TrueToVisibleConverter" FalseValue="Collapsed" TrueValue="Visible"/>
 			<mvvm:AddValueConverter x:Key="AddValueConverter" Offset="-75"/>
 		</ResourceDictionary>
 	</UserControl.Resources>
 	<Grid>
-		<Grid.RowDefinitions>
-			<RowDefinition Height="1*"/>
-			<RowDefinition Height="65"/>
-		</Grid.RowDefinitions>
-		<DataGrid Grid.Row="0"
+        <Grid.RowDefinitions>
+            <RowDefinition Height="1*"/>
+            <RowDefinition Height="65"/>
+        </Grid.RowDefinitions>
+        <Border VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="{Binding HasNoReportItems, Converter={StaticResource TrueToVisibleConverter}}"  Grid.ZIndex="1">
+            <TextBlock Text="Drop items here or double click them in the record list." FontSize="18"/>
+        </Border>
+        <DataGrid Grid.Row="0"
 				  Margin="5 10 5 0"
 				  AutoGenerateColumns="True"
 				  AutoGeneratingColumn="OnAutoGeneratingColumn"
 				  Tag="{Binding ElementName=ReportViewControl, Path=DataContext}" 
 				  Name ="ReportDataGrid"
 				  Height="{Binding ElementName=ReportViewControl, Path=ActualHeight, Converter={StaticResource AddValueConverter}}"
-				  ItemsSource="{Binding ReportInfoCollecion}"
+				  ItemsSource="{Binding ReportInfoCollection}"
 				  Background="#F5F5F5" 
 				  materialDesign:DataGridAssist.CellPadding="13 8 8 8" materialDesign:DataGridAssist.ColumnHeaderPadding="8" IsSynchronizedWithCurrentItem="False"
 				  CanUserSortColumns="True"
