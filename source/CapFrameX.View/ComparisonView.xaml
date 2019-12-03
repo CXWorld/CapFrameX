@@ -218,18 +218,10 @@
 					</Grid.RowDefinitions>
 					<Grid Grid.Row="0">
 						<Border VerticalAlignment="Center" HorizontalAlignment="Center">
-							<Image Grid.Row="0" Visibility="{Binding HasComparisonItems, Converter={StaticResource TrueToCollapsedConverter}}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
-									   Name="ComparisonImage"
-									   dragdrop:DragDrop.IsDropTarget="True"
-									   dragdrop:DragDrop.DropHandler="{Binding}"
-									   dragdrop:DragDrop.UseDefaultDragAdorner="True"
-									   dragdrop:DragDrop.DropTargetAdornerBrush="White"
-									   dragdrop:DragDrop.DefaultDragAdornerOpacity="0.5"
-									   dragdrop:DragDrop.UseDefaultEffectDataTemplate="False"
-									   Source="/CapFrameX;component/Icons/CX_Logo.png"
-									   Width="80" Height="80">
-							</Image>
-						</Border>
+                            <TextBlock Visibility="{Binding HasComparisonItems, Converter={StaticResource TrueToCollapsedConverter}}"
+                                   Text="Add items to compare by double clicking them in the record list." 
+                                   FontSize="18" Width="250" TextAlignment="Center" TextWrapping="Wrap"/>
+                        </Border>
 						<DockPanel Height="{Binding ElementName=ComparisonAreaGrid, Path=ActualHeight, Converter={StaticResource AddValueConverter}}">
 							<ScrollViewer VerticalScrollBarVisibility="Auto" CanContentScroll="True">
 								<ItemsControl ItemsSource="{Binding ComparisonRecords}" Background="#e6e6e6" 
