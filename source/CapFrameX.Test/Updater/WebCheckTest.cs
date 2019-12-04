@@ -9,7 +9,7 @@ namespace CapFrameX.Test.Updater
 		[TestMethod]
 		public void CheckWebUpdate_CorrecState()
 		{
-			string url = "https://raw.githubusercontent.com/DevTechProfile/CapFrameX/2d55cc088fa90eb61d1d33c371d65264ce7d3a0a/version/Version.txt";
+			string url = "https://raw.githubusercontent.com/DevTechProfile/CapFrameX/develop/feature/rtss_client_implementation/version/Version.txt";
 			Assert.IsTrue(WebCheck.IsCXUpdateAvailable(url, () => "1.3.0"));
 		}
 	}

@@ -19,7 +19,7 @@ namespace CapFrameX.Updater
 				// Use SecurityProtocolType.Ssl3 if needed for compatibility reasons
 
 				System.Net.WebClient wc = new System.Net.WebClient();
-				// dev branch: "https://raw.githubusercontent.com/DevTechProfile/CapFrameX/2d55cc088fa90eb61d1d33c371d65264ce7d3a0a/version/Version.txt"
+				// dev branch: "https://raw.githubusercontent.com/DevTechProfile/CapFrameX/develop/feature/rtss_client_implementation/version/Version.txt
 				// master branch: get by raw button
 				byte[] raw = wc.DownloadData(url);
 
