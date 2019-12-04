@@ -62,6 +62,7 @@
     <Compile Include="PresentMonInterface\SystemInfoTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TestHelper.cs" />
+    <Compile Include="Updater\WebCheckTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="TestRecordFiles\CustomFilenameWithoutComment.csv">
@@ -102,6 +103,14 @@
     <ProjectReference Include="..\CapFrameX.PresentMonInterface\CapFrameX.PresentMonInterface.csproj">
       <Project>{adfbaece-b74f-4a80-87d1-84bc990527b0}</Project>
       <Name>CapFrameX.PresentMonInterface</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CapFrameX.Updater\CapFrameX.Updater.csproj">
+      <Project>{5d12aa37-cc30-4476-94ad-11c15dc65518}</Project>
+      <Name>CapFrameX.Updater</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CapFrameX\CapFrameX.csproj">
+      <Project>{aaa73d26-5cd6-4066-b84c-5bd34057b346}</Project>
+      <Name>CapFrameX</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

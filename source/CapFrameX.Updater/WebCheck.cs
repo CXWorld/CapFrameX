@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Net;
 using System.Reflection;
 using System.Text;
 
@@ -8,19 +9,30 @@ namespace CapFrameX.Updater
 {
 	public class WebCheck
 	{
-		public static bool IsCXUpdateAvailable()
+		public static bool IsCXUpdateAvailable(string url, Func<string> getGetCurrentVersionString)
 		{
-			System.Net.WebClient wc = new System.Net.WebClient();
-			byte[] raw = wc.DownloadData("https://github.com/DevTechProfile/CapFrameX/tree/master/version/Version.txt");
+			try
+			{
+				// using System.Net;
+				ServicePointManager.Expect100Continue = true;
+				ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+				// Use SecurityProtocolType.Ssl3 if needed for compatibility reasons
 
-			if (raw == null || !raw.Any())
-				return false;
+				System.Net.WebClient wc = new System.Net.WebClient();
+				// dev branch: "https://raw.githubusercontent.com/DevTechProfile/CapFrameX/2d55cc088fa90eb61d1d33c371d65264ce7d3a0a/version/Version.txt"
+				// master branch: get by raw button
+				byte[] raw = wc.DownloadData(url);
 
-			string webVersionString = Encoding.UTF8.GetString(raw);
-			Version webVersion = new Version(webVersionString);
-			Version currentVersion = new Version(GetCurrentVersionString());
+				if (raw == null || !raw.Any())
+					return false;
 
-			return webVersion > currentVersion;
+				string webVersionString = Encoding.UTF8.GetString(raw);
+				Version webVersion = new Version(webVersionString);
+				Version currentVersion = new Version(getGetCurrentVersionString.Invoke());
+
+				return webVersion > currentVersion;
+			}
+			catch { return false; }
 		}
 
 		public static string GetCurrentVersionString()
