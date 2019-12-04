@@ -93,21 +93,21 @@ namespace CapFrameX.View
 					encoder.Save(stream);
 
 					Bitmap bitmap = new Bitmap(stream);
-					System.Drawing.Image logo1 = (System.Drawing.Image)Properties.Resources.ResourceManager.GetObject("CX_Screen_Logo_Name");
-					System.Drawing.Image logo2 = (System.Drawing.Image)Properties.Resources.ResourceManager.GetObject("CX_Screen_Logo_Description");
+					System.Drawing.Image logoName = (System.Drawing.Image)Properties.Resources.ResourceManager.GetObject("CX_Screen_Logo_Name");
+					System.Drawing.Image logoDescription = (System.Drawing.Image)Properties.Resources.ResourceManager.GetObject("CX_Screen_Logo_Description");
 
 
 					// Add fill rectangle
-					AddFillRectangle(bitmap, new System.Drawing.Point(0, imageHeight - logo1.Height),
-						new System.Drawing.Size(imageWidth, logo1.Height), new SolidBrush(System.Drawing.Color.FromArgb(255, 32, 141, 228)));
+					AddFillRectangle(bitmap, new System.Drawing.Point(0, imageHeight - logoDescription.Height),
+						new System.Drawing.Size(imageWidth, logoDescription.Height), new SolidBrush(System.Drawing.Color.FromArgb(255, 32, 141, 228)));
 
 					// Add frame
 					AddRectangle(bitmap, new System.Drawing.Point(1, 1),
 						new System.Drawing.Size(imageWidth - 2, imageHeight), new SolidBrush(System.Drawing.Color.FromArgb(255, 32, 141, 228)));
 
 					// Add CX logos
-					AddLogo(bitmap, logo1, new System.Drawing.Point(0, imageHeight - logo1.Height));
-					AddLogo(bitmap, logo2, new System.Drawing.Point(imageWidth - logo2.Width, imageHeight - logo2.Height));
+					AddLogo(bitmap, logoName, new System.Drawing.Point(0, imageHeight - logoName.Height));
+					AddLogo(bitmap, logoDescription, new System.Drawing.Point(imageWidth - logoDescription.Width, imageHeight - logoDescription.Height));
 
 					bitmap.Save(filename);
 				}

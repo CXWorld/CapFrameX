@@ -299,13 +299,13 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\CX_Screen_Logo.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\CX_Screen_Logo_Description.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\CX_Screen_Logo_Name.bmp" />
+    <None Include="Resources\CX_Screen_Logo.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\CX_Screen_Logo_Name.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
