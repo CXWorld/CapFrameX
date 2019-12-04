@@ -16,16 +16,17 @@ using CapFrameX.Configuration;
 using CapFrameX.Contracts.PresentMonInterface;
 using CapFrameX.PresentMonInterface;
 using CapFrameX.Contracts.Data;
+using CapFrameX.Contracts.MVVM;
 
 namespace CapFrameX
 {
 	public class Bootstrapper : DryIocBootstrapper
 	{
-		public static IAppConfiguration Test { get; protected set;}
-
 		protected override DependencyObject CreateShell()
 		{
-			return Container.Resolve<Shell>();
+			var shell = Container.Resolve<Shell>();
+			Container.UseInstance<IShell>(shell);
+			return shell;
 		}
 
 		protected override void InitializeShell()
@@ -52,8 +53,8 @@ namespace CapFrameX
 			Container.Register<IStatisticProvider, FrametimeStatisticProvider>(Reuse.Singleton);
 			Container.Register<IFrametimeAnalyzer, FrametimeAnalyzer>(Reuse.Singleton);
 			Container.Register<ICaptureService, PresentMonCaptureService>(Reuse.Singleton);
-            Container.Register<IRecordDataProvider, RecordDataProvider>(Reuse.Singleton);
-        }
+            Container.Register<IRecordDataProvider, RecordDataProvider>(Reuse.Singleton);			
+		}
 
 		/// <summary>
 		/// https://www.c-sharpcorner.com/forums/using-ioc-with-wpf-prism-in-mvvm

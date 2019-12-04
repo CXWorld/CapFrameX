@@ -247,12 +247,12 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Icons\CX_Icon.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Icons\cx_icon_BUC_icon.ico">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
   </ItemGroup>
   <ItemGroup>
@@ -269,7 +269,7 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Icons\CX_Logo.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
   </ItemGroup>
   <ItemGroup>
@@ -288,7 +288,9 @@
     </Resource>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\CX_Screen_Logo_Name.bmp" />
+    <Resource Include="Icons\CX_Screen_Logo_Name.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

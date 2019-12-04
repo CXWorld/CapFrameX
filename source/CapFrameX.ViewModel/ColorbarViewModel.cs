@@ -15,6 +15,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Windows.Input;
+using CapFrameX.Contracts.MVVM;
 
 namespace CapFrameX.ViewModel
 {
@@ -24,6 +25,7 @@ namespace CapFrameX.ViewModel
 		private readonly IRecordDirectoryObserver _recordDirectoryObserver;
 		private readonly IEventAggregator _eventAggregator;
 		private readonly IAppConfiguration _appConfiguration;
+		private readonly IShell _shell;
 
 		private PubSubEvent<AppMessages.UpdateObservedDirectory> _updateObservedFolder;
 		private bool _captureIsChecked = true;
@@ -186,6 +188,8 @@ namespace CapFrameX.ViewModel
 										   .Cast<EHardwareInfoSource>()
 										   .ToArray();
 
+		public IShell Shell => _shell;
+
 		public ICommand SelectObservedFolderCommand { get; }
 
 		public ICommand SelectScreenshotFolderCommand { get; }
@@ -201,12 +205,14 @@ namespace CapFrameX.ViewModel
 		public ColorbarViewModel(IRegionManager regionManager,
 								 IRecordDirectoryObserver recordDirectoryObserver,
 								 IEventAggregator eventAggregator,
-								 IAppConfiguration appConfiguration)
+								 IAppConfiguration appConfiguration,
+								 IShell shell)
 		{
 			_regionManager = regionManager;
 			_recordDirectoryObserver = recordDirectoryObserver;
 			_eventAggregator = eventAggregator;
 			_appConfiguration = appConfiguration;
+			_shell = shell;
 
 			StutteringFactor = _appConfiguration.StutteringFactor;
 			SelectWindowSize = _appConfiguration.MovingAverageWindowSize;
