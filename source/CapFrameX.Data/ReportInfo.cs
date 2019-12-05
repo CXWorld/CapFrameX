@@ -18,6 +18,8 @@ namespace CapFrameX.Data
 		public string Cpu { get; set; }
 		[DisplayName("Graphic card")]
 		public string GraphicCard { get; set; }
+		[DisplayName("RAM")]
+		public string Ram { get; set; }
 		[DisplayName("Max FPS")]
 		public double MaxFps { get; set; }
 		[DisplayName("99% quantile")]

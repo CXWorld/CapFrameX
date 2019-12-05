@@ -74,6 +74,7 @@ namespace CapFrameX.ViewModel
 			var displayNameRecordTime = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.RecordTime);
 			var displayNameCpu = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.Cpu);
 			var displayNameGraphicCard = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.GraphicCard);
+			var displayNameRam = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.Ram);
 			var displayNameMaxFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.MaxFps);
 			var displayNameNinetyNinePercentQuantileFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.NinetyNinePercentQuantileFps);
 			var displayNameNinetyFivePercentQuantileFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.NinetyFivePercentQuantileFps);
@@ -95,6 +96,7 @@ namespace CapFrameX.ViewModel
 						   displayNameRecordTime + "\t" +
 						   displayNameCpu + "\t" +
 						   displayNameGraphicCard + "\t" +
+						   displayNameRam + "\t" +
 						   displayNameMaxFps + "\t" +
 						   displayNameNinetyNinePercentQuantileFps + "\t" +
 						   displayNameNinetyFivePercentQuantileFps + "\t" +
@@ -119,6 +121,7 @@ namespace CapFrameX.ViewModel
 							   reportInfo.RecordTime + "\t" +
 							   reportInfo.Cpu + "\t" +
 							   reportInfo.GraphicCard + "\t" +
+							   reportInfo.Ram + "\t" +
 							   reportInfo.MaxFps.ToString(CultureInfo.InvariantCulture) + "\t" +
 							   reportInfo.NinetyNinePercentQuantileFps.ToString(CultureInfo.InvariantCulture) + "\t" +
 							   reportInfo.NinetyFivePercentQuantileFps.ToString(CultureInfo.InvariantCulture) + "\t" +
@@ -180,6 +183,7 @@ namespace CapFrameX.ViewModel
 				RecordTime = Math.Round(session.LastFrameTime, 2).ToString(CultureInfo.InvariantCulture),
 				Cpu = recordInfo.ProcessorName == null ? "" : recordInfo.ProcessorName.Trim(new Char[] { ' ', '"' }),
 				GraphicCard = recordInfo.GraphicCardName == null ? "" : recordInfo.GraphicCardName.Trim(new Char[] { ' ', '"' }),
+				Ram = recordInfo.SystemRamInfo == null ? "" : recordInfo.SystemRamInfo.Trim(new Char[] { ' ', '"' }),
 				MaxFps = max,
 				NinetyNinePercentQuantileFps = p99_quantile,
 				NinetyFivePercentQuantileFps = p95_quantile,
