@@ -5,6 +5,7 @@ using CapFrameX.ViewModel;
 using Prism.Events;
 using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Windows.Controls;
 
 namespace CapFrameX.View
@@ -25,6 +26,12 @@ namespace CapFrameX.View
 				var appConfiguration = new CapFrameXConfiguration();
 				DataContext = new StateViewModel( new RecordDirectoryObserver(appConfiguration), new EventAggregator(), appConfiguration, new PresentMonCaptureService());
 			}
+		}
+
+		private void Hyperlink_RequestNavigate(object sender, System.Windows.Navigation.RequestNavigateEventArgs e)
+		{
+			Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri));
+			e.Handled = true;
 		}
 	}
 }

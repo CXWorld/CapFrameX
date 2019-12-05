@@ -9,7 +9,22 @@ namespace CapFrameX.Updater
 {
 	public class WebCheck
 	{
-		public static bool IsCXUpdateAvailable(string url, Func<string> getGetCurrentVersionString)
+		public static bool IsCXUpdateAvailable(string url, Func<string> getGetCurrentVersionString = null)
+		{
+			try
+			{
+				if (getGetCurrentVersionString == null)
+					getGetCurrentVersionString = GetCurrentVersionString;
+
+				Version webVersion = GetWebVersion(url);
+				Version currentVersion = new Version(getGetCurrentVersionString.Invoke());
+
+				return webVersion > currentVersion;
+			}
+			catch { return false; }
+		}
+
+		public static Version GetWebVersion(string url)
 		{
 			try
 			{
@@ -18,21 +33,18 @@ namespace CapFrameX.Updater
 				ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
 				// Use SecurityProtocolType.Ssl3 if needed for compatibility reasons
 
-				System.Net.WebClient wc = new System.Net.WebClient();
+				WebClient wc = new WebClient();
 				// dev branch: "https://raw.githubusercontent.com/DevTechProfile/CapFrameX/develop/feature/rtss_client_implementation/version/Version.txt
 				// master branch: get by raw button
 				byte[] raw = wc.DownloadData(url);
 
 				if (raw == null || !raw.Any())
-					return false;
+					return null;
 
 				string webVersionString = Encoding.UTF8.GetString(raw);
-				Version webVersion = new Version(webVersionString);
-				Version currentVersion = new Version(getGetCurrentVersionString.Invoke());
-
-				return webVersion > currentVersion;
+				return new Version(webVersionString);
 			}
-			catch { return false; }
+			catch { return null; }
 		}
 
 		public static string GetCurrentVersionString()

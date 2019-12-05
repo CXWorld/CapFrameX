@@ -1,6 +1,7 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.OcatInterface;
 using CapFrameX.Contracts.PresentMonInterface;
+using CapFrameX.Updater;
 using Prism.Events;
 using Prism.Mvvm;
 using System;
@@ -13,22 +14,27 @@ namespace CapFrameX.ViewModel
 {
 	public class StateViewModel : BindableBase
 	{
+		// ToDo : get correct url maybe from config
+		private const string
+			URL = "https://raw.githubusercontent.com/DevTechProfile/CapFrameX/develop/feature/rtss_client_implementation/version/Version.txt";
+
 		private readonly IRecordDirectoryObserver _recordObserver;
 		private readonly IEventAggregator _eventAggregator;
 		private readonly IAppConfiguration _appConfiguration;
-        private readonly ICaptureService _captureService;
+		private readonly ICaptureService _captureService;
 
-        private bool _isCaptureModeActive;
-        private bool _isDirectoryObserving;
+		private bool _isCaptureModeActive;
+		private bool _isDirectoryObserving;
+		private string _updateHpyerlinkText;
 
-        private bool IsBeta => GetBetaState();
+		private bool IsBeta => GetBetaState();
 
 		private bool GetBetaState()
 		{
 			Assembly assembly = GetAssemblyByName("CapFrameX");
 			var metaData = assembly.GetCustomAttributes(typeof(AssemblyMetadataAttribute));
 
-			if (metaData.FirstOrDefault(attribute => (attribute as AssemblyMetadataAttribute).Key == "IsBeta") 
+			if (metaData.FirstOrDefault(attribute => (attribute as AssemblyMetadataAttribute).Key == "IsBeta")
 				is AssemblyMetadataAttribute isBetaAttribute)
 				return Convert.ToBoolean(isBetaAttribute.Value);
 
@@ -40,53 +46,67 @@ namespace CapFrameX.ViewModel
 			get { return _isDirectoryObserving; }
 			set
 			{
-                _isDirectoryObserving =
+				_isDirectoryObserving =
 					value && _recordObserver.HasValidSource;
 				RaisePropertyChanged();
 			}
 		}
 
-        public bool IsCaptureModeActive
-        {
-            get { return _isCaptureModeActive; }
-            set
-            {
-                _isCaptureModeActive = value;
-                RaisePropertyChanged();
-            }
-        }
+		public bool IsCaptureModeActive
+		{
+			get { return _isCaptureModeActive; }
+			set
+			{
+				_isCaptureModeActive = value;
+				RaisePropertyChanged();
+			}
+		}
 
-        public string VersionString
+		public string UpdateHpyerlinkText
+		{
+			get { return _updateHpyerlinkText; }
+			set
+			{
+				_updateHpyerlinkText = value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public string VersionString
 		{
 			get
 			{
 				Assembly assembly = GetAssemblyByName("CapFrameX");
 				var fileVersion = FileVersionInfo.GetVersionInfo(assembly.Location).FileVersion;
 
-                var numbers = fileVersion.Split('.');
+				var numbers = fileVersion.Split('.');
 				return IsBeta ? $"{numbers[0]}.{numbers[1]}.{numbers[2]} Beta" : $"{numbers[0]}.{numbers[1]}.{numbers[2]}";
 			}
 		}
 
+		public bool IsUpdateAvailable => WebCheck.IsCXUpdateAvailable(URL);
+
 		public StateViewModel(IRecordDirectoryObserver recordObserver,
 							  IEventAggregator eventAggregator,
 							  IAppConfiguration appConfiguration,
-                              ICaptureService captureService)
+							  ICaptureService captureService)
 		{
 			_recordObserver = recordObserver;
 			_eventAggregator = eventAggregator;
 			_appConfiguration = appConfiguration;
-            _captureService = captureService;
+			_captureService = captureService;
 
-            IsDirectoryObserving = true;
-            IsCaptureModeActive = false;
+			IsDirectoryObserving = true;
+			IsCaptureModeActive = false;
+			
+			UpdateHpyerlinkText = $"New version available on GitHub: v{WebCheck.GetWebVersion(URL)}";
 
-            _recordObserver.HasValidSourceStream
+			_recordObserver.HasValidSourceStream
 				.Subscribe(state => IsDirectoryObserving = state);
 
-            _captureService.IsCaptureModeActiveStream
-                .Subscribe(state => IsCaptureModeActive = state);
-        }
+			_captureService.IsCaptureModeActiveStream
+				.Subscribe(state => IsCaptureModeActive = state);
+		}
 
 		private Assembly GetAssemblyByName(string name)
 		{
