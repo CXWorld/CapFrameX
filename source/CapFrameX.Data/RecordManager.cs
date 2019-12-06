@@ -288,7 +288,11 @@ namespace CapFrameX.Data
 						{
 							if (double.TryParse(GetStringFromArray(values, indexDisplayTimes), NumberStyles.Any, CultureInfo.InvariantCulture, out var displayTime))
 							{
-								session.Displaytimes.Add(displayTime);
+								if (displayTime > 0)
+								{ 
+									session.Displaytimes.Add(displayTime); 
+								}
+								
 							}
 						}
 
