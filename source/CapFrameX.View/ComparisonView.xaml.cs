@@ -21,7 +21,7 @@ namespace CapFrameX.View
 		public ComparisonView()
 		{
 			InitializeComponent();
-			OxyPlotHelper.SetYAxisZoomWheelAndPan(ComparisonPlotView);
+			OxyPlotHelper.SetAxisZoomWheelAndPan(ComparisonPlotView);
 
 			// Design time!
 			if (DesignerProperties.GetIsInDesignMode(this))

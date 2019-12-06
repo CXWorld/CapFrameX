@@ -18,7 +18,7 @@ namespace CapFrameX.View
 		public SynchronizationView()
 		{
 			InitializeComponent();
-			OxyPlotHelper.SetYAxisZoomWheelAndPan(SynchronizationPlotView);
+			OxyPlotHelper.SetAxisZoomWheelAndPan(SynchronizationPlotView);
 
 			// Design time!
 			if (DesignerProperties.GetIsInDesignMode(this))

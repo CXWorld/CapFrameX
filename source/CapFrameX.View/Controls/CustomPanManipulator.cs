@@ -4,14 +4,17 @@ namespace CapFrameX.View.Controls
 {
 	public class CustomPanManipulator : MouseManipulator
 	{
-		public CustomPanManipulator(IPlotView plotView)
+		public CustomPanManipulator(IPlotView plotView, EAxisDescription axisDescription)
 			: base(plotView)
 		{
+			AxisDescription = axisDescription;
 		}
 
 		private ScreenPoint PreviousPosition { get; set; }
 
 		private bool IsPanEnabled { get; set; }
+
+		public EAxisDescription AxisDescription { get; }
 
 		public override void Completed(OxyMouseEventArgs e)
 		{
@@ -33,15 +36,35 @@ namespace CapFrameX.View.Controls
 				return;
 			}
 
-			//if (this.XAxis != null)
-			//{
-			//	this.XAxis.Pan(this.PreviousPosition, e.Position);
-			//}
 
-			if (this.YAxis != null)
+			switch (AxisDescription)
 			{
-				this.YAxis.Pan(this.PreviousPosition, e.Position);
+				case EAxisDescription.XY:
+					if (this.XAxis != null)
+					{
+						this.XAxis.Pan(this.PreviousPosition, e.Position);
+					}
+
+					if (this.YAxis != null)
+					{
+						this.YAxis.Pan(this.PreviousPosition, e.Position);
+					}
+					break;
+				case EAxisDescription.X:
+					if (this.XAxis != null)
+					{
+						this.XAxis.Pan(this.PreviousPosition, e.Position);
+					}
+					break;
+				case EAxisDescription.Y:
+					if (this.YAxis != null)
+					{
+						this.YAxis.Pan(this.PreviousPosition, e.Position);
+					}
+					break;
 			}
+
+
 
 			this.PlotView.InvalidatePlot(false);
 			this.PreviousPosition = e.Position;

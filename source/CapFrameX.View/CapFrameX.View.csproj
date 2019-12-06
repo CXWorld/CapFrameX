@@ -147,6 +147,7 @@
       <DependentUpon>ComparisonView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controls\CustomPanManipulator.cs" />
+    <Compile Include="Controls\EAxisDescription.cs" />
     <Compile Include="Controls\FpsGraphControl.xaml.cs">
       <DependentUpon>FpsGraphControl.xaml</DependentUpon>
     </Compile>

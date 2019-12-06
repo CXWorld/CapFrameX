@@ -10,7 +10,7 @@ namespace CapFrameX.View.Controls
         public FrametimeGraphControl()
         {
             InitializeComponent();
-			OxyPlotHelper.SetYAxisZoomWheelAndPan(FrametimePlotView);
+			OxyPlotHelper.SetAxisZoomWheelAndPan(FrametimePlotView);
 		}
 
 		private void ResetChart_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
