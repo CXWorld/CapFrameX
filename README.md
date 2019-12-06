@@ -99,14 +99,19 @@ The toolbar now shows you the options to activate the cutting mode and the conte
 ## Chart control
 | Action | Gesture |
 | --- | --- |
-Pan(Y-axis) | Right mouse button |
-Zoom(Y-axis) | Mouse wheel |
-Zoom by rectangle | Ctrl+Right mouse button, Middle mouse button |
-Reset | Left mouse button double-click, Middle mouse button double-click, ‘A’, Home |
+Pan | Right mouse button |
+Pan(X-axis) | Shift + right mouse button |
+Pan(Y-axis) | Ctrl + right mouse button |
+Zoom | Mouse wheel |
+Zoom(X-axis) | Shift + mouse wheel |
+Zoom(Y-axis) | Ctrl + mouse wheel |
+Zoom by rectangle | Middle mouse button |
+Reset | Left or middle mouse button double-click, ‘A’, Home |
 Show ‘tracker’ | Left mouse button |
-Copy values	| Right mouse button+context menu |
+Copy values| Right mouse button context menu |
 
-You can zoom/pan/reset the Y-axis by positioning the mouse cursor over the axis before starting the zoom/pan.
+You can also zoom/pan/reset a single axis by positioning the mouse cursor over the axis before starting the zoom/pan.
+This manual is also available through the context menu.
 
 ## Report view
 This is a simple view where you can add your records to see all the relevant parameters all at once. You can also just copy them with a right-click to add them into any other programm. This is also possible for the graphs and performance parameters in the single record view.
