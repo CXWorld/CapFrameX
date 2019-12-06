@@ -63,5 +63,11 @@
 		bool ShowOutlierWarning { get; set; }
 
 		string HardwareInfoSource { get; set; }
+
+		string CustomCpuDescription { get; set; }
+
+		string CustomGpuDescription { get; set; }
+
+		string CustomRamDescription { get; set; }		
 	}
 }

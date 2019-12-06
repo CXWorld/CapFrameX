@@ -4,11 +4,9 @@ namespace CapFrameX.Data
 {
 	public enum EHardwareInfoSource
 	{
-		[Description("No hardware info")]
-		None = 1,
 		[Description("Automatic detection")]
-		Auto = 2,
+		Auto = 1,
 		[Description("Custom description")]
-		Custom = 3
+		Custom = 2
 	}
 }

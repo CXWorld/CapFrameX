@@ -98,5 +98,14 @@
     <Setting Name="HardwareInfoSource" Type="System.String" Scope="User">
       <Value Profile="(Default)">Auto</Value>
     </Setting>
+    <Setting Name="CustomCpuDescription" Type="System.String" Scope="User">
+      <Value Profile="(Default)">CPU</Value>
+    </Setting>
+    <Setting Name="CustomGpuDescription" Type="System.String" Scope="User">
+      <Value Profile="(Default)">GPU</Value>
+    </Setting>
+    <Setting Name="CustomRamDescription" Type="System.String" Scope="User">
+      <Value Profile="(Default)">RAM</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

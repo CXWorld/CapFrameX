@@ -40,7 +40,7 @@ namespace CapFrameX.View
                 var recordDirectoryObserver = new RecordDirectoryObserver(appConfiguration);
 
                 DataContext = new ControlViewModel(new RecordDirectoryObserver(appConfiguration), new EventAggregator(), 
-                    new CapFrameXConfiguration(), new RecordDataProvider(recordDirectoryObserver));
+                    new CapFrameXConfiguration(), new RecordDataProvider(recordDirectoryObserver, appConfiguration));
 			}
 
 			SetSortSettings((DataContext as ControlViewModel).AppConfiguration);
@@ -49,7 +49,7 @@ namespace CapFrameX.View
 		private void SetSortSettings(IAppConfiguration appConfiguration)
 		{
 			string sortMemberPath = appConfiguration.RecordingListSortMemberPath;
-			var direction = appConfiguration.RecordingListSortDirection.ConverToEnum<ListSortDirection>();
+			var direction = appConfiguration.RecordingListSortDirection.ConvertToEnum<ListSortDirection>();
 			var collectionView = CollectionViewSource.GetDefaultView(RecordDataGrid.ItemsSource);
 
 			collectionView.SortDescriptions.Clear();

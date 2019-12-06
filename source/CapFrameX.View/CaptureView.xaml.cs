@@ -65,7 +65,7 @@ namespace CapFrameX.View
             {
                 var appConfiguration = new CapFrameXConfiguration();
                 DataContext = new CaptureViewModel(appConfiguration, new PresentMonCaptureService(), 
-                    new EventAggregator(), new RecordDataProvider(new RecordDirectoryObserver(appConfiguration)));
+                    new EventAggregator(), new RecordDataProvider(new RecordDirectoryObserver(appConfiguration), appConfiguration));
             }
         }
 

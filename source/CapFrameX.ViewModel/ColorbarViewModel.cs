@@ -39,6 +39,7 @@ namespace CapFrameX.ViewModel
 		private int _fpsValuesRoundingDigits;
 		private bool _aggregatioIsChecked;
 		private string _screenshotDirectory;
+		private bool _hasCustomInfo;
 
 		public bool CaptureIsChecked
 		{
@@ -173,11 +174,51 @@ namespace CapFrameX.ViewModel
 
 		public EHardwareInfoSource SelectedHardwareInfoSource
 		{
-			get { return _appConfiguration.HardwareInfoSource.ConverToEnum<EHardwareInfoSource>(); }
+			get { return _appConfiguration.HardwareInfoSource.ConvertToEnum<EHardwareInfoSource>(); }
 			set
 			{
 				_appConfiguration.HardwareInfoSource = value.ConvertToString();
 				OnHardwareInfoSourceChanged();
+				RaisePropertyChanged();
+			}
+		}
+
+		public bool HasCustomInfo
+		{
+			get { return _hasCustomInfo; }
+			set
+			{
+				_hasCustomInfo = value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public string CustomCpuDescription
+		{
+			get { return _appConfiguration.CustomCpuDescription; }
+			set
+			{
+				_appConfiguration.CustomCpuDescription = value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public string CustomGpuDescription
+		{
+			get { return _appConfiguration.CustomGpuDescription; }
+			set
+			{
+				_appConfiguration.CustomGpuDescription = value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public string CustomRamDescription
+		{
+			get { return _appConfiguration.CustomRamDescription; }
+			set
+			{
+				_appConfiguration.CustomRamDescription = value;
 				RaisePropertyChanged();
 			}
 		}
@@ -226,10 +267,26 @@ namespace CapFrameX.ViewModel
 			OpenObservedFolderCommand = new DelegateCommand(OnOpenObservedFolder);
 			OpenScreenshotFolderCommand = new DelegateCommand(OnOpenScreenshotFolder);
 
+			HasCustomInfo = SelectedHardwareInfoSource == EHardwareInfoSource.Custom;
+
+			SetHardwareInfoDefaultsFromDatabase();
+		
 			SetAggregatorEvents();
 
 			SubscribeToOverlayActivate();
 			SubscribeToOverlayDeactivate();
+		}
+
+		private void SetHardwareInfoDefaultsFromDatabase()
+		{
+			if (CustomCpuDescription == "CPU")
+				CustomCpuDescription = SystemInfo.GetProcessorName();
+
+			if (CustomGpuDescription == "GPU")
+				CustomGpuDescription = SystemInfo.GetGraphicCardName();
+
+			if (CustomRamDescription == "RAM")
+				CustomRamDescription = SystemInfo.GetSystemRAMInfoName();
 		}
 
 		private void OnSelectObeservedFolder()
@@ -299,8 +356,8 @@ namespace CapFrameX.ViewModel
 
 		private void OnCaptureIsCheckedChanged()
 		{
-			
-				_regionManager.RequestNavigate("DataRegion", "CaptureView");
+
+			_regionManager.RequestNavigate("DataRegion", "CaptureView");
 		}
 
 		private void OnSingleRecordIsCheckedChanged()
@@ -330,7 +387,11 @@ namespace CapFrameX.ViewModel
 
 		private void OnHardwareInfoSourceChanged()
 		{
-			throw new NotImplementedException();
+			// mange visibility
+			HasCustomInfo = SelectedHardwareInfoSource == EHardwareInfoSource.Custom;
+
+			// manage defaults
+			SetHardwareInfoDefaultsFromDatabase();
 		}
 
 		private void SetAggregatorEvents()

@@ -435,9 +435,9 @@ namespace CapFrameX.ViewModel
 
 			ComparisonColumnChartFormatter = value => value.ToString(string.Format("F{0}",
 			_appConfiguration.FpsValuesRoundingDigits), CultureInfo.InvariantCulture);
-			SelectedComparisonContext = _appConfiguration.ComparisonContext.ConverToEnum<EComparisonContext>();
-			SelectedSecondaryMetric = _appConfiguration.SecondaryMetric.ConverToEnum<EMetric>();
-			SelectedThirdMetric = _appConfiguration.ThirdMetric.ConverToEnum<EMetric>();
+			SelectedComparisonContext = _appConfiguration.ComparisonContext.ConvertToEnum<EComparisonContext>();
+			SelectedSecondaryMetric = _appConfiguration.SecondaryMetric.ConvertToEnum<EMetric>();
+			SelectedThirdMetric = _appConfiguration.ThirdMetric.ConvertToEnum<EMetric>();
 
 			SetRowSeries();
 			InitializePlotModel();

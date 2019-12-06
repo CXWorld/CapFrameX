@@ -39,7 +39,7 @@ namespace CapFrameX.PresentMonInterface
 			catch { propertyDataValue = string.Empty; }
 
 			// Name
-			return propertyDataValue;
+			return propertyDataValue.TrimEnd();
 		}
 
 		public static string GetGraphicCardName()

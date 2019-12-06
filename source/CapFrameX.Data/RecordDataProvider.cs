@@ -1,5 +1,7 @@
-﻿using CapFrameX.Contracts.Data;
+﻿using CapFrameX.Contracts.Configuration;
+using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.OcatInterface;
+using CapFrameX.Extensions;
 using CapFrameX.PresentMonInterface;
 using System;
 using System.Collections.Generic;
@@ -26,12 +28,14 @@ namespace CapFrameX.Data
 				@"CapFrameX\Resources\ProcessGameNameMatchingList.txt");
 
 		private readonly IRecordDirectoryObserver _recordObserver;
+		private readonly IAppConfiguration _appConfiguration;
 
 		private Dictionary<string, string> _processGameMatchingDictionary = new Dictionary<string, string>();
 
-		public RecordDataProvider(IRecordDirectoryObserver recordObserver)
+		public RecordDataProvider(IRecordDirectoryObserver recordObserver, IAppConfiguration appConfiguration)
 		{
 			_recordObserver = recordObserver;
+			_appConfiguration = appConfiguration;
 
 			try
 			{
@@ -58,7 +62,7 @@ namespace CapFrameX.Data
 
 		public IList<IFileRecordInfo> GetFileRecordInfoList()
 		{
-			 var filterList = CaptureServiceConfiguration.GetProcessIgnoreList();
+			var filterList = CaptureServiceConfiguration.GetProcessIgnoreList();
 
 			if (filterList.Contains("CapFrameX"))
 				filterList.Remove("CapFrameX");
@@ -88,6 +92,27 @@ namespace CapFrameX.Data
 
 				var processNameAdjusted = processName.Contains(".exe") ? processName : $"{processName}.exe";
 
+				// manage custom hardware info
+				bool hasCustomInfo = 
+					_appConfiguration.HardwareInfoSource.ConvertToEnum<EHardwareInfoSource>() == EHardwareInfoSource.Custom;
+
+				var cpuInfo = string.Empty;
+				var gpuInfo = string.Empty;
+				var ramInfo = string.Empty;
+
+				if (hasCustomInfo)
+				{
+					cpuInfo = _appConfiguration.CustomCpuDescription;
+					gpuInfo = _appConfiguration.CustomGpuDescription;
+					ramInfo = _appConfiguration.CustomRamDescription;
+				}
+				else
+				{
+					cpuInfo = SystemInfo.GetProcessorName();
+					gpuInfo = SystemInfo.GetGraphicCardName();
+					ramInfo = SystemInfo.GetSystemRAMInfoName();
+				}
+
 				// Create header
 				var headerLines = new List<string>()
 				{
@@ -98,11 +123,11 @@ namespace CapFrameX.Data
 					$"{FileRecordInfo.HEADER_MARKER}CreationTime{FileRecordInfo.INFO_SEPERATOR}{datetime.ToString("HH:mm:ss")}",
 					$"{FileRecordInfo.HEADER_MARKER}Motherboard{FileRecordInfo.INFO_SEPERATOR}{SystemInfo.GetMotherboardName()}",
 					$"{FileRecordInfo.HEADER_MARKER}OS{FileRecordInfo.INFO_SEPERATOR}{SystemInfo.GetOSVersion()}",
-					$"{FileRecordInfo.HEADER_MARKER}Processor{FileRecordInfo.INFO_SEPERATOR}{SystemInfo.GetProcessorName()}",
-					$"{FileRecordInfo.HEADER_MARKER}System RAM{FileRecordInfo.INFO_SEPERATOR}{SystemInfo.GetSystemRAMInfoName()}",
+					$"{FileRecordInfo.HEADER_MARKER}Processor{FileRecordInfo.INFO_SEPERATOR}{cpuInfo}",
+					$"{FileRecordInfo.HEADER_MARKER}System RAM{FileRecordInfo.INFO_SEPERATOR}{ramInfo}",
 					$"{FileRecordInfo.HEADER_MARKER}Base Driver Version{FileRecordInfo.INFO_SEPERATOR}{string.Empty}",
 					$"{FileRecordInfo.HEADER_MARKER}Driver Package{FileRecordInfo.INFO_SEPERATOR}{string.Empty}",
-					$"{FileRecordInfo.HEADER_MARKER}GPU{FileRecordInfo.INFO_SEPERATOR}{SystemInfo.GetGraphicCardName()}",
+					$"{FileRecordInfo.HEADER_MARKER}GPU{FileRecordInfo.INFO_SEPERATOR}{gpuInfo}",
 					$"{FileRecordInfo.HEADER_MARKER}GPU #{FileRecordInfo.INFO_SEPERATOR}{string.Empty}",
 					$"{FileRecordInfo.HEADER_MARKER}GPU Core Clock (MHz){FileRecordInfo.INFO_SEPERATOR}{string.Empty}",
 					$"{FileRecordInfo.HEADER_MARKER}GPU Memory Clock (MHz){FileRecordInfo.INFO_SEPERATOR}{string.Empty}",

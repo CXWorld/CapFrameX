@@ -191,5 +191,23 @@ namespace CapFrameX.Configuration
 			get { return Settings.HardwareInfoSource; }
 			set { Settings.HardwareInfoSource = value; Settings.Save(); }
 		}
+
+		public string CustomCpuDescription
+		{
+			get { return Settings.CustomCpuDescription; }
+			set { Settings.CustomCpuDescription = value; Settings.Save(); }
+		}
+
+		public string CustomGpuDescription
+		{
+			get { return Settings.CustomGpuDescription; }
+			set { Settings.CustomGpuDescription = value; Settings.Save(); }
+		}
+
+		public string CustomRamDescription
+		{
+			get { return Settings.CustomRamDescription; }
+			set { Settings.CustomRamDescription = value; Settings.Save(); }
+		}
 	}
 }
