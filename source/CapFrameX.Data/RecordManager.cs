@@ -296,7 +296,7 @@ namespace CapFrameX.Data
 						{
 							if (double.TryParse(GetStringFromArray(values, indexQPCTimes), NumberStyles.Any, CultureInfo.InvariantCulture, out var qPCTime))
 							{
-								session.Displaytimes.Add(qPCTime);
+								session.QPCTimes.Add(qPCTime);
 							}
 						}
 
