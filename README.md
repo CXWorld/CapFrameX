@@ -56,9 +56,9 @@ The screenshot button takes a screenshot of the current view excluding the recor
 * Screenshot directory = The directory in which your screenshots are saved.
 
 ## Capture view
-Here you can set your capture hotkey, the capture time(0=unlimited) and the response sounds.
+Here you can set your capture hotkey, the capture time(0=unlimited) and the response sounds.  
 An info text always informs you what's going on with the capture service and also tells you what to do in certain situations.
-For more detailed information about the capture events, you can take a look into the log which can be expanded from the bottom.
+For more detailed information about the capture events, you can take a look into the infobox which can be expanded from the top.
 
 ## How to make a capture
 The process you want to capture has to be present in the "Running processes" list. This list automatically lists all running processes from which frametimes can be captured.
@@ -75,33 +75,33 @@ The ignore list already includes many of the most common processes and, just lik
 ## Analysis View
 This is where you can analyse the captures you made one by one.
 
-For the graphs you can choose between frametime graphs, FPS graphs and L-shapes.
-Below that you have your performance parameters like min, max, avg and percentiles.
-You also have a pie chart which shows the amount of time you had stuttering, meaning frametimes above 2.5x average(default).
+For the graphs you can choose between frametime graphs, FPS graphs and L-shapes.  
+Below that you have your performance parameters like min, max, avg and percentiles.  
+You also have a pie chart which shows the amount of time you had stuttering, meaning frametimes above 2.5x average(default).  
 At the bottom is a toolbar where you can change the performance parameters, adjust the Y-axis for the frametimes, remove unusual outliers from the graphs and activate a cutting mode.
 
 ## Comparison View
-Here you can compare multiple records.
+Here you can compare multiple records.  
 With a double-click from the record list you can add the captures to the comparison list and with a click on the comparison list entry you can select them in the record list. With the button at the end you can remove them all from the list.
 
-The first tab shows you the records as bar charts.
+The first tab shows you the records as bar charts.  
 If you compare records from just a single game, this game is set as a title above the diagramm. If you compare records from multiple games, the names are labeled on the bars.
 In addition you have an adjustable context for each record.
-At the bottom is a toolbar where you can change the sorting and adjust the displayed metrics aswell as the context.
+At the bottom is a toolbar where you can change the sorting and adjust the displayed metrics aswell as the context.  
 The "Grouping" toggle switches between two sorting modes:  
 off-> all records are sorted by FPS  
 on-> records are sorted by game, then by FPS  
 
-The second tab shows you the frametime graphs and L-shapes.
+The second tab shows you the frametime graphs and L-shapes.  
 You can highlight the graphs with a mousover in the comparison list and also change their color or hide them.
 The toolbar now shows you the options to activate the cutting mode and the context legend for the frametime graphs. The context setting is shared between the two tabs.
 
 ## Chart control
 | Action | Gesture |
 | --- | --- |
-Pan | Right mouse button |
+Pan | Right mouse button, arrow keys(+ Ctrl = slow pan) |
 Pan(X-axis) | Shift + right mouse button |
-Pan(Y-axis) | Ctrl + right mouse button |
+Pan(Y-axis) | Ctrl + right mouse button  |
 Zoom | Mouse wheel |
 Zoom(X-axis) | Shift + mouse wheel |
 Zoom(Y-axis) | Ctrl + mouse wheel |
@@ -117,9 +117,9 @@ This manual is also available through the context menu.
 This is a simple view where you can add your records to see all the relevant parameters all at once. You can also just copy them with a right-click to add them into any other programm. This is also possible for the graphs and performance parameters in the single record view.
 
 ## Synchronization view
-This view shows you the quality of your synchronization methods like FreeSync or G-Sync.
-If they are working properly, the lines for "frametimes" and "Display changed times" should align pretty well, this means your monitor works at the adaptive refresh rate of your GPU.
-Below the Graph you can see two percentage values. The first one shows the correlation of frame- and display time, the second one shows the amount of frames within valid sync range(that you can enter next to it).
+This view shows you the quality of your synchronization methods like FreeSync or G-Sync.  
+If they are working properly, the lines for "frametimes" and "Display changed times" should align pretty well, this means your monitor works at the adaptive refresh rate of your GPU.  
+Below the Graph you can see two percentage values. The first one shows the correlation of frame- and display time, the second one shows the amount of frames within valid sync range(that you can enter next to it).  
 At the bottom you can see the distribution of the refresh times and beside it another pie chart which shows the number of dropped frames.
 
 ## Export options (context menu)
