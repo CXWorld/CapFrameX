@@ -88,9 +88,9 @@ The first tab shows you the records as bar charts.
 If you compare records from just a single game, this game is set as a title above the diagramm. If you compare records from multiple games, the names are labeled on the bars.
 In addition you have an adjustable context for each record.
 At the bottom is a toolbar where you can change the sorting and adjust the displayed metrics aswell as the context.
-The "Grouping" toggle switches between two sorting modes:
-off-> all records are sorted by FPS
-on-> records are sorted by game, then by FPS
+The "Grouping" toggle switches between two sorting modes:  
+off-> all records are sorted by FPS  
+on-> records are sorted by game, then by FPS  
 
 The second tab shows you the frametime graphs and L-shapes.
 You can highlight the graphs with a mousover in the comparison list and also change their color or hide them.
@@ -110,7 +110,7 @@ Reset | Left or middle mouse button double-click, ‘A’, Home |
 Show ‘tracker’ | Left mouse button |
 Copy values| Right mouse button context menu |
 
-You can also zoom/pan/reset a single axis by positioning the mouse cursor over the axis before starting the zoom/pan.
+You can also zoom/pan a single axis by positioning the mouse cursor over the axis before starting the zoom/pan.  
 This manual is also available through the context menu.
 
 ## Report view
