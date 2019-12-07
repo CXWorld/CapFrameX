@@ -201,17 +201,17 @@ namespace CapFrameX.ViewModel
 									UpdateCharts();
 									FrametimeDisplayChangedTimeCorrelation =
 										GetCorrelation(msg.CurrentSession);
-									SyncRangePercentage = CalculateSyncRangePercentage();
+									SyncRangePercentage = GetSyncRangePercentageString();
 								}
 							});
 		}
 
 		private string GetCorrelation(Session currentSession)
 		{
-			var frametimes = currentSession.FrameTimes;
-			var displayChangedTimes = currentSession.Displaytimes;
+			var frametimes = currentSession.FrameTimes.Where((x,i) => !_session.AppMissed[i]);
+			var displayChangedTimes = currentSession.Displaytimes.Where((x, i) => !_session.AppMissed[i]);
 
-			if (frametimes.Count != displayChangedTimes.Count)
+			if (frametimes.Count() != displayChangedTimes.Count())
 				return "NaN";
 
 			var correlation = Correlation.Pearson(frametimes, displayChangedTimes);
@@ -251,7 +251,7 @@ namespace CapFrameX.ViewModel
 		}
 
 		private void OnSyncRangeChanged()
-			=> SyncRangePercentage = CalculateSyncRangePercentage();
+			=> SyncRangePercentage = GetSyncRangePercentageString();
 
 		private void UpdateCharts()
 		{
@@ -406,34 +406,17 @@ namespace CapFrameX.ViewModel
 			}));
 		}
 
-		private string CalculateSyncRangePercentage()
+		private string GetSyncRangePercentageString()
 		{
-			if (_session?.Displaytimes == null)
-				return "0%";
-
 			if (string.IsNullOrWhiteSpace(SyncRangeLower) ||
 				string.IsNullOrWhiteSpace(SyncRangeUpper))
-				return "0%";
+				return "NaN";
 
 			int lowerValue = Convert.ToInt32(SyncRangeLower);
 			int upperValue = Convert.ToInt32(SyncRangeUpper);
+			var percentage = _session.GetSyncRangePercentage(lowerValue, upperValue);
 
-			bool IsInRange(double value)
-			{
-				int hz = (int)Math.Round(value, 0);
-
-				if (hz >= lowerValue && hz <= upperValue)
-					return true;
-				else
-					return false;
-			};
-
-			int count = _session
-				.Displaytimes.Select(time => 1000d / time)
-				.Count(hz => IsInRange(hz));
-
-			return (Math.Round((double)count/ 
-				_session.Displaytimes.Count * 100, 0))
+			return (Math.Round(percentage * 100, 0))
 				.ToString() + "%";
 		}
 
@@ -447,7 +430,7 @@ namespace CapFrameX.ViewModel
 				UpdateCharts();
 				FrametimeDisplayChangedTimeCorrelation =
 					GetCorrelation(_session);
-				SyncRangePercentage = CalculateSyncRangePercentage();
+				SyncRangePercentage = GetSyncRangePercentageString();
 			}
 		}
 

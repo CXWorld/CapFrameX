@@ -41,6 +41,7 @@
 					<ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
 						<MenuItem Header="Copy frametime values (f)" Command="{Binding CopyFrametimeValuesCommand}"/>
 						<MenuItem Header="Copy frametime points (t, f(t))" Command="{Binding CopyFrametimePointsCommand}"/>
+                        <MenuItem Header="Show chart controls" Command="{Binding CopyFrametimePointsCommand}"/>
 					</ContextMenu>
 				</oxy:PlotView.ContextMenu>
 			</oxy:PlotView>

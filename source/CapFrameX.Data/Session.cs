@@ -1,12 +1,13 @@
 ﻿using CapFrameX.Configuration;
 using CapFrameX.Statistics;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 
 namespace CapFrameX.Data
 {
-	public class Session
+	public sealed class Session
 	{
 		IStatisticProvider _frametimeStatisticProvider;
 
@@ -32,7 +33,7 @@ namespace CapFrameX.Data
 		public double LastReprojectionTime { get; set; }
 
 		public Session()
-		{		
+		{
 			_frametimeStatisticProvider = new FrametimeStatisticProvider(new CapFrameXConfiguration());
 		}
 
@@ -93,7 +94,7 @@ namespace CapFrameX.Data
 			return frametimesPointsWindow;
 		}
 
-		public IList<Point> GetFrametimePointsSampleWindow(int startIndex, double endIndex, 
+		public IList<Point> GetFrametimePointsSampleWindow(int startIndex, double endIndex,
 			ERemoveOutlierMethod eRemoveOutlierMethod = ERemoveOutlierMethod.None)
 		{
 			var frametimesPointsSampleWindow = new List<Point>();
@@ -108,6 +109,25 @@ namespace CapFrameX.Data
 			}
 
 			return frametimesPointsSampleWindow;
+		}
+
+		public double GetSyncRangePercentage(int syncRangeLower, int syncRangeUpper)
+		{
+			if (Displaytimes == null)
+				return 0d;
+
+			bool IsInRange(double value)
+			{
+				int hz = (int)Math.Round(value, 0);
+
+				if (hz >= syncRangeLower && hz <= syncRangeUpper)
+					return true;
+				else
+					return false;
+			};
+
+			return Displaytimes.Select(time => 1000d / time)
+				.Count(hz => IsInRange(hz)) / (double)Displaytimes.Count;
 		}
 	}
 }
