@@ -38,6 +38,11 @@ namespace CapFrameX.View
 			System.Diagnostics.Process.Start("https://github.com/DevTechProfile/CapFrameX#capframex");
 		}
 
+		private void Donate_Button_Click(object sender, RoutedEventArgs e)
+		{
+			System.Diagnostics.Process.Start("https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=A4VJPT9NB7G28&source=url");
+		}
+
 		/// <summary>
 		/// Exporting png pictures
 		/// </summary>

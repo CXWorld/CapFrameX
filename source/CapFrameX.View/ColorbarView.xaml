@@ -58,7 +58,7 @@
 							 Content="AGGREGATION" />-->
                 </StackPanel>
 
-                <Button Grid.Column="1" Margin="0 0 180 0"
+                <Button Grid.Column="1" Margin="0 0 310 0"
 						Style="{StaticResource MaterialDesignFloatingActionMiniButton}"
 						VerticalAlignment="Center"
 						HorizontalAlignment="Right"
@@ -68,7 +68,7 @@
                     <materialDesign:PackIcon Kind="PhotoLibrary"/>
                 </Button>
 
-                <Button Grid.Column="1" Margin="0 0 50 0" HorizontalAlignment="Right" BorderThickness="0" Background="Transparent"
+                <Button Grid.Column="1" Margin="0 0 180 0" HorizontalAlignment="Right" BorderThickness="0" Background="Transparent"
                     x:Name="GitHubButton" Click="GitHubButton_Click" Width="120" Height="50">
                     <StackPanel Orientation="Horizontal">
                         <materialDesign:PackIcon Kind="GithubCircle" Height="30" Width="30" VerticalAlignment="Center"/>
@@ -76,6 +76,11 @@
                     </StackPanel>
                 </Button>
 
+				<Button Grid.Column="1" Margin="0 0 50 0" Width="150" Height="50" HorizontalAlignment="Right" BorderThickness="0" 
+						Background="Transparent" Click="Donate_Button_Click">
+					<Image Width="120" Height="40" Source="/CapFrameX;component/Icons/Donate-PayPal-White.png"></Image>
+				</Button>
+				
                 <materialDesign:PopupBox Grid.Column="1" RequestBringIntoView="PopupBox_RequestBringIntoView" Margin="16,0,16,0" StaysOpen="True" PlacementMode="BottomAndAlignRightEdges" HorizontalAlignment="Right">
                     <Grid Margin="8 8 8 8">
                         <Grid.Resources>
