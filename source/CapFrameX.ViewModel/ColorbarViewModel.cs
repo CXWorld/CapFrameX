@@ -40,6 +40,7 @@ namespace CapFrameX.ViewModel
 		private bool _aggregatioIsChecked;
 		private string _screenshotDirectory;
 		private bool _hasCustomInfo;
+		private string _selectedView = "Options";
 
 		public bool CaptureIsChecked
 		{
@@ -223,6 +224,18 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
+		public string SelectedView
+		{
+			get { return _selectedView; }
+			set
+			{
+				_selectedView = value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public string HelpText => File.ReadAllText(@"HelpTexts\ChartControls.rtf");
+
 		public bool IsCompatibleWithRunningOS => CaptureServiceInfo.IsCompatibleWithRunningOS;
 
 		public Array HardwareInfoSourceItems => Enum.GetValues(typeof(EHardwareInfoSource))
@@ -238,6 +251,10 @@ namespace CapFrameX.ViewModel
 		public ICommand OpenObservedFolderCommand { get; }
 
 		public ICommand OpenScreenshotFolderCommand { get; }
+
+		public ICommand OptionsMouseDownCommand { get; }
+
+		public ICommand HelpMouseDownCommand { get; }
 
 		public IList<int> WindowSizes { get; }
 
@@ -266,11 +283,13 @@ namespace CapFrameX.ViewModel
 			SelectScreenshotFolderCommand = new DelegateCommand(OnSelectScreenshotFolder);
 			OpenObservedFolderCommand = new DelegateCommand(OnOpenObservedFolder);
 			OpenScreenshotFolderCommand = new DelegateCommand(OnOpenScreenshotFolder);
+			OptionsMouseDownCommand = new DelegateCommand(OnOptionsMouseDown);
+			HelpMouseDownCommand = new DelegateCommand(OnHelpMouseDown);
 
 			HasCustomInfo = SelectedHardwareInfoSource == EHardwareInfoSource.Custom;
 
 			SetHardwareInfoDefaultsFromDatabase();
-		
+
 			SetAggregatorEvents();
 
 			SubscribeToOverlayActivate();
@@ -338,6 +357,12 @@ namespace CapFrameX.ViewModel
 			}
 			catch { }
 		}
+
+		private void OnOptionsMouseDown()
+			=> SelectedView = "Options";
+
+		private void OnHelpMouseDown()
+			=> SelectedView = "Help";
 
 		private void OnOpenObservedFolder()
 		{

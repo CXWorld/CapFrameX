@@ -27,9 +27,13 @@ namespace CapFrameX.MVVM.Converter
 
 		object IValueConverter.Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
-			Enum myEnum = (Enum)value;
-			string description = GetEnumDescription(myEnum);
-			return description;
+			try
+			{
+				Enum myEnum = (Enum)value;
+				string description = GetEnumDescription(myEnum);
+				return description;
+			}
+			catch { return string.Empty; }
 		}
 
 		object IValueConverter.ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
