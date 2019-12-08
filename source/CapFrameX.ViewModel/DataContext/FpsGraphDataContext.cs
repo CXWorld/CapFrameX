@@ -30,12 +30,14 @@ namespace CapFrameX.ViewModel.DataContext
 		}
 
 		public ICommand CopyFpsValuesCommand { get; }
+		public ICommand CopyFpsPointsCommand { get; }
 
 		public FpsGraphDataContext(IRecordDataServer recordDataServer,
 			IAppConfiguration appConfiguration, IStatisticProvider frametimesStatisticProvider) :
 			base(recordDataServer, appConfiguration, frametimesStatisticProvider)
 		{
 			CopyFpsValuesCommand = new DelegateCommand(OnCopyFpsValues);
+			CopyFpsPointsCommand = new DelegateCommand(OnCopyFpsPoints);
 
 			// Update Chart after changing index slider
 			RecordDataServer.FpsPointDataStream.Subscribe(sequence =>
@@ -90,6 +92,23 @@ namespace CapFrameX.ViewModel.DataContext
 			foreach (var framerate in fps)
 			{
 				builder.Append(framerate.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
+			}
+
+			Clipboard.SetDataObject(builder.ToString(), false);
+		}
+
+		private void OnCopyFpsPoints()
+		{
+			if (RecordSession == null)
+				return;
+
+			var fpsPoints = RecordDataServer.GetFpsPointTimeWindow();
+			StringBuilder builder = new StringBuilder();
+
+			for (int i = 0; i < fpsPoints.Count; i++)
+			{
+				builder.Append(fpsPoints[i].X.ToString(CultureInfo.InvariantCulture) + "\t" +
+					fpsPoints[i].Y.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
 			}
 
 			Clipboard.SetDataObject(builder.ToString(), false);

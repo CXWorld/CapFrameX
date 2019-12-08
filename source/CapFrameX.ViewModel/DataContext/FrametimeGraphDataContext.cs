@@ -116,15 +116,15 @@ namespace CapFrameX.ViewModel.DataContext
                 frametimeSeries.Points.AddRange(frametimeDataPoints);
                 movingAverageSeries.Points.AddRange(movingAverage.Select((y, i) => new DataPoint(frametimePoints[i].X, y)));
 
-                //var xAxis = FrametimeModel.GetAxisOrDefault("xAxis", null);
-                //var yAxis = FrametimeModel.GetAxisOrDefault("yAxis", null);
+				var xAxis = FrametimeModel.GetAxisOrDefault("xAxis", null);
+				//var yAxis = FrametimeModel.GetAxisOrDefault("yAxis", null);
 
-                //xAxis.Minimum = frametimePoints.First().X;
-                //xAxis.Maximum = frametimePoints.Last().X;
-                //yAxis.Minimum = yMin - (yMax - yMin) / 6;
-                //yAxis.Maximum = yMax + (yMax - yMin) / 6;
+				xAxis.Minimum = frametimePoints.First().X;
+				xAxis.Maximum = frametimePoints.Last().X;
+				//yAxis.Minimum = yMin - (yMax - yMin) / 6;
+				//yAxis.Maximum = yMax + (yMax - yMin) / 6;
 
-                FrametimeModel.Series.Add(frametimeSeries);
+				FrametimeModel.Series.Add(frametimeSeries);
                 FrametimeModel.Series.Add(movingAverageSeries);
 
                 FrametimeModel.InvalidatePlot(true);
