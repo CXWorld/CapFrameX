@@ -46,6 +46,10 @@
                 <File Id="fil60A491409F9FE309FF63B17A92C963ED" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.Statistics.dll" />
             </Component>
             
+            <Component Id="cmpF4AA3050A716E6F54BB951C2FD2122DC" Guid="*" Win64="yes">
+                <File Id="fil5F66D1BA3F0735980723B32E1A79E0B1" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.Updater.dll" />
+            </Component>
+            
             <Component Id="cmp18FAC930D57ECB5DA84BC4EF8F1FF236" Guid="*" Win64="yes">
                 <File Id="fil5A22FA3F9BADD87BBA07D3CFC2BB585C" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.View.dll" />
             </Component>
@@ -150,6 +154,11 @@
             <Component Id="cmpC85BD7478E073743A39F17DF06865203" Guid="*" Win64="yes">
                 <File Id="fil3DAD59899DDA1B0FCEDF95F84CB3C475" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Xceed.Wpf.Toolkit.dll" />
             </Component>
+            <Directory Id="dirED1C7BF395F6825C5E6AA296F629EF5A" Name="HelpTexts">
+                <Component Id="cmpEEF8583F33AC9DCDC349C22B5162CEF5" Guid="*" Win64="yes">
+                    <File Id="filE1F227BC37167083E8389BD7591F66D3" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\HelpTexts\ChartControls.rtf" />
+                </Component>
+            </Directory>
             <Directory Id="dirFC3633220FD8334290F4812439E7BC6B" Name="NameMatching">
                 <Component Id="cmpDB3C9F13C3E689373E9F99E1C51AE6E5" Guid="*" Win64="yes">
                     <File Id="fil0DAA58FB4BD6C33A6C03C3A4415C92E3" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\NameMatching\ProcessGameNameMatchingList.txt" />
@@ -209,6 +218,8 @@
             
             <ComponentRef Id="cmp0FB30BFBF10002FEB8B1F262B927DE5E" />
             
+            <ComponentRef Id="cmpF4AA3050A716E6F54BB951C2FD2122DC" />
+            
             <ComponentRef Id="cmp18FAC930D57ECB5DA84BC4EF8F1FF236" />
             
             
@@ -261,6 +272,7 @@
             
             <ComponentRef Id="cmp017BFB3832A5B110A2B3A350E13F2A5C" />
             <ComponentRef Id="cmpC85BD7478E073743A39F17DF06865203" />
+            <ComponentRef Id="cmpEEF8583F33AC9DCDC349C22B5162CEF5" />
             <ComponentRef Id="cmpDB3C9F13C3E689373E9F99E1C51AE6E5" />
             <ComponentRef Id="cmpC9FDA2A63A64022F27649C6DD6729D8D" />
             <ComponentRef Id="cmp8C1AB07795DAE387F9C0929C8DBCE953" />
