@@ -84,32 +84,19 @@
 					<Image Width="120" Height="40" Source="/CapFrameX;component/Icons/Donate-PayPal-White.png"></Image>
 				</Button>
 
-				<materialDesign:PopupBox Grid.Column="1" RequestBringIntoView="PopupBox_RequestBringIntoView" Margin="16,0,16,0" StaysOpen="True" PlacementMode="BottomAndAlignRightEdges" HorizontalAlignment="Right">
+				<materialDesign:PopupBox Grid.Column="1" materialDesign:Closed="PopupBox_Closed" RequestBringIntoView="PopupBox_RequestBringIntoView" Margin="16,0,16,0" StaysOpen="True" PlacementMode="BottomAndAlignRightEdges" HorizontalAlignment="Right">
 					<DockPanel>
 						<StackPanel Margin="10" DockPanel.Dock="Top" Orientation="Horizontal">
-							<TextBlock Margin="18 0 0 0" Grid.Row="0" Grid.Column="0"
-								   Style="{StaticResource MaterialDesignTitleTextBlock}">
-									OPTIONS
-									<i:Interaction.Triggers>
-										<i:EventTrigger EventName="MouseDown" >
-											<i:InvokeCommandAction Command="{Binding OptionsMouseDownCommand}" />
-										</i:EventTrigger>
-									</i:Interaction.Triggers>
-							</TextBlock>
-							<Line X1="0" X2="0" Y1="0" Y2="25" Stroke="Black" StrokeThickness="0.5" Margin="20 2 0 0"/>
-							<TextBlock Grid.Row="0" Grid.Column="0" Margin="20 0 18 0"
-								   Style="{StaticResource MaterialDesignTitleTextBlock}">
-									HELP
-									<i:Interaction.Triggers>
-										<i:EventTrigger EventName="MouseDown" >
-											<i:InvokeCommandAction Command="{Binding HelpMouseDownCommand}" />
-										</i:EventTrigger>
-									</i:Interaction.Triggers>
-							</TextBlock>
+							<RadioButton Margin="18 0 0 0" Style="{StaticResource MaterialDesignTabRadioButton}"
+										 IsChecked="{Binding OptionsViewSelected}"
+										 Content="OPTIONS" />
+							<RadioButton Margin="20 0 0 0" Style="{StaticResource MaterialDesignTabRadioButton}"
+										 IsChecked="{Binding HelpViewSelected}"
+										 Content="HELP" />
 						</StackPanel>
-						<ContentPresenter Content="{Binding}">
+						<ContentPresenter x:Name="ContentPresenterSwitchView" Content="{Binding}">
 							<ContentPresenter.Resources>
-								<DataTemplate x:Key="OptionsContent">
+								<DataTemplate x:Name="OptionsDataTemplate" x:Key="OptionsContent">
 									<Grid Margin="10">
 										<Grid.Resources>
 											<Style TargetType="CheckBox" BasedOn="{StaticResource MaterialDesignCheckBox}">
@@ -228,7 +215,6 @@
 													  Text="{Binding Path=DataContext.HelpText, ElementName=ColorbarViewName, Mode=OneWay}"></xctk:RichTextBox>
 								</DataTemplate>
 							</ContentPresenter.Resources>
-
 							<ContentPresenter.Style>
 								<Style TargetType="{x:Type ContentPresenter}">
 									<Style.Triggers>

@@ -31,7 +31,7 @@ namespace CapFrameX.View
 			}
 		}
 
-		private void PopupBox_RequestBringIntoView(object sender, RequestBringIntoViewEventArgs e) { }
+		private void PopupBox_RequestBringIntoView(object sender, RequestBringIntoViewEventArgs e) {}
 
 		private void GitHubButton_Click(object sender, RoutedEventArgs e)
 		{
@@ -151,6 +151,11 @@ namespace CapFrameX.View
 			}
 
 			return bitmap;
+		}
+
+		private void PopupBox_Closed(object sender, RoutedEventArgs e)
+		{
+			(DataContext as ColorbarViewModel).OptionsViewSelected = true;
 		}
 	}
 }

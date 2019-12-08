@@ -41,6 +41,8 @@ namespace CapFrameX.ViewModel
 		private string _screenshotDirectory;
 		private bool _hasCustomInfo;
 		private string _selectedView = "Options";
+		private bool _optionsViewSelected = true;
+		private bool _helpViewSelected;
 
 		public bool CaptureIsChecked
 		{
@@ -234,6 +236,28 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
+		public bool OptionsViewSelected
+		{
+			get { return _optionsViewSelected; }
+			set
+			{
+				_optionsViewSelected = value;
+				OnViewSelectionChanged();
+				RaisePropertyChanged();
+			}
+		}		
+
+		public bool HelpViewSelected
+		{
+			get { return _helpViewSelected; }
+			set
+			{
+				_helpViewSelected = value;
+				OnViewSelectionChanged();
+				RaisePropertyChanged();
+			}
+		}
+
 		public string HelpText => File.ReadAllText(@"HelpTexts\ChartControls.rtf");
 
 		public bool IsCompatibleWithRunningOS => CaptureServiceInfo.IsCompatibleWithRunningOS;
@@ -251,10 +275,6 @@ namespace CapFrameX.ViewModel
 		public ICommand OpenObservedFolderCommand { get; }
 
 		public ICommand OpenScreenshotFolderCommand { get; }
-
-		public ICommand OptionsMouseDownCommand { get; }
-
-		public ICommand HelpMouseDownCommand { get; }
 
 		public IList<int> WindowSizes { get; }
 
@@ -283,8 +303,6 @@ namespace CapFrameX.ViewModel
 			SelectScreenshotFolderCommand = new DelegateCommand(OnSelectScreenshotFolder);
 			OpenObservedFolderCommand = new DelegateCommand(OnOpenObservedFolder);
 			OpenScreenshotFolderCommand = new DelegateCommand(OnOpenScreenshotFolder);
-			OptionsMouseDownCommand = new DelegateCommand(OnOptionsMouseDown);
-			HelpMouseDownCommand = new DelegateCommand(OnHelpMouseDown);
 
 			HasCustomInfo = SelectedHardwareInfoSource == EHardwareInfoSource.Custom;
 
@@ -358,12 +376,6 @@ namespace CapFrameX.ViewModel
 			catch { }
 		}
 
-		private void OnOptionsMouseDown()
-			=> SelectedView = "Options";
-
-		private void OnHelpMouseDown()
-			=> SelectedView = "Help";
-
 		private void OnOpenObservedFolder()
 		{
 			try
@@ -417,6 +429,15 @@ namespace CapFrameX.ViewModel
 
 			// manage defaults
 			SetHardwareInfoDefaultsFromDatabase();
+		}
+
+		private void OnViewSelectionChanged()
+		{
+			if (OptionsViewSelected)
+				SelectedView = "Options";
+
+			if(HelpViewSelected)
+				SelectedView = "Help";
 		}
 
 		private void SetAggregatorEvents()
