@@ -50,10 +50,13 @@ The screenshot button takes a screenshot of the current view excluding the recor
 
 ## Options
 * Moving average window size = The number of frames that are used for the average line in the frametime chart.(Analysis View)
+* FPS values rounding digits = The number of decimals for the FPS values
 * Stuttering factor = The factor a frametime has to be above average to be counted as stutter.(Analysis View)
 * Observed directory = The directory in which your captures are saved and also where you can put your OCAT/PresentMon captures.
-* FPS values rounding digits = The number of decimals for the FPS values
 * Screenshot directory = The directory in which your screenshots are saved.
+* Hardware info source = What will be written into the capture file as your CPU, GPU and RAM config.
+  Automatic detection: What's delivered by the system
+  Custom description: What you write into the text boxes below
 
 ## Capture view
 Here you can set your capture hotkey, the capture time(0=unlimited) and the response sounds.  
