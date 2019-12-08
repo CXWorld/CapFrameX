@@ -13,11 +13,7 @@ using System.Reflection;
 namespace CapFrameX.ViewModel
 {
 	public class StateViewModel : BindableBase
-	{
-		// ToDo : get correct url maybe from config
-		private const string
-			URL = "https://raw.githubusercontent.com/DevTechProfile/CapFrameX/develop/feature/rtss_client_implementation/version/Version.txt";
-
+	{	
 		private readonly IRecordDirectoryObserver _recordObserver;
 		private readonly IEventAggregator _eventAggregator;
 		private readonly IAppConfiguration _appConfiguration;
@@ -84,7 +80,7 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-		public bool IsUpdateAvailable => WebCheck.IsCXUpdateAvailable(URL);
+		public bool IsUpdateAvailable => WebCheck.IsCXUpdateAvailable(WebCheck.VersionSourceFileUrl);
 
 		public StateViewModel(IRecordDirectoryObserver recordObserver,
 							  IEventAggregator eventAggregator,
@@ -99,7 +95,7 @@ namespace CapFrameX.ViewModel
 			IsDirectoryObserving = true;
 			IsCaptureModeActive = false;
 			
-			UpdateHpyerlinkText = $"New version available on GitHub: v{WebCheck.GetWebVersion(URL)}";
+			UpdateHpyerlinkText = $"New version available on GitHub: v{WebCheck.GetWebVersion(WebCheck.VersionSourceFileUrl)}";
 
 			_recordObserver.HasValidSourceStream
 				.Subscribe(state => IsDirectoryObserving = state);

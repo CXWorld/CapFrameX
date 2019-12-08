@@ -9,6 +9,9 @@ namespace CapFrameX.Updater
 {
 	public class WebCheck
 	{
+		public const string VersionSourceFileUrl
+			= "https://raw.githubusercontent.com/DevTechProfile/CapFrameX/master/version/Version.txt";
+
 		public static bool IsCXUpdateAvailable(string url, Func<string> getGetCurrentVersionString = null)
 		{
 			try
@@ -34,8 +37,6 @@ namespace CapFrameX.Updater
 				// Use SecurityProtocolType.Ssl3 if needed for compatibility reasons
 
 				WebClient wc = new WebClient();
-				// dev branch: "https://raw.githubusercontent.com/DevTechProfile/CapFrameX/develop/feature/rtss_client_implementation/version/Version.txt
-				// master branch: get by raw button
 				byte[] raw = wc.DownloadData(url);
 
 				if (raw == null || !raw.Any())
