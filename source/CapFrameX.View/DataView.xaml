@@ -7,9 +7,10 @@
 			 xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
 			 xmlns:mvvm="clr-namespace:CapFrameX.MVVM.Converter;assembly=CapFrameX.MVVM"
 			 xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+			 xmlns:mahapps="http://metro.mahapps.com/winfx/xaml/controls"
 			 xmlns:controls="clr-namespace:CapFrameX.View.Controls"
 			 xmlns:data="clr-namespace:CapFrameX.Data;assembly=CapFrameX.Data"
-			 xmlns:prism="http://prismlibrary.com/"			 
+			 xmlns:prism="http://prismlibrary.com/"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800"
 			 Background="{DynamicResource MaterialDesignPaper}"
@@ -22,9 +23,9 @@
 				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Shadows.xaml" />
 				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ToggleButton.xaml" />
 				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.DataGrid.xaml" />
-				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Slider.xaml" />
 				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.GridSplitter.xaml" />
 				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ComboBox.xaml" />
+				<ResourceDictionary Source="Styles/CustomRangeSliderStyle.xaml" />
 			</ResourceDictionary.MergedDictionaries>
 			<mvvm:EnumDescriptionConverter x:Key="EnumDescriptionConverter"/>
 			<mvvm:ZoomingModeConverter x:Key="ZoomingModeConverter"/>
@@ -100,12 +101,18 @@
 				</TabControl>
 			</materialDesign:DialogHost>
 			<Grid Grid.Row="1" Margin="5 0 5 5" Background="#F5F5F5" Visibility="{Binding ElementName=CuttingModeActiveToggleButton, Path=IsChecked, Converter={StaticResource FalseToCollapsedConverter}}">
-				<Grid.ColumnDefinitions>
-					<ColumnDefinition Width="2*" />
-					<ColumnDefinition MinWidth="130" Width="1*" />
-					<ColumnDefinition Width="2*" />
-				</Grid.ColumnDefinitions>
-				<Slider Grid.Column="0" Margin="10 -35 0 0" Minimum="0"
+				<!--<mahapps:RangeSlider
+					HorizontalAlignment="Stretch"
+								  Minimum="0"
+								  Maximum="100"
+								  LowerValue="{Binding FirstSeconds}"
+								  UpperValue="{Binding LastSeconds}"
+								  Orientation="Horizontal">
+				</mahapps:RangeSlider>-->
+				<mahapps:RangeSlider Margin="6 16 6 0" LowerValue="25" UpperValue="75" 
+									 TickPlacement="BottomRight" TickFrequency="10" 
+									 Style="{StaticResource CustomRangeSlider}"/>
+				<!--<Slider Grid.Column="0" Margin="10 -35 0 0" Minimum="0"
 								Maximum="{Binding CutLeftSliderMaximum}"
 								TickFrequency="0.1"
 								HorizontalAlignment="Stretch"
@@ -129,7 +136,7 @@
 								VerticalAlignment="Center"
 								Value="{Binding LastSeconds}"
 								Style="{StaticResource MaterialDesignDiscreteSlider}"
-								ToolTip="Cut last seconds"/>
+								ToolTip="Cut last seconds"/>-->
 			</Grid>
 			<Grid Grid.Row="2" Margin="5 0 5 0" Background="#F5F5F5">
 				<Grid.ColumnDefinitions>
