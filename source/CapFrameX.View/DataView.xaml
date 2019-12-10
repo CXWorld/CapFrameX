@@ -109,7 +109,7 @@
 								  UpperValue="{Binding LastSeconds}"
 								  Orientation="Horizontal">
 				</mahapps:RangeSlider>-->
-				<mahapps:RangeSlider Margin="6 16 6 0" LowerValue="25" UpperValue="75" 
+                <mahapps:RangeSlider Margin="6 16 6 0" LowerValue="{Binding FirstSeconds}" UpperValue="{Binding LastSeconds}"               
 									 TickPlacement="BottomRight" TickFrequency="10" 
 									 Style="{StaticResource CustomRangeSlider}"/>
 				<!--<Slider Grid.Column="0" Margin="10 -35 0 0" Minimum="0"

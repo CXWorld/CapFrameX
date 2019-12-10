@@ -242,7 +242,7 @@ namespace CapFrameX.ViewModel
 				_firstSeconds = value;
 				RaisePropertyChanged();
 				_localRecordDataServer.SetTimeWindow(_firstSeconds,
-					_maxRecordingTime - LastSeconds - _firstSeconds);
+					_maxRecordingTime - _firstSeconds);
 				UpdateMainCharts();
 				UpdateSecondaryCharts();
 				RemainingRecordingTime = Math.Round(_maxRecordingTime - LastSeconds - _firstSeconds, 2)
@@ -258,7 +258,7 @@ namespace CapFrameX.ViewModel
 				_lastSeconds = value;
 				RaisePropertyChanged();
 				_localRecordDataServer.SetTimeWindow(FirstSeconds,
-					_maxRecordingTime - _lastSeconds - FirstSeconds);
+					_maxRecordingTime - _lastSeconds + FirstSeconds);
 				UpdateMainCharts();
 				UpdateSecondaryCharts();
 				RemainingRecordingTime = Math.Round(_maxRecordingTime - _lastSeconds - FirstSeconds, 2)
@@ -510,9 +510,6 @@ namespace CapFrameX.ViewModel
 			FirstSeconds = 0;
 			LastSeconds = 0;
 			_doUpdateCharts = true;
-
-			CutLeftSliderMaximum = _maxRecordingTime - 0.5;
-			CutRightSliderMaximum = _maxRecordingTime - 0.5;
 			RemainingRecordingTime = Math.Round(_maxRecordingTime, 2)
 				.ToString(CultureInfo.InvariantCulture) + " s";
 		}
