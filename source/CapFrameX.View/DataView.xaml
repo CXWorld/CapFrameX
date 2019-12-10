@@ -41,8 +41,8 @@
 					<Trigger Property="IsChecked" Value="True">
 						<Setter Property="ToolTip" Value="Switch to control mode"/>
 					</Trigger>
-					<Trigger Property="IsChecked" Value="False">
-						<Setter Property="ToolTip" Value="Switch to screenshot mode"/>
+                    <Trigger Property="IsChecked" Value="False">
+                        <Setter Property="ToolTip" Value="Switch to screenshot mode"/>
 					</Trigger>
 				</Style.Triggers>
 			</Style>
@@ -100,44 +100,18 @@
 					</TabItem>
 				</TabControl>
 			</materialDesign:DialogHost>
-			<Grid Grid.Row="1" Margin="5 0 5 5" Background="#F5F5F5" Visibility="{Binding ElementName=CuttingModeActiveToggleButton, Path=IsChecked, Converter={StaticResource FalseToCollapsedConverter}}">
-				<!--<mahapps:RangeSlider
-					HorizontalAlignment="Stretch"
-								  Minimum="0"
-								  Maximum="100"
-								  LowerValue="{Binding FirstSeconds}"
-								  UpperValue="{Binding LastSeconds}"
-								  Orientation="Horizontal">
-				</mahapps:RangeSlider>-->
-                <mahapps:RangeSlider Margin="6 16 6 0" LowerValue="{Binding FirstSeconds}" UpperValue="{Binding LastSeconds}"               
-									 TickPlacement="BottomRight" TickFrequency="10" 
-									 Style="{StaticResource CustomRangeSlider}"/>
-				<!--<Slider Grid.Column="0" Margin="10 -35 0 0" Minimum="0"
-								Maximum="{Binding CutLeftSliderMaximum}"
-								TickFrequency="0.1"
-								HorizontalAlignment="Stretch"
-								VerticalAlignment="Center"
-								Value="{Binding FirstSeconds}"
-								Style="{StaticResource MaterialDesignDiscreteSlider}"
-								ToolTip="Cut first seconds"/>
-				<TextBox Grid.Column="1" Margin="15 0 15 10" HorizontalAlignment="Center" IsReadOnly="True"
-						 Style="{StaticResource MaterialDesignFloatingHintTextBox}" Text="{Binding RemainingRecordingTime}">
-					<materialDesign:HintAssist.Hint>
-						<TextBlock>
-							Remaining time [s]
-						</TextBlock>
-					</materialDesign:HintAssist.Hint>
-				</TextBox>
-				<Slider Grid.Column="2" Margin="0 -35 10 0" Minimum="0"
-								IsDirectionReversed="True"
-								Maximum="{Binding CutRightSliderMaximum}"
-								TickFrequency="0.1"
-								HorizontalAlignment="Stretch"
-								VerticalAlignment="Center"
-								Value="{Binding LastSeconds}"
-								Style="{StaticResource MaterialDesignDiscreteSlider}"
-								ToolTip="Cut last seconds"/>-->
-			</Grid>
+            <Grid Grid.Row="1" Margin="5 0 5 5" Background="#F5F5F5" Visibility="{Binding ElementName=RangeSliderActiveToggleButton, Path=IsChecked, Converter={StaticResource FalseToCollapsedConverter}}">
+                <mahapps:RangeSlider Margin="50 10 5 30" LowerValue="{Binding FirstSeconds}" UpperValue="{Binding LastSeconds}"   
+                                     Maximum="{Binding MaxRecordingTime}"                                    
+									 TickPlacement="BottomRight" TickFrequency="2.5"                                     
+                                     MinRange="{Binding MinRangeSliderRange}"
+									 Style="{StaticResource CustomRangeSlider}"
+                                     Thumb.DragCompleted="RangeSlider_DragCompleted"/>
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Bottom" Orientation="Horizontal" Margin="40 0 0 5" Height="15">
+                    <TextBlock Text="Time window:"/>
+                    <TextBlock Text="{Binding RemainingRecordingTime}" Margin="5 0 0 0"/>
+                </StackPanel>
+            </Grid>
 			<Grid Grid.Row="2" Margin="5 0 5 0" Background="#F5F5F5">
 				<Grid.ColumnDefinitions>
 					<ColumnDefinition Width="1*" MaxWidth="800" />
@@ -258,13 +232,14 @@
 							</materialDesign:Card>
 						</materialDesign:PopupBox>
 					</StackPanel>
-					<CheckBox Margin="30 0 0 0" VerticalAlignment="Center" IsThreeState="False" IsChecked="{Binding RemoveOutliers}">
-						Remove outliers
-					</CheckBox>
+                    <StackPanel Margin="30 0 0 0" VerticalAlignment="Center" Orientation="Horizontal">
+                        <TextBlock Text="Remove outliers:"/>
+                        <ToggleButton Margin="10 0 0 0" IsChecked="{Binding RemoveOutliers}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>					   
+                    </StackPanel>
 					<StackPanel Margin="30 0 20 0"  Orientation="Horizontal" VerticalAlignment="Center">
-						<TextBlock VerticalAlignment="Center">Cutting mode:</TextBlock>
-						<ToggleButton Name="CuttingModeActiveToggleButton" Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
-									  ToolTip="Cutting mode" IsChecked="{Binding IsCuttingModeActive}"/>
+						<TextBlock VerticalAlignment="Center">Range slider:</TextBlock>
+						<ToggleButton Name="RangeSliderActiveToggleButton" Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
+									  IsChecked="{Binding IsRangeSliderActive}"/>
 					</StackPanel>
 				</StackPanel>
 			</Grid>

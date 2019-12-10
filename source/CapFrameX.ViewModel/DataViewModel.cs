@@ -45,15 +45,13 @@ namespace CapFrameX.ViewModel
 		private string[] _advancedParameterLabels;
 		private bool _removeOutliers;
 		private List<SystemInfoEntry> _systemInfos;
-		private bool _isCuttingModeActive;
+		private bool _isRangeSliderActive;
 		private bool _doUpdateCharts = true;
 		private Func<double, string> _parameterFormatter;
 		private TabItem _selectedChartItem;
 		private string _currentGameName;
 		private double _maxRecordingTime;
 		private string _remainingRecordingTime;
-		private double _cutLeftSliderMaximum;
-		private double _cutRightSliderMaximum;
 		private double _firstSeconds;
 		private double _lastSeconds;
 		private EChartYAxisSetting _selecetedChartYAxisSetting = EChartYAxisSetting.FullFit;
@@ -183,14 +181,14 @@ namespace CapFrameX.ViewModel
 			set { _systemInfos = value; RaisePropertyChanged(); }
 		}
 
-		public bool IsCuttingModeActive
+		public bool IsRangeSliderActive
 		{
-			get { return _isCuttingModeActive; }
+			get { return _isRangeSliderActive; }
 			set
 			{
-				_isCuttingModeActive = value;
+				_isRangeSliderActive = value;
 				RaisePropertyChanged();
-				OnCuttingModeChanged();
+				OnSliderRangeChanged();
 			}
 		}
 
@@ -214,24 +212,20 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-		public double CutLeftSliderMaximum
+		public double MaxRecordingTime
 		{
-			get { return _cutLeftSliderMaximum; }
+			get { return _maxRecordingTime; }
 			set
 			{
-				_cutLeftSliderMaximum = value;
+				_maxRecordingTime = value;
 				RaisePropertyChanged();
+				RaisePropertyChanged(nameof(MinRangeSliderRange));
 			}
 		}
 
-		public double CutRightSliderMaximum
+		public double MinRangeSliderRange
 		{
-			get { return _cutRightSliderMaximum; }
-			set
-			{
-				_cutRightSliderMaximum = value;
-				RaisePropertyChanged();
-			}
+			get { return MaxRecordingTime * 0.05; }
 		}
 
 		public double FirstSeconds
@@ -240,13 +234,8 @@ namespace CapFrameX.ViewModel
 			set
 			{
 				_firstSeconds = value;
+				OnRangeSliderValueChanged();
 				RaisePropertyChanged();
-				_localRecordDataServer.SetTimeWindow(_firstSeconds,
-					_maxRecordingTime - _firstSeconds);
-				UpdateMainCharts();
-				UpdateSecondaryCharts();
-				RemainingRecordingTime = Math.Round(_maxRecordingTime - LastSeconds - _firstSeconds, 2)
-					.ToString(CultureInfo.InvariantCulture) + " s";
 			}
 		}
 
@@ -256,13 +245,8 @@ namespace CapFrameX.ViewModel
 			set
 			{
 				_lastSeconds = value;
+				OnRangeSliderValueChanged();
 				RaisePropertyChanged();
-				_localRecordDataServer.SetTimeWindow(FirstSeconds,
-					_maxRecordingTime - _lastSeconds + FirstSeconds);
-				UpdateMainCharts();
-				UpdateSecondaryCharts();
-				RemainingRecordingTime = Math.Round(_maxRecordingTime - _lastSeconds - FirstSeconds, 2)
-					.ToString(CultureInfo.InvariantCulture) + " s";
 			}
 		}
 
@@ -373,14 +357,23 @@ namespace CapFrameX.ViewModel
 			Task.Factory.StartNew(() => SetStaticChart(GetFrametimesSubset()));
 		}
 
-		private void OnCuttingModeChanged()
+		private void OnSliderRangeChanged()
 		{
 			if (_session == null)
 				return;
 
-			UpdateCuttingParameter();
+			UpdateRangeSliderParameter();
 			UpdateMainCharts();
 			UpdateSecondaryCharts();
+		}
+
+		private void OnRangeSliderValueChanged()
+		{
+			_localRecordDataServer.SetTimeWindow(FirstSeconds, LastSeconds - FirstSeconds);
+			RealTimeUpdateCharts();
+			UpdateSecondaryCharts();
+			RemainingRecordingTime = Math.Round(LastSeconds - FirstSeconds, 2)
+				.ToString(CultureInfo.InvariantCulture) + " s";
 		}
 
 		private void OnCopyStatisticalParameter()
@@ -499,18 +492,18 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-		private void UpdateCuttingParameter()
+		private void UpdateRangeSliderParameter()
 		{
 			if (_session == null)
 				return;
 
-			_maxRecordingTime = _session.FrameStart.Last();
+			MaxRecordingTime = _session.FrameStart.Last();
 
 			_doUpdateCharts = false;
 			FirstSeconds = 0;
-			LastSeconds = 0;
+			LastSeconds = MaxRecordingTime;
 			_doUpdateCharts = true;
-			RemainingRecordingTime = Math.Round(_maxRecordingTime, 2)
+			RemainingRecordingTime = Math.Round(MaxRecordingTime, 2)
 				.ToString(CultureInfo.InvariantCulture) + " s";
 		}
 
@@ -541,7 +534,7 @@ namespace CapFrameX.ViewModel
 				FrametimeGraphDataContext.RecordSession = _session;
 				FpsGraphDataContext.RecordSession = _session;
 
-				UpdateCuttingParameter();
+				UpdateRangeSliderParameter();
 				UpdateMainCharts();
 				UpdateSecondaryCharts();
 			}
@@ -569,6 +562,43 @@ namespace CapFrameX.ViewModel
 						GetYAxisSettingFromSelection(SelecetedChartYAxisSetting));
 				});
 
+				Task.Factory.StartNew(() => SetStaticChart(subset));
+				Task.Factory.StartNew(() => SetStutteringChart(subset));
+			}
+		}
+
+		private void RealTimeUpdateCharts()
+		{
+			if (!_doUpdateCharts)
+				return;
+
+			var subset = GetFrametimesSubset();
+
+			if (subset != null)
+			{
+				Task.Factory.StartNew(() =>
+				{
+					FrametimeGraphDataContext
+					   .SetFrametimeChart(_localRecordDataServer?
+					   .GetFrametimePointTimeWindow());
+					var xAxis = FrametimeGraphDataContext
+						.FrametimeModel.Axes.FirstOrDefault(axis => axis.Key == "xAxis");
+
+					if (xAxis != null)
+						xAxis.Reset();
+				});
+			}
+		}
+
+		private void DemandUpdateCharts()
+		{
+			if (!_doUpdateCharts)
+				return;
+
+			var subset = GetFrametimesSubset();
+
+			if (subset != null)
+			{
 				Task.Factory.StartNew(() => SetStaticChart(subset));
 				Task.Factory.StartNew(() => SetStutteringChart(subset));
 			}
@@ -786,10 +816,9 @@ namespace CapFrameX.ViewModel
 			var yAxis = FrametimeGraphDataContext
 				.FrametimeModel.Axes.FirstOrDefault(axis => axis.Key == "yAxis");
 
-			FrametimeGraphDataContext.FrametimeModel.ResetAllAxes();
-
 			if (yAxis != null)
 			{
+				yAxis.Reset();
 				yAxis.Minimum = setting.Item1;
 				yAxis.Maximum = setting.Item2;
 				FrametimeGraphDataContext.FrametimeModel.InvalidatePlot(true);
@@ -848,6 +877,11 @@ namespace CapFrameX.ViewModel
 			}
 
 			return setting;
+		}
+
+		public void OnRangeSliderDragCompleted()
+		{
+			DemandUpdateCharts();
 		}
 
 		public void OnNavigatedTo(NavigationContext navigationContext)

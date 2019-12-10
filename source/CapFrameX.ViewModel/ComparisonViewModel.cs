@@ -49,8 +49,6 @@ namespace CapFrameX.ViewModel
 		private ComparisonColorManager _comparisonColorManager = new ComparisonColorManager();
 		private bool _useEventMessages;
 		private string _remainingRecordingTime;
-		private double _cutLeftSliderMaximum;
-		private double _cutRightSliderMaximum;
 		private double _firstSeconds;
 		private double _lastSeconds;
 		private bool _isContextLegendActive = true;
@@ -68,7 +66,7 @@ namespace CapFrameX.ViewModel
 		private string _currentGameName;
 		private bool _hasUniqueGameNames;
 		private bool _useComparisonGrouping;
-		private bool _isCuttingModeActive;
+		private bool _isRangeSliderActive;
 		private bool _messageDialogContentIsOpen;
 		private MessageDialog _messageDialogContent;
 		private string _messageText;
@@ -204,26 +202,6 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-		public double CutLeftSliderMaximum
-		{
-			get { return _cutLeftSliderMaximum; }
-			set
-			{
-				_cutLeftSliderMaximum = value;
-				RaisePropertyChanged();
-			}
-		}
-
-		public double CutRightSliderMaximum
-		{
-			get { return _cutRightSliderMaximum; }
-			set
-			{
-				_cutRightSliderMaximum = value;
-				RaisePropertyChanged();
-			}
-		}
-
 		public string ColumnChartYAxisTitle
 		{
 			get { return _columnChartYAxisTitle; }
@@ -263,6 +241,20 @@ namespace CapFrameX.ViewModel
 				RaisePropertyChanged();
 			}
 		}
+		public double MaxRecordingTime
+		{
+			get { return _maxRecordingTime; }
+			set
+			{
+				_maxRecordingTime = value;
+				RaisePropertyChanged();
+				RaisePropertyChanged(nameof(MinRangeSliderRange));
+			}
+		}
+		public double MinRangeSliderRange
+		{
+			get { return MaxRecordingTime * 0.05; }
+		}
 
 		public double FirstSeconds
 		{
@@ -272,7 +264,7 @@ namespace CapFrameX.ViewModel
 				_firstSeconds = value;
 				RaisePropertyChanged();
 				UpdateCharts();
-				RemainingRecordingTime = Math.Round(_maxRecordingTime - LastSeconds - _firstSeconds, 2)
+				RemainingRecordingTime = Math.Round(LastSeconds - _firstSeconds, 2)
 					.ToString(CultureInfo.InvariantCulture) + " s";
 			}
 		}
@@ -285,7 +277,7 @@ namespace CapFrameX.ViewModel
 				_lastSeconds = value;
 				RaisePropertyChanged();
 				UpdateCharts();
-				RemainingRecordingTime = Math.Round(_maxRecordingTime - _lastSeconds - FirstSeconds, 2)
+				RemainingRecordingTime = Math.Round(_lastSeconds - FirstSeconds, 2)
 					.ToString(CultureInfo.InvariantCulture) + " s";
 			}
 		}
@@ -356,14 +348,14 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-		public bool IsCuttingModeActive
+		public bool IsRangeSliderActive
 		{
-			get { return _isCuttingModeActive; }
+			get { return _isRangeSliderActive; }
 			set
 			{
-				_isCuttingModeActive = value;
+				_isRangeSliderActive = value;
 				RaisePropertyChanged();
-				OnCuttingModeChanged();
+				OnRangeSliderChanged();
 			}
 		}
 
@@ -593,7 +585,7 @@ namespace CapFrameX.ViewModel
 				var currentWrappedComparisonInfo = ComparisonRecords[i];
 
 				double startTime = FirstSeconds;
-				double endTime = _maxRecordingTime - LastSeconds;
+				double endTime = LastSeconds;
 				var frametimeTimeWindow = currentWrappedComparisonInfo.WrappedRecordInfo.Session
 					.GetFrametimeTimeWindow(startTime, endTime, ERemoveOutlierMethod.None);
 
@@ -647,41 +639,35 @@ namespace CapFrameX.ViewModel
 
 		}
 
-		private void OnCuttingModeChanged()
+		private void OnRangeSliderChanged()
 		{
-			UpdateCuttingParameter();
+			UpdateRangeSliderParameter();
 			UpdateCharts();
 		}
 
-		private void UpdateCuttingParameter()
+		private void UpdateRangeSliderParameter()
 		{
 			if (ComparisonRecords == null || !ComparisonRecords.Any())
 				return;
 
-			double minRecordingTime = double.MaxValue;
-			_maxRecordingTime = double.MinValue;
+			MaxRecordingTime = double.MinValue;
 
 			foreach (var record in ComparisonRecords)
 			{
-				if (record.WrappedRecordInfo.Session.FrameStart.Last() > _maxRecordingTime)
-					_maxRecordingTime = record.WrappedRecordInfo.Session.FrameStart.Last();
-
-				if (record.WrappedRecordInfo.Session.FrameStart.Last() < minRecordingTime)
-					minRecordingTime = record.WrappedRecordInfo.Session.FrameStart.Last();
+				if (record.WrappedRecordInfo.Session.FrameStart.Last() > MaxRecordingTime)
+					MaxRecordingTime = record.WrappedRecordInfo.Session.FrameStart.Last();
 			}
 
 			_doUpdateCharts = false;
 			FirstSeconds = 0;
-			LastSeconds = 0;
+			LastSeconds = MaxRecordingTime;
 			_doUpdateCharts = true;
 
-			CutLeftSliderMaximum = minRecordingTime / 2 - 0.5;
-			CutRightSliderMaximum = minRecordingTime / 2 + _maxRecordingTime - minRecordingTime - 0.5;
 			RemainingRecordingTime = ComparisonRecords.Any() ?
-				Math.Round(_maxRecordingTime, 2).ToString(CultureInfo.InvariantCulture) + " s" : "0.0 s"; ;
+				Math.Round(MaxRecordingTime, 2).ToString(CultureInfo.InvariantCulture) + " s" : "0.0 s"; ;
 		}
 
-		private void UpdateAxesMinMax(bool invalidatePlot)
+		private void UpdateAxesMinMax()
 		{
 			if (ComparisonRecords == null || !ComparisonRecords.Any())
 				return;
@@ -692,34 +678,52 @@ namespace CapFrameX.ViewModel
 			if (xAxis == null || yAxis == null)
 				return;
 
+			xAxis.Reset();
+
 			double xMin = 0;
 			double xMax = 0;
 			double yMin = 0;
 			double yMax = 0;
 
 			double startTime = FirstSeconds;
-			double endTime = _maxRecordingTime - LastSeconds;
+			double endTime = LastSeconds;
 
 			var sessionParallelQuery = ComparisonRecords.Select(record => record.WrappedRecordInfo.Session).AsParallel();
 
 			xMin = sessionParallelQuery.Min(session =>
 			{
-				return session.GetFrametimePointsTimeWindow(startTime, endTime).First().X;
+				var window = session.GetFrametimePointsTimeWindow(startTime, endTime);
+				if (window.Any())
+					return window.First().X;
+				else
+					return double.MaxValue;
 			});
 
 			xMax = sessionParallelQuery.Max(session =>
 			{
-				return session.GetFrametimePointsTimeWindow(startTime, endTime).Last().X;
+				var window = session.GetFrametimePointsTimeWindow(startTime, endTime);
+				if (window.Any())
+					return window.Last().X;
+				else
+					return double.MinValue;
 			});
 
 			yMin = sessionParallelQuery.Min(session =>
 			{
-				return session.GetFrametimePointsTimeWindow(startTime, endTime).Min(pnt => pnt.Y); ;
+				var window = session.GetFrametimePointsTimeWindow(startTime, endTime);
+				if (window.Any())
+					return window.Min(pnt => pnt.Y);
+				else
+					return double.MaxValue;
 			});
 
 			yMax = sessionParallelQuery.Max(session =>
 			{
-				return session.GetFrametimePointsTimeWindow(startTime, endTime).Max(pnt => pnt.Y);
+				var window = session.GetFrametimePointsTimeWindow(startTime, endTime);
+				if (window.Any())
+					return window.Max(pnt => pnt.Y);
+				else
+					return double.MinValue;
 			});
 
 			xAxis.Minimum = xMin;
@@ -728,8 +732,7 @@ namespace CapFrameX.ViewModel
 			yAxis.Minimum = yMin - (yMax - yMin) / 6;
 			yAxis.Maximum = yMax + (yMax - yMin) / 6;
 
-			if (invalidatePlot)
-				ComparisonModel.InvalidatePlot(true);
+			ComparisonModel.InvalidatePlot(true);
 		}
 
 		private void UpdateBarChartHeight()
@@ -866,7 +869,7 @@ namespace CapFrameX.ViewModel
 		private void AddToFrameTimeChart(ComparisonRecordInfoWrapper wrappedComparisonInfo)
 		{
 			double startTime = FirstSeconds;
-			double endTime = _maxRecordingTime - LastSeconds;
+			double endTime = LastSeconds;
 			var session = wrappedComparisonInfo.WrappedRecordInfo.Session;
 			var frametimePoints = session.GetFrametimePointsTimeWindow(startTime, endTime)
 										 .Select(pnt => new Point(pnt.X, pnt.Y));
@@ -918,7 +921,7 @@ namespace CapFrameX.ViewModel
 		private void AddToLShapeChart(ComparisonRecordInfoWrapper wrappedComparisonInfo)
 		{
 			double startTime = FirstSeconds;
-			double endTime = _maxRecordingTime - LastSeconds;
+			double endTime = LastSeconds;
 			var frametimeTimeWindow = wrappedComparisonInfo.WrappedRecordInfo.Session.GetFrametimeTimeWindow(startTime, endTime, ERemoveOutlierMethod.None);
 
 			var lShapeQuantiles = _frametimeAnalyzer.GetLShapeQuantiles();
@@ -963,7 +966,7 @@ namespace CapFrameX.ViewModel
 				AddToFrameTimeChart(ComparisonRecords[i]);
 			}
 
-			UpdateAxesMinMax(true);
+			UpdateAxesMinMax();
 		}
 
 		private void SetLShapeChart()

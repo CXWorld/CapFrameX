@@ -41,6 +41,7 @@ namespace CapFrameX.Data
 			ERemoveOutlierMethod eRemoveOutlierMethod = ERemoveOutlierMethod.None)
 		{
 			var frametimesSampleWindow = new List<double>();
+
 			var frametimes = _frametimeStatisticProvider?.GetOutlierAdjustedSequence(FrameTimes, eRemoveOutlierMethod);
 
 			if (frametimes != null && frametimes.Any())
@@ -58,6 +59,7 @@ namespace CapFrameX.Data
 			ERemoveOutlierMethod eRemoveOutlierMethod = ERemoveOutlierMethod.None)
 		{
 			IList<double> frametimesTimeWindow = new List<double>();
+
 			var frametimes = _frametimeStatisticProvider?.GetOutlierAdjustedSequence(FrameTimes, eRemoveOutlierMethod);
 
 			if (frametimes != null && FrameStart != null)
@@ -78,6 +80,7 @@ namespace CapFrameX.Data
 			ERemoveOutlierMethod eRemoveOutlierMethod = ERemoveOutlierMethod.None)
 		{
 			IList<Point> frametimesPointsWindow = new List<Point>();
+
 			var frametimes = _frametimeStatisticProvider?.GetOutlierAdjustedSequence(FrameTimes, eRemoveOutlierMethod);
 
 			if (frametimes != null && FrameStart != null)
@@ -98,6 +101,7 @@ namespace CapFrameX.Data
 			ERemoveOutlierMethod eRemoveOutlierMethod = ERemoveOutlierMethod.None)
 		{
 			var frametimesPointsSampleWindow = new List<Point>();
+
 			var frametimes = _frametimeStatisticProvider?.GetOutlierAdjustedSequence(FrameTimes, eRemoveOutlierMethod);
 
 			if (frametimes != null && frametimes.Any())

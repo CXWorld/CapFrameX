@@ -33,7 +33,7 @@ namespace CapFrameX.ViewModel
 
 			// Update height of bar chart control here
 			UpdateBarChartHeight();
-			UpdateCuttingParameter();
+			UpdateRangeSliderParameter();
 
 			//Draw charts and performance parameter
 			UpdateCharts();
@@ -51,7 +51,7 @@ namespace CapFrameX.ViewModel
 		{
 			double startTime = FirstSeconds;
 			double lastFrameStart = wrappedComparisonRecordInfo.WrappedRecordInfo.Session.FrameStart.Last();
-			double endTime = LastSeconds > lastFrameStart ? lastFrameStart : lastFrameStart - LastSeconds;
+			double endTime = LastSeconds > lastFrameStart ? lastFrameStart : lastFrameStart + LastSeconds;
 			var frametimeTimeWindow = wrappedComparisonRecordInfo.WrappedRecordInfo.Session.GetFrametimeTimeWindow(startTime, endTime, ERemoveOutlierMethod.None);
 			double GeMetricValue(IList<double> sequence, EMetric metric) =>
 					_frametimeStatisticProvider.GetFpsMetricValue(sequence, metric);
@@ -105,7 +105,7 @@ namespace CapFrameX.ViewModel
 			ComparisonRecords.Remove(wrappedComparisonRecordInfo);
 
 			HasComparisonItems = ComparisonRecords.Any();
-			UpdateCuttingParameter();
+			UpdateRangeSliderParameter();
 			UpdateCharts();
 			UpdateBarChartHeight();
 
@@ -150,7 +150,7 @@ namespace CapFrameX.ViewModel
 			CurrentGameName = string.Empty;
 
 			RemainingRecordingTime = "0.0 s";
-			UpdateCuttingParameter();
+			UpdateRangeSliderParameter();
 			ComparisonModel.InvalidatePlot(true);
 		}
 

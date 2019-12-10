@@ -10,6 +10,7 @@
              xmlns:vm="clr-namespace:CapFrameX.ViewModel;assembly=CapFrameX.ViewModel"
              xmlns:mvvm="clr-namespace:CapFrameX.MVVM.Converter;assembly=CapFrameX.MVVM"
 			 xmlns:attached="clr-namespace:CapFrameX.MVVM.AttachedProperties;assembly=CapFrameX.MVVM"
+             xmlns:mahapps="http://metro.mahapps.com/winfx/xaml/controls"
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
              xmlns:oxy="clr-namespace:OxyPlot.Wpf;assembly=OxyPlot.Wpf"
@@ -29,7 +30,8 @@
 				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.DataGrid.xaml" />
 				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Slider.xaml" />
 				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.PopupBox.xaml" />
-			</ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Styles/CustomRangeSliderStyle.xaml" />
+            </ResourceDictionary.MergedDictionaries>
 			<mvvm:ZoomingModeConverter x:Key="ZoomingModeConverter"/>
 			<mvvm:EnumDescriptionConverter x:Key="EnumDescriptionConverter"/>
 			<mvvm:BoolToVisibilityConverter x:Key="FalseToHiddenConverter" FalseValue="Hidden" TrueValue="Visible"/>
@@ -86,38 +88,17 @@
 							<Grid Grid.Row="0" Margin="0 0 0 -10">
 								<oxy:PlotView Background="#F5F5F5" x:Name="ComparisonPlotView" Model="{Binding ComparisonModel}" MouseDoubleClick="ResetFrametimeChart_MouseDoubleClick"/>
 							</Grid>
-							<Grid Grid.Row="1" Visibility="{Binding ElementName=CuttingModeActiveToggleButton, Path=IsChecked, Converter={StaticResource TrueToVisibleConverter}}">
-								<Grid.ColumnDefinitions>
-									<ColumnDefinition Width="2*" />
-									<ColumnDefinition Width="1*" />
-									<ColumnDefinition Width="2*" />
-								</Grid.ColumnDefinitions>
-								<Slider Grid.Column="0" Margin="20 0 0 10" Minimum="0"
-								Maximum="{Binding CutLeftSliderMaximum}"
-								TickFrequency="0.1"
-								HorizontalAlignment="Stretch"
-								VerticalAlignment="Bottom"
-								Value="{Binding FirstSeconds}"
-								Style="{StaticResource MaterialDesignDiscreteSlider}"
-								ToolTip="Cut first seconds"/>
-								<TextBox Grid.Column="1" HorizontalAlignment="Center" IsReadOnly="True" Margin="20 0 20 3"
-								 Style="{StaticResource MaterialDesignFloatingHintTextBox}" Text="{Binding RemainingRecordingTime}">
-									<materialDesign:HintAssist.Hint>
-										<TextBlock>
-									Remaining time [s]
-										</TextBlock>
-									</materialDesign:HintAssist.Hint>
-								</TextBox>
-								<Slider Grid.Column="2" Margin="0 0 10 10" Minimum="0"
-								IsDirectionReversed="True"
-								Maximum="{Binding CutRightSliderMaximum}"
-								TickFrequency="0.1"
-								HorizontalAlignment="Stretch"
-								VerticalAlignment="Bottom"
-								Value="{Binding LastSeconds}"
-								Style="{StaticResource MaterialDesignDiscreteSlider}"
-								ToolTip="Cut last seconds"/>
-							</Grid>
+                        <Grid Grid.Row="1" Visibility="{Binding ElementName=RangeSliderActiveToggleButton, Path=IsChecked, Converter={StaticResource TrueToVisibleConverter}}">
+                            <mahapps:RangeSlider Margin="50 10 5 25" LowerValue="{Binding FirstSeconds}" UpperValue="{Binding LastSeconds}"   
+                                     Maximum="{Binding MaxRecordingTime}"                                    
+									 TickPlacement="BottomRight" TickFrequency="2.5"                                     
+                                     MinRange="{Binding MinRangeSliderRange}"
+									 Style="{StaticResource CustomRangeSlider}"/>
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Bottom" Orientation="Horizontal" Margin="45 0 0 0" Height="15">
+                                <TextBlock Text="Time window:"/>
+                                <TextBlock Text="{Binding RemainingRecordingTime}" Margin="5 0 0 0"/>
+                            </StackPanel>
+                        </Grid>
 							<Grid Grid.Row="2">
 								<lvc:CartesianChart MouseDoubleClick="ResetLShapeChart_MouseDoubleClick" Series="{Binding ComparisonLShapeCollection}" Zoom="Y">
 									<lvc:CartesianChart.AxisX>
@@ -185,9 +166,9 @@
 			</ComboBox>
 			<StackPanel Grid.Column="1" Margin="30 8 0 0" VerticalAlignment="Center" Orientation="Horizontal"
 						Visibility="{Binding IsBarChartTabActive, Converter={StaticResource TrueToCollapsedConverter}}">
-				<TextBlock VerticalAlignment="Center">Cutting mode:</TextBlock>
-				<ToggleButton Name="CuttingModeActiveToggleButton" Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
-							  ToolTip="Cutting mode" IsChecked="{Binding IsCuttingModeActive}"/>
+				<TextBlock VerticalAlignment="Center">Range slider:</TextBlock>
+				<ToggleButton Name="RangeSliderActiveToggleButton" Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
+							  IsChecked="{Binding IsRangeSliderActive}"/>
 			</StackPanel>
 
 			<StackPanel Grid.Column="4" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0 8 150 0" Orientation="Horizontal"
