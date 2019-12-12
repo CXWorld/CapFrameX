@@ -27,6 +27,12 @@
     <ClInclude Include="GroupedString.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
+    <ClInclude Include="RTSSCSharpWrapper.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="RTSSCoreControl.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -42,6 +48,12 @@
       <Filter>Quelldateien</Filter>
     </ClCompile>
     <ClCompile Include="GroupedString.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="RTSSCSharpWrapper.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="RTSSCoreControl.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
   </ItemGroup>

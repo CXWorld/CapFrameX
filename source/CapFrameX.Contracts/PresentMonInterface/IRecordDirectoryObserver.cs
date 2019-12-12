@@ -3,7 +3,7 @@ using System.IO;
 using System.Collections.Generic;
 using System.Reactive.Subjects;
 
-namespace CapFrameX.Contracts.OcatInterface
+namespace CapFrameX.Contracts.PresentMonInterface
 {
     public interface IRecordDirectoryObserver
     {
