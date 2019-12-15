@@ -3,10 +3,10 @@
 
 #pragma managed
 using namespace System;
-using namespace CapFrameX::Contracts::RTSSInterface;
+//using namespace CapFrameX::Contracts::Overlay;
 using namespace System::Collections::Generic;
 
-ref class RTSSCSharpWrapper:IRTSSCSharpWrapper
+public ref class RTSSCSharpWrapper
 {
 public:
 	RTSSCSharpWrapper()
@@ -36,6 +36,16 @@ public:
 	}
 
 	virtual void StartCountDown(int seconds)
+	{
+
+	}
+
+	virtual void StartTimer()
+	{
+
+	}
+
+	virtual void StopdTimer()
 	{
 
 	}

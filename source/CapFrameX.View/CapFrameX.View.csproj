@@ -282,9 +282,17 @@
       <Project>{cfb57d81-1886-45d2-aa16-ede1dd17a9ca}</Project>
       <Name>CapFrameX.MVVM</Name>
     </ProjectReference>
+    <ProjectReference Include="..\CapFrameX.Overlay\CapFrameX.Overlay.csproj">
+      <Project>{624777C2-6AF6-46D5-A019-1285F699B8A7}</Project>
+      <Name>CapFrameX.Overlay</Name>
+    </ProjectReference>
     <ProjectReference Include="..\CapFrameX.PresentMonInterface\CapFrameX.PresentMonInterface.csproj">
       <Project>{ADFBAECE-B74F-4A80-87D1-84BC990527B0}</Project>
       <Name>CapFrameX.PresentMonInterface</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CapFrameX.RTSSInterface\CapFrameX.RTSSInterface.vcxproj">
+      <Project>{9c46d3f3-72e0-4e6c-ad3e-54a5ee121475}</Project>
+      <Name>CapFrameX.RTSSInterface</Name>
     </ProjectReference>
     <ProjectReference Include="..\CapFrameX.Statistics\CapFrameX.Statistics.csproj">
       <Project>{788F49CD-ABCB-4C7C-B1B6-BF9DC2482432}</Project>

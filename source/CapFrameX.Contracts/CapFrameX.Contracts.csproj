@@ -79,7 +79,7 @@
     <Compile Include="PresentMonInterface\ICaptureServiceConfiguration.cs" />
     <Compile Include="PresentMonInterface\IServiceStartInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RTSSInterface\IRTSSCSharpWrapper.cs" />
+    <Compile Include="Overlay\IOverlayService.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

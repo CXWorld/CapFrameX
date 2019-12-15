@@ -16,6 +16,8 @@ using CapFrameX.Contracts.PresentMonInterface;
 using CapFrameX.PresentMonInterface;
 using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.MVVM;
+using CapFrameX.Contracts.Overlay;
+using CapFrameX.Overlay;
 
 namespace CapFrameX
 {
@@ -52,7 +54,8 @@ namespace CapFrameX
 			Container.Register<IStatisticProvider, FrametimeStatisticProvider>(Reuse.Singleton);
 			Container.Register<IFrametimeAnalyzer, FrametimeAnalyzer>(Reuse.Singleton);
 			Container.Register<ICaptureService, PresentMonCaptureService>(Reuse.Singleton);
-            Container.Register<IRecordDataProvider, RecordDataProvider>(Reuse.Singleton);			
+			Container.Register<IOverlayService, OverlayService>(Reuse.Singleton);
+			Container.Register<IRecordDataProvider, RecordDataProvider>(Reuse.Singleton);			
 		}
 
 		/// <summary>

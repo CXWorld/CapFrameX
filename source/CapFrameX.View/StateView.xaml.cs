@@ -1,9 +1,9 @@
 ﻿using CapFrameX.Configuration;
 using CapFrameX.Data;
+using CapFrameX.Overlay;
 using CapFrameX.PresentMonInterface;
 using CapFrameX.ViewModel;
 using Prism.Events;
-using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Windows.Controls;
@@ -22,7 +22,8 @@ namespace CapFrameX.View
             if (DesignerProperties.GetIsInDesignMode(this))
 			{
 				var appConfiguration = new CapFrameXConfiguration();
-				DataContext = new StateViewModel( new RecordDirectoryObserver(appConfiguration), new EventAggregator(), appConfiguration, new PresentMonCaptureService());
+				DataContext = new StateViewModel( new RecordDirectoryObserver(appConfiguration), 
+					new EventAggregator(), appConfiguration, new PresentMonCaptureService(), new OverlayService());
 			}
 		}
 
