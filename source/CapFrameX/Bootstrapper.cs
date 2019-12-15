@@ -1,5 +1,4 @@
-﻿using CapFrameX.Contracts.OcatInterface;
-using CapFrameX.Data;
+﻿using CapFrameX.Data;
 using CapFrameX.Statistics;
 using DryIoc;
 using Prism.DryIoc;

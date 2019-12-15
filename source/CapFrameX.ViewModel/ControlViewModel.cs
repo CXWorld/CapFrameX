@@ -1,5 +1,4 @@
-﻿using CapFrameX.Contracts.OcatInterface;
-using CapFrameX.EventAggregation.Messages;
+﻿using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Data;
 using Prism.Events;
 using Prism.Mvvm;
@@ -19,6 +18,7 @@ using CapFrameX.Contracts.Data;
 using System.Collections.Generic;
 using System.Collections;
 using System.Reactive.Subjects;
+using CapFrameX.Contracts.PresentMonInterface;
 
 namespace CapFrameX.ViewModel
 {

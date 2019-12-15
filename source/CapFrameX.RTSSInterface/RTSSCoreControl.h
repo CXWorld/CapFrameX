@@ -26,17 +26,16 @@ public:
 	//{{AFX_VIRTUAL(CRTSSSharedMemorySampleDlg)
 public:
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
+	void						ReleaseOSD();
+	void						Refresh();
 
 // Implementation
 protected:
-	void						Refresh();
-
 	DWORD						EmbedGraph(DWORD dwOffset, FLOAT* lpBuffer, DWORD dwBufferPos, DWORD dwBufferSize, LONG dwWidth, LONG dwHeight, LONG dwMargin, FLOAT fltMin, FLOAT fltMax, DWORD dwFlags);
 
 	DWORD						GetClientsNum();
 	DWORD						GetSharedMemoryVersion();
 	BOOL						UpdateOSD(LPCSTR lpText);
-	void						ReleaseOSD();
 	void						IncProfileProperty(LPCSTR lpProfile, LPCSTR lpProfileProperty, LONG dwIncrement);
 	void						SetProfileProperty(LPCSTR lpProfile, LPCSTR lpProfileProperty, DWORD dwProperty);
 

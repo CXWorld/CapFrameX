@@ -474,6 +474,9 @@ namespace CapFrameX.ViewModel
 
 		private void OnRemoveOutliersChanged()
 		{
+			if (RecordInfo == null)
+				return;
+
 			_localRecordDataServer.RemoveOutlierMethod = RemoveOutliers ?
 				ERemoveOutlierMethod.DeciPercentile : ERemoveOutlierMethod.None;
 

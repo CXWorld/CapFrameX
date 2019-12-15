@@ -1,5 +1,4 @@
 ﻿using CapFrameX.Contracts.Configuration;
-using CapFrameX.Contracts.OcatInterface;
 using CapFrameX.Contracts.PresentMonInterface;
 using CapFrameX.Updater;
 using Prism.Events;

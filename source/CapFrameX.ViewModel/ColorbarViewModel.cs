@@ -1,5 +1,4 @@
 ﻿using CapFrameX.Contracts.Configuration;
-using CapFrameX.Contracts.OcatInterface;
 using CapFrameX.Data;
 using CapFrameX.Extensions;
 using CapFrameX.EventAggregation.Messages;
@@ -16,6 +15,7 @@ using System.IO;
 using System.Linq;
 using System.Windows.Input;
 using CapFrameX.Contracts.MVVM;
+using CapFrameX.Contracts.PresentMonInterface;
 
 namespace CapFrameX.ViewModel
 {
