@@ -12,7 +12,7 @@ namespace CapFrameX.Contracts.RTSSInterface
 
 		void ReleaseOverlay();
 
-		void SetOverlayHeader(string[] entries);
+		void SetOverlayHeader(IList<string> entries);
 
 		void StartCountDown(int seconds);
 	}
