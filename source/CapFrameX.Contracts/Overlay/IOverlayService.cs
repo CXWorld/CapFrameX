@@ -17,6 +17,6 @@ namespace CapFrameX.Contracts.Overlay
 
 		void StartTimer();
 
-		void StopdTimer();
+		void StopTimer();
 	}
 }

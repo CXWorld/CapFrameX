@@ -38,6 +38,8 @@
 
 		string CaptureHotKey { get; set; }
 
+		string OverlayHotKey { get; set; }
+
 		string HotkeySoundMode { get; set; }
 
 		int CaptureTime { get; set; }
@@ -68,6 +70,8 @@
 
 		string CustomGpuDescription { get; set; }
 
-		string CustomRamDescription { get; set; }		
+		string CustomRamDescription { get; set; }	
+		
+		bool IsOverlayActive { get; set; }
 	}
 }

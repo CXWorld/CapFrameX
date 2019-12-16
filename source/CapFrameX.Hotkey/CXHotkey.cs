@@ -4,19 +4,19 @@ using System.Windows.Input;
 
 namespace CapFrameX.Hotkey
 {
-	public class CaptureHotkey
+	public class CXHotkey
 	{
 		public Key Key { get; }
 
 		public ModifierKeys Modifiers { get; }
 
-		public CaptureHotkey()
+		public CXHotkey(Key defaultKey)
 		{
-			Key = Key.F12;
+			Key = defaultKey;
 			Modifiers = ModifierKeys.None;
 		}
 
-		public CaptureHotkey(Key key, ModifierKeys modifiers)
+		public CXHotkey(Key key, ModifierKeys modifiers)
 		{
 			Key = key;
 			Modifiers = modifiers;
@@ -40,6 +40,34 @@ namespace CapFrameX.Hotkey
 			return str.ToString();
 		}
 
+        public static CXHotkey Create(string[] keyStrings, Key defaultKey, ModifierKeys modifierKey = ModifierKeys.None)
+        {
+            CXHotkey hotkey = new CXHotkey(defaultKey, modifierKey);
+
+            if (keyStrings.Length == 1)
+            {
+                var key = (Key)Enum.Parse(typeof(Key), keyStrings[0], true);
+                hotkey = new CXHotkey(key, ModifierKeys.None);
+            }
+            else if (keyStrings.Length == 2)
+            {
+                var keyModifier = (ModifierKeys)Enum.Parse(typeof(ModifierKeys), keyStrings[0], true);
+                var key = (Key)Enum.Parse(typeof(Key), keyStrings[1], true);
+
+                hotkey = new CXHotkey(key, keyModifier);
+            }
+            else if (keyStrings.Length == 3)
+            {
+                var keyModifierA = (ModifierKeys)Enum.Parse(typeof(ModifierKeys), keyStrings[0], true);
+                var keyModifierB = (ModifierKeys)Enum.Parse(typeof(ModifierKeys), keyStrings[1], true);
+                var key = (Key)Enum.Parse(typeof(Key), keyStrings[2], true);
+
+                hotkey = new CXHotkey(key, keyModifierA | keyModifierB);
+            }
+
+            return hotkey;
+        }
+
         public static bool IsValidHotkey(string hotkeyString)
         {
             if (string.IsNullOrWhiteSpace(hotkeyString))
@@ -48,7 +76,7 @@ namespace CapFrameX.Hotkey
             var keyStrings = hotkeyString.Split('+');
 
             bool isValid = true;
-            CaptureHotkey captureHotkey;
+            CXHotkey captureHotkey;
             try
             {
                 if (keyStrings.Length == 1)
@@ -58,7 +86,7 @@ namespace CapFrameX.Hotkey
                     if (!((key >= Key.A && key <= Key.Z) || (key >= Key.F1 && key <= Key.F12)))
                         isValid = false;
 
-                    captureHotkey = new CaptureHotkey(key, ModifierKeys.None);
+                    captureHotkey = new CXHotkey(key, ModifierKeys.None);
                 }
                 else if (keyStrings.Length == 2)
                 {
@@ -71,7 +99,7 @@ namespace CapFrameX.Hotkey
                     if (!(keyModifier == ModifierKeys.Alt || keyModifier == ModifierKeys.Shift || keyModifier == ModifierKeys.Control))
                         isValid = false;
 
-                    captureHotkey = new CaptureHotkey(key, keyModifier);
+                    captureHotkey = new CXHotkey(key, keyModifier);
                 }
                 else if (keyStrings.Length == 3)
                 {
@@ -90,7 +118,7 @@ namespace CapFrameX.Hotkey
                     if (!((key >= Key.A && key <= Key.Z) || (key >= Key.F1 && key <= Key.F12)))
                         isValid = false;
 
-                    captureHotkey = new CaptureHotkey(key, keyModifierA | keyModifierB);
+                    captureHotkey = new CXHotkey(key, keyModifierA | keyModifierB);
                 }
             }
             catch { isValid = false; }

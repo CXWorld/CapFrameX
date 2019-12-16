@@ -45,7 +45,7 @@ public:
 
 	}
 
-	virtual void StopdTimer()
+	virtual void StopTimer()
 	{
 
 	}

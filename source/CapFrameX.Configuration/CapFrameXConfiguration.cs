@@ -116,7 +116,13 @@ namespace CapFrameX.Configuration
             set { Settings.CaptureHotKey = value; Settings.Save(); }
         }
 
-        public string HotkeySoundMode
+		public string OverlayHotKey
+		{
+			get { return Settings.OverlayHotKey; }
+			set { Settings.OverlayHotKey = value; Settings.Save(); }
+		}
+
+		public string HotkeySoundMode
         {
             get { return Settings.HotkeySoundMode; }
             set { Settings.HotkeySoundMode = value; Settings.Save(); }
@@ -208,6 +214,12 @@ namespace CapFrameX.Configuration
 		{
 			get { return Settings.CustomRamDescription; }
 			set { Settings.CustomRamDescription = value; Settings.Save(); }
+		}
+
+		public bool IsOverlayActive
+		{
+			get { return Settings.IsOverlayActive; }
+			set { Settings.IsOverlayActive = value; Settings.Save(); }
 		}
 	}
 }

@@ -1,5 +1,6 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
+using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.PresentMonInterface;
 using CapFrameX.Data;
 using CapFrameX.EventAggregation.Messages;
@@ -41,6 +42,7 @@ namespace CapFrameX.ViewModel
 		private readonly ICaptureService _captureService;
 		private readonly IEventAggregator _eventAggregator;
 		private readonly IRecordDataProvider _recordDataProvider;
+		private readonly IOverlayService _overlayService;
 		private readonly MediaPlayer _soundPlayer = new MediaPlayer();
 		private readonly string[] _soundModes = new[] { "none", "simple sounds", "voice response" };
 		private readonly List<string> _captureDataArchive = new List<string>(ARCHIVE_LENGTH);
@@ -56,7 +58,8 @@ namespace CapFrameX.ViewModel
 		private string _captureStateInfo = string.Empty;
 		private string _captureTimeString = "0";
 		private string _captureStartDelayString = "0";
-		private IKeyboardMouseEvents _globalHookEvent;
+		private IKeyboardMouseEvents _globalCaptureHookEvent;
+		private IKeyboardMouseEvents _globalOverlayHookEvent;
 		private string _selectedSoundMode;
 		private string _loggerOutput = string.Empty;
 		private bool _fillArchive = false;
@@ -77,6 +80,16 @@ namespace CapFrameX.ViewModel
 			{
 				_isCapturing = value;
 				_captureService.IsCaptureModeActiveStream.OnNext(value);
+			}
+		}
+
+		private bool IsOverlayActive
+		{
+			get { return _appConfiguration.IsOverlayActive; }
+			set
+			{
+				_appConfiguration.IsOverlayActive = value;
+				_overlayService.IsOverlayActiveStream.OnNext(value);
 			}
 		}
 
@@ -149,12 +162,26 @@ namespace CapFrameX.ViewModel
 			get { return _appConfiguration.CaptureHotKey; }
 			set
 			{
-				if (!CaptureHotkey.IsValidHotkey(value))
+				if (!CXHotkey.IsValidHotkey(value))
 					return;
 
 				_appConfiguration.CaptureHotKey = value;
 				UpdateCaptureStateInfo();
-				UpdateGlobalHookEvent();
+				UpdateGlobalCaptureHookEvent();
+				RaisePropertyChanged();
+			}
+		}
+
+		public string OverlayHotkeyString
+		{
+			get { return _appConfiguration.OverlayHotKey; }
+			set
+			{
+				if (!CXHotkey.IsValidHotkey(value))
+					return;
+
+				_appConfiguration.OverlayHotKey = value;
+				UpdateGlobalOverlayHookEvent();
 				RaisePropertyChanged();
 			}
 		}
@@ -263,12 +290,14 @@ namespace CapFrameX.ViewModel
 		public CaptureViewModel(IAppConfiguration appConfiguration,
 								ICaptureService captureService,
 								IEventAggregator eventAggregator,
-								IRecordDataProvider recordDataProvider)
+								IRecordDataProvider recordDataProvider,
+								IOverlayService overlayService)
 		{
 			_appConfiguration = appConfiguration;
 			_captureService = captureService;
 			_eventAggregator = eventAggregator;
 			_recordDataProvider = recordDataProvider;
+			_overlayService = overlayService;
 
 			AddToIgonreListCommand = new DelegateCommand(OnAddToIgonreList);
 			AddToProcessListCommand = new DelegateCommand(OnAddToProcessList);
@@ -278,16 +307,22 @@ namespace CapFrameX.ViewModel
 			SelectedSoundMode = _appConfiguration.HotkeySoundMode;
 			CaptureTimeString = _appConfiguration.CaptureTime.ToString();
 
+			OverlayHotkeyString = _appConfiguration.OverlayHotKey.ToString();
+
 			ProcessesToIgnore.AddRange(CaptureServiceConfiguration.GetProcessIgnoreList());
 			_disposableHeartBeat = GetListUpdatHeartBeat();
 			_frametimeStream = new Subject<string>();
 
 			SubscribeToUpdateProcessIgnoreList();
-			SubscribeToGlobalHookEvent();
+			SubscribeToGlobalCaptureHookEvent();
+			SubscribeToGlobalOverlayHookEvent();
 
 			StartCaptureService();
+			if (IsOverlayActive)
+				_overlayService.ShowOverlay();
 
 			_captureService.IsCaptureModeActiveStream.OnNext(false);
+			_overlayService.IsOverlayActiveStream.OnNext(_appConfiguration.IsOverlayActive);
 
 			FrametimeModel = new PlotModel
 			{
@@ -373,23 +408,37 @@ namespace CapFrameX.ViewModel
 							});
 		}
 
-		private void SubscribeToGlobalHookEvent()
+		private void SubscribeToGlobalCaptureHookEvent()
 		{
 			SetGlobalHookEventCaptureHotkey();
 		}
 
-		private void UpdateGlobalHookEvent()
+		private void SubscribeToGlobalOverlayHookEvent()
 		{
-			if (_globalHookEvent != null)
+			SetGlobalHookEventOverlayHotkey();
+		}
+
+		private void UpdateGlobalCaptureHookEvent()
+		{
+			if (_globalCaptureHookEvent != null)
 			{
-				_globalHookEvent.Dispose();
+				_globalCaptureHookEvent.Dispose();
 				SetGlobalHookEventCaptureHotkey();
+			}
+		}
+
+		private void UpdateGlobalOverlayHookEvent()
+		{
+			if (_globalOverlayHookEvent != null)
+			{
+				_globalOverlayHookEvent.Dispose();
+				SetGlobalHookEventOverlayHotkey();
 			}
 		}
 
 		private void SetGlobalHookEventCaptureHotkey()
 		{
-			if (!CaptureHotkey.IsValidHotkey(CaptureHotkeyString))
+			if (!CXHotkey.IsValidHotkey(CaptureHotkeyString))
 				return;
 
 			var onCombinationDictionary = new Dictionary<Combination, Action>
@@ -401,8 +450,25 @@ namespace CapFrameX.ViewModel
 				}}
 			};
 
-			_globalHookEvent = Hook.GlobalEvents();
-			_globalHookEvent.OnCombination(onCombinationDictionary);
+			_globalCaptureHookEvent = Hook.GlobalEvents();
+			_globalCaptureHookEvent.OnCombination(onCombinationDictionary);
+		}
+
+		private void SetGlobalHookEventOverlayHotkey()
+		{
+			if (!CXHotkey.IsValidHotkey(OverlayHotkeyString))
+				return;
+
+			var onCombinationDictionary = new Dictionary<Combination, Action>
+			{
+				{Combination.FromString(OverlayHotkeyString), () =>
+				{
+					SetOverlayMode();
+				}}
+			};
+
+			_globalOverlayHookEvent = Hook.GlobalEvents();
+			_globalOverlayHookEvent.OnCombination(onCombinationDictionary);
 		}
 
 		private void SetCaptureMode()
@@ -504,6 +570,16 @@ namespace CapFrameX.ViewModel
 					}, CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, context);
 				});
 			}
+		}
+
+		private void SetOverlayMode()
+		{
+			IsOverlayActive = !IsOverlayActive;
+
+			if (IsOverlayActive)
+				_overlayService.ShowOverlay();
+			else
+				_overlayService.ReleaseOverlay();
 		}
 
 		private void StartCaptureDataFromStream()
@@ -731,7 +807,7 @@ namespace CapFrameX.ViewModel
 			// fire update global hook if new process is detected
 			if (backupProcessList.Count != ProcessesToCapture.Count)
 			{
-				UpdateGlobalHookEvent();
+				UpdateGlobalCaptureHookEvent();
 			}
 
 			if (!processList.Contains(selectedProcessToCapture))
