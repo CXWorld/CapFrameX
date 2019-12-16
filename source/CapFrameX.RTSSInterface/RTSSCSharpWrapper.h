@@ -3,7 +3,8 @@
 
 #pragma managed
 using namespace System;
-//using namespace CapFrameX::Contracts::Overlay;
+using namespace System::Threading;
+using namespace System::Threading::Tasks;
 using namespace System::Collections::Generic;
 
 public ref class RTSSCSharpWrapper
@@ -22,11 +23,14 @@ public:
 
 	virtual void ShowOverlay()
 	{
-		_coreControl->Refresh();
+		_stopFlag = true;
+	/*	_coreControl->Refresh();*/
+		Task^ myTask = Task::Factory->StartNew(gcnew Action(this, &RTSSCSharpWrapper::LoopRefresh));
 	}
 
 	virtual void ReleaseOverlay()
 	{
+		_stopFlag = false;
 		_coreControl->ReleaseOSD();
 	}
 
@@ -52,5 +56,17 @@ public:
 
 private: 
 	RTSSCoreControl* _coreControl;
+	bool _stopFlag;
+
+	void LoopRefresh()
+	{
+		while (_stopFlag)
+		{
+			Thread::Sleep(500);
+			_coreControl->Refresh();
+		}
+		
+		_coreControl->ReleaseOSD();
+	}
 };
 

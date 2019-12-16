@@ -20,7 +20,6 @@ static char THIS_FILE[] = __FILE__;
 
 RTSSCoreControl::RTSSCoreControl()
 {
-  m_strStatus = "";
   m_strInstallPath = "";
 
   m_bMultiLineOutput = TRUE;
@@ -173,7 +172,8 @@ BOOL RTSSCoreControl::UpdateOSD(LPCSTR lpText)
             //allow primary OSD clients (i.e. EVGA Precision / MSI Afterburner) to use the first slot exclusively, so third party
             //applications start scanning the slots from the second one
           {
-            RTSS_SHARED_MEMORY::LPRTSS_SHARED_MEMORY_OSD_ENTRY pEntry = (RTSS_SHARED_MEMORY::LPRTSS_SHARED_MEMORY_OSD_ENTRY)((LPBYTE)pMem + pMem->dwOSDArrOffset + dwEntry * pMem->dwOSDEntrySize);
+            RTSS_SHARED_MEMORY::LPRTSS_SHARED_MEMORY_OSD_ENTRY pEntry = 
+              (RTSS_SHARED_MEMORY::LPRTSS_SHARED_MEMORY_OSD_ENTRY)((LPBYTE)pMem + pMem->dwOSDArrOffset + dwEntry * pMem->dwOSDEntrySize);
 
             if (dwPass)
             {
@@ -344,7 +344,8 @@ void RTSSCoreControl::Refresh()
   //init max OSD text size, we'll use extended text slot for v2.7 and higher shared memory, 
   //it allows displaying 4096 symbols /instead of 256 for regular text slot
 
-  DWORD dwMaxTextSize = (dwSharedMemoryVersion >= 0x00020007) ? sizeof(RTSS_SHARED_MEMORY::RTSS_SHARED_MEMORY_OSD_ENTRY().szOSDEx) : sizeof(RTSS_SHARED_MEMORY::RTSS_SHARED_MEMORY_OSD_ENTRY().szOSD);
+  DWORD dwMaxTextSize = (dwSharedMemoryVersion >= 0x00020007) ? sizeof(RTSS_SHARED_MEMORY::RTSS_SHARED_MEMORY_OSD_ENTRY().szOSDEx) 
+    : sizeof(RTSS_SHARED_MEMORY::RTSS_SHARED_MEMORY_OSD_ENTRY().szOSD);
 
   CGroupedString groupedString(dwMaxTextSize - 1);
   // RivaTuner based products use similar CGroupedString object for convenient OSD text formatting and length control
@@ -392,8 +393,7 @@ void RTSSCoreControl::Refresh()
     strOSD = "";
 
   // Add CX label
-  groupedString.Add("CX OSD beta", "", "\n", " ");
-
+  groupedString.Add("CX OSD", "", "\n", " ");
 
   if (bFormatTagsSupported && m_bFormatTags)
   {
@@ -414,39 +414,8 @@ void RTSSCoreControl::Refresh()
 
   if (!strOSD.IsEmpty())
   {
-    BOOL bResult = UpdateOSD(strOSD);
-
+    BOOL bResult = UpdateOSD(strOSD);;
     m_bConnected = bResult;
-
-    if (bResult)
-    {
-      m_strStatus = "The following text is being forwarded to OSD:\n\n" + strOSD;
-
-      if (bTruncated)
-        m_strStatus += "\n\nWarning!\nThe text is too long to be displayed in OSD, some info has been truncated!";
-
-      m_strStatus += "\n\nHints:\n-Press <Space> to toggle multi-line OSD text formatting";
-
-      if (bFormatTagsSupported)
-        m_strStatus += "\n-Press <F> to toggle OSD text formatting tags";
-
-      if (bFormatTagsSupported)
-        m_strStatus += "\n-Press <I> to toggle graphs fill mode";
-    }
-    else
-    {
-
-      if (m_strInstallPath.IsEmpty())
-        m_strStatus = "Failed to connect to RTSS shared memory!\n\nHints:\n-Install RivaTuner Statistics Server";
-      else
-        m_strStatus = "Failed to connect to RTSS shared memory!\n\nHints:\n-Press <Space> to start RivaTuner Statistics Server";
-    }
-
-    if (m_profileInterface.IsInitialized())
-    {
-      m_strStatus += "\n-Press <Up>,<Down>,<Left>,<Right> to change OSD position in global profile";
-      m_strStatus += "\n-Press <R>,<G>,<B> to change OSD color in global profile";
-    }
   }
 }
 /////////////////////////////////////////////////////////////////////////////

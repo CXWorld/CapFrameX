@@ -46,7 +46,6 @@ protected:
 
 	UINT						m_nTimerID;
 
-	CString						m_strStatus;
 	CString						m_strInstallPath;
 
 	CRTSSProfileInterface		m_profileInterface;

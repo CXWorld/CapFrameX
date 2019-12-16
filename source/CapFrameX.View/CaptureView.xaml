@@ -114,10 +114,10 @@
 					</Binding>
 				</TextBox>
 				<TextBox Grid.Row="0" Grid.Column="1" Width="132" wpf:HintAssist.Hint="Capture time in seconds" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
-					 Margin="100 0 0 0" FontSize="14" Text="{Binding CaptureTimeString, UpdateSourceTrigger=PropertyChanged}"
+					 Margin="80 0 0 0" FontSize="14" Text="{Binding CaptureTimeString, UpdateSourceTrigger=PropertyChanged}"
                      PreviewMouseDown="TextBox_PreviewMouseDown" PreviewKeyDown="CaptureTimeTextBox_PreviewKeyDown" MouseLeave="TextBox_MouseLeave" ToolTip="0 = no limit"/>
 
-				<ComboBox Grid.Row="0" Grid.Column="2" Width="132" Margin="100 0 0 0" materialDesign:HintAssist.Hint="Hotkey sound mode"
+				<ComboBox Grid.Row="0" Grid.Column="2" Width="132" Margin="80 0 0 0" materialDesign:HintAssist.Hint="Hotkey sound mode"
 						materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="200" FontSize="14" 
 						ItemsSource="{Binding SoundModes}" HorizontalAlignment="Right" VerticalAlignment="Bottom">
 					<ComboBox.Text>
@@ -138,7 +138,7 @@
 					<TextBlock HorizontalAlignment="Right" Text="{Binding SliderSoundLevel}" Background="Transparent"/>
 				</Grid>
 				<TextBox Grid.Row="0" Grid.Column="3" Width="132" wpf:HintAssist.Hint="Overlay hotkey" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
-						 Margin="100 0 0 0" FontSize="14"
+						 Margin="80 0 0 0" FontSize="14"
 						 IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False" PreviewKeyDown="OverlayHotkeyTextBox_PreviewKeyDown"
 						 ToolTip="combinable with Ctrl/Shift/Alt">
 					<Binding Path="OverlayHotkey"
