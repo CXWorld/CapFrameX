@@ -108,7 +108,7 @@
       <Value Profile="(Default)">RAM</Value>
     </Setting>
     <Setting Name="OverlayHotKey" Type="System.String" Scope="User">
-      <Value Profile="(Default)">ALT+O</Value>
+      <Value Profile="(Default)">Alt+O</Value>
     </Setting>
     <Setting Name="IsOverlayActive" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
