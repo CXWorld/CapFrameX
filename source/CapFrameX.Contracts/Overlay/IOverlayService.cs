@@ -7,16 +7,12 @@ namespace CapFrameX.Contracts.Overlay
 	{
 		Subject<bool> IsOverlayActiveStream { get; }
 
+		void Refresh();
+
+		void ReleaseOSD();
+
 		void ShowOverlay();
 
-		void ReleaseOverlay();
-
-		void SetOverlayHeader(IList<string> entries);
-
-		void StartCountDown(int seconds);
-
-		void StartTimer();
-
-		void StopTimer();
+		void HideOverlay();
 	}
 }

@@ -313,10 +313,6 @@ namespace CapFrameX.ViewModel
 			_disposableHeartBeat = GetListUpdatHeartBeat();
 			_frametimeStream = new Subject<string>();
 
-			Task.Factory.StartNew(() =>
-			{
-				Console.WriteLine("bla");
-			});
 
 			SubscribeToUpdateProcessIgnoreList();
 			SubscribeToGlobalCaptureHookEvent();
@@ -584,7 +580,7 @@ namespace CapFrameX.ViewModel
 			if (IsOverlayActive)
 				_overlayService.ShowOverlay();
 			else
-				_overlayService.ReleaseOverlay();
+				_overlayService.HideOverlay();
 		}
 
 		private void StartCaptureDataFromStream()

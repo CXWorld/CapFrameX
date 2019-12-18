@@ -29,7 +29,7 @@ namespace CapFrameX
         {
             PresentMonCaptureService.TryKillPresentMon();
 			var overlayService = _bootstrapper.Container.Resolve(typeof(IOverlayService), true) as IOverlayService;
-			overlayService?.ReleaseOverlay();
+			overlayService?.HideOverlay();
 		}
 
         private void Application_Startup(object sender, StartupEventArgs e)
