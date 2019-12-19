@@ -25,7 +25,6 @@ public:
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CRTSSSharedMemorySampleDlg)
 public:
-	virtual BOOL PreTranslateMessage(MSG* pMsg);
 	void						ReleaseOSD();
 	void						Refresh();
 

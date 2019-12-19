@@ -11,6 +11,7 @@
 #include <shlwapi.h>
 #include <float.h>
 #include <io.h>
+
 /////////////////////////////////////////////////////////////////////////////
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -418,63 +419,7 @@ void RTSSCoreControl::Refresh()
     m_bConnected = bResult;
   }
 }
-/////////////////////////////////////////////////////////////////////////////
-BOOL RTSSCoreControl::PreTranslateMessage(MSG* pMsg)
-{
-  if (pMsg->message == WM_KEYDOWN)
-  {
-    switch (pMsg->wParam)
-    {
-    case 'F':
-      if (m_bConnected)
-      {
-        m_bFormatTags = !m_bFormatTags;
-        Refresh();
-      }
-      break;
-    case 'I':
-      if (m_bConnected)
-      {
-        m_bFillGraphs = !m_bFillGraphs;
-        Refresh();
-      }
-      break;
-    case ' ':
-      if (m_bConnected)
-      {
-        m_bMultiLineOutput = !m_bMultiLineOutput;
-        Refresh();
-      }
-      else
-      {
-       /* if (!m_strInstallPath.IsEmpty())
-          ShellExecute(GetSafeHwnd(), "open", m_strInstallPath, NULL, NULL, SW_SHOWNORMAL);*/
-      }
-      return TRUE;
-    case VK_UP:
-      IncProfileProperty("", "PositionY", -1);
-      return TRUE;
-    case VK_DOWN:
-      IncProfileProperty("", "PositionY", +1);
-      return TRUE;
-    case VK_LEFT:
-      IncProfileProperty("", "PositionX", -1);
-      return TRUE;
-    case VK_RIGHT:
-      IncProfileProperty("", "PositionX", +1);
-      return TRUE;
-    case 'R':
-      SetProfileProperty("", "BaseColor", 0xFF0000);
-      return TRUE;
-    case 'G':
-      SetProfileProperty("", "BaseColor", 0x00FF00);
-      return TRUE;
-    case 'B':
-      SetProfileProperty("", "BaseColor", 0x0000FF);
-      return TRUE;
-    }
-  }
-}
+
 /////////////////////////////////////////////////////////////////////////////
 void RTSSCoreControl::IncProfileProperty(LPCSTR lpProfile, LPCSTR lpProfileProperty, LONG dwIncrement)
 {
