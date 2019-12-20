@@ -1,3 +1,4 @@
+.Battle.net
 AMD Ryzen Master
 ApplicationFrameHost
 avpui
