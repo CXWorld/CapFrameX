@@ -6,6 +6,7 @@ using CapFrameX.Data;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Hotkey;
 using CapFrameX.PresentMonInterface;
+using CapFrameX.Statistics;
 using Gma.System.MouseKeyHook;
 using OxyPlot;
 using OxyPlot.Axes;
@@ -43,6 +44,7 @@ namespace CapFrameX.ViewModel
 		private readonly IEventAggregator _eventAggregator;
 		private readonly IRecordDataProvider _recordDataProvider;
 		private readonly IOverlayService _overlayService;
+		private readonly IStatisticProvider _statisticProvider;
 		private readonly MediaPlayer _soundPlayer = new MediaPlayer();
 		private readonly string[] _soundModes = new[] { "none", "simple sounds", "voice response" };
 		private readonly List<string> _captureDataArchive = new List<string>(ARCHIVE_LENGTH);
@@ -291,13 +293,15 @@ namespace CapFrameX.ViewModel
 								ICaptureService captureService,
 								IEventAggregator eventAggregator,
 								IRecordDataProvider recordDataProvider,
-								IOverlayService overlayService)
+								IOverlayService overlayService,
+							    IStatisticProvider statisticProvider)
 		{
 			_appConfiguration = appConfiguration;
 			_captureService = captureService;
 			_eventAggregator = eventAggregator;
 			_recordDataProvider = recordDataProvider;
 			_overlayService = overlayService;
+			_statisticProvider = statisticProvider;
 
 			AddToIgonreListCommand = new DelegateCommand(OnAddToIgonreList);
 			AddToProcessListCommand = new DelegateCommand(OnAddToProcessList);
@@ -561,7 +565,7 @@ namespace CapFrameX.ViewModel
 				
 				CaptureStateInfo = "Creating capture file...";
 				_overlayService.StopCaptureTimer();
-				_overlayService.SetCaptureServiceStatus("Capture service processing data");
+				_overlayService.SetCaptureServiceStatus("Processing data");
 
 				// offset timer
 				Task.Run(async () =>
@@ -590,7 +594,7 @@ namespace CapFrameX.ViewModel
 		private void StartCaptureDataFromStream()
 		{
 			AddLoggerEntry("Capturing started.");
-			_overlayService.SetCaptureServiceStatus("Capture service recording frametimes");
+			_overlayService.SetCaptureServiceStatus("Recording frametimes");
 
 			_captureData = new List<string>();
 			bool autoTermination = Convert.ToInt32(CaptureTimeString) > 0;
@@ -654,7 +658,7 @@ namespace CapFrameX.ViewModel
 							CaptureStateInfo = "Creating capture file...";
 
 							// update overlay
-							_overlayService.SetCaptureServiceStatus("Capture service processing data");
+							_overlayService.SetCaptureServiceStatus("Processing data");
 
 							// none -> do nothing
 							// simple sounds
@@ -824,6 +828,10 @@ namespace CapFrameX.ViewModel
 			if (backupProcessList.Count != ProcessesToCapture.Count)
 			{
 				UpdateGlobalCaptureHookEvent();
+
+				// reset run history
+				_runHistory = new List<string> { "N/A", "N/A", "N/A" };
+				_overlayService.SetRunHistory(_runHistory.ToArray());
 			}
 
 			if (!processList.Contains(selectedProcessToCapture))

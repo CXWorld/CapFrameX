@@ -46,6 +46,31 @@ public:
     _coreControl->CaptureServiceStatus = status;
   }
 
+  void SetShowRunHistory(bool showHistory)
+  {
+    _coreControl->ShowRunHistory = showHistory;
+  }
+
+  void SetRunHistory(array<String^>^ runHistory)
+  {
+    _coreControl->RunHistory.clear();
+
+    // reset history
+    if (runHistory == nullptr)
+    {
+      _coreControl->RunHistory.push_back("N/A");
+      _coreControl->RunHistory.push_back("N/A");
+      _coreControl->RunHistory.push_back("N/A");
+      return;
+    }
+
+    for (size_t i = 0; i < runHistory->Length; i++)
+    {
+      String^ run = runHistory[i];
+      _coreControl->RunHistory.push_back(run);
+    }
+  }
+
 private:
   RTSSCoreControl* _coreControl;
 };

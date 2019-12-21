@@ -11,6 +11,7 @@
 /////////////////////////////////////////////////////////////////////////////
 #include "RTSSSharedMemory.h"
 #include "RTSSProfileInterface.h"
+#include <vector>
 /////////////////////////////////////////////////////////////////////////////
 // define constants / structures and function prototype for NTDLL.dll
 // NtQuerySystemInformation function which will be used for CPU usage 
@@ -28,6 +29,8 @@ public:
 	BOOL						ShowCaptureTimer;
 	DWORD						CaptureTimerValue;
 	CString					CaptureServiceStatus;
+	BOOL						ShowRunHistory;
+	std::vector<CString>				RunHistory;
 
 // Implementation
 protected:

@@ -24,6 +24,11 @@ RTSSCoreControl::RTSSCoreControl()
   m_strInstallPath = "";
   CaptureServiceStatus = "Capture service is inactive";
 
+  RunHistory.push_back("N/A");
+  RunHistory.push_back("N/A");
+  RunHistory.push_back("N/A");
+  ShowRunHistory = true;
+
   m_bMultiLineOutput = TRUE;
   m_bFormatTags = TRUE;
   m_bFillGraphs = FALSE;
@@ -363,7 +368,7 @@ void RTSSCoreControl::Refresh()
   if (bFormatTagsSupported && m_bFormatTags)
   {
     if (GetClientsNum() == 1)
-      strOSD += "<P=0,10>";
+      strOSD += "<P=0,0>";
     //move to position 0,10 (in zoomed pixel units)
 
     //Note: take a note that position is specified in absolute coordinates so use this tag with caution because your text may
@@ -406,6 +411,13 @@ void RTSSCoreControl::Refresh()
     CaptureTimerValueStr.Format("%d s", CaptureTimerValue);
       
     groupedString.Add(CaptureTimerValueStr, "Timer: ", "\n", " ");
+  }
+
+  if (ShowRunHistory && RunHistory.size() == 3)
+  {
+    groupedString.Add(RunHistory[0], "Run 1: ", "\n", " ");
+    groupedString.Add(RunHistory[1], "Run 2: ", "\n", " ");
+    groupedString.Add(RunHistory[2], "Run 3: ", "\n", " ");
   }
 
   if (bFormatTagsSupported && m_bFormatTags)

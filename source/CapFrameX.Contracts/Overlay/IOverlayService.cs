@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Reactive.Subjects;
+﻿using System.Reactive.Subjects;
 
 namespace CapFrameX.Contracts.Overlay
 {
@@ -22,5 +21,9 @@ namespace CapFrameX.Contracts.Overlay
 		void StopCaptureTimer();
 
 		void SetCaptureServiceStatus(string status);
+
+		void SetShowRunHistory(bool showHistory);
+
+		void SetRunHistory(string[] runHistory);
 	}
 }

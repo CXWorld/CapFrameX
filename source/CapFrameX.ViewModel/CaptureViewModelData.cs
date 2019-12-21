@@ -2,6 +2,7 @@
 using CapFrameX.PresentMonInterface;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
@@ -11,6 +12,26 @@ namespace CapFrameX.ViewModel
 {
 	public partial class CaptureViewModel
 	{
+		private List<string> _runHistory = new List<string> { "N/A", "N/A", "N/A" };
+
+		private void AddAnalysisToRunHistory(List<string> captureData)
+		{
+			// ToDo: make this configurable
+			var frametimes = captureData.Select(line => RecordDataProvider.GetFrameTimeFromDataLine(line)).ToList();
+			var average = _statisticProvider.GetFpsMetricValue(frametimes, Statistics.EMetric.Average);
+			var p1 = _statisticProvider.GetFpsMetricValue(frametimes, Statistics.EMetric.P1);
+			var p0dot2 = _statisticProvider.GetFpsMetricValue(frametimes, Statistics.EMetric.P0dot2);
+
+			var analysis = $"Avg={average.ToString(CultureInfo.InvariantCulture)} FPS | " +
+				$"P1={p1.ToString(CultureInfo.InvariantCulture)} FPS | " +
+				$"P0.2={p0dot2.ToString(CultureInfo.InvariantCulture)} FPS";
+
+			_runHistory.RemoveAt(2);
+			_runHistory.Insert(0, analysis);
+
+			_overlayService.SetRunHistory(_runHistory.ToArray());
+		}
+
 		private void WriteCaptureDataToFile()
 		{
 			// explicit hook, only one process
@@ -34,6 +55,7 @@ namespace CapFrameX.ViewModel
 				return;
 
 			var captureData = GetAdjustedCaptureData();
+			Task.Factory.StartNew(() => AddAnalysisToRunHistory(captureData));
 			StartFillArchive();
 
 			Application.Current.Dispatcher.Invoke(new Action(() =>

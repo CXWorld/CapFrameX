@@ -4,6 +4,7 @@ using CapFrameX.Extensions;
 using CapFrameX.Hotkey;
 using CapFrameX.Overlay;
 using CapFrameX.PresentMonInterface;
+using CapFrameX.Statistics;
 using CapFrameX.ViewModel;
 using Prism.Events;
 using System.ComponentModel;
@@ -65,7 +66,8 @@ namespace CapFrameX.View
 			{
 				var appConfiguration = new CapFrameXConfiguration();
 				DataContext = new CaptureViewModel(appConfiguration, new PresentMonCaptureService(),
-					new EventAggregator(), new RecordDataProvider(new RecordDirectoryObserver(appConfiguration), appConfiguration), new OverlayService());
+					new EventAggregator(), new RecordDataProvider(new RecordDirectoryObserver(appConfiguration), appConfiguration), 
+					new OverlayService(), new FrametimeStatisticProvider(appConfiguration));
 			}
 		}
 
