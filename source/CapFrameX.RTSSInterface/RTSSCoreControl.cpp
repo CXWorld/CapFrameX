@@ -22,6 +22,7 @@ static char THIS_FILE[] = __FILE__;
 RTSSCoreControl::RTSSCoreControl()
 {
   m_strInstallPath = "";
+  CaptureServiceStatus = "Capture service is inactive";
 
   m_bMultiLineOutput = TRUE;
   m_bFormatTags = TRUE;
@@ -396,12 +397,15 @@ void RTSSCoreControl::Refresh()
   // Add CX label
   groupedString.Add("CX OSD", "", "\n", " ");
 
+  // Add CX capture service status
+  groupedString.Add(CaptureServiceStatus, "Status: ", "\n", " ");
+
   if (ShowCaptureTimer)
   {
     CString CaptureTimerValueStr;
     CaptureTimerValueStr.Format("%d s", CaptureTimerValue);
       
-    groupedString.Add(CaptureTimerValueStr, "Capture timer ", "\n", " ");
+    groupedString.Add(CaptureTimerValueStr, "Timer: ", "\n", " ");
   }
 
   if (bFormatTagsSupported && m_bFormatTags)

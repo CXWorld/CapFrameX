@@ -7,16 +7,20 @@ namespace CapFrameX.Contracts.Overlay
 	{
 		Subject<bool> IsOverlayActiveStream { get; }
 
-		void Refresh();
-
-		void ReleaseOSD();
-
 		void ShowOverlay();
 
 		void HideOverlay();
 
 		void UpdateRefreshRate(int milliSeconds);
 
+		void SetCaptureTimerValue(int t);
+
 		void StartCountdown(int seconds);
+
+		void StartCaptureTimer();
+
+		void StopCaptureTimer();
+
+		void SetCaptureServiceStatus(string status);
 	}
 }

@@ -6,13 +6,13 @@ using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using System.Threading;
 
 namespace CapFrameX.Overlay
 {
 	public class OverlayService : RTSSCSharpWrapper, IOverlayService
 	{
 		private IDisposable _disposableHeartBeat;
+		private IDisposable _disposableCaptureTimer;
 
 		/// <summary>
 		/// Refresh period in milliseconds
@@ -52,20 +52,27 @@ namespace CapFrameX.Overlay
 			SetShowCaptureTimer(true);
 			obs.Subscribe(t =>
 			{
-				Console.WriteLine("Current counter: {0}", t);
-				SetCountdownCounter((int)t);
+				SetCaptureTimerValue((int)t);
 
 				if (t == 0)
-					OnCountDownFinished();
+					OnCountdownFinished();
 			});
 		}
 
-		private void SetCountdownCounter(int t)
+		public void StartCaptureTimer()
 		{
-			SetCaptureTimerValue((uint)t);
+			SetShowCaptureTimer(true);
+			_disposableCaptureTimer = GetCaptureTimer();
 		}
 
-		private void OnCountDownFinished()
+		public void StopCaptureTimer()
+		{
+			SetShowCaptureTimer(false);
+			SetCaptureTimerValue(0);
+			_disposableCaptureTimer?.Dispose();
+		}
+
+		private void OnCountdownFinished()
 		{
 			SetShowCaptureTimer(false);
 		}
@@ -135,15 +142,16 @@ namespace CapFrameX.Overlay
 
 		private IDisposable GetOverlayRefreshHeartBeat()
 		{
-			var context = SynchronizationContext.Current;
-			return Observable.Generate(0, // dummy initialState
-										x => true, // dummy condition
-										x => x, // dummy iterate
-										x => x, // dummy resultSelector
-										x => TimeSpan.FromMilliseconds(RefreshPeriod))
-										.ObserveOn(context)
-										.SubscribeOn(context)
-										.Subscribe(x => CheckRTSSRunningAndRefresh());
+			return Observable
+				.Timer(DateTimeOffset.UtcNow, TimeSpan.FromMilliseconds(RefreshPeriod))
+				.Subscribe(x => CheckRTSSRunningAndRefresh());
+		}
+
+		private IDisposable GetCaptureTimer()
+		{
+			return Observable
+				.Timer(DateTimeOffset.UtcNow, TimeSpan.FromSeconds(1))
+				.Subscribe(x => SetCaptureTimerValue((int)x));
 		}
 	}
 }

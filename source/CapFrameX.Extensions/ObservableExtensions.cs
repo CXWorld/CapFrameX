@@ -9,9 +9,9 @@ namespace CapFrameX.Extensions
 		public static IObservable<long> CountDown(int seconds)
 		{
 			return Observable
-					  .Timer(DateTimeOffset.UtcNow, TimeSpan.FromSeconds(1)) // timer(firstValueDelay, intervalBetweenValues)
-					  .Select(i => seconds - i)
-					  .Take(seconds + 1);
+				.Timer(DateTimeOffset.UtcNow, TimeSpan.FromSeconds(1))
+				.Select(i => seconds - i)
+				.Take(seconds + 1);
 		}
 	}
 }

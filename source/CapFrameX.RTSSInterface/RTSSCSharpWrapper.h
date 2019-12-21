@@ -36,9 +36,14 @@ public:
     _coreControl->ShowCaptureTimer = showTimer;
   }
 
-  void SetCaptureTimerValue(UINT captureTimerValue)
+  void SetCaptureTimerValue(Int32 captureTimerValue)
   {
-    _coreControl->CaptureTimerValue = captureTimerValue;
+    _coreControl->CaptureTimerValue = (UINT)captureTimerValue;
+  }
+
+  void SetCaptureServiceStatus(String^ status)
+  {
+    _coreControl->CaptureServiceStatus = status;
   }
 
 private:

@@ -313,12 +313,13 @@ namespace CapFrameX.ViewModel
 			_disposableHeartBeat = GetListUpdatHeartBeat();
 			_frametimeStream = new Subject<string>();
 
-
 			SubscribeToUpdateProcessIgnoreList();
 			SubscribeToGlobalCaptureHookEvent();
 			SubscribeToGlobalOverlayHookEvent();
 
-			StartCaptureService();
+			bool captureServiceStarted = StartCaptureService();
+			if (captureServiceStarted)
+				_overlayService.SetCaptureServiceStatus("Capture service ready...");
 			if (IsOverlayActive)
 				_overlayService.ShowOverlay();
 
@@ -557,16 +558,19 @@ namespace CapFrameX.ViewModel
 				}
 
 				var context = TaskScheduler.FromCurrentSynchronizationContext();
+				
+				CaptureStateInfo = "Creating capture file...";
+				_overlayService.StopCaptureTimer();
+				_overlayService.SetCaptureServiceStatus("Capture service processing data");
 
 				// offset timer
-				CaptureStateInfo = "Creating capture file...";
 				Task.Run(async () =>
 				{
 					await SetTaskDelayOffset().ContinueWith(_ =>
 					{
 						Application.Current.Dispatcher.Invoke(new Action(() =>
 						{
-							FinishCapturingAndUpdateUi();						
+							FinishCapturingAndUpdateUi();
 						}));
 					}, CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, context);
 				});
@@ -586,6 +590,7 @@ namespace CapFrameX.ViewModel
 		private void StartCaptureDataFromStream()
 		{
 			AddLoggerEntry("Capturing started.");
+			_overlayService.SetCaptureServiceStatus("Capture service recording frametimes");
 
 			_captureData = new List<string>();
 			bool autoTermination = Convert.ToInt32(CaptureTimeString) > 0;
@@ -620,10 +625,10 @@ namespace CapFrameX.ViewModel
 			{
 				AddLoggerEntry("Starting countdown...");
 
-				_cancellationTokenSource = new CancellationTokenSource();
-
 				// Start overlay countdown timer
 				_overlayService.StartCountdown(Convert.ToInt32(CaptureTimeString));
+
+				_cancellationTokenSource = new CancellationTokenSource();
 
 				// data timer
 				Task.Run(async () =>
@@ -647,6 +652,10 @@ namespace CapFrameX.ViewModel
 							// turn locking on 
 							_dataOffsetRunning = true;
 							CaptureStateInfo = "Creating capture file...";
+
+							// update overlay
+							_overlayService.SetCaptureServiceStatus("Capture service processing data");
+
 							// none -> do nothing
 							// simple sounds
 							if (SelectedSoundMode == _soundModes[1])
@@ -666,6 +675,8 @@ namespace CapFrameX.ViewModel
 					}, _cancellationTokenSource.Token, TaskContinuationOptions.ExecuteSynchronously, context);
 				});
 			}
+			else
+				_overlayService.StartCaptureTimer();
 		}
 
 		private void FinishCapturingAndUpdateUi()
@@ -680,6 +691,7 @@ namespace CapFrameX.ViewModel
 			_disposableHeartBeat = GetListUpdatHeartBeat();
 			IsAddToIgnoreListButtonActive = true;
 			UpdateCaptureStateInfo();
+			_overlayService.SetCaptureServiceStatus("Capture service ready...");
 		}
 
 		private async Task SetTaskDelayOffset()
@@ -699,14 +711,17 @@ namespace CapFrameX.ViewModel
 				1000 * Convert.ToInt32(CaptureTimeString)));
 		}
 
-		private void StartCaptureService()
+		private bool StartCaptureService()
 		{
+			bool success;
 			var serviceConfig = GetRedirectedServiceConfig();
 			var startInfo = CaptureServiceConfiguration
 				.GetServiceStartInfo(serviceConfig.ConfigParameterToArguments());
-			_captureService.StartCaptureService(startInfo);
+			success = _captureService.StartCaptureService(startInfo);
 
 			StartFillArchive();
+
+			return success;
 		}
 
 		private void StartFillArchive()
@@ -789,14 +804,11 @@ namespace CapFrameX.ViewModel
 		private IDisposable GetListUpdatHeartBeat()
 		{
 			var context = SynchronizationContext.Current;
-			return Observable.Generate(0, // dummy initialState
-										x => true, // dummy condition
-										x => x, // dummy iterate
-										x => x, // dummy resultSelector
-										x => TimeSpan.FromSeconds(1))
-										.ObserveOn(context)
-										.SubscribeOn(context)
-										.Subscribe(x => UpdateProcessToCaptureList());
+			return Observable
+				.Timer(DateTimeOffset.UtcNow, TimeSpan.FromSeconds(1))
+				.ObserveOn(context)
+				.SubscribeOn(context)
+				.Subscribe(x => UpdateProcessToCaptureList());
 		}
 
 		private void UpdateProcessToCaptureList()

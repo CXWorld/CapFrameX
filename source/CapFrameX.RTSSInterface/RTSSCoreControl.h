@@ -27,6 +27,7 @@ public:
 	void						Refresh();
 	BOOL						ShowCaptureTimer;
 	DWORD						CaptureTimerValue;
+	CString					CaptureServiceStatus;
 
 // Implementation
 protected:
