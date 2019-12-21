@@ -22,11 +22,11 @@ class RTSSCoreControl
 public:
 	RTSSCoreControl();	// standard constructor
 
-	// ClassWizard generated virtual function overrides
-	//{{AFX_VIRTUAL(CRTSSSharedMemorySampleDlg)
 public:
 	void						ReleaseOSD();
 	void						Refresh();
+	BOOL						ShowCaptureTimer;
+	DWORD						CaptureTimerValue;
 
 // Implementation
 protected:

@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace CapFrameX.Extensions
 {
-	public static class LinqExtension
+	public static class LinqExtensions
 	{
 		public static bool AllEqual<T>(this IEnumerable<T> values)
 		{

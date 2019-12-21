@@ -396,6 +396,14 @@ void RTSSCoreControl::Refresh()
   // Add CX label
   groupedString.Add("CX OSD", "", "\n", " ");
 
+  if (ShowCaptureTimer)
+  {
+    CString CaptureTimerValueStr;
+    CaptureTimerValueStr.Format("%d s", CaptureTimerValue);
+      
+    groupedString.Add(CaptureTimerValueStr, "Capture timer ", "\n", " ");
+  }
+
   if (bFormatTagsSupported && m_bFormatTags)
   {
     groupedString.Add("<A0><FR><A><A1><S1> FPS<S><A>", "<C2><APP><C>", "\n", m_bFormatTags ? " " : ", ");

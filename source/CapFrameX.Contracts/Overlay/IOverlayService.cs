@@ -14,5 +14,9 @@ namespace CapFrameX.Contracts.Overlay
 		void ShowOverlay();
 
 		void HideOverlay();
+
+		void UpdateRefreshRate(int milliSeconds);
+
+		void StartCountdown(int seconds);
 	}
 }

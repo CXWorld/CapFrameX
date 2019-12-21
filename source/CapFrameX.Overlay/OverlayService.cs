@@ -14,14 +14,17 @@ namespace CapFrameX.Overlay
 	{
 		private IDisposable _disposableHeartBeat;
 
-		public double RefreshPeriod { get; }
+		/// <summary>
+		/// Refresh period in milliseconds
+		/// </summary>
+		public int RefreshPeriod { get; private set; }
 
 		public Subject<bool> IsOverlayActiveStream { get; }
 
 		public OverlayService() : base()
 		{
-			// default 1 second
-			RefreshPeriod = 1;
+			// default 500 milliseconds
+			RefreshPeriod = 500;
 			IsOverlayActiveStream = new Subject<bool>();
 		}
 
@@ -34,6 +37,37 @@ namespace CapFrameX.Overlay
 		{
 			_disposableHeartBeat?.Dispose();
 			ReleaseOSD();
+		}
+
+		public void UpdateRefreshRate(int milliSeconds)
+		{
+			RefreshPeriod = milliSeconds;
+			_disposableHeartBeat?.Dispose();
+			_disposableHeartBeat = GetOverlayRefreshHeartBeat();
+		}
+
+		public void StartCountdown(int seconds)
+		{
+			IObservable<long> obs = Extensions.ObservableExtensions.CountDown(seconds);
+			SetShowCaptureTimer(true);
+			obs.Subscribe(t =>
+			{
+				Console.WriteLine("Current counter: {0}", t);
+				SetCountdownCounter((int)t);
+
+				if (t == 0)
+					OnCountDownFinished();
+			});
+		}
+
+		private void SetCountdownCounter(int t)
+		{
+			SetCaptureTimerValue((uint)t);
+		}
+
+		private void OnCountDownFinished()
+		{
+			SetShowCaptureTimer(false);
 		}
 
 		private void CheckRTSSRunningAndRefresh()
@@ -67,7 +101,7 @@ namespace CapFrameX.Overlay
 				{
 					if (key != null)
 					{
-						Object o = key.GetValue("InstallPath");
+						object o = key.GetValue("InstallPath");
 						if (o != null)
 						{
 							installPath = o as string;  //"as" because it's REG_SZ...otherwise ToString() might be safe(r)
@@ -82,7 +116,7 @@ namespace CapFrameX.Overlay
 					{
 						if (key != null)
 						{
-							Object o = key.GetValue("InstallPath");
+							object o = key.GetValue("InstallPath");
 							if (o != null)
 							{
 								installPath = o as string;  //"as" because it's REG_SZ...otherwise ToString() might be safe(r)
@@ -106,7 +140,7 @@ namespace CapFrameX.Overlay
 										x => true, // dummy condition
 										x => x, // dummy iterate
 										x => x, // dummy resultSelector
-										x => TimeSpan.FromSeconds(RefreshPeriod))
+										x => TimeSpan.FromMilliseconds(RefreshPeriod))
 										.ObserveOn(context)
 										.SubscribeOn(context)
 										.Subscribe(x => CheckRTSSRunningAndRefresh());

@@ -622,6 +622,9 @@ namespace CapFrameX.ViewModel
 
 				_cancellationTokenSource = new CancellationTokenSource();
 
+				// Start overlay countdown timer
+				_overlayService.StartCountdown(Convert.ToInt32(CaptureTimeString));
+
 				// data timer
 				Task.Run(async () =>
 				{

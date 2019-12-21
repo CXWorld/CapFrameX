@@ -21,14 +21,24 @@ public:
     delete _coreControl;
   }
 
-  virtual void Refresh()
+  void Refresh()
   {
     _coreControl->Refresh();
   }
 
-  virtual void ReleaseOSD()
+  void ReleaseOSD()
   {
     _coreControl->ReleaseOSD();
+  }
+
+  void SetShowCaptureTimer(bool showTimer)
+  {
+    _coreControl->ShowCaptureTimer = showTimer;
+  }
+
+  void SetCaptureTimerValue(UINT captureTimerValue)
+  {
+    _coreControl->CaptureTimerValue = captureTimerValue;
   }
 
 private:

@@ -30,6 +30,7 @@ NVIDIA GeForce Experience
 NVIDIA Share
 Origin
 RadeonSettings
+ramtest
 ScriptedSandbox64
 SearchUI
 ServiceHub.ThreadedWaitDialog
