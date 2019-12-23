@@ -369,7 +369,13 @@ void RTSSCoreControl::Refresh()
   {
     if (GetClientsNum() == 1)
       strOSD += "<P=0,0>";
-    //move to position 0,10 (in zoomed pixel units)
+    else
+    {
+        groupedString.Add(" ", "", "\n", " ");
+        // Add CX label
+        groupedString.Add("CX OSD", "", "\n", " ");
+    }
+    //move to position 0,0 (in zoomed pixel units)
 
     //Note: take a note that position is specified in absolute coordinates so use this tag with caution because your text may
     //overlap with text slots displayed by other applications, so in this demo we explicitly disable this tag usage if more than
@@ -399,25 +405,22 @@ void RTSSCoreControl::Refresh()
   else
     strOSD = "";
 
-  // Add CX label
-  groupedString.Add("CX OSD", "", "\n", " ");
-
   // Add CX capture service status
-  groupedString.Add(CaptureServiceStatus, "Status: ", "\n", " ");
+  groupedString.Add(CaptureServiceStatus, "", "\n", " ");
 
   if (ShowCaptureTimer)
   {
     CString CaptureTimerValueStr;
     CaptureTimerValueStr.Format("%d s", CaptureTimerValue);
       
-    groupedString.Add(CaptureTimerValueStr, "Timer: ", "\n", " ");
+    groupedString.Add(CaptureTimerValueStr, "Timer:", "\n", " ");
   }
 
   if (ShowRunHistory && RunHistory.size() == 3)
   {
-    groupedString.Add(RunHistory[0], "Run 1: ", "\n", " ");
-    groupedString.Add(RunHistory[1], "Run 2: ", "\n", " ");
-    groupedString.Add(RunHistory[2], "Run 3: ", "\n", " ");
+    groupedString.Add(RunHistory[0], "", "\n", " ");
+    groupedString.Add(RunHistory[1], "", "\n", " ");
+    groupedString.Add(RunHistory[2], "", "\n", " ");
   }
 
   if (bFormatTagsSupported && m_bFormatTags)
