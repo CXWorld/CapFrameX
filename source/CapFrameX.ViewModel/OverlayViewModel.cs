@@ -1,156 +1,104 @@
-﻿using CapFrameX.Contracts.Data;
-using CapFrameX.EventAggregation.Messages;
-using CapFrameX.MVVM.Dialogs;
-using CapFrameX.Data;
-using Prism.Commands;
+﻿using CapFrameX.Contracts.Configuration;
+using CapFrameX.Contracts.Overlay;
+using CapFrameX.Hotkey;
+using Gma.System.MouseKeyHook;
 using Prism.Events;
 using Prism.Mvvm;
 using Prism.Regions;
-using System.Windows.Input;
+using System;
+using System.Collections.Generic;
 
 namespace CapFrameX.ViewModel
 {
     public class OverlayViewModel : BindableBase, INavigationAware
     {
+        private readonly IOverlayService _overlayService;
+        private readonly IAppConfiguration _appConfiguration;
         private readonly IEventAggregator _eventAggregator;
 
-        private PubSubEvent<ViewMessages.HideOverlay> _hideOverlayEvent;
-        private bool _isEditingDialogOpen;
-        private EditingDialog _editingDialogContent;
-		private IFileRecordInfo _recordInfo;
-        private string _customCpuDescription;
-        private string _customGpuDescription;
-		private string _customRamDescription;
-		private string _customGameName;
-        private string _customComment;
+        private IKeyboardMouseEvents _globalOverlayHookEvent;
 
-        public bool IsEditingDialogOpen
+        private bool IsOverlayActive
         {
-            get { return _isEditingDialogOpen; }
+            get { return _appConfiguration.IsOverlayActive; }
             set
             {
-                _isEditingDialogOpen = value;
+                _appConfiguration.IsOverlayActive = value;
+                _overlayService.IsOverlayActiveStream.OnNext(value);
+            }
+        }
+
+        public string OverlayHotkeyString
+        {
+            get { return _appConfiguration.OverlayHotKey; }
+            set
+            {
+                if (!CXHotkey.IsValidHotkey(value))
+                    return;
+
+                _appConfiguration.OverlayHotKey = value;
+                UpdateGlobalOverlayHookEvent();
                 RaisePropertyChanged();
             }
         }
 
-        public EditingDialog EditingDialogContent
+        public IAppConfiguration AppConfiguration => _appConfiguration;
+
+        public OverlayViewModel(IOverlayService overlayService, IAppConfiguration appConfiguration, IEventAggregator eventAggregator)
         {
-            get { return _editingDialogContent; }
-            set
-            {
-                _editingDialogContent = value;
-                RaisePropertyChanged();
-            }
-        }
-
-        public string CustomCpuDescription
-        {
-            get { return _customCpuDescription; }
-            set
-            {
-                _customCpuDescription = value;
-                RaisePropertyChanged();
-            }
-        }
-
-        public string CustomGpuDescription
-        {
-            get { return _customGpuDescription; }
-            set
-            {
-                _customGpuDescription = value;
-                RaisePropertyChanged();
-            }
-        }
-
-		public string CustomRamDescription
-		{
-			get { return _customRamDescription; }
-			set
-			{
-				_customRamDescription = value;
-				RaisePropertyChanged();
-			}
-		}
-
-		public string CustomGameName
-        {
-            get { return _customGameName; }
-            set
-            {
-                _customGameName = value;
-                RaisePropertyChanged();
-            }
-        }
-
-        public string CustomComment
-        {
-            get { return _customComment; }
-            set
-            {
-                _customComment = value;
-                RaisePropertyChanged();
-            }
-        }
-
-        public ICommand AcceptEditingDialogCommand { get; }
-
-        public ICommand CancelEditingDialogCommand { get; }
-
-        public OverlayViewModel(IEventAggregator eventAggregator)
-        {
+            _overlayService = overlayService;
+            _appConfiguration = appConfiguration;
             _eventAggregator = eventAggregator;
 
-            AcceptEditingDialogCommand = new DelegateCommand(OnAcceptEditingDialog);
-            CancelEditingDialogCommand = new DelegateCommand(OnCancelEditingDialog);
+            OverlayHotkeyString = _appConfiguration.OverlayHotKey.ToString();
 
-            _hideOverlayEvent = _eventAggregator.GetEvent<PubSubEvent<ViewMessages.HideOverlay>>();
-            SubscribeToUpdateSession();
+            if (IsOverlayActive)
+                _overlayService.ShowOverlay();
+
+            _overlayService.IsOverlayActiveStream.OnNext(_appConfiguration.IsOverlayActive);
+
+            SubscribeToGlobalOverlayHookEvent();
         }
 
-        private void OnCancelEditingDialog()
+        private void SubscribeToGlobalOverlayHookEvent()
         {
-            IsEditingDialogOpen = false;
-            _hideOverlayEvent.Publish(new ViewMessages.HideOverlay());
+            SetGlobalHookEventOverlayHotkey();
         }
 
-        private void OnAcceptEditingDialog()
+        private void UpdateGlobalOverlayHookEvent()
         {
-            IsEditingDialogOpen = false;
-            RecordManager.UpdateCustomData(_recordInfo,
-                CustomCpuDescription, CustomGpuDescription, CustomRamDescription, CustomGameName, CustomComment);
-            _hideOverlayEvent.Publish(new ViewMessages.HideOverlay());
-        }
-
-        private void SubscribeToUpdateSession()
-        {
-            _eventAggregator.GetEvent<PubSubEvent<ViewMessages.UpdateSession>>()
-                            .Subscribe(msg =>
-                            {
-                                _recordInfo = msg.RecordInfo;
-                            });
-        }
-
-        public void OnNavigatedTo(NavigationContext navigationContext)
-        {
-            if (_recordInfo != null)
+            if (_globalOverlayHookEvent != null)
             {
-                CustomCpuDescription = string.Copy(_recordInfo.ProcessorName ?? string.Empty);
-                CustomGpuDescription = string.Copy(_recordInfo.GraphicCardName ?? string.Empty);
-                CustomGameName = string.Copy(_recordInfo.GameName ?? string.Empty);
-                CustomComment = string.Copy(_recordInfo.Comment ?? string.Empty);
+                _globalOverlayHookEvent.Dispose();
+                SetGlobalHookEventOverlayHotkey();
             }
+        }
+
+        private void SetGlobalHookEventOverlayHotkey()
+        {
+            if (!CXHotkey.IsValidHotkey(OverlayHotkeyString))
+                return;
+
+            var onCombinationDictionary = new Dictionary<Combination, Action>
+            {
+                {Combination.FromString(OverlayHotkeyString), () =>
+                {
+                    SetOverlayMode();
+                }}
+            };
+
+            _globalOverlayHookEvent = Hook.GlobalEvents();
+            _globalOverlayHookEvent.OnCombination(onCombinationDictionary);
+        }
+
+        private void SetOverlayMode()
+        {
+            IsOverlayActive = !IsOverlayActive;
+
+            if (IsOverlayActive)
+                _overlayService.ShowOverlay();
             else
-            {
-                CustomCpuDescription = string.Empty;
-                CustomGpuDescription = string.Empty;
-                CustomGameName = string.Empty;
-                CustomComment = string.Empty;
-            }
-
-            EditingDialogContent = new EditingDialog();
-            IsEditingDialogOpen = true;
+                _overlayService.HideOverlay();
         }
 
         public bool IsNavigationTarget(NavigationContext navigationContext)
@@ -159,6 +107,10 @@ namespace CapFrameX.ViewModel
         }
 
         public void OnNavigatedFrom(NavigationContext navigationContext)
+        {
+        }
+
+        public void OnNavigatedTo(NavigationContext navigationContext)
         {
         }
     }

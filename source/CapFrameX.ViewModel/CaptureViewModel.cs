@@ -61,7 +61,6 @@ namespace CapFrameX.ViewModel
 		private string _captureTimeString = "0";
 		private string _captureStartDelayString = "0";
 		private IKeyboardMouseEvents _globalCaptureHookEvent;
-		private IKeyboardMouseEvents _globalOverlayHookEvent;
 		private string _selectedSoundMode;
 		private string _loggerOutput = string.Empty;
 		private bool _fillArchive = false;
@@ -82,16 +81,6 @@ namespace CapFrameX.ViewModel
 			{
 				_isCapturing = value;
 				_captureService.IsCaptureModeActiveStream.OnNext(value);
-			}
-		}
-
-		private bool IsOverlayActive
-		{
-			get { return _appConfiguration.IsOverlayActive; }
-			set
-			{
-				_appConfiguration.IsOverlayActive = value;
-				_overlayService.IsOverlayActiveStream.OnNext(value);
 			}
 		}
 
@@ -170,20 +159,6 @@ namespace CapFrameX.ViewModel
 				_appConfiguration.CaptureHotKey = value;
 				UpdateCaptureStateInfo();
 				UpdateGlobalCaptureHookEvent();
-				RaisePropertyChanged();
-			}
-		}
-
-		public string OverlayHotkeyString
-		{
-			get { return _appConfiguration.OverlayHotKey; }
-			set
-			{
-				if (!CXHotkey.IsValidHotkey(value))
-					return;
-
-				_appConfiguration.OverlayHotKey = value;
-				UpdateGlobalOverlayHookEvent();
 				RaisePropertyChanged();
 			}
 		}
@@ -311,24 +286,19 @@ namespace CapFrameX.ViewModel
 			SelectedSoundMode = _appConfiguration.HotkeySoundMode;
 			CaptureTimeString = _appConfiguration.CaptureTime.ToString();
 
-			OverlayHotkeyString = _appConfiguration.OverlayHotKey.ToString();
-
 			ProcessesToIgnore.AddRange(CaptureServiceConfiguration.GetProcessIgnoreList());
 			_disposableHeartBeat = GetListUpdatHeartBeat();
 			_frametimeStream = new Subject<string>();
 
 			SubscribeToUpdateProcessIgnoreList();
 			SubscribeToGlobalCaptureHookEvent();
-			SubscribeToGlobalOverlayHookEvent();
 
 			bool captureServiceStarted = StartCaptureService();
+
 			if (captureServiceStarted)
 				_overlayService.SetCaptureServiceStatus("Capture service ready...");
-			if (IsOverlayActive)
-				_overlayService.ShowOverlay();
 
 			_captureService.IsCaptureModeActiveStream.OnNext(false);
-			_overlayService.IsOverlayActiveStream.OnNext(_appConfiguration.IsOverlayActive);
 
 			FrametimeModel = new PlotModel
 			{
@@ -419,26 +389,12 @@ namespace CapFrameX.ViewModel
 			SetGlobalHookEventCaptureHotkey();
 		}
 
-		private void SubscribeToGlobalOverlayHookEvent()
-		{
-			SetGlobalHookEventOverlayHotkey();
-		}
-
 		private void UpdateGlobalCaptureHookEvent()
 		{
 			if (_globalCaptureHookEvent != null)
 			{
 				_globalCaptureHookEvent.Dispose();
 				SetGlobalHookEventCaptureHotkey();
-			}
-		}
-
-		private void UpdateGlobalOverlayHookEvent()
-		{
-			if (_globalOverlayHookEvent != null)
-			{
-				_globalOverlayHookEvent.Dispose();
-				SetGlobalHookEventOverlayHotkey();
 			}
 		}
 
@@ -458,23 +414,6 @@ namespace CapFrameX.ViewModel
 
 			_globalCaptureHookEvent = Hook.GlobalEvents();
 			_globalCaptureHookEvent.OnCombination(onCombinationDictionary);
-		}
-
-		private void SetGlobalHookEventOverlayHotkey()
-		{
-			if (!CXHotkey.IsValidHotkey(OverlayHotkeyString))
-				return;
-
-			var onCombinationDictionary = new Dictionary<Combination, Action>
-			{
-				{Combination.FromString(OverlayHotkeyString), () =>
-				{
-					SetOverlayMode();
-				}}
-			};
-
-			_globalOverlayHookEvent = Hook.GlobalEvents();
-			_globalOverlayHookEvent.OnCombination(onCombinationDictionary);
 		}
 
 		private void SetCaptureMode()
@@ -579,16 +518,6 @@ namespace CapFrameX.ViewModel
 					}, CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, context);
 				});
 			}
-		}
-
-		private void SetOverlayMode()
-		{
-			IsOverlayActive = !IsOverlayActive;
-
-			if (IsOverlayActive)
-				_overlayService.ShowOverlay();
-			else
-				_overlayService.HideOverlay();
 		}
 
 		private void StartCaptureDataFromStream()

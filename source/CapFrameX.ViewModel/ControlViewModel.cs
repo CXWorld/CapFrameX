@@ -32,7 +32,6 @@ namespace CapFrameX.ViewModel
 
 		private PubSubEvent<ViewMessages.UpdateSession> _updateSessionEvent;
 		private PubSubEvent<ViewMessages.SelectSession> _selectSessionEvent;
-		private PubSubEvent<ViewMessages.ShowOverlay> _showOverlayEvent;
 		private PubSubEvent<ViewMessages.UpdateProcessIgnoreList> _updateProcessIgnoreListEvent;
 		private PubSubEvent<ViewMessages.UpdateRecordInfos> _updateRecordInfosEvent;
 
@@ -160,7 +159,6 @@ namespace CapFrameX.ViewModel
 			_recordDataProvider = recordDataProvider;
 
 			//Commands
-			OpenEditingDialogCommand = new DelegateCommand(OnOpenEditingDialog);
 			AddToIgnoreListCommand = new DelegateCommand(OnAddToIgnoreList);
 			DeleteRecordFileCommand = new DelegateCommand(OnDeleteRecordFile);
 			AcceptEditingDialogCommand = new DelegateCommand(OnAcceptEditingDialog);
@@ -246,14 +244,6 @@ namespace CapFrameX.ViewModel
 				_updateSessionEvent.Publish(new ViewMessages.UpdateSession(null, null));
 			}
 			catch { }
-		}
-
-		private void OnOpenEditingDialog()
-		{
-			if (!RecordInfoList.Any())
-				return;
-
-			_showOverlayEvent.Publish(new ViewMessages.ShowOverlay());
 		}
 
 		private void OnAddToIgnoreList()
@@ -415,7 +405,6 @@ namespace CapFrameX.ViewModel
 		{
 			_updateSessionEvent = _eventAggregator.GetEvent<PubSubEvent<ViewMessages.UpdateSession>>();
 			_selectSessionEvent = _eventAggregator.GetEvent<PubSubEvent<ViewMessages.SelectSession>>();
-			_showOverlayEvent = _eventAggregator.GetEvent<PubSubEvent<ViewMessages.ShowOverlay>>();
 			_updateProcessIgnoreListEvent = _eventAggregator.GetEvent<PubSubEvent<ViewMessages.UpdateProcessIgnoreList>>();
 			_updateRecordInfosEvent = _eventAggregator.GetEvent<PubSubEvent<ViewMessages.UpdateRecordInfos>>();
 		}

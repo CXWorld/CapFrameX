@@ -97,7 +97,6 @@
 					<ColumnDefinition Width="1*"/>
 					<ColumnDefinition Width="1*"/>
 					<ColumnDefinition Width="1*"/>
-					<ColumnDefinition Width="1*"/>
 				</Grid.ColumnDefinitions>
 				<TextBox Grid.Row="0" Grid.Column="0" Width="132" wpf:HintAssist.Hint="Capture hotkey" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
 						 Margin="0" FontSize="14"
@@ -137,20 +136,6 @@
 							Width="100" Thumb.DragCompleted="Slider_DragCompleted"/>
 					<TextBlock HorizontalAlignment="Right" Text="{Binding SliderSoundLevel}" Background="Transparent"/>
 				</Grid>
-				<TextBox Grid.Row="0" Grid.Column="3" Width="132" wpf:HintAssist.Hint="Overlay hotkey" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
-						 Margin="80 0 0 0" FontSize="14"
-						 IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False" PreviewKeyDown="OverlayHotkeyTextBox_PreviewKeyDown"
-						 ToolTip="combinable with Ctrl/Shift/Alt">
-					<Binding Path="OverlayHotkey"
-							 ElementName="CaptureViewControl"
-							 Mode="OneWay"
-							 TargetNullValue="&lt; not set &gt;">
-						<Binding.ValidationRules>
-							<validation:HotkeyValidationRule
-                          ValidatesOnTargetUpdated="True" />
-						</Binding.ValidationRules>
-					</Binding>
-				</TextBox>
 			</Grid>
 		</DockPanel>
         <Expander HorizontalAlignment="Stretch" Grid.Row="0" ExpandDirection="Down" Margin="0">

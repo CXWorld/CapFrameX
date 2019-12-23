@@ -29,6 +29,7 @@ namespace CapFrameX.ViewModel
 
 		private PubSubEvent<AppMessages.UpdateObservedDirectory> _updateObservedFolder;
 		private bool _captureIsChecked = true;
+		private bool _overlayIsChecked;
 		private bool _singleRecordIsChecked;
 		private bool _recordComparisonIsChecked;
 		private bool _reportIsChecked;
@@ -54,6 +55,19 @@ namespace CapFrameX.ViewModel
 
 				if (value)
 					OnCaptureIsCheckedChanged();
+			}
+		}
+
+		public bool OverlayIsChecked
+		{
+			get { return _overlayIsChecked; }
+			set
+			{
+				_overlayIsChecked = value;
+				RaisePropertyChanged();
+
+				if (value)
+					OnOverlayIsCheckedChanged();
 			}
 		}
 
@@ -245,7 +259,7 @@ namespace CapFrameX.ViewModel
 				OnViewSelectionChanged();
 				RaisePropertyChanged();
 			}
-		}		
+		}
 
 		public bool HelpViewSelected
 		{
@@ -309,9 +323,6 @@ namespace CapFrameX.ViewModel
 			SetHardwareInfoDefaultsFromDatabase();
 
 			SetAggregatorEvents();
-
-			SubscribeToOverlayActivate();
-			SubscribeToOverlayDeactivate();
 		}
 
 		private void SetHardwareInfoDefaultsFromDatabase()
@@ -360,7 +371,6 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-
 		private void OnOpenScreenshotFolder()
 		{
 			try
@@ -393,8 +403,12 @@ namespace CapFrameX.ViewModel
 
 		private void OnCaptureIsCheckedChanged()
 		{
-
 			_regionManager.RequestNavigate("DataRegion", "CaptureView");
+		}
+
+		private void OnOverlayIsCheckedChanged()
+		{
+			_regionManager.RequestNavigate("DataRegion", "OverlayView");
 		}
 
 		private void OnSingleRecordIsCheckedChanged()
@@ -436,78 +450,13 @@ namespace CapFrameX.ViewModel
 			if (OptionsViewSelected)
 				SelectedView = "Options";
 
-			if(HelpViewSelected)
+			if (HelpViewSelected)
 				SelectedView = "Help";
 		}
 
 		private void SetAggregatorEvents()
 		{
 			_updateObservedFolder = _eventAggregator.GetEvent<PubSubEvent<AppMessages.UpdateObservedDirectory>>();
-		}
-
-		private void SubscribeToOverlayActivate()
-		{
-			_eventAggregator.GetEvent<PubSubEvent<ViewMessages.ShowOverlay>>()
-							.Subscribe(msg =>
-							{
-								// This is crap, should be refactored
-								var controlView = _regionManager.Regions["ControlRegion"].Views.FirstOrDefault();
-								_regionManager.Regions["ControlRegion"].Deactivate(controlView);
-								var colorbarView = _regionManager.Regions["ColorbarRegion"].Views.FirstOrDefault();
-								_regionManager.Regions["ColorbarRegion"].Deactivate(colorbarView);
-
-								var dataRegionViews = _regionManager.Regions["DataRegion"].ActiveViews;
-
-								foreach (var view in dataRegionViews)
-								{
-									_regionManager.Regions["DataRegion"].Deactivate(view);
-								}
-
-								_regionManager.RequestNavigate("OverlayRegion", "OverlayView");
-							});
-		}
-
-		private void SubscribeToOverlayDeactivate()
-		{
-			_eventAggregator.GetEvent<PubSubEvent<ViewMessages.HideOverlay>>()
-							.Subscribe(msg =>
-							{
-								var overlayView = _regionManager.Regions["OverlayRegion"].Views.FirstOrDefault();
-								_regionManager.Regions["OverlayRegion"].Deactivate(overlayView);
-
-								_regionManager.RequestNavigate("ControlRegion", "ControlView");
-								_regionManager.RequestNavigate("ColorbarRegion", "ColorbarView");
-
-								if (CaptureIsChecked)
-								{
-									_regionManager.RequestNavigate("DataRegion", "CaptureView");
-								}
-
-								if (SingleRecordIsChecked)
-								{
-									_regionManager.RequestNavigate("DataRegion", "DataView");
-								}
-
-								if (RecordComparisonIsChecked)
-								{
-									_regionManager.RequestNavigate("DataRegion", "ComparisonView");
-								}
-
-								if (ReportIsChecked)
-								{
-									_regionManager.RequestNavigate("DataRegion", "ReportView");
-								}
-
-								if (SynchronizationIsChecked)
-								{
-									_regionManager.RequestNavigate("DataRegion", "SynchronizationView");
-								}
-
-								if (AggregationIsChecked)
-								{
-									_regionManager.RequestNavigate("DataRegion", "AggregationView");
-								}
-							});
 		}
 	}
 }

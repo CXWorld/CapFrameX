@@ -47,10 +47,6 @@ namespace CapFrameX.EventAggregation.Messages
 			}
 		}
 
-		public class ShowOverlay { }
-
-		public class HideOverlay { }
-
 		public class UpdateProcessIgnoreList { }
 	}
 }

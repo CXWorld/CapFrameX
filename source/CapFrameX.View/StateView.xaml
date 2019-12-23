@@ -36,7 +36,7 @@
 			</Hyperlink>	
 		</TextBlock>
 		<StackPanel HorizontalAlignment="Left" Grid.Column="0" Margin="10 0 0 0" Orientation="Horizontal">
-			<TextBlock Margin="0 0 5 0" VerticalAlignment="Center">Capture mode active:</TextBlock>
+			<TextBlock Margin="0 0 5 0" VerticalAlignment="Center">Capture mode:</TextBlock>
 			<ToggleButton Width="20" Height="20" IsHitTestVisible="False"
 					  Style="{StaticResource MaterialDesignActionAccentToggleButton}"
 					  IsChecked="{Binding IsCaptureModeActive}"
@@ -45,7 +45,7 @@
 					<materialDesign:PackIcon Kind="Play"/>
 				</materialDesign:ToggleButtonAssist.OnContent>
 			</ToggleButton>
-			<TextBlock Margin="10 0 5 0" VerticalAlignment="Center">Overlay active:</TextBlock>
+			<TextBlock Margin="10 0 5 0" VerticalAlignment="Center">Overlay:</TextBlock>
 			<ToggleButton Width="20" Height="20" IsHitTestVisible="False"
 					  Style="{StaticResource MaterialDesignActionAccentToggleButton}"
 					  IsChecked="{Binding IsOverlayActive}"
@@ -54,7 +54,7 @@
 					<materialDesign:PackIcon Kind="Play"/>
 				</materialDesign:ToggleButtonAssist.OnContent>
 			</ToggleButton>
-			<TextBlock Margin="10 0 5 0" VerticalAlignment="Center">Directory observer active:</TextBlock>
+			<TextBlock Margin="10 0 5 0" VerticalAlignment="Center">Directory observer:</TextBlock>
 			<ToggleButton Width="20" Height="20" IsHitTestVisible="False"
 					  Style="{StaticResource MaterialDesignActionAccentToggleButton}"
 					  IsChecked="{Binding IsDirectoryObserving}"

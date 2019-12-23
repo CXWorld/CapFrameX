@@ -5,15 +5,28 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:CapFrameX.View"
 			 xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+			 xmlns:validation ="clr-namespace:CapFrameX.MVVM.Validation;assembly=CapFrameX.MVVM"
+			 xmlns:wpf="clr-namespace:MaterialDesignThemes.Wpf;assembly=MaterialDesignThemes.Wpf"
 			 xmlns:prism="http://prismlibrary.com/"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800"
 			 Background="{DynamicResource MaterialDesignPaper}"
              FontFamily="{StaticResource MaterialDesignFont}"
 			 prism:ViewModelLocator.AutoWireViewModel="True">
-	<materialDesign:DialogHost HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                               IsOpen="{Binding IsEditingDialogOpen}"
-                               DialogContent="{Binding EditingDialogContent}"
-                               CloseOnClickAway="True">
-	</materialDesign:DialogHost>
+	<Grid>
+		<TextBox Grid.Row="0" Grid.Column="3" Width="132" wpf:HintAssist.Hint="Overlay hotkey" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
+						 Margin="80 0 0 0" FontSize="14"
+						 IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False" PreviewKeyDown="OverlayHotkeyTextBox_PreviewKeyDown"
+						 ToolTip="combinable with Ctrl/Shift/Alt">
+			<Binding Path="OverlayHotkey"
+							 ElementName="CaptureViewControl"
+							 Mode="OneWay"
+							 TargetNullValue="&lt; not set &gt;">
+				<Binding.ValidationRules>
+					<validation:HotkeyValidationRule
+                          ValidatesOnTargetUpdated="True" />
+				</Binding.ValidationRules>
+			</Binding>
+		</TextBox>
+	</Grid>
 </UserControl>
