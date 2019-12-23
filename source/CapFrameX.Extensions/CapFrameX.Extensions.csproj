@@ -65,6 +65,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Attributes\ShortDescriptionAttribute.cs" />
     <Compile Include="CollectionExtensions.cs" />
     <Compile Include="EnumExtensions.cs" />
     <Compile Include="LinqExtensions.cs" />
