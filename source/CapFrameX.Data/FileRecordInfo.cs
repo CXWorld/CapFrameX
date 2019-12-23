@@ -34,6 +34,7 @@ namespace CapFrameX.Data
 		public string GPUMemoryClock { get; private set; }
 		public string GPUMemory { get; private set; }
 		public string Comment { get; private set; }
+		public string IsAggregated { get; private set; }
 		public bool IsValid { get; private set; }
 		public bool HasInfoHeader { get; private set; }
 		public string Id { get; private set; }
@@ -241,6 +242,11 @@ namespace CapFrameX.Data
 
 				if (infoKeyValueDictionary.Keys.Contains("Comment"))
 					Comment = infoKeyValueDictionary["Comment"];
+
+				if (infoKeyValueDictionary.Keys.Contains("IsAggregated"))
+					IsAggregated = infoKeyValueDictionary["IsAggregated"];
+				else
+					IsAggregated = "false";
 			}
 		}
 

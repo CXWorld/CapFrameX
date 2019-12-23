@@ -83,7 +83,8 @@ namespace CapFrameX.Data
 			return check;
 		}
 
-		public bool SavePresentData(IList<string> recordLines, string filePath, string processName, int captureTime)
+		public bool SavePresentData(IList<string> recordLines, string filePath, 
+			string processName, int captureTime)
 		{
 			try
 			{
@@ -132,7 +133,8 @@ namespace CapFrameX.Data
 					$"{FileRecordInfo.HEADER_MARKER}GPU Core Clock (MHz){FileRecordInfo.INFO_SEPERATOR}{string.Empty}",
 					$"{FileRecordInfo.HEADER_MARKER}GPU Memory Clock (MHz){FileRecordInfo.INFO_SEPERATOR}{string.Empty}",
 					$"{FileRecordInfo.HEADER_MARKER}GPU Memory (MB){FileRecordInfo.INFO_SEPERATOR}{string.Empty}",
-					$"{FileRecordInfo.HEADER_MARKER}Comment{FileRecordInfo.INFO_SEPERATOR}{string.Empty}"
+					$"{FileRecordInfo.HEADER_MARKER}Comment{FileRecordInfo.INFO_SEPERATOR}{string.Empty}",
+					$"{FileRecordInfo.HEADER_MARKER}IsAggregated{FileRecordInfo.INFO_SEPERATOR}{"false"}"
 				};
 
 				foreach (var headerLine in headerLines)
