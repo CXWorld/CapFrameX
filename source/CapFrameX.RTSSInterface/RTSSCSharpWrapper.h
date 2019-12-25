@@ -61,13 +61,14 @@ public:
       _coreControl->RunHistory.push_back("N/A");
       _coreControl->RunHistory.push_back("N/A");
       _coreControl->RunHistory.push_back("N/A");
-      return;
     }
-
-    for (size_t i = 0; i < runHistory->Length; i++)
+    else
     {
-      String^ run = runHistory[i];
-      _coreControl->RunHistory.push_back(run);
+      for (size_t i = 0; i < runHistory->Length; i++)
+      {
+        String^ run = runHistory[i];
+        _coreControl->RunHistory.push_back(run);
+      }
     }
   }
 

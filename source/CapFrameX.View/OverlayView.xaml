@@ -27,6 +27,7 @@
 				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Flipper.xaml" />
 			</ResourceDictionary.MergedDictionaries>
 			<mvvm:BoolToVisibilityConverter x:Key="FalseToCollapsedConverter" TrueValue="Visible" FalseValue="Collapsed"/>
+			<mvvm:EnumDescriptionConverter x:Key="EnumDescriptionConverter"/>
 		</ResourceDictionary>
 	</UserControl.Resources>
 	<Grid>
@@ -61,6 +62,7 @@
 		<Grid Grid.Row="1" Grid.Column="2">
 			<Grid.RowDefinitions>
 				<RowDefinition Height="2*"></RowDefinition>
+				<RowDefinition Height="1*"></RowDefinition>
 				<RowDefinition Height="1*"></RowDefinition>
 				<RowDefinition Height="1*"></RowDefinition>
 			</Grid.RowDefinitions>
@@ -113,6 +115,27 @@
   					Keep all recording files after aggregation
 				</TextBlock>
 			</CheckBox>
+			<!--Metrics to show on overlay-->
+			<ComboBox Grid.Row="3" Grid.Column="1" Width="110" VerticalAlignment="Center" Margin="30 0 0 5" materialDesign:HintAssist.Hint="Second metric"
+					  Visibility="{Binding IsBarChartTabActive, Converter={StaticResource TrueToVisibleConverter}}"
+					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="330" materialDesign:ComboBoxAssist.ClassicMode="True"
+					  ItemsSource="{Binding SecondMetricItems}" SelectedItem="{Binding SelectedSecondaryMetric}">
+				<ComboBox.ItemTemplate>
+					<DataTemplate>
+						<TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}"/>
+					</DataTemplate>
+				</ComboBox.ItemTemplate>
+			</ComboBox>
+			<ComboBox Grid.Row="3" Grid.Column="1" Width="110" VerticalAlignment="Center" Margin="30 0 0 5" materialDesign:HintAssist.Hint="Third metric"
+					  Visibility="{Binding IsBarChartTabActive, Converter={StaticResource TrueToVisibleConverter}}"
+					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="360" materialDesign:ComboBoxAssist.ClassicMode="True"
+					  ItemsSource="{Binding ThirdMetricItems}" SelectedItem="{Binding SelectedThirdMetric}">
+				<ComboBox.ItemTemplate>
+					<DataTemplate>
+						<TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}"/>
+					</DataTemplate>
+				</ComboBox.ItemTemplate>
+			</ComboBox>
 		</Grid>
 	</Grid>
 </UserControl>

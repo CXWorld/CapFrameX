@@ -302,18 +302,18 @@ namespace CapFrameX.Configuration.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("P1")]
-        public string SecondaryMetric {
+        public string SecondMetric {
             get {
-                return ((string)(this["SecondaryMetric"]));
+                return ((string)(this["SecondMetric"]));
             }
             set {
-                this["SecondaryMetric"] = value;
+                this["SecondMetric"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("P0dot1")]
+        [global::System.Configuration.DefaultSettingValueAttribute("P0dot2")]
         public string ThirdMetric {
             get {
                 return ((string)(this["ThirdMetric"]));
@@ -476,6 +476,42 @@ namespace CapFrameX.Configuration.Properties {
             }
             set {
                 this["ResetHistoryHotkey"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool UseRunHistory {
+            get {
+                return ((bool)(this["UseRunHistory"]));
+            }
+            set {
+                this["UseRunHistory"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("P1")]
+        public string SecondMetricOverlay {
+            get {
+                return ((string)(this["SecondMetricOverlay"]));
+            }
+            set {
+                this["SecondMetricOverlay"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("P0dot2")]
+        public string ThirdMetricOverlay {
+            get {
+                return ((string)(this["ThirdMetricOverlay"]));
+            }
+            set {
+                this["ThirdMetricOverlay"] = value;
             }
         }
     }

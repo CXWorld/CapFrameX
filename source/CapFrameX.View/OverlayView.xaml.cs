@@ -66,7 +66,8 @@ namespace CapFrameX.View
 			if (DesignerProperties.GetIsInDesignMode(this))
 			{
 				var appConfiguration = new CapFrameXConfiguration();
-				DataContext = new OverlayViewModel(new OverlayService(), appConfiguration, new EventAggregator());
+				var statisticProvider = new FrametimeStatisticProvider(appConfiguration);
+				DataContext = new OverlayViewModel(new OverlayService(statisticProvider), appConfiguration, new EventAggregator());
 			}
 		}
 

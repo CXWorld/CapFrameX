@@ -48,9 +48,13 @@
 
 		double SimpleSoundLevel { get; set; }
 
-		string SecondaryMetric { get; set; }
+		string SecondMetric { get; set; }
 
 		string ThirdMetric { get; set; }
+
+		string SecondMetricOverlay { get; set; }
+
+		string ThirdMetricOverlay { get; set; }
 
 		string ComparisonContext { get; set; }
 
@@ -75,5 +79,7 @@
 		bool IsOverlayActive { get; set; }
 
 		string ResetHistoryHotkey { get; set; }
+
+		bool UseRunHistory { get; set; }
 	}
 }

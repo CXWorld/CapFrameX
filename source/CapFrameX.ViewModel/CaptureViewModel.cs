@@ -759,8 +759,7 @@ namespace CapFrameX.ViewModel
 				UpdateGlobalCaptureHookEvent();
 
 				// reset run history
-				_runHistory = new List<string> { "N/A", "N/A", "N/A" };
-				_overlayService.SetRunHistory(_runHistory.ToArray());
+				_overlayService.ResetHistory();
 			}
 
 			if (!processList.Contains(selectedProcessToCapture))

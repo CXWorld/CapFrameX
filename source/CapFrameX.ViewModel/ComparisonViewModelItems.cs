@@ -60,7 +60,7 @@ namespace CapFrameX.ViewModel
 				= GeMetricValue(frametimeTimeWindow, EMetric.Average);
 
 			wrappedComparisonRecordInfo.WrappedRecordInfo.SecondMetric
-				= GeMetricValue(frametimeTimeWindow, SelectedSecondaryMetric);
+				= GeMetricValue(frametimeTimeWindow, SelectedSecondMetric);
 
 			wrappedComparisonRecordInfo.WrappedRecordInfo.ThirdMetric
 				= GeMetricValue(frametimeTimeWindow, SelectedThirdMetric);

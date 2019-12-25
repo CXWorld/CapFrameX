@@ -1,7 +1,12 @@
 ﻿using CapFrameX.Contracts.Overlay;
+using CapFrameX.Data;
+using CapFrameX.Extensions;
+using CapFrameX.Statistics;
 using Microsoft.Win32;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
@@ -11,20 +16,35 @@ namespace CapFrameX.Overlay
 {
 	public class OverlayService : RTSSCSharpWrapper, IOverlayService
 	{
+		private readonly IStatisticProvider _statisticProvider;
+
 		private IDisposable _disposableHeartBeat;
 		private IDisposable _disposableCaptureTimer;
 
+		private List<string> _runHistory = new List<string>();
 		/// <summary>
 		/// Refresh period in milliseconds
 		/// </summary>
-		public int RefreshPeriod { get; private set; }
+		private int _refreshPeriod;
+		private int _numberOfRuns;
+		private int _numberOfRunsToAggregate;
 
 		public Subject<bool> IsOverlayActiveStream { get; }
 
-		public OverlayService() : base()
+		public string SecondMetric { get; set; }
+
+		public string ThirdMetric { get; set; }
+
+		public OverlayService(IStatisticProvider statisticProvider) : base()
 		{
+			_statisticProvider = statisticProvider;
+
 			// default 500 milliseconds
-			RefreshPeriod = 500;
+			_refreshPeriod = 500;
+			_numberOfRuns = 3;
+			_numberOfRunsToAggregate = 3;
+			SecondMetric = "P1";
+			ThirdMetric = "P0dot2";
 			IsOverlayActiveStream = new Subject<bool>();
 		}
 
@@ -41,7 +61,7 @@ namespace CapFrameX.Overlay
 
 		public void UpdateRefreshRate(int milliSeconds)
 		{
-			RefreshPeriod = milliSeconds;
+			_refreshPeriod = milliSeconds;
 			_disposableHeartBeat?.Dispose();
 			_disposableHeartBeat = GetOverlayRefreshHeartBeat();
 		}
@@ -74,7 +94,30 @@ namespace CapFrameX.Overlay
 
 		public void ResetHistory()
 		{
+			SetRunHistory(null);
+		}
 
+		public void AddRunToHistory(List<string> captureData)
+		{
+			var frametimes = captureData.Select(line => RecordDataProvider.GetFrameTimeFromDataLine(line)).ToList();
+			var average = _statisticProvider.GetFpsMetricValue(frametimes, EMetric.Average);
+			var secondMetricValue = _statisticProvider.GetFpsMetricValue(frametimes, SecondMetric.ConvertToEnum<EMetric>());
+			var thrirdMetricValue = _statisticProvider.GetFpsMetricValue(frametimes, ThirdMetric.ConvertToEnum<EMetric>());
+
+			string secondMetricString = 
+				SecondMetric.ConvertToEnum<EMetric>() != EMetric.None ? 
+				$"{SecondMetric.ConvertToEnum<EMetric>().GetShortDescription()}={secondMetricValue.ToString(CultureInfo.InvariantCulture)} FPS | " : string.Empty;
+
+			string thirdMetricString =
+				ThirdMetric.ConvertToEnum<EMetric>() != EMetric.None ?
+				$"{ThirdMetric.ConvertToEnum<EMetric>().GetShortDescription()}={thrirdMetricValue.ToString(CultureInfo.InvariantCulture)} FPS | " : string.Empty;
+
+			_runHistory.Add($"Avg={average.ToString(CultureInfo.InvariantCulture)} FPS | " + secondMetricString + thirdMetricString);
+
+			if (_runHistory.Count > _numberOfRuns)
+				_runHistory.RemoveAt(0);
+
+			SetRunHistory(_runHistory.ToArray());
 		}
 
 		private void OnCountdownFinished()
@@ -148,7 +191,7 @@ namespace CapFrameX.Overlay
 		private IDisposable GetOverlayRefreshHeartBeat()
 		{
 			return Observable
-				.Timer(DateTimeOffset.UtcNow, TimeSpan.FromMilliseconds(RefreshPeriod))
+				.Timer(DateTimeOffset.UtcNow, TimeSpan.FromMilliseconds(_refreshPeriod))
 				.Subscribe(x => CheckRTSSRunningAndRefresh());
 		}
 
@@ -157,6 +200,16 @@ namespace CapFrameX.Overlay
 			return Observable
 				.Timer(DateTimeOffset.UtcNow, TimeSpan.FromSeconds(1))
 				.Subscribe(x => SetCaptureTimerValue((int)x));
+		}
+
+		public void UpdateNumberOfRuns(int numberOfRuns)
+		{
+			throw new NotImplementedException();
+		}
+
+		public void UpdateNumberOfRunsToAggregate(int numberOfRunsToAggregate)
+		{
+			throw new NotImplementedException();
 		}
 	}
 }

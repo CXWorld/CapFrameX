@@ -146,16 +146,28 @@ namespace CapFrameX.Configuration
             set { Settings.SimpleSoundLevel = value; Settings.Save(); }
         }
 
-		public string SecondaryMetric 
+		public string SecondMetric 
 		{
-			get { return Settings.SecondaryMetric; }
-			set { Settings.SecondaryMetric = value; Settings.Save(); }
+			get { return Settings.SecondMetric; }
+			set { Settings.SecondMetric = value; Settings.Save(); }
 		}
 		public string ThirdMetric
 		{
 			get { return Settings.ThirdMetric; }
 			set { Settings.ThirdMetric = value; Settings.Save(); }
 		}
+
+		public string SecondMetricOverlay
+		{
+			get { return Settings.SecondMetricOverlay; }
+			set { Settings.SecondMetricOverlay = value; Settings.Save(); }
+		}
+		public string ThirdMetricOverlay
+		{
+			get { return Settings.ThirdMetricOverlay; }
+			set { Settings.ThirdMetricOverlay = value; Settings.Save(); }
+		}
+
 		public string ComparisonContext
 		{
 			get { return Settings.ComparisonContext; }
@@ -226,6 +238,12 @@ namespace CapFrameX.Configuration
 		{
 			get { return Settings.ResetHistoryHotkey; }
 			set { Settings.ResetHistoryHotkey = value; Settings.Save(); }
+		}
+
+		public bool UseRunHistory
+		{
+			get { return Settings.UseRunHistory; }
+			set { Settings.UseRunHistory = value; Settings.Save(); }
 		}
 	}
 }

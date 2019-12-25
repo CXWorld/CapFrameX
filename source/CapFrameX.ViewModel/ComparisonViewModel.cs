@@ -60,7 +60,7 @@ namespace CapFrameX.ViewModel
 		private bool _isSortModeAscending = false;
 		private Func<double, string> _comparisonColumnChartFormatter;
 		private bool _colorPickerVisibility;
-		private EMetric _selectedSecondaryMetric = EMetric.P1;
+		private EMetric _selectedSecondMetric = EMetric.P1;
 		private EMetric _selectedThirdMetric = EMetric.P0dot2;
 		private EComparisonContext _selectedComparisonContext = EComparisonContext.DateTime;
 		private string _currentGameName;
@@ -72,15 +72,14 @@ namespace CapFrameX.ViewModel
 		private string _messageText;
 		private int _barMaxValue;
 
-		public Array MetricItems => Enum.GetValues(typeof(EMetric))
-										.Cast<EMetric>()
-										.Where(metric => metric != EMetric.Average)
-										.ToArray();
-
 		public Array SecondMetricItems => Enum.GetValues(typeof(EMetric))
 											  .Cast<EMetric>()
 											  .Where(metric => metric != EMetric.Average && metric != EMetric.None)
 											  .ToArray();
+		public Array ThirdMetricItems => Enum.GetValues(typeof(EMetric))
+											 .Cast<EMetric>()
+											 .Where(metric => metric != EMetric.Average)
+											 .ToArray();
 
 		public Array ComparisonContextItems => Enum.GetValues(typeof(EComparisonContext))
 												   .Cast<EComparisonContext>()
@@ -94,14 +93,14 @@ namespace CapFrameX.ViewModel
 		public IEventAggregator EventAggregator
 			=> _eventAggregator;
 
-		public EMetric SelectedSecondaryMetric
+		public EMetric SelectedSecondMetric
 		{
-			get { return _selectedSecondaryMetric; }
+			get { return _selectedSecondMetric; }
 			set
 			{
-				_appConfiguration.SecondaryMetric =
+				_appConfiguration.SecondMetric =
 					value.ConvertToString();
-				_selectedSecondaryMetric = value;
+				_selectedSecondMetric = value;
 				RaisePropertyChanged();
 				OnMetricChanged();
 			}
@@ -428,7 +427,7 @@ namespace CapFrameX.ViewModel
 			ComparisonColumnChartFormatter = value => value.ToString(string.Format("F{0}",
 			_appConfiguration.FpsValuesRoundingDigits), CultureInfo.InvariantCulture);
 			SelectedComparisonContext = _appConfiguration.ComparisonContext.ConvertToEnum<EComparisonContext>();
-			SelectedSecondaryMetric = _appConfiguration.SecondaryMetric.ConvertToEnum<EMetric>();
+			SelectedSecondMetric = _appConfiguration.SecondMetric.ConvertToEnum<EMetric>();
 			SelectedThirdMetric = _appConfiguration.ThirdMetric.ConvertToEnum<EMetric>();
 
 			SetRowSeries();
@@ -535,13 +534,13 @@ namespace CapFrameX.ViewModel
 				}
 			};
 
-			if (SelectedSecondaryMetric != EMetric.None)
+			if (SelectedSecondMetric != EMetric.None)
 			{
 				// second metric
 				ComparisonRowChartSeriesCollection.Add(
 				new RowSeries
 				{
-					Title = SelectedSecondaryMetric.GetDescription(),
+					Title = SelectedSecondMetric.GetDescription(),
 					Values = new ChartValues<double>(),
 					Fill = new SolidColorBrush(Color.FromRgb(241, 125, 32)),
 					HighlightFill = new SolidColorBrush(Color.FromRgb(245, 164, 98)),
@@ -606,7 +605,7 @@ namespace CapFrameX.ViewModel
 			if (index == 0)
 				return EMetric.Average;
 			else if (index == 1)
-				return SelectedSecondaryMetric;
+				return SelectedSecondMetric;
 			else if (index == 2)
 				return SelectedThirdMetric;
 			else

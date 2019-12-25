@@ -1,4 +1,5 @@
-﻿using System.Reactive.Subjects;
+﻿using System.Collections.Generic;
+using System.Reactive.Subjects;
 
 namespace CapFrameX.Contracts.Overlay
 {
@@ -6,11 +7,19 @@ namespace CapFrameX.Contracts.Overlay
 	{
 		Subject<bool> IsOverlayActiveStream { get; }
 
+		string SecondMetric { get; }
+
+		string ThirdMetric { get; }
+
 		void ShowOverlay();
 
 		void HideOverlay();
 
 		void UpdateRefreshRate(int milliSeconds);
+
+		void UpdateNumberOfRuns(int numberOfRuns);
+
+		void UpdateNumberOfRunsToAggregate(int numberOfRunsToAggregate);
 
 		void SetCaptureTimerValue(int t);
 
@@ -24,8 +33,8 @@ namespace CapFrameX.Contracts.Overlay
 
 		void SetShowRunHistory(bool showHistory);
 
-		void SetRunHistory(string[] runHistory);
-
 		void ResetHistory();
+
+		void AddRunToHistory(List<string> captureData);
 	}
 }

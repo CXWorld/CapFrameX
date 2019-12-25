@@ -71,11 +71,11 @@
     <Setting Name="SimpleSoundLevel" Type="System.Double" Scope="User">
       <Value Profile="(Default)">0.5</Value>
     </Setting>
-    <Setting Name="SecondaryMetric" Type="System.String" Scope="User">
+    <Setting Name="SecondMetric" Type="System.String" Scope="User">
       <Value Profile="(Default)">P1</Value>
     </Setting>
     <Setting Name="ThirdMetric" Type="System.String" Scope="User">
-      <Value Profile="(Default)">P0dot1</Value>
+      <Value Profile="(Default)">P0dot2</Value>
     </Setting>
     <Setting Name="ComparisonContext" Type="System.String" Scope="User">
       <Value Profile="(Default)">DateTime</Value>
@@ -115,6 +115,15 @@
     </Setting>
     <Setting Name="ResetHistoryHotkey" Type="System.String" Scope="User">
       <Value Profile="(Default)">Alt+R</Value>
+    </Setting>
+    <Setting Name="UseRunHistory" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="SecondMetricOverlay" Type="System.String" Scope="User">
+      <Value Profile="(Default)">P1</Value>
+    </Setting>
+    <Setting Name="ThirdMetricOverlay" Type="System.String" Scope="User">
+      <Value Profile="(Default)">P0dot2</Value>
     </Setting>
   </Settings>
 </SettingsFile>

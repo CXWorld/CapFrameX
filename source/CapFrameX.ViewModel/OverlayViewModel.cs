@@ -1,12 +1,15 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Overlay;
+using CapFrameX.Extensions;
 using CapFrameX.Hotkey;
+using CapFrameX.Statistics;
 using Gma.System.MouseKeyHook;
 using Prism.Events;
 using Prism.Mvvm;
 using Prism.Regions;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace CapFrameX.ViewModel
 {
@@ -57,7 +60,42 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        public EMetric SelectedSecondMetric
+        {
+            get { return _appConfiguration
+                    .SecondMetricOverlay
+                    .ConvertToEnum<EMetric>(); }
+            set
+            {
+                _appConfiguration.SecondMetric =
+                    value.ConvertToString();
+                RaisePropertyChanged();
+            }
+        }
+        public EMetric SelectedThirdMetric
+        {
+            get { return _appConfiguration
+                    .ThirdMetricOverlay
+                    .ConvertToEnum<EMetric>(); ;
+            }
+            set
+            {
+                _appConfiguration.ThirdMetric =
+                    value.ConvertToString();
+                RaisePropertyChanged();
+            }
+        }
+
         public IAppConfiguration AppConfiguration => _appConfiguration;
+
+        public Array SecondMetricItems => Enum.GetValues(typeof(EMetric))
+                                              .Cast<EMetric>()
+                                              .Where(metric => metric != EMetric.Average && metric != EMetric.None)
+                                              .ToArray();
+        public Array ThirdMetricItems => Enum.GetValues(typeof(EMetric))
+                                             .Cast<EMetric>()
+                                             .Where(metric => metric != EMetric.Average)
+                                             .ToArray();
 
         public OverlayViewModel(IOverlayService overlayService, IAppConfiguration appConfiguration, IEventAggregator eventAggregator)
         {
