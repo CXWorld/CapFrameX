@@ -221,5 +221,11 @@ namespace CapFrameX.Configuration
 			get { return Settings.IsOverlayActive; }
 			set { Settings.IsOverlayActive = value; Settings.Save(); }
 		}
+
+		public string ResetHistoryHotkey
+		{
+			get { return Settings.ResetHistoryHotkey; }
+			set { Settings.ResetHistoryHotkey = value; Settings.Save(); }
+		}
 	}
 }

@@ -72,6 +72,11 @@ namespace CapFrameX.Overlay
 			_disposableCaptureTimer?.Dispose();
 		}
 
+		public void ResetHistory()
+		{
+
+		}
+
 		private void OnCountdownFinished()
 		{
 			SetShowCaptureTimer(false);

@@ -23,16 +23,27 @@ namespace CapFrameX.View
 		DependencyProperty.Register(nameof(OverlayHotkey), typeof(CXHotkey), typeof(OverlayView),
 		 new FrameworkPropertyMetadata(default(CXHotkey), FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
+		public static readonly DependencyProperty ResetHistoryHotkeyProperty =
+		DependencyProperty.Register(nameof(ResetHistoryHotkey), typeof(CXHotkey), typeof(OverlayView),
+		 new FrameworkPropertyMetadata(default(CXHotkey), FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
 		public CXHotkey OverlayHotkey
 		{
 			get => (CXHotkey)GetValue(OverlayHotkeyProperty);
 			set => SetValue(OverlayHotkeyProperty, value);
 		}
 
+		public CXHotkey ResetHistoryHotkey
+		{
+			get => (CXHotkey)GetValue(ResetHistoryHotkeyProperty);
+			set => SetValue(ResetHistoryHotkeyProperty, value);
+		}
+
 		public OverlayView()
 		{
 			InitializeComponent();
 
+			// Overlay hotkey
 			try
 			{
 				var overlayHotkeyString = (DataContext as OverlayViewModel).AppConfiguration.OverlayHotKey;
@@ -41,6 +52,16 @@ namespace CapFrameX.View
 				OverlayHotkey = CXHotkey.Create(keyStrings, Key.O, ModifierKeys.Alt);
 			}
 			catch { OverlayHotkey = new CXHotkey(Key.O, ModifierKeys.Alt); }
+
+			// Reset history hotkey
+			try
+			{
+				var resetHistoryHotkeyString = (DataContext as OverlayViewModel).AppConfiguration.ResetHistoryHotkey;
+				var keyStrings = resetHistoryHotkeyString.Split('+');
+
+				ResetHistoryHotkey = CXHotkey.Create(keyStrings, Key.R, ModifierKeys.Control);
+			}
+			catch { ResetHistoryHotkey = new CXHotkey(Key.R, ModifierKeys.Control); }
 
 			if (DesignerProperties.GetIsInDesignMode(this))
 			{
@@ -78,6 +99,39 @@ namespace CapFrameX.View
 			OverlayHotkey = new CXHotkey(key, modifiers);
 			var dataContext = DataContext as OverlayViewModel;
 			dataContext.OverlayHotkeyString = OverlayHotkey.ToString();
+
+			Keyboard.ClearFocus();
+		}
+
+		private void ResetHistoryHotkeyTextBox_PreviewKeyDown(object sender, KeyEventArgs e)
+		{
+			e.Handled = true;
+
+			var modifiers = Keyboard.Modifiers;
+			var key = e.Key;
+
+			if (key == Key.System)
+			{
+				key = e.SystemKey;
+			}
+
+			if (modifiers == ModifierKeys.None && key.IsEither(Key.Delete, Key.Back, Key.Escape))
+			{
+				ResetHistoryHotkey = null;
+				return;
+			}
+
+			if (key.IsEither(
+				Key.LeftCtrl, Key.RightCtrl, Key.LeftAlt, Key.RightAlt,
+				Key.LeftShift, Key.RightShift, Key.LWin, Key.RWin,
+				Key.Clear, Key.OemClear, Key.Apps))
+			{
+				return;
+			}
+
+			ResetHistoryHotkey = new CXHotkey(key, modifiers);
+			var dataContext = DataContext as OverlayViewModel;
+			dataContext.ResetHistoryHotkeyString = ResetHistoryHotkey.ToString();
 
 			Keyboard.ClearFocus();
 		}

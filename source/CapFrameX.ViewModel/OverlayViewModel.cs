@@ -17,6 +17,7 @@ namespace CapFrameX.ViewModel
         private readonly IEventAggregator _eventAggregator;
 
         private IKeyboardMouseEvents _globalOverlayHookEvent;
+        private IKeyboardMouseEvents _globalResetHistoryHookEvent;
 
         private bool IsOverlayActive
         {
@@ -42,6 +43,20 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        public string ResetHistoryHotkeyString
+        {
+            get { return _appConfiguration.ResetHistoryHotkey; }
+            set
+            {
+                if (!CXHotkey.IsValidHotkey(value))
+                    return;
+
+                _appConfiguration.ResetHistoryHotkey = value;
+                UpdateGlobalResetHistoryHookEvent();
+                RaisePropertyChanged();
+            }
+        }
+
         public IAppConfiguration AppConfiguration => _appConfiguration;
 
         public OverlayViewModel(IOverlayService overlayService, IAppConfiguration appConfiguration, IEventAggregator eventAggregator)
@@ -57,12 +72,8 @@ namespace CapFrameX.ViewModel
 
             _overlayService.IsOverlayActiveStream.OnNext(_appConfiguration.IsOverlayActive);
 
-            SubscribeToGlobalOverlayHookEvent();
-        }
-
-        private void SubscribeToGlobalOverlayHookEvent()
-        {
             SetGlobalHookEventOverlayHotkey();
+            SetGlobalHookEventResetHistoryHotkey();
         }
 
         private void UpdateGlobalOverlayHookEvent()
@@ -71,6 +82,15 @@ namespace CapFrameX.ViewModel
             {
                 _globalOverlayHookEvent.Dispose();
                 SetGlobalHookEventOverlayHotkey();
+            }
+        }
+
+        private void UpdateGlobalResetHistoryHookEvent()
+        {
+            if (_globalResetHistoryHookEvent != null)
+            {
+                _globalResetHistoryHookEvent.Dispose();
+                SetGlobalHookEventResetHistoryHotkey();
             }
         }
 
@@ -89,6 +109,23 @@ namespace CapFrameX.ViewModel
 
             _globalOverlayHookEvent = Hook.GlobalEvents();
             _globalOverlayHookEvent.OnCombination(onCombinationDictionary);
+        }
+
+        private void SetGlobalHookEventResetHistoryHotkey()
+        {
+            if (!CXHotkey.IsValidHotkey(ResetHistoryHotkeyString))
+                return;
+
+            var onCombinationDictionary = new Dictionary<Combination, Action>
+            {
+                {Combination.FromString(ResetHistoryHotkeyString), () =>
+                {
+                    _overlayService.ResetHistory();
+                }}
+            };
+
+            _globalResetHistoryHookEvent = Hook.GlobalEvents();
+            _globalResetHistoryHookEvent.OnCombination(onCombinationDictionary);
         }
 
         private void SetOverlayMode()

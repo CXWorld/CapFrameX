@@ -73,5 +73,7 @@
 		string CustomRamDescription { get; set; }	
 		
 		bool IsOverlayActive { get; set; }
+
+		string ResetHistoryHotkey { get; set; }
 	}
 }

@@ -25,5 +25,7 @@ namespace CapFrameX.Contracts.Overlay
 		void SetShowRunHistory(bool showHistory);
 
 		void SetRunHistory(string[] runHistory);
+
+		void ResetHistory();
 	}
 }

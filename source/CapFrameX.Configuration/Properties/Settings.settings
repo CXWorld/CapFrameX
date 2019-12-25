@@ -113,5 +113,8 @@
     <Setting Name="IsOverlayActive" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
+    <Setting Name="ResetHistoryHotkey" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Alt+R</Value>
+    </Setting>
   </Settings>
 </SettingsFile>
