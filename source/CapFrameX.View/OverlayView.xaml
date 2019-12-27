@@ -11,7 +11,7 @@
 			 xmlns:wpf="clr-namespace:MaterialDesignThemes.Wpf;assembly=MaterialDesignThemes.Wpf"
 			 xmlns:prism="http://prismlibrary.com/"
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800"
+             d:DesignHeight="1000" d:DesignWidth="1200"
 			 Background="{DynamicResource MaterialDesignPaper}"
              FontFamily="{StaticResource MaterialDesignFont}"
 			 prism:ViewModelLocator.AutoWireViewModel="True">
@@ -34,16 +34,17 @@
 	<Grid HorizontalAlignment="Center">
 		<Grid.RowDefinitions>
 			<RowDefinition Height="50"></RowDefinition>
-			<RowDefinition Height="450"></RowDefinition>
+			<RowDefinition Height="380"></RowDefinition>
 		</Grid.RowDefinitions>
 		<Grid.ColumnDefinitions>
-            <ColumnDefinition Width="450"/>
-            <ColumnDefinition Width="450"/>
-        </Grid.ColumnDefinitions>
+			<ColumnDefinition Width="450"/>
+			<ColumnDefinition Width="450"/>
+		</Grid.ColumnDefinitions>
 		<DockPanel Grid.Row="1" Grid.Column="0" >
-            <DataGrid>
-            </DataGrid>
-			<TextBox VerticalAlignment="Top" HorizontalAlignment="Center" Margin="0 0 0 0"
+			<!--DataGrid and Overlay hotkey-->
+			<DataGrid>
+			</DataGrid>
+			<TextBox DockPanel.Dock="Bottom" HorizontalAlignment="Center"
                      Width="132" wpf:HintAssist.Hint="Overlay hotkey" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" FontSize="14"
 					 IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False" PreviewKeyDown="OverlayHotkeyTextBox_PreviewKeyDown"
 					 ToolTip="combinable with Ctrl/Shift/Alt">
@@ -61,133 +62,135 @@
 		<Grid Grid.Row="1" Grid.Column="1">
 			<Grid.RowDefinitions>
 				<RowDefinition Height="60"></RowDefinition>
-				<RowDefinition Height="150"></RowDefinition>
+				<RowDefinition Height="140"></RowDefinition>
 				<RowDefinition Height="100"></RowDefinition>
-                <RowDefinition Height="100"></RowDefinition>
-            </Grid.RowDefinitions>
+				<RowDefinition Height="80"></RowDefinition>
+			</Grid.RowDefinitions>
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition Width="1*"/>
 				<ColumnDefinition Width="1*"/>
 			</Grid.ColumnDefinitions>
 			<!--Global history toogle-->
-            <StackPanel Grid.Row="0" Grid.ColumnSpan="2" HorizontalAlignment="Center" Orientation="Vertical">
-                <TextBlock Text="Run history" Margin="5"/>
-                <ToggleButton IsChecked="{Binding UseRunHistory}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
-            </StackPanel>
+			<StackPanel Grid.Row="0" Grid.ColumnSpan="2" HorizontalAlignment="Center" VerticalAlignment="Bottom" Orientation="Vertical">
+				<TextBlock Text="Run history" Margin="5"/>
+				<ToggleButton IsChecked="{Binding UseRunHistory}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+			</StackPanel>
 			<!--Run controls-->
-            <StackPanel Grid.Row="1" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Center"
-                        Visibility="{Binding UseRunHistory, Converter={StaticResource TrueToVisibleConverter}}">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="1*"></RowDefinition>
-                        <RowDefinition Height="1*"></RowDefinition>
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="1*"/>
-                        <ColumnDefinition Width="1*"/>
-                    </Grid.ColumnDefinitions>
-            <ComboBox Grid.Row="0" Grid.Column="0" materialDesign:HintAssist.Hint="Number of runs" VerticalAlignment="Bottom" Margin="0 0 20 0"
-					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Width="110"
+			<Grid Grid.Row="1" Grid.ColumnSpan="2" HorizontalAlignment="Center"
+                  IsEnabled="{Binding UseRunHistory, Converter={StaticResource TrueToVisibleConverter}}">
+				<Grid.RowDefinitions>
+					<RowDefinition Height="1*"></RowDefinition>
+					<RowDefinition Height="1*"></RowDefinition>
+				</Grid.RowDefinitions>
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="225"/>
+					<ColumnDefinition Width="225"/>
+				</Grid.ColumnDefinitions>
+				<ComboBox Grid.Row="0" Grid.Column="0" materialDesign:HintAssist.Hint="Number of runs" VerticalAlignment="Bottom"
+					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Width="120"
 					  ItemsSource="{Binding Path=NumberOfRunsItemsSource}">
-                <ComboBox.ToolTip>
-                      <ToolTip StaysOpen="True" MaxWidth="275">
-                      <TextBlock 
+					<ComboBox.ToolTip>
+						<ToolTip StaysOpen="True" MaxWidth="275">
+							<TextBlock 
                        Text="The number of runs written into the history.
 							Any additional run will start a new history." 
                        TextWrapping="Wrap"/>
-                      </ToolTip>
-                </ComboBox.ToolTip>
-                <ComboBox.Text>
+						</ToolTip>
+					</ComboBox.ToolTip>
+					<ComboBox.Text>
 						<Binding Path="SelectedNumberOfRuns"
 							Mode="TwoWay"
 							UpdateSourceTrigger="PropertyChanged">
 						</Binding>
-				</ComboBox.Text>
-			</ComboBox>
-			<!--Reset run history hotkey-->
-            <TextBox  Grid.Row="0" Grid.Column="1" Width="132" wpf:HintAssist.Hint="Reset run history hotkey" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" FontSize="14"
+					</ComboBox.Text>
+				</ComboBox>
+				<!--Reset run history hotkey-->
+				<TextBox Grid.Row="0" Grid.Column="1" Width="120" wpf:HintAssist.Hint="Reset run history hotkey" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" FontSize="14"
 					 IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False" PreviewKeyDown="ResetHistoryHotkeyTextBox_PreviewKeyDown"
 					 ToolTip="combinable with Ctrl/Shift/Alt">
-				<Binding Path="ResetHistoryHotkey"
+					<Binding Path="ResetHistoryHotkey"
 						 ElementName="OverlayViewControl"
 						 Mode="OneWay"
 						 TargetNullValue="&lt; not set &gt;">
-					<Binding.ValidationRules>
-						<validation:HotkeyValidationRule
+						<Binding.ValidationRules>
+							<validation:HotkeyValidationRule
                           ValidatesOnTargetUpdated="True" />
-					</Binding.ValidationRules>
-				</Binding>
-			</TextBox>
-			<!--Metrics shown on overlay-->
-            <ComboBox  Grid.Row="1" Grid.Column="0" Width="110" Margin="30 0 50 5" materialDesign:HintAssist.Hint="Second metric"
+						</Binding.ValidationRules>
+					</Binding>
+				</TextBox>
+				<!--Metrics shown on overlay-->
+				<ComboBox  Grid.Row="1" Grid.Column="0" Width="120" materialDesign:HintAssist.Hint="Second metric"
 					  Visibility="{Binding IsBarChartTabActive, Converter={StaticResource TrueToVisibleConverter}}"
 					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="330" materialDesign:ComboBoxAssist.ClassicMode="True"
 					  ItemsSource="{Binding SecondMetricItems}" SelectedItem="{Binding SelectedSecondaryMetric}">
-				<ComboBox.ItemTemplate>
-					<DataTemplate>
-						<TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}"/>
-					</DataTemplate>
-				</ComboBox.ItemTemplate>
-			</ComboBox>
-            <ComboBox Grid.Row="1" Grid.Column="1" Width="110" Margin="30 0 50 5" materialDesign:HintAssist.Hint="Third metric"
+					<ComboBox.ItemTemplate>
+						<DataTemplate>
+							<TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}"/>
+						</DataTemplate>
+					</ComboBox.ItemTemplate>
+				</ComboBox>
+				<ComboBox Grid.Row="1" Grid.Column="1" Width="120" materialDesign:HintAssist.Hint="Third metric"
 					  Visibility="{Binding IsBarChartTabActive, Converter={StaticResource TrueToVisibleConverter}}"
 					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="360" materialDesign:ComboBoxAssist.ClassicMode="True"
 					  ItemsSource="{Binding ThirdMetricItems}" SelectedItem="{Binding SelectedThirdMetric}">
-				<ComboBox.ItemTemplate>
-					<DataTemplate>
-						<TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}"/>
-					</DataTemplate>
-				</ComboBox.ItemTemplate>
-			</ComboBox>
-            </Grid>
-            </StackPanel>
-            <!--Aggregation of run history toogle-->
-            <StackPanel Grid.Row="2" Grid.ColumnSpan="2" HorizontalAlignment="Center" VerticalAlignment="Bottom">
+					<ComboBox.ItemTemplate>
+						<DataTemplate>
+							<TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}"/>
+						</DataTemplate>
+					</ComboBox.ItemTemplate>
+				</ComboBox>
+			</Grid>
+			<!--Aggregation of run history toogle-->
+			<StackPanel Grid.Row="2" Grid.ColumnSpan="2" HorizontalAlignment="Center" VerticalAlignment="Bottom">
 				<TextBlock Text="Aggregation of run history" Margin="5"/>
-                <ToggleButton IsChecked="{Binding UseAggregationRunHistory}" Style="{StaticResource MaterialDesignSwitchToggleButton}">
-                    <ToggleButton.ToolTip>
-                        <ToolTip StaysOpen="True" MaxWidth="350">
-                            <TextBlock 
+				<ToggleButton IsChecked="{Binding UseAggregationRunHistory}" Style="{StaticResource MaterialDesignSwitchToggleButton}">
+					<ToggleButton.ToolTip>
+						<ToolTip StaysOpen="True" MaxWidth="350">
+							<TextBlock 
                              Text="Once the run history is full, combines the frametime data of a set number of nuns to a single record file.
                                 This is NOT the same as calculating averave parameters from multiple single record files. It simulates running the same scene multiple times in one single benchmark. Performance parameters are calculated using all of the frametime data" 
                              TextWrapping="Wrap"/>
-                        </ToolTip>
-                    </ToggleButton.ToolTip>
-                </ToggleButton>
+						</ToolTip>
+					</ToggleButton.ToolTip>
+				</ToggleButton>
 			</StackPanel>
-            <StackPanel Grid.Row="3" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Center"
-                        Visibility="{Binding UseAggregationRunHistory, Converter={StaticResource TrueToVisibleConverter}}">
-			<ComboBox materialDesign:HintAssist.Hint="Runs to aggregate"
-					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Width="120" Margin="0 0 50 0"
+			<Grid Grid.Row="3" Grid.ColumnSpan="2" HorizontalAlignment="Center"
+                  IsEnabled="{Binding UseAggregationRunHistory, Converter={StaticResource TrueToVisibleConverter}}">
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="225"/>
+					<ColumnDefinition Width="225"/>
+				</Grid.ColumnDefinitions>
+				<ComboBox Grid.Column="0" VerticalAlignment="Bottom" materialDesign:HintAssist.Hint="Runs to aggregate"
+					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Width="120"
 					  ItemsSource="{Binding Path=NumberOfAggregationRunsItemsSource}">
-                    <ComboBox.ToolTip>
-                        <ToolTip StaysOpen="True" MaxWidth="275">
-                            <TextBlock 
+					<ComboBox.ToolTip>
+						<ToolTip StaysOpen="True" MaxWidth="275">
+							<TextBlock 
                              Text="Runs used for aggregation.  
                                 If the number is smaller than the number of runs in the history, the worst runs will be ignored." 
                              TextWrapping="Wrap"/>
-                        </ToolTip>
-                    </ComboBox.ToolTip>
-                    <ComboBox.Text>
-                        <Binding Path="SelectedNumberOfAggregationRuns"
+						</ToolTip>
+					</ComboBox.ToolTip>
+					<ComboBox.Text>
+						<Binding Path="SelectedNumberOfAggregationRuns"
 							Mode="TwoWay"
 							UpdateSourceTrigger="PropertyChanged">
-                        </Binding>
-				</ComboBox.Text>
-			</ComboBox>
-			<CheckBox Width="150" IsChecked="{Binding KeepRecordingFiles}">
-                    <CheckBox.ToolTip>
-                        <ToolTip StaysOpen="True" MaxWidth="275">
-                            <TextBlock 
+						</Binding>
+					</ComboBox.Text>
+				</ComboBox>
+				<CheckBox Margin="15 0 0 0" Grid.Column="1" VerticalAlignment="Bottom" Width="150" IsChecked="{Binding KeepRecordingFiles}">
+					<CheckBox.ToolTip>
+						<ToolTip StaysOpen="True" MaxWidth="275">
+							<TextBlock 
                              Text="If unchecked, all record files within the run history will be deleted after aggregation and only the aggregated file will be kept." 
                              TextWrapping="Wrap"/>
-                        </ToolTip>
-                    </CheckBox.ToolTip>
-                    <TextBlock Padding="10 0 0 0" TextWrapping="WrapWithOverflow">
+						</ToolTip>
+					</CheckBox.ToolTip>
+					<TextBlock Padding="5 0 0 0" TextWrapping="WrapWithOverflow">
   					Keep all recording files after aggregation
-				</TextBlock>
-			</CheckBox>
-            </StackPanel>
-        </Grid>
+					</TextBlock>
+				</CheckBox>
+			</Grid>
+		</Grid>
 	</Grid>
 </UserControl>
