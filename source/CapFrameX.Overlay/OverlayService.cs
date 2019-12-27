@@ -94,6 +94,7 @@ namespace CapFrameX.Overlay
 
 		public void ResetHistory()
 		{
+			_runHistory.Clear();
 			SetRunHistory(null);
 		}
 
@@ -106,11 +107,13 @@ namespace CapFrameX.Overlay
 
 			string secondMetricString = 
 				SecondMetric.ConvertToEnum<EMetric>() != EMetric.None ? 
-				$"{SecondMetric.ConvertToEnum<EMetric>().GetShortDescription()}={secondMetricValue.ToString(CultureInfo.InvariantCulture)} FPS | " : string.Empty;
+				$"{SecondMetric.ConvertToEnum<EMetric>().GetShortDescription()}=" +
+				$"{secondMetricValue.ToString(CultureInfo.InvariantCulture)} FPS | " : string.Empty;
 
 			string thirdMetricString =
 				ThirdMetric.ConvertToEnum<EMetric>() != EMetric.None ?
-				$"{ThirdMetric.ConvertToEnum<EMetric>().GetShortDescription()}={thrirdMetricValue.ToString(CultureInfo.InvariantCulture)} FPS | " : string.Empty;
+				$"{ThirdMetric.ConvertToEnum<EMetric>().GetShortDescription()}=" +
+				$"{thrirdMetricValue.ToString(CultureInfo.InvariantCulture)} FPS | " : string.Empty;
 
 			_runHistory.Add($"Avg={average.ToString(CultureInfo.InvariantCulture)} FPS | " + secondMetricString + thirdMetricString);
 

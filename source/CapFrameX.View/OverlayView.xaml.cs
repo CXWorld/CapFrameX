@@ -1,9 +1,7 @@
 ﻿using CapFrameX.Configuration;
-using CapFrameX.Data;
 using CapFrameX.Extensions;
 using CapFrameX.Hotkey;
 using CapFrameX.Overlay;
-using CapFrameX.PresentMonInterface;
 using CapFrameX.Statistics;
 using CapFrameX.ViewModel;
 using Prism.Events;
