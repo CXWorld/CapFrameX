@@ -49,7 +49,7 @@ namespace CapFrameX.View
 				var statisticProvider = new FrametimeStatisticProvider(appConfiguration);
 				DataContext = new CaptureViewModel(appConfiguration, new PresentMonCaptureService(),
 					new EventAggregator(), new RecordDataProvider(new RecordDirectoryObserver(appConfiguration), appConfiguration), 
-					new OverlayService(statisticProvider), statisticProvider);
+					new OverlayService(statisticProvider, appConfiguration), statisticProvider);
 			}
 		}
 

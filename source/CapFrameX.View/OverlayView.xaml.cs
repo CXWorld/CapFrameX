@@ -65,7 +65,8 @@ namespace CapFrameX.View
 			{
 				var appConfiguration = new CapFrameXConfiguration();
 				var statisticProvider = new FrametimeStatisticProvider(appConfiguration);
-				DataContext = new OverlayViewModel(new OverlayService(statisticProvider), appConfiguration, new EventAggregator());
+				DataContext = new OverlayViewModel(new OverlayService(statisticProvider, appConfiguration), 
+					appConfiguration, new EventAggregator());
 			}
 		}
 

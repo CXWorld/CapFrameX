@@ -416,11 +416,12 @@ void RTSSCoreControl::Refresh()
     groupedString.Add(CaptureTimerValueStr, "Timer:", "\n", " ");
   }
 
-  if (ShowRunHistory && RunHistory.size() == 3)
+  if (ShowRunHistory)
   {
-    groupedString.Add(RunHistory[0], "", "\n", " ");
-    groupedString.Add(RunHistory[1], "", "\n", " ");
-    groupedString.Add(RunHistory[2], "", "\n", " ");
+    for (size_t i = 0; i < RunHistory.size(); i++)
+    {
+      groupedString.Add(RunHistory[i], "", "\n", " ");
+    }
   }
 
   if (bFormatTagsSupported && m_bFormatTags)

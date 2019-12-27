@@ -188,11 +188,6 @@ namespace CapFrameX.ViewModel
 
 			OverlayHotkeyString = _appConfiguration.OverlayHotKey.ToString();
 
-			// initialize overlay service
-			_overlayService.UpdateNumberOfRuns(SelectedNumberOfRuns);
-			_overlayService.SecondMetric = SelectedSecondMetric.ConvertToString();
-			_overlayService.ThirdMetric = SelectedThirdMetric.ConvertToString();
-
 			if (IsOverlayActive)
 				_overlayService.ShowOverlay();
 

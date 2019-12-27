@@ -1,4 +1,5 @@
-﻿using CapFrameX.Contracts.Overlay;
+﻿using CapFrameX.Contracts.Configuration;
+using CapFrameX.Contracts.Overlay;
 using CapFrameX.Data;
 using CapFrameX.Extensions;
 using CapFrameX.Statistics;
@@ -17,6 +18,7 @@ namespace CapFrameX.Overlay
 	public class OverlayService : RTSSCSharpWrapper, IOverlayService
 	{
 		private readonly IStatisticProvider _statisticProvider;
+		private readonly IAppConfiguration _appConfiguration;
 
 		private IDisposable _disposableHeartBeat;
 		private IDisposable _disposableCaptureTimer;
@@ -34,18 +36,22 @@ namespace CapFrameX.Overlay
 
 		public string ThirdMetric { get; set; }
 
-		public OverlayService(IStatisticProvider statisticProvider) : base()
+		public OverlayService(IStatisticProvider statisticProvider, IAppConfiguration appConfiguration) 
+			: base()
 		{
 			_statisticProvider = statisticProvider;
+			_appConfiguration = appConfiguration;
 
+			// ToDo: get from config
 			// default 500 milliseconds
 			_refreshPeriod = 500;
-			_numberOfRuns = 3;
-			SecondMetric = "P1";
-			ThirdMetric = "P0dot2";
+			_numberOfRuns = _appConfiguration.SelectedHistoryRuns;
+			SecondMetric = _appConfiguration.SecondMetricOverlay;
+			ThirdMetric = _appConfiguration.ThirdMetricOverlay;
 			IsOverlayActiveStream = new Subject<bool>();
 
 			_runHistory = Enumerable.Repeat("N/A", _numberOfRuns).ToList();
+			SetRunHistory(_runHistory.ToArray());
 		}
 
 		public void ShowOverlay()
@@ -94,8 +100,8 @@ namespace CapFrameX.Overlay
 
 		public void ResetHistory()
 		{
-			_runHistory.Clear();
-			SetRunHistory(null);
+			_runHistory = Enumerable.Repeat("N/A", _numberOfRuns).ToList();
+			SetRunHistory(_runHistory.ToArray());
 		}
 
 		public void AddRunToHistory(List<string> captureData)
@@ -108,15 +114,18 @@ namespace CapFrameX.Overlay
 			string secondMetricString = 
 				SecondMetric.ConvertToEnum<EMetric>() != EMetric.None ? 
 				$"{SecondMetric.ConvertToEnum<EMetric>().GetShortDescription()}=" +
-				$"{secondMetricValue.ToString(CultureInfo.InvariantCulture)} FPS | " : string.Empty;
+				$"{secondMetricValue.ToString(string.Format("F{0}", _appConfiguration.FpsValuesRoundingDigits), CultureInfo.InvariantCulture)} " +
+				$"FPS | " : string.Empty;
 
 			string thirdMetricString =
 				ThirdMetric.ConvertToEnum<EMetric>() != EMetric.None ?
 				$"{ThirdMetric.ConvertToEnum<EMetric>().GetShortDescription()}=" +
-				$"{thrirdMetricValue.ToString(CultureInfo.InvariantCulture)} FPS | " : string.Empty;
+				$"{thrirdMetricValue.ToString(string.Format("F{0}", _appConfiguration.FpsValuesRoundingDigits), CultureInfo.InvariantCulture)} " +
+				$"FPS | " : string.Empty;
 
-			var currentList = new List<string>() { $"Avg={average.ToString(CultureInfo.InvariantCulture)} FPS | " + secondMetricString + thirdMetricString };
-			currentList.Concat(_runHistory);
+			var currentList = new List<string>() { $"Avg={average.ToString(string.Format("F{0}", _appConfiguration.FpsValuesRoundingDigits), CultureInfo.InvariantCulture)} " +
+				$"FPS | " + secondMetricString + thirdMetricString };
+			_runHistory = currentList.Concat(_runHistory).ToList();
 
 			if (_runHistory.Count > _numberOfRuns)
 				_runHistory.RemoveAt(_runHistory.Count - 1);
@@ -209,8 +218,8 @@ namespace CapFrameX.Overlay
 		public void UpdateNumberOfRuns(int numberOfRuns)
 		{
 			_numberOfRuns = numberOfRuns;
-			// ToDo: what do to with current runs?
 			_runHistory = Enumerable.Repeat("N/A", _numberOfRuns).ToList();
+			SetRunHistory(_runHistory.ToArray());
 		}
 	}
 }

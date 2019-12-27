@@ -43,7 +43,10 @@
 		</Grid.ColumnDefinitions>
 		<DockPanel Grid.Row="1" Grid.Column="0" >
 			<!--DataGrid and Overlay hotkey-->
-			<DataGrid x:Name="OverlayItemDataGrid" Background="#F5F5F5" HorizontalAlignment="Center"
+			<TextBlock Margin="0 0 0 10" DockPanel.Dock="Top" HorizontalAlignment="Center" Text="Overlay items" FontSize="14"/>
+			<StackPanel DockPanel.Dock="Top" Orientation="Vertical" HorizontalAlignment="Center">
+				<DataGrid x:Name="OverlayItemDataGrid" Height="280" Width="300"
+					  Background="#F5F5F5"
 					  SelectedIndex="{Binding OverlayItemDataGridSelectedIndex}"
 					  Tag="{Binding ElementName=OverlayViewControl, Path=DataContext}" FontSize="11"
 					  ItemsSource="{Binding OverlayItemList}" SelectedItem="{Binding SelectedOverlayItem}" 
@@ -56,7 +59,9 @@
 					  dragdrop:DragDrop.DefaultDragAdornerOpacity="0.5"
 					  dragdrop:DragDrop.UseDefaultEffectDataTemplate="False">
 			</DataGrid>
-			<TextBox DockPanel.Dock="Bottom" HorizontalAlignment="Center"
+				<TextBlock HorizontalAlignment="Center" Text="Drag &amp; Drop to change order"/>
+			</StackPanel>
+			<TextBox Margin="0 20 0 -20" DockPanel.Dock="Bottom" HorizontalAlignment="Center"
                      Width="132" wpf:HintAssist.Hint="Overlay hotkey" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" FontSize="14"
 					 IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False" PreviewKeyDown="OverlayHotkeyTextBox_PreviewKeyDown"
 					 ToolTip="combinable with Ctrl/Shift/Alt">
@@ -71,7 +76,8 @@
 				</Binding>
 			</TextBox>
 		</DockPanel>
-		<Grid Grid.Row="1" Grid.Column="1">
+		<Border Grid.Row="1" Grid.Column="1" Margin="0 0 0 -20" Background="Transparent" BorderThickness=".2" BorderBrush="Black">
+		<Grid>
 			<Grid.RowDefinitions>
 				<RowDefinition Height="60"></RowDefinition>
 				<RowDefinition Height="140"></RowDefinition>
@@ -204,5 +210,6 @@
 				</CheckBox>
 			</Grid>
 		</Grid>
+	</Border>
 	</Grid>
 </UserControl>
