@@ -76,7 +76,7 @@
             </StackPanel>
 			<!--Run controls-->
             <StackPanel Grid.Row="1" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Center"
-                        Visibility="{Binding UseRunHistory, Converter={StaticResource TrueToVisibleConverter}}">
+                        IsEnabled="{Binding UseRunHistory}">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="1*"></RowDefinition>
@@ -86,10 +86,10 @@
                         <ColumnDefinition Width="1*"/>
                         <ColumnDefinition Width="1*"/>
                     </Grid.ColumnDefinitions>
-            <ComboBox Grid.Row="0" Grid.Column="0" materialDesign:HintAssist.Hint="Number of runs" VerticalAlignment="Bottom" Margin="0 0 20 0"
+                    <ComboBox Grid.Row="0" Grid.Column="0" materialDesign:HintAssist.Hint="Number of runs" VerticalAlignment="Bottom" Margin="0 0 20 0"
 					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Width="110"
-					  ItemsSource="{Binding Path=NumberOfRunsItemsSource}">
-                <ComboBox.ToolTip>
+					  ItemsSource="{Binding HistoryRunsItems}">
+                        <ComboBox.ToolTip>
                       <ToolTip StaysOpen="True" MaxWidth="275">
                       <TextBlock 
                        Text="The number of runs written into the history.
@@ -122,7 +122,7 @@
             <ComboBox  Grid.Row="1" Grid.Column="0" Width="110" Margin="30 0 50 5" materialDesign:HintAssist.Hint="Second metric"
 					  Visibility="{Binding IsBarChartTabActive, Converter={StaticResource TrueToVisibleConverter}}"
 					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="330" materialDesign:ComboBoxAssist.ClassicMode="True"
-					  ItemsSource="{Binding SecondMetricItems}" SelectedItem="{Binding SelectedSecondaryMetric}">
+					  ItemsSource="{Binding SecondMetricItems}" SelectedItem="{Binding SelectedSecondMetric}">
 				<ComboBox.ItemTemplate>
 					<DataTemplate>
 						<TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}"/>
@@ -144,7 +144,7 @@
             <!--Aggregation of run history toogle-->
             <StackPanel Grid.Row="2" Grid.ColumnSpan="2" HorizontalAlignment="Center" VerticalAlignment="Bottom">
 				<TextBlock Text="Aggregation of run history" Margin="5"/>
-                <ToggleButton IsChecked="{Binding UseAggregationRunHistory}" Style="{StaticResource MaterialDesignSwitchToggleButton}">
+                <ToggleButton IsChecked="{Binding UseAggregation}" Style="{StaticResource MaterialDesignSwitchToggleButton}" IsEnabled="{Binding UseRunHistory}">
                     <ToggleButton.ToolTip>
                         <ToolTip StaysOpen="True" MaxWidth="350">
                             <TextBlock 
@@ -156,10 +156,10 @@
                 </ToggleButton>
 			</StackPanel>
             <StackPanel Grid.Row="3" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Center"
-                        Visibility="{Binding UseAggregationRunHistory, Converter={StaticResource TrueToVisibleConverter}}">
-			<ComboBox materialDesign:HintAssist.Hint="Runs to aggregate"
+                        IsEnabled="{Binding UseAggregation}">
+                <ComboBox materialDesign:HintAssist.Hint="Runs to aggregate"
 					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Width="120" Margin="0 0 50 0"
-					  ItemsSource="{Binding Path=NumberOfAggregationRunsItemsSource}">
+					  ItemsSource="{Binding AggregationRunsItems}">
                     <ComboBox.ToolTip>
                         <ToolTip StaysOpen="True" MaxWidth="275">
                             <TextBlock 

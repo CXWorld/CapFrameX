@@ -27,7 +27,6 @@ namespace CapFrameX.Overlay
 		/// </summary>
 		private int _refreshPeriod;
 		private int _numberOfRuns;
-		private int _numberOfRunsToAggregate;
 
 		public Subject<bool> IsOverlayActiveStream { get; }
 
@@ -42,10 +41,11 @@ namespace CapFrameX.Overlay
 			// default 500 milliseconds
 			_refreshPeriod = 500;
 			_numberOfRuns = 3;
-			_numberOfRunsToAggregate = 3;
 			SecondMetric = "P1";
 			ThirdMetric = "P0dot2";
 			IsOverlayActiveStream = new Subject<bool>();
+
+			_runHistory = Enumerable.Repeat("N/A", _numberOfRuns).ToList();
 		}
 
 		public void ShowOverlay()
@@ -115,10 +115,11 @@ namespace CapFrameX.Overlay
 				$"{ThirdMetric.ConvertToEnum<EMetric>().GetShortDescription()}=" +
 				$"{thrirdMetricValue.ToString(CultureInfo.InvariantCulture)} FPS | " : string.Empty;
 
-			_runHistory.Add($"Avg={average.ToString(CultureInfo.InvariantCulture)} FPS | " + secondMetricString + thirdMetricString);
+			var currentList = new List<string>() { $"Avg={average.ToString(CultureInfo.InvariantCulture)} FPS | " + secondMetricString + thirdMetricString };
+			currentList.Concat(_runHistory);
 
 			if (_runHistory.Count > _numberOfRuns)
-				_runHistory.RemoveAt(0);
+				_runHistory.RemoveAt(_runHistory.Count - 1);
 
 			SetRunHistory(_runHistory.ToArray());
 		}
@@ -207,12 +208,9 @@ namespace CapFrameX.Overlay
 
 		public void UpdateNumberOfRuns(int numberOfRuns)
 		{
-			throw new NotImplementedException();
-		}
-
-		public void UpdateNumberOfRunsToAggregate(int numberOfRunsToAggregate)
-		{
-			throw new NotImplementedException();
+			_numberOfRuns = numberOfRuns;
+			// ToDo: what do to with current runs?
+			_runHistory = Enumerable.Repeat("N/A", _numberOfRuns).ToList();
 		}
 	}
 }

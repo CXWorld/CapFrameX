@@ -7,9 +7,9 @@ namespace CapFrameX.Contracts.Overlay
 	{
 		Subject<bool> IsOverlayActiveStream { get; }
 
-		string SecondMetric { get; }
+		string SecondMetric { get; set; }
 
-		string ThirdMetric { get; }
+		string ThirdMetric { get; set; }
 
 		void ShowOverlay();
 
@@ -18,8 +18,6 @@ namespace CapFrameX.Contracts.Overlay
 		void UpdateRefreshRate(int milliSeconds);
 
 		void UpdateNumberOfRuns(int numberOfRuns);
-
-		void UpdateNumberOfRunsToAggregate(int numberOfRunsToAggregate);
 
 		void SetCaptureTimerValue(int t);
 
