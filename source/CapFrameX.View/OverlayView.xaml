@@ -6,6 +6,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:CapFrameX.View"
 			 xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+			 xmlns:dragdrop="urn:gong-wpf-dragdrop"
 			 xmlns:mvvm="clr-namespace:CapFrameX.MVVM.Converter;assembly=CapFrameX.MVVM"
 			 xmlns:validation ="clr-namespace:CapFrameX.MVVM.Validation;assembly=CapFrameX.MVVM"
 			 xmlns:wpf="clr-namespace:MaterialDesignThemes.Wpf;assembly=MaterialDesignThemes.Wpf"
@@ -42,8 +43,19 @@
 		</Grid.ColumnDefinitions>
 		<DockPanel Grid.Row="1" Grid.Column="0" >
 			<!--DataGrid and Overlay hotkey-->
-			<DataGrid>
-			< DataGrid>
+			<DataGrid x:Name="OverlayItemDataGrid" Background="#F5F5F5" HorizontalAlignment="Center"
+					  SelectedIndex="{Binding OverlayItemDataGridSelectedIndex}"
+					  Tag="{Binding ElementName=OverlayViewControl, Path=DataContext}" FontSize="11"
+					  ItemsSource="{Binding OverlayItemList}" SelectedItem="{Binding SelectedOverlayItem}" 
+					  CanUserSortColumns="True" CanUserAddRows="False" AutoGenerateColumns="False"
+					  materialDesign:DataGridAssist.CellPadding="13 8 8 8" materialDesign:DataGridAssist.ColumnHeaderPadding="8" IsSynchronizedWithCurrentItem="False"
+					  ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.CanContentScroll="True"
+					  dragdrop:DragDrop.IsDragSource="True"
+					  dragdrop:DragDrop.IsDropTarget="True"
+					  dragdrop:DragDrop.UseDefaultDragAdorner="True"
+					  dragdrop:DragDrop.DefaultDragAdornerOpacity="0.5"
+					  dragdrop:DragDrop.UseDefaultEffectDataTemplate="False">
+			</DataGrid>
 			<TextBox DockPanel.Dock="Bottom" HorizontalAlignment="Center"
                      Width="132" wpf:HintAssist.Hint="Overlay hotkey" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" FontSize="14"
 					 IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False" PreviewKeyDown="OverlayHotkeyTextBox_PreviewKeyDown"
@@ -77,7 +89,7 @@
 			</StackPanel>
 			<!--Run controls-->
 			<Grid Grid.Row="1" Grid.ColumnSpan="2" HorizontalAlignment="Center"
-                  IsEnabled="{Binding UseRunHistory, Converter={StaticResource TrueToVisibleConverter}}">
+                  IsEnabled="{Binding UseRunHistory}">
 				<Grid.RowDefinitions>
 					<RowDefinition Height="1*"></RowDefinition>
 					<RowDefinition Height="1*"></RowDefinition>
@@ -143,7 +155,7 @@
 			<!--Aggregation of run history toogle-->
 			<StackPanel Grid.Row="2" Grid.ColumnSpan="2" HorizontalAlignment="Center" VerticalAlignment="Bottom">
 				<TextBlock Text="Aggregation of run history" Margin="5"/>
-				<ToggleButton IsChecked="{Binding UseAggregationRunHistory}" Style="{StaticResource MaterialDesignSwitchToggleButton}">
+				<ToggleButton IsChecked="{Binding UseAggregation}" Style="{StaticResource MaterialDesignSwitchToggleButton}">
 					<ToggleButton.ToolTip>
 						<ToolTip StaysOpen="True" MaxWidth="350">
 							<TextBlock 
@@ -155,7 +167,7 @@
 				</ToggleButton>
 			</StackPanel>
 			<Grid Grid.Row="3" Grid.ColumnSpan="2" HorizontalAlignment="Center"
-                  IsEnabled="{Binding UseAggregationRunHistory, Converter={StaticResource TrueToVisibleConverter}}">
+                  IsEnabled="{Binding UseAggregation}">
 				<Grid.ColumnDefinitions>
 					<ColumnDefinition Width="225"/>
 					<ColumnDefinition Width="225"/>

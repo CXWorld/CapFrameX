@@ -81,5 +81,11 @@
 		string ResetHistoryHotkey { get; set; }
 
 		bool UseRunHistory { get; set; }
+
+		bool UseAggregation { get; set; }
+
+		int SelectedAggregationRuns { get; set; }
+
+		int SelectedHistoryRuns { get; set; }
 	}
 }

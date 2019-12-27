@@ -168,6 +168,17 @@ namespace CapFrameX.Configuration
 			set { Settings.ThirdMetricOverlay = value; Settings.Save(); }
 		}
 
+		public int SelectedHistoryRuns
+		{
+			get { return Settings.SelectedHistoryRuns; }
+			set { Settings.SelectedHistoryRuns = value; Settings.Save(); }
+		}
+		public int SelectedAggregationRuns
+		{
+			get { return Settings.SelectedAggregationRuns; }
+			set { Settings.SelectedAggregationRuns = value; Settings.Save(); }
+		}
+
 		public string ComparisonContext
 		{
 			get { return Settings.ComparisonContext; }
@@ -244,6 +255,11 @@ namespace CapFrameX.Configuration
 		{
 			get { return Settings.UseRunHistory; }
 			set { Settings.UseRunHistory = value; Settings.Save(); }
+		}
+		public bool UseAggregation
+		{
+			get { return Settings.UseAggregation; }
+			set { Settings.UseAggregation = value; Settings.Save(); }
 		}
 	}
 }

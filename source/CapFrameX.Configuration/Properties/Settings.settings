@@ -117,13 +117,22 @@
       <Value Profile="(Default)">Alt+R</Value>
     </Setting>
     <Setting Name="UseRunHistory" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">True</Value>
+      <Value Profile="(Default)">False</Value>
     </Setting>
     <Setting Name="SecondMetricOverlay" Type="System.String" Scope="User">
       <Value Profile="(Default)">P1</Value>
     </Setting>
     <Setting Name="ThirdMetricOverlay" Type="System.String" Scope="User">
       <Value Profile="(Default)">P0dot2</Value>
+    </Setting>
+    <Setting Name="UseAggregation" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="SelectedHistoryRuns" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">3</Value>
+    </Setting>
+    <Setting Name="SelectedAggregationRuns" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">3</Value>
     </Setting>
   </Settings>
 </SettingsFile>
