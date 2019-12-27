@@ -44,7 +44,7 @@ namespace CapFrameX.Overlay
 
 			// ToDo: get from config
 			// default 500 milliseconds
-			_refreshPeriod = 500;
+			_refreshPeriod = _appConfiguration.OSDRefreshPeriod;
 			_numberOfRuns = _appConfiguration.SelectedHistoryRuns;
 			SecondMetric = _appConfiguration.SecondMetricOverlay;
 			ThirdMetric = _appConfiguration.ThirdMetricOverlay;
@@ -52,7 +52,7 @@ namespace CapFrameX.Overlay
 
 			_runHistory = Enumerable.Repeat("N/A", _numberOfRuns).ToList();
 			SetRunHistory(_runHistory.ToArray());
-		}
+		 }
 
 		public void ShowOverlay()
 		{

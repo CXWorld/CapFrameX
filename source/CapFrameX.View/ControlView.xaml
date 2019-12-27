@@ -50,7 +50,7 @@
 					  materialDesign:DataGridAssist.CellPadding="13 8 8 8" materialDesign:DataGridAssist.ColumnHeaderPadding="8" IsSynchronizedWithCurrentItem="False"
 					  ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.CanContentScroll="True"
 					  dragdrop:DragDrop.IsDragSource="True"
-					  dragdrop:DragDrop.IsDropTarget="True"
+					  dragdrop:DragDrop.IsDropTarget="False"
 					  dragdrop:DragDrop.UseDefaultDragAdorner="True"
 					  dragdrop:DragDrop.DefaultDragAdornerOpacity="0.5"
 					  dragdrop:DragDrop.UseDefaultEffectDataTemplate="False">

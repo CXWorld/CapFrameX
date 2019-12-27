@@ -178,6 +178,11 @@ namespace CapFrameX.Configuration
 			get { return Settings.SelectedAggregationRuns; }
 			set { Settings.SelectedAggregationRuns = value; Settings.Save(); }
 		}
+		public int OSDRefreshPeriod
+		{
+			get { return Settings.OSDRefreshPeriod; }
+			set { Settings.OSDRefreshPeriod = value; Settings.Save(); }
+		}
 
 		public string ComparisonContext
 		{
@@ -260,6 +265,11 @@ namespace CapFrameX.Configuration
 		{
 			get { return Settings.UseAggregation; }
 			set { Settings.UseAggregation = value; Settings.Save(); }
+		}
+		public bool KeepRecordFiles
+		{
+			get { return Settings.KeepRecordFiles; }
+			set { Settings.KeepRecordFiles = value; Settings.Save(); }
 		}
 	}
 }

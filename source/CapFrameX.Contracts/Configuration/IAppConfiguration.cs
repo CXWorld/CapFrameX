@@ -87,5 +87,7 @@
 		int SelectedAggregationRuns { get; set; }
 
 		int SelectedHistoryRuns { get; set; }
+		int OSDRefreshPeriod { get; set; }
+		bool KeepRecordFiles { get; set; }
 	}
 }

@@ -131,6 +131,24 @@ namespace CapFrameX.ViewModel
 				RaisePropertyChanged();
 			}
 		}
+		public int OSDRefreshPeriod
+		{
+			get
+			{
+				return _appConfiguration
+				  .OSDRefreshPeriod;
+			}
+			set
+			{
+				_appConfiguration.OSDRefreshPeriod =
+					value;
+				if (OSDRefreshPeriod < 200)
+					OSDRefreshPeriod = 200;
+				if (OSDRefreshPeriod > 2000)
+					OSDRefreshPeriod = 2000;
+				RaisePropertyChanged();
+			}
+		}
 
 		public bool UseRunHistory
 		{
@@ -161,6 +179,21 @@ namespace CapFrameX.ViewModel
 			set
 			{
 				_appConfiguration.UseAggregation =
+					value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public bool KeepRecordFiles
+		{
+			get
+			{
+				return _appConfiguration
+				  .KeepRecordFiles;
+			}
+			set
+			{
+				_appConfiguration.KeepRecordFiles =
 					value;
 				RaisePropertyChanged();
 			}

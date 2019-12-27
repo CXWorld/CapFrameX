@@ -550,5 +550,29 @@ namespace CapFrameX.Configuration.Properties {
                 this["SelectedAggregationRuns"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("500")]
+        public int OSDRefreshPeriod {
+            get {
+                return ((int)(this["OSDRefreshPeriod"]));
+            }
+            set {
+                this["OSDRefreshPeriod"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool KeepRecordFiles {
+            get {
+                return ((bool)(this["KeepRecordFiles"]));
+            }
+            set {
+                this["KeepRecordFiles"] = value;
+            }
+        }
     }
 }
