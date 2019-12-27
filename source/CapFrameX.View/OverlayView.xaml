@@ -43,7 +43,7 @@
 		<DockPanel Grid.Row="1" Grid.Column="0" >
 			<!--DataGrid and Overlay hotkey-->
 			<DataGrid>
-			</DataGrid>
+			< DataGrid>
 			<TextBox DockPanel.Dock="Bottom" HorizontalAlignment="Center"
                      Width="132" wpf:HintAssist.Hint="Overlay hotkey" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" FontSize="14"
 					 IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False" PreviewKeyDown="OverlayHotkeyTextBox_PreviewKeyDown"
@@ -122,7 +122,7 @@
 				<ComboBox  Grid.Row="1" Grid.Column="0" Width="120" materialDesign:HintAssist.Hint="Second metric"
 					  Visibility="{Binding IsBarChartTabActive, Converter={StaticResource TrueToVisibleConverter}}"
 					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="330" materialDesign:ComboBoxAssist.ClassicMode="True"
-					  ItemsSource="{Binding SecondMetricItems}" SelectedItem="{Binding SelectedSecondaryMetric}">
+					  ItemsSource="{Binding SecondMetricItems}" SelectedItem="{Binding SelectedSecondMetric}">
 					<ComboBox.ItemTemplate>
 						<DataTemplate>
 							<TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}"/>
