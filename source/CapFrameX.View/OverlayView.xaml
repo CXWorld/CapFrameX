@@ -89,11 +89,19 @@
             <ComboBox Grid.Row="0" Grid.Column="0" materialDesign:HintAssist.Hint="Number of runs" VerticalAlignment="Bottom" Margin="0 0 20 0"
 					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Width="110"
 					  ItemsSource="{Binding Path=NumberOfRunsItemsSource}">
-				<ComboBox.Text>
-					<Binding Path="SelectedNumberOfRuns"
+                <ComboBox.ToolTip>
+                      <ToolTip StaysOpen="True" MaxWidth="275">
+                      <TextBlock 
+                       Text="The number of runs written into the history.
+							Any additional run will start a new history." 
+                       TextWrapping="Wrap"/>
+                      </ToolTip>
+                </ComboBox.ToolTip>
+                <ComboBox.Text>
+						<Binding Path="SelectedNumberOfRuns"
 							Mode="TwoWay"
 							UpdateSourceTrigger="PropertyChanged">
-					</Binding>
+						</Binding>
 				</ComboBox.Text>
 			</ComboBox>
 			<!--Reset run history hotkey-->
@@ -136,22 +144,46 @@
             <!--Aggregation of run history toogle-->
             <StackPanel Grid.Row="2" Grid.ColumnSpan="2" HorizontalAlignment="Center" VerticalAlignment="Bottom">
 				<TextBlock Text="Aggregation of run history" Margin="5"/>
-				<ToggleButton IsChecked="{Binding UseAggregationRunHistory}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                <ToggleButton IsChecked="{Binding UseAggregationRunHistory}" Style="{StaticResource MaterialDesignSwitchToggleButton}">
+                    <ToggleButton.ToolTip>
+                        <ToolTip StaysOpen="True" MaxWidth="350">
+                            <TextBlock 
+                             Text="Once the run history is full, combines the frametime data of a set number of nuns to a single record file.
+                                This is NOT the same as calculating averave parameters from multiple single record files. It simulates running the same scene multiple times in one single benchmark. Performance parameters are calculated using all of the frametime data" 
+                             TextWrapping="Wrap"/>
+                        </ToolTip>
+                    </ToggleButton.ToolTip>
+                </ToggleButton>
 			</StackPanel>
             <StackPanel Grid.Row="3" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Center"
                         Visibility="{Binding UseAggregationRunHistory, Converter={StaticResource TrueToVisibleConverter}}">
 			<ComboBox materialDesign:HintAssist.Hint="Runs to aggregate"
 					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Width="120" Margin="0 0 50 0"
 					  ItemsSource="{Binding Path=NumberOfAggregationRunsItemsSource}">
-				<ComboBox.Text>
-					<Binding Path="SelectedNumberOfAggregationRuns"
+                    <ComboBox.ToolTip>
+                        <ToolTip StaysOpen="True" MaxWidth="275">
+                            <TextBlock 
+                             Text="Runs used for aggregation.  
+                                If the number is smaller than the number of runs in the history, the worst runs will be ignored." 
+                             TextWrapping="Wrap"/>
+                        </ToolTip>
+                    </ComboBox.ToolTip>
+                    <ComboBox.Text>
+                        <Binding Path="SelectedNumberOfAggregationRuns"
 							Mode="TwoWay"
 							UpdateSourceTrigger="PropertyChanged">
-					</Binding>
+                        </Binding>
 				</ComboBox.Text>
 			</ComboBox>
 			<CheckBox Width="150" IsChecked="{Binding KeepRecordingFiles}">
-				<TextBlock Padding="10 0 0 0" TextWrapping="WrapWithOverflow">
+                    <CheckBox.ToolTip>
+                        <ToolTip StaysOpen="True" MaxWidth="275">
+                            <TextBlock 
+                             Text="If unchecked, all record files within the run history will be deleted after aggregation and only the aggregated file will be kept." 
+                             TextWrapping="Wrap"/>
+                        </ToolTip>
+                    </CheckBox.ToolTip>
+                    <TextBlock Padding="10 0 0 0" TextWrapping="WrapWithOverflow">
   					Keep all recording files after aggregation
 				</TextBlock>
 			</CheckBox>
