@@ -103,7 +103,15 @@
                 <!--Global history toogle-->
                 <StackPanel Grid.Row="0" Grid.ColumnSpan="2" HorizontalAlignment="Center" VerticalAlignment="Bottom" Orientation="Vertical">
                     <TextBlock Text="Run history" Margin="5"/>
-                    <ToggleButton IsChecked="{Binding UseRunHistory}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                    <ToggleButton IsChecked="{Binding UseRunHistory}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTipService.ShowDuration="25000">
+                    <ToggleButton.ToolTip>
+                        <ToolTip MaxWidth="250">
+                            <TextBlock 
+                             Text="Saves a set number of runs into a history which can be displayed in the overlay"                               
+                             TextWrapping="Wrap"/>
+                        </ToolTip>
+                    </ToggleButton.ToolTip>
+                    </ToggleButton>    
                 </StackPanel>
                 <!--Run controls-->
                 <Grid Grid.Row="1" Grid.ColumnSpan="2" HorizontalAlignment="Center"
@@ -118,12 +126,12 @@
                     </Grid.ColumnDefinitions>
                     <ComboBox Grid.Row="0" Grid.Column="0" materialDesign:HintAssist.Hint="Number of runs" VerticalAlignment="Bottom"
 					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Width="120"
-					  ItemsSource="{Binding Path=NumberOfRunsItemsSource}">
+					  ItemsSource="{Binding Path=NumberOfRunsItemsSource}" ToolTipService.ShowDuration="25000">
                         <ComboBox.ToolTip>
                             <ToolTip StaysOpen="True" MaxWidth="275">
                                 <TextBlock 
                        Text="The number of runs written into the history.
-							Any additional run will start a new history." 
+							Any additional run will replace the oldest one." 
                        TextWrapping="Wrap"/>
                             </ToolTip>
                         </ComboBox.ToolTip>
@@ -173,12 +181,14 @@
                 <!--Aggregation of run history toogle-->
                 <StackPanel Grid.Row="2" Grid.ColumnSpan="2" HorizontalAlignment="Center" VerticalAlignment="Bottom">
                     <TextBlock Text="Aggregation of run history" Margin="5"/>
-                    <ToggleButton IsChecked="{Binding UseAggregation}" Style="{StaticResource MaterialDesignSwitchToggleButton}" IsEnabled="{Binding UseRunHistory}">
+                    <ToggleButton IsChecked="{Binding UseAggregation}" Style="{StaticResource MaterialDesignSwitchToggleButton}" IsEnabled="{Binding UseRunHistory}" 
+                                  ToolTipService.ShowDuration="25000">
                         <ToggleButton.ToolTip>
-                            <ToolTip StaysOpen="True" MaxWidth="350">
+                            <ToolTip MaxWidth="350">
                                 <TextBlock 
-                             Text="Once the run history is full, combines the frametime data of a set number of nuns to a single record file.
-                                This is NOT the same as calculating averave parameters from multiple single record files. It simulates running the same scene multiple times in one single benchmark. Performance parameters are calculated using all of the frametime data" 
+                             Text="Once the run history is full, combines the frametime data of a set number of runs to a single record file.                                   
+                                This is NOT the same as calculating averave parameters from multiple single record files. It simulates running the same scene multiple times in one single benchmark. 
+                                Performance parameters are calculated using all of the frametime data." 
                              TextWrapping="Wrap"/>
                             </ToolTip>
                         </ToggleButton.ToolTip>
@@ -192,7 +202,7 @@
                     </Grid.ColumnDefinitions>
                     <ComboBox Grid.Column="0" VerticalAlignment="Bottom" materialDesign:HintAssist.Hint="Runs to aggregate"
 					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Width="120"
-					  ItemsSource="{Binding Path=NumberOfAggregationRunsItemsSource}">
+					  ItemsSource="{Binding Path=NumberOfAggregationRunsItemsSource}" ToolTipService.ShowDuration="25000">
                         <ComboBox.ToolTip>
                             <ToolTip StaysOpen="True" MaxWidth="275">
                                 <TextBlock 
@@ -208,7 +218,8 @@
                             </Binding>
                         </ComboBox.Text>
                     </ComboBox>
-                    <CheckBox Margin="15 0 0 0" Grid.Column="1" VerticalAlignment="Bottom" Width="150" IsChecked="{Binding KeepRecordFiles}">
+                    <CheckBox Margin="15 0 0 0" Grid.Column="1" VerticalAlignment="Bottom" Width="150" IsChecked="{Binding KeepRecordFiles}"
+                              ToolTipService.ShowDuration="25000">
                         <CheckBox.ToolTip>
                             <ToolTip StaysOpen="True" MaxWidth="275">
                                 <TextBlock 
