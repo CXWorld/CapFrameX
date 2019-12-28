@@ -42,8 +42,6 @@ namespace CapFrameX.Overlay
 			_statisticProvider = statisticProvider;
 			_appConfiguration = appConfiguration;
 
-			// ToDo: get from config
-			// default 500 milliseconds
 			_refreshPeriod = _appConfiguration.OSDRefreshPeriod;
 			_numberOfRuns = _appConfiguration.SelectedHistoryRuns;
 			SecondMetric = _appConfiguration.SecondMetricOverlay;

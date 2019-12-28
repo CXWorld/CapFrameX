@@ -280,6 +280,8 @@ namespace CapFrameX.ViewModel
 										   .Cast<EHardwareInfoSource>()
 										   .ToArray();
 
+		public	IAppConfiguration AppConfiguration => _appConfiguration;
+
 		public IShell Shell => _shell;
 
 		public ICommand SelectObservedFolderCommand { get; }

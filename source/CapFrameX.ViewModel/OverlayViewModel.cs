@@ -143,11 +143,12 @@ namespace CapFrameX.ViewModel
 				 _appConfiguration.OSDRefreshPeriod =
 					value;
 
-				_overlayService.UpdateRefreshRate(value);
 				if (OSDRefreshPeriod < 200)
 					OSDRefreshPeriod = 200;
 				if (OSDRefreshPeriod > 2000)
 					OSDRefreshPeriod = 2000;
+
+				_overlayService.UpdateRefreshRate(OSDRefreshPeriod);
 				RaisePropertyChanged();
 			}
 		}

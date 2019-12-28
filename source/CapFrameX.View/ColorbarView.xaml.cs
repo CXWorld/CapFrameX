@@ -51,7 +51,7 @@ namespace CapFrameX.View
 		/// <param name="e"></param>
 		private void TakeScreenShotButton_Click(object sender, RoutedEventArgs e)
 		{
-			string path = CapFrameXConfiguration.Instance.ScreenshotDirectory;
+			string path = (DataContext as ColorbarViewModel).AppConfiguration.ScreenshotDirectory;
 
 			try
 			{

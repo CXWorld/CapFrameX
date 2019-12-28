@@ -4,8 +4,6 @@ namespace CapFrameX.Configuration
 {
 	public class CapFrameXConfiguration : IAppConfiguration
 	{
-		public static IAppConfiguration Instance = new CapFrameXConfiguration();
-
 		private static Properties.Settings Settings => Properties.Settings.Default;
 
 		public int MovingAverageWindowSize
@@ -162,6 +160,7 @@ namespace CapFrameX.Configuration
 			get { return Settings.SecondMetricOverlay; }
 			set { Settings.SecondMetricOverlay = value; Settings.Save(); }
 		}
+
 		public string ThirdMetricOverlay
 		{
 			get { return Settings.ThirdMetricOverlay; }
@@ -173,11 +172,13 @@ namespace CapFrameX.Configuration
 			get { return Settings.SelectedHistoryRuns; }
 			set { Settings.SelectedHistoryRuns = value; Settings.Save(); }
 		}
+
 		public int SelectedAggregationRuns
 		{
 			get { return Settings.SelectedAggregationRuns; }
 			set { Settings.SelectedAggregationRuns = value; Settings.Save(); }
 		}
+
 		public int OSDRefreshPeriod
 		{
 			get { return Settings.OSDRefreshPeriod; }
@@ -261,11 +262,13 @@ namespace CapFrameX.Configuration
 			get { return Settings.UseRunHistory; }
 			set { Settings.UseRunHistory = value; Settings.Save(); }
 		}
+
 		public bool UseAggregation
 		{
 			get { return Settings.UseAggregation; }
 			set { Settings.UseAggregation = value; Settings.Save(); }
 		}
+
 		public bool KeepRecordFiles
 		{
 			get { return Settings.KeepRecordFiles; }
