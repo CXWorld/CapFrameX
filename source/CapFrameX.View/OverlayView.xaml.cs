@@ -135,22 +135,9 @@ namespace CapFrameX.View
 
 			Keyboard.ClearFocus();
 		}
-		private void OSDRefreshPeriodTextBox_MouseLeave(object sender, MouseEventArgs e)
+		private void OSDRefreshPeriodComboBox_MouseLeave(object sender, MouseEventArgs e)
 		{
-			var textBox = sender as TextBox;
-			if (textBox.Text == string.Empty)
-				textBox.Text = "500";
-
 			Keyboard.ClearFocus();
-		}
-		private void OSDRefreshPeriodTextBox_PreviewKeyDown(object sender, KeyEventArgs e)
-		{
-			var key = e.Key;
-
-			if (key == Key.Enter)
-			{
-				Keyboard.ClearFocus();
-			}
 		}
 	}
 }

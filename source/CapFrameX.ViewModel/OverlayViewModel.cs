@@ -83,7 +83,7 @@ namespace CapFrameX.ViewModel
 			{
 				return _appConfiguration
 				  .ThirdMetricOverlay
-				  .ConvertToEnum<EMetric>(); 
+				  .ConvertToEnum<EMetric>();
 			}
 			set
 			{
@@ -99,7 +99,7 @@ namespace CapFrameX.ViewModel
 			get
 			{
 				return _appConfiguration
-				  .SelectedHistoryRuns; 
+				  .SelectedHistoryRuns;
 			}
 			set
 			{
@@ -140,15 +140,9 @@ namespace CapFrameX.ViewModel
 			}
 			set
 			{
-				 _appConfiguration.OSDRefreshPeriod =
-					value;
-
-				if (OSDRefreshPeriod < 200)
-					OSDRefreshPeriod = 200;
-				if (OSDRefreshPeriod > 2000)
-					OSDRefreshPeriod = 2000;
-
-				_overlayService.UpdateRefreshRate(OSDRefreshPeriod);
+				_appConfiguration
+				   .OSDRefreshPeriod = value;
+				_overlayService.UpdateRefreshRate(value);
 				RaisePropertyChanged();
 			}
 		}
@@ -164,10 +158,12 @@ namespace CapFrameX.ViewModel
 			{
 				_appConfiguration.UseRunHistory =
 					value;
-				if(!value)
+
+				if (!value)
 				{
 					UseAggregation = false;
 				}
+
 				RaisePropertyChanged();
 			}
 		}
@@ -212,17 +208,18 @@ namespace CapFrameX.ViewModel
 											 .Cast<EMetric>()
 											 .Where(metric => metric != EMetric.Average)
 											 .ToArray();
+
 		public Array NumberOfRunsItemsSource => Enumerable.Range(2, 4).ToArray();
 
 		public Array NumberOfAggregationRunsItemsSource => Enumerable.Range(2, SelectedNumberOfRuns - 1).ToArray();
+
+		public Array RefreshPeriodItemsSource => new[] { 200, 300, 400, 500, 600, 700, 800, 900, 1000 };
 
 		public OverlayViewModel(IOverlayService overlayService, IAppConfiguration appConfiguration, IEventAggregator eventAggregator)
 		{
 			_overlayService = overlayService;
 			_appConfiguration = appConfiguration;
 			_eventAggregator = eventAggregator;
-
-			OverlayHotkeyString = _appConfiguration.OverlayHotKey.ToString();
 
 			if (IsOverlayActive)
 				_overlayService.ShowOverlay();
