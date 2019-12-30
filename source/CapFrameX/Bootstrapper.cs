@@ -42,7 +42,6 @@ namespace CapFrameX
 			base.ConfigureContainer();
 
 			// Vertical components
-
 			Container.Register<IEventAggregator, EventAggregator>(Reuse.Singleton, null, null, IfAlreadyRegistered.Replace, "EventAggregator");
 			Container.Register<IAppConfiguration, CapFrameXConfiguration>(Reuse.Singleton);
 
@@ -55,7 +54,8 @@ namespace CapFrameX
 			Container.Register<IFrametimeAnalyzer, FrametimeAnalyzer>(Reuse.Singleton);
 			Container.Register<ICaptureService, PresentMonCaptureService>(Reuse.Singleton);
 			Container.Register<IOverlayService, OverlayService>(Reuse.Singleton);
-			Container.Register<IRecordDataProvider, RecordDataProvider>(Reuse.Singleton);			
+			Container.Register<IOverlayEntryProvider, OverlayEntryProvider>(Reuse.Singleton);
+			Container.Register<IRecordDataProvider, RecordDataProvider>(Reuse.Singleton);
 		}
 
 		/// <summary>

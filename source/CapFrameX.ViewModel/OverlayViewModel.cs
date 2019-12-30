@@ -16,6 +16,7 @@ namespace CapFrameX.ViewModel
 	public class OverlayViewModel : BindableBase, INavigationAware
 	{
 		private readonly IOverlayService _overlayService;
+		private readonly IOverlayEntryProvider _overlayEntryProvider;
 		private readonly IAppConfiguration _appConfiguration;
 		private readonly IEventAggregator _eventAggregator;
 
@@ -215,9 +216,11 @@ namespace CapFrameX.ViewModel
 
 		public Array RefreshPeriodItemsSource => new[] { 200, 300, 400, 500, 600, 700, 800, 900, 1000 };
 
-		public OverlayViewModel(IOverlayService overlayService, IAppConfiguration appConfiguration, IEventAggregator eventAggregator)
+		public OverlayViewModel(IOverlayService overlayService, IOverlayEntryProvider overlayEntryProvider,
+			IAppConfiguration appConfiguration, IEventAggregator eventAggregator)
 		{
 			_overlayService = overlayService;
+			_overlayEntryProvider = overlayEntryProvider;
 			_appConfiguration = appConfiguration;
 			_eventAggregator = eventAggregator;
 

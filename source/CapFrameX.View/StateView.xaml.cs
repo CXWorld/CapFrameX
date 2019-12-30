@@ -20,13 +20,14 @@ namespace CapFrameX.View
 		{
 			InitializeComponent();
 
-            if (DesignerProperties.GetIsInDesignMode(this))
+			if (DesignerProperties.GetIsInDesignMode(this))
 			{
 				var appConfiguration = new CapFrameXConfiguration();
 				var statisticProvider = new FrametimeStatisticProvider(appConfiguration);
-				DataContext = new StateViewModel( new RecordDirectoryObserver(appConfiguration), 
-					new EventAggregator(), appConfiguration, new PresentMonCaptureService(), 
-					new OverlayService(statisticProvider, appConfiguration));
+				var overlayEntryProvider = new OverlayEntryProvider();
+				DataContext = new StateViewModel(new RecordDirectoryObserver(appConfiguration),
+					new EventAggregator(), appConfiguration, new PresentMonCaptureService(),
+					new OverlayService(statisticProvider, overlayEntryProvider, appConfiguration));
 			}
 		}
 

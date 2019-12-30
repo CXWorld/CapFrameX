@@ -159,6 +159,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="GroupedString.h" />
+    <ClInclude Include="OverlayEntry.h" />
     <ClInclude Include="RTSSCoreControl.h" />
     <ClInclude Include="RTSSCSharpWrapper.h" />
     <ClInclude Include="RTSSProfileInterface.h" />
@@ -169,6 +170,7 @@
     <ClCompile Include="CapFrameX.RTSSInterface.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="GroupedString.cpp" />
+    <ClCompile Include="OverlayEntry.cpp" />
     <ClCompile Include="RTSSCoreControl.cpp" />
     <ClCompile Include="RTSSCSharpWrapper.cpp" />
     <ClCompile Include="RTSSProfileInterface.cpp" />

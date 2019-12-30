@@ -33,6 +33,9 @@
     <ClInclude Include="RTSSCoreControl.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
+    <ClInclude Include="OverlayEntry.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -54,6 +57,9 @@
       <Filter>Quelldateien</Filter>
     </ClCompile>
     <ClCompile Include="RTSSCoreControl.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="OverlayEntry.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
   </ItemGroup>

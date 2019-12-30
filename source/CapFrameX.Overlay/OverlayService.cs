@@ -18,10 +18,12 @@ namespace CapFrameX.Overlay
 	public class OverlayService : RTSSCSharpWrapper, IOverlayService
 	{
 		private readonly IStatisticProvider _statisticProvider;
+		private readonly IOverlayEntryProvider _overlayEntryProvider;
 		private readonly IAppConfiguration _appConfiguration;
 
 		private IDisposable _disposableHeartBeat;
 		private IDisposable _disposableCaptureTimer;
+		private bool _pauseRefreshHeartBeat;
 
 		private List<string> _runHistory = new List<string>();
 		/// <summary>
@@ -36,10 +38,12 @@ namespace CapFrameX.Overlay
 
 		public string ThirdMetric { get; set; }
 
-		public OverlayService(IStatisticProvider statisticProvider, IAppConfiguration appConfiguration) 
+		public OverlayService(IStatisticProvider statisticProvider, 
+			IOverlayEntryProvider overlayEntryProvider, IAppConfiguration appConfiguration) 
 			: base()
 		{
 			_statisticProvider = statisticProvider;
+			_overlayEntryProvider = overlayEntryProvider;
 			_appConfiguration = appConfiguration;
 
 			_refreshPeriod = _appConfiguration.OSDRefreshPeriod;
@@ -47,6 +51,8 @@ namespace CapFrameX.Overlay
 			SecondMetric = _appConfiguration.SecondMetricOverlay;
 			ThirdMetric = _appConfiguration.ThirdMetricOverlay;
 			IsOverlayActiveStream = new Subject<bool>();
+
+			SetOverlayEntries(overlayEntryProvider?.GetOverlayEntries());
 
 			_runHistory = Enumerable.Repeat("N/A", _numberOfRuns).ToList();
 			SetRunHistory(_runHistory.ToArray());
@@ -96,10 +102,36 @@ namespace CapFrameX.Overlay
 			_disposableCaptureTimer?.Dispose();
 		}
 
+		public void SetCaptureTimerValue(int t)
+		{
+			_pauseRefreshHeartBeat = true;
+			var captureTimer = _overlayEntryProvider.GetOverlayEntry("CaptureTimer");
+			captureTimer.Value = t;
+			_pauseRefreshHeartBeat = false;
+		}
+
+		public void SetCaptureServiceStatus(string status)
+		{
+			_pauseRefreshHeartBeat = true;
+			var captureStatus = _overlayEntryProvider.GetOverlayEntry("CaptureServiceStatus");
+			captureStatus.Value = status;
+			_pauseRefreshHeartBeat = false;
+		}
+
+		public void SetShowRunHistory(bool showHistory)
+		{
+			_pauseRefreshHeartBeat = true;
+			var history = _overlayEntryProvider.GetOverlayEntry("RunHistory");
+			history.ShowOnOverlay = showHistory;
+			_pauseRefreshHeartBeat = false;
+		}
+
 		public void ResetHistory()
 		{
 			_runHistory = Enumerable.Repeat("N/A", _numberOfRuns).ToList();
+			_pauseRefreshHeartBeat = true;
 			SetRunHistory(_runHistory.ToArray());
+			_pauseRefreshHeartBeat = false;
 		}
 
 		public void AddRunToHistory(List<string> captureData)
@@ -108,32 +140,47 @@ namespace CapFrameX.Overlay
 			var average = _statisticProvider.GetFpsMetricValue(frametimes, EMetric.Average);
 			var secondMetricValue = _statisticProvider.GetFpsMetricValue(frametimes, SecondMetric.ConvertToEnum<EMetric>());
 			var thrirdMetricValue = _statisticProvider.GetFpsMetricValue(frametimes, ThirdMetric.ConvertToEnum<EMetric>());
+			string numberFormat = string.Format("F{0}", _appConfiguration.FpsValuesRoundingDigits);
+			var cultureInfo = CultureInfo.InvariantCulture;
 
 			string secondMetricString = 
 				SecondMetric.ConvertToEnum<EMetric>() != EMetric.None ? 
 				$"{SecondMetric.ConvertToEnum<EMetric>().GetShortDescription()}=" +
-				$"{secondMetricValue.ToString(string.Format("F{0}", _appConfiguration.FpsValuesRoundingDigits), CultureInfo.InvariantCulture)} " +
+				$"{secondMetricValue.ToString(numberFormat, cultureInfo)} " +
 				$"FPS | " : string.Empty;
 
 			string thirdMetricString =
 				ThirdMetric.ConvertToEnum<EMetric>() != EMetric.None ?
 				$"{ThirdMetric.ConvertToEnum<EMetric>().GetShortDescription()}=" +
-				$"{thrirdMetricValue.ToString(string.Format("F{0}", _appConfiguration.FpsValuesRoundingDigits), CultureInfo.InvariantCulture)} " +
+				$"{thrirdMetricValue.ToString(numberFormat, cultureInfo)} " +
 				$"FPS | " : string.Empty;
 
-			var currentList = new List<string>() { $"Avg={average.ToString(string.Format("F{0}", _appConfiguration.FpsValuesRoundingDigits), CultureInfo.InvariantCulture)} " +
-				$"FPS | " + secondMetricString + thirdMetricString };
+			var currentList = new List<string>() 
+			{ 
+				$"Avg={average.ToString(numberFormat, cultureInfo)} " +
+				$"FPS | " + secondMetricString + thirdMetricString 
+			};
 			_runHistory = currentList.Concat(_runHistory).ToList();
 
 			if (_runHistory.Count > _numberOfRuns)
 				_runHistory.RemoveAt(_runHistory.Count - 1);
 
+			_pauseRefreshHeartBeat = true;
 			SetRunHistory(_runHistory.ToArray());
+			_pauseRefreshHeartBeat = false;
 		}
 
 		private void OnCountdownFinished()
 		{
 			SetShowCaptureTimer(false);
+		}
+
+		private void SetShowCaptureTimer(bool show)
+		{
+			_pauseRefreshHeartBeat = true;
+			var captureTimer = _overlayEntryProvider.GetOverlayEntry("CaptureTimer");
+			captureTimer.ShowOnOverlay = show;
+			_pauseRefreshHeartBeat = false;
 		}
 
 		private void CheckRTSSRunningAndRefresh()
@@ -203,6 +250,7 @@ namespace CapFrameX.Overlay
 		{
 			return Observable
 				.Timer(DateTimeOffset.UtcNow, TimeSpan.FromMilliseconds(_refreshPeriod))
+				.Where(x => !_pauseRefreshHeartBeat)
 				.Subscribe(x => CheckRTSSRunningAndRefresh());
 		}
 
@@ -215,9 +263,11 @@ namespace CapFrameX.Overlay
 
 		public void UpdateNumberOfRuns(int numberOfRuns)
 		{
+			_pauseRefreshHeartBeat = true;
 			_numberOfRuns = numberOfRuns;
 			_runHistory = Enumerable.Repeat("N/A", _numberOfRuns).ToList();
 			SetRunHistory(_runHistory.ToArray());
+			_pauseRefreshHeartBeat = false;
 		}
 	}
 }

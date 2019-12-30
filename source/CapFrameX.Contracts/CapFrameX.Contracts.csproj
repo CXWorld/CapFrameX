@@ -74,6 +74,8 @@
     <Compile Include="Data\IRecordDataProvider.cs" />
     <Compile Include="MVVM\IMouseEventHandler.cs" />
     <Compile Include="MVVM\IShell.cs" />
+    <Compile Include="Overlay\IOverlayEntry.cs" />
+    <Compile Include="Overlay\IOverlayEntryProvider.cs" />
     <Compile Include="PresentMonInterface\IRecordDirectoryObserver.cs" />
     <Compile Include="PresentMonInterface\ICaptureService.cs" />
     <Compile Include="PresentMonInterface\ICaptureServiceConfiguration.cs" />

@@ -6,6 +6,7 @@ using namespace System;
 using namespace System::Threading;
 using namespace System::Threading::Tasks;
 using namespace System::Collections::Generic;
+using namespace CapFrameX::Contracts::Overlay;
 
 public ref class RTSSCSharpWrapper
 {
@@ -31,26 +32,6 @@ public:
     _coreControl->ReleaseOSD();
   }
 
-  void SetShowCaptureTimer(bool showTimer)
-  {
-    _coreControl->ShowCaptureTimer = showTimer;
-  }
-
-  void SetCaptureTimerValue(Int32 captureTimerValue)
-  {
-    _coreControl->CaptureTimerValue = (UINT)captureTimerValue;
-  }
-
-  void SetCaptureServiceStatus(String^ status)
-  {
-    _coreControl->CaptureServiceStatus = status;
-  }
-
-  void SetShowRunHistory(bool showHistory)
-  {
-    _coreControl->ShowRunHistory = showHistory;
-  }
-
   void SetRunHistory(array<String^>^ runHistory)
   {
     _coreControl->RunHistory.clear();
@@ -69,6 +50,30 @@ public:
         String^ run = runHistory[i];
         _coreControl->RunHistory.push_back(run);
       }
+    }
+  }
+
+  void SetOverlayEntries(array<IOverlayEntry^>^ overlayEntries)
+  {
+    if (overlayEntries == nullptr || overlayEntries->Length == 0)
+      return;
+
+    _coreControl->OverlayEntries.clear();
+
+    for (size_t i = 0; i < overlayEntries->Length; i++)
+    {
+      IOverlayEntry^ managedEntry = overlayEntries[i];
+      OverlayEntry entry;
+
+      // mapping member
+      entry.Identifier = managedEntry->Identifier;
+      entry.ShowOnOverlay = managedEntry->ShowOnOverlay;
+      entry.GroupName = managedEntry->GroupName;
+      entry.Value = managedEntry->FormattedValue;
+      entry.ShowGraph = managedEntry->ShowGraph;
+      entry.Color = managedEntry->Color;
+
+      _coreControl->OverlayEntries.push_back(entry);
     }
   }
 

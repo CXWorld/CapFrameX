@@ -9,6 +9,8 @@
 #pragma once
 #endif // _MSC_VER > 1000
 /////////////////////////////////////////////////////////////////////////////
+#include "GroupedString.h"
+#include "OverlayEntry.h"
 #include "RTSSSharedMemory.h"
 #include "RTSSProfileInterface.h"
 #include <vector>
@@ -24,13 +26,10 @@ public:
 	RTSSCoreControl();	// standard constructor
 
 public:
-	void						ReleaseOSD();
-	void						Refresh();
-	BOOL						ShowCaptureTimer;
-	DWORD						CaptureTimerValue;
-	CString					CaptureServiceStatus;
-	BOOL						ShowRunHistory;
+	void												ReleaseOSD();
+	void												Refresh();
 	std::vector<CString>				RunHistory;
+	std::vector<OverlayEntry>		OverlayEntries;
 
 // Implementation
 protected:
@@ -41,6 +40,7 @@ protected:
 	BOOL						UpdateOSD(LPCSTR lpText);
 	void						IncProfileProperty(LPCSTR lpProfile, LPCSTR lpProfileProperty, LONG dwIncrement);
 	void						SetProfileProperty(LPCSTR lpProfile, LPCSTR lpProfileProperty, DWORD dwProperty);
+	void						AddOverlayEntry(CGroupedString* groupedString, OverlayEntry* entry, BOOL bFormatTagsSupported);
 
 	BOOL						m_bMultiLineOutput;
 	BOOL						m_bFormatTags;
@@ -49,7 +49,7 @@ protected:
 
 	UINT						m_nTimerID;
 
-	CString						m_strInstallPath;
+	CString					m_strInstallPath;
 
 	CRTSSProfileInterface		m_profileInterface;
 };

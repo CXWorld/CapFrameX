@@ -22,12 +22,10 @@ static char THIS_FILE[] = __FILE__;
 RTSSCoreControl::RTSSCoreControl()
 {
   m_strInstallPath = "";
-  CaptureServiceStatus = "Capture service is inactive";
 
   RunHistory.push_back("N/A");
   RunHistory.push_back("N/A");
   RunHistory.push_back("N/A");
-  ShowRunHistory = true;
 
   m_bMultiLineOutput = TRUE;
   m_bFormatTags = TRUE;
@@ -179,7 +177,7 @@ BOOL RTSSCoreControl::UpdateOSD(LPCSTR lpText)
             //allow primary OSD clients (i.e. EVGA Precision / MSI Afterburner) to use the first slot exclusively, so third party
             //applications start scanning the slots from the second one
           {
-            RTSS_SHARED_MEMORY::LPRTSS_SHARED_MEMORY_OSD_ENTRY pEntry = 
+            RTSS_SHARED_MEMORY::LPRTSS_SHARED_MEMORY_OSD_ENTRY pEntry =
               (RTSS_SHARED_MEMORY::LPRTSS_SHARED_MEMORY_OSD_ENTRY)((LPBYTE)pMem + pMem->dwOSDArrOffset + dwEntry * pMem->dwOSDEntrySize);
 
             if (dwPass)
@@ -351,7 +349,7 @@ void RTSSCoreControl::Refresh()
   //init max OSD text size, we'll use extended text slot for v2.7 and higher shared memory, 
   //it allows displaying 4096 symbols /instead of 256 for regular text slot
 
-  DWORD dwMaxTextSize = (dwSharedMemoryVersion >= 0x00020007) ? sizeof(RTSS_SHARED_MEMORY::RTSS_SHARED_MEMORY_OSD_ENTRY().szOSDEx) 
+  DWORD dwMaxTextSize = (dwSharedMemoryVersion >= 0x00020007) ? sizeof(RTSS_SHARED_MEMORY::RTSS_SHARED_MEMORY_OSD_ENTRY().szOSDEx)
     : sizeof(RTSS_SHARED_MEMORY::RTSS_SHARED_MEMORY_OSD_ENTRY().szOSD);
 
   CGroupedString groupedString(dwMaxTextSize - 1);
@@ -371,9 +369,8 @@ void RTSSCoreControl::Refresh()
       strOSD += "<P=0,0>";
     else
     {
-        groupedString.Add(" ", "", "\n", " ");
-        // Add CX label
-        groupedString.Add("CX OSD", "", "\n", " ");
+      // Add CX label
+      groupedString.Add("CX OSD", "", "\n", " ");
     }
     //move to position 0,0 (in zoomed pixel units)
 
@@ -405,36 +402,12 @@ void RTSSCoreControl::Refresh()
   else
     strOSD = "";
 
-  // Add CX capture service status
-  groupedString.Add(CaptureServiceStatus, "", "\n", " ");
-
-  if (ShowCaptureTimer)
+  if (OverlayEntries.size() > 0)
   {
-    CString CaptureTimerValueStr;
-    CaptureTimerValueStr.Format("%d s", CaptureTimerValue);
-      
-    groupedString.Add(CaptureTimerValueStr, "Timer:", "\n", " ");
-  }
-
-  if (ShowRunHistory)
-  {
-    for (size_t i = 0; i < RunHistory.size(); i++)
+    for (size_t i = 0; i < OverlayEntries.size(); i++)
     {
-      groupedString.Add(RunHistory[i], "", "\n", " ");
+      AddOverlayEntry(&groupedString, &OverlayEntries[i], bFormatTagsSupported);
     }
-  }
-
-  if (bFormatTagsSupported && m_bFormatTags)
-  {
-    groupedString.Add("<A0><FR><A><A1><S1> FPS<S><A>", "<C2><APP><C>", "\n", m_bFormatTags ? " " : ", ");
-    groupedString.Add("<A0><FT><A><A1><S1> ms<S><A>", "<C2><APP><C>", "\n", m_bFormatTags ? " " : ", ");
-    //print application-specific 3D API, framerate and frametime using tags
-  }
-  else
-  {
-    groupedString.Add("%FRAMERATE%", "", "\n");
-    groupedString.Add("%FRAMETIME%", "", "\n");
-    //print application-specific 3D API, framerate and frametime using deprecated macro
   }
 
   BOOL bTruncated = FALSE;
@@ -445,6 +418,63 @@ void RTSSCoreControl::Refresh()
   {
     BOOL bResult = UpdateOSD(strOSD);;
     m_bConnected = bResult;
+  }
+}
+
+void RTSSCoreControl::AddOverlayEntry(CGroupedString* groupedString, OverlayEntry* entry, BOOL bFormatTagsSupported)
+{
+  // handle special cases first
+  // ToDo when more special cases: better use switch-case with string/index mapping table
+  if (entry->Identifier == "RunHistory")
+  {
+    if (entry->ShowOnOverlay)
+    {
+      for (size_t i = 0; i < RunHistory.size(); i++)
+      {
+        CString strGroup;
+        strGroup.Format("Run %d:", i);
+        groupedString->Add(RunHistory[i], strGroup, "\n", " ");
+      }
+    }
+    else if (entry->Identifier == "Framerate")
+    {
+      if (entry->ShowOnOverlay)
+      {
+        if (bFormatTagsSupported && m_bFormatTags)
+        {
+          groupedString->Add("<A0><FR><A><A1><S1> FPS<S><A>", "<C2><APP><C>", "\n", m_bFormatTags ? " " : ", ");
+          //print application-specific 3D API, framerate and frametime using tags
+        }
+        else
+        {
+          groupedString->Add("%FRAMERATE%", "", "\n");
+          //print application-specific 3D API, framerate and frametime using deprecated macro
+        }
+      }
+    }
+    else if (entry->Identifier == "Frametime")
+    {
+      if (entry->ShowOnOverlay)
+      {
+        if (bFormatTagsSupported && m_bFormatTags)
+        {
+          groupedString->Add("<A0><FT><A><A1><S1> ms<S><A>", "<C2><APP><C>", "\n", m_bFormatTags ? " " : ", ");
+          //print application-specific 3D API, framerate and frametime using tags
+        }
+        else
+        {
+          groupedString->Add("%FRAMETIME%", "", "\n");
+          //print application-specific 3D API, framerate and frametime using deprecated macro
+        }
+      }
+    }
+    else
+    {
+      if (entry->ShowOnOverlay)
+      {
+        groupedString->Add(entry->Value, entry->GroupName, "\n", " ");
+      }
+    }
   }
 }
 
