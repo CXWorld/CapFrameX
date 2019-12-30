@@ -13,6 +13,7 @@ public:
 
 public:
   CString Identifier;
+  CString Description;
   BOOL ShowOnOverlay;
   CString GroupName;
   CString Value;

@@ -4,16 +4,19 @@ using CapFrameX.Extensions;
 using CapFrameX.Hotkey;
 using CapFrameX.Statistics;
 using Gma.System.MouseKeyHook;
+using GongSolutions.Wpf.DragDrop;
 using Prism.Events;
 using Prism.Mvvm;
 using Prism.Regions;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
+using System.Windows;
 
 namespace CapFrameX.ViewModel
 {
-	public class OverlayViewModel : BindableBase, INavigationAware
+	public class OverlayViewModel : BindableBase, INavigationAware, IDropTarget
 	{
 		private readonly IOverlayService _overlayService;
 		private readonly IOverlayEntryProvider _overlayEntryProvider;
@@ -216,6 +219,9 @@ namespace CapFrameX.ViewModel
 
 		public Array RefreshPeriodItemsSource => new[] { 200, 300, 400, 500, 600, 700, 800, 900, 1000 };
 
+		public ObservableCollection<IOverlayEntry> OverlayEntries { get; private set; }
+			= new ObservableCollection<IOverlayEntry>();
+
 		public OverlayViewModel(IOverlayService overlayService, IOverlayEntryProvider overlayEntryProvider,
 			IAppConfiguration appConfiguration, IEventAggregator eventAggregator)
 		{
@@ -228,6 +234,7 @@ namespace CapFrameX.ViewModel
 				_overlayService.ShowOverlay();
 
 			_overlayService.IsOverlayActiveStream.OnNext(_appConfiguration.IsOverlayActive);
+			OverlayEntries.AddRange(_overlayEntryProvider.GetOverlayEntries());
 
 			SetGlobalHookEventOverlayHotkey();
 			SetGlobalHookEventResetHistoryHotkey();
@@ -306,6 +313,32 @@ namespace CapFrameX.ViewModel
 
 		public void OnNavigatedTo(NavigationContext navigationContext)
 		{
+		}
+
+		void IDropTarget.Drop(IDropInfo dropInfo)
+		{
+			if (dropInfo != null)
+			{
+				if (dropInfo.VisualTarget is FrameworkElement frameworkElement)
+				{
+					if (frameworkElement.Name == "OverlayViewControl")
+					{
+						if (dropInfo.Data is IOverlayEntry overlayEntry)
+						{
+							// check index
+						}
+					}
+				}
+			}
+		}
+
+		void IDropTarget.DragOver(IDropInfo dropInfo)
+		{
+			if (dropInfo != null)
+			{
+				dropInfo.DropTargetAdorner = DropTargetAdorners.Highlight;
+				dropInfo.Effects = DragDropEffects.Move;
+			}
 		}
 	}
 }

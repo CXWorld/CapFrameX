@@ -4,6 +4,8 @@
 	{
 		string Identifier { get; }
 
+		string Description { get; }
+
 		string FormattedValue { get; }
 
 	    bool ShowOnOverlay { get; set; }

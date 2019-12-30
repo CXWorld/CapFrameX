@@ -67,6 +67,7 @@ public:
 
       // mapping member
       entry.Identifier = managedEntry->Identifier;
+      entry.Description = managedEntry->Description;
       entry.ShowOnOverlay = managedEntry->ShowOnOverlay;
       entry.GroupName = managedEntry->GroupName;
       entry.Value = managedEntry->FormattedValue;

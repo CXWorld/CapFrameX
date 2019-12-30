@@ -26,9 +26,6 @@ namespace CapFrameX.Overlay
 		private bool _pauseRefreshHeartBeat;
 
 		private List<string> _runHistory = new List<string>();
-		/// <summary>
-		/// Refresh period in milliseconds
-		/// </summary>
 		private int _refreshPeriod;
 		private int _numberOfRuns;
 

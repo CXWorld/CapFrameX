@@ -28,8 +28,12 @@ namespace CapFrameX
         private void CapFrameXExit(object sender, ExitEventArgs e)
         {
             PresentMonCaptureService.TryKillPresentMon();
+
 			var overlayService = _bootstrapper.Container.Resolve(typeof(IOverlayService), true) as IOverlayService;
 			overlayService?.HideOverlay();
+
+			var overlayEntryProvider = _bootstrapper.Container.Resolve(typeof(IOverlayEntryProvider), true) as IOverlayEntryProvider;
+			_ = overlayEntryProvider?.SaveOverlayEntriesToJson();
 		}
 
         private void Application_Startup(object sender, StartupEventArgs e)

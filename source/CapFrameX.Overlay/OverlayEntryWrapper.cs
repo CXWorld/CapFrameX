@@ -15,9 +15,12 @@ namespace CapFrameX.Overlay
 
 		public string Identifier { get; }
 
+		public string Description { get; set; }	
+
 		[JsonIgnore]
 		public string FormattedValue
-			=> _valueFormat == null ? Value.ToString()
+			=> _valueFormat == null ?
+			(Value == null ? string.Empty : Value.ToString())
 			: string.Format(_valueFormat, Value);
 
 		public bool ShowOnOverlay

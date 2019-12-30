@@ -8,12 +8,16 @@ namespace CapFrameX.Overlay
 {
 	public class OverlayEntryProvider : IOverlayEntryProvider
 	{
-		private readonly Dictionary<string, IOverlayEntry> _identifierOverlayEntryDict
-			= new Dictionary<string, IOverlayEntry>();
+		private const string JSON_FILE_NAME
+			= @"OverlayConfiguration\OverlayEntryConfiguration.json";
+
+		private readonly Dictionary<string, IOverlayEntry> _identifierOverlayEntryDict;
 		private List<IOverlayEntry> _overlayEntries;
 
 		public OverlayEntryProvider()
 		{
+			_identifierOverlayEntryDict = new Dictionary<string, IOverlayEntry>();
+
 			try
 			{
 				LoadOverlayEntriesFromJson();
@@ -49,7 +53,7 @@ namespace CapFrameX.Overlay
 				};
 
 				var json = JsonConvert.SerializeObject(persistence);
-				File.WriteAllText(@"OverlayConfiguration\OverlayEntryConfiguration.json", json);
+				File.WriteAllText(JSON_FILE_NAME, json);
 
 				return true;
 			}
@@ -58,8 +62,9 @@ namespace CapFrameX.Overlay
 
 		private void LoadOverlayEntriesFromJson()
 		{
-			string json = File.ReadAllText(@"OverlayConfiguration\OverlayEntryConfiguration.json");
-			_overlayEntries = new List<IOverlayEntry>(JsonConvert.DeserializeObject<OverlayEntryPersistence>(json).OverlayEntries);
+			string json = File.ReadAllText(JSON_FILE_NAME);
+			_overlayEntries = new List<IOverlayEntry>(JsonConvert.
+				DeserializeObject<OverlayEntryPersistence>(json).OverlayEntries);
 
 			foreach (var entry in _overlayEntries)
 			{
@@ -76,6 +81,7 @@ namespace CapFrameX.Overlay
 					new OverlayEntryWrapper("CaptureServiceStatus")
 					{
 						ShowOnOverlay = true,
+						Description = "Capture service status",
 						GroupName = string.Empty,
 						Value = "Capture service ready...",
 						ShowGraph = false,
@@ -86,6 +92,7 @@ namespace CapFrameX.Overlay
 					new OverlayEntryWrapper("RunHistory")
 					{
 						ShowOnOverlay = true,
+						Description = "Run history",
 						GroupName = string.Empty,
 						Value = default(object),
 						ShowGraph = false,
@@ -96,6 +103,7 @@ namespace CapFrameX.Overlay
 					new OverlayEntryWrapper("CaptureTimer")
 					{
 						ShowOnOverlay = true,
+						Description = "Capture timer",
 						GroupName = "Timer: ",
 						Value = "0",
 						ShowGraph = false,
@@ -107,6 +115,7 @@ namespace CapFrameX.Overlay
 					new OverlayEntryWrapper("Framerate")
 					{
 						ShowOnOverlay = true,
+						Description = "Framerate",
 						GroupName = "<APP>",
 						Value = 0d,
 						ShowGraph = false,
@@ -117,6 +126,7 @@ namespace CapFrameX.Overlay
 					new OverlayEntryWrapper("Frametime")
 					{
 						ShowOnOverlay = true,
+						Description = "Frametime",
 						GroupName = "<APP>",
 						Value = 0d,
 						ShowGraph = true,

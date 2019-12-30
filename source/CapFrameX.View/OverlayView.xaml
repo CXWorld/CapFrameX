@@ -45,19 +45,37 @@
             <!--DataGrid and Overlay hotkey-->
             <TextBlock Margin="0 0 0 10" DockPanel.Dock="Top" HorizontalAlignment="Center" Text="Overlay items" FontSize="14"/>
             <StackPanel DockPanel.Dock="Top" Orientation="Vertical" HorizontalAlignment="Center">
-                <DataGrid x:Name="OverlayItemDataGrid" Height="280" Width="300"
-					  Background="#F5F5F5"
-					  SelectedIndex="{Binding OverlayItemDataGridSelectedIndex}"
-					  Tag="{Binding ElementName=OverlayViewControl, Path=DataContext}" FontSize="11"
-					  ItemsSource="{Binding OverlayItemList}" SelectedItem="{Binding SelectedOverlayItem}" 
-					  CanUserSortColumns="True" CanUserAddRows="False" AutoGenerateColumns="False"
-					  materialDesign:DataGridAssist.CellPadding="13 8 8 8" materialDesign:DataGridAssist.ColumnHeaderPadding="8" IsSynchronizedWithCurrentItem="False"
-					  ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.CanContentScroll="True"
-					  dragdrop:DragDrop.IsDragSource="True"
-					  dragdrop:DragDrop.IsDropTarget="True"
-					  dragdrop:DragDrop.UseDefaultDragAdorner="True"
-					  dragdrop:DragDrop.DefaultDragAdornerOpacity="0.5"
-					  dragdrop:DragDrop.UseDefaultEffectDataTemplate="False">
+                <DataGrid x:Name="OverlayItemDataGrid" Height="280" Width="300" Background="#F5F5F5"
+					      SelectedIndex="{Binding SelectedOverlayEntryIndex}" IsReadOnly="False"
+					      Tag="{Binding ElementName=OverlayViewControl, Path=DataContext}" FontSize="11"
+					      ItemsSource="{Binding OverlayEntries}" SelectedItem="{Binding SelectedOverlayEntry}" 
+					      CanUserSortColumns="True" CanUserAddRows="False" AutoGenerateColumns="False"
+					      materialDesign:DataGridAssist.CellPadding="13 8 8 8" materialDesign:DataGridAssist.ColumnHeaderPadding="8" IsSynchronizedWithCurrentItem="False"
+					      ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.CanContentScroll="True"
+					      dragdrop:DragDrop.IsDragSource="True"
+					      dragdrop:DragDrop.IsDropTarget="True"
+					      dragdrop:DragDrop.UseDefaultDragAdorner="True"
+					      dragdrop:DragDrop.DefaultDragAdornerOpacity="0.5"
+					      dragdrop:DragDrop.UseDefaultEffectDataTemplate="False">
+					<DataGrid.Columns>
+						<DataGridCheckBoxColumn Binding="{Binding ShowOnOverlay, Mode=OneWay}"
+                                                Header="OSD"
+												Width="55"
+												IsReadOnly="False"/>
+						<DataGridTextColumn Binding="{Binding Description, Mode=OneWay}"
+                                            Header="Description"
+                                            IsReadOnly="True"/>
+						<DataGridTextColumn Binding="{Binding GroupName, Mode=OneWay}"
+                                            Header="Group name"
+                                            IsReadOnly="False"/>
+						<DataGridCheckBoxColumn Binding="{Binding ShowGraph, Mode=OneWay}"
+                                            Header="Graph"
+                                            IsReadOnly="False"/>
+						<DataGridTextColumn Binding="{Binding Color, Mode=OneWay}"
+										    Width="100"
+                                            Header="Hex-color"
+                                            IsReadOnly="False"/>
+					</DataGrid.Columns>
                 </DataGrid>
                 <TextBlock HorizontalAlignment="Center" Text="Drag &amp; Drop to change order"/>
             </StackPanel>

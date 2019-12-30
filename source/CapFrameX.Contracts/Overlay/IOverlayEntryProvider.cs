@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace CapFrameX.Contracts.Overlay
+﻿namespace CapFrameX.Contracts.Overlay
 {
 	public interface IOverlayEntryProvider
 	{
@@ -9,5 +7,7 @@ namespace CapFrameX.Contracts.Overlay
 		void MoveEntry(int sourceIndex, int targetIndex);
 
 		IOverlayEntry GetOverlayEntry(string identifier);
+
+		bool SaveOverlayEntriesToJson();
 	}
 }
