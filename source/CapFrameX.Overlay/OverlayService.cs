@@ -85,7 +85,7 @@ namespace CapFrameX.Overlay
 				SetCaptureTimerValue((int)t);
 
 				if (t == 0)
-					OnCountdownFinished();
+					SetShowCaptureTimer(false);
 			});
 		}
 
@@ -170,9 +170,11 @@ namespace CapFrameX.Overlay
 			_pauseRefreshHeartBeat = false;
 		}
 
-		private void OnCountdownFinished()
+		public void UpdateOverlayEntries()
 		{
-			SetShowCaptureTimer(false);
+			_pauseRefreshHeartBeat = true;
+			SetOverlayEntries(_overlayEntryProvider?.GetOverlayEntries());
+			_pauseRefreshHeartBeat = false;
 		}
 
 		private void SetShowCaptureTimer(bool show)

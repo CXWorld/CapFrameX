@@ -34,5 +34,7 @@ namespace CapFrameX.Contracts.Overlay
 		void ResetHistory();
 
 		void AddRunToHistory(List<string> captureData);
+
+		void UpdateOverlayEntries();
 	}
 }

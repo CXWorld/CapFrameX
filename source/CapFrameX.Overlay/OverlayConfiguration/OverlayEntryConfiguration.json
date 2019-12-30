@@ -1,0 +1,44 @@
+{
+  "OverlayEntries": [
+    {
+      "Identifier": "CaptureServiceStatus",
+      "ShowOnOverlay": true,
+      "GroupName": "",
+      "Value": "Capture service ready...",
+      "ShowGraph": false,
+      "Color": ""
+    },
+    {
+      "Identifier": "RunHistory",
+      "ShowOnOverlay": true,
+      "GroupName": "",
+      "Value": null,
+      "ShowGraph": false,
+      "Color": ""
+    },
+    {
+      "Identifier": "CaptureTimer",
+      "ShowOnOverlay": true,
+      "GroupName": "Timer: ",
+      "Value": "0",
+      "ShowGraph": false,
+      "Color": ""
+    },
+    {
+      "Identifier": "Framerate",
+      "ShowOnOverlay": true,
+      "GroupName": "<APP>",
+      "Value": 0.0,
+      "ShowGraph": false,
+      "Color": ""
+    },
+    {
+      "Identifier": "Frametime",
+      "ShowOnOverlay": true,
+      "GroupName": "<APP>",
+      "Value": 0.0,
+      "ShowGraph": true,
+      "Color": ""
+    }
+  ]
+}

@@ -1,4 +1,5 @@
 ﻿using CapFrameX.Contracts.Overlay;
+using Newtonsoft.Json;
 using Prism.Mvvm;
 
 namespace CapFrameX.Overlay
@@ -14,6 +15,7 @@ namespace CapFrameX.Overlay
 
 		public string Identifier { get; }
 
+		[JsonIgnore]
 		public string FormattedValue
 			=> _valueFormat == null ? Value.ToString()
 			: string.Format(_valueFormat, Value);
