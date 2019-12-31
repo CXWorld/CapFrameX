@@ -14,7 +14,7 @@ namespace CapFrameX.Test.Overlay
 		{
 			var persistence = new OverlayEntryPersistence
 			{
-				OverlayEntries = new System.Collections.Generic.List<IOverlayEntry>
+				OverlayEntries = new System.Collections.Generic.List<OverlayEntryWrapper>
 				{
 					// CX 
 					// CaptureServiceStatus

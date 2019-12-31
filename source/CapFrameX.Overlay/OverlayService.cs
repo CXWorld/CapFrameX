@@ -50,6 +50,8 @@ namespace CapFrameX.Overlay
 			IsOverlayActiveStream = new Subject<bool>();
 
 			SetOverlayEntries(overlayEntryProvider?.GetOverlayEntries());
+			overlayEntryProvider.EntryUpdateStream.Subscribe(x => 
+				SetOverlayEntries(overlayEntryProvider?.GetOverlayEntries()));
 
 			_runHistory = Enumerable.Repeat("N/A", _numberOfRuns).ToList();
 			SetRunHistory(_runHistory.ToArray());
@@ -174,6 +176,15 @@ namespace CapFrameX.Overlay
 			_pauseRefreshHeartBeat = false;
 		}
 
+		public void UpdateNumberOfRuns(int numberOfRuns)
+		{
+			_pauseRefreshHeartBeat = true;
+			_numberOfRuns = numberOfRuns;
+			_runHistory = Enumerable.Repeat("N/A", _numberOfRuns).ToList();
+			SetRunHistory(_runHistory.ToArray());
+			_pauseRefreshHeartBeat = false;
+		}
+
 		private void SetShowCaptureTimer(bool show)
 		{
 			_pauseRefreshHeartBeat = true;
@@ -258,15 +269,6 @@ namespace CapFrameX.Overlay
 			return Observable
 				.Timer(DateTimeOffset.UtcNow, TimeSpan.FromSeconds(1))
 				.Subscribe(x => SetCaptureTimerValue((int)x));
-		}
-
-		public void UpdateNumberOfRuns(int numberOfRuns)
-		{
-			_pauseRefreshHeartBeat = true;
-			_numberOfRuns = numberOfRuns;
-			_runHistory = Enumerable.Repeat("N/A", _numberOfRuns).ToList();
-			SetRunHistory(_runHistory.ToArray());
-			_pauseRefreshHeartBeat = false;
 		}
 	}
 }

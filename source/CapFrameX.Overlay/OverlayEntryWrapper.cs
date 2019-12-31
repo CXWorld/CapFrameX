@@ -1,6 +1,7 @@
 ﻿using CapFrameX.Contracts.Overlay;
 using Newtonsoft.Json;
 using Prism.Mvvm;
+using System.Reactive;
 
 namespace CapFrameX.Overlay
 {
@@ -12,6 +13,9 @@ namespace CapFrameX.Overlay
 		private object _value;
 		private bool _showGraph;
 		private string _color;
+
+		[JsonIgnore]
+		public IOverlayEntryProvider OverlayEntryProvider { get; set; }
 
 		public string Identifier { get; }
 
@@ -29,6 +33,7 @@ namespace CapFrameX.Overlay
 			set
 			{
 				_showOnOverlay = value;
+				OverlayEntryProvider?.EntryUpdateStream.OnNext(default(Unit));
 				RaisePropertyChanged();
 			}
 		}
@@ -39,6 +44,7 @@ namespace CapFrameX.Overlay
 			set
 			{
 				_groupName = value;
+				OverlayEntryProvider?.EntryUpdateStream.OnNext(default(Unit));
 				RaisePropertyChanged();
 			}
 		}
@@ -59,6 +65,7 @@ namespace CapFrameX.Overlay
 			set
 			{
 				_showGraph = value;
+				OverlayEntryProvider?.EntryUpdateStream.OnNext(default(Unit));
 				RaisePropertyChanged();
 			}
 		}
@@ -72,6 +79,7 @@ namespace CapFrameX.Overlay
 			set
 			{
 				_color = value;
+				OverlayEntryProvider?.EntryUpdateStream.OnNext(default(Unit));
 				RaisePropertyChanged();
 			}
 		}

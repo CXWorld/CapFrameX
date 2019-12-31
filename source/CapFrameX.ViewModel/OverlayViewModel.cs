@@ -2,6 +2,7 @@
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.Extensions;
 using CapFrameX.Hotkey;
+using CapFrameX.Overlay;
 using CapFrameX.Statistics;
 using Gma.System.MouseKeyHook;
 using GongSolutions.Wpf.DragDrop;

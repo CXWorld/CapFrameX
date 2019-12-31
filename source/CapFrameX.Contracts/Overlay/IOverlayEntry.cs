@@ -2,6 +2,8 @@
 {
 	public interface IOverlayEntry
 	{
+		IOverlayEntryProvider OverlayEntryProvider { get; set; }
+
 		string Identifier { get; }
 
 		string Description { get; }

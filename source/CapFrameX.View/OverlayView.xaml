@@ -38,18 +38,18 @@
             <RowDefinition Height="380"></RowDefinition>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="450"/>
+            <ColumnDefinition Width="500"/>
             <ColumnDefinition Width="450"/>
         </Grid.ColumnDefinitions>
-        <DockPanel Grid.Row="1" Grid.Column="0" >
+        <DockPanel Grid.Row="1" Grid.Column="0" Margin="0 0 10 0">
             <!--DataGrid and Overlay hotkey-->
             <TextBlock Margin="0 0 0 10" DockPanel.Dock="Top" HorizontalAlignment="Center" Text="Overlay items" FontSize="14"/>
             <StackPanel DockPanel.Dock="Top" Orientation="Vertical" HorizontalAlignment="Center">
-                <DataGrid x:Name="OverlayItemDataGrid" Height="280" Width="300" Background="#F5F5F5"
+                <DataGrid x:Name="OverlayItemDataGrid" Height="280" Width="470" Background="#F5F5F5"
 					      SelectedIndex="{Binding SelectedOverlayEntryIndex}" IsReadOnly="False"
 					      Tag="{Binding ElementName=OverlayViewControl, Path=DataContext}" FontSize="11"
 					      ItemsSource="{Binding OverlayEntries}" SelectedItem="{Binding SelectedOverlayEntry}" 
-					      CanUserSortColumns="True" CanUserAddRows="False" AutoGenerateColumns="False"
+					      CanUserSortColumns="False" CanUserAddRows="False" AutoGenerateColumns="False"
 					      materialDesign:DataGridAssist.CellPadding="13 8 8 8" materialDesign:DataGridAssist.ColumnHeaderPadding="8" IsSynchronizedWithCurrentItem="False"
 					      ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.CanContentScroll="True"
 					      dragdrop:DragDrop.IsDragSource="True"
@@ -58,20 +58,20 @@
 					      dragdrop:DragDrop.DefaultDragAdornerOpacity="0.5"
 					      dragdrop:DragDrop.UseDefaultEffectDataTemplate="False">
 					<DataGrid.Columns>
-						<DataGridCheckBoxColumn Binding="{Binding ShowOnOverlay, Mode=OneWay}"
+						<DataGridCheckBoxColumn Binding="{Binding ShowOnOverlay, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                 Header="OSD"
 												Width="55"
 												IsReadOnly="False"/>
-						<DataGridTextColumn Binding="{Binding Description, Mode=OneWay}"
+						<DataGridTextColumn Binding="{Binding Description, Mode=TwoWay}"
                                             Header="Description"
                                             IsReadOnly="True"/>
-						<DataGridTextColumn Binding="{Binding GroupName, Mode=OneWay}"
+						<DataGridTextColumn Binding="{Binding GroupName, Mode=TwoWay}"
                                             Header="Group name"
                                             IsReadOnly="False"/>
-						<DataGridCheckBoxColumn Binding="{Binding ShowGraph, Mode=OneWay}"
+						<DataGridCheckBoxColumn Binding="{Binding ShowGraph, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                             Header="Graph"
                                             IsReadOnly="False"/>
-						<DataGridTextColumn Binding="{Binding Color, Mode=OneWay}"
+						<DataGridTextColumn Binding="{Binding Color, Mode=TwoWay}"
 										    Width="100"
                                             Header="Hex-color"
                                             IsReadOnly="False"/>

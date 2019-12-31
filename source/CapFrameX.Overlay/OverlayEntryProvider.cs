@@ -3,6 +3,9 @@ using CapFrameX.Extensions;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Reactive;
+using System.Reactive.Subjects;
 
 namespace CapFrameX.Overlay
 {
@@ -17,6 +20,7 @@ namespace CapFrameX.Overlay
 		public OverlayEntryProvider()
 		{
 			_identifierOverlayEntryDict = new Dictionary<string, IOverlayEntry>();
+			EntryUpdateStream = new Subject<Unit>();
 
 			try
 			{
@@ -27,6 +31,8 @@ namespace CapFrameX.Overlay
 				SetOverlayEntryDefaults();
 			}
 		}
+
+		public ISubject<Unit> EntryUpdateStream { get; }
 
 		public IOverlayEntry[] GetOverlayEntries()
 		{
@@ -49,7 +55,7 @@ namespace CapFrameX.Overlay
 			{
 				var persistence = new OverlayEntryPersistence()
 				{
-					OverlayEntries = _overlayEntries
+					OverlayEntries = _overlayEntries.Select(entry => entry as OverlayEntryWrapper).ToList()
 				};
 
 				var json = JsonConvert.SerializeObject(persistence);
@@ -68,6 +74,7 @@ namespace CapFrameX.Overlay
 
 			foreach (var entry in _overlayEntries)
 			{
+				entry.OverlayEntryProvider = this;
 				_identifierOverlayEntryDict.Add(entry.Identifier, entry);
 			}
 		}
@@ -85,7 +92,8 @@ namespace CapFrameX.Overlay
 						GroupName = string.Empty,
 						Value = "Capture service ready...",
 						ShowGraph = false,
-						Color = string.Empty
+						Color = string.Empty,
+						OverlayEntryProvider = this
 					},
 
 					// RunHistory
@@ -96,7 +104,8 @@ namespace CapFrameX.Overlay
 						GroupName = string.Empty,
 						Value = default(object),
 						ShowGraph = false,
-						Color = string.Empty
+						Color = string.Empty,
+						OverlayEntryProvider = this
 					},
 
 					// RunHistory
@@ -107,7 +116,8 @@ namespace CapFrameX.Overlay
 						GroupName = "Timer: ",
 						Value = "0",
 						ShowGraph = false,
-						Color = string.Empty
+						Color = string.Empty,
+						OverlayEntryProvider = this
 					},
 
 					// RTSS
@@ -119,7 +129,8 @@ namespace CapFrameX.Overlay
 						GroupName = "<APP>",
 						Value = 0d,
 						ShowGraph = false,
-						Color = string.Empty
+						Color = string.Empty,
+						OverlayEntryProvider = this
 					},
 
 					// Frametime
@@ -130,7 +141,8 @@ namespace CapFrameX.Overlay
 						GroupName = "<APP>",
 						Value = 0d,
 						ShowGraph = true,
-						Color = string.Empty
+						Color = string.Empty,
+						OverlayEntryProvider = this
 					}
 				};
 

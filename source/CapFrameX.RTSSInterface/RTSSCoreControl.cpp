@@ -432,48 +432,48 @@ void RTSSCoreControl::AddOverlayEntry(CGroupedString* groupedString, OverlayEntr
       for (size_t i = 0; i < RunHistory.size(); i++)
       {
         CString strGroup;
-        strGroup.Format("Run %d:", i);
+        strGroup.Format("Run %d:", i + 1);
         groupedString->Add(RunHistory[i], strGroup, "\n", " ");
       }
     }
-    else if (entry->Identifier == "Framerate")
+  }
+  else if (entry->Identifier == "Framerate")
+  {
+    if (entry->ShowOnOverlay)
     {
-      if (entry->ShowOnOverlay)
+      if (bFormatTagsSupported && m_bFormatTags)
       {
-        if (bFormatTagsSupported && m_bFormatTags)
-        {
-          groupedString->Add("<A0><FR><A><A1><S1> FPS<S><A>", "<C2><APP><C>", "\n", m_bFormatTags ? " " : ", ");
-          //print application-specific 3D API, framerate and frametime using tags
-        }
-        else
-        {
-          groupedString->Add("%FRAMERATE%", "", "\n");
-          //print application-specific 3D API, framerate and frametime using deprecated macro
-        }
+        groupedString->Add("<A0><FR><A><A1><S1> FPS<S><A>", "<C2><APP><C>", "\n", m_bFormatTags ? " " : ", ");
+        //print application-specific 3D API, framerate and frametime using tags
+      }
+      else
+      {
+        groupedString->Add("%FRAMERATE%", "", "\n");
+        //print application-specific 3D API, framerate and frametime using deprecated macro
       }
     }
-    else if (entry->Identifier == "Frametime")
+  }
+  else if (entry->Identifier == "Frametime")
+  {
+    if (entry->ShowOnOverlay)
     {
-      if (entry->ShowOnOverlay)
+      if (bFormatTagsSupported && m_bFormatTags)
       {
-        if (bFormatTagsSupported && m_bFormatTags)
-        {
-          groupedString->Add("<A0><FT><A><A1><S1> ms<S><A>", "<C2><APP><C>", "\n", m_bFormatTags ? " " : ", ");
-          //print application-specific 3D API, framerate and frametime using tags
-        }
-        else
-        {
-          groupedString->Add("%FRAMETIME%", "", "\n");
-          //print application-specific 3D API, framerate and frametime using deprecated macro
-        }
+        groupedString->Add("<A0><FT><A><A1><S1> ms<S><A>", "<C2><APP><C>", "\n", m_bFormatTags ? " " : ", ");
+        //print application-specific 3D API, framerate and frametime using tags
+      }
+      else
+      {
+        groupedString->Add("%FRAMETIME%", "", "\n");
+        //print application-specific 3D API, framerate and frametime using deprecated macro
       }
     }
-    else
+  }
+  else
+  {
+    if (entry->ShowOnOverlay)
     {
-      if (entry->ShowOnOverlay)
-      {
-        groupedString->Add(entry->Value, entry->GroupName, "\n", " ");
-      }
+      groupedString->Add(entry->Value, entry->GroupName, "\n", " ");
     }
   }
 }

@@ -115,7 +115,7 @@
   <ItemGroup>
     <None Include="app.config" />
     <Content Include="OverlayConfiguration\OverlayEntryConfiguration.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <None Include="packages.config" />
   </ItemGroup>
