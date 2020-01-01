@@ -64,8 +64,8 @@ namespace CapFrameX.ViewModel
 
 			if (!checkSave)
 				AddLoggerEntry("Error while saving capture data.");
-
-			AddLoggerEntry("Capture file is successfully written into directory.");
+			else
+				AddLoggerEntry("Capture file is successfully written into directory.");
 		}
 
 		private List<string> GetAdjustedCaptureData()

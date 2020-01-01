@@ -38,6 +38,8 @@ namespace CapFrameX.Overlay
 			}
 		}
 
+		public bool ShowOnOverlayIsEnabled { get; set; }
+
 		public string GroupName
 		{
 			get { return _groupName; }
@@ -69,6 +71,8 @@ namespace CapFrameX.Overlay
 				RaisePropertyChanged();
 			}
 		}
+
+		public bool ShowGraphIsEnabled { get; set; }
 
 		/// <summary>
 		/// Display color in hex format

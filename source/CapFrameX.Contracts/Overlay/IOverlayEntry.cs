@@ -12,11 +12,15 @@
 
 	    bool ShowOnOverlay { get; set; }
 
+		bool ShowOnOverlayIsEnabled { get; set; }
+
 		string GroupName { get; set; }
 
 		object Value { get; set; }
 
 		bool ShowGraph { get; set; }
+
+		bool ShowGraphIsEnabled { get; set; }
 
 		string Color { get; set; }
 	}

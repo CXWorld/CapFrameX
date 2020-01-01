@@ -378,7 +378,7 @@ void RTSSCoreControl::Refresh()
     //overlap with text slots displayed by other applications, so in this demo we explicitly disable this tag usage if more than
     //one client is currently rendering something in OSD
 
-    strOSD += "<A0=-5>";
+    strOSD += "<A0=0>";
     //define align variable A[0] as right alignment by 5 symbols (positive is left, negative is right)
     strOSD += "<A1=4>";
     //define align variable A[1] as left alignment by 4 symbols (positive is left, negative is right)
@@ -429,11 +429,11 @@ void RTSSCoreControl::AddOverlayEntry(CGroupedString* groupedString, OverlayEntr
   {
     if (entry->ShowOnOverlay)
     {
-      for (size_t i = 0; i < RunHistory.size(); i++)
+      for (int i = 0; i < RunHistory.size(); i++)
       {
         CString strGroup;
         strGroup.Format("Run %d:", i + 1);
-        groupedString->Add(RunHistory[i], strGroup, "\n", " ");
+        groupedString->Add(RunHistory[i], strGroup, "\n");
       }
     }
   }

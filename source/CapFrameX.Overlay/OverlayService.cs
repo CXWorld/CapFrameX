@@ -23,7 +23,6 @@ namespace CapFrameX.Overlay
 
 		private IDisposable _disposableHeartBeat;
 		private IDisposable _disposableCaptureTimer;
-		private bool _pauseRefreshHeartBeat;
 
 		private List<string> _runHistory = new List<string>();
 		private int _refreshPeriod;
@@ -103,34 +102,29 @@ namespace CapFrameX.Overlay
 
 		public void SetCaptureTimerValue(int t)
 		{
-			_pauseRefreshHeartBeat = true;
 			var captureTimer = _overlayEntryProvider.GetOverlayEntry("CaptureTimer");
 			captureTimer.Value = t;
-			_pauseRefreshHeartBeat = false;
+			SetOverlayEntries(_overlayEntryProvider?.GetOverlayEntries());
 		}
 
 		public void SetCaptureServiceStatus(string status)
 		{
-			_pauseRefreshHeartBeat = true;
 			var captureStatus = _overlayEntryProvider.GetOverlayEntry("CaptureServiceStatus");
 			captureStatus.Value = status;
-			_pauseRefreshHeartBeat = false;
+			SetOverlayEntries(_overlayEntryProvider?.GetOverlayEntries());
 		}
 
 		public void SetShowRunHistory(bool showHistory)
 		{
-			_pauseRefreshHeartBeat = true;
 			var history = _overlayEntryProvider.GetOverlayEntry("RunHistory");
 			history.ShowOnOverlay = showHistory;
-			_pauseRefreshHeartBeat = false;
+			SetOverlayEntries(_overlayEntryProvider?.GetOverlayEntries());
 		}
 
 		public void ResetHistory()
 		{
 			_runHistory = Enumerable.Repeat("N/A", _numberOfRuns).ToList();
-			_pauseRefreshHeartBeat = true;
 			SetRunHistory(_runHistory.ToArray());
-			_pauseRefreshHeartBeat = false;
 		}
 
 		public void AddRunToHistory(List<string> captureData)
@@ -164,33 +158,25 @@ namespace CapFrameX.Overlay
 			if (_runHistory.Count > _numberOfRuns)
 				_runHistory.RemoveAt(_runHistory.Count - 1);
 
-			_pauseRefreshHeartBeat = true;
 			SetRunHistory(_runHistory.ToArray());
-			_pauseRefreshHeartBeat = false;
 		}
 
 		public void UpdateOverlayEntries()
 		{
-			_pauseRefreshHeartBeat = true;
 			SetOverlayEntries(_overlayEntryProvider?.GetOverlayEntries());
-			_pauseRefreshHeartBeat = false;
 		}
 
 		public void UpdateNumberOfRuns(int numberOfRuns)
 		{
-			_pauseRefreshHeartBeat = true;
 			_numberOfRuns = numberOfRuns;
 			_runHistory = Enumerable.Repeat("N/A", _numberOfRuns).ToList();
 			SetRunHistory(_runHistory.ToArray());
-			_pauseRefreshHeartBeat = false;
 		}
 
 		private void SetShowCaptureTimer(bool show)
 		{
-			_pauseRefreshHeartBeat = true;
 			var captureTimer = _overlayEntryProvider.GetOverlayEntry("CaptureTimer");
 			captureTimer.ShowOnOverlay = show;
-			_pauseRefreshHeartBeat = false;
 		}
 
 		private void CheckRTSSRunningAndRefresh()
@@ -260,7 +246,6 @@ namespace CapFrameX.Overlay
 		{
 			return Observable
 				.Timer(DateTimeOffset.UtcNow, TimeSpan.FromMilliseconds(_refreshPeriod))
-				.Where(x => !_pauseRefreshHeartBeat)
 				.Subscribe(x => CheckRTSSRunningAndRefresh());
 		}
 

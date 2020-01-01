@@ -140,5 +140,11 @@ namespace CapFrameX.View
 		{
 			Keyboard.ClearFocus();
 		}
+
+		private void OverlayItemDataGrid_MouseLeave(object sender, MouseEventArgs e)
+		{
+			(DataContext as OverlayViewModel).SelectedOverlayEntryIndex = -1;
+			Keyboard.ClearFocus();
+		}
 	}
 }

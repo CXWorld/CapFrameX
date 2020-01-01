@@ -21,10 +21,12 @@ namespace CapFrameX.Test.Overlay
 					new OverlayEntryWrapper("CaptureServiceStatus")
 					{
 						ShowOnOverlay = true,
+						ShowOnOverlayIsEnabled = true,
 						Description = "Capture service status",
 						GroupName = string.Empty,
 						Value = "Capture service ready...",
 						ShowGraph = false,
+						ShowGraphIsEnabled = false,
 						Color = string.Empty
 					},
 
@@ -32,21 +34,25 @@ namespace CapFrameX.Test.Overlay
 					new OverlayEntryWrapper("RunHistory")
 					{
 						ShowOnOverlay = true,
+						ShowOnOverlayIsEnabled = true,
 						Description = "Run history",
 						GroupName = string.Empty,
 						Value = default(object),
 						ShowGraph = false,
+						ShowGraphIsEnabled = false,
 						Color = string.Empty
 					},
 
-					// RunHistory
+					// CaptureTimer
 					new OverlayEntryWrapper("CaptureTimer")
 					{
-						ShowOnOverlay = true,
+						ShowOnOverlay = false,
+						ShowOnOverlayIsEnabled = false,
 						Description = "Capture timer",
 						GroupName = "Timer: ",
 						Value = "0",
 						ShowGraph = false,
+						ShowGraphIsEnabled = false,
 						Color = string.Empty
 					},
 
@@ -55,10 +61,12 @@ namespace CapFrameX.Test.Overlay
 					new OverlayEntryWrapper("Framerate")
 					{
 						ShowOnOverlay = true,
+						ShowOnOverlayIsEnabled = true,
 						Description = "Framerate",
 						GroupName = "<APP>",
 						Value = 0d,
 						ShowGraph = false,
+						ShowGraphIsEnabled = true,
 						Color = string.Empty
 					},
 
@@ -66,10 +74,12 @@ namespace CapFrameX.Test.Overlay
 					new OverlayEntryWrapper("Frametime")
 					{
 						ShowOnOverlay = true,
+						ShowOnOverlayIsEnabled = true,
 						Description = "Frametime",
 						GroupName = "<APP>",
 						Value = 0d,
-						ShowGraph = true,
+						ShowGraph = false,
+						ShowGraphIsEnabled = true,
 						Color = string.Empty
 					}
 				}

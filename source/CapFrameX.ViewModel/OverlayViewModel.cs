@@ -26,6 +26,7 @@ namespace CapFrameX.ViewModel
 
 		private IKeyboardMouseEvents _globalOverlayHookEvent;
 		private IKeyboardMouseEvents _globalResetHistoryHookEvent;
+		private int _selectedOverlayEntryIndex = -1;
 
 		private bool IsOverlayActive
 		{
@@ -203,6 +204,17 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
+		public int SelectedOverlayEntryIndex
+		{
+			get { return _selectedOverlayEntryIndex; }
+			set
+			{
+				_selectedOverlayEntryIndex = value;
+				RaisePropertyChanged();
+			}
+		}
+
+
 		public IAppConfiguration AppConfiguration => _appConfiguration;
 
 		public Array SecondMetricItems => Enum.GetValues(typeof(EMetric))
@@ -322,11 +334,18 @@ namespace CapFrameX.ViewModel
 			{
 				if (dropInfo.VisualTarget is FrameworkElement frameworkElement)
 				{
-					if (frameworkElement.Name == "OverlayViewControl")
+					if (frameworkElement.Name == "OverlayItemDataGrid")
 					{
 						if (dropInfo.Data is IOverlayEntry overlayEntry)
 						{
-							// check index
+							// get source index
+							int sourceIndex = OverlayEntries.IndexOf(overlayEntry);
+							int targetIndex = dropInfo.InsertIndex;
+
+							_overlayEntryProvider.MoveEntry(sourceIndex, targetIndex);
+							OverlayEntries.Clear();
+							OverlayEntries.AddRange(_overlayEntryProvider?.GetOverlayEntries());
+							_overlayService.UpdateOverlayEntries();
 						}
 					}
 				}
