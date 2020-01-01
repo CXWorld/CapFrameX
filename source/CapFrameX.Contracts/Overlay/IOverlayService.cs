@@ -36,5 +36,7 @@ namespace CapFrameX.Contracts.Overlay
 		void AddRunToHistory(List<string> captureData);
 
 		void UpdateOverlayEntries();
+
+		string GetRTSSFullPath();
 	}
 }

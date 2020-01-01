@@ -370,7 +370,7 @@ void RTSSCoreControl::Refresh()
     else
     {
       // Add CX label
-      groupedString.Add("<C3>CX OSD<C>", "", "\n", " ");
+      groupedString.Add("", "<C3>CX OSD<C>", "\n", " ");
     }
     //move to position 0,0 (in zoomed pixel units)
 
@@ -378,8 +378,9 @@ void RTSSCoreControl::Refresh()
     //overlap with text slots displayed by other applications, so in this demo we explicitly disable this tag usage if more than
     //one client is currently rendering something in OSD
 
-    strOSD += "<A0=0>";
+    strOSD += "<A0=-5>";
     //define align variable A[0] as right alignment by 5 symbols (positive is left, negative is right)
+    //strOSD += "<A1=4>";
     strOSD += "<A1=4>";
     //define align variable A[1] as left alignment by 4 symbols (positive is left, negative is right)
     strOSD += "<C0=FFA0A0>";
@@ -388,7 +389,11 @@ void RTSSCoreControl::Refresh()
     //define color variable C[1] as R=FF,G=00 and B=A0
     strOSD += "<C2=FFFFFF>";
     //define color variable C[1] as R=FF,G=FF and B=FF
+    // CX blue
     strOSD += "<C3=2297F3>";
+    //define color variable C[1] as R=FF,G=FF and B=FF
+    // CX orange
+    strOSD += "<C4=F17D20>";
     //define color variable C[1] as R=FF,G=FF and B=FF
     strOSD += "<S0=-50>";
     //define size variable S[0] as 50% subscript (positive is superscript, negative is subscript)
@@ -439,13 +444,27 @@ void RTSSCoreControl::AddOverlayEntry(CGroupedString* groupedString, OverlayEntr
       }
     }
   }
+  else if (entry->Identifier == "CaptureServiceStatus")
+  {
+    if (entry->ShowOnOverlay)
+    {
+      CString groupName = entry->GroupName;
+
+      if (groupName != "")
+      {
+        groupName = "<C2>" + groupName + "<C>";
+      }
+
+      groupedString->Add("<A=20><C3>" + entry->Value + "<C><A>", groupName, "\n", " ");
+    }
+  }
   else if (entry->Identifier == "Framerate")
   {
     if (entry->ShowOnOverlay)
     {
       if (bFormatTagsSupported && m_bFormatTags)
       {
-        groupedString->Add("<A0><C3><FR><C><A><A1><S1><C3> FPS<C><S><A>", "<C2><APP><C>", "\n", m_bFormatTags ? " " : ", ");
+        groupedString->Add("<A=0><C4><FR><C><A><A1><S1><C4> FPS<C><S><A>", "<C2><APP><C>", "\n", m_bFormatTags ? " " : ", ");
         //print application-specific 3D API, framerate and frametime using tags
       }
       else
@@ -461,7 +480,7 @@ void RTSSCoreControl::AddOverlayEntry(CGroupedString* groupedString, OverlayEntr
     {
       if (bFormatTagsSupported && m_bFormatTags)
       {
-        groupedString->Add("<A0><C3><FT><C><A><A1><S1><C3> ms<C><S><A>", "<C2><APP><C>", "\n", m_bFormatTags ? " " : ", ");
+        groupedString->Add("<A=0><C4><FT><C><A><A1><S1><C4> ms<C><S><A>", "<C2><APP><C>", "\n", m_bFormatTags ? " " : ", ");
         //print application-specific 3D API, framerate and frametime using tags
       }
       else
@@ -482,7 +501,9 @@ void RTSSCoreControl::AddOverlayEntry(CGroupedString* groupedString, OverlayEntr
         groupName = "<C2>" + groupName + "<C>";
       }
 
-      groupedString->Add("<C3>" + entry->Value + "<C>", groupName, "\n", " ");
+      CString value = entry->Value;
+
+      groupedString->Add("<C4>" + value + "<C>", groupName, "\n", " ");
     }
   }
 }

@@ -173,33 +173,7 @@ namespace CapFrameX.Overlay
 			SetRunHistory(_runHistory.ToArray());
 		}
 
-		private void SetShowCaptureTimer(bool show)
-		{
-			var captureTimer = _overlayEntryProvider.GetOverlayEntry("CaptureTimer");
-			captureTimer.ShowOnOverlay = show;
-		}
-
-		private void CheckRTSSRunningAndRefresh()
-		{
-			var processes = Process.GetProcessesByName("RTSS");
-
-			if (!processes.Any())
-			{
-				try
-				{
-					Process proc = new Process();
-					proc.StartInfo.FileName = Path.Combine(GetRTSSFullPath());
-					proc.StartInfo.UseShellExecute = false;
-					proc.StartInfo.Verb = "runas";
-					proc.Start();
-				}
-				catch { }
-			}
-
-			Refresh();
-		}
-
-		private string GetRTSSFullPath()
+		public string GetRTSSFullPath()
 		{
 			string installPath = string.Empty;
 
@@ -240,6 +214,32 @@ namespace CapFrameX.Overlay
 			}
 
 			return installPath;
+		}
+
+		private void SetShowCaptureTimer(bool show)
+		{
+			var captureTimer = _overlayEntryProvider.GetOverlayEntry("CaptureTimer");
+			captureTimer.ShowOnOverlay = show;
+		}
+
+		private void CheckRTSSRunningAndRefresh()
+		{
+			var processes = Process.GetProcessesByName("RTSS");
+
+			if (!processes.Any())
+			{
+				try
+				{
+					Process proc = new Process();
+					proc.StartInfo.FileName = Path.Combine(GetRTSSFullPath());
+					proc.StartInfo.UseShellExecute = false;
+					proc.StartInfo.Verb = "runas";
+					proc.Start();
+				}
+				catch { }
+			}
+
+			Refresh();
 		}
 
 		private IDisposable GetOverlayRefreshHeartBeat()

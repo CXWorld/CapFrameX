@@ -27,6 +27,7 @@ namespace CapFrameX.ViewModel
 		private IKeyboardMouseEvents _globalOverlayHookEvent;
 		private IKeyboardMouseEvents _globalResetHistoryHookEvent;
 		private int _selectedOverlayEntryIndex = -1;
+		private string _updateHpyerlinkText;
 
 		private bool IsOverlayActive
 		{
@@ -214,6 +215,17 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
+		public string UpdateHpyerlinkText
+		{
+			get { return _updateHpyerlinkText; }
+			set
+			{
+				_updateHpyerlinkText = value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public bool IsRTSSInstalled {get;}
 
 		public IAppConfiguration AppConfiguration => _appConfiguration;
 
@@ -246,7 +258,10 @@ namespace CapFrameX.ViewModel
 			if (IsOverlayActive)
 				_overlayService.ShowOverlay();
 
-			_overlayService.IsOverlayActiveStream.OnNext(_appConfiguration.IsOverlayActive);
+			IsRTSSInstalled = !string.IsNullOrEmpty(_overlayService.GetRTSSFullPath());
+			UpdateHpyerlinkText = "Install latest RivaTuner Statistics Server (RTSS) to use overlay.";
+
+			//_overlayService.IsOverlayActiveStream.OnNext(_appConfiguration.IsOverlayActive && IsRTSSInstalled);
 			OverlayEntries.AddRange(_overlayEntryProvider.GetOverlayEntries());
 
 			SetGlobalHookEventOverlayHotkey();
@@ -356,7 +371,8 @@ namespace CapFrameX.ViewModel
 		{
 			if (dropInfo != null)
 			{
-				dropInfo.DropTargetAdorner = DropTargetAdorners.Highlight;
+				// standard behavior
+				dropInfo.DropTargetAdorner = DropTargetAdorners.Insert;
 				dropInfo.Effects = DragDropEffects.Move;
 			}
 		}

@@ -108,7 +108,7 @@ namespace CapFrameX.ViewModel
 
 			IsDirectoryObserving = true;
 			IsCaptureModeActive = false;
-			IsOverlayActive = _appConfiguration.IsOverlayActive;
+			IsOverlayActive = _appConfiguration.IsOverlayActive && !string.IsNullOrEmpty(_overlayService.GetRTSSFullPath());
 
 			UpdateHpyerlinkText = $"New version available on GitHub: v{WebCheck.GetWebVersion(WebCheck.VersionSourceFileUrl)}";
 

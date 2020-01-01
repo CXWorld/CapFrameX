@@ -6,6 +6,7 @@ using CapFrameX.Statistics;
 using CapFrameX.ViewModel;
 using Prism.Events;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -145,6 +146,12 @@ namespace CapFrameX.View
 		{
 			(DataContext as OverlayViewModel).SelectedOverlayEntryIndex = -1;
 			Keyboard.ClearFocus();
+		}
+
+		private void Hyperlink_RequestNavigate(object sender, System.Windows.Navigation.RequestNavigateEventArgs e)
+		{
+			Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri));
+			e.Handled = true;
 		}
 	}
 }
