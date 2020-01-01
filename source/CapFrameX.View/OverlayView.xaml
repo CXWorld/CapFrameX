@@ -38,14 +38,14 @@
             <RowDefinition Height="380"></RowDefinition>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="500"/>
+            <ColumnDefinition Width="450"/>
             <ColumnDefinition Width="450"/>
         </Grid.ColumnDefinitions>
         <DockPanel Grid.Row="1" Grid.Column="0" Margin="0 0 10 0">
             <!--DataGrid and Overlay hotkey-->
             <TextBlock Margin="0 0 0 10" DockPanel.Dock="Top" HorizontalAlignment="Center" Text="Overlay items" FontSize="14"/>
             <StackPanel DockPanel.Dock="Top" Orientation="Vertical" HorizontalAlignment="Center">
-				<DataGrid x:Name="OverlayItemDataGrid" Height="280" Width="470" Background="#F5F5F5" FontSize="11"
+				<DataGrid x:Name="OverlayItemDataGrid" Height="280" Width="400" Background="#F5F5F5" FontSize="11"
 						  MouseLeave="OverlayItemDataGrid_MouseLeave"
 					      SelectedIndex="{Binding SelectedOverlayEntryIndex}" ItemsSource="{Binding OverlayEntries}"
 					      CanUserSortColumns="False" CanUserAddRows="False" AutoGenerateColumns="False"
@@ -100,10 +100,10 @@
 								</Style>
 							</DataGridCheckBoxColumn.CellStyle>
 						</DataGridCheckBoxColumn>
-						<DataGridTextColumn Binding="{Binding Color, Mode=TwoWay}"
+						<!--<DataGridTextColumn Binding="{Binding Color, Mode=TwoWay}"
 										    Width="100"
                                             Header="Hex-color"
-                                            IsReadOnly="False"/>
+                                            IsReadOnly="False"/>-->
 					</DataGrid.Columns>
                 </DataGrid>
                 <TextBlock HorizontalAlignment="Center" Text="Drag &amp; Drop to change order"/>

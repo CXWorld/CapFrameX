@@ -370,7 +370,7 @@ void RTSSCoreControl::Refresh()
     else
     {
       // Add CX label
-      groupedString.Add("CX OSD", "", "\n", " ");
+      groupedString.Add("<C3>CX OSD<C>", "", "\n", " ");
     }
     //move to position 0,0 (in zoomed pixel units)
 
@@ -387,6 +387,8 @@ void RTSSCoreControl::Refresh()
     strOSD += "<C1=FF00A0>";
     //define color variable C[1] as R=FF,G=00 and B=A0
     strOSD += "<C2=FFFFFF>";
+    //define color variable C[1] as R=FF,G=FF and B=FF
+    strOSD += "<C3=2297F3>";
     //define color variable C[1] as R=FF,G=FF and B=FF
     strOSD += "<S0=-50>";
     //define size variable S[0] as 50% subscript (positive is superscript, negative is subscript)
@@ -432,8 +434,8 @@ void RTSSCoreControl::AddOverlayEntry(CGroupedString* groupedString, OverlayEntr
       for (int i = 0; i < RunHistory.size(); i++)
       {
         CString strGroup;
-        strGroup.Format("Run %d:", i + 1);
-        groupedString->Add(RunHistory[i], strGroup, "\n");
+        strGroup.Format("<C2>Run %d:<C>", i + 1);
+        groupedString->Add("<C3>" + RunHistory[i] + "<C>", strGroup, "\n");
       }
     }
   }
@@ -443,7 +445,7 @@ void RTSSCoreControl::AddOverlayEntry(CGroupedString* groupedString, OverlayEntr
     {
       if (bFormatTagsSupported && m_bFormatTags)
       {
-        groupedString->Add("<A0><FR><A><A1><S1> FPS<S><A>", "<C2><APP><C>", "\n", m_bFormatTags ? " " : ", ");
+        groupedString->Add("<A0><C3><FR><C><A><A1><S1><C3> FPS<C><S><A>", "<C2><APP><C>", "\n", m_bFormatTags ? " " : ", ");
         //print application-specific 3D API, framerate and frametime using tags
       }
       else
@@ -459,7 +461,7 @@ void RTSSCoreControl::AddOverlayEntry(CGroupedString* groupedString, OverlayEntr
     {
       if (bFormatTagsSupported && m_bFormatTags)
       {
-        groupedString->Add("<A0><FT><A><A1><S1> ms<S><A>", "<C2><APP><C>", "\n", m_bFormatTags ? " " : ", ");
+        groupedString->Add("<A0><C3><FT><C><A><A1><S1><C3> ms<C><S><A>", "<C2><APP><C>", "\n", m_bFormatTags ? " " : ", ");
         //print application-specific 3D API, framerate and frametime using tags
       }
       else
@@ -473,7 +475,14 @@ void RTSSCoreControl::AddOverlayEntry(CGroupedString* groupedString, OverlayEntr
   {
     if (entry->ShowOnOverlay)
     {
-      groupedString->Add(entry->Value, entry->GroupName, "\n", " ");
+      CString groupName = entry->GroupName;
+
+      if (groupName != "")
+      {
+        groupName = "<C2>" + groupName + "<C>";
+      }
+
+      groupedString->Add("<C3>" + entry->Value + "<C>", groupName, "\n", " ");
     }
   }
 }

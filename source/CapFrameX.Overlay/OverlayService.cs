@@ -103,7 +103,7 @@ namespace CapFrameX.Overlay
 		public void SetCaptureTimerValue(int t)
 		{
 			var captureTimer = _overlayEntryProvider.GetOverlayEntry("CaptureTimer");
-			captureTimer.Value = t;
+			captureTimer.Value = $"{t.ToString()} s";
 			SetOverlayEntries(_overlayEntryProvider?.GetOverlayEntries());
 		}
 
@@ -146,7 +146,7 @@ namespace CapFrameX.Overlay
 				ThirdMetric.ConvertToEnum<EMetric>() != EMetric.None ?
 				$"{ThirdMetric.ConvertToEnum<EMetric>().GetShortDescription()}=" +
 				$"{thrirdMetricValue.ToString(numberFormat, cultureInfo)} " +
-				$"FPS | " : string.Empty;
+				$"FPS" : string.Empty;
 
 			var currentList = new List<string>() 
 			{ 
