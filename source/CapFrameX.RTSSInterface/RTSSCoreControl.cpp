@@ -498,14 +498,14 @@ void RTSSCoreControl::AddOverlayEntry(CGroupedString* groupedString, OverlayEntr
     if (entry->ShowOnOverlay)
     {
       CString groupName = entry->GroupName;
+      CString value = entry->Value;
 
       if (groupName != "")
       {
-        groupName = "<C2>" + groupName + "<C>";
+        groupName = "<C2>" + groupName + " <C>";
+        groupedString->Add("<C4> " + value + "<C>", groupName, "\n", " ");
       }
-
-      CString value = entry->Value;
-
+      else
       groupedString->Add("<C4>" + value + "<C>", groupName, "\n", " ");
     }
   }
