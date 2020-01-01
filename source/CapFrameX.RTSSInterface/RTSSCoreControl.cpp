@@ -439,8 +439,8 @@ void RTSSCoreControl::AddOverlayEntry(CGroupedString* groupedString, OverlayEntr
       for (int i = 0; i < RunHistory.size(); i++)
       {
         CString strGroup;
-        strGroup.Format("<C2>Run %d:<C>", i + 1);
-        groupedString->Add("<C3>" + RunHistory[i] + "<C>", strGroup, "\n");
+        strGroup.Format("<C2>Run %d: <C>", i + 1);
+        groupedString->Add("<C3> " + RunHistory[i] + "<C>", strGroup, "\n");
       }
     }
   }
@@ -452,10 +452,13 @@ void RTSSCoreControl::AddOverlayEntry(CGroupedString* groupedString, OverlayEntr
 
       if (groupName != "")
       {
-        groupName = "<C2>" + groupName + "<C>";
+        groupName = "<C2>" + groupName + " <C>";
+        groupedString->Add("<A=0><C3> " + entry->Value + "<C><A>", groupName, "\n", " ");
       }
-
-      groupedString->Add("<A=20><C3>" + entry->Value + "<C><A>", groupName, "\n", " ");
+      else
+      {
+        groupedString->Add("<A=0><C3>" + entry->Value + "<C><A>", groupName, "\n", " ");
+      }      
     }
   }
   else if (entry->Identifier == "Framerate")
@@ -464,7 +467,7 @@ void RTSSCoreControl::AddOverlayEntry(CGroupedString* groupedString, OverlayEntr
     {
       if (bFormatTagsSupported && m_bFormatTags)
       {
-        groupedString->Add("<A=0><C4><FR><C><A><A1><S1><C4> FPS<C><S><A>", "<C2><APP><C>", "\n", m_bFormatTags ? " " : ", ");
+        groupedString->Add("<A=-4><C4><FR><C><A><A1><S1><C4> FPS<C><S><A>", "<C2><APP> <C>", "\n", m_bFormatTags ? " " : ", ");
         //print application-specific 3D API, framerate and frametime using tags
       }
       else
@@ -480,7 +483,7 @@ void RTSSCoreControl::AddOverlayEntry(CGroupedString* groupedString, OverlayEntr
     {
       if (bFormatTagsSupported && m_bFormatTags)
       {
-        groupedString->Add("<A=0><C4><FT><C><A><A1><S1><C4> ms<C><S><A>", "<C2><APP><C>", "\n", m_bFormatTags ? " " : ", ");
+        groupedString->Add("<A=-4><C4><FT><C><A><A1><S1><C4> ms<C><S><A>", "<C2><APP> <C>", "\n", m_bFormatTags ? " " : ", ");
         //print application-specific 3D API, framerate and frametime using tags
       }
       else
