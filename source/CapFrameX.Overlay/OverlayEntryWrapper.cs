@@ -9,9 +9,11 @@ namespace CapFrameX.Overlay
 	{
 		private string _valueFormat;
 		private bool _showOnOverlay;
+		private bool _showOnOverlayIsEnabled;
 		private string _groupName;
 		private object _value;
 		private bool _showGraph;
+		private bool _showGraphIsEnabled;
 		private string _color;
 
 		[JsonIgnore]
@@ -38,7 +40,15 @@ namespace CapFrameX.Overlay
 			}
 		}
 
-		public bool ShowOnOverlayIsEnabled { get; set; }
+		public bool ShowOnOverlayIsEnabled
+		{
+			get { return _showOnOverlayIsEnabled; }
+			set
+			{
+				_showOnOverlayIsEnabled = value;
+				RaisePropertyChanged();
+			}
+		}
 
 		public string GroupName
 		{
@@ -72,7 +82,15 @@ namespace CapFrameX.Overlay
 			}
 		}
 
-		public bool ShowGraphIsEnabled { get; set; }
+		public bool ShowGraphIsEnabled
+		{
+			get { return _showGraphIsEnabled; }
+			set
+			{
+				_showGraphIsEnabled = value;
+				RaisePropertyChanged();
+			}
+		}
 
 		/// <summary>
 		/// Display color in hex format

@@ -380,7 +380,6 @@ void RTSSCoreControl::Refresh()
 
     strOSD += "<A0=-5>";
     //define align variable A[0] as right alignment by 5 symbols (positive is left, negative is right)
-    //strOSD += "<A1=4>";
     strOSD += "<A1=4>";
     //define align variable A[1] as left alignment by 4 symbols (positive is left, negative is right)
     strOSD += "<C0=FFA0A0>";
@@ -506,7 +505,7 @@ void RTSSCoreControl::AddOverlayEntry(CGroupedString* groupedString, OverlayEntr
         groupedString->Add("<C4> " + value + "<C>", groupName, "\n", " ");
       }
       else
-      groupedString->Add("<C4>" + value + "<C>", groupName, "\n", " ");
+        groupedString->Add("<C4>" + value + "<C>", groupName, "\n", " ");
     }
   }
 }

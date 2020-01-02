@@ -163,13 +163,8 @@ namespace CapFrameX.ViewModel
 			}
 			set
 			{
-				_appConfiguration.UseRunHistory =
-					value;
-
-				if (!value)
-				{
-					UseAggregation = false;
-				}
+				_appConfiguration.UseRunHistory = value;
+				OnUseRunHistoryChanged();
 
 				RaisePropertyChanged();
 			}
@@ -225,7 +220,7 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-		public bool IsRTSSInstalled {get;}
+		public bool IsRTSSInstalled { get; }
 
 		public IAppConfiguration AppConfiguration => _appConfiguration;
 
@@ -261,11 +256,32 @@ namespace CapFrameX.ViewModel
 			IsRTSSInstalled = !string.IsNullOrEmpty(_overlayService.GetRTSSFullPath());
 			UpdateHpyerlinkText = "Install latest RivaTuner Statistics Server (RTSS) to use overlay.";
 
-			//_overlayService.IsOverlayActiveStream.OnNext(_appConfiguration.IsOverlayActive && IsRTSSInstalled);
 			OverlayEntries.AddRange(_overlayEntryProvider.GetOverlayEntries());
 
 			SetGlobalHookEventOverlayHotkey();
 			SetGlobalHookEventResetHistoryHotkey();
+		}
+
+		private void OnUseRunHistoryChanged()
+		{
+			var historyEntry = _overlayEntryProvider.GetOverlayEntry("RunHistory");
+
+			if (!UseRunHistory)
+			{
+				UseAggregation = false;
+
+				// don't show history on overlay
+				if (historyEntry != null)
+				{
+					historyEntry.ShowOnOverlay = false;
+					historyEntry.ShowOnOverlayIsEnabled = false;
+				}
+			}
+			else
+			{
+				if (historyEntry != null)
+					historyEntry.ShowOnOverlayIsEnabled = true;
+			}
 		}
 
 		private void UpdateGlobalOverlayHookEvent()

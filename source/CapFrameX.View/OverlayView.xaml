@@ -152,12 +152,12 @@
 				<!--Global history toogle-->
 				<StackPanel Grid.Row="0" Grid.ColumnSpan="2" HorizontalAlignment="Center" VerticalAlignment="Bottom" Orientation="Vertical">
 					<TextBlock Text="Run history" Margin="5"/>
-					<ToggleButton IsChecked="{Binding UseRunHistory}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTipService.ShowDuration="25000">
+					<ToggleButton IsChecked="{Binding UseRunHistory}" Style="{StaticResource MaterialDesignSwitchToggleButton}" 
+								  ToolTipService.ShowDuration="25000">
 						<ToggleButton.ToolTip>
 							<ToolTip MaxWidth="250">
-								<TextBlock 
-                             Text="Saves a set number of runs into a history which can be displayed in the overlay"                               
-                             TextWrapping="Wrap"/>
+								<TextBlock Text="Saves a set number of runs into a history which can be displayed in the overlay"                               
+										   TextWrapping="Wrap"/>
 							</ToolTip>
 						</ToggleButton.ToolTip>
 					</ToggleButton>
@@ -178,10 +178,9 @@
 					  ItemsSource="{Binding Path=NumberOfRunsItemsSource}" ToolTipService.ShowDuration="25000">
 						<ComboBox.ToolTip>
 							<ToolTip StaysOpen="True" MaxWidth="275">
-								<TextBlock 
-                       Text="The number of runs written into the history.
-							Any additional run will replace the oldest one." 
-                       TextWrapping="Wrap"/>
+								<TextBlock Text="The number of runs written into the history.
+											Any additional run will replace the oldest one." 
+										   TextWrapping="Wrap"/>
 							</ToolTip>
 						</ComboBox.ToolTip>
 						<ComboBox.Text>
