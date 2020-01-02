@@ -84,7 +84,7 @@ namespace CapFrameX.Data
 		}
 
 		public bool SavePresentData(IList<string> recordLines, string filePath, 
-			string processName, int captureTime)
+			string processName)
 		{
 			try
 			{
@@ -156,26 +156,15 @@ namespace CapFrameX.Data
 
 				foreach (var dataLine in recordLines.Skip(1))
 				{
-					var extractedProcessName = GetProcessNameFromDataLine(dataLine);
-					if (extractedProcessName != null)
-					{
-						if (extractedProcessName == processName)
-						{
-							double currentStartTime = GetStartTimeFromDataLine(dataLine);
+					double currentStartTime = GetStartTimeFromDataLine(dataLine);
 
-							// normalize time
-							double normalizedTime = currentStartTime - timeStart;
+					// normalize time
+					double normalizedTime = currentStartTime - timeStart;
 
-							// cutting offset
-							if (captureTime > 0 && normalizedTime > captureTime)
-								break;
+					currentLineSplit = dataLine.Split(',');
+					currentLineSplit[11] = normalizedTime.ToString(CultureInfo.InvariantCulture);
 
-							currentLineSplit = dataLine.Split(',');
-							currentLineSplit[11] = normalizedTime.ToString(CultureInfo.InvariantCulture);
-
-							csv.AppendLine(string.Join(",", currentLineSplit));
-						}
-					}
+					csv.AppendLine(string.Join(",", currentLineSplit));
 				}
 
 				using (var sw = new StreamWriter(filePath))
@@ -203,6 +192,16 @@ namespace CapFrameX.Data
 			}
 
 			return processName;
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static string GetProcessIdFromDataLine(string dataLine)
+		{
+			if (string.IsNullOrWhiteSpace(dataLine))
+				return null;
+
+			var lineSplit = dataLine.Split(',');
+			return lineSplit[1];
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]

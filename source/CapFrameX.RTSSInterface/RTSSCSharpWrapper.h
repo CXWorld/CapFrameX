@@ -53,6 +53,11 @@ public:
     }
   }
 
+  void SetRunHistoryAggregation(String^ aggregation)
+  {
+    _coreControl->RunHistoryAggregation = aggregation;
+  }
+
   void SetOverlayEntries(array<IOverlayEntry^>^ overlayEntries)
   {
     if (overlayEntries == nullptr || overlayEntries->Length == 0)

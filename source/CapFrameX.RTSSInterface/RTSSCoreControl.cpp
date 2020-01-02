@@ -441,6 +441,12 @@ void RTSSCoreControl::AddOverlayEntry(CGroupedString* groupedString, OverlayEntr
         strGroup.Format("<C2>Run %d: <C>", i + 1);
         groupedString->Add("<C3> " + RunHistory[i] + "<C>", strGroup, "\n");
       }
+
+      // add aggregation
+      if (RunHistoryAggregation != "")
+      {
+        groupedString->Add("<C3> " + RunHistoryAggregation + "<C>", "<C2>Result: <C>", "\n");
+      }
     }
   }
   else if (entry->Identifier == "CaptureServiceStatus")

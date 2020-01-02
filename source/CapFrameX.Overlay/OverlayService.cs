@@ -25,6 +25,8 @@ namespace CapFrameX.Overlay
 		private IDisposable _disposableCaptureTimer;
 
 		private List<string> _runHistory = new List<string>();
+		private List<List<string>> _captureDataHistory = new List<List<string>>();
+		private List<List<double>> _frametimeHistory = new List<List<double>>();
 		private int _refreshPeriod;
 		private int _numberOfRuns;
 
@@ -34,8 +36,10 @@ namespace CapFrameX.Overlay
 
 		public string ThirdMetric { get; set; }
 
-		public OverlayService(IStatisticProvider statisticProvider, 
-			IOverlayEntryProvider overlayEntryProvider, IAppConfiguration appConfiguration) 
+		public int RunHistoryCount => _runHistory.Count(run => run != "N/A");
+
+		public OverlayService(IStatisticProvider statisticProvider,
+			IOverlayEntryProvider overlayEntryProvider, IAppConfiguration appConfiguration)
 			: base()
 		{
 			_statisticProvider = statisticProvider;
@@ -49,12 +53,13 @@ namespace CapFrameX.Overlay
 			IsOverlayActiveStream = new Subject<bool>();
 
 			SetOverlayEntries(overlayEntryProvider?.GetOverlayEntries());
-			overlayEntryProvider.EntryUpdateStream.Subscribe(x => 
+			overlayEntryProvider.EntryUpdateStream.Subscribe(x =>
 				SetOverlayEntries(overlayEntryProvider?.GetOverlayEntries()));
 
 			_runHistory = Enumerable.Repeat("N/A", _numberOfRuns).ToList();
 			SetRunHistory(_runHistory.ToArray());
-		 }
+			SetRunHistoryAggregation(string.Empty);
+		}
 
 		public void ShowOverlay()
 		{
@@ -124,41 +129,40 @@ namespace CapFrameX.Overlay
 		public void ResetHistory()
 		{
 			_runHistory = Enumerable.Repeat("N/A", _numberOfRuns).ToList();
+			_captureDataHistory.Clear();
+			_frametimeHistory.Clear();
 			SetRunHistory(_runHistory.ToArray());
+			SetRunHistoryAggregation(string.Empty);
 		}
 
 		public void AddRunToHistory(List<string> captureData)
 		{
 			var frametimes = captureData.Select(line => RecordDataProvider.GetFrameTimeFromDataLine(line)).ToList();
-			var average = _statisticProvider.GetFpsMetricValue(frametimes, EMetric.Average);
-			var secondMetricValue = _statisticProvider.GetFpsMetricValue(frametimes, SecondMetric.ConvertToEnum<EMetric>());
-			var thrirdMetricValue = _statisticProvider.GetFpsMetricValue(frametimes, ThirdMetric.ConvertToEnum<EMetric>());
-			string numberFormat = string.Format("F{0}", _appConfiguration.FpsValuesRoundingDigits);
-			var cultureInfo = CultureInfo.InvariantCulture;
 
-			string secondMetricString = 
-				SecondMetric.ConvertToEnum<EMetric>() != EMetric.None ? 
-				$"{SecondMetric.ConvertToEnum<EMetric>().GetShortDescription()}=" +
-				$"{secondMetricValue.ToString(numberFormat, cultureInfo)} " +
-				$"FPS | " : string.Empty;
-
-			string thirdMetricString =
-				ThirdMetric.ConvertToEnum<EMetric>() != EMetric.None ?
-				$"{ThirdMetric.ConvertToEnum<EMetric>().GetShortDescription()}=" +
-				$"{thrirdMetricValue.ToString(numberFormat, cultureInfo)} " +
-				$"FPS" : string.Empty;
-
-			var currentList = new List<string>() 
-			{ 
-				$"Avg={average.ToString(numberFormat, cultureInfo)} " +
-				$"FPS | " + secondMetricString + thirdMetricString 
-			};
-			_runHistory = currentList.Concat(_runHistory).ToList();
+			// metric history
+			_runHistory.Insert(0, GetMetrics(frametimes));
 
 			if (_runHistory.Count > _numberOfRuns)
 				_runHistory.RemoveAt(_runHistory.Count - 1);
 
 			SetRunHistory(_runHistory.ToArray());
+
+			// capture data history
+			_captureDataHistory.Insert(0, captureData);
+
+			if (_captureDataHistory.Count > _numberOfRuns)
+				_captureDataHistory.RemoveAt(_captureDataHistory.Count - 1);
+
+			// frametime history
+			_frametimeHistory.Insert(0, frametimes);
+
+			if (_frametimeHistory.Count > _numberOfRuns)
+				_frametimeHistory.RemoveAt(_frametimeHistory.Count - 1);
+
+			if (RunHistoryCount == _numberOfRuns)
+			{
+				SetRunHistoryAggregation(GetAggregation());
+			}
 		}
 
 		public void UpdateOverlayEntries()
@@ -254,6 +258,42 @@ namespace CapFrameX.Overlay
 			return Observable
 				.Timer(DateTimeOffset.UtcNow, TimeSpan.FromSeconds(1))
 				.Subscribe(x => SetCaptureTimerValue((int)x));
+		}
+
+		private string GetAggregation()
+		{
+			var concatedFrametimes = new List<double>(_frametimeHistory.Sum(set => set.Count));
+
+			foreach (var frametimeSet in _frametimeHistory)
+			{
+				concatedFrametimes.AddRange(frametimeSet);
+			}
+
+			return GetMetrics(concatedFrametimes);
+		}
+
+		private string GetMetrics(List<double> frametimes)
+		{
+			var average = _statisticProvider.GetFpsMetricValue(frametimes, EMetric.Average);
+			var secondMetricValue = _statisticProvider.GetFpsMetricValue(frametimes, SecondMetric.ConvertToEnum<EMetric>());
+			var thrirdMetricValue = _statisticProvider.GetFpsMetricValue(frametimes, ThirdMetric.ConvertToEnum<EMetric>());
+			string numberFormat = string.Format("F{0}", _appConfiguration.FpsValuesRoundingDigits);
+			var cultureInfo = CultureInfo.InvariantCulture;
+
+			string secondMetricString =
+				SecondMetric.ConvertToEnum<EMetric>() != EMetric.None ?
+				$"{SecondMetric.ConvertToEnum<EMetric>().GetShortDescription()}=" +
+				$"{secondMetricValue.ToString(numberFormat, cultureInfo)} " +
+				$"FPS | " : string.Empty;
+
+			string thirdMetricString =
+				ThirdMetric.ConvertToEnum<EMetric>() != EMetric.None ?
+				$"{ThirdMetric.ConvertToEnum<EMetric>().GetShortDescription()}=" +
+				$"{thrirdMetricValue.ToString(numberFormat, cultureInfo)} " +
+				$"FPS" : string.Empty;
+
+			return $"Avg={average.ToString(numberFormat, cultureInfo)} " +
+				$"FPS | " + secondMetricString + thirdMetricString;
 		}
 	}
 }
