@@ -75,7 +75,13 @@
 											</ControlTemplate>
 										</Setter.Value>
 									</Setter>
+									<Style.Triggers>
+										<Trigger Property="DataGridCell.IsSelected" Value="True">
+											<Setter Property="Background" Value="#DCDCDC" />
+										</Trigger>
+									</Style.Triggers>
 								</Style>
+								
 							</DataGridCheckBoxColumn.CellStyle>
 						</DataGridCheckBoxColumn>
 						<DataGridTextColumn Binding="{Binding Description, Mode=TwoWay}"
@@ -99,6 +105,11 @@
 											</ControlTemplate>
 										</Setter.Value>
 									</Setter>
+									<Style.Triggers>
+										<Trigger Property="DataGridCell.IsSelected" Value="True">
+											<Setter Property="Background" Value="#DCDCDC" />
+										</Trigger>
+									</Style.Triggers>
 								</Style>
 							</DataGridCheckBoxColumn.CellStyle>
 						</DataGridCheckBoxColumn>
