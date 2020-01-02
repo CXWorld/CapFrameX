@@ -16,7 +16,7 @@ dwm
 EpicGamesLauncher
 explorer
 firefox
-GalaxyClient Helper
+GalaxyClient_Helper
 GameBar
 HxAccounts
 HxOutlook

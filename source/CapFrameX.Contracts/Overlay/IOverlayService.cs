@@ -11,6 +11,8 @@ namespace CapFrameX.Contracts.Overlay
 
 		string ThirdMetric { get; set; }
 
+		int RunHistoryCount { get; }
+
 		void ShowOverlay();
 
 		void HideOverlay();
@@ -34,6 +36,8 @@ namespace CapFrameX.Contracts.Overlay
 		void ResetHistory();
 
 		void AddRunToHistory(List<string> captureData);
+
+		void SetRunHistoryAggregation(string aggregation);
 
 		void UpdateOverlayEntries();
 

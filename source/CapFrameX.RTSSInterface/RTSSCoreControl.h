@@ -29,6 +29,7 @@ public:
 	void												ReleaseOSD();
 	void												Refresh();
 	std::vector<CString>				RunHistory;
+	CString											RunHistoryAggregation;
 	std::vector<OverlayEntry>		OverlayEntries;
 
 // Implementation

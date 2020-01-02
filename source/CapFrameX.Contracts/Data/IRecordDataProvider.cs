@@ -9,7 +9,7 @@ namespace CapFrameX.Contracts.Data
 
         IList<IFileRecordInfo> GetFileRecordInfoList();
 
-        bool SavePresentData(IList<string> recordLines, string filePath, string processName, int captureTime);
+        bool SavePresentData(IList<string> recordLines, string filePath, string processName);
 
         void AddGameNameToMatchingList(string processName, string gameName);
 
