@@ -114,30 +114,41 @@ namespace CapFrameX.ViewModel
 					value;
 
 				_overlayService.UpdateNumberOfRuns(value);
-
-				if (SelectedNumberOfAggregationRuns > SelectedNumberOfRuns)
-					SelectedNumberOfAggregationRuns = SelectedNumberOfRuns;
-
 				RaisePropertyChanged();
-				RaisePropertyChanged(nameof(NumberOfAggregationRunsItemsSource));
-				RaisePropertyChanged(nameof(SelectedNumberOfAggregationRuns));
 			}
 		}
 
-		public int SelectedNumberOfAggregationRuns
+		public int SelectedOutlierPercentage
 		{
 			get
 			{
 				return _appConfiguration
-				  .SelectedAggregationRuns;
+				  .OutlierPercentage;
 			}
 			set
 			{
-				_appConfiguration.SelectedAggregationRuns =
+				_appConfiguration.OutlierPercentage =
 					value;
 				RaisePropertyChanged();
 			}
 		}
+
+		public EAggregationMode SelectedAggregationMode
+		{
+			get
+			{
+				return _appConfiguration
+				  .AggregationMode
+				  .ConvertToEnum<EAggregationMode>();
+			}
+			set
+			{
+				_appConfiguration.AggregationMode =
+					value.ConvertToString();
+				RaisePropertyChanged();
+			}
+		}
+
 		public int OSDRefreshPeriod
 		{
 			get
@@ -233,9 +244,13 @@ namespace CapFrameX.ViewModel
 											 .Where(metric => metric != EMetric.Average)
 											 .ToArray();
 
-		public Array NumberOfRunsItemsSource => Enumerable.Range(2, 4).ToArray();
+		public Array NumberOfRunsItemsSource => Enumerable.Range(3, 3).ToArray();
 
-		public Array NumberOfAggregationRunsItemsSource => Enumerable.Range(2, SelectedNumberOfRuns - 1).ToArray();
+		public Array OutlierPercentageItemsSource => Enumerable.Range(2, 4).ToArray();
+
+		public Array AggregationModeItems => Enum.GetValues(typeof(EAggregationMode))
+														.Cast<EAggregationMode>()
+														.ToArray();
 
 		public Array RefreshPeriodItemsSource => new[] { 200, 300, 400, 500, 600, 700, 800, 900, 1000 };
 

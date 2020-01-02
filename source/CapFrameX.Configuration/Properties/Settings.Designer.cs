@@ -541,13 +541,13 @@ namespace CapFrameX.Configuration.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("3")]
-        public int SelectedAggregationRuns {
+        [global::System.Configuration.DefaultSettingValueAttribute("Ignore")]
+        public string AggregationMode {
             get {
-                return ((int)(this["SelectedAggregationRuns"]));
+                return ((string)(this["AggregationMode"]));
             }
             set {
-                this["SelectedAggregationRuns"] = value;
+                this["AggregationMode"] = value;
             }
         }
         
@@ -572,6 +572,18 @@ namespace CapFrameX.Configuration.Properties {
             }
             set {
                 this["KeepRecordFiles"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("3")]
+        public int OutlierPercentage {
+            get {
+                return ((int)(this["OutlierPercentage"]));
+            }
+            set {
+                this["OutlierPercentage"] = value;
             }
         }
     }

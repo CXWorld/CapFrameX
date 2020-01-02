@@ -259,38 +259,41 @@
 						<ColumnDefinition Width="225"/>
 						<ColumnDefinition Width="225"/>
 					</Grid.ColumnDefinitions>
-					<ComboBox Grid.Column="0" VerticalAlignment="Bottom" materialDesign:HintAssist.Hint="Runs to aggregate"
+					<ComboBox Grid.Column="0" VerticalAlignment="Bottom" materialDesign:HintAssist.Hint="Aggregation mode"
 					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Width="120"
-					  ItemsSource="{Binding Path=NumberOfAggregationRunsItemsSource}" ToolTipService.ShowDuration="25000">
+					  ItemsSource="{Binding AggregationModeItems}" SelectedItem="{Binding SelectedAggregationMode}" 
+                              ToolTipService.ShowDuration="25000">
 						<ComboBox.ToolTip>
-							<ToolTip StaysOpen="True" MaxWidth="275">
-								<TextBlock 
-                             Text="Runs used for aggregation.  
-                                If the number is smaller than the number of runs in the history, the worst runs will be ignored." 
+							<ToolTip MaxWidth="350">
+                                <TextBlock
+                             Text="Ignore outliers&#10;If a run is x% slower than the median of all runs, it will be ignored for aggregation.
+                                   
+                                   &#10;&#10;Repeat outliers&#10;If a run is x% slower than the median of all runs, 
+                                   it will be marked red and you can do another run to replace it before the runs are being aggregated.
+                                    
+                                   &#10;&#10;Include outliers&#10;Use all runs in the history for aggregation regardless of outliers" 
                              TextWrapping="Wrap"/>
 							</ToolTip>
 						</ComboBox.ToolTip>
-						<ComboBox.Text>
-							<Binding Path="SelectedNumberOfAggregationRuns"
-							Mode="TwoWay"
-							UpdateSourceTrigger="PropertyChanged">
-							</Binding>
-						</ComboBox.Text>
-					</ComboBox>
-					<CheckBox Margin="15 0 0 0" Grid.Column="1" VerticalAlignment="Bottom" Width="150" IsChecked="{Binding KeepRecordFiles}"
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}"/>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                    <ComboBox Margin="15 0 0 0" Grid.Column="1" VerticalAlignment="Bottom" materialDesign:HintAssist.Hint="Outlier percentage"
+					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Width="120"
+					  ItemsSource="{Binding OutlierPercentageItemsSource}" SelectedItem="{Binding SelectedOutlierPercentage}" 
                               ToolTipService.ShowDuration="25000">
-						<CheckBox.ToolTip>
-							<ToolTip StaysOpen="True" MaxWidth="275">
-								<TextBlock 
-                             Text="If unchecked, all record files within the run history will be deleted after aggregation and only the aggregated file will be kept." 
+                        <ComboBox.ToolTip>
+                            <ToolTip MaxWidth="350">
+                                <TextBlock
+                             Text="Percentage a run has to differ from the median before it is seen as outlier" 
                              TextWrapping="Wrap"/>
-							</ToolTip>
-						</CheckBox.ToolTip>
-						<TextBlock Padding="5 0 0 0" TextWrapping="WrapWithOverflow">
-  					     Keep all record files after aggregation
-						</TextBlock>
-					</CheckBox>
-				</Grid>
+                            </ToolTip>
+                        </ComboBox.ToolTip>
+                    </ComboBox>
+                </Grid>
 			</Grid>
 		</Border>
 

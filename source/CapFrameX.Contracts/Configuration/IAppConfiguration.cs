@@ -84,12 +84,13 @@
 
 		bool UseAggregation { get; set; }
 
-		int SelectedAggregationRuns { get; set; }
+		string AggregationMode { get; set; }
 
 		int SelectedHistoryRuns { get; set; }
 
 		int OSDRefreshPeriod { get; set; }
 
 		bool KeepRecordFiles { get; set; }
+		int OutlierPercentage { get; set; }
 	}
 }

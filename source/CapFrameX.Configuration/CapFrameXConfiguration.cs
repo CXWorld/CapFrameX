@@ -173,10 +173,10 @@ namespace CapFrameX.Configuration
 			set { Settings.SelectedHistoryRuns = value; Settings.Save(); }
 		}
 
-		public int SelectedAggregationRuns
+		public string AggregationMode
 		{
-			get { return Settings.SelectedAggregationRuns; }
-			set { Settings.SelectedAggregationRuns = value; Settings.Save(); }
+			get { return Settings.AggregationMode; }
+			set { Settings.AggregationMode = value; Settings.Save(); }
 		}
 
 		public int OSDRefreshPeriod
@@ -273,6 +273,11 @@ namespace CapFrameX.Configuration
 		{
 			get { return Settings.KeepRecordFiles; }
 			set { Settings.KeepRecordFiles = value; Settings.Save(); }
+		}
+		public int OutlierPercentage
+		{
+			get { return Settings.OutlierPercentage; }
+			set { Settings.OutlierPercentage = value; Settings.Save(); }
 		}
 	}
 }
