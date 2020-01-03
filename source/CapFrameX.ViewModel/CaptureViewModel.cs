@@ -560,7 +560,6 @@ namespace CapFrameX.ViewModel
 
 				// Start overlay countdown timer
 				_overlayService.StartCountdown(Convert.ToInt32(CaptureTimeString));
-
 				_cancellationTokenSource = new CancellationTokenSource();
 
 				// data timer
@@ -757,9 +756,6 @@ namespace CapFrameX.ViewModel
 			if (backupProcessList.Count != ProcessesToCapture.Count)
 			{
 				UpdateGlobalCaptureHookEvent();
-
-				// reset run history
-				_overlayService.ResetHistory();
 			}
 
 			if (!processList.Contains(selectedProcessToCapture))

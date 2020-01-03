@@ -131,7 +131,7 @@
     <Setting Name="SelectedHistoryRuns" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">3</Value>
     </Setting>
-    <Setting Name="AggregationMode" Type="System.String" Scope="User">
+    <Setting Name="OutlierHandling" Type="System.String" Scope="User">
       <Value Profile="(Default)">Ignore</Value>
     </Setting>
     <Setting Name="OSDRefreshPeriod" Type="System.Int32" Scope="User">
@@ -142,6 +142,9 @@
     </Setting>
     <Setting Name="OutlierPercentage" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">3</Value>
+    </Setting>
+    <Setting Name="RelatedMetric" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Average</Value>
     </Setting>
   </Settings>
 </SettingsFile>

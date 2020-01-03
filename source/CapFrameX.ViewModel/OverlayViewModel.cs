@@ -133,19 +133,20 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-		public EAggregationMode SelectedAggregationMode
+		public EOutlierHandling SelectedOutlierHandling
 		{
 			get
 			{
 				return _appConfiguration
-				  .AggregationMode
-				  .ConvertToEnum<EAggregationMode>();
+				  .OutlierHandling
+				  .ConvertToEnum<EOutlierHandling>();
 			}
 			set
 			{
-				_appConfiguration.AggregationMode =
+				_appConfiguration.OutlierHandling =
 					value.ConvertToString();
 				RaisePropertyChanged();
+				RaisePropertyChanged(nameof(IsOutlierReplace));
 			}
 		}
 
@@ -196,21 +197,6 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-		public bool KeepRecordFiles
-		{
-			get
-			{
-				return _appConfiguration
-				  .KeepRecordFiles;
-			}
-			set
-			{
-				_appConfiguration.KeepRecordFiles =
-					value;
-				RaisePropertyChanged();
-			}
-		}
-
 		public int SelectedOverlayEntryIndex
 		{
 			get { return _selectedOverlayEntryIndex; }
@@ -231,6 +217,21 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
+		public string SelectedRelatedMetric
+		{
+			get 
+			{
+				return _appConfiguration.RelatedMetric;
+			}
+			set
+			{
+				_appConfiguration.RelatedMetric = value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public bool IsOutlierReplace => SelectedOutlierHandling == EOutlierHandling.Replace;
+
 		public bool IsRTSSInstalled { get; }
 
 		public IAppConfiguration AppConfiguration => _appConfiguration;
@@ -246,11 +247,13 @@ namespace CapFrameX.ViewModel
 
 		public Array NumberOfRunsItemsSource => Enumerable.Range(3, 3).ToArray();
 
-		public Array OutlierPercentageItemsSource => Enumerable.Range(2, 4).ToArray();
+		public Array OutlierPercentageItemsSource => Enumerable.Range(2, 9).ToArray();
 
-		public Array AggregationModeItems => Enum.GetValues(typeof(EAggregationMode))
-														.Cast<EAggregationMode>()
+		public Array OutlierHandlingItems => Enum.GetValues(typeof(EOutlierHandling))
+														.Cast<EOutlierHandling>()
 														.ToArray();
+
+		public Array RelatedMetricItemsSource => new[] { "Average", "Second", "Third" };
 
 		public Array RefreshPeriodItemsSource => new[] { 200, 300, 400, 500, 600, 700, 800, 900, 1000 };
 

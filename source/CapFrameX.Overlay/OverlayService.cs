@@ -23,10 +23,12 @@ namespace CapFrameX.Overlay
 
 		private IDisposable _disposableHeartBeat;
 		private IDisposable _disposableCaptureTimer;
+		private IDisposable _disposableCountdown;
 
 		private List<string> _runHistory = new List<string>();
 		private List<List<string>> _captureDataHistory = new List<List<string>>();
 		private List<List<double>> _frametimeHistory = new List<List<double>>();
+		private bool[] _runHistoryOutlierFlags;
 		private int _refreshPeriod;
 		private int _numberOfRuns;
 
@@ -51,6 +53,7 @@ namespace CapFrameX.Overlay
 			SecondMetric = _appConfiguration.SecondMetricOverlay;
 			ThirdMetric = _appConfiguration.ThirdMetricOverlay;
 			IsOverlayActiveStream = new Subject<bool>();
+			_runHistoryOutlierFlags = Enumerable.Repeat(false, _numberOfRuns).ToArray();
 
 			SetOverlayEntries(overlayEntryProvider?.GetOverlayEntries());
 			overlayEntryProvider.EntryUpdateStream.Subscribe(x =>
@@ -59,6 +62,7 @@ namespace CapFrameX.Overlay
 			_runHistory = Enumerable.Repeat("N/A", _numberOfRuns).ToList();
 			SetRunHistory(_runHistory.ToArray());
 			SetRunHistoryAggregation(string.Empty);
+			SetRunHistoryOutlierFlags(_runHistoryOutlierFlags);
 		}
 
 		public void ShowOverlay()
@@ -83,7 +87,10 @@ namespace CapFrameX.Overlay
 		{
 			IObservable<long> obs = Extensions.ObservableExtensions.CountDown(seconds);
 			SetShowCaptureTimer(true);
-			obs.Subscribe(t =>
+
+			SetCaptureTimerValue(0);
+			_disposableCountdown?.Dispose();
+			_disposableCountdown = obs.Subscribe(t =>
 			{
 				SetCaptureTimerValue((int)t);
 
@@ -129,39 +136,38 @@ namespace CapFrameX.Overlay
 		public void ResetHistory()
 		{
 			_runHistory = Enumerable.Repeat("N/A", _numberOfRuns).ToList();
+			_runHistoryOutlierFlags = Enumerable.Repeat(false, _numberOfRuns).ToArray();
 			_captureDataHistory.Clear();
 			_frametimeHistory.Clear();
 			SetRunHistory(_runHistory.ToArray());
 			SetRunHistoryAggregation(string.Empty);
+			SetRunHistoryOutlierFlags(_runHistoryOutlierFlags);
 		}
 
 		public void AddRunToHistory(List<string> captureData)
 		{
 			var frametimes = captureData.Select(line => RecordDataProvider.GetFrameTimeFromDataLine(line)).ToList();
 
-			// metric history
-			_runHistory.Insert(0, GetMetrics(frametimes));
-
-			if (_runHistory.Count > _numberOfRuns)
-				_runHistory.RemoveAt(_runHistory.Count - 1);
-
-			SetRunHistory(_runHistory.ToArray());
-
-			// capture data history
-			_captureDataHistory.Insert(0, captureData);
-
-			if (_captureDataHistory.Count > _numberOfRuns)
-				_captureDataHistory.RemoveAt(_captureDataHistory.Count - 1);
-
-			// frametime history
-			_frametimeHistory.Insert(0, frametimes);
-
-			if (_frametimeHistory.Count > _numberOfRuns)
-				_frametimeHistory.RemoveAt(_frametimeHistory.Count - 1);
-
-			if (RunHistoryCount == _numberOfRuns)
+			if (RunHistoryCount < _numberOfRuns)
 			{
-				SetRunHistoryAggregation(GetAggregation());
+				// metric history
+				_runHistory[RunHistoryCount] = GetMetrics(frametimes);
+				SetRunHistory(_runHistory.ToArray());
+
+				// capture data history
+				_captureDataHistory.Add(captureData);
+
+				// frametime history
+				_frametimeHistory.Add(frametimes);
+
+				if (_appConfiguration.UseAggregation 
+					&& RunHistoryCount == _numberOfRuns
+					&& _runHistoryOutlierFlags.All( x => x == false))
+				{
+					SetRunHistoryAggregation(GetAggregation());
+
+					// analysis
+				}
 			}
 		}
 

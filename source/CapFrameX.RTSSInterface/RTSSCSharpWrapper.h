@@ -53,6 +53,27 @@ public:
     }
   }
 
+  void SetRunHistoryOutlierFlags(array<bool>^ outlierFlags)
+  {
+    _coreControl->RunHistoryOutlierFlags.clear();
+
+    if (outlierFlags == nullptr)
+    {
+      for (size_t i = 0; i < 3; i++)
+      {
+        _coreControl->RunHistoryOutlierFlags.push_back(false);
+      }
+    }
+    else
+    {
+      for (size_t i = 0; i < outlierFlags->Length; i++)
+      {
+        bool outlierFlag = outlierFlags[i];
+        _coreControl->RunHistoryOutlierFlags.push_back(outlierFlag);
+      }
+    }
+  }
+
   void SetRunHistoryAggregation(String^ aggregation)
   {
     _coreControl->RunHistoryAggregation = aggregation;

@@ -94,8 +94,8 @@ namespace CapFrameX.Data
 				var processNameAdjusted = processName.Contains(".exe") ? processName : $"{processName}.exe";
 
 				// manage custom hardware info
-				bool hasCustomInfo = 
-					_appConfiguration.HardwareInfoSource.ConvertToEnum<EHardwareInfoSource>() == EHardwareInfoSource.Custom;
+				bool hasCustomInfo = _appConfiguration.HardwareInfoSource
+					.ConvertToEnum<EHardwareInfoSource>() == EHardwareInfoSource.Custom;
 
 				var cpuInfo = string.Empty;
 				var gpuInfo = string.Empty;

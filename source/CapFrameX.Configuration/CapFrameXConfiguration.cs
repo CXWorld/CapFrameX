@@ -149,6 +149,7 @@ namespace CapFrameX.Configuration
 			get { return Settings.SecondMetric; }
 			set { Settings.SecondMetric = value; Settings.Save(); }
 		}
+
 		public string ThirdMetric
 		{
 			get { return Settings.ThirdMetric; }
@@ -173,10 +174,10 @@ namespace CapFrameX.Configuration
 			set { Settings.SelectedHistoryRuns = value; Settings.Save(); }
 		}
 
-		public string AggregationMode
+		public string OutlierHandling
 		{
-			get { return Settings.AggregationMode; }
-			set { Settings.AggregationMode = value; Settings.Save(); }
+			get { return Settings.OutlierHandling; }
+			set { Settings.OutlierHandling = value; Settings.Save(); }
 		}
 
 		public int OSDRefreshPeriod
@@ -274,10 +275,17 @@ namespace CapFrameX.Configuration
 			get { return Settings.KeepRecordFiles; }
 			set { Settings.KeepRecordFiles = value; Settings.Save(); }
 		}
+
 		public int OutlierPercentage
 		{
 			get { return Settings.OutlierPercentage; }
 			set { Settings.OutlierPercentage = value; Settings.Save(); }
+		}
+
+		public string RelatedMetric
+		{
+			get { return Settings.RelatedMetric; }
+			set { Settings.RelatedMetric = value; Settings.Save(); }
 		}
 	}
 }
