@@ -135,7 +135,7 @@
 					</Binding.ValidationRules>
 				</Binding>
 			</TextBox>
-			<ComboBox DockPanel.Dock="Bottom" Margin="200 0 0 -96"
+            <ComboBox DockPanel.Dock="Bottom" Margin="200 0 0 -96" materialDesign:ComboBoxAssist.ClassicMode="True"
 					  materialDesign:HintAssist.Hint="Refresh period (ms)" HorizontalAlignment="Center"
 					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="200" Width="132"
 					  MouseLeave="OSDRefreshPeriodComboBox_MouseLeave" FontSize="14"
@@ -185,7 +185,7 @@
 						<ColumnDefinition Width="225"/>
 					</Grid.ColumnDefinitions>
 					<ComboBox Grid.Row="0" Grid.Column="0" materialDesign:HintAssist.Hint="Number of runs" VerticalAlignment="Bottom"
-					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Width="120"
+					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Width="120" materialDesign:ComboBoxAssist.ClassicMode="True"
 					  ItemsSource="{Binding Path=NumberOfRunsItemsSource}" ToolTipService.ShowDuration="25000">
 						<ComboBox.ToolTip>
 							<ToolTip StaysOpen="True" MaxWidth="275">
@@ -216,7 +216,7 @@
 						</Binding>
 					</TextBox>
 					<!--Metrics shown on overlay-->
-					<ComboBox  Grid.Row="1" Grid.Column="0" Width="120" materialDesign:HintAssist.Hint="Second metric"
+                    <ComboBox  Grid.Row="1" Grid.Column="0" Width="120" materialDesign:HintAssist.Hint="Second metric" 
 					  Visibility="{Binding IsBarChartTabActive, Converter={StaticResource TrueToVisibleConverter}}"
 					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="330" materialDesign:ComboBoxAssist.ClassicMode="True"
 					  ItemsSource="{Binding SecondMetricItems}" SelectedItem="{Binding SelectedSecondMetric}">
@@ -226,7 +226,7 @@
 							</DataTemplate>
 						</ComboBox.ItemTemplate>
 					</ComboBox>
-					<ComboBox Grid.Row="1" Grid.Column="1" Width="120" materialDesign:HintAssist.Hint="Third metric"
+                    <ComboBox Grid.Row="1" Grid.Column="1" Width="120" materialDesign:HintAssist.Hint="Third metric"
 					  Visibility="{Binding IsBarChartTabActive, Converter={StaticResource TrueToVisibleConverter}}"
 					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="360" materialDesign:ComboBoxAssist.ClassicMode="True"
 					  ItemsSource="{Binding ThirdMetricItems}" SelectedItem="{Binding SelectedThirdMetric}">
@@ -261,7 +261,7 @@
 						<ColumnDefinition Width="150"/>
 					</Grid.ColumnDefinitions>
 					<!--Outlier handling-->
-					<ComboBox Grid.Column="0" VerticalAlignment="Bottom" materialDesign:HintAssist.Hint="Outlier handling"
+                    <ComboBox Grid.Column="0" VerticalAlignment="Bottom" materialDesign:HintAssist.Hint="Outlier handling" materialDesign:ComboBoxAssist.ClassicMode="True"
 					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Width="90"
 					  ItemsSource="{Binding OutlierHandlingItems}" SelectedItem="{Binding SelectedOutlierHandling}" 
                               ToolTipService.ShowDuration="25000">
@@ -282,7 +282,7 @@
 					</ComboBox>
 
 					<!--Related metric-->
-					<ComboBox Grid.Column="1" VerticalAlignment="Bottom" materialDesign:HintAssist.Hint="Related metric"
+                    <ComboBox Grid.Column="1" VerticalAlignment="Bottom" materialDesign:HintAssist.Hint="Related metric" materialDesign:ComboBoxAssist.ClassicMode="True"
 					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Width="90" IsEnabled="{Binding IsOutlierReplace}"
 					  ItemsSource="{Binding RelatedMetricItemsSource}" SelectedItem="{Binding SelectedRelatedMetric}" 
                               ToolTipService.ShowDuration="25000">
@@ -296,8 +296,8 @@
 					</ComboBox>
 
 					<!--Outlier percentage-->
-					<ComboBox Grid.Column="2" VerticalAlignment="Bottom" materialDesign:HintAssist.Hint="Outlier percentage"
-					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Width="90" IsEnabled="{Binding IsOutlierReplace}"
+                    <ComboBox Grid.Column="2" VerticalAlignment="Bottom" materialDesign:HintAssist.Hint="Outlier percentage" materialDesign:ComboBoxAssist.ClassicMode="True"
+					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="200" Width="90" IsEnabled="{Binding IsOutlierReplace}"
 					  ItemsSource="{Binding OutlierPercentageItemsSource}" SelectedItem="{Binding SelectedOutlierPercentage}" 
                               ToolTipService.ShowDuration="25000">
 						<ComboBox.ToolTip>
