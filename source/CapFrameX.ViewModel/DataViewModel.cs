@@ -744,7 +744,7 @@ namespace CapFrameX.ViewModel
 					new PieSeries
 					{
 						Title = "Smooth time (s)",
-						Values = new ChartValues<double>(){ Math.Round((1 - stutteringTimePercentage / 100) * frametimes.Sum(), 0)/1000 },
+						Values = new ChartValues<double>(){ Math.Round((1 - stutteringTimePercentage / 100) * frametimes.Skip(1).Sum() / 1000, 2) },
 						DataLabels = true,
 						Fill = ColorRessource.PieChartSmmoothFill,
 						Foreground = Brushes.Black,
@@ -754,7 +754,7 @@ namespace CapFrameX.ViewModel
 					new PieSeries
 					{
 						Title = "Stuttering time (s)",
-						Values = new ChartValues<double>(){ Math.Round(stutteringTimePercentage / 100 * frametimes.Sum()) / 1000 },
+						Values = new ChartValues<double>(){ Math.Round(stutteringTimePercentage / 100 * frametimes.Skip(1).Sum() / 1000, 2) },
 						DataLabels = true,
 						Fill = ColorRessource.PieChartStutterFill,
 						Foreground = Brushes.Black,

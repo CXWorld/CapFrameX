@@ -13,6 +13,7 @@ using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace CapFrameX.Overlay
@@ -150,7 +151,7 @@ namespace CapFrameX.Overlay
 
 		public void AddRunToHistory(List<string> captureData)
 		{
-			var frametimes = captureData.Select(line => 
+			var frametimes = captureData.Select(line =>
 				RecordDataProvider.GetFrameTimeFromDataLine(line)).ToList();
 
 			if (RunHistoryCount == _numberOfRuns)
@@ -178,8 +179,14 @@ namespace CapFrameX.Overlay
 					SetRunHistoryAggregation(GetAggregation());
 
 					// write aggregated file
-					Task.Run(() => _recordDataProvider
-						.SaveAggregatedPresentData(_captureDataHistory));
+					Task.Run(async () =>
+					{
+						await SetTaskDelayOffset().ContinueWith(_ =>
+						{
+							_recordDataProvider
+							.SaveAggregatedPresentData(_captureDataHistory);
+						}, CancellationToken.None, TaskContinuationOptions.RunContinuationsAsynchronously, TaskScheduler.Default);
+					});
 				}
 			}
 		}
@@ -240,6 +247,11 @@ namespace CapFrameX.Overlay
 			}
 
 			return installPath;
+		}
+
+		private async Task SetTaskDelayOffset()
+		{
+			await Task.Delay(TimeSpan.FromMilliseconds(1000));
 		}
 
 		private void SetShowCaptureTimer(bool show)

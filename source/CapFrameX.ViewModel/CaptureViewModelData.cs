@@ -33,11 +33,23 @@ namespace CapFrameX.ViewModel
 			if (string.IsNullOrWhiteSpace(processName))
 				return;
 
-			var captureData = GetAdjustedCaptureData(processName);
+			var adjustedCaptureData = GetAdjustedCaptureData(processName);
+
+			if (adjustedCaptureData == null)
+			{
+				AddLoggerEntry("Error while extracting capture data. No file will be written.");
+				return;
+			}
+
+			if (!adjustedCaptureData.Any())
+			{
+				AddLoggerEntry("Error while extracting capture data. Empty list. No file will be written.");
+				return;
+			}
 
 			if (AppConfiguration.UseRunHistory)
 			{
-				Task.Factory.StartNew(() => _overlayService.AddRunToHistory(captureData));
+				Task.Factory.StartNew(() => _overlayService.AddRunToHistory(adjustedCaptureData));
 			}
 
 			StartFillArchive();
@@ -48,20 +60,12 @@ namespace CapFrameX.ViewModel
 				_dataOffsetRunning = false;
 			}));
 
-			if (captureData == null)
-			{
-				AddLoggerEntry("Error while extracting capture data. No file will be written.");
+			// if aggregation mode is active don't save single history items
+			if (AppConfiguration.UseAggregation)
 				return;
-			}
-
-			if (!captureData.Any())
-			{
-				AddLoggerEntry("Error while extracting capture data. Empty list. No file will be written.");
-				return;
-			}
 
 			var filePath = _recordDataProvider.GetOutputFilename(processName);
-			bool checkSave = _recordDataProvider.SavePresentData(captureData, filePath, processName);
+			bool checkSave = _recordDataProvider.SavePresentData(adjustedCaptureData, filePath, processName);
 
 			if (!checkSave)
 				AddLoggerEntry("Error while saving capture data.");

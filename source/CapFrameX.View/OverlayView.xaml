@@ -253,14 +253,16 @@
 						</ToggleButton.ToolTip>
 					</ToggleButton>
 				</StackPanel>
+				<!--Todo: IsEnabled="{Binding UseAggregation}"-->
 				<Grid Grid.Row="3" Grid.ColumnSpan="2" HorizontalAlignment="Center"
-                  IsEnabled="{Binding UseAggregation}">
+                  IsEnabled="False">
 					<Grid.ColumnDefinitions>
 						<ColumnDefinition Width="150"/>
 						<ColumnDefinition Width="150"/>
 						<ColumnDefinition Width="150"/>
 					</Grid.ColumnDefinitions>
 					<!--Outlier handling-->
+					
                     <ComboBox Grid.Column="0" VerticalAlignment="Bottom" materialDesign:HintAssist.Hint="Outlier handling" materialDesign:ComboBoxAssist.ClassicMode="True"
 					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Width="90"
 					  ItemsSource="{Binding OutlierHandlingItems}" SelectedItem="{Binding SelectedOutlierHandling}" 

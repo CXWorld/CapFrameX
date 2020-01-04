@@ -156,8 +156,8 @@
 										Width="100"
                                         Header="Comment"
                                         IsReadOnly="True"/>
-						<DataGridCheckBoxColumn Binding="{Binding IsValid, Mode=OneWay}"
-                                            Header="Valid"
+						<DataGridCheckBoxColumn Binding="{Binding IsAggregated, Mode=OneWay}"
+                                            Header="Aggregated"
                                             IsReadOnly="True" MinWidth="55"/>
 					</DataGrid.Columns>
 				</DataGrid>
