@@ -73,6 +73,7 @@ namespace CapFrameX.ViewModel
 		private long _timestampStartCapture;
 		private long _timestampStopCapture;
 		private bool _dataOffsetRunning;
+		private string _lastCapturedProcess;
 
 		private bool IsCapturing
 		{
@@ -269,7 +270,7 @@ namespace CapFrameX.ViewModel
 								IEventAggregator eventAggregator,
 								IRecordDataProvider recordDataProvider,
 								IOverlayService overlayService,
-							    IStatisticProvider statisticProvider)
+								IStatisticProvider statisticProvider)
 		{
 			_appConfiguration = appConfiguration;
 			_captureService = captureService;
@@ -436,6 +437,11 @@ namespace CapFrameX.ViewModel
 
 			if (!IsCapturing)
 			{
+				if (SelectedProcessToCapture != null)
+					_lastCapturedProcess = SelectedProcessToCapture;
+				else
+					_lastCapturedProcess = ProcessesToCapture.FirstOrDefault();
+
 				_ = QueryPerformanceCounter(out long startCounter);
 				AddLoggerEntry($"Performance counter on start capturing: {startCounter}");
 				_qpcTimeStart = startCounter;
@@ -501,7 +507,7 @@ namespace CapFrameX.ViewModel
 				}
 
 				var context = TaskScheduler.FromCurrentSynchronizationContext();
-				
+
 				CaptureStateInfo = "Creating capture file...";
 				_overlayService.StopCaptureTimer();
 				_overlayService.SetCaptureServiceStatus("Processing data");
@@ -751,6 +757,14 @@ namespace CapFrameX.ViewModel
 			var filter = CaptureServiceConfiguration.GetProcessIgnoreList();
 			var processList = _captureService.GetAllFilteredProcesses(filter).Distinct();
 			ProcessesToCapture.AddRange(processList);
+
+			if (ProcessesToCapture.Any() && !string.IsNullOrWhiteSpace(_lastCapturedProcess))
+			{
+				if (!ProcessesToCapture.Contains(_lastCapturedProcess) ||
+					(selectedProcessToCapture != null &&
+					selectedProcessToCapture != _lastCapturedProcess))
+					_overlayService.ResetHistory();
+			}
 
 			// fire update global hook if new process is detected
 			if (backupProcessList.Count != ProcessesToCapture.Count)

@@ -36,7 +36,9 @@ namespace CapFrameX.ViewModel
 			var captureData = GetAdjustedCaptureData(processName);
 
 			if (AppConfiguration.UseRunHistory)
+			{
 				Task.Factory.StartNew(() => _overlayService.AddRunToHistory(captureData));
+			}
 
 			StartFillArchive();
 
@@ -91,27 +93,38 @@ namespace CapFrameX.ViewModel
 					autoTermination = false;
 			}
 
-			var processIdDict = new Dictionary<string, int>();
+			var uniqueProcessIdDict = new Dictionary<string, HashSet<string>>();
 
 			foreach (var filteredCaptureDataLine in _captureData)
 			{
+				var currentProcess = RecordDataProvider.GetProcessNameFromDataLine(filteredCaptureDataLine);
 				var currentProcessId = RecordDataProvider.GetProcessIdFromDataLine(filteredCaptureDataLine);
 
-				if (processIdDict.ContainsKey(currentProcessId))
-					processIdDict[currentProcessId]++;
+				if (!uniqueProcessIdDict.ContainsKey(currentProcess))
+				{
+					var idHashSet = new HashSet<string>
+					{
+						currentProcessId
+					};
+					uniqueProcessIdDict.Add(currentProcess, idHashSet);
+				}
 				else
-					processIdDict.Add(currentProcessId, 1);
+					uniqueProcessIdDict[currentProcess].Add(currentProcessId);
 			}
 
-			int maxCount = processIdDict.Values.Max();
-			var validProcessId = processIdDict.FirstOrDefault(x => x.Value == maxCount).Key;
+			if (uniqueProcessIdDict.Any(dict => dict.Value.Count() > 1))
+				AddLoggerEntry($"Multi instances detected. Capture data is not valid.");
 
-			var filteredArchive = _captureDataArchive.Where(line 
-				=> RecordDataProvider.GetProcessNameFromDataLine(line) == processName 
-				&& RecordDataProvider.GetProcessIdFromDataLine(line) == validProcessId).ToList();
-			var filteredCaptureData = _captureData.Where(line 
-				=> RecordDataProvider.GetProcessNameFromDataLine(line) == processName
-				&& RecordDataProvider.GetProcessIdFromDataLine(line) == validProcessId).ToList();
+			var filteredArchive = _captureDataArchive.Where(line =>
+				{
+					var currentProcess = RecordDataProvider.GetProcessNameFromDataLine(line);
+					return currentProcess == processName && uniqueProcessIdDict[currentProcess].Count() == 1;
+				}).ToList();
+			var filteredCaptureData = _captureData.Where(line =>
+				{
+					var currentProcess = RecordDataProvider.GetProcessNameFromDataLine(line);
+					return currentProcess == processName && uniqueProcessIdDict[currentProcess].Count() == 1;
+				}).ToList();
 
 			AddLoggerEntry($"Using archive with {filteredArchive.Count} frames.");
 

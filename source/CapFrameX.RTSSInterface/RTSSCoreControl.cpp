@@ -439,10 +439,18 @@ void RTSSCoreControl::AddOverlayEntry(CGroupedString* groupedString, OverlayEntr
       {
         CString strGroup;
         strGroup.Format("<C2>Run %d: <C>", i + 1);
-        if(!RunHistoryOutlierFlags[i])
-          groupedString->Add("<C3> " + RunHistory[i] + "<C>", strGroup, "\n");
+
+        if (RunHistoryOutlierFlags.size() == RunHistory.size())
+        {
+          if (!RunHistoryOutlierFlags[i])
+            groupedString->Add("<C3> " + RunHistory[i] + "<C>", strGroup, "\n");
+          else
+            groupedString->Add("<C=C80000> " + RunHistory[i] + "<C>", strGroup, "\n");
+        }
         else
-          groupedString->Add("<C=C80000> " + RunHistory[i] + "<C>", strGroup, "\n");
+        {
+          groupedString->Add("<C3> " + RunHistory[i] + "<C>", strGroup, "\n");
+        }
       }
 
       // add aggregation

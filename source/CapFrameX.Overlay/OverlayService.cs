@@ -148,6 +148,9 @@ namespace CapFrameX.Overlay
 		{
 			var frametimes = captureData.Select(line => RecordDataProvider.GetFrameTimeFromDataLine(line)).ToList();
 
+			if (RunHistoryCount == _numberOfRuns)
+				ResetHistory();
+
 			if (RunHistoryCount < _numberOfRuns)
 			{
 				// metric history
@@ -160,13 +163,14 @@ namespace CapFrameX.Overlay
 				// frametime history
 				_frametimeHistory.Add(frametimes);
 
-				if (_appConfiguration.UseAggregation 
+				if (_appConfiguration.UseAggregation
 					&& RunHistoryCount == _numberOfRuns
-					&& _runHistoryOutlierFlags.All( x => x == false))
+					&& _runHistoryOutlierFlags.All(x => x == false))
 				{
 					SetRunHistoryAggregation(GetAggregation());
 
 					// analysis
+					// Todo...
 				}
 			}
 		}
@@ -180,7 +184,10 @@ namespace CapFrameX.Overlay
 		{
 			_numberOfRuns = numberOfRuns;
 			_runHistory = Enumerable.Repeat("N/A", _numberOfRuns).ToList();
+			_runHistoryOutlierFlags = Enumerable.Repeat(false, _numberOfRuns).ToArray();
 			SetRunHistory(_runHistory.ToArray());
+			SetRunHistoryAggregation(string.Empty);
+			SetRunHistoryOutlierFlags(_runHistoryOutlierFlags);
 		}
 
 		public string GetRTSSFullPath()
