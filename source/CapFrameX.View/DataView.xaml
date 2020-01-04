@@ -215,7 +215,7 @@
 										<ToggleButton Margin="5" Grid.Row="9" Grid.Column="1" IsChecked="{Binding UseP0Dot1LowAverageStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show 0.1% low average parameter" />
 										<TextBlock Margin="5" Grid.Row="10" Grid.Column="0" Text="Minimum" VerticalAlignment="Center"/>
 										<ToggleButton Margin="5" Grid.Row="10" Grid.Column="1" IsChecked="{Binding UseMinStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show minimum value parameter" />
-										<TextBlock Margin="5" Grid.Row="11" Grid.Column="0" Text="Adaptive STD" VerticalAlignment="Center" ToolTip="standard deviation calculated with moving average instead of constant mean"/>
+										<TextBlock Margin="5" Grid.Row="11" Grid.Column="0" Text="Adaptive STDEV" VerticalAlignment="Center" ToolTip="standard deviation calculated with moving average instead of constant mean"/>
 										<ToggleButton Margin="5" Grid.Row="11" Grid.Column="1" IsChecked="{Binding UseAdaptiveSTDStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show adaptive standard deviation parameter" />
 									</Grid>
 									<Separator Style="{StaticResource MaterialDesignDarkSeparator}" />
