@@ -24,10 +24,12 @@ namespace CapFrameX.View
 			{
 				var appConfiguration = new CapFrameXConfiguration();
 				var statisticProvider = new FrametimeStatisticProvider(appConfiguration);
+				var recordDirectoryObserver = new RecordDirectoryObserver(appConfiguration);
+				var recordDataProvider = new RecordDataProvider(recordDirectoryObserver, appConfiguration);
 				var overlayEntryProvider = new OverlayEntryProvider();
 				DataContext = new StateViewModel(new RecordDirectoryObserver(appConfiguration),
 					new EventAggregator(), appConfiguration, new PresentMonCaptureService(),
-					new OverlayService(statisticProvider, overlayEntryProvider, appConfiguration));
+					new OverlayService(statisticProvider, recordDataProvider, overlayEntryProvider, appConfiguration));
 			}
 		}
 

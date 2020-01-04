@@ -1,4 +1,5 @@
 ﻿using CapFrameX.Contracts.Configuration;
+using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.Data;
 using CapFrameX.Extensions;
@@ -12,12 +13,14 @@ using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using System.Threading.Tasks;
 
 namespace CapFrameX.Overlay
 {
 	public class OverlayService : RTSSCSharpWrapper, IOverlayService
 	{
 		private readonly IStatisticProvider _statisticProvider;
+		private readonly IRecordDataProvider _recordDataProvider;
 		private readonly IOverlayEntryProvider _overlayEntryProvider;
 		private readonly IAppConfiguration _appConfiguration;
 
@@ -25,9 +28,9 @@ namespace CapFrameX.Overlay
 		private IDisposable _disposableCaptureTimer;
 		private IDisposable _disposableCountdown;
 
-		private List<string> _runHistory = new List<string>();
-		private List<List<string>> _captureDataHistory = new List<List<string>>();
-		private List<List<double>> _frametimeHistory = new List<List<double>>();
+		private IList<string> _runHistory = new List<string>();
+		private IList<IList<string>> _captureDataHistory = new List<IList<string>>();
+		private IList<IList<double>> _frametimeHistory = new List<IList<double>>();
 		private bool[] _runHistoryOutlierFlags;
 		private int _refreshPeriod;
 		private int _numberOfRuns;
@@ -40,11 +43,12 @@ namespace CapFrameX.Overlay
 
 		public int RunHistoryCount => _runHistory.Count(run => run != "N/A");
 
-		public OverlayService(IStatisticProvider statisticProvider,
+		public OverlayService(IStatisticProvider statisticProvider, IRecordDataProvider recordDataProvider,
 			IOverlayEntryProvider overlayEntryProvider, IAppConfiguration appConfiguration)
 			: base()
 		{
 			_statisticProvider = statisticProvider;
+			_recordDataProvider = recordDataProvider;
 			_overlayEntryProvider = overlayEntryProvider;
 			_appConfiguration = appConfiguration;
 
@@ -146,7 +150,8 @@ namespace CapFrameX.Overlay
 
 		public void AddRunToHistory(List<string> captureData)
 		{
-			var frametimes = captureData.Select(line => RecordDataProvider.GetFrameTimeFromDataLine(line)).ToList();
+			var frametimes = captureData.Select(line => 
+				RecordDataProvider.GetFrameTimeFromDataLine(line)).ToList();
 
 			if (RunHistoryCount == _numberOfRuns)
 				ResetHistory();
@@ -167,10 +172,14 @@ namespace CapFrameX.Overlay
 					&& RunHistoryCount == _numberOfRuns
 					&& _runHistoryOutlierFlags.All(x => x == false))
 				{
-					SetRunHistoryAggregation(GetAggregation());
-
 					// analysis
 					// Todo...
+
+					SetRunHistoryAggregation(GetAggregation());
+
+					// write aggregated file
+					Task.Run(() => _recordDataProvider
+						.SaveAggregatedPresentData(_captureDataHistory));
 				}
 			}
 		}

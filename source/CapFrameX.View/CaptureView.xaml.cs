@@ -46,11 +46,13 @@ namespace CapFrameX.View
 			if (DesignerProperties.GetIsInDesignMode(this))
 			{
 				var appConfiguration = new CapFrameXConfiguration();
-				var statisticProvider = new FrametimeStatisticProvider(appConfiguration);
+				var statisticProvider = new FrametimeStatisticProvider( appConfiguration);
+				var recordDirectoryObserver = new RecordDirectoryObserver(appConfiguration);
+				var recordDataProvider = new RecordDataProvider(recordDirectoryObserver, appConfiguration);
 				var overlayEntryProvider = new OverlayEntryProvider();
 				DataContext = new CaptureViewModel(appConfiguration, new PresentMonCaptureService(),
 					new EventAggregator(), new RecordDataProvider(new RecordDirectoryObserver(appConfiguration), appConfiguration), 
-					new OverlayService(statisticProvider, overlayEntryProvider, appConfiguration), statisticProvider);
+					new OverlayService(statisticProvider, recordDataProvider, overlayEntryProvider, appConfiguration), statisticProvider);
 			}
 		}
 

@@ -83,8 +83,8 @@ namespace CapFrameX.Data
 			return check;
 		}
 
-		public bool SavePresentData(IList<string> recordLines, string filePath, 
-			string processName)
+		public bool SavePresentData(IList<string> recordLines, string filePath,
+			string processName, bool IsAggregated = false)
 		{
 			try
 			{
@@ -134,7 +134,7 @@ namespace CapFrameX.Data
 					$"{FileRecordInfo.HEADER_MARKER}GPU Memory Clock (MHz){FileRecordInfo.INFO_SEPERATOR}{string.Empty}",
 					$"{FileRecordInfo.HEADER_MARKER}GPU Memory (MB){FileRecordInfo.INFO_SEPERATOR}{string.Empty}",
 					$"{FileRecordInfo.HEADER_MARKER}Comment{FileRecordInfo.INFO_SEPERATOR}{string.Empty}",
-					$"{FileRecordInfo.HEADER_MARKER}IsAggregated{FileRecordInfo.INFO_SEPERATOR}{"false"}"
+					$"{FileRecordInfo.HEADER_MARKER}IsAggregated{FileRecordInfo.INFO_SEPERATOR}{IsAggregated.ToString()}"
 				};
 
 				foreach (var headerLine in headerLines)
@@ -310,6 +310,56 @@ namespace CapFrameX.Data
 			}
 
 			return gameName;
+		}
+
+		public string GetOutputFilename(string processName)
+		{
+			var filename = CaptureServiceConfiguration.GetCaptureFilename(processName);
+			string observedDirectory = RecordDirectoryObserver
+				.GetInitialObservedDirectory(_appConfiguration.ObservedDirectory);
+
+			return Path.Combine(observedDirectory, filename);
+		}
+
+		public bool SaveAggregatedPresentData(IList<IList<string>> aggregatedCaptureData)
+		{
+			IList<string> aggregatedList = new List<string>();
+
+			var concatedCaptureData = new List<string>(aggregatedCaptureData.Sum(set => set.Count));
+
+			foreach (var frametimeSet in aggregatedCaptureData)
+			{
+				concatedCaptureData.AddRange(frametimeSet);
+			}
+
+			// set first line to 0
+			double startTime = 0;
+
+			var firstLineSplit = concatedCaptureData[0].Split(',');
+			firstLineSplit[11] = startTime.ToString(CultureInfo.InvariantCulture);
+			aggregatedList.Add(string.Join(",", firstLineSplit));
+
+			for (int i = 1; i < concatedCaptureData.Count; i++)
+			{
+				var lineSplit = concatedCaptureData[i].Split(',');
+				var frametime = 1E-03 * Convert.ToDouble(lineSplit[12], CultureInfo.InvariantCulture);
+				startTime += frametime;
+				lineSplit[11] = startTime.ToString(CultureInfo.InvariantCulture);
+				aggregatedList.Add(string.Join(",", lineSplit));
+			}
+
+			if (aggregatedList.Any())
+			{
+				string processName = GetProcessNameFromDataLine(aggregatedList.First());
+				return SavePresentData(aggregatedList, GetOutputFilename(processName), processName, true);
+			}
+
+			return false;
+		}
+
+		public bool SavePresentData(IList<string> recordLines, string filePath, string processName)
+		{
+			throw new NotImplementedException();
 		}
 	}
 }

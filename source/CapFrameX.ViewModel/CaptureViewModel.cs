@@ -689,15 +689,6 @@ namespace CapFrameX.ViewModel
 			_captureService.StopCaptureService();
 		}
 
-		private string GetOutputFilename(string processName)
-		{
-			var filename = CaptureServiceConfiguration.GetCaptureFilename(processName);
-			string observedDirectory = RecordDirectoryObserver
-				.GetInitialObservedDirectory(_appConfiguration.ObservedDirectory);
-
-			return Path.Combine(observedDirectory, filename);
-		}
-
 		private ICaptureServiceConfiguration GetRedirectedServiceConfig()
 		{
 			return new PresentMonServiceConfiguration

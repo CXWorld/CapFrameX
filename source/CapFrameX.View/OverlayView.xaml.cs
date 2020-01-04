@@ -1,4 +1,5 @@
 ﻿using CapFrameX.Configuration;
+using CapFrameX.Data;
 using CapFrameX.Extensions;
 using CapFrameX.Hotkey;
 using CapFrameX.Overlay;
@@ -66,8 +67,10 @@ namespace CapFrameX.View
 			{
 				var appConfiguration = new CapFrameXConfiguration();
 				var statisticProvider = new FrametimeStatisticProvider(appConfiguration);
+				var recordDirectoryObserver = new RecordDirectoryObserver(appConfiguration);
+				var recordDataProvider = new RecordDataProvider(recordDirectoryObserver, appConfiguration);
 				var overlayEntryProvider = new OverlayEntryProvider();
-				DataContext = new OverlayViewModel(new OverlayService(statisticProvider, overlayEntryProvider, appConfiguration),
+				DataContext = new OverlayViewModel(new OverlayService(statisticProvider, recordDataProvider, overlayEntryProvider, appConfiguration),
 					overlayEntryProvider, appConfiguration, new EventAggregator());
 			}
 		}

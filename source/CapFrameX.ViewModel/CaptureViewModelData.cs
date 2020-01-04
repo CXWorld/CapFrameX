@@ -60,8 +60,7 @@ namespace CapFrameX.ViewModel
 				return;
 			}
 
-			var filePath = GetOutputFilename(processName);
-			int captureTime = Convert.ToInt32(CaptureTimeString);
+			var filePath = _recordDataProvider.GetOutputFilename(processName);
 			bool checkSave = _recordDataProvider.SavePresentData(captureData, filePath, processName);
 
 			if (!checkSave)
@@ -149,7 +148,6 @@ namespace CapFrameX.ViewModel
 				return null;
 
 			var unionCaptureData = filteredArchive.Concat(filteredCaptureData.Skip(distinctIndex)).ToList();
-
 			var unionCaptureDataStartTime = RecordDataProvider.GetStartTimeFromDataLine(unionCaptureData.First());
 			var unionCaptureDataEndTime = RecordDataProvider.GetStartTimeFromDataLine(unionCaptureData.Last());
 
