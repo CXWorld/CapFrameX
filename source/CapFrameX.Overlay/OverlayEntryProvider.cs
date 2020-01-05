@@ -90,8 +90,21 @@ namespace CapFrameX.Overlay
 						ShowOnOverlay = true,
 						ShowOnOverlayIsEnabled = true,
 						Description = "Capture service status",
-						GroupName = string.Empty,
+						GroupName = "Status:",
 						Value = "Capture service ready...",
+						ShowGraph = false,
+						ShowGraphIsEnabled = false,
+						Color = string.Empty
+					},
+
+					// CaptureTimer
+					new OverlayEntryWrapper("CaptureTimer")
+					{
+						ShowOnOverlay = false,
+						ShowOnOverlayIsEnabled = false,
+						Description = "Capture timer",
+						GroupName = "Status:",
+						Value = "0",
 						ShowGraph = false,
 						ShowGraphIsEnabled = false,
 						Color = string.Empty
@@ -105,19 +118,6 @@ namespace CapFrameX.Overlay
 						Description = "Run history",
 						GroupName = string.Empty,
 						Value = default(object),
-						ShowGraph = false,
-						ShowGraphIsEnabled = false,
-						Color = string.Empty
-					},
-
-					// CaptureTimer
-					new OverlayEntryWrapper("CaptureTimer")
-					{
-						ShowOnOverlay = false,
-						ShowOnOverlayIsEnabled = false,
-						Description = "Capture timer",
-						GroupName = "Timer: ",
-						Value = "0",
 						ShowGraph = false,
 						ShowGraphIsEnabled = false,
 						Color = string.Empty

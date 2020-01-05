@@ -197,6 +197,21 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
+		public bool SaveAggregationOnly
+		{
+			get
+			{
+				return _appConfiguration
+				  .SaveAggregationOnly;
+			}
+			set
+			{
+				_appConfiguration.SaveAggregationOnly =
+					value;
+				RaisePropertyChanged();
+			}
+		}
+
 		public int SelectedOverlayEntryIndex
 		{
 			get { return _selectedOverlayEntryIndex; }

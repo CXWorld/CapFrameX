@@ -151,10 +151,10 @@
 		<Border Grid.Row="1" Grid.Column="1" Margin="0 0 0 -20" Background="Transparent" BorderThickness=".2" BorderBrush="Black">
 			<Grid>
 				<Grid.RowDefinitions>
-					<RowDefinition Height="60"></RowDefinition>
+					<RowDefinition Height="50"></RowDefinition>
 					<RowDefinition Height="140"></RowDefinition>
-					<RowDefinition Height="100"></RowDefinition>
 					<RowDefinition Height="80"></RowDefinition>
+					<RowDefinition Height="140"></RowDefinition>
 				</Grid.RowDefinitions>
 				<Grid.ColumnDefinitions>
 					<ColumnDefinition Width="1*"/>
@@ -238,41 +238,43 @@
 					</ComboBox>
 				</Grid>
 				<!--Aggregation of run history toogle-->
-				<StackPanel Grid.Row="2" Grid.ColumnSpan="2" HorizontalAlignment="Center" VerticalAlignment="Bottom">
-					<TextBlock Text="Aggregation of run history" Margin="5"/>
-					<ToggleButton IsChecked="{Binding UseAggregation}" Style="{StaticResource MaterialDesignSwitchToggleButton}" IsEnabled="{Binding UseRunHistory}" 
+                <StackPanel Grid.Row="2" Grid.ColumnSpan="2" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <TextBlock Text="Aggregation of run history" Margin="5"/>
+                    <ToggleButton IsChecked="{Binding UseAggregation}" Style="{StaticResource MaterialDesignSwitchToggleButton}" IsEnabled="{Binding UseRunHistory}" 
                                   ToolTipService.ShowDuration="25000">
-						<ToggleButton.ToolTip>
-							<ToolTip MaxWidth="350">
-								<TextBlock 
-                             Text="Once the run history is full, combines its frametime data to a single record file.
+                        <ToggleButton.ToolTip>
+                            <ToolTip MaxWidth="350">
+                                <TextBlock 
+                             Text="Once the run history is full, combines its frametime data to a single record file and shows it below the run history.
                                 &#10;&#10;This is NOT the same as calculating average parameters from multiple single record files. It simulates running the same scene multiple times in one single benchmark. 
                                 Performance parameters are calculated using all of the frametime data." 
                              TextWrapping="Wrap"/>
-							</ToolTip>
-						</ToggleButton.ToolTip>
-					</ToggleButton>
-				</StackPanel>
-				<!--Todo: IsEnabled="{Binding UseAggregation}"-->
-				<Grid Grid.Row="3" Grid.ColumnSpan="2" HorizontalAlignment="Center"
-                  IsEnabled="False">
+                            </ToolTip>
+                        </ToggleButton.ToolTip>
+                    </ToggleButton>
+                </StackPanel>
+                <Grid Grid.Row="3" Grid.ColumnSpan="2" HorizontalAlignment="Center"
+                  IsEnabled="{Binding UseAggregation}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="60"/>
+                        <RowDefinition Height="50"/>
+                    </Grid.RowDefinitions>
 					<Grid.ColumnDefinitions>
-						<ColumnDefinition Width="150"/>
-						<ColumnDefinition Width="150"/>
-						<ColumnDefinition Width="150"/>
-					</Grid.ColumnDefinitions>
-					<!--Outlier handling-->
-					
-                    <ComboBox Grid.Column="0" VerticalAlignment="Bottom" materialDesign:HintAssist.Hint="Outlier handling" materialDesign:ComboBoxAssist.ClassicMode="True"
-					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Width="90"
+						<ColumnDefinition Width="225"/>
+                        <ColumnDefinition Width="225"/>
+                    </Grid.ColumnDefinitions>
+					<!--Outlier handling (disabled for beta)-->					
+                    <ComboBox Grid.Row="0" Grid.Column="0" materialDesign:HintAssist.Hint="Outlier handling" materialDesign:ComboBoxAssist.ClassicMode="True"
+					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Width="120" IsEnabled="False" 
 					  ItemsSource="{Binding OutlierHandlingItems}" SelectedItem="{Binding SelectedOutlierHandling}" 
                               ToolTipService.ShowDuration="25000">
 						<ComboBox.ToolTip>
 							<ToolTip MaxWidth="350">
 								<TextBlock
-                             Text="Ignore outliers&#10;Start aggregation once the history is full.
+                             Text="Ignore outliers&#10;Runs will be aggregated once the history is full.
                                    
-                                   &#10;&#10;Replace outliers&#10;If a run has x% better or worse FPS in the selected metric than the median of all runs, it will be marked red and you have to do another run to replace it before the runs are being aggregated."
+                                   &#10;&#10;Replace outliers&#10;If the selected metric of a run differs more than X% from the median of all runs, the run will be marked as an outlier and you have to do another run to replace it.
+                                   &#10;Runs will be aggregated once the history contains no more outliers."
                              TextWrapping="Wrap"/>
 							</ToolTip>
 						</ComboBox.ToolTip>
@@ -282,24 +284,35 @@
 							</DataTemplate>
 						</ComboBox.ItemTemplate>
 					</ComboBox>
-
-					<!--Related metric-->
-                    <ComboBox Grid.Column="1" VerticalAlignment="Bottom" materialDesign:HintAssist.Hint="Related metric" materialDesign:ComboBoxAssist.ClassicMode="True"
-					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Width="90" IsEnabled="{Binding IsOutlierReplace}"
+                    <!--History items save option-->
+                    <CheckBox Grid.Row="0" Grid.Column="1"  Width="120" IsChecked="{Binding SaveAggregationOnly}" ToolTipService.ShowDuration="25000">
+                        <CheckBox.ToolTip>
+                            <ToolTip StaysOpen="True" MaxWidth="275">
+                                <TextBlock 
+                             Text="If checked, the independent history items will not be saved in addition to the aggregated result." 
+                                  TextWrapping="Wrap"/>
+                            </ToolTip>
+                        </CheckBox.ToolTip>
+                        <TextBlock Padding="5 0 0 0" TextWrapping="WrapWithOverflow">
+  					     Save aggregated result only
+                        </TextBlock>
+                    </CheckBox>
+                    <!--Related metric-->
+                    <ComboBox Grid.Row="1" Grid.Column="0"  materialDesign:HintAssist.Hint="Related metric" materialDesign:ComboBoxAssist.ClassicMode="True"
+					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Width="120" IsEnabled="{Binding IsOutlierReplace}"
 					  ItemsSource="{Binding RelatedMetricItemsSource}" SelectedItem="{Binding SelectedRelatedMetric}" 
                               ToolTipService.ShowDuration="25000">
-						<ComboBox.ToolTip>
-							<ToolTip MaxWidth="350">
-								<TextBlock
-                             Text="Metric outlier percentage is related to" 
+                        <ComboBox.ToolTip>
+                            <ToolTip MaxWidth="350">
+                                <TextBlock
+                             Text="Metric used to determine outliers" 
                              TextWrapping="Wrap"/>
-							</ToolTip>
-						</ComboBox.ToolTip>
-					</ComboBox>
-
-					<!--Outlier percentage-->
-                    <ComboBox Grid.Column="2" VerticalAlignment="Bottom" materialDesign:HintAssist.Hint="Outlier percentage" materialDesign:ComboBoxAssist.ClassicMode="True"
-					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="200" Width="90" IsEnabled="{Binding IsOutlierReplace}"
+                            </ToolTip>
+                        </ComboBox.ToolTip>
+                    </ComboBox>
+                    <!--Outlier percentage-->
+                    <ComboBox Grid.Row="1" Grid.Column="1" materialDesign:HintAssist.Hint="Outlier percentage" materialDesign:ComboBoxAssist.ClassicMode="True"
+					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="200" Width="120" IsEnabled="{Binding IsOutlierReplace}"
 					  ItemsSource="{Binding OutlierPercentageItemsSource}" SelectedItem="{Binding SelectedOutlierPercentage}" 
                               ToolTipService.ShowDuration="25000">
 						<ComboBox.ToolTip>

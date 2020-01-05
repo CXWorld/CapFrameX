@@ -90,10 +90,11 @@
 
 		int OSDRefreshPeriod { get; set; }
 
-		bool KeepRecordFiles { get; set; }
+		bool SaveAggregationOnly { get; set; }
 
 		int OutlierPercentage { get; set; }
 
 		string RelatedMetric { get; set; }
+
 	}
 }

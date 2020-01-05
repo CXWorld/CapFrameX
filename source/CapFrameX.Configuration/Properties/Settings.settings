@@ -137,7 +137,7 @@
     <Setting Name="OSDRefreshPeriod" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">500</Value>
     </Setting>
-    <Setting Name="KeepRecordFiles" Type="System.Boolean" Scope="User">
+    <Setting Name="SaveAggregationOnly" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
     <Setting Name="OutlierPercentage" Type="System.Int32" Scope="User">
