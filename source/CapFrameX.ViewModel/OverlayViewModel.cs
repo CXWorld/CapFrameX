@@ -313,6 +313,7 @@ namespace CapFrameX.ViewModel
 			else
 			{
 				if (historyEntry != null)
+					historyEntry.ShowOnOverlay = true;
 					historyEntry.ShowOnOverlayIsEnabled = true;
 			}
 		}
