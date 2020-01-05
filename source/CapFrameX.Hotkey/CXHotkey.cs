@@ -83,7 +83,8 @@ namespace CapFrameX.Hotkey
                 {
                     var key = (Key)Enum.Parse(typeof(Key), keyStrings[0], true);
 
-                    if (!((key >= Key.A && key <= Key.Z) || (key >= Key.F1 && key <= Key.F12)))
+                    if (!((key >= Key.A && key <= Key.Z) || (key >= Key.F1 && key <= Key.F12) ||
+                        (key >= Key.D0 && key <= Key.D9) || (key >= Key.NumPad0 && key <= Key.NumPad9)))
                         isValid = false;
 
                     captureHotkey = new CXHotkey(key, ModifierKeys.None);
@@ -93,7 +94,8 @@ namespace CapFrameX.Hotkey
                     var keyModifier = (ModifierKeys)Enum.Parse(typeof(ModifierKeys), keyStrings[0], true);
                     var key = (Key)Enum.Parse(typeof(Key), keyStrings[1], true);
 
-                    if (!((key >= Key.A && key <= Key.Z) || (key >= Key.F1 && key <= Key.F12)))
+                    if (!((key >= Key.A && key <= Key.Z) || (key >= Key.F1 && key <= Key.F12) ||
+                        (key >= Key.D0 && key <= Key.D9) || (key >= Key.NumPad0 && key <= Key.NumPad9)))
                         isValid = false;
 
                     if (!(keyModifier == ModifierKeys.Alt || keyModifier == ModifierKeys.Shift || keyModifier == ModifierKeys.Control))
