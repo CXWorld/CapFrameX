@@ -26,7 +26,7 @@
       "Identifier": "RunHistory",
       "Description": "Run history",
       "ShowOnOverlay": false,
-      "ShowOnOverlayIsEnabled": true,
+      "ShowOnOverlayIsEnabled": false,
       "GroupName": "",
       "Value": null,
       "ShowGraph": false,

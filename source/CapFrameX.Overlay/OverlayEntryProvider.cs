@@ -113,8 +113,8 @@ namespace CapFrameX.Overlay
 					// RunHistory
 					new OverlayEntryWrapper("RunHistory")
 					{
-						ShowOnOverlay = true,
-						ShowOnOverlayIsEnabled = true,
+						ShowOnOverlay = false,
+						ShowOnOverlayIsEnabled = false,
 						Description = "Run history",
 						GroupName = string.Empty,
 						Value = default(object),
