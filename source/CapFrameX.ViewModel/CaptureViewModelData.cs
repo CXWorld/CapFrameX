@@ -60,8 +60,8 @@ namespace CapFrameX.ViewModel
 				_dataOffsetRunning = false;
 			}));
 
-			// if aggregation mode is active don't save single history items
-			if (AppConfiguration.UseAggregation)
+			// if aggregation mode is active and "Save aggregated result only" is checked, don't save single history items
+			if (AppConfiguration.UseAggregation && AppConfiguration.SaveAggregationOnly)
 				return;
 
 			var filePath = _recordDataProvider.GetOutputFilename(processName);

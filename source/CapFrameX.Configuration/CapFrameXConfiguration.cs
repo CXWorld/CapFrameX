@@ -270,10 +270,10 @@ namespace CapFrameX.Configuration
 			set { Settings.UseAggregation = value; Settings.Save(); }
 		}
 
-		public bool KeepRecordFiles
+		public bool SaveAggregationOnly
 		{
-			get { return Settings.KeepRecordFiles; }
-			set { Settings.KeepRecordFiles = value; Settings.Save(); }
+			get { return Settings.SaveAggregationOnly; }
+			set { Settings.SaveAggregationOnly = value; Settings.Save(); }
 		}
 
 		public int OutlierPercentage
