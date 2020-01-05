@@ -204,6 +204,9 @@ namespace CapFrameX.PresentMonInterface
 			}
 			catch { propertyDataValueSpeed = "unknown"; moduleSetting.Add(0, 1); }
 
+			if (!moduleSetting.Any())
+				moduleSetting.Add(0, 0);
+
 			//RAM size + speed
 			// example: 48GB (4x4GB+4x8GB)
 			var infoString = string.Empty;
@@ -214,8 +217,7 @@ namespace CapFrameX.PresentMonInterface
 				infoString += $"{item.Value}x{item.Key / ONE_GIB}GB+";
 			}
 
-			return $"{wholeCapacity/ONE_GIB}GB ({infoString.Remove(infoString.Length - 1)}) {propertyDataValueSpeed}MT/s";
-			
+			return $"{wholeCapacity / ONE_GIB}GB ({infoString.Remove(infoString.Length - 1)}) {propertyDataValueSpeed}MT/s";
 		}
 	}
 }
