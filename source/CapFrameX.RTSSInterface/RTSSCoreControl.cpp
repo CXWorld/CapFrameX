@@ -370,7 +370,7 @@ void RTSSCoreControl::Refresh()
     else
     {
       // Add CX label
-      groupedString.Add("", "<C3>CX OSD<C>", "\n", " ");
+      groupedString.Add("", "<C3>\nCX OSD<C>", "\n", " ");
     }
     //move to position 0,0 (in zoomed pixel units)
 
