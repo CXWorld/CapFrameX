@@ -36,7 +36,7 @@
 	<Grid HorizontalAlignment="Center">
 		<Grid.RowDefinitions>
 			<RowDefinition Height="50"></RowDefinition>
-			<RowDefinition Height="380"></RowDefinition>
+			<RowDefinition Height="450"></RowDefinition>
 			<RowDefinition Height="100"></RowDefinition>
 		</Grid.RowDefinitions>
 		<Grid.ColumnDefinitions>
@@ -47,7 +47,7 @@
 			<!--DataGrid and Overlay hotkey-->
 			<TextBlock Margin="0 0 0 10" DockPanel.Dock="Top" HorizontalAlignment="Center" Text="Overlay items" FontSize="14"/>
 			<StackPanel DockPanel.Dock="Top" Orientation="Vertical" HorizontalAlignment="Center">
-				<DataGrid x:Name="OverlayItemDataGrid" Height="280" Width="400" Background="#F5F5F5" FontSize="11"
+				<DataGrid x:Name="OverlayItemDataGrid" Height="350" Width="400" Background="#F5F5F5" FontSize="11"
 						  MouseLeave="OverlayItemDataGrid_MouseLeave"
 					      SelectedIndex="{Binding SelectedOverlayEntryIndex}" ItemsSource="{Binding OverlayEntries}"
 					      CanUserSortColumns="False" CanUserAddRows="False" AutoGenerateColumns="False"
@@ -121,20 +121,17 @@
 				<TextBlock HorizontalAlignment="Center" Text="Drag &amp; Drop to change order"/>
 			</StackPanel>
 			<!--Global overlay toggle-->
-			<StackPanel DockPanel.Dock="Bottom">
-			<StackPanel Orientation="Vertical">
-				<TextBlock Margin="5" Text="Show CX overlay"/>
-				<ToggleButton IsChecked="{Binding UseRunHistory}" Style="{StaticResource MaterialDesignSwitchToggleButton}" 
+            <StackPanel Margin="0 20 0 0" DockPanel.Dock="Bottom">
+                <ToggleButton Margin="25 0 0 -50" IsChecked="{Binding IsOverlayActive, Mode=TwoWay}" "{StaticResource MaterialDesignSwitchToggleButton}" 
 							  ToolTipService.ShowDuration="25000" HorizontalAlignment="Left">
-					<ToggleButton.ToolTip>
-						<ToolTip MaxWidth="250">
-							<TextBlock Text="Saves a set number of runs into a history which can be displayed in the overlay"                               
+                    <ToggleButton.ToolTip>
+                        <ToolTip MaxWidth="250">
+                            <TextBlock Text="Shows the CX overlay items in RTSS"                               
 										   TextWrapping="Wrap"/>
-						</ToolTip>
-					</ToggleButton.ToolTip>
-				</ToggleButton>
-			</StackPanel>
-			<TextBox Width="132" wpf:HintAssist.Hint="Overlay hotkey" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" FontSize="14"
+                        </ToolTip>
+                    </ToggleButton.ToolTip>
+                </ToggleButton>
+                <TextBox Margin="-180 0 0 -20" DockPanel.Dock="Bottom" materialDesign:HintAssist.Hint="Show overlay" Width="132" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" FontSize="14"
 					 IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False" PreviewKeyDown="OverlayHotkeyTextBox_PreviewKeyDown"
 					 ToolTip="combinable with Ctrl/Shift/Alt" IsEnabled="{Binding IsRTSSInstalled}">
 				<Binding Path="OverlayHotkey"
@@ -147,7 +144,8 @@
 					</Binding.ValidationRules>
 				</Binding>
 			</TextBox>
-			<ComboBox materialDesign:ComboBoxAssist.ClassicMode="True"
+                <ComboBox Margin="225 -20 0 0" DockPanel.Dock="Bottom"
+					  materialDesign:ComboBoxAssist.ClassicMode="True"
 					  materialDesign:HintAssist.Hint="Refresh period (ms)"
 					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="200" Width="132"
 					  MouseLeave="OSDRefreshPeriodComboBox_MouseLeave" FontSize="14"
@@ -251,7 +249,7 @@
 					</ComboBox>
 				</Grid>
 				<!--Aggregation of run history toogle-->
-				<StackPanel Grid.Row="2" Grid.ColumnSpan="2" HorizontalAlignment="Center" VerticalAlignment="Center">
+				<StackPanel Margin="0 -20 0 0" Grid.Row="23" Grid.ColumnSpan="2" HorizontalAlignment="Center" VerticalAlignment="Top">
 					<TextBlock Text="Aggregation of run history" Margin="5"/>
 					<ToggleButton IsChecked="{Binding UseAggregation}" Style="{StaticResource MaterialDesignSwitchToggleButton}" IsEnabled="{Binding UseRunHistory}" 
                                   ToolTipService.ShowDuration="25000">
@@ -266,8 +264,9 @@
 						</ToggleButton.ToolTip>
 					</ToggleButton>
 				</StackPanel>
-				<Grid Grid.Row="3" Grid.ColumnSpan="2" HorizontalAlignment="Center"
+                <StackPanel Margin="0 40 0 0" Grid.Row="3" Grid.ColumnSpan="2" HorizontalAlignment="Center"
                   IsEnabled="{Binding UseAggregation}">
+				<Grid>
 					<Grid.RowDefinitions>
 						<RowDefinition Height="60"/>
 						<RowDefinition Height="50"/>
@@ -337,7 +336,8 @@
 						</ComboBox.ToolTip>
 					</ComboBox>
 				</Grid>
-			</Grid>
+                </StackPanel>
+            </Grid>
 		</Border>
 		<TextBlock Margin="0 40 0 0" Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Center"
 				   Visibility="{Binding IsRTSSInstalled, Converter={StaticResource FalseToVisibleConverter}}">           

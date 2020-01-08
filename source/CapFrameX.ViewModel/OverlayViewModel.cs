@@ -29,7 +29,7 @@ namespace CapFrameX.ViewModel
 		private int _selectedOverlayEntryIndex = -1;
 		private string _updateHpyerlinkText;
 
-		private bool IsOverlayActive
+		public bool IsOverlayActive
 		{
 			get { return _appConfiguration.IsOverlayActive; }
 			set
