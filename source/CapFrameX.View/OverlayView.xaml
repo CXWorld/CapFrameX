@@ -36,7 +36,7 @@
 	<Grid HorizontalAlignment="Center">
 		<Grid.RowDefinitions>
 			<RowDefinition Height="50"></RowDefinition>
-			<RowDefinition Height="600"></RowDefinition>
+			<RowDefinition Height="380"></RowDefinition>
 			<RowDefinition Height="100"></RowDefinition>
 		</Grid.RowDefinitions>
 		<Grid.ColumnDefinitions>
@@ -45,52 +45,13 @@
 		</Grid.ColumnDefinitions>
 		<DockPanel Grid.Row="1" Grid.Column="0" Margin="0 0 10 0">
 			<!--DataGrid and Overlay hotkey-->
-            <StackPanel Margin="0 0 0 20" DockPanel.Dock="Top" HorizontalAlignment="Center" Orientation="Vertical">
-                <TextBlock Margin="5" Text="Show CX overlay"/>
-                <ToggleButton IsChecked="{Binding UseRunHistory}" Style="{StaticResource MaterialDesignSwitchToggleButton}" 
-								  ToolTipService.ShowDuration="25000">
-                    <ToggleButton.ToolTip>
-                        <ToolTip MaxWidth="250">
-                            <TextBlock Text="Saves a set number of runs into a history which can be displayed in the overlay"                               
-										   TextWrapping="Wrap"/>
-                        </ToolTip>
-                    </ToggleButton.ToolTip>
-                </ToggleButton>
-            </StackPanel>
-            <TextBox Margin="0 0 200 -40" DockPanel.Dock="Top"
-                     Width="132" wpf:HintAssist.Hint="Overlay hotkey"  Style="{DynamicResource MaterialDesignFloatingHintTextBox}" FontSize="14"
-					 IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False" PreviewKeyDown="OverlayHotkeyTextBox_PreviewKeyDown"
-					 ToolTip="combinable with Ctrl/Shift/Alt" IsEnabled="{Binding IsRTSSInstalled}">
-                <Binding Path="OverlayHotkey"
-						 ElementName="OverlayViewControl"
-						 Mode="OneWay"
-						 TargetNullValue="&lt; not set &gt;">
-                    <Binding.ValidationRules>
-                        <validation:HotkeyValidationRule
-                          ValidatesOnTargetUpdated="True" />
-                    </Binding.ValidationRules>
-                </Binding>
-            </TextBox>
-            <ComboBox DockPanel.Dock="Top" Margin="200 0 0 0" materialDesign:ComboBoxAssist.ClassicMode="True"
-					  materialDesign:HintAssist.Hint="Refresh period (ms)"
-					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="200" Width="132"
-					  MouseLeave="OSDRefreshPeriodComboBox_MouseLeave" FontSize="14"
-					  ItemsSource="{Binding Path=RefreshPeriodItemsSource}">
-                <ComboBox.Text>
-                    <Binding Path="OSDRefreshPeriod"
-							 Mode="TwoWay"
-							 UpdateSourceTrigger="PropertyChanged">
-                    </Binding>
-                </ComboBox.Text>
-            </ComboBox>
-            <TextBlock Margin="25 25 0 -40" DockPanel.Dock="Top" HorizontalAlignment="Left" Text="Overlay items" FontSize="16" FontWeight="Bold"/>
-            <TextBlock Margin="0 25 25 5" DockPanel.Dock="Top" HorizontalAlignment="Right" Text="Drag &amp; Drop to change order"/>
-            <StackPanel DockPanel.Dock="Top" Orientation="Vertical" HorizontalAlignment="Center">
-                <DataGrid x:Name="OverlayItemDataGrid" Height="450" Width="400" Background="#F5F5F5" FontSize="11"
+			<TextBlock Margin="0 0 0 10" DockPanel.Dock="Top" HorizontalAlignment="Center" Text="Overlay items" FontSize="14"/>
+			<StackPanel DockPanel.Dock="Top" Orientation="Vertical" HorizontalAlignment="Center">
+				<DataGrid x:Name="OverlayItemDataGrid" Height="280" Width="400" Background="#F5F5F5" FontSize="11"
 						  MouseLeave="OverlayItemDataGrid_MouseLeave"
 					      SelectedIndex="{Binding SelectedOverlayEntryIndex}" ItemsSource="{Binding OverlayEntries}"
 					      CanUserSortColumns="False" CanUserAddRows="False" AutoGenerateColumns="False"
-					      materialDesign:DataGridAssist.CellPadding="13 8 8 8" materialDesign:DataGridAssist.ColumnHeaderPadding="8 3 0 3" IsSynchronizedWithCurrentItem="False"
+					      materialDesign:DataGridAssist.CellPadding="13 8 8 8" materialDesign:DataGridAssist.ColumnHeaderPadding="8" IsSynchronizedWithCurrentItem="False"
 					      ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.CanContentScroll="True"
 					      dragdrop:DragDrop.IsDragSource="True"
 					      dragdrop:DragDrop.IsDropTarget="True"
@@ -98,69 +59,109 @@
 					      dragdrop:DragDrop.UseDefaultDragAdorner="True"
 					      dragdrop:DragDrop.DefaultDragAdornerOpacity="0.5"
 					      dragdrop:DragDrop.UseDefaultEffectDataTemplate="False">
-                    <DataGrid.Columns>
-                        <DataGridCheckBoxColumn Binding="{Binding ShowOnOverlay, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                Header="OSD">
-                            <DataGridCheckBoxColumn.CellStyle>
-                                <Style TargetType="DataGridCell">
-                                    <Setter Property="IsEnabled" 
+					<DataGrid.Columns>
+						<DataGridCheckBoxColumn Binding="{Binding ShowOnOverlay, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Header="OSD">
+							<DataGridCheckBoxColumn.CellStyle>
+								<Style TargetType="DataGridCell">
+									<Setter Property="IsEnabled" 
                                         Value="{Binding Path=ShowOnOverlayIsEnabled}" />
-                                    <Setter Property="Template">
-                                        <Setter.Value>
-                                            <ControlTemplate TargetType="{x:Type DataGridCell}">
-                                                <Grid Background="{TemplateBinding Background}">
-                                                    <ContentPresenter VerticalAlignment="Center" />
-                                                </Grid>
-                                            </ControlTemplate>
-                                        </Setter.Value>
-                                    </Setter>
-                                    <Style.Triggers>
-                                        <Trigger Property="DataGridCell.IsSelected" Value="True">
-                                            <Setter Property="Background" Value="#DCDCDC" />
-                                        </Trigger>
-                                    </Style.Triggers>
-                                </Style>
+									<Setter Property="Template">
+										<Setter.Value>
+											<ControlTemplate TargetType="{x:Type DataGridCell}">
+												<Grid Background="{TemplateBinding Background}">
+													<ContentPresenter VerticalAlignment="Center" />
+												</Grid>
+											</ControlTemplate>
+										</Setter.Value>
+									</Setter>
+									<Style.Triggers>
+										<Trigger Property="DataGridCell.IsSelected" Value="True">
+											<Setter Property="Background" Value="#DCDCDC" />
+										</Trigger>
+									</Style.Triggers>
+								</Style>
 
-                            </DataGridCheckBoxColumn.CellStyle>
-                        </DataGridCheckBoxColumn>
-                        <DataGridTextColumn Binding="{Binding Description, Mode=TwoWay}"
+							</DataGridCheckBoxColumn.CellStyle>
+						</DataGridCheckBoxColumn>
+						<DataGridTextColumn Binding="{Binding Description, Mode=TwoWay}"
                                             Header="Description"
                                             IsReadOnly="True"/>
-                        <DataGridTextColumn Binding="{Binding GroupName, Mode=TwoWay}"
+						<DataGridTextColumn Binding="{Binding GroupName, Mode=TwoWay}"
                                             Header="Group name"
                                             IsReadOnly="False"/>
-                        <DataGridCheckBoxColumn Binding="{Binding ShowGraph, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+						<DataGridCheckBoxColumn Binding="{Binding ShowGraph, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                             Header="Graph">
-                            <DataGridCheckBoxColumn.CellStyle>
-                                <Style TargetType="DataGridCell">
-                                    <Setter Property="IsEnabled" 
+							<DataGridCheckBoxColumn.CellStyle>
+								<Style TargetType="DataGridCell">
+									<Setter Property="IsEnabled" 
                                         Value="{Binding Path=ShowGraphIsEnabled}" />
-                                    <Setter Property="Template">
-                                        <Setter.Value>
-                                            <ControlTemplate TargetType="{x:Type DataGridCell}">
-                                                <Grid Background="{TemplateBinding Background}">
-                                                    <ContentPresenter VerticalAlignment="Center" />
-                                                </Grid>
-                                            </ControlTemplate>
-                                        </Setter.Value>
-                                    </Setter>
-                                    <Style.Triggers>
-                                        <Trigger Property="DataGridCell.IsSelected" Value="True">
-                                            <Setter Property="Background" Value="#DCDCDC" />
-                                        </Trigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </DataGridCheckBoxColumn.CellStyle>
-                        </DataGridCheckBoxColumn>
-                        <!--<DataGridTextColumn Binding="{Binding Color, Mode=TwoWay}"
+									<Setter Property="Template">
+										<Setter.Value>
+											<ControlTemplate TargetType="{x:Type DataGridCell}">
+												<Grid Background="{TemplateBinding Background}">
+													<ContentPresenter VerticalAlignment="Center" />
+												</Grid>
+											</ControlTemplate>
+										</Setter.Value>
+									</Setter>
+									<Style.Triggers>
+										<Trigger Property="DataGridCell.IsSelected" Value="True">
+											<Setter Property="Background" Value="#DCDCDC" />
+										</Trigger>
+									</Style.Triggers>
+								</Style>
+							</DataGridCheckBoxColumn.CellStyle>
+						</DataGridCheckBoxColumn>
+						<!--<DataGridTextColumn Binding="{Binding Color, Mode=TwoWay}"
 										    Width="100"
                                             Header="Hex-color"
                                             IsReadOnly="False"/>-->
-                    </DataGrid.Columns>
-                </DataGrid>
-            </StackPanel>
-        </DockPanel>
-		<Border Grid.Row="1" Grid.Column="1" Margin="0 0 0 180" Background="Transparent" BorderThickness=".2" BorderBrush="Black">
+					</DataGrid.Columns>
+				</DataGrid>
+				<TextBlock HorizontalAlignment="Center" Text="Drag &amp; Drop to change order"/>
+			</StackPanel>
+			<!--Global overlay toggle-->
+			<StackPanel DockPanel.Dock="Bottom">
+			<StackPanel Orientation="Vertical">
+				<TextBlock Margin="5" Text="Show CX overlay"/>
+				<ToggleButton IsChecked="{Binding UseRunHistory}" Style="{StaticResource MaterialDesignSwitchToggleButton}" 
+							  ToolTipService.ShowDuration="25000" HorizontalAlignment="Left">
+					<ToggleButton.ToolTip>
+						<ToolTip MaxWidth="250">
+							<TextBlock Text="Saves a set number of runs into a history which can be displayed in the overlay"                               
+										   TextWrapping="Wrap"/>
+						</ToolTip>
+					</ToggleButton.ToolTip>
+				</ToggleButton>
+			</StackPanel>
+			<TextBox Width="132" wpf:HintAssist.Hint="Overlay hotkey" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" FontSize="14"
+					 IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False" PreviewKeyDown="OverlayHotkeyTextBox_PreviewKeyDown"
+					 ToolTip="combinable with Ctrl/Shift/Alt" IsEnabled="{Binding IsRTSSInstalled}">
+				<Binding Path="OverlayHotkey"
+						 ElementName="OverlayViewControl"
+						 Mode="OneWay"
+						 TargetNullValue="&lt; not set &gt;">
+					<Binding.ValidationRules>
+						<validation:HotkeyValidationRule
+                          ValidatesOnTargetUpdated="True" />
+					</Binding.ValidationRules>
+				</Binding>
+			</TextBox>
+			<ComboBox materialDesign:ComboBoxAssist.ClassicMode="True"
+					  materialDesign:HintAssist.Hint="Refresh period (ms)"
+					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="200" Width="132"
+					  MouseLeave="OSDRefreshPeriodComboBox_MouseLeave" FontSize="14"
+					  ItemsSource="{Binding Path=RefreshPeriodItemsSource}">
+				<ComboBox.Text>
+					<Binding Path="OSDRefreshPeriod"
+							 Mode="TwoWay"
+							 UpdateSourceTrigger="PropertyChanged">
+					</Binding>
+				</ComboBox.Text>
+			</ComboBox>
+			</StackPanel>
+		</DockPanel>
+		<Border Grid.Row="1" Grid.Column="1" Margin="0 0 0 -20" Background="Transparent" BorderThickness=".2" BorderBrush="Black">
 			<Grid>
 				<Grid.RowDefinitions>
 					<RowDefinition Height="50"></RowDefinition>
@@ -228,7 +229,7 @@
 						</Binding>
 					</TextBox>
 					<!--Metrics shown on overlay-->
-                    <ComboBox  Grid.Row="1" Grid.Column="0" Width="120" materialDesign:HintAssist.Hint="Second metric" 
+					<ComboBox  Grid.Row="1" Grid.Column="0" Width="120" materialDesign:HintAssist.Hint="Second metric" 
 					  Visibility="{Binding IsBarChartTabActive, Converter={StaticResource TrueToVisibleConverter}}"
 					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="330" materialDesign:ComboBoxAssist.ClassicMode="True"
 					  ItemsSource="{Binding SecondMetricItems}" SelectedItem="{Binding SelectedSecondMetric}">
@@ -238,7 +239,7 @@
 							</DataTemplate>
 						</ComboBox.ItemTemplate>
 					</ComboBox>
-                    <ComboBox Grid.Row="1" Grid.Column="1" Width="120" materialDesign:HintAssist.Hint="Third metric"
+					<ComboBox Grid.Row="1" Grid.Column="1" Width="120" materialDesign:HintAssist.Hint="Third metric"
 					  Visibility="{Binding IsBarChartTabActive, Converter={StaticResource TrueToVisibleConverter}}"
 					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="360" materialDesign:ComboBoxAssist.ClassicMode="True"
 					  ItemsSource="{Binding ThirdMetricItems}" SelectedItem="{Binding SelectedThirdMetric}">
@@ -250,33 +251,33 @@
 					</ComboBox>
 				</Grid>
 				<!--Aggregation of run history toogle-->
-                <StackPanel Grid.Row="2" Grid.ColumnSpan="2" HorizontalAlignment="Center" VerticalAlignment="Center">
-                    <TextBlock Text="Aggregation of run history" Margin="5"/>
-                    <ToggleButton IsChecked="{Binding UseAggregation}" Style="{StaticResource MaterialDesignSwitchToggleButton}" IsEnabled="{Binding UseRunHistory}" 
+				<StackPanel Grid.Row="2" Grid.ColumnSpan="2" HorizontalAlignment="Center" VerticalAlignment="Center">
+					<TextBlock Text="Aggregation of run history" Margin="5"/>
+					<ToggleButton IsChecked="{Binding UseAggregation}" Style="{StaticResource MaterialDesignSwitchToggleButton}" IsEnabled="{Binding UseRunHistory}" 
                                   ToolTipService.ShowDuration="25000">
-                        <ToggleButton.ToolTip>
-                            <ToolTip MaxWidth="350">
-                                <TextBlock 
+						<ToggleButton.ToolTip>
+							<ToolTip MaxWidth="350">
+								<TextBlock 
                              Text="Once the run history is full, combines its frametime data to a single record file and shows it below the run history.
                                 &#10;&#10;This is NOT the same as calculating average parameters from multiple single record files. It simulates running the same scene multiple times in one single benchmark. 
                                 Performance parameters are calculated using all of the frametime data." 
                              TextWrapping="Wrap"/>
-                            </ToolTip>
-                        </ToggleButton.ToolTip>
-                    </ToggleButton>
-                </StackPanel>
-                <Grid Grid.Row="3" Grid.ColumnSpan="2" HorizontalAlignment="Center"
+							</ToolTip>
+						</ToggleButton.ToolTip>
+					</ToggleButton>
+				</StackPanel>
+				<Grid Grid.Row="3" Grid.ColumnSpan="2" HorizontalAlignment="Center"
                   IsEnabled="{Binding UseAggregation}">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="60"/>
-                        <RowDefinition Height="50"/>
-                    </Grid.RowDefinitions>
+					<Grid.RowDefinitions>
+						<RowDefinition Height="60"/>
+						<RowDefinition Height="50"/>
+					</Grid.RowDefinitions>
 					<Grid.ColumnDefinitions>
 						<ColumnDefinition Width="225"/>
-                        <ColumnDefinition Width="225"/>
-                    </Grid.ColumnDefinitions>
-					<!--Outlier handling (disabled for beta)-->					
-                    <ComboBox Grid.Row="0" Grid.Column="0" materialDesign:HintAssist.Hint="Outlier handling" materialDesign:ComboBoxAssist.ClassicMode="True"
+						<ColumnDefinition Width="225"/>
+					</Grid.ColumnDefinitions>
+					<!--Outlier handling (disabled for beta)-->
+					<ComboBox Grid.Row="0" Grid.Column="0" materialDesign:HintAssist.Hint="Outlier handling" materialDesign:ComboBoxAssist.ClassicMode="True"
 					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Width="120" IsEnabled="False" 
 					  ItemsSource="{Binding OutlierHandlingItems}" SelectedItem="{Binding SelectedOutlierHandling}" 
                               ToolTipService.ShowDuration="25000">
@@ -296,34 +297,34 @@
 							</DataTemplate>
 						</ComboBox.ItemTemplate>
 					</ComboBox>
-                    <!--History items save option-->
-                    <CheckBox Grid.Row="0" Grid.Column="1"  Width="120" IsChecked="{Binding SaveAggregationOnly}" ToolTipService.ShowDuration="25000">
-                        <CheckBox.ToolTip>
-                            <ToolTip StaysOpen="True" MaxWidth="275">
-                                <TextBlock 
+					<!--History items save option-->
+					<CheckBox Grid.Row="0" Grid.Column="1"  Width="120" IsChecked="{Binding SaveAggregationOnly}" ToolTipService.ShowDuration="25000">
+						<CheckBox.ToolTip>
+							<ToolTip StaysOpen="True" MaxWidth="275">
+								<TextBlock 
                              Text="If checked, the independent history items will not be saved in addition to the aggregated result." 
                                   TextWrapping="Wrap"/>
-                            </ToolTip>
-                        </CheckBox.ToolTip>
-                        <TextBlock Padding="5 0 0 0" TextWrapping="WrapWithOverflow">
+							</ToolTip>
+						</CheckBox.ToolTip>
+						<TextBlock Padding="5 0 0 0" TextWrapping="WrapWithOverflow">
   					     Save aggregated result only
-                        </TextBlock>
-                    </CheckBox>
-                    <!--Related metric-->
-                    <ComboBox Grid.Row="1" Grid.Column="0"  materialDesign:HintAssist.Hint="Related metric" materialDesign:ComboBoxAssist.ClassicMode="True"
+						</TextBlock>
+					</CheckBox>
+					<!--Related metric-->
+					<ComboBox Grid.Row="1" Grid.Column="0"  materialDesign:HintAssist.Hint="Related metric" materialDesign:ComboBoxAssist.ClassicMode="True"
 					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Width="120" IsEnabled="{Binding IsOutlierReplace}"
 					  ItemsSource="{Binding RelatedMetricItemsSource}" SelectedItem="{Binding SelectedRelatedMetric}" 
                               ToolTipService.ShowDuration="25000">
-                        <ComboBox.ToolTip>
-                            <ToolTip MaxWidth="350">
-                                <TextBlock
+						<ComboBox.ToolTip>
+							<ToolTip MaxWidth="350">
+								<TextBlock
                              Text="Metric used to determine outliers" 
                              TextWrapping="Wrap"/>
-                            </ToolTip>
-                        </ComboBox.ToolTip>
-                    </ComboBox>
-                    <!--Outlier percentage-->
-                    <ComboBox Grid.Row="1" Grid.Column="1" materialDesign:HintAssist.Hint="Outlier percentage" materialDesign:ComboBoxAssist.ClassicMode="True"
+							</ToolTip>
+						</ComboBox.ToolTip>
+					</ComboBox>
+					<!--Outlier percentage-->
+					<ComboBox Grid.Row="1" Grid.Column="1" materialDesign:HintAssist.Hint="Outlier percentage" materialDesign:ComboBoxAssist.ClassicMode="True"
 					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="200" Width="120" IsEnabled="{Binding IsOutlierReplace}"
 					  ItemsSource="{Binding OutlierPercentageItemsSource}" SelectedItem="{Binding SelectedOutlierPercentage}" 
                               ToolTipService.ShowDuration="25000">
@@ -338,7 +339,6 @@
 				</Grid>
 			</Grid>
 		</Border>
-
 		<TextBlock Margin="0 40 0 0" Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Center"
 				   Visibility="{Binding IsRTSSInstalled, Converter={StaticResource FalseToVisibleConverter}}">           
 			<Hyperlink NavigateUri="https://www.guru3d.com/files-details/rtss-rivatuner-statistics-server-download.html" 
