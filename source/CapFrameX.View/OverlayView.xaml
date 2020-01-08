@@ -36,7 +36,7 @@
 	<Grid HorizontalAlignment="Center">
 		<Grid.RowDefinitions>
 			<RowDefinition Height="50"></RowDefinition>
-			<RowDefinition Height="380"></RowDefinition>
+			<RowDefinition Height="600"></RowDefinition>
 			<RowDefinition Height="100"></RowDefinition>
 		</Grid.RowDefinitions>
 		<Grid.ColumnDefinitions>
@@ -45,13 +45,52 @@
 		</Grid.ColumnDefinitions>
 		<DockPanel Grid.Row="1" Grid.Column="0" Margin="0 0 10 0">
 			<!--DataGrid and Overlay hotkey-->
-			<TextBlock Margin="0 0 0 10" DockPanel.Dock="Top" HorizontalAlignment="Center" Text="Overlay items" FontSize="14"/>
-			<StackPanel DockPanel.Dock="Top" Orientation="Vertical" HorizontalAlignment="Center">
-				<DataGrid x:Name="OverlayItemDataGrid" Height="280" Width="400" Background="#F5F5F5" FontSize="11"
+            <StackPanel Margin="0 0 0 20" DockPanel.Dock="Top" HorizontalAlignment="Center" Orientation="Vertical">
+                <TextBlock Margin="5" Text="Show CX overlay"/>
+                <ToggleButton IsChecked="{Binding UseRunHistory}" Style="{StaticResource MaterialDesignSwitchToggleButton}" 
+								  ToolTipService.ShowDuration="25000">
+                    <ToggleButton.ToolTip>
+                        <ToolTip MaxWidth="250">
+                            <TextBlock Text="Saves a set number of runs into a history which can be displayed in the overlay"                               
+										   TextWrapping="Wrap"/>
+                        </ToolTip>
+                    </ToggleButton.ToolTip>
+                </ToggleButton>
+            </StackPanel>
+            <TextBox Margin="0 0 200 -40" DockPanel.Dock="Top"
+                     Width="132" wpf:HintAssist.Hint="Overlay hotkey"  Style="{DynamicResource MaterialDesignFloatingHintTextBox}" FontSize="14"
+					 IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False" PreviewKeyDown="OverlayHotkeyTextBox_PreviewKeyDown"
+					 ToolTip="combinable with Ctrl/Shift/Alt" IsEnabled="{Binding IsRTSSInstalled}">
+                <Binding Path="OverlayHotkey"
+						 ElementName="OverlayViewControl"
+						 Mode="OneWay"
+						 TargetNullValue="&lt; not set &gt;">
+                    <Binding.ValidationRules>
+                        <validation:HotkeyValidationRule
+                          ValidatesOnTargetUpdated="True" />
+                    </Binding.ValidationRules>
+                </Binding>
+            </TextBox>
+            <ComboBox DockPanel.Dock="Top" Margin="200 0 0 0" materialDesign:ComboBoxAssist.ClassicMode="True"
+					  materialDesign:HintAssist.Hint="Refresh period (ms)"
+					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="200" Width="132"
+					  MouseLeave="OSDRefreshPeriodComboBox_MouseLeave" FontSize="14"
+					  ItemsSource="{Binding Path=RefreshPeriodItemsSource}">
+                <ComboBox.Text>
+                    <Binding Path="OSDRefreshPeriod"
+							 Mode="TwoWay"
+							 UpdateSourceTrigger="PropertyChanged">
+                    </Binding>
+                </ComboBox.Text>
+            </ComboBox>
+            <TextBlock Margin="25 25 0 -40" DockPanel.Dock="Top" HorizontalAlignment="Left" Text="Overlay items" FontSize="16" FontWeight="Bold"/>
+            <TextBlock Margin="0 25 25 5" DockPanel.Dock="Top" HorizontalAlignment="Right" Text="Drag &amp; Drop to change order"/>
+            <StackPanel DockPanel.Dock="Top" Orientation="Vertical" HorizontalAlignment="Center">
+                <DataGrid x:Name="OverlayItemDataGrid" Height="450" Width="400" Background="#F5F5F5" FontSize="11"
 						  MouseLeave="OverlayItemDataGrid_MouseLeave"
 					      SelectedIndex="{Binding SelectedOverlayEntryIndex}" ItemsSource="{Binding OverlayEntries}"
 					      CanUserSortColumns="False" CanUserAddRows="False" AutoGenerateColumns="False"
-					      materialDesign:DataGridAssist.CellPadding="13 8 8 8" materialDesign:DataGridAssist.ColumnHeaderPadding="8" IsSynchronizedWithCurrentItem="False"
+					      materialDesign:DataGridAssist.CellPadding="13 8 8 8" materialDesign:DataGridAssist.ColumnHeaderPadding="8 3 0 3" IsSynchronizedWithCurrentItem="False"
 					      ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.CanContentScroll="True"
 					      dragdrop:DragDrop.IsDragSource="True"
 					      dragdrop:DragDrop.IsDropTarget="True"
@@ -59,96 +98,69 @@
 					      dragdrop:DragDrop.UseDefaultDragAdorner="True"
 					      dragdrop:DragDrop.DefaultDragAdornerOpacity="0.5"
 					      dragdrop:DragDrop.UseDefaultEffectDataTemplate="False">
-					<DataGrid.Columns>
-						<DataGridCheckBoxColumn Binding="{Binding ShowOnOverlay, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                    <DataGrid.Columns>
+                        <DataGridCheckBoxColumn Binding="{Binding ShowOnOverlay, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                 Header="OSD">
-							<DataGridCheckBoxColumn.CellStyle>
-								<Style TargetType="DataGridCell">
-									<Setter Property="IsEnabled" 
+                            <DataGridCheckBoxColumn.CellStyle>
+                                <Style TargetType="DataGridCell">
+                                    <Setter Property="IsEnabled" 
                                         Value="{Binding Path=ShowOnOverlayIsEnabled}" />
-									<Setter Property="Template">
-										<Setter.Value>
-											<ControlTemplate TargetType="{x:Type DataGridCell}">
-												<Grid Background="{TemplateBinding Background}">
-													<ContentPresenter VerticalAlignment="Center" />
-												</Grid>
-											</ControlTemplate>
-										</Setter.Value>
-									</Setter>
-									<Style.Triggers>
-										<Trigger Property="DataGridCell.IsSelected" Value="True">
-											<Setter Property="Background" Value="#DCDCDC" />
-										</Trigger>
-									</Style.Triggers>
-								</Style>
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="{x:Type DataGridCell}">
+                                                <Grid Background="{TemplateBinding Background}">
+                                                    <ContentPresenter VerticalAlignment="Center" />
+                                                </Grid>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Style.Triggers>
+                                        <Trigger Property="DataGridCell.IsSelected" Value="True">
+                                            <Setter Property="Background" Value="#DCDCDC" />
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
 
-							</DataGridCheckBoxColumn.CellStyle>
-						</DataGridCheckBoxColumn>
-						<DataGridTextColumn Binding="{Binding Description, Mode=TwoWay}"
+                            </DataGridCheckBoxColumn.CellStyle>
+                        </DataGridCheckBoxColumn>
+                        <DataGridTextColumn Binding="{Binding Description, Mode=TwoWay}"
                                             Header="Description"
                                             IsReadOnly="True"/>
-						<DataGridTextColumn Binding="{Binding GroupName, Mode=TwoWay}"
+                        <DataGridTextColumn Binding="{Binding GroupName, Mode=TwoWay}"
                                             Header="Group name"
                                             IsReadOnly="False"/>
-						<DataGridCheckBoxColumn Binding="{Binding ShowGraph, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        <DataGridCheckBoxColumn Binding="{Binding ShowGraph, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                             Header="Graph">
-							<DataGridCheckBoxColumn.CellStyle>
-								<Style TargetType="DataGridCell">
-									<Setter Property="IsEnabled" 
+                            <DataGridCheckBoxColumn.CellStyle>
+                                <Style TargetType="DataGridCell">
+                                    <Setter Property="IsEnabled" 
                                         Value="{Binding Path=ShowGraphIsEnabled}" />
-									<Setter Property="Template">
-										<Setter.Value>
-											<ControlTemplate TargetType="{x:Type DataGridCell}">
-												<Grid Background="{TemplateBinding Background}">
-													<ContentPresenter VerticalAlignment="Center" />
-												</Grid>
-											</ControlTemplate>
-										</Setter.Value>
-									</Setter>
-									<Style.Triggers>
-										<Trigger Property="DataGridCell.IsSelected" Value="True">
-											<Setter Property="Background" Value="#DCDCDC" />
-										</Trigger>
-									</Style.Triggers>
-								</Style>
-							</DataGridCheckBoxColumn.CellStyle>
-						</DataGridCheckBoxColumn>
-						<!--<DataGridTextColumn Binding="{Binding Color, Mode=TwoWay}"
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="{x:Type DataGridCell}">
+                                                <Grid Background="{TemplateBinding Background}">
+                                                    <ContentPresenter VerticalAlignment="Center" />
+                                                </Grid>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Style.Triggers>
+                                        <Trigger Property="DataGridCell.IsSelected" Value="True">
+                                            <Setter Property="Background" Value="#DCDCDC" />
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </DataGridCheckBoxColumn.CellStyle>
+                        </DataGridCheckBoxColumn>
+                        <!--<DataGridTextColumn Binding="{Binding Color, Mode=TwoWay}"
 										    Width="100"
                                             Header="Hex-color"
                                             IsReadOnly="False"/>-->
-					</DataGrid.Columns>
-				</DataGrid>
-				<TextBlock HorizontalAlignment="Center" Text="Drag &amp; Drop to change order"/>
-			</StackPanel>
-			<TextBox Margin="0 20 200 -20" DockPanel.Dock="Bottom" HorizontalAlignment="Center"
-                     Width="132" wpf:HintAssist.Hint="Overlay hotkey" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" FontSize="14"
-					 IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False" PreviewKeyDown="OverlayHotkeyTextBox_PreviewKeyDown"
-					 ToolTip="combinable with Ctrl/Shift/Alt" IsEnabled="{Binding IsRTSSInstalled}">
-				<Binding Path="OverlayHotkey"
-						 ElementName="OverlayViewControl"
-						 Mode="OneWay"
-						 TargetNullValue="&lt; not set &gt;">
-					<Binding.ValidationRules>
-						<validation:HotkeyValidationRule
-                          ValidatesOnTargetUpdated="True" />
-					</Binding.ValidationRules>
-				</Binding>
-			</TextBox>
-            <ComboBox DockPanel.Dock="Bottom" Margin="200 0 0 -96" materialDesign:ComboBoxAssist.ClassicMode="True"
-					  materialDesign:HintAssist.Hint="Refresh period (ms)" HorizontalAlignment="Center"
-					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="200" Width="132"
-					  MouseLeave="OSDRefreshPeriodComboBox_MouseLeave" FontSize="14"
-					  ItemsSource="{Binding Path=RefreshPeriodItemsSource}">
-				<ComboBox.Text>
-					<Binding Path="OSDRefreshPeriod"
-							 Mode="TwoWay"
-							 UpdateSourceTrigger="PropertyChanged">
-					</Binding>
-				</ComboBox.Text>
-			</ComboBox>
-		</DockPanel>
-		<Border Grid.Row="1" Grid.Column="1" Margin="0 0 0 -20" Background="Transparent" BorderThickness=".2" BorderBrush="Black">
+                    </DataGrid.Columns>
+                </DataGrid>
+            </StackPanel>
+        </DockPanel>
+		<Border Grid.Row="1" Grid.Column="1" Margin="0 0 0 180" Background="Transparent" BorderThickness=".2" BorderBrush="Black">
 			<Grid>
 				<Grid.RowDefinitions>
 					<RowDefinition Height="50"></RowDefinition>
