@@ -122,6 +122,7 @@ namespace CapFrameX.Overlay
 			var captureTimer = _overlayEntryProvider.GetOverlayEntry("CaptureTimer");
 			captureTimer.Value = $"{t.ToString()} s";
 			SetOverlayEntries(_overlayEntryProvider?.GetOverlayEntries());
+			CheckRTSSRunningAndRefresh();
 		}
 
 		public void SetCaptureServiceStatus(string status)
@@ -282,6 +283,8 @@ namespace CapFrameX.Overlay
 
 		private IDisposable GetOverlayRefreshHeartBeat()
 		{
+			CheckRTSSRunningAndRefresh();
+
 			return Observable
 				.Timer(DateTimeOffset.UtcNow, TimeSpan.FromMilliseconds(_refreshPeriod))
 				.Subscribe(x => CheckRTSSRunningAndRefresh());

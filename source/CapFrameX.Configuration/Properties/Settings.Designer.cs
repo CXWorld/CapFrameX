@@ -229,7 +229,7 @@ namespace CapFrameX.Configuration.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("F12")]
+        [global::System.Configuration.DefaultSettingValueAttribute("F11")]
         public string CaptureHotKey {
             get {
                 return ((string)(this["CaptureHotKey"]));

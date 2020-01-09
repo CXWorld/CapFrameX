@@ -54,7 +54,7 @@
       <Value Profile="(Default)">True</Value>
     </Setting>
     <Setting Name="CaptureHotKey" Type="System.String" Scope="User">
-      <Value Profile="(Default)">F12</Value>
+      <Value Profile="(Default)">F11</Value>
     </Setting>
     <Setting Name="HotkeySoundMode" Type="System.String" Scope="User">
       <Value Profile="(Default)">voice response</Value>

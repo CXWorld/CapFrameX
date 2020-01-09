@@ -36,7 +36,7 @@
 	<Grid HorizontalAlignment="Center">
 		<Grid.RowDefinitions>
 			<RowDefinition Height="50"></RowDefinition>
-			<RowDefinition Height="450"></RowDefinition>
+			<RowDefinition Height="480"></RowDefinition>
 			<RowDefinition Height="100"></RowDefinition>
 		</Grid.RowDefinitions>
 		<Grid.ColumnDefinitions>
@@ -121,9 +121,14 @@
 				<TextBlock HorizontalAlignment="Center" Text="Drag &amp; Drop to change order"/>
 			</StackPanel>
 			<!--Global overlay toggle-->
-            <StackPanel Margin="0 20 0 0" DockPanel.Dock="Bottom">
-                <ToggleButton Margin="25 0 0 -50" IsChecked="{Binding IsOverlayActive, Mode=TwoWay}" Style="{StaticResource MaterialDesignSwitchToggleButton}" 
-							  ToolTipService.ShowDuration="25000" HorizontalAlignment="Left">
+            <StackPanel Margin="0 30 0 0" DockPanel.Dock="Bottom">
+                <ToggleButton Margin="-60 0 0 -50" Width="25" Height="25"
+					  Style="{StaticResource MaterialDesignActionAccentToggleButton}"
+					  IsChecked="{Binding IsOverlayActive, Mode=TwoWay}"
+					  Content="{materialDesign:PackIcon Stop, Size=20}">
+                    <materialDesign:ToggleButtonAssist.OnContent>
+                        <materialDesign:PackIcon Kind="Play"/>
+                    </materialDesign:ToggleButtonAssist.OnContent>
                     <ToggleButton.ToolTip>
                         <ToolTip MaxWidth="250">
                             <TextBlock Text="Shows the CX overlay items in RTSS"                               
@@ -131,7 +136,7 @@
                         </ToolTip>
                     </ToggleButton.ToolTip>
                 </ToggleButton>
-                <TextBox Margin="-180 0 0 -20" DockPanel.Dock="Bottom" materialDesign:HintAssist.Hint="Show overlay" Width="132" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" FontSize="14"
+                <TextBox Margin="-225 0 0 -20" DockPanel.Dock="Bottom" materialDesign:HintAssist.Hint="Show overlay" Width="132" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" FontSize="14"
 					 IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False" PreviewKeyDown="OverlayHotkeyTextBox_PreviewKeyDown"
 					 ToolTip="combinable with Ctrl/Shift/Alt" IsEnabled="{Binding IsRTSSInstalled}">
 				<Binding Path="OverlayHotkey"
@@ -159,7 +164,7 @@
 			</ComboBox>
 			</StackPanel>
 		</DockPanel>
-		<Border Grid.Row="1" Grid.Column="1" Margin="0 0 0 -20" Background="Transparent" BorderThickness=".2" BorderBrush="Black">
+		<Border Grid.Row="1" Grid.Column="1" Margin="0 0 0 20" Background="Transparent" BorderThickness=".2" BorderBrush="Black">
 			<Grid>
 				<Grid.RowDefinitions>
 					<RowDefinition Height="50"></RowDefinition>

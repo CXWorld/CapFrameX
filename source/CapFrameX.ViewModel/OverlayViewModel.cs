@@ -36,6 +36,12 @@ namespace CapFrameX.ViewModel
 			{
 				_appConfiguration.IsOverlayActive = value;
 				_overlayService.IsOverlayActiveStream.OnNext(value);
+
+				if (value)
+					_overlayService.ShowOverlay();
+				else
+					_overlayService.HideOverlay();
+
 				RaisePropertyChanged();
 			}
 		}
@@ -346,7 +352,7 @@ namespace CapFrameX.ViewModel
 			{
 				{Combination.FromString(OverlayHotkeyString), () =>
 				{
-					SetOverlayMode();
+					IsOverlayActive = !IsOverlayActive;
 				}}
 			};
 
@@ -369,16 +375,6 @@ namespace CapFrameX.ViewModel
 
 			_globalResetHistoryHookEvent = Hook.GlobalEvents();
 			_globalResetHistoryHookEvent.OnCombination(onCombinationDictionary);
-		}
-
-		private void SetOverlayMode()
-		{
-			IsOverlayActive = !IsOverlayActive;
-
-			if (IsOverlayActive)
-				_overlayService.ShowOverlay();
-			else
-				_overlayService.HideOverlay();
 		}
 
 		public bool IsNavigationTarget(NavigationContext navigationContext)
