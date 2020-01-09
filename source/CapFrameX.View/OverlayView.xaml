@@ -122,7 +122,7 @@
 			</StackPanel>
 			<!--Global overlay toggle-->
             <StackPanel Margin="0 20 0 0" DockPanel.Dock="Bottom">
-                <ToggleButton Margin="25 0 0 -50" IsChecked="{Binding IsOverlayActive, Mode=TwoWay}" "{StaticResource MaterialDesignSwitchToggleButton}" 
+                <ToggleButton Margin="25 0 0 -50" IsChecked="{Binding IsOverlayActive, Mode=TwoWay}" Style="{StaticResource MaterialDesignSwitchToggleButton}" 
 							  ToolTipService.ShowDuration="25000" HorizontalAlignment="Left">
                     <ToggleButton.ToolTip>
                         <ToolTip MaxWidth="250">

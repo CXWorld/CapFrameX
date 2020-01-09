@@ -36,6 +36,7 @@ namespace CapFrameX.ViewModel
 			{
 				_appConfiguration.IsOverlayActive = value;
 				_overlayService.IsOverlayActiveStream.OnNext(value);
+				RaisePropertyChanged();
 			}
 		}
 
