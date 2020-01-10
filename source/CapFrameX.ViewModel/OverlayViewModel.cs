@@ -294,7 +294,8 @@ namespace CapFrameX.ViewModel
 				_overlayService.ShowOverlay();
 
 			IsRTSSInstalled = !string.IsNullOrEmpty(RTSSUtils.GetRTSSFullPath());
-			UpdateHpyerlinkText = "Install latest RivaTuner Statistics Server (RTSS) to use overlay.";
+			UpdateHpyerlinkText = "To use the overlay, install the latest" + Environment.NewLine +
+				"Rivatuner  Statistics  Server  (RTSS)";
 
 			OverlayEntries.AddRange(_overlayEntryProvider.GetOverlayEntries());
 
