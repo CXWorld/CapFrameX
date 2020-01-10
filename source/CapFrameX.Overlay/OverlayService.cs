@@ -122,7 +122,10 @@ namespace CapFrameX.Overlay
 			var captureTimer = _overlayEntryProvider.GetOverlayEntry("CaptureTimer");
 			captureTimer.Value = $"{t.ToString()} s";
 			SetOverlayEntries(_overlayEntryProvider?.GetOverlayEntries());
-			CheckRTSSRunningAndRefresh();
+			if (_appConfiguration.IsOverlayActive)
+			{
+				CheckRTSSRunningAndRefresh();
+			};
 		}
 
 		public void SetCaptureServiceStatus(string status)
