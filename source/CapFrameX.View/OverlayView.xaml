@@ -280,17 +280,18 @@
 						<ColumnDefinition Width="225"/>
 						<ColumnDefinition Width="225"/>
 					</Grid.ColumnDefinitions>
-					<!--Outlier handling (disabled for beta)-->
+					<!--Outlier handling-->
 					<ComboBox Grid.Row="0" Grid.Column="0" materialDesign:HintAssist.Hint="Outlier handling" materialDesign:ComboBoxAssist.ClassicMode="True"
-					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Width="120" IsEnabled="False" 
+					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Width="120"
 					  ItemsSource="{Binding OutlierHandlingItems}" SelectedItem="{Binding SelectedOutlierHandling}" 
                               ToolTipService.ShowDuration="25000">
 						<ComboBox.ToolTip>
 							<ToolTip MaxWidth="350">
 								<TextBlock
-                             Text="Ignore outliers&#10;Runs will be aggregated once the history is full.
+                             Text="If the selected metric of a run differs more than X% from the median of all runs, the run will be marked as an outlier.
+                                    &#10;&#10;Mark &amp; use&#10;All runs will be aggregated once the history is full.
                                    
-                                   &#10;&#10;Replace outliers&#10;If the selected metric of a run differs more than X% from the median of all runs, the run will be marked as an outlier and you have to do another run to replace it.
+                                   &#10;&#10;Mark &amp; replace&#10;Marked runs have to be replaced by additional runs.
                                    &#10;Runs will be aggregated once the history contains no more outliers."
                              TextWrapping="Wrap"/>
 							</ToolTip>
@@ -316,7 +317,7 @@
 					</CheckBox>
 					<!--Related metric-->
 					<ComboBox Grid.Row="1" Grid.Column="0"  materialDesign:HintAssist.Hint="Related metric" materialDesign:ComboBoxAssist.ClassicMode="True"
-					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Width="120" IsEnabled="{Binding IsOutlierReplace}"
+					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Width="120" 
 					  ItemsSource="{Binding RelatedMetricItemsSource}" SelectedItem="{Binding SelectedRelatedMetric}" 
                               ToolTipService.ShowDuration="25000">
 						<ComboBox.ToolTip>
@@ -329,7 +330,7 @@
 					</ComboBox>
 					<!--Outlier percentage-->
 					<ComboBox Grid.Row="1" Grid.Column="1" materialDesign:HintAssist.Hint="Outlier percentage" materialDesign:ComboBoxAssist.ClassicMode="True"
-					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="200" Width="120" IsEnabled="{Binding IsOutlierReplace}"
+					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="200" Width="120" 
 					  ItemsSource="{Binding OutlierPercentageItemsSource}" SelectedItem="{Binding SelectedOutlierPercentage}" 
                               ToolTipService.ShowDuration="25000">
 						<ComboBox.ToolTip>

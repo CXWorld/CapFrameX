@@ -120,7 +120,7 @@ namespace CapFrameX.ViewModel
 				_appConfiguration.SelectedHistoryRuns =
 					value;
 
-				_overlayService.UpdateNumberOfRuns(value);
+				_overlayService.UpdateNumberOfRuns(value);				
 				RaisePropertyChanged();
 			}
 		}
@@ -136,6 +136,7 @@ namespace CapFrameX.ViewModel
 			{
 				_appConfiguration.OutlierPercentage =
 					value;
+				_overlayService.ResetHistory();
 				RaisePropertyChanged();
 			}
 		}
@@ -152,8 +153,8 @@ namespace CapFrameX.ViewModel
 			{
 				_appConfiguration.OutlierHandling =
 					value.ConvertToString();
+				_overlayService.ResetHistory();
 				RaisePropertyChanged();
-				RaisePropertyChanged(nameof(IsOutlierReplace));
 			}
 		}
 
@@ -248,11 +249,10 @@ namespace CapFrameX.ViewModel
 			set
 			{
 				_appConfiguration.RelatedMetric = value;
+				_overlayService.ResetHistory();
 				RaisePropertyChanged();
 			}
 		}
-
-		public bool IsOutlierReplace => SelectedOutlierHandling == EOutlierHandling.Replace;
 
 		public bool IsRTSSInstalled { get; }
 
@@ -293,7 +293,7 @@ namespace CapFrameX.ViewModel
 			if (IsOverlayActive)
 				_overlayService.ShowOverlay();
 
-			IsRTSSInstalled = !string.IsNullOrEmpty(_overlayService.GetRTSSFullPath());
+			IsRTSSInstalled = !string.IsNullOrEmpty(RTSSUtils.GetRTSSFullPath());
 			UpdateHpyerlinkText = "Install latest RivaTuner Statistics Server (RTSS) to use overlay.";
 
 			OverlayEntries.AddRange(_overlayEntryProvider.GetOverlayEntries());

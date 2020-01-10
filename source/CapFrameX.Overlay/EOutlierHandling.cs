@@ -1,12 +1,12 @@
 ﻿using System.ComponentModel;
 
-namespace CapFrameX.ViewModel
+namespace CapFrameX.Overlay
 {
     public enum EOutlierHandling
     {
-		[Description("Ignore")]
+		[Description("Mark & use")]
 		Ignore = 0,
-		[Description("Replace")]
+		[Description("Mark & replace")]
 		Replace = 1
 	}
 } 

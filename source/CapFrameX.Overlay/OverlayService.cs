@@ -35,6 +35,7 @@ namespace CapFrameX.Overlay
 		private bool[] _runHistoryOutlierFlags;
 		private int _refreshPeriod;
 		private int _numberOfRuns;
+		private IList<MetricAnalysis> _metricAnalysis = new List<MetricAnalysis>();
 
 		public Subject<bool> IsOverlayActiveStream { get; }
 
@@ -148,6 +149,7 @@ namespace CapFrameX.Overlay
 			_runHistoryOutlierFlags = Enumerable.Repeat(false, _numberOfRuns).ToArray();
 			_captureDataHistory.Clear();
 			_frametimeHistory.Clear();
+			_metricAnalysis.Clear();
 			SetRunHistory(_runHistory.ToArray());
 			SetRunHistoryAggregation(string.Empty);
 			SetRunHistoryOutlierFlags(_runHistoryOutlierFlags);
@@ -159,12 +161,46 @@ namespace CapFrameX.Overlay
 				RecordDataProvider.GetFrameTimeFromDataLine(line)).ToList();
 
 			if (RunHistoryCount == _numberOfRuns)
-				ResetHistory();
+			{
+				if (!_runHistoryOutlierFlags.All(x => x == false)
+					&& _appConfiguration.OutlierHandling == EOutlierHandling.Replace.ConvertToString())
+				{
+					var historyDefault = Enumerable.Repeat("N/A", _numberOfRuns).ToList();
+					var validRuns = _runHistory.Where((run, i) => _runHistoryOutlierFlags[i] == false).ToList();
+
+					for (int i = 0; i < validRuns.Count; i++)
+					{
+						historyDefault[i] = validRuns[i];
+					}
+
+					var validCaptureData = _captureDataHistory.Where((run, i) => _runHistoryOutlierFlags[i] == false);
+					var validFrametimes = _frametimeHistory.Where((run, i) => _runHistoryOutlierFlags[i] == false);
+					var validMetricAnalysis = _metricAnalysis.Where((run, i) => _runHistoryOutlierFlags[i] == false);					
+
+					_runHistory = historyDefault.ToList();
+					_captureDataHistory = validCaptureData.ToList();
+					_frametimeHistory = validFrametimes.ToList();
+					_metricAnalysis = validMetricAnalysis.ToList();
+
+					// local reset
+					_runHistoryOutlierFlags = Enumerable.Repeat(false, _numberOfRuns).ToArray();
+
+					SetRunHistory(_runHistory.ToArray());
+					SetRunHistoryAggregation(string.Empty);
+					SetRunHistoryOutlierFlags(_runHistoryOutlierFlags);
+				}
+				else
+				{
+					ResetHistory();
+				}
+			}
 
 			if (RunHistoryCount < _numberOfRuns)
 			{
 				// metric history
-				_runHistory[RunHistoryCount] = GetMetrics(frametimes);
+				var currentAnalysis = GetMetrics(frametimes);
+				_metricAnalysis.Add(currentAnalysis);
+				_runHistory[RunHistoryCount] = currentAnalysis.ResultString;
 				SetRunHistory(_runHistory.ToArray());
 
 				// capture data history
@@ -174,23 +210,25 @@ namespace CapFrameX.Overlay
 				_frametimeHistory.Add(frametimes);
 
 				if (_appConfiguration.UseAggregation
-					&& RunHistoryCount == _numberOfRuns
-					&& _runHistoryOutlierFlags.All(x => x == false))
+					&& RunHistoryCount == _numberOfRuns)
 				{
-					// analysis
-					// Todo...
+					CalculateOutlierAnalysis();
+					SetRunHistoryOutlierFlags(_runHistoryOutlierFlags);
 
-					SetRunHistoryAggregation(GetAggregation());
-
-					// write aggregated file
-					Task.Run(async () =>
+					if ((_runHistoryOutlierFlags.All(x => x == false)))
 					{
-						await SetTaskDelayOffset().ContinueWith(_ =>
+						SetRunHistoryAggregation(GetAggregation());
+
+						// write aggregated file
+						Task.Run(async () =>
 						{
-							_recordDataProvider
-							.SaveAggregatedPresentData(_captureDataHistory);
-						}, CancellationToken.None, TaskContinuationOptions.RunContinuationsAsynchronously, TaskScheduler.Default);
-					});
+							await SetTaskDelayOffset().ContinueWith(_ =>
+							{
+								_recordDataProvider
+								.SaveAggregatedPresentData(_captureDataHistory);
+							}, CancellationToken.None, TaskContinuationOptions.RunContinuationsAsynchronously, TaskScheduler.Default);
+						});
+					}
 				}
 			}
 		}
@@ -203,54 +241,40 @@ namespace CapFrameX.Overlay
 		public void UpdateNumberOfRuns(int numberOfRuns)
 		{
 			_numberOfRuns = numberOfRuns;
-			_runHistory = Enumerable.Repeat("N/A", _numberOfRuns).ToList();
-			_runHistoryOutlierFlags = Enumerable.Repeat(false, _numberOfRuns).ToArray();
-			SetRunHistory(_runHistory.ToArray());
-			SetRunHistoryAggregation(string.Empty);
-			SetRunHistoryOutlierFlags(_runHistoryOutlierFlags);
+			ResetHistory();
 		}
 
-		public string GetRTSSFullPath()
+		private void CalculateOutlierAnalysis()
 		{
-			string installPath = string.Empty;
+			var averageValues = _metricAnalysis.Select(analysis => analysis.Average).ToList();
+			var secondMetricValues = _metricAnalysis.Select(analysis => analysis.Second).ToList();
+			var thirdMetricValues = _metricAnalysis.Select(analysis => analysis.Third).ToList();
 
-			try
+			if (_appConfiguration.RelatedMetric == "Average")
 			{
-				// SOFTWARE\WOW6432Node\Unwinder\RTSS
-				using (RegistryKey key = Registry.LocalMachine.OpenSubKey("Software\\WOW6432Node\\Unwinder\\RTSS"))
-				{
-					if (key != null)
-					{
-						object o = key.GetValue("InstallPath");
-						if (o != null)
-						{
-							installPath = o as string;  //"as" because it's REG_SZ...otherwise ToString() might be safe(r)
-						}
-					}
-				}
+				SetOutlierFlags(averageValues);
+			}
+			else if (_appConfiguration.RelatedMetric == "Second")
+			{
+				SetOutlierFlags(secondMetricValues);
+			}
+			else if (_appConfiguration.RelatedMetric == "Third")
+			{
+				SetOutlierFlags(thirdMetricValues);
+			}
+		}
 
-				// SOFTWARE\Unwinder\RTSS
-				if (string.IsNullOrWhiteSpace(installPath))
+		private void SetOutlierFlags(List<double> values)
+		{
+			var median = _statisticProvider.GetPQuantileSequence(values, 0.5);
+
+			for (int i = 0; i < values.Count; i++)
+			{
+				if ((Math.Abs(values[i] - median) / median) * 100 > (double)_appConfiguration.OutlierPercentage)
 				{
-					using (RegistryKey key = Registry.LocalMachine.OpenSubKey("Software\\Unwinder\\RTSS"))
-					{
-						if (key != null)
-						{
-							object o = key.GetValue("InstallPath");
-							if (o != null)
-							{
-								installPath = o as string;  //"as" because it's REG_SZ...otherwise ToString() might be safe(r)
-							}
-						}
-					}
+					_runHistoryOutlierFlags[i] = true;
 				}
 			}
-			catch (Exception)
-			{
-				throw;
-			}
-
-			return installPath;
 		}
 
 		private async Task SetTaskDelayOffset()
@@ -273,7 +297,7 @@ namespace CapFrameX.Overlay
 				try
 				{
 					Process proc = new Process();
-					proc.StartInfo.FileName = Path.Combine(GetRTSSFullPath());
+					proc.StartInfo.FileName = Path.Combine(RTSSUtils.GetRTSSFullPath());
 					proc.StartInfo.UseShellExecute = false;
 					proc.StartInfo.Verb = "runas";
 					proc.Start();
@@ -309,10 +333,10 @@ namespace CapFrameX.Overlay
 				concatedFrametimes.AddRange(frametimeSet);
 			}
 
-			return GetMetrics(concatedFrametimes);
+			return GetMetrics(concatedFrametimes).ResultString;
 		}
 
-		private string GetMetrics(List<double> frametimes)
+		private MetricAnalysis GetMetrics(List<double> frametimes)
 		{
 			var average = _statisticProvider.GetFpsMetricValue(frametimes, EMetric.Average);
 			var secondMetricValue = _statisticProvider.GetFpsMetricValue(frametimes, SecondMetric.ConvertToEnum<EMetric>());
@@ -332,8 +356,22 @@ namespace CapFrameX.Overlay
 				$"{thrirdMetricValue.ToString(numberFormat, cultureInfo)} " +
 				$"FPS" : string.Empty;
 
-			return $"Avg={average.ToString(numberFormat, cultureInfo)} " +
-				$"FPS | " + secondMetricString + thirdMetricString;
+			return new MetricAnalysis()
+			{
+				ResultString = $"Avg={average.ToString(numberFormat, cultureInfo)} " +
+				$"FPS | " + secondMetricString + thirdMetricString,
+				Average = average,
+				Second = secondMetricValue,
+				Third = thrirdMetricValue
+			};
+		}
+
+		private class MetricAnalysis
+		{
+			public string ResultString { get; set; }
+			public double Average { get; set; }
+			public double Second { get; set; }
+			public double Third { get; set; }
 		}
 	}
 }

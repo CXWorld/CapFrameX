@@ -1,6 +1,7 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.PresentMonInterface;
+using CapFrameX.Overlay;
 using CapFrameX.Updater;
 using Prism.Events;
 using Prism.Mvvm;
@@ -108,7 +109,7 @@ namespace CapFrameX.ViewModel
 
 			IsDirectoryObserving = true;
 			IsCaptureModeActive = false;
-			IsOverlayActive = _appConfiguration.IsOverlayActive && !string.IsNullOrEmpty(_overlayService.GetRTSSFullPath());
+			IsOverlayActive = _appConfiguration.IsOverlayActive && !string.IsNullOrEmpty(RTSSUtils.GetRTSSFullPath());
 
 			UpdateHpyerlinkText = $"New version available on GitHub: v{WebCheck.GetWebVersion(WebCheck.VersionSourceFileUrl)}";
 

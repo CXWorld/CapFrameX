@@ -40,7 +40,5 @@ namespace CapFrameX.Contracts.Overlay
 		void SetRunHistoryAggregation(string aggregation);
 
 		void UpdateOverlayEntries();
-
-		string GetRTSSFullPath();
 	}
 }
