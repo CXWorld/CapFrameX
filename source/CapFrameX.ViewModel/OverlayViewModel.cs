@@ -34,9 +34,11 @@ namespace CapFrameX.ViewModel
 			get { return _appConfiguration.IsOverlayActive; }
 			set
 			{
-				_appConfiguration.IsOverlayActive = value;
-				_overlayService.IsOverlayActiveStream.OnNext(value);
-
+				if (IsRTSSInstalled)
+				{
+					_appConfiguration.IsOverlayActive = value;
+					_overlayService.IsOverlayActiveStream.OnNext(value);
+				}
 				if (value)
 					_overlayService.ShowOverlay();
 				else
@@ -120,7 +122,7 @@ namespace CapFrameX.ViewModel
 				_appConfiguration.SelectedHistoryRuns =
 					value;
 
-				_overlayService.UpdateNumberOfRuns(value);				
+				_overlayService.UpdateNumberOfRuns(value);
 				RaisePropertyChanged();
 			}
 		}
@@ -242,7 +244,7 @@ namespace CapFrameX.ViewModel
 
 		public string SelectedRelatedMetric
 		{
-			get 
+			get
 			{
 				return _appConfiguration.RelatedMetric;
 			}
@@ -295,7 +297,7 @@ namespace CapFrameX.ViewModel
 
 			IsRTSSInstalled = !string.IsNullOrEmpty(RTSSUtils.GetRTSSFullPath());
 			UpdateHpyerlinkText = "To use the overlay, install the latest" + Environment.NewLine +
-				"Rivatuner  Statistics  Server  (RTSS)";
+				"RivaTuner  Statistics  Server  (RTSS)";
 
 			OverlayEntries.AddRange(_overlayEntryProvider.GetOverlayEntries());
 
@@ -322,7 +324,7 @@ namespace CapFrameX.ViewModel
 			{
 				if (historyEntry != null)
 					historyEntry.ShowOnOverlay = true;
-					historyEntry.ShowOnOverlayIsEnabled = true;
+				historyEntry.ShowOnOverlayIsEnabled = true;
 			}
 		}
 
