@@ -420,6 +420,52 @@ void RTSSCoreControl::Refresh()
 
   strOSD += groupedString.Get(bTruncated, FALSE, m_bFormatTags ? "\t" : " \t: ");
 
+  // manage graphs
+  strOSD += "\n";
+
+  DWORD dwObjectOffset = 0;
+  DWORD dwObjectSize = 0;
+  DWORD dwFlags = 0;
+  CString strObj;
+
+  if (OverlayEntries.size() > 0)
+  {
+    for (size_t i = 0; i < OverlayEntries.size(); i++)
+    {
+      if (OverlayEntries[i].ShowGraph)
+      {
+        if (OverlayEntries[i].Identifier == "Framerate")
+        {
+          //embed framerate graph object into the buffer
+          dwObjectSize = EmbedGraph(dwObjectOffset, NULL, 0, 0, -32, -2, 1, 0.0f, 200.0f, dwFlags | RTSS_EMBEDDED_OBJECT_GRAPH_FLAG_FRAMERATE);
+
+          if (dwObjectSize)
+          {
+            strObj.Format("<C2><OBJ=%08X><A0><S1><FR><A> FPS<S><C>\n", dwObjectOffset);
+            //print embedded object
+            strOSD += strObj;
+            //modify object offset
+            dwObjectOffset += dwObjectSize;
+          }
+        }
+        else if (OverlayEntries[i].Identifier == "Frametime")
+        {
+          //embed frametime graph object into the buffer
+          dwObjectSize = EmbedGraph(dwObjectOffset, NULL, 0, 0, -32, -2, 1, 0.0f, 50000.0f, dwFlags | RTSS_EMBEDDED_OBJECT_GRAPH_FLAG_FRAMETIME);
+
+          if (dwObjectSize)
+          {
+            strObj.Format("<C2><OBJ=%08X><A0><S1><FT><A> ms<S><C>\n", dwObjectOffset);
+            //print embedded object
+            strOSD += strObj;
+            //modify object offset
+            dwObjectOffset += dwObjectSize;
+          }
+        }
+      }
+    }
+  }
+
   if (!strOSD.IsEmpty())
   {
     BOOL bResult = UpdateOSD(strOSD);;
