@@ -4,6 +4,7 @@ ApplicationFrameHost
 avpui
 balenaEtcher
 Battle.net
+BethesdaNetLauncher
 Calculator
 CapFrameX
 chrome
