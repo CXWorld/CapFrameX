@@ -23,6 +23,7 @@ namespace CapFrameX.Data
 		public List<bool> AppMissed { get; set; }
 		public List<bool> WarpMissed { get; set; }
 		public List<double> Displaytimes { get; set; }
+		public List<double> InputLagTimes { get; set; }
 		public List<double> QPCTimes { get; set; }
 		public bool IsVR { get; set; }
 		public int AppMissesCount { get; set; }

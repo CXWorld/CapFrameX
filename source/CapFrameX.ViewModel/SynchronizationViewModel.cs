@@ -30,6 +30,7 @@ namespace CapFrameX.ViewModel
 		private readonly IAppConfiguration _appConfiguration;
 
 		private PlotModel _synchronizationModel;
+		private PlotModel _inputLagModel;
 		private SeriesCollection _histogramCollection;
 		private SeriesCollection _droppedFramesStatisticCollection;
 		private string[] _droppedFramesLabels;
@@ -61,6 +62,15 @@ namespace CapFrameX.ViewModel
 			set
 			{
 				_synchronizationModel = value;
+				RaisePropertyChanged();
+			}
+		}
+		public PlotModel InputLagModel
+		{
+			get { return _inputLagModel; }
+			set
+			{
+				_inputLagModel = value;
 				RaisePropertyChanged();
 			}
 		}
@@ -184,6 +194,12 @@ namespace CapFrameX.ViewModel
 				PlotMargins = new OxyThickness(40, 10, 0, 40),
 				PlotAreaBorderColor = OxyColor.FromArgb(64, 204, 204, 204),
 			};
+
+			InputLagModel = new PlotModel
+			{
+				PlotMargins = new OxyThickness(40, 10, 0, 40),
+				PlotAreaBorderColor = OxyColor.FromArgb(64, 204, 204, 204),
+			};
 		}
 
 		private void SubscribeToUpdateSession()
@@ -260,6 +276,7 @@ namespace CapFrameX.ViewModel
 
 			// Do not run on background thread, leads to errors on analysis page
 			SetFrameDisplayTimesChart(_session.FrameTimes, _session.Displaytimes);
+			SetFrameInputLagChart(_session.FrameTimes, _session.InputLagTimes);
 			Task.Factory.StartNew(() => SetHistogramChart(_session.Displaytimes));
 			Task.Factory.StartNew(() => SetDroppedFramesChart(_session.AppMissed));
 		}
@@ -335,6 +352,7 @@ namespace CapFrameX.ViewModel
 				SynchronizationModel = tmp;
 			}));
 		}
+
 
 		private void SetHistogramChart(List<double> displaytimes)
 		{
@@ -418,6 +436,78 @@ namespace CapFrameX.ViewModel
 
 			return (Math.Round(percentage * 100, 0))
 				.ToString() + "%";
+		}
+
+		private void SetFrameInputLagChart(IList<double> frametimes, IList<double> inputlagtimes)
+		{
+			var yMin = Math.Min(frametimes.Min(), inputlagtimes.Min());
+			var yMax = Math.Max(frametimes.Max(), inputlagtimes.Max());
+
+			var frametimeSeries = new OxyPlot.Series.LineSeries
+			{
+				Title = "Frametimes",
+				StrokeThickness = 1,
+				LegendStrokeThickness = 4,
+				Color = ColorRessource.FrametimeStroke
+			};
+
+			var inputLagSeries = new OxyPlot.Series.LineSeries
+			{
+				Title = "Input lag",
+				StrokeThickness = 1,
+				LegendStrokeThickness = 4,
+				Color = ColorRessource.FrametimeMovingAverageStroke
+			};
+
+			frametimeSeries.Points.AddRange(frametimes.Select((x, i) => new DataPoint(i, x)));
+			inputLagSeries.Points.AddRange(inputlagtimes.Select((x, i) => new DataPoint(i, x)));
+
+			Application.Current.Dispatcher.Invoke(new Action(() =>
+			{
+				var tmp = new PlotModel
+				{
+					PlotMargins = new OxyThickness(40, 10, 0, 40),
+					PlotAreaBorderColor = OxyColor.FromArgb(64, 204, 204, 204),
+					LegendPosition = LegendPosition.TopCenter,
+					LegendOrientation = LegendOrientation.Horizontal
+				};
+
+				tmp.Series.Add(frametimeSeries);
+				tmp.Series.Add(inputLagSeries);
+
+				//Axes
+				//X
+				tmp.Axes.Add(new LinearAxis()
+				{
+					Key = "xAxis",
+					Position = OxyPlot.Axes.AxisPosition.Bottom,
+					Title = "Samples",
+					Minimum = 0,
+					Maximum = frametimes.Count,
+					MajorGridlineStyle = LineStyle.Solid,
+					MajorGridlineThickness = 1,
+					MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
+					MinorTickSize = 0,
+					MajorTickSize = 0
+				});
+
+				//Y
+				tmp.Axes.Add(new LinearAxis()
+				{
+					Key = "yAxis",
+					Position = OxyPlot.Axes.AxisPosition.Left,
+					Title = "Frametime + input lag [ms]",
+					Minimum = yMin - (yMax - yMin) / 6,
+					Maximum = yMax + (yMax - yMin) / 6,
+					MajorGridlineStyle = LineStyle.Solid,
+					MajorGridlineThickness = 1,
+					MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
+					MinorTickSize = 0,
+					MajorTickSize = 0
+				});
+
+				InputLagModel = tmp;
+			}));
 		}
 
 		public void OnNavigatedTo(NavigationContext navigationContext)
