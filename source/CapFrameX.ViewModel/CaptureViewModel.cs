@@ -297,14 +297,8 @@ namespace CapFrameX.ViewModel
 			bool captureServiceStarted = StartCaptureService();
 
 			if (captureServiceStarted)
-			{
-				if (ProcessesToCapture.Count > 1 && string.IsNullOrWhiteSpace(SelectedProcessToCapture))
+				_overlayService.SetCaptureServiceStatus("Capture service ready...");
 
-					_overlayService.SetCaptureServiceStatus("Multiple processes detected.");
-
-				else
-					_overlayService.SetCaptureServiceStatus("Capture service ready...");
-			}
 
 			_captureService.IsCaptureModeActiveStream.OnNext(false);
 
@@ -635,14 +629,8 @@ namespace CapFrameX.ViewModel
 			IsCapturing = !IsCapturing;
 			_disposableHeartBeat = GetListUpdatHeartBeat();
 			IsAddToIgnoreListButtonActive = true;
-			UpdateCaptureStateInfo();			
-			if (ProcessesToCapture.Count > 1 && string.IsNullOrWhiteSpace(SelectedProcessToCapture))
-
-				_overlayService.SetCaptureServiceStatus("Multiple processes detected.");
-
-			else
-				_overlayService.SetCaptureServiceStatus("Capture service ready...");
-			
+			UpdateCaptureStateInfo();
+			_overlayService.SetCaptureServiceStatus("Capture service ready...");	
 		}
 
 		private async Task SetTaskDelayOffset()
@@ -797,12 +785,20 @@ namespace CapFrameX.ViewModel
 			if (string.IsNullOrWhiteSpace(SelectedProcessToCapture))
 			{
 				if (!ProcessesToCapture.Any())
-					CaptureStateInfo = "Process list clear." + Environment.NewLine + $"Start any game / application and press  {CaptureHotkeyString} to start capture.";
+				{ CaptureStateInfo = "Process list clear." + Environment.NewLine + $"Start any game / application and press  {CaptureHotkeyString} to start capture.";
+					_overlayService.SetCaptureServiceStatus("Scanning for process...");
+				}
 				else if (ProcessesToCapture.Count == 1)
+				{ 
 					CaptureStateInfo = "Process auto-detected." + Environment.NewLine + $"Press {CaptureHotkeyString} to start capture.";
+					_overlayService.SetCaptureServiceStatus("Ready to capture...");
+				}
 				else if (ProcessesToCapture.Count > 1)
+				{ 
 					//Multiple processes detected, select the one to capture or move unwanted processes to ignore list.
 					CaptureStateInfo = "Multiple processes detected." + Environment.NewLine + "Select one or move unwanted processes to ignore list.";
+					_overlayService.SetCaptureServiceStatus("Multiple processes detected");
+				}
 				return;
 			}
 
