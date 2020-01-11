@@ -32,30 +32,33 @@
             </Style>
         </ResourceDictionary>
     </UserControl.Resources>
-    <TabControl Grid.Row="0" Grid.Column="0" Background="#F5F5F5"
+    <Grid Margin="5 0 5 0">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="45"></RowDefinition>
+            <RowDefinition Height="1*"></RowDefinition>
+        </Grid.RowDefinitions>
+        <TextBlock Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Bottom" FontWeight="Bold" FontSize="16" Text="{Binding CurrentGameName}"/>
+        <TabControl Grid.Row="1" Grid.Column="0" Background="#F5F5F5"
 					SelectedItem="{Binding SelectedChartItem}">
         <TabItem Header="Display changed times" Width="150">
-            <Grid Margin="0 10 0 0">
+            <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="5*"></RowDefinition>
                     <RowDefinition Height="40"></RowDefinition>
                     <RowDefinition Height="3*" MaxHeight="300"></RowDefinition>
                     <RowDefinition Height="65"></RowDefinition>
                 </Grid.RowDefinitions>
-                <Grid Grid.Row="0" Background="#F5F5F5">
-                    <DockPanel>
-                        <TextBlock DockPanel.Dock="Top" Margin="0 20 0 0" HorizontalAlignment="Center" FontWeight="Bold" FontSize="16" VerticalAlignment="Bottom" Text="{Binding CurrentGameName}"/>
-                        <oxy:PlotView Background="#F5F5F5" x:Name="SynchronizationPlotView" Model="{Binding SynchronizationModel}" Tag="{Binding ElementName=SynchronizationViewUserControl, Path=DataContext}"
+                <DockPanel Grid.Row="0" Background="#F5F5F5">
+                    <oxy:PlotView Background="#F5F5F5" x:Name="SynchronizationPlotView" Model="{Binding SynchronizationModel}" Tag="{Binding ElementName=SynchronizationViewUserControl, Path=DataContext}"
 						  MouseDoubleClick="ResetChart_MouseDoubleClick">
-                            <oxy:PlotView.ContextMenu>
-                                <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
-                                    <MenuItem Header="Copy display change time values (dc)" Command="{Binding CopyDisplayChangeTimeValuesCommand}"/>
-                                </ContextMenu>
-                            </oxy:PlotView.ContextMenu>
-                        </oxy:PlotView>
-                    </DockPanel>
-                 </Grid>
-                 <Grid Grid.Row="1" Background="#F5F5F5">
+                        <oxy:PlotView.ContextMenu>
+                            <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
+                                <MenuItem Header="Copy display change time values (dc)" Command="{Binding CopyDisplayChangeTimeValuesCommand}"/>
+                            </ContextMenu>
+                        </oxy:PlotView.ContextMenu>
+                    </oxy:PlotView>
+                </DockPanel>
+                <Grid Grid.Row="1" Background="#F5F5F5">
             <StackPanel Margin="20 0 0 0" Orientation="Horizontal" HorizontalAlignment="Left">
                 <TextBlock VerticalAlignment="Center">Correlation frame- and display times:</TextBlock>
                 <TextBlock Width="40" Height="27" Margin="10 0 0 0" Padding="0 7 0 0" FontWeight="Bold" TextAlignment="Center"
@@ -109,14 +112,13 @@
         <TabItem Header="Input lag approximation" Width="150">
             <Grid Margin="0 10 0 0">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="5*"></RowDefinition>
+                    <RowDefinition Height="300"></RowDefinition>
                     <RowDefinition Height="40"></RowDefinition>
-                    <RowDefinition Height="3*" MaxHeight="300"></RowDefinition>
+                    <RowDefinition Height="300" MaxHeight="300"></RowDefinition>
                     <RowDefinition Height="65"></RowDefinition>
                 </Grid.RowDefinitions>
                 <Grid Grid.Row="0" Background="#F5F5F5">
                     <DockPanel>
-                        <TextBlock DockPanel.Dock="Top" Margin="0 20 0 0" HorizontalAlignment="Center" FontWeight="Bold" FontSize="16" VerticalAlignment="Bottom" Text="{Binding CurrentGameName}"/>
                         <oxy:PlotView Background="#F5F5F5" x:Name="InputLagPlotView" Model="{Binding InputLagModel}" Tag="{Binding ElementName=SynchronizationViewUserControl, Path=DataContext}"
 						  MouseDoubleClick="ResetChart_MouseDoubleClick">
                         </oxy:PlotView>
@@ -146,12 +148,30 @@
                             </lvc:CartesianChart.AxisY>
                         </lvc:CartesianChart>
                         <DockPanel Grid.Column="1" Margin="10 5 50 5" HorizontalAlignment="Right">
-                            <lvc:PieChart Width="250" Hoverable="False" Series="{Binding DroppedFramesStatisticCollection}" 
-								  LegendLocation="Bottom" DataClick="Chart_OnDataClick"/>
-                        </DockPanel>
+                                <lvc:CartesianChart Grid.Column="0" Margin="15 10 0 5" Series="{Binding StatisticCollection}" LegendLocation="None"
+									Tag="{Binding ElementName=DataViewUserControl, Path=DataContext}" DataTooltip="{x:Null}" >
+                                    <lvc:CartesianChart.ContextMenu>
+                                        <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
+                                            <MenuItem Header="Copy statistical parameter" Command="{Binding CopyStatisticalParameterCommand}"/>
+                                        </ContextMenu>
+                                    </lvc:CartesianChart.ContextMenu>
+                                    <lvc:CartesianChart.AxisX>
+                                        <lvc:Axis Title="FPS" FontSize="11" MinValue="0" MaxValue="{Binding BarMaxValue}" 
+								  LabelFormatter="{Binding ParameterFormatter}" Foreground="Black"/>
+                                    </lvc:CartesianChart.AxisX>
+                                    <lvc:CartesianChart.AxisY>
+                                        <lvc:Axis FontSize="11" Labels="{Binding ParameterLabels}" Foreground="Black">
+                                            <lvc:Axis.Separator>
+                                                <lvc:Separator Step="1" IsEnabled="False"></lvc:Separator>
+                                            </lvc:Axis.Separator>
+                                        </lvc:Axis>
+                                    </lvc:CartesianChart.AxisY>
+                                </lvc:CartesianChart>
+                            </DockPanel>
                     </Grid>
                 </Grid>
             </Grid>
         </TabItem>
     </TabControl>
+    </Grid>
 </UserControl>
