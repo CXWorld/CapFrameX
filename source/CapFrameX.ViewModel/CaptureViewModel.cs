@@ -297,7 +297,15 @@ namespace CapFrameX.ViewModel
 			bool captureServiceStarted = StartCaptureService();
 
 			if (captureServiceStarted)
-				_overlayService.SetCaptureServiceStatus("Capture service ready...");
+			{
+				if (ProcessesToCapture.Count > 1 && string.IsNullOrWhiteSpace(SelectedProcessToCapture))
+
+					_overlayService.SetCaptureServiceStatus("Multiple processes detected.");
+
+				else
+					_overlayService.SetCaptureServiceStatus("Capture service ready..."); 			
+			}
+
 
 			_captureService.IsCaptureModeActiveStream.OnNext(false);
 
@@ -628,8 +636,13 @@ namespace CapFrameX.ViewModel
 			IsCapturing = !IsCapturing;
 			_disposableHeartBeat = GetListUpdatHeartBeat();
 			IsAddToIgnoreListButtonActive = true;
-			UpdateCaptureStateInfo();
-			_overlayService.SetCaptureServiceStatus("Capture service ready...");
+			UpdateCaptureStateInfo();			
+			if (ProcessesToCapture.Count > 1 && string.IsNullOrWhiteSpace(SelectedProcessToCapture))
+
+				_overlayService.SetCaptureServiceStatus("Multiple processes detected.");
+
+			else
+				_overlayService.SetCaptureServiceStatus("Capture service ready...");			
 		}
 
 		private async Task SetTaskDelayOffset()
