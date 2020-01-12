@@ -421,15 +421,16 @@ void RTSSCoreControl::Refresh()
   strOSD += groupedString.Get(bTruncated, FALSE, m_bFormatTags ? "\t" : " \t: ");
 
   // manage graphs
-  strOSD += "\n";
-
-  DWORD dwObjectOffset = 0;
-  DWORD dwObjectSize = 0;
-  DWORD dwFlags = 0;
-  CString strObj;
 
   if (OverlayEntries.size() > 0)
   {
+    strOSD += "\n";
+
+    DWORD dwObjectOffset = 0;
+    DWORD dwObjectSize = 0;
+    DWORD dwFlags = 0;
+    CString strObj;
+
     for (size_t i = 0; i < OverlayEntries.size(); i++)
     {
       if (OverlayEntries[i].ShowGraph)
