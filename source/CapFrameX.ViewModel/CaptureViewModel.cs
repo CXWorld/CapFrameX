@@ -785,7 +785,8 @@ namespace CapFrameX.ViewModel
 			if (string.IsNullOrWhiteSpace(SelectedProcessToCapture))
 			{
 				if (!ProcessesToCapture.Any())
-				{ CaptureStateInfo = "Process list clear." + Environment.NewLine + $"Start any game / application and press  {CaptureHotkeyString} to start capture.";
+				{ 
+					CaptureStateInfo = "Process list clear." + Environment.NewLine + $"Start any game / application and press  {CaptureHotkeyString} to start capture.";
 					_overlayService.SetCaptureServiceStatus("Scanning for process...");
 				}
 				else if (ProcessesToCapture.Count == 1)

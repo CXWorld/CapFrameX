@@ -240,6 +240,7 @@ namespace CapFrameX.Data
 			return Convert.ToDouble(startTime, CultureInfo.InvariantCulture);
 		}
 
+
 		public void AddGameNameToMatchingList(string processName, string gameName)
 		{
 			if (string.IsNullOrWhiteSpace(processName) ||
