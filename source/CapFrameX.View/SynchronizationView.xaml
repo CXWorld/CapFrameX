@@ -79,17 +79,17 @@
 							<ColumnDefinition Width="3*" />
 							<ColumnDefinition Width="2*" />
 						</Grid.ColumnDefinitions>
-						<!--Histogram chart-->
-						<lvc:CartesianChart Grid.Column="0" Margin="0 5 0 10" Series="{Binding HistogramCollection}" LegendLocation="Bottom"
+						<!--Display times histogram chart-->
+						<lvc:CartesianChart Grid.Column="0" Margin="0 5 0 10" Series="{Binding DisplayTimesHistogramCollection}" LegendLocation="Bottom"
 								Tag="{Binding ElementName=SynchronizationViewUserControl, Path=DataContext}" DataTooltip="{x:Null}">
 							<lvc:CartesianChart.ContextMenu>
 
 								<ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
-									<MenuItem Header="Copy histogram data" Command="{Binding CopyHistogramDataCommand}"/>
+									<MenuItem Header="Copy histogram data" Command="{Binding CopyDisplayTimesHistogramDataCommand}"/>
 								</ContextMenu>
 							</lvc:CartesianChart.ContextMenu>
 							<lvc:CartesianChart.AxisX>
-								<lvc:Axis Title="Display change time (ms)" BarUnit="1" Labels="{Binding HistogramLabels}" LabelFormatter="{Binding HistogramFormatter}" Foreground="Black">
+								<lvc:Axis Title="Display change time (ms)" BarUnit="1" Labels="{Binding DisplayTimesHistogramLabels}" LabelFormatter="{Binding HistogramFormatter}" Foreground="Black">
 									<lvc:Axis.Separator>
 										<lvc:Separator Step="1" IsEnabled="True"></lvc:Separator>
 									</lvc:Axis.Separator>
@@ -119,23 +119,21 @@
 								 MouseDoubleClick="ResetInputLagChart_MouseDoubleClick">
 						</oxy:PlotView>
 					</DockPanel>
-					<!--<Grid Background="#F5F5F5" Grid.Row="2">
+					<Grid Background="#F5F5F5" Grid.Row="2">
 						<Grid.ColumnDefinitions>
 							<ColumnDefinition Width="3*" />
 							<ColumnDefinition Width="2*" />
 						</Grid.ColumnDefinitions>
-						-->
-					<!--Input histogram-->
-					<!--
-						<lvc:CartesianChart Grid.Column="0" Margin="0 5 0 10" Series="{Binding HistogramCollection}" LegendLocation="Bottom"
+						<!--Input histogram-->
+						<lvc:CartesianChart Grid.Column="0" Margin="0 5 0 10" Series="{Binding InputLagHistogramCollection}" LegendLocation="Bottom"
 								Tag="{Binding ElementName=SynchronizationViewUserControl, Path=DataContext}" DataTooltip="{x:Null}">
 							<lvc:CartesianChart.ContextMenu>
 								<ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
-									<MenuItem Header="Copy histogram data" Command="{Binding CopyHistogramDataCommand}"/>
+									<MenuItem Header="Copy histogram data" Command="{Binding CopyInputLagHistogramDataCommand}"/>
 								</ContextMenu>
 							</lvc:CartesianChart.ContextMenu>
 							<lvc:CartesianChart.AxisX>
-								<lvc:Axis Title="Display change time (ms)" BarUnit="1" Labels="{Binding HistogramLabels}" LabelFormatter="{Binding HistogramFormatter}" Foreground="Black">
+								<lvc:Axis Title="Approximated input lag (ms)" BarUnit="1" Labels="{Binding InputLagHistogramLabels}" LabelFormatter="{Binding HistogramFormatter}" Foreground="Black">
 									<lvc:Axis.Separator>
 										<lvc:Separator Step="1" IsEnabled="True"></lvc:Separator>
 									</lvc:Axis.Separator>
@@ -145,7 +143,7 @@
 								<lvc:Axis Title="Distribution" Foreground="Black"/>
 							</lvc:CartesianChart.AxisY>
 						</lvc:CartesianChart>
-						<DockPanel Grid.Column="1" Margin="10 5 50 5" HorizontalAlignment="Right">
+						<!--<DockPanel Grid.Column="1" Margin="10 5 50 5" HorizontalAlignment="Right">
 							<lvc:CartesianChart Grid.Column="0" Margin="15 10 0 5" Series="{Binding StatisticCollection}" LegendLocation="None"
 									Tag="{Binding ElementName=DataViewUserControl, Path=DataContext}" DataTooltip="{x:Null}" >
 								<lvc:CartesianChart.ContextMenu>
@@ -165,8 +163,8 @@
 									</lvc:Axis>
 								</lvc:CartesianChart.AxisY>
 							</lvc:CartesianChart>
-						</DockPanel>
-					</Grid>-->
+						</DockPanel>-->
+					</Grid>
 				</Grid>
 			</TabItem>
 		</TabControl>

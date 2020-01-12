@@ -31,10 +31,12 @@ namespace CapFrameX.ViewModel
 
 		private PlotModel _synchronizationModel;
 		private PlotModel _inputLagModel;
-		private SeriesCollection _histogramCollection;
+		private SeriesCollection _displayTimesHistogramCollection;
+		private SeriesCollection _inputLagHistogramCollection;
 		private SeriesCollection _droppedFramesStatisticCollection;
 		private string[] _droppedFramesLabels;
-		private string[] _histogramLabels;
+		private string[] _displayTimesHistogramLabels;
+		private string[] _inputLagHistogramLabels;
 		private bool _useUpdateSession;
 		private Session _session;
 		private IFileRecordInfo _recordInfo;
@@ -75,12 +77,22 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-		public SeriesCollection HistogramCollection
+		public SeriesCollection DisplayTimesHistogramCollection
 		{
-			get { return _histogramCollection; }
+			get { return _displayTimesHistogramCollection; }
 			set
 			{
-				_histogramCollection = value;
+				_displayTimesHistogramCollection = value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public SeriesCollection InputLagHistogramCollection
+		{
+			get { return _inputLagHistogramCollection; }
+			set
+			{
+				_inputLagHistogramCollection = value;
 				RaisePropertyChanged();
 			}
 		}
@@ -105,12 +117,22 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-		public string[] HistogramLabels
+		public string[] DisplayTimesHistogramLabels
 		{
-			get { return _histogramLabels; }
+			get { return _displayTimesHistogramLabels; }
 			set
 			{
-				_histogramLabels = value;
+				_displayTimesHistogramLabels = value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public string[] InputLagHistogramLabels
+		{
+			get { return _inputLagHistogramLabels; }
+			set
+			{
+				_inputLagHistogramLabels = value;
 				RaisePropertyChanged();
 			}
 		}
@@ -171,7 +193,9 @@ namespace CapFrameX.ViewModel
 
 		public ICommand CopyDisplayChangeTimeValuesCommand { get; }
 
-		public ICommand CopyHistogramDataCommand { get; }
+		public ICommand CopyDisplayTimesHistogramDataCommand { get; }
+
+		public ICommand CopyInputLagHistogramDataCommand { get; }
 
 		public SynchronizationViewModel(IStatisticProvider frametimeStatisticProvider,
 										IEventAggregator eventAggregator,
@@ -182,7 +206,8 @@ namespace CapFrameX.ViewModel
 			_appConfiguration = appConfiguration;
 
 			CopyDisplayChangeTimeValuesCommand = new DelegateCommand(OnCopyDisplayChangeTimeValues);
-			CopyHistogramDataCommand = new DelegateCommand(CopyHistogramData);
+			CopyDisplayTimesHistogramDataCommand = new DelegateCommand(CopDisplayTimesHistogramData);
+			CopyInputLagHistogramDataCommand = new DelegateCommand(CopyInputLagHistogramData);
 
 			_syncRangeLower = _appConfiguration.SyncRangeLower;
 			_syncRangeUpper = _appConfiguration.SyncRangeUpper;
@@ -249,21 +274,26 @@ namespace CapFrameX.ViewModel
 			Clipboard.SetDataObject(builder.ToString(), false);
 		}
 
-		private void CopyHistogramData()
+		private void CopDisplayTimesHistogramData()
 		{
-			if (HistogramCollection == null || HistogramLabels == null)
+			if (DisplayTimesHistogramCollection == null || DisplayTimesHistogramLabels == null)
 				return;
 
 			StringBuilder builder = new StringBuilder();
-			var chartValues = HistogramCollection.First().Values;
+			var chartValues = DisplayTimesHistogramCollection.First().Values;
 
-			foreach (var bin in HistogramLabels.Select((value, i) => new { i, value }))
+			foreach (var bin in DisplayTimesHistogramLabels.Select((value, i) => new { i, value }))
 			{
 				builder.Append(bin.value.ToString(CultureInfo.InvariantCulture) + "\t" + chartValues[bin.i]
 					.ToString() + Environment.NewLine);
 			}
 
 			Clipboard.SetDataObject(builder.ToString(), false);
+		}
+
+		private void CopyInputLagHistogramData()
+		{
+			throw new NotImplementedException();
 		}
 
 		private void OnSyncRangeChanged()
@@ -275,9 +305,12 @@ namespace CapFrameX.ViewModel
 				return;
 
 			// Do not run on background thread, leads to errors on analysis page
+			var inputLagTimes = _session.GetApproxInputLagTimes();
+
 			SetFrameDisplayTimesChart(_session.FrameTimes, _session.DisplayTimes);
-			SetFrameInputLagChart(_session.FrameTimes, _session.GetApproxInputLagTimes());
-			Task.Factory.StartNew(() => SetHistogramChart(_session.DisplayTimes));
+			SetFrameInputLagChart(_session.FrameTimes, inputLagTimes);
+			Task.Factory.StartNew(() => SetDisplayTimesHistogramChart(_session.DisplayTimes));
+			Task.Factory.StartNew(() => SetInputLagHistogramChart(inputLagTimes));
 			Task.Factory.StartNew(() => SetDroppedFramesChart(_session.AppMissed));
 		}
 
@@ -353,7 +386,7 @@ namespace CapFrameX.ViewModel
 			}));
 		}
 
-		private void SetHistogramChart(List<double> displaytimes)
+		private void SetDisplayTimesHistogramChart(IList<double> displaytimes)
 		{
 			var discreteDistribution = _frametimeStatisticProvider.GetDiscreteDistribution(displaytimes);
 			var histogram = new Histogram(displaytimes, discreteDistribution.Length);
@@ -374,7 +407,7 @@ namespace CapFrameX.ViewModel
 
 			Application.Current.Dispatcher.BeginInvoke(new Action(() =>
 			{
-				HistogramCollection = new SeriesCollection
+				DisplayTimesHistogramCollection = new SeriesCollection
 				{
 					new LiveCharts.Wpf.ColumnSeries
 					{
@@ -385,7 +418,44 @@ namespace CapFrameX.ViewModel
 					}
 				};
 
-				HistogramLabels = bins.Select(bin => Math.Round(bin, 2)
+				DisplayTimesHistogramLabels = bins.Select(bin => Math.Round(bin, 2)
+					.ToString(CultureInfo.InvariantCulture)).ToArray();
+			}));
+		}
+
+		private void SetInputLagHistogramChart(IList<double> inputLagTimes)
+		{
+			var discreteDistribution = _frametimeStatisticProvider.GetDiscreteDistribution(inputLagTimes);
+			var histogram = new Histogram(inputLagTimes, discreteDistribution.Length);
+
+			var bins = new List<double>();
+			var histogramValues = new ChartValues<double>();
+
+			for (int i = 0; i < discreteDistribution.Length; i++)
+			{
+				var count = discreteDistribution[i].Count;
+				var avg = count > 0 ?
+						  discreteDistribution[i].Average() :
+						  (histogram[i].UpperBound + histogram[i].LowerBound) / 2;
+
+				bins.Add(avg);
+				histogramValues.Add(count);
+			}
+
+			Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+			{
+				InputLagHistogramCollection = new SeriesCollection
+				{
+					new LiveCharts.Wpf.ColumnSeries
+					{
+						Title = "Input lag time distribution",
+						Values = histogramValues,
+						Fill = new SolidColorBrush(Color.FromRgb(241, 125, 32)),
+						DataLabels = true,
+					}
+				};
+
+				InputLagHistogramLabels = bins.Select(bin => Math.Round(bin, 2)
 					.ToString(CultureInfo.InvariantCulture)).ToArray();
 			}));
 		}
