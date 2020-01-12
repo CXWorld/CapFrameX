@@ -225,7 +225,7 @@ namespace CapFrameX.ViewModel
 		private string GetCorrelation(Session currentSession)
 		{
 			var frametimes = currentSession.FrameTimes.Where((x,i) => !_session.AppMissed[i]);
-			var displayChangedTimes = currentSession.Displaytimes.Where((x, i) => !_session.AppMissed[i]);
+			var displayChangedTimes = currentSession.DisplayTimes.Where((x, i) => !_session.AppMissed[i]);
 
 			if (frametimes.Count() != displayChangedTimes.Count())
 				return "NaN";
@@ -241,7 +241,7 @@ namespace CapFrameX.ViewModel
 
 			StringBuilder builder = new StringBuilder();
 
-			foreach (var dcTime in _session.Displaytimes)
+			foreach (var dcTime in _session.DisplayTimes)
 			{
 				builder.Append(dcTime + Environment.NewLine);
 			}
@@ -275,9 +275,9 @@ namespace CapFrameX.ViewModel
 				return;
 
 			// Do not run on background thread, leads to errors on analysis page
-			SetFrameDisplayTimesChart(_session.FrameTimes, _session.Displaytimes);
-			SetFrameInputLagChart(_session.FrameTimes, _session.InputLagTimes);
-			Task.Factory.StartNew(() => SetHistogramChart(_session.Displaytimes));
+			SetFrameDisplayTimesChart(_session.FrameTimes, _session.DisplayTimes);
+			SetFrameInputLagChart(_session.FrameTimes, _session.GetInputLagTimes());
+			Task.Factory.StartNew(() => SetHistogramChart(_session.DisplayTimes));
 			Task.Factory.StartNew(() => SetDroppedFramesChart(_session.AppMissed));
 		}
 

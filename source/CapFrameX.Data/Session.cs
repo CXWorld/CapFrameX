@@ -22,8 +22,8 @@ namespace CapFrameX.Data
 		public List<double> VSync { get; set; }
 		public List<bool> AppMissed { get; set; }
 		public List<bool> WarpMissed { get; set; }
-		public List<double> Displaytimes { get; set; }
-		public List<double> InputLagTimes { get; set; }
+		public List<double> InPresentAPITimes { get; set; }
+		public List<double> DisplayTimes { get; set; }
 		public List<double> QPCTimes { get; set; }
 		public bool IsVR { get; set; }
 		public int AppMissesCount { get; set; }
@@ -116,9 +116,26 @@ namespace CapFrameX.Data
 			return frametimesPointsSampleWindow;
 		}
 
+		/// <summary>
+		/// Source: https://github.com/GameTechDev/PresentMon
+		/// Formular: LatencyMs =~ MsBetweenPresents + MsUntilDisplayed - previous(MsInPresentAPI)
+		/// </summary>
+		/// <returns></returns>
+		public IList<double> GetInputLagTimes()
+		{
+			var inputLagTimes = new List<double>(FrameTimes.Count - 1);
+
+			for (int i = 1; i < FrameTimes.Count; i++)
+			{
+				inputLagTimes.Add( FrameTimes[i] + DisplayTimes[i] - InPresentAPITimes[i - 1]);
+			}
+
+			return inputLagTimes;
+		}
+
 		public double GetSyncRangePercentage(int syncRangeLower, int syncRangeUpper)
 		{
-			if (Displaytimes == null)
+			if (DisplayTimes == null)
 				return 0d;
 
 			bool IsInRange(double value)
@@ -131,8 +148,8 @@ namespace CapFrameX.Data
 					return false;
 			};
 
-			return Displaytimes.Select(time => 1000d / time)
-				.Count(hz => IsInRange(hz)) / (double)Displaytimes.Count;
+			return DisplayTimes.Select(time => 1000d / time)
+				.Count(hz => IsInRange(hz)) / (double)DisplayTimes.Count;
 		}
 	}
 }

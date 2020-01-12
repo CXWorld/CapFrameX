@@ -150,9 +150,9 @@ namespace CapFrameX.Data
 			session.VSync = new List<double>();
 			session.AppMissed = new List<bool>();
 			session.WarpMissed = new List<bool>();
-			session.Displaytimes = new List<double>();
+			session.DisplayTimes = new List<double>();
 			session.QPCTimes = new List<double>();
-
+			session.InPresentAPITimes = new List<double>();
 			session.AppMissesCount = 0;
 			session.WarpMissesCount = 0;
 			session.ValidAppFrames = 0;
@@ -181,6 +181,7 @@ namespace CapFrameX.Data
 					int indexVSync = -1;
 					int indexAppMissed = -1;
 					int indexWarpMissed = -1;
+					int indexMsInPresentAPI = -1;
 					int indexDisplayTimes = -1;
 					int indexQPCTimes = -1;
 
@@ -225,6 +226,10 @@ namespace CapFrameX.Data
 						if (string.Compare(metrics[i], "WarpMissed") == 0 || string.Compare(metrics[i], "LsrMissed") == 0)
 						{
 							indexWarpMissed = i;
+						}
+						if (string.Compare(metrics[i], "MsInPresentAPI") == 0)
+						{
+							indexMsInPresentAPI = i;
 						}
 						if (string.Compare(metrics[i], "MsBetweenDisplayChange") == 0)
 						{
@@ -288,7 +293,15 @@ namespace CapFrameX.Data
 						{
 							if (double.TryParse(GetStringFromArray(values, indexDisplayTimes), NumberStyles.Any, CultureInfo.InvariantCulture, out var displayTime))
 							{
-								session.Displaytimes.Add(displayTime);
+								session.DisplayTimes.Add(displayTime);
+							}
+						}
+
+						if (indexMsInPresentAPI > 0)
+						{
+							if (double.TryParse(GetStringFromArray(values, indexMsInPresentAPI), NumberStyles.Any, CultureInfo.InvariantCulture, out var inPresentAPITime))
+							{
+								session.InPresentAPITimes.Add(inPresentAPITime);
 							}
 						}
 
