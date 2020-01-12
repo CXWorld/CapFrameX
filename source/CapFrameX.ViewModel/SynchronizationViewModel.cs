@@ -353,7 +353,6 @@ namespace CapFrameX.ViewModel
 			}));
 		}
 
-
 		private void SetHistogramChart(List<double> displaytimes)
 		{
 			var discreteDistribution = _frametimeStatisticProvider.GetDiscreteDistribution(displaytimes);
