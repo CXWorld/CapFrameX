@@ -20,6 +20,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
+using LiveCharts.Wpf;
 
 namespace CapFrameX.ViewModel
 {
@@ -34,6 +35,7 @@ namespace CapFrameX.ViewModel
 		private SeriesCollection _displayTimesHistogramCollection;
 		private SeriesCollection _inputLagHistogramCollection;
 		private SeriesCollection _droppedFramesStatisticCollection;
+		private SeriesCollection _inputLagStatisticCollection;
 		private string[] _droppedFramesLabels;
 		private string[] _displayTimesHistogramLabels;
 		private string[] _inputLagHistogramLabels;
@@ -45,12 +47,15 @@ namespace CapFrameX.ViewModel
 		private string _syncRangePercentage = "0%";
 		private string _syncRangeLower;
 		private string _syncRangeUpper;
+		private int _inputLagBarMaxValue;
+		private Func<double, string> _inputLagParameterFormatter;
+		private string[] _inputLagParameterLabels;
 
 		/// <summary>
 		/// https://docs.microsoft.com/en-us/dotnet/standard/base-types/standard-numeric-format-strings
 		/// </summary>
 		public Func<double, string> HistogramFormatter { get; } =
-			value => value.ToString("N", CultureInfo.InvariantCulture);
+			value => value.ToString("N", CultureInfo.InvariantCulture);		
 
 		/// <summary>
 		/// https://docs.microsoft.com/en-us/dotnet/standard/base-types/standard-numeric-format-strings
@@ -93,6 +98,16 @@ namespace CapFrameX.ViewModel
 			set
 			{
 				_inputLagHistogramCollection = value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public SeriesCollection InputLagStatisticCollection
+		{
+			get { return _inputLagStatisticCollection; }
+			set
+			{
+				_inputLagStatisticCollection = value;
 				RaisePropertyChanged();
 			}
 		}
@@ -191,11 +206,46 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
+		public int InputLagBarMaxValue
+		{
+			get { return _inputLagBarMaxValue; }
+			set
+			{
+				_inputLagBarMaxValue = value;
+				RaisePropertyChanged();
+			}
+		}
+
+		/// <summary>
+		/// https://docs.microsoft.com/en-us/dotnet/standard/base-types/standard-numeric-format-strings
+		/// </summary>
+		public Func<double, string> InputLagParameterFormatter
+		{
+			get { return _inputLagParameterFormatter; }
+			set
+			{
+				_inputLagParameterFormatter = value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public string[] InputLagParameterLabels
+		{
+			get { return _inputLagParameterLabels; }
+			set
+			{
+				_inputLagParameterLabels = value;
+				RaisePropertyChanged();
+			}
+		}
+
 		public ICommand CopyDisplayChangeTimeValuesCommand { get; }
 
 		public ICommand CopyDisplayTimesHistogramDataCommand { get; }
 
 		public ICommand CopyInputLagHistogramDataCommand { get; }
+
+		public ICommand CopyInputLagStatisticalParameterCommand { get; }
 
 		public SynchronizationViewModel(IStatisticProvider frametimeStatisticProvider,
 										IEventAggregator eventAggregator,
@@ -208,6 +258,10 @@ namespace CapFrameX.ViewModel
 			CopyDisplayChangeTimeValuesCommand = new DelegateCommand(OnCopyDisplayChangeTimeValues);
 			CopyDisplayTimesHistogramDataCommand = new DelegateCommand(CopDisplayTimesHistogramData);
 			CopyInputLagHistogramDataCommand = new DelegateCommand(CopyInputLagHistogramData);
+			CopyInputLagStatisticalParameterCommand = new DelegateCommand(CopyInputLagStatisticalParameter);
+
+			InputLagParameterFormatter = value => value.ToString(string.Format("F{0}",
+				_appConfiguration.FpsValuesRoundingDigits), CultureInfo.InvariantCulture);
 
 			_syncRangeLower = _appConfiguration.SyncRangeLower;
 			_syncRangeUpper = _appConfiguration.SyncRangeUpper;
@@ -296,6 +350,11 @@ namespace CapFrameX.ViewModel
 			throw new NotImplementedException();
 		}
 
+		private void CopyInputLagStatisticalParameter()
+		{
+			throw new NotImplementedException();
+		}
+
 		private void OnSyncRangeChanged()
 			=> SyncRangePercentage = GetSyncRangePercentageString();
 
@@ -311,11 +370,18 @@ namespace CapFrameX.ViewModel
 			SetFrameInputLagChart(_session.FrameTimes, inputLagTimes);
 			Task.Factory.StartNew(() => SetDisplayTimesHistogramChart(_session.DisplayTimes));
 			Task.Factory.StartNew(() => SetInputLagHistogramChart(inputLagTimes));
+			Task.Factory.StartNew(() => SetInputLagStatisticChart(inputLagTimes));
 			Task.Factory.StartNew(() => SetDroppedFramesChart(_session.AppMissed));
 		}
 
 		private void SetFrameDisplayTimesChart(IList<double> frametimes, IList<double> displaytimes)
 		{
+			if (frametimes == null || !frametimes.Any())
+				return;
+
+			if (displaytimes == null || !displaytimes.Any())
+				return;
+
 			var yMin = Math.Min(frametimes.Min(), displaytimes.Min());
 			var yMax = Math.Max(frametimes.Max(), displaytimes.Max());
 
@@ -388,6 +454,9 @@ namespace CapFrameX.ViewModel
 
 		private void SetDisplayTimesHistogramChart(IList<double> displaytimes)
 		{
+			if (displaytimes == null || !displaytimes.Any())
+				return;
+
 			var discreteDistribution = _frametimeStatisticProvider.GetDiscreteDistribution(displaytimes);
 			var histogram = new Histogram(displaytimes, discreteDistribution.Length);
 
@@ -425,6 +494,9 @@ namespace CapFrameX.ViewModel
 
 		private void SetInputLagHistogramChart(IList<double> inputLagTimes)
 		{
+			if (inputLagTimes == null || !inputLagTimes.Any())
+				return;
+
 			var discreteDistribution = _frametimeStatisticProvider.GetDiscreteDistribution(inputLagTimes);
 			var histogram = new Histogram(inputLagTimes, discreteDistribution.Length);
 
@@ -457,6 +529,50 @@ namespace CapFrameX.ViewModel
 
 				InputLagHistogramLabels = bins.Select(bin => Math.Round(bin, 2)
 					.ToString(CultureInfo.InvariantCulture)).ToArray();
+			}));
+		}
+
+		private void SetInputLagStatisticChart(IList<double> inputLagTimes)
+		{
+			if (inputLagTimes == null || !inputLagTimes.Any())
+				return;
+
+			var p99_quantile = _frametimeStatisticProvider.GetPQuantileSequence(inputLagTimes, 0.99);
+			var average = inputLagTimes.Average();
+			var p1_quantile = _frametimeStatisticProvider.GetPQuantileSequence(inputLagTimes, 0.01);
+
+			Application.Current.Dispatcher.Invoke(new Action(() =>
+			{
+				IChartValues values = new ChartValues<double>
+				{
+					p1_quantile,
+					average,
+					p99_quantile
+				};
+
+				InputLagStatisticCollection = new SeriesCollection
+				{
+					new RowSeries
+					{
+						Title = "Input lag statistic",
+						Fill = new SolidColorBrush(Color.FromRgb(241, 125, 32)),
+						Values = values,
+						DataLabels = true,
+						FontSize = 11,
+						MaxRowHeigth = 25
+					}
+				};
+
+				double maxOffset = (values as IList<double>).Max() * 0.15;
+				InputLagBarMaxValue = (int)((values as IList<double>).Max() + maxOffset);
+
+				InputLagParameterLabels = new List<string>
+				{
+					//{ "99%", "Average", "1%"}
+					"P1",
+					"Average",
+					"P99"
+				}.ToArray();
 			}));
 		}
 
