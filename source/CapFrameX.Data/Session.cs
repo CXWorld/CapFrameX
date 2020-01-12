@@ -22,6 +22,7 @@ namespace CapFrameX.Data
 		public List<double> VSync { get; set; }
 		public List<bool> AppMissed { get; set; }
 		public List<bool> WarpMissed { get; set; }
+		public List<double> UntilDisplayedTimes { get; set; }
 		public List<double> InPresentAPITimes { get; set; }
 		public List<double> DisplayTimes { get; set; }
 		public List<double> QPCTimes { get; set; }
@@ -31,7 +32,6 @@ namespace CapFrameX.Data
 		public int ValidAppFrames { get; set; }
 		public int ValidReproFrames { get; set; }
 		public double LastFrameTime { get; set; }
-		public double LastReprojectionTime { get; set; }
 
 		public Session()
 		{
@@ -121,13 +121,13 @@ namespace CapFrameX.Data
 		/// Formular: LatencyMs =~ MsBetweenPresents + MsUntilDisplayed - previous(MsInPresentAPI)
 		/// </summary>
 		/// <returns></returns>
-		public IList<double> GetInputLagTimes()
+		public IList<double> GetApproxInputLagTimes()
 		{
 			var inputLagTimes = new List<double>(FrameTimes.Count - 1);
 
 			for (int i = 1; i < FrameTimes.Count; i++)
 			{
-				inputLagTimes.Add(FrameTimes[i] + DisplayTimes[i] - InPresentAPITimes[i - 1]);
+				inputLagTimes.Add(FrameTimes[i] + UntilDisplayedTimes[i] - InPresentAPITimes[i - 1]);
 			}
 
 			return inputLagTimes;

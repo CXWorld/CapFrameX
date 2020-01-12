@@ -276,7 +276,7 @@ namespace CapFrameX.ViewModel
 
 			// Do not run on background thread, leads to errors on analysis page
 			SetFrameDisplayTimesChart(_session.FrameTimes, _session.DisplayTimes);
-			SetFrameInputLagChart(_session.FrameTimes, _session.GetInputLagTimes());
+			SetFrameInputLagChart(_session.FrameTimes, _session.GetApproxInputLagTimes());
 			Task.Factory.StartNew(() => SetHistogramChart(_session.DisplayTimes));
 			Task.Factory.StartNew(() => SetDroppedFramesChart(_session.AppMissed));
 		}

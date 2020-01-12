@@ -153,12 +153,12 @@ namespace CapFrameX.Data
 			session.DisplayTimes = new List<double>();
 			session.QPCTimes = new List<double>();
 			session.InPresentAPITimes = new List<double>();
+			session.UntilDisplayedTimes = new List<double>();
 			session.AppMissesCount = 0;
 			session.WarpMissesCount = 0;
 			session.ValidAppFrames = 0;
 			session.LastFrameTime = 0;
 			session.ValidReproFrames = 0;
-			session.LastReprojectionTime = 0;
 
 			try
 			{
@@ -175,9 +175,7 @@ namespace CapFrameX.Data
 					int indexFrameStart = -1;
 					int indexFrameTimes = -1;
 					int indexFrameEnd = -1;
-					int indexReprojectionStart = -1;
-					int indexReprojectionTimes = -1;
-					int indexReprojectionEnd = -1;
+					int indexUntilDisplayedTimes = -1;
 					int indexVSync = -1;
 					int indexAppMissed = -1;
 					int indexWarpMissed = -1;
@@ -201,18 +199,9 @@ namespace CapFrameX.Data
 						{
 							indexFrameTimes = i;
 						}
-						if (string.Compare(metrics[i], "ReprojectionStart") == 0)
+						if (string.Compare(metrics[i], "MsUntilDisplayed") == 0)
 						{
-							indexReprojectionStart = i;
-						}
-						//MsUntilDisplayed needs to be added to AppRenderStart, we don't have a reprojection start timestamp in this case
-						if (string.Compare(metrics[i], "ReprojectionEnd") == 0 || string.Compare(metrics[i], "MsUntilDisplayed") == 0)
-						{
-							indexReprojectionEnd = i;
-						}
-						if (string.Compare(metrics[i], "MsBetweenReprojections") == 0 || string.Compare(metrics[i], "MsBetweenLsrs") == 0)
-						{
-							indexReprojectionTimes = i;
+							indexUntilDisplayedTimes = i;
 						}
 						if (string.Compare(metrics[i], "VSync") == 0)
 						{
@@ -297,6 +286,14 @@ namespace CapFrameX.Data
 							}
 						}
 
+						if (indexUntilDisplayedTimes > 0)
+						{
+							if (double.TryParse(GetStringFromArray(values, indexUntilDisplayedTimes), NumberStyles.Any, CultureInfo.InvariantCulture, out var untilDisplayTime))
+							{
+								session.UntilDisplayedTimes.Add(untilDisplayTime);
+							}
+						}
+
 						if (indexMsInPresentAPI > 0)
 						{
 							if (double.TryParse(GetStringFromArray(values, indexMsInPresentAPI), NumberStyles.Any, CultureInfo.InvariantCulture, out var inPresentAPITime))
@@ -313,38 +310,26 @@ namespace CapFrameX.Data
 							}
 						}
 
-						if (indexFrameEnd > 0 && indexReprojectionEnd > 0)
+						if (indexFrameEnd > 0)
 						{
-							if (double.TryParse(GetStringFromArray(values, indexFrameEnd), NumberStyles.Any, CultureInfo.InvariantCulture, out var frameEnd)
-							 && double.TryParse(GetStringFromArray(values, indexReprojectionEnd), NumberStyles.Any, CultureInfo.InvariantCulture, out var reprojectionEnd))
+							if (double.TryParse(GetStringFromArray(values, indexFrameEnd), NumberStyles.Any, CultureInfo.InvariantCulture, out var frameEnd))
 							{
 								if (session.IsVR)
 								{
 									session.FrameEnd.Add(frameEnd);
-									session.ReprojectionEnd.Add(reprojectionEnd);
 								}
 								else
 								{
 									session.FrameEnd.Add(frameStart + frameEnd / 1000.0);
-									session.ReprojectionEnd.Add(frameStart + reprojectionEnd / 1000.0);
 								}
 							}
 						}
 
-						if (indexReprojectionStart > 0 && indexReprojectionTimes > 0 && indexVSync > 0 && indexWarpMissed > 0)
+						if ( indexVSync > 0 && indexWarpMissed > 0)
 						{
-							if (double.TryParse(GetStringFromArray(values, indexReprojectionStart), NumberStyles.Any, CultureInfo.InvariantCulture, out var reprojectionStart)
-							 && double.TryParse(GetStringFromArray(values, indexReprojectionTimes), NumberStyles.Any, CultureInfo.InvariantCulture, out var reprojectionTimes)
-							 && double.TryParse(GetStringFromArray(values, indexVSync), NumberStyles.Any, CultureInfo.InvariantCulture, out var vSync)
+							if ( double.TryParse(GetStringFromArray(values, indexVSync), NumberStyles.Any, CultureInfo.InvariantCulture, out var vSync)
 							 && int.TryParse(GetStringFromArray(values, indexWarpMissed), NumberStyles.Any, CultureInfo.InvariantCulture, out var warpMissed))
 							{
-								if (reprojectionStart > 0)
-								{
-									session.ValidReproFrames++;
-									session.LastReprojectionTime = reprojectionStart;
-								}
-								session.ReprojectionStart.Add(reprojectionStart);
-								session.ReprojectionTimes.Add(reprojectionTimes);
 								session.VSync.Add(vSync);
 								session.WarpMissed.Add(Convert.ToBoolean(warpMissed));
 								session.WarpMissesCount += warpMissed;
