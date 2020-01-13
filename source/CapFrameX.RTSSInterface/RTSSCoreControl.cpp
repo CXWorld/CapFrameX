@@ -1,7 +1,5 @@
-
-// RTSSSharedMemorySampleDlg.cpp : implementation file
-//
-// created by Unwinder
+/////////////////////////////////////////////////////////////////////////////
+// created by Unwinder - modified by ZeroStrat
 /////////////////////////////////////////////////////////////////////////////
 #include "stdafx.h"
 #include "RTSSSharedMemory.h"
@@ -88,11 +86,12 @@ DWORD RTSSCoreControl::EmbedGraph(DWORD dwOffset, FLOAT* lpBuffer, DWORD dwBuffe
 
             if (dwPass)
             {
+              // RTSSSharedMemorySample
               if (!strlen(pEntry->szOSDOwner))
-                strcpy_s(pEntry->szOSDOwner, sizeof(pEntry->szOSDOwner), "RTSSSharedMemorySample");
+                strcpy_s(pEntry->szOSDOwner, sizeof(pEntry->szOSDOwner), "CapFrameX");
             }
 
-            if (!strcmp(pEntry->szOSDOwner, "RTSSSharedMemorySample"))
+            if (!strcmp(pEntry->szOSDOwner, "CapFrameX"))
             {
               if (pMem->dwVersion >= 0x0002000c)
                 //embedded graphs are supported for v2.12 and higher shared memory
@@ -183,10 +182,10 @@ BOOL RTSSCoreControl::UpdateOSD(LPCSTR lpText)
             if (dwPass)
             {
               if (!strlen(pEntry->szOSDOwner))
-                strcpy_s(pEntry->szOSDOwner, sizeof(pEntry->szOSDOwner), "RTSSSharedMemorySample");
+                strcpy_s(pEntry->szOSDOwner, sizeof(pEntry->szOSDOwner), "CapFrameX");
             }
 
-            if (!strcmp(pEntry->szOSDOwner, "RTSSSharedMemorySample"))
+            if (!strcmp(pEntry->szOSDOwner, "CapFrameX"))
             {
               if (pMem->dwVersion >= 0x00020007)
                 //use extended text slot for v2.7 and higher shared memory, it allows displaying 4096 symbols
@@ -254,7 +253,7 @@ void RTSSCoreControl::ReleaseOSD()
         {
           RTSS_SHARED_MEMORY::LPRTSS_SHARED_MEMORY_OSD_ENTRY pEntry = (RTSS_SHARED_MEMORY::LPRTSS_SHARED_MEMORY_OSD_ENTRY)((LPBYTE)pMem + pMem->dwOSDArrOffset + dwEntry * pMem->dwOSDEntrySize);
 
-          if (!strcmp(pEntry->szOSDOwner, "RTSSSharedMemorySample"))
+          if (!strcmp(pEntry->szOSDOwner, "CapFrameX"))
           {
             memset(pEntry, 0, pMem->dwOSDEntrySize);
             pMem->dwOSDFrame++;
