@@ -125,7 +125,7 @@
 						<StackPanel Margin="20 0 0 0" Orientation="Horizontal" HorizontalAlignment="Left">
 							<TextBlock VerticalAlignment="Center">Input lag offset (ms):</TextBlock>
 							<TextBox Height="25" Margin="5 0 0 0" Background="#e6e6e6" TextAlignment="Center" Text="{Binding InputLagOffset, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="Offset" 
-									 PreviewKeyDown="InputLagOffsetTextBox_PreviewKeyDown" />
+									 PreviewKeyDown="InputLagOffsetTextBox_PreviewKeyDown" ToolTip="Offset for display and mouse/keyboard/gamepad latency"/>
 						</StackPanel>
 					</Grid>
 					<Grid Grid.Row="2">
