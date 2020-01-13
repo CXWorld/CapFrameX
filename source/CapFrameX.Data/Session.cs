@@ -127,7 +127,10 @@ namespace CapFrameX.Data
 
 			for (int i = 1; i < FrameTimes.Count; i++)
 			{
-				inputLagTimes.Add(FrameTimes[i] + UntilDisplayedTimes[i] - InPresentAPITimes[i - 1]);
+				if (UntilDisplayedTimes[i] > 0)
+					inputLagTimes.Add(FrameTimes[i] + UntilDisplayedTimes[i] - InPresentAPITimes[i - 1]);
+				else
+					inputLagTimes.Add(0);
 			}
 
 			return inputLagTimes;

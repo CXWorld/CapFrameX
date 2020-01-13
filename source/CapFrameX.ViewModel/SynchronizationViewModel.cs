@@ -496,9 +496,9 @@ namespace CapFrameX.ViewModel
 		{
 			if (inputLagTimes == null || !inputLagTimes.Any())
 				return;
-
-			var discreteDistribution = _frametimeStatisticProvider.GetDiscreteDistribution(inputLagTimes);
-			var histogram = new Histogram(inputLagTimes, discreteDistribution.Length);
+			var filteredInputLagTimes = inputLagTimes.Where(i => i != 0).ToList();
+			var discreteDistribution = _frametimeStatisticProvider.GetDiscreteDistribution(filteredInputLagTimes);
+			var histogram = new Histogram(filteredInputLagTimes, discreteDistribution.Length);
 
 			var bins = new List<double>();
 			var histogramValues = new ChartValues<double>();
@@ -537,9 +537,10 @@ namespace CapFrameX.ViewModel
 			if (inputLagTimes == null || !inputLagTimes.Any())
 				return;
 
-			var p99_quantile = _frametimeStatisticProvider.GetPQuantileSequence(inputLagTimes, 0.99);
+			var filteredInputLagTimes = inputLagTimes.Where(i => i != 0).ToList();
+			var p99_quantile = _frametimeStatisticProvider.GetPQuantileSequence(filteredInputLagTimes, 0.99);
 			var average = inputLagTimes.Average();
-			var p1_quantile = _frametimeStatisticProvider.GetPQuantileSequence(inputLagTimes, 0.01);
+			var p1_quantile = _frametimeStatisticProvider.GetPQuantileSequence(filteredInputLagTimes, 0.01);
 
 			Application.Current.Dispatcher.Invoke(new Action(() =>
 			{
