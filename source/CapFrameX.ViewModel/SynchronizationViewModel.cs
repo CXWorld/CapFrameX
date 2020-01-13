@@ -539,7 +539,7 @@ namespace CapFrameX.ViewModel
 
 			var filteredInputLagTimes = inputLagTimes.Where(i => i != 0).ToList();
 			var p99_quantile = _frametimeStatisticProvider.GetPQuantileSequence(filteredInputLagTimes, 0.99);
-			var average = inputLagTimes.Average();
+			var average = filteredInputLagTimes.Average();
 			var p1_quantile = _frametimeStatisticProvider.GetPQuantileSequence(filteredInputLagTimes, 0.01);
 
 			Application.Current.Dispatcher.Invoke(new Action(() =>
