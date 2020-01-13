@@ -55,7 +55,7 @@ namespace CapFrameX.ViewModel
 		/// https://docs.microsoft.com/en-us/dotnet/standard/base-types/standard-numeric-format-strings
 		/// </summary>
 		public Func<double, string> HistogramFormatter { get; } =
-			value => value.ToString("N", CultureInfo.InvariantCulture);		
+			value => value.ToString("N", CultureInfo.InvariantCulture);
 
 		/// <summary>
 		/// https://docs.microsoft.com/en-us/dotnet/standard/base-types/standard-numeric-format-strings
@@ -239,6 +239,17 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
+		public int InputLagOffset
+		{
+			get { return _appConfiguration.InputLagOffset; }
+			set
+			{
+				_appConfiguration.InputLagOffset = value;
+				UpdateCharts();
+				RaisePropertyChanged();
+			}
+		}
+
 		public ICommand CopyDisplayChangeTimeValuesCommand { get; }
 
 		public ICommand CopyDisplayTimesHistogramDataCommand { get; }
@@ -303,7 +314,7 @@ namespace CapFrameX.ViewModel
 
 		private string GetCorrelation(Session currentSession)
 		{
-			var frametimes = currentSession.FrameTimes.Where((x,i) => !_session.AppMissed[i]);
+			var frametimes = currentSession.FrameTimes.Where((x, i) => !_session.AppMissed[i]);
 			var displayChangedTimes = currentSession.DisplayTimes.Where((x, i) => !_session.AppMissed[i]);
 
 			if (frametimes.Count() != displayChangedTimes.Count())
@@ -364,7 +375,7 @@ namespace CapFrameX.ViewModel
 				return;
 
 			// Do not run on background thread, leads to errors on analysis page
-			var inputLagTimes = _session.GetApproxInputLagTimes();
+			var inputLagTimes = _session.GetApproxInputLagTimes().Select(val => val += InputLagOffset).ToList();
 
 			SetFrameDisplayTimesChart(_session.FrameTimes, _session.DisplayTimes);
 			SetFrameInputLagChart(_session.FrameTimes, inputLagTimes);
@@ -496,9 +507,9 @@ namespace CapFrameX.ViewModel
 		{
 			if (inputLagTimes == null || !inputLagTimes.Any())
 				return;
-			var filteredInputLagTimes = inputLagTimes.Where(i => i != 0).ToList();
-			var discreteDistribution = _frametimeStatisticProvider.GetDiscreteDistribution(filteredInputLagTimes);
-			var histogram = new Histogram(filteredInputLagTimes, discreteDistribution.Length);
+
+			var discreteDistribution = _frametimeStatisticProvider.GetDiscreteDistribution(inputLagTimes);
+			var histogram = new Histogram(inputLagTimes, discreteDistribution.Length);
 
 			var bins = new List<double>();
 			var histogramValues = new ChartValues<double>();
@@ -518,7 +529,7 @@ namespace CapFrameX.ViewModel
 			{
 				InputLagHistogramCollection = new SeriesCollection
 				{
-					new LiveCharts.Wpf.ColumnSeries
+					new ColumnSeries
 					{
 						Title = "Input lag time distribution",
 						Values = histogramValues,
@@ -537,10 +548,9 @@ namespace CapFrameX.ViewModel
 			if (inputLagTimes == null || !inputLagTimes.Any())
 				return;
 
-			var filteredInputLagTimes = inputLagTimes.Where(i => i != 0).ToList();
-			var p99_quantile = _frametimeStatisticProvider.GetPQuantileSequence(filteredInputLagTimes, 0.99);
-			var average = filteredInputLagTimes.Average();
-			var p1_quantile = _frametimeStatisticProvider.GetPQuantileSequence(filteredInputLagTimes, 0.01);
+			var p99_quantile = _frametimeStatisticProvider.GetPQuantileSequence(inputLagTimes, 0.99);
+			var average = inputLagTimes.Average();
+			var p1_quantile = _frametimeStatisticProvider.GetPQuantileSequence(inputLagTimes, 0.01);
 
 			Application.Current.Dispatcher.Invoke(new Action(() =>
 			{
@@ -586,7 +596,7 @@ namespace CapFrameX.ViewModel
 			{
 				DroppedFramesStatisticCollection = new SeriesCollection()
 				{
-					new LiveCharts.Wpf.PieSeries
+					new PieSeries
 					{
 						Title = "Synced frames",
 						Values = new ChartValues<int>(){ appMissed.Count(flag => flag == false) },
@@ -626,8 +636,10 @@ namespace CapFrameX.ViewModel
 
 		private void SetFrameInputLagChart(IList<double> frametimes, IList<double> inputlagtimes)
 		{
-			var yMin = Math.Min(frametimes.Min(), inputlagtimes.Min());
-			var yMax = Math.Max(frametimes.Max(), inputlagtimes.Max());
+			var filteredFrametimes = frametimes.Where((ft, i) => _session.AppMissed[i] != true).ToList();
+
+			var yMin = Math.Min(filteredFrametimes.Min(), inputlagtimes.Min());
+			var yMax = Math.Max(filteredFrametimes.Max(), inputlagtimes.Max());
 
 			var frametimeSeries = new OxyPlot.Series.LineSeries
 			{
@@ -645,7 +657,7 @@ namespace CapFrameX.ViewModel
 				Color = ColorRessource.FrametimeMovingAverageStroke
 			};
 
-			frametimeSeries.Points.AddRange(frametimes.Select((x, i) => new DataPoint(i, x)));
+			frametimeSeries.Points.AddRange(filteredFrametimes.Select((x, i) => new DataPoint(i, x)));
 			inputLagSeries.Points.AddRange(inputlagtimes.Select((x, i) => new DataPoint(i, x)));
 
 			Application.Current.Dispatcher.Invoke(new Action(() =>
@@ -669,7 +681,7 @@ namespace CapFrameX.ViewModel
 					Position = OxyPlot.Axes.AxisPosition.Bottom,
 					Title = "Samples",
 					Minimum = 0,
-					Maximum = frametimes.Count,
+					Maximum = filteredFrametimes.Count,
 					MajorGridlineStyle = LineStyle.Solid,
 					MajorGridlineThickness = 1,
 					MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),

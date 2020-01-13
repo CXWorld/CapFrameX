@@ -81,24 +81,24 @@
 						</Grid.ColumnDefinitions>
 						<!--Display times histogram chart-->
 						<Grid Background="#F5F5F5" Grid.Column="0" Margin="0 5 0 0" >
-						<lvc:CartesianChart Margin="5" Series="{Binding DisplayTimesHistogramCollection}" LegendLocation="Bottom"
+							<lvc:CartesianChart Margin="5" Series="{Binding DisplayTimesHistogramCollection}" LegendLocation="Bottom"
 								Tag="{Binding ElementName=SynchronizationViewUserControl, Path=DataContext}" DataTooltip="{x:Null}">
-							<lvc:CartesianChart.ContextMenu>
-								<ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
-									<MenuItem Header="Copy histogram data" Command="{Binding CopyDisplayTimesHistogramDataCommand}"/>
-								</ContextMenu>
-							</lvc:CartesianChart.ContextMenu>
-							<lvc:CartesianChart.AxisX>
-								<lvc:Axis Title="Display change time (ms)" BarUnit="1" Labels="{Binding DisplayTimesHistogramLabels}" LabelFormatter="{Binding HistogramFormatter}" Foreground="Black">
-									<lvc:Axis.Separator>
-										<lvc:Separator Step="1" IsEnabled="True"></lvc:Separator>
-									</lvc:Axis.Separator>
-								</lvc:Axis>
-							</lvc:CartesianChart.AxisX>
-							<lvc:CartesianChart.AxisY>
-								<lvc:Axis Title="Distribution" Foreground="Black"/>
-							</lvc:CartesianChart.AxisY>
-						</lvc:CartesianChart>
+								<lvc:CartesianChart.ContextMenu>
+									<ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
+										<MenuItem Header="Copy histogram data" Command="{Binding CopyDisplayTimesHistogramDataCommand}"/>
+									</ContextMenu>
+								</lvc:CartesianChart.ContextMenu>
+								<lvc:CartesianChart.AxisX>
+									<lvc:Axis Title="Display change time (ms)" BarUnit="1" Labels="{Binding DisplayTimesHistogramLabels}" LabelFormatter="{Binding HistogramFormatter}" Foreground="Black">
+										<lvc:Axis.Separator>
+											<lvc:Separator Step="1" IsEnabled="True"></lvc:Separator>
+										</lvc:Axis.Separator>
+									</lvc:Axis>
+								</lvc:CartesianChart.AxisX>
+								<lvc:CartesianChart.AxisY>
+									<lvc:Axis Title="Distribution" Foreground="Black"/>
+								</lvc:CartesianChart.AxisY>
+							</lvc:CartesianChart>
 						</Grid>
 						<DockPanel Background="#F5F5F5" Grid.Column="1" Margin="5 5 0 0" HorizontalAlignment="Stretch">
 							<lvc:PieChart Margin="0 0 0 5" Width="250" HorizontalAlignment="Center" Hoverable="False" Series="{Binding DroppedFramesStatisticCollection}" 
@@ -111,6 +111,7 @@
 				<Grid>
 					<Grid.RowDefinitions>
 						<RowDefinition Height="5*"></RowDefinition>
+						<RowDefinition Height="50"></RowDefinition>
 						<RowDefinition Height="3*" MaxHeight="300"></RowDefinition>
 					</Grid.RowDefinitions>
 					<DockPanel Grid.Row="0">
@@ -119,52 +120,60 @@
 								 MouseDoubleClick="ResetInputLagChart_MouseDoubleClick">
 						</oxy:PlotView>
 					</DockPanel>
-					<Grid Grid.Row="1">
+					<!--Input lag offset-->
+					<Grid Grid.Row="1" Margin="0 5 0 0" Background="#F5F5F5">
+						<StackPanel Margin="20 0 0 0" Orientation="Horizontal" HorizontalAlignment="Left">
+							<TextBlock VerticalAlignment="Center">Input lag offset (ms):</TextBlock>
+							<TextBox Height="25" Margin="5 0 0 0" Background="#e6e6e6" TextAlignment="Center" Text="{Binding InputLagOffset, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="Offset" 
+									 PreviewKeyDown="InputLagOffsetTextBox_PreviewKeyDown" />
+						</StackPanel>
+					</Grid>
+					<Grid Grid.Row="2">
 						<Grid.ColumnDefinitions>
 							<ColumnDefinition Width="3*" />
 							<ColumnDefinition Width="2*" />
 						</Grid.ColumnDefinitions>
 						<!--Input histogram-->
 						<Grid  Background="#F5F5F5" Grid.Column="0" Margin="0 5 0 0" >
-						<lvc:CartesianChart Margin="5" Series="{Binding InputLagHistogramCollection}" LegendLocation="Bottom"
+							<lvc:CartesianChart Margin="5" Series="{Binding InputLagHistogramCollection}" LegendLocation="Bottom"
 								Tag="{Binding ElementName=SynchronizationViewUserControl, Path=DataContext}" DataTooltip="{x:Null}">
-							<lvc:CartesianChart.ContextMenu>
-								<ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
-									<MenuItem Header="Copy histogram data" Command="{Binding CopyInputLagHistogramDataCommand}"/>
-								</ContextMenu>
-							</lvc:CartesianChart.ContextMenu>
-							<lvc:CartesianChart.AxisX>
-								<lvc:Axis Title="Approximated input lag (ms)" BarUnit="1" Labels="{Binding InputLagHistogramLabels}" LabelFormatter="{Binding HistogramFormatter}" Foreground="Black">
-									<lvc:Axis.Separator>
-										<lvc:Separator Step="1" IsEnabled="True"></lvc:Separator>
-									</lvc:Axis.Separator>
-								</lvc:Axis>
-							</lvc:CartesianChart.AxisX>
-							<lvc:CartesianChart.AxisY>
-								<lvc:Axis Title="Distribution" Foreground="Black"/>
-							</lvc:CartesianChart.AxisY>
-						</lvc:CartesianChart>
+								<lvc:CartesianChart.ContextMenu>
+									<ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
+										<MenuItem Header="Copy histogram data" Command="{Binding CopyInputLagHistogramDataCommand}"/>
+									</ContextMenu>
+								</lvc:CartesianChart.ContextMenu>
+								<lvc:CartesianChart.AxisX>
+									<lvc:Axis Title="Approximated input lag (ms)" BarUnit="1" Labels="{Binding InputLagHistogramLabels}" LabelFormatter="{Binding HistogramFormatter}" Foreground="Black">
+										<lvc:Axis.Separator>
+											<lvc:Separator Step="1" IsEnabled="True"></lvc:Separator>
+										</lvc:Axis.Separator>
+									</lvc:Axis>
+								</lvc:CartesianChart.AxisX>
+								<lvc:CartesianChart.AxisY>
+									<lvc:Axis Title="Distribution" Foreground="Black"/>
+								</lvc:CartesianChart.AxisY>
+							</lvc:CartesianChart>
 						</Grid>
 						<Grid Grid.Column="1" Margin="5 5 0 0" Background="#F5F5F5">
-						<lvc:CartesianChart Margin="10 20 10 5" Series="{Binding InputLagStatisticCollection}" LegendLocation="Bottom"
+							<lvc:CartesianChart Margin="10 20 10 5" Series="{Binding InputLagStatisticCollection}" LegendLocation="Bottom"
 									Tag="{Binding ElementName=SynchronizationViewUserControl, Path=DataContext}" DataTooltip="{x:Null}" >
-							<lvc:CartesianChart.ContextMenu>
-								<ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
-									<MenuItem Header="Copy statistical parameter" Command="{Binding CopyInputLagStatisticalParameterCommand}"/>
-								</ContextMenu>
-							</lvc:CartesianChart.ContextMenu>
-							<lvc:CartesianChart.AxisX>
-								<lvc:Axis Title="ms" FontSize="11" MinValue="0" MaxValue="{Binding InputLagBarMaxValue}" 
+								<lvc:CartesianChart.ContextMenu>
+									<ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
+										<MenuItem Header="Copy statistical parameter" Command="{Binding CopyInputLagStatisticalParameterCommand}"/>
+									</ContextMenu>
+								</lvc:CartesianChart.ContextMenu>
+								<lvc:CartesianChart.AxisX>
+									<lvc:Axis Title="ms" FontSize="11" MinValue="0" MaxValue="{Binding InputLagBarMaxValue}" 
 								  LabelFormatter="{Binding InputLagParameterFormatter}" Foreground="Black"/>
-							</lvc:CartesianChart.AxisX>
-							<lvc:CartesianChart.AxisY>
-								<lvc:Axis FontSize="11" Labels="{Binding InputLagParameterLabels}" Foreground="Black">
-									<lvc:Axis.Separator>
-										<lvc:Separator Step="1" IsEnabled="False"></lvc:Separator>
-									</lvc:Axis.Separator>
-								</lvc:Axis>
-							</lvc:CartesianChart.AxisY>
-						</lvc:CartesianChart>
+								</lvc:CartesianChart.AxisX>
+								<lvc:CartesianChart.AxisY>
+									<lvc:Axis FontSize="11" Labels="{Binding InputLagParameterLabels}" Foreground="Black">
+										<lvc:Axis.Separator>
+											<lvc:Separator Step="1" IsEnabled="False"></lvc:Separator>
+										</lvc:Axis.Separator>
+									</lvc:Axis>
+								</lvc:CartesianChart.AxisY>
+							</lvc:CartesianChart>
 						</Grid>
 					</Grid>
 				</Grid>

@@ -27,9 +27,7 @@ namespace CapFrameX.Data
 		public List<double> DisplayTimes { get; set; }
 		public List<double> QPCTimes { get; set; }
 		public bool IsVR { get; set; }
-		public int AppMissesCount { get; set; }
 		public int WarpMissesCount { get; set; }
-		public int ValidAppFrames { get; set; }
 		public int ValidReproFrames { get; set; }
 		public double LastFrameTime { get; set; }
 
@@ -127,10 +125,8 @@ namespace CapFrameX.Data
 
 			for (int i = 1; i < FrameTimes.Count; i++)
 			{
-				if (UntilDisplayedTimes[i] > 0)
+				if (AppMissed[i] != true)
 					inputLagTimes.Add(FrameTimes[i] + UntilDisplayedTimes[i] - InPresentAPITimes[i - 1]);
-				else
-					inputLagTimes.Add(0);
 			}
 
 			return inputLagTimes;

@@ -96,5 +96,6 @@
 
 		string RelatedMetric { get; set; }
 
+		int InputLagOffset { get; set; }
 	}
 }

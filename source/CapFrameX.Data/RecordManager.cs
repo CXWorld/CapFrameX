@@ -154,9 +154,7 @@ namespace CapFrameX.Data
 			session.QPCTimes = new List<double>();
 			session.InPresentAPITimes = new List<double>();
 			session.UntilDisplayedTimes = new List<double>();
-			session.AppMissesCount = 0;
 			session.WarpMissesCount = 0;
-			session.ValidAppFrames = 0;
 			session.LastFrameTime = 0;
 			session.ValidReproFrames = 0;
 
@@ -257,24 +255,29 @@ namespace CapFrameX.Data
 						values = line.Split(',');
 						double frameStart = 0;
 
-						if (indexFrameStart > 0 && indexFrameTimes > 0 && indexAppMissed > 0)
+						if (indexFrameStart > 0 && indexFrameTimes > 0)
 						{
-							// non VR titles only have app render start and frame times metrics
-							// app render end and reprojection end get calculated based on ms until render complete and ms until displayed metric
 							if (double.TryParse(GetStringFromArray(values, indexFrameStart), NumberStyles.Any, CultureInfo.InvariantCulture, out frameStart)
-								&& double.TryParse(GetStringFromArray(values, indexFrameTimes), NumberStyles.Any, CultureInfo.InvariantCulture, out var frameTimes)
-								&& int.TryParse(GetStringFromArray(values, indexAppMissed), NumberStyles.Any, CultureInfo.InvariantCulture, out var appMissed))
+								&& double.TryParse(GetStringFromArray(values, indexFrameTimes), NumberStyles.Any, CultureInfo.InvariantCulture, out var frameTimes))
 							{
 								if (frameStart > 0)
 								{
-									session.ValidAppFrames++;
 									session.LastFrameTime = frameStart;
 								}
 								session.FrameStart.Add(frameStart);
 								session.FrameTimes.Add(frameTimes);
+							}
+						}
 
+						if (indexAppMissed > 0)
+						{
+							if (int.TryParse(GetStringFromArray(values, indexAppMissed), NumberStyles.Any, CultureInfo.InvariantCulture, out var appMissed))
+							{
 								session.AppMissed.Add(Convert.ToBoolean(appMissed));
-								session.AppMissesCount += appMissed;
+							}
+							else
+							{
+								session.AppMissed.Add(true);
 							}
 						}
 

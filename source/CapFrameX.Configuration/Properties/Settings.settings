@@ -146,5 +146,8 @@
     <Setting Name="RelatedMetric" Type="System.String" Scope="User">
       <Value Profile="(Default)">Average</Value>
     </Setting>
+    <Setting Name="InputLagOffset" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">20</Value>
+    </Setting>
   </Settings>
 </SettingsFile>
