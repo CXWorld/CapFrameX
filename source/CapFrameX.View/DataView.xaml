@@ -161,17 +161,40 @@
 				</ComboBox>
 				<StackPanel Grid.Column="3" Orientation="Horizontal" HorizontalAlignment="Right">
 					<StackPanel Margin="0 8 0 8" Orientation="Horizontal">
-						<TextBlock VerticalAlignment="Center">Statistic parameter settings:</TextBlock>
-						<materialDesign:PopupBox StaysOpen="True">
-							<materialDesign:Card Width="220" Margin="0 0 0 -10">
+                        <TextBlock VerticalAlignment="Center">Statistic parameter settings:</TextBlock>
+                        <materialDesign:PopupBox StaysOpen="True" ToolTipService.ShowDuration="25000">
+                            <materialDesign:PopupBox.ToolTip>
+                                <ToolTip MaxWidth="275" Placement="Top">
+                                    <TextBlock Text="Maximum:
+                                               &#10;The single highest value
+                                               &#10;
+                                               &#10;Average:
+                                               &#10;The average of all values
+                                               &#10;
+                                               &#10;Minimum:
+                                               &#10;The single lowest value
+                                               &#10;
+                                               &#10;X% percentile:
+                                               &#10;X% of all values are lower than this
+                                               &#10;
+                                               &#10;X% low average:
+                                               &#10;The average of the lowest X% of all values
+                                               &#10;
+                                               &#10;Adaptive STDEV:
+                                               &#10;The standard deviation of values compared to the moving average                                              
+											" 
+										   TextWrapping="Wrap"/>
+                                </ToolTip>
+                            </materialDesign:PopupBox.ToolTip>
+                            <materialDesign:Card Width="220" Margin="0 0 0 -10">
 								<StackPanel>
 									<Grid Margin="8 8 8 8">
 										<Grid.Resources>
-											<Style TargetType="CheckBox"
+                                            <Style TargetType="CheckBox"
 											BasedOn="{StaticResource MaterialDesignCheckBox}">
-												<Setter Property="Margin" Value="8,8,10,8" />
-											</Style>
-											<Style TargetType="TextBox" BasedOn="{StaticResource MaterialDesignTextBox}">
+                                                <Setter Property="Margin" Value="8,8,10,8" />
+                                            </Style>
+                                            <Style TargetType="TextBox" BasedOn="{StaticResource MaterialDesignTextBox}">
 												<Setter Property="materialDesign:HintAssist.IsFloating" Value="True" />
 												<Setter Property="Margin" Value="8,8,8,8" />
 											</Style>
