@@ -11,6 +11,7 @@
 			 xmlns:controls="clr-namespace:CapFrameX.View.Controls"
 			 xmlns:data="clr-namespace:CapFrameX.Data;assembly=CapFrameX.Data"
 			 xmlns:prism="http://prismlibrary.com/"
+             xmlns:sys="clr-namespace:System;assembly=mscorlib"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800"
 			 Background="{DynamicResource MaterialDesignPaper}"
@@ -252,8 +253,11 @@
 						</TextBlock.LayoutTransform>
 					</TextBlock>
 				</Expander.Header>
-				<ScrollViewer VerticalScrollBarVisibility="Visible">
-					<ItemsControl ItemsSource="{Binding SystemInfos}" Grid.IsSharedSizeScope="True" Background="#e6e6e6" 
+				<ScrollViewer VerticalScrollBarVisibility="Hidden">
+                    <ScrollViewer.Resources>
+                        <sys:Double x:Key="{x:Static SystemParameters.VerticalScrollBarWidthKey}">3</sys:Double>
+                    </ScrollViewer.Resources>
+                    <ItemsControl ItemsSource="{Binding SystemInfos}" Grid.IsSharedSizeScope="True" Background="#e6e6e6" 
 										  Tag="{Binding ElementName=DataViewUserControl, Path=DataContext}">
 						<ItemsControl.ContextMenu>
 							<ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
@@ -267,24 +271,20 @@
 										BorderThickness="0 0 0 1"
 										BorderBrush="{DynamicResource MaterialDesignDivider}">
 									<Grid>
-										<Grid.ColumnDefinitions>
-											<ColumnDefinition SharedSizeGroup="Checkerz" />
-											<ColumnDefinition />
-										</Grid.ColumnDefinitions>
-										<ToggleButton VerticalAlignment="Center"
-															  IsChecked="False"
-															  Style="{StaticResource MaterialDesignActionLightToggleButton}"
-															  Content="{Binding Letter}" />
-										<StackPanel Margin="8 0 0 0"
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition SharedSizeGroup="Checkerz" />
+                                            <ColumnDefinition />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Margin="8 0 0 0"
 														Grid.Column="1">
 											<TextBlock FontWeight="Bold"
 															Text="{Binding Key}" />
 											<TextBlock Text="{Binding Value}" TextWrapping="Wrap"
-															   Width="184"
+															   Width="220"
 															   LineStackingStrategy="BlockLineHeight"
 															   FontSize="12"
 															   LineHeight="14"
-															   MaxHeight="52"/>
+															   MaxHeight="55"/>
 										</StackPanel>
 									</Grid>
 								</Border>

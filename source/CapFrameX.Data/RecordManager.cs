@@ -87,30 +87,32 @@ namespace CapFrameX.Data
 		{
 			var systemInfos = new List<SystemInfoEntry>();
 
-			if (recordInfo.MotherboardName != null)
-				systemInfos.Add(new SystemInfoEntry() { Key = "Motherboard", Value = recordInfo.MotherboardName });
-			if (recordInfo.OsVersion != null)
-				systemInfos.Add(new SystemInfoEntry() { Key = "OS Version", Value = recordInfo.OsVersion });
-			if (recordInfo.ProcessorName != null)
-				systemInfos.Add(new SystemInfoEntry() { Key = "Processor", Value = recordInfo.ProcessorName });
-			if (recordInfo.SystemRamInfo != null)
-				systemInfos.Add(new SystemInfoEntry() { Key = "System RAM Info", Value = recordInfo.SystemRamInfo });
-			if (recordInfo.BaseDriverVersion != null)
-				systemInfos.Add(new SystemInfoEntry() { Key = "Base Driver Version", Value = recordInfo.BaseDriverVersion });
-			if (recordInfo.DriverPackage != null)
-				systemInfos.Add(new SystemInfoEntry() { Key = "Driver Package", Value = recordInfo.DriverPackage });
-			if (recordInfo.NumberGPUs != null)
-				systemInfos.Add(new SystemInfoEntry() { Key = "GPU #", Value = recordInfo.NumberGPUs });
-			if (recordInfo.GraphicCardName != null)
-				systemInfos.Add(new SystemInfoEntry() { Key = "Graphic Card", Value = recordInfo.GraphicCardName });
-			if (recordInfo.GPUCoreClock != null)
-				systemInfos.Add(new SystemInfoEntry() { Key = "GPU Core Clock (MHz)", Value = recordInfo.GPUCoreClock });
-			if (recordInfo.GPUMemoryClock != null)
-				systemInfos.Add(new SystemInfoEntry() { Key = "GPU Memory Clock (MHz)", Value = recordInfo.GPUMemoryClock });
-			if (recordInfo.GPUMemory != null)
-				systemInfos.Add(new SystemInfoEntry() { Key = "GPU Memory (MB)", Value = recordInfo.GPUMemory });
-			if (recordInfo.Comment != null)
+			if (!string.IsNullOrWhiteSpace(recordInfo.CreationDate))
+				systemInfos.Add(new SystemInfoEntry() { Key = "Creation Date & Time", Value = recordInfo.CreationDate + "  |  " + recordInfo.CreationTime });
+			if (!string.IsNullOrWhiteSpace(recordInfo.Comment))
 				systemInfos.Add(new SystemInfoEntry() { Key = "Comment", Value = recordInfo.Comment });
+			if (!string.IsNullOrWhiteSpace(recordInfo.ProcessorName))
+				systemInfos.Add(new SystemInfoEntry() { Key = "Processor", Value = recordInfo.ProcessorName });
+			if (!string.IsNullOrWhiteSpace(recordInfo.SystemRamInfo))
+				systemInfos.Add(new SystemInfoEntry() { Key = "System RAM", Value = recordInfo.SystemRamInfo });
+			if (!string.IsNullOrWhiteSpace(recordInfo.GraphicCardName))
+				systemInfos.Add(new SystemInfoEntry() { Key = "Graphics Card", Value = recordInfo.GraphicCardName });
+			if (!string.IsNullOrWhiteSpace(recordInfo.MotherboardName))
+				systemInfos.Add(new SystemInfoEntry() { Key = "Motherboard", Value = recordInfo.MotherboardName });
+			if (!string.IsNullOrWhiteSpace(recordInfo.OsVersion))
+				systemInfos.Add(new SystemInfoEntry() { Key = "OS Version", Value = recordInfo.OsVersion });
+			if (!string.IsNullOrWhiteSpace(recordInfo.NumberGPUs))
+				systemInfos.Add(new SystemInfoEntry() { Key = "GPU #", Value = recordInfo.NumberGPUs });
+			if (!string.IsNullOrWhiteSpace(recordInfo.GPUCoreClock))
+				systemInfos.Add(new SystemInfoEntry() { Key = "GPU Core Clock (MHz)", Value = recordInfo.GPUCoreClock });
+			if (!string.IsNullOrWhiteSpace(recordInfo.GPUMemoryClock))
+				systemInfos.Add(new SystemInfoEntry() { Key = "GPU Memory Clock (MHz)", Value = recordInfo.GPUMemoryClock });
+			if (!string.IsNullOrWhiteSpace(recordInfo.GPUMemory))
+				systemInfos.Add(new SystemInfoEntry() { Key = "GPU Memory (MB)", Value = recordInfo.GPUMemory });
+			if (!string.IsNullOrWhiteSpace(recordInfo.BaseDriverVersion))
+				systemInfos.Add(new SystemInfoEntry() { Key = "Base Driver Version", Value = recordInfo.BaseDriverVersion });
+			if (!string.IsNullOrWhiteSpace(recordInfo.DriverPackage))
+				systemInfos.Add(new SystemInfoEntry() { Key = "Driver Package", Value = recordInfo.DriverPackage });
 
 			return systemInfos;
 		}
