@@ -215,7 +215,9 @@ namespace CapFrameX.Overlay
 					CalculateOutlierAnalysis();
 					SetRunHistoryOutlierFlags(_runHistoryOutlierFlags);
 
-					if ((_runHistoryOutlierFlags.All(x => x == false)))
+					if ((_runHistoryOutlierFlags.All(x => x == false) 
+						&& _appConfiguration.OutlierHandling == EOutlierHandling.Replace.ConvertToString())
+						|| _appConfiguration.OutlierHandling == EOutlierHandling.Ignore.ConvertToString())
 					{
 						SetRunHistoryAggregation(GetAggregation());
 
