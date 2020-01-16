@@ -289,28 +289,24 @@
 						</ItemsControl.ContextMenu>
 						<ItemsControl.ItemTemplate>
 							<DataTemplate DataType="{x:Type data:SystemInfoEntry}">
-								<Border x:Name="Border"
+                                <Border x:Name="Border"
 										Padding="8"
 										BorderThickness="0 0 0 1"
 										BorderBrush="{DynamicResource MaterialDesignDivider}">
-									<Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition SharedSizeGroup="Checkerz" />
-                                            <ColumnDefinition />
-                                        </Grid.ColumnDefinitions>
-                                        <StackPanel Margin="8 0 0 0"
+                                    <StackPanel Margin="8 0 0 0"
 														Grid.Column="1">
-											<TextBlock FontWeight="Bold"
-															Text="{Binding Key}" />
-											<TextBlock Text="{Binding Value}" TextWrapping="Wrap"
+                                        <TextBlock FontWeight="Bold"
+															Text="{Binding Key}" 
+															FontSize="13"
+															LineHeight="18"/>
+                                        <TextBlock Text="{Binding Value}" TextWrapping="Wrap"
 															   Width="220"
 															   LineStackingStrategy="BlockLineHeight"
 															   FontSize="12"
-															   LineHeight="14"
+															   LineHeight="12"
 															   MaxHeight="55"/>
-										</StackPanel>
-									</Grid>
-								</Border>
+                                    </StackPanel>
+                                </Border>
 								<DataTemplate.Triggers>
 									<DataTrigger Binding="{Binding IsSelected}" Value="True">
 										<Setter TargetName="Border"
