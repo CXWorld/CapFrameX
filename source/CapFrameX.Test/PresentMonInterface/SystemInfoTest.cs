@@ -36,5 +36,11 @@ namespace CapFrameX.Test.PresentMonInterface
         {
             Console.WriteLine(SystemInfo.GetOSVersion());
         }
-    }
+
+		[TestMethod]
+		public void GetGraphicDriverVersion_CorrectVersion()
+		{
+			Console.WriteLine(SystemInfo.GetGraphicDriverVersion());
+		}
+	}
 }

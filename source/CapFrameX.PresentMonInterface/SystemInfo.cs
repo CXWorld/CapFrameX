@@ -219,5 +219,10 @@ namespace CapFrameX.PresentMonInterface
 
 			return $"{wholeCapacity / ONE_GIB}GB ({infoString.Remove(infoString.Length - 1)}) {propertyDataValueSpeed}MT/s";
 		}
+
+		public static string GetGraphicDriverVersion()
+		{
+			return "unknown";
+		}
 	}
 }
