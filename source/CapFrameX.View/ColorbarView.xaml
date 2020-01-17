@@ -49,6 +49,10 @@
 							 Content="ANALYSIS" />
 					<RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
 							 Margin="5"
+							 IsChecked="{Binding AggregationIsChecked}"
+							 Content="AGGREGATION" />
+					<RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
+							 Margin="5"
 							 IsChecked="{Binding RecordComparisonIsChecked}"
 							 Content="COMPARISON" />
 					<RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
@@ -59,10 +63,6 @@
 							 Margin="5"
 							 IsChecked="{Binding SynchronizationIsChecked}"
 							 Content="SYNCHRONIZATION" />
-					<!--<RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
-							 Margin="5"
-							 IsChecked="{Binding AggregationIsChecked}"
-							 Content="AGGREGATION" />-->
 				</StackPanel>
 
 				<Button Grid.Column="1" Margin="0 0 310 0"

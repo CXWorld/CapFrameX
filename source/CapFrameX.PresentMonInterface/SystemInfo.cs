@@ -42,6 +42,39 @@ namespace CapFrameX.PresentMonInterface
 			return propertyDataValue.TrimEnd();
 		}
 
+		public static string GetGraphicCardVendor()
+		{
+			string propertyDataValue = string.Empty;
+			const string propertyDataName = "AdapterCompatibility";
+
+			var win32DeviceClassName = "Win32_VideoController";
+			var query = string.Format("select * from {0}", win32DeviceClassName);
+
+			try
+			{
+				using (var searcher = new ManagementObjectSearcher(query))
+				{
+					ManagementObjectCollection objectCollection = searcher.Get();
+
+					foreach (ManagementBaseObject managementBaseObject in objectCollection)
+					{
+						foreach (PropertyData propertyData in managementBaseObject.Properties)
+						{
+							if (propertyData.Name == propertyDataName)
+							{
+								propertyDataValue = (string)propertyData.Value;
+								break;
+							}
+						}
+					}
+				}
+			}
+			catch { propertyDataValue = string.Empty; }
+
+			//DeviceName
+			return propertyDataValue;
+		}
+
 		public static string GetGraphicCardName()
 		{
 			string propertyDataValue = string.Empty;

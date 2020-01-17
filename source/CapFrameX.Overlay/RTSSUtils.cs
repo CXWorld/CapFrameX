@@ -3,7 +3,7 @@ using Microsoft.Win32;
 
 namespace CapFrameX.Overlay
 {
-	public class RTSSUtils
+	public static class RTSSUtils
 	{
 		public static string GetRTSSFullPath()
 		{
