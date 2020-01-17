@@ -24,6 +24,7 @@ namespace CapFrameX.Overlay
 		private readonly IRecordDataProvider _recordDataProvider;
 		private readonly IOverlayEntryProvider _overlayEntryProvider;
 		private readonly IAppConfiguration _appConfiguration;
+		private readonly object _overlayLock = new object();
 
 		private IDisposable _disposableHeartBeat;
 		private IDisposable _disposableCaptureTimer;
@@ -63,7 +64,10 @@ namespace CapFrameX.Overlay
 
 			SetOverlayEntries(overlayEntryProvider?.GetOverlayEntries());
 			overlayEntryProvider.EntryUpdateStream.Subscribe(x =>
-				SetOverlayEntries(overlayEntryProvider?.GetOverlayEntries()));
+			{
+				lock (_overlayLock)
+					SetOverlayEntries(overlayEntryProvider?.GetOverlayEntries());
+			});
 
 			_runHistory = Enumerable.Repeat("N/A", _numberOfRuns).ToList();
 			SetRunHistory(_runHistory.ToArray());
@@ -122,7 +126,8 @@ namespace CapFrameX.Overlay
 		{
 			var captureTimer = _overlayEntryProvider.GetOverlayEntry("CaptureTimer");
 			captureTimer.Value = $"{t.ToString()} s";
-			SetOverlayEntries(_overlayEntryProvider?.GetOverlayEntries());
+			lock (_overlayLock)
+				SetOverlayEntries(_overlayEntryProvider?.GetOverlayEntries());
 			if (_appConfiguration.IsOverlayActive)
 			{
 				CheckRTSSRunningAndRefresh();
@@ -133,14 +138,16 @@ namespace CapFrameX.Overlay
 		{
 			var captureStatus = _overlayEntryProvider.GetOverlayEntry("CaptureServiceStatus");
 			captureStatus.Value = status;
-			SetOverlayEntries(_overlayEntryProvider?.GetOverlayEntries());
+			lock (_overlayLock)
+				SetOverlayEntries(_overlayEntryProvider?.GetOverlayEntries());
 		}
 
 		public void SetShowRunHistory(bool showHistory)
 		{
 			var history = _overlayEntryProvider.GetOverlayEntry("RunHistory");
 			history.ShowOnOverlay = showHistory;
-			SetOverlayEntries(_overlayEntryProvider?.GetOverlayEntries());
+			lock (_overlayLock)
+				SetOverlayEntries(_overlayEntryProvider?.GetOverlayEntries());
 		}
 
 		public void ResetHistory()
@@ -150,9 +157,12 @@ namespace CapFrameX.Overlay
 			_captureDataHistory.Clear();
 			_frametimeHistory.Clear();
 			_metricAnalysis.Clear();
-			SetRunHistory(_runHistory.ToArray());
-			SetRunHistoryAggregation(string.Empty);
-			SetRunHistoryOutlierFlags(_runHistoryOutlierFlags);
+			lock (_overlayLock)
+			{
+				SetRunHistory(_runHistory.ToArray());
+				SetRunHistoryAggregation(string.Empty);
+				SetRunHistoryOutlierFlags(_runHistoryOutlierFlags);
+			}
 		}
 
 		public void AddRunToHistory(List<string> captureData)
@@ -175,7 +185,7 @@ namespace CapFrameX.Overlay
 
 					var validCaptureData = _captureDataHistory.Where((run, i) => _runHistoryOutlierFlags[i] == false);
 					var validFrametimes = _frametimeHistory.Where((run, i) => _runHistoryOutlierFlags[i] == false);
-					var validMetricAnalysis = _metricAnalysis.Where((run, i) => _runHistoryOutlierFlags[i] == false);					
+					var validMetricAnalysis = _metricAnalysis.Where((run, i) => _runHistoryOutlierFlags[i] == false);
 
 					_runHistory = historyDefault.ToList();
 					_captureDataHistory = validCaptureData.ToList();
@@ -185,9 +195,12 @@ namespace CapFrameX.Overlay
 					// local reset
 					_runHistoryOutlierFlags = Enumerable.Repeat(false, _numberOfRuns).ToArray();
 
-					SetRunHistory(_runHistory.ToArray());
-					SetRunHistoryAggregation(string.Empty);
-					SetRunHistoryOutlierFlags(_runHistoryOutlierFlags);
+					lock (_overlayLock)
+					{
+						SetRunHistory(_runHistory.ToArray());
+						SetRunHistoryAggregation(string.Empty);
+						SetRunHistoryOutlierFlags(_runHistoryOutlierFlags);
+					}
 				}
 				else
 				{
@@ -201,7 +214,8 @@ namespace CapFrameX.Overlay
 				var currentAnalysis = GetMetrics(frametimes);
 				_metricAnalysis.Add(currentAnalysis);
 				_runHistory[RunHistoryCount] = currentAnalysis.ResultString;
-				SetRunHistory(_runHistory.ToArray());
+				lock (_overlayLock)
+					SetRunHistory(_runHistory.ToArray());
 
 				// capture data history
 				_captureDataHistory.Add(captureData);
@@ -213,13 +227,15 @@ namespace CapFrameX.Overlay
 					&& RunHistoryCount == _numberOfRuns)
 				{
 					CalculateOutlierAnalysis();
-					SetRunHistoryOutlierFlags(_runHistoryOutlierFlags);
+					lock (_overlayLock)
+						SetRunHistoryOutlierFlags(_runHistoryOutlierFlags);
 
-					if ((_runHistoryOutlierFlags.All(x => x == false) 
+					if ((_runHistoryOutlierFlags.All(x => x == false)
 						&& _appConfiguration.OutlierHandling == EOutlierHandling.Replace.ConvertToString())
 						|| _appConfiguration.OutlierHandling == EOutlierHandling.Ignore.ConvertToString())
 					{
-						SetRunHistoryAggregation(GetAggregation());
+						lock (_overlayLock)
+							SetRunHistoryAggregation(GetAggregation());
 
 						// write aggregated file
 						Task.Run(async () =>
@@ -237,7 +253,8 @@ namespace CapFrameX.Overlay
 
 		public void UpdateOverlayEntries()
 		{
-			SetOverlayEntries(_overlayEntryProvider?.GetOverlayEntries());
+			lock (_overlayLock)
+				SetOverlayEntries(_overlayEntryProvider?.GetOverlayEntries());
 		}
 
 		public void UpdateNumberOfRuns(int numberOfRuns)
