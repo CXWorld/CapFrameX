@@ -23,5 +23,7 @@ namespace CapFrameX.Statistics
 		double GetFpsMetricValue(IList<double> sequence, EMetric metric);
 
 		List<double>[] GetDiscreteDistribution(IList<double> sequence);
+
+		MetricAnalysis GetMetricAnalysis(List<double> frametimes, string secondMetric, string thirdMetric);
 	}
 }

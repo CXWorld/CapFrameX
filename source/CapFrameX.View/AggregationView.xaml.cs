@@ -1,5 +1,6 @@
 ﻿using CapFrameX.Configuration;
 using CapFrameX.Data;
+using CapFrameX.Statistics;
 using CapFrameX.ViewModel;
 using Prism.Events;
 using System.ComponentModel;
@@ -22,7 +23,7 @@ namespace CapFrameX.View
 			{
 				var appConfiguration = new CapFrameXConfiguration();
 				var recordDataProvider = new RecordDataProvider(new RecordDirectoryObserver(appConfiguration), appConfiguration);
-				DataContext = new AggregationViewModel(recordDataProvider, new EventAggregator(), appConfiguration);
+				DataContext = new AggregationViewModel(new FrametimeStatisticProvider(appConfiguration), recordDataProvider, new EventAggregator(), appConfiguration);
 			}
 		}
 

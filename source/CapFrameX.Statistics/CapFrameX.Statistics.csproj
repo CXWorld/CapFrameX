@@ -71,8 +71,9 @@
     <Compile Include="ERemoveOutlierMethod.cs" />
     <Compile Include="FrametimeAnalyzer.cs" />
     <Compile Include="FrametimeStatisticProvider.cs" />
-    <Compile Include="IFrametimeAnalyzer.cs" />
+    <Compile Include="IFrameTimeAnalyzer.cs" />
     <Compile Include="IStatisticProvider.cs" />
+    <Compile Include="MetricAnalysis.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

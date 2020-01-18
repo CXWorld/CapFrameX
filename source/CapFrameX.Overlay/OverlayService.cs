@@ -211,7 +211,7 @@ namespace CapFrameX.Overlay
 			if (RunHistoryCount < _numberOfRuns)
 			{
 				// metric history
-				var currentAnalysis = GetMetrics(frametimes);
+				var currentAnalysis = _statisticProvider.GetMetricAnalysis(frametimes, SecondMetric, ThirdMetric);
 				_metricAnalysis.Add(currentAnalysis);
 				_runHistory[RunHistoryCount] = currentAnalysis.ResultString;
 				lock (_overlayLock)
@@ -352,45 +352,8 @@ namespace CapFrameX.Overlay
 				concatedFrametimes.AddRange(frametimeSet);
 			}
 
-			return GetMetrics(concatedFrametimes).ResultString;
-		}
-
-		private MetricAnalysis GetMetrics(List<double> frametimes)
-		{
-			var average = _statisticProvider.GetFpsMetricValue(frametimes, EMetric.Average);
-			var secondMetricValue = _statisticProvider.GetFpsMetricValue(frametimes, SecondMetric.ConvertToEnum<EMetric>());
-			var thrirdMetricValue = _statisticProvider.GetFpsMetricValue(frametimes, ThirdMetric.ConvertToEnum<EMetric>());
-			string numberFormat = string.Format("F{0}", _appConfiguration.FpsValuesRoundingDigits);
-			var cultureInfo = CultureInfo.InvariantCulture;
-
-			string secondMetricString =
-				SecondMetric.ConvertToEnum<EMetric>() != EMetric.None ?
-				$"{SecondMetric.ConvertToEnum<EMetric>().GetShortDescription()}=" +
-				$"{secondMetricValue.ToString(numberFormat, cultureInfo)} " +
-				$"FPS | " : string.Empty;
-
-			string thirdMetricString =
-				ThirdMetric.ConvertToEnum<EMetric>() != EMetric.None ?
-				$"{ThirdMetric.ConvertToEnum<EMetric>().GetShortDescription()}=" +
-				$"{thrirdMetricValue.ToString(numberFormat, cultureInfo)} " +
-				$"FPS" : string.Empty;
-
-			return new MetricAnalysis()
-			{
-				ResultString = $"Avg={average.ToString(numberFormat, cultureInfo)} " +
-				$"FPS | " + secondMetricString + thirdMetricString,
-				Average = average,
-				Second = secondMetricValue,
-				Third = thrirdMetricValue
-			};
-		}
-
-		private class MetricAnalysis
-		{
-			public string ResultString { get; set; }
-			public double Average { get; set; }
-			public double Second { get; set; }
-			public double Third { get; set; }
+			return _statisticProvider.GetMetricAnalysis(concatedFrametimes, SecondMetric, ThirdMetric)
+				.ResultString;
 		}
 	}
 }

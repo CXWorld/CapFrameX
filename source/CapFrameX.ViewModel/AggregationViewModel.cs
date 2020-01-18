@@ -1,6 +1,7 @@
 ﻿using CapFrameX.Contracts.Aggregation;
 using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
+using CapFrameX.Data;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Extensions;
 using CapFrameX.Statistics;
@@ -9,6 +10,7 @@ using Prism.Events;
 using Prism.Mvvm;
 using Prism.Regions;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
@@ -17,6 +19,7 @@ namespace CapFrameX.ViewModel
 {
 	public class AggregationViewModel : BindableBase, INavigationAware, IDropTarget
 	{
+		private readonly IStatisticProvider _statisticProvider;
 		private readonly IRecordDataProvider _recordDataProvider;
 		private readonly IEventAggregator _eventAggregator;
 		private readonly IAppConfiguration _appConfiguration;
@@ -36,9 +39,12 @@ namespace CapFrameX.ViewModel
 
 		public EMetric SelectedSecondMetric
 		{
-			get { return _appConfiguration
-					.SecondMetricAggregation
-					.ConvertToEnum<EMetric>(); }
+			get
+			{
+				return _appConfiguration
+				  .SecondMetricAggregation
+				  .ConvertToEnum<EMetric>();
+			}
 			set
 			{
 				_appConfiguration.SecondMetricAggregation =
@@ -49,9 +55,12 @@ namespace CapFrameX.ViewModel
 
 		public EMetric SelectedThirdMetric
 		{
-			get { return _appConfiguration
-					.ThirdMetricAggregation
-					.ConvertToEnum<EMetric>(); }
+			get
+			{
+				return _appConfiguration
+				  .ThirdMetricAggregation
+				  .ConvertToEnum<EMetric>();
+			}
 			set
 			{
 				_appConfiguration.ThirdMetricAggregation =
@@ -98,9 +107,10 @@ namespace CapFrameX.ViewModel
 		public ObservableCollection<IAggregationEntry> AggregationEntries { get; private set; }
 			= new ObservableCollection<IAggregationEntry>();
 
-		public AggregationViewModel(IRecordDataProvider recordDataProvider,
+		public AggregationViewModel(IStatisticProvider statisticProvider, IRecordDataProvider recordDataProvider,
 			IEventAggregator eventAggregator, IAppConfiguration appConfiguration)
 		{
+			_statisticProvider = statisticProvider;
 			_recordDataProvider = recordDataProvider;
 			_eventAggregator = eventAggregator;
 			_appConfiguration = appConfiguration;
@@ -110,19 +120,39 @@ namespace CapFrameX.ViewModel
 
 		private void SubscribeToUpdateSession()
 		{
-			_eventAggregator.GetEvent<PubSubEvent<ViewMessages.UpdateSession>>()
+			_eventAggregator.GetEvent<PubSubEvent<ViewMessages.SelectSession>>()
 							.Subscribe(msg =>
 							{
 								if (_useUpdateSession)
 								{
-									AddAggregationEntry(msg.RecordInfo);
+									AddAggregationEntry(msg.RecordInfo, msg.CurrentSession);
 								}
 							});
 		}
 
-		private void AddAggregationEntry(IFileRecordInfo recordInfo)
-		{ 
-			throw new NotImplementedException();
+		private void AddAggregationEntry(IFileRecordInfo recordInfo, Session session)
+		{
+			List<double> frametimes = session?.FrameTimes;
+
+			if (session == null)
+			{
+				var localSession = RecordManager.LoadData(recordInfo.FullPath);
+				frametimes = localSession?.FrameTimes;
+			}
+
+			var metricAnalysis = _statisticProvider
+				.GetMetricAnalysis(frametimes, SelectedSecondMetric.ConvertToString(),
+					SelectedThirdMetric.ConvertToString());
+
+			AggregationEntries.Add(new AggregationEntry()
+			{
+				GameName = recordInfo.GameName,
+				CreationDate = recordInfo.CreationDate,
+				CreationTime = recordInfo.CreationTime,
+				AverageValue = metricAnalysis.Average,
+				SecondMetricValue = metricAnalysis.Second,
+				ThirdMetricValue = metricAnalysis.Third
+			});
 		}
 
 		public void OnNavigatedTo(NavigationContext navigationContext)
@@ -150,7 +180,7 @@ namespace CapFrameX.ViewModel
 					{
 						if (dropInfo.Data is IFileRecordInfo recordInfo)
 						{
-							AddAggregationEntry(recordInfo);
+							AddAggregationEntry(recordInfo, null);
 						}
 					}
 				}

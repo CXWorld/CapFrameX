@@ -1,7 +1,9 @@
 ﻿using CapFrameX.Contracts.Configuration;
+using CapFrameX.Extensions;
 using MathNet.Numerics.Statistics;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 
@@ -279,6 +281,36 @@ namespace CapFrameX.Statistics
 			}
 
 			return output;
+		}
+
+		public MetricAnalysis GetMetricAnalysis(List<double> frametimes, string secondMetric, string thirdMetric)
+		{
+				var average = GetFpsMetricValue(frametimes, EMetric.Average);
+				var secondMetricValue = GetFpsMetricValue(frametimes, secondMetric.ConvertToEnum<EMetric>());
+				var thrirdMetricValue = GetFpsMetricValue(frametimes, thirdMetric.ConvertToEnum<EMetric>());
+				string numberFormat = string.Format("F{0}", _appConfiguration.FpsValuesRoundingDigits);
+				var cultureInfo = CultureInfo.InvariantCulture;
+
+				string secondMetricString =
+					secondMetric.ConvertToEnum<EMetric>() != EMetric.None ?
+					$"{secondMetric.ConvertToEnum<EMetric>().GetShortDescription()}=" +
+					$"{secondMetricValue.ToString(numberFormat, cultureInfo)} " +
+					$"FPS | " : string.Empty;
+
+				string thirdMetricString =
+					thirdMetric.ConvertToEnum<EMetric>() != EMetric.None ?
+					$"{thirdMetric.ConvertToEnum<EMetric>().GetShortDescription()}=" +
+					$"{thrirdMetricValue.ToString(numberFormat, cultureInfo)} " +
+					$"FPS" : string.Empty;
+
+				return new MetricAnalysis()
+				{
+					ResultString = $"Avg={average.ToString(numberFormat, cultureInfo)} " +
+					$"FPS | " + secondMetricString + thirdMetricString,
+					Average = average,
+					Second = secondMetricValue,
+					Third = thrirdMetricValue
+				};
 		}
 	}
 }

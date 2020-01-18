@@ -91,6 +91,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AttachedProperties\MouseHelper.cs" />
+    <Compile Include="BindingProxy.cs" />
     <Compile Include="Converter\AddSubsctractConverter.cs" />
     <Compile Include="Converter\AddValueConverter.cs" />
     <Compile Include="Converter\EnumDescriptionConverter.cs" />
