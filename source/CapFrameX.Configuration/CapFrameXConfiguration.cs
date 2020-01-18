@@ -305,5 +305,15 @@ namespace CapFrameX.Configuration
 			get { return Settings.ThirdMetricAggregation; }
 			set { Settings.ThirdMetricAggregation = value; Settings.Save(); }
 		}
+		public string RelatedMetricAggregation
+		{
+			get { return Settings.RelatedMetricAggregation; }
+			set { Settings.RelatedMetricAggregation = value; Settings.Save(); }
+		}
+		public int OutlierPercentageAggregation
+		{
+			get { return Settings.OutlierPercentageAggregation; }
+			set { Settings.OutlierPercentageAggregation = value; Settings.Save(); }
+		}
 	}
 }

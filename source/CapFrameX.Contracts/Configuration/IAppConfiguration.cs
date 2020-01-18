@@ -101,5 +101,10 @@
 		string SecondMetricAggregation { get; set; }
 
 		string ThirdMetricAggregation { get; set; }
+
+		string RelatedMetricAggregation { get; set; }
+
+		int OutlierPercentageAggregation { get; set; }
+
 	}
 }

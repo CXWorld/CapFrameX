@@ -2,12 +2,15 @@
 using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
 using CapFrameX.EventAggregation.Messages;
+using CapFrameX.Extensions;
+using CapFrameX.Statistics;
 using GongSolutions.Wpf.DragDrop;
 using Prism.Events;
 using Prism.Mvvm;
 using Prism.Regions;
 using System;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Windows;
 
 namespace CapFrameX.ViewModel
@@ -31,25 +34,66 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-		public string SelectedSecondMetric
+		public EMetric SelectedSecondMetric
 		{
-			get { return _appConfiguration.SecondMetricAggregation; }
+			get { return _appConfiguration
+					.SecondMetricAggregation
+					.ConvertToEnum<EMetric>(); }
 			set
 			{
-				_appConfiguration.SecondMetricAggregation = value;
+				_appConfiguration.SecondMetricAggregation =
+					value.ConvertToString();
 				RaisePropertyChanged();
 			}
 		}
 
-		public string SelectedThirdMetric
+		public EMetric SelectedThirdMetric
 		{
-			get { return _appConfiguration.ThirdMetricAggregation; }
+			get { return _appConfiguration
+					.ThirdMetricAggregation
+					.ConvertToEnum<EMetric>(); }
 			set
 			{
-				_appConfiguration.ThirdMetricAggregation = value;
+				_appConfiguration.ThirdMetricAggregation =
+					value.ConvertToString();
 				RaisePropertyChanged();
 			}
 		}
+
+		public string SelectedRelatedMetric
+		{
+			get { return _appConfiguration.RelatedMetricAggregation; }
+			set
+			{
+				_appConfiguration.RelatedMetricAggregation = value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public int SelectedOutlierPercentage
+		{
+			get { return _appConfiguration.OutlierPercentageAggregation; }
+			set
+			{
+				_appConfiguration.OutlierPercentageAggregation = value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public Array RelatedMetricItemsSource => new[] { "Average", "Second", "Third" };
+
+		public Array OutlierPercentageItemsSource => Enumerable.Range(2, 9).ToArray();
+
+		public Array SecondMetricItems => Enum.GetValues(typeof(EMetric))
+									  .Cast<EMetric>()
+									  .Where(metric => metric != EMetric.Average)
+									  .ToArray();
+		public Array ThirdMetricItems => Enum.GetValues(typeof(EMetric))
+											 .Cast<EMetric>()
+											 .Where(metric => metric != EMetric.Average)
+											 .ToArray();
+
+
 
 		public ObservableCollection<IAggregationEntry> AggregationEntries { get; private set; }
 			= new ObservableCollection<IAggregationEntry>();

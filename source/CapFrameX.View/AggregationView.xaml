@@ -27,9 +27,9 @@
 	<Grid>
 		<DockPanel Grid.Row="1" Grid.Column="0" Margin="0 40 10 0" >
 			<!--DataGrid-->
-			<TextBlock Margin="0 0 0 10" DockPanel.Dock="Top" HorizontalAlignment="Center" Text="Aggregation table" FontSize="14"/>
-			<StackPanel DockPanel.Dock="Top" Orientation="Vertical" HorizontalAlignment="Center">
-				<DataGrid x:Name="AggregationItemDataGrid" Height="350" Width="600" Background="#F5F5F5" FontSize="11"
+            <TextBlock Margin="0 0 0 10" DockPanel.Dock="Top" HorizontalAlignment="Center" Text="Aggregation table" FontSize="14"/>
+            <StackPanel DockPanel.Dock="Top" Orientation="Vertical" HorizontalAlignment="Center">
+                <DataGrid x:Name="AggregationItemDataGrid" Height="350" Width="600" Background="#F5F5F5" FontSize="11"
 						  MouseLeave="AggregationItemDataGrid_MouseLeave"
 					      SelectedIndex="{Binding SelectedAggregationEntryIndex}" ItemsSource="{Binding AggregationEntries}"
 					      CanUserSortColumns="False" CanUserAddRows="False" AutoGenerateColumns="False"
@@ -41,28 +41,29 @@
 					      dragdrop:DragDrop.UseDefaultDragAdorner="True"
 					      dragdrop:DragDrop.DefaultDragAdornerOpacity="0.5"
 					      dragdrop:DragDrop.UseDefaultEffectDataTemplate="False">
-					<DataGrid.Columns>
-						<DataGridTextColumn Binding="{Binding GameName, Mode=OneWay}"
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Binding="{Binding GameName, Mode=OneWay}"
                                             Header="Game"
                                             IsReadOnly="True"/>
-						<DataGridTextColumn Binding="{Binding CreationDate, Mode=OneWay}"
+                        <DataGridTextColumn Binding="{Binding CreationDate, Mode=OneWay}"
                                             Header="Date"
                                             IsReadOnly="True"/>
-						<DataGridTextColumn Binding="{Binding CreationTime, Mode=OneWay}"
+                        <DataGridTextColumn Binding="{Binding CreationTime, Mode=OneWay}"
                                             Header="Time"
                                             IsReadOnly="True"/>
-						<DataGridTextColumn Binding="{Binding AverageValue, Mode=OneWay}"
+                        <DataGridTextColumn Binding="{Binding AverageValue, Mode=OneWay}"
                                             Header="Average"
                                             IsReadOnly="True"/>
-						<DataGridTextColumn Binding="{Binding SecondMetricValue, Mode=OneWay}"
+                        <DataGridTextColumn Binding="{Binding SecondMetricValue, Mode=OneWay}"
                                             Header="{Binding Path=DataContext.SelectedSecondMetric, ElementName=AggregationViewControl}"
                                             IsReadOnly="True"/>
-						<DataGridTextColumn Binding="{Binding ThirdMetricValue, Mode=OneWay}"
+                        <DataGridTextColumn Binding="{Binding ThirdMetricValue, Mode=OneWay}"
                                             Header="{Binding Path=DataContext.SelectedThirdMetric, ElementName=AggregationViewControl}"
                                             IsReadOnly="True"/>
-					</DataGrid.Columns>
-				</DataGrid>
-				<TextBlock HorizontalAlignment="Center" Text="Drag &amp; Drop from recording list to insert"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+                <TextBlock TextAlignment="Center" HorizontalAlignment="Center" Width="450" TextWrapping="Wrap" FontSize="17"
+                           Text="Drop items here or double click them in the record list to aggregate them manually.&#10;&#10;For automatic aggregation during benchmarks use the settings on the overlay page."/>
 			</StackPanel>
 		</DockPanel>
 	</Grid>
