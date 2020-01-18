@@ -276,16 +276,16 @@ namespace CapFrameX.Configuration
 			set { Settings.SaveAggregationOnly = value; Settings.Save(); }
 		}
 
-		public int OutlierPercentage
+		public int OutlierPercentageOverlay
 		{
-			get { return Settings.OutlierPercentage; }
-			set { Settings.OutlierPercentage = value; Settings.Save(); }
+			get { return Settings.OutlierPercentageOverlay; }
+			set { Settings.OutlierPercentageOverlay = value; Settings.Save(); }
 		}
 
-		public string RelatedMetric
+		public string RelatedMetricOverlay
 		{
-			get { return Settings.RelatedMetric; }
-			set { Settings.RelatedMetric = value; Settings.Save(); }
+			get { return Settings.RelatedMetricOverlay; }
+			set { Settings.RelatedMetricOverlay = value; Settings.Save(); }
 		}
 
 		public int InputLagOffset

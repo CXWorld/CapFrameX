@@ -132,11 +132,11 @@ namespace CapFrameX.ViewModel
 			get
 			{
 				return _appConfiguration
-				  .OutlierPercentage;
+				  .OutlierPercentageOverlay;
 			}
 			set
 			{
-				_appConfiguration.OutlierPercentage =
+				_appConfiguration.OutlierPercentageOverlay =
 					value;
 				_overlayService.ResetHistory();
 				RaisePropertyChanged();
@@ -246,11 +246,11 @@ namespace CapFrameX.ViewModel
 		{
 			get
 			{
-				return _appConfiguration.RelatedMetric;
+				return _appConfiguration.RelatedMetricOverlay;
 			}
 			set
 			{
-				_appConfiguration.RelatedMetric = value;
+				_appConfiguration.RelatedMetricOverlay = value;
 				_overlayService.ResetHistory();
 				RaisePropertyChanged();
 			}

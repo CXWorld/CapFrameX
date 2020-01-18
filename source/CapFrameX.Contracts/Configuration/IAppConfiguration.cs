@@ -92,9 +92,9 @@
 
 		bool SaveAggregationOnly { get; set; }
 
-		int OutlierPercentage { get; set; }
+		int OutlierPercentageOverlay { get; set; }
 
-		string RelatedMetric { get; set; }
+		string RelatedMetricOverlay { get; set; }
 
 		int InputLagOffset { get; set; }
 	}

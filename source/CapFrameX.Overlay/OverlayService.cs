@@ -269,15 +269,15 @@ namespace CapFrameX.Overlay
 			var secondMetricValues = _metricAnalysis.Select(analysis => analysis.Second).ToList();
 			var thirdMetricValues = _metricAnalysis.Select(analysis => analysis.Third).ToList();
 
-			if (_appConfiguration.RelatedMetric == "Average")
+			if (_appConfiguration.RelatedMetricOverlay == "Average")
 			{
 				SetOutlierFlags(averageValues);
 			}
-			else if (_appConfiguration.RelatedMetric == "Second")
+			else if (_appConfiguration.RelatedMetricOverlay == "Second")
 			{
 				SetOutlierFlags(secondMetricValues);
 			}
-			else if (_appConfiguration.RelatedMetric == "Third")
+			else if (_appConfiguration.RelatedMetricOverlay == "Third")
 			{
 				SetOutlierFlags(thirdMetricValues);
 			}
@@ -289,7 +289,7 @@ namespace CapFrameX.Overlay
 
 			for (int i = 0; i < values.Count; i++)
 			{
-				if ((Math.Abs(values[i] - median) / median) * 100 > (double)_appConfiguration.OutlierPercentage)
+				if ((Math.Abs(values[i] - median) / median) * 100 > (double)_appConfiguration.OutlierPercentageOverlay)
 				{
 					_runHistoryOutlierFlags[i] = true;
 				}
