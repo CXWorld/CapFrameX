@@ -12,6 +12,7 @@ using Prism.Regions;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Windows;
 
@@ -26,6 +27,7 @@ namespace CapFrameX.ViewModel
 
 		private bool _useUpdateSession;
 		private int _selectedAggregationEntryIndex = -1;
+		private bool _showHelpText = true;
 
 		public int SelectedAggregationEntryIndex
 		{
@@ -89,6 +91,16 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
+		public bool ShowHelpText
+		{
+			get { return _showHelpText; }
+			set
+			{
+				_showHelpText = value;
+				RaisePropertyChanged();
+			}
+		}
+
 		public Array RelatedMetricItemsSource => new[] { "Average", "Second", "Third" };
 
 		public Array OutlierPercentageItemsSource => Enumerable.Range(2, 9).ToArray();
@@ -116,6 +128,9 @@ namespace CapFrameX.ViewModel
 			_appConfiguration = appConfiguration;
 
 			SubscribeToUpdateSession();
+
+			AggregationEntries.CollectionChanged += new NotifyCollectionChangedEventHandler
+				((sender, eventArg) => ShowHelpText = !AggregationEntries.Any());
 		}
 
 		private void SubscribeToUpdateSession()
