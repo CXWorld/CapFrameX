@@ -293,5 +293,17 @@ namespace CapFrameX.Configuration
 			get { return Settings.InputLagOffset; }
 			set { Settings.InputLagOffset = value; Settings.Save(); }
 		}
+
+		public string SecondMetricAggregation
+		{
+			get { return Settings.SecondMetricAggregation; }
+			set { Settings.SecondMetricAggregation = value; Settings.Save(); }
+		}
+
+		public string ThirdMetricAggregation
+		{
+			get { return Settings.ThirdMetricAggregation; }
+			set { Settings.ThirdMetricAggregation = value; Settings.Save(); }
+		}
 	}
 }

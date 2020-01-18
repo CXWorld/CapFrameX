@@ -97,5 +97,9 @@
 		string RelatedMetricOverlay { get; set; }
 
 		int InputLagOffset { get; set; }
+
+		string SecondMetricAggregation { get; set; }
+
+		string ThirdMetricAggregation { get; set; }
 	}
 }

@@ -20,8 +20,6 @@ namespace CapFrameX.ViewModel
 
 		private bool _useUpdateSession;
 		private int _selectedAggregationEntryIndex = -1;
-		private string _selectedSecondMetric;
-		private string _selectedThirdMetric;
 
 		public int SelectedAggregationEntryIndex
 		{
