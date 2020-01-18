@@ -1,96 +1,65 @@
-﻿using CapFrameX.Contracts.Configuration;
+﻿using CapFrameX.Contracts.Aggregation;
+using CapFrameX.Contracts.Configuration;
+using CapFrameX.Contracts.Data;
 using CapFrameX.EventAggregation.Messages;
-using CapFrameX.Data;
-using OxyPlot;
-using OxyPlot.Axes;
-using OxyPlot.Series;
+using GongSolutions.Wpf.DragDrop;
 using Prism.Events;
 using Prism.Mvvm;
 using Prism.Regions;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reactive.Linq;
+using System;
+using System.Collections.ObjectModel;
 using System.Windows;
-using CapFrameX.Contracts.PresentMonInterface;
 
 namespace CapFrameX.ViewModel
 {
-	public class AggregationViewModel : BindableBase, INavigationAware
+	public class AggregationViewModel : BindableBase, INavigationAware, IDropTarget
 	{
-		// make UI parameter
-		const double SELECTABLETIME = 10d;
-
-		private readonly IRecordDirectoryObserver _recordObserver;
+		private readonly IRecordDataProvider _recordDataProvider;
 		private readonly IEventAggregator _eventAggregator;
 		private readonly IAppConfiguration _appConfiguration;
 
-		private PlotModel _frametimeModel;
-		private bool _useUpdateSession = false;
-		private double _timeOffset;
-		private double _bufferStartTime;
-		private double _selectableTime;
-		private double _scrollEndTime;
-		private Session _session;
-		private IEnumerable<Point> _points;
+		private bool _useUpdateSession;
+		private int _selectedAggregationEntryIndex = -1;
+		private string _selectedSecondMetric;
+		private string _selectedThirdMetric;
 
-		public PlotModel FrametimeModel
+		public int SelectedAggregationEntryIndex
 		{
-			get { return _frametimeModel; }
+			get { return _selectedAggregationEntryIndex; }
 			set
 			{
-				if (_frametimeModel != value)
-				{
-					_frametimeModel = value;
-					RaisePropertyChanged();
-				}
-			}
-		}
-
-		public double TimeOffset
-		{
-			get { return _timeOffset; }
-			set
-			{
-				_timeOffset = value;
-				RaisePropertyChanged();
-				OnTimeOffsetChanged();
-			}
-		}
-
-		public double BufferStartTime
-		{
-			get { return _bufferStartTime; }
-			set
-			{
-				_bufferStartTime = value;
+				_selectedAggregationEntryIndex = value;
 				RaisePropertyChanged();
 			}
 		}
 
-		public double ScrollEndTime
+		public string SelectedSecondMetric
 		{
-			get { return _scrollEndTime; }
+			get { return _appConfiguration.SecondMetricAggregation; }
 			set
 			{
-				_scrollEndTime = value;
+				_appConfiguration.SecondMetricAggregation = value;
 				RaisePropertyChanged();
 			}
 		}
 
-		public double SelectableTime
+		public string SelectedThirdMetric
 		{
-			get { return _selectableTime; }
+			get { return _appConfiguration.ThirdMetricAggregation; }
 			set
 			{
-				_selectableTime = value;
+				_appConfiguration.ThirdMetricAggregation = value;
 				RaisePropertyChanged();
 			}
 		}
 
-		public AggregationViewModel(IRecordDirectoryObserver recordObserver,
+		public ObservableCollection<IAggregationEntry> AggregationEntries { get; private set; }
+			= new ObservableCollection<IAggregationEntry>();
+
+		public AggregationViewModel(IRecordDataProvider recordDataProvider,
 			IEventAggregator eventAggregator, IAppConfiguration appConfiguration)
 		{
-			_recordObserver = recordObserver;
+			_recordDataProvider = recordDataProvider;
 			_eventAggregator = eventAggregator;
 			_appConfiguration = appConfiguration;
 
@@ -104,71 +73,14 @@ namespace CapFrameX.ViewModel
 							{
 								if (_useUpdateSession)
 								{
-									_session = msg.CurrentSession;
-									_points = _session?.FrameTimes.Select((ft, i) => new Point(_session.FrameStart[i], ft));
-
-									if (_points == null || !_points.Any())
-										return;
-
-									_timeOffset = _points.First().X;
-									BufferStartTime = _points.First().X;
-									ScrollEndTime = _points.Last().X - SELECTABLETIME;
-									SelectableTime = SELECTABLETIME;
-
-									var tmp = new PlotModel
-									{
-										PlotMargins = new OxyThickness(40, 10, 10, 40),
-										PlotAreaBorderColor = OxyColor.FromArgb(64, 204, 204, 204)									
-									};
-
-									// Frametime graph
-									var ls = new LineSeries { Title = "Test samples", StrokeThickness = 1, Color = OxyColor.FromRgb(139, 35, 35) };
-
-									var slidingWindow = _points.Where(p => p.X >= TimeOffset && p.X <= TimeOffset + SelectableTime);
-									var yMin = slidingWindow.Min(pnt => pnt.Y);
-									var yMax = slidingWindow.Max(pnt => pnt.Y);
-									double minXWindow = slidingWindow.First().X;
-									foreach (var point in slidingWindow)
-									{
-										ls.Points.Add(new DataPoint(point.X - minXWindow, point.Y));
-									}
-
-									tmp.Series.Add(ls);
-
-									//Axes
-									//X
-									tmp.Axes.Add(new LinearAxis()
-									{
-										Key = "xAxis",
-										Position = AxisPosition.Bottom,
-										Title = "Time [s]",
-										Minimum = _points.First().X,
-										Maximum = SELECTABLETIME,
-										MajorGridlineStyle = LineStyle.Solid,
-										MajorGridlineThickness = 1,
-										MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
-										MinorTickSize = 0,
-										MajorTickSize = 0
-									});								
-
-									//Y
-									tmp.Axes.Add(new LinearAxis()
-									{
-										Key = "yAxis",
-										Position = AxisPosition.Left,
-										Title = "Frametimes [ms]",
-										Minimum = yMin - (yMax - yMin)/ 6,
-										Maximum = yMax + (yMax - yMin) / 6,
-										MajorGridlineStyle = LineStyle.Solid,
-										MajorGridlineThickness = 1,
-										MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
-										MinorTickSize = 0,
-										MajorTickSize = 0
-									});
-
-									FrametimeModel = tmp;
+									AddAggregationEntry(msg.RecordInfo);
 								}
 							});
+		}
+
+		private void AddAggregationEntry(IFileRecordInfo recordInfo)
+		{ 
+			throw new NotImplementedException();
 		}
 
 		public void OnNavigatedTo(NavigationContext navigationContext)
@@ -186,24 +98,30 @@ namespace CapFrameX.ViewModel
 			_useUpdateSession = false;
 		}
 
-		private void OnTimeOffsetChanged()
+		void IDropTarget.Drop(IDropInfo dropInfo)
 		{
-			if (_points == null || !_points.Any())
-				return;			
-
-			// Update frametime graph sliding window
-			var ls = new LineSeries { Title = "Test samples", StrokeThickness = 1, Color = OxyColor.FromRgb(139, 35, 35) };
-
-			var slidingWindow = _points.Where(p => p.X >= TimeOffset && p.X <= TimeOffset + SelectableTime);
-			double minXWindow = slidingWindow.First().X;
-			foreach (var point in slidingWindow)
+			if (dropInfo != null)
 			{
-				ls.Points.Add(new DataPoint(point.X - minXWindow, point.Y));
+				if (dropInfo.VisualTarget is FrameworkElement frameworkElement)
+				{
+					if (frameworkElement.Name == "AggregationItemDataGrid")
+					{
+						if (dropInfo.Data is IFileRecordInfo recordInfo)
+						{
+							AddAggregationEntry(recordInfo);
+						}
+					}
+				}
 			}
+		}
 
-			FrametimeModel.Series.Clear();
-			FrametimeModel.Series.Add(ls);
-			FrametimeModel.InvalidatePlot(true);
+		void IDropTarget.DragOver(IDropInfo dropInfo)
+		{
+			if (dropInfo != null)
+			{
+				dropInfo.DropTargetAdorner = DropTargetAdorners.Highlight;
+				dropInfo.Effects = DragDropEffects.Move;
+			}
 		}
 	}
 }

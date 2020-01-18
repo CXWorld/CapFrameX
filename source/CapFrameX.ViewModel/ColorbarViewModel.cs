@@ -418,6 +418,11 @@ namespace CapFrameX.ViewModel
 			_regionManager.RequestNavigate("DataRegion", "DataView");
 		}
 
+		private void OnAggregationIsCheckedChanged()
+		{
+			_regionManager.RequestNavigate("DataRegion", "AggregationView");
+		}
+
 		private void OnRecordComparisonIsCheckedChanged()
 		{
 			_regionManager.RequestNavigate("DataRegion", "ComparisonView");
@@ -431,11 +436,6 @@ namespace CapFrameX.ViewModel
 		private void OnSynchronizationIsCheckedChanged()
 		{
 			_regionManager.RequestNavigate("DataRegion", "SynchronizationView");
-		}
-
-		private void OnAggregationIsCheckedChanged()
-		{
-			_regionManager.RequestNavigate("DataRegion", "AggregationView");
 		}
 
 		private void OnHardwareInfoSourceChanged()

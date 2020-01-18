@@ -4,6 +4,7 @@ using CapFrameX.ViewModel;
 using Prism.Events;
 using System.ComponentModel;
 using System.Windows.Controls;
+using System.Windows.Input;
 
 namespace CapFrameX.View
 {
@@ -20,8 +21,15 @@ namespace CapFrameX.View
 			if (DesignerProperties.GetIsInDesignMode(this))
 			{
 				var appConfiguration = new CapFrameXConfiguration();
-				DataContext = new AggregationViewModel(new RecordDirectoryObserver(appConfiguration), new EventAggregator(), appConfiguration);
+				var recordDataProvider = new RecordDataProvider(new RecordDirectoryObserver(appConfiguration), appConfiguration);
+				DataContext = new AggregationViewModel(recordDataProvider, new EventAggregator(), appConfiguration);
 			}
+		}
+
+		private void AggregationItemDataGrid_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
+		{
+			(DataContext as AggregationViewModel).SelectedAggregationEntryIndex = -1;
+			Keyboard.ClearFocus();
 		}
 	}
 }

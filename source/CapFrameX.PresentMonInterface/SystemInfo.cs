@@ -42,6 +42,10 @@ namespace CapFrameX.PresentMonInterface
 			return propertyDataValue.TrimEnd();
 		}
 
+		/// <summary>
+		/// Gets the vendor name
+		/// </summary>
+		/// <returns>"NVIDIA", "Advanced Micro Devices, Inc."</returns>
 		public static string GetGraphicCardVendor()
 		{
 			string propertyDataValue = string.Empty;

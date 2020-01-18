@@ -1,9 +1,13 @@
 ﻿<UserControl x:Class="CapFrameX.View.AggregationView"
+			 x:Name="AggregationViewControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 			 xmlns:prism="http://prismlibrary.com/"
+			 xmlns:dragdrop="urn:gong-wpf-dragdrop"
+			 xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+			 xmlns:validation ="clr-namespace:CapFrameX.MVVM.Validation;assembly=CapFrameX.MVVM"
              xmlns:local="clr-namespace:CapFrameX.View"
 			 xmlns:oxy="clr-namespace:OxyPlot.Wpf;assembly=OxyPlot.Wpf"
              mc:Ignorable="d" 
@@ -20,20 +24,46 @@
 			</ResourceDictionary.MergedDictionaries>
 		</ResourceDictionary>
 	</UserControl.Resources>
-	<Grid Margin="0 10 0 0">
-		<Grid.RowDefinitions>
-			<RowDefinition Height="5*"></RowDefinition>
-			<RowDefinition Height="Auto"></RowDefinition>
-			<RowDefinition Height="3*"></RowDefinition>
-		</Grid.RowDefinitions>
-		<Grid Grid.Row="0" Background="#F5F5F5" Margin="0 0 20 0">
-			<oxy:PlotView Model="{Binding FrametimeModel}"/>
-		</Grid>
-		<ScrollBar Grid.Row="1" Margin="50 0 20 0"
-                   Value="{Binding TimeOffset}" 
-                   Minimum="{Binding BufferStartTime}" 
-                   Maximum="{Binding ScrollEndTime}" 
-                   ViewportSize="{Binding SelectableTime}" 
-				   Orientation="Horizontal" />
+	<Grid>
+		<DockPanel Grid.Row="1" Grid.Column="0" Margin="0 40 10 0" >
+			<!--DataGrid-->
+			<TextBlock Margin="0 0 0 10" DockPanel.Dock="Top" HorizontalAlignment="Center" Text="Aggregation table" FontSize="14"/>
+			<StackPanel DockPanel.Dock="Top" Orientation="Vertical" HorizontalAlignment="Center">
+				<DataGrid x:Name="AggregationItemDataGrid" Height="350" Width="600" Background="#F5F5F5" FontSize="11"
+						  MouseLeave="AggregationItemDataGrid_MouseLeave"
+					      SelectedIndex="{Binding SelectedAggregationEntryIndex}" ItemsSource="{Binding AggregationEntries}"
+					      CanUserSortColumns="False" CanUserAddRows="False" AutoGenerateColumns="False"
+					      materialDesign:DataGridAssist.CellPadding="13 8 8 8" materialDesign:DataGridAssist.ColumnHeaderPadding="8" IsSynchronizedWithCurrentItem="False"
+					      ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.CanContentScroll="True"
+					      dragdrop:DragDrop.IsDragSource="False"
+					      dragdrop:DragDrop.IsDropTarget="True"
+						  dragdrop:DragDrop.DropHandler="{Binding}"
+					      dragdrop:DragDrop.UseDefaultDragAdorner="True"
+					      dragdrop:DragDrop.DefaultDragAdornerOpacity="0.5"
+					      dragdrop:DragDrop.UseDefaultEffectDataTemplate="False">
+					<DataGrid.Columns>
+						<DataGridTextColumn Binding="{Binding GameName, Mode=OneWay}"
+                                            Header="Game"
+                                            IsReadOnly="True"/>
+						<DataGridTextColumn Binding="{Binding CreationDate, Mode=OneWay}"
+                                            Header="Date"
+                                            IsReadOnly="True"/>
+						<DataGridTextColumn Binding="{Binding CreationTime, Mode=OneWay}"
+                                            Header="Time"
+                                            IsReadOnly="True"/>
+						<DataGridTextColumn Binding="{Binding AverageValue, Mode=OneWay}"
+                                            Header="Average"
+                                            IsReadOnly="True"/>
+						<DataGridTextColumn Binding="{Binding SecondMetricValue, Mode=OneWay}"
+                                            Header="{Binding Path=DataContext.SelectedSecondMetric, ElementName=AggregationViewControl}"
+                                            IsReadOnly="True"/>
+						<DataGridTextColumn Binding="{Binding ThirdMetricValue, Mode=OneWay}"
+                                            Header="{Binding Path=DataContext.SelectedThirdMetric, ElementName=AggregationViewControl}"
+                                            IsReadOnly="True"/>
+					</DataGrid.Columns>
+				</DataGrid>
+				<TextBlock HorizontalAlignment="Center" Text="Drag &amp; Drop from recording list to insert"/>
+			</StackPanel>
+		</DockPanel>
 	</Grid>
 </UserControl>
