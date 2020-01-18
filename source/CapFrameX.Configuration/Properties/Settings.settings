@@ -140,14 +140,26 @@
     <Setting Name="SaveAggregationOnly" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
-    <Setting Name="OutlierPercentage" Type="System.Int32" Scope="User">
+    <Setting Name="OutlierPercentageOverlay" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">3</Value>
     </Setting>
-    <Setting Name="RelatedMetric" Type="System.String" Scope="User">
-      <Value Profile="(Default)">Average</Value>
+    <Setting Name="RelatedMetricOverlay" Type="System.String" Scope="User">
+      <Value Profile="(Default)">P1</Value>
     </Setting>
     <Setting Name="InputLagOffset" Type="System.Int32" Scope="User">
-      <Value Profile="(Default)">20</Value>
+      <Value Profile="(Default)">10</Value>
+    </Setting>
+    <Setting Name="SecondMetricAggregation" Type="System.String" Scope="User">
+      <Value Profile="(Default)">P1</Value>
+    </Setting>
+    <Setting Name="ThirdMetricAggregation" Type="System.String" Scope="User">
+      <Value Profile="(Default)">P0dot2</Value>
+    </Setting>
+    <Setting Name="RelatedMetricAggregation" Type="System.String" Scope="User">
+      <Value Profile="(Default)">P1</Value>
+    </Setting>
+    <Setting Name="OutlierPercentageAggregation" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">3</Value>
     </Setting>
   </Settings>
 </SettingsFile>
