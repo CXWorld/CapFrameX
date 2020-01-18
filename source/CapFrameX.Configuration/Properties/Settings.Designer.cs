@@ -589,7 +589,7 @@ namespace CapFrameX.Configuration.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("P1")]
+        [global::System.Configuration.DefaultSettingValueAttribute("Second")]
         public string RelatedMetricOverlay {
             get {
                 return ((string)(this["RelatedMetricOverlay"]));
@@ -637,7 +637,7 @@ namespace CapFrameX.Configuration.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("P1")]
+        [global::System.Configuration.DefaultSettingValueAttribute("Second")]
         public string RelatedMetricAggregation {
             get {
                 return ((string)(this["RelatedMetricAggregation"]));

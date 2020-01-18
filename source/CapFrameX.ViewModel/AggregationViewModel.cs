@@ -6,6 +6,7 @@ using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Extensions;
 using CapFrameX.Statistics;
 using GongSolutions.Wpf.DragDrop;
+using Prism.Commands;
 using Prism.Events;
 using Prism.Mvvm;
 using Prism.Regions;
@@ -15,6 +16,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Windows;
+using System.Windows.Input;
 
 namespace CapFrameX.ViewModel
 {
@@ -28,10 +30,14 @@ namespace CapFrameX.ViewModel
 		private bool _useUpdateSession;
 		private int _selectedAggregationEntryIndex = -1;
 		private bool _showHelpText = true;
+		private bool _enableButtons = false;
 
 		public int SelectedAggregationEntryIndex
 		{
-			get { return _selectedAggregationEntryIndex; }
+			get
+			{
+				return _selectedAggregationEntryIndex;
+			}
 			set
 			{
 				_selectedAggregationEntryIndex = value;
@@ -73,7 +79,10 @@ namespace CapFrameX.ViewModel
 
 		public string SelectedRelatedMetric
 		{
-			get { return _appConfiguration.RelatedMetricAggregation; }
+			get 
+			{
+				return _appConfiguration.RelatedMetricAggregation; 
+			}
 			set
 			{
 				_appConfiguration.RelatedMetricAggregation = value;
@@ -83,7 +92,10 @@ namespace CapFrameX.ViewModel
 
 		public int SelectedOutlierPercentage
 		{
-			get { return _appConfiguration.OutlierPercentageAggregation; }
+			get 
+			{
+				return _appConfiguration.OutlierPercentageAggregation;
+			}
 			set
 			{
 				_appConfiguration.OutlierPercentageAggregation = value;
@@ -93,10 +105,25 @@ namespace CapFrameX.ViewModel
 
 		public bool ShowHelpText
 		{
-			get { return _showHelpText; }
+			get
+			{
+				return _showHelpText;
+			}
 			set
 			{
 				_showHelpText = value;
+				RaisePropertyChanged();
+			}
+		}
+		public bool EnableButtons
+		{
+			get
+			{
+				return _enableButtons;
+			}
+			set
+			{
+				_enableButtons = value;
 				RaisePropertyChanged();
 			}
 		}
@@ -116,6 +143,12 @@ namespace CapFrameX.ViewModel
 
 
 
+		public ICommand ClearTableCommand { get; }
+		public ICommand AggregateIncludeCommand { get; }
+		public ICommand AggregateExcludeCommand { get; }
+
+
+
 		public ObservableCollection<IAggregationEntry> AggregationEntries { get; private set; }
 			= new ObservableCollection<IAggregationEntry>();
 
@@ -127,10 +160,17 @@ namespace CapFrameX.ViewModel
 			_eventAggregator = eventAggregator;
 			_appConfiguration = appConfiguration;
 
+			ClearTableCommand = new DelegateCommand(OnClearTable);
+			AggregateIncludeCommand = new DelegateCommand(OnAggregateInclude);
+			AggregateExcludeCommand = new DelegateCommand(OnAggregateExclude);
+
 			SubscribeToUpdateSession();
 
 			AggregationEntries.CollectionChanged += new NotifyCollectionChangedEventHandler
 				((sender, eventArg) => ShowHelpText = !AggregationEntries.Any());
+
+			AggregationEntries.CollectionChanged += new NotifyCollectionChangedEventHandler
+				((sender, eventArg) => EnableButtons = AggregationEntries.Any());
 		}
 
 		private void SubscribeToUpdateSession()
@@ -169,6 +209,24 @@ namespace CapFrameX.ViewModel
 				ThirdMetricValue = metricAnalysis.Third
 			});
 		}
+
+
+
+		private void OnClearTable()
+		{
+				AggregationEntries.Clear();	
+		}
+
+		private void OnAggregateInclude()
+		{
+
+		}
+
+		private void OnAggregateExclude()
+		{
+
+		}
+
 
 		public void OnNavigatedTo(NavigationContext navigationContext)
 		{

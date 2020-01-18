@@ -244,7 +244,6 @@
                     </TextBox>
                     <!--Metrics shown on overlay-->
                     <ComboBox  Grid.Row="1" Grid.Column="0" Width="120" materialDesign:HintAssist.Hint="Second metric" 
-					  Visibility="{Binding IsBarChartTabActive, Converter={StaticResource TrueToVisibleConverter}}"
 					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="330" materialDesign:ComboBoxAssist.ClassicMode="True"
 					  ItemsSource="{Binding SecondMetricItems}" SelectedItem="{Binding SelectedSecondMetric}"
                       ToolTip="Second metric shown in history entries">
@@ -255,7 +254,6 @@
                         </ComboBox.ItemTemplate>
                     </ComboBox>
                     <ComboBox Grid.Row="1" Grid.Column="1" Width="120" materialDesign:HintAssist.Hint="Third metric"
-					  Visibility="{Binding IsBarChartTabActive, Converter={StaticResource TrueToVisibleConverter}}"
 					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="360" materialDesign:ComboBoxAssist.ClassicMode="True"
 					  ItemsSource="{Binding ThirdMetricItems}" SelectedItem="{Binding SelectedThirdMetric}"
                       ToolTip="Third metric shown in history entries">
@@ -286,8 +284,8 @@
                   IsEnabled="{Binding UseAggregation}">
                     <Grid>
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="60"/>
                             <RowDefinition Height="50"/>
+                            <RowDefinition Height="60"/>
                         </Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="225"/>
@@ -328,8 +326,8 @@
   					     Save aggregated result only
                             </TextBlock>
                         </CheckBox>
-                        <!--Related metric-->
-                        <ComboBox Grid.Row="1" Grid.Column="0"  materialDesign:HintAssist.Hint="Related metric" materialDesign:ComboBoxAssist.ClassicMode="True"
+                        <!--Outlier metric-->
+                        <ComboBox Grid.Row="1" Grid.Column="0"  materialDesign:HintAssist.Hint="Outlier metric" materialDesign:ComboBoxAssist.ClassicMode="True"
 					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Width="120" 
 					  ItemsSource="{Binding RelatedMetricItemsSource}" SelectedItem="{Binding SelectedRelatedMetric}" 
                               ToolTipService.ShowDuration="25000">

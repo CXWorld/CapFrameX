@@ -144,7 +144,7 @@
       <Value Profile="(Default)">3</Value>
     </Setting>
     <Setting Name="RelatedMetricOverlay" Type="System.String" Scope="User">
-      <Value Profile="(Default)">P1</Value>
+      <Value Profile="(Default)">Second</Value>
     </Setting>
     <Setting Name="InputLagOffset" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">10</Value>
@@ -156,7 +156,7 @@
       <Value Profile="(Default)">P0dot2</Value>
     </Setting>
     <Setting Name="RelatedMetricAggregation" Type="System.String" Scope="User">
-      <Value Profile="(Default)">P1</Value>
+      <Value Profile="(Default)">Second</Value>
     </Setting>
     <Setting Name="OutlierPercentageAggregation" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">3</Value>
