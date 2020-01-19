@@ -336,7 +336,7 @@ namespace CapFrameX.ViewModel
 			AggregationResultString = $"Result: {resultString}";
 			ShowResultString = true;
 
-			WriteAggregatedFile(concatedFrametimesInclude);
+			WriteAggregatedFileAsync(Enumerable.Repeat(false, _fileRecordInfoList.Count).ToArray());
 		}
 
 		private void OnAggregateExclude()
@@ -362,15 +362,27 @@ namespace CapFrameX.ViewModel
 			AggregationResultString = $"Result: {resultString}";
 			ShowResultString = true;
 
-			WriteAggregatedFile(concatedFrametimesExclude);
-
+			WriteAggregatedFileAsync(outlierFlags);
 		}
 
-		private void WriteAggregatedFile(List<double> frametimes)
+		private void WriteAggregatedFileAsync(bool[] outlierFlags)
 		{
+			// write aggregated file
+			Task.Run(() =>
+			{
+				var filteredFileRecordInfoList = _fileRecordInfoList.Where((x, i) => !outlierFlags[i]);
+				var representiveHeader = _recordDataProvider.CreateHeaderLinesFromRecordInfo(filteredFileRecordInfoList.First());
 
+				IList<IList<string>> presentDataList = new List<IList<string>>();
+
+				foreach (var recordInfo in filteredFileRecordInfoList)
+				{
+					presentDataList.Add(RecordManager.LoadPresentData(recordInfo.FullPath));
+				}
+
+				_recordDataProvider.SaveAggregatedPresentData(presentDataList, representiveHeader);
+ 			});
 		}
-
 
 		public void OnNavigatedTo(NavigationContext navigationContext)
 		{

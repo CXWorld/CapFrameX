@@ -330,9 +330,9 @@ namespace CapFrameX.Data
 							}
 						}
 
-						if ( indexVSync > 0 && indexWarpMissed > 0)
+						if (indexVSync > 0 && indexWarpMissed > 0)
 						{
-							if ( double.TryParse(GetStringFromArray(values, indexVSync), NumberStyles.Any, CultureInfo.InvariantCulture, out var vSync)
+							if (double.TryParse(GetStringFromArray(values, indexVSync), NumberStyles.Any, CultureInfo.InvariantCulture, out var vSync)
 							 && int.TryParse(GetStringFromArray(values, indexWarpMissed), NumberStyles.Any, CultureInfo.InvariantCulture, out var warpMissed))
 							{
 								session.VSync.Add(vSync);
@@ -349,6 +349,54 @@ namespace CapFrameX.Data
 			}
 
 			return session;
+		}
+
+		public static IList<string> LoadPresentData(string csvFile)
+		{
+			if (string.IsNullOrWhiteSpace(csvFile))
+			{
+				return null;
+			}
+
+			if (!File.Exists(csvFile))
+			{
+				return null;
+			}
+
+			if (new FileInfo(csvFile).Length == 0)
+			{
+				return null;
+			}
+
+			var dataLines = new List<string>();
+
+			try
+			{
+				using (var reader = new StreamReader(csvFile))
+				{
+					string line = reader.ReadLine();
+
+					// skip header
+					while (line.Contains(FileRecordInfo.HEADER_MARKER))
+					{
+						line = reader.ReadLine();
+					}
+
+					//skip column header
+					_ = reader.ReadLine();
+
+					while (!reader.EndOfStream)
+					{
+						dataLines.Add(reader.ReadLine());
+					}
+				}
+
+				return dataLines;
+			}
+			catch (IOException)
+			{
+				return null;
+			}
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
