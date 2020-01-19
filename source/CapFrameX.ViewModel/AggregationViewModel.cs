@@ -249,9 +249,18 @@ namespace CapFrameX.ViewModel
 		private void AddAggregationEntry(IFileRecordInfo recordInfo, Session session)
 		{
 			if (recordInfo != null)
+			{
+				if(_fileRecordInfoList.Any())
+				{
+					if (!_fileRecordInfoList.All(info => info.ProcessName == recordInfo.ProcessName))
+						return;
+				}
+
 				_fileRecordInfoList.Add(recordInfo);
+			}
 			else
 				return;
+
 
 			List<double> frametimes = session?.FrameTimes;
 
