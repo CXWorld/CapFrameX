@@ -32,7 +32,9 @@ namespace CapFrameX.ViewModel
 		private bool _useUpdateSession;
 		private int _selectedAggregationEntryIndex = -1;
 		private bool _showHelpText = true;
-		private bool _enableButtons = false;
+		private bool _enableClearButton = false;
+		private bool _enableIncludeButton = false;
+		private bool _enableExcludeButton = false;
 		private List<IFileRecordInfo> _fileRecordInfoList = new List<IFileRecordInfo>();
 		private bool _showResultString;
 		private string _aggregationResultString = string.Empty;
@@ -41,9 +43,7 @@ namespace CapFrameX.ViewModel
 		public int SelectedAggregationEntryIndex
 		{
 			get
-			{
-				return _selectedAggregationEntryIndex;
-			}
+			{return _selectedAggregationEntryIndex;}
 			set
 			{
 				_selectedAggregationEntryIndex = value;
@@ -88,9 +88,7 @@ namespace CapFrameX.ViewModel
 		public string SelectedRelatedMetric
 		{
 			get
-			{
-				return _appConfiguration.RelatedMetricAggregation;
-			}
+			{return _appConfiguration.RelatedMetricAggregation;}
 			set
 			{
 				_appConfiguration.RelatedMetricAggregation = value;
@@ -102,9 +100,7 @@ namespace CapFrameX.ViewModel
 		public int SelectedOutlierPercentage
 		{
 			get
-			{
-				return _appConfiguration.OutlierPercentageAggregation;
-			}
+			{return _appConfiguration.OutlierPercentageAggregation;}
 			set
 			{
 				_appConfiguration.OutlierPercentageAggregation = value;
@@ -116,9 +112,7 @@ namespace CapFrameX.ViewModel
 		public bool ShowHelpText
 		{
 			get
-			{
-				return _showHelpText;
-			}
+			{return _showHelpText;}
 			set
 			{
 				_showHelpText = value;
@@ -129,9 +123,7 @@ namespace CapFrameX.ViewModel
 		public string AggregationResultString
 		{
 			get
-			{
-				return _aggregationResultString;
-			}
+			{return _aggregationResultString;}
 			set
 			{
 				_aggregationResultString = value;
@@ -142,9 +134,7 @@ namespace CapFrameX.ViewModel
 		public bool ShowResultString
 		{
 			get
-			{
-				return _showResultString;
-			}
+			{return _showResultString;}
 			set
 			{
 				_showResultString = value;
@@ -152,15 +142,33 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-		public bool EnableButtons
+		public bool EnableClearButton
 		{
 			get
-			{
-				return _enableButtons;
-			}
+			{return _enableClearButton;}
 			set
 			{
-				_enableButtons = value;
+				_enableClearButton = value;
+				RaisePropertyChanged();
+			}
+		}
+		public bool EnableIncludeButton
+		{
+			get
+			{return _enableIncludeButton;}
+			set
+			{
+				_enableIncludeButton = value;
+				RaisePropertyChanged();
+			}
+		}
+		public bool EnableExcludeButton
+		{
+			get
+			{return _enableExcludeButton;}
+			set
+			{
+				_enableExcludeButton = value;
 				RaisePropertyChanged();
 			}
 		}
@@ -209,9 +217,10 @@ namespace CapFrameX.ViewModel
 		private void OnAggregationEntriesChanged()
 		{
 			ShowHelpText = !AggregationEntries.Any();
-			EnableButtons = AggregationEntries.Any();
+			EnableClearButton = AggregationEntries.Any();
+			EnableIncludeButton = AggregationEntries.Count >= 2;
 
-			// Further analysis
+			// Outlier analysis
 			if (AggregationEntries.Count >= 2 && !_supressCollectionChanged)
 			{
 				var outlierFlags = _statisticProvider
@@ -219,7 +228,10 @@ namespace CapFrameX.ViewModel
 					_appConfiguration.RelatedMetricAggregation, _appConfiguration.OutlierPercentageAggregation);
 
 				OutlierFlagStream.OnNext(outlierFlags);
+
+				EnableExcludeButton = outlierFlags.Any(x => x == false);
 			}
+
 		}
 
 		private void SubscribeToUpdateSession()
@@ -307,28 +319,24 @@ namespace CapFrameX.ViewModel
 
 		private void OnAggregateInclude()
 		{
-			var concatedFrametimes = new List<double>();
+			var concatedFrametimesInclude = new List<double>();
 
 			foreach (var recordInfo in _fileRecordInfoList)
 			{
 				var localSession = RecordManager.LoadData(recordInfo.FullPath);
 				var frametimes = localSession?.FrameTimes;
-				concatedFrametimes.AddRange(frametimes);
+				concatedFrametimesInclude.AddRange(frametimes);
 			}
 
 			var resultString = _statisticProvider
-				.GetMetricAnalysis(concatedFrametimes,
+				.GetMetricAnalysis(concatedFrametimesInclude,
 				_appConfiguration.SecondMetricAggregation,
-				_appConfiguration.ThirdMetricAggregation).ResultString; 
+				_appConfiguration.ThirdMetricAggregation).ResultString;
 
 			AggregationResultString = $"Result: {resultString}";
 			ShowResultString = true;
 
-			// write aggregated file
-			Task.Run(async () =>
-			{
-				// await _recordDataProvider.SaveAggregatedPresentData(null);
-			});
+			WriteAggregatedFile(concatedFrametimesInclude);
 		}
 
 		private void OnAggregateExclude()
@@ -337,29 +345,32 @@ namespace CapFrameX.ViewModel
 					.GetOutlierAnalysis(AggregationEntries.Select(analysis => analysis.MetricAnalysis).ToList(),
 					_appConfiguration.RelatedMetricAggregation, _appConfiguration.OutlierPercentageAggregation);
 
-			var concatedFrametimes = new List<double>();
+			var concatedFrametimesExclude = new List<double>();
 
 			foreach (var recordInfo in _fileRecordInfoList.Where((x, i) => !outlierFlags[i]))
 			{
 				var localSession = RecordManager.LoadData(recordInfo.FullPath);
 				var frametimes = localSession?.FrameTimes;
-				concatedFrametimes.AddRange(frametimes);
+				concatedFrametimesExclude.AddRange(frametimes);
 			}
 
 			var resultString = _statisticProvider
-				.GetMetricAnalysis(concatedFrametimes,
+				.GetMetricAnalysis(concatedFrametimesExclude,
 				_appConfiguration.SecondMetricAggregation,
 				_appConfiguration.ThirdMetricAggregation).ResultString;
 
 			AggregationResultString = $"Result: {resultString}";
 			ShowResultString = true;
 
-			// write aggregated file
-			Task.Run(async () =>
-			{
-				// await _recordDataProvider.SaveAggregatedPresentData(null);
-			});
+			WriteAggregatedFile(concatedFrametimesExclude);
+
 		}
+
+		private void WriteAggregatedFile(List<double> frametimes)
+		{
+
+		}
+
 
 		public void OnNavigatedTo(NavigationContext navigationContext)
 		{
@@ -382,7 +393,7 @@ namespace CapFrameX.ViewModel
 			{
 				if (dropInfo.VisualTarget is FrameworkElement frameworkElement)
 				{
-					if (frameworkElement.Name == "AggregationItemDataGrid" 
+					if (frameworkElement.Name == "AggregationItemDataGrid"
 						|| frameworkElement.Name == "DragAndDropInfoTextTextBlock")
 					{
 						if (dropInfo.Data is IFileRecordInfo recordInfo)

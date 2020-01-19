@@ -122,12 +122,12 @@
                 <ColumnDefinition Width="2*"/>
             </Grid.ColumnDefinitions>
             <Button Grid.Row="0" Grid.Column="0" VerticalAlignment="Top" Width="135" Height="45"
-					Command="{Binding ClearTableCommand}" IsEnabled="{Binding EnableButtons}"
+					Command="{Binding ClearTableCommand}" IsEnabled="{Binding EnableClearButton}"
                     ToolTip="Remove all entries">
                 <TextBlock Text="Clear table" TextAlignment="Center"/>
             </Button>
             <Button Grid.Row="0" Grid.Column="3" VerticalAlignment="Top" Width="150" Height="45"
-					Command="{Binding AggregateIncludeCommand}" IsEnabled="{Binding EnableButtons}"
+					Command="{Binding AggregateIncludeCommand}" IsEnabled="{Binding EnableIncludeButton}"
                     ToolTipService.ShowDuration="25000">
                 <TextBlock Text="Aggregate&#10;including outliers" TextWrapping="Wrap" TextAlignment="Center"/>
                 <Button.ToolTip>
@@ -139,7 +139,7 @@
                 </Button.ToolTip>
             </Button>
             <Button Grid.Row="0" Grid.Column="4" VerticalAlignment="Top" Width="150" Height="45"
-					Command="{Binding AggregateExcludeCommand}" IsEnabled="{Binding EnableButtons}"
+					Command="{Binding AggregateExcludeCommand}" IsEnabled="{Binding EnableExcludeButton}"
                     ToolTipService.ShowDuration="25000">
                 <TextBlock Text="Aggregate excluding outliers" TextWrapping="Wrap"  TextAlignment="Center"/>
                 <Button.ToolTip>
