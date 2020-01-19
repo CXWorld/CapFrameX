@@ -34,7 +34,7 @@
 	</UserControl.Resources>
 	<Grid Margin="5 0 5 0">
 		<Grid.RowDefinitions>
-			<RowDefinition Height="45"></RowDefinition>
+			<RowDefinition Height="35"></RowDefinition>
 			<RowDefinition Height="1*"></RowDefinition>
 			<RowDefinition Height="65"></RowDefinition>
 		</Grid.RowDefinitions>
@@ -80,7 +80,7 @@
 							<ColumnDefinition Width="2*" />
 						</Grid.ColumnDefinitions>
 						<!--Display times histogram chart-->
-						<Grid Background="#F5F5F5" Grid.Column="0" Margin="0 5 0 0" >
+						<Grid Background="#F5F5F5" Grid.Column="0" Margin="0 5 0 0">
 							<lvc:CartesianChart Margin="5" Series="{Binding DisplayTimesHistogramCollection}" LegendLocation="Bottom"
 								Tag="{Binding ElementName=SynchronizationViewUserControl, Path=DataContext}" DataTooltip="{x:Null}">
 								<lvc:CartesianChart.ContextMenu>
