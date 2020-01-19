@@ -1,4 +1,5 @@
-﻿using CapFrameX.Contracts.Statistics;
+﻿using CapFrameX.Contracts.Data;
+using CapFrameX.Contracts.Statistics;
 
 namespace CapFrameX.Contracts.Aggregation
 {
@@ -17,5 +18,7 @@ namespace CapFrameX.Contracts.Aggregation
 		double ThirdMetricValue { get; }
 
 		IMetricAnalysis MetricAnalysis { get; }
+
+		IFileRecordInfo FileRecordInfo { get; }
 	}
 }

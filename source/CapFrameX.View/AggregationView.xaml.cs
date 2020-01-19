@@ -1,4 +1,5 @@
 ﻿using CapFrameX.Configuration;
+using CapFrameX.Contracts.Aggregation;
 using CapFrameX.Data;
 using CapFrameX.Statistics;
 using CapFrameX.ViewModel;
@@ -68,6 +69,20 @@ namespace CapFrameX.View
 					count++;
 				}
 			}));
+		}
+
+		private void AggregationItemDataGrid_PreviewKeyDown(object sender, KeyEventArgs e)
+		{
+			if (e.Key == Key.Delete)
+			{
+				if (AggregationItemDataGrid.SelectedItem != null)
+				{
+					var selectedItem = AggregationItemDataGrid.SelectedItem as IAggregationEntry;
+					(DataContext as AggregationViewModel).RemoveAggregationEntry(selectedItem);
+				}
+
+				e.Handled = true;
+			}
 		}
 	}
 }

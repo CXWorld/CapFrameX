@@ -52,9 +52,9 @@
 				   dragdrop:DragDrop.DefaultDragAdornerOpacity="0.5"
 				   dragdrop:DragDrop.UseDefaultEffectDataTemplate="False"/>
         <DataGrid Grid.Row="1" Grid.Column="1" x:Name="AggregationItemDataGrid" Height="275" Width="700" Background="#F5F5F5" FontSize="11"
-						  MouseLeave="AggregationItemDataGrid_MouseLeave"
+						  MouseLeave="AggregationItemDataGrid_MouseLeave" 
 					      SelectedIndex="{Binding SelectedAggregationEntryIndex}" ItemsSource="{Binding AggregationEntries}"
-					      CanUserSortColumns="False" CanUserAddRows="False" AutoGenerateColumns="False"
+					      CanUserSortColumns="False" CanUserAddRows="False" AutoGenerateColumns="False" PreviewKeyDown="AggregationItemDataGrid_PreviewKeyDown"
 					      materialDesign:DataGridAssist.CellPadding="13 8 8 8" materialDesign:DataGridAssist.ColumnHeaderPadding="8" IsSynchronizedWithCurrentItem="False"
 					      ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.CanContentScroll="True"
 					      dragdrop:DragDrop.IsDragSource="False"

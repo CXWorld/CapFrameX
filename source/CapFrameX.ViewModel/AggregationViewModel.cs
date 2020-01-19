@@ -214,6 +214,12 @@ namespace CapFrameX.ViewModel
 				((sender, eventArg) => OnAggregationEntriesChanged());
 		}
 
+		public void RemoveAggregationEntry(IAggregationEntry entry)
+		{
+			_fileRecordInfoList.Remove(entry.FileRecordInfo);
+			AggregationEntries.Remove(entry);
+		}
+
 		private void OnAggregationEntriesChanged()
 		{
 			ShowHelpText = !AggregationEntries.Any();
@@ -282,7 +288,8 @@ namespace CapFrameX.ViewModel
 				AverageValue = metricAnalysis.Average,
 				SecondMetricValue = metricAnalysis.Second,
 				ThirdMetricValue = metricAnalysis.Third,
-				MetricAnalysis = metricAnalysis
+				MetricAnalysis = metricAnalysis,
+				FileRecordInfo = recordInfo
 			});
 		}
 
