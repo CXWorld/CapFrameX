@@ -1,6 +1,7 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.Overlay;
+using CapFrameX.Contracts.Statistics;
 using CapFrameX.Data;
 using CapFrameX.Extensions;
 using CapFrameX.Statistics;
@@ -36,7 +37,7 @@ namespace CapFrameX.Overlay
 		private bool[] _runHistoryOutlierFlags;
 		private int _refreshPeriod;
 		private int _numberOfRuns;
-		private IList<MetricAnalysis> _metricAnalysis = new List<MetricAnalysis>();
+		private IList<IMetricAnalysis> _metricAnalysis = new List<IMetricAnalysis>();
 
 		public Subject<bool> IsOverlayActiveStream { get; }
 
@@ -226,7 +227,11 @@ namespace CapFrameX.Overlay
 				if (_appConfiguration.UseAggregation
 					&& RunHistoryCount == _numberOfRuns)
 				{
-					CalculateOutlierAnalysis();
+					_runHistoryOutlierFlags = _statisticProvider
+						.GetOutlierAnalysis(_metricAnalysis, 
+											_appConfiguration.RelatedMetricOverlay, 
+											_appConfiguration.OutlierPercentageOverlay);
+
 					lock (_overlayLock)
 						SetRunHistoryOutlierFlags(_runHistoryOutlierFlags);
 
@@ -261,39 +266,6 @@ namespace CapFrameX.Overlay
 		{
 			_numberOfRuns = numberOfRuns;
 			ResetHistory();
-		}
-
-		private void CalculateOutlierAnalysis()
-		{
-			var averageValues = _metricAnalysis.Select(analysis => analysis.Average).ToList();
-			var secondMetricValues = _metricAnalysis.Select(analysis => analysis.Second).ToList();
-			var thirdMetricValues = _metricAnalysis.Select(analysis => analysis.Third).ToList();
-
-			if (_appConfiguration.RelatedMetricOverlay == "Average")
-			{
-				SetOutlierFlags(averageValues);
-			}
-			else if (_appConfiguration.RelatedMetricOverlay == "Second")
-			{
-				SetOutlierFlags(secondMetricValues);
-			}
-			else if (_appConfiguration.RelatedMetricOverlay == "Third")
-			{
-				SetOutlierFlags(thirdMetricValues);
-			}
-		}
-
-		private void SetOutlierFlags(List<double> values)
-		{
-			var median = _statisticProvider.GetPQuantileSequence(values, 0.5);
-
-			for (int i = 0; i < values.Count; i++)
-			{
-				if ((Math.Abs(values[i] - median) / median) * 100 > (double)_appConfiguration.OutlierPercentageOverlay)
-				{
-					_runHistoryOutlierFlags[i] = true;
-				}
-			}
 		}
 
 		private async Task SetTaskDelayOffset()

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using CapFrameX.Contracts.Statistics;
+using System.Collections.Generic;
 
 namespace CapFrameX.Statistics
 {
@@ -22,8 +23,10 @@ namespace CapFrameX.Statistics
 
 		double GetFpsMetricValue(IList<double> sequence, EMetric metric);
 
-		List<double>[] GetDiscreteDistribution(IList<double> sequence);
+		IList<double>[] GetDiscreteDistribution(IList<double> sequence);
 
-		MetricAnalysis GetMetricAnalysis(List<double> frametimes, string secondMetric, string thirdMetric);
+		IMetricAnalysis GetMetricAnalysis(IList<double> frametimes, string secondMetric, string thirdMetric);
+
+		bool[] GetOutlierAnalysis(IList<IMetricAnalysis> metricAnalysisSet, string relatedMetric, int outlierPercentage);
 	}
 }

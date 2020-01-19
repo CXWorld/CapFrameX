@@ -24,15 +24,16 @@
 				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.DataGrid.xaml" />
 				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Slider.xaml" />
 			</ResourceDictionary.MergedDictionaries>
-            <mvvm:BoolToVisibilityConverter x:Key="TrueToVisibleConverter" FalseValue="Collapsed" TrueValue="Visible"/>
-            <mvvm:EnumDescriptionConverter x:Key="EnumDescriptionConverter"/>
+			<mvvm:BoolToVisibilityConverter x:Key="TrueToVisibleConverter" FalseValue="Collapsed" TrueValue="Visible"/>
+			<mvvm:EnumDescriptionConverter x:Key="EnumDescriptionConverter"/>
 		</ResourceDictionary>
 	</UserControl.Resources>
 	<Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="50"/>
-            <RowDefinition Height="300"/>
-            <RowDefinition Height="175"/>
+            <RowDefinition Height="Auto"/>
+			<RowDefinition Height="Auto"/>
+			<RowDefinition Height="150"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="1*"/>
@@ -41,10 +42,16 @@
         </Grid.ColumnDefinitions>
         <!--DataGrid-->
         <TextBlock Grid.Row="0" Grid.Column="1" Margin="0 25 0 0" HorizontalAlignment="Center" Text="Aggregation table" FontSize="16"/>
-        <TextBlock Grid.Row="1" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Width="450"
-                       TextAlignment="Center" TextWrapping="Wrap" FontSize="17" Visibility="{Binding ShowHelpText, Converter={StaticResource TrueToVisibleConverter}}"  Grid.ZIndex="1"                     
-                       Text="Drop items here or double click them in the record list to aggregate them manually.&#10;&#10;For automatic aggregation during benchmarks use the settings on the overlay page."/>
-        <DataGrid Grid.Row="1" Grid.Column="1" x:Name="AggregationItemDataGrid" Height="300" Width="700" Background="#F5F5F5" FontSize="11"
+		<TextBlock Grid.Row="1" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Width="450" x:Name="DragAndDropInfoTextTextBlock"
+                   TextAlignment="Center" TextWrapping="Wrap" FontSize="17" Visibility="{Binding ShowHelpText, Converter={StaticResource TrueToVisibleConverter}}"  Grid.ZIndex="1"                     
+                   Text="Drop items here or double click them in the record list to aggregate them manually.&#10;&#10;For automatic aggregation during benchmarks use the settings on the overlay page."
+				   dragdrop:DragDrop.IsDragSource="False"
+				   dragdrop:DragDrop.IsDropTarget="True"
+				   dragdrop:DragDrop.DropHandler="{Binding}"
+				   dragdrop:DragDrop.UseDefaultDragAdorner="True"
+				   dragdrop:DragDrop.DefaultDragAdornerOpacity="0.5"
+				   dragdrop:DragDrop.UseDefaultEffectDataTemplate="False"/>
+        <DataGrid Grid.Row="1" Grid.Column="1" x:Name="AggregationItemDataGrid" Height="275" Width="700" Background="#F5F5F5" FontSize="11"
 						  MouseLeave="AggregationItemDataGrid_MouseLeave"
 					      SelectedIndex="{Binding SelectedAggregationEntryIndex}" ItemsSource="{Binding AggregationEntries}"
 					      CanUserSortColumns="False" CanUserAddRows="False" AutoGenerateColumns="False"
@@ -80,8 +87,29 @@
                                             IsReadOnly="True"/>
             </DataGrid.Columns>
         </DataGrid>
-        <!--Settings-->
-        <Grid Grid.Row="2" Grid.Column="1" Margin="0 10 0 0">
+		
+		<!--Result Line-->
+		<TextBox Grid.Row="2" Grid.Column="1" Margin="0 5 0 0" Visibility="{Binding ShowResultString, Converter={StaticResource TrueToVisibleConverter}}" IsReadOnly="True" BorderThickness="0"
+				 VerticalAlignment="Top"  HorizontalAlignment="Center" FontSize="16" Text="{Binding AggregationResultString}">
+			<TextBox.Style>
+				<Style>
+					<Style.Triggers>
+						<Trigger Property="TextBox.Visibility" Value="Visible">
+							<Trigger.EnterActions>
+								<BeginStoryboard>
+									<Storyboard>
+										<DoubleAnimation From="0" To="25" Storyboard.TargetProperty="Height" Duration="0:00:00.5"/>
+									</Storyboard>
+								</BeginStoryboard>
+							</Trigger.EnterActions>
+						</Trigger>
+					</Style.Triggers>
+				</Style>
+			</TextBox.Style>
+		</TextBox>
+		
+		<!--Settings-->
+        <Grid Grid.Row="3" Grid.Column="1" Margin="0 10 0 0">
             <Grid.RowDefinitions>
                 <RowDefinition Height="1*"/>
                 <RowDefinition Height="1*"/>

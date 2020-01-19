@@ -1,6 +1,8 @@
-﻿namespace CapFrameX.Statistics
+﻿using CapFrameX.Contracts.Statistics;
+
+namespace CapFrameX.Statistics
 {
-	public class MetricAnalysis
+	public class MetricAnalysis : IMetricAnalysis
 	{
 		public string ResultString { get; set; }
 		public double Average { get; set; }

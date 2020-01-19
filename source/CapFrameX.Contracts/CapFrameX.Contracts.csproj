@@ -83,6 +83,7 @@
     <Compile Include="PresentMonInterface\IServiceStartInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Overlay\IOverlayService.cs" />
+    <Compile Include="Statistics\IMetricAnalysis.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

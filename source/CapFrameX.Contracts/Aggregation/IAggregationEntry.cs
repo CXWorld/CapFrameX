@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using CapFrameX.Contracts.Statistics;
 
 namespace CapFrameX.Contracts.Aggregation
 {
@@ -19,5 +15,7 @@ namespace CapFrameX.Contracts.Aggregation
 		double SecondMetricValue { get; }
 
 		double ThirdMetricValue { get; }
+
+		IMetricAnalysis MetricAnalysis { get; }
 	}
 }

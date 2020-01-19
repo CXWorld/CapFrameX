@@ -1,4 +1,5 @@
 ﻿using CapFrameX.Contracts.Configuration;
+using CapFrameX.Contracts.Statistics;
 using CapFrameX.Extensions;
 using MathNet.Numerics.Statistics;
 using System;
@@ -181,7 +182,7 @@ namespace CapFrameX.Statistics
 			return Math.Round(metricValue, _appConfiguration.FpsValuesRoundingDigits);
 		}
 
-		public List<double>[] GetDiscreteDistribution(IList<double> sequence)
+		public IList<double>[] GetDiscreteDistribution(IList<double> sequence)
 		{
 			var min = sequence.Min();
 			var max = sequence.Max();
@@ -249,7 +250,7 @@ namespace CapFrameX.Statistics
 			return counts;
 		}
 
-		private List<double>[] Distribution(IList<double> data, double[] binEdges)
+		private IList<double>[] Distribution(IList<double> data, double[] binEdges)
 		{
 			List<double>[] counts = new List<double>[binEdges.Length - 1];
 
@@ -283,34 +284,74 @@ namespace CapFrameX.Statistics
 			return output;
 		}
 
-		public MetricAnalysis GetMetricAnalysis(List<double> frametimes, string secondMetric, string thirdMetric)
+		public IMetricAnalysis GetMetricAnalysis(IList<double> frametimes, string secondMetric, string thirdMetric)
 		{
-				var average = GetFpsMetricValue(frametimes, EMetric.Average);
-				var secondMetricValue = GetFpsMetricValue(frametimes, secondMetric.ConvertToEnum<EMetric>());
-				var thrirdMetricValue = GetFpsMetricValue(frametimes, thirdMetric.ConvertToEnum<EMetric>());
-				string numberFormat = string.Format("F{0}", _appConfiguration.FpsValuesRoundingDigits);
-				var cultureInfo = CultureInfo.InvariantCulture;
+			var average = GetFpsMetricValue(frametimes, EMetric.Average);
+			var secondMetricValue = GetFpsMetricValue(frametimes, secondMetric.ConvertToEnum<EMetric>());
+			var thrirdMetricValue = GetFpsMetricValue(frametimes, thirdMetric.ConvertToEnum<EMetric>());
+			string numberFormat = string.Format("F{0}", _appConfiguration.FpsValuesRoundingDigits);
+			var cultureInfo = CultureInfo.InvariantCulture;
 
-				string secondMetricString =
-					secondMetric.ConvertToEnum<EMetric>() != EMetric.None ?
-					$"{secondMetric.ConvertToEnum<EMetric>().GetShortDescription()}=" +
-					$"{secondMetricValue.ToString(numberFormat, cultureInfo)} " +
-					$"FPS | " : string.Empty;
+			string secondMetricString =
+				secondMetric.ConvertToEnum<EMetric>() != EMetric.None ?
+				$"{secondMetric.ConvertToEnum<EMetric>().GetShortDescription()}=" +
+				$"{secondMetricValue.ToString(numberFormat, cultureInfo)} " +
+				$"FPS | " : string.Empty;
 
-				string thirdMetricString =
-					thirdMetric.ConvertToEnum<EMetric>() != EMetric.None ?
-					$"{thirdMetric.ConvertToEnum<EMetric>().GetShortDescription()}=" +
-					$"{thrirdMetricValue.ToString(numberFormat, cultureInfo)} " +
-					$"FPS" : string.Empty;
+			string thirdMetricString =
+				thirdMetric.ConvertToEnum<EMetric>() != EMetric.None ?
+				$"{thirdMetric.ConvertToEnum<EMetric>().GetShortDescription()}=" +
+				$"{thrirdMetricValue.ToString(numberFormat, cultureInfo)} " +
+				$"FPS" : string.Empty;
 
-				return new MetricAnalysis()
+			return new MetricAnalysis()
+			{
+				ResultString = $"Avg={average.ToString(numberFormat, cultureInfo)} " +
+				$"FPS | " + secondMetricString + thirdMetricString,
+				Average = average,
+				Second = secondMetricValue,
+				Third = thrirdMetricValue
+			};
+		}
+
+		public bool[] GetOutlierAnalysis(IList<IMetricAnalysis> metricAnalysisSet, string relatedMetric, int outlierPercentage)
+		{
+			var averageValues = metricAnalysisSet.Select(analysis => analysis.Average).ToList();
+			var secondMetricValues = metricAnalysisSet.Select(analysis => analysis.Second).ToList();
+			var thirdMetricValues = metricAnalysisSet.Select(analysis => analysis.Third).ToList();
+
+			bool[] outlierFlags = Enumerable.Repeat(false, metricAnalysisSet.Count).ToArray();
+
+			if (relatedMetric == "Average")
+			{
+				outlierFlags = GetOutlierFlags(averageValues, outlierPercentage);
+			}
+			else if (relatedMetric == "Second")
+			{
+				outlierFlags = GetOutlierFlags(secondMetricValues, outlierPercentage);
+			}
+			else if (relatedMetric == "Third")
+			{
+				outlierFlags = GetOutlierFlags(thirdMetricValues, outlierPercentage);
+			}
+
+			return outlierFlags;
+		}
+
+		private bool[] GetOutlierFlags(IList<double> metricValues, int outlierPercentage)
+		{
+			bool[] outlierFlags = Enumerable.Repeat(false, metricValues.Count).ToArray();
+			var median = GetPQuantileSequence(metricValues, 0.5);
+			
+			for (int i = 0; i < metricValues.Count; i++)
+			{
+				if ((Math.Abs(metricValues[i] - median) / median) * 100d > outlierPercentage)
 				{
-					ResultString = $"Avg={average.ToString(numberFormat, cultureInfo)} " +
-					$"FPS | " + secondMetricString + thirdMetricString,
-					Average = average,
-					Second = secondMetricValue,
-					Third = thrirdMetricValue
-				};
+					outlierFlags[i] = true;
+				}
+			}
+
+			return outlierFlags;
 		}
 	}
 }

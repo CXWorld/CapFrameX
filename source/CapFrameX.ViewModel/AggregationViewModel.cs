@@ -15,6 +15,8 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
+using System.Reactive.Subjects;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 
@@ -31,6 +33,10 @@ namespace CapFrameX.ViewModel
 		private int _selectedAggregationEntryIndex = -1;
 		private bool _showHelpText = true;
 		private bool _enableButtons = false;
+		private List<IFileRecordInfo> _fileRecordInfoList = new List<IFileRecordInfo>();
+		private bool _showResultString;
+		private string _aggregationResultString = string.Empty;
+		private bool _supressCollectionChanged;
 
 		public int SelectedAggregationEntryIndex
 		{
@@ -57,6 +63,7 @@ namespace CapFrameX.ViewModel
 			{
 				_appConfiguration.SecondMetricAggregation =
 					value.ConvertToString();
+				UpdateAggregationEntries();
 				RaisePropertyChanged();
 			}
 		}
@@ -73,32 +80,35 @@ namespace CapFrameX.ViewModel
 			{
 				_appConfiguration.ThirdMetricAggregation =
 					value.ConvertToString();
+				UpdateAggregationEntries();
 				RaisePropertyChanged();
 			}
 		}
 
 		public string SelectedRelatedMetric
 		{
-			get 
+			get
 			{
-				return _appConfiguration.RelatedMetricAggregation; 
+				return _appConfiguration.RelatedMetricAggregation;
 			}
 			set
 			{
 				_appConfiguration.RelatedMetricAggregation = value;
+				UpdateAggregationEntries();
 				RaisePropertyChanged();
 			}
 		}
 
 		public int SelectedOutlierPercentage
 		{
-			get 
+			get
 			{
 				return _appConfiguration.OutlierPercentageAggregation;
 			}
 			set
 			{
 				_appConfiguration.OutlierPercentageAggregation = value;
+				UpdateAggregationEntries();
 				RaisePropertyChanged();
 			}
 		}
@@ -115,6 +125,33 @@ namespace CapFrameX.ViewModel
 				RaisePropertyChanged();
 			}
 		}
+
+		public string AggregationResultString
+		{
+			get
+			{
+				return _aggregationResultString;
+			}
+			set
+			{
+				_aggregationResultString = value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public bool ShowResultString
+		{
+			get
+			{
+				return _showResultString;
+			}
+			set
+			{
+				_showResultString = value;
+				RaisePropertyChanged();
+			}
+		}
+
 		public bool EnableButtons
 		{
 			get
@@ -136,18 +173,17 @@ namespace CapFrameX.ViewModel
 									  .Cast<EMetric>()
 									  .Where(metric => metric != EMetric.Average)
 									  .ToArray();
+
 		public Array ThirdMetricItems => Enum.GetValues(typeof(EMetric))
 											 .Cast<EMetric>()
 											 .Where(metric => metric != EMetric.Average)
 											 .ToArray();
 
-
+		public ISubject<bool[]> OutlierFlagStream = new Subject<bool[]>();
 
 		public ICommand ClearTableCommand { get; }
 		public ICommand AggregateIncludeCommand { get; }
 		public ICommand AggregateExcludeCommand { get; }
-
-
 
 		public ObservableCollection<IAggregationEntry> AggregationEntries { get; private set; }
 			= new ObservableCollection<IAggregationEntry>();
@@ -167,10 +203,23 @@ namespace CapFrameX.ViewModel
 			SubscribeToUpdateSession();
 
 			AggregationEntries.CollectionChanged += new NotifyCollectionChangedEventHandler
-				((sender, eventArg) => ShowHelpText = !AggregationEntries.Any());
+				((sender, eventArg) => OnAggregationEntriesChanged());
+		}
 
-			AggregationEntries.CollectionChanged += new NotifyCollectionChangedEventHandler
-				((sender, eventArg) => EnableButtons = AggregationEntries.Any());
+		private void OnAggregationEntriesChanged()
+		{
+			ShowHelpText = !AggregationEntries.Any();
+			EnableButtons = AggregationEntries.Any();
+
+			// Further analysis
+			if (AggregationEntries.Count >= 2 && !_supressCollectionChanged)
+			{
+				var outlierFlags = _statisticProvider
+					.GetOutlierAnalysis(AggregationEntries.Select(analysis => analysis.MetricAnalysis).ToList(),
+					_appConfiguration.RelatedMetricAggregation, _appConfiguration.OutlierPercentageAggregation);
+
+				OutlierFlagStream.OnNext(outlierFlags);
+			}
 		}
 
 		private void SubscribeToUpdateSession()
@@ -187,6 +236,11 @@ namespace CapFrameX.ViewModel
 
 		private void AddAggregationEntry(IFileRecordInfo recordInfo, Session session)
 		{
+			if (recordInfo != null)
+				_fileRecordInfoList.Add(recordInfo);
+			else
+				return;
+
 			List<double> frametimes = session?.FrameTimes;
 
 			if (session == null)
@@ -206,27 +260,106 @@ namespace CapFrameX.ViewModel
 				CreationTime = recordInfo.CreationTime,
 				AverageValue = metricAnalysis.Average,
 				SecondMetricValue = metricAnalysis.Second,
-				ThirdMetricValue = metricAnalysis.Third
+				ThirdMetricValue = metricAnalysis.Third,
+				MetricAnalysis = metricAnalysis
 			});
 		}
 
+		private void UpdateAggregationEntries()
+		{
+			if (!_fileRecordInfoList.Any())
+				return;
 
+			AggregationEntries.Clear();
+
+			_supressCollectionChanged = true;
+			foreach (var recordInfo in _fileRecordInfoList)
+			{
+				var localSession = RecordManager.LoadData(recordInfo.FullPath);
+				var frametimes = localSession?.FrameTimes;
+
+				var metricAnalysis = _statisticProvider
+					.GetMetricAnalysis(frametimes, SelectedSecondMetric.ConvertToString(),
+						SelectedThirdMetric.ConvertToString());
+
+				AggregationEntries.Add(new AggregationEntry()
+				{
+					GameName = recordInfo.GameName,
+					CreationDate = recordInfo.CreationDate,
+					CreationTime = recordInfo.CreationTime,
+					AverageValue = metricAnalysis.Average,
+					SecondMetricValue = metricAnalysis.Second,
+					ThirdMetricValue = metricAnalysis.Third,
+					MetricAnalysis = metricAnalysis
+				});
+			}
+			_supressCollectionChanged = false;
+			OnAggregationEntriesChanged();
+		}
 
 		private void OnClearTable()
 		{
-				AggregationEntries.Clear();	
+			AggregationEntries.Clear();
+			_fileRecordInfoList.Clear();
+			AggregationResultString = string.Empty;
+			ShowResultString = false;
 		}
 
 		private void OnAggregateInclude()
 		{
+			var concatedFrametimes = new List<double>();
 
+			foreach (var recordInfo in _fileRecordInfoList)
+			{
+				var localSession = RecordManager.LoadData(recordInfo.FullPath);
+				var frametimes = localSession?.FrameTimes;
+				concatedFrametimes.AddRange(frametimes);
+			}
+
+			var resultString = _statisticProvider
+				.GetMetricAnalysis(concatedFrametimes,
+				_appConfiguration.SecondMetricAggregation,
+				_appConfiguration.ThirdMetricAggregation).ResultString; 
+
+			AggregationResultString = $"Result: {resultString}";
+			ShowResultString = true;
+
+			// write aggregated file
+			Task.Run(async () =>
+			{
+				// await _recordDataProvider.SaveAggregatedPresentData(null);
+			});
 		}
 
 		private void OnAggregateExclude()
 		{
+			var outlierFlags = _statisticProvider
+					.GetOutlierAnalysis(AggregationEntries.Select(analysis => analysis.MetricAnalysis).ToList(),
+					_appConfiguration.RelatedMetricAggregation, _appConfiguration.OutlierPercentageAggregation);
 
+			var concatedFrametimes = new List<double>();
+
+			foreach (var recordInfo in _fileRecordInfoList.Where((x, i) => !outlierFlags[i]))
+			{
+				var localSession = RecordManager.LoadData(recordInfo.FullPath);
+				var frametimes = localSession?.FrameTimes;
+				concatedFrametimes.AddRange(frametimes);
+			}
+
+			var resultString = _statisticProvider
+				.GetMetricAnalysis(concatedFrametimes,
+				_appConfiguration.SecondMetricAggregation,
+				_appConfiguration.ThirdMetricAggregation).ResultString;
+
+			AggregationResultString = $"Result: {resultString}";
+			ShowResultString = true;
+
+			// write aggregated file
+			Task.Run(async () =>
+			{
+				// await _recordDataProvider.SaveAggregatedPresentData(null);
+			});
 		}
-
 
 		public void OnNavigatedTo(NavigationContext navigationContext)
 		{
@@ -249,7 +382,8 @@ namespace CapFrameX.ViewModel
 			{
 				if (dropInfo.VisualTarget is FrameworkElement frameworkElement)
 				{
-					if (frameworkElement.Name == "AggregationItemDataGrid")
+					if (frameworkElement.Name == "AggregationItemDataGrid" 
+						|| frameworkElement.Name == "DragAndDropInfoTextTextBlock")
 					{
 						if (dropInfo.Data is IFileRecordInfo recordInfo)
 						{
@@ -264,7 +398,7 @@ namespace CapFrameX.ViewModel
 		{
 			if (dropInfo != null)
 			{
-				dropInfo.DropTargetAdorner = DropTargetAdorners.Highlight;
+				dropInfo.DropTargetAdorner = DropTargetAdorners.Insert;
 				dropInfo.Effects = DragDropEffects.Move;
 			}
 		}
