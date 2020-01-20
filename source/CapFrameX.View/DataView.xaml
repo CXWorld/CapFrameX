@@ -164,7 +164,7 @@
                                     <lvc:CartesianChart.AxisY>
 										<lvc:Axis Title="#Frames" MinValue="0" MaxValue="1.1" Foreground="Black" LabelFormatter="{Binding YAxisFormatter}">
 											<lvc:Axis.Separator>
-												<lvc:Separator Step="0.25" StrokeThickness="2" Stroke="Black"></lvc:Separator>
+												<lvc:Separator Step="0.25" StrokeThickness="0.5" Stroke="Gray"></lvc:Separator>
 											</lvc:Axis.Separator>
 										</lvc:Axis>
 
