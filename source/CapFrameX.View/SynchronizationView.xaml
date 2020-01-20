@@ -40,7 +40,7 @@
 		</Grid.RowDefinitions>
 		<TextBlock Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Bottom" FontWeight="Bold" FontSize="16" Text="{Binding CurrentGameName}"/>
 		<TabControl Grid.Row="1" Grid.Column="0">
-			<TabItem Header="Display changed times" Width="150">
+			<TabItem Header="Display changed times">
 				<Grid>
 					<Grid.RowDefinitions>
 						<RowDefinition Height="5*"></RowDefinition>
@@ -107,7 +107,7 @@
 					</Grid>
 				</Grid>
 			</TabItem>
-			<TabItem Header="Input lag approximation" Width="150">
+			<TabItem Header="Input lag approximation">
 				<Grid>
 					<Grid.RowDefinitions>
 						<RowDefinition Height="5*"></RowDefinition>
