@@ -68,7 +68,7 @@
 				<ColumnDefinition Width="1*"></ColumnDefinition>
 				<ColumnDefinition Width="Auto"></ColumnDefinition>
 			</Grid.ColumnDefinitions>
-			<materialDesign:DialogHost Margin="5 0 5 5"
+			<materialDesign:DialogHost Margin="5 0 5 0"
 									   IsOpen="{Binding MessageDialogContentIsOpen}"
 									   DialogContent="{Binding MessageDialogContent}"
 									   CloseOnClickAway="True">
@@ -101,7 +101,7 @@
 					</TabItem>
 				</TabControl>
 			</materialDesign:DialogHost>
-            <Grid Grid.Row="1" Margin="5 0 5 5" Background="#F5F5F5" Visibility="{Binding ElementName=RangeSliderActiveToggleButton, Path=IsChecked, Converter={StaticResource FalseToCollapsedConverter}}">
+            <Grid Grid.Row="1" Margin="5 0 5 0" Background="#F5F5F5" Visibility="{Binding ElementName=RangeSliderActiveToggleButton, Path=IsChecked, Converter={StaticResource FalseToCollapsedConverter}}">
                 <mahapps:RangeSlider Margin="50 10 5 30" LowerValue="{Binding FirstSeconds}" UpperValue="{Binding LastSeconds}"   
                                      Maximum="{Binding MaxRecordingTime}"                                    
 									 TickPlacement="BottomRight" TickFrequency="2.5"                                     
@@ -115,13 +115,13 @@
             </Grid>
 			<Grid Grid.Row="2" Margin="5 0 5 0">
 				<Grid.ColumnDefinitions>
-					<ColumnDefinition Width="1*" MaxWidth="800"/>
-                    <ColumnDefinition Width="5"/>
-					<ColumnDefinition Width="1*"/>
+					<ColumnDefinition Width="100*" MaxWidth="600"/>
+                    <ColumnDefinition Width="1*" MinWidth="5"/>
+					<ColumnDefinition Width="100*" MaxWidth="600"/>
 				</Grid.ColumnDefinitions>
                 <!--Statistic parameters-->
-                <Grid Background="#F5F5F5" Grid.Column="0" Margin="0 5 0 0">
-                    <lvc:CartesianChart Grid.Column="0" Margin="15 10 0 5" Series="{Binding StatisticCollection}" LegendLocation="None"
+				<Grid Background="#F5F5F5" Grid.Column="0" Margin="0 5 0 0">
+                    <lvc:CartesianChart Margin="15 10 0 5" Series="{Binding StatisticCollection}" LegendLocation="None"
 									Tag="{Binding ElementName=DataViewUserControl, Path=DataContext}" DataTooltip="{x:Null}" >
                         <lvc:CartesianChart.ContextMenu>
                             <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
@@ -141,43 +141,44 @@
                         </lvc:CartesianChart.AxisY>
                     </lvc:CartesianChart>
                 </Grid>
+				<Grid Grid.Column="1" Background="#F5F5F5" Margin="5 5 0 0">
+				</Grid>
                 <!--FPS thresholds and stuttering analysis-->
-                <DockPanel Grid.Column="2" Margin="5 5 0 0" HorizontalAlignment="Stretch" >
-                    <TabControl Background="#F5F5F5">
-                        <TabItem Header="FPS thresholds" Width="120">
-                            <Grid Background="#F5F5F5" Grid.Column="0" Margin="0 5 0 0">
-                                <lvc:CartesianChart Margin="5" Series="{Binding FPSThresholdCollection}" LegendLocation="None"
+				<Grid Grid.Column="2" Margin="5 5 0 0" >
+					<TabControl Background="#F5F5F5" >
+					<TabItem Header="FPS thresholds" Width="120">
+						<Grid Margin="0 5 0 0">
+							<lvc:CartesianChart Margin="5" Series="{Binding FPSThresholdCollection}" LegendLocation="None"
 								Tag="{Binding ElementName=DataViewUserControl, Path=DataContext}" DataTooltip="{x:Null}">
-                                    <lvc:CartesianChart.ContextMenu>
-                                        <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
-                                            <MenuItem Header="Copy threshold data" Command="{Binding CopyFPSThresholdDataCommand}"/>
-                                        </ContextMenu>
-                                    </lvc:CartesianChart.ContextMenu>
-                                    <lvc:CartesianChart.AxisX>
-                                        <lvc:Axis ShowLabels="True" BarUnit="1" Foreground="Black"
+								<lvc:CartesianChart.ContextMenu>
+									<ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
+										<MenuItem Header="Copy threshold data" Command="{Binding CopyFPSThresholdDataCommand}"/>
+									</ContextMenu>
+								</lvc:CartesianChart.ContextMenu>
+								<lvc:CartesianChart.AxisX>
+									<lvc:Axis ShowLabels="True" BarUnit="1" Foreground="Black"
                                                   Labels="{Binding FPSThresholdLabels}" LabelFormatter="{Binding XAxisFormatter}">
-                                            <lvc:Axis.Separator>
-												<lvc:Separator Step="1" IsEnabled="False"></lvc:Separator>
-                                            </lvc:Axis.Separator>
-                                        </lvc:Axis>
-                                    </lvc:CartesianChart.AxisX>
-                                    <lvc:CartesianChart.AxisY>
-										<lvc:Axis Title="#Frames" MinValue="0" MaxValue="1.1" Foreground="Black" LabelFormatter="{Binding YAxisFormatter}">
-											<lvc:Axis.Separator>
-												<lvc:Separator Step="0.25" StrokeThickness="0.5" Stroke="Gray"></lvc:Separator>
-											</lvc:Axis.Separator>
-										</lvc:Axis>
-
-									</lvc:CartesianChart.AxisY>
-                                </lvc:CartesianChart>
-                            </Grid>
-                        </TabItem>
-                        <TabItem Header="Stuttering analysis" Width="120">
-                            <lvc:PieChart Width="250" Hoverable="False" Series="{Binding StutteringStatisticCollection}" 
+										<lvc:Axis.Separator>
+											<lvc:Separator Step="1" IsEnabled="False"></lvc:Separator>
+										</lvc:Axis.Separator>
+									</lvc:Axis>
+								</lvc:CartesianChart.AxisX>
+								<lvc:CartesianChart.AxisY>
+									<lvc:Axis Title="#Frames" MinValue="0" MaxValue="1.1" Foreground="Black" LabelFormatter="{Binding YAxisFormatter}">
+										<lvc:Axis.Separator>
+											<lvc:Separator Step="0.25" StrokeThickness="0.5" Stroke="Gray"></lvc:Separator>
+										</lvc:Axis.Separator>
+									</lvc:Axis>
+								</lvc:CartesianChart.AxisY>
+							</lvc:CartesianChart>
+						</Grid>
+					</TabItem>
+					<TabItem Header="Stuttering analysis" Width="120">
+						<lvc:PieChart Width="250" Hoverable="False" Series="{Binding StutteringStatisticCollection}" 
 								  LegendLocation="Bottom" DataClick="Chart_OnDataClick"/>
-                        </TabItem>
-                    </TabControl>
-                </DockPanel>
+					</TabItem>
+				</TabControl>
+				</Grid>
 			</Grid>
 			<!--Toolbar-->
 			<Grid Grid.Row="3" Margin="5 5 5 5" Background="#e6e6e6">

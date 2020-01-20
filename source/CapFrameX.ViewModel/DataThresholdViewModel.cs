@@ -73,7 +73,8 @@ namespace CapFrameX.ViewModel
 						Values = thresholdCountValues,
 						Fill = new SolidColorBrush(Color.FromRgb(34, 151, 243)),
 						DataLabels = true,
-						LabelPoint = p => (thresholdCounts.Max() * p.Y).ToString()
+						LabelPoint = p => (thresholdCounts.Max() * p.Y).ToString(),
+						MaxColumnWidth = 40
 					}
 				};
 			}));
