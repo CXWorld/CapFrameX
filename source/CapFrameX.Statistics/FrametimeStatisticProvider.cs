@@ -12,6 +12,8 @@ namespace CapFrameX.Statistics
 {
 	public class FrametimeStatisticProvider : IStatisticProvider
 	{
+		public static readonly double[] FPSTHRESHOLDS = new double[] { 15, 30, 45, 60, 75, 90, 120, 144, 165, 240 };
+
 		private const double TAU = 0.999;
 		private readonly IAppConfiguration _appConfiguration;
 
@@ -342,7 +344,7 @@ namespace CapFrameX.Statistics
 		{
 			bool[] outlierFlags = Enumerable.Repeat(false, metricValues.Count).ToArray();
 			var median = GetPQuantileSequence(metricValues, 0.5);
-			
+
 			for (int i = 0; i < metricValues.Count; i++)
 			{
 				if ((Math.Abs(metricValues[i] - median) / median) * 100d > outlierPercentage)
@@ -352,6 +354,20 @@ namespace CapFrameX.Statistics
 			}
 
 			return outlierFlags;
+		}
+
+		public IList<int> GetFpsThresholdCounts(IList<double> frametimes)
+		{
+			var fps = frametimes.Select(ft => 1000 / ft);
+
+			var thresholds = new List<int>(FPSTHRESHOLDS.Length);
+
+			foreach (var threshold in FPSTHRESHOLDS)
+			{
+				thresholds.Add(fps.Count(val => val > threshold));
+			}
+
+			return thresholds;
 		}
 	}
 }

@@ -132,6 +132,7 @@
     <Compile Include="DataContext\FpsGraphDataContext.cs" />
     <Compile Include="DataContext\FrametimeGraphDataContext.cs" />
     <Compile Include="DataContext\GraphDataContextBase.cs" />
+    <Compile Include="DataThresholdViewModel.cs" />
     <Compile Include="DataViewModelParameterSettings.cs" />
     <Compile Include="EChartYAxisSetting.cs" />
     <Compile Include="EComparisonContext.cs" />

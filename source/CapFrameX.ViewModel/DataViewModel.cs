@@ -348,6 +348,7 @@ namespace CapFrameX.ViewModel
 			MessageDialogContent = new ContitionalMessageDialog();
 
 			InitializeStatisticParameter();
+			SetThresholdLabels();
 		}
 
 		partial void InitializeStatisticParameter();
@@ -567,6 +568,7 @@ namespace CapFrameX.ViewModel
 
 				Task.Factory.StartNew(() => SetStaticChart(subset));
 				Task.Factory.StartNew(() => SetStutteringChart(subset));
+				Task.Factory.StartNew(() => SetFpsThresholdChart(subset));
 			}
 		}
 
@@ -604,6 +606,7 @@ namespace CapFrameX.ViewModel
 			{
 				Task.Factory.StartNew(() => SetStaticChart(subset));
 				Task.Factory.StartNew(() => SetStutteringChart(subset));
+				Task.Factory.StartNew(() => SetFpsThresholdChart(subset));
 			}
 		}
 
