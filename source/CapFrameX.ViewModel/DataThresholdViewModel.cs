@@ -51,7 +51,7 @@ namespace CapFrameX.ViewModel
 		{
 			FPSThresholdLabels = FrametimeStatisticProvider.FPSTHRESHOLDS.Select(thres =>
 			{
-				return $">{thres}";
+				return $"<{thres}";
 			}).ToArray();
 		}
 
@@ -62,7 +62,7 @@ namespace CapFrameX.ViewModel
 
 			var thresholdCounts = _frametimeStatisticProvider.GetFpsThresholdCounts(frametimes);
 			var thresholdCountValues = new ChartValues<double>();
-			thresholdCountValues.AddRange(thresholdCounts.Select(val => (double)val / thresholdCounts.Max()));
+			thresholdCountValues.AddRange(thresholdCounts.Select(val => (double)val / frametimes.Count));
 
 			Application.Current.Dispatcher.BeginInvoke(new Action(() =>
 			{
@@ -73,7 +73,7 @@ namespace CapFrameX.ViewModel
 						Values = thresholdCountValues,
 						Fill = new SolidColorBrush(Color.FromRgb(34, 151, 243)),
 						DataLabels = true,
-						LabelPoint = p => (thresholdCounts.Max() * p.Y).ToString(),
+						LabelPoint = p => (frametimes.Count* p.Y).ToString(),
 						MaxColumnWidth = 40
 					}
 				};

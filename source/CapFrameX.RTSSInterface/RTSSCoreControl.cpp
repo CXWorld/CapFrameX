@@ -409,10 +409,15 @@ void RTSSCoreControl::Refresh()
 
   if (OverlayEntries.size() > 0)
   {
-    for (size_t i = 0; i < OverlayEntries.size(); i++)
+    try
     {
-      AddOverlayEntry(&groupedString, &OverlayEntries[i], bFormatTagsSupported);
+      for (size_t i = 0; i < OverlayEntries.size(); i++)
+      {
+        AddOverlayEntry(&groupedString, &OverlayEntries[i], bFormatTagsSupported);
+      }
     }
+    // ToDo: error info?
+    catch(const std::exception & e){}
   }
 
   BOOL bTruncated = FALSE;

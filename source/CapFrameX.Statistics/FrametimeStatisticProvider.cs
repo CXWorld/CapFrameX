@@ -12,7 +12,7 @@ namespace CapFrameX.Statistics
 {
 	public class FrametimeStatisticProvider : IStatisticProvider
 	{
-		public static readonly double[] FPSTHRESHOLDS = new double[] { 15, 30, 45, 60, 75, 90, 120, 144, 165, 240 };
+		public static readonly double[] FPSTHRESHOLDS = new double[] { 10, 15, 30, 45, 60, 75, 90, 120, 144, 240 }.Reverse().ToArray();
 
 		private const double TAU = 0.999;
 		private readonly IAppConfiguration _appConfiguration;
@@ -364,7 +364,7 @@ namespace CapFrameX.Statistics
 
 			foreach (var threshold in FPSTHRESHOLDS)
 			{
-				thresholds.Add(fps.Count(val => val > threshold));
+				thresholds.Add(fps.Count(val => val < threshold));
 			}
 
 			return thresholds;
