@@ -56,7 +56,7 @@ public:
       }
     }
     // catch non-CLS compliant exceptions 
-    catch(RuntimeWrappedException^)
+    catch(RuntimeWrappedException^ ex)
     {
       // ToDo: logger input
     }
@@ -85,7 +85,7 @@ public:
       }
     }
     // catch non-CLS compliant exceptions 
-    catch(RuntimeWrappedException^)
+    catch(RuntimeWrappedException^ ex)
     {
       // ToDo: logger input
     }
@@ -98,7 +98,7 @@ public:
       _coreControl->RunHistoryAggregation = aggregation;
     }
     // catch non-CLS compliant exceptions 
-    catch(RuntimeWrappedException^)
+    catch(RuntimeWrappedException^ ex)
     {
       // ToDo: logger input
     }
@@ -131,7 +131,7 @@ public:
       }
     }
     // catch non-CLS compliant exceptions 
-    catch (RuntimeWrappedException^ e)
+    catch (RuntimeWrappedException^ ex)
     {
       // ToDo: logger input
     }
