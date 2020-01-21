@@ -315,5 +315,11 @@ namespace CapFrameX.Configuration
 			get { return Settings.OutlierPercentageAggregation; }
 			set { Settings.OutlierPercentageAggregation = value; Settings.Save(); }
 		}
+
+		public bool AreThresholdsReversed
+		{
+			get { return Settings.AreThresholdsReversed; }
+			set { Settings.AreThresholdsReversed = value; Settings.Save(); }
+		}
 	}
 }

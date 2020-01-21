@@ -336,6 +336,7 @@ namespace CapFrameX.ViewModel
 			CopyLShapeQuantilesCommand = new DelegateCommand(OnCopyQuantiles);
 			CopySystemInfoCommand = new DelegateCommand(OnCopySystemInfoCommand);
 			AcceptParameterSettingsCommand = new DelegateCommand(OnAcceptParameterSettings);
+			CopyFPSThresholdDataCommand = new DelegateCommand(OnCopyFPSThresholdData);
 
 			ParameterFormatter = value => value.ToString(string.Format("F{0}",
 				_appConfiguration.FpsValuesRoundingDigits), CultureInfo.InvariantCulture);

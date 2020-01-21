@@ -7,6 +7,7 @@ using namespace System::Threading;
 using namespace System::Threading::Tasks;
 using namespace System::Collections::Generic;
 using namespace CapFrameX::Contracts::Overlay;
+using namespace System::Runtime::CompilerServices;
 
 public ref class RTSSCSharpWrapper
 {
@@ -55,7 +56,7 @@ public:
       }
     }
     // catch non-CLS compliant exceptions 
-    catch
+    catch(RuntimeWrappedException^)
     {
       // ToDo: logger input
     }
@@ -84,7 +85,7 @@ public:
       }
     }
     // catch non-CLS compliant exceptions 
-    catch
+    catch(RuntimeWrappedException^)
     {
       // ToDo: logger input
     }
@@ -92,12 +93,12 @@ public:
 
   void SetRunHistoryAggregation(String^ aggregation)
   {
-    try
+   try
     {
       _coreControl->RunHistoryAggregation = aggregation;
     }
     // catch non-CLS compliant exceptions 
-    catch
+    catch(RuntimeWrappedException^)
     {
       // ToDo: logger input
     }
@@ -130,7 +131,7 @@ public:
       }
     }
     // catch non-CLS compliant exceptions 
-    catch
+    catch (RuntimeWrappedException^ e)
     {
       // ToDo: logger input
     }
@@ -139,4 +140,3 @@ public:
 private:
   RTSSCoreControl* _coreControl;
 };
-

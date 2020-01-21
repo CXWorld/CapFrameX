@@ -5,7 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Input;
 using System.Windows.Media;
 
 namespace CapFrameX.ViewModel
@@ -47,12 +50,59 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
+		public bool ThresholdToggleButtonIsChecked
+		{
+			get { return _appConfiguration.AreThresholdsReversed; }
+			set
+			{
+				_appConfiguration.AreThresholdsReversed = value;
+				OnThresholdDirectionChanged();
+				RaisePropertyChanged();
+			}
+		}
+		public ICommand CopyFPSThresholdDataCommand { get; }
+
+		private void OnCopyFPSThresholdData()
+		{
+			var subset = GetFrametimesSubset();
+
+			if (subset != null)
+			{
+				var thresholdCounts = _frametimeStatisticProvider.GetFpsThresholdCounts(subset, ThresholdToggleButtonIsChecked);
+				StringBuilder builder = new StringBuilder();
+
+				for (int i = 0; i < FPSThresholdLabels.Length; i++)
+				{
+					builder.Append($"{FPSThresholdLabels[i]}\t{thresholdCounts[i]}" + Environment.NewLine);
+				}
+
+				Clipboard.SetDataObject(builder.ToString(), false);
+			}
+		}
+
+		private void OnThresholdDirectionChanged()
+		{
+			var subset = GetFrametimesSubset();
+
+			if (subset != null)
+			{
+				Task.Factory.StartNew(() => SetFpsThresholdChart(subset));
+				SetThresholdLabels();
+			}
+		}
+
 		private void SetThresholdLabels()
 		{
-			FPSThresholdLabels = FrametimeStatisticProvider.FPSTHRESHOLDS.Select(thres =>
-			{
-				return $"<{thres}";
-			}).ToArray();
+			if (ThresholdToggleButtonIsChecked)
+				FPSThresholdLabels = FrametimeStatisticProvider.FPSTHRESHOLDS.Reverse().Select(thres =>
+				{
+					return $">{thres}";
+				}).ToArray();
+			else
+				FPSThresholdLabels = FrametimeStatisticProvider.FPSTHRESHOLDS.Select(thres =>
+				{
+					return $"<{thres}";
+				}).ToArray();
 		}
 
 		private void SetFpsThresholdChart(IList<double> frametimes)
@@ -60,11 +110,11 @@ namespace CapFrameX.ViewModel
 			if (frametimes == null || !frametimes.Any())
 				return;
 
-			var thresholdCounts = _frametimeStatisticProvider.GetFpsThresholdCounts(frametimes);
+			var thresholdCounts = _frametimeStatisticProvider.GetFpsThresholdCounts(frametimes, ThresholdToggleButtonIsChecked);
 			var thresholdCountValues = new ChartValues<double>();
 			thresholdCountValues.AddRange(thresholdCounts.Select(val => (double)val / frametimes.Count));
 
-			Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+			Application.Current.Dispatcher.Invoke(new Action(() =>
 			{
 				FPSThresholdCollection = new SeriesCollection
 				{

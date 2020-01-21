@@ -356,18 +356,19 @@ namespace CapFrameX.Statistics
 			return outlierFlags;
 		}
 
-		public IList<int> GetFpsThresholdCounts(IList<double> frametimes)
+		public IList<int> GetFpsThresholdCounts(IList<double> frametimes, bool isReversed)
 		{
 			var fps = frametimes.Select(ft => 1000 / ft);
+			var thresholds = isReversed ? FPSTHRESHOLDS.Reverse().ToArray() : FPSTHRESHOLDS;
 
-			var thresholds = new List<int>(FPSTHRESHOLDS.Length);
+			var counts = new List<int>(thresholds.Length);
 
-			foreach (var threshold in FPSTHRESHOLDS)
+			foreach (var threshold in thresholds)
 			{
-				thresholds.Add(fps.Count(val => val < threshold));
+				counts.Add(fps.Count(val => isReversed ? val > threshold : val < threshold));
 			}
 
-			return thresholds;
+			return counts;
 		}
 	}
 }

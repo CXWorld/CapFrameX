@@ -29,6 +29,6 @@ namespace CapFrameX.Statistics
 
 		bool[] GetOutlierAnalysis(IList<IMetricAnalysis> metricAnalysisSet, string relatedMetric, int outlierPercentage);
 
-		IList<int> GetFpsThresholdCounts(IList<double> frametimes);
+		IList<int> GetFpsThresholdCounts(IList<double> frametimes, bool isReversed);
 	}
 }

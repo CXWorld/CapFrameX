@@ -106,5 +106,6 @@
 
 		int OutlierPercentageAggregation { get; set; }
 
+		bool AreThresholdsReversed { get; set; }
 	}
 }
