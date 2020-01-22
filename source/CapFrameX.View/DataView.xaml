@@ -73,32 +73,45 @@
 									   DialogContent="{Binding MessageDialogContent}"
 									   CloseOnClickAway="True">
 				<TabControl Grid.Row="0" Background="#F5F5F5" SelectedItem="{Binding SelectedChartItem}">
-					<TabItem Header="Frametimes">
-						<controls:FrametimeGraphControl DataContext="{Binding Path=FrametimeGraphDataContext}"/>
-					</TabItem>
+                    <TabItem Header="Frametimes">
+                        <Grid>
+                            <Grid Margin="25 -10 0 0" Panel.ZIndex="1" HorizontalAlignment="Right" VerticalAlignment="Top">
+                                <ComboBox Width="120" VerticalAlignment="Center" Margin="25 8 0 8" materialDesign:HintAssist.Hint="Y-axis scale"
+										materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="240" materialDesign:ComboBoxAssist.ClassicMode="True"
+										ItemsSource="{Binding ChartYAxisSettings}" SelectedItem="{Binding SelecetedChartYAxisSetting}">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}"/>
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+                            </Grid>
+                            <controls:FrametimeGraphControl DataContext="{Binding Path=FrametimeGraphDataContext}"/>
+                        </Grid>
+                    </TabItem>
 					<TabItem Header="FPS">
 						<controls:FpsGraphControl DataContext="{Binding Path=FpsGraphDataContext}"/>
 					</TabItem>
 					<TabItem Header="L-shape">
-						<lvc:CartesianChart MouseDoubleClick="ResetChart_MouseDoubleClick" Series="{Binding LShapeCollection}" Zoom="Y" 
+                        <lvc:CartesianChart MouseDoubleClick="ResetChart_MouseDoubleClick" Series="{Binding LShapeCollection}" Zoom="Y" 
 										Tag="{Binding ElementName=DataViewUserControl, Path=DataContext}" DataTooltip="{x:Null}" >
-							<lvc:CartesianChart.ContextMenu>
-								<ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
-									<MenuItem Header="Copy quantiles" Command="{Binding CopyLShapeQuantilesCommand}"/>
-								</ContextMenu>
-							</lvc:CartesianChart.ContextMenu>
-							<lvc:CartesianChart.AxisX>
-								<lvc:Axis Title="Percentiles (%)" Name="LShapeX" Foreground="Black">
-									<lvc:Axis.Separator >
-										<lvc:Separator Step="1"></lvc:Separator>
-									</lvc:Axis.Separator>
-								</lvc:Axis>
-							</lvc:CartesianChart.AxisX>
-							<lvc:CartesianChart.AxisY>
-								<lvc:Axis Title="Frametime [ms]" Name="LShapeY" Foreground="Black"/>
-							</lvc:CartesianChart.AxisY>
-						</lvc:CartesianChart>
-					</TabItem>
+                            <lvc:CartesianChart.ContextMenu>
+                                <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
+                                    <MenuItem Header="Copy quantiles" Command="{Binding CopyLShapeQuantilesCommand}"/>
+                                </ContextMenu>
+                            </lvc:CartesianChart.ContextMenu>
+                            <lvc:CartesianChart.AxisX>
+                                <lvc:Axis Title="Percentiles (%)" Name="LShapeX" Foreground="Black">
+                                    <lvc:Axis.Separator >
+                                        <lvc:Separator Step="1"></lvc:Separator>
+                                    </lvc:Axis.Separator>
+                                </lvc:Axis>
+                            </lvc:CartesianChart.AxisX>
+                            <lvc:CartesianChart.AxisY>
+                                <lvc:Axis Title="Frametime [ms]" Name="LShapeY" Foreground="Black"/>
+                            </lvc:CartesianChart.AxisY>
+                        </lvc:CartesianChart>
+                    </TabItem>
 				</TabControl>
 			</materialDesign:DialogHost>
             <Grid Grid.Row="1" Margin="5 0 5 0" Background="#F5F5F5" Visibility="{Binding ElementName=RangeSliderActiveToggleButton, Path=IsChecked, Converter={StaticResource FalseToCollapsedConverter}}">
@@ -145,73 +158,63 @@
 				</Grid>
                 <!--FPS thresholds and stuttering analysis-->
 				<Grid Grid.Column="2" Margin="5 5 0 0" >
-					<TabControl Background="#F5F5F5" >
-						<TabItem Header="FPS thresholds">
-						<Grid Margin="0 5 0 0">
-                                <Grid Margin="0 0 5 0" Panel.ZIndex="1" HorizontalAlignment="Right" VerticalAlignment="Top">
-									<ToggleButton Width="25" Height="25" Style="{StaticResource MaterialDesignActionToggleButton}"
-												  ToolTip="Change fps thresholds direction" IsChecked="{Binding ThresholdToggleButtonIsChecked}">
-										<ToggleButton.Content>
-											<materialDesign:PackIcon Width="25" Margin="-1 0 0 0"
-												Kind="LessThan" />
-										</ToggleButton.Content>
-										<materialDesign:ToggleButtonAssist.OnContent>
-											<materialDesign:PackIcon Width="25" Margin="1 0 0 0"
-												Kind="GreaterThan" />
-										</materialDesign:ToggleButtonAssist.OnContent>
-									</ToggleButton>
-								</Grid>
-							<lvc:CartesianChart Margin="5" Series="{Binding FPSThresholdCollection}" LegendLocation="None"
-								Tag="{Binding ElementName=DataViewUserControl, Path=DataContext}" DataTooltip="{x:Null}">
-								<lvc:CartesianChart.ContextMenu>
-									<ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
-										<MenuItem Header="Copy threshold data" Command="{Binding CopyFPSThresholdDataCommand}"/>
-									</ContextMenu>
-								</lvc:CartesianChart.ContextMenu>
-								<lvc:CartesianChart.AxisX>
-									<lvc:Axis ShowLabels="True" BarUnit="1" Foreground="Black"
-                                                  Labels="{Binding FPSThresholdLabels}" LabelFormatter="{Binding XAxisFormatter}">
-										<lvc:Axis.Separator>
-											<lvc:Separator Step="1" IsEnabled="False"></lvc:Separator>
-										</lvc:Axis.Separator>
-									</lvc:Axis>
-								</lvc:CartesianChart.AxisX>
-								<lvc:CartesianChart.AxisY>
-									<lvc:Axis Title="#Frames" MinValue="0" MaxValue="1.2" Foreground="Black" LabelFormatter="{Binding YAxisFormatter}">
-										<lvc:Axis.Separator>
-											<lvc:Separator Step="0.25" StrokeThickness="0.5" Stroke="Gray"></lvc:Separator>
-										</lvc:Axis.Separator>
-									</lvc:Axis>
-								</lvc:CartesianChart.AxisY>
-							</lvc:CartesianChart>
-						</Grid>
-					</TabItem>
-					<TabItem Header="Stuttering analysis">
+                    <TabControl Background="#F5F5F5" >
+                        <TabItem Header="Stuttering analysis">
 						<lvc:PieChart Width="250" Hoverable="False" Series="{Binding StutteringStatisticCollection}" 
 								  LegendLocation="Bottom" DataClick="Chart_OnDataClick"/>
 					</TabItem>
-				</TabControl>
+                        <TabItem Header="FPS thresholds">
+                            <Grid Margin="0 5 0 0">
+                                <Grid Margin="0 0 5 0" Panel.ZIndex="1" HorizontalAlignment="Right" VerticalAlignment="Top">
+                                    <ToggleButton Width="25" Height="25" Style="{StaticResource MaterialDesignActionToggleButton}"
+												  ToolTip="Change fps thresholds direction" IsChecked="{Binding ThresholdToggleButtonIsChecked}">
+                                        <ToggleButton.Content>
+                                            <materialDesign:PackIcon Width="25" Margin="-1 0 0 0"
+												Kind="LessThan" />
+                                        </ToggleButton.Content>
+                                        <materialDesign:ToggleButtonAssist.OnContent>
+                                            <materialDesign:PackIcon Width="25" Margin="1 0 0 0"
+												Kind="GreaterThan" />
+                                        </materialDesign:ToggleButtonAssist.OnContent>
+                                    </ToggleButton>
+                                </Grid>
+                                <lvc:CartesianChart Margin="5" Series="{Binding FPSThresholdCollection}" LegendLocation="None"
+								Tag="{Binding ElementName=DataViewUserControl, Path=DataContext}" DataTooltip="{x:Null}">
+                                    <lvc:CartesianChart.ContextMenu>
+                                        <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
+                                            <MenuItem Header="Copy threshold data" Command="{Binding CopyFPSThresholdDataCommand}"/>
+                                        </ContextMenu>
+                                    </lvc:CartesianChart.ContextMenu>
+                                    <lvc:CartesianChart.AxisX>
+                                        <lvc:Axis ShowLabels="True" BarUnit="1" Foreground="Black"
+                                                  Labels="{Binding FPSThresholdLabels}" LabelFormatter="{Binding XAxisFormatter}">
+                                            <lvc:Axis.Separator>
+                                                <lvc:Separator Step="1" IsEnabled="False"></lvc:Separator>
+                                            </lvc:Axis.Separator>
+                                        </lvc:Axis>
+                                    </lvc:CartesianChart.AxisX>
+                                    <lvc:CartesianChart.AxisY>
+                                        <lvc:Axis Title="#Frames" MinValue="0" MaxValue="1.2" Foreground="Black" LabelFormatter="{Binding YAxisFormatter}">
+                                            <lvc:Axis.Separator>
+                                                <lvc:Separator Step="0.25" StrokeThickness="0.5" Stroke="Gray"></lvc:Separator>
+                                            </lvc:Axis.Separator>
+                                        </lvc:Axis>
+                                    </lvc:CartesianChart.AxisY>
+                                </lvc:CartesianChart>
+                            </Grid>
+                        </TabItem>
+                    </TabControl>
 				</Grid>
 			</Grid>
 			<!--Toolbar-->
 			<Grid Grid.Row="3" Margin="5 5 5 5" Background="#e6e6e6">
-				<Grid.ColumnDefinitions>
-					<ColumnDefinition Width="Auto" />
-					<ColumnDefinition Width="Auto" />
-					<ColumnDefinition Width="Auto" />
-					<ColumnDefinition Width="1*" />
-				</Grid.ColumnDefinitions>
-				<ComboBox Grid.Column="0" Width="120" VerticalAlignment="Center" Margin="25 8 0 8" materialDesign:HintAssist.Hint="Frametime chart y-axis"
-					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="240" materialDesign:ComboBoxAssist.ClassicMode="True"
-					  ItemsSource="{Binding ChartYAxisSettings}" SelectedItem="{Binding SelecetedChartYAxisSetting}">
-					<ComboBox.ItemTemplate>
-						<DataTemplate>
-							<TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}"/>
-						</DataTemplate>
-					</ComboBox.ItemTemplate>
-				</ComboBox>
-				<StackPanel Grid.Column="3" Orientation="Horizontal" HorizontalAlignment="Right">
-					<StackPanel Margin="0 8 0 8" Orientation="Horizontal">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="1*" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0" Margin="15 8 0 8" Orientation="Horizontal">
                         <TextBlock VerticalAlignment="Center">Statistic parameter settings:</TextBlock>
                         <materialDesign:PopupBox StaysOpen="True" ToolTipService.ShowDuration="25000">
                             <materialDesign:PopupBox.ToolTip>
@@ -307,17 +310,18 @@
 							</materialDesign:Card>
 						</materialDesign:PopupBox>
 					</StackPanel>
-                    <StackPanel Margin="30 0 0 0" VerticalAlignment="Center" Orientation="Horizontal">
+                <Grid Grid.Column="3" HorizontalAlignment="Right">
+                   <StackPanel  Margin="0 0 0 0" VerticalAlignment="Center" Orientation="Horizontal">
                         <TextBlock Text="Remove outliers:"/>
                         <ToggleButton Margin="10 0 0 0" IsChecked="{Binding RemoveOutliers}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>					   
                     </StackPanel>
-					<StackPanel Margin="30 0 20 0"  Orientation="Horizontal" VerticalAlignment="Center">
-						<TextBlock VerticalAlignment="Center">Range slider:</TextBlock>
-						<ToggleButton Name="RangeSliderActiveToggleButton" Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
+                <StackPanel Margin="175 0 25 0"  Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock VerticalAlignment="Center">Range slider:</TextBlock>
+                    <ToggleButton Name="RangeSliderActiveToggleButton" Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
 									  IsChecked="{Binding IsRangeSliderActive}"/>
-					</StackPanel>
-				</StackPanel>
-			</Grid>
+                </StackPanel>
+                </Grid>
+            </Grid>
 			<Grid Margin="0 5 0 5" Grid.Row="4" Grid.Column="1" Background="#e6e6e6"/>
 			<Expander Margin="0 20 0 0" Background="#e6e6e6" Grid.Row="0" Grid.RowSpan="3" Grid.Column="1" ExpandDirection="Left">
 				<Expander.Header>
