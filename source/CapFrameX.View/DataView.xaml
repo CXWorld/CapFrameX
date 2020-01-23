@@ -75,7 +75,7 @@
 				<TabControl Grid.Row="0" Background="#F5F5F5" SelectedItem="{Binding SelectedChartItem}">
                     <TabItem Header="Frametimes">
                         <Grid>
-                            <Grid Margin="25 -10 0 0" Panel.ZIndex="1" HorizontalAlignment="Right" VerticalAlignment="Top">
+                            <Grid Margin="0 0 10 0" Panel.ZIndex="1" HorizontalAlignment="Right" VerticalAlignment="Top">
                                 <ComboBox Width="120" VerticalAlignment="Center" Margin="25 8 0 8" materialDesign:HintAssist.Hint="Y-axis scale"
 										materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="240" materialDesign:ComboBoxAssist.ClassicMode="True"
 										ItemsSource="{Binding ChartYAxisSettings}" SelectedItem="{Binding SelecetedChartYAxisSetting}">
