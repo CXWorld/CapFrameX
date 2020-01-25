@@ -5,15 +5,13 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Collections.Generic;
 using CapFrameX.Contracts.Configuration;
-using System.Threading.Tasks;
-using System.Threading;
 using CapFrameX.Contracts.PresentMonInterface;
 
 namespace CapFrameX.Data
 {
 	public class RecordDirectoryObserver : IRecordDirectoryObserver
 	{
-		private const int ACCESSTRYCOUNT = 500;
+		private const int ACCESSTRYCOUNT = 2000;
 
 		private readonly ISubject<string> _recordCreatedStream;
 		private readonly ISubject<string> _recordDeletedStream;
