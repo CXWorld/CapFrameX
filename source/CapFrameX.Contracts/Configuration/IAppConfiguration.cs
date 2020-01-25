@@ -38,6 +38,8 @@
 
 		string CaptureHotKey { get; set; }
 
+		string OverlayHotKey { get; set; }
+
 		string HotkeySoundMode { get; set; }
 
 		int CaptureTime { get; set; }
@@ -46,9 +48,13 @@
 
 		double SimpleSoundLevel { get; set; }
 
-		string SecondaryMetric { get; set; }
+		string SecondMetric { get; set; }
 
 		string ThirdMetric { get; set; }
+
+		string SecondMetricOverlay { get; set; }
+
+		string ThirdMetricOverlay { get; set; }
 
 		string ComparisonContext { get; set; }
 
@@ -68,6 +74,38 @@
 
 		string CustomGpuDescription { get; set; }
 
-		string CustomRamDescription { get; set; }		
+		string CustomRamDescription { get; set; }	
+		
+		bool IsOverlayActive { get; set; }
+
+		string ResetHistoryHotkey { get; set; }
+
+		bool UseRunHistory { get; set; }
+
+		bool UseAggregation { get; set; }
+
+		string OutlierHandling { get; set; }
+
+		int SelectedHistoryRuns { get; set; }
+
+		int OSDRefreshPeriod { get; set; }
+
+		bool SaveAggregationOnly { get; set; }
+
+		int OutlierPercentageOverlay { get; set; }
+
+		string RelatedMetricOverlay { get; set; }
+
+		int InputLagOffset { get; set; }
+
+		string SecondMetricAggregation { get; set; }
+
+		string ThirdMetricAggregation { get; set; }
+
+		string RelatedMetricAggregation { get; set; }
+
+		int OutlierPercentageAggregation { get; set; }
+
+		bool AreThresholdsReversed { get; set; }
 	}
 }

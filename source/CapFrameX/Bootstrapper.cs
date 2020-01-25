@@ -1,5 +1,4 @@
-﻿using CapFrameX.Contracts.OcatInterface;
-using CapFrameX.Data;
+﻿using CapFrameX.Data;
 using CapFrameX.Statistics;
 using DryIoc;
 using Prism.DryIoc;
@@ -17,6 +16,8 @@ using CapFrameX.Contracts.PresentMonInterface;
 using CapFrameX.PresentMonInterface;
 using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.MVVM;
+using CapFrameX.Contracts.Overlay;
+using CapFrameX.Overlay;
 
 namespace CapFrameX
 {
@@ -41,7 +42,6 @@ namespace CapFrameX
 			base.ConfigureContainer();
 
 			// Vertical components
-
 			Container.Register<IEventAggregator, EventAggregator>(Reuse.Singleton, null, null, IfAlreadyRegistered.Replace, "EventAggregator");
 			Container.Register<IAppConfiguration, CapFrameXConfiguration>(Reuse.Singleton);
 
@@ -53,7 +53,9 @@ namespace CapFrameX
 			Container.Register<IStatisticProvider, FrametimeStatisticProvider>(Reuse.Singleton);
 			Container.Register<IFrametimeAnalyzer, FrametimeAnalyzer>(Reuse.Singleton);
 			Container.Register<ICaptureService, PresentMonCaptureService>(Reuse.Singleton);
-            Container.Register<IRecordDataProvider, RecordDataProvider>(Reuse.Singleton);			
+			Container.Register<IOverlayService, OverlayService>(Reuse.Singleton);
+			Container.Register<IOverlayEntryProvider, OverlayEntryProvider>(Reuse.Singleton);
+			Container.Register<IRecordDataProvider, RecordDataProvider>(Reuse.Singleton);
 		}
 
 		/// <summary>

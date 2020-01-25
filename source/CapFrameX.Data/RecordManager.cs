@@ -87,30 +87,32 @@ namespace CapFrameX.Data
 		{
 			var systemInfos = new List<SystemInfoEntry>();
 
-			if (recordInfo.MotherboardName != null)
-				systemInfos.Add(new SystemInfoEntry() { Key = "Motherboard", Value = recordInfo.MotherboardName });
-			if (recordInfo.OsVersion != null)
-				systemInfos.Add(new SystemInfoEntry() { Key = "OS Version", Value = recordInfo.OsVersion });
-			if (recordInfo.ProcessorName != null)
-				systemInfos.Add(new SystemInfoEntry() { Key = "Processor", Value = recordInfo.ProcessorName });
-			if (recordInfo.SystemRamInfo != null)
-				systemInfos.Add(new SystemInfoEntry() { Key = "System RAM Info", Value = recordInfo.SystemRamInfo });
-			if (recordInfo.BaseDriverVersion != null)
-				systemInfos.Add(new SystemInfoEntry() { Key = "Base Driver Version", Value = recordInfo.BaseDriverVersion });
-			if (recordInfo.DriverPackage != null)
-				systemInfos.Add(new SystemInfoEntry() { Key = "Driver Package", Value = recordInfo.DriverPackage });
-			if (recordInfo.NumberGPUs != null)
-				systemInfos.Add(new SystemInfoEntry() { Key = "GPU #", Value = recordInfo.NumberGPUs });
-			if (recordInfo.GraphicCardName != null)
-				systemInfos.Add(new SystemInfoEntry() { Key = "Graphic Card", Value = recordInfo.GraphicCardName });
-			if (recordInfo.GPUCoreClock != null)
-				systemInfos.Add(new SystemInfoEntry() { Key = "GPU Core Clock (MHz)", Value = recordInfo.GPUCoreClock });
-			if (recordInfo.GPUMemoryClock != null)
-				systemInfos.Add(new SystemInfoEntry() { Key = "GPU Memory Clock (MHz)", Value = recordInfo.GPUMemoryClock });
-			if (recordInfo.GPUMemory != null)
-				systemInfos.Add(new SystemInfoEntry() { Key = "GPU Memory (MB)", Value = recordInfo.GPUMemory });
-			if (recordInfo.Comment != null)
+			if (!string.IsNullOrWhiteSpace(recordInfo.CreationDate))
+				systemInfos.Add(new SystemInfoEntry() { Key = "Creation Date & Time", Value = recordInfo.CreationDate + "  |  " + recordInfo.CreationTime });
+			if (!string.IsNullOrWhiteSpace(recordInfo.Comment))
 				systemInfos.Add(new SystemInfoEntry() { Key = "Comment", Value = recordInfo.Comment });
+			if (!string.IsNullOrWhiteSpace(recordInfo.ProcessorName))
+				systemInfos.Add(new SystemInfoEntry() { Key = "Processor", Value = recordInfo.ProcessorName });
+			if (!string.IsNullOrWhiteSpace(recordInfo.SystemRamInfo))
+				systemInfos.Add(new SystemInfoEntry() { Key = "System RAM", Value = recordInfo.SystemRamInfo });
+			if (!string.IsNullOrWhiteSpace(recordInfo.GraphicCardName))
+				systemInfos.Add(new SystemInfoEntry() { Key = "Graphics Card", Value = recordInfo.GraphicCardName });
+			if (!string.IsNullOrWhiteSpace(recordInfo.MotherboardName))
+				systemInfos.Add(new SystemInfoEntry() { Key = "Motherboard", Value = recordInfo.MotherboardName });
+			if (!string.IsNullOrWhiteSpace(recordInfo.OsVersion))
+				systemInfos.Add(new SystemInfoEntry() { Key = "OS Version", Value = recordInfo.OsVersion });
+			if (!string.IsNullOrWhiteSpace(recordInfo.NumberGPUs))
+				systemInfos.Add(new SystemInfoEntry() { Key = "GPU #", Value = recordInfo.NumberGPUs });
+			if (!string.IsNullOrWhiteSpace(recordInfo.GPUCoreClock))
+				systemInfos.Add(new SystemInfoEntry() { Key = "GPU Core Clock (MHz)", Value = recordInfo.GPUCoreClock });
+			if (!string.IsNullOrWhiteSpace(recordInfo.GPUMemoryClock))
+				systemInfos.Add(new SystemInfoEntry() { Key = "GPU Memory Clock (MHz)", Value = recordInfo.GPUMemoryClock });
+			if (!string.IsNullOrWhiteSpace(recordInfo.GPUMemory))
+				systemInfos.Add(new SystemInfoEntry() { Key = "GPU Memory (MB)", Value = recordInfo.GPUMemory });
+			if (!string.IsNullOrWhiteSpace(recordInfo.BaseDriverVersion))
+				systemInfos.Add(new SystemInfoEntry() { Key = "Base Driver Version", Value = recordInfo.BaseDriverVersion });
+			if (!string.IsNullOrWhiteSpace(recordInfo.DriverPackage))
+				systemInfos.Add(new SystemInfoEntry() { Key = "Driver Package", Value = recordInfo.DriverPackage });
 
 			return systemInfos;
 		}
@@ -150,15 +152,13 @@ namespace CapFrameX.Data
 			session.VSync = new List<double>();
 			session.AppMissed = new List<bool>();
 			session.WarpMissed = new List<bool>();
-			session.Displaytimes = new List<double>();
+			session.DisplayTimes = new List<double>();
 			session.QPCTimes = new List<double>();
-
-			session.AppMissesCount = 0;
+			session.InPresentAPITimes = new List<double>();
+			session.UntilDisplayedTimes = new List<double>();
 			session.WarpMissesCount = 0;
-			session.ValidAppFrames = 0;
 			session.LastFrameTime = 0;
 			session.ValidReproFrames = 0;
-			session.LastReprojectionTime = 0;
 
 			try
 			{
@@ -175,12 +175,11 @@ namespace CapFrameX.Data
 					int indexFrameStart = -1;
 					int indexFrameTimes = -1;
 					int indexFrameEnd = -1;
-					int indexReprojectionStart = -1;
-					int indexReprojectionTimes = -1;
-					int indexReprojectionEnd = -1;
+					int indexUntilDisplayedTimes = -1;
 					int indexVSync = -1;
 					int indexAppMissed = -1;
 					int indexWarpMissed = -1;
+					int indexMsInPresentAPI = -1;
 					int indexDisplayTimes = -1;
 					int indexQPCTimes = -1;
 
@@ -200,18 +199,9 @@ namespace CapFrameX.Data
 						{
 							indexFrameTimes = i;
 						}
-						if (string.Compare(metrics[i], "ReprojectionStart") == 0)
+						if (string.Compare(metrics[i], "MsUntilDisplayed") == 0)
 						{
-							indexReprojectionStart = i;
-						}
-						//MsUntilDisplayed needs to be added to AppRenderStart, we don't have a reprojection start timestamp in this case
-						if (string.Compare(metrics[i], "ReprojectionEnd") == 0 || string.Compare(metrics[i], "MsUntilDisplayed") == 0)
-						{
-							indexReprojectionEnd = i;
-						}
-						if (string.Compare(metrics[i], "MsBetweenReprojections") == 0 || string.Compare(metrics[i], "MsBetweenLsrs") == 0)
-						{
-							indexReprojectionTimes = i;
+							indexUntilDisplayedTimes = i;
 						}
 						if (string.Compare(metrics[i], "VSync") == 0)
 						{
@@ -225,6 +215,10 @@ namespace CapFrameX.Data
 						if (string.Compare(metrics[i], "WarpMissed") == 0 || string.Compare(metrics[i], "LsrMissed") == 0)
 						{
 							indexWarpMissed = i;
+						}
+						if (string.Compare(metrics[i], "MsInPresentAPI") == 0)
+						{
+							indexMsInPresentAPI = i;
 						}
 						if (string.Compare(metrics[i], "MsBetweenDisplayChange") == 0)
 						{
@@ -263,24 +257,29 @@ namespace CapFrameX.Data
 						values = line.Split(',');
 						double frameStart = 0;
 
-						if (indexFrameStart > 0 && indexFrameTimes > 0 && indexAppMissed > 0)
+						if (indexFrameStart > 0 && indexFrameTimes > 0)
 						{
-							// non VR titles only have app render start and frame times metrics
-							// app render end and reprojection end get calculated based on ms until render complete and ms until displayed metric
 							if (double.TryParse(GetStringFromArray(values, indexFrameStart), NumberStyles.Any, CultureInfo.InvariantCulture, out frameStart)
-								&& double.TryParse(GetStringFromArray(values, indexFrameTimes), NumberStyles.Any, CultureInfo.InvariantCulture, out var frameTimes)
-								&& int.TryParse(GetStringFromArray(values, indexAppMissed), NumberStyles.Any, CultureInfo.InvariantCulture, out var appMissed))
+								&& double.TryParse(GetStringFromArray(values, indexFrameTimes), NumberStyles.Any, CultureInfo.InvariantCulture, out var frameTimes))
 							{
 								if (frameStart > 0)
 								{
-									session.ValidAppFrames++;
 									session.LastFrameTime = frameStart;
 								}
 								session.FrameStart.Add(frameStart);
 								session.FrameTimes.Add(frameTimes);
+							}
+						}
 
+						if (indexAppMissed > 0)
+						{
+							if (int.TryParse(GetStringFromArray(values, indexAppMissed), NumberStyles.Any, CultureInfo.InvariantCulture, out var appMissed))
+							{
 								session.AppMissed.Add(Convert.ToBoolean(appMissed));
-								session.AppMissesCount += appMissed;
+							}
+							else
+							{
+								session.AppMissed.Add(true);
 							}
 						}
 
@@ -288,7 +287,23 @@ namespace CapFrameX.Data
 						{
 							if (double.TryParse(GetStringFromArray(values, indexDisplayTimes), NumberStyles.Any, CultureInfo.InvariantCulture, out var displayTime))
 							{
-								session.Displaytimes.Add(displayTime);
+								session.DisplayTimes.Add(displayTime);
+							}
+						}
+
+						if (indexUntilDisplayedTimes > 0)
+						{
+							if (double.TryParse(GetStringFromArray(values, indexUntilDisplayedTimes), NumberStyles.Any, CultureInfo.InvariantCulture, out var untilDisplayTime))
+							{
+								session.UntilDisplayedTimes.Add(untilDisplayTime);
+							}
+						}
+
+						if (indexMsInPresentAPI > 0)
+						{
+							if (double.TryParse(GetStringFromArray(values, indexMsInPresentAPI), NumberStyles.Any, CultureInfo.InvariantCulture, out var inPresentAPITime))
+							{
+								session.InPresentAPITimes.Add(inPresentAPITime);
 							}
 						}
 
@@ -300,38 +315,26 @@ namespace CapFrameX.Data
 							}
 						}
 
-						if (indexFrameEnd > 0 && indexReprojectionEnd > 0)
+						if (indexFrameEnd > 0)
 						{
-							if (double.TryParse(GetStringFromArray(values, indexFrameEnd), NumberStyles.Any, CultureInfo.InvariantCulture, out var frameEnd)
-							 && double.TryParse(GetStringFromArray(values, indexReprojectionEnd), NumberStyles.Any, CultureInfo.InvariantCulture, out var reprojectionEnd))
+							if (double.TryParse(GetStringFromArray(values, indexFrameEnd), NumberStyles.Any, CultureInfo.InvariantCulture, out var frameEnd))
 							{
 								if (session.IsVR)
 								{
 									session.FrameEnd.Add(frameEnd);
-									session.ReprojectionEnd.Add(reprojectionEnd);
 								}
 								else
 								{
 									session.FrameEnd.Add(frameStart + frameEnd / 1000.0);
-									session.ReprojectionEnd.Add(frameStart + reprojectionEnd / 1000.0);
 								}
 							}
 						}
 
-						if (indexReprojectionStart > 0 && indexReprojectionTimes > 0 && indexVSync > 0 && indexWarpMissed > 0)
+						if (indexVSync > 0 && indexWarpMissed > 0)
 						{
-							if (double.TryParse(GetStringFromArray(values, indexReprojectionStart), NumberStyles.Any, CultureInfo.InvariantCulture, out var reprojectionStart)
-							 && double.TryParse(GetStringFromArray(values, indexReprojectionTimes), NumberStyles.Any, CultureInfo.InvariantCulture, out var reprojectionTimes)
-							 && double.TryParse(GetStringFromArray(values, indexVSync), NumberStyles.Any, CultureInfo.InvariantCulture, out var vSync)
+							if (double.TryParse(GetStringFromArray(values, indexVSync), NumberStyles.Any, CultureInfo.InvariantCulture, out var vSync)
 							 && int.TryParse(GetStringFromArray(values, indexWarpMissed), NumberStyles.Any, CultureInfo.InvariantCulture, out var warpMissed))
 							{
-								if (reprojectionStart > 0)
-								{
-									session.ValidReproFrames++;
-									session.LastReprojectionTime = reprojectionStart;
-								}
-								session.ReprojectionStart.Add(reprojectionStart);
-								session.ReprojectionTimes.Add(reprojectionTimes);
 								session.VSync.Add(vSync);
 								session.WarpMissed.Add(Convert.ToBoolean(warpMissed));
 								session.WarpMissesCount += warpMissed;
@@ -346,6 +349,54 @@ namespace CapFrameX.Data
 			}
 
 			return session;
+		}
+
+		public static IList<string> LoadPresentData(string csvFile)
+		{
+			if (string.IsNullOrWhiteSpace(csvFile))
+			{
+				return null;
+			}
+
+			if (!File.Exists(csvFile))
+			{
+				return null;
+			}
+
+			if (new FileInfo(csvFile).Length == 0)
+			{
+				return null;
+			}
+
+			var dataLines = new List<string>();
+
+			try
+			{
+				using (var reader = new StreamReader(csvFile))
+				{
+					string line = reader.ReadLine();
+
+					// skip header
+					while (line.Contains(FileRecordInfo.HEADER_MARKER))
+					{
+						line = reader.ReadLine();
+					}
+
+					//skip column header
+					_ = reader.ReadLine();
+
+					while (!reader.EndOfStream)
+					{
+						dataLines.Add(reader.ReadLine());
+					}
+				}
+
+				return dataLines;
+			}
+			catch (IOException)
+			{
+				return null;
+			}
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]

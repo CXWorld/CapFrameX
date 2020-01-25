@@ -51,6 +51,11 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Reactive, Version=4.0.0.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.Reactive.4.0.0\lib\net46\System.Reactive.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Windows" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -60,10 +65,12 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Attributes\ShortDescriptionAttribute.cs" />
     <Compile Include="CollectionExtensions.cs" />
     <Compile Include="EnumExtensions.cs" />
-    <Compile Include="LinqExtension.cs" />
+    <Compile Include="LinqExtensions.cs" />
     <Compile Include="ObjectExtensions.cs" />
+    <Compile Include="ObservableExtensions.cs" />
     <Compile Include="ReflectionExtensions.cs" />
     <Compile Include="StringExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -73,6 +80,9 @@
       <Project>{b033a95b-c385-4a33-8992-2872df979ecd}</Project>
       <Name>CapFrameX.Hotkey</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

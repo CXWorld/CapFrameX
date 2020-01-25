@@ -21,6 +21,21 @@
     <ClInclude Include="targetver.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
+    <ClInclude Include="RTSSProfileInterface.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="GroupedString.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="RTSSCSharpWrapper.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="RTSSCoreControl.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="OverlayEntry.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -30,6 +45,21 @@
       <Filter>Quelldateien</Filter>
     </ClCompile>
     <ClCompile Include="dllmain.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="RTSSProfileInterface.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="GroupedString.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="RTSSCSharpWrapper.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="RTSSCoreControl.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="OverlayEntry.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
   </ItemGroup>

@@ -50,10 +50,15 @@
 					  materialDesign:DataGridAssist.CellPadding="13 8 8 8" materialDesign:DataGridAssist.ColumnHeaderPadding="8" IsSynchronizedWithCurrentItem="False"
 					  ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.CanContentScroll="True"
 					  dragdrop:DragDrop.IsDragSource="True"
-					  dragdrop:DragDrop.IsDropTarget="True"
+					  dragdrop:DragDrop.IsDropTarget="False"
 					  dragdrop:DragDrop.UseDefaultDragAdorner="True"
 					  dragdrop:DragDrop.DefaultDragAdornerOpacity="0.5"
 					  dragdrop:DragDrop.UseDefaultEffectDataTemplate="False">
+					<DataGrid.Resources>
+						<Style TargetType="DataGridRow">
+							<EventSetter Event="MouseDoubleClick" Handler="DataGridRow_MouseDoubleClick"/>
+						</Style>
+					</DataGrid.Resources>
 					<i:Interaction.Triggers>
 						<i:EventTrigger EventName="SelectionChanged">
 							<i:InvokeCommandAction Command="{Binding SelectedRecordingsCommand}" 
@@ -69,11 +74,6 @@
 							<MenuItem Header="Delete recording file(s)" Command="{Binding DeleteRecordFileCommand}"/>
 						</ContextMenu>
 					</DataGrid.ContextMenu>
-					<DataGrid.Resources>
-						<Style TargetType="DataGridRow">
-							<EventSetter Event="MouseDoubleClick" Handler="DataGridRow_MouseDoubleClick"/>
-						</Style>
-					</DataGrid.Resources>
 					<DataGrid.ColumnHeaderStyle>
 						<Style TargetType="{x:Type DataGridColumnHeader}">
 							<Setter Property="BorderThickness" Value="0, 0, 1, 0"/>
@@ -156,8 +156,8 @@
 										Width="100"
                                         Header="Comment"
                                         IsReadOnly="True"/>
-						<DataGridCheckBoxColumn Binding="{Binding IsValid, Mode=OneWay}"
-                                            Header="Valid"
+						<DataGridCheckBoxColumn Binding="{Binding IsAggregated, Mode=OneWay}"
+                                            Header="Aggregated"
                                             IsReadOnly="True" MinWidth="55"/>
 					</DataGrid.Columns>
 				</DataGrid>

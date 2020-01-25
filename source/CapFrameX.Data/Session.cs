@@ -22,15 +22,14 @@ namespace CapFrameX.Data
 		public List<double> VSync { get; set; }
 		public List<bool> AppMissed { get; set; }
 		public List<bool> WarpMissed { get; set; }
-		public List<double> Displaytimes { get; set; }
+		public List<double> UntilDisplayedTimes { get; set; }
+		public List<double> InPresentAPITimes { get; set; }
+		public List<double> DisplayTimes { get; set; }
 		public List<double> QPCTimes { get; set; }
 		public bool IsVR { get; set; }
-		public int AppMissesCount { get; set; }
 		public int WarpMissesCount { get; set; }
-		public int ValidAppFrames { get; set; }
 		public int ValidReproFrames { get; set; }
 		public double LastFrameTime { get; set; }
-		public double LastReprojectionTime { get; set; }
 
 		public Session()
 		{
@@ -41,6 +40,7 @@ namespace CapFrameX.Data
 			ERemoveOutlierMethod eRemoveOutlierMethod = ERemoveOutlierMethod.None)
 		{
 			var frametimesSampleWindow = new List<double>();
+
 			var frametimes = _frametimeStatisticProvider?.GetOutlierAdjustedSequence(FrameTimes, eRemoveOutlierMethod);
 
 			if (frametimes != null && frametimes.Any())
@@ -58,6 +58,7 @@ namespace CapFrameX.Data
 			ERemoveOutlierMethod eRemoveOutlierMethod = ERemoveOutlierMethod.None)
 		{
 			IList<double> frametimesTimeWindow = new List<double>();
+
 			var frametimes = _frametimeStatisticProvider?.GetOutlierAdjustedSequence(FrameTimes, eRemoveOutlierMethod);
 
 			if (frametimes != null && FrameStart != null)
@@ -78,6 +79,7 @@ namespace CapFrameX.Data
 			ERemoveOutlierMethod eRemoveOutlierMethod = ERemoveOutlierMethod.None)
 		{
 			IList<Point> frametimesPointsWindow = new List<Point>();
+
 			var frametimes = _frametimeStatisticProvider?.GetOutlierAdjustedSequence(FrameTimes, eRemoveOutlierMethod);
 
 			if (frametimes != null && FrameStart != null)
@@ -98,6 +100,7 @@ namespace CapFrameX.Data
 			ERemoveOutlierMethod eRemoveOutlierMethod = ERemoveOutlierMethod.None)
 		{
 			var frametimesPointsSampleWindow = new List<Point>();
+
 			var frametimes = _frametimeStatisticProvider?.GetOutlierAdjustedSequence(FrameTimes, eRemoveOutlierMethod);
 
 			if (frametimes != null && frametimes.Any())
@@ -111,9 +114,27 @@ namespace CapFrameX.Data
 			return frametimesPointsSampleWindow;
 		}
 
+		/// <summary>
+		/// Source: https://github.com/GameTechDev/PresentMon
+		/// Formular: LatencyMs =~ MsBetweenPresents + MsUntilDisplayed - previous(MsInPresentAPI)
+		/// </summary>
+		/// <returns></returns>
+		public IList<double> GetApproxInputLagTimes()
+		{
+			var inputLagTimes = new List<double>(FrameTimes.Count - 1);
+
+			for (int i = 1; i < FrameTimes.Count; i++)
+			{
+				if (AppMissed[i] != true)
+					inputLagTimes.Add(FrameTimes[i] + UntilDisplayedTimes[i] - InPresentAPITimes[i - 1]);
+			}
+
+			return inputLagTimes;
+		}
+
 		public double GetSyncRangePercentage(int syncRangeLower, int syncRangeUpper)
 		{
-			if (Displaytimes == null)
+			if (DisplayTimes == null)
 				return 0d;
 
 			bool IsInRange(double value)
@@ -126,8 +147,8 @@ namespace CapFrameX.Data
 					return false;
 			};
 
-			return Displaytimes.Select(time => 1000d / time)
-				.Count(hz => IsInRange(hz)) / (double)Displaytimes.Count;
+			return DisplayTimes.Select(time => 1000d / time)
+				.Count(hz => IsInRange(hz)) / (double)DisplayTimes.Count;
 		}
 	}
 }

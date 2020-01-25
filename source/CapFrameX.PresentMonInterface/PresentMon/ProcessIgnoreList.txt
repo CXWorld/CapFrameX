@@ -1,8 +1,10 @@
+.Battle.net
 AMD Ryzen Master
 ApplicationFrameHost
 avpui
 balenaEtcher
 Battle.net
+BethesdaNetLauncher
 Calculator
 CapFrameX
 chrome
@@ -15,7 +17,7 @@ dwm
 EpicGamesLauncher
 explorer
 firefox
-GalaxyClient Helper
+GalaxyClient_Helper
 GameBar
 HxAccounts
 HxOutlook
@@ -29,6 +31,7 @@ NVIDIA GeForce Experience
 NVIDIA Share
 Origin
 RadeonSettings
+ramtest
 ScriptedSandbox64
 SearchUI
 ServiceHub.ThreadedWaitDialog

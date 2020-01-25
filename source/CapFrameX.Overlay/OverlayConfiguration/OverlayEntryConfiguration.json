@@ -1,0 +1,59 @@
+{
+  "OverlayEntries": [
+    {
+      "Color": "",
+      "Description": "Capture service status",
+      "GroupName": "Status:",
+      "Identifier": "CaptureServiceStatus",
+      "ShowGraph": false,
+      "ShowGraphIsEnabled": false,
+      "ShowOnOverlay": true,
+      "ShowOnOverlayIsEnabled": true,
+      "Value": "Capture service ready..."
+    },
+    {
+      "Identifier": "CaptureTimer",
+      "Description": "Capture timer",
+      "ShowOnOverlay": false,
+      "ShowOnOverlayIsEnabled": false,
+      "GroupName": "Status:",
+      "Value": "0",
+      "ShowGraph": false,
+      "ShowGraphIsEnabled": false,
+      "Color": ""
+    },
+    {
+      "Identifier": "RunHistory",
+      "Description": "Run history",
+      "ShowOnOverlay": false,
+      "ShowOnOverlayIsEnabled": false,
+      "GroupName": "",
+      "Value": null,
+      "ShowGraph": false,
+      "ShowGraphIsEnabled": false,
+      "Color": ""
+    },
+    {
+      "Identifier": "Framerate",
+      "Description": "Framerate",
+      "ShowOnOverlay": true,
+      "ShowOnOverlayIsEnabled": true,
+      "GroupName": "<APP>",
+      "Value": 0.0,
+      "ShowGraph": false,
+      "ShowGraphIsEnabled": true,
+      "Color": ""
+    },
+    {
+      "Identifier": "Frametime",
+      "Description": "Frametime",
+      "ShowOnOverlay": true,
+      "ShowOnOverlayIsEnabled": true,
+      "GroupName": "<APP>",
+      "Value": 0.0,
+      "ShowGraph": false,
+      "ShowGraphIsEnabled": true,
+      "Color": ""
+    }
+  ]
+}

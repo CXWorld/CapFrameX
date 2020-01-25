@@ -42,7 +42,7 @@ namespace CapFrameX.Data
 		public double ZeroDotOnePercentLowAverageFps { get; set; }
 		[DisplayName("Min FPS")]
 		public double MinFps { get; set; }
-		[DisplayName("Adaptive STD")]
+		[DisplayName("Adaptive STDEV")]
 		public double AdaptiveSTDFps { get; set; }
 		[DisplayName("Comment")]
 		public string CustomComment { get; set; }

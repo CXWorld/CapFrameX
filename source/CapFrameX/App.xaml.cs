@@ -1,4 +1,5 @@
-﻿using CapFrameX.Data;
+﻿using CapFrameX.Contracts.Overlay;
+using CapFrameX.Data;
 using CapFrameX.PresentMonInterface;
 using System;
 using System.Collections.Generic;
@@ -15,17 +16,25 @@ namespace CapFrameX
     /// </summary>
     public partial class App : Application
     {
-        protected override void OnStartup(StartupEventArgs e)
+		private Bootstrapper _bootstrapper;
+
+		protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
-            Bootstrapper bootstrapper = new Bootstrapper();
-            bootstrapper.Run(true);
+			_bootstrapper = new Bootstrapper();
+			_bootstrapper.Run(true);
         }
 
         private void CapFrameXExit(object sender, ExitEventArgs e)
         {
             PresentMonCaptureService.TryKillPresentMon();
-        }
+
+			var overlayService = _bootstrapper.Container.Resolve(typeof(IOverlayService), true) as IOverlayService;
+			overlayService?.HideOverlay();
+
+			var overlayEntryProvider = _bootstrapper.Container.Resolve(typeof(IOverlayEntryProvider), true) as IOverlayEntryProvider;
+			_ = overlayEntryProvider?.SaveOverlayEntriesToJson();
+		}
 
         private void Application_Startup(object sender, StartupEventArgs e)
         {

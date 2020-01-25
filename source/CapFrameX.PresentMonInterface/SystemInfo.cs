@@ -42,6 +42,43 @@ namespace CapFrameX.PresentMonInterface
 			return propertyDataValue.TrimEnd();
 		}
 
+		/// <summary>
+		/// Gets the vendor name
+		/// </summary>
+		/// <returns>"NVIDIA", "Advanced Micro Devices, Inc."</returns>
+		public static string GetGraphicCardVendor()
+		{
+			string propertyDataValue = string.Empty;
+			const string propertyDataName = "AdapterCompatibility";
+
+			var win32DeviceClassName = "Win32_VideoController";
+			var query = string.Format("select * from {0}", win32DeviceClassName);
+
+			try
+			{
+				using (var searcher = new ManagementObjectSearcher(query))
+				{
+					ManagementObjectCollection objectCollection = searcher.Get();
+
+					foreach (ManagementBaseObject managementBaseObject in objectCollection)
+					{
+						foreach (PropertyData propertyData in managementBaseObject.Properties)
+						{
+							if (propertyData.Name == propertyDataName)
+							{
+								propertyDataValue = (string)propertyData.Value;
+								break;
+							}
+						}
+					}
+				}
+			}
+			catch { propertyDataValue = string.Empty; }
+
+			//DeviceName
+			return propertyDataValue;
+		}
+
 		public static string GetGraphicCardName()
 		{
 			string propertyDataValue = string.Empty;
@@ -204,6 +241,9 @@ namespace CapFrameX.PresentMonInterface
 			}
 			catch { propertyDataValueSpeed = "unknown"; moduleSetting.Add(0, 1); }
 
+			if (!moduleSetting.Any())
+				moduleSetting.Add(0, 0);
+
 			//RAM size + speed
 			// example: 48GB (4x4GB+4x8GB)
 			var infoString = string.Empty;
@@ -214,8 +254,12 @@ namespace CapFrameX.PresentMonInterface
 				infoString += $"{item.Value}x{item.Key / ONE_GIB}GB+";
 			}
 
-			return $"{wholeCapacity/ONE_GIB}GB ({infoString.Remove(infoString.Length - 1)}) {propertyDataValueSpeed}MT/s";
-			
+			return $"{wholeCapacity / ONE_GIB}GB ({infoString.Remove(infoString.Length - 1)}) {propertyDataValueSpeed}MT/s";
+		}
+
+		public static string GetGraphicDriverVersion()
+		{
+			return "unknown";
 		}
 	}
 }

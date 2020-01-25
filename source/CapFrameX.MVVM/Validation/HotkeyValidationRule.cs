@@ -9,7 +9,7 @@ namespace CapFrameX.MVVM.Validation
         {
             var inputString = value as string;
 
-            return !CapFrameX.Hotkey.CaptureHotkey.IsValidHotkey(inputString)
+            return !CapFrameX.Hotkey.CXHotkey.IsValidHotkey(inputString)
                  ? new ValidationResult(false, "Hotkey is not valid.")
                  : ValidationResult.ValidResult;
         }

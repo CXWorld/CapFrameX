@@ -1,7 +1,10 @@
 ﻿using CapFrameX.Contracts.Configuration;
+using CapFrameX.Contracts.Statistics;
+using CapFrameX.Extensions;
 using MathNet.Numerics.Statistics;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 
@@ -9,6 +12,8 @@ namespace CapFrameX.Statistics
 {
 	public class FrametimeStatisticProvider : IStatisticProvider
 	{
+		public static readonly double[] FPSTHRESHOLDS = new double[] { 10, 15, 30, 45, 60, 75, 90, 120, 144, 240 }.Reverse().ToArray();
+
 		private const double TAU = 0.999;
 		private readonly IAppConfiguration _appConfiguration;
 
@@ -179,7 +184,7 @@ namespace CapFrameX.Statistics
 			return Math.Round(metricValue, _appConfiguration.FpsValuesRoundingDigits);
 		}
 
-		public List<double>[] GetDiscreteDistribution(IList<double> sequence)
+		public IList<double>[] GetDiscreteDistribution(IList<double> sequence)
 		{
 			var min = sequence.Min();
 			var max = sequence.Max();
@@ -247,7 +252,7 @@ namespace CapFrameX.Statistics
 			return counts;
 		}
 
-		private List<double>[] Distribution(IList<double> data, double[] binEdges)
+		private IList<double>[] Distribution(IList<double> data, double[] binEdges)
 		{
 			List<double>[] counts = new List<double>[binEdges.Length - 1];
 
@@ -279,6 +284,91 @@ namespace CapFrameX.Statistics
 			}
 
 			return output;
+		}
+
+		public IMetricAnalysis GetMetricAnalysis(IList<double> frametimes, string secondMetric, string thirdMetric)
+		{
+			var average = GetFpsMetricValue(frametimes, EMetric.Average);
+			var secondMetricValue = GetFpsMetricValue(frametimes, secondMetric.ConvertToEnum<EMetric>());
+			var thrirdMetricValue = GetFpsMetricValue(frametimes, thirdMetric.ConvertToEnum<EMetric>());
+			string numberFormat = string.Format("F{0}", _appConfiguration.FpsValuesRoundingDigits);
+			var cultureInfo = CultureInfo.InvariantCulture;
+
+			string secondMetricString =
+				secondMetric.ConvertToEnum<EMetric>() != EMetric.None ?
+				$"{secondMetric.ConvertToEnum<EMetric>().GetShortDescription()}=" +
+				$"{secondMetricValue.ToString(numberFormat, cultureInfo)} " +
+				$"FPS | " : string.Empty;
+
+			string thirdMetricString =
+				thirdMetric.ConvertToEnum<EMetric>() != EMetric.None ?
+				$"{thirdMetric.ConvertToEnum<EMetric>().GetShortDescription()}=" +
+				$"{thrirdMetricValue.ToString(numberFormat, cultureInfo)} " +
+				$"FPS" : string.Empty;
+
+			return new MetricAnalysis()
+			{
+				ResultString = $"Avg={average.ToString(numberFormat, cultureInfo)} " +
+				$"FPS | " + secondMetricString + thirdMetricString,
+				Average = average,
+				Second = secondMetricValue,
+				Third = thrirdMetricValue
+			};
+		}
+
+		public bool[] GetOutlierAnalysis(IList<IMetricAnalysis> metricAnalysisSet, string relatedMetric, int outlierPercentage)
+		{
+			var averageValues = metricAnalysisSet.Select(analysis => analysis.Average).ToList();
+			var secondMetricValues = metricAnalysisSet.Select(analysis => analysis.Second).ToList();
+			var thirdMetricValues = metricAnalysisSet.Select(analysis => analysis.Third).ToList();
+
+			bool[] outlierFlags = Enumerable.Repeat(false, metricAnalysisSet.Count).ToArray();
+
+			if (relatedMetric == "Average")
+			{
+				outlierFlags = GetOutlierFlags(averageValues, outlierPercentage);
+			}
+			else if (relatedMetric == "Second")
+			{
+				outlierFlags = GetOutlierFlags(secondMetricValues, outlierPercentage);
+			}
+			else if (relatedMetric == "Third")
+			{
+				outlierFlags = GetOutlierFlags(thirdMetricValues, outlierPercentage);
+			}
+
+			return outlierFlags;
+		}
+
+		private bool[] GetOutlierFlags(IList<double> metricValues, int outlierPercentage)
+		{
+			bool[] outlierFlags = Enumerable.Repeat(false, metricValues.Count).ToArray();
+			var median = GetPQuantileSequence(metricValues, 0.5);
+
+			for (int i = 0; i < metricValues.Count; i++)
+			{
+				if ((Math.Abs(metricValues[i] - median) / median) * 100d > outlierPercentage)
+				{
+					outlierFlags[i] = true;
+				}
+			}
+
+			return outlierFlags;
+		}
+
+		public IList<int> GetFpsThresholdCounts(IList<double> frametimes, bool isReversed)
+		{
+			var fps = frametimes.Select(ft => 1000 / ft);
+			var thresholds = isReversed ? FPSTHRESHOLDS.Reverse().ToArray() : FPSTHRESHOLDS;
+
+			var counts = new List<int>(thresholds.Length);
+
+			foreach (var threshold in thresholds)
+			{
+				counts.Add(fps.Count(val => isReversed ? val > threshold : val < threshold));
+			}
+
+			return counts;
 		}
 	}
 }

@@ -33,7 +33,25 @@ namespace CapFrameX.ViewModel
 			if (string.IsNullOrWhiteSpace(processName))
 				return;
 
-			var captureData = GetAdjustedCaptureData();
+			var adjustedCaptureData = GetAdjustedCaptureData(processName);
+
+			if (adjustedCaptureData == null)
+			{
+				AddLoggerEntry("Error while extracting capture data. No file will be written.");
+				return;
+			}
+
+			if (!adjustedCaptureData.Any())
+			{
+				AddLoggerEntry("Error while extracting capture data. Empty list. No file will be written.");
+				return;
+			}
+
+			if (AppConfiguration.UseRunHistory)
+			{
+				Task.Factory.StartNew(() => _overlayService.AddRunToHistory(adjustedCaptureData));
+			}
+
 			StartFillArchive();
 
 			Application.Current.Dispatcher.Invoke(new Action(() =>
@@ -42,34 +60,24 @@ namespace CapFrameX.ViewModel
 				_dataOffsetRunning = false;
 			}));
 
-			if (captureData == null)
-			{
-				AddLoggerEntry("Error while extracting capture data. No file will be written.");
+			// if aggregation mode is active and "Save aggregated result only" is checked, don't save single history items
+			if (AppConfiguration.UseAggregation && AppConfiguration.SaveAggregationOnly)
 				return;
-			}
 
-			if (!captureData.Any())
-			{
-				AddLoggerEntry("Error while extracting capture data. Empty list. No file will be written.");
-				return;
-			}
-
-			var filePath = GetOutputFilename(processName);
-			int captureTime = Convert.ToInt32(CaptureTimeString);
-			bool checkSave = _recordDataProvider.SavePresentData(captureData, filePath, processName, captureTime);
+			var filePath = _recordDataProvider.GetOutputFilename(processName);
+			bool checkSave = _recordDataProvider.SavePresentData(adjustedCaptureData, filePath, processName);
 
 			if (!checkSave)
 				AddLoggerEntry("Error while saving capture data.");
-
-			AddLoggerEntry("Capture file is successfully written into directory.");
+			else
+				AddLoggerEntry("Capture file is successfully written into directory.");
 		}
 
-		private List<string> GetAdjustedCaptureData()
+		private List<string> GetAdjustedCaptureData(string processName)
 		{
 			if (!_captureData.Any())
 				return Enumerable.Empty<string>().ToList();
 
-			var processName = RecordDataProvider.GetProcessNameFromDataLine(_captureData.First());
 			var startTimeWithOffset = RecordDataProvider.GetStartTimeFromDataLine(_captureData.First());
 			var stopwatchTime = (_timestampStopCapture - _timestampStartCapture) / 1000d;
 
@@ -88,7 +96,38 @@ namespace CapFrameX.ViewModel
 					autoTermination = false;
 			}
 
-			var filteredArchive = _captureDataArchive.Where(line => RecordDataProvider.GetProcessNameFromDataLine(line) == processName).ToList();
+			var uniqueProcessIdDict = new Dictionary<string, HashSet<string>>();
+
+			foreach (var filteredCaptureDataLine in _captureData)
+			{
+				var currentProcess = RecordDataProvider.GetProcessNameFromDataLine(filteredCaptureDataLine);
+				var currentProcessId = RecordDataProvider.GetProcessIdFromDataLine(filteredCaptureDataLine);
+
+				if (!uniqueProcessIdDict.ContainsKey(currentProcess))
+				{
+					var idHashSet = new HashSet<string>
+					{
+						currentProcessId
+					};
+					uniqueProcessIdDict.Add(currentProcess, idHashSet);
+				}
+				else
+					uniqueProcessIdDict[currentProcess].Add(currentProcessId);
+			}
+
+			if (uniqueProcessIdDict.Any(dict => dict.Value.Count() > 1))
+				AddLoggerEntry($"Multi instances detected. Capture data is not valid.");
+
+			var filteredArchive = _captureDataArchive.Where(line =>
+				{
+					var currentProcess = RecordDataProvider.GetProcessNameFromDataLine(line);
+					return currentProcess == processName && uniqueProcessIdDict[currentProcess].Count() == 1;
+				}).ToList();
+			var filteredCaptureData = _captureData.Where(line =>
+				{
+					var currentProcess = RecordDataProvider.GetProcessNameFromDataLine(line);
+					return currentProcess == processName && uniqueProcessIdDict[currentProcess].Count() == 1;
+				}).ToList();
 
 			AddLoggerEntry($"Using archive with {filteredArchive.Count} frames.");
 
@@ -101,9 +140,9 @@ namespace CapFrameX.ViewModel
 			// Distinct archive and live stream
 			var lastArchiveTime = RecordDataProvider.GetStartTimeFromDataLine(filteredArchive.Last());
 			int distinctIndex = 0;
-			for (int i = 0; i < _captureData.Count; i++)
+			for (int i = 0; i < filteredCaptureData.Count; i++)
 			{
-				if (RecordDataProvider.GetStartTimeFromDataLine(_captureData[i]) <= lastArchiveTime)
+				if (RecordDataProvider.GetStartTimeFromDataLine(filteredCaptureData[i]) <= lastArchiveTime)
 					distinctIndex++;
 				else
 					break;
@@ -112,7 +151,7 @@ namespace CapFrameX.ViewModel
 			if (distinctIndex == 0)
 				return null;
 
-			var unionCaptureData = filteredArchive.Concat(_captureData.Skip(distinctIndex)).ToList();
+			var unionCaptureData = filteredArchive.Concat(filteredCaptureData.Skip(distinctIndex)).ToList();
 			var unionCaptureDataStartTime = RecordDataProvider.GetStartTimeFromDataLine(unionCaptureData.First());
 			var unionCaptureDataEndTime = RecordDataProvider.GetStartTimeFromDataLine(unionCaptureData.Last());
 

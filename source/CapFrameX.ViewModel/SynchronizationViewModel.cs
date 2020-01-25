@@ -20,6 +20,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
+using LiveCharts.Wpf;
 
 namespace CapFrameX.ViewModel
 {
@@ -30,10 +31,14 @@ namespace CapFrameX.ViewModel
 		private readonly IAppConfiguration _appConfiguration;
 
 		private PlotModel _synchronizationModel;
-		private SeriesCollection _histogramCollection;
+		private PlotModel _inputLagModel;
+		private SeriesCollection _displayTimesHistogramCollection;
+		private SeriesCollection _inputLagHistogramCollection;
 		private SeriesCollection _droppedFramesStatisticCollection;
+		private SeriesCollection _inputLagStatisticCollection;
 		private string[] _droppedFramesLabels;
-		private string[] _histogramLabels;
+		private string[] _displayTimesHistogramLabels;
+		private string[] _inputLagHistogramLabels;
 		private bool _useUpdateSession;
 		private Session _session;
 		private IFileRecordInfo _recordInfo;
@@ -42,6 +47,9 @@ namespace CapFrameX.ViewModel
 		private string _syncRangePercentage = "0%";
 		private string _syncRangeLower;
 		private string _syncRangeUpper;
+		private int _inputLagBarMaxValue;
+		private Func<double, string> _inputLagParameterFormatter;
+		private string[] _inputLagParameterLabels;
 
 		/// <summary>
 		/// https://docs.microsoft.com/en-us/dotnet/standard/base-types/standard-numeric-format-strings
@@ -64,13 +72,42 @@ namespace CapFrameX.ViewModel
 				RaisePropertyChanged();
 			}
 		}
-
-		public SeriesCollection HistogramCollection
+		public PlotModel InputLagModel
 		{
-			get { return _histogramCollection; }
+			get { return _inputLagModel; }
 			set
 			{
-				_histogramCollection = value;
+				_inputLagModel = value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public SeriesCollection DisplayTimesHistogramCollection
+		{
+			get { return _displayTimesHistogramCollection; }
+			set
+			{
+				_displayTimesHistogramCollection = value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public SeriesCollection InputLagHistogramCollection
+		{
+			get { return _inputLagHistogramCollection; }
+			set
+			{
+				_inputLagHistogramCollection = value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public SeriesCollection InputLagStatisticCollection
+		{
+			get { return _inputLagStatisticCollection; }
+			set
+			{
+				_inputLagStatisticCollection = value;
 				RaisePropertyChanged();
 			}
 		}
@@ -95,12 +132,22 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-		public string[] HistogramLabels
+		public string[] DisplayTimesHistogramLabels
 		{
-			get { return _histogramLabels; }
+			get { return _displayTimesHistogramLabels; }
 			set
 			{
-				_histogramLabels = value;
+				_displayTimesHistogramLabels = value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public string[] InputLagHistogramLabels
+		{
+			get { return _inputLagHistogramLabels; }
+			set
+			{
+				_inputLagHistogramLabels = value;
 				RaisePropertyChanged();
 			}
 		}
@@ -159,9 +206,57 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
+		public int InputLagBarMaxValue
+		{
+			get { return _inputLagBarMaxValue; }
+			set
+			{
+				_inputLagBarMaxValue = value;
+				RaisePropertyChanged();
+			}
+		}
+
+		/// <summary>
+		/// https://docs.microsoft.com/en-us/dotnet/standard/base-types/standard-numeric-format-strings
+		/// </summary>
+		public Func<double, string> InputLagParameterFormatter
+		{
+			get { return _inputLagParameterFormatter; }
+			set
+			{
+				_inputLagParameterFormatter = value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public string[] InputLagParameterLabels
+		{
+			get { return _inputLagParameterLabels; }
+			set
+			{
+				_inputLagParameterLabels = value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public int InputLagOffset
+		{
+			get { return _appConfiguration.InputLagOffset; }
+			set
+			{
+				_appConfiguration.InputLagOffset = value;
+				UpdateCharts();
+				RaisePropertyChanged();
+			}
+		}
+
 		public ICommand CopyDisplayChangeTimeValuesCommand { get; }
 
-		public ICommand CopyHistogramDataCommand { get; }
+		public ICommand CopyDisplayTimesHistogramDataCommand { get; }
+
+		public ICommand CopyInputLagHistogramDataCommand { get; }
+
+		public ICommand CopyInputLagStatisticalParameterCommand { get; }
 
 		public SynchronizationViewModel(IStatisticProvider frametimeStatisticProvider,
 										IEventAggregator eventAggregator,
@@ -172,7 +267,12 @@ namespace CapFrameX.ViewModel
 			_appConfiguration = appConfiguration;
 
 			CopyDisplayChangeTimeValuesCommand = new DelegateCommand(OnCopyDisplayChangeTimeValues);
-			CopyHistogramDataCommand = new DelegateCommand(CopyHistogramData);
+			CopyDisplayTimesHistogramDataCommand = new DelegateCommand(CopDisplayTimesHistogramData);
+			CopyInputLagHistogramDataCommand = new DelegateCommand(CopyInputLagHistogramData);
+			CopyInputLagStatisticalParameterCommand = new DelegateCommand(CopyInputLagStatisticalParameter);
+
+			InputLagParameterFormatter = value => value.ToString(string.Format("F{0}",
+				_appConfiguration.FpsValuesRoundingDigits), CultureInfo.InvariantCulture);
 
 			_syncRangeLower = _appConfiguration.SyncRangeLower;
 			_syncRangeUpper = _appConfiguration.SyncRangeUpper;
@@ -180,6 +280,12 @@ namespace CapFrameX.ViewModel
 			SubscribeToUpdateSession();
 
 			SynchronizationModel = new PlotModel
+			{
+				PlotMargins = new OxyThickness(40, 10, 0, 40),
+				PlotAreaBorderColor = OxyColor.FromArgb(64, 204, 204, 204),
+			};
+
+			InputLagModel = new PlotModel
 			{
 				PlotMargins = new OxyThickness(40, 10, 0, 40),
 				PlotAreaBorderColor = OxyColor.FromArgb(64, 204, 204, 204),
@@ -208,8 +314,8 @@ namespace CapFrameX.ViewModel
 
 		private string GetCorrelation(Session currentSession)
 		{
-			var frametimes = currentSession.FrameTimes.Where((x,i) => !_session.AppMissed[i]);
-			var displayChangedTimes = currentSession.Displaytimes.Where((x, i) => !_session.AppMissed[i]);
+			var frametimes = currentSession.FrameTimes.Where((x, i) => !_session.AppMissed[i]);
+			var displayChangedTimes = currentSession.DisplayTimes.Where((x, i) => !_session.AppMissed[i]);
 
 			if (frametimes.Count() != displayChangedTimes.Count())
 				return "NaN";
@@ -225,7 +331,7 @@ namespace CapFrameX.ViewModel
 
 			StringBuilder builder = new StringBuilder();
 
-			foreach (var dcTime in _session.Displaytimes)
+			foreach (var dcTime in _session.DisplayTimes)
 			{
 				builder.Append(dcTime + Environment.NewLine);
 			}
@@ -233,21 +339,31 @@ namespace CapFrameX.ViewModel
 			Clipboard.SetDataObject(builder.ToString(), false);
 		}
 
-		private void CopyHistogramData()
+		private void CopDisplayTimesHistogramData()
 		{
-			if (HistogramCollection == null || HistogramLabels == null)
+			if (DisplayTimesHistogramCollection == null || DisplayTimesHistogramLabels == null)
 				return;
 
 			StringBuilder builder = new StringBuilder();
-			var chartValues = HistogramCollection.First().Values;
+			var chartValues = DisplayTimesHistogramCollection.First().Values;
 
-			foreach (var bin in HistogramLabels.Select((value, i) => new { i, value }))
+			foreach (var bin in DisplayTimesHistogramLabels.Select((value, i) => new { i, value }))
 			{
 				builder.Append(bin.value.ToString(CultureInfo.InvariantCulture) + "\t" + chartValues[bin.i]
 					.ToString() + Environment.NewLine);
 			}
 
 			Clipboard.SetDataObject(builder.ToString(), false);
+		}
+
+		private void CopyInputLagHistogramData()
+		{
+			throw new NotImplementedException();
+		}
+
+		private void CopyInputLagStatisticalParameter()
+		{
+			throw new NotImplementedException();
 		}
 
 		private void OnSyncRangeChanged()
@@ -259,13 +375,24 @@ namespace CapFrameX.ViewModel
 				return;
 
 			// Do not run on background thread, leads to errors on analysis page
-			SetFrameDisplayTimesChart(_session.FrameTimes, _session.Displaytimes);
-			Task.Factory.StartNew(() => SetHistogramChart(_session.Displaytimes));
+			var inputLagTimes = _session.GetApproxInputLagTimes().Select(val => val += InputLagOffset).ToList();
+
+			SetFrameDisplayTimesChart(_session.FrameTimes, _session.DisplayTimes);
+			SetFrameInputLagChart(_session.FrameTimes, inputLagTimes);
+			Task.Factory.StartNew(() => SetDisplayTimesHistogramChart(_session.DisplayTimes));
+			Task.Factory.StartNew(() => SetInputLagHistogramChart(inputLagTimes));
+			Task.Factory.StartNew(() => SetInputLagStatisticChart(inputLagTimes));
 			Task.Factory.StartNew(() => SetDroppedFramesChart(_session.AppMissed));
 		}
 
 		private void SetFrameDisplayTimesChart(IList<double> frametimes, IList<double> displaytimes)
 		{
+			if (frametimes == null || !frametimes.Any())
+				return;
+
+			if (displaytimes == null || !displaytimes.Any())
+				return;
+
 			var yMin = Math.Min(frametimes.Min(), displaytimes.Min());
 			var yMax = Math.Max(frametimes.Max(), displaytimes.Max());
 
@@ -336,8 +463,11 @@ namespace CapFrameX.ViewModel
 			}));
 		}
 
-		private void SetHistogramChart(List<double> displaytimes)
+		private void SetDisplayTimesHistogramChart(IList<double> displaytimes)
 		{
+			if (displaytimes == null || !displaytimes.Any())
+				return;
+
 			var discreteDistribution = _frametimeStatisticProvider.GetDiscreteDistribution(displaytimes);
 			var histogram = new Histogram(displaytimes, discreteDistribution.Length);
 
@@ -357,7 +487,7 @@ namespace CapFrameX.ViewModel
 
 			Application.Current.Dispatcher.BeginInvoke(new Action(() =>
 			{
-				HistogramCollection = new SeriesCollection
+				DisplayTimesHistogramCollection = new SeriesCollection
 				{
 					new LiveCharts.Wpf.ColumnSeries
 					{
@@ -368,8 +498,92 @@ namespace CapFrameX.ViewModel
 					}
 				};
 
-				HistogramLabels = bins.Select(bin => Math.Round(bin, 2)
+				DisplayTimesHistogramLabels = bins.Select(bin => Math.Round(bin, 2)
 					.ToString(CultureInfo.InvariantCulture)).ToArray();
+			}));
+		}
+
+		private void SetInputLagHistogramChart(IList<double> inputLagTimes)
+		{
+			if (inputLagTimes == null || !inputLagTimes.Any())
+				return;
+
+			var discreteDistribution = _frametimeStatisticProvider.GetDiscreteDistribution(inputLagTimes);
+			var histogram = new Histogram(inputLagTimes, discreteDistribution.Length);
+
+			var bins = new List<double>();
+			var histogramValues = new ChartValues<double>();
+
+			for (int i = 0; i < discreteDistribution.Length; i++)
+			{
+				var count = discreteDistribution[i].Count;
+				var avg = count > 0 ?
+						  discreteDistribution[i].Average() :
+						  (histogram[i].UpperBound + histogram[i].LowerBound) / 2;
+
+				bins.Add(avg);
+				histogramValues.Add(count);
+			}
+
+			Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+			{
+				InputLagHistogramCollection = new SeriesCollection
+				{
+					new ColumnSeries
+					{
+						Title = "Input lag time distribution",
+						Values = histogramValues,
+						Fill = new SolidColorBrush(Color.FromRgb(241, 125, 32)),
+						DataLabels = true,
+					}
+				};
+
+				InputLagHistogramLabels = bins.Select(bin => Math.Round(bin, 2)
+					.ToString(CultureInfo.InvariantCulture)).ToArray();
+			}));
+		}
+
+		private void SetInputLagStatisticChart(IList<double> inputLagTimes)
+		{
+			if (inputLagTimes == null || !inputLagTimes.Any())
+				return;
+
+			var p99_quantile = _frametimeStatisticProvider.GetPQuantileSequence(inputLagTimes, 0.99);
+			var average = inputLagTimes.Average();
+			var p1_quantile = _frametimeStatisticProvider.GetPQuantileSequence(inputLagTimes, 0.01);
+
+			Application.Current.Dispatcher.Invoke(new Action(() =>
+			{
+				IChartValues values = new ChartValues<double>
+				{
+					p1_quantile,
+					average,
+					p99_quantile
+				};
+
+				InputLagStatisticCollection = new SeriesCollection
+				{
+					new RowSeries
+					{
+						Title = "Input lag statistic",
+						Fill = new SolidColorBrush(Color.FromRgb(241, 125, 32)),
+						Values = values,
+						DataLabels = true,
+						FontSize = 11,
+						MaxRowHeigth = 25
+					}
+				};
+
+				double maxOffset = (values as IList<double>).Max() * 0.15;
+				InputLagBarMaxValue = (int)((values as IList<double>).Max() + maxOffset);
+
+				InputLagParameterLabels = new List<string>
+				{
+					//{ "99%", "Average", "1%"}
+					"P1",
+					"Average",
+					"P99"
+				}.ToArray();
 			}));
 		}
 
@@ -382,7 +596,7 @@ namespace CapFrameX.ViewModel
 			{
 				DroppedFramesStatisticCollection = new SeriesCollection()
 				{
-					new LiveCharts.Wpf.PieSeries
+					new PieSeries
 					{
 						Title = "Synced frames",
 						Values = new ChartValues<int>(){ appMissed.Count(flag => flag == false) },
@@ -418,6 +632,80 @@ namespace CapFrameX.ViewModel
 
 			return (Math.Round(percentage * 100, 0))
 				.ToString() + "%";
+		}
+
+		private void SetFrameInputLagChart(IList<double> frametimes, IList<double> inputlagtimes)
+		{
+			var filteredFrametimes = frametimes.Where((ft, i) => _session.AppMissed[i] != true).ToList();
+
+			var yMin = Math.Min(filteredFrametimes.Min(), inputlagtimes.Min());
+			var yMax = Math.Max(filteredFrametimes.Max(), inputlagtimes.Max());
+
+			var frametimeSeries = new OxyPlot.Series.LineSeries
+			{
+				Title = "Frametimes",
+				StrokeThickness = 1,
+				LegendStrokeThickness = 4,
+				Color = ColorRessource.FrametimeStroke
+			};
+
+			var inputLagSeries = new OxyPlot.Series.LineSeries
+			{
+				Title = "Input lag",
+				StrokeThickness = 1,
+				LegendStrokeThickness = 4,
+				Color = ColorRessource.FrametimeMovingAverageStroke
+			};
+
+			frametimeSeries.Points.AddRange(filteredFrametimes.Select((x, i) => new DataPoint(i, x)));
+			inputLagSeries.Points.AddRange(inputlagtimes.Select((x, i) => new DataPoint(i, x)));
+
+			Application.Current.Dispatcher.Invoke(new Action(() =>
+			{
+				var tmp = new PlotModel
+				{
+					PlotMargins = new OxyThickness(40, 10, 0, 40),
+					PlotAreaBorderColor = OxyColor.FromArgb(64, 204, 204, 204),
+					LegendPosition = LegendPosition.TopCenter,
+					LegendOrientation = LegendOrientation.Horizontal
+				};
+
+				tmp.Series.Add(frametimeSeries);
+				tmp.Series.Add(inputLagSeries);
+
+				//Axes
+				//X
+				tmp.Axes.Add(new LinearAxis()
+				{
+					Key = "xAxis",
+					Position = OxyPlot.Axes.AxisPosition.Bottom,
+					Title = "Samples",
+					Minimum = 0,
+					Maximum = filteredFrametimes.Count,
+					MajorGridlineStyle = LineStyle.Solid,
+					MajorGridlineThickness = 1,
+					MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
+					MinorTickSize = 0,
+					MajorTickSize = 0
+				});
+
+				//Y
+				tmp.Axes.Add(new LinearAxis()
+				{
+					Key = "yAxis",
+					Position = OxyPlot.Axes.AxisPosition.Left,
+					Title = "Frametime + input lag [ms]",
+					Minimum = yMin - (yMax - yMin) / 6,
+					Maximum = yMax + (yMax - yMin) / 6,
+					MajorGridlineStyle = LineStyle.Solid,
+					MajorGridlineThickness = 1,
+					MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
+					MinorTickSize = 0,
+					MajorTickSize = 0
+				});
+
+				InputLagModel = tmp;
+			}));
 		}
 
 		public void OnNavigatedTo(NavigationContext navigationContext)

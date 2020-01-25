@@ -48,6 +48,7 @@
 				  materialDesign:DataGridAssist.CellPadding="13 8 8 8" materialDesign:DataGridAssist.ColumnHeaderPadding="8" IsSynchronizedWithCurrentItem="False"
 				  CanUserSortColumns="True"
 				  CanUserAddRows="False"
+                  IsReadOnly="True"
 				  ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.CanContentScroll="True"
 				  dragdrop:DragDrop.IsDropTarget="True"
 				  dragdrop:DragDrop.IsDragSource="True"

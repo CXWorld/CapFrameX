@@ -1,165 +1,430 @@
-﻿using CapFrameX.Contracts.Data;
-using CapFrameX.EventAggregation.Messages;
-using CapFrameX.MVVM.Dialogs;
-using CapFrameX.Data;
-using Prism.Commands;
+﻿using CapFrameX.Contracts.Configuration;
+using CapFrameX.Contracts.Overlay;
+using CapFrameX.Extensions;
+using CapFrameX.Hotkey;
+using CapFrameX.Overlay;
+using CapFrameX.Statistics;
+using Gma.System.MouseKeyHook;
+using GongSolutions.Wpf.DragDrop;
 using Prism.Events;
 using Prism.Mvvm;
 using Prism.Regions;
-using System.Windows.Input;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Windows;
 
 namespace CapFrameX.ViewModel
 {
-    public class OverlayViewModel : BindableBase, INavigationAware
-    {
-        private readonly IEventAggregator _eventAggregator;
+	public class OverlayViewModel : BindableBase, INavigationAware, IDropTarget
+	{
+		private readonly IOverlayService _overlayService;
+		private readonly IOverlayEntryProvider _overlayEntryProvider;
+		private readonly IAppConfiguration _appConfiguration;
+		private readonly IEventAggregator _eventAggregator;
 
-        private PubSubEvent<ViewMessages.HideOverlay> _hideOverlayEvent;
-        private bool _isEditingDialogOpen;
-        private EditingDialog _editingDialogContent;
-		private IFileRecordInfo _recordInfo;
-        private string _customCpuDescription;
-        private string _customGpuDescription;
-		private string _customRamDescription;
-		private string _customGameName;
-        private string _customComment;
+		private IKeyboardMouseEvents _globalOverlayHookEvent;
+		private IKeyboardMouseEvents _globalResetHistoryHookEvent;
+		private int _selectedOverlayEntryIndex = -1;
+		private string _updateHpyerlinkText;
 
-        public bool IsEditingDialogOpen
-        {
-            get { return _isEditingDialogOpen; }
-            set
-            {
-                _isEditingDialogOpen = value;
-                RaisePropertyChanged();
-            }
-        }
-
-        public EditingDialog EditingDialogContent
-        {
-            get { return _editingDialogContent; }
-            set
-            {
-                _editingDialogContent = value;
-                RaisePropertyChanged();
-            }
-        }
-
-        public string CustomCpuDescription
-        {
-            get { return _customCpuDescription; }
-            set
-            {
-                _customCpuDescription = value;
-                RaisePropertyChanged();
-            }
-        }
-
-        public string CustomGpuDescription
-        {
-            get { return _customGpuDescription; }
-            set
-            {
-                _customGpuDescription = value;
-                RaisePropertyChanged();
-            }
-        }
-
-		public string CustomRamDescription
+		public bool IsOverlayActive
 		{
-			get { return _customRamDescription; }
+			get { return _appConfiguration.IsOverlayActive; }
 			set
 			{
-				_customRamDescription = value;
+				if (IsRTSSInstalled)
+				{
+					_appConfiguration.IsOverlayActive = value;
+					_overlayService.IsOverlayActiveStream.OnNext(value);
+				}
+				if (value)
+					_overlayService.ShowOverlay();
+				else
+					_overlayService.HideOverlay();
+
 				RaisePropertyChanged();
 			}
 		}
 
-		public string CustomGameName
-        {
-            get { return _customGameName; }
-            set
-            {
-                _customGameName = value;
-                RaisePropertyChanged();
-            }
-        }
+		public string OverlayHotkeyString
+		{
+			get { return _appConfiguration.OverlayHotKey; }
+			set
+			{
+				if (!CXHotkey.IsValidHotkey(value))
+					return;
 
-        public string CustomComment
-        {
-            get { return _customComment; }
-            set
-            {
-                _customComment = value;
-                RaisePropertyChanged();
-            }
-        }
+				_appConfiguration.OverlayHotKey = value;
+				UpdateGlobalOverlayHookEvent();
+				RaisePropertyChanged();
+			}
+		}
 
-        public ICommand AcceptEditingDialogCommand { get; }
+		public string ResetHistoryHotkeyString
+		{
+			get { return _appConfiguration.ResetHistoryHotkey; }
+			set
+			{
+				if (!CXHotkey.IsValidHotkey(value))
+					return;
 
-        public ICommand CancelEditingDialogCommand { get; }
+				_appConfiguration.ResetHistoryHotkey = value;
+				UpdateGlobalResetHistoryHookEvent();
+				RaisePropertyChanged();
+			}
+		}
 
-        public OverlayViewModel(IEventAggregator eventAggregator)
-        {
-            _eventAggregator = eventAggregator;
+		public EMetric SelectedSecondMetric
+		{
+			get
+			{
+				return _appConfiguration
+				  .SecondMetricOverlay
+				  .ConvertToEnum<EMetric>();
+			}
+			set
+			{
+				_appConfiguration.SecondMetricOverlay =
+					value.ConvertToString();
+				_overlayService.SecondMetric = value.ConvertToString();
+				RaisePropertyChanged();
+			}
+		}
 
-            AcceptEditingDialogCommand = new DelegateCommand(OnAcceptEditingDialog);
-            CancelEditingDialogCommand = new DelegateCommand(OnCancelEditingDialog);
+		public EMetric SelectedThirdMetric
+		{
+			get
+			{
+				return _appConfiguration
+				  .ThirdMetricOverlay
+				  .ConvertToEnum<EMetric>();
+			}
+			set
+			{
+				_appConfiguration.ThirdMetricOverlay =
+					value.ConvertToString();
+				_overlayService.ThirdMetric = value.ConvertToString();
+				RaisePropertyChanged();
+			}
+		}
 
-            _hideOverlayEvent = _eventAggregator.GetEvent<PubSubEvent<ViewMessages.HideOverlay>>();
-            SubscribeToUpdateSession();
-        }
+		public int SelectedNumberOfRuns
+		{
+			get
+			{
+				return _appConfiguration
+				  .SelectedHistoryRuns;
+			}
+			set
+			{
+				_appConfiguration.SelectedHistoryRuns =
+					value;
 
-        private void OnCancelEditingDialog()
-        {
-            IsEditingDialogOpen = false;
-            _hideOverlayEvent.Publish(new ViewMessages.HideOverlay());
-        }
+				_overlayService.UpdateNumberOfRuns(value);
+				RaisePropertyChanged();
+			}
+		}
 
-        private void OnAcceptEditingDialog()
-        {
-            IsEditingDialogOpen = false;
-            RecordManager.UpdateCustomData(_recordInfo,
-                CustomCpuDescription, CustomGpuDescription, CustomRamDescription, CustomGameName, CustomComment);
-            _hideOverlayEvent.Publish(new ViewMessages.HideOverlay());
-        }
+		public int SelectedOutlierPercentage
+		{
+			get
+			{
+				return _appConfiguration
+				  .OutlierPercentageOverlay;
+			}
+			set
+			{
+				_appConfiguration.OutlierPercentageOverlay =
+					value;
+				_overlayService.ResetHistory();
+				RaisePropertyChanged();
+			}
+		}
 
-        private void SubscribeToUpdateSession()
-        {
-            _eventAggregator.GetEvent<PubSubEvent<ViewMessages.UpdateSession>>()
-                            .Subscribe(msg =>
-                            {
-                                _recordInfo = msg.RecordInfo;
-                            });
-        }
+		public EOutlierHandling SelectedOutlierHandling
+		{
+			get
+			{
+				return _appConfiguration
+				  .OutlierHandling
+				  .ConvertToEnum<EOutlierHandling>();
+			}
+			set
+			{
+				_appConfiguration.OutlierHandling =
+					value.ConvertToString();
+				_overlayService.ResetHistory();
+				RaisePropertyChanged();
+			}
+		}
 
-        public void OnNavigatedTo(NavigationContext navigationContext)
-        {
-            if (_recordInfo != null)
-            {
-                CustomCpuDescription = string.Copy(_recordInfo.ProcessorName ?? string.Empty);
-                CustomGpuDescription = string.Copy(_recordInfo.GraphicCardName ?? string.Empty);
-                CustomGameName = string.Copy(_recordInfo.GameName ?? string.Empty);
-                CustomComment = string.Copy(_recordInfo.Comment ?? string.Empty);
-            }
-            else
-            {
-                CustomCpuDescription = string.Empty;
-                CustomGpuDescription = string.Empty;
-                CustomGameName = string.Empty;
-                CustomComment = string.Empty;
-            }
+		public int OSDRefreshPeriod
+		{
+			get
+			{
+				return _appConfiguration
+				  .OSDRefreshPeriod;
+			}
+			set
+			{
+				_appConfiguration
+				   .OSDRefreshPeriod = value;
+				_overlayService.UpdateRefreshRate(value);
+				RaisePropertyChanged();
+			}
+		}
 
-            EditingDialogContent = new EditingDialog();
-            IsEditingDialogOpen = true;
-        }
+		public bool UseRunHistory
+		{
+			get
+			{
+				return _appConfiguration
+				  .UseRunHistory;
+			}
+			set
+			{
+				_appConfiguration.UseRunHistory = value;
+				OnUseRunHistoryChanged();
 
-        public bool IsNavigationTarget(NavigationContext navigationContext)
-        {
-            return true;
-        }
+				RaisePropertyChanged();
+			}
+		}
 
-        public void OnNavigatedFrom(NavigationContext navigationContext)
-        {
-        }
-    }
+		public bool UseAggregation
+		{
+			get
+			{
+				return _appConfiguration
+				  .UseAggregation;
+			}
+			set
+			{
+				_appConfiguration.UseAggregation =
+					value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public bool SaveAggregationOnly
+		{
+			get
+			{
+				return _appConfiguration
+				  .SaveAggregationOnly;
+			}
+			set
+			{
+				_appConfiguration.SaveAggregationOnly =
+					value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public int SelectedOverlayEntryIndex
+		{
+			get { return _selectedOverlayEntryIndex; }
+			set
+			{
+				_selectedOverlayEntryIndex = value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public string UpdateHpyerlinkText
+		{
+			get { return _updateHpyerlinkText; }
+			set
+			{
+				_updateHpyerlinkText = value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public string SelectedRelatedMetric
+		{
+			get
+			{
+				return _appConfiguration.RelatedMetricOverlay;
+			}
+			set
+			{
+				_appConfiguration.RelatedMetricOverlay = value;
+				_overlayService.ResetHistory();
+				RaisePropertyChanged();
+			}
+		}
+
+		public bool IsRTSSInstalled { get; }
+
+		public IAppConfiguration AppConfiguration => _appConfiguration;
+
+		public Array SecondMetricItems => Enum.GetValues(typeof(EMetric))
+											  .Cast<EMetric>()
+											  .Where(metric => metric != EMetric.Average && metric != EMetric.None)
+											  .ToArray();
+		public Array ThirdMetricItems => Enum.GetValues(typeof(EMetric))
+											 .Cast<EMetric>()
+											 .Where(metric => metric != EMetric.Average)
+											 .ToArray();
+
+		public Array NumberOfRunsItemsSource => Enumerable.Range(3, 3).ToArray();
+
+		public Array OutlierPercentageItemsSource => Enumerable.Range(2, 9).ToArray();
+
+		public Array OutlierHandlingItems => Enum.GetValues(typeof(EOutlierHandling))
+														.Cast<EOutlierHandling>()
+														.ToArray();
+
+		public Array RelatedMetricItemsSource => new[] { "Average", "Second", "Third" };
+
+		public Array RefreshPeriodItemsSource => new[] { 200, 300, 400, 500, 600, 700, 800, 900, 1000 };
+
+		public ObservableCollection<IOverlayEntry> OverlayEntries { get; private set; }
+			= new ObservableCollection<IOverlayEntry>();
+
+		public OverlayViewModel(IOverlayService overlayService, IOverlayEntryProvider overlayEntryProvider,
+			IAppConfiguration appConfiguration, IEventAggregator eventAggregator)
+		{
+			_overlayService = overlayService;
+			_overlayEntryProvider = overlayEntryProvider;
+			_appConfiguration = appConfiguration;
+			_eventAggregator = eventAggregator;
+
+			if (IsOverlayActive)
+				_overlayService.ShowOverlay();
+
+			IsRTSSInstalled = !string.IsNullOrEmpty(RTSSUtils.GetRTSSFullPath());
+			UpdateHpyerlinkText = "To use the overlay, install the latest" + Environment.NewLine +
+				"RivaTuner  Statistics  Server  (RTSS)";
+
+			OverlayEntries.AddRange(_overlayEntryProvider.GetOverlayEntries());
+
+			SetGlobalHookEventOverlayHotkey();
+			SetGlobalHookEventResetHistoryHotkey();
+		}
+
+		private void OnUseRunHistoryChanged()
+		{
+			var historyEntry = _overlayEntryProvider.GetOverlayEntry("RunHistory");
+
+			if (!UseRunHistory)
+			{
+				UseAggregation = false;
+
+				// don't show history on overlay
+				if (historyEntry != null)
+				{
+					historyEntry.ShowOnOverlay = false;
+					historyEntry.ShowOnOverlayIsEnabled = false;
+				}
+			}
+			else
+			{
+				if (historyEntry != null)
+					historyEntry.ShowOnOverlay = true;
+				historyEntry.ShowOnOverlayIsEnabled = true;
+			}
+		}
+
+		private void UpdateGlobalOverlayHookEvent()
+		{
+			if (_globalOverlayHookEvent != null)
+			{
+				_globalOverlayHookEvent.Dispose();
+				SetGlobalHookEventOverlayHotkey();
+			}
+		}
+
+		private void UpdateGlobalResetHistoryHookEvent()
+		{
+			if (_globalResetHistoryHookEvent != null)
+			{
+				_globalResetHistoryHookEvent.Dispose();
+				SetGlobalHookEventResetHistoryHotkey();
+			}
+		}
+
+		private void SetGlobalHookEventOverlayHotkey()
+		{
+			if (!CXHotkey.IsValidHotkey(OverlayHotkeyString))
+				return;
+
+			var onCombinationDictionary = new Dictionary<Combination, Action>
+			{
+				{Combination.FromString(OverlayHotkeyString), () =>
+				{
+					IsOverlayActive = !IsOverlayActive;
+				}}
+			};
+
+			_globalOverlayHookEvent = Hook.GlobalEvents();
+			_globalOverlayHookEvent.OnCombination(onCombinationDictionary);
+		}
+
+		private void SetGlobalHookEventResetHistoryHotkey()
+		{
+			if (!CXHotkey.IsValidHotkey(ResetHistoryHotkeyString))
+				return;
+
+			var onCombinationDictionary = new Dictionary<Combination, Action>
+			{
+				{Combination.FromString(ResetHistoryHotkeyString), () =>
+				{
+					_overlayService.ResetHistory();
+				}}
+			};
+
+			_globalResetHistoryHookEvent = Hook.GlobalEvents();
+			_globalResetHistoryHookEvent.OnCombination(onCombinationDictionary);
+		}
+
+		public bool IsNavigationTarget(NavigationContext navigationContext)
+		{
+			return true;
+		}
+
+		public void OnNavigatedFrom(NavigationContext navigationContext)
+		{
+		}
+
+		public void OnNavigatedTo(NavigationContext navigationContext)
+		{
+		}
+
+		void IDropTarget.Drop(IDropInfo dropInfo)
+		{
+			if (dropInfo != null)
+			{
+				if (dropInfo.VisualTarget is FrameworkElement frameworkElement)
+				{
+					if (frameworkElement.Name == "OverlayItemDataGrid")
+					{
+						if (dropInfo.Data is IOverlayEntry overlayEntry)
+						{
+							// get source index
+							int sourceIndex = OverlayEntries.IndexOf(overlayEntry);
+							int targetIndex = dropInfo.InsertIndex;
+
+							_overlayEntryProvider.MoveEntry(sourceIndex, targetIndex);
+							OverlayEntries.Clear();
+							OverlayEntries.AddRange(_overlayEntryProvider?.GetOverlayEntries());
+							_overlayService.UpdateOverlayEntries();
+						}
+					}
+				}
+			}
+		}
+
+		void IDropTarget.DragOver(IDropInfo dropInfo)
+		{
+			if (dropInfo != null)
+			{
+				// standard behavior
+				dropInfo.DropTargetAdorner = DropTargetAdorners.Insert;
+				dropInfo.Effects = DragDropEffects.Move;
+			}
+		}
+	}
 }

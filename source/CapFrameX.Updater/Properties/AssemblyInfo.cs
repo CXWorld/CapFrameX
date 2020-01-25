@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("UGG")]
 [assembly: AssemblyProduct("CapFrameX.Updater")]
-[assembly: AssemblyCopyright("Copyright © UGG 2019")]
+[assembly: AssemblyCopyright("Copyright © UGG 2020")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

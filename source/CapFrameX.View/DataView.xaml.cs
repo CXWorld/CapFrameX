@@ -67,5 +67,10 @@ namespace CapFrameX.View
 			LShapeY.MinValue = double.NaN;
 			LShapeY.MaxValue = double.NaN;
 		}
+
+		private void RangeSlider_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
+		{
+			(DataContext as DataViewModel).OnRangeSliderDragCompleted();
+		}
 	}
 }

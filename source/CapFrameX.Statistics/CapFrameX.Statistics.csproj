@@ -71,8 +71,9 @@
     <Compile Include="ERemoveOutlierMethod.cs" />
     <Compile Include="FrametimeAnalyzer.cs" />
     <Compile Include="FrametimeStatisticProvider.cs" />
-    <Compile Include="IFrametimeAnalyzer.cs" />
+    <Compile Include="IFrameTimeAnalyzer.cs" />
     <Compile Include="IStatisticProvider.cs" />
+    <Compile Include="MetricAnalysis.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -82,6 +83,10 @@
     <ProjectReference Include="..\CapFrameX.Contracts\CapFrameX.Contracts.csproj">
       <Project>{4C3B8B5C-54D7-46A1-91A1-32BF82FD42CD}</Project>
       <Name>CapFrameX.Contracts</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CapFrameX.Extensions\CapFrameX.Extensions.csproj">
+      <Project>{A4559B99-7FCB-40EF-BF97-D293A2B7D6D3}</Project>
+      <Name>CapFrameX.Extensions</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -1,6 +1,7 @@
 ﻿using CapFrameX.Contracts.Configuration;
-using CapFrameX.Contracts.OcatInterface;
+using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.PresentMonInterface;
+using CapFrameX.Overlay;
 using CapFrameX.Updater;
 using Prism.Events;
 using Prism.Mvvm;
@@ -18,8 +19,10 @@ namespace CapFrameX.ViewModel
 		private readonly IEventAggregator _eventAggregator;
 		private readonly IAppConfiguration _appConfiguration;
 		private readonly ICaptureService _captureService;
+		private readonly IOverlayService _overlayService;
 
 		private bool _isCaptureModeActive;
+		private bool _isOverlayActive;
 		private bool _isDirectoryObserving;
 		private string _updateHpyerlinkText;
 
@@ -44,6 +47,16 @@ namespace CapFrameX.ViewModel
 			{
 				_isDirectoryObserving =
 					value && _recordObserver.HasValidSource;
+				RaisePropertyChanged();
+			}
+		}
+
+		public bool IsOverlayActive
+		{
+			get { return _isOverlayActive; }
+			set
+			{
+				_isOverlayActive = value;
 				RaisePropertyChanged();
 			}
 		}
@@ -85,16 +98,19 @@ namespace CapFrameX.ViewModel
 		public StateViewModel(IRecordDirectoryObserver recordObserver,
 							  IEventAggregator eventAggregator,
 							  IAppConfiguration appConfiguration,
-							  ICaptureService captureService)
+							  ICaptureService captureService,
+							  IOverlayService overlayService)
 		{
 			_recordObserver = recordObserver;
 			_eventAggregator = eventAggregator;
 			_appConfiguration = appConfiguration;
 			_captureService = captureService;
+			_overlayService = overlayService;
 
 			IsDirectoryObserving = true;
 			IsCaptureModeActive = false;
-			
+			IsOverlayActive = _appConfiguration.IsOverlayActive && !string.IsNullOrEmpty(RTSSUtils.GetRTSSFullPath());
+
 			UpdateHpyerlinkText = $"New version available on GitHub: v{WebCheck.GetWebVersion(WebCheck.VersionSourceFileUrl)}";
 
 			_recordObserver.HasValidSourceStream
@@ -102,6 +118,9 @@ namespace CapFrameX.ViewModel
 
 			_captureService.IsCaptureModeActiveStream
 				.Subscribe(state => IsCaptureModeActive = state);
+
+			_overlayService.IsOverlayActiveStream
+				.Subscribe(state => IsOverlayActive = state);
 		}
 
 		private Assembly GetAssemblyByName(string name)

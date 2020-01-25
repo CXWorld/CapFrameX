@@ -27,7 +27,8 @@ namespace CapFrameX.View
 			if (DesignerProperties.GetIsInDesignMode(this))
 			{
 				var appConfiguration = new CapFrameXConfiguration();
-				DataContext = new ColorbarViewModel(new RegionManager(), new RecordDirectoryObserver(appConfiguration), new EventAggregator(), appConfiguration, null);
+				DataContext = new ColorbarViewModel(new RegionManager(), new RecordDirectoryObserver(appConfiguration), 
+					new EventAggregator(), appConfiguration, null);
 			}
 		}
 
@@ -50,7 +51,7 @@ namespace CapFrameX.View
 		/// <param name="e"></param>
 		private void TakeScreenShotButton_Click(object sender, RoutedEventArgs e)
 		{
-			string path = CapFrameXConfiguration.Instance.ScreenshotDirectory;
+			string path = (DataContext as ColorbarViewModel).AppConfiguration.ScreenshotDirectory;
 
 			try
 			{

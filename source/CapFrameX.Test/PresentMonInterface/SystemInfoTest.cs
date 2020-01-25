@@ -20,6 +20,12 @@ namespace CapFrameX.Test.PresentMonInterface
 		}
 
 		[TestMethod]
+		public void GetGraphicCardVendor_CorrectVendor()
+		{
+			Console.WriteLine(SystemInfo.GetGraphicCardVendor());
+		}
+
+		[TestMethod]
 		public void GetMotherboardInfo_CorrectName()
 		{
 			Console.WriteLine(SystemInfo.GetMotherboardName());
@@ -36,5 +42,11 @@ namespace CapFrameX.Test.PresentMonInterface
         {
             Console.WriteLine(SystemInfo.GetOSVersion());
         }
-    }
+
+		[TestMethod]
+		public void GetGraphicDriverVersion_CorrectVersion()
+		{
+			Console.WriteLine(SystemInfo.GetGraphicDriverVersion());
+		}
+	}
 }

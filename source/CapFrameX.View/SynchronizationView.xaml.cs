@@ -7,6 +7,7 @@ using LiveCharts.Wpf;
 using Prism.Events;
 using System.ComponentModel;
 using System.Windows.Controls;
+using System.Windows.Input;
 
 namespace CapFrameX.View
 {
@@ -29,9 +30,14 @@ namespace CapFrameX.View
 			}
 		}
 
-		private void ResetChart_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
+		private void ResetSynchronizationChart_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
 		{
 			SynchronizationPlotView.ResetAllAxes();
+		}
+
+		private void ResetInputLagChart_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
+		{
+			InputLagPlotView.ResetAllAxes();
 		}
 
 		private void Chart_OnDataClick(object sender, ChartPoint chartpoint)
@@ -44,6 +50,16 @@ namespace CapFrameX.View
 
 			var selectedSeries = (PieSeries)chartpoint.SeriesView;
 			selectedSeries.PushOut = 8;
+		}
+
+		private void InputLagOffsetTextBox_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+		{
+			var key = e.Key;
+
+			if (key == Key.Enter)
+			{
+				InputLagPlotView.Focus();
+			}
 		}
 	}
 }

@@ -4,20 +4,20 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Collections.Generic;
-using CapFrameX.Contracts.OcatInterface;
 using CapFrameX.Contracts.Configuration;
-using CapFrameX.PresentMonInterface;
 using System.Threading.Tasks;
 using System.Threading;
+using CapFrameX.Contracts.PresentMonInterface;
 
 namespace CapFrameX.Data
 {
 	public class RecordDirectoryObserver : IRecordDirectoryObserver
 	{
+		private const int ACCESSTRYCOUNT = 500;
+
 		private readonly ISubject<string> _recordCreatedStream;
 		private readonly ISubject<string> _recordDeletedStream;
 		private readonly IAppConfiguration _appConfiguration;
-
 		private bool _isActive;
 		private string _recordDirectory;
 		private FileSystemWatcher _fileSystemWatcher;
@@ -98,21 +98,42 @@ namespace CapFrameX.Data
 			return path;
 		}
 
-		private async Task SetTaskDelay()
+		private bool IsFileLocked(FileInfo file)
 		{
-			// put some offset here
-			await Task.Delay(TimeSpan.FromMilliseconds(1000));
+			try
+			{
+				using (FileStream stream = file.Open(FileMode.Open, FileAccess.Read, FileShare.None))
+				{
+					stream.Close();
+				}
+			}
+			catch (Exception)
+			{
+				//the file is unavailable because it is:
+				//still being written to
+				//or being processed by another thread
+				//or does not exist (has already been processed)
+				return true;
+			}
+
+			//file is not locked
+			return false;
 		}
 
 		private void WatcherCreated(object sender, FileSystemEventArgs e)
 		{
-			Task.Run(async () =>
+			var fileInfo = new FileInfo(e.FullPath);
+			int count = 0;
+			while (IsFileLocked(fileInfo)) 
 			{
-				await SetTaskDelay().ContinueWith(_ =>
-				{
-					_recordCreatedStream.OnNext(e.FullPath);
-				}, CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
-			});
+				if (count++ > ACCESSTRYCOUNT)
+					break;
+			}
+
+			if(count < ACCESSTRYCOUNT)
+				_recordCreatedStream.OnNext(e.FullPath);
+			// else
+			// ToDo: logger info/error 
 		}
 
 		private void WatcherDeleted(object sender, FileSystemEventArgs e)

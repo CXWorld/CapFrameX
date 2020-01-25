@@ -23,7 +23,7 @@
     <ProjectGuid>{9C46D3F3-72E0-4E6C-AD3E-54A5EE121475}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>CapFrameXRTSSInterface</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.18362.0</WindowsTargetPlatformVersion>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -44,15 +44,18 @@
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
     <CLRSupport>true</CLRSupport>
+    <UseOfMfc>Dynamic</UseOfMfc>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
+    <UseOfMfc>Dynamic</UseOfMfc>
+    <CLRSupport>true</CLRSupport>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -93,10 +96,12 @@
       <PreprocessorDefinitions>_DEBUG;CAPFRAMEXRTSSINTERFACE_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalOptions>/Zc:twoPhase- %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalIncludeDirectories>Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>shlwapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -141,27 +146,45 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;CAPFRAMEXRTSSINTERFACE_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>/Zc:twoPhase- %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>shlwapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="GroupedString.h" />
+    <ClInclude Include="OverlayEntry.h" />
+    <ClInclude Include="RTSSCoreControl.h" />
+    <ClInclude Include="RTSSCSharpWrapper.h" />
+    <ClInclude Include="RTSSProfileInterface.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CapFrameX.RTSSInterface.cpp" />
     <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="GroupedString.cpp" />
+    <ClCompile Include="OverlayEntry.cpp" />
+    <ClCompile Include="RTSSCoreControl.cpp" />
+    <ClCompile Include="RTSSCSharpWrapper.cpp" />
+    <ClCompile Include="RTSSProfileInterface.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CapFrameX.Contracts\CapFrameX.Contracts.csproj">
+      <Project>{4c3b8b5c-54d7-46a1-91a1-32bf82fd42cd}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

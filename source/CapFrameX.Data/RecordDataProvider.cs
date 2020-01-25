@@ -1,6 +1,6 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
-using CapFrameX.Contracts.OcatInterface;
+using CapFrameX.Contracts.PresentMonInterface;
 using CapFrameX.Extensions;
 using CapFrameX.PresentMonInterface;
 using System;
@@ -15,7 +15,7 @@ namespace CapFrameX.Data
 {
 	public class RecordDataProvider : IRecordDataProvider
 	{
-		private static readonly string FILE_HEADER =
+		private static readonly string COLUMN_HEADER =
 			$"Application,ProcessID,SwapChainAddress,Runtime,SyncInterval,PresentFlags," +
 			$"AllowsTearing,PresentMode,WasBatched,DwmNotified,Dropped,TimeInSeconds,MsBetweenPresents," +
 			$"MsBetweenDisplayChange,MsInPresentAPI,MsUntilRenderComplete,MsUntilDisplayed,QPCTime";
@@ -83,7 +83,8 @@ namespace CapFrameX.Data
 			return check;
 		}
 
-		public bool SavePresentData(IList<string> recordLines, string filePath, string processName, int captureTime)
+		public bool SavePresentData(IList<string> recordLines, string filePath,
+			string processName, bool IsAggregated = false, IList<string> externalHeaderLines = null)
 		{
 			try
 			{
@@ -93,8 +94,8 @@ namespace CapFrameX.Data
 				var processNameAdjusted = processName.Contains(".exe") ? processName : $"{processName}.exe";
 
 				// manage custom hardware info
-				bool hasCustomInfo = 
-					_appConfiguration.HardwareInfoSource.ConvertToEnum<EHardwareInfoSource>() == EHardwareInfoSource.Custom;
+				bool hasCustomInfo = _appConfiguration.HardwareInfoSource
+					.ConvertToEnum<EHardwareInfoSource>() == EHardwareInfoSource.Custom;
 
 				var cpuInfo = string.Empty;
 				var gpuInfo = string.Empty;
@@ -113,34 +114,44 @@ namespace CapFrameX.Data
 					ramInfo = SystemInfo.GetSystemRAMInfoName();
 				}
 
+				IList<string> headerLines = Enumerable.Empty<string>().ToList();
+
 				// Create header
-				var headerLines = new List<string>()
+				if (externalHeaderLines == null)
 				{
-					$"{FileRecordInfo.HEADER_MARKER}Id{FileRecordInfo.INFO_SEPERATOR}{Guid.NewGuid().ToString()}",
-					$"{FileRecordInfo.HEADER_MARKER}GameName{FileRecordInfo.INFO_SEPERATOR}{string.Empty}",
-					$"{FileRecordInfo.HEADER_MARKER}ProcessName{FileRecordInfo.INFO_SEPERATOR}{processNameAdjusted}",
-					$"{FileRecordInfo.HEADER_MARKER}CreationDate{FileRecordInfo.INFO_SEPERATOR}{datetime.ToString("yyyy-MM-dd")}",
-					$"{FileRecordInfo.HEADER_MARKER}CreationTime{FileRecordInfo.INFO_SEPERATOR}{datetime.ToString("HH:mm:ss")}",
-					$"{FileRecordInfo.HEADER_MARKER}Motherboard{FileRecordInfo.INFO_SEPERATOR}{SystemInfo.GetMotherboardName()}",
-					$"{FileRecordInfo.HEADER_MARKER}OS{FileRecordInfo.INFO_SEPERATOR}{SystemInfo.GetOSVersion()}",
-					$"{FileRecordInfo.HEADER_MARKER}Processor{FileRecordInfo.INFO_SEPERATOR}{cpuInfo}",
-					$"{FileRecordInfo.HEADER_MARKER}System RAM{FileRecordInfo.INFO_SEPERATOR}{ramInfo}",
-					$"{FileRecordInfo.HEADER_MARKER}Base Driver Version{FileRecordInfo.INFO_SEPERATOR}{string.Empty}",
-					$"{FileRecordInfo.HEADER_MARKER}Driver Package{FileRecordInfo.INFO_SEPERATOR}{string.Empty}",
-					$"{FileRecordInfo.HEADER_MARKER}GPU{FileRecordInfo.INFO_SEPERATOR}{gpuInfo}",
-					$"{FileRecordInfo.HEADER_MARKER}GPU #{FileRecordInfo.INFO_SEPERATOR}{string.Empty}",
-					$"{FileRecordInfo.HEADER_MARKER}GPU Core Clock (MHz){FileRecordInfo.INFO_SEPERATOR}{string.Empty}",
-					$"{FileRecordInfo.HEADER_MARKER}GPU Memory Clock (MHz){FileRecordInfo.INFO_SEPERATOR}{string.Empty}",
-					$"{FileRecordInfo.HEADER_MARKER}GPU Memory (MB){FileRecordInfo.INFO_SEPERATOR}{string.Empty}",
-					$"{FileRecordInfo.HEADER_MARKER}Comment{FileRecordInfo.INFO_SEPERATOR}{string.Empty}"
-				};
+					headerLines = new List<string>()
+					{
+						$"{FileRecordInfo.HEADER_MARKER}Id{FileRecordInfo.INFO_SEPERATOR}{Guid.NewGuid().ToString()}",
+						$"{FileRecordInfo.HEADER_MARKER}GameName{FileRecordInfo.INFO_SEPERATOR}{string.Empty}",
+						$"{FileRecordInfo.HEADER_MARKER}ProcessName{FileRecordInfo.INFO_SEPERATOR}{processNameAdjusted}",
+						$"{FileRecordInfo.HEADER_MARKER}CreationDate{FileRecordInfo.INFO_SEPERATOR}{datetime.ToString("yyyy-MM-dd")}",
+						$"{FileRecordInfo.HEADER_MARKER}CreationTime{FileRecordInfo.INFO_SEPERATOR}{datetime.ToString("HH:mm:ss")}",
+						$"{FileRecordInfo.HEADER_MARKER}Motherboard{FileRecordInfo.INFO_SEPERATOR}{SystemInfo.GetMotherboardName()}",
+						$"{FileRecordInfo.HEADER_MARKER}OS{FileRecordInfo.INFO_SEPERATOR}{SystemInfo.GetOSVersion()}",
+						$"{FileRecordInfo.HEADER_MARKER}Processor{FileRecordInfo.INFO_SEPERATOR}{cpuInfo}",
+						$"{FileRecordInfo.HEADER_MARKER}System RAM{FileRecordInfo.INFO_SEPERATOR}{ramInfo}",
+						$"{FileRecordInfo.HEADER_MARKER}Base Driver Version{FileRecordInfo.INFO_SEPERATOR}{string.Empty}",
+						$"{FileRecordInfo.HEADER_MARKER}Driver Package{FileRecordInfo.INFO_SEPERATOR}{string.Empty}",
+						$"{FileRecordInfo.HEADER_MARKER}GPU{FileRecordInfo.INFO_SEPERATOR}{gpuInfo}",
+						$"{FileRecordInfo.HEADER_MARKER}GPU #{FileRecordInfo.INFO_SEPERATOR}{string.Empty}",
+						$"{FileRecordInfo.HEADER_MARKER}GPU Core Clock (MHz){FileRecordInfo.INFO_SEPERATOR}{string.Empty}",
+						$"{FileRecordInfo.HEADER_MARKER}GPU Memory Clock (MHz){FileRecordInfo.INFO_SEPERATOR}{string.Empty}",
+						$"{FileRecordInfo.HEADER_MARKER}GPU Memory (MB){FileRecordInfo.INFO_SEPERATOR}{string.Empty}",
+						$"{FileRecordInfo.HEADER_MARKER}Comment{FileRecordInfo.INFO_SEPERATOR}{string.Empty}",
+						$"{FileRecordInfo.HEADER_MARKER}IsAggregated{FileRecordInfo.INFO_SEPERATOR}{IsAggregated.ToString()}"
+					};
+				}
+				else
+				{
+					headerLines = externalHeaderLines;
+				}
 
 				foreach (var headerLine in headerLines)
 				{
 					csv.AppendLine(headerLine);
 				}
 
-				csv.AppendLine(FILE_HEADER);
+				csv.AppendLine(COLUMN_HEADER);
 				string firstDataLine = recordLines.First();
 
 				//start time
@@ -154,26 +165,15 @@ namespace CapFrameX.Data
 
 				foreach (var dataLine in recordLines.Skip(1))
 				{
-					var extractedProcessName = GetProcessNameFromDataLine(dataLine);
-					if (extractedProcessName != null)
-					{
-						if (extractedProcessName == processName)
-						{
-							double currentStartTime = GetStartTimeFromDataLine(dataLine);
+					double currentStartTime = GetStartTimeFromDataLine(dataLine);
 
-							// normalize time
-							double normalizedTime = currentStartTime - timeStart;
+					// normalize time
+					double normalizedTime = currentStartTime - timeStart;
 
-							// cutting offset
-							if (captureTime > 0 && normalizedTime > captureTime)
-								break;
+					currentLineSplit = dataLine.Split(',');
+					currentLineSplit[11] = normalizedTime.ToString(CultureInfo.InvariantCulture);
 
-							currentLineSplit = dataLine.Split(',');
-							currentLineSplit[11] = normalizedTime.ToString(CultureInfo.InvariantCulture);
-
-							csv.AppendLine(string.Join(",", currentLineSplit));
-						}
-					}
+					csv.AppendLine(string.Join(",", currentLineSplit));
 				}
 
 				using (var sw = new StreamWriter(filePath))
@@ -184,6 +184,33 @@ namespace CapFrameX.Data
 				return true;
 			}
 			catch { return false; }
+		}
+
+		public IList<string> CreateHeaderLinesFromRecordInfo(IFileRecordInfo recordInfo )
+		{
+			var datetime = DateTime.Now;
+
+			return new List<string>()
+					{
+						$"{FileRecordInfo.HEADER_MARKER}Id{FileRecordInfo.INFO_SEPERATOR}{Guid.NewGuid().ToString()}",
+						$"{FileRecordInfo.HEADER_MARKER}GameName{FileRecordInfo.INFO_SEPERATOR}{recordInfo.GameName}",
+						$"{FileRecordInfo.HEADER_MARKER}ProcessName{FileRecordInfo.INFO_SEPERATOR}{recordInfo.ProcessName}",
+						$"{FileRecordInfo.HEADER_MARKER}CreationDate{FileRecordInfo.INFO_SEPERATOR}{datetime.ToString("yyyy-MM-dd")}",
+						$"{FileRecordInfo.HEADER_MARKER}CreationTime{FileRecordInfo.INFO_SEPERATOR}{datetime.ToString("HH:mm:ss")}",
+						$"{FileRecordInfo.HEADER_MARKER}Motherboard{FileRecordInfo.INFO_SEPERATOR}{recordInfo.MotherboardName}",
+						$"{FileRecordInfo.HEADER_MARKER}OS{FileRecordInfo.INFO_SEPERATOR}{recordInfo.OsVersion}",
+						$"{FileRecordInfo.HEADER_MARKER}Processor{FileRecordInfo.INFO_SEPERATOR}{recordInfo.ProcessorName}",
+						$"{FileRecordInfo.HEADER_MARKER}System RAM{FileRecordInfo.INFO_SEPERATOR}{recordInfo.SystemRamInfo}",
+						$"{FileRecordInfo.HEADER_MARKER}Base Driver Version{FileRecordInfo.INFO_SEPERATOR}{recordInfo.BaseDriverVersion}",
+						$"{FileRecordInfo.HEADER_MARKER}Driver Package{FileRecordInfo.INFO_SEPERATOR}{recordInfo.DriverPackage}",
+						$"{FileRecordInfo.HEADER_MARKER}GPU{FileRecordInfo.INFO_SEPERATOR}{recordInfo.GraphicCardName}",
+						$"{FileRecordInfo.HEADER_MARKER}GPU #{FileRecordInfo.INFO_SEPERATOR}{recordInfo.NumberGPUs}",
+						$"{FileRecordInfo.HEADER_MARKER}GPU Core Clock (MHz){FileRecordInfo.INFO_SEPERATOR}{recordInfo.GPUCoreClock}",
+						$"{FileRecordInfo.HEADER_MARKER}GPU Memory Clock (MHz){FileRecordInfo.INFO_SEPERATOR}{recordInfo.GPUMemoryClock}",
+						$"{FileRecordInfo.HEADER_MARKER}GPU Memory (MB){FileRecordInfo.INFO_SEPERATOR}{recordInfo.GPUMemory}",
+						$"{FileRecordInfo.HEADER_MARKER}Comment{FileRecordInfo.INFO_SEPERATOR}{string.Empty}",
+						$"{FileRecordInfo.HEADER_MARKER}IsAggregated{FileRecordInfo.INFO_SEPERATOR}{true.ToString()}"
+					};
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -201,6 +228,16 @@ namespace CapFrameX.Data
 			}
 
 			return processName;
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static string GetProcessIdFromDataLine(string dataLine)
+		{
+			if (string.IsNullOrWhiteSpace(dataLine))
+				return null;
+
+			var lineSplit = dataLine.Split(',');
+			return lineSplit[1];
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -238,6 +275,7 @@ namespace CapFrameX.Data
 
 			return Convert.ToDouble(startTime, CultureInfo.InvariantCulture);
 		}
+
 
 		public void AddGameNameToMatchingList(string processName, string gameName)
 		{
@@ -309,6 +347,51 @@ namespace CapFrameX.Data
 			}
 
 			return gameName;
+		}
+
+		public string GetOutputFilename(string processName)
+		{
+			var filename = CaptureServiceConfiguration.GetCaptureFilename(processName);
+			string observedDirectory = RecordDirectoryObserver
+				.GetInitialObservedDirectory(_appConfiguration.ObservedDirectory);
+
+			return Path.Combine(observedDirectory, filename);
+		}
+
+		public bool SaveAggregatedPresentData(IList<IList<string>> aggregatedCaptureData, IList<string> externalHeaderLines = null)
+		{
+			IList<string> aggregatedList = new List<string>();
+
+			var concatedCaptureData = new List<string>(aggregatedCaptureData.Sum(set => set.Count));
+
+			foreach (var frametimeSet in aggregatedCaptureData)
+			{
+				concatedCaptureData.AddRange(frametimeSet);
+			}
+
+			// set first line to 0
+			double startTime = 0;
+
+			var firstLineSplit = concatedCaptureData[0].Split(',');
+			firstLineSplit[11] = startTime.ToString(CultureInfo.InvariantCulture);
+			aggregatedList.Add(string.Join(",", firstLineSplit));
+
+			for (int i = 1; i < concatedCaptureData.Count; i++)
+			{
+				var lineSplit = concatedCaptureData[i].Split(',');
+				var frametime = 1E-03 * Convert.ToDouble(lineSplit[12], CultureInfo.InvariantCulture);
+				startTime += frametime;
+				lineSplit[11] = startTime.ToString(CultureInfo.InvariantCulture);
+				aggregatedList.Add(string.Join(",", lineSplit));
+			}
+
+			if (aggregatedList.Any())
+			{
+				string processName = GetProcessNameFromDataLine(aggregatedList.First());
+				return SavePresentData(aggregatedList, GetOutputFilename(processName), processName, true, externalHeaderLines);
+			}
+
+			return false;
 		}
 	}
 }

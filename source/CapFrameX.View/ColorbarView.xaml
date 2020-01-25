@@ -41,8 +41,16 @@
                              Visibility="{Binding IsCompatibleWithRunningOS, Converter={StaticResource FalseToCollapsedConverter}}"/>
 					<RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
 							 Margin="5"
+							 IsChecked="{Binding OverlayIsChecked}"
+							 Content="OVERLAY" />
+					<RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
+							 Margin="5"
 							 IsChecked="{Binding SingleRecordIsChecked}"
 							 Content="ANALYSIS" />
+					<RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
+							 Margin="5"
+							 IsChecked="{Binding AggregationIsChecked}"
+							 Content="AGGREGATION" />
 					<RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
 							 Margin="5"
 							 IsChecked="{Binding RecordComparisonIsChecked}"
@@ -55,10 +63,6 @@
 							 Margin="5"
 							 IsChecked="{Binding SynchronizationIsChecked}"
 							 Content="SYNCHRONIZATION" />
-					<!--<RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
-							 Margin="5"
-							 IsChecked="{Binding AggregationIsChecked}"
-							 Content="AGGREGATION" />-->
 				</StackPanel>
 
 				<Button Grid.Column="1" Margin="0 0 310 0"
