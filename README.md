@@ -54,9 +54,9 @@ The screenshot button takes a screenshot of the current view excluding the recor
 
 ## Options
 * Moving average window size = The number of frames that are used for the average line in the frametime chart.(Analysis View)
-* FPS values rounding digits = The number of decimals for the FPS values
 * Stuttering factor = The factor a frametime has to be above average to be counted as stutter.(Analysis View)
 * Observed directory = The directory in which your captures are saved and also where you can put your OCAT/PresentMon captures.
+* FPS values rounding digits = The number of decimals for the FPS values
 * Screenshot directory = The directory in which your screenshots are saved.
 * Hardware info source = What will be written into the capture file as your CPU, GPU and RAM config.  
   Automatic detection: What's delivered by the system  
@@ -93,13 +93,15 @@ Contains the settings for the items displayed in the OSD aswell as the settings 
 
 Left side  
 Overlay items list where you can set the items you want to see in the OSD and change their order by Drag&Drop. Items with the same group name will be displayed within a single line.
-Overlay hotkey to show or hide CX items in OSD. This doesn't hide RTSS completely like the Afterburner hotkey does. If you have AB or any other App that uses RTSS running together with CX, only CX items will disappear.
+Overlay hotkey to show or hide CX items in OSD. This doesn't hide RTSS completely like the Afterburner hotkey does. If you have AB or any other App that uses RTSS running together with CX, only CX items will disappear.  
+
 Right side  
 Run history to set a number of runs for which you get a simple analysis directly in the OSD. If the history is full, any additional run will replace the oldest one.  
 Aggregation to combine the runs in the history to a single record file once the history is full, while marking outliers within the history.  
 This doesn't take the calculated performance parameters of each record file and calculates an average out of them. It takes the raw frametimes of each record file and puts them into a new file, calculating every parameter based on that set of frametimes.  
-Aggregation outlier handling: A full history is checked for outliers using the median of a selectable metric and an also selectable percentage value.  
-	"Mark & use": Outliers are marked, but all runs will be used for the aggregation.
+
+Aggregation outlier handling: A full history is checked for outliers using the median of a selectable metric and an also selectable percentage value. From there you can choose between two modes:  
+	"Mark & use": Outliers are marked, but all runs will be used for the aggregation.  
 	"Mark & replace": If outliers exist, you have to do additional runs to replace them. Aggregation triggers when you have a full history without outliers. 
 
 ## Comparison View
@@ -108,8 +110,9 @@ With a double-click from the record list you can add the captures to the compari
 
 The first tab shows you the records as bar charts.  
 If you compare records from just a single game, this game is set as a title above the diagramm. If you compare records from multiple games, the names are labeled on the bars.
-In addition you have an adjustable context for each record.
+In addition you have an adjustable context for each record.  
 At the bottom is a toolbar where you can change the sorting and adjust the displayed metrics aswell as the context.  
+
 The "Grouping" toggle switches between two sorting modes:  
 off-> all records are sorted by FPS  
 on-> records are sorted by game, then by FPS  
@@ -147,7 +150,8 @@ Below the Graph you can see two percentage values. The first one shows the corre
 At the bottom you can see the distribution of the refresh times and beside it another pie chart which shows the number of dropped frames.  
 
 Tab "Approximated input lag"  
-Using various data from PresentMon, we can give a fairly accurate approximation on the input lag. Note, that this doesn't include the additional latency from your mouse/keyboard or your monitor.  
+Using various data from PresentMon, we can give a fairly accurate approximation on the input lag.  
+Note, that this doesn't include the additional latency from your mouse/keyboard or your monitor. For that we've included a box where you can type in an offset based on your hardware. We've chosen 10ms as the default.  
 This input lag is shown in the graph and in the distribution below as well as a small bar chart for the average and pecentile values.  
 
 ## Export options (context menu)
