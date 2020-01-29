@@ -67,6 +67,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AggregationEntry.cs" />
+    <Compile Include="AppVersionProvider.cs" />
     <Compile Include="ComparisonRecordInfo.cs" />
     <Compile Include="EHardwareInfoSource.cs" />
     <Compile Include="FileRecordInfo.cs" />
@@ -108,6 +109,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

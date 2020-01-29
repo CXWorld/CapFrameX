@@ -71,6 +71,7 @@
   <ItemGroup>
     <Compile Include="Aggregation\IAggregationEntry.cs" />
     <Compile Include="Configuration\IAppConfiguration.cs" />
+    <Compile Include="Data\IAppVersionProvider.cs" />
     <Compile Include="Data\IFileRecordInfo.cs" />
     <Compile Include="Data\IRecordDataProvider.cs" />
     <Compile Include="MVVM\IMouseEventHandler.cs" />
