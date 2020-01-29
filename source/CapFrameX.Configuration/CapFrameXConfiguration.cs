@@ -30,6 +30,12 @@ namespace CapFrameX.Configuration
 			set { Settings.ScreenshotDirectory = value; Settings.Save(); }
 		}
 
+		public string LoggingDirectory
+		{
+			get { return Settings.LoggingDirectory; }
+			set { Settings.LoggingDirectory = value; Settings.Save(); }
+		}
+
 		public int FpsValuesRoundingDigits
 		{
 			get { return Settings.FpsValuesRoundingDigits; }

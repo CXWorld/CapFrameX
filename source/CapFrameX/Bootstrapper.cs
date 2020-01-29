@@ -18,11 +18,16 @@ using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.MVVM;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.Overlay;
+using Serilog;
+using Microsoft.Extensions.Logging;
+using CapFrameX.Extensions;
+using System.IO;
 
 namespace CapFrameX
 {
 	public class Bootstrapper : DryIocBootstrapper
 	{
+
 		protected override DependencyObject CreateShell()
 		{
 			var shell = Container.Resolve<Shell>();
@@ -44,6 +49,8 @@ namespace CapFrameX
 			// Vertical components
 			Container.Register<IEventAggregator, EventAggregator>(Reuse.Singleton, null, null, IfAlreadyRegistered.Replace, "EventAggregator");
 			Container.Register<IAppConfiguration, CapFrameXConfiguration>(Reuse.Singleton);
+			Container.ConfigureSerilogILogger(CreateLoggerConfiguration(Container.Resolve<IAppConfiguration>()));
+
 
 			// Prism
 			Container.Register<IRegionManager, RegionManager>(Reuse.Singleton, null, null, IfAlreadyRegistered.Replace, "RegionManager");
@@ -56,6 +63,7 @@ namespace CapFrameX
 			Container.Register<IOverlayService, OverlayService>(Reuse.Singleton);
 			Container.Register<IOverlayEntryProvider, OverlayEntryProvider>(Reuse.Singleton);
 			Container.Register<IRecordDataProvider, RecordDataProvider>(Reuse.Singleton);
+			Container.Register<IAppVersionProvider, AppVersionProvider>(Reuse.Singleton);
 		}
 
 		/// <summary>
@@ -92,5 +100,21 @@ namespace CapFrameX
 			ModuleCatalog moduleCatalog = (ModuleCatalog)ModuleCatalog;
 			moduleCatalog.AddModule(typeof(CapFrameXViewRegion));
 		}
+
+		private LoggerConfiguration CreateLoggerConfiguration(IAppConfiguration appConfiguration)
+		{
+			var path = appConfiguration.LoggingDirectory;
+			if (path.Contains(@"MyDocuments\CapFrameX\Logs"))
+			{
+				path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), @"CapFrameX\Logs");
+			}
+			return new LoggerConfiguration()
+				.MinimumLevel.Debug()
+				.WriteTo.File(
+					path: Path.Combine(path, "CapFrameX.log"),
+					fileSizeLimitBytes: 10240
+				);
+		}
+
 	}
 }

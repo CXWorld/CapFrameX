@@ -6,6 +6,7 @@ using CapFrameX.Overlay;
 using CapFrameX.PresentMonInterface;
 using CapFrameX.Statistics;
 using CapFrameX.ViewModel;
+using Microsoft.Extensions.Logging;
 using Prism.Events;
 using System.ComponentModel;
 using System.Windows;
@@ -52,7 +53,7 @@ namespace CapFrameX.View
 				var overlayEntryProvider = new OverlayEntryProvider();
 				DataContext = new CaptureViewModel(appConfiguration, new PresentMonCaptureService(),
 					new EventAggregator(), new RecordDataProvider(new RecordDirectoryObserver(appConfiguration), appConfiguration), 
-					new OverlayService(statisticProvider, recordDataProvider, overlayEntryProvider, appConfiguration), statisticProvider);
+					new OverlayService(statisticProvider, recordDataProvider, overlayEntryProvider, appConfiguration), statisticProvider, new LoggerFactory().CreateLogger<CaptureViewModel>());
 			}
 		}
 

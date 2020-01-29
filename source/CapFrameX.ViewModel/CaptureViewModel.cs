@@ -8,6 +8,7 @@ using CapFrameX.Hotkey;
 using CapFrameX.PresentMonInterface;
 using CapFrameX.Statistics;
 using Gma.System.MouseKeyHook;
+using Microsoft.Extensions.Logging;
 using OxyPlot;
 using OxyPlot.Axes;
 using Prism.Commands;
@@ -45,6 +46,7 @@ namespace CapFrameX.ViewModel
 		private readonly IRecordDataProvider _recordDataProvider;
 		private readonly IOverlayService _overlayService;
 		private readonly IStatisticProvider _statisticProvider;
+		private readonly ILogger<CaptureViewModel> _logger;
 		private readonly MediaPlayer _soundPlayer = new MediaPlayer();
 		private readonly string[] _soundModes = new[] { "none", "simple sounds", "voice response" };
 		private readonly List<string> _captureDataArchive = new List<string>(ARCHIVE_LENGTH);
@@ -270,7 +272,8 @@ namespace CapFrameX.ViewModel
 								IEventAggregator eventAggregator,
 								IRecordDataProvider recordDataProvider,
 								IOverlayService overlayService,
-								IStatisticProvider statisticProvider)
+								IStatisticProvider statisticProvider,
+								ILogger<CaptureViewModel> logger)
 		{
 			_appConfiguration = appConfiguration;
 			_captureService = captureService;
@@ -278,11 +281,13 @@ namespace CapFrameX.ViewModel
 			_recordDataProvider = recordDataProvider;
 			_overlayService = overlayService;
 			_statisticProvider = statisticProvider;
+			_logger = logger;
 
 			AddToIgonreListCommand = new DelegateCommand(OnAddToIgonreList);
 			AddToProcessListCommand = new DelegateCommand(OnAddToProcessList);
 			ResetCaptureProcessCommand = new DelegateCommand(OnResetCaptureProcess);
 
+			_logger.LogDebug("{viewName} Ready", this.GetType().Name);
 			CaptureStateInfo = "Service ready..." + Environment.NewLine + $"Press {CaptureHotkeyString} to start capture of the running process.";
 			SelectedSoundMode = _appConfiguration.HotkeySoundMode;
 			CaptureTimeString = _appConfiguration.CaptureTime.ToString();
