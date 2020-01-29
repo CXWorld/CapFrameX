@@ -38,6 +38,7 @@ namespace CapFrameX
 		protected override void InitializeShell()
 		{
 			base.InitializeShell();
+			LogAppInfo();
 			Application.Current.MainWindow = (Window)Shell;
 			Application.Current.MainWindow.Show();
 		}
@@ -116,5 +117,11 @@ namespace CapFrameX
 				);
 		}
 
+		private void LogAppInfo()
+		{
+			var loggerFactory = Container.Resolve<ILoggerFactory>();
+			var version = Container.Resolve<IAppVersionProvider>().GetAppVersion().ToString();
+			loggerFactory.CreateLogger<ILogger<Bootstrapper>>().LogInformation("CapFrameX {version} started", version);
+		}
 	}
 }
