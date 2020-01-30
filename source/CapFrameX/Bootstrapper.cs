@@ -24,6 +24,7 @@ using CapFrameX.Extensions;
 using System.IO;
 using CapFrameX.Contracts.UpdateCheck;
 using CapFrameX.Updater;
+using Serilog.Formatting.Compact;
 
 namespace CapFrameX
 {
@@ -115,9 +116,11 @@ namespace CapFrameX
 			}
 			return new LoggerConfiguration()
 				.MinimumLevel.Debug()
+				.Enrich.FromLogContext()
 				.WriteTo.File(
 					path: Path.Combine(path, "CapFrameX.log"),
-					fileSizeLimitBytes: 10240
+					fileSizeLimitBytes: 10240,
+					formatter: new CompactJsonFormatter()
 				);
 		}
 
