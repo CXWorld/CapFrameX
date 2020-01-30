@@ -1,6 +1,8 @@
 ﻿using CapFrameX.Contracts.Configuration;
+using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.PresentMonInterface;
+using CapFrameX.Contracts.UpdateCheck;
 using CapFrameX.Overlay;
 using CapFrameX.Updater;
 using Prism.Events;
@@ -20,11 +22,12 @@ namespace CapFrameX.ViewModel
 		private readonly IAppConfiguration _appConfiguration;
 		private readonly ICaptureService _captureService;
 		private readonly IOverlayService _overlayService;
-
+		private readonly IUpdateCheck _updateCheck;
+		private readonly IAppVersionProvider _appVersionProvider;
 		private bool _isCaptureModeActive;
 		private bool _isOverlayActive;
 		private bool _isDirectoryObserving;
-		private string _updateHpyerlinkText;
+		private string _updateHyperlinkText;
 
 		private bool IsBeta => GetBetaState();
 
@@ -71,12 +74,12 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-		public string UpdateHpyerlinkText
+		public string UpdateHyperlinkText
 		{
-			get { return _updateHpyerlinkText; }
+			get { return _updateHyperlinkText; }
 			set
 			{
-				_updateHpyerlinkText = value;
+				_updateHyperlinkText = value;
 				RaisePropertyChanged();
 			}
 		}
@@ -85,33 +88,36 @@ namespace CapFrameX.ViewModel
 		{
 			get
 			{
-				Assembly assembly = GetAssemblyByName("CapFrameX");
-				var fileVersion = FileVersionInfo.GetVersionInfo(assembly.Location).FileVersion;
+				var version = _appVersionProvider.GetAppVersion();
+				var versionString = $"{version.Major}.{version.Minor}.{version.Build}";
 
-				var numbers = fileVersion.Split('.');
-				return IsBeta ? $"{numbers[0]}.{numbers[1]}.{numbers[2]} Beta" : $"{numbers[0]}.{numbers[1]}.{numbers[2]}";
+				return IsBeta ? $"{versionString} Beta" : versionString;
 			}
 		}
 
-		public bool IsUpdateAvailable => WebCheck.IsCXUpdateAvailable(WebCheck.VersionSourceFileUrl);
+		public bool IsUpdateAvailable => _updateCheck.IsUpdateAvailable();
 
 		public StateViewModel(IRecordDirectoryObserver recordObserver,
 							  IEventAggregator eventAggregator,
 							  IAppConfiguration appConfiguration,
 							  ICaptureService captureService,
-							  IOverlayService overlayService)
+							  IOverlayService overlayService,
+							  IUpdateCheck updateCheck,
+							  IAppVersionProvider appVersionProvider,
+							  IWebVersionProvider webVersionProvider)
 		{
 			_recordObserver = recordObserver;
 			_eventAggregator = eventAggregator;
 			_appConfiguration = appConfiguration;
 			_captureService = captureService;
 			_overlayService = overlayService;
-
+			_updateCheck = updateCheck;
+			_appVersionProvider = appVersionProvider;
 			IsDirectoryObserving = true;
 			IsCaptureModeActive = false;
 			IsOverlayActive = _appConfiguration.IsOverlayActive && !string.IsNullOrEmpty(RTSSUtils.GetRTSSFullPath());
 
-			UpdateHpyerlinkText = $"New version available on GitHub: v{WebCheck.GetWebVersion(WebCheck.VersionSourceFileUrl)}";
+			UpdateHyperlinkText = $"New version available on GitHub: v{webVersionProvider.GetWebVersion()}";
 
 			_recordObserver.HasValidSourceStream
 				.Subscribe(state => IsDirectoryObserving = state);

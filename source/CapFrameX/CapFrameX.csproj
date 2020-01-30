@@ -163,6 +163,9 @@
     <Reference Include="Serilog.Extensions.Logging, Version=2.0.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Serilog.Extensions.Logging.3.0.1\lib\netstandard2.0\Serilog.Extensions.Logging.dll</HintPath>
     </Reference>
+    <Reference Include="Serilog.Formatting.Compact, Version=1.1.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Serilog.Formatting.Compact.1.1.0\lib\net452\Serilog.Formatting.Compact.dll</HintPath>
+    </Reference>
     <Reference Include="Serilog.Sinks.File, Version=2.0.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Serilog.Sinks.File.4.1.0\lib\net45\Serilog.Sinks.File.dll</HintPath>
     </Reference>
@@ -283,6 +286,10 @@
     <ProjectReference Include="..\CapFrameX.Statistics\CapFrameX.Statistics.csproj">
       <Project>{788F49CD-ABCB-4C7C-B1B6-BF9DC2482432}</Project>
       <Name>CapFrameX.Statistics</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CapFrameX.Updater\CapFrameX.Updater.csproj">
+      <Project>{5D12AA37-CC30-4476-94AD-11C15DC65518}</Project>
+      <Name>CapFrameX.Updater</Name>
     </ProjectReference>
     <ProjectReference Include="..\CapFrameX.ViewModel\CapFrameX.ViewModel.csproj">
       <Project>{ad4536b2-c977-4cb8-8540-866928671c2d}</Project>

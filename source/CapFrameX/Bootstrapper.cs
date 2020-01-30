@@ -22,6 +22,9 @@ using Serilog;
 using Microsoft.Extensions.Logging;
 using CapFrameX.Extensions;
 using System.IO;
+using CapFrameX.Contracts.UpdateCheck;
+using CapFrameX.Updater;
+using Serilog.Formatting.Compact;
 
 namespace CapFrameX
 {
@@ -65,6 +68,8 @@ namespace CapFrameX
 			Container.Register<IOverlayEntryProvider, OverlayEntryProvider>(Reuse.Singleton);
 			Container.Register<IRecordDataProvider, RecordDataProvider>(Reuse.Singleton);
 			Container.Register<IAppVersionProvider, AppVersionProvider>(Reuse.Singleton);
+			Container.RegisterInstance<IWebVersionProvider>(new WebVersionProvider(), Reuse.Singleton);
+			Container.Register<IUpdateCheck, UpdateCheck>(Reuse.Singleton);
 		}
 
 		/// <summary>
@@ -111,9 +116,11 @@ namespace CapFrameX
 			}
 			return new LoggerConfiguration()
 				.MinimumLevel.Debug()
+				.Enrich.FromLogContext()
 				.WriteTo.File(
 					path: Path.Combine(path, "CapFrameX.log"),
-					fileSizeLimitBytes: 10240
+					fileSizeLimitBytes: 10240,
+					formatter: new CompactJsonFormatter()
 				);
 		}
 

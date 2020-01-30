@@ -313,6 +313,10 @@
       <Project>{788F49CD-ABCB-4C7C-B1B6-BF9DC2482432}</Project>
       <Name>CapFrameX.Statistics</Name>
     </ProjectReference>
+    <ProjectReference Include="..\CapFrameX.Updater\CapFrameX.Updater.csproj">
+      <Project>{5D12AA37-CC30-4476-94AD-11C15DC65518}</Project>
+      <Name>CapFrameX.Updater</Name>
+    </ProjectReference>
     <ProjectReference Include="..\CapFrameX.ViewModel\CapFrameX.ViewModel.csproj">
       <Project>{AD4536B2-C977-4CB8-8540-866928671C2D}</Project>
       <Name>CapFrameX.ViewModel</Name>
