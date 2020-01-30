@@ -55,7 +55,6 @@ namespace CapFrameX
 			Container.Register<IAppConfiguration, CapFrameXConfiguration>(Reuse.Singleton);
 			Container.ConfigureSerilogILogger(CreateLoggerConfiguration(Container.Resolve<IAppConfiguration>()));
 
-
 			// Prism
 			Container.Register<IRegionManager, RegionManager>(Reuse.Singleton, null, null, IfAlreadyRegistered.Replace, "RegionManager");
 
