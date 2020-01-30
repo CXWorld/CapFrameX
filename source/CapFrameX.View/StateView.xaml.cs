@@ -3,6 +3,7 @@ using CapFrameX.Data;
 using CapFrameX.Overlay;
 using CapFrameX.PresentMonInterface;
 using CapFrameX.Statistics;
+using CapFrameX.Updater;
 using CapFrameX.ViewModel;
 using Prism.Events;
 using System.ComponentModel;
@@ -27,9 +28,12 @@ namespace CapFrameX.View
 				var recordDirectoryObserver = new RecordDirectoryObserver(appConfiguration);
 				var recordDataProvider = new RecordDataProvider(recordDirectoryObserver, appConfiguration);
 				var overlayEntryProvider = new OverlayEntryProvider();
+				var appVersionProvider = new AppVersionProvider();
+				var webVersionProvider = new WebVersionProvider();
 				DataContext = new StateViewModel(new RecordDirectoryObserver(appConfiguration),
 					new EventAggregator(), appConfiguration, new PresentMonCaptureService(),
-					new OverlayService(statisticProvider, recordDataProvider, overlayEntryProvider, appConfiguration));
+					new OverlayService(statisticProvider, recordDataProvider, overlayEntryProvider, appConfiguration), 
+					new UpdateCheck(appVersionProvider, webVersionProvider), appVersionProvider, webVersionProvider);
 			}
 		}
 
