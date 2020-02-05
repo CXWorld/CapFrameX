@@ -53,7 +53,9 @@ namespace CapFrameX.View
 				var overlayEntryProvider = new OverlayEntryProvider();
 				DataContext = new CaptureViewModel(appConfiguration, new PresentMonCaptureService(),
 					new EventAggregator(), new RecordDataProvider(new RecordDirectoryObserver(appConfiguration), appConfiguration), 
-					new OverlayService(statisticProvider, recordDataProvider, overlayEntryProvider, appConfiguration), statisticProvider, new LoggerFactory().CreateLogger<CaptureViewModel>());
+					new OverlayService(statisticProvider, recordDataProvider, overlayEntryProvider, appConfiguration, 
+					new LoggerFactory().CreateLogger<OverlayService>()),
+					statisticProvider, new LoggerFactory().CreateLogger<CaptureViewModel>());
 			}
 		}
 

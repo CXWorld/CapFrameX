@@ -5,6 +5,7 @@ using CapFrameX.Contracts.Statistics;
 using CapFrameX.Data;
 using CapFrameX.Extensions;
 using CapFrameX.Statistics;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -23,6 +24,7 @@ namespace CapFrameX.Overlay
 		private readonly IRecordDataProvider _recordDataProvider;
 		private readonly IOverlayEntryProvider _overlayEntryProvider;
 		private readonly IAppConfiguration _appConfiguration;
+		private static ILogger<OverlayService> _logger;
 
 		private IDisposable _disposableHeartBeat;
 		private IDisposable _disposableCaptureTimer;
@@ -44,14 +46,18 @@ namespace CapFrameX.Overlay
 
 		public int RunHistoryCount => _runHistory.Count(run => run != "N/A");
 
-		public OverlayService(IStatisticProvider statisticProvider, IRecordDataProvider recordDataProvider,
-			IOverlayEntryProvider overlayEntryProvider, IAppConfiguration appConfiguration)
-			: base()
+		public OverlayService(IStatisticProvider statisticProvider, 
+							  IRecordDataProvider recordDataProvider,
+							  IOverlayEntryProvider overlayEntryProvider, 
+							  IAppConfiguration appConfiguration, 
+							  ILogger<OverlayService> logger)
+			: base(ExceptionAction)
 		{
 			_statisticProvider = statisticProvider;
 			_recordDataProvider = recordDataProvider;
 			_overlayEntryProvider = overlayEntryProvider;
 			_appConfiguration = appConfiguration;
+			_logger = logger;
 
 			_refreshPeriod = _appConfiguration.OSDRefreshPeriod;
 			_numberOfRuns = _appConfiguration.SelectedHistoryRuns;
@@ -60,6 +66,7 @@ namespace CapFrameX.Overlay
 			IsOverlayActiveStream = new Subject<bool>();
 			_runHistoryOutlierFlags = Enumerable.Repeat(false, _numberOfRuns).ToArray();
 
+			_logger.LogDebug("{componentName} Ready", this.GetType().Name);
 			SetOverlayEntries(overlayEntryProvider?.GetOverlayEntries());
 			overlayEntryProvider.EntryUpdateStream.Subscribe(x =>
 			{
@@ -274,7 +281,7 @@ namespace CapFrameX.Overlay
 					proc.StartInfo.Verb = "runas";
 					proc.Start();
 				}
-				catch { }
+				catch (Exception ex){ _logger.LogError(ex, "Error while starting RTSS process"); }
 			}
 
 			Refresh();
@@ -308,6 +315,12 @@ namespace CapFrameX.Overlay
 			return _statisticProvider
 				.GetMetricAnalysis(concatedFrametimes, SecondMetric, ThirdMetric)
 				.ResultString;
+		}
+
+
+		private static void ExceptionAction(Exception ex)
+		{
+			_logger.LogError(ex, "Exception thrown in RTSSCSharpWrapper");
 		}
 	}
 }

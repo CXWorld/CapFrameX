@@ -5,6 +5,7 @@ using CapFrameX.PresentMonInterface;
 using CapFrameX.Statistics;
 using CapFrameX.Updater;
 using CapFrameX.ViewModel;
+using Microsoft.Extensions.Logging;
 using Prism.Events;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -32,7 +33,8 @@ namespace CapFrameX.View
 				var webVersionProvider = new WebVersionProvider();
 				DataContext = new StateViewModel(new RecordDirectoryObserver(appConfiguration),
 					new EventAggregator(), appConfiguration, new PresentMonCaptureService(),
-					new OverlayService(statisticProvider, recordDataProvider, overlayEntryProvider, appConfiguration), 
+					new OverlayService(statisticProvider, recordDataProvider, overlayEntryProvider, appConfiguration, 
+					new LoggerFactory().CreateLogger<OverlayService>()), 
 					new UpdateCheck(appVersionProvider, webVersionProvider), appVersionProvider, webVersionProvider);
 			}
 		}

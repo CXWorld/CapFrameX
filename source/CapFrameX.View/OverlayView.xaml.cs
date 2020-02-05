@@ -5,6 +5,7 @@ using CapFrameX.Hotkey;
 using CapFrameX.Overlay;
 using CapFrameX.Statistics;
 using CapFrameX.ViewModel;
+using Microsoft.Extensions.Logging;
 using Prism.Events;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -70,7 +71,8 @@ namespace CapFrameX.View
 				var recordDirectoryObserver = new RecordDirectoryObserver(appConfiguration);
 				var recordDataProvider = new RecordDataProvider(recordDirectoryObserver, appConfiguration);
 				var overlayEntryProvider = new OverlayEntryProvider();
-				DataContext = new OverlayViewModel(new OverlayService(statisticProvider, recordDataProvider, overlayEntryProvider, appConfiguration),
+				DataContext = new OverlayViewModel(new OverlayService(statisticProvider, recordDataProvider, 
+					overlayEntryProvider, appConfiguration, new LoggerFactory().CreateLogger<OverlayService>()),
 					overlayEntryProvider, appConfiguration, new EventAggregator());
 			}
 		}

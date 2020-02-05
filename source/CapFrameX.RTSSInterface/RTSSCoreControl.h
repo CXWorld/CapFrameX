@@ -25,12 +25,12 @@ public:
 	RTSSCoreControl();	// standard constructor
 
 public:
-	void												ReleaseOSD();
-	void												Refresh();
-	std::vector<CString>				RunHistory;
-	std::vector<BOOL>						RunHistoryOutlierFlags;
-	CString											RunHistoryAggregation;
-	std::vector<OverlayEntry>		OverlayEntries;
+	void						ReleaseOSD();
+	void						Refresh();
+	std::vector<CString>		RunHistory;
+	std::vector<BOOL>			RunHistoryOutlierFlags;
+	CString						RunHistoryAggregation;
+	std::vector<OverlayEntry>	OverlayEntries;
 
 // Implementation
 protected:
@@ -50,7 +50,7 @@ protected:
 
 	UINT						m_nTimerID;
 
-	CString					m_strInstallPath;
+	CString						m_strInstallPath;
 
 	CRTSSProfileInterface		m_profileInterface;
 };
