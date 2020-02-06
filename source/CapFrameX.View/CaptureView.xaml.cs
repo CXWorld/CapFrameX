@@ -48,11 +48,15 @@ namespace CapFrameX.View
 			{
 				var appConfiguration = new CapFrameXConfiguration();
 				var statisticProvider = new FrametimeStatisticProvider( appConfiguration);
-				var recordDirectoryObserver = new RecordDirectoryObserver(appConfiguration);
-				var recordDataProvider = new RecordDataProvider(recordDirectoryObserver, appConfiguration);
+				var recordDirectoryObserver = new RecordDirectoryObserver(appConfiguration, 
+					new LoggerFactory().CreateLogger<RecordDirectoryObserver>());
+				var recordDataProvider = new RecordDataProvider(recordDirectoryObserver, appConfiguration, 
+					new LoggerFactory().CreateLogger<RecordDataProvider>());
 				var overlayEntryProvider = new OverlayEntryProvider();
 				DataContext = new CaptureViewModel(appConfiguration, new PresentMonCaptureService(),
-					new EventAggregator(), new RecordDataProvider(new RecordDirectoryObserver(appConfiguration), appConfiguration), 
+					new EventAggregator(), new RecordDataProvider(new RecordDirectoryObserver(appConfiguration, 
+					new LoggerFactory().CreateLogger<RecordDirectoryObserver>()), appConfiguration, 
+					new LoggerFactory().CreateLogger<RecordDataProvider>()), 
 					new OverlayService(statisticProvider, recordDataProvider, overlayEntryProvider, appConfiguration, 
 					new LoggerFactory().CreateLogger<OverlayService>()),
 					statisticProvider, new LoggerFactory().CreateLogger<CaptureViewModel>());

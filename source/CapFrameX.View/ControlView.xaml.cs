@@ -4,6 +4,7 @@ using CapFrameX.Contracts.Data;
 using CapFrameX.Data;
 using CapFrameX.Extensions;
 using CapFrameX.ViewModel;
+using Microsoft.Extensions.Logging;
 using Prism.Events;
 using System;
 using System.ComponentModel;
@@ -37,10 +38,13 @@ namespace CapFrameX.View
 			if (DesignerProperties.GetIsInDesignMode(this))
 			{
 				var appConfiguration = new CapFrameXConfiguration();
-                var recordDirectoryObserver = new RecordDirectoryObserver(appConfiguration);
+                var recordDirectoryObserver = new RecordDirectoryObserver(appConfiguration, 
+					new LoggerFactory().CreateLogger<RecordDirectoryObserver>());
 
-                DataContext = new ControlViewModel(new RecordDirectoryObserver(appConfiguration), new EventAggregator(), 
-                    new CapFrameXConfiguration(), new RecordDataProvider(recordDirectoryObserver, appConfiguration));
+                DataContext = new ControlViewModel(new RecordDirectoryObserver(appConfiguration, 
+					new LoggerFactory().CreateLogger<RecordDirectoryObserver>()), new EventAggregator(), 
+                    new CapFrameXConfiguration(), new RecordDataProvider(recordDirectoryObserver, appConfiguration,
+					new LoggerFactory().CreateLogger<RecordDataProvider>()));
 			}
 
 			SetSortSettings((DataContext as ControlViewModel).AppConfiguration);

@@ -3,12 +3,11 @@ using CapFrameX.Contracts.Aggregation;
 using CapFrameX.Data;
 using CapFrameX.Statistics;
 using CapFrameX.ViewModel;
+using Microsoft.Extensions.Logging;
 using Prism.Events;
 using System;
 using System.ComponentModel;
-using System.Reactive.Concurrency;
 using System.Reactive.Linq;
-using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -29,7 +28,8 @@ namespace CapFrameX.View
 			if (DesignerProperties.GetIsInDesignMode(this))
 			{
 				var appConfiguration = new CapFrameXConfiguration();
-				var recordDataProvider = new RecordDataProvider(new RecordDirectoryObserver(appConfiguration), appConfiguration);
+				var recordDataProvider = new RecordDataProvider(new RecordDirectoryObserver(appConfiguration, 
+					new LoggerFactory().CreateLogger<RecordDirectoryObserver>()), appConfiguration, new LoggerFactory().CreateLogger<RecordDataProvider>());
 				DataContext = new AggregationViewModel(new FrametimeStatisticProvider(appConfiguration), recordDataProvider, new EventAggregator(), appConfiguration);
 			}
 

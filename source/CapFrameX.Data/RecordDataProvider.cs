@@ -3,6 +3,7 @@ using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.PresentMonInterface;
 using CapFrameX.Extensions;
 using CapFrameX.PresentMonInterface;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -29,13 +30,16 @@ namespace CapFrameX.Data
 
 		private readonly IRecordDirectoryObserver _recordObserver;
 		private readonly IAppConfiguration _appConfiguration;
+		private readonly ILogger<RecordDataProvider> _logger;
 
 		private Dictionary<string, string> _processGameMatchingDictionary = new Dictionary<string, string>();
 
-		public RecordDataProvider(IRecordDirectoryObserver recordObserver, IAppConfiguration appConfiguration)
+		public RecordDataProvider(IRecordDirectoryObserver recordObserver, IAppConfiguration appConfiguration,
+			ILogger<RecordDataProvider> logger)
 		{
 			_recordObserver = recordObserver;
 			_appConfiguration = appConfiguration;
+			_logger = logger;
 
 			try
 			{
@@ -47,7 +51,12 @@ namespace CapFrameX.Data
 					File.Copy(_matchingNameInitialFilename, _matchingNameLiveFilename);
 				}
 			}
-			catch { }
+			catch (Exception ex) 
+			{
+				var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+							@"CapFrameX\Resources");
+				_logger.LogError(ex, $"Error while creating {path}");
+			}
 		}
 
 		public IFileRecordInfo GetFileRecordInfo(FileInfo fileInfo)
@@ -176,14 +185,20 @@ namespace CapFrameX.Data
 					csv.AppendLine(string.Join(",", currentLineSplit));
 				}
 
+				var csvString = csv.ToString();
 				using (var sw = new StreamWriter(filePath))
 				{
-					sw.Write(csv.ToString());
+					sw.Write(csvString);
 				}
 
+				_logger.LogInformation($"{filePath} successfully written");
 				return true;
 			}
-			catch { return false; }
+			catch (Exception ex) 
+			{
+				_logger.LogError(ex, $"Error while creating {filePath}");
+				return false; 
+			}
 		}
 
 		public IList<string> CreateHeaderLinesFromRecordInfo(IFileRecordInfo recordInfo )

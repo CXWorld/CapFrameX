@@ -40,7 +40,7 @@ namespace CapFrameX.Data
 				_version = new Version(webVersionString);
 				return _version;
 			}
-			catch (Exception e)
+			catch
 			{
 				return null;
 			}

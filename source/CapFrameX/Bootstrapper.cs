@@ -114,6 +114,7 @@ namespace CapFrameX
 				path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), @"CapFrameX\Logs");
 			}
 			return new LoggerConfiguration()
+				.MinimumLevel.Information()
 				.MinimumLevel.Debug()
 				.Enrich.FromLogContext()
 				.WriteTo.File(

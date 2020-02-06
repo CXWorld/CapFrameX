@@ -1,6 +1,7 @@
 ﻿using CapFrameX.Configuration;
 using CapFrameX.Data;
 using CapFrameX.ViewModel;
+using Microsoft.Extensions.Logging;
 using Prism.Events;
 using Prism.Regions;
 using System;
@@ -27,7 +28,8 @@ namespace CapFrameX.View
 			if (DesignerProperties.GetIsInDesignMode(this))
 			{
 				var appConfiguration = new CapFrameXConfiguration();
-				DataContext = new ColorbarViewModel(new RegionManager(), new RecordDirectoryObserver(appConfiguration), 
+				DataContext = new ColorbarViewModel(new RegionManager(), new RecordDirectoryObserver(appConfiguration,
+					new LoggerFactory().CreateLogger<RecordDirectoryObserver>()), 
 					new EventAggregator(), appConfiguration, null);
 			}
 		}
