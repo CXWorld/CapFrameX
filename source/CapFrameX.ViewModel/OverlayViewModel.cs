@@ -269,7 +269,7 @@ namespace CapFrameX.ViewModel
 											 .Where(metric => metric != EMetric.Average)
 											 .ToArray();
 
-		public Array NumberOfRunsItemsSource => Enumerable.Range(3, 3).ToArray();
+		public Array NumberOfRunsItemsSource => Enumerable.Range(2, 9).ToArray();
 
 		public Array OutlierPercentageItemsSource => Enumerable.Range(2, 9).ToArray();
 
