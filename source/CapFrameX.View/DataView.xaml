@@ -62,7 +62,7 @@
 				<RowDefinition Height="4*"></RowDefinition>
 				<RowDefinition Height="Auto"></RowDefinition>
 				<RowDefinition Height="3*" MaxHeight="300"></RowDefinition>
-				<RowDefinition Height="Auto"></RowDefinition>
+				<RowDefinition Height="65"></RowDefinition>
 			</Grid.RowDefinitions>
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition Width="1*"></ColumnDefinition>
