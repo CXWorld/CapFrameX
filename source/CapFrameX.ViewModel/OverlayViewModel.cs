@@ -4,9 +4,8 @@ using CapFrameX.Extensions;
 using CapFrameX.Hotkey;
 using CapFrameX.Overlay;
 using CapFrameX.Statistics;
+using Gma.System.MouseKeyHook;
 using GongSolutions.Wpf.DragDrop;
-using NHotkey;
-using NHotkey.Wpf;
 using Prism.Events;
 using Prism.Mvvm;
 using Prism.Regions;
@@ -15,7 +14,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
-using System.Windows.Input;
 
 namespace CapFrameX.ViewModel
 {
@@ -26,6 +24,8 @@ namespace CapFrameX.ViewModel
 		private readonly IAppConfiguration _appConfiguration;
 		private readonly IEventAggregator _eventAggregator;
 
+		private IKeyboardMouseEvents _globalOverlayHookEvent;
+		private IKeyboardMouseEvents _globalResetHistoryHookEvent;
 		private int _selectedOverlayEntryIndex = -1;
 		private string _updateHpyerlinkText;
 
@@ -57,7 +57,7 @@ namespace CapFrameX.ViewModel
 					return;
 
 				_appConfiguration.OverlayHotKey = value;
-				SetGlobalHookEventOverlayHotkey();
+				UpdateGlobalOverlayHookEvent();
 				RaisePropertyChanged();
 			}
 		}
@@ -71,7 +71,7 @@ namespace CapFrameX.ViewModel
 					return;
 
 				_appConfiguration.ResetHistoryHotkey = value;
-				SetGlobalHookEventResetHistoryHotkey();
+				UpdateGlobalResetHistoryHookEvent();
 				RaisePropertyChanged();
 			}
 		}
@@ -328,19 +328,39 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
+		private void UpdateGlobalOverlayHookEvent()
+		{
+			if (_globalOverlayHookEvent != null)
+			{
+				_globalOverlayHookEvent.Dispose();
+				SetGlobalHookEventOverlayHotkey();
+			}
+		}
+
+		private void UpdateGlobalResetHistoryHookEvent()
+		{
+			if (_globalResetHistoryHookEvent != null)
+			{
+				_globalResetHistoryHookEvent.Dispose();
+				SetGlobalHookEventResetHistoryHotkey();
+			}
+		}
+
 		private void SetGlobalHookEventOverlayHotkey()
 		{
 			if (!CXHotkey.IsValidHotkey(OverlayHotkeyString))
 				return;
 
-			void ToggleOverlay(object sender, HotkeyEventArgs e)
+			var onCombinationDictionary = new Dictionary<Combination, Action>
 			{
-				IsOverlayActive = !IsOverlayActive;
-				e.Handled = true;
-			}
+				{Combination.FromString(OverlayHotkeyString), () =>
+				{
+					IsOverlayActive = !IsOverlayActive;
+				}}
+			};
 
-			var hk = CXHotkey.CreateFromString(OverlayHotkeyString, Key.O, ModifierKeys.Alt);
-			HotkeyManager.Current.AddOrReplace("ToggleOverlayHotkey", hk.Key, hk.Modifiers, ToggleOverlay);
+			_globalOverlayHookEvent = Hook.GlobalEvents();
+			_globalOverlayHookEvent.OnCombination(onCombinationDictionary);
 		}
 
 		private void SetGlobalHookEventResetHistoryHotkey()
@@ -348,14 +368,16 @@ namespace CapFrameX.ViewModel
 			if (!CXHotkey.IsValidHotkey(ResetHistoryHotkeyString))
 				return;
 
-			void ResetHistory(object sender, HotkeyEventArgs e)
+			var onCombinationDictionary = new Dictionary<Combination, Action>
 			{
-				_overlayService.ResetHistory();
-				e.Handled = true;
-			}
+				{Combination.FromString(ResetHistoryHotkeyString), () =>
+				{
+					_overlayService.ResetHistory();
+				}}
+			};
 
-			var hk = CXHotkey.CreateFromString(ResetHistoryHotkeyString, Key.R, ModifierKeys.Alt);
-			HotkeyManager.Current.AddOrReplace("ResetHistoryHotkey", hk.Key, hk.Modifiers, ResetHistory);
+			_globalResetHistoryHookEvent = Hook.GlobalEvents();
+			_globalResetHistoryHookEvent.OnCombination(onCombinationDictionary);
 		}
 
 		public bool IsNavigationTarget(NavigationContext navigationContext)

@@ -7,9 +7,8 @@ using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Hotkey;
 using CapFrameX.PresentMonInterface;
 using CapFrameX.Statistics;
+using Gma.System.MouseKeyHook;
 using Microsoft.Extensions.Logging;
-using NHotkey;
-using NHotkey.Wpf;
 using OxyPlot;
 using OxyPlot.Axes;
 using Prism.Commands;
@@ -63,6 +62,7 @@ namespace CapFrameX.ViewModel
 		private string _captureStateInfo = string.Empty;
 		private string _captureTimeString = "0";
 		private string _captureStartDelayString = "0";
+		private IKeyboardMouseEvents _globalCaptureHookEvent;
 		private string _selectedSoundMode;
 		private string _loggerOutput = string.Empty;
 		private bool _fillArchive = false;
@@ -161,7 +161,7 @@ namespace CapFrameX.ViewModel
 
 				_appConfiguration.CaptureHotKey = value;
 				UpdateCaptureStateInfo();
-				SetGlobalHookEventCaptureHotkey();
+				UpdateGlobalCaptureHookEvent();
 				RaisePropertyChanged();
 			}
 		}
@@ -396,24 +396,31 @@ namespace CapFrameX.ViewModel
 			SetGlobalHookEventCaptureHotkey();
 		}
 
+		private void UpdateGlobalCaptureHookEvent()
+		{
+			if (_globalCaptureHookEvent != null)
+			{
+				_globalCaptureHookEvent.Dispose();
+				SetGlobalHookEventCaptureHotkey();
+			}
+		}
+
 		private void SetGlobalHookEventCaptureHotkey()
 		{
 			if (!CXHotkey.IsValidHotkey(CaptureHotkeyString))
-			{
 				return;
-			}
 
-			void StartCapture(object sender, HotkeyEventArgs e)
+			var onCombinationDictionary = new Dictionary<Combination, Action>
 			{
-				if (!_dataOffsetRunning)
+				{Combination.FromString(CaptureHotkeyString), () =>
 				{
-					SetCaptureMode();
-				}
-				e.Handled = true;
-			}
+					if(!_dataOffsetRunning)
+						SetCaptureMode();
+				}}
+			};
 
-			var hk = CXHotkey.CreateFromString(CaptureHotkeyString, Key.F11);
-			HotkeyManager.Current.AddOrReplace("StartCaptureHotkey", hk.Key, hk.Modifiers, StartCapture);
+			_globalCaptureHookEvent = Hook.GlobalEvents();
+			_globalCaptureHookEvent.OnCombination(onCombinationDictionary);
 		}
 
 		private void SetCaptureMode()
@@ -759,7 +766,7 @@ namespace CapFrameX.ViewModel
 			// fire update global hook if new process is detected
 			if (backupProcessList.Count != ProcessesToCapture.Count)
 			{
-				SetGlobalHookEventCaptureHotkey();
+				UpdateGlobalCaptureHookEvent();
 			}
 
 			if (!processList.Contains(selectedProcessToCapture))

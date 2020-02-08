@@ -41,9 +41,7 @@ namespace CapFrameX.View
 
 				CaptureHotkey = CXHotkey.Create(keyStrings, Key.F12);
 			}
-			catch { 
-				CaptureHotkey = new CXHotkey(Key.F12); 
-			}
+			catch { CaptureHotkey = new CXHotkey(Key.F12); }
 
 			// Design time!
 			if (DesignerProperties.GetIsInDesignMode(this))
