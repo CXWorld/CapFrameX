@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Windows.Input;
 
 namespace CapFrameX.Hotkey
 {
@@ -218,7 +219,7 @@ namespace CapFrameX.Hotkey
         {
             var parts = trigger
                 .Split('+')
-                .Select(p => Enum.Parse(typeof(Keys), p))
+                .Select(p => ParseKeyEnum(p))
                 .Cast<Keys>();
             var stack = new Stack<Keys>(parts);
             var triggerKey = stack.Pop();
@@ -226,7 +227,7 @@ namespace CapFrameX.Hotkey
         }
 
         /// <inheritdoc />
-        protected bool Equals(Combination other)
+        protected bool Equals(CXHotkeyCombination other)
         {
             return
                 TriggerKey == other.TriggerKey
@@ -239,7 +240,7 @@ namespace CapFrameX.Hotkey
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
             if (obj.GetType() != GetType()) return false;
-            return Equals((Combination)obj);
+            return Equals((CXHotkeyCombination)obj);
         }
 
         /// <inheritdoc />
@@ -247,6 +248,21 @@ namespace CapFrameX.Hotkey
         {
             return Chord.GetHashCode() ^
                    (int)TriggerKey;
+        }
+
+        private static Keys ParseKeyEnum(string key)
+        {
+            var parseResult = Enum.TryParse(key, out Keys parsedKey);
+            if(parseResult)
+            {
+                return parsedKey;
+            }
+
+            // if parsing failed, we try to determine the key by string comparison ignoring case sensitivity
+            var keys = Enum.GetNames(typeof(Keys));
+            var matchingEntry = keys.First(keysEntry => string.Compare(keysEntry, key, true) == 0);
+            Enum.TryParse(matchingEntry, out Keys result);
+            return result;
         }
     }
 }
