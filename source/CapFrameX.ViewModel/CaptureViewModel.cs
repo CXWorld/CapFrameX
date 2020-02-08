@@ -410,9 +410,9 @@ namespace CapFrameX.ViewModel
 			if (!CXHotkey.IsValidHotkey(CaptureHotkeyString))
 				return;
 
-			var onCombinationDictionary = new Dictionary<Combination, Action>
+			var onCombinationDictionary = new Dictionary<CXHotkeyCombination, Action>
 			{
-				{Combination.FromString(CaptureHotkeyString), () =>
+				{CXHotkeyCombination.FromString(CaptureHotkeyString), () =>
 				{
 					if(!_dataOffsetRunning)
 						SetCaptureMode();
@@ -420,7 +420,7 @@ namespace CapFrameX.ViewModel
 			};
 
 			_globalCaptureHookEvent = Hook.GlobalEvents();
-			_globalCaptureHookEvent.OnCombination(onCombinationDictionary);
+			_globalCaptureHookEvent.OnCXCombination(onCombinationDictionary);
 		}
 
 		private void SetCaptureMode()

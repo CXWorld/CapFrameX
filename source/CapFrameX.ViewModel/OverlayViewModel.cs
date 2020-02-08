@@ -351,16 +351,16 @@ namespace CapFrameX.ViewModel
 			if (!CXHotkey.IsValidHotkey(OverlayHotkeyString))
 				return;
 
-			var onCombinationDictionary = new Dictionary<Combination, Action>
+			var onCombinationDictionary = new Dictionary<CXHotkeyCombination, Action>
 			{
-				{Combination.FromString(OverlayHotkeyString), () =>
+				{CXHotkeyCombination.FromString(OverlayHotkeyString), () =>
 				{
 					IsOverlayActive = !IsOverlayActive;
 				}}
 			};
 
 			_globalOverlayHookEvent = Hook.GlobalEvents();
-			_globalOverlayHookEvent.OnCombination(onCombinationDictionary);
+			_globalOverlayHookEvent.OnCXCombination(onCombinationDictionary);
 		}
 
 		private void SetGlobalHookEventResetHistoryHotkey()
@@ -368,16 +368,16 @@ namespace CapFrameX.ViewModel
 			if (!CXHotkey.IsValidHotkey(ResetHistoryHotkeyString))
 				return;
 
-			var onCombinationDictionary = new Dictionary<Combination, Action>
+			var onCombinationDictionary = new Dictionary<CXHotkeyCombination, Action>
 			{
-				{Combination.FromString(ResetHistoryHotkeyString), () =>
+				{CXHotkeyCombination.FromString(ResetHistoryHotkeyString), () =>
 				{
 					_overlayService.ResetHistory();
 				}}
 			};
 
 			_globalResetHistoryHookEvent = Hook.GlobalEvents();
-			_globalResetHistoryHookEvent.OnCombination(onCombinationDictionary);
+			_globalResetHistoryHookEvent.OnCXCombination(onCombinationDictionary);
 		}
 
 		public bool IsNavigationTarget(NavigationContext navigationContext)
