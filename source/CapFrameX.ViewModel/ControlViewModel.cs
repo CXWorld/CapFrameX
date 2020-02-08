@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Collections;
 using System.Reactive.Subjects;
 using CapFrameX.Contracts.PresentMonInterface;
+using Microsoft.VisualBasic.FileIO;
 
 namespace CapFrameX.ViewModel
 {
@@ -223,7 +224,7 @@ namespace CapFrameX.ViewModel
 
 					foreach (var item in _selectedRecordings)
 					{
-						File.Delete(item.FullPath);
+						FileSystem.DeleteFile(item.FullPath, UIOption.OnlyErrorDialogs, RecycleOption.SendToRecycleBin);
 					}
 
 					_ = _recordObserver.RecordingFileWatcher
@@ -234,7 +235,7 @@ namespace CapFrameX.ViewModel
 				}
 				else
 				{
-					File.Delete(SelectedRecordInfo.FullPath);
+					FileSystem.DeleteFile(SelectedRecordInfo.FullPath, UIOption.OnlyErrorDialogs, RecycleOption.SendToRecycleBin);
 				}
 
 				SelectedRecordInfo = null;
