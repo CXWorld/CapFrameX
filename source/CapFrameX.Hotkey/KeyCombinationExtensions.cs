@@ -219,7 +219,7 @@ namespace CapFrameX.Hotkey
         {
             var parts = trigger
                 .Split('+')
-                .Select(p => ParseKeyEnum(p))
+                .Select(p => Enum.Parse(typeof(Keys), p, true))
                 .Cast<Keys>();
             var stack = new Stack<Keys>(parts);
             var triggerKey = stack.Pop();
@@ -248,21 +248,6 @@ namespace CapFrameX.Hotkey
         {
             return Chord.GetHashCode() ^
                    (int)TriggerKey;
-        }
-
-        private static Keys ParseKeyEnum(string key)
-        {
-            var parseResult = Enum.TryParse(key, out Keys parsedKey);
-            if(parseResult)
-            {
-                return parsedKey;
-            }
-
-            // if parsing failed, we try to determine the key by string comparison ignoring case sensitivity
-            var keys = Enum.GetNames(typeof(Keys));
-            var matchingEntry = keys.First(keysEntry => string.Compare(keysEntry, key, true) == 0);
-            Enum.TryParse(matchingEntry, out Keys result);
-            return result;
         }
     }
 }
