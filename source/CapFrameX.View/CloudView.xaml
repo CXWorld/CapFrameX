@@ -92,12 +92,12 @@
             </DataGrid.Columns>
         </DataGrid>
             <Button Grid.Row="1" Grid.Column="0" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="5"  Width="100" Height="45"
-					Command="{Binding ClearTableCommand}" IsEnabled="{Binding EnableClearButton}"
+					Command="{Binding ClearTableCommand}" IsEnabled="{Binding EnableClearAndUploadButton}"
                     ToolTip="Remove all entries">
                 <TextBlock Text="Clear table" TextAlignment="Center"/>
             </Button>
             <Button Grid.Row="1" Grid.Column="2" Margin="5" VerticalAlignment="Top" HorizontalAlignment="Right" Width="100" Height="45"
-					Command="{Binding UploadRecordsCommand}" IsEnabled="{Binding EnableUploadButton}"
+					Command="{Binding UploadRecordsCommand}" IsEnabled="{Binding EnableClearAndUploadButton}"
                     ToolTipService.ShowDuration="25000">
                 <TextBlock Text="Upload records" TextWrapping="Wrap"  TextAlignment="Center"/>
                 <Button.ToolTip>
@@ -119,14 +119,18 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="1*"/>
                 <ColumnDefinition Width="1*"/>
-                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="120"/>
             </Grid.ColumnDefinitions>
-            <TextBox Grid.Row="0" Grid.Column="0"  Width="200" wpf:HintAssist.Hint="Download ID" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
+            <TextBox Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Width="350" HorizontalAlignment="Left" wpf:HintAssist.Hint="Download ID" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
 					 Margin="5 0 0 10" FontSize="14" Text="{Binding DownloadIDString, UpdateSourceTrigger=PropertyChanged}">
             </TextBox>
             <TextBox Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Width="350" wpf:HintAssist.Hint="Download Folder" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
-					 Margin="5 0 0 -10" FontSize="14" HorizontalAlignment="Left" Text="{Binding DownloadIDString, UpdateSourceTrigger=PropertyChanged}">
+					 Margin="5 0 0 -10" FontSize="14" HorizontalAlignment="Left" Text="{Binding CloudDownloadDirectory, Mode=OneWay}">
             </TextBox>
+            <Button Grid.Row="1" Grid.Column="1" Margin="0 0 25 -25" Height="30" Width="30" HorizontalAlignment="Right" Command="{Binding SelectDownloadFolderCommand}" 
+                    Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}" ToolTip="Select download folder">
+                    <materialDesign:PackIcon Kind="Folder" Height="20" Width="20" />
+            </Button>
             <Button Grid.Row="0" Grid.RowSpan="2" Grid.Column="2" Margin="5 25 5 5" VerticalAlignment="Center" HorizontalAlignment="Right" Width="100" Height="45"
 					Command="{Binding DownloadRecordsCommand}" IsEnabled="{Binding EnableDownloadButton}"
                     ToolTipService.ShowDuration="25000">

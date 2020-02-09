@@ -167,5 +167,8 @@
     <Setting Name="LoggingDirectory" Type="System.String" Scope="User">
       <Value Profile="(Default)">MyDocuments\CapFrameX\Logs</Value>
     </Setting>
+    <Setting Name="CloudDownloadDirectory" Type="System.String" Scope="User">
+      <Value Profile="(Default)">MyDocuments\CapFrameX\Captures\Cloud</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

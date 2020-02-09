@@ -682,5 +682,17 @@ namespace CapFrameX.Configuration.Properties {
                 this["LoggingDirectory"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("MyDocuments\\CapFrameX\\Captures\\Cloud")]
+        public string CloudDownloadDirectory {
+            get {
+                return ((string)(this["CloudDownloadDirectory"]));
+            }
+            set {
+                this["CloudDownloadDirectory"] = value;
+            }
+        }
     }
 }

@@ -58,6 +58,10 @@ namespace CapFrameX.Data
                 {
                     Directory.CreateDirectory(_recordDirectory);
                 }
+                if (!Directory.Exists(_appConfiguration.CloudDownloadDirectory))
+                {
+                    Directory.CreateDirectory(_appConfiguration.CloudDownloadDirectory);
+                }
 
                 _fileSystemWatcher = new FileSystemWatcher(_recordDirectory);
                 _fileSystemWatcher.Created += new FileSystemEventHandler(WatcherCreated);

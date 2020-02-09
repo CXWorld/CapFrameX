@@ -327,5 +327,11 @@ namespace CapFrameX.Configuration
 			get { return Settings.AreThresholdsReversed; }
 			set { Settings.AreThresholdsReversed = value; Settings.Save(); }
 		}
+
+		public string CloudDownloadDirectory
+		{
+			get { return Settings.CloudDownloadDirectory; }
+			set { Settings.CloudDownloadDirectory = value; Settings.Save(); }
+		}
 	}
 }

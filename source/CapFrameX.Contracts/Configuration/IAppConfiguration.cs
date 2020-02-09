@@ -90,7 +90,7 @@
 		int SelectedHistoryRuns { get; set; }
 
 		int OSDRefreshPeriod { get; set; }
-
+		string CloudDownloadDirectory { get; set; }
 		bool SaveAggregationOnly { get; set; }
 
 		int OutlierPercentageOverlay { get; set; }

@@ -7,6 +7,7 @@ using CapFrameX.Extensions;
 using CapFrameX.Statistics;
 using GongSolutions.Wpf.DragDrop;
 using Microsoft.Extensions.Logging;
+using Microsoft.WindowsAPICodePack.Dialogs;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Mvvm;
@@ -39,7 +40,10 @@ namespace CapFrameX.ViewModel
 		private bool _useUpdateSession;
 		private int _selectedCloudEntryIndex = -1;
 		private bool _showHelpText = true;
+		private bool _enableClearAndUploadButton;
+		private bool _enableDownloadButton;
 		private List<IFileRecordInfo> _fileRecordInfoList = new List<IFileRecordInfo>();
+
 
 		public int SelectedCloudEntryIndex
 		{
@@ -62,7 +66,41 @@ namespace CapFrameX.ViewModel
 				RaisePropertyChanged();
 			}
 		}
+		
+		public bool EnableClearAndUploadButton
+		{
+			get
+			{ return _enableClearAndUploadButton; }
+			set
+			{
+				_enableClearAndUploadButton = value;
+				RaisePropertyChanged();
+			}
+		}
+		public bool EnableDownloadButton
+		{
+			get
+			{ return _enableDownloadButton; }
+			set
+			{
+				_enableDownloadButton = value;
+				RaisePropertyChanged();
+			}
+		}
+		public string CloudDownloadDirectory
+		{
+			get { return _appConfiguration.CloudDownloadDirectory; }
+			set
+			{
+				_appConfiguration.CloudDownloadDirectory = value;
+				RaisePropertyChanged();
+			}
+		}
 
+
+		public ICommand ClearTableCommand { get; }
+
+		public ICommand SelectDownloadFolderCommand { get; }
 
 		public ObservableCollection<ICloudEntry> CloudEntries { get; private set; }
 			= new ObservableCollection<ICloudEntry>();
@@ -76,6 +114,8 @@ namespace CapFrameX.ViewModel
 			_appConfiguration = appConfiguration;
 			_logger = logger;
 			_appVersionProvider = appVersionProvider;
+			ClearTableCommand = new DelegateCommand(OnClearTable);
+			SelectDownloadFolderCommand = new DelegateCommand(OnSelectDownloadFolder);
 			UploadRecordsCommand = new DelegateCommand(async () => {
 				await UploadRecords();
 				OnClearTable();
@@ -97,7 +137,7 @@ namespace CapFrameX.ViewModel
 		private void OnCloudEntriesChanged()
 		{
 			ShowHelpText = !CloudEntries.Any();
-
+			EnableClearAndUploadButton = CloudEntries.Any();
 		}
 
 		private void SubscribeToUpdateSession()
@@ -146,6 +186,21 @@ namespace CapFrameX.ViewModel
 			_fileRecordInfoList.Clear();
 		}
 
+		private void OnSelectDownloadFolder()
+		{
+			var dialog = new CommonOpenFileDialog
+			{
+				IsFolderPicker = true
+			};
+
+			CommonFileDialogResult result = dialog.ShowDialog();
+
+			if (result == CommonFileDialogResult.Ok)
+			{
+				_appConfiguration.CloudDownloadDirectory = dialog.FileName;
+				CloudDownloadDirectory = dialog.FileName;
+			}
+		}
 
 		public void OnNavigatedTo(NavigationContext navigationContext)
 		{
