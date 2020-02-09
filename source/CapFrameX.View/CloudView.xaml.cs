@@ -31,7 +31,7 @@ namespace CapFrameX.View
 				var appConfiguration = new CapFrameXConfiguration();
 				var recordDataProvider = new RecordDataProvider(new RecordDirectoryObserver(appConfiguration, 
 					new LoggerFactory().CreateLogger<RecordDirectoryObserver>()), appConfiguration, new LoggerFactory().CreateLogger<RecordDataProvider>());
-				DataContext = new CloudViewModel(new FrametimeStatisticProvider(appConfiguration), recordDataProvider, new EventAggregator(), appConfiguration);
+				DataContext = new CloudViewModel(new FrametimeStatisticProvider(appConfiguration), recordDataProvider, new EventAggregator(), appConfiguration, new LoggerFactory().CreateLogger<CloudViewModel>(), new AppVersionProvider());
 			}
 
 		}
