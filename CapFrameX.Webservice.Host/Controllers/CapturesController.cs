@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using CapFrameX.Webservice.Data.Commands;
+using CapFrameX.Webservice.Data.DTO;
 using CapFrameX.Webservice.Data.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Http;
@@ -20,11 +23,11 @@ namespace CapFrameX.Webservice.Host.Controllers
             _mediator = mediator;
         }
 
-        // GET: api/Captures/5
-        [HttpGet("{id}", Name = "Get")]
+        // GET: api/Captures/Collection/5
+        [HttpGet("Collection/{id}", Name = "Get")]
         public async Task<IActionResult> Get(Guid id)
         {
-            var query = new GetCaptureByIdQuery()
+            var query = new GetCaptureCollectionByIdQuery()
             {
                 Id = id
             };
@@ -35,8 +38,29 @@ namespace CapFrameX.Webservice.Host.Controllers
 
         // POST: api/Captures
         [HttpPost]
-        public void Post([FromBody] string value)
+        public async Task<IActionResult> Post([FromForm] UploadCapturesForm form)
         {
+            var blobBytes = new List<Capture>();
+            using(var memoryStream = new MemoryStream())
+            {
+                foreach(var capture in form.Capture)
+                {
+                    await capture.CopyToAsync(memoryStream);
+                    blobBytes.Add(new Capture() { 
+                        Name = capture.FileName,
+                        BlobBytes = memoryStream.ToArray()
+                    });
+                    await memoryStream.FlushAsync();
+                }
+            }
+            var query = new UploadCapturesCommand()
+            {
+                AppVersion = form.AppVersion,
+                CaptureFiles = blobBytes
+            };
+
+            var result = await _mediator.Send(query);
+            return CreatedAtAction("Get", new { Id = result.Id } ,result);
         }
     }
 }

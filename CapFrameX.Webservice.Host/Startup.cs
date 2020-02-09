@@ -5,9 +5,11 @@ using System.Reflection;
 using System.Threading.Tasks;
 using AutoMapper;
 using CapFrameX.Webservice.Data;
+using CapFrameX.Webservice.Data.Commands;
 using CapFrameX.Webservice.Data.Interfaces;
 using CapFrameX.Webservice.Data.Queries;
 using CapFrameX.Webservice.Implementation.Handlers;
+using CapFrameX.Webservice.Implementation.CaptureStorageProviders;
 using CapFrameX.Webservice.Implementation.Services;
 using FluentValidation.AspNetCore;
 using MediatR;
@@ -37,17 +39,20 @@ namespace CapFrameX.Webservice.Host
 		{
 			var assembly = Assembly.GetExecutingAssembly();
 			services.AddMediatR(
-				typeof(GetCaptureByIdHandler).GetTypeInfo().Assembly,
-				typeof(GetCaptureByIdQuery).GetTypeInfo().Assembly
+				typeof(GetCaptureCollectionByIdHandler).GetTypeInfo().Assembly,
+				typeof(GetCaptureCollectionByIdQuery).GetTypeInfo().Assembly,
+				typeof(UploadCapturesCommand).GetTypeInfo().Assembly
 			);
 			services.AddAutoMapper(assembly);
 
 			services.AddScoped<ICapturesService, CapturesService>();
+			services.AddScoped<ICaptureStorage>(opt => new CaptureDiskStorage(@"C:\CXService"));
 
 			services.AddControllers()
 				.AddFluentValidation(opt =>
 				{
 					opt.RegisterValidatorsFromAssemblyContaining<GetCaptureByIdQueryValidator>();
+					opt.RegisterValidatorsFromAssemblyContaining<UploadCaptureCommandValidator>();
 					opt.ImplicitlyValidateChildProperties = true;
 					opt.RunDefaultMvcValidationAfterFluentValidationExecutes = false;
 				});

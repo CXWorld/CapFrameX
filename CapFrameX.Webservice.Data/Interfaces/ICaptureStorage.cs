@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace CapFrameX.Webservice.Data.Interfaces
 {
-	public interface ICapturesService
+	public interface ICaptureStorage
 	{
-		Task<CaptureCollection> GetCaptureCollectionById(Guid id);
-		Task<CaptureCollectionMetadata> SaveCaptures(string appVersion, IEnumerable<Capture> captures);
+		Task<CaptureCollection> GetCaptureCollection(Guid collectionId);
+		Task<CaptureCollection> SaveCaptureCollection(CaptureCollection captureCollection);
 	}
 }
