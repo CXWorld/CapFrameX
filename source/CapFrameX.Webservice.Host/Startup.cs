@@ -9,7 +9,7 @@ using CapFrameX.Webservice.Data.Commands;
 using CapFrameX.Webservice.Data.Interfaces;
 using CapFrameX.Webservice.Data.Queries;
 using CapFrameX.Webservice.Implementation.Handlers;
-using CapFrameX.Webservice.Implementation.CaptureStorageProviders;
+using CapFrameX.Webservice.Implementation.CaptureStorages;
 using CapFrameX.Webservice.Implementation.Services;
 using FluentValidation.AspNetCore;
 using MediatR;

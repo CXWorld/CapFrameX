@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CapFrameX.Webservice.Implementation.CaptureStorageProviders
+namespace CapFrameX.Webservice.Implementation.CaptureStorages
 {
 	public class CaptureDiskStorage : ICaptureStorage
 	{
@@ -38,7 +38,8 @@ namespace CapFrameX.Webservice.Implementation.CaptureStorageProviders
 			return new CaptureCollection()
 			{
 				Id = collectionId,
-				Captures = captures
+				Captures = captures,
+				UploadTimestamp = directoryInfo.CreationTimeUtc
 			};
 		}
 

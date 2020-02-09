@@ -14,17 +14,17 @@ namespace CapFrameX.Webservice.Host.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class CapturesController : ControllerBase
+    public class CaptureCollectionsController : ControllerBase
     {
         private readonly IMediator _mediator;
 
-        public CapturesController(IMediator mediator)
+        public CaptureCollectionsController(IMediator mediator)
         {
             _mediator = mediator;
         }
 
-        // GET: api/Captures/Collection/5
-        [HttpGet("Collection/{id}", Name = "Get")]
+        // GET: api/CaptureCollections/Collection/5
+        [HttpGet("{id}", Name = "Get")]
         public async Task<IActionResult> Get(Guid id)
         {
             var query = new GetCaptureCollectionByIdQuery()
@@ -36,7 +36,7 @@ namespace CapFrameX.Webservice.Host.Controllers
             return Ok(result);
         }
 
-        // POST: api/Captures
+        // POST: api/CaptureCollections
         [HttpPost]
         public async Task<IActionResult> Post([FromForm] UploadCapturesForm form)
         {

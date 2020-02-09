@@ -18,14 +18,15 @@ namespace CapFrameX.Webservice.Implementation.Services
 
 		public async Task<CaptureCollectionMetadata> SaveCaptures(string appVersion, IEnumerable<Capture> captures)
 		{
-			var metadata = await _storage.SaveCaptureCollection(new CaptureCollection()
+			var collection = await _storage.SaveCaptureCollection(new CaptureCollection()
 			{
-				Captures = captures
+				Captures = captures,
+				UploadTimestamp = DateTime.UtcNow
 			});
 			return new CaptureCollectionMetadata() { 
 				AppVersion = appVersion,
-				UploadTimestamp = DateTime.UtcNow,
-				Id = metadata.Id,
+				UploadTimestamp = collection.UploadTimestamp,
+				Id = collection.Id,
 				CaptureCount = captures.Count()
 			};
 		}
