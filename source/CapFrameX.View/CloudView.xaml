@@ -61,7 +61,7 @@
 				   dragdrop:DragDrop.UseDefaultDragAdorner="True"
 				   dragdrop:DragDrop.DefaultDragAdornerOpacity="0.5"
 				   dragdrop:DragDrop.UseDefaultEffectDataTemplate="False"/>
-			<DataGrid Grid.Row="0" Grid.Column="1" x:Name="CloudItemDataGrid" Height="275" Width="900" Background="#F5F5F5" FontSize="11"
+			<DataGrid Grid.Row="0" Grid.Column="1" x:Name="CloudItemDataGrid" Height="275" Width="545" Background="#F5F5F5" FontSize="11"
 						  MouseLeave="CloudItemDataGrid_MouseLeave" SelectionMode="Single"
 					      SelectedIndex="{Binding SelectedCloudEntryIndex}" ItemsSource="{Binding CloudEntries}"
 					      CanUserSortColumns="False" CanUserAddRows="False" AutoGenerateColumns="False" PreviewKeyDown="CloudItemDataGrid_PreviewKeyDown"
@@ -79,15 +79,19 @@
 				<DataGrid.Columns>
 					<DataGridTextColumn Binding="{Binding GameName, Mode=OneWay}"
                                             Header="Game"
+											Width="Auto"
                                             IsReadOnly="True"/>
 					<DataGridTextColumn Binding="{Binding CreationDate, Mode=OneWay}"
                                             Header="Date"
+											Width="Auto"
                                             IsReadOnly="True"/>
 					<DataGridTextColumn Binding="{Binding CreationTime, Mode=OneWay}"
                                             Header="Time"
+											Width="Auto"
                                             IsReadOnly="True"/>
 					<DataGridTextColumn Binding="{Binding Comment, Mode=OneWay}"
                                             Header="Comment"
+											Width="Auto"
                                             IsReadOnly="True"/>
 				</DataGrid.Columns>
 			</DataGrid>
