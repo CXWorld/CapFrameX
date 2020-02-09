@@ -46,12 +46,20 @@ namespace CapFrameX.Webservice.Host
 			services.AddAutoMapper(assembly);
 
 			services.AddScoped<ICapturesService, CapturesService>();
-			services.AddScoped<ICaptureStorage>(opt => {
-				if(Configuration.GetValue<string>("CaptureStorage:Type") == "Disk")
+			services.AddScoped<ICaptureStorage>(opt =>
+			{
+				switch (Configuration.GetValue<string>("CaptureStorage:Type"))
 				{
-					return new CaptureDiskStorage(Configuration.GetValue<string>("CaptureStorage:Options:Directory"));
+					case "Disk":
+						return new CaptureDiskStorage(Configuration.GetValue<string>("CaptureStorage:Options:Directory"));
+					case "MongoDB":
+						{
+							var options = Configuration.GetSection("CaptureStorage:Options").Get<MongoDbStorageConfiguration>();
+							return new MongoDBStorage(options);
+						}
+					default:
+						throw new Exception("No CaptureStorage configured");
 				}
-				throw new Exception("No CaptureStorage configured");
 			});
 
 			services.AddControllers()
