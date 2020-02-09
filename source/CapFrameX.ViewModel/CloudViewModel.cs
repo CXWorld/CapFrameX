@@ -44,6 +44,29 @@ namespace CapFrameX.ViewModel
 		private bool _enableClearAndUploadButton;
 		private List<IFileRecordInfo> _fileRecordInfoList = new List<IFileRecordInfo>();
 		private string _downloadIdString;
+		private string _shareUrl;
+
+		public string ShareUrl
+		{
+			get
+			{
+				return _shareUrl;
+			}
+			set
+			{
+				_shareUrl = value;
+				RaisePropertyChanged();
+				RaisePropertyChanged(nameof(ShareUrlVisible));
+			}
+		}
+
+		public bool ShareUrlVisible
+		{
+			get
+			{
+				return !string.IsNullOrWhiteSpace(ShareUrl);
+			}
+		}
 
 		public int SelectedCloudEntryIndex
 		{
@@ -78,7 +101,7 @@ namespace CapFrameX.ViewModel
 			}
 		}
 		public bool EnableDownloadButton { get; set; }
-		
+
 		public string CloudDownloadDirectory
 		{
 			get { return _appConfiguration.CloudDownloadDirectory; }
@@ -102,7 +125,8 @@ namespace CapFrameX.ViewModel
 				if (match.Success)
 				{
 					_downloadIdString = match.Value;
-				} else
+				}
+				else
 				{
 					_downloadIdString = value;
 				}
@@ -110,7 +134,6 @@ namespace CapFrameX.ViewModel
 				RaisePropertyChanged(nameof(EnableDownloadButton));
 			}
 		}
-
 
 		public ICommand ClearTableCommand { get; }
 
@@ -285,6 +308,7 @@ namespace CapFrameX.ViewModel
 
 				if (response.IsSuccessStatusCode)
 				{
+					ShareUrl = response.Headers.Location.ToString();
 					_logger.LogInformation("Successfully uploaded Captures. ShareUrl is {shareUrl}", response.Headers.Location);
 				}
 				else

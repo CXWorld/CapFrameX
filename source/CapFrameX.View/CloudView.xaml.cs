@@ -56,5 +56,11 @@ namespace CapFrameX.View
 				e.Handled = true;
 			}
 		}
+
+		private void ShareUrlFocusHandler(object sender, RoutedEventArgs e)
+		{
+			TextBox textBox = (TextBox)sender;
+			textBox.Dispatcher.BeginInvoke(new Action(() => textBox.SelectAll()));
+		}
 	}
 }

@@ -32,27 +32,27 @@
 		</ResourceDictionary>
 	</UserControl.Resources>
 	<Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="50"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="50"/>
-            <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="1*"/>
-            <ColumnDefinition Width="545"/>
-            <ColumnDefinition Width="10"/>
-            <ColumnDefinition Width="395"/>
-            <ColumnDefinition Width="1*"/>
-        </Grid.ColumnDefinitions>
-        <TextBlock Grid.Row="0" Grid.Column="1" Margin="0 25 0 0" HorizontalAlignment="Center" Text="Record upload" FontSize="16"/>
-        <!--Grid record upload-->
-        <Grid Grid.Row="1" Grid.Column="1" >
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-            </Grid.RowDefinitions>
-            <TextBlock Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center" Width="450" x:Name="DragAndDropInfoTextTextBlock"
+		<Grid.RowDefinitions>
+			<RowDefinition Height="50"/>
+			<RowDefinition Height="Auto"/>
+			<RowDefinition Height="50"/>
+			<RowDefinition Height="Auto"/>
+		</Grid.RowDefinitions>
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="1*"/>
+			<ColumnDefinition Width="545"/>
+			<ColumnDefinition Width="10"/>
+			<ColumnDefinition Width="395"/>
+			<ColumnDefinition Width="1*"/>
+		</Grid.ColumnDefinitions>
+		<TextBlock Grid.Row="0" Grid.Column="1" Margin="0 25 0 0" HorizontalAlignment="Center" Text="Record upload" FontSize="16"/>
+		<!--Grid record upload-->
+		<Grid Grid.Row="1" Grid.Column="1" >
+			<Grid.RowDefinitions>
+				<RowDefinition Height="Auto"/>
+				<RowDefinition Height="Auto"/>
+			</Grid.RowDefinitions>
+			<TextBlock Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center" Width="450" x:Name="DragAndDropInfoTextTextBlock"
                    TextAlignment="Center" TextWrapping="Wrap" FontSize="17" Visibility="{Binding ShowHelpText, Converter={StaticResource TrueToVisibleConverter}}"  Grid.ZIndex="1"                     
                    Text="Drop items here or double click them in the record list"
 				   dragdrop:DragDrop.IsDragSource="False"
@@ -61,7 +61,7 @@
 				   dragdrop:DragDrop.UseDefaultDragAdorner="True"
 				   dragdrop:DragDrop.DefaultDragAdornerOpacity="0.5"
 				   dragdrop:DragDrop.UseDefaultEffectDataTemplate="False"/>
-        <DataGrid Grid.Row="0" Grid.Column="1" x:Name="CloudItemDataGrid" Height="275" Width="900" Background="#F5F5F5" FontSize="11"
+			<DataGrid Grid.Row="0" Grid.Column="1" x:Name="CloudItemDataGrid" Height="275" Width="900" Background="#F5F5F5" FontSize="11"
 						  MouseLeave="CloudItemDataGrid_MouseLeave" SelectionMode="Single"
 					      SelectedIndex="{Binding SelectedCloudEntryIndex}" ItemsSource="{Binding CloudEntries}"
 					      CanUserSortColumns="False" CanUserAddRows="False" AutoGenerateColumns="False" PreviewKeyDown="CloudItemDataGrid_PreviewKeyDown"
@@ -73,187 +73,189 @@
 					      dragdrop:DragDrop.UseDefaultDragAdorner="True"
 					      dragdrop:DragDrop.DefaultDragAdornerOpacity="0.5"
 					      dragdrop:DragDrop.UseDefaultEffectDataTemplate="False">
-            <DataGrid.Resources>
-                <proxy:BindingProxy x:Key="proxy" Data="{Binding}" />
-            </DataGrid.Resources>
-            <DataGrid.Columns>
-                <DataGridTextColumn Binding="{Binding GameName, Mode=OneWay}"
+				<DataGrid.Resources>
+					<proxy:BindingProxy x:Key="proxy" Data="{Binding}" />
+				</DataGrid.Resources>
+				<DataGrid.Columns>
+					<DataGridTextColumn Binding="{Binding GameName, Mode=OneWay}"
                                             Header="Game"
                                             IsReadOnly="True"/>
-                <DataGridTextColumn Binding="{Binding CreationDate, Mode=OneWay}"
+					<DataGridTextColumn Binding="{Binding CreationDate, Mode=OneWay}"
                                             Header="Date"
                                             IsReadOnly="True"/>
-                <DataGridTextColumn Binding="{Binding CreationTime, Mode=OneWay}"
+					<DataGridTextColumn Binding="{Binding CreationTime, Mode=OneWay}"
                                             Header="Time"
                                             IsReadOnly="True"/>
-                <DataGridTextColumn Binding="{Binding Comment, Mode=OneWay}"
+					<DataGridTextColumn Binding="{Binding Comment, Mode=OneWay}"
                                             Header="Comment"
                                             IsReadOnly="True"/>
-            </DataGrid.Columns>
-        </DataGrid>
-            <Button Grid.Row="1" Grid.Column="0" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="5"  Width="100" Height="45"
+				</DataGrid.Columns>
+			</DataGrid>
+			<Button Grid.Row="1" Grid.Column="0" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="5"  Width="100" Height="45"
 					Command="{Binding ClearTableCommand}" IsEnabled="{Binding EnableClearAndUploadButton}"
                     ToolTip="Remove all entries">
-                <TextBlock Text="Clear table" TextAlignment="Center"/>
-            </Button>
-            <Button Grid.Row="1" Grid.Column="2" Margin="5" VerticalAlignment="Top" HorizontalAlignment="Right" Width="100" Height="45"
+				<TextBlock Text="Clear table" TextAlignment="Center"/>
+			</Button>
+			<TextBox Grid.Row="1" Width="300" wpf:HintAssist.Hint="Share with friends and have fun ;)" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
+					 Margin="121,10,0,10" FontSize="14" HorizontalAlignment="Left" Text="{Binding ShareUrl, Mode=OneWay}" GotFocus="ShareUrlFocusHandler" IsReadOnly="True" Visibility="{Binding ShareUrlVisible, Converter={StaticResource TrueToVisibleConverter}}"/>
+			<Button Grid.Row="1" Grid.Column="2" Margin="5" VerticalAlignment="Top" HorizontalAlignment="Right" Width="100" Height="45"
 					Command="{Binding UploadRecordsCommand}" IsEnabled="{Binding EnableClearAndUploadButton}"
                     ToolTipService.ShowDuration="25000">
-                <TextBlock Text="Upload records" TextWrapping="Wrap"  TextAlignment="Center"/>
-                <Button.ToolTip>
-                    <ToolTip MaxWidth="200">
-                        <TextBlock
+				<TextBlock Text="Upload records" TextWrapping="Wrap"  TextAlignment="Center"/>
+				<Button.ToolTip>
+					<ToolTip MaxWidth="200">
+						<TextBlock
                              Text="Upload your records to our server and recieve an ID to share them" 
                              TextWrapping="Wrap"/>
-                    </ToolTip>
-                </Button.ToolTip>
-            </Button>
-        </Grid>
-        <TextBlock Grid.Row="2" Grid.Column="1" Margin="0 25 0 0" HorizontalAlignment="Center" Text="Record download" FontSize="16"/>
-        <!--Grid record download-->
-        <Grid Grid.Row="3" Grid.Column="1">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-            </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="1*"/>
-                <ColumnDefinition Width="1*"/>
-                <ColumnDefinition Width="120"/>
-            </Grid.ColumnDefinitions>
-            <TextBox Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Width="350" HorizontalAlignment="Left" wpf:HintAssist.Hint="Download ID" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
+					</ToolTip>
+				</Button.ToolTip>
+			</Button>
+		</Grid>
+		<TextBlock Grid.Row="2" Grid.Column="1" Margin="0 25 0 0" HorizontalAlignment="Center" Text="Record download" FontSize="16"/>
+		<!--Grid record download-->
+		<Grid Grid.Row="3" Grid.Column="1">
+			<Grid.RowDefinitions>
+				<RowDefinition Height="Auto"/>
+				<RowDefinition Height="Auto"/>
+			</Grid.RowDefinitions>
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="1*"/>
+				<ColumnDefinition Width="1*"/>
+				<ColumnDefinition Width="120"/>
+			</Grid.ColumnDefinitions>
+			<TextBox Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Width="350" HorizontalAlignment="Left" wpf:HintAssist.Hint="Download ID" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
 					 Margin="5 0 0 10" FontSize="14" Text="{Binding DownloadIDString, UpdateSourceTrigger=PropertyChanged}">
-            </TextBox>
-            <TextBox Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Width="350" wpf:HintAssist.Hint="Download Folder" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
+			</TextBox>
+			<TextBox Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Width="350" wpf:HintAssist.Hint="Download Folder" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
 					 Margin="5 0 0 -10" FontSize="14" HorizontalAlignment="Left" Text="{Binding CloudDownloadDirectory, Mode=OneWay}">
-            </TextBox>
-            <Button Grid.Row="1" Grid.Column="1" Margin="0 0 25 -25" Height="30" Width="30" HorizontalAlignment="Right" Command="{Binding SelectDownloadFolderCommand}" 
+			</TextBox>
+			<Button Grid.Row="1" Grid.Column="1" Margin="0 0 25 -25" Height="30" Width="30" HorizontalAlignment="Right" Command="{Binding SelectDownloadFolderCommand}" 
                     Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}" ToolTip="Select download folder">
-                    <materialDesign:PackIcon Kind="Folder" Height="20" Width="20" />
-            </Button>
-            <Button Grid.Row="0" Grid.RowSpan="2" Grid.Column="2" Margin="5 25 5 5" VerticalAlignment="Center" HorizontalAlignment="Right" Width="100" Height="45"
+				<materialDesign:PackIcon Kind="Folder" Height="20" Width="20" />
+			</Button>
+			<Button Grid.Row="0" Grid.RowSpan="2" Grid.Column="2" Margin="5 25 5 5" VerticalAlignment="Center" HorizontalAlignment="Right" Width="100" Height="45"
 					Command="{Binding DownloadRecordsCommand}" IsEnabled="{Binding EnableDownloadButton}"
                     ToolTipService.ShowDuration="25000">
-                <TextBlock Text="Download records" TextWrapping="Wrap"  TextAlignment="Center"/>
-                <Button.ToolTip>
-                    <ToolTip MaxWidth="200">
-                        <TextBlock
+				<TextBlock Text="Download records" TextWrapping="Wrap"  TextAlignment="Center"/>
+				<Button.ToolTip>
+					<ToolTip MaxWidth="200">
+						<TextBlock
                              Text="Download the records bound to the download ID to your specified download folder" 
                              TextWrapping="Wrap"/>
-                    </ToolTip>
-                </Button.ToolTip>
-            </Button>
-        </Grid>
-        <TextBlock Grid.Row="0" Grid.Column="3" Margin="0 25 0 0" HorizontalAlignment="Center" Text="Game name and ignore list options" FontSize="16"/>
-        <!--Grid lists upload/download-->
-        <Grid Grid.Row="1" Grid.Column="3">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="50"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-            </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="1*"/>
-                <ColumnDefinition Width="1*"/>
-            </Grid.ColumnDefinitions>
-            <Button Grid.Row="0" Grid.Column="0" Margin="5" VerticalAlignment="Center" HorizontalAlignment="Center" Width="135" Height="45"
+					</ToolTip>
+				</Button.ToolTip>
+			</Button>
+		</Grid>
+		<TextBlock Grid.Row="0" Grid.Column="3" Margin="0 25 0 0" HorizontalAlignment="Center" Text="Game name and ignore list options" FontSize="16"/>
+		<!--Grid lists upload/download-->
+		<Grid Grid.Row="1" Grid.Column="3">
+			<Grid.RowDefinitions>
+				<RowDefinition Height="Auto"/>
+				<RowDefinition Height="Auto"/>
+				<RowDefinition Height="50"/>
+				<RowDefinition Height="Auto"/>
+				<RowDefinition Height="Auto"/>
+			</Grid.RowDefinitions>
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="1*"/>
+				<ColumnDefinition Width="1*"/>
+			</Grid.ColumnDefinitions>
+			<Button Grid.Row="0" Grid.Column="0" Margin="5" VerticalAlignment="Center" HorizontalAlignment="Center" Width="135" Height="45"
 					Command="{Binding UploadIgnoreListCommand}"
                     ToolTipService.ShowDuration="25000">
-                <TextBlock Text="Upload&#10;ignore list" TextWrapping="Wrap"  TextAlignment="Center"/>
-                <Button.ToolTip>
-                    <ToolTip MaxWidth="200">
-                        <TextBlock
+				<TextBlock Text="Upload&#10;ignore list" TextWrapping="Wrap"  TextAlignment="Center"/>
+				<Button.ToolTip>
+					<ToolTip MaxWidth="200">
+						<TextBlock
                              Text="Upload your ignore list to our server to help us enhance our included ignore list" 
                              TextWrapping="Wrap"/>
-                    </ToolTip>
-                </Button.ToolTip>
-            </Button>
-            <Button Grid.Row="0" Grid.Column="1" Margin="5" VerticalAlignment="Center" HorizontalAlignment="Center" Width="135" Height="45"
+					</ToolTip>
+				</Button.ToolTip>
+			</Button>
+			<Button Grid.Row="0" Grid.Column="1" Margin="5" VerticalAlignment="Center" HorizontalAlignment="Center" Width="135" Height="45"
 					Command="{Binding UpdateIgnoreListCommand}"
                     ToolTipService.ShowDuration="25000">
-                <TextBlock Text="Update&#10;ignore list" TextWrapping="Wrap"  TextAlignment="Center"/>
-                <Button.ToolTip>
-                    <ToolTip MaxWidth="200">
-                        <TextBlock
+				<TextBlock Text="Update&#10;ignore list" TextWrapping="Wrap"  TextAlignment="Center"/>
+				<Button.ToolTip>
+					<ToolTip MaxWidth="200">
+						<TextBlock
                              Text="Compare your own ignore list to our online list and add any entry you don't have." 
                              TextWrapping="Wrap"/>
-                    </ToolTip>
-                </Button.ToolTip>
-            </Button>
-            <Button Grid.Row="1" Grid.Column="0" Margin="5" VerticalAlignment="Center" HorizontalAlignment="Center" Width="135" Height="45"
+					</ToolTip>
+				</Button.ToolTip>
+			</Button>
+			<Button Grid.Row="1" Grid.Column="0" Margin="5" VerticalAlignment="Center" HorizontalAlignment="Center" Width="135" Height="45"
 					Command="{Binding UploadGameListCommand}"
                     ToolTipService.ShowDuration="25000">
-                <TextBlock Text="Upload&#10;game name list" TextWrapping="Wrap"  TextAlignment="Center"/>
-                <Button.ToolTip>
-                    <ToolTip MaxWidth="200">
-                        <TextBlock
+				<TextBlock Text="Upload&#10;game name list" TextWrapping="Wrap"  TextAlignment="Center"/>
+				<Button.ToolTip>
+					<ToolTip MaxWidth="200">
+						<TextBlock
                              Text="Upload your game name list to our server to help us enhance our included game name list" 
                              TextWrapping="Wrap"/>
-                    </ToolTip>
-                </Button.ToolTip>
-            </Button>
-            <Button Grid.Row="1" Grid.Column="1" Margin="5" VerticalAlignment="Center" HorizontalAlignment="Center" Width="135" Height="45"
+					</ToolTip>
+				</Button.ToolTip>
+			</Button>
+			<Button Grid.Row="1" Grid.Column="1" Margin="5" VerticalAlignment="Center" HorizontalAlignment="Center" Width="135" Height="45"
 					Command="{Binding UpdateGameListCommand}"
                     ToolTipService.ShowDuration="25000">
-                <TextBlock Text="Update&#10;game name list" TextWrapping="Wrap"  TextAlignment="Center"/>
-                <Button.ToolTip>
-                    <ToolTip MaxWidth="200">
-                        <TextBlock
+				<TextBlock Text="Update&#10;game name list" TextWrapping="Wrap"  TextAlignment="Center"/>
+				<Button.ToolTip>
+					<ToolTip MaxWidth="200">
+						<TextBlock
                              Text="Compare your own game name list to our online list and add any entry you don't have." 
                              TextWrapping="Wrap"/>
-                    </ToolTip>
-                </Button.ToolTip>
-            </Button>
-            <CheckBox Grid.Row="3" Grid.Column="0"  Width="120" IsChecked="{Binding AutoUploadIgnoreList}" ToolTipService.ShowDuration="25000">
-                <CheckBox.ToolTip>
-                    <ToolTip StaysOpen="True" MaxWidth="275">
-                        <TextBlock 
+					</ToolTip>
+				</Button.ToolTip>
+			</Button>
+			<CheckBox Grid.Row="3" Grid.Column="0"  Width="120" IsChecked="{Binding AutoUploadIgnoreList}" ToolTipService.ShowDuration="25000">
+				<CheckBox.ToolTip>
+					<ToolTip StaysOpen="True" MaxWidth="275">
+						<TextBlock 
                              Text="If checked, any entry you add to your own ignore list will be sent to us so that we can add it to our online list" 
                                   TextWrapping="Wrap"/>
-                    </ToolTip>
-                </CheckBox.ToolTip>
-                <TextBlock Padding="5 0 0 0" TextWrapping="WrapWithOverflow">
+					</ToolTip>
+				</CheckBox.ToolTip>
+				<TextBlock Padding="5 0 0 0" TextWrapping="WrapWithOverflow">
   					     Auto upload new ignore list entries
-                </TextBlock>
-            </CheckBox>
-            <CheckBox Grid.Row="4" Grid.Column="0"  Width="120" Margin="10"  IsChecked="{Binding AutoUploadGameNameList}" ToolTipService.ShowDuration="25000">
-                <CheckBox.ToolTip>
-                    <ToolTip StaysOpen="True" MaxWidth="275">
-                        <TextBlock 
+				</TextBlock>
+			</CheckBox>
+			<CheckBox Grid.Row="4" Grid.Column="0"  Width="120" Margin="10"  IsChecked="{Binding AutoUploadGameNameList}" ToolTipService.ShowDuration="25000">
+				<CheckBox.ToolTip>
+					<ToolTip StaysOpen="True" MaxWidth="275">
+						<TextBlock 
                              Text="If checked, any entry you add to your own game name list will be sent to us so that we can add it to our online list" 
                                   TextWrapping="Wrap"/>
-                    </ToolTip>
-                </CheckBox.ToolTip>
-                <TextBlock Padding="5 0 0 0" TextWrapping="WrapWithOverflow">
+					</ToolTip>
+				</CheckBox.ToolTip>
+				<TextBlock Padding="5 0 0 0" TextWrapping="WrapWithOverflow">
   					     Auto upload new game list entries
-                </TextBlock>
-            </CheckBox>
-            <CheckBox Grid.Row="3" Grid.Column="1"  Width="120" IsChecked="{Binding AutoUpdateIgnoreList}" ToolTipService.ShowDuration="25000">
-                <CheckBox.ToolTip>
-                    <ToolTip StaysOpen="True" MaxWidth="275">
-                        <TextBlock 
+				</TextBlock>
+			</CheckBox>
+			<CheckBox Grid.Row="3" Grid.Column="1"  Width="120" IsChecked="{Binding AutoUpdateIgnoreList}" ToolTipService.ShowDuration="25000">
+				<CheckBox.ToolTip>
+					<ToolTip StaysOpen="True" MaxWidth="275">
+						<TextBlock 
                              Text="If checked, once per week your own ignore list will be compared to our online list and anything that's not on your list will be added" 
                                   TextWrapping="Wrap"/>
-                    </ToolTip>
-                </CheckBox.ToolTip>
-                <TextBlock Padding="5 0 0 0" TextWrapping="WrapWithOverflow">
+					</ToolTip>
+				</CheckBox.ToolTip>
+				<TextBlock Padding="5 0 0 0" TextWrapping="WrapWithOverflow">
   					     Auto update ignore list
-                </TextBlock>
-            </CheckBox>
-            <CheckBox Grid.Row="4" Grid.Column="1"  Width="120" IsChecked="{Binding AutoUpdateGameNameList}" ToolTipService.ShowDuration="25000">
-                    <CheckBox.ToolTip>
-                        <ToolTip StaysOpen="True" MaxWidth="275">
-                            <TextBlock 
+				</TextBlock>
+			</CheckBox>
+			<CheckBox Grid.Row="4" Grid.Column="1"  Width="120" IsChecked="{Binding AutoUpdateGameNameList}" ToolTipService.ShowDuration="25000">
+				<CheckBox.ToolTip>
+					<ToolTip StaysOpen="True" MaxWidth="275">
+						<TextBlock 
                              Text="If checked, once per week your game name list will be compared to our online list and anything that's not on your list will be added" 
                                   TextWrapping="Wrap"/>
-                        </ToolTip>
-                    </CheckBox.ToolTip>
-                    <TextBlock Padding="5 0 0 0" TextWrapping="WrapWithOverflow">
+					</ToolTip>
+				</CheckBox.ToolTip>
+				<TextBlock Padding="5 0 0 0" TextWrapping="WrapWithOverflow">
   					     Auto update game list
-                    </TextBlock>
-                </CheckBox>
-        </Grid>
-    </Grid>
+				</TextBlock>
+			</CheckBox>
+		</Grid>
+	</Grid>
 </UserControl>
