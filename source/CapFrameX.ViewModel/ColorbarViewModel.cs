@@ -37,6 +37,7 @@ namespace CapFrameX.ViewModel
 		private double _stutteringFactor;
 		private string _observedDirectory;
 		private bool _synchronizationIsChecked;
+		private bool _cloudIsChecked;
 		private int _fpsValuesRoundingDigits;
 		private bool _aggregatioIsChecked;
 		private string _screenshotDirectory;
@@ -83,6 +84,18 @@ namespace CapFrameX.ViewModel
 					OnSingleRecordIsCheckedChanged();
 			}
 		}
+		public bool AggregationIsChecked
+		{
+			get { return _aggregatioIsChecked; }
+			set
+			{
+				_aggregatioIsChecked = value;
+				RaisePropertyChanged();
+
+				if (value)
+					OnAggregationIsCheckedChanged();
+			}
+		}
 
 		public bool RecordComparisonIsChecked
 		{
@@ -122,19 +135,19 @@ namespace CapFrameX.ViewModel
 					OnSynchronizationIsCheckedChanged();
 			}
 		}
-
-		public bool AggregationIsChecked
+		public bool CloudIsChecked
 		{
-			get { return _aggregatioIsChecked; }
+			get { return _cloudIsChecked; }
 			set
 			{
-				_aggregatioIsChecked = value;
+				_cloudIsChecked = value;
 				RaisePropertyChanged();
 
 				if (value)
-					OnAggregationIsCheckedChanged();
+					OnCloudIsCheckedChanged();
 			}
 		}
+
 
 		public int SelectWindowSize
 		{
@@ -436,6 +449,11 @@ namespace CapFrameX.ViewModel
 		private void OnSynchronizationIsCheckedChanged()
 		{
 			_regionManager.RequestNavigate("DataRegion", "SynchronizationView");
+		}
+
+		private void OnCloudIsCheckedChanged()
+		{
+			_regionManager.RequestNavigate("DataRegion", "CloudView");
 		}
 
 		private void OnHardwareInfoSourceChanged()

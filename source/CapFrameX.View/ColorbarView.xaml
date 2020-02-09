@@ -63,7 +63,11 @@
 							 Margin="5"
 							 IsChecked="{Binding SynchronizationIsChecked}"
 							 Content="SYNCHRONIZATION" />
-				</StackPanel>
+                    <RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
+							 Margin="5"
+							 IsChecked="{Binding CloudIsChecked}"
+							 Content="CLOUD" />
+                </StackPanel>
 
 				<Button Grid.Column="1" Margin="0 0 310 0"
 						Style="{StaticResource MaterialDesignFloatingActionMiniButton}"

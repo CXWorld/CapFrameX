@@ -70,6 +70,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Aggregation\IAggregationEntry.cs" />
+    <Compile Include="Cloud\ICloudEntry.cs" />
     <Compile Include="Configuration\IAppConfiguration.cs" />
     <Compile Include="Data\IWebVersionProvider.cs" />
     <Compile Include="Data\IAppVersionProvider.cs" />

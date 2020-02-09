@@ -127,6 +127,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CloudViewModel.cs" />
     <Compile Include="AggregationViewModel.cs" />
     <Compile Include="CaptureViewModel.cs" />
     <Compile Include="CaptureViewModelData.cs" />
