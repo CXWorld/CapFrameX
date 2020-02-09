@@ -37,6 +37,21 @@ public:
 		_coreControl->ReleaseOSD();
 	}
 
+	void SetIsCaptureTimerActive(bool isActive)
+	{
+		try
+		{
+			{
+				msclr::lock l(m_lock);
+				_coreControl->IsCaptureTimerActive = isActive;
+			}
+		}
+		catch (Exception ^ ex)
+		{
+			_exceptionAction->Invoke(ex);
+		}
+	}
+
 	void SetRunHistory(array<String^>^ runHistory)
 	{
 		try

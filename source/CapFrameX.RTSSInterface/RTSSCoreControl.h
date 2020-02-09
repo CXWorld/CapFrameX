@@ -31,6 +31,7 @@ public:
 	std::vector<BOOL>			RunHistoryOutlierFlags;
 	CString						RunHistoryAggregation;
 	std::vector<OverlayEntry>	OverlayEntries;
+	BOOL						IsCaptureTimerActive;
 
 // Implementation
 protected:
