@@ -50,7 +50,7 @@ namespace CapFrameX.Webservice.Host.Controllers
                         Name = capture.FileName,
                         BlobBytes = memoryStream.ToArray()
                     });
-                    await memoryStream.FlushAsync();
+                    memoryStream.SetLength(0);
                 }
             }
             var query = new UploadCapturesCommand()
