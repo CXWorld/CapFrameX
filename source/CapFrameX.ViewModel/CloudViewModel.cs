@@ -5,9 +5,11 @@ using CapFrameX.Data;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Extensions;
 using CapFrameX.Statistics;
+using CapFrameX.Webservice.Data.DTO;
 using GongSolutions.Wpf.DragDrop;
 using Microsoft.Extensions.Logging;
 using Microsoft.WindowsAPICodePack.Dialogs;
+using Newtonsoft.Json;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Mvvm;
@@ -20,6 +22,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Reactive.Subjects;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
@@ -35,20 +38,17 @@ namespace CapFrameX.ViewModel
 		private readonly ILogger<CloudViewModel> _logger;
 		private readonly IAppVersionProvider _appVersionProvider;
 
-		public DelegateCommand UploadRecordsCommand { get; }
-
 		private bool _useUpdateSession;
 		private int _selectedCloudEntryIndex = -1;
 		private bool _showHelpText = true;
 		private bool _enableClearAndUploadButton;
-		private bool _enableDownloadButton;
 		private List<IFileRecordInfo> _fileRecordInfoList = new List<IFileRecordInfo>();
-
+		private string _downloadIdString;
 
 		public int SelectedCloudEntryIndex
 		{
 			get
-			{return _selectedCloudEntryIndex;}
+			{ return _selectedCloudEntryIndex; }
 			set
 			{
 				_selectedCloudEntryIndex = value;
@@ -59,14 +59,14 @@ namespace CapFrameX.ViewModel
 		public bool ShowHelpText
 		{
 			get
-			{return _showHelpText;}
+			{ return _showHelpText; }
 			set
 			{
 				_showHelpText = value;
 				RaisePropertyChanged();
 			}
 		}
-		
+
 		public bool EnableClearAndUploadButton
 		{
 			get
@@ -77,16 +77,8 @@ namespace CapFrameX.ViewModel
 				RaisePropertyChanged();
 			}
 		}
-		public bool EnableDownloadButton
-		{
-			get
-			{ return _enableDownloadButton; }
-			set
-			{
-				_enableDownloadButton = value;
-				RaisePropertyChanged();
-			}
-		}
+		public bool EnableDownloadButton { get; set; }
+		
 		public string CloudDownloadDirectory
 		{
 			get { return _appConfiguration.CloudDownloadDirectory; }
@@ -97,10 +89,35 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
+		public string DownloadIDString
+		{
+			get
+			{
+				return _downloadIdString;
+			}
+			set
+			{
+				var regex = new Regex(@"(\{){0,1}[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}(\}){0,1}");
+				var match = regex.Match(value);
+				if (match.Success)
+				{
+					_downloadIdString = match.Value;
+				} else
+				{
+					_downloadIdString = value;
+				}
+				EnableDownloadButton = match.Success;
+				RaisePropertyChanged(nameof(EnableDownloadButton));
+			}
+		}
+
 
 		public ICommand ClearTableCommand { get; }
 
 		public ICommand SelectDownloadFolderCommand { get; }
+
+		public ICommand UploadRecordsCommand { get; }
+		public ICommand DownloadRecordsCommand { get; }
 
 		public ObservableCollection<ICloudEntry> CloudEntries { get; private set; }
 			= new ObservableCollection<ICloudEntry>();
@@ -116,9 +133,15 @@ namespace CapFrameX.ViewModel
 			_appVersionProvider = appVersionProvider;
 			ClearTableCommand = new DelegateCommand(OnClearTable);
 			SelectDownloadFolderCommand = new DelegateCommand(OnSelectDownloadFolder);
-			UploadRecordsCommand = new DelegateCommand(async () => {
+			UploadRecordsCommand = new DelegateCommand(async () =>
+			{
 				await UploadRecords();
 				OnClearTable();
+			});
+
+			DownloadRecordsCommand = new DelegateCommand(async () =>
+			{
+				await DownloadCaptureCollection(DownloadIDString);
 			});
 
 
@@ -249,7 +272,7 @@ namespace CapFrameX.ViewModel
 
 			var requestContent = new MultipartFormDataContent();
 
-			requestContent.Add(new StringContent(_appVersionProvider.GetAppVersion().ToString()),"appVersion");
+			requestContent.Add(new StringContent(_appVersionProvider.GetAppVersion().ToString()), "appVersion");
 			foreach (var file in CloudEntries)
 			{
 				var fileInfo = file.FileRecordInfo.FileInfo;
@@ -260,13 +283,49 @@ namespace CapFrameX.ViewModel
 			{
 				var response = await client.PostAsync(@"https://capframex.com/api/capturecollections", requestContent);
 
-				if(response.IsSuccessStatusCode)
+				if (response.IsSuccessStatusCode)
 				{
 					_logger.LogInformation("Successfully uploaded Captures. ShareUrl is {shareUrl}", response.Headers.Location);
-				} else
+				}
+				else
 				{
 					var content = await response.Content.ReadAsStringAsync();
 					_logger.LogError("Upload of Captures failed. {error}", content);
+				}
+			}
+		}
+
+		private async Task DownloadCaptureCollection(string id)
+		{
+			var url = $@"https://capframex.com/api/capturecollections/{id}";
+			using (var client = new HttpClient())
+			{
+				var response = await client.GetAsync(url);
+
+				if (response.IsSuccessStatusCode)
+				{
+					var content = JsonConvert.DeserializeObject<Webservice.Data.DTO.CaptureCollection>(await response.Content.ReadAsStringAsync());
+
+					var downloadDirectory = _appConfiguration.CloudDownloadDirectory;
+
+					if (downloadDirectory.Contains(@"MyDocuments\CapFrameX\Captures\Cloud"))
+					{
+						downloadDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), @"CapFrameX\Captures\Cloud");
+					}
+					if (!Directory.Exists(downloadDirectory))
+					{
+						Directory.CreateDirectory(downloadDirectory);
+					}
+					foreach (var capture in content.Captures)
+					{
+						var fileInfo = new FileInfo(Path.Combine(downloadDirectory, capture.Name));
+						File.WriteAllBytes(fileInfo.FullName, capture.BlobBytes);
+					}
+				}
+				else
+				{
+					var content = await response.Content.ReadAsStringAsync();
+					_logger.LogError("Download of CaptureCollection failed. {error}", content);
 				}
 			}
 		}
