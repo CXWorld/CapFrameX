@@ -46,7 +46,13 @@ namespace CapFrameX.Webservice.Host
 			services.AddAutoMapper(assembly);
 
 			services.AddScoped<ICapturesService, CapturesService>();
-			services.AddScoped<ICaptureStorage>(opt => new CaptureDiskStorage(@"C:\CXService"));
+			services.AddScoped<ICaptureStorage>(opt => {
+				if(Configuration.GetValue<string>("CaptureStorage:Type") == "Disk")
+				{
+					return new CaptureDiskStorage(Configuration.GetValue<string>("CaptureStorage:Options:Directory"));
+				}
+				throw new Exception("No CaptureStorage configured");
+			});
 
 			services.AddControllers()
 				.AddFluentValidation(opt =>
