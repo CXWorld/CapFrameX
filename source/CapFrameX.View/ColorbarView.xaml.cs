@@ -6,6 +6,7 @@ using Prism.Events;
 using Prism.Regions;
 using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Windows;
@@ -159,6 +160,12 @@ namespace CapFrameX.View
 		private void PopupBox_Closed(object sender, RoutedEventArgs e)
 		{
 			(DataContext as ColorbarViewModel).OptionsViewSelected = true;
+		}
+
+		private void Hyperlink_RequestNavigate(object sender, System.Windows.Navigation.RequestNavigateEventArgs e)
+		{
+			Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri));
+			e.Handled = true;
 		}
 	}
 }
