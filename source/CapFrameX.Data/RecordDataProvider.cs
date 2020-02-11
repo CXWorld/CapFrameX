@@ -191,12 +191,12 @@ namespace CapFrameX.Data
 					sw.Write(csvString);
 				}
 
-				_logger.LogInformation($"{filePath} successfully written");
+				_logger.LogInformation("{filePath} successfully written", filePath);
 				return true;
 			}
 			catch (Exception ex) 
 			{
-				_logger.LogError(ex, $"Error while creating {filePath}");
+				_logger.LogError(ex, "Error while creating {filePath}", filePath);
 				return false; 
 			}
 		}

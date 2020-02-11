@@ -77,6 +77,7 @@ namespace CapFrameX.Overlay
 			SetRunHistory(_runHistory.ToArray());
 			SetRunHistoryAggregation(string.Empty);
 			SetRunHistoryOutlierFlags(_runHistoryOutlierFlags);
+			SetIsCaptureTimerActive(false);
 		}
 
 		public void ShowOverlay()
@@ -100,7 +101,7 @@ namespace CapFrameX.Overlay
 		public void StartCountdown(int seconds)
 		{
 			IObservable<long> obs = Extensions.ObservableExtensions.CountDown(seconds);
-			SetShowCaptureTimer(true);
+			SetIsCaptureTimerActive(true);
 
 			SetCaptureTimerValue(0);
 			_disposableCountdown?.Dispose();
@@ -109,19 +110,19 @@ namespace CapFrameX.Overlay
 				SetCaptureTimerValue((int)t);
 
 				if (t == 0)
-					SetShowCaptureTimer(false);
+					SetIsCaptureTimerActive(false);
 			});
 		}
 
 		public void StartCaptureTimer()
 		{
-			SetShowCaptureTimer(true);
 			_disposableCaptureTimer = GetCaptureTimer();
+			SetIsCaptureTimerActive(true);
 		}
 
 		public void StopCaptureTimer()
 		{
-			SetShowCaptureTimer(false);
+			SetIsCaptureTimerActive(false);
 			SetCaptureTimerValue(0);
 			_disposableCaptureTimer?.Dispose();
 		}
@@ -259,12 +260,6 @@ namespace CapFrameX.Overlay
 		private async Task SetTaskDelayOffset()
 		{
 			await Task.Delay(TimeSpan.FromMilliseconds(1000));
-		}
-
-		private void SetShowCaptureTimer(bool show)
-		{
-			var captureTimer = _overlayEntryProvider.GetOverlayEntry("CaptureTimer");
-			captureTimer.ShowOnOverlay = show;
 		}
 
 		private void CheckRTSSRunningAndRefresh()

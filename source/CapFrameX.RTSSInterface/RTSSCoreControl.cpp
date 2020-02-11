@@ -533,6 +533,22 @@ void RTSSCoreControl::AddOverlayEntry(CGroupedString* groupedString, OverlayEntr
 			}
 		}
 	}
+	else if (entry->Identifier == "CaptureTimer")
+	{
+		if (entry->ShowOnOverlay && IsCaptureTimerActive)
+		{
+			CString groupName = entry->GroupName;
+			CString value = entry->Value;
+
+			if (groupName != "")
+			{
+				groupName = "<C2>" + groupName + " <C>";
+				groupedString->Add("<C4> " + value + "<C>", groupName, "\n", " ");
+			}
+			else
+				groupedString->Add("<C4>" + value + "<C>", groupName, "\n", " ");
+		}
+	}
 	else if (entry->Identifier == "Framerate")
 	{
 		if (entry->ShowOnOverlay)

@@ -14,8 +14,8 @@
     {
       "Identifier": "CaptureTimer",
       "Description": "Capture timer",
-      "ShowOnOverlay": false,
-      "ShowOnOverlayIsEnabled": false,
+      "ShowOnOverlay": true,
+      "ShowOnOverlayIsEnabled": true,
       "GroupName": "Status:",
       "Value": "0",
       "ShowGraph": false,

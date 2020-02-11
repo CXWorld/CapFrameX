@@ -13,53 +13,53 @@
 			 x:Name="ColorbarViewName"
              d:DesignHeight="450" d:DesignWidth="800"
 			 prism:ViewModelLocator.AutoWireViewModel="True">
-	<UserControl.Resources>
-		<ResourceDictionary>
-			<ResourceDictionary.MergedDictionaries>
-				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Button.xaml" />
-				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Shadows.xaml" />
-				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ToggleButton.xaml" />
-				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.DataGrid.xaml" />
-				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Slider.xaml" />
-			</ResourceDictionary.MergedDictionaries>
-			<mvvm:BoolToVisibilityConverter x:Key="FalseToCollapsedConverter" TrueValue="Visible" FalseValue="Collapsed"/>
-			<mvvm:EnumDescriptionConverter x:Key="EnumDescriptionConverter"/>
-		</ResourceDictionary>
-	</UserControl.Resources>
-	<Grid>
-		<materialDesign:ColorZone Mode="PrimaryMid">
-			<Grid>
-				<Grid.ColumnDefinitions>
-					<ColumnDefinition Width="2*"/>
-					<ColumnDefinition Width="1*"/>
-				</Grid.ColumnDefinitions>
-				<StackPanel Grid.Column="0" Orientation="Horizontal" Margin="2">
-					<RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Button.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Shadows.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ToggleButton.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.DataGrid.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Slider.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <mvvm:BoolToVisibilityConverter x:Key="FalseToCollapsedConverter" TrueValue="Visible" FalseValue="Collapsed"/>
+            <mvvm:EnumDescriptionConverter x:Key="EnumDescriptionConverter"/>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Grid>
+        <materialDesign:ColorZone Mode="PrimaryMid">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="2*"/>
+                    <ColumnDefinition Width="1*"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Margin="2">
+                    <RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
 							 Margin="5"
 							 IsChecked="{Binding CaptureIsChecked}"
 							 Content="CAPTURE" 
                              Visibility="{Binding IsCompatibleWithRunningOS, Converter={StaticResource FalseToCollapsedConverter}}"/>
-					<RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
+                    <RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
 							 Margin="5"
 							 IsChecked="{Binding OverlayIsChecked}"
 							 Content="OVERLAY" />
-					<RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
+                    <RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
 							 Margin="5"
 							 IsChecked="{Binding SingleRecordIsChecked}"
 							 Content="ANALYSIS" />
-					<RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
+                    <RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
 							 Margin="5"
 							 IsChecked="{Binding AggregationIsChecked}"
 							 Content="AGGREGATION" />
-					<RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
+                    <RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
 							 Margin="5"
 							 IsChecked="{Binding RecordComparisonIsChecked}"
 							 Content="COMPARISON" />
-					<RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
+                    <RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
 							 Margin="5"
 							 IsChecked="{Binding ReportIsChecked}"
 							 Content="REPORT" />
-					<RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
+                    <RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
 							 Margin="5"
 							 IsChecked="{Binding SynchronizationIsChecked}"
 							 Content="SYNCHRONIZATION" />
@@ -69,176 +69,169 @@
 							 Content="CLOUD" />
                 </StackPanel>
 
-				<Button Grid.Column="1" Margin="0 0 310 0"
+                <Button Grid.Column="1" Margin="0 0 210 0"
 						Style="{StaticResource MaterialDesignFloatingActionMiniButton}"
 						VerticalAlignment="Center"
 						HorizontalAlignment="Right"
 						ToolTip="Take a screenshot"
 						materialDesign:RippleAssist.Feedback="#DD000000"
 						Width="32" Height="32" Click="TakeScreenShotButton_Click">
-					<materialDesign:PackIcon Kind="PhotoLibrary"/>
-				</Button>
+                    <materialDesign:PackIcon Kind="PhotoLibrary"/>
+                </Button>
 
-				<Button Grid.Column="1" Margin="0 0 180 0" HorizontalAlignment="Right" BorderThickness="0" Background="Transparent"
-                    x:Name="GitHubButton" Click="GitHubButton_Click" Width="120" Height="50">
-					<StackPanel Orientation="Horizontal">
-						<materialDesign:PackIcon Kind="GithubCircle" Height="30" Width="30" VerticalAlignment="Center"/>
-						<TextBlock Margin="8 0 0 0" VerticalAlignment="Center">GitHub</TextBlock>
-					</StackPanel>
-				</Button>
+                <TextBlock Grid.Column="1" Margin="0 0 70 2" HorizontalAlignment="Right" VerticalAlignment="Center">           
+			        <Hyperlink NavigateUri="https://capframex.com/" RequestNavigate="Hyperlink_RequestNavigate" TextDecorations="None">
+				        <TextBlock FontSize="16" Foreground="White" Text="CapFrameX.com"/>
+			        </Hyperlink>	
+		        </TextBlock>
 
-				<Button Grid.Column="1" Margin="0 0 50 0" Width="150" Height="50" HorizontalAlignment="Right" BorderThickness="0" 
-						Background="Transparent" Click="Donate_Button_Click">
-					<Image Width="120" Height="40" Source="/CapFrameX;component/Icons/Donate-PayPal-White.png"></Image>
-				</Button>
-
-				<materialDesign:PopupBox Grid.Column="1" materialDesign:Closed="PopupBox_Closed" RequestBringIntoView="PopupBox_RequestBringIntoView" Margin="16,0,16,0" StaysOpen="True" PlacementMode="BottomAndAlignRightEdges" HorizontalAlignment="Right">
-					<DockPanel>
-						<StackPanel Margin="10" DockPanel.Dock="Top" Orientation="Horizontal">
-							<RadioButton Margin="18 0 0 0" Style="{StaticResource MaterialDesignTabRadioButton}"
+                <materialDesign:PopupBox Grid.Column="1" materialDesign:Closed="PopupBox_Closed" RequestBringIntoView="PopupBox_RequestBringIntoView" Margin="16,0,16,0" StaysOpen="True" PlacementMode="BottomAndAlignRightEdges" HorizontalAlignment="Right">
+                    <DockPanel>
+                        <StackPanel Margin="10" DockPanel.Dock="Top" Orientation="Horizontal">
+                            <RadioButton Margin="18 0 0 0" Style="{StaticResource MaterialDesignTabRadioButton}"
 										 IsChecked="{Binding OptionsViewSelected}"
 										 Content="OPTIONS" />
-							<RadioButton Margin="20 0 0 0" Style="{StaticResource MaterialDesignTabRadioButton}"
+                            <RadioButton Margin="20 0 0 0" Style="{StaticResource MaterialDesignTabRadioButton}"
 										 IsChecked="{Binding HelpViewSelected}"
 										 Content="HELP" />
-						</StackPanel>
-						<ContentPresenter x:Name="ContentPresenterSwitchView" Content="{Binding}">
-							<ContentPresenter.Resources>
-								<DataTemplate x:Name="OptionsDataTemplate" x:Key="OptionsContent">
-									<Grid Margin="10">
-										<Grid.Resources>
-											<Style TargetType="CheckBox" BasedOn="{StaticResource MaterialDesignCheckBox}">
-												<Setter Property="Margin" Value="8,8,10,8" />
-											</Style>
-											<Style TargetType="TextBox" BasedOn="{StaticResource MaterialDesignTextBox}">
-												<Setter Property="materialDesign:HintAssist.IsFloating" Value="True" />
-												<Setter Property="Margin" Value="8,8,8,8" />
-											</Style>
-										</Grid.Resources>
-										<Grid.RowDefinitions>
-											<RowDefinition Height="*" />
-											<RowDefinition Height="*" />
-											<RowDefinition Height="*" />
-											<RowDefinition Height="*" />
-											<RowDefinition Height="*" />
-											<RowDefinition Height="*" />
-											<RowDefinition Height="*" />
-										</Grid.RowDefinitions>
-										<Grid.ColumnDefinitions>
-											<ColumnDefinition Width="*"/>
-											<ColumnDefinition Width="*"/>
-											<ColumnDefinition Width="*"/>
-										</Grid.ColumnDefinitions>
-										<ComboBox Grid.Row="0" Grid.Column="0" materialDesign:HintAssist.Hint="Moving average window" HorizontalAlignment="Left"
+                        </StackPanel>
+                        <ContentPresenter x:Name="ContentPresenterSwitchView" Content="{Binding}">
+                            <ContentPresenter.Resources>
+                                <DataTemplate x:Name="OptionsDataTemplate" x:Key="OptionsContent">
+                                    <Grid Margin="10">
+                                        <Grid.Resources>
+                                            <Style TargetType="CheckBox" BasedOn="{StaticResource MaterialDesignCheckBox}">
+                                                <Setter Property="Margin" Value="8,8,10,8" />
+                                            </Style>
+                                            <Style TargetType="TextBox" BasedOn="{StaticResource MaterialDesignTextBox}">
+                                                <Setter Property="materialDesign:HintAssist.IsFloating" Value="True" />
+                                                <Setter Property="Margin" Value="8,8,8,8" />
+                                            </Style>
+                                        </Grid.Resources>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="*" />
+                                            <RowDefinition Height="*" />
+                                            <RowDefinition Height="*" />
+                                            <RowDefinition Height="*" />
+                                            <RowDefinition Height="*" />
+                                            <RowDefinition Height="*" />
+                                            <RowDefinition Height="*" />
+                                        </Grid.RowDefinitions>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <ComboBox Grid.Row="0" Grid.Column="0" materialDesign:HintAssist.Hint="Moving average window" HorizontalAlignment="Left"
 												  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Width="140" Margin="20 15 15 15"
 												  ItemsSource="{Binding Path=DataContext.WindowSizes, ElementName=ColorbarViewName}">
-											<ComboBox.Text>
-												<Binding Path="SelectWindowSize"
+                                            <ComboBox.Text>
+                                                <Binding Path="SelectWindowSize"
 														 Mode="TwoWay"
 														 UpdateSourceTrigger="PropertyChanged">
-												</Binding>
-											</ComboBox.Text>
-										</ComboBox>
-										<ComboBox Grid.Row="0" Grid.Column="1" materialDesign:HintAssist.Hint="FPS values decimals" HorizontalAlignment="Center"
+                                                </Binding>
+                                            </ComboBox.Text>
+                                        </ComboBox>
+                                        <ComboBox Grid.Row="0" Grid.Column="1" materialDesign:HintAssist.Hint="FPS values decimals" HorizontalAlignment="Center"
 												  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Width="120" Margin="15 15"
 												  ItemsSource="{Binding Path=DataContext.RoundingDigits, ElementName=ColorbarViewName}">
-											<ComboBox.Text>
-												<Binding Path="FpsValuesRoundingDigits"
+                                            <ComboBox.Text>
+                                                <Binding Path="FpsValuesRoundingDigits"
 														 Mode="TwoWay"
 														 UpdateSourceTrigger="PropertyChanged">
-												</Binding>
-											</ComboBox.Text>
-										</ComboBox>
-										<TextBox Grid.Row="0" Grid.Column="2" materialDesign:HintAssist.Hint="Stuttering factor" HorizontalAlignment="Right" Width="90"  Margin="15 15">
-											<TextBox.Text>
-												<Binding Path="StutteringFactor"
+                                                </Binding>
+                                            </ComboBox.Text>
+                                        </ComboBox>
+                                        <TextBox Grid.Row="0" Grid.Column="2" materialDesign:HintAssist.Hint="Stuttering factor" HorizontalAlignment="Right" Width="90"  Margin="15 15">
+                                            <TextBox.Text>
+                                                <Binding Path="StutteringFactor"
 														 Mode="TwoWay"
 														 UpdateSourceTrigger="LostFocus">
-												</Binding>
-											</TextBox.Text>
-										</TextBox>
-										<StackPanel Grid.Row="1" Grid.ColumnSpan="3" Orientation="Horizontal" HorizontalAlignment="Left" Margin="10 0 0 0">
-											<TextBox Width="350" IsReadOnly="True" materialDesign:HintAssist.Hint="Observed directory (third-party compatible)" Text="{Binding DataContext.ObservedDirectory, ElementName=ColorbarViewName, Mode=OneWay}" />
-											<Button Margin="15 0 0 0" Height="35" Width="35" Command="{Binding Path=DataContext.SelectObservedFolderCommand, ElementName=ColorbarViewName}" Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}" ToolTip="Select observed folder">
-												<materialDesign:PackIcon Kind="Folder" Height="25" Width="25" />
-											</Button>
-											<Button Margin="15 0 0 0" Height="35" Width="35" Command="{Binding Path=DataContext.OpenObservedFolderCommand, ElementName=ColorbarViewName}" Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}" ToolTip="Open observed folder">
-												<materialDesign:PackIcon Kind="Forward"  Height="25" Width="25" />
-											</Button>
-										</StackPanel>
+                                                </Binding>
+                                            </TextBox.Text>
+                                        </TextBox>
+                                        <StackPanel Grid.Row="1" Grid.ColumnSpan="3" Orientation="Horizontal" HorizontalAlignment="Left" Margin="10 0 0 0">
+                                            <TextBox Width="350" IsReadOnly="True" materialDesign:HintAssist.Hint="Observed directory (third-party compatible)" Text="{Binding DataContext.ObservedDirectory, ElementName=ColorbarViewName, Mode=OneWay}" />
+                                            <Button Margin="15 0 0 0" Height="35" Width="35" Command="{Binding Path=DataContext.SelectObservedFolderCommand, ElementName=ColorbarViewName}" Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}" ToolTip="Select observed folder">
+                                                <materialDesign:PackIcon Kind="Folder" Height="25" Width="25" />
+                                            </Button>
+                                            <Button Margin="15 0 0 0" Height="35" Width="35" Command="{Binding Path=DataContext.OpenObservedFolderCommand, ElementName=ColorbarViewName}" Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}" ToolTip="Open observed folder">
+                                                <materialDesign:PackIcon Kind="Forward"  Height="25" Width="25" />
+                                            </Button>
+                                        </StackPanel>
 
-										<StackPanel Grid.Row="2" Grid.ColumnSpan="3" Orientation="Horizontal" HorizontalAlignment="Left"  Margin="10 0 0 0">
-											<TextBox Width="350" IsReadOnly="True" materialDesign:HintAssist.Hint="Screenshot directory" Text="{Binding ScreenshotDirectory, Mode=OneWay}" />
-											<Button Margin="15 0 0 0" Height="35" Width="35" Command="{Binding Path=DataContext.SelectScreenshotFolderCommand, ElementName=ColorbarViewName}" Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}" ToolTip="Select screenshot folder">
-												<materialDesign:PackIcon Kind="Folder" Height="25" Width="25" />
-											</Button>
-											<Button Margin="15 0 0 0" Height="35" Width="35" Command="{Binding Path=DataContext.OpenScreenshotFolderCommand, ElementName=ColorbarViewName}" Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}" ToolTip="Open screenshot folder">
-												<materialDesign:PackIcon Kind="Forward" Height="25" Width="25" />
-											</Button>
-										</StackPanel>
-										<ComboBox Grid.Row="3" Grid.Column="0" materialDesign:HintAssist.Hint="Hardware info source"
+                                        <StackPanel Grid.Row="2" Grid.ColumnSpan="3" Orientation="Horizontal" HorizontalAlignment="Left"  Margin="10 0 0 0">
+                                            <TextBox Width="350" IsReadOnly="True" materialDesign:HintAssist.Hint="Screenshot directory" Text="{Binding ScreenshotDirectory, Mode=OneWay}" />
+                                            <Button Margin="15 0 0 0" Height="35" Width="35" Command="{Binding Path=DataContext.SelectScreenshotFolderCommand, ElementName=ColorbarViewName}" Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}" ToolTip="Select screenshot folder">
+                                                <materialDesign:PackIcon Kind="Folder" Height="25" Width="25" />
+                                            </Button>
+                                            <Button Margin="15 0 0 0" Height="35" Width="35" Command="{Binding Path=DataContext.OpenScreenshotFolderCommand, ElementName=ColorbarViewName}" Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}" ToolTip="Open screenshot folder">
+                                                <materialDesign:PackIcon Kind="Forward" Height="25" Width="25" />
+                                            </Button>
+                                        </StackPanel>
+                                        <ComboBox Grid.Row="3" Grid.Column="0" materialDesign:HintAssist.Hint="Hardware info source"
 												  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Margin="15 15 0 0"
 												  ItemsSource="{Binding Path=DataContext.HardwareInfoSourceItems, ElementName=ColorbarViewName}" 
 												  SelectedItem="{Binding Path=DataContext.SelectedHardwareInfoSource, ElementName=ColorbarViewName}">
-											<ComboBox.ItemTemplate>
-												<DataTemplate>
-													<TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}"/>
-												</DataTemplate>
-											</ComboBox.ItemTemplate>
-										</ComboBox>
-										<TextBox Grid.Row="4" Grid.ColumnSpan="2" materialDesign:HintAssist.Hint="CPU" Margin="15 15 0 0"
+                                            <ComboBox.ItemTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}"/>
+                                                </DataTemplate>
+                                            </ComboBox.ItemTemplate>
+                                        </ComboBox>
+                                        <TextBox Grid.Row="4" Grid.ColumnSpan="2" materialDesign:HintAssist.Hint="CPU" Margin="15 15 0 0"
 												Visibility="{Binding Path=DataContext.HasCustomInfo, ElementName=ColorbarViewName, Converter={StaticResource FalseToCollapsedConverter}}">
-											<TextBox.Text>
-												<Binding Path="DataContext.CustomCpuDescription"
+                                            <TextBox.Text>
+                                                <Binding Path="DataContext.CustomCpuDescription"
 														 ElementName="ColorbarViewName"
 														 Mode="TwoWay"
 														 UpdateSourceTrigger="LostFocus">
-												</Binding>
-											</TextBox.Text>
-										</TextBox>
-										<TextBox Grid.Row="5" Grid.ColumnSpan="2" materialDesign:HintAssist.Hint="GPU" Margin="15 10 0 0"
+                                                </Binding>
+                                            </TextBox.Text>
+                                        </TextBox>
+                                        <TextBox Grid.Row="5" Grid.ColumnSpan="2" materialDesign:HintAssist.Hint="GPU" Margin="15 10 0 0"
 												Visibility="{Binding Path=DataContext.HasCustomInfo, ElementName=ColorbarViewName, Converter={StaticResource FalseToCollapsedConverter}}">
-											<TextBox.Text>
-												<Binding Path="DataContext.CustomGpuDescription"
+                                            <TextBox.Text>
+                                                <Binding Path="DataContext.CustomGpuDescription"
 														 ElementName="ColorbarViewName"
 														 Mode="TwoWay"
 														 UpdateSourceTrigger="LostFocus">
-												</Binding>
-											</TextBox.Text>
-										</TextBox>
-										<TextBox Grid.Row="6" Grid.ColumnSpan="2" materialDesign:HintAssist.Hint="RAM" Margin="15 10 0 0"
+                                                </Binding>
+                                            </TextBox.Text>
+                                        </TextBox>
+                                        <TextBox Grid.Row="6" Grid.ColumnSpan="2" materialDesign:HintAssist.Hint="RAM" Margin="15 10 0 0"
 												Visibility="{Binding Path=DataContext.HasCustomInfo, ElementName=ColorbarViewName, Converter={StaticResource FalseToCollapsedConverter}}">
-											<TextBox.Text>
-												<Binding Path="DataContext.CustomRamDescription"
+                                            <TextBox.Text>
+                                                <Binding Path="DataContext.CustomRamDescription"
 														 ElementName="ColorbarViewName"
 														 Mode="TwoWay"
 														 UpdateSourceTrigger="LostFocus">
-												</Binding>
-											</TextBox.Text>
-										</TextBox>
-									</Grid>
-								</DataTemplate>
-								<DataTemplate x:Key="HelpContent">
-									<xctk:RichTextBox Margin="10" Width="475" Height="300" IsHitTestVisible="False" IsReadOnly="True"
+                                                </Binding>
+                                            </TextBox.Text>
+                                        </TextBox>
+                                    </Grid>
+                                </DataTemplate>
+                                <DataTemplate x:Key="HelpContent">
+                                    <xctk:RichTextBox Margin="10" Width="475" Height="300" IsHitTestVisible="False" IsReadOnly="True"
 													  Text="{Binding Path=DataContext.HelpText, ElementName=ColorbarViewName, Mode=OneWay}"></xctk:RichTextBox>
-								</DataTemplate>
-							</ContentPresenter.Resources>
-							<ContentPresenter.Style>
-								<Style TargetType="{x:Type ContentPresenter}">
-									<Style.Triggers>
-										<DataTrigger Binding="{Binding DataContext.SelectedView, ElementName=ColorbarViewName}" Value="Options">
-											<Setter Property="ContentTemplate" Value="{StaticResource OptionsContent}" />
-										</DataTrigger>
-										<DataTrigger Binding="{Binding DataContext.SelectedView, ElementName=ColorbarViewName}" Value="Help">
-											<Setter Property="ContentTemplate" Value="{StaticResource HelpContent}" />
-										</DataTrigger>
-									</Style.Triggers>
-								</Style>
-							</ContentPresenter.Style>
-						</ContentPresenter>
-					</DockPanel>
-				</materialDesign:PopupBox>
-			</Grid>
-		</materialDesign:ColorZone>
-	</Grid>
+                                </DataTemplate>
+                            </ContentPresenter.Resources>
+                            <ContentPresenter.Style>
+                                <Style TargetType="{x:Type ContentPresenter}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding DataContext.SelectedView, ElementName=ColorbarViewName}" Value="Options">
+                                            <Setter Property="ContentTemplate" Value="{StaticResource OptionsContent}" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding DataContext.SelectedView, ElementName=ColorbarViewName}" Value="Help">
+                                            <Setter Property="ContentTemplate" Value="{StaticResource HelpContent}" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </ContentPresenter.Style>
+                        </ContentPresenter>
+                    </DockPanel>
+                </materialDesign:PopupBox>
+            </Grid>
+        </materialDesign:ColorZone>
+    </Grid>
 </UserControl>
