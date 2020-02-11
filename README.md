@@ -1,13 +1,13 @@
 ![Screenshot](Images/CX_Header_Logo_Wide.png)
 # CapFrameX
-Frametimes capture and analysis tool compatible with most common 3D APIs
+Frametimes capture and analysis tool based on PresentMon. Overlay provided by Rivatuner Statistics Server.
 
 # Special thanks to
 Sven Bauduin for logo and text design
 
 # Remark in our own intererst
-If you are a reviewer or a youtuber using CapFrameX to get your data, please mention us and link to our software.
-If you want to use images of the CapFrameX analysis, please use the built in screenshot function so that our logo and name gets added to the images.
+If you are a reviewer or a youtuber using CapFrameX to get your data, it would be nice to mention us and link to our software.
+If you want to use images of the CapFrameX analysis, you could use the built in screenshot function so that our logo and name gets added to the images.
 
 # Release
 Download link: https://github.com/DevTechProfile/CapFrameX/releases
