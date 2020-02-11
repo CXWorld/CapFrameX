@@ -65,7 +65,7 @@
 							 Content="SYNCHRONIZATION" />
                 </StackPanel>
 
-                <Button Grid.Column="1" Margin="0 0 310 0"
+                <Button Grid.Column="1" Margin="0 0 210 0"
 						Style="{StaticResource MaterialDesignFloatingActionMiniButton}"
 						VerticalAlignment="Center"
 						HorizontalAlignment="Right"
@@ -73,14 +73,6 @@
 						materialDesign:RippleAssist.Feedback="#DD000000"
 						Width="32" Height="32" Click="TakeScreenShotButton_Click">
                     <materialDesign:PackIcon Kind="PhotoLibrary"/>
-                </Button>
-
-                <Button Grid.Column="1" Margin="0 0 180 0" HorizontalAlignment="Right" BorderThickness="0" Background="Transparent"
-                    x:Name="GitHubButton" Click="GitHubButton_Click" Width="120" Height="50">
-                    <StackPanel Orientation="Horizontal">
-                        <materialDesign:PackIcon Kind="GithubCircle" Height="30" Width="30" VerticalAlignment="Center"/>
-                        <TextBlock Margin="8 0 0 0" VerticalAlignment="Center">GitHub</TextBlock>
-                    </StackPanel>
                 </Button>
 
                 <TextBlock Grid.Column="1" Margin="0 0 70 2" HorizontalAlignment="Right" VerticalAlignment="Center">           

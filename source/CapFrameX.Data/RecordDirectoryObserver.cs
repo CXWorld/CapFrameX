@@ -48,12 +48,12 @@ namespace CapFrameX.Data
         {
             _appConfiguration = appConfiguration;
             _logger = logger;
-            _recordDirectory = GetInitialObservedDirectory(_appConfiguration.ObservedDirectory);
 
             HasValidSourceStream = new Subject<bool>();
 
             try
             {
+                _recordDirectory = GetInitialObservedDirectory(_appConfiguration.ObservedDirectory);
                 if (!Directory.Exists(_recordDirectory))
                 {
                     Directory.CreateDirectory(_recordDirectory);
@@ -135,7 +135,7 @@ namespace CapFrameX.Data
             {
                 var task = Task.Run(() =>
                 {
-                    while (IsFileLocked(fileInfo));
+                    while (IsFileLocked(fileInfo)) ;
                 });
 
                 if (task.Wait(TimeSpan.FromMilliseconds(ACCESSTIMEOUT)))
@@ -148,7 +148,7 @@ namespace CapFrameX.Data
             }
             catch (TimeoutException ex)
             {
-                _logger.LogError(ex, $"{e.FullPath} access timeout");
+                _logger.LogError(ex, "{path} access timeout", e.FullPath);
             }
             catch (Exception ex)
             {

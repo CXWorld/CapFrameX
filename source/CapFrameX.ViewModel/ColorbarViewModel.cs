@@ -16,6 +16,7 @@ using System.Linq;
 using System.Windows.Input;
 using CapFrameX.Contracts.MVVM;
 using CapFrameX.Contracts.PresentMonInterface;
+using Microsoft.Extensions.Logging;
 
 namespace CapFrameX.ViewModel
 {
@@ -25,6 +26,7 @@ namespace CapFrameX.ViewModel
 		private readonly IRecordDirectoryObserver _recordDirectoryObserver;
 		private readonly IEventAggregator _eventAggregator;
 		private readonly IAppConfiguration _appConfiguration;
+		private readonly ILogger<ColorbarViewModel> _logger;
 		private readonly IShell _shell;
 
 		private PubSubEvent<AppMessages.UpdateObservedDirectory> _updateObservedFolder;
@@ -282,6 +284,8 @@ namespace CapFrameX.ViewModel
 
 		public	IAppConfiguration AppConfiguration => _appConfiguration;
 
+		public ILogger<ColorbarViewModel> Logger => _logger;
+
 		public IShell Shell => _shell;
 
 		public ICommand SelectObservedFolderCommand { get; }
@@ -300,12 +304,14 @@ namespace CapFrameX.ViewModel
 								 IRecordDirectoryObserver recordDirectoryObserver,
 								 IEventAggregator eventAggregator,
 								 IAppConfiguration appConfiguration,
+								 ILogger<ColorbarViewModel> logger,
 								 IShell shell)
 		{
 			_regionManager = regionManager;
 			_recordDirectoryObserver = recordDirectoryObserver;
 			_eventAggregator = eventAggregator;
 			_appConfiguration = appConfiguration;
+			_logger = logger;
 			_shell = shell;
 
 			StutteringFactor = _appConfiguration.StutteringFactor;
