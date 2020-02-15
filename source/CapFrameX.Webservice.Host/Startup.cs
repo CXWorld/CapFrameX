@@ -48,18 +48,13 @@ namespace CapFrameX.Webservice.Host
 			services.AddScoped<ICapturesService, CapturesService>();
 			services.AddScoped<ICaptureStorage>(opt =>
 			{
-				switch (Configuration.GetValue<string>("CaptureStorage:Type"))
+				var storageType = Configuration.GetValue<string>("CaptureStorage:Type");
+				return storageType switch
 				{
-					case "Disk":
-						return new CaptureDiskStorage(Configuration.GetValue<string>("CaptureStorage:Options:Directory"));
-					case "MongoDB":
-						{
-							var options = Configuration.GetSection("CaptureStorage:Options").Get<MongoDbStorageConfiguration>();
-							return new MongoDBStorage(options);
-						}
-					default:
-						throw new Exception("No CaptureStorage configured");
-				}
+					"Disk" => new CaptureDiskStorage(Configuration.GetValue<string>("CaptureStorage:Options:Directory")),
+					"MongoDB" => new MongoDBStorage(Configuration.GetSection("CaptureStorage:Options").Get<MongoDbStorageConfiguration>()),
+					_ => throw new Exception("No CaptureStorage configured"),
+				};
 			});
 
 			services.AddControllers()
