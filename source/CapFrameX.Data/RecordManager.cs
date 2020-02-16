@@ -1,4 +1,5 @@
 ﻿using CapFrameX.Contracts.Data;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -8,9 +9,15 @@ using System.Runtime.CompilerServices;
 
 namespace CapFrameX.Data
 {
-	public static class RecordManager
+	public class RecordManager
 	{
-		public static void UpdateCustomData(IFileRecordInfo recordInfo, string customCpuInfo,
+		private readonly ILogger<RecordManager> _logger;
+
+		public RecordManager(ILogger<RecordManager> logger)
+		{
+			_logger = logger;
+		}
+		public void UpdateCustomData(IFileRecordInfo recordInfo, string customCpuInfo,
 			string customGpuInfo, string customRamInfo, string customGameName, string customComment)
 		{
 			if (recordInfo == null || customCpuInfo == null ||
@@ -72,19 +79,21 @@ namespace CapFrameX.Data
 					File.WriteAllLines(recordInfo.FullPath, headerLines.Concat(lines));
 				}
 			}
-			//Todo: write message to logger
-			catch { }
+			catch(Exception ex) {
+				_logger.LogError(ex, "Error writing Lines");
+			}
 		}
 
-		private static int GetHeaderIndex(string[] lines, string headerEntry)
+		private int GetHeaderIndex(string[] lines, string headerEntry)
 		{
 			int index = 0;
 			while (!lines[index].Contains(headerEntry)) index++;
 			return index;
 		}
 
-		public static List<SystemInfoEntry> GetSystemInfos(IFileRecordInfo recordInfo)
+		public List<SystemInfoEntry> GetSystemInfos(IFileRecordInfo recordInfo)
 		{
+			_logger.LogInformation("Getting Systeminfos");
 			var systemInfos = new List<SystemInfoEntry>();
 
 			if (!string.IsNullOrWhiteSpace(recordInfo.CreationDate))
@@ -117,8 +126,9 @@ namespace CapFrameX.Data
 			return systemInfos;
 		}
 
-		public static Session LoadData(string csvFile)
+		public Session LoadData(string csvFile)
 		{
+			_logger.LogInformation("Loading data from: {path}", csvFile);
 			if (string.IsNullOrWhiteSpace(csvFile))
 			{
 				return null;
@@ -343,15 +353,16 @@ namespace CapFrameX.Data
 					}
 				}
 			}
-			catch (IOException)
+			catch (IOException ex)
 			{
+				_logger.LogError(ex, "Error loading Data");
 				return null;
 			}
 
 			return session;
 		}
 
-		public static IList<string> LoadPresentData(string csvFile)
+		public IList<string> LoadPresentData(string csvFile)
 		{
 			if (string.IsNullOrWhiteSpace(csvFile))
 			{
@@ -393,14 +404,15 @@ namespace CapFrameX.Data
 
 				return dataLines;
 			}
-			catch (IOException)
+			catch (IOException ex)
 			{
+				_logger.LogError(ex, "Error loading Data");
 				return null;
 			}
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		private static string GetStringFromArray(string[] array, int index)
+		private string GetStringFromArray(string[] array, int index)
 		{
 			var value = string.Empty;
 

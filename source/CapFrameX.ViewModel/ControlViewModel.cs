@@ -29,6 +29,7 @@ namespace CapFrameX.ViewModel
 		private readonly IEventAggregator _eventAggregator;
 		private readonly IAppConfiguration _appConfiguration;
 		private readonly IRecordDataProvider _recordDataProvider;
+		private readonly RecordManager _recordManager;
 		private readonly ISubject<FileInfo> _recordDeleteSubStream;
 
 		private PubSubEvent<ViewMessages.UpdateSession> _updateSessionEvent;
@@ -152,12 +153,13 @@ namespace CapFrameX.ViewModel
 		public ControlViewModel(IRecordDirectoryObserver recordObserver,
 								IEventAggregator eventAggregator,
 								IAppConfiguration appConfiguration,
-								IRecordDataProvider recordDataProvider)
+								IRecordDataProvider recordDataProvider, RecordManager recordManager)
 		{
 			_recordObserver = recordObserver;
 			_eventAggregator = eventAggregator;
 			_appConfiguration = appConfiguration;
 			_recordDataProvider = recordDataProvider;
+			_recordManager = recordManager;
 
 			//Commands
 			AddToIgnoreListCommand = new DelegateCommand(OnAddToIgnoreList);
@@ -293,7 +295,7 @@ namespace CapFrameX.ViewModel
 
 			// hint: _selectedRecordInfo must not be uptated, because after reload
 			// it will be set to null
-			RecordManager.UpdateCustomData(_selectedRecordInfo,
+			_recordManager.UpdateCustomData(_selectedRecordInfo,
 				CustomCpuDescription, CustomGpuDescription, CustomRamDescription, CustomGameName, CustomComment);
 
 			_recordDataProvider.AddGameNameToMatchingList(_selectedRecordInfo.ProcessName, CustomGameName);
@@ -315,7 +317,7 @@ namespace CapFrameX.ViewModel
 		{
 			if (SelectedRecordInfo != null && _selectSessionEvent != null)
 			{
-				var session = RecordManager.LoadData(SelectedRecordInfo.FullPath);
+				var session = _recordManager.LoadData(SelectedRecordInfo.FullPath);
 				_selectSessionEvent.Publish(new ViewMessages.SelectSession(session, SelectedRecordInfo));
 			}
 		}
@@ -324,7 +326,7 @@ namespace CapFrameX.ViewModel
 		{
 			if (SelectedRecordInfo != null && _updateSessionEvent != null)
 			{
-				var session = RecordManager.LoadData(SelectedRecordInfo.FullPath);
+				var session = _recordManager.LoadData(SelectedRecordInfo.FullPath);
 
 				if (session != null)
 				{

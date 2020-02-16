@@ -1,8 +1,10 @@
 ﻿using CapFrameX.Configuration;
+using CapFrameX.Data;
 using CapFrameX.Statistics;
 using CapFrameX.ViewModel;
 using LiveCharts;
 using LiveCharts.Wpf;
+using Microsoft.Extensions.Logging;
 using Prism.Events;
 using System;
 using System.ComponentModel;
@@ -32,7 +34,7 @@ namespace CapFrameX.View
 			{
 				var appConfiguration = new CapFrameXConfiguration();
 				DataContext = new DataViewModel(new FrametimeStatisticProvider(appConfiguration),
-					new FrametimeAnalyzer(), new EventAggregator(), appConfiguration);
+					new FrametimeAnalyzer(), new EventAggregator(), appConfiguration, new RecordManager(new LoggerFactory().CreateLogger<RecordManager>()));
 			}
 
 			var context = SynchronizationContext.Current;

@@ -33,6 +33,7 @@ namespace CapFrameX.ViewModel
 		private readonly IFrametimeAnalyzer _frametimeAnalyzer;
 		private readonly IEventAggregator _eventAggregator;
 		private readonly IAppConfiguration _appConfiguration;
+		private readonly RecordManager _recordManager;
 		private readonly IRecordDataServer _localRecordDataServer;
 
 		private bool _useUpdateSession;
@@ -323,13 +324,13 @@ namespace CapFrameX.ViewModel
 		public DataViewModel(IStatisticProvider frametimeStatisticProvider,
 							 IFrametimeAnalyzer frametimeAnalyzer,
 							 IEventAggregator eventAggregator,
-							 IAppConfiguration appConfiguration)
+							 IAppConfiguration appConfiguration, RecordManager recordManager)
 		{
 			_frametimeStatisticProvider = frametimeStatisticProvider;
 			_frametimeAnalyzer = frametimeAnalyzer;
 			_eventAggregator = eventAggregator;
 			_appConfiguration = appConfiguration;
-
+			_recordManager = recordManager;
 			SubscribeToUpdateSession();
 
 			CopyStatisticalParameterCommand = new DelegateCommand(OnCopyStatisticalParameter);
@@ -457,7 +458,7 @@ namespace CapFrameX.ViewModel
 			if (RecordInfo == null)
 				return;
 
-			var systemInfos = RecordManager.GetSystemInfos(RecordInfo);
+			var systemInfos = _recordManager.GetSystemInfos(RecordInfo);
 
 			StringBuilder builder = new StringBuilder();
 
@@ -533,7 +534,7 @@ namespace CapFrameX.ViewModel
 			{
 				CurrentGameName = RemoveOutliers ? $"{RecordInfo.GameName} (outlier-cleaned)"
 					: RecordInfo.GameName;
-				SystemInfos = RecordManager.GetSystemInfos(RecordInfo);
+				SystemInfos = _recordManager.GetSystemInfos(RecordInfo);
 
 				// Do update actions
 				FrametimeGraphDataContext.RecordSession = _session;

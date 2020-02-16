@@ -30,7 +30,7 @@ namespace CapFrameX.View
 				var appConfiguration = new CapFrameXConfiguration();
 				var recordDataProvider = new RecordDataProvider(new RecordDirectoryObserver(appConfiguration, 
 					new LoggerFactory().CreateLogger<RecordDirectoryObserver>()), appConfiguration, new LoggerFactory().CreateLogger<RecordDataProvider>());
-				DataContext = new AggregationViewModel(new FrametimeStatisticProvider(appConfiguration), recordDataProvider, new EventAggregator(), appConfiguration);
+				DataContext = new AggregationViewModel(new FrametimeStatisticProvider(appConfiguration), recordDataProvider, new EventAggregator(), appConfiguration, new RecordManager(new LoggerFactory().CreateLogger<RecordManager>()));
 			}
 
 			(DataContext as AggregationViewModel)
