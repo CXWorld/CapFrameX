@@ -13,7 +13,7 @@ namespace CapFrameX.Data
 {
 	public class RecordDirectoryObserver : IRecordDirectoryObserver
 	{
-		private readonly TimeSpan _fileAccessIntervalTimespan = TimeSpan.FromMilliseconds(100);
+		private readonly TimeSpan _fileAccessIntervalTimespan = TimeSpan.FromMilliseconds(200);
 		private readonly int _fileAccessIntervalRetryLimit = 10;
 
 		private readonly ISubject<string> _recordCreatedStream;
@@ -106,7 +106,7 @@ namespace CapFrameX.Data
 		private void WatcherCreated(object sender, FileSystemEventArgs e)
 		{
 			var fileInfo = new FileInfo(e.FullPath);
-			Observable.Interval(_fileAccessIntervalTimespan)
+			Observable.Timer(_fileAccessIntervalTimespan)
 				.Select(_ =>
 				{
 					using (var stream = fileInfo.Open(FileMode.Open, FileAccess.Read, FileShare.None)) {
@@ -114,7 +114,6 @@ namespace CapFrameX.Data
 					}
 				})
 				.Retry(_fileAccessIntervalRetryLimit)
-				.Take(1)
 				.Subscribe(fullPath =>
 				{
 					_recordCreatedStream.OnNext(e.FullPath);
