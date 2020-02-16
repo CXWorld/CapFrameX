@@ -22,6 +22,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Serilog;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using CapFrameX.Webservice.Data.Providers;
 
 namespace CapFrameX.Webservice.Host
 {
@@ -57,6 +60,22 @@ namespace CapFrameX.Webservice.Host
 				};
 			});
 
+			services.AddScoped<IUserClaimsProvider, UserClaimsProvider>();
+
+			services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+				.AddJwtBearer(options =>
+				{
+					options.Authority = @"https://capframex.com/auth/realms/CapFrameX";
+					options.Audience = "account";
+					options.TokenValidationParameters = new TokenValidationParameters
+					{
+						ValidateIssuerSigningKey = true,
+						ValidateIssuer = true,
+						ValidateAudience = false,
+						ValidateLifetime = true
+					};
+				});
+
 			services.AddControllers()
 				.AddFluentValidation(opt =>
 				{
@@ -65,6 +84,7 @@ namespace CapFrameX.Webservice.Host
 					opt.ImplicitlyValidateChildProperties = true;
 					opt.RunDefaultMvcValidationAfterFluentValidationExecutes = false;
 				});
+			services.AddHttpContextAccessor();
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -79,6 +99,12 @@ namespace CapFrameX.Webservice.Host
 			app.UseForwardedHeaders(GetHeaderOptions());
 			app.UseRouting();
 
+			app.UseCors(x => x
+				.AllowAnyOrigin()
+				.AllowAnyMethod()
+				.AllowAnyHeader());
+
+			app.UseAuthentication();
 			app.UseAuthorization();
 
 			app.UseEndpoints(endpoints =>
