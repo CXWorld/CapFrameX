@@ -394,6 +394,9 @@ namespace CapFrameX.Data
 			for (int i = 1; i < concatedCaptureData.Count; i++)
 			{
 				var lineSplit = concatedCaptureData[i].Split(',');
+				if (firstLineSplit.Length != lineSplit.Length)
+					continue;
+
 				var frametime = 1E-03 * Convert.ToDouble(lineSplit[12], CultureInfo.InvariantCulture);
 				startTime += frametime;
 				lineSplit[11] = startTime.ToString(CultureInfo.InvariantCulture);
