@@ -14,7 +14,7 @@ namespace CapFrameX.Data
 	public class RecordDirectoryObserver : IRecordDirectoryObserver
 	{
 		private readonly TimeSpan _fileAccessIntervalTimespan = TimeSpan.FromMilliseconds(200);
-		private readonly int _fileAccessIntervalRetryLimit = 10;
+		private readonly int _fileAccessIntervalRetryLimit = 30;
 
 		private readonly ISubject<string> _recordCreatedStream;
 		private readonly ISubject<string> _recordDeletedStream;
