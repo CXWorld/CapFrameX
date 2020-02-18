@@ -78,7 +78,6 @@
     <Compile Include="IRecordDataServer.cs" />
     <Compile Include="LocalRecordDataServer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RecordDataProvider.cs" />
     <Compile Include="RecordDirectoryObserver.cs" />
     <Compile Include="RecordManager.cs" />
     <Compile Include="ReportInfo.cs" />

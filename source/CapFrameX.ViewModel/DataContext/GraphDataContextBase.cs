@@ -1,4 +1,5 @@
 ﻿using CapFrameX.Contracts.Configuration;
+using CapFrameX.Contracts.Data;
 using CapFrameX.Data;
 using CapFrameX.Statistics;
 using Prism.Mvvm;
@@ -15,7 +16,7 @@ namespace CapFrameX.ViewModel.DataContext
 
 		protected IStatisticProvider FrametimesStatisticProvider { get; }
 
-		public Session RecordSession
+		public ISession RecordSession
 		{
 			get => RecordDataServer.CurrentSession;
 			set

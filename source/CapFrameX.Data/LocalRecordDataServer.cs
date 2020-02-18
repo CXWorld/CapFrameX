@@ -4,6 +4,8 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Windows;
+using CapFrameX.Contracts.Data;
+using CapFrameX.Contracts.Statistics;
 using CapFrameX.Statistics;
 
 namespace CapFrameX.Data
@@ -20,7 +22,7 @@ namespace CapFrameX.Data
 
 		public bool IsActive { get; set; }
 
-		public Session CurrentSession { get; set; }
+		public ISession CurrentSession { get; set; }
 
 		public double WindowLength
 		{

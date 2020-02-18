@@ -24,6 +24,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using CapFrameX.MVVM.Dialogs;
+using CapFrameX.Contracts.Statistics;
 
 namespace CapFrameX.ViewModel
 {
@@ -37,7 +38,7 @@ namespace CapFrameX.ViewModel
 		private readonly IRecordDataServer _localRecordDataServer;
 
 		private bool _useUpdateSession;
-		private Session _session;
+		private ISession _session;
 		private SeriesCollection _statisticCollection;
 		private SeriesCollection _lShapeCollection;
 		private SeriesCollection _stutteringStatisticCollection;
@@ -45,7 +46,7 @@ namespace CapFrameX.ViewModel
 		private string[] _lShapeLabels;
 		private string[] _advancedParameterLabels;
 		private bool _removeOutliers;
-		private List<SystemInfoEntry> _systemInfos;
+		private List<ISystemInfoEntry> _systemInfos;
 		private bool _isRangeSliderActive;
 		private bool _doUpdateCharts = true;
 		private Func<double, string> _parameterFormatter;
@@ -176,7 +177,7 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-		public List<SystemInfoEntry> SystemInfos
+		public List<ISystemInfoEntry> SystemInfos
 		{
 			get { return _systemInfos; }
 			set { _systemInfos = value; RaisePropertyChanged(); }

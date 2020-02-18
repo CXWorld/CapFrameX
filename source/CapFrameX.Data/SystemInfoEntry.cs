@@ -1,8 +1,9 @@
-﻿using System.Linq;
+﻿using CapFrameX.Contracts.Data;
+using System.Linq;
 
 namespace CapFrameX.Data
 {
-	public class SystemInfoEntry
+	public class SystemInfoEntry : ISystemInfoEntry
 	{
 		public string Letter => Key.First().ToString();
 		public string Key { get; set; }

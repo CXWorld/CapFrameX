@@ -33,8 +33,9 @@ namespace CapFrameX.View
 			if (DesignerProperties.GetIsInDesignMode(this))
 			{
 				var appConfiguration = new CapFrameXConfiguration();
+				var loggerFactory = new LoggerFactory();
 				DataContext = new DataViewModel(new FrametimeStatisticProvider(appConfiguration),
-					new FrametimeAnalyzer(), new EventAggregator(), appConfiguration, new RecordManager(new LoggerFactory().CreateLogger<RecordManager>()));
+					new FrametimeAnalyzer(), new EventAggregator(), appConfiguration, new RecordManager(loggerFactory.CreateLogger<RecordManager>(), appConfiguration, new RecordDirectoryObserver(appConfiguration, loggerFactory.CreateLogger<RecordDirectoryObserver>())));
 			}
 
 			var context = SynchronizationContext.Current;

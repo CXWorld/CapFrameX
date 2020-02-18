@@ -28,8 +28,7 @@ namespace CapFrameX.ViewModel
 		private readonly IRecordDirectoryObserver _recordObserver;
 		private readonly IEventAggregator _eventAggregator;
 		private readonly IAppConfiguration _appConfiguration;
-		private readonly IRecordDataProvider _recordDataProvider;
-		private readonly RecordManager _recordManager;
+		private readonly IRecordManager _recordManager;
 		private readonly ISubject<FileInfo> _recordDeleteSubStream;
 
 		private PubSubEvent<ViewMessages.UpdateSession> _updateSessionEvent;
@@ -152,13 +151,11 @@ namespace CapFrameX.ViewModel
 
 		public ControlViewModel(IRecordDirectoryObserver recordObserver,
 								IEventAggregator eventAggregator,
-								IAppConfiguration appConfiguration,
-								IRecordDataProvider recordDataProvider, RecordManager recordManager)
+								IAppConfiguration appConfiguration,RecordManager recordManager)
 		{
 			_recordObserver = recordObserver;
 			_eventAggregator = eventAggregator;
 			_appConfiguration = appConfiguration;
-			_recordDataProvider = recordDataProvider;
 			_recordManager = recordManager;
 
 			//Commands
@@ -174,18 +171,18 @@ namespace CapFrameX.ViewModel
 
 			HasValidSource = recordObserver.HasValidSource;
 
-			Task.Factory.StartNew(() =>
+			Task.Factory.StartNew((Action)(() =>
 			{
 				if (recordObserver.HasValidSource)
 				{
-					var initialRecordFileInfoList = _recordDataProvider?.GetFileRecordInfoList();
+					var initialRecordFileInfoList = this._recordManager?.GetFileRecordInfoList();
 
 					foreach (var recordFileInfo in initialRecordFileInfoList)
 					{
-						AddToRecordInfoList(recordFileInfo);
+						AddToRecordInfoList((IFileRecordInfo)recordFileInfo);
 					}
 				}
-			});
+			}));
 
 			RecordDataGridSelectedIndex = -1;
 
@@ -298,7 +295,7 @@ namespace CapFrameX.ViewModel
 			_recordManager.UpdateCustomData(_selectedRecordInfo,
 				CustomCpuDescription, CustomGpuDescription, CustomRamDescription, CustomGameName, CustomComment);
 
-			_recordDataProvider.AddGameNameToMatchingList(_selectedRecordInfo.ProcessName, CustomGameName);
+			_recordManager.AddGameNameToMatchingList(_selectedRecordInfo.ProcessName, CustomGameName);
 
 			var id = SelectedRecordInfo.Id;
 			ReloadRecordList();
@@ -383,7 +380,7 @@ namespace CapFrameX.ViewModel
 		}
 
 		private void OnRecordCreated(FileInfo fileInfo)
-			=> AddToRecordInfoList(_recordDataProvider.GetFileRecordInfo(fileInfo));
+			=> AddToRecordInfoList(_recordManager.GetFileRecordInfo(fileInfo));
 
 		private void OnRecordDeleted()
 		{
@@ -398,7 +395,7 @@ namespace CapFrameX.ViewModel
 
 		private void LoadRecordList()
 		{
-			foreach (var fileRecordInfo in _recordDataProvider?.GetFileRecordInfoList())
+			foreach (var fileRecordInfo in _recordManager?.GetFileRecordInfoList())
 			{
 				AddToRecordInfoList(fileRecordInfo);
 			}

@@ -25,10 +25,9 @@ namespace CapFrameX.ViewModel
 	public class AggregationViewModel : BindableBase, INavigationAware, IDropTarget
 	{
 		private readonly IStatisticProvider _statisticProvider;
-		private readonly IRecordDataProvider _recordDataProvider;
 		private readonly IEventAggregator _eventAggregator;
 		private readonly IAppConfiguration _appConfiguration;
-		private readonly RecordManager _recordManager;
+		private readonly IRecordManager _recordManager;
 		private bool _useUpdateSession;
 		private int _selectedAggregationEntryIndex = -1;
 		private bool _showHelpText = true;
@@ -196,11 +195,10 @@ namespace CapFrameX.ViewModel
 		public ObservableCollection<IAggregationEntry> AggregationEntries { get; private set; }
 			= new ObservableCollection<IAggregationEntry>();
 
-		public AggregationViewModel(IStatisticProvider statisticProvider, IRecordDataProvider recordDataProvider,
-			IEventAggregator eventAggregator, IAppConfiguration appConfiguration, RecordManager recordManager)
+		public AggregationViewModel(IStatisticProvider statisticProvider,
+			IEventAggregator eventAggregator, IAppConfiguration appConfiguration, IRecordManager recordManager)
 		{
 			_statisticProvider = statisticProvider;
-			_recordDataProvider = recordDataProvider;
 			_eventAggregator = eventAggregator;
 			_appConfiguration = appConfiguration;
 			_recordManager = recordManager;
@@ -252,7 +250,7 @@ namespace CapFrameX.ViewModel
 							});
 		}
 
-		private void AddAggregationEntry(IFileRecordInfo recordInfo, Session session)
+		private void AddAggregationEntry(IFileRecordInfo recordInfo, ISession session)
 		{
 			if (recordInfo != null)
 			{
@@ -387,7 +385,7 @@ namespace CapFrameX.ViewModel
 			Task.Run(() =>
 			{
 				var filteredFileRecordInfoList = _fileRecordInfoList.Where((x, i) => !outlierFlags[i]);
-				var representiveHeader = _recordDataProvider.CreateHeaderLinesFromRecordInfo(filteredFileRecordInfoList.First());
+				var representiveHeader = _recordManager.CreateHeaderLinesFromRecordInfo(filteredFileRecordInfoList.First());
 
 				IList<IList<string>> presentDataList = new List<IList<string>>();
 
@@ -396,7 +394,7 @@ namespace CapFrameX.ViewModel
 					presentDataList.Add(_recordManager.LoadPresentData(recordInfo.FullPath));
 				}
 
-				_recordDataProvider.SaveAggregatedPresentData(presentDataList, representiveHeader);
+				_recordManager.SaveAggregatedPresentData(presentDataList, representiveHeader);
  			});
 		}
 
