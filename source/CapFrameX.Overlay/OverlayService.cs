@@ -21,11 +21,10 @@ namespace CapFrameX.Overlay
 	public class OverlayService : RTSSCSharpWrapper, IOverlayService
 	{
 		private readonly IStatisticProvider _statisticProvider;
-		private readonly IRecordDataProvider _recordDataProvider;
 		private readonly IOverlayEntryProvider _overlayEntryProvider;
 		private readonly IAppConfiguration _appConfiguration;
 		private static ILogger<OverlayService> _logger;
-
+		private readonly IRecordManager _recordManager;
 		private IDisposable _disposableHeartBeat;
 		private IDisposable _disposableCaptureTimer;
 		private IDisposable _disposableCountdown;
@@ -46,19 +45,17 @@ namespace CapFrameX.Overlay
 
 		public int RunHistoryCount => _runHistory.Count(run => run != "N/A");
 
-		public OverlayService(IStatisticProvider statisticProvider, 
-							  IRecordDataProvider recordDataProvider,
-							  IOverlayEntryProvider overlayEntryProvider, 
-							  IAppConfiguration appConfiguration, 
-							  ILogger<OverlayService> logger)
+		public OverlayService(IStatisticProvider statisticProvider,
+							  IOverlayEntryProvider overlayEntryProvider,
+							  IAppConfiguration appConfiguration,
+							  ILogger<OverlayService> logger, IRecordManager recordManager)
 			: base(ExceptionAction)
 		{
 			_statisticProvider = statisticProvider;
-			_recordDataProvider = recordDataProvider;
 			_overlayEntryProvider = overlayEntryProvider;
 			_appConfiguration = appConfiguration;
 			_logger = logger;
-
+			_recordManager = recordManager;
 			_refreshPeriod = _appConfiguration.OSDRefreshPeriod;
 			_numberOfRuns = _appConfiguration.SelectedHistoryRuns;
 			SecondMetric = _appConfiguration.SecondMetricOverlay;
@@ -167,7 +164,7 @@ namespace CapFrameX.Overlay
 		public void AddRunToHistory(List<string> captureData)
 		{
 			var frametimes = captureData.Select(line =>
-				RecordDataProvider.GetFrameTimeFromDataLine(line)).ToList();
+				_recordManager.GetFrameTimeFromDataLine(line)).ToList();
 
 			if (RunHistoryCount == _numberOfRuns)
 			{
@@ -237,8 +234,7 @@ namespace CapFrameX.Overlay
 						{
 							await SetTaskDelayOffset().ContinueWith(_ =>
 							{
-								_recordDataProvider
-								.SaveAggregatedPresentData(_captureDataHistory);
+								_recordManager.SaveAggregatedPresentData(_captureDataHistory);
 							}, CancellationToken.None, TaskContinuationOptions.RunContinuationsAsynchronously, TaskScheduler.Default);
 						});
 					}
@@ -276,7 +272,7 @@ namespace CapFrameX.Overlay
 					proc.StartInfo.Verb = "runas";
 					proc.Start();
 				}
-				catch (Exception ex){ _logger.LogError(ex, "Error while starting RTSS process"); }
+				catch (Exception ex) { _logger.LogError(ex, "Error while starting RTSS process"); }
 			}
 
 			Refresh();

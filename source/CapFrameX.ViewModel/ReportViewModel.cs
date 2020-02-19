@@ -26,6 +26,7 @@ namespace CapFrameX.ViewModel
 		private readonly IStatisticProvider _frametimeStatisticProvider;
 		private readonly IEventAggregator _eventAggregator;
 		private readonly IAppConfiguration _appConfiguration;
+		private readonly RecordManager _recordManager;
 		private bool _useEventMessages;
 		private bool _hasNoReportItems = true;
 
@@ -46,12 +47,12 @@ namespace CapFrameX.ViewModel
 
 		public ReportViewModel(IStatisticProvider frametimeStatisticProvider,
 							  IEventAggregator eventAggregator,
-							  IAppConfiguration appConfiguration)
+							  IAppConfiguration appConfiguration, RecordManager recordManager)
 		{
 			_frametimeStatisticProvider = frametimeStatisticProvider;
 			_eventAggregator = eventAggregator;
 			_appConfiguration = appConfiguration;
-
+			_recordManager = recordManager;
 			CopyTableDataCommand = new DelegateCommand(OnCopyTableData);
 			ReportInfoCollection.CollectionChanged += new NotifyCollectionChangedEventHandler
 				((sender, eventArg) => HasNoReportItems = !ReportInfoCollection.Any());
@@ -156,7 +157,7 @@ namespace CapFrameX.ViewModel
 
 		private ReportInfo GetReportInfoFromRecordInfo(IFileRecordInfo recordInfo)
 		{
-			var session = RecordManager.LoadData(recordInfo.FullPath);
+			var session = _recordManager.LoadData(recordInfo.FullPath);
 
 			double GeMetricValue(IList<double> sequence, EMetric metric) =>
 					_frametimeStatisticProvider.GetFpsMetricValue(sequence, metric);

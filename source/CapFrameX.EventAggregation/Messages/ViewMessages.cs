@@ -7,10 +7,10 @@ namespace CapFrameX.EventAggregation.Messages
 	{
 		public class UpdateSession
 		{
-			public Session CurrentSession { get; }
+			public ISession CurrentSession { get; }
 			public IFileRecordInfo RecordInfo { get; }
 
-			public UpdateSession(Session session, IFileRecordInfo recordInfo)
+			public UpdateSession(ISession session, IFileRecordInfo recordInfo)
 			{
 				CurrentSession = session;
 				RecordInfo = recordInfo;
@@ -21,7 +21,7 @@ namespace CapFrameX.EventAggregation.Messages
 
 		public class SelectSession : UpdateSession
 		{
-			public SelectSession(Session session, IFileRecordInfo recordInfo) :
+			public SelectSession(ISession session, IFileRecordInfo recordInfo) :
 				base(session, recordInfo)
 			{
 			}
