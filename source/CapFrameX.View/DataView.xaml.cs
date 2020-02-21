@@ -35,7 +35,7 @@ namespace CapFrameX.View
 				var appConfiguration = new CapFrameXConfiguration();
 				var loggerFactory = new LoggerFactory();
 				DataContext = new DataViewModel(new FrametimeStatisticProvider(appConfiguration),
-					new FrametimeAnalyzer(), new EventAggregator(), appConfiguration, new RecordManager(loggerFactory.CreateLogger<RecordManager>(), appConfiguration, new RecordDirectoryObserver(appConfiguration, loggerFactory.CreateLogger<RecordDirectoryObserver>())));
+					new FrametimeAnalyzer(), new EventAggregator(), appConfiguration, new RecordManager(loggerFactory.CreateLogger<RecordManager>(), appConfiguration, new RecordDirectoryObserver(appConfiguration, loggerFactory.CreateLogger<RecordDirectoryObserver>()), new AppVersionProvider()));
 			}
 
 			var context = SynchronizationContext.Current;

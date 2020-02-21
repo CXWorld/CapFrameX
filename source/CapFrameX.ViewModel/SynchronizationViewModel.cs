@@ -314,9 +314,9 @@ namespace CapFrameX.ViewModel
 
 		private string GetCorrelation(ISession currentSession)
 		{
-			var appMissed = _session.Runs.SelectMany(r => r.CaptureData.AppMissed).ToArray();
-			var currentSessionDisplayTimes = currentSession.Runs.SelectMany(r => r.CaptureData.DisplayTimes).ToArray();
-			var frametimes = currentSession.Runs.SelectMany(r => r.CaptureData.FrameTimes).Where((x, i) => !appMissed[i]);
+			var appMissed = _session.Runs.SelectMany(r => r.CaptureData.Dropped).ToArray();
+			var currentSessionDisplayTimes = currentSession.Runs.SelectMany(r => r.CaptureData.MsBetweenDisplayChange).ToArray();
+			var frametimes = currentSession.Runs.SelectMany(r => r.CaptureData.MsBetweenPresents).Where((x, i) => !appMissed[i]);
 			var displayChangedTimes = currentSessionDisplayTimes.Where((x, i) => !appMissed[i]);
 
 			if (frametimes.Count() != displayChangedTimes.Count())
@@ -332,7 +332,7 @@ namespace CapFrameX.ViewModel
 				return;
 
 			StringBuilder builder = new StringBuilder();
-			var currentSessionDisplayTimes = _session.Runs.SelectMany(r => r.CaptureData.DisplayTimes).ToArray();
+			var currentSessionDisplayTimes = _session.Runs.SelectMany(r => r.CaptureData.MsBetweenDisplayChange).ToArray();
 			foreach (var dcTime in currentSessionDisplayTimes)
 			{
 				builder.Append(dcTime + Environment.NewLine);
@@ -378,9 +378,9 @@ namespace CapFrameX.ViewModel
 
 			// Do not run on background thread, leads to errors on analysis page
 			var inputLagTimes = _session.GetApproxInputLagTimes().Select(val => val += InputLagOffset).ToList();
-			var frametimes = _session.Runs.SelectMany(r => r.CaptureData.FrameTimes).ToList();
-			var displayTimes = _session.Runs.SelectMany(r => r.CaptureData.DisplayTimes).ToList();
-			var appMissed = _session.Runs.SelectMany(r => r.CaptureData.AppMissed).ToList();
+			var frametimes = _session.Runs.SelectMany(r => r.CaptureData.MsBetweenPresents).ToList();
+			var displayTimes = _session.Runs.SelectMany(r => r.CaptureData.MsBetweenDisplayChange).ToList();
+			var appMissed = _session.Runs.SelectMany(r => r.CaptureData.Dropped).ToList();
 
 			SetFrameDisplayTimesChart(frametimes, displayTimes);
 			SetFrameInputLagChart(frametimes, inputLagTimes);
@@ -641,7 +641,7 @@ namespace CapFrameX.ViewModel
 
 		private void SetFrameInputLagChart(IList<double> frametimes, IList<double> inputlagtimes)
 		{
-			var appMissed = _session.Runs.SelectMany(r => r.CaptureData.AppMissed).ToList();
+			var appMissed = _session.Runs.SelectMany(r => r.CaptureData.Dropped).ToList();
 			var filteredFrametimes = frametimes.Where((ft, i) => appMissed[i] != true).ToList();
 
 			var yMin = Math.Min(filteredFrametimes.Min(), inputlagtimes.Min());

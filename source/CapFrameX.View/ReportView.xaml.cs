@@ -23,7 +23,7 @@ namespace CapFrameX.View
             {
 				var appConfiguration = new CapFrameXConfiguration();
                 var loggerFactory = new LoggerFactory();
-                DataContext = new ReportViewModel(new FrametimeStatisticProvider(appConfiguration), new EventAggregator(), appConfiguration, new RecordManager(loggerFactory.CreateLogger<RecordManager>(), appConfiguration, new RecordDirectoryObserver(appConfiguration,loggerFactory.CreateLogger<RecordDirectoryObserver>())));
+                DataContext = new ReportViewModel(new FrametimeStatisticProvider(appConfiguration), new EventAggregator(), appConfiguration, new RecordManager(loggerFactory.CreateLogger<RecordManager>(), appConfiguration, new RecordDirectoryObserver(appConfiguration,loggerFactory.CreateLogger<RecordDirectoryObserver>()), new AppVersionProvider()));
             }
         }
 

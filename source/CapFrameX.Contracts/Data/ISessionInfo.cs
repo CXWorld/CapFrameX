@@ -16,9 +16,9 @@ namespace CapFrameX.Contracts.Data
 		string BaseDriverVersion { get; set; }
 		string DriverPackage { get; set; }
 		string GPU { get; set; }
-		int GPUCount {get; set; }
-		int GpuCoreClock { get; set; }
-		int GpuMemoryClock { get; set; }
+		string GPUCount {get; set; }
+		string GpuCoreClock { get; set; }
+		string GpuMemoryClock { get; set; }
 		string Comment { get; set; }
 		bool IsAggregated { get; set; }
 	}

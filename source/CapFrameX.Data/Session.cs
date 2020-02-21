@@ -2,6 +2,7 @@
 using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.Statistics;
 using CapFrameX.Statistics;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,9 +24,9 @@ namespace CapFrameX.Data
 		public string BaseDriverVersion { get; set; }
 		public string DriverPackage { get; set; }
 		public string GPU { get; set; }
-		public int GPUCount { get; set; }
-		public int GpuCoreClock { get; set; }
-		public int GpuMemoryClock { get; set; }
+		public string GPUCount { get; set; }
+		public string GpuCoreClock { get; set; }
+		public string GpuMemoryClock { get; set; }
 		public string Comment { get; set; }
 		public bool IsAggregated { get; set; }
 	}
@@ -34,64 +35,66 @@ namespace CapFrameX.Data
 	{
 		public string Path { get; set; }
 		public bool IsVR { get; set; }
-		public int WarpMissesCount => CaptureData.WarpMissed.Count(x => x == true);
-		public double LastFrameTime => CaptureData.FrameTimes.Last();
+		public int WarpMissesCount => CaptureData.LsrMissed.Count(x => x == true);
+		public double LastFrameTime => CaptureData.MsBetweenPresents.Last();
 		public int ValidReproFrames { get; set; }
 		public string Filename { get; set; }
+		[JsonProperty("CaptureData")]
 		public ISessionCaptureData CaptureData { get; set; }
+		[JsonProperty("SensorData")]
 		public ISessionSensorData SensorData { get; set; }
 	}
 
 	public class SessionCaptureData : ISessionCaptureData
 	{
-		public bool[] AppMissed { get; set; }
-		public double[] DisplayTimes { get; set; }
-		public double[] FrameEnd { get; set; }
-		public double[] FrameStart { get; set; }
-		public double[] FrameTimes { get; set; }
-		public double[] InPresentAPITimes { get; set; }
+		public bool[] Dropped { get; set; }
+		public double[] MsBetweenDisplayChange { get; set; }
+		public double[] MsUntilRenderComplete { get; set; }
+		public double[] TimeInSeconds { get; set; }
+		public double[] MsBetweenPresents { get; set; }
+		public double[] MsInPresentAPI { get; set; }
 		public double[] QPCTimes { get; set; }
 		public double[] ReprojectionEnd { get; set; }
 		public double[] ReprojectionStart { get; set; }
 		public double[] ReprojectionTimes { get; set; }
-		public double[] UntilDisplayedTimes { get; set; }
+		public double[] MsUntilDisplayed { get; set; }
 		public double[] VSync { get; set; }
-		public bool[] WarpMissed { get; set; }
+		public bool[] LsrMissed { get; set; }
 
 		public SessionCaptureData(int numberOfCapturePoints) {
-			AppMissed = new bool[numberOfCapturePoints];
-			DisplayTimes = new double[numberOfCapturePoints];
-			FrameEnd = new double[numberOfCapturePoints];
-			FrameStart = new double[numberOfCapturePoints];
-			FrameTimes = new double[numberOfCapturePoints];
-			InPresentAPITimes = new double[numberOfCapturePoints];
+			Dropped = new bool[numberOfCapturePoints];
+			MsBetweenDisplayChange = new double[numberOfCapturePoints];
+			MsUntilRenderComplete = new double[numberOfCapturePoints];
+			TimeInSeconds = new double[numberOfCapturePoints];
+			MsBetweenPresents = new double[numberOfCapturePoints];
+			MsInPresentAPI = new double[numberOfCapturePoints];
 			QPCTimes = new double[numberOfCapturePoints];
 			ReprojectionEnd = new double[numberOfCapturePoints];
 			ReprojectionStart = new double[numberOfCapturePoints];
 			ReprojectionTimes = new double[numberOfCapturePoints];
-			UntilDisplayedTimes = new double[numberOfCapturePoints];
+			MsUntilDisplayed = new double[numberOfCapturePoints];
 			VSync = new double[numberOfCapturePoints];
-			WarpMissed = new bool[numberOfCapturePoints];
+			LsrMissed = new bool[numberOfCapturePoints];
 		}
 
 		public IEnumerable<CaptureDataEntry> LineWise()
 		{
-			for(int i = 0; i < FrameTimes.Count(); i++)
+			for(int i = 0; i < MsBetweenPresents.Count(); i++)
 			{
 				yield return new CaptureDataEntry()
 				{
-					AppMissed = AppMissed[i],
-					DisplayTime = DisplayTimes[i],
-					FrameEnd = FrameEnd[i],
-					FrameStart = FrameStart[i],
-					FrameTime = FrameTimes[i],
-					InPresentAPITime = InPresentAPITimes[i],
+					AppMissed = Dropped[i],
+					DisplayTime = MsBetweenDisplayChange[i],
+					FrameEnd = MsUntilRenderComplete[i],
+					FrameStart = TimeInSeconds[i],
+					FrameTime = MsBetweenPresents[i],
+					InPresentAPITime = MsInPresentAPI[i],
 					QPCTime = QPCTimes[i],
 					ReprojectionEnd = ReprojectionEnd[i],
 					ReprojectionStart = ReprojectionStart[i],
 					ReprojectionTime = ReprojectionTimes[i],
 					VSync = VSync[i],
-					WarpMissed = WarpMissed[i]
+					WarpMissed = LsrMissed[i]
 				};
 			}
 		}
@@ -125,8 +128,10 @@ namespace CapFrameX.Data
 
 	public sealed class Session : ISession
 	{
+		[JsonProperty("Info")]
 		public ISessionInfo Info { get; set; } = new SessionInfo();
-		public List<ISessionRun> Runs { get; set; } = new List<ISessionRun>();
+		[JsonProperty("Runs")]
+		public IList<ISessionRun> Runs { get; set; } = new List<ISessionRun>();
 	}
 
 	public static class SessionExtensions
@@ -137,7 +142,7 @@ namespace CapFrameX.Data
 			var frametimeStatisticProvider = new FrametimeStatisticProvider(new CapFrameXConfiguration());
 			var frametimesSampleWindow = new List<double>();
 
-			var frametimes = frametimeStatisticProvider?.GetOutlierAdjustedSequence(session.Runs.SelectMany(r => r.CaptureData.FrameTimes).ToArray(), eRemoveOutlierMethod);
+			var frametimes = frametimeStatisticProvider?.GetOutlierAdjustedSequence(session.Runs.SelectMany(r => r.CaptureData.MsBetweenPresents).ToArray(), eRemoveOutlierMethod);
 
 			if (frametimes.Any())
 			{
@@ -155,8 +160,8 @@ namespace CapFrameX.Data
 		{
 			IList<double> frametimesTimeWindow = new List<double>();
 			var frametimeStatisticProvider = new FrametimeStatisticProvider(new CapFrameXConfiguration());
-			var frameStarts = session.Runs.SelectMany(r => r.CaptureData.FrameStart).ToArray();
-			var frametimes = frametimeStatisticProvider?.GetOutlierAdjustedSequence(session.Runs.SelectMany(r => r.CaptureData.FrameTimes).ToArray(), eRemoveOutlierMethod);
+			var frameStarts = session.Runs.SelectMany(r => r.CaptureData.TimeInSeconds).ToArray();
+			var frametimes = frametimeStatisticProvider?.GetOutlierAdjustedSequence(session.Runs.SelectMany(r => r.CaptureData.MsBetweenPresents).ToArray(), eRemoveOutlierMethod);
 
 			if (frametimes.Any() && frameStarts.Any())
 			{
@@ -178,8 +183,8 @@ namespace CapFrameX.Data
 			IList<Point> frametimesPointsWindow = new List<Point>();
 			var frametimeStatisticProvider = new FrametimeStatisticProvider(new CapFrameXConfiguration());
 
-			var frametimes = frametimeStatisticProvider?.GetOutlierAdjustedSequence(session.Runs.SelectMany(r => r.CaptureData.FrameTimes).ToArray(), eRemoveOutlierMethod);
-			var frameStarts = session.Runs.SelectMany(r => r.CaptureData.FrameStart).ToArray();
+			var frametimes = frametimeStatisticProvider?.GetOutlierAdjustedSequence(session.Runs.SelectMany(r => r.CaptureData.MsBetweenPresents).ToArray(), eRemoveOutlierMethod);
+			var frameStarts = session.Runs.SelectMany(r => r.CaptureData.TimeInSeconds).ToArray();
 			if (frametimes.Any() && frameStarts.Any())
 			{
 				for (int i = 0; i < frametimes.Count(); i++)
@@ -200,8 +205,8 @@ namespace CapFrameX.Data
 			var frametimesPointsSampleWindow = new List<Point>();
 			var frametimeStatisticProvider = new FrametimeStatisticProvider(new CapFrameXConfiguration());
 
-			var frametimes = frametimeStatisticProvider?.GetOutlierAdjustedSequence(session.Runs.SelectMany(r => r.CaptureData.FrameTimes).ToArray(), eRemoveOutlierMethod);
-			var frameStarts = session.Runs.SelectMany(r => r.CaptureData.FrameStart).ToArray();
+			var frametimes = frametimeStatisticProvider?.GetOutlierAdjustedSequence(session.Runs.SelectMany(r => r.CaptureData.MsBetweenPresents).ToArray(), eRemoveOutlierMethod);
+			var frameStarts = session.Runs.SelectMany(r => r.CaptureData.TimeInSeconds).ToArray();
 			if (frametimes.Any())
 			{
 				for (int i = startIndex; i < frametimes.Count() - endIndex; i++)
@@ -220,10 +225,10 @@ namespace CapFrameX.Data
 		/// <returns></returns>
 		public static IList<double> GetApproxInputLagTimes(this ISession session)
 		{
-			var frameTimes = session.Runs.SelectMany(r => r.CaptureData.FrameTimes).ToArray();
-			var appMissed = session.Runs.SelectMany(r => r.CaptureData.AppMissed).ToArray();
-			var untilDisplayedTimes = session.Runs.SelectMany(r => r.CaptureData.UntilDisplayedTimes).ToArray();
-			var inPresentAPITimes = session.Runs.SelectMany(r => r.CaptureData.InPresentAPITimes).ToArray();
+			var frameTimes = session.Runs.SelectMany(r => r.CaptureData.MsBetweenPresents).ToArray();
+			var appMissed = session.Runs.SelectMany(r => r.CaptureData.Dropped).ToArray();
+			var untilDisplayedTimes = session.Runs.SelectMany(r => r.CaptureData.MsUntilDisplayed).ToArray();
+			var inPresentAPITimes = session.Runs.SelectMany(r => r.CaptureData.MsInPresentAPI).ToArray();
 			var inputLagTimes = new List<double>(frameTimes.Count() - 1);
 
 			for (int i = 1; i < frameTimes.Count(); i++)
@@ -237,7 +242,7 @@ namespace CapFrameX.Data
 
 		public static double GetSyncRangePercentage(this ISession session, int syncRangeLower, int syncRangeUpper)
 		{
-			var displayTimes = session.Runs.SelectMany(r => r.CaptureData.DisplayTimes);
+			var displayTimes = session.Runs.SelectMany(r => r.CaptureData.MsBetweenDisplayChange);
 			if(!displayTimes.Any())
 			{
 				return 0d;

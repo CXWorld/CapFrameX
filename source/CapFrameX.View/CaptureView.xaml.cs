@@ -52,7 +52,7 @@ namespace CapFrameX.View
 				var recordDirectoryObserver = new RecordDirectoryObserver(appConfiguration, 
 					loggerFactory.CreateLogger<RecordDirectoryObserver>());
 				var overlayEntryProvider = new OverlayEntryProvider();
-				var recordManager = new RecordManager(loggerFactory.CreateLogger<RecordManager>(), appConfiguration, recordDirectoryObserver);
+				var recordManager = new RecordManager(loggerFactory.CreateLogger<RecordManager>(), appConfiguration, recordDirectoryObserver, new AppVersionProvider());
 				DataContext = new CaptureViewModel(appConfiguration, new PresentMonCaptureService(),
 					new EventAggregator(), recordManager,
 					new OverlayService(statisticProvider, overlayEntryProvider, appConfiguration, 

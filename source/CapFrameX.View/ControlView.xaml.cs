@@ -45,7 +45,7 @@ namespace CapFrameX.View
 
                 DataContext = new ControlViewModel(new RecordDirectoryObserver(appConfiguration,
 					loggerFactory.CreateLogger<RecordDirectoryObserver>()), new EventAggregator(), 
-                    new CapFrameXConfiguration(), new RecordManager(loggerFactory.CreateLogger<RecordManager>(), appConfiguration, recordDirectoryObserver));
+                    new CapFrameXConfiguration(), new RecordManager(loggerFactory.CreateLogger<RecordManager>(), appConfiguration, recordDirectoryObserver, new AppVersionProvider()));
 			}
 
 			SetSortSettings((DataContext as ControlViewModel).AppConfiguration);

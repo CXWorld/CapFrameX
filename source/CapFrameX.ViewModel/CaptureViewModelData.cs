@@ -62,7 +62,8 @@ namespace CapFrameX.ViewModel
 				return;
 
 			var filePath = _recordManager.GetOutputFilename(processName);
-			var sessionRun = _recordManager.ConvertPresentDataLinesToSessionRun(adjustedCaptureData);
+			var normalizedAdjustedCaptureData = NormalizeTimes(adjustedCaptureData);
+			var sessionRun = _recordManager.ConvertPresentDataLinesToSessionRun(normalizedAdjustedCaptureData);
 
 			if (AppConfiguration.UseRunHistory)
 			{
@@ -218,33 +219,6 @@ namespace CapFrameX.ViewModel
 			return captureInterval;
 		}
 
-		private IEnumerable<string> NormalizeTimes(IEnumerable<string> recordLines)
-		{
-			string firstDataLine = recordLines.First();
-			var lines = new List<string>();
-			//start time
-			var timeStart = GetStartTimeFromDataLine(firstDataLine);
-
-			// normalize time
-			var currentLineSplit = firstDataLine.Split(',');
-			currentLineSplit[11] = "0";
-
-			lines.Add(string.Join(",", currentLineSplit));
-
-			foreach (var dataLine in recordLines.Skip(1))
-			{
-				double currentStartTime = GetStartTimeFromDataLine(dataLine);
-
-				// normalize time
-				double normalizedTime = currentStartTime - timeStart;
-
-				currentLineSplit = dataLine.Split(',');
-				currentLineSplit[11] = normalizedTime.ToString(CultureInfo.InvariantCulture);
-
-				lines.Add(string.Join(",", currentLineSplit));
-			}
-			return lines;
-		}
 		private double GetStartTimeFromDataLine(string dataLine)
 		{
 			if (string.IsNullOrWhiteSpace(dataLine))
@@ -290,6 +264,34 @@ namespace CapFrameX.ViewModel
 			var qpcTime = lineSplit[17];
 
 			return Convert.ToInt64(qpcTime, CultureInfo.InvariantCulture);
+		}
+
+		private IEnumerable<string> NormalizeTimes(IEnumerable<string> recordLines)
+		{
+			string firstDataLine = recordLines.First();
+			var lines = new List<string>();
+			//start time
+			var timeStart = GetStartTimeFromDataLine(firstDataLine);
+
+			// normalize time
+			var currentLineSplit = firstDataLine.Split(',');
+			currentLineSplit[11] = "0";
+
+			lines.Add(string.Join(",", currentLineSplit));
+
+			foreach (var dataLine in recordLines.Skip(1))
+			{
+				double currentStartTime = GetStartTimeFromDataLine(dataLine);
+
+				// normalize time
+				double normalizedTime = currentStartTime - timeStart;
+
+				currentLineSplit = dataLine.Split(',');
+				currentLineSplit[11] = normalizedTime.ToString(CultureInfo.InvariantCulture);
+
+				lines.Add(string.Join(",", currentLineSplit));
+			}
+			return lines;
 		}
 	}
 }

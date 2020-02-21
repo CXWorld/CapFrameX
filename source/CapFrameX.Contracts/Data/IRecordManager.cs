@@ -23,7 +23,6 @@ namespace CapFrameX.Contracts.Data
 			string customGpuInfo, string customRamInfo, string customGameName, string customComment);
 		List<ISystemInfoEntry> GetSystemInfos(IFileRecordInfo recordInfo);
 		ISession LoadData(string file);
-		IList<string> LoadPresentData(string csvFile);
 
 		double GetFrameTimeFromDataLine(string dataLine);
 		ISessionRun ConvertPresentDataLinesToSessionRun(IEnumerable<string> presentLines);

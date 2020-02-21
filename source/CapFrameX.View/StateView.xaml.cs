@@ -32,7 +32,7 @@ namespace CapFrameX.View
 				var overlayEntryProvider = new OverlayEntryProvider();
 				var appVersionProvider = new AppVersionProvider();
 				var webVersionProvider = new WebVersionProvider();
-				var recordManager = new RecordManager(loggerFactory.CreateLogger<RecordManager>(), appConfiguration, recordDirectoryObserver);
+				var recordManager = new RecordManager(loggerFactory.CreateLogger<RecordManager>(), appConfiguration, recordDirectoryObserver, new AppVersionProvider());
 				DataContext = new StateViewModel(new RecordDirectoryObserver(appConfiguration,
 					new LoggerFactory().CreateLogger<RecordDirectoryObserver>()),
 					new EventAggregator(), appConfiguration, new PresentMonCaptureService(),

@@ -654,8 +654,8 @@ namespace CapFrameX.ViewModel
 
 			foreach (var record in ComparisonRecords)
 			{
-				if (record.WrappedRecordInfo.Session.Runs.SelectMany(r => r.CaptureData.FrameStart).Last() > MaxRecordingTime)
-					MaxRecordingTime = record.WrappedRecordInfo.Session.Runs.SelectMany(r => r.CaptureData.FrameStart).Last();
+				if (record.WrappedRecordInfo.Session.Runs.SelectMany(r => r.CaptureData.TimeInSeconds).Last() > MaxRecordingTime)
+					MaxRecordingTime = record.WrappedRecordInfo.Session.Runs.SelectMany(r => r.CaptureData.TimeInSeconds).Last();
 			}
 
 			_doUpdateCharts = false;
@@ -756,7 +756,7 @@ namespace CapFrameX.ViewModel
 		{
 			string infoText = string.Empty;
 			var session = _recordManager.LoadData(fileRecordInfo.FullPath);
-			var frameTimes = session.Runs.SelectMany(r => r.CaptureData.FrameTimes).ToList();
+			var frameTimes = session.Runs.SelectMany(r => r.CaptureData.MsBetweenPresents).ToList();
 			if (session != null)
 			{
 				var newLine = Environment.NewLine;

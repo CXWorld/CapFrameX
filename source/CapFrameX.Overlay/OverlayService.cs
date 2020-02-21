@@ -163,7 +163,7 @@ namespace CapFrameX.Overlay
 
 		public void AddRunToHistory(ISessionRun sessionRun, string process)
 		{
-			var frametimes = sessionRun.CaptureData.FrameTimes;
+			var frametimes = sessionRun.CaptureData.MsBetweenPresents;
 
 			if (RunHistoryCount == _numberOfRuns)
 			{

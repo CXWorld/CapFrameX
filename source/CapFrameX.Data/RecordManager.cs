@@ -21,13 +21,14 @@ namespace CapFrameX.Data
 		private readonly ILogger<RecordManager> _logger;
 		private readonly IAppConfiguration _appConfiguration;
 		private readonly IRecordDirectoryObserver _recordObserver;
+		private readonly IAppVersionProvider _appVersionProvider;
 
-		public RecordManager(ILogger<RecordManager> logger, IAppConfiguration appConfiguration, IRecordDirectoryObserver recordObserver)
+		public RecordManager(ILogger<RecordManager> logger, IAppConfiguration appConfiguration, IRecordDirectoryObserver recordObserver, IAppVersionProvider appVersionProvider)
 		{
 			_logger = logger;
 			_appConfiguration = appConfiguration;
 			_recordObserver = recordObserver;
-
+			_appVersionProvider = appVersionProvider;
 			try
 			{
 				if (!File.Exists(_matchingNameLiveFilename))
@@ -177,11 +178,27 @@ namespace CapFrameX.Data
 			switch (fileInfo.Extension)
 			{
 				case ".json":
-					return null;
+					return LoadSessionFromJSON(fileInfo);
 				case ".csv":
 					return LoadSessionFromCSV(fileInfo);
 				default:
 					return null;
+			}
+		}
+
+		private ISession LoadSessionFromJSON(FileInfo fileInfo)
+		{
+			try
+			{
+				var content = File.ReadAllText(fileInfo.FullName);
+				var session = JsonConvert.DeserializeObject<Session>(content, new JsonSerializerSettings() { 
+					TypeNameHandling = TypeNameHandling.Auto
+				});
+				return session;
+			} catch(Exception e)
+			{
+				_logger.LogError(e, "An Error occured while reading JSON Session File");
+				return null;
 			}
 		}
 
@@ -212,66 +229,17 @@ namespace CapFrameX.Data
 							Comment = recordedFileInfo.Comment,
 							Id = Guid.Parse(recordedFileInfo.Id),
 							OS = recordedFileInfo.OsVersion,
-							GpuCoreClock = Int32.Parse(recordedFileInfo.GPUCoreClock),
-							GPUCount = Int32.Parse(recordedFileInfo.NumberGPUs),
+							GpuCoreClock = recordedFileInfo.GPUCoreClock,
+							GPUCount = recordedFileInfo.NumberGPUs,
 							SystemRam = recordedFileInfo.SystemRamInfo,
 							Motherboard = recordedFileInfo.MotherboardName,
 							DriverPackage = recordedFileInfo.DriverPackage,
-							GpuMemoryClock = Int32.Parse(recordedFileInfo.GPUMemoryClock),
-							CreationDate = 
-
+							GpuMemoryClock = recordedFileInfo.GPUMemoryClock,
+							CreationDate = DateTime.Parse(recordedFileInfo.CreationDate + "T" + recordedFileInfo.CreationTime),
+							AppVersion = null
 						}
 					};
 				}
-			}
-			catch (IOException ex)
-			{
-				_logger.LogError(ex, "Error loading Data");
-				return null;
-			}
-		}
-
-		public IList<string> LoadPresentData(string csvFile)
-		{
-			if (string.IsNullOrWhiteSpace(csvFile))
-			{
-				return null;
-			}
-
-			if (!File.Exists(csvFile))
-			{
-				return null;
-			}
-
-			if (new FileInfo(csvFile).Length == 0)
-			{
-				return null;
-			}
-
-			var dataLines = new List<string>();
-
-			try
-			{
-				using (var reader = new StreamReader(csvFile))
-				{
-					string line = reader.ReadLine();
-
-					// skip header
-					while (line.Contains(FileRecordInfo.HEADER_MARKER))
-					{
-						line = reader.ReadLine();
-					}
-
-					//skip column header
-					_ = reader.ReadLine();
-
-					while (!reader.EndOfStream)
-					{
-						dataLines.Add(reader.ReadLine());
-					}
-				}
-
-				return dataLines;
 			}
 			catch (IOException ex)
 			{
@@ -345,6 +313,10 @@ namespace CapFrameX.Data
 		{
 			try
 			{
+				if(runs.Count() > 1)
+				{
+					NormalizeStartTimesOfAggragationRuns(runs);
+				}
 				if(filePath is null)
 				{
 					filePath = GetOutputFilename(processName);
@@ -390,11 +362,15 @@ namespace CapFrameX.Data
 						Processor = cpuInfo,
 						SystemRam = ramInfo,
 						GPU = gpuInfo,
-						IsAggregated = runs.Count() > 1
+						IsAggregated = runs.Count() > 1,
+						AppVersion = _appVersionProvider.GetAppVersion()
 					}
 				};
 
-				File.WriteAllText(filePath, JsonConvert.SerializeObject(session));
+				File.WriteAllText(filePath, JsonConvert.SerializeObject(session, Formatting.None, new JsonSerializerSettings()
+				{
+					TypeNameHandling = TypeNameHandling.Auto
+				}));
 
 				_logger.LogInformation("{filePath} successfully written", filePath);
 				return true;
@@ -624,8 +600,8 @@ namespace CapFrameX.Data
 					if (double.TryParse(GetStringFromArray(values, indexFrameStart), NumberStyles.Any, CultureInfo.InvariantCulture, out frameStart)
 						&& double.TryParse(GetStringFromArray(values, indexFrameTimes), NumberStyles.Any, CultureInfo.InvariantCulture, out var frameTime))
 					{
-						captureData.FrameStart[lineNo] = frameStart;
-						captureData.FrameTimes[lineNo] = frameTime;
+						captureData.TimeInSeconds[lineNo] = frameStart;
+						captureData.MsBetweenPresents[lineNo] = frameTime;
 					}
 				}
 
@@ -633,11 +609,11 @@ namespace CapFrameX.Data
 				{
 					if (int.TryParse(GetStringFromArray(values, indexAppMissed), NumberStyles.Any, CultureInfo.InvariantCulture, out var appMissed))
 					{
-						captureData.AppMissed[lineNo] = Convert.ToBoolean(appMissed);
+						captureData.Dropped[lineNo] = Convert.ToBoolean(appMissed);
 					}
 					else
 					{
-						captureData.AppMissed[lineNo] = true;
+						captureData.Dropped[lineNo] = true;
 					}
 				}
 
@@ -645,7 +621,7 @@ namespace CapFrameX.Data
 				{
 					if (double.TryParse(GetStringFromArray(values, indexDisplayTimes), NumberStyles.Any, CultureInfo.InvariantCulture, out var displayTime))
 					{
-						captureData.DisplayTimes[lineNo] = displayTime;
+						captureData.MsBetweenDisplayChange[lineNo] = displayTime;
 					}
 				}
 
@@ -653,7 +629,7 @@ namespace CapFrameX.Data
 				{
 					if (double.TryParse(GetStringFromArray(values, indexUntilDisplayedTimes), NumberStyles.Any, CultureInfo.InvariantCulture, out var untilDisplayTime))
 					{
-						captureData.UntilDisplayedTimes[lineNo] = untilDisplayTime;
+						captureData.MsUntilDisplayed[lineNo] = untilDisplayTime;
 					}
 				}
 
@@ -661,7 +637,7 @@ namespace CapFrameX.Data
 				{
 					if (double.TryParse(GetStringFromArray(values, indexMsInPresentAPI), NumberStyles.Any, CultureInfo.InvariantCulture, out var inPresentAPITime))
 					{
-						captureData.InPresentAPITimes[lineNo] = inPresentAPITime;
+						captureData.MsInPresentAPI[lineNo] = inPresentAPITime;
 					}
 				}
 
@@ -679,11 +655,11 @@ namespace CapFrameX.Data
 					{
 						if (sessionRun.IsVR)
 						{
-							captureData.FrameEnd[lineNo] = frameEnd;
+							captureData.MsUntilRenderComplete[lineNo] = frameEnd;
 						}
 						else
 						{
-							captureData.FrameEnd[lineNo] = frameStart + frameEnd / 1000.0;
+							captureData.MsUntilRenderComplete[lineNo] = frameStart + frameEnd / 1000.0;
 						}
 					}
 				}
@@ -694,12 +670,26 @@ namespace CapFrameX.Data
 					 && int.TryParse(GetStringFromArray(values, indexWarpMissed), NumberStyles.Any, CultureInfo.InvariantCulture, out var warpMissed))
 					{
 						captureData.VSync[lineNo] = vSync;
-						captureData.WarpMissed[lineNo] = Convert.ToBoolean(warpMissed);
+						captureData.LsrMissed[lineNo] = Convert.ToBoolean(warpMissed);
 					}
 				}
 			}
 			sessionRun.CaptureData = captureData;
 			return sessionRun;
+		}
+
+		private void NormalizeStartTimesOfAggragationRuns(IEnumerable<ISessionRun> sessionRuns)
+		{
+			double startTime = 0;
+
+			foreach(var sessionRun in sessionRuns)
+			{
+				for(int i = 0; i < sessionRun.CaptureData.MsBetweenPresents.Count(); i++)
+				{
+					sessionRun.CaptureData.TimeInSeconds[i] = startTime;
+					startTime += sessionRun.CaptureData.MsBetweenPresents[i];
+				}
+			}
 		}
 	}
 }
