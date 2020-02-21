@@ -472,181 +472,197 @@ namespace CapFrameX.Data
 
 		public ISessionRun ConvertPresentDataLinesToSessionRun(IEnumerable<string> presentLines)
 		{
-			var sessionRun = new SessionRun();
-
-			int indexFrameStart = -1;
-			int indexFrameTimes = -1;
-			int indexFrameEnd = -1;
-			int indexUntilDisplayedTimes = -1;
-			int indexVSync = -1;
-			int indexAppMissed = -1;
-			int indexWarpMissed = -1;
-			int indexMsInPresentAPI = -1;
-			int indexDisplayTimes = -1;
-			int indexQPCTimes = -1;
-
-			var headerLine = presentLines.First();
-
-			var metrics = headerLine.Split(',');
-			for (int i = 0; i < metrics.Count(); i++)
+			try
 			{
-				if (string.Compare(metrics[i], "AppRenderStart") == 0 || string.Compare(metrics[i], "TimeInSeconds") == 0)
-				{
-					indexFrameStart = i;
-				}
-				// MsUntilRenderComplete needs to be added to AppRenderStart to get the timestamp
-				if (string.Compare(metrics[i], "AppRenderEnd") == 0 || string.Compare(metrics[i], "MsUntilRenderComplete") == 0)
-				{
-					indexFrameEnd = i;
-				}
-				if (string.Compare(metrics[i], "MsBetweenAppPresents") == 0 || string.Compare(metrics[i], "MsBetweenPresents") == 0)
-				{
-					indexFrameTimes = i;
-				}
-				if (string.Compare(metrics[i], "MsUntilDisplayed") == 0)
-				{
-					indexUntilDisplayedTimes = i;
-				}
-				if (string.Compare(metrics[i], "VSync") == 0)
-				{
-					indexVSync = i;
-					sessionRun.IsVR = true;
-				}
-				if (string.Compare(metrics[i], "AppMissed") == 0 || string.Compare(metrics[i], "Dropped") == 0)
-				{
-					indexAppMissed = i;
-				}
-				if (string.Compare(metrics[i], "WarpMissed") == 0 || string.Compare(metrics[i], "LsrMissed") == 0)
-				{
-					indexWarpMissed = i;
-				}
-				if (string.Compare(metrics[i], "MsInPresentAPI") == 0)
-				{
-					indexMsInPresentAPI = i;
-				}
-				if (string.Compare(metrics[i], "MsBetweenDisplayChange") == 0)
-				{
-					indexDisplayTimes = i;
-				}
-				if (string.Compare(metrics[i], "QPCTime") == 0)
-				{
-					indexQPCTimes = i;
-				}
-			}
+				var sessionRun = new SessionRun();
 
-			var captureData = new SessionCaptureData(presentLines.Count() - 1); // lines minus headerline
+				int indexFrameStart = -1;
+				int indexFrameTimes = -1;
+				int indexFrameEnd = -1;
+				int indexUntilDisplayedTimes = -1;
+				int indexVSync = -1;
+				int indexAppMissed = -1;
+				int indexWarpMissed = -1;
+				int indexMsInPresentAPI = -1;
+				int indexDisplayTimes = -1;
+				int indexQPCTimes = -1;
 
-			var dataLines = presentLines.Skip(1).ToArray();
-			for (int lineNo = 0; lineNo < dataLines.Count(); lineNo++)
-			{
-				string line = dataLines[lineNo];
-				if(!line.Any())
+				string headerLine;
+				if (presentLines.First() != COLUMN_HEADER)
 				{
-					continue;
+					headerLine = COLUMN_HEADER;
 				}
-				var lineCharList = new List<char>();
-				string[] values = new string[0];
-
-				if (lineNo == 0)
+				else
 				{
-					int isInner = -1;
-					for (int i = 0; i < line.Length; i++)
+					headerLine = presentLines.First();
+					presentLines = presentLines.Skip(1);
+				}
+
+				var metrics = headerLine.Split(',');
+				for (int i = 0; i < metrics.Count(); i++)
+				{
+					if (string.Compare(metrics[i], "AppRenderStart") == 0 || string.Compare(metrics[i], "TimeInSeconds") == 0)
 					{
-						if (line[i] == '"')
-							isInner *= -1;
-
-						if (!(line[i] == ',' && isInner == 1))
-							lineCharList.Add(line[i]);
-
+						indexFrameStart = i;
 					}
-
-					line = new string(lineCharList.ToArray());
-				}
-
-				values = line.Split(',');
-				double frameStart = 0;
-
-				if (indexFrameStart > 0 && indexFrameTimes > 0)
-				{
-					if (double.TryParse(GetStringFromArray(values, indexFrameStart), NumberStyles.Any, CultureInfo.InvariantCulture, out frameStart)
-						&& double.TryParse(GetStringFromArray(values, indexFrameTimes), NumberStyles.Any, CultureInfo.InvariantCulture, out var frameTime))
+					// MsUntilRenderComplete needs to be added to AppRenderStart to get the timestamp
+					if (string.Compare(metrics[i], "AppRenderEnd") == 0 || string.Compare(metrics[i], "MsUntilRenderComplete") == 0)
 					{
-						captureData.TimeInSeconds[lineNo] = frameStart;
-						captureData.MsBetweenPresents[lineNo] = frameTime;
+						indexFrameEnd = i;
+					}
+					if (string.Compare(metrics[i], "MsBetweenAppPresents") == 0 || string.Compare(metrics[i], "MsBetweenPresents") == 0)
+					{
+						indexFrameTimes = i;
+					}
+					if (string.Compare(metrics[i], "MsUntilDisplayed") == 0)
+					{
+						indexUntilDisplayedTimes = i;
+					}
+					if (string.Compare(metrics[i], "VSync") == 0)
+					{
+						indexVSync = i;
+						sessionRun.IsVR = true;
+					}
+					if (string.Compare(metrics[i], "AppMissed") == 0 || string.Compare(metrics[i], "Dropped") == 0)
+					{
+						indexAppMissed = i;
+					}
+					if (string.Compare(metrics[i], "WarpMissed") == 0 || string.Compare(metrics[i], "LsrMissed") == 0)
+					{
+						indexWarpMissed = i;
+					}
+					if (string.Compare(metrics[i], "MsInPresentAPI") == 0)
+					{
+						indexMsInPresentAPI = i;
+					}
+					if (string.Compare(metrics[i], "MsBetweenDisplayChange") == 0)
+					{
+						indexDisplayTimes = i;
+					}
+					if (string.Compare(metrics[i], "QPCTime") == 0)
+					{
+						indexQPCTimes = i;
 					}
 				}
 
-				if (indexAppMissed > 0)
-				{
-					if (int.TryParse(GetStringFromArray(values, indexAppMissed), NumberStyles.Any, CultureInfo.InvariantCulture, out var appMissed))
-					{
-						captureData.Dropped[lineNo] = Convert.ToBoolean(appMissed);
-					}
-					else
-					{
-						captureData.Dropped[lineNo] = true;
-					}
-				}
+				var captureData = new SessionCaptureData(presentLines.Count());
 
-				if (indexDisplayTimes > 0)
+				var dataLines = presentLines.ToArray();
+				for (int lineNo = 0; lineNo < dataLines.Count(); lineNo++)
 				{
-					if (double.TryParse(GetStringFromArray(values, indexDisplayTimes), NumberStyles.Any, CultureInfo.InvariantCulture, out var displayTime))
+					string line = dataLines[lineNo];
+					if (!line.Any())
 					{
-						captureData.MsBetweenDisplayChange[lineNo] = displayTime;
+						continue;
 					}
-				}
+					var lineCharList = new List<char>();
+					string[] values = new string[0];
 
-				if (indexUntilDisplayedTimes > 0)
-				{
-					if (double.TryParse(GetStringFromArray(values, indexUntilDisplayedTimes), NumberStyles.Any, CultureInfo.InvariantCulture, out var untilDisplayTime))
+					if (lineNo == 0)
 					{
-						captureData.MsUntilDisplayed[lineNo] = untilDisplayTime;
-					}
-				}
-
-				if (indexMsInPresentAPI > 0)
-				{
-					if (double.TryParse(GetStringFromArray(values, indexMsInPresentAPI), NumberStyles.Any, CultureInfo.InvariantCulture, out var inPresentAPITime))
-					{
-						captureData.MsInPresentAPI[lineNo] = inPresentAPITime;
-					}
-				}
-
-				if (indexQPCTimes > 0)
-				{
-					if (double.TryParse(GetStringFromArray(values, indexQPCTimes), NumberStyles.Any, CultureInfo.InvariantCulture, out var qPCTime))
-					{
-						captureData.QPCTimes[lineNo] = qPCTime;
-					}
-				}
-
-				if (indexFrameEnd > 0)
-				{
-					if (double.TryParse(GetStringFromArray(values, indexFrameEnd), NumberStyles.Any, CultureInfo.InvariantCulture, out var frameEnd))
-					{
-						if (sessionRun.IsVR)
+						int isInner = -1;
+						for (int i = 0; i < line.Length; i++)
 						{
-							captureData.MsUntilRenderComplete[lineNo] = frameEnd;
+							if (line[i] == '"')
+								isInner *= -1;
+
+							if (!(line[i] == ',' && isInner == 1))
+								lineCharList.Add(line[i]);
+
+						}
+
+						line = new string(lineCharList.ToArray());
+					}
+
+					values = line.Split(',');
+					double frameStart = 0;
+
+					if (indexFrameStart > 0 && indexFrameTimes > 0)
+					{
+						if (double.TryParse(GetStringFromArray(values, indexFrameStart), NumberStyles.Any, CultureInfo.InvariantCulture, out frameStart)
+							&& double.TryParse(GetStringFromArray(values, indexFrameTimes), NumberStyles.Any, CultureInfo.InvariantCulture, out var frameTime))
+						{
+							captureData.TimeInSeconds[lineNo] = frameStart;
+							captureData.MsBetweenPresents[lineNo] = frameTime;
+						}
+					}
+
+					if (indexAppMissed > 0)
+					{
+						if (int.TryParse(GetStringFromArray(values, indexAppMissed), NumberStyles.Any, CultureInfo.InvariantCulture, out var appMissed))
+						{
+							captureData.Dropped[lineNo] = Convert.ToBoolean(appMissed);
 						}
 						else
 						{
-							captureData.MsUntilRenderComplete[lineNo] = frameStart + frameEnd / 1000.0;
+							captureData.Dropped[lineNo] = true;
+						}
+					}
+
+					if (indexDisplayTimes > 0)
+					{
+						if (double.TryParse(GetStringFromArray(values, indexDisplayTimes), NumberStyles.Any, CultureInfo.InvariantCulture, out var displayTime))
+						{
+							captureData.MsBetweenDisplayChange[lineNo] = displayTime;
+						}
+					}
+
+					if (indexUntilDisplayedTimes > 0)
+					{
+						if (double.TryParse(GetStringFromArray(values, indexUntilDisplayedTimes), NumberStyles.Any, CultureInfo.InvariantCulture, out var untilDisplayTime))
+						{
+							captureData.MsUntilDisplayed[lineNo] = untilDisplayTime;
+						}
+					}
+
+					if (indexMsInPresentAPI > 0)
+					{
+						if (double.TryParse(GetStringFromArray(values, indexMsInPresentAPI), NumberStyles.Any, CultureInfo.InvariantCulture, out var inPresentAPITime))
+						{
+							captureData.MsInPresentAPI[lineNo] = inPresentAPITime;
+						}
+					}
+
+					if (indexQPCTimes > 0)
+					{
+						if (double.TryParse(GetStringFromArray(values, indexQPCTimes), NumberStyles.Any, CultureInfo.InvariantCulture, out var qPCTime))
+						{
+							captureData.QPCTimes[lineNo] = qPCTime;
+						}
+					}
+
+					if (indexFrameEnd > 0)
+					{
+						if (double.TryParse(GetStringFromArray(values, indexFrameEnd), NumberStyles.Any, CultureInfo.InvariantCulture, out var frameEnd))
+						{
+							if (sessionRun.IsVR)
+							{
+								captureData.MsUntilRenderComplete[lineNo] = frameEnd;
+							}
+							else
+							{
+								captureData.MsUntilRenderComplete[lineNo] = frameStart + frameEnd / 1000.0;
+							}
+						}
+					}
+
+					if (indexVSync > 0 && indexWarpMissed > 0)
+					{
+						if (double.TryParse(GetStringFromArray(values, indexVSync), NumberStyles.Any, CultureInfo.InvariantCulture, out var vSync)
+						 && int.TryParse(GetStringFromArray(values, indexWarpMissed), NumberStyles.Any, CultureInfo.InvariantCulture, out var warpMissed))
+						{
+							captureData.VSync[lineNo] = vSync;
+							captureData.LsrMissed[lineNo] = Convert.ToBoolean(warpMissed);
 						}
 					}
 				}
-
-				if (indexVSync > 0 && indexWarpMissed > 0)
-				{
-					if (double.TryParse(GetStringFromArray(values, indexVSync), NumberStyles.Any, CultureInfo.InvariantCulture, out var vSync)
-					 && int.TryParse(GetStringFromArray(values, indexWarpMissed), NumberStyles.Any, CultureInfo.InvariantCulture, out var warpMissed))
-					{
-						captureData.VSync[lineNo] = vSync;
-						captureData.LsrMissed[lineNo] = Convert.ToBoolean(warpMissed);
-					}
-				}
+				sessionRun.CaptureData = captureData;
+				return sessionRun;
+			} catch(Exception e)
+			{
+				_logger.LogError(e, "Error converting PresentData");
+				throw;
 			}
-			sessionRun.CaptureData = captureData;
-			return sessionRun;
 		}
 
 		private void NormalizeStartTimesOfAggragationRuns(IEnumerable<ISessionRun> sessionRuns)
