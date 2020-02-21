@@ -43,6 +43,7 @@ namespace CapFrameX.Data
 		{
 			FileInfo = fileInfo;
 			FullPath = fileInfo.FullName;
+			Id = session.Info.Id.ToString();
 			CreationDate = session.Info.CreationDate.ToString("yyyy-MM-dd");
 			CreationTime = session.Info.CreationDate.ToString("HH:mm:ss");
 			ProcessName = session.Info.ProcessName;
