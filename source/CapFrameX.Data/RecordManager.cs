@@ -540,6 +540,10 @@ namespace CapFrameX.Data
 			for (int lineNo = 0; lineNo < dataLines.Count(); lineNo++)
 			{
 				string line = dataLines[lineNo];
+				if(!line.Any())
+				{
+					continue;
+				}
 				var lineCharList = new List<char>();
 				string[] values = new string[0];
 
@@ -654,7 +658,8 @@ namespace CapFrameX.Data
 				for(int i = 0; i < sessionRun.CaptureData.MsBetweenPresents.Count(); i++)
 				{
 					sessionRun.CaptureData.TimeInSeconds[i] = startTime;
-					startTime += sessionRun.CaptureData.MsBetweenPresents[i];
+					var frameTimeInMs = 1E-03 * sessionRun.CaptureData.MsBetweenPresents[i];
+					startTime += frameTimeInMs;
 				}
 			}
 		}
