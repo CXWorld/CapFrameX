@@ -223,6 +223,7 @@ namespace CapFrameX.ViewModel
 			ShowHelpText = !AggregationEntries.Any();
 			EnableClearButton = AggregationEntries.Any();
 			EnableIncludeButton = AggregationEntries.Count >= 2;
+			EnableExcludeButton = AggregationEntries.Count >= 2;
 
 			// Outlier analysis
 			if (AggregationEntries.Count >= 2 && !_supressCollectionChanged)

@@ -36,6 +36,9 @@ namespace CapFrameX.ViewModel
 				return;
 
 			var adjustedCaptureData = GetAdjustedCaptureData(processName);
+			var normalizedAdjustedCaptureData = NormalizeTimes(adjustedCaptureData.Skip(1)); // Skip first line to compensate the first frametime being one frame before original capture start point.
+			var sessionRun = _recordManager.ConvertPresentDataLinesToSessionRun(normalizedAdjustedCaptureData);
+			var filePath = _recordManager.GetOutputFilename(processName);
 
 			if (adjustedCaptureData == null)
 			{
@@ -47,6 +50,11 @@ namespace CapFrameX.ViewModel
 			{
 				AddLoggerEntry("Error while extracting capture data. Empty list. No file will be written.");
 				return;
+			}
+
+			if (AppConfiguration.UseRunHistory)
+			{
+				Task.Factory.StartNew(() => _overlayService.AddRunToHistory(sessionRun, processName));
 			}
 
 			StartFillArchive();
@@ -61,9 +69,6 @@ namespace CapFrameX.ViewModel
 			if (AppConfiguration.UseAggregation && AppConfiguration.SaveAggregationOnly)
 				return;
 
-			var filePath = _recordManager.GetOutputFilename(processName);
-			var normalizedAdjustedCaptureData = NormalizeTimes(adjustedCaptureData);
-			var sessionRun = _recordManager.ConvertPresentDataLinesToSessionRun(normalizedAdjustedCaptureData);
 
 			if (AppConfiguration.UseRunHistory)
 			{
