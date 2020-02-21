@@ -208,11 +208,7 @@ namespace CapFrameX.Data
 			{
 				using (var reader = new StreamReader(csvFile.FullName))
 				{
-					var lines = new List<string>();
-					while (!reader.EndOfStream)
-					{
-						lines.Add(reader.ReadLine());
-					}
+					var lines = File.ReadAllLines(csvFile.FullName);
 					var sessionRun = ConvertPresentDataLinesToSessionRun(lines.SkipWhile(line => line.Contains(FileRecordInfo.HEADER_MARKER)));
 					var recordedFileInfo = FileRecordInfo.Create(csvFile);
 					var systemInfos = GetSystemInfos(FileRecordInfo.Create(csvFile));
@@ -227,7 +223,7 @@ namespace CapFrameX.Data
 							BaseDriverVersion = recordedFileInfo.BaseDriverVersion,
 							GameName = recordedFileInfo.GameName,
 							Comment = recordedFileInfo.Comment,
-							Id = Guid.Parse(recordedFileInfo.Id),
+							Id = Guid.TryParse(recordedFileInfo.Id, out var guidId) ? guidId : Guid.Empty,
 							OS = recordedFileInfo.OsVersion,
 							GpuCoreClock = recordedFileInfo.GPUCoreClock,
 							GPUCount = recordedFileInfo.NumberGPUs,
@@ -241,7 +237,7 @@ namespace CapFrameX.Data
 					};
 				}
 			}
-			catch (IOException ex)
+			catch (Exception ex)
 			{
 				_logger.LogError(ex, "Error loading Data");
 				return null;
@@ -278,7 +274,18 @@ namespace CapFrameX.Data
 
 		public IFileRecordInfo GetFileRecordInfo(FileInfo fileInfo)
 		{
-			var fileRecordInfo = FileRecordInfo.Create(fileInfo);
+			IFileRecordInfo fileRecordInfo = null;
+			switch(fileInfo.Extension)
+			{
+				case ".csv":
+					fileRecordInfo = FileRecordInfo.Create(fileInfo);
+					break;
+				case ".json":
+					fileRecordInfo = FileRecordInfo.Create(fileInfo, LoadSessionFromJSON(fileInfo));
+					break;
+				default:
+					break;
+			}
 			if (fileRecordInfo == null)
 				return null;
 

@@ -131,10 +131,7 @@ namespace CapFrameX.Data
 
 		public IEnumerable<FileInfo> GetAllRecordFileInfo()
 		{
-			return HasValidSource ? Directory.GetFiles(_recordDirectory, "*.csv",
-				SearchOption.TopDirectoryOnly)
-				.Select(file => new FileInfo(file))
-				: Enumerable.Empty<FileInfo>();
+			return HasValidSource ? Directory.GetFiles(_recordDirectory, "*.*",	SearchOption.TopDirectoryOnly).Select(file => new FileInfo(file)).Where(fi => fi.Extension == ".csv" || fi.Extension == ".json") : Enumerable.Empty<FileInfo>();
 		}
 
 		public void UpdateObservedDirectory(string directory)

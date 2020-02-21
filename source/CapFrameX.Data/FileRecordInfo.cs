@@ -39,6 +39,17 @@ namespace CapFrameX.Data
 		public bool HasInfoHeader { get; private set; }
 		public string Id { get; private set; }
 
+		private FileRecordInfo(FileInfo fileInfo, ISession session)
+		{
+			FileInfo = fileInfo;
+			FullPath = fileInfo.FullName;
+			CreationDate = session.Info.CreationDate.ToString("yyyy-MM-dd");
+			CreationTime = session.Info.CreationDate.ToString("HH:mm:ss");
+			ProcessName = session.Info.ProcessName;
+
+			IsValid = true;
+		}
+
 		private FileRecordInfo(FileInfo fileInfo)
 		{
 			if (fileInfo != null && File.Exists(fileInfo.FullName))
@@ -257,6 +268,26 @@ namespace CapFrameX.Data
 			try
 			{
 				recordInfo = new FileRecordInfo(fileInfo);
+			}
+			catch (ArgumentException)
+			{
+				// Log
+			}
+			catch (Exception)
+			{
+				// Log
+			}
+
+			return recordInfo;
+		}
+
+		public static IFileRecordInfo Create(FileInfo fileInfo, ISession session)
+		{
+			FileRecordInfo recordInfo = null;
+
+			try
+			{
+				recordInfo = new FileRecordInfo(fileInfo, session);
 			}
 			catch (ArgumentException)
 			{
