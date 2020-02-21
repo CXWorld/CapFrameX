@@ -46,7 +46,11 @@ namespace CapFrameX.Data
 			CreationDate = session.Info.CreationDate.ToString("yyyy-MM-dd");
 			CreationTime = session.Info.CreationDate.ToString("HH:mm:ss");
 			ProcessName = session.Info.ProcessName;
-
+			ProcessorName = session.Info.Processor;
+			GraphicCardName = session.Info.GPU;
+			SystemRamInfo = session.Info.SystemRam;
+			ProcessName = session.Info.ProcessName;
+			IsAggregated = Convert.ToString(session.Runs.Count() > 1);
 			IsValid = true;
 		}
 
