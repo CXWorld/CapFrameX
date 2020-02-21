@@ -504,7 +504,7 @@ namespace CapFrameX.ViewModel
 			if (_session == null)
 				return;
 
-			MaxRecordingTime = _session.FrameStart.Last();
+			MaxRecordingTime = _session.Runs.SelectMany(r => r.CaptureData.FrameStart).Last();
 
 			_doUpdateCharts = false;
 			FirstSeconds = 0;

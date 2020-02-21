@@ -11,6 +11,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace CapFrameX.Data
 {
@@ -170,34 +171,26 @@ namespace CapFrameX.Data
 				return null;
 			}
 
-			var session = new Session
-			{
-				Path = csvFile,
-				IsVR = false
-			};
 
 			int index = csvFile.LastIndexOf('\\');
-			session.Filename = csvFile.Substring(index + 1);
-
-			session.FrameStart = new List<double>();
-			session.FrameEnd = new List<double>();
-			session.FrameTimes = new List<double>();
-			session.ReprojectionStart = new List<double>();
-			session.ReprojectionEnd = new List<double>();
-			session.ReprojectionTimes = new List<double>();
-			session.VSync = new List<double>();
-			session.AppMissed = new List<bool>();
-			session.WarpMissed = new List<bool>();
-			session.DisplayTimes = new List<double>();
-			session.QPCTimes = new List<double>();
-			session.InPresentAPITimes = new List<double>();
-			session.UntilDisplayedTimes = new List<double>();
-			session.WarpMissesCount = 0;
-			session.LastFrameTime = 0;
-			session.ValidReproFrames = 0;
 
 			try
 			{
+				var sessionRun = new SessionRun()
+				{
+					Filename = csvFile.Substring(index + 1)
+				};
+				using (var reader = new StreamReader(csvFile))
+				{
+					var regEx = new Regex(@"^(?!\/\/).+$", RegexOptions.Multiline);
+					var matches = regEx.Matches(reader.ReadToEnd());
+					int numberOfPresentCaptureLines = matches.Count - 1;
+
+					if (numberOfPresentCaptureLines > 0)
+					{
+						sessionRun.CaptureData = new SessionCaptureData(numberOfPresentCaptureLines);
+					}
+				}
 				using (var reader = new StreamReader(csvFile))
 				{
 					string line = reader.ReadLine();
@@ -242,7 +235,7 @@ namespace CapFrameX.Data
 						if (string.Compare(metrics[i], "VSync") == 0)
 						{
 							indexVSync = i;
-							session.IsVR = true;
+							sessionRun.IsVR = true;
 						}
 						if (string.Compare(metrics[i], "AppMissed") == 0 || string.Compare(metrics[i], "Dropped") == 0)
 						{
@@ -267,6 +260,7 @@ namespace CapFrameX.Data
 					}
 
 					int lineCount = 0;
+					int arrayIndex = 0;
 					while (!reader.EndOfStream)
 					{
 						line = reader.ReadLine();
@@ -296,14 +290,10 @@ namespace CapFrameX.Data
 						if (indexFrameStart > 0 && indexFrameTimes > 0)
 						{
 							if (double.TryParse(GetStringFromArray(values, indexFrameStart), NumberStyles.Any, CultureInfo.InvariantCulture, out frameStart)
-								&& double.TryParse(GetStringFromArray(values, indexFrameTimes), NumberStyles.Any, CultureInfo.InvariantCulture, out var frameTimes))
+								&& double.TryParse(GetStringFromArray(values, indexFrameTimes), NumberStyles.Any, CultureInfo.InvariantCulture, out var frameTime))
 							{
-								if (frameStart > 0)
-								{
-									session.LastFrameTime = frameStart;
-								}
-								session.FrameStart.Add(frameStart);
-								session.FrameTimes.Add(frameTimes);
+								sessionRun.CaptureData.FrameStart[arrayIndex] = frameStart;
+								sessionRun.CaptureData.FrameTimes[arrayIndex] = frameTime;
 							}
 						}
 
@@ -311,11 +301,11 @@ namespace CapFrameX.Data
 						{
 							if (int.TryParse(GetStringFromArray(values, indexAppMissed), NumberStyles.Any, CultureInfo.InvariantCulture, out var appMissed))
 							{
-								session.AppMissed.Add(Convert.ToBoolean(appMissed));
+								sessionRun.CaptureData.AppMissed[arrayIndex] = Convert.ToBoolean(appMissed);
 							}
 							else
 							{
-								session.AppMissed.Add(true);
+								sessionRun.CaptureData.AppMissed[arrayIndex] = true;
 							}
 						}
 
@@ -323,7 +313,7 @@ namespace CapFrameX.Data
 						{
 							if (double.TryParse(GetStringFromArray(values, indexDisplayTimes), NumberStyles.Any, CultureInfo.InvariantCulture, out var displayTime))
 							{
-								session.DisplayTimes.Add(displayTime);
+								sessionRun.CaptureData.DisplayTimes[arrayIndex] = displayTime;
 							}
 						}
 
@@ -331,7 +321,7 @@ namespace CapFrameX.Data
 						{
 							if (double.TryParse(GetStringFromArray(values, indexUntilDisplayedTimes), NumberStyles.Any, CultureInfo.InvariantCulture, out var untilDisplayTime))
 							{
-								session.UntilDisplayedTimes.Add(untilDisplayTime);
+								sessionRun.CaptureData.UntilDisplayedTimes[arrayIndex] = untilDisplayTime;
 							}
 						}
 
@@ -339,7 +329,7 @@ namespace CapFrameX.Data
 						{
 							if (double.TryParse(GetStringFromArray(values, indexMsInPresentAPI), NumberStyles.Any, CultureInfo.InvariantCulture, out var inPresentAPITime))
 							{
-								session.InPresentAPITimes.Add(inPresentAPITime);
+								sessionRun.CaptureData.InPresentAPITimes[arrayIndex] =  inPresentAPITime;
 							}
 						}
 
@@ -347,7 +337,7 @@ namespace CapFrameX.Data
 						{
 							if (double.TryParse(GetStringFromArray(values, indexQPCTimes), NumberStyles.Any, CultureInfo.InvariantCulture, out var qPCTime))
 							{
-								session.QPCTimes.Add(qPCTime);
+								sessionRun.CaptureData.QPCTimes[arrayIndex] =  qPCTime;
 							}
 						}
 
@@ -355,13 +345,13 @@ namespace CapFrameX.Data
 						{
 							if (double.TryParse(GetStringFromArray(values, indexFrameEnd), NumberStyles.Any, CultureInfo.InvariantCulture, out var frameEnd))
 							{
-								if (session.IsVR)
+								if (sessionRun.IsVR)
 								{
-									session.FrameEnd.Add(frameEnd);
+									sessionRun.CaptureData.FrameEnd[arrayIndex] = frameEnd;
 								}
 								else
 								{
-									session.FrameEnd.Add(frameStart + frameEnd / 1000.0);
+									sessionRun.CaptureData.FrameEnd[arrayIndex] = frameStart + frameEnd / 1000.0;
 								}
 							}
 						}
@@ -371,21 +361,23 @@ namespace CapFrameX.Data
 							if (double.TryParse(GetStringFromArray(values, indexVSync), NumberStyles.Any, CultureInfo.InvariantCulture, out var vSync)
 							 && int.TryParse(GetStringFromArray(values, indexWarpMissed), NumberStyles.Any, CultureInfo.InvariantCulture, out var warpMissed))
 							{
-								session.VSync.Add(vSync);
-								session.WarpMissed.Add(Convert.ToBoolean(warpMissed));
-								session.WarpMissesCount += warpMissed;
+								sessionRun.CaptureData.VSync[arrayIndex] =  vSync;
+								sessionRun.CaptureData.WarpMissed[arrayIndex] = Convert.ToBoolean(warpMissed);
 							}
 						}
+						arrayIndex++;
 					}
 				}
+				return new Session()
+				{
+					Runs = new List<ISessionRun>() { sessionRun }
+				};
 			}
 			catch (IOException ex)
 			{
 				_logger.LogError(ex, "Error loading Data");
 				return null;
 			}
-
-			return session;
 		}
 
 		public IList<string> LoadPresentData(string csvFile)

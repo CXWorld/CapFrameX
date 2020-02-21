@@ -161,27 +161,27 @@ namespace CapFrameX.ViewModel
 
 			double GeMetricValue(IList<double> sequence, EMetric metric) =>
 					_frametimeStatisticProvider.GetFpsMetricValue(sequence, metric);
-
-			var max = GeMetricValue(session.FrameTimes, EMetric.Max);
-			var p99_quantile = GeMetricValue(session.FrameTimes, EMetric.P99);
-			var p95_quantile = GeMetricValue(session.FrameTimes, EMetric.P95);
-			var average = GeMetricValue(session.FrameTimes, EMetric.Average);
-			var p0dot1_quantile = GeMetricValue(session.FrameTimes, EMetric.P0dot1);
-			var p0dot2_quantile = GeMetricValue(session.FrameTimes, EMetric.P0dot2);
-			var p1_quantile = GeMetricValue(session.FrameTimes, EMetric.P1);
-			var p5_quantile = GeMetricValue(session.FrameTimes, EMetric.P5);
-			var p1_averageLow = GeMetricValue(session.FrameTimes, EMetric.OnePercentLow);
-			var p0dot1_averageLow = GeMetricValue(session.FrameTimes, EMetric.ZerodotOnePercentLow);
-			var min = GeMetricValue(session.FrameTimes, EMetric.Min);
-			var adaptiveStandardDeviation = GeMetricValue(session.FrameTimes, EMetric.AdaptiveStd);
+			var frameTimes = session.Runs.SelectMany(r => r.CaptureData.FrameTimes).ToList();
+			var max = GeMetricValue(frameTimes, EMetric.Max);
+			var p99_quantile = GeMetricValue(frameTimes, EMetric.P99);
+			var p95_quantile = GeMetricValue(frameTimes, EMetric.P95);
+			var average = GeMetricValue(frameTimes, EMetric.Average);
+			var p0dot1_quantile = GeMetricValue(frameTimes, EMetric.P0dot1);
+			var p0dot2_quantile = GeMetricValue(frameTimes, EMetric.P0dot2);
+			var p1_quantile = GeMetricValue(frameTimes, EMetric.P1);
+			var p5_quantile = GeMetricValue(frameTimes, EMetric.P5);
+			var p1_averageLow = GeMetricValue(frameTimes, EMetric.OnePercentLow);
+			var p0dot1_averageLow = GeMetricValue(frameTimes, EMetric.ZerodotOnePercentLow);
+			var min = GeMetricValue(frameTimes, EMetric.Min);
+			var adaptiveStandardDeviation = GeMetricValue(frameTimes, EMetric.AdaptiveStd);
 
 			var reportInfo = new ReportInfo()
 			{
 				Game = recordInfo.GameName,
 				Date = recordInfo.CreationDate,
 				Time = recordInfo.CreationTime,
-				NumberOfSamples = session.FrameTimes.Count,
-				RecordTime = Math.Round(session.LastFrameTime, 2).ToString(CultureInfo.InvariantCulture),
+				NumberOfSamples = frameTimes.Count,
+				RecordTime = Math.Round(frameTimes.Last(), 2).ToString(CultureInfo.InvariantCulture),
 				Cpu = recordInfo.ProcessorName == null ? "" : recordInfo.ProcessorName.Trim(new Char[] { ' ', '"' }),
 				GraphicCard = recordInfo.GraphicCardName == null ? "" : recordInfo.GraphicCardName.Trim(new Char[] { ' ', '"' }),
 				Ram = recordInfo.SystemRamInfo == null ? "" : recordInfo.SystemRamInfo.Trim(new Char[] { ' ', '"' }),

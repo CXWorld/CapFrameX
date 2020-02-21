@@ -266,12 +266,12 @@ namespace CapFrameX.ViewModel
 				return;
 
 
-			List<double> frametimes = session?.FrameTimes;
+			var frametimes = session.Runs.SelectMany(r => r.CaptureData.FrameTimes).ToList();
 
 			if (session == null)
 			{
 				var localSession = _recordManager.LoadData(recordInfo.FullPath);
-				frametimes = localSession?.FrameTimes;
+				frametimes = localSession.Runs.SelectMany(r => r.CaptureData.FrameTimes).ToList();
 			}
 
 			var metricAnalysis = _statisticProvider
@@ -302,7 +302,7 @@ namespace CapFrameX.ViewModel
 			foreach (var recordInfo in _fileRecordInfoList)
 			{
 				var localSession = _recordManager.LoadData(recordInfo.FullPath);
-				var frametimes = localSession?.FrameTimes;
+				var frametimes = localSession.Runs.SelectMany(r => r.CaptureData.FrameTimes).ToList();
 
 				var metricAnalysis = _statisticProvider
 					.GetMetricAnalysis(frametimes, SelectedSecondMetric.ConvertToString(),
@@ -338,7 +338,7 @@ namespace CapFrameX.ViewModel
 			foreach (var recordInfo in _fileRecordInfoList)
 			{
 				var localSession = _recordManager.LoadData(recordInfo.FullPath);
-				var frametimes = localSession?.FrameTimes;
+				var frametimes = localSession.Runs.SelectMany(r => r.CaptureData.FrameTimes).ToList();
 				concatedFrametimesInclude.AddRange(frametimes);
 			}
 
@@ -364,7 +364,7 @@ namespace CapFrameX.ViewModel
 			foreach (var recordInfo in _fileRecordInfoList.Where((x, i) => !outlierFlags[i]))
 			{
 				var localSession = _recordManager.LoadData(recordInfo.FullPath);
-				var frametimes = localSession?.FrameTimes;
+				var frametimes = localSession.Runs.SelectMany(r => r.CaptureData.FrameTimes).ToList();
 				concatedFrametimesExclude.AddRange(frametimes);
 			}
 

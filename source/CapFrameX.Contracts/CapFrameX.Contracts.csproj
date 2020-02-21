@@ -72,6 +72,10 @@
     <Compile Include="Aggregation\IAggregationEntry.cs" />
     <Compile Include="Configuration\IAppConfiguration.cs" />
     <Compile Include="Data\ISession.cs" />
+    <Compile Include="Data\ISessionCaptureData.cs" />
+    <Compile Include="Data\ISessionHeader.cs" />
+    <Compile Include="Data\ISessionRun.cs" />
+    <Compile Include="Data\ISessionSensorData.cs" />
     <Compile Include="Data\ISystemInfoEntry.cs" />
     <Compile Include="Data\IWebVersionProvider.cs" />
     <Compile Include="Data\IAppVersionProvider.cs" />
