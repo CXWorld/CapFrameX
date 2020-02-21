@@ -9,10 +9,26 @@ using System.Windows;
 
 namespace CapFrameX.Data
 {
-	public class SessionHeader : ISessionHeader
+	public class SessionInfo : ISessionInfo
 	{
 		public Version AppVersion { get; set; }
 		public string Cpu { get; set; }
+		public Guid Id { get; set; }
+		public string Processor { get; set; }
+		public string GameName { get; set; }
+		public string ProcessName { get; set; }
+		public DateTime CreationDate { get; set; }
+		public string Motherboard { get; set; }
+		public string OS { get; set; }
+		public string SystemRam { get; set; }
+		public string BaseDriverVersion { get; set; }
+		public string DriverPackage { get; set; }
+		public string GPU { get; set; }
+		public int GPUCount { get; set; }
+		public int GpuCoreClock { get; set; }
+		public int GpuMemoryClock { get; set; }
+		public string Comment { get; set; }
+		public string IsAggregated { get; set; }
 	}
 
 	public class SessionRun : ISessionRun
@@ -58,6 +74,44 @@ namespace CapFrameX.Data
 			VSync = new double[numberOfCapturePoints];
 			WarpMissed = new bool[numberOfCapturePoints];
 		}
+
+		public IEnumerable<CaptureDataEntry> LineWise()
+		{
+			for(int i = 0; i < FrameTimes.Count(); i++)
+			{
+				yield return new CaptureDataEntry()
+				{
+					AppMissed = AppMissed[i],
+					DisplayTime = DisplayTimes[i],
+					FrameEnd = FrameEnd[i],
+					FrameStart = FrameStart[i],
+					FrameTime = FrameTimes[i],
+					InPresentAPITime = InPresentAPITimes[i],
+					QPCTime = QPCTimes[i],
+					ReprojectionEnd = ReprojectionEnd[i],
+					ReprojectionStart = ReprojectionStart[i],
+					ReprojectionTime = ReprojectionTimes[i],
+					VSync = VSync[i],
+					WarpMissed = WarpMissed[i]
+				};
+			}
+		}
+	}
+
+	public struct CaptureDataEntry {
+		public bool AppMissed { get; set; }
+		public double DisplayTime { get; set; }
+		public double FrameEnd { get; set; }
+		public double FrameStart { get; set; }
+		public double FrameTime { get; set; }
+		public double InPresentAPITime { get; set; }
+		public double QPCTime { get; set; }
+		public double ReprojectionEnd { get; set; }
+		public double ReprojectionStart { get; set; }
+		public double ReprojectionTime { get; set; }
+		public double UntilDisplayedTime { get; set; }
+		public double VSync { get; set; }
+		public bool WarpMissed { get; set; }
 	}
 
 	public class SessionSensorData : ISessionSensorData
@@ -72,7 +126,7 @@ namespace CapFrameX.Data
 
 	public sealed class Session : ISession
 	{
-		public ISessionHeader Header { get; set; } = new SessionHeader();
+		public ISessionInfo Header { get; set; } = new SessionInfo();
 		public List<ISessionRun> Runs { get; set; } = new List<ISessionRun>();
 	}
 

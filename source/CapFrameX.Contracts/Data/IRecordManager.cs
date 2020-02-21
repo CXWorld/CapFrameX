@@ -25,7 +25,7 @@ namespace CapFrameX.Contracts.Data
 		void UpdateCustomData(IFileRecordInfo recordInfo, string customCpuInfo,
 			string customGpuInfo, string customRamInfo, string customGameName, string customComment);
 		List<ISystemInfoEntry> GetSystemInfos(IFileRecordInfo recordInfo);
-		ISession LoadData(string csvFile);
+		ISession LoadData(string file);
 		IList<string> LoadPresentData(string csvFile);
 
 		string GetProcessNameFromDataLine(string dataLine);

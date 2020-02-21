@@ -73,7 +73,7 @@
     <Compile Include="Configuration\IAppConfiguration.cs" />
     <Compile Include="Data\ISession.cs" />
     <Compile Include="Data\ISessionCaptureData.cs" />
-    <Compile Include="Data\ISessionHeader.cs" />
+    <Compile Include="Data\ISessionInfo.cs" />
     <Compile Include="Data\ISessionRun.cs" />
     <Compile Include="Data\ISessionSensorData.cs" />
     <Compile Include="Data\ISystemInfoEntry.cs" />

@@ -15,7 +15,7 @@ using System.Text.RegularExpressions;
 
 namespace CapFrameX.Data
 {
-	public class RecordManager: IRecordManager
+	public class RecordManager : IRecordManager
 	{
 		private readonly ILogger<RecordManager> _logger;
 		private readonly IAppConfiguration _appConfiguration;
@@ -106,7 +106,8 @@ namespace CapFrameX.Data
 					File.WriteAllLines(recordInfo.FullPath, headerLines.Concat(lines));
 				}
 			}
-			catch(Exception ex) {
+			catch (Exception ex)
+			{
 				_logger.LogError(ex, "Error writing Lines");
 			}
 		}
@@ -153,225 +154,53 @@ namespace CapFrameX.Data
 			return systemInfos;
 		}
 
-		public ISession LoadData(string csvFile)
+		public ISession LoadData(string path)
 		{
-			_logger.LogInformation("Loading data from: {path}", csvFile);
-			if (string.IsNullOrWhiteSpace(csvFile))
+			_logger.LogInformation("Loading data from: {path}", path);
+			if (string.IsNullOrWhiteSpace(path))
+			{
+				return null;
+			}
+			var fileInfo = new FileInfo(path);
+
+			if (!fileInfo.Exists)
 			{
 				return null;
 			}
 
-			if (!File.Exists(csvFile))
+			if (fileInfo.Length == 0)
 			{
 				return null;
 			}
 
-			if (new FileInfo(csvFile).Length == 0)
+			switch (fileInfo.Extension)
 			{
-				return null;
+				case ".json":
+					return null;
+				case ".csv":
+					return LoadSessionFromCSV(fileInfo);
+				default:
+					return null;
 			}
+		}
 
-
-			int index = csvFile.LastIndexOf('\\');
-
+		private ISession LoadSessionFromCSV(FileInfo csvFile)
+		{
 			try
 			{
-				var sessionRun = new SessionRun()
+				using (var reader = new StreamReader(csvFile.FullName))
 				{
-					Filename = csvFile.Substring(index + 1)
-				};
-				using (var reader = new StreamReader(csvFile))
-				{
-					var regEx = new Regex(@"^(?!\/\/).+$", RegexOptions.Multiline);
-					var matches = regEx.Matches(reader.ReadToEnd());
-					int numberOfPresentCaptureLines = matches.Count - 1;
-
-					if (numberOfPresentCaptureLines > 0)
-					{
-						sessionRun.CaptureData = new SessionCaptureData(numberOfPresentCaptureLines);
-					}
-				}
-				using (var reader = new StreamReader(csvFile))
-				{
-					string line = reader.ReadLine();
-
-					// skip header
-					while (line.Contains(FileRecordInfo.HEADER_MARKER))
-					{
-						line = reader.ReadLine();
-					}
-
-					int indexFrameStart = -1;
-					int indexFrameTimes = -1;
-					int indexFrameEnd = -1;
-					int indexUntilDisplayedTimes = -1;
-					int indexVSync = -1;
-					int indexAppMissed = -1;
-					int indexWarpMissed = -1;
-					int indexMsInPresentAPI = -1;
-					int indexDisplayTimes = -1;
-					int indexQPCTimes = -1;
-
-					var metrics = line.Split(',');
-					for (int i = 0; i < metrics.Count(); i++)
-					{
-						if (string.Compare(metrics[i], "AppRenderStart") == 0 || string.Compare(metrics[i], "TimeInSeconds") == 0)
-						{
-							indexFrameStart = i;
-						}
-						// MsUntilRenderComplete needs to be added to AppRenderStart to get the timestamp
-						if (string.Compare(metrics[i], "AppRenderEnd") == 0 || string.Compare(metrics[i], "MsUntilRenderComplete") == 0)
-						{
-							indexFrameEnd = i;
-						}
-						if (string.Compare(metrics[i], "MsBetweenAppPresents") == 0 || string.Compare(metrics[i], "MsBetweenPresents") == 0)
-						{
-							indexFrameTimes = i;
-						}
-						if (string.Compare(metrics[i], "MsUntilDisplayed") == 0)
-						{
-							indexUntilDisplayedTimes = i;
-						}
-						if (string.Compare(metrics[i], "VSync") == 0)
-						{
-							indexVSync = i;
-							sessionRun.IsVR = true;
-						}
-						if (string.Compare(metrics[i], "AppMissed") == 0 || string.Compare(metrics[i], "Dropped") == 0)
-						{
-							indexAppMissed = i;
-						}
-						if (string.Compare(metrics[i], "WarpMissed") == 0 || string.Compare(metrics[i], "LsrMissed") == 0)
-						{
-							indexWarpMissed = i;
-						}
-						if (string.Compare(metrics[i], "MsInPresentAPI") == 0)
-						{
-							indexMsInPresentAPI = i;
-						}
-						if (string.Compare(metrics[i], "MsBetweenDisplayChange") == 0)
-						{
-							indexDisplayTimes = i;
-						}
-						if (string.Compare(metrics[i], "QPCTime") == 0)
-						{
-							indexQPCTimes = i;
-						}
-					}
-
-					int lineCount = 0;
-					int arrayIndex = 0;
+					var lines = new List<string>();
 					while (!reader.EndOfStream)
 					{
-						line = reader.ReadLine();
-						var lineCharList = new List<char>();
-						lineCount++;
-						string[] values = new string[0];
-
-						if (lineCount < 2)
-						{
-							int isInner = -1;
-							for (int i = 0; i < line.Length; i++)
-							{
-								if (line[i] == '"')
-									isInner *= -1;
-
-								if (!(line[i] == ',' && isInner == 1))
-									lineCharList.Add(line[i]);
-
-							}
-
-							line = new string(lineCharList.ToArray());
-						}
-
-						values = line.Split(',');
-						double frameStart = 0;
-
-						if (indexFrameStart > 0 && indexFrameTimes > 0)
-						{
-							if (double.TryParse(GetStringFromArray(values, indexFrameStart), NumberStyles.Any, CultureInfo.InvariantCulture, out frameStart)
-								&& double.TryParse(GetStringFromArray(values, indexFrameTimes), NumberStyles.Any, CultureInfo.InvariantCulture, out var frameTime))
-							{
-								sessionRun.CaptureData.FrameStart[arrayIndex] = frameStart;
-								sessionRun.CaptureData.FrameTimes[arrayIndex] = frameTime;
-							}
-						}
-
-						if (indexAppMissed > 0)
-						{
-							if (int.TryParse(GetStringFromArray(values, indexAppMissed), NumberStyles.Any, CultureInfo.InvariantCulture, out var appMissed))
-							{
-								sessionRun.CaptureData.AppMissed[arrayIndex] = Convert.ToBoolean(appMissed);
-							}
-							else
-							{
-								sessionRun.CaptureData.AppMissed[arrayIndex] = true;
-							}
-						}
-
-						if (indexDisplayTimes > 0)
-						{
-							if (double.TryParse(GetStringFromArray(values, indexDisplayTimes), NumberStyles.Any, CultureInfo.InvariantCulture, out var displayTime))
-							{
-								sessionRun.CaptureData.DisplayTimes[arrayIndex] = displayTime;
-							}
-						}
-
-						if (indexUntilDisplayedTimes > 0)
-						{
-							if (double.TryParse(GetStringFromArray(values, indexUntilDisplayedTimes), NumberStyles.Any, CultureInfo.InvariantCulture, out var untilDisplayTime))
-							{
-								sessionRun.CaptureData.UntilDisplayedTimes[arrayIndex] = untilDisplayTime;
-							}
-						}
-
-						if (indexMsInPresentAPI > 0)
-						{
-							if (double.TryParse(GetStringFromArray(values, indexMsInPresentAPI), NumberStyles.Any, CultureInfo.InvariantCulture, out var inPresentAPITime))
-							{
-								sessionRun.CaptureData.InPresentAPITimes[arrayIndex] =  inPresentAPITime;
-							}
-						}
-
-						if (indexQPCTimes > 0)
-						{
-							if (double.TryParse(GetStringFromArray(values, indexQPCTimes), NumberStyles.Any, CultureInfo.InvariantCulture, out var qPCTime))
-							{
-								sessionRun.CaptureData.QPCTimes[arrayIndex] =  qPCTime;
-							}
-						}
-
-						if (indexFrameEnd > 0)
-						{
-							if (double.TryParse(GetStringFromArray(values, indexFrameEnd), NumberStyles.Any, CultureInfo.InvariantCulture, out var frameEnd))
-							{
-								if (sessionRun.IsVR)
-								{
-									sessionRun.CaptureData.FrameEnd[arrayIndex] = frameEnd;
-								}
-								else
-								{
-									sessionRun.CaptureData.FrameEnd[arrayIndex] = frameStart + frameEnd / 1000.0;
-								}
-							}
-						}
-
-						if (indexVSync > 0 && indexWarpMissed > 0)
-						{
-							if (double.TryParse(GetStringFromArray(values, indexVSync), NumberStyles.Any, CultureInfo.InvariantCulture, out var vSync)
-							 && int.TryParse(GetStringFromArray(values, indexWarpMissed), NumberStyles.Any, CultureInfo.InvariantCulture, out var warpMissed))
-							{
-								sessionRun.CaptureData.VSync[arrayIndex] =  vSync;
-								sessionRun.CaptureData.WarpMissed[arrayIndex] = Convert.ToBoolean(warpMissed);
-							}
-						}
-						arrayIndex++;
+						lines.Add(reader.ReadLine());
 					}
+					var sessionRun = ConvertPresentDataLinesToSessionRun(lines.SkipWhile(line => line.Contains(FileRecordInfo.HEADER_MARKER)));
+					return new Session()
+					{
+						Runs = new List<ISessionRun>() { sessionRun }
+					};
 				}
-				return new Session()
-				{
-					Runs = new List<ISessionRun>() { sessionRun }
-				};
 			}
 			catch (IOException ex)
 			{
@@ -808,6 +637,181 @@ namespace CapFrameX.Data
 			}
 
 			return false;
+		}
+
+		private ISessionRun ConvertPresentDataLinesToSessionRun(IEnumerable<string> presentLines)
+		{
+			var sessionRun = new SessionRun();
+
+			int indexFrameStart = -1;
+			int indexFrameTimes = -1;
+			int indexFrameEnd = -1;
+			int indexUntilDisplayedTimes = -1;
+			int indexVSync = -1;
+			int indexAppMissed = -1;
+			int indexWarpMissed = -1;
+			int indexMsInPresentAPI = -1;
+			int indexDisplayTimes = -1;
+			int indexQPCTimes = -1;
+
+			var headerLine = presentLines.First();
+
+			var metrics = headerLine.Split(',');
+			for (int i = 0; i < metrics.Count(); i++)
+			{
+				if (string.Compare(metrics[i], "AppRenderStart") == 0 || string.Compare(metrics[i], "TimeInSeconds") == 0)
+				{
+					indexFrameStart = i;
+				}
+				// MsUntilRenderComplete needs to be added to AppRenderStart to get the timestamp
+				if (string.Compare(metrics[i], "AppRenderEnd") == 0 || string.Compare(metrics[i], "MsUntilRenderComplete") == 0)
+				{
+					indexFrameEnd = i;
+				}
+				if (string.Compare(metrics[i], "MsBetweenAppPresents") == 0 || string.Compare(metrics[i], "MsBetweenPresents") == 0)
+				{
+					indexFrameTimes = i;
+				}
+				if (string.Compare(metrics[i], "MsUntilDisplayed") == 0)
+				{
+					indexUntilDisplayedTimes = i;
+				}
+				if (string.Compare(metrics[i], "VSync") == 0)
+				{
+					indexVSync = i;
+					sessionRun.IsVR = true;
+				}
+				if (string.Compare(metrics[i], "AppMissed") == 0 || string.Compare(metrics[i], "Dropped") == 0)
+				{
+					indexAppMissed = i;
+				}
+				if (string.Compare(metrics[i], "WarpMissed") == 0 || string.Compare(metrics[i], "LsrMissed") == 0)
+				{
+					indexWarpMissed = i;
+				}
+				if (string.Compare(metrics[i], "MsInPresentAPI") == 0)
+				{
+					indexMsInPresentAPI = i;
+				}
+				if (string.Compare(metrics[i], "MsBetweenDisplayChange") == 0)
+				{
+					indexDisplayTimes = i;
+				}
+				if (string.Compare(metrics[i], "QPCTime") == 0)
+				{
+					indexQPCTimes = i;
+				}
+			}
+
+			var captureData = new SessionCaptureData(presentLines.Count() - 1); // lines minus headerline
+
+			var dataLines = presentLines.Skip(1).ToArray();
+			for (int lineNo = 0; lineNo < dataLines.Count(); lineNo++)
+			{
+				string line = dataLines[lineNo];
+				var lineCharList = new List<char>();
+				string[] values = new string[0];
+
+				if (lineNo == 0)
+				{
+					int isInner = -1;
+					for (int i = 0; i < line.Length; i++)
+					{
+						if (line[i] == '"')
+							isInner *= -1;
+
+						if (!(line[i] == ',' && isInner == 1))
+							lineCharList.Add(line[i]);
+
+					}
+
+					line = new string(lineCharList.ToArray());
+				}
+
+				values = line.Split(',');
+				double frameStart = 0;
+
+				if (indexFrameStart > 0 && indexFrameTimes > 0)
+				{
+					if (double.TryParse(GetStringFromArray(values, indexFrameStart), NumberStyles.Any, CultureInfo.InvariantCulture, out frameStart)
+						&& double.TryParse(GetStringFromArray(values, indexFrameTimes), NumberStyles.Any, CultureInfo.InvariantCulture, out var frameTime))
+					{
+						captureData.FrameStart[lineNo] = frameStart;
+						captureData.FrameTimes[lineNo] = frameTime;
+					}
+				}
+
+				if (indexAppMissed > 0)
+				{
+					if (int.TryParse(GetStringFromArray(values, indexAppMissed), NumberStyles.Any, CultureInfo.InvariantCulture, out var appMissed))
+					{
+						captureData.AppMissed[lineNo] = Convert.ToBoolean(appMissed);
+					}
+					else
+					{
+						captureData.AppMissed[lineNo] = true;
+					}
+				}
+
+				if (indexDisplayTimes > 0)
+				{
+					if (double.TryParse(GetStringFromArray(values, indexDisplayTimes), NumberStyles.Any, CultureInfo.InvariantCulture, out var displayTime))
+					{
+						captureData.DisplayTimes[lineNo] = displayTime;
+					}
+				}
+
+				if (indexUntilDisplayedTimes > 0)
+				{
+					if (double.TryParse(GetStringFromArray(values, indexUntilDisplayedTimes), NumberStyles.Any, CultureInfo.InvariantCulture, out var untilDisplayTime))
+					{
+						captureData.UntilDisplayedTimes[lineNo] = untilDisplayTime;
+					}
+				}
+
+				if (indexMsInPresentAPI > 0)
+				{
+					if (double.TryParse(GetStringFromArray(values, indexMsInPresentAPI), NumberStyles.Any, CultureInfo.InvariantCulture, out var inPresentAPITime))
+					{
+						captureData.InPresentAPITimes[lineNo] = inPresentAPITime;
+					}
+				}
+
+				if (indexQPCTimes > 0)
+				{
+					if (double.TryParse(GetStringFromArray(values, indexQPCTimes), NumberStyles.Any, CultureInfo.InvariantCulture, out var qPCTime))
+					{
+						captureData.QPCTimes[lineNo] = qPCTime;
+					}
+				}
+
+				if (indexFrameEnd > 0)
+				{
+					if (double.TryParse(GetStringFromArray(values, indexFrameEnd), NumberStyles.Any, CultureInfo.InvariantCulture, out var frameEnd))
+					{
+						if (sessionRun.IsVR)
+						{
+							captureData.FrameEnd[lineNo] = frameEnd;
+						}
+						else
+						{
+							captureData.FrameEnd[lineNo] = frameStart + frameEnd / 1000.0;
+						}
+					}
+				}
+
+				if (indexVSync > 0 && indexWarpMissed > 0)
+				{
+					if (double.TryParse(GetStringFromArray(values, indexVSync), NumberStyles.Any, CultureInfo.InvariantCulture, out var vSync)
+					 && int.TryParse(GetStringFromArray(values, indexWarpMissed), NumberStyles.Any, CultureInfo.InvariantCulture, out var warpMissed))
+					{
+						captureData.VSync[lineNo] = vSync;
+						captureData.WarpMissed[lineNo] = Convert.ToBoolean(warpMissed);
+					}
+				}
+			}
+			sessionRun.CaptureData = captureData;
+			return sessionRun;
 		}
 	}
 }
