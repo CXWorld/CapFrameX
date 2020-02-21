@@ -757,11 +757,12 @@ namespace CapFrameX.ViewModel
 			string infoText = string.Empty;
 			var session = _recordManager.LoadData(fileRecordInfo.FullPath);
 			var frameTimes = session.Runs.SelectMany(r => r.CaptureData.MsBetweenPresents).ToList();
+			var recordTime = session.Runs.SelectMany(r => r.CaptureData.TimeInSeconds).Last();
 			if (session != null)
 			{
 				var newLine = Environment.NewLine;
 				infoText += $"{fileRecordInfo.CreationDate} { fileRecordInfo.CreationTime}" + newLine +
-							$"{frameTimes.Count()} frames in {Math.Round(frameTimes.Last(), 2).ToString(CultureInfo.InvariantCulture)}s";
+							$"{frameTimes.Count()} frames in {Math.Round(recordTime, 2).ToString(CultureInfo.InvariantCulture)}s";
 			}
 
 			return new ComparisonRecordInfo

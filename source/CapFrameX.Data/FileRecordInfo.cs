@@ -49,6 +49,12 @@ namespace CapFrameX.Data
 			ProcessorName = session.Info.Processor;
 			GraphicCardName = session.Info.GPU;
 			SystemRamInfo = session.Info.SystemRam;
+			MotherboardName = session.Info.Motherboard;
+			GPUMemoryClock = session.Info.GpuMemoryClock;
+			GPUCoreClock = session.Info.GpuCoreClock;
+			DriverPackage = session.Info.DriverPackage;
+			BaseDriverVersion = session.Info.BaseDriverVersion;
+			Comment = session.Info.Comment;
 			ProcessName = session.Info.ProcessName;
 			IsAggregated = Convert.ToString(session.Runs.Count() > 1);
 			IsValid = true;

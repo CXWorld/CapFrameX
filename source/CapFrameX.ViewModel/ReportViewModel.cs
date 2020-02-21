@@ -162,6 +162,8 @@ namespace CapFrameX.ViewModel
 			double GeMetricValue(IList<double> sequence, EMetric metric) =>
 					_frametimeStatisticProvider.GetFpsMetricValue(sequence, metric);
 			var frameTimes = session.Runs.SelectMany(r => r.CaptureData.MsBetweenPresents).ToList();
+			var recordTime = session.Runs.SelectMany(r => r.CaptureData.TimeInSeconds).Last();
+
 			var max = GeMetricValue(frameTimes, EMetric.Max);
 			var p99_quantile = GeMetricValue(frameTimes, EMetric.P99);
 			var p95_quantile = GeMetricValue(frameTimes, EMetric.P95);
@@ -181,7 +183,7 @@ namespace CapFrameX.ViewModel
 				Date = recordInfo.CreationDate,
 				Time = recordInfo.CreationTime,
 				NumberOfSamples = frameTimes.Count,
-				RecordTime = Math.Round(frameTimes.Last(), 2).ToString(CultureInfo.InvariantCulture),
+				RecordTime = Math.Round(recordTime, 2).ToString(CultureInfo.InvariantCulture),
 				Cpu = recordInfo.ProcessorName == null ? "" : recordInfo.ProcessorName.Trim(new Char[] { ' ', '"' }),
 				GraphicCard = recordInfo.GraphicCardName == null ? "" : recordInfo.GraphicCardName.Trim(new Char[] { ' ', '"' }),
 				Ram = recordInfo.SystemRamInfo == null ? "" : recordInfo.SystemRamInfo.Trim(new Char[] { ' ', '"' }),
