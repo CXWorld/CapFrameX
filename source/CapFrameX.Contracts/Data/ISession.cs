@@ -6,7 +6,7 @@ namespace CapFrameX.Contracts.Data
 {
 	public interface ISession
 	{
-		ISessionInfo Header { get; set; }
+		ISessionInfo Info { get; set; }
 		List<ISessionRun> Runs { get; set; }
 	}
 }

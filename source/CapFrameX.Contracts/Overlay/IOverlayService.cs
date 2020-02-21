@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using CapFrameX.Contracts.Data;
+using System.Collections.Generic;
 using System.Reactive.Subjects;
 
 namespace CapFrameX.Contracts.Overlay
@@ -37,7 +38,7 @@ namespace CapFrameX.Contracts.Overlay
 
 		void ResetHistory();
 
-		void AddRunToHistory(List<string> captureData);
+		void AddRunToHistory(ISessionRun captureData, string process);
 
 		void SetRunHistoryAggregation(string aggregation);
 

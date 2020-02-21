@@ -384,17 +384,19 @@ namespace CapFrameX.ViewModel
 			// write aggregated file
 			Task.Run(() =>
 			{
+				string process = string.Empty;
 				var filteredFileRecordInfoList = _fileRecordInfoList.Where((x, i) => !outlierFlags[i]);
-				var representiveHeader = _recordManager.CreateHeaderLinesFromRecordInfo(filteredFileRecordInfoList.First());
 
-				IList<IList<string>> presentDataList = new List<IList<string>>();
+				var runs = new List<ISessionRun>();
 
 				foreach (var recordInfo in filteredFileRecordInfoList)
 				{
-					presentDataList.Add(_recordManager.LoadPresentData(recordInfo.FullPath));
+					var otherSession = _recordManager.LoadData(recordInfo.FullPath);
+					process = otherSession.Info.ProcessName;
+					runs.AddRange(otherSession.Runs);
 				}
 
-				_recordManager.SaveAggregatedPresentData(presentDataList, representiveHeader);
+				_recordManager.SaveSessionRunsToFile(runs, null, process);
  			});
 		}
 

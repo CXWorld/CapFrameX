@@ -9,10 +9,7 @@ namespace CapFrameX.Contracts.Data
 
 		IList<IFileRecordInfo> GetFileRecordInfoList();
 
-		bool SavePresentData(IList<string> recordLines, string filePath, string processNamem,
-			bool IsAggregated = false, IList<string> externalHeaderLines = null);
-
-		bool SaveAggregatedPresentData(IList<IList<string>> aggregatedCaptureData, IList<string> externalHeaderLines = null);
+		bool SaveSessionRunsToFile(IEnumerable<ISessionRun> runs, string filePath, string processName);
 
 		void AddGameNameToMatchingList(string processName, string gameName);
 
@@ -28,13 +25,8 @@ namespace CapFrameX.Contracts.Data
 		ISession LoadData(string file);
 		IList<string> LoadPresentData(string csvFile);
 
-		string GetProcessNameFromDataLine(string dataLine);
-		long GetQpcTimeFromDataLine(string dataLine);
-		string GetProcessIdFromDataLine(string dataLine);
-
-		double GetStartTimeFromDataLine(string dataLine);
-
 		double GetFrameTimeFromDataLine(string dataLine);
+		ISessionRun ConvertPresentDataLinesToSessionRun(IEnumerable<string> presentLines);
 
 	}
 }

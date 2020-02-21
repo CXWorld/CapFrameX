@@ -30,7 +30,7 @@ namespace CapFrameX.Overlay
 		private IDisposable _disposableCountdown;
 
 		private IList<string> _runHistory = new List<string>();
-		private IList<IList<string>> _captureDataHistory = new List<IList<string>>();
+		private IList<ISessionRun> _captureDataHistory = new List<ISessionRun>();
 		private IList<IList<double>> _frametimeHistory = new List<IList<double>>();
 		private bool[] _runHistoryOutlierFlags;
 		private int _refreshPeriod;
@@ -161,10 +161,9 @@ namespace CapFrameX.Overlay
 			SetRunHistoryOutlierFlags(_runHistoryOutlierFlags);
 		}
 
-		public void AddRunToHistory(List<string> captureData)
+		public void AddRunToHistory(ISessionRun sessionRun, string process)
 		{
-			var frametimes = captureData.Select(line =>
-				_recordManager.GetFrameTimeFromDataLine(line)).ToList();
+			var frametimes = sessionRun.CaptureData.FrameTimes;
 
 			if (RunHistoryCount == _numberOfRuns)
 			{
@@ -209,7 +208,7 @@ namespace CapFrameX.Overlay
 				SetRunHistory(_runHistory.ToArray());
 
 				// capture data history
-				_captureDataHistory.Add(captureData);
+				_captureDataHistory.Add(sessionRun);
 
 				// frametime history
 				_frametimeHistory.Add(frametimes);
@@ -234,7 +233,7 @@ namespace CapFrameX.Overlay
 						{
 							await SetTaskDelayOffset().ContinueWith(_ =>
 							{
-								_recordManager.SaveAggregatedPresentData(_captureDataHistory);
+								_recordManager.SaveSessionRunsToFile(_captureDataHistory, null, process);
 							}, CancellationToken.None, TaskContinuationOptions.RunContinuationsAsynchronously, TaskScheduler.Default);
 						});
 					}

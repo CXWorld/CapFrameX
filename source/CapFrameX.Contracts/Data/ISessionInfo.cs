@@ -20,6 +20,6 @@ namespace CapFrameX.Contracts.Data
 		int GpuCoreClock { get; set; }
 		int GpuMemoryClock { get; set; }
 		string Comment { get; set; }
-		string IsAggregated { get; set; }
+		bool IsAggregated { get; set; }
 	}
 }

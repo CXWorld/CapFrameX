@@ -12,7 +12,6 @@ namespace CapFrameX.Data
 	public class SessionInfo : ISessionInfo
 	{
 		public Version AppVersion { get; set; }
-		public string Cpu { get; set; }
 		public Guid Id { get; set; }
 		public string Processor { get; set; }
 		public string GameName { get; set; }
@@ -28,7 +27,7 @@ namespace CapFrameX.Data
 		public int GpuCoreClock { get; set; }
 		public int GpuMemoryClock { get; set; }
 		public string Comment { get; set; }
-		public string IsAggregated { get; set; }
+		public bool IsAggregated { get; set; }
 	}
 
 	public class SessionRun : ISessionRun
@@ -126,7 +125,7 @@ namespace CapFrameX.Data
 
 	public sealed class Session : ISession
 	{
-		public ISessionInfo Header { get; set; } = new SessionInfo();
+		public ISessionInfo Info { get; set; } = new SessionInfo();
 		public List<ISessionRun> Runs { get; set; } = new List<ISessionRun>();
 	}
 

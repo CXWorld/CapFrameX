@@ -1,7 +1,9 @@
-﻿using CapFrameX.Data;
+﻿using CapFrameX.Contracts.Data;
+using CapFrameX.Data;
 using CapFrameX.PresentMonInterface;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
@@ -47,11 +49,6 @@ namespace CapFrameX.ViewModel
 				return;
 			}
 
-			if (AppConfiguration.UseRunHistory)
-			{
-				Task.Factory.StartNew(() => _overlayService.AddRunToHistory(adjustedCaptureData));
-			}
-
 			StartFillArchive();
 
 			Application.Current.Dispatcher.Invoke(new Action(() =>
@@ -65,7 +62,14 @@ namespace CapFrameX.ViewModel
 				return;
 
 			var filePath = _recordManager.GetOutputFilename(processName);
-			bool checkSave = _recordManager.SavePresentData(adjustedCaptureData, filePath, processName);
+			var sessionRun = _recordManager.ConvertPresentDataLinesToSessionRun(adjustedCaptureData);
+
+			if (AppConfiguration.UseRunHistory)
+			{
+				Task.Factory.StartNew(() => _overlayService.AddRunToHistory(sessionRun, processName));
+			}
+
+			bool checkSave = _recordManager.SaveSessionRunsToFile(new ISessionRun[] { sessionRun }, filePath, processName);
 
 			if (!checkSave)
 				AddLoggerEntry("Error while saving capture data.");
@@ -78,7 +82,7 @@ namespace CapFrameX.ViewModel
 			if (!_captureData.Any())
 				return Enumerable.Empty<string>().ToList();
 
-			var startTimeWithOffset = _recordManager.GetStartTimeFromDataLine(_captureData.First());
+			var startTimeWithOffset = GetStartTimeFromDataLine(_captureData.First());
 			var stopwatchTime = (_timestampStopCapture - _timestampStartCapture) / 1000d;
 
 			if (string.IsNullOrWhiteSpace(CaptureTimeString))
@@ -100,8 +104,8 @@ namespace CapFrameX.ViewModel
 
 			foreach (var filteredCaptureDataLine in _captureData)
 			{
-				var currentProcess = _recordManager.GetProcessNameFromDataLine(filteredCaptureDataLine);
-				var currentProcessId = _recordManager.GetProcessIdFromDataLine(filteredCaptureDataLine);
+				var currentProcess = GetProcessNameFromDataLine(filteredCaptureDataLine);
+				var currentProcessId = GetProcessIdFromDataLine(filteredCaptureDataLine);
 
 				if (!uniqueProcessIdDict.ContainsKey(currentProcess))
 				{
@@ -120,12 +124,12 @@ namespace CapFrameX.ViewModel
 
 			var filteredArchive = _captureDataArchive.Where(line =>
 				{
-					var currentProcess = _recordManager.GetProcessNameFromDataLine(line);
+					var currentProcess = GetProcessNameFromDataLine(line);
 					return currentProcess == processName && uniqueProcessIdDict[currentProcess].Count() == 1;
 				}).ToList();
 			var filteredCaptureData = _captureData.Where(line =>
 				{
-					var currentProcess = _recordManager.GetProcessNameFromDataLine(line);
+					var currentProcess = GetProcessNameFromDataLine(line);
 					return currentProcess == processName && uniqueProcessIdDict[currentProcess].Count() == 1;
 				}).ToList();
 
@@ -138,11 +142,11 @@ namespace CapFrameX.ViewModel
 			}
 
 			// Distinct archive and live stream
-			var lastArchiveTime = _recordManager.GetStartTimeFromDataLine(filteredArchive.Last());
+			var lastArchiveTime = GetStartTimeFromDataLine(filteredArchive.Last());
 			int distinctIndex = 0;
 			for (int i = 0; i < filteredCaptureData.Count; i++)
 			{
-				if (_recordManager.GetStartTimeFromDataLine(filteredCaptureData[i]) <= lastArchiveTime)
+				if (GetStartTimeFromDataLine(filteredCaptureData[i]) <= lastArchiveTime)
 					distinctIndex++;
 				else
 					break;
@@ -152,8 +156,8 @@ namespace CapFrameX.ViewModel
 				return null;
 
 			var unionCaptureData = filteredArchive.Concat(filteredCaptureData.Skip(distinctIndex)).ToList();
-			var unionCaptureDataStartTime = _recordManager.GetStartTimeFromDataLine(unionCaptureData.First());
-			var unionCaptureDataEndTime = _recordManager.GetStartTimeFromDataLine(unionCaptureData.Last());
+			var unionCaptureDataStartTime = GetStartTimeFromDataLine(unionCaptureData.First());
+			var unionCaptureDataEndTime = GetStartTimeFromDataLine(unionCaptureData.Last());
 
 			AddLoggerEntry($"Length captured data + archive in sec: " +
 				$"{ Math.Round(unionCaptureDataEndTime - unionCaptureDataStartTime, 2)}");
@@ -165,11 +169,11 @@ namespace CapFrameX.ViewModel
 			// find first dataline that fits start of valid interval
 			for (int i = 0; i < unionCaptureData.Count - 1; i++)
 			{
-				var currentQpcTime = _recordManager.GetQpcTimeFromDataLine(unionCaptureData[i + 1]);
+				var currentQpcTime = GetQpcTimeFromDataLine(unionCaptureData[i + 1]);
 
 				if (currentQpcTime >= _qpcTimeStart)
 				{
-					startTime = _recordManager.GetStartTimeFromDataLine(unionCaptureData[i]);
+					startTime = GetStartTimeFromDataLine(unionCaptureData[i]);
 					break;
 				}
 			}
@@ -184,8 +188,8 @@ namespace CapFrameX.ViewModel
 			{
 				for (int i = 0; i < unionCaptureData.Count; i++)
 				{
-					var currentqpcTime = _recordManager.GetQpcTimeFromDataLine(unionCaptureData[i]);
-					var currentTime = _recordManager.GetStartTimeFromDataLine(unionCaptureData[i]);
+					var currentqpcTime = GetQpcTimeFromDataLine(unionCaptureData[i]);
+					var currentTime = GetStartTimeFromDataLine(unionCaptureData[i]);
 
 					if (currentqpcTime >= _qpcTimeStart && currentTime - startTime <= stopwatchTime)
 						captureInterval.Add(unionCaptureData[i]);
@@ -204,7 +208,7 @@ namespace CapFrameX.ViewModel
 
 				for (int i = 0; i < unionCaptureData.Count; i++)
 				{
-					var currentStartTime = _recordManager.GetStartTimeFromDataLine(unionCaptureData[i]);
+					var currentStartTime = GetStartTimeFromDataLine(unionCaptureData[i]);
 
 					if (currentStartTime >= startTime && currentStartTime - startTime <= definedTime)
 						captureInterval.Add(unionCaptureData[i]);
@@ -212,6 +216,80 @@ namespace CapFrameX.ViewModel
 			}
 
 			return captureInterval;
+		}
+
+		private IEnumerable<string> NormalizeTimes(IEnumerable<string> recordLines)
+		{
+			string firstDataLine = recordLines.First();
+			var lines = new List<string>();
+			//start time
+			var timeStart = GetStartTimeFromDataLine(firstDataLine);
+
+			// normalize time
+			var currentLineSplit = firstDataLine.Split(',');
+			currentLineSplit[11] = "0";
+
+			lines.Add(string.Join(",", currentLineSplit));
+
+			foreach (var dataLine in recordLines.Skip(1))
+			{
+				double currentStartTime = GetStartTimeFromDataLine(dataLine);
+
+				// normalize time
+				double normalizedTime = currentStartTime - timeStart;
+
+				currentLineSplit = dataLine.Split(',');
+				currentLineSplit[11] = normalizedTime.ToString(CultureInfo.InvariantCulture);
+
+				lines.Add(string.Join(",", currentLineSplit));
+			}
+			return lines;
+		}
+		private double GetStartTimeFromDataLine(string dataLine)
+		{
+			if (string.IsNullOrWhiteSpace(dataLine))
+				return 0;
+
+			var lineSplit = dataLine.Split(',');
+			var startTime = lineSplit[11];
+
+			return Convert.ToDouble(startTime, CultureInfo.InvariantCulture);
+		}
+
+		private string GetProcessNameFromDataLine(string dataLine)
+		{
+			if (string.IsNullOrWhiteSpace(dataLine))
+				return null;
+
+			int index = dataLine.IndexOf(".exe");
+			string processName = null;
+
+			if (index > 0)
+			{
+				processName = dataLine.Substring(0, index);
+			}
+
+			return processName;
+		}
+
+		private string GetProcessIdFromDataLine(string dataLine)
+		{
+			if (string.IsNullOrWhiteSpace(dataLine))
+				return null;
+
+			var lineSplit = dataLine.Split(',');
+			return lineSplit[1];
+		}
+
+		private long GetQpcTimeFromDataLine(string dataLine)
+		{
+			if (string.IsNullOrWhiteSpace(dataLine))
+				return 0;
+
+			var lineSplit = dataLine.Split(',');
+			var qpcTime = lineSplit[17];
+
+			return Convert.ToInt64(qpcTime, CultureInfo.InvariantCulture);
 		}
 	}
 }
