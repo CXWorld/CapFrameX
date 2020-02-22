@@ -73,6 +73,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AggregationEntry.cs" />
+    <Compile Include="SessionCaptureData.cs" />
+    <Compile Include="SessionInfo.cs" />
+    <Compile Include="SessionRun.cs" />
+    <Compile Include="SessionSensorData.cs" />
     <Compile Include="WebVersionProvider.cs" />
     <Compile Include="AppVersionProvider.cs" />
     <Compile Include="ComparisonRecordInfo.cs" />
