@@ -230,7 +230,7 @@ namespace CapFrameX.Data
 					var systemInfos = GetSystemInfos(recordedFileInfo);
 					return new Session()
 					{
-						Hash = sessionRun.Hash,
+						Hash = string.Join(",", new string[] { sessionRun.Hash }).GetSha1(),
 						Runs = new List<ISessionRun>() { sessionRun },
 						Info = new SessionInfo()
 						{
