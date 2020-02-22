@@ -8,7 +8,7 @@
 		double[] TimeInSeconds { get; set; }
 		double[] MsBetweenPresents { get; set; }
 		double[] MsInPresentAPI { get; set; }
-		double[] QPCTimes { get; set; }
+		double[] QPCTime { get; set; }
 		double[] ReprojectionEnd { get; set; }
 		double[] ReprojectionStart { get; set; }
 		double[] ReprojectionTimes { get; set; }

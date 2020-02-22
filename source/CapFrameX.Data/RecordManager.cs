@@ -46,8 +46,7 @@ namespace CapFrameX.Data
 				_logger.LogError(ex, $"Error while creating {path}");
 			}
 		}
-		public void UpdateCustomData(IFileRecordInfo recordInfo, string customCpuInfo,
-			string customGpuInfo, string customRamInfo, string customGameName, string customComment)
+		public void UpdateCustomData(IFileRecordInfo recordInfo, string customCpuInfo, string customGpuInfo, string customRamInfo, string customGameName, string customComment)
 		{
 			if (recordInfo == null || customCpuInfo == null ||
 				customGpuInfo == null || customRamInfo == null || customGameName == null ||
@@ -56,36 +55,48 @@ namespace CapFrameX.Data
 
 			try
 			{
-				string[] lines = File.ReadAllLines(recordInfo.FileInfo.FullName);
-
-				if (recordInfo.HasInfoHeader)
+				if (recordInfo.FileInfo.Extension == ".json")
 				{
-					// Processor
-					int processorNameHeaderIndex = GetHeaderIndex(lines, "Processor");
-					lines[processorNameHeaderIndex] = $"{FileRecordInfo.HEADER_MARKER}Processor{FileRecordInfo.INFO_SEPERATOR}{customCpuInfo}";
+					var session = LoadSessionFromJSON(recordInfo.FileInfo);
+					session.Info.Processor = customCpuInfo;
+					session.Info.GPU = customGpuInfo;
+					session.Info.SystemRam = customRamInfo;
+					session.Info.GameName = customGameName;
+					session.Info.Comment = customComment;
 
-					// GPU
-					int graphicCardNameHeaderIndex = GetHeaderIndex(lines, "GPU");
-					lines[graphicCardNameHeaderIndex] = $"{FileRecordInfo.HEADER_MARKER}GPU{FileRecordInfo.INFO_SEPERATOR}{customGpuInfo}";
+					SaveSessionToDisk(recordInfo.FileInfo.FullName, session);
 
-					// RAM
-					int systemRamNameHeaderIndex = GetHeaderIndex(lines, "System RAM");
-					lines[systemRamNameHeaderIndex] = $"{FileRecordInfo.HEADER_MARKER}System RAM{FileRecordInfo.INFO_SEPERATOR}{customRamInfo}";
+				} else if(recordInfo.FileInfo.Extension == ".csv") {
+					string[] lines = File.ReadAllLines(recordInfo.FileInfo.FullName);
 
-					// GameName
-					int gameNameHeaderIndex = GetHeaderIndex(lines, "GameName");
-					lines[gameNameHeaderIndex] = $"{FileRecordInfo.HEADER_MARKER}GameName{FileRecordInfo.INFO_SEPERATOR}{customGameName}";
+					if (recordInfo.HasInfoHeader)
+					{
+						// Processor
+						int processorNameHeaderIndex = GetHeaderIndex(lines, "Processor");
+						lines[processorNameHeaderIndex] = $"{FileRecordInfo.HEADER_MARKER}Processor{FileRecordInfo.INFO_SEPERATOR}{customCpuInfo}";
 
-					// Comment
-					int commentNameHeaderIndex = GetHeaderIndex(lines, "Comment");
-					lines[commentNameHeaderIndex] = $"{FileRecordInfo.HEADER_MARKER}Comment{FileRecordInfo.INFO_SEPERATOR}{customComment}";
+						// GPU
+						int graphicCardNameHeaderIndex = GetHeaderIndex(lines, "GPU");
+						lines[graphicCardNameHeaderIndex] = $"{FileRecordInfo.HEADER_MARKER}GPU{FileRecordInfo.INFO_SEPERATOR}{customGpuInfo}";
 
-					File.WriteAllLines(recordInfo.FullPath, lines);
-				}
-				else
-				{
-					// Create header
-					var headerLines = new List<string>()
+						// RAM
+						int systemRamNameHeaderIndex = GetHeaderIndex(lines, "System RAM");
+						lines[systemRamNameHeaderIndex] = $"{FileRecordInfo.HEADER_MARKER}System RAM{FileRecordInfo.INFO_SEPERATOR}{customRamInfo}";
+
+						// GameName
+						int gameNameHeaderIndex = GetHeaderIndex(lines, "GameName");
+						lines[gameNameHeaderIndex] = $"{FileRecordInfo.HEADER_MARKER}GameName{FileRecordInfo.INFO_SEPERATOR}{customGameName}";
+
+						// Comment
+						int commentNameHeaderIndex = GetHeaderIndex(lines, "Comment");
+						lines[commentNameHeaderIndex] = $"{FileRecordInfo.HEADER_MARKER}Comment{FileRecordInfo.INFO_SEPERATOR}{customComment}";
+
+						File.WriteAllLines(recordInfo.FullPath, lines);
+					}
+					else
+					{
+						// Create header
+						var headerLines = new List<string>()
 					{
 						$"{FileRecordInfo.HEADER_MARKER}GameName{FileRecordInfo.INFO_SEPERATOR}{customGameName}",
 						$"{FileRecordInfo.HEADER_MARKER}ProcessName{FileRecordInfo.INFO_SEPERATOR}{recordInfo.ProcessName}",
@@ -105,7 +116,8 @@ namespace CapFrameX.Data
 						$"{FileRecordInfo.HEADER_MARKER}Comment{FileRecordInfo.INFO_SEPERATOR}{customComment}"
 					};
 
-					File.WriteAllLines(recordInfo.FullPath, headerLines.Concat(lines));
+						File.WriteAllLines(recordInfo.FullPath, headerLines.Concat(lines));
+					}
 				}
 			}
 			catch (Exception ex)
@@ -320,11 +332,11 @@ namespace CapFrameX.Data
 		{
 			try
 			{
-				if(runs.Count() > 1)
+				if (runs.Count() > 1)
 				{
 					NormalizeStartTimesOfAggragationRuns(runs);
 				}
-				if(filePath is null)
+				if (filePath is null)
 				{
 					filePath = GetOutputFilename(processName);
 				}
@@ -374,10 +386,7 @@ namespace CapFrameX.Data
 					}
 				};
 
-				File.WriteAllText(filePath, JsonConvert.SerializeObject(session, Formatting.None, new JsonSerializerSettings()
-				{
-					TypeNameHandling = TypeNameHandling.Auto
-				}));
+				SaveSessionToDisk(filePath, session);
 
 				_logger.LogInformation("{filePath} successfully written", filePath);
 				return true;
@@ -387,6 +396,14 @@ namespace CapFrameX.Data
 				_logger.LogError(ex, "Error while creating {filePath}", filePath);
 				return false;
 			}
+		}
+
+		private static void SaveSessionToDisk(string filePath, ISession session)
+		{
+			File.WriteAllText(filePath, JsonConvert.SerializeObject(session, Formatting.None, new JsonSerializerSettings()
+			{
+				TypeNameHandling = TypeNameHandling.Auto
+			}));
 		}
 
 		public void AddGameNameToMatchingList(string processName, string gameName)
@@ -627,7 +644,7 @@ namespace CapFrameX.Data
 					{
 						if (double.TryParse(GetStringFromArray(values, indexQPCTimes), NumberStyles.Any, CultureInfo.InvariantCulture, out var qPCTime))
 						{
-							captureData.QPCTimes[lineNo] = qPCTime;
+							captureData.QPCTime[lineNo] = qPCTime;
 						}
 					}
 
