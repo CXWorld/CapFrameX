@@ -12,6 +12,7 @@ namespace CapFrameX.Data
 {
 	public sealed class Session : ISession
 	{
+		public string Hash { get; set; }
 		[JsonProperty("Info")]
 		public ISessionInfo Info { get; set; } = new SessionInfo();
 		[JsonProperty("Runs")]

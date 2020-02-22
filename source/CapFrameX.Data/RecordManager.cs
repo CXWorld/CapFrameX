@@ -226,10 +226,11 @@ namespace CapFrameX.Data
 				{
 					var lines = File.ReadAllLines(csvFile.FullName);
 					var sessionRun = ConvertPresentDataLinesToSessionRun(lines.SkipWhile(line => line.Contains(FileRecordInfo.HEADER_MARKER)));
-					var recordedFileInfo = FileRecordInfo.Create(csvFile);
-					var systemInfos = GetSystemInfos(FileRecordInfo.Create(csvFile));
+					var recordedFileInfo = FileRecordInfo.Create(csvFile, sessionRun.Hash);
+					var systemInfos = GetSystemInfos(recordedFileInfo);
 					return new Session()
 					{
+						Hash = sessionRun.Hash,
 						Runs = new List<ISessionRun>() { sessionRun },
 						Info = new SessionInfo()
 						{
@@ -294,7 +295,8 @@ namespace CapFrameX.Data
 			switch (fileInfo.Extension)
 			{
 				case ".csv":
-					fileRecordInfo = FileRecordInfo.Create(fileInfo);
+					var session = LoadSessionFromCSV(fileInfo);
+					fileRecordInfo = FileRecordInfo.Create(fileInfo, session.Hash);
 					break;
 				case ".json":
 					fileRecordInfo = FileRecordInfo.Create(fileInfo, LoadSessionFromJSON(fileInfo));
@@ -374,6 +376,7 @@ namespace CapFrameX.Data
 
 				var session = new Session()
 				{
+					Hash = string.Join(",", runs.Select(r => r.Hash).OrderBy(h => h)).GetSha1(),
 					Runs = runs.ToList(),
 					Info = new SessionInfo()
 					{
@@ -501,7 +504,9 @@ namespace CapFrameX.Data
 		{
 			try
 			{
-				var sessionRun = new SessionRun();
+				var sessionRun = new SessionRun() {
+					Hash = string.Join(",", presentLines).GetSha1()
+				};
 
 				int indexFrameStart = -1;
 				int indexFrameTimes = -1;

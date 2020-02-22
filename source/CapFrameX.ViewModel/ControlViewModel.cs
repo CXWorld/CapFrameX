@@ -370,7 +370,10 @@ namespace CapFrameX.ViewModel
 
 		private void AddToRecordInfoList(IFileRecordInfo recordFileInfo)
 		{
-			if (recordFileInfo != null && !RecordInfoList.Any(info => info.Id == recordFileInfo.Id))
+			if (recordFileInfo != null && !RecordInfoList.Any(info =>
+			{
+				return info.Id == recordFileInfo.Id || info.Hash == recordFileInfo.Hash;
+			}))
 			{
 				Application.Current.Dispatcher.Invoke(new Action(() =>
 				{

@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace CapFrameX.Extensions
 {
@@ -68,6 +70,18 @@ namespace CapFrameX.Extensions
                 split.Add(curSplit);
 
             return split;
+        }
+
+        public static string GetSha1(this string value)
+        {
+            var data = Encoding.ASCII.GetBytes(value);
+            var hashData = new SHA1Managed().ComputeHash(data);
+            var hash = string.Empty;
+            foreach (var b in hashData)
+            {
+                hash += b.ToString("X2");
+            }
+            return hash;
         }
     }
 }

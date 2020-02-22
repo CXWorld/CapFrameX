@@ -28,5 +28,6 @@ namespace CapFrameX.Contracts.Data
 		bool IsValid { get; }
 		bool HasInfoHeader { get; }
 		string Id { get; }
+		string Hash { get; }
 	}
 }
