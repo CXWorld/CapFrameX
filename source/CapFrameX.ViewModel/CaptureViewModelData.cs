@@ -69,12 +69,6 @@ namespace CapFrameX.ViewModel
 			if (AppConfiguration.UseAggregation && AppConfiguration.SaveAggregationOnly)
 				return;
 
-
-			if (AppConfiguration.UseRunHistory)
-			{
-				Task.Factory.StartNew(() => _overlayService.AddRunToHistory(sessionRun, processName));
-			}
-
 			bool checkSave = _recordManager.SaveSessionRunsToFile(new ISessionRun[] { sessionRun }, filePath, processName);
 
 			if (!checkSave)
