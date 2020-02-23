@@ -1,4 +1,6 @@
 ﻿using CapFrameX.Configuration;
+using CapFrameX.Contracts.Data;
+using CapFrameX.Contracts.Statistics;
 using CapFrameX.Statistics;
 using System;
 using System.Collections.Generic;
@@ -7,7 +9,7 @@ using System.Windows;
 
 namespace CapFrameX.Data
 {
-	public sealed class Session
+	public sealed class Session : ISession
 	{
 		IStatisticProvider _frametimeStatisticProvider;
 

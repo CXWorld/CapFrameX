@@ -40,7 +40,7 @@ namespace CapFrameX.ViewModel
 		private string[] _displayTimesHistogramLabels;
 		private string[] _inputLagHistogramLabels;
 		private bool _useUpdateSession;
-		private Session _session;
+		private ISession _session;
 		private IFileRecordInfo _recordInfo;
 		private string _frametimeDisplayChangedTimeCorrelation = "0%";
 		private string _currentGameName;
@@ -312,7 +312,7 @@ namespace CapFrameX.ViewModel
 							});
 		}
 
-		private string GetCorrelation(Session currentSession)
+		private string GetCorrelation(ISession currentSession)
 		{
 			var frametimes = currentSession.FrameTimes.Where((x, i) => !_session.AppMissed[i]);
 			var displayChangedTimes = currentSession.DisplayTimes.Where((x, i) => !_session.AppMissed[i]);

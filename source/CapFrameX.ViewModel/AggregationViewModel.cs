@@ -25,10 +25,9 @@ namespace CapFrameX.ViewModel
 	public class AggregationViewModel : BindableBase, INavigationAware, IDropTarget
 	{
 		private readonly IStatisticProvider _statisticProvider;
-		private readonly IRecordDataProvider _recordDataProvider;
 		private readonly IEventAggregator _eventAggregator;
 		private readonly IAppConfiguration _appConfiguration;
-
+		private readonly IRecordManager _recordManager;
 		private bool _useUpdateSession;
 		private int _selectedAggregationEntryIndex = -1;
 		private bool _showHelpText = true;
@@ -196,14 +195,13 @@ namespace CapFrameX.ViewModel
 		public ObservableCollection<IAggregationEntry> AggregationEntries { get; private set; }
 			= new ObservableCollection<IAggregationEntry>();
 
-		public AggregationViewModel(IStatisticProvider statisticProvider, IRecordDataProvider recordDataProvider,
-			IEventAggregator eventAggregator, IAppConfiguration appConfiguration)
+		public AggregationViewModel(IStatisticProvider statisticProvider,
+			IEventAggregator eventAggregator, IAppConfiguration appConfiguration, IRecordManager recordManager)
 		{
 			_statisticProvider = statisticProvider;
-			_recordDataProvider = recordDataProvider;
 			_eventAggregator = eventAggregator;
 			_appConfiguration = appConfiguration;
-
+			_recordManager = recordManager;
 			ClearTableCommand = new DelegateCommand(OnClearTable);
 			AggregateIncludeCommand = new DelegateCommand(OnAggregateInclude);
 			AggregateExcludeCommand = new DelegateCommand(OnAggregateExclude);
@@ -252,7 +250,7 @@ namespace CapFrameX.ViewModel
 							});
 		}
 
-		private void AddAggregationEntry(IFileRecordInfo recordInfo, Session session)
+		private void AddAggregationEntry(IFileRecordInfo recordInfo, ISession session)
 		{
 			if (recordInfo != null)
 			{
@@ -272,7 +270,7 @@ namespace CapFrameX.ViewModel
 
 			if (session == null)
 			{
-				var localSession = RecordManager.LoadData(recordInfo.FullPath);
+				var localSession = _recordManager.LoadData(recordInfo.FullPath);
 				frametimes = localSession?.FrameTimes;
 			}
 
@@ -303,7 +301,7 @@ namespace CapFrameX.ViewModel
 			_supressCollectionChanged = true;
 			foreach (var recordInfo in _fileRecordInfoList)
 			{
-				var localSession = RecordManager.LoadData(recordInfo.FullPath);
+				var localSession = _recordManager.LoadData(recordInfo.FullPath);
 				var frametimes = localSession?.FrameTimes;
 
 				var metricAnalysis = _statisticProvider
@@ -339,7 +337,7 @@ namespace CapFrameX.ViewModel
 
 			foreach (var recordInfo in _fileRecordInfoList)
 			{
-				var localSession = RecordManager.LoadData(recordInfo.FullPath);
+				var localSession = _recordManager.LoadData(recordInfo.FullPath);
 				var frametimes = localSession?.FrameTimes;
 				concatedFrametimesInclude.AddRange(frametimes);
 			}
@@ -365,7 +363,7 @@ namespace CapFrameX.ViewModel
 
 			foreach (var recordInfo in _fileRecordInfoList.Where((x, i) => !outlierFlags[i]))
 			{
-				var localSession = RecordManager.LoadData(recordInfo.FullPath);
+				var localSession = _recordManager.LoadData(recordInfo.FullPath);
 				var frametimes = localSession?.FrameTimes;
 				concatedFrametimesExclude.AddRange(frametimes);
 			}
@@ -387,16 +385,16 @@ namespace CapFrameX.ViewModel
 			Task.Run(() =>
 			{
 				var filteredFileRecordInfoList = _fileRecordInfoList.Where((x, i) => !outlierFlags[i]);
-				var representiveHeader = _recordDataProvider.CreateHeaderLinesFromRecordInfo(filteredFileRecordInfoList.First());
+				var representiveHeader = _recordManager.CreateHeaderLinesFromRecordInfo(filteredFileRecordInfoList.First());
 
 				IList<IList<string>> presentDataList = new List<IList<string>>();
 
 				foreach (var recordInfo in filteredFileRecordInfoList)
 				{
-					presentDataList.Add(RecordManager.LoadPresentData(recordInfo.FullPath));
+					presentDataList.Add(_recordManager.LoadPresentData(recordInfo.FullPath));
 				}
 
-				_recordDataProvider.SaveAggregatedPresentData(presentDataList, representiveHeader);
+				_recordManager.SaveAggregatedPresentData(presentDataList, representiveHeader);
  			});
 		}
 

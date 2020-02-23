@@ -65,7 +65,7 @@ namespace CapFrameX
 			Container.Register<ICaptureService, PresentMonCaptureService>(Reuse.Singleton);
 			Container.Register<IOverlayService, OverlayService>(Reuse.Singleton);
 			Container.Register<IOverlayEntryProvider, OverlayEntryProvider>(Reuse.Singleton);
-			Container.Register<IRecordDataProvider, RecordDataProvider>(Reuse.Singleton);
+			Container.Register<IRecordManager, RecordManager>(Reuse.Singleton);
 			Container.Register<IAppVersionProvider, AppVersionProvider>(Reuse.Singleton);
 			Container.RegisterInstance<IWebVersionProvider>(new WebVersionProvider(), Reuse.Singleton);
 			Container.Register<IUpdateCheck, UpdateCheck>(Reuse.Singleton);
@@ -118,7 +118,9 @@ namespace CapFrameX
 				.Enrich.FromLogContext()
 				.WriteTo.File(
 					path: Path.Combine(path, "CapFrameX.log"),
-					fileSizeLimitBytes: 10240,
+					fileSizeLimitBytes: 1024*10000, // approx 10MB
+					rollOnFileSizeLimit: true, // if filesize is reached, it created a new file
+					retainedFileCountLimit: 10, // it keeps max 10 files
 					formatter: new CompactJsonFormatter()
 				);
 		}
