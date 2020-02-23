@@ -808,6 +808,7 @@ namespace CapFrameX.ViewModel
 			}
 
 			CaptureStateInfo = $"{SelectedProcessToCapture} selected." + Environment.NewLine + $"Press {CaptureHotkeyString} to start capture.";
+			_overlayService.SetCaptureServiceStatus("Ready to capture...");
 		}
 
 		private void AddDataLineToArchive(string dataLine)
