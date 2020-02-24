@@ -231,10 +231,8 @@ namespace CapFrameX.Overlay
 						// write aggregated file
 						Task.Run(async () =>
 						{
-							await SetTaskDelayOffset().ContinueWith(_ =>
-							{
-								_recordManager.SaveSessionRunsToFile(_captureDataHistory, null, process);
-							}, CancellationToken.None, TaskContinuationOptions.RunContinuationsAsynchronously, TaskScheduler.Default);
+							await Task.Delay(1000);
+							await _recordManager.SaveSessionRunsToFile(_captureDataHistory, process);
 						});
 					}
 				}
@@ -250,11 +248,6 @@ namespace CapFrameX.Overlay
 		{
 			_numberOfRuns = numberOfRuns;
 			ResetHistory();
-		}
-
-		private async Task SetTaskDelayOffset()
-		{
-			await Task.Delay(TimeSpan.FromMilliseconds(1000));
 		}
 
 		private void CheckRTSSRunningAndRefresh()

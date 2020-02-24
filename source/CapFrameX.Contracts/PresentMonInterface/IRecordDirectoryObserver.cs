@@ -7,20 +7,12 @@ namespace CapFrameX.Contracts.PresentMonInterface
 {
     public interface IRecordDirectoryObserver
     {
-        bool IsActive { get; set; }
+        IObservable<FileInfo> FileCreatedStream { get; }
+        IObservable<FileInfo> FileChangedStream { get; }
+        IObservable<FileInfo> FileDeletedStream { get; }
+        IObservable<IEnumerable<FileInfo>> DirectoryFilesStream { get; }
+        IObservable<DirectoryInfo> ObservingDirectoryStream { get; }
 
-		bool HasValidSource { get; }
-
-		FileSystemWatcher RecordingFileWatcher { get; }
-
-		Subject<bool> HasValidSourceStream { get; }
-
-		IObservable<FileInfo> RecordCreatedStream { get; }
-
-        IObservable<FileInfo> RecordDeletedStream { get; }
-
-		void UpdateObservedDirectory(string directory);
-
-		IEnumerable<FileInfo> GetAllRecordFileInfo();
+        void ObserveDirectory(string dir);
     }
 }
