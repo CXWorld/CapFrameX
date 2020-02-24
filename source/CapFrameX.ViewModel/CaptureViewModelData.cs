@@ -1,5 +1,4 @@
 ﻿using CapFrameX.Contracts.Data;
-using CapFrameX.Data;
 using CapFrameX.PresentMonInterface;
 using System;
 using System.Collections.Generic;
@@ -36,7 +35,8 @@ namespace CapFrameX.ViewModel
 				return;
 
 			var adjustedCaptureData = GetAdjustedCaptureData(processName);
-			var normalizedAdjustedCaptureData = NormalizeTimes(adjustedCaptureData.Skip(1)); // Skip first line to compensate the first frametime being one frame before original capture start point.
+			// Skip first line to compensate the first frametime being one frame before original capture start point.
+			var normalizedAdjustedCaptureData = NormalizeTimes(adjustedCaptureData.Skip(1));
 			var sessionRun = _recordManager.ConvertPresentDataLinesToSessionRun(normalizedAdjustedCaptureData);
 			var filePath = _recordManager.GetOutputFilename(processName);
 

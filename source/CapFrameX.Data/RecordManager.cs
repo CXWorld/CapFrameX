@@ -64,9 +64,11 @@ namespace CapFrameX.Data
 					session.Info.GameName = customGameName;
 					session.Info.Comment = customComment;
 
-					SaveSessionToDisk(recordInfo.FileInfo.FullName, session);
+					SaveSessionToFile(recordInfo.FileInfo.FullName, session);
 
-				} else if(recordInfo.FileInfo.Extension == ".csv") {
+				}
+				else if (recordInfo.FileInfo.Extension == ".csv")
+				{
 					string[] lines = File.ReadAllLines(recordInfo.FileInfo.FullName);
 
 					if (recordInfo.HasInfoHeader)
@@ -203,11 +205,13 @@ namespace CapFrameX.Data
 			try
 			{
 				var content = File.ReadAllText(fileInfo.FullName);
-				var session = JsonConvert.DeserializeObject<Session>(content, new JsonSerializerSettings() { 
+				var session = JsonConvert.DeserializeObject<Session>(content, new JsonSerializerSettings()
+				{
 					TypeNameHandling = TypeNameHandling.Auto
 				});
 				return session;
-			} catch(Exception e)
+			}
+			catch (Exception e)
 			{
 				_logger.LogError(e, "An Error occured while reading JSON Session File");
 				return null;
@@ -222,10 +226,11 @@ namespace CapFrameX.Data
 				{
 					var lines = File.ReadAllLines(csvFile.FullName);
 					var sessionRun = ConvertPresentDataLinesToSessionRun(lines.SkipWhile(line => line.Contains(FileRecordInfo.HEADER_MARKER)));
-					var recordedFileInfo = FileRecordInfo.Create(csvFile);
-					var systemInfos = GetSystemInfos(FileRecordInfo.Create(csvFile));
+					var recordedFileInfo = FileRecordInfo.Create(csvFile, sessionRun.Hash);
+					var systemInfos = GetSystemInfos(recordedFileInfo);
 					return new Session()
 					{
+						Hash = string.Join(",", new string[] { sessionRun.Hash }).GetSha1(),
 						Runs = new List<ISessionRun>() { sessionRun },
 						Info = new SessionInfo()
 						{
@@ -287,10 +292,11 @@ namespace CapFrameX.Data
 		public IFileRecordInfo GetFileRecordInfo(FileInfo fileInfo)
 		{
 			IFileRecordInfo fileRecordInfo = null;
-			switch(fileInfo.Extension)
+			switch (fileInfo.Extension)
 			{
 				case ".csv":
-					fileRecordInfo = FileRecordInfo.Create(fileInfo);
+					var session = LoadSessionFromCSV(fileInfo);
+					fileRecordInfo = FileRecordInfo.Create(fileInfo, session.Hash);
 					break;
 				case ".json":
 					fileRecordInfo = FileRecordInfo.Create(fileInfo, LoadSessionFromJSON(fileInfo));
@@ -370,6 +376,7 @@ namespace CapFrameX.Data
 
 				var session = new Session()
 				{
+					Hash = string.Join(",", runs.Select(r => r.Hash).OrderBy(h => h)).GetSha1(),
 					Runs = runs.ToList(),
 					Info = new SessionInfo()
 					{
@@ -381,14 +388,12 @@ namespace CapFrameX.Data
 						Processor = cpuInfo,
 						SystemRam = ramInfo,
 						GPU = gpuInfo,
-						IsAggregated = runs.Count() > 1,
 						AppVersion = _appVersionProvider.GetAppVersion()
 					}
 				};
 
-				SaveSessionToDisk(filePath, session);
+				SaveSessionToFile(filePath, session);
 
-				_logger.LogInformation("{filePath} successfully written", filePath);
 				return true;
 			}
 			catch (Exception ex)
@@ -398,12 +403,20 @@ namespace CapFrameX.Data
 			}
 		}
 
-		private static void SaveSessionToDisk(string filePath, ISession session)
+		private void SaveSessionToFile(string filePath, ISession session)
 		{
-			File.WriteAllText(filePath, JsonConvert.SerializeObject(session, Formatting.None, new JsonSerializerSettings()
+			try
 			{
-				TypeNameHandling = TypeNameHandling.Auto
-			}));
+				File.WriteAllText(filePath, JsonConvert.SerializeObject(session, Formatting.None, new JsonSerializerSettings()
+				{
+					TypeNameHandling = TypeNameHandling.Auto
+				}));
+				_logger.LogInformation("{filePath} successfully written", filePath);
+			}
+			catch (Exception e)
+			{
+				_logger.LogError(e, "Error writing JSON file");
+			}
 		}
 
 		public void AddGameNameToMatchingList(string processName, string gameName)
@@ -491,7 +504,9 @@ namespace CapFrameX.Data
 		{
 			try
 			{
-				var sessionRun = new SessionRun();
+				var sessionRun = new SessionRun() {
+					Hash = string.Join(",", presentLines).GetSha1()
+				};
 
 				int indexFrameStart = -1;
 				int indexFrameTimes = -1;
@@ -675,7 +690,8 @@ namespace CapFrameX.Data
 				}
 				sessionRun.CaptureData = captureData;
 				return sessionRun;
-			} catch(Exception e)
+			}
+			catch (Exception e)
 			{
 				_logger.LogError(e, "Error converting PresentData");
 				throw;
@@ -686,9 +702,9 @@ namespace CapFrameX.Data
 		{
 			double startTime = 0;
 
-			foreach(var sessionRun in sessionRuns)
+			foreach (var sessionRun in sessionRuns)
 			{
-				for(int i = 0; i < sessionRun.CaptureData.MsBetweenPresents.Count(); i++)
+				for (int i = 0; i < sessionRun.CaptureData.MsBetweenPresents.Count(); i++)
 				{
 					sessionRun.CaptureData.TimeInSeconds[i] = startTime;
 					var frameTimeInMs = 1E-03 * sessionRun.CaptureData.MsBetweenPresents[i];

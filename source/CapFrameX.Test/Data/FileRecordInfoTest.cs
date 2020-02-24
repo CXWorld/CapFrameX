@@ -11,7 +11,7 @@ namespace CapFrameX.Test.Data
         public void RecordFileValidation_OCATStandardFile_IsValidTrue()
         {
             var fileInfo = new FileInfo(@"TestRecordFiles\OCAT-MetroExodus.exe-2019-02-20T101522.csv");
-            var fileRecordInfo = FileRecordInfo.Create(fileInfo);
+            var fileRecordInfo = FileRecordInfo.Create(fileInfo, "testHash");
 
             Assert.IsTrue(fileRecordInfo.IsValid);
             Assert.IsFalse(fileRecordInfo.HasInfoHeader);
@@ -21,7 +21,7 @@ namespace CapFrameX.Test.Data
         public void RecordFileValidation_OCATCustomFilenameWithoutComment_IsValidTrue()
         {
             var fileInfo = new FileInfo(@"TestRecordFiles\CustomFilenameWithoutComment.csv");
-            var fileRecordInfo = FileRecordInfo.Create(fileInfo);
+            var fileRecordInfo = FileRecordInfo.Create(fileInfo, "testHash");
 
             Assert.IsTrue(fileRecordInfo.IsValid);
             Assert.IsFalse(fileRecordInfo.HasInfoHeader);
@@ -32,7 +32,7 @@ namespace CapFrameX.Test.Data
         public void RecordFileValidation_OCATCustomFilenameWithoutMetaDataInFilename_IsValidTrue()
         {
             var fileInfo = new FileInfo(@"TestRecordFiles\CustomFilenameWithoutMetaDataInFilename.csv");
-            var fileRecordInfo = FileRecordInfo.Create(fileInfo);
+            var fileRecordInfo = FileRecordInfo.Create(fileInfo, "testHash");
 
             Assert.IsTrue(fileRecordInfo.IsValid);
             Assert.IsFalse(fileRecordInfo.HasInfoHeader);
@@ -42,7 +42,7 @@ namespace CapFrameX.Test.Data
         public void FileRecordInfo_OCATStandardFile_CorrectSystemInfo()
         {
             var fileInfo = new FileInfo(@"TestRecordFiles\OCAT-MetroExodus.exe-2019-02-20T101522.csv");
-            var fileRecordInfo = FileRecordInfo.Create(fileInfo);
+            var fileRecordInfo = FileRecordInfo.Create(fileInfo, "testHash");
 
             Assert.AreEqual("MetroExodus.exe", fileRecordInfo.GameName);
             Assert.AreEqual("MetroExodus.exe", fileRecordInfo.ProcessName);
@@ -60,7 +60,7 @@ namespace CapFrameX.Test.Data
         public void RecordFileValidation_PresentMonTestOutputFile_IsValidTrue()
         {
             var fileInfo = new FileInfo(@"TestRecordFiles\PresentMonTestOutputFilename.csv");
-            var fileRecordInfo = FileRecordInfo.Create(fileInfo);
+            var fileRecordInfo = FileRecordInfo.Create(fileInfo, "testHash");
 
             Assert.IsTrue(fileRecordInfo.IsValid);
             Assert.IsFalse(fileRecordInfo.HasInfoHeader);
@@ -73,7 +73,7 @@ namespace CapFrameX.Test.Data
         public void RecordFileValidation_ShortFile_IsValidFalse()
         {
             var fileInfo = new FileInfo(@"TestRecordFiles\ShortFile.csv");
-            var fileRecordInfo = FileRecordInfo.Create(fileInfo);
+            var fileRecordInfo = FileRecordInfo.Create(fileInfo, "testHash");
 
             Assert.IsFalse(fileRecordInfo.IsValid);
             Assert.IsFalse(fileRecordInfo.HasInfoHeader);
@@ -83,7 +83,7 @@ namespace CapFrameX.Test.Data
         public void RecordFileValidation_InvalidColumnFile_IsValidFalse()
         {
             var fileInfo = new FileInfo(@"TestRecordFiles\InvalidColumnFile.csv");
-            var fileRecordInfo = FileRecordInfo.Create(fileInfo);
+            var fileRecordInfo = FileRecordInfo.Create(fileInfo, "testHash");
 
             Assert.IsFalse(fileRecordInfo.IsValid);
             Assert.IsFalse(fileRecordInfo.HasInfoHeader);
@@ -93,7 +93,7 @@ namespace CapFrameX.Test.Data
         public void RecordFileValidation_CapFrameXFileWithHeader_IsValidTrue()
         {
             var fileInfo = new FileInfo(@"TestRecordFiles\CapFrameXFileWithHeader.csv");
-            var fileRecordInfo = FileRecordInfo.Create(fileInfo);
+            var fileRecordInfo = FileRecordInfo.Create(fileInfo, "testHash");
 
             Assert.IsTrue(fileRecordInfo.IsValid);
             Assert.IsTrue(fileRecordInfo.HasInfoHeader);
