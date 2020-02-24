@@ -190,6 +190,7 @@ namespace CapFrameX.ViewModel
 				});
 			_recordObserver.FileCreatedStream
 				.SelectMany(fileInfo => _recordManager.GetFileRecordInfo(fileInfo))
+				.Where(recordInfo => recordInfo is IFileRecordInfo)
 				.ObserveOn(context)
 				.Subscribe(recordInfo =>
 				{
@@ -207,6 +208,7 @@ namespace CapFrameX.ViewModel
 				});
 			_recordObserver.FileChangedStream
 				.SelectMany(fileInfo => _recordManager.GetFileRecordInfo(fileInfo))
+				.Where(recordInfo => recordInfo is IFileRecordInfo)
 				.ObserveOn(context)
 				.Subscribe(recordInfo =>
 				{

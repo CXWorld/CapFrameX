@@ -21,7 +21,7 @@ namespace CapFrameX.Data
 	public class RecordManager : IRecordManager
 	{
 		private readonly TimeSpan _fileAccessIntervalTimespan = TimeSpan.FromMilliseconds(200);
-		private readonly int _fileAccessIntervalRetryLimit = 30;
+		private readonly int _fileAccessIntervalRetryLimit = 50;
 		private readonly ILogger<RecordManager> _logger;
 		private readonly IAppConfiguration _appConfiguration;
 		private readonly IRecordDirectoryObserver _recordObserver;
@@ -208,11 +208,12 @@ namespace CapFrameX.Data
 		{
 			try
 			{
-				using(var stream = new StreamReader(fileInfo.FullName))
+				using (var stream = new StreamReader(fileInfo.FullName))
 				{
-					using(JsonReader jsonReader = new JsonTextReader(stream))
+					using (JsonReader jsonReader = new JsonTextReader(stream))
 					{
-						JsonSerializer serializer = new JsonSerializer() {
+						JsonSerializer serializer = new JsonSerializer()
+						{
 							TypeNameHandling = TypeNameHandling.Auto
 						};
 						var session = serializer.Deserialize<Session>(jsonReader);
@@ -301,28 +302,35 @@ namespace CapFrameX.Data
 		public async Task<IFileRecordInfo> GetFileRecordInfo(FileInfo fileInfo)
 		{
 			return await Observable.Timer(_fileAccessIntervalTimespan)
-				.Select(_ =>
-				{
-					using (var stream = fileInfo.Open(FileMode.Open, FileAccess.Read, FileShare.None))
-					{
-						return fileInfo;
-					}
-				})
-				.Retry(_fileAccessIntervalRetryLimit)
-				.Select(_ =>
+				.SelectMany(_ =>
 				{
 					switch (fileInfo.Extension)
 					{
 						case ".csv":
 							var sessionFromCSV = LoadSessionFromCSV(fileInfo);
-							return FileRecordInfo.Create(fileInfo, sessionFromCSV.Hash);
+							return Observable.Return(FileRecordInfo.Create(fileInfo, sessionFromCSV.Hash));
 						case ".json":
 							var sessionFromJSON = LoadSessionFromJSON(fileInfo);
-							return FileRecordInfo.Create(fileInfo, sessionFromJSON);
+							return Observable.Return(FileRecordInfo.Create(fileInfo, sessionFromJSON));
 						default:
-							return null;
+							return Observable.Empty<IFileRecordInfo>();
 					}
-				}).Do(fileRecordInfo => fileRecordInfo.GameName = GetGameFromMatchingList(fileRecordInfo.ProcessName));
+				})
+				.Catch<IFileRecordInfo, Exception>(e => { 
+					if(e is IOException)
+					{ // If e is IOException we will throw it again, so the retry will execute the function again
+						return Observable.Throw<IFileRecordInfo>(e);
+					} // otherwise, we return empty
+					return Observable.Empty<IFileRecordInfo>();
+				})
+				.Retry(_fileAccessIntervalRetryLimit)
+				.Do(fileRecordInfo =>
+				{
+					if (fileRecordInfo is IFileRecordInfo)
+					{
+						fileRecordInfo.GameName = GetGameFromMatchingList(fileRecordInfo.ProcessName);
+					}
+				});
 		}
 
 		public async Task<bool> SaveSessionRunsToFile(IEnumerable<ISessionRun> runs, string processName)
@@ -395,11 +403,12 @@ namespace CapFrameX.Data
 		{
 			try
 			{
-				using( var streamWriter = new StreamWriter(filePath))
+				using (var streamWriter = new StreamWriter(filePath))
 				{
 					using (JsonWriter jsonWriter = new JsonTextWriter(streamWriter))
 					{
-						var serializer = new JsonSerializer() { 
+						var serializer = new JsonSerializer()
+						{
 							TypeNameHandling = TypeNameHandling.Auto
 						};
 						serializer.Serialize(jsonWriter, session);
