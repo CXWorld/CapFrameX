@@ -182,10 +182,11 @@ namespace CapFrameX.ViewModel
 			_recordObserver.DirectoryFilesStream
 				.DistinctUntilChanged()
 				.Do(_ => RecordInfoList.Clear())
-				.SelectMany(fileInfos => fileInfos.Select(fi => Observable.FromAsync(() => _recordManager.GetFileRecordInfo(fi))))
-				.Merge()
-				.Where(recordFileInfo => recordFileInfo is IFileRecordInfo)
-				.Distinct(recordFileInfo => recordFileInfo.Hash)
+				.SelectMany(fileInfos => 
+					Observable.Merge(fileInfos.Select(fileInfo => Observable.FromAsync(() => _recordManager.GetFileRecordInfo(fileInfo))))
+					.Where(recordFileInfo => recordFileInfo is IFileRecordInfo)
+					.Distinct(recordFileInfo => recordFileInfo.Hash)
+				)
 				.ObserveOn(context)
 				.Subscribe(recordFileInfos =>
 				{
