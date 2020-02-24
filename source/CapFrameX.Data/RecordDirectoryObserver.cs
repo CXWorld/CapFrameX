@@ -11,73 +11,118 @@ using Microsoft.Extensions.Logging;
 
 namespace CapFrameX.Data
 {
-	public class RecordDirectoryObserver : IRecordDirectoryObserver
+	public class RecordDirectoryObserver : IRecordDirectoryObserver, IDisposable
 	{
-		private readonly TimeSpan _fileAccessIntervalTimespan = TimeSpan.FromMilliseconds(200);
-		private readonly int _fileAccessIntervalRetryLimit = 30;
-
-		private readonly ISubject<string> _recordCreatedStream;
-		private readonly ISubject<string> _recordDeletedStream;
 		private readonly IAppConfiguration _appConfiguration;
 		private readonly ILogger<RecordDirectoryObserver> _logger;
-		private bool _isActive;
-		private string _recordDirectory;
-		private FileSystemWatcher _fileSystemWatcher;
+		private readonly Func<FileInfo, bool> _validFileFilterFunc = (FileInfo fi) => fi.Extension == ".csv" || fi.Extension == ".json";
+		private readonly ISubject<FileInfo> _fileCreatedSubject = new ReplaySubject<FileInfo>();
+		private readonly ISubject<FileInfo> _fileChangedSubject = new ReplaySubject<FileInfo>();
+		private readonly ISubject<FileInfo> _fileDeletedSubject = new ReplaySubject<FileInfo>();
+		private readonly ISubject<IEnumerable<FileInfo>> _directoryFilesSubject = new BehaviorSubject<IEnumerable<FileInfo>>(new FileInfo[] { });
+		private readonly ISubject<DirectoryInfo> _observingDirectorySubject = new BehaviorSubject<DirectoryInfo>(null);
 
-		public bool IsActive
-		{
-			get { return _isActive; }
-			set { _isActive = value; HasValidSourceStream.OnNext(_isActive); }
-		}
+		public IObservable<FileInfo> FileCreatedStream => _fileCreatedSubject.AsObservable();
+		public IObservable<FileInfo> FileChangedStream => _fileChangedSubject.AsObservable();
+		public IObservable<FileInfo> FileDeletedStream => _fileDeletedSubject.AsObservable();
+		public IObservable<IEnumerable<FileInfo>> DirectoryFilesStream => _directoryFilesSubject.AsObservable();
+		public IObservable<DirectoryInfo> ObservingDirectoryStream => _observingDirectorySubject.AsObservable();
 
-		public bool HasValidSource { get; private set; }
-
-		public IObservable<FileInfo> RecordCreatedStream
-			=> _recordCreatedStream.Where(p => IsActive).Select(path => new FileInfo(path)).AsObservable();
-
-		public IObservable<FileInfo> RecordDeletedStream
-			=> _recordDeletedStream.Where(p => IsActive).Select(path => new FileInfo(path)).AsObservable();
-
-		public FileSystemWatcher RecordingFileWatcher => _fileSystemWatcher;
-
-		public Subject<bool> HasValidSourceStream { get; }
+		private FileSystemWatcher _watcher;
+		private List<FileInfo> _currentFiles = new List<FileInfo>();
 
 		public RecordDirectoryObserver(IAppConfiguration appConfiguration, ILogger<RecordDirectoryObserver> logger)
 		{
 			_appConfiguration = appConfiguration;
 			_logger = logger;
-
-			HasValidSourceStream = new Subject<bool>();
-
-			try
-			{
-				_recordDirectory = GetInitialObservedDirectory(_appConfiguration.ObservedDirectory);
-				if (!Directory.Exists(_recordDirectory))
-				{
-					Directory.CreateDirectory(_recordDirectory);
-				}
-
-				_fileSystemWatcher = new FileSystemWatcher(_recordDirectory);
-				_fileSystemWatcher.Created += new FileSystemEventHandler(WatcherCreated);
-				_fileSystemWatcher.Deleted += new FileSystemEventHandler(WatcherDeleted);
-				_fileSystemWatcher.EnableRaisingEvents = true;
-				_fileSystemWatcher.IncludeSubdirectories = false;
-
-				HasValidSource = true;
-				_logger.LogDebug("{componentName} Ready", this.GetType().Name);
-			}
-			catch (Exception ex)
-			{
-				HasValidSource = false;
-				_logger.LogError(ex, "Error while creating record directory");
-			}
-
-			IsActive = false;
-			_recordCreatedStream = new Subject<string>();
-			_recordDeletedStream = new Subject<string>();
+			ObserveDirectory(GetInitialObservedDirectory(_appConfiguration.ObservedDirectory));
 		}
 
-		public static string GetInitialObservedDirectory(string observedDirectory)
+		public void Dispose()
+		{
+			_watcher.Dispose();
+			_directoryFilesSubject.OnCompleted();
+			_fileCreatedSubject.OnCompleted();
+			_fileChangedSubject.OnCompleted();
+			_fileDeletedSubject.OnCompleted();
+			_observingDirectorySubject.OnCompleted();
+		}
+
+		public void ObserveDirectory(string dir)
+		{
+			var directory = new DirectoryInfo(dir);
+			if (!directory.Exists)
+			{
+				_logger.LogWarning("Cannot observe directory {path}: Does not exist", directory);
+				return;
+			}
+
+			if (_watcher is FileSystemWatcher)
+			{
+				_logger.LogDebug("Changing observed directory");
+				_watcher.Dispose();
+			}
+
+			_watcher = new FileSystemWatcher(directory.FullName)
+			{
+				EnableRaisingEvents = true,
+				IncludeSubdirectories = false,
+				NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.FileName
+			};
+			_watcher.Created += OnFileCreated;
+			_watcher.Changed += OnFileChanged;
+			_watcher.Deleted += OnFileDeleted;
+			_watcher.Renamed += OnFileRenamed;
+			_observingDirectorySubject.OnNext(directory);
+			_currentFiles = directory.GetFiles("*.*", SearchOption.TopDirectoryOnly).Where(_validFileFilterFunc).ToList();
+			_directoryFilesSubject.OnNext(_currentFiles);
+			_logger.LogInformation("Now observing directory: {path}", directory.FullName);
+
+
+			void OnFileCreated(object sender, FileSystemEventArgs e)
+			{
+				var fileInfo = new FileInfo(e.FullPath);
+				_logger.LogInformation("File created: {path}", fileInfo.FullName);
+				_fileCreatedSubject.OnNext(fileInfo);
+				_currentFiles.Add(fileInfo);
+				_directoryFilesSubject.OnNext(_currentFiles);
+			}
+
+			void OnFileChanged(object sender, FileSystemEventArgs e)
+			{
+				var fileInfo = _currentFiles.FirstOrDefault(f => f.FullName.Equals(e.FullPath));
+				if (fileInfo is FileInfo)
+				{
+					_logger.LogInformation("File changed: {path}", fileInfo.FullName);
+					fileInfo.Refresh();
+					_fileChangedSubject.OnNext(fileInfo);
+					_directoryFilesSubject.OnNext(_currentFiles);
+				}
+			}
+
+			void OnFileRenamed(object sender, RenamedEventArgs e)
+			{
+				var oldFileInfo = new FileInfo(e.OldFullPath);
+				_fileDeletedSubject.OnNext(oldFileInfo);
+				var item = _currentFiles.First(f => f.FullName.Equals(oldFileInfo.FullName));
+				if (item is FileInfo)
+				{
+					_currentFiles.Remove(item);
+				}
+				OnFileCreated(sender, e);
+			}
+
+			void OnFileDeleted(object sender, FileSystemEventArgs e)
+			{
+				var fileInfo = new FileInfo(e.FullPath);
+				_fileDeletedSubject.OnNext(fileInfo);
+				_currentFiles.Remove(_currentFiles.First(f => f.FullName.Equals(fileInfo.FullName)));
+				_directoryFilesSubject.OnNext(_currentFiles);
+				_logger.LogInformation("File deleted: {path}", fileInfo.FullName);
+			}
+		}
+
+		private string GetInitialObservedDirectory(string observedDirectory)
 		{
 			var documentFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
 			string path = observedDirectory;
@@ -101,61 +146,6 @@ namespace CapFrameX.Data
 			}
 
 			return path;
-		}
-
-		private void WatcherCreated(object sender, FileSystemEventArgs e)
-		{
-			var fileInfo = new FileInfo(e.FullPath);
-			Observable.Timer(_fileAccessIntervalTimespan)
-				.Select(_ =>
-				{
-					using (var stream = fileInfo.Open(FileMode.Open, FileAccess.Read, FileShare.None)) {
-						return fileInfo.FullName;
-					}
-				})
-				.Retry(_fileAccessIntervalRetryLimit)
-				.Subscribe(fullPath =>
-				{
-					_recordCreatedStream.OnNext(e.FullPath);
-				}, error =>
-				{
-					_logger.LogError(error, "Error while watcher created handling");
-				});
-
-		}
-
-		private void WatcherDeleted(object sender, FileSystemEventArgs e)
-		{
-			_recordDeletedStream.OnNext(e.FullPath);
-		}
-
-		public IEnumerable<FileInfo> GetAllRecordFileInfo()
-		{
-			return HasValidSource ? Directory.GetFiles(_recordDirectory, "*.*",	SearchOption.TopDirectoryOnly).Select(file => new FileInfo(file)).Where(fi => fi.Extension == ".csv" || fi.Extension == ".json") : Enumerable.Empty<FileInfo>();
-		}
-
-		public void UpdateObservedDirectory(string directory)
-		{
-			if (!Directory.Exists(directory))
-			{
-				HasValidSource = false;
-				IsActive = false;
-			}
-			else
-			{
-				HasValidSource = true;
-
-				_recordDirectory = directory;
-				_fileSystemWatcher = new FileSystemWatcher(directory);
-				_fileSystemWatcher.Created += new FileSystemEventHandler(WatcherCreated);
-				_fileSystemWatcher.Deleted += new FileSystemEventHandler(WatcherDeleted);
-				_fileSystemWatcher.EnableRaisingEvents = true;
-				_fileSystemWatcher.IncludeSubdirectories = false;
-
-				IsActive = true;
-			}
-
-			HasValidSourceStream.OnNext(HasValidSource);
 		}
 	}
 }

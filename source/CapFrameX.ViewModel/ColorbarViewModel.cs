@@ -29,7 +29,6 @@ namespace CapFrameX.ViewModel
 		private readonly ILogger<ColorbarViewModel> _logger;
 		private readonly IShell _shell;
 
-		private PubSubEvent<AppMessages.UpdateObservedDirectory> _updateObservedFolder;
 		private bool _captureIsChecked = true;
 		private bool _overlayIsChecked;
 		private bool _singleRecordIsChecked;
@@ -37,7 +36,6 @@ namespace CapFrameX.ViewModel
 		private bool _reportIsChecked;
 		private int _selectWindowSize;
 		private double _stutteringFactor;
-		private string _observedDirectory;
 		private bool _synchronizationIsChecked;
 		private int _fpsValuesRoundingDigits;
 		private bool _aggregatioIsChecked;
@@ -171,15 +169,7 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-		public string ObservedDirectory
-		{
-			get { return _observedDirectory; }
-			set
-			{
-				_observedDirectory = value;
-				RaisePropertyChanged();
-			}
-		}
+		public string ObservedDirectory { get; private set; }
 
 		public string ScreenshotDirectory
 		{
@@ -317,7 +307,6 @@ namespace CapFrameX.ViewModel
 			StutteringFactor = _appConfiguration.StutteringFactor;
 			SelectWindowSize = _appConfiguration.MovingAverageWindowSize;
 			FpsValuesRoundingDigits = _appConfiguration.FpsValuesRoundingDigits;
-			ObservedDirectory = _appConfiguration.ObservedDirectory;
 			ScreenshotDirectory = _appConfiguration.ScreenshotDirectory;
 			WindowSizes = new List<int>(Enumerable.Range(4, 100 - 4));
 			RoundingDigits = new List<int>(Enumerable.Range(0, 8));
@@ -325,12 +314,14 @@ namespace CapFrameX.ViewModel
 			SelectScreenshotFolderCommand = new DelegateCommand(OnSelectScreenshotFolder);
 			OpenObservedFolderCommand = new DelegateCommand(OnOpenObservedFolder);
 			OpenScreenshotFolderCommand = new DelegateCommand(OnOpenScreenshotFolder);
+			_recordDirectoryObserver.ObservingDirectoryStream.Subscribe(directory => {
+				ObservedDirectory = directory.FullName;
+				RaisePropertyChanged(nameof(ObservedDirectory));
+			});
 
 			HasCustomInfo = SelectedHardwareInfoSource == EHardwareInfoSource.Custom;
 
 			SetHardwareInfoDefaultsFromDatabase();
-
-			SetAggregatorEvents();
 		}
 
 		private void SetHardwareInfoDefaultsFromDatabase()
@@ -357,9 +348,7 @@ namespace CapFrameX.ViewModel
 			if (result == CommonFileDialogResult.Ok)
 			{
 				_appConfiguration.ObservedDirectory = dialog.FileName;
-				_recordDirectoryObserver.UpdateObservedDirectory(dialog.FileName);
-				ObservedDirectory = dialog.FileName;
-				_updateObservedFolder.Publish(new AppMessages.UpdateObservedDirectory(dialog.FileName));
+				_recordDirectoryObserver.ObserveDirectory(dialog.FileName);
 			}
 		}
 
@@ -460,11 +449,6 @@ namespace CapFrameX.ViewModel
 
 			if (HelpViewSelected)
 				SelectedView = "Help";
-		}
-
-		private void SetAggregatorEvents()
-		{
-			_updateObservedFolder = _eventAggregator.GetEvent<PubSubEvent<AppMessages.UpdateObservedDirectory>>();
 		}
 	}
 }

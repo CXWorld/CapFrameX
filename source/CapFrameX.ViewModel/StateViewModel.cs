@@ -26,7 +26,6 @@ namespace CapFrameX.ViewModel
 		private readonly IAppVersionProvider _appVersionProvider;
 		private bool _isCaptureModeActive;
 		private bool _isOverlayActive;
-		private bool _isDirectoryObserving;
 		private string _updateHyperlinkText;
 
 		private bool IsBeta => GetBetaState();
@@ -43,16 +42,7 @@ namespace CapFrameX.ViewModel
 			return true;
 		}
 
-		public bool IsDirectoryObserving
-		{
-			get { return _isDirectoryObserving; }
-			set
-			{
-				_isDirectoryObserving =
-					value && _recordObserver.HasValidSource;
-				RaisePropertyChanged();
-			}
-		}
+		public bool IsDirectoryObserving { get; private set; }
 
 		public bool IsOverlayActive
 		{
@@ -119,8 +109,10 @@ namespace CapFrameX.ViewModel
 
 			UpdateHyperlinkText = $"New version available on GitHub: v{webVersionProvider.GetWebVersion()}";
 
-			_recordObserver.HasValidSourceStream
-				.Subscribe(state => IsDirectoryObserving = state);
+			_recordObserver.ObservingDirectoryStream
+				.Subscribe(directoryInfo => {
+					IsDirectoryObserving = directoryInfo?.Exists ?? false;
+				});
 
 			_captureService.IsCaptureModeActiveStream
 				.Subscribe(state => IsCaptureModeActive = state);

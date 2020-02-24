@@ -39,7 +39,7 @@
 			<TextBlock Margin="0 0 5 0" VerticalAlignment="Center">Capture mode:</TextBlock>
 			<ToggleButton Width="20" Height="20" IsHitTestVisible="False"
 					  Style="{StaticResource MaterialDesignActionAccentToggleButton}"
-					  IsChecked="{Binding IsCaptureModeActive}"
+					  IsChecked="{Binding IsCaptureModeActive, Mode=OneWay}"
 					  Content="{materialDesign:PackIcon Stop, Size=18}">
 				<materialDesign:ToggleButtonAssist.OnContent>
 					<materialDesign:PackIcon Kind="Play"/>
@@ -48,7 +48,7 @@
 			<TextBlock Margin="10 0 5 0" VerticalAlignment="Center">Overlay:</TextBlock>
 			<ToggleButton Width="20" Height="20" IsHitTestVisible="False"
 					  Style="{StaticResource MaterialDesignActionAccentToggleButton}"
-					  IsChecked="{Binding IsOverlayActive}"
+					  IsChecked="{Binding IsOverlayActive, Mode=OneWay}"
 					  Content="{materialDesign:PackIcon Stop, Size=18}">
 				<materialDesign:ToggleButtonAssist.OnContent>
 					<materialDesign:PackIcon Kind="Play"/>
@@ -57,7 +57,7 @@
 			<TextBlock Margin="10 0 5 0" VerticalAlignment="Center">Directory observer:</TextBlock>
 			<ToggleButton Width="20" Height="20" IsHitTestVisible="False"
 					  Style="{StaticResource MaterialDesignActionAccentToggleButton}"
-					  IsChecked="{Binding IsDirectoryObserving}"
+					  IsChecked="{Binding IsDirectoryObserving, Mode=OneWay}"
 					  Content="{materialDesign:PackIcon Stop, Size=18}">
 				<materialDesign:ToggleButtonAssist.OnContent>
 					<materialDesign:PackIcon Kind="Check"/>

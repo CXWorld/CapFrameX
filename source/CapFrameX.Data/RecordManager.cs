@@ -10,14 +10,18 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Reactive.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace CapFrameX.Data
 {
 	public class RecordManager : IRecordManager
 	{
+		private readonly TimeSpan _fileAccessIntervalTimespan = TimeSpan.FromMilliseconds(200);
+		private readonly int _fileAccessIntervalRetryLimit = 30;
 		private readonly ILogger<RecordManager> _logger;
 		private readonly IAppConfiguration _appConfiguration;
 		private readonly IRecordDirectoryObserver _recordObserver;
@@ -289,62 +293,41 @@ namespace CapFrameX.Data
 		private Dictionary<string, string> _processGameMatchingDictionary = new Dictionary<string, string>();
 
 
-		public IFileRecordInfo GetFileRecordInfo(FileInfo fileInfo)
+		public async Task<IFileRecordInfo> GetFileRecordInfo(FileInfo fileInfo)
 		{
-			IFileRecordInfo fileRecordInfo = null;
-			switch (fileInfo.Extension)
-			{
-				case ".csv":
-					var session = LoadSessionFromCSV(fileInfo);
-					fileRecordInfo = FileRecordInfo.Create(fileInfo, session.Hash);
-					break;
-				case ".json":
-					fileRecordInfo = FileRecordInfo.Create(fileInfo, LoadSessionFromJSON(fileInfo));
-					break;
-				default:
-					break;
-			}
-			if (fileRecordInfo == null)
-				return null;
-
-			fileRecordInfo.GameName = GetGameFromMatchingList(fileRecordInfo.ProcessName);
-			return fileRecordInfo;
+			return await Observable.Timer(_fileAccessIntervalTimespan)
+				.Select(_ =>
+				{
+					using (var stream = fileInfo.Open(FileMode.Open, FileAccess.Read, FileShare.None))
+					{
+						return fileInfo;
+					}
+				})
+				.Retry(_fileAccessIntervalRetryLimit)
+				.Select(_ =>
+				{
+					switch (fileInfo.Extension)
+					{
+						case ".csv":
+							var sessionFromCSV = LoadSessionFromCSV(fileInfo);
+							return FileRecordInfo.Create(fileInfo, sessionFromCSV.Hash);
+						case ".json":
+							var sessionFromJSON = LoadSessionFromJSON(fileInfo);
+							return FileRecordInfo.Create(fileInfo, sessionFromJSON);
+						default:
+							return null;
+					}
+				}).Do(fileRecordInfo => fileRecordInfo.GameName = GetGameFromMatchingList(fileRecordInfo.ProcessName));
 		}
 
-		public IList<IFileRecordInfo> GetFileRecordInfoList()
+		public async Task<bool> SaveSessionRunsToFile(IEnumerable<ISessionRun> runs, string processName)
 		{
-			var filterList = CaptureServiceConfiguration.GetProcessIgnoreList();
-
-			if (filterList.Contains("CapFrameX"))
-				filterList.Remove("CapFrameX");
-
-			return _recordObserver.GetAllRecordFileInfo()
-				.Select(fileInfo => GetFileRecordInfo(fileInfo))
-				.Where(fileRecordInfo => fileRecordInfo != null)
-				.Where(fileRecordInfo => CheckNotContains(filterList, fileRecordInfo.ProcessName))
-				.OrderBy(fileRecordInfo => fileRecordInfo.GameName)
-				.ToList();
-		}
-
-		private bool CheckNotContains(HashSet<string> filterList, string processName)
-		{
-			var check = !filterList
-					.Contains(processName?.Replace(".exe", string.Empty));
-
-			return check;
-		}
-
-		public bool SaveSessionRunsToFile(IEnumerable<ISessionRun> runs, string filePath, string processName)
-		{
+			var filePath = await GetOutputFilename(processName);
 			try
 			{
 				if (runs.Count() > 1)
 				{
 					NormalizeStartTimesOfAggragationRuns(runs);
-				}
-				if (filePath is null)
-				{
-					filePath = GetOutputFilename(processName);
 				}
 				var csv = new StringBuilder();
 				var datetime = DateTime.Now;
@@ -491,20 +474,19 @@ namespace CapFrameX.Data
 			return gameName;
 		}
 
-		public string GetOutputFilename(string processName)
+		private async Task<string> GetOutputFilename(string processName)
 		{
 			var filename = CaptureServiceConfiguration.GetCaptureFilename(processName);
-			string observedDirectory = RecordDirectoryObserver
-				.GetInitialObservedDirectory(_appConfiguration.ObservedDirectory);
-
-			return Path.Combine(observedDirectory, filename);
+			var directory = await _recordObserver.ObservingDirectoryStream.Take(1);
+			return Path.Combine(directory.FullName, filename);
 		}
 
 		public ISessionRun ConvertPresentDataLinesToSessionRun(IEnumerable<string> presentLines)
 		{
 			try
 			{
-				var sessionRun = new SessionRun() {
+				var sessionRun = new SessionRun()
+				{
 					Hash = string.Join(",", presentLines).GetSha1()
 				};
 
