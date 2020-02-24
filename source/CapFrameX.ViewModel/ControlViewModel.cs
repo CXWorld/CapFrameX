@@ -50,8 +50,8 @@ namespace CapFrameX.ViewModel
 			set
 			{
 				_selectedRecordInfo = value;
-				RaisePropertyChanged();
 				OnSelectedRecordInfoChanged();
+				RaisePropertyChanged();
 			}
 		}
 
@@ -215,17 +215,16 @@ namespace CapFrameX.ViewModel
 				.ObserveOn(context)
 				.Subscribe(recordInfo =>
 				{
-					var item = RecordInfoList.FirstOrDefault(ri => ri.FullPath.Equals(recordInfo.FullPath));
-					if (item is IFileRecordInfo)
+				var itemToRemove = RecordInfoList.FirstOrDefault(ri => ri.FullPath.Equals(recordInfo.FullPath));
+				if (itemToRemove is IFileRecordInfo)
+				{
+					var selectedRecordId = _selectedRecordInfo?.Id;
+					var itemIndex = RecordInfoList.IndexOf(itemToRemove);
+					RecordInfoList[itemIndex] = recordInfo;
+					if (selectedRecordId?.Equals(itemToRemove.Id) ?? false)
 					{
-						var selectedRecordId = _selectedRecordInfo?.Id;
-						var itemIndex = RecordInfoList.IndexOf(item);
-						RecordInfoList.RemoveAt(itemIndex);
-						RecordInfoList.Insert(itemIndex, recordInfo);
-						if(selectedRecordId?.Equals(item.Id) ?? false)
-						{
-							SelectedRecordInfo = item;
-							_updateRecordInfosEvent.Publish(new ViewMessages.UpdateRecordInfos(item));
+						SelectedRecordInfo = recordInfo;
+						_updateRecordInfosEvent.Publish(new ViewMessages.UpdateRecordInfos(itemToRemove));
 						}
 					}
 				});
