@@ -16,9 +16,11 @@ namespace CapFrameX.Contracts.Data
 
 		void UpdateCustomData(IFileRecordInfo recordInfo, string customCpuInfo,
 			string customGpuInfo, string customRamInfo, string customGameName, string customComment);
-		List<ISystemInfoEntry> GetSystemInfos(IFileRecordInfo recordInfo);
-		ISession LoadData(string file);
-		ISessionRun ConvertPresentDataLinesToSessionRun(IEnumerable<string> presentLines);
 
+		List<ISystemInfoEntry> GetSystemInfos(IFileRecordInfo recordInfo);
+
+		ISession LoadData(string file);
+
+		ISessionRun ConvertPresentDataLinesToSessionRun(IEnumerable<string> presentLines);
 	}
 }
