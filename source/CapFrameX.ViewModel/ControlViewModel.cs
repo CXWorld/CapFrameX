@@ -183,7 +183,7 @@ namespace CapFrameX.ViewModel
 				.DistinctUntilChanged()
 				.Do(_ => RecordInfoList.Clear())
 				.SelectMany(fileInfos => fileInfos.Select(fi => Observable.FromAsync(() => _recordManager.GetFileRecordInfo(fi))))
-				.Concat()
+				.Merge(20)
 				.Where(recordFileInfo => recordFileInfo is IFileRecordInfo)
 				.ObserveOn(context)
 				.Subscribe(recordFileInfos =>
