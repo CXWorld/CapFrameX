@@ -208,12 +208,17 @@ namespace CapFrameX.Data
 		{
 			try
 			{
-				var content = File.ReadAllText(fileInfo.FullName);
-				var session = JsonConvert.DeserializeObject<Session>(content, new JsonSerializerSettings()
+				using(var stream = new StreamReader(fileInfo.FullName))
 				{
-					TypeNameHandling = TypeNameHandling.Auto
-				});
-				return session;
+					using(JsonReader jsonReader = new JsonTextReader(stream))
+					{
+						JsonSerializer serializer = new JsonSerializer() {
+							TypeNameHandling = TypeNameHandling.Auto
+						};
+						var session = serializer.Deserialize<Session>(jsonReader);
+						return session;
+					}
+				}
 			}
 			catch (Exception e)
 			{
@@ -390,11 +395,17 @@ namespace CapFrameX.Data
 		{
 			try
 			{
-				File.WriteAllText(filePath, JsonConvert.SerializeObject(session, Formatting.None, new JsonSerializerSettings()
+				using( var streamWriter = new StreamWriter(filePath))
 				{
-					TypeNameHandling = TypeNameHandling.Auto
-				}));
-				_logger.LogInformation("{filePath} successfully written", filePath);
+					using (JsonWriter jsonWriter = new JsonTextWriter(streamWriter))
+					{
+						var serializer = new JsonSerializer() { 
+							TypeNameHandling = TypeNameHandling.Auto
+						};
+						serializer.Serialize(jsonWriter, session);
+						_logger.LogInformation("{filePath} successfully written", filePath);
+					}
+				}
 			}
 			catch (Exception e)
 			{
