@@ -72,10 +72,16 @@
     <Compile Include="Aggregation\IAggregationEntry.cs" />
     <Compile Include="Cloud\ICloudEntry.cs" />
     <Compile Include="Configuration\IAppConfiguration.cs" />
+    <Compile Include="Data\ISession.cs" />
+    <Compile Include="Data\ISessionCaptureData.cs" />
+    <Compile Include="Data\ISessionInfo.cs" />
+    <Compile Include="Data\ISessionRun.cs" />
+    <Compile Include="Data\ISessionSensorData.cs" />
+    <Compile Include="Data\ISystemInfoEntry.cs" />
     <Compile Include="Data\IWebVersionProvider.cs" />
     <Compile Include="Data\IAppVersionProvider.cs" />
     <Compile Include="Data\IFileRecordInfo.cs" />
-    <Compile Include="Data\IRecordDataProvider.cs" />
+    <Compile Include="Data\IRecordManager.cs" />
     <Compile Include="MVVM\IMouseEventHandler.cs" />
     <Compile Include="MVVM\IShell.cs" />
     <Compile Include="Overlay\IOverlayEntry.cs" />
@@ -86,6 +92,7 @@
     <Compile Include="PresentMonInterface\IServiceStartInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Overlay\IOverlayService.cs" />
+    <Compile Include="Statistics\ERemoveOutlierMethod.cs" />
     <Compile Include="Statistics\IMetricAnalysis.cs" />
     <Compile Include="UpdateCheck\IUpdateCheck.cs" />
   </ItemGroup>

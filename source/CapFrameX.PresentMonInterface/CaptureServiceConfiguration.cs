@@ -90,7 +90,7 @@ namespace CapFrameX.PresentMonInterface
             DateTime now = DateTime.Now;
             string dateTimeFormat = $"{now.Year}-{now.Month.ToString("d2")}-" +
 				$"{now.Day.ToString("d2")}T{now.Hour}{now.Minute}{now.Second}";
-            return $"CapFrameX-{processName}.exe-{dateTimeFormat}.csv";
+            return $"CapFrameX-{processName}.exe-{dateTimeFormat}.json";
         }
     }
 }

@@ -26,6 +26,7 @@ namespace CapFrameX.ViewModel
 		private readonly IStatisticProvider _frametimeStatisticProvider;
 		private readonly IEventAggregator _eventAggregator;
 		private readonly IAppConfiguration _appConfiguration;
+		private readonly RecordManager _recordManager;
 		private bool _useEventMessages;
 		private bool _hasNoReportItems = true;
 
@@ -46,12 +47,12 @@ namespace CapFrameX.ViewModel
 
 		public ReportViewModel(IStatisticProvider frametimeStatisticProvider,
 							  IEventAggregator eventAggregator,
-							  IAppConfiguration appConfiguration)
+							  IAppConfiguration appConfiguration, RecordManager recordManager)
 		{
 			_frametimeStatisticProvider = frametimeStatisticProvider;
 			_eventAggregator = eventAggregator;
 			_appConfiguration = appConfiguration;
-
+			_recordManager = recordManager;
 			CopyTableDataCommand = new DelegateCommand(OnCopyTableData);
 			ReportInfoCollection.CollectionChanged += new NotifyCollectionChangedEventHandler
 				((sender, eventArg) => HasNoReportItems = !ReportInfoCollection.Any());
@@ -156,31 +157,33 @@ namespace CapFrameX.ViewModel
 
 		private ReportInfo GetReportInfoFromRecordInfo(IFileRecordInfo recordInfo)
 		{
-			var session = RecordManager.LoadData(recordInfo.FullPath);
+			var session = _recordManager.LoadData(recordInfo.FullPath);
 
 			double GeMetricValue(IList<double> sequence, EMetric metric) =>
 					_frametimeStatisticProvider.GetFpsMetricValue(sequence, metric);
+			var frameTimes = session.Runs.SelectMany(r => r.CaptureData.MsBetweenPresents).ToList();
+			var recordTime = session.Runs.SelectMany(r => r.CaptureData.TimeInSeconds).Last();
 
-			var max = GeMetricValue(session.FrameTimes, EMetric.Max);
-			var p99_quantile = GeMetricValue(session.FrameTimes, EMetric.P99);
-			var p95_quantile = GeMetricValue(session.FrameTimes, EMetric.P95);
-			var average = GeMetricValue(session.FrameTimes, EMetric.Average);
-			var p0dot1_quantile = GeMetricValue(session.FrameTimes, EMetric.P0dot1);
-			var p0dot2_quantile = GeMetricValue(session.FrameTimes, EMetric.P0dot2);
-			var p1_quantile = GeMetricValue(session.FrameTimes, EMetric.P1);
-			var p5_quantile = GeMetricValue(session.FrameTimes, EMetric.P5);
-			var p1_averageLow = GeMetricValue(session.FrameTimes, EMetric.OnePercentLow);
-			var p0dot1_averageLow = GeMetricValue(session.FrameTimes, EMetric.ZerodotOnePercentLow);
-			var min = GeMetricValue(session.FrameTimes, EMetric.Min);
-			var adaptiveStandardDeviation = GeMetricValue(session.FrameTimes, EMetric.AdaptiveStd);
+			var max = GeMetricValue(frameTimes, EMetric.Max);
+			var p99_quantile = GeMetricValue(frameTimes, EMetric.P99);
+			var p95_quantile = GeMetricValue(frameTimes, EMetric.P95);
+			var average = GeMetricValue(frameTimes, EMetric.Average);
+			var p0dot1_quantile = GeMetricValue(frameTimes, EMetric.P0dot1);
+			var p0dot2_quantile = GeMetricValue(frameTimes, EMetric.P0dot2);
+			var p1_quantile = GeMetricValue(frameTimes, EMetric.P1);
+			var p5_quantile = GeMetricValue(frameTimes, EMetric.P5);
+			var p1_averageLow = GeMetricValue(frameTimes, EMetric.OnePercentLow);
+			var p0dot1_averageLow = GeMetricValue(frameTimes, EMetric.ZerodotOnePercentLow);
+			var min = GeMetricValue(frameTimes, EMetric.Min);
+			var adaptiveStandardDeviation = GeMetricValue(frameTimes, EMetric.AdaptiveStd);
 
 			var reportInfo = new ReportInfo()
 			{
 				Game = recordInfo.GameName,
 				Date = recordInfo.CreationDate,
 				Time = recordInfo.CreationTime,
-				NumberOfSamples = session.FrameTimes.Count,
-				RecordTime = Math.Round(session.LastFrameTime, 2).ToString(CultureInfo.InvariantCulture),
+				NumberOfSamples = frameTimes.Count,
+				RecordTime = Math.Round(recordTime, 2).ToString(CultureInfo.InvariantCulture),
 				Cpu = recordInfo.ProcessorName == null ? "" : recordInfo.ProcessorName.Trim(new Char[] { ' ', '"' }),
 				GraphicCard = recordInfo.GraphicCardName == null ? "" : recordInfo.GraphicCardName.Trim(new Char[] { ' ', '"' }),
 				Ram = recordInfo.SystemRamInfo == null ? "" : recordInfo.SystemRamInfo.Trim(new Char[] { ' ', '"' }),

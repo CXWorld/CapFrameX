@@ -1,4 +1,6 @@
 ﻿using CapFrameX.Contracts.Data;
+using CapFrameX.Contracts.Statistics;
+using CapFrameX.Data;
 using CapFrameX.Statistics;
 using System;
 using System.Collections.Generic;
@@ -50,7 +52,7 @@ namespace CapFrameX.ViewModel
 		private void SetMetrics(ComparisonRecordInfoWrapper wrappedComparisonRecordInfo)
 		{
 			double startTime = FirstSeconds;
-			double lastFrameStart = wrappedComparisonRecordInfo.WrappedRecordInfo.Session.FrameStart.Last();
+			double lastFrameStart = wrappedComparisonRecordInfo.WrappedRecordInfo.Session.Runs.SelectMany(r => r.CaptureData.TimeInSeconds).Last();
 			double endTime = LastSeconds > lastFrameStart ? lastFrameStart : lastFrameStart + LastSeconds;
 			var frametimeTimeWindow = wrappedComparisonRecordInfo.WrappedRecordInfo.Session.GetFrametimeTimeWindow(startTime, endTime, ERemoveOutlierMethod.None);
 			double GeMetricValue(IList<double> sequence, EMetric metric) =>

@@ -1,4 +1,6 @@
-﻿using CapFrameX.Statistics;
+﻿using CapFrameX.Contracts.Data;
+using CapFrameX.Contracts.Statistics;
+using CapFrameX.Statistics;
 using System;
 using System.Collections.Generic;
 using System.Windows;
@@ -13,7 +15,7 @@ namespace CapFrameX.Data
 
 		double CurrentTime { get; set; }
 
-		Session CurrentSession { get; set; }
+		ISession CurrentSession { get; set; }
 
 		ERemoveOutlierMethod RemoveOutlierMethod { get; set; }
 

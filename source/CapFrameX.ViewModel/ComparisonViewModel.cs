@@ -1,5 +1,6 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
+using CapFrameX.Contracts.Statistics;
 using CapFrameX.Data;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Extensions;
@@ -39,7 +40,7 @@ namespace CapFrameX.ViewModel
 		private readonly IFrametimeAnalyzer _frametimeAnalyzer;
 		private readonly IEventAggregator _eventAggregator;
 		private readonly IAppConfiguration _appConfiguration;
-
+		private readonly RecordManager _recordManager;
 		private PlotModel _comparisonModel;
 		private SeriesCollection _comparisonRowChartSeriesCollection;
 		private string[] _comparisonRowChartLabels;
@@ -413,13 +414,13 @@ namespace CapFrameX.ViewModel
 		public ComparisonViewModel(IStatisticProvider frametimeStatisticProvider,
 			IFrametimeAnalyzer frametimeAnalyzer,
 			IEventAggregator eventAggregator,
-			IAppConfiguration appConfiguration)
+			IAppConfiguration appConfiguration, RecordManager recordManager)
 		{
 			_frametimeStatisticProvider = frametimeStatisticProvider;
 			_frametimeAnalyzer = frametimeAnalyzer;
 			_eventAggregator = eventAggregator;
 			_appConfiguration = appConfiguration;
-
+			_recordManager = recordManager;
 			RemoveAllComparisonsCommand = new DelegateCommand(OnRemoveAllComparisons);
 			ComparisonLShapeCollection = new SeriesCollection();
 			MessageDialogContent = new MessageDialog();
@@ -653,8 +654,8 @@ namespace CapFrameX.ViewModel
 
 			foreach (var record in ComparisonRecords)
 			{
-				if (record.WrappedRecordInfo.Session.FrameStart.Last() > MaxRecordingTime)
-					MaxRecordingTime = record.WrappedRecordInfo.Session.FrameStart.Last();
+				if (record.WrappedRecordInfo.Session.Runs.SelectMany(r => r.CaptureData.TimeInSeconds).Last() > MaxRecordingTime)
+					MaxRecordingTime = record.WrappedRecordInfo.Session.Runs.SelectMany(r => r.CaptureData.TimeInSeconds).Last();
 			}
 
 			_doUpdateCharts = false;
@@ -754,13 +755,14 @@ namespace CapFrameX.ViewModel
 		private ComparisonRecordInfo GetComparisonRecordInfoFromFileRecordInfo(IFileRecordInfo fileRecordInfo)
 		{
 			string infoText = string.Empty;
-			var session = RecordManager.LoadData(fileRecordInfo.FullPath);
-
+			var session = _recordManager.LoadData(fileRecordInfo.FullPath);
+			var frameTimes = session.Runs.SelectMany(r => r.CaptureData.MsBetweenPresents).ToList();
+			var recordTime = session.Runs.SelectMany(r => r.CaptureData.TimeInSeconds).Last();
 			if (session != null)
 			{
 				var newLine = Environment.NewLine;
 				infoText += $"{fileRecordInfo.CreationDate} { fileRecordInfo.CreationTime}" + newLine +
-							$"{session.FrameTimes.Count} frames in {Math.Round(session.LastFrameTime, 2).ToString(CultureInfo.InvariantCulture)}s";
+							$"{frameTimes.Count()} frames in {Math.Round(recordTime, 2).ToString(CultureInfo.InvariantCulture)}s";
 			}
 
 			return new ComparisonRecordInfo

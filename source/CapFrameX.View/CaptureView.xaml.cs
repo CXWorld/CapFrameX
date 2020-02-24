@@ -46,19 +46,17 @@ namespace CapFrameX.View
 			// Design time!
 			if (DesignerProperties.GetIsInDesignMode(this))
 			{
+				var loggerFactory = new LoggerFactory();
 				var appConfiguration = new CapFrameXConfiguration();
 				var statisticProvider = new FrametimeStatisticProvider( appConfiguration);
 				var recordDirectoryObserver = new RecordDirectoryObserver(appConfiguration, 
-					new LoggerFactory().CreateLogger<RecordDirectoryObserver>());
-				var recordDataProvider = new RecordDataProvider(recordDirectoryObserver, appConfiguration, 
-					new LoggerFactory().CreateLogger<RecordDataProvider>());
+					loggerFactory.CreateLogger<RecordDirectoryObserver>());
 				var overlayEntryProvider = new OverlayEntryProvider();
+				var recordManager = new RecordManager(loggerFactory.CreateLogger<RecordManager>(), appConfiguration, recordDirectoryObserver, new AppVersionProvider());
 				DataContext = new CaptureViewModel(appConfiguration, new PresentMonCaptureService(),
-					new EventAggregator(), new RecordDataProvider(new RecordDirectoryObserver(appConfiguration, 
-					new LoggerFactory().CreateLogger<RecordDirectoryObserver>()), appConfiguration, 
-					new LoggerFactory().CreateLogger<RecordDataProvider>()), 
-					new OverlayService(statisticProvider, recordDataProvider, overlayEntryProvider, appConfiguration, 
-					new LoggerFactory().CreateLogger<OverlayService>()),
+					new EventAggregator(), recordManager,
+					new OverlayService(statisticProvider, overlayEntryProvider, appConfiguration, 
+					loggerFactory.CreateLogger<OverlayService>(), recordManager),
 					statisticProvider, new LoggerFactory().CreateLogger<CaptureViewModel>());
 			}
 		}

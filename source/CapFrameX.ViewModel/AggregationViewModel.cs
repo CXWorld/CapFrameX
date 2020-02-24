@@ -25,10 +25,9 @@ namespace CapFrameX.ViewModel
 	public class AggregationViewModel : BindableBase, INavigationAware, IDropTarget
 	{
 		private readonly IStatisticProvider _statisticProvider;
-		private readonly IRecordDataProvider _recordDataProvider;
 		private readonly IEventAggregator _eventAggregator;
 		private readonly IAppConfiguration _appConfiguration;
-
+		private readonly IRecordManager _recordManager;
 		private bool _useUpdateSession;
 		private int _selectedAggregationEntryIndex = -1;
 		private bool _showHelpText = true;
@@ -196,14 +195,13 @@ namespace CapFrameX.ViewModel
 		public ObservableCollection<IAggregationEntry> AggregationEntries { get; private set; }
 			= new ObservableCollection<IAggregationEntry>();
 
-		public AggregationViewModel(IStatisticProvider statisticProvider, IRecordDataProvider recordDataProvider,
-			IEventAggregator eventAggregator, IAppConfiguration appConfiguration)
+		public AggregationViewModel(IStatisticProvider statisticProvider,
+			IEventAggregator eventAggregator, IAppConfiguration appConfiguration, IRecordManager recordManager)
 		{
 			_statisticProvider = statisticProvider;
-			_recordDataProvider = recordDataProvider;
 			_eventAggregator = eventAggregator;
 			_appConfiguration = appConfiguration;
-
+			_recordManager = recordManager;
 			ClearTableCommand = new DelegateCommand(OnClearTable);
 			AggregateIncludeCommand = new DelegateCommand(OnAggregateInclude);
 			AggregateExcludeCommand = new DelegateCommand(OnAggregateExclude);
@@ -225,6 +223,7 @@ namespace CapFrameX.ViewModel
 			ShowHelpText = !AggregationEntries.Any();
 			EnableClearButton = AggregationEntries.Any();
 			EnableIncludeButton = AggregationEntries.Count >= 2;
+			EnableExcludeButton = AggregationEntries.Count >= 2;
 
 			// Outlier analysis
 			if (AggregationEntries.Count >= 2 && !_supressCollectionChanged)
@@ -252,7 +251,7 @@ namespace CapFrameX.ViewModel
 							});
 		}
 
-		private void AddAggregationEntry(IFileRecordInfo recordInfo, Session session)
+		private void AddAggregationEntry(IFileRecordInfo recordInfo, ISession session)
 		{
 			if (recordInfo != null)
 			{
@@ -268,12 +267,12 @@ namespace CapFrameX.ViewModel
 				return;
 
 
-			List<double> frametimes = session?.FrameTimes;
+			var frametimes = session.Runs.SelectMany(r => r.CaptureData.MsBetweenPresents).ToList();
 
 			if (session == null)
 			{
-				var localSession = RecordManager.LoadData(recordInfo.FullPath);
-				frametimes = localSession?.FrameTimes;
+				var localSession = _recordManager.LoadData(recordInfo.FullPath);
+				frametimes = localSession.Runs.SelectMany(r => r.CaptureData.MsBetweenPresents).ToList();
 			}
 
 			var metricAnalysis = _statisticProvider
@@ -303,8 +302,8 @@ namespace CapFrameX.ViewModel
 			_supressCollectionChanged = true;
 			foreach (var recordInfo in _fileRecordInfoList)
 			{
-				var localSession = RecordManager.LoadData(recordInfo.FullPath);
-				var frametimes = localSession?.FrameTimes;
+				var localSession = _recordManager.LoadData(recordInfo.FullPath);
+				var frametimes = localSession.Runs.SelectMany(r => r.CaptureData.MsBetweenPresents).ToList();
 
 				var metricAnalysis = _statisticProvider
 					.GetMetricAnalysis(frametimes, SelectedSecondMetric.ConvertToString(),
@@ -339,8 +338,8 @@ namespace CapFrameX.ViewModel
 
 			foreach (var recordInfo in _fileRecordInfoList)
 			{
-				var localSession = RecordManager.LoadData(recordInfo.FullPath);
-				var frametimes = localSession?.FrameTimes;
+				var localSession = _recordManager.LoadData(recordInfo.FullPath);
+				var frametimes = localSession.Runs.SelectMany(r => r.CaptureData.MsBetweenPresents).ToList();
 				concatedFrametimesInclude.AddRange(frametimes);
 			}
 
@@ -365,8 +364,8 @@ namespace CapFrameX.ViewModel
 
 			foreach (var recordInfo in _fileRecordInfoList.Where((x, i) => !outlierFlags[i]))
 			{
-				var localSession = RecordManager.LoadData(recordInfo.FullPath);
-				var frametimes = localSession?.FrameTimes;
+				var localSession = _recordManager.LoadData(recordInfo.FullPath);
+				var frametimes = localSession.Runs.SelectMany(r => r.CaptureData.MsBetweenPresents).ToList();
 				concatedFrametimesExclude.AddRange(frametimes);
 			}
 
@@ -386,17 +385,19 @@ namespace CapFrameX.ViewModel
 			// write aggregated file
 			Task.Run(() =>
 			{
+				string process = string.Empty;
 				var filteredFileRecordInfoList = _fileRecordInfoList.Where((x, i) => !outlierFlags[i]);
-				var representiveHeader = _recordDataProvider.CreateHeaderLinesFromRecordInfo(filteredFileRecordInfoList.First());
 
-				IList<IList<string>> presentDataList = new List<IList<string>>();
+				var runs = new List<ISessionRun>();
 
 				foreach (var recordInfo in filteredFileRecordInfoList)
 				{
-					presentDataList.Add(RecordManager.LoadPresentData(recordInfo.FullPath));
+					var otherSession = _recordManager.LoadData(recordInfo.FullPath);
+					process = otherSession.Info.ProcessName;
+					runs.AddRange(otherSession.Runs);
 				}
 
-				_recordDataProvider.SaveAggregatedPresentData(presentDataList, representiveHeader);
+				_recordManager.SaveSessionRunsToFile(runs, null, process);
  			});
 		}
 

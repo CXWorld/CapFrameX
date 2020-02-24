@@ -41,7 +41,7 @@ namespace CapFrameX.ViewModel
 		private readonly IAppConfiguration _appConfiguration;
 		private readonly ICaptureService _captureService;
 		private readonly IEventAggregator _eventAggregator;
-		private readonly IRecordDataProvider _recordDataProvider;
+		private readonly IRecordManager _recordManager;
 		private readonly IOverlayService _overlayService;
 		private readonly IStatisticProvider _statisticProvider;
 		private readonly ILogger<CaptureViewModel> _logger;
@@ -268,7 +268,7 @@ namespace CapFrameX.ViewModel
 		public CaptureViewModel(IAppConfiguration appConfiguration,
 								ICaptureService captureService,
 								IEventAggregator eventAggregator,
-								IRecordDataProvider recordDataProvider,
+								IRecordManager recordManager,
 								IOverlayService overlayService,
 								IStatisticProvider statisticProvider,
 								ILogger<CaptureViewModel> logger)
@@ -276,7 +276,7 @@ namespace CapFrameX.ViewModel
 			_appConfiguration = appConfiguration;
 			_captureService = captureService;
 			_eventAggregator = eventAggregator;
-			_recordDataProvider = recordDataProvider;
+			_recordManager = recordManager;
 			_overlayService = overlayService;
 			_statisticProvider = statisticProvider;
 			_logger = logger;
@@ -808,6 +808,7 @@ namespace CapFrameX.ViewModel
 			}
 
 			CaptureStateInfo = $"{SelectedProcessToCapture} selected." + Environment.NewLine + $"Press {CaptureHotkeyString} to start capture.";
+			_overlayService.SetCaptureServiceStatus("Ready to capture...");
 		}
 
 		private void AddDataLineToArchive(string dataLine)

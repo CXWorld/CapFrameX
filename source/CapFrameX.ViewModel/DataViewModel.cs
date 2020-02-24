@@ -24,6 +24,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using CapFrameX.MVVM.Dialogs;
+using CapFrameX.Contracts.Statistics;
 
 namespace CapFrameX.ViewModel
 {
@@ -33,10 +34,11 @@ namespace CapFrameX.ViewModel
 		private readonly IFrametimeAnalyzer _frametimeAnalyzer;
 		private readonly IEventAggregator _eventAggregator;
 		private readonly IAppConfiguration _appConfiguration;
+		private readonly RecordManager _recordManager;
 		private readonly IRecordDataServer _localRecordDataServer;
 
 		private bool _useUpdateSession;
-		private Session _session;
+		private ISession _session;
 		private SeriesCollection _statisticCollection;
 		private SeriesCollection _lShapeCollection;
 		private SeriesCollection _stutteringStatisticCollection;
@@ -44,7 +46,7 @@ namespace CapFrameX.ViewModel
 		private string[] _lShapeLabels;
 		private string[] _advancedParameterLabels;
 		private bool _removeOutliers;
-		private List<SystemInfoEntry> _systemInfos;
+		private List<ISystemInfoEntry> _systemInfos;
 		private bool _isRangeSliderActive;
 		private bool _doUpdateCharts = true;
 		private Func<double, string> _parameterFormatter;
@@ -175,7 +177,7 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-		public List<SystemInfoEntry> SystemInfos
+		public List<ISystemInfoEntry> SystemInfos
 		{
 			get { return _systemInfos; }
 			set { _systemInfos = value; RaisePropertyChanged(); }
@@ -323,13 +325,13 @@ namespace CapFrameX.ViewModel
 		public DataViewModel(IStatisticProvider frametimeStatisticProvider,
 							 IFrametimeAnalyzer frametimeAnalyzer,
 							 IEventAggregator eventAggregator,
-							 IAppConfiguration appConfiguration)
+							 IAppConfiguration appConfiguration, RecordManager recordManager)
 		{
 			_frametimeStatisticProvider = frametimeStatisticProvider;
 			_frametimeAnalyzer = frametimeAnalyzer;
 			_eventAggregator = eventAggregator;
 			_appConfiguration = appConfiguration;
-
+			_recordManager = recordManager;
 			SubscribeToUpdateSession();
 
 			CopyStatisticalParameterCommand = new DelegateCommand(OnCopyStatisticalParameter);
@@ -457,7 +459,7 @@ namespace CapFrameX.ViewModel
 			if (RecordInfo == null)
 				return;
 
-			var systemInfos = RecordManager.GetSystemInfos(RecordInfo);
+			var systemInfos = _recordManager.GetSystemInfos(RecordInfo);
 
 			StringBuilder builder = new StringBuilder();
 
@@ -502,7 +504,7 @@ namespace CapFrameX.ViewModel
 			if (_session == null)
 				return;
 
-			MaxRecordingTime = _session.FrameStart.Last();
+			MaxRecordingTime = _session.Runs.SelectMany(r => r.CaptureData.TimeInSeconds).Last();
 
 			_doUpdateCharts = false;
 			FirstSeconds = 0;
@@ -533,7 +535,7 @@ namespace CapFrameX.ViewModel
 			{
 				CurrentGameName = RemoveOutliers ? $"{RecordInfo.GameName} (outlier-cleaned)"
 					: RecordInfo.GameName;
-				SystemInfos = RecordManager.GetSystemInfos(RecordInfo);
+				SystemInfos = _recordManager.GetSystemInfos(RecordInfo);
 
 				// Do update actions
 				FrametimeGraphDataContext.RecordSession = _session;

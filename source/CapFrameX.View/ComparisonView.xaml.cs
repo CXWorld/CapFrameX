@@ -1,7 +1,9 @@
 ﻿using CapFrameX.Configuration;
+using CapFrameX.Data;
 using CapFrameX.Statistics;
 using CapFrameX.View.Controls;
 using CapFrameX.ViewModel;
+using Microsoft.Extensions.Logging;
 using Prism.Events;
 using System;
 using System.ComponentModel;
@@ -27,8 +29,9 @@ namespace CapFrameX.View
 			if (DesignerProperties.GetIsInDesignMode(this))
 			{
 				var appConfiguration = new CapFrameXConfiguration();
+				var loggerFactory = new LoggerFactory();
 				DataContext = new ComparisonViewModel(new FrametimeStatisticProvider(appConfiguration),
-					new FrametimeAnalyzer(), new EventAggregator(), appConfiguration);
+					new FrametimeAnalyzer(), new EventAggregator(), appConfiguration, new RecordManager(loggerFactory.CreateLogger<RecordManager>(), appConfiguration, new RecordDirectoryObserver(appConfiguration, loggerFactory.CreateLogger<RecordDirectoryObserver>()), new AppVersionProvider()));
 			}
 
 			var context = SynchronizationContext.Current;

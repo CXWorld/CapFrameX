@@ -9,7 +9,7 @@ namespace CapFrameX.Data
 		public string Game { get; set; }
 		public string InfoText { get; set; }
         public string DateTime { get; set; }
-        public Session Session { get; set; }
+        public ISession Session { get; set; }
 		public double FirstMetric { get; set; }
 		public double SecondMetric { get; set; }
 		public double ThirdMetric { get; set; }

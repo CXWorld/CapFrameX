@@ -38,13 +38,14 @@ namespace CapFrameX.View
 			if (DesignerProperties.GetIsInDesignMode(this))
 			{
 				var appConfiguration = new CapFrameXConfiguration();
-                var recordDirectoryObserver = new RecordDirectoryObserver(appConfiguration, 
-					new LoggerFactory().CreateLogger<RecordDirectoryObserver>());
+				var loggerFactory = new LoggerFactory();
 
-                DataContext = new ControlViewModel(new RecordDirectoryObserver(appConfiguration, 
-					new LoggerFactory().CreateLogger<RecordDirectoryObserver>()), new EventAggregator(), 
-                    new CapFrameXConfiguration(), new RecordDataProvider(recordDirectoryObserver, appConfiguration,
-					new LoggerFactory().CreateLogger<RecordDataProvider>()));
+				var recordDirectoryObserver = new RecordDirectoryObserver(appConfiguration,
+					loggerFactory.CreateLogger<RecordDirectoryObserver>());
+
+                DataContext = new ControlViewModel(new RecordDirectoryObserver(appConfiguration,
+					loggerFactory.CreateLogger<RecordDirectoryObserver>()), new EventAggregator(), 
+                    new CapFrameXConfiguration(), new RecordManager(loggerFactory.CreateLogger<RecordManager>(), appConfiguration, recordDirectoryObserver, new AppVersionProvider()));
 			}
 
 			SetSortSettings((DataContext as ControlViewModel).AppConfiguration);

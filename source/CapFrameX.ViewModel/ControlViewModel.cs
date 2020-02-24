@@ -28,7 +28,7 @@ namespace CapFrameX.ViewModel
 		private readonly IRecordDirectoryObserver _recordObserver;
 		private readonly IEventAggregator _eventAggregator;
 		private readonly IAppConfiguration _appConfiguration;
-		private readonly IRecordDataProvider _recordDataProvider;
+		private readonly IRecordManager _recordManager;
 		private readonly ISubject<FileInfo> _recordDeleteSubStream;
 
 		private PubSubEvent<ViewMessages.UpdateSession> _updateSessionEvent;
@@ -151,13 +151,12 @@ namespace CapFrameX.ViewModel
 
 		public ControlViewModel(IRecordDirectoryObserver recordObserver,
 								IEventAggregator eventAggregator,
-								IAppConfiguration appConfiguration,
-								IRecordDataProvider recordDataProvider)
+								IAppConfiguration appConfiguration,RecordManager recordManager)
 		{
 			_recordObserver = recordObserver;
 			_eventAggregator = eventAggregator;
 			_appConfiguration = appConfiguration;
-			_recordDataProvider = recordDataProvider;
+			_recordManager = recordManager;
 
 			//Commands
 			AddToIgnoreListCommand = new DelegateCommand(OnAddToIgnoreList);
@@ -172,18 +171,18 @@ namespace CapFrameX.ViewModel
 
 			HasValidSource = recordObserver.HasValidSource;
 
-			Task.Factory.StartNew(() =>
+			Task.Factory.StartNew((Action)(() =>
 			{
 				if (recordObserver.HasValidSource)
 				{
-					var initialRecordFileInfoList = _recordDataProvider?.GetFileRecordInfoList();
+					var initialRecordFileInfoList = this._recordManager?.GetFileRecordInfoList();
 
 					foreach (var recordFileInfo in initialRecordFileInfoList)
 					{
-						AddToRecordInfoList(recordFileInfo);
+						AddToRecordInfoList((IFileRecordInfo)recordFileInfo);
 					}
 				}
-			});
+			}));
 
 			RecordDataGridSelectedIndex = -1;
 
@@ -293,10 +292,10 @@ namespace CapFrameX.ViewModel
 
 			// hint: _selectedRecordInfo must not be uptated, because after reload
 			// it will be set to null
-			RecordManager.UpdateCustomData(_selectedRecordInfo,
+			_recordManager.UpdateCustomData(_selectedRecordInfo,
 				CustomCpuDescription, CustomGpuDescription, CustomRamDescription, CustomGameName, CustomComment);
 
-			_recordDataProvider.AddGameNameToMatchingList(_selectedRecordInfo.ProcessName, CustomGameName);
+			_recordManager.AddGameNameToMatchingList(_selectedRecordInfo.ProcessName, CustomGameName);
 
 			var id = SelectedRecordInfo.Id;
 			ReloadRecordList();
@@ -315,7 +314,7 @@ namespace CapFrameX.ViewModel
 		{
 			if (SelectedRecordInfo != null && _selectSessionEvent != null)
 			{
-				var session = RecordManager.LoadData(SelectedRecordInfo.FullPath);
+				var session = _recordManager.LoadData(SelectedRecordInfo.FullPath);
 				_selectSessionEvent.Publish(new ViewMessages.SelectSession(session, SelectedRecordInfo));
 			}
 		}
@@ -324,7 +323,7 @@ namespace CapFrameX.ViewModel
 		{
 			if (SelectedRecordInfo != null && _updateSessionEvent != null)
 			{
-				var session = RecordManager.LoadData(SelectedRecordInfo.FullPath);
+				var session = _recordManager.LoadData(SelectedRecordInfo.FullPath);
 
 				if (session != null)
 				{
@@ -371,7 +370,10 @@ namespace CapFrameX.ViewModel
 
 		private void AddToRecordInfoList(IFileRecordInfo recordFileInfo)
 		{
-			if (recordFileInfo != null && !RecordInfoList.Any(info => info.Id == recordFileInfo.Id))
+			if (recordFileInfo != null && !RecordInfoList.Any(info =>
+			{
+				return info.Id == recordFileInfo.Id || info.Hash == recordFileInfo.Hash;
+			}))
 			{
 				Application.Current.Dispatcher.Invoke(new Action(() =>
 				{
@@ -381,7 +383,7 @@ namespace CapFrameX.ViewModel
 		}
 
 		private void OnRecordCreated(FileInfo fileInfo)
-			=> AddToRecordInfoList(_recordDataProvider.GetFileRecordInfo(fileInfo));
+			=> AddToRecordInfoList(_recordManager.GetFileRecordInfo(fileInfo));
 
 		private void OnRecordDeleted()
 		{
@@ -396,7 +398,7 @@ namespace CapFrameX.ViewModel
 
 		private void LoadRecordList()
 		{
-			foreach (var fileRecordInfo in _recordDataProvider?.GetFileRecordInfoList())
+			foreach (var fileRecordInfo in _recordManager?.GetFileRecordInfoList())
 			{
 				AddToRecordInfoList(fileRecordInfo);
 			}

@@ -40,7 +40,7 @@ namespace CapFrameX.ViewModel
 		private string[] _displayTimesHistogramLabels;
 		private string[] _inputLagHistogramLabels;
 		private bool _useUpdateSession;
-		private Session _session;
+		private ISession _session;
 		private IFileRecordInfo _recordInfo;
 		private string _frametimeDisplayChangedTimeCorrelation = "0%";
 		private string _currentGameName;
@@ -312,10 +312,12 @@ namespace CapFrameX.ViewModel
 							});
 		}
 
-		private string GetCorrelation(Session currentSession)
+		private string GetCorrelation(ISession currentSession)
 		{
-			var frametimes = currentSession.FrameTimes.Where((x, i) => !_session.AppMissed[i]);
-			var displayChangedTimes = currentSession.DisplayTimes.Where((x, i) => !_session.AppMissed[i]);
+			var appMissed = _session.Runs.SelectMany(r => r.CaptureData.Dropped).ToArray();
+			var currentSessionDisplayTimes = currentSession.Runs.SelectMany(r => r.CaptureData.MsBetweenDisplayChange).ToArray();
+			var frametimes = currentSession.Runs.SelectMany(r => r.CaptureData.MsBetweenPresents).Where((x, i) => !appMissed[i]);
+			var displayChangedTimes = currentSessionDisplayTimes.Where((x, i) => !appMissed[i]);
 
 			if (frametimes.Count() != displayChangedTimes.Count())
 				return "NaN";
@@ -330,8 +332,8 @@ namespace CapFrameX.ViewModel
 				return;
 
 			StringBuilder builder = new StringBuilder();
-
-			foreach (var dcTime in _session.DisplayTimes)
+			var currentSessionDisplayTimes = _session.Runs.SelectMany(r => r.CaptureData.MsBetweenDisplayChange).ToArray();
+			foreach (var dcTime in currentSessionDisplayTimes)
 			{
 				builder.Append(dcTime + Environment.NewLine);
 			}
@@ -376,13 +378,16 @@ namespace CapFrameX.ViewModel
 
 			// Do not run on background thread, leads to errors on analysis page
 			var inputLagTimes = _session.GetApproxInputLagTimes().Select(val => val += InputLagOffset).ToList();
+			var frametimes = _session.Runs.SelectMany(r => r.CaptureData.MsBetweenPresents).ToList();
+			var displayTimes = _session.Runs.SelectMany(r => r.CaptureData.MsBetweenDisplayChange).ToList();
+			var appMissed = _session.Runs.SelectMany(r => r.CaptureData.Dropped).ToList();
 
-			SetFrameDisplayTimesChart(_session.FrameTimes, _session.DisplayTimes);
-			SetFrameInputLagChart(_session.FrameTimes, inputLagTimes);
-			Task.Factory.StartNew(() => SetDisplayTimesHistogramChart(_session.DisplayTimes));
+			SetFrameDisplayTimesChart(frametimes, displayTimes);
+			SetFrameInputLagChart(frametimes, inputLagTimes);
+			Task.Factory.StartNew(() => SetDisplayTimesHistogramChart(displayTimes));
 			Task.Factory.StartNew(() => SetInputLagHistogramChart(inputLagTimes));
 			Task.Factory.StartNew(() => SetInputLagStatisticChart(inputLagTimes));
-			Task.Factory.StartNew(() => SetDroppedFramesChart(_session.AppMissed));
+			Task.Factory.StartNew(() => SetDroppedFramesChart(appMissed));
 		}
 
 		private void SetFrameDisplayTimesChart(IList<double> frametimes, IList<double> displaytimes)
@@ -636,7 +641,8 @@ namespace CapFrameX.ViewModel
 
 		private void SetFrameInputLagChart(IList<double> frametimes, IList<double> inputlagtimes)
 		{
-			var filteredFrametimes = frametimes.Where((ft, i) => _session.AppMissed[i] != true).ToList();
+			var appMissed = _session.Runs.SelectMany(r => r.CaptureData.Dropped).ToList();
+			var filteredFrametimes = frametimes.Where((ft, i) => appMissed[i] != true).ToList();
 
 			var yMin = Math.Min(filteredFrametimes.Min(), inputlagtimes.Min());
 			var yMax = Math.Max(filteredFrametimes.Max(), inputlagtimes.Max());
@@ -681,7 +687,7 @@ namespace CapFrameX.ViewModel
 					Position = OxyPlot.Axes.AxisPosition.Bottom,
 					Title = "Samples",
 					Minimum = 0,
-					Maximum = filteredFrametimes.Count,
+					Maximum = filteredFrametimes.Count(),
 					MajorGridlineStyle = LineStyle.Solid,
 					MajorGridlineThickness = 1,
 					MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
