@@ -179,6 +179,7 @@ namespace CapFrameX.ViewModel
 					HasValidSource = directory?.Exists ?? false;
 					RaisePropertyChanged(nameof(HasValidSource));
 				});
+
 			_recordObserver.DirectoryFilesStream
 				.DistinctUntilChanged()
 				.Do(_ => RecordInfoList.Clear())
@@ -192,6 +193,7 @@ namespace CapFrameX.ViewModel
 				{
 					RecordInfoList.Add(recordFileInfos);
 				});
+
 			_recordObserver.FileCreatedStream
 				.SelectMany(fileInfo => _recordManager.GetFileRecordInfo(fileInfo))
 				.Where(recordInfo => recordInfo is IFileRecordInfo)
@@ -200,6 +202,7 @@ namespace CapFrameX.ViewModel
 				{
 					RecordInfoList.Add(recordInfo);
 				});
+
 			_recordObserver.FileDeletedStream
 				.ObserveOn(context)
 				.Subscribe(fileInfo =>
@@ -210,6 +213,7 @@ namespace CapFrameX.ViewModel
 						RecordInfoList.Remove(item);
 					}
 				});
+
 			_recordObserver.FileChangedStream
 				.SelectMany(fileInfo => _recordManager.GetFileRecordInfo(fileInfo))
 				.Where(recordInfo => recordInfo is IFileRecordInfo)
