@@ -181,12 +181,14 @@ namespace CapFrameX.ViewModel
 				});
 			_recordObserver.DirectoryFilesStream
 				.DistinctUntilChanged()
-				.SelectMany(fileInfos => Task.WhenAll(fileInfos.Select(_recordManager.GetFileRecordInfo)))
+				.Do(_ => RecordInfoList.Clear())
+				.SelectMany(fileInfos => fileInfos.Select(fi => Observable.FromAsync(() => _recordManager.GetFileRecordInfo(fi))))
+				.Concat()
+				.Where(recordFileInfo => recordFileInfo is IFileRecordInfo)
 				.ObserveOn(context)
 				.Subscribe(recordFileInfos =>
 				{
-					RecordInfoList.Clear();
-					RecordInfoList.AddRange(recordFileInfos);
+					RecordInfoList.Add(recordFileInfos);
 				});
 			_recordObserver.FileCreatedStream
 				.SelectMany(fileInfo => _recordManager.GetFileRecordInfo(fileInfo))
