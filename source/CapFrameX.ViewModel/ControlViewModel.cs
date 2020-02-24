@@ -170,7 +170,7 @@ namespace CapFrameX.ViewModel
 			SetupObservers(SynchronizationContext.Current);
 		}
 
-		private async void SetupObservers(SynchronizationContext context)
+		private void SetupObservers(SynchronizationContext context)
 		{
 			_recordObserver.ObservingDirectoryStream
 				.ObserveOn(context)
@@ -183,8 +183,9 @@ namespace CapFrameX.ViewModel
 				.DistinctUntilChanged()
 				.Do(_ => RecordInfoList.Clear())
 				.SelectMany(fileInfos => fileInfos.Select(fi => Observable.FromAsync(() => _recordManager.GetFileRecordInfo(fi))))
-				.Merge(20)
+				.Merge()
 				.Where(recordFileInfo => recordFileInfo is IFileRecordInfo)
+				.Distinct(recordFileInfo => recordFileInfo.Hash)
 				.ObserveOn(context)
 				.Subscribe(recordFileInfos =>
 				{
