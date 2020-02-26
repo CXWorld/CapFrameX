@@ -1,8 +1,6 @@
-﻿using CapFrameX.Contracts.Statistics;
-using System.Collections.Generic;
-using System.Windows;
+﻿using System.Collections.Generic;
 
-namespace CapFrameX.Contracts.Data
+namespace CapFrameX.Data.Session.Contracts
 {
 	public interface ISession
 	{

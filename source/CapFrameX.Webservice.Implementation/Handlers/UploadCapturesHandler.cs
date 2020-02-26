@@ -11,20 +11,20 @@ using System.Threading.Tasks;
 
 namespace CapFrameX.Webservice.Implementation.Handlers
 {
-	public class UploadCapturesHandler: IRequestHandler<UploadCapturesCommand, CaptureCollectionMetadata>
+	public class UploadCapturesHandler: IRequestHandler<UploadSessionsCommand, Guid>
 	{
-		private readonly IValidator<UploadCapturesCommand> _validator;
-		private readonly ICapturesService _capturesService;
+		private readonly IValidator<UploadSessionsCommand> _validator;
+		private readonly ISessionService _capturesService;
 
-		public UploadCapturesHandler(IValidator<UploadCapturesCommand> validator, ICapturesService capturesService) {
+		public UploadCapturesHandler(IValidator<UploadSessionsCommand> validator, ISessionService capturesService) {
 			_validator = validator;
 			_capturesService = capturesService;
 		}
 
-		public async Task<CaptureCollectionMetadata> Handle(UploadCapturesCommand command, CancellationToken cancellationToken)
+		public async Task<Guid> Handle(UploadSessionsCommand command, CancellationToken cancellationToken)
 		{
 			_validator.ValidateAndThrow(command);
-			return await _capturesService.SaveCaptures(command.AppVersion, command.CaptureFiles);
+			return Guid.NewGuid();
 		}
 	}
 }

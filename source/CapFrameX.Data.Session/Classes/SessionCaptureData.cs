@@ -1,8 +1,8 @@
-﻿using CapFrameX.Contracts.Data;
+﻿using CapFrameX.Data.Session.Contracts;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace CapFrameX.Data
+namespace CapFrameX.Data.Session.Classes
 {
 	public class SessionCaptureData : ISessionCaptureData
 	{

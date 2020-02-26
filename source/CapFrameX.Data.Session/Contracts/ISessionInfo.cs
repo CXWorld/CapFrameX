@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace CapFrameX.Contracts.Data
+namespace CapFrameX.Data.Session.Contracts
 {
 	public interface ISessionInfo
 	{

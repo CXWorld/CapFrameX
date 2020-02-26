@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using CapFrameX.Data.Session.Contracts;
+using System.Collections.Generic;
 using System.IO;
 
 namespace CapFrameX.Contracts.Data

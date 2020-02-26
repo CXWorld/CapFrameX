@@ -47,13 +47,17 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CapFrameX.RTSSInterface", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.Updater", "source\CapFrameX.Updater\CapFrameX.Updater.csproj", "{5D12AA37-CC30-4476-94AD-11C15DC65518}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.Webservice.Host", "source\CapFrameX.Webservice.Host\CapFrameX.Webservice.Host.csproj", "{DF415CAC-AE74-4D59-8E35-5F4C2C4192DC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CapFrameX.Webservice.Host", "source\CapFrameX.Webservice.Host\CapFrameX.Webservice.Host.csproj", "{DF415CAC-AE74-4D59-8E35-5F4C2C4192DC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.Webservice.Data", "source\CapFrameX.Webservice.Data\CapFrameX.Webservice.Data.csproj", "{69D694A6-B029-4FE8-8429-F4E70DB8B5E1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CapFrameX.Webservice.Data", "source\CapFrameX.Webservice.Data\CapFrameX.Webservice.Data.csproj", "{69D694A6-B029-4FE8-8429-F4E70DB8B5E1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.Webservice.Implementation", "source\CapFrameX.Webservice.Implementation\CapFrameX.Webservice.Implementation.csproj", "{F55962DA-2615-4AFB-AD33-0F3D5987308C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CapFrameX.Webservice.Implementation", "source\CapFrameX.Webservice.Implementation\CapFrameX.Webservice.Implementation.csproj", "{F55962DA-2615-4AFB-AD33-0F3D5987308C}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Webservice", "Webservice", "{5A596328-DBB3-47B5-B0CE-E7F6CB4591E0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.Webservice.Persistance", "source\CapFrameX.Webservice.Persistance\CapFrameX.Webservice.Persistance.csproj", "{8320607A-6A5B-4AD9-94A6-EABDF526C567}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.Data.Session", "source\CapFrameX.Data.Session\CapFrameX.Data.Session.csproj", "{6BE48CF4-C2F0-44CB-95D8-7500A3CB430E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -355,6 +359,30 @@ Global
 		{F55962DA-2615-4AFB-AD33-0F3D5987308C}.Release|x64.Build.0 = Release|Any CPU
 		{F55962DA-2615-4AFB-AD33-0F3D5987308C}.Release|x86.ActiveCfg = Release|Any CPU
 		{F55962DA-2615-4AFB-AD33-0F3D5987308C}.Release|x86.Build.0 = Release|Any CPU
+		{8320607A-6A5B-4AD9-94A6-EABDF526C567}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8320607A-6A5B-4AD9-94A6-EABDF526C567}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8320607A-6A5B-4AD9-94A6-EABDF526C567}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{8320607A-6A5B-4AD9-94A6-EABDF526C567}.Debug|x64.Build.0 = Debug|Any CPU
+		{8320607A-6A5B-4AD9-94A6-EABDF526C567}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{8320607A-6A5B-4AD9-94A6-EABDF526C567}.Debug|x86.Build.0 = Debug|Any CPU
+		{8320607A-6A5B-4AD9-94A6-EABDF526C567}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8320607A-6A5B-4AD9-94A6-EABDF526C567}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8320607A-6A5B-4AD9-94A6-EABDF526C567}.Release|x64.ActiveCfg = Release|Any CPU
+		{8320607A-6A5B-4AD9-94A6-EABDF526C567}.Release|x64.Build.0 = Release|Any CPU
+		{8320607A-6A5B-4AD9-94A6-EABDF526C567}.Release|x86.ActiveCfg = Release|Any CPU
+		{8320607A-6A5B-4AD9-94A6-EABDF526C567}.Release|x86.Build.0 = Release|Any CPU
+		{6BE48CF4-C2F0-44CB-95D8-7500A3CB430E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6BE48CF4-C2F0-44CB-95D8-7500A3CB430E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6BE48CF4-C2F0-44CB-95D8-7500A3CB430E}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{6BE48CF4-C2F0-44CB-95D8-7500A3CB430E}.Debug|x64.Build.0 = Debug|Any CPU
+		{6BE48CF4-C2F0-44CB-95D8-7500A3CB430E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{6BE48CF4-C2F0-44CB-95D8-7500A3CB430E}.Debug|x86.Build.0 = Debug|Any CPU
+		{6BE48CF4-C2F0-44CB-95D8-7500A3CB430E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6BE48CF4-C2F0-44CB-95D8-7500A3CB430E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6BE48CF4-C2F0-44CB-95D8-7500A3CB430E}.Release|x64.ActiveCfg = Release|Any CPU
+		{6BE48CF4-C2F0-44CB-95D8-7500A3CB430E}.Release|x64.Build.0 = Release|Any CPU
+		{6BE48CF4-C2F0-44CB-95D8-7500A3CB430E}.Release|x86.ActiveCfg = Release|Any CPU
+		{6BE48CF4-C2F0-44CB-95D8-7500A3CB430E}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -363,6 +391,7 @@ Global
 		{DF415CAC-AE74-4D59-8E35-5F4C2C4192DC} = {5A596328-DBB3-47B5-B0CE-E7F6CB4591E0}
 		{69D694A6-B029-4FE8-8429-F4E70DB8B5E1} = {5A596328-DBB3-47B5-B0CE-E7F6CB4591E0}
 		{F55962DA-2615-4AFB-AD33-0F3D5987308C} = {5A596328-DBB3-47B5-B0CE-E7F6CB4591E0}
+		{8320607A-6A5B-4AD9-94A6-EABDF526C567} = {5A596328-DBB3-47B5-B0CE-E7F6CB4591E0}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {4227F05D-F6EF-4571-9B94-6F3C05AA60DA}

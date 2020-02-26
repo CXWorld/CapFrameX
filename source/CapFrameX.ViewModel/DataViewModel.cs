@@ -25,6 +25,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using CapFrameX.MVVM.Dialogs;
 using CapFrameX.Contracts.Statistics;
+using CapFrameX.Data.Session.Contracts;
 
 namespace CapFrameX.ViewModel
 {

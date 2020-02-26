@@ -1,6 +1,7 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
 using CapFrameX.Data;
+using CapFrameX.Data.Session.Contracts;
 using CapFrameX.Statistics;
 using Prism.Mvvm;
 

@@ -29,9 +29,9 @@ namespace CapFrameX.View
 			if (DesignerProperties.GetIsInDesignMode(this))
 			{
 				var appConfiguration = new CapFrameXConfiguration();
-				var recordDataProvider = new RecordDataProvider(new RecordDirectoryObserver(appConfiguration, 
-					new LoggerFactory().CreateLogger<RecordDirectoryObserver>()), appConfiguration, new LoggerFactory().CreateLogger<RecordDataProvider>());
-				DataContext = new CloudViewModel(new FrametimeStatisticProvider(appConfiguration), recordDataProvider, new EventAggregator(), appConfiguration, new LoggerFactory().CreateLogger<CloudViewModel>(), new AppVersionProvider());
+				var loggerFactory = new LoggerFactory();
+				var recordManager = new RecordManager(loggerFactory.CreateLogger<RecordManager>(), appConfiguration, new RecordDirectoryObserver(appConfiguration, loggerFactory.CreateLogger<RecordDirectoryObserver>()), new AppVersionProvider());
+				DataContext = new CloudViewModel(new FrametimeStatisticProvider(appConfiguration), recordManager, new EventAggregator(), appConfiguration, loggerFactory.CreateLogger<CloudViewModel>(), new AppVersionProvider());
 			}
 
 		}

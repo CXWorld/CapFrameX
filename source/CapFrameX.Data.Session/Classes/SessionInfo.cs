@@ -1,8 +1,8 @@
-﻿using CapFrameX.Contracts.Data;
+﻿using CapFrameX.Data.Session.Contracts;
 using Newtonsoft.Json;
 using System;
 
-namespace CapFrameX.Data
+namespace CapFrameX.Data.Session.Classes
 {
 	public class SessionInfo : ISessionInfo
 	{

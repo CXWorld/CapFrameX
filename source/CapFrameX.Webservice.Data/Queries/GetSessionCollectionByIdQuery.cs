@@ -7,12 +7,12 @@ using System.Text;
 
 namespace CapFrameX.Webservice.Data.Queries
 {
-	public class GetCaptureCollectionByIdQuery: IRequest<CaptureCollection>
+	public class GetSessionCollectionByIdQuery: IRequest<SessionCollectionDTO>
 	{
 		public Guid Id { get; set; }
 	}
 
-    public class GetCaptureByIdQueryValidator : AbstractValidator<GetCaptureCollectionByIdQuery>
+    public class GetCaptureByIdQueryValidator : AbstractValidator<GetSessionCollectionByIdQuery>
     {
         public GetCaptureByIdQueryValidator()
         {

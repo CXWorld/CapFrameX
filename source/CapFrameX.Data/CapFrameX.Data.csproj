@@ -74,10 +74,6 @@
   <ItemGroup>
     <Compile Include="CloudEntry.cs" />
     <Compile Include="AggregationEntry.cs" />
-    <Compile Include="SessionCaptureData.cs" />
-    <Compile Include="SessionInfo.cs" />
-    <Compile Include="SessionRun.cs" />
-    <Compile Include="SessionSensorData.cs" />
     <Compile Include="WebVersionProvider.cs" />
     <Compile Include="AppVersionProvider.cs" />
     <Compile Include="ComparisonRecordInfo.cs" />
@@ -89,7 +85,6 @@
     <Compile Include="RecordDirectoryObserver.cs" />
     <Compile Include="RecordManager.cs" />
     <Compile Include="ReportInfo.cs" />
-    <Compile Include="Session.cs" />
     <Compile Include="SystemInfoEntry.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -105,6 +100,10 @@
     <ProjectReference Include="..\CapFrameX.Contracts\CapFrameX.Contracts.csproj">
       <Project>{4C3B8B5C-54D7-46A1-91A1-32BF82FD42CD}</Project>
       <Name>CapFrameX.Contracts</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CapFrameX.Data.Session\CapFrameX.Data.Session.csproj">
+      <Project>{6BE48CF4-C2F0-44CB-95D8-7500A3CB430E}</Project>
+      <Name>CapFrameX.Data.Session</Name>
     </ProjectReference>
     <ProjectReference Include="..\CapFrameX.Extensions\CapFrameX.Extensions.csproj">
       <Project>{a4559b99-7fcb-40ef-bf97-d293a2b7d6d3}</Project>

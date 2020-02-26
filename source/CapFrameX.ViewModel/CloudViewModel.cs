@@ -2,6 +2,8 @@
 using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
 using CapFrameX.Data;
+using CapFrameX.Data.Session.Classes;
+using CapFrameX.Data.Session.Contracts;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Extensions;
 using CapFrameX.Statistics;
@@ -32,7 +34,7 @@ namespace CapFrameX.ViewModel
 	public class CloudViewModel : BindableBase, INavigationAware, IDropTarget
 	{
 		private readonly IStatisticProvider _statisticProvider;
-		private readonly IRecordDataProvider _recordDataProvider;
+		private readonly IRecordManager _recordManager;
 		private readonly IEventAggregator _eventAggregator;
 		private readonly IAppConfiguration _appConfiguration;
 		private readonly ILogger<CloudViewModel> _logger;
@@ -145,11 +147,11 @@ namespace CapFrameX.ViewModel
 		public ObservableCollection<ICloudEntry> CloudEntries { get; private set; }
 			= new ObservableCollection<ICloudEntry>();
 
-		public CloudViewModel(IStatisticProvider statisticProvider, IRecordDataProvider recordDataProvider,
+		public CloudViewModel(IStatisticProvider statisticProvider, IRecordManager recordManager,
 			IEventAggregator eventAggregator, IAppConfiguration appConfiguration, ILogger<CloudViewModel> logger, IAppVersionProvider appVersionProvider)
 		{
 			_statisticProvider = statisticProvider;
-			_recordDataProvider = recordDataProvider;
+			_recordManager = recordManager;
 			_eventAggregator = eventAggregator;
 			_appConfiguration = appConfiguration;
 			_logger = logger;
@@ -198,7 +200,7 @@ namespace CapFrameX.ViewModel
 							});
 		}
 
-		private void AddCloudEntry(IFileRecordInfo recordInfo, Session session)
+		private void AddCloudEntry(IFileRecordInfo recordInfo, ISession session)
 		{
 			if (recordInfo != null)
 			{
@@ -206,15 +208,6 @@ namespace CapFrameX.ViewModel
 			}
 			else
 				return;
-
-
-			List<double> frametimes = session?.FrameTimes;
-
-			if (session == null)
-			{
-				var localSession = RecordManager.LoadData(recordInfo.FullPath);
-				frametimes = localSession?.FrameTimes;
-			}
 
 			CloudEntries.Add(new CloudEntry()
 			{
@@ -321,14 +314,17 @@ namespace CapFrameX.ViewModel
 
 		private async Task DownloadCaptureCollection(string id)
 		{
-			var url = $@"https://capframex.com/api/capturecollections/{id}";
+			var url = $@"https://capframex.com/api/sessioncollections/{id}";
 			using (var client = new HttpClient())
 			{
 				var response = await client.GetAsync(url);
 
 				if (response.IsSuccessStatusCode)
 				{
-					var content = JsonConvert.DeserializeObject<Webservice.Data.DTO.CaptureCollection>(await response.Content.ReadAsStringAsync());
+					var content = JsonConvert.DeserializeObject<SessionCollectionDTO>(await response.Content.ReadAsStringAsync(), new JsonSerializerSettings()
+					{
+						TypeNameHandling = TypeNameHandling.Auto
+					});
 
 					var downloadDirectory = _appConfiguration.CloudDownloadDirectory;
 
@@ -340,10 +336,13 @@ namespace CapFrameX.ViewModel
 					{
 						Directory.CreateDirectory(downloadDirectory);
 					}
-					foreach (var capture in content.Captures)
+					foreach (var session in content.Sessions)
 					{
-						var fileInfo = new FileInfo(Path.Combine(downloadDirectory, capture.Name));
-						File.WriteAllBytes(fileInfo.FullName, capture.BlobBytes);
+						var fileInfo = new FileInfo(Path.Combine(downloadDirectory, session.Hash));
+						File.WriteAllText(fileInfo.FullName, JsonConvert.SerializeObject(session, new JsonSerializerSettings()
+						{
+							TypeNameHandling = TypeNameHandling.Auto
+						}));
 					}
 				}
 				else

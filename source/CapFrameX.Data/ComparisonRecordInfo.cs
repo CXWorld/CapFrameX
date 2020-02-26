@@ -1,4 +1,5 @@
 ﻿using CapFrameX.Contracts.Data;
+using CapFrameX.Data.Session.Contracts;
 using System.Linq;
 
 namespace CapFrameX.Data

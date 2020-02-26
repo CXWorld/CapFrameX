@@ -1,6 +1,8 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.PresentMonInterface;
+using CapFrameX.Data.Session.Classes;
+using CapFrameX.Data.Session.Contracts;
 using CapFrameX.Extensions;
 using CapFrameX.PresentMonInterface;
 using Microsoft.Extensions.Logging;
@@ -205,7 +207,7 @@ namespace CapFrameX.Data
 			try
 			{
 				var content = File.ReadAllText(fileInfo.FullName);
-				var session = JsonConvert.DeserializeObject<Session>(content, new JsonSerializerSettings()
+				var session = JsonConvert.DeserializeObject<Session.Classes.Session>(content, new JsonSerializerSettings()
 				{
 					TypeNameHandling = TypeNameHandling.Auto
 				});
@@ -228,7 +230,7 @@ namespace CapFrameX.Data
 					var sessionRun = ConvertPresentDataLinesToSessionRun(lines.SkipWhile(line => line.Contains(FileRecordInfo.HEADER_MARKER)));
 					var recordedFileInfo = FileRecordInfo.Create(csvFile, sessionRun.Hash);
 					var systemInfos = GetSystemInfos(recordedFileInfo);
-					return new Session()
+					return new Session.Classes.Session()
 					{
 						Hash = string.Join(",", new string[] { sessionRun.Hash }).GetSha1(),
 						Runs = new List<ISessionRun>() { sessionRun },
@@ -374,7 +376,7 @@ namespace CapFrameX.Data
 
 
 
-				var session = new Session()
+				var session = new Session.Classes.Session()
 				{
 					Hash = string.Join(",", runs.Select(r => r.Hash).OrderBy(h => h)).GetSha1(),
 					Runs = runs.ToList(),

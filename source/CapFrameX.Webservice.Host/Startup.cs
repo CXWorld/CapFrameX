@@ -2,14 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
 using AutoMapper;
-using CapFrameX.Webservice.Data;
 using CapFrameX.Webservice.Data.Commands;
 using CapFrameX.Webservice.Data.Interfaces;
 using CapFrameX.Webservice.Data.Queries;
 using CapFrameX.Webservice.Implementation.Handlers;
-using CapFrameX.Webservice.Implementation.CaptureStorages;
 using CapFrameX.Webservice.Implementation.Services;
 using FluentValidation.AspNetCore;
 using MediatR;
@@ -25,6 +22,8 @@ using Serilog;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using CapFrameX.Webservice.Data.Providers;
+using CapFrameX.Webservice.Persistance;
+using Microsoft.EntityFrameworkCore;
 
 namespace CapFrameX.Webservice.Host
 {
@@ -42,25 +41,17 @@ namespace CapFrameX.Webservice.Host
 		{
 			var assembly = Assembly.GetExecutingAssembly();
 			services.AddMediatR(
-				typeof(GetCaptureCollectionByIdHandler).GetTypeInfo().Assembly,
-				typeof(GetCaptureCollectionByIdQuery).GetTypeInfo().Assembly,
-				typeof(UploadCapturesCommand).GetTypeInfo().Assembly
+				typeof(GetSessionCollectionByIdHandler).GetTypeInfo().Assembly,
+				typeof(GetSessionCollectionByIdQuery).GetTypeInfo().Assembly,
+				typeof(UploadSessionsCommand).GetTypeInfo().Assembly
 			);
 			services.AddAutoMapper(assembly);
 
-			services.AddScoped<ICapturesService, CapturesService>();
-			services.AddScoped<ICaptureStorage>(opt =>
-			{
-				var storageType = Configuration.GetValue<string>("CaptureStorage:Type");
-				return storageType switch
-				{
-					"Disk" => new CaptureDiskStorage(Configuration.GetValue<string>("CaptureStorage:Options:Directory")),
-					"MongoDB" => new MongoDBStorage(Configuration.GetSection("CaptureStorage:Options").Get<MongoDbStorageConfiguration>()),
-					_ => throw new Exception("No CaptureStorage configured"),
-				};
-			});
-
+			services.AddScoped<ISessionService, SessionService>();
 			services.AddScoped<IUserClaimsProvider, UserClaimsProvider>();
+			services.AddDbContext<CXContext>(options => {
+				options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"));
+			});
 
 			services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 				.AddJwtBearer(options =>
@@ -71,7 +62,7 @@ namespace CapFrameX.Webservice.Host
 					{
 						ValidateIssuerSigningKey = true,
 						ValidateIssuer = true,
-						ValidateAudience = false,
+						ValidateAudience = true,
 						ValidateLifetime = true
 					};
 				});
@@ -80,7 +71,7 @@ namespace CapFrameX.Webservice.Host
 				.AddFluentValidation(opt =>
 				{
 					opt.RegisterValidatorsFromAssemblyContaining<GetCaptureByIdQueryValidator>();
-					opt.RegisterValidatorsFromAssemblyContaining<UploadCaptureCommandValidator>();
+					opt.RegisterValidatorsFromAssemblyContaining<UploadSessionsCommandValidator>();
 					opt.ImplicitlyValidateChildProperties = true;
 					opt.RunDefaultMvcValidationAfterFluentValidationExecutes = false;
 				});

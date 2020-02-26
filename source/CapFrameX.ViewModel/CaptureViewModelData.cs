@@ -1,4 +1,5 @@
 ﻿using CapFrameX.Contracts.Data;
+using CapFrameX.Data.Session.Contracts;
 using CapFrameX.PresentMonInterface;
 using System;
 using System.Collections.Generic;

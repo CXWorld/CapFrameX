@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CapFrameX.Webservice.Data\CapFrameX.Webservice.Data.csproj" />
+    <ProjectReference Include="..\CapFrameX.Webservice.Persistance\CapFrameX.Webservice.Persistance.csproj" />
   </ItemGroup>
 
 </Project>

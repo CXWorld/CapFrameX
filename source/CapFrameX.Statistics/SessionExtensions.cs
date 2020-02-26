@@ -1,24 +1,16 @@
 ﻿using CapFrameX.Configuration;
-using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.Statistics;
+using CapFrameX.Data.Session.Contracts;
 using CapFrameX.Statistics;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using System.Windows;
 
-namespace CapFrameX.Data
+namespace CapFrameX.StatisticsExtensions
 {
-	public sealed class Session : ISession
-	{
-		public string Hash { get; set; }
-		[JsonProperty("Info")]
-		public ISessionInfo Info { get; set; } = new SessionInfo();
-		[JsonProperty("Runs")]
-		public IList<ISessionRun> Runs { get; set; } = new List<ISessionRun>();
-	}
-
 	public static class SessionExtensions
 	{
 
@@ -91,7 +83,7 @@ namespace CapFrameX.Data
 		public static double GetSyncRangePercentage(this ISession session, int syncRangeLower, int syncRangeUpper)
 		{
 			var displayTimes = session.Runs.SelectMany(r => r.CaptureData.MsBetweenDisplayChange);
-			if(!displayTimes.Any())
+			if (!displayTimes.Any())
 			{
 				return 0d;
 			}

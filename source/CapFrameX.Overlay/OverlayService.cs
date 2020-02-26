@@ -3,6 +3,7 @@ using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.Statistics;
 using CapFrameX.Data;
+using CapFrameX.Data.Session.Contracts;
 using CapFrameX.Extensions;
 using CapFrameX.Statistics;
 using Microsoft.Extensions.Logging;

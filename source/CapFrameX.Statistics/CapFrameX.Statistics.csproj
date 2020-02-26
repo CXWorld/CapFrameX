@@ -65,6 +65,7 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
+    <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="EMetric.cs" />
@@ -74,15 +75,24 @@
     <Compile Include="IStatisticProvider.cs" />
     <Compile Include="MetricAnalysis.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SessionExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\CapFrameX.Configuration\CapFrameX.Configuration.csproj">
+      <Project>{D0A09FA9-D19E-4CCC-BF0E-104893CFE48B}</Project>
+      <Name>CapFrameX.Configuration</Name>
+    </ProjectReference>
     <ProjectReference Include="..\CapFrameX.Contracts\CapFrameX.Contracts.csproj">
       <Project>{4C3B8B5C-54D7-46A1-91A1-32BF82FD42CD}</Project>
       <Name>CapFrameX.Contracts</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CapFrameX.Data.Session\CapFrameX.Data.Session.csproj">
+      <Project>{6BE48CF4-C2F0-44CB-95D8-7500A3CB430E}</Project>
+      <Name>CapFrameX.Data.Session</Name>
     </ProjectReference>
     <ProjectReference Include="..\CapFrameX.Extensions\CapFrameX.Extensions.csproj">
       <Project>{A4559B99-7FCB-40EF-BF97-D293A2B7D6D3}</Project>
