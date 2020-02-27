@@ -233,5 +233,6 @@
                 </materialDesign:PopupBox>
             </Grid>
         </materialDesign:ColorZone>
-    </Grid>
+		<WebBrowser x:Name="Wb" Height="Auto" Initialized="Wb_Initialized" />
+	</Grid>
 </UserControl>

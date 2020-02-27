@@ -69,6 +69,7 @@ namespace CapFrameX
 			Container.Register<IAppVersionProvider, AppVersionProvider>(Reuse.Singleton);
 			Container.RegisterInstance<IWebVersionProvider>(new WebVersionProvider(), Reuse.Singleton);
 			Container.Register<IUpdateCheck, UpdateCheck>(Reuse.Singleton);
+			Container.Register<ICloudManager, CloudManager>(Reuse.Singleton);
 		}
 
 		/// <summary>
