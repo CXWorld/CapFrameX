@@ -378,15 +378,17 @@ namespace CapFrameX.ViewModel
 
 			// Do not run on background thread, leads to errors on analysis page
 			var inputLagTimes = _session.GetApproxInputLagTimes().Select(val => val += InputLagOffset).ToList();
+			var upperBoundInputLagTimes = _session.GetUpperBoundInputLagTimes().Select(val => val += InputLagOffset).ToList();
+			var lowerBoundInputLagTimes = _session.GetLowerBoundInputLagTimes().Select(val => val += InputLagOffset).ToList();
 			var frametimes = _session.Runs.SelectMany(r => r.CaptureData.MsBetweenPresents).ToList();
 			var displayTimes = _session.Runs.SelectMany(r => r.CaptureData.MsBetweenDisplayChange).ToList();
 			var appMissed = _session.Runs.SelectMany(r => r.CaptureData.Dropped).ToList();
 
 			SetFrameDisplayTimesChart(frametimes, displayTimes);
-			SetFrameInputLagChart(frametimes, inputLagTimes);
+			SetFrameInputLagChart(frametimes, upperBoundInputLagTimes, lowerBoundInputLagTimes);
 			Task.Factory.StartNew(() => SetDisplayTimesHistogramChart(displayTimes));
 			Task.Factory.StartNew(() => SetInputLagHistogramChart(inputLagTimes));
-			Task.Factory.StartNew(() => SetInputLagStatisticChart(inputLagTimes));
+			Task.Factory.StartNew(() => SetInputLagStatisticChart(inputLagTimes, upperBoundInputLagTimes, lowerBoundInputLagTimes));
 			Task.Factory.StartNew(() => SetDroppedFramesChart(appMissed));
 		}
 
@@ -548,29 +550,29 @@ namespace CapFrameX.ViewModel
 			}));
 		}
 
-		private void SetInputLagStatisticChart(IList<double> inputLagTimes)
+		private void SetInputLagStatisticChart(IList<double> inputLagTimes, IList<double> upperBoundInputLagTimes, IList<double> lowerBoundInputLagTimes)
 		{
 			if (inputLagTimes == null || !inputLagTimes.Any())
 				return;
 
-			var p99_quantile = _frametimeStatisticProvider.GetPQuantileSequence(inputLagTimes, 0.99);
-			var average = inputLagTimes.Average();
-			var p1_quantile = _frametimeStatisticProvider.GetPQuantileSequence(inputLagTimes, 0.01);
+			var upperBound = upperBoundInputLagTimes.Average();
+			var approx = inputLagTimes.Average();
+			var lowerBound = lowerBoundInputLagTimes.Average();
 
 			Application.Current.Dispatcher.Invoke(new Action(() =>
 			{
 				IChartValues values = new ChartValues<double>
 				{
-					p1_quantile,
-					average,
-					p99_quantile
+					upperBound,
+					approx,
+					lowerBound
 				};
 
 				InputLagStatisticCollection = new SeriesCollection
 				{
 					new RowSeries
 					{
-						Title = "Input lag statistic",
+						Title = "Average input lag",
 						Fill = new SolidColorBrush(Color.FromRgb(241, 125, 32)),
 						Values = values,
 						DataLabels = true,
@@ -583,11 +585,10 @@ namespace CapFrameX.ViewModel
 				InputLagBarMaxValue = (int)((values as IList<double>).Max() + maxOffset);
 
 				InputLagParameterLabels = new List<string>
-				{
-					//{ "99%", "Average", "1%"}
-					"P1",
-					"Average",
-					"P99"
+				{					
+					"Upper Bound",
+					"Approximated",
+					"Lower Bound"
 				}.ToArray();
 			}));
 		}
@@ -639,13 +640,13 @@ namespace CapFrameX.ViewModel
 				.ToString() + "%";
 		}
 
-		private void SetFrameInputLagChart(IList<double> frametimes, IList<double> inputlagtimes)
+		private void SetFrameInputLagChart(IList<double> frametimes, IList<double> upperBoundInputlagtimes, IList<double> lowerBoundInputlagtimes)
 		{
 			var appMissed = _session.Runs.SelectMany(r => r.CaptureData.Dropped).ToList();
 			var filteredFrametimes = frametimes.Where((ft, i) => appMissed[i] != true).ToList();
 
-			var yMin = Math.Min(filteredFrametimes.Min(), inputlagtimes.Min());
-			var yMax = Math.Max(filteredFrametimes.Max(), inputlagtimes.Max());
+			var yMin = Math.Min(filteredFrametimes.Min(), lowerBoundInputlagtimes.Min());
+			var yMax = Math.Max(filteredFrametimes.Max(), upperBoundInputlagtimes.Max());
 
 			var frametimeSeries = new OxyPlot.Series.LineSeries
 			{
@@ -655,16 +656,26 @@ namespace CapFrameX.ViewModel
 				Color = ColorRessource.FrametimeStroke
 			};
 
-			var inputLagSeries = new OxyPlot.Series.LineSeries
+			var upperBoundInputLagSeries = new OxyPlot.Series.LineSeries
 			{
-				Title = "Input lag",
+				Title = "Input lag upper bound",
 				StrokeThickness = 1,
 				LegendStrokeThickness = 4,
-				Color = ColorRessource.FrametimeMovingAverageStroke
+				Color = OxyColor.FromRgb(255, 150, 150)
+			};
+
+			var lowerBoundInputLagSeries = new OxyPlot.Series.LineSeries
+			{
+				Title = "Input lag lower bound",
+				StrokeThickness = 1,
+				LegendStrokeThickness = 4,
+				Color = OxyColor.FromRgb(200, 140, 140)
 			};
 
 			frametimeSeries.Points.AddRange(filteredFrametimes.Select((x, i) => new DataPoint(i, x)));
-			inputLagSeries.Points.AddRange(inputlagtimes.Select((x, i) => new DataPoint(i, x)));
+			upperBoundInputLagSeries.Points.AddRange(upperBoundInputlagtimes.Select((x, i) => new DataPoint(i, x)));
+			lowerBoundInputLagSeries.Points.AddRange(lowerBoundInputlagtimes.Select((x, i) => new DataPoint(i, x)));
+
 
 			Application.Current.Dispatcher.Invoke(new Action(() =>
 			{
@@ -677,7 +688,8 @@ namespace CapFrameX.ViewModel
 				};
 
 				tmp.Series.Add(frametimeSeries);
-				tmp.Series.Add(inputLagSeries);
+				tmp.Series.Add(upperBoundInputLagSeries);
+				tmp.Series.Add(lowerBoundInputLagSeries);
 
 				//Axes
 				//X

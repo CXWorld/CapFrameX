@@ -79,13 +79,49 @@ namespace CapFrameX.Data
 			var inPresentAPITimes = session.Runs.SelectMany(r => r.CaptureData.MsInPresentAPI).ToArray();
 			var inputLagTimes = new List<double>(frameTimes.Count() - 1);
 
-			for (int i = 1; i < frameTimes.Count(); i++)
+			for (int i = 2; i < frameTimes.Count(); i++)
 			{
 				if (appMissed[i] != true)
-					inputLagTimes.Add(frameTimes[i] + untilDisplayedTimes[i] - inPresentAPITimes[i - 1]);
+					inputLagTimes.Add(frameTimes[i] + untilDisplayedTimes[i] + (0.5 * frameTimes[i - 1] ) 
+						- (0.5 * inPresentAPITimes[i - 1]) - (0.5 * inPresentAPITimes[i - 2]));
 			}
 
 			return inputLagTimes;
+
+		}
+		public static IList<double> GetUpperBoundInputLagTimes(this ISession session)
+		{
+			var frameTimes = session.Runs.SelectMany(r => r.CaptureData.MsBetweenPresents).ToArray();
+			var appMissed = session.Runs.SelectMany(r => r.CaptureData.Dropped).ToArray();
+			var untilDisplayedTimes = session.Runs.SelectMany(r => r.CaptureData.MsUntilDisplayed).ToArray();
+			var inPresentAPITimes = session.Runs.SelectMany(r => r.CaptureData.MsInPresentAPI).ToArray();
+			var upperBoundInputLagTimes = new List<double>(frameTimes.Count() - 1);
+
+			for (int i = 2; i < frameTimes.Count(); i++)
+			{
+				if (appMissed[i] != true)
+					upperBoundInputLagTimes.Add(frameTimes[i] + untilDisplayedTimes[i] + frameTimes[i - 1] - inPresentAPITimes[i - 2]);
+			}
+
+			return upperBoundInputLagTimes;
+
+		}
+		public static IList<double> GetLowerBoundInputLagTimes(this ISession session)
+		{
+			var frameTimes = session.Runs.SelectMany(r => r.CaptureData.MsBetweenPresents).ToArray();
+			var appMissed = session.Runs.SelectMany(r => r.CaptureData.Dropped).ToArray();
+			var untilDisplayedTimes = session.Runs.SelectMany(r => r.CaptureData.MsUntilDisplayed).ToArray();
+			var inPresentAPITimes = session.Runs.SelectMany(r => r.CaptureData.MsInPresentAPI).ToArray();
+			var lowerBoundInputLagTimes = new List<double>(frameTimes.Count() - 1);
+
+			for (int i = 2; i < frameTimes.Count(); i++)
+			{
+				if (appMissed[i] != true)
+					lowerBoundInputLagTimes.Add(frameTimes[i] + untilDisplayedTimes[i] - inPresentAPITimes[i - 1]);
+			}
+
+			return lowerBoundInputLagTimes;
+
 		}
 
 		public static double GetSyncRangePercentage(this ISession session, int syncRangeLower, int syncRangeUpper)
