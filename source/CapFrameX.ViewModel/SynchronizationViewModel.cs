@@ -21,6 +21,7 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 using LiveCharts.Wpf;
+using OxyPlot.Series;
 
 namespace CapFrameX.ViewModel
 {
@@ -509,7 +510,7 @@ namespace CapFrameX.ViewModel
 			{
 				InputLagHistogramCollection = new SeriesCollection
 				{
-					new ColumnSeries
+					new LiveCharts.Wpf.ColumnSeries
 					{
 						Title = "Input lag time distribution",
 						Values = histogramValues,
@@ -575,7 +576,7 @@ namespace CapFrameX.ViewModel
 			{
 				DroppedFramesStatisticCollection = new SeriesCollection()
 				{
-					new PieSeries
+					new LiveCharts.Wpf.PieSeries
 					{
 						Title = "Synced frames",
 						Values = new ChartValues<int>(){ appMissed.Count(flag => flag == false) },
@@ -645,9 +646,18 @@ namespace CapFrameX.ViewModel
 				Color = OxyColor.FromRgb(200, 140, 140)
 			};
 
+			var areaSeries = new AreaSeries()
+			{
+				StrokeThickness = 1,
+				Color = OxyColors.Transparent,
+				Fill = OxyColor.FromArgb(64, 225, 145, 145)
+			};
+
 			frametimeSeries.Points.AddRange(filteredFrametimes.Select((x, i) => new DataPoint(i, x)));
 			upperBoundInputLagSeries.Points.AddRange(upperBoundInputlagtimes.Select((x, i) => new DataPoint(i, x)));
 			lowerBoundInputLagSeries.Points.AddRange(lowerBoundInputlagtimes.Select((x, i) => new DataPoint(i, x)));
+			areaSeries.Points.AddRange(lowerBoundInputlagtimes.Select((x, i) => new DataPoint(i, x)));
+			areaSeries.Points2.AddRange(upperBoundInputlagtimes.Select((x, i) => new DataPoint(i, x)));
 
 
 			Application.Current.Dispatcher.Invoke(new Action(() =>
@@ -663,6 +673,7 @@ namespace CapFrameX.ViewModel
 				tmp.Series.Add(frametimeSeries);
 				tmp.Series.Add(upperBoundInputLagSeries);
 				tmp.Series.Add(lowerBoundInputLagSeries);
+				tmp.Series.Add(areaSeries);
 
 				//Axes
 				//X
