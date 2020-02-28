@@ -17,6 +17,7 @@ using System.Windows.Input;
 using CapFrameX.Contracts.MVVM;
 using CapFrameX.Contracts.PresentMonInterface;
 using Microsoft.Extensions.Logging;
+using CapFrameX.Contracts.Data;
 
 namespace CapFrameX.ViewModel
 {
@@ -28,8 +29,10 @@ namespace CapFrameX.ViewModel
 		private readonly IAppConfiguration _appConfiguration;
 		private readonly ILogger<ColorbarViewModel> _logger;
 		private readonly IShell _shell;
+		private readonly ICloudManager _cloudManager;
 
 		private PubSubEvent<AppMessages.UpdateObservedDirectory> _updateObservedFolder;
+
 		private bool _captureIsChecked = true;
 		private bool _overlayIsChecked;
 		private bool _singleRecordIsChecked;
@@ -301,6 +304,8 @@ namespace CapFrameX.ViewModel
 
 		public IShell Shell => _shell;
 
+		public ICloudManager CloudManager => _cloudManager;
+
 		public ICommand SelectObservedFolderCommand { get; }
 
 		public ICommand SelectScreenshotFolderCommand { get; }
@@ -318,7 +323,8 @@ namespace CapFrameX.ViewModel
 								 IEventAggregator eventAggregator,
 								 IAppConfiguration appConfiguration,
 								 ILogger<ColorbarViewModel> logger,
-								 IShell shell)
+								 IShell shell,
+								 ICloudManager cloudManager)
 		{
 			_regionManager = regionManager;
 			_recordDirectoryObserver = recordDirectoryObserver;
@@ -326,6 +332,7 @@ namespace CapFrameX.ViewModel
 			_appConfiguration = appConfiguration;
 			_logger = logger;
 			_shell = shell;
+			_cloudManager = cloudManager;
 
 			StutteringFactor = _appConfiguration.StutteringFactor;
 			SelectWindowSize = _appConfiguration.MovingAverageWindowSize;
