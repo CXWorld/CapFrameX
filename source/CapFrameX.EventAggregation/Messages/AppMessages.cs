@@ -21,5 +21,7 @@
 				Directory = directory;
 			}	
 		}
+
+		public class OpenLoginWindow { }
 	}
 }

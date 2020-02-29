@@ -161,17 +161,9 @@ namespace CapFrameX.View
             e.Handled = true;
         }
 
-        private async void Wb_Initialized(object sender, EventArgs e)
+        private void Login_Click(object sender, RoutedEventArgs e)
         {
-            await ((CloudManager)(DataContext as ColorbarViewModel)?.CloudManager)?
-                .LoginManager.HandleRedirect(async (url) =>
-                {
-                    await Dispatcher.BeginInvoke(DispatcherPriority.Normal, (Action)(() =>
-                    {
-                        var browser = (WebBrowser)sender;
-                        browser.Navigate(url);
-                    }));
-                });
+            (DataContext as ColorbarViewModel).OpenLoginWindow();
         }
     }
 }
