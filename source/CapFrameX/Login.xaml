@@ -4,10 +4,10 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:CapFrameX"
-		xmlns:WPF="clr-namespace:Microsoft.Toolkit.Wpf.UI.Controls;assembly=Microsoft.Toolkit.Wpf.UI.Controls.WebView"
+		xmlns:wpf="clr-namespace:CefSharp.Wpf;assembly=CefSharp.Wpf"
 		mc:Ignorable="d"
         Title="Login" Height="850" Width="450">
     <Grid>
-		<WPF:WebView x:Name="wvc" Height="Auto" Initialized="OnBrowserInitialized" />
+		<wpf:ChromiumWebBrowser x:Name="Wb" Initialized="OnBrowserInitialized"/>
 	</Grid>
 </Window>

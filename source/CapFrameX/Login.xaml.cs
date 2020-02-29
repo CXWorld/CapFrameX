@@ -1,5 +1,5 @@
 ﻿using CapFrameX.Data;
-using Microsoft.Toolkit.Wpf.UI.Controls;
+using CefSharp.Wpf;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -37,8 +37,8 @@ namespace CapFrameX
 				{
 					await Dispatcher.BeginInvoke(DispatcherPriority.Normal, (Action)(() =>
 					{
-						var browser = (WebView)sender;
-						browser.Navigate(url);
+						var browser = (ChromiumWebBrowser)sender;
+						browser.Load(url);
 					}));
 				});
 			_loginManager.EnableTokenRefresh(new CancellationToken());
