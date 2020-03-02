@@ -1,4 +1,5 @@
-﻿using CapFrameX.Webservice.Data;
+﻿using AutoMapper;
+using CapFrameX.Webservice.Data;
 using CapFrameX.Webservice.Data.DTO;
 using CapFrameX.Webservice.Data.Interfaces;
 using CapFrameX.Webservice.Data.Queries;
@@ -16,16 +17,19 @@ namespace CapFrameX.Webservice.Implementation.Handlers
 	{
 		private readonly IValidator<GetSessionCollectionByIdQuery> _validator;
 		private readonly ISessionService _capturesService;
+		private readonly IMapper _mapper;
 
-		public GetSessionCollectionByIdHandler(IValidator<GetSessionCollectionByIdQuery> validator, ISessionService capturesService)
+		public GetSessionCollectionByIdHandler(IValidator<GetSessionCollectionByIdQuery> validator, ISessionService capturesService, IMapper mapper)
 		{
 			_validator = validator;
 			_capturesService = capturesService;
+			_mapper = mapper;
 		}
 		public async Task<SessionCollectionDTO> Handle(GetSessionCollectionByIdQuery request, CancellationToken cancellationToken)
 		{
 			_validator.ValidateAndThrow(request);
-			return new SessionCollectionDTO();
+			var collection = await _capturesService.GetSessionCollection(request.Id);
+			return _mapper.Map<SessionCollectionDTO>(collection);
 		}
 	}
 }

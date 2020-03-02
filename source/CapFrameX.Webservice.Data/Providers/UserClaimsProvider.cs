@@ -20,19 +20,19 @@ namespace CapFrameX.Webservice.Data.Providers
 		{
 			var claimsPrincipal = _httpContextAccessor.HttpContext.User;
 
-			if (_httpContextAccessor.HttpContext.User is null)
+			if (_httpContextAccessor.HttpContext.User?.Identity?.IsAuthenticated ?? false)
 			{
-				return null;
+				var claims = new UserClaims()
+				{
+					Sub = Guid.Parse(claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier).Value),
+					Email = claimsPrincipal.FindFirst(ClaimTypes.Email).Value,
+					EmailVerified = bool.Parse(claimsPrincipal.FindFirst("email_verified").Value),
+					GivenName = claimsPrincipal.FindFirst(ClaimTypes.GivenName).Value,
+					FamilyName = claimsPrincipal.FindFirst(ClaimTypes.Surname).Value
+				};
+				return claims;
 			}
-			var claims = new UserClaims()
-			{
-				Sub = Guid.Parse(claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier).Value),
-				Email = claimsPrincipal.FindFirst(ClaimTypes.Email).Value,
-				EmailVerified = bool.Parse(claimsPrincipal.FindFirst("email_verified").Value),
-				GivenName = claimsPrincipal.FindFirst(ClaimTypes.GivenName).Value,
-				FamilyName = claimsPrincipal.FindFirst(ClaimTypes.Surname).Value
-			};
-			return claims;
+			return null;
 		}
 	}
 }

@@ -56,11 +56,11 @@ namespace CapFrameX.Webservice.Host.Controllers
 
         // POST: api/CaptureCollections
         [HttpPost]
-        public async Task<IActionResult> Post(IEnumerable<Session> sessions)
+        public async Task<IActionResult> Post(IEnumerable<CapFrameX.Data.Session.Contracts.ISession> sessions)
         {
             var result = await _mediator.Send(new UploadSessionsCommand() {
                 UserId = _userClaimsProvider.GetUserClaims()?.Sub,
-                Sessions = sessions
+                Sessions = sessions.Cast<Session>()
             });
             return CreatedAtAction("Get", new { Id = result } ,result);
         }

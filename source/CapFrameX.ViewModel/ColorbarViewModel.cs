@@ -336,7 +336,7 @@ namespace CapFrameX.ViewModel
 			});
 
 			HasCustomInfo = SelectedHardwareInfoSource == EHardwareInfoSource.Custom;
-
+			SetAggregatorEvents();
 			SetHardwareInfoDefaultsFromDatabase();
 		}
 

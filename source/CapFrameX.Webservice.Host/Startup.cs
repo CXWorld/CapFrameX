@@ -24,6 +24,7 @@ using Microsoft.IdentityModel.Tokens;
 using CapFrameX.Webservice.Data.Providers;
 using CapFrameX.Webservice.Persistance;
 using Microsoft.EntityFrameworkCore;
+using CapFrameX.Webservice.Data.Mappings;
 
 namespace CapFrameX.Webservice.Host
 {
@@ -45,12 +46,13 @@ namespace CapFrameX.Webservice.Host
 				typeof(GetSessionCollectionByIdQuery).GetTypeInfo().Assembly,
 				typeof(UploadSessionsCommand).GetTypeInfo().Assembly
 			);
-			services.AddAutoMapper(assembly);
+			services.AddAutoMapper(typeof(SessionCollectionProfile).Assembly);
 
 			services.AddScoped<ISessionService, SessionService>();
 			services.AddScoped<IUserClaimsProvider, UserClaimsProvider>();
 			services.AddDbContext<CXContext>(options => {
 				options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"));
+				options.UseLazyLoadingProxies();
 			});
 
 			services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -68,6 +70,9 @@ namespace CapFrameX.Webservice.Host
 				});
 
 			services.AddControllers()
+				.AddNewtonsoftJson(options => {
+					options.SerializerSettings.TypeNameHandling = Newtonsoft.Json.TypeNameHandling.Auto;
+				})
 				.AddFluentValidation(opt =>
 				{
 					opt.RegisterValidatorsFromAssemblyContaining<GetCaptureByIdQueryValidator>();

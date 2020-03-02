@@ -23,6 +23,7 @@ using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Reactive.Subjects;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -39,7 +40,7 @@ namespace CapFrameX.ViewModel
 		private readonly IAppConfiguration _appConfiguration;
 		private readonly ILogger<CloudViewModel> _logger;
 		private readonly IAppVersionProvider _appVersionProvider;
-
+		private readonly LoginManager _loginManager;
 		private bool _useUpdateSession;
 		private int _selectedCloudEntryIndex = -1;
 		private bool _showHelpText = true;
@@ -148,7 +149,7 @@ namespace CapFrameX.ViewModel
 			= new ObservableCollection<ICloudEntry>();
 
 		public CloudViewModel(IStatisticProvider statisticProvider, IRecordManager recordManager,
-			IEventAggregator eventAggregator, IAppConfiguration appConfiguration, ILogger<CloudViewModel> logger, IAppVersionProvider appVersionProvider)
+			IEventAggregator eventAggregator, IAppConfiguration appConfiguration, ILogger<CloudViewModel> logger, IAppVersionProvider appVersionProvider, LoginManager loginManager)
 		{
 			_statisticProvider = statisticProvider;
 			_recordManager = recordManager;
@@ -156,6 +157,7 @@ namespace CapFrameX.ViewModel
 			_appConfiguration = appConfiguration;
 			_logger = logger;
 			_appVersionProvider = appVersionProvider;
+			_loginManager = loginManager;
 			ClearTableCommand = new DelegateCommand(OnClearTable);
 			SelectDownloadFolderCommand = new DelegateCommand(OnSelectDownloadFolder);
 			UploadRecordsCommand = new DelegateCommand(async () =>
@@ -286,18 +288,25 @@ namespace CapFrameX.ViewModel
 		private async Task UploadRecords()
 		{
 
-			var requestContent = new MultipartFormDataContent();
-
-			requestContent.Add(new StringContent(_appVersionProvider.GetAppVersion().ToString()), "appVersion");
-			foreach (var file in CloudEntries)
+			var sessions = new List<ISession>();
+			foreach (var entry in CloudEntries)
 			{
-				var fileInfo = file.FileRecordInfo.FileInfo;
-				var imageContent = new ByteArrayContent(File.ReadAllBytes(fileInfo.FullName));
-				requestContent.Add(imageContent, "capture", fileInfo.Name);
+				sessions.Add(_recordManager.LoadData(entry.FileRecordInfo.FullPath));
 			}
+
+			var contentAsJson = JsonConvert.SerializeObject(sessions, new JsonSerializerSettings()
+			{
+				TypeNameHandling = TypeNameHandling.Auto
+			});
 			using (var client = new HttpClient())
 			{
-				var response = await client.PostAsync(@"https://capframex.com/api/capturecollections", requestContent);
+				if (_loginManager.State?.Token != null)
+				{
+					client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _loginManager.State.Token.AccessToken);
+				}
+				var content = new StringContent(contentAsJson);
+				content.Headers.ContentType.MediaType = "application/json";
+				var response = await client.PostAsync(@"http://localhost:5000/api/SessionCollections", content);
 
 				if (response.IsSuccessStatusCode)
 				{
@@ -306,15 +315,15 @@ namespace CapFrameX.ViewModel
 				}
 				else
 				{
-					var content = await response.Content.ReadAsStringAsync();
-					_logger.LogError("Upload of Captures failed. {error}", content);
+					var responseBody = await response.Content.ReadAsStringAsync();
+					_logger.LogError("Upload of Captures failed. {error}", responseBody);
 				}
 			}
 		}
 
 		private async Task DownloadCaptureCollection(string id)
 		{
-			var url = $@"https://capframex.com/api/sessioncollections/{id}";
+			var url = $@"http://localhost:5000/api/SessionCollections/{id}";
 			using (var client = new HttpClient())
 			{
 				var response = await client.GetAsync(url);
