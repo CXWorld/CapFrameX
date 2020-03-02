@@ -23,6 +23,7 @@ using System.Windows.Media;
 using LiveCharts.Wpf;
 using CapFrameX.Data.Session.Contracts;
 using CapFrameX.StatisticsExtensions;
+using OxyPlot.Series;
 
 namespace CapFrameX.ViewModel
 {
@@ -44,7 +45,6 @@ namespace CapFrameX.ViewModel
 		private bool _useUpdateSession;
 		private ISession _session;
 		private IFileRecordInfo _recordInfo;
-		private string _frametimeDisplayChangedTimeCorrelation = "0%";
 		private string _currentGameName;
 		private string _syncRangePercentage = "0%";
 		private string _syncRangeLower;
@@ -154,16 +154,6 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-		public string FrametimeDisplayChangedTimeCorrelation
-		{
-			get { return _frametimeDisplayChangedTimeCorrelation; }
-			set
-			{
-				_frametimeDisplayChangedTimeCorrelation = value;
-				RaisePropertyChanged();
-			}
-		}
-
 		public string CurrentGameName
 		{
 			get { return _currentGameName; }
@@ -252,7 +242,7 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-		public ICommand CopyDisplayChangeTimeValuesCommand { get; }
+		public ICommand CopyUntilDisplayedTimesValuesCommand { get; }
 
 		public ICommand CopyDisplayTimesHistogramDataCommand { get; }
 
@@ -268,7 +258,7 @@ namespace CapFrameX.ViewModel
 			_eventAggregator = eventAggregator;
 			_appConfiguration = appConfiguration;
 
-			CopyDisplayChangeTimeValuesCommand = new DelegateCommand(OnCopyDisplayChangeTimeValues);
+			CopyUntilDisplayedTimesValuesCommand = new DelegateCommand(OnCopyUntilDisplayedTimesValues);
 			CopyDisplayTimesHistogramDataCommand = new DelegateCommand(CopDisplayTimesHistogramData);
 			CopyInputLagHistogramDataCommand = new DelegateCommand(CopyInputLagHistogramData);
 			CopyInputLagStatisticalParameterCommand = new DelegateCommand(CopyInputLagStatisticalParameter);
@@ -307,34 +297,18 @@ namespace CapFrameX.ViewModel
 									// Do update actions
 									CurrentGameName = msg.RecordInfo.GameName;
 									UpdateCharts();
-									FrametimeDisplayChangedTimeCorrelation =
-										GetCorrelation(msg.CurrentSession);
 									SyncRangePercentage = GetSyncRangePercentageString();
 								}
 							});
 		}
 
-		private string GetCorrelation(ISession currentSession)
-		{
-			var appMissed = _session.Runs.SelectMany(r => r.CaptureData.Dropped).ToArray();
-			var currentSessionDisplayTimes = currentSession.Runs.SelectMany(r => r.CaptureData.MsBetweenDisplayChange).ToArray();
-			var frametimes = currentSession.Runs.SelectMany(r => r.CaptureData.MsBetweenPresents).Where((x, i) => !appMissed[i]);
-			var displayChangedTimes = currentSessionDisplayTimes.Where((x, i) => !appMissed[i]);
-
-			if (frametimes.Count() != displayChangedTimes.Count())
-				return "NaN";
-
-			var correlation = Correlation.Pearson(frametimes, displayChangedTimes);
-			return Math.Round(correlation * 100, 0).ToString(CultureInfo.InvariantCulture) + "%";
-		}
-
-		private void OnCopyDisplayChangeTimeValues()
+		private void OnCopyUntilDisplayedTimesValues()
 		{
 			if (_session == null)
 				return;
 
 			StringBuilder builder = new StringBuilder();
-			var currentSessionDisplayTimes = _session.Runs.SelectMany(r => r.CaptureData.MsBetweenDisplayChange).ToArray();
+			var currentSessionDisplayTimes = _session.Runs.SelectMany(r => r.CaptureData.MsUntilDisplayed).ToArray();
 			foreach (var dcTime in currentSessionDisplayTimes)
 			{
 				builder.Append(dcTime + Environment.NewLine);
@@ -380,15 +354,17 @@ namespace CapFrameX.ViewModel
 
 			// Do not run on background thread, leads to errors on analysis page
 			var inputLagTimes = _session.GetApproxInputLagTimes().Select(val => val += InputLagOffset).ToList();
+			var upperBoundInputLagTimes = _session.GetUpperBoundInputLagTimes().Select(val => val += InputLagOffset).ToList();
+			var lowerBoundInputLagTimes = _session.GetLowerBoundInputLagTimes().Select(val => val += InputLagOffset).ToList();
 			var frametimes = _session.Runs.SelectMany(r => r.CaptureData.MsBetweenPresents).ToList();
-			var displayTimes = _session.Runs.SelectMany(r => r.CaptureData.MsBetweenDisplayChange).ToList();
+			var displayTimes = _session.Runs.SelectMany(r => r.CaptureData.MsUntilDisplayed).ToList();
 			var appMissed = _session.Runs.SelectMany(r => r.CaptureData.Dropped).ToList();
 
 			SetFrameDisplayTimesChart(frametimes, displayTimes);
-			SetFrameInputLagChart(frametimes, inputLagTimes);
+			SetFrameInputLagChart(frametimes, upperBoundInputLagTimes, lowerBoundInputLagTimes);
 			Task.Factory.StartNew(() => SetDisplayTimesHistogramChart(displayTimes));
 			Task.Factory.StartNew(() => SetInputLagHistogramChart(inputLagTimes));
-			Task.Factory.StartNew(() => SetInputLagStatisticChart(inputLagTimes));
+			Task.Factory.StartNew(() => SetInputLagStatisticChart(inputLagTimes, upperBoundInputLagTimes, lowerBoundInputLagTimes));
 			Task.Factory.StartNew(() => SetDroppedFramesChart(appMissed));
 		}
 
@@ -411,16 +387,16 @@ namespace CapFrameX.ViewModel
 				Color = ColorRessource.FrametimeStroke
 			};
 
-			var displayChangedTimesSeries = new OxyPlot.Series.LineSeries
+			var untilDisplayedTimesSeries = new OxyPlot.Series.LineSeries
 			{
-				Title = "Display changed times",
+				Title = "Until displayed times",
 				StrokeThickness = 1,
 				LegendStrokeThickness = 4,
 				Color = ColorRessource.FrametimeMovingAverageStroke
 			};
 
 			frametimeSeries.Points.AddRange(frametimes.Select((x, i) => new DataPoint(i, x)));
-			displayChangedTimesSeries.Points.AddRange(displaytimes.Select((x, i) => new DataPoint(i, x)));
+			untilDisplayedTimesSeries.Points.AddRange(displaytimes.Select((x, i) => new DataPoint(i, x)));
 
 			Application.Current.Dispatcher.Invoke(new Action(() =>
 			{
@@ -433,7 +409,7 @@ namespace CapFrameX.ViewModel
 				};
 
 				tmp.Series.Add(frametimeSeries);
-				tmp.Series.Add(displayChangedTimesSeries);
+				tmp.Series.Add(untilDisplayedTimesSeries);
 
 				//Axes
 				//X
@@ -456,7 +432,7 @@ namespace CapFrameX.ViewModel
 				{
 					Key = "yAxis",
 					Position = OxyPlot.Axes.AxisPosition.Left,
-					Title = "Frametime + display change time [ms]",
+					Title = "Frametime + until displayed time [ms]",
 					Minimum = yMin - (yMax - yMin) / 6,
 					Maximum = yMax + (yMax - yMin) / 6,
 					MajorGridlineStyle = LineStyle.Solid,
@@ -498,7 +474,7 @@ namespace CapFrameX.ViewModel
 				{
 					new LiveCharts.Wpf.ColumnSeries
 					{
-						Title = "Display changed time distribution",
+						Title = "Until displayed time distribution",
 						Values = histogramValues,
 						Fill = new SolidColorBrush(Color.FromRgb(241, 125, 32)),
 						DataLabels = true,
@@ -536,7 +512,7 @@ namespace CapFrameX.ViewModel
 			{
 				InputLagHistogramCollection = new SeriesCollection
 				{
-					new ColumnSeries
+					new LiveCharts.Wpf.ColumnSeries
 					{
 						Title = "Input lag time distribution",
 						Values = histogramValues,
@@ -550,29 +526,29 @@ namespace CapFrameX.ViewModel
 			}));
 		}
 
-		private void SetInputLagStatisticChart(IList<double> inputLagTimes)
+		private void SetInputLagStatisticChart(IList<double> inputLagTimes, IList<double> upperBoundInputLagTimes, IList<double> lowerBoundInputLagTimes)
 		{
 			if (inputLagTimes == null || !inputLagTimes.Any())
 				return;
 
-			var p99_quantile = _frametimeStatisticProvider.GetPQuantileSequence(inputLagTimes, 0.99);
-			var average = inputLagTimes.Average();
-			var p1_quantile = _frametimeStatisticProvider.GetPQuantileSequence(inputLagTimes, 0.01);
+			var upperBound = upperBoundInputLagTimes.Average();
+			var expected = inputLagTimes.Average();
+			var lowerBound = lowerBoundInputLagTimes.Average();
 
 			Application.Current.Dispatcher.Invoke(new Action(() =>
 			{
 				IChartValues values = new ChartValues<double>
 				{
-					p1_quantile,
-					average,
-					p99_quantile
+					upperBound,
+					expected,
+					lowerBound
 				};
 
 				InputLagStatisticCollection = new SeriesCollection
 				{
 					new RowSeries
 					{
-						Title = "Input lag statistic",
+						Title = "Average input lag",
 						Fill = new SolidColorBrush(Color.FromRgb(241, 125, 32)),
 						Values = values,
 						DataLabels = true,
@@ -585,11 +561,10 @@ namespace CapFrameX.ViewModel
 				InputLagBarMaxValue = (int)((values as IList<double>).Max() + maxOffset);
 
 				InputLagParameterLabels = new List<string>
-				{
-					//{ "99%", "Average", "1%"}
-					"P1",
-					"Average",
-					"P99"
+				{					
+					"Upper bound",
+					"Expected",
+					"Lower bound"
 				}.ToArray();
 			}));
 		}
@@ -603,7 +578,7 @@ namespace CapFrameX.ViewModel
 			{
 				DroppedFramesStatisticCollection = new SeriesCollection()
 				{
-					new PieSeries
+					new LiveCharts.Wpf.PieSeries
 					{
 						Title = "Synced frames",
 						Values = new ChartValues<int>(){ appMissed.Count(flag => flag == false) },
@@ -641,13 +616,13 @@ namespace CapFrameX.ViewModel
 				.ToString() + "%";
 		}
 
-		private void SetFrameInputLagChart(IList<double> frametimes, IList<double> inputlagtimes)
+		private void SetFrameInputLagChart(IList<double> frametimes, IList<double> upperBoundInputlagtimes, IList<double> lowerBoundInputlagtimes)
 		{
 			var appMissed = _session.Runs.SelectMany(r => r.CaptureData.Dropped).ToList();
 			var filteredFrametimes = frametimes.Where((ft, i) => appMissed[i] != true).ToList();
 
-			var yMin = Math.Min(filteredFrametimes.Min(), inputlagtimes.Min());
-			var yMax = Math.Max(filteredFrametimes.Max(), inputlagtimes.Max());
+			var yMin = Math.Min(filteredFrametimes.Min(), lowerBoundInputlagtimes.Min());
+			var yMax = Math.Max(filteredFrametimes.Max(), upperBoundInputlagtimes.Max());
 
 			var frametimeSeries = new OxyPlot.Series.LineSeries
 			{
@@ -657,16 +632,35 @@ namespace CapFrameX.ViewModel
 				Color = ColorRessource.FrametimeStroke
 			};
 
-			var inputLagSeries = new OxyPlot.Series.LineSeries
+			var upperBoundInputLagSeries = new OxyPlot.Series.LineSeries
 			{
-				Title = "Input lag",
+				Title = "Input lag upper bound",
 				StrokeThickness = 1,
 				LegendStrokeThickness = 4,
-				Color = ColorRessource.FrametimeMovingAverageStroke
+				Color = OxyColor.FromRgb(255, 150, 150)
+			};
+
+			var lowerBoundInputLagSeries = new OxyPlot.Series.LineSeries
+			{
+				Title = "Input lag lower bound",
+				StrokeThickness = 1,
+				LegendStrokeThickness = 4,
+				Color = OxyColor.FromRgb(200, 140, 140)
+			};
+
+			var areaSeries = new AreaSeries()
+			{
+				StrokeThickness = 1,
+				Color = OxyColors.Transparent,
+				Fill = OxyColor.FromArgb(64, 225, 145, 145)
 			};
 
 			frametimeSeries.Points.AddRange(filteredFrametimes.Select((x, i) => new DataPoint(i, x)));
-			inputLagSeries.Points.AddRange(inputlagtimes.Select((x, i) => new DataPoint(i, x)));
+			upperBoundInputLagSeries.Points.AddRange(upperBoundInputlagtimes.Select((x, i) => new DataPoint(i, x)));
+			lowerBoundInputLagSeries.Points.AddRange(lowerBoundInputlagtimes.Select((x, i) => new DataPoint(i, x)));
+			areaSeries.Points.AddRange(lowerBoundInputlagtimes.Select((x, i) => new DataPoint(i, x)));
+			areaSeries.Points2.AddRange(upperBoundInputlagtimes.Select((x, i) => new DataPoint(i, x)));
+
 
 			Application.Current.Dispatcher.Invoke(new Action(() =>
 			{
@@ -679,7 +673,9 @@ namespace CapFrameX.ViewModel
 				};
 
 				tmp.Series.Add(frametimeSeries);
-				tmp.Series.Add(inputLagSeries);
+				tmp.Series.Add(upperBoundInputLagSeries);
+				tmp.Series.Add(lowerBoundInputLagSeries);
+				tmp.Series.Add(areaSeries);
 
 				//Axes
 				//X
@@ -724,8 +720,6 @@ namespace CapFrameX.ViewModel
 			{
 				CurrentGameName = _recordInfo.GameName;
 				UpdateCharts();
-				FrametimeDisplayChangedTimeCorrelation =
-					GetCorrelation(_session);
 				SyncRangePercentage = GetSyncRangePercentageString();
 			}
 		}

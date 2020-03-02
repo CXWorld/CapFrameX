@@ -43,11 +43,12 @@ namespace CapFrameX.Data
 
 		private FileRecordInfo(FileInfo fileInfo, ISession session)
 		{
+			var creationDateTime = session.Info.CreationDate.ToLocalTime();
 			FileInfo = fileInfo;
 			FullPath = fileInfo.FullName;
 			Id = session.Info.Id.ToString();
-			CreationDate = session.Info.CreationDate.ToString("yyyy-MM-dd");
-			CreationTime = session.Info.CreationDate.ToString("HH:mm:ss");
+			CreationDate = creationDateTime.ToString("yyyy-MM-dd");
+			CreationTime = creationDateTime.ToString("HH:mm:ss");
 			ProcessName = session.Info.ProcessName;
 			ProcessorName = session.Info.Processor;
 			GraphicCardName = session.Info.GPU;

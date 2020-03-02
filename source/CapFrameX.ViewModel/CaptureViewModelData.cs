@@ -18,7 +18,7 @@ namespace CapFrameX.ViewModel
 			// explicit hook, only one process
 			if (!string.IsNullOrWhiteSpace(SelectedProcessToCapture))
 			{
-				Task.Run(() => WriteExtractedCaptureDataToFile(SelectedProcessToCapture));
+				Task.Run(() => WriteExtractedCaptureDataToFileAsync(SelectedProcessToCapture));
 			}
 			// auto hook with filtered process list
 			else
@@ -26,11 +26,11 @@ namespace CapFrameX.ViewModel
 				var filter = CaptureServiceConfiguration.GetProcessIgnoreList();
 				var process = ProcessesToCapture.FirstOrDefault();
 
-				Task.Run(() => WriteExtractedCaptureDataToFile(process));
+				Task.Run(() => WriteExtractedCaptureDataToFileAsync(process));
 			}
 		}
 
-		private void WriteExtractedCaptureDataToFile(string processName)
+		private async Task WriteExtractedCaptureDataToFileAsync(string processName)
 		{
 			if (string.IsNullOrWhiteSpace(processName))
 				return;
@@ -39,7 +39,6 @@ namespace CapFrameX.ViewModel
 			// Skip first line to compensate the first frametime being one frame before original capture start point.
 			var normalizedAdjustedCaptureData = NormalizeTimes(adjustedCaptureData.Skip(1));
 			var sessionRun = _recordManager.ConvertPresentDataLinesToSessionRun(normalizedAdjustedCaptureData);
-			var filePath = _recordManager.GetOutputFilename(processName);
 
 			if (adjustedCaptureData == null)
 			{
@@ -55,7 +54,7 @@ namespace CapFrameX.ViewModel
 
 			if (AppConfiguration.UseRunHistory)
 			{
-				Task.Factory.StartNew(() => _overlayService.AddRunToHistory(sessionRun, processName));
+				await Task.Factory.StartNew(() => _overlayService.AddRunToHistory(sessionRun, processName));
 			}
 
 			StartFillArchive();
@@ -70,7 +69,7 @@ namespace CapFrameX.ViewModel
 			if (AppConfiguration.UseAggregation && AppConfiguration.SaveAggregationOnly)
 				return;
 
-			bool checkSave = _recordManager.SaveSessionRunsToFile(new ISessionRun[] { sessionRun }, filePath, processName);
+			bool checkSave = await _recordManager.SaveSessionRunsToFile(new ISessionRun[] { sessionRun }, processName);
 
 			if (!checkSave)
 				AddLoggerEntry("Error while saving capture data.");
