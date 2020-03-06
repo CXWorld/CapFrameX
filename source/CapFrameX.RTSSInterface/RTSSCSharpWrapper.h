@@ -36,7 +36,7 @@ public:
 				_coreControl->Refresh();
 			}
 		}
-		catch (Exception ^ ex)
+		catch (Exception^ ex)
 		{
 			_exceptionAction->Invoke(ex);
 		}
@@ -51,7 +51,7 @@ public:
 				_coreControl->ReleaseOSD();
 			}
 		}
-		catch (Exception ^ ex)
+		catch (Exception^ ex)
 		{
 			_exceptionAction->Invoke(ex);
 		}
@@ -66,7 +66,7 @@ public:
 				_coreControl->IsCaptureTimerActive = isActive;
 			}
 		}
-		catch (Exception ^ ex)
+		catch (Exception^ ex)
 		{
 			_exceptionAction->Invoke(ex);
 		}
@@ -97,7 +97,7 @@ public:
 				}
 			}
 		}
-		catch (Exception ^ ex)
+		catch (Exception^ ex)
 		{
 			_exceptionAction->Invoke(ex);
 		}
@@ -128,7 +128,7 @@ public:
 				}
 			}
 		}
-		catch (Exception ^ ex)
+		catch (Exception^ ex)
 		{
 			_exceptionAction->Invoke(ex);
 		}
@@ -143,7 +143,7 @@ public:
 				_coreControl->RunHistoryAggregation = aggregation;
 			}
 		}
-		catch (Exception ^ ex)
+		catch (Exception^ ex)
 		{
 			_exceptionAction->Invoke(ex);
 		}
@@ -178,7 +178,7 @@ public:
 				}
 			}
 		}
-		catch (Exception ^ ex)
+		catch (Exception^ ex)
 		{
 			_exceptionAction->Invoke(ex);
 		}
