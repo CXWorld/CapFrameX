@@ -316,6 +316,7 @@ namespace CapFrameX.Data
                     { // If e is IOException we will throw it again, so the retry will execute the function again
                         return Observable.Throw<IFileRecordInfo>(e);
                     } // otherwise, we return empty
+                    _logger.LogError(e, "Error Creating FileRecordInfo of {path}", fileInfo.FullName);
                     return Observable.Empty<IFileRecordInfo>();
                 })
                 .Retry(_fileAccessIntervalRetryLimit)

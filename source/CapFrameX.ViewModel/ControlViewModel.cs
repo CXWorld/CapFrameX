@@ -184,8 +184,8 @@ namespace CapFrameX.ViewModel
 			_recordObserver.DirectoryFilesStream
 				.DistinctUntilChanged()
 				.Do(_ => RecordInfoList.Clear())
-				.SelectMany(fileInfos => 
-					fileInfos.ToObservable().SelectMany(fi =>_recordManager.GetFileRecordInfo(fi)).Catch<IFileRecordInfo, InvalidOperationException>(_ => null)
+				.SelectMany(fileInfos =>
+					fileInfos.ToObservable().SelectMany(fi => Observable.FromAsync(() => _recordManager.GetFileRecordInfo(fi)).Catch<IFileRecordInfo, Exception>(_ => null))
 						.Where(recordFileInfo => recordFileInfo is IFileRecordInfo)
 						.Distinct(recordFileInfo => recordFileInfo.Hash)
 				)
@@ -196,7 +196,7 @@ namespace CapFrameX.ViewModel
 				});
 
 			_recordObserver.FileCreatedStream
-				.SelectMany(fileInfo => _recordManager.GetFileRecordInfo(fileInfo))
+				.SelectMany(fi => Observable.FromAsync(() => _recordManager.GetFileRecordInfo(fi)).Catch<IFileRecordInfo, Exception>(_ => null))
 				.Where(recordInfo => recordInfo is IFileRecordInfo)
 				.ObserveOn(context)
 				.Subscribe(recordInfo =>
@@ -216,21 +216,21 @@ namespace CapFrameX.ViewModel
 				});
 
 			_recordObserver.FileChangedStream
-				.SelectMany(fileInfo => _recordManager.GetFileRecordInfo(fileInfo))
+				.SelectMany(fi => Observable.FromAsync(() => _recordManager.GetFileRecordInfo(fi)).Catch<IFileRecordInfo, Exception>(_ => null))
 				.Where(recordInfo => recordInfo is IFileRecordInfo)
 				.ObserveOn(context)
 				.Subscribe(recordInfo =>
 				{
-				var itemToRemove = RecordInfoList.FirstOrDefault(ri => ri.FullPath.Equals(recordInfo.FullPath));
-				if (itemToRemove is IFileRecordInfo)
-				{
-					var selectedRecordId = _selectedRecordInfo?.Id;
-					var itemIndex = RecordInfoList.IndexOf(itemToRemove);
-					RecordInfoList[itemIndex] = recordInfo;
-					if (selectedRecordId?.Equals(itemToRemove.Id) ?? false)
+					var itemToRemove = RecordInfoList.FirstOrDefault(ri => ri.FullPath.Equals(recordInfo.FullPath));
+					if (itemToRemove is IFileRecordInfo)
 					{
-						SelectedRecordInfo = recordInfo;
-						_updateRecordInfosEvent.Publish(new ViewMessages.UpdateRecordInfos(itemToRemove));
+						var selectedRecordId = _selectedRecordInfo?.Id;
+						var itemIndex = RecordInfoList.IndexOf(itemToRemove);
+						RecordInfoList[itemIndex] = recordInfo;
+						if (selectedRecordId?.Equals(itemToRemove.Id) ?? false)
+						{
+							SelectedRecordInfo = recordInfo;
+							_updateRecordInfosEvent.Publish(new ViewMessages.UpdateRecordInfos(itemToRemove));
 						}
 					}
 				});
@@ -320,14 +320,16 @@ namespace CapFrameX.ViewModel
 
 		private void OnSelectedRecordInfoChanged()
 		{
-			if (_selectedRecordInfo is null) {
+			if (_selectedRecordInfo is null)
+			{
 				ResetInfoEditBoxes();
-			} else 
+			}
+			else
 			{
 				var session = _recordManager.LoadData(_selectedRecordInfo.FullPath);
 				if (session is ISession)
 				{
-					if(_updateSessionEvent != null)
+					if (_updateSessionEvent != null)
 					{
 						_updateSessionEvent.Publish(new ViewMessages.UpdateSession(session, SelectedRecordInfo));
 					}
