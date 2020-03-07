@@ -1,5 +1,8 @@
 ﻿using CapFrameX.Data;
+using CapFrameX.EventAggregation.Messages;
+using CefSharp;
 using CefSharp.Wpf;
+using Prism.Events;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,10 +27,18 @@ namespace CapFrameX
 	public partial class LoginWindow : Window
 	{
 		private readonly LoginManager _loginManager;
+		private readonly PubSubEvent<AppMessages.LoginState> _loginEvent;
 
 		public LoginWindow(LoginManager loginManager)
 		{
 			_loginManager = loginManager;
+			var cefSettings = new CefSettings() { 
+				UserAgent = "Chrome"
+			};
+			if (!Cef.IsInitialized)
+			{
+				Cef.Initialize(cefSettings);
+			}
 			InitializeComponent();
 		}
 
@@ -41,7 +52,6 @@ namespace CapFrameX
 						browser.Load(url);
 					}));
 				});
-			_loginManager.EnableTokenRefresh(new CancellationToken());
 			Close();
 		}
 	}

@@ -29,8 +29,10 @@ namespace CapFrameX.ViewModel
 		private readonly IAppConfiguration _appConfiguration;
 		private readonly ILogger<ColorbarViewModel> _logger;
 		private readonly IShell _shell;
+		private readonly LoginManager _loginManager;
 		private PubSubEvent<AppMessages.UpdateObservedDirectory> _updateObservedFolder;
 		private PubSubEvent<AppMessages.OpenLoginWindow> _openLoginWindow;
+		private PubSubEvent<AppMessages.LoginState> _logout;
 
 		private bool _captureIsChecked = true;
 		private bool _overlayIsChecked;
@@ -306,12 +308,15 @@ namespace CapFrameX.ViewModel
 
 		public IList<int> RoundingDigits { get; }
 
+		public bool IsLoggedIn { get; private set; }
+
 		public ColorbarViewModel(IRegionManager regionManager,
 								 IRecordDirectoryObserver recordDirectoryObserver,
 								 IEventAggregator eventAggregator,
 								 IAppConfiguration appConfiguration,
 								 ILogger<ColorbarViewModel> logger,
-								 IShell shell)
+								 IShell shell,
+								 LoginManager loginManager)
 		{
 			_regionManager = regionManager;
 			_recordDirectoryObserver = recordDirectoryObserver;
@@ -319,7 +324,7 @@ namespace CapFrameX.ViewModel
 			_appConfiguration = appConfiguration;
 			_logger = logger;
 			_shell = shell;
-
+			_loginManager = loginManager;
 			StutteringFactor = _appConfiguration.StutteringFactor;
 			SelectWindowSize = _appConfiguration.MovingAverageWindowSize;
 			FpsValuesRoundingDigits = _appConfiguration.FpsValuesRoundingDigits;
@@ -343,6 +348,11 @@ namespace CapFrameX.ViewModel
 		public void OpenLoginWindow()
 		{
 			_openLoginWindow.Publish(new AppMessages.OpenLoginWindow());
+		}
+
+		public async void Logout()
+		{
+			await _loginManager.Logout();
 		}
 
 		private void SetHardwareInfoDefaultsFromDatabase()
@@ -481,6 +491,11 @@ namespace CapFrameX.ViewModel
 		{
 			_updateObservedFolder = _eventAggregator.GetEvent<PubSubEvent<AppMessages.UpdateObservedDirectory>>();
 			_openLoginWindow = _eventAggregator.GetEvent<PubSubEvent<AppMessages.OpenLoginWindow>>();
+			_logout = _eventAggregator.GetEvent<PubSubEvent<AppMessages.LoginState>>();
+			_eventAggregator.GetEvent<PubSubEvent<AppMessages.LoginState>>().Subscribe(state => {
+				IsLoggedIn = state.IsLoggedIn;
+				RaisePropertyChanged(nameof(IsLoggedIn));
+			});
 		}
 	}
 }

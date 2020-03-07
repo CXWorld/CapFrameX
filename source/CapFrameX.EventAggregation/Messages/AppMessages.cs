@@ -23,5 +23,15 @@
 		}
 
 		public class OpenLoginWindow { }
+
+		public class LoginState
+		{
+			public bool IsLoggedIn { get; }
+
+			public LoginState(bool loggedIn)
+			{
+				IsLoggedIn = loggedIn;
+			}
+		}
 	}
 }

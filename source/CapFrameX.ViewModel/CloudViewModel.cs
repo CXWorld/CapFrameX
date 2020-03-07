@@ -302,7 +302,17 @@ namespace CapFrameX.ViewModel
 			{
 				if (_loginManager.State?.Token != null)
 				{
-					client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _loginManager.State.Token.AccessToken);
+					try
+					{
+						await _loginManager.RefreshTokenIfNeeded();
+						if (_loginManager.State.IsSigned)
+						{
+							client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _loginManager.State.Token.AccessToken);
+						}
+					} catch(Exception e)
+					{
+						_logger.LogWarning(e, "Something went wrong while Refreshing the Accesstoken. Using Guest Mode");
+					}
 				}
 				var content = new StringContent(contentAsJson);
 				content.Headers.ContentType.MediaType = "application/json";

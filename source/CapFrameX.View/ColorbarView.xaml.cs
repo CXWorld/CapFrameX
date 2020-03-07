@@ -165,5 +165,10 @@ namespace CapFrameX.View
         {
             (DataContext as ColorbarViewModel).OpenLoginWindow();
         }
+
+        private void Logout_Click(object sender, RoutedEventArgs e)
+        {
+            (DataContext as ColorbarViewModel).Logout();
+        }
     }
 }

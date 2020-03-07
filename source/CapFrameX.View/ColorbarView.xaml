@@ -23,6 +23,8 @@
 				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Slider.xaml" />
 			</ResourceDictionary.MergedDictionaries>
 			<mvvm:BoolToVisibilityConverter x:Key="FalseToCollapsedConverter" TrueValue="Visible" FalseValue="Collapsed"/>
+			<mvvm:BoolToVisibilityConverter x:Key="TrueToVisibleConverter" FalseValue="Hidden" TrueValue="Visible"/>
+			<mvvm:BoolToVisibilityConverter x:Key="FalseToVisibleConverter" FalseValue="Visible" TrueValue="Hidden"/>
 			<mvvm:EnumDescriptionConverter x:Key="EnumDescriptionConverter"/>
 		</ResourceDictionary>
 	</UserControl.Resources>
@@ -81,10 +83,19 @@
                             Margin="0 0 15 0"
 						    ToolTip="Login"
 						    materialDesign:RippleAssist.Feedback="#DD000000"
-						    Width="32" Height="32" Click="Login_Click">
+						    Width="32" Height="32" Click="Login_Click"
+							Visibility="{Binding Path=DataContext.IsLoggedIn, ElementName=ColorbarViewName, Converter={StaticResource FalseToVisibleConverter}}">
                         <materialDesign:PackIcon Kind="Login"/>
                     </Button>
-                    <TextBlock>           
+					<Button Style="{StaticResource MaterialDesignFloatingActionMiniButton}"
+                            Margin="0 0 15 0"
+						    ToolTip="Logout"
+						    materialDesign:RippleAssist.Feedback="#DD000000"
+						    Width="32" Height="32" Click="Logout_Click"
+							Visibility="{Binding Path=DataContext.IsLoggedIn, ElementName=ColorbarViewName, Converter={StaticResource TrueToVisibleConverter}}">
+						<materialDesign:PackIcon Kind="Logout"/>
+					</Button>
+					<TextBlock>           
 			            <Hyperlink NavigateUri="https://capframex.com/" RequestNavigate="Hyperlink_RequestNavigate" TextDecorations="None">
 				            <TextBlock Margin="0 5 0 0" FontSize="16" Foreground="White" Text="CapFrameX.com"/>
 			            </Hyperlink>	

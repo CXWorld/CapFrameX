@@ -1,5 +1,4 @@
 ﻿using CapFrameX.Contracts.Data;
-using CapFrameX.Data;
 using CapFrameX.Data.Session.Contracts;
 
 namespace CapFrameX.EventAggregation.Messages

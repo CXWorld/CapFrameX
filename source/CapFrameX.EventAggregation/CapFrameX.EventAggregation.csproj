@@ -75,10 +75,6 @@
       <Project>{6be48cf4-c2f0-44cb-95d8-7500a3cb430e}</Project>
       <Name>CapFrameX.Data.Session</Name>
     </ProjectReference>
-    <ProjectReference Include="..\CapFrameX.Data\CapFrameX.Data.csproj">
-      <Project>{d328b391-432c-4a0e-9a7e-57a58aa592d4}</Project>
-      <Name>CapFrameX.Data</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

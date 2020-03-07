@@ -1,4 +1,7 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using CapFrameX.EventAggregation.Messages;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using Prism.Events;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -19,22 +22,36 @@ namespace CapFrameX.Data
 	public class LoginManager
 	{
 		private readonly ILogger<LoginManager> _logger;
+		private readonly PubSubEvent<AppMessages.LoginState> _loginStateEvent;
 
 		public OAuthState State { get; } = new OAuthState();
-		public OAuthRequest Request { get; private set; }
+		private OAuthRequest Request { get; set; } = OAuthRequest.BuildLoopbackRequest(new string[] { "profile", "offline_access" });
 
-		public LoginManager(ILogger<LoginManager> logger)
+		public LoginManager(ILogger<LoginManager> logger, IEventAggregator eventAggregator)
 		{
 			_logger = logger;
+			_loginStateEvent = eventAggregator.GetEvent<PubSubEvent<AppMessages.LoginState>>();
+			Initialize();
+		}
+
+		public void Initialize()
+		{
+			var fileInfo = new FileInfo("OAuthState.dat");
+			if (fileInfo.Exists)
+			{
+				State.Token = OAuthToken.FromJson(File.ReadAllText(fileInfo.FullName));
+			}
+			Task.Run(() => RefreshTokenIfNeeded());
+		}
+
+		public async Task Logout()
+		{
+			ApplyToken(null);
 		}
 
 		public async Task HandleRedirect(Func<string, Task> navigateAction)
 		{
 			State.Token = null;
-
-			var scopes = new string[] { "profile", "offline_access" };
-
-			Request = OAuthRequest.BuildLoopbackRequest(scopes);
 			using (var listener = new HttpListener())
 			{
 				listener.Prefixes.Add(Request.RedirectUri);
@@ -62,8 +79,16 @@ namespace CapFrameX.Data
 
 				string code = context.Request.QueryString["code"];
 				_logger.LogInformation("Login successfull");
-				State.Token = await Request.ExchangeCodeForAccessToken(code);
+				ApplyToken(await Request.ExchangeCodeForAccessToken(code));
 				_logger.LogDebug("Token information: {@token}", State.Token);
+			}
+		}
+
+		public async Task RefreshTokenIfNeeded()
+		{
+			if(State.Token != null && State.IsNotSigned)
+			{
+				await RefreshToken();
 			}
 		}
 
@@ -80,8 +105,28 @@ namespace CapFrameX.Data
 				.TakeWhile(_ => State.Token != null && !cancellationToken.IsCancellationRequested)
 				.Subscribe(token =>
 				{
-					State.Token = token;
+					ApplyToken(token);
 				});
+		}
+
+		private void ApplyToken(OAuthToken token)
+		{
+			State.Token = token;
+			var fileInfo = new FileInfo("OAuthState.dat");
+			if (State.Token is null)
+			{
+				_loginStateEvent.Publish(new AppMessages.LoginState(false));
+				File.Delete(fileInfo.FullName);
+			} else
+			{
+				_loginStateEvent.Publish(new AppMessages.LoginState(true));
+				File.WriteAllText(fileInfo.FullName, token.ToJson());
+			}
+		}
+
+		private async Task RefreshToken()
+		{
+			ApplyToken(await Request.Refresh(State.Token));
 		}
 	}
 
@@ -109,49 +154,55 @@ namespace CapFrameX.Data
 		public bool IsNotSigned => !IsSigned;
 	}
 
-	[DataContract]
 	public class OAuthToken
 	{
-		[DataMember(Name = "access_token")]
+		[JsonProperty("access_token")]
 		public string AccessToken { get; set; }
 
-		[DataMember(Name = "token_type")]
+		[JsonProperty("token_type")]
 		public string TokenType { get; set; }
 
-		[DataMember(Name = "expires_in")]
+		[JsonProperty("expires_in")]
 		public int ExpiresIn { get; set; }
 
-		[DataMember(Name = "refresh_token")]
+		[JsonProperty("refresh_token")]
 		public string RefreshToken { get; set; }
 
-		[DataMember]
 		public string Name { get; set; }
 
-		[DataMember]
 		public string Email { get; set; }
 
-		[DataMember]
 		public string Picture { get; set; }
 
-		[DataMember]
 		public string Locale { get; set; }
 
-		[DataMember]
 		public string FamilyName { get; set; }
 
-		[DataMember]
 		public string GivenName { get; set; }
 
-		[DataMember]
 		public string Id { get; set; }
 
-		[DataMember]
 		public string Profile { get; set; }
 
-		[DataMember]
 		public string[] Scopes { get; set; }
 
 		public DateTime ExpirationDate { get; set; }
+
+		public string ToJson()
+		{
+			return JsonConvert.SerializeObject(this, new JsonSerializerSettings()
+			{
+				DateFormatString = "yyyy-MM-dd'T'HH:mm:ss.fffK"
+			});
+		}
+
+		public static OAuthToken FromJson(string json)
+		{
+			return JsonConvert.DeserializeObject<OAuthToken>(json, new JsonSerializerSettings()
+			{
+				DateFormatString = "yyyy-MM-dd'T'HH:mm:ss.fffK"
+			});
+		}
 	}
 
 	public sealed class OAuthRequest
@@ -220,54 +271,19 @@ namespace CapFrameX.Data
 		{
 			if (oldToken == null)
 				throw new ArgumentNullException(nameof(oldToken));
-
-			string tokenRequestBody = string.Format("refresh_token={0}&client_id={1}&client_secret={2}&grant_type=refresh_token",
-				oldToken.RefreshToken,
-				_clientId,
-				_clientSecret
-				);
-
-			return TokenRequest(tokenRequestBody, oldToken.Scopes);
-		}
-
-		private static T Deserialize<T>(string json)
-		{
-			if (string.IsNullOrWhiteSpace(json))
-				return default(T);
-
-			return Deserialize<T>(Encoding.UTF8.GetBytes(json));
-		}
-
-		private static T Deserialize<T>(byte[] json)
-		{
-			if (json == null || json.Length == 0)
-				return default(T);
-
-			using (var ms = new MemoryStream(json))
+			try
 			{
-				return Deserialize<T>(ms);
+				string tokenRequestBody = string.Format("refresh_token={0}&client_id={1}&client_secret={2}&grant_type=refresh_token",
+					oldToken.RefreshToken,
+					_clientId,
+					_clientSecret
+					);
+
+				return TokenRequest(tokenRequestBody, oldToken.Scopes);
+			} catch(Exception e)
+			{
+				return null;
 			}
-		}
-
-		private static T Deserialize<T>(Stream json)
-		{
-			if (json == null)
-				return default(T);
-
-			var ser = CreateSerializer(typeof(T));
-			return (T)ser.ReadObject(json);
-		}
-
-		private static DataContractJsonSerializer CreateSerializer(Type type)
-		{
-			if (type == null)
-				throw new ArgumentNullException(nameof(type));
-
-			var settings = new DataContractJsonSerializerSettings
-			{
-				DateTimeFormat = new DateTimeFormat("yyyy-MM-dd'T'HH:mm:ss.fffK")
-			};
-			return new DataContractJsonSerializer(type, settings);
 		}
 
 		private static int GetRandomUnusedPort()
@@ -322,19 +338,22 @@ namespace CapFrameX.Data
 			var response = await request.GetResponseAsync();
 			using (var responseStream = response.GetResponseStream())
 			{
-				var token = Deserialize<OAuthToken>(responseStream);
-				token.ExpirationDate = DateTime.Now + new TimeSpan(0, 0, token.ExpiresIn);
-				var user = GetUserInfo(token.AccessToken);
-				token.Name = user.Name;
-				token.Picture = user.Picture;
-				token.Email = user.Email;
-				token.Locale = user.Locale;
-				token.FamilyName = user.FamilyName;
-				token.GivenName = user.GivenName;
-				token.Id = user.Id;
-				token.Profile = user.Profile;
-				token.Scopes = scopes;
-				return token;
+				using (StreamReader sr = new StreamReader(responseStream))
+				{
+					var token = JsonConvert.DeserializeObject<OAuthToken>(sr.ReadToEnd());
+					token.ExpirationDate = DateTime.Now + new TimeSpan(0, 0, token.ExpiresIn);
+					var user = GetUserInfo(token.AccessToken);
+					token.Name = user.Name;
+					token.Picture = user.Picture;
+					token.Email = user.Email;
+					token.Locale = user.Locale;
+					token.FamilyName = user.FamilyName;
+					token.GivenName = user.GivenName;
+					token.Id = user.Id;
+					token.Profile = user.Profile;
+					token.Scopes = scopes;
+					return token;
+				}
 			}
 		}
 
@@ -344,9 +363,12 @@ namespace CapFrameX.Data
 			request.Method = "GET";
 			request.Headers.Add(string.Format("Authorization: Bearer {0}", accessToken));
 			var response = request.GetResponse();
-			using (var stream = response.GetResponseStream())
+			using (var responseStream = response.GetResponseStream())
 			{
-				return Deserialize<UserInfo>(stream);
+				using (var reader = new StreamReader(responseStream))
+				{
+					return JsonConvert.DeserializeObject<UserInfo>(reader.ReadToEnd());
+				}
 			}
 		}
 
@@ -363,37 +385,36 @@ namespace CapFrameX.Data
 			return scope;
 		}
 
-		[DataContract]
 		private class UserInfo
 		{
-			[DataMember(Name = "name")]
+			[JsonProperty("name")]
 			public string Name { get; set; }
 
-			[DataMember(Name = "kind")]
+			[JsonProperty("kind")]
 			public string Kind { get; set; }
 
-			[DataMember(Name = "email")]
+			[JsonProperty("email")]
 			public string Email { get; set; }
 
-			[DataMember(Name = "picture")]
+			[JsonProperty("picture")]
 			public string Picture { get; set; }
 
-			[DataMember(Name = "locale")]
+			[JsonProperty("locale")]
 			public string Locale { get; set; }
 
-			[DataMember(Name = "family_name")]
+			[JsonProperty("family_name")]
 			public string FamilyName { get; set; }
 
-			[DataMember(Name = "given_name")]
+			[JsonProperty("given_name")]
 			public string GivenName { get; set; }
 
-			[DataMember(Name = "sub")]
+			[JsonProperty("sub")]
 			public string Id { get; set; }
 
-			[DataMember(Name = "profile")]
+			[JsonProperty("profile")]
 			public string Profile { get; set; }
 
-			[DataMember(Name = "gender")]
+			[JsonProperty("gender")]
 			public string Gender { get; set; }
 		}
 	}
