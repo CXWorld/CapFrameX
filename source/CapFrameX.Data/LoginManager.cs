@@ -5,6 +5,7 @@ using Prism.Events;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -231,12 +232,12 @@ namespace CapFrameX.Data
 
 	public sealed class OAuthRequest
 	{
-		private const string _clientId = "application";
-		private const string _clientSecret = "13e2d80b-32e7-4d48-b2fe-29c44bca7958";
+		private static readonly string _clientId = ConfigurationManager.AppSettings["OAuthClientId"];
+		private static readonly string _clientSecret = ConfigurationManager.AppSettings["OAuthClientSecret"];
 
-		private const string _authorizationEndpoint = "https://capframex.com/auth/realms/CapFrameX/protocol/openid-connect/auth";
-		private const string _tokenEndpoint = "https://capframex.com/auth/realms/CapFrameX/protocol/openid-connect/token";
-		private const string _userInfoEndpoint = "https://capframex.com/auth/realms/CapFrameX/protocol/openid-connect/userinfo";
+		private static readonly string _authorizationEndpoint = ConfigurationManager.AppSettings["OAuthAuthorizationEndpoint"];
+		private static readonly string _tokenEndpoint = ConfigurationManager.AppSettings["OAuthTokenEndpoint"];
+		private static readonly string _userInfoEndpoint = ConfigurationManager.AppSettings["OAuthUserinfoEndpoint"];
 
 		private OAuthRequest()
 		{

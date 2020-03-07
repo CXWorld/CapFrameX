@@ -11,5 +11,6 @@ namespace CapFrameX.Webservice.Data.Interfaces
 	{
 		Task<Guid> SaveSessionCollection(SessionCollection sessionCollection);
 		Task<SessionCollection> GetSessionCollection(Guid id);
+		Task<IEnumerable<SessionCollection>> GetSessionCollectionsForUser(Guid userId);
 	}
 }

@@ -2,6 +2,7 @@
 using CapFrameX.Webservice.Data.Entities;
 using CapFrameX.Webservice.Data.Interfaces;
 using CapFrameX.Webservice.Persistance;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,6 +17,11 @@ namespace CapFrameX.Webservice.Implementation.Services
 
 		public SessionService(CXContext context) {
 			_context = context;
+		}
+
+		public async Task<IEnumerable<SessionCollection>> GetSessionCollectionsForUser(Guid userId)
+		{
+			return await _context.SessionCollections.Where(sc => sc.UserId == userId).ToArrayAsync();
 		}
 
 		public async Task<SessionCollection> GetSessionCollection(Guid id)

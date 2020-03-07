@@ -32,16 +32,13 @@ namespace CapFrameX.Webservice.Host.Controllers
         public async Task<IActionResult> GetMyCollections ([FromQuery] Guid? sub)
         {
                 var userId = sub ?? _userClaimsProvider.GetUserClaims().Sub;
-                return Ok(new List<dynamic>() { 
-                    new {  
-                        DateUploaded = DateTime.UtcNow,
-                        Size = "4522Kb",
-                        Name = "Test dummy"
-                    }
+                var result = await _mediator.Send(new GetSessionCollectionsReducedForUserByIdQuery()
+                {
+                    UserId = userId
                 });
+                return Ok(result);
         }
 
-        // GET: api/CaptureCollections/Collection/5
         [HttpGet("{id}", Name = "Get")]
         public async Task<IActionResult> Get(Guid id)
         {
@@ -54,7 +51,6 @@ namespace CapFrameX.Webservice.Host.Controllers
             return Ok(result);
         }
 
-        // POST: api/CaptureCollections
         [HttpPost]
         public async Task<IActionResult> Post(IEnumerable<CapFrameX.Data.Session.Contracts.ISession> sessions)
         {
@@ -62,7 +58,7 @@ namespace CapFrameX.Webservice.Host.Controllers
                 UserId = _userClaimsProvider.GetUserClaims()?.Sub,
                 Sessions = sessions.Cast<Session>()
             });
-            return CreatedAtAction("Get", new { Id = result } ,result);
+            return CreatedAtAction(nameof(Get), new { Id = result } ,result);
         }
     }
 }

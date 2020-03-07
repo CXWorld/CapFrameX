@@ -20,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -298,7 +299,9 @@ namespace CapFrameX.ViewModel
 			{
 				TypeNameHandling = TypeNameHandling.Auto
 			});
-			using (var client = new HttpClient())
+			using (var client = new HttpClient() {
+				BaseAddress = new Uri(ConfigurationManager.AppSettings["WebserviceUri"])
+			})
 			{
 				if (_loginManager.State?.Token != null)
 				{
@@ -316,7 +319,7 @@ namespace CapFrameX.ViewModel
 				}
 				var content = new StringContent(contentAsJson);
 				content.Headers.ContentType.MediaType = "application/json";
-				var response = await client.PostAsync(@"http://localhost:5000/api/SessionCollections", content);
+				var response = await client.PostAsync(@"SessionCollections", content);
 
 				if (response.IsSuccessStatusCode)
 				{
@@ -333,8 +336,10 @@ namespace CapFrameX.ViewModel
 
 		private async Task DownloadCaptureCollection(string id)
 		{
-			var url = $@"http://localhost:5000/api/SessionCollections/{id}";
-			using (var client = new HttpClient())
+			var url = $@"SessionCollections/{id}";
+			using (var client = new HttpClient() { 
+				BaseAddress = new Uri(ConfigurationManager.AppSettings["WebserviceUri"])
+			})
 			{
 				var response = await client.GetAsync(url);
 
@@ -357,7 +362,7 @@ namespace CapFrameX.ViewModel
 					}
 					foreach (var session in content.Sessions)
 					{
-						var fileInfo = new FileInfo(Path.Combine(downloadDirectory, session.Hash));
+						var fileInfo = new FileInfo(Path.Combine(downloadDirectory, $"{session.Hash}.json"));
 						File.WriteAllText(fileInfo.FullName, JsonConvert.SerializeObject(session, new JsonSerializerSettings()
 						{
 							TypeNameHandling = TypeNameHandling.Auto

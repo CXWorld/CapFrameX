@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using CapFrameX.Data.Session.Classes;
 using CapFrameX.Webservice.Data.DTO;
 using CapFrameX.Webservice.Data.Entities;
 using System;
@@ -14,6 +15,8 @@ namespace CapFrameX.Webservice.Data.Mappings
 		{
 			CreateMap<SessionCollection, SessionCollectionDTO>()
 				.ForMember(dest => dest.Sessions, opts => opts.MapFrom(src => src.Sessions.Select(s => s.Session)));
+			CreateMap<SessionCollection, SessionCollectionReducedDTO>()
+				.ForMember(dest => dest.Sessions, opt => opt.MapFrom(src => src.Sessions.Select(s => s.Session.Info)));
 		}
 	}
 }

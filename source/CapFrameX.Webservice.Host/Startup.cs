@@ -86,6 +86,10 @@ namespace CapFrameX.Webservice.Host
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
 		public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 		{
+			using (var scope = app.ApplicationServices.CreateScope())
+			{
+				MigrateDatabase(scope.ServiceProvider.GetRequiredService<CXContext>());
+			}
 			if (env.IsDevelopment())
 			{
 				app.UseDeveloperExceptionPage();
@@ -107,6 +111,11 @@ namespace CapFrameX.Webservice.Host
 			{
 				endpoints.MapControllers();
 			});
+		}
+
+		private void MigrateDatabase(CXContext context)
+		{
+			context.Database.Migrate();
 		}
 
 		private ForwardedHeadersOptions GetHeaderOptions()
