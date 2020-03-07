@@ -15,22 +15,22 @@
 			 Background="{DynamicResource MaterialDesignPaper}"
              FontFamily="{StaticResource MaterialDesignFont}"
              prism:ViewModelLocator.AutoWireViewModel="True">
-	<UserControl.Resources>
-		<ResourceDictionary>
-			<ResourceDictionary.MergedDictionaries>
-				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Button.xaml" />
-				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Shadows.xaml" />
-				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ToggleButton.xaml" />
-				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.DataGrid.xaml" />
-				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Slider.xaml" />
-			</ResourceDictionary.MergedDictionaries>
-			<CollectionViewSource x:Key="RecordInfoListKey" Source="{Binding RecordInfoList}" Filter="RecordInfoListOnFilter"/>
-			<mvvm:AddValueConverter x:Key="AddValueConverter" Offset="-315"/>
-			<mvvm:BoolToVisibilityConverter x:Key="FalseToVisibleConverter" FalseValue="Visible" TrueValue="Collapsed"/>
-			<mvvm:BoolToVisibilityConverter x:Key="FalseToCollapsedConverter" FalseValue="Collapsed" TrueValue="Visible"/>
-		</ResourceDictionary>
-	</UserControl.Resources>
-	<Grid>
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Button.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Shadows.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ToggleButton.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.DataGrid.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Slider.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <CollectionViewSource x:Key="RecordInfoListKey" Source="{Binding RecordInfoList}" Filter="RecordInfoListOnFilter"/>
+            <mvvm:AddValueConverter x:Key="AddValueConverter" Offset="-315"/>
+            <mvvm:BoolToVisibilityConverter x:Key="FalseToVisibleConverter" FalseValue="Visible" TrueValue="Collapsed"/>
+            <mvvm:BoolToVisibilityConverter x:Key="FalseToCollapsedConverter" FalseValue="Collapsed" TrueValue="Visible"/>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Grid>
 		<Border Visibility="{Binding HasValidSource, Converter={StaticResource FalseToVisibleConverter}}" Margin="0 10 5 0" BorderBrush="#e6e6e6" BorderThickness="1" Background="#F5F5F5">
 			<TextBlock TextWrapping="Wrap" Width="220" Margin="10 0 10 0" HorizontalAlignment="Center" VerticalAlignment="Center" Style="{StaticResource MaterialDesignHeadlineTextBlock}">
 				No source defined. Maybe an error occurred. Go to settings and select a folder.
@@ -43,7 +43,7 @@
 			</Grid.RowDefinitions>
 			<StackPanel Grid.Row="0" Orientation="Vertical">
 				<TextBox Margin="5 10 5 0" Background="#e6e6e6" Name="RecordSearchBox" materialDesign:HintAssist.Hint="Search" />
-				<DataGrid Name="RecordDataGrid" Height="{Binding ElementName=ControlViewControl, Path=ActualHeight, Converter={StaticResource AddValueConverter}}" Background="#F5F5F5" Margin="0 10 5 0" 
+                <DataGrid Name="RecordDataGrid" Height="{Binding ElementName=ControlViewControl, Path=ActualHeight, Converter={StaticResource AddValueConverter}}" Background="#F5F5F5" Margin="0 10 5 0" 
 					  Sorting="RecordDataGrid_Sorting" SelectedIndex="{Binding RecordDataGridSelectedIndex}"
 					  Tag="{Binding ElementName=ControlViewControl, Path=DataContext}" FontSize="11"
 					  ItemsSource="{Binding Source={StaticResource RecordInfoListKey}}" SelectedItem="{Binding SelectedRecordInfo}" CanUserSortColumns="True" CanUserAddRows="False" AutoGenerateColumns="False"
@@ -54,7 +54,7 @@
 					  dragdrop:DragDrop.UseDefaultDragAdorner="True"
 					  dragdrop:DragDrop.DefaultDragAdornerOpacity="0.5"
 					  dragdrop:DragDrop.UseDefaultEffectDataTemplate="False">
-					<DataGrid.Resources>
+                    <DataGrid.Resources>
 						<Style TargetType="DataGridRow">
 							<EventSetter Event="MouseDoubleClick" Handler="DataGridRow_MouseDoubleClick"/>
 						</Style>
@@ -74,92 +74,120 @@
 							<MenuItem Header="Delete recording file(s)" Command="{Binding DeleteRecordFileCommand}"/>
 						</ContextMenu>
 					</DataGrid.ContextMenu>
-					<DataGrid.ColumnHeaderStyle>
-						<Style TargetType="{x:Type DataGridColumnHeader}">
-							<Setter Property="BorderThickness" Value="0, 0, 1, 0"/>
-							<Setter Property="BorderBrush" Value="{DynamicResource MaterialDesignDivider}" />
-							<Setter Property="VerticalContentAlignment" Value="Center"/>
-							<Setter Property="TextBlock.FontSize" Value="12" />
-							<Setter Property="TextBlock.FontWeight" Value="Medium" />
-							<Setter Property="Padding" Value="8, 5, 0, 0"/>
-							<Setter Property="Foreground" Value="{DynamicResource MaterialDesignColumnHeader}" />
-							<Setter Property="Template">
-								<Setter.Value>
-									<ControlTemplate TargetType="{x:Type DataGridColumnHeader}">
-										<ControlTemplate.Resources>
-											<Storyboard x:Key="GoToVisible">
-												<DoubleAnimationUsingKeyFrames Storyboard.TargetName="SortDirectionIndicator" Storyboard.TargetProperty="Width">
-													<EasingDoubleKeyFrame KeyTime="0:0:0.0" Value="0" />
-													<EasingDoubleKeyFrame KeyTime="0:0:0.2" Value="12" />
-												</DoubleAnimationUsingKeyFrames>
-											</Storyboard>
-											<Storyboard x:Key="GoToHidden">
-												<DoubleAnimationUsingKeyFrames Storyboard.TargetName="SortDirectionIndicator" Storyboard.TargetProperty="Width">
-													<EasingDoubleKeyFrame KeyTime="0:0:0.0" Value="12" />
-													<EasingDoubleKeyFrame KeyTime="0:0:0.2" Value="0" />
-												</DoubleAnimationUsingKeyFrames>
-											</Storyboard>
-										</ControlTemplate.Resources>
-										<Grid>
-											<Border Margin="0 5 0 5" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
-												<Grid Background="Transparent">
-													<Grid.ColumnDefinitions>
-														<ColumnDefinition Width="Auto"/>
-														<ColumnDefinition Width="*"/>
-													</Grid.ColumnDefinitions>
-													<wpf:ListSortDirectionIndicator Grid.Column="0" Width="0" Height="14" 
+                    <DataGrid.ColumnHeaderStyle>
+                        <Style TargetType="{x:Type DataGridColumnHeader}">
+                            <Setter Property="BorderThickness" Value="0, 0, 1, 0"/>
+                            <Setter Property="BorderBrush" Value="{DynamicResource MaterialDesignDivider}" />
+                            <Setter Property="VerticalContentAlignment" Value="Center"/>
+                            <Setter Property="TextBlock.FontSize" Value="12" />
+                            <Setter Property="TextBlock.FontWeight" Value="Medium" />
+                            <Setter Property="Padding" Value="8, 5, 0, 0"/>
+                            <Setter Property="Foreground" Value="{DynamicResource MaterialDesignColumnHeader}" />
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="{x:Type DataGridColumnHeader}">
+                                        <ControlTemplate.Resources>
+                                            <Storyboard x:Key="GoToVisible">
+                                                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="SortDirectionIndicator" Storyboard.TargetProperty="Width">
+                                                    <EasingDoubleKeyFrame KeyTime="0:0:0.0" Value="0" />
+                                                    <EasingDoubleKeyFrame KeyTime="0:0:0.2" Value="12" />
+                                                </DoubleAnimationUsingKeyFrames>
+                                            </Storyboard>
+                                            <Storyboard x:Key="GoToHidden">
+                                                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="SortDirectionIndicator" Storyboard.TargetProperty="Width">
+                                                    <EasingDoubleKeyFrame KeyTime="0:0:0.0" Value="12" />
+                                                    <EasingDoubleKeyFrame KeyTime="0:0:0.2" Value="0" />
+                                                </DoubleAnimationUsingKeyFrames>
+                                            </Storyboard>
+                                        </ControlTemplate.Resources>
+                                        <Grid>
+                                            <Border Margin="0 5 0 5" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
+                                                <Grid Background="Transparent">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <wpf:ListSortDirectionIndicator Grid.Column="0" Width="0" Height="14" 
                                                                 x:Name="SortDirectionIndicator"
                                                                 ListSortDirection="{TemplateBinding SortDirection}"/>
-													<ContentPresenter Height="20" Grid.Column="1" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                                    <ContentPresenter Height="20" Grid.Column="1" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                                                   Margin="{TemplateBinding Padding}"/>
-												</Grid>
-											</Border>
-											<Thumb x:Name="PART_LeftHeaderGripper" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignGridColumnHeaderGripper}"/>
-											<Thumb x:Name="PART_RightHeaderGripper" HorizontalAlignment="Right" Style="{StaticResource MaterialDesignGridColumnHeaderGripper}"/>
-										</Grid>
-										<ControlTemplate.Triggers>
-											<Trigger Property="IsMouseOver" Value="True">
-												<Setter Property="Foreground" Value="{DynamicResource MaterialDesignBody}" />
-											</Trigger>
-											<Trigger Property="SortDirection" Value="Ascending">
-												<Setter Property="Foreground" Value="{DynamicResource MaterialDesignBody}" />
-											</Trigger>
-											<Trigger Property="SortDirection" Value="Descending">
-												<Setter Property="Foreground" Value="{DynamicResource MaterialDesignBody}" />
-											</Trigger>
-											<Trigger SourceName="SortDirectionIndicator" Property="IsNeutral" Value="False">
-												<Trigger.EnterActions>
-													<BeginStoryboard Storyboard="{StaticResource GoToVisible}" Name="GoToVisible" />
-												</Trigger.EnterActions>
-												<Trigger.ExitActions>
-													<RemoveStoryboard BeginStoryboardName="GoToVisible" />
-													<BeginStoryboard Storyboard="{StaticResource GoToHidden}" />
-												</Trigger.ExitActions>
-											</Trigger>
-										</ControlTemplate.Triggers>
-									</ControlTemplate>
-								</Setter.Value>
-							</Setter>
-						</Style>
-					</DataGrid.ColumnHeaderStyle>
-					<DataGrid.Columns>
-						<DataGridTextColumn Binding="{Binding GameName, Mode=OneWay}"
+                                                </Grid>
+                                            </Border>
+                                            <Thumb x:Name="PART_LeftHeaderGripper" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignGridColumnHeaderGripper}"/>
+                                            <Thumb x:Name="PART_RightHeaderGripper" HorizontalAlignment="Right" Style="{StaticResource MaterialDesignGridColumnHeaderGripper}"/>
+                                        </Grid>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBody}" />
+                                            </Trigger>
+                                            <Trigger Property="SortDirection" Value="Ascending">
+                                                <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBody}" />
+                                            </Trigger>
+                                            <Trigger Property="SortDirection" Value="Descending">
+                                                <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBody}" />
+                                            </Trigger>
+                                            <Trigger SourceName="SortDirectionIndicator" Property="IsNeutral" Value="False">
+                                                <Trigger.EnterActions>
+                                                    <BeginStoryboard Storyboard="{StaticResource GoToVisible}" Name="GoToVisible" />
+                                                </Trigger.EnterActions>
+                                                <Trigger.ExitActions>
+                                                    <RemoveStoryboard BeginStoryboardName="GoToVisible" />
+                                                    <BeginStoryboard Storyboard="{StaticResource GoToHidden}" />
+                                                </Trigger.ExitActions>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </DataGrid.ColumnHeaderStyle>
+                    <DataGrid.RowStyle>
+                        <Style>
+                            <Setter Property="DataGrid.Height" Value="40" />
+                        </Style>
+                    </DataGrid.RowStyle>
+                    <DataGrid.Columns>
+                        <DataGridTextColumn  Binding="{Binding GameName, Mode=OneWay}"
                                         Header="Game"
-                                        IsReadOnly="True"/>
-						<DataGridTextColumn Binding="{Binding CreationDate, Mode=OneWay}"
-                                        Header="Date"
-                                        IsReadOnly="True"/>
-						<DataGridTextColumn Binding="{Binding CreationTime, Mode=OneWay}"
-                                        Header="Time"
-                                        IsReadOnly="True"/>
-						<DataGridTextColumn Binding="{Binding Comment, Mode=OneWay}"
+                                        IsReadOnly="True">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style>
+                                    <Setter Property="TextBlock.VerticalAlignment" Value="Center" />
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+                            <DataGridTextColumn Binding="{Binding CreationTimestamp, Mode=OneWay}"
+                                        Header="Recorded at"
+                                        IsReadOnly="True"
+                                        MinWidth="95">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style>
+                                    <Setter Property="TextBlock.TextAlignment" Value="Center" />
+                                    <Setter Property="TextBlock.VerticalAlignment" Value="Center" />
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+                        <DataGridTextColumn Binding="{Binding Comment, Mode=OneWay}"
 										Width="100"
                                         Header="Comment"
-                                        IsReadOnly="True"/>
-						<DataGridCheckBoxColumn Binding="{Binding IsAggregated, Mode=OneWay}"
+                                        IsReadOnly="True">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style>
+                                    <Setter Property="TextBlock.VerticalAlignment" Value="Center" />
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+                        <DataGridCheckBoxColumn Binding="{Binding IsAggregated, Mode=OneWay}"
                                             Header="Aggregated"
-                                            IsReadOnly="True" MinWidth="55"/>
-					</DataGrid.Columns>
+                                            IsReadOnly="True" MinWidth="55">
+                            <DataGridCheckBoxColumn.ElementStyle>
+                                <Style>
+                                    <Setter Property="CheckBox.VerticalAlignment" Value="Center" />
+                                </Style>
+                            </DataGridCheckBoxColumn.ElementStyle>
+                            </DataGridCheckBoxColumn>
+                    </DataGrid.Columns>
 				</DataGrid>
 				<Border Margin="0 5 5 0" BorderThickness="0 1 0 0" BorderBrush="{DynamicResource MaterialDesignDivider}" />
 			</StackPanel>
