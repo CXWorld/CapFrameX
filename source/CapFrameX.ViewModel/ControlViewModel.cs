@@ -185,9 +185,9 @@ namespace CapFrameX.ViewModel
 				.DistinctUntilChanged()
 				.Do(_ => RecordInfoList.Clear())
 				.SelectMany(fileInfos => 
-					Observable.Merge(fileInfos.Select(fileInfo => Observable.FromAsync(() => _recordManager.GetFileRecordInfo(fileInfo))))
-					.Where(recordFileInfo => recordFileInfo is IFileRecordInfo)
-					.Distinct(recordFileInfo => recordFileInfo.Hash)
+					fileInfos.ToObservable().SelectMany(fi =>_recordManager.GetFileRecordInfo(fi)).Catch<IFileRecordInfo, InvalidOperationException>(_ => null)
+						.Where(recordFileInfo => recordFileInfo is IFileRecordInfo)
+						.Distinct(recordFileInfo => recordFileInfo.Hash)
 				)
 				.ObserveOn(context)
 				.Subscribe(recordFileInfos =>
