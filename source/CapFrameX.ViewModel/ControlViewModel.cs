@@ -20,6 +20,7 @@ using System.Collections;
 using System.Reactive.Subjects;
 using CapFrameX.Contracts.PresentMonInterface;
 using Microsoft.VisualBasic.FileIO;
+using Microsoft.WindowsAPICodePack.Dialogs;
 
 namespace CapFrameX.ViewModel
 {
@@ -117,6 +118,8 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
+		public string ObservedDirectory { get; private set; }
+
 		public ObservableCollection<IFileRecordInfo> RecordInfoList { get; }
 			= new ObservableCollection<IFileRecordInfo>();
 
@@ -142,6 +145,8 @@ namespace CapFrameX.ViewModel
 
 		public ICommand SelectedRecordingsCommand { get; }
 
+		public ICommand SelectObservedFolderCommand { get; }
+
 		public ControlViewModel(IRecordDirectoryObserver recordObserver,
 								IEventAggregator eventAggregator,
 								IAppConfiguration appConfiguration, RecordManager recordManager)
@@ -161,6 +166,11 @@ namespace CapFrameX.ViewModel
 			AddRamInfoCommand = new DelegateCommand(OnAddRamInfo);
 			DeleteRecordCommand = new DelegateCommand(OnPressDeleteKey);
 			SelectedRecordingsCommand = new DelegateCommand<object>(OnSelectedRecordings);
+			SelectObservedFolderCommand = new DelegateCommand(OnSelectObeservedFolder);
+			_recordObserver.ObservingDirectoryStream.Subscribe(directory => {
+				ObservedDirectory = directory.FullName;
+				RaisePropertyChanged(nameof(ObservedDirectory));
+			});
 
 			RecordDataGridSelectedIndex = -1;
 
@@ -168,6 +178,22 @@ namespace CapFrameX.ViewModel
 			SubscribeToResetRecord();
 			SubscribeToSetFileRecordInfoExternal();
 			SetupObservers(SynchronizationContext.Current);
+		}
+
+		private void OnSelectObeservedFolder()
+		{
+			var dialog = new CommonOpenFileDialog
+			{
+				IsFolderPicker = true
+			};
+
+			CommonFileDialogResult result = dialog.ShowDialog();
+
+			if (result == CommonFileDialogResult.Ok)
+			{
+				_appConfiguration.ObservedDirectory = dialog.FileName;
+				_recordObserver.ObserveDirectory(dialog.FileName);
+			}
 		}
 
 		private void SetupObservers(SynchronizationContext context)

@@ -55,7 +55,15 @@
                     </TextBlock>
                 </Expander.Header>
                 <Grid VerticalAlignment="Center">
-                <TextBlock Margin="50" Text="Folder management test" />
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="40" ></RowDefinition>
+                        <RowDefinition Height="30" ></RowDefinition>
+                        <RowDefinition Height="Auto" ></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <TextBox Grid.Row="1" Width="250" IsReadOnly="True" materialDesign:HintAssist.Hint="Observed directory" Text="{Binding DataContext.ObservedDirectory, ElementName=ControlViewName, Mode=OneWay}" />
+                    <Button Grid.Row="0" Margin="0 5 0 0" Height="35" Width="35" Command="{Binding Path=DataContext.SelectObservedFolderCommand, ElementName=ControlViewName}" Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}" ToolTip="Select observed folder">
+                        <materialDesign:PackIcon Kind="Folder" Height="25" Width="25" />
+                    </Button>
                 </Grid>
             </Expander>
             <!--Record list-->
