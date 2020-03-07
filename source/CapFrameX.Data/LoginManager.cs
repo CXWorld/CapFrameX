@@ -21,6 +21,7 @@ namespace CapFrameX.Data
 {
 	public class LoginManager
 	{
+		private const string OAUTHTOKEN_FILENAME = "OAuthToken.dat";
 		private readonly ILogger<LoginManager> _logger;
 		private readonly PubSubEvent<AppMessages.LoginState> _loginStateEvent;
 
@@ -36,10 +37,17 @@ namespace CapFrameX.Data
 
 		public void Initialize()
 		{
-			var fileInfo = new FileInfo("OAuthState.dat");
+			var fileInfo = new FileInfo(OAUTHTOKEN_FILENAME);
 			if (fileInfo.Exists)
 			{
-				State.Token = OAuthToken.FromJson(File.ReadAllText(fileInfo.FullName));
+				try
+				{
+					var decrypted = ProtectedData.Unprotect(File.ReadAllBytes(fileInfo.FullName), null, DataProtectionScope.CurrentUser);
+					ApplyToken(OAuthToken.FromJson(Encoding.UTF8.GetString(decrypted)));
+				} catch(Exception e)
+				{
+					_logger.LogError(e, "Error reading OAuthToken from File");
+				}
 			}
 			Task.Run(() => RefreshTokenIfNeeded());
 		}
@@ -111,16 +119,27 @@ namespace CapFrameX.Data
 
 		private void ApplyToken(OAuthToken token)
 		{
+			if (token != null && token.Equals(State.Token)) {
+				return;
+			};
 			State.Token = token;
-			var fileInfo = new FileInfo("OAuthState.dat");
-			if (State.Token is null)
+			var fileInfo = new FileInfo(OAUTHTOKEN_FILENAME);
+			try
 			{
-				_loginStateEvent.Publish(new AppMessages.LoginState(false));
-				File.Delete(fileInfo.FullName);
-			} else
+				if (State.Token is null)
+				{
+					_loginStateEvent.Publish(new AppMessages.LoginState(false));
+					File.Delete(fileInfo.FullName);
+				}
+				else
+				{
+					_loginStateEvent.Publish(new AppMessages.LoginState(true));
+					var encrypted = ProtectedData.Protect(Encoding.UTF8.GetBytes(token.ToJson()), null, DataProtectionScope.CurrentUser);
+					File.WriteAllBytes(fileInfo.FullName, encrypted);
+				}
+			} catch(Exception e)
 			{
-				_loginStateEvent.Publish(new AppMessages.LoginState(true));
-				File.WriteAllText(fileInfo.FullName, token.ToJson());
+				_logger.LogError(e, "Error saving OAuthToken to File");
 			}
 		}
 
@@ -187,6 +206,11 @@ namespace CapFrameX.Data
 		public string[] Scopes { get; set; }
 
 		public DateTime ExpirationDate { get; set; }
+
+		public override bool Equals(object obj)
+		{
+			return obj != null && obj.GetType() == GetType() && (obj as OAuthToken).AccessToken == this.AccessToken;
+		}
 
 		public string ToJson()
 		{
