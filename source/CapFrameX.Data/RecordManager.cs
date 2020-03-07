@@ -250,7 +250,7 @@ namespace CapFrameX.Data
                         BaseDriverVersion = recordedFileInfo.BaseDriverVersion,
                         GameName = recordedFileInfo.GameName,
                         Comment = recordedFileInfo.Comment,
-                        Id = Guid.TryParse(recordedFileInfo.Id, out var guidId) ? guidId : Guid.Empty,
+                        Id = Guid.TryParse(recordedFileInfo.Id, out var guidId) ? guidId : Guid.NewGuid(),
                         OS = recordedFileInfo.OsVersion,
                         GpuCoreClock = recordedFileInfo.GPUCoreClock,
                         GPUCount = recordedFileInfo.NumberGPUs,
@@ -259,7 +259,7 @@ namespace CapFrameX.Data
                         DriverPackage = recordedFileInfo.DriverPackage,
                         GpuMemoryClock = recordedFileInfo.GPUMemoryClock,
                         CreationDate = DateTime.Parse(recordedFileInfo.CreationDate + "T" + recordedFileInfo.CreationTime),
-                        AppVersion = null
+                        AppVersion = new Version()
                     }
                 };
             }
