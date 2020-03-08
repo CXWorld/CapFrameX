@@ -1,6 +1,6 @@
 MIT License
 
-Copyright (c) 2018 DevTechProfile
+Copyright (c) 2018-2020 DevTechProfile
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -19,3 +19,10 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+Source code from openhardwaremonitor is subject to the terms of the Mozilla Public
+License, v. 2.0.
+
+Link: https://github.com/openhardwaremonitor/openhardwaremonitor
+ 
+Copyright (C) 2009-2020 Michael Möller <mmoeller@openhardwaremonitor.org>
