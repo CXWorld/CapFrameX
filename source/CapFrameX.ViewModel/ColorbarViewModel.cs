@@ -1,7 +1,6 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using CapFrameX.Data;
 using CapFrameX.Extensions;
-using CapFrameX.EventAggregation.Messages;
 using CapFrameX.PresentMonInterface;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using Prism.Commands;
@@ -15,7 +14,6 @@ using System.IO;
 using System.Linq;
 using System.Windows.Input;
 using CapFrameX.Contracts.MVVM;
-using CapFrameX.Contracts.PresentMonInterface;
 using Microsoft.Extensions.Logging;
 
 namespace CapFrameX.ViewModel
@@ -23,7 +21,6 @@ namespace CapFrameX.ViewModel
 	public class ColorbarViewModel : BindableBase
 	{
 		private readonly IRegionManager _regionManager;
-		private readonly IRecordDirectoryObserver _recordDirectoryObserver;
 		private readonly IEventAggregator _eventAggregator;
 		private readonly IAppConfiguration _appConfiguration;
 		private readonly ILogger<ColorbarViewModel> _logger;
@@ -169,8 +166,6 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-		public string ObservedDirectory { get; private set; }
-
 		public string ScreenshotDirectory
 		{
 			get { return _screenshotDirectory; }
@@ -278,11 +273,7 @@ namespace CapFrameX.ViewModel
 
 		public IShell Shell => _shell;
 
-		public ICommand SelectObservedFolderCommand { get; }
-
 		public ICommand SelectScreenshotFolderCommand { get; }
-
-		public ICommand OpenObservedFolderCommand { get; }
 
 		public ICommand OpenScreenshotFolderCommand { get; }
 
@@ -291,14 +282,12 @@ namespace CapFrameX.ViewModel
 		public IList<int> RoundingDigits { get; }
 
 		public ColorbarViewModel(IRegionManager regionManager,
-								 IRecordDirectoryObserver recordDirectoryObserver,
 								 IEventAggregator eventAggregator,
 								 IAppConfiguration appConfiguration,
 								 ILogger<ColorbarViewModel> logger,
 								 IShell shell)
 		{
 			_regionManager = regionManager;
-			_recordDirectoryObserver = recordDirectoryObserver;
 			_eventAggregator = eventAggregator;
 			_appConfiguration = appConfiguration;
 			_logger = logger;
@@ -310,14 +299,8 @@ namespace CapFrameX.ViewModel
 			ScreenshotDirectory = _appConfiguration.ScreenshotDirectory;
 			WindowSizes = new List<int>(Enumerable.Range(4, 100 - 4));
 			RoundingDigits = new List<int>(Enumerable.Range(0, 8));
-			SelectObservedFolderCommand = new DelegateCommand(OnSelectObeservedFolder);
 			SelectScreenshotFolderCommand = new DelegateCommand(OnSelectScreenshotFolder);
-			OpenObservedFolderCommand = new DelegateCommand(OnOpenObservedFolder);
 			OpenScreenshotFolderCommand = new DelegateCommand(OnOpenScreenshotFolder);
-			_recordDirectoryObserver.ObservingDirectoryStream.Subscribe(directory => {
-				ObservedDirectory = directory.FullName;
-				RaisePropertyChanged(nameof(ObservedDirectory));
-			});
 
 			HasCustomInfo = SelectedHardwareInfoSource == EHardwareInfoSource.Custom;
 
@@ -334,22 +317,6 @@ namespace CapFrameX.ViewModel
 
 			if (CustomRamDescription == "RAM")
 				CustomRamDescription = SystemInfo.GetSystemRAMInfoName();
-		}
-
-		private void OnSelectObeservedFolder()
-		{
-			var dialog = new CommonOpenFileDialog
-			{
-				IsFolderPicker = true
-			};
-
-			CommonFileDialogResult result = dialog.ShowDialog();
-
-			if (result == CommonFileDialogResult.Ok)
-			{
-				_appConfiguration.ObservedDirectory = dialog.FileName;
-				_recordDirectoryObserver.ObserveDirectory(dialog.FileName);
-			}
 		}
 
 		private void OnSelectScreenshotFolder()
@@ -377,21 +344,6 @@ namespace CapFrameX.ViewModel
 				{
 					var documentFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
 					path = Path.Combine(documentFolder, @"CapFrameX\Screenshots");
-				}
-				Process.Start(path);
-			}
-			catch { }
-		}
-
-		private void OnOpenObservedFolder()
-		{
-			try
-			{
-				var path = _appConfiguration.ObservedDirectory;
-				if (path.Contains(@"MyDocuments\CapFrameX\Captures"))
-				{
-					var documentFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-					path = Path.Combine(documentFolder, @"CapFrameX\Captures");
 				}
 				Process.Start(path);
 			}

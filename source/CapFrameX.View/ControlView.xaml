@@ -56,14 +56,28 @@
                 </Expander.Header>
                 <Grid VerticalAlignment="Center">
                     <Grid.RowDefinitions>
+                        <RowDefinition Height="50" ></RowDefinition>
                         <RowDefinition Height="40" ></RowDefinition>
-                        <RowDefinition Height="30" ></RowDefinition>
                         <RowDefinition Height="Auto" ></RowDefinition>
                     </Grid.RowDefinitions>
-                    <TextBox Grid.Row="1" Width="250" IsReadOnly="True" materialDesign:HintAssist.Hint="Observed directory" Text="{Binding DataContext.ObservedDirectory, ElementName=ControlViewName, Mode=OneWay}" />
-                    <Button Grid.Row="0" Margin="0 5 0 0" Height="35" Width="35" Command="{Binding Path=DataContext.SelectObservedFolderCommand, ElementName=ControlViewName}" Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}" ToolTip="Select observed folder">
+                    <TextBox Grid.Row="1" Width="225" IsReadOnly="True" Margin="10 0 10 0"
+                             Text="{Binding DataContext.ObservedDirectory, ElementName=ControlViewControl, Mode=OneWay}" TextWrapping="Wrap"/>
+                    <Button Grid.Row="0" Margin="0 10 50 0" Height="35" Width="35" Command="{Binding Path=DataContext.SelectObservedFolderCommand, ElementName=ControlViewControl}" Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}" ToolTip="Select observed folder">
                         <materialDesign:PackIcon Kind="Folder" Height="25" Width="25" />
                     </Button>
+                    <Button Grid.Row="0" Margin="50 10 0 0" Height="35" Width="35" Command="{Binding Path=DataContext.OpenObservedFolderCommand, ElementName=ControlViewControl}" Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}" ToolTip="Open observed folder">
+                        <materialDesign:PackIcon Kind="Forward"  Height="25" Width="25" />
+                    </Button>
+                    <Grid Grid.Row="2" Margin="5 15 5 0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <TreeView Grid.Column="0" Name="trvFiles" HorizontalAlignment="Left">
+                                <TreeViewItem Header="Sub folders"></TreeViewItem>
+                            </TreeView>
+                        <ListView  Name="lvSubFolders" ItemsSource="{Binding Path=SelectedItem.SubFolders,ElementName=trvFiles, Mode=OneWay}" Grid.Column="1" ></ListView>
+                    </Grid>
                 </Grid>
             </Expander>
             <!--Record list-->
@@ -187,7 +201,7 @@
                             <DataGridTextColumn Binding="{Binding CreationTimestamp, Mode=OneWay}"
                                         Width="Auto"
                                         MinWidth="95"
-                                        Header="Recorded at"
+                                        Header="Date / Time"
                                         IsReadOnly="True">
                             <DataGridTextColumn.ElementStyle>
                                 <Style>
@@ -213,6 +227,7 @@
                             <DataGridCheckBoxColumn.ElementStyle>
                                 <Style>
                                     <Setter Property="CheckBox.VerticalAlignment" Value="Center" />
+                                    <Setter Property="CheckBox.HorizontalAlignment" Value="Center" />
                                 </Style>
                             </DataGridCheckBoxColumn.ElementStyle>
                             </DataGridCheckBoxColumn>

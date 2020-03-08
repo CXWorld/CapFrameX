@@ -29,8 +29,7 @@ namespace CapFrameX.View
             if (DesignerProperties.GetIsInDesignMode(this))
             {
                 var appConfiguration = new CapFrameXConfiguration();
-                DataContext = new ColorbarViewModel(new RegionManager(), new RecordDirectoryObserver(appConfiguration,
-                    new LoggerFactory().CreateLogger<RecordDirectoryObserver>()),
+                DataContext = new ColorbarViewModel(new RegionManager(),
                     new EventAggregator(), appConfiguration, new LoggerFactory().CreateLogger<ColorbarViewModel>(), null);
             }
         }

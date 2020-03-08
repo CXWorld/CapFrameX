@@ -17,6 +17,7 @@ using CapFrameX.PresentMonInterface;
 using CapFrameX.Contracts.Data;
 using System.Collections.Generic;
 using System.Collections;
+using System.Diagnostics;
 using System.Reactive.Subjects;
 using CapFrameX.Contracts.PresentMonInterface;
 using Microsoft.VisualBasic.FileIO;
@@ -147,6 +148,8 @@ namespace CapFrameX.ViewModel
 
 		public ICommand SelectObservedFolderCommand { get; }
 
+		public ICommand OpenObservedFolderCommand { get; }
+
 		public ControlViewModel(IRecordDirectoryObserver recordObserver,
 								IEventAggregator eventAggregator,
 								IAppConfiguration appConfiguration, RecordManager recordManager)
@@ -167,6 +170,7 @@ namespace CapFrameX.ViewModel
 			DeleteRecordCommand = new DelegateCommand(OnPressDeleteKey);
 			SelectedRecordingsCommand = new DelegateCommand<object>(OnSelectedRecordings);
 			SelectObservedFolderCommand = new DelegateCommand(OnSelectObeservedFolder);
+			OpenObservedFolderCommand = new DelegateCommand(OnOpenObservedFolder);
 			_recordObserver.ObservingDirectoryStream.Subscribe(directory => {
 				ObservedDirectory = directory.FullName;
 				RaisePropertyChanged(nameof(ObservedDirectory));
@@ -194,6 +198,20 @@ namespace CapFrameX.ViewModel
 				_appConfiguration.ObservedDirectory = dialog.FileName;
 				_recordObserver.ObserveDirectory(dialog.FileName);
 			}
+		}
+		private void OnOpenObservedFolder()
+		{
+			try
+			{
+				var path = _appConfiguration.ObservedDirectory;
+				if (path.Contains(@"MyDocuments\CapFrameX\Captures"))
+				{
+					var documentFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+					path = Path.Combine(documentFolder, @"CapFrameX\Captures");
+				}
+				Process.Start(path);
+			}
+			catch { }
 		}
 
 		private void SetupObservers(SynchronizationContext context)

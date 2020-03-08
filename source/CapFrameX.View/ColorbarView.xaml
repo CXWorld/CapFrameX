@@ -111,7 +111,6 @@
                                             <RowDefinition Height="*" />
                                             <RowDefinition Height="*" />
                                             <RowDefinition Height="*" />
-                                            <RowDefinition Height="*" />
                                         </Grid.RowDefinitions>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*"/>
@@ -146,17 +145,7 @@
                                                 </Binding>
                                             </TextBox.Text>
                                         </TextBox>
-                                        <StackPanel Grid.Row="1" Grid.ColumnSpan="3" Orientation="Horizontal" HorizontalAlignment="Left" Margin="10 0 0 0">
-                                            <TextBox Width="350" IsReadOnly="True" materialDesign:HintAssist.Hint="Observed directory (third-party compatible)" Text="{Binding DataContext.ObservedDirectory, ElementName=ColorbarViewName, Mode=OneWay}" />
-                                            <Button Margin="15 0 0 0" Height="35" Width="35" Command="{Binding Path=DataContext.SelectObservedFolderCommand, ElementName=ColorbarViewName}" Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}" ToolTip="Select observed folder">
-                                                <materialDesign:PackIcon Kind="Folder" Height="25" Width="25" />
-                                            </Button>
-                                            <Button Margin="15 0 0 0" Height="35" Width="35" Command="{Binding Path=DataContext.OpenObservedFolderCommand, ElementName=ColorbarViewName}" Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}" ToolTip="Open observed folder">
-                                                <materialDesign:PackIcon Kind="Forward"  Height="25" Width="25" />
-                                            </Button>
-                                        </StackPanel>
-
-                                        <StackPanel Grid.Row="2" Grid.ColumnSpan="3" Orientation="Horizontal" HorizontalAlignment="Left"  Margin="10 0 0 0">
+                                        <StackPanel Grid.Row="1" Grid.ColumnSpan="3" Orientation="Horizontal" HorizontalAlignment="Left"  Margin="10 0 0 0">
                                             <TextBox Width="350" IsReadOnly="True" materialDesign:HintAssist.Hint="Screenshot directory" Text="{Binding ScreenshotDirectory, Mode=OneWay}" />
                                             <Button Margin="15 0 0 0" Height="35" Width="35" Command="{Binding Path=DataContext.SelectScreenshotFolderCommand, ElementName=ColorbarViewName}" Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}" ToolTip="Select screenshot folder">
                                                 <materialDesign:PackIcon Kind="Folder" Height="25" Width="25" />
@@ -165,7 +154,7 @@
                                                 <materialDesign:PackIcon Kind="Forward" Height="25" Width="25" />
                                             </Button>
                                         </StackPanel>
-                                        <ComboBox Grid.Row="3" Grid.Column="0" materialDesign:HintAssist.Hint="Hardware info source"
+                                        <ComboBox Grid.Row="2" Grid.Column="0" materialDesign:HintAssist.Hint="Hardware info source"
 												  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Margin="15 15 0 0"
 												  ItemsSource="{Binding Path=DataContext.HardwareInfoSourceItems, ElementName=ColorbarViewName}" 
 												  SelectedItem="{Binding Path=DataContext.SelectedHardwareInfoSource, ElementName=ColorbarViewName}">
@@ -175,7 +164,7 @@
                                                 </DataTemplate>
                                             </ComboBox.ItemTemplate>
                                         </ComboBox>
-                                        <TextBox Grid.Row="4" Grid.ColumnSpan="2" materialDesign:HintAssist.Hint="CPU" Margin="15 15 0 0"
+                                        <TextBox Grid.Row="3" Grid.ColumnSpan="2" materialDesign:HintAssist.Hint="CPU" Margin="15 15 0 0"
 												Visibility="{Binding Path=DataContext.HasCustomInfo, ElementName=ColorbarViewName, Converter={StaticResource FalseToCollapsedConverter}}">
                                             <TextBox.Text>
                                                 <Binding Path="DataContext.CustomCpuDescription"
@@ -185,7 +174,7 @@
                                                 </Binding>
                                             </TextBox.Text>
                                         </TextBox>
-                                        <TextBox Grid.Row="5" Grid.ColumnSpan="2" materialDesign:HintAssist.Hint="GPU" Margin="15 10 0 0"
+                                        <TextBox Grid.Row="4" Grid.ColumnSpan="2" materialDesign:HintAssist.Hint="GPU" Margin="15 10 0 0"
 												Visibility="{Binding Path=DataContext.HasCustomInfo, ElementName=ColorbarViewName, Converter={StaticResource FalseToCollapsedConverter}}">
                                             <TextBox.Text>
                                                 <Binding Path="DataContext.CustomGpuDescription"
@@ -195,7 +184,7 @@
                                                 </Binding>
                                             </TextBox.Text>
                                         </TextBox>
-                                        <TextBox Grid.Row="6" Grid.ColumnSpan="2" materialDesign:HintAssist.Hint="RAM" Margin="15 10 0 0"
+                                        <TextBox Grid.Row="5" Grid.ColumnSpan="2" materialDesign:HintAssist.Hint="RAM" Margin="15 10 0 0"
 												Visibility="{Binding Path=DataContext.HasCustomInfo, ElementName=ColorbarViewName, Converter={StaticResource FalseToCollapsedConverter}}">
                                             <TextBox.Text>
                                                 <Binding Path="DataContext.CustomRamDescription"
