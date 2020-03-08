@@ -10,7 +10,6 @@ using CapFrameX.Webservice.Data.Interfaces;
 using CapFrameX.Webservice.Data.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CapFrameX.Webservice.Host.Controllers
@@ -59,6 +58,19 @@ namespace CapFrameX.Webservice.Host.Controllers
                 Sessions = sessions.Cast<Session>()
             });
             return CreatedAtAction(nameof(Get), new { Id = result } ,result);
+        }
+
+        [Authorize]
+        [HttpDelete("{id}", Name = "Delete")]
+        public async Task<IActionResult> Delete(Guid id)
+        {
+            await _mediator.Send(new DeleteSessionCollectionByIdCommand()
+            {
+                Id = id,
+                UserId = _userClaimsProvider.GetUserClaims()?.Sub
+            });
+
+            return NoContent();
         }
     }
 }

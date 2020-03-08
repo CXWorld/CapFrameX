@@ -2,6 +2,7 @@
 using CapFrameX.Webservice.Data.DTO;
 using CapFrameX.Webservice.Data.Interfaces;
 using CapFrameX.Webservice.Data.Queries;
+using FluentValidation;
 using MediatR;
 using System;
 using System.Collections.Generic;
@@ -16,14 +17,17 @@ namespace CapFrameX.Webservice.Implementation.Handlers
 	{
 		private readonly IMapper _mapper;
 		private readonly ISessionService _sessionService;
+		private readonly IValidator<GetSessionCollectionsReducedForUserByIdQuery> _validator;
 
-		public GetSessionCollectionsReducedByUserIdHandler(IMapper mapper, ISessionService sessionService)
+		public GetSessionCollectionsReducedByUserIdHandler(IMapper mapper, ISessionService sessionService, IValidator<GetSessionCollectionsReducedForUserByIdQuery> validator)
 		{
 			_mapper = mapper;
 			_sessionService = sessionService;
+			_validator = validator;
 		}
 		public async Task<IEnumerable<SessionCollectionReducedDTO>> Handle(GetSessionCollectionsReducedForUserByIdQuery request, CancellationToken cancellationToken)
 		{
+			_validator.ValidateAndThrow(request);
 			return (await _sessionService.GetSessionCollectionsForUser(request.UserId)).Select(sc => _mapper.Map<SessionCollectionReducedDTO>(sc));
 		}
 	}

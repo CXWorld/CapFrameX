@@ -35,5 +35,16 @@ namespace CapFrameX.Webservice.Implementation.Services
 			await _context.SaveChangesAsync();
 			return sessionCollection.Id;
 		}
+
+		public async Task DeleteCollection(Guid id, Guid userId)
+		{
+			var sessionToDelete = await GetSessionCollection(id);
+			if(sessionToDelete.UserId != userId)
+			{
+				throw new UnauthorizedAccessException("You cannot delete this session.");
+			}
+			_context.SessionCollections.Remove(sessionToDelete);
+			await _context.SaveChangesAsync();
+		}
 	}
 }

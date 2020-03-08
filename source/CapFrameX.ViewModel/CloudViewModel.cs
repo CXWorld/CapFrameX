@@ -288,7 +288,7 @@ namespace CapFrameX.ViewModel
 
 		private async Task UploadRecords()
 		{
-
+			ShareUrl = string.Empty;
 			var sessions = new List<ISession>();
 			foreach (var entry in CloudEntries)
 			{

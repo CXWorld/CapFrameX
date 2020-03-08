@@ -25,6 +25,11 @@ using CapFrameX.Webservice.Data.Providers;
 using CapFrameX.Webservice.Persistance;
 using Microsoft.EntityFrameworkCore;
 using CapFrameX.Webservice.Data.Mappings;
+using Microsoft.AspNetCore.Http;
+using Newtonsoft.Json;
+using Microsoft.AspNetCore.Diagnostics;
+using System.Net;
+using System.Net.Mime;
 
 namespace CapFrameX.Webservice.Host
 {
@@ -93,6 +98,24 @@ namespace CapFrameX.Webservice.Host
 			if (env.IsDevelopment())
 			{
 				app.UseDeveloperExceptionPage();
+			} else
+			{
+				app.UseExceptionHandler(errorApp =>
+				{
+					errorApp.Run(async context =>
+					{
+						context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+						context.Response.ContentType = MediaTypeNames.Application.Json;
+						var exceptionHandlerPathFeature = context.Features.Get<IExceptionHandlerPathFeature>();
+
+						var error = new {
+							context.Response.StatusCode,
+							exceptionHandlerPathFeature.Error.Message
+						};
+
+						await context.Response.WriteAsync(JsonConvert.SerializeObject(error));
+					});
+				});
 			}
 
 			app.UseSerilogRequestLogging();
