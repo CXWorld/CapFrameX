@@ -113,5 +113,11 @@ namespace CapFrameX.View
 		{
 			(DataContext as ControlViewModel).OnRecordSelectByDoubleClick();
 		}
+		private void ScrollViewer_PreviewMouseWheel(object sender, System.Windows.Input.MouseWheelEventArgs e)
+		{
+			ScrollViewer scv = (ScrollViewer)sender;
+			scv.ScrollToVerticalOffset(scv.VerticalOffset - e.Delta / 10);
+			e.Handled = true;
+		}
 	}
 }

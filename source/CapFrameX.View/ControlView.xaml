@@ -54,31 +54,37 @@
                         </TextBlock.LayoutTransform>
                     </TextBlock>
                 </Expander.Header>
-                <Grid VerticalAlignment="Center">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="50" ></RowDefinition>
-                        <RowDefinition Height="40" ></RowDefinition>
-                        <RowDefinition Height="Auto" ></RowDefinition>
-                    </Grid.RowDefinitions>
-                    <TextBox Grid.Row="1" Width="225" IsReadOnly="True" Margin="10 0 10 0"
+                <ScrollViewer VerticalScrollBarVisibility="Visible" PreviewMouseWheel="ScrollViewer_PreviewMouseWheel">
+                    <Grid VerticalAlignment="Center">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" ></RowDefinition>
+                            <RowDefinition Height="Auto" ></RowDefinition>
+                            <RowDefinition Height="Auto" ></RowDefinition>
+                        </Grid.RowDefinitions>
+                        <TextBox Grid.Row="0" Margin="10 10 10 0" Width="225" IsReadOnly="True"  materialDesign:HintAssist.Hint="Observed main folder" materialDesign:HintAssist.IsFloating="True"
                              Text="{Binding DataContext.ObservedDirectory, ElementName=ControlViewControl, Mode=OneWay}" TextWrapping="Wrap"/>
-                    <Button Grid.Row="0" Margin="0 10 50 0" Height="35" Width="35" Command="{Binding Path=DataContext.SelectObservedFolderCommand, ElementName=ControlViewControl}" Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}" ToolTip="Select observed folder">
-                        <materialDesign:PackIcon Kind="Folder" Height="25" Width="25" />
-                    </Button>
-                    <Button Grid.Row="0" Margin="50 10 0 0" Height="35" Width="35" Command="{Binding Path=DataContext.OpenObservedFolderCommand, ElementName=ControlViewControl}" Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}" ToolTip="Open observed folder">
-                        <materialDesign:PackIcon Kind="Forward"  Height="25" Width="25" />
-                    </Button>
-                    <Grid Grid.Row="2" Margin="5 15 5 0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-                        <TreeView Grid.Column="0" Name="trvFiles" HorizontalAlignment="Left">
-                                <TreeViewItem Header="Sub folders"></TreeViewItem>
-                            </TreeView>
-                        <ListView  Name="lvSubFolders" ItemsSource="{Binding Path=SelectedItem.SubFolders,ElementName=trvFiles, Mode=OneWay}" Grid.Column="1" ></ListView>
+                        <StackPanel Grid.Row="1" MaxWidth="250"  VerticalAlignment="Bottom" HorizontalAlignment="Left" Margin="5 0 0 15" Orientation="Horizontal">
+                            <Button Margin="10" Height="35" Width="35" Command="{Binding Path=DataContext.SelectObservedFolderCommand, ElementName=ControlViewControl}" Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}" ToolTip="Select observed main folder">
+                                <materialDesign:PackIcon Kind="Folder" Height="25" Width="25" />
+                            </Button>
+                            <Button Grid.Row="0" Margin="0 0 10 0" Height="35" Width="35" Command="{Binding Path=DataContext.OpenObservedFolderCommand, ElementName=ControlViewControl}" Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}" ToolTip="Open observed main folder">
+                                <materialDesign:PackIcon Kind="Forward"  Height="25" Width="25" />
+                            </Button>
+                            <CheckBox ToolTip="Also show records from sub folders of the selected folder" />
+                            <TextBlock Margin="5" VerticalAlignment="Center" Text="Include sub folders"/>
+                        </StackPanel>
+                        <TreeView Width="260" Grid.Row="2" Margin="-20 -15 0 0" Name="trvFiles" HorizontalAlignment="Left">
+                            <TreeViewItem Header="Main folder" IsExpanded="True">
+                                <TreeViewItem Header="Sub folder 1" />
+                                <TreeViewItem Header="Sub folder 2" />
+                                <TreeViewItem Header="Sub folder 3" IsExpanded="True">
+                                <TreeViewItem Header="Sub folder 3.1 " />
+                                </TreeViewItem>
+                                <TreeViewItem Header="Sub folder 4" />
+                            </TreeViewItem>
+                        </TreeView>
                     </Grid>
-                </Grid>
+                </ScrollViewer>
             </Expander>
             <!--Record list-->
             <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Vertical">
