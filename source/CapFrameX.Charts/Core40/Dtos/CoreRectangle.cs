@@ -83,7 +83,7 @@ namespace LiveCharts.Dtos
         /// </value>
         public double Left
         {
-            get { return _left; }
+            get { return double.IsInfinity(_left) ? 0 : _left; }
             set
             {
                 _left = value;
@@ -99,7 +99,7 @@ namespace LiveCharts.Dtos
         /// </value>
         public double Top
         {
-            get { return _top; }
+            get { return double.IsInfinity(_top) ? 0 : _top; }
             set
             {
                 _top = value;
@@ -115,7 +115,7 @@ namespace LiveCharts.Dtos
         /// </value>
         public double Width
         {
-            get { return _width; }
+            get { return double.IsInfinity(_width) ? 0 : _width; }
             set
             {
                 _width = value < 0 ? 0 : value;
@@ -131,7 +131,7 @@ namespace LiveCharts.Dtos
         /// </value>
         public double Height
         {
-            get { return _height; }
+            get { return double.IsInfinity(_height) ? 0 : _height; }
             set
             {
                 _height = value < 0 ? 0 : value;

@@ -30,12 +30,13 @@ namespace CapFrameX.Data
 
 		private FileSystemWatcher _watcher;
 		private List<FileInfo> _currentFiles = new List<FileInfo>();
+		private string _currentDir;
 
 		public RecordDirectoryObserver(IAppConfiguration appConfiguration, ILogger<RecordDirectoryObserver> logger)
 		{
 			_appConfiguration = appConfiguration;
 			_logger = logger;
-			ObserveDirectory(GetInitialObservedDirectory(_appConfiguration.ObservedDirectory));
+			ObserveDirectory(GetInitialObservedDirectory(_appConfiguration.RootDirectory));
 		}
 
 		public void Dispose()
@@ -50,6 +51,10 @@ namespace CapFrameX.Data
 
 		public void ObserveDirectory(string dir)
 		{
+			if (string.IsNullOrWhiteSpace(dir) || dir == _currentDir)
+				return;
+
+			_currentDir = dir;
 			var directory = new DirectoryInfo(dir);
 			if (!directory.Exists)
 			{

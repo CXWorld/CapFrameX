@@ -13,8 +13,10 @@ using System.ComponentModel;
 using System.Data;
 using System.Linq;
 using System.Reactive.Linq;
+using System.Diagnostics;
 using System.Windows.Controls;
 using System.Windows.Data;
+using Microsoft.WindowsAPICodePack.Dialogs;
 
 namespace CapFrameX.View
 {
@@ -36,9 +38,7 @@ namespace CapFrameX.View
 				.ObserveOnDispatcher()
 				.Subscribe(t => _recordInfoCollection.View.Refresh());
 
-			DriveInfo[] drives = DriveInfo.GetDrives();
-			foreach (DriveInfo driveInfo in drives)
-				trvStructure.Items.Add(CreateTreeItem(driveInfo));
+			CreateTreeViewRoot();
 
 			// Design time!
 			if (DesignerProperties.GetIsInDesignMode(this))
@@ -56,6 +56,7 @@ namespace CapFrameX.View
 
 			SetSortSettings((DataContext as ControlViewModel).AppConfiguration);
 		}
+
 
 		private void SetSortSettings(IAppConfiguration appConfiguration)
 		{
@@ -126,6 +127,18 @@ namespace CapFrameX.View
 			e.Handled = true;
 		}
 
+
+		private void CreateTreeViewRoot()
+		{
+			trvStructure.Items.Clear();
+			var mainfolderpath = (DataContext as ControlViewModel).AppConfiguration.CaptureRootDirectory;
+			var mainfoldername = new DirectoryInfo(ExtractFullPath(mainfolderpath));
+			var rootNode = CreateTreeItem(mainfoldername, mainfoldername.Name);
+			trvStructure.Items.Add(rootNode);
+			rootNode.IsSelected = true;
+			rootNode.IsExpanded = true;
+		}
+
 		public void TreeViewItem_Expanded(object sender, RoutedEventArgs e)
 		{
 			TreeViewItem item = e.Source as TreeViewItem;
@@ -141,19 +154,48 @@ namespace CapFrameX.View
 				try
 				{
 					foreach (DirectoryInfo subDir in expandedDir.GetDirectories())
-						item.Items.Add(CreateTreeItem(subDir));
+						item.Items.Add(CreateTreeItem(subDir, subDir.ToString()));
 				}
 				catch { }
 			}
 		}
 
-		private TreeViewItem CreateTreeItem(object o)
+		private TreeViewItem CreateTreeItem(object o, string name)
 		{
-			TreeViewItem item = new TreeViewItem();
-			item.Header = o.ToString();
-			item.Tag = o;
+			TreeViewItem item = new TreeViewItem
+			{
+				Header = name,
+				Tag = o
+			};
 			item.Items.Add("Loading...");
 			return item;
+		}
+
+		private void TreeViewItem_Selected(object sender, RoutedEventArgs e)
+		{
+			TreeViewItem item = e.Source as TreeViewItem;
+			(DataContext as ControlViewModel).RecordObserver.ObserveDirectory((item.Tag as DirectoryInfo).FullName);
+		}
+
+		private string ExtractFullPath(string path)
+		{
+			if (path.Contains(@"MyDocuments\CapFrameX\Captures"))
+			{
+				var documentFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+				path = Path.Combine(documentFolder, @"CapFrameX\Captures");
+			}
+
+			return path;
+		}
+
+		private void RootFolder_PreviewMouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+		{
+				var result = (DataContext as ControlViewModel).OnSelectRootFolder();
+			if(result)
+			{
+				
+				CreateTreeViewRoot();
+			}
 		}
 	}
 }

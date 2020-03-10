@@ -45,6 +45,7 @@ namespace CapFrameX.ViewModel
 		private string _customComment;
 		private int _recordDataGridSelectedIndex;
 		private List<IFileRecordInfo> _selectedRecordings;
+		public bool _directoryLoading;
 
 		public IFileRecordInfo SelectedRecordInfo
 		{
@@ -119,12 +120,34 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-		public string ObservedDirectory { get; private set; }
+		public bool DirectoryLoading
+		{
+			get { return _directoryLoading; }
+			set
+			{
+				_directoryLoading = value;
+				RaisePropertyChanged();
+				RaisePropertyChanged(nameof (DirectoryIsEmpty));
+			}
+		}
+
+		public string RootDirectory 
+		{
+			get { return _appConfiguration.CaptureRootDirectory; }
+			set
+			{
+				_appConfiguration.CaptureRootDirectory = value;
+				RaisePropertyChanged();
+			}
+		}
+		public bool DirectoryIsEmpty => !DirectoryLoading && !RecordInfoList.Any();
 
 		public ObservableCollection<IFileRecordInfo> RecordInfoList { get; }
 			= new ObservableCollection<IFileRecordInfo>();
 
 		public IAppConfiguration AppConfiguration => _appConfiguration;
+
+		public IRecordDirectoryObserver RecordObserver => _recordObserver;
 
 		public ICommand OpenEditingDialogCommand { get; }
 
@@ -146,10 +169,6 @@ namespace CapFrameX.ViewModel
 
 		public ICommand SelectedRecordingsCommand { get; }
 
-		public ICommand SelectObservedFolderCommand { get; }
-
-		public ICommand OpenObservedFolderCommand { get; }
-
 		public ControlViewModel(IRecordDirectoryObserver recordObserver,
 								IEventAggregator eventAggregator,
 								IAppConfiguration appConfiguration, RecordManager recordManager)
@@ -169,22 +188,21 @@ namespace CapFrameX.ViewModel
 			AddRamInfoCommand = new DelegateCommand(OnAddRamInfo);
 			DeleteRecordCommand = new DelegateCommand(OnPressDeleteKey);
 			SelectedRecordingsCommand = new DelegateCommand<object>(OnSelectedRecordings);
-			SelectObservedFolderCommand = new DelegateCommand(OnSelectObeservedFolder);
-			OpenObservedFolderCommand = new DelegateCommand(OnOpenObservedFolder);
-			_recordObserver.ObservingDirectoryStream.Subscribe(directory => {
-				ObservedDirectory = directory.FullName;
-				RaisePropertyChanged(nameof(ObservedDirectory));
-			});
 
 			RecordDataGridSelectedIndex = -1;
 
 			SetAggregatorEvents();
 			SubscribeToResetRecord();
 			SubscribeToSetFileRecordInfoExternal();
+
+			RecordInfoList.CollectionChanged += (sender, args) =>
+			{
+				RaisePropertyChanged(nameof(DirectoryIsEmpty));
+			};
 			SetupObservers(SynchronizationContext.Current);
 		}
 
-		private void OnSelectObeservedFolder()
+		public bool OnSelectRootFolder()
 		{
 			var dialog = new CommonOpenFileDialog
 			{
@@ -195,23 +213,10 @@ namespace CapFrameX.ViewModel
 
 			if (result == CommonFileDialogResult.Ok)
 			{
-				_appConfiguration.ObservedDirectory = dialog.FileName;
-				_recordObserver.ObserveDirectory(dialog.FileName);
+				RootDirectory = dialog.FileName;
+				return true;
 			}
-		}
-		private void OnOpenObservedFolder()
-		{
-			try
-			{
-				var path = _appConfiguration.ObservedDirectory;
-				if (path.Contains(@"MyDocuments\CapFrameX\Captures"))
-				{
-					var documentFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-					path = Path.Combine(documentFolder, @"CapFrameX\Captures");
-				}
-				Process.Start(path);
-			}
-			catch { }
+			return false;
 		}
 
 		private void SetupObservers(SynchronizationContext context)
@@ -224,18 +229,29 @@ namespace CapFrameX.ViewModel
 					RaisePropertyChanged(nameof(HasValidSource));
 				});
 
+
 			_recordObserver.DirectoryFilesStream
 				.DistinctUntilChanged()
-				.Do(_ => RecordInfoList.Clear())
-				.SelectMany(fileInfos => 
-					Observable.Merge(fileInfos.Select(fileInfo => Observable.FromAsync(() => _recordManager.GetFileRecordInfo(fileInfo))))
+				.Do(_ => {
+					RecordInfoList.Clear();
+					DirectoryLoading = true;
+					RaisePropertyChanged(nameof(DirectoryLoading));
+				})
+				.Select(fileInfos =>
+				{
+					return Observable.Merge(fileInfos.Select(fileInfo => Observable.FromAsync(() => _recordManager.GetFileRecordInfo(fileInfo))), 30)
 					.Where(recordFileInfo => recordFileInfo is IFileRecordInfo)
 					.Distinct(recordFileInfo => recordFileInfo.Hash)
-				)
+					.ToArray();
+				}
+				).Switch()
 				.ObserveOn(context)
 				.Subscribe(recordFileInfos =>
 				{
-					RecordInfoList.Add(recordFileInfos);
+					RecordInfoList.Clear();
+					DirectoryLoading = false;
+					RaisePropertyChanged(nameof (DirectoryLoading));
+					RecordInfoList.AddRange(recordFileInfos);
 				});
 
 			_recordObserver.FileCreatedStream

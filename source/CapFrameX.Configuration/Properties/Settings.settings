@@ -167,5 +167,8 @@
     <Setting Name="LoggingDirectory" Type="System.String" Scope="User">
       <Value Profile="(Default)">MyDocuments\CapFrameX\Logs</Value>
     </Setting>
+    <Setting Name="CaptureRootDirectory" Type="System.String" Scope="User">
+      <Value Profile="(Default)">MyDocuments\CapFrameX\Captures</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

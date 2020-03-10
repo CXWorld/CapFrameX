@@ -6,7 +6,7 @@
 
 		double StutteringFactor { get; set; }
 
-		string ObservedDirectory { get; set; }
+		string RootDirectory { get; set; }
 
 		string ScreenshotDirectory { get; set; }
 		string LoggingDirectory { get; set; }
@@ -108,5 +108,7 @@
 		int OutlierPercentageAggregation { get; set; }
 
 		bool AreThresholdsReversed { get; set; }
+
+		string CaptureRootDirectory { get; set; }
 	}
 }
