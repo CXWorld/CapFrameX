@@ -254,7 +254,8 @@
 				</Grid.ColumnDefinitions>
 				<!--CPU-->
 				<TextBox Grid.Row="0" Grid.Column="0" wpf:HintAssist.Hint="Custom CPU description" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
-							Margin="5 6 5 0" FontSize="12" Text="{Binding CustomCpuDescription, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Stretch"/>
+						 Margin="5 6 5 0" FontSize="12" Text="{Binding CustomCpuDescription, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Stretch"
+                         KeyDown="TextBox_KeyDown"/>
 				<Button Grid.Row="0" Grid.Column="1" Margin="5 6 5 0" Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}"
 							VerticalAlignment="Bottom" HorizontalAlignment="Right"
 							Width="20" Height="20"
@@ -264,7 +265,8 @@
 				</Button>
 				<!--GPU-->
 				<TextBox Grid.Row="1" Grid.Column="0" wpf:HintAssist.Hint="Custom GPU description" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
-							Margin="5 6 5 0" FontSize="12" Text="{Binding CustomGpuDescription, UpdateSourceTrigger=PropertyChanged}"/>
+						 Margin="5 6 5 0" FontSize="12" Text="{Binding CustomGpuDescription, UpdateSourceTrigger=PropertyChanged}"
+                         KeyDown="TextBox_KeyDown"/>
 				<Button Grid.Row="1" Grid.Column="1" Margin="5 6 5 0" Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}"
 							VerticalAlignment="Bottom" HorizontalAlignment="Right"
 							Width="20" Height="20"
@@ -274,7 +276,8 @@
 				</Button>
 				<!--RAM-->	
 				<TextBox Grid.Row="2" Grid.Column="0" wpf:HintAssist.Hint="Custom RAM description" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
-						 Margin="5 6 5 0" FontSize="12" Text="{Binding CustomRamDescription, UpdateSourceTrigger=PropertyChanged}"/>
+						 Margin="5 6 5 0" FontSize="12" Text="{Binding CustomRamDescription, UpdateSourceTrigger=PropertyChanged}"
+                         KeyDown="TextBox_KeyDown"/>
 				<Button Grid.Row="2" Grid.Column="1" Margin="5 6 5 0" Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}"
 							VerticalAlignment="Bottom" HorizontalAlignment="Right"
 							Width="20" Height="20"
@@ -284,9 +287,11 @@
 				</Button>
 
 				<TextBox Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" wpf:HintAssist.Hint="Game" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
-						 Margin="5 6 5 0" FontSize="12" Text="{Binding CustomGameName, UpdateSourceTrigger=PropertyChanged}"/>
+						 Margin="5 6 5 0" FontSize="12" Text="{Binding CustomGameName, UpdateSourceTrigger=PropertyChanged}"
+                         KeyDown="TextBox_KeyDown"/>
 				<TextBox Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" wpf:HintAssist.Hint="Comment" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
-						 Margin="5 6 5 0" FontSize="12" Text="{Binding CustomComment, UpdateSourceTrigger=PropertyChanged}"/>
+						 Margin="5 6 5 0" FontSize="12" Text="{Binding CustomComment, UpdateSourceTrigger=PropertyChanged}"
+                         KeyDown="TextBox_KeyDown"/>
 				<StackPanel Grid.Row="5" Orientation="Horizontal" HorizontalAlignment="Center"
 							Grid.Column="0" Grid.ColumnSpan="2" Margin="0 16 0 5">
 					<Button Style="{DynamicResource MaterialDesignFlatButton}"

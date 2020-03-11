@@ -29,12 +29,32 @@ public:
 
 	void Refresh()
 	{
-		_coreControl->Refresh();
+		try
+		{
+			{
+				msclr::lock l(m_lock);
+				_coreControl->Refresh();
+			}
+		}
+		catch (Exception^ ex)
+		{
+			_exceptionAction->Invoke(ex);
+		}
 	}
 
 	void ReleaseOSD()
 	{
-		_coreControl->ReleaseOSD();
+		try
+		{
+			{
+				msclr::lock l(m_lock);
+				_coreControl->ReleaseOSD();
+			}
+		}
+		catch (Exception^ ex)
+		{
+			_exceptionAction->Invoke(ex);
+		}
 	}
 
 	void SetIsCaptureTimerActive(bool isActive)
@@ -46,7 +66,7 @@ public:
 				_coreControl->IsCaptureTimerActive = isActive;
 			}
 		}
-		catch (Exception ^ ex)
+		catch (Exception^ ex)
 		{
 			_exceptionAction->Invoke(ex);
 		}
@@ -77,7 +97,7 @@ public:
 				}
 			}
 		}
-		catch (Exception ^ ex)
+		catch (Exception^ ex)
 		{
 			_exceptionAction->Invoke(ex);
 		}
@@ -108,7 +128,7 @@ public:
 				}
 			}
 		}
-		catch (Exception ^ ex)
+		catch (Exception^ ex)
 		{
 			_exceptionAction->Invoke(ex);
 		}
@@ -123,7 +143,7 @@ public:
 				_coreControl->RunHistoryAggregation = aggregation;
 			}
 		}
-		catch (Exception ^ ex)
+		catch (Exception^ ex)
 		{
 			_exceptionAction->Invoke(ex);
 		}
@@ -158,7 +178,7 @@ public:
 				}
 			}
 		}
-		catch (Exception ^ ex)
+		catch (Exception^ ex)
 		{
 			_exceptionAction->Invoke(ex);
 		}

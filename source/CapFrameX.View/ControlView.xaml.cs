@@ -17,7 +17,7 @@ using System.Diagnostics;
 using System.Windows.Controls;
 using System.Windows.Data;
 using Microsoft.WindowsAPICodePack.Dialogs;
-using System.Windows.Media;
+using System.Windows.Input;
 
 namespace CapFrameX.View
 {
@@ -121,15 +121,13 @@ namespace CapFrameX.View
 		{
 			(DataContext as ControlViewModel).OnRecordSelectByDoubleClick();
 		}
+		
 		private void ScrollViewer_PreviewMouseWheel(object sender, System.Windows.Input.MouseWheelEventArgs e)
 		{
 			ScrollViewer scv = (ScrollViewer)sender;
 			scv.ScrollToVerticalOffset(scv.VerticalOffset - e.Delta / 10);
 			e.Handled = true;
 		}
-
-
-		// TreeView controls
 
 		private void CreateTreeViewRoot()
 		{
@@ -138,7 +136,7 @@ namespace CapFrameX.View
 			var mainfoldername = new DirectoryInfo(ExtractFullPath(mainfolderpath));
 			var rootNode = CreateTreeItem(mainfoldername, mainfoldername.Name);
 			trvStructure.Items.Add(rootNode);
-			//rootNode.IsSelected = true;
+			rootNode.IsSelected = true;
 			rootNode.IsExpanded = true;
 		}
 
@@ -157,14 +155,7 @@ namespace CapFrameX.View
 				try
 				{
 					foreach (DirectoryInfo subDir in expandedDir.GetDirectories())
-					{
 						item.Items.Add(CreateTreeItem(subDir, subDir.ToString()));
-						item.ExpandSubtree();						
-					}
-
-					var selectedFolderPath = (DataContext as ControlViewModel).AppConfiguration.ObservedDirectory;
-					var selectedFolderName = new DirectoryInfo(ExtractFullPath(selectedFolderPath)).Name;
-					//item.Focus();
 				}
 				catch { }
 			}
@@ -200,32 +191,21 @@ namespace CapFrameX.View
 
 		private void RootFolder_PreviewMouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
 		{
-				var result = (DataContext as ControlViewModel).OnSelectRootFolder();
+			var result = (DataContext as ControlViewModel).OnSelectRootFolder();
 			if(result)
-			{
-				
+			{				
 				CreateTreeViewRoot();
 			}
 		}
 
-		private void TreeView_PreviewMouseRightButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+		private void TextBox_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
 		{
+			if (e.Key != System.Windows.Input.Key.Enter) 
+				return;
 
-			TreeViewItem treeViewItem = VisualUpwardSearch(e.OriginalSource as DependencyObject);
-
-			if (treeViewItem != null)
-			{
-				treeViewItem.Focus();
-				e.Handled = true;
-			}
-		}
-
-		static TreeViewItem VisualUpwardSearch(DependencyObject source)
-		{
-			while (source != null && !(source is TreeViewItem))
-				source = VisualTreeHelper.GetParent(source);
-
-			return source as TreeViewItem;
+			Keyboard.ClearFocus();
+			(DataContext as ControlViewModel).SaveDescriptions();
+			e.Handled = true;
 		}
 	}
 }
