@@ -64,7 +64,14 @@
                     <TextBox Grid.Row="0" Margin="10 10 10 0" Width="225" IsReadOnly="True" HorizontalAlignment="Left" materialDesign:HintAssist.Hint="Root capture folder" materialDesign:HintAssist.IsFloating="True"
                              Text="{Binding DataContext.RootDirectory, ElementName=ControlViewControl, Mode=OneWay}" TextWrapping="Wrap" PreviewMouseDown="RootFolder_PreviewMouseDown"/>
                     <ScrollViewer Margin="0 20 0 0" Width="250" Grid.Row="1" Height="{Binding ElementName=ControlViewControl, Path=ActualHeight, Converter={StaticResource AddValueConverterExpander}}" PreviewMouseWheel="ScrollViewer_PreviewMouseWheel" >
-                        <TreeView Name="trvStructure" TreeViewItem.Expanded="TreeViewItem_Expanded" TreeViewItem.Selected="TreeViewItem_Selected" >
+                        <TreeView Name="trvStructure" TreeViewItem.Expanded="TreeViewItem_Expanded" TreeViewItem.Selected="TreeViewItem_Selected" PreviewMouseRightButtonDown="TreeView_PreviewMouseRightButtonDown"
+                                  Tag="{Binding ElementName=ControlViewControl, Path=DataContext}">
+                            <TreeView.ContextMenu>
+                                <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
+                                    <MenuItem Header="Open folder" Command="{Binding OpenObservedFolderCommand}"/>
+                                    <MenuItem Header="Create new sub folder" Command="{Binding CreateSubFolderCommand}"/>
+                                </ContextMenu>
+                            </TreeView.ContextMenu>
                     </TreeView>
                     </ScrollViewer>
                 </Grid>

@@ -17,6 +17,7 @@ using System.Diagnostics;
 using System.Windows.Controls;
 using System.Windows.Data;
 using Microsoft.WindowsAPICodePack.Dialogs;
+using System.Windows.Media;
 
 namespace CapFrameX.View
 {
@@ -128,6 +129,8 @@ namespace CapFrameX.View
 		}
 
 
+		// TreeView controls
+
 		private void CreateTreeViewRoot()
 		{
 			trvStructure.Items.Clear();
@@ -135,7 +138,7 @@ namespace CapFrameX.View
 			var mainfoldername = new DirectoryInfo(ExtractFullPath(mainfolderpath));
 			var rootNode = CreateTreeItem(mainfoldername, mainfoldername.Name);
 			trvStructure.Items.Add(rootNode);
-			rootNode.IsSelected = true;
+			//rootNode.IsSelected = true;
 			rootNode.IsExpanded = true;
 		}
 
@@ -154,7 +157,14 @@ namespace CapFrameX.View
 				try
 				{
 					foreach (DirectoryInfo subDir in expandedDir.GetDirectories())
+					{
 						item.Items.Add(CreateTreeItem(subDir, subDir.ToString()));
+						item.ExpandSubtree();						
+					}
+
+					var selectedFolderPath = (DataContext as ControlViewModel).AppConfiguration.ObservedDirectory;
+					var selectedFolderName = new DirectoryInfo(ExtractFullPath(selectedFolderPath)).Name;
+					//item.Focus();
 				}
 				catch { }
 			}
@@ -196,6 +206,26 @@ namespace CapFrameX.View
 				
 				CreateTreeViewRoot();
 			}
+		}
+
+		private void TreeView_PreviewMouseRightButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+		{
+
+			TreeViewItem treeViewItem = VisualUpwardSearch(e.OriginalSource as DependencyObject);
+
+			if (treeViewItem != null)
+			{
+				treeViewItem.Focus();
+				e.Handled = true;
+			}
+		}
+
+		static TreeViewItem VisualUpwardSearch(DependencyObject source)
+		{
+			while (source != null && !(source is TreeViewItem))
+				source = VisualTreeHelper.GetParent(source);
+
+			return source as TreeViewItem;
 		}
 	}
 }

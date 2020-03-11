@@ -140,6 +140,9 @@ namespace CapFrameX.ViewModel
 				RaisePropertyChanged();
 			}
 		}
+
+		public string ObservedDirectory { get; private set; }
+
 		public bool DirectoryIsEmpty => !DirectoryLoading && !RecordInfoList.Any();
 
 		public ObservableCollection<IFileRecordInfo> RecordInfoList { get; }
@@ -148,8 +151,6 @@ namespace CapFrameX.ViewModel
 		public IAppConfiguration AppConfiguration => _appConfiguration;
 
 		public IRecordDirectoryObserver RecordObserver => _recordObserver;
-
-		public ICommand OpenEditingDialogCommand { get; }
 
 		public ICommand AddToIgnoreListCommand { get; }
 
@@ -166,6 +167,8 @@ namespace CapFrameX.ViewModel
 		public ICommand AddRamInfoCommand { get; }
 
 		public ICommand DeleteRecordCommand { get; }
+
+		public ICommand OpenObservedFolderCommand { get; }
 
 		public ICommand SelectedRecordingsCommand { get; }
 
@@ -187,6 +190,7 @@ namespace CapFrameX.ViewModel
 			AddGpuInfoCommand = new DelegateCommand(OnAddGpuInfo);
 			AddRamInfoCommand = new DelegateCommand(OnAddRamInfo);
 			DeleteRecordCommand = new DelegateCommand(OnPressDeleteKey);
+			OpenObservedFolderCommand = new DelegateCommand(OnOpenObservedFolder);
 			SelectedRecordingsCommand = new DelegateCommand<object>(OnSelectedRecordings);
 
 			RecordDataGridSelectedIndex = -1;
@@ -217,6 +221,20 @@ namespace CapFrameX.ViewModel
 				return true;
 			}
 			return false;
+		}
+		private void OnOpenObservedFolder()
+		{
+			try
+			{
+				var path = _appConfiguration.ObservedDirectory;
+				if (path.Contains(@"MyDocuments\CapFrameX\Captures"))
+				{
+					var documentFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+					path = Path.Combine(documentFolder, @"CapFrameX\Captures");
+				}
+				Process.Start(path);
+			}
+			catch { }
 		}
 
 		private void SetupObservers(SynchronizationContext context)

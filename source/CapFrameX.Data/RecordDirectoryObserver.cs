@@ -36,7 +36,7 @@ namespace CapFrameX.Data
 		{
 			_appConfiguration = appConfiguration;
 			_logger = logger;
-			ObserveDirectory(GetInitialObservedDirectory(_appConfiguration.RootDirectory));
+			ObserveDirectory(GetInitialObservedDirectory(_appConfiguration.ObservedDirectory));
 		}
 
 		public void Dispose()
@@ -55,6 +55,7 @@ namespace CapFrameX.Data
 				return;
 
 			_currentDir = dir;
+			_appConfiguration.ObservedDirectory = dir;
 			var directory = new DirectoryInfo(dir);
 			if (!directory.Exists)
 			{

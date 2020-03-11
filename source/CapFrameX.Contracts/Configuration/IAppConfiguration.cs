@@ -6,7 +6,7 @@
 
 		double StutteringFactor { get; set; }
 
-		string RootDirectory { get; set; }
+		string ObservedDirectory { get; set; }
 
 		string ScreenshotDirectory { get; set; }
 		string LoggingDirectory { get; set; }

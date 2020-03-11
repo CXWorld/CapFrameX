@@ -18,7 +18,7 @@ namespace CapFrameX.Configuration
 			set { Settings.StutteringFactor = value; Settings.Save(); }
 		}
 
-		public string RootDirectory
+		public string ObservedDirectory
 		{
 			get { return Settings.ObservedDirectory; }
 			set { Settings.ObservedDirectory = value; Settings.Save(); }
