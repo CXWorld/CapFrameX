@@ -40,5 +40,10 @@ namespace CapFrameX.Extensions
 
 			return o;
 		}
+
+		public static bool IsAllNotNull(params object[] objects)
+		{
+			return objects.All(o => !(o == null));
+		}
 	}
 }

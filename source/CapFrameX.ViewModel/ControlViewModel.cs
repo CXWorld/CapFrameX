@@ -20,6 +20,7 @@ using System.Collections;
 using System.Reactive.Subjects;
 using CapFrameX.Contracts.PresentMonInterface;
 using Microsoft.VisualBasic.FileIO;
+using CapFrameX.Extensions;
 
 namespace CapFrameX.ViewModel
 {
@@ -298,10 +299,13 @@ namespace CapFrameX.ViewModel
 			CustomComment = string.Empty;
 		}
 
-		private void OnAcceptEditingDialog()
-		{
-			if (CustomCpuDescription == null || CustomGpuDescription == null || CustomRamDescription == null
-				|| CustomGameName == null || CustomComment == null || _selectedRecordInfo == null)
+		private void OnAcceptEditingDialog() => SaveDescriptions();
+
+		public void SaveDescriptions()
+		{			
+			if (!ObjectExtensions.IsAllNotNull(CustomCpuDescription, 
+				CustomGpuDescription, CustomRamDescription, CustomGameName, 
+				CustomComment, _selectedRecordInfo))
 				return;
 
 			_recordManager.UpdateCustomData(_selectedRecordInfo, CustomCpuDescription, CustomGpuDescription, CustomRamDescription, CustomGameName, CustomComment);

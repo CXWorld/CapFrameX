@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -82,6 +83,16 @@ namespace CapFrameX.Extensions
                 hash += b.ToString("X2");
             }
             return hash;
+        }
+
+        public static bool IsAllNotNullOrWhiteSpace(params string[] strings)
+        {
+            return strings.All(str => !string.IsNullOrWhiteSpace(str));
+        }
+
+        public static bool IsAllNotNull(params string[] strings)
+        {
+            return strings.All(str => !(str == null));
         }
     }
 }

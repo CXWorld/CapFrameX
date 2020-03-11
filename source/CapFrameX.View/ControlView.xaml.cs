@@ -13,6 +13,7 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Input;
 
 namespace CapFrameX.View
 {
@@ -117,6 +118,16 @@ namespace CapFrameX.View
 		private void DataGridRow_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
 		{
 			(DataContext as ControlViewModel).OnRecordSelectByDoubleClick();
+		}
+
+		private void TextBox_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+		{
+			if (e.Key != System.Windows.Input.Key.Enter) 
+				return;
+
+			Keyboard.ClearFocus();
+			(DataContext as ControlViewModel).SaveDescriptions();
+			e.Handled = true;
 		}
 	}
 }
