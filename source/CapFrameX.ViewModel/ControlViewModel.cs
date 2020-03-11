@@ -20,7 +20,7 @@ using System.Collections;
 using System.Reactive.Subjects;
 using CapFrameX.Contracts.PresentMonInterface;
 using Microsoft.VisualBasic.FileIO;
-using CapFrameX.Data.Session.Contracts;
+using CapFrameX.Extensions;
 
 namespace CapFrameX.ViewModel
 {
@@ -184,10 +184,10 @@ namespace CapFrameX.ViewModel
 			_recordObserver.DirectoryFilesStream
 				.DistinctUntilChanged()
 				.Do(_ => RecordInfoList.Clear())
-				.SelectMany(fileInfos =>
-					fileInfos.ToObservable().SelectMany(fi => Observable.FromAsync(() => _recordManager.GetFileRecordInfo(fi)).Catch<IFileRecordInfo, Exception>(_ => null))
-						.Where(recordFileInfo => recordFileInfo is IFileRecordInfo)
-						.Distinct(recordFileInfo => recordFileInfo.Hash)
+				.SelectMany(fileInfos => 
+					Observable.Merge(fileInfos.Select(fileInfo => Observable.FromAsync(() => _recordManager.GetFileRecordInfo(fileInfo))))
+					.Where(recordFileInfo => recordFileInfo is IFileRecordInfo)
+					.Distinct(recordFileInfo => recordFileInfo.Hash)
 				)
 				.ObserveOn(context)
 				.Subscribe(recordFileInfos =>
@@ -196,7 +196,7 @@ namespace CapFrameX.ViewModel
 				});
 
 			_recordObserver.FileCreatedStream
-				.SelectMany(fi => Observable.FromAsync(() => _recordManager.GetFileRecordInfo(fi)).Catch<IFileRecordInfo, Exception>(_ => null))
+				.SelectMany(fileInfo => _recordManager.GetFileRecordInfo(fileInfo))
 				.Where(recordInfo => recordInfo is IFileRecordInfo)
 				.ObserveOn(context)
 				.Subscribe(recordInfo =>
@@ -216,21 +216,21 @@ namespace CapFrameX.ViewModel
 				});
 
 			_recordObserver.FileChangedStream
-				.SelectMany(fi => Observable.FromAsync(() => _recordManager.GetFileRecordInfo(fi)).Catch<IFileRecordInfo, Exception>(_ => null))
+				.SelectMany(fileInfo => _recordManager.GetFileRecordInfo(fileInfo))
 				.Where(recordInfo => recordInfo is IFileRecordInfo)
 				.ObserveOn(context)
 				.Subscribe(recordInfo =>
 				{
-					var itemToRemove = RecordInfoList.FirstOrDefault(ri => ri.FullPath.Equals(recordInfo.FullPath));
-					if (itemToRemove is IFileRecordInfo)
+				var itemToRemove = RecordInfoList.FirstOrDefault(ri => ri.FullPath.Equals(recordInfo.FullPath));
+				if (itemToRemove is IFileRecordInfo)
+				{
+					var selectedRecordId = _selectedRecordInfo?.Id;
+					var itemIndex = RecordInfoList.IndexOf(itemToRemove);
+					RecordInfoList[itemIndex] = recordInfo;
+					if (selectedRecordId?.Equals(itemToRemove.Id) ?? false)
 					{
-						var selectedRecordId = _selectedRecordInfo?.Id;
-						var itemIndex = RecordInfoList.IndexOf(itemToRemove);
-						RecordInfoList[itemIndex] = recordInfo;
-						if (selectedRecordId?.Equals(itemToRemove.Id) ?? false)
-						{
-							SelectedRecordInfo = recordInfo;
-							_updateRecordInfosEvent.Publish(new ViewMessages.UpdateRecordInfos(itemToRemove));
+						SelectedRecordInfo = recordInfo;
+						_updateRecordInfosEvent.Publish(new ViewMessages.UpdateRecordInfos(itemToRemove));
 						}
 					}
 				});
@@ -299,10 +299,13 @@ namespace CapFrameX.ViewModel
 			CustomComment = string.Empty;
 		}
 
-		private void OnAcceptEditingDialog()
-		{
-			if (CustomCpuDescription == null || CustomGpuDescription == null || CustomRamDescription == null
-				|| CustomGameName == null || CustomComment == null || _selectedRecordInfo == null)
+		private void OnAcceptEditingDialog() => SaveDescriptions();
+
+		public void SaveDescriptions()
+		{			
+			if (!ObjectExtensions.IsAllNotNull(CustomCpuDescription, 
+				CustomGpuDescription, CustomRamDescription, CustomGameName, 
+				CustomComment, _selectedRecordInfo))
 				return;
 
 			_recordManager.UpdateCustomData(_selectedRecordInfo, CustomCpuDescription, CustomGpuDescription, CustomRamDescription, CustomGameName, CustomComment);
@@ -320,16 +323,14 @@ namespace CapFrameX.ViewModel
 
 		private void OnSelectedRecordInfoChanged()
 		{
-			if (_selectedRecordInfo is null)
-			{
+			if (_selectedRecordInfo is null) {
 				ResetInfoEditBoxes();
-			}
-			else
+			} else 
 			{
 				var session = _recordManager.LoadData(_selectedRecordInfo.FullPath);
 				if (session is ISession)
 				{
-					if (_updateSessionEvent != null)
+					if(_updateSessionEvent != null)
 					{
 						_updateSessionEvent.Publish(new ViewMessages.UpdateSession(session, SelectedRecordInfo));
 					}
