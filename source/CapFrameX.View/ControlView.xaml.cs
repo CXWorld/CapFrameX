@@ -41,59 +41,33 @@ namespace CapFrameX.View
                 .ObserveOnDispatcher()
                 .Subscribe(t => _recordInfoCollection.View.Refresh());
 
+            BuildTreeView();
+
+            SetSortSettings((DataContext as ControlViewModel).AppConfiguration);
+        }
+
+        void BuildTreeView()
+        { 
             var root = CreateTreeViewRoot();
             CreateTreeViewRecursive(trvStructure.Items[0] as TreeViewItem);
-
             TraverseTreeView(root);
 
             if (_observedTreeViewItem != null)
                 JumpToNode(root, _observedTreeViewItem.Header.ToString());
 
-            //if (_observedTreeViewItem != null)
-            //{
-            //    var parentList = new List<TreeViewItem>();
-            //    var currentTreeViewItem = _observedTreeViewItem;
-            //    while (currentTreeViewItem.Parent != null && currentTreeViewItem.Parent is TreeViewItem)
-            //    {
-            //        currentTreeViewItem = currentTreeViewItem.Parent as TreeViewItem;
-            //        parentList.Add(currentTreeViewItem);
-            //    }
-
-            //    parentList.Reverse();
-
-            //    foreach (var item in parentList)
-            //    {
-            //        item.IsExpanded = true;
-            //    }
-
-            //    _observedTreeViewItem.IsSelected = true;
-            //}
-
-            SetSortSettings((DataContext as ControlViewModel).AppConfiguration);
+            if ((DataContext as ControlViewModel).AppConfiguration.CaptureRootDirectory == (DataContext as ControlViewModel).AppConfiguration.ObservedDirectory)
+                root.IsSelected = true;
         }
 
-        void JumpToNode(TreeViewItem tvi, string NodeName)
+        private TreeViewItem CreateTreeViewRoot()
         {
-            if (tvi == null)
-                return;
-
-            if (tvi.Header.ToString() == NodeName)
-            {
-                tvi.BringIntoView();
-                tvi.IsSelected = true;
-                return;
-            }
-            else
-                tvi.IsExpanded = false;
-
-            if (tvi.HasItems)
-            {
-                foreach (var item in tvi.Items)
-                {
-                    TreeViewItem temp = item as TreeViewItem;
-                    JumpToNode(temp, NodeName);
-                }
-            }
+            trvStructure.Items.Clear();
+            var mainfolderpath = (DataContext as ControlViewModel).AppConfiguration.CaptureRootDirectory;
+            var mainfoldername = new DirectoryInfo(ExtractFullPath(mainfolderpath));
+            var rootNode = CreateTreeItem(mainfoldername, mainfoldername.Name);
+            trvStructure.Items.Add(rootNode);
+            rootNode.IsExpanded = true;
+            return rootNode;
         }
 
         private void TraverseTreeView(TreeViewItem item)
@@ -119,6 +93,16 @@ namespace CapFrameX.View
             }
             catch { }
         }
+        private TreeViewItem CreateTreeItem(object o, string name)
+        {
+            TreeViewItem item = new TreeViewItem
+            {
+                Header = name,
+                Tag = o
+            };
+            item.Items.Add("Loading...");
+            return item;
+        }
 
         private TreeViewItem _observedTreeViewItem;
 
@@ -143,6 +127,30 @@ namespace CapFrameX.View
                     }
                 }
                 catch { }
+            }
+        }
+
+        void JumpToNode(TreeViewItem tvi, string NodeName)
+        {
+            if (tvi == null)
+                return;
+
+            if (tvi.Header.ToString() == NodeName)
+            {
+                tvi.BringIntoView();
+                tvi.IsSelected = true;
+                return;
+            }
+            else
+                tvi.IsExpanded = false;
+
+            if (tvi.HasItems)
+            {
+                foreach (var item in tvi.Items)
+                {
+                    TreeViewItem temp = item as TreeViewItem;
+                    JumpToNode(temp, NodeName);
+                }
             }
         }
 
@@ -216,63 +224,7 @@ namespace CapFrameX.View
             e.Handled = true;
         }
 
-        private TreeViewItem CreateTreeViewRoot()
-        {
-            trvStructure.Items.Clear();
-            var mainfolderpath = (DataContext as ControlViewModel).AppConfiguration.CaptureRootDirectory;
-            var mainfoldername = new DirectoryInfo(ExtractFullPath(mainfolderpath));
-            var rootNode = CreateTreeItem(mainfoldername, mainfoldername.Name);
-            trvStructure.Items.Add(rootNode);
-            rootNode.IsExpanded = true;
-            return rootNode;
-        }
 
-        public void TreeViewItem_Expanded(object sender, RoutedEventArgs e)
-        {
-            TreeViewItem item = e.Source as TreeViewItem;
-            if ((item.Items.Count == 1) && (item.Items[0] is string))
-            {
-                item.Items.Clear();
-
-                DirectoryInfo expandedDir = null;
-                if (item.Tag is DriveInfo)
-                    expandedDir = (item.Tag as DriveInfo).RootDirectory;
-                if (item.Tag is DirectoryInfo)
-                    expandedDir = (item.Tag as DirectoryInfo);
-                try
-                {
-                    foreach (DirectoryInfo subDir in expandedDir.GetDirectories())
-                    {
-                        var subItem = CreateTreeItem(subDir, subDir.ToString());
-                        item.Items.Add(subItem);
-                        subItem.IsExpanded = true;
-                        if (!(subDir.FullName == (DataContext as ControlViewModel).AppConfiguration.ObservedDirectory))
-                        {
-                            subItem.IsExpanded = false;
-                        }
-                        else
-                        {
-
-                            subItem.Focus();
-                            (subItem.Parent as TreeViewItem).IsExpanded = true;
-
-                        }
-                    }
-                }
-                catch { }
-            }
-        }
-
-        private TreeViewItem CreateTreeItem(object o, string name)
-        {
-            TreeViewItem item = new TreeViewItem
-            {
-                Header = name,
-                Tag = o
-            };
-            item.Items.Add("Loading...");
-            return item;
-        }
 
         private void TreeViewItem_Selected(object sender, RoutedEventArgs e)
         {
@@ -296,10 +248,9 @@ namespace CapFrameX.View
             var result = (DataContext as ControlViewModel).OnSelectRootFolder();
             if (result)
             {
-                CreateTreeViewRoot();
+                BuildTreeView();
             }
         }
-
 
         private void TreeView_PreviewMouseRightButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {

@@ -171,6 +171,10 @@ namespace CapFrameX.ViewModel
 
 		public ICommand OpenObservedFolderCommand { get; }
 
+		public ICommand DeleteFolderCommand { get; }
+
+		public ICommand CreateSubFolderCommand { get; }
+
 		public ICommand SelectedRecordingsCommand { get; }
 
 		public ControlViewModel(IRecordDirectoryObserver recordObserver,
@@ -192,6 +196,8 @@ namespace CapFrameX.ViewModel
 			AddRamInfoCommand = new DelegateCommand(OnAddRamInfo);
 			DeleteRecordCommand = new DelegateCommand(OnPressDeleteKey);
 			OpenObservedFolderCommand = new DelegateCommand(OnOpenObservedFolder);
+			DeleteFolderCommand = new DelegateCommand(OnDeleteFolder);
+			CreateSubFolderCommand = new DelegateCommand(OnCreateSubFolder);
 			SelectedRecordingsCommand = new DelegateCommand<object>(OnSelectedRecordings);
 
 			RecordDataGridSelectedIndex = -1;
@@ -205,6 +211,36 @@ namespace CapFrameX.ViewModel
 				RaisePropertyChanged(nameof(DirectoryIsEmpty));
 			};
 			SetupObservers(SynchronizationContext.Current);
+		}
+
+		private void OnCreateSubFolder()
+		{
+			if (!_appConfiguration.ObservedDirectory.Any())
+				return;
+
+			try
+			{
+				FileSystem.CreateDirectory(Path.Combine(_appConfiguration.ObservedDirectory, "SubDirectoryTest"));
+
+				// add popup message with folder name textbox
+				// trigger creating TreeView in code behind
+			}
+			catch { }
+		}
+		private void OnDeleteFolder()
+		{
+			if (!_appConfiguration.ObservedDirectory.Any())
+				return;
+
+			try
+			{
+				FileSystem.DeleteDirectory(_appConfiguration.ObservedDirectory, UIOption.OnlyErrorDialogs, RecycleOption.SendToRecycleBin);
+				
+				_updateSessionEvent.Publish(new ViewMessages.UpdateSession(null, null));
+
+				// trigger creating TreeView in code behind
+			}
+			catch { }
 		}
 
 		public bool OnSelectRootFolder()
@@ -237,6 +273,7 @@ namespace CapFrameX.ViewModel
 			}
 			catch { }
 		}
+
 
 		private void SetupObservers(SynchronizationContext context)
 		{

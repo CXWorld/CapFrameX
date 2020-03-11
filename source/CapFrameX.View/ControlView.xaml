@@ -26,7 +26,7 @@
             </ResourceDictionary.MergedDictionaries>
             <CollectionViewSource x:Key="RecordInfoListKey" Source="{Binding RecordInfoList}" Filter="RecordInfoListOnFilter"/>
             <mvvm:AddValueConverter x:Key="AddValueConverter" Offset="-315"/>
-            <mvvm:AddValueConverter x:Key="AddValueConverterExpander" Offset="-398"/>
+            <mvvm:AddValueConverter x:Key="AddValueConverterExpander" Offset="-78"/>
             <mvvm:BoolToVisibilityConverter x:Key="FalseToVisibleConverter" FalseValue="Visible" TrueValue="Collapsed"/>
             <mvvm:BoolToVisibilityConverter x:Key="TrueToVisibleConverter" FalseValue="Collapsed" TrueValue="Visible"/>
             <mvvm:BoolToVisibilityConverter x:Key="FalseToCollapsedConverter" FalseValue="Collapsed" TrueValue="Visible"/>
@@ -39,16 +39,12 @@
 			</TextBlock>
 		</Border>
 		<Grid Visibility="{Binding HasValidSource, Converter={StaticResource FalseToCollapsedConverter}}">
-			<Grid.RowDefinitions>
-				<RowDefinition Height="1*"></RowDefinition>
-				<RowDefinition Height="270"></RowDefinition>
-			</Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"></ColumnDefinition>
-                <ColumnDefinition Width="1*"></ColumnDefinition>
-            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="1*"></RowDefinition>
+                <RowDefinition Height="270"></RowDefinition>
+            </Grid.RowDefinitions>
             <!--Record folder management expander-->
-            <Expander MaxWidth="300" Background="#e6e6e6" Grid.Row="0" Grid.Column="0" Panel.ZIndex="1" ExpandDirection="Right">
+            <Expander Margin="0 10 0 0" MaxWidth="350" Background="#e6e6e6" Grid.Row="0" Panel.ZIndex="1" ExpandDirection="Right" HorizontalAlignment="Left">
                 <Expander.Header>
                     <TextBlock  Text="Observed directory" RenderTransformOrigin=".5,.5">
                         <TextBlock.LayoutTransform>
@@ -61,15 +57,15 @@
                         <RowDefinition Height="Auto" ></RowDefinition>
                         <RowDefinition Height="Auto" ></RowDefinition>
                     </Grid.RowDefinitions>
-                    <TextBox Grid.Row="0" Margin="10 10 10 0" Width="225" IsReadOnly="True" HorizontalAlignment="Left" materialDesign:HintAssist.Hint="Root capture folder" materialDesign:HintAssist.IsFloating="True"
+                    <TextBox Grid.Row="0" Margin="10 10 10 0" Width="275" IsReadOnly="True" HorizontalAlignment="Left" materialDesign:HintAssist.Hint="Root capture folder" materialDesign:HintAssist.IsFloating="True"
                              Text="{Binding DataContext.RootDirectory, ElementName=ControlViewControl, Mode=OneWay}" TextWrapping="Wrap" PreviewMouseDown="RootFolder_PreviewMouseDown"/>
-                    <ScrollViewer Margin="0 20 0 0" Width="250" Grid.Row="1" Height="{Binding ElementName=ControlViewControl, Path=ActualHeight, Converter={StaticResource AddValueConverterExpander}}" PreviewMouseWheel="ScrollViewer_PreviewMouseWheel" >
-                        <!--TreeViewItem.Expanded="TreeViewItem_Expanded"-->
+                    <ScrollViewer Margin="0 20 0 0" Width="300" Grid.Row="1" Height="{Binding ElementName=ControlViewControl, Path=ActualHeight, Converter={StaticResource AddValueConverterExpander}}" PreviewMouseWheel="ScrollViewer_PreviewMouseWheel" >
                         <TreeView Name="trvStructure" TreeViewItem.Selected="TreeViewItem_Selected" PreviewMouseRightButtonDown="TreeView_PreviewMouseRightButtonDown"
-                                  Tag="{Binding ElementName=ControlViewControl, Path=DataContext}">
+                                  Tag="{Binding ElementName=ControlViewControl, Path=DataContext}" FontSize="12" >
                             <TreeView.ContextMenu>
                                 <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
                                     <MenuItem Header="Open folder" Command="{Binding OpenObservedFolderCommand}"/>
+                                    <MenuItem Header="Delete folder" Command="{Binding DeleteFolderCommand}"/>
                                     <MenuItem Header="Create new sub folder" Command="{Binding CreateSubFolderCommand}"/>
                                 </ContextMenu>
                             </TreeView.ContextMenu>
@@ -78,7 +74,7 @@
                 </Grid>
             </Expander>
             <!--Record list-->
-            <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Vertical">
+            <StackPanel Margin="50 0 0 0" Grid.Row="0" Orientation="Vertical" >
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"></RowDefinition>
