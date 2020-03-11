@@ -17,6 +17,7 @@ using System.Diagnostics;
 using System.Windows.Controls;
 using System.Windows.Data;
 using Microsoft.WindowsAPICodePack.Dialogs;
+using System.Windows.Input;
 
 namespace CapFrameX.View
 {
@@ -120,13 +121,13 @@ namespace CapFrameX.View
 		{
 			(DataContext as ControlViewModel).OnRecordSelectByDoubleClick();
 		}
+		
 		private void ScrollViewer_PreviewMouseWheel(object sender, System.Windows.Input.MouseWheelEventArgs e)
 		{
 			ScrollViewer scv = (ScrollViewer)sender;
 			scv.ScrollToVerticalOffset(scv.VerticalOffset - e.Delta / 10);
 			e.Handled = true;
 		}
-
 
 		private void CreateTreeViewRoot()
 		{
@@ -190,12 +191,21 @@ namespace CapFrameX.View
 
 		private void RootFolder_PreviewMouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
 		{
-				var result = (DataContext as ControlViewModel).OnSelectRootFolder();
+			var result = (DataContext as ControlViewModel).OnSelectRootFolder();
 			if(result)
-			{
-				
+			{				
 				CreateTreeViewRoot();
 			}
+		}
+
+		private void TextBox_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+		{
+			if (e.Key != System.Windows.Input.Key.Enter) 
+				return;
+
+			Keyboard.ClearFocus();
+			(DataContext as ControlViewModel).SaveDescriptions();
+			e.Handled = true;
 		}
 	}
 }

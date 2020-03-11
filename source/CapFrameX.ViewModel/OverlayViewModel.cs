@@ -300,6 +300,8 @@ namespace CapFrameX.ViewModel
 				"RivaTuner  Statistics  Server  (RTSS)";
 
 			OverlayEntries.AddRange(_overlayEntryProvider.GetOverlayEntries());
+			var history = _overlayEntryProvider.GetOverlayEntry("RunHistory");
+			history.ShowOnOverlayIsEnabled = UseRunHistory;
 
 			SetGlobalHookEventOverlayHotkey();
 			SetGlobalHookEventResetHistoryHotkey();
