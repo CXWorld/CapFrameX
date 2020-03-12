@@ -11,8 +11,6 @@ using System.Collections.ObjectModel;
 using System.Windows.Input;
 using Prism.Commands;
 using CapFrameX.Contracts.Configuration;
-using System.Threading.Tasks;
-using System.Windows;
 using CapFrameX.PresentMonInterface;
 using CapFrameX.Contracts.Data;
 using System.Collections.Generic;
@@ -23,6 +21,8 @@ using CapFrameX.Contracts.PresentMonInterface;
 using Microsoft.VisualBasic.FileIO;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using CapFrameX.Extensions;
+using System.Reactive;
+using CapFrameX.MVVM.Dialogs;
 
 namespace CapFrameX.ViewModel
 {
@@ -47,6 +47,9 @@ namespace CapFrameX.ViewModel
 		private int _recordDataGridSelectedIndex;
 		private List<IFileRecordInfo> _selectedRecordings;
 		public bool _directoryLoading;
+		private CreateFolderDialog _createFolderDialogContent;
+		private bool _createFolderDialogIsOpen;
+		private string _treeViewSubFolderName = string.Empty;
 
 		public IFileRecordInfo SelectedRecordInfo
 		{
@@ -142,6 +145,36 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
+		public CreateFolderDialog CreateFolderDialogContent
+		{
+			get { return _createFolderDialogContent; }
+			set
+			{
+				_createFolderDialogContent = value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public bool CreateFolderDialogIsOpen
+		{
+			get { return _createFolderDialogIsOpen; }
+			set
+			{
+				_createFolderDialogIsOpen = value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public string TreeViewSubFolderName
+		{
+			get { return _treeViewSubFolderName; }
+			set
+			{
+				_treeViewSubFolderName = value;
+				RaisePropertyChanged();
+			}
+		}
+
 		public string ObservedDirectory { get; private set; }
 
 		public bool DirectoryIsEmpty => !DirectoryLoading && !RecordInfoList.Any();
@@ -173,9 +206,19 @@ namespace CapFrameX.ViewModel
 
 		public ICommand DeleteFolderCommand { get; }
 
-		public ICommand CreateSubFolderCommand { get; }
+		public ICommand OpenCreateSubFolderDialogCommand { get; }
 
 		public ICommand SelectedRecordingsCommand { get; }
+
+		public ICommand CreateFolderCommand { get; }
+
+		public ICommand CloseCreateFolderDialogCommand { get; }
+
+		public ISubject<string> TreeViewItemCreatedStream = new Subject<string>();
+
+		public ISubject<string> TreeViewItemDeletedStream = new Subject<string>();
+
+		public ISubject<Unit> TreeViewUpdateStream = new Subject<Unit>();
 
 		public ControlViewModel(IRecordDirectoryObserver recordObserver,
 								IEventAggregator eventAggregator,
@@ -197,10 +240,18 @@ namespace CapFrameX.ViewModel
 			DeleteRecordCommand = new DelegateCommand(OnPressDeleteKey);
 			OpenObservedFolderCommand = new DelegateCommand(OnOpenObservedFolder);
 			DeleteFolderCommand = new DelegateCommand(OnDeleteFolder);
-			CreateSubFolderCommand = new DelegateCommand(OnCreateSubFolder);
+			OpenCreateSubFolderDialogCommand = new DelegateCommand(() => 
+			{ 
+				CreateFolderDialogIsOpen = true; 
+				TreeViewSubFolderName = string.Empty; 
+			});
 			SelectedRecordingsCommand = new DelegateCommand<object>(OnSelectedRecordings);
+			CreateFolderCommand = new DelegateCommand(OnCreateSubFolder);
+			CloseCreateFolderDialogCommand = new DelegateCommand(() => CreateFolderDialogIsOpen = false);
 
 			RecordDataGridSelectedIndex = -1;
+
+			CreateFolderDialogContent = new CreateFolderDialog();
 
 			SetAggregatorEvents();
 			SubscribeToResetRecord();
@@ -220,13 +271,17 @@ namespace CapFrameX.ViewModel
 
 			try
 			{
-				FileSystem.CreateDirectory(Path.Combine(_appConfiguration.ObservedDirectory, "SubDirectoryTest"));
-
+				var path = Path.Combine(_appConfiguration.ObservedDirectory, TreeViewSubFolderName);
+				FileSystem.CreateDirectory(path);
+				_appConfiguration.ObservedDirectory = path;
 				// add popup message with folder name textbox
 				// trigger creating TreeView in code behind
+				TreeViewUpdateStream.OnNext(default);
+				CreateFolderDialogIsOpen = false;
 			}
 			catch { }
 		}
+
 		private void OnDeleteFolder()
 		{
 			if (!_appConfiguration.ObservedDirectory.Any())
@@ -234,11 +289,13 @@ namespace CapFrameX.ViewModel
 
 			try
 			{
+				var parentFolder = Directory.GetParent(_appConfiguration.ObservedDirectory);
 				FileSystem.DeleteDirectory(_appConfiguration.ObservedDirectory, UIOption.OnlyErrorDialogs, RecycleOption.SendToRecycleBin);
 				
 				_updateSessionEvent.Publish(new ViewMessages.UpdateSession(null, null));
-
+				_appConfiguration.ObservedDirectory = parentFolder.FullName;
 				// trigger creating TreeView in code behind
+				TreeViewUpdateStream.OnNext(default);
 			}
 			catch { }
 		}
