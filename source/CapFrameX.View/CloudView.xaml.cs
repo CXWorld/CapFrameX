@@ -62,5 +62,10 @@ namespace CapFrameX.View
 			TextBox textBox = (TextBox)sender;
 			textBox.Dispatcher.BeginInvoke(new Action(() => textBox.SelectAll()));
 		}
+
+		private void DownloadURL_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+		{
+			(DataContext as CloudViewModel).OnSelectDownloadFolder();
+		}
 	}
 }

@@ -27,7 +27,7 @@
 				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.DataGrid.xaml" />
 				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Slider.xaml" />
 			</ResourceDictionary.MergedDictionaries>
-			<mvvm:BoolToVisibilityConverter x:Key="TrueToVisibleConverter" FalseValue="Collapsed" TrueValue="Visible"/>
+			<mvvm:BoolToVisibilityConverter x:Key="TrueToVisibleConverter" FalseValue="Hidden" TrueValue="Visible"/>
 			<mvvm:EnumDescriptionConverter x:Key="EnumDescriptionConverter"/>
 		</ResourceDictionary>
 	</UserControl.Resources>
@@ -100,8 +100,9 @@
                     ToolTip="Remove all entries">
 				<TextBlock Text="Clear table" TextAlignment="Center"/>
 			</Button>
-			<TextBox Grid.Row="1" Width="300" wpf:HintAssist.Hint="Share with friends and have fun ;)" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
+            <TextBox Grid.Row="1" Width="300" wpf:HintAssist.Hint="Download link / ID" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
 					 Margin="121,10,0,10" FontSize="14" HorizontalAlignment="Left" Text="{Binding ShareUrl, Mode=OneWay}" GotFocus="ShareUrlFocusHandler" IsReadOnly="True" Visibility="{Binding ShareUrlVisible, Converter={StaticResource TrueToVisibleConverter}}"/>
+            <TextBlock Grid.Row="1" FontSize="16" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Uploading..."  Visibility="{Binding ShowUploadInfo, Converter={StaticResource TrueToVisibleConverter}}"/>
 			<Button Grid.Row="1" Grid.Column="2" Margin="5" VerticalAlignment="Top" HorizontalAlignment="Right" Width="100" Height="45"
 					Command="{Binding UploadRecordsCommand}" IsEnabled="{Binding EnableClearAndUploadButton}"
                     ToolTipService.ShowDuration="25000">
@@ -119,36 +120,33 @@
 		<!--Grid record download-->
 		<Grid Grid.Row="3" Grid.Column="1">
 			<Grid.RowDefinitions>
-				<RowDefinition Height="Auto"/>
-				<RowDefinition Height="Auto"/>
+				<RowDefinition Height="1*"/>
+				<RowDefinition Height="1*"/>
 			</Grid.RowDefinitions>
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition Width="1*"/>
 				<ColumnDefinition Width="1*"/>
 				<ColumnDefinition Width="120"/>
 			</Grid.ColumnDefinitions>
-			<TextBox Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Width="350" HorizontalAlignment="Left" wpf:HintAssist.Hint="Download ID" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
+			<TextBox Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Width="400" HorizontalAlignment="Left" wpf:HintAssist.Hint="Download ID" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
 					 Margin="5 0 0 10" FontSize="14" Text="{Binding DownloadIDString, UpdateSourceTrigger=PropertyChanged}">
 			</TextBox>
-			<TextBox Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Width="350" wpf:HintAssist.Hint="Download Folder" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
-					 Margin="5 0 0 -10" FontSize="14" HorizontalAlignment="Left" Text="{Binding CloudDownloadDirectory, Mode=OneWay}">
-			</TextBox>
-			<Button Grid.Row="1" Grid.Column="1" Margin="0 0 25 -25" Height="30" Width="30" HorizontalAlignment="Right" Command="{Binding SelectDownloadFolderCommand}" 
-                    Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}" ToolTip="Select download folder">
-				<materialDesign:PackIcon Kind="Folder" Height="20" Width="20" />
-			</Button>
-			<Button Grid.Row="0" Grid.RowSpan="2" Grid.Column="2" Margin="5 25 5 5" VerticalAlignment="Center" HorizontalAlignment="Right" Width="100" Height="45"
+            <TextBox Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Width="400" wpf:HintAssist.Hint="Download Folder" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
+					 Margin="5 0 0 0" IsReadOnly="True" FontSize="14" HorizontalAlignment="Left" Text="{Binding CloudDownloadDirectory, Mode=OneWay}" PreviewMouseDown="DownloadURL_PreviewMouseDown">
+            </TextBox>
+            <Button Grid.Row="0" Grid.RowSpan="2" Grid.Column="2" Margin="5 0 5 5" VerticalAlignment="Center" HorizontalAlignment="Right" Width="100" Height="45"
 					Command="{Binding DownloadRecordsCommand}" IsEnabled="{Binding EnableDownloadButton}"
                     ToolTipService.ShowDuration="25000">
-				<TextBlock Text="Download records" TextWrapping="Wrap"  TextAlignment="Center"/>
-				<Button.ToolTip>
-					<ToolTip MaxWidth="200">
-						<TextBlock
+                <TextBlock Text="Download records" TextWrapping="Wrap"  TextAlignment="Center"/>
+                <Button.ToolTip>
+                    <ToolTip MaxWidth="200">
+                        <TextBlock
                              Text="Download the records bound to the download ID to your specified download folder" 
                              TextWrapping="Wrap"/>
-					</ToolTip>
-				</Button.ToolTip>
-			</Button>
+                    </ToolTip>
+                </Button.ToolTip>
+            </Button>
+            <TextBlock Grid.Row="1" Grid.Column="2" Padding="15 30 0 0" FontSize="16" FontWeight="Bold" Text="Downloading..."  Visibility="{Binding ShowDownloadInfo, Converter={StaticResource TrueToVisibleConverter}}"/>
 		</Grid>
 		<TextBlock Grid.Row="0" Grid.Column="3" Margin="0 25 0 0" HorizontalAlignment="Center" Text="Game name and ignore list options" FontSize="16"/>
 		<!--Grid lists upload/download-->

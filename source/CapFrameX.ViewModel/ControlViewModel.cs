@@ -21,6 +21,7 @@ using System.Reactive.Subjects;
 using CapFrameX.Contracts.PresentMonInterface;
 using Microsoft.VisualBasic.FileIO;
 using CapFrameX.Extensions;
+using CapFrameX.Data.Session.Contracts;
 
 namespace CapFrameX.ViewModel
 {

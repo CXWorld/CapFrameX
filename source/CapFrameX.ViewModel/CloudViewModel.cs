@@ -47,8 +47,10 @@ namespace CapFrameX.ViewModel
 		private bool _showHelpText = true;
 		private bool _enableClearAndUploadButton;
 		private List<IFileRecordInfo> _fileRecordInfoList = new List<IFileRecordInfo>();
-		private string _downloadIdString;
+		private string _downloadIdString = string.Empty;
 		private string _shareUrl;
+		private bool _showUploadInfo = false;
+		private bool _showDownloadInfo = false;
 
 		public string ShareUrl
 		{
@@ -70,6 +72,11 @@ namespace CapFrameX.ViewModel
 			{
 				return !string.IsNullOrWhiteSpace(ShareUrl);
 			}
+			set
+			{
+				ShareUrlVisible = value;
+				RaisePropertyChanged();
+			}
 		}
 
 		public int SelectedCloudEntryIndex
@@ -90,6 +97,26 @@ namespace CapFrameX.ViewModel
 			set
 			{
 				_showHelpText = value;
+				RaisePropertyChanged();
+			}
+		}
+		public bool ShowUploadInfo
+		{
+			get
+			{ return _showUploadInfo; }
+			set
+			{
+				_showUploadInfo = value;
+				RaisePropertyChanged();
+			}
+		}
+		public bool ShowDownloadInfo
+		{
+			get
+			{ return _showDownloadInfo; }
+			set
+			{
+				_showDownloadInfo = value;
 				RaisePropertyChanged();
 			}
 		}
@@ -141,9 +168,8 @@ namespace CapFrameX.ViewModel
 
 		public ICommand ClearTableCommand { get; }
 
-		public ICommand SelectDownloadFolderCommand { get; }
-
 		public ICommand UploadRecordsCommand { get; }
+
 		public ICommand DownloadRecordsCommand { get; }
 
 		public ObservableCollection<ICloudEntry> CloudEntries { get; private set; }
@@ -160,7 +186,6 @@ namespace CapFrameX.ViewModel
 			_appVersionProvider = appVersionProvider;
 			_loginManager = loginManager;
 			ClearTableCommand = new DelegateCommand(OnClearTable);
-			SelectDownloadFolderCommand = new DelegateCommand(OnSelectDownloadFolder);
 			UploadRecordsCommand = new DelegateCommand(async () =>
 			{
 				await UploadRecords();
@@ -211,7 +236,7 @@ namespace CapFrameX.ViewModel
 			}
 			else
 				return;
-
+			ShareUrl = string.Empty;
 			CloudEntries.Add(new CloudEntry()
 			{
 				GameName = recordInfo.GameName,
@@ -228,7 +253,7 @@ namespace CapFrameX.ViewModel
 			_fileRecordInfoList.Clear();
 		}
 
-		private void OnSelectDownloadFolder()
+		public void OnSelectDownloadFolder()
 		{
 			var dialog = new CommonOpenFileDialog
 			{
@@ -288,6 +313,7 @@ namespace CapFrameX.ViewModel
 
 		private async Task UploadRecords()
 		{
+			ShowUploadInfo = true;
 			ShareUrl = string.Empty;
 			var sessions = new List<ISession>();
 			foreach (var entry in CloudEntries)
@@ -324,6 +350,7 @@ namespace CapFrameX.ViewModel
 				if (response.IsSuccessStatusCode)
 				{
 					ShareUrl = response.Headers.Location.ToString();
+					ShowUploadInfo = false;
 					_logger.LogInformation("Successfully uploaded Captures. ShareUrl is {shareUrl}", response.Headers.Location);
 				}
 				else
@@ -336,6 +363,7 @@ namespace CapFrameX.ViewModel
 
 		private async Task DownloadCaptureCollection(string id)
 		{
+			ShowDownloadInfo = true;
 			var url = $@"SessionCollections/{id}";
 			using (var client = new HttpClient() { 
 				BaseAddress = new Uri(ConfigurationManager.AppSettings["WebserviceUri"])
@@ -368,6 +396,8 @@ namespace CapFrameX.ViewModel
 							TypeNameHandling = TypeNameHandling.Auto
 						}));
 					}
+					ShowDownloadInfo = false;
+					DownloadIDString = string.Empty;
 				}
 				else
 				{
