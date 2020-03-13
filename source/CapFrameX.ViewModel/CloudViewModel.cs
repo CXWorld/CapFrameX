@@ -139,6 +139,7 @@ namespace CapFrameX.ViewModel
 
 		public bool ShowUploadDescriptionTextBox
 		{
+
 			get
 			{ return _showUploadDescriptionTextBox; }
 			set
