@@ -501,10 +501,6 @@ namespace CapFrameX.Data
         {
             try
             {
-                var sessionRun = new SessionRun()
-                {
-                    Hash = string.Join(",", presentLines).GetSha1()
-                };
 
                 int indexFrameStart = -1;
                 int indexFrameTimes = -1;
@@ -518,7 +514,7 @@ namespace CapFrameX.Data
                 int indexQPCTimes = -1;
 
                 string headerLine;
-                if (presentLines.First() != COLUMN_HEADER)
+                if (!presentLines.First().StartsWith("Application"))
                 {
                     headerLine = COLUMN_HEADER;
                 }
@@ -527,6 +523,11 @@ namespace CapFrameX.Data
                     headerLine = presentLines.First();
                     presentLines = presentLines.Skip(1);
                 }
+
+                var sessionRun = new SessionRun()
+                {
+                    Hash = string.Join(",", presentLines).GetSha1()
+                };
 
                 var metrics = headerLine.Split(',');
                 for (int i = 0; i < metrics.Count(); i++)
