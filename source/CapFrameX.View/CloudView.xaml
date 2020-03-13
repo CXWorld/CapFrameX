@@ -101,9 +101,13 @@
 				<TextBlock Text="Clear table" TextAlignment="Center"/>
 			</Button>
             <TextBox Grid.Row="1" Width="300" wpf:HintAssist.Hint="Download link / ID" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
-					 Margin="121,10,0,10" FontSize="14" HorizontalAlignment="Left" Text="{Binding ShareUrl, Mode=OneWay}" GotFocus="ShareUrlFocusHandler" IsReadOnly="True" Visibility="{Binding ShareUrlVisible, Converter={StaticResource TrueToVisibleConverter}}"/>
-            <TextBlock Grid.Row="1" FontSize="16" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Uploading..."  Visibility="{Binding ShowUploadInfo, Converter={StaticResource TrueToVisibleConverter}}"/>
-			<Button Grid.Row="1" Grid.Column="2" Margin="5" VerticalAlignment="Top" HorizontalAlignment="Right" Width="100" Height="45"
+					 Margin="121,10,0,10" FontSize="14" HorizontalAlignment="Left" Text="{Binding ShareUrl, Mode=OneWay}" GotFocus="ShareUrlFocusHandler" IsReadOnly="True" 
+                     Visibility="{Binding ShareUrlVisible, Converter={StaticResource TrueToVisibleConverter}}"/>
+            <TextBlock Grid.Row="1" FontSize="16" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Uploading..."  
+                       Visibility="{Binding ShowUploadInfo, Converter={StaticResource TrueToVisibleConverter}}"/>
+            <TextBox Name="UploadDescription"  Grid.Row="1" FontSize="16" Width="300" wpf:HintAssist.Hint="(Optional) Upload description" HorizontalAlignment="Center" VerticalAlignment="Center" 
+                     Text="{Binding UploadDescription, UpdateSourceTrigger=PropertyChanged}" Visibility="{Binding ShowUploadDescriptionTextBox, Converter={StaticResource TrueToVisibleConverter}}"/>
+            <Button Grid.Row="1" Grid.Column="2" Margin="5" VerticalAlignment="Top" HorizontalAlignment="Right" Width="100" Height="45"
 					Command="{Binding UploadRecordsCommand}" IsEnabled="{Binding EnableClearAndUploadButton}"
                     ToolTipService.ShowDuration="25000">
 				<TextBlock Text="Upload records" TextWrapping="Wrap"  TextAlignment="Center"/>

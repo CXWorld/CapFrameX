@@ -50,6 +50,21 @@ namespace CapFrameX.ViewModel
 		private string _shareUrl;
 		private bool _showUploadInfo = false;
 		private bool _showDownloadInfo = false;
+		private bool _showUploadDescriptionTextBox = true;
+		private string _uploadDescription = string.Empty;
+
+		public string UploadDescription
+		{
+			get
+			{
+				return _uploadDescription;
+			}
+			set
+			{
+				_uploadDescription = value;
+				RaisePropertyChanged();
+			}
+		}
 
 		public string ShareUrl
 		{
@@ -99,6 +114,7 @@ namespace CapFrameX.ViewModel
 				RaisePropertyChanged();
 			}
 		}
+
 		public bool ShowUploadInfo
 		{
 			get
@@ -109,6 +125,7 @@ namespace CapFrameX.ViewModel
 				RaisePropertyChanged();
 			}
 		}
+
 		public bool ShowDownloadInfo
 		{
 			get
@@ -116,6 +133,17 @@ namespace CapFrameX.ViewModel
 			set
 			{
 				_showDownloadInfo = value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public bool ShowUploadDescriptionTextBox
+		{
+			get
+			{ return _showUploadDescriptionTextBox; }
+			set
+			{
+				_showUploadDescriptionTextBox = value;
 				RaisePropertyChanged();
 			}
 		}
@@ -130,6 +158,7 @@ namespace CapFrameX.ViewModel
 				RaisePropertyChanged();
 			}
 		}
+
 		public bool EnableDownloadButton { get; set; }
 
 		public string CloudDownloadDirectory
@@ -238,6 +267,7 @@ namespace CapFrameX.ViewModel
 			else
 				return;
 			ShareUrl = string.Empty;
+			ShowUploadDescriptionTextBox = true;
 			CloudEntries.Add(new CloudEntry()
 			{
 				GameName = recordInfo.GameName,
@@ -314,6 +344,7 @@ namespace CapFrameX.ViewModel
 
 		private async Task UploadRecords()
 		{
+			ShowUploadDescriptionTextBox = false;
 			ShowUploadInfo = true;
 			ShareUrl = string.Empty;
 			var sessions = new List<ISession>();
@@ -346,12 +377,13 @@ namespace CapFrameX.ViewModel
 				}
 				var content = new StringContent(contentAsJson);
 				content.Headers.ContentType.MediaType = "application/json";
-				var response = await client.PostAsync(@"SessionCollections", content);
+				var response = await client.PostAsync($@"SessionCollections?description={UploadDescription}", content);
 
 				if (response.IsSuccessStatusCode)
 				{
 					ShareUrl = response.Headers.Location.ToString();
 					ShowUploadInfo = false;
+					UploadDescription = string.Empty;
 					_logger.LogInformation("Successfully uploaded Captures. ShareUrl is {shareUrl}", response.Headers.Location);
 				}
 				else
