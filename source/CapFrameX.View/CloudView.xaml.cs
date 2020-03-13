@@ -25,6 +25,8 @@ namespace CapFrameX.View
 		{
 			InitializeComponent();
 
+			(DataContext as CloudViewModel).DownloadCompleteStream.Subscribe(_ => IDBox.Clear());
+
 			// Design time!
 			if (DesignerProperties.GetIsInDesignMode(this))
 			{
@@ -63,7 +65,7 @@ namespace CapFrameX.View
 			textBox.Dispatcher.BeginInvoke(new Action(() => textBox.SelectAll()));
 		}
 
-		private void DownloadURL_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+		private void DownloadFolder_PreviewMouseDown(object sender, MouseButtonEventArgs e)
 		{
 			(DataContext as CloudViewModel).OnSelectDownloadFolder();
 		}

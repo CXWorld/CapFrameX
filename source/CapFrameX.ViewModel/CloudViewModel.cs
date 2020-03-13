@@ -2,10 +2,8 @@
 using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
 using CapFrameX.Data;
-using CapFrameX.Data.Session.Classes;
 using CapFrameX.Data.Session.Contracts;
 using CapFrameX.EventAggregation.Messages;
-using CapFrameX.Extensions;
 using CapFrameX.Statistics;
 using CapFrameX.Webservice.Data.DTO;
 using GongSolutions.Wpf.DragDrop;
@@ -25,6 +23,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Reactive;
 using System.Reactive.Subjects;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -171,6 +170,8 @@ namespace CapFrameX.ViewModel
 		public ICommand UploadRecordsCommand { get; }
 
 		public ICommand DownloadRecordsCommand { get; }
+
+		public ISubject<Unit> DownloadCompleteStream = new Subject<Unit>();
 
 		public ObservableCollection<ICloudEntry> CloudEntries { get; private set; }
 			= new ObservableCollection<ICloudEntry>();
@@ -398,6 +399,7 @@ namespace CapFrameX.ViewModel
 					}
 					ShowDownloadInfo = false;
 					DownloadIDString = string.Empty;
+					DownloadCompleteStream.OnNext(default);
 				}
 				else
 				{
