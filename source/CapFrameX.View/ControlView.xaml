@@ -32,13 +32,7 @@
             <mvvm:BoolToVisibilityConverter x:Key="FalseToCollapsedConverter" FalseValue="Collapsed" TrueValue="Visible"/>
         </ResourceDictionary>
     </UserControl.Resources>
-    <Grid>
-		<Border Visibility="{Binding HasValidSource, Converter={StaticResource FalseToVisibleConverter}}" Margin="0 10 5 0" BorderBrush="#e6e6e6" BorderThickness="1" Background="#F5F5F5">
-			<TextBlock TextWrapping="Wrap" Width="220" Margin="10 0 10 0" HorizontalAlignment="Center" VerticalAlignment="Center" Style="{StaticResource MaterialDesignHeadlineTextBlock}">
-				No source defined. Maybe an error occurred. Go to settings and select a folder.
-			</TextBlock>
-		</Border>
-		<Grid Visibility="{Binding HasValidSource, Converter={StaticResource FalseToCollapsedConverter}}">
+         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="1*"></RowDefinition>
                 <RowDefinition Height="270"></RowDefinition>
@@ -79,8 +73,12 @@
                 </materialDesign:DialogHost>
             </Expander>
             <!--Record list-->
-            <StackPanel Margin="50 0 0 0" Grid.Row="0" Orientation="Vertical" >
-                <Grid>
+            <Border Visibility="{Binding HasValidSource, Converter={StaticResource FalseToVisibleConverter}}" Margin="0 10 5 0" BorderBrush="#e6e6e6" BorderThickness="1" Background="#F5F5F5">
+            <TextBlock Text="Observed directory missing.&#10;Open expander and select a folder." TextAlignment="Center"
+                       TextWrapping="Wrap" Width="220" Margin="60 0 10 0" HorizontalAlignment="Center" VerticalAlignment="Center" Style="{StaticResource MaterialDesignHeadlineTextBlock}" />
+            </Border>
+            <StackPanel Margin="50 0 0 0" Grid.Row="0"  Orientation="Vertical" >
+                <Grid  Visibility="{Binding HasValidSource, Converter={StaticResource FalseToCollapsedConverter}}">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"></RowDefinition>
                         <RowDefinition Height="Auto"></RowDefinition>
@@ -303,5 +301,4 @@
 				</StackPanel>
 			</Grid>
 		</Grid>
-	</Grid>
-</UserControl>
+    </UserControl>

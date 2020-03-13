@@ -62,7 +62,7 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-		public bool HasValidSource { set; private get; }
+		public bool HasValidSource { set; get; }
 
 		public string CustomCpuDescription
 		{
