@@ -4,6 +4,7 @@ using CapFrameX.Contracts.Data;
 using CapFrameX.Data;
 using CapFrameX.Data.Session.Contracts;
 using CapFrameX.EventAggregation.Messages;
+using CapFrameX.Extensions;
 using CapFrameX.Statistics;
 using CapFrameX.Webservice.Data.DTO;
 using GongSolutions.Wpf.DragDrop;
@@ -330,6 +331,7 @@ namespace CapFrameX.ViewModel
 				BaseAddress = new Uri(ConfigurationManager.AppSettings["WebserviceUri"])
 			})
 			{
+				client.DefaultRequestHeaders.AddCXClientUserAgent();
 				if (_loginManager.State?.Token != null)
 				{
 					try
@@ -367,9 +369,10 @@ namespace CapFrameX.ViewModel
 			ShowDownloadInfo = true;
 			var url = $@"SessionCollections/{id}";
 			using (var client = new HttpClient() { 
-				BaseAddress = new Uri(ConfigurationManager.AppSettings["WebserviceUri"])
+				BaseAddress = new Uri(ConfigurationManager.AppSettings["WebserviceUri"]),
 			})
 			{
+				client.DefaultRequestHeaders.AddCXClientUserAgent();
 				var response = await client.GetAsync(url);
 
 				if (response.IsSuccessStatusCode)

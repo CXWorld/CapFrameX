@@ -30,6 +30,7 @@ using Newtonsoft.Json;
 using Microsoft.AspNetCore.Diagnostics;
 using System.Net;
 using System.Net.Mime;
+using CapFrameX.Webservice.Host.Attributes;
 
 namespace CapFrameX.Webservice.Host
 {
@@ -59,6 +60,8 @@ namespace CapFrameX.Webservice.Host
 				options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"));
 				options.UseLazyLoadingProxies();
 			});
+
+			services.AddScoped<UserAgentFilter>();
 
 			services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 				.AddJwtBearer(options =>
