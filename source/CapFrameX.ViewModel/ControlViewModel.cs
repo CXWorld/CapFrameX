@@ -335,6 +335,10 @@ namespace CapFrameX.ViewModel
 
 		private void SetupObservers(SynchronizationContext context)
 		{
+			IObservable<IFileRecordInfo> GetFileRecordInfo(FileInfo fi) =>
+				Observable.FromAsync(() => _recordManager.GetFileRecordInfo(fi))
+					.Catch<IFileRecordInfo, Exception>(e => Observable.Return<IFileRecordInfo>(null));
+
 			_recordObserver.ObservingDirectoryStream
 				.ObserveOn(context)
 				.Subscribe(directory =>
@@ -353,10 +357,10 @@ namespace CapFrameX.ViewModel
 				})
 				.Select(fileInfos =>
 				{
-					return Observable.Merge(fileInfos.Select(fileInfo => Observable.FromAsync(() => _recordManager.GetFileRecordInfo(fileInfo))), 30)
-					.Where(recordFileInfo => recordFileInfo is IFileRecordInfo)
-					.Distinct(recordFileInfo => recordFileInfo.Hash)
-					.ToArray();
+					return Observable.Merge(fileInfos.Select(GetFileRecordInfo), 30)
+						.Where(recordFileInfo => recordFileInfo is IFileRecordInfo)
+						.Distinct(recordFileInfo => recordFileInfo.Hash)
+						.ToArray();
 				}
 				).Switch()
 				.ObserveOn(context)
@@ -369,7 +373,7 @@ namespace CapFrameX.ViewModel
 				});
 
 			_recordObserver.FileCreatedStream
-				.SelectMany(fileInfo => _recordManager.GetFileRecordInfo(fileInfo))
+				.SelectMany(GetFileRecordInfo)
 				.Where(recordInfo => recordInfo is IFileRecordInfo)
 				.ObserveOn(context)
 				.Subscribe(recordInfo =>
@@ -389,21 +393,21 @@ namespace CapFrameX.ViewModel
 				});
 
 			_recordObserver.FileChangedStream
-				.SelectMany(fileInfo => _recordManager.GetFileRecordInfo(fileInfo))
+				.SelectMany(GetFileRecordInfo)
 				.Where(recordInfo => recordInfo is IFileRecordInfo)
 				.ObserveOn(context)
 				.Subscribe(recordInfo =>
 				{
-				var itemToRemove = RecordInfoList.FirstOrDefault(ri => ri.FullPath.Equals(recordInfo.FullPath));
-				if (itemToRemove is IFileRecordInfo)
-				{
-					var selectedRecordId = _selectedRecordInfo?.Id;
-					var itemIndex = RecordInfoList.IndexOf(itemToRemove);
-					RecordInfoList[itemIndex] = recordInfo;
-					if (selectedRecordId?.Equals(itemToRemove.Id) ?? false)
+					var itemToRemove = RecordInfoList.FirstOrDefault(ri => ri.FullPath.Equals(recordInfo.FullPath));
+					if (itemToRemove is IFileRecordInfo)
 					{
-						SelectedRecordInfo = recordInfo;
-						_updateRecordInfosEvent.Publish(new ViewMessages.UpdateRecordInfos(itemToRemove));
+						var selectedRecordId = _selectedRecordInfo?.Id;
+						var itemIndex = RecordInfoList.IndexOf(itemToRemove);
+						RecordInfoList[itemIndex] = recordInfo;
+						if (selectedRecordId?.Equals(itemToRemove.Id) ?? false)
+						{
+							SelectedRecordInfo = recordInfo;
+							_updateRecordInfosEvent.Publish(new ViewMessages.UpdateRecordInfos(itemToRemove));
 						}
 					}
 				});
