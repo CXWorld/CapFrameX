@@ -15,6 +15,9 @@ namespace CapFrameX.Data
 
 		private string[] _lines;
 
+		public string CreationTimestamp => $@"{CreationDate}
+{CreationTime}";
+
 		public string GameName { get; set; }
 		public string ProcessName { get; private set; }
 		public string CreationDate { get; private set; }

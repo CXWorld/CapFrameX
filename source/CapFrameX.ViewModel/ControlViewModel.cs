@@ -11,17 +11,19 @@ using System.Collections.ObjectModel;
 using System.Windows.Input;
 using Prism.Commands;
 using CapFrameX.Contracts.Configuration;
-using System.Threading.Tasks;
-using System.Windows;
 using CapFrameX.PresentMonInterface;
 using CapFrameX.Contracts.Data;
 using System.Collections.Generic;
 using System.Collections;
+using System.Diagnostics;
 using System.Reactive.Subjects;
 using CapFrameX.Contracts.PresentMonInterface;
 using Microsoft.VisualBasic.FileIO;
+using Microsoft.WindowsAPICodePack.Dialogs;
 using CapFrameX.Extensions;
 using CapFrameX.Data.Session.Contracts;
+using System.Reactive;
+using CapFrameX.MVVM.Dialogs;
 
 namespace CapFrameX.ViewModel
 {
@@ -45,6 +47,10 @@ namespace CapFrameX.ViewModel
 		private string _customComment;
 		private int _recordDataGridSelectedIndex;
 		private List<IFileRecordInfo> _selectedRecordings;
+		public bool _directoryLoading;
+		private CreateFolderDialog _createFolderDialogContent;
+		private bool _createFolderDialogIsOpen;
+		private string _treeViewSubFolderName = string.Empty;
 
 		public IFileRecordInfo SelectedRecordInfo
 		{
@@ -57,7 +63,7 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-		public bool HasValidSource { set; private get; }
+		public bool HasValidSource { set; get; }
 
 		public string CustomCpuDescription
 		{
@@ -119,12 +125,67 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
+		public bool DirectoryLoading
+		{
+			get { return _directoryLoading; }
+			set
+			{
+				_directoryLoading = value;
+				RaisePropertyChanged();
+				RaisePropertyChanged(nameof (DirectoryIsEmpty));
+			}
+		}
+
+		public string RootDirectory 
+		{
+			get { return _appConfiguration.CaptureRootDirectory; }
+			set
+			{
+				_appConfiguration.CaptureRootDirectory = value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public CreateFolderDialog CreateFolderDialogContent
+		{
+			get { return _createFolderDialogContent; }
+			set
+			{
+				_createFolderDialogContent = value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public bool CreateFolderDialogIsOpen
+		{
+			get { return _createFolderDialogIsOpen; }
+			set
+			{
+				_createFolderDialogIsOpen = value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public string TreeViewSubFolderName
+		{
+			get { return _treeViewSubFolderName; }
+			set
+			{
+				_treeViewSubFolderName = value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public string ObservedDirectory { get; private set; }
+
+		public bool DirectoryIsEmpty => !DirectoryLoading && !RecordInfoList.Any();
+
 		public ObservableCollection<IFileRecordInfo> RecordInfoList { get; }
 			= new ObservableCollection<IFileRecordInfo>();
 
 		public IAppConfiguration AppConfiguration => _appConfiguration;
 
-		public ICommand OpenEditingDialogCommand { get; }
+		public IRecordDirectoryObserver RecordObserver => _recordObserver;
 
 		public ICommand AddToIgnoreListCommand { get; }
 
@@ -142,7 +203,23 @@ namespace CapFrameX.ViewModel
 
 		public ICommand DeleteRecordCommand { get; }
 
+		public ICommand OpenObservedFolderCommand { get; }
+
+		public ICommand DeleteFolderCommand { get; }
+
+		public ICommand OpenCreateSubFolderDialogCommand { get; }
+
 		public ICommand SelectedRecordingsCommand { get; }
+
+		public ICommand CreateFolderCommand { get; }
+
+		public ICommand CloseCreateFolderDialogCommand { get; }
+
+		public ISubject<string> TreeViewItemCreatedStream = new Subject<string>();
+
+		public ISubject<string> TreeViewItemDeletedStream = new Subject<string>();
+
+		public ISubject<Unit> TreeViewUpdateStream = new Subject<Unit>();
 
 		public ControlViewModel(IRecordDirectoryObserver recordObserver,
 								IEventAggregator eventAggregator,
@@ -162,15 +239,99 @@ namespace CapFrameX.ViewModel
 			AddGpuInfoCommand = new DelegateCommand(OnAddGpuInfo);
 			AddRamInfoCommand = new DelegateCommand(OnAddRamInfo);
 			DeleteRecordCommand = new DelegateCommand(OnPressDeleteKey);
+			OpenObservedFolderCommand = new DelegateCommand(OnOpenObservedFolder);
+			DeleteFolderCommand = new DelegateCommand(OnDeleteFolder);
+			OpenCreateSubFolderDialogCommand = new DelegateCommand(() => 
+			{ 
+				CreateFolderDialogIsOpen = true; 
+				TreeViewSubFolderName = string.Empty; 
+			});
 			SelectedRecordingsCommand = new DelegateCommand<object>(OnSelectedRecordings);
+			CreateFolderCommand = new DelegateCommand(OnCreateSubFolder);
+			CloseCreateFolderDialogCommand = new DelegateCommand(() => CreateFolderDialogIsOpen = false);
 
 			RecordDataGridSelectedIndex = -1;
+
+			CreateFolderDialogContent = new CreateFolderDialog();
 
 			SetAggregatorEvents();
 			SubscribeToResetRecord();
 			SubscribeToSetFileRecordInfoExternal();
+
+			RecordInfoList.CollectionChanged += (sender, args) =>
+			{
+				RaisePropertyChanged(nameof(DirectoryIsEmpty));
+			};
 			SetupObservers(SynchronizationContext.Current);
 		}
+
+		private void OnCreateSubFolder()
+		{
+			if (!_appConfiguration.ObservedDirectory.Any())
+				return;
+
+			try
+			{
+				var path = Path.Combine(_appConfiguration.ObservedDirectory, TreeViewSubFolderName);
+				FileSystem.CreateDirectory(path);
+				_appConfiguration.ObservedDirectory = path;
+				// add popup message with folder name textbox
+				// trigger creating TreeView in code behind
+				TreeViewUpdateStream.OnNext(default);
+				CreateFolderDialogIsOpen = false;
+			}
+			catch { }
+		}
+
+		private void OnDeleteFolder()
+		{
+			if (!_appConfiguration.ObservedDirectory.Any())
+				return;
+
+			try
+			{
+				var parentFolder = Directory.GetParent(_appConfiguration.ObservedDirectory);
+				FileSystem.DeleteDirectory(_appConfiguration.ObservedDirectory, UIOption.OnlyErrorDialogs, RecycleOption.SendToRecycleBin);
+				
+				_updateSessionEvent.Publish(new ViewMessages.UpdateSession(null, null));
+				_appConfiguration.ObservedDirectory = parentFolder.FullName;
+				// trigger creating TreeView in code behind
+				TreeViewUpdateStream.OnNext(default);
+			}
+			catch { }
+		}
+
+		public bool OnSelectRootFolder()
+		{
+			var dialog = new CommonOpenFileDialog
+			{
+				IsFolderPicker = true
+			};
+
+			CommonFileDialogResult result = dialog.ShowDialog();
+
+			if (result == CommonFileDialogResult.Ok)
+			{
+				RootDirectory = dialog.FileName;
+				return true;
+			}
+			return false;
+		}
+		private void OnOpenObservedFolder()
+		{
+			try
+			{
+				var path = _appConfiguration.ObservedDirectory;
+				if (path.Contains(@"MyDocuments\CapFrameX\Captures"))
+				{
+					var documentFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+					path = Path.Combine(documentFolder, @"CapFrameX\Captures");
+				}
+				Process.Start(path);
+			}
+			catch { }
+		}
+
 
 		private void SetupObservers(SynchronizationContext context)
 		{
@@ -182,18 +343,29 @@ namespace CapFrameX.ViewModel
 					RaisePropertyChanged(nameof(HasValidSource));
 				});
 
+
 			_recordObserver.DirectoryFilesStream
 				.DistinctUntilChanged()
-				.Do(_ => RecordInfoList.Clear())
-				.SelectMany(fileInfos => 
-					Observable.Merge(fileInfos.Select(fileInfo => Observable.FromAsync(() => _recordManager.GetFileRecordInfo(fileInfo))))
+				.Do(_ => {
+					RecordInfoList.Clear();
+					DirectoryLoading = true;
+					RaisePropertyChanged(nameof(DirectoryLoading));
+				})
+				.Select(fileInfos =>
+				{
+					return Observable.Merge(fileInfos.Select(fileInfo => Observable.FromAsync(() => _recordManager.GetFileRecordInfo(fileInfo))), 30)
 					.Where(recordFileInfo => recordFileInfo is IFileRecordInfo)
 					.Distinct(recordFileInfo => recordFileInfo.Hash)
-				)
+					.ToArray();
+				}
+				).Switch()
 				.ObserveOn(context)
 				.Subscribe(recordFileInfos =>
 				{
-					RecordInfoList.Add(recordFileInfos);
+					RecordInfoList.Clear();
+					DirectoryLoading = false;
+					RaisePropertyChanged(nameof (DirectoryLoading));
+					RecordInfoList.AddRange(recordFileInfos);
 				});
 
 			_recordObserver.FileCreatedStream

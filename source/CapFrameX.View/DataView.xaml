@@ -331,7 +331,7 @@
 						</TextBlock.LayoutTransform>
 					</TextBlock>
 				</Expander.Header>
-				<ScrollViewer VerticalScrollBarVisibility="Hidden">
+                <ScrollViewer VerticalScrollBarVisibility="Hidden">
                     <ScrollViewer.Resources>
                         <sys:Double x:Key="{x:Static SystemParameters.VerticalScrollBarWidthKey}">3</sys:Double>
                     </ScrollViewer.Resources>

@@ -1,7 +1,11 @@
-﻿using CapFrameX.Data;
+﻿using CapFrameX.Configuration;
+using CapFrameX.Data;
 using CapFrameX.ViewModel;
 using Microsoft.Extensions.Logging;
+using Prism.Events;
+using Prism.Regions;
 using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;

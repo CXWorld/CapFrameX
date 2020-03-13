@@ -108,5 +108,7 @@
 		int OutlierPercentageAggregation { get; set; }
 
 		bool AreThresholdsReversed { get; set; }
+
+		string CaptureRootDirectory { get; set; }
 	}
 }

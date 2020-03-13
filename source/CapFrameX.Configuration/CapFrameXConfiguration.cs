@@ -333,5 +333,10 @@ namespace CapFrameX.Configuration
 			get { return Settings.CloudDownloadDirectory; }
 			set { Settings.CloudDownloadDirectory = value; Settings.Save(); }
 		}
+		public string CaptureRootDirectory
+		{
+			get { return Settings.CaptureRootDirectory; }
+			set { Settings.CaptureRootDirectory = value; Settings.Save(); }
+		}
 	}
 }
