@@ -4,14 +4,16 @@ using CapFrameX.Webservice.Persistance;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace CapFrameX.Webservice.Persistance.Migrations
 {
     [DbContext(typeof(CXContext))]
-    partial class CXContextModelSnapshot : ModelSnapshot
+    [Migration("20200313210429_drop_collectionName")]
+    partial class drop_collectionName
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
