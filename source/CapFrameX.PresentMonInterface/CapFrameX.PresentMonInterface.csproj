@@ -82,9 +82,6 @@
     <Content Include="PresentMon\PresentMon64-1.5.2.exe">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="PresentMon\ProcessIgnoreList.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
     <Content Include="Sounds\capture_finished.mp3">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

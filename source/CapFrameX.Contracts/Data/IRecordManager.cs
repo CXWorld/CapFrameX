@@ -11,10 +11,6 @@ namespace CapFrameX.Contracts.Data
 
 		Task<bool> SaveSessionRunsToFile(IEnumerable<ISessionRun> runs, string processName);
 
-		void AddGameNameToMatchingList(string processName, string gameName);
-
-		string GetGameFromMatchingList(string processName);
-
 		void UpdateCustomData(IFileRecordInfo recordInfo, string customCpuInfo,
 			string customGpuInfo, string customRamInfo, string customGameName, string customComment);
 
