@@ -101,11 +101,6 @@
     <Compile Include="SystemInfoEntry.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="NameMatching\ProcessGameNameMatchingList.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\CapFrameX.Configuration\CapFrameX.Configuration.csproj">
       <Project>{d0a09fa9-d19e-4ccc-bf0e-104893cfe48b}</Project>
       <Name>CapFrameX.Configuration</Name>
@@ -138,6 +133,10 @@
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
+    <None Include="ProcessList\Processes.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

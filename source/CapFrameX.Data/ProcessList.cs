@@ -4,8 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using System.Text;
-using System.Threading.Tasks;
 using Newtonsoft.Json;
 
 namespace CapFrameX.Data
@@ -29,7 +27,7 @@ namespace CapFrameX.Data
 			return Processes.Where(p => p.IsBlacklisted).Select(p => p.Name).OrderBy(p => p).ToArray();
 		}
 
-		public void AddEntry(string processName, string displayName, bool blacklist = false)
+		public void AddEntry(string processName, string displayName, bool blacklist = false, bool whitelist = false)
 		{
 			processName = processName.StripExeExtension();
 			if (processName is null)
@@ -40,7 +38,7 @@ namespace CapFrameX.Data
 			{
 				return;
 			}
-			var process = new CXProcess(processName, displayName, blacklist, false);
+			var process = new CXProcess(processName, displayName, blacklist, whitelist);
 			process.RegisterOnChange(() => _processListUpdate.OnNext(default));
 			_processList.Add(process);
 			_processListUpdate.OnNext(default);
@@ -78,17 +76,21 @@ namespace CapFrameX.Data
 			ProcessList processList = new ProcessList(filename);
 			try
 			{
-				processList.ReadFromFile();
+				try
+				{
+					processList.ReadFromFile();
 
-				var defaultIgnorelistFileInfo = new FileInfo(Path.Combine("PresentMon", "ProcessIgnoreList.txt"));
-				if (!defaultIgnorelistFileInfo.Exists)
+				} catch { }
+				var defaultProcesslistFileInfo = new FileInfo(Path.Combine("ProcessList", "Processes.json"));
+				if (!defaultProcesslistFileInfo.Exists)
 				{
 					return processList;
 				}
 
-				foreach (var process in File.ReadAllLines(defaultIgnorelistFileInfo.FullName))
+				var defaultProcesses = JsonConvert.DeserializeObject<List<CXProcess>>(File.ReadAllText(defaultProcesslistFileInfo.FullName));
+				foreach (var process in defaultProcesses)
 				{
-					processList.AddEntry(process, null, true);
+					processList.AddEntry(process.Name, process.DisplayName, process.IsBlacklisted, process.IsWhitelisted);
 				}
 				processList.Save();
 			}
@@ -120,10 +122,8 @@ namespace CapFrameX.Data
 		[JsonProperty]
 		public bool IsBlacklisted { get; private set; }
 
-		public CXProcess()
-		{
-
-		}
+		[JsonConstructor]
+		public CXProcess() {}
 
 		public CXProcess(string name, string displayName, bool isBlacklisted, bool isWhitelisted)
 		{
