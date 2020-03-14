@@ -36,7 +36,6 @@ namespace CapFrameX.ViewModel
 
 		private PubSubEvent<ViewMessages.UpdateSession> _updateSessionEvent;
 		private PubSubEvent<ViewMessages.SelectSession> _selectSessionEvent;
-		private PubSubEvent<ViewMessages.UpdateProcessIgnoreList> _updateProcessIgnoreListEvent;
 		private PubSubEvent<ViewMessages.UpdateRecordInfos> _updateRecordInfosEvent;
 
 		private IFileRecordInfo _selectedRecordInfo;
@@ -187,8 +186,6 @@ namespace CapFrameX.ViewModel
 
 		public IRecordDirectoryObserver RecordObserver => _recordObserver;
 
-		public ICommand AddToIgnoreListCommand { get; }
-
 		public ICommand DeleteRecordFileCommand { get; }
 
 		public ICommand AcceptEditingDialogCommand { get; }
@@ -231,7 +228,6 @@ namespace CapFrameX.ViewModel
 			_recordManager = recordManager;
 
 			//Commands
-			AddToIgnoreListCommand = new DelegateCommand(OnAddToIgnoreList);
 			DeleteRecordFileCommand = new DelegateCommand(OnDeleteRecordFile);
 			AcceptEditingDialogCommand = new DelegateCommand(OnAcceptEditingDialog);
 			CancelEditingDialogCommand = new DelegateCommand(OnCancelEditingDialog);
@@ -440,17 +436,6 @@ namespace CapFrameX.ViewModel
 			catch { }
 		}
 
-		private void OnAddToIgnoreList()
-		{
-			if (!RecordInfoList.Any())
-				return;
-
-			CaptureServiceConfiguration.AddProcessToIgnoreList(SelectedRecordInfo.GameName);
-			_updateProcessIgnoreListEvent.Publish(new ViewMessages.UpdateProcessIgnoreList());
-
-			SelectedRecordInfo = null;
-		}
-
 		private void OnCancelEditingDialog()
 		{
 			if (SelectedRecordInfo != null)
@@ -550,7 +535,6 @@ namespace CapFrameX.ViewModel
 		{
 			_updateSessionEvent = _eventAggregator.GetEvent<PubSubEvent<ViewMessages.UpdateSession>>();
 			_selectSessionEvent = _eventAggregator.GetEvent<PubSubEvent<ViewMessages.SelectSession>>();
-			_updateProcessIgnoreListEvent = _eventAggregator.GetEvent<PubSubEvent<ViewMessages.UpdateProcessIgnoreList>>();
 			_updateRecordInfosEvent = _eventAggregator.GetEvent<PubSubEvent<ViewMessages.UpdateRecordInfos>>();
 		}
 

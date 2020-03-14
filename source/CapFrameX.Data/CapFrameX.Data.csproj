@@ -86,6 +86,7 @@
     <Compile Include="AggregationEntry.cs" />
     <Compile Include="CloudManager.cs" />
     <Compile Include="LoginManager.cs" />
+    <Compile Include="ProcessList.cs" />
     <Compile Include="WebVersionProvider.cs" />
     <Compile Include="AppVersionProvider.cs" />
     <Compile Include="ComparisonRecordInfo.cs" />

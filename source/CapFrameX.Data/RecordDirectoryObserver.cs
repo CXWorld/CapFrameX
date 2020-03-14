@@ -4,7 +4,6 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.PresentMonInterface;
 using Microsoft.Extensions.Logging;

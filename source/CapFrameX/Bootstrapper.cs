@@ -73,6 +73,8 @@ namespace CapFrameX
 			Container.Register<LoginManager>(Reuse.Singleton);
 			Container.Register<ICloudManager, CloudManager>(Reuse.Singleton);
 			Container.Register<LoginWindow>(Reuse.Transient);
+			Container.RegisterInstance(new ProcessList(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+						@"CapFrameX\Resources\Processes.json")));
 
 			Container.Resolve<IEventAggregator>().GetEvent<PubSubEvent<AppMessages.OpenLoginWindow>>().Subscribe(_ => {
 				var window = Container.Resolve<LoginWindow>();

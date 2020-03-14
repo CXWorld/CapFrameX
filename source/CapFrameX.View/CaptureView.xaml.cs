@@ -57,7 +57,7 @@ namespace CapFrameX.View
 					new EventAggregator(), recordManager,
 					new OverlayService(statisticProvider, overlayEntryProvider, appConfiguration, 
 					loggerFactory.CreateLogger<OverlayService>(), recordManager),
-					statisticProvider, new LoggerFactory().CreateLogger<CaptureViewModel>());
+					statisticProvider, new LoggerFactory().CreateLogger<CaptureViewModel>(), new ProcessList(""));
 			}
 		}
 

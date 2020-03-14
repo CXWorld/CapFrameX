@@ -2,6 +2,7 @@
 using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.PresentMonInterface;
+using CapFrameX.Data;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Hotkey;
 using CapFrameX.PresentMonInterface;
@@ -45,6 +46,7 @@ namespace CapFrameX.ViewModel
 		private readonly IOverlayService _overlayService;
 		private readonly IStatisticProvider _statisticProvider;
 		private readonly ILogger<CaptureViewModel> _logger;
+		private readonly ProcessList _processList;
 		private readonly MediaPlayer _soundPlayer = new MediaPlayer();
 		private readonly string[] _soundModes = new[] { "none", "simple sounds", "voice response" };
 		private readonly List<string> _captureDataArchive = new List<string>(ARCHIVE_LENGTH);
@@ -271,7 +273,8 @@ namespace CapFrameX.ViewModel
 								IRecordManager recordManager,
 								IOverlayService overlayService,
 								IStatisticProvider statisticProvider,
-								ILogger<CaptureViewModel> logger)
+								ILogger<CaptureViewModel> logger,
+								ProcessList processList)
 		{
 			_appConfiguration = appConfiguration;
 			_captureService = captureService;
@@ -280,7 +283,7 @@ namespace CapFrameX.ViewModel
 			_overlayService = overlayService;
 			_statisticProvider = statisticProvider;
 			_logger = logger;
-
+			_processList = processList;
 			AddToIgonreListCommand = new DelegateCommand(OnAddToIgonreList);
 			AddToProcessListCommand = new DelegateCommand(OnAddToProcessList);
 			ResetCaptureProcessCommand = new DelegateCommand(OnResetCaptureProcess);
@@ -290,8 +293,6 @@ namespace CapFrameX.ViewModel
 				$"Press {CaptureHotkeyString} to start capture of the running process.";
 			SelectedSoundMode = _appConfiguration.HotkeySoundMode;
 			CaptureTimeString = _appConfiguration.CaptureTime.ToString();
-
-			ProcessesToIgnore.AddRange(CaptureServiceConfiguration.GetProcessIgnoreList());
 			_disposableHeartBeat = GetListUpdatHeartBeat();
 			_frametimeStream = new Subject<string>();
 
@@ -382,12 +383,10 @@ namespace CapFrameX.ViewModel
 
 		private void SubscribeToUpdateProcessIgnoreList()
 		{
-			_eventAggregator.GetEvent<PubSubEvent<ViewMessages.UpdateProcessIgnoreList>>()
-							.Subscribe(msg =>
-							{
-								ProcessesToIgnore.Clear();
-								ProcessesToIgnore.AddRange(CaptureServiceConfiguration.GetProcessIgnoreList());
-							});
+			_processList.ProcessesUpdate.StartWith(default(int)).Subscribe(_ => {
+				ProcessesToIgnore.Clear();
+				ProcessesToIgnore.AddRange(_processList.GetIgnoredProcessNames());
+			});
 		}
 
 		private void SubscribeToGlobalCaptureHookEvent()
@@ -699,7 +698,7 @@ namespace CapFrameX.ViewModel
 			return new PresentMonServiceConfiguration
 			{
 				RedirectOutputStream = true,
-				ExcludeProcesses = CaptureServiceConfiguration.GetProcessIgnoreList().ToList()
+				ExcludeProcesses = _processList.GetIgnoredProcessNames().ToList()
 			};
 		}
 
@@ -709,9 +708,17 @@ namespace CapFrameX.ViewModel
 				return;
 
 			StopCaptureService();
-			CaptureServiceConfiguration.AddProcessToIgnoreList(SelectedProcessToCapture);
-			ProcessesToIgnore.Clear();
-			ProcessesToIgnore.AddRange(CaptureServiceConfiguration.GetProcessIgnoreList());
+
+			var process = _processList.Processes.FirstOrDefault(p => p.Name == SelectedProcessToCapture);
+			if(process is null)
+			{
+				_processList.AddEntry(SelectedProcessToCapture);
+			}
+			else if(process is CXProcess)
+			{
+				process.Blacklist();
+			}
+			_processList.Save();
 
 			SelectedProcessToCapture = null;
 			StartCaptureService();
@@ -724,9 +731,12 @@ namespace CapFrameX.ViewModel
 				return;
 
 			StopCaptureService();
-			CaptureServiceConfiguration.RemoveProcessFromIgnoreList(SelectedProcessToIgnore);
-			ProcessesToIgnore.Clear();
-			ProcessesToIgnore.AddRange(CaptureServiceConfiguration.GetProcessIgnoreList());
+			var process = _processList.Processes.FirstOrDefault(p => p.Name == SelectedProcessToIgnore);
+			if (process is CXProcess)
+			{
+				process.Whitelist();
+				_processList.Save();
+			}
 			StartCaptureService();
 		}
 
@@ -750,7 +760,7 @@ namespace CapFrameX.ViewModel
 			var selectedProcessToCapture = SelectedProcessToCapture;
 			var backupProcessList = new List<string>(ProcessesToCapture);
 			ProcessesToCapture.Clear();
-			var filter = CaptureServiceConfiguration.GetProcessIgnoreList();
+			var filter = _processList.GetIgnoredProcessNames().ToHashSet();
 			var processList = _captureService.GetAllFilteredProcesses(filter).Distinct();
 			ProcessesToCapture.AddRange(processList);
 
