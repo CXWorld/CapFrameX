@@ -349,16 +349,10 @@ namespace CapFrameX.ViewModel
 			ShowUploadDescriptionTextBox = false;
 			ShowUploadInfo = true;
 			ShareUrl = string.Empty;
-			var sessions = new List<ISession>();
-			foreach (var entry in CloudEntries)
-			{
-				sessions.Add(_recordManager.LoadData(entry.FileRecordInfo.FullPath));
-			}
 
-			var contentAsJson = JsonConvert.SerializeObject(sessions, new JsonSerializerSettings()
-			{
-				TypeNameHandling = TypeNameHandling.Auto
-			});
+			var sessions = CloudEntries.Select(ce => _recordManager.LoadData(ce.FileRecordInfo.FullPath));
+
+			var contentAsJson = JsonConvert.SerializeObject(sessions);
 			using (var client = new HttpClient() {
 				BaseAddress = new Uri(ConfigurationManager.AppSettings["WebserviceUri"])
 			})
@@ -410,10 +404,7 @@ namespace CapFrameX.ViewModel
 
 				if (response.IsSuccessStatusCode)
 				{
-					var content = JsonConvert.DeserializeObject<SessionCollectionDTO>(await response.Content.ReadAsStringAsync(), new JsonSerializerSettings()
-					{
-						TypeNameHandling = TypeNameHandling.Auto
-					});
+					var content = JsonConvert.DeserializeObject<SessionCollectionDTO>(await response.Content.ReadAsStringAsync());
 
 					var downloadDirectory = _appConfiguration.CloudDownloadDirectory;
 
@@ -428,10 +419,7 @@ namespace CapFrameX.ViewModel
 					foreach (var session in content.Sessions)
 					{
 						var fileInfo = new FileInfo(Path.Combine(downloadDirectory, $"{session.Hash}.json"));
-						File.WriteAllText(fileInfo.FullName, JsonConvert.SerializeObject(session, new JsonSerializerSettings()
-						{
-							TypeNameHandling = TypeNameHandling.Auto
-						}));
+						File.WriteAllText(fileInfo.FullName, JsonConvert.SerializeObject(session));
 					}
 					ShowDownloadInfo = false;
 					DownloadIDString = string.Empty;

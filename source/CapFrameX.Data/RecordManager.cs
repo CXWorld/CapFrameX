@@ -220,10 +220,7 @@ namespace CapFrameX.Data
             {
                 using (JsonReader jsonReader = new JsonTextReader(stream))
                 {
-                    JsonSerializer serializer = new JsonSerializer()
-                    {
-                        TypeNameHandling = TypeNameHandling.Auto
-                    };
+                    JsonSerializer serializer = new JsonSerializer();
                     var session = serializer.Deserialize<Session.Classes.Session>(jsonReader);
                     return session;
                 }
@@ -338,7 +335,6 @@ namespace CapFrameX.Data
                 {
                     NormalizeStartTimesOfAggragationRuns(runs);
                 }
-                var csv = new StringBuilder();
                 var datetime = DateTime.Now;
 
                 // manage custom hardware info
@@ -361,10 +357,6 @@ namespace CapFrameX.Data
                     gpuInfo = SystemInfo.GetGraphicCardName();
                     ramInfo = SystemInfo.GetSystemRAMInfoName();
                 }
-
-                IList<string> headerLines = Enumerable.Empty<string>().ToList();
-
-
 
                 var session = new Session.Classes.Session()
                 {
@@ -403,10 +395,7 @@ namespace CapFrameX.Data
                 {
                     using (JsonWriter jsonWriter = new JsonTextWriter(streamWriter))
                     {
-                        var serializer = new JsonSerializer()
-                        {
-                            TypeNameHandling = TypeNameHandling.Auto
-                        };
+                        var serializer = new JsonSerializer();
                         serializer.Serialize(jsonWriter, session);
                         _logger.LogInformation("{filePath} successfully written", filePath);
                     }

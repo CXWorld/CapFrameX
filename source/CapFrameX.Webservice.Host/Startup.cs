@@ -78,9 +78,7 @@ namespace CapFrameX.Webservice.Host
 				});
 
 			services.AddControllers()
-				.AddNewtonsoftJson(options => {
-					options.SerializerSettings.TypeNameHandling = Newtonsoft.Json.TypeNameHandling.Auto;
-				})
+				.AddNewtonsoftJson()
 				.AddFluentValidation(opt =>
 				{
 					opt.RegisterValidatorsFromAssemblyContaining<GetCaptureByIdQueryValidator>();
