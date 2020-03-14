@@ -255,8 +255,8 @@ namespace CapFrameX.View
 		{
 			var result = (DataContext as ControlViewModel).CreateFolderDialogIsOpen;
 
-			if(!result)
-			Expander.IsExpanded = false;
+			if(!result && !trvStructure.ContextMenu.IsOpen)
+				Expander.IsExpanded = false;
 		}
 	}
 }
