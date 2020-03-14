@@ -32,18 +32,19 @@ namespace CapFrameX
 		public LoginWindow(LoginManager loginManager)
 		{
 			_loginManager = loginManager;
-			var cefSettings = new CefSettings() { 
-				UserAgent = "Chrome"
-			};
 			if (!Cef.IsInitialized)
 			{
-				Cef.Initialize(cefSettings);
+				Cef.Initialize(new CefSettings()
+				{
+					UserAgent = "Chrome"
+				});
 			}
 			InitializeComponent();
 		}
 
 		private async void OnBrowserInitialized(object sender, EventArgs e)
 		{
+			Cef.GetGlobalCookieManager().DeleteCookies();
 			await _loginManager.HandleRedirect(async (url) =>
 				{
 					await Dispatcher.BeginInvoke(DispatcherPriority.Normal, (Action)(() =>

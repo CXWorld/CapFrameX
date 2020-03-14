@@ -13,6 +13,6 @@ namespace CapFrameX.Webservice.Data.DTO
 		public DateTime Timestamp { get; set; }
 		public string Name { get; set; }
 		public string Description { get; set; }
-		public virtual IEnumerable<ISession> Sessions { get; set; }
+		public virtual IEnumerable<Session> Sessions { get; set; }
 	}
 }

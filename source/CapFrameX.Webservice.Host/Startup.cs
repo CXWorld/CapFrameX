@@ -30,6 +30,7 @@ using Newtonsoft.Json;
 using Microsoft.AspNetCore.Diagnostics;
 using System.Net;
 using System.Net.Mime;
+using CapFrameX.Webservice.Host.Attributes;
 
 namespace CapFrameX.Webservice.Host
 {
@@ -60,6 +61,8 @@ namespace CapFrameX.Webservice.Host
 				options.UseLazyLoadingProxies();
 			});
 
+			services.AddScoped<UserAgentFilter>();
+
 			services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 				.AddJwtBearer(options =>
 				{
@@ -75,9 +78,7 @@ namespace CapFrameX.Webservice.Host
 				});
 
 			services.AddControllers()
-				.AddNewtonsoftJson(options => {
-					options.SerializerSettings.TypeNameHandling = Newtonsoft.Json.TypeNameHandling.Auto;
-				})
+				.AddNewtonsoftJson()
 				.AddFluentValidation(opt =>
 				{
 					opt.RegisterValidatorsFromAssemblyContaining<GetCaptureByIdQueryValidator>();

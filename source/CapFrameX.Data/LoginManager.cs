@@ -27,7 +27,7 @@ namespace CapFrameX.Data
 		private readonly PubSubEvent<AppMessages.LoginState> _loginStateEvent;
 
 		public OAuthState State { get; } = new OAuthState();
-		private OAuthRequest Request { get; set; } = OAuthRequest.BuildLoopbackRequest(new string[] { "profile", "offline_access" });
+		private OAuthRequest Request { get; set; } = OAuthRequest.BuildLoopbackRequest();
 
 		public LoginManager(ILogger<LoginManager> logger, IEventAggregator eventAggregator)
 		{
@@ -60,6 +60,7 @@ namespace CapFrameX.Data
 
 		public async Task HandleRedirect(Func<string, Task> navigateAction)
 		{
+			Request = OAuthRequest.BuildLoopbackRequest();
 			State.Token = null;
 			using (var listener = new HttpListener())
 			{
@@ -249,8 +250,9 @@ namespace CapFrameX.Data
 		public string CodeVerifier { get; private set; }
 		public string[] Scopes { get; private set; }
 
-		public static OAuthRequest BuildLoopbackRequest(params string[] scopes)
+		public static OAuthRequest BuildLoopbackRequest()
 		{
+			var scopes = new string[] { "profile", "offline_access" };
 			var request = new OAuthRequest
 			{
 				CodeVerifier = RandomDataBase64Url(32),

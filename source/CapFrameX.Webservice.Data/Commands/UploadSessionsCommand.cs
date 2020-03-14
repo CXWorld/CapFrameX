@@ -12,6 +12,7 @@ namespace CapFrameX.Webservice.Data.Commands
 	{
 		public Guid? UserId { get; set; }
 		public IEnumerable<ISession> Sessions { get; set; }
+		public string Description { get; set; }
 	}
 
 	public class UploadSessionsCommandValidator : AbstractValidator<UploadSessionsCommand>
