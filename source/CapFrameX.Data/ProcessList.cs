@@ -26,7 +26,7 @@ namespace CapFrameX.Data
 
 		public string[] GetIgnoredProcessNames()
 		{
-			return Processes.Where(p => p.IsBlacklisted).Select(p => p.Name).ToArray();
+			return Processes.Where(p => p.IsBlacklisted).Select(p => p.Name).OrderBy(p => p).ToArray();
 		}
 
 		public void AddEntry(string processName)
@@ -43,7 +43,16 @@ namespace CapFrameX.Data
 
 		public void Save()
 		{
-			var json = JsonConvert.SerializeObject(_processList.OrderBy(p => p.Name), Formatting.Indented);
+			var json = JsonConvert.SerializeObject(_processList.OrderBy(p =>
+			{
+				if (p.IsBlacklisted)
+					return 0;
+				else if (p.IsWhitelisted)
+					return 1;
+				else
+					return 2;
+			})
+			.ThenBy(p => p.Name), Formatting.Indented);
 			File.WriteAllText(_filename, json);
 		}
 
