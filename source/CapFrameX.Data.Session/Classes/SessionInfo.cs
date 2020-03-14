@@ -1,4 +1,5 @@
 ﻿using CapFrameX.Data.Session.Contracts;
+using CapFrameX.Data.Session.Converters;
 using Newtonsoft.Json;
 using System;
 
@@ -23,20 +24,5 @@ namespace CapFrameX.Data.Session.Classes
 		public string GpuCoreClock { get; set; }
 		public string GpuMemoryClock { get; set; }
 		public string Comment { get; set; }
-	}
-
-	public class VersionConverter : JsonConverter<Version>
-	{
-		public override void WriteJson(JsonWriter writer, Version value, JsonSerializer serializer)
-		{
-			writer.WriteValue(value.ToString());
-		}
-
-		public override Version ReadJson(JsonReader reader, Type objectType, Version existingValue, bool hasExistingValue, JsonSerializer serializer)
-		{
-			string s = (string)reader.Value;
-
-			return new Version(s);
-		}
 	}
 }

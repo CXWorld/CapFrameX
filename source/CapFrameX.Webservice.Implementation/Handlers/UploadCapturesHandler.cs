@@ -35,8 +35,7 @@ namespace CapFrameX.Webservice.Implementation.Handlers
 				}).ToArray(),
 				UserId = command.UserId,
 				Timestamp = DateTime.UtcNow,
-				Name = "",
-				Description = ""
+				Description = command.Description
 			});
 		}
 	}

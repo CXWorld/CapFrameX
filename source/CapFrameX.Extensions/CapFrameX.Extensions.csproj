@@ -99,6 +99,7 @@
     <Compile Include="CollectionExtensions.cs" />
     <Compile Include="ContainerExtensions.cs" />
     <Compile Include="EnumExtensions.cs" />
+    <Compile Include="HttpRequestHeadersExtensions.cs" />
     <Compile Include="LinqExtensions.cs" />
     <Compile Include="ObjectExtensions.cs" />
     <Compile Include="ObservableExtensions.cs" />
