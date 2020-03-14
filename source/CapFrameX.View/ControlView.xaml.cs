@@ -253,6 +253,9 @@ namespace CapFrameX.View
 
 		private void Expander_MouseLeave(object sender, MouseEventArgs e)
 		{
+			var result = (DataContext as ControlViewModel).CreateFolderDialogIsOpen;
+
+			if(!result)
 			Expander.IsExpanded = false;
 		}
 	}
