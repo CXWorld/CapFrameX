@@ -81,11 +81,15 @@ namespace CapFrameX
 				var ignoreLiveListFilename = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
 						@"CapFrameX\Resources\ProcessIgnoreList.txt");
 				var ignoreListFileName = Path.Combine("PresentMon", "ProcessIgnoreList.txt");
+				
+				var ignoreWhitelistFileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+						@"CapFrameX\Resources\ProcessIgnoreWhitelist.txt");
 
-				if (File.Exists(ignoreLiveListFilename))
+				if (File.Exists(ignoreLiveListFilename) && (File.Exists(ignoreWhitelistFileName)))
 				{
+					var whitelist = File.ReadAllLines(ignoreWhitelistFileName); 
 					var processesLive = File.ReadAllLines(ignoreLiveListFilename);
-					var processes = File.ReadAllLines(ignoreListFileName);
+					var processes = File.ReadAllLines(ignoreListFileName).Where(process => !whitelist.Contains(process));
 
 					var unionList = processesLive.Union(processes);
 					File.WriteAllLines(ignoreLiveListFilename, unionList.OrderBy(name => name));

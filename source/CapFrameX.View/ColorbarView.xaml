@@ -32,7 +32,7 @@
         <materialDesign:ColorZone Mode="PrimaryMid">
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="2*"/>
+                    <ColumnDefinition Width="3*"/>
                     <ColumnDefinition Width="1*"/>
                 </Grid.ColumnDefinitions>
                 <StackPanel Grid.Column="0" Orientation="Horizontal" Margin="2">
@@ -71,7 +71,7 @@
                              Content="CLOUD" />
 				</StackPanel>
 
-                <Button Grid.Column="1" Margin="0 0 210 0"
+                <Button Grid.Column="1" Margin="0 0 260 0"
 						Style="{StaticResource MaterialDesignFloatingActionMiniButton}"
 						VerticalAlignment="Center"
 						HorizontalAlignment="Right"
@@ -81,17 +81,19 @@
                     <materialDesign:PackIcon Kind="PhotoLibrary"/>
                 </Button>
 
-				<Button Grid.Column="2" Style="{StaticResource MaterialDesignFloatingActionMiniButton}"
-                            Margin="0 0 15 0"
+				<Button Grid.Column="1" Style="{StaticResource MaterialDesignFloatingActionMiniButton}"
+                            Margin="0 0 210 0"
 						    ToolTip="Login"
+                            HorizontalAlignment="Right"
 						    materialDesign:RippleAssist.Feedback="#DD000000"
 						    Width="32" Height="32" Click="Login_Click"
 							Visibility="{Binding Path=DataContext.IsLoggedIn, ElementName=ColorbarViewName, Converter={StaticResource FalseToVisibleConverter}}">
 					<materialDesign:PackIcon Kind="Login"/>
 				</Button>
-				<Button Grid.Column="2" Style="{StaticResource MaterialDesignFloatingActionMiniButton}"
-                            Margin="0 0 15 0"
+				<Button Grid.Column="1" Style="{StaticResource MaterialDesignFloatingActionMiniButton}"
+                            Margin="0 0 210 0"
 						    ToolTip="Logout"
+                            HorizontalAlignment="Right"
 						    materialDesign:RippleAssist.Feedback="#DD000000"
 						    Width="32" Height="32" Click="Logout_Click"
 							Visibility="{Binding Path=DataContext.IsLoggedIn, ElementName=ColorbarViewName, Converter={StaticResource TrueToVisibleConverter}}">

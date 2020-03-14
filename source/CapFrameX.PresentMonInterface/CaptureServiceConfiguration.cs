@@ -15,6 +15,10 @@ namespace CapFrameX.PresentMonInterface
             Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
                 @"CapFrameX\Resources\ProcessIgnoreList.txt");
 
+        private static readonly string _ignoreWhitelistFilename =
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                @"CapFrameX\Resources\ProcessIgnoreWhitelist.txt");
+
         private static string[] _processes;
 
         public static IServiceStartInfo GetServiceStartInfo(string arguments)
@@ -46,7 +50,12 @@ namespace CapFrameX.PresentMonInterface
                     File.Copy(_ignoreListFileName, _ignoreLiveListFilename);
                 }
 
-                if (_processes == null || !_processes.Any())
+                if (!File.Exists(_ignoreWhitelistFilename))
+                {
+                    File.Create(_ignoreWhitelistFilename);
+                }
+
+                    if (_processes == null || !_processes.Any())
                     _processes = File.ReadAllLines(_ignoreLiveListFilename);
 
                 ignoreList = new HashSet<string>(_processes.Where(process => !string.IsNullOrEmpty(process)));
@@ -61,6 +70,9 @@ namespace CapFrameX.PresentMonInterface
 
         public static void AddProcessToIgnoreList(string processName)
         {
+            var whitelist = File.ReadAllLines(_ignoreWhitelistFilename);
+            File.WriteAllLines(_ignoreWhitelistFilename, whitelist.Where(process => process != processName));
+
             if (_processes == null || !_processes.Any())
                 _processes = File.ReadAllLines(_ignoreLiveListFilename);
 
@@ -74,6 +86,10 @@ namespace CapFrameX.PresentMonInterface
 
         public static void RemoveProcessFromIgnoreList(string processName)
         {
+            var whitelist = File.ReadAllLines(_ignoreWhitelistFilename).ToList();
+            whitelist.Add(processName);
+            File.WriteAllLines(_ignoreWhitelistFilename, whitelist);
+
             if (_processes == null || !_processes.Any())
                 _processes = File.ReadAllLines(_ignoreLiveListFilename);
 
