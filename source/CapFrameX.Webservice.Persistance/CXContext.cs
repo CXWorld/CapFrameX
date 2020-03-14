@@ -17,6 +17,8 @@ namespace CapFrameX.Webservice.Persistance
 	public class CXContext : DbContext
 	{
 		public DbSet<SessionCollection> SessionCollections { get; set; }
+		public DbSet<Game> GameList { get; set; }
+		public DbSet<IgnoreEntry> IgnoreList { get; set; }
 
 		public CXContext(DbContextOptions<CXContext> options) : base(options)
 		{
@@ -26,6 +28,8 @@ namespace CapFrameX.Webservice.Persistance
 		{
 			modelBuilder.ApplyConfiguration(new SessionProxyConfiguratation());
 			modelBuilder.ApplyConfiguration(new SessionCollectionConfiguration());
+			modelBuilder.ApplyConfiguration(new GameConfiguration());
+			modelBuilder.ApplyConfiguration(new IgnoreEntryConfiguration());
 		}
 	}
 }
