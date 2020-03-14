@@ -250,5 +250,10 @@ namespace CapFrameX.View
 			(DataContext as ControlViewModel).SaveDescriptions();
 			e.Handled = true;
 		}
+
+		private void Expander_MouseLeave(object sender, MouseEventArgs e)
+		{
+			Expander.IsExpanded = false;
+		}
 	}
 }
