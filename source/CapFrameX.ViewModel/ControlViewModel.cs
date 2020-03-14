@@ -24,6 +24,8 @@ using CapFrameX.Extensions;
 using CapFrameX.Data.Session.Contracts;
 using System.Reactive;
 using CapFrameX.MVVM.Dialogs;
+using Microsoft.Extensions.Logging;
+using System.ComponentModel;
 
 namespace CapFrameX.ViewModel
 {
@@ -33,7 +35,8 @@ namespace CapFrameX.ViewModel
 		private readonly IEventAggregator _eventAggregator;
 		private readonly IAppConfiguration _appConfiguration;
 		private readonly IRecordManager _recordManager;
-
+		private readonly ProcessList _processList;
+		private readonly ILogger<ControlViewModel> _logger;
 		private PubSubEvent<ViewMessages.UpdateSession> _updateSessionEvent;
 		private PubSubEvent<ViewMessages.SelectSession> _selectSessionEvent;
 		private PubSubEvent<ViewMessages.UpdateRecordInfos> _updateRecordInfosEvent;
@@ -220,12 +223,14 @@ namespace CapFrameX.ViewModel
 
 		public ControlViewModel(IRecordDirectoryObserver recordObserver,
 								IEventAggregator eventAggregator,
-								IAppConfiguration appConfiguration, RecordManager recordManager)
+								IAppConfiguration appConfiguration, RecordManager recordManager, ProcessList processList, ILogger<ControlViewModel> logger)
 		{
 			_recordObserver = recordObserver;
 			_eventAggregator = eventAggregator;
 			_appConfiguration = appConfiguration;
 			_recordManager = recordManager;
+			_processList = processList;
+			_logger = logger;
 
 			//Commands
 			DeleteRecordFileCommand = new DelegateCommand(OnDeleteRecordFile);
@@ -471,7 +476,38 @@ namespace CapFrameX.ViewModel
 				return;
 
 			_recordManager.UpdateCustomData(_selectedRecordInfo, CustomCpuDescription, CustomGpuDescription, CustomRamDescription, CustomGameName, CustomComment);
-			_recordManager.AddGameNameToMatchingList(_selectedRecordInfo.ProcessName, CustomGameName);
+			AddOrUpdateProcess(_selectedRecordInfo.ProcessName, CustomGameName);
+		}
+
+		private void AddOrUpdateProcess(string processName, string gameName)
+		{
+			if (string.IsNullOrWhiteSpace(processName) || string.IsNullOrWhiteSpace(gameName))
+			{
+				return;
+			}
+			try
+			{
+				var process = _processList.FindProcessByProcessName(processName);
+				if (process is null)
+				{
+					_processList.AddEntry(processName, gameName);
+					process = _processList.FindProcessByProcessName(processName);
+				}
+				else
+				{
+					process.UpdateDisplayName(gameName);
+				}
+				_processList.Save();
+				RecordInfoList.Where(record => record.ProcessName == processName).ForEach(record => {
+					record.GameName = process.DisplayName;
+					((FileRecordInfo)record).NotifyPropertyChanged(nameof(record.GameName));
+				});
+				RaisePropertyChanged(nameof(RecordInfoList));
+			}
+			catch (Exception e)
+			{
+				_logger.LogError(e, "Error updating ProcessList");
+			}
 		}
 
 		public void OnRecordSelectByDoubleClick()

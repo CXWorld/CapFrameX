@@ -1,8 +1,9 @@
-﻿using System.IO;
+﻿using System.ComponentModel;
+using System.IO;
 
 namespace CapFrameX.Contracts.Data
 {
-	public interface IFileRecordInfo
+	public interface IFileRecordInfo: INotifyPropertyChanged
 	{
 		string GameName { get; set; }
 		string ProcessName { get; }

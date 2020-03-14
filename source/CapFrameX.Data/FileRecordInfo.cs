@@ -2,9 +2,11 @@
 using CapFrameX.Data.Session.Contracts;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace CapFrameX.Data
 {
@@ -14,6 +16,13 @@ namespace CapFrameX.Data
 		public static readonly char INFO_SEPERATOR = '=';
 
 		private string[] _lines;
+
+		public event PropertyChangedEventHandler PropertyChanged;
+
+		public void NotifyPropertyChanged([CallerMemberName] String propertyName = "")
+		{
+			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+		}
 
 		public string CreationTimestamp => $@"{CreationDate}
 {CreationTime}";

@@ -29,30 +29,33 @@ namespace CapFrameX.Data
 			return Processes.Where(p => p.IsBlacklisted).Select(p => p.Name).OrderBy(p => p).ToArray();
 		}
 
-		public void AddEntry(string processName)
+		public void AddEntry(string processName, string displayName, bool blacklist = false)
 		{
+			processName = processName.StripExeExtension();
+			if (processName is null)
+			{
+				throw new ArgumentException(nameof(processName) + "is required");
+			}
 			if (_processList.Any(p => p.Name == processName))
 			{
 				return;
 			}
-			var process = new CXProcess(processName);
+			var process = new CXProcess(processName, displayName, blacklist, false);
 			process.RegisterOnChange(() => _processListUpdate.OnNext(default));
 			_processList.Add(process);
 			_processListUpdate.OnNext(default);
 		}
 
+		public CXProcess FindProcessByProcessName(string processName)
+		{
+			processName = processName.StripExeExtension();
+			var process = Processes.FirstOrDefault(p => p.Name == processName);
+			return process;
+		}
+
 		public void Save()
 		{
-			var json = JsonConvert.SerializeObject(_processList.OrderBy(p =>
-			{
-				if (p.IsBlacklisted)
-					return 0;
-				else if (p.IsWhitelisted)
-					return 1;
-				else
-					return 2;
-			})
-			.ThenBy(p => p.Name), Formatting.Indented);
+			var json = JsonConvert.SerializeObject(_processList.OrderBy(p => p.Name), Formatting.Indented);
 			File.WriteAllText(_filename, json);
 		}
 
@@ -69,6 +72,40 @@ namespace CapFrameX.Data
 			_processList.AddRange(processes);
 			_processListUpdate.OnNext(default);
 		}
+
+		public static ProcessList Create(string filename)
+		{
+			ProcessList processList = new ProcessList(filename);
+			try
+			{
+				processList.ReadFromFile();
+
+				var defaultIgnorelistFileInfo = new FileInfo(Path.Combine("PresentMon", "ProcessIgnoreList.txt"));
+				if (!defaultIgnorelistFileInfo.Exists)
+				{
+					return processList;
+				}
+
+				foreach (var process in File.ReadAllLines(defaultIgnorelistFileInfo.FullName))
+				{
+					processList.AddEntry(process, null, true);
+				}
+				processList.Save();
+			}
+			catch (Exception e)
+			{
+
+			}
+			return processList;
+		}
+	}
+
+	internal static class StringExtensions
+	{
+		internal static string StripExeExtension(this string processName)
+		{
+			return processName.Replace(".exe", string.Empty);
+		}
 	}
 
 	public class CXProcess
@@ -77,22 +114,24 @@ namespace CapFrameX.Data
 		[JsonProperty]
 		public string Name { get; private set; }
 		[JsonProperty]
+		public string DisplayName { get; private set; }
+		[JsonProperty]
 		public bool IsWhitelisted { get; private set; }
 		[JsonProperty]
 		public bool IsBlacklisted { get; private set; }
 
-		public CXProcess() {
-			
+		public CXProcess()
+		{
+
 		}
 
-		public CXProcess(string name, bool isBlacklisted, bool isWhitelisted)
+		public CXProcess(string name, string displayName, bool isBlacklisted, bool isWhitelisted)
 		{
 			Name = name;
+			DisplayName = displayName;
 			IsWhitelisted = isWhitelisted;
 			IsBlacklisted = isBlacklisted;
 		}
-
-		public CXProcess(string name) : this(name, true, false) { }
 
 		public void Blacklist()
 		{
@@ -105,6 +144,12 @@ namespace CapFrameX.Data
 		{
 			IsWhitelisted = true;
 			IsBlacklisted = false;
+			_onChange();
+		}
+
+		public void UpdateDisplayName(string newName)
+		{
+			DisplayName = newName;
 			_onChange();
 		}
 

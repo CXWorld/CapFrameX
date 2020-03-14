@@ -27,15 +27,6 @@ namespace CapFrameX.View
 
 			(DataContext as CloudViewModel).DownloadCompleteStream.Subscribe(_ => IDBox.Clear());
 
-			// Design time!
-			if (DesignerProperties.GetIsInDesignMode(this))
-			{
-				var appConfiguration = new CapFrameXConfiguration();
-				var loggerFactory = new LoggerFactory();
-				var recordManager = new RecordManager(loggerFactory.CreateLogger<RecordManager>(), appConfiguration, new RecordDirectoryObserver(appConfiguration, loggerFactory.CreateLogger<RecordDirectoryObserver>()), new AppVersionProvider());
-				DataContext = new CloudViewModel(new FrametimeStatisticProvider(appConfiguration), recordManager, new EventAggregator(), appConfiguration, loggerFactory.CreateLogger<CloudViewModel>(), new AppVersionProvider(), new LoginManager(loggerFactory.CreateLogger<LoginManager>(), new EventAggregator()));
-			}
-
 		}
 
 		private void CloudItemDataGrid_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)

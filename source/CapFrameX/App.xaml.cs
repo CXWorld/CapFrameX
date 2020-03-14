@@ -23,7 +23,6 @@ namespace CapFrameX
 			base.OnStartup(e);
 			_bootstrapper = new Bootstrapper();
 			_bootstrapper.Run(true);
-			InitializeProcesslist();
 		}
 
 		private void CapFrameXExit(object sender, ExitEventArgs e)
@@ -35,27 +34,6 @@ namespace CapFrameX
 
 			var overlayEntryProvider = _bootstrapper.Container.Resolve(typeof(IOverlayEntryProvider), true) as IOverlayEntryProvider;
 			_ = overlayEntryProvider?.SaveOverlayEntriesToJson();
-		}
-
-		private void InitializeProcesslist()
-		{
-			ProcessList processList = _bootstrapper.Container.Resolve(typeof(ProcessList), false) as ProcessList;
-			try
-			{
-				processList.ReadFromFile();
-			}
-			catch (Exception e) { }
-			var defaultIgnorelistFileInfo = new FileInfo(Path.Combine("PresentMon", "ProcessIgnoreList.txt"));
-			if (!defaultIgnorelistFileInfo.Exists)
-			{
-				return;
-			}
-
-			foreach (var process in File.ReadAllLines(defaultIgnorelistFileInfo.FullName))
-			{
-				processList.AddEntry(process);
-			}
-			processList.Save();
 		}
 
 		private void Application_Startup(object sender, StartupEventArgs e)

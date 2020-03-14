@@ -712,7 +712,7 @@ namespace CapFrameX.ViewModel
 			var process = _processList.Processes.FirstOrDefault(p => p.Name == SelectedProcessToCapture);
 			if(process is null)
 			{
-				_processList.AddEntry(SelectedProcessToCapture);
+				_processList.AddEntry(SelectedProcessToCapture, null, true);
 			}
 			else if(process is CXProcess)
 			{
