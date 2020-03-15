@@ -13,6 +13,9 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Threading.Tasks;
+using System.Reactive.Subjects;
+using System.Threading;
 
 namespace CapFrameX.View
 {
@@ -23,6 +26,8 @@ namespace CapFrameX.View
 	{
 		private const int SEARCH_REFRESH_DELAY_MS = 100;
 		private readonly CollectionViewSource _recordInfoCollection;
+
+		private bool CreateFolderDialogIsOpen;
 
 		private string ObservedDirectory
 			=> (DataContext as ControlViewModel).AppConfiguration.ObservedDirectory;
@@ -41,8 +46,27 @@ namespace CapFrameX.View
 
 			(DataContext as ControlViewModel).TreeViewUpdateStream.Subscribe(_ => BuildTreeView());
 
+			(DataContext as ControlViewModel).CreateFolderdialogIsOpenStream
+				.SelectMany(isOpen => { 
+					if(isOpen)
+					{
+						return Observable.Return(true);
+					}
+					return Observable.Return(false).Delay(TimeSpan.FromMilliseconds(500));
+				})
+				.Subscribe(isOpen => CreateFolderDialogIsOpen = isOpen);
+
 			BuildTreeView();
 			SetSortSettings((DataContext as ControlViewModel).AppConfiguration);
+
+			Observable.FromEventPattern(Expander, "MouseLeave")
+				.Where(_ => !trvStructure.ContextMenu.IsOpen)
+				.Where(_ => Expander.IsExpanded)
+				.Where(isOpen => !CreateFolderDialogIsOpen)
+				.ObserveOnDispatcher()
+				.Subscribe(_ => {
+					Expander.IsExpanded = false;
+				});
 		}
 
 		private void BuildTreeView()
@@ -249,20 +273,6 @@ namespace CapFrameX.View
 			Keyboard.ClearFocus();
 			(DataContext as ControlViewModel).SaveDescriptions();
 			e.Handled = true;
-		}
-
-		private void Expander_MouseLeave(object sender, MouseEventArgs e)
-		{
-			var result = (DataContext as ControlViewModel).CreateFolderDialogIsOpen;
-			{
-				if (Expander.IsExpanded && !result && !trvStructure.ContextMenu.IsOpen)
-				Expander.IsExpanded = false;
-			}
-		}
-
-		private void DescriptionGrid_GotFocus(object sender, RoutedEventArgs e)
-		{
-			Expander.IsExpanded = false;
 		}
 	}
 }
