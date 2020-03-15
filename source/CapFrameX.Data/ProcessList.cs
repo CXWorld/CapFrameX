@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
+using CapFrameX.Configuration;
 using CapFrameX.Extensions;
 using Newtonsoft.Json;
 
@@ -94,7 +95,7 @@ namespace CapFrameX.Data
 			}
 		}
 
-		public static ProcessList Create(string filename)
+		public static ProcessList Create(string filename, bool AutoUpdateProcessList = false)
 		{
 			ProcessList processList = new ProcessList(filename);
 			try
@@ -117,6 +118,11 @@ namespace CapFrameX.Data
 					processList.AddEntry(process.Name, process.DisplayName, process.IsBlacklisted, process.IsWhitelisted);
 				}
 				processList.Save();
+
+				if(AutoUpdateProcessList)
+				{
+					Task.Run(() => processList.UpdateProcessListFromWebserviceAsync().ConfigureAwait(false));
+				}
 			}
 			catch (Exception)
 			{

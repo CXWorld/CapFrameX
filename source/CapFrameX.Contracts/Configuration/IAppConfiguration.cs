@@ -9,7 +9,6 @@
 		string ObservedDirectory { get; set; }
 
 		string ScreenshotDirectory { get; set; }
-		string LoggingDirectory { get; set; }
 
 		int FpsValuesRoundingDigits { get; set; }
 
