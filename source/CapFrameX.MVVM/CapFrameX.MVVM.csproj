@@ -101,6 +101,9 @@
     <Compile Include="Converter\PlusHalfDifferenceConverter.cs" />
     <Compile Include="Converter\SelectedAreaWidthRatioConverter.cs" />
     <Compile Include="Converter\ZoomingModeConverter.cs" />
+    <Compile Include="Dialogs\CreateFolderDialog.xaml.cs">
+      <DependentUpon>CreateFolderDialog.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Dialogs\EditingDialog.xaml.cs">
       <DependentUpon>EditingDialog.xaml</DependentUpon>
     </Compile>
@@ -140,6 +143,10 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Page Include="Dialogs\CreateFolderDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Dialogs\EditingDialog.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

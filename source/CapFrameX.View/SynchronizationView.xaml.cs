@@ -20,6 +20,7 @@ namespace CapFrameX.View
 		{
 			InitializeComponent();
 			OxyPlotHelper.SetAxisZoomWheelAndPan(SynchronizationPlotView);
+			OxyPlotHelper.SetAxisZoomWheelAndPan(InputLagPlotView);
 
 			// Design time!
 			if (DesignerProperties.GetIsInDesignMode(this))

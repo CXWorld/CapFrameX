@@ -13,6 +13,8 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
+using System.Windows.Threading;
 
 namespace CapFrameX.View
 {
@@ -24,27 +26,18 @@ namespace CapFrameX.View
         public ColorbarView()
         {
             InitializeComponent();
-
-            // Design time!
-            if (DesignerProperties.GetIsInDesignMode(this))
-            {
-                var appConfiguration = new CapFrameXConfiguration();
-                DataContext = new ColorbarViewModel(new RegionManager(), new RecordDirectoryObserver(appConfiguration,
-                    new LoggerFactory().CreateLogger<RecordDirectoryObserver>()),
-                    new EventAggregator(), appConfiguration, new LoggerFactory().CreateLogger<ColorbarViewModel>(), null);
-            }
         }
 
         private void PopupBox_RequestBringIntoView(object sender, RequestBringIntoViewEventArgs e) { }
 
         private void GitHubButton_Click(object sender, RoutedEventArgs e)
         {
-            System.Diagnostics.Process.Start("https://github.com/DevTechProfile/CapFrameX#capframex");
+            Process.Start("https://github.com/DevTechProfile/CapFrameX#capframex");
         }
 
         private void Donate_Button_Click(object sender, RoutedEventArgs e)
         {
-            System.Diagnostics.Process.Start("https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=A4VJPT9NB7G28&source=url");
+            Process.Start("https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=A4VJPT9NB7G28&source=url");
         }
 
         /// <summary>
@@ -166,10 +159,20 @@ namespace CapFrameX.View
             (DataContext as ColorbarViewModel).OptionsViewSelected = true;
         }
 
-        private void Hyperlink_RequestNavigate(object sender, System.Windows.Navigation.RequestNavigateEventArgs e)
+        private void Hyperlink_RequestNavigate(object sender, RequestNavigateEventArgs e)
         {
             Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri));
             e.Handled = true;
+        }
+
+        private void Login_Click(object sender, RoutedEventArgs e)
+        {
+            (DataContext as ColorbarViewModel).OpenLoginWindow();
+        }
+
+        private void Logout_Click(object sender, RoutedEventArgs e)
+        {
+            (DataContext as ColorbarViewModel).Logout();
         }
     }
 }

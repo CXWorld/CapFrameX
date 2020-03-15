@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using CapFrameX.Data.Session.Contracts;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -9,10 +10,6 @@ namespace CapFrameX.Contracts.Data
 		Task<IFileRecordInfo> GetFileRecordInfo(FileInfo fileInfo);
 
 		Task<bool> SaveSessionRunsToFile(IEnumerable<ISessionRun> runs, string processName);
-
-		void AddGameNameToMatchingList(string processName, string gameName);
-
-		string GetGameFromMatchingList(string processName);
 
 		void UpdateCustomData(IFileRecordInfo recordInfo, string customCpuInfo,
 			string customGpuInfo, string customRamInfo, string customGameName, string customComment);

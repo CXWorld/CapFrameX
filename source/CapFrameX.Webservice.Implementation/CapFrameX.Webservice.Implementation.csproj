@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MongoDB.Driver" Version="2.10.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CapFrameX.Webservice.Data\CapFrameX.Webservice.Data.csproj" />
+    <ProjectReference Include="..\CapFrameX.Webservice.Persistance\CapFrameX.Webservice.Persistance.csproj" />
+  </ItemGroup>
+
+</Project>

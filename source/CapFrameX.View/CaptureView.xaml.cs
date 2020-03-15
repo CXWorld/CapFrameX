@@ -42,23 +42,6 @@ namespace CapFrameX.View
 				CaptureHotkey = CXHotkey.Create(keyStrings, Key.F12);
 			}
 			catch { CaptureHotkey = new CXHotkey(Key.F12); }
-
-			// Design time!
-			if (DesignerProperties.GetIsInDesignMode(this))
-			{
-				var loggerFactory = new LoggerFactory();
-				var appConfiguration = new CapFrameXConfiguration();
-				var statisticProvider = new FrametimeStatisticProvider( appConfiguration);
-				var recordDirectoryObserver = new RecordDirectoryObserver(appConfiguration, 
-					loggerFactory.CreateLogger<RecordDirectoryObserver>());
-				var overlayEntryProvider = new OverlayEntryProvider();
-				var recordManager = new RecordManager(loggerFactory.CreateLogger<RecordManager>(), appConfiguration, recordDirectoryObserver, new AppVersionProvider());
-				DataContext = new CaptureViewModel(appConfiguration, new PresentMonCaptureService(),
-					new EventAggregator(), recordManager,
-					new OverlayService(statisticProvider, overlayEntryProvider, appConfiguration, 
-					loggerFactory.CreateLogger<OverlayService>(), recordManager),
-					statisticProvider, new LoggerFactory().CreateLogger<CaptureViewModel>());
-			}
 		}
 
 		private void CaptureHotkeyTextBox_PreviewKeyDown(object sender, KeyEventArgs e)

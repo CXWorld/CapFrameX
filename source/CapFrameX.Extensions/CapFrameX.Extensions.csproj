@@ -81,8 +81,8 @@
     <Reference Include="System.Reactive, Version=4.0.0.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
       <HintPath>..\..\packages\System.Reactive.4.0.0\lib\net46\System.Reactive.dll</HintPath>
     </Reference>
-    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=4.0.3.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.Runtime.CompilerServices.Unsafe.4.4.0\lib\netstandard2.0\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=4.0.4.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.Runtime.CompilerServices.Unsafe.4.5.0\lib\netstandard2.0\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
     </Reference>
     <Reference Include="System.Windows" />
     <Reference Include="System.Windows.Forms" />
@@ -99,6 +99,7 @@
     <Compile Include="CollectionExtensions.cs" />
     <Compile Include="ContainerExtensions.cs" />
     <Compile Include="EnumExtensions.cs" />
+    <Compile Include="HttpRequestHeadersExtensions.cs" />
     <Compile Include="LinqExtensions.cs" />
     <Compile Include="ObjectExtensions.cs" />
     <Compile Include="ObservableExtensions.cs" />
@@ -107,6 +108,14 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\CapFrameX.Contracts\CapFrameX.Contracts.csproj">
+      <Project>{4C3B8B5C-54D7-46A1-91A1-32BF82FD42CD}</Project>
+      <Name>CapFrameX.Contracts</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CapFrameX.Data.Session\CapFrameX.Data.Session.csproj">
+      <Project>{6BE48CF4-C2F0-44CB-95D8-7500A3CB430E}</Project>
+      <Name>CapFrameX.Data.Session</Name>
+    </ProjectReference>
     <ProjectReference Include="..\CapFrameX.Hotkey\CapFrameX.Hotkey.csproj">
       <Project>{b033a95b-c385-4a33-8992-2872df979ecd}</Project>
       <Name>CapFrameX.Hotkey</Name>

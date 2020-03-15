@@ -17,14 +17,6 @@ namespace CapFrameX.View
         public ReportView()
         {
             InitializeComponent();
-
-            // Design time!
-            if (DesignerProperties.GetIsInDesignMode(this))
-            {
-				var appConfiguration = new CapFrameXConfiguration();
-                var loggerFactory = new LoggerFactory();
-                DataContext = new ReportViewModel(new FrametimeStatisticProvider(appConfiguration), new EventAggregator(), appConfiguration, new RecordManager(loggerFactory.CreateLogger<RecordManager>(), appConfiguration, new RecordDirectoryObserver(appConfiguration,loggerFactory.CreateLogger<RecordDirectoryObserver>()), new AppVersionProvider()));
-            }
         }
 
 		private void OnAutoGeneratingColumn(object sender, DataGridAutoGeneratingColumnEventArgs e)

@@ -1,18 +1,18 @@
-﻿using CapFrameX.Configuration;
-using CapFrameX.Contracts.Configuration;
+﻿using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
-using CapFrameX.Data;
 using CapFrameX.Extensions;
 using CapFrameX.ViewModel;
-using Microsoft.Extensions.Logging;
-using Prism.Events;
 using System;
+using System.IO;
+using System.Windows;
 using System.ComponentModel;
 using System.Data;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Input;
+using System.Windows.Media;
 
 namespace CapFrameX.View
 {
@@ -24,6 +24,11 @@ namespace CapFrameX.View
 		private const int SEARCH_REFRESH_DELAY_MS = 100;
 		private readonly CollectionViewSource _recordInfoCollection;
 
+		private string ObservedDirectory
+			=> (DataContext as ControlViewModel).AppConfiguration.ObservedDirectory;
+		private string CaptureRootDirectory
+			=> (DataContext as ControlViewModel).AppConfiguration.CaptureRootDirectory;
+
 		public ControlView()
 		{
 			InitializeComponent();
@@ -34,21 +39,89 @@ namespace CapFrameX.View
 				.ObserveOnDispatcher()
 				.Subscribe(t => _recordInfoCollection.View.Refresh());
 
-			// Design time!
-			if (DesignerProperties.GetIsInDesignMode(this))
-			{
-				var appConfiguration = new CapFrameXConfiguration();
-				var loggerFactory = new LoggerFactory();
+			(DataContext as ControlViewModel).TreeViewUpdateStream.Subscribe(_ => BuildTreeView());
 
-				var recordDirectoryObserver = new RecordDirectoryObserver(appConfiguration,
-					loggerFactory.CreateLogger<RecordDirectoryObserver>());
-
-                DataContext = new ControlViewModel(new RecordDirectoryObserver(appConfiguration,
-					loggerFactory.CreateLogger<RecordDirectoryObserver>()), new EventAggregator(), 
-                    new CapFrameXConfiguration(), new RecordManager(loggerFactory.CreateLogger<RecordManager>(), appConfiguration, recordDirectoryObserver, new AppVersionProvider()));
-			}
-
+			BuildTreeView();
 			SetSortSettings((DataContext as ControlViewModel).AppConfiguration);
+		}
+
+		private void BuildTreeView()
+		{
+			var root = CreateTreeViewRoot();
+			CreateTreeViewRecursive(trvStructure.Items[0] as TreeViewItem);
+			JumpToObservedDirectoryItem(root);
+
+			if ((CaptureRootDirectory == ObservedDirectory) || (!(DataContext as ControlViewModel).HasValidSource))
+				root.IsSelected = true;
+		}
+
+		private TreeViewItem CreateTreeViewRoot()
+		{
+			trvStructure.Items.Clear();
+			var mainfoldername = new DirectoryInfo(ExtractFullPath(CaptureRootDirectory));
+			var rootNode = CreateTreeItem(mainfoldername, mainfoldername.Name);
+			trvStructure.Items.Add(rootNode);
+			rootNode.IsExpanded = true;
+			return rootNode;
+		}
+
+		private TreeViewItem CreateTreeItem(object o, string name)
+		{
+			TreeViewItem item = new TreeViewItem
+			{
+				Header = name,
+				Tag = o
+			};
+			item.Items.Add("Loading...");
+			return item;
+		}
+
+		private void CreateTreeViewRecursive(TreeViewItem item)
+		{
+			if ((item.Items.Count == 1) && (item.Items[0] is string))
+			{
+				item.Items.Clear();
+
+				DirectoryInfo expandedDir = null;
+				if (item.Tag is DriveInfo)
+					expandedDir = (item.Tag as DriveInfo).RootDirectory;
+				if (item.Tag is DirectoryInfo)
+					expandedDir = (item.Tag as DirectoryInfo);
+				try
+				{
+					foreach (DirectoryInfo subDir in expandedDir.GetDirectories())
+					{
+						var subItem = CreateTreeItem(subDir, subDir.ToString());
+						item.Items.Add(subItem);
+						CreateTreeViewRecursive(subItem);
+					}
+				}
+				catch { }
+			}
+		}
+
+		void JumpToObservedDirectoryItem(TreeViewItem tvi)
+		{
+			if (tvi == null)
+				return;
+
+			if ((tvi.Tag as DirectoryInfo).FullName == ObservedDirectory)
+			{
+				tvi.BringIntoView();
+				tvi.IsSelected = true;
+				return;
+			}
+			else
+				tvi.IsExpanded = false;
+
+			if (tvi.HasItems)
+			{
+				foreach (var item in tvi.Items)
+				{
+					TreeViewItem temp = item as TreeViewItem;
+					JumpToObservedDirectoryItem(temp);
+				}
+			}
 		}
 
 		private void SetSortSettings(IAppConfiguration appConfiguration)
@@ -98,14 +171,9 @@ namespace CapFrameX.View
 		{
 			if (sortMemberPath == "GameName")
 			{
-				AddSortColumn(dataGrid, "CreationDate", sortDirection);
-				AddSortColumn(dataGrid, "CreationTime", sortDirection);
+				AddSortColumn(dataGrid, "CreationTimestamp", sortDirection);
 			}
 
-			if (sortMemberPath == "CreationDate")
-			{
-				AddSortColumn(dataGrid, "CreationTime", sortDirection);
-			}
 		}
 
 		private void RecordInfoListOnFilter(object sender, FilterEventArgs e)
@@ -114,9 +182,81 @@ namespace CapFrameX.View
 										(record, word) => record.CombinedInfo.NullSafeContains(word, true));
 		}
 
-		private void DataGridRow_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
+		private void DataGridRow_MouseDoubleClick(object sender, MouseButtonEventArgs e)
 		{
 			(DataContext as ControlViewModel).OnRecordSelectByDoubleClick();
+		}
+
+		private void ScrollViewer_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+		{
+			ScrollViewer scv = (ScrollViewer)sender;
+			scv.ScrollToVerticalOffset(scv.VerticalOffset - e.Delta / 10);
+			e.Handled = true;
+		}
+
+
+
+		private void TreeViewItem_Selected(object sender, RoutedEventArgs e)
+		{
+			TreeViewItem item = e.Source as TreeViewItem;
+			(DataContext as ControlViewModel).RecordObserver.ObserveDirectory((item.Tag as DirectoryInfo).FullName);
+		}
+
+		private string ExtractFullPath(string path)
+		{
+			if (path.Contains(@"MyDocuments\CapFrameX\Captures"))
+			{
+				var documentFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+				path = Path.Combine(documentFolder, @"CapFrameX\Captures");
+			}
+
+			return path;
+		}
+
+		private void RootFolder_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+		{
+			var result = (DataContext as ControlViewModel).OnSelectRootFolder();
+			if (result)
+			{
+				BuildTreeView();
+			}
+		}
+
+		private void TreeView_PreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
+		{
+			TreeViewItem treeViewItem = VisualUpwardSearch(e.OriginalSource as DependencyObject);
+
+			if (treeViewItem != null)
+			{
+				treeViewItem.Focus();
+				e.Handled = true;
+			}
+		}
+
+		static TreeViewItem VisualUpwardSearch(DependencyObject source)
+		{
+			while (source != null && !(source is TreeViewItem))
+				source = VisualTreeHelper.GetParent(source);
+
+			return source as TreeViewItem;
+		}
+
+		private void TextBox_KeyDown(object sender, KeyEventArgs e)
+		{
+			if (e.Key != Key.Enter)
+				return;
+
+			Keyboard.ClearFocus();
+			(DataContext as ControlViewModel).SaveDescriptions();
+			e.Handled = true;
+		}
+
+		private void Expander_MouseLeave(object sender, MouseEventArgs e)
+		{
+			var result = (DataContext as ControlViewModel).CreateFolderDialogIsOpen;
+
+			if(!result && !trvStructure.ContextMenu.IsOpen)
+				Expander.IsExpanded = false;
 		}
 	}
 }

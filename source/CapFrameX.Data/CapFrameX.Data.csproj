@@ -56,13 +56,23 @@
     <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Newtonsoft.Json.12.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+    <Reference Include="Prism, Version=7.0.0.396, Culture=neutral, PublicKeyToken=40ee6c3a2184dc59, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Prism.Core.7.0.0.396\lib\net45\Prism.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Reactive, Version=4.0.0.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
       <HintPath>..\..\packages\System.Reactive.4.0.0\lib\net46\System.Reactive.dll</HintPath>
     </Reference>
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Security" />
     <Reference Include="System.Windows" />
     <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Windows.Presentation" />
+    <Reference Include="System.Xaml" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -72,11 +82,11 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CloudEntry.cs" />
     <Compile Include="AggregationEntry.cs" />
-    <Compile Include="SessionCaptureData.cs" />
-    <Compile Include="SessionInfo.cs" />
-    <Compile Include="SessionRun.cs" />
-    <Compile Include="SessionSensorData.cs" />
+    <Compile Include="CloudManager.cs" />
+    <Compile Include="LoginManager.cs" />
+    <Compile Include="ProcessList.cs" />
     <Compile Include="WebVersionProvider.cs" />
     <Compile Include="AppVersionProvider.cs" />
     <Compile Include="ComparisonRecordInfo.cs" />
@@ -88,13 +98,7 @@
     <Compile Include="RecordDirectoryObserver.cs" />
     <Compile Include="RecordManager.cs" />
     <Compile Include="ReportInfo.cs" />
-    <Compile Include="Session.cs" />
     <Compile Include="SystemInfoEntry.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="NameMatching\ProcessGameNameMatchingList.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CapFrameX.Configuration\CapFrameX.Configuration.csproj">
@@ -104,6 +108,14 @@
     <ProjectReference Include="..\CapFrameX.Contracts\CapFrameX.Contracts.csproj">
       <Project>{4C3B8B5C-54D7-46A1-91A1-32BF82FD42CD}</Project>
       <Name>CapFrameX.Contracts</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CapFrameX.Data.Session\CapFrameX.Data.Session.csproj">
+      <Project>{6BE48CF4-C2F0-44CB-95D8-7500A3CB430E}</Project>
+      <Name>CapFrameX.Data.Session</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CapFrameX.EventAggregation\CapFrameX.EventAggregation.csproj">
+      <Project>{C3D082AE-BF05-4C83-B414-33CF7C420D4A}</Project>
+      <Name>CapFrameX.EventAggregation</Name>
     </ProjectReference>
     <ProjectReference Include="..\CapFrameX.Extensions\CapFrameX.Extensions.csproj">
       <Project>{a4559b99-7fcb-40ef-bf97-d293a2b7d6d3}</Project>
@@ -121,6 +133,10 @@
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
+    <None Include="ProcessList\Processes.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

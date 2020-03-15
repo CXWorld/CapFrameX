@@ -6,6 +6,7 @@ using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Extensions;
 using CapFrameX.MVVM.Dialogs;
 using CapFrameX.Statistics;
+using CapFrameX.StatisticsExtensions;
 using GongSolutions.Wpf.DragDrop;
 using LiveCharts;
 using LiveCharts.Defaults;

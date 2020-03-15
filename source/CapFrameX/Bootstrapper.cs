@@ -25,6 +25,7 @@ using System.IO;
 using CapFrameX.Contracts.UpdateCheck;
 using CapFrameX.Updater;
 using Serilog.Formatting.Compact;
+using CapFrameX.EventAggregation.Messages;
 
 namespace CapFrameX
 {
@@ -69,6 +70,16 @@ namespace CapFrameX
 			Container.Register<IAppVersionProvider, AppVersionProvider>(Reuse.Singleton);
 			Container.RegisterInstance<IWebVersionProvider>(new WebVersionProvider(), Reuse.Singleton);
 			Container.Register<IUpdateCheck, UpdateCheck>(Reuse.Singleton);
+			Container.Register<LoginManager>(Reuse.Singleton);
+			Container.Register<ICloudManager, CloudManager>(Reuse.Singleton);
+			Container.Register<LoginWindow>(Reuse.Transient);
+			Container.RegisterInstance(ProcessList.Create(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+						@"CapFrameX\Resources\Processes.json")));
+
+			Container.Resolve<IEventAggregator>().GetEvent<PubSubEvent<AppMessages.OpenLoginWindow>>().Subscribe(_ => {
+				var window = Container.Resolve<LoginWindow>();
+				window.Show();
+			});
 		}
 
 		/// <summary>

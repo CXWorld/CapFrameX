@@ -327,5 +327,26 @@ namespace CapFrameX.Configuration
 			get { return Settings.AreThresholdsReversed; }
 			set { Settings.AreThresholdsReversed = value; Settings.Save(); }
 		}
+
+		public string CloudDownloadDirectory
+		{
+			get { return Settings.CloudDownloadDirectory; }
+			set { Settings.CloudDownloadDirectory = value; Settings.Save(); }
+		}
+		public string CaptureRootDirectory
+		{
+			get { return Settings.CaptureRootDirectory; }
+			set { Settings.CaptureRootDirectory = value; Settings.Save(); }
+		}
+		public bool ShareProcessListEntries
+		{
+			get { return Settings.ShareProcessListEntries; }
+			set { Settings.ShareProcessListEntries = value; Settings.Save(); }
+		}
+		public bool AutoUpdateProcessList
+		{
+			get { return Settings.AutoUpdateProcessList; }
+			set { Settings.AutoUpdateProcessList = value; Settings.Save(); }
+		}
 	}
 }

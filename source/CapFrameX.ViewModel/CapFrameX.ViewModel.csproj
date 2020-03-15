@@ -127,6 +127,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CloudViewModel.cs" />
     <Compile Include="AggregationViewModel.cs" />
     <Compile Include="CaptureViewModel.cs" />
     <Compile Include="CaptureViewModelData.cs" />
@@ -177,6 +178,10 @@
       <Project>{4C3B8B5C-54D7-46A1-91A1-32BF82FD42CD}</Project>
       <Name>CapFrameX.Contracts</Name>
     </ProjectReference>
+    <ProjectReference Include="..\CapFrameX.Data.Session\CapFrameX.Data.Session.csproj">
+      <Project>{6BE48CF4-C2F0-44CB-95D8-7500A3CB430E}</Project>
+      <Name>CapFrameX.Data.Session</Name>
+    </ProjectReference>
     <ProjectReference Include="..\CapFrameX.Data\CapFrameX.Data.csproj">
       <Project>{D328B391-432C-4A0E-9A7E-57A58AA592D4}</Project>
       <Name>CapFrameX.Data</Name>
@@ -212,6 +217,10 @@
     <ProjectReference Include="..\CapFrameX.Updater\CapFrameX.Updater.csproj">
       <Project>{5D12AA37-CC30-4476-94AD-11C15DC65518}</Project>
       <Name>CapFrameX.Updater</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CapFrameX.Webservice.Data\CapFrameX.Webservice.Data.csproj">
+      <Project>{69D694A6-B029-4FE8-8429-F4E70DB8B5E1}</Project>
+      <Name>CapFrameX.Webservice.Data</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

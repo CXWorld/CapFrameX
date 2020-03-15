@@ -6,7 +6,9 @@ using System.Reactive.Subjects;
 using System.Windows;
 using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.Statistics;
+using CapFrameX.Data.Session.Contracts;
 using CapFrameX.Statistics;
+using CapFrameX.StatisticsExtensions;
 
 namespace CapFrameX.Data
 {

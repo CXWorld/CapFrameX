@@ -158,6 +158,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CloudView.xaml.cs">
+      <DependentUpon>CloudView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="AggregationView.xaml.cs">
       <DependentUpon>AggregationView.xaml</DependentUpon>
     </Compile>
@@ -207,6 +210,10 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <Page Include="CloudView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="AggregationView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

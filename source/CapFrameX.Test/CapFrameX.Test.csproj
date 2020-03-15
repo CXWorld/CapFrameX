@@ -94,6 +94,10 @@
       <Project>{4c3b8b5c-54d7-46a1-91a1-32bf82fd42cd}</Project>
       <Name>CapFrameX.Contracts</Name>
     </ProjectReference>
+    <ProjectReference Include="..\CapFrameX.Data.Session\CapFrameX.Data.Session.csproj">
+      <Project>{6be48cf4-c2f0-44cb-95d8-7500a3cb430e}</Project>
+      <Name>CapFrameX.Data.Session</Name>
+    </ProjectReference>
     <ProjectReference Include="..\CapFrameX.Data\CapFrameX.Data.csproj">
       <Project>{D328B391-432C-4A0E-9A7E-57A58AA592D4}</Project>
       <Name>CapFrameX.Data</Name>

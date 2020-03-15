@@ -4,7 +4,6 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.PresentMonInterface;
 using Microsoft.Extensions.Logging;
@@ -30,6 +29,7 @@ namespace CapFrameX.Data
 
 		private FileSystemWatcher _watcher;
 		private List<FileInfo> _currentFiles = new List<FileInfo>();
+		private string _currentDir;
 
 		public RecordDirectoryObserver(IAppConfiguration appConfiguration, ILogger<RecordDirectoryObserver> logger)
 		{
@@ -50,6 +50,11 @@ namespace CapFrameX.Data
 
 		public void ObserveDirectory(string dir)
 		{
+			if (string.IsNullOrWhiteSpace(dir) || dir == _currentDir)
+				return;
+
+			_currentDir = dir;
+			_appConfiguration.ObservedDirectory = dir;
 			var directory = new DirectoryInfo(dir);
 			if (!directory.Exists)
 			{

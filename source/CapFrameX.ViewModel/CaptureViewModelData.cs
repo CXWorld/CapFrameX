@@ -1,5 +1,4 @@
-﻿using CapFrameX.Contracts.Data;
-using CapFrameX.PresentMonInterface;
+﻿using CapFrameX.Data.Session.Contracts;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -22,9 +21,7 @@ namespace CapFrameX.ViewModel
 			// auto hook with filtered process list
 			else
 			{
-				var filter = CaptureServiceConfiguration.GetProcessIgnoreList();
 				var process = ProcessesToCapture.FirstOrDefault();
-
 				Task.Run(() => WriteExtractedCaptureDataToFileAsync(process));
 			}
 		}

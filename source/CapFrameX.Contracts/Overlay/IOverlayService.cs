@@ -1,4 +1,5 @@
 ﻿using CapFrameX.Contracts.Data;
+using CapFrameX.Data.Session.Contracts;
 using System.Collections.Generic;
 using System.Reactive.Subjects;
 

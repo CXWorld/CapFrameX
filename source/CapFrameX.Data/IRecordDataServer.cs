@@ -1,5 +1,6 @@
 ﻿using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.Statistics;
+using CapFrameX.Data.Session.Contracts;
 using CapFrameX.Statistics;
 using System;
 using System.Collections.Generic;

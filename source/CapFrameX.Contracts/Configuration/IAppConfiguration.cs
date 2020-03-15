@@ -90,7 +90,7 @@
 		int SelectedHistoryRuns { get; set; }
 
 		int OSDRefreshPeriod { get; set; }
-
+		string CloudDownloadDirectory { get; set; }
 		bool SaveAggregationOnly { get; set; }
 
 		int OutlierPercentageOverlay { get; set; }
@@ -108,5 +108,11 @@
 		int OutlierPercentageAggregation { get; set; }
 
 		bool AreThresholdsReversed { get; set; }
+
+		string CaptureRootDirectory { get; set; }
+
+		bool ShareProcessListEntries { get; set; }
+
+		bool AutoUpdateProcessList { get; set; }
 	}
 }
