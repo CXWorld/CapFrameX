@@ -7,11 +7,8 @@
 			 xmlns:prism="http://prismlibrary.com/"
 			 xmlns:dragdrop="urn:gong-wpf-dragdrop"
 			 xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
-			 xmlns:validation ="clr-namespace:CapFrameX.MVVM.Validation;assembly=CapFrameX.MVVM"
 			 xmlns:mvvm="clr-namespace:CapFrameX.MVVM.Converter;assembly=CapFrameX.MVVM"
 			 xmlns:proxy="clr-namespace:CapFrameX.MVVM;assembly=CapFrameX.MVVM"
-             xmlns:local="clr-namespace:CapFrameX.View"
-			 xmlns:oxy="clr-namespace:OxyPlot.Wpf;assembly=OxyPlot.Wpf"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800"
              Background="{DynamicResource MaterialDesignPaper}"
@@ -111,7 +108,7 @@
 		</TextBox>
 		
 		<!--Settings-->
-        <Grid Grid.Row="3" Grid.Column="1" Margin="0 10 0 0">
+        <Grid Grid.Row="3" Grid.Column="1" Margin="0 5 0 0">
             <Grid.RowDefinitions>
                 <RowDefinition Height="1*"/>
                 <RowDefinition Height="1*"/>
@@ -123,12 +120,13 @@
                 <ColumnDefinition Width="2*"/>
                 <ColumnDefinition Width="2*"/>
             </Grid.ColumnDefinitions>
-            <Button Grid.Row="0" Grid.Column="0" VerticalAlignment="Top" Width="135" Height="45"
+            <Button Grid.Row="0" Grid.Column="4" VerticalAlignment="Top" HorizontalAlignment="Right" Width="40" Height="40"
 					Command="{Binding ClearTableCommand}" IsEnabled="{Binding EnableClearButton}"
+                    Style="{StaticResource MaterialDesignFloatingActionMiniButton}"
                     ToolTip="Remove all entries">
-                <TextBlock Text="Clear table" TextAlignment="Center"/>
+                <materialDesign:PackIcon Kind="PlaylistRemove" Height="24" Width="24" />
             </Button>
-            <Button Grid.Row="0" Grid.Column="3" VerticalAlignment="Top" Width="150" Height="45"
+            <Button Grid.Row="0" Grid.Column="0" VerticalAlignment="Top" Width="150" Height="45"
 					Command="{Binding AggregateIncludeCommand}" IsEnabled="{Binding EnableIncludeButton}"
                     ToolTipService.ShowDuration="25000">
                 <TextBlock Text="Aggregate&#10;including outliers" TextWrapping="Wrap" TextAlignment="Center"/>
@@ -140,7 +138,7 @@
                     </ToolTip>
                 </Button.ToolTip>
             </Button>
-            <Button Grid.Row="0" Grid.Column="4" VerticalAlignment="Top" Width="150" Height="45"
+            <Button Grid.Row="0" Grid.Column="1" VerticalAlignment="Top" Width="150" Height="45"
 					Command="{Binding AggregateExcludeCommand}" IsEnabled="{Binding EnableExcludeButton}"
                     ToolTipService.ShowDuration="25000">
                 <TextBlock Text="Aggregate excluding outliers" TextWrapping="Wrap"  TextAlignment="Center"/>

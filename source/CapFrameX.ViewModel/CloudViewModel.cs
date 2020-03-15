@@ -222,6 +222,8 @@ namespace CapFrameX.ViewModel
 
 		public ICommand DownloadRecordsCommand { get; }
 
+		public ICommand CopyURLCommand { get; }
+
 		public ISubject<Unit> DownloadCompleteStream = new Subject<Unit>();
 
 		public ObservableCollection<ICloudEntry> CloudEntries { get; private set; }
@@ -238,6 +240,7 @@ namespace CapFrameX.ViewModel
 			_appVersionProvider = appVersionProvider;
 			_loginManager = loginManager;
 			ClearTableCommand = new DelegateCommand(OnClearTable);
+			CopyURLCommand = new DelegateCommand(() => Clipboard.SetText(_shareUrl));
 			UploadRecordsCommand = new DelegateCommand(async () =>
 			{
 				await UploadRecords();
@@ -369,6 +372,7 @@ namespace CapFrameX.ViewModel
 			ShowUploadDescriptionTextBox = false;
 			ShowUploadInfo = true;
 			ShareUrl = string.Empty;
+			EnableClearAndUploadButton = false;
 
 			var sessions = CloudEntries.Select(ce => _recordManager.LoadData(ce.FileRecordInfo.FullPath));
 
@@ -414,6 +418,8 @@ namespace CapFrameX.ViewModel
 		private async Task DownloadCaptureCollection(string id)
 		{
 			ShowDownloadInfo = true;
+			EnableDownloadButton = false;
+			RaisePropertyChanged(nameof(EnableDownloadButton));
 			var url = $@"SessionCollections/{id}";
 			using (var client = new HttpClient() { 
 				BaseAddress = new Uri(ConfigurationManager.AppSettings["WebserviceUri"]),
