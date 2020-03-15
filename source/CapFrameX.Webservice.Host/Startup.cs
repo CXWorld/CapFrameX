@@ -31,6 +31,7 @@ using Microsoft.AspNetCore.Diagnostics;
 using System.Net;
 using System.Net.Mime;
 using CapFrameX.Webservice.Host.Attributes;
+using Squidex.ClientLibrary;
 
 namespace CapFrameX.Webservice.Host
 {
@@ -54,6 +55,8 @@ namespace CapFrameX.Webservice.Host
 			);
 			services.AddAutoMapper(typeof(SessionCollectionProfile).Assembly);
 
+			services.Configure<SquidexOptions>(Configuration.GetSection("SquidexOptions"));
+			services.AddSingleton<ISquidexService, SquidexService>();
 			services.AddScoped<IIgnoreListService, IgnoreListService>();
 			services.AddScoped<IGameListService, GameListService>();
 			services.AddScoped<ISessionService, SessionService>();
