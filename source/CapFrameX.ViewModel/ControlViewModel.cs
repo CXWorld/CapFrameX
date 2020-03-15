@@ -221,6 +221,8 @@ namespace CapFrameX.ViewModel
 
 		public ISubject<Unit> TreeViewUpdateStream = new Subject<Unit>();
 
+		public ISubject<bool> CreateFolderdialogIsOpenStream = new BehaviorSubject<bool>(false);
+
 		public ControlViewModel(IRecordDirectoryObserver recordObserver,
 								IEventAggregator eventAggregator,
 								IAppConfiguration appConfiguration, RecordManager recordManager, ProcessList processList, ILogger<ControlViewModel> logger)
@@ -245,11 +247,17 @@ namespace CapFrameX.ViewModel
 			OpenCreateSubFolderDialogCommand = new DelegateCommand(() => 
 			{ 
 				CreateFolderDialogIsOpen = true; 
-				TreeViewSubFolderName = string.Empty; 
+				TreeViewSubFolderName = string.Empty;
+				CreateFolderdialogIsOpenStream.OnNext(true);
 			});
 			SelectedRecordingsCommand = new DelegateCommand<object>(OnSelectedRecordings);
 			CreateFolderCommand = new DelegateCommand(OnCreateSubFolder);
-			CloseCreateFolderDialogCommand = new DelegateCommand(() => CreateFolderDialogIsOpen = false);
+			CloseCreateFolderDialogCommand = new DelegateCommand(() =>
+			{
+				CreateFolderDialogIsOpen = false;
+				CreateFolderdialogIsOpenStream.OnNext(false);
+			}
+			);
 
 			RecordDataGridSelectedIndex = -1;
 
@@ -276,9 +284,8 @@ namespace CapFrameX.ViewModel
 				var path = Path.Combine(_appConfiguration.ObservedDirectory, TreeViewSubFolderName);
 				FileSystem.CreateDirectory(path);
 				_appConfiguration.ObservedDirectory = path;
-				// add popup message with folder name textbox
-				// trigger creating TreeView in code behind
 				TreeViewUpdateStream.OnNext(default);
+				CreateFolderdialogIsOpenStream.OnNext(false);
 				CreateFolderDialogIsOpen = false;
 			}
 			catch { }
@@ -296,7 +303,6 @@ namespace CapFrameX.ViewModel
 				
 				_updateSessionEvent.Publish(new ViewMessages.UpdateSession(null, null));
 				_appConfiguration.ObservedDirectory = parentFolder.FullName;
-				// trigger creating TreeView in code behind
 				TreeViewUpdateStream.OnNext(default);
 			}
 			catch { }
