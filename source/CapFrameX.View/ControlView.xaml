@@ -235,7 +235,7 @@
             </Grid>
             <Border Margin="0 5 5 0" BorderThickness="0 1 0 0" BorderBrush="{DynamicResource MaterialDesignDivider}" />
         </StackPanel>
-        <Grid Grid.Row="1" Grid.ColumnSpan="2" Margin="0 5 5 0" Background="#F5F5F5" MouseEnter="Expander_MouseLeave">
+        <Grid Grid.Row="1" Grid.ColumnSpan="2" Margin="0 5 5 0" Background="#F5F5F5" GotFocus="DescriptionGrid_GotFocus">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
