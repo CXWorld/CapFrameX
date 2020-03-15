@@ -1,13 +1,11 @@
 ﻿using CapFrameX.Contracts.Overlay;
 using Newtonsoft.Json;
 using Prism.Mvvm;
-using System.Reactive;
 
 namespace CapFrameX.Overlay
 {
 	public class OverlayEntryWrapper : BindableBase, IOverlayEntry
 	{
-		private string _valueFormat;
 		private bool _showOnOverlay;
 		private bool _showOnOverlayIsEnabled;
 		private string _groupName;
@@ -21,13 +19,17 @@ namespace CapFrameX.Overlay
 
 		public string Identifier { get; }
 
+		public EOverlayEntryType OverlayEntryType { get; set; }
+
 		public string Description { get; set; }	
 
 		[JsonIgnore]
 		public string FormattedValue
-			=> _valueFormat == null ?
+			=> string.IsNullOrWhiteSpace(ValueFormat) ?
 			(Value == null ? string.Empty : Value.ToString())
-			: string.Format(_valueFormat, Value);
+			: string.Format(ValueFormat, Value);
+
+		public string ValueFormat { get; set; }
 
 		public bool ShowOnOverlay
 		{
@@ -35,7 +37,7 @@ namespace CapFrameX.Overlay
 			set
 			{
 				_showOnOverlay = value;
-				OverlayEntryProvider?.EntryUpdateStream.OnNext(default(Unit));
+				OverlayEntryProvider?.EntryUpdateStream.OnNext(default);
 				RaisePropertyChanged();
 			}
 		}
@@ -56,7 +58,7 @@ namespace CapFrameX.Overlay
 			set
 			{
 				_groupName = value;
-				OverlayEntryProvider?.EntryUpdateStream.OnNext(default(Unit));
+				OverlayEntryProvider?.EntryUpdateStream.OnNext(default);
 				RaisePropertyChanged();
 			}
 		}
@@ -77,7 +79,7 @@ namespace CapFrameX.Overlay
 			set
 			{
 				_showGraph = value;
-				OverlayEntryProvider?.EntryUpdateStream.OnNext(default(Unit));
+				OverlayEntryProvider?.EntryUpdateStream.OnNext(default);
 				RaisePropertyChanged();
 			}
 		}
@@ -101,15 +103,14 @@ namespace CapFrameX.Overlay
 			set
 			{
 				_color = value;
-				OverlayEntryProvider?.EntryUpdateStream.OnNext(default(Unit));
+				OverlayEntryProvider?.EntryUpdateStream.OnNext(default);
 				RaisePropertyChanged();
 			}
 		}
 
-		public OverlayEntryWrapper(string identifier, string format = null)
+		public OverlayEntryWrapper(string identifier)
 		{
 			Identifier = identifier;
-			_valueFormat = format;
 		}
 	}
 }

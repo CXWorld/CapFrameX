@@ -333,20 +333,29 @@ namespace CapFrameX.Configuration
 			get { return Settings.CloudDownloadDirectory; }
 			set { Settings.CloudDownloadDirectory = value; Settings.Save(); }
 		}
+
 		public string CaptureRootDirectory
 		{
 			get { return Settings.CaptureRootDirectory; }
 			set { Settings.CaptureRootDirectory = value; Settings.Save(); }
 		}
+
 		public bool ShareProcessListEntries
 		{
 			get { return Settings.ShareProcessListEntries; }
 			set { Settings.ShareProcessListEntries = value; Settings.Save(); }
 		}
+
 		public bool AutoUpdateProcessList
 		{
 			get { return Settings.AutoUpdateProcessList; }
 			set { Settings.AutoUpdateProcessList = value; Settings.Save(); }
+		}
+
+		public bool UseSensorLogging
+		{
+			get { return Settings.UseSensorLogging; }
+			set { Settings.UseSensorLogging = value; Settings.Save(); }
 		}
 	}
 }

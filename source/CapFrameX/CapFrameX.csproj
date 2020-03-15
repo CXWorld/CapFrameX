@@ -210,6 +210,10 @@
       <Project>{9c46d3f3-72e0-4e6c-ad3e-54a5ee121475}</Project>
       <Name>CapFrameX.RTSSInterface</Name>
     </ProjectReference>
+    <ProjectReference Include="..\CapFrameX.Sensor\CapFrameX.Sensor.csproj">
+      <Project>{B1B0E5F1-942A-476C-BEA4-8B9FFBCA04C6}</Project>
+      <Name>CapFrameX.Sensor</Name>
+    </ProjectReference>
     <ProjectReference Include="..\CapFrameX.Statistics\CapFrameX.Statistics.csproj">
       <Project>{788F49CD-ABCB-4C7C-B1B6-BF9DC2482432}</Project>
       <Name>CapFrameX.Statistics</Name>

@@ -2,6 +2,7 @@
 using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.PresentMonInterface;
+using CapFrameX.Contracts.Sensor;
 using CapFrameX.Data;
 using CapFrameX.Hotkey;
 using CapFrameX.PresentMonInterface;
@@ -43,6 +44,7 @@ namespace CapFrameX.ViewModel
 		private readonly IEventAggregator _eventAggregator;
 		private readonly IRecordManager _recordManager;
 		private readonly IOverlayService _overlayService;
+		private readonly ISensorService _sensorService;
 		private readonly IStatisticProvider _statisticProvider;
 		private readonly ILogger<CaptureViewModel> _logger;
 		private readonly ProcessList _processList;
@@ -271,6 +273,7 @@ namespace CapFrameX.ViewModel
 								IEventAggregator eventAggregator,
 								IRecordManager recordManager,
 								IOverlayService overlayService,
+								ISensorService sensorService,
 								IStatisticProvider statisticProvider,
 								ILogger<CaptureViewModel> logger,
 								ProcessList processList)
@@ -280,6 +283,7 @@ namespace CapFrameX.ViewModel
 			_eventAggregator = eventAggregator;
 			_recordManager = recordManager;
 			_overlayService = overlayService;
+			_sensorService = sensorService;
 			_statisticProvider = statisticProvider;
 			_logger = logger;
 			_processList = processList;
@@ -533,6 +537,7 @@ namespace CapFrameX.ViewModel
 		{
 			AddLoggerEntry("Capturing started.");
 			_overlayService.SetCaptureServiceStatus("Recording frametimes");
+			_sensorService.StartSensorLogging();
 
 			_captureData = new List<string>();
 			bool autoTermination = Convert.ToInt32(CaptureTimeString) > 0;
@@ -623,7 +628,7 @@ namespace CapFrameX.ViewModel
 		private void FinishCapturingAndUpdateUi()
 		{
 			_disposableCaptureStream?.Dispose();
-
+			_sensorService.StopSensorLogging();
 			AddLoggerEntry("Capturing stopped.");
 			// asynchron
 			WriteCaptureDataToFile();
@@ -722,7 +727,6 @@ namespace CapFrameX.ViewModel
 			SelectedProcessToCapture = null;
 			StartCaptureService();
 		}
-
 
 		private void OnAddToProcessList()
 		{
