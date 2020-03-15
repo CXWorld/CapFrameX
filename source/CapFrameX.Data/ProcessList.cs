@@ -1,9 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using System.Threading.Tasks;
+using CapFrameX.Extensions;
 using Newtonsoft.Json;
 
 namespace CapFrameX.Data
@@ -71,6 +75,25 @@ namespace CapFrameX.Data
 			_processListUpdate.OnNext(default);
 		}
 
+		public async Task UpdateProcessListFromWebserviceAsync()
+		{
+			using (var client = new HttpClient()
+			{
+				BaseAddress = new Uri(ConfigurationManager.AppSettings["WebserviceUri"])
+			})
+			{
+				client.DefaultRequestHeaders.AddCXClientUserAgent();
+				var content = await client.GetStringAsync("ProcessList");
+				var processes = JsonConvert.DeserializeObject<List<CXProcess>>(content);
+
+				foreach (var proc in processes)
+				{
+					AddEntry(proc.Name, proc.DisplayName, proc.IsBlacklisted, proc.IsWhitelisted);
+				}
+				Save();
+			}
+		}
+
 		public static ProcessList Create(string filename)
 		{
 			ProcessList processList = new ProcessList(filename);
@@ -80,7 +103,8 @@ namespace CapFrameX.Data
 				{
 					processList.ReadFromFile();
 
-				} catch { }
+				}
+				catch { }
 				var defaultProcesslistFileInfo = new FileInfo(Path.Combine("ProcessList", "Processes.json"));
 				if (!defaultProcesslistFileInfo.Exists)
 				{
@@ -123,7 +147,7 @@ namespace CapFrameX.Data
 		public bool IsBlacklisted { get; private set; }
 
 		[JsonConstructor]
-		public CXProcess() {}
+		public CXProcess() { }
 
 		public CXProcess(string name, string displayName, bool isBlacklisted, bool isWhitelisted)
 		{
