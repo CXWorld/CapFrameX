@@ -54,6 +54,8 @@ namespace CapFrameX.Webservice.Host
 			);
 			services.AddAutoMapper(typeof(SessionCollectionProfile).Assembly);
 
+			services.AddScoped<IIgnoreListService, IgnoreListService>();
+			services.AddScoped<IGameListService, GameListService>();
 			services.AddScoped<ISessionService, SessionService>();
 			services.AddScoped<IUserClaimsProvider, UserClaimsProvider>();
 			services.AddDbContext<CXContext>(options => {
