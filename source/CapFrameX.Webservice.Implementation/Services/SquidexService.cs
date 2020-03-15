@@ -5,12 +5,13 @@ using Newtonsoft.Json;
 using Squidex.ClientLibrary;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace CapFrameX.Webservice.Implementation.Services
 {
-	public class SquidexService: ISquidexService
+	public class SquidexService : IProcessListService, ISessionService
 	{
 		private readonly SquidexClientManager _squidexClientManager;
 		public SquidexService(IOptions<SquidexOptions> squidexOptions)
@@ -30,6 +31,59 @@ namespace CapFrameX.Webservice.Implementation.Services
 					return Task.CompletedTask;
 				});
 				return processList;
+			}
+		}
+
+		public async Task<SqSessionCollection> GetSessionCollection(Guid id)
+		{
+			var client = _squidexClientManager.CreateContentsClient<SqSessionCollection, SqSessionCollectionData>("sessioncollections");
+			using ((IDisposable)client)
+			{
+				var collections = await client.GetAsync(new ContentQuery()
+				{
+					Ids = new HashSet<string>() { id.ToString() }
+				});
+				return collections.Items.FirstOrDefault();
+			}
+		}
+
+		public async Task<IEnumerable<SqSessionCollection>> GetSessionCollectionsForUser(Guid userId)
+		{
+			var client = _squidexClientManager.CreateContentsClient<SqSessionCollection, SqSessionCollectionData>("sessioncollections");
+			using ((IDisposable)client)
+			{
+				var collections = await client.GetAsync(new ContentQuery() { 
+					Filter = $"Sub eq {userId}"
+				});
+				return collections.Items;
+			}
+		}
+
+		public async Task<Guid> SaveSessionCollection(SqSessionCollectionData sessionCollection)
+		{
+			var client = _squidexClientManager.CreateContentsClient<SqSessionCollection, SqSessionCollectionData>("sessioncollections");
+			using ((IDisposable)client)
+			{
+				var result = await client.CreateAsync(sessionCollection, true);
+				return result.Id;
+			}
+		}
+
+		public async Task DeleteCollection(Guid id, Guid userId)
+		{
+			var client = _squidexClientManager.CreateContentsClient<SqSessionCollection, SqSessionCollectionData>("sessioncollections");
+			using ((IDisposable)client)
+			{
+				var sessionCollection = await client.GetAsync(new ContentQuery()
+				{
+					Ids = new HashSet<string>() { id.ToString() },
+					Filter = $"Sub eq {userId}"
+				});
+				if (!sessionCollection.Items.Any())
+				{
+					throw new UnauthorizedAccessException("You cannot delete this session.");
+				}
+				await client.DeleteAsync(id);
 			}
 		}
 	}
