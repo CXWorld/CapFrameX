@@ -14,8 +14,6 @@ namespace CapFrameX.Webservice.Data.DTO
 		public string DisplayName { get; set; }
 		[JsonProperty("IsBlacklisted")]
 		public bool IsBlacklisted { get; set; }
-		[JsonProperty("IsWhitelisted")]
-		public bool IsWhitelisted { get; set; }
 	}
 
 	public sealed class ProcessListData
@@ -27,8 +25,6 @@ namespace CapFrameX.Webservice.Data.DTO
 		public string DisplayName { get; set; }
 		[JsonConverter(typeof(InvariantConverter))]
 		public bool IsBlacklisted { get; set; }
-		[JsonConverter(typeof(InvariantConverter))]
-		public bool IsWhitelisted { get; set; }
 	}
 
 	public class ProcessList : Content<ProcessListData>
