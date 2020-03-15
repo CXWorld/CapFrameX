@@ -167,13 +167,11 @@
     <Setting Name="LoggingDirectory" Type="System.String" Scope="User">
       <Value Profile="(Default)">MyDocuments\CapFrameX\Logs</Value>
     </Setting>
-<<<<<<< HEAD
     <Setting Name="CloudDownloadDirectory" Type="System.String" Scope="User">
       <Value Profile="(Default)">MyDocuments\CapFrameX\Captures\Cloud</Value>
-=======
+	</Setting>
     <Setting Name="CaptureRootDirectory" Type="System.String" Scope="User">
       <Value Profile="(Default)">MyDocuments\CapFrameX\Captures</Value>
->>>>>>> release/1.4.3
     </Setting>
   </Settings>
 </SettingsFile>
