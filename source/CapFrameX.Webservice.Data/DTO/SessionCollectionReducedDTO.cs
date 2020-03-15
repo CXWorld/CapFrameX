@@ -10,8 +10,16 @@ namespace CapFrameX.Webservice.Data.DTO
 		public Guid Id { get; set; }
 		public Guid? UserId { get; set; }
 		public DateTime Timestamp { get; set; }
-		public string Name { get; set; }
 		public string Description { get; set; }
-		public virtual IEnumerable<ISessionInfo> Sessions { get; set; }
+		public virtual IEnumerable<SessionReducedDTO> Sessions { get; set; }
+	}
+
+	public class SessionReducedDTO
+	{
+		public string AppVersion { get; set; }
+		public string Comment { get; set; }
+		public string ProcessName { get; set; }
+		public string GameName { get; set; }
+		public DateTime CreationDate { get; set; }
 	}
 }

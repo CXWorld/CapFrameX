@@ -22,8 +22,7 @@ using Serilog;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using CapFrameX.Webservice.Data.Providers;
-using CapFrameX.Webservice.Persistance;
-using Microsoft.EntityFrameworkCore;
+
 using CapFrameX.Webservice.Data.Mappings;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
@@ -31,6 +30,7 @@ using Microsoft.AspNetCore.Diagnostics;
 using System.Net;
 using System.Net.Mime;
 using CapFrameX.Webservice.Host.Attributes;
+using Squidex.ClientLibrary;
 
 namespace CapFrameX.Webservice.Host
 {
@@ -47,24 +47,31 @@ namespace CapFrameX.Webservice.Host
 		public void ConfigureServices(IServiceCollection services)
 		{
 			var assembly = Assembly.GetExecutingAssembly();
+
+			// Register Libraries
 			services.AddMediatR(
-				typeof(GetSessionCollectionByIdHandler).GetTypeInfo().Assembly,
-				typeof(GetSessionCollectionByIdQuery).GetTypeInfo().Assembly,
-				typeof(UploadSessionsCommand).GetTypeInfo().Assembly
+				typeof(GetSessionCollectionByIdHandler).GetTypeInfo().Assembly, // Register Handlers
+				typeof(GetSessionCollectionByIdQuery).GetTypeInfo().Assembly, // Register Queries
+				typeof(UploadSessionsCommand).GetTypeInfo().Assembly // Register Commands
 			);
 			services.AddAutoMapper(typeof(SessionCollectionProfile).Assembly);
 
-			services.AddScoped<IIgnoreListService, IgnoreListService>();
-			services.AddScoped<IGameListService, GameListService>();
-			services.AddScoped<ISessionService, SessionService>();
-			services.AddScoped<IUserClaimsProvider, UserClaimsProvider>();
-			services.AddDbContext<CXContext>(options => {
-				options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"));
-				options.UseLazyLoadingProxies();
-			});
+			// Setup and Register Squidex
+			services.Configure<SquidexOptions>(Configuration.GetSection("SquidexOptions"));
+			services.AddSingleton<SquidexService>();
 
+			// Register Services
+			services.AddSingleton<ISessionService>(x => x.GetRequiredService<SquidexService>());
+			services.AddSingleton<IProcessListService>(x => x.GetRequiredService<SquidexService>());
+
+			// Register Providers
+			services.AddScoped<IUserClaimsProvider, UserClaimsProvider>();
+
+			// Register ServiceFilters
 			services.AddScoped<UserAgentFilter>();
 
+			// Register Middlewares
+			services.AddHttpContextAccessor();
 			services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 				.AddJwtBearer(options =>
 				{
@@ -79,6 +86,7 @@ namespace CapFrameX.Webservice.Host
 					};
 				});
 
+			// Register Controllers
 			services.AddControllers()
 				.AddNewtonsoftJson()
 				.AddFluentValidation(opt =>
@@ -88,16 +96,11 @@ namespace CapFrameX.Webservice.Host
 					opt.ImplicitlyValidateChildProperties = true;
 					opt.RunDefaultMvcValidationAfterFluentValidationExecutes = false;
 				});
-			services.AddHttpContextAccessor();
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
 		public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 		{
-			using (var scope = app.ApplicationServices.CreateScope())
-			{
-				MigrateDatabase(scope.ServiceProvider.GetRequiredService<CXContext>());
-			}
 			if (env.IsDevelopment())
 			{
 				app.UseDeveloperExceptionPage();
@@ -137,11 +140,6 @@ namespace CapFrameX.Webservice.Host
 			{
 				endpoints.MapControllers();
 			});
-		}
-
-		private void MigrateDatabase(CXContext context)
-		{
-			context.Database.Migrate();
 		}
 
 		private ForwardedHeadersOptions GetHeaderOptions()

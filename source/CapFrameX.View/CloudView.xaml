@@ -28,6 +28,7 @@
 				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Slider.xaml" />
 			</ResourceDictionary.MergedDictionaries>
 			<mvvm:BoolToVisibilityConverter x:Key="TrueToVisibleConverter" FalseValue="Hidden" TrueValue="Visible"/>
+            <mvvm:BoolToVisibilityConverter x:Key="FalseToVisibleConverter" FalseValue="Visible" TrueValue="Hidden"/>
 			<mvvm:EnumDescriptionConverter x:Key="EnumDescriptionConverter"/>
 		</ResourceDictionary>
 	</UserControl.Resources>
@@ -45,9 +46,10 @@
 			<ColumnDefinition Width="395"/>
 			<ColumnDefinition Width="1*"/>
 		</Grid.ColumnDefinitions>
+        <!--Record upload-->
 		<TextBlock Grid.Row="0" Grid.Column="1" Margin="0 25 0 0" HorizontalAlignment="Center" Text="Record upload" FontSize="16"/>
-		<!--Grid record upload-->
-		<Grid Grid.Row="1" Grid.Column="1" >
+
+        <Grid Grid.Row="1" Grid.Column="1" >
 			<Grid.RowDefinitions>
 				<RowDefinition Height="Auto"/>
 				<RowDefinition Height="Auto"/>
@@ -61,7 +63,7 @@
 				   dragdrop:DragDrop.UseDefaultDragAdorner="True"
 				   dragdrop:DragDrop.DefaultDragAdornerOpacity="0.5"
 				   dragdrop:DragDrop.UseDefaultEffectDataTemplate="False"/>
-			<DataGrid Grid.Row="0" Grid.Column="1" x:Name="CloudItemDataGrid" Height="275" Width="545" Background="#F5F5F5" FontSize="11"
+            <DataGrid Grid.Row="0" Grid.Column="1" x:Name="CloudItemDataGrid" Height="275" Width="545" Background="#F5F5F5" FontSize="11"
 						  MouseLeave="CloudItemDataGrid_MouseLeave" SelectionMode="Single"
 					      SelectedIndex="{Binding SelectedCloudEntryIndex}" ItemsSource="{Binding CloudEntries}"
 					      CanUserSortColumns="False" CanUserAddRows="False" AutoGenerateColumns="False" PreviewKeyDown="CloudItemDataGrid_PreviewKeyDown"
@@ -77,38 +79,39 @@
                     <proxy:BindingProxy x:Key="proxy" Data="{Binding}" />
                 </DataGrid.Resources>
                 <DataGrid.Columns>
-					<DataGridTextColumn Binding="{Binding GameName, Mode=OneWay}"
+                    <DataGridTextColumn Binding="{Binding GameName, Mode=OneWay}"
                                             Header="Game"
 											Width="Auto"
                                             IsReadOnly="True"/>
-					<DataGridTextColumn Binding="{Binding CreationDate, Mode=OneWay}"
+                    <DataGridTextColumn Binding="{Binding CreationDate, Mode=OneWay}"
                                             Header="Date"
 											Width="Auto"
                                             IsReadOnly="True"/>
-					<DataGridTextColumn Binding="{Binding CreationTime, Mode=OneWay}"
+                    <DataGridTextColumn Binding="{Binding CreationTime, Mode=OneWay}"
                                             Header="Time"
 											Width="Auto"
                                             IsReadOnly="True"/>
-					<DataGridTextColumn Binding="{Binding Comment, Mode=OneWay}"
+                    <DataGridTextColumn Binding="{Binding Comment, Mode=OneWay}"
                                             Header="Comment"
 											Width="Auto"
                                             IsReadOnly="True"/>
-				</DataGrid.Columns>
-			</DataGrid>
-			<Button Grid.Row="1" Grid.Column="0" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="5"  Width="100" Height="45"
+                </DataGrid.Columns>
+            </DataGrid>
+            <Button Grid.Row="1" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="5"  Width="40" Height="40"
+                    Style="{StaticResource MaterialDesignFloatingActionMiniButton}"
 					Command="{Binding ClearTableCommand}" IsEnabled="{Binding EnableClearAndUploadButton}"
                     ToolTip="Remove all entries">
-				<TextBlock Text="Clear table" TextAlignment="Center"/>
-			</Button>
-            <TextBox Grid.Row="1" Width="300" wpf:HintAssist.Hint="Download link / ID" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
-					 Margin="121,10,0,10" FontSize="14" HorizontalAlignment="Left" Text="{Binding ShareUrl, Mode=OneWay}" GotFocus="ShareUrlFocusHandler" IsReadOnly="True" 
+                <materialDesign:PackIcon Kind="PlaylistRemove" Height="24" Width="24" />
+            </Button>
+            <TextBox Grid.Row="1" Width="350" wpf:HintAssist.Hint="Download link / ID" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
+					 Margin="50 0 0 0" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"  Text="{Binding ShareUrl, Mode=OneWay}" PreviewMouseDoubleClick="ShareUrlFocusHandler" IsReadOnly="True" 
                      Visibility="{Binding ShareUrlVisible, Converter={StaticResource TrueToVisibleConverter}}"/>
             <TextBlock Grid.Row="1" FontSize="16" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Uploading..."  
                        Visibility="{Binding ShowUploadInfo, Converter={StaticResource TrueToVisibleConverter}}"/>
-            <TextBox Name="UploadDescription"  Grid.Row="1" FontSize="16" Width="300" wpf:HintAssist.Hint="(Optional) Upload description" HorizontalAlignment="Center" VerticalAlignment="Center" 
+            <TextBox Name="UploadDescription"  Grid.Row="1" Margin="50 0 0 0" FontSize="16" Width="350" wpf:HintAssist.Hint="(Optional) Upload description" HorizontalAlignment="Center" VerticalAlignment="Center" 
                      Text="{Binding UploadDescription, UpdateSourceTrigger=PropertyChanged}" Visibility="{Binding ShowUploadDescriptionTextBox, Converter={StaticResource TrueToVisibleConverter}}"/>
-            <Button Grid.Row="1" Grid.Column="2" Margin="5" VerticalAlignment="Top" HorizontalAlignment="Right" Width="100" Height="45"
-					Command="{Binding UploadRecordsCommand}" IsEnabled="{Binding EnableClearAndUploadButton}"
+            <Button Grid.Row="1" Grid.Column="2" Margin="5" VerticalAlignment="Top" HorizontalAlignment="Left" Width="100" Height="45"
+					Command="{Binding UploadRecordsCommand}" IsEnabled="{Binding EnableClearAndUploadButton}" Visibility="{Binding ShareUrlVisible, Converter={StaticResource FalseToVisibleConverter}}"
                     ToolTipService.ShowDuration="25000">
 				<TextBlock Text="Upload records" TextWrapping="Wrap"  TextAlignment="Center"/>
 				<Button.ToolTip>
@@ -119,10 +122,14 @@
 					</ToolTip>
 				</Button.ToolTip>
 			</Button>
-		</Grid>
-		<TextBlock Grid.Row="2" Grid.Column="1" Margin="0 25 0 0" HorizontalAlignment="Center" Text="Record download" FontSize="16"/>
-		<!--Grid record download-->
-		<Grid Grid.Row="3" Grid.Column="1">
+            <Button Grid.Row="1" Grid.Column="2" Margin="5" VerticalAlignment="Top" HorizontalAlignment="Left" Width="100" Height="45"
+					Command="{Binding CopyURLCommand}" Visibility="{Binding ShareUrlVisible, Converter={StaticResource TrueToVisibleConverter}}">
+                <TextBlock Text="Copy to clipboard" TextWrapping="Wrap"  TextAlignment="Center"/>
+            </Button>
+        </Grid>
+        <!--Record download-->
+        <TextBlock Grid.Row="2" Grid.Column="1" Margin="0 25 0 0" HorizontalAlignment="Center" Text="Record download" FontSize="16"/>
+        <Grid Grid.Row="3" Grid.Column="1">
 			<Grid.RowDefinitions>
 				<RowDefinition Height="1*"/>
 				<RowDefinition Height="1*"/>
@@ -132,7 +139,7 @@
 				<ColumnDefinition Width="1*"/>
 				<ColumnDefinition Width="120"/>
 			</Grid.ColumnDefinitions>
-			<TextBox Name="IDBox" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Width="400" HorizontalAlignment="Left" wpf:HintAssist.Hint="Download ID" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
+			<TextBox Name="IDBox" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Width="400" HorizontalAlignment="Left" wpf:HintAssist.Hint="Download link / ID" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
 					 Margin="5 0 0 10" FontSize="14" Text="{Binding DownloadIDString, UpdateSourceTrigger=PropertyChanged}">
 			</TextBox>
             <TextBox Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Width="400" wpf:HintAssist.Hint="Download Folder" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"

@@ -1,4 +1,5 @@
-﻿using CapFrameX.Data.Session.Classes;
+﻿using AutoMapper;
+using CapFrameX.Data.Session.Classes;
 using CapFrameX.Webservice.Data.Commands;
 using CapFrameX.Webservice.Data.DTO;
 using CapFrameX.Webservice.Data.Interfaces;
@@ -17,26 +18,25 @@ namespace CapFrameX.Webservice.Implementation.Handlers
 	{
 		private readonly IValidator<UploadSessionsCommand> _validator;
 		private readonly ISessionService _capturesService;
+		private readonly IMapper _mapper;
 
-		public UploadCapturesHandler(IValidator<UploadSessionsCommand> validator, ISessionService capturesService)
+		public UploadCapturesHandler(IValidator<UploadSessionsCommand> validator, ISessionService capturesService, IMapper mapper)
 		{
 			_validator = validator;
 			_capturesService = capturesService;
+			_mapper = mapper;
 		}
 
 		public async Task<Guid> Handle(UploadSessionsCommand command, CancellationToken cancellationToken)
 		{
 			_validator.ValidateAndThrow(command);
-			return await _capturesService.SaveSessionCollection(new Data.Entities.SessionCollection()
-			{
-				Sessions = command.Sessions.Select(s => new Data.Entities.SessionProxy()
-				{
-					Session = (Session)s
-				}).ToArray(),
-				UserId = command.UserId,
-				Timestamp = DateTime.UtcNow,
-				Description = command.Description
-			});
+
+			var data = new SqSessionCollectionData() { 
+				Sub = command.UserId,
+				Description = command.Description,
+				Sessions = _mapper.Map<SqSessionData[]>(command.Sessions.Cast<Session>())
+			};
+			return await _capturesService.SaveSessionCollection(data);
 		}
 	}
 }
