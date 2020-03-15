@@ -152,22 +152,33 @@
             </Button>
             <TextBlock Grid.Row="1" Grid.Column="2" Padding="15 30 0 0" FontSize="16" FontWeight="Bold" Text="Downloading..."  Visibility="{Binding ShowDownloadInfo, Converter={StaticResource TrueToVisibleConverter}}"/>
 		</Grid>
-		<TextBlock Grid.Row="0" Grid.Column="3" Margin="0 25 0 0" HorizontalAlignment="Center" Text="Game name and ignore list options" FontSize="16"/>
+		<TextBlock Grid.Row="0" Grid.Column="3" Margin="0 25 0 0" HorizontalAlignment="Center" Text="Process list options" FontSize="16"/>
 		<!--Grid lists upload/download-->
 		<Grid Grid.Row="1" Grid.Column="3">
             <Grid.RowDefinitions>
-                <RowDefinition Height="25"/>
+                <RowDefinition Height="Auto"/>
 				<RowDefinition Height="Auto"/>
 			</Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="1*"/>
                 <ColumnDefinition Width="1*"/>
             </Grid.ColumnDefinitions>
+            <Expander Grid.Row="0" Grid.ColumnSpan="2" ExpandDirection="Down" HorizontalAlignment="Center" >
+                <Expander.Header>
+                    <TextBlock Margin="50 0 0 0" HorizontalAlignment="Center" FontWeight="Bold" Text="What is the process list?" RenderTransformOrigin=".5,.5">
+                    </TextBlock>
+                </Expander.Header>
+                <TextBlock  Margin="0 10 0 20" Width="375" TextWrapping="Wrap" TextAlignment="Center"
+                       Text="The process list contains all processes known by CapFrameX.&#10;
+                            &#10;It holds information about the displayed process name and whether or not the process is ingored by the capture service.&#10;
+                            &#10;On first startup your own process list is created and updated from a default list we deliver with every new version of CapFrameX that already contains many game processes with their correct names and other processes that are to be ignored.&#10;
+							&#10;The options below help us to get additional entries for our default list and can also directly provide you with our latest additions." />
+            </Expander>
             <CheckBox Grid.Row="1" Grid.Column="0"  Width="120" IsChecked="{Binding AutoUploadListEntries}" ToolTipService.ShowDuration="25000">
                 <CheckBox.ToolTip>
                     <ToolTip StaysOpen="True" MaxWidth="275">
                         <TextBlock 
-                             Text="If checked, any entry you add to your own ignore list or game name lsit will be sent to us so that we can add it to our online lists" 
+                             Text="Any new game name or ignored process you add will be sent to us so that we can add it to our own list" 
                                   TextWrapping="Wrap"/>
                     </ToolTip>
                 </CheckBox.ToolTip>
@@ -178,13 +189,14 @@
             <CheckBox Grid.Row="1" Grid.Column="1"  Width="120" IsChecked="{Binding AutoUpdateLists}" ToolTipService.ShowDuration="25000">
                 <CheckBox.ToolTip>
                     <ToolTip StaysOpen="True" MaxWidth="275">
-                        <TextBlock 
-                             Text="If checked, once per week your own ignore list and game name list will be compared to our online lists and anything that's not on your list will be added" 
-                                  TextWrapping="Wrap"/>
+                        <TextBlock TextWrapping="Wrap"
+                             Text="On startup, your own process list will be compared to our online list and anything that's not on your list will be added.
+									&#10;
+									&#10;This will not affect the ignored/unignored status or the custom game name of any process that's already on your list"/>
                     </ToolTip>
                 </CheckBox.ToolTip>
                 <TextBlock Padding="5 0 0 0" TextWrapping="WrapWithOverflow">
-  					     Auto update lists
+  					     Auto update list
                 </TextBlock>
             </CheckBox>
         </Grid>
