@@ -52,8 +52,14 @@ namespace CapFrameX.Webservice.Implementation.Services
 			var client = _squidexClientManager.CreateContentsClient<SqSessionCollection, SqSessionCollectionData>("sessioncollections");
 			using ((IDisposable)client)
 			{
-				var collections = await client.GetAsync(new ContentQuery() { 
-					Filter = $"Sub eq {userId}"
+				var collections = await client.GetAsync(new ContentQuery()
+				{
+					JsonQuery = new
+					{
+						path = "data.sub.iv",
+						op = "eq",
+						value = userId.ToString()
+					}
 				});
 				return collections.Items;
 			}
@@ -77,7 +83,12 @@ namespace CapFrameX.Webservice.Implementation.Services
 				var sessionCollection = await client.GetAsync(new ContentQuery()
 				{
 					Ids = new HashSet<string>() { id.ToString() },
-					Filter = $"Sub eq {userId}"
+					JsonQuery = new
+					{
+						path = "data.sub.iv",
+						op = "eq",
+						value = userId.ToString()
+					}
 				});
 				if (!sessionCollection.Items.Any())
 				{
