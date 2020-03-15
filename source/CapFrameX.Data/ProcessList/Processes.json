@@ -2,1897 +2,1581 @@
   {
     "Name": ".Battle.net",
     "DisplayName": null,
-    "IsWhitelisted": false,
     "IsBlacklisted": true
   },
   {
     "Name": "3DMark",
     "DisplayName": null,
-    "IsWhitelisted": false,
     "IsBlacklisted": true
   },
   {
     "Name": "AC3SP",
     "DisplayName": "Assassin's Creed 3",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "aces",
     "DisplayName": "War Thunder",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "ACOdyssey",
     "DisplayName": "Assassin's Creed Odyssey",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "ACOrigins",
     "DisplayName": "Assassin's Creed Origins",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "age3y",
     "DisplayName": "Age of Empires III",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "alan_wakes_american_nightmare",
     "DisplayName": "Alan Wake's American Nightmare",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "AlanWake",
     "DisplayName": "Alan Wake",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "Allegiance",
     "DisplayName": "Allegiance",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "altitude",
     "DisplayName": "Alltitude",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "AMD Ryzen Master",
     "DisplayName": null,
-    "IsWhitelisted": false,
     "IsBlacklisted": true
   },
   {
     "Name": "Amnesia",
     "DisplayName": "Amnesia: The Dark Descent",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "Anno1800",
     "DisplayName": "Anno 1800",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "anno5",
     "DisplayName": "Anno 2070",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "AoK HD",
     "DisplayName": " Age of Empires II",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "APlagueTaleInnocence_x64",
     "DisplayName": "A Plague Tale: Innocence",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "ApplicationFrameHost",
     "DisplayName": null,
-    "IsWhitelisted": false,
     "IsBlacklisted": true
   },
   {
     "Name": "Application-x64",
     "DisplayName": "Banished",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "arma2",
     "DisplayName": "ArmA 2",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "ArmA2OA",
     "DisplayName": "ArmA 2: Operation Arrowhead",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "arma3",
     "DisplayName": "ArmA 3",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "armoredwarfare",
     "DisplayName": "Armored Warfare",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "Ashes_DX11",
     "DisplayName": "Ashes of the Singularity",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "Ashes_DX12",
     "DisplayName": "Ashes of the Singularity",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "AssettoCorsa",
     "DisplayName": "Assetto Corsa",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "AstronautsGame-Win64-Shipping",
     "DisplayName": "The Vanishing of Ethan Carter",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "Atilla",
     "DisplayName": "Total War: Attila",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "audiosurf",
     "DisplayName": "Audiosurf",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "audiosurf2",
     "DisplayName": "Audiosurf 2",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "avpui",
     "DisplayName": null,
-    "IsWhitelisted": false,
     "IsBlacklisted": true
   },
   {
     "Name": "Awesomenauts",
     "DisplayName": "Awesomenauts",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "balenaEtcher",
     "DisplayName": null,
-    "IsWhitelisted": false,
     "IsBlacklisted": true
   },
   {
     "Name": "Bastion",
     "DisplayName": "Bastion",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "BatmanAK",
     "DisplayName": "Batman Arkham Knight",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "Battle.net",
     "DisplayName": null,
-    "IsWhitelisted": false,
     "IsBlacklisted": true
   },
   {
     "Name": "battlefront",
     "DisplayName": "Star Wars: Battlefront (2004)",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "battlefrontii",
     "DisplayName": "Star Wars: Battlefront II (2005)",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "Besiege",
     "DisplayName": "Besiege",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "BethesdaNetLauncher",
     "DisplayName": null,
-    "IsWhitelisted": false,
     "IsBlacklisted": true
   },
   {
     "Name": "bf1",
     "DisplayName": "Battlefield 1",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "BF2",
     "DisplayName": "Battlefield 2",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "bf3",
     "DisplayName": "Battlefield 3",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "bf4",
     "DisplayName": "Battlefield 4",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "BFBC2Game",
     "DisplayName": "Battlefield: Bad Company 2",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "bfh",
     "DisplayName": "Battlefield Hardline",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "bfv",
     "DisplayName": "Battlefield V",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "Binding_of_Isaac",
     "DisplayName": "The Binding of Isaac",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "Bioshock",
     "DisplayName": "Bioshock",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "Bioshock2",
     "DisplayName": "BioShock II",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "BioShockInfinite",
     "DisplayName": "BioShock Infinite",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "BlackDesert64",
     "DisplayName": "Black Desert Online",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "Borderlands",
     "DisplayName": "Borderlands",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "Borderlands2",
     "DisplayName": "Borderlands 2",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "Borderlands3",
     "DisplayName": "Borderlands 3",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "Brothers",
     "DisplayName": "Brothers: A Tale of Two Sons",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "cabal2main",
     "DisplayName": "Cabal 2",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "CabalMain",
     "DisplayName": "Cabal Online",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "Calculator",
     "DisplayName": null,
-    "IsWhitelisted": false,
     "IsBlacklisted": true
   },
   {
     "Name": "CapFrameX",
     "DisplayName": null,
-    "IsWhitelisted": false,
     "IsBlacklisted": true
   },
   {
     "Name": "chrome",
     "DisplayName": null,
-    "IsWhitelisted": false,
     "IsBlacklisted": true
   },
   {
     "Name": "Cities",
     "DisplayName": "Cities: Skylines",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "CivilizationBE_Mantle",
     "DisplayName": "Civilization Beyond Earth",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "CivilizationV_DX11",
     "DisplayName": "Civilization V",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "CoDWaw",
     "DisplayName": "Call of Duty: World at War",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "Control_DX11",
     "DisplayName": "Control (DX11)",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "Control_DX12",
     "DisplayName": "Control (DX12)",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "cossacks",
     "DisplayName": "Cossacks 3",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "CRYENGINE_Launcher",
     "DisplayName": null,
-    "IsWhitelisted": false,
     "IsBlacklisted": true
   },
   {
     "Name": "Crysis",
     "DisplayName": "Crysis",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "Crysis2",
     "DisplayName": "Crysis 2",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "Crysis3",
     "DisplayName": "Crysis 3",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "Crysis64",
     "DisplayName": "Crysis",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "csgo",
     "DisplayName": "Counter Strike: Global Offensive",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "csrss",
     "DisplayName": null,
-    "IsWhitelisted": false,
     "IsBlacklisted": true
   },
   {
     "Name": "daorigins",
     "DisplayName": "Dragon Age: Origins",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "Darksiders2",
     "DisplayName": "Darksiders 2",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "DarksidersPC",
     "DisplayName": "Darksiders",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "DarkSoulsII",
     "DisplayName": "Dark Souls II",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "DATA",
     "DisplayName": "Dark Souls",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "DeadIslandGame",
     "DisplayName": "Dead Island",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "DeadIslandGame_x86_rwdi",
     "DisplayName": "Dead Island Riptide",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "deadspace2",
     "DisplayName": "Dead Space 2",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "devenv",
     "DisplayName": null,
-    "IsWhitelisted": false,
     "IsBlacklisted": true
   },
   {
     "Name": "DeviMayCry4",
     "DisplayName": "Devil May Cry 4",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "diablo",
     "DisplayName": "Diablo",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "dirt2_game",
     "DisplayName": "DiRT 2",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "dirt3_game",
     "DisplayName": "Dirt 3",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "Discord",
     "DisplayName": null,
-    "IsWhitelisted": false,
     "IsBlacklisted": true
   },
   {
     "Name": "dllhost",
     "DisplayName": null,
-    "IsWhitelisted": false,
     "IsBlacklisted": true
   },
   {
     "Name": "DMC-DevilMayCry",
     "DisplayName": "DmC Devil May Cry",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "DOOMx64",
     "DisplayName": "Doom (OGL)",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "DOOMx64vk",
     "DisplayName": "Doom (Vulkan)",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "dota2",
     "DisplayName": "DOTA 2",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "DragonAge2",
     "DisplayName": "Dragon Age II",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "DragonAgeInquisition",
     "DisplayName": "Dragon Age: Inquisition",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "drt",
     "DisplayName": "Dirt Rally",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "DukeForever",
     "DisplayName": "Duke Nukem Forever",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "Dungeons3Bin",
     "DisplayName": "Dungeons 3",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "DungeonSouls",
     "DisplayName": "Dungeon Souls",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "dwm",
     "DisplayName": null,
-    "IsWhitelisted": false,
     "IsBlacklisted": true
   },
   {
     "Name": "dxhr",
     "DisplayName": "Deus Ex: Human Revolution",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "DXHRDC",
     "DisplayName": "Deus Ex: Human Revolution - Director's Cut",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "DXMD",
     "DisplayName": "Deus Ex: Mankind Divided",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "ed6_win",
     "DisplayName": "The Legend of Heroes: Trails in the Sky",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "ELEX",
     "DisplayName": "ELEX",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "EliteDangerous32",
     "DisplayName": "Elite Dangerous",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "Empire",
     "DisplayName": "Empire: Total War",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "Engine",
     "DisplayName": "F.E.A.R.",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "EoCApp",
     "DisplayName": "Divinity - Original Sin",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "EpicGamesLauncher",
     "DisplayName": null,
-    "IsWhitelisted": false,
     "IsBlacklisted": true
   },
   {
     "Name": "eqgame",
     "DisplayName": "EverQuest",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "eso64",
     "DisplayName": "The Elder Scrolls Online",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "EthanCarter-Win64-Shipping",
     "DisplayName": "The Vanishing of Ethan Carter Redux",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "exefile",
     "DisplayName": "Eve Online",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "explorer",
     "DisplayName": null,
-    "IsWhitelisted": false,
     "IsBlacklisted": true
   },
   {
     "Name": "F1_2019",
     "DisplayName": "F1 2019",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "F1_2019_dx12",
     "DisplayName": "F1 2019 (DX12)",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "fable",
     "DisplayName": "Fable: The Lost Chapters",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "fallout3",
     "DisplayName": "Fallout 3",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "Fallout4",
     "DisplayName": "Fallout 4",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "FalloutNV",
     "DisplayName": "Fallout New Vegas",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "FarCry2",
     "DisplayName": "Far Cry 2",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "farcry3",
     "DisplayName": "Far Cry 3",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "FarCry5",
     "DisplayName": "Far Cry 5",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "FarCryNewDawn",
     "DisplayName": "Far Cry New Dawn",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "FEAR2",
     "DisplayName": "F.E.A.R. 2: Project Origin",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "ffxiiiimg",
     "DisplayName": "Final Fantasy XIII",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "ffxiv",
     "DisplayName": "Final Fantasy XIV",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "ffxiv_dx11_FINAL FANTASY XIV",
     "DisplayName": null,
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "ffxv_s",
     "DisplayName": "Final Fantasy XV",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "firefox",
     "DisplayName": null,
-    "IsWhitelisted": false,
     "IsBlacklisted": true
   },
   {
     "Name": "FlagAC4BFSP",
     "DisplayName": "Assassin's Creed IV: Black Flag",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "Frostpunk",
     "DisplayName": "Frostpunk",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "FTLGame",
     "DisplayName": "FTL: Faster Than Light",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "GalaxyClient_Helper",
     "DisplayName": null,
-    "IsWhitelisted": false,
     "IsBlacklisted": true
   },
   {
     "Name": "GameBar",
     "DisplayName": null,
-    "IsWhitelisted": false,
     "IsBlacklisted": true
   },
   {
     "Name": "GameLauncher",
     "DisplayName": "GameLauncher.exe",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "GRB",
     "DisplayName": "Ghost Recon Breakpoint",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "Grid_dx12",
     "DisplayName": "Grid 2019 (DX12)",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "GRW",
     "DisplayName": "Ghost Recon Wildlands",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "GTA5",
     "DisplayName": "Grand Theft Auto 5",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "GTAIV",
     "DisplayName": "Grand Theft Auto 4",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "Gw",
     "DisplayName": "Guild Wars",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "Gw2-64",
     "DisplayName": "Guild Wars 2",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "Hearthstone",
     "DisplayName": "Hearthstone",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "HeroesOfTheStorm:Heroes of the Storm",
     "DisplayName": null,
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "HeroesOfTheStorm_x64",
     "DisplayName": "Heroes of the Storm",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "HITMAN",
     "DisplayName": "Hitman",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "hl2P",
     "DisplayName": "Portal",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "hl2TF",
     "DisplayName": "Team Fortress 2",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "HMA",
     "DisplayName": "Hitman Absolution",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "Hon",
     "DisplayName": "Heroes of Newerth",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "HxAccounts",
     "DisplayName": null,
-    "IsWhitelisted": false,
     "IsBlacklisted": true
   },
   {
     "Name": "HxOutlook",
     "DisplayName": null,
-    "IsWhitelisted": false,
     "IsBlacklisted": true
   },
   {
     "Name": "iCUE",
     "DisplayName": null,
-    "IsWhitelisted": false,
     "IsBlacklisted": true
   },
   {
     "Name": "IndianaEpicGameStore-Win64-Shipping",
     "DisplayName": "The Outer Worlds",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "Insurgency",
     "DisplayName": "Insurgency",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "isaac-ng",
     "DisplayName": "The Binding of Isaac Rebirth",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "iw3sp",
     "DisplayName": "Call of Duty 4: Modern Warfare",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "iw4mp",
     "DisplayName": "Call of Duty: Modern Warfare 2",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "iw5mp",
     "DisplayName": "Call of Duty: Modern Warfare 3",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "JustCause",
     "DisplayName": "Just Cause",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "JustCause2",
     "DisplayName": "Just Cause 2",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "KFGame",
     "DisplayName": "Killing Floor 2",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "KillingFloor",
     "DisplayName": "Killing Floor",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "KingdomCome",
     "DisplayName": "Kingdom Come: Deliverance",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "KSP",
     "DisplayName": "Kerbal Space Program",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "LANoire",
     "DisplayName": "L.A. Noire",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "left4dead",
     "DisplayName": "Left 4 Dead",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "left4dead2",
     "DisplayName": "Left 4 Dead 2",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "LifeIsStrange",
     "DisplayName": "Life Is Strange",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "limbo",
     "DisplayName": "Limbo",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "LolClient",
     "DisplayName": "League of Legends",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "lync",
     "DisplayName": null,
-    "IsWhitelisted": false,
     "IsBlacklisted": true
   },
   {
     "Name": "MadMax",
     "DisplayName": "Mad Max",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "Magicka",
     "DisplayName": "Magicka",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "MassEffect",
     "DisplayName": "Mass Effect",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "MassEffect2",
     "DisplayName": "Mass Effect 2",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "MassEffect3",
     "DisplayName": "Mass Effect 3",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "metro2033",
     "DisplayName": "Metro 2033",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "MetroExodus",
     "DisplayName": "Metro Exodus",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "MetroLL",
     "DisplayName": "Metro: Last Light",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "mgs2_sse",
     "DisplayName": "Metal Gear Solid 2: Substance",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "MgsGroundZeroes",
     "DisplayName": "Metal Gear Solid V: Ground Zeroes",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "mgsi",
     "DisplayName": "Metal Gear Solid",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "mgsvtpp",
     "DisplayName": "Metal Gear Solid V: The Phantom Pain",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "Microsoft.Photos",
     "DisplayName": null,
-    "IsWhitelisted": false,
     "IsBlacklisted": true
   },
   {
     "Name": "MicrosoftEdge",
     "DisplayName": null,
-    "IsWhitelisted": false,
     "IsBlacklisted": true
   },
   {
     "Name": "MicrosoftEdgeCP",
     "DisplayName": null,
-    "IsWhitelisted": false,
     "IsBlacklisted": true
   },
   {
     "Name": "minecraft",
     "DisplayName": "Minecraft",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "mirrorsedge",
     "DisplayName": "Mirror's Edge",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "MirrorsEdgeCatalyst",
     "DisplayName": "Mirror's Edge Catalyst",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "MK10",
     "DisplayName": "Mortal Kombat X",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "ModernWarfare",
     "DisplayName": "Call of Duty: Modern Warfare",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "morrowind",
     "DisplayName": "The Elder Scrolls III: Morrowind",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "mwoclient",
     "DisplayName": "MechWarrior Online",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "Napoleon",
     "DisplayName": "Napoleon: Total War",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "Nidhogg",
     "DisplayName": "Nidhogg",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "NMS",
     "DisplayName": "No Man's Sky",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "notepad++",
     "DisplayName": null,
-    "IsWhitelisted": false,
     "IsBlacklisted": true
   },
   {
     "Name": "NVIDIA GeForce Experience",
     "DisplayName": null,
-    "IsWhitelisted": false,
     "IsBlacklisted": true
   },
   {
     "Name": "NVIDIA Share",
     "DisplayName": null,
-    "IsWhitelisted": false,
     "IsBlacklisted": true
   },
   {
     "Name": "Oblivion",
     "DisplayName": "The Elder Scrolls IV: Oblivion",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "OLGame",
     "DisplayName": "Outlast",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "Origin",
     "DisplayName": null,
-    "IsWhitelisted": false,
     "IsBlacklisted": true
   },
   {
     "Name": "OSBuddy",
     "DisplayName": "RuneScape",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "overwatch",
     "DisplayName": "Overwatch",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "PathOfExileSteam",
     "DisplayName": "Path of Exile ",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "payday_win32_release",
     "DisplayName": "Payday",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "payday2_win32_release",
     "DisplayName": "Payday 2",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "pCARS",
     "DisplayName": "Project Cars",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "PillarsOfEternity",
     "DisplayName": "Pillars of Eternity",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "PlagueIncEvolved",
     "DisplayName": "PlagueInc Evolved",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "PlanetSide2_x64",
     "DisplayName": "PlanetSide 2",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "planetside2_x86",
     "DisplayName": "PlanetSide 2",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "PlanetZoo",
     "DisplayName": "Planet Zoo",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "pol",
     "DisplayName": "FINAL FANTASY XI",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "portal2",
     "DisplayName": "Portal 2",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "quake1",
     "DisplayName": "Quake I",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "quake2",
     "DisplayName": "Quake II",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "quake3",
     "DisplayName": "Quake III",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "QuantumBreak",
     "DisplayName": "Quantum Break",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "r5apex",
     "DisplayName": "Apex Legends",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "RadeonSettings",
     "DisplayName": null,
-    "IsWhitelisted": false,
     "IsBlacklisted": true
   },
   {
     "Name": "RadeonSoftware",
     "DisplayName": null,
-    "IsWhitelisted": false,
     "IsBlacklisted": true
   },
   {
     "Name": "Rage",
     "DisplayName": "RAGE",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "RainbowSix",
     "DisplayName": "Rainbow Six Siege",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "ramtest",
     "DisplayName": null,
-    "IsWhitelisted": false,
     "IsBlacklisted": true
   },
   {
     "Name": "RDR2",
     "DisplayName": "Red Dead Redemption 2",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "RelicCOH",
     "DisplayName": "Company of Heroes",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "RelicCoH2",
     "DisplayName": "Company of Heroes 2",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "rift",
     "DisplayName": "Rift",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "Rome2",
     "DisplayName": "Total War: Rome II",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "ROTTR",
     "DisplayName": "Rise of the Tomb Raider",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "RustClient",
     "DisplayName": "Rust",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "SaintsRowIV",
     "DisplayName": "Saints Row IV",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "SaintsRowTheThird_DX11",
     "DisplayName": "Saints Row 3",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "SC2_x64",
     "DisplayName": "Starcraft II",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "ScriptedSandbox64",
     "DisplayName": null,
-    "IsWhitelisted": false,
     "IsBlacklisted": true
   },
   {
     "Name": "SearchUI",
     "DisplayName": null,
-    "IsWhitelisted": false,
     "IsBlacklisted": true
   },
   {
     "Name": "seccenter",
     "DisplayName": null,
-    "IsWhitelisted": false,
     "IsBlacklisted": true
   },
   {
     "Name": "ServiceHub.Host.CLR.x86",
     "DisplayName": null,
-    "IsWhitelisted": false,
     "IsBlacklisted": true
   },
   {
     "Name": "ServiceHub.ThreadedWaitDialog",
     "DisplayName": null,
-    "IsWhitelisted": false,
     "IsBlacklisted": true
   },
   {
     "Name": "SF3ClientFinal",
     "DisplayName": " SpellForce 3",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "ShadowOfMordor",
     "DisplayName": "Middle-earth: Shadow of Mordor",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "ShellExperienceHost",
     "DisplayName": null,
-    "IsWhitelisted": false,
     "IsBlacklisted": true
   },
   {
     "Name": "Shogun2",
     "DisplayName": "Total War: Shogun II",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "SocialClubHelper",
     "DisplayName": null,
-    "IsWhitelisted": false,
     "IsBlacklisted": true
   },
   {
     "Name": "SOTTR",
     "DisplayName": "Shadow of the Tomb Raider",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "SourceTree",
     "DisplayName": null,
-    "IsWhitelisted": false,
     "IsBlacklisted": true
   },
   {
     "Name": "Spotify",
     "DisplayName": null,
-    "IsWhitelisted": false,
     "IsBlacklisted": true
   },
   {
     "Name": "StarCitizen",
     "DisplayName": "Star Citizen",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "starcraft",
     "DisplayName": "Starcraft",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "StartMenuExperienceHost",
     "DisplayName": null,
-    "IsWhitelisted": false,
     "IsBlacklisted": true
   },
   {
     "Name": "starwarsbattlefront Star Wars: Battlefront",
     "DisplayName": null,
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "starwarsbattlefrontii",
     "DisplayName": "Star Wars Battlefront II",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "starwarsjedifallenorder",
     "DisplayName": "Star Wars: Jedi Fallen Order",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "steamwebhelper",
     "DisplayName": null,
-    "IsWhitelisted": false,
     "IsBlacklisted": true
   },
   {
     "Name": "StrangeBrigade_DX12",
     "DisplayName": "Strange Brigade (DX12)",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "StrangeBrigade_Vulkan",
     "DisplayName": "Strange Brigade (Vulkan)",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "Subnautica",
     "DisplayName": "Subnautica",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "SuperMeatBoy",
     "DisplayName": "Super Meat Boy",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "swtor",
     "DisplayName": "Star Wars: The Old Republic",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "SystemSettings",
     "DisplayName": null,
-    "IsWhitelisted": false,
     "IsBlacklisted": true
   },
   {
     "Name": "t6sp",
     "DisplayName": "Call of Duty: Black Ops",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "Taskmgr",
     "DisplayName": null,
-    "IsWhitelisted": false,
     "IsBlacklisted": true
   },
   {
     "Name": "TERA",
     "DisplayName": "TERA",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "Terraria",
     "DisplayName": "Terraria",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "TESV",
     "DisplayName": "The Elder Scrolls V: Skyrim",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "TheCrew",
     "DisplayName": "The Crew",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "TheDivision2",
     "DisplayName": "The Division 2",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "TheWolfAmongUs",
     "DisplayName": "The Wolf Among Us",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "TiberianDawn",
     "DisplayName": "TiberianDawn.exe",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "Titanfall",
     "DisplayName": "Titanfall",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "TKOM",
     "DisplayName": "Take On Mars",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "tld",
     "DisplayName": "The Long Dark",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "TLR.ex",
     "DisplayName": "The Last Remnant",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "TmUnitedForever",
     "DisplayName": "Trackmania United Forever",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "TombRaider",
     "DisplayName": "Tomb Raider",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "Torchlight",
     "DisplayName": "Torchlight",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "Torchlight2",
     "DisplayName": "Torchlight 2",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "trine",
     "DisplayName": "Trine",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "Trine2_32bit",
     "DisplayName": "Trine 2",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "tslgame",
     "DisplayName": "Player Unknowns BattleGrounds",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "UnrealCEFSubProcess",
     "DisplayName": null,
-    "IsWhitelisted": false,
     "IsBlacklisted": true
   },
   {
     "Name": "Video.UI",
     "DisplayName": null,
-    "IsWhitelisted": false,
     "IsBlacklisted": true
   },
   {
     "Name": "vlc",
     "DisplayName": null,
-    "IsWhitelisted": false,
     "IsBlacklisted": true
   },
   {
     "Name": "Warcraft III",
     "DisplayName": "Warcraft III",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "Warframe",
     "DisplayName": "Warframe",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "Warhammer",
     "DisplayName": "Total War: Warhammer",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "watch_dogs",
     "DisplayName": "Watch Dogs",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "WeMod",
     "DisplayName": null,
-    "IsWhitelisted": false,
     "IsBlacklisted": true
   },
   {
     "Name": "wgc_renderer",
     "DisplayName": null,
-    "IsWhitelisted": false,
     "IsBlacklisted": true
   },
   {
     "Name": "WinStore.App",
     "DisplayName": null,
-    "IsWhitelisted": false,
     "IsBlacklisted": true
   },
   {
     "Name": "witcher3",
     "DisplayName": "The Witcher 3",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "WizardWarsLauncher",
     "DisplayName": "Magicka Wizard Wars",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "Wolcen",
     "DisplayName": "Wolcen: Lords of Mayhem",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "WolfOldBlood_x64",
     "DisplayName": "Wolfenstein: The Old Blood",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "WorldOfGoo",
     "DisplayName": "World of Goo",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "WorldOfTanks",
     "DisplayName": "World of Tanks",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "WorldOfTanksEnCore",
     "DisplayName": "World Of Tanks EnCore",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "Wow",
     "DisplayName": "World of Warcraft",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "Wow-64",
     "DisplayName": "World of Warcraft",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "WoWSLauncher",
     "DisplayName": "World of Warships",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "WWAHost",
     "DisplayName": null,
-    "IsWhitelisted": false,
     "IsBlacklisted": true
   },
   {
     "Name": "wwzRetailEgs",
     "DisplayName": "World War Z",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "X3AP_n",
     "DisplayName": "X3: Albion Prelude",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "X3TC",
     "DisplayName": "X3: Terran Conflict",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "X4",
     "DisplayName": "X4: Foundations",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "XComGame",
     "DisplayName": "XCOM: Enemy Unknown",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "XDesProc",
     "DisplayName": null,
-    "IsWhitelisted": false,
     "IsBlacklisted": true
   },
   {
     "Name": "XRebirth",
     "DisplayName": "X Rebirth",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "Youngblood_x64vk",
     "DisplayName": "Wolfenstein: Youngblood (Vulkan)",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "ZA4_dx12",
     "DisplayName": "Zomby Army 4: Dead War (DX12)",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   },
   {
     "Name": "ZA4_vulkan",
     "DisplayName": "Zomby Army 4: Dead War (Vulkan)",
-    "IsWhitelisted": false,
     "IsBlacklisted": false
   }
 ]

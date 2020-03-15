@@ -17,14 +17,16 @@ namespace CapFrameX.Data
 	{
 		private readonly List<CXProcess> _processList = new List<CXProcess>();
 		private readonly string _filename;
+		private readonly bool _shareProcessListEntries;
 		private readonly ISubject<int> _processListUpdate = new Subject<int>();
 		public IObservable<int> ProcessesUpdate => _processListUpdate.AsObservable();
 
 		public CXProcess[] Processes => _processList.ToArray();
 
-		public ProcessList(string filename)
+		public ProcessList(string filename, bool shareProcessListEntries = false)
 		{
 			_filename = filename;
+			_shareProcessListEntries = shareProcessListEntries;
 		}
 
 		public string[] GetIgnoredProcessNames()
@@ -32,7 +34,7 @@ namespace CapFrameX.Data
 			return Processes.Where(p => p.IsBlacklisted).Select(p => p.Name).OrderBy(p => p).ToArray();
 		}
 
-		public void AddEntry(string processName, string displayName, bool blacklist = false, bool whitelist = false)
+		public void AddEntry(string processName, string displayName, bool blacklist = false)
 		{
 			processName = processName.StripExeExtension();
 			if (processName is null)
@@ -43,10 +45,14 @@ namespace CapFrameX.Data
 			{
 				return;
 			}
-			var process = new CXProcess(processName, displayName, blacklist, whitelist);
+			var process = new CXProcess(processName, displayName, blacklist);
 			process.RegisterOnChange(() => _processListUpdate.OnNext(default));
 			_processList.Add(process);
 			_processListUpdate.OnNext(default);
+			if(_shareProcessListEntries)
+			{
+				// Do something
+			}
 		}
 
 		public CXProcess FindProcessByProcessName(string processName)
@@ -89,15 +95,15 @@ namespace CapFrameX.Data
 
 				foreach (var proc in processes)
 				{
-					AddEntry(proc.Name, proc.DisplayName, proc.IsBlacklisted, proc.IsWhitelisted);
+					AddEntry(proc.Name, proc.DisplayName, proc.IsBlacklisted);
 				}
 				Save();
 			}
 		}
 
-		public static ProcessList Create(string filename, bool AutoUpdateProcessList = false)
+		public static ProcessList Create(string filename, bool AutoUpdateProcessList = false, bool ShareProcessListEntries = false)
 		{
-			ProcessList processList = new ProcessList(filename);
+			ProcessList processList = new ProcessList(filename, ShareProcessListEntries);
 			try
 			{
 				try
@@ -115,7 +121,7 @@ namespace CapFrameX.Data
 				var defaultProcesses = JsonConvert.DeserializeObject<List<CXProcess>>(File.ReadAllText(defaultProcesslistFileInfo.FullName));
 				foreach (var process in defaultProcesses)
 				{
-					processList.AddEntry(process.Name, process.DisplayName, process.IsBlacklisted, process.IsWhitelisted);
+					processList.AddEntry(process.Name, process.DisplayName, process.IsBlacklisted);
 				}
 				processList.Save();
 
@@ -148,31 +154,26 @@ namespace CapFrameX.Data
 		[JsonProperty]
 		public string DisplayName { get; private set; }
 		[JsonProperty]
-		public bool IsWhitelisted { get; private set; }
-		[JsonProperty]
 		public bool IsBlacklisted { get; private set; }
 
 		[JsonConstructor]
 		public CXProcess() { }
 
-		public CXProcess(string name, string displayName, bool isBlacklisted, bool isWhitelisted)
+		public CXProcess(string name, string displayName, bool isBlacklisted)
 		{
 			Name = name;
 			DisplayName = displayName;
-			IsWhitelisted = isWhitelisted;
 			IsBlacklisted = isBlacklisted;
 		}
 
 		public void Blacklist()
 		{
 			IsBlacklisted = true;
-			IsWhitelisted = false;
 			_onChange();
 		}
 
 		public void Whitelist()
 		{
-			IsWhitelisted = true;
 			IsBlacklisted = false;
 			_onChange();
 		}
