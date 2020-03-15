@@ -12,7 +12,7 @@ namespace CapFrameX.Webservice.Persistance.Configurations
 
 		public void Configure(EntityTypeBuilder<IgnoreEntry> builder)
 		{
-			builder.HasKey(x => x.Process);
+			builder.HasKey(x => x.Id);
 		}
 	}
 }
