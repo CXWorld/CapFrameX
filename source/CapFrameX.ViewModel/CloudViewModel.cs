@@ -172,6 +172,26 @@ namespace CapFrameX.ViewModel
 				RaisePropertyChanged();
 			}
 		}
+		public bool ShareProcessListEntries
+		{
+			get
+			{ return _appConfiguration.ShareProcessListEntries; }
+			set
+			{
+				_appConfiguration.ShareProcessListEntries = value;
+				RaisePropertyChanged();
+			}
+		}
+		public bool AutoUpdateProcessList
+		{
+			get
+			{ return _appConfiguration.AutoUpdateProcessList; }
+			set
+			{
+				_appConfiguration.AutoUpdateProcessList = value;
+				RaisePropertyChanged();
+			}
+		}
 
 		public string DownloadIDString
 		{

@@ -169,9 +169,15 @@
     </Setting>
     <Setting Name="CloudDownloadDirectory" Type="System.String" Scope="User">
       <Value Profile="(Default)">MyDocuments\CapFrameX\Captures\Cloud</Value>
-	</Setting>
+    </Setting>
     <Setting Name="CaptureRootDirectory" Type="System.String" Scope="User">
       <Value Profile="(Default)">MyDocuments\CapFrameX\Captures</Value>
+    </Setting>
+    <Setting Name="ShareProcessListEntries" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="AutoUpdateProcessList" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
     </Setting>
   </Settings>
 </SettingsFile>

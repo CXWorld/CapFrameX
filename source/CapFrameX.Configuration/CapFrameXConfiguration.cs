@@ -338,5 +338,15 @@ namespace CapFrameX.Configuration
 			get { return Settings.CaptureRootDirectory; }
 			set { Settings.CaptureRootDirectory = value; Settings.Save(); }
 		}
+		public bool ShareProcessListEntries
+		{
+			get { return Settings.ShareProcessListEntries; }
+			set { Settings.ShareProcessListEntries = value; Settings.Save(); }
+		}
+		public bool AutoUpdateProcessList
+		{
+			get { return Settings.AutoUpdateProcessList; }
+			set { Settings.AutoUpdateProcessList = value; Settings.Save(); }
+		}
 	}
 }

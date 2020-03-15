@@ -174,7 +174,7 @@
                             &#10;On first startup your own process list is created and updated from a default list we deliver with every new version of CapFrameX that already contains many game processes with their correct names and other processes that are to be ignored.&#10;
 							&#10;The options below help us to get additional entries for our default list and can also directly provide you with our latest additions." />
             </Expander>
-            <CheckBox Grid.Row="1" Grid.Column="0"  Width="120" IsChecked="{Binding AutoUploadListEntries}" ToolTipService.ShowDuration="25000">
+            <CheckBox Grid.Row="1" Grid.Column="0"  Width="125" IsChecked="{Binding ShareProcessListEntries}" ToolTipService.ShowDuration="25000">
                 <CheckBox.ToolTip>
                     <ToolTip StaysOpen="True" MaxWidth="275">
                         <TextBlock 
@@ -183,10 +183,10 @@
                     </ToolTip>
                 </CheckBox.ToolTip>
                 <TextBlock Padding="5 0 0 0" TextWrapping="WrapWithOverflow">
-  					     Share new list entries
+  					     Share new entries
                 </TextBlock>
             </CheckBox>
-            <CheckBox Grid.Row="1" Grid.Column="1"  Width="120" IsChecked="{Binding AutoUpdateLists}" ToolTipService.ShowDuration="25000">
+            <CheckBox Grid.Row="1" Grid.Column="1"  Width="125" IsChecked="{Binding AutoUpdateProcessList}" ToolTipService.ShowDuration="25000">
                 <CheckBox.ToolTip>
                     <ToolTip StaysOpen="True" MaxWidth="275">
                         <TextBlock TextWrapping="Wrap"

@@ -110,5 +110,9 @@
 		bool AreThresholdsReversed { get; set; }
 
 		string CaptureRootDirectory { get; set; }
+
+		bool ShareProcessListEntries { get; set; }
+
+		bool AutoUpdateProcessList { get; set; }
 	}
 }
