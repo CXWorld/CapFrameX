@@ -1,4 +1,4 @@
-﻿using CapFrameX.Webservice.Data.Entities;
+﻿using CapFrameX.Webservice.Data.DTO;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace CapFrameX.Webservice.Data.Interfaces
 {
-	public interface IIgnoreListService
+	public interface IProcessListService
 	{
-		Task<IgnoreEntry[]> GetIgnoreListAsync();
+		Task<IEnumerable<ProcessListData>> GetProcessList();
 	}
 }

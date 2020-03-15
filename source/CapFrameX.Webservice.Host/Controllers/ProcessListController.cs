@@ -5,8 +5,11 @@ using System.Threading.Tasks;
 using AutoMapper;
 using CapFrameX.Webservice.Data.DTO;
 using CapFrameX.Webservice.Data.Interfaces;
+using CapFrameX.Webservice.Data.Queries;
+using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 
 namespace CapFrameX.Webservice.Host.Controllers
 {
@@ -14,18 +17,21 @@ namespace CapFrameX.Webservice.Host.Controllers
     [ApiController]
     public class ProcessListController : ControllerBase
     {
-        private readonly ISquidexService _squidexService;
-        private readonly IMapper _mapper;
+        private readonly IMediator _mediator;
 
-        public ProcessListController(ISquidexService squidexService, IMapper mapper)
+        public ProcessListController(IMediator mediator)
         {
-            _squidexService = squidexService;
-            _mapper = mapper;
+            _mediator = mediator;
         }
         [HttpGet]
         public async Task<IActionResult> Get()
         {
-            return Ok(_mapper.Map<ProcessListDataDTO[]>(await _squidexService.GetProcessList()));
+            var list = await _mediator.Send(new GetProcessListQuery());
+
+            return new JsonResult(list, new JsonSerializerSettings
+            {
+                Formatting = Formatting.Indented,
+            });
         }
     }
 }

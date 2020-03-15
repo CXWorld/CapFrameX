@@ -118,7 +118,7 @@ namespace CapFrameX.Data
 				}
 				processList.Save();
 			}
-			catch (Exception e)
+			catch (Exception)
 			{
 
 			}

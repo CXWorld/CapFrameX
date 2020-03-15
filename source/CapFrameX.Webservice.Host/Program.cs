@@ -25,7 +25,8 @@ namespace CapFrameX.Webservice.Host
 			{
 				config
 					.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-					.AddJsonFile($"appsettings.{context.HostingEnvironment.EnvironmentName}.json", optional: true, reloadOnChange: true);
+					.AddJsonFile($"appsettings.{context.HostingEnvironment.EnvironmentName}.json", optional: true, reloadOnChange: true)
+					.AddEnvironmentVariables();
 				context.Configuration = config.Build();
 			})
 			.UseStartup<Startup>()

@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using CapFrameX.Webservice.Data;
 using CapFrameX.Webservice.Data.DTO;
+using CapFrameX.Webservice.Data.Exceptions;
 using CapFrameX.Webservice.Data.Interfaces;
 using CapFrameX.Webservice.Data.Queries;
 using FluentValidation;
@@ -29,6 +30,10 @@ namespace CapFrameX.Webservice.Implementation.Handlers
 		{
 			_validator.ValidateAndThrow(request);
 			var collection = await _capturesService.GetSessionCollection(request.Id);
+			if(collection is null)
+			{
+				throw new SessionCollectionNotFoundException($"No Sessioncollection found with id {request.Id}");
+			}
 			return _mapper.Map<SessionCollectionDTO>(collection);
 		}
 	}

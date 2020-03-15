@@ -455,6 +455,8 @@ namespace CapFrameX.ViewModel
 				{
 					var content = await response.Content.ReadAsStringAsync();
 					_logger.LogError("Download of CaptureCollection failed. {error}", content);
+					EnableDownloadButton = true;
+					RaisePropertyChanged(nameof(EnableDownloadButton));
 				}
 			}
 		}
