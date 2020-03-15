@@ -73,8 +73,11 @@ namespace CapFrameX
 			Container.Register<LoginManager>(Reuse.Singleton);
 			Container.Register<ICloudManager, CloudManager>(Reuse.Singleton);
 			Container.Register<LoginWindow>(Reuse.Transient);
-			Container.RegisterInstance(ProcessList.Create(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
-						@"CapFrameX\Resources\Processes.json")));
+			Container.RegisterInstance(ProcessList.Create(
+				filename: Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), @"CapFrameX\Resources\Processes.json"),
+				AutoUpdateProcessList: Container.Resolve<IAppConfiguration>().AutoUpdateProcessList
+				)
+			);
 
 			Container.Resolve<IEventAggregator>().GetEvent<PubSubEvent<AppMessages.OpenLoginWindow>>().Subscribe(_ => {
 				var window = Container.Resolve<LoginWindow>();
@@ -119,11 +122,8 @@ namespace CapFrameX
 
 		private LoggerConfiguration CreateLoggerConfiguration(IAppConfiguration appConfiguration)
 		{
-			var path = appConfiguration.LoggingDirectory;
-			if (path.Contains(@"MyDocuments\CapFrameX\Logs"))
-			{
-				path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), @"CapFrameX\Logs");
-			}
+			var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), @"CapFrameX\Logs");
+
 			return new LoggerConfiguration()
 				.MinimumLevel.Debug()
 				.Enrich.FromLogContext()
