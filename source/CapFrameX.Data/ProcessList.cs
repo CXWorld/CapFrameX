@@ -49,9 +49,25 @@ namespace CapFrameX.Data
 			process.RegisterOnChange(() => _processListUpdate.OnNext(default));
 			_processList.Add(process);
 			_processListUpdate.OnNext(default);
-			if(_shareProcessListEntries)
+			if (_shareProcessListEntries)
 			{
-				// Do something
+				Task.Run(async () =>
+				{
+					using (var client = new HttpClient()
+					{
+						BaseAddress = new Uri(ConfigurationManager.AppSettings["WebserviceUri"])
+					})
+					{
+						client.DefaultRequestHeaders.AddCXClientUserAgent();
+						var content = new StringContent(JsonConvert.SerializeObject(new
+						{
+							Name = processName,
+							DisplayName = displayName,
+							IsBlacklisted = blacklist
+						}));
+						var response = await client.PostAsync("ProcessList", content);
+					}
+				});
 			}
 		}
 

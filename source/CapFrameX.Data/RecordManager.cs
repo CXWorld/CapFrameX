@@ -341,6 +341,7 @@ namespace CapFrameX.Data
                     {
                         Id = Guid.NewGuid(),
                         ProcessName = processName.Contains(".exe") ? processName : $"{processName}.exe",
+						GameName = GetGamenameForProcess(processName),
                         CreationDate = DateTime.UtcNow,
                         Motherboard = SystemInfo.GetMotherboardName(),
                         OS = SystemInfo.GetOSVersion(),
