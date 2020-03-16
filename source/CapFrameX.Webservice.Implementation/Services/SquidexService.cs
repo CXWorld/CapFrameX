@@ -65,9 +65,12 @@ namespace CapFrameX.Webservice.Implementation.Services
 				{
 					JsonQuery = new
 					{
-						path = "data.sub.iv",
-						op = "eq",
-						value = userId.ToString()
+						filter = new
+						{
+							path = "data.sub.iv",
+							op = "eq",
+							value = userId.ToString()
+						}
 					}
 				});
 				return collections.Items;
@@ -91,12 +94,23 @@ namespace CapFrameX.Webservice.Implementation.Services
 			{
 				var sessionCollection = await client.GetAsync(new ContentQuery()
 				{
-					Ids = new HashSet<string>() { id.ToString() },
 					JsonQuery = new
 					{
-						path = "data.sub.iv",
-						op = "eq",
-						value = userId.ToString()
+						filter = new
+						{
+							and = new object[] {
+								new {
+									path = "data.sub.iv",
+									op = "eq",
+									value = userId.ToString()
+								},
+								new {
+									path = "id",
+									op = "eq",
+									value = id.ToString()
+								}
+							}
+						}
 					}
 				});
 				if (!sessionCollection.Items.Any())
