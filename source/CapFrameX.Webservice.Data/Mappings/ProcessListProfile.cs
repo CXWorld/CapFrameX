@@ -10,7 +10,8 @@ namespace CapFrameX.Webservice.Data.Mappings
 	{
 		public ProcessListProfile()
 		{
-			CreateMap<ProcessListData, ProcessListDataDTO>();
+			CreateMap<ProcessListData, ProcessListDataDTO>()
+				.ReverseMap();
 		}
 	}
 }

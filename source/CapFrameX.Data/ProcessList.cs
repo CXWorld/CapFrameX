@@ -17,16 +17,15 @@ namespace CapFrameX.Data
 	{
 		private readonly List<CXProcess> _processList = new List<CXProcess>();
 		private readonly string _filename;
-		private readonly bool _shareProcessListEntries;
+		private bool ShareProcessListEntries { get; set; }
 		private readonly ISubject<int> _processListUpdate = new Subject<int>();
 		public IObservable<int> ProcessesUpdate => _processListUpdate.AsObservable();
 
 		public CXProcess[] Processes => _processList.ToArray();
 
-		public ProcessList(string filename, bool shareProcessListEntries = false)
+		public ProcessList(string filename)
 		{
 			_filename = filename;
-			_shareProcessListEntries = shareProcessListEntries;
 		}
 
 		public string[] GetIgnoredProcessNames()
@@ -49,7 +48,8 @@ namespace CapFrameX.Data
 			process.RegisterOnChange(() => _processListUpdate.OnNext(default));
 			_processList.Add(process);
 			_processListUpdate.OnNext(default);
-			if (_shareProcessListEntries)
+
+			if (ShareProcessListEntries)
 			{
 				Task.Run(async () =>
 				{
@@ -65,10 +65,16 @@ namespace CapFrameX.Data
 							DisplayName = displayName,
 							IsBlacklisted = blacklist
 						}));
+						content.Headers.ContentType.MediaType = "application/json";
 						var response = await client.PostAsync("ProcessList", content);
 					}
 				});
 			}
+		}
+
+		public void EnableSharingOfNewEntries()
+		{
+			ShareProcessListEntries = true;
 		}
 
 		public CXProcess FindProcessByProcessName(string processName)
@@ -119,7 +125,7 @@ namespace CapFrameX.Data
 
 		public static ProcessList Create(string filename, bool AutoUpdateProcessList = false, bool ShareProcessListEntries = false)
 		{
-			ProcessList processList = new ProcessList(filename, ShareProcessListEntries);
+			ProcessList processList = new ProcessList(filename);
 			try
 			{
 				try
@@ -141,9 +147,19 @@ namespace CapFrameX.Data
 				}
 				processList.Save();
 
-				if(AutoUpdateProcessList)
+				if (AutoUpdateProcessList)
 				{
-					Task.Run(() => processList.UpdateProcessListFromWebserviceAsync().ConfigureAwait(false));
+					Task.Run(() => processList.UpdateProcessListFromWebserviceAsync().ContinueWith(t =>
+					{
+						if (ShareProcessListEntries)
+						{
+							processList.EnableSharingOfNewEntries();
+						}
+					}).ConfigureAwait(false));
+				}
+				else if (ShareProcessListEntries)
+				{
+					processList.EnableSharingOfNewEntries();
 				}
 			}
 			catch (Exception)
