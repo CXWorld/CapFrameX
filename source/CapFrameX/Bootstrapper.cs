@@ -78,7 +78,8 @@ namespace CapFrameX
 			Container.Register<LoginWindow>(Reuse.Transient);
 			Container.RegisterInstance(ProcessList.Create(
 				filename: Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), @"CapFrameX\Resources\Processes.json"),
-				AutoUpdateProcessList: Container.Resolve<IAppConfiguration>().AutoUpdateProcessList
+				AutoUpdateProcessList: Container.Resolve<IAppConfiguration>().AutoUpdateProcessList,
+				ShareProcessListEntries: Container.Resolve<IAppConfiguration>().ShareProcessListEntries
 				)
 			);
 
