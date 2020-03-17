@@ -60,6 +60,17 @@ namespace CapFrameX.ViewModel
 				RaisePropertyChanged();
 			}
 		}
+
+		public bool ThresholdPercentageButtonIsChecked
+		{
+			get { return _appConfiguration.AreThresholdsPercentage; }
+			set
+			{
+				_appConfiguration.AreThresholdsPercentage = value;
+				OnThresholdDirectionChanged();
+				RaisePropertyChanged();
+			}
+		}
 		public ICommand CopyFPSThresholdDataCommand { get; }
 
 		private void OnCopyFPSThresholdData()
@@ -110,12 +121,16 @@ namespace CapFrameX.ViewModel
 			if (frametimes == null || !frametimes.Any())
 				return;
 
+
+
 			var thresholdCounts = _frametimeStatisticProvider.GetFpsThresholdCounts(frametimes, ThresholdToggleButtonIsChecked);
 			var thresholdCountValues = new ChartValues<double>();
 			thresholdCountValues.AddRange(thresholdCounts.Select(val => (double)val / frametimes.Count));
 
 			Application.Current.Dispatcher.Invoke(new Action(() =>
 			{
+				if (!ThresholdPercentageButtonIsChecked)
+				{ 
 				FPSThresholdCollection = new SeriesCollection
 				{
 					new ColumnSeries
@@ -127,6 +142,21 @@ namespace CapFrameX.ViewModel
 						MaxColumnWidth = 40
 					}
 				};
+				}
+				else				
+				{
+				FPSThresholdCollection = new SeriesCollection
+				{
+					new ColumnSeries
+					{
+						Values = thresholdCountValues,
+						Fill = new SolidColorBrush(Color.FromRgb(34, 151, 243)),
+						DataLabels = true,
+						LabelPoint = p => (100 * p.Y).ToString("N1") + "%",
+						MaxColumnWidth = 40
+					}
+				};
+				}
 			}));
 		}
 	}

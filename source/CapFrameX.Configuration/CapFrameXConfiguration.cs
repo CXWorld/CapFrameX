@@ -342,5 +342,10 @@ namespace CapFrameX.Configuration
 			get { return Settings.AutoUpdateProcessList; }
 			set { Settings.AutoUpdateProcessList = value; Settings.Save(); }
 		}
+		public bool AreThresholdsPercentage
+		{
+			get { return Settings.AreThresholdsPercentage; }
+			set { Settings.AreThresholdsPercentage = value; Settings.Save(); }
+		}
 	}
 }

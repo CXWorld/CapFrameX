@@ -532,7 +532,7 @@ namespace CapFrameX.ViewModel
 					DataLabels = true,
 					MaxRowHeigth = BarChartMaxRowHeight,
 					RowPadding = 0,
-					UseRelativeMode = true
+					UseRelativeMode = true					
 				}
 			};
 

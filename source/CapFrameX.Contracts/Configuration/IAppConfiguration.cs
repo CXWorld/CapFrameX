@@ -113,5 +113,6 @@
 		bool ShareProcessListEntries { get; set; }
 
 		bool AutoUpdateProcessList { get; set; }
+		bool AreThresholdsPercentage { get; set; }
 	}
 }
