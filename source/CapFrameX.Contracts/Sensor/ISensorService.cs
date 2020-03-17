@@ -13,5 +13,6 @@ namespace CapFrameX.Contracts.Sensor
         void StartSensorLogging();
         void StopSensorLogging();
         ISessionSensorData GetSessionSensorData();
+        void CloseOpenHardwareMonitor();
     }
 }

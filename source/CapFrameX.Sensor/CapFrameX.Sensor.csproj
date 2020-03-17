@@ -31,6 +31,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.Extensions.Logging.Abstractions, Version=3.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.Extensions.Logging.Abstractions.3.1.1\lib\netstandard2.0\Microsoft.Extensions.Logging.Abstractions.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -53,6 +56,18 @@
       <Project>{6BE48CF4-C2F0-44CB-95D8-7500A3CB430E}</Project>
       <Name>CapFrameX.Data.Session</Name>
     </ProjectReference>
+    <ProjectReference Include="..\CapFrameX.Overlay\CapFrameX.Overlay.csproj">
+      <Project>{624777C2-6AF6-46D5-A019-1285F699B8A7}</Project>
+      <Name>CapFrameX.Overlay</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\OpenHardwareMonitor\OpenHardwareMonitorLib.csproj">
+      <Project>{B0397530-545A-471D-BB74-027AE456DF1A}</Project>
+      <Name>OpenHardwareMonitorLib</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -1,6 +1,4 @@
-﻿using CapFrameX.Contracts.Data;
-using CapFrameX.Data.Session.Contracts;
-using System.Collections.Generic;
+﻿using CapFrameX.Data.Session.Contracts;
 using System.Reactive.Subjects;
 
 namespace CapFrameX.Contracts.Overlay
