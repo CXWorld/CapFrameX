@@ -34,6 +34,15 @@ namespace CapFrameX.Webservice.Implementation.Services
 			}
 		}
 
+		public async Task AddProcess(ProcessListData data)
+		{
+			var client = _squidexClientManager.CreateContentsClient<ProcessList, ProcessListData>("processlist");
+			using ((IDisposable)client)
+			{
+				await client.CreateAsync(data);
+			}
+		}
+
 		public async Task<SqSessionCollection> GetSessionCollection(Guid id)
 		{
 			var client = _squidexClientManager.CreateContentsClient<SqSessionCollection, SqSessionCollectionData>("sessioncollections");

@@ -9,5 +9,6 @@ namespace CapFrameX.Webservice.Data.Interfaces
 	public interface IProcessListService
 	{
 		Task<IEnumerable<ProcessListData>> GetProcessList();
+		Task AddProcess(ProcessListData data);
 	}
 }

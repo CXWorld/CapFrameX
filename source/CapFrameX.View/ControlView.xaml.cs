@@ -75,7 +75,7 @@ namespace CapFrameX.View
 			CreateTreeViewRecursive(trvStructure.Items[0] as TreeViewItem);
 			JumpToObservedDirectoryItem(root);
 
-			if ((CaptureRootDirectory == ObservedDirectory) || (!(DataContext as ControlViewModel).HasValidSource))
+			if ((CaptureRootDirectory == ObservedDirectory))
 				root.IsSelected = true;
 		}
 

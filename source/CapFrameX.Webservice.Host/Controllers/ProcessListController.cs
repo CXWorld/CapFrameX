@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using CapFrameX.Webservice.Data.Commands;
 using CapFrameX.Webservice.Data.DTO;
 using CapFrameX.Webservice.Data.Interfaces;
 using CapFrameX.Webservice.Data.Queries;
@@ -32,6 +33,14 @@ namespace CapFrameX.Webservice.Host.Controllers
             {
                 Formatting = Formatting.Indented,
             });
+        }
+
+        public async Task<IActionResult> Post(ProcessListDataDTO process)
+        {
+            await _mediator.Send(new AddProcessCommand() { 
+                Process = process
+            });
+            return NoContent();
         }
     }
 }

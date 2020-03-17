@@ -16,6 +16,7 @@ namespace CapFrameX.Webservice.Data.DTO
 		public bool IsBlacklisted { get; set; }
 	}
 
+	[KeepCasing]
 	public sealed class ProcessListData
 	{
 		[JsonConverter(typeof(InvariantConverter))]
@@ -23,6 +24,7 @@ namespace CapFrameX.Webservice.Data.DTO
 
 		[JsonConverter(typeof(InvariantConverter))]
 		public string DisplayName { get; set; }
+
 		[JsonConverter(typeof(InvariantConverter))]
 		public bool IsBlacklisted { get; set; }
 	}
