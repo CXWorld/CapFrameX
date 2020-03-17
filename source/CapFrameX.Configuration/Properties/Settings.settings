@@ -177,6 +177,9 @@
       <Value Profile="(Default)">False</Value>
     </Setting>
     <Setting Name="UseSensorLogging" Type="System.Boolean" Scope="User">
+	  <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="AreThresholdsPercentage" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
   </Settings>

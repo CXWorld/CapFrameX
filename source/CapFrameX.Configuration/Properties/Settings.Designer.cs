@@ -728,6 +728,18 @@ namespace CapFrameX.Configuration.Properties {
             }
             set {
                 this["UseSensorLogging"] = value;
+			}
+		}
+
+		[global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool AreThresholdsPercentage {
+            get {
+                return ((bool)(this["AreThresholdsPercentage"]));
+            }
+            set {
+                this["AreThresholdsPercentage"] = value;
             }
         }
     }

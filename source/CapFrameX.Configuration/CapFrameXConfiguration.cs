@@ -351,5 +351,11 @@ namespace CapFrameX.Configuration
 			get { return Settings.UseSensorLogging; }
 			set { Settings.UseSensorLogging = value; Settings.Save(); }
 		}
+		
+		public bool AreThresholdsPercentage
+		{
+			get { return Settings.AreThresholdsPercentage; }
+			set { Settings.AreThresholdsPercentage = value; Settings.Save(); }
+		}
 	}
 }

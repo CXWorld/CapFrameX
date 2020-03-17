@@ -165,6 +165,17 @@
 					</TabItem>
                         <TabItem Header="FPS thresholds">
                             <Grid Margin="0 5 0 0">
+                                <Grid Margin="0 0 40 0" Panel.ZIndex="1" HorizontalAlignment="Right" VerticalAlignment="Top">
+                                    <ToggleButton Width="25" Height="25" Style="{StaticResource MaterialDesignActionToggleButton}"
+												  ToolTip="Toggle between absolute and relative values" IsChecked="{Binding ThresholdPercentageButtonIsChecked}">
+                                        <ToggleButton.Content>
+                                            %
+                                        </ToggleButton.Content>
+                                        <materialDesign:ToggleButtonAssist.OnContent>
+                                            #
+                                        </materialDesign:ToggleButtonAssist.OnContent>
+                                    </ToggleButton>
+                                </Grid>
                                 <Grid Margin="0 0 5 0" Panel.ZIndex="1" HorizontalAlignment="Right" VerticalAlignment="Top">
                                     <ToggleButton Width="25" Height="25" Style="{StaticResource MaterialDesignActionToggleButton}"
 												  ToolTip="Change fps thresholds direction" IsChecked="{Binding ThresholdToggleButtonIsChecked}">

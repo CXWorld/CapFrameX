@@ -60,6 +60,17 @@ namespace CapFrameX.ViewModel
 				RaisePropertyChanged();
 			}
 		}
+
+		public bool ThresholdPercentageButtonIsChecked
+		{
+			get { return _appConfiguration.AreThresholdsPercentage; }
+			set
+			{
+				_appConfiguration.AreThresholdsPercentage = value;
+				OnThresholdDirectionChanged();
+				RaisePropertyChanged();
+			}
+		}
 		public ICommand CopyFPSThresholdDataCommand { get; }
 
 		private void OnCopyFPSThresholdData()
@@ -110,6 +121,7 @@ namespace CapFrameX.ViewModel
 			if (frametimes == null || !frametimes.Any())
 				return;
 
+
 			var thresholdCounts = _frametimeStatisticProvider.GetFpsThresholdCounts(frametimes, ThresholdToggleButtonIsChecked);
 			var thresholdCountValues = new ChartValues<double>();
 			thresholdCountValues.AddRange(thresholdCounts.Select(val => (double)val / frametimes.Count));
@@ -123,7 +135,8 @@ namespace CapFrameX.ViewModel
 						Values = thresholdCountValues,
 						Fill = new SolidColorBrush(Color.FromRgb(34, 151, 243)),
 						DataLabels = true,
-						LabelPoint = p => (frametimes.Count* p.Y).ToString(),
+						LabelPoint = p => ThresholdPercentageButtonIsChecked ? (frametimes.Count* p.Y).ToString() :
+							(100 * p.Y).ToString("N1", CultureInfo.InvariantCulture) + "%",
 						MaxColumnWidth = 40
 					}
 				};
