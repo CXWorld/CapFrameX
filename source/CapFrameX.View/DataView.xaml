@@ -169,10 +169,10 @@
                                     <ToggleButton Width="25" Height="25" Style="{StaticResource MaterialDesignActionToggleButton}"
 												  ToolTip="Toggle between absolute and relative values" IsChecked="{Binding ThresholdPercentageButtonIsChecked}">
                                         <ToggleButton.Content>
-                                            #
+                                            %
                                         </ToggleButton.Content>
                                         <materialDesign:ToggleButtonAssist.OnContent>
-                                            %
+                                            #
                                         </materialDesign:ToggleButtonAssist.OnContent>
                                     </ToggleButton>
                                 </Grid>
