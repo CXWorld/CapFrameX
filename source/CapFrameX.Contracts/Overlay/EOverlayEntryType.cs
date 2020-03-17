@@ -8,6 +8,7 @@
         CPU,
         RAM,
         GPU,
-        HDD
+        HDD,
+        Undefined
     }
 }

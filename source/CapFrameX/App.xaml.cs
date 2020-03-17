@@ -1,4 +1,5 @@
 ﻿using CapFrameX.Contracts.Overlay;
+using CapFrameX.Contracts.Sensor;
 using CapFrameX.Data;
 using CapFrameX.PresentMonInterface;
 using System;
@@ -34,6 +35,9 @@ namespace CapFrameX
 
 			var overlayEntryProvider = _bootstrapper.Container.Resolve(typeof(IOverlayEntryProvider), true) as IOverlayEntryProvider;
 			_ = overlayEntryProvider?.SaveOverlayEntriesToJson();
+
+			var sensorService = _bootstrapper.Container.Resolve(typeof(ISensorService), true) as ISensorService;
+			sensorService?.CloseOpenHardwareMonitor();
 		}
 
 		private void Application_Startup(object sender, StartupEventArgs e)

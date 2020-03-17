@@ -78,19 +78,26 @@ namespace CapFrameX.Overlay
 
             if (_sensorService.CheckHardwareChanged(_overlayEntries))
             {
-                var sensorOverlayEntries = _sensorService.GetSensorOverlayEntries();
+                var sensorOverlayEntries = _sensorService
+                    .GetSensorOverlayEntries();
+                var sensorOverlayEntryIdentfiers = _sensorService
+                    .GetSensorOverlayEntries().Select(entry => entry.Identifier)
+                    .ToList();
 
                 var adjustedOverlayEntries = new List<IOverlayEntry>(_overlayEntries);
-                foreach (var entry in _overlayEntries)
+                var adjustedOverlayEntryIdentfiers = adjustedOverlayEntries
+                    .Select(entry => entry.Identifier)
+                    .ToList();
+                foreach (var entry in _overlayEntries.Where(x => !(x.OverlayEntryType == EOverlayEntryType.CX)))
                 {
-                    if (!sensorOverlayEntries.Contains(entry))
+                    if (!sensorOverlayEntryIdentfiers.Contains(entry.Identifier))
                         adjustedOverlayEntries.Remove(entry);
                 }
 
                 bool reorderFlag = false;
                 foreach (var entry in sensorOverlayEntries)
                 {
-                    if (!adjustedOverlayEntries.Contains(entry))
+                    if (!adjustedOverlayEntryIdentfiers.Contains(entry.Identifier))
                     {
                         reorderFlag = true;
                         adjustedOverlayEntries.Add(entry);
@@ -212,6 +219,7 @@ namespace CapFrameX.Overlay
 
             foreach (var entry in _overlayEntries)
             {
+                entry.OverlayEntryProvider = this;
                 _identifierOverlayEntryDict.Add(entry.Identifier, entry);
             }
         }
@@ -220,11 +228,10 @@ namespace CapFrameX.Overlay
         {
             _sensorService.UpdateSensors();
 
-            foreach (var entry in _overlayEntries)
+            foreach (var entry in _overlayEntries.Where(x => !(x.OverlayEntryType == EOverlayEntryType.CX)))
             {
                 var sensorEntry = _sensorService.GetSensorOverlayEntry(entry.Identifier);
                 entry.Value = sensorEntry.Value;
-                entry.ValueFormat = sensorEntry.ValueFormat;
             }
         }
     }
