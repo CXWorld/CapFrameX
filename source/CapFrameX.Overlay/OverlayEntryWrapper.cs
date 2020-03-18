@@ -1,6 +1,7 @@
 ﻿using CapFrameX.Contracts.Overlay;
 using Newtonsoft.Json;
 using Prism.Mvvm;
+using System.Globalization;
 
 namespace CapFrameX.Overlay
 {
@@ -27,7 +28,7 @@ namespace CapFrameX.Overlay
 		public string FormattedValue
 			=> string.IsNullOrWhiteSpace(ValueFormat) ?
 			(Value == null ? string.Empty : Value.ToString())
-			: string.Format(ValueFormat, Value);
+			: string.Format(CultureInfo.InvariantCulture, ValueFormat, Value);
 
 		public string ValueFormat { get; set; }
 
