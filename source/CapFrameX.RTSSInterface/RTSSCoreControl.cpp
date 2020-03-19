@@ -383,15 +383,15 @@ void RTSSCoreControl::Refresh()
 		//define align variable A[1] as left alignment by 4 symbols (positive is left, negative is right)
 		strOSD += "<C0=FFA0A0>";
 		//define color variable C[0] as R=FF,G=A0 and B=A0
-		strOSD += "<C1=FF00A0>";
+		strOSD += "<C1=AEEA00>"; //CX Green
 		//define color variable C[1] as R=FF,G=00 and B=A0
-		strOSD += "<C2=FFFFFF>";
+		strOSD += "<C2=FFFFFF>"; // White
 		//define color variable C[1] as R=FF,G=FF and B=FF
 		// CX blue
-		strOSD += "<C3=2297F3>";
+		strOSD += "<C3=2297F3>"; //CX Blue
 		//define color variable C[1] as R=FF,G=FF and B=FF
 		// CX orange
-		strOSD += "<C4=F17D20>";
+		strOSD += "<C4=F17D20>"; //CX Orange
 		//define color variable C[1] as R=FF,G=FF and B=FF
 		strOSD += "<S0=-50>";
 		//define size variable S[0] as 50% subscript (positive is superscript, negative is subscript)
@@ -555,7 +555,7 @@ void RTSSCoreControl::AddOverlayEntry(CGroupedString* groupedString, OverlayEntr
 		{
 			if (bFormatTagsSupported && m_bFormatTags)
 			{
-				groupedString->Add("<A=-4><C4><FR><C><A><A1><S1><C4> FPS<C><S><A>", "<C2><APP> <C>", "\n", m_bFormatTags ? " " : ", ");
+				groupedString->Add("<A=-5><C1><FR><C><A><A=5><S1><C1>FPS<C><S><A>", "<C1><APP> <C>", "\n", m_bFormatTags ? " " : ", ");
 				//print application-specific 3D API, framerate and frametime using tags
 			}
 			else
@@ -571,7 +571,7 @@ void RTSSCoreControl::AddOverlayEntry(CGroupedString* groupedString, OverlayEntr
 		{
 			if (bFormatTagsSupported && m_bFormatTags)
 			{
-				groupedString->Add("<A=-4><C4><FT><C><A><A1><S1><C4> ms<C><S><A>", "<C2><APP> <C>", "\n", m_bFormatTags ? " " : ", ");
+				groupedString->Add("<A=-5><C1><FT><C><A><A=5><S1><C1>ms<C><S><A>", "<C1><APP> <C>", "\n", m_bFormatTags ? " " : ", ");
 				//print application-specific 3D API, framerate and frametime using tags
 			}
 			else

@@ -90,7 +90,7 @@ namespace CapFrameX.Sensor
                 ShowOnOverlayIsEnabled = true,
                 ShowOnOverlay = true,
                 Value = 0,
-                ValueFormat = GetFormatString(sensor.SensorType)
+                ValueFormat = GetFormatString(sensor.SensorType),
             };
         }
 
@@ -137,43 +137,43 @@ namespace CapFrameX.Sensor
             switch (sensorType)
             {
                 case SensorType.Voltage:
-                    formatString = "{0:N2} V";
+                    formatString = "{0,4:F2}<S=50>V  <S>";
                     break;
                 case SensorType.Clock:
-                    formatString = "{0:N0} MHz";
+                    formatString = "{0,4:F0}<S=50>MHz<S>";
                     break;
                 case SensorType.Temperature:
-                    formatString = "{0:N0} బC";
+                    formatString = "{0,4:F0}<S=50>°C <S>";
                     break;
                 case SensorType.Load:
-                    formatString = "{0:N0} %";
+                    formatString = "{0,4:F0}<S=50>%  <S>";
                     break;
                 case SensorType.Fan:
-                    formatString = "{0:N0} RPM";
+                    formatString = "{0,4:F0}<S=50>RPM<S>";
                     break;
                 case SensorType.Flow:
-                    formatString = "{0:N0} L/h";
+                    formatString = "{0,4:F0}<S=50>L/h<S>";
                     break;
                 case SensorType.Control:
-                    formatString = "{0:N0} %";
+                    formatString = "{0,4:F0}<S=50>%  <S>";
                     break;
                 case SensorType.Level:
-                    formatString = "{0:N0} %";
+                    formatString = "{0,4:F0}<S=50>%  <S>";
                     break;
                 case SensorType.Factor:
-                    formatString = "{0:N0}";
+                    formatString = "{0,4:F0}<S=50>   <S>";
                     break;
                 case SensorType.Power:
-                    formatString = "{0:N1} W";
+                    formatString = "{0,4:F1}<S=50>W  <S>";
                     break;
                 case SensorType.Data:
-                    formatString = "{0:N0} GB";
+                    formatString = "{0,4:F2}<S=50>GB <S>";
                     break;
                 case SensorType.SmallData:
-                    formatString = "{0:N0} MB";
+                    formatString = "{0,4:F0}<S=50>MB <S>";
                     break;
                 case SensorType.Throughput:
-                    formatString = "{0:N0} MB/s";
+                    formatString = "{0,4:F0}<S=50>MB/s<S>";
                     break;
             }
 
