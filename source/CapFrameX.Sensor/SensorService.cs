@@ -82,9 +82,9 @@ namespace CapFrameX.Sensor
         {
             return new OverlayEntryWrapper(sensor.Identifier.ToString())
             {
-                Description = sensor.Name,
+                Description = GetDescription(sensor),
                 OverlayEntryType = MapType(hardwareType),
-                GroupName = sensor.Name,
+                GroupName = GetGroupName(sensor),
                 ShowGraph = false,
                 ShowGraphIsEnabled = true,
                 ShowOnOverlayIsEnabled = true,
@@ -92,6 +92,70 @@ namespace CapFrameX.Sensor
                 Value = 0,
                 ValueFormat = GetFormatString(sensor.SensorType),
             };
+        }
+
+        private string GetGroupName(ISensor sensor)
+        {
+            var name = sensor.Name;
+            if (name.Contains("CPU Core #"))
+            {
+                name = name.Replace("Core #", "");
+            }
+            else if (name.Contains("GPU Core"))
+            {
+                name = name.Replace("Core", "");
+            }
+
+            return name;
+        }
+
+        private string GetDescription(ISensor sensor)
+        {
+            string description = string.Empty;
+            switch (sensor.SensorType)
+            {
+                case SensorType.Voltage:
+                    description = $"{sensor.Name} Voltage";
+                    break;
+                case SensorType.Clock:
+                    description = $"{sensor.Name} Clock";
+                    break;
+                case SensorType.Temperature:
+                    description = $"{sensor.Name} Temp";
+                    break;
+                case SensorType.Load:
+                    description = $"{sensor.Name} Load";
+                    break;
+                case SensorType.Fan:
+                    description = sensor.Name;
+                    break;
+                case SensorType.Flow:
+                    description = $"{sensor.Name} Flow Rate";
+                    break;
+                case SensorType.Control:
+                    description = sensor.Name;
+                    break;
+                case SensorType.Level:
+                    description = sensor.Name;
+                    break;
+                case SensorType.Factor:
+                    description = sensor.Name;
+                    break;
+                case SensorType.Power:
+                    description = $"{sensor.Name} Power";
+                    break;
+                case SensorType.Data:
+                    description = sensor.Name;
+                    break;
+                case SensorType.SmallData:
+                    description = sensor.Name;
+                    break;
+                case SensorType.Throughput:
+                    description = sensor.Name;
+                    break;
+            }
+
+            return description;
         }
 
         private EOverlayEntryType MapType(HardwareType hardwareType)
