@@ -134,6 +134,18 @@ namespace CapFrameX.Sensor
                 name = name.Replace("Memory", "Mem");
             }
 
+            if (name.Contains(" - Thread #1"))
+            {
+                name = name.Replace(" - Thread #1", "");
+
+            }
+
+            if (name.Contains(" - Thread #2"))
+            {
+                name = name.Replace(" - Thread #2", "");
+
+            }
+
             return name;
         }
 
