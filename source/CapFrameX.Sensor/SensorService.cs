@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using OpenHardwareMonitor.Hardware;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 
 namespace CapFrameX.Sensor
@@ -40,10 +41,10 @@ namespace CapFrameX.Sensor
                 _computer = new Computer();
                 _computer.Open();
 
-                _computer.MainboardEnabled = false;
                 _computer.FanControllerEnabled = false;
                 _computer.GPUEnabled = true;
                 _computer.CPUEnabled = true;
+                _computer.MainboardEnabled = false;
                 _computer.RAMEnabled = true;
                 _computer.HDDEnabled = false;
             }
@@ -88,10 +89,32 @@ namespace CapFrameX.Sensor
                 ShowGraph = false,
                 ShowGraphIsEnabled = true,
                 ShowOnOverlayIsEnabled = true,
-                ShowOnOverlay = true,
+                ShowOnOverlay = GetOverlayToggle(sensor),
                 Value = 0,
                 ValueFormat = GetFormatString(sensor.SensorType),
             };
+        }
+
+        private string GetDegreeCelciusUnitByCulture()
+        {
+            if (CultureInfo.CurrentCulture.Name == new CultureInfo("en-DE").Name)
+                return "బC";
+            else
+                return "°C";
+        }
+
+        private bool GetOverlayToggle(ISensor sensor)
+        {
+            if (sensor.Name.Contains("Core"))
+            {
+                if (sensor.SensorType == SensorType.Power &&
+                    sensor.Name.Contains("CPU"))
+                    return false;
+
+                return true;
+            }
+            else
+                return false;            
         }
 
         private string GetGroupName(ISensor sensor)
@@ -104,6 +127,11 @@ namespace CapFrameX.Sensor
             else if (name.Contains("GPU Core"))
             {
                 name = name.Replace("Core", "");
+
+            }
+            else if (name.Contains("Memory"))
+            {
+                name = name.Replace("Memory", "Mem");
             }
 
             return name;
@@ -207,7 +235,7 @@ namespace CapFrameX.Sensor
                     formatString = "{0,4:F0}<S=50>MHz<S>";
                     break;
                 case SensorType.Temperature:
-                    formatString = "{0,4:F0}<S=50>°C <S>";
+                    formatString = "{0,4:F0}<S=50>"+ GetDegreeCelciusUnitByCulture() + " <S>";
                     break;
                 case SensorType.Load:
                     formatString = "{0,4:F0}<S=50>%  <S>";
