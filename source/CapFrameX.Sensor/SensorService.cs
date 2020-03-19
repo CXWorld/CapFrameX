@@ -115,43 +115,43 @@ namespace CapFrameX.Sensor
             switch (sensor.SensorType)
             {
                 case SensorType.Voltage:
-                    description = $"{sensor.Name} Voltage";
+                    description = $"{sensor.Name} (V)";
                     break;
                 case SensorType.Clock:
-                    description = $"{sensor.Name} Clock";
+                    description = $"{sensor.Name} (MHz)";
                     break;
                 case SensorType.Temperature:
-                    description = $"{sensor.Name} Temp";
+                    description = $"{sensor.Name} (°C)";
                     break;
                 case SensorType.Load:
-                    description = $"{sensor.Name} Load";
+                    description = $"{sensor.Name} (%)";
                     break;
                 case SensorType.Fan:
-                    description = sensor.Name;
+                    description = $"{sensor.Name} (RPM)";
                     break;
                 case SensorType.Flow:
-                    description = $"{sensor.Name} Flow Rate";
+                    description = $"{sensor.Name} (L/h)";
                     break;
                 case SensorType.Control:
-                    description = sensor.Name;
+                    description = $"{sensor.Name} (%)";
                     break;
                 case SensorType.Level:
-                    description = sensor.Name;
+                    description = $"{sensor.Name} (%)";
                     break;
                 case SensorType.Factor:
                     description = sensor.Name;
                     break;
                 case SensorType.Power:
-                    description = $"{sensor.Name} Power";
+                    description = $"{sensor.Name} (W)";
                     break;
                 case SensorType.Data:
-                    description = sensor.Name;
+                    description = $"{sensor.Name} (GB)";
                     break;
                 case SensorType.SmallData:
-                    description = sensor.Name;
+                    description = $"{sensor.Name} (MB)";
                     break;
                 case SensorType.Throughput:
-                    description = sensor.Name;
+                    description = $"{sensor.Name} (MB/s)";
                     break;
             }
 
