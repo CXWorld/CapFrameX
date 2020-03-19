@@ -23,7 +23,7 @@ namespace OpenHardwareMonitor.Hardware.CPU {
     private static CPUID[][] GetProcessorThreads() {
 
       List<CPUID> threads = new List<CPUID>();
-      for (int i = 0; i < 64; i++) {
+      for (int i = 0; i < Math.Min(Environment.ProcessorCount, 64); i++) {
         try {
           threads.Add(new CPUID(i));
         } catch (ArgumentOutOfRangeException) { }

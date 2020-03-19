@@ -327,6 +327,7 @@ namespace CapFrameX.Sensor
                     }
                 }
 
+                // ToDo: Handle key not found exception
                 foreach (var sensor in hardware.Sensors)
                 {
                     var currentIdentifier = sensor.Identifier.ToString();
