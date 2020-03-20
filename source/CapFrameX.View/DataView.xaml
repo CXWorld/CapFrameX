@@ -245,6 +245,15 @@
                                             Width="75"
                                             IsReadOnly="True"/>
                                     </DataGrid.Columns>
+                                    <!--Sensors to Log:
+                                        CPU Total Load (%)
+                                        CPU Max Thread Load(%)
+                                        GPU Load (%)
+                                        CPU Power / GPU Total (W)                                                                            
+                                        GPU Power (W)
+                                        CPU Package (°C) 
+                                        GPU Core (°C)
+                                    -->
                                 </DataGrid>
                             </StackPanel>
                         </TabItem>
@@ -381,8 +390,6 @@
                                         <RowDefinition Height="*" />
                                         <RowDefinition Height="*" />
                                         <RowDefinition Height="*" />
-                                        <RowDefinition Height="*" />
-                                        <RowDefinition Height="*" />
                                     </Grid.RowDefinitions>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto"/>
@@ -392,12 +399,8 @@
                                     <ToggleButton Margin="5" Grid.Row="0" Grid.Column="1" IsChecked="{Binding ShowCPULoadGraph}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show CPU usage graph" />
                                     <TextBlock Margin="5" Grid.Row="1" Grid.Column="0" Text="Max. CPU thread load" VerticalAlignment="Center"/>
                                     <ToggleButton Margin="5" Grid.Row="1" Grid.Column="1" IsChecked="{Binding ShowMaxThreadLoadGraph}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show max CPU thread usage graph" />
-                                    <TextBlock Margin="5" Grid.Row="2" Grid.Column="0" Text="CPU power" VerticalAlignment="Center"/>
-                                    <ToggleButton Margin="5" Grid.Row="2" Grid.Column="1" IsChecked="{Binding ShowCPUPowerGraph}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show CPU power graph" />
-                                    <TextBlock Margin="5" Grid.Row="3" Grid.Column="0" Text="GPU load" VerticalAlignment="Center"/>
-                                    <ToggleButton Margin="5" Grid.Row="3" Grid.Column="1" IsChecked="{Binding ShowGPULoadGraph}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show GPU usage graph" />
-                                    <TextBlock Margin="5" Grid.Row="4" Grid.Column="0" Text="GPU power" VerticalAlignment="Center"/>
-                                    <ToggleButton Margin="5" Grid.Row="4" Grid.Column="1" IsChecked="{Binding ShowGPUPowerGraph}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show GPU power graph" />
+                                    <TextBlock Margin="5" Grid.Row="2" Grid.Column="0" Text="GPU load" VerticalAlignment="Center"/>
+                                    <ToggleButton Margin="5" Grid.Row="2" Grid.Column="1" IsChecked="{Binding ShowGPULoadGraph}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show GPU usage graph" />
                                 </Grid>
                             </StackPanel>
                         </materialDesign:Card>
