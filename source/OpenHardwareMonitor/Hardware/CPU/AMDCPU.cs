@@ -37,6 +37,5 @@ namespace OpenHardwareMonitor.Hardware.CPU {
 
       return address;
     }
-
   }
 }

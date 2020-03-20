@@ -44,6 +44,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
 
         private float totalLoad;
         private readonly float[] coreLoads;
+        private float maxLoad;
 
         private readonly bool available;
 
@@ -98,6 +99,11 @@ namespace OpenHardwareMonitor.Hardware.CPU
             get { return available; }
         }
 
+        public float GetMaxLoad()
+        {
+            return this.maxLoad;
+        }
+
         public float GetTotalLoad()
         {
             return totalLoad;
@@ -127,6 +133,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
                 return;
 
             float total = 0;
+            this.maxLoad = 0;
             int count = 0;
             for (int i = 0; i < cpuid.Length; i++)
             {
@@ -146,8 +153,12 @@ namespace OpenHardwareMonitor.Hardware.CPU
                     value = 1.0f - value;
                     value = value < 0 ? 0 : value;
                     coreLoads[index] = value * 100;
+
+                    if (coreLoads[index] > this.maxLoad)
+                        this.maxLoad = coreLoads[index];
                 }
             }
+
             if (count > 0)
             {
                 total = 1.0f - total / count;
