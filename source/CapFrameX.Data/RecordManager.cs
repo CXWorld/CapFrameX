@@ -331,8 +331,6 @@ namespace CapFrameX.Data
 
                 IList<string> headerLines = Enumerable.Empty<string>().ToList();
 
-
-
                 var session = new Session.Classes.Session()
                 {
                     Hash = string.Join(",", runs.Select(r => r.Hash).OrderBy(h => h)).GetSha1(),
@@ -404,7 +402,6 @@ namespace CapFrameX.Data
 		{
 			try
 			{
-
 				int indexFrameStart = -1;
 				int indexFrameTimes = -1;
 				int indexFrameEnd = -1;

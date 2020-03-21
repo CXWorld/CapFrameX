@@ -217,7 +217,7 @@
                         <TabItem Header="Sensor statistics">
                             <StackPanel Margin="0 5 0 0" HorizontalAlignment="Center" VerticalAlignment="Stretch">
                                 <DataGrid x:Name="OverlayItemDataGrid" Background="#F5F5F5" FontSize="11"
-										ItemsSource="{Binding OverlayEntries}" ColumnHeaderHeight="25"
+										ItemsSource="{Binding SensorEntries}" ColumnHeaderHeight="25"
 										CanUserSortColumns="False" CanUserAddRows="False" AutoGenerateColumns="False"
 										materialDesign:DataGridAssist.CellPadding="13 3 0 0" materialDesign:DataGridAssist.ColumnHeaderPadding="8 0 0 0" IsSynchronizedWithCurrentItem="False"
 										ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True">
@@ -227,33 +227,24 @@
                                         </Style>
                                     </DataGrid.Resources>
                                     <DataGrid.Columns>
-                                        <DataGridTextColumn Binding="{Binding Sensors, Mode=TwoWay}"                                                           
+                                        <DataGridTextColumn Binding="{Binding Sensors}"                                                           
                                             Header="Sensor"
                                             MinWidth="100"
                                             IsReadOnly="True">
                                         </DataGridTextColumn>
-                                        <DataGridTextColumn Binding="{Binding SensorMinValues, Mode=TwoWay}"
+                                        <DataGridTextColumn Binding="{Binding SensorMinValues}"
                                             Header="Min"
                                             Width="75"
                                             IsReadOnly="True"/>
-                                        <DataGridTextColumn Binding="{Binding SensorAverageValues, Mode=TwoWay}"
+                                        <DataGridTextColumn Binding="{Binding SensorAverageValues}"
                                             Header="Average"
                                             Width="75"
                                             IsReadOnly="True"/>
-                                        <DataGridTextColumn Binding="{Binding SensorMaxValues, Mode=TwoWay}"
+                                        <DataGridTextColumn Binding="{Binding SensorMaxValues}"
                                             Header="Max"
                                             Width="75"
                                             IsReadOnly="True"/>
                                     </DataGrid.Columns>
-                                    <!--Sensors to Log:
-                                        CPU Total Load (%)
-                                        CPU Max Thread Load(%)
-                                        GPU Load (%)
-                                        CPU Power / GPU Total (W)                                                                            
-                                        GPU Power (W)
-                                        CPU Package (°C) 
-                                        GPU Core (°C)
-                                    -->
                                 </DataGrid>
                             </StackPanel>
                         </TabItem>

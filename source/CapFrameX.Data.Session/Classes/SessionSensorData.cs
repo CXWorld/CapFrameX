@@ -12,5 +12,6 @@ namespace CapFrameX.Data.Session.Classes
 		public bool[] IsInGpuLimit { get; set; }
 		public int[] GpuPower { get; set; }
 		public int[] GpuTemp { get; set; }
+		public int[] VRamUsage { get; set; }
 	}
 }

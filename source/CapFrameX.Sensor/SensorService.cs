@@ -17,10 +17,12 @@ namespace CapFrameX.Sensor
         private readonly IAppConfiguration _appConfiguration;
         private readonly ILogger<SensorService> _logger;
         private readonly object _dictLock = new object();
+        private readonly Dictionary<string, IOverlayEntry> _overlayEntryDict
+            = new Dictionary<string, IOverlayEntry>();
 
         private Computer _computer;
-        private Dictionary<string, IOverlayEntry> _overlayEntryDict
-            = new Dictionary<string, IOverlayEntry>();
+        private SessionSensorDataLive _sessionSensorDataLive;
+        private bool _isLoggingActive = false;
 
         public bool UseSensorLogging => _appConfiguration.UseSensorLogging;
 
@@ -34,6 +36,9 @@ namespace CapFrameX.Sensor
 
             StartOpenHardwareMonitor();
             InitializeOverlayEntryDict();
+
+            // Test
+            _appConfiguration.UseSensorLogging = true;
         }
 
         private void StartOpenHardwareMonitor()
@@ -43,11 +48,11 @@ namespace CapFrameX.Sensor
                 _computer = new Computer();
                 _computer.Open();
 
-                _computer.FanControllerEnabled = false;
                 _computer.GPUEnabled = true;
                 _computer.CPUEnabled = true;
-                _computer.MainboardEnabled = false;
                 _computer.RAMEnabled = true;
+                _computer.MainboardEnabled = false;
+                _computer.FanControllerEnabled = false;
                 _computer.HDDEnabled = false;
             }
             catch (Exception ex)
@@ -324,22 +329,31 @@ namespace CapFrameX.Sensor
 
         public ISessionSensorData GetSessionSensorData()
         {
-            return null;
+            return _sessionSensorDataLive.ToSessionSensorData();
         }
 
         public void StartSensorLogging()
         {
+            if (UseSensorLogging)
+            {
+                _sessionSensorDataLive = new SessionSensorDataLive();
+                _isLoggingActive = true;
+            }
         }
 
         public void StopSensorLogging()
         {
+            _isLoggingActive = false;
         }
 
         public void UpdateSensors()
         {
             if (_computer == null) return;
 
-            foreach (var hardware in _computer.Hardware)
+            if (UseSensorLogging && _isLoggingActive)
+                _sessionSensorDataLive.AddMeasureTime();
+
+                foreach (var hardware in _computer.Hardware)
             {
                 hardware.Update();
                 foreach (var subHardware in hardware.SubHardware)
@@ -353,7 +367,12 @@ namespace CapFrameX.Sensor
                             _overlayEntryDict.TryGetValue(currentIdentifier, out IOverlayEntry entry);
 
                             if (entry != null)
+                            {
                                 entry.Value = sensor.Value;
+
+                                if (UseSensorLogging && _isLoggingActive)
+                                    _sessionSensorDataLive.AddSensorValue(sensor);
+                            }
                         }
                     }
                 }
@@ -367,7 +386,12 @@ namespace CapFrameX.Sensor
                         _overlayEntryDict.TryGetValue(currentIdentifier, out IOverlayEntry entry);
 
                         if (entry != null)
+                        {
                             entry.Value = sensor.Value;
+
+                            if (UseSensorLogging && _isLoggingActive)
+                                _sessionSensorDataLive.AddSensorValue(sensor);
+                        }
                     }
                 }
             }

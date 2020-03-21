@@ -35,6 +35,7 @@ namespace CapFrameX.ViewModel
 			// Skip first line to compensate the first frametime being one frame before original capture start point.
 			var normalizedAdjustedCaptureData = NormalizeTimes(adjustedCaptureData.Skip(1));
 			var sessionRun = _recordManager.ConvertPresentDataLinesToSessionRun(normalizedAdjustedCaptureData);
+			sessionRun.SensorData = _sensorService.GetSessionSensorData();
 
 			if (adjustedCaptureData == null)
 			{
