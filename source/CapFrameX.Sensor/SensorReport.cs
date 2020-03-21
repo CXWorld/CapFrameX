@@ -3,85 +3,99 @@ using CapFrameX.Data.Session.Contracts;
 using CapFrameX.Extensions;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 
 namespace CapFrameX.Sensor
 {
-    public enum EReportSensorName
-    {
-        CpuUsage,
-        CpuMaxThreadUsage,
-        RamUsage,
-        GpuUsage,
-        GpuPower,
-        GpuTemp,
-        VRamUsage
-    }
+	public enum EReportSensorName
+	{
+		[Description("CPU load (%)")]
+		CpuUsage,
+		[Description("CPU max thread load (%)")]
+		CpuMaxThreadUsage,
+		[Description("CPU power (W)")]
+		CpuPower,
+		[Description("CPU temp (°C)")]
+		CpuTemp,
+		[Description("GPU load (%)")]
+		GpuUsage,
+		[Description("GPU power (W)")]
+		GpuPower,
+		[Description("GPU temp. (°C)")]
+		GpuTemp,
+		[Description("GPU VRAM usage (MB)")]
+		VRamUsage,
+		[Description("RAM usage (GB)")]
+		RamUsage
+	}
 
-    public static class SensorReport
-    {
-        public static IEnumerable<ISensorReportItem> GetReportFromSessionSensorData
-            (IEnumerable<ISessionSensorData> sessionsSensorData)
-        {
-            if (sessionsSensorData == null || !sessionsSensorData.Any() 
-                || !sessionsSensorData.All(session => session != null))
-                return Enumerable.Empty<ISensorReportItem>();
+	public static class SensorReport
+	{
+		public static IEnumerable<ISensorReportItem> GetReportFromSessionSensorData
+			(IEnumerable<ISessionSensorData> sessionsSensorData)
+		{
+			if (sessionsSensorData == null || !sessionsSensorData.Any()
+				|| sessionsSensorData.Any(session => session == null))
+				return Enumerable.Empty<ISensorReportItem>();
 
-            var sensorReportItems = new List<ISensorReportItem>();
-            try
-            {
-                foreach (var item in Enum.GetValues(typeof(EReportSensorName)).Cast<EReportSensorName>())
-                {
-                    var reportItem = new SensorReportItem
-                    {
-                        Name = item.GetDescription()
-                    };
+			var sensorReportItems = new List<ISensorReportItem>();
+			try
+			{
+				foreach (var item in Enum.GetValues(typeof(EReportSensorName)).Cast<EReportSensorName>())
+				{
+					switch (item)
+					{
+						case EReportSensorName.CpuUsage when HasValues(sessionsSensorData, session => session.CpuUsage, out var values):
+							AddSensorEntry(item, Math.Round(values.Average()), values.Min(), values.Max());
+							break;
+						case EReportSensorName.CpuMaxThreadUsage when HasValues(sessionsSensorData, session => session.CpuMaxThreadUsage, out var values):
+							AddSensorEntry(item, Math.Round(values.Average()), values.Min(), values.Max());
+							break;
+						case EReportSensorName.CpuPower when HasValues(sessionsSensorData, session => session.CpuPower, out var values):
+							AddSensorEntry(item, Math.Round(values.Average()), values.Min(), values.Max());
+							break;
+						case EReportSensorName.CpuTemp when HasValues(sessionsSensorData, session => session.CpuTemp, out var values):
+							AddSensorEntry(item, Math.Round(values.Average()), values.Min(), values.Max());
+							break;
+						case EReportSensorName.RamUsage when HasValues(sessionsSensorData, session => session.RamUsage, out var values):
+							AddSensorEntry(item, Math.Round(values.Average(), 2), Math.Round(values.Min(), 2), Math.Round(values.Max(), 2));
+							break;
+						case EReportSensorName.GpuUsage when HasValues(sessionsSensorData, session => session.GpuUsage, out var values):
+							AddSensorEntry(item, Math.Round(values.Average()), values.Min(), values.Max());
+							break;
+						case EReportSensorName.GpuPower when HasValues(sessionsSensorData, session => session.GpuPower, out var values):
+							AddSensorEntry(item, Math.Round(values.Average()), values.Min(), values.Max());
+							break;
+						case EReportSensorName.GpuTemp when HasValues(sessionsSensorData, session => session.GpuTemp, out var values):
+							AddSensorEntry(item, Math.Round(values.Average()), values.Min(), values.Max());
+							break;
+						case EReportSensorName.VRamUsage when HasValues(sessionsSensorData, session => session.VRamUsage, out var values):
+							AddSensorEntry(item, Math.Round(values.Average()), values.Min(), values.Max());
+							break;
+					}
+				}
 
-                    switch (item)
-                    {
-                        case EReportSensorName.CpuUsage:
-                            reportItem.AverageValue = Math.Round(sessionsSensorData.Select(session => session.CpuUsage.Average()).Average());
-                            reportItem.MinValue = sessionsSensorData.Select(session => session.CpuUsage.Min()).Min();
-                            reportItem.MaxValue = sessionsSensorData.Select(session => session.CpuUsage.Max()).Max();
-                            break;
-                        case EReportSensorName.CpuMaxThreadUsage:
-                            reportItem.AverageValue = Math.Round(sessionsSensorData.Select(session => session.CpuMaxThreadUsage.Average()).Average());
-                            reportItem.MinValue = sessionsSensorData.Select(session => session.CpuMaxThreadUsage.Min()).Min();
-                            reportItem.MaxValue = sessionsSensorData.Select(session => session.CpuMaxThreadUsage.Max()).Max();
-                            break;
-                        case EReportSensorName.RamUsage:
-                            reportItem.AverageValue = Math.Round(sessionsSensorData.Select(session => session.RamUsage.Average()).Average(), 2);
-                            reportItem.MinValue = Math.Round(sessionsSensorData.Select(session => session.RamUsage.Min()).Min(), 2);
-                            reportItem.MaxValue = Math.Round(sessionsSensorData.Select(session => session.RamUsage.Max()).Max(), 2);
-                            break;
-                        case EReportSensorName.GpuUsage:
-                            reportItem.AverageValue = Math.Round(sessionsSensorData.Select(session => session.GpuUsage.Average()).Average());
-                            reportItem.MinValue = sessionsSensorData.Select(session => session.GpuUsage.Min()).Min();
-                            reportItem.MaxValue = sessionsSensorData.Select(session => session.GpuUsage.Max()).Max();
-                            break;
-                        case EReportSensorName.GpuPower:
-                            reportItem.AverageValue = Math.Round(sessionsSensorData.Select(session => session.GpuPower.Average()).Average());
-                            reportItem.MinValue = sessionsSensorData.Select(session => session.GpuPower.Min()).Min();
-                            reportItem.MaxValue = sessionsSensorData.Select(session => session.GpuPower.Max()).Max();
-                            break;
-                        case EReportSensorName.GpuTemp:
-                            reportItem.AverageValue = Math.Round(sessionsSensorData.Select(session => session.GpuTemp.Average()).Average());
-                            reportItem.MinValue = sessionsSensorData.Select(session => session.GpuTemp.Min()).Min();
-                            reportItem.MaxValue = sessionsSensorData.Select(session => session.GpuTemp.Max()).Max();
-                            break;
-                        case EReportSensorName.VRamUsage:
-                            reportItem.AverageValue = Math.Round(sessionsSensorData.Select(session => session.VRamUsage.Average()).Average());
-                            reportItem.MinValue = sessionsSensorData.Select(session => session.VRamUsage.Min()).Min();
-                            reportItem.MaxValue = sessionsSensorData.Select(session => session.VRamUsage.Max()).Max();
-                            break;
-                    }
+				return sensorReportItems;
+			}
+			catch { return sensorReportItems; }
 
-                    sensorReportItems.Add(reportItem);
-                }
+			bool HasValues<T>(IEnumerable<ISessionSensorData> sessionSensorData, Func<ISessionSensorData, IEnumerable<T>> selector, out IEnumerable<T> values)
+			{
+				values = sessionsSensorData.SelectMany(selector);
+				return values.Any();
+			}
 
-                return sensorReportItems;
-            }
-            catch { return sensorReportItems; }
-        }
-    }
+			void AddSensorEntry(EReportSensorName sensorName, double avg, double min, double max)
+			{
+				sensorReportItems.Add(new SensorReportItem
+				{
+					Name = sensorName.GetDescription(),
+					MinValue = min,
+					AverageValue = avg,
+					MaxValue = max
+				});
+			}
+		}
+	}
 }

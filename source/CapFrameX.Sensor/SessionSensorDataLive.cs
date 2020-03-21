@@ -13,6 +13,7 @@ namespace CapFrameX.Sensor
             {
                 "CPU Total",
                 "CPU Max",
+                "CPU Package",
                 "Used Memory",
                 "GPU Core",
                 "GPU Total",
@@ -23,6 +24,8 @@ namespace CapFrameX.Sensor
         private long _timestampStartLogging;
         private List<double> _measureTime;
         private List<int> _cpuUsage;
+        private List<int> _cpuPower;
+        private List<int> _cpuTemp;
         private List<int> _cpuMaxThreadUsage;
         private List<int> _gpuUsage;
         private List<double> _ramUsage;
@@ -37,6 +40,8 @@ namespace CapFrameX.Sensor
             _measureTime = new List<double>();
             _cpuUsage = new List<int>();
             _cpuMaxThreadUsage = new List<int>();
+            _cpuPower = new List<int>();
+            _cpuTemp = new List<int>();
             _gpuUsage = new List<int>();
             _ramUsage = new List<double>();
             _isInGpuLimit = new List<bool>();
@@ -60,29 +65,40 @@ namespace CapFrameX.Sensor
                 return;
 
             // CPU Loads
-            if (name == "CPU Total" && sensor.Hardware.HardwareType == HardwareType.CPU)
-                _cpuUsage.Add((int)Math.Round(sensor.Value.Value));
-            else if (name == "CPU Max" && sensor.Hardware.HardwareType == HardwareType.CPU)
-                _cpuMaxThreadUsage.Add((int)Math.Round(sensor.Value.Value));       
-            // GPU Load
-            else if (name == "GPU Core" && sensor.SensorType == SensorType.Load)
-                _gpuUsage.Add((int)Math.Round(sensor.Value.Value));
-            // RAM Usage
-            else if (name == "Used Memory" && sensor.Hardware.HardwareType == HardwareType.RAM)
-                _ramUsage.Add(Math.Round(sensor.Value.Value, 2));
-            // ToDo: GPU Limit
-            // GPU Power
-            else if (name == "GPU Power" && sensor.Hardware.HardwareType == HardwareType.GpuNvidia)
-                _gpuPower.Add((int)Math.Round(sensor.Value.Value));
-            else if (name == "GPU Total" && sensor.Hardware.HardwareType == HardwareType.GpuAti)
-                _gpuPower.Add((int)Math.Round(sensor.Value.Value));
-            // GPU Temp
-            else if (name == "GPU Core" && sensor.SensorType == SensorType.Temperature)
-                _gpuTemp.Add((int)Math.Round(sensor.Value.Value));
-            // VRAM Usage
-            else if (name == "GPU Memory Used" && sensor.SensorType == SensorType.SmallData
-                && sensor.Hardware.HardwareType == HardwareType.GpuNvidia)
-                _vRamUsage.Add((int)Math.Round(sensor.Value.Value, 0));
+            switch (name)
+            {
+                case "CPU Total" when sensor.Hardware.HardwareType == HardwareType.CPU:
+                    _cpuUsage.Add((int)Math.Round(sensor.Value.Value));
+                    break;
+                case "CPU Max" when sensor.Hardware.HardwareType == HardwareType.CPU:
+                    _cpuMaxThreadUsage.Add((int)Math.Round(sensor.Value.Value));
+                    break;
+                case "CPU Package" when sensor.SensorType == SensorType.Power:
+                    _cpuPower.Add((int)Math.Round(sensor.Value.Value));
+                    break;
+                case "CPU Package" when sensor.SensorType == SensorType.Temperature:
+                    _cpuTemp.Add((int)Math.Round(sensor.Value.Value));
+                    break;
+                case "GPU Core" when sensor.SensorType == SensorType.Load:
+                    _gpuUsage.Add((int)Math.Round(sensor.Value.Value));
+                    break;
+                case "Used Memory" when sensor.Hardware.HardwareType == HardwareType.RAM:
+                    _ramUsage.Add(Math.Round(sensor.Value.Value, 2));
+                    break;
+                case "GPU Power" when sensor.Hardware.HardwareType == HardwareType.GpuNvidia:
+                    _gpuPower.Add((int)Math.Round(sensor.Value.Value));
+                    break;
+                case "GPU Total" when sensor.Hardware.HardwareType == HardwareType.GpuAti:
+                    _gpuPower.Add((int)Math.Round(sensor.Value.Value));
+                    break;
+                case "GPU Core" when sensor.SensorType == SensorType.Temperature:
+                    _gpuTemp.Add((int)Math.Round(sensor.Value.Value));
+                    break;
+                case "GPU Memory Used" when sensor.SensorType == SensorType.SmallData
+                && sensor.Hardware.HardwareType == HardwareType.GpuNvidia:
+                    _vRamUsage.Add((int)Math.Round(sensor.Value.Value, 0));
+                    break;
+            }
 
         }
 
@@ -93,6 +109,8 @@ namespace CapFrameX.Sensor
                 MeasureTime = _measureTime.ToArray(),
                 CpuUsage = _cpuUsage.ToArray(),
                 CpuMaxThreadUsage = _cpuMaxThreadUsage.ToArray(),
+                CpuPower = _cpuPower.ToArray(),
+                CpuTemp = _cpuTemp.ToArray(),
                 GpuUsage = _gpuUsage.ToArray(),
                 RamUsage = _ramUsage.ToArray(),
                 IsInGpuLimit = _isInGpuLimit.ToArray(),

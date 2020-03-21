@@ -7,6 +7,8 @@
 		int[] GpuUsage { get; set; }
 		int[] CpuUsage { get; set; }
 		int[] CpuMaxThreadUsage { get; set; }
+		int[] CpuPower { get; set; }
+		int[] CpuTemp { get; set; }
 		bool[] IsInGpuLimit { get; set; }
 		double[] MeasureTime { get; set; }
 		double[] RamUsage { get; set; }

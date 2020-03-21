@@ -29,6 +29,7 @@ using CapFrameX.Data.Session.Contracts;
 using System.Collections.ObjectModel;
 using CapFrameX.Contracts.Sensor;
 using CapFrameX.Sensor;
+using System.Windows.Threading;
 
 namespace CapFrameX.ViewModel
 {
@@ -76,7 +77,7 @@ namespace CapFrameX.ViewModel
 
         public Array ChartYAxisSettings => Enum.GetValues(typeof(EChartYAxisSetting));
 
-        public ObservableCollection<ISensorReportItem> SensorReportItems
+        public ObservableCollection<ISensorReportItem> SensorReportItems { get; }
             = new ObservableCollection<ISensorReportItem>();
 
         /// <summary>
@@ -562,11 +563,10 @@ namespace CapFrameX.ViewModel
             var items = SensorReport
                 .GetReportFromSessionSensorData(_session
                 .Runs.Select(run => run.SensorData));
-
             foreach (var item in items)
             {
                 SensorReportItems.Add(item);
-            }
+            };
         }
 
         private void UpdateMainCharts()

@@ -156,6 +156,7 @@
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
+    <None Include="Properties\packages.config" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CapFrameX.Charts\Core40\Core.csproj">
