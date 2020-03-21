@@ -210,6 +210,10 @@
       <Project>{ADFBAECE-B74F-4A80-87D1-84BC990527B0}</Project>
       <Name>CapFrameX.PresentMonInterface</Name>
     </ProjectReference>
+    <ProjectReference Include="..\CapFrameX.Sensor\CapFrameX.Sensor.csproj">
+      <Project>{B1B0E5F1-942A-476C-BEA4-8B9FFBCA04C6}</Project>
+      <Name>CapFrameX.Sensor</Name>
+    </ProjectReference>
     <ProjectReference Include="..\CapFrameX.Statistics\CapFrameX.Statistics.csproj">
       <Project>{788F49CD-ABCB-4C7C-B1B6-BF9DC2482432}</Project>
       <Name>CapFrameX.Statistics</Name>

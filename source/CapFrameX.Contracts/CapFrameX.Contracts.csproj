@@ -90,6 +90,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Overlay\IOverlayService.cs" />
     <Compile Include="Sensor\EHardwareType.cs" />
+    <Compile Include="Sensor\ISensorReportItem.cs" />
     <Compile Include="Sensor\ISensorService.cs" />
     <Compile Include="Statistics\ERemoveOutlierMethod.cs" />
     <Compile Include="Statistics\IMetricAnalysis.cs" />

@@ -215,38 +215,36 @@
                             </Grid>
                         </TabItem>
                         <TabItem Header="Sensor statistics">
-                            <StackPanel Margin="0 5 0 0" HorizontalAlignment="Center" VerticalAlignment="Stretch">
-                                <DataGrid x:Name="OverlayItemDataGrid" Background="#F5F5F5" FontSize="11"
-										ItemsSource="{Binding SensorEntries}" ColumnHeaderHeight="25"
+                            <DataGrid Background="#F5F5F5" FontSize="11" Height="300"
+										ItemsSource="{Binding SensorReportItems}" ColumnHeaderHeight="25"
 										CanUserSortColumns="False" CanUserAddRows="False" AutoGenerateColumns="False"
 										materialDesign:DataGridAssist.CellPadding="13 3 0 0" materialDesign:DataGridAssist.ColumnHeaderPadding="8 0 0 0" IsSynchronizedWithCurrentItem="False"
 										ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True">
-                                    <DataGrid.Resources>
-                                        <Style TargetType="DataGridRow">
-                                            <Setter Property="DataGrid.Height" Value="25" />
-                                        </Style>
-                                    </DataGrid.Resources>
-                                    <DataGrid.Columns>
-                                        <DataGridTextColumn Binding="{Binding Sensors}"                                                           
-                                            Header="Sensor"
+                                <DataGrid.Resources>
+                                    <Style TargetType="DataGridRow">
+                                        <Setter Property="DataGrid.Height" Value="25" />
+                                    </Style>
+                                </DataGrid.Resources>
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Binding="{Binding Name, Mode=OneWay}"                                                           
+                                            Header="Sensor"                 
                                             MinWidth="100"
                                             IsReadOnly="True">
-                                        </DataGridTextColumn>
-                                        <DataGridTextColumn Binding="{Binding SensorMinValues}"
+                                    </DataGridTextColumn>
+                                    <DataGridTextColumn Binding="{Binding MinValue, Mode=OneWay}"
                                             Header="Min"
                                             Width="75"
                                             IsReadOnly="True"/>
-                                        <DataGridTextColumn Binding="{Binding SensorAverageValues}"
+                                    <DataGridTextColumn Binding="{Binding AverageValue, Mode=OneWay}"
                                             Header="Average"
                                             Width="75"
                                             IsReadOnly="True"/>
-                                        <DataGridTextColumn Binding="{Binding SensorMaxValues}"
+                                    <DataGridTextColumn Binding="{Binding MaxValue, Mode=OneWay}"
                                             Header="Max"
                                             Width="75"
                                             IsReadOnly="True"/>
-                                    </DataGrid.Columns>
-                                </DataGrid>
-                            </StackPanel>
+                                </DataGrid.Columns>
+                            </DataGrid>
                         </TabItem>
                     </TabControl>
 				</Grid>
