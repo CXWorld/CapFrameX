@@ -46,11 +46,13 @@ namespace CapFrameX.ViewModel.DataContext
             });
 
             FrametimeModel = new PlotModel
-            {
+            {             
                 PlotMargins = new OxyThickness(40, 0, 0, 40),
                 PlotAreaBorderColor = OxyColor.FromArgb(64, 204, 204, 204),
-                LegendPosition = LegendPosition.TopCenter,
-                LegendOrientation = LegendOrientation.Horizontal
+                LegendPlacement = LegendPlacement.Outside,
+                LegendPosition = LegendPosition.BottomCenter,
+                LegendOrientation = LegendOrientation.Horizontal,
+                LegendMaxHeight = 25
             };
 
             //Axes
@@ -73,6 +75,18 @@ namespace CapFrameX.ViewModel.DataContext
                 Key = "yAxis",
                 Position = AxisPosition.Left,
                 Title = "Frametime [ms]",
+                MajorGridlineStyle = LineStyle.Solid,
+                MajorGridlineThickness = 1,
+                MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
+                MinorTickSize = 0,
+                MajorTickSize = 0
+            });
+            //Y2
+            FrametimeModel.Axes.Add(new LinearAxis()
+            {
+                Key = "yAxis2",
+                Position = AxisPosition.Right,
+                Title = "Load [%]",
                 MajorGridlineStyle = LineStyle.Solid,
                 MajorGridlineThickness = 1,
                 MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
@@ -106,8 +120,7 @@ namespace CapFrameX.ViewModel.DataContext
                 };
                 var movingAverageSeries = new LineSeries
                 {
-                    Title = string.Format(CultureInfo.InvariantCulture,
-                    "Moving average (window size = {0})", AppConfiguration.MovingAverageWindowSize),
+                    Title = "Moving average",
                     StrokeThickness = 2,
                     LegendStrokeThickness = 4,
                     Color = ColorRessource.FrametimeMovingAverageStroke

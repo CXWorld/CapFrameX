@@ -31,6 +31,7 @@
 			<mvvm:EnumDescriptionConverter x:Key="EnumDescriptionConverter"/>
 			<mvvm:ZoomingModeConverter x:Key="ZoomingModeConverter"/>
 			<mvvm:NegateBoolConverter x:Key="NegateBoolConverter"/>
+            <mvvm:AddValueConverter x:Key="AddValueConverter" Offset="-45"/>
 			<mvvm:BoolToVisibilityConverter x:Key="TrueToCollapsedConverter" TrueValue="Collapsed" FalseValue="Visible"/>
 			<mvvm:BoolToVisibilityConverter x:Key="FalseToCollapsedConverter" TrueValue="Visible" FalseValue="Collapsed"/>
 			<mvvm:BoolToVisibilityConverter x:Key="TrueToVisibleConverter" FalseValue="Collapsed" TrueValue="Visible"/>
@@ -72,10 +73,10 @@
 									   IsOpen="{Binding MessageDialogContentIsOpen}"
 									   DialogContent="{Binding MessageDialogContent}"
 									   CloseOnClickAway="True">
-				<TabControl Grid.Row="0" Background="#F5F5F5" SelectedItem="{Binding SelectedChartItem}">
+                <TabControl Name="GraphTab" Grid.Row="0" Background="#F0F0F0" SelectedItem="{Binding SelectedChartItem}">
                     <TabItem Header="Frametimes">
                         <Grid>
-                            <Grid Margin="0 0 10 0" Panel.ZIndex="1" HorizontalAlignment="Right" VerticalAlignment="Top">
+                            <Grid Margin="0 0 50 0" Panel.ZIndex="1" HorizontalAlignment="Left" VerticalAlignment="Bottom">
                                 <ComboBox Width="120" VerticalAlignment="Center" Margin="25 8 0 8" materialDesign:HintAssist.Hint="Y-axis scale"
 										materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="240" materialDesign:ComboBoxAssist.ClassicMode="True"
 										ItemsSource="{Binding ChartYAxisSettings}" SelectedItem="{Binding SelecetedChartYAxisSetting}">
@@ -86,11 +87,13 @@
                                     </ComboBox.ItemTemplate>
                                 </ComboBox>
                             </Grid>
-                            <controls:FrametimeGraphControl DataContext="{Binding Path=FrametimeGraphDataContext}"/>
+                            <controls:FrametimeGraphControl DataContext="{Binding Path=FrametimeGraphDataContext}" HorizontalAlignment="Left"
+                                                            Width="{Binding ElementName=GraphTab, Path=ActualWidth, Converter={StaticResource AddValueConverter}}"/>
                         </Grid>
                     </TabItem>
 					<TabItem Header="FPS">
-						<controls:FpsGraphControl DataContext="{Binding Path=FpsGraphDataContext}"/>
+                        <controls:FpsGraphControl DataContext="{Binding Path=FpsGraphDataContext}" HorizontalAlignment="Left"
+                                                            Width="{Binding ElementName=GraphTab, Path=ActualWidth, Converter={StaticResource AddValueConverter}}"/>
 					</TabItem>
 					<TabItem Header="L-shape">
                         <lvc:CartesianChart MouseDoubleClick="ResetChart_MouseDoubleClick" Series="{Binding LShapeCollection}" Zoom="Y" 
