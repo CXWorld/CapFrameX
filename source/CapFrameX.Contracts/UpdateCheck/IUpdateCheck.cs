@@ -8,6 +8,6 @@ namespace CapFrameX.Contracts.UpdateCheck
 {
 	public interface IUpdateCheck
 	{
-		bool IsUpdateAvailable();
+		Task<(bool, Version)> IsUpdateAvailable();
 	}
 }

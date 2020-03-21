@@ -12,11 +12,13 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
+using System.Windows.Threading;
 
 namespace CapFrameX.ViewModel
 {
 	public class StateViewModel : BindableBase
-	{	
+	{
 		private readonly IRecordDirectoryObserver _recordObserver;
 		private readonly IEventAggregator _eventAggregator;
 		private readonly IAppConfiguration _appConfiguration;
@@ -85,7 +87,7 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-		public bool IsUpdateAvailable => _updateCheck.IsUpdateAvailable();
+		public bool IsUpdateAvailable { get; private set; }
 
 		public StateViewModel(IRecordDirectoryObserver recordObserver,
 							  IEventAggregator eventAggregator,
@@ -107,10 +109,9 @@ namespace CapFrameX.ViewModel
 			IsCaptureModeActive = false;
 			IsOverlayActive = _appConfiguration.IsOverlayActive && !string.IsNullOrEmpty(RTSSUtils.GetRTSSFullPath());
 
-			UpdateHyperlinkText = $"New version available on GitHub: v{webVersionProvider.GetWebVersion()}";
-
 			_recordObserver.ObservingDirectoryStream
-				.Subscribe(directoryInfo => {
+				.Subscribe(directoryInfo =>
+				{
 					IsDirectoryObserving = directoryInfo?.Exists ?? false;
 				});
 
@@ -119,6 +120,18 @@ namespace CapFrameX.ViewModel
 
 			_overlayService.IsOverlayActiveStream
 				.Subscribe(state => IsOverlayActive = state);
+
+			Task.Run(async () =>
+			{
+				var (updateAvailable, updateVersion) = await _updateCheck.IsUpdateAvailable();
+				Dispatcher.CurrentDispatcher.Invoke(() =>
+				{
+					IsUpdateAvailable = updateAvailable;
+					UpdateHyperlinkText = $"New version available on GitHub: v{updateVersion}";
+					RaisePropertyChanged(nameof(IsUpdateAvailable));
+				});
+			});
+
 		}
 
 		private Assembly GetAssemblyByName(string name)
