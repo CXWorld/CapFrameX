@@ -82,22 +82,22 @@
     <Content Include="PresentMon\PresentMon64-1.5.2.exe">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Sounds\capture_finished.mp3">
+    <Content Include="Sounds\Voice\CaptureStopped.mp3">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Sounds\capture_started.mp3">
+    <Content Include="Sounds\Voice\CaptureStarted.mp3">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Sounds\more_than_one_process.mp3">
+    <Content Include="Sounds\Voice\MoreThanOneProcess.mp3">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Sounds\no_process.mp3">
+    <Content Include="Sounds\Voice\NoProcess.mp3">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Sounds\simple_start_sound.mp3">
+    <Content Include="Sounds\Simple\CaptureStarted.mp3">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Sounds\simple_stop_sound.mp3">
+    <Content Include="Sounds\Simple\CaptureStopped.mp3">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

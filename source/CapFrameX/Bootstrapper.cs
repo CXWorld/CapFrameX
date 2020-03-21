@@ -79,6 +79,7 @@ namespace CapFrameX
 				ShareProcessListEntries: Container.Resolve<IAppConfiguration>().ShareProcessListEntries
 				)
 			);
+			Container.Register<SoundManager>(Reuse.Singleton);
 
 			Container.Resolve<IEventAggregator>().GetEvent<PubSubEvent<AppMessages.OpenLoginWindow>>().Subscribe(_ => {
 				var window = Container.Resolve<LoginWindow>();
