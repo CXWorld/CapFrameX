@@ -131,25 +131,21 @@ namespace CapFrameX.Overlay
         {
             var captureTimer = _overlayEntryProvider.GetOverlayEntry("CaptureTimer");
             captureTimer.Value = $"{t.ToString()} s";
-            SetOverlayEntries(_overlayEntryProvider?.GetOverlayEntries());
-            if (_appConfiguration.IsOverlayActive)
-            {
-                CheckRTSSRunningAndRefresh();
-            };
+            SetOverlayEntry(captureTimer);
         }
 
         public void SetCaptureServiceStatus(string status)
         {
             var captureStatus = _overlayEntryProvider.GetOverlayEntry("CaptureServiceStatus");
             captureStatus.Value = status;
-            SetOverlayEntries(_overlayEntryProvider?.GetOverlayEntries());
+            SetOverlayEntry(captureStatus);
         }
 
         public void SetShowRunHistory(bool showHistory)
         {
             var history = _overlayEntryProvider.GetOverlayEntry("RunHistory");
             history.ShowOnOverlay = showHistory;
-            SetOverlayEntries(_overlayEntryProvider?.GetOverlayEntries());
+            SetOverlayEntry(history);
         }
 
         public void ResetHistory()
@@ -270,6 +266,7 @@ namespace CapFrameX.Overlay
                 catch (Exception ex) { _logger.LogError(ex, "Error while starting RTSS process"); }
             }
 
+            UpdateOverlayEntries();
             Refresh();
         }
 
@@ -302,7 +299,6 @@ namespace CapFrameX.Overlay
                 .GetMetricAnalysis(concatedFrametimes, SecondMetric, ThirdMetric)
                 .ResultString;
         }
-
 
         private static void ExceptionAction(Exception ex)
         {

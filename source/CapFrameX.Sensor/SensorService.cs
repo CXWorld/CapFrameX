@@ -6,6 +6,7 @@ using CapFrameX.Overlay;
 using Microsoft.Extensions.Logging;
 using OpenHardwareMonitor.Hardware;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -18,7 +19,8 @@ namespace CapFrameX.Sensor
         private readonly ILogger<SensorService> _logger;
 
         private Computer _computer;
-        private Dictionary<string, IOverlayEntry> _overlayEntryDict = new Dictionary<string, IOverlayEntry>();
+        private ConcurrentDictionary<string, IOverlayEntry> _overlayEntryDict
+            = new ConcurrentDictionary<string, IOverlayEntry>();
 
         public bool UseSensorLogging => _appConfiguration.UseSensorLogging;
 
@@ -67,14 +69,14 @@ namespace CapFrameX.Sensor
                     foreach (var sensor in subHardware.Sensors)
                     {
                         var currentEntry = CreateOverlayEntry(sensor, hardware.HardwareType);
-                        _overlayEntryDict.Add(currentEntry.Identifier, currentEntry);
+                        _overlayEntryDict.TryAdd(currentEntry.Identifier, currentEntry);
                     }
                 }
 
                 foreach (var sensor in hardware.Sensors)
                 {
                     var currentEntry = CreateOverlayEntry(sensor, hardware.HardwareType);
-                    _overlayEntryDict.Add(currentEntry.Identifier, currentEntry);
+                    _overlayEntryDict.TryAdd(currentEntry.Identifier, currentEntry);
                 }
             }
         }
@@ -114,7 +116,7 @@ namespace CapFrameX.Sensor
                 return true;
             }
             else
-                return false;            
+                return false;
         }
 
         private string GetGroupName(ISensor sensor)
@@ -247,7 +249,7 @@ namespace CapFrameX.Sensor
                     formatString = "{0,4:F0}<S=50>MHz<S>";
                     break;
                 case SensorType.Temperature:
-                    formatString = "{0,4:F0}<S=50>"+ GetDegreeCelciusUnitByCulture() + " <S>";
+                    formatString = "{0,4:F0}<S=50>" + GetDegreeCelciusUnitByCulture() + " <S>";
                     break;
                 case SensorType.Load:
                     formatString = "{0,4:F0}<S=50>%  <S>";
@@ -304,22 +306,21 @@ namespace CapFrameX.Sensor
 
         public IOverlayEntry GetSensorOverlayEntry(string identifier)
         {
-            return _overlayEntryDict[identifier];
+            _overlayEntryDict.TryGetValue(identifier, out IOverlayEntry entry);
+            return entry;
         }
 
         public ISessionSensorData GetSessionSensorData()
         {
-            throw new NotImplementedException();
+            return null;
         }
 
         public void StartSensorLogging()
         {
-            throw new NotImplementedException();
         }
 
         public void StopSensorLogging()
         {
-            throw new NotImplementedException();
         }
 
         public void UpdateSensors()
@@ -335,15 +336,21 @@ namespace CapFrameX.Sensor
                     foreach (var sensor in subHardware.Sensors)
                     {
                         var currentIdentifier = sensor.Identifier.ToString();
-                        _overlayEntryDict[currentIdentifier].Value = sensor.Value;
+                        _overlayEntryDict.TryGetValue(currentIdentifier, out IOverlayEntry entry);
+
+                        if (entry != null)
+                            entry.Value = sensor.Value;
                     }
                 }
 
-                // ToDo: Handle key not found exception
                 foreach (var sensor in hardware.Sensors)
                 {
                     var currentIdentifier = sensor.Identifier.ToString();
-                    _overlayEntryDict[currentIdentifier].Value = sensor.Value;
+
+                    _overlayEntryDict.TryGetValue(currentIdentifier, out IOverlayEntry entry);
+
+                    if (entry != null)
+                        entry.Value = sensor.Value;
                 }
             }
         }

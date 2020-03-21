@@ -513,6 +513,7 @@ namespace CapFrameX.ViewModel
 					_soundPlayer.Play();
 				}
 
+				_sensorService.StopSensorLogging();
 				var context = TaskScheduler.FromCurrentSynchronizationContext();
 
 				CaptureStateInfo = "Creating capture file...";
@@ -595,6 +596,9 @@ namespace CapFrameX.ViewModel
 					{
 						Application.Current.Dispatcher.Invoke(new Action(() =>
 						{
+							// stop sensor data logging
+							_sensorService.StopSensorLogging();
+
 							// turn locking on 
 							_dataOffsetRunning = true;
 							CaptureStateInfo = "Creating capture file...";
@@ -628,16 +632,13 @@ namespace CapFrameX.ViewModel
 		private void FinishCapturingAndUpdateUi()
 		{
 			_disposableCaptureStream?.Dispose();
-			_sensorService.StopSensorLogging();
 			AddLoggerEntry("Capturing stopped.");
-			// asynchron
 			WriteCaptureDataToFile();
 
 			IsCapturing = !IsCapturing;
 			_disposableHeartBeat = GetListUpdatHeartBeat();
 			IsAddToIgnoreListButtonActive = true;
-			UpdateCaptureStateInfo();
-			_overlayService.SetCaptureServiceStatus("Capture service ready...");	
+			UpdateCaptureStateInfo();	
 		}
 
 		private async Task SetTaskDelayOffset()
