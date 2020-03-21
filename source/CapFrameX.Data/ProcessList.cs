@@ -126,46 +126,49 @@ namespace CapFrameX.Data
 		public static ProcessList Create(string filename, bool AutoUpdateProcessList = false, bool ShareProcessListEntries = false)
 		{
 			ProcessList processList = new ProcessList(filename);
-			try
+			Task.Run(() =>
 			{
 				try
 				{
-					processList.ReadFromFile();
-
-				}
-				catch { }
-				var defaultProcesslistFileInfo = new FileInfo(Path.Combine("ProcessList", "Processes.json"));
-				if (!defaultProcesslistFileInfo.Exists)
-				{
-					return processList;
-				}
-
-				var defaultProcesses = JsonConvert.DeserializeObject<List<CXProcess>>(File.ReadAllText(defaultProcesslistFileInfo.FullName));
-				foreach (var process in defaultProcesses)
-				{
-					processList.AddEntry(process.Name, process.DisplayName, process.IsBlacklisted);
-				}
-				processList.Save();
-
-				if (AutoUpdateProcessList)
-				{
-					Task.Run(() => processList.UpdateProcessListFromWebserviceAsync().ContinueWith(t =>
+					try
 					{
-						if (ShareProcessListEntries)
-						{
-							processList.EnableSharingOfNewEntries();
-						}
-					}).ConfigureAwait(false));
-				}
-				else if (ShareProcessListEntries)
-				{
-					processList.EnableSharingOfNewEntries();
-				}
-			}
-			catch (Exception)
-			{
+						processList.ReadFromFile();
 
-			}
+					}
+					catch { }
+					var defaultProcesslistFileInfo = new FileInfo(Path.Combine("ProcessList", "Processes.json"));
+					if (!defaultProcesslistFileInfo.Exists)
+					{
+						return;
+					}
+
+					var defaultProcesses = JsonConvert.DeserializeObject<List<CXProcess>>(File.ReadAllText(defaultProcesslistFileInfo.FullName));
+					foreach (var process in defaultProcesses)
+					{
+						processList.AddEntry(process.Name, process.DisplayName, process.IsBlacklisted);
+					}
+					processList.Save();
+
+					if (AutoUpdateProcessList)
+					{
+						Task.Run(() => processList.UpdateProcessListFromWebserviceAsync().ContinueWith(t =>
+						{
+							if (ShareProcessListEntries)
+							{
+								processList.EnableSharingOfNewEntries();
+							}
+						}).ConfigureAwait(false));
+					}
+					else if (ShareProcessListEntries)
+					{
+						processList.EnableSharingOfNewEntries();
+					}
+				}
+				catch (Exception)
+				{
+
+				}
+			});
 			return processList;
 		}
 	}
