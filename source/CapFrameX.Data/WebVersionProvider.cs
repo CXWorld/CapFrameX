@@ -2,7 +2,9 @@
 using System;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace CapFrameX.Data
 {
@@ -18,27 +20,23 @@ namespace CapFrameX.Data
 
 		public Version GetWebVersion()
 		{
-			if(_version != null)
-			{
-				return _version;
-			}
+			return GetWebVersionAsync().GetAwaiter().GetResult();
+		}
+
+		public async Task<Version> GetWebVersionAsync()
+		{
 			try
 			{
-				ServicePointManager.Expect100Continue = true;
-				ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
-				// Use SecurityProtocolType.Ssl3 if needed for compatibility reasons
-
-				WebClient wc = new WebClient();
-				byte[] raw = wc.DownloadData(_webVersionCheckUrl);
-
-				if (raw == null || !raw.Any())
+				if (_version != null)
 				{
-					return null;
+					return _version;
 				}
-
-				string webVersionString = Encoding.UTF8.GetString(raw);
-				_version = new Version(webVersionString);
-				return _version;
+				using (var client = new HttpClient() { Timeout = TimeSpan.FromSeconds(2)})
+				{
+					var versionString = await client.GetStringAsync(_webVersionCheckUrl);
+					_version = new Version(versionString);
+					return _version;
+				}
 			}
 			catch
 			{
