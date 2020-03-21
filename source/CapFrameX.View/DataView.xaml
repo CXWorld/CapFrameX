@@ -30,9 +30,8 @@
 			</ResourceDictionary.MergedDictionaries>
 			<mvvm:EnumDescriptionConverter x:Key="EnumDescriptionConverter"/>
 			<mvvm:ZoomingModeConverter x:Key="ZoomingModeConverter"/>
-			<mvvm:NegateBoolConverter x:Key="NegateBoolConverter"/>
-            <mvvm:AddValueConverter x:Key="AddValueConverter" Offset="-45"/>
-			<mvvm:BoolToVisibilityConverter x:Key="TrueToCollapsedConverter" TrueValue="Collapsed" FalseValue="Visible"/>
+            <mvvm:NegateBoolConverter x:Key="NegateBoolConverter"/>
+            <mvvm:BoolToVisibilityConverter x:Key="TrueToCollapsedConverter" TrueValue="Collapsed" FalseValue="Visible"/>
 			<mvvm:BoolToVisibilityConverter x:Key="FalseToCollapsedConverter" TrueValue="Visible" FalseValue="Collapsed"/>
 			<mvvm:BoolToVisibilityConverter x:Key="TrueToVisibleConverter" FalseValue="Collapsed" TrueValue="Visible"/>
 			<Style x:Key="CleanSeparator" TargetType="lvc:Separator">
@@ -87,13 +86,11 @@
                                     </ComboBox.ItemTemplate>
                                 </ComboBox>
                             </Grid>
-                            <controls:FrametimeGraphControl DataContext="{Binding Path=FrametimeGraphDataContext}" HorizontalAlignment="Left"
-                                                            Width="{Binding ElementName=GraphTab, Path=ActualWidth, Converter={StaticResource AddValueConverter}}"/>
+                            <controls:FrametimeGraphControl DataContext="{Binding Path=FrametimeGraphDataContext}"/>
                         </Grid>
                     </TabItem>
 					<TabItem Header="FPS">
-                        <controls:FpsGraphControl DataContext="{Binding Path=FpsGraphDataContext}" HorizontalAlignment="Left"
-                                                            Width="{Binding ElementName=GraphTab, Path=ActualWidth, Converter={StaticResource AddValueConverter}}"/>
+                        <controls:FpsGraphControl DataContext="{Binding Path=FpsGraphDataContext}"/>
 					</TabItem>
 					<TabItem Header="L-shape">
                         <lvc:CartesianChart MouseDoubleClick="ResetChart_MouseDoubleClick" Series="{Binding LShapeCollection}" Zoom="Y" 

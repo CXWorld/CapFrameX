@@ -47,7 +47,7 @@ namespace CapFrameX.ViewModel.DataContext
 
             FrametimeModel = new PlotModel
             {             
-                PlotMargins = new OxyThickness(40, 0, 0, 40),
+                PlotMargins = new OxyThickness(35, 0, 35, 35),
                 PlotAreaBorderColor = OxyColor.FromArgb(64, 204, 204, 204),
                 LegendPlacement = LegendPlacement.Outside,
                 LegendPosition = LegendPosition.BottomCenter,
