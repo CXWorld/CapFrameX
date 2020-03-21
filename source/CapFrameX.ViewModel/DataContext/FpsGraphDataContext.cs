@@ -84,15 +84,17 @@ namespace CapFrameX.ViewModel.DataContext
 
 			//Y2
 			FpsModel.Axes.Add(new LinearAxis()
-			{
+			{	
 				Key = "yAxis2",
 				Position = AxisPosition.Right,
 				Title = "Load [%]",
-				MajorGridlineStyle = LineStyle.Solid,
-				MajorGridlineThickness = 1,
-				MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
+				MajorGridlineStyle = LineStyle.None,
+				MajorStep = 25,
 				MinorTickSize = 0,
-				MajorTickSize = 0
+				MajorTickSize = 0,
+				AbsoluteMaximum = 100,
+				AbsoluteMinimum = 0
+
 			});
 		}
 
