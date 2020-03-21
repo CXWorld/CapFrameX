@@ -215,14 +215,13 @@
                             </Grid>
                         </TabItem>
                         <TabItem Header="Sensor statistics">
-                            <DataGrid Background="#F5F5F5" FontSize="11"
+                            <DataGrid Background="#F5F5F5" FontSize="11" 
 										ItemsSource="{Binding SensorReportItems}" ColumnHeaderHeight="25"
 										CanUserSortColumns="False" CanUserAddRows="False" AutoGenerateColumns="False"
 										materialDesign:DataGridAssist.CellPadding="13 3 0 0" materialDesign:DataGridAssist.ColumnHeaderPadding="8 0 0 0" IsSynchronizedWithCurrentItem="False"
 										ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True">
                                 <DataGrid.Resources>
                                     <Style TargetType="DataGridRow">
-                                        <Setter Property="TextBlock.VerticalAlignment" Value="Center" />
                                         <Setter Property="DataGrid.Height" Value="25" />
                                     </Style>
                                 </DataGrid.Resources>

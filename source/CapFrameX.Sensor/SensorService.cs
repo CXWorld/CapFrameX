@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using OpenHardwareMonitor.Hardware;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 
@@ -36,9 +37,6 @@ namespace CapFrameX.Sensor
 
             StartOpenHardwareMonitor();
             InitializeOverlayEntryDict();
-
-            // Test
-            _appConfiguration.UseSensorLogging = true;
         }
 
         private void StartOpenHardwareMonitor()
@@ -329,10 +327,7 @@ namespace CapFrameX.Sensor
 
         public ISessionSensorData GetSessionSensorData()
         {
-            if (UseSensorLogging)
-                return _sessionSensorDataLive.ToSessionSensorData();
-            else
-                return null;
+            return UseSensorLogging ? _sessionSensorDataLive.ToSessionSensorData() : null;
         }
 
         public void StartSensorLogging()

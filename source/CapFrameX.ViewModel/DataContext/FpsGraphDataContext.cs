@@ -85,7 +85,7 @@ namespace CapFrameX.ViewModel.DataContext
 			//Y2
 			FpsModel.Axes.Add(new LinearAxis()
 			{	
-				Key = "yAxis2",
+				Key = "yAxisLoad",
 				Position = AxisPosition.Right,
 				Title = "Load [%]",
 				MajorGridlineStyle = LineStyle.None,

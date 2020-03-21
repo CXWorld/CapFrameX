@@ -85,7 +85,7 @@ namespace CapFrameX.ViewModel.DataContext
             //Y2
             FrametimeModel.Axes.Add(new LinearAxis()
             {
-                Key = "yAxis2",
+                Key = "yAxisLoad",
                 Position = AxisPosition.Right,
                 Title = "Load [%]",
                 MajorGridlineStyle = LineStyle.None,
