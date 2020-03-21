@@ -214,6 +214,49 @@
                                 </lvc:CartesianChart>
                             </Grid>
                         </TabItem>
+                        <TabItem Header="Sensor statistics">
+                            <StackPanel Margin="0 5 0 0" HorizontalAlignment="Center" VerticalAlignment="Stretch">
+                                <DataGrid x:Name="OverlayItemDataGrid" Background="#F5F5F5" FontSize="11"
+										ItemsSource="{Binding OverlayEntries}" ColumnHeaderHeight="25"
+										CanUserSortColumns="False" CanUserAddRows="False" AutoGenerateColumns="False"
+										materialDesign:DataGridAssist.CellPadding="13 3 0 0" materialDesign:DataGridAssist.ColumnHeaderPadding="8 0 0 0" IsSynchronizedWithCurrentItem="False"
+										ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True">
+                                    <DataGrid.Resources>
+                                        <Style TargetType="DataGridRow">
+                                            <Setter Property="DataGrid.Height" Value="25" />
+                                        </Style>
+                                    </DataGrid.Resources>
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Binding="{Binding Sensors, Mode=TwoWay}"                                                           
+                                            Header="Sensor"
+                                            MinWidth="100"
+                                            IsReadOnly="True">
+                                        </DataGridTextColumn>
+                                        <DataGridTextColumn Binding="{Binding SensorMinValues, Mode=TwoWay}"
+                                            Header="Min"
+                                            Width="75"
+                                            IsReadOnly="True"/>
+                                        <DataGridTextColumn Binding="{Binding SensorAverageValues, Mode=TwoWay}"
+                                            Header="Average"
+                                            Width="75"
+                                            IsReadOnly="True"/>
+                                        <DataGridTextColumn Binding="{Binding SensorMaxValues, Mode=TwoWay}"
+                                            Header="Max"
+                                            Width="75"
+                                            IsReadOnly="True"/>
+                                    </DataGrid.Columns>
+                                    <!--Sensors to Log:
+                                        CPU Total Load (%)
+                                        CPU Max Thread Load(%)
+                                        GPU Load (%)
+                                        CPU Power / GPU Total (W)                                                                            
+                                        GPU Power (W)
+                                        CPU Package (°C) 
+                                        GPU Core (°C)
+                                    -->
+                                </DataGrid>
+                            </StackPanel>
+                        </TabItem>
                     </TabControl>
 				</Grid>
 			</Grid>
@@ -321,6 +364,48 @@
 							</materialDesign:Card>
 						</materialDesign:PopupBox>
 					</StackPanel>
+                <StackPanel Grid.Column="1" Margin="50 8 0 8" Orientation="Horizontal">
+                    <TextBlock VerticalAlignment="Center">Additional graphs:</TextBlock>
+                    <materialDesign:PopupBox StaysOpen="True" ToolTipService.ShowDuration="25000">
+                        <materialDesign:PopupBox.ToolTip>
+                            <ToolTip MaxWidth="275" Placement="Top">
+                                <TextBlock Text="Show additional graphs for CPU and GPU load" 
+										   TextWrapping="Wrap"/>
+                            </ToolTip>
+                        </materialDesign:PopupBox.ToolTip>
+                        <materialDesign:Card Width="220" Margin="0 0 0 -10">
+                            <StackPanel>
+                                <Grid Margin="8 8 8 8">
+                                    <Grid.Resources>
+                                        <Style TargetType="CheckBox"
+											BasedOn="{StaticResource MaterialDesignCheckBox}">
+                                            <Setter Property="Margin" Value="8,8,10,8" />
+                                        </Style>
+                                        <Style TargetType="TextBox" BasedOn="{StaticResource MaterialDesignTextBox}">
+                                            <Setter Property="materialDesign:HintAssist.IsFloating" Value="True" />
+                                            <Setter Property="Margin" Value="8,8,8,8" />
+                                        </Style>
+                                    </Grid.Resources>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="*" />
+                                        <RowDefinition Height="*" />
+                                        <RowDefinition Height="*" />
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Margin="5" Grid.Row="0" Grid.Column="0" Text="Total CPU load" VerticalAlignment="Center"/>
+                                    <ToggleButton Margin="5" Grid.Row="0" Grid.Column="1" IsChecked="{Binding ShowCPULoadGraph}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show CPU usage graph" />
+                                    <TextBlock Margin="5" Grid.Row="1" Grid.Column="0" Text="Max. CPU thread load" VerticalAlignment="Center"/>
+                                    <ToggleButton Margin="5" Grid.Row="1" Grid.Column="1" IsChecked="{Binding ShowMaxThreadLoadGraph}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show max CPU thread usage graph" />
+                                    <TextBlock Margin="5" Grid.Row="2" Grid.Column="0" Text="GPU load" VerticalAlignment="Center"/>
+                                    <ToggleButton Margin="5" Grid.Row="2" Grid.Column="1" IsChecked="{Binding ShowGPULoadGraph}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show GPU usage graph" />
+                                </Grid>
+                            </StackPanel>
+                        </materialDesign:Card>
+                    </materialDesign:PopupBox>
+                </StackPanel>
                 <Grid Grid.Column="3" HorizontalAlignment="Right">
                    <StackPanel  Margin="0 0 0 0" VerticalAlignment="Center" Orientation="Horizontal">
                         <TextBlock Text="Remove outliers:"/>

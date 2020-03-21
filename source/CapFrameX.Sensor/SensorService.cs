@@ -128,7 +128,7 @@ namespace CapFrameX.Sensor
             }
             else if (name.Contains("GPU Core"))
             {
-                name = name.Replace("Core", "");
+                name = name.Replace(" Core", "");
 
             }
             else if (name.Contains("Memory"))
