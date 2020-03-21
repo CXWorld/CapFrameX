@@ -188,7 +188,7 @@ namespace CapFrameX.ViewModel
 			{
 				_soundManager.SetSoundMode(value);
 				RaisePropertyChanged();
-				RaisePropertyChanged(nameof(SliderSoundLevel);
+				RaisePropertyChanged(nameof(SliderSoundLevel));
 				RaisePropertyChanged(nameof(ShowVolumeController));
 			}
 		}
