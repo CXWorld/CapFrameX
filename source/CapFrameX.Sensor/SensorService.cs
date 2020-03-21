@@ -329,7 +329,10 @@ namespace CapFrameX.Sensor
 
         public ISessionSensorData GetSessionSensorData()
         {
-            return _sessionSensorDataLive.ToSessionSensorData();
+            if (UseSensorLogging)
+                return _sessionSensorDataLive.ToSessionSensorData();
+            else
+                return null;
         }
 
         public void StartSensorLogging()

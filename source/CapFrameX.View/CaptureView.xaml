@@ -120,7 +120,19 @@
 						</Binding.ValidationRules>
 					</Binding>
 				</TextBox>
-				<TextBox Grid.Row="0" Grid.Column="1" Width="132" wpf:HintAssist.Hint="Capture time in seconds" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
+                <CheckBox Grid.Row="1" Grid.Column="0" Margin="-15 0 0 0" Width="120" IsChecked="{Binding UseSensorLogging}" ToolTipService.ShowDuration="25000">
+                    <CheckBox.ToolTip>
+                        <ToolTip StaysOpen="True" MaxWidth="275">
+                            <TextBlock 
+                             Text="If checked, various sensor data like CPU and GPU load/power will be logged for analysis" 
+                                  TextWrapping="Wrap"/>
+                        </ToolTip>
+                    </CheckBox.ToolTip>
+                    <TextBlock Padding="5 0 0 0" TextWrapping="WrapWithOverflow">
+  					     Log sensor data
+                    </TextBlock>
+                </CheckBox>
+                <TextBox Grid.Row="0" Grid.Column="1" Width="132" wpf:HintAssist.Hint="Capture time in seconds" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
 					 Margin="80 0 0 0" FontSize="14" Text="{Binding CaptureTimeString, UpdateSourceTrigger=PropertyChanged}"
                      PreviewMouseDown="TextBox_PreviewMouseDown" PreviewKeyDown="CaptureTimeTextBox_PreviewKeyDown" MouseLeave="TextBox_MouseLeave" ToolTip="0 = no limit"/>
 

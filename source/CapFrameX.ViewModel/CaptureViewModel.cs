@@ -167,6 +167,16 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
+		public bool UseSensorLogging
+		{
+			get { return _appConfiguration.UseSensorLogging; }
+			set
+			{
+				_appConfiguration.UseSensorLogging = value;
+				RaisePropertyChanged();
+			}
+		}
+
 		public string SelectedSoundMode
 		{
 			get { return _selectedSoundMode; }
