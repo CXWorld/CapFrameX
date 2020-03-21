@@ -6,7 +6,6 @@ using CapFrameX.Overlay;
 using Microsoft.Extensions.Logging;
 using OpenHardwareMonitor.Hardware;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -17,10 +16,11 @@ namespace CapFrameX.Sensor
     {
         private readonly IAppConfiguration _appConfiguration;
         private readonly ILogger<SensorService> _logger;
+        private readonly object _dictLock = new object();
 
         private Computer _computer;
-        private ConcurrentDictionary<string, IOverlayEntry> _overlayEntryDict
-            = new ConcurrentDictionary<string, IOverlayEntry>();
+        private Dictionary<string, IOverlayEntry> _overlayEntryDict
+            = new Dictionary<string, IOverlayEntry>();
 
         public bool UseSensorLogging => _appConfiguration.UseSensorLogging;
 
@@ -69,14 +69,22 @@ namespace CapFrameX.Sensor
                     foreach (var sensor in subHardware.Sensors)
                     {
                         var currentEntry = CreateOverlayEntry(sensor, hardware.HardwareType);
-                        _overlayEntryDict.TryAdd(currentEntry.Identifier, currentEntry);
+                        lock (_dictLock)
+                        {
+                            if (!_overlayEntryDict.ContainsKey(currentEntry.Identifier))
+                                _overlayEntryDict.Add(currentEntry.Identifier, currentEntry);
+                        }
                     }
                 }
 
                 foreach (var sensor in hardware.Sensors)
                 {
                     var currentEntry = CreateOverlayEntry(sensor, hardware.HardwareType);
-                    _overlayEntryDict.TryAdd(currentEntry.Identifier, currentEntry);
+                    lock (_dictLock)
+                    {
+                        if (!_overlayEntryDict.ContainsKey(currentEntry.Identifier))
+                            _overlayEntryDict.Add(currentEntry.Identifier, currentEntry);
+                    }
                 }
             }
         }
@@ -301,13 +309,17 @@ namespace CapFrameX.Sensor
 
         public IOverlayEntry[] GetSensorOverlayEntries()
         {
-            return _overlayEntryDict.Values.ToArray();
+            lock (_dictLock)
+                return _overlayEntryDict.Values.ToArray();
         }
 
         public IOverlayEntry GetSensorOverlayEntry(string identifier)
         {
-            _overlayEntryDict.TryGetValue(identifier, out IOverlayEntry entry);
-            return entry;
+            lock (_dictLock)
+            {
+                _overlayEntryDict.TryGetValue(identifier, out IOverlayEntry entry);
+                return entry;
+            }
         }
 
         public ISessionSensorData GetSessionSensorData()
@@ -336,10 +348,13 @@ namespace CapFrameX.Sensor
                     foreach (var sensor in subHardware.Sensors)
                     {
                         var currentIdentifier = sensor.Identifier.ToString();
-                        _overlayEntryDict.TryGetValue(currentIdentifier, out IOverlayEntry entry);
+                        lock (_dictLock)
+                        {
+                            _overlayEntryDict.TryGetValue(currentIdentifier, out IOverlayEntry entry);
 
-                        if (entry != null)
-                            entry.Value = sensor.Value;
+                            if (entry != null)
+                                entry.Value = sensor.Value;
+                        }
                     }
                 }
 
@@ -347,10 +362,13 @@ namespace CapFrameX.Sensor
                 {
                     var currentIdentifier = sensor.Identifier.ToString();
 
-                    _overlayEntryDict.TryGetValue(currentIdentifier, out IOverlayEntry entry);
+                    lock (_dictLock)
+                    {
+                        _overlayEntryDict.TryGetValue(currentIdentifier, out IOverlayEntry entry);
 
-                    if (entry != null)
-                        entry.Value = sensor.Value;
+                        if (entry != null)
+                            entry.Value = sensor.Value;
+                    }
                 }
             }
         }

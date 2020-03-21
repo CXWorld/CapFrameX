@@ -1,5 +1,10 @@
 [
   {
+    "Name": "PaintDotNet",
+    "DisplayName": "null",
+    "IsBlacklisted": true
+  },
+  {
     "Name": "ffxiv_dx11",
     "DisplayName": "Final Fantasy XIV",
     "IsBlacklisted": false
