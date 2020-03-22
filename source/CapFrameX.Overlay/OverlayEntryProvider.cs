@@ -235,8 +235,8 @@ namespace CapFrameX.Overlay
 					new OverlayEntryWrapper("CaptureTimer")
                     {
                         OverlayEntryType = EOverlayEntryType.CX,
-                        ShowOnOverlay = false,
-                        ShowOnOverlayIsEnabled = false,
+                        ShowOnOverlay = true,
+                        ShowOnOverlayIsEnabled = true,
                         Description = "Capture timer",
                         GroupName = "Status:",
                         Value = "0",
@@ -251,7 +251,7 @@ namespace CapFrameX.Overlay
                     {
                         OverlayEntryType = EOverlayEntryType.CX,
                         ShowOnOverlay = false,
-                        ShowOnOverlayIsEnabled = false,
+                        ShowOnOverlayIsEnabled = true,
                         Description = "Run history",
                         GroupName = string.Empty,
                         Value = default,
