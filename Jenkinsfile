@@ -5,11 +5,15 @@ pipeline {
 
     stages {
         stage('Nuget restore') {
-            bat "nuget restore"
+            steps {
+                bat "nuget restore"
+            }
         }
 
         stage('Build') {
-            bat "msbuild source\\CapFrameX\\CapFrameX.csproj /p:DeployOnBuild=true /p:VisualStudioVersion=16.0"
+            steps {
+                bat "msbuild source\\CapFrameX\\CapFrameX.csproj /p:DeployOnBuild=true /p:VisualStudioVersion=16.0"
+            }
         }
     }
 }
