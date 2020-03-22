@@ -48,8 +48,7 @@ namespace CapFrameX.ViewModel
 		private readonly IStatisticProvider _statisticProvider;
 		private readonly ILogger<CaptureViewModel> _logger;
 		private readonly ProcessList _processList;
-		private readonly MediaPlayer _soundPlayer = new MediaPlayer();
-		private readonly string[] _soundModes = new[] { "none", "simple sounds", "voice response" };
+		private readonly SoundManager _soundManager;
 		private readonly List<string> _captureDataArchive = new List<string>(ARCHIVE_LENGTH);
 
 		private IDisposable _disposableHeartBeat;
@@ -64,12 +63,9 @@ namespace CapFrameX.ViewModel
 		private string _captureTimeString = "0";
 		private string _captureStartDelayString = "0";
 		private IKeyboardMouseEvents _globalCaptureHookEvent;
-		private string _selectedSoundMode;
 		private string _loggerOutput = string.Empty;
 		private bool _fillArchive = false;
 		private CancellationTokenSource _cancellationTokenSource;
-		private int _sliderSoundLevel;
-		private bool _showVolumeController;
 		private PlotModel _frametimeModel;
 		private ISubject<string> _frametimeStream;
 		private long _qpcTimeStart;
@@ -177,59 +173,12 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-		public string SelectedSoundMode
-		{
-			get { return _selectedSoundMode; }
-			set
-			{
-				_selectedSoundMode = value;
-				_appConfiguration.HotkeySoundMode = value;
-
-				if (value == "simple sounds")
-				{
-					SliderSoundLevel = (int)Math.Round(SimpleSoundLevel * 100, 0);
-					ShowVolumeController = true;
-				}
-				else if (value == "voice response")
-				{
-					SliderSoundLevel = (int)Math.Round(VoiceSoundLevel * 100, 0);
-					ShowVolumeController = true;
-				}
-				else
-				{
-					ShowVolumeController = false;
-				}
-
-				RaisePropertyChanged();
-			}
-		}
-
-		public bool ShowVolumeController
-		{
-			get { return _showVolumeController; }
-			set
-			{
-				_showVolumeController = value;
-				RaisePropertyChanged();
-			}
-		}
-
 		public string LoggerOutput
 		{
 			get { return _loggerOutput; }
 			set
 			{
 				_loggerOutput = value;
-				RaisePropertyChanged();
-			}
-		}
-
-		public int SliderSoundLevel
-		{
-			get { return _sliderSoundLevel; }
-			set
-			{
-				_sliderSoundLevel = value;
 				RaisePropertyChanged();
 			}
 		}
@@ -244,27 +193,32 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-		public double VoiceSoundLevel
+		public string SelectedSoundMode
 		{
-			get { return _appConfiguration.VoiceSoundLevel; }
+			get => Enum.GetName(typeof(SoundMode), _soundManager.SoundMode);
 			set
 			{
-				_appConfiguration.VoiceSoundLevel = value;
+				_soundManager.SetSoundMode(value);
+				RaisePropertyChanged();
+				RaisePropertyChanged(nameof(SliderSoundLevel));
+				RaisePropertyChanged(nameof(ShowVolumeController));
 			}
 		}
 
-		public double SimpleSoundLevel
+		public bool ShowVolumeController => _soundManager.SoundMode != SoundMode.None;
+
+		public double SliderSoundLevel
 		{
-			get { return _appConfiguration.SimpleSoundLevel; }
-			set
-			{
-				_appConfiguration.SimpleSoundLevel = value;
+			get => Math.Round(_soundManager.Volume * 100, 0);
+			set {
+				_soundManager.Volume = value / 100;
+				RaisePropertyChanged();
 			}
 		}
+
+		public string[] SoundModes => _soundManager.AvailableSoundModes;
 
 		public IAppConfiguration AppConfiguration => _appConfiguration;
-
-		public string[] SoundModes => _soundModes;
 
 		public ObservableCollection<string> ProcessesToCapture { get; }
 			= new ObservableCollection<string>();
@@ -286,7 +240,8 @@ namespace CapFrameX.ViewModel
 								ISensorService sensorService,
 								IStatisticProvider statisticProvider,
 								ILogger<CaptureViewModel> logger,
-								ProcessList processList)
+								ProcessList processList,
+								SoundManager soundManager)
 		{
 			_appConfiguration = appConfiguration;
 			_captureService = captureService;
@@ -297,12 +252,13 @@ namespace CapFrameX.ViewModel
 			_statisticProvider = statisticProvider;
 			_logger = logger;
 			_processList = processList;
+			_soundManager = soundManager;
 			AddToIgonreListCommand = new DelegateCommand(OnAddToIgonreList);
 			AddToProcessListCommand = new DelegateCommand(OnAddToProcessList);
 			ResetCaptureProcessCommand = new DelegateCommand(OnResetCaptureProcess);
 
 			_logger.LogDebug("{viewName} Ready", this.GetType().Name);
-			CaptureStateInfo = "Service ready..." + Environment.NewLine + 
+			CaptureStateInfo = "Service ready..." + Environment.NewLine +
 				$"Press {CaptureHotkeyString} to start capture of the running process.";
 			SelectedSoundMode = _appConfiguration.HotkeySoundMode;
 			CaptureTimeString = _appConfiguration.CaptureTime.ToString();
@@ -371,22 +327,7 @@ namespace CapFrameX.ViewModel
 
 		public void OnSoundLevelChanged()
 		{
-			if (SelectedSoundMode == "simple sounds")
-			{
-				SimpleSoundLevel = SliderSoundLevel / 100d;
-
-				_soundPlayer.Open(new Uri("Sounds/simple_start_sound.mp3", UriKind.Relative));
-				_soundPlayer.Volume = SimpleSoundLevel;
-				_soundPlayer.Play();
-			}
-			else if (SelectedSoundMode == "voice response")
-			{
-				VoiceSoundLevel = SliderSoundLevel / 100d;
-
-				_soundPlayer.Open(new Uri("Sounds/capture_started.mp3", UriKind.Relative));
-				_soundPlayer.Volume = VoiceSoundLevel;
-				_soundPlayer.Play();
-			}
+			_soundManager.PlaySound(Sound.CaptureStarted);
 		}
 
 		private void AddLoggerEntry(string entry)
@@ -396,7 +337,8 @@ namespace CapFrameX.ViewModel
 
 		private void SubscribeToUpdateProcessIgnoreList()
 		{
-			_processList.ProcessesUpdate.StartWith(default(int)).Subscribe(_ => {
+			_processList.ProcessesUpdate.StartWith(default(int)).Subscribe(_ =>
+			{
 				ProcessesToIgnore.Clear();
 				ProcessesToIgnore.AddRange(_processList.GetIgnoredProcessNames());
 			});
@@ -438,21 +380,15 @@ namespace CapFrameX.ViewModel
 		{
 			if (!ProcessesToCapture.Any())
 			{
-				_soundPlayer.Open(new Uri("Sounds/no_process.mp3", UriKind.Relative));
-				_soundPlayer.Volume = VoiceSoundLevel;
-				_soundPlayer.Play();
+				_soundManager.PlaySound(Sound.NoProcess);
 				return;
 			}
-
-			if (ProcessesToCapture.Count > 1 && string.IsNullOrWhiteSpace(SelectedProcessToCapture))
+			else if (ProcessesToCapture.Count > 1 && string.IsNullOrWhiteSpace(SelectedProcessToCapture))
 			{
-				_soundPlayer.Open(new Uri("Sounds/more_than_one_process.mp3", UriKind.Relative));
-				_soundPlayer.Volume = VoiceSoundLevel;
-				_soundPlayer.Play();
+				_soundManager.PlaySound(Sound.MoreThanOneProcess);
 				return;
 			}
-
-			if (!IsCapturing)
+			else if (!IsCapturing)
 			{
 				if (SelectedProcessToCapture != null)
 					_lastCapturedProcess = SelectedProcessToCapture;
@@ -465,21 +401,7 @@ namespace CapFrameX.ViewModel
 
 				_timestampStartCapture = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds();
 
-				// none -> do nothing
-				// simple sounds
-				if (SelectedSoundMode == _soundModes[1])
-				{
-					_soundPlayer.Open(new Uri("Sounds/simple_start_sound.mp3", UriKind.Relative));
-					_soundPlayer.Volume = SimpleSoundLevel;
-					_soundPlayer.Play();
-				}
-				// voice response
-				else if (SelectedSoundMode == _soundModes[2])
-				{
-					_soundPlayer.Open(new Uri("Sounds/capture_started.mp3", UriKind.Relative));
-					_soundPlayer.Volume = VoiceSoundLevel;
-					_soundPlayer.Play();
-				}
+				_soundManager.PlaySound(Sound.CaptureStarted);
 
 				StartCaptureDataFromStream();
 
@@ -507,21 +429,7 @@ namespace CapFrameX.ViewModel
 				_timestampStopCapture = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds();
 				_cancellationTokenSource?.Cancel();
 
-				// none -> do nothing
-				// simple sounds
-				if (SelectedSoundMode == _soundModes[1])
-				{
-					_soundPlayer.Open(new Uri("Sounds/simple_stop_sound.mp3", UriKind.Relative));
-					_soundPlayer.Volume = SimpleSoundLevel;
-					_soundPlayer.Play();
-				}
-				// voice response
-				else if (SelectedSoundMode == _soundModes[2])
-				{
-					_soundPlayer.Open(new Uri("Sounds/capture_finished.mp3", UriKind.Relative));
-					_soundPlayer.Volume = VoiceSoundLevel;
-					_soundPlayer.Play();
-				}
+				_soundManager.PlaySound(Sound.CaptureStopped);
 
 				_sensorService.StopSensorLogging();
 				var context = TaskScheduler.FromCurrentSynchronizationContext();
@@ -615,22 +523,7 @@ namespace CapFrameX.ViewModel
 
 							// update overlay
 							_overlayService.SetCaptureServiceStatus("Processing data");
-
-							// none -> do nothing
-							// simple sounds
-							if (SelectedSoundMode == _soundModes[1])
-							{
-								_soundPlayer.Open(new Uri("Sounds/simple_stop_sound.mp3", UriKind.Relative));
-								_soundPlayer.Volume = SimpleSoundLevel;
-								_soundPlayer.Play();
-							}
-							// voice response
-							else if (SelectedSoundMode == _soundModes[2])
-							{
-								_soundPlayer.Open(new Uri("Sounds/capture_finished.mp3", UriKind.Relative));
-								_soundPlayer.Volume = VoiceSoundLevel;
-								_soundPlayer.Play();
-							}
+							_soundManager.PlaySound(Sound.CaptureStarted);
 						}));
 					}, _cancellationTokenSource.Token, TaskContinuationOptions.ExecuteSynchronously, context);
 				});
@@ -648,7 +541,12 @@ namespace CapFrameX.ViewModel
 			IsCapturing = !IsCapturing;
 			_disposableHeartBeat = GetListUpdatHeartBeat();
 			IsAddToIgnoreListButtonActive = true;
+<<<<<<< HEAD
 			UpdateCaptureStateInfo();	
+=======
+			UpdateCaptureStateInfo();
+			_overlayService.SetCaptureServiceStatus("Capture service ready...");
+>>>>>>> release/1.5.0
 		}
 
 		private async Task SetTaskDelayOffset()
@@ -725,11 +623,11 @@ namespace CapFrameX.ViewModel
 			StopCaptureService();
 
 			var process = _processList.Processes.FirstOrDefault(p => p.Name == SelectedProcessToCapture);
-			if(process is null)
+			if (process is null)
 			{
 				_processList.AddEntry(SelectedProcessToCapture, null, true);
 			}
-			else if(process is CXProcess)
+			else if (process is CXProcess)
 			{
 				process.Blacklist();
 			}
@@ -813,17 +711,17 @@ namespace CapFrameX.ViewModel
 			if (string.IsNullOrWhiteSpace(SelectedProcessToCapture))
 			{
 				if (!ProcessesToCapture.Any())
-				{ 
+				{
 					CaptureStateInfo = "Process list clear." + Environment.NewLine + $"Start any game / application and press  {CaptureHotkeyString} to start capture.";
 					_overlayService.SetCaptureServiceStatus("Scanning for process...");
 				}
 				else if (ProcessesToCapture.Count == 1)
-				{ 
+				{
 					CaptureStateInfo = "Process auto-detected." + Environment.NewLine + $"Press {CaptureHotkeyString} to start capture.";
 					_overlayService.SetCaptureServiceStatus("Ready to capture...");
 				}
 				else if (ProcessesToCapture.Count > 1)
-				{ 
+				{
 					//Multiple processes detected, select the one to capture or move unwanted processes to ignore list.
 					CaptureStateInfo = "Multiple processes detected." + Environment.NewLine + "Select one or move unwanted processes to ignore list.";
 					_overlayService.SetCaptureServiceStatus("Multiple processes detected");
