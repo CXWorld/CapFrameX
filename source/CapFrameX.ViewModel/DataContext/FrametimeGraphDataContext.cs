@@ -13,98 +13,56 @@ using System.Reactive.Linq;
 using System.Text;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Threading;
 
 namespace CapFrameX.ViewModel.DataContext
 {
 	public class FrametimeGraphDataContext : GraphDataContextBase
 	{
-		private PlotModel _frametimeModel;
-
-		public PlotModel FrametimeModel
-		{
-			get { return _frametimeModel; }
-			set
-			{
-				_frametimeModel = value;
-				RaisePropertyChanged();
-			}
-		}
-
 		public ICommand CopyFrametimeValuesCommand { get; }
 
 		public ICommand CopyFrametimePointsCommand { get; }
+
+		public PlotModel FrametimeModel { get => PlotModel; }
 
 		public FrametimeGraphDataContext(IRecordDataServer recordDataServer, IAppConfiguration appConfiguration, IStatisticProvider frametimesStatisticProvider) :
 			base(recordDataServer, appConfiguration, frametimesStatisticProvider)
 		{
 			CopyFrametimeValuesCommand = new DelegateCommand(OnCopyFrametimeValues);
 			CopyFrametimePointsCommand = new DelegateCommand(OnCopyFrametimePoints);
+		}
 
-			// Update Chart after changing index slider
-			RecordDataServer.FrametimePointDataStream.Subscribe(sequence =>
+		public void BuildPlotmodel(VisibleGraphs visibleGraphs, Action<PlotModel> onFinishAction = null)
+		{
+			var plotModel = PlotModel;
+			Dispatcher.CurrentDispatcher.Invoke(() =>
 			{
-				SetFrametimeChart(sequence);
-			});
+				Reset();
+				plotModel.Axes.Add(AxisDefinitions[EPlotAxis.XAXIS]);
+				plotModel.Axes.Add(AxisDefinitions[EPlotAxis.YAXISFRAMETIMES]);
 
-			FrametimeModel = new PlotModel
-			{
-				PlotMargins = new OxyThickness(35, 0, 35, 35),
-				PlotAreaBorderColor = OxyColor.FromArgb(64, 204, 204, 204),
-				LegendPlacement = LegendPlacement.Outside,
-				LegendPosition = LegendPosition.BottomCenter,
-				LegendOrientation = LegendOrientation.Horizontal,
-				LegendMaxHeight = 25
-			};
+				SetFrametimeChart(plotModel, RecordDataServer.GetFrametimePointTimeWindow());
 
-			//Axes
-			//X
-			FrametimeModel.Axes.Add(new LinearAxis()
-			{
-				Key = "xAxis",
-				Position = AxisPosition.Bottom,
-				Title = "Recording time [s]",
-				MajorGridlineStyle = LineStyle.Solid,
-				MajorGridlineThickness = 1,
-				MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
-				MinorTickSize = 0,
-				MajorTickSize = 0
-			});
+				if (visibleGraphs.GpuLoad || visibleGraphs.CpuLoad || visibleGraphs.CpuMaxThreadLoad)
+					plotModel.Axes.Add(AxisDefinitions[EPlotAxis.YAXISPERCENTAGE]);
 
-			//Y
-			FrametimeModel.Axes.Add(new LinearAxis()
-			{
-				Key = "yAxis",
-				Position = AxisPosition.Left,
-				Title = "Frametime [ms]",
-				MajorGridlineStyle = LineStyle.Solid,
-				MajorGridlineThickness = 1,
-				MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
-				MinorTickSize = 0,
-				MajorTickSize = 0
-			});
+				if (visibleGraphs.GpuLoad)
+					SetGPULoadChart(plotModel, RecordDataServer.GetGPULoadPointTimeWindow());
+				if(visibleGraphs.CpuLoad)
+					SetCPULoadChart(plotModel, RecordDataServer.GetCPULoadPointTimeWindow());
+				if (visibleGraphs.CpuMaxThreadLoad)
+					SetCPUMaxThreadLoadChart(plotModel, RecordDataServer.GetCPUMaxThreadLoadPointTimeWindow());
 
-			//Y2
-			FrametimeModel.Axes.Add(new LinearAxis()
-			{
-				Key = "yAxisLoad",
-				Position = AxisPosition.Right,
-				Title = "Load [%]",
-				MajorGridlineStyle = LineStyle.None,
-				MajorStep = 25,
-				MinorTickSize = 0,
-				MajorTickSize = 0,
-				Minimum = 0,
-				Maximum = 100,
-				AbsoluteMaximum = 100,
-				AbsoluteMinimum = 0
+				onFinishAction?.Invoke(plotModel);
+				plotModel.InvalidatePlot(true);
 			});
 		}
 
-		public void SetFrametimeChart(IList<Point> frametimePoints)
+		private void SetFrametimeChart(PlotModel plotModel, IList<Point> frametimePoints)
 		{
 			if (frametimePoints == null || !frametimePoints.Any())
 				return;
-			
+
 			int count = frametimePoints.Count;
 			var frametimeDataPoints = frametimePoints.Select(pnt => new DataPoint(pnt.X, pnt.Y));
 			var yMin = frametimePoints.Min(pnt => pnt.Y);
@@ -112,42 +70,37 @@ namespace CapFrameX.ViewModel.DataContext
 			var movingAverage = FrametimesStatisticProvider
 				.GetMovingAverage(frametimePoints.Select(pnt => pnt.Y)
 				.ToList(), AppConfiguration.MovingAverageWindowSize);
-
-			Application.Current.Dispatcher.Invoke(new Action(() =>
+			var frametimeSeries = new LineSeries
 			{
-				FrametimeModel.Series.Clear();
-				var frametimeSeries = new LineSeries
-				{
-					Title = "Frametimes",
-					StrokeThickness = 1,
-					LegendStrokeThickness = 4,
-					Color = ColorRessource.FrametimeStroke
-				};
-				var movingAverageSeries = new LineSeries
-				{
-					Title = "Moving average",
-					StrokeThickness = 2,
-					LegendStrokeThickness = 4,
-					Color = ColorRessource.FrametimeMovingAverageStroke
-				};
+				Title = "Frametimes",
+				StrokeThickness = 1,
+				LegendStrokeThickness = 4,
+				Color = ColorRessource.FrametimeStroke
+			};
+			var movingAverageSeries = new LineSeries
+			{
+				Title = "Moving average",
+				StrokeThickness = 2,
+				LegendStrokeThickness = 4,
+				Color = ColorRessource.FrametimeMovingAverageStroke
+			};
 
-				frametimeSeries.Points.AddRange(frametimeDataPoints);
-				movingAverageSeries.Points.AddRange(movingAverage.Select((y, i) => new DataPoint(frametimePoints[i].X, y)));
+			frametimeSeries.Points.AddRange(frametimeDataPoints);
+			movingAverageSeries.Points.AddRange(movingAverage.Select((y, i) => new DataPoint(frametimePoints[i].X, y)));
 
-				var xAxis = FrametimeModel.GetAxisOrDefault("xAxis", null);
-				//var yAxis = FrametimeModel.GetAxisOrDefault("yAxis", null);
+			UpdateAxis(EPlotAxis.XAXIS, (axis) =>
+			{
+				axis.Minimum = frametimePoints.First().X;
+				axis.Maximum = frametimePoints.Last().X;
+			});
+			//var yAxis = FrametimeModel.GetAxisOrDefault("yAxis", null);
 
-				xAxis.Minimum = frametimePoints.First().X;
-				xAxis.Maximum = frametimePoints.Last().X;
-				//yAxis.Minimum = yMin - (yMax - yMin) / 6;
-				//yAxis.Maximum = yMax + (yMax - yMin) / 6;
 
-				FrametimeModel.Series.Add(frametimeSeries);
-				FrametimeModel.Series.Add(movingAverageSeries);
+			//yAxis.Minimum = yMin - (yMax - yMin) / 6;
+			//yAxis.Maximum = yMax + (yMax - yMin) / 6;
 
-				FrametimeModel.InvalidatePlot(true);
-				SetLoadChart(RecordDataServer.GetLoadPointTimeWindow());
-			}));
+			plotModel.Series.Add(frametimeSeries);
+			plotModel.Series.Add(movingAverageSeries);
 		}
 
 		private void OnCopyFrametimeValues()
@@ -181,25 +134,6 @@ namespace CapFrameX.ViewModel.DataContext
 			}
 
 			Clipboard.SetDataObject(builder.ToString(), false);
-		}
-
-		private void SetLoadChart(IList<Point> points)
-		{
-			Application.Current.Dispatcher.Invoke(() =>
-			{
-				var series = new LineSeries
-				{
-					Title = "GPU load",
-					StrokeThickness = 1,
-					LegendStrokeThickness = 4,
-					Color = OxyColor.FromRgb(32, 141, 228),
-					YAxisKey = "yAxisLoad"
-				};
-
-				series.Points.AddRange(points.Select(p => new DataPoint(p.X, p.Y)));
-				FrametimeModel.Series.Add(series);
-				FrametimeModel.InvalidatePlot(true);
-			});
 		}
 	}
 }

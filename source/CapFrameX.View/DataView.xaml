@@ -385,11 +385,11 @@
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
                                     <TextBlock Margin="5" Grid.Row="0" Grid.Column="0" Text="Total CPU load" VerticalAlignment="Center"/>
-                                    <ToggleButton Margin="5" Grid.Row="0" Grid.Column="1" IsChecked="{Binding ShowCPULoadGraph}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show CPU usage graph" />
+                                    <ToggleButton Margin="5" Grid.Row="0" Grid.Column="1" IsChecked="{Binding Path=CpuLoad}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show CPU usage graph" />
                                     <TextBlock Margin="5" Grid.Row="1" Grid.Column="0" Text="Max. CPU thread load" VerticalAlignment="Center"/>
-                                    <ToggleButton Margin="5" Grid.Row="1" Grid.Column="1" IsChecked="{Binding ShowMaxThreadLoadGraph}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show max CPU thread usage graph" />
+                                    <ToggleButton Margin="5" Grid.Row="1" Grid.Column="1" IsChecked="{Binding Path=CpuMaxThreadLoad}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show max CPU thread usage graph" />
                                     <TextBlock Margin="5" Grid.Row="2" Grid.Column="0" Text="GPU load" VerticalAlignment="Center"/>
-                                    <ToggleButton Margin="5" Grid.Row="2" Grid.Column="1" IsChecked="{Binding ShowGPULoadGraph}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show GPU usage graph" />
+                                    <ToggleButton Margin="5" Grid.Row="2" Grid.Column="1" IsChecked="{Binding Path=GpuLoad}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show GPU usage graph" />
                                 </Grid>
                             </StackPanel>
                         </materialDesign:Card>
