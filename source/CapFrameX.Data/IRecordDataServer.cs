@@ -37,5 +37,6 @@ namespace CapFrameX.Data
 		IList<Point> GetFpsPointTimeWindow();
 
 		void SetTimeWindow(double currentTime, double windowLength);
+		IList<Point> GetLoadPointTimeWindow();
 	}
 }

@@ -21,6 +21,7 @@ namespace CapFrameX.Data
 		private ISubject<IList<Point>> _frametimePointDataSubject;
 		private ISubject<IList<double>> _fpsDataSubject;
 		private ISubject<IList<Point>> _fpsPointDataSubject;
+		private ISubject<IList<Point>> _loadsPointDataSubject;
 
 		public bool IsActive { get; set; }
 
@@ -69,6 +70,7 @@ namespace CapFrameX.Data
 			_frametimePointDataSubject = new Subject<IList<Point>>();
 			_fpsDataSubject = new Subject<IList<double>>();
 			_fpsPointDataSubject = new Subject<IList<Point>>();
+			_loadsPointDataSubject = new Subject<IList<Point>>();
 
 			IsActive = true;
 		}
@@ -101,6 +103,22 @@ namespace CapFrameX.Data
 		public IList<Point> GetFpsPointTimeWindow()
 		{
 			return GetFrametimePointTimeWindow()?.Select(pnt => new Point(pnt.X, 1000 / pnt.Y)).ToList();
+		}
+
+		public IList<Point> GetLoadPointTimeWindow()
+		{
+			if (CurrentSession == null)
+				return null;
+
+			var list = new List<Point>();
+			var times = CurrentSession.Runs.SelectMany(r => r.SensorData.MeasureTime).ToArray();
+			var loads = CurrentSession.Runs.SelectMany(r => r.SensorData.GpuUsage).ToArray();
+
+			for (int i = 0; i< times.Count(); i++)
+			{
+				list.Add(new Point(times[i], loads[i]));
+			}
+			return list;
 		}
 
 		private void DoUpdateWindowTrigger()
