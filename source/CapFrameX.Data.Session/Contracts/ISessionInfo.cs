@@ -15,6 +15,7 @@ namespace CapFrameX.Data.Session.Contracts
 		string SystemRam { get; set; }
 		string BaseDriverVersion { get; set; }
 		string DriverPackage { get; set; }
+		string GPUDriverVersion { get; set; }
 		string GPU { get; set; }
 		string GPUCount {get; set; }
 		string GpuCoreClock { get; set; }
