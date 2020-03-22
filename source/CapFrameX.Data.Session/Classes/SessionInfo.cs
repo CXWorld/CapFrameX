@@ -18,6 +18,7 @@ namespace CapFrameX.Data.Session.Classes
 		public string OS { get; set; }
 		public string SystemRam { get; set; }
 		public string BaseDriverVersion { get; set; }
+		public string GPUDriverVersion { get; set; }
 		public string DriverPackage { get; set; }
 		public string GPU { get; set; }
 		public string GPUCount { get; set; }

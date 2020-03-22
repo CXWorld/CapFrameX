@@ -24,6 +24,7 @@ namespace CapFrameX.Contracts.Data
 		string GPUCoreClock { get; }
 		string GPUMemoryClock { get; }
 		string GPUMemory { get; }
+		string GPUDriverVersion { get; }
 		string IsAggregated { get; }
 		string Comment { get; }
 		bool IsValid { get; }
