@@ -1,3 +1,4 @@
+
 /////////////////////////////////////////////////////////////////////////////
 // created by Unwinder - modified by ZeroStrat
 /////////////////////////////////////////////////////////////////////////////
@@ -486,7 +487,7 @@ void RTSSCoreControl::Refresh()
 void RTSSCoreControl::AddOverlayEntry(CGroupedString* groupedString, OverlayEntry* entry, BOOL bFormatTagsSupported)
 {
 	// handle special cases first
-	// ToDo when more special cases: better use switch-case with string/index mapping table
+	// ToDo: When more special cases, better use switch-case with string/index mapping table
 	if (entry->Identifier == "RunHistory")
 	{
 		if (entry->ShowOnOverlay)

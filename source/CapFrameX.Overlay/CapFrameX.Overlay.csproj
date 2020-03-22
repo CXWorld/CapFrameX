@@ -112,6 +112,10 @@
       <Project>{a4559b99-7fcb-40ef-bf97-d293a2b7d6d3}</Project>
       <Name>CapFrameX.Extensions</Name>
     </ProjectReference>
+    <ProjectReference Include="..\CapFrameX.PresentMonInterface\CapFrameX.PresentMonInterface.csproj">
+      <Project>{ADFBAECE-B74F-4A80-87D1-84BC990527B0}</Project>
+      <Name>CapFrameX.PresentMonInterface</Name>
+    </ProjectReference>
     <ProjectReference Include="..\CapFrameX.RTSSInterface\CapFrameX.RTSSInterface.vcxproj">
       <Project>{9c46d3f3-72e0-4e6c-ad3e-54a5ee121475}</Project>
       <Name>CapFrameX.RTSSInterface</Name>

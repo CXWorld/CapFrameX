@@ -1,6 +1,8 @@
-﻿using CapFrameX.Contracts.Overlay;
+﻿using CapFrameX.Contracts.Configuration;
+using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.Sensor;
 using CapFrameX.Extensions;
+using CapFrameX.PresentMonInterface;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.IO;
@@ -16,18 +18,22 @@ namespace CapFrameX.Overlay
             = @"OverlayConfiguration\OverlayEntryConfiguration.json";
 
         private readonly ISensorService _sensorService;
+        private readonly IAppConfiguration _appConfiguration;
         private readonly Dictionary<string, IOverlayEntry> _identifierOverlayEntryDict;
         private List<IOverlayEntry> _overlayEntries;
 
-        public OverlayEntryProvider(ISensorService sensorService)
+        public OverlayEntryProvider(ISensorService sensorService, IAppConfiguration appConfiguration)
         {
             _sensorService = sensorService;
+            _appConfiguration = appConfiguration;
             _identifierOverlayEntryDict = new Dictionary<string, IOverlayEntry>();
             EntryUpdateStream = new Subject<Unit>();
 
             try
             {
                 LoadOverlayEntriesFromJson();
+                CheckCustomSystemInfo();
+                ChecOSVersion();
             }
             catch
             {
@@ -88,6 +94,7 @@ namespace CapFrameX.Overlay
                 var adjustedOverlayEntryIdentfiers = adjustedOverlayEntries
                     .Select(entry => entry.Identifier)
                     .ToList();
+
                 foreach (var entry in _overlayEntries.Where(x => !(x.OverlayEntryType == EOverlayEntryType.CX)))
                 {
                     if (!sensorOverlayEntryIdentfiers.Contains(entry.Identifier))
@@ -117,6 +124,53 @@ namespace CapFrameX.Overlay
             }
         }
 
+        private void ChecOSVersion()
+        {
+            _identifierOverlayEntryDict.TryGetValue("OS", out IOverlayEntry entry);
+
+            if (entry != null)
+            {
+                entry.Value = SystemInfo.GetOSVersion();
+            }
+        }
+
+        private void CheckCustomSystemInfo()
+        {
+            _identifierOverlayEntryDict.TryGetValue("CustomCPU", out IOverlayEntry customCPUEntry);
+
+            if (customCPUEntry != null)
+            {
+                customCPUEntry.Value = 
+                    _appConfiguration.CustomCpuDescription == "CPU" ? SystemInfo.GetProcessorName() 
+                    : _appConfiguration.CustomCpuDescription;
+            }
+
+            _identifierOverlayEntryDict.TryGetValue("CustomGPU", out IOverlayEntry customGPUEntry);
+
+            if (customGPUEntry != null)
+            {
+                customGPUEntry.Value =
+                    _appConfiguration.CustomGpuDescription == "GPU" ? SystemInfo.GetGraphicCardName()
+                    : _appConfiguration.CustomGpuDescription;
+            }
+
+            _identifierOverlayEntryDict.TryGetValue("Mainboard", out IOverlayEntry mainboardEntry);
+
+            if (mainboardEntry != null)
+            {
+                mainboardEntry.Value = SystemInfo.GetMotherboardName();
+            }
+
+            _identifierOverlayEntryDict.TryGetValue("CustomRAM", out IOverlayEntry customRAMEntry); ;
+
+            if (customRAMEntry != null)
+            {
+                customRAMEntry.Value =
+                    _appConfiguration.CustomRamDescription == "RAM" ? SystemInfo.GetSystemRAMInfoName()
+                    : _appConfiguration.CustomRamDescription;
+            }
+        }
+
         private void ReorderOverlayEntries()
         {
             var reorderedOverlayEntries = new List<IOverlayEntry>();
@@ -133,7 +187,33 @@ namespace CapFrameX.Overlay
 
         private void SetOverlayEntryDefaults()
         {
-            _overlayEntries = new List<IOverlayEntry>
+            _overlayEntries = GetOverlayEntryDefaults().Select(item => item as IOverlayEntry).ToList();
+
+            // Sensor data
+            var sensorOverlayEntries = _sensorService.GetSensorOverlayEntries();
+            _overlayEntries.AddRange(sensorOverlayEntries);
+
+            foreach (var entry in _overlayEntries)
+            {
+                entry.OverlayEntryProvider = this;
+                _identifierOverlayEntryDict.Add(entry.Identifier, entry);
+            }
+        }
+
+        private void UpdateSensorData()
+        {
+            _sensorService.UpdateSensors();
+
+            foreach (var entry in _overlayEntries.Where(x => !(x.OverlayEntryType == EOverlayEntryType.CX)))
+            {
+                var sensorEntry = _sensorService.GetSensorOverlayEntry(entry.Identifier);
+                entry.Value = sensorEntry.Value;
+            }
+        }
+
+        public static List<OverlayEntryWrapper> GetOverlayEntryDefaults()
+        {
+            return new List<OverlayEntryWrapper>
                 {
 					// CX 
 					// CaptureServiceStatus
@@ -210,29 +290,83 @@ namespace CapFrameX.Overlay
                         ShowGraph = false,
                         ShowGraphIsEnabled = true,
                         Color = string.Empty
+                    },
+
+                    // Custom CPU
+					new OverlayEntryWrapper("CustomCPU")
+                    {
+                        OverlayEntryType = EOverlayEntryType.CX,
+                        ShowOnOverlay = false,
+                        ShowOnOverlayIsEnabled = true,
+                        Description = "Custom CPU Name",
+                        GroupName = "System Info",
+                        Value = "CPU",
+                        ValueFormat = default,
+                        ShowGraph = false,
+                        ShowGraphIsEnabled = false,
+                        Color = string.Empty
+                    },
+
+                    // Custom GPU
+					new OverlayEntryWrapper("CustomGPU")
+                    {
+                        OverlayEntryType = EOverlayEntryType.CX,
+                        ShowOnOverlay = false,
+                        ShowOnOverlayIsEnabled = true,
+                        Description = "Custom GPU Name",
+                        GroupName = "System Info",
+                        Value = "GPU",
+                        ValueFormat = default,
+                        ShowGraph = false,
+                        ShowGraphIsEnabled = false,
+                        Color = string.Empty
+                    },
+
+                    // Custom Mainboard
+					new OverlayEntryWrapper("Mainboard")
+                    {
+                        OverlayEntryType = EOverlayEntryType.CX,
+                        ShowOnOverlay = false,
+                        ShowOnOverlayIsEnabled = true,
+                        Description = "Mainboard Name",
+                        GroupName = "System Info",
+                        Value = "Mainboard",
+                        ValueFormat = default,
+                        ShowGraph = false,
+                        ShowGraphIsEnabled = false,
+                        Color = string.Empty
+                    },
+
+                    // Custom RAM
+					new OverlayEntryWrapper("CustomRAM")
+                    {
+                        OverlayEntryType = EOverlayEntryType.CX,
+                        ShowOnOverlay = false,
+                        ShowOnOverlayIsEnabled = true,
+                        Description = "Custom RAM Description",
+                        GroupName = "System Info",
+                        Value = "RAM",
+                        ValueFormat = default,
+                        ShowGraph = false,
+                        ShowGraphIsEnabled = false,
+                        Color = string.Empty
+                    },
+
+                    // OS
+					new OverlayEntryWrapper("OS")
+                    {
+                        OverlayEntryType = EOverlayEntryType.CX,
+                        ShowOnOverlay = false,
+                        ShowOnOverlayIsEnabled = true,
+                        Description = "OS Version",
+                        GroupName = "OS",
+                        Value = "OS",
+                        ValueFormat = default,
+                        ShowGraph = false,
+                        ShowGraphIsEnabled = false,
+                        Color = string.Empty
                     }
             };
-
-            // Sensor data
-            var sensorOverlayEntries = _sensorService.GetSensorOverlayEntries();
-            _overlayEntries.AddRange(sensorOverlayEntries);
-
-            foreach (var entry in _overlayEntries)
-            {
-                entry.OverlayEntryProvider = this;
-                _identifierOverlayEntryDict.Add(entry.Identifier, entry);
-            }
-        }
-
-        private void UpdateSensorData()
-        {
-            _sensorService.UpdateSensors();
-
-            foreach (var entry in _overlayEntries.Where(x => !(x.OverlayEntryType == EOverlayEntryType.CX)))
-            {
-                var sensorEntry = _sensorService.GetSensorOverlayEntry(entry.Identifier);
-                entry.Value = sensorEntry.Value;
-            }
         }
     }
 }
