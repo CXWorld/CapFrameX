@@ -22,6 +22,19 @@
     <DefineConstants>CapFrameXInstaller.BinaryDir=$(SolutionDir)source\CapFrameX\bin\x64\$(Configuration)</DefineConstants>
     <SuppressIces>ICE57</SuppressIces>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
+    <DefineConstants>Debug;CapFrameXInstaller.BinaryDir=$(SolutionDir)\source\CapFrameX\bin\$(Configuration)</DefineConstants>
+    <SuppressValidation>False</SuppressValidation>
+    <SuppressIces>ICE57</SuppressIces>
+    <OutputPath>bin\$(Platform)\$(Configuration)\</OutputPath>
+    <IntermediateOutputPath>obj\$(Platform)\$(Configuration)\</IntermediateOutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
+    <DefineConstants>CapFrameXInstaller.BinaryDir=$(SolutionDir)source\CapFrameX\bin\x64\$(Configuration)</DefineConstants>
+    <SuppressIces>ICE57</SuppressIces>
+    <OutputPath>bin\$(Platform)\$(Configuration)\</OutputPath>
+    <IntermediateOutputPath>obj\$(Platform)\$(Configuration)\</IntermediateOutputPath>
+  </PropertyGroup>
   <ItemGroup>
     <Compile Include="CapFrameX.Binaries.wxs" />
     <Compile Include="Product.wxs" />
@@ -56,19 +69,6 @@
   </Target>
   <PropertyGroup>
     <PreBuildEvent>"%25WIX%25\bin\heat.exe" dir "$(SolutionDir)source\CapFrameX\bin\x64\$(ConfigurationName)" -var var.CapFrameXInstaller.BinaryDir -dr INSTALLFOLDER -ag -cg CapFrameXBinaries -scom -sreg -sfrag -srd -o "$(SolutionDir)source\CapFrameXInstaller\CapFrameX.Binaries.wxs" -t "$(SolutionDir)source\CapFrameXInstaller\filter.xslt"</PreBuildEvent>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
-    <DefineConstants>Debug;CapFrameXInstaller.BinaryDir=$(SolutionDir)\source\CapFrameX\bin\$(Configuration)</DefineConstants>
-    <SuppressValidation>False</SuppressValidation>
-    <SuppressIces>ICE57</SuppressIces>
-    <OutputPath>bin\$(Platform)\$(Configuration)\</OutputPath>
-    <IntermediateOutputPath>obj\$(Platform)\$(Configuration)\</IntermediateOutputPath>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
-    <DefineConstants>CapFrameXInstaller.BinaryDir=$(SolutionDir)source\CapFrameX\bin\x64\$(Configuration)</DefineConstants>
-    <SuppressIces>ICE57</SuppressIces>
-    <OutputPath>bin\$(Platform)\$(Configuration)\</OutputPath>
-    <IntermediateOutputPath>obj\$(Platform)\$(Configuration)\</IntermediateOutputPath>
   </PropertyGroup>
   <!--
 	To modify your build process, add your task inside one of the targets below and uncomment it.
