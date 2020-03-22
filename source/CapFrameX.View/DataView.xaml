@@ -115,13 +115,13 @@
 				</TabControl>
 			</materialDesign:DialogHost>
             <Grid Grid.Row="1" Margin="5 0 5 0" Background="#F5F5F5" Visibility="{Binding ElementName=RangeSliderActiveToggleButton, Path=IsChecked, Converter={StaticResource FalseToCollapsedConverter}}">
-                <mahapps:RangeSlider Margin="50 10 5 30" LowerValue="{Binding FirstSeconds}" UpperValue="{Binding LastSeconds}"   
+                <mahapps:RangeSlider Margin="40 10 40 30" LowerValue="{Binding FirstSeconds}" UpperValue="{Binding LastSeconds}"   
                                      Maximum="{Binding MaxRecordingTime}"                                    
 									 TickPlacement="BottomRight" TickFrequency="2.5"                                     
                                      MinRange="{Binding MinRangeSliderRange}"
 									 Style="{StaticResource CustomRangeSlider}"
                                      Thumb.DragCompleted="RangeSlider_DragCompleted"/>
-                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Bottom" Orientation="Horizontal" Margin="40 0 0 5" Height="15">
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Bottom" Orientation="Horizontal" Margin="0 0 0 5" Height="15">
                     <TextBlock Text="Time window:"/>
                     <TextBlock Text="{Binding RemainingRecordingTime}" Margin="5 0 0 0"/>
                 </StackPanel>
