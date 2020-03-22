@@ -29,7 +29,11 @@ namespace CapFrameX.Data
 		private readonly IAppVersionProvider _appVersionProvider;
 		private readonly ProcessList _processList;
 
-		public RecordManager(ILogger<RecordManager> logger, IAppConfiguration appConfiguration, IRecordDirectoryObserver recordObserver, IAppVersionProvider appVersionProvider, ProcessList processList)
+		public RecordManager(ILogger<RecordManager> logger, 
+							 IAppConfiguration appConfiguration, 
+							 IRecordDirectoryObserver recordObserver, 
+							 IAppVersionProvider appVersionProvider, 
+							 ProcessList processList)
 		{
 			_logger = logger;
 			_appConfiguration = appConfiguration;

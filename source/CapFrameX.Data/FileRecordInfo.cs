@@ -46,6 +46,7 @@ namespace CapFrameX.Data
 		public string GPUCoreClock { get; private set; }
 		public string GPUMemoryClock { get; private set; }
 		public string GPUMemory { get; private set; }
+		public string GPUDriverVersion { get; private set; }
 		public string Comment { get; private set; }
 		public string IsAggregated { get; private set; }
 		public bool IsValid { get; private set; }
@@ -70,6 +71,7 @@ namespace CapFrameX.Data
 			GPUCoreClock = session.Info.GpuCoreClock;
 			DriverPackage = session.Info.DriverPackage;
 			BaseDriverVersion = session.Info.BaseDriverVersion;
+			GPUDriverVersion = session.Info.GPUDriverVersion;
 			Comment = session.Info.Comment;
 			ProcessName = session.Info.ProcessName;
 			IsAggregated = Convert.ToString(session.Runs.Count() > 1);
