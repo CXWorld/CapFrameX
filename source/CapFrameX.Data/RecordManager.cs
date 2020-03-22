@@ -1,6 +1,7 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.PresentMonInterface;
+using CapFrameX.Contracts.Sensor;
 using CapFrameX.Data.Session.Classes;
 using CapFrameX.Data.Session.Contracts;
 using CapFrameX.Extensions;
@@ -27,18 +28,21 @@ namespace CapFrameX.Data
 		private readonly IAppConfiguration _appConfiguration;
 		private readonly IRecordDirectoryObserver _recordObserver;
 		private readonly IAppVersionProvider _appVersionProvider;
+		private readonly ISensorService _sensorService;
 		private readonly ProcessList _processList;
 
 		public RecordManager(ILogger<RecordManager> logger, 
 							 IAppConfiguration appConfiguration, 
 							 IRecordDirectoryObserver recordObserver, 
-							 IAppVersionProvider appVersionProvider, 
+							 IAppVersionProvider appVersionProvider,
+							 ISensorService sensorService,
 							 ProcessList processList)
 		{
 			_logger = logger;
 			_appConfiguration = appConfiguration;
 			_recordObserver = recordObserver;
 			_appVersionProvider = appVersionProvider;
+			_sensorService = sensorService;
 			_processList = processList;
 		}
 		public void UpdateCustomData(IFileRecordInfo recordInfo, string customCpuInfo, string customGpuInfo, string customRamInfo, string customGameName, string customComment)
@@ -162,6 +166,8 @@ namespace CapFrameX.Data
 				systemInfos.Add(new SystemInfoEntry() { Key = "GPU Memory (MB)", Value = recordInfo.GPUMemory });
 			if (!string.IsNullOrWhiteSpace(recordInfo.BaseDriverVersion))
 				systemInfos.Add(new SystemInfoEntry() { Key = "Base Driver Version", Value = recordInfo.BaseDriverVersion });
+			if (!string.IsNullOrWhiteSpace(recordInfo.GPUDriverVersion))
+				systemInfos.Add(new SystemInfoEntry() { Key = "GPU Driver Version", Value = recordInfo.GPUDriverVersion });
 			if (!string.IsNullOrWhiteSpace(recordInfo.DriverPackage))
 				systemInfos.Add(new SystemInfoEntry() { Key = "Driver Package", Value = recordInfo.DriverPackage });
 
@@ -350,6 +356,7 @@ namespace CapFrameX.Data
                         Processor = cpuInfo,
                         SystemRam = ramInfo,
                         GPU = gpuInfo,
+						GPUDriverVersion = _sensorService.GetGpuDriverVersion(),
                         AppVersion = _appVersionProvider.GetAppVersion()
                     }
                 };

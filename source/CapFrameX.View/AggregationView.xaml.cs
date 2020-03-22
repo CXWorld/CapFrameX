@@ -24,23 +24,6 @@ namespace CapFrameX.View
 		{
 			InitializeComponent();
 
-			// Design time!
-			if (DesignerProperties.GetIsInDesignMode(this))
-			{
-				var appConfiguration = new CapFrameXConfiguration();
-				var loggerFactory = new LoggerFactory();
-				DataContext = new AggregationViewModel(
-					new FrametimeStatisticProvider(appConfiguration), 
-					new EventAggregator(), appConfiguration,
-					new RecordManager(loggerFactory.CreateLogger<RecordManager>(),
-						new CapFrameXConfiguration(), 
-						new RecordDirectoryObserver(appConfiguration, loggerFactory.CreateLogger<RecordDirectoryObserver>()),
-						new AppVersionProvider(),
-						new ProcessList("")
-						)
-					);
-			}
-
 			(DataContext as AggregationViewModel)
 				.OutlierFlagStream
 				.Throttle(TimeSpan.FromMilliseconds(100))
