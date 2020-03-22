@@ -523,7 +523,7 @@ namespace CapFrameX.ViewModel
 
 							// update overlay
 							_overlayService.SetCaptureServiceStatus("Processing data");
-							_soundManager.PlaySound(Sound.CaptureStarted);
+							_soundManager.PlaySound(Sound.CaptureStopped);
 						}));
 					}, _cancellationTokenSource.Token, TaskContinuationOptions.ExecuteSynchronously, context);
 				});
