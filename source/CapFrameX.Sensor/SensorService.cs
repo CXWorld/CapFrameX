@@ -14,6 +14,8 @@ namespace CapFrameX.Sensor
 {
     public class SensorService : ISensorService
     {
+        private const string GPU_DRIVER_IDENTIFIER = "GPUDriver";
+
         private readonly IAppConfiguration _appConfiguration;
         private readonly ILogger<SensorService> _logger;
         private readonly object _dictLock = new object();
@@ -65,6 +67,11 @@ namespace CapFrameX.Sensor
             foreach (var hardware in _computer.Hardware)
             {
                 hardware.Update();
+
+                if (hardware.HardwareType == HardwareType.GpuAti
+                      || hardware.HardwareType == HardwareType.GpuNvidia)
+                    AddDriverVersionEntry(hardware.GetDriverVersion());
+
                 foreach (var subHardware in hardware.SubHardware)
                 {
                     subHardware.Update();
@@ -89,6 +96,23 @@ namespace CapFrameX.Sensor
                     }
                 }
             }
+        }
+
+        private void AddDriverVersionEntry(string driverVersion)
+        {
+            if (!_overlayEntryDict.ContainsKey(GPU_DRIVER_IDENTIFIER))
+                _overlayEntryDict.Add(GPU_DRIVER_IDENTIFIER, new OverlayEntryWrapper(GPU_DRIVER_IDENTIFIER)
+                {
+                    Description = "GPU Software Version",
+                    OverlayEntryType = EOverlayEntryType.CX,
+                    GroupName = "GPU Driver",
+                    ShowGraph = false,
+                    ShowGraphIsEnabled = false,
+                    ShowOnOverlayIsEnabled = true,
+                    ShowOnOverlay = false,
+                    Value = driverVersion,
+                    ValueFormat = default
+                });
         }
 
         private IOverlayEntry CreateOverlayEntry(ISensor sensor, HardwareType hardwareType)
@@ -350,7 +374,7 @@ namespace CapFrameX.Sensor
             if (UseSensorLogging && _isLoggingActive)
                 _sessionSensorDataLive.AddMeasureTime();
 
-                foreach (var hardware in _computer.Hardware)
+            foreach (var hardware in _computer.Hardware)
             {
                 hardware.Update();
                 foreach (var subHardware in hardware.SubHardware)
@@ -397,6 +421,12 @@ namespace CapFrameX.Sensor
         public void CloseOpenHardwareMonitor()
         {
             _computer?.Close();
+        }
+
+        public string GetGpuDriverVersion()
+        {
+            _overlayEntryDict.TryGetValue(GPU_DRIVER_IDENTIFIER, out IOverlayEntry entry);
+            return entry?.Value?.ToString();
         }
     }
 }

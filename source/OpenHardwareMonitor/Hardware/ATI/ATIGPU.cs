@@ -469,23 +469,39 @@ namespace OpenHardwareMonitor.Hardware.ATI
 
         public override string GetDriverVersion()
         {
-            string driverVersion = string.Empty;
-            ADLAdapterInfo aDLAdapterInfo = new ADLAdapterInfo();
-            var driverPath = aDLAdapterInfo.DriverPath;
+            string radeonSoftwareVersion = string.Empty;
+            string radeonSoftwareEdition = string.Empty;
 
-            using (RegistryKey key = Registry.LocalMachine.OpenSubKey(driverPath))
+            int numberOfAdapters = 0;
+            ADL.ADL_Adapter_NumberOfAdapters_Get(ref numberOfAdapters);
+            if (numberOfAdapters > 0)
             {
-                if (key != null)
+                ADLAdapterInfo[] adapterInfo = new ADLAdapterInfo[numberOfAdapters];
+                if (ADL.ADL_Adapter_AdapterInfo_Get(adapterInfo) == ADL.ADL_OK)
                 {
-                    object o = key.GetValue("Version");
-                    if (o != null)
+                    var path = adapterInfo[0].DriverPath.Replace("\\Registry\\Machine\\", "");
+                    using (RegistryKey key = Registry.LocalMachine.OpenSubKey(path))
                     {
-                        driverVersion = o as string;  //"as" because it's REG_SZ...otherwise ToString() might be safe(r)
+                        if (key != null)
+                        {
+                            object sv = key.GetValue("RadeonSoftwareVersion");
+                            object se = key.GetValue("RadeonSoftwareEdition");
+
+                            if (sv != null)
+                            {
+                                radeonSoftwareVersion = sv as string;
+                            }
+
+                            if (se != null)
+                            {
+                                radeonSoftwareEdition = se as string;
+                            }
+                        }
                     }
                 }
             }
 
-            return driverVersion;
+            return $"{radeonSoftwareEdition} {radeonSoftwareVersion}";
         }
     }
 }
