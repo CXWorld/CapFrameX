@@ -541,12 +541,8 @@ namespace CapFrameX.ViewModel
 			IsCapturing = !IsCapturing;
 			_disposableHeartBeat = GetListUpdatHeartBeat();
 			IsAddToIgnoreListButtonActive = true;
-<<<<<<< HEAD
+
 			UpdateCaptureStateInfo();	
-=======
-			UpdateCaptureStateInfo();
-			_overlayService.SetCaptureServiceStatus("Capture service ready...");
->>>>>>> release/1.5.0
 		}
 
 		private async Task SetTaskDelayOffset()
