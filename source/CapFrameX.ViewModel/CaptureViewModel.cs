@@ -274,41 +274,7 @@ namespace CapFrameX.ViewModel
 
 
 			_captureService.IsCaptureModeActiveStream.OnNext(false);
-
-			FrametimeModel = new PlotModel
-			{
-				PlotMargins = new OxyThickness(40, 0, 0, 40),
-				PlotAreaBorderColor = OxyColor.FromArgb(64, 204, 204, 204),
-				LegendPosition = LegendPosition.TopCenter,
-				LegendOrientation = LegendOrientation.Horizontal
-			};
-
-			//Axes
-			//X
-			FrametimeModel.Axes.Add(new LinearAxis()
-			{
-				Key = "xAxis",
-				Position = AxisPosition.Bottom,
-				Title = "Samples",
-				MajorGridlineStyle = LineStyle.Solid,
-				MajorGridlineThickness = 1,
-				MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
-				MinorTickSize = 0,
-				MajorTickSize = 0
-			});
-
-			//Y
-			FrametimeModel.Axes.Add(new LinearAxis()
-			{
-				Key = "yAxis",
-				Position = AxisPosition.Left,
-				Title = "Frametime [ms]",
-				MajorGridlineStyle = LineStyle.Solid,
-				MajorGridlineThickness = 1,
-				MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
-				MinorTickSize = 0,
-				MajorTickSize = 0
-			});
+			InitializeFrametimeModel();
 		}
 
 		public bool IsNavigationTarget(NavigationContext navigationContext)
@@ -742,5 +708,43 @@ namespace CapFrameX.ViewModel
 		}
 
 		private void ResetArchive() => _captureDataArchive.Clear();
+
+		private void InitializeFrametimeModel()
+		{
+			FrametimeModel = new PlotModel
+			{
+				PlotMargins = new OxyThickness(40, 0, 0, 40),
+				PlotAreaBorderColor = OxyColor.FromArgb(64, 204, 204, 204),
+				LegendPosition = LegendPosition.TopCenter,
+				LegendOrientation = LegendOrientation.Horizontal
+			};
+
+			//Axes
+			//X
+			FrametimeModel.Axes.Add(new LinearAxis()
+			{
+				Key = "xAxis",
+				Position = AxisPosition.Bottom,
+				Title = "Samples",
+				MajorGridlineStyle = LineStyle.Solid,
+				MajorGridlineThickness = 1,
+				MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
+				MinorTickSize = 0,
+				MajorTickSize = 0
+			});
+
+			//Y
+			FrametimeModel.Axes.Add(new LinearAxis()
+			{
+				Key = "yAxis",
+				Position = AxisPosition.Left,
+				Title = "Frametime [ms]",
+				MajorGridlineStyle = LineStyle.Solid,
+				MajorGridlineThickness = 1,
+				MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
+				MinorTickSize = 0,
+				MajorTickSize = 0
+			});
+		}
 	}
 }
