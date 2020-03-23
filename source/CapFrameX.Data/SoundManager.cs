@@ -20,7 +20,7 @@ namespace CapFrameX.Data
 		{
 			get
 			{
-				return Enum.TryParse(_configuration.HotkeySoundMode, out SoundMode soundMode) ? soundMode : SoundMode.None;
+				return Enum.TryParse(_configuration.HotkeySoundMode, out SoundMode soundMode) ? soundMode : SoundMode.Voice;
 			}
 			set
 			{
