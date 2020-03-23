@@ -408,6 +408,7 @@ namespace CapFrameX.ViewModel
 		{
 			void updatePlot()
 			{
+				FpsGraphDataContext.BuildPlotmodel(new VisibleGraphs(GpuLoad, CpuLoad, CpuMaxThreadLoad));
 				FrametimeGraphDataContext.BuildPlotmodel(new VisibleGraphs(GpuLoad, CpuLoad, CpuMaxThreadLoad), plotModel =>
 				{
 					FrametimeGraphDataContext.UpdateAxis(EPlotAxis.YAXISFRAMETIMES, axis =>
@@ -416,6 +417,7 @@ namespace CapFrameX.ViewModel
 						SetFrametimeChartYAxisSetting(tuple);
 					});
 				});
+
 			}
 
 			_onUpdateChart.Subscribe(_ => updatePlot());
@@ -691,12 +693,6 @@ namespace CapFrameX.ViewModel
 			{
 				Task.Factory.StartNew(() => SetLShapeChart(subset));
 			}
-			else if (headerName == "FPS")
-			{
-				Task.Factory.StartNew(() =>
-					FpsGraphDataContext.SetFpsChart(_localRecordDataServer?
-					.GetFpsPointTimeWindow()));
-			}
 		}
 
 		private IList<double> GetFrametimesSubset()
@@ -874,8 +870,7 @@ namespace CapFrameX.ViewModel
 		private void ResetData()
 		{
 			FrametimeGraphDataContext.Reset();
-			FpsGraphDataContext.FpsModel.Series.Clear();
-			FpsGraphDataContext.FpsModel.InvalidatePlot(true);
+			FpsGraphDataContext.Reset();
 			_localRecordDataServer.CurrentSession = null;
 			LShapeCollection?.Clear();
 			StatisticCollection?.Clear();
