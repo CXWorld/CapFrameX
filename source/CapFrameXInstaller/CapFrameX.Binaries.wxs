@@ -512,24 +512,28 @@
                 </Component>
             </Directory>
             <Directory Id="dir1450B10CD9213F91984D1913F3B466A5" Name="Sounds">
-                <Component Id="cmp3F2F9B6546AE06A5A2BC8225D157AC3C" Guid="*" Win64="yes">
-                    <File Id="fil24228021E7FD2FABAD16C57D8D6FD5E7" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Sounds\capture_finished.mp3" />
-                </Component>
-                <Component Id="cmpDF6DFD99ABED9CCF3316E293E49351AE" Guid="*" Win64="yes">
-                    <File Id="fil4353B429C610A2842E55C33C8005A575" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Sounds\capture_started.mp3" />
-                </Component>
-                <Component Id="cmp3EEE69535363E853D13D17349B078B73" Guid="*" Win64="yes">
-                    <File Id="filFC94E5A41715E7322F01FD984C55D332" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Sounds\more_than_one_process.mp3" />
-                </Component>
-                <Component Id="cmp4DB77BB5B381B587308A20C44B19BB34" Guid="*" Win64="yes">
-                    <File Id="fil081380B58D1E01F1C2A4826EA16AF369" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Sounds\no_process.mp3" />
-                </Component>
-                <Component Id="cmp2B2AD3CDCCA5134FE476F0CC03CF6E31" Guid="*" Win64="yes">
-                    <File Id="fil127C69AB83A1138534DD260DCD773CA9" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Sounds\simple_start_sound.mp3" />
-                </Component>
-                <Component Id="cmp9A52E3FF2E5E6BBC35673A92EC0A3170" Guid="*" Win64="yes">
-                    <File Id="fil604A0117FD178B502183C7B25945C2D8" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Sounds\simple_stop_sound.mp3" />
-                </Component>
+                <Directory Id="dir63FE4520DB8A77385792872C2D485865" Name="Simple">
+                    <Component Id="cmp614D68FE53DA984A3D71375B620FF70E" Guid="*" Win64="yes">
+                        <File Id="filE2275B8617074DBC5897EEA95CA293BB" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Sounds\Simple\CaptureStarted.mp3" />
+                    </Component>
+                    <Component Id="cmpA044E6163633978606D91D3CED29FCBF" Guid="*" Win64="yes">
+                        <File Id="fil9EB0C482A6D2B02B0C822E8A998EC8E7" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Sounds\Simple\CaptureStopped.mp3" />
+                    </Component>
+                </Directory>
+                <Directory Id="dir11E6F1110AE0164582C31C75A4AEF5D6" Name="Voice">
+                    <Component Id="cmpCFB1EAE6489484870C9B4CB672B1494D" Guid="*" Win64="yes">
+                        <File Id="fil1741DD2E38D6BEFC51664B29B43A18E2" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Sounds\Voice\CaptureStarted.mp3" />
+                    </Component>
+                    <Component Id="cmpCB9D5CA7463DAF6300BBC9DE8E3CC81D" Guid="*" Win64="yes">
+                        <File Id="fil6A6B11074039F8D339C0B3828FE587E6" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Sounds\Voice\CaptureStopped.mp3" />
+                    </Component>
+                    <Component Id="cmp27E6F79BFDC24D392F37F3C531E3B73E" Guid="*" Win64="yes">
+                        <File Id="filBD4C51BF25EFE6DE164CA773E4219D22" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Sounds\Voice\MoreThanOneProcess.mp3" />
+                    </Component>
+                    <Component Id="cmp7C4098BF66F05EC6BE7C6AD21C4B08C0" Guid="*" Win64="yes">
+                        <File Id="filEE458BD8B9F790A82833481479B8221F" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Sounds\Voice\NoProcess.mp3" />
+                    </Component>
+                </Directory>
             </Directory>
             <Directory Id="dir248D31DDF01545F6DE1ADFFB1B0E0D98" Name="swiftshader">
                 <Component Id="cmpF0485C0E11EB02E7E9D487833BC3705B" Guid="*" Win64="yes">
@@ -742,12 +746,12 @@
             <ComponentRef Id="cmp89C39AB705167646EC022ED93ABECA4F" />
             <ComponentRef Id="cmpC9FDA2A63A64022F27649C6DD6729D8D" />
             <ComponentRef Id="cmpA6A9ED7D0D14A0EB3F1B6598611EC6CB" />
-            <ComponentRef Id="cmp3F2F9B6546AE06A5A2BC8225D157AC3C" />
-            <ComponentRef Id="cmpDF6DFD99ABED9CCF3316E293E49351AE" />
-            <ComponentRef Id="cmp3EEE69535363E853D13D17349B078B73" />
-            <ComponentRef Id="cmp4DB77BB5B381B587308A20C44B19BB34" />
-            <ComponentRef Id="cmp2B2AD3CDCCA5134FE476F0CC03CF6E31" />
-            <ComponentRef Id="cmp9A52E3FF2E5E6BBC35673A92EC0A3170" />
+            <ComponentRef Id="cmp614D68FE53DA984A3D71375B620FF70E" />
+            <ComponentRef Id="cmpA044E6163633978606D91D3CED29FCBF" />
+            <ComponentRef Id="cmpCFB1EAE6489484870C9B4CB672B1494D" />
+            <ComponentRef Id="cmpCB9D5CA7463DAF6300BBC9DE8E3CC81D" />
+            <ComponentRef Id="cmp27E6F79BFDC24D392F37F3C531E3B73E" />
+            <ComponentRef Id="cmp7C4098BF66F05EC6BE7C6AD21C4B08C0" />
             <ComponentRef Id="cmpF0485C0E11EB02E7E9D487833BC3705B" />
             <ComponentRef Id="cmp06B1ACFF6A5507920AA959A5A0B5A3F8" />
         </ComponentGroup>
