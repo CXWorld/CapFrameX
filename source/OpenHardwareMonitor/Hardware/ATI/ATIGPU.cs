@@ -469,39 +469,27 @@ namespace OpenHardwareMonitor.Hardware.ATI
 
         public override string GetDriverVersion()
         {
-            string radeonSoftwareVersion = string.Empty;
-            string radeonSoftwareEdition = string.Empty;
-
             int numberOfAdapters = 0;
             ADL.ADL_Adapter_NumberOfAdapters_Get(ref numberOfAdapters);
-            if (numberOfAdapters > 0)
+            ADLAdapterInfo[] adapterInfo = new ADLAdapterInfo[numberOfAdapters];
+            if (numberOfAdapters > 0 && ADL.ADL_Adapter_AdapterInfo_Get(adapterInfo) == ADL.ADL_OK)
             {
-                ADLAdapterInfo[] adapterInfo = new ADLAdapterInfo[numberOfAdapters];
-                if (ADL.ADL_Adapter_AdapterInfo_Get(adapterInfo) == ADL.ADL_OK)
+                var path = adapterInfo[0].DriverPath.Replace("\\Registry\\Machine\\", "");
+                using (RegistryKey key = Registry.LocalMachine.OpenSubKey(path))
                 {
-                    var path = adapterInfo[0].DriverPath.Replace("\\Registry\\Machine\\", "");
-                    using (RegistryKey key = Registry.LocalMachine.OpenSubKey(path))
+                    if (key != null)
                     {
-                        if (key != null)
-                        {
-                            object sv = key.GetValue("RadeonSoftwareVersion");
-                            object se = key.GetValue("RadeonSoftwareEdition");
+                        var sv = key.GetValue("RadeonSoftwareVersion");
+                        var se = key.GetValue("RadeonSoftwareEdition");
+                        var radeonSoftwareVersion = sv == null ? string.Empty : sv.ToString();
+                        var radeonSoftwareEdition = se == null ? string.Empty : se.ToString();
 
-                            if (sv != null)
-                            {
-                                radeonSoftwareVersion = sv as string;
-                            }
-
-                            if (se != null)
-                            {
-                                radeonSoftwareEdition = se as string;
-                            }
-                        }
+                        return $"{radeonSoftwareEdition} {radeonSoftwareVersion}";
                     }
                 }
             }
 
-            return $"{radeonSoftwareEdition} {radeonSoftwareVersion}";
+            return base.GetDriverVersion();
         }
     }
 }
