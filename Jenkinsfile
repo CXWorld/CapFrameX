@@ -41,7 +41,7 @@ pipeline {
 			steps {
 				zip archive: true, dir: '', glob: '*/**/CapFrameXInstaller.msi', zipFile: "${commit}.zip"
 				withCredentials([usernameColonPassword(credentialsId: 'nexus-admin', variable: 'credentials')]) {
-					bat "curl --fail -k -v --user $credentials --upload-file ${commit}.zip ${CAPFRAMEX_REPO}/${branch}/${date}/${commit}.zip"
+					bat "curl -L --fail -k -v --user $credentials --upload-file ${commit}.zip ${CAPFRAMEX_REPO}/${branch}/${date}/${commit}.zip"
 				}
 			}
 		}
