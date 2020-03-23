@@ -34,8 +34,8 @@ pipeline {
 				
 			//}
 			environment {
-				branch = "${GIT_BRANCH}".replace("/", "__"),
-				date = "${(new Date()).format( 'dd.MM.yyyy' )}",
+				branch = "${GIT_BRANCH}".replace("/", "__")
+				date = "${(new Date()).format( 'dd.MM.yyyy' )}"
 				commit = "${GIT_COMMIT}"
 			}
 			steps {
