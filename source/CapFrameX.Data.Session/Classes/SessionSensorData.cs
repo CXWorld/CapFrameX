@@ -27,6 +27,7 @@ namespace CapFrameX.Data.Session.Classes
 		public int[] GpuTemp { get; set; } = new int[] { };
 		[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
 		public int[] VRamUsage { get; set; } = new int[] { };
-
+		[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+		public double[] BetweenMeasureTimes { get; set; } = new double[] { };
 	}
 }

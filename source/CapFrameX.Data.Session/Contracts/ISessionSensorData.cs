@@ -13,5 +13,6 @@
 		double[] MeasureTime { get; set; }
 		double[] RamUsage { get; set; }
 		int[] VRamUsage { get; set; }
+		double[] BetweenMeasureTimes { get; set; }
 	}
 }
