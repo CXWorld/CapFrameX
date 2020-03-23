@@ -43,7 +43,7 @@ namespace CapFrameX.ViewModel.DataContext
 
 				SetFrametimeChart(plotModel, RecordDataServer.GetFrametimePointTimeWindow());
 
-				if (visibleGraphs.GpuLoad || visibleGraphs.CpuLoad || visibleGraphs.CpuMaxThreadLoad)
+				if (visibleGraphs.IsAnyGraphVisible)
 					plotModel.Axes.Add(AxisDefinitions[EPlotAxis.YAXISPERCENTAGE]);
 
 				if (visibleGraphs.GpuLoad)

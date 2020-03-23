@@ -44,7 +44,7 @@ namespace CapFrameX.ViewModel.DataContext
 
 				SetFpsChart(plotModel, RecordDataServer.GetFpsPointTimeWindow());
 
-				if (visibleGraphs.GpuLoad || visibleGraphs.CpuLoad || visibleGraphs.CpuMaxThreadLoad)
+				if (visibleGraphs.IsAnyGraphVisible)
 					plotModel.Axes.Add(AxisDefinitions[EPlotAxis.YAXISPERCENTAGE]);
 
 				if (visibleGraphs.GpuLoad)

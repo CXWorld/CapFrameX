@@ -613,22 +613,29 @@ namespace CapFrameX.Data
 			double startTimePresents = 0;
 			double lastSensorMeasureTime = 0;
 
-			for (var runIndex = 0; runIndex < sessionRuns.Count(); runIndex++)
+			foreach (var sessionRun in sessionRuns)
 			{
-				var sessionRun = sessionRuns.ElementAt(runIndex);
-
 				for (int i = 0; i < sessionRun.CaptureData.MsBetweenPresents.Count(); i++)
 				{
 					sessionRun.CaptureData.TimeInSeconds[i] = startTimePresents;
 					var frameTimeInMs = 1E-03 * sessionRun.CaptureData.MsBetweenPresents[i];
 					startTimePresents += frameTimeInMs;
 				}
+			}
 
-				for (int i = 0; i < sessionRun.SensorData.BetweenMeasureTimes.Count(); i++)
+			if (sessionRuns.All(sr => sr.SensorData != null))
+			{
+				foreach (var sessionRun in sessionRuns)
 				{
-					lastSensorMeasureTime += sessionRun.SensorData.BetweenMeasureTimes[i];
-					sessionRun.SensorData.MeasureTime[i] = lastSensorMeasureTime;
+					for (int i = 0; i < sessionRun.SensorData.BetweenMeasureTimes.Count(); i++)
+					{
+						lastSensorMeasureTime += sessionRun.SensorData.BetweenMeasureTimes[i];
+						sessionRun.SensorData.MeasureTime[i] = lastSensorMeasureTime;
+					}
 				}
+			} else
+			{
+				sessionRuns.ForEach(sr => sr.SensorData = null);
 			}
 		}
 	}
