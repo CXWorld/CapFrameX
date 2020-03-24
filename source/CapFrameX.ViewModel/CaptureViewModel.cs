@@ -245,7 +245,7 @@ namespace CapFrameX.ViewModel
 
 		public ICommand ResetCaptureProcessCommand { get; }
 
-		public Array LoggingPeriodItemsSource => new[] { 200, 300, 400, 500, 600, 700, 800, 900, 1000 };
+		public Array LoggingPeriodItemsSource => new[] { 300, 400, 500, 600, 700, 800, 900, 1000 };
 
 		public CaptureViewModel(IAppConfiguration appConfiguration,
 								ICaptureService captureService,
