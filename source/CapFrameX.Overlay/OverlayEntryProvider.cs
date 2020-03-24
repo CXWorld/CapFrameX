@@ -101,18 +101,18 @@ namespace CapFrameX.Overlay
                         adjustedOverlayEntries.Remove(entry);
                 }
 
-                bool reorderFlag = false;
+                //bool reorderFlag = false;
                 foreach (var entry in sensorOverlayEntries)
                 {
                     if (!adjustedOverlayEntryIdentfiers.Contains(entry.Identifier))
                     {
-                        reorderFlag = true;
+                        //reorderFlag = true;
                         adjustedOverlayEntries.Add(entry);
                     }
                 }
 
-                if (reorderFlag)
-                    ReorderOverlayEntries();
+                //if (reorderFlag)
+                //  ReorderOverlayEntries();
 
                 _overlayEntries = new List<IOverlayEntry>(adjustedOverlayEntries);
             }
