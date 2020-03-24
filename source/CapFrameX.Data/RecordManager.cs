@@ -611,25 +611,32 @@ namespace CapFrameX.Data
 		private void NormalizeStartTimesOfAggragationRuns(IEnumerable<ISessionRun> sessionRuns)
 		{
 			double startTimePresents = 0;
-			double lastSensorMeasureTime = sessionRuns.FirstOrDefault()?.SensorData?.MeasureTime.FirstOrDefault() ?? 0;
+			double lastSensorMeasureTime = 0;
 
 			foreach (var sessionRun in sessionRuns)
 			{
-				double lastSensorTime = 0;
 				for (int i = 0; i < sessionRun.CaptureData.MsBetweenPresents.Count(); i++)
 				{
 					sessionRun.CaptureData.TimeInSeconds[i] = startTimePresents;
 					var frameTimeInMs = 1E-03 * sessionRun.CaptureData.MsBetweenPresents[i];
 					startTimePresents += frameTimeInMs;
 				}
-				for (int i = 0; i < sessionRun.SensorData.MeasureTime.Count(); i++)
+			}
+
+			if (sessionRuns.All(sr => sr.SensorData != null))
+			{
+				foreach (var sessionRun in sessionRuns)
 				{
-					var sensorTime = lastSensorMeasureTime + sessionRun.SensorData.MeasureTime[i] - lastSensorTime;
-					lastSensorTime = sessionRun.SensorData.MeasureTime[i];
-					sessionRun.SensorData.MeasureTime[i] = sensorTime;
-					lastSensorMeasureTime = sensorTime;
+					for (int i = 0; i < sessionRun.SensorData.BetweenMeasureTimes.Count(); i++)
+					{
+						lastSensorMeasureTime += sessionRun.SensorData.BetweenMeasureTimes[i];
+						sessionRun.SensorData.MeasureTime[i] = lastSensorMeasureTime;
+					}
 				}
-			}			
+			} else
+			{
+				sessionRuns.ForEach(sr => sr.SensorData = null);
+			}
 		}
 	}
 }

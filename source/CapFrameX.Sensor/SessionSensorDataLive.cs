@@ -104,9 +104,27 @@ namespace CapFrameX.Sensor
 
         public ISessionSensorData ToSessionSensorData()
         {
+            var betweenMeasureTimes = new List<double>();
+
+            for (int i = 0; i < _measureTime.Count; i++)
+            {
+                var current = _measureTime[i];
+                if (i == 0)
+                {
+                    betweenMeasureTimes.Add(current);
+                }
+                else
+                {
+                    var prev = _measureTime[i - 1];
+                    double between = current - prev;
+                    betweenMeasureTimes.Add(between);
+                }
+            }
+
             return new SessionSensorData()
             {
                 MeasureTime = _measureTime.ToArray(),
+                BetweenMeasureTimes = betweenMeasureTimes.ToArray(),
                 CpuUsage = _cpuUsage.ToArray(),
                 CpuMaxThreadUsage = _cpuMaxThreadUsage.ToArray(),
                 CpuPower = _cpuPower.ToArray(),

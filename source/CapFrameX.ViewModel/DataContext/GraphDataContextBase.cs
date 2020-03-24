@@ -179,6 +179,8 @@ namespace CapFrameX.ViewModel.DataContext
 		public bool CpuLoad { get; private set; }
 		public bool CpuMaxThreadLoad { get; private set; }
 
+		public bool IsAnyGraphVisible => GpuLoad || CpuLoad || CpuMaxThreadLoad;
+
 		public VisibleGraphs(bool gpuLoad, bool cpuLoad, bool cpuMaxThreadLoad)
 		{
 			GpuLoad = gpuLoad;

@@ -355,7 +355,7 @@
 					</StackPanel>
                 <StackPanel Grid.Column="1" Margin="50 8 0 8" Orientation="Horizontal">
                     <TextBlock VerticalAlignment="Center">Additional graphs:</TextBlock>
-                    <materialDesign:PopupBox StaysOpen="True" ToolTipService.ShowDuration="25000">
+                    <materialDesign:PopupBox StaysOpen="True" ToolTipService.ShowDuration="25000" IsEnabled= "{Binding AdditionalGraphsEnabled}">
                         <materialDesign:PopupBox.ToolTip>
                             <ToolTip MaxWidth="275" Placement="Top">
                                 <TextBlock Text="Show additional graphs for CPU and GPU load" 
