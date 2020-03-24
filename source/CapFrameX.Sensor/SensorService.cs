@@ -35,6 +35,17 @@ namespace CapFrameX.Sensor
 		private ISubject<TimeSpan> _loggingUpdateSubject;
 		private TimeSpan _currentLoggingTimespan;
 		private TimeSpan _currentOSDTimespan;
+		private TimeSpan _currentSensorTimespan
+		{
+			get
+			{
+				if (_currentLoggingTimespan < _currentOSDTimespan)
+				{
+					return _currentLoggingTimespan;
+				}
+				return _currentOSDTimespan;
+			}
+		}
 		private IObservable<Dictionary<ISensor, float>> _sensorSnapshotStream;
 		public ISubject<IOverlayEntry[]> OnDictionaryUpdated { get; } = new Subject<IOverlayEntry[]>();
 
@@ -49,15 +60,14 @@ namespace CapFrameX.Sensor
 			_currentLoggingTimespan = TimeSpan.FromMilliseconds(_appConfiguration.SensorLoggingRefreshPeriod);
 			_loggingUpdateSubject = new BehaviorSubject<TimeSpan>(_currentLoggingTimespan);
 			_osdUpdateSubject = new BehaviorSubject<TimeSpan>(_currentOSDTimespan);
-			_sensorUpdateSubject = new BehaviorSubject<TimeSpan>(TimeSpan.FromMilliseconds(500));
+			_sensorUpdateSubject = new BehaviorSubject<TimeSpan>(_currentSensorTimespan);
 			_sensorSnapshotStream = _sensorUpdateSubject
-				.Do(_ => Console.WriteLine("bla"))
 				.DistinctUntilChanged(x => x.TotalMilliseconds)
-				.Select(Observable.Interval)
+				.Do(_ => Console.WriteLine("Sensor interval (ms): " + _.Milliseconds))
+				.Select(timespan => Observable.Timer(DateTime.Now, timespan))
 				.Switch()
 				.Select(_ => GetSensorValues())
-				.Replay().RefCount();
-			UpdateSensorInterval();
+				.Replay(0).RefCount();
 
 			_logger.LogDebug("{componentName} Ready", this.GetType().Name);
 
@@ -65,7 +75,7 @@ namespace CapFrameX.Sensor
 			InitializeOverlayEntryDict();
 
 			_sensorSnapshotStream
-				.Sample(_osdUpdateSubject.Select(Observable.Interval).Switch())
+				.Sample(_osdUpdateSubject.Select(timespan => Observable.Timer(DateTime.Now, timespan)).Switch())
 				.Subscribe(sensorData =>
 				{
 					UpdateOSD(sensorData);
@@ -73,7 +83,7 @@ namespace CapFrameX.Sensor
 				});
 
 			_sensorSnapshotStream
-				.Sample(_loggingUpdateSubject.Select(Observable.Interval).Switch())
+				.Sample(_loggingUpdateSubject.Select(timespan => Observable.Timer(DateTime.Now, timespan)).Switch())
 				.Where(_ => _isLoggingActive && UseSensorLogging)
 				.Subscribe(sensorData => LogCurrentValues(sensorData));
 		}
@@ -95,14 +105,7 @@ namespace CapFrameX.Sensor
 
 		private void UpdateSensorInterval()
 		{
-			if (_currentLoggingTimespan < _currentOSDTimespan)
-			{
-				_sensorUpdateSubject.OnNext(_currentLoggingTimespan);
-			}
-			else
-			{
-				_sensorUpdateSubject.OnNext(_currentOSDTimespan);
-			}
+			_sensorUpdateSubject.OnNext(_currentSensorTimespan);
 		}
 
 		private void StartOpenHardwareMonitor()
@@ -406,8 +409,8 @@ namespace CapFrameX.Sensor
 		{
 			if (UseSensorLogging)
 			{
-				_sessionSensorDataLive = new SessionSensorDataLive();
 				_isLoggingActive = true;
+				_sessionSensorDataLive = new SessionSensorDataLive();
 			}
 		}
 
@@ -419,9 +422,6 @@ namespace CapFrameX.Sensor
 		private void UpdateOSD(Dictionary<ISensor, float> sensorData)
 		{
 			if (_computer == null) return;
-
-			if (UseSensorLogging && _isLoggingActive)
-				_sessionSensorDataLive.AddMeasureTime();
 
 			foreach (var sensorPair in sensorData)
 			{
@@ -439,6 +439,7 @@ namespace CapFrameX.Sensor
 
 		private void LogCurrentValues(Dictionary<ISensor, float> currentValues)
 		{
+			_sessionSensorDataLive.AddMeasureTime();
 			foreach (var sensorPair in currentValues)
 			{
 				_sessionSensorDataLive.AddSensorValue(sensorPair.Key, sensorPair.Value);
