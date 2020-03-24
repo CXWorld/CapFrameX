@@ -38,7 +38,7 @@ namespace CapFrameX.View
 
 		private void OnOutlierFlagsChanged(bool[] flags)
 		{
-			Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+			Application.Current.Dispatcher.Invoke(new Action(() =>
 			{
 				int count = 0;
 				foreach (var item in AggregationItemDataGrid.ItemsSource)
