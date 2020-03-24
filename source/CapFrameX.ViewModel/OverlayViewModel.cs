@@ -279,7 +279,7 @@ namespace CapFrameX.ViewModel
 
 		public Array RelatedMetricItemsSource => new[] { "Average", "Second", "Third" };
 
-		public Array RefreshPeriodItemsSource => new[] { 200, 300, 400, 500, 600, 700, 800, 900, 1000 };
+		public Array RefreshPeriodItemsSource => new[] { 500, 750, 1000 };
 
 		public ObservableCollection<IOverlayEntry> OverlayEntries { get; private set; }
 			= new ObservableCollection<IOverlayEntry>();
