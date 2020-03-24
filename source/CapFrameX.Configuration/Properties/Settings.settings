@@ -177,10 +177,13 @@
       <Value Profile="(Default)">False</Value>
     </Setting>
     <Setting Name="UseSensorLogging" Type="System.Boolean" Scope="User">
-	  <Value Profile="(Default)">False</Value>
+      <Value Profile="(Default)">False</Value>
     </Setting>
     <Setting Name="AreThresholdsPercentage" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="OverlayEntryConfigurationFile" Type="System.String" Scope="User">
+      <Value Profile="(Default)">OverlayEntryConfiguration_0</Value>
     </Setting>
   </Settings>
 </SettingsFile>

@@ -14,5 +14,7 @@ namespace CapFrameX.Contracts.Overlay
 		IOverlayEntry GetOverlayEntry(string identifier);
 
 		bool SaveOverlayEntriesToJson();
+
+		void SwitchConfigurationTo(int index);
 	}
 }

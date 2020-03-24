@@ -80,6 +80,7 @@
     <Compile Include="Data\IRecordManager.cs" />
     <Compile Include="MVVM\IMouseEventHandler.cs" />
     <Compile Include="MVVM\IShell.cs" />
+    <Compile Include="Overlay\EOverlayEntryConfig.cs" />
     <Compile Include="Overlay\EOverlayEntryType.cs" />
     <Compile Include="Overlay\IOverlayEntry.cs" />
     <Compile Include="Overlay\IOverlayEntryProvider.cs" />

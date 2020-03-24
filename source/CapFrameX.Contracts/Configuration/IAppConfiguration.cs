@@ -119,5 +119,7 @@
 		bool UseSensorLogging { get; set; }
 		
 		bool AreThresholdsPercentage { get; set; }
+
+		string OverlayEntryConfigurationFile { get; set; }
 	}
 }

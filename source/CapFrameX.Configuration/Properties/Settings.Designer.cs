@@ -728,10 +728,10 @@ namespace CapFrameX.Configuration.Properties {
             }
             set {
                 this["UseSensorLogging"] = value;
-			}
-		}
-
-		[global::System.Configuration.UserScopedSettingAttribute()]
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
         public bool AreThresholdsPercentage {
@@ -740,6 +740,18 @@ namespace CapFrameX.Configuration.Properties {
             }
             set {
                 this["AreThresholdsPercentage"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("OverlayEntryConfiguration_0")]
+        public string OverlayEntryConfigurationFile {
+            get {
+                return ((string)(this["OverlayEntryConfigurationFile"]));
+            }
+            set {
+                this["OverlayEntryConfigurationFile"] = value;
             }
         }
     }

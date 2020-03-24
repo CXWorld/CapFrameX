@@ -1,22 +1,10 @@
-﻿using CapFrameX.Configuration;
-using CapFrameX.Data;
-using CapFrameX.Statistics;
-using CapFrameX.ViewModel;
+﻿using CapFrameX.ViewModel;
 using LiveCharts;
 using LiveCharts.Wpf;
-using Microsoft.Extensions.Logging;
-using Prism.Events;
 using System;
-using System.ComponentModel;
-using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.IO;
 using System.Reactive.Linq;
 using System.Threading;
-using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
 
 namespace CapFrameX.View
 {

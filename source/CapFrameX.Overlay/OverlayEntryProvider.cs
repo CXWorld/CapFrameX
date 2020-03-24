@@ -14,9 +14,6 @@ namespace CapFrameX.Overlay
 {
     public class OverlayEntryProvider : IOverlayEntryProvider
     {
-        private const string JSON_FILE_NAME
-            = @"OverlayConfiguration\OverlayEntryConfiguration.json";
-
         private readonly ISensorService _sensorService;
         private readonly IAppConfiguration _appConfiguration;
         private readonly Dictionary<string, IOverlayEntry> _identifierOverlayEntryDict;
@@ -28,17 +25,6 @@ namespace CapFrameX.Overlay
             _appConfiguration = appConfiguration;
             _identifierOverlayEntryDict = new Dictionary<string, IOverlayEntry>();
             EntryUpdateStream = new Subject<Unit>();
-
-            try
-            {
-                LoadOverlayEntriesFromJson();
-                CheckCustomSystemInfo();
-                ChecOSVersion();
-            }
-            catch
-            {
-                SetOverlayEntryDefaults();
-            }
         }
 
         public ISubject<Unit> EntryUpdateStream { get; }
@@ -69,16 +55,36 @@ namespace CapFrameX.Overlay
                 };
 
                 var json = JsonConvert.SerializeObject(persistence);
-                File.WriteAllText(JSON_FILE_NAME, json);
+                File.WriteAllText(GetConfigurationFileName(), json);
 
                 return true;
             }
             catch { return false; }
         }
 
+        public void SwitchConfigurationTo(int index)
+        {
+            SetConfigurationFileName(index);
+            LoadOrSetDefault();
+        }
+
+        private void LoadOrSetDefault()
+        {
+            try
+            {
+                LoadOverlayEntriesFromJson();
+                CheckCustomSystemInfo();
+                ChecOSVersion();
+            }
+            catch
+            {
+                SetOverlayEntryDefaults();
+            }
+        }
+
         private void LoadOverlayEntriesFromJson()
         {
-            string json = File.ReadAllText(JSON_FILE_NAME);
+            string json = File.ReadAllText(GetConfigurationFileName());
             _overlayEntries = new List<IOverlayEntry>(JsonConvert.
                 DeserializeObject<OverlayEntryPersistence>(json).OverlayEntries);
 
@@ -101,18 +107,13 @@ namespace CapFrameX.Overlay
                         adjustedOverlayEntries.Remove(entry);
                 }
 
-                //bool reorderFlag = false;
                 foreach (var entry in sensorOverlayEntries)
                 {
                     if (!adjustedOverlayEntryIdentfiers.Contains(entry.Identifier))
                     {
-                        //reorderFlag = true;
                         adjustedOverlayEntries.Add(entry);
                     }
                 }
-
-                //if (reorderFlag)
-                //  ReorderOverlayEntries();
 
                 _overlayEntries = new List<IOverlayEntry>(adjustedOverlayEntries);
             }
@@ -140,8 +141,8 @@ namespace CapFrameX.Overlay
 
             if (customCPUEntry != null)
             {
-                customCPUEntry.Value = 
-                    _appConfiguration.CustomCpuDescription == "CPU" ? SystemInfo.GetProcessorName() 
+                customCPUEntry.Value =
+                    _appConfiguration.CustomCpuDescription == "CPU" ? SystemInfo.GetProcessorName()
                     : _appConfiguration.CustomCpuDescription;
             }
 
@@ -171,20 +172,6 @@ namespace CapFrameX.Overlay
             }
         }
 
-        private void ReorderOverlayEntries()
-        {
-            var reorderedOverlayEntries = new List<IOverlayEntry>();
-            reorderedOverlayEntries.AddRange(_overlayEntries.Where(entry => entry.OverlayEntryType == EOverlayEntryType.CX));
-            reorderedOverlayEntries.AddRange(_overlayEntries.Where(entry => entry.OverlayEntryType == EOverlayEntryType.GPU));
-            reorderedOverlayEntries.AddRange(_overlayEntries.Where(entry => entry.OverlayEntryType == EOverlayEntryType.CPU));
-            reorderedOverlayEntries.AddRange(_overlayEntries.Where(entry => entry.OverlayEntryType == EOverlayEntryType.RAM));
-            reorderedOverlayEntries.AddRange(_overlayEntries.Where(entry => entry.OverlayEntryType == EOverlayEntryType.Mainboard));
-            reorderedOverlayEntries.AddRange(_overlayEntries.Where(entry => entry.OverlayEntryType == EOverlayEntryType.FanController));
-            reorderedOverlayEntries.AddRange(_overlayEntries.Where(entry => entry.OverlayEntryType == EOverlayEntryType.HDD));
-
-            _overlayEntries = new List<IOverlayEntry>(reorderedOverlayEntries);
-        }
-
         private void SetOverlayEntryDefaults()
         {
             _overlayEntries = GetOverlayEntryDefaults().Select(item => item as IOverlayEntry).ToList();
@@ -209,6 +196,17 @@ namespace CapFrameX.Overlay
                 var sensorEntry = _sensorService.GetSensorOverlayEntry(entry.Identifier);
                 entry.Value = sensorEntry.Value;
             }
+        }
+
+        private string GetConfigurationFileName()
+        {
+            return $"OverlayConfiguration//{_appConfiguration.OverlayEntryConfigurationFile}.json";
+        }
+
+        private void SetConfigurationFileName(int index)
+        {
+            _appConfiguration.OverlayEntryConfigurationFile
+                = $"OverlayConfiguration//OverlayEntryConfiguration_{index}.json";
         }
 
         public static List<OverlayEntryWrapper> GetOverlayEntryDefaults()

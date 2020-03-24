@@ -249,6 +249,16 @@ namespace CapFrameX.Overlay
             ResetHistory();
         }
 
+        public void SwitchOverlayConfiguration(EOverlayEntryConfig config)
+        {
+            HideOverlay();
+            _overlayEntryProvider?.SwitchConfigurationTo((int)config);
+            ResetHistory();
+            StopCaptureTimer();
+            SetOverlayEntries(_overlayEntryProvider?.GetOverlayEntries());
+            _disposableHeartBeat = GetOverlayRefreshHeartBeat();
+        }
+
         private void CheckRTSSRunningAndRefresh()
         {
             var processes = Process.GetProcessesByName("RTSS");
