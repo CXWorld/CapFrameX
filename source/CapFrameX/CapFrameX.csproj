@@ -112,6 +112,9 @@
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>cx_icon_BUC_icon.ico</ApplicationIcon>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Data" />
@@ -182,6 +185,7 @@
     <None Include="app.manifest">
       <SubType>Designer</SubType>
     </None>
+    <Resource Include="cx_icon_BUC_icon.ico" />
     <Content Include="HelpTexts\ChartControls.rtf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
