@@ -1,5 +1,6 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Overlay;
+using CapFrameX.Contracts.Sensor;
 using CapFrameX.Extensions;
 using CapFrameX.Hotkey;
 using CapFrameX.Overlay;
@@ -23,7 +24,7 @@ namespace CapFrameX.ViewModel
 		private readonly IOverlayEntryProvider _overlayEntryProvider;
 		private readonly IAppConfiguration _appConfiguration;
 		private readonly IEventAggregator _eventAggregator;
-
+		private readonly ISensorService _sensorService;
 		private IKeyboardMouseEvents _globalOverlayHookEvent;
 		private IKeyboardMouseEvents _globalResetHistoryHookEvent;
 		private int _selectedOverlayEntryIndex = -1;
@@ -171,7 +172,7 @@ namespace CapFrameX.ViewModel
 			{
 				_appConfiguration
 				   .OSDRefreshPeriod = value;
-				_overlayService.UpdateRefreshRate(value);
+				_sensorService.SetOSDInterval(TimeSpan.FromMilliseconds(value));
 				RaisePropertyChanged();
 			}
 		}
@@ -285,12 +286,13 @@ namespace CapFrameX.ViewModel
 			= new ObservableCollection<IOverlayEntry>();
 
 		public OverlayViewModel(IOverlayService overlayService, IOverlayEntryProvider overlayEntryProvider,
-			IAppConfiguration appConfiguration, IEventAggregator eventAggregator)
+			IAppConfiguration appConfiguration, IEventAggregator eventAggregator, ISensorService sensorService)
 		{
 			_overlayService = overlayService;
 			_overlayEntryProvider = overlayEntryProvider;
 			_appConfiguration = appConfiguration;
 			_eventAggregator = eventAggregator;
+			_sensorService = sensorService;
 
 			if (IsOverlayActive)
 				_overlayService.ShowOverlay();

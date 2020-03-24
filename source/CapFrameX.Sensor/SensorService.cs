@@ -10,6 +10,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Reactive;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 
@@ -30,6 +31,12 @@ namespace CapFrameX.Sensor
 		private bool _isLoggingActive = false;
 
 		private ISubject<TimeSpan> _sensorUpdateSubject;
+		private ISubject<TimeSpan> _osdUpdateSubject;
+		private ISubject<TimeSpan> _loggingUpdateSubject;
+		private TimeSpan _currentLoggingTimespan;
+		private TimeSpan _currentOSDTimespan;
+		private IObservable<Dictionary<ISensor, float>> _sensorSnapshotStream;
+		public ISubject<IOverlayEntry[]> OnDictionaryUpdated { get; } = new Subject<IOverlayEntry[]>();
 
 		public bool UseSensorLogging => _appConfiguration.UseSensorLogging;
 
@@ -38,24 +45,64 @@ namespace CapFrameX.Sensor
 		{
 			_appConfiguration = appConfiguration;
 			_logger = logger;
-			_sensorUpdateSubject = new BehaviorSubject<TimeSpan>(TimeSpan.FromMilliseconds(_appConfiguration.SensorLoggingRefreshPeriod));
+			_currentOSDTimespan = TimeSpan.FromMilliseconds(_appConfiguration.OSDRefreshPeriod);
+			_currentLoggingTimespan = TimeSpan.FromMilliseconds(_appConfiguration.SensorLoggingRefreshPeriod);
+			_loggingUpdateSubject = new BehaviorSubject<TimeSpan>(_currentLoggingTimespan);
+			_osdUpdateSubject = new BehaviorSubject<TimeSpan>(_currentOSDTimespan);
+			_sensorUpdateSubject = new BehaviorSubject<TimeSpan>(TimeSpan.FromMilliseconds(500));
+			_sensorSnapshotStream = _sensorUpdateSubject
+				.Do(_ => Console.WriteLine("bla"))
+				.DistinctUntilChanged(x => x.TotalMilliseconds)
+				.Select(Observable.Interval)
+				.Switch()
+				.Select(_ => GetSensorValues())
+				.Replay().RefCount();
+			UpdateSensorInterval();
 
 			_logger.LogDebug("{componentName} Ready", this.GetType().Name);
 
 			StartOpenHardwareMonitor();
 			InitializeOverlayEntryDict();
 
-			_sensorUpdateSubject
-				.Select(timespan => Observable.Interval(timespan))
-				.Switch()
-				.Subscribe(_ => {
-					UpdateSensors();
+			_sensorSnapshotStream
+				.Sample(_osdUpdateSubject.Select(Observable.Interval).Switch())
+				.Subscribe(sensorData =>
+				{
+					UpdateOSD(sensorData);
+					OnDictionaryUpdated.OnNext(GetSensorOverlayEntries());
 				});
+
+			_sensorSnapshotStream
+				.Sample(_loggingUpdateSubject.Select(Observable.Interval).Switch())
+				.Where(_ => _isLoggingActive && UseSensorLogging)
+				.Subscribe(sensorData => LogCurrentValues(sensorData));
 		}
 
-		public void SetUpdateInterval(TimeSpan timeSpan)
+		public void SetLoggingInterval(TimeSpan timeSpan)
 		{
-			_sensorUpdateSubject.OnNext(timeSpan);
+			_currentLoggingTimespan = timeSpan;
+			UpdateSensorInterval();
+			_loggingUpdateSubject.OnNext(timeSpan);
+		}
+
+		public void SetOSDInterval(TimeSpan timeSpan)
+		{
+			_currentOSDTimespan = timeSpan;
+			UpdateSensorInterval();
+			_osdUpdateSubject.OnNext(timeSpan);
+
+		}
+
+		private void UpdateSensorInterval()
+		{
+			if (_currentLoggingTimespan < _currentOSDTimespan)
+			{
+				_sensorUpdateSubject.OnNext(_currentLoggingTimespan);
+			}
+			else
+			{
+				_sensorUpdateSubject.OnNext(_currentOSDTimespan);
+			}
 		}
 
 		private void StartOpenHardwareMonitor()
@@ -89,7 +136,7 @@ namespace CapFrameX.Sensor
 				var dictEntry = CreateOverlayEntry(sensor);
 				_overlayEntryDict.Add(sensor.Identifier.ToString(), dictEntry);
 			}
-			
+
 		}
 
 		private void AddDriverVersionEntry()
@@ -335,7 +382,7 @@ namespace CapFrameX.Sensor
 				 && overlayEntryIdentfiers.Count == overlayEntryLiveIdentfiers.Count);
 		}
 
-		public IOverlayEntry[] GetSensorOverlayEntries()
+		private IOverlayEntry[] GetSensorOverlayEntries()
 		{
 			lock (_dictLock)
 				return _overlayEntryDict.Values.ToArray();
@@ -369,36 +416,42 @@ namespace CapFrameX.Sensor
 			_isLoggingActive = false;
 		}
 
-		private void UpdateSensors()
+		private void UpdateOSD(Dictionary<ISensor, float> sensorData)
 		{
 			if (_computer == null) return;
 
 			if (UseSensorLogging && _isLoggingActive)
 				_sessionSensorDataLive.AddMeasureTime();
 
-			foreach(var sensor in GetSensors())
+			foreach (var sensorPair in sensorData)
 			{
-				if(_overlayEntryDict.TryGetValue(sensor.Identifier.ToString(), out IOverlayEntry entry))
+				var sensorIdentifier = sensorPair.Key.Identifier.ToString();
+				var sensorValue = sensorPair.Value;
+				if (_overlayEntryDict.TryGetValue(sensorIdentifier, out IOverlayEntry entry))
 				{
-					lock(_dictLock)
+					lock (_dictLock)
 					{
-						entry.Value = sensor.Value;
-						if (UseSensorLogging && _isLoggingActive)
-						{
-							_sessionSensorDataLive.AddSensorValue(sensor);
-						}
+						entry.Value = sensorValue;
 					}
 				}
 			}
 		}
 
-		private Dictionary<string, object> GetSensorValues()
+		private void LogCurrentValues(Dictionary<ISensor, float> currentValues)
 		{
-			var dict = new ConcurrentDictionary<string, object>();
-			var sensors = GetSensors();
-            foreach (var sensor in sensors)
+			foreach (var sensorPair in currentValues)
 			{
-				dict.TryAdd(sensor.Identifier.ToString(), sensor.Value);
+				_sessionSensorDataLive.AddSensorValue(sensorPair.Key, sensorPair.Value);
+			}
+		}
+
+		private Dictionary<ISensor, float> GetSensorValues()
+		{
+			var dict = new ConcurrentDictionary<ISensor, float>();
+			var sensors = GetSensors();
+			foreach (var sensor in sensors)
+			{
+				dict.TryAdd(sensor, sensor.Value.Value);
 			}
 
 			return dict.ToDictionary(x => x.Key, x => x.Value);

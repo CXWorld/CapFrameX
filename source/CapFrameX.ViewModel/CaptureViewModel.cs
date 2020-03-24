@@ -182,7 +182,7 @@ namespace CapFrameX.ViewModel
 			{
 				_appConfiguration
 				   .SensorLoggingRefreshPeriod = value;
-				_sensorService.SetUpdateInterval(TimeSpan.FromMilliseconds(value));
+				_sensorService.SetLoggingInterval(TimeSpan.FromMilliseconds(value));
 				RaisePropertyChanged();
 			}
 		}

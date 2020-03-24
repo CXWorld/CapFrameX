@@ -67,9 +67,8 @@ namespace CapFrameX.Overlay
             _runHistoryOutlierFlags = Enumerable.Repeat(false, _numberOfRuns).ToArray();
 
             _logger.LogDebug("{componentName} Ready", this.GetType().Name);
-            SetOverlayEntries(overlayEntryProvider?.GetOverlayEntries());
-            overlayEntryProvider.EntryUpdateStream.Subscribe(x =>
-            {
+
+            _sensorService.OnDictionaryUpdated.Subscribe(zeug => {
                 SetOverlayEntries(overlayEntryProvider?.GetOverlayEntries());
             });
 

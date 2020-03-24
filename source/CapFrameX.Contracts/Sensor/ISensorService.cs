@@ -2,12 +2,12 @@
 using CapFrameX.Data.Session.Contracts;
 using System;
 using System.Collections.Generic;
+using System.Reactive.Subjects;
 
 namespace CapFrameX.Contracts.Sensor
 {
     public interface ISensorService
     {
-        IOverlayEntry[] GetSensorOverlayEntries();
         IOverlayEntry GetSensorOverlayEntry(string identifier);
         bool CheckHardwareChanged(List<IOverlayEntry> overlayEntries);
         void StartSensorLogging();
@@ -15,6 +15,8 @@ namespace CapFrameX.Contracts.Sensor
         ISessionSensorData GetSessionSensorData();
         void CloseOpenHardwareMonitor();
         string GetGpuDriverVersion();
-        void SetUpdateInterval(TimeSpan timeSpan);
+        void SetLoggingInterval(TimeSpan timeSpan);
+        void SetOSDInterval(TimeSpan timeSpan);
+        ISubject<IOverlayEntry[]> OnDictionaryUpdated { get; }
     }
 }
