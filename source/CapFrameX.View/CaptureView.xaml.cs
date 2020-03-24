@@ -111,5 +111,10 @@ namespace CapFrameX.View
 				Keyboard.ClearFocus();
 			}
 		}
+
+		private void LoggingPeriodComboBox_MouseLeave(object sender, MouseEventArgs e)
+		{
+			Keyboard.ClearFocus();
+		}
 	}
 }

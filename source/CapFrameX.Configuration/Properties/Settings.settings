@@ -177,10 +177,13 @@
       <Value Profile="(Default)">False</Value>
     </Setting>
     <Setting Name="UseSensorLogging" Type="System.Boolean" Scope="User">
-	  <Value Profile="(Default)">False</Value>
+      <Value Profile="(Default)">False</Value>
     </Setting>
     <Setting Name="AreThresholdsPercentage" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="SensorLoggingRefreshPeriod" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">300</Value>
     </Setting>
   </Settings>
 </SettingsFile>

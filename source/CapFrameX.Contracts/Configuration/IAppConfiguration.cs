@@ -119,5 +119,6 @@
 		bool UseSensorLogging { get; set; }
 		
 		bool AreThresholdsPercentage { get; set; }
+		int SensorLoggingRefreshPeriod { get; set; }
 	}
 }
