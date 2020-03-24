@@ -10,6 +10,8 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Reactive.Linq;
+using System.Reactive.Subjects;
 
 namespace CapFrameX.Sensor
 {
@@ -27,6 +29,8 @@ namespace CapFrameX.Sensor
 		private SessionSensorDataLive _sessionSensorDataLive;
 		private bool _isLoggingActive = false;
 
+		private ISubject<TimeSpan> _sensorUpdateSubject;
+
 		public bool UseSensorLogging => _appConfiguration.UseSensorLogging;
 
 		public SensorService(IAppConfiguration appConfiguration,
@@ -34,11 +38,24 @@ namespace CapFrameX.Sensor
 		{
 			_appConfiguration = appConfiguration;
 			_logger = logger;
+			_sensorUpdateSubject = new BehaviorSubject<TimeSpan>(TimeSpan.FromMilliseconds(_appConfiguration.SensorLoggingRefreshPeriod));
 
 			_logger.LogDebug("{componentName} Ready", this.GetType().Name);
 
 			StartOpenHardwareMonitor();
 			InitializeOverlayEntryDict();
+
+			_sensorUpdateSubject
+				.Select(timespan => Observable.Interval(timespan))
+				.Switch()
+				.Subscribe(_ => {
+					UpdateSensors();
+				});
+		}
+
+		public void SetUpdateInterval(TimeSpan timeSpan)
+		{
+			_sensorUpdateSubject.OnNext(timeSpan);
 		}
 
 		private void StartOpenHardwareMonitor()
@@ -352,7 +369,7 @@ namespace CapFrameX.Sensor
 			_isLoggingActive = false;
 		}
 
-		public void UpdateSensors()
+		private void UpdateSensors()
 		{
 			if (_computer == null) return;
 

@@ -86,8 +86,8 @@ namespace CapFrameX.Overlay
             {
                 var sensorOverlayEntries = _sensorService
                     .GetSensorOverlayEntries();
-                var sensorOverlayEntryIdentfiers = _sensorService
-                    .GetSensorOverlayEntries().Select(entry => entry.Identifier)
+                var sensorOverlayEntryIdentfiers = sensorOverlayEntries
+                    .Select(entry => entry.Identifier)
                     .ToList();
 
                 var adjustedOverlayEntries = new List<IOverlayEntry>(_overlayEntries);
@@ -202,8 +202,6 @@ namespace CapFrameX.Overlay
 
         private void UpdateSensorData()
         {
-            _sensorService.UpdateSensors();
-
             foreach (var entry in _overlayEntries.Where(x => !(x.OverlayEntryType == EOverlayEntryType.CX)))
             {
                 var sensorEntry = _sensorService.GetSensorOverlayEntry(entry.Identifier);
