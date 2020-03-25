@@ -222,9 +222,11 @@
                         <DataGridCheckBoxColumn Binding="{Binding IsAggregated, Mode=OneWay}"
                                         Width="Auto"
                                         Header="Aggregated"
-                                        IsReadOnly="True" MinWidth="55">
+                                        IsReadOnly="True" 
+                                        MinWidth="55">
                             <DataGridCheckBoxColumn.ElementStyle>
                                 <Style>
+                                    <Setter Property="CheckBox.IsEnabled" Value="False" />
                                     <Setter Property="CheckBox.VerticalAlignment" Value="Center" />
                                     <Setter Property="CheckBox.HorizontalAlignment" Value="Center" />
                                 </Style>
