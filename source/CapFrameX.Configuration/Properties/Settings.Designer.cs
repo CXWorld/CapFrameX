@@ -745,7 +745,7 @@ namespace CapFrameX.Configuration.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("300")]
+        [global::System.Configuration.DefaultSettingValueAttribute("250")]
         public int SensorLoggingRefreshPeriod {
             get {
                 return ((int)(this["SensorLoggingRefreshPeriod"]));
