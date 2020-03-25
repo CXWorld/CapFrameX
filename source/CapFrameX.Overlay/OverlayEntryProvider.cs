@@ -25,6 +25,8 @@ namespace CapFrameX.Overlay
             _appConfiguration = appConfiguration;
             _identifierOverlayEntryDict = new Dictionary<string, IOverlayEntry>();
             EntryUpdateStream = new Subject<Unit>();
+
+            LoadOrSetDefault();
         }
 
         public ISubject<Unit> EntryUpdateStream { get; }
