@@ -8,6 +8,7 @@ using OpenHardwareMonitor.Hardware;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Reactive;
@@ -46,7 +47,7 @@ namespace CapFrameX.Sensor
 				return _currentOSDTimespan;
 			}
 		}
-		private IObservable<Dictionary<ISensor, float>> _sensorSnapshotStream;
+		private IObservable<(DateTime, Dictionary<ISensor, float>)> _sensorSnapshotStream;
 		public ISubject<IOverlayEntry[]> OnDictionaryUpdated { get; } = new Subject<IOverlayEntry[]>();
 
 		public bool UseSensorLogging => _appConfiguration.UseSensorLogging;
@@ -62,9 +63,8 @@ namespace CapFrameX.Sensor
 			_osdUpdateSubject = new BehaviorSubject<TimeSpan>(_currentOSDTimespan);
 			_sensorUpdateSubject = new BehaviorSubject<TimeSpan>(_currentSensorTimespan);
 			_sensorSnapshotStream = _sensorUpdateSubject
-				.DistinctUntilChanged(x => x.TotalMilliseconds)
 				.Do(_ => Console.WriteLine("Sensor interval (ms): " + _.Milliseconds))
-				.Select(timespan => Observable.Timer(DateTime.Now, timespan))
+				.Select(timespan => Observable.Concat(Observable.Return(-1l), Observable.Interval(timespan)))
 				.Switch()
 				.Select(_ => GetSensorValues())
 				.Replay(0).RefCount();
@@ -75,17 +75,17 @@ namespace CapFrameX.Sensor
 			InitializeOverlayEntryDict();
 
 			_sensorSnapshotStream
-				.Sample(_osdUpdateSubject.Select(timespan => Observable.Timer(DateTime.Now, timespan)).Switch())
+				.Sample(_osdUpdateSubject.Select(timespan => Observable.Concat(Observable.Return(-1l), Observable.Interval(timespan))).Switch())
 				.Subscribe(sensorData =>
 				{
-					UpdateOSD(sensorData);
+					UpdateOSD(sensorData.Item2);
 					OnDictionaryUpdated.OnNext(GetSensorOverlayEntries());
 				});
 
 			_sensorSnapshotStream
-				.Sample(_loggingUpdateSubject.Select(timespan => Observable.Timer(DateTime.Now, timespan)).Switch())
+				.Sample(_loggingUpdateSubject.Select(timespan => Observable.Concat(Observable.Return(-1l), Observable.Interval(timespan))).Switch())
 				.Where(_ => _isLoggingActive && UseSensorLogging)
-				.Subscribe(sensorData => LogCurrentValues(sensorData));
+				.Subscribe(sensorData => LogCurrentValues(sensorData.Item2, sensorData.Item1));
 		}
 
 		public void SetLoggingInterval(TimeSpan timeSpan)
@@ -411,12 +411,15 @@ namespace CapFrameX.Sensor
 			{
 				_isLoggingActive = true;
 				_sessionSensorDataLive = new SessionSensorDataLive();
+				_sensorUpdateSubject.OnNext(_currentSensorTimespan);
 			}
 		}
 
 		public void StopSensorLogging()
 		{
-			_isLoggingActive = false;
+			Observable.Timer(_currentLoggingTimespan).Subscribe(_ => {
+				_isLoggingActive = false;
+			});
 		}
 
 		private void UpdateOSD(Dictionary<ISensor, float> sensorData)
@@ -437,16 +440,16 @@ namespace CapFrameX.Sensor
 			}
 		}
 
-		private void LogCurrentValues(Dictionary<ISensor, float> currentValues)
+		private void LogCurrentValues(Dictionary<ISensor, float> currentValues, DateTime timestamp)
 		{
-			_sessionSensorDataLive.AddMeasureTime();
+			_sessionSensorDataLive.AddMeasureTime(timestamp);
 			foreach (var sensorPair in currentValues)
 			{
 				_sessionSensorDataLive.AddSensorValue(sensorPair.Key, sensorPair.Value);
 			}
 		}
 
-		private Dictionary<ISensor, float> GetSensorValues()
+		private (DateTime, Dictionary<ISensor, float>) GetSensorValues()
 		{
 			var dict = new ConcurrentDictionary<ISensor, float>();
 			var sensors = GetSensors();
@@ -455,12 +458,12 @@ namespace CapFrameX.Sensor
 				dict.TryAdd(sensor, sensor.Value.Value);
 			}
 
-			return dict.ToDictionary(x => x.Key, x => x.Value);
+			return (DateTime.UtcNow, dict.ToDictionary(x => x.Key, x => x.Value));
 		}
 
 		private IEnumerable<ISensor> GetSensors()
 		{
-			return _computer.Hardware.SelectMany(hardware =>
+			var sensors = _computer.Hardware.SelectMany(hardware =>
 			{
 				hardware.Update();
 				return hardware.Sensors.Concat(hardware.SubHardware.SelectMany(subHardware =>
@@ -469,6 +472,7 @@ namespace CapFrameX.Sensor
 					return subHardware.Sensors;
 				}));
 			});
+			return sensors;
 		}
 
 		public void CloseOpenHardwareMonitor()

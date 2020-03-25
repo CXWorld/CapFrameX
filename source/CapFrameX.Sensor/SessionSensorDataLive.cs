@@ -50,9 +50,9 @@ namespace CapFrameX.Sensor
             _vRamUsage = new List<int>();
         }
 
-        public void AddMeasureTime()
+        public void AddMeasureTime(DateTime dateTime)
         {
-            var timestampLogging = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds();
+            var timestampLogging = new DateTimeOffset(dateTime).ToUnixTimeMilliseconds();
             long ellapsedMilliseconds = timestampLogging - _timestampStartLogging;
             _measureTime.Add(ellapsedMilliseconds * 1E-03);
         }
