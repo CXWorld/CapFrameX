@@ -30,13 +30,13 @@
 			<mvvm:BoolToVisibilityConverter x:Key="FalseToVisibleConverter" TrueValue="Collapsed" FalseValue="Visible"/>
 			<mvvm:BoolToVisibilityConverter x:Key="FalseToCollapsedConverter" TrueValue="Visible" FalseValue="Collapsed"/>
 			<mvvm:BoolToVisibilityConverter x:Key="TrueToVisibleConverter" FalseValue="Collapsed" TrueValue="Visible"/>
-			<mvvm:EnumDescriptionConverter x:Key="EnumDescriptionConverter"/>
-		</ResourceDictionary>
+            <mvvm:EnumDescriptionConverter x:Key="EnumDescriptionConverter"/>
+        </ResourceDictionary>
 	</UserControl.Resources>
 	<Grid HorizontalAlignment="Center">
 		<Grid.RowDefinitions>
 			<RowDefinition Height="50"></RowDefinition>
-			<RowDefinition Height="480"></RowDefinition>
+			<RowDefinition Height="500"></RowDefinition>
             <RowDefinition Height="100"></RowDefinition>
         </Grid.RowDefinitions>
 		<Grid.ColumnDefinitions>
@@ -53,9 +53,38 @@
         <DockPanel Grid.Row="1" Grid.Column="0" Margin="0 0 10 0" 
                    Visibility="{Binding  IsRTSSInstalled, Converter={StaticResource TrueToVisibleConverter}}">
 			<!--DataGrid and Overlay hotkey-->
-			<TextBlock Margin="0 0 0 10" DockPanel.Dock="Top" HorizontalAlignment="Center" Text="Overlay items" FontSize="14"/>
-			<StackPanel DockPanel.Dock="Top" Orientation="Vertical" HorizontalAlignment="Center">
-				<DataGrid x:Name="OverlayItemDataGrid" Height="350" Width="400" Background="#F5F5F5" FontSize="11"
+            <Grid DockPanel.Dock="Top">
+                <TextBlock Margin="0 0 0 10" HorizontalAlignment="Center" Text="Overlay items" FontSize="14"/>
+                <StackPanel Margin="0 0 20 10" Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Width="28" Height="28" Margin="0 0 10 0" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
+                            ToolTip="Save current config" Command="{Binding SaveConfigCommand}">
+                        <materialDesign:PackIcon Kind="ContentSaveSettings" Height="22" Width="22" />
+                    </Button>
+                    <RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
+                                 Padding="0 0 0 0"
+                                 Width="30"
+                                 MinWidth="30"
+                                 IsChecked="True"
+                                 Content="1"
+                                 Command="{Binding ConfigSwitchCommand}" CommandParameter="0"/>
+                    <RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
+                                 Padding="0 0 0 0"
+                                 Width="30"
+                                 MinWidth="30"
+                                 IsChecked="False"
+                                 Content="2" 
+                                 Command="{Binding ConfigSwitchCommand}" CommandParameter="1"/>
+                    <RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
+                                 Padding="0 0 0 0"
+                                 Width="30"
+                                 MinWidth="30"
+                                 IsChecked="False"
+                                 Content="3" 
+                                 Command="{Binding ConfigSwitchCommand}" CommandParameter="2"/>
+                </StackPanel>
+            </Grid>
+            <StackPanel DockPanel.Dock="Top" Orientation="Vertical" HorizontalAlignment="Center">
+                <DataGrid x:Name="OverlayItemDataGrid" Height="350" Width="400" Background="#F5F5F5" FontSize="11"
 						  MouseLeave="OverlayItemDataGrid_MouseLeave"
 					      SelectedIndex="{Binding SelectedOverlayEntryIndex}" ItemsSource="{Binding OverlayEntries}"
 					      CanUserSortColumns="False" CanUserAddRows="False" AutoGenerateColumns="False"

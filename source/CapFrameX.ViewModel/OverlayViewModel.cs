@@ -6,6 +6,7 @@ using CapFrameX.Overlay;
 using CapFrameX.Statistics;
 using Gma.System.MouseKeyHook;
 using GongSolutions.Wpf.DragDrop;
+using Prism.Commands;
 using Prism.Events;
 using Prism.Mvvm;
 using Prism.Regions;
@@ -13,420 +14,443 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Reactive;
+using System.Reactive.Linq;
+using System.Reactive.Subjects;
+using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Input;
 
 namespace CapFrameX.ViewModel
 {
-	public class OverlayViewModel : BindableBase, INavigationAware, IDropTarget
-	{
-		private readonly IOverlayService _overlayService;
-		private readonly IOverlayEntryProvider _overlayEntryProvider;
-		private readonly IAppConfiguration _appConfiguration;
-		private readonly IEventAggregator _eventAggregator;
+    public class OverlayViewModel : BindableBase, INavigationAware, IDropTarget
+    {
+        private readonly IOverlayService _overlayService;
+        private readonly IOverlayEntryProvider _overlayEntryProvider;
+        private readonly IAppConfiguration _appConfiguration;
+        private readonly IEventAggregator _eventAggregator;
 
-		private IKeyboardMouseEvents _globalOverlayHookEvent;
-		private IKeyboardMouseEvents _globalResetHistoryHookEvent;
-		private int _selectedOverlayEntryIndex = -1;
-		private string _updateHpyerlinkText;
+        private IKeyboardMouseEvents _globalOverlayHookEvent;
+        private IKeyboardMouseEvents _globalResetHistoryHookEvent;
+        private int _selectedOverlayEntryIndex = -1;
+        private string _updateHpyerlinkText;
 
-		public bool IsOverlayActive
-		{
-			get { return _appConfiguration.IsOverlayActive; }
-			set
-			{
-				if (IsRTSSInstalled)
-				{
-					_appConfiguration.IsOverlayActive = value;
-					_overlayService.IsOverlayActiveStream.OnNext(value);
-				}
-				if (value)
-					_overlayService.ShowOverlay();
-				else
-					_overlayService.HideOverlay();
+        public bool IsOverlayActive
+        {
+            get { return _appConfiguration.IsOverlayActive; }
+            set
+            {
+                if (IsRTSSInstalled)
+                {
+                    _appConfiguration.IsOverlayActive = value;
+                    _overlayService.IsOverlayActiveStream.OnNext(value);
+                }
+                if (value)
+                    _overlayService.ShowOverlay();
+                else
+                    _overlayService.HideOverlay();
 
-				RaisePropertyChanged();
-			}
-		}
+                RaisePropertyChanged();
+            }
+        }
 
-		public string OverlayHotkeyString
-		{
-			get { return _appConfiguration.OverlayHotKey; }
-			set
-			{
-				if (!CXHotkey.IsValidHotkey(value))
-					return;
+        public string OverlayHotkeyString
+        {
+            get { return _appConfiguration.OverlayHotKey; }
+            set
+            {
+                if (!CXHotkey.IsValidHotkey(value))
+                    return;
 
-				_appConfiguration.OverlayHotKey = value;
-				UpdateGlobalOverlayHookEvent();
-				RaisePropertyChanged();
-			}
-		}
+                _appConfiguration.OverlayHotKey = value;
+                UpdateGlobalOverlayHookEvent();
+                RaisePropertyChanged();
+            }
+        }
 
-		public string ResetHistoryHotkeyString
-		{
-			get { return _appConfiguration.ResetHistoryHotkey; }
-			set
-			{
-				if (!CXHotkey.IsValidHotkey(value))
-					return;
+        public string ResetHistoryHotkeyString
+        {
+            get { return _appConfiguration.ResetHistoryHotkey; }
+            set
+            {
+                if (!CXHotkey.IsValidHotkey(value))
+                    return;
 
-				_appConfiguration.ResetHistoryHotkey = value;
-				UpdateGlobalResetHistoryHookEvent();
-				RaisePropertyChanged();
-			}
-		}
+                _appConfiguration.ResetHistoryHotkey = value;
+                UpdateGlobalResetHistoryHookEvent();
+                RaisePropertyChanged();
+            }
+        }
 
-		public EMetric SelectedSecondMetric
-		{
-			get
-			{
-				return _appConfiguration
-				  .SecondMetricOverlay
-				  .ConvertToEnum<EMetric>();
-			}
-			set
-			{
-				_appConfiguration.SecondMetricOverlay =
-					value.ConvertToString();
-				_overlayService.SecondMetric = value.ConvertToString();
-				RaisePropertyChanged();
-			}
-		}
+        public EMetric SelectedSecondMetric
+        {
+            get
+            {
+                return _appConfiguration
+                  .SecondMetricOverlay
+                  .ConvertToEnum<EMetric>();
+            }
+            set
+            {
+                _appConfiguration.SecondMetricOverlay =
+                    value.ConvertToString();
+                _overlayService.SecondMetric = value.ConvertToString();
+                RaisePropertyChanged();
+            }
+        }
 
-		public EMetric SelectedThirdMetric
-		{
-			get
-			{
-				return _appConfiguration
-				  .ThirdMetricOverlay
-				  .ConvertToEnum<EMetric>();
-			}
-			set
-			{
-				_appConfiguration.ThirdMetricOverlay =
-					value.ConvertToString();
-				_overlayService.ThirdMetric = value.ConvertToString();
-				RaisePropertyChanged();
-			}
-		}
+        public EMetric SelectedThirdMetric
+        {
+            get
+            {
+                return _appConfiguration
+                  .ThirdMetricOverlay
+                  .ConvertToEnum<EMetric>();
+            }
+            set
+            {
+                _appConfiguration.ThirdMetricOverlay =
+                    value.ConvertToString();
+                _overlayService.ThirdMetric = value.ConvertToString();
+                RaisePropertyChanged();
+            }
+        }
 
-		public int SelectedNumberOfRuns
-		{
-			get
-			{
-				return _appConfiguration
-				  .SelectedHistoryRuns;
-			}
-			set
-			{
-				_appConfiguration.SelectedHistoryRuns =
-					value;
+        public int SelectedNumberOfRuns
+        {
+            get
+            {
+                return _appConfiguration
+                  .SelectedHistoryRuns;
+            }
+            set
+            {
+                _appConfiguration.SelectedHistoryRuns =
+                    value;
 
-				_overlayService.UpdateNumberOfRuns(value);
-				RaisePropertyChanged();
-			}
-		}
+                _overlayService.UpdateNumberOfRuns(value);
+                RaisePropertyChanged();
+            }
+        }
 
-		public int SelectedOutlierPercentage
-		{
-			get
-			{
-				return _appConfiguration
-				  .OutlierPercentageOverlay;
-			}
-			set
-			{
-				_appConfiguration.OutlierPercentageOverlay =
-					value;
-				_overlayService.ResetHistory();
-				RaisePropertyChanged();
-			}
-		}
+        public int SelectedOutlierPercentage
+        {
+            get
+            {
+                return _appConfiguration
+                  .OutlierPercentageOverlay;
+            }
+            set
+            {
+                _appConfiguration.OutlierPercentageOverlay =
+                    value;
+                _overlayService.ResetHistory();
+                RaisePropertyChanged();
+            }
+        }
 
-		public EOutlierHandling SelectedOutlierHandling
-		{
-			get
-			{
-				return _appConfiguration
-				  .OutlierHandling
-				  .ConvertToEnum<EOutlierHandling>();
-			}
-			set
-			{
-				_appConfiguration.OutlierHandling =
-					value.ConvertToString();
-				_overlayService.ResetHistory();
-				RaisePropertyChanged();
-			}
-		}
+        public EOutlierHandling SelectedOutlierHandling
+        {
+            get
+            {
+                return _appConfiguration
+                  .OutlierHandling
+                  .ConvertToEnum<EOutlierHandling>();
+            }
+            set
+            {
+                _appConfiguration.OutlierHandling =
+                    value.ConvertToString();
+                _overlayService.ResetHistory();
+                RaisePropertyChanged();
+            }
+        }
 
-		public int OSDRefreshPeriod
-		{
-			get
-			{
-				return _appConfiguration
-				  .OSDRefreshPeriod;
-			}
-			set
-			{
-				_appConfiguration
-				   .OSDRefreshPeriod = value;
-				_overlayService.UpdateRefreshRate(value);
-				RaisePropertyChanged();
-			}
-		}
+        public int OSDRefreshPeriod
+        {
+            get
+            {
+                return _appConfiguration
+                  .OSDRefreshPeriod;
+            }
+            set
+            {
+                _appConfiguration
+                   .OSDRefreshPeriod = value;
+                _overlayService.UpdateRefreshRate(value);
+                RaisePropertyChanged();
+            }
+        }
 
-		public bool UseRunHistory
-		{
-			get
-			{
-				return _appConfiguration
-				  .UseRunHistory;
-			}
-			set
-			{
-				_appConfiguration.UseRunHistory = value;
-				OnUseRunHistoryChanged();
+        public bool UseRunHistory
+        {
+            get
+            {
+                return _appConfiguration
+                  .UseRunHistory;
+            }
+            set
+            {
+                _appConfiguration.UseRunHistory = value;
+                OnUseRunHistoryChanged();
 
-				RaisePropertyChanged();
-			}
-		}
+                RaisePropertyChanged();
+            }
+        }
 
-		public bool UseAggregation
-		{
-			get
-			{
-				return _appConfiguration
-				  .UseAggregation;
-			}
-			set
-			{
-				_appConfiguration.UseAggregation =
-					value;
-				RaisePropertyChanged();
-			}
-		}
+        public bool UseAggregation
+        {
+            get
+            {
+                return _appConfiguration
+                  .UseAggregation;
+            }
+            set
+            {
+                _appConfiguration.UseAggregation =
+                    value;
+                RaisePropertyChanged();
+            }
+        }
 
-		public bool SaveAggregationOnly
-		{
-			get
-			{
-				return _appConfiguration
-				  .SaveAggregationOnly;
-			}
-			set
-			{
-				_appConfiguration.SaveAggregationOnly =
-					value;
-				RaisePropertyChanged();
-			}
-		}
+        public bool SaveAggregationOnly
+        {
+            get
+            {
+                return _appConfiguration
+                  .SaveAggregationOnly;
+            }
+            set
+            {
+                _appConfiguration.SaveAggregationOnly =
+                    value;
+                RaisePropertyChanged();
+            }
+        }
 
-		public int SelectedOverlayEntryIndex
-		{
-			get { return _selectedOverlayEntryIndex; }
-			set
-			{
-				_selectedOverlayEntryIndex = value;
-				RaisePropertyChanged();
-			}
-		}
+        public int SelectedOverlayEntryIndex
+        {
+            get { return _selectedOverlayEntryIndex; }
+            set
+            {
+                _selectedOverlayEntryIndex = value;
+                RaisePropertyChanged();
+            }
+        }
 
-		public string UpdateHpyerlinkText
-		{
-			get { return _updateHpyerlinkText; }
-			set
-			{
-				_updateHpyerlinkText = value;
-				RaisePropertyChanged();
-			}
-		}
+        public string UpdateHpyerlinkText
+        {
+            get { return _updateHpyerlinkText; }
+            set
+            {
+                _updateHpyerlinkText = value;
+                RaisePropertyChanged();
+            }
+        }
 
-		public string SelectedRelatedMetric
-		{
-			get
-			{
-				return _appConfiguration.RelatedMetricOverlay;
-			}
-			set
-			{
-				_appConfiguration.RelatedMetricOverlay = value;
-				_overlayService.ResetHistory();
-				RaisePropertyChanged();
-			}
-		}
+        public string SelectedRelatedMetric
+        {
+            get
+            {
+                return _appConfiguration.RelatedMetricOverlay;
+            }
+            set
+            {
+                _appConfiguration.RelatedMetricOverlay = value;
+                _overlayService.ResetHistory();
+                RaisePropertyChanged();
+            }
+        }
 
-		public bool IsRTSSInstalled { get; }
+        public ICommand ConfigSwitchCommand { get; }
 
-		public IAppConfiguration AppConfiguration => _appConfiguration;
+        public ICommand SaveConfigCommand { get; }
 
-		public Array SecondMetricItems => Enum.GetValues(typeof(EMetric))
-											  .Cast<EMetric>()
-											  .Where(metric => metric != EMetric.Average && metric != EMetric.None)
-											  .ToArray();
-		public Array ThirdMetricItems => Enum.GetValues(typeof(EMetric))
-											 .Cast<EMetric>()
-											 .Where(metric => metric != EMetric.Average)
-											 .ToArray();
+        public bool IsRTSSInstalled { get; }
 
-		public Array NumberOfRunsItemsSource => Enumerable.Range(2, 9).ToArray();
+        public IAppConfiguration AppConfiguration => _appConfiguration;
 
-		public Array OutlierPercentageItemsSource => Enumerable.Range(2, 9).ToArray();
+        public Array SecondMetricItems => Enum.GetValues(typeof(EMetric))
+                                              .Cast<EMetric>()
+                                              .Where(metric => metric != EMetric.Average && metric != EMetric.None)
+                                              .ToArray();
+        public Array ThirdMetricItems => Enum.GetValues(typeof(EMetric))
+                                             .Cast<EMetric>()
+                                             .Where(metric => metric != EMetric.Average)
+                                             .ToArray();
 
-		public Array OutlierHandlingItems => Enum.GetValues(typeof(EOutlierHandling))
-														.Cast<EOutlierHandling>()
-														.ToArray();
+        public Array NumberOfRunsItemsSource => Enumerable.Range(2, 9).ToArray();
 
-		public Array RelatedMetricItemsSource => new[] { "Average", "Second", "Third" };
+        public Array OutlierPercentageItemsSource => Enumerable.Range(2, 9).ToArray();
 
-		public Array RefreshPeriodItemsSource => new[] { 200, 300, 400, 500, 600, 700, 800, 900, 1000 };
+        public Array OutlierHandlingItems => Enum.GetValues(typeof(EOutlierHandling))
+                                                        .Cast<EOutlierHandling>()
+                                                        .ToArray();
 
-		public ObservableCollection<IOverlayEntry> OverlayEntries { get; private set; }
-			= new ObservableCollection<IOverlayEntry>();
+        public Array RelatedMetricItemsSource => new[] { "Average", "Second", "Third" };
 
-		public OverlayViewModel(IOverlayService overlayService, IOverlayEntryProvider overlayEntryProvider,
-			IAppConfiguration appConfiguration, IEventAggregator eventAggregator)
-		{
-			_overlayService = overlayService;
-			_overlayEntryProvider = overlayEntryProvider;
-			_appConfiguration = appConfiguration;
-			_eventAggregator = eventAggregator;
+        public Array RefreshPeriodItemsSource => new[] { 200, 300, 400, 500, 600, 700, 800, 900, 1000 };
 
-			if (IsOverlayActive)
-				_overlayService.ShowOverlay();
+        public ObservableCollection<IOverlayEntry> OverlayEntries { get; private set; }
+            = new ObservableCollection<IOverlayEntry>();
 
-			IsRTSSInstalled = !string.IsNullOrEmpty(RTSSUtils.GetRTSSFullPath());
-			UpdateHpyerlinkText = "To use the overlay, install the latest" + Environment.NewLine +
-				"RivaTuner  Statistics  Server  (RTSS)";
 
-			OverlayEntries.AddRange(_overlayEntryProvider.GetOverlayEntries());
-			var history = _overlayEntryProvider.GetOverlayEntry("RunHistory");
-			history.ShowOnOverlayIsEnabled = UseRunHistory;
+        public OverlayViewModel(IOverlayService overlayService, IOverlayEntryProvider overlayEntryProvider,
+            IAppConfiguration appConfiguration, IEventAggregator eventAggregator)
+        {
+            _overlayService = overlayService;
+            _overlayEntryProvider = overlayEntryProvider;
+            _appConfiguration = appConfiguration;
+            _eventAggregator = eventAggregator;
 
-			SetGlobalHookEventOverlayHotkey();
-			SetGlobalHookEventResetHistoryHotkey();
-		}
+            if (IsOverlayActive)
+                _overlayService.ShowOverlay();
 
-		private void OnUseRunHistoryChanged()
-		{
-			var historyEntry = _overlayEntryProvider.GetOverlayEntry("RunHistory");
+            var configSubject = new Subject<object>();
+            ConfigSwitchCommand = new DelegateCommand<object>(configSubject.OnNext);
+            configSubject.Select(obj => Convert.ToInt32(obj)).DistinctUntilChanged()
+                .Subscribe(index =>
+                {
+                    _overlayEntryProvider.SwitchConfigurationTo(index);
+                    OverlayEntries.Clear();
+                    OverlayEntries.AddRange(_overlayEntryProvider.GetOverlayEntries());
+                });
 
-			if (!UseRunHistory)
-			{
-				UseAggregation = false;
+            SaveConfigCommand = new DelegateCommand(
+                () => _overlayEntryProvider.SaveOverlayEntriesToJson());
 
-				// don't show history on overlay
-				if (historyEntry != null)
-				{
-					historyEntry.ShowOnOverlay = false;
-					historyEntry.ShowOnOverlayIsEnabled = false;
-				}
-			}
-			else
-			{
-				if (historyEntry != null)
-					historyEntry.ShowOnOverlay = true;
-				historyEntry.ShowOnOverlayIsEnabled = true;
-			}
-		}
+            IsRTSSInstalled = !string.IsNullOrEmpty(RTSSUtils.GetRTSSFullPath());
+            UpdateHpyerlinkText = "To use the overlay, install the latest" + Environment.NewLine +
+                "RivaTuner  Statistics  Server  (RTSS)";
 
-		private void UpdateGlobalOverlayHookEvent()
-		{
-			if (_globalOverlayHookEvent != null)
-			{
-				_globalOverlayHookEvent.Dispose();
-				SetGlobalHookEventOverlayHotkey();
-			}
-		}
+            OverlayEntries.AddRange(_overlayEntryProvider.GetOverlayEntries());
+            var history = _overlayEntryProvider.GetOverlayEntry("RunHistory");
+            history.ShowOnOverlayIsEnabled = UseRunHistory;
 
-		private void UpdateGlobalResetHistoryHookEvent()
-		{
-			if (_globalResetHistoryHookEvent != null)
-			{
-				_globalResetHistoryHookEvent.Dispose();
-				SetGlobalHookEventResetHistoryHotkey();
-			}
-		}
+            SetGlobalHookEventOverlayHotkey();
+            SetGlobalHookEventResetHistoryHotkey();
+        }
 
-		private void SetGlobalHookEventOverlayHotkey()
-		{
-			if (!CXHotkey.IsValidHotkey(OverlayHotkeyString))
-				return;
+        private void OnUseRunHistoryChanged()
+        {
+            var historyEntry = _overlayEntryProvider.GetOverlayEntry("RunHistory");
 
-			var onCombinationDictionary = new Dictionary<CXHotkeyCombination, Action>
-			{
-				{CXHotkeyCombination.FromString(OverlayHotkeyString), () =>
-				{
-					IsOverlayActive = !IsOverlayActive;
-				}}
-			};
+            if (!UseRunHistory)
+            {
+                UseAggregation = false;
 
-			_globalOverlayHookEvent = Hook.GlobalEvents();
-			_globalOverlayHookEvent.OnCXCombination(onCombinationDictionary);
-		}
+                // don't show history on overlay
+                if (historyEntry != null)
+                {
+                    historyEntry.ShowOnOverlay = false;
+                    historyEntry.ShowOnOverlayIsEnabled = false;
+                }
+            }
+            else
+            {
+                if (historyEntry != null)
+                    historyEntry.ShowOnOverlay = true;
+                historyEntry.ShowOnOverlayIsEnabled = true;
+            }
+        }
 
-		private void SetGlobalHookEventResetHistoryHotkey()
-		{
-			if (!CXHotkey.IsValidHotkey(ResetHistoryHotkeyString))
-				return;
+        private void UpdateGlobalOverlayHookEvent()
+        {
+            if (_globalOverlayHookEvent != null)
+            {
+                _globalOverlayHookEvent.Dispose();
+                SetGlobalHookEventOverlayHotkey();
+            }
+        }
 
-			var onCombinationDictionary = new Dictionary<CXHotkeyCombination, Action>
-			{
-				{CXHotkeyCombination.FromString(ResetHistoryHotkeyString), () =>
-				{
-					_overlayService.ResetHistory();
-				}}
-			};
+        private void UpdateGlobalResetHistoryHookEvent()
+        {
+            if (_globalResetHistoryHookEvent != null)
+            {
+                _globalResetHistoryHookEvent.Dispose();
+                SetGlobalHookEventResetHistoryHotkey();
+            }
+        }
 
-			_globalResetHistoryHookEvent = Hook.GlobalEvents();
-			_globalResetHistoryHookEvent.OnCXCombination(onCombinationDictionary);
-		}
+        private void SetGlobalHookEventOverlayHotkey()
+        {
+            if (!CXHotkey.IsValidHotkey(OverlayHotkeyString))
+                return;
 
-		public bool IsNavigationTarget(NavigationContext navigationContext)
-		{
-			return true;
-		}
+            var onCombinationDictionary = new Dictionary<CXHotkeyCombination, Action>
+            {
+                {CXHotkeyCombination.FromString(OverlayHotkeyString), () =>
+                {
+                    IsOverlayActive = !IsOverlayActive;
+                }}
+            };
 
-		public void OnNavigatedFrom(NavigationContext navigationContext)
-		{
-		}
+            _globalOverlayHookEvent = Hook.GlobalEvents();
+            _globalOverlayHookEvent.OnCXCombination(onCombinationDictionary);
+        }
 
-		public void OnNavigatedTo(NavigationContext navigationContext)
-		{
-		}
+        private void SetGlobalHookEventResetHistoryHotkey()
+        {
+            if (!CXHotkey.IsValidHotkey(ResetHistoryHotkeyString))
+                return;
 
-		void IDropTarget.Drop(IDropInfo dropInfo)
-		{
-			if (dropInfo != null)
-			{
-				if (dropInfo.VisualTarget is FrameworkElement frameworkElement)
-				{
-					if (frameworkElement.Name == "OverlayItemDataGrid")
-					{
-						if (dropInfo.Data is IOverlayEntry overlayEntry)
-						{
-							// get source index
-							int sourceIndex = OverlayEntries.IndexOf(overlayEntry);
-							int targetIndex = dropInfo.InsertIndex;
+            var onCombinationDictionary = new Dictionary<CXHotkeyCombination, Action>
+            {
+                {CXHotkeyCombination.FromString(ResetHistoryHotkeyString), () =>
+                {
+                    _overlayService.ResetHistory();
+                }}
+            };
 
-							_overlayEntryProvider.MoveEntry(sourceIndex, targetIndex);
-							OverlayEntries.Clear();
-							OverlayEntries.AddRange(_overlayEntryProvider?.GetOverlayEntries());
-							_overlayService.UpdateOverlayEntries();
-						}
-					}
-				}
-			}
-		}
+            _globalResetHistoryHookEvent = Hook.GlobalEvents();
+            _globalResetHistoryHookEvent.OnCXCombination(onCombinationDictionary);
+        }
 
-		void IDropTarget.DragOver(IDropInfo dropInfo)
-		{
-			if (dropInfo != null)
-			{
-				// standard behavior
-				dropInfo.DropTargetAdorner = DropTargetAdorners.Insert;
-				dropInfo.Effects = DragDropEffects.Move;
-			}
-		}
-	}
+        public bool IsNavigationTarget(NavigationContext navigationContext)
+        {
+            return true;
+        }
+
+        public void OnNavigatedFrom(NavigationContext navigationContext)
+        {
+        }
+
+        public void OnNavigatedTo(NavigationContext navigationContext)
+        {
+        }
+
+        void IDropTarget.Drop(IDropInfo dropInfo)
+        {
+            if (dropInfo != null)
+            {
+                if (dropInfo.VisualTarget is FrameworkElement frameworkElement)
+                {
+                    if (frameworkElement.Name == "OverlayItemDataGrid")
+                    {
+                        if (dropInfo.Data is IOverlayEntry overlayEntry)
+                        {
+                            // get source index
+                            int sourceIndex = OverlayEntries.IndexOf(overlayEntry);
+                            int targetIndex = dropInfo.InsertIndex;
+
+                            _overlayEntryProvider.MoveEntry(sourceIndex, targetIndex);
+                            OverlayEntries.Clear();
+                            OverlayEntries.AddRange(_overlayEntryProvider?.GetOverlayEntries());
+                            _overlayService.UpdateOverlayEntries();
+                        }
+                    }
+                }
+            }
+        }
+
+        void IDropTarget.DragOver(IDropInfo dropInfo)
+        {
+            if (dropInfo != null)
+            {
+                // standard behavior
+                dropInfo.DropTargetAdorner = DropTargetAdorners.Insert;
+                dropInfo.Effects = DragDropEffects.Move;
+            }
+        }
+    }
 }

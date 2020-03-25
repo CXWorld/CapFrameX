@@ -252,9 +252,9 @@ namespace CapFrameX.Overlay
         public void SwitchOverlayConfiguration(EOverlayEntryConfig config)
         {
             HideOverlay();
-            _overlayEntryProvider?.SwitchConfigurationTo((int)config);
             ResetHistory();
             StopCaptureTimer();
+            _overlayEntryProvider?.SwitchConfigurationTo((int)config);
             SetOverlayEntries(_overlayEntryProvider?.GetOverlayEntries());
             _disposableHeartBeat = GetOverlayRefreshHeartBeat();
         }

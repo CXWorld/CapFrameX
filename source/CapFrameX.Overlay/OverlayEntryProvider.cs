@@ -120,6 +120,7 @@ namespace CapFrameX.Overlay
                 _overlayEntries = new List<IOverlayEntry>(adjustedOverlayEntries);
             }
 
+            _identifierOverlayEntryDict.Clear();
             foreach (var entry in _overlayEntries)
             {
                 entry.OverlayEntryProvider = this;
@@ -176,6 +177,7 @@ namespace CapFrameX.Overlay
 
         private void SetOverlayEntryDefaults()
         {
+            _identifierOverlayEntryDict.Clear();
             _overlayEntries = GetOverlayEntryDefaults().Select(item => item as IOverlayEntry).ToList();
 
             // Sensor data
@@ -208,7 +210,7 @@ namespace CapFrameX.Overlay
         private void SetConfigurationFileName(int index)
         {
             _appConfiguration.OverlayEntryConfigurationFile
-                = $"OverlayConfiguration//OverlayEntryConfiguration_{index}.json";
+                = $"OverlayEntryConfiguration_{index}";
         }
 
         public static List<OverlayEntryWrapper> GetOverlayEntryDefaults()
