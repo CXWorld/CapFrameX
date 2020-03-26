@@ -45,7 +45,7 @@ namespace CapFrameX.Overlay
                     {
                         OverlayEntryType = EOverlayEntryType.CX,
                         ShowOnOverlay = false,
-                        ShowOnOverlayIsEnabled = true,
+                        ShowOnOverlayIsEnabled = false,
                         Description = "Run history",
                         GroupName = string.Empty,
                         Value = default,

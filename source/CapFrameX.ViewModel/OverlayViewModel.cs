@@ -191,7 +191,6 @@ namespace CapFrameX.ViewModel
             {
                 _appConfiguration.UseRunHistory = value;
                 OnUseRunHistoryChanged();
-
                 RaisePropertyChanged();
             }
         }
@@ -306,7 +305,7 @@ namespace CapFrameX.ViewModel
 
         public ICommand SaveConfigCommand { get; }
 
-        public bool IsRTSSInstalled 
+        public bool IsRTSSInstalled
             => !string.IsNullOrEmpty(RTSSUtils.GetRTSSFullPath());
 
         public IAppConfiguration AppConfiguration => _appConfiguration;
@@ -325,8 +324,8 @@ namespace CapFrameX.ViewModel
         public Array OutlierPercentageItemsSource => Enumerable.Range(2, 9).ToArray();
 
         public Array OutlierHandlingItems => Enum.GetValues(typeof(EOutlierHandling))
-                                                        .Cast<EOutlierHandling>()
-                                                        .ToArray();
+                                                 .Cast<EOutlierHandling>()
+                                                 .ToArray();
 
         public Array RelatedMetricItemsSource => new[] { "Average", "Second", "Third" };
 
@@ -355,6 +354,8 @@ namespace CapFrameX.ViewModel
                     _overlayEntryProvider.SwitchConfigurationTo(index);
                     OverlayEntries.Clear();
                     OverlayEntries.AddRange(_overlayEntryProvider.GetOverlayEntries());
+                    var historyAfterSwitch = _overlayEntryProvider.GetOverlayEntry("RunHistory");
+                    historyAfterSwitch.ShowOnOverlayIsEnabled = UseRunHistory;
                 });
 
             SaveConfigCommand = new DelegateCommand(
@@ -375,22 +376,11 @@ namespace CapFrameX.ViewModel
         {
             var historyEntry = _overlayEntryProvider.GetOverlayEntry("RunHistory");
 
-            if (!UseRunHistory)
+            if (historyEntry != null)
             {
-                UseAggregation = false;
-
-                // don't show history on overlay
-                if (historyEntry != null)
-                {
-                    historyEntry.ShowOnOverlay = false;
-                    historyEntry.ShowOnOverlayIsEnabled = false;
-                }
-            }
-            else
-            {
-                if (historyEntry != null)
-                    historyEntry.ShowOnOverlay = true;
-                historyEntry.ShowOnOverlayIsEnabled = true;
+                historyEntry.ShowOnOverlayIsEnabled = UseRunHistory;
+                if (!UseRunHistory)
+                    UseAggregation = UseRunHistory;
             }
         }
 

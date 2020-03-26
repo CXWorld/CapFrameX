@@ -34,7 +34,9 @@ namespace CapFrameX.Extensions
 			else
 				list.Add(currentValue);
 
-			return new BlockingCollection<T>(new ConcurrentQueue<T>(list));
+			while (values.TryTake(out _)) { }
+			list.ForEach(values.Add);
+			return values;
 		}
 
 		public static BlockingCollection<T> ToBlockingCollection<T>(this IEnumerable<T> values)
