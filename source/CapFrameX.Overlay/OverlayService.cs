@@ -250,14 +250,7 @@ namespace CapFrameX.Overlay
         }
 
         public void SwitchOverlayConfiguration(EOverlayEntryConfig config)
-        {
-            HideOverlay();
-            ResetHistory();
-            StopCaptureTimer();
-            _overlayEntryProvider?.SwitchConfigurationTo((int)config);
-            SetOverlayEntries(_overlayEntryProvider?.GetOverlayEntries());
-            _disposableHeartBeat = GetOverlayRefreshHeartBeat();
-        }
+            => _overlayEntryProvider?.SwitchConfigurationTo((int)config);
 
         private void CheckRTSSRunningAndRefresh()
         {

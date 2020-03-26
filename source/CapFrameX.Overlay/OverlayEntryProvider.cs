@@ -4,6 +4,7 @@ using CapFrameX.Contracts.Sensor;
 using CapFrameX.Extensions;
 using CapFrameX.PresentMonInterface;
 using Newtonsoft.Json;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -16,14 +17,14 @@ namespace CapFrameX.Overlay
     {
         private readonly ISensorService _sensorService;
         private readonly IAppConfiguration _appConfiguration;
-        private readonly Dictionary<string, IOverlayEntry> _identifierOverlayEntryDict;
-        private List<IOverlayEntry> _overlayEntries;
+        private readonly ConcurrentDictionary<string, IOverlayEntry> _identifierOverlayEntryDict;
+        private BlockingCollection<IOverlayEntry> _overlayEntries;
 
         public OverlayEntryProvider(ISensorService sensorService, IAppConfiguration appConfiguration)
         {
             _sensorService = sensorService;
             _appConfiguration = appConfiguration;
-            _identifierOverlayEntryDict = new Dictionary<string, IOverlayEntry>();
+            _identifierOverlayEntryDict = new ConcurrentDictionary<string, IOverlayEntry>();
             EntryUpdateStream = new Subject<Unit>();
 
             LoadOrSetDefault();
@@ -87,10 +88,10 @@ namespace CapFrameX.Overlay
         private void LoadOverlayEntriesFromJson()
         {
             string json = File.ReadAllText(GetConfigurationFileName());
-            _overlayEntries = new List<IOverlayEntry>(JsonConvert.
-                DeserializeObject<OverlayEntryPersistence>(json).OverlayEntries);
+            _overlayEntries = JsonConvert.DeserializeObject<OverlayEntryPersistence>(json)
+                .OverlayEntries.ToBlockingCollection<IOverlayEntry>();
 
-            if (_sensorService.CheckHardwareChanged(_overlayEntries))
+            if (_sensorService.CheckHardwareChanged(_overlayEntries.ToList()))
             {
                 var sensorOverlayEntries = _sensorService
                     .GetSensorOverlayEntries();
@@ -117,14 +118,14 @@ namespace CapFrameX.Overlay
                     }
                 }
 
-                _overlayEntries = new List<IOverlayEntry>(adjustedOverlayEntries);
+                _overlayEntries = adjustedOverlayEntries.ToBlockingCollection();
             }
 
             _identifierOverlayEntryDict.Clear();
             foreach (var entry in _overlayEntries)
             {
                 entry.OverlayEntryProvider = this;
-                _identifierOverlayEntryDict.Add(entry.Identifier, entry);
+                _identifierOverlayEntryDict.TryAdd(entry.Identifier, entry);
             }
         }
 
@@ -178,16 +179,17 @@ namespace CapFrameX.Overlay
         private void SetOverlayEntryDefaults()
         {
             _identifierOverlayEntryDict.Clear();
-            _overlayEntries = GetOverlayEntryDefaults().Select(item => item as IOverlayEntry).ToList();
+            _overlayEntries = OverlayUtils.GetOverlayEntryDefaults()
+                    .Select(item => item as IOverlayEntry).ToBlockingCollection();
 
             // Sensor data
             var sensorOverlayEntries = _sensorService.GetSensorOverlayEntries();
-            _overlayEntries.AddRange(sensorOverlayEntries);
+            sensorOverlayEntries.ForEach(sensor => _overlayEntries.Add(sensor));
 
             foreach (var entry in _overlayEntries)
             {
                 entry.OverlayEntryProvider = this;
-                _identifierOverlayEntryDict.Add(entry.Identifier, entry);
+                _identifierOverlayEntryDict.TryAdd(entry.Identifier, entry);
             }
         }
 
@@ -211,164 +213,6 @@ namespace CapFrameX.Overlay
         {
             _appConfiguration.OverlayEntryConfigurationFile
                 = $"OverlayEntryConfiguration_{index}";
-        }
-
-        public static List<OverlayEntryWrapper> GetOverlayEntryDefaults()
-        {
-            return new List<OverlayEntryWrapper>
-                {
-					// CX 
-					// CaptureServiceStatus
-					new OverlayEntryWrapper("CaptureServiceStatus")
-                    {
-                        OverlayEntryType = EOverlayEntryType.CX,
-                        ShowOnOverlay = true,
-                        ShowOnOverlayIsEnabled = true,
-                        Description = "Capture service status",
-                        GroupName = "Status:",
-                        Value = "Capture service ready...",
-                        ValueFormat = default,
-                        ShowGraph = false,
-                        ShowGraphIsEnabled = false,
-                        Color = string.Empty
-                    },
-
-					// CaptureTimer
-					new OverlayEntryWrapper("CaptureTimer")
-                    {
-                        OverlayEntryType = EOverlayEntryType.CX,
-                        ShowOnOverlay = true,
-                        ShowOnOverlayIsEnabled = true,
-                        Description = "Capture timer",
-                        GroupName = "Status:",
-                        Value = "0",
-                        ValueFormat = default,
-                        ShowGraph = false,
-                        ShowGraphIsEnabled = false,
-                        Color = string.Empty
-                    },
-
-					// RunHistory
-					new OverlayEntryWrapper("RunHistory")
-                    {
-                        OverlayEntryType = EOverlayEntryType.CX,
-                        ShowOnOverlay = false,
-                        ShowOnOverlayIsEnabled = true,
-                        Description = "Run history",
-                        GroupName = string.Empty,
-                        Value = default,
-                        ValueFormat = default,
-                        ShowGraph = false,
-                        ShowGraphIsEnabled = false,
-                        Color = string.Empty
-                    },
-
-					// RTSS
-					// Framerate
-					new OverlayEntryWrapper("Framerate")
-                    {
-                        OverlayEntryType = EOverlayEntryType.CX,
-                        ShowOnOverlay = true,
-                        ShowOnOverlayIsEnabled = true,
-                        Description = "Framerate",
-                        GroupName = "<APP>",
-                        Value = 0d,
-                        ValueFormat = default,
-                        ShowGraph = false,
-                        ShowGraphIsEnabled = true,
-                        Color = string.Empty
-                    },
-
-					// Frametime
-					new OverlayEntryWrapper("Frametime")
-                    {
-                        OverlayEntryType = EOverlayEntryType.CX,
-                        ShowOnOverlay = true,
-                        ShowOnOverlayIsEnabled = true,
-                        Description = "Frametime",
-                        GroupName = "<APP>",
-                        Value = 0d,
-                        ValueFormat = default,
-                        ShowGraph = false,
-                        ShowGraphIsEnabled = true,
-                        Color = string.Empty
-                    },
-
-                    // Custom CPU
-					new OverlayEntryWrapper("CustomCPU")
-                    {
-                        OverlayEntryType = EOverlayEntryType.CX,
-                        ShowOnOverlay = false,
-                        ShowOnOverlayIsEnabled = true,
-                        Description = "Custom CPU Name",
-                        GroupName = "System Info",
-                        Value = "CPU",
-                        ValueFormat = default,
-                        ShowGraph = false,
-                        ShowGraphIsEnabled = false,
-                        Color = string.Empty
-                    },
-
-                    // Custom GPU
-					new OverlayEntryWrapper("CustomGPU")
-                    {
-                        OverlayEntryType = EOverlayEntryType.CX,
-                        ShowOnOverlay = false,
-                        ShowOnOverlayIsEnabled = true,
-                        Description = "Custom GPU Name",
-                        GroupName = "System Info",
-                        Value = "GPU",
-                        ValueFormat = default,
-                        ShowGraph = false,
-                        ShowGraphIsEnabled = false,
-                        Color = string.Empty
-                    },
-
-                    // Custom Mainboard
-					new OverlayEntryWrapper("Mainboard")
-                    {
-                        OverlayEntryType = EOverlayEntryType.CX,
-                        ShowOnOverlay = false,
-                        ShowOnOverlayIsEnabled = true,
-                        Description = "Mainboard Name",
-                        GroupName = "System Info",
-                        Value = "Mainboard",
-                        ValueFormat = default,
-                        ShowGraph = false,
-                        ShowGraphIsEnabled = false,
-                        Color = string.Empty
-                    },
-
-                    // Custom RAM
-					new OverlayEntryWrapper("CustomRAM")
-                    {
-                        OverlayEntryType = EOverlayEntryType.CX,
-                        ShowOnOverlay = false,
-                        ShowOnOverlayIsEnabled = true,
-                        Description = "Custom RAM Description",
-                        GroupName = "System Info",
-                        Value = "RAM",
-                        ValueFormat = default,
-                        ShowGraph = false,
-                        ShowGraphIsEnabled = false,
-                        Color = string.Empty
-                    },
-
-                    // OS
-					new OverlayEntryWrapper("OS")
-                    {
-                        OverlayEntryType = EOverlayEntryType.CX,
-                        ShowOnOverlay = false,
-                        ShowOnOverlayIsEnabled = true,
-                        Description = "OS Version",
-                        GroupName = "OS",
-                        Value = "OS",
-                        ValueFormat = default,
-                        ShowGraph = false,
-                        ShowGraphIsEnabled = false,
-                        Color = string.Empty
-                    }
-            };
         }
     }
 }

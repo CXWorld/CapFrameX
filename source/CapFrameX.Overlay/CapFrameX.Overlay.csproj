@@ -92,6 +92,7 @@
     <Compile Include="OverlayEntryProvider.cs" />
     <Compile Include="OverlayEntryWrapper.cs" />
     <Compile Include="OverlayService.cs" />
+    <Compile Include="OverlayUtils.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RTSSUtils.cs" />
   </ItemGroup>

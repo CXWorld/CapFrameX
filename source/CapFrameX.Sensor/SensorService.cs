@@ -320,7 +320,7 @@ namespace CapFrameX.Sensor
             return formatString;
         }
 
-        public bool CheckHardwareChanged(List<IOverlayEntry> overlayEntries)
+        public bool CheckHardwareChanged(IList<IOverlayEntry> overlayEntries)
         {
             var overlayEntryIdentfiers = overlayEntries
                     .Select(entry => entry.Identifier)

@@ -1,5 +1,6 @@
 ﻿using CapFrameX.Contracts.Overlay;
 using CapFrameX.Data.Session.Contracts;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 
 namespace CapFrameX.Contracts.Sensor
@@ -9,7 +10,7 @@ namespace CapFrameX.Contracts.Sensor
         IOverlayEntry[] GetSensorOverlayEntries();
         IOverlayEntry GetSensorOverlayEntry(string identifier);
         void UpdateSensors();
-        bool CheckHardwareChanged(List<IOverlayEntry> overlayEntries);
+        bool CheckHardwareChanged(IList<IOverlayEntry> overlayEntries);
         void StartSensorLogging();
         void StopSensorLogging();
         ISessionSensorData GetSessionSensorData();

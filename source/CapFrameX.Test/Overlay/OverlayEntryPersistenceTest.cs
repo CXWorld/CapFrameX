@@ -13,7 +13,7 @@ namespace CapFrameX.Test.Overlay
 		{
 			var persistence = new OverlayEntryPersistence
 			{
-				OverlayEntries = OverlayEntryProvider.GetOverlayEntryDefaults()
+				OverlayEntries = OverlayUtils.GetOverlayEntryDefaults()
 			};
 
 			File.WriteAllText(

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace CapFrameX.Extensions
@@ -18,6 +19,30 @@ namespace CapFrameX.Extensions
 				values.Add(currentValue);
 
 			return values;
+		}
+
+		public static BlockingCollection<T> Move<T>(this BlockingCollection<T> values, int sourceIndex, int targetIndex)
+		{
+			if (values == null || !values.Any())
+				return values;
+
+			var list = values.ToList();
+			var currentValue = list[sourceIndex];
+			list.RemoveAt(sourceIndex);
+			if (targetIndex < list.Count)
+				list.Insert(targetIndex, currentValue);
+			else
+				list.Add(currentValue);
+
+			return new BlockingCollection<T>(new ConcurrentQueue<T>(list));
+		}
+
+		public static BlockingCollection<T> ToBlockingCollection<T>(this IEnumerable<T> values)
+		{
+			if (values == null || !values.Any())
+				return null;
+
+			return new BlockingCollection<T>(new ConcurrentQueue<T>(values));
 		}
 	}
 }
