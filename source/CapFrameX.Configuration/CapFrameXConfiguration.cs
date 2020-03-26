@@ -358,7 +358,7 @@ namespace CapFrameX.Configuration
 			set { Settings.AreThresholdsPercentage = value; Settings.Save(); }
 		}
 
-		public string OverlayEntryConfigurationFile
+		public int OverlayEntryConfigurationFile
 		{
 			get { return Settings.OverlayEntryConfigurationFile; }
 			set { Settings.OverlayEntryConfigurationFile = value; Settings.Save(); }

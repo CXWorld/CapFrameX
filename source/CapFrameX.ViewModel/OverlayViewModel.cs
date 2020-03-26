@@ -262,6 +262,48 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        public bool IsConfig0Checked
+        {
+            get
+            {
+                return _appConfiguration.OverlayEntryConfigurationFile == 0;
+            }
+            set
+            {
+                if (value)
+                    _appConfiguration.OverlayEntryConfigurationFile = 0;
+                RaisePropertyChanged();
+            }
+        }
+
+        public bool IsConfig1Checked
+        {
+            get
+            {
+                return _appConfiguration.OverlayEntryConfigurationFile == 1;
+            }
+            set
+            {
+                if (value)
+                    _appConfiguration.OverlayEntryConfigurationFile = 1;
+                RaisePropertyChanged();
+            }
+        }
+
+        public bool IsConfig2Checked
+        {
+            get
+            {
+                return _appConfiguration.OverlayEntryConfigurationFile == 2;
+            }
+            set
+            {
+                if (value)
+                    _appConfiguration.OverlayEntryConfigurationFile = 2;
+                RaisePropertyChanged();
+            }
+        }
+
         public ICommand ConfigSwitchCommand { get; }
 
         public ICommand SaveConfigCommand { get; }

@@ -120,6 +120,6 @@
 		
 		bool AreThresholdsPercentage { get; set; }
 
-		string OverlayEntryConfigurationFile { get; set; }
+		int OverlayEntryConfigurationFile { get; set; }
 	}
 }

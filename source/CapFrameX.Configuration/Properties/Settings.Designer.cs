@@ -745,10 +745,10 @@ namespace CapFrameX.Configuration.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("OverlayEntryConfiguration_0")]
-        public string OverlayEntryConfigurationFile {
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int OverlayEntryConfigurationFile {
             get {
-                return ((string)(this["OverlayEntryConfigurationFile"]));
+                return ((int)(this["OverlayEntryConfigurationFile"]));
             }
             set {
                 this["OverlayEntryConfigurationFile"] = value;

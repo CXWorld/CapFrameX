@@ -17,20 +17,21 @@ namespace CapFrameX.Overlay
     {
         private readonly ISensorService _sensorService;
         private readonly IAppConfiguration _appConfiguration;
-        private readonly ConcurrentDictionary<string, IOverlayEntry> _identifierOverlayEntryDict;
+        private readonly ConcurrentDictionary<string, IOverlayEntry> _identifierOverlayEntryDict
+             = new ConcurrentDictionary<string, IOverlayEntry>();
         private BlockingCollection<IOverlayEntry> _overlayEntries;
 
-        public OverlayEntryProvider(ISensorService sensorService, IAppConfiguration appConfiguration)
+        public ISubject<Unit> EntryUpdateStream { get; }
+            = new Subject<Unit>();
+
+        public OverlayEntryProvider(ISensorService sensorService, 
+            IAppConfiguration appConfiguration)
         {
             _sensorService = sensorService;
             _appConfiguration = appConfiguration;
-            _identifierOverlayEntryDict = new ConcurrentDictionary<string, IOverlayEntry>();
-            EntryUpdateStream = new Subject<Unit>();
 
             LoadOrSetDefault();
         }
-
-        public ISubject<Unit> EntryUpdateStream { get; }
 
         public IOverlayEntry[] GetOverlayEntries()
         {
@@ -197,7 +198,8 @@ namespace CapFrameX.Overlay
         {
             _sensorService.UpdateSensors();
 
-            foreach (var entry in _overlayEntries.Where(x => !(x.OverlayEntryType == EOverlayEntryType.CX)))
+            foreach (var entry in _overlayEntries
+                .Where(x => !(x.OverlayEntryType == EOverlayEntryType.CX)))
             {
                 var sensorEntry = _sensorService.GetSensorOverlayEntry(entry.Identifier);
                 entry.Value = sensorEntry.Value;
@@ -206,13 +208,13 @@ namespace CapFrameX.Overlay
 
         private string GetConfigurationFileName()
         {
-            return $"OverlayConfiguration//{_appConfiguration.OverlayEntryConfigurationFile}.json";
+            return $"OverlayConfiguration//OverlayEntryConfiguration_" +
+                $"{_appConfiguration.OverlayEntryConfigurationFile}.json";
         }
 
         private void SetConfigurationFileName(int index)
         {
-            _appConfiguration.OverlayEntryConfigurationFile
-                = $"OverlayEntryConfiguration_{index}";
+            _appConfiguration.OverlayEntryConfigurationFile = index;
         }
     }
 }

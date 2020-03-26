@@ -64,21 +64,21 @@
                                  Padding="0 0 0 0"
                                  Width="30"
                                  MinWidth="30"
-                                 IsChecked="True"
+                                 IsChecked="{Binding IsConfig0Checked}"
                                  Content="1"
                                  Command="{Binding ConfigSwitchCommand}" CommandParameter="0"/>
                     <RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
                                  Padding="0 0 0 0"
                                  Width="30"
                                  MinWidth="30"
-                                 IsChecked="False"
+                                 IsChecked="{Binding IsConfig1Checked}"
                                  Content="2" 
                                  Command="{Binding ConfigSwitchCommand}" CommandParameter="1"/>
                     <RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
                                  Padding="0 0 0 0"
                                  Width="30"
                                  MinWidth="30"
-                                 IsChecked="False"
+                                 IsChecked="{Binding IsConfig2Checked}"
                                  Content="3" 
                                  Command="{Binding ConfigSwitchCommand}" CommandParameter="2"/>
                 </StackPanel>

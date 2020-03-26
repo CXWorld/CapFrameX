@@ -182,8 +182,8 @@
     <Setting Name="AreThresholdsPercentage" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
-    <Setting Name="OverlayEntryConfigurationFile" Type="System.String" Scope="User">
-      <Value Profile="(Default)">OverlayEntryConfiguration_0</Value>
+    <Setting Name="OverlayEntryConfigurationFile" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">0</Value>
     </Setting>
   </Settings>
 </SettingsFile>
