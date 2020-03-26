@@ -227,6 +227,7 @@
                                 <Style>
                                     <Setter Property="CheckBox.VerticalAlignment" Value="Center" />
                                     <Setter Property="CheckBox.HorizontalAlignment" Value="Center" />
+                                    <Setter Property="CheckBox.IsHitTestVisible" Value="False"/>
                                 </Style>
                             </DataGridCheckBoxColumn.ElementStyle>
                         </DataGridCheckBoxColumn>
