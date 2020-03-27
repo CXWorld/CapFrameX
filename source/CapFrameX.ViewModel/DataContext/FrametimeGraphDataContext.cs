@@ -1,5 +1,6 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using CapFrameX.Data;
+using CapFrameX.Extensions;
 using CapFrameX.Statistics;
 using OxyPlot;
 using OxyPlot.Axes;
@@ -43,16 +44,17 @@ namespace CapFrameX.ViewModel.DataContext
 
 				SetFrametimeChart(plotModel, RecordDataServer.GetFrametimePointTimeWindow());
 
-				if (visibleGraphs.IsAnyGraphVisible)
+				if (visibleGraphs.IsAnyGraphVisible && RecordDataServer.CurrentSession.HasValidSensorData())
+				{
 					plotModel.Axes.Add(AxisDefinitions[EPlotAxis.YAXISPERCENTAGE]);
-
-				if (visibleGraphs.GpuLoad)
-					SetGPULoadChart(plotModel, RecordDataServer.GetGPULoadPointTimeWindow());
-				if(visibleGraphs.CpuLoad)
-					SetCPULoadChart(plotModel, RecordDataServer.GetCPULoadPointTimeWindow());
-				if (visibleGraphs.CpuMaxThreadLoad)
-					SetCPUMaxThreadLoadChart(plotModel, RecordDataServer.GetCPUMaxThreadLoadPointTimeWindow());
-
+				
+					if (visibleGraphs.GpuLoad)
+						SetGPULoadChart(plotModel, RecordDataServer.GetGPULoadPointTimeWindow());
+					if (visibleGraphs.CpuLoad)
+						SetCPULoadChart(plotModel, RecordDataServer.GetCPULoadPointTimeWindow());
+					if (visibleGraphs.CpuMaxThreadLoad)
+						SetCPUMaxThreadLoadChart(plotModel, RecordDataServer.GetCPUMaxThreadLoadPointTimeWindow());
+				}
 				onFinishAction?.Invoke(plotModel);
 				plotModel.InvalidatePlot(true);
 			});
@@ -70,38 +72,46 @@ namespace CapFrameX.ViewModel.DataContext
 			var movingAverage = FrametimesStatisticProvider
 				.GetMovingAverage(frametimePoints.Select(pnt => pnt.Y)
 				.ToList(), AppConfiguration.MovingAverageWindowSize);
-			var frametimeSeries = new LineSeries
+
+			Application.Current.Dispatcher.Invoke(new Action(() =>
 			{
-				Title = "Frametimes",
-				StrokeThickness = 1,
-				LegendStrokeThickness = 4,
-				Color = ColorRessource.FrametimeStroke
-			};
-			var movingAverageSeries = new LineSeries
-			{
-				Title = "Moving average",
-				StrokeThickness = 2,
-				LegendStrokeThickness = 4,
-				Color = ColorRessource.FrametimeMovingAverageStroke
-			};
+				plotModel.Series.Clear();
 
-			frametimeSeries.Points.AddRange(frametimeDataPoints);
-			movingAverageSeries.Points.AddRange(movingAverage.Select((y, i) => new DataPoint(frametimePoints[i].X, y)));
+				var frametimeSeries = new LineSeries
+				{
+					Title = "Frametimes",
+					StrokeThickness = 1,
+					LegendStrokeThickness = 4,
+					Color = ColorRessource.FrametimeStroke
+				};
+				var movingAverageSeries = new LineSeries
+				{
+					Title = "Moving average",
+					StrokeThickness = 2,
+					LegendStrokeThickness = 4,
+					Color = ColorRessource.FrametimeMovingAverageStroke
+				};
 
-			UpdateAxis(EPlotAxis.XAXIS, (axis) =>
-			{
-				axis.Minimum = frametimePoints.First().X;
-				axis.Maximum = frametimePoints.Last().X;
-			});
-			//var yAxis = FrametimeModel.GetAxisOrDefault("yAxis", null);
+				frametimeSeries.Points.AddRange(frametimeDataPoints);
+				movingAverageSeries.Points.AddRange(movingAverage.Select((y, i) => new DataPoint(frametimePoints[i].X, y)));
+
+				UpdateAxis(EPlotAxis.XAXIS, (axis) =>
+				{
+					axis.Minimum = frametimePoints.First().X;
+					axis.Maximum = frametimePoints.Last().X;
+				});
+				//var yAxis = FrametimeModel.GetAxisOrDefault("yAxis", null);
 
 
-			//yAxis.Minimum = yMin - (yMax - yMin) / 6;
-			//yAxis.Maximum = yMax + (yMax - yMin) / 6;
+				//yAxis.Minimum = yMin - (yMax - yMin) / 6;
+				//yAxis.Maximum = yMax + (yMax - yMin) / 6;
 
-			plotModel.Series.Add(frametimeSeries);
-			plotModel.Series.Add(movingAverageSeries);
-		}
+				plotModel.Series.Add(frametimeSeries);
+				plotModel.Series.Add(movingAverageSeries);
+
+				plotModel.InvalidatePlot(true);
+				}));
+			}
 
 		private void OnCopyFrametimeValues()
 		{

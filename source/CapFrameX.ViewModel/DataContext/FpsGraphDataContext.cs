@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using CapFrameX.Data;
 using System.Windows.Threading;
+using CapFrameX.Extensions;
 
 namespace CapFrameX.ViewModel.DataContext
 {
@@ -44,7 +45,8 @@ namespace CapFrameX.ViewModel.DataContext
 
 				SetFpsChart(plotModel, RecordDataServer.GetFpsPointTimeWindow());
 
-				if (visibleGraphs.IsAnyGraphVisible)
+				if (visibleGraphs.IsAnyGraphVisible && RecordDataServer.CurrentSession.HasValidSensorData())
+				{ 
 					plotModel.Axes.Add(AxisDefinitions[EPlotAxis.YAXISPERCENTAGE]);
 
 				if (visibleGraphs.GpuLoad)
@@ -53,6 +55,7 @@ namespace CapFrameX.ViewModel.DataContext
 					SetCPULoadChart(plotModel, RecordDataServer.GetCPULoadPointTimeWindow());
 				if (visibleGraphs.CpuMaxThreadLoad)
 					SetCPUMaxThreadLoadChart(plotModel, RecordDataServer.GetCPUMaxThreadLoadPointTimeWindow());
+				}
 
 				onFinishAction?.Invoke(plotModel);
 				plotModel.InvalidatePlot(true);
