@@ -47,7 +47,8 @@ namespace CapFrameX.Sensor
 			}
 		}
 		private IObservable<(DateTime, Dictionary<ISensor, float>)> _sensorSnapshotStream;
-		public ISubject<IOverlayEntry[]> OnDictionaryUpdated { get; } = new Subject<IOverlayEntry[]>();
+		private ISubject<IOverlayEntry[]> _onDictionaryUpdated = new Subject<IOverlayEntry[]>();
+		public IObservable<IOverlayEntry[]> OnDictionaryUpdated => _onDictionaryUpdated;
 
 		public bool UseSensorLogging => _appConfiguration.UseSensorLogging;
 
@@ -63,7 +64,7 @@ namespace CapFrameX.Sensor
 			_sensorUpdateSubject = new BehaviorSubject<TimeSpan>(_currentSensorTimespan);
 			_sensorSnapshotStream = _sensorUpdateSubject
 				.Do(_ => Console.WriteLine("Sensor interval (ms): " + _.Milliseconds))
-				.Select(timespan => Observable.Concat(Observable.Return(-1l), Observable.Interval(timespan)))
+				.Select(timespan => Observable.Concat(Observable.Return(-1L), Observable.Interval(timespan)))
 				.Switch()
 				.Select(_ => GetSensorValues())
 				.Replay(0).RefCount();
@@ -74,15 +75,15 @@ namespace CapFrameX.Sensor
 			InitializeOverlayEntryDict();
 
 			_sensorSnapshotStream
-				.Sample(_osdUpdateSubject.Select(timespan => Observable.Concat(Observable.Return(-1l), Observable.Interval(timespan))).Switch())
+				.Sample(_osdUpdateSubject.Select(timespan => Observable.Concat(Observable.Return(-1L), Observable.Interval(timespan))).Switch())
 				.Subscribe(sensorData =>
 				{
 					UpdateOSD(sensorData.Item2);
-					OnDictionaryUpdated.OnNext(GetSensorOverlayEntries());
+					_onDictionaryUpdated.OnNext(GetSensorOverlayEntries());
 				});
 
 			_sensorSnapshotStream
-				.Sample(_loggingUpdateSubject.Select(timespan => Observable.Concat(Observable.Return(-1l), Observable.Interval(timespan))).Switch())
+				.Sample(_loggingUpdateSubject.Select(timespan => Observable.Concat(Observable.Return(-1L), Observable.Interval(timespan))).Switch())
 				.Where(_ => _isLoggingActive && UseSensorLogging)
 				.Subscribe(sensorData => LogCurrentValues(sensorData.Item2, sensorData.Item1));
 		}

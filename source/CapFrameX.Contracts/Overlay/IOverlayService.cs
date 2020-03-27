@@ -1,23 +1,18 @@
 ﻿using CapFrameX.Data.Session.Contracts;
 using System.Reactive.Subjects;
+using System.Threading.Tasks;
 
 namespace CapFrameX.Contracts.Overlay
 {
 	public interface IOverlayService
 	{
-		Subject<bool> IsOverlayActiveStream { get; }
+		ISubject<bool> IsOverlayActiveStream { get; }
 
 		string SecondMetric { get; set; }
 
 		string ThirdMetric { get; set; }
 
 		int RunHistoryCount { get; }
-
-		void ShowOverlay();
-
-		void HideOverlay();
-
-		void UpdateRefreshRate(int milliSeconds);
 
 		void UpdateNumberOfRuns(int numberOfRuns);
 
@@ -41,8 +36,6 @@ namespace CapFrameX.Contracts.Overlay
 
 		void SetRunHistoryAggregation(string aggregation);
 
-		void UpdateOverlayEntries();
-
-		void SwitchOverlayConfiguration(EOverlayEntryConfig config);
+		Task SwitchOverlayConfiguration(EOverlayEntryConfig config);
 	}
 }

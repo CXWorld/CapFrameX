@@ -31,7 +31,7 @@ namespace CapFrameX
 			PresentMonCaptureService.TryKillPresentMon();
 
 			var overlayService = _bootstrapper.Container.Resolve(typeof(IOverlayService), true) as IOverlayService;
-			overlayService?.HideOverlay();
+			overlayService?.IsOverlayActiveStream.OnNext(false);
 
 			var overlayEntryProvider = _bootstrapper.Container.Resolve(typeof(IOverlayEntryProvider), true) as IOverlayEntryProvider;
 			_ = overlayEntryProvider?.SaveOverlayEntriesToJson();

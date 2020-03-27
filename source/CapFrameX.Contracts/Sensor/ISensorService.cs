@@ -17,6 +17,6 @@ namespace CapFrameX.Contracts.Sensor
         string GetGpuDriverVersion();
         void SetLoggingInterval(TimeSpan timeSpan);
         void SetOSDInterval(TimeSpan timeSpan);
-        ISubject<IOverlayEntry[]> OnDictionaryUpdated { get; }
+        IObservable<IOverlayEntry[]> OnDictionaryUpdated { get; }
     }
 }

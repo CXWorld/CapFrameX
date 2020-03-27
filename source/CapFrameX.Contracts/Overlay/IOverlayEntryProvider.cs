@@ -1,12 +1,11 @@
 ﻿using System.Reactive;
 using System.Reactive.Subjects;
+using System.Threading.Tasks;
 
 namespace CapFrameX.Contracts.Overlay
 {
 	public interface IOverlayEntryProvider
 	{
-
-		IOverlayEntry[] GetOverlayEntries();
 
 		void MoveEntry(int sourceIndex, int targetIndex);
 
@@ -14,6 +13,7 @@ namespace CapFrameX.Contracts.Overlay
 
 		bool SaveOverlayEntriesToJson();
 
-		void SwitchConfigurationTo(int index);
+		Task SwitchConfigurationTo(int index);
+		Task<IOverlayEntry[]> GetOverlayEntries();
 	}
 }
