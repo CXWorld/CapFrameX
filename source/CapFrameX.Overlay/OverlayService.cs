@@ -67,8 +67,8 @@ namespace CapFrameX.Overlay
             _runHistoryOutlierFlags = Enumerable.Repeat(false, _numberOfRuns).ToArray();
 
             _logger.LogDebug("{componentName} Ready", this.GetType().Name);
-            SetOverlayEntries(overlayEntryProvider?.GetOverlayEntries());
-            overlayEntryProvider.EntryUpdateStream.Subscribe(x =>
+
+            _sensorService.OnDictionaryUpdated.Subscribe(zeug =>
             {
                 SetOverlayEntries(overlayEntryProvider?.GetOverlayEntries());
             });
@@ -130,22 +130,31 @@ namespace CapFrameX.Overlay
         public void SetCaptureTimerValue(int t)
         {
             var captureTimer = _overlayEntryProvider.GetOverlayEntry("CaptureTimer");
-            captureTimer.Value = $"{t.ToString()} s";
-            SetOverlayEntry(captureTimer);
+            if (captureTimer != null)
+            {
+                captureTimer.Value = $"{t.ToString()} s";
+                SetOverlayEntry(captureTimer);
+            }
         }
 
         public void SetCaptureServiceStatus(string status)
         {
             var captureStatus = _overlayEntryProvider.GetOverlayEntry("CaptureServiceStatus");
-            captureStatus.Value = status;
-            SetOverlayEntry(captureStatus);
+            if (captureStatus != null)
+            {
+                captureStatus.Value = status;
+                SetOverlayEntry(captureStatus);
+            }
         }
 
         public void SetShowRunHistory(bool showHistory)
         {
             var history = _overlayEntryProvider.GetOverlayEntry("RunHistory");
-            history.ShowOnOverlay = showHistory;
-            SetOverlayEntry(history);
+            if (history != null)
+            {
+                history.ShowOnOverlay = showHistory;
+                SetOverlayEntry(history);
+            }
         }
 
         public void ResetHistory()

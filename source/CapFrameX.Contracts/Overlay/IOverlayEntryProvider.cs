@@ -5,7 +5,6 @@ namespace CapFrameX.Contracts.Overlay
 {
 	public interface IOverlayEntryProvider
 	{
-		ISubject<Unit> EntryUpdateStream { get; }
 
 		IOverlayEntry[] GetOverlayEntries();
 

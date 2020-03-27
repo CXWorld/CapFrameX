@@ -4,12 +4,12 @@ using CapFrameX.Contracts.Sensor;
 using CapFrameX.Extensions;
 using CapFrameX.PresentMonInterface;
 using Newtonsoft.Json;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reactive;
-using System.Reactive.Subjects;
+using System.Reactive.Linq;
 
 namespace CapFrameX.Overlay
 {
@@ -21,11 +21,7 @@ namespace CapFrameX.Overlay
              = new ConcurrentDictionary<string, IOverlayEntry>();
         private BlockingCollection<IOverlayEntry> _overlayEntries;
 
-        public ISubject<Unit> EntryUpdateStream { get; }
-            = new Subject<Unit>();
-
-        public OverlayEntryProvider(ISensorService sensorService, 
-            IAppConfiguration appConfiguration)
+        public OverlayEntryProvider(ISensorService sensorService, IAppConfiguration appConfiguration)
         {
             _sensorService = sensorService;
             _appConfiguration = appConfiguration;
@@ -41,7 +37,8 @@ namespace CapFrameX.Overlay
 
         public IOverlayEntry GetOverlayEntry(string identifier)
         {
-            return _identifierOverlayEntryDict[identifier];
+            _identifierOverlayEntryDict.TryGetValue(identifier, out IOverlayEntry entry);
+            return entry;
         }
 
         public void MoveEntry(int sourceIndex, int targetIndex)
@@ -94,32 +91,35 @@ namespace CapFrameX.Overlay
 
             if (_sensorService.CheckHardwareChanged(_overlayEntries.ToList()))
             {
-                var sensorOverlayEntries = _sensorService
-                    .GetSensorOverlayEntries();
-                var sensorOverlayEntryIdentfiers = _sensorService
-                    .GetSensorOverlayEntries().Select(entry => entry.Identifier)
-                    .ToList();
-
-                var adjustedOverlayEntries = new List<IOverlayEntry>(_overlayEntries);
-                var adjustedOverlayEntryIdentfiers = adjustedOverlayEntries
-                    .Select(entry => entry.Identifier)
-                    .ToList();
-
-                foreach (var entry in _overlayEntries.Where(x => !(x.OverlayEntryType == EOverlayEntryType.CX)))
-                {
-                    if (!sensorOverlayEntryIdentfiers.Contains(entry.Identifier))
-                        adjustedOverlayEntries.Remove(entry);
-                }
-
-                foreach (var entry in sensorOverlayEntries)
-                {
-                    if (!adjustedOverlayEntryIdentfiers.Contains(entry.Identifier))
+                _sensorService.OnDictionaryUpdated
+                    .Take(1)
+                    .Subscribe(sensorOverlayEntries =>
                     {
-                        adjustedOverlayEntries.Add(entry);
-                    }
-                }
+                        var sensorOverlayEntryIdentfiers = sensorOverlayEntries
+                            .Select(entry => entry.Identifier)
+                            .ToList();
 
-                _overlayEntries = adjustedOverlayEntries.ToBlockingCollection();
+                        var adjustedOverlayEntries = new List<IOverlayEntry>(_overlayEntries);
+                        var adjustedOverlayEntryIdentfiers = adjustedOverlayEntries
+                            .Select(entry => entry.Identifier)
+                            .ToList();
+
+                        foreach (var entry in _overlayEntries.Where(x => !(x.OverlayEntryType == EOverlayEntryType.CX)))
+                        {
+                            if (!sensorOverlayEntryIdentfiers.Contains(entry.Identifier))
+                                adjustedOverlayEntries.Remove(entry);
+                        }
+
+                        foreach (var entry in sensorOverlayEntries)
+                        {
+                            if (!adjustedOverlayEntryIdentfiers.Contains(entry.Identifier))
+                            {
+                                adjustedOverlayEntries.Add(entry);
+                            }
+                        }
+
+                        _overlayEntries = adjustedOverlayEntries.ToBlockingCollection();
+                    });
             }
 
             _identifierOverlayEntryDict.Clear();
@@ -179,27 +179,28 @@ namespace CapFrameX.Overlay
 
         private void SetOverlayEntryDefaults()
         {
-            _identifierOverlayEntryDict.Clear();
             _overlayEntries = OverlayUtils.GetOverlayEntryDefaults()
                     .Select(item => item as IOverlayEntry).ToBlockingCollection();
 
             // Sensor data
-            var sensorOverlayEntries = _sensorService.GetSensorOverlayEntries();
-            sensorOverlayEntries.ForEach(sensor => _overlayEntries.Add(sensor));
+            _sensorService.OnDictionaryUpdated
+                .Take(1)
+                .Subscribe(sensorOverlayEntries =>
+                {
+                    sensorOverlayEntries.ForEach(sensor => _overlayEntries.TryAdd(sensor));
 
-            foreach (var entry in _overlayEntries)
-            {
-                entry.OverlayEntryProvider = this;
-                _identifierOverlayEntryDict.TryAdd(entry.Identifier, entry);
-            }
+                    _identifierOverlayEntryDict.Clear();
+                    foreach (var entry in _overlayEntries)
+                    {
+                        entry.OverlayEntryProvider = this;
+                        _identifierOverlayEntryDict.TryAdd(entry.Identifier, entry);
+                    }
+                });
         }
 
         private void UpdateSensorData()
         {
-            _sensorService.UpdateSensors();
-
-            foreach (var entry in _overlayEntries
-                .Where(x => !(x.OverlayEntryType == EOverlayEntryType.CX)))
+            foreach (var entry in _overlayEntries.Where(x => !(x.OverlayEntryType == EOverlayEntryType.CX)))
             {
                 var sensorEntry = _sensorService.GetSensorOverlayEntry(entry.Identifier);
                 entry.Value = sensorEntry.Value;

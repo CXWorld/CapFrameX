@@ -50,14 +50,14 @@ namespace CapFrameX.Sensor
             _vRamUsage = new List<int>();
         }
 
-        public void AddMeasureTime()
+        public void AddMeasureTime(DateTime dateTime)
         {
-            var timestampLogging = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds();
+            var timestampLogging = new DateTimeOffset(dateTime).ToUnixTimeMilliseconds();
             long ellapsedMilliseconds = timestampLogging - _timestampStartLogging;
             _measureTime.Add(ellapsedMilliseconds * 1E-03);
         }
 
-        public void AddSensorValue(ISensor sensor)
+        public void AddSensorValue(ISensor sensor, float currentValue)
         {
             var name = sensor.Name;
 
@@ -68,35 +68,35 @@ namespace CapFrameX.Sensor
             switch (name)
             {
                 case "CPU Total" when sensor.Hardware.HardwareType == HardwareType.CPU:
-                    _cpuUsage.Add((int)Math.Round(sensor.Value.Value));
+                    _cpuUsage.Add((int)Math.Round(currentValue));
                     break;
                 case "CPU Max" when sensor.Hardware.HardwareType == HardwareType.CPU:
-                    _cpuMaxThreadUsage.Add((int)Math.Round(sensor.Value.Value));
+                    _cpuMaxThreadUsage.Add((int)Math.Round(currentValue));
                     break;
                 case "CPU Package" when sensor.SensorType == SensorType.Power:
-                    _cpuPower.Add((int)Math.Round(sensor.Value.Value));
+                    _cpuPower.Add((int)Math.Round(currentValue));
                     break;
                 case "CPU Package" when sensor.SensorType == SensorType.Temperature:
-                    _cpuTemp.Add((int)Math.Round(sensor.Value.Value));
+                    _cpuTemp.Add((int)Math.Round(currentValue));
                     break;
                 case "GPU Core" when sensor.SensorType == SensorType.Load:
-                    _gpuUsage.Add((int)Math.Round(sensor.Value.Value));
+                    _gpuUsage.Add((int)Math.Round(currentValue));
                     break;
                 case "Used Memory" when sensor.Hardware.HardwareType == HardwareType.RAM:
-                    _ramUsage.Add(Math.Round(sensor.Value.Value, 2));
+                    _ramUsage.Add(Math.Round(currentValue, 2));
                     break;
                 case "GPU Power" when sensor.Hardware.HardwareType == HardwareType.GpuNvidia:
-                    _gpuPower.Add((int)Math.Round(sensor.Value.Value));
+                    _gpuPower.Add((int)Math.Round(currentValue));
                     break;
                 case "GPU Total" when sensor.Hardware.HardwareType == HardwareType.GpuAti:
-                    _gpuPower.Add((int)Math.Round(sensor.Value.Value));
+                    _gpuPower.Add((int)Math.Round(currentValue));
                     break;
                 case "GPU Core" when sensor.SensorType == SensorType.Temperature:
-                    _gpuTemp.Add((int)Math.Round(sensor.Value.Value));
+                    _gpuTemp.Add((int)Math.Round(currentValue));
                     break;
                 case "GPU Memory Used" when sensor.SensorType == SensorType.SmallData
                 && sensor.Hardware.HardwareType == HardwareType.GpuNvidia:
-                    _vRamUsage.Add((int)Math.Round(sensor.Value.Value, 0));
+                    _vRamUsage.Add((int)Math.Round(currentValue, 0));
                     break;
             }
 

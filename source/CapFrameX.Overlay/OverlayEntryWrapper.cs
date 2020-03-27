@@ -38,7 +38,6 @@ namespace CapFrameX.Overlay
 			set
 			{
 				_showOnOverlay = value;
-				OverlayEntryProvider?.EntryUpdateStream.OnNext(default);
 				RaisePropertyChanged();
 			}
 		}
@@ -59,7 +58,6 @@ namespace CapFrameX.Overlay
 			set
 			{
 				_groupName = value;
-				OverlayEntryProvider?.EntryUpdateStream.OnNext(default);
 				RaisePropertyChanged();
 			}
 		}
@@ -80,7 +78,6 @@ namespace CapFrameX.Overlay
 			set
 			{
 				_showGraph = value;
-				OverlayEntryProvider?.EntryUpdateStream.OnNext(default);
 				RaisePropertyChanged();
 			}
 		}
@@ -104,7 +101,6 @@ namespace CapFrameX.Overlay
 			set
 			{
 				_color = value;
-				OverlayEntryProvider?.EntryUpdateStream.OnNext(default);
 				RaisePropertyChanged();
 			}
 		}

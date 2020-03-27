@@ -171,6 +171,21 @@ namespace CapFrameX.ViewModel
 				RaisePropertyChanged();
 			}
 		}
+		public int LoggingPeriod
+		{
+			get
+			{
+				return _appConfiguration
+				  .SensorLoggingRefreshPeriod;
+			}
+			set
+			{
+				_appConfiguration
+				   .SensorLoggingRefreshPeriod = value;
+				_sensorService.SetLoggingInterval(TimeSpan.FromMilliseconds(value));
+				RaisePropertyChanged();
+			}
+		}
 
 		public string LoggerOutput
 		{
@@ -230,6 +245,8 @@ namespace CapFrameX.ViewModel
 		public ICommand AddToProcessListCommand { get; }
 
 		public ICommand ResetCaptureProcessCommand { get; }
+
+		public Array LoggingPeriodItemsSource => new[] { 250, 500 };
 
 		public CaptureViewModel(IAppConfiguration appConfiguration,
 								ICaptureService captureService,

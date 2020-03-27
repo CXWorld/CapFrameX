@@ -214,7 +214,7 @@
                                 </lvc:CartesianChart>
                             </Grid>
                         </TabItem>
-                        <TabItem Header="Sensor statistics">
+                        <TabItem Header="Sensor statistics" IsEnabled="{Binding AdditionalGraphsEnabled}">
                             <DataGrid Background="#F5F5F5" FontSize="11" 
 										ItemsSource="{Binding SensorReportItems}" ColumnHeaderHeight="25"
 										CanUserSortColumns="False" CanUserAddRows="False" AutoGenerateColumns="False"

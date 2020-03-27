@@ -1,5 +1,6 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Overlay;
+using CapFrameX.Contracts.Sensor;
 using CapFrameX.Extensions;
 using CapFrameX.Hotkey;
 using CapFrameX.Overlay;
@@ -27,7 +28,7 @@ namespace CapFrameX.ViewModel
         private readonly IOverlayEntryProvider _overlayEntryProvider;
         private readonly IAppConfiguration _appConfiguration;
         private readonly IEventAggregator _eventAggregator;
-
+        private readonly ISensorService _sensorService;
         private IKeyboardMouseEvents _globalOverlayHookEvent;
         private IKeyboardMouseEvents _globalResetHistoryHookEvent;
         private int _selectedOverlayEntryIndex = -1;
@@ -175,7 +176,7 @@ namespace CapFrameX.ViewModel
             {
                 _appConfiguration
                    .OSDRefreshPeriod = value;
-                _overlayService.UpdateRefreshRate(value);
+                _sensorService.SetOSDInterval(TimeSpan.FromMilliseconds(value));
                 RaisePropertyChanged();
             }
         }
@@ -329,19 +330,20 @@ namespace CapFrameX.ViewModel
 
         public Array RelatedMetricItemsSource => new[] { "Average", "Second", "Third" };
 
-        public Array RefreshPeriodItemsSource => new[] { 200, 300, 400, 500, 600, 700, 800, 900, 1000 };
+        public Array RefreshPeriodItemsSource => new[] { 500, 1000, 1500, 2000 };
 
         public ObservableCollection<IOverlayEntry> OverlayEntries { get; private set; }
             = new ObservableCollection<IOverlayEntry>();
 
 
         public OverlayViewModel(IOverlayService overlayService, IOverlayEntryProvider overlayEntryProvider,
-            IAppConfiguration appConfiguration, IEventAggregator eventAggregator)
+            IAppConfiguration appConfiguration, IEventAggregator eventAggregator, ISensorService sensorService)
         {
             _overlayService = overlayService;
             _overlayEntryProvider = overlayEntryProvider;
             _appConfiguration = appConfiguration;
             _eventAggregator = eventAggregator;
+            _sensorService = sensorService;
 
             if (IsOverlayActive)
                 _overlayService.ShowOverlay();
@@ -355,7 +357,8 @@ namespace CapFrameX.ViewModel
                     OverlayEntries.Clear();
                     OverlayEntries.AddRange(_overlayEntryProvider.GetOverlayEntries());
                     var historyAfterSwitch = _overlayEntryProvider.GetOverlayEntry("RunHistory");
-                    historyAfterSwitch.ShowOnOverlayIsEnabled = UseRunHistory;
+                    if (historyAfterSwitch != null)
+                        historyAfterSwitch.ShowOnOverlayIsEnabled = UseRunHistory;
                 });
 
             SaveConfigCommand = new DelegateCommand(
@@ -366,7 +369,8 @@ namespace CapFrameX.ViewModel
 
             OverlayEntries.AddRange(_overlayEntryProvider.GetOverlayEntries());
             var history = _overlayEntryProvider.GetOverlayEntry("RunHistory");
-            history.ShowOnOverlayIsEnabled = UseRunHistory;
+            if (history != null)
+                history.ShowOnOverlayIsEnabled = UseRunHistory;
 
             SetGlobalHookEventOverlayHotkey();
             SetGlobalHookEventResetHistoryHotkey();
@@ -380,7 +384,10 @@ namespace CapFrameX.ViewModel
             {
                 historyEntry.ShowOnOverlayIsEnabled = UseRunHistory;
                 if (!UseRunHistory)
+                {
+                    historyEntry.ShowOnOverlay = false;
                     UseAggregation = UseRunHistory;
+                }
             }
         }
 

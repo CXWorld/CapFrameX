@@ -121,5 +121,7 @@
 		bool AreThresholdsPercentage { get; set; }
 
 		int OverlayEntryConfigurationFile { get; set; }
+
+		int SensorLoggingRefreshPeriod { get; set; }
 	}
 }

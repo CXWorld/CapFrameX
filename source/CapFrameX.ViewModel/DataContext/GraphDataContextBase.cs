@@ -134,7 +134,7 @@ namespace CapFrameX.ViewModel.DataContext
 			var series = new LineSeries
 			{
 				Title = "GPU load",
-				StrokeThickness = 3,
+				StrokeThickness = 2,
 				LegendStrokeThickness = 4,
 				Color = OxyColor.FromArgb(180, 32, 141, 228),
 				YAxisKey = EPlotAxis.YAXISPERCENTAGE.GetDescription()
@@ -148,7 +148,7 @@ namespace CapFrameX.ViewModel.DataContext
 			var series = new LineSeries
 			{
 				Title = "CPU total load",
-				StrokeThickness = 3,
+				StrokeThickness = 2,
 				LegendStrokeThickness = 4,
 				Color = OxyColor.FromArgb(180, 241, 125, 32),
 				YAxisKey = EPlotAxis.YAXISPERCENTAGE.GetDescription()
@@ -162,7 +162,7 @@ namespace CapFrameX.ViewModel.DataContext
 			var series = new LineSeries
 			{
 				Title = "CPU max thread load",
-				StrokeThickness = 3,
+				StrokeThickness = 2,
 				LegendStrokeThickness = 4,
 				Color = OxyColor.FromArgb(180, 250, 25, 30),
 				YAxisKey = EPlotAxis.YAXISPERCENTAGE.GetDescription()

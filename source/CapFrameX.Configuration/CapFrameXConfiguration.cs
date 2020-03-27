@@ -363,5 +363,11 @@ namespace CapFrameX.Configuration
 			get { return Settings.OverlayEntryConfigurationFile; }
 			set { Settings.OverlayEntryConfigurationFile = value; Settings.Save(); }
 		}
+		
+		public int SensorLoggingRefreshPeriod
+		{
+			get { return Settings.SensorLoggingRefreshPeriod; }
+			set { Settings.SensorLoggingRefreshPeriod = value; Settings.Save(); }
+		}
 	}
 }

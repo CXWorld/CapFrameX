@@ -77,8 +77,21 @@ namespace CapFrameX.ViewModel.DataContext
 			{
 				plotModel.Series.Clear();
 
-				var fpsSeries = new LineSeries { Title = "FPS", StrokeThickness = 1, LegendStrokeThickness = 4, Color = ColorRessource.FpsStroke };
-				var averageSeries = new LineSeries { Title = "Average FPS", StrokeThickness = 2, LegendStrokeThickness = 4, Color = ColorRessource.FpsAverageStroke };
+				var fpsSeries = new LineSeries 
+				{ 
+					Title = "FPS", 
+					StrokeThickness = 1, 
+					LegendStrokeThickness = 4, 
+					Color = ColorRessource.FpsStroke 
+				};
+
+				var averageSeries = new LineSeries 
+				{ 
+					Title = "Average FPS", 
+					StrokeThickness = 2, 
+					LegendStrokeThickness = 4, 
+					Color = ColorRessource.FpsAverageStroke 
+				};
 
 				fpsSeries.Points.AddRange(fpsDataPoints);
 				averageSeries.Points.AddRange(averageDataPoints);
