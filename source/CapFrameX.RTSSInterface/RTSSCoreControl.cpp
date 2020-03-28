@@ -365,9 +365,10 @@ void RTSSCoreControl::Refresh()
 
 	if (bFormatTagsSupported && m_bFormatTags)
 	{
-		if (GetClientsNum() == 1)
+		auto clientCount = GetClientsNum();
+		if (clientCount == 1)
 			strOSD += "<P=0,0>";
-		else
+		else if (clientCount > 1)
 		{
 			// Add CX label
 			groupedString.Add("", "<C3>\nCX OSD<C>", "\n", " ");

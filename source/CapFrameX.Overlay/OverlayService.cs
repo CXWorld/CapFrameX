@@ -71,7 +71,7 @@ namespace CapFrameX.Overlay
 					if (isActive)
 					{
 						return sensorService.OnDictionaryUpdated
-						.SelectMany(_ => _overlayEntryProvider.GetOverlayEntries());
+							.SelectMany(_ => _overlayEntryProvider.GetOverlayEntries());
 					}
 					else
 					{
@@ -91,7 +91,6 @@ namespace CapFrameX.Overlay
 			SetRunHistoryOutlierFlags(_runHistoryOutlierFlags);
 			SetIsCaptureTimerActive(false);
 		}
-
 
 		public void StartCountdown(int seconds)
 		{
