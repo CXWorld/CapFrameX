@@ -33,5 +33,7 @@
 				IsLoggedIn = loggedIn;
 			}
 		}
+
+		public class CloudFolderChanged	{ }
 	}
 }

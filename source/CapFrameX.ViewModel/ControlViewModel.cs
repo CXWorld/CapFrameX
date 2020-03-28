@@ -40,7 +40,7 @@ namespace CapFrameX.ViewModel
 		private PubSubEvent<ViewMessages.UpdateSession> _updateSessionEvent;
 		private PubSubEvent<ViewMessages.SelectSession> _selectSessionEvent;
 		private PubSubEvent<ViewMessages.UpdateRecordInfos> _updateRecordInfosEvent;
-
+		private PubSubEvent<AppMessages.CloudFolderChanged> _cloudFolderChanged;
 		private IFileRecordInfo _selectedRecordInfo;
 		private string _customCpuDescription;
 		private string _customGpuDescription;
@@ -215,6 +215,8 @@ namespace CapFrameX.ViewModel
 
 		public ICommand CloseCreateFolderDialogCommand { get; }
 
+		public ICommand ReloadRootFolderCommand { get; }
+
 		public ISubject<string> TreeViewItemCreatedStream = new Subject<string>();
 
 		public ISubject<string> TreeViewItemDeletedStream = new Subject<string>();
@@ -241,7 +243,7 @@ namespace CapFrameX.ViewModel
 			AddCpuInfoCommand = new DelegateCommand(OnAddCpuInfo);
 			AddGpuInfoCommand = new DelegateCommand(OnAddGpuInfo);
 			AddRamInfoCommand = new DelegateCommand(OnAddRamInfo);
-			DeleteRecordCommand = new DelegateCommand(OnPressDeleteKey);
+			DeleteRecordCommand = new DelegateCommand(OnPressDeleteKey);			
 			OpenObservedFolderCommand = new DelegateCommand(OnOpenObservedFolder);
 			DeleteFolderCommand = new DelegateCommand(OnDeleteFolder);
 			OpenCreateSubFolderDialogCommand = new DelegateCommand(() => 
@@ -258,12 +260,14 @@ namespace CapFrameX.ViewModel
 				CreateFolderdialogIsOpenStream.OnNext(false);
 			}
 			);
+			ReloadRootFolderCommand = new DelegateCommand(() => TreeViewUpdateStream.OnNext(default));
 
 			RecordDataGridSelectedIndex = -1;
 
 			CreateFolderDialogContent = new CreateFolderDialog();
 
 			SetAggregatorEvents();
+			SubscribeToCloudFolderChanged();
 			SubscribeToResetRecord();
 			SubscribeToSetFileRecordInfoExternal();
 
@@ -599,6 +603,15 @@ namespace CapFrameX.ViewModel
 									.FirstOrDefault(info => info.Id == msg.RecordInfo.Id);
 								_selectedRecordings = null;
 							});
+		}
+
+		private void SubscribeToCloudFolderChanged()
+		{
+			_eventAggregator.GetEvent<PubSubEvent<AppMessages.CloudFolderChanged>>()
+				.Subscribe(msg =>
+				{
+					TreeViewUpdateStream.OnNext(default);
+				});
 		}
 	}
 }

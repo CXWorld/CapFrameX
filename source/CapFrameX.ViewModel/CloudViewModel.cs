@@ -42,6 +42,8 @@ namespace CapFrameX.ViewModel
 		private readonly ILogger<CloudViewModel> _logger;
 		private readonly IAppVersionProvider _appVersionProvider;
 		private readonly LoginManager _loginManager;
+		private PubSubEvent<AppMessages.CloudFolderChanged> _cloudFolderChanged;
+
 		private bool _useUpdateSession;
 		private int _selectedCloudEntryIndex = -1;
 		private bool _showHelpText = true;
@@ -53,6 +55,7 @@ namespace CapFrameX.ViewModel
 		private bool _showDownloadInfo = false;
 		private bool _showUploadDescriptionTextBox = true;
 		private string _uploadDescription = string.Empty;
+
 
 		public string UploadDescription
 		{
@@ -241,6 +244,7 @@ namespace CapFrameX.ViewModel
 			_loginManager = loginManager;
 			ClearTableCommand = new DelegateCommand(OnClearTable);
 			CopyURLCommand = new DelegateCommand(() => Clipboard.SetText(_shareUrl));
+			_cloudFolderChanged = eventAggregator.GetEvent<PubSubEvent<AppMessages.CloudFolderChanged>>();
 			UploadRecordsCommand = new DelegateCommand(async () =>
 			{
 				await UploadRecords();
@@ -322,6 +326,7 @@ namespace CapFrameX.ViewModel
 			{
 				_appConfiguration.CloudDownloadDirectory = dialog.FileName;
 				CloudDownloadDirectory = dialog.FileName;
+				_cloudFolderChanged.Publish(new AppMessages.CloudFolderChanged());
 			}
 		}
 
@@ -441,6 +446,8 @@ namespace CapFrameX.ViewModel
 					if (!Directory.Exists(downloadDirectory))
 					{
 						Directory.CreateDirectory(downloadDirectory);
+						_cloudFolderChanged.Publish(new AppMessages.CloudFolderChanged());
+
 					}
 					foreach (var session in content.Sessions)
 					{
