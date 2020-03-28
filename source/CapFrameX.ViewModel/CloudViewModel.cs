@@ -5,6 +5,7 @@ using CapFrameX.Data;
 using CapFrameX.Data.Session.Contracts;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Extensions;
+using CapFrameX.PresentMonInterface;
 using CapFrameX.Statistics;
 using CapFrameX.Webservice.Data.DTO;
 using GongSolutions.Wpf.DragDrop;
@@ -451,7 +452,14 @@ namespace CapFrameX.ViewModel
 					}
 					foreach (var session in content.Sessions)
 					{
-						var fileInfo = new FileInfo(Path.Combine(downloadDirectory, $"{session.Hash}.json"));
+						string dateTimeFormat = 
+						$"{session.Info.CreationDate.Year}-" +
+						$"{session.Info.CreationDate.Month.ToString("d2")}-" +
+						$"{session.Info.CreationDate.Day.ToString("d2")}" +
+						$"T{session.Info.CreationDate.Hour}" +
+						$"{session.Info.CreationDate.Minute}{session.Info.CreationDate.Second}";
+
+						var fileInfo = new FileInfo(Path.Combine(downloadDirectory, $"CapFrameX-{session.Info.ProcessName}-{dateTimeFormat}.json"));
 						File.WriteAllText(fileInfo.FullName, JsonConvert.SerializeObject(session));
 					}
 					ShowDownloadInfo = false;
