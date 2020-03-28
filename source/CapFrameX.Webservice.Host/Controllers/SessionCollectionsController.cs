@@ -7,6 +7,7 @@ using CapFrameX.Data.Session.Classes;
 using CapFrameX.Webservice.Data.Commands;
 using CapFrameX.Webservice.Data.DTO;
 using CapFrameX.Webservice.Data.Exceptions;
+using CapFrameX.Webservice.Data.Extensions;
 using CapFrameX.Webservice.Data.Interfaces;
 using CapFrameX.Webservice.Data.Queries;
 using CapFrameX.Webservice.Host.Attributes;
@@ -32,17 +33,26 @@ namespace CapFrameX.Webservice.Host.Controllers
 		[HttpGet]
 		public async Task<IActionResult> GetUserCollections([FromQuery] Guid? sub)
 		{
-			var result = await _mediator.Send(new GetSessionCollectionsReducedForUserByIdQuery()
+			try
 			{
-				UserId = sub ?? _userClaimsProvider.GetUserClaims().Sub
-			});
-			return Ok(result);
+				var result = await _mediator.Send(new GetSessionCollectionsReducedForUserByIdQuery()
+				{
+					UserId = sub ?? _userClaimsProvider.GetUserClaims().Sub
+				});
+				return Ok(result);
+			} catch(SessionCollectionNotFoundException)
+			{
+				return NotFound();
+			}
 		}
 
 		[HttpGet("{id}", Name = "Get")]
-		[ServiceFilter(typeof(UserAgentFilter))]
 		public async Task<IActionResult> Get(Guid id)
 		{
+			if(!Request.HasCXClientHeader())
+			{
+				return Redirect($"https://capframex.com/sessioncollections/{id}");
+			}
 			var query = new GetSessionCollectionByIdQuery()
 			{
 				Id = id
@@ -56,7 +66,16 @@ namespace CapFrameX.Webservice.Host.Controllers
 			{
 				return NotFound();
 			}
+		}
 
+		[HttpGet("{id}/reduced", Name = "GetReduced")]
+		public async Task<IActionResult> GetReduced(Guid id)
+		{
+			var query = new GetSessionCollectionReducedByIdQuery()
+			{
+				Id = id
+			};
+			return Ok(await _mediator.Send(query));
 		}
 
 		[HttpPost]
@@ -85,7 +104,8 @@ namespace CapFrameX.Webservice.Host.Controllers
 				});
 
 				return NoContent();
-			} catch(UnauthorizedAccessException)
+			}
+			catch (UnauthorizedAccessException)
 			{
 				return Forbid();
 			}
