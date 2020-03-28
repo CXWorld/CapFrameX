@@ -138,7 +138,6 @@ namespace CapFrameX.Sensor
 				var dictEntry = CreateOverlayEntry(sensor);
 				_overlayEntryDict.Add(sensor.Identifier.ToString(), dictEntry);
 			}
-
 		}
 
 		private void AddDriverVersionEntry()
