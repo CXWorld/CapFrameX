@@ -19,7 +19,6 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Windows;
 using System.Windows.Input;
-using System.Windows.Threading;
 
 namespace CapFrameX.ViewModel
 {

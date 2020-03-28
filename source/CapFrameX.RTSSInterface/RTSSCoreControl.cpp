@@ -365,6 +365,7 @@ void RTSSCoreControl::Refresh()
 
 	if (bFormatTagsSupported && m_bFormatTags)
 	{
+		UpdateOSD("");
 		auto clientCount = GetClientsNum();
 		if (clientCount == 1)
 			strOSD += "<P=0,0>";

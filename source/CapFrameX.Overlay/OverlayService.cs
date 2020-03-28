@@ -253,7 +253,6 @@ namespace CapFrameX.Overlay
 		private void CheckRTSSRunningAndRefresh()
 		{
 			var processes = Process.GetProcessesByName("RTSS");
-
 			if (!processes.Any())
 			{
 				try
