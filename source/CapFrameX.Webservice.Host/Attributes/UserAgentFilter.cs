@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using CapFrameX.Webservice.Data.Extensions;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using System;
 using System.Collections.Generic;
@@ -14,9 +15,7 @@ namespace CapFrameX.Webservice.Host.Attributes
 
         public void OnActionExecuting(ActionExecutingContext context)
         {
-            var uaHeaderPresent = context.HttpContext.Request.Headers.TryGetValue("User-Agent", out var uaHeader);
-
-            if(!uaHeaderPresent || uaHeader.All(agent => !agent.Contains("CX_Client")))
+            if(context.HttpContext.Request.HasCXClientHeader())
             {
                 context.Result = new RedirectResult("https://capframex.com", false);
             }

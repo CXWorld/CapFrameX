@@ -63,7 +63,6 @@ namespace CapFrameX.Sensor
 			_osdUpdateSubject = new BehaviorSubject<TimeSpan>(_currentOSDTimespan);
 			_sensorUpdateSubject = new BehaviorSubject<TimeSpan>(_currentSensorTimespan);
 			_sensorSnapshotStream = _sensorUpdateSubject
-				.Do(_ => Console.WriteLine("Sensor interval (ms): " + _.Milliseconds))
 				.Select(timespan => Observable.Concat(Observable.Return(-1L), Observable.Interval(timespan)))
 				.Switch()
 				.Select(_ => GetSensorValues())
@@ -139,7 +138,6 @@ namespace CapFrameX.Sensor
 				var dictEntry = CreateOverlayEntry(sensor);
 				_overlayEntryDict.Add(sensor.Identifier.ToString(), dictEntry);
 			}
-
 		}
 
 		private void AddDriverVersionEntry()
@@ -175,7 +173,7 @@ namespace CapFrameX.Sensor
 				OverlayEntryType = MapType(sensor.Hardware.HardwareType),
 				GroupName = GetGroupName(sensor),
 				ShowGraph = false,
-				ShowGraphIsEnabled = true,
+				ShowGraphIsEnabled = false,
 				ShowOnOverlayIsEnabled = true,
 				ShowOnOverlay = GetOverlayToggle(sensor),
 				Value = 0,

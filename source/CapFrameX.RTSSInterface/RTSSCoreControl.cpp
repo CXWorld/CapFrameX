@@ -449,6 +449,8 @@ void RTSSCoreControl::Refresh()
 			{
 				if (OverlayEntries[i].Identifier == "Framerate")
 				{
+					// set graph name
+					strOSD += "<C1><S=50>Framerate\n<S><C>";
 					//embed framerate graph object into the buffer
 					dwObjectSize = EmbedGraph(dwObjectOffset, NULL, 0, 0, -32, -2, 1, 0.0f, 200.0f, dwFlags | RTSS_EMBEDDED_OBJECT_GRAPH_FLAG_FRAMERATE);
 
@@ -463,6 +465,8 @@ void RTSSCoreControl::Refresh()
 				}
 				else if (OverlayEntries[i].Identifier == "Frametime")
 				{
+					// set graph name
+					strOSD += "<C1><S=50>Frametime\n<S><C>";
 					//embed frametime graph object into the buffer
 					dwObjectSize = EmbedGraph(dwObjectOffset, NULL, 0, 0, -32, -2, 1, 0.0f, 50000.0f, dwFlags | RTSS_EMBEDDED_OBJECT_GRAPH_FLAG_FRAMETIME);
 
