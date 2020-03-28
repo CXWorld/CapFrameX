@@ -9,9 +9,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reactive;
 using System.Reactive.Linq;
-using System.Reactive.Subjects;
 using System.Threading.Tasks;
 
 namespace CapFrameX.Overlay
@@ -22,23 +20,22 @@ namespace CapFrameX.Overlay
 		private readonly IAppConfiguration _appConfiguration;
 		private readonly ConcurrentDictionary<string, IOverlayEntry> _identifierOverlayEntryDict
 			 = new ConcurrentDictionary<string, IOverlayEntry>();
+		private readonly TaskCompletionSource<bool> _taskCompletionSource 
+			= new TaskCompletionSource<bool>();
 		private BlockingCollection<IOverlayEntry> _overlayEntries;
-		private IObservable<bool> _initialized;
 
 		public OverlayEntryProvider(ISensorService sensorService, IAppConfiguration appConfiguration)
 		{
 			_sensorService = sensorService;
 			_appConfiguration = appConfiguration;
-			_initialized = Observable.FromAsync(() => LoadOrSetDefault())
-			.Select(_ => true)
-			.Replay(1).RefCount()
-			.AsObservable();
-			_initialized.Subscribe();
+
+			_ = Task.Run(async () => await LoadOrSetDefault())
+				.ContinueWith(task => _taskCompletionSource.SetResult(true));
 		}
 
 		public async Task<IOverlayEntry[]> GetOverlayEntries()
 		{
-			await _initialized.Take(1);
+			await _taskCompletionSource.Task;
 			UpdateSensorData();
 			return _overlayEntries.ToArray();
 		}

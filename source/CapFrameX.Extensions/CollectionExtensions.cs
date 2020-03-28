@@ -27,12 +27,7 @@ namespace CapFrameX.Extensions
 				return values;
 
 			var list = values.ToList();
-			var currentValue = list[sourceIndex];
-			list.RemoveAt(sourceIndex);
-			if (targetIndex < list.Count)
-				list.Insert(targetIndex, currentValue);
-			else
-				list.Add(currentValue);
+			list.Move(sourceIndex, targetIndex);
 
 			while (values.TryTake(out _)) { }
 			list.ForEach(values.Add);
