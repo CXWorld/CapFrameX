@@ -15,7 +15,7 @@ namespace CapFrameX.Webservice.Host.Attributes
 
         public void OnActionExecuting(ActionExecutingContext context)
         {
-            if(context.HttpContext.Request.HasCXClientHeader())
+            if(!context.HttpContext.Request.HasCXClientHeader())
             {
                 context.Result = new RedirectResult("https://capframex.com", false);
             }
