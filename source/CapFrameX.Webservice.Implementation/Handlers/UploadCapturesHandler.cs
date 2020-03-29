@@ -1,13 +1,12 @@
 ﻿using AutoMapper;
-using CapFrameX.Data.Session.Classes;
 using CapFrameX.Webservice.Data.Commands;
 using CapFrameX.Webservice.Data.DTO;
 using CapFrameX.Webservice.Data.Interfaces;
 using FluentValidation;
 using MediatR;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -31,10 +30,20 @@ namespace CapFrameX.Webservice.Implementation.Handlers
 		{
 			_validator.ValidateAndThrow(command);
 
+			var sessions = new List<SqSessionData>();
+			foreach(var session in command.Sessions)
+			{
+				var sessionData = _mapper.Map<SqSessionData>(session);
+				var fileBytes = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(session));
+				var assetId = await _capturesService.UploadAsset(fileBytes, session.Hash);
+				sessionData.File = new string[] { assetId.ToString() };
+				sessions.Add(sessionData);
+			}
+
 			var data = new SqSessionCollectionData() { 
 				Sub = command.UserId,
 				Description = command.Description,
-				Sessions = _mapper.Map<SqSessionData[]>(command.Sessions.Cast<Session>())
+				Sessions = sessions.ToArray()
 			};
 			return await _capturesService.SaveSessionCollection(data);
 		}

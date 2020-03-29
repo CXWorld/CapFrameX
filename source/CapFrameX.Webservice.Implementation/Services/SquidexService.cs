@@ -3,8 +3,10 @@ using CapFrameX.Webservice.Data.Interfaces;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Squidex.ClientLibrary;
+using Squidex.ClientLibrary.Management;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,9 +16,11 @@ namespace CapFrameX.Webservice.Implementation.Services
 	public class SquidexService : IProcessListService, ISessionService
 	{
 		private readonly SquidexClientManager _squidexClientManager;
+		private readonly SquidexOptions _squidexOptions;
 		public SquidexService(IOptions<SquidexOptions> squidexOptions)
 		{
 			_squidexClientManager = new SquidexClientManager(squidexOptions.Value);
+			_squidexOptions = squidexOptions.Value;
 		}
 
 		public async Task<IEnumerable<ProcessListData>> GetProcessList()
@@ -56,6 +60,23 @@ namespace CapFrameX.Webservice.Implementation.Services
 			}
 		}
 
+		public async Task<Guid> UploadAsset(byte[] data, string fileName)
+		{
+			var SESSIONFOLDERID = Guid.Parse("94c0cfae-19fc-4c64-be67-13683c04fe0a");
+			var client = _squidexClientManager.CreateAssetsClient();
+				var uploadedAsset = await client.PostAssetAsync(_squidexOptions.AppName, new FileParameter(new MemoryStream(data), fileName, "application/json"));
+				return uploadedAsset.Id;
+		}
+
+		public async Task<byte[]> DownloadAsset(Guid id)
+		{
+			var client = _squidexClientManager.CreateAssetsClient();
+			var asset = await client.GetAssetContentAsync(id.ToString());
+			using var stream = new MemoryStream();
+			await asset.Stream.CopyToAsync(stream);
+			return stream.ToArray();
+		}
+
 		public async Task<IEnumerable<SqSessionCollection>> GetSessionCollectionsForUser(Guid userId)
 		{
 			var client = _squidexClientManager.CreateContentsClient<SqSessionCollection, SqSessionCollectionData>("sessioncollections");
@@ -82,8 +103,14 @@ namespace CapFrameX.Webservice.Implementation.Services
 			var client = _squidexClientManager.CreateContentsClient<SqSessionCollection, SqSessionCollectionData>("sessioncollections");
 			using ((IDisposable)client)
 			{
-				var result = await client.CreateAsync(sessionCollection, true);
-				return result.Id;
+				try
+				{
+					var result = await client.CreateAsync(sessionCollection, true);
+					return result.Id;
+				} catch(Exception e)
+				{
+					throw;
+				}
 			}
 		}
 
