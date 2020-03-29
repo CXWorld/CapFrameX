@@ -5,7 +5,6 @@ using CapFrameX.Data;
 using CapFrameX.Data.Session.Contracts;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Extensions;
-using CapFrameX.PresentMonInterface;
 using CapFrameX.Statistics;
 using CapFrameX.Webservice.Data.DTO;
 using GongSolutions.Wpf.DragDrop;
@@ -296,6 +295,7 @@ namespace CapFrameX.ViewModel
 			}
 			else
 				return;
+
 			ShareUrl = string.Empty;
 			ShowUploadDescriptionTextBox = true;
 			CloudEntries.Add(new CloudEntry()
