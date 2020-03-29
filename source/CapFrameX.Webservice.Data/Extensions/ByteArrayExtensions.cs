@@ -24,7 +24,6 @@ namespace CapFrameX.Webservice.Data.Extensions
         {
             using (MemoryStream memory = new MemoryStream(compressed))
             {
-                byte[] raw = new byte[] { };
                 using (GZipStream gzip = new GZipStream(memory, CompressionMode.Decompress, true))
                 {
                     using (var rawStream = new MemoryStream())
