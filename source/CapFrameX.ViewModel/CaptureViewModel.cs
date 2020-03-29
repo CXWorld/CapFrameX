@@ -168,6 +168,7 @@ namespace CapFrameX.ViewModel
 			set
 			{
 				_appConfiguration.UseSensorLogging = value;
+				_captureService.IsLoggingActiveStream.OnNext(value);
 				RaisePropertyChanged();
 			}
 		}

@@ -54,7 +54,16 @@
 					<materialDesign:PackIcon Kind="Play"/>
 				</materialDesign:ToggleButtonAssist.OnContent>
 			</ToggleButton>
-			<TextBlock Margin="10 0 5 0" VerticalAlignment="Center">Directory observer:</TextBlock>
+            <TextBlock Margin="10 0 5 0" VerticalAlignment="Center">Sensor logging:</TextBlock>
+            <ToggleButton Width="20" Height="20" IsHitTestVisible="False"
+					  Style="{StaticResource MaterialDesignActionAccentToggleButton}"
+					  IsChecked="{Binding IsLoggingActive, Mode=OneWay}"
+					  Content="{materialDesign:PackIcon Stop, Size=18}">
+                <materialDesign:ToggleButtonAssist.OnContent>
+                    <materialDesign:PackIcon Kind="Play"/>
+                </materialDesign:ToggleButtonAssist.OnContent>
+            </ToggleButton>
+            <TextBlock Margin="10 0 5 0" VerticalAlignment="Center">Directory observer:</TextBlock>
 			<ToggleButton Width="20" Height="20" IsHitTestVisible="False"
 					  Style="{StaticResource MaterialDesignActionAccentToggleButton}"
 					  IsChecked="{Binding IsDirectoryObserving, Mode=OneWay}"

@@ -12,6 +12,8 @@ namespace CapFrameX.Contracts.PresentMonInterface
 
         Subject<bool> IsCaptureModeActiveStream { get; }
 
+        Subject<bool> IsLoggingActiveStream { get; }
+
         bool StartCaptureService(IServiceStartInfo startinfo);
 
         bool StopCaptureService();

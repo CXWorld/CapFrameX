@@ -65,6 +65,15 @@ namespace CapFrameX.ViewModel
 				RaisePropertyChanged();
 			}
 		}
+		public bool IsLoggingActive
+		{
+			get { return _appConfiguration.UseSensorLogging; }
+			set
+			{
+				_appConfiguration.UseSensorLogging = value;
+				RaisePropertyChanged();
+			}
+		}
 
 		public string UpdateHyperlinkText
 		{
@@ -117,6 +126,9 @@ namespace CapFrameX.ViewModel
 
 			_captureService.IsCaptureModeActiveStream
 				.Subscribe(state => IsCaptureModeActive = state);
+
+			_captureService.IsLoggingActiveStream
+				.Subscribe(state => IsLoggingActive = state);
 
 			_overlayService.IsOverlayActiveStream
 				.Subscribe(state => IsOverlayActive = state);
