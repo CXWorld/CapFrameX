@@ -61,6 +61,10 @@ namespace CapFrameX.Overlay
                 };
 
                 var json = JsonConvert.SerializeObject(persistence);
+
+                if (!Directory.Exists("OverlayConfiguration"))
+                    Directory.CreateDirectory("OverlayConfiguration");
+
                 File.WriteAllText(GetConfigurationFileName(), json);
 
                 return true;
