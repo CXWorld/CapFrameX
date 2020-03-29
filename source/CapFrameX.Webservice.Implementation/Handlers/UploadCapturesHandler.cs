@@ -7,9 +7,12 @@ using MediatR;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.IO.Compression;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using CapFrameX.Webservice.Data.Extensions;
 
 namespace CapFrameX.Webservice.Implementation.Handlers
 {
@@ -35,7 +38,8 @@ namespace CapFrameX.Webservice.Implementation.Handlers
 			{
 				var sessionData = _mapper.Map<SqSessionData>(session);
 				var fileBytes = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(session));
-				var assetId = await _capturesService.UploadAsset(fileBytes, session.Hash);
+
+				var assetId = await _capturesService.UploadAsset(fileBytes.Compress(), session.Hash + ".json.gz");
 				sessionData.File = new string[] { assetId.ToString() };
 				sessions.Add(sessionData);
 			}

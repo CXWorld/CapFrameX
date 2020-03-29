@@ -64,17 +64,18 @@ namespace CapFrameX.Webservice.Implementation.Services
 		{
 			var SESSIONFOLDERID = Guid.Parse("94c0cfae-19fc-4c64-be67-13683c04fe0a");
 			var client = _squidexClientManager.CreateAssetsClient();
-				var uploadedAsset = await client.PostAssetAsync(_squidexOptions.AppName, new FileParameter(new MemoryStream(data), fileName, "application/json"));
-				return uploadedAsset.Id;
+			var uploadedAsset = await client.PostAssetAsync(_squidexOptions.AppName, new FileParameter(new MemoryStream(data), fileName, "application/json"), SESSIONFOLDERID);
+			return uploadedAsset.Id;
 		}
 
-		public async Task<byte[]> DownloadAsset(Guid id)
+		public async Task<(string, byte[])> DownloadAsset(Guid id)
 		{
 			var client = _squidexClientManager.CreateAssetsClient();
-			var asset = await client.GetAssetContentAsync(id.ToString());
+			var asset = await client.GetAssetAsync(_squidexOptions.AppName, id.ToString());
+			var assetContent = await client.GetAssetContentAsync(id.ToString());
 			using var stream = new MemoryStream();
-			await asset.Stream.CopyToAsync(stream);
-			return stream.ToArray();
+			await assetContent.Stream.CopyToAsync(stream);
+			return (asset.FileName, stream.ToArray());
 		}
 
 		public async Task<IEnumerable<SqSessionCollection>> GetSessionCollectionsForUser(Guid userId)

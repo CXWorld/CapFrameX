@@ -10,9 +10,12 @@ using MediatR;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.IO.Compression;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using CapFrameX.Webservice.Data.Extensions;
 
 namespace CapFrameX.Webservice.Implementation.Handlers
 {
@@ -41,7 +44,11 @@ namespace CapFrameX.Webservice.Implementation.Handlers
 			foreach(var sessionData in collection.Data.Sessions)
 			{
 				var assetId = sessionData.File[0];
-				var fileBytes = await _capturesService.DownloadAsset(Guid.Parse(assetId));
+				var (fileName, fileBytes) = await _capturesService.DownloadAsset(Guid.Parse(assetId));
+				if (fileName.EndsWith(".gz"))
+				{
+						fileBytes = fileBytes.Decompress();
+				}
 				sessions.Add(JsonConvert.DeserializeObject<Session>(Encoding.UTF8.GetString(fileBytes)));
 			}
 			var sessionCollectionDTO = _mapper.Map<SessionCollectionDTO>(collection);

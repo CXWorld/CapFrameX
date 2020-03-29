@@ -18,7 +18,7 @@ namespace CapFrameX.Webservice.Data.Mappings
 				.ForMember(dest => dest.UserId, opts => opts.MapFrom(src => src.Data.Sub))
 				.ForMember(dest => dest.Timestamp, opts => opts.MapFrom(src => src.Created.UtcDateTime))
 				.ForMember(dest => dest.Description, opts => opts.MapFrom(src => src.Data.Description))
-				.ForMember(dest => dest.Sessions, opts => opts.MapFrom(src => src.Data.Sessions.Select(d => JsonConvert.DeserializeObject<Session>(d.Raw))));
+				.ForMember(dest => dest.Sessions, opts => opts.Ignore());
 
 			CreateMap<SqSessionCollection, SessionCollectionReducedDTO>()
 				.ForMember(dest => dest.Id, opts => opts.MapFrom(src => src.Id))
@@ -40,8 +40,7 @@ namespace CapFrameX.Webservice.Data.Mappings
 				.ForMember(dest => dest.CreationDate, opts => opts.MapFrom(src => src.Info.CreationDate))
 				.ForMember(dest => dest.GameName, opts => opts.MapFrom(src => src.Info.GameName))
 				.ForMember(dest => dest.ProcessName, opts => opts.MapFrom(src => src.Info.ProcessName))
-				.ForMember(dest => dest.Hash, opts => opts.MapFrom(src => src.Hash))
-				.ForMember(dest => dest.Raw, opts => opts.MapFrom(src => JsonConvert.SerializeObject(src)));
+				.ForMember(dest => dest.Hash, opts => opts.MapFrom(src => src.Hash));
 		}
 	}
 }

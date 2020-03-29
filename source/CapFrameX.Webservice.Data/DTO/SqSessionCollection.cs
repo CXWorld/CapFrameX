@@ -8,7 +8,6 @@ namespace CapFrameX.Webservice.Data.DTO
 {
 	public class SqSessionData
 	{
-		public string Raw { get; set; }
 		public string[] File { get; set; }
 		public string Hash { get; set; }
 		public string AppVersion { get; set; }
