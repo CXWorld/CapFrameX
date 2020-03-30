@@ -56,7 +56,7 @@ namespace CapFrameX.ViewModel
 		private List<string> _captureData;
 		private string _selectedProcessToCapture;
 		private string _selectedProcessToIgnore;
-		private bool _isAddToIgnoreListButtonActive = true;
+		private bool _areButtonsActive = true;
 		private bool _isCapturing;
 		private string _captureStateInfo = string.Empty;
 		private string _captureTimeString = "0";
@@ -104,12 +104,12 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-		public bool IsAddToIgnoreListButtonActive
+		public bool AreButtonsActive
 		{
-			get { return _isAddToIgnoreListButtonActive; }
+			get { return _areButtonsActive; }
 			set
 			{
-				_isAddToIgnoreListButtonActive = value;
+				_areButtonsActive = value;
 				RaisePropertyChanged();
 			}
 		}
@@ -390,7 +390,7 @@ namespace CapFrameX.ViewModel
 
 				IsCapturing = !IsCapturing;
 				_disposableHeartBeat?.Dispose();
-				IsAddToIgnoreListButtonActive = false;
+				AreButtonsActive = false;
 
 				if (CaptureTimeString == "0" && CaptureStartDelayString == "0")
 					CaptureStateInfo = "Capturing in progress..." + Environment.NewLine + $"Press {CaptureHotkeyString} to stop capture.";
@@ -523,7 +523,7 @@ namespace CapFrameX.ViewModel
 
 			IsCapturing = !IsCapturing;
 			_disposableHeartBeat = GetListUpdatHeartBeat();
-			IsAddToIgnoreListButtonActive = true;
+			AreButtonsActive = true;
 
 			UpdateCaptureStateInfo();	
 		}

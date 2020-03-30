@@ -26,8 +26,9 @@
 				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.GridSplitter.xaml" />
 				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Flipper.xaml" />
 			</ResourceDictionary.MergedDictionaries>
-			<mvvm:BoolToVisibilityConverter x:Key="FalseToCollapsedConverter" TrueValue="Visible" FalseValue="Collapsed"/>
-		</ResourceDictionary>
+            <mvvm:BoolToVisibilityConverter x:Key="FalseToCollapsedConverter" TrueValue="Visible" FalseValue="Collapsed"/>
+            <mvvm:BoolToVisibilityConverter x:Key="FalseToVisibleConverter" TrueValue="Collapsed" FalseValue="Visible"/>
+        </ResourceDictionary>
 	</UserControl.Resources>
 	<Grid>
         <Grid.RowDefinitions>
@@ -58,18 +59,18 @@
 											<TextBlock Style="{StaticResource MaterialDesignTitleTextBlock}">Running processes</TextBlock>
 											<Button Padding="0 0 25 4" Width="64" Height="24" Foreground="Black" BorderThickness="0" Background="Transparent" VerticalAlignment="Top"
 													HorizontalAlignment="Center" Command="{Binding ResetCaptureProcessCommand}" ToolTip="Reset selected process"
-													IsEnabled="{Binding IsAddToIgnoreListButtonActive}">
+													IsEnabled="{Binding AreButtonsActive}">
 												<materialDesign:PackIcon Kind="FilterRemove" Width="22" Height="22"/>
 											</Button>
 										</StackPanel>
 										<Border Margin="0 10 0 0" Background="#F5F5F5" BorderThickness="0.1" BorderBrush="Black">
 											<ListView IsSynchronizedWithCurrentItem="False" ItemsSource="{Binding ProcessesToCapture}" SelectedItem="{Binding SelectedProcessToCapture}"
 													  ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True" Height="150" Width="250"
-													  IsEnabled="{Binding IsAddToIgnoreListButtonActive}">
+													  IsEnabled="{Binding AreButtonsActive}">
 											</ListView>
 										</Border>
 										<Button Margin="0 10 0 0" HorizontalAlignment="Right" Width="120" Height="45" 
-												Command="{Binding AddToIgonreListCommand}" IsEnabled="{Binding IsAddToIgnoreListButtonActive}">
+												Command="{Binding AddToIgonreListCommand}" IsEnabled="{Binding AreButtonsActive}">
 											<TextBlock Text="Move to ignore list" TextWrapping="Wrap" TextAlignment="Center"/>
 										</Button>
 									</StackPanel>
@@ -85,7 +86,7 @@
 											</ListView>
 										</Border>
 										<Button Margin="0 10 0 0" HorizontalAlignment="Right" Width="120" Height="45"
-												Command="{Binding AddToProcessListCommand}" IsEnabled="{Binding IsAddToIgnoreListButtonActive}">
+												Command="{Binding AddToProcessListCommand}" IsEnabled="{Binding AreButtonsActive}">
 											<TextBlock Text="Remove from ignore list" TextWrapping="Wrap" TextAlignment="Center"/>
 										</Button>
 									</StackPanel>
@@ -143,6 +144,7 @@
                     </ComboBox>
                     <ToggleButton  Margin="10 0 0 -50" Width="25" Height="25"
 					  Style="{StaticResource MaterialDesignActionAccentToggleButton}"
+                      IsEnabled="{Binding AreButtonsActive}"
 					  IsChecked="{Binding UseSensorLogging, Mode=TwoWay}"
 					  Content="{materialDesign:PackIcon Stop, Size=20}">
                         <materialDesign:ToggleButtonAssist.OnContent>
