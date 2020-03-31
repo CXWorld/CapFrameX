@@ -27,6 +27,21 @@ public:
 		delete _exceptionAction;
 	}
 
+	void ResetOSD()
+	{
+		try
+		{
+			{
+				msclr::lock l(m_lock);
+				_coreControl->UpdateOSD("");
+			}
+		}
+		catch (Exception ^ ex)
+		{
+			_exceptionAction->Invoke(ex);
+		}
+	}
+
 	void Refresh()
 	{
 		try

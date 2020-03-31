@@ -39,5 +39,7 @@ namespace CapFrameX.Contracts.Overlay
 		Task SwitchOverlayConfiguration(EOverlayEntryConfig config);
 
 		void Refresh();
+
+		void ResetOSD();
 	}
 }

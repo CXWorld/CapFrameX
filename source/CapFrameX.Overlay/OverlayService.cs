@@ -70,6 +70,7 @@ namespace CapFrameX.Overlay
 				{
 					if (isActive)
 					{
+						ResetOSD();
 						return sensorService.OnDictionaryUpdated
 							.SelectMany(_ => _overlayEntryProvider.GetOverlayEntries());
 					}

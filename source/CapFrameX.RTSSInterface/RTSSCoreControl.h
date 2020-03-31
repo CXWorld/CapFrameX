@@ -32,6 +32,7 @@ public:
 	CString						RunHistoryAggregation;
 	std::vector<OverlayEntry>	OverlayEntries;
 	BOOL						IsCaptureTimerActive;
+	BOOL						UpdateOSD(LPCSTR lpText);
 
 // Implementation
 protected:
@@ -39,7 +40,6 @@ protected:
 
 	DWORD						GetClientsNum();
 	DWORD						GetSharedMemoryVersion();
-	BOOL						UpdateOSD(LPCSTR lpText);
 	void						IncProfileProperty(LPCSTR lpProfile, LPCSTR lpProfileProperty, LONG dwIncrement);
 	void						SetProfileProperty(LPCSTR lpProfile, LPCSTR lpProfileProperty, DWORD dwProperty);
 	void						AddOverlayEntry(CGroupedString* groupedString, OverlayEntry* entry, BOOL bFormatTagsSupported);
