@@ -81,6 +81,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CaptureServiceInfo.cs" />
+    <Compile Include="IOnlineMetricService.cs" />
+    <Compile Include="OnlineMetricService.cs" />
     <Compile Include="SystemInfo.cs" />
     <Compile Include="PresentMonCaptureService.cs" />
     <Compile Include="PresentMonServiceConfiguration.cs" />
@@ -115,6 +117,10 @@
     <ProjectReference Include="..\CapFrameX.Contracts\CapFrameX.Contracts.csproj">
       <Project>{4C3B8B5C-54D7-46A1-91A1-32BF82FD42CD}</Project>
       <Name>CapFrameX.Contracts</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CapFrameX.Statistics\CapFrameX.Statistics.csproj">
+      <Project>{788F49CD-ABCB-4C7C-B1B6-BF9DC2482432}</Project>
+      <Name>CapFrameX.Statistics</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
