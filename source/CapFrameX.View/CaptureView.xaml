@@ -125,8 +125,7 @@
                 <TextBox Grid.Row="0" Grid.Column="1" Width="132" wpf:HintAssist.Hint="Capture time [s]" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
 					 Margin="50 0 0 0" FontSize="14" Text="{Binding CaptureTimeString, UpdateSourceTrigger=PropertyChanged}"
                      PreviewMouseDown="TextBox_PreviewMouseDown" PreviewKeyDown="CaptureTimeTextBox_PreviewKeyDown" MouseLeave="TextBox_MouseLeave" ToolTip="0 = no limit"/>
-                <StackPanel Grid.Row="0" Grid.Column="2" Orientation="Horizontal">
-                    <ComboBox Margin="50 40 0 0" Grid.Row="0" Grid.Column="2"
+                <ComboBox Margin="50 40 0 0" Grid.Row="0" Grid.Column="2" 
 					  materialDesign:ComboBoxAssist.ClassicMode="True"
 					  materialDesign:HintAssist.Hint="Sensor logging [ms]"
 					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="200" Width="110"
@@ -142,14 +141,9 @@
                             Polling period [ms] for sensor logging
                         </ComboBox.ToolTip>
                     </ComboBox>
-                    <ToggleButton  Margin="10 0 0 -50" Width="25" Height="25"
-					  Style="{StaticResource MaterialDesignActionAccentToggleButton}"
-                      IsEnabled="{Binding AreButtonsActive}"
-					  IsChecked="{Binding UseSensorLogging, Mode=TwoWay}"
-					  Content="{materialDesign:PackIcon Stop, Size=20}">
-                        <materialDesign:ToggleButtonAssist.OnContent>
-                            <materialDesign:PackIcon Kind="Play"/>
-                        </materialDesign:ToggleButtonAssist.OnContent>
+                <StackPanel Margin="50 10 0 0" Grid.Row="1" Grid.Column="2" VerticalAlignment="Center" Orientation="Horizontal"                                >
+                    <TextBlock Text="Sensor logging"/>
+                    <ToggleButton Margin="10 0 0 0" IsEnabled="{Binding AreButtonsActive}" IsChecked="{Binding UseSensorLogging, Mode=TwoWay}" Style="{StaticResource MaterialDesignSwitchToggleButton}">
                         <ToggleButton.ToolTip>
                             <ToolTip MaxWidth="250">
                                 <TextBlock Text="Logs various sensor data like CPU and GPU load/power for analysis"                               
