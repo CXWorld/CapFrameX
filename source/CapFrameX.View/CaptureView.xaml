@@ -127,7 +127,7 @@
                      PreviewMouseDown="TextBox_PreviewMouseDown" PreviewKeyDown="CaptureTimeTextBox_PreviewKeyDown" MouseLeave="TextBox_MouseLeave" ToolTip="0 = no limit"/>
                 <ComboBox Margin="50 40 0 0" Grid.Row="0" Grid.Column="2" 
 					  materialDesign:ComboBoxAssist.ClassicMode="True"
-					  materialDesign:HintAssist.Hint="Sensor logging [ms]"
+					  materialDesign:HintAssist.Hint="Sensor polling [ms]"
 					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="200" Width="110"
 					  MouseLeave="LoggingPeriodComboBox_MouseLeave" FontSize="14"
 					  ItemsSource="{Binding Path=LoggingPeriodItemsSource}">
@@ -142,7 +142,7 @@
                         </ComboBox.ToolTip>
                     </ComboBox>
                 <StackPanel Margin="50 10 0 0" Grid.Row="1" Grid.Column="2" VerticalAlignment="Center" Orientation="Horizontal"                                >
-                    <TextBlock Text="Sensor logging"/>
+                    <TextBlock Text="Log sensors"/>
                     <ToggleButton Margin="10 0 0 0" IsEnabled="{Binding AreButtonsActive}" IsChecked="{Binding UseSensorLogging, Mode=TwoWay}" Style="{StaticResource MaterialDesignSwitchToggleButton}">
                         <ToggleButton.ToolTip>
                             <ToolTip MaxWidth="250">

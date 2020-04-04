@@ -178,7 +178,7 @@
                         </ToolTip>
                     </ToggleButton.ToolTip>
                 </ToggleButton>-->
-                <TextBox Margin="-225 0 0 -20" DockPanel.Dock="Bottom" materialDesign:HintAssist.Hint="Show overlay" Width="132" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" FontSize="14"
+                <TextBox Margin="-225 0 0 -20" DockPanel.Dock="Bottom" materialDesign:HintAssist.Hint="Overlay hotkey" Width="132" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" FontSize="14"
 					 IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False" PreviewKeyDown="OverlayHotkeyTextBox_PreviewKeyDown"
 					 ToolTip="combinable with Ctrl/Shift/Alt">
                     <Binding Path="OverlayHotkey"
@@ -205,7 +205,7 @@
                     </ComboBox.Text>
                 </ComboBox>
                 <StackPanel Margin="40 10 0 0" Grid.Row="1" Grid.Column="2" VerticalAlignment="Center" Orientation="Horizontal">
-                    <TextBlock Text="RTSS overlay"/>
+                    <TextBlock Text="Overlay toggle"/>
                     <ToggleButton Margin="15 0 0 0" IsChecked="{Binding IsOverlayActive, Mode=TwoWay}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
                     <StackPanel.ToolTip>
                         <ToolTip MaxWidth="250">
