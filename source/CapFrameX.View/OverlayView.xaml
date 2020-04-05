@@ -36,7 +36,7 @@
 	<Grid HorizontalAlignment="Center">
 		<Grid.RowDefinitions>
 			<RowDefinition Height="50"></RowDefinition>
-			<RowDefinition Height="500"></RowDefinition>
+			<RowDefinition Height="510"></RowDefinition>
             <RowDefinition Height="100"></RowDefinition>
         </Grid.RowDefinitions>
 		<Grid.ColumnDefinitions>
@@ -165,7 +165,7 @@
 			</StackPanel>
 			<!--Global overlay toggle-->
             <StackPanel Margin="0 30 0 0" DockPanel.Dock="Bottom">
-                <ToggleButton Margin="-60 0 0 -50" Width="25" Height="25"
+                <!--<ToggleButton Margin="-60 0 0 -50" Width="25" Height="25"
 					  Style="{StaticResource MaterialDesignActionAccentToggleButton}"
 					  IsChecked="{Binding IsOverlayActive, Mode=TwoWay}"
 					  Content="{materialDesign:PackIcon Stop, Size=20}">
@@ -178,8 +178,8 @@
 										   TextWrapping="Wrap"/>
                         </ToolTip>
                     </ToggleButton.ToolTip>
-                </ToggleButton>
-                <TextBox Margin="-225 0 0 -20" DockPanel.Dock="Bottom" materialDesign:HintAssist.Hint="Show overlay" Width="132" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" FontSize="14"
+                </ToggleButton>-->
+                <TextBox Margin="-225 0 0 -20" DockPanel.Dock="Bottom" materialDesign:HintAssist.Hint="Overlay hotkey" Width="132" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" FontSize="14"
 					 IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False" PreviewKeyDown="OverlayHotkeyTextBox_PreviewKeyDown"
 					 ToolTip="combinable with Ctrl/Shift/Alt">
                     <Binding Path="OverlayHotkey"
@@ -198,16 +198,22 @@
 					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="200" Width="132"
 					  MouseLeave="OSDRefreshPeriodComboBox_MouseLeave" FontSize="14"
 					  ItemsSource="{Binding Path=RefreshPeriodItemsSource}">
-				<ComboBox.Text>
-					<Binding Path="OSDRefreshPeriod"
+                    <ComboBox.Text>
+                        <Binding Path="OSDRefreshPeriod"
 							 Mode="TwoWay"
 							 UpdateSourceTrigger="PropertyChanged">
-					</Binding>
-				</ComboBox.Text>
-			</ComboBox>
-                <TextBlock Margin="25 5 0 0">
-                    Make sure global RTSS OSD is "ON"
-                </TextBlock>
+                        </Binding>
+                    </ComboBox.Text>
+                </ComboBox>
+                <StackPanel Margin="40 10 0 0" Grid.Row="1" Grid.Column="2" VerticalAlignment="Center" Orientation="Horizontal">
+                    <TextBlock Text="Overlay toggle"/>
+                    <ToggleButton Margin="15 0 0 0" IsChecked="{Binding IsOverlayActive, Mode=TwoWay}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                    <StackPanel.ToolTip>
+                        <ToolTip MaxWidth="250">
+                            <TextBlock Text="Shows the CX overlay items in RTSS. Make sure global RTSS OSD is ON" TextWrapping="Wrap"/>
+                        </ToolTip>
+                    </StackPanel.ToolTip>
+                </StackPanel>
             </StackPanel>
 		</DockPanel>
         <Border Grid.Row="1" Grid.Column="1" Margin="0 0 0 20" Background="Transparent" BorderThickness=".2" BorderBrush="Black">

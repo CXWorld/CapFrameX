@@ -8,7 +8,7 @@
 		xmlns:converter="clr-namespace:CapFrameX.MVVM.Converter;assembly=CapFrameX.MVVM"
 		mc:Ignorable="d"
 		Title="CapFrameX"
-        Height="780" Width="1400" MinHeight="650"  MinWidth="1400" Icon="Icons/CX_Icon.png">
+        Height="780" Width="1400" MinHeight="680"  MinWidth="1400" Icon="Icons/CX_Icon.png">
 	<Window.Resources>
 		<ResourceDictionary>
 			<ResourceDictionary.MergedDictionaries>
