@@ -148,18 +148,19 @@ namespace CapFrameX.Sensor
 				{
 					if (!_overlayEntryDict.ContainsKey(GPU_DRIVER_IDENTIFIER))
 					{
-						_overlayEntryDict.Add(GPU_DRIVER_IDENTIFIER, new OverlayEntryWrapper(GPU_DRIVER_IDENTIFIER)
-						{
-							Description = "GPU Software Version",
-							OverlayEntryType = EOverlayEntryType.CX,
-							GroupName = "GPU Driver",
-							ShowGraph = false,
-							ShowGraphIsEnabled = false,
-							ShowOnOverlayIsEnabled = true,
-							ShowOnOverlay = false,
-							Value = hardware.GetDriverVersion(),
-							ValueFormat = default
-						});
+						_overlayEntryDict.Add(GPU_DRIVER_IDENTIFIER, 
+							new OverlayEntryWrapper(GPU_DRIVER_IDENTIFIER)
+							{
+								Description = "GPU Software Version",
+								OverlayEntryType = EOverlayEntryType.CX,
+								GroupName = "GPU Driver",
+								ShowGraph = false,
+								ShowGraphIsEnabled = false,
+								ShowOnOverlayIsEnabled = true,
+								ShowOnOverlay = false,
+								Value = hardware.GetDriverVersion(),
+								ValueFormat = default
+							});
 					}
 				}
 			}
@@ -400,7 +401,8 @@ namespace CapFrameX.Sensor
 
 		public ISessionSensorData GetSessionSensorData()
 		{
-			return UseSensorLogging ? _sessionSensorDataLive.ToSessionSensorData() : null;
+			return UseSensorLogging ? _sessionSensorDataLive
+				.ToSessionSensorData() : null;
 		}
 
 		public void StartSensorLogging()

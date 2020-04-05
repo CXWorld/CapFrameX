@@ -3,6 +3,7 @@
     public enum EOverlayEntryType
     {
         CX,
+        OnlineMetric,
         Mainboard,
         FanController,
         CPU,

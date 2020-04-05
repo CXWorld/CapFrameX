@@ -13,8 +13,9 @@ namespace CapFrameX.PresentMonInterface
         private readonly object _lock = new object();
         private string _currentProcess;
         private double _currentTime = 0;
+        // ToDo: get value from config
         // length in seconds
-        private readonly double _maxOnlineIntervalLength = 20d;
+        private readonly double _maxOnlineIntervalLength = 60d;
 
         public ISubject<Tuple<string, string>> ProcessDataLineStream { get; }
             = new Subject<Tuple<string, string>>();

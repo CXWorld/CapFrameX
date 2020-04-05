@@ -127,7 +127,7 @@ namespace CapFrameX.Overlay
 			var captureTimer = _overlayEntryProvider.GetOverlayEntry("CaptureTimer");
 			if (captureTimer != null)
 			{
-				captureTimer.Value = $"{t.ToString()} s";
+				captureTimer.Value = $"{t} s";
 				SetOverlayEntry(captureTimer);
 			}
 		}

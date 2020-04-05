@@ -7,6 +7,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
@@ -17,6 +18,7 @@ namespace CapFrameX.Overlay
     public class OverlayEntryProvider : IOverlayEntryProvider
     {
         private readonly ISensorService _sensorService;
+        private readonly IOnlineMetricService _onlineMetricService;
         private readonly IAppConfiguration _appConfiguration;
         private readonly ConcurrentDictionary<string, IOverlayEntry> _identifierOverlayEntryDict
              = new ConcurrentDictionary<string, IOverlayEntry>();
@@ -24,9 +26,12 @@ namespace CapFrameX.Overlay
             = new TaskCompletionSource<bool>();
         private BlockingCollection<IOverlayEntry> _overlayEntries;
 
-        public OverlayEntryProvider(ISensorService sensorService, IAppConfiguration appConfiguration)
+        public OverlayEntryProvider(ISensorService sensorService,
+                                    IOnlineMetricService onlineMetricService,
+                                    IAppConfiguration appConfiguration)
         {
             _sensorService = sensorService;
+            _onlineMetricService = onlineMetricService;
             _appConfiguration = appConfiguration;
 
             _ = Task.Run(async () => await LoadOrSetDefault())
@@ -37,6 +42,7 @@ namespace CapFrameX.Overlay
         {
             await _taskCompletionSource.Task;
             UpdateSensorData();
+            UpdateOnlineMetrics();
             return _overlayEntries.ToArray();
         }
 
@@ -117,7 +123,10 @@ namespace CapFrameX.Overlay
                         .Select(entry => entry.Identifier)
                         .ToList();
 
-                    foreach (var entry in overlayEntriesFromJson.Where(x => x.OverlayEntryType != EOverlayEntryType.CX))
+                    foreach (var entry in overlayEntriesFromJson
+                        .Where(x => (x.OverlayEntryType != EOverlayEntryType.CX
+                            && x.OverlayEntryType != EOverlayEntryType.OnlineMetric
+                            && x.OverlayEntryType != EOverlayEntryType.Undefined)))
                     {
                         if (!sensorOverlayEntryIdentfiers.Contains(entry.Identifier))
                             adjustedOverlayEntries.Remove(entry);
@@ -199,10 +208,31 @@ namespace CapFrameX.Overlay
 
         private void UpdateSensorData()
         {
-            foreach (var entry in _overlayEntries.Where(x => !(x.OverlayEntryType == EOverlayEntryType.CX)))
+            foreach (var entry in _overlayEntries.Where(x => x.OverlayEntryType == EOverlayEntryType.GPU 
+                || x.OverlayEntryType == EOverlayEntryType.CPU
+                || x.OverlayEntryType == EOverlayEntryType.RAM
+                || x.OverlayEntryType == EOverlayEntryType.Mainboard
+                || x.OverlayEntryType == EOverlayEntryType.FanController
+                || x.OverlayEntryType == EOverlayEntryType.HDD))
             {
                 var sensorEntry = _sensorService.GetSensorOverlayEntry(entry.Identifier);
                 entry.Value = sensorEntry.Value;
+            }
+        }
+
+        private void UpdateOnlineMetrics()
+        {
+            foreach (var entry in _overlayEntries.Where(x => x.OverlayEntryType == EOverlayEntryType.OnlineMetric))
+            {
+                double metricValue = 
+                    entry.Identifier == "OnlineAverage" ? _onlineMetricService.GetOnlineFpsMetricValue(Statistics.EMetric.Average) :
+                    entry.Identifier == "OnlineP1" ? _onlineMetricService.GetOnlineFpsMetricValue(Statistics.EMetric.P1) :
+                    entry.Identifier == "OnlineP0dot2" ? _onlineMetricService.GetOnlineFpsMetricValue(Statistics.EMetric.P0dot2) :
+                    // Default
+                    double.NaN;
+
+                entry.Value = Math.Round(metricValue, 0).ToString(CultureInfo.InvariantCulture);
+                entry.ValueFormat = "{0,4:F0}<S=50>FPS<S>";
             }
         }
 
