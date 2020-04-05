@@ -100,7 +100,8 @@
 			<Grid x:Name="HotkeyTextBox" DockPanel.Dock="Bottom" HorizontalAlignment="Center">
 				<Grid.RowDefinitions>
 					<RowDefinition Height="80"/>
-					<RowDefinition Height="30"/>
+                    <RowDefinition Height="30"/>
+					<RowDefinition Height="60"/>
 				</Grid.RowDefinitions>
 				<Grid.ColumnDefinitions>
 					<ColumnDefinition Width="1*"/>
@@ -125,11 +126,12 @@
                 <TextBox Grid.Row="0" Grid.Column="1" Width="132" wpf:HintAssist.Hint="Capture time [s]" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
 					 Margin="50 0 0 0" FontSize="14" Text="{Binding CaptureTimeString, UpdateSourceTrigger=PropertyChanged}"
                      PreviewMouseDown="TextBox_PreviewMouseDown" PreviewKeyDown="CaptureTimeTextBox_PreviewKeyDown" MouseLeave="TextBox_MouseLeave" ToolTip="0 = no limit"/>
-                <ComboBox Margin="50 40 0 0" Grid.Row="0" Grid.Column="2" 
+                <ComboBox Margin="0 0 0 0" Grid.Row="2" Grid.Column="0" 
 					  materialDesign:ComboBoxAssist.ClassicMode="True"
 					  materialDesign:HintAssist.Hint="Sensor polling [ms]"
-					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="200" Width="110"
+					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="200" Width="132"
 					  MouseLeave="LoggingPeriodComboBox_MouseLeave" FontSize="14"
+                      Visibility="{Binding UseSensorLogging, Converter={StaticResource FalseToCollapsedConverter}}"
 					  ItemsSource="{Binding Path=LoggingPeriodItemsSource}">
                         <ComboBox.Text>
                             <Binding Path="LoggingPeriod"
@@ -141,18 +143,18 @@
                             Polling period [ms] for sensor logging
                         </ComboBox.ToolTip>
                     </ComboBox>
-                <StackPanel Margin="50 10 0 0" Grid.Row="1" Grid.Column="2" VerticalAlignment="Center" Orientation="Horizontal"                                >
-                    <TextBlock Text="Log sensors"/>
-                    <ToggleButton Margin="10 0 0 0" IsEnabled="{Binding AreButtonsActive}" IsChecked="{Binding UseSensorLogging, Mode=TwoWay}" Style="{StaticResource MaterialDesignSwitchToggleButton}">
-                        <ToggleButton.ToolTip>
-                            <ToolTip MaxWidth="250">
-                                <TextBlock Text="Logs various sensor data like CPU and GPU load/power for analysis"                               
+                <StackPanel Margin="0 0 0 0" Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Orientation="Horizontal">
+                    <StackPanel.ToolTip>
+                        <ToolTip MaxWidth="250">
+                            <TextBlock Text="Logs various sensor data (like CPU and GPU load/power) over the course of the capture to be used for analysis"                               
 										   TextWrapping="Wrap"/>
-                            </ToolTip>
-                        </ToggleButton.ToolTip>
-                    </ToggleButton>
+                        </ToolTip>
+                    </StackPanel.ToolTip>
+                    <CheckBox Margin="0 0 0 0" IsEnabled="{Binding AreButtonsActive}" IsChecked="{Binding UseSensorLogging, Mode=TwoWay}">
+                    </CheckBox>
+                    <TextBlock Margin="5 2 0 0" Text="Use sensor logging"/>
                 </StackPanel>
-                <ComboBox Grid.Row="0" Grid.Column="3" Width="132" Margin="50 0 0 0" materialDesign:HintAssist.Hint="Hotkey sound mode"
+                <ComboBox Grid.Row="0" Grid.Column="2" Width="132" Margin="50 0 0 0" materialDesign:HintAssist.Hint="Response sound mode"
 						materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="200" FontSize="14" 
 						ItemsSource="{Binding SoundModes}" HorizontalAlignment="Right" VerticalAlignment="Bottom">
 					<ComboBox.Text>
@@ -162,7 +164,7 @@
 						</Binding>
 					</ComboBox.Text>
 				</ComboBox>
-                <Grid Grid.Row="1" Grid.Column="3" Visibility="{Binding ShowVolumeController, Converter={StaticResource FalseToCollapsedConverter}}" Margin="50 10 0 0" Width="140" HorizontalAlignment="Right">
+                <Grid Grid.Row="1" Grid.Column="2" Visibility="{Binding ShowVolumeController, Converter={StaticResource FalseToCollapsedConverter}}" Margin="50 10 0 0" Width="140" HorizontalAlignment="Right">
                     <materialDesign:PackIcon Kind="VolumeMedium"/>
                     <Slider HorizontalAlignment="Center"
 							Minimum="0" 
