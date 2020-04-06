@@ -142,8 +142,8 @@
                         Polling period [ms] for sensor logging
                     </ComboBox.ToolTip>
                 </ComboBox>
-                <StackPanel Margin="50 10 0 0" Grid.Row="1" Grid.Column="2" VerticalAlignment="Center" Orientation="Horizontal"                                >
-                    <CheckBox Margin="30 0 0 0" IsEnabled="{Binding AreButtonsActive}" IsChecked="{Binding UseSensorLogging, Mode=TwoWay}">
+                <StackPanel Margin="50 5 0 0" Grid.Row="1" Grid.Column="2" VerticalAlignment="Center" Orientation="Horizontal"                                >
+                    <CheckBox IsEnabled="{Binding AreButtonsActive}" IsChecked="{Binding UseSensorLogging, Mode=TwoWay}">
                         <CheckBox.ToolTip>
                             <ToolTip MaxWidth="250">
                                 <TextBlock Text="Logs various sensor data like CPU and GPU load/power for analysis"                               
@@ -151,7 +151,7 @@
                             </ToolTip>
                         </CheckBox.ToolTip>
                     </CheckBox>
-                    <TextBlock Text="Log sensors"/>
+                    <TextBlock Margin="10 0 0 0" VerticalAlignment="Center" Text="Log sensors"/>
                 </StackPanel>
                 <ComboBox Grid.Row="0" Grid.Column="3" Width="132" Margin="50 0 0 0" materialDesign:HintAssist.Hint="Hotkey sound mode"
 						materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="200" FontSize="14" 
