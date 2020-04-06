@@ -395,6 +395,8 @@ namespace CapFrameX.ViewModel
             CopySystemInfoCommand = new DelegateCommand(OnCopySystemInfoCommand);
             AcceptParameterSettingsCommand = new DelegateCommand(OnAcceptParameterSettings);
             CopyFPSThresholdDataCommand = new DelegateCommand(OnCopyFPSThresholdData);
+            ThresholdCountsCommand = new DelegateCommand(() => _appConfiguration.ShowThresholdTimes = false);
+            ThresholdTimesCommand = new DelegateCommand(() => _appConfiguration.ShowThresholdTimes = true);
 
             ParameterFormatter = value => value.ToString(string.Format("F{0}",
                 _appConfiguration.FpsValuesRoundingDigits), CultureInfo.InvariantCulture);

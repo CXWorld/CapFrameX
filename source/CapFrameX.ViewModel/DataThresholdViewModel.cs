@@ -1,6 +1,7 @@
 ﻿using CapFrameX.Statistics;
 using LiveCharts;
 using LiveCharts.Wpf;
+using Prism.Commands;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -30,6 +31,8 @@ namespace CapFrameX.ViewModel
         public Func<double, string> XAxisFormatter { get; } =
             value => value.ToString("N", CultureInfo.InvariantCulture);
 
+        public string _yAxisLabel;
+
         public string[] FPSThresholdLabels
         {
             get { return _fPSThresholdLabels; }
@@ -56,7 +59,7 @@ namespace CapFrameX.ViewModel
             set
             {
                 _appConfiguration.AreThresholdsReversed = value;
-                OnThresholdDirectionChanged();
+                OnThresholdValuesChanged();
                 RaisePropertyChanged();
             }
         }
@@ -67,11 +70,35 @@ namespace CapFrameX.ViewModel
             set
             {
                 _appConfiguration.AreThresholdsPercentage = value;
-                OnThresholdDirectionChanged();
+                OnThresholdValuesChanged();
                 RaisePropertyChanged();
             }
         }
+
+        public bool ShowThresholdTimes
+        {
+            get { return _appConfiguration.ShowThresholdTimes; }
+            set
+            {
+                _appConfiguration.ShowThresholdTimes = value;
+                OnThresholdValuesChanged();
+                RaisePropertyChanged();
+            }
+        }
+
+        public string YAxisLabel
+        {
+            get { return _yAxisLabel; }
+            set
+            {
+                _yAxisLabel = value;
+                RaisePropertyChanged();
+            }
+        }
+
         public ICommand CopyFPSThresholdDataCommand { get; }
+        public DelegateCommand ThresholdCountsCommand { get; }
+        public DelegateCommand ThresholdTimesCommand { get; }
 
         private void OnCopyFPSThresholdData()
         {
@@ -91,7 +118,7 @@ namespace CapFrameX.ViewModel
             }
         }
 
-        private void OnThresholdDirectionChanged()
+        private void OnThresholdValuesChanged()
         {
             var subset = GetFrametimesSubset();
 
@@ -132,8 +159,9 @@ namespace CapFrameX.ViewModel
 
             Application.Current.Dispatcher.Invoke(new Action(() =>
             {
-                if (/*!ThresholdTimeToggle*/false)
+                if (!ShowThresholdTimes)
                 {
+                    YAxisLabel = "Frames";
                     FPSThresholdCollection = new SeriesCollection
                     {
                         new ColumnSeries
@@ -149,6 +177,7 @@ namespace CapFrameX.ViewModel
                 }
                 else
                 {
+                    YAxisLabel = "Time";
                     FPSThresholdCollection = new SeriesCollection
                     {
                         new ColumnSeries

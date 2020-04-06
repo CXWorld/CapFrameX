@@ -766,5 +766,17 @@ namespace CapFrameX.Configuration.Properties {
                 this["SensorLoggingRefreshPeriod"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool ShowThresholdTimes {
+            get {
+                return ((bool)(this["ShowThresholdTimes"]));
+            }
+            set {
+                this["ShowThresholdTimes"] = value;
+            }
+        }
     }
 }

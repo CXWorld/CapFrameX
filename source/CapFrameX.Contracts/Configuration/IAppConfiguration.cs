@@ -123,5 +123,6 @@
 		int OverlayEntryConfigurationFile { get; set; }
 
 		int SensorLoggingRefreshPeriod { get; set; }
+		bool ShowThresholdTimes { get; set; }
 	}
 }

@@ -96,6 +96,7 @@
     <Compile Include="Converter\AddValueConverter.cs" />
     <Compile Include="Converter\EnumDescriptionConverter.cs" />
     <Compile Include="Converter\InequalityToValueConverter.cs" />
+    <Compile Include="Converter\InvertBoolConverter.cs" />
     <Compile Include="Converter\NegateBoolConverter.cs" />
     <Compile Include="Converter\BoolToVisibilityConverter.cs" />
     <Compile Include="Converter\PlusHalfDifferenceConverter.cs" />

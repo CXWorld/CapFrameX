@@ -369,5 +369,11 @@ namespace CapFrameX.Configuration
 			get { return Settings.SensorLoggingRefreshPeriod; }
 			set { Settings.SensorLoggingRefreshPeriod = value; Settings.Save(); }
 		}
+		
+		public bool ShowThresholdTimes
+		{
+			get { return Settings.ShowThresholdTimes; }
+			set { Settings.ShowThresholdTimes = value; Settings.Save(); }
+		}
 	}
 }
