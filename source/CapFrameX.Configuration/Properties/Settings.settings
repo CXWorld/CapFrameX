@@ -177,14 +177,14 @@
       <Value Profile="(Default)">False</Value>
     </Setting>
     <Setting Name="UseSensorLogging" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">False</Value>
+      <Value Profile="(Default)">True</Value>
     </Setting>
     <Setting Name="AreThresholdsPercentage" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
     <Setting Name="OverlayEntryConfigurationFile" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">0</Value>
-	</Setting>
+    </Setting>
     <Setting Name="SensorLoggingRefreshPeriod" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">250</Value>
     </Setting>
