@@ -3,32 +3,34 @@ using System.Collections.Generic;
 
 namespace CapFrameX.Statistics
 {
-	public interface IStatisticProvider
-	{
-		IList<double> GetOutlierAdjustedSequence(IList<double> sequence, ERemoveOutlierMethod method);
+    public interface IStatisticProvider
+    {
+        IList<double> GetOutlierAdjustedSequence(IList<double> sequence, ERemoveOutlierMethod method);
 
-		double GetAdaptiveStandardDeviation(IList<double> sequence, int windowSize);
+        double GetAdaptiveStandardDeviation(IList<double> sequence, int windowSize);
 
-		double GetStutteringCountPercentage(IList<double> sequence, double stutteringFactor);
+        double GetStutteringCountPercentage(IList<double> sequence, double stutteringFactor);
 
-		double GetStutteringTimePercentage(IList<double> sequence, double stutteringFactor);
+        double GetStutteringTimePercentage(IList<double> sequence, double stutteringFactor);
 
-		IList<double> GetMovingAverage(IList<double> sequence, int windowSize);
+        IList<double> GetMovingAverage(IList<double> sequence, int windowSize);
 
-		double GetPQuantileSequence(IList<double> sequence, double pQuantile);
+        double GetPQuantileSequence(IList<double> sequence, double pQuantile);
 
-		double GetPAverageLowSequence(IList<double> sequence, double pQuantile);
+        double GetPAverageLowSequence(IList<double> sequence, double pQuantile);
 
-		double GetPAverageHighSequence(IList<double> sequence, double pQuantile);
+        double GetPAverageHighSequence(IList<double> sequence, double pQuantile);
 
-		double GetFpsMetricValue(IList<double> sequence, EMetric metric);
+        double GetFpsMetricValue(IList<double> sequence, EMetric metric);
 
-		IList<double>[] GetDiscreteDistribution(IList<double> sequence);
+        IList<double>[] GetDiscreteDistribution(IList<double> sequence);
 
-		IMetricAnalysis GetMetricAnalysis(IList<double> frametimes, string secondMetric, string thirdMetric);
+        IMetricAnalysis GetMetricAnalysis(IList<double> frametimes, string secondMetric, string thirdMetric);
 
-		bool[] GetOutlierAnalysis(IList<IMetricAnalysis> metricAnalysisSet, string relatedMetric, int outlierPercentage);
+        bool[] GetOutlierAnalysis(IList<IMetricAnalysis> metricAnalysisSet, string relatedMetric, int outlierPercentage);
 
-		IList<int> GetFpsThresholdCounts(IList<double> frametimes, bool isReversed);
-	}
+        IList<int> GetFpsThresholdCounts(IList<double> frametimes, bool isReversed);
+
+        IList<double> GetFpsThresholdTimes(IList<double> frametimes, bool isReversed);
+    }
 }
