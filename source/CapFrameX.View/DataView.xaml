@@ -29,8 +29,8 @@
 				<ResourceDictionary Source="Styles/CustomRangeSliderStyle.xaml" />
 			</ResourceDictionary.MergedDictionaries>
 			<mvvm:EnumDescriptionConverter x:Key="EnumDescriptionConverter"/>
-			<mvvm:ZoomingModeConverter x:Key="ZoomingModeConverter"/>
-            <mvvm:NegateBoolConverter x:Key="NegateBoolConverter"/>
+            <mvvm:ZoomingModeConverter x:Key="ZoomingModeConverter"/>
+            <mvvm:InvertBoolConverter x:Key="InvertBoolConverter"/>
             <mvvm:BoolToVisibilityConverter x:Key="TrueToCollapsedConverter" TrueValue="Collapsed" FalseValue="Visible"/>
 			<mvvm:BoolToVisibilityConverter x:Key="FalseToCollapsedConverter" TrueValue="Visible" FalseValue="Collapsed"/>
 			<mvvm:BoolToVisibilityConverter x:Key="TrueToVisibleConverter" FalseValue="Collapsed" TrueValue="Visible"/>
@@ -165,6 +165,26 @@
 					</TabItem>
                         <TabItem Header="FPS thresholds">
                             <Grid Margin="0 5 0 0">
+                                <RadioButton Panel.ZIndex="1" HorizontalAlignment="Left" VerticalAlignment="Top"
+                                 ToolTip="Show number of frames above or below thresholds"
+                                 Style="{StaticResource MaterialDesignTabRadioButton}"
+                                 Margin="0 -5 0 0"
+                                 Width="80"
+                                 MinWidth="80"
+                                 Height="25"
+                                 IsChecked="{Binding ShowThresholdTimes, Converter={StaticResource InvertBoolConverter}}"
+                                 Content="Counts"
+                                 Command="{Binding ThresholdCountsCommand}"/>
+                                <RadioButton Panel.ZIndex="1" HorizontalAlignment="Left" VerticalAlignment="Top"
+                                 ToolTip="Show time above or below thresholds"
+                                 Style="{StaticResource MaterialDesignTabRadioButton}"
+                                 Margin="80 -5 0 0"
+                                 Width="80"
+                                 MinWidth="80"
+                                 Height="25"
+                                 IsChecked="{Binding ShowThresholdTimes}"
+                                 Content="Times"
+                                 Command="{Binding ThresholdTimesCommand}"/>
                                 <Grid Margin="0 0 40 0" Panel.ZIndex="1" HorizontalAlignment="Right" VerticalAlignment="Top">
                                     <ToggleButton Width="25" Height="25" Style="{StaticResource MaterialDesignActionToggleButton}"
 												  ToolTip="Toggle between absolute and relative values" IsChecked="{Binding ThresholdPercentageButtonIsChecked}">
@@ -189,7 +209,7 @@
                                         </materialDesign:ToggleButtonAssist.OnContent>
                                     </ToggleButton>
                                 </Grid>
-                                <lvc:CartesianChart Margin="5" Series="{Binding FPSThresholdCollection}" LegendLocation="None"
+                                <lvc:CartesianChart Margin="5 10 5 5" Series="{Binding FPSThresholdCollection}" LegendLocation="None"
 								Tag="{Binding ElementName=DataViewUserControl, Path=DataContext}" DataTooltip="{x:Null}">
                                     <lvc:CartesianChart.ContextMenu>
                                         <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
@@ -205,7 +225,7 @@
                                         </lvc:Axis>
                                     </lvc:CartesianChart.AxisX>
                                     <lvc:CartesianChart.AxisY>
-                                        <lvc:Axis Title="#Frames" MinValue="0" MaxValue="1.2" Foreground="Black" LabelFormatter="{Binding YAxisFormatter}">
+                                        <lvc:Axis Title="{Binding YAxisLabel}" MinValue="0" MaxValue="1.2" Foreground="Black" LabelFormatter="{Binding YAxisFormatter}">
                                             <lvc:Axis.Separator>
                                                 <lvc:Separator Step="0.25" StrokeThickness="0.5" Stroke="Gray"></lvc:Separator>
                                             </lvc:Axis.Separator>
