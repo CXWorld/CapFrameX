@@ -9,7 +9,6 @@ namespace CapFrameX.Contracts.Sensor
     public interface ISensorService
     {
         IOverlayEntry GetSensorOverlayEntry(string identifier);
-        bool CheckHardwareChanged(IList<IOverlayEntry> overlayEntries);
         void StartSensorLogging();
         void StopSensorLogging();
         ISessionSensorData GetSessionSensorData();

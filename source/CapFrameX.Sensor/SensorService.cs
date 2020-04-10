@@ -370,19 +370,6 @@ namespace CapFrameX.Sensor
 			return formatString;
 		}
 
-		public bool CheckHardwareChanged(IList<IOverlayEntry> overlayEntries)
-		{
-			var overlayEntryIdentfiers = overlayEntries
-					.Select(entry => entry.Identifier)
-					.ToList();
-			var overlayEntryLiveIdentfiers = GetSensorOverlayEntries()
-					.Select(entry => entry.Identifier)
-					.ToList(); ;
-
-			return !(overlayEntryIdentfiers.All(overlayEntryLiveIdentfiers.Contains)
-				 && overlayEntryIdentfiers.Count == overlayEntryLiveIdentfiers.Count);
-		}
-
 		private IOverlayEntry[] GetSensorOverlayEntries()
 		{
 			lock (_dictLock)

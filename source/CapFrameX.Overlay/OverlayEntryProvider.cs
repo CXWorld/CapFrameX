@@ -95,7 +95,7 @@ namespace CapFrameX.Overlay
                 _identifierOverlayEntryDict.TryAdd(entry.Identifier, entry);
             }
             CheckCustomSystemInfo();
-            ChecOSVersion();
+            CheckOSVersion();
         }
 
         private IObservable<BlockingCollection<IOverlayEntry>> InitializeOverlayEntryDictionary()
@@ -134,7 +134,7 @@ namespace CapFrameX.Overlay
                 });
         }
 
-        private void ChecOSVersion()
+        private void CheckOSVersion()
         {
             _identifierOverlayEntryDict.TryGetValue("OS", out IOverlayEntry entry);
 
