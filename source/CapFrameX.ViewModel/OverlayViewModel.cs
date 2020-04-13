@@ -17,6 +17,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 
@@ -302,6 +303,9 @@ namespace CapFrameX.ViewModel
 
 		public ICommand SaveConfigCommand { get; }
 
+		public ICommand ResetDefaultsCommand { get; }
+
+
 		public bool IsRTSSInstalled
 			=> !string.IsNullOrEmpty(RTSSUtils.GetRTSSFullPath());
 
@@ -363,12 +367,22 @@ namespace CapFrameX.ViewModel
 			SaveConfigCommand = new DelegateCommand(
 				() => _overlayEntryProvider.SaveOverlayEntriesToJson());
 
+			ResetDefaultsCommand = new DelegateCommand( 
+				async () => await OnResetDefaults());
+
 			UpdateHpyerlinkText = "To use the overlay, install the latest" + Environment.NewLine +
 				"RivaTuner  Statistics  Server  (RTSS)";
 
-
 			SetGlobalHookEventOverlayHotkey();
 			SetGlobalHookEventResetHistoryHotkey();
+		}
+
+		private async Task OnResetDefaults()
+		{
+			var overlayEntries = await _overlayEntryProvider.GetDefaultOverlayEntries();
+			OverlayEntries.Clear();
+			OverlayEntries.AddRange(overlayEntries);
+			OnUseRunHistoryChanged();
 		}
 
 		private void OnUseRunHistoryChanged()
