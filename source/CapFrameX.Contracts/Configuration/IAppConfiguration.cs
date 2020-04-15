@@ -20,6 +20,8 @@
 
 		bool UseSingleRecordAverageStatisticParameter { get; set; }
 
+		bool UseSingleRecordMedianStatisticParameter { get; set; }
+
 		bool UseSingleRecordP5QuantileStatisticParameter { get; set; }
 
 		bool UseSingleRecordP1QuantileStatisticParameter { get; set; }

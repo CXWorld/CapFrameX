@@ -146,6 +146,10 @@ namespace CapFrameX.Statistics
                 case EMetric.Average:
                     metricValue = sequence.Count * 1000 / sequence.Sum();
                     break;
+                case EMetric.Median:
+                    fps = sequence.Select(ft => 1000 / ft).ToList();
+                    metricValue = GetPQuantileSequence(fps, 0.5);
+                    break;
                 case EMetric.P5:
                     fps = sequence.Select(ft => 1000 / ft).ToList();
                     metricValue = GetPQuantileSequence(fps, 0.05);

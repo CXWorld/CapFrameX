@@ -60,6 +60,12 @@ namespace CapFrameX.Configuration
 			set { Settings.UseSingleRecordAverageStatisticParameter = value; Settings.Save(); }
 		}
 
+		public bool UseSingleRecordMedianStatisticParameter
+		{
+			get { return Settings.UseSingleRecordMedianStatisticParameter; }
+			set { Settings.UseSingleRecordMedianStatisticParameter = value; Settings.Save(); }
+		}
+
 		public bool UseSingleRecordP5QuantileStatisticParameter
 		{
 			get { return Settings.UseSingleRecordP5QuantileStatisticParameter; }
