@@ -49,6 +49,10 @@ namespace CapFrameX.ViewModel
 		private bool _optionsViewSelected = true;
 		private bool _helpViewSelected;
 
+		public string CurrentPageName { get; set; }
+
+		public IFileRecordInfo RecordInfo { get; set; }
+
 		public bool CaptureIsChecked
 		{
 			get { return _captureIsChecked; }
@@ -256,6 +260,7 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
+
 		public bool OptionsViewSelected
 		{
 			get { return _optionsViewSelected; }
@@ -307,7 +312,7 @@ namespace CapFrameX.ViewModel
 								 IAppConfiguration appConfiguration,
 								 ILogger<ColorbarViewModel> logger,
 								 IShell shell,
-								 LoginManager loginManager)
+								 LoginManager loginManager)			
 		{
 			_regionManager = regionManager;
 			_eventAggregator = eventAggregator;
@@ -327,6 +332,17 @@ namespace CapFrameX.ViewModel
 			HasCustomInfo = SelectedHardwareInfoSource == EHardwareInfoSource.Custom;
 			SetAggregatorEvents();
 			SetHardwareInfoDefaultsFromDatabase();
+			SubscribeToUpdateSession();
+		}
+
+
+		private void SubscribeToUpdateSession()
+		{
+			_eventAggregator.GetEvent<PubSubEvent<ViewMessages.UpdateSession>>()
+							.Subscribe(msg =>
+							{
+								RecordInfo = msg.RecordInfo;
+							});
 		}
 
 		public void OpenLoginWindow()
@@ -385,41 +401,48 @@ namespace CapFrameX.ViewModel
 		private void OnCaptureIsCheckedChanged()
 		{
 			_regionManager.RequestNavigate("DataRegion", "CaptureView");
+			CurrentPageName = "Capture";
 		}
-
 		private void OnOverlayIsCheckedChanged()
 		{
 			_regionManager.RequestNavigate("DataRegion", "OverlayView");
+			CurrentPageName = "Overlay";
 		}
 
 		private void OnSingleRecordIsCheckedChanged()
 		{
 			_regionManager.RequestNavigate("DataRegion", "DataView");
+			CurrentPageName = "Analysis";
 		}
 
 		private void OnAggregationIsCheckedChanged()
 		{
 			_regionManager.RequestNavigate("DataRegion", "AggregationView");
+			CurrentPageName = "Aggregation";
 		}
 
 		private void OnRecordComparisonIsCheckedChanged()
 		{
 			_regionManager.RequestNavigate("DataRegion", "ComparisonView");
+			CurrentPageName = "Comparison";
 		}
 
 		private void OnReportIsCheckedChanged()
 		{
 			_regionManager.RequestNavigate("DataRegion", "ReportView");
+			CurrentPageName = "Report";
 		}
 
 		private void OnSynchronizationIsCheckedChanged()
 		{
 			_regionManager.RequestNavigate("DataRegion", "SynchronizationView");
+			CurrentPageName = "Synchronization";
 		}
 
 		private void OnCloudIsCheckedChanged()
 		{
 			_regionManager.RequestNavigate("DataRegion", "CloudView");
+			CurrentPageName = "Cloud";
 		}
 
 		private void OnHardwareInfoSourceChanged()
