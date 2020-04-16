@@ -31,6 +31,7 @@ namespace CapFrameX.ViewModel
 		private PubSubEvent<AppMessages.UpdateObservedDirectory> _updateObservedFolder;
 		private PubSubEvent<AppMessages.OpenLoginWindow> _openLoginWindow;
 		private PubSubEvent<AppMessages.LoginState> _logout;
+		public PubSubEvent<ViewMessages.OptionPopupClosed> OptionPopupClosed;
 
 		private bool _captureIsChecked = true;
 		private bool _overlayIsChecked;
@@ -328,21 +329,12 @@ namespace CapFrameX.ViewModel
 			RoundingDigits = new List<int>(Enumerable.Range(0, 8));
 			SelectScreenshotFolderCommand = new DelegateCommand(OnSelectScreenshotFolder);
 			OpenScreenshotFolderCommand = new DelegateCommand(OnOpenScreenshotFolder);
+			OptionPopupClosed = eventAggregator.GetEvent<PubSubEvent<ViewMessages.OptionPopupClosed>>();
 
 			HasCustomInfo = SelectedHardwareInfoSource == EHardwareInfoSource.Custom;
 			SetAggregatorEvents();
 			SetHardwareInfoDefaultsFromDatabase();
 			SubscribeToUpdateSession();
-		}
-
-
-		private void SubscribeToUpdateSession()
-		{
-			_eventAggregator.GetEvent<PubSubEvent<ViewMessages.UpdateSession>>()
-							.Subscribe(msg =>
-							{
-								RecordInfo = msg.RecordInfo;
-							});
 		}
 
 		public void OpenLoginWindow()
@@ -472,6 +464,14 @@ namespace CapFrameX.ViewModel
 				IsLoggedIn = state.IsLoggedIn;
 				RaisePropertyChanged(nameof(IsLoggedIn));
 			});
+		}
+		private void SubscribeToUpdateSession()
+		{
+			_eventAggregator.GetEvent<PubSubEvent<ViewMessages.UpdateSession>>()
+							.Subscribe(msg =>
+							{
+								RecordInfo = msg.RecordInfo;
+							});
 		}
 	}
 }

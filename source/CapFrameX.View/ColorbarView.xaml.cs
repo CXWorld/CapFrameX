@@ -1,5 +1,6 @@
 ﻿using CapFrameX.Configuration;
 using CapFrameX.Data;
+using CapFrameX.EventAggregation.Messages;
 using CapFrameX.ViewModel;
 using Microsoft.Extensions.Logging;
 using Prism.Events;
@@ -173,7 +174,9 @@ namespace CapFrameX.View
 
 		private void PopupBox_Closed(object sender, RoutedEventArgs e)
 		{
-			(DataContext as ColorbarViewModel).OptionsViewSelected = true;
+			var viewModel = DataContext as ColorbarViewModel;
+			viewModel.OptionsViewSelected = true;
+			viewModel.OptionPopupClosed.Publish(new ViewMessages.OptionPopupClosed());
 		}
 
 		private void Hyperlink_RequestNavigate(object sender, RequestNavigateEventArgs e)

@@ -1,9 +1,11 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.Sensor;
+using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Extensions;
 using CapFrameX.PresentMonInterface;
 using Newtonsoft.Json;
+using Prism.Events;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -18,19 +20,23 @@ namespace CapFrameX.Overlay
     {
         private readonly ISensorService _sensorService;
         private readonly IAppConfiguration _appConfiguration;
+        private readonly IEventAggregator _eventAggregator;
         private readonly ConcurrentDictionary<string, IOverlayEntry> _identifierOverlayEntryDict
              = new ConcurrentDictionary<string, IOverlayEntry>();
         private readonly TaskCompletionSource<bool> _taskCompletionSource
             = new TaskCompletionSource<bool>();
         private BlockingCollection<IOverlayEntry> _overlayEntries;
 
-        public OverlayEntryProvider(ISensorService sensorService, IAppConfiguration appConfiguration)
+        public OverlayEntryProvider(ISensorService sensorService, IAppConfiguration appConfiguration, IEventAggregator eventAggregator)
         {
             _sensorService = sensorService;
             _appConfiguration = appConfiguration;
+            _eventAggregator = eventAggregator;
 
             _ = Task.Run(async () => await LoadOrSetDefault())
                 .ContinueWith(task => _taskCompletionSource.SetResult(true));
+
+            SubscribeToOptionPopupClosed();
         }
 
         public async Task<IOverlayEntry[]> GetOverlayEntries()
@@ -164,7 +170,7 @@ namespace CapFrameX.Overlay
             if (customCPUEntry != null)
             {
                 customCPUEntry.Value =
-                    _appConfiguration.CustomCpuDescription == "CPU" ? SystemInfo.GetProcessorName()
+                    _appConfiguration.HardwareInfoSource == "Auto" ? SystemInfo.GetProcessorName()
                     : _appConfiguration.CustomCpuDescription;
             }
 
@@ -173,7 +179,7 @@ namespace CapFrameX.Overlay
             if (customGPUEntry != null)
             {
                 customGPUEntry.Value =
-                    _appConfiguration.CustomGpuDescription == "GPU" ? SystemInfo.GetGraphicCardName()
+                    _appConfiguration.HardwareInfoSource == "Auto" ? SystemInfo.GetGraphicCardName()
                     : _appConfiguration.CustomGpuDescription;
             }
 
@@ -189,7 +195,7 @@ namespace CapFrameX.Overlay
             if (customRAMEntry != null)
             {
                 customRAMEntry.Value =
-                    _appConfiguration.CustomRamDescription == "RAM" ? SystemInfo.GetSystemRAMInfoName()
+                    _appConfiguration.HardwareInfoSource == "Auto" ? SystemInfo.GetSystemRAMInfoName()
                     : _appConfiguration.CustomRamDescription;
             }
         }
@@ -227,6 +233,14 @@ namespace CapFrameX.Overlay
         private void SetConfigurationFileName(int index)
         {
             _appConfiguration.OverlayEntryConfigurationFile = index;
+        }
+        private void SubscribeToOptionPopupClosed()
+        {
+            _eventAggregator.GetEvent<PubSubEvent<ViewMessages.OptionPopupClosed>>()
+                            .Subscribe(_ =>
+                            {
+                                CheckCustomSystemInfo();
+                            });
         }
     }
 }
