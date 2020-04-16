@@ -300,20 +300,20 @@ namespace CapFrameX.Statistics
 
             string secondMetricString =
                 secondMetric.ConvertToEnum<EMetric>() != EMetric.None ?
-                $"{secondMetric.ConvertToEnum<EMetric>().GetShortDescription()}=" +
+                " | " + $"{secondMetric.ConvertToEnum<EMetric>().GetShortDescription()}=" +
                 $"{secondMetricValue.ToString(numberFormat, cultureInfo)} " +
-                $"FPS | " : string.Empty;
+                $"FPS" : string.Empty;
 
             string thirdMetricString =
                 thirdMetric.ConvertToEnum<EMetric>() != EMetric.None ?
-                $"{thirdMetric.ConvertToEnum<EMetric>().GetShortDescription()}=" +
+                " | " + $"{thirdMetric.ConvertToEnum<EMetric>().GetShortDescription()}=" +
                 $"{thrirdMetricValue.ToString(numberFormat, cultureInfo)} " +
                 $"FPS" : string.Empty;
 
             return new MetricAnalysis()
             {
                 ResultString = $"Avg={average.ToString(numberFormat, cultureInfo)} " +
-                $"FPS | " + secondMetricString + thirdMetricString,
+                $"FPS" + secondMetricString + thirdMetricString,
                 Average = average,
                 Second = secondMetricValue,
                 Third = thrirdMetricValue
