@@ -80,16 +80,15 @@ namespace CapFrameX.Overlay
 
         public async Task<IEnumerable<IOverlayEntry>> GetDefaultOverlayEntries()
         {
-            var overlayEntries = OverlayUtils.GetOverlayEntryDefaults();
+            _overlayEntries = await SetOverlayEntryDefaults();
+            _identifierOverlayEntryDict.Clear();
+            foreach (var entry in _overlayEntries)
+            {
+                entry.OverlayEntryProvider = this;
+                _identifierOverlayEntryDict.TryAdd(entry.Identifier, entry);
+            }
 
-            // Sensor data
-            return await _sensorService.OnDictionaryUpdated
-                .Take(1)
-                .Select(sensorOverlayEntries =>
-                {
-                    sensorOverlayEntries.ForEach(sensor => overlayEntries.Add(sensor as OverlayEntryWrapper));
-                    return overlayEntries;
-                }).LastAsync();
+            return _overlayEntries.ToList();
         }
 
         private async Task LoadOrSetDefault()
