@@ -754,10 +754,10 @@ namespace CapFrameX.ViewModel
                     values.Add(p1_quantile);
                 if (_appConfiguration.UseSingleRecordP5QuantileStatisticParameter)
                     values.Add(p5_quantile);
-                if (_appConfiguration.UseSingleRecordAverageStatisticParameter)
-                    values.Add(average);
                 if (_appConfiguration.UseSingleRecordMedianStatisticParameter)
                     values.Add(median);
+                if (_appConfiguration.UseSingleRecordAverageStatisticParameter)
+                    values.Add(average);
                 if (_appConfiguration.UseSingleRecordP95QuantileStatisticParameter)
                     values.Add(p95_quantile);
                 if (_appConfiguration.UseSingleRecord99QuantileStatisticParameter)
