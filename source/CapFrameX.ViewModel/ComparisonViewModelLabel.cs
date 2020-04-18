@@ -20,27 +20,7 @@ namespace CapFrameX.ViewModel
 			}
 			else
 			{
-				switch (_selectedComparisonContext)
-				{
-					case EComparisonContext.DateTime:
-						SetLabelDateTimeContext();
-						break;
-					case EComparisonContext.CPU:
-						SetLabelCpuContext();
-						break;
-					case EComparisonContext.GPU:
-						SetLabelGpuContext();
-						break;
-					case EComparisonContext.SystemRam:
-						SetLabelSystemRamContext();
-						break;
-					case EComparisonContext.Custom:
-						SetLabelCustomContext();
-						break;
-					default:
-						SetLabelDateTimeContext();
-						break;
-				}
+				OnComparisonContextChanged();
 			}
 
 			ComparisonModel.InvalidatePlot(true);
@@ -134,300 +114,34 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-		private void OnCustomContex()
+		private string[] GetLabelForContext(ComparisonRecordInfoWrapper record, EComparisonContext context)
 		{
-			SetLabelCustomContext();
-			ComparisonModel?.InvalidatePlot(true);
-		}
-
-		private void OnGpuContex()
-		{
-			SetLabelGpuContext();
-			ComparisonModel?.InvalidatePlot(true);
-		}
-
-		private void OnSystemRamContex()
-		{
-			SetLabelSystemRamContext();
-			ComparisonModel?.InvalidatePlot(true);
-		}
-
-		private void OnCpuContext()
-		{
-			SetLabelCpuContext();
-			ComparisonModel?.InvalidatePlot(true);
-		}
-
-		private void OnDateTimeContext()
-		{
-			SetLabelDateTimeContext();
-			ComparisonModel?.InvalidatePlot(true);
-		}
-
-		private bool CheckDataConsistency()
-		{
-			bool check = true;
-			if (ComparisonModel == null)
-				return false;
-
-			if (ComparisonRecords == null)
-				return false;
-
-			if (ComparisonModel.Series == null)
-				return false;
-
-			if (!ComparisonRecords.Any())
-				check = false;
-
-			return check;
-		}
-
-		private void SetLabelDateTimeContext()
-		{
-			if (!CheckDataConsistency())
-				return;
-
-			ComparisonRowChartLabels = ComparisonRecords.Select(record =>
+			switch(context)
 			{
-				return GetLabelDateTimeContext(record, GetMaxDateTimeAlignment());
-			}).Reverse().ToArray();
-
-			if (IsContextLegendActive)
-			{
-				if (ComparisonModel.Series.Count == ComparisonRecords.Count)
-				{
-					for (int i = 0; i < ComparisonRecords.Count; i++)
-					{
-						var wrappedComparisonInfo = ComparisonRecords[i];
-						var chartTitle = $"{wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.CreationDate} " +
-							$"{ wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.CreationTime}";
-						ComparisonModel.Series[i].Title = chartTitle;
-					}
-				}
+				case EComparisonContext.CPU:
+					return GetLabelLines(record.WrappedRecordInfo.FileRecordInfo.ProcessorName, GetMaxCpuAlignment());
+				case EComparisonContext.GPU:
+					return GetLabelLines(record.WrappedRecordInfo.FileRecordInfo.GraphicCardName, GetMaxGpuAlignment());
+				case EComparisonContext.SystemRam:
+					return GetLabelLines(record.WrappedRecordInfo.FileRecordInfo.SystemRamInfo, GetMaxSystemRamAlignment());
+				case EComparisonContext.DateTime:
+					return GetLabelLines($"{record.WrappedRecordInfo.FileRecordInfo.CreationDate} { record.WrappedRecordInfo.FileRecordInfo.CreationTime}", GetMaxDateTimeAlignment());
+				case EComparisonContext.Custom:
+					return GetLabelLines(record.WrappedRecordInfo.FileRecordInfo.Comment, GetMaxCommentAlignment());
+				default:
+					return Array.Empty<string>();
 			}
 		}
 
-		private string GetLabelDateTimeContext(ComparisonRecordInfoWrapper record, int maxAlignment)
+		private string[] GetLabelLines(string rawLabel, int maxAlignment)
 		{
-			var alignmentFormat = "{0," + maxAlignment.ToString() + "}";
-
-			bool hasUniqueGameNames = GetHasUniqueGameNames();
-			if (hasUniqueGameNames)
+			if(string.IsNullOrWhiteSpace(rawLabel))
 			{
-				return string.Format(CultureInfo.InvariantCulture, alignmentFormat,
-					$"{record.WrappedRecordInfo.FileRecordInfo.CreationDate} { record.WrappedRecordInfo.FileRecordInfo.CreationTime}");
+				return Array.Empty<string>();
 			}
-			else
-			{
-				var gameName = string.Format(CultureInfo.InvariantCulture, alignmentFormat, record.WrappedRecordInfo.Game);
-				var dateTime = string.Format(CultureInfo.InvariantCulture, alignmentFormat, record.WrappedRecordInfo.DateTime);
-				return gameName + Environment.NewLine + dateTime;
-			}
-		}
+			var labelParts = rawLabel.SplitWordWise(PART_LENGTH);
 
-		private void SetLabelCpuContext()
-		{
-			if (!CheckDataConsistency())
-				return;
-
-			ComparisonRowChartLabels = ComparisonRecords.Select(record =>
-			{
-				return GetLabelCpuContext(record, GetMaxCpuAlignment());
-			}).Reverse().ToArray();
-
-			if (IsContextLegendActive)
-			{
-				if (ComparisonModel.Series.Count == ComparisonRecords.Count)
-				{
-					for (int i = 0; i < ComparisonRecords.Count; i++)
-					{
-						var wrappedComparisonInfo = ComparisonRecords[i];
-						var chartTitle = wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.ProcessorName;
-						ComparisonModel.Series[i].Title = chartTitle;
-					}
-				}
-			}
-		}
-
-		private string GetLabelCpuContext(ComparisonRecordInfoWrapper record, int maxAlignment)
-		{
-			var processorName = record.WrappedRecordInfo.FileRecordInfo.ProcessorName ?? "";
-			var cpuInfoParts = processorName.SplitWordWise(PART_LENGTH);
-			var alignmentFormat = "{0," + maxAlignment.ToString() + "}";
-
-			var infoPartsFormatted = string.Empty;
-			foreach (var part in cpuInfoParts)
-			{
-				if (part == string.Empty)
-					continue;
-
-				infoPartsFormatted += string.Format(CultureInfo.InvariantCulture, alignmentFormat, part) + Environment.NewLine;
-			}
-
-			bool hasUniqueGameNames = GetHasUniqueGameNames();
-			if (hasUniqueGameNames)
-			{
-				return infoPartsFormatted;
-			}
-			else
-			{
-				var gameName = string.Format(CultureInfo.InvariantCulture, alignmentFormat, record.WrappedRecordInfo.Game);
-				return gameName + Environment.NewLine + infoPartsFormatted;
-			}
-		}
-
-		private void SetLabelGpuContext()
-		{
-			if (!CheckDataConsistency())
-				return;
-
-			ComparisonRowChartLabels = ComparisonRecords.Select(record =>
-			{
-				return GetLabelGpuContext(record, GetMaxGpuAlignment());
-			}).Reverse().ToArray();
-
-			if (IsContextLegendActive)
-			{
-				if (ComparisonModel.Series.Count == ComparisonRecords.Count)
-				{
-					for (int i = 0; i < ComparisonRecords.Count; i++)
-					{
-						var wrappedComparisonInfo = ComparisonRecords[i];
-						var chartTitle = wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.GraphicCardName;
-						ComparisonModel.Series[i].Title = chartTitle;
-					}
-				}
-			}
-		}
-
-		private string GetLabelGpuContext(ComparisonRecordInfoWrapper record, int maxAlignment)
-		{
-			var graphicCardName = record.WrappedRecordInfo.FileRecordInfo.GraphicCardName ?? "";
-			var gpuInfoParts = graphicCardName.SplitWordWise(PART_LENGTH);
-			var alignmentFormat = "{0," + maxAlignment.ToString() + "}";
-
-			var infoPartsFormatted = string.Empty;
-			foreach (var part in gpuInfoParts)
-			{
-				if (part == string.Empty)
-					continue;
-
-				infoPartsFormatted += string.Format(CultureInfo.InvariantCulture, alignmentFormat, part) + Environment.NewLine;
-			}
-
-			bool hasUniqueGameNames = GetHasUniqueGameNames();
-			if (hasUniqueGameNames)
-			{
-				return infoPartsFormatted;
-			}
-			else
-			{
-				var gameName = string.Format(CultureInfo.InvariantCulture, alignmentFormat, record.WrappedRecordInfo.Game);
-				return gameName + Environment.NewLine + infoPartsFormatted;
-			}
-		}
-
-		private void SetLabelSystemRamContext()
-		{
-			if (!CheckDataConsistency())
-				return;
-
-			ComparisonRowChartLabels = ComparisonRecords.Select(record =>
-			{
-				return GetLabelSystemRamContext(record, GetMaxSystemRamAlignment());
-			}).Reverse().ToArray();
-
-			if (IsContextLegendActive)
-			{
-				if (ComparisonModel.Series.Count == ComparisonRecords.Count)
-				{
-					for (int i = 0; i < ComparisonRecords.Count; i++)
-					{
-						var wrappedComparisonInfo = ComparisonRecords[i];
-						var chartTitle = wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.SystemRamInfo;
-						ComparisonModel.Series[i].Title = chartTitle;
-					}
-				}
-			}
-		}
-
-		private string GetLabelSystemRamContext(ComparisonRecordInfoWrapper record, int maxAlignment)
-		{
-			var systemRamName = record.WrappedRecordInfo.FileRecordInfo.SystemRamInfo ?? "";
-			var systemRamInfoParts = systemRamName.SplitWordWise(PART_LENGTH);
-			var alignmentFormat = "{0," + maxAlignment.ToString() + "}";
-
-			var infoPartsFormatted = string.Empty;
-			foreach (var part in systemRamInfoParts)
-			{
-				if (part == string.Empty)
-					continue;
-
-				infoPartsFormatted +=
-					string.Format(CultureInfo.InvariantCulture, alignmentFormat, part) + Environment.NewLine;
-			}
-
-			bool hasUniqueGameNames = GetHasUniqueGameNames();
-			if (hasUniqueGameNames)
-			{
-				return infoPartsFormatted;
-			}
-			else
-			{
-				var gameName = string.Format(CultureInfo.InvariantCulture, alignmentFormat, record.WrappedRecordInfo.Game);
-				return gameName + Environment.NewLine + infoPartsFormatted;
-			}
-		}
-
-		private void SetLabelCustomContext()
-		{
-			if (!CheckDataConsistency())
-				return;
-
-			ComparisonRowChartLabels = ComparisonRecords.Select(record =>
-			{
-				return GetLabelCustomContext(record, GetMaxCommentAlignment());
-			}).Reverse().ToArray();
-
-			if (IsContextLegendActive)
-			{
-				if (ComparisonModel.Series.Count == ComparisonRecords.Count)
-				{
-					for (int i = 0; i < ComparisonRecords.Count; i++)
-					{
-						var wrappedComparisonInfo = ComparisonRecords[i];
-						var chartTitle = wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.Comment;
-						ComparisonModel.Series[i].Title = chartTitle;
-					}
-				}
-			}
-		}
-
-		private string GetLabelCustomContext(ComparisonRecordInfoWrapper record, int maxAlignment)
-		{
-			var comment = record.WrappedRecordInfo.FileRecordInfo.Comment ?? "";
-			var commentParts = comment.SplitWordWise(PART_LENGTH);
-			var alignmentFormat = "{0," + maxAlignment.ToString() + "}";
-
-			var infoPartsFormatted = string.Empty;
-			foreach (var part in commentParts)
-			{
-				if (part == string.Empty)
-					continue;
-
-				infoPartsFormatted += string.Format(CultureInfo.InvariantCulture, alignmentFormat, part) + Environment.NewLine;
-			}
-
-			bool hasUniqueGameNames = GetHasUniqueGameNames();
-			if (hasUniqueGameNames)
-			{
-				return infoPartsFormatted;
-			}
-			else
-			{
-				var gameName = string.Format(CultureInfo.InvariantCulture, alignmentFormat, record.WrappedRecordInfo.Game);
-				return gameName + Environment.NewLine + infoPartsFormatted;
-			}
+			return labelParts.Where(part => !string.IsNullOrWhiteSpace(part)).ToArray();
 		}
 	}
 }

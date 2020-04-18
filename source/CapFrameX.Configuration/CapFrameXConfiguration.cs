@@ -197,6 +197,11 @@ namespace CapFrameX.Configuration
 			get { return Settings.ComparisonContext; }
 			set { Settings.ComparisonContext = value; Settings.Save(); }
 		}
+		public string SecondComparisonContext
+		{
+			get { return Settings.SecondComparisonContext; }
+			set { Settings.SecondComparisonContext = value; Settings.Save(); }
+		}
 
 		public string RecordingListSortMemberPath
 		{
