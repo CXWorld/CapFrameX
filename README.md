@@ -113,7 +113,7 @@ If you chose to log sensor data for a record, two additional options are enabled
 At the bottom is a toolbar where you can change the performance parameters, toggle the additional sensor data graphs, remove unusual outliers from the graphs and activate a range slider.
 On the very right of the page, there is also a "System info" expander which shows all the HW and SW information available for the selected benchmark.
 
-##Aggregation view
+## Aggregation view
 Here you can manually aggregate records that were already saved.
 Add them to the list and set the metrics you want to be displayed as well as the outlier handling options.
 Outliers will be marked red and you can choose to unclude or exclude them for the aggregation. On aggregation you'll see a simple result line and a new record file is created containing all the frametime data of the aggregated records.
