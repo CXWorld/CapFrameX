@@ -642,11 +642,10 @@ namespace CapFrameX.ViewModel
 					var firstContext = GetLabelForContext(record, SelectedComparisonContext == EComparisonContext.None ? EComparisonContext.DateTime : SelectedComparisonContext);
 					var secondContext = GetLabelForContext(record, SelectedSecondComparisonContext);
 					var maxAlignment = new int[] { PART_LENGTH, firstContext.Max(x => x.Length), secondContext.Max(x => x.Length) }.Max();
-					string alignmentFormat = "{0," + maxAlignment.ToString() + "}";
 
-					var gameName = string.Format(CultureInfo.InvariantCulture, alignmentFormat, record.WrappedRecordInfo.Game);
+					var gameName = record.WrappedRecordInfo.Game;
 					var context = string.Join(Environment.NewLine, new string[][] { firstContext, secondContext}.Select(labelLines => {
-						return string.Join(Environment.NewLine, labelLines.Select(line => PadBoth(line, maxAlignment)));
+						return string.Join(Environment.NewLine, labelLines.Select(line => line.PadRight(maxAlignment)));
 					}));
 					return new ChartLabel()
 					{
@@ -654,14 +653,6 @@ namespace CapFrameX.ViewModel
 						Context = context
 					};
 				}).ToArray();
-			}
-
-			string PadBoth(string source, int length)
-			{
-				int spaces = length - source.Length;
-				int padLeft = spaces / 2 + source.Length;
-				return source.PadLeft(padLeft).PadRight(length);
-
 			}
 
 			void SetLabels(ChartLabel[] labels)
