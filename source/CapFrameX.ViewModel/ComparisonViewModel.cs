@@ -447,7 +447,6 @@ namespace CapFrameX.ViewModel
 			SelectedThirdMetric = _appConfiguration.ThirdMetric.ConvertToEnum<EMetric>();
 
 			SetRowSeries();
-			InitializePlotModel();
 			SubscribeToSelectRecord();
 			SubscribeToUpdateRecordInfos();
 		}
@@ -639,14 +638,18 @@ namespace CapFrameX.ViewModel
 
 			ChartLabel[] GetLabels() {
 				return ComparisonRecords.Select(record => {
-					var firstContext = GetLabelForContext(record, SelectedComparisonContext == EComparisonContext.None ? EComparisonContext.DateTime : SelectedComparisonContext);
+					var firstContext = GetLabelForContext(record, SelectedComparisonContext);
 					var secondContext = GetLabelForContext(record, SelectedSecondComparisonContext);
-					var maxAlignment = new int[] { PART_LENGTH, firstContext.Max(x => x.Length), secondContext.Max(x => x.Length) }.Max();
+					var maxAlignment = new int[] { 
+						PART_LENGTH, 
+						firstContext.Any() ? firstContext.Max(x => x.Length): 0,
+						secondContext.Any() ? secondContext.Max(x => x.Length) : 0
+					}.Max();
 
 					var gameName = record.WrappedRecordInfo.Game;
 					var context = string.Join(Environment.NewLine, new string[][] { firstContext, secondContext}.Select(labelLines => {
 						return string.Join(Environment.NewLine, labelLines.Select(line => line.PadRight(maxAlignment)));
-					}));
+					}).Where(line => !string.IsNullOrWhiteSpace(line)));
 					return new ChartLabel()
 					{
 						GameName = gameName,
@@ -673,7 +676,7 @@ namespace CapFrameX.ViewModel
 
 			if(ComparisonModel == null)
 			{
-				return;
+				InitializePlotModel();
 			}
 			SetLabels(GetLabels());
 			ComparisonModel.InvalidatePlot(true);
@@ -829,8 +832,9 @@ namespace CapFrameX.ViewModel
 			else
 			{
 				SetFrametimeChart();
-				SetLShapeChart();
+				SetLShapeChart();				
 			}
+			OnComparisonContextChanged();
 		}
 
 		private void AddToColumnCharts(ComparisonRecordInfoWrapper wrappedComparisonInfo)
@@ -896,33 +900,6 @@ namespace CapFrameX.ViewModel
 										 .Select(pnt => new Point(pnt.X, pnt.Y));
 
 			var chartTitle = string.Empty;
-
-			if (IsContextLegendActive)
-			{
-				switch (SelectedComparisonContext)
-				{
-					case EComparisonContext.DateTime:
-						chartTitle = $"{wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.CreationDate} " +
-							$"{ wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.CreationTime}";
-						break;
-					case EComparisonContext.CPU:
-						chartTitle = wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.ProcessorName;
-						break;
-					case EComparisonContext.GPU:
-						chartTitle = wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.GraphicCardName;
-						break;
-					case EComparisonContext.SystemRam:
-						chartTitle = wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.SystemRamInfo;
-						break;
-					case EComparisonContext.Custom:
-						chartTitle = wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.Comment;
-						break;
-					default:
-						chartTitle = $"{wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.CreationDate} " +
-							$"{ wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.CreationTime}";
-						break;
-				}
-			}
 
 			var color = wrappedComparisonInfo.FrametimeGraphColor.Value;
 			var frametimeSeries = new OxyPlot.Series.LineSeries

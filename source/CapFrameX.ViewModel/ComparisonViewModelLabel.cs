@@ -128,8 +128,6 @@ namespace CapFrameX.ViewModel
 					return GetLabelLines($"{record.WrappedRecordInfo.FileRecordInfo.CreationDate} { record.WrappedRecordInfo.FileRecordInfo.CreationTime}", GetMaxDateTimeAlignment());
 				case EComparisonContext.Custom:
 					return GetLabelLines(record.WrappedRecordInfo.FileRecordInfo.Comment, GetMaxCommentAlignment());
-				case EComparisonContext.None:
-					return Array.Empty<string>();
 				default:
 					return Array.Empty<string>();
 			}
