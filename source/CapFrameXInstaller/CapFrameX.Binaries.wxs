@@ -511,6 +511,7 @@
                     <File Id="filAD427424F750F9EADEDB5030ACC85834" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\locales\zh-TW.pak" />
                 </Component>
             </Directory>
+            
             <Directory Id="dir853772609C50C17748AF70C12E8A0818" Name="PresentMon">
                 <Component Id="cmpC9FDA2A63A64022F27649C6DD6729D8D" Guid="*" Win64="yes">
                     <File Id="fil444A50FFAD9F4E0A482DCBC9AE37F9D5" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\PresentMon\PresentMon64-1.5.2.exe" />
@@ -758,6 +759,9 @@
             <ComponentRef Id="cmp80642D2D1994622CA31AC0ED1ED014D1" />
             <ComponentRef Id="cmp5775E2EF67EC1F2A7A26152C6507EA35" />
             <ComponentRef Id="cmpC00155C4F0BBC6D4B881D098F564FA42" />
+            
+            
+            
             <ComponentRef Id="cmpC9FDA2A63A64022F27649C6DD6729D8D" />
             <ComponentRef Id="cmpA6A9ED7D0D14A0EB3F1B6598611EC6CB" />
             <ComponentRef Id="cmp614D68FE53DA984A3D71375B620FF70E" />
