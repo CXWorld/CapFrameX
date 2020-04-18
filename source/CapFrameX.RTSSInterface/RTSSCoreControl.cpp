@@ -1,3 +1,4 @@
+
 /////////////////////////////////////////////////////////////////////////////
 // created by Unwinder - modified by ZeroStrat
 /////////////////////////////////////////////////////////////////////////////
@@ -364,9 +365,10 @@ void RTSSCoreControl::Refresh()
 
 	if (bFormatTagsSupported && m_bFormatTags)
 	{
-		if (GetClientsNum() == 1)
+		auto clientCount = GetClientsNum();
+		if (clientCount == 1)
 			strOSD += "<P=0,0>";
-		else
+		else if (clientCount > 1)
 		{
 			// Add CX label
 			groupedString.Add("", "<C3>\nCX OSD<C>", "\n", " ");
@@ -383,15 +385,15 @@ void RTSSCoreControl::Refresh()
 		//define align variable A[1] as left alignment by 4 symbols (positive is left, negative is right)
 		strOSD += "<C0=FFA0A0>";
 		//define color variable C[0] as R=FF,G=A0 and B=A0
-		strOSD += "<C1=FF00A0>";
+		strOSD += "<C1=AEEA00>"; //CX Green
 		//define color variable C[1] as R=FF,G=00 and B=A0
-		strOSD += "<C2=FFFFFF>";
+		strOSD += "<C2=FFFFFF>"; // White
 		//define color variable C[1] as R=FF,G=FF and B=FF
 		// CX blue
-		strOSD += "<C3=2297F3>";
+		strOSD += "<C3=2297F3>"; //CX Blue
 		//define color variable C[1] as R=FF,G=FF and B=FF
 		// CX orange
-		strOSD += "<C4=F17D20>";
+		strOSD += "<C4=F17D20>"; //CX Orange
 		//define color variable C[1] as R=FF,G=FF and B=FF
 		strOSD += "<S0=-50>";
 		//define size variable S[0] as 50% subscript (positive is superscript, negative is subscript)
@@ -446,6 +448,8 @@ void RTSSCoreControl::Refresh()
 			{
 				if (OverlayEntries[i].Identifier == "Framerate")
 				{
+					// set graph name
+					strOSD += "<C1><S=50>Framerate\n<S><C>";
 					//embed framerate graph object into the buffer
 					dwObjectSize = EmbedGraph(dwObjectOffset, NULL, 0, 0, -32, -2, 1, 0.0f, 200.0f, dwFlags | RTSS_EMBEDDED_OBJECT_GRAPH_FLAG_FRAMERATE);
 
@@ -460,6 +464,8 @@ void RTSSCoreControl::Refresh()
 				}
 				else if (OverlayEntries[i].Identifier == "Frametime")
 				{
+					// set graph name
+					strOSD += "<C1><S=50>Frametime\n<S><C>";
 					//embed frametime graph object into the buffer
 					dwObjectSize = EmbedGraph(dwObjectOffset, NULL, 0, 0, -32, -2, 1, 0.0f, 50000.0f, dwFlags | RTSS_EMBEDDED_OBJECT_GRAPH_FLAG_FRAMETIME);
 
@@ -486,7 +492,7 @@ void RTSSCoreControl::Refresh()
 void RTSSCoreControl::AddOverlayEntry(CGroupedString* groupedString, OverlayEntry* entry, BOOL bFormatTagsSupported)
 {
 	// handle special cases first
-	// ToDo when more special cases: better use switch-case with string/index mapping table
+	// ToDo: When more special cases, better use switch-case with string/index mapping table
 	if (entry->Identifier == "RunHistory")
 	{
 		if (entry->ShowOnOverlay)
@@ -555,7 +561,7 @@ void RTSSCoreControl::AddOverlayEntry(CGroupedString* groupedString, OverlayEntr
 		{
 			if (bFormatTagsSupported && m_bFormatTags)
 			{
-				groupedString->Add("<A=-4><C4><FR><C><A><A1><S1><C4> FPS<C><S><A>", "<C2><APP> <C>", "\n", m_bFormatTags ? " " : ", ");
+				groupedString->Add("<A=-5><C1><FR><C><A><A=5><S1><C1>FPS<C><S><A>", "<C1><APP> <C>", "\n", m_bFormatTags ? " " : ", ");
 				//print application-specific 3D API, framerate and frametime using tags
 			}
 			else
@@ -571,7 +577,7 @@ void RTSSCoreControl::AddOverlayEntry(CGroupedString* groupedString, OverlayEntr
 		{
 			if (bFormatTagsSupported && m_bFormatTags)
 			{
-				groupedString->Add("<A=-4><C4><FT><C><A><A1><S1><C4> ms<C><S><A>", "<C2><APP> <C>", "\n", m_bFormatTags ? " " : ", ");
+				groupedString->Add("<A=-5><C1><FT><C><A><A=5><S1><C1>ms<C><S><A>", "<C1><APP> <C>", "\n", m_bFormatTags ? " " : ", ");
 				//print application-specific 3D API, framerate and frametime using tags
 			}
 			else

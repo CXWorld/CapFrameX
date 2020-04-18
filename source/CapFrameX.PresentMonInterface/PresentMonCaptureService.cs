@@ -25,12 +25,14 @@ namespace CapFrameX.PresentMonInterface
 		public IObservable<string> RedirectedOutputErrorStream 
 			=> _outputErrorStream.AsObservable();
 		public Subject<bool> IsCaptureModeActiveStream { get; }
+		public Subject<bool> IsLoggingActiveStream { get; }
 
 		public PresentMonCaptureService()
 		{
 			_outputDataStream = new Subject<string>();
 			_outputErrorStream = new Subject<string>();
 			IsCaptureModeActiveStream = new Subject<bool>();
+			IsLoggingActiveStream = new Subject<bool>();
 			_presentMonProcesses = new HashSet<string>();
 		}
 

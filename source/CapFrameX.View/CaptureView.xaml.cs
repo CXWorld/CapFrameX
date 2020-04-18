@@ -42,25 +42,6 @@ namespace CapFrameX.View
 				CaptureHotkey = CXHotkey.Create(keyStrings, Key.F12);
 			}
 			catch { CaptureHotkey = new CXHotkey(Key.F12); }
-
-			// Design time!
-			if (DesignerProperties.GetIsInDesignMode(this))
-			{
-				var appConfiguration = new CapFrameXConfiguration();
-				var statisticProvider = new FrametimeStatisticProvider( appConfiguration);
-				var recordDirectoryObserver = new RecordDirectoryObserver(appConfiguration, 
-					new LoggerFactory().CreateLogger<RecordDirectoryObserver>());
-				var recordDataProvider = new RecordDataProvider(recordDirectoryObserver, appConfiguration, 
-					new LoggerFactory().CreateLogger<RecordDataProvider>());
-				var overlayEntryProvider = new OverlayEntryProvider();
-				DataContext = new CaptureViewModel(appConfiguration, new PresentMonCaptureService(),
-					new EventAggregator(), new RecordDataProvider(new RecordDirectoryObserver(appConfiguration, 
-					new LoggerFactory().CreateLogger<RecordDirectoryObserver>()), appConfiguration, 
-					new LoggerFactory().CreateLogger<RecordDataProvider>()), 
-					new OverlayService(statisticProvider, recordDataProvider, overlayEntryProvider, appConfiguration, 
-					new LoggerFactory().CreateLogger<OverlayService>()),
-					statisticProvider, new LoggerFactory().CreateLogger<CaptureViewModel>());
-			}
 		}
 
 		private void CaptureHotkeyTextBox_PreviewKeyDown(object sender, KeyEventArgs e)
@@ -129,6 +110,11 @@ namespace CapFrameX.View
 			{
 				Keyboard.ClearFocus();
 			}
+		}
+
+		private void LoggingPeriodComboBox_MouseLeave(object sender, MouseEventArgs e)
+		{
+			Keyboard.ClearFocus();
 		}
 	}
 }

@@ -1,11 +1,13 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Overlay;
+using CapFrameX.Contracts.Sensor;
 using CapFrameX.Extensions;
 using CapFrameX.Hotkey;
 using CapFrameX.Overlay;
 using CapFrameX.Statistics;
 using Gma.System.MouseKeyHook;
 using GongSolutions.Wpf.DragDrop;
+using Prism.Commands;
 using Prism.Events;
 using Prism.Mvvm;
 using Prism.Regions;
@@ -13,7 +15,11 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Reactive.Linq;
+using System.Reactive.Subjects;
+using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Input;
 
 namespace CapFrameX.ViewModel
 {
@@ -23,7 +29,7 @@ namespace CapFrameX.ViewModel
 		private readonly IOverlayEntryProvider _overlayEntryProvider;
 		private readonly IAppConfiguration _appConfiguration;
 		private readonly IEventAggregator _eventAggregator;
-
+		private readonly ISensorService _sensorService;
 		private IKeyboardMouseEvents _globalOverlayHookEvent;
 		private IKeyboardMouseEvents _globalResetHistoryHookEvent;
 		private int _selectedOverlayEntryIndex = -1;
@@ -39,10 +45,6 @@ namespace CapFrameX.ViewModel
 					_appConfiguration.IsOverlayActive = value;
 					_overlayService.IsOverlayActiveStream.OnNext(value);
 				}
-				if (value)
-					_overlayService.ShowOverlay();
-				else
-					_overlayService.HideOverlay();
 
 				RaisePropertyChanged();
 			}
@@ -171,7 +173,7 @@ namespace CapFrameX.ViewModel
 			{
 				_appConfiguration
 				   .OSDRefreshPeriod = value;
-				_overlayService.UpdateRefreshRate(value);
+				_sensorService.SetOSDInterval(TimeSpan.FromMilliseconds(value));
 				RaisePropertyChanged();
 			}
 		}
@@ -187,7 +189,6 @@ namespace CapFrameX.ViewModel
 			{
 				_appConfiguration.UseRunHistory = value;
 				OnUseRunHistoryChanged();
-
 				RaisePropertyChanged();
 			}
 		}
@@ -256,7 +257,57 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-		public bool IsRTSSInstalled { get; }
+		public bool IsConfig0Checked
+		{
+			get
+			{
+				return _appConfiguration.OverlayEntryConfigurationFile == 0;
+			}
+			set
+			{
+				if (value)
+					_appConfiguration.OverlayEntryConfigurationFile = 0;
+				RaisePropertyChanged();
+			}
+		}
+
+		public bool IsConfig1Checked
+		{
+			get
+			{
+				return _appConfiguration.OverlayEntryConfigurationFile == 1;
+			}
+			set
+			{
+				if (value)
+					_appConfiguration.OverlayEntryConfigurationFile = 1;
+				RaisePropertyChanged();
+			}
+		}
+
+		public bool IsConfig2Checked
+		{
+			get
+			{
+				return _appConfiguration.OverlayEntryConfigurationFile == 2;
+			}
+			set
+			{
+				if (value)
+					_appConfiguration.OverlayEntryConfigurationFile = 2;
+				RaisePropertyChanged();
+			}
+		}
+
+		public ICommand ConfigSwitchCommand { get; }
+
+		public ICommand SaveConfigCommand { get; }
+
+		public ICommand ResetDefaultsCommand { get; }
+
+
+		public bool IsRTSSInstalled
+			=> !string.IsNullOrEmpty(RTSSUtils.GetRTSSFullPath());
 
 		public IAppConfiguration AppConfiguration => _appConfiguration;
 
@@ -274,35 +325,64 @@ namespace CapFrameX.ViewModel
 		public Array OutlierPercentageItemsSource => Enumerable.Range(2, 9).ToArray();
 
 		public Array OutlierHandlingItems => Enum.GetValues(typeof(EOutlierHandling))
-														.Cast<EOutlierHandling>()
-														.ToArray();
+												 .Cast<EOutlierHandling>()
+												 .ToArray();
 
 		public Array RelatedMetricItemsSource => new[] { "Average", "Second", "Third" };
 
-		public Array RefreshPeriodItemsSource => new[] { 200, 300, 400, 500, 600, 700, 800, 900, 1000 };
+		public Array RefreshPeriodItemsSource => new[] { 500, 1000, 1500, 2000 };
 
 		public ObservableCollection<IOverlayEntry> OverlayEntries { get; private set; }
 			= new ObservableCollection<IOverlayEntry>();
 
+
 		public OverlayViewModel(IOverlayService overlayService, IOverlayEntryProvider overlayEntryProvider,
-			IAppConfiguration appConfiguration, IEventAggregator eventAggregator)
+			IAppConfiguration appConfiguration, IEventAggregator eventAggregator, ISensorService sensorService)
 		{
 			_overlayService = overlayService;
 			_overlayEntryProvider = overlayEntryProvider;
 			_appConfiguration = appConfiguration;
 			_eventAggregator = eventAggregator;
+			_sensorService = sensorService;
 
-			if (IsOverlayActive)
-				_overlayService.ShowOverlay();
+			var configSubject = new Subject<object>();
+			ConfigSwitchCommand = new DelegateCommand<object>(configSubject.OnNext);
+			configSubject
+				.Select(obj => Convert.ToInt32(obj)).DistinctUntilChanged()
+				.SelectMany(index =>
+				{
+					return Observable.FromAsync(() => _overlayEntryProvider.SwitchConfigurationTo(index))
+						.SelectMany(_ => _sensorService.OnDictionaryUpdated.Take(1));
+				})
+				.StartWith(Enumerable.Empty<IOverlayEntry>())
+				.SelectMany(_ => _overlayEntryProvider.GetOverlayEntries())
+				.ObserveOnDispatcher()
+				.Subscribe(entries =>
+				{
+					OverlayEntries.Clear();
+					OverlayEntries.AddRange(entries);
+					OnUseRunHistoryChanged();
+				});
 
-			IsRTSSInstalled = !string.IsNullOrEmpty(RTSSUtils.GetRTSSFullPath());
+			SaveConfigCommand = new DelegateCommand(
+				() => _overlayEntryProvider.SaveOverlayEntriesToJson());
+
+			ResetDefaultsCommand = new DelegateCommand( 
+				async () => await OnResetDefaults());
+
 			UpdateHpyerlinkText = "To use the overlay, install the latest" + Environment.NewLine +
 				"RivaTuner  Statistics  Server  (RTSS)";
 
-			OverlayEntries.AddRange(_overlayEntryProvider.GetOverlayEntries());
-
 			SetGlobalHookEventOverlayHotkey();
 			SetGlobalHookEventResetHistoryHotkey();
+		}
+
+		private async Task OnResetDefaults()
+		{
+			var overlayEntries = await _overlayEntryProvider.GetDefaultOverlayEntries();
+			OverlayEntries.Clear();
+			OverlayEntries.AddRange(overlayEntries);
+			OnUseRunHistoryChanged();
 		}
 
 		private void OnUseRunHistoryChanged()
@@ -393,7 +473,7 @@ namespace CapFrameX.ViewModel
 		{
 		}
 
-		void IDropTarget.Drop(IDropInfo dropInfo)
+		async void IDropTarget.Drop(IDropInfo dropInfo)
 		{
 			if (dropInfo != null)
 			{
@@ -409,8 +489,7 @@ namespace CapFrameX.ViewModel
 
 							_overlayEntryProvider.MoveEntry(sourceIndex, targetIndex);
 							OverlayEntries.Clear();
-							OverlayEntries.AddRange(_overlayEntryProvider?.GetOverlayEntries());
-							_overlayService.UpdateOverlayEntries();
+							OverlayEntries.AddRange(await _overlayEntryProvider.GetOverlayEntries());
 						}
 					}
 				}

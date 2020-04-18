@@ -137,9 +137,6 @@
     <Setting Name="OSDRefreshPeriod" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">500</Value>
     </Setting>
-    <Setting Name="SaveAggregationOnly" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">True</Value>
-    </Setting>
     <Setting Name="OutlierPercentageOverlay" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">3</Value>
     </Setting>
@@ -164,8 +161,38 @@
     <Setting Name="AreThresholdsReversed" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
-    <Setting Name="LoggingDirectory" Type="System.String" Scope="User">
-      <Value Profile="(Default)">MyDocuments\CapFrameX\Logs</Value>
+    <Setting Name="CloudDownloadDirectory" Type="System.String" Scope="User">
+      <Value Profile="(Default)">MyDocuments\CapFrameX\Captures\Cloud</Value>
+    </Setting>
+    <Setting Name="CaptureRootDirectory" Type="System.String" Scope="User">
+      <Value Profile="(Default)">MyDocuments\CapFrameX\Captures</Value>
+    </Setting>
+    <Setting Name="ShareProcessListEntries" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="AutoUpdateProcessList" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="UseSensorLogging" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="AreThresholdsPercentage" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="OverlayEntryConfigurationFile" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">0</Value>
+    </Setting>
+    <Setting Name="SensorLoggingRefreshPeriod" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">250</Value>
+    </Setting>
+    <Setting Name="ShowThresholdTimes" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="SaveAggregationOnly" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="UseSingleRecordMedianStatisticParameter" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
     </Setting>
   </Settings>
 </SettingsFile>

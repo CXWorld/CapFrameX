@@ -565,18 +565,6 @@ namespace CapFrameX.Configuration.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool SaveAggregationOnly {
-            get {
-                return ((bool)(this["SaveAggregationOnly"]));
-            }
-            set {
-                this["SaveAggregationOnly"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("3")]
         public int OutlierPercentageOverlay {
             get {
@@ -673,13 +661,133 @@ namespace CapFrameX.Configuration.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("MyDocuments\\CapFrameX\\Logs")]
-        public string LoggingDirectory {
+        [global::System.Configuration.DefaultSettingValueAttribute("MyDocuments\\CapFrameX\\Captures\\Cloud")]
+        public string CloudDownloadDirectory {
             get {
-                return ((string)(this["LoggingDirectory"]));
+                return ((string)(this["CloudDownloadDirectory"]));
             }
             set {
-                this["LoggingDirectory"] = value;
+                this["CloudDownloadDirectory"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("MyDocuments\\CapFrameX\\Captures")]
+        public string CaptureRootDirectory {
+            get {
+                return ((string)(this["CaptureRootDirectory"]));
+            }
+            set {
+                this["CaptureRootDirectory"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool ShareProcessListEntries {
+            get {
+                return ((bool)(this["ShareProcessListEntries"]));
+            }
+            set {
+                this["ShareProcessListEntries"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool AutoUpdateProcessList {
+            get {
+                return ((bool)(this["AutoUpdateProcessList"]));
+            }
+            set {
+                this["AutoUpdateProcessList"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool UseSensorLogging {
+            get {
+                return ((bool)(this["UseSensorLogging"]));
+            }
+            set {
+                this["UseSensorLogging"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool AreThresholdsPercentage {
+            get {
+                return ((bool)(this["AreThresholdsPercentage"]));
+            }
+            set {
+                this["AreThresholdsPercentage"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int OverlayEntryConfigurationFile {
+            get {
+                return ((int)(this["OverlayEntryConfigurationFile"]));
+            }
+            set {
+                this["OverlayEntryConfigurationFile"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("250")]
+        public int SensorLoggingRefreshPeriod {
+            get {
+                return ((int)(this["SensorLoggingRefreshPeriod"]));
+            }
+            set {
+                this["SensorLoggingRefreshPeriod"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool ShowThresholdTimes {
+            get {
+                return ((bool)(this["ShowThresholdTimes"]));
+            }
+            set {
+                this["ShowThresholdTimes"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool SaveAggregationOnly {
+            get {
+                return ((bool)(this["SaveAggregationOnly"]));
+            }
+            set {
+                this["SaveAggregationOnly"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool UseSingleRecordMedianStatisticParameter {
+            get {
+                return ((bool)(this["UseSingleRecordMedianStatisticParameter"]));
+            }
+            set {
+                this["UseSingleRecordMedianStatisticParameter"] = value;
             }
         }
     }

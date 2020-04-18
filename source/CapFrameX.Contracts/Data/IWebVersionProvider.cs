@@ -9,5 +9,6 @@ namespace CapFrameX.Contracts.Data
 	public interface IWebVersionProvider
 	{
 		Version GetWebVersion();
+		Task<Version> GetWebVersionAsync();
 	}
 }

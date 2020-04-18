@@ -9,7 +9,6 @@
 		string ObservedDirectory { get; set; }
 
 		string ScreenshotDirectory { get; set; }
-		string LoggingDirectory { get; set; }
 
 		int FpsValuesRoundingDigits { get; set; }
 
@@ -20,6 +19,8 @@
 		bool UseSingleRecordP95QuantileStatisticParameter { get; set; }
 
 		bool UseSingleRecordAverageStatisticParameter { get; set; }
+
+		bool UseSingleRecordMedianStatisticParameter { get; set; }
 
 		bool UseSingleRecordP5QuantileStatisticParameter { get; set; }
 
@@ -90,7 +91,9 @@
 		int SelectedHistoryRuns { get; set; }
 
 		int OSDRefreshPeriod { get; set; }
-
+		
+		string CloudDownloadDirectory { get; set; }
+		
 		bool SaveAggregationOnly { get; set; }
 
 		int OutlierPercentageOverlay { get; set; }
@@ -108,5 +111,20 @@
 		int OutlierPercentageAggregation { get; set; }
 
 		bool AreThresholdsReversed { get; set; }
+
+		string CaptureRootDirectory { get; set; }
+
+		bool ShareProcessListEntries { get; set; }
+
+		bool AutoUpdateProcessList { get; set; }
+
+		bool UseSensorLogging { get; set; }
+		
+		bool AreThresholdsPercentage { get; set; }
+
+		int OverlayEntryConfigurationFile { get; set; }
+
+		int SensorLoggingRefreshPeriod { get; set; }
+		bool ShowThresholdTimes { get; set; }
 	}
 }

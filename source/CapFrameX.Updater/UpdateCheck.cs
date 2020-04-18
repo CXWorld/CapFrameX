@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace CapFrameX.Updater
 {
@@ -20,9 +21,11 @@ namespace CapFrameX.Updater
 			_webVersionProvider = webVersionProvider;
 		}
 
-		public bool IsUpdateAvailable()
+		public async Task<(bool, Version)> IsUpdateAvailable()
 		{
-			return _appVersionProvider.GetAppVersion() < _webVersionProvider.GetWebVersion();
+			var versionAvailable = await _webVersionProvider.GetWebVersionAsync();
+			var isUpdateAvailable = _appVersionProvider.GetAppVersion() < versionAvailable;
+			return  (isUpdateAvailable, versionAvailable);
 		}
 
 	}

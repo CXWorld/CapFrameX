@@ -1,9 +1,12 @@
 ﻿using CapFrameX.Contracts.Data;
+using CapFrameX.Data.Session.Contracts;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace CapFrameX.Data
 {
@@ -13,6 +16,16 @@ namespace CapFrameX.Data
 		public static readonly char INFO_SEPERATOR = '=';
 
 		private string[] _lines;
+
+		public event PropertyChangedEventHandler PropertyChanged;
+
+		public void NotifyPropertyChanged([CallerMemberName] String propertyName = "")
+		{
+			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+		}
+
+		public string CreationTimestamp => $@"{CreationDate}
+{CreationTime}";
 
 		public string GameName { get; set; }
 		public string ProcessName { get; private set; }
@@ -33,18 +46,46 @@ namespace CapFrameX.Data
 		public string GPUCoreClock { get; private set; }
 		public string GPUMemoryClock { get; private set; }
 		public string GPUMemory { get; private set; }
+		public string GPUDriverVersion { get; private set; }
 		public string Comment { get; private set; }
 		public string IsAggregated { get; private set; }
 		public bool IsValid { get; private set; }
 		public bool HasInfoHeader { get; private set; }
 		public string Id { get; private set; }
+		public string Hash { get; private set; }
 
-		private FileRecordInfo(FileInfo fileInfo)
+		private FileRecordInfo(FileInfo fileInfo, ISession session)
+		{
+			var creationDateTime = session.Info.CreationDate.ToLocalTime();
+			FileInfo = fileInfo;
+			FullPath = fileInfo.FullName;
+			Id = session.Info.Id.ToString();
+			CreationDate = creationDateTime.ToString("yyyy-MM-dd");
+			CreationTime = creationDateTime.ToString("HH:mm:ss");
+			ProcessName = session.Info.ProcessName;
+			ProcessorName = session.Info.Processor;
+			GraphicCardName = session.Info.GPU;
+			SystemRamInfo = session.Info.SystemRam;
+			MotherboardName = session.Info.Motherboard;
+			GPUMemoryClock = session.Info.GpuMemoryClock;
+			GPUCoreClock = session.Info.GpuCoreClock;
+			DriverPackage = session.Info.DriverPackage;
+			BaseDriverVersion = session.Info.BaseDriverVersion;
+			GPUDriverVersion = session.Info.GPUDriverVersion;
+			Comment = session.Info.Comment;
+			ProcessName = session.Info.ProcessName;
+			IsAggregated = Convert.ToString(session.Runs.Count() > 1);
+			IsValid = true;
+			Hash = session.Hash;
+		}
+
+		private FileRecordInfo(FileInfo fileInfo, string hash)
 		{
 			if (fileInfo != null && File.Exists(fileInfo.FullName))
 			{
 				FileInfo = fileInfo;
 				FullPath = fileInfo.FullName;
+				Hash = hash;
 				_lines = File.ReadAllLines(fileInfo.FullName);
 
 				if (_lines != null && _lines.Any())
@@ -250,13 +291,33 @@ namespace CapFrameX.Data
 			}
 		}
 
-		public static IFileRecordInfo Create(FileInfo fileInfo)
+		public static IFileRecordInfo Create(FileInfo fileInfo, string hash)
 		{
 			FileRecordInfo recordInfo = null;
 
 			try
 			{
-				recordInfo = new FileRecordInfo(fileInfo);
+				recordInfo = new FileRecordInfo(fileInfo, hash);
+			}
+			catch (ArgumentException)
+			{
+				// Log
+			}
+			catch (Exception)
+			{
+				// Log
+			}
+
+			return recordInfo;
+		}
+
+		public static IFileRecordInfo Create(FileInfo fileInfo, ISession session)
+		{
+			FileRecordInfo recordInfo = null;
+
+			try
+			{
+				recordInfo = new FileRecordInfo(fileInfo, session);
 			}
 			catch (ArgumentException)
 			{

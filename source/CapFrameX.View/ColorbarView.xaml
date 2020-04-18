@@ -23,6 +23,8 @@
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Slider.xaml" />
             </ResourceDictionary.MergedDictionaries>
             <mvvm:BoolToVisibilityConverter x:Key="FalseToCollapsedConverter" TrueValue="Visible" FalseValue="Collapsed"/>
+			<mvvm:BoolToVisibilityConverter x:Key="FalseToVisibleConverter" TrueValue="Hidden" FalseValue="Visible"/>
+			<mvvm:BoolToVisibilityConverter x:Key="TrueToVisibleConverter" TrueValue="Visible" FalseValue="Collapsed"/>
             <mvvm:EnumDescriptionConverter x:Key="EnumDescriptionConverter"/>
         </ResourceDictionary>
     </UserControl.Resources>
@@ -30,7 +32,7 @@
         <materialDesign:ColorZone Mode="PrimaryMid">
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="2*"/>
+                    <ColumnDefinition Width="3*"/>
                     <ColumnDefinition Width="1*"/>
                 </Grid.ColumnDefinitions>
                 <StackPanel Grid.Column="0" Orientation="Horizontal" Margin="2">
@@ -63,9 +65,13 @@
 							 Margin="5"
 							 IsChecked="{Binding SynchronizationIsChecked}"
 							 Content="SYNCHRONIZATION" />
-                </StackPanel>
+					<RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
+                             Margin="5"
+                             IsChecked="{Binding CloudIsChecked}"
+                             Content="CLOUD" />
+				</StackPanel>
 
-                <Button Grid.Column="1" Margin="0 0 210 0"
+                <Button Grid.Column="1" Margin="0 0 260 0"
 						Style="{StaticResource MaterialDesignFloatingActionMiniButton}"
 						VerticalAlignment="Center"
 						HorizontalAlignment="Right"
@@ -75,7 +81,26 @@
                     <materialDesign:PackIcon Kind="PhotoLibrary"/>
                 </Button>
 
-                <TextBlock Grid.Column="1" Margin="0 0 70 2" HorizontalAlignment="Right" VerticalAlignment="Center">           
+				<Button Grid.Column="1" Style="{StaticResource MaterialDesignFloatingActionMiniButton}"
+                            Margin="0 0 210 0"
+						    ToolTip="Login"
+                            HorizontalAlignment="Right"
+						    materialDesign:RippleAssist.Feedback="#DD000000"
+						    Width="32" Height="32" Click="Login_Click"
+							Visibility="{Binding Path=DataContext.IsLoggedIn, ElementName=ColorbarViewName, Converter={StaticResource FalseToVisibleConverter}}">
+					<materialDesign:PackIcon Kind="Login"/>
+				</Button>
+				<Button Grid.Column="1" Style="{StaticResource MaterialDesignFloatingActionMiniButton}"
+                            Margin="0 0 210 0"
+						    ToolTip="Logout"
+                            HorizontalAlignment="Right"
+						    materialDesign:RippleAssist.Feedback="#DD000000"
+						    Width="32" Height="32" Click="Logout_Click"
+							Visibility="{Binding Path=DataContext.IsLoggedIn, ElementName=ColorbarViewName, Converter={StaticResource TrueToVisibleConverter}}">
+					<materialDesign:PackIcon Kind="Logout"/>
+				</Button>
+
+				<TextBlock Grid.Column="1" Margin="0 0 70 2" HorizontalAlignment="Right" VerticalAlignment="Center">           
 			        <Hyperlink NavigateUri="https://capframex.com/" RequestNavigate="Hyperlink_RequestNavigate" TextDecorations="None">
 				        <TextBlock FontSize="16" Foreground="White" Text="CapFrameX.com"/>
 			        </Hyperlink>	
@@ -105,7 +130,6 @@
                                             </Style>
                                         </Grid.Resources>
                                         <Grid.RowDefinitions>
-                                            <RowDefinition Height="*" />
                                             <RowDefinition Height="*" />
                                             <RowDefinition Height="*" />
                                             <RowDefinition Height="*" />
@@ -146,17 +170,7 @@
                                                 </Binding>
                                             </TextBox.Text>
                                         </TextBox>
-                                        <StackPanel Grid.Row="1" Grid.ColumnSpan="3" Orientation="Horizontal" HorizontalAlignment="Left" Margin="10 0 0 0">
-                                            <TextBox Width="350" IsReadOnly="True" materialDesign:HintAssist.Hint="Observed directory (third-party compatible)" Text="{Binding DataContext.ObservedDirectory, ElementName=ColorbarViewName, Mode=OneWay}" />
-                                            <Button Margin="15 0 0 0" Height="35" Width="35" Command="{Binding Path=DataContext.SelectObservedFolderCommand, ElementName=ColorbarViewName}" Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}" ToolTip="Select observed folder">
-                                                <materialDesign:PackIcon Kind="Folder" Height="25" Width="25" />
-                                            </Button>
-                                            <Button Margin="15 0 0 0" Height="35" Width="35" Command="{Binding Path=DataContext.OpenObservedFolderCommand, ElementName=ColorbarViewName}" Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}" ToolTip="Open observed folder">
-                                                <materialDesign:PackIcon Kind="Forward"  Height="25" Width="25" />
-                                            </Button>
-                                        </StackPanel>
-
-                                        <StackPanel Grid.Row="2" Grid.ColumnSpan="3" Orientation="Horizontal" HorizontalAlignment="Left"  Margin="10 0 0 0">
+                                        <StackPanel Grid.Row="1" Grid.ColumnSpan="3" Orientation="Horizontal" HorizontalAlignment="Left"  Margin="10 0 0 0">
                                             <TextBox Width="350" IsReadOnly="True" materialDesign:HintAssist.Hint="Screenshot directory" Text="{Binding ScreenshotDirectory, Mode=OneWay}" />
                                             <Button Margin="15 0 0 0" Height="35" Width="35" Command="{Binding Path=DataContext.SelectScreenshotFolderCommand, ElementName=ColorbarViewName}" Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}" ToolTip="Select screenshot folder">
                                                 <materialDesign:PackIcon Kind="Folder" Height="25" Width="25" />
@@ -165,7 +179,7 @@
                                                 <materialDesign:PackIcon Kind="Forward" Height="25" Width="25" />
                                             </Button>
                                         </StackPanel>
-                                        <ComboBox Grid.Row="3" Grid.Column="0" materialDesign:HintAssist.Hint="Hardware info source"
+                                        <ComboBox Grid.Row="2" Grid.Column="0" materialDesign:HintAssist.Hint="Hardware info source"
 												  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Margin="15 15 0 0"
 												  ItemsSource="{Binding Path=DataContext.HardwareInfoSourceItems, ElementName=ColorbarViewName}" 
 												  SelectedItem="{Binding Path=DataContext.SelectedHardwareInfoSource, ElementName=ColorbarViewName}">
@@ -175,7 +189,7 @@
                                                 </DataTemplate>
                                             </ComboBox.ItemTemplate>
                                         </ComboBox>
-                                        <TextBox Grid.Row="4" Grid.ColumnSpan="2" materialDesign:HintAssist.Hint="CPU" Margin="15 15 0 0"
+                                        <TextBox Grid.Row="3" Grid.ColumnSpan="2" materialDesign:HintAssist.Hint="CPU" Margin="15 15 0 0"
 												Visibility="{Binding Path=DataContext.HasCustomInfo, ElementName=ColorbarViewName, Converter={StaticResource FalseToCollapsedConverter}}">
                                             <TextBox.Text>
                                                 <Binding Path="DataContext.CustomCpuDescription"
@@ -185,7 +199,7 @@
                                                 </Binding>
                                             </TextBox.Text>
                                         </TextBox>
-                                        <TextBox Grid.Row="5" Grid.ColumnSpan="2" materialDesign:HintAssist.Hint="GPU" Margin="15 10 0 0"
+                                        <TextBox Grid.Row="4" Grid.ColumnSpan="2" materialDesign:HintAssist.Hint="GPU" Margin="15 10 0 0"
 												Visibility="{Binding Path=DataContext.HasCustomInfo, ElementName=ColorbarViewName, Converter={StaticResource FalseToCollapsedConverter}}">
                                             <TextBox.Text>
                                                 <Binding Path="DataContext.CustomGpuDescription"
@@ -195,7 +209,7 @@
                                                 </Binding>
                                             </TextBox.Text>
                                         </TextBox>
-                                        <TextBox Grid.Row="6" Grid.ColumnSpan="2" materialDesign:HintAssist.Hint="RAM" Margin="15 10 0 0"
+                                        <TextBox Grid.Row="5" Grid.ColumnSpan="2" materialDesign:HintAssist.Hint="RAM" Margin="15 10 0 0"
 												Visibility="{Binding Path=DataContext.HasCustomInfo, ElementName=ColorbarViewName, Converter={StaticResource FalseToCollapsedConverter}}">
                                             <TextBox.Text>
                                                 <Binding Path="DataContext.CustomRamDescription"

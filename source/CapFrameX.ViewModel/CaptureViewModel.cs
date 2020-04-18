@@ -2,7 +2,8 @@
 using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.PresentMonInterface;
-using CapFrameX.EventAggregation.Messages;
+using CapFrameX.Contracts.Sensor;
+using CapFrameX.Data;
 using CapFrameX.Hotkey;
 using CapFrameX.PresentMonInterface;
 using CapFrameX.Statistics;
@@ -26,7 +27,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
-using System.Windows.Media;
 
 namespace CapFrameX.ViewModel
 {
@@ -41,12 +41,13 @@ namespace CapFrameX.ViewModel
 		private readonly IAppConfiguration _appConfiguration;
 		private readonly ICaptureService _captureService;
 		private readonly IEventAggregator _eventAggregator;
-		private readonly IRecordDataProvider _recordDataProvider;
+		private readonly IRecordManager _recordManager;
 		private readonly IOverlayService _overlayService;
+		private readonly ISensorService _sensorService;
 		private readonly IStatisticProvider _statisticProvider;
 		private readonly ILogger<CaptureViewModel> _logger;
-		private readonly MediaPlayer _soundPlayer = new MediaPlayer();
-		private readonly string[] _soundModes = new[] { "none", "simple sounds", "voice response" };
+		private readonly ProcessList _processList;
+		private readonly SoundManager _soundManager;
 		private readonly List<string> _captureDataArchive = new List<string>(ARCHIVE_LENGTH);
 
 		private IDisposable _disposableHeartBeat;
@@ -55,18 +56,15 @@ namespace CapFrameX.ViewModel
 		private List<string> _captureData;
 		private string _selectedProcessToCapture;
 		private string _selectedProcessToIgnore;
-		private bool _isAddToIgnoreListButtonActive = true;
+		private bool _areButtonsActive = true;
 		private bool _isCapturing;
 		private string _captureStateInfo = string.Empty;
 		private string _captureTimeString = "0";
 		private string _captureStartDelayString = "0";
 		private IKeyboardMouseEvents _globalCaptureHookEvent;
-		private string _selectedSoundMode;
 		private string _loggerOutput = string.Empty;
 		private bool _fillArchive = false;
 		private CancellationTokenSource _cancellationTokenSource;
-		private int _sliderSoundLevel;
-		private bool _showVolumeController;
 		private PlotModel _frametimeModel;
 		private ISubject<string> _frametimeStream;
 		private long _qpcTimeStart;
@@ -106,12 +104,12 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-		public bool IsAddToIgnoreListButtonActive
+		public bool AreButtonsActive
 		{
-			get { return _isAddToIgnoreListButtonActive; }
+			get { return _areButtonsActive; }
 			set
 			{
-				_isAddToIgnoreListButtonActive = value;
+				_areButtonsActive = value;
 				RaisePropertyChanged();
 			}
 		}
@@ -164,39 +162,28 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-		public string SelectedSoundMode
+		public bool UseSensorLogging
 		{
-			get { return _selectedSoundMode; }
+			get { return _appConfiguration.UseSensorLogging; }
 			set
 			{
-				_selectedSoundMode = value;
-				_appConfiguration.HotkeySoundMode = value;
-
-				if (value == "simple sounds")
-				{
-					SliderSoundLevel = (int)Math.Round(SimpleSoundLevel * 100, 0);
-					ShowVolumeController = true;
-				}
-				else if (value == "voice response")
-				{
-					SliderSoundLevel = (int)Math.Round(VoiceSoundLevel * 100, 0);
-					ShowVolumeController = true;
-				}
-				else
-				{
-					ShowVolumeController = false;
-				}
-
+				_appConfiguration.UseSensorLogging = value;
+				_captureService.IsLoggingActiveStream.OnNext(value);
 				RaisePropertyChanged();
 			}
 		}
-
-		public bool ShowVolumeController
+		public int LoggingPeriod
 		{
-			get { return _showVolumeController; }
+			get
+			{
+				return _appConfiguration
+				  .SensorLoggingRefreshPeriod;
+			}
 			set
 			{
-				_showVolumeController = value;
+				_appConfiguration
+				   .SensorLoggingRefreshPeriod = value;
+				_sensorService.SetLoggingInterval(TimeSpan.FromMilliseconds(value));
 				RaisePropertyChanged();
 			}
 		}
@@ -211,16 +198,6 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-		public int SliderSoundLevel
-		{
-			get { return _sliderSoundLevel; }
-			set
-			{
-				_sliderSoundLevel = value;
-				RaisePropertyChanged();
-			}
-		}
-
 		public PlotModel FrametimeModel
 		{
 			get { return _frametimeModel; }
@@ -231,27 +208,32 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-		public double VoiceSoundLevel
+		public string SelectedSoundMode
 		{
-			get { return _appConfiguration.VoiceSoundLevel; }
+			get => Enum.GetName(typeof(SoundMode), _soundManager.SoundMode);
 			set
 			{
-				_appConfiguration.VoiceSoundLevel = value;
+				_soundManager.SetSoundMode(value);
+				RaisePropertyChanged();
+				RaisePropertyChanged(nameof(SliderSoundLevel));
+				RaisePropertyChanged(nameof(ShowVolumeController));
 			}
 		}
 
-		public double SimpleSoundLevel
+		public bool ShowVolumeController => _soundManager.SoundMode != SoundMode.None;
+
+		public double SliderSoundLevel
 		{
-			get { return _appConfiguration.SimpleSoundLevel; }
-			set
-			{
-				_appConfiguration.SimpleSoundLevel = value;
+			get => Math.Round(_soundManager.Volume * 100, 0);
+			set {
+				_soundManager.Volume = value / 100;
+				RaisePropertyChanged();
 			}
 		}
+
+		public string[] SoundModes => _soundManager.AvailableSoundModes;
 
 		public IAppConfiguration AppConfiguration => _appConfiguration;
-
-		public string[] SoundModes => _soundModes;
 
 		public ObservableCollection<string> ProcessesToCapture { get; }
 			= new ObservableCollection<string>();
@@ -265,33 +247,38 @@ namespace CapFrameX.ViewModel
 
 		public ICommand ResetCaptureProcessCommand { get; }
 
+		public Array LoggingPeriodItemsSource => new[] { 250, 500 };
+
 		public CaptureViewModel(IAppConfiguration appConfiguration,
 								ICaptureService captureService,
 								IEventAggregator eventAggregator,
-								IRecordDataProvider recordDataProvider,
+								IRecordManager recordManager,
 								IOverlayService overlayService,
+								ISensorService sensorService,
 								IStatisticProvider statisticProvider,
-								ILogger<CaptureViewModel> logger)
+								ILogger<CaptureViewModel> logger,
+								ProcessList processList,
+								SoundManager soundManager)
 		{
 			_appConfiguration = appConfiguration;
 			_captureService = captureService;
 			_eventAggregator = eventAggregator;
-			_recordDataProvider = recordDataProvider;
+			_recordManager = recordManager;
 			_overlayService = overlayService;
+			_sensorService = sensorService;
 			_statisticProvider = statisticProvider;
 			_logger = logger;
-
+			_processList = processList;
+			_soundManager = soundManager;
 			AddToIgonreListCommand = new DelegateCommand(OnAddToIgonreList);
 			AddToProcessListCommand = new DelegateCommand(OnAddToProcessList);
 			ResetCaptureProcessCommand = new DelegateCommand(OnResetCaptureProcess);
 
 			_logger.LogDebug("{viewName} Ready", this.GetType().Name);
-			CaptureStateInfo = "Service ready..." + Environment.NewLine + 
+			CaptureStateInfo = "Service ready..." + Environment.NewLine +
 				$"Press {CaptureHotkeyString} to start capture of the running process.";
 			SelectedSoundMode = _appConfiguration.HotkeySoundMode;
 			CaptureTimeString = _appConfiguration.CaptureTime.ToString();
-
-			ProcessesToIgnore.AddRange(CaptureServiceConfiguration.GetProcessIgnoreList());
 			_disposableHeartBeat = GetListUpdatHeartBeat();
 			_frametimeStream = new Subject<string>();
 
@@ -305,41 +292,7 @@ namespace CapFrameX.ViewModel
 
 
 			_captureService.IsCaptureModeActiveStream.OnNext(false);
-
-			FrametimeModel = new PlotModel
-			{
-				PlotMargins = new OxyThickness(40, 0, 0, 40),
-				PlotAreaBorderColor = OxyColor.FromArgb(64, 204, 204, 204),
-				LegendPosition = LegendPosition.TopCenter,
-				LegendOrientation = LegendOrientation.Horizontal
-			};
-
-			//Axes
-			//X
-			FrametimeModel.Axes.Add(new LinearAxis()
-			{
-				Key = "xAxis",
-				Position = AxisPosition.Bottom,
-				Title = "Samples",
-				MajorGridlineStyle = LineStyle.Solid,
-				MajorGridlineThickness = 1,
-				MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
-				MinorTickSize = 0,
-				MajorTickSize = 0
-			});
-
-			//Y
-			FrametimeModel.Axes.Add(new LinearAxis()
-			{
-				Key = "yAxis",
-				Position = AxisPosition.Left,
-				Title = "Frametime [ms]",
-				MajorGridlineStyle = LineStyle.Solid,
-				MajorGridlineThickness = 1,
-				MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
-				MinorTickSize = 0,
-				MajorTickSize = 0
-			});
+			InitializeFrametimeModel();
 		}
 
 		public bool IsNavigationTarget(NavigationContext navigationContext)
@@ -357,22 +310,7 @@ namespace CapFrameX.ViewModel
 
 		public void OnSoundLevelChanged()
 		{
-			if (SelectedSoundMode == "simple sounds")
-			{
-				SimpleSoundLevel = SliderSoundLevel / 100d;
-
-				_soundPlayer.Open(new Uri("Sounds/simple_start_sound.mp3", UriKind.Relative));
-				_soundPlayer.Volume = SimpleSoundLevel;
-				_soundPlayer.Play();
-			}
-			else if (SelectedSoundMode == "voice response")
-			{
-				VoiceSoundLevel = SliderSoundLevel / 100d;
-
-				_soundPlayer.Open(new Uri("Sounds/capture_started.mp3", UriKind.Relative));
-				_soundPlayer.Volume = VoiceSoundLevel;
-				_soundPlayer.Play();
-			}
+			_soundManager.PlaySound(Sound.CaptureStarted);
 		}
 
 		private void AddLoggerEntry(string entry)
@@ -382,12 +320,11 @@ namespace CapFrameX.ViewModel
 
 		private void SubscribeToUpdateProcessIgnoreList()
 		{
-			_eventAggregator.GetEvent<PubSubEvent<ViewMessages.UpdateProcessIgnoreList>>()
-							.Subscribe(msg =>
-							{
-								ProcessesToIgnore.Clear();
-								ProcessesToIgnore.AddRange(CaptureServiceConfiguration.GetProcessIgnoreList());
-							});
+			_processList.ProcessesUpdate.StartWith(default(int)).Subscribe(_ =>
+			{
+				ProcessesToIgnore.Clear();
+				ProcessesToIgnore.AddRange(_processList.GetIgnoredProcessNames());
+			});
 		}
 
 		private void SubscribeToGlobalCaptureHookEvent()
@@ -426,21 +363,15 @@ namespace CapFrameX.ViewModel
 		{
 			if (!ProcessesToCapture.Any())
 			{
-				_soundPlayer.Open(new Uri("Sounds/no_process.mp3", UriKind.Relative));
-				_soundPlayer.Volume = VoiceSoundLevel;
-				_soundPlayer.Play();
+				_soundManager.PlaySound(Sound.NoProcess);
 				return;
 			}
-
-			if (ProcessesToCapture.Count > 1 && string.IsNullOrWhiteSpace(SelectedProcessToCapture))
+			else if (ProcessesToCapture.Count > 1 && string.IsNullOrWhiteSpace(SelectedProcessToCapture))
 			{
-				_soundPlayer.Open(new Uri("Sounds/more_than_one_process.mp3", UriKind.Relative));
-				_soundPlayer.Volume = VoiceSoundLevel;
-				_soundPlayer.Play();
+				_soundManager.PlaySound(Sound.MoreThanOneProcess);
 				return;
 			}
-
-			if (!IsCapturing)
+			else if (!IsCapturing)
 			{
 				if (SelectedProcessToCapture != null)
 					_lastCapturedProcess = SelectedProcessToCapture;
@@ -453,27 +384,13 @@ namespace CapFrameX.ViewModel
 
 				_timestampStartCapture = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds();
 
-				// none -> do nothing
-				// simple sounds
-				if (SelectedSoundMode == _soundModes[1])
-				{
-					_soundPlayer.Open(new Uri("Sounds/simple_start_sound.mp3", UriKind.Relative));
-					_soundPlayer.Volume = SimpleSoundLevel;
-					_soundPlayer.Play();
-				}
-				// voice response
-				else if (SelectedSoundMode == _soundModes[2])
-				{
-					_soundPlayer.Open(new Uri("Sounds/capture_started.mp3", UriKind.Relative));
-					_soundPlayer.Volume = VoiceSoundLevel;
-					_soundPlayer.Play();
-				}
+				_soundManager.PlaySound(Sound.CaptureStarted);
 
 				StartCaptureDataFromStream();
 
 				IsCapturing = !IsCapturing;
 				_disposableHeartBeat?.Dispose();
-				IsAddToIgnoreListButtonActive = false;
+				AreButtonsActive = false;
 
 				if (CaptureTimeString == "0" && CaptureStartDelayString == "0")
 					CaptureStateInfo = "Capturing in progress..." + Environment.NewLine + $"Press {CaptureHotkeyString} to stop capture.";
@@ -495,22 +412,9 @@ namespace CapFrameX.ViewModel
 				_timestampStopCapture = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds();
 				_cancellationTokenSource?.Cancel();
 
-				// none -> do nothing
-				// simple sounds
-				if (SelectedSoundMode == _soundModes[1])
-				{
-					_soundPlayer.Open(new Uri("Sounds/simple_stop_sound.mp3", UriKind.Relative));
-					_soundPlayer.Volume = SimpleSoundLevel;
-					_soundPlayer.Play();
-				}
-				// voice response
-				else if (SelectedSoundMode == _soundModes[2])
-				{
-					_soundPlayer.Open(new Uri("Sounds/capture_finished.mp3", UriKind.Relative));
-					_soundPlayer.Volume = VoiceSoundLevel;
-					_soundPlayer.Play();
-				}
+				_soundManager.PlaySound(Sound.CaptureStopped);
 
+				_sensorService.StopSensorLogging();
 				var context = TaskScheduler.FromCurrentSynchronizationContext();
 
 				CaptureStateInfo = "Creating capture file...";
@@ -535,6 +439,7 @@ namespace CapFrameX.ViewModel
 		{
 			AddLoggerEntry("Capturing started.");
 			_overlayService.SetCaptureServiceStatus("Recording frametimes");
+			_sensorService.StartSensorLogging();
 
 			_captureData = new List<string>();
 			bool autoTermination = Convert.ToInt32(CaptureTimeString) > 0;
@@ -592,28 +497,16 @@ namespace CapFrameX.ViewModel
 					{
 						Application.Current.Dispatcher.Invoke(new Action(() =>
 						{
+							// stop sensor data logging
+							_sensorService.StopSensorLogging();
+
 							// turn locking on 
 							_dataOffsetRunning = true;
 							CaptureStateInfo = "Creating capture file...";
 
 							// update overlay
 							_overlayService.SetCaptureServiceStatus("Processing data");
-
-							// none -> do nothing
-							// simple sounds
-							if (SelectedSoundMode == _soundModes[1])
-							{
-								_soundPlayer.Open(new Uri("Sounds/simple_stop_sound.mp3", UriKind.Relative));
-								_soundPlayer.Volume = SimpleSoundLevel;
-								_soundPlayer.Play();
-							}
-							// voice response
-							else if (SelectedSoundMode == _soundModes[2])
-							{
-								_soundPlayer.Open(new Uri("Sounds/capture_finished.mp3", UriKind.Relative));
-								_soundPlayer.Volume = VoiceSoundLevel;
-								_soundPlayer.Play();
-							}
+							_soundManager.PlaySound(Sound.CaptureStopped);
 						}));
 					}, _cancellationTokenSource.Token, TaskContinuationOptions.ExecuteSynchronously, context);
 				});
@@ -625,16 +518,14 @@ namespace CapFrameX.ViewModel
 		private void FinishCapturingAndUpdateUi()
 		{
 			_disposableCaptureStream?.Dispose();
-
 			AddLoggerEntry("Capturing stopped.");
-			// asynchron
 			WriteCaptureDataToFile();
 
 			IsCapturing = !IsCapturing;
 			_disposableHeartBeat = GetListUpdatHeartBeat();
-			IsAddToIgnoreListButtonActive = true;
-			UpdateCaptureStateInfo();
-			_overlayService.SetCaptureServiceStatus("Capture service ready...");	
+			AreButtonsActive = true;
+
+			UpdateCaptureStateInfo();	
 		}
 
 		private async Task SetTaskDelayOffset()
@@ -699,7 +590,7 @@ namespace CapFrameX.ViewModel
 			return new PresentMonServiceConfiguration
 			{
 				RedirectOutputStream = true,
-				ExcludeProcesses = CaptureServiceConfiguration.GetProcessIgnoreList().ToList()
+				ExcludeProcesses = _processList.GetIgnoredProcessNames().ToList()
 			};
 		}
 
@@ -709,14 +600,21 @@ namespace CapFrameX.ViewModel
 				return;
 
 			StopCaptureService();
-			CaptureServiceConfiguration.AddProcessToIgnoreList(SelectedProcessToCapture);
-			ProcessesToIgnore.Clear();
-			ProcessesToIgnore.AddRange(CaptureServiceConfiguration.GetProcessIgnoreList());
+
+			var process = _processList.Processes.FirstOrDefault(p => p.Name == SelectedProcessToCapture);
+			if (process is null)
+			{
+				_processList.AddEntry(SelectedProcessToCapture, null, true);
+			}
+			else if (process is CXProcess)
+			{
+				process.Blacklist();
+			}
+			_processList.Save();
 
 			SelectedProcessToCapture = null;
 			StartCaptureService();
 		}
-
 
 		private void OnAddToProcessList()
 		{
@@ -724,9 +622,12 @@ namespace CapFrameX.ViewModel
 				return;
 
 			StopCaptureService();
-			CaptureServiceConfiguration.RemoveProcessFromIgnoreList(SelectedProcessToIgnore);
-			ProcessesToIgnore.Clear();
-			ProcessesToIgnore.AddRange(CaptureServiceConfiguration.GetProcessIgnoreList());
+			var process = _processList.Processes.FirstOrDefault(p => p.Name == SelectedProcessToIgnore);
+			if (process is CXProcess)
+			{
+				process.Whitelist();
+				_processList.Save();
+			}
 			StartCaptureService();
 		}
 
@@ -750,7 +651,7 @@ namespace CapFrameX.ViewModel
 			var selectedProcessToCapture = SelectedProcessToCapture;
 			var backupProcessList = new List<string>(ProcessesToCapture);
 			ProcessesToCapture.Clear();
-			var filter = CaptureServiceConfiguration.GetProcessIgnoreList();
+			var filter = _processList.GetIgnoredProcessNames().ToHashSet();
 			var processList = _captureService.GetAllFilteredProcesses(filter).Distinct();
 			ProcessesToCapture.AddRange(processList);
 
@@ -789,17 +690,17 @@ namespace CapFrameX.ViewModel
 			if (string.IsNullOrWhiteSpace(SelectedProcessToCapture))
 			{
 				if (!ProcessesToCapture.Any())
-				{ 
+				{
 					CaptureStateInfo = "Process list clear." + Environment.NewLine + $"Start any game / application and press  {CaptureHotkeyString} to start capture.";
 					_overlayService.SetCaptureServiceStatus("Scanning for process...");
 				}
 				else if (ProcessesToCapture.Count == 1)
-				{ 
+				{
 					CaptureStateInfo = "Process auto-detected." + Environment.NewLine + $"Press {CaptureHotkeyString} to start capture.";
 					_overlayService.SetCaptureServiceStatus("Ready to capture...");
 				}
 				else if (ProcessesToCapture.Count > 1)
-				{ 
+				{
 					//Multiple processes detected, select the one to capture or move unwanted processes to ignore list.
 					CaptureStateInfo = "Multiple processes detected." + Environment.NewLine + "Select one or move unwanted processes to ignore list.";
 					_overlayService.SetCaptureServiceStatus("Multiple processes detected");
@@ -808,6 +709,7 @@ namespace CapFrameX.ViewModel
 			}
 
 			CaptureStateInfo = $"{SelectedProcessToCapture} selected." + Environment.NewLine + $"Press {CaptureHotkeyString} to start capture.";
+			_overlayService.SetCaptureServiceStatus("Ready to capture...");
 		}
 
 		private void AddDataLineToArchive(string dataLine)
@@ -824,5 +726,43 @@ namespace CapFrameX.ViewModel
 		}
 
 		private void ResetArchive() => _captureDataArchive.Clear();
+
+		private void InitializeFrametimeModel()
+		{
+			FrametimeModel = new PlotModel
+			{
+				PlotMargins = new OxyThickness(40, 0, 0, 40),
+				PlotAreaBorderColor = OxyColor.FromArgb(64, 204, 204, 204),
+				LegendPosition = LegendPosition.TopCenter,
+				LegendOrientation = LegendOrientation.Horizontal
+			};
+
+			//Axes
+			//X
+			FrametimeModel.Axes.Add(new LinearAxis()
+			{
+				Key = "xAxis",
+				Position = AxisPosition.Bottom,
+				Title = "Samples",
+				MajorGridlineStyle = LineStyle.Solid,
+				MajorGridlineThickness = 1,
+				MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
+				MinorTickSize = 0,
+				MajorTickSize = 0
+			});
+
+			//Y
+			FrametimeModel.Axes.Add(new LinearAxis()
+			{
+				Key = "yAxis",
+				Position = AxisPosition.Left,
+				Title = "Frametime [ms]",
+				MajorGridlineStyle = LineStyle.Solid,
+				MajorGridlineThickness = 1,
+				MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
+				MinorTickSize = 0,
+				MajorTickSize = 0
+			});
+		}
 	}
 }

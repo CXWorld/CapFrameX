@@ -21,25 +21,6 @@ namespace CapFrameX.View
 		public StateView()
 		{
 			InitializeComponent();
-
-			if (DesignerProperties.GetIsInDesignMode(this))
-			{
-				var appConfiguration = new CapFrameXConfiguration();
-				var statisticProvider = new FrametimeStatisticProvider(appConfiguration);
-				var recordDirectoryObserver = new RecordDirectoryObserver(appConfiguration,
-					new LoggerFactory().CreateLogger<RecordDirectoryObserver>());
-				var recordDataProvider = new RecordDataProvider(recordDirectoryObserver, appConfiguration,
-					new LoggerFactory().CreateLogger<RecordDataProvider>());
-				var overlayEntryProvider = new OverlayEntryProvider();
-				var appVersionProvider = new AppVersionProvider();
-				var webVersionProvider = new WebVersionProvider();
-				DataContext = new StateViewModel(new RecordDirectoryObserver(appConfiguration,
-					new LoggerFactory().CreateLogger<RecordDirectoryObserver>()),
-					new EventAggregator(), appConfiguration, new PresentMonCaptureService(),
-					new OverlayService(statisticProvider, recordDataProvider, overlayEntryProvider, appConfiguration, 
-					new LoggerFactory().CreateLogger<OverlayService>()), 
-					new UpdateCheck(appVersionProvider, webVersionProvider), appVersionProvider, webVersionProvider);
-			}
 		}
 
 		private void Hyperlink_RequestNavigate(object sender, System.Windows.Navigation.RequestNavigateEventArgs e)

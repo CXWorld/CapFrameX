@@ -1,160 +1,246 @@
-﻿using CapFrameX.Contracts.Overlay;
+﻿using CapFrameX.Contracts.Configuration;
+using CapFrameX.Contracts.Overlay;
+using CapFrameX.Contracts.Sensor;
+using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Extensions;
+using CapFrameX.PresentMonInterface;
 using Newtonsoft.Json;
+using Prism.Events;
+using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reactive;
-using System.Reactive.Subjects;
+using System.Reactive.Linq;
+using System.Threading.Tasks;
 
 namespace CapFrameX.Overlay
 {
-	public class OverlayEntryProvider : IOverlayEntryProvider
-	{
-		private const string JSON_FILE_NAME
-			= @"OverlayConfiguration\OverlayEntryConfiguration.json";
+    public class OverlayEntryProvider : IOverlayEntryProvider
+    {
+        private readonly ISensorService _sensorService;
+        private readonly IAppConfiguration _appConfiguration;
+        private readonly IEventAggregator _eventAggregator;
+        private readonly ConcurrentDictionary<string, IOverlayEntry> _identifierOverlayEntryDict
+             = new ConcurrentDictionary<string, IOverlayEntry>();
+        private readonly TaskCompletionSource<bool> _taskCompletionSource
+            = new TaskCompletionSource<bool>();
+        private BlockingCollection<IOverlayEntry> _overlayEntries;
 
-		private readonly Dictionary<string, IOverlayEntry> _identifierOverlayEntryDict;
-		private List<IOverlayEntry> _overlayEntries;
+        public OverlayEntryProvider(ISensorService sensorService, IAppConfiguration appConfiguration, IEventAggregator eventAggregator)
+        {
+            _sensorService = sensorService;
+            _appConfiguration = appConfiguration;
+            _eventAggregator = eventAggregator;
 
-		public OverlayEntryProvider()
-		{
-			_identifierOverlayEntryDict = new Dictionary<string, IOverlayEntry>();
-			EntryUpdateStream = new Subject<Unit>();
+            _ = Task.Run(async () => await LoadOrSetDefault())
+                .ContinueWith(task => _taskCompletionSource.SetResult(true));
 
-			try
-			{
-				LoadOverlayEntriesFromJson();
-			}
-			catch
-			{
-				SetOverlayEntryDefaults();
-			}
-		}
+            SubscribeToOptionPopupClosed();
+        }
 
-		public ISubject<Unit> EntryUpdateStream { get; }
+        public async Task<IOverlayEntry[]> GetOverlayEntries()
+        {
+            await _taskCompletionSource.Task;
+            UpdateSensorData();
+            return _overlayEntries.ToArray();
+        }
 
-		public IOverlayEntry[] GetOverlayEntries()
-		{
-			return _overlayEntries.ToArray();
-		}
+        public IOverlayEntry GetOverlayEntry(string identifier)
+        {
+            _identifierOverlayEntryDict.TryGetValue(identifier, out IOverlayEntry entry);
+            return entry;
+        }
 
-		public IOverlayEntry GetOverlayEntry(string identifier)
-		{
-			return _identifierOverlayEntryDict[identifier];
-		}
+        public void MoveEntry(int sourceIndex, int targetIndex)
+        {
+            _overlayEntries.Move(sourceIndex, targetIndex);
+        }
 
-		public void MoveEntry(int sourceIndex, int targetIndex)
-		{
-			_overlayEntries.Move(sourceIndex, targetIndex);
-		}
+        public bool SaveOverlayEntriesToJson()
+        {
+            try
+            {
+                var persistence = new OverlayEntryPersistence()
+                {
+                    OverlayEntries = _overlayEntries.Select(entry => entry as OverlayEntryWrapper).ToList()
+                };
 
-		public bool SaveOverlayEntriesToJson()
-		{
-			try
-			{
-				var persistence = new OverlayEntryPersistence()
-				{
-					OverlayEntries = _overlayEntries.Select(entry => entry as OverlayEntryWrapper).ToList()
-				};
+                var json = JsonConvert.SerializeObject(persistence);
 
-				var json = JsonConvert.SerializeObject(persistence);
-				File.WriteAllText(JSON_FILE_NAME, json);
+                if (!Directory.Exists("OverlayConfiguration"))
+                    Directory.CreateDirectory("OverlayConfiguration");
 
-				return true;
-			}
-			catch { return false; }
-		}
+                File.WriteAllText(GetConfigurationFileName(), json);
 
-		private void LoadOverlayEntriesFromJson()
-		{
-			string json = File.ReadAllText(JSON_FILE_NAME);
-			_overlayEntries = new List<IOverlayEntry>(JsonConvert.
-				DeserializeObject<OverlayEntryPersistence>(json).OverlayEntries);
+                return true;
+            }
+            catch { return false; }
+        }
 
-			foreach (var entry in _overlayEntries)
-			{
-				entry.OverlayEntryProvider = this;
-				_identifierOverlayEntryDict.Add(entry.Identifier, entry);
-			}
-		}
+        public async Task SwitchConfigurationTo(int index)
+        {
+            SetConfigurationFileName(index);
+            await LoadOrSetDefault();
+        }
 
-		private void SetOverlayEntryDefaults()
-		{
-			_overlayEntries = new List<IOverlayEntry>
-				{
-					// CX 
-					// CaptureServiceStatus
-					new OverlayEntryWrapper("CaptureServiceStatus")
-					{
-						ShowOnOverlay = true,
-						ShowOnOverlayIsEnabled = true,
-						Description = "Capture service status",
-						GroupName = "Status:",
-						Value = "Capture service ready...",
-						ShowGraph = false,
-						ShowGraphIsEnabled = false,
-						Color = string.Empty
-					},
+        public async Task<IEnumerable<IOverlayEntry>> GetDefaultOverlayEntries()
+        {
+            _overlayEntries = await SetOverlayEntryDefaults();
+            _identifierOverlayEntryDict.Clear();
+            foreach (var entry in _overlayEntries)
+            {
+                entry.OverlayEntryProvider = this;
+                _identifierOverlayEntryDict.TryAdd(entry.Identifier, entry);
+            }
 
-					// CaptureTimer
-					new OverlayEntryWrapper("CaptureTimer")
-					{
-						ShowOnOverlay = false,
-						ShowOnOverlayIsEnabled = false,
-						Description = "Capture timer",
-						GroupName = "Status:",
-						Value = "0",
-						ShowGraph = false,
-						ShowGraphIsEnabled = false,
-						Color = string.Empty
-					},
+            return _overlayEntries.ToList();
+        }
 
-					// RunHistory
-					new OverlayEntryWrapper("RunHistory")
-					{
-						ShowOnOverlay = false,
-						ShowOnOverlayIsEnabled = false,
-						Description = "Run history",
-						GroupName = string.Empty,
-						Value = default(object),
-						ShowGraph = false,
-						ShowGraphIsEnabled = false,
-						Color = string.Empty
-					},
+        private async Task LoadOrSetDefault()
+        {
+            try
+            {
+                _overlayEntries = await InitializeOverlayEntryDictionary();
+            }
+            catch
+            {
+                _overlayEntries = await SetOverlayEntryDefaults();
+            }
+            _identifierOverlayEntryDict.Clear();
+            foreach (var entry in _overlayEntries)
+            {
+                entry.OverlayEntryProvider = this;
+                _identifierOverlayEntryDict.TryAdd(entry.Identifier, entry);
+            }
+            CheckCustomSystemInfo();
+            CheckOSVersion();
+        }
 
-					// RTSS
-					// Framerate
-					new OverlayEntryWrapper("Framerate")
-					{
-						ShowOnOverlay = true,
-						ShowOnOverlayIsEnabled = true,
-						Description = "Framerate",
-						GroupName = "<APP>",
-						Value = 0d,
-						ShowGraph = false,
-						ShowGraphIsEnabled = true,
-						Color = string.Empty
-					},
+        private IObservable<BlockingCollection<IOverlayEntry>> InitializeOverlayEntryDictionary()
+        {
+            string json = File.ReadAllText(GetConfigurationFileName());
+            var overlayEntriesFromJson = JsonConvert.DeserializeObject<OverlayEntryPersistence>(json)
+                .OverlayEntries.ToBlockingCollection<IOverlayEntry>();
 
-					// Frametime
-					new OverlayEntryWrapper("Frametime")
-					{
-						ShowOnOverlay = true,
-						ShowOnOverlayIsEnabled = true,
-						Description = "Frametime",
-						GroupName = "<APP>",
-						Value = 0d,
-						ShowGraph = false,
-						ShowGraphIsEnabled = true,
-						Color = string.Empty
-					}
-			};
+            return _sensorService.OnDictionaryUpdated
+                .Take(1)
+                .Select(sensorOverlayEntries =>
+                {
+                    var sensorOverlayEntryIdentfiers = sensorOverlayEntries
+                        .Select(entry => entry.Identifier)
+                        .ToList();
 
-			foreach (var entry in _overlayEntries)
-			{
-				_identifierOverlayEntryDict.Add(entry.Identifier, entry);
-			}
-		}
-	}
+                    var adjustedOverlayEntries = new List<IOverlayEntry>(overlayEntriesFromJson);
+                    var adjustedOverlayEntryIdentfiers = adjustedOverlayEntries
+                        .Select(entry => entry.Identifier)
+                        .ToList();
+
+                    foreach (var entry in overlayEntriesFromJson.Where(x => x.OverlayEntryType != EOverlayEntryType.CX))
+                    {
+                        if (!sensorOverlayEntryIdentfiers.Contains(entry.Identifier))
+                            adjustedOverlayEntries.Remove(entry);
+                    }
+
+                    foreach (var entry in sensorOverlayEntries)
+                    {
+                        if (!adjustedOverlayEntryIdentfiers.Contains(entry.Identifier))
+                        {
+                            adjustedOverlayEntries.Add(entry);
+                        }
+                    }
+                    return adjustedOverlayEntries.ToBlockingCollection();
+                });
+        }
+
+        private void CheckOSVersion()
+        {
+            _identifierOverlayEntryDict.TryGetValue("OS", out IOverlayEntry entry);
+
+            if (entry != null)
+            {
+                entry.Value = SystemInfo.GetOSVersion();
+            }
+        }
+
+        private void CheckCustomSystemInfo()
+        {
+            _identifierOverlayEntryDict.TryGetValue("CustomCPU", out IOverlayEntry customCPUEntry);
+
+            if (customCPUEntry != null)
+            {
+                customCPUEntry.Value =
+                    _appConfiguration.HardwareInfoSource == "Auto" ? SystemInfo.GetProcessorName()
+                    : _appConfiguration.CustomCpuDescription;
+            }
+
+            _identifierOverlayEntryDict.TryGetValue("CustomGPU", out IOverlayEntry customGPUEntry);
+
+            if (customGPUEntry != null)
+            {
+                customGPUEntry.Value =
+                    _appConfiguration.HardwareInfoSource == "Auto" ? SystemInfo.GetGraphicCardName()
+                    : _appConfiguration.CustomGpuDescription;
+            }
+
+            _identifierOverlayEntryDict.TryGetValue("Mainboard", out IOverlayEntry mainboardEntry);
+
+            if (mainboardEntry != null)
+            {
+                mainboardEntry.Value = SystemInfo.GetMotherboardName();
+            }
+
+            _identifierOverlayEntryDict.TryGetValue("CustomRAM", out IOverlayEntry customRAMEntry); ;
+
+            if (customRAMEntry != null)
+            {
+                customRAMEntry.Value =
+                    _appConfiguration.HardwareInfoSource == "Auto" ? SystemInfo.GetSystemRAMInfoName()
+                    : _appConfiguration.CustomRamDescription;
+            }
+        }
+
+        private IObservable<BlockingCollection<IOverlayEntry>> SetOverlayEntryDefaults()
+        {
+            var overlayEntries = OverlayUtils.GetOverlayEntryDefaults()
+                    .Select(item => item as IOverlayEntry).ToBlockingCollection();
+
+            // Sensor data
+            return _sensorService.OnDictionaryUpdated
+                .Take(1)
+                .Select(sensorOverlayEntries =>
+                {
+                    sensorOverlayEntries.ForEach(sensor => overlayEntries.TryAdd(sensor));
+                    return overlayEntries;
+                });
+        }
+
+        private void UpdateSensorData()
+        {
+            foreach (var entry in _overlayEntries.Where(x => !(x.OverlayEntryType == EOverlayEntryType.CX)))
+            {
+                var sensorEntry = _sensorService.GetSensorOverlayEntry(entry.Identifier);
+                entry.Value = sensorEntry.Value;
+            }
+        }
+
+        private string GetConfigurationFileName()
+        {
+            return $"OverlayConfiguration//OverlayEntryConfiguration_" +
+                $"{_appConfiguration.OverlayEntryConfigurationFile}.json";
+        }
+
+        private void SetConfigurationFileName(int index)
+        {
+            _appConfiguration.OverlayEntryConfigurationFile = index;
+        }
+        private void SubscribeToOptionPopupClosed()
+        {
+            _eventAggregator.GetEvent<PubSubEvent<ViewMessages.OptionPopupClosed>>()
+                            .Subscribe(_ =>
+                            {
+                                CheckCustomSystemInfo();
+                            });
+        }
+    }
 }

@@ -12,11 +12,13 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
+using System.Windows.Threading;
 
 namespace CapFrameX.ViewModel
 {
 	public class StateViewModel : BindableBase
-	{	
+	{
 		private readonly IRecordDirectoryObserver _recordObserver;
 		private readonly IEventAggregator _eventAggregator;
 		private readonly IAppConfiguration _appConfiguration;
@@ -26,7 +28,6 @@ namespace CapFrameX.ViewModel
 		private readonly IAppVersionProvider _appVersionProvider;
 		private bool _isCaptureModeActive;
 		private bool _isOverlayActive;
-		private bool _isDirectoryObserving;
 		private string _updateHyperlinkText;
 
 		private bool IsBeta => GetBetaState();
@@ -43,16 +44,7 @@ namespace CapFrameX.ViewModel
 			return true;
 		}
 
-		public bool IsDirectoryObserving
-		{
-			get { return _isDirectoryObserving; }
-			set
-			{
-				_isDirectoryObserving =
-					value && _recordObserver.HasValidSource;
-				RaisePropertyChanged();
-			}
-		}
+		public bool IsDirectoryObserving { get; private set; }
 
 		public bool IsOverlayActive
 		{
@@ -70,6 +62,15 @@ namespace CapFrameX.ViewModel
 			set
 			{
 				_isCaptureModeActive = value;
+				RaisePropertyChanged();
+			}
+		}
+		public bool IsLoggingActive
+		{
+			get { return _appConfiguration.UseSensorLogging; }
+			set
+			{
+				_appConfiguration.UseSensorLogging = value;
 				RaisePropertyChanged();
 			}
 		}
@@ -95,7 +96,7 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-		public bool IsUpdateAvailable => _updateCheck.IsUpdateAvailable();
+		public bool IsUpdateAvailable { get; private set; }
 
 		public StateViewModel(IRecordDirectoryObserver recordObserver,
 							  IEventAggregator eventAggregator,
@@ -117,16 +118,32 @@ namespace CapFrameX.ViewModel
 			IsCaptureModeActive = false;
 			IsOverlayActive = _appConfiguration.IsOverlayActive && !string.IsNullOrEmpty(RTSSUtils.GetRTSSFullPath());
 
-			UpdateHyperlinkText = $"New version available on GitHub: v{webVersionProvider.GetWebVersion()}";
-
-			_recordObserver.HasValidSourceStream
-				.Subscribe(state => IsDirectoryObserving = state);
+			_recordObserver.ObservingDirectoryStream
+				.Subscribe(directoryInfo =>
+				{
+					IsDirectoryObserving = directoryInfo?.Exists ?? false;
+				});
 
 			_captureService.IsCaptureModeActiveStream
 				.Subscribe(state => IsCaptureModeActive = state);
 
+			_captureService.IsLoggingActiveStream
+				.Subscribe(state => IsLoggingActive = state);
+
 			_overlayService.IsOverlayActiveStream
 				.Subscribe(state => IsOverlayActive = state);
+
+			Task.Run(async () =>
+			{
+				var (updateAvailable, updateVersion) = await _updateCheck.IsUpdateAvailable();
+				Dispatcher.CurrentDispatcher.Invoke(() =>
+				{
+					IsUpdateAvailable = updateAvailable;
+					UpdateHyperlinkText = $"New version available on GitHub: v{updateVersion}";
+					RaisePropertyChanged(nameof(IsUpdateAvailable));
+				});
+			});
+
 		}
 
 		private Assembly GetAssemblyByName(string name)

@@ -1,20 +1,10 @@
-﻿using CapFrameX.Configuration;
-using CapFrameX.Statistics;
-using CapFrameX.ViewModel;
+﻿using CapFrameX.ViewModel;
 using LiveCharts;
 using LiveCharts.Wpf;
-using Prism.Events;
 using System;
-using System.ComponentModel;
-using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.IO;
 using System.Reactive.Linq;
 using System.Threading;
-using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
 
 namespace CapFrameX.View
 {
@@ -26,14 +16,6 @@ namespace CapFrameX.View
 		public DataView()
 		{
 			InitializeComponent();
-
-			// Design time!
-			if (DesignerProperties.GetIsInDesignMode(this))
-			{
-				var appConfiguration = new CapFrameXConfiguration();
-				DataContext = new DataViewModel(new FrametimeStatisticProvider(appConfiguration),
-					new FrametimeAnalyzer(), new EventAggregator(), appConfiguration);
-			}
 
 			var context = SynchronizationContext.Current;
 			(DataContext as DataViewModel)?.ResetLShapeChart

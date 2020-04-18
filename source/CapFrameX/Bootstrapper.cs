@@ -25,6 +25,9 @@ using System.IO;
 using CapFrameX.Contracts.UpdateCheck;
 using CapFrameX.Updater;
 using Serilog.Formatting.Compact;
+using CapFrameX.EventAggregation.Messages;
+using CapFrameX.Contracts.Sensor;
+using CapFrameX.Sensor;
 
 namespace CapFrameX
 {
@@ -64,11 +67,23 @@ namespace CapFrameX
 			Container.Register<IFrametimeAnalyzer, FrametimeAnalyzer>(Reuse.Singleton);
 			Container.Register<ICaptureService, PresentMonCaptureService>(Reuse.Singleton);
 			Container.Register<IOverlayService, OverlayService>(Reuse.Singleton);
+			Container.Register<ISensorService, SensorService>(Reuse.Singleton);
 			Container.Register<IOverlayEntryProvider, OverlayEntryProvider>(Reuse.Singleton);
-			Container.Register<IRecordDataProvider, RecordDataProvider>(Reuse.Singleton);
+			Container.Register<IRecordManager, RecordManager>(Reuse.Singleton);
 			Container.Register<IAppVersionProvider, AppVersionProvider>(Reuse.Singleton);
 			Container.RegisterInstance<IWebVersionProvider>(new WebVersionProvider(), Reuse.Singleton);
 			Container.Register<IUpdateCheck, UpdateCheck>(Reuse.Singleton);
+			Container.Register<LoginManager>(Reuse.Singleton);
+			Container.Register<ICloudManager, CloudManager>(Reuse.Singleton);
+			Container.Register<LoginWindow>(Reuse.Transient);
+			Container.RegisterInstance(ProcessList.Create(
+				filename: Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), @"CapFrameX\Resources\Processes.json"),
+				appConfiguration: Container.Resolve<IAppConfiguration>()));
+			Container.Register<SoundManager>(Reuse.Singleton);
+			Container.Resolve<IEventAggregator>().GetEvent<PubSubEvent<AppMessages.OpenLoginWindow>>().Subscribe(_ => {
+				var window = Container.Resolve<LoginWindow>();
+				window.Show();
+			});
 		}
 
 		/// <summary>
@@ -108,17 +123,16 @@ namespace CapFrameX
 
 		private LoggerConfiguration CreateLoggerConfiguration(IAppConfiguration appConfiguration)
 		{
-			var path = appConfiguration.LoggingDirectory;
-			if (path.Contains(@"MyDocuments\CapFrameX\Logs"))
-			{
-				path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), @"CapFrameX\Logs");
-			}
+			var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), @"CapFrameX\Logs");
+
 			return new LoggerConfiguration()
 				.MinimumLevel.Debug()
 				.Enrich.FromLogContext()
 				.WriteTo.File(
 					path: Path.Combine(path, "CapFrameX.log"),
-					fileSizeLimitBytes: 10240,
+					fileSizeLimitBytes: 1024*10000, // approx 10MB
+					rollOnFileSizeLimit: true, // if filesize is reached, it created a new file
+					retainedFileCountLimit: 10, // it keeps max 10 files
 					formatter: new CompactJsonFormatter()
 				);
 		}

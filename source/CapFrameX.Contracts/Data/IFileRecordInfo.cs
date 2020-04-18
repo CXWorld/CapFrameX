@@ -1,8 +1,9 @@
-﻿using System.IO;
+﻿using System.ComponentModel;
+using System.IO;
 
 namespace CapFrameX.Contracts.Data
 {
-	public interface IFileRecordInfo
+	public interface IFileRecordInfo: INotifyPropertyChanged
 	{
 		string GameName { get; set; }
 		string ProcessName { get; }
@@ -23,10 +24,12 @@ namespace CapFrameX.Contracts.Data
 		string GPUCoreClock { get; }
 		string GPUMemoryClock { get; }
 		string GPUMemory { get; }
+		string GPUDriverVersion { get; }
 		string IsAggregated { get; }
 		string Comment { get; }
 		bool IsValid { get; }
 		bool HasInfoHeader { get; }
 		string Id { get; }
+		string Hash { get; }
 	}
 }

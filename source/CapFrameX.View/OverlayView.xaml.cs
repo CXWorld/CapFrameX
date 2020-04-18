@@ -63,20 +63,6 @@ namespace CapFrameX.View
 				ResetHistoryHotkey = CXHotkey.Create(keyStrings, Key.R, ModifierKeys.Control);
 			}
 			catch { ResetHistoryHotkey = new CXHotkey(Key.R, ModifierKeys.Control); }
-
-			if (DesignerProperties.GetIsInDesignMode(this))
-			{
-				var appConfiguration = new CapFrameXConfiguration();
-				var statisticProvider = new FrametimeStatisticProvider(appConfiguration);
-				var recordDirectoryObserver = new RecordDirectoryObserver(appConfiguration, 
-					new LoggerFactory().CreateLogger<RecordDirectoryObserver>());
-				var recordDataProvider = new RecordDataProvider(recordDirectoryObserver, appConfiguration,
-					new LoggerFactory().CreateLogger<RecordDataProvider>());
-				var overlayEntryProvider = new OverlayEntryProvider();
-				DataContext = new OverlayViewModel(new OverlayService(statisticProvider, recordDataProvider, 
-					overlayEntryProvider, appConfiguration, new LoggerFactory().CreateLogger<OverlayService>()),
-					overlayEntryProvider, appConfiguration, new EventAggregator());
-			}
 		}
 
 		private void OverlayHotkeyTextBox_PreviewKeyDown(object sender, KeyEventArgs e)
@@ -152,7 +138,6 @@ namespace CapFrameX.View
 		private void OverlayItemDataGrid_MouseLeave(object sender, MouseEventArgs e)
 		{
 			(DataContext as OverlayViewModel).SelectedOverlayEntryIndex = -1;
-			Keyboard.ClearFocus();
 		}
 
 		private void Hyperlink_RequestNavigate(object sender, System.Windows.Navigation.RequestNavigateEventArgs e)

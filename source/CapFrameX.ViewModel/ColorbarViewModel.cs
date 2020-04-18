@@ -1,7 +1,6 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using CapFrameX.Data;
 using CapFrameX.Extensions;
-using CapFrameX.EventAggregation.Messages;
 using CapFrameX.PresentMonInterface;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using Prism.Commands;
@@ -15,21 +14,25 @@ using System.IO;
 using System.Linq;
 using System.Windows.Input;
 using CapFrameX.Contracts.MVVM;
-using CapFrameX.Contracts.PresentMonInterface;
 using Microsoft.Extensions.Logging;
+using CapFrameX.Contracts.Data;
+using CapFrameX.EventAggregation.Messages;
 
 namespace CapFrameX.ViewModel
 {
 	public class ColorbarViewModel : BindableBase
 	{
 		private readonly IRegionManager _regionManager;
-		private readonly IRecordDirectoryObserver _recordDirectoryObserver;
 		private readonly IEventAggregator _eventAggregator;
 		private readonly IAppConfiguration _appConfiguration;
 		private readonly ILogger<ColorbarViewModel> _logger;
 		private readonly IShell _shell;
-
+		private readonly LoginManager _loginManager;
 		private PubSubEvent<AppMessages.UpdateObservedDirectory> _updateObservedFolder;
+		private PubSubEvent<AppMessages.OpenLoginWindow> _openLoginWindow;
+		private PubSubEvent<AppMessages.LoginState> _logout;
+		public PubSubEvent<ViewMessages.OptionPopupClosed> OptionPopupClosed;
+
 		private bool _captureIsChecked = true;
 		private bool _overlayIsChecked;
 		private bool _singleRecordIsChecked;
@@ -37,8 +40,8 @@ namespace CapFrameX.ViewModel
 		private bool _reportIsChecked;
 		private int _selectWindowSize;
 		private double _stutteringFactor;
-		private string _observedDirectory;
 		private bool _synchronizationIsChecked;
+		private bool _cloudIsChecked;
 		private int _fpsValuesRoundingDigits;
 		private bool _aggregatioIsChecked;
 		private string _screenshotDirectory;
@@ -46,6 +49,10 @@ namespace CapFrameX.ViewModel
 		private string _selectedView = "Options";
 		private bool _optionsViewSelected = true;
 		private bool _helpViewSelected;
+
+		public string CurrentPageName { get; set; }
+
+		public IFileRecordInfo RecordInfo { get; set; }
 
 		public bool CaptureIsChecked
 		{
@@ -83,6 +90,18 @@ namespace CapFrameX.ViewModel
 
 				if (value)
 					OnSingleRecordIsCheckedChanged();
+			}
+		}
+		public bool AggregationIsChecked
+		{
+			get { return _aggregatioIsChecked; }
+			set
+			{
+				_aggregatioIsChecked = value;
+				RaisePropertyChanged();
+
+				if (value)
+					OnAggregationIsCheckedChanged();
 			}
 		}
 
@@ -124,19 +143,19 @@ namespace CapFrameX.ViewModel
 					OnSynchronizationIsCheckedChanged();
 			}
 		}
-
-		public bool AggregationIsChecked
+		public bool CloudIsChecked
 		{
-			get { return _aggregatioIsChecked; }
+			get { return _cloudIsChecked; }
 			set
 			{
-				_aggregatioIsChecked = value;
+				_cloudIsChecked = value;
 				RaisePropertyChanged();
 
 				if (value)
-					OnAggregationIsCheckedChanged();
+					OnCloudIsCheckedChanged();
 			}
 		}
+
 
 		public int SelectWindowSize
 		{
@@ -167,16 +186,6 @@ namespace CapFrameX.ViewModel
 			{
 				_fpsValuesRoundingDigits = value;
 				_appConfiguration.FpsValuesRoundingDigits = value;
-				RaisePropertyChanged();
-			}
-		}
-
-		public string ObservedDirectory
-		{
-			get { return _observedDirectory; }
-			set
-			{
-				_observedDirectory = value;
 				RaisePropertyChanged();
 			}
 		}
@@ -252,6 +261,7 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
+
 		public bool OptionsViewSelected
 		{
 			get { return _optionsViewSelected; }
@@ -288,11 +298,7 @@ namespace CapFrameX.ViewModel
 
 		public IShell Shell => _shell;
 
-		public ICommand SelectObservedFolderCommand { get; }
-
 		public ICommand SelectScreenshotFolderCommand { get; }
-
-		public ICommand OpenObservedFolderCommand { get; }
 
 		public ICommand OpenScreenshotFolderCommand { get; }
 
@@ -300,37 +306,45 @@ namespace CapFrameX.ViewModel
 
 		public IList<int> RoundingDigits { get; }
 
+		public bool IsLoggedIn { get; private set; }
+
 		public ColorbarViewModel(IRegionManager regionManager,
-								 IRecordDirectoryObserver recordDirectoryObserver,
 								 IEventAggregator eventAggregator,
 								 IAppConfiguration appConfiguration,
 								 ILogger<ColorbarViewModel> logger,
-								 IShell shell)
+								 IShell shell,
+								 LoginManager loginManager)			
 		{
 			_regionManager = regionManager;
-			_recordDirectoryObserver = recordDirectoryObserver;
 			_eventAggregator = eventAggregator;
 			_appConfiguration = appConfiguration;
 			_logger = logger;
 			_shell = shell;
-
+			_loginManager = loginManager;
 			StutteringFactor = _appConfiguration.StutteringFactor;
 			SelectWindowSize = _appConfiguration.MovingAverageWindowSize;
 			FpsValuesRoundingDigits = _appConfiguration.FpsValuesRoundingDigits;
-			ObservedDirectory = _appConfiguration.ObservedDirectory;
 			ScreenshotDirectory = _appConfiguration.ScreenshotDirectory;
 			WindowSizes = new List<int>(Enumerable.Range(4, 100 - 4));
 			RoundingDigits = new List<int>(Enumerable.Range(0, 8));
-			SelectObservedFolderCommand = new DelegateCommand(OnSelectObeservedFolder);
 			SelectScreenshotFolderCommand = new DelegateCommand(OnSelectScreenshotFolder);
-			OpenObservedFolderCommand = new DelegateCommand(OnOpenObservedFolder);
 			OpenScreenshotFolderCommand = new DelegateCommand(OnOpenScreenshotFolder);
+			OptionPopupClosed = eventAggregator.GetEvent<PubSubEvent<ViewMessages.OptionPopupClosed>>();
 
 			HasCustomInfo = SelectedHardwareInfoSource == EHardwareInfoSource.Custom;
-
-			SetHardwareInfoDefaultsFromDatabase();
-
 			SetAggregatorEvents();
+			SetHardwareInfoDefaultsFromDatabase();
+			SubscribeToUpdateSession();
+		}
+
+		public void OpenLoginWindow()
+		{
+			_openLoginWindow.Publish(new AppMessages.OpenLoginWindow());
+		}
+
+		public async void Logout()
+		{
+			await _loginManager.Logout();
 		}
 
 		private void SetHardwareInfoDefaultsFromDatabase()
@@ -343,24 +357,6 @@ namespace CapFrameX.ViewModel
 
 			if (CustomRamDescription == "RAM")
 				CustomRamDescription = SystemInfo.GetSystemRAMInfoName();
-		}
-
-		private void OnSelectObeservedFolder()
-		{
-			var dialog = new CommonOpenFileDialog
-			{
-				IsFolderPicker = true
-			};
-
-			CommonFileDialogResult result = dialog.ShowDialog();
-
-			if (result == CommonFileDialogResult.Ok)
-			{
-				_appConfiguration.ObservedDirectory = dialog.FileName;
-				_recordDirectoryObserver.UpdateObservedDirectory(dialog.FileName);
-				ObservedDirectory = dialog.FileName;
-				_updateObservedFolder.Publish(new AppMessages.UpdateObservedDirectory(dialog.FileName));
-			}
 		}
 
 		private void OnSelectScreenshotFolder()
@@ -394,54 +390,51 @@ namespace CapFrameX.ViewModel
 			catch { }
 		}
 
-		private void OnOpenObservedFolder()
-		{
-			try
-			{
-				var path = _appConfiguration.ObservedDirectory;
-				if (path.Contains(@"MyDocuments\CapFrameX\Captures"))
-				{
-					var documentFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-					path = Path.Combine(documentFolder, @"CapFrameX\Captures");
-				}
-				Process.Start(path);
-			}
-			catch { }
-		}
-
 		private void OnCaptureIsCheckedChanged()
 		{
 			_regionManager.RequestNavigate("DataRegion", "CaptureView");
+			CurrentPageName = "Capture";
 		}
-
 		private void OnOverlayIsCheckedChanged()
 		{
 			_regionManager.RequestNavigate("DataRegion", "OverlayView");
+			CurrentPageName = "Overlay";
 		}
 
 		private void OnSingleRecordIsCheckedChanged()
 		{
 			_regionManager.RequestNavigate("DataRegion", "DataView");
+			CurrentPageName = "Analysis";
 		}
 
 		private void OnAggregationIsCheckedChanged()
 		{
 			_regionManager.RequestNavigate("DataRegion", "AggregationView");
+			CurrentPageName = "Aggregation";
 		}
 
 		private void OnRecordComparisonIsCheckedChanged()
 		{
 			_regionManager.RequestNavigate("DataRegion", "ComparisonView");
+			CurrentPageName = "Comparison";
 		}
 
 		private void OnReportIsCheckedChanged()
 		{
 			_regionManager.RequestNavigate("DataRegion", "ReportView");
+			CurrentPageName = "Report";
 		}
 
 		private void OnSynchronizationIsCheckedChanged()
 		{
 			_regionManager.RequestNavigate("DataRegion", "SynchronizationView");
+			CurrentPageName = "Synchronization";
+		}
+
+		private void OnCloudIsCheckedChanged()
+		{
+			_regionManager.RequestNavigate("DataRegion", "CloudView");
+			CurrentPageName = "Cloud";
 		}
 
 		private void OnHardwareInfoSourceChanged()
@@ -465,6 +458,20 @@ namespace CapFrameX.ViewModel
 		private void SetAggregatorEvents()
 		{
 			_updateObservedFolder = _eventAggregator.GetEvent<PubSubEvent<AppMessages.UpdateObservedDirectory>>();
+			_openLoginWindow = _eventAggregator.GetEvent<PubSubEvent<AppMessages.OpenLoginWindow>>();
+			_logout = _eventAggregator.GetEvent<PubSubEvent<AppMessages.LoginState>>();
+			_eventAggregator.GetEvent<PubSubEvent<AppMessages.LoginState>>().Subscribe(state => {
+				IsLoggedIn = state.IsLoggedIn;
+				RaisePropertyChanged(nameof(IsLoggedIn));
+			});
+		}
+		private void SubscribeToUpdateSession()
+		{
+			_eventAggregator.GetEvent<PubSubEvent<ViewMessages.UpdateSession>>()
+							.Subscribe(msg =>
+							{
+								RecordInfo = msg.RecordInfo;
+							});
 		}
 	}
 }

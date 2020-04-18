@@ -6,7 +6,13 @@
 
 		string Identifier { get; }
 
+		EOverlayEntryType OverlayEntryType { get; }
+
 		string Description { get; }
+
+		object Value { get; set; }
+
+		string ValueFormat { get; set; }
 
 		string FormattedValue { get; }
 
@@ -15,8 +21,6 @@
 		bool ShowOnOverlayIsEnabled { get; set; }
 
 		string GroupName { get; set; }
-
-		object Value { get; set; }
 
 		bool ShowGraph { get; set; }
 

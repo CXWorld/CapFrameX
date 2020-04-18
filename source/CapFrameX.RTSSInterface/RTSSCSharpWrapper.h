@@ -27,14 +27,49 @@ public:
 		delete _exceptionAction;
 	}
 
+	void ResetOSD()
+	{
+		try
+		{
+			{
+				msclr::lock l(m_lock);
+				_coreControl->UpdateOSD("");
+			}
+		}
+		catch (Exception ^ ex)
+		{
+			_exceptionAction->Invoke(ex);
+		}
+	}
+
 	void Refresh()
 	{
-		_coreControl->Refresh();
+		try
+		{
+			{
+				msclr::lock l(m_lock);
+				_coreControl->Refresh();
+			}
+		}
+		catch (Exception^ ex)
+		{
+			_exceptionAction->Invoke(ex);
+		}
 	}
 
 	void ReleaseOSD()
 	{
-		_coreControl->ReleaseOSD();
+		try
+		{
+			{
+				msclr::lock l(m_lock);
+				_coreControl->ReleaseOSD();
+			}
+		}
+		catch (Exception^ ex)
+		{
+			_exceptionAction->Invoke(ex);
+		}
 	}
 
 	void SetIsCaptureTimerActive(bool isActive)
@@ -46,7 +81,7 @@ public:
 				_coreControl->IsCaptureTimerActive = isActive;
 			}
 		}
-		catch (Exception ^ ex)
+		catch (Exception^ ex)
 		{
 			_exceptionAction->Invoke(ex);
 		}
@@ -77,7 +112,7 @@ public:
 				}
 			}
 		}
-		catch (Exception ^ ex)
+		catch (Exception^ ex)
 		{
 			_exceptionAction->Invoke(ex);
 		}
@@ -108,7 +143,7 @@ public:
 				}
 			}
 		}
-		catch (Exception ^ ex)
+		catch (Exception^ ex)
 		{
 			_exceptionAction->Invoke(ex);
 		}
@@ -123,7 +158,7 @@ public:
 				_coreControl->RunHistoryAggregation = aggregation;
 			}
 		}
-		catch (Exception ^ ex)
+		catch (Exception^ ex)
 		{
 			_exceptionAction->Invoke(ex);
 		}
@@ -155,6 +190,37 @@ public:
 					entry.Color = managedEntry->Color;
 
 					_coreControl->OverlayEntries.push_back(entry);
+				}
+			}
+		}
+		catch (Exception^ ex)
+		{
+			_exceptionAction->Invoke(ex);
+		}
+	}
+
+	void SetOverlayEntry(IOverlayEntry^ managedEntry)
+	{
+		if (managedEntry == nullptr || _coreControl->OverlayEntries.size() == 0)
+			return;
+
+		try
+		{
+			{
+				msclr::lock l(m_lock);
+				for (std::vector<int>::size_type i = 0; i < _coreControl->OverlayEntries.size(); i++)
+				{
+					if (_coreControl->OverlayEntries[i].Identifier == managedEntry->Identifier)
+					{
+						// mapping member
+						_coreControl->OverlayEntries[i].Description = managedEntry->Description;
+						_coreControl->OverlayEntries[i].ShowOnOverlay = managedEntry->ShowOnOverlay;
+						_coreControl->OverlayEntries[i].GroupName = managedEntry->GroupName;
+						_coreControl->OverlayEntries[i].Value = managedEntry->FormattedValue;
+						_coreControl->OverlayEntries[i].ShowGraph = managedEntry->ShowGraph;
+						_coreControl->OverlayEntries[i].Color = managedEntry->Color;
+						break;
+					}
 				}
 			}
 		}

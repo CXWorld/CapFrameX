@@ -30,12 +30,6 @@ namespace CapFrameX.Configuration
 			set { Settings.ScreenshotDirectory = value; Settings.Save(); }
 		}
 
-		public string LoggingDirectory
-		{
-			get { return Settings.LoggingDirectory; }
-			set { Settings.LoggingDirectory = value; Settings.Save(); }
-		}
-
 		public int FpsValuesRoundingDigits
 		{
 			get { return Settings.FpsValuesRoundingDigits; }
@@ -64,6 +58,12 @@ namespace CapFrameX.Configuration
 		{
 			get { return Settings.UseSingleRecordAverageStatisticParameter; }
 			set { Settings.UseSingleRecordAverageStatisticParameter = value; Settings.Save(); }
+		}
+
+		public bool UseSingleRecordMedianStatisticParameter
+		{
+			get { return Settings.UseSingleRecordMedianStatisticParameter; }
+			set { Settings.UseSingleRecordMedianStatisticParameter = value; Settings.Save(); }
 		}
 
 		public bool UseSingleRecordP5QuantileStatisticParameter
@@ -326,6 +326,60 @@ namespace CapFrameX.Configuration
 		{
 			get { return Settings.AreThresholdsReversed; }
 			set { Settings.AreThresholdsReversed = value; Settings.Save(); }
+		}
+
+		public string CloudDownloadDirectory
+		{
+			get { return Settings.CloudDownloadDirectory; }
+			set { Settings.CloudDownloadDirectory = value; Settings.Save(); }
+		}
+
+		public string CaptureRootDirectory
+		{
+			get { return Settings.CaptureRootDirectory; }
+			set { Settings.CaptureRootDirectory = value; Settings.Save(); }
+		}
+
+		public bool ShareProcessListEntries
+		{
+			get { return Settings.ShareProcessListEntries; }
+			set { Settings.ShareProcessListEntries = value; Settings.Save(); }
+		}
+
+		public bool AutoUpdateProcessList
+		{
+			get { return Settings.AutoUpdateProcessList; }
+			set { Settings.AutoUpdateProcessList = value; Settings.Save(); }
+		}
+
+		public bool UseSensorLogging
+		{
+			get { return Settings.UseSensorLogging; }
+			set { Settings.UseSensorLogging = value; Settings.Save(); }
+		}
+		
+		public bool AreThresholdsPercentage
+		{
+			get { return Settings.AreThresholdsPercentage; }
+			set { Settings.AreThresholdsPercentage = value; Settings.Save(); }
+		}
+
+		public int OverlayEntryConfigurationFile
+		{
+			get { return Settings.OverlayEntryConfigurationFile; }
+			set { Settings.OverlayEntryConfigurationFile = value; Settings.Save(); }
+		}
+		
+		public int SensorLoggingRefreshPeriod
+		{
+			get { return Settings.SensorLoggingRefreshPeriod; }
+			set { Settings.SensorLoggingRefreshPeriod = value; Settings.Save(); }
+		}
+		
+		public bool ShowThresholdTimes
+		{
+			get { return Settings.ShowThresholdTimes; }
+			set { Settings.ShowThresholdTimes = value; Settings.Save(); }
 		}
 	}
 }

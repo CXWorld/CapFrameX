@@ -39,75 +39,8 @@
 			<RowDefinition Height="65"></RowDefinition>
 		</Grid.RowDefinitions>
 		<TextBlock Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Bottom" FontWeight="Bold" FontSize="16" Text="{Binding CurrentGameName}"/>
-		<TabControl Grid.Row="1" Grid.Column="0">
-			<TabItem Header="Display changed times">
-				<Grid>
-					<Grid.RowDefinitions>
-						<RowDefinition Height="5*"></RowDefinition>
-						<RowDefinition Height="50"></RowDefinition>
-						<RowDefinition Height="3*" MaxHeight="300"></RowDefinition>
-					</Grid.RowDefinitions>
-					<DockPanel Grid.Row="0">
-						<oxy:PlotView x:Name="SynchronizationPlotView" Background="#F5F5F5" Model="{Binding SynchronizationModel}" Tag="{Binding ElementName=SynchronizationViewUserControl, Path=DataContext}"
-						  MouseDoubleClick="ResetSynchronizationChart_MouseDoubleClick">
-							<oxy:PlotView.ContextMenu>
-								<ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
-									<MenuItem Header="Copy display change time values (dc)" Command="{Binding CopyDisplayChangeTimeValuesCommand}"/>
-								</ContextMenu>
-							</oxy:PlotView.ContextMenu>
-						</oxy:PlotView>
-					</DockPanel>
-					<Grid Grid.Row="1" Margin="0 5 0 0" Background="#F5F5F5">
-						<StackPanel Margin="20 0 0 0" Orientation="Horizontal" HorizontalAlignment="Left">
-							<TextBlock VerticalAlignment="Center">Correlation frame- and display times:</TextBlock>
-							<TextBlock Width="40" Height="27" Margin="10 0 0 0" Padding="0 7 0 0" FontWeight="Bold" TextAlignment="Center"
-						   Background="#e6e6e6" Text="{Binding FrametimeDisplayChangedTimeCorrelation}"/>
-						</StackPanel>
-						<StackPanel Margin="0 0 20 0" Orientation="Horizontal" HorizontalAlignment="Right">
-							<TextBlock VerticalAlignment="Center">Frames within valid sync range:</TextBlock>
-							<TextBlock Width="40" Height="27" Margin="10 0 0 0" Padding="0 7 0 0" FontWeight="Bold" TextAlignment="Center"
-						   Background="#e6e6e6" Text="{Binding SyncRangePercentage}"/>
-							<TextBlock Margin="5 0 0 0" VerticalAlignment="Center">(Range:</TextBlock>
-							<TextBox Height="25" Margin="5 0 0 0" Background="#e6e6e6" TextAlignment="Center" Text="{Binding SyncRangeLower, UpdateSourceTrigger=PropertyChanged}" materialDesign:HintAssist.Hint="Upper" />
-							<TextBlock Margin="5 0 0 0" VerticalAlignment="Center">-</TextBlock>
-							<TextBox Height="25" Margin="5 0 0 0" Background="#e6e6e6" TextAlignment="Center" Text="{Binding SyncRangeUpper, UpdateSourceTrigger=PropertyChanged}" materialDesign:HintAssist.Hint="Lower" />
-							<TextBlock Margin="5 0 0 0" VerticalAlignment="Center">Hz)</TextBlock>
-						</StackPanel>
-					</Grid>
-					<Grid Grid.Row="2">
-						<Grid.ColumnDefinitions>
-							<ColumnDefinition Width="3*" />
-							<ColumnDefinition Width="2*" />
-						</Grid.ColumnDefinitions>
-						<!--Display times histogram chart-->
-						<Grid Background="#F5F5F5" Grid.Column="0" Margin="0 5 0 0">
-							<lvc:CartesianChart Margin="5" Series="{Binding DisplayTimesHistogramCollection}" LegendLocation="Bottom"
-								Tag="{Binding ElementName=SynchronizationViewUserControl, Path=DataContext}" DataTooltip="{x:Null}">
-								<lvc:CartesianChart.ContextMenu>
-									<ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
-										<MenuItem Header="Copy histogram data" Command="{Binding CopyDisplayTimesHistogramDataCommand}"/>
-									</ContextMenu>
-								</lvc:CartesianChart.ContextMenu>
-								<lvc:CartesianChart.AxisX>
-									<lvc:Axis Title="Display change time (ms)" BarUnit="1" Labels="{Binding DisplayTimesHistogramLabels}" LabelFormatter="{Binding HistogramFormatter}" Foreground="Black">
-										<lvc:Axis.Separator>
-											<lvc:Separator Step="1" IsEnabled="True"></lvc:Separator>
-										</lvc:Axis.Separator>
-									</lvc:Axis>
-								</lvc:CartesianChart.AxisX>
-								<lvc:CartesianChart.AxisY>
-									<lvc:Axis Title="Distribution" Foreground="Black"/>
-								</lvc:CartesianChart.AxisY>
-							</lvc:CartesianChart>
-						</Grid>
-						<DockPanel Background="#F5F5F5" Grid.Column="1" Margin="5 5 0 0" HorizontalAlignment="Stretch">
-							<lvc:PieChart Margin="0 0 0 5" Width="250" HorizontalAlignment="Center" Hoverable="False" Series="{Binding DroppedFramesStatisticCollection}" 
-								  LegendLocation="Bottom" DataClick="Chart_OnDataClick"/>
-						</DockPanel>
-					</Grid>
-				</Grid>
-			</TabItem>
-			<TabItem Header="Input lag approximation">
+        <TabControl Grid.Row="1" Grid.Column="0">
+            <TabItem Header="Input lag approximation">
 				<Grid>
 					<Grid.RowDefinitions>
 						<RowDefinition Height="5*"></RowDefinition>
@@ -143,7 +76,7 @@
 									</ContextMenu>
 								</lvc:CartesianChart.ContextMenu>
 								<lvc:CartesianChart.AxisX>
-									<lvc:Axis Title="Approximated input lag (ms)" BarUnit="1" Labels="{Binding InputLagHistogramLabels}" LabelFormatter="{Binding HistogramFormatter}" Foreground="Black">
+									<lvc:Axis Title="Expected input lag (ms)" BarUnit="1" Labels="{Binding InputLagHistogramLabels}" LabelFormatter="{Binding HistogramFormatter}" Foreground="Black">
 										<lvc:Axis.Separator>
 											<lvc:Separator Step="1" IsEnabled="True"></lvc:Separator>
 										</lvc:Axis.Separator>
@@ -178,7 +111,69 @@
 					</Grid>
 				</Grid>
 			</TabItem>
-		</TabControl>
+            <TabItem Header="Until displayed times">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="5*"></RowDefinition>
+                        <RowDefinition Height="50"></RowDefinition>
+                        <RowDefinition Height="3*" MaxHeight="300"></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <DockPanel Grid.Row="0">
+                        <oxy:PlotView x:Name="SynchronizationPlotView" Background="#F5F5F5" Model="{Binding SynchronizationModel}" Tag="{Binding ElementName=SynchronizationViewUserControl, Path=DataContext}"
+						  MouseDoubleClick="ResetSynchronizationChart_MouseDoubleClick">
+                            <oxy:PlotView.ContextMenu>
+                                <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
+                                    <MenuItem Header="Copy until displayed time values" Command="{Binding CopyUntilDisplayedTimesValuesCommand}"/>
+                                </ContextMenu>
+                            </oxy:PlotView.ContextMenu>
+                        </oxy:PlotView>
+                    </DockPanel>
+                    <Grid Grid.Row="1" Margin="0 5 0 0" Background="#F5F5F5">
+                        <StackPanel Margin="20 0 0 0" Orientation="Horizontal" HorizontalAlignment="Left">
+                            <TextBlock VerticalAlignment="Center">Frames within monitor sync range:</TextBlock>
+                            <TextBlock Width="40" Height="27" Margin="10 0 0 0" Padding="0 7 0 0" FontWeight="Bold" TextAlignment="Center"
+						   Background="#e6e6e6" Text="{Binding SyncRangePercentage}"/>
+                            <TextBlock Margin="5 0 0 0" VerticalAlignment="Center">(Range:</TextBlock>
+                            <TextBox Height="25" Margin="5 0 0 0" Background="#e6e6e6" TextAlignment="Center" Text="{Binding SyncRangeLower, UpdateSourceTrigger=PropertyChanged}" materialDesign:HintAssist.Hint="Upper" />
+                            <TextBlock Margin="5 0 0 0" VerticalAlignment="Center">-</TextBlock>
+                            <TextBox Height="25" Margin="5 0 0 0" Background="#e6e6e6" TextAlignment="Center" Text="{Binding SyncRangeUpper, UpdateSourceTrigger=PropertyChanged}" materialDesign:HintAssist.Hint="Lower" />
+                            <TextBlock Margin="5 0 0 0" VerticalAlignment="Center">Hz)</TextBlock>
+                        </StackPanel>
+                    </Grid>
+                    <Grid Grid.Row="2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="3*" />
+                            <ColumnDefinition Width="2*" />
+                        </Grid.ColumnDefinitions>
+                        <!--Display times histogram chart-->
+                        <Grid Background="#F5F5F5" Grid.Column="0" Margin="0 5 0 0">
+                            <lvc:CartesianChart Margin="5" Series="{Binding DisplayTimesHistogramCollection}" LegendLocation="Bottom"
+								Tag="{Binding ElementName=SynchronizationViewUserControl, Path=DataContext}" DataTooltip="{x:Null}">
+                                <lvc:CartesianChart.ContextMenu>
+                                    <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
+                                        <MenuItem Header="Copy histogram data" Command="{Binding CopyDisplayTimesHistogramDataCommand}"/>
+                                    </ContextMenu>
+                                </lvc:CartesianChart.ContextMenu>
+                                <lvc:CartesianChart.AxisX>
+                                    <lvc:Axis Title="Until displayed time (ms)" BarUnit="1" Labels="{Binding DisplayTimesHistogramLabels}" LabelFormatter="{Binding HistogramFormatter}" Foreground="Black">
+                                        <lvc:Axis.Separator>
+                                            <lvc:Separator Step="1" IsEnabled="True"></lvc:Separator>
+                                        </lvc:Axis.Separator>
+                                    </lvc:Axis>
+                                </lvc:CartesianChart.AxisX>
+                                <lvc:CartesianChart.AxisY>
+                                    <lvc:Axis Title="Distribution" Foreground="Black"/>
+                                </lvc:CartesianChart.AxisY>
+                            </lvc:CartesianChart>
+                        </Grid>
+                        <DockPanel Background="#F5F5F5" Grid.Column="1" Margin="5 5 0 0" HorizontalAlignment="Stretch">
+                            <lvc:PieChart Margin="0 0 0 5" Width="250" HorizontalAlignment="Center" Hoverable="False" Series="{Binding DroppedFramesStatisticCollection}" 
+								  LegendLocation="Bottom" DataClick="Chart_OnDataClick"/>
+                        </DockPanel>
+                    </Grid>
+                </Grid>
+            </TabItem>
+        </TabControl>
 		<Grid Grid.Row="2" Margin="0 5 0 5" Background="#e6e6e6"/>
 	</Grid>
 </UserControl>

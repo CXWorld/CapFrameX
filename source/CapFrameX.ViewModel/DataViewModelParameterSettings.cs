@@ -6,6 +6,7 @@
 		private bool _useP99QuantileStatisticParameter;
 		private bool _useP95QuantileStatisticParameter;
 		private bool _useAverageStatisticParameter;
+		private bool _useMedianStatisticParameter;
 		private bool _useP5QuantileStatisticParameter;
 		private bool _useP1QuantileStatisticParameter;
         private bool _useP0Dot2QuantileStatisticParameter;
@@ -21,6 +22,7 @@
 			UseP99QuantileStatisticParameter = _appConfiguration.UseSingleRecord99QuantileStatisticParameter;
 			UseP95QuantileStatisticParameter = _appConfiguration.UseSingleRecordP95QuantileStatisticParameter;
 			UseAverageStatisticParameter = _appConfiguration.UseSingleRecordAverageStatisticParameter;
+			UseMedianStatisticParameter = _appConfiguration.UseSingleRecordMedianStatisticParameter;
 			UseP5QuantileStatisticParameter = _appConfiguration.UseSingleRecordP5QuantileStatisticParameter;
 			UseP1QuantileStatisticParameter = _appConfiguration.UseSingleRecordP1QuantileStatisticParameter;
             UseP0Dot2QuantileStatisticParameter = _appConfiguration.UseSingleRecordP0Dot2QuantileStatisticParameter;
@@ -71,6 +73,17 @@
 			{
 				_useAverageStatisticParameter = value;
 				_appConfiguration.UseSingleRecordAverageStatisticParameter = value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public bool UseMedianStatisticParameter
+		{
+			get { return _useMedianStatisticParameter; }
+			set
+			{
+				_useMedianStatisticParameter = value;
+				_appConfiguration.UseSingleRecordMedianStatisticParameter = value;
 				RaisePropertyChanged();
 			}
 		}

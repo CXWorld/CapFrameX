@@ -1,8 +1,9 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.Overlay;
+using CapFrameX.Contracts.Sensor;
 using CapFrameX.Contracts.Statistics;
-using CapFrameX.Data;
+using CapFrameX.Data.Session.Contracts;
 using CapFrameX.Extensions;
 using CapFrameX.Statistics;
 using Microsoft.Extensions.Logging;
@@ -13,7 +14,6 @@ using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace CapFrameX.Overlay
@@ -21,24 +21,22 @@ namespace CapFrameX.Overlay
 	public class OverlayService : RTSSCSharpWrapper, IOverlayService
 	{
 		private readonly IStatisticProvider _statisticProvider;
-		private readonly IRecordDataProvider _recordDataProvider;
 		private readonly IOverlayEntryProvider _overlayEntryProvider;
+		private readonly ISensorService _sensorService;
 		private readonly IAppConfiguration _appConfiguration;
 		private static ILogger<OverlayService> _logger;
-
-		private IDisposable _disposableHeartBeat;
+		private readonly IRecordManager _recordManager;
 		private IDisposable _disposableCaptureTimer;
 		private IDisposable _disposableCountdown;
 
 		private IList<string> _runHistory = new List<string>();
-		private IList<IList<string>> _captureDataHistory = new List<IList<string>>();
+		private IList<ISessionRun> _captureDataHistory = new List<ISessionRun>();
 		private IList<IList<double>> _frametimeHistory = new List<IList<double>>();
 		private bool[] _runHistoryOutlierFlags;
-		private int _refreshPeriod;
 		private int _numberOfRuns;
 		private IList<IMetricAnalysis> _metricAnalysis = new List<IMetricAnalysis>();
 
-		public Subject<bool> IsOverlayActiveStream { get; }
+		public ISubject<bool> IsOverlayActiveStream { get; }
 
 		public string SecondMetric { get; set; }
 
@@ -46,56 +44,53 @@ namespace CapFrameX.Overlay
 
 		public int RunHistoryCount => _runHistory.Count(run => run != "N/A");
 
-		public OverlayService(IStatisticProvider statisticProvider, 
-							  IRecordDataProvider recordDataProvider,
-							  IOverlayEntryProvider overlayEntryProvider, 
-							  IAppConfiguration appConfiguration, 
-							  ILogger<OverlayService> logger)
+		public OverlayService(IStatisticProvider statisticProvider,
+							  ISensorService sensorService,
+							  IOverlayEntryProvider overlayEntryProvider,
+							  IAppConfiguration appConfiguration,
+							  ILogger<OverlayService> logger, IRecordManager recordManager)
 			: base(ExceptionAction)
 		{
 			_statisticProvider = statisticProvider;
-			_recordDataProvider = recordDataProvider;
+			_sensorService = sensorService;
 			_overlayEntryProvider = overlayEntryProvider;
 			_appConfiguration = appConfiguration;
 			_logger = logger;
-
-			_refreshPeriod = _appConfiguration.OSDRefreshPeriod;
+			_recordManager = recordManager;
 			_numberOfRuns = _appConfiguration.SelectedHistoryRuns;
 			SecondMetric = _appConfiguration.SecondMetricOverlay;
 			ThirdMetric = _appConfiguration.ThirdMetricOverlay;
-			IsOverlayActiveStream = new Subject<bool>();
+			IsOverlayActiveStream = new BehaviorSubject<bool>(_appConfiguration.IsOverlayActive);
 			_runHistoryOutlierFlags = Enumerable.Repeat(false, _numberOfRuns).ToArray();
 
 			_logger.LogDebug("{componentName} Ready", this.GetType().Name);
-			SetOverlayEntries(overlayEntryProvider?.GetOverlayEntries());
-			overlayEntryProvider.EntryUpdateStream.Subscribe(x =>
-			{
-				SetOverlayEntries(overlayEntryProvider?.GetOverlayEntries());
-			});
+
+			IsOverlayActiveStream.AsObservable()
+				.Select(isActive =>
+				{
+					if (isActive)
+					{
+						ResetOSD();
+						return sensorService.OnDictionaryUpdated
+							.SelectMany(_ => _overlayEntryProvider.GetOverlayEntries());
+					}
+					else
+					{
+						ReleaseOSD();
+						return Observable.Empty<IOverlayEntry[]>();
+					}
+				}).Switch()
+				.Subscribe(entries =>
+				{					
+					SetOverlayEntries(entries); 
+					CheckRTSSRunningAndRefresh();
+				});
 
 			_runHistory = Enumerable.Repeat("N/A", _numberOfRuns).ToList();
 			SetRunHistory(_runHistory.ToArray());
 			SetRunHistoryAggregation(string.Empty);
 			SetRunHistoryOutlierFlags(_runHistoryOutlierFlags);
 			SetIsCaptureTimerActive(false);
-		}
-
-		public void ShowOverlay()
-		{
-			_disposableHeartBeat = GetOverlayRefreshHeartBeat();
-		}
-
-		public void HideOverlay()
-		{
-			_disposableHeartBeat?.Dispose();
-			ReleaseOSD();
-		}
-
-		public void UpdateRefreshRate(int milliSeconds)
-		{
-			_refreshPeriod = milliSeconds;
-			_disposableHeartBeat?.Dispose();
-			_disposableHeartBeat = GetOverlayRefreshHeartBeat();
 		}
 
 		public void StartCountdown(int seconds)
@@ -130,26 +125,31 @@ namespace CapFrameX.Overlay
 		public void SetCaptureTimerValue(int t)
 		{
 			var captureTimer = _overlayEntryProvider.GetOverlayEntry("CaptureTimer");
-			captureTimer.Value = $"{t.ToString()} s";
-			SetOverlayEntries(_overlayEntryProvider?.GetOverlayEntries());
-			if (_appConfiguration.IsOverlayActive)
+			if (captureTimer != null)
 			{
-				CheckRTSSRunningAndRefresh();
-			};
+				captureTimer.Value = $"{t.ToString()} s";
+				SetOverlayEntry(captureTimer);
+			}
 		}
 
 		public void SetCaptureServiceStatus(string status)
 		{
 			var captureStatus = _overlayEntryProvider.GetOverlayEntry("CaptureServiceStatus");
-			captureStatus.Value = status;
-			SetOverlayEntries(_overlayEntryProvider?.GetOverlayEntries());
+			if (captureStatus != null)
+			{
+				captureStatus.Value = status;
+				SetOverlayEntry(captureStatus);
+			}
 		}
 
 		public void SetShowRunHistory(bool showHistory)
 		{
 			var history = _overlayEntryProvider.GetOverlayEntry("RunHistory");
-			history.ShowOnOverlay = showHistory;
-			SetOverlayEntries(_overlayEntryProvider?.GetOverlayEntries());
+			if (history != null)
+			{
+				history.ShowOnOverlay = showHistory;
+				SetOverlayEntry(history);
+			}
 		}
 
 		public void ResetHistory()
@@ -164,10 +164,9 @@ namespace CapFrameX.Overlay
 			SetRunHistoryOutlierFlags(_runHistoryOutlierFlags);
 		}
 
-		public void AddRunToHistory(List<string> captureData)
+		public void AddRunToHistory(ISessionRun sessionRun, string process)
 		{
-			var frametimes = captureData.Select(line =>
-				RecordDataProvider.GetFrameTimeFromDataLine(line)).ToList();
+			var frametimes = sessionRun.CaptureData.MsBetweenPresents;
 
 			if (RunHistoryCount == _numberOfRuns)
 			{
@@ -212,7 +211,7 @@ namespace CapFrameX.Overlay
 				SetRunHistory(_runHistory.ToArray());
 
 				// capture data history
-				_captureDataHistory.Add(captureData);
+				_captureDataHistory.Add(sessionRun);
 
 				// frametime history
 				_frametimeHistory.Add(frametimes);
@@ -235,20 +234,12 @@ namespace CapFrameX.Overlay
 						// write aggregated file
 						Task.Run(async () =>
 						{
-							await SetTaskDelayOffset().ContinueWith(_ =>
-							{
-								_recordDataProvider
-								.SaveAggregatedPresentData(_captureDataHistory);
-							}, CancellationToken.None, TaskContinuationOptions.RunContinuationsAsynchronously, TaskScheduler.Default);
+							await Task.Delay(1000);
+							await _recordManager.SaveSessionRunsToFile(_captureDataHistory, process);
 						});
 					}
 				}
 			}
-		}
-
-		public void UpdateOverlayEntries()
-		{
-			SetOverlayEntries(_overlayEntryProvider?.GetOverlayEntries());
 		}
 
 		public void UpdateNumberOfRuns(int numberOfRuns)
@@ -257,15 +248,9 @@ namespace CapFrameX.Overlay
 			ResetHistory();
 		}
 
-		private async Task SetTaskDelayOffset()
-		{
-			await Task.Delay(TimeSpan.FromMilliseconds(1000));
-		}
-
 		private void CheckRTSSRunningAndRefresh()
 		{
 			var processes = Process.GetProcessesByName("RTSS");
-
 			if (!processes.Any())
 			{
 				try
@@ -276,19 +261,9 @@ namespace CapFrameX.Overlay
 					proc.StartInfo.Verb = "runas";
 					proc.Start();
 				}
-				catch (Exception ex){ _logger.LogError(ex, "Error while starting RTSS process"); }
+				catch (Exception ex) { _logger.LogError(ex, "Error while starting RTSS process"); }
 			}
-
 			Refresh();
-		}
-
-		private IDisposable GetOverlayRefreshHeartBeat()
-		{
-			CheckRTSSRunningAndRefresh();
-
-			return Observable
-				.Timer(DateTimeOffset.UtcNow, TimeSpan.FromMilliseconds(_refreshPeriod))
-				.Subscribe(x => CheckRTSSRunningAndRefresh());
 		}
 
 		private IDisposable GetCaptureTimer()
@@ -311,7 +286,6 @@ namespace CapFrameX.Overlay
 				.GetMetricAnalysis(concatedFrametimes, SecondMetric, ThirdMetric)
 				.ResultString;
 		}
-
 
 		private static void ExceptionAction(Exception ex)
 		{

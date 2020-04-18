@@ -1,0 +1,211 @@
+﻿<UserControl x:Class="CapFrameX.View.CloudView"
+             x:Name="CloudViewControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+			 xmlns:prism="http://prismlibrary.com/"
+			 xmlns:dragdrop="urn:gong-wpf-dragdrop"
+			 xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+			 xmlns:validation ="clr-namespace:CapFrameX.MVVM.Validation;assembly=CapFrameX.MVVM"
+			 xmlns:mvvm="clr-namespace:CapFrameX.MVVM.Converter;assembly=CapFrameX.MVVM"
+			 xmlns:proxy="clr-namespace:CapFrameX.MVVM;assembly=CapFrameX.MVVM"
+             xmlns:wpf="clr-namespace:MaterialDesignThemes.Wpf;assembly=MaterialDesignThemes.Wpf"
+             xmlns:local="clr-namespace:CapFrameX.View"
+			 xmlns:oxy="clr-namespace:OxyPlot.Wpf;assembly=OxyPlot.Wpf"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800"
+             Background="{DynamicResource MaterialDesignPaper}"
+             FontFamily="{StaticResource MaterialDesignFont}"
+			 prism:ViewModelLocator.AutoWireViewModel="True">
+	<UserControl.Resources>
+		<ResourceDictionary>
+			<ResourceDictionary.MergedDictionaries>
+				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Button.xaml" />
+				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Shadows.xaml" />
+				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ToggleButton.xaml" />
+				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.DataGrid.xaml" />
+				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Slider.xaml" />
+			</ResourceDictionary.MergedDictionaries>
+			<mvvm:BoolToVisibilityConverter x:Key="TrueToVisibleConverter" FalseValue="Hidden" TrueValue="Visible"/>
+            <mvvm:BoolToVisibilityConverter x:Key="FalseToVisibleConverter" FalseValue="Visible" TrueValue="Hidden"/>
+			<mvvm:EnumDescriptionConverter x:Key="EnumDescriptionConverter"/>
+		</ResourceDictionary>
+	</UserControl.Resources>
+	<Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="50"/>
+			<RowDefinition Height="Auto"/>
+			<RowDefinition Height="50"/>
+			<RowDefinition Height="Auto"/>
+		</Grid.RowDefinitions>
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="1*"/>
+			<ColumnDefinition Width="545"/>
+			<ColumnDefinition Width="10"/>
+			<ColumnDefinition Width="395"/>
+			<ColumnDefinition Width="1*"/>
+		</Grid.ColumnDefinitions>
+        <!--Record upload-->
+		<TextBlock Grid.Row="0" Grid.Column="1" Margin="0 25 0 0" HorizontalAlignment="Center" Text="Record upload" FontSize="16"/>
+
+        <Grid Grid.Row="1" Grid.Column="1" >
+			<Grid.RowDefinitions>
+				<RowDefinition Height="Auto"/>
+				<RowDefinition Height="Auto"/>
+			</Grid.RowDefinitions>
+			<TextBlock Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center" Width="450" x:Name="DragAndDropInfoTextTextBlock"
+                   TextAlignment="Center" TextWrapping="Wrap" FontSize="17" Visibility="{Binding ShowHelpText, Converter={StaticResource TrueToVisibleConverter}}"  Grid.ZIndex="1"                     
+                   Text="Drop items here or double click them in the record list"
+				   dragdrop:DragDrop.IsDragSource="False"
+				   dragdrop:DragDrop.IsDropTarget="True"
+				   dragdrop:DragDrop.DropHandler="{Binding}"
+				   dragdrop:DragDrop.UseDefaultDragAdorner="True"
+				   dragdrop:DragDrop.DefaultDragAdornerOpacity="0.5"
+				   dragdrop:DragDrop.UseDefaultEffectDataTemplate="False"/>
+            <DataGrid Grid.Row="0" Grid.Column="1" x:Name="CloudItemDataGrid" Height="275" Width="545" Background="#F5F5F5" FontSize="11"
+						  MouseLeave="CloudItemDataGrid_MouseLeave" SelectionMode="Single"
+					      SelectedIndex="{Binding SelectedCloudEntryIndex}" ItemsSource="{Binding CloudEntries}"
+					      CanUserSortColumns="False" CanUserAddRows="False" AutoGenerateColumns="False" PreviewKeyDown="CloudItemDataGrid_PreviewKeyDown"
+					      materialDesign:DataGridAssist.CellPadding="13 8 8 8" materialDesign:DataGridAssist.ColumnHeaderPadding="8" IsSynchronizedWithCurrentItem="False"
+					      ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.CanContentScroll="True"
+					      dragdrop:DragDrop.IsDragSource="False"
+					      dragdrop:DragDrop.IsDropTarget="True"
+						  dragdrop:DragDrop.DropHandler="{Binding}"
+					      dragdrop:DragDrop.UseDefaultDragAdorner="True"
+					      dragdrop:DragDrop.DefaultDragAdornerOpacity="0.5"
+					      dragdrop:DragDrop.UseDefaultEffectDataTemplate="False">
+                <DataGrid.Resources>
+                    <proxy:BindingProxy x:Key="proxy" Data="{Binding}" />
+                </DataGrid.Resources>
+                <DataGrid.Columns>
+                    <DataGridTextColumn Binding="{Binding GameName, Mode=OneWay}"
+                                            Header="Game"
+											Width="Auto"
+                                            IsReadOnly="True"/>
+                    <DataGridTextColumn Binding="{Binding CreationDate, Mode=OneWay}"
+                                            Header="Date"
+											Width="Auto"
+                                            IsReadOnly="True"/>
+                    <DataGridTextColumn Binding="{Binding CreationTime, Mode=OneWay}"
+                                            Header="Time"
+											Width="Auto"
+                                            IsReadOnly="True"/>
+                    <DataGridTextColumn Binding="{Binding Comment, Mode=OneWay}"
+                                            Header="Comment"
+											Width="Auto"
+                                            IsReadOnly="True"/>
+                </DataGrid.Columns>
+            </DataGrid>
+            <Button Grid.Row="1" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="5"  Width="40" Height="40"
+                    Style="{StaticResource MaterialDesignFloatingActionMiniButton}"
+					Command="{Binding ClearTableCommand}" IsEnabled="{Binding EnableClearAndUploadButton}"
+                    ToolTip="Remove all entries">
+                <materialDesign:PackIcon Kind="PlaylistRemove" Height="24" Width="24" />
+            </Button>
+            <TextBox Grid.Row="1" Width="350" wpf:HintAssist.Hint="Download link / ID" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
+					 Margin="50 0 0 0" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"  Text="{Binding ShareUrl, Mode=OneWay}" PreviewMouseDoubleClick="ShareUrlFocusHandler" IsReadOnly="True" 
+                     Visibility="{Binding ShareUrlVisible, Converter={StaticResource TrueToVisibleConverter}}"/>
+            <TextBlock Grid.Row="1" FontSize="16" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Uploading..."  
+                       Visibility="{Binding ShowUploadInfo, Converter={StaticResource TrueToVisibleConverter}}"/>
+            <TextBox Name="UploadDescription"  Grid.Row="1" Margin="50 0 0 0" FontSize="16" Width="350" wpf:HintAssist.Hint="(Optional) Upload description" HorizontalAlignment="Center" VerticalAlignment="Center" 
+                     Text="{Binding UploadDescription, UpdateSourceTrigger=PropertyChanged}" Visibility="{Binding ShowUploadDescriptionTextBox, Converter={StaticResource TrueToVisibleConverter}}"/>
+            <Button Grid.Row="1" Grid.Column="2" Margin="5" VerticalAlignment="Top" HorizontalAlignment="Left" Width="100" Height="45"
+					Command="{Binding UploadRecordsCommand}" IsEnabled="{Binding EnableClearAndUploadButton}" Visibility="{Binding ShareUrlVisible, Converter={StaticResource FalseToVisibleConverter}}"
+                    ToolTipService.ShowDuration="25000">
+				<TextBlock Text="Upload records" TextWrapping="Wrap"  TextAlignment="Center"/>
+				<Button.ToolTip>
+					<ToolTip MaxWidth="200">
+						<TextBlock
+                             Text="Upload your records to our server and recieve an ID to share them" 
+                             TextWrapping="Wrap"/>
+					</ToolTip>
+				</Button.ToolTip>
+			</Button>
+            <Button Grid.Row="1" Grid.Column="2" Margin="5" VerticalAlignment="Top" HorizontalAlignment="Left" Width="100" Height="45"
+					Command="{Binding CopyURLCommand}" Visibility="{Binding ShareUrlVisible, Converter={StaticResource TrueToVisibleConverter}}">
+                <TextBlock Text="Copy to clipboard" TextWrapping="Wrap"  TextAlignment="Center"/>
+            </Button>
+        </Grid>
+        <!--Record download-->
+        <TextBlock Grid.Row="2" Grid.Column="1" Margin="0 25 0 0" HorizontalAlignment="Center" Text="Record download" FontSize="16"/>
+        <Grid Grid.Row="3" Grid.Column="1">
+			<Grid.RowDefinitions>
+				<RowDefinition Height="1*"/>
+				<RowDefinition Height="1*"/>
+			</Grid.RowDefinitions>
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="1*"/>
+				<ColumnDefinition Width="1*"/>
+				<ColumnDefinition Width="120"/>
+			</Grid.ColumnDefinitions>
+			<TextBox Name="IDBox" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Width="400" HorizontalAlignment="Left" wpf:HintAssist.Hint="Download link / ID" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
+					 Margin="5 0 0 10" FontSize="14" Text="{Binding DownloadIDString, UpdateSourceTrigger=PropertyChanged}">
+			</TextBox>
+            <TextBox Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Width="400" wpf:HintAssist.Hint="Download Folder" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
+					 Margin="5 0 0 0" IsReadOnly="True" FontSize="14" HorizontalAlignment="Left" Text="{Binding CloudDownloadDirectory, Mode=OneWay}" PreviewMouseDown="DownloadFolder_PreviewMouseDown">
+            </TextBox>
+            <Button Grid.Row="0" Grid.RowSpan="2" Grid.Column="2" Margin="5 0 5 5" VerticalAlignment="Center" HorizontalAlignment="Right" Width="100" Height="45"
+					Command="{Binding DownloadRecordsCommand}" IsEnabled="{Binding EnableDownloadButton}"
+                    ToolTipService.ShowDuration="25000">
+                <TextBlock Text="Download records" TextWrapping="Wrap"  TextAlignment="Center"/>
+                <Button.ToolTip>
+                    <ToolTip MaxWidth="200">
+                        <TextBlock
+                             Text="Download the records bound to the download ID to your specified download folder" 
+                             TextWrapping="Wrap"/>
+                    </ToolTip>
+                </Button.ToolTip>
+            </Button>
+            <TextBlock Grid.Row="1" Grid.Column="2" Padding="15 30 0 0" FontSize="16" FontWeight="Bold" Text="Downloading..."  Visibility="{Binding ShowDownloadInfo, Converter={StaticResource TrueToVisibleConverter}}"/>
+		</Grid>
+		<TextBlock Grid.Row="0" Grid.Column="3" Margin="0 25 0 0" HorizontalAlignment="Center" Text="Process list options" FontSize="16"/>
+		<!--Grid lists upload/download-->
+		<Grid Grid.Row="1" Grid.Column="3">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+				<RowDefinition Height="Auto"/>
+			</Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="1*"/>
+            </Grid.ColumnDefinitions>
+            <Expander Grid.Row="0" Grid.ColumnSpan="2" ExpandDirection="Down" HorizontalAlignment="Center" >
+                <Expander.Header>
+                    <TextBlock Margin="50 0 0 0" HorizontalAlignment="Center" FontWeight="Bold" Text="What is the process list?" RenderTransformOrigin=".5,.5">
+                    </TextBlock>
+                </Expander.Header>
+                <TextBlock  Margin="0 10 0 20" Width="375" TextWrapping="Wrap" TextAlignment="Center"
+                       Text="The process list contains all processes known by CapFrameX.&#10;
+                            &#10;It holds information about the displayed process name and whether or not the process is ingored by the capture service.&#10;
+                            &#10;On first startup your own process list is created and updated from a default list we deliver with every new version of CapFrameX that already contains many game processes with their correct names and other processes that are to be ignored.&#10;
+							&#10;The options below help us to get additional entries for our default list and can also directly provide you with our latest additions." />
+            </Expander>
+            <CheckBox Grid.Row="1" Grid.Column="0"  Width="125" IsChecked="{Binding ShareProcessListEntries}" ToolTipService.ShowDuration="25000">
+                <CheckBox.ToolTip>
+                    <ToolTip StaysOpen="True" MaxWidth="275">
+                        <TextBlock 
+                             Text="Any new game name or ignored process you add will be sent to us so that we can add it to our own list" 
+                                  TextWrapping="Wrap"/>
+                    </ToolTip>
+                </CheckBox.ToolTip>
+                <TextBlock Padding="5 0 0 0" TextWrapping="WrapWithOverflow">
+  					     Share new entries
+                </TextBlock>
+            </CheckBox>
+            <CheckBox Grid.Row="1" Grid.Column="1"  Width="125" IsChecked="{Binding AutoUpdateProcessList}" ToolTipService.ShowDuration="25000">
+                <CheckBox.ToolTip>
+                    <ToolTip StaysOpen="True" MaxWidth="275">
+                        <TextBlock TextWrapping="Wrap"
+                             Text="On startup, your own process list will be compared to our online list and anything that's not on your list will be added.
+									&#10;
+									&#10;This will not affect the ignored/unignored status or the custom game name of any process that's already on your list"/>
+                    </ToolTip>
+                </CheckBox.ToolTip>
+                <TextBlock Padding="5 0 0 0" TextWrapping="WrapWithOverflow">
+  					     Auto update list
+                </TextBlock>
+            </CheckBox>
+        </Grid>
+	</Grid>
+</UserControl>

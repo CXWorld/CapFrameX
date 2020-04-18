@@ -11,15 +11,21 @@ using System.Collections.ObjectModel;
 using System.Windows.Input;
 using Prism.Commands;
 using CapFrameX.Contracts.Configuration;
-using System.Threading.Tasks;
-using System.Windows;
 using CapFrameX.PresentMonInterface;
 using CapFrameX.Contracts.Data;
 using System.Collections.Generic;
 using System.Collections;
+using System.Diagnostics;
 using System.Reactive.Subjects;
 using CapFrameX.Contracts.PresentMonInterface;
 using Microsoft.VisualBasic.FileIO;
+using Microsoft.WindowsAPICodePack.Dialogs;
+using CapFrameX.Extensions;
+using CapFrameX.Data.Session.Contracts;
+using System.Reactive;
+using CapFrameX.MVVM.Dialogs;
+using Microsoft.Extensions.Logging;
+using System.ComponentModel;
 
 namespace CapFrameX.ViewModel
 {
@@ -28,16 +34,14 @@ namespace CapFrameX.ViewModel
 		private readonly IRecordDirectoryObserver _recordObserver;
 		private readonly IEventAggregator _eventAggregator;
 		private readonly IAppConfiguration _appConfiguration;
-		private readonly IRecordDataProvider _recordDataProvider;
-		private readonly ISubject<FileInfo> _recordDeleteSubStream;
-
+		private readonly IRecordManager _recordManager;
+		private readonly ProcessList _processList;
+		private readonly ILogger<ControlViewModel> _logger;
 		private PubSubEvent<ViewMessages.UpdateSession> _updateSessionEvent;
 		private PubSubEvent<ViewMessages.SelectSession> _selectSessionEvent;
-		private PubSubEvent<ViewMessages.UpdateProcessIgnoreList> _updateProcessIgnoreListEvent;
 		private PubSubEvent<ViewMessages.UpdateRecordInfos> _updateRecordInfosEvent;
-
+		private PubSubEvent<AppMessages.CloudFolderChanged> _cloudFolderChanged;
 		private IFileRecordInfo _selectedRecordInfo;
-		private bool _hasValidSource;
 		private string _customCpuDescription;
 		private string _customGpuDescription;
 		private string _customRamDescription;
@@ -45,7 +49,10 @@ namespace CapFrameX.ViewModel
 		private string _customComment;
 		private int _recordDataGridSelectedIndex;
 		private List<IFileRecordInfo> _selectedRecordings;
-		private bool _recordDeleteStreamActive = true;
+		public bool _directoryLoading;
+		private CreateFolderDialog _createFolderDialogContent;
+		private bool _createFolderDialogIsOpen;
+		private string _treeViewSubFolderName = string.Empty;
 
 		public IFileRecordInfo SelectedRecordInfo
 		{
@@ -53,16 +60,12 @@ namespace CapFrameX.ViewModel
 			set
 			{
 				_selectedRecordInfo = value;
-				RaisePropertyChanged();
 				OnSelectedRecordInfoChanged();
+				RaisePropertyChanged();
 			}
 		}
 
-		public bool HasValidSource
-		{
-			get { return _hasValidSource; }
-			set { _hasValidSource = value; RaisePropertyChanged(); }
-		}
+		public bool HasValidSource { set; get; }
 
 		public string CustomCpuDescription
 		{
@@ -124,14 +127,67 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
+		public bool DirectoryLoading
+		{
+			get { return _directoryLoading; }
+			set
+			{
+				_directoryLoading = value;
+				RaisePropertyChanged();
+				RaisePropertyChanged(nameof (DirectoryIsEmpty));
+			}
+		}
+
+		public string RootDirectory 
+		{
+			get { return _appConfiguration.CaptureRootDirectory; }
+			set
+			{
+				_appConfiguration.CaptureRootDirectory = value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public CreateFolderDialog CreateFolderDialogContent
+		{
+			get { return _createFolderDialogContent; }
+			set
+			{
+				_createFolderDialogContent = value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public bool CreateFolderDialogIsOpen
+		{
+			get { return _createFolderDialogIsOpen; }
+			set
+			{
+				_createFolderDialogIsOpen = value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public string TreeViewSubFolderName
+		{
+			get { return _treeViewSubFolderName; }
+			set
+			{
+				_treeViewSubFolderName = value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public string ObservedDirectory { get; private set; }
+
+		public bool DirectoryIsEmpty => !DirectoryLoading && !RecordInfoList.Any();
+
 		public ObservableCollection<IFileRecordInfo> RecordInfoList { get; }
 			= new ObservableCollection<IFileRecordInfo>();
 
 		public IAppConfiguration AppConfiguration => _appConfiguration;
 
-		public ICommand OpenEditingDialogCommand { get; }
-
-		public ICommand AddToIgnoreListCommand { get; }
+		public IRecordDirectoryObserver RecordObserver => _recordObserver;
 
 		public ICommand DeleteRecordFileCommand { get; }
 
@@ -147,68 +203,225 @@ namespace CapFrameX.ViewModel
 
 		public ICommand DeleteRecordCommand { get; }
 
+		public ICommand OpenObservedFolderCommand { get; }
+
+		public ICommand DeleteFolderCommand { get; }
+
+		public ICommand OpenCreateSubFolderDialogCommand { get; }
+
 		public ICommand SelectedRecordingsCommand { get; }
+
+		public ICommand CreateFolderCommand { get; }
+
+		public ICommand CloseCreateFolderDialogCommand { get; }
+
+		public ICommand ReloadRootFolderCommand { get; }
+
+		public ISubject<string> TreeViewItemCreatedStream = new Subject<string>();
+
+		public ISubject<string> TreeViewItemDeletedStream = new Subject<string>();
+
+		public ISubject<Unit> TreeViewUpdateStream = new Subject<Unit>();
+
+		public ISubject<bool> CreateFolderdialogIsOpenStream = new BehaviorSubject<bool>(false);
 
 		public ControlViewModel(IRecordDirectoryObserver recordObserver,
 								IEventAggregator eventAggregator,
-								IAppConfiguration appConfiguration,
-								IRecordDataProvider recordDataProvider)
+								IAppConfiguration appConfiguration, RecordManager recordManager, ProcessList processList, ILogger<ControlViewModel> logger)
 		{
 			_recordObserver = recordObserver;
 			_eventAggregator = eventAggregator;
 			_appConfiguration = appConfiguration;
-			_recordDataProvider = recordDataProvider;
+			_recordManager = recordManager;
+			_processList = processList;
+			_logger = logger;
 
 			//Commands
-			AddToIgnoreListCommand = new DelegateCommand(OnAddToIgnoreList);
 			DeleteRecordFileCommand = new DelegateCommand(OnDeleteRecordFile);
 			AcceptEditingDialogCommand = new DelegateCommand(OnAcceptEditingDialog);
 			CancelEditingDialogCommand = new DelegateCommand(OnCancelEditingDialog);
 			AddCpuInfoCommand = new DelegateCommand(OnAddCpuInfo);
 			AddGpuInfoCommand = new DelegateCommand(OnAddGpuInfo);
 			AddRamInfoCommand = new DelegateCommand(OnAddRamInfo);
-			DeleteRecordCommand = new DelegateCommand(OnPressDeleteKey);
-			SelectedRecordingsCommand = new DelegateCommand<object>(OnSelectedRecordings);
-
-			HasValidSource = recordObserver.HasValidSource;
-
-			Task.Factory.StartNew(() =>
-			{
-				if (recordObserver.HasValidSource)
-				{
-					var initialRecordFileInfoList = _recordDataProvider?.GetFileRecordInfoList();
-
-					foreach (var recordFileInfo in initialRecordFileInfoList)
-					{
-						AddToRecordInfoList(recordFileInfo);
-					}
-				}
+			DeleteRecordCommand = new DelegateCommand(OnPressDeleteKey);			
+			OpenObservedFolderCommand = new DelegateCommand(OnOpenObservedFolder);
+			DeleteFolderCommand = new DelegateCommand(OnDeleteFolder);
+			OpenCreateSubFolderDialogCommand = new DelegateCommand(() => 
+			{ 
+				CreateFolderDialogIsOpen = true; 
+				TreeViewSubFolderName = string.Empty;
+				CreateFolderdialogIsOpenStream.OnNext(true);
 			});
+			SelectedRecordingsCommand = new DelegateCommand<object>(OnSelectedRecordings);
+			CreateFolderCommand = new DelegateCommand(OnCreateSubFolder);
+			CloseCreateFolderDialogCommand = new DelegateCommand(() =>
+			{
+				CreateFolderDialogIsOpen = false;
+				CreateFolderdialogIsOpenStream.OnNext(false);
+			}
+			);
+			ReloadRootFolderCommand = new DelegateCommand(() => TreeViewUpdateStream.OnNext(default));
 
 			RecordDataGridSelectedIndex = -1;
 
-			_recordDeleteSubStream = new Subject<FileInfo>();
-
-			var context = SynchronizationContext.Current;
-			_recordObserver.RecordCreatedStream
-						   .ObserveOn(context)
-						   .SubscribeOn(context)
-						   .Subscribe(OnRecordCreated);
-			_recordObserver.RecordDeletedStream
-						   .Merge(_recordDeleteSubStream)
-						   .Where(x => _recordDeleteStreamActive)
-						   .ObserveOn(context)
-						   .SubscribeOn(context)
-						   .Subscribe(x => OnRecordDeleted());
-
-			// Turn streams now on
-			if (_recordObserver.HasValidSource)
-				_recordObserver.IsActive = true;
+			CreateFolderDialogContent = new CreateFolderDialog();
 
 			SetAggregatorEvents();
+			SubscribeToCloudFolderChanged();
 			SubscribeToResetRecord();
-			SubscribeToObservedDiretoryUpdated();
 			SubscribeToSetFileRecordInfoExternal();
+
+			RecordInfoList.CollectionChanged += (sender, args) =>
+			{
+				RaisePropertyChanged(nameof(DirectoryIsEmpty));
+			};
+			SetupObservers(SynchronizationContext.Current);
+		}
+
+		private void OnCreateSubFolder()
+		{
+			if (!_appConfiguration.ObservedDirectory.Any())
+				return;
+
+			try
+			{
+				var path = Path.Combine(_appConfiguration.ObservedDirectory, TreeViewSubFolderName);
+				FileSystem.CreateDirectory(path);
+				_appConfiguration.ObservedDirectory = path;
+				TreeViewUpdateStream.OnNext(default);
+				CreateFolderdialogIsOpenStream.OnNext(false);
+				CreateFolderDialogIsOpen = false;
+			}
+			catch { }
+		}
+
+		private void OnDeleteFolder()
+		{
+			if (!_appConfiguration.ObservedDirectory.Any())
+				return;
+
+			try
+			{
+				var parentFolder = Directory.GetParent(_appConfiguration.ObservedDirectory);
+				FileSystem.DeleteDirectory(_appConfiguration.ObservedDirectory, UIOption.OnlyErrorDialogs, RecycleOption.SendToRecycleBin);
+				
+				_updateSessionEvent.Publish(new ViewMessages.UpdateSession(null, null));
+				_appConfiguration.ObservedDirectory = parentFolder.FullName;
+				TreeViewUpdateStream.OnNext(default);
+			}
+			catch { }
+		}
+
+		public bool OnSelectRootFolder()
+		{
+			var dialog = new CommonOpenFileDialog
+			{
+				IsFolderPicker = true
+			};
+
+			CommonFileDialogResult result = dialog.ShowDialog();
+
+			if (result == CommonFileDialogResult.Ok)
+			{
+				RootDirectory = dialog.FileName;
+				return true;
+			}
+			return false;
+		}
+		private void OnOpenObservedFolder()
+		{
+			try
+			{
+				var path = _appConfiguration.ObservedDirectory;
+				if (path.Contains(@"MyDocuments\CapFrameX\Captures"))
+				{
+					var documentFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+					path = Path.Combine(documentFolder, @"CapFrameX\Captures");
+				}
+				Process.Start(path);
+			}
+			catch { }
+		}
+
+
+		private void SetupObservers(SynchronizationContext context)
+		{
+			IObservable<IFileRecordInfo> GetFileRecordInfo(FileInfo fi) =>
+				Observable.FromAsync(() => _recordManager.GetFileRecordInfo(fi))
+					.Catch<IFileRecordInfo, Exception>(e => Observable.Return<IFileRecordInfo>(null));
+
+			_recordObserver.ObservingDirectoryStream
+				.ObserveOn(context)
+				.Subscribe(directory =>
+				{
+					HasValidSource = directory?.Exists ?? false;
+					RaisePropertyChanged(nameof(HasValidSource));
+				});
+
+
+			_recordObserver.DirectoryFilesStream
+				.DistinctUntilChanged()
+				.Do(_ => {
+					RecordInfoList.Clear();
+					DirectoryLoading = true;
+					RaisePropertyChanged(nameof(DirectoryLoading));
+				})
+				.Select(fileInfos =>
+				{
+					return Observable.Merge(fileInfos.Select(GetFileRecordInfo), 30)
+						.Where(recordFileInfo => recordFileInfo is IFileRecordInfo)
+						.Distinct(recordFileInfo => recordFileInfo.Hash)
+						.ToArray();
+				}
+				).Switch()
+				.ObserveOn(context)
+				.Subscribe(recordFileInfos =>
+				{
+					RecordInfoList.Clear();
+					DirectoryLoading = false;
+					RaisePropertyChanged(nameof (DirectoryLoading));
+					RecordInfoList.AddRange(recordFileInfos);
+				});
+
+			_recordObserver.FileCreatedStream
+				.SelectMany(GetFileRecordInfo)
+				.Where(recordInfo => recordInfo is IFileRecordInfo)
+				.ObserveOn(context)
+				.Subscribe(recordInfo =>
+				{
+					RecordInfoList.Add(recordInfo);
+				});
+
+			_recordObserver.FileDeletedStream
+				.ObserveOn(context)
+				.Subscribe(fileInfo =>
+				{
+					var item = RecordInfoList.FirstOrDefault(ri => ri.FullPath.Equals(fileInfo.FullName));
+					if (item is IFileRecordInfo)
+					{
+						RecordInfoList.Remove(item);
+					}
+				});
+
+			_recordObserver.FileChangedStream
+				.SelectMany(GetFileRecordInfo)
+				.Where(recordInfo => recordInfo is IFileRecordInfo)
+				.ObserveOn(context)
+				.Subscribe(recordInfo =>
+				{
+					var itemToRemove = RecordInfoList.FirstOrDefault(ri => ri.FullPath.Equals(recordInfo.FullPath));
+					if (itemToRemove is IFileRecordInfo)
+					{
+						var selectedRecordId = _selectedRecordInfo?.Id;
+						var itemIndex = RecordInfoList.IndexOf(itemToRemove);
+						RecordInfoList[itemIndex] = recordInfo;
+						if (selectedRecordId?.Equals(itemToRemove.Id) ?? false)
+						{
+							SelectedRecordInfo = recordInfo;
+							_updateRecordInfosEvent.Publish(new ViewMessages.UpdateRecordInfos(itemToRemove));
+						}
+					}
+				});
 		}
 
 		private void OnDeleteRecordFile()
@@ -220,18 +433,10 @@ namespace CapFrameX.ViewModel
 			{
 				if (_selectedRecordings?.Count > 1)
 				{
-					_recordDeleteStreamActive = false;
-
 					foreach (var item in _selectedRecordings)
 					{
 						FileSystem.DeleteFile(item.FullPath, UIOption.OnlyErrorDialogs, RecycleOption.SendToRecycleBin);
 					}
-
-					_ = _recordObserver.RecordingFileWatcher
-						.WaitForChanged(WatcherChangeTypes.Deleted, 1000);
-
-					_recordDeleteStreamActive = true;
-					_recordDeleteSubStream.OnNext(null);
 				}
 				else
 				{
@@ -240,24 +445,10 @@ namespace CapFrameX.ViewModel
 
 				SelectedRecordInfo = null;
 				_selectedRecordings = null;
-				ResetInfoEditBoxes();
 
 				_updateSessionEvent.Publish(new ViewMessages.UpdateSession(null, null));
 			}
 			catch { }
-		}
-
-		private void OnAddToIgnoreList()
-		{
-			if (!RecordInfoList.Any())
-				return;
-
-			CaptureServiceConfiguration.AddProcessToIgnoreList(SelectedRecordInfo.GameName);
-			_updateProcessIgnoreListEvent.Publish(new ViewMessages.UpdateProcessIgnoreList());
-
-			SelectedRecordInfo = null;
-			RecordInfoList.Clear();
-			LoadRecordList();
 		}
 
 		private void OnCancelEditingDialog()
@@ -285,29 +476,47 @@ namespace CapFrameX.ViewModel
 			CustomComment = string.Empty;
 		}
 
-		private void OnAcceptEditingDialog()
-		{
-			if (CustomCpuDescription == null || CustomGpuDescription == null || CustomRamDescription == null
-				|| CustomGameName == null || CustomComment == null || _selectedRecordInfo == null)
+		private void OnAcceptEditingDialog() => SaveDescriptions();
+
+		public void SaveDescriptions()
+		{			
+			if (!ObjectExtensions.IsAllNotNull(CustomCpuDescription, 
+				CustomGpuDescription, CustomRamDescription, CustomGameName, 
+				CustomComment, _selectedRecordInfo))
 				return;
 
-			// hint: _selectedRecordInfo must not be uptated, because after reload
-			// it will be set to null
-			RecordManager.UpdateCustomData(_selectedRecordInfo,
-				CustomCpuDescription, CustomGpuDescription, CustomRamDescription, CustomGameName, CustomComment);
+			_recordManager.UpdateCustomData(_selectedRecordInfo, CustomCpuDescription, CustomGpuDescription, CustomRamDescription, CustomGameName, CustomComment);
+			AddOrUpdateProcess(_selectedRecordInfo.ProcessName, CustomGameName);
+		}
 
-			_recordDataProvider.AddGameNameToMatchingList(_selectedRecordInfo.ProcessName, CustomGameName);
-
-			var id = SelectedRecordInfo.Id;
-			ReloadRecordList();
-
-			// Get recordInfo after update via id
-			var updatedRecordInfo = RecordInfoList.FirstOrDefault(info => info.Id == id);
-
-			if (updatedRecordInfo != null)
+		private void AddOrUpdateProcess(string processName, string gameName)
+		{
+			if (string.IsNullOrWhiteSpace(processName) || string.IsNullOrWhiteSpace(gameName))
 			{
-				SelectedRecordInfo = updatedRecordInfo;
-				_updateRecordInfosEvent.Publish(new ViewMessages.UpdateRecordInfos(updatedRecordInfo));
+				return;
+			}
+			try
+			{
+				var process = _processList.FindProcessByProcessName(processName);
+				if (process is null)
+				{
+					_processList.AddEntry(processName, gameName);
+					process = _processList.FindProcessByProcessName(processName);
+				}
+				else
+				{
+					process.UpdateDisplayName(gameName);
+				}
+				_processList.Save();
+				RecordInfoList.Where(record => record.ProcessName == processName).ForEach(record => {
+					record.GameName = process.DisplayName;
+					((FileRecordInfo)record).NotifyPropertyChanged(nameof(record.GameName));
+				});
+				RaisePropertyChanged(nameof(RecordInfoList));
+			}
+			catch (Exception e)
+			{
+				_logger.LogError(e, "Error updating ProcessList");
 			}
 		}
 
@@ -315,31 +524,30 @@ namespace CapFrameX.ViewModel
 		{
 			if (SelectedRecordInfo != null && _selectSessionEvent != null)
 			{
-				var session = RecordManager.LoadData(SelectedRecordInfo.FullPath);
+				var session = _recordManager.LoadData(SelectedRecordInfo.FullPath);
 				_selectSessionEvent.Publish(new ViewMessages.SelectSession(session, SelectedRecordInfo));
 			}
 		}
 
 		private void OnSelectedRecordInfoChanged()
 		{
-			if (SelectedRecordInfo != null && _updateSessionEvent != null)
+			if (_selectedRecordInfo is null) {
+				ResetInfoEditBoxes();
+			} else 
 			{
-				var session = RecordManager.LoadData(SelectedRecordInfo.FullPath);
-
-				if (session != null)
+				var session = _recordManager.LoadData(_selectedRecordInfo.FullPath);
+				if (session is ISession)
 				{
+					if(_updateSessionEvent != null)
+					{
+						_updateSessionEvent.Publish(new ViewMessages.UpdateSession(session, SelectedRecordInfo));
+					}
 					CustomCpuDescription = string.Copy(SelectedRecordInfo.ProcessorName ?? string.Empty);
 					CustomGpuDescription = string.Copy(SelectedRecordInfo.GraphicCardName ?? string.Empty);
 					CustomRamDescription = string.Copy(SelectedRecordInfo.SystemRamInfo ?? string.Empty);
 					CustomGameName = string.Copy(SelectedRecordInfo.GameName ?? string.Empty);
 					CustomComment = string.Copy(SelectedRecordInfo.Comment ?? string.Empty);
 				}
-				else
-				{
-					ResetInfoEditBoxes();
-				}
-
-				_updateSessionEvent.Publish(new ViewMessages.UpdateSession(session, SelectedRecordInfo));
 			}
 		}
 
@@ -369,44 +577,10 @@ namespace CapFrameX.ViewModel
 			_selectedRecordings = new List<IFileRecordInfo>((selectedRecordings as IList).Cast<IFileRecordInfo>());
 		}
 
-		private void AddToRecordInfoList(IFileRecordInfo recordFileInfo)
-		{
-			if (recordFileInfo != null && !RecordInfoList.Any(info => info.Id == recordFileInfo.Id))
-			{
-				Application.Current.Dispatcher.Invoke(new Action(() =>
-				{
-					RecordInfoList.Add(recordFileInfo);
-				}));
-			}
-		}
-
-		private void OnRecordCreated(FileInfo fileInfo)
-			=> AddToRecordInfoList(_recordDataProvider.GetFileRecordInfo(fileInfo));
-
-		private void OnRecordDeleted()
-		{
-			ReloadRecordList();
-		}
-
-		private void ReloadRecordList()
-		{
-			RecordInfoList.Clear();
-			LoadRecordList();
-		}
-
-		private void LoadRecordList()
-		{
-			foreach (var fileRecordInfo in _recordDataProvider?.GetFileRecordInfoList())
-			{
-				AddToRecordInfoList(fileRecordInfo);
-			}
-		}
-
 		private void SetAggregatorEvents()
 		{
 			_updateSessionEvent = _eventAggregator.GetEvent<PubSubEvent<ViewMessages.UpdateSession>>();
 			_selectSessionEvent = _eventAggregator.GetEvent<PubSubEvent<ViewMessages.SelectSession>>();
-			_updateProcessIgnoreListEvent = _eventAggregator.GetEvent<PubSubEvent<ViewMessages.UpdateProcessIgnoreList>>();
 			_updateRecordInfosEvent = _eventAggregator.GetEvent<PubSubEvent<ViewMessages.UpdateRecordInfos>>();
 		}
 
@@ -420,24 +594,6 @@ namespace CapFrameX.ViewModel
 							});
 		}
 
-		private void SubscribeToObservedDiretoryUpdated()
-		{
-			_eventAggregator.GetEvent<PubSubEvent<AppMessages.UpdateObservedDirectory>>()
-							.Subscribe(msg =>
-							{
-								SelectedRecordInfo = null;
-								_selectedRecordings = null;
-								RecordInfoList.Clear();
-
-								HasValidSource = _recordObserver.HasValidSource;
-
-								if (HasValidSource)
-								{
-									LoadRecordList();
-								}
-							});
-		}
-
 		private void SubscribeToSetFileRecordInfoExternal()
 		{
 			_eventAggregator.GetEvent<PubSubEvent<ViewMessages.SetFileRecordInfoExternal>>()
@@ -447,6 +603,15 @@ namespace CapFrameX.ViewModel
 									.FirstOrDefault(info => info.Id == msg.RecordInfo.Id);
 								_selectedRecordings = null;
 							});
+		}
+
+		private void SubscribeToCloudFolderChanged()
+		{
+			_eventAggregator.GetEvent<PubSubEvent<AppMessages.CloudFolderChanged>>()
+				.Subscribe(msg =>
+				{
+					TreeViewUpdateStream.OnNext(default);
+				});
 		}
 	}
 }

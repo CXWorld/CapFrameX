@@ -21,7 +21,100 @@
 		</BootstrapperApplicationRef>
 		<Variable Name="InstallFolder" Type="string" Value="[ProgramFilesFolder]CapFrameX" />
 
-		<Chain>
+    <!-- v6.0 Service Pack 2 -->
+    <bal:Condition Message="This application requires Service Pack 2 for Windows Vista / Server 2008.">
+      <![CDATA[NOT (VersionNT = v6.0 AND ServicePackLevel < 2)]]>
+    </bal:Condition>
+
+    <!-- v6.1 Service Pack 1 -->
+    <bal:Condition Message="This application requires Service Pack 1 for Windows 7 / Server 2008 R2.">
+      <![CDATA[NOT (VersionNT = v6.1 AND ServicePackLevel < 1)]]>
+    </bal:Condition>
+
+    <!-- v6.3 KB2919355 -->
+    <util:FileSearch
+      Id="HAL.DLL"
+      Path="[WindowsFolder]System32\hal.dll"
+      Result="version"
+      Variable="NT603HALVER"
+      Condition="VersionNT = v6.3" />
+    <bal:Condition Message="This application requires S14 Update (KB2919355) for Windows 8.1 / Server 2012 R2.">
+      <![CDATA[NOT (VersionNT = v6.3 AND NT603HALVER < v6.3.9600.17031)]]>
+    </bal:Condition>
+
+    <!-- Visual C++ 2015-2019 Redistributable (x64) minimum runtime msi package version -->
+    <util:ProductSearch
+      Id="VCRedist2015x64"
+      Result="version"
+      Variable="VCRedist2015x64"
+      UpgradeCode="36F68A90-239C-34DF-B58C-64B30153CE35"
+      Condition="VersionNT64" />
+
+    <!-- Visual C++ 2015-2019 Redistributable (x86) minimum runtime msi package version -->
+    <util:ProductSearch
+      Id="VCRedist2015x86"
+      Result="version"
+      Variable="VCRedist2015x86"
+      UpgradeCode="65E5BD06-6392-3027-8C26-853107D3CF1A"
+      Condition="VersionNT" />
+
+    <!-- Visual C++ 2015-2019 Redistributable version -->
+    <Variable Name="VCRedist2015" Type="version" Value="14.24.28127.4" />
+
+    <Chain>
+      <!-- use heat command to get RemotePayload attributes -->
+      <!-- example: heat payload vc_redist.x64.exe -o x64.wxs -->
+
+      <!-- Visual C++ 2015-2019 Redistributable (x64) - 14.24.28127 -->
+      <ExePackage
+        Id="vc_redist.x64.exe"
+        Name="vc_redist.x64.14.24.28127.4.exe"
+        DisplayName="Microsoft Visual C++ 2015-2019 Redistributable (x64) - 14.24.28127"
+        Cache="no"
+        Compressed="no"
+        PerMachine="yes"
+        Permanent="yes"
+        InstallCondition="VersionNT64"
+        DetectCondition="VCRedist2015x64 >= VCRedist2015"
+        DownloadUrl="https://download.visualstudio.microsoft.com/download/pr/3b070396-b7fb-4eee-aa8b-102a23c3e4f4/40EA2955391C9EAE3E35619C4C24B5AAF3D17AEAA6D09424EE9672AA9372AEED/VC_redist.x64.exe"
+        InstallCommand="/install /quiet /norestart"
+        RepairCommand="/repair /quiet /norestart"
+        UninstallCommand="/uninstall /quiet /norestart" >
+        <RemotePayload
+          ProductName="Microsoft Visual C++ 2015-2019 Redistributable (x64) - 14.24.28127"
+          Description="Microsoft Visual C++ 2015-2019 Redistributable (x64) - 14.24.28127"
+          Version="14.24.28127.4"
+          CertificatePublicKey="6608A9DBA86701156A4C17CE63BA99BE8B932F8D"
+          CertificateThumbprint="62009AAABDAE749FD47D19150958329BF6FF4B34"
+          Hash="B87C38D093872D7BE7E191F01107B39C87888A5A"
+          Size="15060496" />
+      </ExePackage>
+
+      <!-- Visual C++ 2015-2019 Redistributable (x86) - 14.24.28127 -->
+      <ExePackage
+        Id="vc_redist.x86.exe"
+        Name="vc_redist.x86.14.24.28127.4.exe"
+        DisplayName="Microsoft Visual C++ 2015-2019 Redistributable (x86) - 14.24.28127"
+        Cache="no"
+        Compressed="no"
+        PerMachine="yes"
+        Permanent="yes"
+        InstallCondition="VersionNT"
+        DetectCondition="VCRedist2015x86 >= VCRedist2015"
+        DownloadUrl="https://download.visualstudio.microsoft.com/download/pr/9307e627-aaac-42cb-a32a-a39e166ee8cb/E59AE3E886BD4571A811FE31A47959AE5C40D87C583F786816C60440252CD7EC/VC_redist.x86.exe"
+        InstallCommand="/install /quiet /norestart"
+        RepairCommand="/repair /quiet /norestart"
+        UninstallCommand="/uninstall /quiet /norestart" >
+        <RemotePayload
+          ProductName="Microsoft Visual C++ 2015-2019 Redistributable (x86) - 14.24.28127"
+          Description="Microsoft Visual C++ 2015-2019 Redistributable (x86) - 14.24.28127"
+          Version="14.24.28127.4"
+          CertificatePublicKey="6608A9DBA86701156A4C17CE63BA99BE8B932F8D"
+          CertificateThumbprint="62009AAABDAE749FD47D19150958329BF6FF4B34"
+          Hash="AFA5BADCE64EE67290ADD24E0DC3D8210954AC6C"
+          Size="14364440" />
+      </ExePackage>
+      
       <!--Install .Net Framework 4.7.2-->
       <PackageGroupRef Id="NetFx472Redist"/>
 			<MsiPackage Id="CapFrameXPackage" SourceFile="$(var.CapFrameXInstaller.TargetPath)" DisplayInternalUI="no" Compressed="yes" Vital="yes">
