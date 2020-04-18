@@ -640,22 +640,17 @@ namespace CapFrameX.ViewModel
 				return ComparisonRecords.Select(record => {
 					var firstContext = GetLabelForContext(record, SelectedComparisonContext);
 					var secondContext = GetLabelForContext(record, SelectedSecondComparisonContext);
-					var maxAlignment = new int[] { 
-						PART_LENGTH, 
-						firstContext.Any() ? firstContext.Max(x => x.Length): 0,
-						secondContext.Any() ? secondContext.Max(x => x.Length) : 0
-					}.Max();
 
 					var gameName = record.WrappedRecordInfo.Game;
 					var context = string.Join(Environment.NewLine, new string[][] { firstContext, secondContext}.Select(labelLines => {
-						return string.Join(Environment.NewLine, labelLines.Select(line => line.PadRight(maxAlignment)));
+						return string.Join(Environment.NewLine, labelLines.Select(line => line.PadRight(PART_LENGTH)));
 					}).Where(line => !string.IsNullOrWhiteSpace(line)));
 					return new ChartLabel()
 					{
 						GameName = gameName,
 						Context = context
 					};
-				}).ToArray();
+				}).Reverse().ToArray();
 			}
 
 			void SetLabels(ChartLabel[] labels)
