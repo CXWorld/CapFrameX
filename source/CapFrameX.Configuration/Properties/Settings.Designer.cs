@@ -790,5 +790,17 @@ namespace CapFrameX.Configuration.Properties {
                 this["UseSingleRecordMedianStatisticParameter"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("None")]
+        public string SecondComparisonContext {
+            get {
+                return ((string)(this["SecondComparisonContext"]));
+            }
+            set {
+                this["SecondComparisonContext"] = value;
+            }
+        }
     }
 }

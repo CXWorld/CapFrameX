@@ -60,6 +60,8 @@
 
 		string ComparisonContext { get; set; }
 
+		string SecondComparisonContext { get; set; }
+
 		string RecordingListSortMemberPath { get; set; }
 
 		string RecordingListSortDirection { get; set; }
