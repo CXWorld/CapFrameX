@@ -142,10 +142,12 @@
 						Visibility="{Binding IsBarChartTabActive, Converter={StaticResource TrueToVisibleConverter}}">
                 <TextBlock VerticalAlignment="Center">Grouping:</TextBlock>
                 <ToggleButton Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
-							  ToolTip="Grouping" IsChecked="{Binding UseComparisonGrouping}"/>
+							  ToolTip="Sort entries by game first" IsChecked="{Binding UseComparisonGrouping}"/>
                 
             </StackPanel>
-            <StackPanel Grid.Column="2" Margin="75 5 5 5" Orientation="Vertical" Visibility="{Binding IsBarChartTabActive, Converter={StaticResource TrueToVisibleConverter}}">
+            <StackPanel Grid.Column="2" Margin="50 5 5 5" Orientation="Horizontal" Visibility="{Binding IsBarChartTabActive, Converter={StaticResource TrueToVisibleConverter}}"
+                        ToolTip="Select a second and third metric to be shown">
+                <TextBlock Margin="0 0 0 0" VerticalAlignment="Center"  HorizontalAlignment="Center"> Metrics</TextBlock>
                 <materialDesign:PopupBox StaysOpen="True" ToolTipService.ShowDuration="25000" PlacementMode="TopAndAlignCentres">
                     <materialDesign:Card Width="300" Margin="0 0 0 -10">
                         <StackPanel>
@@ -180,9 +182,10 @@
                         </StackPanel>
                     </materialDesign:Card>
                 </materialDesign:PopupBox>
-                <TextBlock Margin="-5 0 0 0" HorizontalAlignment="Center"> Metrics</TextBlock>
             </StackPanel>
-            <StackPanel Grid.Column="3" Margin="75 5 5 5" Orientation="Vertical">
+            <StackPanel Grid.Column="3" Margin="50 5 5 5" Orientation="Horizontal"
+                        ToolTip="Select up to 2 contexts to be shown">
+                <TextBlock Margin="0 0 0 0" VerticalAlignment="Center" HorizontalAlignment="Center">Contexts</TextBlock>
                 <materialDesign:PopupBox StaysOpen="True" ToolTipService.ShowDuration="25000" PlacementMode="TopAndAlignCentres">
                     <materialDesign:Card Width="325" Margin="0 0 0 -10">
                         <StackPanel>
@@ -216,17 +219,16 @@
                         </StackPanel>
                     </materialDesign:Card>
                 </materialDesign:PopupBox>
-                <TextBlock Margin="-5 0 0 0" HorizontalAlignment="Center">Contexts</TextBlock>
             </StackPanel>
             
-            <StackPanel Grid.Column="1" Margin="30 0 0 0" VerticalAlignment="Center" Orientation="Horizontal"
+            <StackPanel Grid.Column="0" Margin="30 0 0 0" VerticalAlignment="Center" Orientation="Horizontal"
 						Visibility="{Binding IsBarChartTabActive, Converter={StaticResource TrueToCollapsedConverter}}">
                 <TextBlock VerticalAlignment="Center">Range slider:</TextBlock>
                 <ToggleButton Name="RangeSliderActiveToggleButton" Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
 							  IsChecked="{Binding IsRangeSliderActive}"/>
             </StackPanel>
 
-            <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="50 0 10 0" Orientation="Horizontal"
+            <StackPanel Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="50 0 10 0" Orientation="Horizontal"
 						Visibility="{Binding IsBarChartTabActive, Converter={StaticResource TrueToCollapsedConverter}}">
                 <TextBlock VerticalAlignment="Center">Show legend:</TextBlock>
                 <ToggleButton Name="ContextLegendActiveToggleButton" Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
