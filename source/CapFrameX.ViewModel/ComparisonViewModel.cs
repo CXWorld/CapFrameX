@@ -545,7 +545,7 @@ namespace CapFrameX.ViewModel
 					DataLabels = true,
 					MaxRowHeigth = BarChartMaxRowHeight,
 					RowPadding = 0,
-					UseRelativeMode = true					
+					UseRelativeMode = true
 				}
 			};
 
@@ -627,30 +627,34 @@ namespace CapFrameX.ViewModel
 				return 0;
 		}
 
-		private class ChartLabel
+		internal class ChartLabel
 		{
 			public string GameName;
 			public string Context;
 		};
 
+		internal ChartLabel GetChartLabel(ComparisonRecordInfo record)
+		{
+			var firstContext = GetLabelForContext(record, SelectedComparisonContext);
+			var secondContext = GetLabelForContext(record, SelectedSecondComparisonContext);
+
+			var gameName = record.Game;
+			var context = string.Join(Environment.NewLine, new string[][] { firstContext, secondContext }.Select(labelLines =>
+			{
+				return string.Join(Environment.NewLine, labelLines.Select(line => line.PadRight(PART_LENGTH)));
+			}).Where(line => !string.IsNullOrWhiteSpace(line)));
+			return new ChartLabel()
+			{
+				GameName = gameName,
+				Context = context
+			};
+		}
+
 		private void OnComparisonContextChanged()
 		{
-
-			ChartLabel[] GetLabels() {
-				return ComparisonRecords.Select(record => {
-					var firstContext = GetLabelForContext(record, SelectedComparisonContext);
-					var secondContext = GetLabelForContext(record, SelectedSecondComparisonContext);
-
-					var gameName = record.WrappedRecordInfo.Game;
-					var context = string.Join(Environment.NewLine, new string[][] { firstContext, secondContext}.Select(labelLines => {
-						return string.Join(Environment.NewLine, labelLines.Select(line => line.PadRight(PART_LENGTH)));
-					}).Where(line => !string.IsNullOrWhiteSpace(line)));
-					return new ChartLabel()
-					{
-						GameName = gameName,
-						Context = context
-					};
-				}).ToArray();
+			ChartLabel[] GetLabels()
+			{
+				return ComparisonRecords.Select( record => GetChartLabel(record.WrappedRecordInfo)).ToArray();
 			}
 
 			void SetLabels(ChartLabel[] labels)
@@ -669,7 +673,7 @@ namespace CapFrameX.ViewModel
 				}
 			}
 
-			if(ComparisonModel == null)
+			if (ComparisonModel == null)
 			{
 				InitializePlotModel();
 			}
@@ -827,7 +831,7 @@ namespace CapFrameX.ViewModel
 			else
 			{
 				SetFrametimeChart();
-				SetLShapeChart();				
+				SetLShapeChart();
 			}
 			OnComparisonContextChanged();
 		}

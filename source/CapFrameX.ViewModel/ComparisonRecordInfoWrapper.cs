@@ -146,6 +146,7 @@ namespace CapFrameX.ViewModel
 					frametimesChart.Color = OxyColors.Transparent;
 					lShapeChart.Stroke = Brushes.Transparent;
 					lShapeChart.PointForeground = Brushes.Transparent;
+					frametimesChart.Title = string.Empty;
 				}
 				else
 				{
@@ -154,6 +155,7 @@ namespace CapFrameX.ViewModel
 					frametimesChart.Color = OxyColor.FromArgb(color.A, color.R, color.G, color.B);
 					lShapeChart.Stroke = solidColorBrush;
 					lShapeChart.PointForeground = solidColorBrush;
+					frametimesChart.Title = _viewModel.GetChartLabel(WrappedRecordInfo).Context;
 				}
 
 				_viewModel.ComparisonModel.InvalidatePlot(true);

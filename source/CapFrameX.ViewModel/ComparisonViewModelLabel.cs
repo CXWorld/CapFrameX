@@ -1,4 +1,5 @@
-﻿using CapFrameX.Extensions;
+﻿using CapFrameX.Data;
+using CapFrameX.Extensions;
 using System;
 using System.Globalization;
 using System.Linq;
@@ -26,20 +27,20 @@ namespace CapFrameX.ViewModel
 			ComparisonModel.InvalidatePlot(true);
 		}
 
-		private string[] GetLabelForContext(ComparisonRecordInfoWrapper record, EComparisonContext context)
+		private string[] GetLabelForContext(ComparisonRecordInfo record, EComparisonContext context)
 		{
 			switch(context)
 			{
 				case EComparisonContext.CPU:
-					return GetLabelLines(record.WrappedRecordInfo.FileRecordInfo.ProcessorName);
+					return GetLabelLines(record.FileRecordInfo.ProcessorName);
 				case EComparisonContext.GPU:
-					return GetLabelLines(record.WrappedRecordInfo.FileRecordInfo.GraphicCardName);
+					return GetLabelLines(record.FileRecordInfo.GraphicCardName);
 				case EComparisonContext.SystemRam:
-					return GetLabelLines(record.WrappedRecordInfo.FileRecordInfo.SystemRamInfo);
+					return GetLabelLines(record.FileRecordInfo.SystemRamInfo);
 				case EComparisonContext.DateTime:
-					return GetLabelLines($"{record.WrappedRecordInfo.FileRecordInfo.CreationDate} { record.WrappedRecordInfo.FileRecordInfo.CreationTime}");
+					return GetLabelLines($"{record.FileRecordInfo.CreationDate} { record.FileRecordInfo.CreationTime}");
 				case EComparisonContext.Custom:
-					return GetLabelLines(record.WrappedRecordInfo.FileRecordInfo.Comment);
+					return GetLabelLines(record.FileRecordInfo.Comment);
 				default:
 					return Array.Empty<string>();
 			}

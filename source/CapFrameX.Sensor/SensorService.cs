@@ -183,10 +183,17 @@ namespace CapFrameX.Sensor
 
 		private string GetDegreeCelciusUnitByCulture()
 		{
-			if (CultureInfo.CurrentCulture.Name == new CultureInfo("en-DE").Name)
-				return "బC";
-			else
+			try
+			{
+				if (CultureInfo.CurrentCulture.Name == new CultureInfo("en-DE").Name)
+					return "బC";
+				else
+					return "°C";
+			}
+			catch
+			{
 				return "°C";
+			}
 		}
 
 		private bool GetOverlayToggle(ISensor sensor)
@@ -402,7 +409,8 @@ namespace CapFrameX.Sensor
 
 		public void StopSensorLogging()
 		{
-			Observable.Timer(_currentLoggingTimespan).Subscribe(_ => {
+			Observable.Timer(_currentLoggingTimespan).Subscribe(_ =>
+			{
 				_isLoggingActive = false;
 			});
 		}
