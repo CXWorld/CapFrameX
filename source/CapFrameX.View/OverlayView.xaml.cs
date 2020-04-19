@@ -12,6 +12,7 @@ using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 
 namespace CapFrameX.View
 {
@@ -145,5 +146,7 @@ namespace CapFrameX.View
 			Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri));
 			e.Handled = true;
 		}
+
+		private void SelectedColorChanged(object sender, RoutedPropertyChangedEventArgs<Color?> e) { }
 	}
 }
