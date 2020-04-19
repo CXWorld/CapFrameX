@@ -650,12 +650,12 @@ namespace CapFrameX.ViewModel
 						GameName = gameName,
 						Context = context
 					};
-				}).Reverse().ToArray();
+				}).ToArray();
 			}
 
 			void SetLabels(ChartLabel[] labels)
 			{
-				ComparisonRowChartLabels = labels.Select(label => GetHasUniqueGameNames() ? label.Context : $"{label.GameName}{Environment.NewLine}{label.Context}").ToArray();
+				ComparisonRowChartLabels = labels.Select(label => GetHasUniqueGameNames() ? label.Context : $"{label.GameName}{Environment.NewLine}{label.Context}").Reverse().ToArray();
 
 				if (IsContextLegendActive)
 				{
