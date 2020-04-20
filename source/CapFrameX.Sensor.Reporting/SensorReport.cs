@@ -1,39 +1,17 @@
-﻿using CapFrameX.Contracts.Sensor;
-using CapFrameX.Data.Session.Contracts;
-using CapFrameX.Extensions;
+﻿using CapFrameX.Data.Session.Contracts;
+using CapFrameX.Sensor.Reporting.Contracts;
+using CapFrameX.Sensor.Reporting.Data;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
+using CapFrameX.Extensions.NetStandard;
 using System.Linq;
+using System.ComponentModel;
 
-namespace CapFrameX.Sensor
+namespace CapFrameX.Sensor.Reporting
 {
-	public enum EReportSensorName
-	{
-		[Description("CPU load (%)")]
-		CpuUsage,
-		[Description("CPU max thread load (%)")]
-		CpuMaxThreadUsage,
-		[Description("CPU power (W)")]
-		CpuPower,
-		[Description("CPU temp (°C)")]
-		CpuTemp,
-		[Description("GPU load (%)")]
-		GpuUsage,
-		[Description("GPU power (W)")]
-		GpuPower,
-		[Description("GPU temp. (°C)")]
-		GpuTemp,
-		[Description("GPU VRAM usage (MB)")]
-		VRamUsage,
-		[Description("RAM usage (GB)")]
-		RamUsage
-	}
-
 	public static class SensorReport
 	{
-		public static IEnumerable<ISensorReportItem> GetReportFromSessionSensorData
-			(IEnumerable<ISessionSensorData> sessionsSensorData)
+		public static IEnumerable<ISensorReportItem> GetReportFromSessionSensorData(IEnumerable<ISessionSensorData> sessionsSensorData)
 		{
 			if (sessionsSensorData == null || !sessionsSensorData.Any()
 				|| sessionsSensorData.Any(session => session == null))
@@ -90,7 +68,7 @@ namespace CapFrameX.Sensor
 			{
 				sensorReportItems.Add(new SensorReportItem
 				{
-					Name = sensorName.GetDescription(),
+					Name = sensorName.GetAttribute<DescriptionAttribute>().Description,
 					MinValue = min,
 					AverageValue = avg,
 					MaxValue = max
