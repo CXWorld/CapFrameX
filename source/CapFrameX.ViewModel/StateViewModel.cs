@@ -3,6 +3,7 @@ using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.PresentMonInterface;
 using CapFrameX.Contracts.UpdateCheck;
+using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Overlay;
 using CapFrameX.Updater;
 using Prism.Events;
@@ -97,6 +98,7 @@ namespace CapFrameX.ViewModel
 		}
 
 		public bool IsUpdateAvailable { get; private set; }
+		public bool IsLoggedIn { get; private set; }
 
 		public StateViewModel(IRecordDirectoryObserver recordObserver,
 							  IEventAggregator eventAggregator,
@@ -132,6 +134,12 @@ namespace CapFrameX.ViewModel
 
 			_overlayService.IsOverlayActiveStream
 				.Subscribe(state => IsOverlayActive = state);
+
+			_eventAggregator.GetEvent<PubSubEvent<AppMessages.LoginState>>().Subscribe(state => {
+				IsLoggedIn = state.IsLoggedIn;
+				RaisePropertyChanged(nameof(IsLoggedIn));
+			});
+
 
 			Task.Run(async () =>
 			{
