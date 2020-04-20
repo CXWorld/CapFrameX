@@ -28,6 +28,8 @@ namespace CapFrameX.Data
 		public double NinetyFivePercentQuantileFps { get; set; }
 		[DisplayName("Average FPS")]
 		public double AverageFps { get; set; }
+		[DisplayName("Median FPS")]
+		public double MedianFps { get; set; }
 		[DisplayName("5% quantile")]
 		public double FivePercentQuantileFps { get; set; }
 		[DisplayName("1% quantile")]

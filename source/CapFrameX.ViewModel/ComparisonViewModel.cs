@@ -65,6 +65,7 @@ namespace CapFrameX.ViewModel
 		private EMetric _selectedSecondMetric = EMetric.P1;
 		private EMetric _selectedThirdMetric = EMetric.P0dot2;
 		private EComparisonContext _selectedComparisonContext = EComparisonContext.DateTime;
+		private EComparisonContext _selectedSecondComparisonContext = EComparisonContext.None;
 		private string _currentGameName;
 		private bool _hasUniqueGameNames;
 		private bool _useComparisonGrouping;
@@ -128,6 +129,18 @@ namespace CapFrameX.ViewModel
 				_appConfiguration.ComparisonContext =
 					value.ConvertToString();
 				_selectedComparisonContext = value;
+				RaisePropertyChanged();
+				OnComparisonContextChanged();
+			}
+		}
+		public EComparisonContext SelectedSecondComparisonContext
+		{
+			get { return _selectedSecondComparisonContext; }
+			set
+			{
+				_appConfiguration.SecondComparisonContext =
+					value.ConvertToString();
+				_selectedSecondComparisonContext = value;
 				RaisePropertyChanged();
 				OnComparisonContextChanged();
 			}
@@ -429,11 +442,11 @@ namespace CapFrameX.ViewModel
 			ComparisonColumnChartFormatter = value => value.ToString(string.Format("F{0}",
 			_appConfiguration.FpsValuesRoundingDigits), CultureInfo.InvariantCulture);
 			SelectedComparisonContext = _appConfiguration.ComparisonContext.ConvertToEnum<EComparisonContext>();
+			SelectedSecondComparisonContext = _appConfiguration.SecondComparisonContext.ConvertToEnum<EComparisonContext>();
 			SelectedSecondMetric = _appConfiguration.SecondMetric.ConvertToEnum<EMetric>();
 			SelectedThirdMetric = _appConfiguration.ThirdMetric.ConvertToEnum<EMetric>();
 
 			SetRowSeries();
-			InitializePlotModel();
 			SubscribeToSelectRecord();
 			SubscribeToUpdateRecordInfos();
 		}
@@ -532,7 +545,7 @@ namespace CapFrameX.ViewModel
 					DataLabels = true,
 					MaxRowHeigth = BarChartMaxRowHeight,
 					RowPadding = 0,
-					UseRelativeMode = true					
+					UseRelativeMode = true
 				}
 			};
 
@@ -614,30 +627,58 @@ namespace CapFrameX.ViewModel
 				return 0;
 		}
 
+		internal class ChartLabel
+		{
+			public string GameName;
+			public string Context;
+		};
+
+		internal ChartLabel GetChartLabel(ComparisonRecordInfo record)
+		{
+			var firstContext = GetLabelForContext(record, SelectedComparisonContext);
+			var secondContext = GetLabelForContext(record, SelectedSecondComparisonContext);
+
+			var gameName = record.Game;
+			var context = string.Join(Environment.NewLine, new string[][] { firstContext, secondContext }.Select(labelLines =>
+			{
+				return string.Join(Environment.NewLine, labelLines.Select(line => line.PadRight(PART_LENGTH)));
+			}).Where(line => !string.IsNullOrWhiteSpace(line)));
+			return new ChartLabel()
+			{
+				GameName = gameName,
+				Context = context
+			};
+		}
+
 		private void OnComparisonContextChanged()
 		{
-			switch (SelectedComparisonContext)
+			ChartLabel[] GetLabels()
 			{
-				case EComparisonContext.DateTime:
-					OnDateTimeContext();
-					break;
-				case EComparisonContext.CPU:
-					OnCpuContext();
-					break;
-				case EComparisonContext.GPU:
-					OnGpuContex();
-					break;
-				case EComparisonContext.SystemRam:
-					OnSystemRamContex();
-					break;
-				case EComparisonContext.Custom:
-					OnCustomContex();
-					break;
-				default:
-					OnDateTimeContext();
-					break;
+				return ComparisonRecords.Select( record => GetChartLabel(record.WrappedRecordInfo)).ToArray();
 			}
 
+			void SetLabels(ChartLabel[] labels)
+			{
+				ComparisonRowChartLabels = labels.Select(label => GetHasUniqueGameNames() ? label.Context : $"{label.GameName}{Environment.NewLine}{label.Context}").Reverse().ToArray();
+
+				if (IsContextLegendActive)
+				{
+					if (ComparisonModel.Series.Count == ComparisonRecords.Count)
+					{
+						for (int i = 0; i < ComparisonRecords.Count; i++)
+						{
+							ComparisonModel.Series[i].Title = labels[i].Context;
+						}
+					}
+				}
+			}
+
+			if (ComparisonModel == null)
+			{
+				InitializePlotModel();
+			}
+			SetLabels(GetLabels());
+			ComparisonModel.InvalidatePlot(true);
 		}
 
 		private void OnRangeSliderChanged()
@@ -792,6 +833,7 @@ namespace CapFrameX.ViewModel
 				SetFrametimeChart();
 				SetLShapeChart();
 			}
+			OnComparisonContextChanged();
 		}
 
 		private void AddToColumnCharts(ComparisonRecordInfoWrapper wrappedComparisonInfo)
@@ -816,27 +858,7 @@ namespace CapFrameX.ViewModel
 
 			SetBarMaxValue();
 
-			switch (SelectedComparisonContext)
-			{
-				case EComparisonContext.DateTime:
-					SetLabelDateTimeContext();
-					break;
-				case EComparisonContext.CPU:
-					SetLabelCpuContext();
-					break;
-				case EComparisonContext.GPU:
-					SetLabelGpuContext();
-					break;
-				case EComparisonContext.SystemRam:
-					SetLabelSystemRamContext();
-					break;
-				case EComparisonContext.Custom:
-					SetLabelCustomContext();
-					break;
-				default:
-					SetLabelDateTimeContext();
-					break;
-			}
+			OnComparisonContextChanged();
 		}
 
 		private void SetBarMaxValue()
@@ -877,33 +899,6 @@ namespace CapFrameX.ViewModel
 										 .Select(pnt => new Point(pnt.X, pnt.Y));
 
 			var chartTitle = string.Empty;
-
-			if (IsContextLegendActive)
-			{
-				switch (SelectedComparisonContext)
-				{
-					case EComparisonContext.DateTime:
-						chartTitle = $"{wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.CreationDate} " +
-							$"{ wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.CreationTime}";
-						break;
-					case EComparisonContext.CPU:
-						chartTitle = wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.ProcessorName;
-						break;
-					case EComparisonContext.GPU:
-						chartTitle = wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.GraphicCardName;
-						break;
-					case EComparisonContext.SystemRam:
-						chartTitle = wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.SystemRamInfo;
-						break;
-					case EComparisonContext.Custom:
-						chartTitle = wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.Comment;
-						break;
-					default:
-						chartTitle = $"{wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.CreationDate} " +
-							$"{ wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.CreationTime}";
-						break;
-				}
-			}
 
 			var color = wrappedComparisonInfo.FrametimeGraphColor.Value;
 			var frametimeSeries = new OxyPlot.Series.LineSeries

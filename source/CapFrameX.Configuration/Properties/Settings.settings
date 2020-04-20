@@ -137,9 +137,6 @@
     <Setting Name="OSDRefreshPeriod" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">500</Value>
     </Setting>
-    <Setting Name="SaveAggregationOnly" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">True</Value>
-    </Setting>
     <Setting Name="OutlierPercentageOverlay" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">3</Value>
     </Setting>
@@ -190,6 +187,15 @@
     </Setting>
     <Setting Name="ShowThresholdTimes" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="SaveAggregationOnly" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="UseSingleRecordMedianStatisticParameter" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="SecondComparisonContext" Type="System.String" Scope="User">
+      <Value Profile="(Default)">None</Value>
     </Setting>
   </Settings>
 </SettingsFile>

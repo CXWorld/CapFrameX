@@ -47,6 +47,6 @@ namespace CapFrameX.EventAggregation.Messages
 			}
 		}
 
-		public class UpdateProcessIgnoreList { }
+		public class OptionPopupClosed { }
 	}
 }

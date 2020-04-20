@@ -80,6 +80,7 @@ namespace CapFrameX.ViewModel
 			var displayNameNinetyNinePercentQuantileFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.NinetyNinePercentQuantileFps);
 			var displayNameNinetyFivePercentQuantileFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.NinetyFivePercentQuantileFps);
 			var displayNameAverageFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.AverageFps);
+			var displayNameMedianFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.MedianFps);
 			var displayNameFivePercentQuantileFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.FivePercentQuantileFps);
 			var displayNameOnePercentQuantileFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.OnePercentQuantileFps);
 			var displayNameOnePercentLowAverageFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.OnePercentLowAverageFps);
@@ -102,6 +103,7 @@ namespace CapFrameX.ViewModel
 						   displayNameNinetyNinePercentQuantileFps + "\t" +
 						   displayNameNinetyFivePercentQuantileFps + "\t" +
 						   displayNameAverageFps + "\t" +
+						   displayNameMedianFps + "\t" +
 						   displayNameFivePercentQuantileFps + "\t" +
 						   displayNameOnePercentQuantileFps + "\t" +
 						   displayNameOnePercentLowAverageFps + "\t" +
@@ -127,6 +129,7 @@ namespace CapFrameX.ViewModel
 							   reportInfo.NinetyNinePercentQuantileFps.ToString(CultureInfo.InvariantCulture) + "\t" +
 							   reportInfo.NinetyFivePercentQuantileFps.ToString(CultureInfo.InvariantCulture) + "\t" +
 							   reportInfo.AverageFps.ToString(CultureInfo.InvariantCulture) + "\t" +
+							   reportInfo.MedianFps.ToString(CultureInfo.InvariantCulture) + "\t" +
 							   reportInfo.FivePercentQuantileFps.ToString(CultureInfo.InvariantCulture) + "\t" +
 							   reportInfo.OnePercentQuantileFps.ToString(CultureInfo.InvariantCulture) + "\t" +
 							   reportInfo.OnePercentLowAverageFps.ToString(CultureInfo.InvariantCulture) + "\t" +
@@ -168,6 +171,7 @@ namespace CapFrameX.ViewModel
 			var p99_quantile = GeMetricValue(frameTimes, EMetric.P99);
 			var p95_quantile = GeMetricValue(frameTimes, EMetric.P95);
 			var average = GeMetricValue(frameTimes, EMetric.Average);
+			var median = GeMetricValue(frameTimes, EMetric.Median);
 			var p0dot1_quantile = GeMetricValue(frameTimes, EMetric.P0dot1);
 			var p0dot2_quantile = GeMetricValue(frameTimes, EMetric.P0dot2);
 			var p1_quantile = GeMetricValue(frameTimes, EMetric.P1);
@@ -191,6 +195,7 @@ namespace CapFrameX.ViewModel
 				NinetyNinePercentQuantileFps = p99_quantile,
 				NinetyFivePercentQuantileFps = p95_quantile,
 				AverageFps = average,
+				MedianFps = median,
 				FivePercentQuantileFps = p5_quantile,
 				OnePercentQuantileFps = p1_quantile,
 				OnePercentLowAverageFps = p1_averageLow,

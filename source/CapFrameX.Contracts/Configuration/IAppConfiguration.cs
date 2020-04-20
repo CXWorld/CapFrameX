@@ -20,6 +20,8 @@
 
 		bool UseSingleRecordAverageStatisticParameter { get; set; }
 
+		bool UseSingleRecordMedianStatisticParameter { get; set; }
+
 		bool UseSingleRecordP5QuantileStatisticParameter { get; set; }
 
 		bool UseSingleRecordP1QuantileStatisticParameter { get; set; }
@@ -57,6 +59,8 @@
 		string ThirdMetricOverlay { get; set; }
 
 		string ComparisonContext { get; set; }
+
+		string SecondComparisonContext { get; set; }
 
 		string RecordingListSortMemberPath { get; set; }
 

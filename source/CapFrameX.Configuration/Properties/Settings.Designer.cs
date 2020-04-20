@@ -565,18 +565,6 @@ namespace CapFrameX.Configuration.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool SaveAggregationOnly {
-            get {
-                return ((bool)(this["SaveAggregationOnly"]));
-            }
-            set {
-                this["SaveAggregationOnly"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("3")]
         public int OutlierPercentageOverlay {
             get {
@@ -776,6 +764,42 @@ namespace CapFrameX.Configuration.Properties {
             }
             set {
                 this["ShowThresholdTimes"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool SaveAggregationOnly {
+            get {
+                return ((bool)(this["SaveAggregationOnly"]));
+            }
+            set {
+                this["SaveAggregationOnly"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool UseSingleRecordMedianStatisticParameter {
+            get {
+                return ((bool)(this["UseSingleRecordMedianStatisticParameter"]));
+            }
+            set {
+                this["UseSingleRecordMedianStatisticParameter"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("None")]
+        public string SecondComparisonContext {
+            get {
+                return ((string)(this["SecondComparisonContext"]));
+            }
+            set {
+                this["SecondComparisonContext"] = value;
             }
         }
     }

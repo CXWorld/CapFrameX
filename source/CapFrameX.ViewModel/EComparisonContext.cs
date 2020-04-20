@@ -13,6 +13,8 @@ namespace CapFrameX.ViewModel
 		[Description("RAM")]
 		SystemRam = 4,
 		[Description("Custom comment")]
-		Custom = 5
+		Custom = 5,
+		[Description("None")]
+		None = 6
 	}
 }

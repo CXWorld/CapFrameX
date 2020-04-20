@@ -138,7 +138,6 @@ namespace CapFrameX.View
 		private void OverlayItemDataGrid_MouseLeave(object sender, MouseEventArgs e)
 		{
 			(DataContext as OverlayViewModel).SelectedOverlayEntryIndex = -1;
-			Keyboard.ClearFocus();
 		}
 
 		private void Hyperlink_RequestNavigate(object sender, System.Windows.Navigation.RequestNavigateEventArgs e)

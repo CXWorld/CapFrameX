@@ -1,13 +1,14 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.Sensor;
+using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Extensions;
 using CapFrameX.PresentMonInterface;
 using Newtonsoft.Json;
+using Prism.Events;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
@@ -18,31 +19,30 @@ namespace CapFrameX.Overlay
     public class OverlayEntryProvider : IOverlayEntryProvider
     {
         private readonly ISensorService _sensorService;
-        private readonly IOnlineMetricService _onlineMetricService;
         private readonly IAppConfiguration _appConfiguration;
+        private readonly IEventAggregator _eventAggregator;
         private readonly ConcurrentDictionary<string, IOverlayEntry> _identifierOverlayEntryDict
              = new ConcurrentDictionary<string, IOverlayEntry>();
         private readonly TaskCompletionSource<bool> _taskCompletionSource
             = new TaskCompletionSource<bool>();
         private BlockingCollection<IOverlayEntry> _overlayEntries;
 
-        public OverlayEntryProvider(ISensorService sensorService,
-                                    IOnlineMetricService onlineMetricService,
-                                    IAppConfiguration appConfiguration)
+        public OverlayEntryProvider(ISensorService sensorService, IAppConfiguration appConfiguration, IEventAggregator eventAggregator)
         {
             _sensorService = sensorService;
-            _onlineMetricService = onlineMetricService;
             _appConfiguration = appConfiguration;
+            _eventAggregator = eventAggregator;
 
             _ = Task.Run(async () => await LoadOrSetDefault())
                 .ContinueWith(task => _taskCompletionSource.SetResult(true));
+
+            SubscribeToOptionPopupClosed();
         }
 
         public async Task<IOverlayEntry[]> GetOverlayEntries()
         {
             await _taskCompletionSource.Task;
             UpdateSensorData();
-            UpdateOnlineMetrics();
             return _overlayEntries.ToArray();
         }
 
@@ -84,6 +84,19 @@ namespace CapFrameX.Overlay
             await LoadOrSetDefault();
         }
 
+        public async Task<IEnumerable<IOverlayEntry>> GetDefaultOverlayEntries()
+        {
+            _overlayEntries = await SetOverlayEntryDefaults();
+            _identifierOverlayEntryDict.Clear();
+            foreach (var entry in _overlayEntries)
+            {
+                entry.OverlayEntryProvider = this;
+                _identifierOverlayEntryDict.TryAdd(entry.Identifier, entry);
+            }
+
+            return _overlayEntries.ToList();
+        }
+
         private async Task LoadOrSetDefault()
         {
             try
@@ -101,7 +114,7 @@ namespace CapFrameX.Overlay
                 _identifierOverlayEntryDict.TryAdd(entry.Identifier, entry);
             }
             CheckCustomSystemInfo();
-            ChecOSVersion();
+            CheckOSVersion();
         }
 
         private IObservable<BlockingCollection<IOverlayEntry>> InitializeOverlayEntryDictionary()
@@ -123,10 +136,7 @@ namespace CapFrameX.Overlay
                         .Select(entry => entry.Identifier)
                         .ToList();
 
-                    foreach (var entry in overlayEntriesFromJson
-                        .Where(x => (x.OverlayEntryType != EOverlayEntryType.CX
-                            && x.OverlayEntryType != EOverlayEntryType.OnlineMetric
-                            && x.OverlayEntryType != EOverlayEntryType.Undefined)))
+                    foreach (var entry in overlayEntriesFromJson.Where(x => x.OverlayEntryType != EOverlayEntryType.CX))
                     {
                         if (!sensorOverlayEntryIdentfiers.Contains(entry.Identifier))
                             adjustedOverlayEntries.Remove(entry);
@@ -143,7 +153,7 @@ namespace CapFrameX.Overlay
                 });
         }
 
-        private void ChecOSVersion()
+        private void CheckOSVersion()
         {
             _identifierOverlayEntryDict.TryGetValue("OS", out IOverlayEntry entry);
 
@@ -160,7 +170,7 @@ namespace CapFrameX.Overlay
             if (customCPUEntry != null)
             {
                 customCPUEntry.Value =
-                    _appConfiguration.CustomCpuDescription == "CPU" ? SystemInfo.GetProcessorName()
+                    _appConfiguration.HardwareInfoSource == "Auto" ? SystemInfo.GetProcessorName()
                     : _appConfiguration.CustomCpuDescription;
             }
 
@@ -169,7 +179,7 @@ namespace CapFrameX.Overlay
             if (customGPUEntry != null)
             {
                 customGPUEntry.Value =
-                    _appConfiguration.CustomGpuDescription == "GPU" ? SystemInfo.GetGraphicCardName()
+                    _appConfiguration.HardwareInfoSource == "Auto" ? SystemInfo.GetGraphicCardName()
                     : _appConfiguration.CustomGpuDescription;
             }
 
@@ -185,7 +195,7 @@ namespace CapFrameX.Overlay
             if (customRAMEntry != null)
             {
                 customRAMEntry.Value =
-                    _appConfiguration.CustomRamDescription == "RAM" ? SystemInfo.GetSystemRAMInfoName()
+                    _appConfiguration.HardwareInfoSource == "Auto" ? SystemInfo.GetSystemRAMInfoName()
                     : _appConfiguration.CustomRamDescription;
             }
         }
@@ -201,38 +211,16 @@ namespace CapFrameX.Overlay
                 .Select(sensorOverlayEntries =>
                 {
                     sensorOverlayEntries.ForEach(sensor => overlayEntries.TryAdd(sensor));
-
                     return overlayEntries;
                 });
         }
 
         private void UpdateSensorData()
         {
-            foreach (var entry in _overlayEntries.Where(x => x.OverlayEntryType == EOverlayEntryType.GPU 
-                || x.OverlayEntryType == EOverlayEntryType.CPU
-                || x.OverlayEntryType == EOverlayEntryType.RAM
-                || x.OverlayEntryType == EOverlayEntryType.Mainboard
-                || x.OverlayEntryType == EOverlayEntryType.FanController
-                || x.OverlayEntryType == EOverlayEntryType.HDD))
+            foreach (var entry in _overlayEntries.Where(x => !(x.OverlayEntryType == EOverlayEntryType.CX)))
             {
                 var sensorEntry = _sensorService.GetSensorOverlayEntry(entry.Identifier);
                 entry.Value = sensorEntry.Value;
-            }
-        }
-
-        private void UpdateOnlineMetrics()
-        {
-            foreach (var entry in _overlayEntries.Where(x => x.OverlayEntryType == EOverlayEntryType.OnlineMetric))
-            {
-                double metricValue = 
-                    entry.Identifier == "OnlineAverage" ? _onlineMetricService.GetOnlineFpsMetricValue(Statistics.EMetric.Average) :
-                    entry.Identifier == "OnlineP1" ? _onlineMetricService.GetOnlineFpsMetricValue(Statistics.EMetric.P1) :
-                    entry.Identifier == "OnlineP0dot2" ? _onlineMetricService.GetOnlineFpsMetricValue(Statistics.EMetric.P0dot2) :
-                    // Default
-                    double.NaN;
-
-                entry.Value = Math.Round(metricValue, 0).ToString(CultureInfo.InvariantCulture);
-                entry.ValueFormat = "{0,4:F0}<S=50>FPS<S>";
             }
         }
 
@@ -245,6 +233,14 @@ namespace CapFrameX.Overlay
         private void SetConfigurationFileName(int index)
         {
             _appConfiguration.OverlayEntryConfigurationFile = index;
+        }
+        private void SubscribeToOptionPopupClosed()
+        {
+            _eventAggregator.GetEvent<PubSubEvent<ViewMessages.OptionPopupClosed>>()
+                            .Subscribe(_ =>
+                            {
+                                CheckCustomSystemInfo();
+                            });
         }
     }
 }

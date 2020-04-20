@@ -32,18 +32,13 @@ namespace CapFrameX
 		public LoginWindow(LoginManager loginManager)
 		{
 			_loginManager = loginManager;
-			if (!Cef.IsInitialized)
-			{
-				Cef.Initialize(new CefSettings()
-				{
-					UserAgent = "Chrome"
-				});
-			}
 			InitializeComponent();
 		}
 
 		private async void OnBrowserInitialized(object sender, EventArgs e)
 		{
+			await SetupBrowser();
+
 			Cef.GetGlobalCookieManager().DeleteCookies();
 			await _loginManager.HandleRedirect(async (url) =>
 				{
@@ -54,6 +49,22 @@ namespace CapFrameX
 					}));
 				});
 			Close();
+		}
+
+		private async Task SetupBrowser()
+		{
+			if (!Cef.IsInitialized)
+			{
+				Cef.Initialize(new CefSettings()
+				{
+					UserAgent = "Chrome"
+				});
+			}
+
+			do
+			{
+				await Task.Delay(200);
+			} while (!Cef.IsInitialized);
 		}
 	}
 }

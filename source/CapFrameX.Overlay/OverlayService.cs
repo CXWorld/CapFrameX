@@ -248,9 +248,6 @@ namespace CapFrameX.Overlay
 			ResetHistory();
 		}
 
-		public async Task SwitchOverlayConfiguration(EOverlayEntryConfig config)
-			=> await _overlayEntryProvider?.SwitchConfigurationTo((int)config);
-
 		private void CheckRTSSRunningAndRefresh()
 		{
 			var processes = Process.GetProcessesByName("RTSS");

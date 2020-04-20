@@ -8,6 +8,7 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
 using CapFrameX.Configuration;
+using CapFrameX.Contracts.Configuration;
 using CapFrameX.Extensions;
 using Newtonsoft.Json;
 
@@ -17,15 +18,17 @@ namespace CapFrameX.Data
 	{
 		private readonly List<CXProcess> _processList = new List<CXProcess>();
 		private readonly string _filename;
-		private bool ShareProcessListEntries { get; set; }
+		private readonly IAppConfiguration _appConfiguration;
 		private readonly ISubject<int> _processListUpdate = new Subject<int>();
+		private bool ProcesslistInitialized { get; set; }
 		public IObservable<int> ProcessesUpdate => _processListUpdate.AsObservable();
 
 		public CXProcess[] Processes => _processList.ToArray();
 
-		public ProcessList(string filename)
+		private ProcessList(string filename, IAppConfiguration appConfiguration)
 		{
 			_filename = filename;
+			_appConfiguration = appConfiguration;
 		}
 
 		public string[] GetIgnoredProcessNames()
@@ -49,8 +52,8 @@ namespace CapFrameX.Data
 			_processList.Add(process);
 			_processListUpdate.OnNext(default);
 
-			if (ShareProcessListEntries)
-			{
+			if (_appConfiguration.ShareProcessListEntries && ProcesslistInitialized)
+			{ 
 				Task.Run(async () =>
 				{
 					using (var client = new HttpClient()
@@ -68,13 +71,8 @@ namespace CapFrameX.Data
 						content.Headers.ContentType.MediaType = "application/json";
 						var response = await client.PostAsync("ProcessList", content);
 					}
-				});
+				});				
 			}
-		}
-
-		public void EnableSharingOfNewEntries()
-		{
-			ShareProcessListEntries = true;
 		}
 
 		public CXProcess FindProcessByProcessName(string processName)
@@ -123,9 +121,9 @@ namespace CapFrameX.Data
 			}
 		}
 
-		public static ProcessList Create(string filename, bool AutoUpdateProcessList = false, bool ShareProcessListEntries = false)
+		public static ProcessList Create(string filename, IAppConfiguration appConfiguration)
 		{
-			ProcessList processList = new ProcessList(filename);
+			ProcessList processList = new ProcessList(filename, appConfiguration);
 			Task.Run(() =>
 			{
 				try
@@ -149,20 +147,16 @@ namespace CapFrameX.Data
 					}
 					processList.Save();
 
-					if (AutoUpdateProcessList)
+					if (appConfiguration.AutoUpdateProcessList)
 					{
+						processList.ProcesslistInitialized = false;
 						Task.Run(() => processList.UpdateProcessListFromWebserviceAsync().ContinueWith(t =>
-						{
-							if (ShareProcessListEntries)
-							{
-								processList.EnableSharingOfNewEntries();
-							}
+						{							
+						processList.ProcesslistInitialized = true;							
 						}).ConfigureAwait(false));
 					}
-					else if (ShareProcessListEntries)
-					{
-						processList.EnableSharingOfNewEntries();
-					}
+					else
+						processList.ProcesslistInitialized = true;
 				}
 				catch (Exception)
 				{

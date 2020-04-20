@@ -31,6 +31,7 @@ namespace CapFrameX.ViewModel
 		private PubSubEvent<AppMessages.UpdateObservedDirectory> _updateObservedFolder;
 		private PubSubEvent<AppMessages.OpenLoginWindow> _openLoginWindow;
 		private PubSubEvent<AppMessages.LoginState> _logout;
+		public PubSubEvent<ViewMessages.OptionPopupClosed> OptionPopupClosed;
 
 		private bool _captureIsChecked = true;
 		private bool _overlayIsChecked;
@@ -48,6 +49,10 @@ namespace CapFrameX.ViewModel
 		private string _selectedView = "Options";
 		private bool _optionsViewSelected = true;
 		private bool _helpViewSelected;
+
+		public string CurrentPageName { get; set; }
+
+		public IFileRecordInfo RecordInfo { get; set; }
 
 		public bool CaptureIsChecked
 		{
@@ -256,6 +261,7 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
+
 		public bool OptionsViewSelected
 		{
 			get { return _optionsViewSelected; }
@@ -307,7 +313,7 @@ namespace CapFrameX.ViewModel
 								 IAppConfiguration appConfiguration,
 								 ILogger<ColorbarViewModel> logger,
 								 IShell shell,
-								 LoginManager loginManager)
+								 LoginManager loginManager)			
 		{
 			_regionManager = regionManager;
 			_eventAggregator = eventAggregator;
@@ -323,10 +329,12 @@ namespace CapFrameX.ViewModel
 			RoundingDigits = new List<int>(Enumerable.Range(0, 8));
 			SelectScreenshotFolderCommand = new DelegateCommand(OnSelectScreenshotFolder);
 			OpenScreenshotFolderCommand = new DelegateCommand(OnOpenScreenshotFolder);
+			OptionPopupClosed = eventAggregator.GetEvent<PubSubEvent<ViewMessages.OptionPopupClosed>>();
 
 			HasCustomInfo = SelectedHardwareInfoSource == EHardwareInfoSource.Custom;
 			SetAggregatorEvents();
 			SetHardwareInfoDefaultsFromDatabase();
+			SubscribeToUpdateSession();
 		}
 
 		public void OpenLoginWindow()
@@ -385,41 +393,48 @@ namespace CapFrameX.ViewModel
 		private void OnCaptureIsCheckedChanged()
 		{
 			_regionManager.RequestNavigate("DataRegion", "CaptureView");
+			CurrentPageName = "Capture";
 		}
-
 		private void OnOverlayIsCheckedChanged()
 		{
 			_regionManager.RequestNavigate("DataRegion", "OverlayView");
+			CurrentPageName = "Overlay";
 		}
 
 		private void OnSingleRecordIsCheckedChanged()
 		{
 			_regionManager.RequestNavigate("DataRegion", "DataView");
+			CurrentPageName = "Analysis";
 		}
 
 		private void OnAggregationIsCheckedChanged()
 		{
 			_regionManager.RequestNavigate("DataRegion", "AggregationView");
+			CurrentPageName = "Aggregation";
 		}
 
 		private void OnRecordComparisonIsCheckedChanged()
 		{
 			_regionManager.RequestNavigate("DataRegion", "ComparisonView");
+			CurrentPageName = "Comparison";
 		}
 
 		private void OnReportIsCheckedChanged()
 		{
 			_regionManager.RequestNavigate("DataRegion", "ReportView");
+			CurrentPageName = "Report";
 		}
 
 		private void OnSynchronizationIsCheckedChanged()
 		{
 			_regionManager.RequestNavigate("DataRegion", "SynchronizationView");
+			CurrentPageName = "Synchronization";
 		}
 
 		private void OnCloudIsCheckedChanged()
 		{
 			_regionManager.RequestNavigate("DataRegion", "CloudView");
+			CurrentPageName = "Cloud";
 		}
 
 		private void OnHardwareInfoSourceChanged()
@@ -449,6 +464,14 @@ namespace CapFrameX.ViewModel
 				IsLoggedIn = state.IsLoggedIn;
 				RaisePropertyChanged(nameof(IsLoggedIn));
 			});
+		}
+		private void SubscribeToUpdateSession()
+		{
+			_eventAggregator.GetEvent<PubSubEvent<ViewMessages.UpdateSession>>()
+							.Subscribe(msg =>
+							{
+								RecordInfo = msg.RecordInfo;
+							});
 		}
 	}
 }

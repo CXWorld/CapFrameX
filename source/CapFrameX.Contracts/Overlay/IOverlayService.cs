@@ -36,8 +36,6 @@ namespace CapFrameX.Contracts.Overlay
 
 		void SetRunHistoryAggregation(string aggregation);
 
-		Task SwitchOverlayConfiguration(EOverlayEntryConfig config);
-
 		void Refresh();
 
 		void ResetOSD();

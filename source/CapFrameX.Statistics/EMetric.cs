@@ -17,32 +17,35 @@ namespace CapFrameX.Statistics
 		[Description("Average")]
 		[ShortDescription("Avg")]
 		Average = 4,
+		[Description("Median")]
+		[ShortDescription("Med")]
+		Median = 5,
 		[Description("5% percentile")]
 		[ShortDescription("P5")]
-		P5 = 5,
+		P5 = 6,
 		[Description("1% percentile")]
 		[ShortDescription("P1")]
-		P1 = 6,
+		P1 = 7,
 		[Description("0.2% percentile")]
 		[ShortDescription("P0.2")]
-		P0dot2 = 7,
+		P0dot2 = 8,
 		[Description("0.1% percentile")]
 		[ShortDescription("P0.1")]
-		P0dot1 = 8,
+		P0dot1 = 9,
 		[Description("1% low average")]
 		[ShortDescription("1% Low")]
-		OnePercentLow = 9,
+		OnePercentLow = 10,
 		[Description("0.1% low average")]
 		[ShortDescription("0.1% Low")]
-		ZerodotOnePercentLow = 10,
+		ZerodotOnePercentLow = 11,
 		[Description("Minimum")]
 		[ShortDescription("Min")]
-		Min = 11,
+		Min = 12,
 		[Description("Adaptive STDEV")]
 		[ShortDescription("Adp STDEV")]
-		AdaptiveStd = 12,
+		AdaptiveStd = 13,
 		[Description("None")]
 		[ShortDescription("None")]
-		None = 13,
+		None = 14,
 	}
 }
