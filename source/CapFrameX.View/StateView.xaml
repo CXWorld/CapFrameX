@@ -22,6 +22,7 @@
 				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Slider.xaml" />
 			</ResourceDictionary.MergedDictionaries>
 			<mvvm:BoolToVisibilityConverter x:Key="FalseToCollapsedConverter" FalseValue="Collapsed" TrueValue="Visible"/>
+            <mvvm:BoolToVisibilityConverter x:Key="TrueToCollapsedConverter" FalseValue="Visible" TrueValue="Collapsed"/>
 		</ResourceDictionary>
 	</UserControl.Resources>
 	<Grid Background="#e6e6e6">
@@ -35,46 +36,29 @@
 				<TextBlock Text="{Binding Path=UpdateHyperlinkText}"/>
 			</Hyperlink>	
 		</TextBlock>
-		<StackPanel HorizontalAlignment="Left" Grid.Column="0" Margin="10 0 0 0" Orientation="Horizontal">
-			<TextBlock Margin="0 0 5 0" VerticalAlignment="Center">Capture mode:</TextBlock>
-			<ToggleButton Width="20" Height="20" IsHitTestVisible="False"
-					  Style="{StaticResource MaterialDesignActionAccentToggleButton}"
-					  IsChecked="{Binding IsCaptureModeActive, Mode=OneWay}"
-					  Content="{materialDesign:PackIcon Stop, Size=18}">
-				<materialDesign:ToggleButtonAssist.OnContent>
-					<materialDesign:PackIcon Kind="Play"/>
-				</materialDesign:ToggleButtonAssist.OnContent>
-			</ToggleButton>
-			<TextBlock Margin="10 0 5 0" VerticalAlignment="Center">Overlay:</TextBlock>
-			<ToggleButton Width="20" Height="20" IsHitTestVisible="False"
-					  Style="{StaticResource MaterialDesignActionAccentToggleButton}"
-					  IsChecked="{Binding IsOverlayActive, Mode=OneWay}"
-					  Content="{materialDesign:PackIcon Stop, Size=18}">
-				<materialDesign:ToggleButtonAssist.OnContent>
-					<materialDesign:PackIcon Kind="Play"/>
-				</materialDesign:ToggleButtonAssist.OnContent>
-			</ToggleButton>
-            <TextBlock Margin="10 0 5 0" VerticalAlignment="Center">Sensor logging:</TextBlock>
-            <ToggleButton Width="20" Height="20" IsHitTestVisible="False"
-					  Style="{StaticResource MaterialDesignActionAccentToggleButton}"
-					  IsChecked="{Binding IsLoggingActive, Mode=OneWay}"
-					  Content="{materialDesign:PackIcon Stop, Size=18}">
-                <materialDesign:ToggleButtonAssist.OnContent>
-                    <materialDesign:PackIcon Kind="Play"/>
-                </materialDesign:ToggleButtonAssist.OnContent>
-            </ToggleButton>
-            <TextBlock Margin="10 0 5 0" VerticalAlignment="Center">Directory observer:</TextBlock>
-			<ToggleButton Width="20" Height="20" IsHitTestVisible="False"
-					  Style="{StaticResource MaterialDesignActionAccentToggleButton}"
-					  IsChecked="{Binding IsDirectoryObserving, Mode=OneWay}"
-					  Content="{materialDesign:PackIcon Stop, Size=18}">
-				<materialDesign:ToggleButtonAssist.OnContent>
-					<materialDesign:PackIcon Kind="Check"/>
-				</materialDesign:ToggleButtonAssist.OnContent>
-			</ToggleButton>
-		</StackPanel>
-	
-		<StackPanel HorizontalAlignment="Right" Grid.Column="1" Margin="0 0 10 0" Orientation="Horizontal">
+        <StackPanel HorizontalAlignment="Left" Grid.Column="0" Margin="10 0 0 0" Orientation="Horizontal">
+            <TextBlock Margin="0 0 5 0" VerticalAlignment="Center">Capture Service:</TextBlock>
+            <TextBlock Margin="0 0 20 0" VerticalAlignment="Center" Visibility="{Binding IsCaptureModeActive, Mode=OneWay,Converter={StaticResource TrueToCollapsedConverter}}" 
+                       Text="Ready" FontWeight="Bold" Foreground="LimeGreen"></TextBlock>
+            <TextBlock Margin="0 0 0 0" VerticalAlignment="Center" Visibility="{Binding IsCaptureModeActive, Mode=OneWay, Converter={StaticResource FalseToCollapsedConverter}}" 
+                       Text="Capturing" FontWeight="Bold" Foreground="OrangeRed"></TextBlock>
+            <TextBlock Margin="25 0 5 0" VerticalAlignment="Center">Overlay:</TextBlock>
+            <TextBlock Margin="0 0 5 0" VerticalAlignment="Center" Visibility="{Binding IsOverlayActive, Mode=OneWay,Converter={StaticResource FalseToCollapsedConverter}}" 
+                       Text="ON" FontWeight="Bold" Foreground="LimeGreen"></TextBlock>
+            <TextBlock Margin="0 0 0 0" VerticalAlignment="Center" Visibility="{Binding IsOverlayActive, Mode=OneWay,Converter={StaticResource TrueToCollapsedConverter}}" 
+                       Text="OFF" FontWeight="Bold" Foreground="OrangeRed"></TextBlock>
+            <TextBlock Margin="25 0 5 0" VerticalAlignment="Center">Sensor logging:</TextBlock>
+            <TextBlock Margin="0 0 5 0" VerticalAlignment="Center" Visibility="{Binding IsLoggingActive, Mode=OneWay,Converter={StaticResource FalseToCollapsedConverter}}" 
+                       Text="ON" FontWeight="Bold" Foreground="LimeGreen"></TextBlock>
+            <TextBlock Margin="0 0 0 0" VerticalAlignment="Center" Visibility="{Binding IsLoggingActive, Mode=OneWay,Converter={StaticResource TrueToCollapsedConverter}}" 
+                       Text="OFF" FontWeight="Bold" Foreground="OrangeRed"></TextBlock>
+            <TextBlock Margin="25 0 5 0" VerticalAlignment="Center">Directory observer:</TextBlock>
+            <TextBlock Margin="0 0 5 0" VerticalAlignment="Center" Visibility="{Binding IsDirectoryObserving, Mode=OneWay,Converter={StaticResource FalseToCollapsedConverter}}" 
+                       Text="Active" FontWeight="Bold" Foreground="LimeGreen"></TextBlock>
+            <TextBlock Margin="0 0 5 0" VerticalAlignment="Center" Visibility="{Binding IsDirectoryObserving, Mode=OneWay,Converter={StaticResource TrueToCollapsedConverter}}" 
+                       Text="Inactive" FontWeight="Bold" Foreground="OrangeRed"></TextBlock>
+        </StackPanel>
+        <StackPanel HorizontalAlignment="Right" Grid.Column="1" Margin="0 0 10 0" Orientation="Horizontal">
 			<materialDesign:PackIcon Kind="Information" VerticalAlignment="Center" />
 			<TextBlock Margin="5 0 0 0" VerticalAlignment="Center">Version:</TextBlock>
 			<TextBlock Margin="5 0 0 0" VerticalAlignment="Center" Text="{Binding VersionString, Mode=OneWay}"/>
