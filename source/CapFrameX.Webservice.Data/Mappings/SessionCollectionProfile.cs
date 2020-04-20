@@ -32,7 +32,9 @@ namespace CapFrameX.Webservice.Data.Mappings
 				.ForMember(dest => dest.GameName, opts => opts.MapFrom(src => src.GameName))
 				.ForMember(dest => dest.ProcessName, opts => opts.MapFrom(src => src.ProcessName))
 				.ForMember(dest => dest.CreationDate, opts => opts.MapFrom(src => src.CreationDate))
-				.ForMember(dest => dest.Comment, opts => opts.MapFrom(src => src.Comment));
+				.ForMember(dest => dest.Comment, opts => opts.MapFrom(src => src.Comment))
+				.ForMember(dest => dest.FileId, opts => opts.MapFrom(src => src.File.FirstOrDefault()))
+				.ForMember(dest => dest.SessionHash, opts => opts.MapFrom(src => src.Hash));
 
 			CreateMap<Session, SqSessionData>()
 				.ForMember(dest => dest.AppVersion, opts => opts.MapFrom(src => src.Info.AppVersion))
