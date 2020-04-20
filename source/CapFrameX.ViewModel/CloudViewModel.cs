@@ -53,7 +53,7 @@ namespace CapFrameX.ViewModel
 		private string _shareUrl;
 		private bool _showUploadInfo = false;
 		private bool _showDownloadInfo = false;
-		private bool _showUploadDescriptionTextBox = true;
+		private bool _showUploadDescriptionTextBox = false;
 		private string _uploadDescription = string.Empty;
 
 
@@ -231,6 +231,7 @@ namespace CapFrameX.ViewModel
 
 		public ObservableCollection<ICloudEntry> CloudEntries { get; private set; }
 			= new ObservableCollection<ICloudEntry>();
+		public bool IsLoggedIn { get; private set; }
 
 		public CloudViewModel(IStatisticProvider statisticProvider, IRecordManager recordManager,
 			IEventAggregator eventAggregator, IAppConfiguration appConfiguration, ILogger<CloudViewModel> logger, IAppVersionProvider appVersionProvider, LoginManager loginManager)
@@ -261,6 +262,13 @@ namespace CapFrameX.ViewModel
 
 			CloudEntries.CollectionChanged += new NotifyCollectionChangedEventHandler
 				((sender, eventArg) => OnCloudEntriesChanged());
+
+			_eventAggregator.GetEvent<PubSubEvent<AppMessages.LoginState>>().Subscribe(state =>
+			{
+				IsLoggedIn = state.IsLoggedIn;
+				RaisePropertyChanged(nameof(IsLoggedIn));
+				ShowUploadDescriptionTextBox = (CloudEntries.Any() && IsLoggedIn) ? true : false;
+			});
 		}
 
 		public void RemoveCloudEntry(ICloudEntry entry)
@@ -273,6 +281,7 @@ namespace CapFrameX.ViewModel
 		{
 			ShowHelpText = !CloudEntries.Any();
 			EnableClearAndUploadButton = CloudEntries.Any();
+			ShowUploadDescriptionTextBox = (CloudEntries.Any() && IsLoggedIn) ? true : false;
 		}
 
 		private void SubscribeToUpdateSession()
@@ -296,8 +305,7 @@ namespace CapFrameX.ViewModel
 			else
 				return;
 
-			ShareUrl = string.Empty;
-			ShowUploadDescriptionTextBox = true;
+			ShareUrl = string.Empty;		
 			CloudEntries.Add(new CloudEntry()
 			{
 				GameName = recordInfo.GameName,

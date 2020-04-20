@@ -31,6 +31,7 @@
     <Grid Background="#e6e6e6">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="1*"></ColumnDefinition>
+            <!--<ColumnDefinition Width="2*"></ColumnDefinition>-->
             <ColumnDefinition Width="1*"></ColumnDefinition>
         </Grid.ColumnDefinitions>
         <TextBlock Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Center" VerticalAlignment="Center"
@@ -55,6 +56,10 @@
             <TextBlock Margin="25 0 5 0" VerticalAlignment="Center">Directory observer:</TextBlock>
             <TextBlock Margin="0 0 20 0" VerticalAlignment="Center" Text="{Binding IsDirectoryObserving, Converter={StaticResource ModeDescriptionConverter}, ConverterParameter= Active|Inactive}" 
                        FontWeight="Bold" Foreground="{Binding IsDirectoryObserving, Converter={StaticResource ModeColorConverter}}"></TextBlock>
+
+            <TextBlock Margin="25 0 5 0" VerticalAlignment="Center">Login status:</TextBlock>
+            <TextBlock Margin="0 0 20 0" VerticalAlignment="Center" Text="{Binding IsLoggedIn, Converter={StaticResource ModeDescriptionConverter}, ConverterParameter= Logged in|Not logged in}" 
+                       FontWeight="Bold" Foreground="{Binding IsLoggedIn, Converter={StaticResource ModeColorConverter}}"></TextBlock>
         </StackPanel>
         <StackPanel HorizontalAlignment="Right" Grid.Column="1" Margin="0 0 10 0" Orientation="Horizontal">
             <materialDesign:PackIcon Kind="Information" VerticalAlignment="Center" />
