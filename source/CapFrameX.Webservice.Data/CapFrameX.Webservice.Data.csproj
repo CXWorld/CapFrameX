@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CapFrameX.Data.Session\CapFrameX.Data.Session.csproj" />
+    <ProjectReference Include="..\CapFrameX.Sensor.Reporting\CapFrameX.Sensor.Reporting.csproj" />
   </ItemGroup>
 
 </Project>
