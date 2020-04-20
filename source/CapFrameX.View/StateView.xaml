@@ -12,25 +12,28 @@
 			 Background="{DynamicResource MaterialDesignPaper}"
              FontFamily="{StaticResource MaterialDesignFont}"
              prism:ViewModelLocator.AutoWireViewModel="True">
-	<UserControl.Resources>
-		<ResourceDictionary>
-			<ResourceDictionary.MergedDictionaries>
-				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Button.xaml" />
-				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Shadows.xaml" />
-				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ToggleButton.xaml" />
-				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.DataGrid.xaml" />
-				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Slider.xaml" />
-			</ResourceDictionary.MergedDictionaries>
-			<mvvm:BoolToVisibilityConverter x:Key="FalseToCollapsedConverter" FalseValue="Collapsed" TrueValue="Visible"/>
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Button.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Shadows.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ToggleButton.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.DataGrid.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Slider.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <mvvm:BoolToVisibilityConverter x:Key="FalseToCollapsedConverter" FalseValue="Collapsed" TrueValue="Visible"/>
             <mvvm:BoolToVisibilityConverter x:Key="TrueToCollapsedConverter" FalseValue="Visible" TrueValue="Collapsed"/>
-		</ResourceDictionary>
-	</UserControl.Resources>
-	<Grid Background="#e6e6e6">
-		<Grid.ColumnDefinitions>
-			<ColumnDefinition Width="1*"></ColumnDefinition>
-			<ColumnDefinition Width="1*"></ColumnDefinition>
-		</Grid.ColumnDefinitions>
-		<TextBlock Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Center" VerticalAlignment="Center"
+            <mvvm:ModeColorConverter x:Key="ModeColorConverter" ActiveColor="LimeGreen" InactiveColor="OrangeRed"/>
+            <mvvm:ModeColorConverter x:Key="ModeColorConverterReverse" ActiveColor="OrangeRed" InactiveColor="LimeGreen"/>
+            <mvvm:ModeDescriptionConverter x:Key="ModeDescriptionConverter" Seperator="|"/>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Grid Background="#e6e6e6">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1*"></ColumnDefinition>
+            <ColumnDefinition Width="1*"></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        <TextBlock Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Center" VerticalAlignment="Center"
 				   Visibility="{Binding IsUpdateAvailable, Converter={StaticResource FalseToCollapsedConverter}}">           
 			<Hyperlink NavigateUri="https://github.com/DevTechProfile/CapFrameX/releases" RequestNavigate="Hyperlink_RequestNavigate">
 				<TextBlock Text="{Binding Path=UpdateHyperlinkText}"/>
@@ -38,30 +41,25 @@
 		</TextBlock>
         <StackPanel HorizontalAlignment="Left" Grid.Column="0" Margin="10 0 0 0" Orientation="Horizontal">
             <TextBlock Margin="0 0 5 0" VerticalAlignment="Center">Capture Service:</TextBlock>
-            <TextBlock Margin="0 0 20 0" VerticalAlignment="Center" Visibility="{Binding IsCaptureModeActive, Mode=OneWay,Converter={StaticResource TrueToCollapsedConverter}}" 
-                       Text="Ready" FontWeight="Bold" Foreground="LimeGreen"></TextBlock>
-            <TextBlock Margin="0 0 0 0" VerticalAlignment="Center" Visibility="{Binding IsCaptureModeActive, Mode=OneWay, Converter={StaticResource FalseToCollapsedConverter}}" 
-                       Text="Capturing" FontWeight="Bold" Foreground="OrangeRed"></TextBlock>
+            <TextBlock Margin="0 0 20 0" VerticalAlignment="Center" Text="{Binding IsCaptureModeActive, Converter={StaticResource ModeDescriptionConverter}, ConverterParameter=Capturing|Ready}" 
+                       FontWeight="Bold" Foreground="{Binding IsCaptureModeActive, Converter={StaticResource ModeColorConverterReverse}}"></TextBlock>
+            
             <TextBlock Margin="25 0 5 0" VerticalAlignment="Center">Overlay:</TextBlock>
-            <TextBlock Margin="0 0 5 0" VerticalAlignment="Center" Visibility="{Binding IsOverlayActive, Mode=OneWay,Converter={StaticResource FalseToCollapsedConverter}}" 
-                       Text="ON" FontWeight="Bold" Foreground="LimeGreen"></TextBlock>
-            <TextBlock Margin="0 0 0 0" VerticalAlignment="Center" Visibility="{Binding IsOverlayActive, Mode=OneWay,Converter={StaticResource TrueToCollapsedConverter}}" 
-                       Text="OFF" FontWeight="Bold" Foreground="OrangeRed"></TextBlock>
+            <TextBlock Margin="0 0 20 0" VerticalAlignment="Center" Text="{Binding IsOverlayActive, Converter={StaticResource ModeDescriptionConverter}, ConverterParameter=On|Off}" 
+                       FontWeight="Bold" Foreground="{Binding IsOverlayActive, Converter={StaticResource ModeColorConverter}}"></TextBlock>
+            
             <TextBlock Margin="25 0 5 0" VerticalAlignment="Center">Sensor logging:</TextBlock>
-            <TextBlock Margin="0 0 5 0" VerticalAlignment="Center" Visibility="{Binding IsLoggingActive, Mode=OneWay,Converter={StaticResource FalseToCollapsedConverter}}" 
-                       Text="ON" FontWeight="Bold" Foreground="LimeGreen"></TextBlock>
-            <TextBlock Margin="0 0 0 0" VerticalAlignment="Center" Visibility="{Binding IsLoggingActive, Mode=OneWay,Converter={StaticResource TrueToCollapsedConverter}}" 
-                       Text="OFF" FontWeight="Bold" Foreground="OrangeRed"></TextBlock>
+            <TextBlock Margin="0 0 20 0" VerticalAlignment="Center" Text="{Binding IsLoggingActive, Converter={StaticResource ModeDescriptionConverter}, ConverterParameter=On|Off}" 
+                       FontWeight="Bold" Foreground="{Binding IsLoggingActive, Converter={StaticResource ModeColorConverter}}"></TextBlock>
+            
             <TextBlock Margin="25 0 5 0" VerticalAlignment="Center">Directory observer:</TextBlock>
-            <TextBlock Margin="0 0 5 0" VerticalAlignment="Center" Visibility="{Binding IsDirectoryObserving, Mode=OneWay,Converter={StaticResource FalseToCollapsedConverter}}" 
-                       Text="Active" FontWeight="Bold" Foreground="LimeGreen"></TextBlock>
-            <TextBlock Margin="0 0 5 0" VerticalAlignment="Center" Visibility="{Binding IsDirectoryObserving, Mode=OneWay,Converter={StaticResource TrueToCollapsedConverter}}" 
-                       Text="Inactive" FontWeight="Bold" Foreground="OrangeRed"></TextBlock>
+            <TextBlock Margin="0 0 20 0" VerticalAlignment="Center" Text="{Binding IsDirectoryObserving, Converter={StaticResource ModeDescriptionConverter}, ConverterParameter= Active|Inactive}" 
+                       FontWeight="Bold" Foreground="{Binding IsDirectoryObserving, Converter={StaticResource ModeColorConverter}}"></TextBlock>
         </StackPanel>
         <StackPanel HorizontalAlignment="Right" Grid.Column="1" Margin="0 0 10 0" Orientation="Horizontal">
-			<materialDesign:PackIcon Kind="Information" VerticalAlignment="Center" />
-			<TextBlock Margin="5 0 0 0" VerticalAlignment="Center">Version:</TextBlock>
-			<TextBlock Margin="5 0 0 0" VerticalAlignment="Center" Text="{Binding VersionString, Mode=OneWay}"/>
-		</StackPanel>
-	</Grid>
+            <materialDesign:PackIcon Kind="Information" VerticalAlignment="Center" />
+            <TextBlock Margin="5 0 0 0" VerticalAlignment="Center">Version:</TextBlock>
+            <TextBlock Margin="5 0 0 0" VerticalAlignment="Center" Text="{Binding VersionString, Mode=OneWay}"/>
+        </StackPanel>
+    </Grid>
 </UserControl>
