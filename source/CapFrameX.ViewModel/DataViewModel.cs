@@ -31,6 +31,8 @@ using CapFrameX.Contracts.Sensor;
 using CapFrameX.Sensor;
 using System.Windows.Threading;
 using System.Reactive.Linq;
+using CapFrameX.Sensor.Reporting.Contracts;
+using CapFrameX.Sensor.Reporting;
 
 namespace CapFrameX.ViewModel
 {

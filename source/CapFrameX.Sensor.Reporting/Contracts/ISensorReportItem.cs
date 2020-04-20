@@ -1,4 +1,4 @@
-﻿namespace CapFrameX.Contracts.Sensor
+﻿namespace CapFrameX.Sensor.Reporting.Contracts
 {
     public interface ISensorReportItem
     {

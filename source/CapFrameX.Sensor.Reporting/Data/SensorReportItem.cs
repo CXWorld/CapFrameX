@@ -1,6 +1,6 @@
-﻿using CapFrameX.Contracts.Sensor;
+﻿using CapFrameX.Sensor.Reporting.Contracts;
 
-namespace CapFrameX.Sensor
+namespace CapFrameX.Sensor.Reporting.Data
 {
     public class SensorReportItem : ISensorReportItem
     {
