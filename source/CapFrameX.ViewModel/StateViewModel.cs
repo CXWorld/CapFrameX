@@ -5,11 +5,9 @@ using CapFrameX.Contracts.PresentMonInterface;
 using CapFrameX.Contracts.UpdateCheck;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Overlay;
-using CapFrameX.Updater;
 using Prism.Events;
 using Prism.Mvvm;
 using System;
-using System.Diagnostics;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reflection;
@@ -44,8 +42,6 @@ namespace CapFrameX.ViewModel
 
 			return true;
 		}
-
-		public bool IsDirectoryObserving { get; private set; }
 
 		public bool IsOverlayActive
 		{
@@ -116,15 +112,8 @@ namespace CapFrameX.ViewModel
 			_overlayService = overlayService;
 			_updateCheck = updateCheck;
 			_appVersionProvider = appVersionProvider;
-			IsDirectoryObserving = true;
 			IsCaptureModeActive = false;
 			IsOverlayActive = _appConfiguration.IsOverlayActive && !string.IsNullOrEmpty(RTSSUtils.GetRTSSFullPath());
-
-			_recordObserver.ObservingDirectoryStream
-				.Subscribe(directoryInfo =>
-				{
-					IsDirectoryObserving = directoryInfo?.Exists ?? false;
-				});
 
 			_captureService.IsCaptureModeActiveStream
 				.Subscribe(state => IsCaptureModeActive = state);
