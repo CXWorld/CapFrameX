@@ -12,72 +12,54 @@
 			 Background="{DynamicResource MaterialDesignPaper}"
              FontFamily="{StaticResource MaterialDesignFont}"
              prism:ViewModelLocator.AutoWireViewModel="True">
-	<UserControl.Resources>
-		<ResourceDictionary>
-			<ResourceDictionary.MergedDictionaries>
-				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Button.xaml" />
-				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Shadows.xaml" />
-				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ToggleButton.xaml" />
-				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.DataGrid.xaml" />
-				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Slider.xaml" />
-			</ResourceDictionary.MergedDictionaries>
-			<mvvm:BoolToVisibilityConverter x:Key="FalseToCollapsedConverter" FalseValue="Collapsed" TrueValue="Visible"/>
-		</ResourceDictionary>
-	</UserControl.Resources>
-	<Grid Background="#e6e6e6">
-		<Grid.ColumnDefinitions>
-			<ColumnDefinition Width="1*"></ColumnDefinition>
-			<ColumnDefinition Width="1*"></ColumnDefinition>
-		</Grid.ColumnDefinitions>
-		<TextBlock Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Center" VerticalAlignment="Center"
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Button.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Shadows.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ToggleButton.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.DataGrid.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Slider.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <mvvm:BoolToVisibilityConverter x:Key="FalseToCollapsedConverter" FalseValue="Collapsed" TrueValue="Visible"/>
+            <mvvm:BoolToVisibilityConverter x:Key="TrueToCollapsedConverter" FalseValue="Visible" TrueValue="Collapsed"/>
+            <mvvm:ModeColorConverter x:Key="ModeColorConverter" ActiveColor="LimeGreen" InactiveColor="OrangeRed"/>
+            <mvvm:ModeColorConverter x:Key="ModeColorConverterReverse" ActiveColor="OrangeRed" InactiveColor="LimeGreen"/>
+            <mvvm:ModeDescriptionConverter x:Key="ModeDescriptionConverter" Seperator="|"/>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Grid Background="#e6e6e6">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="2*"></ColumnDefinition>
+            <ColumnDefinition Width="1*"></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        <TextBlock Grid.Column="1" Grid.ColumnSpan="2" HorizontalAlignment="Center" VerticalAlignment="Center"
 				   Visibility="{Binding IsUpdateAvailable, Converter={StaticResource FalseToCollapsedConverter}}">           
 			<Hyperlink NavigateUri="https://github.com/DevTechProfile/CapFrameX/releases" RequestNavigate="Hyperlink_RequestNavigate">
 				<TextBlock Text="{Binding Path=UpdateHyperlinkText}"/>
 			</Hyperlink>	
 		</TextBlock>
-		<StackPanel HorizontalAlignment="Left" Grid.Column="0" Margin="10 0 0 0" Orientation="Horizontal">
-			<TextBlock Margin="0 0 5 0" VerticalAlignment="Center">Capture mode:</TextBlock>
-			<ToggleButton Width="20" Height="20" IsHitTestVisible="False"
-					  Style="{StaticResource MaterialDesignActionAccentToggleButton}"
-					  IsChecked="{Binding IsCaptureModeActive, Mode=OneWay}"
-					  Content="{materialDesign:PackIcon Stop, Size=18}">
-				<materialDesign:ToggleButtonAssist.OnContent>
-					<materialDesign:PackIcon Kind="Play"/>
-				</materialDesign:ToggleButtonAssist.OnContent>
-			</ToggleButton>
-			<TextBlock Margin="10 0 5 0" VerticalAlignment="Center">Overlay:</TextBlock>
-			<ToggleButton Width="20" Height="20" IsHitTestVisible="False"
-					  Style="{StaticResource MaterialDesignActionAccentToggleButton}"
-					  IsChecked="{Binding IsOverlayActive, Mode=OneWay}"
-					  Content="{materialDesign:PackIcon Stop, Size=18}">
-				<materialDesign:ToggleButtonAssist.OnContent>
-					<materialDesign:PackIcon Kind="Play"/>
-				</materialDesign:ToggleButtonAssist.OnContent>
-			</ToggleButton>
-            <TextBlock Margin="10 0 5 0" VerticalAlignment="Center">Sensor logging:</TextBlock>
-            <ToggleButton Width="20" Height="20" IsHitTestVisible="False"
-					  Style="{StaticResource MaterialDesignActionAccentToggleButton}"
-					  IsChecked="{Binding IsLoggingActive, Mode=OneWay}"
-					  Content="{materialDesign:PackIcon Stop, Size=18}">
-                <materialDesign:ToggleButtonAssist.OnContent>
-                    <materialDesign:PackIcon Kind="Play"/>
-                </materialDesign:ToggleButtonAssist.OnContent>
-            </ToggleButton>
-            <TextBlock Margin="10 0 5 0" VerticalAlignment="Center">Directory observer:</TextBlock>
-			<ToggleButton Width="20" Height="20" IsHitTestVisible="False"
-					  Style="{StaticResource MaterialDesignActionAccentToggleButton}"
-					  IsChecked="{Binding IsDirectoryObserving, Mode=OneWay}"
-					  Content="{materialDesign:PackIcon Stop, Size=18}">
-				<materialDesign:ToggleButtonAssist.OnContent>
-					<materialDesign:PackIcon Kind="Check"/>
-				</materialDesign:ToggleButtonAssist.OnContent>
-			</ToggleButton>
-		</StackPanel>
-	
-		<StackPanel HorizontalAlignment="Right" Grid.Column="1" Margin="0 0 10 0" Orientation="Horizontal">
-			<materialDesign:PackIcon Kind="Information" VerticalAlignment="Center" />
-			<TextBlock Margin="5 0 0 0" VerticalAlignment="Center">Version:</TextBlock>
-			<TextBlock Margin="5 0 0 0" VerticalAlignment="Center" Text="{Binding VersionString, Mode=OneWay}"/>
-		</StackPanel>
-	</Grid>
+        <StackPanel HorizontalAlignment="Left" Grid.Column="0" Margin="10 0 0 0" Orientation="Horizontal">
+            <TextBlock Margin="0 0 5 0" VerticalAlignment="Center">Capture service:</TextBlock>
+            <TextBlock Width="55" VerticalAlignment="Center" Text="{Binding IsCaptureModeActive, Converter={StaticResource ModeDescriptionConverter}, ConverterParameter=Capturing|Ready}" 
+                       FontWeight="Bold" Foreground="{Binding IsCaptureModeActive, Converter={StaticResource ModeColorConverterReverse}}"></TextBlock>
+            
+            <TextBlock Margin="20 0 5 0" VerticalAlignment="Center">Overlay:</TextBlock>
+            <TextBlock Width="20" VerticalAlignment="Center" Text="{Binding IsOverlayActive, Converter={StaticResource ModeDescriptionConverter}, ConverterParameter=On|Off}" 
+                       FontWeight="Bold" Foreground="{Binding IsOverlayActive, Converter={StaticResource ModeColorConverter}}"></TextBlock>
+            
+            <TextBlock Margin="20 0 5 0" VerticalAlignment="Center">Sensor logging:</TextBlock>
+            <TextBlock Width="20" VerticalAlignment="Center" Text="{Binding IsLoggingActive, Converter={StaticResource ModeDescriptionConverter}, ConverterParameter=On|Off}" 
+                       FontWeight="Bold" Foreground="{Binding IsLoggingActive, Converter={StaticResource ModeColorConverter}}"></TextBlock>
+            
+            <TextBlock Margin="20 0 5 0" VerticalAlignment="Center">Login status:</TextBlock>
+            <TextBlock Width="75" VerticalAlignment="Center" Text="{Binding IsLoggedIn, Converter={StaticResource ModeDescriptionConverter}, ConverterParameter= Logged in|Not logged in}" 
+                       FontWeight="Bold" Foreground="{Binding IsLoggedIn, Converter={StaticResource ModeColorConverter}}"></TextBlock>
+        </StackPanel>
+        <StackPanel HorizontalAlignment="Right" Grid.Column="1" Margin="0 0 10 0" Orientation="Horizontal">
+            <materialDesign:PackIcon Kind="Information" VerticalAlignment="Center" />
+            <TextBlock Margin="5 0 0 0" VerticalAlignment="Center">Version:</TextBlock>
+            <TextBlock Margin="5 0 0 0" VerticalAlignment="Center" Text="{Binding VersionString, Mode=OneWay}"/>
+        </StackPanel>
+    </Grid>
 </UserControl>

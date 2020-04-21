@@ -75,6 +75,19 @@ namespace CapFrameX
 				}
 			}
 			catch { }
+
+			// create capture folder
+			try
+			{
+				var captureFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+					@"CapFrameX\Captures\");
+
+				if (!Directory.Exists(captureFolder))
+				{
+					Directory.CreateDirectory(captureFolder);
+				}
+			}
+			catch { }
 		}
 
 		public static bool IsAdministrator =>
