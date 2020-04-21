@@ -14,9 +14,6 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Threading.Tasks;
-using System.Reactive.Subjects;
-using System.Threading;
 
 namespace CapFrameX.View
 {
@@ -76,7 +73,7 @@ namespace CapFrameX.View
 			CreateTreeViewRecursive(trvStructure.Items[0] as TreeViewItem);
 			JumpToObservedDirectoryItem(root);
 
-			if ((CaptureRootDirectory == ObservedDirectory))
+			if ((ExtractFullPath(CaptureRootDirectory) == ObservedDirectory))
 				root.IsSelected = true;
 		}
 
