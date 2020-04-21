@@ -14,7 +14,7 @@ namespace CapFrameX.Extensions.NetStandard
             var type = value.GetType();
             var name = Enum.GetName(type, value);
             var attributes = type.GetField(name).GetCustomAttributes(false);
-            return attributes.OfType<TAttribute>().SingleOrDefault();
+            return attributes.OfType<TAttribute>().Where(a => a.GetType() == typeof(TAttribute)).SingleOrDefault();
         }
 
 		public static string ConvertToString(this Enum eff)

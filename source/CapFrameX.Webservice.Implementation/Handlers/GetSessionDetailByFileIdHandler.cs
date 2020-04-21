@@ -20,6 +20,8 @@ using CapFrameX.Statistics.NetStandard;
 using CapFrameX.Statistics.PlotBuilder.Contracts;
 using System.IO;
 using OxyPlot;
+using CapFrameX.Extensions.NetStandard;
+using System.ComponentModel;
 
 namespace CapFrameX.Webservice.Implementation.Handlers
 {
@@ -48,10 +50,10 @@ namespace CapFrameX.Webservice.Implementation.Handlers
 				FpsValuesRoundingDigits = 2
 			};
 			var plotSettings = new PlotSettings();
-
-			var fpsGraphBuilder = new FpsGraphPlotBuilder(frametimeStatisticsProviderOptions, new FrametimeStatisticProvider(frametimeStatisticsProviderOptions));
+			var frametimeStatisticProvider = new FrametimeStatisticProvider(frametimeStatisticsProviderOptions);
+			var fpsGraphBuilder = new FpsGraphPlotBuilder(frametimeStatisticsProviderOptions, frametimeStatisticProvider);
 			fpsGraphBuilder.BuildPlotmodel(session, plotSettings, 0, 1000, ERemoveOutlierMethod.None);
-			var frametimeGraphBuilder = new FrametimePlotBuilder(frametimeStatisticsProviderOptions, new FrametimeStatisticProvider(frametimeStatisticsProviderOptions));
+			var frametimeGraphBuilder = new FrametimePlotBuilder(frametimeStatisticsProviderOptions, frametimeStatisticProvider);
 			frametimeGraphBuilder.BuildPlotmodel(session, plotSettings, 0, 1000, ERemoveOutlierMethod.None);
 
 			var exporter = new SvgExporter { Width = 1000, Height = 400 };
@@ -62,9 +64,19 @@ namespace CapFrameX.Webservice.Implementation.Handlers
 			using var fpsGraphStream = new MemoryStream();
 			exporter.Export(fpsGraphBuilder.PlotModel, fpsGraphStream);
 
+			var frametimes = session.GetFrametimeTimeWindow(0, 1000, frametimeStatisticsProviderOptions, ERemoveOutlierMethod.None);
+
+			var fpsTresholdsCounts = frametimeStatisticProvider.GetFpsThresholdCounts(frametimes, false).Select(val => (double)val / frametimes.Count()).ToArray();
+			var fpsTresholdsLabels = FrametimeStatisticProvider.FPSTHRESHOLDS.ToArray();
+			var fpsTresholdsCountsDictionary = Enumerable.Range(0, fpsTresholdsLabels.Count()).ToDictionary(idx => (int)fpsTresholdsLabels[idx], idx => fpsTresholdsCounts[idx]).Where(kvp => !double.IsNaN(kvp.Value));
+
+			var fpsMetricDictionary = Enum.GetValues(typeof(EMetric)).Cast<EMetric>().ToDictionary(metric => metric.GetAttribute<DescriptionAttribute>().Description, metric => frametimeStatisticProvider.GetFpsMetricValue(frametimes, metric)).Where(kvp => !double.IsNaN(kvp.Value));
+
 			return new SessionDetailDTO()
 			{
 				SensorItems = sensorItems,
+				FpsTresholdsCounts = fpsTresholdsCountsDictionary,
+				FpsMetric = fpsMetricDictionary,
 				FpsGraph = Encoding.UTF8.GetString(fpsGraphStream.ToArray()),
 				FrametimeGraph = Encoding.UTF8.GetString(frametimeGraphStream.ToArray())
 			};
