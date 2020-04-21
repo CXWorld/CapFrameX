@@ -40,7 +40,8 @@ namespace CapFrameX.Statistics.PlotBuilder
 					Minimum = 0,
 					Maximum = 100,
 					AbsoluteMaximum = 100,
-					AbsoluteMinimum = 0
+					AbsoluteMinimum = 0,
+					AxisTitleDistance = 10
 				}
 			},
 			{
@@ -53,7 +54,8 @@ namespace CapFrameX.Statistics.PlotBuilder
 					MajorGridlineThickness = 1,
 					MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
 					MinorTickSize = 0,
-					MajorTickSize = 0
+					MajorTickSize = 0,
+					AxisTitleDistance = 10
 				}
 			},
 			{
@@ -66,7 +68,8 @@ namespace CapFrameX.Statistics.PlotBuilder
 					MajorGridlineThickness = 1,
 					MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
 					MinorTickSize = 0,
-					MajorTickSize = 0
+					MajorTickSize = 0,
+					AxisTitleDistance = 10
 				}
 			},
 			{
@@ -79,7 +82,8 @@ namespace CapFrameX.Statistics.PlotBuilder
 					MajorGridlineThickness = 1,
 					MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
 					MinorTickSize = 0,
-					MajorTickSize = 0
+					MajorTickSize = 0,
+					AxisTitleDistance = 10
 				}
 			}
 		};
