@@ -24,6 +24,7 @@ using LiveCharts.Wpf;
 using CapFrameX.Data.Session.Contracts;
 using OxyPlot.Series;
 using CapFrameX.Statistics.NetStandard;
+using CapFrameX.Statistics.PlotBuilder;
 
 namespace CapFrameX.ViewModel
 {
@@ -383,16 +384,14 @@ namespace CapFrameX.ViewModel
 			{
 				Title = "Frametimes",
 				StrokeThickness = 1,
-				LegendStrokeThickness = 4,
-				Color = ColorRessource.FrametimeStroke
+				Color = Constants.FrametimeStroke
 			};
 
 			var untilDisplayedTimesSeries = new OxyPlot.Series.LineSeries
 			{
 				Title = "Until displayed times",
 				StrokeThickness = 1,
-				LegendStrokeThickness = 4,
-				Color = ColorRessource.FrametimeMovingAverageStroke
+				Color = Constants.FrametimeMovingAverageStroke
 			};
 
 			frametimeSeries.Points.AddRange(frametimes.Select((x, i) => new DataPoint(i, x)));
@@ -628,15 +627,13 @@ namespace CapFrameX.ViewModel
 			{
 				Title = "Frametimes",
 				StrokeThickness = 1,
-				LegendStrokeThickness = 4,
-				Color = ColorRessource.FrametimeStroke
+				Color = Constants.FrametimeStroke
 			};
 
 			var upperBoundInputLagSeries = new OxyPlot.Series.LineSeries
 			{
 				Title = "Input lag upper bound",
 				StrokeThickness = 1,
-				LegendStrokeThickness = 4,
 				Color = OxyColor.FromRgb(255, 150, 150)
 			};
 
@@ -644,7 +641,6 @@ namespace CapFrameX.ViewModel
 			{
 				Title = "Input lag lower bound",
 				StrokeThickness = 1,
-				LegendStrokeThickness = 4,
 				Color = OxyColor.FromRgb(200, 140, 140)
 			};
 

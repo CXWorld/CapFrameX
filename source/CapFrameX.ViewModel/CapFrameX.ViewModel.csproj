@@ -98,6 +98,9 @@
     <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Newtonsoft.Json.12.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
+    <Reference Include="OxyPlot, Version=2.0.0.0, Culture=neutral, PublicKeyToken=638079a8f0bd61e9, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\OxyPlot.Core.2.0.0\lib\net45\OxyPlot.dll</HintPath>
+    </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="Prism, Version=7.0.0.396, Culture=neutral, PublicKeyToken=40ee6c3a2184dc59, processorArchitecture=MSIL">
@@ -182,10 +185,6 @@
       <Project>{0d7c7710-c58b-4713-ba18-8231a2f35a12}</Project>
       <Name>OxyPlot.Wpf_NET</Name>
     </ProjectReference>
-    <ProjectReference Include="..\CapFrameX.Charts\OxyPlot\OxyPlot_NET.csproj">
-      <Project>{1c1d9807-be39-40a4-87de-3f81e7c651e5}</Project>
-      <Name>OxyPlot_NET</Name>
-    </ProjectReference>
     <ProjectReference Include="..\CapFrameX.Charts\WpfView\WpfView.csproj">
       <Project>{4d253423-ae05-47f6-a59d-9162ec0bb1f2}</Project>
       <Name>WpfView</Name>
@@ -241,6 +240,10 @@
     <ProjectReference Include="..\CapFrameX.Statistics.NetStandard\CapFrameX.Statistics.NetStandard.csproj">
       <Project>{7D35C9C8-6E9A-4ABB-9042-930BE5E26DC6}</Project>
       <Name>CapFrameX.Statistics.NetStandard</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CapFrameX.Statistics.PlotBuilder\CapFrameX.Statistics.PlotBuilder.csproj">
+      <Project>{80a26f08-6ae5-472d-bb13-b6fb9a37fdcb}</Project>
+      <Name>CapFrameX.Statistics.PlotBuilder</Name>
     </ProjectReference>
     <ProjectReference Include="..\CapFrameX.Statistics\CapFrameX.Statistics.csproj">
       <Project>{788F49CD-ABCB-4C7C-B1B6-BF9DC2482432}</Project>

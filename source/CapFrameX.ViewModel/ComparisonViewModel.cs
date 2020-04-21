@@ -905,10 +905,9 @@ namespace CapFrameX.ViewModel
 			var color = wrappedComparisonInfo.FrametimeGraphColor.Value;
 			var frametimeSeries = new OxyPlot.Series.LineSeries
 			{
-				Id = wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.Id,
+				Tag = wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.Id,
 				Title = chartTitle,
 				StrokeThickness = 1,
-				LegendStrokeThickness = 4,
 				Color = wrappedComparisonInfo.IsHideModeSelected ?
 					OxyColors.Transparent : OxyColor.FromRgb(color.R, color.G, color.B)
 			};

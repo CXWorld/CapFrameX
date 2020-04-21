@@ -134,5 +134,54 @@ namespace CapFrameX.Statistics.NetStandard
 			return displayTimes.Select(time => 1000d / time)
 				.Count(hz => IsInRange(hz)) / (double)displayTimes.Count();
 		}
+
+		public static IList<Point> GetGPULoadPointTimeWindow(this ISession session)
+		{
+			var list = new List<Point>();
+			var times = session.Runs.SelectMany(r => r.SensorData.MeasureTime).ToArray();
+			var loads = session.Runs.SelectMany(r => r.SensorData.GpuUsage).ToArray();
+
+			for (int i = 0; i < times.Count(); i++)
+			{
+				list.Add(new Point(times[i], loads[i]));
+			}
+			return list;
+		}
+
+		public static IList<Point> GetCPULoadPointTimeWindow(this ISession session)
+		{
+			var list = new List<Point>();
+			var times = session.Runs.SelectMany(r => r.SensorData.MeasureTime).ToArray();
+			var loads = session.Runs.SelectMany(r => r.SensorData.CpuUsage).ToArray();
+
+			for (int i = 0; i < times.Count(); i++)
+			{
+				list.Add(new Point(times[i], loads[i]));
+			}
+			return list;
+		}
+
+		public static IList<Point> GetCPUMaxThreadLoadPointTimeWindow(this ISession session)
+		{
+			var list = new List<Point>();
+			var times = session.Runs.SelectMany(r => r.SensorData.MeasureTime).ToArray();
+			var loads = session.Runs.SelectMany(r => r.SensorData.CpuMaxThreadUsage).ToArray();
+
+			for (int i = 0; i < times.Count(); i++)
+			{
+				list.Add(new Point(times[i], loads[i]));
+			}
+			return list;
+		}
+
+		public static IList<Point> GetFpsPointTimeWindow(this ISession session, double startTime, double endTime, IFrametimeStatisticProviderOptions options, ERemoveOutlierMethod eRemoveOutlierMethod = ERemoveOutlierMethod.None)
+		{
+			return session.GetFrametimePointsTimeWindow(startTime, endTime, options, eRemoveOutlierMethod).Select(pnt => new Point(pnt.X, 1000 / pnt.Y)).ToList();
+		}
+
+		public static bool HasValidSensorData(this ISession session)
+		{
+			return session.Runs.All(run => run.SensorData != null && run.SensorData.MeasureTime.Any());
+		}
 	}
 }

@@ -13,7 +13,7 @@ namespace CapFrameX.Statistics.NetStandard
 
         double GetStutteringTimePercentage(IList<double> sequence, double stutteringFactor);
 
-        IList<double> GetMovingAverage(IList<double> sequence, int windowSize);
+        IList<double> GetMovingAverage(IList<double> sequence);
 
         double GetPQuantileSequence(IList<double> sequence, double pQuantile);
 

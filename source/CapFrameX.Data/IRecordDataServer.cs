@@ -31,15 +31,10 @@ namespace CapFrameX.Data
 		IList<double> GetFrametimeTimeWindow();
 
 		IList<Point> GetFrametimePointTimeWindow();
-
 		IList<double> GetFpsTimeWindow();
-
 		IList<Point> GetFpsPointTimeWindow();
 
 		void SetTimeWindow(double currentTime, double windowLength);
-		IList<Point> GetGPULoadPointTimeWindow();
-		IList<Point> GetCPULoadPointTimeWindow();
-		IList<Point> GetCPUMaxThreadLoadPointTimeWindow();
 	}
 	
 }

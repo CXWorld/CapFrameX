@@ -50,9 +50,9 @@ namespace CapFrameX.Statistics.NetStandard
             return 100 * stutteringTime / sequence.Sum();
         }
 
-        public IList<double> GetMovingAverage(IList<double> sequence, int windowSize)
+        public IList<double> GetMovingAverage(IList<double> sequence)
         {
-            return sequence.MovingAverage(windowSize).ToList();
+            return sequence.MovingAverage(_options.MovingAverageWindowSize).ToList();
         }
 
         public IList<double> GetOutlierAdjustedSequence(IList<double> sequence, ERemoveOutlierMethod method)
