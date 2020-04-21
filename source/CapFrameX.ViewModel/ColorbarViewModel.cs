@@ -1,6 +1,6 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using CapFrameX.Data;
-using CapFrameX.Extensions;
+using CapFrameX.Extensions.NetStandard;
 using CapFrameX.PresentMonInterface;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using Prism.Commands;

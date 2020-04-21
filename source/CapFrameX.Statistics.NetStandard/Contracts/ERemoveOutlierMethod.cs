@@ -1,4 +1,4 @@
-﻿namespace CapFrameX.Contracts.Statistics
+﻿namespace CapFrameX.Statistics.NetStandard.Contracts
 {
 	public enum ERemoveOutlierMethod
 	{

@@ -2,7 +2,6 @@
 using CapFrameX.Contracts.Aggregation;
 using CapFrameX.Contracts.Cloud;
 using CapFrameX.Data;
-using CapFrameX.Statistics;
 using CapFrameX.ViewModel;
 using Microsoft.Extensions.Logging;
 using Prism.Events;

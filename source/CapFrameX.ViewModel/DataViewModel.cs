@@ -24,7 +24,6 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using CapFrameX.MVVM.Dialogs;
-using CapFrameX.Contracts.Statistics;
 using CapFrameX.Data.Session.Contracts;
 using System.Collections.ObjectModel;
 using CapFrameX.Contracts.Sensor;
@@ -33,6 +32,9 @@ using System.Windows.Threading;
 using System.Reactive.Linq;
 using CapFrameX.Sensor.Reporting.Contracts;
 using CapFrameX.Sensor.Reporting;
+using CapFrameX.Statistics.NetStandard;
+using CapFrameX.Statistics.NetStandard.Contracts;
+using CapFrameX.Statistics.PlotBuilder.Contracts;
 
 namespace CapFrameX.ViewModel
 {

@@ -1,10 +1,10 @@
 ﻿using CapFrameX.Contracts.Data;
-using CapFrameX.Contracts.Statistics;
 using CapFrameX.Data.Session.Contracts;
 using CapFrameX.Statistics;
+using CapFrameX.Statistics.NetStandard;
+using CapFrameX.Statistics.NetStandard.Contracts;
 using System;
 using System.Collections.Generic;
-using System.Windows;
 
 namespace CapFrameX.Data
 {
@@ -31,15 +31,10 @@ namespace CapFrameX.Data
 		IList<double> GetFrametimeTimeWindow();
 
 		IList<Point> GetFrametimePointTimeWindow();
-
 		IList<double> GetFpsTimeWindow();
-
 		IList<Point> GetFpsPointTimeWindow();
 
 		void SetTimeWindow(double currentTime, double windowLength);
-		IList<Point> GetGPULoadPointTimeWindow();
-		IList<Point> GetCPULoadPointTimeWindow();
-		IList<Point> GetCPUMaxThreadLoadPointTimeWindow();
 	}
 	
 }

@@ -101,8 +101,6 @@
     <Compile Include="Overlay\IOverlayService.cs" />
     <Compile Include="Sensor\EHardwareType.cs" />
     <Compile Include="Sensor\ISensorService.cs" />
-    <Compile Include="Statistics\ERemoveOutlierMethod.cs" />
-    <Compile Include="Statistics\IMetricAnalysis.cs" />
     <Compile Include="UpdateCheck\IUpdateCheck.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -110,9 +108,16 @@
       <Project>{6BE48CF4-C2F0-44CB-95D8-7500A3CB430E}</Project>
       <Name>CapFrameX.Data.Session</Name>
     </ProjectReference>
+    <ProjectReference Include="..\CapFrameX.Statistics.NetStandard\CapFrameX.Statistics.NetStandard.csproj">
+      <Project>{7D35C9C8-6E9A-4ABB-9042-930BE5E26DC6}</Project>
+      <Name>CapFrameX.Statistics.NetStandard</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Statistics\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

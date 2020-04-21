@@ -7,6 +7,7 @@ using CapFrameX.Data;
 using CapFrameX.Hotkey;
 using CapFrameX.PresentMonInterface;
 using CapFrameX.Statistics;
+using CapFrameX.Statistics.NetStandard;
 using Gma.System.MouseKeyHook;
 using Microsoft.Extensions.Logging;
 using OxyPlot;
