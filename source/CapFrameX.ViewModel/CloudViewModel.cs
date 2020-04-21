@@ -6,6 +6,7 @@ using CapFrameX.Data.Session.Contracts;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Extensions;
 using CapFrameX.Statistics;
+using CapFrameX.Statistics.NetStandard;
 using CapFrameX.Webservice.Data.DTO;
 using GongSolutions.Wpf.DragDrop;
 using Microsoft.Extensions.Logging;

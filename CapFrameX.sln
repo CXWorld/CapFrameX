@@ -65,6 +65,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CapFrameX.Sensor.Reporting"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CapFrameX.Extensions.NetStandard", "source\CapFrameX.Extensions.NetStandard\CapFrameX.Extensions.NetStandard.csproj", "{554C8784-954A-4E3D-9C79-D347DEF7E069}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.Statistics.NetStandard", "source\CapFrameX.Statistics.NetStandard\CapFrameX.Statistics.NetStandard.csproj", "{7D35C9C8-6E9A-4ABB-9042-930BE5E26DC6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -425,6 +427,18 @@ Global
 		{554C8784-954A-4E3D-9C79-D347DEF7E069}.Release|x64.Build.0 = Release|Any CPU
 		{554C8784-954A-4E3D-9C79-D347DEF7E069}.Release|x86.ActiveCfg = Release|Any CPU
 		{554C8784-954A-4E3D-9C79-D347DEF7E069}.Release|x86.Build.0 = Release|Any CPU
+		{7D35C9C8-6E9A-4ABB-9042-930BE5E26DC6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7D35C9C8-6E9A-4ABB-9042-930BE5E26DC6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7D35C9C8-6E9A-4ABB-9042-930BE5E26DC6}.Debug|x64.ActiveCfg = Debug|x64
+		{7D35C9C8-6E9A-4ABB-9042-930BE5E26DC6}.Debug|x64.Build.0 = Debug|x64
+		{7D35C9C8-6E9A-4ABB-9042-930BE5E26DC6}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{7D35C9C8-6E9A-4ABB-9042-930BE5E26DC6}.Debug|x86.Build.0 = Debug|Any CPU
+		{7D35C9C8-6E9A-4ABB-9042-930BE5E26DC6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7D35C9C8-6E9A-4ABB-9042-930BE5E26DC6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7D35C9C8-6E9A-4ABB-9042-930BE5E26DC6}.Release|x64.ActiveCfg = Release|Any CPU
+		{7D35C9C8-6E9A-4ABB-9042-930BE5E26DC6}.Release|x64.Build.0 = Release|Any CPU
+		{7D35C9C8-6E9A-4ABB-9042-930BE5E26DC6}.Release|x86.ActiveCfg = Release|Any CPU
+		{7D35C9C8-6E9A-4ABB-9042-930BE5E26DC6}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

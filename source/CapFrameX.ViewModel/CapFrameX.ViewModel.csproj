@@ -206,6 +206,10 @@
       <Project>{C3D082AE-BF05-4C83-B414-33CF7C420D4A}</Project>
       <Name>CapFrameX.EventAggregation</Name>
     </ProjectReference>
+    <ProjectReference Include="..\CapFrameX.Extensions.NetStandard\CapFrameX.Extensions.NetStandard.csproj">
+      <Project>{554c8784-954a-4e3d-9c79-d347def7e069}</Project>
+      <Name>CapFrameX.Extensions.NetStandard</Name>
+    </ProjectReference>
     <ProjectReference Include="..\CapFrameX.Extensions\CapFrameX.Extensions.csproj">
       <Project>{A4559B99-7FCB-40EF-BF97-D293A2B7D6D3}</Project>
       <Name>CapFrameX.Extensions</Name>
@@ -233,6 +237,10 @@
     <ProjectReference Include="..\CapFrameX.Sensor\CapFrameX.Sensor.csproj">
       <Project>{B1B0E5F1-942A-476C-BEA4-8B9FFBCA04C6}</Project>
       <Name>CapFrameX.Sensor</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CapFrameX.Statistics.NetStandard\CapFrameX.Statistics.NetStandard.csproj">
+      <Project>{7D35C9C8-6E9A-4ABB-9042-930BE5E26DC6}</Project>
+      <Name>CapFrameX.Statistics.NetStandard</Name>
     </ProjectReference>
     <ProjectReference Include="..\CapFrameX.Statistics\CapFrameX.Statistics.csproj">
       <Project>{788F49CD-ABCB-4C7C-B1B6-BF9DC2482432}</Project>

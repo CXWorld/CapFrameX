@@ -2,6 +2,7 @@
 using CapFrameX.Data;
 using CapFrameX.Extensions;
 using CapFrameX.Statistics;
+using CapFrameX.Statistics.NetStandard;
 using OxyPlot;
 using OxyPlot.Axes;
 using OxyPlot.Series;
@@ -12,7 +13,7 @@ using System.Globalization;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Text;
-using System.Windows;
+using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Threading;
 
@@ -73,7 +74,7 @@ namespace CapFrameX.ViewModel.DataContext
 				.GetMovingAverage(frametimePoints.Select(pnt => pnt.Y)
 				.ToList(), AppConfiguration.MovingAverageWindowSize);
 
-			Application.Current.Dispatcher.Invoke(new Action(() =>
+			Dispatcher.CurrentDispatcher.Invoke(new Action(() =>
 			{
 				plotModel.Series.Clear();
 

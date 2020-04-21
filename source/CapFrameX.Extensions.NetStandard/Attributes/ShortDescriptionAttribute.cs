@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 
-namespace CapFrameX.Extensions.Attributes
+namespace CapFrameX.Extensions.NetStandard.Attributes
 {
 	public sealed class ShortDescriptionAttribute : DescriptionAttribute
 	{

@@ -1,12 +1,13 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
-using CapFrameX.Contracts.Statistics;
 using CapFrameX.Data;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Extensions;
+using CapFrameX.Extensions.NetStandard;
 using CapFrameX.MVVM.Dialogs;
 using CapFrameX.Statistics;
-using CapFrameX.StatisticsExtensions;
+using CapFrameX.Statistics.NetStandard;
+using CapFrameX.Statistics.NetStandard.Contracts;
 using GongSolutions.Wpf.DragDrop;
 using LiveCharts;
 using LiveCharts.Defaults;
@@ -30,6 +31,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using ComparisonCollection = System.Collections.ObjectModel
 	.ObservableCollection<CapFrameX.ViewModel.ComparisonRecordInfoWrapper>;
+using Point = CapFrameX.Statistics.NetStandard.Point;
 
 namespace CapFrameX.ViewModel
 {
@@ -601,7 +603,7 @@ namespace CapFrameX.ViewModel
 				double startTime = FirstSeconds;
 				double endTime = LastSeconds;
 				var frametimeTimeWindow = currentWrappedComparisonInfo.WrappedRecordInfo.Session
-					.GetFrametimeTimeWindow(startTime, endTime, ERemoveOutlierMethod.None);
+					.GetFrametimeTimeWindow(startTime, endTime, _appConfiguration, ERemoveOutlierMethod.None);
 
 				for (int j = 0; j < ComparisonRowChartSeriesCollection.Count; j++)
 				{
@@ -734,7 +736,7 @@ namespace CapFrameX.ViewModel
 
 			xMin = sessionParallelQuery.Min(session =>
 			{
-				var window = session.GetFrametimePointsTimeWindow(startTime, endTime);
+				var window = session.GetFrametimePointsTimeWindow(startTime, endTime, _appConfiguration);
 				if (window.Any())
 					return window.First().X;
 				else
@@ -743,7 +745,7 @@ namespace CapFrameX.ViewModel
 
 			xMax = sessionParallelQuery.Max(session =>
 			{
-				var window = session.GetFrametimePointsTimeWindow(startTime, endTime);
+				var window = session.GetFrametimePointsTimeWindow(startTime, endTime, _appConfiguration);
 				if (window.Any())
 					return window.Last().X;
 				else
@@ -752,7 +754,7 @@ namespace CapFrameX.ViewModel
 
 			yMin = sessionParallelQuery.Min(session =>
 			{
-				var window = session.GetFrametimePointsTimeWindow(startTime, endTime);
+				var window = session.GetFrametimePointsTimeWindow(startTime, endTime, _appConfiguration);
 				if (window.Any())
 					return window.Min(pnt => pnt.Y);
 				else
@@ -761,7 +763,7 @@ namespace CapFrameX.ViewModel
 
 			yMax = sessionParallelQuery.Max(session =>
 			{
-				var window = session.GetFrametimePointsTimeWindow(startTime, endTime);
+				var window = session.GetFrametimePointsTimeWindow(startTime, endTime, _appConfiguration);
 				if (window.Any())
 					return window.Max(pnt => pnt.Y);
 				else
@@ -895,7 +897,7 @@ namespace CapFrameX.ViewModel
 			double startTime = FirstSeconds;
 			double endTime = LastSeconds;
 			var session = wrappedComparisonInfo.WrappedRecordInfo.Session;
-			var frametimePoints = session.GetFrametimePointsTimeWindow(startTime, endTime)
+			var frametimePoints = session.GetFrametimePointsTimeWindow(startTime, endTime, _appConfiguration)
 										 .Select(pnt => new Point(pnt.X, pnt.Y));
 
 			var chartTitle = string.Empty;
@@ -919,7 +921,7 @@ namespace CapFrameX.ViewModel
 		{
 			double startTime = FirstSeconds;
 			double endTime = LastSeconds;
-			var frametimeTimeWindow = wrappedComparisonInfo.WrappedRecordInfo.Session.GetFrametimeTimeWindow(startTime, endTime, ERemoveOutlierMethod.None);
+			var frametimeTimeWindow = wrappedComparisonInfo.WrappedRecordInfo.Session.GetFrametimeTimeWindow(startTime, endTime, _appConfiguration, ERemoveOutlierMethod.None);
 
 			var lShapeQuantiles = _frametimeAnalyzer.GetLShapeQuantiles();
 			double action(double q) => _frametimeStatisticProvider.GetPQuantileSequence(frametimeTimeWindow, q / 100);

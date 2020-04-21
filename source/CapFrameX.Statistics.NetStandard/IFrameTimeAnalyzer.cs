@@ -1,4 +1,4 @@
-﻿namespace CapFrameX.Statistics
+﻿namespace CapFrameX.Statistics.NetStandard
 {
 	public interface IFrametimeAnalyzer
 	{

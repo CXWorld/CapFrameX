@@ -5,6 +5,7 @@ using CapFrameX.Contracts.Sensor;
 using CapFrameX.Data.Session.Classes;
 using CapFrameX.Data.Session.Contracts;
 using CapFrameX.Extensions;
+using CapFrameX.Extensions.NetStandard;
 using CapFrameX.PresentMonInterface;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;

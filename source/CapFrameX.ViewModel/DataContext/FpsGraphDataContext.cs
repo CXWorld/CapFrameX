@@ -1,5 +1,4 @@
 ﻿using CapFrameX.Contracts.Configuration;
-using CapFrameX.Statistics;
 using OxyPlot;
 using OxyPlot.Axes;
 using OxyPlot.Series;
@@ -7,13 +6,14 @@ using Prism.Commands;
 using System;
 using System.Linq;
 using System.Text;
-using System.Windows;
 using System.Windows.Input;
 using System.Collections.Generic;
 using System.Globalization;
 using CapFrameX.Data;
 using System.Windows.Threading;
 using CapFrameX.Extensions;
+using CapFrameX.Statistics.NetStandard;
+using System.Windows.Forms;
 
 namespace CapFrameX.ViewModel.DataContext
 {
@@ -76,7 +76,7 @@ namespace CapFrameX.ViewModel.DataContext
 			double average = frametimes.Count * 1000 / frametimes.Sum();
 			var averageDataPoints = fpsPoints.Select(pnt => new DataPoint(pnt.X, average));
 
-			Application.Current.Dispatcher.Invoke(new Action(() =>
+			Dispatcher.CurrentDispatcher.Invoke(new Action(() =>
 			{
 				plotModel.Series.Clear();
 

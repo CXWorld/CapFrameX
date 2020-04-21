@@ -1,24 +1,22 @@
-﻿using CapFrameX.Configuration;
-using CapFrameX.Contracts.Statistics;
-using CapFrameX.Data.Session.Contracts;
-using CapFrameX.Statistics;
+﻿using CapFrameX.Data.Session.Contracts;
+using CapFrameX.Statistics.NetStandard.Contracts;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 
-namespace CapFrameX.StatisticsExtensions
+namespace CapFrameX.Statistics.NetStandard
 {
 	public static class SessionExtensions
 	{
 
-		public static IList<double> GetFrametimeTimeWindow(this ISession session, double startTime, double endTime,
-			ERemoveOutlierMethod eRemoveOutlierMethod = ERemoveOutlierMethod.None)
+		public static IList<double> GetFrametimeTimeWindow(this ISession session, double startTime, double endTime, IFrametimeStatisticProviderOptions options, ERemoveOutlierMethod eRemoveOutlierMethod = ERemoveOutlierMethod.None)
 		{
 			IList<double> frametimesTimeWindow = new List<double>();
-			var frametimeStatisticProvider = new FrametimeStatisticProvider(new CapFrameXConfiguration());
+			var frametimeStatisticProvider = new FrametimeStatisticProvider(options);
 			var frameStarts = session.Runs.SelectMany(r => r.CaptureData.TimeInSeconds).ToArray();
 			var frametimes = frametimeStatisticProvider?.GetOutlierAdjustedSequence(session.Runs.SelectMany(r => r.CaptureData.MsBetweenPresents).ToArray(), eRemoveOutlierMethod);
 
@@ -36,11 +34,10 @@ namespace CapFrameX.StatisticsExtensions
 			return frametimesTimeWindow;
 		}
 
-		public static IList<Point> GetFrametimePointsTimeWindow(this ISession session, double startTime, double endTime,
-			ERemoveOutlierMethod eRemoveOutlierMethod = ERemoveOutlierMethod.None)
+		public static IList<Point> GetFrametimePointsTimeWindow(this ISession session, double startTime, double endTime, IFrametimeStatisticProviderOptions options, ERemoveOutlierMethod eRemoveOutlierMethod = ERemoveOutlierMethod.None)
 		{
 			IList<Point> frametimesPointsWindow = new List<Point>();
-			var frametimeStatisticProvider = new FrametimeStatisticProvider(new CapFrameXConfiguration());
+			var frametimeStatisticProvider = new FrametimeStatisticProvider(options);
 
 			var frametimes = frametimeStatisticProvider?.GetOutlierAdjustedSequence(session.Runs.SelectMany(r => r.CaptureData.MsBetweenPresents).ToArray(), eRemoveOutlierMethod);
 			var frameStarts = session.Runs.SelectMany(r => r.CaptureData.TimeInSeconds).ToArray();

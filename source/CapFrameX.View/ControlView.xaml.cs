@@ -1,6 +1,7 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
 using CapFrameX.Extensions;
+using CapFrameX.Extensions.NetStandard;
 using CapFrameX.ViewModel;
 using System;
 using System.IO;

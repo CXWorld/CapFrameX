@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using System.Windows;
 using CapFrameX.Contracts.Data;
-using CapFrameX.Contracts.Statistics;
 using CapFrameX.Data.Session.Contracts;
 using CapFrameX.Statistics;
-using CapFrameX.StatisticsExtensions;
+using CapFrameX.Statistics.NetStandard.Contracts;
+using CapFrameX.Statistics.NetStandard;
+using CapFrameX.Configuration;
 
 namespace CapFrameX.Data
 {
@@ -82,7 +82,7 @@ namespace CapFrameX.Data
 
 			double startTime = CurrentTime;
 			double endTime = startTime + WindowLength;
-			return CurrentSession.GetFrametimeTimeWindow(startTime, endTime, RemoveOutlierMethod);
+			return CurrentSession.GetFrametimeTimeWindow(startTime, endTime, new CapFrameXConfiguration() ,RemoveOutlierMethod);
 		}
 
 		public IList<Point> GetFrametimePointTimeWindow()
@@ -92,7 +92,7 @@ namespace CapFrameX.Data
 
 			double startTime = CurrentTime;
 			double endTime = startTime + WindowLength;
-			return CurrentSession.GetFrametimePointsTimeWindow(startTime, endTime, RemoveOutlierMethod);
+			return CurrentSession.GetFrametimePointsTimeWindow(startTime, endTime, new CapFrameXConfiguration(), RemoveOutlierMethod);
 		}
 
 		public IList<double> GetFpsTimeWindow()

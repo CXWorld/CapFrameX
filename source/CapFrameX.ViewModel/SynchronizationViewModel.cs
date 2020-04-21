@@ -22,8 +22,8 @@ using System.Windows.Input;
 using System.Windows.Media;
 using LiveCharts.Wpf;
 using CapFrameX.Data.Session.Contracts;
-using CapFrameX.StatisticsExtensions;
 using OxyPlot.Series;
+using CapFrameX.Statistics.NetStandard;
 
 namespace CapFrameX.ViewModel
 {

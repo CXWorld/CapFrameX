@@ -1,25 +1,24 @@
-﻿using CapFrameX.Contracts.Configuration;
-using CapFrameX.Contracts.Statistics;
-using CapFrameX.Extensions;
+﻿using CapFrameX.Statistics.NetStandard.Contracts;
 using MathNet.Numerics.Statistics;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using CapFrameX.Extensions.NetStandard;
 
-namespace CapFrameX.Statistics
+namespace CapFrameX.Statistics.NetStandard
 {
     public class FrametimeStatisticProvider : IStatisticProvider
     {
         public static readonly double[] FPSTHRESHOLDS = new double[] { 10, 15, 30, 45, 60, 75, 90, 120, 144, 240 }.Reverse().ToArray();
 
         private const double TAU = 0.999;
-        private readonly IAppConfiguration _appConfiguration;
+        private readonly IFrametimeStatisticProviderOptions _options;
 
-        public FrametimeStatisticProvider(IAppConfiguration appConfiguration)
+        public FrametimeStatisticProvider(IFrametimeStatisticProviderOptions options)
         {
-            _appConfiguration = appConfiguration;
+            _options = options;
         }
 
         public double GetAdaptiveStandardDeviation(IList<double> sequence, int windowSize)
@@ -178,14 +177,14 @@ namespace CapFrameX.Statistics
                     break;
                 case EMetric.AdaptiveStd:
                     fps = sequence.Select(ft => 1000 / ft).ToList();
-                    metricValue = GetAdaptiveStandardDeviation(fps, _appConfiguration.MovingAverageWindowSize);
+                    metricValue = GetAdaptiveStandardDeviation(fps, _options.MovingAverageWindowSize);
                     break;
                 default:
                     metricValue = double.NaN;
                     break;
             }
 
-            return Math.Round(metricValue, _appConfiguration.FpsValuesRoundingDigits);
+            return Math.Round(metricValue, _options.FpsValuesRoundingDigits);
         }
 
         public IList<double>[] GetDiscreteDistribution(IList<double> sequence)
@@ -295,7 +294,7 @@ namespace CapFrameX.Statistics
             var average = GetFpsMetricValue(frametimes, EMetric.Average);
             var secondMetricValue = GetFpsMetricValue(frametimes, secondMetric.ConvertToEnum<EMetric>());
             var thrirdMetricValue = GetFpsMetricValue(frametimes, thirdMetric.ConvertToEnum<EMetric>());
-            string numberFormat = string.Format("F{0}", _appConfiguration.FpsValuesRoundingDigits);
+            string numberFormat = string.Format("F{0}", _options.FpsValuesRoundingDigits);
             var cultureInfo = CultureInfo.InvariantCulture;
 
             string secondMetricString =
