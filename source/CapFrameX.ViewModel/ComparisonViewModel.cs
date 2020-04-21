@@ -903,11 +903,12 @@ namespace CapFrameX.ViewModel
 			var chartTitle = string.Empty;
 
 			var color = wrappedComparisonInfo.FrametimeGraphColor.Value;
-			var frametimeSeries = new OxyPlot.Series.LineSeries
+			var frametimeSeries = new Statistics.PlotBuilder.LineSeries()
 			{
 				Tag = wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.Id,
 				Title = chartTitle,
 				StrokeThickness = 1,
+				LegendStrokeThickness = 4,
 				Color = wrappedComparisonInfo.IsHideModeSelected ?
 					OxyColors.Transparent : OxyColor.FromRgb(color.R, color.G, color.B)
 			};

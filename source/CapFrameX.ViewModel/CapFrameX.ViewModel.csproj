@@ -181,10 +181,6 @@
       <Project>{f261c3d7-6194-4625-9516-044081b06028}</Project>
       <Name>Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\CapFrameX.Charts\OxyPlot.Wpf\OxyPlot.Wpf_NET.csproj">
-      <Project>{0d7c7710-c58b-4713-ba18-8231a2f35a12}</Project>
-      <Name>OxyPlot.Wpf_NET</Name>
-    </ProjectReference>
     <ProjectReference Include="..\CapFrameX.Charts\WpfView\WpfView.csproj">
       <Project>{4d253423-ae05-47f6-a59d-9162ec0bb1f2}</Project>
       <Name>WpfView</Name>

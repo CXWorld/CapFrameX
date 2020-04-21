@@ -62,12 +62,14 @@ namespace CapFrameX.Statistics.PlotBuilder
 			{
 				Title = "Frametimes",
 				StrokeThickness = 1,
+				LegendStrokeThickness = 4,
 				Color = Constants.FrametimeStroke
 			};
 			var movingAverageSeries = new LineSeries
 			{
 				Title = "Moving average",
 				StrokeThickness = 2,
+				LegendStrokeThickness = 4,
 				Color = Constants.FrametimeMovingAverageStroke
 			};
 

@@ -623,24 +623,27 @@ namespace CapFrameX.ViewModel
 			var yMin = Math.Min(filteredFrametimes.Min(), lowerBoundInputlagtimes.Min());
 			var yMax = Math.Max(filteredFrametimes.Max(), upperBoundInputlagtimes.Max());
 
-			var frametimeSeries = new OxyPlot.Series.LineSeries
+			var frametimeSeries = new Statistics.PlotBuilder.LineSeries
 			{
 				Title = "Frametimes",
 				StrokeThickness = 1,
+				LegendStrokeThickness = 4,
 				Color = Constants.FrametimeStroke
 			};
 
-			var upperBoundInputLagSeries = new OxyPlot.Series.LineSeries
+			var upperBoundInputLagSeries = new Statistics.PlotBuilder.LineSeries
 			{
 				Title = "Input lag upper bound",
 				StrokeThickness = 1,
+				LegendStrokeThickness = 4,
 				Color = OxyColor.FromRgb(255, 150, 150)
 			};
 
-			var lowerBoundInputLagSeries = new OxyPlot.Series.LineSeries
+			var lowerBoundInputLagSeries = new Statistics.PlotBuilder.LineSeries
 			{
 				Title = "Input lag lower bound",
 				StrokeThickness = 1,
+				LegendStrokeThickness = 4,
 				Color = OxyColor.FromRgb(200, 140, 140)
 			};
 

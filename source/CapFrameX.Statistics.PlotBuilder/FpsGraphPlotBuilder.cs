@@ -61,6 +61,7 @@ namespace CapFrameX.Statistics.PlotBuilder
 			{
 				Title = "FPS",
 				StrokeThickness = 1,
+				LegendStrokeThickness = 4,
 				Color = Constants.FpsStroke
 			};
 
@@ -68,6 +69,7 @@ namespace CapFrameX.Statistics.PlotBuilder
 			{
 				Title = "Average FPS",
 				StrokeThickness = 2,
+				LegendStrokeThickness = 4,
 				Color = Constants.FpsAverageStroke
 			};
 
