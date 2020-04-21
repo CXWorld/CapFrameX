@@ -18,6 +18,10 @@ namespace CapFrameX.Overlay
 {
     public class OverlayEntryProvider : IOverlayEntryProvider
     {
+        private static readonly string OVERLAY_CONFIG_FOLDER
+            = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                    @"CapFrameX\OverlayConfiguration\");
+
         private readonly ISensorService _sensorService;
         private readonly IAppConfiguration _appConfiguration;
         private readonly IEventAggregator _eventAggregator;
@@ -68,8 +72,8 @@ namespace CapFrameX.Overlay
 
                 var json = JsonConvert.SerializeObject(persistence);
 
-                if (!Directory.Exists("OverlayConfiguration"))
-                    Directory.CreateDirectory("OverlayConfiguration");
+                if (!Directory.Exists(OVERLAY_CONFIG_FOLDER))
+                    Directory.CreateDirectory(OVERLAY_CONFIG_FOLDER);
 
                 File.WriteAllText(GetConfigurationFileName(), json);
 
@@ -226,14 +230,15 @@ namespace CapFrameX.Overlay
 
         private string GetConfigurationFileName()
         {
-            return $"OverlayConfiguration//OverlayEntryConfiguration_" +
-                $"{_appConfiguration.OverlayEntryConfigurationFile}.json";
+            return Path.Combine(OVERLAY_CONFIG_FOLDER, $"OverlayEntryConfiguration_" +
+                $"{_appConfiguration.OverlayEntryConfigurationFile}.json");
         }
 
         private void SetConfigurationFileName(int index)
         {
             _appConfiguration.OverlayEntryConfigurationFile = index;
         }
+
         private void SubscribeToOptionPopupClosed()
         {
             _eventAggregator.GetEvent<PubSubEvent<ViewMessages.OptionPopupClosed>>()
