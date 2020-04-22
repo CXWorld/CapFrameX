@@ -11,11 +11,12 @@ namespace CapFrameX.Sensor.Reporting
 {
 	public static class SensorReport
 	{
-		public static IEnumerable<ISensorReportItem> GetReportFromSessionSensorData(IEnumerable<ISessionSensorData> sessionsSensorData)
+		public static IEnumerable<ISensorReportItem> GetReportFromSessionSensorData(IEnumerable<ISessionSensorData> sessionsSensorData, double startTime = 0, double endTime = double.PositiveInfinity)
 		{
-			if (sessionsSensorData == null || !sessionsSensorData.Any()
-				|| sessionsSensorData.Any(session => session == null))
+			if (sessionsSensorData == null || !sessionsSensorData.Any() || sessionsSensorData.Any(session => session == null))
+			{
 				return Enumerable.Empty<ISensorReportItem>();
+			}
 
 			var sensorReportItems = new List<ISensorReportItem>();
 			try
@@ -58,9 +59,19 @@ namespace CapFrameX.Sensor.Reporting
 			}
 			catch { return sensorReportItems; }
 
-			bool HasValues<T>(IEnumerable<ISessionSensorData> sessionSensorData, Func<ISessionSensorData, IEnumerable<T>> selector, out IEnumerable<T> values)
+			bool HasValues<T>(IEnumerable<ISessionSensorData> sessionSensorData, Func<ISessionSensorData, IEnumerable<T>> selector, out List<T> values)
 			{
-				values = sessionsSensorData.SelectMany(selector);
+				values = new List<T>();
+				var measureTimes = sessionSensorData.SelectMany(x => x.MeasureTime).ToArray();
+				var selectedValues = sessionsSensorData.SelectMany(selector).ToArray();
+				for(int i = 0; i < selectedValues.Count(); i++)
+				{
+					var measureTime = measureTimes[i];
+					if(measureTime >= startTime && measureTime <= endTime)
+					{
+						values.Add(selectedValues[i]);
+					}
+				}
 				return values.Any();
 			}
 

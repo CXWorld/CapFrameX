@@ -2,7 +2,6 @@
 using CapFrameX.Contracts.Data;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Data;
-using CapFrameX.Statistics;
 using CapFrameX.ViewModel.DataContext;
 using LiveCharts;
 using LiveCharts.Defaults;
@@ -26,9 +25,6 @@ using System.Windows.Media;
 using CapFrameX.MVVM.Dialogs;
 using CapFrameX.Data.Session.Contracts;
 using System.Collections.ObjectModel;
-using CapFrameX.Contracts.Sensor;
-using CapFrameX.Sensor;
-using System.Windows.Threading;
 using System.Reactive.Linq;
 using CapFrameX.Sensor.Reporting.Contracts;
 using CapFrameX.Sensor.Reporting;
@@ -74,7 +70,6 @@ namespace CapFrameX.ViewModel
         private bool _gpuLoad;
         private bool _cpuLoad;
         private bool _cpuMaxThreadLoad;
-        private bool _additionalGraphsEnabled;
 
         private ISubject<Unit> _onUpdateChart = new BehaviorSubject<Unit>(default);
 
@@ -642,9 +637,8 @@ namespace CapFrameX.ViewModel
         private void UpdateSensorSessionReport()
         {
             SensorReportItems.Clear();
-            var items = SensorReport
-                .GetReportFromSessionSensorData(_session
-                .Runs.Select(run => run.SensorData));
+            var items = SensorReport.GetReportFromSessionSensorData(_session.Runs.Select(run => run.SensorData), 
+                _localRecordDataServer.CurrentTime, _localRecordDataServer.CurrentTime + _localRecordDataServer.WindowLength);
             foreach (var item in items)
             {
                 SensorReportItems.Add(item);
@@ -693,6 +687,7 @@ namespace CapFrameX.ViewModel
                 Task.Factory.StartNew(() => SetStaticChart(subset));
                 Task.Factory.StartNew(() => SetStutteringChart(subset));
                 Task.Factory.StartNew(() => SetFpsThresholdChart(subset));
+                UpdateSensorSessionReport();
             }
         }
 
