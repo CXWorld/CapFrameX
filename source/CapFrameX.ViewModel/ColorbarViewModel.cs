@@ -332,6 +332,7 @@ namespace CapFrameX.ViewModel
 			OptionPopupClosed = eventAggregator.GetEvent<PubSubEvent<ViewMessages.OptionPopupClosed>>();
 
 			HasCustomInfo = SelectedHardwareInfoSource == EHardwareInfoSource.Custom;
+			IsLoggedIn = _loginManager.State.Token != null;
 			SetAggregatorEvents();
 			SetHardwareInfoDefaultsFromDatabase();
 			SubscribeToUpdateSession();

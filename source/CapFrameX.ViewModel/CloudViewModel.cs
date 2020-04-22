@@ -264,6 +264,8 @@ namespace CapFrameX.ViewModel
 			CloudEntries.CollectionChanged += new NotifyCollectionChangedEventHandler
 				((sender, eventArg) => OnCloudEntriesChanged());
 
+			IsLoggedIn = loginManager.State.Token != null;
+
 			_eventAggregator.GetEvent<PubSubEvent<AppMessages.LoginState>>().Subscribe(state =>
 			{
 				IsLoggedIn = state.IsLoggedIn;

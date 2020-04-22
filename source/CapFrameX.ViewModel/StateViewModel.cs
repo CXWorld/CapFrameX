@@ -3,6 +3,7 @@ using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.PresentMonInterface;
 using CapFrameX.Contracts.UpdateCheck;
+using CapFrameX.Data;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Overlay;
 using Prism.Events;
@@ -103,7 +104,8 @@ namespace CapFrameX.ViewModel
 							  IOverlayService overlayService,
 							  IUpdateCheck updateCheck,
 							  IAppVersionProvider appVersionProvider,
-							  IWebVersionProvider webVersionProvider)
+							  IWebVersionProvider webVersionProvider,
+							  LoginManager loginManager)
 		{
 			_recordObserver = recordObserver;
 			_eventAggregator = eventAggregator;
@@ -123,6 +125,8 @@ namespace CapFrameX.ViewModel
 
 			_overlayService.IsOverlayActiveStream
 				.Subscribe(state => IsOverlayActive = state);
+
+			IsLoggedIn = loginManager.State.Token != null;
 
 			_eventAggregator.GetEvent<PubSubEvent<AppMessages.LoginState>>().Subscribe(state => {
 				IsLoggedIn = state.IsLoggedIn;
