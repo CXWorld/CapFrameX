@@ -63,9 +63,13 @@ namespace CapFrameX.Webservice.Implementation.Handlers
 
 			var frametimes = session.GetFrametimeTimeWindow(0, 1000, frametimeStatisticsProviderOptions, ERemoveOutlierMethod.None);
 
-			var fpsTresholdsCounts = frametimeStatisticProvider.GetFpsThresholdCounts(frametimes, false).Select(val => (double)val / frametimes.Count()).ToArray();
 			var fpsTresholdsLabels = FrametimeStatisticProvider.FPSTHRESHOLDS.ToArray();
+
+			var fpsTresholdsCounts = frametimeStatisticProvider.GetFpsThresholdCounts(frametimes, false).Select(val => (double)val / frametimes.Count()).ToArray();
 			var fpsTresholdsCountsDictionary = Enumerable.Range(0, fpsTresholdsLabels.Count()).ToDictionary(idx => (int)fpsTresholdsLabels[idx], idx => fpsTresholdsCounts[idx]).Where(kvp => !double.IsNaN(kvp.Value));
+
+			var fpsTresholdsTimes = frametimeStatisticProvider.GetFpsThresholdTimes(frametimes, false).Select(val => val / frametimes.Sum()).ToArray();
+			var fpsTresholdsTimesDictionary = Enumerable.Range(0, fpsTresholdsLabels.Count()).ToDictionary(idx => (int)fpsTresholdsLabels[idx], idx => fpsTresholdsTimes[idx]).Where(kvp => !double.IsNaN(kvp.Value));
 
 			var fpsMetricDictionary = Enum.GetValues(typeof(EMetric)).Cast<EMetric>().ToDictionary(metric => metric.GetAttribute<DescriptionAttribute>().Description, metric => frametimeStatisticProvider.GetFpsMetricValue(frametimes, metric)).Where(kvp => !double.IsNaN(kvp.Value));
 
@@ -73,6 +77,7 @@ namespace CapFrameX.Webservice.Implementation.Handlers
 			{
 				SensorItems = sensorItems,
 				FpsTresholdsCounts = fpsTresholdsCountsDictionary,
+				FpsTresholdsTimes = fpsTresholdsTimesDictionary,
 				FpsMetric = fpsMetricDictionary,
 				FpsGraph = Encoding.UTF8.GetString(fpsGraphStream.ToArray()),
 				FrametimeGraph = Encoding.UTF8.GetString(frametimeGraphStream.ToArray())

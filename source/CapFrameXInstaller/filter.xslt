@@ -34,6 +34,10 @@ xmlns:wix="http://schemas.microsoft.com/wix/2006/wi">
 	<xsl:key name="search" match="wix:Component[contains(wix:File/@Source, 'app.config')]" use="@Id" />
 	<xsl:key name="search" match="wix:Component[contains(wix:File/@Source, 'app.config')]" use="@Id" />
 	
+	<xsl:key name="search" match="wix:Component[contains(wix:File/@Source, 'OverlayEntryConfiguration_0.json')]" use="@Id" />
+	<xsl:key name="search" match="wix:Component[contains(wix:File/@Source, 'OverlayEntryConfiguration_1.json')]" use="@Id" />
+	<xsl:key name="search" match="wix:Component[contains(wix:File/@Source, 'OverlayEntryConfiguration_2.json')]" use="@Id" />
+	
 	<xsl:template match="wix:Component[key('search', @Id)]" />
 	<xsl:template match="wix:ComponentRef[key('search', @Id)]"/>
 	<xsl:template match="wix:Directory[key('search', @Id)]" />
