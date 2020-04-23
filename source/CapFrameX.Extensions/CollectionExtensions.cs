@@ -41,5 +41,13 @@ namespace CapFrameX.Extensions
 
 			return new BlockingCollection<T>(new ConcurrentQueue<T>(values));
 		}
+
+		public static bool IsNullOrEmpty<T>(this IEnumerable<T> values)
+		{
+			if (values == null || !values.Any())
+				return true;
+
+			return false;
+		}
 	}
 }

@@ -25,6 +25,7 @@ using CapFrameX.Data.Session.Contracts;
 using OxyPlot.Series;
 using CapFrameX.Statistics.NetStandard;
 using CapFrameX.Statistics.PlotBuilder;
+using CapFrameX.Extensions;
 
 namespace CapFrameX.ViewModel
 {
@@ -290,15 +291,21 @@ namespace CapFrameX.ViewModel
 			_eventAggregator.GetEvent<PubSubEvent<ViewMessages.UpdateSession>>()
 							.Subscribe(msg =>
 							{
+								if (msg == null)
+									return;
+
 								_session = msg.CurrentSession;
 								_recordInfo = msg.RecordInfo;
 
 								if (_useUpdateSession)
 								{
-									// Do update actions
-									CurrentGameName = msg.RecordInfo.GameName;
-									UpdateCharts();
-									SyncRangePercentage = GetSyncRangePercentageString();
+									if (msg.RecordInfo != null && msg.RecordInfo.GameName != null)
+									{
+										// Do update actions
+										CurrentGameName = msg.RecordInfo.GameName;
+										UpdateCharts();
+										SyncRangePercentage = GetSyncRangePercentageString();
+									}
 								}
 							});
 		}
@@ -617,6 +624,11 @@ namespace CapFrameX.ViewModel
 
 		private void SetFrameInputLagChart(IList<double> frametimes, IList<double> upperBoundInputlagtimes, IList<double> lowerBoundInputlagtimes)
 		{
+			if (frametimes.IsNullOrEmpty() || 
+				upperBoundInputlagtimes.IsNullOrEmpty() || 
+				lowerBoundInputlagtimes.IsNullOrEmpty())
+				return;
+
 			var appMissed = _session.Runs.SelectMany(r => r.CaptureData.Dropped).ToList();
 			var filteredFrametimes = frametimes.Where((ft, i) => appMissed[i] != true).ToList();
 

@@ -1,4 +1,4 @@
-﻿using CapFrameX.Statistics;
+﻿using CapFrameX.Statistics.NetStandard.Contracts;
 using System;
 using System.Reactive.Subjects;
 

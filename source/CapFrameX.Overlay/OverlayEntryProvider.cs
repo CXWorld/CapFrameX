@@ -4,6 +4,7 @@ using CapFrameX.Contracts.Sensor;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Extensions;
 using CapFrameX.PresentMonInterface;
+using CapFrameX.Statistics.NetStandard.Contracts;
 using Newtonsoft.Json;
 using Prism.Events;
 using System;
@@ -25,17 +26,22 @@ namespace CapFrameX.Overlay
         private readonly ISensorService _sensorService;
         private readonly IAppConfiguration _appConfiguration;
         private readonly IEventAggregator _eventAggregator;
+        private readonly IOnlineMetricService _onlineMetricService;
         private readonly ConcurrentDictionary<string, IOverlayEntry> _identifierOverlayEntryDict
              = new ConcurrentDictionary<string, IOverlayEntry>();
         private readonly TaskCompletionSource<bool> _taskCompletionSource
             = new TaskCompletionSource<bool>();
         private BlockingCollection<IOverlayEntry> _overlayEntries;
 
-        public OverlayEntryProvider(ISensorService sensorService, IAppConfiguration appConfiguration, IEventAggregator eventAggregator)
+        public OverlayEntryProvider(ISensorService sensorService,
+            IAppConfiguration appConfiguration,
+            IEventAggregator eventAggregator,
+            IOnlineMetricService onlineMetricService)
         {
             _sensorService = sensorService;
             _appConfiguration = appConfiguration;
             _eventAggregator = eventAggregator;
+            _onlineMetricService = onlineMetricService;
 
             _ = Task.Run(async () => await LoadOrSetDefault())
                 .ContinueWith(task => _taskCompletionSource.SetResult(true));
@@ -140,7 +146,10 @@ namespace CapFrameX.Overlay
                         .Select(entry => entry.Identifier)
                         .ToList();
 
-                    foreach (var entry in overlayEntriesFromJson.Where(x => x.OverlayEntryType != EOverlayEntryType.CX))
+                    foreach (var entry in overlayEntriesFromJson.Where(x =>
+                     (x.OverlayEntryType == EOverlayEntryType.GPU
+                     || x.OverlayEntryType == EOverlayEntryType.CPU
+                     || x.OverlayEntryType == EOverlayEntryType.RAM)))
                     {
                         if (!sensorOverlayEntryIdentfiers.Contains(entry.Identifier))
                             adjustedOverlayEntries.Remove(entry);
@@ -221,11 +230,34 @@ namespace CapFrameX.Overlay
 
         private void UpdateSensorData()
         {
-            foreach (var entry in _overlayEntries.Where(x => !(x.OverlayEntryType == EOverlayEntryType.CX)))
+            //foreach (var entry in _overlayEntries.Where(x => !(x.OverlayEntryType == EOverlayEntryType.CX)))
+            foreach (var entry in _overlayEntries.Where(x => 
+                (x.OverlayEntryType == EOverlayEntryType.GPU 
+                 || x.OverlayEntryType == EOverlayEntryType.CPU
+                 || x.OverlayEntryType == EOverlayEntryType.RAM)))
             {
                 var sensorEntry = _sensorService.GetSensorOverlayEntry(entry.Identifier);
-                entry.Value = sensorEntry.Value;
+                entry.Value = sensorEntry?.Value;
             }
+
+            // update online metrics
+            // average
+            _identifierOverlayEntryDict.TryGetValue("OnlineAverage", out IOverlayEntry averageEntry);
+
+            if (averageEntry != null)
+                averageEntry.Value = Math.Round(_onlineMetricService.GetOnlineFpsMetricValue(EMetric.Average));
+
+            // P1
+            _identifierOverlayEntryDict.TryGetValue("OnlineP1", out IOverlayEntry p1Entry);
+
+            if (p1Entry != null)
+                p1Entry.Value = Math.Round(_onlineMetricService.GetOnlineFpsMetricValue(EMetric.P1));
+
+            // P0.2
+            _identifierOverlayEntryDict.TryGetValue("OnlineP0dot2", out IOverlayEntry p1dot2Entry);
+
+            if (p1dot2Entry != null)
+                p1dot2Entry.Value = Math.Round(_onlineMetricService.GetOnlineFpsMetricValue(EMetric.P0dot2));
         }
 
         private string GetConfigurationFileName()

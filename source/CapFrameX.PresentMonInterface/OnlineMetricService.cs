@@ -1,4 +1,5 @@
-﻿using CapFrameX.Statistics;
+﻿using CapFrameX.Statistics.NetStandard;
+using CapFrameX.Statistics.NetStandard.Contracts;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -15,7 +16,7 @@ namespace CapFrameX.PresentMonInterface
         private double _currentTime = 0;
         // ToDo: get value from config
         // length in seconds
-        private readonly double _maxOnlineIntervalLength = 60d;
+        private readonly double _maxOnlineIntervalLength = 30d;
 
         public ISubject<Tuple<string, string>> ProcessDataLineStream { get; }
             = new Subject<Tuple<string, string>>();
@@ -38,7 +39,7 @@ namespace CapFrameX.PresentMonInterface
 
             var lineSplit = dataSet.Item2.Split(',');
 
-            if (lineSplit.Length < 12)
+            if (lineSplit.Length <= 12)
                 return;
 
             var startTime = Convert.ToDouble(lineSplit[11], CultureInfo.InvariantCulture);
@@ -54,7 +55,7 @@ namespace CapFrameX.PresentMonInterface
                     else
                     {
                         _frametimes.Add(frameTime);
-                        _frametimes.Remove(0);
+                        _frametimes.RemoveAt(0);
                     }
                 }
             }
