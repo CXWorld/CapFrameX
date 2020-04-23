@@ -1,5 +1,4 @@
 ﻿using CapFrameX.Contracts.Data;
-using CapFrameX.Contracts.Statistics;
 
 namespace CapFrameX.Contracts.Cloud
 {

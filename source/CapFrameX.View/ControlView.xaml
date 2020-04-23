@@ -121,8 +121,8 @@
                     </DataGrid.InputBindings>
                     <DataGrid.ContextMenu>
                         <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
-                            <MenuItem Header="Add to ignore list" Command="{Binding AddToIgnoreListCommand}"/>
                             <MenuItem Header="Delete recording file(s)" Command="{Binding DeleteRecordFileCommand}"/>
+                            <MenuItem Header="Move recording file(s)" Command="{Binding MoveRecordFileCommand}"/>
                         </ContextMenu>
                     </DataGrid.ContextMenu>
                     <DataGrid.ColumnHeaderStyle>

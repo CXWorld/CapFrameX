@@ -20,6 +20,7 @@ namespace CapFrameX.Data
 		private readonly string _filename;
 		private readonly IAppConfiguration _appConfiguration;
 		private readonly ISubject<int> _processListUpdate = new Subject<int>();
+		private bool ProcesslistInitialized { get; set; }
 		public IObservable<int> ProcessesUpdate => _processListUpdate.AsObservable();
 
 		public CXProcess[] Processes => _processList.ToArray();
@@ -51,8 +52,8 @@ namespace CapFrameX.Data
 			_processList.Add(process);
 			_processListUpdate.OnNext(default);
 
-			if (_appConfiguration.ShareProcessListEntries)
-			{
+			if (_appConfiguration.ShareProcessListEntries && ProcesslistInitialized)
+			{ 
 				Task.Run(async () =>
 				{
 					using (var client = new HttpClient()
@@ -70,7 +71,7 @@ namespace CapFrameX.Data
 						content.Headers.ContentType.MediaType = "application/json";
 						var response = await client.PostAsync("ProcessList", content);
 					}
-				});
+				});				
 			}
 		}
 
@@ -148,8 +149,14 @@ namespace CapFrameX.Data
 
 					if (appConfiguration.AutoUpdateProcessList)
 					{
-						Task.Run(() => processList.UpdateProcessListFromWebserviceAsync().ConfigureAwait(false));
+						processList.ProcesslistInitialized = false;
+						Task.Run(() => processList.UpdateProcessListFromWebserviceAsync().ContinueWith(t =>
+						{							
+						processList.ProcesslistInitialized = true;							
+						}).ConfigureAwait(false));
 					}
+					else
+						processList.ProcesslistInitialized = true;
 				}
 				catch (Exception)
 				{

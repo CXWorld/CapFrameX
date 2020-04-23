@@ -1,10 +1,11 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.Sensor;
-using CapFrameX.Extensions;
+using CapFrameX.Extensions.NetStandard;
 using CapFrameX.Hotkey;
 using CapFrameX.Overlay;
 using CapFrameX.Statistics;
+using CapFrameX.Statistics.NetStandard.Contracts;
 using Gma.System.MouseKeyHook;
 using GongSolutions.Wpf.DragDrop;
 using Prism.Commands;

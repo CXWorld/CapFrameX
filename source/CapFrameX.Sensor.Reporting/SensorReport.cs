@@ -1,43 +1,22 @@
-﻿using CapFrameX.Contracts.Sensor;
-using CapFrameX.Data.Session.Contracts;
-using CapFrameX.Extensions;
+﻿using CapFrameX.Data.Session.Contracts;
+using CapFrameX.Sensor.Reporting.Contracts;
+using CapFrameX.Sensor.Reporting.Data;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
+using CapFrameX.Extensions.NetStandard;
 using System.Linq;
+using System.ComponentModel;
 
-namespace CapFrameX.Sensor
+namespace CapFrameX.Sensor.Reporting
 {
-	public enum EReportSensorName
-	{
-		[Description("CPU load (%)")]
-		CpuUsage,
-		[Description("CPU max thread load (%)")]
-		CpuMaxThreadUsage,
-		[Description("CPU power (W)")]
-		CpuPower,
-		[Description("CPU temp (°C)")]
-		CpuTemp,
-		[Description("GPU load (%)")]
-		GpuUsage,
-		[Description("GPU power (W)")]
-		GpuPower,
-		[Description("GPU temp. (°C)")]
-		GpuTemp,
-		[Description("GPU VRAM usage (MB)")]
-		VRamUsage,
-		[Description("RAM usage (GB)")]
-		RamUsage
-	}
-
 	public static class SensorReport
 	{
-		public static IEnumerable<ISensorReportItem> GetReportFromSessionSensorData
-			(IEnumerable<ISessionSensorData> sessionsSensorData)
+		public static IEnumerable<ISensorReportItem> GetReportFromSessionSensorData(IEnumerable<ISessionSensorData> sessionsSensorData, double startTime = 0, double endTime = double.PositiveInfinity)
 		{
-			if (sessionsSensorData == null || !sessionsSensorData.Any()
-				|| sessionsSensorData.Any(session => session == null))
+			if (sessionsSensorData == null || !sessionsSensorData.Any() || sessionsSensorData.Any(session => session == null))
+			{
 				return Enumerable.Empty<ISensorReportItem>();
+			}
 
 			var sensorReportItems = new List<ISensorReportItem>();
 			try
@@ -80,9 +59,19 @@ namespace CapFrameX.Sensor
 			}
 			catch { return sensorReportItems; }
 
-			bool HasValues<T>(IEnumerable<ISessionSensorData> sessionSensorData, Func<ISessionSensorData, IEnumerable<T>> selector, out IEnumerable<T> values)
+			bool HasValues<T>(IEnumerable<ISessionSensorData> sessionSensorData, Func<ISessionSensorData, IEnumerable<T>> selector, out List<T> values)
 			{
-				values = sessionsSensorData.SelectMany(selector);
+				values = new List<T>();
+				var measureTimes = sessionSensorData.SelectMany(x => x.MeasureTime).ToArray();
+				var selectedValues = sessionsSensorData.SelectMany(selector).ToArray();
+				for(int i = 0; i < selectedValues.Count(); i++)
+				{
+					var measureTime = measureTimes[i];
+					if(measureTime >= startTime && measureTime <= endTime)
+					{
+						values.Add(selectedValues[i]);
+					}
+				}
 				return values.Any();
 			}
 
@@ -90,7 +79,7 @@ namespace CapFrameX.Sensor
 			{
 				sensorReportItems.Add(new SensorReportItem
 				{
-					Name = sensorName.GetDescription(),
+					Name = sensorName.GetAttribute<DescriptionAttribute>().Description,
 					MinValue = min,
 					AverageValue = avg,
 					MaxValue = max

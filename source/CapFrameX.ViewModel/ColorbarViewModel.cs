@@ -1,6 +1,6 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using CapFrameX.Data;
-using CapFrameX.Extensions;
+using CapFrameX.Extensions.NetStandard;
 using CapFrameX.PresentMonInterface;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using Prism.Commands;
@@ -332,6 +332,7 @@ namespace CapFrameX.ViewModel
 			OptionPopupClosed = eventAggregator.GetEvent<PubSubEvent<ViewMessages.OptionPopupClosed>>();
 
 			HasCustomInfo = SelectedHardwareInfoSource == EHardwareInfoSource.Custom;
+			IsLoggedIn = _loginManager.State.Token != null;
 			SetAggregatorEvents();
 			SetHardwareInfoDefaultsFromDatabase();
 			SubscribeToUpdateSession();

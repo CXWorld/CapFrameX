@@ -757,7 +757,7 @@ namespace CapFrameX.Configuration.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
         public bool ShowThresholdTimes {
             get {
                 return ((bool)(this["ShowThresholdTimes"]));
@@ -788,6 +788,18 @@ namespace CapFrameX.Configuration.Properties {
             }
             set {
                 this["UseSingleRecordMedianStatisticParameter"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("None")]
+        public string SecondComparisonContext {
+            get {
+                return ((string)(this["SecondComparisonContext"]));
+            }
+            set {
+                this["SecondComparisonContext"] = value;
             }
         }
     }

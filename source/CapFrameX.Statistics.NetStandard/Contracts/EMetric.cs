@@ -1,7 +1,7 @@
-﻿using CapFrameX.Extensions.Attributes;
+﻿using CapFrameX.Extensions.NetStandard.Attributes;
 using System.ComponentModel;
 
-namespace CapFrameX.Statistics
+namespace CapFrameX.Statistics.NetStandard.Contracts
 {
 	public enum EMetric
 	{

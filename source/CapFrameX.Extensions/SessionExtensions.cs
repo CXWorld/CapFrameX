@@ -9,9 +9,6 @@ namespace CapFrameX.Extensions
 {
 	public static class SessionExtensions
 	{
-		public static bool HasValidSensorData(this ISession session)
-		{
-			return session.Runs.All(run => run.SensorData != null && run.SensorData.MeasureTime.Any());
-		}
+
 	}
 }

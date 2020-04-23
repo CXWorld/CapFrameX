@@ -25,7 +25,6 @@ using CapFrameX.Data.Session.Contracts;
 using System.Reactive;
 using CapFrameX.MVVM.Dialogs;
 using Microsoft.Extensions.Logging;
-using System.ComponentModel;
 
 namespace CapFrameX.ViewModel
 {
@@ -134,11 +133,11 @@ namespace CapFrameX.ViewModel
 			{
 				_directoryLoading = value;
 				RaisePropertyChanged();
-				RaisePropertyChanged(nameof (DirectoryIsEmpty));
+				RaisePropertyChanged(nameof(DirectoryIsEmpty));
 			}
 		}
 
-		public string RootDirectory 
+		public string RootDirectory
 		{
 			get { return _appConfiguration.CaptureRootDirectory; }
 			set
@@ -191,6 +190,8 @@ namespace CapFrameX.ViewModel
 
 		public ICommand DeleteRecordFileCommand { get; }
 
+		public ICommand MoveRecordFileCommand { get; }
+
 		public ICommand AcceptEditingDialogCommand { get; }
 
 		public ICommand CancelEditingDialogCommand { get; }
@@ -238,17 +239,18 @@ namespace CapFrameX.ViewModel
 
 			//Commands
 			DeleteRecordFileCommand = new DelegateCommand(OnDeleteRecordFile);
+			MoveRecordFileCommand = new DelegateCommand(OnMoveRecordFile);
 			AcceptEditingDialogCommand = new DelegateCommand(OnAcceptEditingDialog);
 			CancelEditingDialogCommand = new DelegateCommand(OnCancelEditingDialog);
 			AddCpuInfoCommand = new DelegateCommand(OnAddCpuInfo);
 			AddGpuInfoCommand = new DelegateCommand(OnAddGpuInfo);
 			AddRamInfoCommand = new DelegateCommand(OnAddRamInfo);
-			DeleteRecordCommand = new DelegateCommand(OnPressDeleteKey);			
+			DeleteRecordCommand = new DelegateCommand(OnPressDeleteKey);
 			OpenObservedFolderCommand = new DelegateCommand(OnOpenObservedFolder);
 			DeleteFolderCommand = new DelegateCommand(OnDeleteFolder);
-			OpenCreateSubFolderDialogCommand = new DelegateCommand(() => 
-			{ 
-				CreateFolderDialogIsOpen = true; 
+			OpenCreateSubFolderDialogCommand = new DelegateCommand(() =>
+			{
+				CreateFolderDialogIsOpen = true;
 				TreeViewSubFolderName = string.Empty;
 				CreateFolderdialogIsOpenStream.OnNext(true);
 			});
@@ -304,7 +306,7 @@ namespace CapFrameX.ViewModel
 			{
 				var parentFolder = Directory.GetParent(_appConfiguration.ObservedDirectory);
 				FileSystem.DeleteDirectory(_appConfiguration.ObservedDirectory, UIOption.OnlyErrorDialogs, RecycleOption.SendToRecycleBin);
-				
+
 				_updateSessionEvent.Publish(new ViewMessages.UpdateSession(null, null));
 				_appConfiguration.ObservedDirectory = parentFolder.FullName;
 				TreeViewUpdateStream.OnNext(default);
@@ -361,7 +363,8 @@ namespace CapFrameX.ViewModel
 
 			_recordObserver.DirectoryFilesStream
 				.DistinctUntilChanged()
-				.Do(_ => {
+				.Do(_ =>
+				{
 					RecordInfoList.Clear();
 					DirectoryLoading = true;
 					RaisePropertyChanged(nameof(DirectoryLoading));
@@ -379,7 +382,7 @@ namespace CapFrameX.ViewModel
 				{
 					RecordInfoList.Clear();
 					DirectoryLoading = false;
-					RaisePropertyChanged(nameof (DirectoryLoading));
+					RaisePropertyChanged(nameof(DirectoryLoading));
 					RecordInfoList.AddRange(recordFileInfos);
 				});
 
@@ -451,6 +454,49 @@ namespace CapFrameX.ViewModel
 			catch { }
 		}
 
+		private void OnMoveRecordFile()
+		{
+			if (!RecordInfoList.Any())
+				return;
+
+			var dialog = new CommonOpenFileDialog
+			{
+				IsFolderPicker = true
+			};
+
+			CommonFileDialogResult result = dialog.ShowDialog();
+
+			if (result == CommonFileDialogResult.Ok)
+			{
+				string destinationfolder = dialog.FileName;
+				try
+				{
+
+					if (_selectedRecordings?.Count > 1)
+					{
+						foreach (var item in _selectedRecordings)
+						{
+							string destinationFullPath = Path.Combine(destinationfolder, item.FileInfo.Name);
+							FileSystem.MoveFile(item.FullPath, destinationFullPath);
+						}
+					}
+					else
+					{
+						string destinationFullPath = Path.Combine(destinationfolder, SelectedRecordInfo.FileInfo.Name);
+						FileSystem.MoveFile(SelectedRecordInfo.FullPath, destinationFullPath);
+					}
+
+					SelectedRecordInfo = null;
+					_selectedRecordings = null;
+
+					_updateSessionEvent.Publish(new ViewMessages.UpdateSession(null, null));
+					
+				}
+				catch { }
+			}
+			TreeViewUpdateStream.OnNext(default);
+		}
+
 		private void OnCancelEditingDialog()
 		{
 			if (SelectedRecordInfo != null)
@@ -479,9 +525,9 @@ namespace CapFrameX.ViewModel
 		private void OnAcceptEditingDialog() => SaveDescriptions();
 
 		public void SaveDescriptions()
-		{			
-			if (!ObjectExtensions.IsAllNotNull(CustomCpuDescription, 
-				CustomGpuDescription, CustomRamDescription, CustomGameName, 
+		{
+			if (!ObjectExtensions.IsAllNotNull(CustomCpuDescription,
+				CustomGpuDescription, CustomRamDescription, CustomGameName,
 				CustomComment, _selectedRecordInfo))
 				return;
 
@@ -508,7 +554,8 @@ namespace CapFrameX.ViewModel
 					process.UpdateDisplayName(gameName);
 				}
 				_processList.Save();
-				RecordInfoList.Where(record => record.ProcessName == processName).ForEach(record => {
+				RecordInfoList.Where(record => record.ProcessName == processName).ForEach(record =>
+				{
 					record.GameName = process.DisplayName;
 					((FileRecordInfo)record).NotifyPropertyChanged(nameof(record.GameName));
 				});
@@ -531,14 +578,16 @@ namespace CapFrameX.ViewModel
 
 		private void OnSelectedRecordInfoChanged()
 		{
-			if (_selectedRecordInfo is null) {
+			if (_selectedRecordInfo is null)
+			{
 				ResetInfoEditBoxes();
-			} else 
+			}
+			else
 			{
 				var session = _recordManager.LoadData(_selectedRecordInfo.FullPath);
 				if (session is ISession)
 				{
-					if(_updateSessionEvent != null)
+					if (_updateSessionEvent != null)
 					{
 						_updateSessionEvent.Publish(new ViewMessages.UpdateSession(session, SelectedRecordInfo));
 					}

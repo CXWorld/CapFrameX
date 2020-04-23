@@ -1,11 +1,13 @@
 ﻿using CapFrameX.Data;
 using CapFrameX.EventAggregation.Messages;
 using CefSharp;
+using CefSharp.Handler;
 using CefSharp.Wpf;
 using Prism.Events;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -53,18 +55,28 @@ namespace CapFrameX
 
 		private async Task SetupBrowser()
 		{
-			if (!Cef.IsInitialized)
-			{
-				Cef.Initialize(new CefSettings()
-				{
-					UserAgent = "Chrome"
-				});
-			}
-
-			do
-			{
-				await Task.Delay(200);
-			} while (!Cef.IsInitialized);
+			Wb.RequestHandler = new CustomRequestHandler();
 		}
 	}
+
+	class CustomRequestHandler: RequestHandler
+	{
+		protected override IResourceRequestHandler GetResourceRequestHandler(IWebBrowser chromiumWebBrowser, IBrowser browser, IFrame frame, IRequest request, bool isNavigation, bool isDownload, string requestInitiator, ref bool disableDefaultHandling)
+		{
+			return new CustomResourceRequestHandler();
+		}
+	}
+
+	class CustomResourceRequestHandler: ResourceRequestHandler
+    {
+
+        protected override CefReturnValue OnBeforeResourceLoad(IWebBrowser browserControl, IBrowser browser, IFrame frame, IRequest request, IRequestCallback callback)
+        {
+            var headers = request.Headers;
+            headers["User-Agent"] = "Chrome";
+            request.Headers = headers;
+
+            return CefReturnValue.Continue;
+        }
+    }
 }

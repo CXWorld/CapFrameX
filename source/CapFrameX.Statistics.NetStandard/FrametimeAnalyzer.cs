@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CapFrameX.Statistics
+namespace CapFrameX.Statistics.NetStandard
 {
 	public class FrametimeAnalyzer : IFrametimeAnalyzer
 	{

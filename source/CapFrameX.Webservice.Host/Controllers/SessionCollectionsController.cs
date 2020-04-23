@@ -78,6 +78,16 @@ namespace CapFrameX.Webservice.Host.Controllers
 			return Ok(await _mediator.Send(query));
 		}
 
+		[HttpGet("details/{fileId}")]
+		public async Task<IActionResult> GetSensorReports(Guid fileId)
+		{
+			var query = new GetSessionDetailByFileIdQuery()
+			{
+				FileId = fileId
+			};
+			return Ok(await _mediator.Send(query));
+		}
+
 		[HttpPost]
 		[ServiceFilter(typeof(UserAgentFilter))]
 		public async Task<IActionResult> Post(IEnumerable<Session> sessions, [FromQuery] string description)
