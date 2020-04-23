@@ -1,4 +1,5 @@
 ﻿using CapFrameX.Contracts.Configuration;
+using CapFrameX.Statistics.NetStandard.Contracts;
 
 namespace CapFrameX.Configuration
 {

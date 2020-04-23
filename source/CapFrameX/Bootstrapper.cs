@@ -1,5 +1,4 @@
 ﻿using CapFrameX.Data;
-using CapFrameX.Statistics;
 using DryIoc;
 using Prism.DryIoc;
 using Prism.Modularity;
@@ -28,6 +27,8 @@ using Serilog.Formatting.Compact;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Contracts.Sensor;
 using CapFrameX.Sensor;
+using CapFrameX.Statistics.NetStandard;
+using CapFrameX.Statistics.NetStandard.Contracts;
 
 namespace CapFrameX
 {
@@ -56,6 +57,7 @@ namespace CapFrameX
 			// Vertical components
 			Container.Register<IEventAggregator, EventAggregator>(Reuse.Singleton, null, null, IfAlreadyRegistered.Replace, "EventAggregator");
 			Container.Register<IAppConfiguration, CapFrameXConfiguration>(Reuse.Singleton);
+			Container.RegisterInstance<IFrametimeStatisticProviderOptions>(Container.Resolve<CapFrameXConfiguration>());
 			Container.ConfigureSerilogILogger(CreateLoggerConfiguration(Container.Resolve<IAppConfiguration>()));
 
 			// Prism

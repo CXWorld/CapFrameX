@@ -78,10 +78,10 @@ namespace CapFrameX.Webservice.Host.Controllers
 			return Ok(await _mediator.Send(query));
 		}
 
-		[HttpGet("sensors/{fileId}")]
+		[HttpGet("details/{fileId}")]
 		public async Task<IActionResult> GetSensorReports(Guid fileId)
 		{
-			var query = new GetSensorReportsForSessionCollectionFileHashQuery()
+			var query = new GetSessionDetailByFileIdQuery()
 			{
 				FileId = fileId
 			};

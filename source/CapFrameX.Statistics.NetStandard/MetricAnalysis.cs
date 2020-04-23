@@ -1,6 +1,6 @@
-﻿using CapFrameX.Contracts.Statistics;
+﻿using CapFrameX.Statistics.NetStandard.Contracts;
 
-namespace CapFrameX.Statistics
+namespace CapFrameX.Statistics.NetStandard
 {
 	public class MetricAnalysis : IMetricAnalysis
 	{

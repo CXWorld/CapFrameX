@@ -1,16 +1,15 @@
-﻿namespace CapFrameX.Contracts.Configuration
+﻿using CapFrameX.Statistics.NetStandard.Contracts;
+
+namespace CapFrameX.Contracts.Configuration
 {
-	public interface IAppConfiguration
+	public interface IAppConfiguration : IFrametimeStatisticProviderOptions
 	{
-		int MovingAverageWindowSize { get; set; }
 
 		double StutteringFactor { get; set; }
 
 		string ObservedDirectory { get; set; }
 
 		string ScreenshotDirectory { get; set; }
-
-		int FpsValuesRoundingDigits { get; set; }
 
 		bool UseSingleRecordMaxStatisticParameter { get; set; }
 

@@ -1,5 +1,5 @@
 ﻿using CapFrameX.Contracts.Configuration;
-using CapFrameX.Extensions;
+using CapFrameX.Extensions.NetStandard;
 using System;
 using System.Collections.Generic;
 using System.IO;

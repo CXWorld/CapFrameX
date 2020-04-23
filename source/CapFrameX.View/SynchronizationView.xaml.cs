@@ -1,5 +1,6 @@
 ﻿using CapFrameX.Configuration;
 using CapFrameX.Statistics;
+using CapFrameX.Statistics.NetStandard;
 using CapFrameX.View.Controls;
 using CapFrameX.ViewModel;
 using LiveCharts;

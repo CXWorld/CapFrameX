@@ -3,12 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using System.Windows;
 using CapFrameX.Contracts.Data;
-using CapFrameX.Contracts.Statistics;
 using CapFrameX.Data.Session.Contracts;
-using CapFrameX.Statistics;
-using CapFrameX.StatisticsExtensions;
+using CapFrameX.Statistics.NetStandard.Contracts;
+using CapFrameX.Statistics.NetStandard;
+using CapFrameX.Configuration;
 
 namespace CapFrameX.Data
 {
@@ -82,7 +81,7 @@ namespace CapFrameX.Data
 
 			double startTime = CurrentTime;
 			double endTime = startTime + WindowLength;
-			return CurrentSession.GetFrametimeTimeWindow(startTime, endTime, RemoveOutlierMethod);
+			return CurrentSession.GetFrametimeTimeWindow(startTime, endTime, new CapFrameXConfiguration() ,RemoveOutlierMethod);
 		}
 
 		public IList<Point> GetFrametimePointTimeWindow()
@@ -92,7 +91,7 @@ namespace CapFrameX.Data
 
 			double startTime = CurrentTime;
 			double endTime = startTime + WindowLength;
-			return CurrentSession.GetFrametimePointsTimeWindow(startTime, endTime, RemoveOutlierMethod);
+			return CurrentSession.GetFrametimePointsTimeWindow(startTime, endTime, new CapFrameXConfiguration(), RemoveOutlierMethod);
 		}
 
 		public IList<double> GetFpsTimeWindow()
@@ -103,52 +102,6 @@ namespace CapFrameX.Data
 		public IList<Point> GetFpsPointTimeWindow()
 		{
 			return GetFrametimePointTimeWindow()?.Select(pnt => new Point(pnt.X, 1000 / pnt.Y)).ToList();
-		}
-
-		public IList<Point> GetGPULoadPointTimeWindow()
-		{
-			if (CurrentSession == null)
-				return null;
-
-			var list = new List<Point>();
-			var times = CurrentSession.Runs.SelectMany(r => r.SensorData.MeasureTime).ToArray();
-			var loads = CurrentSession.Runs.SelectMany(r => r.SensorData.GpuUsage).ToArray();
-
-			for (int i = 0; i< times.Count(); i++)
-			{
-				list.Add(new Point(times[i], loads[i]));
-			}
-			return list;
-		}
-		public IList<Point> GetCPULoadPointTimeWindow()
-		{
-			if (CurrentSession == null)
-				return null;
-
-			var list = new List<Point>();
-			var times = CurrentSession.Runs.SelectMany(r => r.SensorData.MeasureTime).ToArray();
-			var loads = CurrentSession.Runs.SelectMany(r => r.SensorData.CpuUsage).ToArray();
-
-			for (int i = 0; i < times.Count(); i++)
-			{
-				list.Add(new Point(times[i], loads[i]));
-			}
-			return list;
-		}
-		public IList<Point> GetCPUMaxThreadLoadPointTimeWindow()
-		{
-			if (CurrentSession == null)
-				return null;
-
-			var list = new List<Point>();
-			var times = CurrentSession.Runs.SelectMany(r => r.SensorData.MeasureTime).ToArray();
-			var loads = CurrentSession.Runs.SelectMany(r => r.SensorData.CpuMaxThreadUsage).ToArray();
-
-			for (int i = 0; i < times.Count(); i++)
-			{
-				list.Add(new Point(times[i], loads[i]));
-			}
-			return list;
 		}
 
 		private void DoUpdateWindowTrigger()

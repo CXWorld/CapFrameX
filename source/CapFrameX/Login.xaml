@@ -8,6 +8,6 @@
 		mc:Ignorable="d"
         Title="Login" Height="850" Width="450">
     <Grid>
-		<wpf:ChromiumWebBrowser x:Name="Wb" Initialized="OnBrowserInitialized"/>
+		<wpf:ChromiumWebBrowser Name="Wb" Initialized="OnBrowserInitialized"/>
 	</Grid>
 </Window>

@@ -107,11 +107,11 @@ namespace CapFrameX.ViewModel
 			{
 				Color color = FrametimeGraphColor.Value;
 
-				var id = WrappedRecordInfo.FileRecordInfo.Id;
+				var tag = WrappedRecordInfo.FileRecordInfo.Id;
 				var frametimesChart = _viewModel.ComparisonModel
-					.Series.FirstOrDefault(chart => chart.Id == id) as OxyPlot.Series.LineSeries;
+					.Series.FirstOrDefault(chart => chart.Tag == tag) as OxyPlot.Series.LineSeries;
 				var lShapeChart = _viewModel.ComparisonLShapeCollection
-					.FirstOrDefault(chart => chart.Id == id) as LineSeries;
+					.FirstOrDefault(chart => chart.Id == tag) as LineSeries;
 
 				if (frametimesChart == null || lShapeChart == null)
 					return;
@@ -132,11 +132,11 @@ namespace CapFrameX.ViewModel
 			if (FrametimeGraphColor.HasValue && _viewModel.ComparisonRecords.Any()
 				&& _viewModel.ComparisonModel.Series.Any() && _viewModel.ComparisonLShapeCollection.Any())
 			{
-				var id = WrappedRecordInfo.FileRecordInfo.Id;
+				var tag = WrappedRecordInfo.FileRecordInfo.Id;
 				var frametimesChart = _viewModel.ComparisonModel
-					.Series.FirstOrDefault(chart => chart.Id == id) as OxyPlot.Series.LineSeries;
+					.Series.FirstOrDefault(chart => chart.Tag == tag) as OxyPlot.Series.LineSeries;
 				var lShapeChart = _viewModel.ComparisonLShapeCollection
-					.FirstOrDefault(chart => chart.Id == id) as LineSeries;
+					.FirstOrDefault(chart => chart.Id == tag) as LineSeries;
 
 				if (frametimesChart == null || lShapeChart == null)
 					return;
@@ -178,9 +178,9 @@ namespace CapFrameX.ViewModel
 
 			if (_viewModel.ComparisonModel.Series.Any())
 			{
-				var id = WrappedRecordInfo.FileRecordInfo.Id;
+				var tag = WrappedRecordInfo.FileRecordInfo.Id;
 				var frametimesChart = _viewModel.ComparisonModel
-					.Series.FirstOrDefault(chart => chart.Id == id) as OxyPlot.Series.LineSeries;
+					.Series.FirstOrDefault(chart => chart.Tag == tag) as OxyPlot.Series.LineSeries;
 
 				if (frametimesChart == null)
 					return;
@@ -218,9 +218,9 @@ namespace CapFrameX.ViewModel
 
 			if (_viewModel.ComparisonModel.Series.Any())
 			{
-				var id = WrappedRecordInfo.FileRecordInfo.Id;
+				var tag = WrappedRecordInfo.FileRecordInfo.Id;
 				var frametimesChart = _viewModel.ComparisonModel
-					.Series.FirstOrDefault(chart => chart.Id == id) as OxyPlot.Series.LineSeries;
+					.Series.FirstOrDefault(chart => chart.Tag == tag) as OxyPlot.Series.LineSeries;
 
 				if (frametimesChart == null)
 					return;
