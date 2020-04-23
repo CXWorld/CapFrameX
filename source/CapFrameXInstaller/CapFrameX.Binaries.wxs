@@ -39,6 +39,10 @@
                 <File Id="fil3C5B48255A95C26C6661A866ABBA9A94" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.Extensions.dll" />
             </Component>
             
+            <Component Id="cmp946F72DFC650C4E5A49C51A838713428" Guid="*" Win64="yes">
+                <File Id="fil8D5A202B59370A078AE09810437627E4" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.Extensions.NetStandard.dll" />
+            </Component>
+            
             
             <Component Id="cmpC53D77F304B4523D70934DE3AA929A1B" Guid="*" Win64="yes">
                 <File Id="fil8AC734A3084D24BF22E7B1C315F35D80" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.Hotkey.dll" />
@@ -68,10 +72,22 @@
             </Component>
             
             
+            <Component Id="cmp0895AE10E5B3ECDA81D5DD888E741F15" Guid="*" Win64="yes">
+                <File Id="filB564A04F334751CB9A1730CE3C9409C0" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.Sensor.Reporting.dll" />
+            </Component>
+            
             <Component Id="cmp0FB30BFBF10002FEB8B1F262B927DE5E" Guid="*" Win64="yes">
                 <File Id="fil60A491409F9FE309FF63B17A92C963ED" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.Statistics.dll" />
             </Component>
             
+            <Component Id="cmp4A14411E5B2D1C7D899B9637CD60A7CD" Guid="*" Win64="yes">
+                <File Id="fil16D7996D0A7821C067EFB1CE112D3697" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.Statistics.NetStandard.dll" />
+            </Component>
+            
+            
+            <Component Id="cmpA370ED5AA85C29D5BFCB28B64725C072" Guid="*" Win64="yes">
+                <File Id="fil6B7F05642808F2CC0AC761685715D27B" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.Statistics.PlotBuilder.dll" />
+            </Component>
             
             <Component Id="cmpF4AA3050A716E6F54BB951C2FD2122DC" Guid="*" Win64="yes">
                 <File Id="fil5F66D1BA3F0735980723B32E1A79E0B1" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.Updater.dll" />
@@ -205,7 +221,6 @@
             <Component Id="cmp3ED5A0A4D782A8BF371C8403342D615B" Guid="*" Win64="yes">
                 <File Id="fil7074B34CCDD7ABC6B6FDB40762FB4CF9" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\MathNet.Numerics.dll" />
             </Component>
-            
             <Component Id="cmp257EA8281FB771B78FAEDC2CD80B4A5F" Guid="*" Win64="yes">
                 <File Id="filE0C20EAC9C3438F2434A2A5C4BB16C88" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\MediatR.dll" />
             </Component>
@@ -270,7 +285,6 @@
             <Component Id="cmp9867DD01B906E145D73B1AA12191B24D" Guid="*" Win64="yes">
                 <File Id="filF3C7E1DBD3AD0BE68A0C0D000EC5A7D6" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\OxyPlot.dll" />
             </Component>
-            
             <Component Id="cmp8F4FC608131CDC6A82B59CBB8B203778" Guid="*" Win64="yes">
                 <File Id="filE9CE96E94505AA7F35F51DF61E20A061" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\OxyPlot.Wpf.dll" />
             </Component>
@@ -511,11 +525,6 @@
                     <File Id="filAD427424F750F9EADEDB5030ACC85834" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\locales\zh-TW.pak" />
                 </Component>
             </Directory>
-            <Directory Id="dir97E37B64C7416E419071FFE4F79CA6A4" Name="OverlayConfiguration">
-                
-                
-                
-            </Directory>
             <Directory Id="dir853772609C50C17748AF70C12E8A0818" Name="PresentMon">
                 <Component Id="cmpC9FDA2A63A64022F27649C6DD6729D8D" Guid="*" Win64="yes">
                     <File Id="fil444A50FFAD9F4E0A482DCBC9AE37F9D5" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\PresentMon\PresentMon64-1.5.2.exe" />
@@ -581,6 +590,8 @@
             <ComponentRef Id="cmp2E59BC59B11729E95EB8C057C580BD11" />
             <ComponentRef Id="cmp197CCAFDD9C330A4C91CAF35F0619382" />
             
+            <ComponentRef Id="cmp946F72DFC650C4E5A49C51A838713428" />
+            
             
             <ComponentRef Id="cmpC53D77F304B4523D70934DE3AA929A1B" />
             
@@ -598,8 +609,14 @@
             <ComponentRef Id="cmp7F114E6DD3365A0AC42A526666770850" />
             
             
+            <ComponentRef Id="cmp0895AE10E5B3ECDA81D5DD888E741F15" />
+            
             <ComponentRef Id="cmp0FB30BFBF10002FEB8B1F262B927DE5E" />
             
+            <ComponentRef Id="cmp4A14411E5B2D1C7D899B9637CD60A7CD" />
+            
+            
+            <ComponentRef Id="cmpA370ED5AA85C29D5BFCB28B64725C072" />
             
             <ComponentRef Id="cmpF4AA3050A716E6F54BB951C2FD2122DC" />
             
@@ -659,7 +676,6 @@
             <ComponentRef Id="cmp6D59DB1C8695088F09FD7F0B07ECD487" />
             
             <ComponentRef Id="cmp3ED5A0A4D782A8BF371C8403342D615B" />
-            
             <ComponentRef Id="cmp257EA8281FB771B78FAEDC2CD80B4A5F" />
             <ComponentRef Id="cmpB785B661067DB1CA34160E239CB75395" />
             <ComponentRef Id="cmp5AA201CA9529E78168BA0DB83D052443" />
@@ -682,7 +698,6 @@
             <ComponentRef Id="cmpBC4FC00A26E7D32479D42D3411317FC5" />
             <ComponentRef Id="cmp36162545506C564646EFF7AED20D4D87" />
             <ComponentRef Id="cmp9867DD01B906E145D73B1AA12191B24D" />
-            
             <ComponentRef Id="cmp8F4FC608131CDC6A82B59CBB8B203778" />
             
             <ComponentRef Id="cmp59564654D02343646998A8D6A6F0C25F" />
@@ -763,9 +778,6 @@
             <ComponentRef Id="cmp80642D2D1994622CA31AC0ED1ED014D1" />
             <ComponentRef Id="cmp5775E2EF67EC1F2A7A26152C6507EA35" />
             <ComponentRef Id="cmpC00155C4F0BBC6D4B881D098F564FA42" />
-            
-            
-            
             <ComponentRef Id="cmpC9FDA2A63A64022F27649C6DD6729D8D" />
             <ComponentRef Id="cmpA6A9ED7D0D14A0EB3F1B6598611EC6CB" />
             <ComponentRef Id="cmp614D68FE53DA984A3D71375B620FF70E" />
