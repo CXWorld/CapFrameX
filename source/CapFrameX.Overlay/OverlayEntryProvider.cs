@@ -245,19 +245,28 @@ namespace CapFrameX.Overlay
             _identifierOverlayEntryDict.TryGetValue("OnlineAverage", out IOverlayEntry averageEntry);
 
             if (averageEntry != null)
+            {
                 averageEntry.Value = Math.Round(_onlineMetricService.GetOnlineFpsMetricValue(EMetric.Average));
+                averageEntry.ValueFormat = "{0,4:F0}<S=50>FPS<S>";
+            }
 
             // P1
             _identifierOverlayEntryDict.TryGetValue("OnlineP1", out IOverlayEntry p1Entry);
 
             if (p1Entry != null)
+            {
                 p1Entry.Value = Math.Round(_onlineMetricService.GetOnlineFpsMetricValue(EMetric.P1));
+                p1Entry.ValueFormat = "{0,4:F0}<S=50>FPS<S>";
+            }
 
             // P0.2
             _identifierOverlayEntryDict.TryGetValue("OnlineP0dot2", out IOverlayEntry p1dot2Entry);
 
             if (p1dot2Entry != null)
+            {
                 p1dot2Entry.Value = Math.Round(_onlineMetricService.GetOnlineFpsMetricValue(EMetric.P0dot2));
+                p1dot2Entry.ValueFormat = "{0,4:F0}<S=50>FPS<S>";
+            }
         }
 
         private string GetConfigurationFileName()
