@@ -47,11 +47,11 @@ This list is always located at the left section, regardless of the view you're c
 It constantly observes the output directory so every capture will show up here as soon as the capture has finished.
 This also includes every OCAT or PresentMon capture you put into that directory.
 
-Changing directories:
-To change the directory, use the expander on the left where you can select your main folder and get a tree view of all subfolders within that main folder.
-Throgh the right click context menu you can create or delete folders directly in the tree view and also open any selected folder in explorer.
+Changing directories:  
+To change the directory, use the expander on the left where you can select your main folder by double clicking on the address line and get a tree view of all subfolders within that main folder.
+Throgh the right click context menu you can create or delete folders directly in the tree view and also open any selected folder in explorer. You can also move record files to other folders through the context menu in the record list itself.
 
-Changing record info:
+Changing record info:  
 At the bottom of the record list you can see and change the CPU, GPU and RAM description and add a custom comment to every capture.
 Also you can edit the game name, since the process name is used as default. 
 This gets saved in a process list file that is being compared with a list we update on every new version of CapFrameX to add new games that aren't already on your list. 
@@ -124,8 +124,8 @@ With a double-click from the record list you can add the captures to the compari
 
 The first tab shows you the records as bar charts.  
 If you compare records from just a single game, this game is set as a title above the diagramm. If you compare records from multiple games, the names are labeled on the bars.
-In addition you have an adjustable context for each record.
-At the bottom is a toolbar where you can change the sorting and adjust the displayed metrics aswell as the context.  
+In addition you have two adjustable contexts that are set as labels for each record.
+At the bottom is a toolbar where you can change the sorting and adjust the displayed metrics aswell as the contexts.  
 The "Grouping" toggle switches between two sorting modes:  
 off-> all records are sorted by FPS  
 on-> records are sorted by game, then by FPS  
