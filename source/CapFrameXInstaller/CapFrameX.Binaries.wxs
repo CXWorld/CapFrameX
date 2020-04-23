@@ -511,7 +511,11 @@
                     <File Id="filAD427424F750F9EADEDB5030ACC85834" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\locales\zh-TW.pak" />
                 </Component>
             </Directory>
-            
+            <Directory Id="dir97E37B64C7416E419071FFE4F79CA6A4" Name="OverlayConfiguration">
+                
+                
+                
+            </Directory>
             <Directory Id="dir853772609C50C17748AF70C12E8A0818" Name="PresentMon">
                 <Component Id="cmpC9FDA2A63A64022F27649C6DD6729D8D" Guid="*" Win64="yes">
                     <File Id="fil444A50FFAD9F4E0A482DCBC9AE37F9D5" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\PresentMon\PresentMon64-1.5.2.exe" />
