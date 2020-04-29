@@ -3,6 +3,7 @@ using CapFrameX.Statistics.NetStandard.Contracts;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Reactive.Subjects;
 
 namespace CapFrameX.PresentMonInterface
@@ -52,6 +53,8 @@ namespace CapFrameX.PresentMonInterface
                 {
                     if (startTime - _currentTime <= _maxOnlineIntervalLength)
                         _frametimes.Add(frameTime);
+                    else if (startTime - _currentTime > _maxOnlineIntervalLength && !_frametimes.Any())
+                        ResetMetrics(dataSet.Item2);
                     else
                     {
                         _frametimes.Add(frameTime);
@@ -64,7 +67,8 @@ namespace CapFrameX.PresentMonInterface
         private void ResetMetrics(string dataLine)
         {
             var lineSplit = dataLine.Split(',');
-            _currentTime = Convert.ToDouble(lineSplit[11], CultureInfo.InvariantCulture);
+            if (lineSplit.Length >= 12)
+                _currentTime = Convert.ToDouble(lineSplit[11], CultureInfo.InvariantCulture);
 
             lock (_lock)
                 _frametimes.Clear();

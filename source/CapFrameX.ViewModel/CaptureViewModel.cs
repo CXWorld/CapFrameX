@@ -373,15 +373,13 @@ namespace CapFrameX.ViewModel
                     if (string.IsNullOrWhiteSpace(dataLine))
                         return;
 
-                    string process = null;
-
                     // explicit hook, only one process
                     if (!string.IsNullOrWhiteSpace(SelectedProcessToCapture))
-                        process = SelectedProcessToCapture;
+                        currentProcess = SelectedProcessToCapture;
                     // auto hook with filtered process list
                     else
                     {
-                        process = ProcessesToCapture.FirstOrDefault();
+                        var process = ProcessesToCapture.FirstOrDefault();
 
                         if (process != null)
                             currentProcess = process;
