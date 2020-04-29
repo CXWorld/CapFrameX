@@ -4,7 +4,6 @@ using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.Sensor;
 using CapFrameX.Data.Session.Contracts;
 using CapFrameX.Extensions.NetStandard;
-using CapFrameX.Statistics;
 using CapFrameX.Statistics.NetStandard;
 using CapFrameX.Statistics.NetStandard.Contracts;
 using Microsoft.Extensions.Logging;

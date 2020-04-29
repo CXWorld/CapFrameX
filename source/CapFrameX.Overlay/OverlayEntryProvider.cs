@@ -125,6 +125,7 @@ namespace CapFrameX.Overlay
             }
             CheckCustomSystemInfo();
             CheckOSVersion();
+            CheckGpuDriver();
         }
 
         private IObservable<BlockingCollection<IOverlayEntry>> InitializeOverlayEntryDictionary()
@@ -173,6 +174,16 @@ namespace CapFrameX.Overlay
             if (entry != null)
             {
                 entry.Value = SystemInfo.GetOSVersion();
+            }
+        }
+
+        private void CheckGpuDriver()
+        {
+            _identifierOverlayEntryDict.TryGetValue("GPUDriver", out IOverlayEntry entry);
+
+            if (entry != null)
+            {
+                entry.Value = _sensorService.GetGpuDriverVersion();
             }
         }
 

@@ -161,6 +161,20 @@ namespace CapFrameX.Overlay
                         Color = string.Empty
                     },
 
+                    new OverlayEntryWrapper("GPUDriver")
+                    {
+                        OverlayEntryType = EOverlayEntryType.CX,
+                        ShowOnOverlay = false,
+                        ShowOnOverlayIsEnabled = true,
+                        Description = "GPU Software Version",
+                        GroupName = "GPU Driver",
+                        Value = "Not available",
+                        ValueFormat = default,
+                        ShowGraph = false,
+                        ShowGraphIsEnabled = false,
+                        Color = string.Empty
+                    },
+
                     // Online metrics
                     // Average
                     new OverlayEntryWrapper("OnlineAverage")
