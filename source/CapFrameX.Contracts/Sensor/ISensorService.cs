@@ -7,7 +7,6 @@ namespace CapFrameX.Contracts.Sensor
 {
     public interface ISensorService
     {
-        IComputer Computer { get; }
         IOverlayEntry GetSensorOverlayEntry(string identifier);
         void StartSensorLogging();
         void StopSensorLogging();

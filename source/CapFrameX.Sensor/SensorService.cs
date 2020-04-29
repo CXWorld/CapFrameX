@@ -49,8 +49,6 @@ namespace CapFrameX.Sensor
 
         public bool UseSensorLogging => _appConfiguration.UseSensorLogging;
 
-        public IComputer Computer => _computer;
-
         public SensorService(IAppConfiguration appConfiguration,
                              ILogger<SensorService> logger)
         {
