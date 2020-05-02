@@ -3,6 +3,7 @@ using CapFrameX.EventAggregation.Messages;
 using CefSharp;
 using CefSharp.Handler;
 using CefSharp.Wpf;
+using Microsoft.Extensions.Logging;
 using Prism.Events;
 using System;
 using System.Collections.Generic;
@@ -29,28 +30,37 @@ namespace CapFrameX
 	public partial class LoginWindow : Window
 	{
 		private readonly LoginManager _loginManager;
-		private readonly PubSubEvent<AppMessages.LoginState> _loginEvent;
+		private readonly ILogger<LoginWindow> _logger;
 
-		public LoginWindow(LoginManager loginManager)
+		public LoginWindow(LoginManager loginManager, ILogger<LoginWindow> logger)
 		{
 			_loginManager = loginManager;
+			_logger = logger;
 			InitializeComponent();
 		}
 
-		private async void OnBrowserInitialized(object sender, EventArgs e)
+		private async void OnBrowserInitialized(object sender, EventArgs evt)
 		{
-			await SetupBrowser();
-
-			Cef.GetGlobalCookieManager().DeleteCookies();
-			await _loginManager.HandleRedirect(async (url) =>
-				{
-					await Dispatcher.BeginInvoke(DispatcherPriority.Normal, (Action)(() =>
+			try
+			{
+				await SetupBrowser();
+				Cef.GetGlobalCookieManager().DeleteCookies();
+				await _loginManager.HandleRedirect(async (url) =>
 					{
-						var browser = (ChromiumWebBrowser)sender;
-						browser.Load(url);
-					}));
+						await Dispatcher.BeginInvoke(DispatcherPriority.Normal, (Action)(() =>
+						{
+							var browser = (ChromiumWebBrowser)sender;
+							browser.Load(url);
+						}));
+					});
+				Close();
+			} catch (Exception ecx)
+			{
+				_logger.LogError(ecx, "Login Failed");
+				Grid.Children.Add(new TextBlock() { 
+					Text = "Sorry, something failed :(" + Environment.NewLine + "See Logfile for more information"
 				});
-			Close();
+			}
 		}
 
 		private async Task SetupBrowser()
