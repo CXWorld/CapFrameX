@@ -53,6 +53,7 @@ namespace CapFrameX.Overlay
         {
             await _taskCompletionSource.Task;
             UpdateSensorData();
+            UpdateOnlineMetrics();
             return _overlayEntries.ToArray();
         }
 
@@ -241,7 +242,6 @@ namespace CapFrameX.Overlay
 
         private void UpdateSensorData()
         {
-            //foreach (var entry in _overlayEntries.Where(x => !(x.OverlayEntryType == EOverlayEntryType.CX)))
             foreach (var entry in _overlayEntries.Where(x => 
                 (x.OverlayEntryType == EOverlayEntryType.GPU 
                  || x.OverlayEntryType == EOverlayEntryType.CPU
@@ -250,8 +250,10 @@ namespace CapFrameX.Overlay
                 var sensorEntry = _sensorService.GetSensorOverlayEntry(entry.Identifier);
                 entry.Value = sensorEntry?.Value;
             }
+        }
 
-            // update online metrics
+        private void UpdateOnlineMetrics()
+        {
             // average
             _identifierOverlayEntryDict.TryGetValue("OnlineAverage", out IOverlayEntry averageEntry);
 

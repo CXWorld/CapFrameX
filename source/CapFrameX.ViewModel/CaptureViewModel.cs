@@ -379,10 +379,7 @@ namespace CapFrameX.ViewModel
                     // auto hook with filtered process list
                     else
                     {
-                        var process = ProcessesToCapture.FirstOrDefault();
-
-                        if (process != null)
-                            currentProcess = process;
+                        currentProcess = ProcessesToCapture.FirstOrDefault();
                     }
 
                     _onlineMetricService.ProcessDataLineStream.OnNext(Tuple.Create(currentProcess, dataLine));

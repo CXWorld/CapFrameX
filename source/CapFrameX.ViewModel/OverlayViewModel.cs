@@ -491,6 +491,32 @@ namespace CapFrameX.ViewModel
                             int targetIndex = dropInfo.InsertIndex;
 
                             _overlayEntryProvider.MoveEntry(sourceIndex, targetIndex);
+
+                            OverlayEntries.Clear();
+                            OverlayEntries.AddRange(await _overlayEntryProvider.GetOverlayEntries());
+                        }
+                        else if (dropInfo.Data is IEnumerable<IOverlayEntry> overlayEntries)
+                        {
+                            // get source index
+                            int count = overlayEntries.Count();
+                            int sourceIndex = OverlayEntries.IndexOf(overlayEntries.First());
+                            int targetIndex = dropInfo.InsertIndex;
+
+                            if (sourceIndex < targetIndex)
+                            {
+                                for (int i = 0; i < count; i++)
+                                {
+                                    _overlayEntryProvider.MoveEntry(sourceIndex, targetIndex - 1);
+                                }
+                            }
+                            else
+                            {
+                                for (int i = 0; i < count; i++)
+                                {
+                                    _overlayEntryProvider.MoveEntry(sourceIndex + i, targetIndex);
+                                }
+                            }
+
                             OverlayEntries.Clear();
                             OverlayEntries.AddRange(await _overlayEntryProvider.GetOverlayEntries());
                         }

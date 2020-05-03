@@ -3,18 +3,20 @@ using CapFrameX.Statistics.NetStandard.Contracts;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Reactive.Subjects;
 
 namespace CapFrameX.PresentMonInterface
 {
     public class OnlineMetricService : IOnlineMetricService
     {
+        private const double STUTTERING_THRESHOLD = 2d;
+
         private readonly IStatisticProvider _frametimeStatisticProvider;
         private readonly List<double> _frametimes = new List<double>();
         private readonly object _lock = new object();
         private string _currentProcess;
-        private double _currentTime = 0;
+        private double _referenceTime = 0;
+        private double _prevTime = 0;
         // ToDo: get value from config
         // length in seconds
         private readonly double _maxOnlineIntervalLength = 30d;
@@ -40,21 +42,38 @@ namespace CapFrameX.PresentMonInterface
 
             var lineSplit = dataSet.Item2.Split(',');
 
-            if (lineSplit.Length <= 12)
+            if (lineSplit.Length < 12)
                 return;
 
             var startTime = Convert.ToDouble(lineSplit[11], CultureInfo.InvariantCulture);
+
+            // if there's break in the frame times sequence, do a reset
+            // this is usually the case when the game has lost focus
+            // threshold should be greater than stuttering time
+            if (startTime - _prevTime > STUTTERING_THRESHOLD)
+                ResetMetrics(dataSet.Item2);
+
+            _prevTime = startTime;
+
             var frameTime = Convert.ToDouble(lineSplit[12], CultureInfo.InvariantCulture);
+
+            // it makes no sense to calculate fps metrics with
+            // frame times above the stuttering threshold
+            // filtering high frame times caused by focus lost for example
+            if (frameTime > STUTTERING_THRESHOLD * 1E03)
+            {
+                ResetMetrics(dataSet.Item2);
+                return;
+            }
+
             string processName = lineSplit[0].Replace(".exe", "");
 
             if (_currentProcess == processName)
             {
                 lock (_lock)
                 {
-                    if (startTime - _currentTime <= _maxOnlineIntervalLength)
+                    if (startTime - _referenceTime <= _maxOnlineIntervalLength)
                         _frametimes.Add(frameTime);
-                    else if (startTime - _currentTime > _maxOnlineIntervalLength && !_frametimes.Any())
-                        ResetMetrics(dataSet.Item2);
                     else
                     {
                         _frametimes.Add(frameTime);
@@ -68,7 +87,7 @@ namespace CapFrameX.PresentMonInterface
         {
             var lineSplit = dataLine.Split(',');
             if (lineSplit.Length >= 12)
-                _currentTime = Convert.ToDouble(lineSplit[11], CultureInfo.InvariantCulture);
+                _referenceTime = Convert.ToDouble(lineSplit[11], CultureInfo.InvariantCulture);
 
             lock (_lock)
                 _frametimes.Clear();

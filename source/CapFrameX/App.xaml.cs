@@ -33,8 +33,8 @@ namespace CapFrameX
 			var overlayService = _bootstrapper.Container.Resolve(typeof(IOverlayService), true) as IOverlayService;
 			overlayService?.IsOverlayActiveStream.OnNext(false);
 
-			var overlayEntryProvider = _bootstrapper.Container.Resolve(typeof(IOverlayEntryProvider), true) as IOverlayEntryProvider;
-			_ = overlayEntryProvider?.SaveOverlayEntriesToJson();
+			//var overlayEntryProvider = _bootstrapper.Container.Resolve(typeof(IOverlayEntryProvider), true) as IOverlayEntryProvider;
+			//_ = overlayEntryProvider?.SaveOverlayEntriesToJson();
 
 			var sensorService = _bootstrapper.Container.Resolve(typeof(ISensorService), true) as ISensorService;
 			sensorService?.CloseOpenHardwareMonitor();
