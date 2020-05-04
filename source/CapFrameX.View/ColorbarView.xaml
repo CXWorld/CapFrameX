@@ -189,6 +189,16 @@
                                                 </DataTemplate>
                                             </ComboBox.ItemTemplate>
                                         </ComboBox>
+                                        <ComboBox Grid.Row="2" Grid.Column="1" materialDesign:HintAssist.Hint="Record info mode"
+												  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Margin="35 15 0 0" Width="160"
+												  ItemsSource="{Binding Path=DataContext.RecordInfoModeItems, ElementName=ColorbarViewName}" 
+												  SelectedItem="{Binding Path=DataContext.SelectedRecordInfoMode, ElementName=ColorbarViewName}">
+                                            <ComboBox.ItemTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}"/>
+                                                </DataTemplate>
+                                            </ComboBox.ItemTemplate>
+                                        </ComboBox>
                                         <TextBox Grid.Row="3" Grid.ColumnSpan="2" materialDesign:HintAssist.Hint="CPU" Margin="15 15 0 0"
 												Visibility="{Binding Path=DataContext.HasCustomInfo, ElementName=ColorbarViewName, Converter={StaticResource FalseToCollapsedConverter}}">
                                             <TextBox.Text>

@@ -210,6 +210,15 @@ namespace CapFrameX.ViewModel
 				RaisePropertyChanged();
 			}
 		}
+		public ERecordInfoMode SelectedRecordInfoMode
+		{
+			get { return _appConfiguration.RecordInfoMode.ConvertToEnum<ERecordInfoMode>(); }
+			set
+			{
+				_appConfiguration.RecordInfoMode = value.ConvertToString();
+				RaisePropertyChanged();
+			}
+		}
 
 		public bool HasCustomInfo
 		{
@@ -291,8 +300,11 @@ namespace CapFrameX.ViewModel
 		public Array HardwareInfoSourceItems => Enum.GetValues(typeof(EHardwareInfoSource))
 										   .Cast<EHardwareInfoSource>()
 										   .ToArray();
+		public Array RecordInfoModeItems => Enum.GetValues(typeof(ERecordInfoMode))
+								   .Cast<ERecordInfoMode>()
+								   .ToArray();
 
-		public	IAppConfiguration AppConfiguration => _appConfiguration;
+		public IAppConfiguration AppConfiguration => _appConfiguration;
 
 		public ILogger<ColorbarViewModel> Logger => _logger;
 
@@ -313,7 +325,7 @@ namespace CapFrameX.ViewModel
 								 IAppConfiguration appConfiguration,
 								 ILogger<ColorbarViewModel> logger,
 								 IShell shell,
-								 LoginManager loginManager)			
+								 LoginManager loginManager)
 		{
 			_regionManager = regionManager;
 			_eventAggregator = eventAggregator;
@@ -461,7 +473,8 @@ namespace CapFrameX.ViewModel
 			_updateObservedFolder = _eventAggregator.GetEvent<PubSubEvent<AppMessages.UpdateObservedDirectory>>();
 			_openLoginWindow = _eventAggregator.GetEvent<PubSubEvent<AppMessages.OpenLoginWindow>>();
 			_logout = _eventAggregator.GetEvent<PubSubEvent<AppMessages.LoginState>>();
-			_eventAggregator.GetEvent<PubSubEvent<AppMessages.LoginState>>().Subscribe(state => {
+			_eventAggregator.GetEvent<PubSubEvent<AppMessages.LoginState>>().Subscribe(state =>
+			{
 				IsLoggedIn = state.IsLoggedIn;
 				RaisePropertyChanged(nameof(IsLoggedIn));
 			});
