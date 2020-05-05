@@ -802,5 +802,17 @@ namespace CapFrameX.Configuration.Properties {
                 this["SecondComparisonContext"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Essential")]
+        public string RecordInfoMode {
+            get {
+                return ((string)(this["RecordInfoMode"]));
+            }
+            set {
+                this["RecordInfoMode"] = value;
+            }
+        }
     }
 }
