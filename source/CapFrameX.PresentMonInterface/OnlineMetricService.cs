@@ -45,7 +45,8 @@ namespace CapFrameX.PresentMonInterface
             if (lineSplit.Length < 12)
                 return;
 
-            var startTime = Convert.ToDouble(lineSplit[11], CultureInfo.InvariantCulture);
+            double.TryParse(lineSplit[11], NumberStyles.Any, CultureInfo.InvariantCulture, out double variable);
+            var startTime = variable;
 
             // if there's break in the frame times sequence, do a reset
             // this is usually the case when the game has lost focus
@@ -55,7 +56,8 @@ namespace CapFrameX.PresentMonInterface
 
             _prevTime = startTime;
 
-            var frameTime = Convert.ToDouble(lineSplit[12], CultureInfo.InvariantCulture);
+            double.TryParse(lineSplit[12], NumberStyles.Any, CultureInfo.InvariantCulture, out variable);
+            var frameTime = variable;
 
             // it makes no sense to calculate fps metrics with
             // frame times above the stuttering threshold
@@ -87,7 +89,10 @@ namespace CapFrameX.PresentMonInterface
         {
             var lineSplit = dataLine.Split(',');
             if (lineSplit.Length >= 12)
-                _referenceTime = Convert.ToDouble(lineSplit[11], CultureInfo.InvariantCulture);
+            {
+                double.TryParse(lineSplit[11], NumberStyles.Any, CultureInfo.InvariantCulture, out double variable);
+                _referenceTime = variable;
+            }
 
             lock (_lock)
                 _frametimes.Clear();

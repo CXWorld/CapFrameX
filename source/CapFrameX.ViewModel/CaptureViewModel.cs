@@ -367,7 +367,7 @@ namespace CapFrameX.ViewModel
         {
             string currentProcess = null;
             _captureService.RedirectedOutputDataStream
-                .Skip(3)
+                .Skip(2)
                 .ObserveOn(new EventLoopScheduler()).Subscribe(dataLine =>
                 {
                     if (string.IsNullOrWhiteSpace(dataLine))
