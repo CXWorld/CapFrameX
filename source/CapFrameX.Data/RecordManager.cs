@@ -151,8 +151,6 @@ namespace CapFrameX.Data
                 systemInfos.Add(new SystemInfoEntry() { Key = "Creation Date & Time", Value = recordInfo.CreationDate + "  |  " + recordInfo.CreationTime });
             if (!string.IsNullOrWhiteSpace(recordInfo.Comment))
                 systemInfos.Add(new SystemInfoEntry() { Key = "Comment", Value = recordInfo.Comment });
-            if (!string.IsNullOrWhiteSpace(recordInfo.ApiInfo))
-                systemInfos.Add(new SystemInfoEntry() { Key = "API", Value = recordInfo.ApiInfo });
             if (!string.IsNullOrWhiteSpace(recordInfo.ProcessorName))
                 systemInfos.Add(new SystemInfoEntry() { Key = "Processor", Value = recordInfo.ProcessorName });
             if (!string.IsNullOrWhiteSpace(recordInfo.SystemRamInfo))
@@ -177,6 +175,8 @@ namespace CapFrameX.Data
                 systemInfos.Add(new SystemInfoEntry() { Key = "GPU Driver Version", Value = recordInfo.GPUDriverVersion });
             if (!string.IsNullOrWhiteSpace(recordInfo.DriverPackage))
                 systemInfos.Add(new SystemInfoEntry() { Key = "Driver Package", Value = recordInfo.DriverPackage });
+            if (!string.IsNullOrWhiteSpace(recordInfo.ApiInfo))
+                systemInfos.Add(new SystemInfoEntry() { Key = "API", Value = recordInfo.ApiInfo });
 
             return systemInfos;
         }
