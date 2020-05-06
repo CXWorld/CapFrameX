@@ -65,6 +65,8 @@ namespace CapFrameX.Overlay
 
 			_logger.LogDebug("{componentName} Ready", this.GetType().Name);
 
+			_recordManager.GetApiInfoFunc = id => GetApiInfo(id);
+
 			IsOverlayActiveStream.AsObservable()
 				.Select(isActive =>
 				{

@@ -34,7 +34,7 @@ RTSSCoreControl::RTSSCoreControl()
 
 CString RTSSCoreControl::GetApiInfo(DWORD processId)
 {
-	CString api;
+	CString api = "unknown";
 	HANDLE hMapFile = OpenFileMapping(FILE_MAP_ALL_ACCESS, FALSE, "RTSSSharedMemoryV2");
 
 	if (hMapFile)

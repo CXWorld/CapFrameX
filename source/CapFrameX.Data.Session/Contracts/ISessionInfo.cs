@@ -21,5 +21,6 @@ namespace CapFrameX.Data.Session.Contracts
 		string GpuCoreClock { get; set; }
 		string GpuMemoryClock { get; set; }
 		string Comment { get; set; }
+		string ApiInfo { get; set; }
 	}
 }

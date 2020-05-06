@@ -31,5 +31,6 @@ namespace CapFrameX.Contracts.Data
 		bool HasInfoHeader { get; }
 		string Id { get; }
 		string Hash { get; }
+		string ApiInfo { get; }
 	}
 }
