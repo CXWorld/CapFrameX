@@ -230,6 +230,14 @@ public:
 		}
 	}
 
+	String^ GetApiInfo(UINT processId)
+	{
+		if (processId == 0)
+			return "";
+
+		return gcnew String(_coreControl->GetApiInfo(processId));
+	}
+
 private:
 	RTSSCoreControl* _coreControl;
 	Action<Exception^>^ _exceptionAction;

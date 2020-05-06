@@ -32,6 +32,55 @@ RTSSCoreControl::RTSSCoreControl()
 	m_bConnected = FALSE;
 }
 
+CString RTSSCoreControl::GetApiInfo(DWORD processId)
+{
+	CString api;
+	HANDLE hMapFile = OpenFileMapping(FILE_MAP_ALL_ACCESS, FALSE, "RTSSSharedMemoryV2");
+
+	if (hMapFile)
+	{
+		LPVOID pMapAddr = MapViewOfFile(hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, 0);
+		LPRTSS_SHARED_MEMORY pMem = (LPRTSS_SHARED_MEMORY)pMapAddr;
+
+		if (pMem)
+		{
+			if ((pMem->dwSignature == 'RTSS') &&
+				(pMem->dwVersion >= 0x00020000))
+			{
+				RTSS_SHARED_MEMORY::RTSS_SHARED_MEMORY_APP_ENTRY* arrAppInfos = pMem->arrApp;
+
+				for (size_t i = 0; i < 256; i++)
+				{
+					RTSS_SHARED_MEMORY::RTSS_SHARED_MEMORY_APP_ENTRY curAppInfos = arrAppInfos[i];
+
+					if (curAppInfos.dwProcessID == processId)
+					{
+						api = (curAppInfos.dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_OGL ? "OpenGL" 
+							: (curAppInfos.dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_DD ? "DD"
+							: (curAppInfos.dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_D3D8 ? "D3D8"
+							: (curAppInfos.dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_D3D9 ? "D3D9"
+							: (curAppInfos.dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_D3D9EX ? "D3D9EX"
+							: (curAppInfos.dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_D3D10 ? "D3D10"
+							: (curAppInfos.dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_D3D11 ? "D3D11"
+							: (curAppInfos.dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_D3D12 ? "D3D12"
+							: (curAppInfos.dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_D3D12AFR ? "D3D12AFR"
+							: (curAppInfos.dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_VULKAN ? "Vulkan"
+							: "unknown";
+
+						break;
+					}
+				}
+
+				UnmapViewOfFile(pMapAddr);
+			}
+
+			CloseHandle(hMapFile);
+		}
+	}
+
+	return api;
+}
+
 /////////////////////////////////////////////////////////////////////////////
 DWORD RTSSCoreControl::GetSharedMemoryVersion()
 {
