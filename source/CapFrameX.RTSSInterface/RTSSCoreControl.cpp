@@ -56,14 +56,14 @@ CString RTSSCoreControl::GetApiInfo(DWORD processId)
 					if (curAppInfos.dwProcessID == processId)
 					{
 						api = (curAppInfos.dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_OGL ? "OpenGL" 
-							: (curAppInfos.dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_DD ? "DD"
-							: (curAppInfos.dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_D3D8 ? "D3D8"
-							: (curAppInfos.dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_D3D9 ? "D3D9"
-							: (curAppInfos.dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_D3D9EX ? "D3D9EX"
-							: (curAppInfos.dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_D3D10 ? "D3D10"
-							: (curAppInfos.dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_D3D11 ? "D3D11"
-							: (curAppInfos.dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_D3D12 ? "D3D12"
-							: (curAppInfos.dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_D3D12AFR ? "D3D12AFR"
+							: (curAppInfos.dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_DD ? "DirectDraw"
+							: (curAppInfos.dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_D3D8 ? "DX8"
+							: (curAppInfos.dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_D3D9 ? "DX9"
+							: (curAppInfos.dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_D3D9EX ? "DX9 EX"
+							: (curAppInfos.dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_D3D10 ? "DX10"
+							: (curAppInfos.dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_D3D11 ? "DX11"
+							: (curAppInfos.dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_D3D12 ? "DX12"
+							: (curAppInfos.dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_D3D12AFR ? "DX12 AFR"
 							: (curAppInfos.dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_VULKAN ? "Vulkan"
 							: "unknown";
 
