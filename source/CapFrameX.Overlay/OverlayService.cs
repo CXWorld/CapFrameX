@@ -22,7 +22,6 @@ namespace CapFrameX.Overlay
 	{
 		private readonly IStatisticProvider _statisticProvider;
 		private readonly IOverlayEntryProvider _overlayEntryProvider;
-		private readonly ISensorService _sensorService;
 		private readonly IAppConfiguration _appConfiguration;
 		private static ILogger<OverlayService> _logger;
 		private readonly IRecordManager _recordManager;
@@ -52,7 +51,6 @@ namespace CapFrameX.Overlay
 			: base(ExceptionAction)
 		{
 			_statisticProvider = statisticProvider;
-			_sensorService = sensorService;
 			_overlayEntryProvider = overlayEntryProvider;
 			_appConfiguration = appConfiguration;
 			_logger = logger;
