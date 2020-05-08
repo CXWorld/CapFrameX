@@ -387,10 +387,10 @@ namespace CapFrameX.Configuration
 			get { return Settings.ShowThresholdTimes; }
 			set { Settings.ShowThresholdTimes = value; Settings.Save(); }
 		}
-		public string RecordInfoMode
+		public string CaptureFileMode
 		{
-			get { return Settings.RecordInfoMode; }
-			set { Settings.RecordInfoMode = value; Settings.Save(); }
+			get { return Settings.CaptureFileMode; }
+			set { Settings.CaptureFileMode = value; Settings.Save(); }
 		}
 	}
 }

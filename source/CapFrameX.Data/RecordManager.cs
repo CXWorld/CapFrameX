@@ -350,9 +350,7 @@ namespace CapFrameX.Data
 
                 IList<string> headerLines = Enumerable.Empty<string>().ToList();
                 var process = Process.GetProcessesByName(processName).FirstOrDefault();
-                string apiInfo = process != null ?
-                    GetApiInfoFunc?.Invoke((uint)process.Id)
-                    : "unknown";
+                string apiInfo = process != null ? GetApiInfoFunc?.Invoke((uint)process.Id) : "unknown";
 
                 var session = new Session.Classes.Session()
                 {
@@ -434,9 +432,12 @@ namespace CapFrameX.Data
                 int indexVSync = -1;
                 int indexAppMissed = -1;
                 int indexWarpMissed = -1;
+                int indexPresentMode = -1;
+                int indexPresentFlags = -1;
                 int indexMsInPresentAPI = -1;
                 int indexDisplayTimes = -1;
                 int indexQPCTimes = -1;
+                int indexRuntime = -1;
 
                 string headerLine;
                 if (!presentLines.First().StartsWith("Application"))
@@ -451,7 +452,8 @@ namespace CapFrameX.Data
 
                 var sessionRun = new SessionRun()
                 {
-                    Hash = string.Join(",", presentLines).GetSha1()
+                    Hash = string.Join(",", presentLines).GetSha1(),
+                    PresentMonRuntime = "unknown"
                 };
 
                 var metrics = headerLine.Split(',');
@@ -499,11 +501,25 @@ namespace CapFrameX.Data
                     {
                         indexQPCTimes = i;
                     }
+                    if (string.Compare(metrics[i], "PresentMode") == 0)
+                    {
+                        indexPresentMode = i;
+                    }
+                    if (string.Compare(metrics[i], "PresentFlags") == 0)
+                    {
+                        indexPresentFlags = i;
+                    }
+                    if (string.Compare(metrics[i], "Runtime") == 0)
+                    {
+                        indexRuntime = i;
+                    }
                 }
 
                 var captureData = new SessionCaptureData(presentLines.Count());
 
                 var dataLines = presentLines.ToArray();
+
+                var presentModeMapping = Enum.GetValues(typeof(EPresentMode)).Cast<EPresentMode>().ToDictionary(e => e.GetDescription(), e => (int) e);
                 for (int lineNo = 0; lineNo < dataLines.Count(); lineNo++)
                 {
                     string line = dataLines[lineNo];
@@ -533,6 +549,10 @@ namespace CapFrameX.Data
                     values = line.Split(',');
                     double frameStart = 0;
 
+                    if(lineNo == 0)
+                    {
+                        sessionRun.PresentMonRuntime = GetStringFromArray(values, indexRuntime);
+                    }
                     if (indexFrameStart > 0 && indexFrameTimes > 0)
                     {
                         if (double.TryParse(GetStringFromArray(values, indexFrameStart), NumberStyles.Any, CultureInfo.InvariantCulture, out frameStart)
@@ -586,7 +606,20 @@ namespace CapFrameX.Data
                             captureData.QPCTime[lineNo] = qPCTime;
                         }
                     }
-
+                    if (indexPresentMode > 0)
+                    {
+                        if (presentModeMapping.TryGetValue(GetStringFromArray(values, indexPresentMode), out var presentMode))
+                        {
+                            captureData.PresentMode[lineNo] = presentMode;
+                        }
+                    }
+                    if (indexPresentFlags > 0)
+                    {
+                        if (int.TryParse(GetStringFromArray(values, indexPresentFlags), NumberStyles.Any, CultureInfo.InvariantCulture, out var presentFlags))
+                        {
+                            captureData.PresentFlags[lineNo] = presentFlags;
+                        }
+                    }
                     if (indexFrameEnd > 0)
                     {
                         if (double.TryParse(GetStringFromArray(values, indexFrameEnd), NumberStyles.Any, CultureInfo.InvariantCulture, out var frameEnd))

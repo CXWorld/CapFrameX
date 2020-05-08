@@ -97,7 +97,7 @@
     <Compile Include="CloudEntry.cs" />
     <Compile Include="AggregationEntry.cs" />
     <Compile Include="CloudManager.cs" />
-    <Compile Include="ERecordInfoMode.cs" />
+    <Compile Include="ECaptureFileMode.cs" />
     <Compile Include="LoginManager.cs" />
     <Compile Include="ProcessList.cs" />
     <Compile Include="SoundManager.cs" />

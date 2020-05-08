@@ -9,10 +9,9 @@
 		double[] MsBetweenPresents { get; set; }
 		double[] MsInPresentAPI { get; set; }
 		double[] QPCTime { get; set; }
-		double[] ReprojectionEnd { get; set; }
-		double[] ReprojectionStart { get; set; }
-		double[] ReprojectionTimes { get; set; }
 		double[] MsUntilDisplayed { get; set; }
+		int[] PresentMode { get; set; }
+		int[] PresentFlags { get; set; }
 		double[] VSync { get; set; }
 		bool[] LsrMissed { get; set; }
 	}

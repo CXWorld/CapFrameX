@@ -189,10 +189,20 @@
                                                 </DataTemplate>
                                             </ComboBox.ItemTemplate>
                                         </ComboBox>
-                                        <ComboBox Grid.Row="2" Grid.Column="1" materialDesign:HintAssist.Hint="Record info mode"
+                                        <ComboBox Grid.Row="2" Grid.Column="1" materialDesign:HintAssist.Hint="Capture file mode" ToolTipService.ShowDuration="25000"
 												  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Margin="35 15 0 0" Width="160"
-												  ItemsSource="{Binding Path=DataContext.RecordInfoModeItems, ElementName=ColorbarViewName}" 
-												  SelectedItem="{Binding Path=DataContext.SelectedRecordInfoMode, ElementName=ColorbarViewName}">
+												  ItemsSource="{Binding Path=DataContext.CaptureFileModeItems, ElementName=ColorbarViewName}" 
+												  SelectedItem="{Binding Path=DataContext.SelectedCaptureFileMode, ElementName=ColorbarViewName}">
+                                            <ComboBox.ToolTip>
+                                                <ToolTip MaxWidth="400" Placement="Top">
+                                                    <TextBlock Text="JSON:
+                                               &#10;Records are saves as json files with all needed data
+                                               &#10;
+                                               &#10;JSON + CSV:
+                                               &#10;For each record a csv file is created in addition to the json file. The csv file includes all PresentMon data. CX will only use the json files, the csv files are only for special analysis of PresentMon data" 
+										   TextWrapping="Wrap"/>
+                                                </ToolTip>
+                                            </ComboBox.ToolTip>
                                             <ComboBox.ItemTemplate>
                                                 <DataTemplate>
                                                     <TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}"/>

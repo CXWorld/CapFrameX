@@ -129,6 +129,6 @@ namespace CapFrameX.Contracts.Configuration
 
 		bool ShowThresholdTimes { get; set; }
 
-		string RecordInfoMode { get; set; }
+		string CaptureFileMode { get; set; }
 	}
 }

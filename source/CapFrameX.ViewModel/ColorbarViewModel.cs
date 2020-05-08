@@ -210,12 +210,12 @@ namespace CapFrameX.ViewModel
 				RaisePropertyChanged();
 			}
 		}
-		public ERecordInfoMode SelectedRecordInfoMode
+		public ECaptureFileMode SelectedCaptureFileMode
 		{
-			get { return _appConfiguration.RecordInfoMode.ConvertToEnum<ERecordInfoMode>(); }
+			get { return _appConfiguration.CaptureFileMode.ConvertToEnum<ECaptureFileMode>(); }
 			set
 			{
-				_appConfiguration.RecordInfoMode = value.ConvertToString();
+				_appConfiguration.CaptureFileMode = value.ConvertToString();
 				RaisePropertyChanged();
 			}
 		}
@@ -300,8 +300,8 @@ namespace CapFrameX.ViewModel
 		public Array HardwareInfoSourceItems => Enum.GetValues(typeof(EHardwareInfoSource))
 										   .Cast<EHardwareInfoSource>()
 										   .ToArray();
-		public Array RecordInfoModeItems => Enum.GetValues(typeof(ERecordInfoMode))
-								   .Cast<ERecordInfoMode>()
+		public Array CaptureFileModeItems => Enum.GetValues(typeof(ECaptureFileMode))
+								   .Cast<ECaptureFileMode>()
 								   .ToArray();
 
 		public IAppConfiguration AppConfiguration => _appConfiguration;

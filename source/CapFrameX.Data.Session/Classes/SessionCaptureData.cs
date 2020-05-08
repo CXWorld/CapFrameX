@@ -13,10 +13,9 @@ namespace CapFrameX.Data.Session.Classes
 		public double[] MsBetweenPresents { get; set; }
 		public double[] MsInPresentAPI { get; set; }
 		public double[] QPCTime { get; set; }
-		public double[] ReprojectionEnd { get; set; }
-		public double[] ReprojectionStart { get; set; }
-		public double[] ReprojectionTimes { get; set; }
 		public double[] MsUntilDisplayed { get; set; }
+		public int[] PresentMode { get; set; }
+		public int[] PresentFlags { get; set; }
 		public double[] VSync { get; set; }
 		public bool[] LsrMissed { get; set; }
 
@@ -28,10 +27,9 @@ namespace CapFrameX.Data.Session.Classes
 			MsBetweenPresents = new double[numberOfCapturePoints];
 			MsInPresentAPI = new double[numberOfCapturePoints];
 			QPCTime = new double[numberOfCapturePoints];
-			ReprojectionEnd = new double[numberOfCapturePoints];
-			ReprojectionStart = new double[numberOfCapturePoints];
-			ReprojectionTimes = new double[numberOfCapturePoints];
 			MsUntilDisplayed = new double[numberOfCapturePoints];
+			PresentMode = new int[numberOfCapturePoints];
+			PresentFlags = new int[numberOfCapturePoints];
 			VSync = new double[numberOfCapturePoints];
 			LsrMissed = new bool[numberOfCapturePoints];
 		}
@@ -49,12 +47,11 @@ namespace CapFrameX.Data.Session.Classes
 					MsBetweenPresents = MsBetweenPresents[i],
 					MsInPresentAPI = MsInPresentAPI[i],
 					QPCTime = QPCTime[i],
-					ReprojectionEnd = ReprojectionEnd[i],
-					ReprojectionStart = ReprojectionStart[i],
-					ReprojectionTime = ReprojectionTimes[i],
 					VSync = VSync[i],
 					LsrMissed = LsrMissed[i],
-					MsUntilDisplayed = MsUntilDisplayed[i]
+					MsUntilDisplayed = MsUntilDisplayed[i],
+					PresentMode = PresentMode[i],
+					PresentFlags = PresentFlags[i]
 				};
 			}
 		}
@@ -69,10 +66,9 @@ namespace CapFrameX.Data.Session.Classes
 		public double MsBetweenPresents { get; set; }
 		public double MsInPresentAPI { get; set; }
 		public double QPCTime { get; set; }
-		public double ReprojectionEnd { get; set; }
-		public double ReprojectionStart { get; set; }
-		public double ReprojectionTime { get; set; }
 		public double MsUntilDisplayed { get; set; }
+		public int PresentMode { get; set; }
+		public int PresentFlags { get; set; }
 		public double VSync { get; set; }
 		public bool LsrMissed { get; set; }
 	}

@@ -197,8 +197,8 @@
     <Setting Name="SecondComparisonContext" Type="System.String" Scope="User">
       <Value Profile="(Default)">None</Value>
     </Setting>
-    <Setting Name="RecordInfoMode" Type="System.String" Scope="User">
-      <Value Profile="(Default)">Essential</Value>
+    <Setting Name="CaptureFileMode" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Json</Value>
     </Setting>
   </Settings>
 </SettingsFile>

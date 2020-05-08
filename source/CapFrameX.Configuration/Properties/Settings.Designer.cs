@@ -805,13 +805,13 @@ namespace CapFrameX.Configuration.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("Essential")]
-        public string RecordInfoMode {
+        [global::System.Configuration.DefaultSettingValueAttribute("Json")]
+        public string CaptureFileMode {
             get {
-                return ((string)(this["RecordInfoMode"]));
+                return ((string)(this["CaptureFileMode"]));
             }
             set {
-                this["RecordInfoMode"] = value;
+                this["CaptureFileMode"] = value;
             }
         }
     }
