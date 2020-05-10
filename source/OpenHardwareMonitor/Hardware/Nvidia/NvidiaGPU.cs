@@ -9,6 +9,9 @@
  
 */
 
+using NvAPIWrapper.Display;
+using NvAPIWrapper.GPU;
+using NvAPIWrapper.Native;
 using System;
 using System.Globalization;
 using System.Text;
@@ -20,12 +23,14 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
 
         private readonly int adapterIndex;
         private readonly NvPhysicalGpuHandle handle;
+        private readonly PhysicalGPU physicalGPU;
         private readonly NvDisplayHandle? displayHandle;
         private readonly NVML.NvmlDevice? device;
 
         private readonly Sensor[] temperatures;
         private readonly Sensor fan;
         private readonly Sensor[] clocks;
+        private readonly Sensor voltage;
         private readonly Sensor[] loads;
         private readonly Sensor control;
         private readonly Sensor memoryLoad;
@@ -38,13 +43,14 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
         private readonly Control fanControl;
 
         public NvidiaGPU(int adapterIndex, NvPhysicalGpuHandle handle,
-          NvDisplayHandle? displayHandle, ISettings settings)
+          NvDisplayHandle? displayHandle, ISettings settings, PhysicalGPU physicalGPU = null)
           : base(GetName(handle), new Identifier("nvidiagpu",
               adapterIndex.ToString(CultureInfo.InvariantCulture)), settings)
         {
             this.adapterIndex = adapterIndex;
             this.handle = handle;
             this.displayHandle = displayHandle;
+            this.physicalGPU = physicalGPU;
 
             NvGPUThermalSettings thermalSettings = GetThermalSettings();
             temperatures = new Sensor[thermalSettings.Count];
@@ -66,14 +72,15 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
                 ActivateSensor(temperatures[i]);
             }
 
-            fan = new Sensor("GPU", 0, SensorType.Fan, this, settings);
-
             clocks = new Sensor[3];
             clocks[0] = new Sensor("GPU Core", 0, SensorType.Clock, this, settings);
             clocks[1] = new Sensor("GPU Memory", 1, SensorType.Clock, this, settings);
             clocks[2] = new Sensor("GPU Shader", 2, SensorType.Clock, this, settings);
             for (int i = 0; i < clocks.Length; i++)
                 ActivateSensor(clocks[i]);
+
+            if (physicalGPU != null)
+                voltage = new Sensor("GPU Voltage", 0, SensorType.Voltage, this, settings);
 
             loads = new Sensor[4];
             loads[0] = new Sensor("GPU Core", 0, SensorType.Load, this, settings);
@@ -84,7 +91,9 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
             memoryFree = new Sensor("GPU Memory Free", 1, SensorType.SmallData, this, settings);
             memoryUsed = new Sensor("GPU Memory Used", 2, SensorType.SmallData, this, settings);
             memoryAvail = new Sensor("GPU Memory Total", 3, SensorType.SmallData, this, settings);
-            control = new Sensor("GPU Fan", 0, SensorType.Control, this, settings);
+            fan = new Sensor("GPU Fan", 0, SensorType.Fan, this, settings);
+            control = new Sensor("GPU Fan", 1, SensorType.Control, this, settings);
+
 
             NvGPUCoolerSettings coolerSettings = GetCoolerSettings();
             if (coolerSettings.Count > 0)
@@ -226,6 +235,17 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
                     clocks[0].Value = 0.001f * values[0];
                     clocks[2].Value = 0.001f * values[14];
                 }
+            }
+
+            // set current voltage
+            if (physicalGPU != null)
+            {
+                try
+                {
+                    voltage.Value = GPUApi.GetCurrentVoltage(physicalGPU.Handle).ValueInMicroVolt / 1E06f;
+                    ActivateSensor(voltage);
+                }
+                catch { voltage.Value = float.NaN; }
             }
 
             var infoEx = new NvDynamicPstatesInfoEx();
