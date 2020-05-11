@@ -191,23 +191,32 @@ namespace CapFrameX.Sensor
             else if (name.Contains("GPU Core"))
             {
                 name = name.Replace(" Core", "");
-
             }
             else if (name.Contains("Memory"))
             {
                 name = name.Replace("Memory", "Mem");
             }
+            else if (name.Contains("Power Limit"))
+            {
+                name = name.Replace("Power Limit", "PL");
+            }
+            else if (name.Contains("Thermal Limit"))
+            {
+                name = name.Replace("Thermal Limit", "TL");
+            }
+            else if (name.Contains("Voltage Limit"))
+            {
+                name = name.Replace("Voltage Limit", "VL");
+            }
 
             if (name.Contains(" - Thread #1"))
             {
                 name = name.Replace(" - Thread #1", "");
-
             }
 
             if (name.Contains(" - Thread #2"))
             {
                 name = name.Replace(" - Thread #2", "");
-
             }
 
             return name;

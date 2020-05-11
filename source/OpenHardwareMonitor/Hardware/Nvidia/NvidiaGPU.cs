@@ -9,9 +9,9 @@
  
 */
 
-using NvAPIWrapper.Display;
 using NvAPIWrapper.GPU;
 using NvAPIWrapper.Native;
+using NvAPIWrapper.Native.GPU;
 using System;
 using System.Globalization;
 using System.Text;
@@ -41,6 +41,10 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
         private readonly Sensor pcieThroughputRx;
         private readonly Sensor pcieThroughputTx;
         private readonly Control fanControl;
+        private readonly Sensor powerLimit;
+        private readonly Sensor temperatureLimit;
+        private readonly Sensor voltageLimit;
+
 
         public NvidiaGPU(int adapterIndex, NvPhysicalGpuHandle handle,
           NvDisplayHandle? displayHandle, ISettings settings, PhysicalGPU physicalGPU = null)
@@ -93,7 +97,9 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
             memoryAvail = new Sensor("GPU Memory Total", 3, SensorType.SmallData, this, settings);
             fan = new Sensor("GPU Fan", 0, SensorType.Fan, this, settings);
             control = new Sensor("GPU Fan", 1, SensorType.Control, this, settings);
-
+            powerLimit = new Sensor("GPU Power Limit", 0, SensorType.Factor, this, settings);
+            temperatureLimit = new Sensor("GPU Thermal Limit", 1, SensorType.Factor, this, settings);
+            voltageLimit = new Sensor("GPU Voltage Limit", 2, SensorType.Factor, this, settings);
 
             NvGPUCoolerSettings coolerSettings = GetCoolerSettings();
             if (coolerSettings.Count > 0)
@@ -237,15 +243,32 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
                 }
             }
 
-            // set current voltage
+            // set extra sensors from external NvAPI wrapper
             if (physicalGPU != null)
             {
                 try
                 {
                     voltage.Value = GPUApi.GetCurrentVoltage(physicalGPU.Handle).ValueInMicroVolt / 1E06f;
                     ActivateSensor(voltage);
+
+                    var currentActiveLimit = physicalGPU.PerformanceControl.CurrentActiveLimit;
+                    powerLimit.Value = ((currentActiveLimit & PerformanceLimit.PowerLimit) 
+                        == PerformanceLimit.PowerLimit) ? 1 : 0;
+                    ActivateSensor(powerLimit);
+                    temperatureLimit.Value = ((currentActiveLimit & PerformanceLimit.TemperatureLimit) 
+                        == PerformanceLimit.TemperatureLimit) ? 1 : 0;
+                    ActivateSensor(temperatureLimit);
+                    voltageLimit.Value = ((currentActiveLimit & PerformanceLimit.VoltageLimit) 
+                        == PerformanceLimit.VoltageLimit) ? 1 : 0;
+                    ActivateSensor(voltageLimit);
                 }
-                catch { voltage.Value = float.NaN; }
+                catch 
+                { 
+                    voltage.Value = float.NaN;
+                    powerLimit.Value = float.NaN;
+                    temperatureLimit.Value = float.NaN;
+                    voltageLimit.Value = float.NaN;
+                }
             }
 
             var infoEx = new NvDynamicPstatesInfoEx();

@@ -42,7 +42,7 @@ namespace CapFrameX.PresentMonInterface
 
             var lineSplit = dataSet.Item2.Split(',');
 
-            if (lineSplit.Length < 12)
+            if (lineSplit.Length <= 12)
                 return;
 
             double.TryParse(lineSplit[11], NumberStyles.Any, CultureInfo.InvariantCulture, out double variable);
