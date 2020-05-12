@@ -99,6 +99,8 @@ namespace CapFrameX.Webservice.Implementation.Handlers
 
 		public bool ShowCpuMaxThreadLoad { get; set; }
 
+		public bool ShowGpuPowerLimit { get; set; }
+
 		public bool IsAnyGraphVisible { get; set; }
 	}
 }

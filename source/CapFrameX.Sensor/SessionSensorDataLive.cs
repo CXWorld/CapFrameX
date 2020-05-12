@@ -3,6 +3,8 @@ using CapFrameX.Data.Session.Contracts;
 using OpenHardwareMonitor.Hardware;
 using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Linq;
 
 namespace CapFrameX.Sensor
 {
@@ -111,7 +113,6 @@ namespace CapFrameX.Sensor
                     _vRamUsage.Add((int)Math.Round(currentValue, 0));
                     break;
             }
-
         }
 
         public ISessionSensorData ToSessionSensorData()
@@ -139,12 +140,14 @@ namespace CapFrameX.Sensor
                 BetweenMeasureTimes = betweenMeasureTimes.ToArray(),
                 CpuUsage = _cpuUsage.ToArray(),
                 CpuMaxThreadUsage = _cpuMaxThreadUsage.ToArray(),
+                CpuMaxClock = _cpuMaxClock.ToArray(),
                 CpuPower = _cpuPower.ToArray(),
                 CpuTemp = _cpuTemp.ToArray(),
                 GpuUsage = _gpuUsage.ToArray(),
                 RamUsage = _ramUsage.ToArray(),
                 IsInGpuLimit = _isInGpuLimit.ToArray(),
                 GpuPower = _gpuPower.ToArray(),
+                GpuPowerLimit = _gpuPowerLimit.Select( state => state == 1).ToArray(),
                 GpuTemp = _gpuTemp.ToArray(),
                 VRamUsage = _vRamUsage.ToArray()
             };

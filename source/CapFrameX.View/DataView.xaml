@@ -405,6 +405,7 @@
                                         <RowDefinition Height="*" />
                                         <RowDefinition Height="*" />
                                         <RowDefinition Height="*" />
+                                        <RowDefinition Height="*" />
                                     </Grid.RowDefinitions>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto"/>
@@ -416,6 +417,9 @@
                                     <ToggleButton Margin="5" Grid.Row="1" Grid.Column="1" IsChecked="{Binding Path=CpuMaxThreadLoad}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show max CPU thread usage graph" />
                                     <TextBlock Margin="5" Grid.Row="2" Grid.Column="0" Text="GPU load" VerticalAlignment="Center"/>
                                     <ToggleButton Margin="5" Grid.Row="2" Grid.Column="1" IsChecked="{Binding Path=GpuLoad}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show GPU usage graph" />
+                                    <TextBlock Visibility="{Binding IsGpuPowerLimitAvailable, Converter={StaticResource FalseToCollapsedConverter}}" Margin="5" Grid.Row="3" Grid.Column="0" Text="GPU power limit" VerticalAlignment="Center"/>
+                                    <ToggleButton Visibility="{Binding IsGpuPowerLimitAvailable, Converter={StaticResource FalseToCollapsedConverter}}" Margin="5" Grid.Row="3" Grid.Column="1" IsChecked="{Binding Path=GpuPowerLimit}" 
+                                                  Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show GPU power limit" />
                                 </Grid>
                             </StackPanel>
                         </materialDesign:Card>

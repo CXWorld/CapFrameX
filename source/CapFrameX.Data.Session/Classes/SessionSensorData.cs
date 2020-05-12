@@ -12,6 +12,8 @@ namespace CapFrameX.Data.Session.Classes
 		[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
 		public int[] CpuMaxThreadUsage { get; set; } = new int[] { };
 		[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+		public int[] CpuMaxClock { get; set; } = new int[] { };
+		[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
 		public int[] CpuPower { get; set; } = new int[] { };
 		[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
 		public int[] CpuTemp { get; set; } = new int[] { };
@@ -21,6 +23,8 @@ namespace CapFrameX.Data.Session.Classes
 		public double[] RamUsage { get; set; } = new double[] { };
 		[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
 		public bool[] IsInGpuLimit { get; set; } = new bool[] { };
+		[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+		public bool[] GpuPowerLimit { get; set; } = new bool[] { };
 		[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
 		public int[] GpuPower { get; set; } = new int[] { };
 		[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]

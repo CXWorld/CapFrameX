@@ -37,8 +37,8 @@ namespace CapFrameX.Sensor.Reporting
 						case EReportSensorName.CpuTemp when HasValues(sessionsSensorData, session => session.CpuTemp, out var values):
 							AddSensorEntry(item, Math.Round(values.Average()), values.Min(), values.Max());
 							break;
-						case EReportSensorName.RamUsage when HasValues(sessionsSensorData, session => session.RamUsage, out var values):
-							AddSensorEntry(item, Math.Round(values.Average(), 2), Math.Round(values.Min(), 2), Math.Round(values.Max(), 2));
+						case EReportSensorName.CpuMaxClock when HasValues(sessionsSensorData, session => session.CpuMaxClock, out var values):
+							AddSensorEntry(item, Math.Round(values.Average(), 2), values.Min(), values.Max());
 							break;
 						case EReportSensorName.GpuUsage when HasValues(sessionsSensorData, session => session.GpuUsage, out var values):
 							AddSensorEntry(item, Math.Round(values.Average()), values.Min(), values.Max());
@@ -51,6 +51,9 @@ namespace CapFrameX.Sensor.Reporting
 							break;
 						case EReportSensorName.VRamUsage when HasValues(sessionsSensorData, session => session.VRamUsage, out var values):
 							AddSensorEntry(item, Math.Round(values.Average()), values.Min(), values.Max());
+							break;
+						case EReportSensorName.RamUsage when HasValues(sessionsSensorData, session => session.RamUsage, out var values):
+							AddSensorEntry(item, Math.Round(values.Average(), 2), Math.Round(values.Min(), 2), Math.Round(values.Max(), 2));
 							break;
 					}
 				}

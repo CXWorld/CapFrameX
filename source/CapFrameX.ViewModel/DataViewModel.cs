@@ -70,6 +70,7 @@ namespace CapFrameX.ViewModel
         private bool _gpuLoad;
         private bool _cpuLoad;
         private bool _cpuMaxThreadLoad;
+        private bool _gpuPowerLimit;
 
         private ISubject<Unit> _onUpdateChart = new BehaviorSubject<Unit>(default);
 
@@ -82,6 +83,8 @@ namespace CapFrameX.ViewModel
         public IAppConfiguration AppConfiguration => _appConfiguration;
 
         public Array ChartYAxisSettings => Enum.GetValues(typeof(EChartYAxisSetting));
+
+        public bool IsGpuPowerLimitAvailable => GetIsPowerLimitAvailable();
 
         public ObservableCollection<ISensorReportItem> SensorReportItems { get; }
             = new ObservableCollection<ISensorReportItem>();
@@ -327,7 +330,7 @@ namespace CapFrameX.ViewModel
 
         public bool AdditionalGraphsEnabled
         {
-            get => _session == null ? false 
+            get => _session == null ? false
                 : _session.Runs.Any(r => r.SensorData != null);
         }
 
@@ -338,8 +341,6 @@ namespace CapFrameX.ViewModel
         public ICommand CopySystemInfoCommand { get; }
 
         public ICommand AcceptParameterSettingsCommand { get; }
-
-
 
         public bool GpuLoad
         {
@@ -367,6 +368,16 @@ namespace CapFrameX.ViewModel
             set
             {
                 _cpuMaxThreadLoad = value;
+                RaisePropertyChanged();
+                _onUpdateChart.OnNext(default);
+            }
+        }
+        public bool GpuPowerLimit
+        {
+            get => _gpuPowerLimit && IsGpuPowerLimitAvailable;
+            set
+            {
+                _gpuPowerLimit = value;
                 RaisePropertyChanged();
                 _onUpdateChart.OnNext(default);
             }
@@ -412,13 +423,28 @@ namespace CapFrameX.ViewModel
             Setup();
         }
 
+        private bool GetIsPowerLimitAvailable()
+        {
+            if (_localRecordDataServer == null)
+                return false;
+
+            if (_localRecordDataServer.CurrentSession == null)
+                return false;
+
+            if (_localRecordDataServer.CurrentSession.Runs == null
+                || !_localRecordDataServer.CurrentSession.Runs.Any())
+                return false;
+
+            return _localRecordDataServer.CurrentSession.Runs.All(session => session.SensorData.GpuPowerLimit.Any());
+        }
+
         private void Setup()
         {
             void updatePlot()
             {
-                FpsGraphDataContext.BuildPlotmodel(new VisibleGraphs(GpuLoad, CpuLoad, CpuMaxThreadLoad));
+                FpsGraphDataContext.BuildPlotmodel(new VisibleGraphs(GpuLoad, CpuLoad, CpuMaxThreadLoad, GpuPowerLimit));
 
-                FrametimeGraphDataContext.BuildPlotmodel(new VisibleGraphs(GpuLoad, CpuLoad, CpuMaxThreadLoad), plotModel =>
+                FrametimeGraphDataContext.BuildPlotmodel(new VisibleGraphs(GpuLoad, CpuLoad, CpuMaxThreadLoad, GpuPowerLimit), plotModel =>
                 {
                     FrametimeGraphDataContext.UpdateAxis(EPlotAxis.YAXISFRAMETIMES, axis =>
                     {
@@ -426,10 +452,14 @@ namespace CapFrameX.ViewModel
                         SetFrametimeChartYAxisSetting(tuple);
                     });
                 });
-
             }
 
-            _onUpdateChart.Subscribe(_ => updatePlot());
+            _onUpdateChart.Subscribe(_ =>
+            {
+                updatePlot();
+                RaisePropertyChanged(nameof(GpuPowerLimit));
+                RaisePropertyChanged(nameof(IsGpuPowerLimitAvailable));
+            });
         }
 
         partial void InitializeStatisticParameter();
@@ -637,7 +667,7 @@ namespace CapFrameX.ViewModel
         private void UpdateSensorSessionReport()
         {
             SensorReportItems.Clear();
-            var items = SensorReport.GetReportFromSessionSensorData(_session.Runs.Select(run => run.SensorData), 
+            var items = SensorReport.GetReportFromSessionSensorData(_session.Runs.Select(run => run.SensorData),
                 _localRecordDataServer.CurrentTime, _localRecordDataServer.CurrentTime + _localRecordDataServer.WindowLength);
             foreach (var item in items)
             {

@@ -91,7 +91,5 @@ namespace CapFrameX.ViewModel.DataContext
 
 			Clipboard.SetDataObject(builder.ToString(), false);
 		}
-
-
 	}
 }

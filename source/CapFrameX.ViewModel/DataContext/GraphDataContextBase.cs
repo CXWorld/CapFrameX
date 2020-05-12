@@ -1,20 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reactive;
-using System.Reactive.Linq;
-using System.Reactive.Subjects;
-using CapFrameX.Contracts.Configuration;
-using CapFrameX.Contracts.Data;
+﻿using CapFrameX.Contracts.Configuration;
 using CapFrameX.Data;
 using CapFrameX.Data.Session.Contracts;
-using CapFrameX.Extensions.NetStandard;
-using CapFrameX.Statistics;
 using CapFrameX.Statistics.NetStandard;
 using CapFrameX.Statistics.PlotBuilder.Contracts;
 using OxyPlot;
-using OxyPlot.Axes;
-using OxyPlot.Series;
 using Prism.Mvvm;
 
 namespace CapFrameX.ViewModel.DataContext
@@ -31,7 +20,8 @@ namespace CapFrameX.ViewModel.DataContext
 
 		protected IRecordDataServer RecordDataServer { get; }
 
-		public GraphDataContextBase(IAppConfiguration appConfiguration, IRecordDataServer recordDataServer, IStatisticProvider frametimesStatisticProvider)
+		public GraphDataContextBase(IAppConfiguration appConfiguration, 
+			IRecordDataServer recordDataServer, IStatisticProvider frametimesStatisticProvider)
 		{
 			AppConfiguration = appConfiguration;
 			RecordDataServer = recordDataServer;
@@ -53,16 +43,16 @@ namespace CapFrameX.ViewModel.DataContext
 		public bool ShowGpuLoad { get; private set; }
 		public bool ShowCpuLoad { get; private set; }
 		public bool ShowCpuMaxThreadLoad { get; private set; }
+		public bool ShowGpuPowerLimit { get; private set; }
 
-		public bool IsAnyGraphVisible => ShowGpuLoad || ShowCpuLoad || ShowCpuMaxThreadLoad;
+		public bool IsAnyGraphVisible => ShowGpuLoad || ShowCpuLoad || ShowCpuMaxThreadLoad || ShowGpuPowerLimit;
 
-		public VisibleGraphs(bool gpuLoad, bool cpuLoad, bool cpuMaxThreadLoad)
+		public VisibleGraphs(bool gpuLoad, bool cpuLoad, bool cpuMaxThreadLoad, bool gpuPowerLimit)
 		{
 			ShowGpuLoad = gpuLoad;
 			ShowCpuLoad = cpuLoad;
 			ShowCpuMaxThreadLoad = cpuMaxThreadLoad;
+			ShowGpuPowerLimit = gpuPowerLimit;
 		}
 	}
-
-
 }

@@ -61,9 +61,10 @@ namespace OpenHardwareMonitor.Hardware.CPU
             // AMD family 1Xh processors support only one temperature sensor
             coreTemperature = new Sensor(
               "Core" + (coreCount > 1 ? " #1 - #" + coreCount : ""), 0,
-              SensorType.Temperature, this, new[] {
-            new ParameterDescription("Offset [°C]", "Temperature offset.", 0)
-                }, settings);
+              SensorType.Temperature, this, new[]
+              {
+                new ParameterDescription("Offset [°C]", "Temperature offset.", 0)
+              }, settings);
 
             switch (family)
             {
@@ -142,7 +143,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
             uint ctrEax, ctrEdx;
             Ring0.Rdmsr(PERF_CTR_0, out ctrEax, out ctrEdx);
 
-            timeStampCounterMultiplier = estimateTimeStampCounterMultiplier();
+            timeStampCounterMultiplier = EstimateTimeStampCounterMultiplier();
 
             // restore the performance counter registers
             Ring0.Wrmsr(PERF_CTL_0, ctlEax, ctlEdx);
@@ -183,21 +184,21 @@ namespace OpenHardwareMonitor.Hardware.CPU
             Update();
         }
 
-        private double estimateTimeStampCounterMultiplier()
+        private double EstimateTimeStampCounterMultiplier()
         {
             // preload the function
-            estimateTimeStampCounterMultiplier(0);
-            estimateTimeStampCounterMultiplier(0);
+            EstimateTimeStampCounterMultiplier(0);
+            EstimateTimeStampCounterMultiplier(0);
 
             // estimate the multiplier
             List<double> estimate = new List<double>(3);
             for (int i = 0; i < 3; i++)
-                estimate.Add(estimateTimeStampCounterMultiplier(0.025));
+                estimate.Add(EstimateTimeStampCounterMultiplier(0.025));
             estimate.Sort();
             return estimate[1];
         }
 
-        private double estimateTimeStampCounterMultiplier(double timeWindow)
+        private double EstimateTimeStampCounterMultiplier(double timeWindow)
         {
             uint eax, edx;
 
@@ -240,7 +241,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
         protected override uint[] GetMSRs()
         {
             return new uint[] { PERF_CTL_0, PERF_CTR_0, HWCR, P_STATE_0,
-        COFVID_STATUS };
+                COFVID_STATUS };
         }
 
         public override string GetReport()

@@ -27,7 +27,8 @@ namespace CapFrameX.Statistics.PlotBuilder
 			LegendMaxHeight = 25
 		};
 
-		protected Dictionary<EPlotAxis, LinearAxis> AxisDefinitions { get; set; } = new Dictionary<EPlotAxis, LinearAxis>() {
+		protected Dictionary<EPlotAxis, LinearAxis> AxisDefinitions { get; set; } 
+			= new Dictionary<EPlotAxis, LinearAxis>() {
 			{ EPlotAxis.YAXISPERCENTAGE, new LinearAxis()
 				{
 					Key = EPlotAxis.YAXISPERCENTAGE.GetDescription(),
@@ -37,10 +38,10 @@ namespace CapFrameX.Statistics.PlotBuilder
 					MajorStep = 25,
 					MinorTickSize = 0,
 					MajorTickSize = 0,
-					Minimum = 0,
-					Maximum = 100,
-					AbsoluteMaximum = 100,
-					AbsoluteMinimum = 0,
+					Minimum = -2,
+					Maximum = 102,
+					AbsoluteMaximum = 102,
+					AbsoluteMinimum = -2,
 					AxisTitleDistance = 10
 				}
 			},
@@ -147,6 +148,22 @@ namespace CapFrameX.Statistics.PlotBuilder
 				StrokeThickness = 2,
 				LegendStrokeThickness = 4,
 				Color = OxyColor.FromArgb(180, 250, 25, 30),
+				YAxisKey = EPlotAxis.YAXISPERCENTAGE.GetDescription()
+			};
+
+			series.Points.AddRange(points.Select(p => new DataPoint(p.X, p.Y)));
+			plotModel.Series.Add(series);
+		}
+
+		protected void SetGpuPowerLimitChart(PlotModel plotModel, IList<Point> points)
+		{
+			var series = new LineSeries
+			{
+				Title = "GPU power limit",
+				LineStyle = LineStyle.None,
+				MarkerType = MarkerType.Square,
+				MarkerSize = 3,
+				MarkerFill = OxyColor.FromArgb(180, 228, 32, 141),
 				YAxisKey = EPlotAxis.YAXISPERCENTAGE.GetDescription()
 			};
 

@@ -174,6 +174,19 @@ namespace CapFrameX.Statistics.NetStandard
 			return list;
 		}
 
+		public static IList<Point> GetGpuPowerLimitPointTimeWindow(this ISession session)
+		{
+			var list = new List<Point>();
+			var times = session.Runs.SelectMany(r => r.SensorData.MeasureTime).ToArray();
+			var flags = session.Runs.SelectMany(r => r.SensorData.GpuPowerLimit.Select(limit => limit ? 100 : 0)).ToArray();
+
+			for (int i = 0; i < times.Count(); i++)
+			{
+				list.Add(new Point(times[i], flags[i]));
+			}
+			return list;
+		}
+
 		public static IList<Point> GetFpsPointTimeWindow(this ISession session, double startTime, double endTime, IFrametimeStatisticProviderOptions options, ERemoveOutlierMethod eRemoveOutlierMethod = ERemoveOutlierMethod.None)
 		{
 			return session.GetFrametimePointsTimeWindow(startTime, endTime, options, eRemoveOutlierMethod).Select(pnt => new Point(pnt.X, 1000 / pnt.Y)).ToList();
