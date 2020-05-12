@@ -5,8 +5,7 @@
   file, You can obtain one at http://mozilla.org/MPL/2.0/.
  
   Copyright (C) 2009-2020 Michael Möller <mmoeller@openhardwaremonitor.org>
-	Copyright (C) 2011 Christian Vallières
- 
+  Copyright (C) 2011 Christian Vallières
 */
 
 using NvAPIWrapper.GPU;
@@ -20,7 +19,6 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
 {
     internal class NvidiaGPU : Hardware
     {
-
         private readonly int adapterIndex;
         private readonly NvPhysicalGpuHandle handle;
         private readonly PhysicalGPU physicalGPU;
@@ -44,7 +42,6 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
         private readonly Sensor powerLimit;
         private readonly Sensor temperatureLimit;
         private readonly Sensor voltageLimit;
-
 
         public NvidiaGPU(int adapterIndex, NvPhysicalGpuHandle handle,
           NvDisplayHandle? displayHandle, ISettings settings, PhysicalGPU physicalGPU = null)
@@ -83,9 +80,6 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
             for (int i = 0; i < clocks.Length; i++)
                 ActivateSensor(clocks[i]);
 
-            if (physicalGPU != null)
-                voltage = new Sensor("GPU Voltage", 0, SensorType.Voltage, this, settings);
-
             loads = new Sensor[4];
             loads[0] = new Sensor("GPU Core", 0, SensorType.Load, this, settings);
             loads[1] = new Sensor("GPU Frame Buffer", 1, SensorType.Load, this, settings);
@@ -97,6 +91,7 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
             memoryAvail = new Sensor("GPU Memory Total", 3, SensorType.SmallData, this, settings);
             fan = new Sensor("GPU Fan", 0, SensorType.Fan, this, settings);
             control = new Sensor("GPU Fan", 1, SensorType.Control, this, settings);
+            voltage = new Sensor("GPU Voltage", 0, SensorType.Voltage, this, settings);
             powerLimit = new Sensor("GPU Power Limit", 0, SensorType.Factor, this, settings);
             temperatureLimit = new Sensor("GPU Thermal Limit", 1, SensorType.Factor, this, settings);
             voltageLimit = new Sensor("GPU Voltage Limit", 2, SensorType.Factor, this, settings);
@@ -252,18 +247,18 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
                     ActivateSensor(voltage);
 
                     var currentActiveLimit = physicalGPU.PerformanceControl.CurrentActiveLimit;
-                    powerLimit.Value = ((currentActiveLimit & PerformanceLimit.PowerLimit) 
+                    powerLimit.Value = ((currentActiveLimit & PerformanceLimit.PowerLimit)
                         == PerformanceLimit.PowerLimit) ? 1 : 0;
                     ActivateSensor(powerLimit);
-                    temperatureLimit.Value = ((currentActiveLimit & PerformanceLimit.TemperatureLimit) 
+                    temperatureLimit.Value = ((currentActiveLimit & PerformanceLimit.TemperatureLimit)
                         == PerformanceLimit.TemperatureLimit) ? 1 : 0;
                     ActivateSensor(temperatureLimit);
-                    voltageLimit.Value = ((currentActiveLimit & PerformanceLimit.VoltageLimit) 
+                    voltageLimit.Value = ((currentActiveLimit & PerformanceLimit.VoltageLimit)
                         == PerformanceLimit.VoltageLimit) ? 1 : 0;
                     ActivateSensor(voltageLimit);
                 }
-                catch 
-                { 
+                catch
+                {
                     voltage.Value = float.NaN;
                     powerLimit.Value = float.NaN;
                     temperatureLimit.Value = float.NaN;

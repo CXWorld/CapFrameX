@@ -14,11 +14,13 @@ namespace CapFrameX.Sensor
                 "CPU Total",
                 "CPU Max",
                 "CPU Package",
+                "CPU Max Clock",
                 "Used Memory",
                 "GPU Core",
                 "GPU Total",
                 "GPU Power",
-                "GPU Memory Used"
+                "GPU Memory Used",
+                "GPU Power Limit"
             };
 
         private long _timestampStartLogging;
@@ -27,11 +29,13 @@ namespace CapFrameX.Sensor
         private List<int> _cpuPower;
         private List<int> _cpuTemp;
         private List<int> _cpuMaxThreadUsage;
+        private List<int> _cpuMaxClock;
         private List<int> _gpuUsage;
         private List<double> _ramUsage;
         private List<bool> _isInGpuLimit;
         private List<int> _gpuPower;
         private List<int> _gpuTemp;
+        private List<int> _gpuPowerLimit;
         private List<int> _vRamUsage;
 
         public SessionSensorDataLive()
@@ -42,11 +46,13 @@ namespace CapFrameX.Sensor
             _cpuMaxThreadUsage = new List<int>();
             _cpuPower = new List<int>();
             _cpuTemp = new List<int>();
+            _cpuMaxClock = new List<int>();
             _gpuUsage = new List<int>();
             _ramUsage = new List<double>();
             _isInGpuLimit = new List<bool>();
             _gpuPower = new List<int>();
             _gpuTemp = new List<int>();
+            _gpuPowerLimit = new List<int>();
             _vRamUsage = new List<int>();
         }
 
@@ -73,6 +79,9 @@ namespace CapFrameX.Sensor
                 case "CPU Max" when sensor.Hardware.HardwareType == HardwareType.CPU:
                     _cpuMaxThreadUsage.Add((int)Math.Round(currentValue));
                     break;
+                case "CPU Max Clock" when sensor.SensorType == SensorType.Clock:
+                    _cpuMaxClock.Add((int)Math.Round(currentValue));
+                    break;
                 case "CPU Package" when sensor.SensorType == SensorType.Power:
                     _cpuPower.Add((int)Math.Round(currentValue));
                     break;
@@ -87,6 +96,9 @@ namespace CapFrameX.Sensor
                     break;
                 case "GPU Power" when sensor.Hardware.HardwareType == HardwareType.GpuNvidia:
                     _gpuPower.Add((int)Math.Round(currentValue));
+                    break;
+                case "GPU Power Limit" when sensor.Hardware.HardwareType == HardwareType.GpuNvidia:
+                    _gpuPowerLimit.Add((int)Math.Round(currentValue));
                     break;
                 case "GPU Total" when sensor.Hardware.HardwareType == HardwareType.GpuAti:
                     _gpuPower.Add((int)Math.Round(currentValue));
