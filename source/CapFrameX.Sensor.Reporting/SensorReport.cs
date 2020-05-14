@@ -38,7 +38,7 @@ namespace CapFrameX.Sensor.Reporting
 							AddSensorEntry(item, Math.Round(values.Average()), values.Min(), values.Max());
 							break;
 						case EReportSensorName.CpuMaxClock when HasValues(sessionsSensorData, session => session.CpuMaxClock, out var values):
-							AddSensorEntry(item, Math.Round(values.Average(), 2), values.Min(), values.Max());
+							AddSensorEntry(item, Math.Round(values.Average()), values.Min(), values.Max());
 							break;
 						case EReportSensorName.GpuUsage when HasValues(sessionsSensorData, session => session.GpuUsage, out var values):
 							AddSensorEntry(item, Math.Round(values.Average()), values.Min(), values.Max());

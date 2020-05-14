@@ -178,7 +178,7 @@ namespace CapFrameX.Statistics.NetStandard
 		{
 			var list = new List<Point>();
 			var times = session.Runs.SelectMany(r => r.SensorData.MeasureTime).ToArray();
-			var flags = session.Runs.SelectMany(r => r.SensorData.GpuPowerLimit.Select(limit => limit ? 100 : 0)).ToArray();
+			var flags = session.Runs.SelectMany(r => r.SensorData.GpuPowerLimit.Select(limit => limit ? 98 : -5)).ToArray();
 
 			for (int i = 0; i < times.Count(); i++)
 			{

@@ -190,7 +190,7 @@ namespace CapFrameX.Sensor
             }
             else if (name.Contains("CPU Max Clock"))
             {
-                name = name.Replace("CPU Max Clock", "CPU Clock");
+                name = name.Replace("CPU Max Clock", "CPU Max");
             }
             else if (name.Contains("GPU Core"))
             {

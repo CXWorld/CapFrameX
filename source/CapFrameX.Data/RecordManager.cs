@@ -231,36 +231,44 @@ namespace CapFrameX.Data
         {
             using (var reader = new StreamReader(csvFile.FullName))
             {
-                var lines = File.ReadAllLines(csvFile.FullName);
-                var sessionRun = ConvertPresentDataLinesToSessionRun(lines.SkipWhile(line => line.Contains(FileRecordInfo.HEADER_MARKER)));
-                var recordedFileInfo = FileRecordInfo.Create(csvFile, sessionRun.Hash);
-                var systemInfos = GetSystemInfos(recordedFileInfo);
-
-                return new Session.Classes.Session()
+                try
                 {
-                    Hash = string.Join(",", new string[] { sessionRun.Hash }).GetSha1(),
-                    Runs = new List<ISessionRun>() { sessionRun },
-                    Info = new SessionInfo()
+                    var lines = File.ReadAllLines(csvFile.FullName);
+                    var sessionRun = ConvertPresentDataLinesToSessionRun(lines.SkipWhile(line => line.Contains(FileRecordInfo.HEADER_MARKER)));
+                    var recordedFileInfo = FileRecordInfo.Create(csvFile, sessionRun.Hash);
+                    var systemInfos = GetSystemInfos(recordedFileInfo);
+
+                    return new Session.Classes.Session()
                     {
-                        ProcessName = recordedFileInfo.ProcessName,
-                        Processor = recordedFileInfo.ProcessorName,
-                        GPU = recordedFileInfo.GraphicCardName,
-                        BaseDriverVersion = recordedFileInfo.BaseDriverVersion,
-                        GameName = recordedFileInfo.GameName,
-                        Comment = recordedFileInfo.Comment,
-                        Id = Guid.TryParse(recordedFileInfo.Id, out var guidId) ? guidId : Guid.NewGuid(),
-                        OS = recordedFileInfo.OsVersion,
-                        GpuCoreClock = recordedFileInfo.GPUCoreClock,
-                        GPUCount = recordedFileInfo.NumberGPUs,
-                        SystemRam = recordedFileInfo.SystemRamInfo,
-                        Motherboard = recordedFileInfo.MotherboardName,
-                        DriverPackage = recordedFileInfo.DriverPackage,
-                        GpuMemoryClock = recordedFileInfo.GPUMemoryClock,
-                        CreationDate = DateTime.Parse(recordedFileInfo.CreationDate + "T" + recordedFileInfo.CreationTime),
-                        AppVersion = new Version(),
-                        ApiInfo = recordedFileInfo.ApiInfo
-                    }
-                };
+                        Hash = string.Join(",", new string[] { sessionRun.Hash }).GetSha1(),
+                        Runs = new List<ISessionRun>() { sessionRun },
+                        Info = new SessionInfo()
+                        {
+                            ProcessName = recordedFileInfo.ProcessName,
+                            Processor = recordedFileInfo.ProcessorName,
+                            GPU = recordedFileInfo.GraphicCardName,
+                            BaseDriverVersion = recordedFileInfo.BaseDriverVersion,
+                            GameName = recordedFileInfo.GameName,
+                            Comment = recordedFileInfo.Comment,
+                            Id = Guid.TryParse(recordedFileInfo.Id, out var guidId) ? guidId : Guid.NewGuid(),
+                            OS = recordedFileInfo.OsVersion,
+                            GpuCoreClock = recordedFileInfo.GPUCoreClock,
+                            GPUCount = recordedFileInfo.NumberGPUs,
+                            SystemRam = recordedFileInfo.SystemRamInfo,
+                            Motherboard = recordedFileInfo.MotherboardName,
+                            DriverPackage = recordedFileInfo.DriverPackage,
+                            GpuMemoryClock = recordedFileInfo.GPUMemoryClock,
+                            CreationDate = DateTime.Parse(recordedFileInfo.CreationDate + "T" + recordedFileInfo.CreationTime),
+                            AppVersion = new Version(),
+                            ApiInfo = recordedFileInfo.ApiInfo
+                        }
+                    };
+                }
+                catch
+                {
+                    reader?.Dispose();
+                    return null;
+                }
             }
         }
 
@@ -288,7 +296,8 @@ namespace CapFrameX.Data
                     {
                         case ".csv":
                             var sessionFromCSV = LoadSessionFromCSV(fileInfo);
-                            return Observable.Return(FileRecordInfo.Create(fileInfo, sessionFromCSV.Hash));
+                            return sessionFromCSV != null ? Observable.Return(FileRecordInfo.Create(fileInfo, sessionFromCSV.Hash))
+                                : Observable.Empty<IFileRecordInfo>();
                         case ".json":
                             var sessionFromJSON = LoadSessionFromJSON(fileInfo);
                             return Observable.Return(FileRecordInfo.Create(fileInfo, sessionFromJSON));
@@ -427,11 +436,8 @@ namespace CapFrameX.Data
             {
                 int indexFrameStart = -1;
                 int indexFrameTimes = -1;
-                int indexFrameEnd = -1;
                 int indexUntilDisplayedTimes = -1;
-                int indexVSync = -1;
                 int indexAppMissed = -1;
-                int indexWarpMissed = -1;
                 int indexPresentMode = -1;
                 int indexPresentFlags = -1;
                 int indexMsInPresentAPI = -1;
@@ -463,11 +469,6 @@ namespace CapFrameX.Data
                     {
                         indexFrameStart = i;
                     }
-                    // MsUntilRenderComplete needs to be added to AppRenderStart to get the timestamp
-                    if (string.Compare(metrics[i], "AppRenderEnd") == 0 || string.Compare(metrics[i], "MsUntilRenderComplete") == 0)
-                    {
-                        indexFrameEnd = i;
-                    }
                     if (string.Compare(metrics[i], "MsBetweenAppPresents") == 0 || string.Compare(metrics[i], "MsBetweenPresents") == 0)
                     {
                         indexFrameTimes = i;
@@ -476,18 +477,9 @@ namespace CapFrameX.Data
                     {
                         indexUntilDisplayedTimes = i;
                     }
-                    if (string.Compare(metrics[i], "VSync") == 0)
-                    {
-                        indexVSync = i;
-                        sessionRun.IsVR = true;
-                    }
                     if (string.Compare(metrics[i], "AppMissed") == 0 || string.Compare(metrics[i], "Dropped") == 0)
                     {
                         indexAppMissed = i;
-                    }
-                    if (string.Compare(metrics[i], "WarpMissed") == 0 || string.Compare(metrics[i], "LsrMissed") == 0)
-                    {
-                        indexWarpMissed = i;
                     }
                     if (string.Compare(metrics[i], "MsInPresentAPI") == 0)
                     {
@@ -519,7 +511,7 @@ namespace CapFrameX.Data
 
                 var dataLines = presentLines.ToArray();
 
-                var presentModeMapping = Enum.GetValues(typeof(EPresentMode)).Cast<EPresentMode>().ToDictionary(e => e.GetDescription(), e => (int) e);
+                var presentModeMapping = Enum.GetValues(typeof(EPresentMode)).Cast<EPresentMode>().ToDictionary(e => e.GetDescription(), e => (int)e);
                 for (int lineNo = 0; lineNo < dataLines.Count(); lineNo++)
                 {
                     string line = dataLines[lineNo];
@@ -528,7 +520,7 @@ namespace CapFrameX.Data
                         continue;
                     }
                     var lineCharList = new List<char>();
-                    string[] values = new string[0];
+                    string[] values = Array.Empty<string>();
 
                     if (lineNo == 0)
                     {
@@ -549,7 +541,7 @@ namespace CapFrameX.Data
                     values = line.Split(',');
                     double frameStart = 0;
 
-                    if(lineNo == 0)
+                    if (lineNo == 0)
                     {
                         sessionRun.PresentMonRuntime = GetStringFromArray(values, indexRuntime);
                     }
@@ -606,6 +598,7 @@ namespace CapFrameX.Data
                             captureData.QPCTime[lineNo] = qPCTime;
                         }
                     }
+
                     if (indexPresentMode > 0)
                     {
                         if (presentModeMapping.TryGetValue(GetStringFromArray(values, indexPresentMode), out var presentMode))
@@ -613,35 +606,12 @@ namespace CapFrameX.Data
                             captureData.PresentMode[lineNo] = presentMode;
                         }
                     }
+
                     if (indexPresentFlags > 0)
                     {
                         if (int.TryParse(GetStringFromArray(values, indexPresentFlags), NumberStyles.Any, CultureInfo.InvariantCulture, out var presentFlags))
                         {
                             captureData.PresentFlags[lineNo] = presentFlags;
-                        }
-                    }
-                    if (indexFrameEnd > 0)
-                    {
-                        if (double.TryParse(GetStringFromArray(values, indexFrameEnd), NumberStyles.Any, CultureInfo.InvariantCulture, out var frameEnd))
-                        {
-                            if (sessionRun.IsVR)
-                            {
-                                captureData.MsUntilRenderComplete[lineNo] = frameEnd;
-                            }
-                            else
-                            {
-                                captureData.MsUntilRenderComplete[lineNo] = frameStart + frameEnd / 1000.0;
-                            }
-                        }
-                    }
-
-                    if (indexVSync > 0 && indexWarpMissed > 0)
-                    {
-                        if (double.TryParse(GetStringFromArray(values, indexVSync), NumberStyles.Any, CultureInfo.InvariantCulture, out var vSync)
-                         && int.TryParse(GetStringFromArray(values, indexWarpMissed), NumberStyles.Any, CultureInfo.InvariantCulture, out var warpMissed))
-                        {
-                            captureData.VSync[lineNo] = vSync;
-                            captureData.LsrMissed[lineNo] = Convert.ToBoolean(warpMissed);
                         }
                     }
                 }

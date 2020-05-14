@@ -1,17 +1,13 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using OxyPlot;
 using OxyPlot.Axes;
-using OxyPlot.Series;
 using Prism.Commands;
 using System;
-using System.Linq;
 using System.Text;
 using System.Windows.Input;
-using System.Collections.Generic;
 using System.Globalization;
 using CapFrameX.Data;
 using System.Windows.Threading;
-using CapFrameX.Extensions;
 using CapFrameX.Statistics.NetStandard;
 using System.Windows.Forms;
 using CapFrameX.Statistics.PlotBuilder;

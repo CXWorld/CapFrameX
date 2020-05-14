@@ -194,6 +194,9 @@ This doesn't affect any processes you already have on your list. If our online l
 * WiX Toolset Visual Studio 2019 Extension
 * WiX Toolset and VS Extension: http://wixtoolset.org/releases/
 
+# Build settings
+* Solution Platform x64
+
 # Dev roadmap
 * Enhancements (new RTSS overlay features, second comparison context)
 

@@ -38,10 +38,10 @@ namespace CapFrameX.Statistics.PlotBuilder
 					MajorStep = 25,
 					MinorTickSize = 0,
 					MajorTickSize = 0,
-					Minimum = -2,
-					Maximum = 102,
-					AbsoluteMaximum = 102,
-					AbsoluteMinimum = -2,
+					Minimum = 0,
+					Maximum = 100,
+					AbsoluteMaximum = 100,
+					AbsoluteMinimum = 0,
 					AxisTitleDistance = 10
 				}
 			},
@@ -163,7 +163,7 @@ namespace CapFrameX.Statistics.PlotBuilder
 				LineStyle = LineStyle.None,
 				MarkerType = MarkerType.Square,
 				MarkerSize = 3,
-				MarkerFill = OxyColor.FromArgb(180, 228, 32, 141),
+				MarkerFill = OxyColor.FromArgb(100, 228, 32, 141),
 				YAxisKey = EPlotAxis.YAXISPERCENTAGE.GetDescription()
 			};
 

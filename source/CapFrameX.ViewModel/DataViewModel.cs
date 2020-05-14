@@ -435,7 +435,9 @@ namespace CapFrameX.ViewModel
                 || !_localRecordDataServer.CurrentSession.Runs.Any())
                 return false;
 
-            return _localRecordDataServer.CurrentSession.Runs.All(session => session.SensorData.GpuPowerLimit.Any());
+            return _localRecordDataServer.CurrentSession.Runs
+                .Where(session => session.SensorData != null)
+                .All(session => session.SensorData.GpuPowerLimit.Any());
         }
 
         private void Setup()
