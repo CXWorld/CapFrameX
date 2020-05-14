@@ -24,7 +24,7 @@ namespace CapFrameX.Data
 			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 		}
 
-		public string CreationTimestamp => $@"{CreationDate}{CreationTime}";
+		public string CreationTimestamp => $@"{CreationDate}" + Environment.NewLine + $@"{CreationTime}";
 
 		public string GameName { get; set; }
 		public string ProcessName { get; private set; }
@@ -97,7 +97,7 @@ namespace CapFrameX.Data
 					IsValid = GetIsValid(_lines);
 
 					if (IsValid)
-					{						
+					{
 						if (HasInfoHeader)
 						{
 							FillPropertyDictionary(infoKeyValueDictionary);
