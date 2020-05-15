@@ -32,5 +32,6 @@ namespace CapFrameX.Contracts.Data
 		string Id { get; }
 		string Hash { get; }
 		string ApiInfo { get; }
+		string PresentationMode { get; }
 	}
 }

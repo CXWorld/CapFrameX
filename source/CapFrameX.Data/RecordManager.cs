@@ -8,6 +8,7 @@ using CapFrameX.Data.Session.Contracts;
 using CapFrameX.Extensions;
 using CapFrameX.Extensions.NetStandard;
 using CapFrameX.PresentMonInterface;
+using CapFrameX.Statistics.NetStandard;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
@@ -177,6 +178,8 @@ namespace CapFrameX.Data
                 systemInfos.Add(new SystemInfoEntry() { Key = "Driver Package", Value = recordInfo.DriverPackage });
             if (!string.IsNullOrWhiteSpace(recordInfo.ApiInfo))
                 systemInfos.Add(new SystemInfoEntry() { Key = "API", Value = recordInfo.ApiInfo });
+            if (!string.IsNullOrWhiteSpace(recordInfo.PresentationMode))
+                systemInfos.Add(new SystemInfoEntry() { Key = "Presentation Mode", Value = recordInfo.PresentationMode });
 
             return systemInfos;
         }
@@ -378,7 +381,8 @@ namespace CapFrameX.Data
                         GPU = gpuInfo,
                         GPUDriverVersion = _sensorService.GetGpuDriverVersion(),
                         AppVersion = _appVersionProvider.GetAppVersion(),
-                        ApiInfo = apiInfo
+                        ApiInfo = apiInfo,
+                        PresentationMode = runs.GetPresentationMode()
                     }
                 };
 

@@ -1,4 +1,5 @@
-﻿using CapFrameX.Data.Session.Contracts;
+﻿using CapFrameX.Data.Session.Classes;
+using CapFrameX.Data.Session.Contracts;
 using CapFrameX.Statistics.NetStandard.Contracts;
 using System;
 using System.Collections.Generic;
@@ -195,6 +196,27 @@ namespace CapFrameX.Statistics.NetStandard
 		public static bool HasValidSensorData(this ISession session)
 		{
 			return session.Runs.All(run => run.SensorData != null && run.SensorData.MeasureTime.Any());
+		}
+
+		public static string GetPresentationMode(this IEnumerable<ISessionRun> runs)
+		{
+			var presentModes = runs.SelectMany(r => r.CaptureData.PresentMode);
+			var orderedByFrequency = presentModes.GroupBy(x => x).OrderByDescending(x => x.Count()).Select(x => x.Key);
+			var presentMode = (EPresentMode)orderedByFrequency.First();
+			switch (presentMode)
+			{
+				case EPresentMode.HardwareLegacyFlip:
+				case EPresentMode.HardwareLegacyCopyToFrontBuffer:
+					return "Fullscreen Exclusive";
+				case EPresentMode.HardwareComposedIndependentFlip:
+				case EPresentMode.HardwareIndependentFlip:
+					return "Fullscreen Optimized or Borderless";
+				case EPresentMode.ComposedFlip:
+				case EPresentMode.ComposedCopyWithGPUGDI:
+					return "Windowed or Borderless";
+				default:
+					return "Unknown";
+			}
 		}
 	}
 }

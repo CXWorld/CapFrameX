@@ -109,7 +109,6 @@
     <Compile Include="ObjectExtensions.cs" />
     <Compile Include="ObservableExtensions.cs" />
     <Compile Include="ReflectionExtensions.cs" />
-    <Compile Include="SessionExtensions.cs" />
     <Compile Include="StringExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

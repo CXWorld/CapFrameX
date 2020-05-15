@@ -544,7 +544,7 @@ namespace CapFrameX.ViewModel
 			try
 			{
 				var process = _processList.FindProcessByProcessName(processName);
-				if (process is null)
+				if (process is null && processName != gameName)
 				{
 					_processList.AddEntry(processName, gameName);
 					process = _processList.FindProcessByProcessName(processName);

@@ -26,5 +26,6 @@ namespace CapFrameX.Data.Session.Classes
 		public string GpuMemoryClock { get; set; }
 		public string Comment { get; set; }
 		public string ApiInfo { get; set; }
+		public string PresentationMode { get; set; }
 	}
 }
