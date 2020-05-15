@@ -439,11 +439,12 @@ namespace CapFrameX.Data
                 int indexUntilDisplayedTimes = -1;
                 int indexAppMissed = -1;
                 int indexPresentMode = -1;
-                int indexPresentFlags = -1;
                 int indexMsInPresentAPI = -1;
                 int indexDisplayTimes = -1;
                 int indexQPCTimes = -1;
                 int indexRuntime = -1;
+                int indexAllowsTearing = -1;
+                int indexSyncInterval = -1;
 
                 string headerLine;
                 if (!presentLines.First().StartsWith("Application"))
@@ -497,13 +498,17 @@ namespace CapFrameX.Data
                     {
                         indexPresentMode = i;
                     }
-                    if (string.Compare(metrics[i], "PresentFlags") == 0)
-                    {
-                        indexPresentFlags = i;
-                    }
                     if (string.Compare(metrics[i], "Runtime") == 0)
                     {
                         indexRuntime = i;
+                    }
+                    if (string.Compare(metrics[i], "AllowsTearing") == 0)
+                    {
+                        indexAllowsTearing = i;
+                    }
+                    if (string.Compare(metrics[i], "SyncInterval") == 0)
+                    {
+                        indexSyncInterval = i;
                     }
                 }
 
@@ -607,11 +612,18 @@ namespace CapFrameX.Data
                         }
                     }
 
-                    if (indexPresentFlags > 0)
+                    if (indexAllowsTearing > 0)
                     {
-                        if (int.TryParse(GetStringFromArray(values, indexPresentFlags), NumberStyles.Any, CultureInfo.InvariantCulture, out var presentFlags))
+                        if (int.TryParse(GetStringFromArray(values, indexAllowsTearing), NumberStyles.Any, CultureInfo.InvariantCulture, out var allowsTearing))
                         {
-                            captureData.PresentFlags[lineNo] = presentFlags;
+                            captureData.AllowsTearing[lineNo] = allowsTearing;
+                        }
+                    }
+                    if (indexSyncInterval > 0)
+                    {
+                        if (int.TryParse(GetStringFromArray(values, indexSyncInterval), NumberStyles.Any, CultureInfo.InvariantCulture, out var syncInterval))
+                        {
+                            captureData.SyncInterval[lineNo] = syncInterval;
                         }
                     }
                 }
