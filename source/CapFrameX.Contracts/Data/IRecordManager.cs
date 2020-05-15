@@ -22,5 +22,6 @@ namespace CapFrameX.Contracts.Data
 		ISession LoadData(string file);
 
 		ISessionRun ConvertPresentDataLinesToSessionRun(IEnumerable<string> presentLines);
+		Task SavePresentmonRawToFile(IEnumerable<string> lines, string process);
 	}
 }

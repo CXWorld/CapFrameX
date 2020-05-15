@@ -2,6 +2,7 @@
 using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.Sensor;
+using CapFrameX.Data;
 using CapFrameX.Data.Session.Contracts;
 using CapFrameX.Extensions.NetStandard;
 using CapFrameX.Statistics.NetStandard;

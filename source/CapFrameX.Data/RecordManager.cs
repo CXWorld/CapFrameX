@@ -26,6 +26,7 @@ namespace CapFrameX.Data
 {
     public class RecordManager : IRecordManager
     {
+        private const string IGNOREFLAGMARKER = "//Ignore=true";
         public Func<uint, string> GetApiInfoFunc { get; set; }
 
         private readonly TimeSpan _fileAccessIntervalTimespan = TimeSpan.FromMilliseconds(200);
@@ -234,9 +235,11 @@ namespace CapFrameX.Data
         {
             using (var reader = new StreamReader(csvFile.FullName))
             {
-                try
-                {
                     var lines = File.ReadAllLines(csvFile.FullName);
+                    if(lines.First().Equals(IGNOREFLAGMARKER))
+                    {
+                        throw new HasIgnoreFlagException();
+                    }
                     var sessionRun = ConvertPresentDataLinesToSessionRun(lines.SkipWhile(line => line.Contains(FileRecordInfo.HEADER_MARKER)));
                     var recordedFileInfo = FileRecordInfo.Create(csvFile, sessionRun.Hash);
                     var systemInfos = GetSystemInfos(recordedFileInfo);
@@ -261,17 +264,12 @@ namespace CapFrameX.Data
                             Motherboard = recordedFileInfo.MotherboardName,
                             DriverPackage = recordedFileInfo.DriverPackage,
                             GpuMemoryClock = recordedFileInfo.GPUMemoryClock,
-                            CreationDate = DateTime.Parse(recordedFileInfo.CreationDate + "T" + recordedFileInfo.CreationTime),
+                            CreationDate = DateTime.TryParse(recordedFileInfo.CreationDate + "T" + recordedFileInfo.CreationTime, out var creationDate) ? creationDate : new DateTime(),
                             AppVersion = new Version(),
                             ApiInfo = recordedFileInfo.ApiInfo
                         }
                     };
-                }
-                catch
-                {
-                    reader?.Dispose();
-                    return null;
-                }
+                
             }
         }
 
@@ -299,8 +297,7 @@ namespace CapFrameX.Data
                     {
                         case ".csv":
                             var sessionFromCSV = LoadSessionFromCSV(fileInfo);
-                            return sessionFromCSV != null ? Observable.Return(FileRecordInfo.Create(fileInfo, sessionFromCSV.Hash))
-                                : Observable.Empty<IFileRecordInfo>();
+                            return Observable.Return(FileRecordInfo.Create(fileInfo, sessionFromCSV.Hash));
                         case ".json":
                             var sessionFromJSON = LoadSessionFromJSON(fileInfo);
                             return Observable.Return(FileRecordInfo.Create(fileInfo, sessionFromJSON));
@@ -313,9 +310,13 @@ namespace CapFrameX.Data
                     if (e is IOException)
                     { // If e is IOException we will throw it again, so the retry will execute the function again
                         return Observable.Throw<IFileRecordInfo>(e);
-                    } // otherwise, we return empty
-                    _logger.LogError(e, "Error Creating FileRecordInfo of {path}", fileInfo.FullName);
-                    return Observable.Empty<IFileRecordInfo>();
+                    } else {// otherwise, we return empty
+                        if (!(e is HasIgnoreFlagException))
+                        {
+                            _logger.LogError(e, "Error Creating FileRecordInfo of {path}", fileInfo.FullName);
+                        }
+                        return Observable.Empty<IFileRecordInfo>();
+                    }
                 })
                 .Retry(_fileAccessIntervalRetryLimit)
                 .Do(fileRecordInfo =>
@@ -325,6 +326,15 @@ namespace CapFrameX.Data
                         fileRecordInfo.GameName = GetGamenameForProcess(fileRecordInfo.ProcessName);
                     }
                 });
+        }
+
+        public async Task SavePresentmonRawToFile(IEnumerable<string> lines, string process)
+        {
+            try {
+                var filePath = await GetOutputFilename(process);
+                lines = new string[] { IGNOREFLAGMARKER, COLUMN_HEADER}.Concat(lines);
+                File.WriteAllLines(filePath + ".csv", lines);
+            } catch(Exception) { }
         }
 
         public async Task<bool> SaveSessionRunsToFile(IEnumerable<ISessionRun> runs, string processName)
@@ -672,5 +682,10 @@ namespace CapFrameX.Data
                 sessionRuns.ForEach(sr => sr.SensorData = null);
             }
         }
+    }
+
+    class HasIgnoreFlagException: Exception
+    {
+
     }
 }

@@ -1,4 +1,6 @@
-﻿using CapFrameX.Data.Session.Contracts;
+﻿using CapFrameX.Data;
+using CapFrameX.Data.Session.Contracts;
+using CapFrameX.Extensions.NetStandard;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -62,11 +64,18 @@ namespace CapFrameX.ViewModel
                 _dataOffsetRunning = false;
             }));
 
+
             // if aggregation mode is active and "Save aggregated result only" is checked, don't save single history items
             if (AppConfiguration.UseAggregation && AppConfiguration.SaveAggregationOnly)
                 return;
 
+            if (_appConfiguration.CaptureFileMode == Enum.GetName(typeof(ECaptureFileMode), ECaptureFileMode.JsonCsv))
+            {
+                await _recordManager.SavePresentmonRawToFile(normalizedAdjustedCaptureData, processName);
+            }
+
             bool checkSave = await _recordManager.SaveSessionRunsToFile(new ISessionRun[] { sessionRun }, processName);
+
 
             if (!checkSave)
                 AddLoggerEntry("Error while saving capture data.");
