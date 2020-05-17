@@ -4,7 +4,6 @@
 	{
 		string Hash { get; set; }
 		string PresentMonRuntime { get; set; }
-		bool IsVR { get; set; }
 		ISessionCaptureData CaptureData { get; set; }
 		ISessionSensorData SensorData { get; set; }
 	}

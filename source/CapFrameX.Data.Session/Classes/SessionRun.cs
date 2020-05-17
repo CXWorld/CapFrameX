@@ -8,7 +8,6 @@ namespace CapFrameX.Data.Session.Classes
 	{
 		public string Hash { get; set; }
 		public string PresentMonRuntime { get; set; }
-		public bool IsVR { get; set; }
 		[JsonProperty("CaptureData")]
 		[JsonConverter(typeof(ConcreteTypeConverter<SessionCaptureData>))]
 		public ISessionCaptureData CaptureData { get; set; }

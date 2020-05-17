@@ -490,7 +490,7 @@ namespace CapFrameX.ViewModel
 					_selectedRecordings = null;
 
 					_updateSessionEvent.Publish(new ViewMessages.UpdateSession(null, null));
-					
+
 				}
 				catch { }
 			}
@@ -537,14 +537,15 @@ namespace CapFrameX.ViewModel
 
 		private void AddOrUpdateProcess(string processName, string gameName)
 		{
-			if (string.IsNullOrWhiteSpace(processName) || string.IsNullOrWhiteSpace(gameName))
+			if (string.IsNullOrWhiteSpace(processName) || string.IsNullOrWhiteSpace(gameName)
+				|| (processName.Replace(".exe", string.Empty) == gameName))
 			{
 				return;
 			}
 			try
 			{
 				var process = _processList.FindProcessByProcessName(processName);
-				if (process is null && processName != gameName)
+				if (process is null)
 				{
 					_processList.AddEntry(processName, gameName);
 					process = _processList.FindProcessByProcessName(processName);
