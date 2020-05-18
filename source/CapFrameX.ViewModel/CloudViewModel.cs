@@ -270,7 +270,6 @@ namespace CapFrameX.ViewModel
 			{
 				IsLoggedIn = state.IsLoggedIn;
 				RaisePropertyChanged(nameof(IsLoggedIn));
-				ShowUploadDescriptionTextBox = (CloudEntries.Any() && IsLoggedIn) ? true : false;
 			});
 		}
 
@@ -283,8 +282,8 @@ namespace CapFrameX.ViewModel
 		private void OnCloudEntriesChanged()
 		{
 			ShowHelpText = !CloudEntries.Any();
+			ShowUploadDescriptionTextBox = CloudEntries.Any();
 			EnableClearAndUploadButton = CloudEntries.Any();
-			ShowUploadDescriptionTextBox = (CloudEntries.Any() && IsLoggedIn) ? true : false;
 		}
 
 		private void SubscribeToUpdateSession()
@@ -308,7 +307,7 @@ namespace CapFrameX.ViewModel
 			else
 				return;
 
-			ShareUrl = string.Empty;		
+			ShareUrl = string.Empty;
 			CloudEntries.Add(new CloudEntry()
 			{
 				GameName = recordInfo.GameName,
