@@ -26,14 +26,15 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
 
         public NvidiaGroup(ISettings settings)
         {
+            NvAPIWrapper.NVIDIA.Initialize();
+
             if (!NVAPI.IsAvailable)
                 return;
 
             report.AppendLine("NVAPI");
             report.AppendLine();
 
-            string version;
-            if (NVAPI.NvAPI_GetInterfaceVersionString(out version) == NvStatus.OK)
+            if (NVAPI.NvAPI_GetInterfaceVersionString(out string version) == NvStatus.OK)
             {
                 report.Append(" Version: ");
                 report.AppendLine(version);

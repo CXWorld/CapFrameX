@@ -1,5 +1,4 @@
-﻿using OxyPlot;
-using System.Windows.Media;
+﻿using System.Windows.Media;
 
 namespace CapFrameX.ViewModel
 {
