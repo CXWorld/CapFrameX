@@ -5,36 +5,157 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:tb="http://www.hardcodet.net/taskbar"
 		xmlns:converter="clr-namespace:CapFrameX.MVVM.Converter;assembly=CapFrameX.MVVM"
 		mc:Ignorable="d"
 		Title="CapFrameX"
         Height="780" Width="1400" MinHeight="680"  MinWidth="1400" Icon="Icons/CX_Icon.png">
-	<Window.Resources>
-		<ResourceDictionary>
-			<ResourceDictionary.MergedDictionaries>
-				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Button.xaml" />
-				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Shadows.xaml" />
-				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ToggleButton.xaml" />
-				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.DataGrid.xaml" />
-				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Slider.xaml" />
-				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.PopupBox.xaml" />
-			</ResourceDictionary.MergedDictionaries>
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Button.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Shadows.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ToggleButton.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.DataGrid.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Slider.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.PopupBox.xaml" />
+            </ResourceDictionary.MergedDictionaries>
             <converter:AddValueConverter x:Key="AddValueConverter" Offset="-1000"/>
         </ResourceDictionary>
-	</Window.Resources>
-	<Grid>
-		<Grid>
+    </Window.Resources>
+    <Grid>
+        <!-- NotifyIcon -->
+        <tb:TaskbarIcon x:Name="SystemTray"
+                        IconSource="{Binding RecordingViewModel.RecorderState.Value, Source={StaticResource ServiceLocator}, Converter={StaticResource StateToTrayIconSourceConverter}}"
+                        ToolTipText="Captura"
+                        MenuActivation="RightClick"
+                        LeftClickCommand="{Binding TrayLeftClickCommand}"
+                        TrayMouseDoubleClick="SystemTray_TrayMouseDoubleClick">
+            <tb:TaskbarIcon.ContextMenu>
+                <ContextMenu>
+                    <!--<Separator/>-->
+
+                    <MenuItem Header="{Binding ScreenShot, Source={StaticResource Loc}, Mode=OneWay}"
+                              Command="{Binding ScreenShotViewModel.ScreenShotCommand, Source={StaticResource ServiceLocator}}">
+                        <MenuItem.Icon>
+                            <Image Source="{StaticResource ScreenShotImageSource}"
+                                   Width="13"
+                                   Margin="5"/>
+                        </MenuItem.Icon>
+                    </MenuItem>
+
+                    <MenuItem Header="{Binding ScreenShotDesktop, Source={StaticResource Loc}, Mode=OneWay}"
+                              Command="{Binding ScreenShotViewModel.ScreenShotDesktopCommand, Source={StaticResource ServiceLocator}}">
+                        <MenuItem.Icon>
+                            <Image Source="{StaticResource ScreenShotImageSource}"
+                                   Width="13"
+                                   Margin="5"/>
+                        </MenuItem.Icon>
+                    </MenuItem>
+
+                    <Separator/>
+
+                    <MenuItem Header="ScreenShot (Region)"
+                              Command="{Binding ScreenShotViewModel.ScreenshotRegionCommand, Source={StaticResource ServiceLocator}}">
+                        <MenuItem.Icon>
+                            <Image Width="13"
+                                   Margin="5">
+                                <Image.Source>
+                                    <DrawingImage>
+                                        <DrawingImage.Drawing>
+                                            <GeometryDrawing Geometry="{Binding Icons.Crop, Source={StaticResource ServiceLocator}}"
+                                                             Brush="{DynamicResource ItemText}"/>
+                                        </DrawingImage.Drawing>
+                                    </DrawingImage>
+                                </Image.Source>
+                            </Image>
+                        </MenuItem.Icon>
+                    </MenuItem>
+
+                    <MenuItem Header="ScreenShot (Screen)"
+                              Command="{Binding ScreenShotViewModel.ScreenshotScreenCommand, Source={StaticResource ServiceLocator}}">
+                        <MenuItem.Icon>
+                            <Image Width="13"
+                                   Margin="5">
+                                <Image.Source>
+                                    <DrawingImage>
+                                        <DrawingImage.Drawing>
+                                            <GeometryDrawing Geometry="{Binding Icons.Screen, Source={StaticResource ServiceLocator}}"
+                                                             Brush="{DynamicResource ItemText}"/>
+                                        </DrawingImage.Drawing>
+                                    </DrawingImage>
+                                </Image.Source>
+                            </Image>
+                        </MenuItem.Icon>
+                    </MenuItem>
+
+                    <MenuItem Header="ScreenShot (Window)"
+                              Command="{Binding ScreenShotViewModel.ScreenshotWindowCommand, Source={StaticResource ServiceLocator}}">
+                        <MenuItem.Icon>
+                            <Image Width="13"
+                                   Margin="5">
+                                <Image.Source>
+                                    <DrawingImage>
+                                        <DrawingImage.Drawing>
+                                            <GeometryDrawing Geometry="{Binding Icons.Window, Source={StaticResource ServiceLocator}}"
+                                                             Brush="{DynamicResource ItemText}"/>
+                                        </DrawingImage.Drawing>
+                                    </DrawingImage>
+                                </Image.Source>
+                            </Image>
+                        </MenuItem.Icon>
+                    </MenuItem>
+
+                    <Separator/>
+
+                    <MenuItem Header="Show Main Window"
+                              Click="ShowMainWindow">
+                        <MenuItem.Icon>
+                            <Image Width="13"
+                                   Margin="5">
+                                <Image.Source>
+                                    <DrawingImage>
+                                        <DrawingImage.Drawing>
+                                            <GeometryDrawing Geometry="{Binding Icons.Window, Source={StaticResource ServiceLocator}}"
+                                                             Brush="{DynamicResource ItemText}"/>
+                                        </DrawingImage.Drawing>
+                                    </DrawingImage>
+                                </Image.Source>
+                            </Image>
+                        </MenuItem.Icon>
+                    </MenuItem>
+
+                    <MenuItem Header="{Binding Exit, Source={StaticResource Loc}, Mode=OneWay}"
+                              Click="MenuExit_Click">
+                        <MenuItem.Icon>
+                            <Image Width="13"
+                                   Margin="5">
+                                <Image.Source>
+                                    <DrawingImage>
+                                        <DrawingImage.Drawing>
+                                            <GeometryDrawing Geometry="{Binding Icons.Close, Source={StaticResource ServiceLocator}}"
+                                                             Brush="#b71c1c"/>
+                                        </DrawingImage.Drawing>
+                                    </DrawingImage>
+                                </Image.Source>
+                            </Image>
+                        </MenuItem.Icon>
+                    </MenuItem>
+                </ContextMenu>
+            </tb:TaskbarIcon.ContextMenu>
+        </tb:TaskbarIcon>
+        <Grid>
 			<Grid.ColumnDefinitions>
                 <ColumnDefinition Width="400" MaxWidth="{Binding ElementName=ShellWindow, Path=ActualWidth, Converter={StaticResource AddValueConverter}}"/>
                 <ColumnDefinition Width="5" />
 				<ColumnDefinition Width="1*" MinWidth="800"/>
 			</Grid.ColumnDefinitions>
-			<Grid.RowDefinitions>
-				<RowDefinition Height="Auto"></RowDefinition>
-				<RowDefinition Height="1*"></RowDefinition>
-				<RowDefinition Height="30"></RowDefinition>
-			</Grid.RowDefinitions>
-			<GridSplitter Grid.Column="1" Grid.Row="1" Width="5" HorizontalAlignment="Stretch" />
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"></RowDefinition>
+                <RowDefinition Height="1*"></RowDefinition>
+                <RowDefinition Height="30"></RowDefinition>
+            </Grid.RowDefinitions>
+            <GridSplitter Grid.Column="1" Grid.Row="1" Width="5" HorizontalAlignment="Stretch" />
 			<ContentControl Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="0" prism:RegionManager.RegionName="ColorbarRegion" />
 			<ContentControl Grid.Column="0" Grid.Row="1" prism:RegionManager.RegionName="ControlRegion" />
 			<ContentControl x:Name="ScreenshotArea" Grid.Column="2" Grid.Row="1" prism:RegionManager.RegionName="DataRegion" />

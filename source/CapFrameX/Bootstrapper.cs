@@ -34,7 +34,6 @@ namespace CapFrameX
 {
 	public class Bootstrapper : DryIocBootstrapper
 	{
-
 		protected override DependencyObject CreateShell()
 		{
 			var shell = Container.Resolve<Shell>();

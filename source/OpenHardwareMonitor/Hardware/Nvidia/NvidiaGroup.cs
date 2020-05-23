@@ -17,7 +17,6 @@ using System.Text;
 
 namespace OpenHardwareMonitor.Hardware.Nvidia
 {
-
     internal class NvidiaGroup : IGroup
     {
 
