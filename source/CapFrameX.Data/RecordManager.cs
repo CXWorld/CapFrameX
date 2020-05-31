@@ -344,6 +344,8 @@ namespace CapFrameX.Data
             {
                 if (runs.Count() > 1)
                 {
+                    var json = JsonConvert.SerializeObject(runs);
+                    runs = JsonConvert.DeserializeObject<SessionRun[]>(json);
                     NormalizeStartTimesOfAggragationRuns(runs);
                 }
                 var csv = new StringBuilder();
