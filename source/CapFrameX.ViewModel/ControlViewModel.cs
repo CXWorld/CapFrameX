@@ -331,6 +331,7 @@ namespace CapFrameX.ViewModel
 			if (result == CommonFileDialogResult.Ok)
 			{
 				RootDirectory = dialog.FileName;
+				_appConfiguration.ObservedDirectory = RootDirectory;
 				return true;
 			}
 			return false;
