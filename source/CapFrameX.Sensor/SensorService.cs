@@ -466,5 +466,22 @@ namespace CapFrameX.Sensor
 
             return gpu != null ? gpu.GetDriverVersion() : "Not available";
         }
+
+        public string GetCpuName()
+        {
+            var cpu = _computer.Hardware
+                .FirstOrDefault(hdw => hdw.HardwareType == HardwareType.CPU);
+
+            return cpu != null ? cpu.Name : "Unknown";
+        }
+
+        public string GetGpuName()
+        {
+            var gpu = _computer.Hardware
+                .FirstOrDefault(hdw => hdw.HardwareType == HardwareType.GpuAti
+                    || hdw.HardwareType == HardwareType.GpuNvidia);
+
+            return gpu != null ? gpu.Name : "Unknown";
+        }
     }
 }

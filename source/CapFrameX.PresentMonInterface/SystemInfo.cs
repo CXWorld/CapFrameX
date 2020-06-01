@@ -1,118 +1,30 @@
-﻿using System;
+﻿using CapFrameX.Contracts.Data;
+using CapFrameX.Contracts.Sensor;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Management;
 
 namespace CapFrameX.PresentMonInterface
 {
-	public static class SystemInfo
+	public class SystemInfo : ISystemInfo
 	{
 		private static readonly long ONE_GIB = 1073741824;
 
-		public static string GetProcessorName()
+		private readonly ISensorService _sensorService;
+
+		public SystemInfo(ISensorService sensorService)
 		{
-			string propertyDataValue = string.Empty;
-			const string propertyDataName = "Name";
-
-			var win32DeviceClassName = "win32_processor";
-			var query = string.Format("select * from {0}", win32DeviceClassName);
-
-			try
-			{
-				using (var searcher = new ManagementObjectSearcher(query))
-				{
-					ManagementObjectCollection objectCollection = searcher.Get();
-
-					foreach (ManagementBaseObject managementBaseObject in objectCollection)
-					{
-						foreach (PropertyData propertyData in managementBaseObject.Properties)
-						{
-							if (propertyData.Name == propertyDataName)
-							{
-								propertyDataValue = (string)propertyData.Value;
-								break;
-							}
-						}
-					}
-				}
-			}
-			catch { propertyDataValue = string.Empty; }
-
-			// Name
-			return propertyDataValue.TrimEnd();
+			_sensorService = sensorService;
 		}
 
-		/// <summary>
-		/// Gets the vendor name
-		/// </summary>
-		/// <returns>"NVIDIA", "Advanced Micro Devices, Inc."</returns>
-		public static string GetGraphicCardVendor()
-		{
-			string propertyDataValue = string.Empty;
-			const string propertyDataName = "AdapterCompatibility";
+		public string GetProcessorName()
+			=> _sensorService.GetCpuName();
 
-			var win32DeviceClassName = "Win32_VideoController";
-			var query = string.Format("select * from {0}", win32DeviceClassName);
+		public string GetGraphicCardName()
+			=> _sensorService.GetGpuName();
 
-			try
-			{
-				using (var searcher = new ManagementObjectSearcher(query))
-				{
-					ManagementObjectCollection objectCollection = searcher.Get();
-
-					foreach (ManagementBaseObject managementBaseObject in objectCollection)
-					{
-						foreach (PropertyData propertyData in managementBaseObject.Properties)
-						{
-							if (propertyData.Name == propertyDataName)
-							{
-								propertyDataValue = (string)propertyData.Value;
-								break;
-							}
-						}
-					}
-				}
-			}
-			catch { propertyDataValue = string.Empty; }
-
-			//DeviceName
-			return propertyDataValue;
-		}
-
-		public static string GetGraphicCardName()
-		{
-			string propertyDataValue = string.Empty;
-			const string propertyDataName = "DeviceName";
-
-			var win32DeviceClassName = "Win32_DisplayConfiguration";
-			var query = string.Format("select * from {0}", win32DeviceClassName);
-
-			try
-			{
-				using (var searcher = new ManagementObjectSearcher(query))
-				{
-					ManagementObjectCollection objectCollection = searcher.Get();
-
-					foreach (ManagementBaseObject managementBaseObject in objectCollection)
-					{
-						foreach (PropertyData propertyData in managementBaseObject.Properties)
-						{
-							if (propertyData.Name == propertyDataName)
-							{
-								propertyDataValue = (string)propertyData.Value;
-								break;
-							}
-						}
-					}
-				}
-			}
-			catch { propertyDataValue = string.Empty; }
-
-			//DeviceName
-			return propertyDataValue;
-		}
-
-		public static string GetOSVersion()
+		public string GetOSVersion()
 		{
 			string propertyDataValueCaption = string.Empty;
 			const string propertyDataNameCaption = "Caption";
@@ -151,7 +63,7 @@ namespace CapFrameX.PresentMonInterface
 			return $"{propertyDataValueCaption} Build {propertyDataValueBuildNumber}";
 		}
 
-		public static string GetMotherboardName()
+		public string GetMotherboardName()
 		{
 			string propertyDataValueManufacturer = string.Empty;
 			const string propertyDataNameManufacturer = "Manufacturer";
@@ -193,7 +105,7 @@ namespace CapFrameX.PresentMonInterface
 			return result.Replace(",", "");
 		}
 
-		public static string GetSystemRAMInfoName()
+		public string GetSystemRAMInfoName()
 		{
 			const string propertyDataNameCapacity = "Capacity";
 			string propertyDataValueSpeed = "unknown";
@@ -244,7 +156,7 @@ namespace CapFrameX.PresentMonInterface
 			if (!moduleSetting.Any())
 				moduleSetting.Add(0, 0);
 
-			//RAM size + speed
+			//RAM size + data rate
 			// example: 48GB (4x4GB+4x8GB)
 			var infoString = string.Empty;
 			long wholeCapacity = 0;
@@ -255,11 +167,6 @@ namespace CapFrameX.PresentMonInterface
 			}
 
 			return $"{wholeCapacity / ONE_GIB}GB ({infoString.Remove(infoString.Length - 1)}) {propertyDataValueSpeed}MT/s";
-		}
-
-		public static string GetGraphicDriverVersion()
-		{
-			return "unknown";
 		}
 	}
 }

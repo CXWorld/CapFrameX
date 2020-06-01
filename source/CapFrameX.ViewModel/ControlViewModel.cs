@@ -34,6 +34,7 @@ namespace CapFrameX.ViewModel
 		private readonly IEventAggregator _eventAggregator;
 		private readonly IAppConfiguration _appConfiguration;
 		private readonly IRecordManager _recordManager;
+		private readonly ISystemInfo _systemInfo;
 		private readonly ProcessList _processList;
 		private readonly ILogger<ControlViewModel> _logger;
 		private PubSubEvent<ViewMessages.UpdateSession> _updateSessionEvent;
@@ -228,12 +229,16 @@ namespace CapFrameX.ViewModel
 
 		public ControlViewModel(IRecordDirectoryObserver recordObserver,
 								IEventAggregator eventAggregator,
-								IAppConfiguration appConfiguration, RecordManager recordManager, ProcessList processList, ILogger<ControlViewModel> logger)
+								IAppConfiguration appConfiguration, RecordManager recordManager,
+								ISystemInfo systemInfo,
+								ProcessList processList, 
+								ILogger<ControlViewModel> logger)
 		{
 			_recordObserver = recordObserver;
 			_eventAggregator = eventAggregator;
 			_appConfiguration = appConfiguration;
 			_recordManager = recordManager;
+			_systemInfo = systemInfo;
 			_processList = processList;
 			_logger = logger;
 
@@ -603,17 +608,17 @@ namespace CapFrameX.ViewModel
 
 		private void OnAddCpuInfo()
 		{
-			CustomCpuDescription = SystemInfo.GetProcessorName();
+			CustomCpuDescription = _systemInfo.GetProcessorName();
 		}
 
 		private void OnAddGpuInfo()
 		{
-			CustomGpuDescription = SystemInfo.GetGraphicCardName();
+			CustomGpuDescription = _systemInfo.GetGraphicCardName();
 		}
 
 		private void OnAddRamInfo()
 		{
-			CustomRamDescription = SystemInfo.GetSystemRAMInfoName();
+			CustomRamDescription = _systemInfo.GetSystemRAMInfoName();
 		}
 
 		private void OnPressDeleteKey()
