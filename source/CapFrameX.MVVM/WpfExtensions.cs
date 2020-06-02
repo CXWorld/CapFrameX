@@ -12,7 +12,6 @@ namespace CapFrameX.MVVM
             }
 
             W.Show();
-
             W.Activate();
         }
     }

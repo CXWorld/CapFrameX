@@ -10,8 +10,7 @@
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
 		mc:Ignorable="d"
 		Title="CapFrameX"
-        Height="780" Width="1400" MinHeight="680"  MinWidth="1400" Icon="Icons/CX_Icon.png"
-        Closing="Window_Closing">
+        Height="780" Width="1400" MinHeight="680"  MinWidth="1400" Icon="Icons/CX_Icon.png">
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -31,7 +30,6 @@
                         IconSource="pack://application:,,,/CapFrameX;component/Icons/cx_icon_BUC_icon.ico"
                         ToolTipText="CapFrameX"
                         MenuActivation="RightClick"
-                        LeftClickCommand="{Binding TrayLeftClickCommand}"
                         TrayMouseDoubleClick="SystemTray_TrayMouseDoubleClick">
             <tb:TaskbarIcon.ContextMenu>
                 <ContextMenu>
@@ -41,7 +39,6 @@
                             <materialDesign:PackIcon Kind="WindowMaximize"/>
                         </MenuItem.Icon>
                     </MenuItem>
-
                     <MenuItem Header="Exit" FontSize="12" Click="Exit_Click">
                         <MenuItem.Icon>
                             <materialDesign:PackIcon Kind="CloseCircle" />

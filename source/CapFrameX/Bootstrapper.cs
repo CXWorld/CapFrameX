@@ -46,7 +46,7 @@ namespace CapFrameX
 			base.InitializeShell();
 			LogAppInfo();
 			Application.Current.MainWindow = (Window)Shell;
-			Application.Current.MainWindow.Show();
+			// Application.Current.MainWindow.Show();
 		}
 
 		protected override void ConfigureContainer()
