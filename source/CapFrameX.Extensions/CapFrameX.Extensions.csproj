@@ -101,7 +101,6 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Attributes\ShortDescriptionAttribute.cs" />
     <Compile Include="CollectionExtensions.cs" />
     <Compile Include="ContainerExtensions.cs" />
     <Compile Include="EnumExtensions.cs" />
@@ -110,7 +109,6 @@
     <Compile Include="ObjectExtensions.cs" />
     <Compile Include="ObservableExtensions.cs" />
     <Compile Include="ReflectionExtensions.cs" />
-    <Compile Include="SessionExtensions.cs" />
     <Compile Include="StringExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

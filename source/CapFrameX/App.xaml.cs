@@ -33,9 +33,6 @@ namespace CapFrameX
 			var overlayService = _bootstrapper.Container.Resolve(typeof(IOverlayService), true) as IOverlayService;
 			overlayService?.IsOverlayActiveStream.OnNext(false);
 
-			var overlayEntryProvider = _bootstrapper.Container.Resolve(typeof(IOverlayEntryProvider), true) as IOverlayEntryProvider;
-			_ = overlayEntryProvider?.SaveOverlayEntriesToJson();
-
 			var sensorService = _bootstrapper.Container.Resolve(typeof(ISensorService), true) as ISensorService;
 			sensorService?.CloseOpenHardwareMonitor();
 		}
@@ -72,6 +69,19 @@ namespace CapFrameX
 				if (!Directory.Exists(destinationFolder))
 				{
 					Directory.CreateDirectory(destinationFolder);
+				}
+			}
+			catch { }
+
+			// create capture folder
+			try
+			{
+				var captureFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+					@"CapFrameX\Captures\");
+
+				if (!Directory.Exists(captureFolder))
+				{
+					Directory.CreateDirectory(captureFolder);
 				}
 			}
 			catch { }

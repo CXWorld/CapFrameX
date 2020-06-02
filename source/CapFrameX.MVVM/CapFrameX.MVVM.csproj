@@ -97,6 +97,8 @@
     <Compile Include="Converter\EnumDescriptionConverter.cs" />
     <Compile Include="Converter\InequalityToValueConverter.cs" />
     <Compile Include="Converter\InvertBoolConverter.cs" />
+    <Compile Include="Converter\ModeColorConverter.cs" />
+    <Compile Include="Converter\ModeDescriptionConverter.cs" />
     <Compile Include="Converter\NegateBoolConverter.cs" />
     <Compile Include="Converter\BoolToVisibilityConverter.cs" />
     <Compile Include="Converter\PlusHalfDifferenceConverter.cs" />
@@ -120,6 +122,7 @@
     <Compile Include="SliderValueChangedBehaviour.cs" />
     <Compile Include="Validation\HotkeyValidationRule.cs" />
     <Compile Include="Validation\NotEmptyValidationRule.cs" />
+    <Compile Include="WpfExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CapFrameX.Charts\Core40\Core.csproj">

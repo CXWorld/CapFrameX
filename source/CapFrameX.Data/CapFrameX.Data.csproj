@@ -64,6 +64,7 @@
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Reactive, Version=4.3.0.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
       <HintPath>..\..\packages\System.Reactive.4.3.2\lib\net46\System.Reactive.dll</HintPath>
     </Reference>
@@ -96,6 +97,7 @@
     <Compile Include="CloudEntry.cs" />
     <Compile Include="AggregationEntry.cs" />
     <Compile Include="CloudManager.cs" />
+    <Compile Include="ECaptureFileMode.cs" />
     <Compile Include="LoginManager.cs" />
     <Compile Include="ProcessList.cs" />
     <Compile Include="SoundManager.cs" />
@@ -129,6 +131,10 @@
       <Project>{C3D082AE-BF05-4C83-B414-33CF7C420D4A}</Project>
       <Name>CapFrameX.EventAggregation</Name>
     </ProjectReference>
+    <ProjectReference Include="..\CapFrameX.Extensions.NetStandard\CapFrameX.Extensions.NetStandard.csproj">
+      <Project>{554c8784-954a-4e3d-9c79-d347def7e069}</Project>
+      <Name>CapFrameX.Extensions.NetStandard</Name>
+    </ProjectReference>
     <ProjectReference Include="..\CapFrameX.Extensions\CapFrameX.Extensions.csproj">
       <Project>{a4559b99-7fcb-40ef-bf97-d293a2b7d6d3}</Project>
       <Name>CapFrameX.Extensions</Name>
@@ -136,6 +142,10 @@
     <ProjectReference Include="..\CapFrameX.PresentMonInterface\CapFrameX.PresentMonInterface.csproj">
       <Project>{ADFBAECE-B74F-4A80-87D1-84BC990527B0}</Project>
       <Name>CapFrameX.PresentMonInterface</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CapFrameX.Statistics.NetStandard\CapFrameX.Statistics.NetStandard.csproj">
+      <Project>{7D35C9C8-6E9A-4ABB-9042-930BE5E26DC6}</Project>
+      <Name>CapFrameX.Statistics.NetStandard</Name>
     </ProjectReference>
     <ProjectReference Include="..\CapFrameX.Statistics\CapFrameX.Statistics.csproj">
       <Project>{788f49cd-abcb-4c7c-b1b6-bf9dc2482432}</Project>

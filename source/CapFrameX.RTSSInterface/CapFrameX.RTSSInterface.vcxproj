@@ -167,7 +167,6 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="CapFrameX.RTSSInterface.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="GroupedString.cpp" />
     <ClCompile Include="OverlayEntry.cpp" />

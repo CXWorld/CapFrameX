@@ -32,6 +32,55 @@ RTSSCoreControl::RTSSCoreControl()
 	m_bConnected = FALSE;
 }
 
+CString RTSSCoreControl::GetApiInfo(DWORD processId)
+{
+	CString api = "unknown";
+	HANDLE hMapFile = OpenFileMapping(FILE_MAP_ALL_ACCESS, FALSE, "RTSSSharedMemoryV2");
+
+	if (hMapFile)
+	{
+		LPVOID pMapAddr = MapViewOfFile(hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, 0);
+		LPRTSS_SHARED_MEMORY pMem = (LPRTSS_SHARED_MEMORY)pMapAddr;
+
+		if (pMem)
+		{
+			if ((pMem->dwSignature == 'RTSS') &&
+				(pMem->dwVersion >= 0x00020000))
+			{
+				RTSS_SHARED_MEMORY::RTSS_SHARED_MEMORY_APP_ENTRY* arrAppInfos = pMem->arrApp;
+
+				for (size_t i = 0; i < 256; i++)
+				{
+					RTSS_SHARED_MEMORY::RTSS_SHARED_MEMORY_APP_ENTRY curAppInfos = arrAppInfos[i];
+
+					if (curAppInfos.dwProcessID == processId)
+					{
+						api = (curAppInfos.dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_OGL ? "OpenGL" 
+							: (curAppInfos.dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_DD ? "DirectDraw"
+							: (curAppInfos.dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_D3D8 ? "DX8"
+							: (curAppInfos.dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_D3D9 ? "DX9"
+							: (curAppInfos.dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_D3D9EX ? "DX9 EX"
+							: (curAppInfos.dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_D3D10 ? "DX10"
+							: (curAppInfos.dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_D3D11 ? "DX11"
+							: (curAppInfos.dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_D3D12 ? "DX12"
+							: (curAppInfos.dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_D3D12AFR ? "DX12 AFR"
+							: (curAppInfos.dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_VULKAN ? "Vulkan"
+							: "unknown";
+
+						break;
+					}
+				}
+
+				UnmapViewOfFile(pMapAddr);
+			}
+
+			CloseHandle(hMapFile);
+		}
+	}
+
+	return api;
+}
+
 /////////////////////////////////////////////////////////////////////////////
 DWORD RTSSCoreControl::GetSharedMemoryVersion()
 {
@@ -62,7 +111,6 @@ DWORD RTSSCoreControl::GetSharedMemoryVersion()
 DWORD RTSSCoreControl::EmbedGraph(DWORD dwOffset, FLOAT* lpBuffer, DWORD dwBufferPos, DWORD dwBufferSize, LONG dwWidth, LONG dwHeight, LONG dwMargin, FLOAT fltMin, FLOAT fltMax, DWORD dwFlags)
 {
 	DWORD dwResult = 0;
-
 	HANDLE hMapFile = OpenFileMapping(FILE_MAP_ALL_ACCESS, FALSE, "RTSSSharedMemoryV2");
 
 	if (hMapFile)
@@ -87,7 +135,7 @@ DWORD RTSSCoreControl::EmbedGraph(DWORD dwOffset, FLOAT* lpBuffer, DWORD dwBuffe
 
 						if (dwPass)
 						{
-							// RTSSSharedMemorySample
+							// CapFrameX
 							if (!strlen(pEntry->szOSDOwner))
 								strcpy_s(pEntry->szOSDOwner, sizeof(pEntry->szOSDOwner), "CapFrameX");
 						}

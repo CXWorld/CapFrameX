@@ -1,5 +1,4 @@
 ﻿using CapFrameX.Data;
-using CapFrameX.Statistics;
 using DryIoc;
 using Prism.DryIoc;
 using Prism.Modularity;
@@ -28,12 +27,13 @@ using Serilog.Formatting.Compact;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Contracts.Sensor;
 using CapFrameX.Sensor;
+using CapFrameX.Statistics.NetStandard;
+using CapFrameX.Statistics.NetStandard.Contracts;
 
 namespace CapFrameX
 {
 	public class Bootstrapper : DryIocBootstrapper
 	{
-
 		protected override DependencyObject CreateShell()
 		{
 			var shell = Container.Resolve<Shell>();
@@ -56,6 +56,7 @@ namespace CapFrameX
 			// Vertical components
 			Container.Register<IEventAggregator, EventAggregator>(Reuse.Singleton, null, null, IfAlreadyRegistered.Replace, "EventAggregator");
 			Container.Register<IAppConfiguration, CapFrameXConfiguration>(Reuse.Singleton);
+			Container.RegisterInstance<IFrametimeStatisticProviderOptions>(Container.Resolve<CapFrameXConfiguration>());
 			Container.ConfigureSerilogILogger(CreateLoggerConfiguration(Container.Resolve<IAppConfiguration>()));
 
 			// Prism
@@ -67,6 +68,8 @@ namespace CapFrameX
 			Container.Register<IFrametimeAnalyzer, FrametimeAnalyzer>(Reuse.Singleton);
 			Container.Register<ICaptureService, PresentMonCaptureService>(Reuse.Singleton);
 			Container.Register<IOverlayService, OverlayService>(Reuse.Singleton);
+			Container.Register<ISystemInfo, SystemInfo>(Reuse.Singleton);
+			Container.Register<IOnlineMetricService, OnlineMetricService>(Reuse.Singleton);
 			Container.Register<ISensorService, SensorService>(Reuse.Singleton);
 			Container.Register<IOverlayEntryProvider, OverlayEntryProvider>(Reuse.Singleton);
 			Container.Register<IRecordManager, RecordManager>(Reuse.Singleton);

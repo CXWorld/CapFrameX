@@ -24,8 +24,7 @@ namespace CapFrameX.Data
 			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 		}
 
-		public string CreationTimestamp => $@"{CreationDate}
-{CreationTime}";
+		public string CreationTimestamp => $@"{CreationDate}" + Environment.NewLine + $@"{CreationTime}";
 
 		public string GameName { get; set; }
 		public string ProcessName { get; private set; }
@@ -53,7 +52,8 @@ namespace CapFrameX.Data
 		public bool HasInfoHeader { get; private set; }
 		public string Id { get; private set; }
 		public string Hash { get; private set; }
-
+		public string ApiInfo { get; private set; }
+		public string PresentationMode { get; private set; }
 		private FileRecordInfo(FileInfo fileInfo, ISession session)
 		{
 			var creationDateTime = session.Info.CreationDate.ToLocalTime();
@@ -77,6 +77,8 @@ namespace CapFrameX.Data
 			IsAggregated = Convert.ToString(session.Runs.Count() > 1);
 			IsValid = true;
 			Hash = session.Hash;
+			ApiInfo = session.Info.ApiInfo;
+			PresentationMode = session.Info.PresentationMode;
 		}
 
 		private FileRecordInfo(FileInfo fileInfo, string hash)
@@ -96,7 +98,7 @@ namespace CapFrameX.Data
 					IsValid = GetIsValid(_lines);
 
 					if (IsValid)
-					{						
+					{
 						if (HasInfoHeader)
 						{
 							FillPropertyDictionary(infoKeyValueDictionary);

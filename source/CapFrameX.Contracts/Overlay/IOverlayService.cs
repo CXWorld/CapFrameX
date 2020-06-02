@@ -39,5 +39,7 @@ namespace CapFrameX.Contracts.Overlay
 		void Refresh();
 
 		void ResetOSD();
+
+		string GetApiInfo(uint processId);
 	}
 }

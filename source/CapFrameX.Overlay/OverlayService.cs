@@ -2,10 +2,11 @@
 using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.Sensor;
-using CapFrameX.Contracts.Statistics;
+using CapFrameX.Data;
 using CapFrameX.Data.Session.Contracts;
-using CapFrameX.Extensions;
-using CapFrameX.Statistics;
+using CapFrameX.Extensions.NetStandard;
+using CapFrameX.Statistics.NetStandard;
+using CapFrameX.Statistics.NetStandard.Contracts;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -22,7 +23,6 @@ namespace CapFrameX.Overlay
 	{
 		private readonly IStatisticProvider _statisticProvider;
 		private readonly IOverlayEntryProvider _overlayEntryProvider;
-		private readonly ISensorService _sensorService;
 		private readonly IAppConfiguration _appConfiguration;
 		private static ILogger<OverlayService> _logger;
 		private readonly IRecordManager _recordManager;
@@ -52,7 +52,6 @@ namespace CapFrameX.Overlay
 			: base(ExceptionAction)
 		{
 			_statisticProvider = statisticProvider;
-			_sensorService = sensorService;
 			_overlayEntryProvider = overlayEntryProvider;
 			_appConfiguration = appConfiguration;
 			_logger = logger;
@@ -64,6 +63,8 @@ namespace CapFrameX.Overlay
 			_runHistoryOutlierFlags = Enumerable.Repeat(false, _numberOfRuns).ToArray();
 
 			_logger.LogDebug("{componentName} Ready", this.GetType().Name);
+
+			_recordManager.GetApiInfoFunc = id => GetApiInfo(id);
 
 			IsOverlayActiveStream.AsObservable()
 				.Select(isActive =>
@@ -127,7 +128,7 @@ namespace CapFrameX.Overlay
 			var captureTimer = _overlayEntryProvider.GetOverlayEntry("CaptureTimer");
 			if (captureTimer != null)
 			{
-				captureTimer.Value = $"{t.ToString()} s";
+				captureTimer.Value = $"{t} s";
 				SetOverlayEntry(captureTimer);
 			}
 		}

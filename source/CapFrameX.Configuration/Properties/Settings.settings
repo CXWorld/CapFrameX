@@ -186,7 +186,7 @@
       <Value Profile="(Default)">250</Value>
     </Setting>
     <Setting Name="ShowThresholdTimes" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">False</Value>
+      <Value Profile="(Default)">True</Value>
     </Setting>
     <Setting Name="SaveAggregationOnly" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
@@ -196,6 +196,9 @@
     </Setting>
     <Setting Name="SecondComparisonContext" Type="System.String" Scope="User">
       <Value Profile="(Default)">None</Value>
+    </Setting>
+    <Setting Name="CaptureFileMode" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Json</Value>
     </Setting>
   </Settings>
 </SettingsFile>

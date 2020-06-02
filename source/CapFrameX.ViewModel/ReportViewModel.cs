@@ -18,6 +18,8 @@ using Prism.Events;
 using Prism.Mvvm;
 using Prism.Regions;
 using System.Collections.Specialized;
+using CapFrameX.Statistics.NetStandard;
+using CapFrameX.Statistics.NetStandard.Contracts;
 
 namespace CapFrameX.ViewModel
 {

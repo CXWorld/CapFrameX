@@ -1,6 +1,6 @@
 ﻿using CapFrameX.Contracts.Aggregation;
 using CapFrameX.Contracts.Data;
-using CapFrameX.Contracts.Statistics;
+using CapFrameX.Statistics.NetStandard.Contracts;
 
 namespace CapFrameX.Data
 {

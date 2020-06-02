@@ -1,6 +1,6 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using CapFrameX.Data;
-using CapFrameX.Extensions;
+using CapFrameX.Extensions.NetStandard;
 using CapFrameX.PresentMonInterface;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using Prism.Commands;
@@ -27,6 +27,7 @@ namespace CapFrameX.ViewModel
 		private readonly IAppConfiguration _appConfiguration;
 		private readonly ILogger<ColorbarViewModel> _logger;
 		private readonly IShell _shell;
+		private readonly ISystemInfo _systemInfo;
 		private readonly LoginManager _loginManager;
 		private PubSubEvent<AppMessages.UpdateObservedDirectory> _updateObservedFolder;
 		private PubSubEvent<AppMessages.OpenLoginWindow> _openLoginWindow;
@@ -210,6 +211,15 @@ namespace CapFrameX.ViewModel
 				RaisePropertyChanged();
 			}
 		}
+		public ECaptureFileMode SelectedCaptureFileMode
+		{
+			get { return _appConfiguration.CaptureFileMode.ConvertToEnum<ECaptureFileMode>(); }
+			set
+			{
+				_appConfiguration.CaptureFileMode = value.ConvertToString();
+				RaisePropertyChanged();
+			}
+		}
 
 		public bool HasCustomInfo
 		{
@@ -291,8 +301,11 @@ namespace CapFrameX.ViewModel
 		public Array HardwareInfoSourceItems => Enum.GetValues(typeof(EHardwareInfoSource))
 										   .Cast<EHardwareInfoSource>()
 										   .ToArray();
+		public Array CaptureFileModeItems => Enum.GetValues(typeof(ECaptureFileMode))
+								   .Cast<ECaptureFileMode>()
+								   .ToArray();
 
-		public	IAppConfiguration AppConfiguration => _appConfiguration;
+		public IAppConfiguration AppConfiguration => _appConfiguration;
 
 		public ILogger<ColorbarViewModel> Logger => _logger;
 
@@ -313,13 +326,15 @@ namespace CapFrameX.ViewModel
 								 IAppConfiguration appConfiguration,
 								 ILogger<ColorbarViewModel> logger,
 								 IShell shell,
-								 LoginManager loginManager)			
+								 ISystemInfo systemInfo,
+								 LoginManager loginManager)
 		{
 			_regionManager = regionManager;
 			_eventAggregator = eventAggregator;
 			_appConfiguration = appConfiguration;
 			_logger = logger;
 			_shell = shell;
+			_systemInfo = systemInfo;
 			_loginManager = loginManager;
 			StutteringFactor = _appConfiguration.StutteringFactor;
 			SelectWindowSize = _appConfiguration.MovingAverageWindowSize;
@@ -332,6 +347,7 @@ namespace CapFrameX.ViewModel
 			OptionPopupClosed = eventAggregator.GetEvent<PubSubEvent<ViewMessages.OptionPopupClosed>>();
 
 			HasCustomInfo = SelectedHardwareInfoSource == EHardwareInfoSource.Custom;
+			IsLoggedIn = _loginManager.State.Token != null;
 			SetAggregatorEvents();
 			SetHardwareInfoDefaultsFromDatabase();
 			SubscribeToUpdateSession();
@@ -350,13 +366,13 @@ namespace CapFrameX.ViewModel
 		private void SetHardwareInfoDefaultsFromDatabase()
 		{
 			if (CustomCpuDescription == "CPU")
-				CustomCpuDescription = SystemInfo.GetProcessorName();
+				CustomCpuDescription = _systemInfo.GetProcessorName();
 
 			if (CustomGpuDescription == "GPU")
-				CustomGpuDescription = SystemInfo.GetGraphicCardName();
+				CustomGpuDescription = _systemInfo.GetGraphicCardName();
 
 			if (CustomRamDescription == "RAM")
-				CustomRamDescription = SystemInfo.GetSystemRAMInfoName();
+				CustomRamDescription = _systemInfo.GetSystemRAMInfoName();
 		}
 
 		private void OnSelectScreenshotFolder()
@@ -460,7 +476,8 @@ namespace CapFrameX.ViewModel
 			_updateObservedFolder = _eventAggregator.GetEvent<PubSubEvent<AppMessages.UpdateObservedDirectory>>();
 			_openLoginWindow = _eventAggregator.GetEvent<PubSubEvent<AppMessages.OpenLoginWindow>>();
 			_logout = _eventAggregator.GetEvent<PubSubEvent<AppMessages.LoginState>>();
-			_eventAggregator.GetEvent<PubSubEvent<AppMessages.LoginState>>().Subscribe(state => {
+			_eventAggregator.GetEvent<PubSubEvent<AppMessages.LoginState>>().Subscribe(state =>
+			{
 				IsLoggedIn = state.IsLoggedIn;
 				RaisePropertyChanged(nameof(IsLoggedIn));
 			});

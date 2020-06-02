@@ -1,4 +1,5 @@
 ﻿using CapFrameX.Contracts.Configuration;
+using CapFrameX.Statistics.NetStandard.Contracts;
 
 namespace CapFrameX.Configuration
 {
@@ -385,6 +386,11 @@ namespace CapFrameX.Configuration
 		{
 			get { return Settings.ShowThresholdTimes; }
 			set { Settings.ShowThresholdTimes = value; Settings.Save(); }
+		}
+		public string CaptureFileMode
+		{
+			get { return Settings.CaptureFileMode; }
+			set { Settings.CaptureFileMode = value; Settings.Save(); }
 		}
 	}
 }

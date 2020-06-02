@@ -1,24 +1,23 @@
-﻿using CapFrameX.Configuration;
-using CapFrameX.Contracts.Statistics;
+﻿using CapFrameX.Data.Session.Classes;
 using CapFrameX.Data.Session.Contracts;
-using CapFrameX.Statistics;
+using CapFrameX.Statistics.NetStandard.Contracts;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 
-namespace CapFrameX.StatisticsExtensions
+namespace CapFrameX.Statistics.NetStandard
 {
 	public static class SessionExtensions
 	{
 
-		public static IList<double> GetFrametimeTimeWindow(this ISession session, double startTime, double endTime,
-			ERemoveOutlierMethod eRemoveOutlierMethod = ERemoveOutlierMethod.None)
+		public static IList<double> GetFrametimeTimeWindow(this ISession session, double startTime, double endTime, IFrametimeStatisticProviderOptions options, ERemoveOutlierMethod eRemoveOutlierMethod = ERemoveOutlierMethod.None)
 		{
 			IList<double> frametimesTimeWindow = new List<double>();
-			var frametimeStatisticProvider = new FrametimeStatisticProvider(new CapFrameXConfiguration());
+			var frametimeStatisticProvider = new FrametimeStatisticProvider(options);
 			var frameStarts = session.Runs.SelectMany(r => r.CaptureData.TimeInSeconds).ToArray();
 			var frametimes = frametimeStatisticProvider?.GetOutlierAdjustedSequence(session.Runs.SelectMany(r => r.CaptureData.MsBetweenPresents).ToArray(), eRemoveOutlierMethod);
 
@@ -36,11 +35,10 @@ namespace CapFrameX.StatisticsExtensions
 			return frametimesTimeWindow;
 		}
 
-		public static IList<Point> GetFrametimePointsTimeWindow(this ISession session, double startTime, double endTime,
-			ERemoveOutlierMethod eRemoveOutlierMethod = ERemoveOutlierMethod.None)
+		public static IList<Point> GetFrametimePointsTimeWindow(this ISession session, double startTime, double endTime, IFrametimeStatisticProviderOptions options, ERemoveOutlierMethod eRemoveOutlierMethod = ERemoveOutlierMethod.None)
 		{
 			IList<Point> frametimesPointsWindow = new List<Point>();
-			var frametimeStatisticProvider = new FrametimeStatisticProvider(new CapFrameXConfiguration());
+			var frametimeStatisticProvider = new FrametimeStatisticProvider(options);
 
 			var frametimes = frametimeStatisticProvider?.GetOutlierAdjustedSequence(session.Runs.SelectMany(r => r.CaptureData.MsBetweenPresents).ToArray(), eRemoveOutlierMethod);
 			var frameStarts = session.Runs.SelectMany(r => r.CaptureData.TimeInSeconds).ToArray();
@@ -136,6 +134,89 @@ namespace CapFrameX.StatisticsExtensions
 
 			return displayTimes.Select(time => 1000d / time)
 				.Count(hz => IsInRange(hz)) / (double)displayTimes.Count();
+		}
+
+		public static IList<Point> GetGPULoadPointTimeWindow(this ISession session)
+		{
+			var list = new List<Point>();
+			var times = session.Runs.SelectMany(r => r.SensorData.MeasureTime).ToArray();
+			var loads = session.Runs.SelectMany(r => r.SensorData.GpuUsage).ToArray();
+
+			for (int i = 0; i < times.Count(); i++)
+			{
+				list.Add(new Point(times[i], loads[i]));
+			}
+			return list;
+		}
+
+		public static IList<Point> GetCPULoadPointTimeWindow(this ISession session)
+		{
+			var list = new List<Point>();
+			var times = session.Runs.SelectMany(r => r.SensorData.MeasureTime).ToArray();
+			var loads = session.Runs.SelectMany(r => r.SensorData.CpuUsage).ToArray();
+
+			for (int i = 0; i < times.Count(); i++)
+			{
+				list.Add(new Point(times[i], loads[i]));
+			}
+			return list;
+		}
+
+		public static IList<Point> GetCPUMaxThreadLoadPointTimeWindow(this ISession session)
+		{
+			var list = new List<Point>();
+			var times = session.Runs.SelectMany(r => r.SensorData.MeasureTime).ToArray();
+			var loads = session.Runs.SelectMany(r => r.SensorData.CpuMaxThreadUsage).ToArray();
+
+			for (int i = 0; i < times.Count(); i++)
+			{
+				list.Add(new Point(times[i], loads[i]));
+			}
+			return list;
+		}
+
+		public static IList<Point> GetGpuPowerLimitPointTimeWindow(this ISession session)
+		{
+			var list = new List<Point>();
+			var times = session.Runs.SelectMany(r => r.SensorData.MeasureTime).ToArray();
+			var flags = session.Runs.SelectMany(r => r.SensorData.GpuPowerLimit.Select(limit => limit ? 98 : -5)).ToArray();
+
+			for (int i = 0; i < times.Count(); i++)
+			{
+				list.Add(new Point(times[i], flags[i]));
+			}
+			return list;
+		}
+
+		public static IList<Point> GetFpsPointTimeWindow(this ISession session, double startTime, double endTime, IFrametimeStatisticProviderOptions options, ERemoveOutlierMethod eRemoveOutlierMethod = ERemoveOutlierMethod.None)
+		{
+			return session.GetFrametimePointsTimeWindow(startTime, endTime, options, eRemoveOutlierMethod).Select(pnt => new Point(pnt.X, 1000 / pnt.Y)).ToList();
+		}
+
+		public static bool HasValidSensorData(this ISession session)
+		{
+			return session.Runs.All(run => run.SensorData != null && run.SensorData.MeasureTime.Any());
+		}
+
+		public static string GetPresentationMode(this IEnumerable<ISessionRun> runs)
+		{
+			var presentModes = runs.SelectMany(r => r.CaptureData.PresentMode);
+			var orderedByFrequency = presentModes.GroupBy(x => x).OrderByDescending(x => x.Count()).Select(x => x.Key);
+			var presentMode = (EPresentMode)orderedByFrequency.First();
+			switch (presentMode)
+			{
+				case EPresentMode.HardwareLegacyFlip:
+				case EPresentMode.HardwareLegacyCopyToFrontBuffer:
+					return "Fullscreen Exclusive";
+				case EPresentMode.HardwareComposedIndependentFlip:
+				case EPresentMode.HardwareIndependentFlip:
+					return "Fullscreen Optimized or Borderless";
+				case EPresentMode.ComposedFlip:
+				case EPresentMode.ComposedCopyWithGPUGDI:
+					return "Windowed or Borderless";
+				default:
+					return "Unknown";
+			}
 		}
 	}
 }

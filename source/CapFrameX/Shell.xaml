@@ -5,36 +5,71 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:tb="http://www.hardcodet.net/taskbar"
 		xmlns:converter="clr-namespace:CapFrameX.MVVM.Converter;assembly=CapFrameX.MVVM"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
 		mc:Ignorable="d"
 		Title="CapFrameX"
         Height="780" Width="1400" MinHeight="680"  MinWidth="1400" Icon="Icons/CX_Icon.png">
-	<Window.Resources>
-		<ResourceDictionary>
-			<ResourceDictionary.MergedDictionaries>
-				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Button.xaml" />
-				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Shadows.xaml" />
-				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ToggleButton.xaml" />
-				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.DataGrid.xaml" />
-				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Slider.xaml" />
-				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.PopupBox.xaml" />
-			</ResourceDictionary.MergedDictionaries>
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Button.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Shadows.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ToggleButton.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.DataGrid.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Slider.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.PopupBox.xaml" />
+            </ResourceDictionary.MergedDictionaries>
             <converter:AddValueConverter x:Key="AddValueConverter" Offset="-1000"/>
         </ResourceDictionary>
-	</Window.Resources>
-	<Grid>
-		<Grid>
+    </Window.Resources>
+    <Grid>
+        <!-- NotifyIcon -->
+        <tb:TaskbarIcon x:Name="SystemTray"
+                        IconSource="pack://application:,,,/CapFrameX;component/Icons/cx_icon_BUC_icon.ico"
+                        MenuActivation="RightClick"
+                        TrayLeftMouseDown="SystemTray_TrayLeftMouseDownClick">
+            <tb:TaskbarIcon.TrayToolTip>
+                <Grid Background="White">
+                    <TextBlock Margin="3" Foreground="#575757" Text="CapFrameX" />
+                </Grid>
+            </tb:TaskbarIcon.TrayToolTip>
+            <tb:TaskbarIcon.ContextMenu>
+                <ContextMenu>
+                    <!--<Separator/>-->
+                    <MenuItem Margin="-10 -10 0 -5" FontSize="12" Click="ShowMainWindow_Click" Height="18" HorizontalAlignment="Left">
+                        <MenuItem.Icon>
+                            <materialDesign:PackIcon Kind="WindowMaximize"/>
+                        </MenuItem.Icon>
+                        <MenuItem.Header>
+                            <TextBlock Margin="-10 0 0 0" Text="Show Main Window"/>
+                        </MenuItem.Header>
+                    </MenuItem>
+                    <Separator Margin="10 0 0 0"/>
+                    <MenuItem Margin="-10 -5 0 -10" FontSize="12" Click="Exit_Click" Height="18" HorizontalAlignment="Left">
+                        <MenuItem.Icon>
+                            <materialDesign:PackIcon Kind="CloseCircle" />
+                        </MenuItem.Icon>
+                        <MenuItem.Header>
+                            <TextBlock Margin="-10 0 0 0" Text="Close"/>
+                        </MenuItem.Header>
+                    </MenuItem>
+                </ContextMenu>
+            </tb:TaskbarIcon.ContextMenu>
+        </tb:TaskbarIcon>
+        <Grid>
 			<Grid.ColumnDefinitions>
                 <ColumnDefinition Width="400" MaxWidth="{Binding ElementName=ShellWindow, Path=ActualWidth, Converter={StaticResource AddValueConverter}}"/>
                 <ColumnDefinition Width="5" />
 				<ColumnDefinition Width="1*" MinWidth="800"/>
 			</Grid.ColumnDefinitions>
-			<Grid.RowDefinitions>
-				<RowDefinition Height="Auto"></RowDefinition>
-				<RowDefinition Height="1*"></RowDefinition>
-				<RowDefinition Height="30"></RowDefinition>
-			</Grid.RowDefinitions>
-			<GridSplitter Grid.Column="1" Grid.Row="1" Width="5" HorizontalAlignment="Stretch" />
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"></RowDefinition>
+                <RowDefinition Height="1*"></RowDefinition>
+                <RowDefinition Height="30"></RowDefinition>
+            </Grid.RowDefinitions>
+            <GridSplitter Grid.Column="1" Grid.Row="1" Width="5" HorizontalAlignment="Stretch" />
 			<ContentControl Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="0" prism:RegionManager.RegionName="ColorbarRegion" />
 			<ContentControl Grid.Column="0" Grid.Row="1" prism:RegionManager.RegionName="ControlRegion" />
 			<ContentControl x:Name="ScreenshotArea" Grid.Column="2" Grid.Row="1" prism:RegionManager.RegionName="DataRegion" />

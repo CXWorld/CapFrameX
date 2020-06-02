@@ -4,7 +4,6 @@ using CapFrameX.Extensions;
 using CapFrameX.Hotkey;
 using CapFrameX.Overlay;
 using CapFrameX.PresentMonInterface;
-using CapFrameX.Statistics;
 using CapFrameX.ViewModel;
 using Microsoft.Extensions.Logging;
 using Prism.Events;
