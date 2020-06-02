@@ -24,7 +24,7 @@ namespace CapFrameX
 
 			// Start tracking the Window instance.
 			WindowStatServices.Tracker.Track(this);
-			this.SourceInitialized += new EventHandler(OnSourceInitialized);
+			SourceInitialized += new EventHandler(OnSourceInitialized);
 		}
 
 		private void OnSourceInitialized(object sender, EventArgs e)
@@ -47,7 +47,7 @@ namespace CapFrameX
 			return IntPtr.Zero;
 		}
 
-		private void SystemTray_TrayMouseDoubleClick(object sender, RoutedEventArgs e)
+		private void SystemTray_TrayLeftMouseDownClick(object sender, RoutedEventArgs e)
 		{
 			if (Visibility == Visibility.Visible)
 			{
