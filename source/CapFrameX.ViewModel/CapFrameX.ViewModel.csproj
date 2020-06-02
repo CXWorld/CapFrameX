@@ -79,8 +79,8 @@
     <Reference Include="MathNet.Filtering, Version=0.6.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\MathNet.Filtering.0.6.0\lib\net461\MathNet.Filtering.dll</HintPath>
     </Reference>
-    <Reference Include="MathNet.Numerics, Version=4.7.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\MathNet.Numerics.4.7.0\lib\net461\MathNet.Numerics.dll</HintPath>
+    <Reference Include="MathNet.Numerics, Version=4.9.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\MathNet.Numerics.4.9.1\lib\net461\MathNet.Numerics.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Extensions.Logging.Abstractions, Version=3.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Microsoft.Extensions.Logging.Abstractions.3.1.1\lib\netstandard2.0\Microsoft.Extensions.Logging.Abstractions.dll</HintPath>
@@ -100,7 +100,7 @@
     </Reference>
     <Reference Include="ParallelExtensionsExtras, Version=1.2.3.0, Culture=neutral, PublicKeyToken=665f4d61f853b5a9, processorArchitecture=MSIL">
       <HintPath>..\..\packages\ParallelExtensionsExtras.1.2.0.0\lib\net40\ParallelExtensionsExtras.dll</HintPath>
-	</Reference>
+    </Reference>
     <Reference Include="OxyPlot, Version=2.0.0.0, Culture=neutral, PublicKeyToken=638079a8f0bd61e9, processorArchitecture=MSIL">
       <HintPath>..\..\packages\OxyPlot.Core.2.0.0\lib\net45\OxyPlot.dll</HintPath>
     </Reference>

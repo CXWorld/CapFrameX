@@ -7,9 +7,11 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:tb="http://www.hardcodet.net/taskbar"
 		xmlns:converter="clr-namespace:CapFrameX.MVVM.Converter;assembly=CapFrameX.MVVM"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
 		mc:Ignorable="d"
 		Title="CapFrameX"
-        Height="780" Width="1400" MinHeight="680"  MinWidth="1400" Icon="Icons/CX_Icon.png">
+        Height="780" Width="1400" MinHeight="680"  MinWidth="1400" Icon="Icons/CX_Icon.png"
+        Closing="Window_Closing">
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -26,119 +28,23 @@
     <Grid>
         <!-- NotifyIcon -->
         <tb:TaskbarIcon x:Name="SystemTray"
-                        IconSource="{Binding RecordingViewModel.RecorderState.Value, Source={StaticResource ServiceLocator}, Converter={StaticResource StateToTrayIconSourceConverter}}"
-                        ToolTipText="Captura"
+                        IconSource="pack://application:,,,/CapFrameX;component/Icons/cx_icon_BUC_icon.ico"
+                        ToolTipText="CapFrameX"
                         MenuActivation="RightClick"
                         LeftClickCommand="{Binding TrayLeftClickCommand}"
                         TrayMouseDoubleClick="SystemTray_TrayMouseDoubleClick">
             <tb:TaskbarIcon.ContextMenu>
                 <ContextMenu>
                     <!--<Separator/>-->
-
-                    <MenuItem Header="{Binding ScreenShot, Source={StaticResource Loc}, Mode=OneWay}"
-                              Command="{Binding ScreenShotViewModel.ScreenShotCommand, Source={StaticResource ServiceLocator}}">
+                    <MenuItem Header="Show Main Window" FontSize="12" Click="ShowMainWindow_Click">
                         <MenuItem.Icon>
-                            <Image Source="{StaticResource ScreenShotImageSource}"
-                                   Width="13"
-                                   Margin="5"/>
+                            <materialDesign:PackIcon Kind="WindowMaximize"/>
                         </MenuItem.Icon>
                     </MenuItem>
 
-                    <MenuItem Header="{Binding ScreenShotDesktop, Source={StaticResource Loc}, Mode=OneWay}"
-                              Command="{Binding ScreenShotViewModel.ScreenShotDesktopCommand, Source={StaticResource ServiceLocator}}">
+                    <MenuItem Header="Exit" FontSize="12" Click="Exit_Click">
                         <MenuItem.Icon>
-                            <Image Source="{StaticResource ScreenShotImageSource}"
-                                   Width="13"
-                                   Margin="5"/>
-                        </MenuItem.Icon>
-                    </MenuItem>
-
-                    <Separator/>
-
-                    <MenuItem Header="ScreenShot (Region)"
-                              Command="{Binding ScreenShotViewModel.ScreenshotRegionCommand, Source={StaticResource ServiceLocator}}">
-                        <MenuItem.Icon>
-                            <Image Width="13"
-                                   Margin="5">
-                                <Image.Source>
-                                    <DrawingImage>
-                                        <DrawingImage.Drawing>
-                                            <GeometryDrawing Geometry="{Binding Icons.Crop, Source={StaticResource ServiceLocator}}"
-                                                             Brush="{DynamicResource ItemText}"/>
-                                        </DrawingImage.Drawing>
-                                    </DrawingImage>
-                                </Image.Source>
-                            </Image>
-                        </MenuItem.Icon>
-                    </MenuItem>
-
-                    <MenuItem Header="ScreenShot (Screen)"
-                              Command="{Binding ScreenShotViewModel.ScreenshotScreenCommand, Source={StaticResource ServiceLocator}}">
-                        <MenuItem.Icon>
-                            <Image Width="13"
-                                   Margin="5">
-                                <Image.Source>
-                                    <DrawingImage>
-                                        <DrawingImage.Drawing>
-                                            <GeometryDrawing Geometry="{Binding Icons.Screen, Source={StaticResource ServiceLocator}}"
-                                                             Brush="{DynamicResource ItemText}"/>
-                                        </DrawingImage.Drawing>
-                                    </DrawingImage>
-                                </Image.Source>
-                            </Image>
-                        </MenuItem.Icon>
-                    </MenuItem>
-
-                    <MenuItem Header="ScreenShot (Window)"
-                              Command="{Binding ScreenShotViewModel.ScreenshotWindowCommand, Source={StaticResource ServiceLocator}}">
-                        <MenuItem.Icon>
-                            <Image Width="13"
-                                   Margin="5">
-                                <Image.Source>
-                                    <DrawingImage>
-                                        <DrawingImage.Drawing>
-                                            <GeometryDrawing Geometry="{Binding Icons.Window, Source={StaticResource ServiceLocator}}"
-                                                             Brush="{DynamicResource ItemText}"/>
-                                        </DrawingImage.Drawing>
-                                    </DrawingImage>
-                                </Image.Source>
-                            </Image>
-                        </MenuItem.Icon>
-                    </MenuItem>
-
-                    <Separator/>
-
-                    <MenuItem Header="Show Main Window"
-                              Click="ShowMainWindow">
-                        <MenuItem.Icon>
-                            <Image Width="13"
-                                   Margin="5">
-                                <Image.Source>
-                                    <DrawingImage>
-                                        <DrawingImage.Drawing>
-                                            <GeometryDrawing Geometry="{Binding Icons.Window, Source={StaticResource ServiceLocator}}"
-                                                             Brush="{DynamicResource ItemText}"/>
-                                        </DrawingImage.Drawing>
-                                    </DrawingImage>
-                                </Image.Source>
-                            </Image>
-                        </MenuItem.Icon>
-                    </MenuItem>
-
-                    <MenuItem Header="{Binding Exit, Source={StaticResource Loc}, Mode=OneWay}"
-                              Click="MenuExit_Click">
-                        <MenuItem.Icon>
-                            <Image Width="13"
-                                   Margin="5">
-                                <Image.Source>
-                                    <DrawingImage>
-                                        <DrawingImage.Drawing>
-                                            <GeometryDrawing Geometry="{Binding Icons.Close, Source={StaticResource ServiceLocator}}"
-                                                             Brush="#b71c1c"/>
-                                        </DrawingImage.Drawing>
-                                    </DrawingImage>
-                                </Image.Source>
-                            </Image>
+                            <materialDesign:PackIcon Kind="CloseCircle" />
                         </MenuItem.Icon>
                     </MenuItem>
                 </ContextMenu>

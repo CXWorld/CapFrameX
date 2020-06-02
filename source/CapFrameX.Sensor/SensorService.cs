@@ -464,7 +464,7 @@ namespace CapFrameX.Sensor
                 .FirstOrDefault(hdw => hdw.HardwareType == HardwareType.GpuAti
                     || hdw.HardwareType == HardwareType.GpuNvidia);
 
-            return gpu != null ? gpu.GetDriverVersion() : "Not available";
+            return gpu != null ? gpu.GetDriverVersion() : "Unknown";
         }
 
         public string GetCpuName()
