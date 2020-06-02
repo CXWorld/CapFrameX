@@ -27,6 +27,7 @@ namespace CapFrameX.ViewModel
 		private readonly IAppConfiguration _appConfiguration;
 		private readonly ILogger<ColorbarViewModel> _logger;
 		private readonly IShell _shell;
+		private readonly ISystemInfo _systemInfo;
 		private readonly LoginManager _loginManager;
 		private PubSubEvent<AppMessages.UpdateObservedDirectory> _updateObservedFolder;
 		private PubSubEvent<AppMessages.OpenLoginWindow> _openLoginWindow;
@@ -325,6 +326,7 @@ namespace CapFrameX.ViewModel
 								 IAppConfiguration appConfiguration,
 								 ILogger<ColorbarViewModel> logger,
 								 IShell shell,
+								 ISystemInfo systemInfo,
 								 LoginManager loginManager)
 		{
 			_regionManager = regionManager;
@@ -332,6 +334,7 @@ namespace CapFrameX.ViewModel
 			_appConfiguration = appConfiguration;
 			_logger = logger;
 			_shell = shell;
+			_systemInfo = systemInfo;
 			_loginManager = loginManager;
 			StutteringFactor = _appConfiguration.StutteringFactor;
 			SelectWindowSize = _appConfiguration.MovingAverageWindowSize;
@@ -363,13 +366,13 @@ namespace CapFrameX.ViewModel
 		private void SetHardwareInfoDefaultsFromDatabase()
 		{
 			if (CustomCpuDescription == "CPU")
-				CustomCpuDescription = SystemInfo.GetProcessorName();
+				CustomCpuDescription = _systemInfo.GetProcessorName();
 
 			if (CustomGpuDescription == "GPU")
-				CustomGpuDescription = SystemInfo.GetGraphicCardName();
+				CustomGpuDescription = _systemInfo.GetGraphicCardName();
 
 			if (CustomRamDescription == "RAM")
-				CustomRamDescription = SystemInfo.GetSystemRAMInfoName();
+				CustomRamDescription = _systemInfo.GetSystemRAMInfoName();
 		}
 
 		private void OnSelectScreenshotFolder()

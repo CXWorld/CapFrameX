@@ -82,6 +82,7 @@
     <Compile Include="Data\ICloudManager.cs" />
     <Compile Include="Cloud\ICloudEntry.cs" />
     <Compile Include="Configuration\IAppConfiguration.cs" />
+    <Compile Include="Data\ISystemInfo.cs" />
     <Compile Include="Data\ISystemInfoEntry.cs" />
     <Compile Include="Data\IWebVersionProvider.cs" />
     <Compile Include="Data\IAppVersionProvider.cs" />

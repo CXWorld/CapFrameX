@@ -36,6 +36,7 @@ namespace CapFrameX.Data
         private readonly IRecordDirectoryObserver _recordObserver;
         private readonly IAppVersionProvider _appVersionProvider;
         private readonly ISensorService _sensorService;
+        private readonly ISystemInfo _systemInfo;
         private readonly ProcessList _processList;
 
         public RecordManager(ILogger<RecordManager> logger,
@@ -43,6 +44,7 @@ namespace CapFrameX.Data
                              IRecordDirectoryObserver recordObserver,
                              IAppVersionProvider appVersionProvider,
                              ISensorService sensorService,
+                             ISystemInfo systemInfo,
                              ProcessList processList)
         {
             _logger = logger;
@@ -50,13 +52,16 @@ namespace CapFrameX.Data
             _recordObserver = recordObserver;
             _appVersionProvider = appVersionProvider;
             _sensorService = sensorService;
+            _systemInfo = systemInfo;
             _processList = processList;
         }
-        public void UpdateCustomData(IFileRecordInfo recordInfo, string customCpuInfo, string customGpuInfo, string customRamInfo, string customGameName, string customComment)
+        public void UpdateCustomData(IFileRecordInfo recordInfo, 
+            string customCpuInfo, string customGpuInfo, 
+            string customRamInfo, string customGameName, string customComment)
         {
             if (recordInfo == null || customCpuInfo == null ||
-                customGpuInfo == null || customRamInfo == null || customGameName == null ||
-                customComment == null)
+                customGpuInfo == null || customRamInfo == null || 
+                customGameName == null || customComment == null)
                 return;
 
             try
@@ -367,9 +372,9 @@ namespace CapFrameX.Data
                 }
                 else
                 {
-                    cpuInfo = SystemInfo.GetProcessorName();
-                    gpuInfo = SystemInfo.GetGraphicCardName();
-                    ramInfo = SystemInfo.GetSystemRAMInfoName();
+                    cpuInfo = _systemInfo.GetProcessorName();
+                    gpuInfo = _systemInfo.GetGraphicCardName();
+                    ramInfo = _systemInfo.GetSystemRAMInfoName();
                 }
 
                 IList<string> headerLines = Enumerable.Empty<string>().ToList();
@@ -386,8 +391,8 @@ namespace CapFrameX.Data
                         ProcessName = processName.Contains(".exe") ? processName : $"{processName}.exe",
                         GameName = GetGamenameForProcess(processName),
                         CreationDate = DateTime.UtcNow,
-                        Motherboard = SystemInfo.GetMotherboardName(),
-                        OS = SystemInfo.GetOSVersion(),
+                        Motherboard = _systemInfo.GetMotherboardName(),
+                        OS = _systemInfo.GetOSVersion(),
                         Processor = cpuInfo,
                         SystemRam = ramInfo,
                         GPU = gpuInfo,
