@@ -38,15 +38,22 @@
             <tb:TaskbarIcon.ContextMenu>
                 <ContextMenu>
                     <!--<Separator/>-->
-                    <MenuItem Header="Show Main Window" FontSize="12" Click="ShowMainWindow_Click">
+                    <MenuItem Margin="-10 -10 0 -5" FontSize="12" Click="ShowMainWindow_Click" Height="18" HorizontalAlignment="Left">
                         <MenuItem.Icon>
                             <materialDesign:PackIcon Kind="WindowMaximize"/>
                         </MenuItem.Icon>
+                        <MenuItem.Header>
+                            <TextBlock Margin="-10 0 0 0" Text="Show Main Window"/>
+                        </MenuItem.Header>
                     </MenuItem>
-                    <MenuItem Header="Exit" FontSize="12" Click="Exit_Click">
+                    <Separator Margin="10 0 0 0"/>
+                    <MenuItem Margin="-10 -5 0 -10" FontSize="12" Click="Exit_Click" Height="18" HorizontalAlignment="Left">
                         <MenuItem.Icon>
                             <materialDesign:PackIcon Kind="CloseCircle" />
                         </MenuItem.Icon>
+                        <MenuItem.Header>
+                            <TextBlock Margin="-10 0 0 0" Text="Close"/>
+                        </MenuItem.Header>
                     </MenuItem>
                 </ContextMenu>
             </tb:TaskbarIcon.ContextMenu>
