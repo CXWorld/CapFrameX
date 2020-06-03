@@ -78,7 +78,7 @@
       <Value Profile="(Default)">P0dot2</Value>
     </Setting>
     <Setting Name="ComparisonContext" Type="System.String" Scope="User">
-      <Value Profile="(Default)">DateTime</Value>
+      <Value Profile="(Default)">CPU</Value>
     </Setting>
     <Setting Name="RecordingListSortMemberPath" Type="System.String" Scope="User">
       <Value Profile="(Default)">GameName</Value>
@@ -195,7 +195,7 @@
       <Value Profile="(Default)">False</Value>
     </Setting>
     <Setting Name="SecondComparisonContext" Type="System.String" Scope="User">
-      <Value Profile="(Default)">None</Value>
+      <Value Profile="(Default)">GPU</Value>
     </Setting>
     <Setting Name="CaptureFileMode" Type="System.String" Scope="User">
       <Value Profile="(Default)">Json</Value>
