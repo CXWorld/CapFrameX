@@ -68,11 +68,11 @@ namespace CapFrameX
 			Container.Register<IFrametimeAnalyzer, FrametimeAnalyzer>(Reuse.Singleton);
 			Container.Register<ICaptureService, PresentMonCaptureService>(Reuse.Singleton);
 			Container.Register<IOverlayService, OverlayService>(Reuse.Singleton);
-			Container.Register<ISystemInfo, SystemInfo>(Reuse.Singleton);
 			Container.Register<IOnlineMetricService, OnlineMetricService>(Reuse.Singleton);
 			Container.Register<ISensorService, SensorService>(Reuse.Singleton);
 			Container.Register<IOverlayEntryProvider, OverlayEntryProvider>(Reuse.Singleton);
 			Container.Register<IRecordManager, RecordManager>(Reuse.Singleton);
+			Container.Register<ISystemInfo, SystemInfo>(Reuse.Singleton);
 			Container.Register<IAppVersionProvider, AppVersionProvider>(Reuse.Singleton);
 			Container.RegisterInstance<IWebVersionProvider>(new WebVersionProvider(), Reuse.Singleton);
 			Container.Register<IUpdateCheck, UpdateCheck>(Reuse.Singleton);

@@ -17,6 +17,8 @@ namespace CapFrameX.Sensor
 {
     public class SensorService : ISensorService
     {
+        private readonly object _lockComputer = new object();
+
         private readonly IAppConfiguration _appConfiguration;
         private readonly ILogger<SensorService> _logger;
         private readonly object _dictLock = new object();
@@ -108,15 +110,18 @@ namespace CapFrameX.Sensor
         {
             try
             {
-                _computer = new Computer();
-                _computer.Open();
+                lock (_lockComputer)
+                {
+                    _computer = new Computer();
+                    _computer.Open();
 
-                _computer.GPUEnabled = true;
-                _computer.CPUEnabled = true;
-                _computer.RAMEnabled = true;
-                _computer.MainboardEnabled = false;
-                _computer.FanControllerEnabled = false;
-                _computer.HDDEnabled = false;
+                    _computer.GPUEnabled = true;
+                    _computer.CPUEnabled = true;
+                    _computer.RAMEnabled = true;
+                    _computer.MainboardEnabled = false;
+                    _computer.FanControllerEnabled = false;
+                    _computer.HDDEnabled = false;
+                }
             }
             catch (Exception ex)
             {
@@ -441,45 +446,65 @@ namespace CapFrameX.Sensor
 
         private IEnumerable<ISensor> GetSensors()
         {
-            var sensors = _computer.Hardware.SelectMany(hardware =>
+            IEnumerable<ISensor> sensors = null;
+            lock (_lockComputer)
             {
-                hardware.Update();
-                return hardware.Sensors.Concat(hardware.SubHardware.SelectMany(subHardware =>
-                {
-                    subHardware.Update();
-                    return subHardware.Sensors;
-                }));
-            });
+                sensors = _computer.Hardware.SelectMany(hardware =>
+                   {
+                       hardware.Update();
+                       return hardware.Sensors.Concat(hardware.SubHardware.SelectMany(subHardware =>
+                       {
+                           subHardware.Update();
+                           return subHardware.Sensors;
+                       }));
+                   });
+            }
+
             return sensors;
         }
 
         public void CloseOpenHardwareMonitor()
         {
-            _computer?.Close();
+            lock (_lockComputer)
+            {
+                _computer?.Close();
+            }
         }
 
         public string GetGpuDriverVersion()
         {
-            var gpu = _computer.Hardware
-                .FirstOrDefault(hdw => hdw.HardwareType == HardwareType.GpuAti
-                    || hdw.HardwareType == HardwareType.GpuNvidia);
+            IHardware gpu = null;
+            lock (_lockComputer)
+            {
+                gpu = _computer.Hardware
+               .FirstOrDefault(hdw => hdw.HardwareType == HardwareType.GpuAti
+                   || hdw.HardwareType == HardwareType.GpuNvidia);
+            }
 
             return gpu != null ? gpu.GetDriverVersion() : "Unknown";
         }
 
         public string GetCpuName()
         {
-            var cpu = _computer.Hardware
-                .FirstOrDefault(hdw => hdw.HardwareType == HardwareType.CPU);
+            IHardware cpu = null;
+            lock (_lockComputer)
+            {
+                cpu = _computer.Hardware
+                    .FirstOrDefault(hdw => hdw.HardwareType == HardwareType.CPU);
+            }
 
             return cpu != null ? cpu.Name : "Unknown";
         }
 
         public string GetGpuName()
         {
-            var gpu = _computer.Hardware
-                .FirstOrDefault(hdw => hdw.HardwareType == HardwareType.GpuAti
-                    || hdw.HardwareType == HardwareType.GpuNvidia);
+            IHardware gpu = null;
+            lock (_lockComputer)
+            {
+                gpu = _computer.Hardware
+                   .FirstOrDefault(hdw => hdw.HardwareType == HardwareType.GpuAti
+                       || hdw.HardwareType == HardwareType.GpuNvidia);
+            }
 
             return gpu != null ? gpu.Name : "Unknown";
         }
