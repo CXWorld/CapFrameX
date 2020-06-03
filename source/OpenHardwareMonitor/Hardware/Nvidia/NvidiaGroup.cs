@@ -25,8 +25,6 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
 
         public NvidiaGroup(ISettings settings)
         {
-            NvAPIWrapper.NVIDIA.Initialize();
-
             if (!NVAPI.IsAvailable)
                 return;
 
