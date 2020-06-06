@@ -8,8 +8,6 @@ namespace CapFrameX.Contracts.Data
 {
 	public interface IRecordManager
 	{
-		Func<uint, string> GetApiInfoFunc { get; set; }
-
 		Task<IFileRecordInfo> GetFileRecordInfo(FileInfo fileInfo);
 
 		Task<bool> SaveSessionRunsToFile(IEnumerable<ISessionRun> runs, string processName);
