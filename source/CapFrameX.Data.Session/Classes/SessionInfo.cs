@@ -18,7 +18,7 @@ namespace CapFrameX.Data.Session.Classes
 		public DateTime CreationDate { get; set; }
 		[Description("Mainboard")]
 		public string Motherboard { get; set; }
-		[Description("Operating Sysem")]
+		[Description("OS")]
 		public string OS { get; set; }
 		[Description("Ram")]
 		public string SystemRam { get; set; }
