@@ -2,6 +2,7 @@
 using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.PresentMonInterface;
+using CapFrameX.Contracts.RTSS;
 using CapFrameX.Contracts.UpdateCheck;
 using CapFrameX.Data;
 using CapFrameX.EventAggregation.Messages;
@@ -105,7 +106,8 @@ namespace CapFrameX.ViewModel
 							  IUpdateCheck updateCheck,
 							  IAppVersionProvider appVersionProvider,
 							  IWebVersionProvider webVersionProvider,
-							  LoginManager loginManager)
+							  LoginManager loginManager,
+							  IRTSSService rTSSService)
 		{
 			_recordObserver = recordObserver;
 			_eventAggregator = eventAggregator;
@@ -115,7 +117,7 @@ namespace CapFrameX.ViewModel
 			_updateCheck = updateCheck;
 			_appVersionProvider = appVersionProvider;
 			IsCaptureModeActive = false;
-			IsOverlayActive = _appConfiguration.IsOverlayActive && !string.IsNullOrEmpty(RTSSUtils.GetRTSSFullPath());
+			IsOverlayActive = _appConfiguration.IsOverlayActive && rTSSService.IsRTSSInstalled();
 
 			_captureService.IsCaptureModeActiveStream
 				.Subscribe(state => IsCaptureModeActive = state);

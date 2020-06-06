@@ -2,6 +2,7 @@
 using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.PresentMonInterface;
+using CapFrameX.Contracts.RTSS;
 using CapFrameX.Contracts.Sensor;
 using CapFrameX.Data.Session.Classes;
 using CapFrameX.Data.Session.Contracts;
@@ -27,7 +28,6 @@ namespace CapFrameX.Data
     public class RecordManager : IRecordManager
     {
         private const string IGNOREFLAGMARKER = "//Ignore=true";
-        public Func<uint, string> GetApiInfoFunc { get; set; }
 
         private readonly TimeSpan _fileAccessIntervalTimespan = TimeSpan.FromMilliseconds(200);
         private readonly int _fileAccessIntervalRetryLimit = 50;
@@ -38,6 +38,7 @@ namespace CapFrameX.Data
         private readonly ISensorService _sensorService;
         private readonly ISystemInfo _systemInfo;
         private readonly ProcessList _processList;
+        private readonly IRTSSService _rTSSService;
 
         public RecordManager(ILogger<RecordManager> logger,
                              IAppConfiguration appConfiguration,
@@ -45,7 +46,8 @@ namespace CapFrameX.Data
                              IAppVersionProvider appVersionProvider,
                              ISensorService sensorService,
                              ISystemInfo systemInfo,
-                             ProcessList processList)
+                             ProcessList processList,
+                             IRTSSService rTSSService)
         {
             _logger = logger;
             _appConfiguration = appConfiguration;
@@ -54,6 +56,7 @@ namespace CapFrameX.Data
             _sensorService = sensorService;
             _systemInfo = systemInfo;
             _processList = processList;
+            _rTSSService = rTSSService;
         }
         public void UpdateCustomData(IFileRecordInfo recordInfo, 
             string customCpuInfo, string customGpuInfo, 
@@ -379,7 +382,7 @@ namespace CapFrameX.Data
 
                 IList<string> headerLines = Enumerable.Empty<string>().ToList();
                 var process = Process.GetProcessesByName(processName).FirstOrDefault();
-                string apiInfo = process != null ? GetApiInfoFunc?.Invoke((uint)process.Id) : "unknown";
+                string apiInfo = process != null ? _rTSSService.GetApiInfo((uint)process.Id) : "unknown";
 
                 var session = new Session.Classes.Session()
                 {
