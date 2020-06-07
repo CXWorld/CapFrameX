@@ -5,8 +5,8 @@ using CapFrameX.Contracts.Sensor;
 using CapFrameX.Extensions.NetStandard;
 using CapFrameX.Hotkey;
 using CapFrameX.Overlay;
-using CapFrameX.Statistics;
 using CapFrameX.Statistics.NetStandard.Contracts;
+using CapFrameX.ViewModel.SubModels;
 using Gma.System.MouseKeyHook;
 using GongSolutions.Wpf.DragDrop;
 using Prism.Commands;
@@ -308,7 +308,6 @@ namespace CapFrameX.ViewModel
 
         public ICommand ResetDefaultsCommand { get; }
 
-
         public bool IsRTSSInstalled
             => _rTSSService.IsRTSSInstalled();
 
@@ -338,6 +337,7 @@ namespace CapFrameX.ViewModel
         public ObservableCollection<IOverlayEntry> OverlayEntries { get; private set; }
             = new ObservableCollection<IOverlayEntry>();
 
+        public OverlayGroupControl OverlaySubModelGroupControl { get; }
 
         public OverlayViewModel(IOverlayService overlayService, IOverlayEntryProvider overlayEntryProvider,
             IAppConfiguration appConfiguration, IEventAggregator eventAggregator, ISensorService sensorService, IRTSSService rTSSService)
@@ -375,6 +375,9 @@ namespace CapFrameX.ViewModel
 
             UpdateHpyerlinkText = "To use the overlay, install the latest" + Environment.NewLine +
                 "RivaTuner  Statistics  Server  (RTSS)";
+
+            // define submodels
+            OverlaySubModelGroupControl = new OverlayGroupControl(this);
 
             SetGlobalHookEventOverlayHotkey();
             SetGlobalHookEventResetHistoryHotkey();

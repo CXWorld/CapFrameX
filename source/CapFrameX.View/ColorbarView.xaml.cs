@@ -2,6 +2,7 @@
 using CapFrameX.Data;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.ViewModel;
+using MaterialDesignThemes.Wpf;
 using Microsoft.Extensions.Logging;
 using Prism.Events;
 using Prism.Regions;
@@ -13,10 +14,10 @@ using System.IO;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
-using System.Windows.Threading;
 
 namespace CapFrameX.View
 {
@@ -193,6 +194,20 @@ namespace CapFrameX.View
 		private void Logout_Click(object sender, RoutedEventArgs e)
 		{
 			(DataContext as ColorbarViewModel).Logout();
+		}
+
+		private void MenuDarkModeButton_Click(object sender, RoutedEventArgs e)
+		{
+			var toggleButton = sender as ToggleButton;
+			ModifyTheme(theme => theme.SetBaseTheme(toggleButton.IsChecked == true ? Theme.Dark : Theme.Light));
+		}
+
+		private static void ModifyTheme(Action<ITheme> modificationAction)
+		{
+			PaletteHelper paletteHelper = new PaletteHelper();
+			ITheme theme = paletteHelper.GetTheme();
+			modificationAction?.Invoke(theme);
+			paletteHelper.SetTheme(theme);
 		}
 	}
 }

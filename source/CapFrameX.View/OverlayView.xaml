@@ -17,33 +17,34 @@
 			 Background="{DynamicResource MaterialDesignPaper}"
              FontFamily="{StaticResource MaterialDesignFont}"
 			 prism:ViewModelLocator.AutoWireViewModel="True">
-	<UserControl.Resources>
-		<ResourceDictionary>
-			<ResourceDictionary.MergedDictionaries>
-				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Button.xaml" />
-				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Shadows.xaml" />
-				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ToggleButton.xaml" />
-				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.DataGrid.xaml" />
-				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Slider.xaml" />
-				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.GridSplitter.xaml" />
-				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Flipper.xaml" />
-			</ResourceDictionary.MergedDictionaries>
-			<mvvm:BoolToVisibilityConverter x:Key="FalseToVisibleConverter" TrueValue="Collapsed" FalseValue="Visible"/>
-			<mvvm:BoolToVisibilityConverter x:Key="FalseToCollapsedConverter" TrueValue="Visible" FalseValue="Collapsed"/>
-			<mvvm:BoolToVisibilityConverter x:Key="TrueToVisibleConverter" FalseValue="Collapsed" TrueValue="Visible"/>
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Button.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Shadows.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ToggleButton.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.DataGrid.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Slider.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.GridSplitter.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Flipper.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <mvvm:BoolToVisibilityConverter x:Key="FalseToVisibleConverter" TrueValue="Collapsed" FalseValue="Visible"/>
+            <mvvm:BoolToVisibilityConverter x:Key="FalseToCollapsedConverter" TrueValue="Visible" FalseValue="Collapsed"/>
+            <mvvm:BoolToVisibilityConverter x:Key="TrueToVisibleConverter" FalseValue="Collapsed" TrueValue="Visible"/>
             <mvvm:EnumDescriptionConverter x:Key="EnumDescriptionConverter"/>
         </ResourceDictionary>
-	</UserControl.Resources>
-	<Grid HorizontalAlignment="Center">
-		<Grid.RowDefinitions>
-			<RowDefinition Height="50"></RowDefinition>
-			<RowDefinition Height="510"></RowDefinition>
+    </UserControl.Resources>
+    <Grid HorizontalAlignment="Center">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="50"></RowDefinition>
+            <RowDefinition Height="510"></RowDefinition>
             <RowDefinition Height="100"></RowDefinition>
         </Grid.RowDefinitions>
-		<Grid.ColumnDefinitions>
-			<ColumnDefinition Width="450"/>
-			<ColumnDefinition Width="450"/>
-		</Grid.ColumnDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="450"/>
+            <ColumnDefinition Width="10"/>
+            <ColumnDefinition Width="450"/>
+        </Grid.ColumnDefinitions>
         <TextBlock Margin="0 0 0 0" Grid.Column="0" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center"
 				    FontSize="18" Visibility="{Binding IsRTSSInstalled, Converter={StaticResource FalseToVisibleConverter}}">             
 			<Hyperlink NavigateUri="https://www.guru3d.com/files-details/rtss-rivatuner-statistics-server-download.html" 
@@ -51,6 +52,9 @@
 				<TextBlock Text="{Binding Path=UpdateHpyerlinkText}" TextAlignment="Center"/>
 			</Hyperlink>
 		</TextBlock>
+        <StackPanel Margin="-15 30 0 0" Grid.Row="0" Grid.RowSpan="2" Grid.Column="1" Orientation="Horizontal">
+            <Separator Width="1" BorderBrush="Black" Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" />
+        </StackPanel>
         <DockPanel Grid.Row="1" Grid.Column="0" Margin="0 0 10 0" 
                    Visibility="{Binding  IsRTSSInstalled, Converter={StaticResource TrueToVisibleConverter}}">
             <!--DataGrid and Overlay hotkey-->
@@ -102,7 +106,8 @@
 						  dragdrop:DragDrop.DropHandler="{Binding}"
 					      dragdrop:DragDrop.UseDefaultDragAdorner="True"
 					      dragdrop:DragDrop.DefaultDragAdornerOpacity="0.5"
-					      dragdrop:DragDrop.UseDefaultEffectDataTemplate="False">
+					      dragdrop:DragDrop.UseDefaultEffectDataTemplate="False"
+                          ToolTip="Drag &amp; Drop to change order">
                     <DataGrid.Resources>
                         <Style TargetType="DataGridRow">
                             <Setter Property="DataGrid.Height" Value="25" />
@@ -167,10 +172,92 @@
                                             IsReadOnly="False"/>-->
                     </DataGrid.Columns>
                 </DataGrid>
-                <TextBlock HorizontalAlignment="Center" Text="Drag &amp; Drop to change order"/>
+                <Border Margin="0 5 0 0"  BorderThickness="0.2" BorderBrush="Black">
+                    <StackPanel Margin="5 5 0 5"  Orientation="Horizontal">
+                        <TextBlock VerticalAlignment="Center">Group control:</TextBlock>
+                        <materialDesign:PopupBox StaysOpen="True" ToolTipService.ShowDuration="25000">
+                            <materialDesign:PopupBox.ToolTip>
+                                <ToolTip MaxWidth="275" Placement="Top">
+                                    <TextBlock Text="OSD parameter group control" 
+										   TextWrapping="Wrap"/>
+                                </ToolTip>
+                            </materialDesign:PopupBox.ToolTip>
+                            <materialDesign:Card Width="220" Margin="0 0 0 -10">
+                                <StackPanel>
+                                    <Grid Margin="8 8 8 8">
+                                        <Grid.Resources>
+                                            <Style TargetType="CheckBox"
+											BasedOn="{StaticResource MaterialDesignCheckBox}">
+                                                <Setter Property="Margin" Value="8,8,10,8" />
+                                            </Style>
+                                            <Style TargetType="TextBox" BasedOn="{StaticResource MaterialDesignTextBox}">
+                                                <Setter Property="materialDesign:HintAssist.IsFloating" Value="True" />
+                                                <Setter Property="Margin" Value="8,8,8,8" />
+                                            </Style>
+                                        </Grid.Resources>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="*" />
+                                            <RowDefinition Height="*" />
+                                            <RowDefinition Height="*" />
+                                            <RowDefinition Height="*" />
+                                            <RowDefinition Height="*" />
+                                            <RowDefinition Height="*" />
+                                            <RowDefinition Height="*" />
+                                            <RowDefinition Height="*" />
+                                            <RowDefinition Height="*" />
+                                            <RowDefinition Height="*" />
+                                        </Grid.RowDefinitions>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <CheckBox Margin="5" Grid.Row="0" Grid.Column="0" IsChecked="{Binding Path=OverlaySubModelGroupControl.UseGroupCaptureItems}"/>
+                                        <TextBlock Margin="5" Grid.Row="0" Grid.Column="1" Text="Capture items" VerticalAlignment="Center"/>
+                                        <ToggleButton Margin="5" Grid.Row="0" Grid.Column="2" IsChecked="{Binding Path=OverlaySubModelGroupControl.OverlayGroupCaptureItems}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Group control capture items" />
+
+                                        <CheckBox Margin="5" Grid.Row="1" Grid.Column="0" IsChecked="{Binding Path=OverlaySubModelGroupControl.UseGroupSystemInfo}"/>
+                                        <TextBlock Margin="5" Grid.Row="1" Grid.Column="1" Text="System info" VerticalAlignment="Center"/>
+                                        <ToggleButton Margin="5" Grid.Row="1" Grid.Column="2" IsChecked="{Binding Path=OverlaySubModelGroupControl.OverlayGroupSystemInfo}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Group control system info" />
+
+                                        <CheckBox Margin="5" Grid.Row="2" Grid.Column="0" IsChecked="{Binding Path=OverlaySubModelGroupControl.UseGroupOnlineMetrics}"/>
+                                        <TextBlock Margin="5" Grid.Row="2" Grid.Column="1" Text="Online metrics" VerticalAlignment="Center"/>
+                                        <ToggleButton Margin="5" Grid.Row="2" Grid.Column="2" IsChecked="{Binding Path=OverlaySubModelGroupControl.OverlayGroupOnlineMetrics}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Group control online metrics" />
+
+                                        <CheckBox Margin="5" Grid.Row="3" Grid.Column="0" IsChecked="{Binding Path=OverlaySubModelGroupControl.UseGroupCPULoads}"/>
+                                        <TextBlock Margin="5" Grid.Row="3" Grid.Column="1" Text="CPU loads" VerticalAlignment="Center"/>
+                                        <ToggleButton Margin="5" Grid.Row="3" Grid.Column="2" IsChecked="{Binding Path=OverlaySubModelGroupControl.OverlayGroupCPULoads}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Group control CPU loads" />
+
+                                        <CheckBox Margin="5" Grid.Row="4" Grid.Column="0" IsChecked="{Binding Path=OverlaySubModelGroupControl.UseGroupCPUClocks}"/>
+                                        <TextBlock Margin="5" Grid.Row="4" Grid.Column="1" Text="CPU clocks" VerticalAlignment="Center"/>
+                                        <ToggleButton Margin="5" Grid.Row="4" Grid.Column="2" IsChecked="{Binding Path=OverlaySubModelGroupControl.OverlayGroupCPUClocks}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Group control CPU Clocks" />
+
+                                        <CheckBox Margin="5" Grid.Row="5" Grid.Column="0" IsChecked="{Binding Path=OverlaySubModelGroupControl.UseGroupCPUTemps}"/>
+                                        <TextBlock Margin="5" Grid.Row="5" Grid.Column="1" Text="CPU temps" VerticalAlignment="Center"/>
+                                        <ToggleButton Margin="5" Grid.Row="5" Grid.Column="2" IsChecked="{Binding Path=OverlaySubModelGroupControl.OverlayGroupCPUTemps}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Group control CPU temps" />
+
+                                        <CheckBox Margin="5" Grid.Row="6" Grid.Column="0" IsChecked="{Binding Path=OverlaySubModelGroupControl.UseGroupCPUPackage}"/>
+                                        <TextBlock Margin="5" Grid.Row="6" Grid.Column="1" Text="CPU package" VerticalAlignment="Center"/>
+                                        <ToggleButton Margin="5" Grid.Row="6" Grid.Column="2" IsChecked="{Binding Path=OverlaySubModelGroupControl.OverlayGroupCPUPackage}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Group control CPU package" />
+
+                                        <CheckBox Margin="5" Grid.Row="7" Grid.Column="0" IsChecked="{Binding Path=OverlaySubModelGroupControl.UseGroupRAMItems}"/>
+                                        <TextBlock Margin="5" Grid.Row="7" Grid.Column="1" Text="RAM items" VerticalAlignment="Center"/>
+                                        <ToggleButton Margin="5" Grid.Row="7" Grid.Column="2" IsChecked="{Binding Path=OverlaySubModelGroupControl.OverlayGroupRAMItems}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Group control RAM items" />
+
+                                        <Separator Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="8" Style="{StaticResource MaterialDesignDarkSeparator}" />
+                                        <Button Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="9" HorizontalAlignment="Center" IsDefault="True" Style="{DynamicResource MaterialDesignFlatButton}"
+										Command="{Binding OverlaySubModelGroupControl.AcceptOSDGroupSettingsCommand}">
+                                            APPLY
+                                        </Button>
+                                    </Grid>
+                                </StackPanel>
+                            </materialDesign:Card>
+                        </materialDesign:PopupBox>
+                    </StackPanel>
+                </Border>
             </StackPanel>
             <!--Global overlay toggle-->
-            <StackPanel Margin="0 30 0 0" DockPanel.Dock="Bottom">
+            <StackPanel Margin="0 10 0 0" DockPanel.Dock="Bottom">
                 <!--<ToggleButton Margin="-60 0 0 -50" Width="25" Height="25"
 					  Style="{StaticResource MaterialDesignActionAccentToggleButton}"
 					  IsChecked="{Binding IsOverlayActive, Mode=TwoWay}"
@@ -222,7 +309,7 @@
                 </StackPanel>
             </StackPanel>
         </DockPanel>
-        <TabControl Grid.Row="1" Grid.Column="1" Margin="0 0 0 20" Background="Transparent" BorderThickness=".2" BorderBrush="Black" >
+        <TabControl Grid.Row="1" Grid.Column="2" Margin="0 0 0 20" Background="Transparent" BorderThickness=".2" BorderBrush="Black" >
             <TabItem Header="Run history and aggregation options">
                 <Grid>
                     <Grid.RowDefinitions>

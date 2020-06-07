@@ -136,6 +136,7 @@
                                             <RowDefinition Height="*" />
                                             <RowDefinition Height="*" />
                                             <RowDefinition Height="*" />
+                                            <RowDefinition Height="*" />
                                         </Grid.RowDefinitions>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*"/>
@@ -209,7 +210,9 @@
                                                 </DataTemplate>
                                             </ComboBox.ItemTemplate>
                                         </ComboBox>
-                                        <TextBox Grid.Row="3" Grid.ColumnSpan="2" materialDesign:HintAssist.Hint="CPU" Margin="15 15 0 0"
+                                        <TextBlock Margin="15 15 0 0" Grid.Row="3" Grid.Column="0" Text="Dark mode" VerticalAlignment="Center"/>
+                                        <ToggleButton Margin="70 20 0 0" Grid.Row="3" Grid.Column="0" Click="MenuDarkModeButton_Click"/>
+                                        <TextBox Grid.Row="4" Grid.ColumnSpan="2" materialDesign:HintAssist.Hint="CPU" Margin="15 15 0 0"
 												Visibility="{Binding Path=DataContext.HasCustomInfo, ElementName=ColorbarViewName, Converter={StaticResource FalseToCollapsedConverter}}">
                                             <TextBox.Text>
                                                 <Binding Path="DataContext.CustomCpuDescription"
@@ -219,7 +222,7 @@
                                                 </Binding>
                                             </TextBox.Text>
                                         </TextBox>
-                                        <TextBox Grid.Row="4" Grid.ColumnSpan="2" materialDesign:HintAssist.Hint="GPU" Margin="15 10 0 0"
+                                        <TextBox Grid.Row="5" Grid.ColumnSpan="2" materialDesign:HintAssist.Hint="GPU" Margin="15 10 0 0"
 												Visibility="{Binding Path=DataContext.HasCustomInfo, ElementName=ColorbarViewName, Converter={StaticResource FalseToCollapsedConverter}}">
                                             <TextBox.Text>
                                                 <Binding Path="DataContext.CustomGpuDescription"
@@ -229,7 +232,7 @@
                                                 </Binding>
                                             </TextBox.Text>
                                         </TextBox>
-                                        <TextBox Grid.Row="5" Grid.ColumnSpan="2" materialDesign:HintAssist.Hint="RAM" Margin="15 10 0 0"
+                                        <TextBox Grid.Row="6" Grid.ColumnSpan="2" materialDesign:HintAssist.Hint="RAM" Margin="15 10 0 0"
 												Visibility="{Binding Path=DataContext.HasCustomInfo, ElementName=ColorbarViewName, Converter={StaticResource FalseToCollapsedConverter}}">
                                             <TextBox.Text>
                                                 <Binding Path="DataContext.CustomRamDescription"
