@@ -31,6 +31,7 @@ namespace CapFrameX.Webservice.Data.DTO
 		public ISensorReportItem[] SensorItems { get; set; }
 		public string FrametimeGraph { get; set; }
 		public string FpsGraph { get; set; }
+		public Dictionary<string, string> Infos { get; set; }
 		public IEnumerable<KeyValuePair<int, double>> FpsTresholdsCounts { get; set; }
 		public IEnumerable<KeyValuePair<string, double>> FpsMetric { get; set; }
 		public IEnumerable<KeyValuePair<int, double>> FpsTresholdsTimes { get; set; }

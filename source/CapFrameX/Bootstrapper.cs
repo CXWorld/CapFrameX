@@ -29,6 +29,8 @@ using CapFrameX.Contracts.Sensor;
 using CapFrameX.Sensor;
 using CapFrameX.Statistics.NetStandard;
 using CapFrameX.Statistics.NetStandard.Contracts;
+using CapFrameX.Contracts.RTSS;
+using CapFrameX.RTSSIntegration;
 
 namespace CapFrameX
 {
@@ -67,6 +69,7 @@ namespace CapFrameX
 			Container.Register<IStatisticProvider, FrametimeStatisticProvider>(Reuse.Singleton);
 			Container.Register<IFrametimeAnalyzer, FrametimeAnalyzer>(Reuse.Singleton);
 			Container.Register<ICaptureService, PresentMonCaptureService>(Reuse.Singleton);
+			Container.Register<IRTSSService, RTSSService>(Reuse.Singleton);
 			Container.Register<IOverlayService, OverlayService>(Reuse.Singleton);
 			Container.Register<IOnlineMetricService, OnlineMetricService>(Reuse.Singleton);
 			Container.Register<ISensorService, SensorService>(Reuse.Singleton);
