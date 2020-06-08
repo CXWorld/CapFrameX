@@ -497,7 +497,7 @@ namespace CapFrameX.ViewModel
 
             var frametimes = GetFrametimesSubset();
             double GeMetricValue(IList<double> sequence, EMetric metric) =>
-                _frametimeStatisticProvider.GetFpsMetricValue(sequence, metric);
+                Math.Round(_frametimeStatisticProvider.GetFpsMetricValue(sequence, metric), 2);
 
             var max = GeMetricValue(frametimes, EMetric.Max);
             var p99_quantile = GeMetricValue(frametimes, EMetric.P99);
