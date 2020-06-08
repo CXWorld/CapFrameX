@@ -1,5 +1,125 @@
 [
   {
+    "Name": "msedge",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "WorldOfWarships64",
+    "DisplayName": "World of Warships",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "ClientG",
+    "DisplayName": "Command & Conquer Remastered",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "GalaxyClient Helper",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "TeamViewer_Desktop",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "RSI Launcher",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "onenoteim",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "MechWarrior-Win64-Shipping",
+    "DisplayName": "MechWarrior 5: Mercenaries",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "FortniteClient-Win64-Shipping",
+    "DisplayName": "Fortnite",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "EscapeFromTarkov",
+    "DisplayName": "Escape from Tarkov",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "TextInputHost",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "Avira.Spotlight.UI.Application",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "VALORANT-Win64-Shipping",
+    "DisplayName": "Valorant",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "q2rtx",
+    "DisplayName": "Quake II RTX",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "GearGame",
+    "DisplayName": "Gears of War 4",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "PathOfExile_x64Steam",
+    "DisplayName": "Path of Exile",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "Portia",
+    "DisplayName": "My Time At Portia",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "FF9",
+    "DisplayName": "Final Fantasy IX",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "SKIF",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "Ghostrunner-Win64-Shipping",
+    "DisplayName": "Ghostrunner",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "ts3client_win64",
+    "DisplayName": "Teamspeak 3",
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "LockApp",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "GameLauncher",
+    "DisplayName": "Neon Noir",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "GRB_vulkan",
+    "DisplayName": "Ghost Recon Breakpoint (Vulkan)",
+    "IsBlacklisted": false
+  },
+  {
     "Name": "obs-browser-page",
     "DisplayName": null,
     "IsBlacklisted": true
@@ -48,11 +168,6 @@
     "Name": "RTSS",
     "DisplayName": null,
     "IsBlacklisted": true
-  },
-  {
-    "Name": "GRB_vulkan",
-    "DisplayName": "Ghost Recon Breakpoint",
-    "IsBlacklisted": false
   },
   {
     "Name": "SearchApp",
