@@ -328,50 +328,68 @@ namespace CapFrameX.ViewModel
 
         private void OnAggregateInclude()
         {
-            var concatedFrametimesInclude = new List<double>();
-
-            foreach (var recordInfo in _fileRecordInfoList)
+            try
             {
-                var localSession = _recordManager.LoadData(recordInfo.FullPath);
-                var frametimes = localSession.Runs.SelectMany(r => r.CaptureData.MsBetweenPresents).ToList();
-                concatedFrametimesInclude.AddRange(frametimes);
+                var concatedFrametimesInclude = new List<double>();
+
+                foreach (var recordInfo in _fileRecordInfoList)
+                {
+                    var localSession = _recordManager.LoadData(recordInfo.FullPath);
+                    var frametimes = localSession.Runs.SelectMany(r => r.CaptureData.MsBetweenPresents).ToList();
+                    concatedFrametimesInclude.AddRange(frametimes);
+                }
+
+                var resultString = _statisticProvider
+                    .GetMetricAnalysis(concatedFrametimesInclude,
+                    _appConfiguration.SecondMetricAggregation,
+                    _appConfiguration.ThirdMetricAggregation).ResultString;
+
+                AggregationResultString = $"Result: {resultString}";
+                ShowResultString = true;
+
+                WriteAggregatedFileAsync(Enumerable.Repeat(false, _fileRecordInfoList.Count).ToArray());
             }
-
-            var resultString = _statisticProvider
-                .GetMetricAnalysis(concatedFrametimesInclude,
-                _appConfiguration.SecondMetricAggregation,
-                _appConfiguration.ThirdMetricAggregation).ResultString;
-
-            AggregationResultString = $"Result: {resultString}";
-            ShowResultString = true;
-
-            WriteAggregatedFileAsync(Enumerable.Repeat(false, _fileRecordInfoList.Count).ToArray());
+            catch
+            {
+                AggregationEntries.Clear();
+                AggregationResultString = "Error while calculating result. Please try again.";
+                ShowResultString = true;
+            }
         }
 
         private void OnAggregateExclude()
         {
-            var outlierFlags = _statisticProvider
-                    .GetOutlierAnalysis(AggregationEntries.Select(analysis => analysis.MetricAnalysis).ToList(),
-                    _appConfiguration.RelatedMetricAggregation, _appConfiguration.OutlierPercentageAggregation);
-
-            var concatedFrametimesExclude = new List<double>();
-
-            foreach (var recordInfo in _fileRecordInfoList.Where((x, i) => !outlierFlags[i]))
+            try
             {
-                var localSession = _recordManager.LoadData(recordInfo.FullPath);
-                var frametimes = localSession.Runs.SelectMany(r => r.CaptureData.MsBetweenPresents).ToList();
-                concatedFrametimesExclude.AddRange(frametimes);
+                var outlierFlags = _statisticProvider
+                        .GetOutlierAnalysis(AggregationEntries.Select(analysis => analysis.MetricAnalysis).ToList(),
+                        _appConfiguration.RelatedMetricAggregation, _appConfiguration.OutlierPercentageAggregation);
+
+                var concatedFrametimesExclude = new List<double>();
+
+                foreach (var recordInfo in _fileRecordInfoList.Where((x, i) => !outlierFlags[i]))
+                {
+                    var localSession = _recordManager.LoadData(recordInfo.FullPath);
+                    var frametimes = localSession.Runs.SelectMany(r => r.CaptureData.MsBetweenPresents).ToList();
+                    concatedFrametimesExclude.AddRange(frametimes);
+                }
+
+                var resultString = _statisticProvider
+                    .GetMetricAnalysis(concatedFrametimesExclude,
+                    _appConfiguration.SecondMetricAggregation,
+                    _appConfiguration.ThirdMetricAggregation).ResultString;
+
+                AggregationResultString = $"Result: {resultString}";
+                ShowResultString = true;
+
+                WriteAggregatedFileAsync(outlierFlags);
             }
-
-            var resultString = _statisticProvider
-                .GetMetricAnalysis(concatedFrametimesExclude,
-                _appConfiguration.SecondMetricAggregation,
-                _appConfiguration.ThirdMetricAggregation).ResultString;
-
-            AggregationResultString = $"Result: {resultString}";
-            ShowResultString = true;
-
-            WriteAggregatedFileAsync(outlierFlags);
+            catch
+            {
+                AggregationEntries.Clear();
+                AggregationResultString = "Error while calculating result. Please try again.";
+                ShowResultString = true;
+            }
         }
 
         private void WriteAggregatedFileAsync(bool[] outlierFlags)

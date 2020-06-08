@@ -1,10 +1,11 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.Overlay;
+using CapFrameX.Contracts.RTSS;
 using CapFrameX.Contracts.Sensor;
+using CapFrameX.Data;
 using CapFrameX.Data.Session.Contracts;
 using CapFrameX.Extensions.NetStandard;
-using CapFrameX.Statistics;
 using CapFrameX.Statistics.NetStandard;
 using CapFrameX.Statistics.NetStandard.Contracts;
 using Microsoft.Extensions.Logging;
@@ -19,15 +20,15 @@ using System.Threading.Tasks;
 
 namespace CapFrameX.Overlay
 {
-	public class OverlayService : RTSSCSharpWrapper, IOverlayService
+	public class OverlayService : IOverlayService
 	{
 		private readonly IStatisticProvider _statisticProvider;
 		private readonly IOverlayEntryProvider _overlayEntryProvider;
-		private readonly ISensorService _sensorService;
 		private readonly IAppConfiguration _appConfiguration;
 		private static ILogger<OverlayService> _logger;
 		private readonly IRecordManager _recordManager;
-		private IDisposable _disposableCaptureTimer;
+        private readonly IRTSSService _rTSSService;
+        private IDisposable _disposableCaptureTimer;
 		private IDisposable _disposableCountdown;
 
 		private IList<string> _runHistory = new List<string>();
@@ -49,16 +50,17 @@ namespace CapFrameX.Overlay
 							  ISensorService sensorService,
 							  IOverlayEntryProvider overlayEntryProvider,
 							  IAppConfiguration appConfiguration,
-							  ILogger<OverlayService> logger, IRecordManager recordManager)
-			: base(ExceptionAction)
+							  ILogger<OverlayService> logger, 
+							  IRecordManager recordManager,
+							  IRTSSService rTSSService)
 		{
 			_statisticProvider = statisticProvider;
-			_sensorService = sensorService;
 			_overlayEntryProvider = overlayEntryProvider;
 			_appConfiguration = appConfiguration;
 			_logger = logger;
 			_recordManager = recordManager;
-			_numberOfRuns = _appConfiguration.SelectedHistoryRuns;
+            _rTSSService = rTSSService;
+            _numberOfRuns = _appConfiguration.SelectedHistoryRuns;
 			SecondMetric = _appConfiguration.SecondMetricOverlay;
 			ThirdMetric = _appConfiguration.ThirdMetricOverlay;
 			IsOverlayActiveStream = new BehaviorSubject<bool>(_appConfiguration.IsOverlayActive);
@@ -71,33 +73,33 @@ namespace CapFrameX.Overlay
 				{
 					if (isActive)
 					{
-						ResetOSD();
+						_rTSSService.ResetOSD();
 						return sensorService.OnDictionaryUpdated
 							.SelectMany(_ => _overlayEntryProvider.GetOverlayEntries());
 					}
 					else
 					{
-						ReleaseOSD();
+						_rTSSService.ReleaseOSD();
 						return Observable.Empty<IOverlayEntry[]>();
 					}
 				}).Switch()
 				.Subscribe(entries =>
-				{					
-					SetOverlayEntries(entries); 
-					CheckRTSSRunningAndRefresh();
+				{
+					_rTSSService.SetOverlayEntries(entries);
+					_rTSSService.CheckRTSSRunningAndRefresh();
 				});
 
 			_runHistory = Enumerable.Repeat("N/A", _numberOfRuns).ToList();
-			SetRunHistory(_runHistory.ToArray());
-			SetRunHistoryAggregation(string.Empty);
-			SetRunHistoryOutlierFlags(_runHistoryOutlierFlags);
-			SetIsCaptureTimerActive(false);
+			_rTSSService.SetRunHistory(_runHistory.ToArray());
+			_rTSSService.SetRunHistoryAggregation(string.Empty);
+			_rTSSService.SetRunHistoryOutlierFlags(_runHistoryOutlierFlags);
+			_rTSSService.SetIsCaptureTimerActive(false);
 		}
 
 		public void StartCountdown(int seconds)
 		{
 			IObservable<long> obs = Extensions.ObservableExtensions.CountDown(seconds);
-			SetIsCaptureTimerActive(true);
+			_rTSSService.SetIsCaptureTimerActive(true);
 
 			SetCaptureTimerValue(0);
 			_disposableCountdown?.Dispose();
@@ -106,19 +108,19 @@ namespace CapFrameX.Overlay
 				SetCaptureTimerValue((int)t);
 
 				if (t == 0)
-					SetIsCaptureTimerActive(false);
+					_rTSSService.SetIsCaptureTimerActive(false);
 			});
 		}
 
 		public void StartCaptureTimer()
 		{
 			_disposableCaptureTimer = GetCaptureTimer();
-			SetIsCaptureTimerActive(true);
+			_rTSSService.SetIsCaptureTimerActive(true);
 		}
 
 		public void StopCaptureTimer()
 		{
-			SetIsCaptureTimerActive(false);
+			_rTSSService.SetIsCaptureTimerActive(false);
 			SetCaptureTimerValue(0);
 			_disposableCaptureTimer?.Dispose();
 		}
@@ -128,8 +130,8 @@ namespace CapFrameX.Overlay
 			var captureTimer = _overlayEntryProvider.GetOverlayEntry("CaptureTimer");
 			if (captureTimer != null)
 			{
-				captureTimer.Value = $"{t.ToString()} s";
-				SetOverlayEntry(captureTimer);
+				captureTimer.Value = $"{t} s";
+				_rTSSService.SetOverlayEntry(captureTimer);
 			}
 		}
 
@@ -139,7 +141,7 @@ namespace CapFrameX.Overlay
 			if (captureStatus != null)
 			{
 				captureStatus.Value = status;
-				SetOverlayEntry(captureStatus);
+				_rTSSService.SetOverlayEntry(captureStatus);
 			}
 		}
 
@@ -149,7 +151,7 @@ namespace CapFrameX.Overlay
 			if (history != null)
 			{
 				history.ShowOnOverlay = showHistory;
-				SetOverlayEntry(history);
+				_rTSSService.SetOverlayEntry(history);
 			}
 		}
 
@@ -160,9 +162,9 @@ namespace CapFrameX.Overlay
 			_captureDataHistory.Clear();
 			_frametimeHistory.Clear();
 			_metricAnalysis.Clear();
-			SetRunHistory(_runHistory.ToArray());
-			SetRunHistoryAggregation(string.Empty);
-			SetRunHistoryOutlierFlags(_runHistoryOutlierFlags);
+			_rTSSService.SetRunHistory(_runHistory.ToArray());
+			_rTSSService.SetRunHistoryAggregation(string.Empty);
+			_rTSSService.SetRunHistoryOutlierFlags(_runHistoryOutlierFlags);
 		}
 
 		public void AddRunToHistory(ISessionRun sessionRun, string process)
@@ -193,9 +195,9 @@ namespace CapFrameX.Overlay
 
 					// local reset
 					_runHistoryOutlierFlags = Enumerable.Repeat(false, _numberOfRuns).ToArray();
-					SetRunHistory(_runHistory.ToArray());
-					SetRunHistoryAggregation(string.Empty);
-					SetRunHistoryOutlierFlags(_runHistoryOutlierFlags);
+					_rTSSService.SetRunHistory(_runHistory.ToArray());
+					_rTSSService.SetRunHistoryAggregation(string.Empty);
+					_rTSSService.SetRunHistoryOutlierFlags(_runHistoryOutlierFlags);
 				}
 				else
 				{
@@ -209,7 +211,7 @@ namespace CapFrameX.Overlay
 				var currentAnalysis = _statisticProvider.GetMetricAnalysis(frametimes, SecondMetric, ThirdMetric);
 				_metricAnalysis.Add(currentAnalysis);
 				_runHistory[RunHistoryCount] = currentAnalysis.ResultString;
-				SetRunHistory(_runHistory.ToArray());
+				_rTSSService.SetRunHistory(_runHistory.ToArray());
 
 				// capture data history
 				_captureDataHistory.Add(sessionRun);
@@ -224,13 +226,13 @@ namespace CapFrameX.Overlay
 						.GetOutlierAnalysis(_metricAnalysis,
 											_appConfiguration.RelatedMetricOverlay,
 											_appConfiguration.OutlierPercentageOverlay);
-					SetRunHistoryOutlierFlags(_runHistoryOutlierFlags);
+					_rTSSService.SetRunHistoryOutlierFlags(_runHistoryOutlierFlags);
 
 					if ((_runHistoryOutlierFlags.All(x => x == false)
 						&& _appConfiguration.OutlierHandling == EOutlierHandling.Replace.ConvertToString())
 						|| _appConfiguration.OutlierHandling == EOutlierHandling.Ignore.ConvertToString())
 					{
-						SetRunHistoryAggregation(GetAggregation());
+						_rTSSService.SetRunHistoryAggregation(GetAggregation());
 
 						// write aggregated file
 						Task.Run(async () =>
@@ -247,24 +249,6 @@ namespace CapFrameX.Overlay
 		{
 			_numberOfRuns = numberOfRuns;
 			ResetHistory();
-		}
-
-		private void CheckRTSSRunningAndRefresh()
-		{
-			var processes = Process.GetProcessesByName("RTSS");
-			if (!processes.Any())
-			{
-				try
-				{
-					Process proc = new Process();
-					proc.StartInfo.FileName = Path.Combine(RTSSUtils.GetRTSSFullPath());
-					proc.StartInfo.UseShellExecute = false;
-					proc.StartInfo.Verb = "runas";
-					proc.Start();
-				}
-				catch (Exception ex) { _logger.LogError(ex, "Error while starting RTSS process"); }
-			}
-			Refresh();
 		}
 
 		private IDisposable GetCaptureTimer()
@@ -286,11 +270,6 @@ namespace CapFrameX.Overlay
 			return _statisticProvider
 				.GetMetricAnalysis(concatedFrametimes, SecondMetric, ThirdMetric)
 				.ResultString;
-		}
-
-		private static void ExceptionAction(Exception ex)
-		{
-			_logger.LogError(ex, "Exception thrown in RTSSCSharpWrapper");
 		}
 	}
 }

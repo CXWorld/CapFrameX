@@ -201,7 +201,8 @@ namespace CapFrameX.View
 		private void RecordInfoListOnFilter(object sender, FilterEventArgs e)
 		{
 			e.FilterCollectionByText<IFileRecordInfo>(RecordSearchBox.Text,
-										(record, word) => record.CombinedInfo.NullSafeContains(word, true));
+										(record, word) => record.CombinedInfo.NullSafeContains(word, true)
+										|| record.GameName.NullSafeContains(word, true));
 		}
 
 		private void DataGridRow_MouseDoubleClick(object sender, MouseButtonEventArgs e)

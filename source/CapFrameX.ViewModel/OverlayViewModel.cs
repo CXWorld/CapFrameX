@@ -1,5 +1,6 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Overlay;
+using CapFrameX.Contracts.RTSS;
 using CapFrameX.Contracts.Sensor;
 using CapFrameX.Extensions.NetStandard;
 using CapFrameX.Hotkey;
@@ -31,6 +32,7 @@ namespace CapFrameX.ViewModel
         private readonly IAppConfiguration _appConfiguration;
         private readonly IEventAggregator _eventAggregator;
         private readonly ISensorService _sensorService;
+        private readonly IRTSSService _rTSSService;
         private IKeyboardMouseEvents _globalOverlayHookEvent;
         private IKeyboardMouseEvents _globalResetHistoryHookEvent;
         private int _selectedOverlayEntryIndex = -1;
@@ -308,7 +310,7 @@ namespace CapFrameX.ViewModel
 
 
         public bool IsRTSSInstalled
-            => !string.IsNullOrEmpty(RTSSUtils.GetRTSSFullPath());
+            => _rTSSService.IsRTSSInstalled();
 
         public IAppConfiguration AppConfiguration => _appConfiguration;
 
@@ -338,14 +340,14 @@ namespace CapFrameX.ViewModel
 
 
         public OverlayViewModel(IOverlayService overlayService, IOverlayEntryProvider overlayEntryProvider,
-            IAppConfiguration appConfiguration, IEventAggregator eventAggregator, ISensorService sensorService)
+            IAppConfiguration appConfiguration, IEventAggregator eventAggregator, ISensorService sensorService, IRTSSService rTSSService)
         {
             _overlayService = overlayService;
             _overlayEntryProvider = overlayEntryProvider;
             _appConfiguration = appConfiguration;
             _eventAggregator = eventAggregator;
             _sensorService = sensorService;
-
+            _rTSSService = rTSSService;
             var configSubject = new Subject<object>();
             ConfigSwitchCommand = new DelegateCommand<object>(configSubject.OnNext);
             configSubject
@@ -491,6 +493,32 @@ namespace CapFrameX.ViewModel
                             int targetIndex = dropInfo.InsertIndex;
 
                             _overlayEntryProvider.MoveEntry(sourceIndex, targetIndex);
+
+                            OverlayEntries.Clear();
+                            OverlayEntries.AddRange(await _overlayEntryProvider.GetOverlayEntries());
+                        }
+                        else if (dropInfo.Data is IEnumerable<IOverlayEntry> overlayEntries)
+                        {
+                            // get source index
+                            int count = overlayEntries.Count();
+                            int sourceIndex = OverlayEntries.IndexOf(overlayEntries.First());
+                            int targetIndex = dropInfo.InsertIndex;
+
+                            if (sourceIndex < targetIndex)
+                            {
+                                for (int i = 0; i < count; i++)
+                                {
+                                    _overlayEntryProvider.MoveEntry(sourceIndex, targetIndex - 1);
+                                }
+                            }
+                            else
+                            {
+                                for (int i = 0; i < count; i++)
+                                {
+                                    _overlayEntryProvider.MoveEntry(sourceIndex + i, targetIndex);
+                                }
+                            }
+
                             OverlayEntries.Clear();
                             OverlayEntries.AddRange(await _overlayEntryProvider.GetOverlayEntries());
                         }

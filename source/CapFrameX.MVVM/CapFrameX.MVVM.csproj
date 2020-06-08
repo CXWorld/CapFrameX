@@ -122,6 +122,7 @@
     <Compile Include="SliderValueChangedBehaviour.cs" />
     <Compile Include="Validation\HotkeyValidationRule.cs" />
     <Compile Include="Validation\NotEmptyValidationRule.cs" />
+    <Compile Include="WpfExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CapFrameX.Charts\Core40\Core.csproj">

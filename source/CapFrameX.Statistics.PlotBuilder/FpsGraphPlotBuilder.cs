@@ -37,6 +37,8 @@ namespace CapFrameX.Statistics.PlotBuilder
 					SetCPULoadChart(plotModel, session.GetCPULoadPointTimeWindow());
 				if (plotSettings.ShowCpuMaxThreadLoad)
 					SetCPUMaxThreadLoadChart(plotModel, session.GetCPUMaxThreadLoadPointTimeWindow());
+				if (plotSettings.ShowGpuPowerLimit)
+					SetGpuPowerLimitChart(plotModel, session.GetGpuPowerLimitPointTimeWindow());
 			}
 
 			onFinishAction?.Invoke(plotModel);

@@ -325,7 +325,7 @@ namespace CapFrameX.Configuration.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("DateTime")]
+        [global::System.Configuration.DefaultSettingValueAttribute("CPU")]
         public string ComparisonContext {
             get {
                 return ((string)(this["ComparisonContext"]));
@@ -793,13 +793,25 @@ namespace CapFrameX.Configuration.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("None")]
+        [global::System.Configuration.DefaultSettingValueAttribute("GPU")]
         public string SecondComparisonContext {
             get {
                 return ((string)(this["SecondComparisonContext"]));
             }
             set {
                 this["SecondComparisonContext"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Json")]
+        public string CaptureFileMode {
+            get {
+                return ((string)(this["CaptureFileMode"]));
+            }
+            set {
+                this["CaptureFileMode"] = value;
             }
         }
     }

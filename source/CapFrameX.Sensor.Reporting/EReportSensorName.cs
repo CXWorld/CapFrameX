@@ -8,6 +8,8 @@ namespace CapFrameX.Sensor.Reporting
 		CpuUsage,
 		[Description("CPU max thread load (%)")]
 		CpuMaxThreadUsage,
+		[Description("CPU max clock (MHz)")]
+		CpuMaxClock,
 		[Description("CPU power (W)")]
 		CpuPower,
 		[Description("CPU temp (°C)")]

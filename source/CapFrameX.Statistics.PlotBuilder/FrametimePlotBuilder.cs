@@ -13,7 +13,6 @@ namespace CapFrameX.Statistics.PlotBuilder
 {
 	public class FrametimePlotBuilder : PlotBuilder
 	{
-
 		public FrametimePlotBuilder(IFrametimeStatisticProviderOptions options, IStatisticProvider frametimeStatisticProvider) : base(options, frametimeStatisticProvider) { }
 
 		public void BuildPlotmodel(ISession session, IPlotSettings plotSettings, double startTime, double endTime, ERemoveOutlierMethod eRemoveOutlinerMethod, Action<PlotModel> onFinishAction = null)
@@ -40,6 +39,8 @@ namespace CapFrameX.Statistics.PlotBuilder
 					SetCPULoadChart(plotModel, session.GetCPULoadPointTimeWindow());
 				if (plotSettings.ShowCpuMaxThreadLoad)
 					SetCPUMaxThreadLoadChart(plotModel, session.GetCPUMaxThreadLoadPointTimeWindow());
+				if (plotSettings.ShowGpuPowerLimit)
+					SetGpuPowerLimitChart(plotModel, session.GetGpuPowerLimitPointTimeWindow());
 			}
 			onFinishAction?.Invoke(plotModel);
 			plotModel.InvalidatePlot(true);

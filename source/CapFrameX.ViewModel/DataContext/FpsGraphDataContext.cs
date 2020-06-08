@@ -1,17 +1,13 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using OxyPlot;
 using OxyPlot.Axes;
-using OxyPlot.Series;
 using Prism.Commands;
 using System;
-using System.Linq;
 using System.Text;
 using System.Windows.Input;
-using System.Collections.Generic;
 using System.Globalization;
 using CapFrameX.Data;
 using System.Windows.Threading;
-using CapFrameX.Extensions;
 using CapFrameX.Statistics.NetStandard;
 using System.Windows.Forms;
 using CapFrameX.Statistics.PlotBuilder;
@@ -69,7 +65,7 @@ namespace CapFrameX.ViewModel.DataContext
 
 			foreach (var framerate in fps)
 			{
-				builder.Append(framerate.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
+				builder.Append(Math.Round(framerate, 2).ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
 			}
 
 			Clipboard.SetDataObject(builder.ToString(), false);
@@ -85,13 +81,11 @@ namespace CapFrameX.ViewModel.DataContext
 
 			for (int i = 0; i < fpsPoints.Count; i++)
 			{
-				builder.Append(fpsPoints[i].X.ToString(CultureInfo.InvariantCulture) + "\t" +
-					fpsPoints[i].Y.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
+				builder.Append(Math.Round(fpsPoints[i].X, 2).ToString(CultureInfo.InvariantCulture) + "\t" +
+					Math.Round(fpsPoints[i].Y, 2).ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
 			}
 
 			Clipboard.SetDataObject(builder.ToString(), false);
 		}
-
-
 	}
 }

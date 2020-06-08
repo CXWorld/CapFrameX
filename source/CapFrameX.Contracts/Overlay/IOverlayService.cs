@@ -16,8 +16,6 @@ namespace CapFrameX.Contracts.Overlay
 
 		void UpdateNumberOfRuns(int numberOfRuns);
 
-		void SetIsCaptureTimerActive(bool isActive);
-
 		void SetCaptureTimerValue(int t);
 
 		void StartCountdown(int seconds);
@@ -34,10 +32,6 @@ namespace CapFrameX.Contracts.Overlay
 
 		void AddRunToHistory(ISessionRun captureData, string process);
 
-		void SetRunHistoryAggregation(string aggregation);
-
-		void Refresh();
-
-		void ResetOSD();
+		
 	}
 }

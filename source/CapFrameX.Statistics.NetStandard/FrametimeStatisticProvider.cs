@@ -6,6 +6,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using CapFrameX.Extensions.NetStandard;
+using System.Net.Http.Headers;
 
 namespace CapFrameX.Statistics.NetStandard
 {
@@ -201,6 +202,9 @@ namespace CapFrameX.Statistics.NetStandard
                 var histogram = Histogram(sequence, minimalBinIntervals);
                 count -= histogram.Count(bin => bin == 0);
             }
+
+            if (count < 1)
+                return Array.Empty<List<double>>();
 
             double[] binIntervals = LinearSpace(min, max, count + 1);
             return Distribution(sequence, binIntervals);

@@ -39,6 +39,7 @@ namespace CapFrameX.Webservice.Implementation.Handlers
 			}
 			var session = JsonConvert.DeserializeObject<Session>(Encoding.UTF8.GetString(fileBytes));
 
+			var infos = session.Info.GetType().GetProperties().Where(p => p.GetCustomAttributes(false).Any(a => a is DescriptionAttribute)).ToDictionary(p => (p.GetCustomAttributes(false).First(a => a is DescriptionAttribute) as DescriptionAttribute)?.Description, p => Convert.ToString(p.GetValue(session.Info)));
 			var sensorItems = SensorReport.GetReportFromSessionSensorData(session.Runs.Select(r => r.SensorData)).ToArray();
 
 			var frametimeStatisticsProviderOptions = new FrametimeStatisticProviderOptions()
@@ -75,6 +76,7 @@ namespace CapFrameX.Webservice.Implementation.Handlers
 
 			return new SessionDetailDTO()
 			{
+				Infos = infos,
 				SensorItems = sensorItems,
 				FpsTresholdsCounts = fpsTresholdsCountsDictionary,
 				FpsTresholdsTimes = fpsTresholdsTimesDictionary,
@@ -98,6 +100,8 @@ namespace CapFrameX.Webservice.Implementation.Handlers
 		public bool ShowCpuLoad { get; set; }
 
 		public bool ShowCpuMaxThreadLoad { get; set; }
+
+		public bool ShowGpuPowerLimit { get; set; }
 
 		public bool IsAnyGraphVisible { get; set; }
 	}

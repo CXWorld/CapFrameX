@@ -7,7 +7,7 @@ namespace CapFrameX.Data.Session.Classes
 	public class SessionRun : ISessionRun
 	{
 		public string Hash { get; set; }
-		public bool IsVR { get; set; }
+		public string PresentMonRuntime { get; set; }
 		[JsonProperty("CaptureData")]
 		[JsonConverter(typeof(ConcreteTypeConverter<SessionCaptureData>))]
 		public ISessionCaptureData CaptureData { get; set; }

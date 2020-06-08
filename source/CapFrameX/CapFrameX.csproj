@@ -64,6 +64,7 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>true</Prefer32Bit>
     <WarningLevel>2</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
     <OutputPath>bin\x64\Release\</OutputPath>
@@ -230,6 +231,10 @@
       <Project>{ADFBAECE-B74F-4A80-87D1-84BC990527B0}</Project>
       <Name>CapFrameX.PresentMonInterface</Name>
     </ProjectReference>
+    <ProjectReference Include="..\CapFrameX.RTSSIntegration\CapFrameX.RTSSIntegration.csproj">
+      <Project>{AE3BDF42-2F21-4CC3-9171-6CF2FDFDAB7A}</Project>
+      <Name>CapFrameX.RTSSIntegration</Name>
+    </ProjectReference>
     <ProjectReference Include="..\CapFrameX.RTSSInterface\CapFrameX.RTSSInterface.vcxproj">
       <Project>{9c46d3f3-72e0-4e6c-ad3e-54a5ee121475}</Project>
       <Name>CapFrameX.RTSSInterface</Name>
@@ -335,6 +340,9 @@
     </PackageReference>
     <PackageReference Include="gong-wpf-dragdrop">
       <Version>1.1.0</Version>
+    </PackageReference>
+    <PackageReference Include="Hardcodet.NotifyIcon.Wpf">
+      <Version>1.0.8</Version>
     </PackageReference>
     <PackageReference Include="Jot">
       <Version>2.0.3</Version>

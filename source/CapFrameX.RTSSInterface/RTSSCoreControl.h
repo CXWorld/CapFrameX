@@ -33,6 +33,7 @@ public:
 	std::vector<OverlayEntry>	OverlayEntries;
 	BOOL						IsCaptureTimerActive;
 	BOOL						UpdateOSD(LPCSTR lpText);
+	CString						GetApiInfo(DWORD processId);
 
 // Implementation
 protected:

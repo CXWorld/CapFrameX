@@ -1,4 +1,5 @@
-﻿using CapFrameX.Data.Session.Contracts;
+﻿using CapFrameX.Data.Session.Classes;
+using CapFrameX.Data.Session.Contracts;
 using CapFrameX.Statistics.NetStandard.Contracts;
 using System;
 using System.Collections.Generic;
@@ -174,6 +175,19 @@ namespace CapFrameX.Statistics.NetStandard
 			return list;
 		}
 
+		public static IList<Point> GetGpuPowerLimitPointTimeWindow(this ISession session)
+		{
+			var list = new List<Point>();
+			var times = session.Runs.SelectMany(r => r.SensorData.MeasureTime).ToArray();
+			var flags = session.Runs.SelectMany(r => r.SensorData.GpuPowerLimit.Select(limit => limit ? 98 : -5)).ToArray();
+
+			for (int i = 0; i < times.Count(); i++)
+			{
+				list.Add(new Point(times[i], flags[i]));
+			}
+			return list;
+		}
+
 		public static IList<Point> GetFpsPointTimeWindow(this ISession session, double startTime, double endTime, IFrametimeStatisticProviderOptions options, ERemoveOutlierMethod eRemoveOutlierMethod = ERemoveOutlierMethod.None)
 		{
 			return session.GetFrametimePointsTimeWindow(startTime, endTime, options, eRemoveOutlierMethod).Select(pnt => new Point(pnt.X, 1000 / pnt.Y)).ToList();
@@ -182,6 +196,27 @@ namespace CapFrameX.Statistics.NetStandard
 		public static bool HasValidSensorData(this ISession session)
 		{
 			return session.Runs.All(run => run.SensorData != null && run.SensorData.MeasureTime.Any());
+		}
+
+		public static string GetPresentationMode(this IEnumerable<ISessionRun> runs)
+		{
+			var presentModes = runs.SelectMany(r => r.CaptureData.PresentMode);
+			var orderedByFrequency = presentModes.GroupBy(x => x).OrderByDescending(x => x.Count()).Select(x => x.Key);
+			var presentMode = (EPresentMode)orderedByFrequency.FirstOrDefault();
+			switch (presentMode)
+			{
+				case EPresentMode.HardwareLegacyFlip:
+				case EPresentMode.HardwareLegacyCopyToFrontBuffer:
+					return "Fullscreen Exclusive";
+				case EPresentMode.HardwareComposedIndependentFlip:
+				case EPresentMode.HardwareIndependentFlip:
+					return "Fullscreen Optimized or Borderless";
+				case EPresentMode.ComposedFlip:
+				case EPresentMode.ComposedCopyWithGPUGDI:
+					return "Windowed or Borderless";
+				default:
+					return "Unknown";
+			}
 		}
 	}
 }

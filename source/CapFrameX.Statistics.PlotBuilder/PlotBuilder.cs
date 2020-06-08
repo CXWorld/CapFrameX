@@ -27,7 +27,8 @@ namespace CapFrameX.Statistics.PlotBuilder
 			LegendMaxHeight = 25
 		};
 
-		protected Dictionary<EPlotAxis, LinearAxis> AxisDefinitions { get; set; } = new Dictionary<EPlotAxis, LinearAxis>() {
+		protected Dictionary<EPlotAxis, LinearAxis> AxisDefinitions { get; set; } 
+			= new Dictionary<EPlotAxis, LinearAxis>() {
 			{ EPlotAxis.YAXISPERCENTAGE, new LinearAxis()
 				{
 					Key = EPlotAxis.YAXISPERCENTAGE.GetDescription(),
@@ -117,6 +118,7 @@ namespace CapFrameX.Statistics.PlotBuilder
 			{
 				Title = "GPU load",
 				StrokeThickness = 2,
+				LegendStrokeThickness = 4,
 				Color = OxyColor.FromArgb(180, 32, 141, 228),
 				YAxisKey = EPlotAxis.YAXISPERCENTAGE.GetDescription()
 			};
@@ -130,6 +132,7 @@ namespace CapFrameX.Statistics.PlotBuilder
 			{
 				Title = "CPU total load",
 				StrokeThickness = 2,
+				LegendStrokeThickness = 4,
 				Color = OxyColor.FromArgb(180, 241, 125, 32),
 				YAxisKey = EPlotAxis.YAXISPERCENTAGE.GetDescription()
 			};
@@ -143,7 +146,24 @@ namespace CapFrameX.Statistics.PlotBuilder
 			{
 				Title = "CPU max thread load",
 				StrokeThickness = 2,
+				LegendStrokeThickness = 4,
 				Color = OxyColor.FromArgb(180, 250, 25, 30),
+				YAxisKey = EPlotAxis.YAXISPERCENTAGE.GetDescription()
+			};
+
+			series.Points.AddRange(points.Select(p => new DataPoint(p.X, p.Y)));
+			plotModel.Series.Add(series);
+		}
+
+		protected void SetGpuPowerLimitChart(PlotModel plotModel, IList<Point> points)
+		{
+			var series = new LineSeries
+			{
+				Title = "GPU power limit",
+				LineStyle = LineStyle.None,
+				MarkerType = MarkerType.Square,
+				MarkerSize = 3,
+				MarkerFill = OxyColor.FromArgb(100, 228, 32, 141),
 				YAxisKey = EPlotAxis.YAXISPERCENTAGE.GetDescription()
 			};
 

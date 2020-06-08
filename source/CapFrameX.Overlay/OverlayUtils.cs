@@ -93,7 +93,7 @@ namespace CapFrameX.Overlay
                         ShowOnOverlay = false,
                         ShowOnOverlayIsEnabled = true,
                         Description = "Custom CPU Name",
-                        GroupName = "System Info",
+                        GroupName = "CPU Info",
                         Value = "CPU",
                         ValueFormat = default,
                         ShowGraph = false,
@@ -108,7 +108,7 @@ namespace CapFrameX.Overlay
                         ShowOnOverlay = false,
                         ShowOnOverlayIsEnabled = true,
                         Description = "Custom GPU Name",
-                        GroupName = "System Info",
+                        GroupName = "GPU Info",
                         Value = "GPU",
                         ValueFormat = default,
                         ShowGraph = false,
@@ -123,7 +123,7 @@ namespace CapFrameX.Overlay
                         ShowOnOverlay = false,
                         ShowOnOverlayIsEnabled = true,
                         Description = "Mainboard Name",
-                        GroupName = "System Info",
+                        GroupName = "MB Info",
                         Value = "Mainboard",
                         ValueFormat = default,
                         ShowGraph = false,
@@ -138,7 +138,7 @@ namespace CapFrameX.Overlay
                         ShowOnOverlay = false,
                         ShowOnOverlayIsEnabled = true,
                         Description = "Custom RAM Description",
-                        GroupName = "System Info",
+                        GroupName = "RAM Info",
                         Value = "RAM",
                         ValueFormat = default,
                         ShowGraph = false,
@@ -155,6 +155,66 @@ namespace CapFrameX.Overlay
                         Description = "OS Version",
                         GroupName = "OS",
                         Value = "OS",
+                        ValueFormat = default,
+                        ShowGraph = false,
+                        ShowGraphIsEnabled = false,
+                        Color = string.Empty
+                    },
+
+                    new OverlayEntryWrapper("GPUDriver")
+                    {
+                        OverlayEntryType = EOverlayEntryType.CX,
+                        ShowOnOverlay = false,
+                        ShowOnOverlayIsEnabled = true,
+                        Description = "GPU Software Version",
+                        GroupName = "GPU Driver",
+                        Value = "Not available",
+                        ValueFormat = default,
+                        ShowGraph = false,
+                        ShowGraphIsEnabled = false,
+                        Color = string.Empty
+                    },
+
+                    // Online metrics
+                    // Average
+                    new OverlayEntryWrapper("OnlineAverage")
+                    {
+                        OverlayEntryType = EOverlayEntryType.OnlineMetric,
+                        ShowOnOverlay = false,
+                        ShowOnOverlayIsEnabled = true,
+                        Description = "Real-time average FPS",
+                        GroupName = "Average",
+                        Value = "0",
+                        ValueFormat = default,
+                        ShowGraph = false,
+                        ShowGraphIsEnabled = false,
+                        Color = string.Empty
+                    },
+
+                     // P1
+                    new OverlayEntryWrapper("OnlineP1")
+                    {
+                        OverlayEntryType = EOverlayEntryType.OnlineMetric,
+                        ShowOnOverlay = false,
+                        ShowOnOverlayIsEnabled = true,
+                        Description = "Real-time P1 FPS",
+                        GroupName = "P1%",
+                        Value = "0",
+                        ValueFormat = default,
+                        ShowGraph = false,
+                        ShowGraphIsEnabled = false,
+                        Color = string.Empty
+                    },
+
+                     // P0.2
+                    new OverlayEntryWrapper("OnlineP0dot2")
+                    {
+                        OverlayEntryType = EOverlayEntryType.OnlineMetric,
+                        ShowOnOverlay = false,
+                        ShowOnOverlayIsEnabled = true,
+                        Description = "Real-time P0.2 FPS",
+                        GroupName = "P0.2%",
+                        Value = "0",
                         ValueFormat = default,
                         ShowGraph = false,
                         ShowGraphIsEnabled = false,
