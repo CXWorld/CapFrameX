@@ -212,7 +212,7 @@
                                         <TextBlock Margin="5" Grid.Row="0" Grid.Column="0" Text="Capture items" VerticalAlignment="Center"/>
                                         <ToggleButton Margin="5" Grid.Row="0" Grid.Column="1" IsChecked="{Binding Path=OverlaySubModelGroupControl.OverlayGroupCaptureItems}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Group control capture items" />
 
-                                        <TextBlock Margin="5" Grid.Row="1" Grid.Column="0" Text="System info" VerticalAlignment="Center"/>
+                                        <TextBlock Margin="5" Grid.Row="1" Grid.Column="0" Text="System infos" VerticalAlignment="Center"/>
                                         <ToggleButton Margin="5" Grid.Row="1" Grid.Column="1" IsChecked="{Binding Path=OverlaySubModelGroupControl.OverlayGroupSystemInfo}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Group control system info" />
 
                                         <TextBlock Margin="5" Grid.Row="2" Grid.Column="0" Text="Online metrics" VerticalAlignment="Center"/>
