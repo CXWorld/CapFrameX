@@ -204,51 +204,34 @@
                                             <RowDefinition Height="*" />
                                             <RowDefinition Height="*" />
                                             <RowDefinition Height="*" />
-                                            <RowDefinition Height="*" />
-                                            <RowDefinition Height="*" />
                                         </Grid.RowDefinitions>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="Auto"/>
                                             <ColumnDefinition Width="Auto"/>
-                                            <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
-                                        <CheckBox Margin="5" Grid.Row="0" Grid.Column="0" IsChecked="{Binding Path=OverlaySubModelGroupControl.UseGroupCaptureItems}"/>
-                                        <TextBlock Margin="5" Grid.Row="0" Grid.Column="1" Text="Capture items" VerticalAlignment="Center"/>
-                                        <ToggleButton Margin="5" Grid.Row="0" Grid.Column="2" IsChecked="{Binding Path=OverlaySubModelGroupControl.OverlayGroupCaptureItems}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Group control capture items" />
+                                        <TextBlock Margin="5" Grid.Row="0" Grid.Column="0" Text="Capture items" VerticalAlignment="Center"/>
+                                        <ToggleButton Margin="5" Grid.Row="0" Grid.Column="1" IsChecked="{Binding Path=OverlaySubModelGroupControl.OverlayGroupCaptureItems}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Group control capture items" />
 
-                                        <CheckBox Margin="5" Grid.Row="1" Grid.Column="0" IsChecked="{Binding Path=OverlaySubModelGroupControl.UseGroupSystemInfo}"/>
-                                        <TextBlock Margin="5" Grid.Row="1" Grid.Column="1" Text="System info" VerticalAlignment="Center"/>
-                                        <ToggleButton Margin="5" Grid.Row="1" Grid.Column="2" IsChecked="{Binding Path=OverlaySubModelGroupControl.OverlayGroupSystemInfo}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Group control system info" />
+                                        <TextBlock Margin="5" Grid.Row="1" Grid.Column="0" Text="System info" VerticalAlignment="Center"/>
+                                        <ToggleButton Margin="5" Grid.Row="1" Grid.Column="1" IsChecked="{Binding Path=OverlaySubModelGroupControl.OverlayGroupSystemInfo}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Group control system info" />
 
-                                        <CheckBox Margin="5" Grid.Row="2" Grid.Column="0" IsChecked="{Binding Path=OverlaySubModelGroupControl.UseGroupOnlineMetrics}"/>
-                                        <TextBlock Margin="5" Grid.Row="2" Grid.Column="1" Text="Online metrics" VerticalAlignment="Center"/>
-                                        <ToggleButton Margin="5" Grid.Row="2" Grid.Column="2" IsChecked="{Binding Path=OverlaySubModelGroupControl.OverlayGroupOnlineMetrics}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Group control online metrics" />
+                                        <TextBlock Margin="5" Grid.Row="2" Grid.Column="0" Text="Online metrics" VerticalAlignment="Center"/>
+                                        <ToggleButton Margin="5" Grid.Row="2" Grid.Column="1" IsChecked="{Binding Path=OverlaySubModelGroupControl.OverlayGroupOnlineMetrics}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Group control online metrics" />
 
-                                        <CheckBox Margin="5" Grid.Row="3" Grid.Column="0" IsChecked="{Binding Path=OverlaySubModelGroupControl.UseGroupCPULoads}"/>
-                                        <TextBlock Margin="5" Grid.Row="3" Grid.Column="1" Text="CPU loads" VerticalAlignment="Center"/>
-                                        <ToggleButton Margin="5" Grid.Row="3" Grid.Column="2" IsChecked="{Binding Path=OverlaySubModelGroupControl.OverlayGroupCPULoads}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Group control CPU loads" />
+                                        <TextBlock Margin="5" Grid.Row="3" Grid.Column="0" Text="GPU basics" VerticalAlignment="Center"/>
+                                        <ToggleButton Margin="5" Grid.Row="3" Grid.Column="1" IsChecked="{Binding Path=OverlaySubModelGroupControl.OverlayGroupGpuBasics}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Group control GPU basic sensors" />
 
-                                        <CheckBox Margin="5" Grid.Row="4" Grid.Column="0" IsChecked="{Binding Path=OverlaySubModelGroupControl.UseGroupCPUClocks}"/>
-                                        <TextBlock Margin="5" Grid.Row="4" Grid.Column="1" Text="CPU clocks" VerticalAlignment="Center"/>
-                                        <ToggleButton Margin="5" Grid.Row="4" Grid.Column="2" IsChecked="{Binding Path=OverlaySubModelGroupControl.OverlayGroupCPUClocks}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Group control CPU Clocks" />
+                                        <TextBlock Margin="5" Grid.Row="4" Grid.Column="0" Text="CPU loads" VerticalAlignment="Center"/>
+                                        <ToggleButton Margin="5" Grid.Row="4" Grid.Column="1" IsChecked="{Binding Path=OverlaySubModelGroupControl.OverlayGroupCPULoads}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Group control CPU loads" />
 
-                                        <CheckBox Margin="5" Grid.Row="5" Grid.Column="0" IsChecked="{Binding Path=OverlaySubModelGroupControl.UseGroupCPUTemps}"/>
-                                        <TextBlock Margin="5" Grid.Row="5" Grid.Column="1" Text="CPU temps" VerticalAlignment="Center"/>
-                                        <ToggleButton Margin="5" Grid.Row="5" Grid.Column="2" IsChecked="{Binding Path=OverlaySubModelGroupControl.OverlayGroupCPUTemps}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Group control CPU temps" />
+                                        <TextBlock Margin="5" Grid.Row="5" Grid.Column="0" Text="CPU clocks" VerticalAlignment="Center"/>
+                                        <ToggleButton Margin="5" Grid.Row="5" Grid.Column="1" IsChecked="{Binding Path=OverlaySubModelGroupControl.OverlayGroupCPUClocks}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Group control CPU Clocks" />
 
-                                        <CheckBox Margin="5" Grid.Row="6" Grid.Column="0" IsChecked="{Binding Path=OverlaySubModelGroupControl.UseGroupCPUPackage}"/>
-                                        <TextBlock Margin="5" Grid.Row="6" Grid.Column="1" Text="CPU package" VerticalAlignment="Center"/>
-                                        <ToggleButton Margin="5" Grid.Row="6" Grid.Column="2" IsChecked="{Binding Path=OverlaySubModelGroupControl.OverlayGroupCPUPackage}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Group control CPU package" />
+                                        <TextBlock Margin="5" Grid.Row="6" Grid.Column="0" Text="CPU temps" VerticalAlignment="Center"/>
+                                        <ToggleButton Margin="5" Grid.Row="6" Grid.Column="1" IsChecked="{Binding Path=OverlaySubModelGroupControl.OverlayGroupCPUTemps}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Group control CPU temps" />
 
-                                        <CheckBox Margin="5" Grid.Row="7" Grid.Column="0" IsChecked="{Binding Path=OverlaySubModelGroupControl.UseGroupRAMItems}"/>
-                                        <TextBlock Margin="5" Grid.Row="7" Grid.Column="1" Text="RAM items" VerticalAlignment="Center"/>
-                                        <ToggleButton Margin="5" Grid.Row="7" Grid.Column="2" IsChecked="{Binding Path=OverlaySubModelGroupControl.OverlayGroupRAMItems}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Group control RAM items" />
-
-                                        <Separator Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="8" Style="{StaticResource MaterialDesignDarkSeparator}" />
-                                        <Button Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="9" HorizontalAlignment="Center" IsDefault="True" Style="{DynamicResource MaterialDesignFlatButton}"
-										Command="{Binding OverlaySubModelGroupControl.AcceptOSDGroupSettingsCommand}">
-                                            APPLY
-                                        </Button>
+                                        <TextBlock Margin="5" Grid.Row="7" Grid.Column="0" Text="RAM items" VerticalAlignment="Center"/>
+                                        <ToggleButton Margin="5" Grid.Row="7" Grid.Column="1" IsChecked="{Binding Path=OverlaySubModelGroupControl.OverlayGroupRAMItems}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Group control RAM items" />
                                     </Grid>
                                 </StackPanel>
                             </materialDesign:Card>
