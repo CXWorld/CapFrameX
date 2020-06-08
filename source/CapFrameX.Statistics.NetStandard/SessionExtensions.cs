@@ -202,7 +202,7 @@ namespace CapFrameX.Statistics.NetStandard
 		{
 			var presentModes = runs.SelectMany(r => r.CaptureData.PresentMode);
 			var orderedByFrequency = presentModes.GroupBy(x => x).OrderByDescending(x => x.Count()).Select(x => x.Key);
-			var presentMode = (EPresentMode)orderedByFrequency.First();
+			var presentMode = (EPresentMode)orderedByFrequency.FirstOrDefault();
 			switch (presentMode)
 			{
 				case EPresentMode.HardwareLegacyFlip:
