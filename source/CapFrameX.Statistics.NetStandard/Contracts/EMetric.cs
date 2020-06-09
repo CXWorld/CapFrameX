@@ -44,8 +44,14 @@ namespace CapFrameX.Statistics.NetStandard.Contracts
 		[Description("Adaptive STDEV")]
 		[ShortDescription("Adp STDEV")]
 		AdaptiveStd = 13,
+		[Description("CPU FPS per Watt")]
+		[ShortDescription("CPU FPS/W")]
+		CpuFpsPerWatt = 14,
+		//[Description("GPU FPS per Watt")]
+		//[ShortDescription("GPU FPS/W")]
+		//GpuFpsPerWatt = 15,
 		[Description("None")]
 		[ShortDescription("None")]
-		None = 14,
+		None = 16,
 	}
 }

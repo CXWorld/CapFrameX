@@ -115,7 +115,19 @@ namespace CapFrameX.Configuration
 			set { Settings.UseSingleRecordAdaptiveSTDStatisticParameter = value; Settings.Save(); }
 		}
 
-        public string CaptureHotKey
+		public bool UseSingleRecordCpuFpsPerWattParameter
+		{
+			get { return Settings.UseSingleRecordCpuFpsPerWattParameter; }
+			set { Settings.UseSingleRecordCpuFpsPerWattParameter = value; Settings.Save(); }
+		}
+
+		public bool UseSingleRecordGpuFpsPerWattParameter
+		{
+			get { return Settings.UseSingleRecordGpuFpsPerWattParameter; }
+			set { Settings.UseSingleRecordGpuFpsPerWattParameter = value; Settings.Save(); }
+		}
+
+		public string CaptureHotKey
         {
             get { return Settings.CaptureHotKey; }
             set { Settings.CaptureHotKey = value; Settings.Save(); }

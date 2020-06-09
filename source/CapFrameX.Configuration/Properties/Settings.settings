@@ -200,5 +200,11 @@
     <Setting Name="CaptureFileMode" Type="System.String" Scope="User">
       <Value Profile="(Default)">Json</Value>
     </Setting>
+    <Setting Name="UseSingleRecordCpuFpsPerWattParameter" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="UseSingleRecordGpuFpsPerWattParameter" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

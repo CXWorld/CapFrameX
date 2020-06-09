@@ -180,6 +180,12 @@ namespace CapFrameX.Statistics.NetStandard
                     fps = sequence.Select(ft => 1000 / ft).ToList();
                     metricValue = GetAdaptiveStandardDeviation(fps, _options.MovingAverageWindowSize);
                     break;
+                case EMetric.CpuFpsPerWatt:
+                    metricValue = (sequence.Count * 1000 / sequence.Sum()) / 60;
+                    break;
+                //case EMetric.GpuFpsPerWatt:
+                //    metricValue = (sequence.Count * 1000 / sequence.Sum()) / 180;
+                //    break;
                 default:
                     metricValue = double.NaN;
                     break;

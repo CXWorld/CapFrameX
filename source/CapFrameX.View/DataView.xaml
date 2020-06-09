@@ -333,6 +333,7 @@
                                         <RowDefinition Height="*" />
                                         <RowDefinition Height="*" />
                                         <RowDefinition Height="*" />
+                                        <RowDefinition Height="*" />
                                     </Grid.RowDefinitions>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto"/>
@@ -364,6 +365,8 @@
                                     <ToggleButton Margin="5" Grid.Row="11" Grid.Column="1" IsChecked="{Binding UseMinStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show minimum value parameter" />
                                     <TextBlock Margin="5" Grid.Row="12" Grid.Column="0" Text="Adaptive STDEV" VerticalAlignment="Center" ToolTip="standard deviation calculated with moving average instead of constant mean"/>
                                     <ToggleButton Margin="5" Grid.Row="12" Grid.Column="1" IsChecked="{Binding UseAdaptiveSTDStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show adaptive standard deviation parameter" />
+                                    <TextBlock Margin="5" Grid.Row="13" Grid.Column="0" Text="CPU FPS/W" VerticalAlignment="Center" ToolTip="CPU FPS per watt"/>
+                                    <ToggleButton Margin="5" Grid.Row="13" Grid.Column="1" IsChecked="{Binding UseCpuFpsPerWattParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show CPU frames per watt" />
                                 </Grid>
                                 <Separator Style="{StaticResource MaterialDesignDarkSeparator}" />
                                 <StackPanel
