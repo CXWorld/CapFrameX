@@ -58,7 +58,11 @@
                 <TabItem Header="Bar charts" >
                     <DockPanel>
                         <TextBlock DockPanel.Dock="Top" Grid.Row="0" Margin="0 10 0 10" FontWeight="Bold" FontSize="16" Text="{Binding CurrentGameName}" HorizontalAlignment="Center"
-							   Visibility="{Binding HasUniqueGameNames, Converter={StaticResource TrueToVisibleConverter}}"/>
+							   Visibility="{Binding ShowGameNameTitle, Converter={StaticResource TrueToVisibleConverter}}"/>
+                        <TextBox DockPanel.Dock="Top" Grid.Row="0" HorizontalAlignment="Center" Visibility="{Binding Path=IsChecked, ElementName=ShowCustomTitleToggleButton, Converter={StaticResource TrueToVisibleConverter}}"
+                                 Text="Type your title here..." Margin="0 10 0 0" Height="30" Padding="0 -28 0 0"
+                                 Style="{StaticResource MaterialDesignFilledTextFieldTextBox}"
+                                 FontSize="18" />
                         <ScrollViewer VerticalScrollBarVisibility="Auto">
                             <lvc:CartesianChart Grid.Row="0" VerticalAlignment="Top" MaxWidth="1000" Margin="10" Series="{Binding ComparisonRowChartSeriesCollection}" Height="{Binding BarChartHeight}"
 											Visibility="{Binding HasComparisonItems, Converter={StaticResource TrueToVisibleConverter}}" DisableAnimations="True"
@@ -78,17 +82,47 @@
                         </ScrollViewer>
                     </DockPanel>
                 </TabItem>
-                <TabItem Header="Frametimes/ L-shapes">
+                <TabItem Header="Line charts/ L-shapes">
                     <Grid Name="ChartAndCuttingGrid">
                         <Grid.RowDefinitions>
+                            <!--Edit box for custom title-->
+                            <RowDefinition Height="Auto"></RowDefinition>
+                            <!--frametimes/fps-->
                             <RowDefinition Height="2*"></RowDefinition>
                             <RowDefinition Height="Auto"></RowDefinition>
                             <RowDefinition Height="1*"></RowDefinition>
                         </Grid.RowDefinitions>
-                        <Grid Grid.Row="0" Margin="0 0 0 -10">
-                            <oxy:PlotView Background="#F5F5F5" x:Name="ComparisonPlotView" Model="{Binding ComparisonModel}" MouseDoubleClick="ResetFrametimeChart_MouseDoubleClick"/>
+                        <TextBox Grid.Row="0" HorizontalAlignment="Center" Visibility="{Binding Path=IsChecked, ElementName=ShowCustomTitleToggleButton, Converter={StaticResource TrueToVisibleConverter}}"
+                                 Text="Type your title here..." Margin="0 10 0 0" Height="30" Padding="0 -28 0 0"
+                                 Style="{StaticResource MaterialDesignFilledTextFieldTextBox}"
+                                 FontSize="18" />
+                        <Grid Grid.Row="1" Margin="0 0 0 -10">
+                            <ContentPresenter x:Name="ChartsContentPresenter" Content="{Binding}">
+                                <ContentPresenter.Resources>
+                                    <DataTemplate x:Key="FrametimeChartContent">
+                                        <oxy:PlotView x:Name="FrametimesPlotView" Background="#F5F5F5" Model="{Binding DataContext.ComparisonModel, ElementName=ComparisonViewUserControl, Mode=OneWay}"
+                                                      MouseDoubleClick="ResetFrametimeChart_MouseDoubleClick"/>
+                                    </DataTemplate>
+                                    <DataTemplate x:Key="FpsChartContent">
+                                        <oxy:PlotView x:Name="ComparisonFpsPlotView" Background="#F5F5F5" Model="{Binding DataContext.ComparisonFpsModel, ElementName=ComparisonViewUserControl, Mode=OneWay}"
+                                                      MouseDoubleClick="ResetFpsChart_MouseDoubleClick"/>
+                                    </DataTemplate>
+                                </ContentPresenter.Resources>
+                                <ContentPresenter.Style>
+                                    <Style TargetType="{x:Type ContentPresenter}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding DataContext.SelectedChartView, ElementName=ComparisonViewUserControl}" Value="Frametime">
+                                                <Setter Property="ContentTemplate" Value="{StaticResource FrametimeChartContent}" />
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding DataContext.SelectedChartView, ElementName=ComparisonViewUserControl}" Value="Chart">
+                                                <Setter Property="ContentTemplate" Value="{StaticResource FpsChartContent}" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </ContentPresenter.Style>
+                            </ContentPresenter>
                         </Grid>
-                        <Grid Grid.Row="1" Visibility="{Binding ElementName=RangeSliderActiveToggleButton, Path=IsChecked, Converter={StaticResource TrueToVisibleConverter}}">
+                        <Grid Grid.Row="2" Visibility="{Binding ElementName=RangeSliderActiveToggleButton, Path=IsChecked, Converter={StaticResource TrueToVisibleConverter}}">
                             <mahapps:RangeSlider Margin="50 10 5 25" LowerValue="{Binding FirstSeconds}" UpperValue="{Binding LastSeconds}"   
                                      Maximum="{Binding MaxRecordingTime}"                                    
 									 TickPlacement="BottomRight" TickFrequency="2.5"                                     
@@ -99,7 +133,7 @@
                                 <TextBlock Text="{Binding RemainingRecordingTime}" Margin="5 0 0 0"/>
                             </StackPanel>
                         </Grid>
-                        <Grid Grid.Row="2">
+                        <Grid Grid.Row="3">
                             <lvc:CartesianChart MouseDoubleClick="ResetLShapeChart_MouseDoubleClick" Series="{Binding ComparisonLShapeCollection}" Zoom="Y">
                                 <lvc:CartesianChart.AxisX>
                                     <lvc:Axis Title="Percentiles (%)" Name="LShapeX" Foreground="Black">
@@ -119,6 +153,8 @@
         </materialDesign:DialogHost>
         <Grid Grid.Row="1" Grid.Column="0" Margin="5 0 0 5" Background="#e6e6e6">
             <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"></ColumnDefinition>
+                <ColumnDefinition Width="Auto"></ColumnDefinition>
                 <ColumnDefinition Width="Auto"></ColumnDefinition>
                 <ColumnDefinition Width="Auto"></ColumnDefinition>
                 <ColumnDefinition Width="Auto"></ColumnDefinition>
@@ -145,7 +181,20 @@
 							  ToolTip="Sort entries by game first" IsChecked="{Binding UseComparisonGrouping}"/>
                 
             </StackPanel>
-            <StackPanel Grid.Column="2" Margin="50 5 5 5" Orientation="Horizontal" Visibility="{Binding IsBarChartTabActive, Converter={StaticResource TrueToVisibleConverter}}"
+            <StackPanel Grid.Column="0" Margin="20 0 0 0" VerticalAlignment="Center" Orientation="Horizontal"
+						Visibility="{Binding IsBarChartTabActive, Converter={StaticResource TrueToCollapsedConverter}}">
+                <TextBlock VerticalAlignment="Center">Range slider:</TextBlock>
+                <ToggleButton Name="RangeSliderActiveToggleButton" Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
+							  IsChecked="{Binding IsRangeSliderActive}"/>
+            </StackPanel>
+
+            <StackPanel Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="20 0 10 0" Orientation="Horizontal"
+						Visibility="{Binding IsBarChartTabActive, Converter={StaticResource TrueToCollapsedConverter}}">
+                <TextBlock VerticalAlignment="Center">Show legend:</TextBlock>
+                <ToggleButton Name="ContextLegendActiveToggleButton" Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
+								  ToolTip="Show context legend" IsChecked="{Binding IsContextLegendActive}"/>
+            </StackPanel>
+            <StackPanel Grid.Column="2" Margin="20 5 5 5" Orientation="Horizontal" Visibility="{Binding IsBarChartTabActive, Converter={StaticResource TrueToVisibleConverter}}"
                         ToolTip="Select a second and third metric to be shown">
                 <TextBlock Margin="0 0 0 0" VerticalAlignment="Center"  HorizontalAlignment="Center"> Metrics</TextBlock>
                 <materialDesign:PopupBox StaysOpen="True" ToolTipService.ShowDuration="25000" PlacementMode="TopAndAlignCentres">
@@ -183,7 +232,7 @@
                     </materialDesign:Card>
                 </materialDesign:PopupBox>
             </StackPanel>
-            <StackPanel Grid.Column="3" Margin="50 5 5 5" Orientation="Horizontal"
+            <StackPanel Grid.Column="4" Margin="20 5 5 5" Orientation="Horizontal"
                         ToolTip="Select up to 2 contexts to be shown">
                 <TextBlock Margin="0 0 0 0" VerticalAlignment="Center" HorizontalAlignment="Center">Contexts</TextBlock>
                 <materialDesign:PopupBox StaysOpen="True" ToolTipService.ShowDuration="25000" PlacementMode="TopAndAlignCentres">
@@ -220,19 +269,11 @@
                     </materialDesign:Card>
                 </materialDesign:PopupBox>
             </StackPanel>
-            
-            <StackPanel Grid.Column="0" Margin="30 0 0 0" VerticalAlignment="Center" Orientation="Horizontal"
-						Visibility="{Binding IsBarChartTabActive, Converter={StaticResource TrueToCollapsedConverter}}">
-                <TextBlock VerticalAlignment="Center">Range slider:</TextBlock>
-                <ToggleButton Name="RangeSliderActiveToggleButton" Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
-							  IsChecked="{Binding IsRangeSliderActive}"/>
-            </StackPanel>
 
-            <StackPanel Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="50 0 10 0" Orientation="Horizontal"
-						Visibility="{Binding IsBarChartTabActive, Converter={StaticResource TrueToCollapsedConverter}}">
-                <TextBlock VerticalAlignment="Center">Show legend:</TextBlock>
-                <ToggleButton Name="ContextLegendActiveToggleButton" Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
-								  ToolTip="Show context legend" IsChecked="{Binding IsContextLegendActive}"/>
+            <StackPanel Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="20 0 10 0" Orientation="Horizontal">
+                <TextBlock VerticalAlignment="Center">Show custom title:</TextBlock>
+                <ToggleButton x:Name="ShowCustomTitleToggleButton" Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
+								  ToolTip="Show custom title edit box" IsChecked="{Binding ShowCustomTitle}"/>
             </StackPanel>
         </Grid>
         <StackPanel Margin="5 10 5 0" Grid.Column="1" Grid.RowSpan="2" Orientation="Vertical">

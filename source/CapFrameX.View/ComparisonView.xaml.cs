@@ -4,9 +4,12 @@ using CapFrameX.Statistics;
 using CapFrameX.View.Controls;
 using CapFrameX.ViewModel;
 using Microsoft.Extensions.Logging;
+using OxyPlot.Wpf;
 using Prism.Events;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Windows;
@@ -21,9 +24,10 @@ namespace CapFrameX.View
 	public partial class ComparisonView : UserControl
 	{
 		public ComparisonView()
-		{
+		{			
 			InitializeComponent();
-			OxyPlotHelper.SetAxisZoomWheelAndPan(ComparisonPlotView);
+			var comparisonFrametimePlotView = GetFrametimePlotView();
+			OxyPlotHelper.SetAxisZoomWheelAndPan(comparisonFrametimePlotView);
 
 			var context = SynchronizationContext.Current;
 			(DataContext as ComparisonViewModel)?.ResetLShapeChart
@@ -32,9 +36,28 @@ namespace CapFrameX.View
 				.Subscribe(dummy => ResetLShapeChart());
 		}
 
+		private PlotView GetFrametimePlotView()
+		{
+			var dataTemplate = ChartsContentPresenter.FindResource("FrametimeChartContent") as DataTemplate;
+			return dataTemplate.LoadContent() as PlotView;
+		}
+
+		private PlotView GetFpsPlotView()
+		{
+			var dataTemplate = ChartsContentPresenter.FindResource("FpsChartContent") as DataTemplate;
+			return dataTemplate.LoadContent() as PlotView;
+		}
+
 		private void ResetFrametimeChart_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
 		{
-			ComparisonPlotView.ResetAllAxes();
+			var comparisonFrametimePlotView = GetFrametimePlotView();
+			comparisonFrametimePlotView.ResetAllAxes();
+		}
+
+		private void ResetFpsChart_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
+		{
+			var comparisonFpsPlotView = GetFpsPlotView();
+			comparisonFpsPlotView.ResetAllAxes();
 		}
 
 		private void ResetLShapeChart_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
