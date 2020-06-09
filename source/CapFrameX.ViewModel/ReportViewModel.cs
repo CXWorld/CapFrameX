@@ -11,7 +11,6 @@ using CapFrameX.Contracts.Data;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Extensions;
 using CapFrameX.Data;
-using CapFrameX.Statistics;
 using GongSolutions.Wpf.DragDrop;
 using Prism.Commands;
 using Prism.Events;
@@ -20,6 +19,7 @@ using Prism.Regions;
 using System.Collections.Specialized;
 using CapFrameX.Statistics.NetStandard;
 using CapFrameX.Statistics.NetStandard.Contracts;
+using CapFrameX.Sensor.Reporting;
 
 namespace CapFrameX.ViewModel
 {
@@ -91,6 +91,8 @@ namespace CapFrameX.ViewModel
 			var displayNameZeroDotOnePercentLowAverageFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.ZeroDotOnePercentLowAverageFps);
 			var displayNameMinFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.MinFps);
 			var displayNameAdaptiveSTDFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.AdaptiveSTDFps);
+			var displayNameCpuFpsPerWatt = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.CpuFpsPerWatt);
+			//var displayNameGpuFpsPerWatt = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.GpuFpsPerWatt);
 			var displayNameCustomComment = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.CustomComment);
 
 			builder.Append(displayNameGame + "\t" +
@@ -114,6 +116,8 @@ namespace CapFrameX.ViewModel
 						   displayNameZeroDotOnePercentLowAverageFps + "\t" +
 						   displayNameMinFps + "\t" +
 						   displayNameAdaptiveSTDFps + "\t" +
+						   displayNameCpuFpsPerWatt + "\t" +
+						   //displayNameGpuFpsPerWatt + "\t" +
 						   displayNameCustomComment +
 						   Environment.NewLine);
 
@@ -140,6 +144,8 @@ namespace CapFrameX.ViewModel
 							   reportInfo.ZeroDotOnePercentLowAverageFps.ToString(CultureInfo.InvariantCulture) + "\t" +
 							   reportInfo.MinFps.ToString(CultureInfo.InvariantCulture) + "\t" +
 							   reportInfo.AdaptiveSTDFps.ToString(CultureInfo.InvariantCulture) + "\t" +
+							   reportInfo.CpuFpsPerWatt.ToString(CultureInfo.InvariantCulture) + "\t" +
+							   //reportInfo.GpuFpsPerWatt.ToString(CultureInfo.InvariantCulture) + "\t" +
 							   reportInfo.CustomComment +
 							   Environment.NewLine);
 			}
@@ -182,6 +188,14 @@ namespace CapFrameX.ViewModel
 			var p0dot1_averageLow = GeMetricValue(frameTimes, EMetric.ZerodotOnePercentLow);
 			var min = GeMetricValue(frameTimes, EMetric.Min);
 			var adaptiveStandardDeviation = GeMetricValue(frameTimes, EMetric.AdaptiveStd);
+			var cpuFpsPerWatt = _frametimeStatisticProvider
+				.GetPhysicalMetricValue(frameTimes, EMetric.CpuFpsPerWatt,
+				SensorReport.GetAverageCpuPower(session.Runs.Select(run => run.SensorData),
+				0, double.PositiveInfinity));
+			//var gpuFpsPerWatt =  _frametimeStatisticProvider
+			//	.GetPhysicalMetricValue(frameTimes, EMetric.GpuFpsPerWatt,
+			//	SensorReport.GetAverageGpuPower(session.Runs.Select(run => run.SensorData),
+			//	0, double.PositiveInfinity));
 
 			var reportInfo = new ReportInfo()
 			{
@@ -206,6 +220,8 @@ namespace CapFrameX.ViewModel
 				ZeroDotOnePercentLowAverageFps = p0dot1_averageLow,
 				MinFps = min,
 				AdaptiveSTDFps = adaptiveStandardDeviation,
+				CpuFpsPerWatt = cpuFpsPerWatt,
+				//GpuFpsPerWatt = gpuFpsPerWatt,
 				CustomComment = recordInfo.Comment
 			};
 

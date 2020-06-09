@@ -5,6 +5,7 @@ using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Extensions;
 using CapFrameX.Extensions.NetStandard;
 using CapFrameX.MVVM.Dialogs;
+using CapFrameX.Sensor.Reporting;
 using CapFrameX.Statistics;
 using CapFrameX.Statistics.NetStandard;
 using CapFrameX.Statistics.NetStandard.Contracts;
@@ -608,9 +609,30 @@ namespace CapFrameX.ViewModel
 
                 for (int j = 0; j < ComparisonRowChartSeriesCollection.Count; j++)
                 {
-                    var metric = GetMetricValue(frametimeTimeWindow, GetMetricByIndex(j));
+                    var metric = GetMetricByIndex(j);
+                    double metricValue = 0;
+
+                    if (metric == EMetric.CpuFpsPerWatt)
+                    {
+                        metricValue =
+                        _frametimeStatisticProvider.GetPhysicalMetricValue(frametimeTimeWindow, EMetric.CpuFpsPerWatt,
+                             SensorReport.GetAverageCpuPower(currentWrappedComparisonInfo.WrappedRecordInfo.Session.Runs.Select(run => run.SensorData),
+                             startTime, endTime));
+                    }
+                    //else if (SelectedSecondMetric == EMetric.GpuFpsPerWatt)
+                    //{
+                    //currentWrappedComparisonInfo.WrappedRecordInfo.SecondMetric =
+                    //    _frametimeStatisticProvider.GetPhysicalMetricValue(frametimeTimeWindow, EMetric.GpuFpsPerWatt,
+                    //         SensorReport.GetAverageGpuPower(currentWrappedComparisonInfo.WrappedRecordInfo.Session.Runs.Select(run => run.SensorData),
+                    //         startTime, endTime));
+                    //}
+                    else
+                    {
+                        metricValue = GetMetricValue(frametimeTimeWindow, metric);
+
+                    }
                     (ComparisonRowChartSeriesCollection[j] as RowSeries).Title = GetDescriptionAndFpsUnit(GetMetricByIndex(j));
-                    ComparisonRowChartSeriesCollection[j].Values.Insert(0, metric);
+                    ComparisonRowChartSeriesCollection[j].Values.Insert(0, metricValue);
                 }
             }
 
