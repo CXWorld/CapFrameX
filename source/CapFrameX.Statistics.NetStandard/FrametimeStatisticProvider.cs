@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using CapFrameX.Extensions.NetStandard;
 using System.Net.Http.Headers;
+using MathNet.Numerics.Integration;
 
 namespace CapFrameX.Statistics.NetStandard
 {
@@ -180,14 +181,33 @@ namespace CapFrameX.Statistics.NetStandard
                     fps = sequence.Select(ft => 1000 / ft).ToList();
                     metricValue = GetAdaptiveStandardDeviation(fps, _options.MovingAverageWindowSize);
                     break;
-                case EMetric.CpuFpsPerWatt:
-                    metricValue = (sequence.Count * 1000 / sequence.Sum()) / 60;
-                    break;
-                //case EMetric.GpuFpsPerWatt:
-                //    metricValue = (sequence.Count * 1000 / sequence.Sum()) / 180;
-                //    break;
                 default:
                     metricValue = double.NaN;
+                    break;
+            }
+
+            return Math.Round(metricValue, _options.FpsValuesRoundingDigits);
+        }
+
+        public double GetPhysicalMetricValue(IList<double> sequence, EMetric metric, double coefficient)
+        {
+            double metricValue;
+            switch (metric)
+            {
+                case EMetric.CpuFpsPerWatt:
+                    if (coefficient > 0)
+                        metricValue = (sequence.Count * 1000 / sequence.Sum()) / coefficient;
+                    else
+                        metricValue = 0;
+                    break;
+                //case EMetric.GpuFpsPerWatt:
+                    //if (coefficient > 0)
+                    //    metricValue = (sequence.Count * 1000 / sequence.Sum()) / coefficient;
+                    //else
+                    //    metricValue = double.NaN;
+                    //break;
+                default:
+                    metricValue = 0;
                     break;
             }
 

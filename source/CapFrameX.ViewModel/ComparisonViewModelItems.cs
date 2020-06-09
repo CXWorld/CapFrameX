@@ -1,5 +1,6 @@
 ﻿using CapFrameX.Contracts.Data;
 using CapFrameX.Data;
+using CapFrameX.Sensor.Reporting;
 using CapFrameX.Statistics.NetStandard;
 using CapFrameX.Statistics.NetStandard.Contracts;
 using System;
@@ -8,186 +9,221 @@ using System.Linq;
 
 namespace CapFrameX.ViewModel
 {
-	public partial class ComparisonViewModel
-	{
-		private void AddComparisonItem(IFileRecordInfo recordInfo)
-		{
-			if (CheckListContains(recordInfo))
-			{
-				MessageText = $"The list already contains this record and therefore cannot be inserted. " +
-					$"Select a different record for the comparison.";
-				MessageDialogContentIsOpen = true;
-				return;
-			}
+    public partial class ComparisonViewModel
+    {
+        private void AddComparisonItem(IFileRecordInfo recordInfo)
+        {
+            if (CheckListContains(recordInfo))
+            {
+                MessageText = $"The list already contains this record and therefore cannot be inserted. " +
+                    $"Select a different record for the comparison.";
+                MessageDialogContentIsOpen = true;
+                return;
+            }
 
-			var comparisonRecordInfo = GetComparisonRecordInfoFromFileRecordInfo(recordInfo);
-			var wrappedComparisonRecordInfo = GetWrappedRecordInfo(comparisonRecordInfo);
+            var comparisonRecordInfo = GetComparisonRecordInfoFromFileRecordInfo(recordInfo);
+            var wrappedComparisonRecordInfo = GetWrappedRecordInfo(comparisonRecordInfo);
 
-			// Insert into list (sorted)
-			SetMetrics(wrappedComparisonRecordInfo);
-			InsertComparisonRecordsSorted(wrappedComparisonRecordInfo);
+            // Insert into list (sorted)
+            SetMetrics(wrappedComparisonRecordInfo);
+            InsertComparisonRecordsSorted(wrappedComparisonRecordInfo);
 
-			HasComparisonItems = ComparisonRecords.Any();
+            HasComparisonItems = ComparisonRecords.Any();
 
-			// Manage game name header
-			HasUniqueGameNames = GetHasUniqueGameNames();
-			CurrentGameName = comparisonRecordInfo.Game;
+            // Manage game name header
+            HasUniqueGameNames = GetHasUniqueGameNames();
+            CurrentGameName = comparisonRecordInfo.Game;
 
-			// Update height of bar chart control here
-			UpdateBarChartHeight();
-			UpdateRangeSliderParameter();
+            // Update height of bar chart control here
+            UpdateBarChartHeight();
+            UpdateRangeSliderParameter();
 
-			//Draw charts and performance parameter
-			UpdateCharts();
-		}
+            //Draw charts and performance parameter
+            UpdateCharts();
+        }
 
-		private bool CheckListContains(IFileRecordInfo recordInfo)
-		{
-			var recordInfoWrapper = ComparisonRecords
-				.FirstOrDefault(info => info.WrappedRecordInfo.FileRecordInfo.Id == recordInfo.Id);
+        private bool CheckListContains(IFileRecordInfo recordInfo)
+        {
+            var recordInfoWrapper = ComparisonRecords
+                .FirstOrDefault(info => info.WrappedRecordInfo.FileRecordInfo.Id == recordInfo.Id);
 
-			return recordInfoWrapper != null && ComparisonRecords.Any();
-		}
+            return recordInfoWrapper != null && ComparisonRecords.Any();
+        }
 
-		private void SetMetrics(ComparisonRecordInfoWrapper wrappedComparisonRecordInfo)
-		{
-			double startTime = FirstSeconds;
-			double lastFrameStart = wrappedComparisonRecordInfo.WrappedRecordInfo.Session.Runs.SelectMany(r => r.CaptureData.TimeInSeconds).Last();
-			double endTime = LastSeconds > lastFrameStart ? lastFrameStart : lastFrameStart + LastSeconds;
-			var frametimeTimeWindow = wrappedComparisonRecordInfo.WrappedRecordInfo.Session.GetFrametimeTimeWindow(startTime, endTime, _appConfiguration, ERemoveOutlierMethod.None);
-			double GeMetricValue(IList<double> sequence, EMetric metric) =>
-					_frametimeStatisticProvider.GetFpsMetricValue(sequence, metric);
+        private void SetMetrics(ComparisonRecordInfoWrapper wrappedComparisonRecordInfo)
+        {
+            double startTime = FirstSeconds;
+            double lastFrameStart = wrappedComparisonRecordInfo.WrappedRecordInfo.Session.Runs.SelectMany(r => r.CaptureData.TimeInSeconds).Last();
+            double endTime = LastSeconds > lastFrameStart ? lastFrameStart : lastFrameStart + LastSeconds;
+            var frametimeTimeWindow = wrappedComparisonRecordInfo.WrappedRecordInfo.Session.GetFrametimeTimeWindow(startTime, endTime, _appConfiguration, ERemoveOutlierMethod.None);
 
-			wrappedComparisonRecordInfo.WrappedRecordInfo.FirstMetric
-				= GeMetricValue(frametimeTimeWindow, EMetric.Average);
+            double GeMetricValue(IList<double> sequence, EMetric metric) =>
+                _frametimeStatisticProvider.GetFpsMetricValue(sequence, metric);
 
-			wrappedComparisonRecordInfo.WrappedRecordInfo.SecondMetric
-				= GeMetricValue(frametimeTimeWindow, SelectedSecondMetric);
+            wrappedComparisonRecordInfo.WrappedRecordInfo.FirstMetric
+                = GeMetricValue(frametimeTimeWindow, EMetric.Average);
 
-			wrappedComparisonRecordInfo.WrappedRecordInfo.ThirdMetric
-				= GeMetricValue(frametimeTimeWindow, SelectedThirdMetric);
-		}
+            if (SelectedSecondMetric == EMetric.CpuFpsPerWatt)
+            {
+                wrappedComparisonRecordInfo.WrappedRecordInfo.SecondMetric =
+                _frametimeStatisticProvider.GetPhysicalMetricValue(frametimeTimeWindow, EMetric.CpuFpsPerWatt,
+                     SensorReport.GetAverageCpuPower(wrappedComparisonRecordInfo.WrappedRecordInfo.Session.Runs.Select(run => run.SensorData),
+                     startTime, endTime));
+            }
+            //else if (SelectedSecondMetric == EMetric.GpuFpsPerWatt)
+            //{
+            //wrappedComparisonRecordInfo.WrappedRecordInfo.SecondMetric =
+            //    _frametimeStatisticProvider.GetPhysicalMetricValue(frametimeTimeWindow, EMetric.GpuFpsPerWatt,
+            //         SensorReport.GetAverageGpuPower(wrappedComparisonRecordInfo.WrappedRecordInfo.Session.Runs.Select(run => run.SensorData),
+            //         startTime, endTime));
+            //}
+            else
+            {
+                wrappedComparisonRecordInfo.WrappedRecordInfo.SecondMetric
+                    = GeMetricValue(frametimeTimeWindow, SelectedSecondMetric);
+            }
 
-		private void InsertComparisonRecordsSorted(ComparisonRecordInfoWrapper wrappedComparisonRecordInfo)
-		{
-			if (!ComparisonRecords.Any())
-			{
-				ComparisonRecords.Add(wrappedComparisonRecordInfo);
-				return;
-			}
+            if (SelectedThirdMetric == EMetric.CpuFpsPerWatt)
+            {
+                wrappedComparisonRecordInfo.WrappedRecordInfo.ThirdMetric =
+               _frametimeStatisticProvider.GetPhysicalMetricValue(frametimeTimeWindow, EMetric.CpuFpsPerWatt,
+                    SensorReport.GetAverageCpuPower(wrappedComparisonRecordInfo.WrappedRecordInfo.Session.Runs.Select(run => run.SensorData),
+                    startTime, endTime));
+            }
+            //else if (SelectedSecondMetric == EMetric.GpuFpsPerWatt)
+            //{
+            //wrappedComparisonRecordInfo.WrappedRecordInfo.ThirdMetric =
+            //  _frametimeStatisticProvider.GetPhysicalMetricValue(frametimeTimeWindow, EMetric.GpuFpsPerWatt,
+            //       SensorReport.GetAverageGpuPower(wrappedComparisonRecordInfo.WrappedRecordInfo.Session.Runs.Select(run => run.SensorData),
+            //       startTime, endTime));
+            ////}
+            else
+            {
+                wrappedComparisonRecordInfo.WrappedRecordInfo.ThirdMetric
+                    = GeMetricValue(frametimeTimeWindow, SelectedThirdMetric);
+            }
+        }
 
-			var list = new List<ComparisonRecordInfoWrapper>(ComparisonRecords)
-			{
-				wrappedComparisonRecordInfo
-			};
+        private void InsertComparisonRecordsSorted(ComparisonRecordInfoWrapper wrappedComparisonRecordInfo)
+        {
+            if (!ComparisonRecords.Any())
+            {
+                ComparisonRecords.Add(wrappedComparisonRecordInfo);
+                return;
+            }
 
-			List<ComparisonRecordInfoWrapper> orderedList = null;
+            var list = new List<ComparisonRecordInfoWrapper>(ComparisonRecords)
+            {
+                wrappedComparisonRecordInfo
+            };
 
-			if (UseComparisonGrouping)
-			{
-				orderedList = IsSortModeAscending ? list.OrderBy(x => x.WrappedRecordInfo.Game).ThenBy(x => x.WrappedRecordInfo.FirstMetric).ToList() :
-					list.OrderBy(x => x.WrappedRecordInfo.Game).ThenByDescending(x => x.WrappedRecordInfo.FirstMetric).ToList();
-			}
-			else
-			{
-				orderedList = IsSortModeAscending ? list.OrderBy(x => x.WrappedRecordInfo.FirstMetric).ToList() :
-					list.OrderByDescending(x => x.WrappedRecordInfo.FirstMetric).ToList();
-			}
+            List<ComparisonRecordInfoWrapper> orderedList = null;
 
-			if (orderedList != null)
-			{
-				var index = orderedList.IndexOf(wrappedComparisonRecordInfo);
-				ComparisonRecords.Insert(index, wrappedComparisonRecordInfo);
-			}
-		}
+            if (UseComparisonGrouping)
+            {
+                orderedList = IsSortModeAscending ? list.OrderBy(x => x.WrappedRecordInfo.Game).ThenBy(x => x.WrappedRecordInfo.FirstMetric).ToList() :
+                    list.OrderBy(x => x.WrappedRecordInfo.Game).ThenByDescending(x => x.WrappedRecordInfo.FirstMetric).ToList();
+            }
+            else
+            {
+                orderedList = IsSortModeAscending ? list.OrderBy(x => x.WrappedRecordInfo.FirstMetric).ToList() :
+                    list.OrderByDescending(x => x.WrappedRecordInfo.FirstMetric).ToList();
+            }
 
-		public void RemoveComparisonItem(ComparisonRecordInfoWrapper wrappedComparisonRecordInfo)
-		{
-			_comparisonColorManager.FreeColor(wrappedComparisonRecordInfo.Color);
-			ComparisonRecords.Remove(wrappedComparisonRecordInfo);
+            if (orderedList != null)
+            {
+                var index = orderedList.IndexOf(wrappedComparisonRecordInfo);
+                ComparisonRecords.Insert(index, wrappedComparisonRecordInfo);
+            }
+        }
 
-			HasComparisonItems = ComparisonRecords.Any();
-			UpdateRangeSliderParameter();
-			UpdateCharts();
-			UpdateBarChartHeight();
+        public void RemoveComparisonItem(ComparisonRecordInfoWrapper wrappedComparisonRecordInfo)
+        {
+            _comparisonColorManager.FreeColor(wrappedComparisonRecordInfo.Color);
+            ComparisonRecords.Remove(wrappedComparisonRecordInfo);
 
-			// Manage game name header		
-			HasUniqueGameNames = GetHasUniqueGameNames();
-			if (HasUniqueGameNames)
-				CurrentGameName = ComparisonRecords.First().WrappedRecordInfo.Game;
+            HasComparisonItems = ComparisonRecords.Any();
+            UpdateRangeSliderParameter();
+            UpdateCharts();
+            UpdateBarChartHeight();
 
-			ComparisonModel.InvalidatePlot(true);
-		}
+            // Manage game name header		
+            HasUniqueGameNames = GetHasUniqueGameNames();
+            if (HasUniqueGameNames)
+                CurrentGameName = ComparisonRecords.First().WrappedRecordInfo.Game;
 
-		private bool GetHasUniqueGameNames()
-		{
-			if (!ComparisonRecords.Any())
-				return false;
+            ComparisonModel.InvalidatePlot(true);
+        }
 
-			var firstName = ComparisonRecords.First().WrappedRecordInfo.Game;
+        private bool GetHasUniqueGameNames()
+        {
+            if (!ComparisonRecords.Any())
+                return false;
 
-			return !ComparisonRecords.Any(record => record.WrappedRecordInfo.Game != firstName);
-		}
+            var firstName = ComparisonRecords.First().WrappedRecordInfo.Game;
 
-		public void RemoveAllComparisonItems(bool manageVisibility = true, bool resetSortMode = false)
-		{
-			if (resetSortMode)
-			{
-				_comparisonColorManager.FreeAllColors();
-			}
+            return !ComparisonRecords.Any(record => record.WrappedRecordInfo.Game != firstName);
+        }
 
-			ComparisonRecords.Clear();
-			UpdateCharts();
+        public void RemoveAllComparisonItems(bool manageVisibility = true, bool resetSortMode = false)
+        {
+            if (resetSortMode)
+            {
+                _comparisonColorManager.FreeAllColors();
+            }
 
-			if (resetSortMode)
-				IsSortModeAscending = false;
+            ComparisonRecords.Clear();
+            UpdateCharts();
 
-			if (manageVisibility)
-			{
-				HasComparisonItems = false;
-			}
+            if (resetSortMode)
+                IsSortModeAscending = false;
 
-			// Manage game name header
-			HasUniqueGameNames = false;
-			CurrentGameName = string.Empty;
+            if (manageVisibility)
+            {
+                HasComparisonItems = false;
+            }
 
-			RemainingRecordingTime = "0.0 s";
-			UpdateRangeSliderParameter();
-			ComparisonModel.InvalidatePlot(true);
-		}
+            // Manage game name header
+            HasUniqueGameNames = false;
+            CurrentGameName = string.Empty;
 
-		public void SortComparisonItems()
-		{
-			if (!ComparisonRecords.Any())
-				return;
+            RemainingRecordingTime = "0.0 s";
+            UpdateRangeSliderParameter();
+            ComparisonModel.InvalidatePlot(true);
+        }
 
-			IEnumerable<ComparisonRecordInfoWrapper> comparisonRecordList = null;
+        public void SortComparisonItems()
+        {
+            if (!ComparisonRecords.Any())
+                return;
 
-			if (UseComparisonGrouping)
-			{
-				comparisonRecordList = IsSortModeAscending ? ComparisonRecords.ToList()
-					.Select(info => info.Clone()).OrderBy(x => x.WrappedRecordInfo.Game).ThenBy(x => x.WrappedRecordInfo.FirstMetric) :
-					ComparisonRecords.ToList().Select(info => info.Clone()).OrderBy(x => x.WrappedRecordInfo.Game).ThenByDescending(x => x.WrappedRecordInfo.FirstMetric);
-			}
-			else
-			{
-				comparisonRecordList = IsSortModeAscending ? ComparisonRecords.ToList()
-					.Select(info => info.Clone()).OrderBy(x => x.WrappedRecordInfo.FirstMetric) :
-					ComparisonRecords.ToList().Select(info => info.Clone()).OrderByDescending(x => x.WrappedRecordInfo.FirstMetric);
-			}
+            IEnumerable<ComparisonRecordInfoWrapper> comparisonRecordList = null;
 
-			if (comparisonRecordList != null)
-			{
-				ComparisonRecords.Clear();
+            if (UseComparisonGrouping)
+            {
+                comparisonRecordList = IsSortModeAscending ? ComparisonRecords.ToList()
+                    .Select(info => info.Clone()).OrderBy(x => x.WrappedRecordInfo.Game).ThenBy(x => x.WrappedRecordInfo.FirstMetric) :
+                    ComparisonRecords.ToList().Select(info => info.Clone()).OrderBy(x => x.WrappedRecordInfo.Game).ThenByDescending(x => x.WrappedRecordInfo.FirstMetric);
+            }
+            else
+            {
+                comparisonRecordList = IsSortModeAscending ? ComparisonRecords.ToList()
+                    .Select(info => info.Clone()).OrderBy(x => x.WrappedRecordInfo.FirstMetric) :
+                    ComparisonRecords.ToList().Select(info => info.Clone()).OrderByDescending(x => x.WrappedRecordInfo.FirstMetric);
+            }
 
-				foreach (var item in comparisonRecordList)
-				{
-					ComparisonRecords.Add(item);
-				}
+            if (comparisonRecordList != null)
+            {
+                ComparisonRecords.Clear();
 
-				//Draw charts and performance parameter
-				UpdateCharts();
-			}
-		}
-	}
+                foreach (var item in comparisonRecordList)
+                {
+                    ComparisonRecords.Add(item);
+                }
+
+                //Draw charts and performance parameter
+                UpdateCharts();
+            }
+        }
+    }
 }

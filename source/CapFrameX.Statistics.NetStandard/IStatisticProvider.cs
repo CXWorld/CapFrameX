@@ -23,6 +23,8 @@ namespace CapFrameX.Statistics.NetStandard
 
         double GetFpsMetricValue(IList<double> sequence, EMetric metric);
 
+        double GetPhysicalMetricValue(IList<double> sequence, EMetric metric, double coefficient);
+
         IList<double>[] GetDiscreteDistribution(IList<double> sequence);
 
         IMetricAnalysis GetMetricAnalysis(IList<double> frametimes, string secondMetric, string thirdMetric);

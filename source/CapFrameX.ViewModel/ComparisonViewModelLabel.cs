@@ -1,7 +1,6 @@
 ﻿using CapFrameX.Data;
 using CapFrameX.Extensions;
 using System;
-using System.Globalization;
 using System.Linq;
 
 namespace CapFrameX.ViewModel

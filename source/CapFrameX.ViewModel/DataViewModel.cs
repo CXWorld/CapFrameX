@@ -31,6 +31,8 @@ using CapFrameX.Sensor.Reporting;
 using CapFrameX.Statistics.NetStandard;
 using CapFrameX.Statistics.NetStandard.Contracts;
 using CapFrameX.Statistics.PlotBuilder.Contracts;
+using CapFrameX.Extensions.NetStandard;
+using System.ComponentModel;
 
 namespace CapFrameX.ViewModel
 {
@@ -512,8 +514,14 @@ namespace CapFrameX.ViewModel
             var p0dot1_averageLow = GeMetricValue(frametimes, EMetric.ZerodotOnePercentLow);
             var min = GeMetricValue(frametimes, EMetric.Min);
             var adaptiveStandardDeviation = GeMetricValue(frametimes, EMetric.AdaptiveStd);
-            var cpuFpsPerWatt = GeMetricValue(frametimes, EMetric.CpuFpsPerWatt);
-            //var gpuFpsPerWatt = GeMetricValue(frametimes, EMetric.GpuFpsPerWatt);
+            var cpuFpsPerWatt = _frametimeStatisticProvider
+                 .GetPhysicalMetricValue(frametimes, EMetric.CpuFpsPerWatt,
+                 SensorReport.GetAverageCpuPower(_session.Runs.Select(run => run.SensorData),
+                 _localRecordDataServer.CurrentTime, _localRecordDataServer.CurrentTime + _localRecordDataServer.WindowLength));
+            //var gpuFpsPerWatt = _frametimeStatisticProvider
+            //.GetPhysicalMetricValue(frametimes, EMetric.GpuFpsPerWatt,
+            //SensorReport.GetAverageGpuPower(_session.Runs.Select(run => run.SensorData),
+            //_localRecordDataServer.CurrentTime, _localRecordDataServer.CurrentTime + _localRecordDataServer.WindowLength));
 
             StringBuilder builder = new StringBuilder();
 
@@ -754,24 +762,30 @@ namespace CapFrameX.ViewModel
             if (frametimes == null || !frametimes.Any())
                 return;
 
-            double GeMetricValue(IList<double> sequence, EMetric metric) =>
+            double GetMetricValue(IList<double> sequence, EMetric metric) =>
                 _frametimeStatisticProvider.GetFpsMetricValue(sequence, metric);
 
-            var max = GeMetricValue(frametimes, EMetric.Max);
-            var p99_quantile = GeMetricValue(frametimes, EMetric.P99);
-            var p95_quantile = GeMetricValue(frametimes, EMetric.P95);
-            var average = GeMetricValue(frametimes, EMetric.Average);
-            var median = GeMetricValue(frametimes, EMetric.Median);
-            var p0dot1_quantile = GeMetricValue(frametimes, EMetric.P0dot1);
-            var p0dot2_quantile = GeMetricValue(frametimes, EMetric.P0dot2);
-            var p1_quantile = GeMetricValue(frametimes, EMetric.P1);
-            var p5_quantile = GeMetricValue(frametimes, EMetric.P5);
-            var p1_averageLow = GeMetricValue(frametimes, EMetric.OnePercentLow);
-            var p0dot1_averageLow = GeMetricValue(frametimes, EMetric.ZerodotOnePercentLow);
-            var min = GeMetricValue(frametimes, EMetric.Min);
-            var adaptiveStandardDeviation = GeMetricValue(frametimes, EMetric.AdaptiveStd);
-            var cpuFpsPerWatt = GeMetricValue(frametimes, EMetric.CpuFpsPerWatt);
-            //var gpuFpsPerWatt = GeMetricValue(frametimes, EMetric.GpuFpsPerWatt);
+            var max = GetMetricValue(frametimes, EMetric.Max);
+            var p99_quantile = GetMetricValue(frametimes, EMetric.P99);
+            var p95_quantile = GetMetricValue(frametimes, EMetric.P95);
+            var average = GetMetricValue(frametimes, EMetric.Average);
+            var median = GetMetricValue(frametimes, EMetric.Median);
+            var p0dot1_quantile = GetMetricValue(frametimes, EMetric.P0dot1);
+            var p0dot2_quantile = GetMetricValue(frametimes, EMetric.P0dot2);
+            var p1_quantile = GetMetricValue(frametimes, EMetric.P1);
+            var p5_quantile = GetMetricValue(frametimes, EMetric.P5);
+            var p1_averageLow = GetMetricValue(frametimes, EMetric.OnePercentLow);
+            var p0dot1_averageLow = GetMetricValue(frametimes, EMetric.ZerodotOnePercentLow);
+            var min = GetMetricValue(frametimes, EMetric.Min);
+            var adaptiveStandardDeviation = GetMetricValue(frametimes, EMetric.AdaptiveStd);
+            var cpuFpsPerWatt = _frametimeStatisticProvider
+                .GetPhysicalMetricValue(frametimes, EMetric.CpuFpsPerWatt,
+                SensorReport.GetAverageCpuPower(_session.Runs.Select(run => run.SensorData),
+                _localRecordDataServer.CurrentTime, _localRecordDataServer.CurrentTime + _localRecordDataServer.WindowLength));
+            //var gpuFpsPerWatt = _frametimeStatisticProvider
+            //.GetPhysicalMetricValue(frametimes, EMetric.GpuFpsPerWatt,
+            //SensorReport.GetAverageGpuPower(_session.Runs.Select(run => run.SensorData),
+            //_localRecordDataServer.CurrentTime, _localRecordDataServer.CurrentTime + _localRecordDataServer.WindowLength));
 
             Application.Current.Dispatcher.Invoke(new Action(() =>
             {
