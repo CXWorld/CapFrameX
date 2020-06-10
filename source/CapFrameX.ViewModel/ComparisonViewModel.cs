@@ -508,7 +508,7 @@ namespace CapFrameX.ViewModel
             // Frametimes
             ComparisonFrametimesModel = new PlotModel
             {
-                PlotMargins = new OxyThickness(40, 10, 0, 40),
+                PlotMargins = new OxyThickness(40, 10, 10, 70),
                 PlotAreaBorderColor = OxyColor.FromArgb(64, 204, 204, 204),
                 LegendPosition = LegendPosition.TopCenter,
                 LegendOrientation = LegendOrientation.Horizontal
@@ -521,6 +521,7 @@ namespace CapFrameX.ViewModel
                 Key = "xAxis",
                 Position = OxyPlot.Axes.AxisPosition.Bottom,
                 Title = "Recording time [s]",
+                AxisTitleDistance = 15,
                 MajorGridlineStyle = LineStyle.Solid,
                 MajorGridlineThickness = 1,
                 MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
@@ -534,6 +535,7 @@ namespace CapFrameX.ViewModel
                 Key = "yAxis",
                 Position = OxyPlot.Axes.AxisPosition.Left,
                 Title = "Frametime [ms]",
+                AxisTitleDistance = 10,
                 MajorGridlineStyle = LineStyle.Solid,
                 MajorGridlineThickness = 1,
                 MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
@@ -544,7 +546,7 @@ namespace CapFrameX.ViewModel
             // FPS
             ComparisonFpsModel = new PlotModel
             {
-                PlotMargins = new OxyThickness(40, 10, 0, 40),
+                PlotMargins = new OxyThickness(40, 10, 10, 70),
                 PlotAreaBorderColor = OxyColor.FromArgb(64, 204, 204, 204),
                 LegendPosition = LegendPosition.TopCenter,
                 LegendOrientation = LegendOrientation.Horizontal
@@ -557,6 +559,7 @@ namespace CapFrameX.ViewModel
                 Key = "xAxis",
                 Position = OxyPlot.Axes.AxisPosition.Bottom,
                 Title = "Recording time [s]",
+                AxisTitleDistance = 15,
                 MajorGridlineStyle = LineStyle.Solid,
                 MajorGridlineThickness = 1,
                 MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
@@ -570,6 +573,7 @@ namespace CapFrameX.ViewModel
                 Key = "yAxis",
                 Position = OxyPlot.Axes.AxisPosition.Left,
                 Title = "FPS [1/s]",
+                AxisTitleDistance = 10,
                 MajorGridlineStyle = LineStyle.Solid,
                 MajorGridlineThickness = 1,
                 MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
