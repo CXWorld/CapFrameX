@@ -101,11 +101,21 @@
                                 <ContentPresenter.Resources>
                                     <DataTemplate x:Key="FrametimeChartContent">
                                         <controls:PlotViewCustomZoom Background="#F5F5F5" Model="{Binding DataContext.ComparisonFrametimesModel, ElementName=ComparisonViewUserControl}"
-                                                      MouseDoubleClick="ResetFrametimeChart_MouseDoubleClick"/>
+                                                  MouseDoubleClick="ResetFrametimeChart_MouseDoubleClick"/>
                                     </DataTemplate>
                                     <DataTemplate x:Key="FpsChartContent">
-                                        <controls:PlotViewCustomZoom Background="#F5F5F5" Model="{Binding DataContext.ComparisonFpsModel, ElementName=ComparisonViewUserControl}"
+                                        <Grid>
+                                            <Grid Margin="0 0 0 0" Panel.ZIndex="1" HorizontalAlignment="Left" VerticalAlignment="Bottom">
+                                                <ComboBox Width="100" VerticalAlignment="Center" Margin="25 8 0 8" materialDesign:HintAssist.Hint="Filter"
+										                materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="240" materialDesign:ComboBoxAssist.ClassicMode="True"
+										                SelectedItem="{Binding SelecetedChartYAxisSetting}">
+                                                    <ComboBoxItem IsSelected="True">Row data</ComboBoxItem>
+                                                    <ComboBoxItem>Median filtered</ComboBoxItem>
+                                                </ComboBox>
+                                            </Grid>
+                                            <controls:PlotViewCustomZoom Margin="0 0 0 20" Background="#F5F5F5" Model="{Binding DataContext.ComparisonFpsModel, ElementName=ComparisonViewUserControl}"
                                                       MouseDoubleClick="ResetFpsChart_MouseDoubleClick"/>
+                                        </Grid>
                                     </DataTemplate>
                                 </ContentPresenter.Resources>
                                 <ContentPresenter.Style>
