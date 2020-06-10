@@ -345,7 +345,7 @@ namespace CapFrameX.Sensor
                     formatString = "{0,4:F0}<S=50>   <S>";
                     break;
                 case SensorType.Power:
-                    formatString = "{0,4:F1}<S=50>W  <S>";
+                    formatString = "{0,5:F1}<S=50>W  <S>";
                     break;
                 case SensorType.Data:
                     formatString = "{0,4:F2}<S=50>GB <S>";
