@@ -1,6 +1,7 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
 using CapFrameX.Data;
+using CapFrameX.Data.Session.Contracts;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Extensions;
 using CapFrameX.Extensions.NetStandard;
@@ -12,6 +13,7 @@ using GongSolutions.Wpf.DragDrop;
 using LiveCharts;
 using LiveCharts.Defaults;
 using LiveCharts.Wpf;
+using MathNet.Filtering.Median;
 using OxyPlot;
 using OxyPlot.Axes;
 using Prism.Commands;
@@ -79,7 +81,7 @@ namespace CapFrameX.ViewModel
         private int _barMaxValue;
         private bool _showCustomTitle;
         private string _selectedChartView = "Frametimes";
-        private string _selecetedFilterMode = "Raw data";
+        private EFilterMode _selectedFilterMode;
 
         public Array SecondMetricItems => Enum.GetValues(typeof(EMetric))
                                               .Cast<EMetric>()
@@ -93,6 +95,10 @@ namespace CapFrameX.ViewModel
         public Array ComparisonContextItems => Enum.GetValues(typeof(EComparisonContext))
                                                    .Cast<EComparisonContext>()
                                                    .ToArray();
+
+        public Array FilterModes => Enum.GetValues(typeof(EFilterMode))
+                                                  .Cast<EFilterMode>()
+                                                  .ToArray();
 
         public ISubject<Unit> ResetLShapeChart = new Subject<Unit>();
 
@@ -454,12 +460,12 @@ namespace CapFrameX.ViewModel
             }
         }
 
-        public string SelecetedFilterMode
+        public EFilterMode SelectedFilterMode
         {
-            get { return _selecetedFilterMode; }
+            get { return _selectedFilterMode; }
             set
             {
-                _selecetedFilterMode = value;
+                _selectedFilterMode = value;
                 RaisePropertyChanged();
                 OnFilterModeChanged();
             }
@@ -710,14 +716,8 @@ namespace CapFrameX.ViewModel
 
         private void OnFilterModeChanged()
         {
-            if (SelecetedFilterMode == "Raw data")
-            {
-
-            }
-            else if (SelecetedFilterMode == "Median filtered")
-            {
-
-            }
+            ComparisonFpsModel.Series.Clear();
+            SetFpsChart();
         }
 
         private EMetric GetMetricByIndex(int index)
@@ -935,7 +935,7 @@ namespace CapFrameX.ViewModel
 
             yMin = sessionParallelQuery.Min(session =>
             {
-                var window = session.GetFpsPointsTimeWindow(startTime, endTime, _appConfiguration);
+                var window = session.GetFpsPointsTimeWindow(startTime, endTime, _appConfiguration, ERemoveOutlierMethod.None, SelectedFilterMode);
                 if (window.Any())
                     return window.Min(pnt => pnt.Y);
                 else
@@ -944,7 +944,7 @@ namespace CapFrameX.ViewModel
 
             yMax = sessionParallelQuery.Max(session =>
             {
-                var window = session.GetFpsPointsTimeWindow(startTime, endTime, _appConfiguration);
+                var window = session.GetFpsPointsTimeWindow(startTime, endTime, _appConfiguration, ERemoveOutlierMethod.None, SelectedFilterMode);
                 if (window.Any())
                     return window.Max(pnt => pnt.Y);
                 else
@@ -1110,8 +1110,8 @@ namespace CapFrameX.ViewModel
             double startTime = FirstSeconds;
             double endTime = LastSeconds;
             var session = wrappedComparisonInfo.WrappedRecordInfo.Session;
-            var fpsPoints = session.GetFpsPointsTimeWindow(startTime, endTime, _appConfiguration)
-                                         .Select(pnt => new Point(pnt.X, pnt.Y));
+
+            var fpsPoints = session.GetFpsPointsTimeWindow(startTime, endTime, _appConfiguration, ERemoveOutlierMethod.None, SelectedFilterMode);
 
             var chartTitle = string.Empty;
 
