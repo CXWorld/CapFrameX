@@ -1,15 +1,6 @@
-﻿using CapFrameX.Configuration;
-using CapFrameX.Data;
-using CapFrameX.Statistics;
-using CapFrameX.View.Controls;
+﻿using CapFrameX.View.Controls;
 using CapFrameX.ViewModel;
-using Microsoft.Extensions.Logging;
-using OxyPlot.Wpf;
-using Prism.Events;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Windows;
@@ -26,8 +17,6 @@ namespace CapFrameX.View
 		public ComparisonView()
 		{			
 			InitializeComponent();
-			var comparisonFrametimePlotView = GetFrametimePlotView();
-			OxyPlotHelper.SetAxisZoomWheelAndPan(comparisonFrametimePlotView);
 
 			var context = SynchronizationContext.Current;
 			(DataContext as ComparisonViewModel)?.ResetLShapeChart
@@ -36,16 +25,16 @@ namespace CapFrameX.View
 				.Subscribe(dummy => ResetLShapeChart());
 		}
 
-		private PlotView GetFrametimePlotView()
+		private PlotViewCustomZoom GetFrametimePlotView()
 		{
 			var dataTemplate = ChartsContentPresenter.FindResource("FrametimeChartContent") as DataTemplate;
-			return dataTemplate.LoadContent() as PlotView;
+			return dataTemplate.LoadContent() as PlotViewCustomZoom;
 		}
 
-		private PlotView GetFpsPlotView()
+		private PlotViewCustomZoom GetFpsPlotView()
 		{
 			var dataTemplate = ChartsContentPresenter.FindResource("FpsChartContent") as DataTemplate;
-			return dataTemplate.LoadContent() as PlotView;
+			return dataTemplate.LoadContent() as PlotViewCustomZoom;
 		}
 
 		private void ResetFrametimeChart_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)

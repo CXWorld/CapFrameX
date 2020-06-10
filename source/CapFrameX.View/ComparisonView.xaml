@@ -13,7 +13,7 @@
              xmlns:mahapps="http://metro.mahapps.com/winfx/xaml/controls"
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
-             xmlns:oxy="clr-namespace:OxyPlot.Wpf;assembly=OxyPlot.Wpf"
+             xmlns:controls="clr-namespace:CapFrameX.View.Controls"
              xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
              xmlns:dragdrop="urn:gong-wpf-dragdrop"
              mc:Ignorable="d"
@@ -100,11 +100,11 @@
                             <ContentPresenter x:Name="ChartsContentPresenter" Content="{Binding}">
                                 <ContentPresenter.Resources>
                                     <DataTemplate x:Key="FrametimeChartContent">
-                                        <oxy:PlotView x:Name="FrametimesPlotView" Background="#F5F5F5" Model="{Binding DataContext.ComparisonFrametimesModel, ElementName=ComparisonViewUserControl, Mode=OneWay}"
+                                        <controls:PlotViewCustomZoom Background="#F5F5F5" Model="{Binding DataContext.ComparisonFrametimesModel, ElementName=ComparisonViewUserControl}"
                                                       MouseDoubleClick="ResetFrametimeChart_MouseDoubleClick"/>
                                     </DataTemplate>
                                     <DataTemplate x:Key="FpsChartContent">
-                                        <oxy:PlotView x:Name="FpsPlotView" Background="#F5F5F5" Model="{Binding DataContext.ComparisonFpsModel, ElementName=ComparisonViewUserControl, Mode=OneWay}"
+                                        <controls:PlotViewCustomZoom Background="#F5F5F5" Model="{Binding DataContext.ComparisonFpsModel, ElementName=ComparisonViewUserControl}"
                                                       MouseDoubleClick="ResetFpsChart_MouseDoubleClick"/>
                                     </DataTemplate>
                                 </ContentPresenter.Resources>
