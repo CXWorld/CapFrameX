@@ -79,6 +79,7 @@ namespace CapFrameX.ViewModel
         private int _barMaxValue;
         private bool _showCustomTitle;
         private string _selectedChartView = "Frametimes";
+        private string _selecetedFilterMode = "Raw data";
 
         public Array SecondMetricItems => Enum.GetValues(typeof(EMetric))
                                               .Cast<EMetric>()
@@ -367,7 +368,7 @@ namespace CapFrameX.ViewModel
             }
         }
 
-        public bool ShowGameNameTitle 
+        public bool ShowGameNameTitle
             => HasUniqueGameNames && !ShowCustomTitle;
 
         public bool UseComparisonGrouping
@@ -450,6 +451,17 @@ namespace CapFrameX.ViewModel
             {
                 _selectedChartView = value;
                 RaisePropertyChanged();
+            }
+        }
+
+        public string SelecetedFilterMode
+        {
+            get { return _selecetedFilterMode; }
+            set
+            {
+                _selecetedFilterMode = value;
+                RaisePropertyChanged();
+                OnFilterModeChanged();
             }
         }
 
@@ -690,6 +702,18 @@ namespace CapFrameX.ViewModel
 
             SetBarMaxValue();
             UpdateBarChartHeight();
+        }
+
+        private void OnFilterModeChanged()
+        {
+            if (SelecetedFilterMode == "Raw data")
+            {
+
+            }
+            else if (SelecetedFilterMode == "Median filtered")
+            {
+
+            }
         }
 
         private EMetric GetMetricByIndex(int index)
@@ -1151,7 +1175,7 @@ namespace CapFrameX.ViewModel
             }
 
             UpdateAxesMinMaxFrametimeChart();
-  
+
         }
 
         private void SetFpsChart()
