@@ -188,7 +188,7 @@ namespace CapFrameX.Statistics.NetStandard
 			return list;
 		}
 
-		public static IList<Point> GetFpsPointTimeWindow(this ISession session, double startTime, double endTime, IFrametimeStatisticProviderOptions options, ERemoveOutlierMethod eRemoveOutlierMethod = ERemoveOutlierMethod.None)
+		public static IList<Point> GetFpsPointsTimeWindow(this ISession session, double startTime, double endTime, IFrametimeStatisticProviderOptions options, ERemoveOutlierMethod eRemoveOutlierMethod = ERemoveOutlierMethod.None)
 		{
 			return session.GetFrametimePointsTimeWindow(startTime, endTime, options, eRemoveOutlierMethod).Select(pnt => new Point(pnt.X, 1000 / pnt.Y)).ToList();
 		}

@@ -25,7 +25,7 @@ namespace CapFrameX.Statistics.PlotBuilder
 			plotModel.Axes.Add(AxisDefinitions[EPlotAxis.XAXIS]);
 			plotModel.Axes.Add(AxisDefinitions[EPlotAxis.YAXISFPS]);
 
-			SetFpsChart(plotModel, session.GetFpsPointTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod), session.GetFrametimeTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod));
+			SetFpsChart(plotModel, session.GetFpsPointsTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod), session.GetFrametimeTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod));
 
 			if (plotSettings.IsAnyGraphVisible && session.HasValidSensorData())
 			{

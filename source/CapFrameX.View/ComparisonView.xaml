@@ -100,21 +100,21 @@
                             <ContentPresenter x:Name="ChartsContentPresenter" Content="{Binding}">
                                 <ContentPresenter.Resources>
                                     <DataTemplate x:Key="FrametimeChartContent">
-                                        <oxy:PlotView x:Name="FrametimesPlotView" Background="#F5F5F5" Model="{Binding DataContext.ComparisonModel, ElementName=ComparisonViewUserControl, Mode=OneWay}"
+                                        <oxy:PlotView x:Name="FrametimesPlotView" Background="#F5F5F5" Model="{Binding DataContext.ComparisonFrametimesModel, ElementName=ComparisonViewUserControl, Mode=OneWay}"
                                                       MouseDoubleClick="ResetFrametimeChart_MouseDoubleClick"/>
                                     </DataTemplate>
                                     <DataTemplate x:Key="FpsChartContent">
-                                        <oxy:PlotView x:Name="ComparisonFpsPlotView" Background="#F5F5F5" Model="{Binding DataContext.ComparisonFpsModel, ElementName=ComparisonViewUserControl, Mode=OneWay}"
+                                        <oxy:PlotView x:Name="FpsPlotView" Background="#F5F5F5" Model="{Binding DataContext.ComparisonFpsModel, ElementName=ComparisonViewUserControl, Mode=OneWay}"
                                                       MouseDoubleClick="ResetFpsChart_MouseDoubleClick"/>
                                     </DataTemplate>
                                 </ContentPresenter.Resources>
                                 <ContentPresenter.Style>
                                     <Style TargetType="{x:Type ContentPresenter}">
                                         <Style.Triggers>
-                                            <DataTrigger Binding="{Binding DataContext.SelectedChartView, ElementName=ComparisonViewUserControl}" Value="Frametime">
+                                            <DataTrigger Binding="{Binding DataContext.SelectedChartView, ElementName=ComparisonViewUserControl}" Value="Frametimes">
                                                 <Setter Property="ContentTemplate" Value="{StaticResource FrametimeChartContent}" />
                                             </DataTrigger>
-                                            <DataTrigger Binding="{Binding DataContext.SelectedChartView, ElementName=ComparisonViewUserControl}" Value="Chart">
+                                            <DataTrigger Binding="{Binding DataContext.SelectedChartView, ElementName=ComparisonViewUserControl}" Value="FPS">
                                                 <Setter Property="ContentTemplate" Value="{StaticResource FpsChartContent}" />
                                             </DataTrigger>
                                         </Style.Triggers>
@@ -269,6 +269,19 @@
                     </materialDesign:Card>
                 </materialDesign:PopupBox>
             </StackPanel>
+
+            <ComboBox Grid.Column="5" Margin="20 0 0 15"
+					materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Width="80"
+					ItemsSource="{Binding Path=DataContext.WindowSizes, ElementName=ColorbarViewName}">
+                <ComboBoxItem IsSelected="True">Frametimes</ComboBoxItem>
+                <ComboBoxItem>FPS</ComboBoxItem>
+                <ComboBox.Text>
+                    <Binding Path="SelectedChartView"
+						    Mode="TwoWay"
+						    UpdateSourceTrigger="PropertyChanged">
+                    </Binding>
+                </ComboBox.Text>
+            </ComboBox>
 
             <StackPanel Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="20 0 10 0" Orientation="Horizontal">
                 <TextBlock VerticalAlignment="Center">Show custom title:</TextBlock>

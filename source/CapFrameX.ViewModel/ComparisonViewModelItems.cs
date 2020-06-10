@@ -116,7 +116,7 @@ namespace CapFrameX.ViewModel
 			if (HasUniqueGameNames)
 				CurrentGameName = ComparisonRecords.First().WrappedRecordInfo.Game;
 
-			ComparisonModel.InvalidatePlot(true);
+			ComparisonFrametimesModel.InvalidatePlot(true);
 		}
 
 		private bool GetHasUniqueGameNames()
@@ -153,7 +153,7 @@ namespace CapFrameX.ViewModel
 
 			RemainingRecordingTime = "0.0 s";
 			UpdateRangeSliderParameter();
-			ComparisonModel.InvalidatePlot(true);
+			ComparisonFrametimesModel.InvalidatePlot(true);
 		}
 
 		public void SortComparisonItems()

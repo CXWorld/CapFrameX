@@ -17,14 +17,14 @@ namespace CapFrameX.ViewModel
 
 			if (!IsContextLegendActive)
 			{
-				ComparisonModel.Series.ForEach(series => series.Title = null);
+				ComparisonFrametimesModel.Series.ForEach(series => series.Title = null);
 			}
 			else
 			{
 				OnComparisonContextChanged();
 			}
 
-			ComparisonModel.InvalidatePlot(true);
+			ComparisonFrametimesModel.InvalidatePlot(true);
 		}
 
 		private string[] GetLabelForContext(ComparisonRecordInfo record, EComparisonContext context)
