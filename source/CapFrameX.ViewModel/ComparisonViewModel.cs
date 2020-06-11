@@ -1,19 +1,16 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
 using CapFrameX.Data;
-using CapFrameX.Data.Session.Contracts;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Extensions;
 using CapFrameX.Extensions.NetStandard;
 using CapFrameX.MVVM.Dialogs;
-using CapFrameX.Statistics;
 using CapFrameX.Statistics.NetStandard;
 using CapFrameX.Statistics.NetStandard.Contracts;
 using GongSolutions.Wpf.DragDrop;
 using LiveCharts;
 using LiveCharts.Defaults;
 using LiveCharts.Wpf;
-using MathNet.Filtering.Median;
 using OxyPlot;
 using OxyPlot.Axes;
 using Prism.Commands;
@@ -22,7 +19,6 @@ using Prism.Mvvm;
 using Prism.Regions;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Reactive;
@@ -479,7 +475,7 @@ namespace CapFrameX.ViewModel
         public ICommand RemoveAllComparisonsCommand { get; }
 
         public ComparisonCollection ComparisonRecords { get; private set; }
-            = new ObservableCollection<ComparisonRecordInfoWrapper>();
+            = new ComparisonCollection();
 
         public double BarChartMaxRowHeight { get; private set; } = 22;
 
