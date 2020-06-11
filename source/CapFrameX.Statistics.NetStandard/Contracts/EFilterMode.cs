@@ -6,7 +6,7 @@ namespace CapFrameX.Statistics.NetStandard.Contracts
     {
         [Description("Raw data")]
         None,
-        [Description("Moving average")]
+        [Description("Average")]
         MovingAverage,
         [Description("Median")]
         Median

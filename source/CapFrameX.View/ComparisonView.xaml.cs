@@ -39,14 +39,14 @@ namespace CapFrameX.View
 
 		private void ResetFrametimeChart_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
 		{
-			var comparisonFrametimePlotView = GetFrametimePlotView();
-			comparisonFrametimePlotView.ResetAllAxes();
+			//var comparisonFrametimePlotView = GetFrametimePlotView();
+			//comparisonFrametimePlotView.ResetAllAxes();
 		}
 
 		private void ResetFpsChart_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
 		{
-			var comparisonFpsPlotView = GetFpsPlotView();
-			comparisonFpsPlotView.ResetAllAxes();
+			//var comparisonFpsPlotView = GetFpsPlotView();
+			//comparisonFpsPlotView.ResetAllAxes();
 		}
 
 		private void ResetLShapeChart_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)

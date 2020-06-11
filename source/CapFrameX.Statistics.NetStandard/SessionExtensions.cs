@@ -4,12 +4,7 @@ using CapFrameX.Statistics.NetStandard.Contracts;
 using MathNet.Numerics.Statistics;
 using System;
 using System.Collections.Generic;
-using System.Data;
-using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
 
 namespace CapFrameX.Statistics.NetStandard
 {
@@ -200,11 +195,13 @@ namespace CapFrameX.Statistics.NetStandard
             {
                 case EFilterMode.MovingAverage:
                     var movingAverage = frametimePoints.Select(pnt => 1000 / pnt.Y).MovingAverage(options.MovingAverageWindowSize).ToArray();
-                    fpsPoints = frametimePoints.Select((pnt, i) => new Point(pnt.X, movingAverage[i])).ToList();
+                    fpsPoints = frametimePoints.Select((pnt, i) => new Point(pnt.X, movingAverage[i]))
+                        .Skip(30).ToList();
                     break;
                 case EFilterMode.Median:
                     var medianFilter = new MathNet.Filtering.Median.OnlineMedianFilter(options.MovingAverageWindowSize);
-                    fpsPoints = frametimePoints.Select(pnt => new Point(pnt.X, medianFilter.ProcessSample(1000 / pnt.Y))).ToList();
+                    fpsPoints = frametimePoints.Select(pnt => new Point(pnt.X, medianFilter.ProcessSample(1000 / pnt.Y)))
+                        .Skip(30).ToList();
                     break;
                 default:
                     fpsPoints = frametimePoints.Select(pnt => new Point(pnt.X, 1000 / pnt.Y)).ToList();

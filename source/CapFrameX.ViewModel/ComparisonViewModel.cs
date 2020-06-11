@@ -714,6 +714,7 @@ namespace CapFrameX.ViewModel
         {
             ComparisonFpsModel.Series.Clear();
             SetFpsChart();
+            OnComparisonContextChanged();
         }
 
         private EMetric GetMetricByIndex(int index)
