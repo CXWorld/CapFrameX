@@ -206,11 +206,11 @@ namespace CapFrameX.Statistics.NetStandard
                         .Select((val, i) => new Point(frametimePoints[i].X, 1000 / val))
                         .Skip(20).ToList();
                     break;
-                case EFilterMode.Polynomial:
-                    var polynomial = new SavitzkyGolayFilter(options.MovingAverageWindowSize, 1).Process(frametimePoints.Select(pnt => pnt.Y).ToArray());
-                    fpsPoints = frametimePoints.Select((pnt, i) => new Point(pnt.X, 1000 / polynomial[i]))
-                        .Skip(20).ToList();
-                    break;
+                //case EFilterMode.Polynomial:
+                //    var polynomial = new SavitzkyGolayFilter(options.MovingAverageWindowSize, 1).Process(frametimePoints.Select(pnt => pnt.Y).ToArray());
+                //    fpsPoints = frametimePoints.Select((pnt, i) => new Point(pnt.X, 1000 / polynomial[i]))
+                //        .Skip(20).ToList();
+                //    break;
                 default:
                     fpsPoints = frametimePoints.Select(pnt => new Point(pnt.X, 1000 / pnt.Y)).ToList();
                     break;
