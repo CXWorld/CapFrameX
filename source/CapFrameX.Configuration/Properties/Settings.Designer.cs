@@ -814,5 +814,29 @@ namespace CapFrameX.Configuration.Properties {
                 this["CaptureFileMode"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool UseSingleRecordCpuFpsPerWattParameter {
+            get {
+                return ((bool)(this["UseSingleRecordCpuFpsPerWattParameter"]));
+            }
+            set {
+                this["UseSingleRecordCpuFpsPerWattParameter"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool UseSingleRecordGpuFpsPerWattParameter {
+            get {
+                return ((bool)(this["UseSingleRecordGpuFpsPerWattParameter"]));
+            }
+            set {
+                this["UseSingleRecordGpuFpsPerWattParameter"] = value;
+            }
+        }
     }
 }

@@ -31,6 +31,8 @@ using CapFrameX.Sensor.Reporting;
 using CapFrameX.Statistics.NetStandard;
 using CapFrameX.Statistics.NetStandard.Contracts;
 using CapFrameX.Statistics.PlotBuilder.Contracts;
+using CapFrameX.Extensions.NetStandard;
+using System.ComponentModel;
 
 namespace CapFrameX.ViewModel
 {
@@ -512,7 +514,7 @@ namespace CapFrameX.ViewModel
 
             var frametimes = GetFrametimesSubset();
             double GeMetricValue(IList<double> sequence, EMetric metric) =>
-                _frametimeStatisticProvider.GetFpsMetricValue(sequence, metric);
+                Math.Round(_frametimeStatisticProvider.GetFpsMetricValue(sequence, metric), 2);
 
             var max = GeMetricValue(frametimes, EMetric.Max);
             var p99_quantile = GeMetricValue(frametimes, EMetric.P99);
@@ -527,6 +529,14 @@ namespace CapFrameX.ViewModel
             var p0dot1_averageLow = GeMetricValue(frametimes, EMetric.ZerodotOnePercentLow);
             var min = GeMetricValue(frametimes, EMetric.Min);
             var adaptiveStandardDeviation = GeMetricValue(frametimes, EMetric.AdaptiveStd);
+            var cpuFpsPerWatt = _frametimeStatisticProvider
+                 .GetPhysicalMetricValue(frametimes, EMetric.CpuFpsPerWatt,
+                 SensorReport.GetAverageCpuPower(_session.Runs.Select(run => run.SensorData),
+                 _localRecordDataServer.CurrentTime, _localRecordDataServer.CurrentTime + _localRecordDataServer.WindowLength));
+            //var gpuFpsPerWatt = _frametimeStatisticProvider
+            //.GetPhysicalMetricValue(frametimes, EMetric.GpuFpsPerWatt,
+            //SensorReport.GetAverageGpuPower(_session.Runs.Select(run => run.SensorData),
+            //_localRecordDataServer.CurrentTime, _localRecordDataServer.CurrentTime + _localRecordDataServer.WindowLength));
 
             StringBuilder builder = new StringBuilder();
 
@@ -558,6 +568,10 @@ namespace CapFrameX.ViewModel
                 builder.Append("Min" + "\t" + min.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
             if (_appConfiguration.UseSingleRecordAdaptiveSTDStatisticParameter)
                 builder.Append("Adaptive STDEV" + "\t" + adaptiveStandardDeviation.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
+            if (_appConfiguration.UseSingleRecordCpuFpsPerWattParameter)
+                builder.Append("CPU FPS/W" + "\t" + cpuFpsPerWatt.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
+            //if (_appConfiguration.UseSingleRecordGpuFpsPerWattParameter)
+            //    builder.Append("GPU FPS/W" + "\t" + gpuFpsPerWatt.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
 
             Clipboard.SetDataObject(builder.ToString(), false);
         }
@@ -770,27 +784,39 @@ namespace CapFrameX.ViewModel
             if (frametimes == null || !frametimes.Any())
                 return;
 
-            double GeMetricValue(IList<double> sequence, EMetric metric) =>
+            double GetMetricValue(IList<double> sequence, EMetric metric) =>
                 _frametimeStatisticProvider.GetFpsMetricValue(sequence, metric);
 
-            var max = GeMetricValue(frametimes, EMetric.Max);
-            var p99_quantile = GeMetricValue(frametimes, EMetric.P99);
-            var p95_quantile = GeMetricValue(frametimes, EMetric.P95);
-            var average = GeMetricValue(frametimes, EMetric.Average);
-            var median = GeMetricValue(frametimes, EMetric.Median);
-            var p0dot1_quantile = GeMetricValue(frametimes, EMetric.P0dot1);
-            var p0dot2_quantile = GeMetricValue(frametimes, EMetric.P0dot2);
-            var p1_quantile = GeMetricValue(frametimes, EMetric.P1);
-            var p5_quantile = GeMetricValue(frametimes, EMetric.P5);
-            var p1_averageLow = GeMetricValue(frametimes, EMetric.OnePercentLow);
-            var p0dot1_averageLow = GeMetricValue(frametimes, EMetric.ZerodotOnePercentLow);
-            var min = GeMetricValue(frametimes, EMetric.Min);
-            var adaptiveStandardDeviation = GeMetricValue(frametimes, EMetric.AdaptiveStd);
+            var max = GetMetricValue(frametimes, EMetric.Max);
+            var p99_quantile = GetMetricValue(frametimes, EMetric.P99);
+            var p95_quantile = GetMetricValue(frametimes, EMetric.P95);
+            var average = GetMetricValue(frametimes, EMetric.Average);
+            var median = GetMetricValue(frametimes, EMetric.Median);
+            var p0dot1_quantile = GetMetricValue(frametimes, EMetric.P0dot1);
+            var p0dot2_quantile = GetMetricValue(frametimes, EMetric.P0dot2);
+            var p1_quantile = GetMetricValue(frametimes, EMetric.P1);
+            var p5_quantile = GetMetricValue(frametimes, EMetric.P5);
+            var p1_averageLow = GetMetricValue(frametimes, EMetric.OnePercentLow);
+            var p0dot1_averageLow = GetMetricValue(frametimes, EMetric.ZerodotOnePercentLow);
+            var min = GetMetricValue(frametimes, EMetric.Min);
+            var adaptiveStandardDeviation = GetMetricValue(frametimes, EMetric.AdaptiveStd);
+            var cpuFpsPerWatt = _frametimeStatisticProvider
+                .GetPhysicalMetricValue(frametimes, EMetric.CpuFpsPerWatt,
+                SensorReport.GetAverageCpuPower(_session.Runs.Select(run => run.SensorData),
+                _localRecordDataServer.CurrentTime, _localRecordDataServer.CurrentTime + _localRecordDataServer.WindowLength));
+            //var gpuFpsPerWatt = _frametimeStatisticProvider
+            //.GetPhysicalMetricValue(frametimes, EMetric.GpuFpsPerWatt,
+            //SensorReport.GetAverageGpuPower(_session.Runs.Select(run => run.SensorData),
+            //_localRecordDataServer.CurrentTime, _localRecordDataServer.CurrentTime + _localRecordDataServer.WindowLength));
 
             Application.Current.Dispatcher.Invoke(new Action(() =>
             {
                 IChartValues values = new ChartValues<double>();
 
+                //if (_appConfiguration.UseSingleRecordGpuFpsPerWattParameter)
+                //    values.Add(gpuFpsPerWatt);
+                if (_appConfiguration.UseSingleRecordCpuFpsPerWattParameter)
+                    values.Add(cpuFpsPerWatt);
                 if (_appConfiguration.UseSingleRecordAdaptiveSTDStatisticParameter && !double.IsNaN(adaptiveStandardDeviation))
                     values.Add(adaptiveStandardDeviation);
                 if (_appConfiguration.UseSingleRecordMinStatisticParameter)
@@ -837,6 +863,11 @@ namespace CapFrameX.ViewModel
                 var parameterLabelList = new List<string>();
 
                 //{ "Adaptive STDEV", "Min", "0.1% Low", "0.1%", "0.2%", "1% Low", "1%", "5%", "Average", "95%", "99%", "Max" }
+
+                if (_appConfiguration.UseSingleRecordGpuFpsPerWattParameter)
+                    parameterLabelList.Add("GPU FPS/W");
+                if (_appConfiguration.UseSingleRecordCpuFpsPerWattParameter)
+                    parameterLabelList.Add("CPU FPS/W");
                 if (_appConfiguration.UseSingleRecordAdaptiveSTDStatisticParameter && !double.IsNaN(adaptiveStandardDeviation))
                     parameterLabelList.Add("Adaptive STDEV");
                 if (_appConfiguration.UseSingleRecordMinStatisticParameter)

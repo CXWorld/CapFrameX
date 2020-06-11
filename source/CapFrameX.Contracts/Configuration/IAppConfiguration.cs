@@ -37,6 +37,10 @@ namespace CapFrameX.Contracts.Configuration
 
 		bool UseSingleRecordAdaptiveSTDStatisticParameter { get; set; }
 
+		bool UseSingleRecordCpuFpsPerWattParameter { get; set; }
+
+		bool UseSingleRecordGpuFpsPerWattParameter { get; set; }
+
 		string CaptureHotKey { get; set; }
 
 		string OverlayHotKey { get; set; }

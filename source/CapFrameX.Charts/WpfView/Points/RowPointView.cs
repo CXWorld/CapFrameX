@@ -138,6 +138,9 @@ namespace LiveCharts.Wpf.Points
 
             var animSpeed = chart.View.AnimationsSpeed;
 
+            //if (double.IsNaN(getX()) || double.IsNaN(getY())
+            //    return;
+
             if (DataLabel != null)
             {
                 DataLabel.UpdateLayout();

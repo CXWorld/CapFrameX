@@ -15,6 +15,8 @@
 		private bool _useP0Dot1LowAverageStatisticParameter;
 		private bool _useMinStatisticParameter;
 		private bool _useAdaptiveSTDStatisticParameter;
+		private bool _useSingleRecordCpuFpsPerWattParameter;
+		private bool _useSingleRecordGpuFpsPerWattParameter;
 
 		partial void InitializeStatisticParameter()
 		{
@@ -31,6 +33,8 @@
 			UseP0Dot1LowAverageStatisticParameter = _appConfiguration.UseSingleRecordP0Dot1LowAverageStatisticParameter;
 			UseMinStatisticParameter = _appConfiguration.UseSingleRecordMinStatisticParameter;
 			UseAdaptiveSTDStatisticParameter = _appConfiguration.UseSingleRecordAdaptiveSTDStatisticParameter;
+			UseCpuFpsPerWattParameter = _appConfiguration.UseSingleRecordCpuFpsPerWattParameter;
+			UseGpuFpsPerWattParameter = _appConfiguration.UseSingleRecordGpuFpsPerWattParameter;
 		}
 
 		public bool UseMaxStatisticParameter
@@ -172,6 +176,27 @@
 			{
 				_useAdaptiveSTDStatisticParameter = value;
 				_appConfiguration.UseSingleRecordAdaptiveSTDStatisticParameter = value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public bool UseCpuFpsPerWattParameter
+		{
+			get { return _useSingleRecordCpuFpsPerWattParameter; }
+			set
+			{
+				_useSingleRecordCpuFpsPerWattParameter = value;
+				_appConfiguration.UseSingleRecordCpuFpsPerWattParameter = value;
+				RaisePropertyChanged();
+			}
+		}
+		public bool UseGpuFpsPerWattParameter
+		{
+			get { return _useSingleRecordGpuFpsPerWattParameter; }
+			set
+			{
+				_useSingleRecordGpuFpsPerWattParameter = value;
+				_appConfiguration.UseSingleRecordGpuFpsPerWattParameter = value;
 				RaisePropertyChanged();
 			}
 		}
