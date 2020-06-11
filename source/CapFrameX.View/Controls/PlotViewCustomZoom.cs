@@ -30,10 +30,6 @@ namespace CapFrameX.View.Controls
 
             MouseDoubleClick += new MouseButtonEventHandler(OnMouseDoubleClick);
         }
-        private void OnMouseDoubleClick(object sender, MouseButtonEventArgs e)
-        {
-            ResetAllAxes();
-        }
 
         private void HandleZoomByWheel(IPlotView view, OxyMouseWheelEventArgs args, double factor = 1)
         {
@@ -51,6 +47,11 @@ namespace CapFrameX.View.Controls
         {
             var m = new CustomZoomStepManipulator(view, EAxisDescription.Y) { Step = args.Delta * 0.001 * factor };
             m.Started(args);
+        }
+
+        private void OnMouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            ResetAllAxes();
         }
     }
 }
