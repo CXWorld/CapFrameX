@@ -1,5 +1,4 @@
-﻿using CapFrameX.View.Controls;
-using CapFrameX.ViewModel;
+﻿using CapFrameX.ViewModel;
 using System;
 using System.Reactive.Linq;
 using System.Threading;
@@ -23,30 +22,6 @@ namespace CapFrameX.View
 				.ObserveOn(context)
 				.SubscribeOn(context)
 				.Subscribe(dummy => ResetLShapeChart());
-		}
-
-		private PlotViewCustomZoom GetFrametimePlotView()
-		{
-			var dataTemplate = ChartsContentPresenter.FindResource("FrametimeChartContent") as DataTemplate;
-			return dataTemplate.LoadContent() as PlotViewCustomZoom;
-		}
-
-		private PlotViewCustomZoom GetFpsPlotView()
-		{
-			var dataTemplate = ChartsContentPresenter.FindResource("FpsChartContent") as DataTemplate;
-			return dataTemplate.LoadContent() as PlotViewCustomZoom;
-		}
-
-		private void ResetFrametimeChart_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
-		{
-			//var comparisonFrametimePlotView = GetFrametimePlotView();
-			//comparisonFrametimePlotView.ResetAllAxes();
-		}
-
-		private void ResetFpsChart_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
-		{
-			//var comparisonFpsPlotView = GetFpsPlotView();
-			//comparisonFpsPlotView.ResetAllAxes();
 		}
 
 		private void ResetLShapeChart_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)

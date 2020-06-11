@@ -115,8 +115,7 @@
                                 <ContentPresenter x:Name="ChartsContentPresenter" Content="{Binding}">
                                     <ContentPresenter.Resources>
                                         <DataTemplate x:Key="FrametimeChartContent">
-                                            <controls:PlotViewCustomZoom Background="#F5F5F5" Model="{Binding DataContext.ComparisonFrametimesModel, ElementName=ComparisonViewUserControl}"
-                                                      MouseDoubleClick="ResetFrametimeChart_MouseDoubleClick"/>
+                                            <controls:PlotViewCustomZoom Background="#F5F5F5" Model="{Binding DataContext.ComparisonFrametimesModel, ElementName=ComparisonViewUserControl}"/>
                                         </DataTemplate>
                                         <DataTemplate x:Key="FpsChartContent">
                                             <Grid>
@@ -131,8 +130,7 @@
                                                         </ComboBox.ItemTemplate>
                                                     </ComboBox>
                                                 </Grid>
-                                                <controls:PlotViewCustomZoom Background="#F5F5F5" Model="{Binding DataContext.ComparisonFpsModel, ElementName=ComparisonViewUserControl}"
-                                                      MouseDoubleClick="ResetFpsChart_MouseDoubleClick"/>
+                                                <controls:PlotViewCustomZoom Background="#F5F5F5" Model="{Binding DataContext.ComparisonFpsModel, ElementName=ComparisonViewUserControl}"/>
                                             </Grid>
                                         </DataTemplate>
                                     </ContentPresenter.Resources>
@@ -154,7 +152,7 @@
                         <Grid Grid.Row="2" Visibility="{Binding ElementName=RangeSliderActiveToggleButton, Path=IsChecked, Converter={StaticResource TrueToVisibleConverter}}">
                             <mahapps:RangeSlider Margin="45 10 5 25" LowerValue="{Binding FirstSeconds}" UpperValue="{Binding LastSeconds}"   
                                      Maximum="{Binding MaxRecordingTime}"                                    
-									 TickPlacement="BottomRight" TickFrequency="2.5"                                     
+									 TickPlacement="BottomRight" TickFrequency="2.5"      
                                      MinRange="{Binding MinRangeSliderRange}"
 									 Style="{StaticResource CustomRangeSlider}"/>
                             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Bottom" Orientation="Horizontal" Margin="45 0 0 0" Height="15">
