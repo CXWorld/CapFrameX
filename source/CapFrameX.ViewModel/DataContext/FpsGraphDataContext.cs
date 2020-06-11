@@ -37,7 +37,9 @@ namespace CapFrameX.ViewModel.DataContext
 		public void BuildPlotmodel(IPlotSettings plotSettings, Action<PlotModel> onFinishAction = null)
 		{
 			Dispatcher.CurrentDispatcher.Invoke(() => {
-				_graphPlotBuilder.BuildPlotmodel(RecordDataServer.CurrentSession, plotSettings, RecordDataServer.CurrentTime, RecordDataServer.CurrentTime + RecordDataServer.WindowLength, RecordDataServer.RemoveOutlierMethod, onFinishAction);
+				_graphPlotBuilder.BuildPlotmodel(RecordDataServer.CurrentSession, plotSettings, 
+					RecordDataServer.CurrentTime, RecordDataServer.CurrentTime + RecordDataServer.WindowLength, 
+					RecordDataServer.RemoveOutlierMethod, RecordDataServer.FilterMode, onFinishAction);
 				PlotModel = _graphPlotBuilder.PlotModel;
 			});
 		}

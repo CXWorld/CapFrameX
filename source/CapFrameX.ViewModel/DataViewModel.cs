@@ -628,13 +628,11 @@ namespace CapFrameX.ViewModel
             }
         }
 
-
         private void OnFilterModeChanged()
         {
-            
+            _localRecordDataServer.FilterMode = SelectedFilterMode;
             FpsGraphDataContext.BuildPlotmodel(new VisibleGraphs(GpuLoad, CpuLoad, CpuMaxThreadLoad, GpuPowerLimit));
         }
-
 
         private void UpdateRangeSliderParameter()
         {
