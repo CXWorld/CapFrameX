@@ -9,8 +9,6 @@ namespace CapFrameX.Statistics.NetStandard.Contracts
         [Description("Average")]
         MovingAverage,
         [Description("Median")]
-        Median,
-        [Description("Polynomial")]
-        Polynomial
+        Median
     }
 }
