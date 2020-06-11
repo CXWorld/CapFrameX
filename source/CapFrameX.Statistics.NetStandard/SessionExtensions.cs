@@ -194,13 +194,16 @@ namespace CapFrameX.Statistics.NetStandard
             switch (filterMode)
             {
                 case EFilterMode.MovingAverage:
-                    var movingAverage = frametimePoints.Select(pnt => 1000 / pnt.Y).MovingAverage(options.MovingAverageWindowSize).ToArray();
+                    var movingAverage = frametimePoints.Select(pnt => pnt.Y)
+                        .MovingAverage(options.MovingAverageWindowSize)
+                        .Select(val => 1000 / val).ToArray();
                     fpsPoints = frametimePoints.Select((pnt, i) => new Point(pnt.X, movingAverage[i]))
                         .Skip(20).ToList();
                     break;
                 case EFilterMode.Median:
                     var medianFilter = new MathNet.Filtering.Median.OnlineMedianFilter(options.MovingAverageWindowSize);
-                    fpsPoints = frametimePoints.Select(pnt => new Point(pnt.X, medianFilter.ProcessSample(1000 / pnt.Y)))
+                    fpsPoints = frametimePoints.Select(pnt => medianFilter.ProcessSample(pnt.Y))
+                        .Select((val, i) => new Point(frametimePoints[i].X, 1000 / val))
                         .Skip(20).ToList();
                     break;
                 default:

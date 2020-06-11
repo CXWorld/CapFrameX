@@ -23,7 +23,7 @@ namespace CapFrameX.Statistics.PlotBuilder
             plotModel.Axes.Add(AxisDefinitions[EPlotAxis.YAXISFPS]);
 
             SetFpsChart(plotModel, session.GetFpsPointsTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod, filterMode),
-                session.GetFrametimeTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod), filterMode);
+                session.GetFrametimeTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod));
 
             if (plotSettings.IsAnyGraphVisible && session.HasValidSensorData())
             {
@@ -43,7 +43,7 @@ namespace CapFrameX.Statistics.PlotBuilder
             plotModel.InvalidatePlot(true);
         }
 
-        private void SetFpsChart(PlotModel plotModel, IList<Point> fpsPoints, IList<double> frametimes, EFilterMode filterMode)
+        private void SetFpsChart(PlotModel plotModel, IList<Point> fpsPoints, IList<double> frametimes)
         {
             if (fpsPoints == null || !fpsPoints.Any())
                 return;
@@ -66,22 +66,19 @@ namespace CapFrameX.Statistics.PlotBuilder
             fpsSeries.Points.AddRange(fpsDataPoints);
             plotModel.Series.Add(fpsSeries);
 
-            if (filterMode == EFilterMode.None)
+            double average = frametimes.Count * 1000 / frametimes.Sum();
+            var averageDataPoints = fpsPoints.Select(pnt => new DataPoint(pnt.X, average));
+
+            var averageSeries = new LineSeries
             {
-                double average = frametimes.Count * 1000 / frametimes.Sum();
-                var averageDataPoints = fpsPoints.Select(pnt => new DataPoint(pnt.X, average));
+                Title = "Average FPS",
+                StrokeThickness = 2,
+                LegendStrokeThickness = 4,
+                Color = Constants.FpsAverageStroke
+            };
 
-                var averageSeries = new LineSeries
-                {
-                    Title = "Average FPS",
-                    StrokeThickness = 2,
-                    LegendStrokeThickness = 4,
-                    Color = Constants.FpsAverageStroke
-                };
-
-                averageSeries.Points.AddRange(averageDataPoints);
-                plotModel.Series.Add(averageSeries);
-            }
+            averageSeries.Points.AddRange(averageDataPoints);
+            plotModel.Series.Add(averageSeries);
 
 
             UpdateAxis(EPlotAxis.XAXIS, (axis) =>
