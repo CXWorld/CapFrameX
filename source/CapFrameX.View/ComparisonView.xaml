@@ -101,7 +101,6 @@
                                 <Grid Margin="0 0 50 0" Panel.ZIndex="1" HorizontalAlignment="Left" VerticalAlignment="Bottom">
                                     <ComboBox Grid.Column="5" Margin="45 0 0 15" HorizontalAlignment="Left" VerticalAlignment="Bottom" materialDesign:HintAssist.Hint="Values"
 					                    materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Width="80"  materialDesign:ComboBoxAssist.ClassicMode="True"
-                                        Visibility="{Binding IsBarChartTabActive, Converter={StaticResource TrueToCollapsedConverter}}"
 					                    ItemsSource="{Binding Path=DataContext.WindowSizes, ElementName=ColorbarViewName}">
                                         <ComboBoxItem IsSelected="True">Frametimes</ComboBoxItem>
                                         <ComboBoxItem>FPS</ComboBoxItem>
@@ -112,15 +111,6 @@
                                             </Binding>
                                         </ComboBox.Text>
                                     </ComboBox>
-                                    <ComboBox Width="100" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="150 0 0 15" materialDesign:HintAssist.Hint="Filter mode"
-										      materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="240" materialDesign:ComboBoxAssist.ClassicMode="True"
-                                              SelectedItem="{Binding SelectedFilterMode}" ItemsSource="{Binding FilterModes}">
-                                        <ComboBox.ItemTemplate>
-                                            <DataTemplate>
-                                                <TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}"/>
-                                            </DataTemplate>
-                                        </ComboBox.ItemTemplate>
-                                    </ComboBox>
                                 </Grid>
                                 <ContentPresenter x:Name="ChartsContentPresenter" Content="{Binding}">
                                     <ContentPresenter.Resources>
@@ -129,8 +119,21 @@
                                                       MouseDoubleClick="ResetFrametimeChart_MouseDoubleClick"/>
                                         </DataTemplate>
                                         <DataTemplate x:Key="FpsChartContent">
-                                            <controls:PlotViewCustomZoom Background="#F5F5F5" Model="{Binding DataContext.ComparisonFpsModel, ElementName=ComparisonViewUserControl}"
+                                            <Grid>
+                                                <Grid Margin="0 0 50 0" Panel.ZIndex="1" HorizontalAlignment="Left" VerticalAlignment="Bottom">
+                                                    <ComboBox Width="100" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="150 0 0 15" materialDesign:HintAssist.Hint="Filter mode"
+										      materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="240" materialDesign:ComboBoxAssist.ClassicMode="True"
+                                              SelectedItem="{Binding SelectedFilterMode}" ItemsSource="{Binding FilterModes}">
+                                                        <ComboBox.ItemTemplate>
+                                                            <DataTemplate>
+                                                                <TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}"/>
+                                                            </DataTemplate>
+                                                        </ComboBox.ItemTemplate>
+                                                    </ComboBox>
+                                                </Grid>
+                                                <controls:PlotViewCustomZoom Background="#F5F5F5" Model="{Binding DataContext.ComparisonFpsModel, ElementName=ComparisonViewUserControl}"
                                                       MouseDoubleClick="ResetFpsChart_MouseDoubleClick"/>
+                                            </Grid>
                                         </DataTemplate>
                                     </ContentPresenter.Resources>
                                     <ContentPresenter.Style>
