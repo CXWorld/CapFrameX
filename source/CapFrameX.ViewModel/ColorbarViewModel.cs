@@ -495,7 +495,7 @@ namespace CapFrameX.ViewModel
 
 		public void OnAutostartChanged()
 		{
-			string run = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run";
+			string run = "SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Run";
 			string appName = "CapFrameX";
 			string appPath = System.Reflection.Assembly.GetEntryAssembly().Location;
 			if (Path.HasExtension(appPath))
