@@ -643,25 +643,9 @@
                                 <TextBox Grid.Row="2" Grid.Column="3" Width="20" VerticalAlignment="Center"
                                      Text="{Binding OverlayItemValueFonzSize, UpdateSourceTrigger=PropertyChanged}">
                                 </TextBox>
-                                <TextBlock Grid.Row="3" Grid.Column="0"  VerticalAlignment="Center" Text="Empty line below this entry"></TextBlock>
+                                <TextBlock Grid.Row="3" Grid.Column="0"  VerticalAlignment="Center" Text="Empty line below this group"></TextBlock>
                                 <CheckBox Grid.Row="3" Grid.Column="3" IsEnabled="{Binding OverlayTypeOptionsSelected, Converter={StaticResource InvertBoolConverter}}" 
-                                          IsChecked="{Binding LineBreakBelowOverlayEntry, Mode=TwoWay}">
-                                    <CheckBox.ToolTip>
-                                        <ToolTip MaxWidth="250">
-                                            <TextBlock Text="Logs various sensor data like CPU and GPU load/power for analysis"                               
-										   TextWrapping="Wrap"/>
-                                        </ToolTip>
-                                    </CheckBox.ToolTip>
-                                </CheckBox>
-                                <TextBlock Grid.Row="4" Grid.Column="0"  VerticalAlignment="Center" Text="Empty line below this group"></TextBlock>
-                                <CheckBox Grid.Row="4" Grid.Column="3" IsEnabled="{Binding OverlayTypeOptionsSelected, Converter={StaticResource InvertBoolConverter}}"  
-                                          IsChecked="{Binding LineBreakBelowOverlayGroup, Mode=TwoWay}">
-                                    <CheckBox.ToolTip>
-                                        <ToolTip MaxWidth="250">
-                                            <TextBlock Text="Logs various sensor data like CPU and GPU load/power for analysis"                               
-										   TextWrapping="Wrap"/>
-                                        </ToolTip>
-                                    </CheckBox.ToolTip>
+                                          IsChecked="{Binding EmptyLineBelowOverlayGroup, Mode=TwoWay}">
                                 </CheckBox>
                             </Grid>
                         </StackPanel>
