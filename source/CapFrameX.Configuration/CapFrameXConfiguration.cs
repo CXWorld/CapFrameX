@@ -399,10 +399,23 @@ namespace CapFrameX.Configuration
 			get { return Settings.ShowThresholdTimes; }
 			set { Settings.ShowThresholdTimes = value; Settings.Save(); }
 		}
+
 		public string CaptureFileMode
 		{
 			get { return Settings.CaptureFileMode; }
 			set { Settings.CaptureFileMode = value; Settings.Save(); }
+		}
+
+		public bool StartMinimized
+		{
+			get { return Settings.StartMinimized; }
+			set { Settings.StartMinimized = value; Settings.Save(); }
+		}
+
+		public bool Autostart
+		{
+			get { return Settings.Autostart; }
+			set { Settings.Autostart = value; Settings.Save(); }
 		}
 	}
 }

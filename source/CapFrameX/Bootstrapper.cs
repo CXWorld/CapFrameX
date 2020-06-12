@@ -48,7 +48,15 @@ namespace CapFrameX
 			base.InitializeShell();
 			LogAppInfo();
 			Application.Current.MainWindow = (Window)Shell;
+
+			var config = Container.Resolve<CapFrameXConfiguration>();
+			if (config.StartMinimized)
+				Application.Current.MainWindow.WindowState = WindowState.Minimized;
+
 			Application.Current.MainWindow.Show();
+
+			if (config.StartMinimized)
+				Application.Current.MainWindow.Hide();
 		}
 
 		protected override void ConfigureContainer()

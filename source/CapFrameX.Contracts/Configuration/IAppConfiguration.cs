@@ -134,5 +134,9 @@ namespace CapFrameX.Contracts.Configuration
 		bool ShowThresholdTimes { get; set; }
 
 		string CaptureFileMode { get; set; }
+
+		bool StartMinimized { get; set; }
+
+		bool Autostart { get; set; }
 	}
 }

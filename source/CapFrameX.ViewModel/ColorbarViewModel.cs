@@ -17,6 +17,7 @@ using CapFrameX.Contracts.MVVM;
 using Microsoft.Extensions.Logging;
 using CapFrameX.Contracts.Data;
 using CapFrameX.EventAggregation.Messages;
+using Microsoft.Win32;
 
 namespace CapFrameX.ViewModel
 {
@@ -293,6 +294,27 @@ namespace CapFrameX.ViewModel
 				RaisePropertyChanged();
 			}
 		}
+		
+		public bool StartMinimized
+		{
+			get { return _appConfiguration.StartMinimized; }
+			set
+			{
+				_appConfiguration.StartMinimized = value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public bool Autostart
+		{
+			get { return _appConfiguration.Autostart; }
+			set
+			{
+				_appConfiguration.Autostart = value;				
+				RaisePropertyChanged();
+				OnAutostartChanged();
+			}
+		}
 
 		public string HelpText => File.ReadAllText(@"HelpTexts\ChartControls.rtf");
 
@@ -469,6 +491,22 @@ namespace CapFrameX.ViewModel
 
 			if (HelpViewSelected)
 				SelectedView = "Help";
+		}
+
+		public void OnAutostartChanged()
+		{
+			string run = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run";
+			string appName = "CapFrameX";
+			string appPath = System.Reflection.Assembly.GetEntryAssembly().Location;
+			if (Path.HasExtension(appPath))
+			{
+				RegistryKey startKey = Registry.LocalMachine.OpenSubKey(run, true);
+
+				if (Autostart)
+					startKey.SetValue(appName, appPath);
+				if (!Autostart)
+					startKey.DeleteValue(appName);
+			}			
 		}
 
 		private void SetAggregatorEvents()

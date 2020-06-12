@@ -106,7 +106,7 @@
 			        </Hyperlink>	
 		        </TextBlock>
 
-                <materialDesign:PopupBox Grid.Column="1" materialDesign:Closed="PopupBox_Closed" RequestBringIntoView="PopupBox_RequestBringIntoView" Margin="16,0,16,0" StaysOpen="True" PlacementMode="BottomAndAlignRightEdges" HorizontalAlignment="Right">
+                <materialDesign:PopupBox Grid.Column="1" DataContext="{Binding Path=DataContext, ElementName=ColorbarViewName}" materialDesign:Closed="PopupBox_Closed" RequestBringIntoView="PopupBox_RequestBringIntoView" Margin="16,0,16,0" StaysOpen="True" PlacementMode="BottomAndAlignRightEdges" HorizontalAlignment="Right">
                     <DockPanel>
                         <StackPanel Margin="10" DockPanel.Dock="Top" Orientation="Horizontal">
                             <RadioButton Margin="18 0 0 0" Style="{StaticResource MaterialDesignTabRadioButton}"
@@ -180,7 +180,6 @@
                                                 </Binding>
                                             </TextBox.Text>
                                         </TextBox>
-
                                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="15 5 0 5" Grid.Row="1" Grid.Column="0">
                                             <TextBlock Text="Dark mode"/>
                                             <ToggleButton Margin="15 0 0 0" Click="MenuDarkModeButton_Click"/>
