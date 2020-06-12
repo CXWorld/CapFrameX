@@ -3,7 +3,7 @@
   <Profiles />
   <Settings>
     <Setting Name="MovingAverageWindowSize" Type="System.Int32" Scope="User">
-      <Value Profile="(Default)">40</Value>
+      <Value Profile="(Default)">100</Value>
     </Setting>
     <Setting Name="StutteringFactor" Type="System.Double" Scope="User">
       <Value Profile="(Default)">2.5</Value>
