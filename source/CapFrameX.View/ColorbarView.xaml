@@ -180,7 +180,23 @@
                                                 </Binding>
                                             </TextBox.Text>
                                         </TextBox>
-                                        <StackPanel Grid.Row="1" Grid.ColumnSpan="3" Orientation="Horizontal" HorizontalAlignment="Left"  Margin="10 0 0 0">
+
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="15 5 0 5" Grid.Row="1" Grid.Column="0">
+                                            <TextBlock Text="Dark mode"/>
+                                            <ToggleButton Margin="15 0 0 0" Click="MenuDarkModeButton_Click"/>
+                                        </StackPanel>
+                                        <StackPanel Orientation="Horizontal" Margin="40 5 0 5" Grid.Row="1" Grid.Column="1">
+                                            <TextBlock Margin="0 0 0 0" Text="Start with Windows" TextAlignment="Center" TextWrapping="Wrap" Width="80"/>
+                                            <CheckBox Margin="0 0 0 0" IsChecked="{Binding Autostart, Mode=TwoWay}">
+                                            </CheckBox>
+                                        </StackPanel>
+                                        <StackPanel Orientation="Horizontal" Margin="10 5 0 5" Grid.Row="1" Grid.Column="2">
+                                            <TextBlock Margin="0 0 0 0" Text="Start minimized" TextAlignment="Center" TextWrapping="Wrap" Width="80"/>
+                                            <CheckBox Margin="0 0 0 0" IsChecked="{Binding StartMinimized, Mode=TwoWay}">
+                                            </CheckBox>
+                                        </StackPanel>
+
+                                        <StackPanel Grid.Row="2" Grid.ColumnSpan="3" Orientation="Horizontal" HorizontalAlignment="Left"  Margin="10 5 0 5">
                                             <TextBox Width="350" IsReadOnly="True" materialDesign:HintAssist.Hint="Screenshot directory" Text="{Binding ScreenshotDirectory, Mode=OneWay}" />
                                             <Button Margin="15 0 0 0" Height="35" Width="35" Command="{Binding Path=DataContext.SelectScreenshotFolderCommand, ElementName=ColorbarViewName}" Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}" ToolTip="Select screenshot folder">
                                                 <materialDesign:PackIcon Kind="Folder" Height="25" Width="25" />
@@ -189,8 +205,9 @@
                                                 <materialDesign:PackIcon Kind="Forward" Height="25" Width="25" />
                                             </Button>
                                         </StackPanel>
-                                        <ComboBox Grid.Row="2" Grid.Column="0" materialDesign:HintAssist.Hint="Hardware info source"
-												  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Margin="15 15 0 0"
+                                                                               
+                                        <ComboBox Grid.Row="3" Grid.Column="0" materialDesign:HintAssist.Hint="Hardware info source"
+												  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Margin="15 15 0 0" Width="160"
 												  ItemsSource="{Binding Path=DataContext.HardwareInfoSourceItems, ElementName=ColorbarViewName}" 
 												  SelectedItem="{Binding Path=DataContext.SelectedHardwareInfoSource, ElementName=ColorbarViewName}">
                                             <ComboBox.ItemTemplate>
@@ -199,7 +216,7 @@
                                                 </DataTemplate>
                                             </ComboBox.ItemTemplate>
                                         </ComboBox>
-                                        <ComboBox Grid.Row="2" Grid.Column="1" materialDesign:HintAssist.Hint="Capture file mode" ToolTipService.ShowDuration="25000"
+                                        <ComboBox Grid.Row="3" Grid.Column="1" materialDesign:HintAssist.Hint="Capture file mode" ToolTipService.ShowDuration="25000"
 												  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Margin="35 15 0 0" Width="160"
 												  ItemsSource="{Binding Path=DataContext.CaptureFileModeItems, ElementName=ColorbarViewName}" 
 												  SelectedItem="{Binding Path=DataContext.SelectedCaptureFileMode, ElementName=ColorbarViewName}">
@@ -219,8 +236,7 @@
                                                 </DataTemplate>
                                             </ComboBox.ItemTemplate>
                                         </ComboBox>
-                                        <TextBlock Margin="15 15 0 0" Grid.Row="3" Grid.Column="0" Text="Dark mode" VerticalAlignment="Center"/>
-                                        <ToggleButton Margin="70 20 0 0" Grid.Row="3" Grid.Column="0" Click="MenuDarkModeButton_Click"/>
+                                        
                                         <TextBox Grid.Row="4" Grid.ColumnSpan="2" materialDesign:HintAssist.Hint="CPU" Margin="15 15 0 0"
 												Visibility="{Binding Path=DataContext.HasCustomInfo, ElementName=ColorbarViewName, Converter={StaticResource FalseToCollapsedConverter}}">
                                             <TextBox.Text>
