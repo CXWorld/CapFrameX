@@ -75,6 +75,12 @@ namespace CapFrameX.View
 
 			if ((ExtractFullPath(CaptureRootDirectory) == ObservedDirectory))
 				root.IsSelected = true;
+
+			if (!root.IsExpanded)
+			{
+				(DataContext as ControlViewModel).RootDirectory = ObservedDirectory;
+				BuildTreeView();
+			}
 		}
 
 		private TreeViewItem CreateTreeViewRoot()

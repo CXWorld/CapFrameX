@@ -35,5 +35,7 @@
 		}
 
 		public class CloudFolderChanged	{ }
+
+		public class SelectCloudFolder { }
 	}
 }

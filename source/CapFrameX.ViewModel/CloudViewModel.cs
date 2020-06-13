@@ -44,7 +44,7 @@ namespace CapFrameX.ViewModel
 		private readonly IAppVersionProvider _appVersionProvider;
 		private readonly LoginManager _loginManager;
 		private PubSubEvent<AppMessages.CloudFolderChanged> _cloudFolderChanged;
-
+		private PubSubEvent<AppMessages.SelectCloudFolder> _selectCloudFolder;
 		private bool _useUpdateSession;
 		private int _selectedCloudEntryIndex = -1;
 		private bool _showHelpText = true;
@@ -228,6 +228,8 @@ namespace CapFrameX.ViewModel
 
 		public ICommand CopyURLCommand { get; }
 
+		public ICommand SwitchToDownloadDirectoryCommand { get; }
+
 		public ISubject<Unit> DownloadCompleteStream = new Subject<Unit>();
 
 		public ObservableCollection<ICloudEntry> CloudEntries { get; private set; }
@@ -246,7 +248,9 @@ namespace CapFrameX.ViewModel
 			_loginManager = loginManager;
 			ClearTableCommand = new DelegateCommand(OnClearTable);
 			CopyURLCommand = new DelegateCommand(() => Clipboard.SetText(_shareUrl));
+			SwitchToDownloadDirectoryCommand = new DelegateCommand(OnSwitchToDownloadDirectory);
 			_cloudFolderChanged = eventAggregator.GetEvent<PubSubEvent<AppMessages.CloudFolderChanged>>();
+			_selectCloudFolder = eventAggregator.GetEvent<PubSubEvent<AppMessages.SelectCloudFolder>>();
 			UploadRecordsCommand = new DelegateCommand(async () =>
 			{
 				await UploadRecords();
@@ -284,6 +288,17 @@ namespace CapFrameX.ViewModel
 			ShowHelpText = !CloudEntries.Any();
 			ShowUploadDescriptionTextBox = CloudEntries.Any();
 			EnableClearAndUploadButton = CloudEntries.Any();
+		}
+
+		public void OnSwitchToDownloadDirectory()
+		{
+			string downloadDirectory = CloudDownloadDirectory;
+
+			if (downloadDirectory.Contains(@"MyDocuments\CapFrameX\Captures\Cloud"))
+				downloadDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), @"CapFrameX\Captures\Cloud");
+
+			_appConfiguration.ObservedDirectory = downloadDirectory;
+			_selectCloudFolder.Publish(new AppMessages.SelectCloudFolder());
 		}
 
 		private void SubscribeToUpdateSession()
