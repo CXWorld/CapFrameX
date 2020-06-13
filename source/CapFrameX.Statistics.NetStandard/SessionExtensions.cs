@@ -1,10 +1,13 @@
 ﻿using CapFrameX.Data.Session.Classes;
 using CapFrameX.Data.Session.Contracts;
 using CapFrameX.Statistics.NetStandard.Contracts;
+using MathNet.Numerics.IntegralTransforms;
 using MathNet.Numerics.Statistics;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Numerics;
 
 namespace CapFrameX.Statistics.NetStandard
 {
@@ -211,6 +214,17 @@ namespace CapFrameX.Statistics.NetStandard
                 //    fpsPoints = frametimePoints.Select((pnt, i) => new Point(pnt.X, 1000 / polynomial[i]))
                 //        .Skip(20).ToList();
                 //    break;
+                case EFilterMode.LowPass:
+                    Complex[] data = frametimePoints.Select(pnt => new Complex(pnt.Y, 0d)).ToArray();
+                    Fourier.Forward(data);
+                    for (int i = frametimePoints.Count/ options.MovingAverageWindowSize; i < frametimePoints.Count; i++)
+                    {
+                        data[i] = new Complex();
+                    }
+                    Fourier.Inverse(data);
+                    fpsPoints = frametimePoints.Select((pnt, i) => new Point(pnt.X, 1000 / data[i].Real))
+                        .Skip(20).ToList();
+                    break;
                 default:
                     fpsPoints = frametimePoints.Select(pnt => new Point(pnt.X, 1000 / pnt.Y)).ToList();
                     break;
