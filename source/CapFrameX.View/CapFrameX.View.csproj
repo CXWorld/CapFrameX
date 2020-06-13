@@ -190,8 +190,8 @@
     <Compile Include="ColorbarView.xaml.cs">
       <DependentUpon>ColorbarView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Controls\OxyPlotHelper.cs" />
     <Compile Include="Controls\CustomZoomStepManipulator.cs" />
+    <Compile Include="Controls\PlotViewCustomZoom.cs" />
     <Compile Include="ControlView.xaml.cs">
       <DependentUpon>ControlView.xaml</DependentUpon>
     </Compile>

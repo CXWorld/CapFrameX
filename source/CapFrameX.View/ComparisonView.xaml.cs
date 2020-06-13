@@ -1,12 +1,5 @@
-﻿using CapFrameX.Configuration;
-using CapFrameX.Data;
-using CapFrameX.Statistics;
-using CapFrameX.View.Controls;
-using CapFrameX.ViewModel;
-using Microsoft.Extensions.Logging;
-using Prism.Events;
+﻿using CapFrameX.ViewModel;
 using System;
-using System.ComponentModel;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Windows;
@@ -21,20 +14,14 @@ namespace CapFrameX.View
 	public partial class ComparisonView : UserControl
 	{
 		public ComparisonView()
-		{
+		{			
 			InitializeComponent();
-			OxyPlotHelper.SetAxisZoomWheelAndPan(ComparisonPlotView);
 
 			var context = SynchronizationContext.Current;
 			(DataContext as ComparisonViewModel)?.ResetLShapeChart
 				.ObserveOn(context)
 				.SubscribeOn(context)
 				.Subscribe(dummy => ResetLShapeChart());
-		}
-
-		private void ResetFrametimeChart_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
-		{
-			ComparisonPlotView.ResetAllAxes();
 		}
 
 		private void ResetLShapeChart_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)

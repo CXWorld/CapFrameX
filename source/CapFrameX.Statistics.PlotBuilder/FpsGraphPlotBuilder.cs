@@ -3,100 +3,97 @@ using CapFrameX.Statistics.NetStandard;
 using CapFrameX.Statistics.NetStandard.Contracts;
 using CapFrameX.Statistics.PlotBuilder.Contracts;
 using OxyPlot;
-using OxyPlot.Series;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace CapFrameX.Statistics.PlotBuilder
 {
-	public class FpsGraphPlotBuilder : PlotBuilder
-	{
-		public FpsGraphPlotBuilder(IFrametimeStatisticProviderOptions options, IStatisticProvider frametimeStatisticProvider) : base(options, frametimeStatisticProvider) { }
-		public void BuildPlotmodel(ISession session, IPlotSettings plotSettings, double startTime, double endTime, ERemoveOutlierMethod eRemoveOutlinerMethod, Action<PlotModel> onFinishAction = null)
-		{
-			var plotModel = PlotModel;
-			Reset();
-			if(session == null)
-			{
-				return;
-			}
-			plotModel.Axes.Add(AxisDefinitions[EPlotAxis.XAXIS]);
-			plotModel.Axes.Add(AxisDefinitions[EPlotAxis.YAXISFPS]);
+    public class FpsGraphPlotBuilder : PlotBuilder
+    {
+        public FpsGraphPlotBuilder(IFrametimeStatisticProviderOptions options, IStatisticProvider frametimeStatisticProvider) : base(options, frametimeStatisticProvider) { }
+        public void BuildPlotmodel(ISession session, IPlotSettings plotSettings, double startTime, double endTime, ERemoveOutlierMethod eRemoveOutlinerMethod, EFilterMode filterMode, Action<PlotModel> onFinishAction = null)
+        {
+            var plotModel = PlotModel;
+            Reset();
 
-			SetFpsChart(plotModel, session.GetFpsPointTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod), session.GetFrametimeTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod));
+            if (session == null) return;
 
-			if (plotSettings.IsAnyGraphVisible && session.HasValidSensorData())
-			{
-				plotModel.Axes.Add(AxisDefinitions[EPlotAxis.YAXISPERCENTAGE]);
+            plotModel.Axes.Add(AxisDefinitions[EPlotAxis.XAXIS]);
+            plotModel.Axes.Add(AxisDefinitions[EPlotAxis.YAXISFPS]);
 
-				if (plotSettings.ShowGpuLoad)
-					SetGPULoadChart(plotModel, session.GetGPULoadPointTimeWindow());
-				if (plotSettings.ShowCpuLoad)
-					SetCPULoadChart(plotModel, session.GetCPULoadPointTimeWindow());
-				if (plotSettings.ShowCpuMaxThreadLoad)
-					SetCPUMaxThreadLoadChart(plotModel, session.GetCPUMaxThreadLoadPointTimeWindow());
-				if (plotSettings.ShowGpuPowerLimit)
-					SetGpuPowerLimitChart(plotModel, session.GetGpuPowerLimitPointTimeWindow());
-			}
+            SetFpsChart(plotModel, session.GetFpsPointsTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod, filterMode),
+                session.GetFrametimeTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod));
 
-			onFinishAction?.Invoke(plotModel);
-			plotModel.InvalidatePlot(true);
-		}
+            if (plotSettings.IsAnyGraphVisible && session.HasValidSensorData())
+            {
+                plotModel.Axes.Add(AxisDefinitions[EPlotAxis.YAXISPERCENTAGE]);
 
-		public void SetFpsChart(PlotModel plotModel, IList<Point> fpsPoints, IList<double> frametimes)
-		{
-			if (fpsPoints == null || !fpsPoints.Any())
-				return;
+                if (plotSettings.ShowGpuLoad)
+                    SetGPULoadChart(plotModel, session.GetGPULoadPointTimeWindow());
+                if (plotSettings.ShowCpuLoad)
+                    SetCPULoadChart(plotModel, session.GetCPULoadPointTimeWindow());
+                if (plotSettings.ShowCpuMaxThreadLoad)
+                    SetCPUMaxThreadLoadChart(plotModel, session.GetCPUMaxThreadLoadPointTimeWindow());
+                if (plotSettings.ShowGpuPowerLimit)
+                    SetGpuPowerLimitChart(plotModel, session.GetGpuPowerLimitPointTimeWindow());
+            }
 
-			int count = fpsPoints.Count;
-			var fpsDataPoints = fpsPoints.Select(pnt => new DataPoint(pnt.X, pnt.Y));
-			var yMin = fpsPoints.Min(pnt => pnt.Y);
-			var yMax = fpsPoints.Max(pnt => pnt.Y);
-			double average = frametimes.Count * 1000 / frametimes.Sum();
-			var averageDataPoints = fpsPoints.Select(pnt => new DataPoint(pnt.X, average));
+            onFinishAction?.Invoke(plotModel);
+            plotModel.InvalidatePlot(true);
+        }
 
-			plotModel.Series.Clear();
+        private void SetFpsChart(PlotModel plotModel, IList<Point> fpsPoints, IList<double> frametimes)
+        {
+            if (fpsPoints == null || !fpsPoints.Any())
+                return;
 
-			var fpsSeries = new LineSeries
-			{
-				Title = "FPS",
-				StrokeThickness = 1,
-				LegendStrokeThickness = 4,
-				Color = Constants.FpsStroke
-			};
+            int count = fpsPoints.Count;
+            var fpsDataPoints = fpsPoints.Select(pnt => new DataPoint(pnt.X, pnt.Y));
+            var yMin = fpsPoints.Min(pnt => pnt.Y);
+            var yMax = fpsPoints.Max(pnt => pnt.Y);
 
-			var averageSeries = new LineSeries
-			{
-				Title = "Average FPS",
-				StrokeThickness = 2,
-				LegendStrokeThickness = 4,
-				Color = Constants.FpsAverageStroke
-			};
+            plotModel.Series.Clear();
 
-			fpsSeries.Points.AddRange(fpsDataPoints);
-			averageSeries.Points.AddRange(averageDataPoints);
+            var fpsSeries = new LineSeries
+            {
+                Title = "FPS",
+                StrokeThickness = 1,
+                LegendStrokeThickness = 4,
+                Color = Constants.FpsStroke
+            };
 
+            fpsSeries.Points.AddRange(fpsDataPoints);
+            plotModel.Series.Add(fpsSeries);
 
-			UpdateAxis(EPlotAxis.XAXIS, (axis) =>
-			{
-				axis.Minimum = fpsPoints.First().X;
-				axis.Maximum = fpsPoints.Last().X;
-			});
+            double average = frametimes.Count * 1000 / frametimes.Sum();
+            var averageDataPoints = fpsPoints.Select(pnt => new DataPoint(pnt.X, average));
 
-			UpdateAxis(EPlotAxis.YAXISFPS, (axis) =>
-			{
-				axis.Minimum = yMin - (yMax - yMin) / 6;
-				axis.Maximum = yMax + (yMax - yMin) / 6;
-			});
+            var averageSeries = new LineSeries
+            {
+                Title = "Average FPS",
+                StrokeThickness = 2,
+                LegendStrokeThickness = 4,
+                Color = Constants.FpsAverageStroke
+            };
+
+            averageSeries.Points.AddRange(averageDataPoints);
+            plotModel.Series.Add(averageSeries);
 
 
+            UpdateAxis(EPlotAxis.XAXIS, (axis) =>
+            {
+                axis.Minimum = 0;
+                axis.Maximum = fpsPoints.Last().X;
+            });
 
-			plotModel.Series.Add(fpsSeries);
-			plotModel.Series.Add(averageSeries);
+            UpdateAxis(EPlotAxis.YAXISFPS, (axis) =>
+            {
+                axis.Minimum = yMin - (yMax - yMin) / 6;
+                axis.Maximum = yMax + (yMax - yMin) / 6;
+            });
 
-			plotModel.InvalidatePlot(true);
-		}
-	}
+            plotModel.InvalidatePlot(true);
+        }
+    }
 }

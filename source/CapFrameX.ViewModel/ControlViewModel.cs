@@ -275,6 +275,7 @@ namespace CapFrameX.ViewModel
 
 			SetAggregatorEvents();
 			SubscribeToCloudFolderChanged();
+			SubscribeToCloudFolderSelected();
 			SubscribeToResetRecord();
 			SubscribeToSetFileRecordInfoExternal();
 
@@ -664,6 +665,15 @@ namespace CapFrameX.ViewModel
 		private void SubscribeToCloudFolderChanged()
 		{
 			_eventAggregator.GetEvent<PubSubEvent<AppMessages.CloudFolderChanged>>()
+				.Subscribe(msg =>
+				{
+					TreeViewUpdateStream.OnNext(default);
+				});
+		}
+
+		private void SubscribeToCloudFolderSelected()
+		{
+			_eventAggregator.GetEvent<PubSubEvent<AppMessages.SelectCloudFolder>>()
 				.Subscribe(msg =>
 				{
 					TreeViewUpdateStream.OnNext(default);

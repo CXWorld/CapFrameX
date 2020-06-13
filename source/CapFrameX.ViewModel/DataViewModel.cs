@@ -73,6 +73,7 @@ namespace CapFrameX.ViewModel
         private bool _cpuLoad;
         private bool _cpuMaxThreadLoad;
         private bool _gpuPowerLimit;
+        private EFilterMode _selectedFilterMode;
 
         private ISubject<Unit> _onUpdateChart = new BehaviorSubject<Unit>(default);
 
@@ -85,6 +86,10 @@ namespace CapFrameX.ViewModel
         public IAppConfiguration AppConfiguration => _appConfiguration;
 
         public Array ChartYAxisSettings => Enum.GetValues(typeof(EChartYAxisSetting));
+
+        public Array FilterModes => Enum.GetValues(typeof(EFilterMode))
+                                          .Cast<EFilterMode>()
+                                          .ToArray();
 
         public bool IsGpuPowerLimitAvailable => GetIsPowerLimitAvailable();
 
@@ -384,6 +389,16 @@ namespace CapFrameX.ViewModel
                 _onUpdateChart.OnNext(default);
             }
         }
+        public EFilterMode SelectedFilterMode
+        {
+            get { return _selectedFilterMode; }
+            set
+            {
+                _selectedFilterMode = value;
+                RaisePropertyChanged();
+                OnFilterModeChanged();
+            }
+        }
 
         public bool IsAnyGraphActive()
         {
@@ -603,6 +618,7 @@ namespace CapFrameX.ViewModel
             UpdateSecondaryCharts();
         }
 
+
         private void OnRemoveOutliersChanged()
         {
             if (RecordInfo == null)
@@ -624,6 +640,12 @@ namespace CapFrameX.ViewModel
                     $"This doesn't qualify as a conclusive evaluation of the benchmark run.";
                 MessageDialogContentIsOpen = true;
             }
+        }
+
+        private void OnFilterModeChanged()
+        {
+            _localRecordDataServer.FilterMode = SelectedFilterMode;
+            FpsGraphDataContext.BuildPlotmodel(new VisibleGraphs(GpuLoad, CpuLoad, CpuMaxThreadLoad, GpuPowerLimit));
         }
 
         private void UpdateRangeSliderParameter()

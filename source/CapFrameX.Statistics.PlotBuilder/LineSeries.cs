@@ -1,11 +1,8 @@
 ﻿using OxyPlot;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace CapFrameX.Statistics.PlotBuilder
 {
-	public class LineSeries: OxyPlot.Series.LineSeries
+    public class LineSeries: OxyPlot.Series.LineSeries
 	{
 		public int LegendStrokeThickness { get; set; }
 

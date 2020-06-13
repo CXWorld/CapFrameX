@@ -53,12 +53,17 @@ namespace CapFrameX
 			{
 				Hide();
 			}
-			else this.ShowAndFocus();
+			else
+			{
+				this.ShowAndFocus();
+				WindowState = WindowState.Normal;
+			} 
 		}
 
 		private void ShowMainWindow_Click(object sender, RoutedEventArgs e)
 		{
 			this.ShowAndFocus();
+			WindowState = WindowState.Normal;
 		}
 
 		private void Exit_Click(object sender, RoutedEventArgs e)

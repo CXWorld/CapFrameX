@@ -15,7 +15,6 @@ namespace CapFrameX.Data
 	{
 		private double _windowLength;
 		private double _currentTime;
-		private ERemoveOutlierMethod _removeOutlierMethod;
 		private ISubject<IList<double>> _frametimeDataSubject;
 		private ISubject<IList<Point>> _frametimePointDataSubject;
 		private ISubject<IList<double>> _fpsDataSubject;
@@ -46,14 +45,9 @@ namespace CapFrameX.Data
 			}
 		}
 
-		public ERemoveOutlierMethod RemoveOutlierMethod
-		{
-			get => _removeOutlierMethod;
-			set
-			{
-				_removeOutlierMethod = value;
-			}
-		}
+		public ERemoveOutlierMethod RemoveOutlierMethod { get; set; }
+
+		public EFilterMode FilterMode { get; set; }
 
 		public IObservable<IList<double>> FrametimeDataStream => _frametimeDataSubject.AsObservable();
 

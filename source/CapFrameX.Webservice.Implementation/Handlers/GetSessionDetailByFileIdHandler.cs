@@ -50,7 +50,7 @@ namespace CapFrameX.Webservice.Implementation.Handlers
 			var plotSettings = new PlotSettings();
 			var frametimeStatisticProvider = new FrametimeStatisticProvider(frametimeStatisticsProviderOptions);
 			var fpsGraphBuilder = new FpsGraphPlotBuilder(frametimeStatisticsProviderOptions, frametimeStatisticProvider);
-			fpsGraphBuilder.BuildPlotmodel(session, plotSettings, 0, 1000, ERemoveOutlierMethod.None);
+			fpsGraphBuilder.BuildPlotmodel(session, plotSettings, 0, 1000, ERemoveOutlierMethod.None, EFilterMode.None);
 			var frametimeGraphBuilder = new FrametimePlotBuilder(frametimeStatisticsProviderOptions, frametimeStatisticProvider);
 			frametimeGraphBuilder.BuildPlotmodel(session, plotSettings, 0, 1000, ERemoveOutlierMethod.None);
 

@@ -8,7 +8,7 @@
 			 xmlns:mvvm="clr-namespace:CapFrameX.MVVM.Converter;assembly=CapFrameX.MVVM"
 			 xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"	
              xmlns:local="clr-namespace:CapFrameX.View.Controls"
-			 xmlns:oxy="clr-namespace:OxyPlot.Wpf;assembly=OxyPlot.Wpf"
+			 xmlns:controls="clr-namespace:CapFrameX.View.Controls"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
 	<UserControl.Resources>
@@ -35,15 +35,15 @@
 			<RowDefinition Height="1*"></RowDefinition>
 		</Grid.RowDefinitions>
 		<Grid Grid.Row="0" Background="#F0F0F0">
-			<oxy:PlotView Background="#F0F0F0" x:Name="FpsPlotView" Model="{Binding FpsModel}" Tag="{Binding ElementName=FpsGraphControlName, Path=DataContext}"
+			<controls:PlotViewCustomZoom Margin="10 0 0 0" Background="#F0F0F0" x:Name="FpsPlotView" Model="{Binding FpsModel}" Tag="{Binding ElementName=FpsGraphControlName, Path=DataContext}"
 						  MouseDoubleClick="ResetChart_MouseDoubleClick">
-				<oxy:PlotView.ContextMenu>
+                <controls:PlotViewCustomZoom.ContextMenu>
 					<ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
 						<MenuItem Header="Copy fps values (f)" Command="{Binding CopyFpsValuesCommand}"/>
                         <MenuItem Header="Copy fps points (t, f(t))" Command="{Binding CopyFpsPointsCommand}"/>
 					</ContextMenu>
-				</oxy:PlotView.ContextMenu>
-			</oxy:PlotView>
+                </controls:PlotViewCustomZoom.ContextMenu>
+			</controls:PlotViewCustomZoom>
 		</Grid>
 	</Grid>
 </UserControl>

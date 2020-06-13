@@ -48,7 +48,15 @@ namespace CapFrameX
 			base.InitializeShell();
 			LogAppInfo();
 			Application.Current.MainWindow = (Window)Shell;
+
+			var config = Container.Resolve<CapFrameXConfiguration>();
+			if (config.StartMinimized)
+				Application.Current.MainWindow.WindowState = WindowState.Minimized;
+
 			Application.Current.MainWindow.Show();
+
+			if (config.StartMinimized)
+				Application.Current.MainWindow.Hide();
 		}
 
 		protected override void ConfigureContainer()
@@ -71,11 +79,11 @@ namespace CapFrameX
 			Container.Register<ICaptureService, PresentMonCaptureService>(Reuse.Singleton);
 			Container.Register<IRTSSService, RTSSService>(Reuse.Singleton);
 			Container.Register<IOverlayService, OverlayService>(Reuse.Singleton);
-			Container.Register<ISystemInfo, SystemInfo>(Reuse.Singleton);
 			Container.Register<IOnlineMetricService, OnlineMetricService>(Reuse.Singleton);
 			Container.Register<ISensorService, SensorService>(Reuse.Singleton);
 			Container.Register<IOverlayEntryProvider, OverlayEntryProvider>(Reuse.Singleton);
 			Container.Register<IRecordManager, RecordManager>(Reuse.Singleton);
+			Container.Register<ISystemInfo, SystemInfo>(Reuse.Singleton);
 			Container.Register<IAppVersionProvider, AppVersionProvider>(Reuse.Singleton);
 			Container.RegisterInstance<IWebVersionProvider>(new WebVersionProvider(), Reuse.Singleton);
 			Container.Register<IUpdateCheck, UpdateCheck>(Reuse.Singleton);
