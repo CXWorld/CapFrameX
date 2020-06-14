@@ -2,16 +2,16 @@
 /////////////////////////////////////////////////////////////////////////////
 // created by Unwinder - modified by ZeroStrat
 /////////////////////////////////////////////////////////////////////////////
+
 #include "stdafx.h"
 #include "RTSSSharedMemory.h"
 #include "RTSSCoreControl.h"
 #include "GroupedString.h"
-/////////////////////////////////////////////////////////////////////////////
+
 #include <shlwapi.h>
 #include <float.h>
 #include <io.h>
 
-/////////////////////////////////////////////////////////////////////////////
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -81,7 +81,6 @@ CString RTSSCoreControl::GetApiInfo(DWORD processId)
 	return api;
 }
 
-/////////////////////////////////////////////////////////////////////////////
 DWORD RTSSCoreControl::GetSharedMemoryVersion()
 {
 	DWORD dwResult = 0;
@@ -107,7 +106,7 @@ DWORD RTSSCoreControl::GetSharedMemoryVersion()
 
 	return dwResult;
 }
-/////////////////////////////////////////////////////////////////////////////
+
 DWORD RTSSCoreControl::EmbedGraph(DWORD dwOffset, FLOAT* lpBuffer, DWORD dwBufferPos, DWORD dwBufferSize, LONG dwWidth, LONG dwHeight, LONG dwMargin, FLOAT fltMin, FLOAT fltMax, DWORD dwFlags)
 {
 	DWORD dwResult = 0;
@@ -200,7 +199,7 @@ DWORD RTSSCoreControl::EmbedGraph(DWORD dwOffset, FLOAT* lpBuffer, DWORD dwBuffe
 
 	return dwResult;
 }
-/////////////////////////////////////////////////////////////////////////////
+
 BOOL RTSSCoreControl::UpdateOSD(LPCSTR lpText)
 {
 	BOOL bResult = FALSE;
@@ -282,7 +281,7 @@ BOOL RTSSCoreControl::UpdateOSD(LPCSTR lpText)
 
 	return bResult;
 }
-/////////////////////////////////////////////////////////////////////////////
+
 void RTSSCoreControl::ReleaseOSD()
 {
 	HANDLE hMapFile = OpenFileMapping(FILE_MAP_ALL_ACCESS, FALSE, "RTSSSharedMemoryV2");
@@ -316,7 +315,7 @@ void RTSSCoreControl::ReleaseOSD()
 		CloseHandle(hMapFile);
 	}
 }
-/////////////////////////////////////////////////////////////////////////////
+
 DWORD RTSSCoreControl::GetClientsNum()
 {
 	DWORD dwClients = 0;
@@ -653,7 +652,6 @@ void RTSSCoreControl::AddOverlayEntry(CGroupedString* groupedString, OverlayEntr
 	}
 }
 
-/////////////////////////////////////////////////////////////////////////////
 void RTSSCoreControl::IncProfileProperty(LPCSTR lpProfile, LPCSTR lpProfileProperty, LONG dwIncrement)
 {
 	if (m_profileInterface.IsInitialized())
@@ -672,7 +670,7 @@ void RTSSCoreControl::IncProfileProperty(LPCSTR lpProfile, LPCSTR lpProfilePrope
 		}
 	}
 }
-/////////////////////////////////////////////////////////////////////////////
+
 void RTSSCoreControl::SetProfileProperty(LPCSTR lpProfile, LPCSTR lpProfileProperty, DWORD dwProperty)
 {
 	if (m_profileInterface.IsInitialized())
@@ -683,4 +681,3 @@ void RTSSCoreControl::SetProfileProperty(LPCSTR lpProfile, LPCSTR lpProfilePrope
 		m_profileInterface.UpdateProfiles();
 	}
 }
-/////////////////////////////////////////////////////////////////////////////
