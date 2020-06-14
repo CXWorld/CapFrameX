@@ -11,6 +11,8 @@ namespace CapFrameX.Statistics.NetStandard.Contracts
         [Description("Median")]
         Median,
         [Description("Time Average")]
-        TimeBasedMovingAverage
+        TimeBasedMovingAverage,
+        [Description("Interval Average")]
+        TimeIntervalAverage
     }
 }

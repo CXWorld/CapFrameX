@@ -213,6 +213,12 @@ namespace CapFrameX.Statistics.NetStandard
                     fpsPoints = frametimePoints.Select((pnt, i) => new Point(pnt.X, 1000 / timeMovingAverage[i]))
                         .Skip(20).ToList();
                     break;
+                case EFilterMode.TimeIntervalAverage:
+                    var timeIntervalAverageFilter = new IntervalTimeAverageFilter();
+                    var timeIntervalAveragePoints = timeIntervalAverageFilter
+                        .ProcessSamples(frametimePoints.Select(pnt => pnt.Y).ToList());
+                    fpsPoints = timeIntervalAveragePoints.Select(pnt => new Point(pnt.X / 1000, 1000 / pnt.Y)).ToList();
+                    break;
                 default:
                     fpsPoints = frametimePoints.Select(pnt => new Point(pnt.X, 1000 / pnt.Y)).ToList();
                     break;
