@@ -6,8 +6,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using CapFrameX.Extensions.NetStandard;
-using System.Net.Http.Headers;
-using MathNet.Numerics.Integration;
 
 namespace CapFrameX.Statistics.NetStandard
 {
@@ -201,11 +199,11 @@ namespace CapFrameX.Statistics.NetStandard
                         metricValue = 0;
                     break;
                 //case EMetric.GpuFpsPerWatt:
-                    //if (coefficient > 0)
-                    //    metricValue = (sequence.Count * 1000 / sequence.Sum()) / coefficient;
-                    //else
-                    //    metricValue = double.NaN;
-                    //break;
+                //if (coefficient > 0)
+                //    metricValue = (sequence.Count * 1000 / sequence.Sum()) / coefficient;
+                //else
+                //    metricValue = double.NaN;
+                //break;
                 default:
                     metricValue = 0;
                     break;
