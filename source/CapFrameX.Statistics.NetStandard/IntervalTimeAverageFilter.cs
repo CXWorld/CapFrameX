@@ -11,7 +11,7 @@ namespace CapFrameX.Statistics.NetStandard
         /// Time interval average filter
         /// </summary>
         /// <param name="timeInterval">time interval in milliseconds</param>
-        public IntervalTimeAverageFilter(double timeInterval = 200)
+        public IntervalTimeAverageFilter(double timeInterval = 500)
         {
             _timeInterval = timeInterval;
         }
