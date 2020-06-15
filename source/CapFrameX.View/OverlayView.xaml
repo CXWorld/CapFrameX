@@ -643,13 +643,20 @@
                                 <TextBox Grid.Row="2" Grid.Column="3" Width="20" VerticalAlignment="Center"
                                      Text="{Binding OverlayItemValueFonzSize, UpdateSourceTrigger=PropertyChanged}">
                                 </TextBox>
-                                <TextBlock Grid.Row="3" Grid.Column="0"  VerticalAlignment="Center" Text="Empty line below this group"></TextBlock>
-                                <CheckBox Grid.Row="3" Grid.Column="3" IsEnabled="{Binding OverlayTypeOptionsSelected, Converter={StaticResource InvertBoolConverter}}" 
-                                          IsChecked="{Binding EmptyLineBelowOverlayGroup, Mode=TwoWay}">
-                                </CheckBox>
                             </Grid>
                         </StackPanel>
                     </Border>
+                    <StackPanel Grid.Row="2" Grid.Column="0"  Orientation="Horizontal" Margin="10 20 0 0">
+                        <TextBlock Text="Separators"/>
+                        <materialDesign:PopupBox StaysOpen="True" VerticalAlignment="Top" ToolTipService.ShowDuration="25000" Margin="0 -5 0 0">
+                            <materialDesign:PopupBox.ToolTip>
+                                <ToolTip MaxWidth="275" Placement="Top">
+                                    <TextBlock Text="OSD parameter group control" 
+										   TextWrapping="Wrap"/>
+                                </ToolTip>
+                            </materialDesign:PopupBox.ToolTip>
+                            </materialDesign:PopupBox>
+                    </StackPanel>
                 </Grid>
             </TabItem>
         </TabControl>
