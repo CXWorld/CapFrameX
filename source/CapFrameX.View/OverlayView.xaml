@@ -461,6 +461,235 @@
                     </StackPanel>
                 </Grid>
             </TabItem>
+            <TabItem Header="Overlay items options">
+                <Grid HorizontalAlignment="Center">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="50"></RowDefinition>
+                        <RowDefinition Height="200"></RowDefinition>
+                        <RowDefinition Height="215"></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="220"/>
+                        <ColumnDefinition Width="220"/>
+                    </Grid.ColumnDefinitions>
+                    <!--<TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="16" Text="{Binding SelectedOverlayItemString}"/>-->
+                    <TextBlock Grid.Row="0" Grid.ColumnSpan="2"  VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="16" Text="Overlay item name"/>
+                    <Border Grid.Row="1" Grid.Column="0" Margin="5" Background="Transparent" BorderThickness=".2" BorderBrush="Black">
+                        <StackPanel Margin="5">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="25"></RowDefinition>
+                                    <RowDefinition Height="40"></RowDefinition>
+                                    <RowDefinition Height="40"></RowDefinition>
+                                    <RowDefinition Height="40"></RowDefinition>
+                                    <RowDefinition Height="40"></RowDefinition>
+                                    <RowDefinition Height="40"></RowDefinition>
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="120"/>
+                                    <ColumnDefinition Width="40"/>
+                                    <ColumnDefinition Width="1*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Row="0" Grid.ColumnSpan="3" VerticalAlignment="Center" HorizontalAlignment="Center" Text="Colors and limits" FontSize="16"/>
+                                <TextBlock Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Text="Group color:"/>
+                                <xctk:ColorPicker Grid.Row="1" Grid.Column="2" Width="25" Height="25" Margin="0 0 0 0" Background="#e6e6e6" SelectedColor="{Binding OverlayItemGroupColor}" 
+										SelectedColorChanged="SelectedColorChanged" DisplayColorAndName="False" AvailableColorsSortingMode="HueSaturationBrightness">
+                                    <xctk:ColorPicker.ButtonStyle>
+                                        <Style TargetType="ToggleButton">
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="ToggleButton" xmlns:chrome="clr-namespace:Xceed.Wpf.Toolkit.Chromes;assembly=Xceed.Wpf.Toolkit">
+                                                        <Grid SnapsToDevicePixels="True">
+                                                            <Grid>
+                                                                <Border Background="{TemplateBinding Background}"
+																							BorderBrush="{TemplateBinding BorderBrush}"
+																							BorderThickness="1"																						
+																							SnapsToDevicePixels="True">
+                                                                    <ContentPresenter Content="{TemplateBinding Content}"
+																										  ContentTemplate="{TemplateBinding ContentTemplate}"
+																										  ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
+																										  VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+																										  HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"/>
+                                                                </Border>
+                                                            </Grid>
+                                                        </Grid>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Style>
+                                    </xctk:ColorPicker.ButtonStyle>
+                                </xctk:ColorPicker>
+                                <TextBlock Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" Text="Standard value color:"/>
+                                <xctk:ColorPicker Grid.Row="2" Grid.Column="2" Width="25" Height="25" Margin="0 0 0 0" Background="#e6e6e6" SelectedColor="{Binding OverlayItemValueColor}" 
+										SelectedColorChanged="SelectedColorChanged" DisplayColorAndName="False" AvailableColorsSortingMode="HueSaturationBrightness">
+                                    <xctk:ColorPicker.ButtonStyle>
+                                        <Style TargetType="ToggleButton">
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="ToggleButton" xmlns:chrome="clr-namespace:Xceed.Wpf.Toolkit.Chromes;assembly=Xceed.Wpf.Toolkit">
+                                                        <Grid SnapsToDevicePixels="True">
+                                                            <Grid>
+                                                                <Border Background="{TemplateBinding Background}"
+																							BorderBrush="{TemplateBinding BorderBrush}"
+																							BorderThickness="1"																						
+																							SnapsToDevicePixels="True">
+                                                                    <ContentPresenter Content="{TemplateBinding Content}"
+																										  ContentTemplate="{TemplateBinding ContentTemplate}"
+																										  ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
+																										  VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+																										  HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"/>
+                                                                </Border>
+                                                            </Grid>
+                                                        </Grid>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Style>
+                                    </xctk:ColorPicker.ButtonStyle>
+                                </xctk:ColorPicker>
+                                <TextBlock Grid.Row="3" Grid.Column="0"  VerticalAlignment="Center" Text="Upper limit + color:"></TextBlock>
+                                <TextBox Grid.Row="3" Grid.Column="1" Width="40" VerticalAlignment="Center"
+                                     Text="{Binding OverlayItemUpperLimitString, UpdateSourceTrigger=PropertyChanged}">
+                                </TextBox>
+                                <xctk:ColorPicker Grid.Row="3" Grid.Column="2" Width="25" Height="25" Margin="0 0 0 0" Background="#e6e6e6" SelectedColor="{Binding OverlayItemUpperThresholdColor}" 
+										SelectedColorChanged="SelectedColorChanged" DisplayColorAndName="False" AvailableColorsSortingMode="HueSaturationBrightness">
+                                    <xctk:ColorPicker.ButtonStyle>
+                                        <Style TargetType="ToggleButton">
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="ToggleButton" xmlns:chrome="clr-namespace:Xceed.Wpf.Toolkit.Chromes;assembly=Xceed.Wpf.Toolkit">
+                                                        <Grid SnapsToDevicePixels="True">
+                                                            <Grid>
+                                                                <Border Background="{TemplateBinding Background}"
+																							BorderBrush="{TemplateBinding BorderBrush}"
+																							BorderThickness="1"																						
+																							SnapsToDevicePixels="True">
+                                                                    <ContentPresenter Content="{TemplateBinding Content}"
+																										  ContentTemplate="{TemplateBinding ContentTemplate}"
+																										  ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
+																										  VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+																										  HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"/>
+                                                                </Border>
+                                                            </Grid>
+                                                        </Grid>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Style>
+                                    </xctk:ColorPicker.ButtonStyle>
+                                </xctk:ColorPicker>
+                                <TextBlock Grid.Row="4" Grid.Column="0"  VerticalAlignment="Center" Text="Lower limit + color:"></TextBlock>
+                                <TextBox Grid.Row="4" Grid.Column="1" Width="40" VerticalAlignment="Center"
+                                     Text="{Binding OverlayItemLowerLimitString, UpdateSourceTrigger=PropertyChanged}">
+                                </TextBox>
+                                <xctk:ColorPicker Grid.Row="4" Grid.Column="2" Width="25" Height="25" Margin="0 0 0 0" Background="#e6e6e6" SelectedColor="{Binding OverlayItemLowerThresholdColor}" 
+										SelectedColorChanged="SelectedColorChanged" DisplayColorAndName="False" AvailableColorsSortingMode="HueSaturationBrightness">
+                                    <xctk:ColorPicker.ButtonStyle>
+                                        <Style TargetType="ToggleButton">
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="ToggleButton" xmlns:chrome="clr-namespace:Xceed.Wpf.Toolkit.Chromes;assembly=Xceed.Wpf.Toolkit">
+                                                        <Grid SnapsToDevicePixels="True">
+                                                            <Grid>
+                                                                <Border Background="{TemplateBinding Background}"
+																							BorderBrush="{TemplateBinding BorderBrush}"
+																							BorderThickness="1"																						
+																							SnapsToDevicePixels="True">
+                                                                    <ContentPresenter Content="{TemplateBinding Content}"
+																										  ContentTemplate="{TemplateBinding ContentTemplate}"
+																										  ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
+																										  VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+																										  HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"/>
+                                                                </Border>
+                                                            </Grid>
+                                                        </Grid>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Style>
+                                    </xctk:ColorPicker.ButtonStyle>
+                                </xctk:ColorPicker>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+                    <!-- Format options -->
+                    <Border Grid.Row="1" Grid.Column="1" Margin="5" Background="Transparent" BorderThickness=".2" BorderBrush="Black">
+                        <StackPanel Margin="5">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="25"></RowDefinition>
+                                    <RowDefinition Height="40"></RowDefinition>
+                                    <RowDefinition Height="40"></RowDefinition>
+                                    <RowDefinition Height="40"></RowDefinition>
+                                    <RowDefinition Height="40"></RowDefinition>
+                                    <RowDefinition Height="40"></RowDefinition>
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="160"/>
+                                    <ColumnDefinition Width="1*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Row="0" Grid.ColumnSpan="3" VerticalAlignment="Center" HorizontalAlignment="Center" Text="Format options" FontSize="16"/>
+                                <TextBlock Grid.Row="1" Grid.Column="0"  VerticalAlignment="Center" Text="Group name font size"></TextBlock>
+                                <TextBox Grid.Row="1" Grid.Column="3" Width="25" VerticalAlignment="Center"
+                                     Text="{Binding OverlayItemGroupFonzSize, UpdateSourceTrigger=PropertyChanged}">
+                                </TextBox>
+                                <TextBlock Grid.Row="2" Grid.Column="0"  VerticalAlignment="Center" Text="Value font size"></TextBlock>
+                                <TextBox Grid.Row="2" Grid.Column="3" Width="25" VerticalAlignment="Center"
+                                     Text="{Binding OverlayItemValueFonzSize, UpdateSourceTrigger=PropertyChanged}">
+                                </TextBox>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+                    <Border Grid.Row="2" Grid.Column="0" Margin="5" Background="Transparent" BorderThickness=".2" BorderBrush="Black">
+                        <DataGrid x:Name="SeparatorDataGrid" Background="#F5F5F5" FontSize="11"
+					      SelectedIndex="{Binding SelectedOverlayGroupIndex}" ItemsSource="{Binding OverlayGroupEntries}"
+					      CanUserSortColumns="False" CanUserAddRows="False" AutoGenerateColumns="False"
+					      materialDesign:DataGridAssist.CellPadding="13 3 0 0" materialDesign:DataGridAssist.ColumnHeaderPadding="8" IsSynchronizedWithCurrentItem="False"
+					      ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.CanContentScroll="True">
+                            <DataGrid.Resources>
+                                <Style TargetType="DataGridRow">
+                                    <Setter Property="DataGrid.Height" Value="25" />
+                                </Style>
+                                <Style TargetType="DataGridColumnHeader">
+                                    <Setter Property="DataGrid.Height" Value="25" />
+                                </Style>
+                            </DataGrid.Resources>
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Binding="{Binding GroupNames}"
+                                            Header="Group name"
+                                            IsReadOnly="True"/>
+                                <DataGridTextColumn Binding="{Binding GroupSeparators, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                            Header="Separators"
+                                            IsReadOnly="False"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Border>
+                    <Border Grid.Row="2" Grid.Column="1" Margin="5" Background="Transparent" BorderThickness=".2" BorderBrush="Black">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="1*"></RowDefinition>
+                                <RowDefinition Height="1*"></RowDefinition>
+                            </Grid.RowDefinitions>
+                            <StackPanel Grid.Row="0" Margin="10 0 0 0" Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock Text="Set colors and formats for all group members" Width="140" TextAlignment="Center" TextWrapping="Wrap"/>
+                                <Button Width="28" Height="28" Margin="20 0 0 0" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
+                                        Command="{Binding SetFormatForGroupName}"
+                                        materialDesign:RippleAssist.Feedback="#DD000000">
+                                    <materialDesign:PackIcon Kind="FormatListBulletedSquare" Height="22" Width="22" />
+                                </Button>
+                            </StackPanel>
+                            <StackPanel Grid.Row="1" Margin="10 0 0 0" Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock Text="Set colors and formats for all sensor type members" Width="140" TextAlignment="Center" TextWrapping="Wrap"/>
+                                <Button Width="28" Height="28" Margin="20 0 0 0" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
+                                        Command="{Binding SetFormatForSensorType}"
+                                        materialDesign:RippleAssist.Feedback="#DD000000">
+                                    <materialDesign:PackIcon Kind="FormatListBulletedSquare" Height="22" Width="22" />
+                                </Button>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </TabItem>
         </TabControl>
     </Grid>
 </UserControl>
