@@ -88,13 +88,13 @@ namespace CapFrameX.ViewModel
                                              .Where(metric => metric != EMetric.Average)
                                              .ToArray();
 
-        public Array ComparisonContextItems => Enum.GetValues(typeof(EFilterMode))
-                                                   .Cast<EFilterMode>()
-                                                   .Where(filter => filter != EFilterMode.RawPlusAverage)
+        public Array ComparisonContextItems => Enum.GetValues(typeof(EComparisonContext))
+                                                   .Cast<EComparisonContext>()
                                                    .ToArray();
 
         public Array FilterModes => Enum.GetValues(typeof(EFilterMode))
                                                   .Cast<EFilterMode>()
+                                                  .Where(filter => filter != EFilterMode.RawPlusAverage)
                                                   .ToArray();
 
         public ISubject<Unit> ResetLShapeChart = new Subject<Unit>();
