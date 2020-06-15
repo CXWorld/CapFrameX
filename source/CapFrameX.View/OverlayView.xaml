@@ -462,24 +462,19 @@
                 </Grid>
             </TabItem>
             <TabItem Header="Overlay items options">
-                <Grid>
+                <Grid HorizontalAlignment="Center">
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="75"></RowDefinition>
+                        <RowDefinition Height="50"></RowDefinition>
                         <RowDefinition Height="200"></RowDefinition>
-                        <RowDefinition Height="190"></RowDefinition>
+                        <RowDefinition Height="215"></RowDefinition>
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="200"/>
-                        <ColumnDefinition Width="50"/>
-                        <ColumnDefinition Width="200"/>
+                        <ColumnDefinition Width="220"/>
+                        <ColumnDefinition Width="220"/>
                     </Grid.ColumnDefinitions>
                     <!--<TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="16" Text="{Binding SelectedOverlayItemString}"/>-->
-                    <TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="16" Text="Overlay item name"/>
-                    <ToggleButton Grid.Row="0" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" IsChecked="{Binding OverlayTypeOptionsSelected, Mode=TwoWay}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Switch between single entry and general entry type"/>
-                    <!--<TextBlock Grid.Row="0" Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="16" Text="{Binding SelectedOverlayTypeString}"/>-->
-                    <TextBlock Grid.Row="0" Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="16" Text="Overlay item type name"/>
-                    <!-- Color and Limit options-->
-                    <Border Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="5" Width="215" Background="Transparent" BorderThickness=".2" BorderBrush="Black">
+                    <TextBlock Grid.Row="0" Grid.ColumnSpan="2"  VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="16" Text="Overlay item name"/>
+                    <Border Grid.Row="1" Grid.Column="0" Margin="5" Background="Transparent" BorderThickness=".2" BorderBrush="Black">
                         <StackPanel Margin="5">
                             <Grid>
                                 <Grid.RowDefinitions>
@@ -618,7 +613,7 @@
                         </StackPanel>
                     </Border>
                     <!-- Format options -->
-                    <Border Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" HorizontalAlignment="Right" Margin="5" Width="215" Background="Transparent" BorderThickness=".2" BorderBrush="Black">
+                    <Border Grid.Row="1" Grid.Column="1" Margin="5" Background="Transparent" BorderThickness=".2" BorderBrush="Black">
                         <StackPanel Margin="5">
                             <Grid>
                                 <Grid.RowDefinitions>
@@ -645,19 +640,12 @@
                             </Grid>
                         </StackPanel>
                     </Border>
-                    <Border Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Width="215" HorizontalAlignment="Left" Margin="5" Background="Transparent" BorderThickness=".2" BorderBrush="Black">
-                        <DataGrid x:Name="SeparatorDataGrid" Height="180" Width="210" Background="#F5F5F5" FontSize="11"
-						  MouseLeave="OverlayItemDataGrid_MouseLeave"
+                    <Border Grid.Row="2" Grid.Column="0" Margin="5" Background="Transparent" BorderThickness=".2" BorderBrush="Black">
+                        <DataGrid x:Name="SeparatorDataGrid" Background="#F5F5F5" FontSize="11"
 					      SelectedIndex="{Binding SelectedOverlayGroupIndex}" ItemsSource="{Binding OverlayGroupEntries}"
 					      CanUserSortColumns="False" CanUserAddRows="False" AutoGenerateColumns="False"
 					      materialDesign:DataGridAssist.CellPadding="13 3 0 0" materialDesign:DataGridAssist.ColumnHeaderPadding="8" IsSynchronizedWithCurrentItem="False"
-					      ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.CanContentScroll="True"
-					      dragdrop:DragDrop.IsDragSource="False"
-					      dragdrop:DragDrop.IsDropTarget="False"
-						  dragdrop:DragDrop.DropHandler="{Binding}"
-					      dragdrop:DragDrop.UseDefaultDragAdorner="True"
-					      dragdrop:DragDrop.DefaultDragAdornerOpacity="0.5"
-					      dragdrop:DragDrop.UseDefaultEffectDataTemplate="False">
+					      ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.CanContentScroll="True">
                             <DataGrid.Resources>
                                 <Style TargetType="DataGridRow">
                                     <Setter Property="DataGrid.Height" Value="25" />
@@ -667,7 +655,7 @@
                                 </Style>
                             </DataGrid.Resources>
                             <DataGrid.Columns>
-                                <DataGridTextColumn Binding="{Binding GroupNames, Mode=TwoWay}"
+                                <DataGridTextColumn Binding="{Binding GroupNames}"
                                             Header="Group name"
                                             IsReadOnly="True"/>
                                 <DataGridTextColumn Binding="{Binding GroupSeparators, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
@@ -675,6 +663,30 @@
                                             IsReadOnly="False"/>
                             </DataGrid.Columns>
                         </DataGrid>
+                    </Border>
+                    <Border Grid.Row="2" Grid.Column="1" Margin="5" Background="Transparent" BorderThickness=".2" BorderBrush="Black">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="1*"></RowDefinition>
+                                <RowDefinition Height="1*"></RowDefinition>
+                            </Grid.RowDefinitions>
+                            <StackPanel Grid.Row="0" Margin="10 0 0 0" Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock Text="Set colors and formats for all group members" Width="140" TextAlignment="Center" TextWrapping="Wrap"/>
+                                <Button Width="28" Height="28" Margin="20 0 0 0" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
+                                        Command="{Binding SetFormatForGroupName}"
+                                        materialDesign:RippleAssist.Feedback="#DD000000">
+                                    <materialDesign:PackIcon Kind="FormatListBulletedSquare" Height="22" Width="22" />
+                                </Button>
+                            </StackPanel>
+                            <StackPanel Grid.Row="1" Margin="10 0 0 0" Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock Text="Set colors and formats for all sensor type members" Width="140" TextAlignment="Center" TextWrapping="Wrap"/>
+                                <Button Width="28" Height="28" Margin="20 0 0 0" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
+                                        Command="{Binding SetFormatForSensorType}"
+                                        materialDesign:RippleAssist.Feedback="#DD000000">
+                                    <materialDesign:PackIcon Kind="FormatListBulletedSquare" Height="22" Width="22" />
+                                </Button>
+                            </StackPanel>
+                        </Grid>
                     </Border>
                 </Grid>
             </TabItem>
