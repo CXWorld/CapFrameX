@@ -48,8 +48,11 @@ namespace CapFrameX.Statistics.PlotBuilder
             if (fpsPoints == null || !fpsPoints.Any())
                 return;
 
+            var avgFps = _frametimesStatisticProvider.GetFpsMetricValue(frametimes, EMetric.Average);
+
             int count = fpsPoints.Count;
             var fpsDataPoints = fpsPoints.Select(pnt => new DataPoint(pnt.X, pnt.Y));
+
             var yMin = fpsPoints.Min(pnt => pnt.Y);
             var yMax = fpsPoints.Max(pnt => pnt.Y);
 
@@ -90,8 +93,19 @@ namespace CapFrameX.Statistics.PlotBuilder
 
             UpdateAxis(EPlotAxis.YAXISFPS, (axis) =>
             {
-                axis.Minimum = yMin - (yMax - yMin) / 6;
-                axis.Maximum = yMax + (yMax - yMin) / 6;
+                var axisMinimum = yMin - (yMax - yMin) / 6;
+                var axisMaximum = yMax + (yMax - yMin) / 6;
+
+                if (avgFps - axisMinimum < 15)
+                    axis.Minimum = avgFps - 15;
+                else
+                    axis.Minimum = axisMinimum;
+
+                if (axisMaximum - avgFps < 15)
+                    axis.Maximum = avgFps + 15;
+                else
+                    axis.Maximum = axisMaximum;
+
             });
 
             plotModel.InvalidatePlot(true);
