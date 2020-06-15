@@ -5,6 +5,9 @@
     <Setting Name="MovingAverageWindowSize" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">100</Value>
     </Setting>
+    <Setting Name="IntervalAverageWindowTime" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">500</Value>
+    </Setting>
     <Setting Name="StutteringFactor" Type="System.Double" Scope="User">
       <Value Profile="(Default)">2.5</Value>
     </Setting>

@@ -60,14 +60,15 @@ namespace CapFrameX.Statistics.PlotBuilder
                 Title = "FPS",
                 StrokeThickness = 1,
                 LegendStrokeThickness = 4,
-                Color = Constants.FpsStroke
+                Color = Constants.FpsStroke,
+                InterpolationAlgorithm = InterpolationAlgorithms.CanonicalSpline
             };
 
             fpsSeries.Points.AddRange(fpsDataPoints);
             plotModel.Series.Add(fpsSeries);
 
             double average = frametimes.Count * 1000 / frametimes.Sum();
-            var averageDataPoints = fpsPoints.Select(pnt => new DataPoint(pnt.X, average));
+            var averageDataPoints =  fpsPoints.Select(pnt => new DataPoint(pnt.X, average));
 
             var averageSeries = new LineSeries
             {

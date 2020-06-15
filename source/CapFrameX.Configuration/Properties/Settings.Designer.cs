@@ -37,6 +37,18 @@ namespace CapFrameX.Configuration.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("500")]
+        public int IntervalAverageWindowTime {
+            get {
+                return ((int)(this["IntervalAverageWindowTime"]));
+            }
+            set {
+                this["IntervalAverageWindowTime"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("2.5")]
         public double StutteringFactor {
             get {

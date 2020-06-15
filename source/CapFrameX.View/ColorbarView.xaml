@@ -143,25 +143,16 @@
                                             <ColumnDefinition Width="*"/>
                                             <ColumnDefinition Width="*"/>
                                         </Grid.ColumnDefinitions>
-                                        <!--<ComboBox Grid.Row="0" Grid.Column="0" materialDesign:HintAssist.Hint="Moving average window" HorizontalAlignment="Left"
+                                        <ComboBox Grid.Row="0" Grid.Column="0" materialDesign:HintAssist.Hint="Moving average window" HorizontalAlignment="Left"
 												  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Width="140" Margin="20 15 15 15"
-												  ItemsSource="{Binding Path=DataContext.WindowSizes, ElementName=ColorbarViewName}">
+												  ItemsSource="{Binding Path=DataContext.AverageTimeWindows, ElementName=ColorbarViewName}">
                                             <ComboBox.Text>
-                                                <Binding Path="SelectWindowSize"
+                                                <Binding Path="SelectedAverageTimeWindow"
 														 Mode="TwoWay"
 														 UpdateSourceTrigger="PropertyChanged">
                                                 </Binding>
                                             </ComboBox.Text>
-                                        </ComboBox>-->
-                                        <TextBox Grid.Row="0" Grid.Column="0" materialDesign:HintAssist.Hint="Filter window size" HorizontalAlignment="Left" Width="90"  
-                                                 Margin="20 15 0 15">
-                                            <TextBox.Text>
-                                                <Binding Path="SelectWindowSize"
-														 Mode="TwoWay"
-														 UpdateSourceTrigger="PropertyChanged">
-                                                </Binding>
-                                            </TextBox.Text>
-                                        </TextBox>
+                                        </ComboBox>
                                         <ComboBox Grid.Row="0" Grid.Column="1" materialDesign:HintAssist.Hint="FPS values decimals" HorizontalAlignment="Center"
 												  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Width="120" Margin="0 15 15 15"
 												  ItemsSource="{Binding Path=DataContext.RoundingDigits, ElementName=ColorbarViewName}">

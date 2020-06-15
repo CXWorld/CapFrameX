@@ -1,5 +1,4 @@
 ﻿using CapFrameX.Contracts.Configuration;
-using CapFrameX.Statistics.NetStandard.Contracts;
 
 namespace CapFrameX.Configuration
 {
@@ -11,6 +10,12 @@ namespace CapFrameX.Configuration
 		{
 			get { return Settings.MovingAverageWindowSize; }
 			set { Settings.MovingAverageWindowSize = value; Settings.Save(); }
+		}
+
+		public int IntervalAverageWindowTime
+		{
+			get { return Settings.IntervalAverageWindowTime; }
+			set { Settings.IntervalAverageWindowTime = value; Settings.Save(); }
 		}
 
 		public double StutteringFactor

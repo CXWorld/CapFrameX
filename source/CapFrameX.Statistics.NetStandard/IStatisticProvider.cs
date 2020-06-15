@@ -7,7 +7,7 @@ namespace CapFrameX.Statistics.NetStandard
     {
         IList<double> GetOutlierAdjustedSequence(IList<double> sequence, ERemoveOutlierMethod method);
 
-        double GetAdaptiveStandardDeviation(IList<double> sequence, int windowSize);
+        double GetAdaptiveStandardDeviation(IList<double> sequence, double timeWindow);
 
         double GetStutteringCountPercentage(IList<double> sequence, double stutteringFactor);
 
