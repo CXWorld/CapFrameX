@@ -466,8 +466,7 @@
                     <Grid.RowDefinitions>
                         <RowDefinition Height="75"></RowDefinition>
                         <RowDefinition Height="200"></RowDefinition>
-                        <RowDefinition Height="150"></RowDefinition>
-                        <RowDefinition Height="150"></RowDefinition>
+                        <RowDefinition Height="190"></RowDefinition>
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="200"/>
@@ -480,7 +479,7 @@
                     <!--<TextBlock Grid.Row="0" Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="16" Text="{Binding SelectedOverlayTypeString}"/>-->
                     <TextBlock Grid.Row="0" Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="16" Text="Overlay item type name"/>
                     <!-- Color and Limit options-->
-                    <Border Grid.Row="1" Grid.Column="0" Margin="5" Background="Transparent" BorderThickness=".2" BorderBrush="Black">
+                    <Border Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="5" Width="215" Background="Transparent" BorderThickness=".2" BorderBrush="Black">
                         <StackPanel Margin="5">
                             <Grid>
                                 <Grid.RowDefinitions>
@@ -492,8 +491,8 @@
                                     <RowDefinition Height="40"></RowDefinition>
                                 </Grid.RowDefinitions>
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="115"/>
-                                    <ColumnDefinition Width="30"/>
+                                    <ColumnDefinition Width="120"/>
+                                    <ColumnDefinition Width="40"/>
                                     <ColumnDefinition Width="1*"/>
                                 </Grid.ColumnDefinitions>
                                 <TextBlock Grid.Row="0" Grid.ColumnSpan="3" VerticalAlignment="Center" HorizontalAlignment="Center" Text="Colors and limits" FontSize="16"/>
@@ -619,7 +618,7 @@
                         </StackPanel>
                     </Border>
                     <!-- Format options -->
-                    <Border Grid.Row="1" Grid.Column="2" Margin="5" Background="Transparent" BorderThickness=".2" BorderBrush="Black">
+                    <Border Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" HorizontalAlignment="Right" Margin="5" Width="215" Background="Transparent" BorderThickness=".2" BorderBrush="Black">
                         <StackPanel Margin="5">
                             <Grid>
                                 <Grid.RowDefinitions>
@@ -636,27 +635,47 @@
                                 </Grid.ColumnDefinitions>
                                 <TextBlock Grid.Row="0" Grid.ColumnSpan="3" VerticalAlignment="Center" HorizontalAlignment="Center" Text="Format options" FontSize="16"/>
                                 <TextBlock Grid.Row="1" Grid.Column="0"  VerticalAlignment="Center" Text="Group name font size"></TextBlock>
-                                <TextBox Grid.Row="1" Grid.Column="3" Width="200" VerticalAlignment="Center"
+                                <TextBox Grid.Row="1" Grid.Column="3" Width="25" VerticalAlignment="Center"
                                      Text="{Binding OverlayItemGroupFonzSize, UpdateSourceTrigger=PropertyChanged}">
                                 </TextBox>
                                 <TextBlock Grid.Row="2" Grid.Column="0"  VerticalAlignment="Center" Text="Value font size"></TextBlock>
-                                <TextBox Grid.Row="2" Grid.Column="3" Width="20" VerticalAlignment="Center"
+                                <TextBox Grid.Row="2" Grid.Column="3" Width="25" VerticalAlignment="Center"
                                      Text="{Binding OverlayItemValueFonzSize, UpdateSourceTrigger=PropertyChanged}">
                                 </TextBox>
                             </Grid>
                         </StackPanel>
                     </Border>
-                    <StackPanel Grid.Row="2" Grid.Column="0"  Orientation="Horizontal" Margin="10 20 0 0">
-                        <TextBlock Text="Separators"/>
-                        <materialDesign:PopupBox StaysOpen="True" VerticalAlignment="Top" ToolTipService.ShowDuration="25000" Margin="0 -5 0 0">
-                            <materialDesign:PopupBox.ToolTip>
-                                <ToolTip MaxWidth="275" Placement="Top">
-                                    <TextBlock Text="OSD parameter group control" 
-										   TextWrapping="Wrap"/>
-                                </ToolTip>
-                            </materialDesign:PopupBox.ToolTip>
-                            </materialDesign:PopupBox>
-                    </StackPanel>
+                    <Border Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Width="215" HorizontalAlignment="Left" Margin="5" Background="Transparent" BorderThickness=".2" BorderBrush="Black">
+                        <DataGrid x:Name="SeparatorDataGrid" Height="180" Width="210" Background="#F5F5F5" FontSize="11"
+						  MouseLeave="OverlayItemDataGrid_MouseLeave"
+					      SelectedIndex="{Binding SelectedOverlayGroupIndex}" ItemsSource="{Binding OverlayGroupEntries}"
+					      CanUserSortColumns="False" CanUserAddRows="False" AutoGenerateColumns="False"
+					      materialDesign:DataGridAssist.CellPadding="13 3 0 0" materialDesign:DataGridAssist.ColumnHeaderPadding="8" IsSynchronizedWithCurrentItem="False"
+					      ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.CanContentScroll="True"
+					      dragdrop:DragDrop.IsDragSource="False"
+					      dragdrop:DragDrop.IsDropTarget="False"
+						  dragdrop:DragDrop.DropHandler="{Binding}"
+					      dragdrop:DragDrop.UseDefaultDragAdorner="True"
+					      dragdrop:DragDrop.DefaultDragAdornerOpacity="0.5"
+					      dragdrop:DragDrop.UseDefaultEffectDataTemplate="False">
+                            <DataGrid.Resources>
+                                <Style TargetType="DataGridRow">
+                                    <Setter Property="DataGrid.Height" Value="25" />
+                                </Style>
+                                <Style TargetType="DataGridColumnHeader">
+                                    <Setter Property="DataGrid.Height" Value="25" />
+                                </Style>
+                            </DataGrid.Resources>
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Binding="{Binding GroupNames, Mode=TwoWay}"
+                                            Header="Group name"
+                                            IsReadOnly="True"/>
+                                <DataGridTextColumn Binding="{Binding GroupSeparators, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                            Header="Separators"
+                                            IsReadOnly="False"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Border>
                 </Grid>
             </TabItem>
         </TabControl>
