@@ -7,6 +7,8 @@ namespace CapFrameX.Statistics.NetStandard.Contracts
         [Description("Raw data")]
         None,
         [Description("Average")]
-        TimeIntervalAverage
+        TimeIntervalAverage,
+        [Description("Raw + Average")]
+        RawPlusAverage
     }
 }
