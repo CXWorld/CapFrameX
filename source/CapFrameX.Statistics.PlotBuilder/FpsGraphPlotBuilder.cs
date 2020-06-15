@@ -96,6 +96,7 @@ namespace CapFrameX.Statistics.PlotBuilder
                 var axisMinimum = yMin - (yMax - yMin) / 6;
                 var axisMaximum = yMax + (yMax - yMin) / 6;
 
+                // min range of y-axis
                 if (avgFps - axisMinimum < 15)
                     axis.Minimum = avgFps - 15;
                 else
@@ -105,6 +106,16 @@ namespace CapFrameX.Statistics.PlotBuilder
                     axis.Maximum = avgFps + 15;
                 else
                     axis.Maximum = axisMaximum;
+
+                // center average FPS line
+                var rangeAvgMin = avgFps - axis.Minimum;
+                var rangeAvgMax = axis.Maximum - avgFps;
+
+                if (rangeAvgMin > rangeAvgMax)
+                    axis.Maximum += (rangeAvgMin - rangeAvgMax);
+                else if (rangeAvgMin < rangeAvgMax)
+                    axis.Minimum -= (rangeAvgMax - rangeAvgMin);
+
 
             });
 
