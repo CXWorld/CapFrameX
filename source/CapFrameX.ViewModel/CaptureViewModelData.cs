@@ -1,6 +1,7 @@
 ﻿using CapFrameX.Data;
 using CapFrameX.Data.Session.Contracts;
 using CapFrameX.Extensions.NetStandard;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -11,292 +12,302 @@ using System.Windows;
 
 namespace CapFrameX.ViewModel
 {
-    public partial class CaptureViewModel
-    {
-        private void WriteCaptureDataToFile()
-        {
-            // explicit hook, only one process
-            if (!string.IsNullOrWhiteSpace(SelectedProcessToCapture))
-            {
-                Task.Run(() => WriteExtractedCaptureDataToFileAsync(SelectedProcessToCapture));
-            }
-            // auto hook with filtered process list
-            else
-            {
-                var process = ProcessesToCapture.FirstOrDefault();
-                Task.Run(() => WriteExtractedCaptureDataToFileAsync(process));
-            }
-        }
+	public partial class CaptureViewModel
+	{
+		private void WriteCaptureDataToFile()
+		{
+			// explicit hook, only one process
+			if (!string.IsNullOrWhiteSpace(SelectedProcessToCapture))
+			{
+				Task.Run(() => WriteExtractedCaptureDataToFileAsync(SelectedProcessToCapture));
+			}
+			// auto hook with filtered process list
+			else
+			{
+				var process = ProcessesToCapture.FirstOrDefault();
+				Task.Run(() => WriteExtractedCaptureDataToFileAsync(process));
+			}
+		}
 
-        private async Task WriteExtractedCaptureDataToFileAsync(string processName)
-        {
-            if (string.IsNullOrWhiteSpace(processName))
-                return;
+		private async Task WriteExtractedCaptureDataToFileAsync(string processName)
+		{
+			try
+			{
 
-            var adjustedCaptureData = GetAdjustedCaptureData(processName);
-            // Skip first line to compensate the first frametime being one frame before original capture start point.
-            var normalizedAdjustedCaptureData = NormalizeTimes(adjustedCaptureData.Skip(1));
-            var sessionRun = _recordManager.ConvertPresentDataLinesToSessionRun(normalizedAdjustedCaptureData);
-            sessionRun.SensorData = _sensorService.GetSessionSensorData();
+				if (string.IsNullOrWhiteSpace(processName))
+					return;
 
-            if (adjustedCaptureData == null)
-            {
-                AddLoggerEntry("Error while extracting capture data. No file will be written.");
-                return;
-            }
+				var adjustedCaptureData = GetAdjustedCaptureData(processName);
+				// Skip first line to compensate the first frametime being one frame before original capture start point.
+				var normalizedAdjustedCaptureData = NormalizeTimes(adjustedCaptureData.Skip(1));
+				var sessionRun = _recordManager.ConvertPresentDataLinesToSessionRun(normalizedAdjustedCaptureData);
+				sessionRun.SensorData = _sensorService.GetSessionSensorData();
 
-            if (!adjustedCaptureData.Any())
-            {
-                AddLoggerEntry("Error while extracting capture data. Empty list. No file will be written.");
-                return;
-            }
+				if (adjustedCaptureData == null)
+				{
+					AddLoggerEntry("Error while extracting capture data. No file will be written.");
+					return;
+				}
 
-            if (AppConfiguration.UseRunHistory)
-            {
-                await Task.Factory.StartNew(() => _overlayService.AddRunToHistory(sessionRun, processName));
-            }
+				if (!adjustedCaptureData.Any())
+				{
+					AddLoggerEntry("Error while extracting capture data. Empty list. No file will be written.");
+					return;
+				}
 
-            StartFillArchive();
+				if (AppConfiguration.UseRunHistory)
+				{
+					await Task.Factory.StartNew(() => _overlayService.AddRunToHistory(sessionRun, processName));
+				}
 
-            Application.Current.Dispatcher.Invoke(new Action(() =>
-            {
-                // turn locking off 
-                _dataOffsetRunning = false;
-            }));
+				StartFillArchive();
 
+				// if aggregation mode is active and "Save aggregated result only" is checked, don't save single history items
+				if (AppConfiguration.UseAggregation && AppConfiguration.SaveAggregationOnly)
+					return;
 
-            // if aggregation mode is active and "Save aggregated result only" is checked, don't save single history items
-            if (AppConfiguration.UseAggregation && AppConfiguration.SaveAggregationOnly)
-                return;
+				if (_appConfiguration.CaptureFileMode == Enum.GetName(typeof(ECaptureFileMode), ECaptureFileMode.JsonCsv))
+				{
+					await _recordManager.SavePresentmonRawToFile(normalizedAdjustedCaptureData, processName);
+				}
 
-            if (_appConfiguration.CaptureFileMode == Enum.GetName(typeof(ECaptureFileMode), ECaptureFileMode.JsonCsv))
-            {
-                await _recordManager.SavePresentmonRawToFile(normalizedAdjustedCaptureData, processName);
-            }
-
-            bool checkSave = await _recordManager.SaveSessionRunsToFile(new ISessionRun[] { sessionRun }, processName);
+				bool checkSave = await _recordManager.SaveSessionRunsToFile(new ISessionRun[] { sessionRun }, processName);
 
 
-            if (!checkSave)
-                AddLoggerEntry("Error while saving capture data.");
-            else
-                AddLoggerEntry("Capture file is successfully written into directory.");
-        }
+				if (!checkSave)
+					AddLoggerEntry("Error while saving capture data.");
+				else
+					AddLoggerEntry("Capture file is successfully written into directory.");
+			}
+			catch (Exception e)
+			{
+				_logger.LogError(e, "Error writing capture data");
+			}
+			finally
+			{
+				Application.Current.Dispatcher.Invoke(new Action(() =>
+				{
+					// turn locking off 
+					_dataOffsetRunning = false;
+				}));
+			}
 
-        private List<string> GetAdjustedCaptureData(string processName)
-        {
-            if (!_captureData.Any())
-                return Enumerable.Empty<string>().ToList();
+		}
 
-            var startTimeWithOffset = GetStartTimeFromDataLine(_captureData.First());
-            var stopwatchTime = (_timestampStopCapture - _timestampStartCapture) / 1000d;
+		private List<string> GetAdjustedCaptureData(string processName)
+		{
+			if (!_captureData.Any())
+				return Enumerable.Empty<string>().ToList();
 
-            if (string.IsNullOrWhiteSpace(CaptureTimeString))
-            {
-                CaptureTimeString = "0";
-                AddLoggerEntry($"Wrong capture time string. Value will be set to default (0).");
-            }
+			var startTimeWithOffset = GetStartTimeFromDataLine(_captureData.First());
+			var stopwatchTime = (_timestampStopCapture - _timestampStartCapture) / 1000d;
 
-            var definedTime = Convert.ToInt32(CaptureTimeString);
-            bool autoTermination = Convert.ToInt32(CaptureTimeString) > 0;
+			if (string.IsNullOrWhiteSpace(CaptureTimeString))
+			{
+				CaptureTimeString = "0";
+				AddLoggerEntry($"Wrong capture time string. Value will be set to default (0).");
+			}
 
-            if (autoTermination)
-            {
-                if (stopwatchTime < definedTime - 0.2 && stopwatchTime > 0)
-                    autoTermination = false;
-            }
+			var definedTime = Convert.ToInt32(CaptureTimeString);
+			bool autoTermination = Convert.ToInt32(CaptureTimeString) > 0;
 
-            var uniqueProcessIdDict = new Dictionary<string, HashSet<string>>();
+			if (autoTermination)
+			{
+				if (stopwatchTime < definedTime - 0.2 && stopwatchTime > 0)
+					autoTermination = false;
+			}
 
-            foreach (var filteredCaptureDataLine in _captureData)
-            {
-                var currentProcess = GetProcessNameFromDataLine(filteredCaptureDataLine);
-                var currentProcessId = GetProcessIdFromDataLine(filteredCaptureDataLine);
+			var uniqueProcessIdDict = new Dictionary<string, HashSet<string>>();
 
-                if (!uniqueProcessIdDict.ContainsKey(currentProcess))
-                {
-                    var idHashSet = new HashSet<string>
-                    {
-                        currentProcessId
-                    };
-                    uniqueProcessIdDict.Add(currentProcess, idHashSet);
-                }
-                else
-                    uniqueProcessIdDict[currentProcess].Add(currentProcessId);
-            }
+			foreach (var filteredCaptureDataLine in _captureData)
+			{
+				var currentProcess = GetProcessNameFromDataLine(filteredCaptureDataLine);
+				var currentProcessId = GetProcessIdFromDataLine(filteredCaptureDataLine);
 
-            if (uniqueProcessIdDict.Any(dict => dict.Value.Count() > 1))
-                AddLoggerEntry($"Multi instances detected. Capture data is not valid.");
+				if (!uniqueProcessIdDict.ContainsKey(currentProcess))
+				{
+					var idHashSet = new HashSet<string>
+					{
+						currentProcessId
+					};
+					uniqueProcessIdDict.Add(currentProcess, idHashSet);
+				}
+				else
+					uniqueProcessIdDict[currentProcess].Add(currentProcessId);
+			}
 
-            var filteredArchive = _captureDataArchive.Where(line =>
-                {
-                    var currentProcess = GetProcessNameFromDataLine(line);
-                    return currentProcess == processName && uniqueProcessIdDict[currentProcess].Count() == 1;
-                }).ToList();
-            var filteredCaptureData = _captureData.Where(line =>
-                {
-                    var currentProcess = GetProcessNameFromDataLine(line);
-                    return currentProcess == processName && uniqueProcessIdDict[currentProcess].Count() == 1;
-                }).ToList();
+			if (uniqueProcessIdDict.Any(dict => dict.Value.Count() > 1))
+				AddLoggerEntry($"Multi instances detected. Capture data is not valid.");
 
-            AddLoggerEntry($"Using archive with {filteredArchive.Count} frames.");
+			var filteredArchive = _captureDataArchive.Where(line =>
+				{
+					var currentProcess = GetProcessNameFromDataLine(line);
+					return currentProcess == processName && uniqueProcessIdDict[currentProcess].Count() == 1;
+				}).ToList();
+			var filteredCaptureData = _captureData.Where(line =>
+				{
+					var currentProcess = GetProcessNameFromDataLine(line);
+					return currentProcess == processName && uniqueProcessIdDict[currentProcess].Count() == 1;
+				}).ToList();
 
-            if (!filteredArchive.Any())
-            {
-                AddLoggerEntry($"Empty archive. No file will be written.");
-                return Enumerable.Empty<string>().ToList();
-            }
+			AddLoggerEntry($"Using archive with {filteredArchive.Count} frames.");
 
-            // Distinct archive and live stream
-            var lastArchiveTime = GetStartTimeFromDataLine(filteredArchive.Last());
-            int distinctIndex = 0;
-            for (int i = 0; i < filteredCaptureData.Count; i++)
-            {
-                if (GetStartTimeFromDataLine(filteredCaptureData[i]) <= lastArchiveTime)
-                    distinctIndex++;
-                else
-                    break;
-            }
+			if (!filteredArchive.Any())
+			{
+				AddLoggerEntry($"Empty archive. No file will be written.");
+				return Enumerable.Empty<string>().ToList();
+			}
 
-            if (distinctIndex == 0)
-                return null;
+			// Distinct archive and live stream
+			var lastArchiveTime = GetStartTimeFromDataLine(filteredArchive.Last());
+			int distinctIndex = 0;
+			for (int i = 0; i < filteredCaptureData.Count; i++)
+			{
+				if (GetStartTimeFromDataLine(filteredCaptureData[i]) <= lastArchiveTime)
+					distinctIndex++;
+				else
+					break;
+			}
 
-            var unionCaptureData = filteredArchive.Concat(filteredCaptureData.Skip(distinctIndex)).ToList();
-            var unionCaptureDataStartTime = GetStartTimeFromDataLine(unionCaptureData.First());
-            var unionCaptureDataEndTime = GetStartTimeFromDataLine(unionCaptureData.Last());
+			if (distinctIndex == 0)
+				return null;
 
-            AddLoggerEntry($"Length captured data + archive in sec: " +
-                $"{ Math.Round(unionCaptureDataEndTime - unionCaptureDataStartTime, 2)}");
+			var unionCaptureData = filteredArchive.Concat(filteredCaptureData.Skip(distinctIndex)).ToList();
+			var unionCaptureDataStartTime = GetStartTimeFromDataLine(unionCaptureData.First());
+			var unionCaptureDataEndTime = GetStartTimeFromDataLine(unionCaptureData.Last());
 
-            var captureInterval = new List<string>();
+			AddLoggerEntry($"Length captured data + archive in sec: " +
+				$"{ Math.Round(unionCaptureDataEndTime - unionCaptureDataStartTime, 2)}");
 
-            double startTime = 0;
+			var captureInterval = new List<string>();
 
-            // find first dataline that fits start of valid interval
-            for (int i = 0; i < unionCaptureData.Count - 1; i++)
-            {
-                var currentQpcTime = GetQpcTimeFromDataLine(unionCaptureData[i + 1]);
+			double startTime = 0;
 
-                if (currentQpcTime >= _qpcTimeStart)
-                {
-                    startTime = GetStartTimeFromDataLine(unionCaptureData[i]);
-                    break;
-                }
-            }
+			// find first dataline that fits start of valid interval
+			for (int i = 0; i < unionCaptureData.Count - 1; i++)
+			{
+				var currentQpcTime = GetQpcTimeFromDataLine(unionCaptureData[i + 1]);
 
-            if (startTime == 0)
-            {
-                AddLoggerEntry($"Start time is invalid. Error while evaluating QPCTime start.");
-                return Enumerable.Empty<string>().ToList();
-            }
+				if (currentQpcTime >= _qpcTimeStart)
+				{
+					startTime = GetStartTimeFromDataLine(unionCaptureData[i]);
+					break;
+				}
+			}
 
-            if (!autoTermination)
-            {
-                for (int i = 0; i < unionCaptureData.Count; i++)
-                {
-                    var currentqpcTime = GetQpcTimeFromDataLine(unionCaptureData[i]);
-                    var currentTime = GetStartTimeFromDataLine(unionCaptureData[i]);
+			if (startTime == 0)
+			{
+				AddLoggerEntry($"Start time is invalid. Error while evaluating QPCTime start.");
+				return Enumerable.Empty<string>().ToList();
+			}
 
-                    if (currentqpcTime >= _qpcTimeStart && currentTime - startTime <= stopwatchTime)
-                        captureInterval.Add(unionCaptureData[i]);
-                }
+			if (!autoTermination)
+			{
+				for (int i = 0; i < unionCaptureData.Count; i++)
+				{
+					var currentqpcTime = GetQpcTimeFromDataLine(unionCaptureData[i]);
+					var currentTime = GetStartTimeFromDataLine(unionCaptureData[i]);
 
-                if (!captureInterval.Any())
-                {
-                    AddLoggerEntry($"Empty capture interval. Error while evaluating start and end time.");
-                    return Enumerable.Empty<string>().ToList();
-                }
-            }
-            else
-            {
-                AddLoggerEntry($"Length captured data QPCTime start to end with buffer in sec: " +
-                    $"{ Math.Round(unionCaptureDataEndTime - startTime, 2)}");
+					if (currentqpcTime >= _qpcTimeStart && currentTime - startTime <= stopwatchTime)
+						captureInterval.Add(unionCaptureData[i]);
+				}
 
-                for (int i = 0; i < unionCaptureData.Count; i++)
-                {
-                    var currentStartTime = GetStartTimeFromDataLine(unionCaptureData[i]);
+				if (!captureInterval.Any())
+				{
+					AddLoggerEntry($"Empty capture interval. Error while evaluating start and end time.");
+					return Enumerable.Empty<string>().ToList();
+				}
+			}
+			else
+			{
+				AddLoggerEntry($"Length captured data QPCTime start to end with buffer in sec: " +
+					$"{ Math.Round(unionCaptureDataEndTime - startTime, 2)}");
 
-                    if (currentStartTime >= startTime && currentStartTime - startTime <= definedTime)
-                        captureInterval.Add(unionCaptureData[i]);
-                }
-            }
+				for (int i = 0; i < unionCaptureData.Count; i++)
+				{
+					var currentStartTime = GetStartTimeFromDataLine(unionCaptureData[i]);
 
-            return captureInterval;
-        }
+					if (currentStartTime >= startTime && currentStartTime - startTime <= definedTime)
+						captureInterval.Add(unionCaptureData[i]);
+				}
+			}
 
-        private double GetStartTimeFromDataLine(string dataLine)
-        {
-            if (string.IsNullOrWhiteSpace(dataLine))
-                return 0;
+			return captureInterval;
+		}
 
-            var lineSplit = dataLine.Split(',');
-            var startTime = lineSplit[11];
+		private double GetStartTimeFromDataLine(string dataLine)
+		{
+			if (string.IsNullOrWhiteSpace(dataLine))
+				return 0;
 
-            return Convert.ToDouble(startTime, CultureInfo.InvariantCulture);
-        }
+			var lineSplit = dataLine.Split(',');
+			var startTime = lineSplit[11];
 
-        private string GetProcessNameFromDataLine(string dataLine)
-        {
-            if (string.IsNullOrWhiteSpace(dataLine))
-                return null;
+			return Convert.ToDouble(startTime, CultureInfo.InvariantCulture);
+		}
 
-            int index = dataLine.IndexOf(".exe");
-            string processName = null;
+		private string GetProcessNameFromDataLine(string dataLine)
+		{
+			if (string.IsNullOrWhiteSpace(dataLine))
+				return null;
 
-            if (index > 0)
-            {
-                processName = dataLine.Substring(0, index);
-            }
+			int index = dataLine.IndexOf(".exe");
+			string processName = null;
 
-            return processName;
-        }
+			if (index > 0)
+			{
+				processName = dataLine.Substring(0, index);
+			}
 
-        private string GetProcessIdFromDataLine(string dataLine)
-        {
-            if (string.IsNullOrWhiteSpace(dataLine))
-                return null;
+			return processName;
+		}
 
-            var lineSplit = dataLine.Split(',');
-            return lineSplit[1];
-        }
+		private string GetProcessIdFromDataLine(string dataLine)
+		{
+			if (string.IsNullOrWhiteSpace(dataLine))
+				return null;
 
-        private long GetQpcTimeFromDataLine(string dataLine)
-        {
-            if (string.IsNullOrWhiteSpace(dataLine))
-                return 0;
+			var lineSplit = dataLine.Split(',');
+			return lineSplit[1];
+		}
 
-            var lineSplit = dataLine.Split(',');
-            var qpcTime = lineSplit[17];
+		private long GetQpcTimeFromDataLine(string dataLine)
+		{
+			if (string.IsNullOrWhiteSpace(dataLine))
+				return 0;
 
-            return Convert.ToInt64(qpcTime, CultureInfo.InvariantCulture);
-        }
+			var lineSplit = dataLine.Split(',');
+			var qpcTime = lineSplit[17];
 
-        private IEnumerable<string> NormalizeTimes(IEnumerable<string> recordLines)
-        {
-            string firstDataLine = recordLines.First();
-            var lines = new List<string>();
-            //start time
-            var timeStart = GetStartTimeFromDataLine(firstDataLine);
+			return Convert.ToInt64(qpcTime, CultureInfo.InvariantCulture);
+		}
 
-            // normalize time
-            var currentLineSplit = firstDataLine.Split(',');
-            currentLineSplit[11] = "0";
+		private IEnumerable<string> NormalizeTimes(IEnumerable<string> recordLines)
+		{
+			string firstDataLine = recordLines.First();
+			var lines = new List<string>();
+			//start time
+			var timeStart = GetStartTimeFromDataLine(firstDataLine);
 
-            lines.Add(string.Join(",", currentLineSplit));
+			// normalize time
+			var currentLineSplit = firstDataLine.Split(',');
+			currentLineSplit[11] = "0";
 
-            foreach (var dataLine in recordLines.Skip(1))
-            {
-                double currentStartTime = GetStartTimeFromDataLine(dataLine);
+			lines.Add(string.Join(",", currentLineSplit));
 
-                // normalize time
-                double normalizedTime = currentStartTime - timeStart;
+			foreach (var dataLine in recordLines.Skip(1))
+			{
+				double currentStartTime = GetStartTimeFromDataLine(dataLine);
 
-                currentLineSplit = dataLine.Split(',');
-                currentLineSplit[11] = normalizedTime.ToString(CultureInfo.InvariantCulture);
+				// normalize time
+				double normalizedTime = currentStartTime - timeStart;
 
-                lines.Add(string.Join(",", currentLineSplit));
-            }
-            return lines;
-        }
-    }
+				currentLineSplit = dataLine.Split(',');
+				currentLineSplit[11] = normalizedTime.ToString(CultureInfo.InvariantCulture);
+
+				lines.Add(string.Join(",", currentLineSplit));
+			}
+			return lines;
+		}
+	}
 }

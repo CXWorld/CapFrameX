@@ -7,10 +7,6 @@ namespace CapFrameX.Statistics.NetStandard.Contracts
         [Description("Raw data")]
         None,
         [Description("Average")]
-        MovingAverage,
-        [Description("Median")]
-        Median,
-        [Description("Low pass")]
-        LowPass
+        TimeIntervalAverage
     }
 }

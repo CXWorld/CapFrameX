@@ -6,8 +6,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using CapFrameX.Extensions.NetStandard;
-using System.Net.Http.Headers;
-using MathNet.Numerics.Integration;
 
 namespace CapFrameX.Statistics.NetStandard
 {
@@ -23,16 +21,17 @@ namespace CapFrameX.Statistics.NetStandard
             _options = options;
         }
 
-        public double GetAdaptiveStandardDeviation(IList<double> sequence, int windowSize)
+        public double GetAdaptiveStandardDeviation(IList<double> sequence, double timeWindow)
         {
-            var movingAverage = sequence.MovingAverage(windowSize).ToList();
+            var timeBasedMovingAverageFilter = new TimeBasedMovingAverage(timeWindow);
+            var timeBasedMovingAverage = timeBasedMovingAverageFilter.ProcessSamples(sequence);
 
-            if (movingAverage.Count != sequence.Count)
+            if (timeBasedMovingAverage.Count != sequence.Count)
             {
                 throw new InvalidDataException("Different sample count data vs. filtered data");
             }
 
-            var sumResidualSquares = sequence.Select((val, i) => Math.Pow(val - movingAverage[i], 2)).Sum();
+            var sumResidualSquares = sequence.Select((val, i) => Math.Pow(val - timeBasedMovingAverage[i], 2)).Sum();
             return Math.Sqrt(sumResidualSquares / (sequence.Count - 1));
         }
 
@@ -54,7 +53,8 @@ namespace CapFrameX.Statistics.NetStandard
 
         public IList<double> GetMovingAverage(IList<double> sequence)
         {
-            return sequence.MovingAverage(_options.MovingAverageWindowSize).ToList();
+            var timeBasedMovingAverageFilter = new TimeBasedMovingAverage(_options.IntervalAverageWindowTime);
+            return timeBasedMovingAverageFilter.ProcessSamples(sequence);
         }
 
         public IList<double> GetOutlierAdjustedSequence(IList<double> sequence, ERemoveOutlierMethod method)
@@ -179,7 +179,7 @@ namespace CapFrameX.Statistics.NetStandard
                     break;
                 case EMetric.AdaptiveStd:
                     fps = sequence.Select(ft => 1000 / ft).ToList();
-                    metricValue = GetAdaptiveStandardDeviation(fps, _options.MovingAverageWindowSize);
+                    metricValue = GetAdaptiveStandardDeviation(fps, _options.IntervalAverageWindowTime);
                     break;
                 default:
                     metricValue = double.NaN;
@@ -201,11 +201,11 @@ namespace CapFrameX.Statistics.NetStandard
                         metricValue = 0;
                     break;
                 //case EMetric.GpuFpsPerWatt:
-                    //if (coefficient > 0)
-                    //    metricValue = (sequence.Count * 1000 / sequence.Sum()) / coefficient;
-                    //else
-                    //    metricValue = double.NaN;
-                    //break;
+                //if (coefficient > 0)
+                //    metricValue = (sequence.Count * 1000 / sequence.Sum()) / coefficient;
+                //else
+                //    metricValue = double.NaN;
+                //break;
                 default:
                     metricValue = 0;
                     break;

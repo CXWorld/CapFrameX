@@ -1,19 +1,14 @@
 ﻿using CapFrameX.Data.Session.Classes;
 using CapFrameX.Data.Session.Contracts;
 using CapFrameX.Statistics.NetStandard.Contracts;
-using MathNet.Numerics.IntegralTransforms;
-using MathNet.Numerics.Statistics;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Numerics;
 
 namespace CapFrameX.Statistics.NetStandard
 {
     public static class SessionExtensions
     {
-
         public static IList<double> GetFrametimeTimeWindow(this ISession session, double startTime, double endTime, IFrametimeStatisticProviderOptions options, ERemoveOutlierMethod eRemoveOutlierMethod = ERemoveOutlierMethod.None)
         {
             IList<double> frametimesTimeWindow = new List<double>();
@@ -196,34 +191,11 @@ namespace CapFrameX.Statistics.NetStandard
             var frametimePoints = session.GetFrametimePointsTimeWindow(startTime, endTime, options, eRemoveOutlierMethod);
             switch (filterMode)
             {
-                case EFilterMode.MovingAverage:
-                    var movingAverage = frametimePoints.Select(pnt => pnt.Y)
-                        .MovingAverage(options.MovingAverageWindowSize)
-                        .Select(val => 1000 / val).ToArray();
-                    fpsPoints = frametimePoints.Select((pnt, i) => new Point(pnt.X, movingAverage[i]))
-                        .Skip(20).ToList();
-                    break;
-                case EFilterMode.Median:
-                    var medianFilter = new MathNet.Filtering.Median.OnlineMedianFilter(options.MovingAverageWindowSize);
-                    fpsPoints = frametimePoints.Select(pnt => medianFilter.ProcessSample(pnt.Y))
-                        .Select((val, i) => new Point(frametimePoints[i].X, 1000 / val))
-                        .Skip(20).ToList();
-                    break;
-                //case EFilterMode.Polynomial:
-                //    var polynomial = new SavitzkyGolayFilter(options.MovingAverageWindowSize, 1).Process(frametimePoints.Select(pnt => pnt.Y).ToArray());
-                //    fpsPoints = frametimePoints.Select((pnt, i) => new Point(pnt.X, 1000 / polynomial[i]))
-                //        .Skip(20).ToList();
-                //    break;
-                case EFilterMode.LowPass:
-                    Complex[] data = frametimePoints.Select(pnt => new Complex(pnt.Y, 0d)).ToArray();
-                    Fourier.Forward(data);
-                    for (int i = frametimePoints.Count/ options.MovingAverageWindowSize; i < frametimePoints.Count; i++)
-                    {
-                        data[i] = new Complex();
-                    }
-                    Fourier.Inverse(data);
-                    fpsPoints = frametimePoints.Select((pnt, i) => new Point(pnt.X, 1000 / data[i].Real))
-                        .Skip(20).ToList();
+                case EFilterMode.TimeIntervalAverage:
+                    var timeIntervalAverageFilter = new IntervalTimeAverageFilter(options.IntervalAverageWindowTime);
+                    var timeIntervalAveragePoints = timeIntervalAverageFilter
+                        .ProcessSamples(frametimePoints.Select(pnt => pnt.Y).ToList());
+                    fpsPoints = timeIntervalAveragePoints.Select(pnt => new Point(pnt.X / 1000, 1000 / pnt.Y)).ToList();
                     break;
                 default:
                     fpsPoints = frametimePoints.Select(pnt => new Point(pnt.X, 1000 / pnt.Y)).ToList();

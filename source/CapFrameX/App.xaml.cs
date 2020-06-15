@@ -2,6 +2,8 @@
 using CapFrameX.Contracts.Sensor;
 using CapFrameX.Data;
 using CapFrameX.PresentMonInterface;
+using Serilog;
+using Serilog.Formatting.Compact;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -21,9 +23,16 @@ namespace CapFrameX
 
 		protected override void OnStartup(StartupEventArgs e)
 		{
-			base.OnStartup(e);
-			_bootstrapper = new Bootstrapper();
-			_bootstrapper.Run(true);
+			InitializeLogger();
+			try
+			{
+				base.OnStartup(e);
+				_bootstrapper = new Bootstrapper();
+				_bootstrapper.Run(true);
+			} catch (Exception exc)
+            {
+				Log.Logger.Fatal(exc, "Fatal Error");
+            }
 		}
 
 		private void CapFrameXExit(object sender, ExitEventArgs e)
@@ -90,6 +99,22 @@ namespace CapFrameX
 		public static bool IsAdministrator =>
 			new WindowsPrincipal(WindowsIdentity.GetCurrent())
 			.IsInRole(WindowsBuiltInRole.Administrator);
+
+		private static void InitializeLogger()
+		{
+			var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), @"CapFrameX\Logs");
+
+			Log.Logger = new LoggerConfiguration()
+				.MinimumLevel.Debug()
+				.Enrich.FromLogContext()
+				.WriteTo.File(
+					path: Path.Combine(path, "CapFrameX.log"),
+					fileSizeLimitBytes: 1024 * 10000, // approx 10MB
+					rollOnFileSizeLimit: true, // if filesize is reached, it created a new file
+					retainedFileCountLimit: 10, // it keeps max 10 files
+					formatter: new CompactJsonFormatter()
+				).CreateLogger();
+		}
 
 	}
 }

@@ -1120,7 +1120,8 @@ namespace CapFrameX.ViewModel
                 StrokeThickness = 1,
                 LegendStrokeThickness = 4,
                 Color = wrappedComparisonInfo.IsHideModeSelected ?
-                    OxyColors.Transparent : OxyColor.FromRgb(color.R, color.G, color.B)
+                    OxyColors.Transparent : OxyColor.FromRgb(color.R, color.G, color.B),
+                InterpolationAlgorithm = InterpolationAlgorithms.CanonicalSpline
             };
 
             fpsSeries.Points.AddRange(fpsPoints.Select(pnt => new DataPoint(pnt.X, pnt.Y)));
