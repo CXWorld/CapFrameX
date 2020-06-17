@@ -59,6 +59,7 @@ namespace CapFrameX.Data
 			if (!directory.Exists)
 			{
 				_logger.LogWarning("Cannot observe directory {path}: Does not exist", directory);
+				_observingDirectorySubject.OnNext(directory);
 				return;
 			}
 

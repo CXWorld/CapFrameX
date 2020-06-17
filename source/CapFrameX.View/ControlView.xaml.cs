@@ -32,6 +32,10 @@ namespace CapFrameX.View
 		private string CaptureRootDirectory
 			=> (DataContext as ControlViewModel).AppConfiguration.CaptureRootDirectory;
 
+		private string DefaultPath = Path.Combine
+						(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+						@"CapFrameX\Captures\");
+
 		public ControlView()
 		{
 			InitializeComponent();
@@ -71,14 +75,20 @@ namespace CapFrameX.View
 		{
 			var root = CreateTreeViewRoot();
 			CreateTreeViewRecursive(trvStructure.Items[0] as TreeViewItem);
-			JumpToObservedDirectoryItem(root, out var rootFound);
+			JumpToObservedDirectoryItem(root, out var directoryFound);
 
 			if ((ExtractFullPath(CaptureRootDirectory) == ObservedDirectory))
 				root.IsSelected = true;
 
-			if (!rootFound)
+			if (!directoryFound)
 			{
-				(DataContext as ControlViewModel).RootDirectory = ObservedDirectory;
+				if (Directory.Exists(ObservedDirectory))
+					(DataContext as ControlViewModel).RootDirectory = ObservedDirectory;
+				else
+				{
+					(DataContext as ControlViewModel).AppConfiguration.ObservedDirectory = DefaultPath;				
+					(DataContext as ControlViewModel).RootDirectory = DefaultPath;
+				}
 				BuildTreeView();
 			}
 		}
@@ -128,9 +138,9 @@ namespace CapFrameX.View
 				}
 		}
 
-		private void JumpToObservedDirectoryItem(TreeViewItem tvi, out bool rootFound)
+		private void JumpToObservedDirectoryItem(TreeViewItem tvi, out bool directoryFound)
 		{
-			rootFound = false;
+			directoryFound = false;
 			if (tvi == null)
 				return;
 
@@ -138,7 +148,7 @@ namespace CapFrameX.View
 			{
 				tvi.BringIntoView();
 				tvi.IsSelected = true;
-				rootFound = true;
+				directoryFound = true;
 				return;
 			}
 			else
@@ -151,8 +161,8 @@ namespace CapFrameX.View
 				foreach (var item in tvi.Items)
 				{
 					TreeViewItem temp = item as TreeViewItem;
-					JumpToObservedDirectoryItem(temp, out rootFound);
-					if (rootFound) break;
+					JumpToObservedDirectoryItem(temp, out directoryFound);
+					if (directoryFound) break;
 				}
 			}
 		}
