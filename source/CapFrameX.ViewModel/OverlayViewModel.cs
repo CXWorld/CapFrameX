@@ -388,6 +388,7 @@ namespace CapFrameX.ViewModel
             var overlayEntries = await _overlayEntryProvider.GetDefaultOverlayEntries();
             OverlayEntries.Clear();
             OverlayEntries.AddRange(overlayEntries);
+            _overlayEntryProvider.SaveOverlayEntriesToJson();
             OnUseRunHistoryChanged();
         }
 
