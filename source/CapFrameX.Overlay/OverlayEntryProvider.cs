@@ -73,7 +73,7 @@ namespace CapFrameX.Overlay
             _overlayEntries.Move(sourceIndex, targetIndex);
         }
 
-        public bool SaveOverlayEntriesToJson()
+        public async Task SaveOverlayEntriesToJson()
         {
             try
             {
@@ -87,11 +87,12 @@ namespace CapFrameX.Overlay
                 if (!Directory.Exists(OVERLAY_CONFIG_FOLDER))
                     Directory.CreateDirectory(OVERLAY_CONFIG_FOLDER);
 
-                File.WriteAllText(GetConfigurationFileName(), json);
-
-                return true;
+                using (StreamWriter outputFile = new StreamWriter(GetConfigurationFileName()))
+                {
+                    await outputFile.WriteAsync(json);
+                }
             }
-            catch { return false; }
+            catch { return; }
         }
 
         public async Task SwitchConfigurationTo(int index)
