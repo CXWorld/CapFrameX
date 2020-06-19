@@ -223,7 +223,10 @@ namespace CapFrameX.View
 		{
 			e.FilterCollectionByText<IFileRecordInfo>(RecordSearchBox.Text,
 										(record, word) => record.CombinedInfo.NullSafeContains(word, true)
-										|| record.GameName.NullSafeContains(word, true));
+										|| record.GameName.NullSafeContains(word, true)
+										|| record.ProcessorName.NullSafeContains(word, true)
+										|| record.GraphicCardName.NullSafeContains(word, true)
+										|| record.SystemRamInfo.NullSafeContains(word, true));
 		}
 
 		private void DataGridRow_MouseDoubleClick(object sender, MouseButtonEventArgs e)
