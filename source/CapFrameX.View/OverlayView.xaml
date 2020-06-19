@@ -675,7 +675,9 @@
                                 <Button Width="28" Height="28" Margin="20 0 0 0" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
                                         Command="{Binding SetFormatForGroupName}"
                                         materialDesign:RippleAssist.Feedback="#DD000000">
-                                    <materialDesign:PackIcon Kind="FormatListBulletedSquare" Height="22" Width="22" />
+                                    <!--BallotRecountOutline-->
+                                    <!--FormatListBulletedSquare-->
+                                    <materialDesign:PackIcon Kind="BallotRecountOutline" Height="22" Width="22" />
                                 </Button>
                             </StackPanel>
                             <StackPanel Grid.Row="1" Margin="10 0 0 0" Orientation="Horizontal" VerticalAlignment="Center">
@@ -683,7 +685,7 @@
                                 <Button Width="28" Height="28" Margin="20 0 0 0" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
                                         Command="{Binding SetFormatForSensorType}"
                                         materialDesign:RippleAssist.Feedback="#DD000000">
-                                    <materialDesign:PackIcon Kind="FormatListBulletedSquare" Height="22" Width="22" />
+                                    <materialDesign:PackIcon Kind="BallotRecountOutline" Height="22" Width="22" />
                                 </Button>
                             </StackPanel>
                         </Grid>
