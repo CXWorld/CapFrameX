@@ -368,7 +368,7 @@ namespace CapFrameX.ViewModel
                 });
 
             SaveConfigCommand = new DelegateCommand(
-                () => _overlayEntryProvider.SaveOverlayEntriesToJson());
+               async () => await _overlayEntryProvider.SaveOverlayEntriesToJson());
 
             ResetDefaultsCommand = new DelegateCommand(
                 async () => await OnResetDefaults());
@@ -388,6 +388,7 @@ namespace CapFrameX.ViewModel
             var overlayEntries = await _overlayEntryProvider.GetDefaultOverlayEntries();
             OverlayEntries.Clear();
             OverlayEntries.AddRange(overlayEntries);
+            await _overlayEntryProvider.SaveOverlayEntriesToJson();
             OnUseRunHistoryChanged();
         }
 

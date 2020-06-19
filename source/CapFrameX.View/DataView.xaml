@@ -76,7 +76,7 @@
                     <TabItem Header="Frametimes">
                         <Grid>
                             <Grid Margin="0 0 50 0" Panel.ZIndex="1" HorizontalAlignment="Left" VerticalAlignment="Bottom">
-                                <ComboBox Width="120" VerticalAlignment="Center" Margin="25 8 0 8" materialDesign:HintAssist.Hint="Y-axis scale"
+                                <ComboBox Width="85" VerticalAlignment="Center" Margin="25 8 0 8" materialDesign:HintAssist.Hint="Y-axis scale"
 										materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="240" materialDesign:ComboBoxAssist.ClassicMode="True"
 										ItemsSource="{Binding ChartYAxisSettings}" SelectedItem="{Binding SelecetedChartYAxisSetting}">
                                     <ComboBox.ItemTemplate>
@@ -92,7 +92,7 @@
                     <TabItem Header="FPS">
                         <Grid>
                             <Grid Margin="0 0 50 0" Panel.ZIndex="1" HorizontalAlignment="Left" VerticalAlignment="Bottom">
-                                <ComboBox Width="120" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="25 8 0 8" materialDesign:HintAssist.Hint="Filter mode"
+                                <ComboBox Width="96" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="25 8 0 8" materialDesign:HintAssist.Hint="Filter mode"
 										      materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="240" materialDesign:ComboBoxAssist.ClassicMode="True"
                                               SelectedItem="{Binding SelectedFilterMode}" SelectedIndex="1" ItemsSource="{Binding FilterModes}">
                                     <ComboBox.ItemTemplate>

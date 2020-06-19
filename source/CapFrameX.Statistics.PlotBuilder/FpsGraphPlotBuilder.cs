@@ -22,8 +22,36 @@ namespace CapFrameX.Statistics.PlotBuilder
             plotModel.Axes.Add(AxisDefinitions[EPlotAxis.XAXIS]);
             plotModel.Axes.Add(AxisDefinitions[EPlotAxis.YAXISFPS]);
 
-            SetFpsChart(plotModel, session.GetFpsPointsTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod, filterMode),
-                session.GetFrametimeTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod));
+
+            var frametimes = session.GetFrametimeTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod);
+            double average = frametimes.Count * 1000 / frametimes.Sum();
+            double yMin, yMax;
+
+            plotModel.Series.Clear();
+
+            if (filterMode is EFilterMode.RawPlusAverage)
+            {               
+                var rawFpsPoints = session.GetFpsPointsTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod, EFilterMode.None);
+                SetRawFPS(plotModel, rawFpsPoints);
+
+                var avgFpsPoints = session.GetFpsPointsTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod, EFilterMode.TimeIntervalAverage);
+                SetFpsChart(plotModel, avgFpsPoints, average, 2, OxyColor.FromRgb(241, 125, 32));
+
+
+                yMin = rawFpsPoints.Min(pnt => pnt.Y);
+                yMax = rawFpsPoints.Max(pnt => pnt.Y);
+            }
+            else
+            {
+                var fpsPoints = session.GetFpsPointsTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod, filterMode);
+
+
+                SetFpsChart(plotModel, fpsPoints, average, filterMode is EFilterMode.None ? 1 : 2, Constants.FpsStroke);
+
+                 yMin = fpsPoints.Min(pnt => pnt.Y);
+                 yMax = fpsPoints.Max(pnt => pnt.Y);
+            }
+            UpdateYAxisMinMaxBorders(yMin, yMax, average);
 
             if (plotSettings.IsAnyGraphVisible && session.HasValidSensorData())
             {
@@ -43,42 +71,34 @@ namespace CapFrameX.Statistics.PlotBuilder
             plotModel.InvalidatePlot(true);
         }
 
-        private void SetFpsChart(PlotModel plotModel, IList<Point> fpsPoints, IList<double> frametimes)
+        private void SetFpsChart(PlotModel plotModel, IList<Point> fpsPoints, double average, int stroke, OxyColor color)
         {
             if (fpsPoints == null || !fpsPoints.Any())
                 return;
 
-            var avgFps = _frametimesStatisticProvider.GetFpsMetricValue(frametimes, EMetric.Average);
-
             int count = fpsPoints.Count;
             var fpsDataPoints = fpsPoints.Select(pnt => new DataPoint(pnt.X, pnt.Y));
-
-            var yMin = fpsPoints.Min(pnt => pnt.Y);
-            var yMax = fpsPoints.Max(pnt => pnt.Y);
-
-            plotModel.Series.Clear();
 
             var fpsSeries = new LineSeries
             {
                 Title = "FPS",
-                StrokeThickness = 1,
+                StrokeThickness = stroke,
                 LegendStrokeThickness = 4,
-                Color = Constants.FpsStroke,
+                Color = color,
                 InterpolationAlgorithm = InterpolationAlgorithms.CanonicalSpline
             };
 
             fpsSeries.Points.AddRange(fpsDataPoints);
             plotModel.Series.Add(fpsSeries);
 
-            double average = frametimes.Count * 1000 / frametimes.Sum();
             var averageDataPoints =  fpsPoints.Select(pnt => new DataPoint(pnt.X, average));
 
             var averageSeries = new LineSeries
             {
-                Title = "Average FPS",
+                Title = "Avg FPS",
                 StrokeThickness = 2,
                 LegendStrokeThickness = 4,
-                Color = Constants.FpsAverageStroke
+                Color = OxyColor.FromAColor(200, Constants.FpsAverageStroke)
             };
 
             averageSeries.Points.AddRange(averageDataPoints);
@@ -91,35 +111,53 @@ namespace CapFrameX.Statistics.PlotBuilder
                 axis.Maximum = fpsPoints.Last().X;
             });
 
+            plotModel.InvalidatePlot(true);
+        }
+
+        private void SetRawFPS(PlotModel plotModel, IList<Point> fpsPoints)
+        {
+            var fpsSeries = new LineSeries
+            { 
+                Title = "Raw FPS",
+                StrokeThickness = 1,
+                LegendStrokeThickness = 4,
+                Color = OxyColor.FromAColor(200, Constants.FpsStroke),
+                InterpolationAlgorithm = InterpolationAlgorithms.CanonicalSpline
+            };
+            var points = fpsPoints.Select(pnt => new DataPoint(pnt.X, pnt.Y));
+            fpsSeries.Points.AddRange(points);
+            plotModel.Series.Add(fpsSeries);
+
+            plotModel.InvalidatePlot(true);
+        }
+
+        private void UpdateYAxisMinMaxBorders(double yMin, double yMax, double average)
+        {
             UpdateAxis(EPlotAxis.YAXISFPS, (axis) =>
             {
                 var axisMinimum = yMin - (yMax - yMin) / 6;
                 var axisMaximum = yMax + (yMax - yMin) / 6;
 
                 // min range of y-axis
-                if (avgFps - axisMinimum < 15)
-                    axis.Minimum = avgFps - 15;
+                if (average - axisMinimum < 15)
+                    axis.Minimum = average - 15;
                 else
                     axis.Minimum = axisMinimum;
 
-                if (axisMaximum - avgFps < 15)
-                    axis.Maximum = avgFps + 15;
+                if (axisMaximum - average < 15)
+                    axis.Maximum = average + 15;
                 else
                     axis.Maximum = axisMaximum;
 
                 // center average FPS line
-                var rangeAvgMin = avgFps - axis.Minimum;
-                var rangeAvgMax = axis.Maximum - avgFps;
+                var rangeAvgMin = average - axis.Minimum;
+                var rangeAvgMax = axis.Maximum - average;
 
                 if (rangeAvgMin > rangeAvgMax)
                     axis.Maximum += (rangeAvgMin - rangeAvgMax);
                 else if (rangeAvgMin < rangeAvgMax)
                     axis.Minimum -= (rangeAvgMax - rangeAvgMin);
-
-
             });
-
-            plotModel.InvalidatePlot(true);
         }
     }
 }

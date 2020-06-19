@@ -11,6 +11,7 @@ using Prism.Events;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
@@ -35,6 +36,7 @@ namespace CapFrameX.Overlay
         private readonly TaskCompletionSource<bool> _taskCompletionSource
             = new TaskCompletionSource<bool>();
         private BlockingCollection<IOverlayEntry> _overlayEntries;
+        private IObservable<IOverlayEntry[]> _onDictionaryUpdatedBuffered;
 
         public OverlayEntryProvider(ISensorService sensorService,
             IAppConfiguration appConfiguration,
@@ -47,6 +49,10 @@ namespace CapFrameX.Overlay
             _eventAggregator = eventAggregator;
             _onlineMetricService = onlineMetricService;
             _systemInfo = systemInfo;
+            _onDictionaryUpdatedBuffered = _sensorService.OnDictionaryUpdated
+                .Replay(1)
+                .AutoConnect(0);
+             
 
             _ = Task.Run(async () => await LoadOrSetDefault())
                 .ContinueWith(task => _taskCompletionSource.SetResult(true));
@@ -73,7 +79,7 @@ namespace CapFrameX.Overlay
             _overlayEntries.Move(sourceIndex, targetIndex);
         }
 
-        public bool SaveOverlayEntriesToJson()
+        public async Task SaveOverlayEntriesToJson()
         {
             try
             {
@@ -87,11 +93,12 @@ namespace CapFrameX.Overlay
                 if (!Directory.Exists(OVERLAY_CONFIG_FOLDER))
                     Directory.CreateDirectory(OVERLAY_CONFIG_FOLDER);
 
-                File.WriteAllText(GetConfigurationFileName(), json);
-
-                return true;
+                using (StreamWriter outputFile = new StreamWriter(GetConfigurationFileName()))
+                {
+                    await outputFile.WriteAsync(json);
+                }
             }
-            catch { return false; }
+            catch { return; }
         }
 
         public async Task SwitchConfigurationTo(int index)
@@ -140,7 +147,7 @@ namespace CapFrameX.Overlay
             var overlayEntriesFromJson = JsonConvert.DeserializeObject<OverlayEntryPersistence>(json)
                 .OverlayEntries.ToBlockingCollection<IOverlayEntry>();
 
-            return _sensorService.OnDictionaryUpdated
+            return _onDictionaryUpdatedBuffered
                 .Take(1)
                 .Select(sensorOverlayEntries =>
                 {
@@ -169,6 +176,7 @@ namespace CapFrameX.Overlay
                             adjustedOverlayEntries.Add(entry);
                         }
                     }
+
                     return adjustedOverlayEntries.ToBlockingCollection();
                 });
         }
@@ -236,7 +244,7 @@ namespace CapFrameX.Overlay
                     .Select(item => item as IOverlayEntry).ToBlockingCollection();
 
             // Sensor data
-            return _sensorService.OnDictionaryUpdated
+            return _onDictionaryUpdatedBuffered
                 .Take(1)
                 .Select(sensorOverlayEntries =>
                 {

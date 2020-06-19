@@ -36,9 +36,11 @@ namespace CapFrameX.Statistics.NetStandard
                     intervalCount = 0;
                 }
             }
-
-            timeAcc += intervalSum;
-            filteredSequence.Add(new Point(timeAcc, intervalSum / intervalCount));
+            if (intervalCount > 0)
+            {
+                timeAcc += intervalSum;
+                filteredSequence.Add(new Point(timeAcc, intervalSum / intervalCount));
+            }
 
             return filteredSequence;
         }

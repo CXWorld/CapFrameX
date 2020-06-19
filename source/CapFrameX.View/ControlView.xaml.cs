@@ -32,6 +32,10 @@ namespace CapFrameX.View
 		private string CaptureRootDirectory
 			=> (DataContext as ControlViewModel).AppConfiguration.CaptureRootDirectory;
 
+		private string DefaultPath = Path.Combine
+						(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+						@"CapFrameX\Captures\");
+
 		public ControlView()
 		{
 			InitializeComponent();
@@ -45,7 +49,7 @@ namespace CapFrameX.View
 			(DataContext as ControlViewModel).TreeViewUpdateStream.Subscribe(_ => BuildTreeView());
 
 			(DataContext as ControlViewModel).CreateFolderdialogIsOpenStream
-				.SelectMany(isOpen => { 
+				.SelectMany(isOpen => {
 					if(isOpen)
 					{
 						return Observable.Return(true);
@@ -71,14 +75,20 @@ namespace CapFrameX.View
 		{
 			var root = CreateTreeViewRoot();
 			CreateTreeViewRecursive(trvStructure.Items[0] as TreeViewItem);
-			JumpToObservedDirectoryItem(root);
+			JumpToObservedDirectoryItem(root, out var directoryFound);
 
 			if ((ExtractFullPath(CaptureRootDirectory) == ObservedDirectory))
 				root.IsSelected = true;
 
-			if (!root.IsExpanded)
+			if (!directoryFound)
 			{
-				(DataContext as ControlViewModel).RootDirectory = ObservedDirectory;
+				if (Directory.Exists(ObservedDirectory))
+					(DataContext as ControlViewModel).RootDirectory = ObservedDirectory;
+				else
+				{
+					(DataContext as ControlViewModel).AppConfiguration.ObservedDirectory = DefaultPath;				
+					(DataContext as ControlViewModel).RootDirectory = DefaultPath;
+				}
 				BuildTreeView();
 			}
 		}
@@ -106,30 +116,31 @@ namespace CapFrameX.View
 
 		private void CreateTreeViewRecursive(TreeViewItem item)
 		{
-			if ((item.Items.Count == 1) && (item.Items[0] is string))
-			{
-				item.Items.Clear();
-
-				DirectoryInfo expandedDir = null;
-				if (item.Tag is DriveInfo)
-					expandedDir = (item.Tag as DriveInfo).RootDirectory;
-				if (item.Tag is DirectoryInfo)
-					expandedDir = (item.Tag as DirectoryInfo);
-				try
+				if ((item.Items.Count == 1) && (item.Items[0] is string))
 				{
-					foreach (DirectoryInfo subDir in expandedDir.GetDirectories())
+					item.Items.Clear();
+
+					DirectoryInfo expandedDir = null;
+					if (item.Tag is DriveInfo)
+						expandedDir = (item.Tag as DriveInfo).RootDirectory;
+					if (item.Tag is DirectoryInfo)
+						expandedDir = (item.Tag as DirectoryInfo);
+					try
 					{
-						var subItem = CreateTreeItem(subDir, subDir.ToString());
-						item.Items.Add(subItem);
-						CreateTreeViewRecursive(subItem);
+						foreach (DirectoryInfo subDir in expandedDir.GetDirectories())
+						{
+							var subItem = CreateTreeItem(subDir, subDir.ToString());
+							item.Items.Add(subItem);
+							CreateTreeViewRecursive(subItem);
+						}
 					}
+					catch { }
 				}
-				catch { }
-			}
 		}
 
-		void JumpToObservedDirectoryItem(TreeViewItem tvi)
+		private void JumpToObservedDirectoryItem(TreeViewItem tvi, out bool directoryFound)
 		{
+			directoryFound = false;
 			if (tvi == null)
 				return;
 
@@ -137,17 +148,21 @@ namespace CapFrameX.View
 			{
 				tvi.BringIntoView();
 				tvi.IsSelected = true;
+				directoryFound = true;
 				return;
 			}
 			else
+			{
 				tvi.IsExpanded = false;
+			}
 
 			if (tvi.HasItems)
 			{
 				foreach (var item in tvi.Items)
 				{
 					TreeViewItem temp = item as TreeViewItem;
-					JumpToObservedDirectoryItem(temp);
+					JumpToObservedDirectoryItem(temp, out directoryFound);
+					if (directoryFound) break;
 				}
 			}
 		}

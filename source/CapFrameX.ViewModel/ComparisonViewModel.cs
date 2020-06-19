@@ -94,6 +94,7 @@ namespace CapFrameX.ViewModel
 
         public Array FilterModes => Enum.GetValues(typeof(EFilterMode))
                                                   .Cast<EFilterMode>()
+                                                  .Where(filter => filter != EFilterMode.RawPlusAverage)
                                                   .ToArray();
 
         public ISubject<Unit> ResetLShapeChart = new Subject<Unit>();
@@ -1117,7 +1118,7 @@ namespace CapFrameX.ViewModel
             {
                 Tag = wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.Id,
                 Title = chartTitle,
-                StrokeThickness = 1,
+                StrokeThickness = SelectedFilterMode is EFilterMode.None ? 1 : 2,
                 LegendStrokeThickness = 4,
                 Color = wrappedComparisonInfo.IsHideModeSelected ?
                     OxyColors.Transparent : OxyColor.FromRgb(color.R, color.G, color.B),
