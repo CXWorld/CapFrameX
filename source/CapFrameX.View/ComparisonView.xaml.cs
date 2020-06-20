@@ -1,9 +1,11 @@
 ﻿using CapFrameX.ViewModel;
 using System;
 using System.Reactive.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 
 namespace CapFrameX.View
@@ -39,5 +41,32 @@ namespace CapFrameX.View
 		}
 
 		private void SelectedColorChanged(object sender, RoutedPropertyChangedEventArgs<Color?> e) { }
+
+		private void FirstSecondsTextBox_PreviewKeyDown(object sender, KeyEventArgs e)
+		{
+			var key = e.Key;
+
+			if (key == Key.Enter)
+			{
+				GraphTab.Focus();
+			}
+			(DataContext as ComparisonViewModel).OnRangeSliderValuesChanged();
+		}
+		private void LastSecondsTextBox_PreviewKeyDown(object sender, KeyEventArgs e)
+		{
+			var key = e.Key;
+
+			if (key == Key.Enter)
+			{
+				GraphTab.Focus();
+			}
+			(DataContext as ComparisonViewModel).OnRangeSliderValuesChanged();
+		}
+
+		private void NumberValidationTextBox(object sender, TextCompositionEventArgs e)
+		{
+			Regex regex = new Regex("[^0-9.-]+");
+			e.Handled = regex.IsMatch(e.Text);
+		}
 	}
 }

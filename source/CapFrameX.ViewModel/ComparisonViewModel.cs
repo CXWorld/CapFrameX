@@ -858,6 +858,15 @@ namespace CapFrameX.ViewModel
                 Math.Round(MaxRecordingTime, 2).ToString(CultureInfo.InvariantCulture) + " s" : "0.0 s"; ;
         }
 
+        public void OnRangeSliderValuesChanged()
+        {
+            if (FirstSeconds > LastSeconds || FirstSeconds < 0)
+                FirstSeconds = 0;
+
+            if (LastSeconds > MaxRecordingTime || LastSeconds <= 0)
+                LastSeconds = MaxRecordingTime;
+        }
+
         private void UpdateAxesMinMaxFrametimeChart()
         {
             if (ComparisonRecords == null || !ComparisonRecords.Any())

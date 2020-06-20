@@ -1047,6 +1047,13 @@ namespace CapFrameX.ViewModel
 
         public void OnRangeSliderDragCompleted()
         {
+            if (FirstSeconds > LastSeconds || FirstSeconds < 0)
+                FirstSeconds = 0;
+
+            if (LastSeconds > MaxRecordingTime || LastSeconds <= 0)
+            LastSeconds = MaxRecordingTime;
+
+
             DemandUpdateCharts();
         }
 
