@@ -64,9 +64,11 @@ namespace CapFrameX.View
 			if (key == Key.Enter)
 			{
 				GraphTab.Focus();
+				(DataContext as DataViewModel).OnRangeSliderDragCompleted();
 			}
-			(DataContext as DataViewModel).OnRangeSliderDragCompleted();	
+				
 		}
+
 		private void LastSecondsTextBox_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
 		{
 			var key = e.Key;
@@ -74,9 +76,10 @@ namespace CapFrameX.View
 			if (key == Key.Enter)
 			{
 				GraphTab.Focus();
-			}
-			(DataContext as DataViewModel).OnRangeSliderDragCompleted();
+				(DataContext as DataViewModel).OnRangeSliderDragCompleted();
+			}			
 		}
+
 		private void NumberValidationTextBox(object sender, TextCompositionEventArgs e)
 		{
 			Regex regex = new Regex("[^0-9.-]+");
