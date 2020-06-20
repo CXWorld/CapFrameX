@@ -5,6 +5,7 @@ using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Extensions;
 using CapFrameX.Extensions.NetStandard;
 using CapFrameX.MVVM.Dialogs;
+using CapFrameX.Sensor.Reporting;
 using CapFrameX.Statistics.NetStandard;
 using CapFrameX.Statistics.NetStandard.Contracts;
 using GongSolutions.Wpf.DragDrop;
@@ -632,7 +633,7 @@ namespace CapFrameX.ViewModel
             {
                 new RowSeries
                 {
-                    Title = $"{EMetric.Average.GetDescription()} FPS",
+                    Title = GetDescriptionAndFpsUnit(EMetric.Average),
                     Values = new ChartValues<double>(),
                     Fill = new SolidColorBrush(Color.FromRgb(34, 151, 243)),
                     HighlightFill = new SolidColorBrush(Color.FromRgb(122, 192, 247)),
@@ -651,7 +652,7 @@ namespace CapFrameX.ViewModel
                 ComparisonRowChartSeriesCollection.Add(
                 new RowSeries
                 {
-                    Title = $"{SelectedSecondMetric.GetDescription()} FPS",
+                    Title = GetDescriptionAndFpsUnit(SelectedSecondMetric),
                     Values = new ChartValues<double>(),
                     Fill = new SolidColorBrush(Color.FromRgb(241, 125, 32)),
                     HighlightFill = new SolidColorBrush(Color.FromRgb(245, 164, 98)),
@@ -669,7 +670,7 @@ namespace CapFrameX.ViewModel
                 ComparisonRowChartSeriesCollection.Add(
                 new RowSeries
                 {
-                    Title = $"{SelectedThirdMetric.GetDescription()} FPS",
+                    Title = GetDescriptionAndFpsUnit(SelectedThirdMetric),
                     Values = new ChartValues<double>(),
                     Fill = new SolidColorBrush(Color.FromRgb(255, 180, 0)),
                     HighlightFill = new SolidColorBrush(Color.FromRgb(245, 217, 128)),
@@ -701,14 +702,49 @@ namespace CapFrameX.ViewModel
 
                 for (int j = 0; j < ComparisonRowChartSeriesCollection.Count; j++)
                 {
-                    var metric = GetMetricValue(frametimeTimeWindow, GetMetricByIndex(j));
+                    var metric = GetMetricByIndex(j);
+                    double metricValue = 0;
+
+                    if (metric == EMetric.CpuFpsPerWatt)
+                    {
+                        metricValue =
+                        _frametimeStatisticProvider.GetPhysicalMetricValue(frametimeTimeWindow, EMetric.CpuFpsPerWatt,
+                             SensorReport.GetAverageCpuPower(currentWrappedComparisonInfo.WrappedRecordInfo.Session.Runs.Select(run => run.SensorData),
+                             startTime, endTime));
+                    }
+                    //else if (SelectedSecondMetric == EMetric.GpuFpsPerWatt)
+                    //{
+                    //currentWrappedComparisonInfo.WrappedRecordInfo.SecondMetric =
+                    //    _frametimeStatisticProvider.GetPhysicalMetricValue(frametimeTimeWindow, EMetric.GpuFpsPerWatt,
+                    //         SensorReport.GetAverageGpuPower(currentWrappedComparisonInfo.WrappedRecordInfo.Session.Runs.Select(run => run.SensorData),
+                    //         startTime, endTime));
+                    //}
+                    else
+                    {
+                        metricValue = GetMetricValue(frametimeTimeWindow, metric);
+
+                    }
+
                     (ComparisonRowChartSeriesCollection[j] as RowSeries).Title = $"{GetMetricByIndex(j).GetDescription()} FPS";
-                    ComparisonRowChartSeriesCollection[j].Values.Insert(0, metric);
+                    ComparisonRowChartSeriesCollection[j].Values.Insert(0, metricValue);
                 }
             }
 
             SetBarMaxValue();
             UpdateBarChartHeight();
+        }
+
+        private string GetDescriptionAndFpsUnit(EMetric metric)
+        {
+            string description;
+            if (metric == EMetric.CpuFpsPerWatt /*|| metric == EMetric.GpuFpsPerWatt*/)
+            {
+                description = metric.GetDescription();
+            }
+            else
+                description = $"{metric.GetDescription()} FPS";
+
+            return description;
         }
 
         private void OnFilterModeChanged()
