@@ -52,6 +52,7 @@ namespace CapFrameX.View
 			}
 			(DataContext as ComparisonViewModel).OnRangeSliderValuesChanged();
 		}
+
 		private void LastSecondsTextBox_PreviewKeyDown(object sender, KeyEventArgs e)
 		{
 			var key = e.Key;

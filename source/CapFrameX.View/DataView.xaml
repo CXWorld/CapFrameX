@@ -134,9 +134,9 @@
                                      MinRange="{Binding MinRangeSliderRange}"
 									 Style="{StaticResource CustomRangeSlider}"
                                      Thumb.DragCompleted="RangeSlider_DragCompleted"/>
-                <StackPanel HorizontalAlignment="Right" VerticalAlignment="Bottom" Orientation="Horizontal" Margin="0 0 10 5" Height="20">
+                <StackPanel HorizontalAlignment="Right" VerticalAlignment="Bottom" Orientation="Horizontal" Margin="0 0 10 0" Height="25">
                     <TextBlock Text="Start and end points:" Margin="0 5 5 0"/>
-                    <TextBox x:Name="FirsSecondsTextbox" Grid.Row="1" materialDesign:HintAssist.Hint="Start (s)" HorizontalAlignment="Center" Width="45"  Margin="0 0 0 0"
+                    <TextBox Grid.Row="1" materialDesign:HintAssist.Hint="Start (s)" HorizontalAlignment="Center" Width="45"
                          ToolTip="Range Slider start point" PreviewKeyDown="FirstSecondsTextBox_PreviewKeyDown" PreviewTextInput="NumberValidationTextBox" TextAlignment="Center">
                         <TextBox.Text>
                             <Binding Path="FirstSeconds"
@@ -146,8 +146,8 @@
                             </Binding>
                         </TextBox.Text>
                     </TextBox>
-                    <TextBlock Text="-" Margin="3 3 3 0"/>
-                    <TextBox x:Name="LastSecondsTextbox" Grid.Row="1" materialDesign:HintAssist.Hint="End (s)" HorizontalAlignment="Center" Width="45"  Margin="0 0 0 0"
+                    <TextBlock Text="-" Margin="3 5 3 0"/>
+                    <TextBox Grid.Row="1" materialDesign:HintAssist.Hint="End (s)" HorizontalAlignment="Center" Width="45"
                          ToolTip="Range Slider end point" PreviewKeyDown="LastSecondsTextBox_PreviewKeyDown" PreviewTextInput="NumberValidationTextBox" TextAlignment="Center">
                         <TextBox.Text>
                             <Binding Path="LastSeconds"
