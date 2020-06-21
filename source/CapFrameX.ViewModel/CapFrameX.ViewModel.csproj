@@ -173,6 +173,7 @@
     <Compile Include="ReportViewModel.cs" />
     <Compile Include="StateViewModel.cs" />
     <Compile Include="SubModels\OverlayGroupControl.cs" />
+    <Compile Include="SubModels\OverlayGroupSeparating.cs" />
     <Compile Include="SynchronizationViewModel.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -1,4 +1,6 @@
-﻿namespace CapFrameX.Contracts.Overlay
+﻿using System;
+
+namespace CapFrameX.Contracts.Overlay
 {
     public interface IOverlayEntry
     {
@@ -50,5 +52,7 @@
         string UpperLimitColor { get; set; }
 
         string LowerLimitColor { get; set; }
+
+        Action<string, string> UpdateGroupName { get; set; }
     }
 }

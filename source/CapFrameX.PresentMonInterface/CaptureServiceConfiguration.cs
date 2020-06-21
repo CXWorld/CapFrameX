@@ -1,8 +1,6 @@
 ﻿using CapFrameX.Contracts.PresentMonInterface;
 using System;
 using System.IO;
-using System.Linq;
-using System.Collections.Generic;
 
 namespace CapFrameX.PresentMonInterface
 {
@@ -27,8 +25,8 @@ namespace CapFrameX.PresentMonInterface
         public static string GetCaptureFilename(string processName)
         {
             DateTime now = DateTime.Now;
-            string dateTimeFormat = $"{now.Year}-{now.Month.ToString("d2")}-" +
-				$"{now.Day.ToString("d2")}T{now.Hour}{now.Minute}{now.Second}";
+            string dateTimeFormat = $"{now.Year}-{now.Month:d2}-" +
+				$"{now.Day:d2}T{now.Hour}{now.Minute}{now.Second}";
             return $"CapFrameX-{processName}.exe-{dateTimeFormat}.json";
         }
     }

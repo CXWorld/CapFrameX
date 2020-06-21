@@ -1,6 +1,7 @@
 ﻿using CapFrameX.Contracts.Overlay;
 using Newtonsoft.Json;
 using Prism.Mvvm;
+using System;
 using System.Globalization;
 
 namespace CapFrameX.Overlay
@@ -30,7 +31,10 @@ namespace CapFrameX.Overlay
 
 		public EOverlayEntryType OverlayEntryType { get; set; }
 
-		public string Description { get; set; }	
+		public string Description { get; set; }
+
+		[JsonIgnore]
+		public Action<string, string> UpdateGroupName { get; set; }
 
 		[JsonIgnore]
 		public string FormattedValue
@@ -65,6 +69,7 @@ namespace CapFrameX.Overlay
 			get { return _groupName; }
 			set
 			{
+				UpdateGroupName?.Invoke(_groupName, value);
 				_groupName = value;
 				RaisePropertyChanged();
 			}

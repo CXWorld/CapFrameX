@@ -642,7 +642,8 @@
                     </Border>
                     <Border Grid.Row="2" Grid.Column="0" Margin="5" Background="Transparent" BorderThickness=".2" BorderBrush="Black">
                         <DataGrid x:Name="SeparatorDataGrid" Background="#F5F5F5" FontSize="11"
-					      SelectedIndex="{Binding SelectedOverlayGroupIndex}" ItemsSource="{Binding OverlayGroupEntries}"
+					      SelectedIndex="{Binding Path=OverlaySubModelGroupSeparating.SelectedOverlayGroupIndex}" 
+                          ItemsSource="{Binding Path=OverlaySubModelGroupSeparating.OverlayGroupNameSeparatorEntries}"
 					      CanUserSortColumns="False" CanUserAddRows="False" AutoGenerateColumns="False"
 					      materialDesign:DataGridAssist.CellPadding="13 3 0 0" materialDesign:DataGridAssist.ColumnHeaderPadding="8" IsSynchronizedWithCurrentItem="False"
 					      ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.CanContentScroll="True">
@@ -655,7 +656,7 @@
                                 </Style>
                             </DataGrid.Resources>
                             <DataGrid.Columns>
-                                <DataGridTextColumn Binding="{Binding GroupNames}"
+                                <DataGridTextColumn Binding="{Binding GroupName}"
                                             Header="Group name"
                                             IsReadOnly="True"/>
                                 <DataGridTextColumn Binding="{Binding GroupSeparators, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"

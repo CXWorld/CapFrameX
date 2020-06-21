@@ -339,6 +339,8 @@ namespace CapFrameX.ViewModel
 
         public OverlayGroupControl OverlaySubModelGroupControl { get; }
 
+        public OverlayGroupSeparating OverlaySubModelGroupSeparating { get; }
+
         public OverlayViewModel(IOverlayService overlayService, IOverlayEntryProvider overlayEntryProvider,
             IAppConfiguration appConfiguration, IEventAggregator eventAggregator, ISensorService sensorService, IRTSSService rTSSService)
         {
@@ -348,6 +350,11 @@ namespace CapFrameX.ViewModel
             _eventAggregator = eventAggregator;
             _sensorService = sensorService;
             _rTSSService = rTSSService;
+
+            // define submodels
+            OverlaySubModelGroupControl = new OverlayGroupControl(this);
+            OverlaySubModelGroupSeparating = new OverlayGroupSeparating(this);
+
             var configSubject = new Subject<object>();
             ConfigSwitchCommand = new DelegateCommand<object>(configSubject.OnNext);
             configSubject
@@ -358,12 +365,21 @@ namespace CapFrameX.ViewModel
                         .SelectMany(_ => _sensorService.OnDictionaryUpdated.Take(1));
                 })
                 .StartWith(Enumerable.Empty<IOverlayEntry>())
-                .SelectMany(_ => _overlayEntryProvider.GetOverlayEntries())
+                .SelectMany(_ =>
+                {
+                    var overlayEntries = overlayEntryProvider.GetOverlayEntries();
+                    foreach (var entry in overlayEntries.Result)
+                        entry.UpdateGroupName = 
+                        OverlaySubModelGroupSeparating.UpdateGroupName;
+
+                    return overlayEntries;
+                })
                 .ObserveOnDispatcher()
                 .Subscribe(entries =>
                 {
                     OverlayEntries.Clear();
                     OverlayEntries.AddRange(entries);
+                    OverlaySubModelGroupSeparating.SetOverlayEntries(entries);
                     OnUseRunHistoryChanged();
                 });
 
@@ -374,10 +390,7 @@ namespace CapFrameX.ViewModel
                 async () => await OnResetDefaults());
 
             UpdateHpyerlinkText = "To use the overlay, install the latest" + Environment.NewLine +
-                "RivaTuner  Statistics  Server  (RTSS)";
-
-            // define submodels
-            OverlaySubModelGroupControl = new OverlayGroupControl(this);
+                "RivaTuner Statistics Server (RTSS)";            
 
             SetGlobalHookEventOverlayHotkey();
             SetGlobalHookEventResetHistoryHotkey();
