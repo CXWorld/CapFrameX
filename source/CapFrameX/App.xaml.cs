@@ -10,6 +10,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Security.Principal;
+using System.Threading.Tasks;
 using System.Windows;
 
 namespace CapFrameX
@@ -24,15 +25,46 @@ namespace CapFrameX
 		protected override void OnStartup(StartupEventArgs e)
 		{
 			InitializeLogger();
+			SetupExceptionHandling();
+			base.OnStartup(e);
+			_bootstrapper = new Bootstrapper();
+			_bootstrapper.Run(true);
+		}
+
+		private void SetupExceptionHandling()
+		{
+			AppDomain.CurrentDomain.UnhandledException += (s, e) =>
+				LogUnhandledException((Exception)e.ExceptionObject, "AppDomain.CurrentDomain.UnhandledException");
+
+			DispatcherUnhandledException += (s, e) =>
+			{
+				LogUnhandledException(e.Exception, "Application.Current.DispatcherUnhandledException");
+				e.Handled = true;
+			};
+
+			TaskScheduler.UnobservedTaskException += (s, e) =>
+			{
+				LogUnhandledException(e.Exception, "TaskScheduler.UnobservedTaskException");
+				e.SetObserved();
+			};
+		}
+
+		private void LogUnhandledException(Exception exception, string source)
+		{
+			string message = $"Unhandled exception ({source})";
 			try
 			{
-				base.OnStartup(e);
-				_bootstrapper = new Bootstrapper();
-				_bootstrapper.Run(true);
-			} catch (Exception exc)
-            {
-				Log.Logger.Fatal(exc, "Fatal Error");
-            }
+				System.Reflection.AssemblyName assemblyName = System.Reflection.Assembly.GetExecutingAssembly().GetName();
+				message = string.Format("Unhandled exception in {0} v{1}", assemblyName.Name, assemblyName.Version);
+			}
+			catch (Exception ex)
+			{
+				Log.Logger.Fatal(ex, "Exception in LogUnhandledException");
+			}
+			finally
+			{
+				Log.Logger.Fatal(exception, message);
+			}
 		}
 
 		private void CapFrameXExit(object sender, ExitEventArgs e)

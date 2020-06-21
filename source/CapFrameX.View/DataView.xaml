@@ -157,6 +157,10 @@
                             </Binding>
                         </TextBox.Text>
                     </TextBox>
+                    <Button Grid.Row="1" Grid.Column="1" HorizontalAlignment="Right" Margin="10 0 0 0" Height="22" Width="22" Command="{Binding CutRecordCommand}" 
+                            Style="{StaticResource MaterialDesignFloatingActionMiniButton}" ToolTip="Cut the record based on range slider and save it as a new file">
+                        <materialDesign:PackIcon Kind="ContentCut" Height="15" Width="15" />
+                    </Button>
                 </StackPanel>
                 <StackPanel HorizontalAlignment="Center" VerticalAlignment="Bottom" Orientation="Horizontal" Margin="0 0 0 5" Height="15">
                     <TextBlock Text="Time window:"/>
