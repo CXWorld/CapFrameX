@@ -53,6 +53,8 @@ namespace CapFrameX.Contracts.Configuration
 
 		double SimpleSoundLevel { get; set; }
 
+		string FirstMetric { get; set; }
+
 		string SecondMetric { get; set; }
 
 		string ThirdMetric { get; set; }

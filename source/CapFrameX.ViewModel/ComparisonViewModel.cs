@@ -62,8 +62,10 @@ namespace CapFrameX.ViewModel
         private bool _hasComparisonItems;
         private TabItem _selectedChartItem;
         private bool _isSortModeAscending = false;
+        private string _selectedSortMetric = "First";
         private Func<double, string> _comparisonColumnChartFormatter;
         private bool _colorPickerVisibility;
+        private EMetric _selectedFirstMetric = EMetric.Average;
         private EMetric _selectedSecondMetric = EMetric.P1;
         private EMetric _selectedThirdMetric = EMetric.P0dot2;
         private EComparisonContext _selectedComparisonContext = EComparisonContext.DateTime;
@@ -80,13 +82,15 @@ namespace CapFrameX.ViewModel
         private string _selectedChartView = "Frametimes";
         private EFilterMode _selectedFilterMode;
 
+        public Array FirstMetricItems => Enum.GetValues(typeof(EMetric))
+                                             .Cast<EMetric>().Where(metric => metric != EMetric.None)
+                                             .ToArray();
+
         public Array SecondMetricItems => Enum.GetValues(typeof(EMetric))
                                               .Cast<EMetric>()
-                                              .Where(metric => metric != EMetric.Average && metric != EMetric.None)
                                               .ToArray();
         public Array ThirdMetricItems => Enum.GetValues(typeof(EMetric))
                                              .Cast<EMetric>()
-                                             .Where(metric => metric != EMetric.Average)
                                              .ToArray();
 
         public Array ComparisonContextItems => Enum.GetValues(typeof(EComparisonContext))
@@ -105,6 +109,19 @@ namespace CapFrameX.ViewModel
 
         public IEventAggregator EventAggregator
             => _eventAggregator;
+
+        public EMetric SelectedFirstMetric
+        {
+            get { return _selectedFirstMetric; }
+            set
+            {
+                _appConfiguration.FirstMetric =
+                    value.ConvertToString();
+                _selectedFirstMetric = value;
+                RaisePropertyChanged();
+                OnMetricChanged();
+            }
+        }
 
         public EMetric SelectedSecondMetric
         {
@@ -468,6 +485,16 @@ namespace CapFrameX.ViewModel
                 OnFilterModeChanged();
             }
         }
+        public string SelectedSortMetric
+        {
+            get { return _selectedSortMetric; }
+            set
+            {
+                _selectedSortMetric = value;
+                RaisePropertyChanged();
+                OnSortModeChanged();
+            }
+        }
 
         public bool IsBarChartTabActive
         {
@@ -480,6 +507,8 @@ namespace CapFrameX.ViewModel
             = new ComparisonCollection();
 
         public double BarChartMaxRowHeight { get; private set; } = 22;
+
+        public Array SortMetricItemsSource => new[] { "First", "Second", "Third" };
 
         public ComparisonViewModel(IStatisticProvider frametimeStatisticProvider,
             IFrametimeAnalyzer frametimeAnalyzer,
@@ -633,7 +662,7 @@ namespace CapFrameX.ViewModel
             {
                 new RowSeries
                 {
-                    Title = GetDescriptionAndFpsUnit(EMetric.Average),
+                    Title = GetDescriptionAndFpsUnit(SelectedFirstMetric),
                     Values = new ChartValues<double>(),
                     Fill = new SolidColorBrush(Color.FromRgb(34, 151, 243)),
                     HighlightFill = new SolidColorBrush(Color.FromRgb(122, 192, 247)),
@@ -757,7 +786,7 @@ namespace CapFrameX.ViewModel
         private EMetric GetMetricByIndex(int index)
         {
             if (index == 0)
-                return EMetric.Average;
+                return SelectedFirstMetric;
             else if (index == 1)
                 return SelectedSecondMetric;
             else if (index == 2)

@@ -59,8 +59,25 @@ namespace CapFrameX.ViewModel
 			double GeMetricValue(IList<double> sequence, EMetric metric) =>
 					_frametimeStatisticProvider.GetFpsMetricValue(sequence, metric);
 
-			wrappedComparisonRecordInfo.WrappedRecordInfo.FirstMetric
-				= GeMetricValue(frametimeTimeWindow, EMetric.Average);
+			if (SelectedFirstMetric == EMetric.CpuFpsPerWatt)
+			{
+				wrappedComparisonRecordInfo.WrappedRecordInfo.FirstMetric =
+				_frametimeStatisticProvider.GetPhysicalMetricValue(frametimeTimeWindow, EMetric.CpuFpsPerWatt,
+					 SensorReport.GetAverageCpuPower(wrappedComparisonRecordInfo.WrappedRecordInfo.Session.Runs.Select(run => run.SensorData),
+					 startTime, endTime));
+			}
+			//else if (SelectedFirstMetric == EMetric.GpuFpsPerWatt)
+			//{
+			//wrappedComparisonRecordInfo.WrappedRecordInfo.FirstMetric =
+			//    _frametimeStatisticProvider.GetPhysicalMetricValue(frametimeTimeWindow, EMetric.GpuFpsPerWatt,
+			//         SensorReport.GetAverageGpuPower(wrappedComparisonRecordInfo.WrappedRecordInfo.Session.Runs.Select(run => run.SensorData),
+			//         startTime, endTime));
+			//}
+			else
+			{ 
+				wrappedComparisonRecordInfo.WrappedRecordInfo.FirstMetric
+				= GeMetricValue(frametimeTimeWindow, SelectedFirstMetric);
+			}
 
 			if (SelectedSecondMetric == EMetric.CpuFpsPerWatt)
 			{
@@ -118,15 +135,23 @@ namespace CapFrameX.ViewModel
 
 			List<ComparisonRecordInfoWrapper> orderedList = null;
 
+			var sortMetric = wrappedComparisonRecordInfo.WrappedRecordInfo.FirstMetric;
+			if (SelectedSortMetric == "Second")
+				sortMetric = wrappedComparisonRecordInfo.WrappedRecordInfo.SecondMetric;
+			if (SelectedSortMetric == "Third")
+				sortMetric = wrappedComparisonRecordInfo.WrappedRecordInfo.ThirdMetric;
+
+
+
 			if (UseComparisonGrouping)
 			{
-				orderedList = IsSortModeAscending ? list.OrderBy(x => x.WrappedRecordInfo.Game).ThenBy(x => x.WrappedRecordInfo.FirstMetric).ToList() :
-					list.OrderBy(x => x.WrappedRecordInfo.Game).ThenByDescending(x => x.WrappedRecordInfo.FirstMetric).ToList();
+				orderedList = IsSortModeAscending ? list.OrderBy(x => x.WrappedRecordInfo.Game).ThenBy(x => sortMetric).ToList() :
+					list.OrderBy(x => x.WrappedRecordInfo.Game).ThenByDescending(x => sortMetric).ToList();
 			}
 			else
 			{
-				orderedList = IsSortModeAscending ? list.OrderBy(x => x.WrappedRecordInfo.FirstMetric).ToList() :
-					list.OrderByDescending(x => x.WrappedRecordInfo.FirstMetric).ToList();
+				orderedList = IsSortModeAscending ? list.OrderBy(x => sortMetric).ToList() :
+					list.OrderByDescending(x => sortMetric).ToList();
 			}
 
 			if (orderedList != null)
@@ -201,14 +226,32 @@ namespace CapFrameX.ViewModel
 			if (UseComparisonGrouping)
 			{
 				comparisonRecordList = IsSortModeAscending ? ComparisonRecords.ToList()
-					.Select(info => info.Clone()).OrderBy(x => x.WrappedRecordInfo.Game).ThenBy(x => x.WrappedRecordInfo.FirstMetric) :
-					ComparisonRecords.ToList().Select(info => info.Clone()).OrderBy(x => x.WrappedRecordInfo.Game).ThenByDescending(x => x.WrappedRecordInfo.FirstMetric);
+					.Select(info => info.Clone()).OrderBy(x => x.WrappedRecordInfo.Game).ThenBy(x =>
+					SelectedSortMetric == "First" ? x.WrappedRecordInfo.FirstMetric :
+					SelectedSortMetric == "Second" ? x.WrappedRecordInfo.SecondMetric :
+					x.WrappedRecordInfo.ThirdMetric)
+
+					:
+
+					ComparisonRecords.ToList().Select(info => info.Clone()).OrderBy(x => x.WrappedRecordInfo.Game).ThenByDescending(x =>
+					SelectedSortMetric == "First" ? x.WrappedRecordInfo.FirstMetric :
+					SelectedSortMetric == "Second" ? x.WrappedRecordInfo.SecondMetric :
+					x.WrappedRecordInfo.ThirdMetric);
 			}
 			else
 			{
 				comparisonRecordList = IsSortModeAscending ? ComparisonRecords.ToList()
-					.Select(info => info.Clone()).OrderBy(x => x.WrappedRecordInfo.FirstMetric) :
-					ComparisonRecords.ToList().Select(info => info.Clone()).OrderByDescending(x => x.WrappedRecordInfo.FirstMetric);
+					.Select(info => info.Clone()).OrderBy(x =>
+					SelectedSortMetric == "First" ? x.WrappedRecordInfo.FirstMetric :
+					SelectedSortMetric == "Second" ? x.WrappedRecordInfo.SecondMetric :
+					x.WrappedRecordInfo.ThirdMetric) 
+
+					:
+
+					ComparisonRecords.ToList().Select(info => info.Clone()).OrderByDescending(x =>
+					SelectedSortMetric == "First" ? x.WrappedRecordInfo.FirstMetric :
+					SelectedSortMetric == "Second" ? x.WrappedRecordInfo.SecondMetric :
+					x.WrappedRecordInfo.ThirdMetric);
 			}
 
 			if (comparisonRecordList != null)

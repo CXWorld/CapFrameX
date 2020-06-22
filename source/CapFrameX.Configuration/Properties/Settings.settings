@@ -215,5 +215,8 @@
     <Setting Name="Autostart" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
+    <Setting Name="FirstMetric" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Average</Value>
+    </Setting>
   </Settings>
 </SettingsFile>
