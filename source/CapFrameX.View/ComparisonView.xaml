@@ -284,7 +284,7 @@
                                         </DataTemplate>
                                     </ComboBox.ItemTemplate>
                                 </ComboBox>
-                                <ComboBox Grid.Column="1" Width="125" VerticalAlignment="Center" Margin="5 5 5 5" materialDesign:HintAssist.Hint="Second metric"
+                                <ComboBox Grid.Column="1" Width="125" VerticalAlignment="Center" Margin="15 5 5 5" materialDesign:HintAssist.Hint="Second metric"
 					                Visibility="{Binding IsBarChartTabActive, Converter={StaticResource TrueToVisibleConverter}}"
 					                materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="330" materialDesign:ComboBoxAssist.ClassicMode="True"
 					                ItemsSource="{Binding SecondMetricItems}" SelectedItem="{Binding SelectedSecondMetric}">
