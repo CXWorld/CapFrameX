@@ -100,8 +100,7 @@
                             <Grid>
                                 <Grid Margin="0 0 50 0" Panel.ZIndex="1" HorizontalAlignment="Left" VerticalAlignment="Bottom">
                                     <ComboBox Grid.Column="5" Margin="45 0 0 15" HorizontalAlignment="Left" VerticalAlignment="Bottom" materialDesign:HintAssist.Hint="Values"
-					                    materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Width="80"  materialDesign:ComboBoxAssist.ClassicMode="True"
-					                    ItemsSource="{Binding Path=DataContext.WindowSizes, ElementName=ColorbarViewName}">
+					                    materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Width="80"  materialDesign:ComboBoxAssist.ClassicMode="True">
                                         <ComboBoxItem IsSelected="True">Frametimes</ComboBoxItem>
                                         <ComboBoxItem>FPS</ComboBoxItem>
                                         <ComboBox.Text>

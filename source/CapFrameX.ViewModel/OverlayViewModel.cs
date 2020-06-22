@@ -358,28 +358,24 @@ namespace CapFrameX.ViewModel
             var configSubject = new Subject<object>();
             ConfigSwitchCommand = new DelegateCommand<object>(configSubject.OnNext);
             configSubject
-                .Select(obj => Convert.ToInt32(obj)).DistinctUntilChanged()
+                .Select(obj => Convert.ToInt32(obj))
+                .DistinctUntilChanged()
                 .SelectMany(index =>
                 {
                     return Observable.FromAsync(() => _overlayEntryProvider.SwitchConfigurationTo(index))
                         .SelectMany(_ => _sensorService.OnDictionaryUpdated.Take(1));
                 })
                 .StartWith(Enumerable.Empty<IOverlayEntry>())
-                .SelectMany(_ =>
-                {
-                    var overlayEntries = overlayEntryProvider.GetOverlayEntries();
-                    foreach (var entry in overlayEntries.Result)
-                        entry.UpdateGroupName = 
-                        OverlaySubModelGroupSeparating.UpdateGroupName;
-
-                    return overlayEntries;
-                })
+                .SelectMany(_ => overlayEntryProvider.GetOverlayEntries())
                 .ObserveOnDispatcher()
                 .Subscribe(entries =>
                 {
+                    foreach (var entry in entries)
+                        entry.UpdateGroupName = OverlaySubModelGroupSeparating.UpdateGroupName;
+
+                    OverlaySubModelGroupSeparating.SetOverlayEntries(entries);
                     OverlayEntries.Clear();
                     OverlayEntries.AddRange(entries);
-                    OverlaySubModelGroupSeparating.SetOverlayEntries(entries);
                     OnUseRunHistoryChanged();
                 });
 
@@ -390,7 +386,7 @@ namespace CapFrameX.ViewModel
                 async () => await OnResetDefaults());
 
             UpdateHpyerlinkText = "To use the overlay, install the latest" + Environment.NewLine +
-                "RivaTuner Statistics Server (RTSS)";            
+                "RivaTuner Statistics Server (RTSS)";
 
             SetGlobalHookEventOverlayHotkey();
             SetGlobalHookEventResetHistoryHotkey();
@@ -399,6 +395,7 @@ namespace CapFrameX.ViewModel
         private async Task OnResetDefaults()
         {
             var overlayEntries = await _overlayEntryProvider.GetDefaultOverlayEntries();
+            OverlaySubModelGroupSeparating.SetOverlayEntries(overlayEntries);
             OverlayEntries.Clear();
             OverlayEntries.AddRange(overlayEntries);
             await _overlayEntryProvider.SaveOverlayEntriesToJson();

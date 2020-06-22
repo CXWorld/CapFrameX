@@ -11,7 +11,6 @@ using Prism.Events;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
@@ -65,6 +64,7 @@ namespace CapFrameX.Overlay
             await _taskCompletionSource.Task;
             UpdateSensorData();
             UpdateOnlineMetrics();
+            UpdateAdvancedFormatting();
             return _overlayEntries.ToArray();
         }
 
@@ -113,7 +113,6 @@ namespace CapFrameX.Overlay
             _identifierOverlayEntryDict.Clear();
             foreach (var entry in _overlayEntries)
             {
-                entry.OverlayEntryProvider = this;
                 _identifierOverlayEntryDict.TryAdd(entry.Identifier, entry);
             }
 
@@ -133,7 +132,6 @@ namespace CapFrameX.Overlay
             _identifierOverlayEntryDict.Clear();
             foreach (var entry in _overlayEntries)
             {
-                entry.OverlayEntryProvider = this;
                 _identifierOverlayEntryDict.TryAdd(entry.Identifier, entry);
             }
             CheckCustomSystemInfo();
@@ -292,6 +290,17 @@ namespace CapFrameX.Overlay
             {
                 p1dot2Entry.Value = Math.Round(_onlineMetricService.GetOnlineFpsMetricValue(EMetric.P0dot2));
                 p1dot2Entry.ValueFormat = "{0,4:F0}<S=50>FPS<S>";
+            }
+        }
+
+        private void UpdateAdvancedFormatting()
+        {
+            foreach (var entry in _overlayEntries.Where(x => x.FormatChanged))
+            {
+                entry.GroupNameFormat 
+                    = entry.GroupSeparators == 0 ? "{0}" 
+                    : Enumerable.Repeat("\n", entry.GroupSeparators).Aggregate((i, j) => i + j) + "{0}";
+                entry.FormatChanged = false;
             }
         }
 

@@ -2,6 +2,7 @@
 using CapFrameX.Extensions;
 using Prism.Mvvm;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 
@@ -56,7 +57,7 @@ namespace CapFrameX.ViewModel.SubModels
 
         public int SelectedOverlayGroupIndex
         {
-            get { return _selectedOverlayGroupIndex; }
+            get => _selectedOverlayGroupIndex;
             set
             {
                 _selectedOverlayGroupIndex = value;
@@ -69,7 +70,20 @@ namespace CapFrameX.ViewModel.SubModels
             _overlayViewModel = overlayViewModel;
         }
 
-        public void SetOverlayEntries(IOverlayEntry[] overlayEntries)
+        public void SetOverlayEntries(IEnumerable<IOverlayEntry> overlayEntries)
+        {
+            AddGroupNameSeparatorEntries(overlayEntries);
+        }
+
+        public void UpdateGroupName()
+        {
+            if (_overlayViewModel.OverlayEntries == null || !_overlayViewModel.OverlayEntries.Any())
+                return;
+
+            AddGroupNameSeparatorEntries(_overlayViewModel.OverlayEntries);
+        }
+
+        private void AddGroupNameSeparatorEntries(IEnumerable<IOverlayEntry> overlayEntries)
         {
             OverlayGroupNameSeparatorEntries.Clear();
             OverlayGroupNameSeparatorEntries.AddRange
@@ -78,7 +92,8 @@ namespace CapFrameX.ViewModel.SubModels
                 {
                     var grpSepEntry = new GroupNameSeparatorEntry()
                     {
-                        GroupName = entry.GroupName
+                        GroupName = entry.GroupName,
+                        UpdateGroupSeparator = UpdateGroupSeparator
                     };
                     grpSepEntry.SetGroupSeparators(entry.GroupSeparators);
 
@@ -86,22 +101,19 @@ namespace CapFrameX.ViewModel.SubModels
                 }).DistinctBy(entry => entry.GroupName));
         }
 
-        public void UpdateGroupName(string oldName, string newName)
-        {
-            var targetEntry = OverlayGroupNameSeparatorEntries
-                .FirstOrDefault(entry => entry.GroupName == oldName);
+        private void UpdateGroupSeparator(string groupName, int separators)
+        {                        
+            if (_overlayViewModel.OverlayEntries == null || !_overlayViewModel.OverlayEntries.Any())
+                return;
 
-            if (targetEntry != null)
+            var targetEntries = _overlayViewModel.OverlayEntries.Where(entry => entry.GroupName == groupName);
+
+            if (targetEntries != null && targetEntries.Any())
             {
-                targetEntry.GroupName = newName;
-
-                var dublicatedEntries = OverlayGroupNameSeparatorEntries.Where(entry => entry.GroupName == newName);
-                if (dublicatedEntries.Count() > 1)
+                foreach (var targetEntry in targetEntries)
                 {
-                    foreach (var item in dublicatedEntries.Skip(1))
-                    {
-                        OverlayGroupNameSeparatorEntries.Remove(item);
-                    }
+                    targetEntry.GroupSeparators = separators;
+                    targetEntry.FormatChanged = true;
                 }
             }
         }

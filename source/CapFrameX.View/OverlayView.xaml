@@ -141,7 +141,7 @@
                         <DataGridTextColumn Binding="{Binding Description, Mode=TwoWay}"
                                             Header="Description"
                                             IsReadOnly="True"/>
-                        <DataGridTextColumn Binding="{Binding GroupName, Mode=TwoWay}"
+                        <DataGridTextColumn Binding="{Binding GroupName, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
                                             Header="Group name"
                                             IsReadOnly="False"/>
                         <DataGridCheckBoxColumn Binding="{Binding ShowGraph, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
@@ -656,10 +656,10 @@
                                 </Style>
                             </DataGrid.Resources>
                             <DataGrid.Columns>
-                                <DataGridTextColumn Binding="{Binding GroupName}"
+                                <DataGridTextColumn Binding="{Binding GroupName, Mode=OneWay}"
                                             Header="Group name"
                                             IsReadOnly="True"/>
-                                <DataGridTextColumn Binding="{Binding GroupSeparators, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                <DataGridTextColumn Binding="{Binding GroupSeparators, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
                                             Header="Separators"
                                             IsReadOnly="False"/>
                             </DataGrid.Columns>

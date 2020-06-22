@@ -1,11 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace CapFrameX.Contracts.Overlay
 {
     public interface IOverlayEntry
     {
-        IOverlayEntryProvider OverlayEntryProvider { get; set; }
-
         string Identifier { get; }
 
         EOverlayEntryType OverlayEntryType { get; }
@@ -53,6 +52,8 @@ namespace CapFrameX.Contracts.Overlay
 
         string LowerLimitColor { get; set; }
 
-        Action<string, string> UpdateGroupName { get; set; }
+        bool FormatChanged { get; set; }
+
+        Action UpdateGroupName { get; set; }
     }
 }

@@ -184,7 +184,7 @@ public:
 					entry.Identifier = managedEntry->Identifier;
 					entry.Description = managedEntry->Description;
 					entry.ShowOnOverlay = managedEntry->ShowOnOverlay;
-					entry.GroupName = managedEntry->GroupName;
+					entry.GroupName = managedEntry->FormattedGroupName;
 					entry.Value = managedEntry->FormattedValue;
 					entry.ShowGraph = managedEntry->ShowGraph;
 					entry.Color = managedEntry->Color;
@@ -215,7 +215,7 @@ public:
 						// mapping member
 						_coreControl->OverlayEntries[i].Description = managedEntry->Description;
 						_coreControl->OverlayEntries[i].ShowOnOverlay = managedEntry->ShowOnOverlay;
-						_coreControl->OverlayEntries[i].GroupName = managedEntry->GroupName;
+						_coreControl->OverlayEntries[i].GroupName = managedEntry->FormattedGroupName;
 						_coreControl->OverlayEntries[i].Value = managedEntry->FormattedValue;
 						_coreControl->OverlayEntries[i].ShowGraph = managedEntry->ShowGraph;
 						_coreControl->OverlayEntries[i].Color = managedEntry->Color;
