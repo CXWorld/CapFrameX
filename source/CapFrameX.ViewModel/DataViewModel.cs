@@ -349,6 +349,8 @@ namespace CapFrameX.ViewModel
 
         public ICommand AcceptParameterSettingsCommand { get; }
 
+        public ICommand CutRecordCommand { get; }
+
         public bool GpuLoad
         {
             get => _gpuLoad;
@@ -421,6 +423,7 @@ namespace CapFrameX.ViewModel
             CopyLShapeQuantilesCommand = new DelegateCommand(OnCopyQuantiles);
             CopySystemInfoCommand = new DelegateCommand(OnCopySystemInfoCommand);
             AcceptParameterSettingsCommand = new DelegateCommand(OnAcceptParameterSettings);
+            CutRecordCommand = new DelegateCommand(OnCutRecord);
             CopyFPSThresholdDataCommand = new DelegateCommand(OnCopyFPSThresholdData);
             ThresholdCountsCommand = new DelegateCommand(() => _appConfiguration.ShowThresholdTimes = false);
             ThresholdTimesCommand = new DelegateCommand(() => _appConfiguration.ShowThresholdTimes = true);
@@ -646,6 +649,11 @@ namespace CapFrameX.ViewModel
         {
             _localRecordDataServer.FilterMode = SelectedFilterMode;
             FpsGraphDataContext.BuildPlotmodel(new VisibleGraphs(GpuLoad, CpuLoad, CpuMaxThreadLoad, GpuPowerLimit));
+        }
+
+        private async void OnCutRecord()
+        {
+            await _recordManager.DuplicateSession(_localRecordDataServer.CurrentSession, FirstSeconds, LastSeconds);
         }
 
         private void UpdateRangeSliderParameter()
@@ -1047,6 +1055,13 @@ namespace CapFrameX.ViewModel
 
         public void OnRangeSliderDragCompleted()
         {
+            if (FirstSeconds > LastSeconds || FirstSeconds < 0)
+                FirstSeconds = 0;
+
+            if (LastSeconds > MaxRecordingTime || LastSeconds <= 0)
+            LastSeconds = MaxRecordingTime;
+
+
             DemandUpdateCharts();
         }
 

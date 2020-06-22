@@ -53,8 +53,8 @@
 								   IsOpen="{Binding MessageDialogContentIsOpen}"
 								   DialogContent="{Binding MessageDialogContent}"
 								   CloseOnClickAway="True">
-            <TabControl Grid.Row="0" Grid.Column="0" Background="#F5F5F5"
-					SelectedItem="{Binding SelectedChartItem}">
+            <TabControl Name="GraphTab" Grid.Row="0" Grid.Column="0" Background="#F5F5F5"
+					SelectedItem="{Binding SelectedChartItem}" FocusVisualStyle="{x:Null}">
                 <TabItem Header="Bar charts" >
                     <DockPanel>
                         <TextBlock DockPanel.Dock="Top" Grid.Row="0" Margin="0 10 0 10" FontWeight="Bold" FontSize="16" Text="{Binding CurrentGameName}" HorizontalAlignment="Center"
@@ -154,6 +154,30 @@
 									 TickPlacement="BottomRight" TickFrequency="2.5"      
                                      MinRange="{Binding MinRangeSliderRange}"
 									 Style="{StaticResource CustomRangeSlider}"/>
+                            <StackPanel HorizontalAlignment="Right" VerticalAlignment="Bottom" Orientation="Horizontal" Margin="0 0 10 -5" Height="25">
+                                <TextBlock Text="Start and end points:" Margin="0 5 5 0"/>
+                                <TextBox x:Name="FirsSecondsTextbox" Grid.Row="1" materialDesign:HintAssist.Hint="Start (s)" HorizontalAlignment="Center" Width="45"
+                                         ToolTip="Range Slider start point" PreviewKeyDown="FirstSecondsTextBox_PreviewKeyDown" PreviewTextInput="NumberValidationTextBox" TextAlignment="Center">
+                                    <TextBox.Text>
+                                        <Binding Path="FirstSeconds"
+                                                 StringFormat="F2"
+								                 Mode="TwoWay"
+								                 UpdateSourceTrigger="LostFocus">
+                                        </Binding>
+                                    </TextBox.Text>
+                                </TextBox>
+                                <TextBlock Text="-" Margin="3 3 3 0"/>
+                                <TextBox x:Name="LastSecondsTextbox" Grid.Row="1" materialDesign:HintAssist.Hint="End (s)" HorizontalAlignment="Center" Width="45"
+                                        ToolTip="Range Slider end point" PreviewKeyDown="LastSecondsTextBox_PreviewKeyDown" PreviewTextInput="NumberValidationTextBox" TextAlignment="Center">
+                                    <TextBox.Text>
+                                        <Binding Path="LastSeconds"
+                                                 StringFormat="F2"
+								                 Mode="TwoWay"
+								                 UpdateSourceTrigger="LostFocus">
+                                        </Binding>
+                                    </TextBox.Text>
+                                </TextBox>
+                            </StackPanel>
                             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Bottom" Orientation="Horizontal" Margin="45 0 0 0" Height="15">
                                 <TextBlock Text="Time window:"/>
                                 <TextBlock Text="{Binding RemainingRecordingTime}" Margin="5 0 0 0"/>

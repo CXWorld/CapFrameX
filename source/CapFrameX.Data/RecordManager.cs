@@ -19,6 +19,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -354,7 +355,7 @@ namespace CapFrameX.Data
                 {
                     var json = JsonConvert.SerializeObject(runs);
                     runs = JsonConvert.DeserializeObject<SessionRun[]>(json);
-                    NormalizeStartTimesOfAggragationRuns(runs);
+                    NormalizeStartTimesOfSessionRuns(runs);
                 }
                 var csv = new StringBuilder();
                 var datetime = DateTime.Now;
@@ -417,6 +418,64 @@ namespace CapFrameX.Data
                 _logger.LogError(ex, "Error while creating {filePath}", filePath);
                 return false;
             }
+        }
+
+        public async Task DuplicateSession(ISession session, double startTime = 0, double endTime = double.PositiveInfinity)
+        {
+            var json = JsonConvert.SerializeObject(session);
+            var clone = JsonConvert.DeserializeObject<Session.Classes.Session>(json);
+
+            var dataPropertyInfos = typeof(SessionCaptureData).GetProperties().Where(pi => pi.PropertyType.IsArray);
+            var sensorPropertyInfos = typeof(SessionSensorData).GetProperties().Where(pi => pi.PropertyType.IsArray);
+
+            void SetArray(IEnumerable<PropertyInfo> propertyInfos, object sourceObject, object targetObject, IEnumerable<int> indicesToKeep)
+            {
+                foreach (var dataPi in propertyInfos)
+                {
+                    var type = dataPi.PropertyType.GetElementType();
+                    var array = Array.CreateInstance(type, 0);
+                    if (dataPi.GetValue(sourceObject) is Array source && source.Length > 0)
+                    {
+                        array = Array.CreateInstance(type, indicesToKeep.Count());
+                        int targetIndex = 0;
+                        foreach (var indexToKeep in indicesToKeep)
+                        {
+                            array.SetValue(source.GetValue(indexToKeep), targetIndex++);
+                        }
+                    }
+                    dataPi.SetValue(targetObject, array);
+                }
+            }
+
+            int[] DetermineIndicesToKeep(double[] reference)
+            {
+                var indicesToKeep = new List<int>();
+                for (int index = 0; index < reference.Count(); index++)
+                {
+                    if (reference[index] >= startTime && reference[index] <= endTime)
+                    {
+                        indicesToKeep.Add(index);
+                    }
+                }
+                return indicesToKeep.ToArray();
+            }
+
+            for (int sessionRunIndex = 0; sessionRunIndex < clone.Runs.Count(); sessionRunIndex++)
+            {
+                var sourceSessionRun = session.Runs[sessionRunIndex];
+                var targetSessionRun = clone.Runs[sessionRunIndex];
+                var dataIndicesToKeep = DetermineIndicesToKeep(sourceSessionRun.CaptureData.TimeInSeconds);
+                var sensorIndicesToKeep = DetermineIndicesToKeep(sourceSessionRun.SensorData.MeasureTime);
+                SetArray(dataPropertyInfos, sourceSessionRun.CaptureData, clone.Runs[sessionRunIndex].CaptureData, dataIndicesToKeep);
+                SetArray(sensorPropertyInfos, sourceSessionRun.SensorData, clone.Runs[sessionRunIndex].SensorData, sensorIndicesToKeep);
+                targetSessionRun.Hash = Convert.ToString(targetSessionRun.GetHashCode()); // Dirty Hack weil Rohdaten nicht mehr vorhanden. Hash ist nicht vergleichbar mit dem Hash, welcher aus den PresentMonLines erstellt wird
+            }
+
+            clone.Hash = string.Join(",", clone.Runs.Select(r => r.Hash).OrderBy(h => h)).GetSha1();
+            clone.Info.Id = Guid.NewGuid();
+            NormalizeStartTimesOfSessionRuns(clone.Runs);
+            var filePath = await GetOutputFilename(clone.Info.ProcessName);
+            SaveSessionToFile(filePath, clone);
         }
 
         private void SaveSessionToFile(string filePath, ISession session)
@@ -663,7 +722,7 @@ namespace CapFrameX.Data
             }
         }
 
-        private void NormalizeStartTimesOfAggragationRuns(IEnumerable<ISessionRun> sessionRuns)
+        private void NormalizeStartTimesOfSessionRuns(IEnumerable<ISessionRun> sessionRuns)
         {
             double startTimePresents = 0;
             double lastSensorMeasureTime = 0;
