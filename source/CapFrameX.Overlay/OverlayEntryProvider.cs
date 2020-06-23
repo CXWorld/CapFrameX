@@ -48,11 +48,11 @@ namespace CapFrameX.Overlay
             _eventAggregator = eventAggregator;
             _onlineMetricService = onlineMetricService;
             _systemInfo = systemInfo;
-            _onDictionaryUpdatedBuffered = _sensorService.OnDictionaryUpdated
+            _onDictionaryUpdatedBuffered = _sensorService
+                .OnDictionaryUpdated
                 .Replay(1)
                 .AutoConnect(0);
-             
-
+            
             _ = Task.Run(async () => await LoadOrSetDefault())
                 .ContinueWith(task => _taskCompletionSource.SetResult(true));
 
@@ -137,6 +137,9 @@ namespace CapFrameX.Overlay
             CheckCustomSystemInfo();
             CheckOSVersion();
             CheckGpuDriver();
+
+            SetOnlineMetricsIsNumericState();
+            SetHardwareIsNumericState();
         }
 
         private IObservable<BlockingCollection<IOverlayEntry>> InitializeOverlayEntryDictionary()
@@ -290,6 +293,44 @@ namespace CapFrameX.Overlay
             {
                 p1dot2Entry.Value = Math.Round(_onlineMetricService.GetOnlineFpsMetricValue(EMetric.P0dot2));
                 p1dot2Entry.ValueFormat = "{0,4:F0}<S=50>FPS<S>";
+            }
+        }
+
+        private void SetOnlineMetricsIsNumericState()
+        {
+            // average
+            _identifierOverlayEntryDict.TryGetValue("OnlineAverage", out IOverlayEntry averageEntry);
+
+            if (averageEntry != null)
+            {
+                averageEntry.IsNumeric = true;
+            }
+
+            // P1
+            _identifierOverlayEntryDict.TryGetValue("OnlineP1", out IOverlayEntry p1Entry);
+
+            if (p1Entry != null)
+            {
+                p1Entry.IsNumeric = true;
+            }
+
+            // P0.2
+            _identifierOverlayEntryDict.TryGetValue("OnlineP0dot2", out IOverlayEntry p1dot2Entry);
+
+            if (p1dot2Entry != null)
+            {
+                p1dot2Entry.IsNumeric = true;
+            }
+        }
+
+        private void SetHardwareIsNumericState()
+        {
+            foreach (var entry in _overlayEntries.Where(x =>
+               (x.OverlayEntryType == EOverlayEntryType.GPU
+                || x.OverlayEntryType == EOverlayEntryType.CPU
+                || x.OverlayEntryType == EOverlayEntryType.RAM)))
+            {
+                entry.IsNumeric = true;
             }
         }
 

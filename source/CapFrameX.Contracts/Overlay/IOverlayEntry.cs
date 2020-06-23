@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace CapFrameX.Contracts.Overlay
 {
@@ -53,6 +52,8 @@ namespace CapFrameX.Contracts.Overlay
         string LowerLimitColor { get; set; }
 
         bool FormatChanged { get; set; }
+
+        bool IsNumeric { get; set; }
 
         Action UpdateGroupName { get; set; }
     }

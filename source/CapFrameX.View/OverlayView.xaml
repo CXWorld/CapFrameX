@@ -548,10 +548,11 @@
                                 </xctk:ColorPicker>
                                 <TextBlock Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" Text="Upper limit + color:"></TextBlock>
                                 <TextBox Grid.Row="3" Grid.Column="1" Width="40" VerticalAlignment="Center" PreviewKeyDown="LostFocus_PreviewKeyDown"
-                                     Text="{Binding SelectedOverlayEntry.UpperLimitValue, UpdateSourceTrigger=LostFocus}">
+                                         Text="{Binding SelectedOverlayEntry.UpperLimitValue, UpdateSourceTrigger=LostFocus}" IsEnabled="{Binding SelectedOverlayEntry.IsNumeric}">
                                 </TextBox>
                                 <xctk:ColorPicker Grid.Row="3" Grid.Column="2" Width="25" Height="25" Margin="0 0 0 0" Background="#e6e6e6" SelectedColor="{Binding OverlayItemUpperThresholdColor}" 
-										SelectedColorChanged="SelectedColorChanged" DisplayColorAndName="False" AvailableColorsSortingMode="HueSaturationBrightness">
+										          SelectedColorChanged="SelectedColorChanged" DisplayColorAndName="False" AvailableColorsSortingMode="HueSaturationBrightness"
+                                                  IsEnabled="{Binding SelectedOverlayEntry.IsNumeric}">
                                     <xctk:ColorPicker.ButtonStyle>
                                         <Style TargetType="ToggleButton">
                                             <Setter Property="Template">
@@ -579,10 +580,12 @@
                                 </xctk:ColorPicker>
                                 <TextBlock Grid.Row="4" Grid.Column="0"  VerticalAlignment="Center" Text="Lower limit + color:"></TextBlock>
                                 <TextBox Grid.Row="4" Grid.Column="1" Width="40" VerticalAlignment="Center" PreviewKeyDown="LostFocus_PreviewKeyDown"
-                                     Text="{Binding SelectedOverlayEntry.LowerLimitValue, UpdateSourceTrigger=LostFocus}">
+                                         Text="{Binding SelectedOverlayEntry.LowerLimitValue, UpdateSourceTrigger=LostFocus}"
+                                         IsEnabled="{Binding SelectedOverlayEntry.IsNumeric}">
                                 </TextBox>
                                 <xctk:ColorPicker Grid.Row="4" Grid.Column="2" Width="25" Height="25" Margin="0 0 0 0" Background="#e6e6e6" SelectedColor="{Binding OverlayItemLowerThresholdColor}" 
-										SelectedColorChanged="SelectedColorChanged" DisplayColorAndName="False" AvailableColorsSortingMode="HueSaturationBrightness">
+										          SelectedColorChanged="SelectedColorChanged" DisplayColorAndName="False" AvailableColorsSortingMode="HueSaturationBrightness"
+                                                  IsEnabled="{Binding SelectedOverlayEntry.IsNumeric}">
                                     <xctk:ColorPicker.ButtonStyle>
                                         <Style TargetType="ToggleButton">
                                             <Setter Property="Template">

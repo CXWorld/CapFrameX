@@ -35,6 +35,9 @@ namespace CapFrameX.Overlay
         public bool FormatChanged { get; set; }
 
         [JsonIgnore]
+        public bool IsNumeric { get; set; }
+
+        [JsonIgnore]
         public Action UpdateGroupName { get; set; }
 
         [JsonIgnore]

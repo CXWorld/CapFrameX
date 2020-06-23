@@ -153,7 +153,7 @@ namespace CapFrameX.Sensor
                 ShowOnOverlayIsEnabled = true,
                 ShowOnOverlay = GetOverlayToggle(sensor),
                 Value = 0,
-                ValueFormat = GetFormatString(sensor.SensorType),
+                ValueFormat = GetFormatString(sensor.SensorType)
             };
         }
 
