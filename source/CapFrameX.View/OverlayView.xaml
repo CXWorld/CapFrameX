@@ -672,19 +672,21 @@
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="1*"></RowDefinition>
                                 <RowDefinition Height="1*"></RowDefinition>
+                                <RowDefinition Height="1*"></RowDefinition>
                             </Grid.RowDefinitions>
-                            <StackPanel Grid.Row="0" Margin="10 0 0 0" Orientation="Horizontal" VerticalAlignment="Center">
-                                <TextBlock Text="Set colors and formats for all group members" Width="140" TextAlignment="Center" TextWrapping="Wrap"/>
+                            <TextBlock Grid.Row="0" Margin="10" HorizontalAlignment="Center" Text="Set colors and formats for multiple entries" Width="180" 
+                                       TextWrapping="Wrap" TextAlignment="Center" FontSize="16">
+                            </TextBlock>
+                            <StackPanel Grid.Row="1" Margin="10 0 0 0" Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock Margin="0 7 0 0" Text="{Binding SelectedOverlayItemGroupName}" Width="140" TextAlignment="Right" TextWrapping="Wrap"/>
                                 <Button Width="28" Height="28" Margin="20 0 0 0" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
                                         Command="{Binding SetFormatForGroupName}"
                                         materialDesign:RippleAssist.Feedback="#DD000000">
-                                    <!--BallotRecountOutline-->
-                                    <!--FormatListBulletedSquare-->
                                     <materialDesign:PackIcon Kind="BallotRecountOutline" Height="22" Width="22" />
                                 </Button>
                             </StackPanel>
-                            <StackPanel Grid.Row="1" Margin="10 0 0 0" Orientation="Horizontal" VerticalAlignment="Center">
-                                <TextBlock Text="Set colors and formats for all sensor type members" Width="140" TextAlignment="Center" TextWrapping="Wrap"/>
+                            <StackPanel Grid.Row="2" Margin="10 0 0 0" Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock Margin="0 7 0 0" Text="{Binding SelectedOverlayItemSensorType}" Width="140" TextAlignment="Right" TextWrapping="Wrap"/>
                                 <Button Width="28" Height="28" Margin="20 0 0 0" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
                                         Command="{Binding SetFormatForSensorType}"
                                         materialDesign:RippleAssist.Feedback="#DD000000">

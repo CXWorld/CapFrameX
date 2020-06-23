@@ -235,6 +235,8 @@ namespace CapFrameX.ViewModel
                 _selectedOverlayEntryIndex = value;
                 RaisePropertyChanged();
                 RaisePropertyChanged(nameof(SelectedOverlayItemName));
+                RaisePropertyChanged(nameof(SelectedOverlayItemGroupName));
+                RaisePropertyChanged(nameof(SelectedOverlayItemSensorType));
             }
         }
 
@@ -317,6 +319,13 @@ namespace CapFrameX.ViewModel
         public string SelectedOverlayItemName 
             => SelectedOverlayEntryIndex > -1 ? 
             OverlayEntries[SelectedOverlayEntryIndex].Description : null;
+
+         public string SelectedOverlayItemGroupName
+            => SelectedOverlayEntryIndex > -1 ?
+            OverlayEntries[SelectedOverlayEntryIndex].GroupName : null;
+          public string SelectedOverlayItemSensorType
+            => SelectedOverlayEntryIndex > -1 ?
+            OverlayEntries[SelectedOverlayEntryIndex].Identifier : null;
 
         public ICommand ConfigSwitchCommand { get; }
 
