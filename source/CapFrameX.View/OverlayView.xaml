@@ -33,6 +33,7 @@
             <mvvm:BoolToVisibilityConverter x:Key="TrueToVisibleConverter" FalseValue="Collapsed" TrueValue="Visible"/>
             <mvvm:InvertBoolConverter x:Key="InvertBoolConverter"/>
             <mvvm:EnumDescriptionConverter x:Key="EnumDescriptionConverter"/>
+            <mvvm:StringColorConverter x:Key="StringColorConverter"/>
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid HorizontalAlignment="Center">
@@ -97,8 +98,7 @@
             </Grid>
             <StackPanel DockPanel.Dock="Top" Orientation="Vertical" HorizontalAlignment="Center">
                 <DataGrid x:Name="OverlayItemDataGrid" Height="350" Width="400" Background="#F5F5F5" FontSize="11"
-						  MouseLeave="OverlayItemDataGrid_MouseLeave"
-					      SelectedIndex="{Binding SelectedOverlayEntryIndex}" ItemsSource="{Binding OverlayEntries}"
+					      SelectedIndex="{Binding SelectedOverlayEntryIndex}" SelectedItem="{Binding SelectedOverlayEntry}" ItemsSource="{Binding OverlayEntries}"
 					      CanUserSortColumns="False" CanUserAddRows="False" AutoGenerateColumns="False"
 					      materialDesign:DataGridAssist.CellPadding="13 3 0 0" materialDesign:DataGridAssist.ColumnHeaderPadding="8" IsSynchronizedWithCurrentItem="False"
 					      ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.CanContentScroll="True"
@@ -263,8 +263,8 @@
 					  ItemsSource="{Binding Path=RefreshPeriodItemsSource}">
                     <ComboBox.Text>
                         <Binding Path="OSDRefreshPeriod"
-							 Mode="TwoWay"
-							 UpdateSourceTrigger="PropertyChanged">
+							     Mode="TwoWay"
+							     UpdateSourceTrigger="PropertyChanged">
                         </Binding>
                     </ComboBox.Text>
                 </ComboBox>
@@ -472,8 +472,7 @@
                         <ColumnDefinition Width="220"/>
                         <ColumnDefinition Width="220"/>
                     </Grid.ColumnDefinitions>
-                    <!--<TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="16" Text="{Binding SelectedOverlayItemString}"/>-->
-                    <TextBlock Grid.Row="0" Grid.ColumnSpan="2"  VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="16" Text="Overlay item name"/>
+                    <TextBlock Grid.Row="0" Grid.ColumnSpan="2"  VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="16" Text="{Binding SelectedOverlayItemName}"/>
                     <Border Grid.Row="1" Grid.Column="0" Margin="5" Background="Transparent" BorderThickness=".2" BorderBrush="Black">
                         <StackPanel Margin="5">
                             <Grid>
@@ -492,7 +491,7 @@
                                 </Grid.ColumnDefinitions>
                                 <TextBlock Grid.Row="0" Grid.ColumnSpan="3" VerticalAlignment="Center" HorizontalAlignment="Center" Text="Colors and limits" FontSize="16"/>
                                 <TextBlock Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Text="Group color:"/>
-                                <xctk:ColorPicker Grid.Row="1" Grid.Column="2" Width="25" Height="25" Margin="0 0 0 0" Background="#e6e6e6" SelectedColor="{Binding OverlayItemGroupColor}" 
+                                <xctk:ColorPicker Grid.Row="1" Grid.Column="2" Width="25" Height="25" Margin="0 0 0 0" Background="#e6e6e6" SelectedColor="{Binding SelectedOverlayEntry.GroupColor, Converter={StaticResource StringColorConverter}}" 
 										SelectedColorChanged="SelectedColorChanged" DisplayColorAndName="False" AvailableColorsSortingMode="HueSaturationBrightness">
                                     <xctk:ColorPicker.ButtonStyle>
                                         <Style TargetType="ToggleButton">
@@ -502,14 +501,14 @@
                                                         <Grid SnapsToDevicePixels="True">
                                                             <Grid>
                                                                 <Border Background="{TemplateBinding Background}"
-																							BorderBrush="{TemplateBinding BorderBrush}"
-																							BorderThickness="1"																						
-																							SnapsToDevicePixels="True">
+																		BorderBrush="{TemplateBinding BorderBrush}"
+																		BorderThickness="1"																						
+																		SnapsToDevicePixels="True">
                                                                     <ContentPresenter Content="{TemplateBinding Content}"
-																										  ContentTemplate="{TemplateBinding ContentTemplate}"
-																										  ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
-																										  VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-																										  HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"/>
+																					  ContentTemplate="{TemplateBinding ContentTemplate}"
+																					  ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
+																					  VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+																					  HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"/>
                                                                 </Border>
                                                             </Grid>
                                                         </Grid>
@@ -520,7 +519,7 @@
                                     </xctk:ColorPicker.ButtonStyle>
                                 </xctk:ColorPicker>
                                 <TextBlock Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" Text="Standard value color:"/>
-                                <xctk:ColorPicker Grid.Row="2" Grid.Column="2" Width="25" Height="25" Margin="0 0 0 0" Background="#e6e6e6" SelectedColor="{Binding OverlayItemValueColor}" 
+                                <xctk:ColorPicker Grid.Row="2" Grid.Column="2" Width="25" Height="25" Margin="0 0 0 0" Background="#e6e6e6" SelectedColor="{Binding SelectedOverlayEntry.Color, Converter={StaticResource StringColorConverter}}" 
 										SelectedColorChanged="SelectedColorChanged" DisplayColorAndName="False" AvailableColorsSortingMode="HueSaturationBrightness">
                                     <xctk:ColorPicker.ButtonStyle>
                                         <Style TargetType="ToggleButton">
@@ -547,9 +546,9 @@
                                         </Style>
                                     </xctk:ColorPicker.ButtonStyle>
                                 </xctk:ColorPicker>
-                                <TextBlock Grid.Row="3" Grid.Column="0"  VerticalAlignment="Center" Text="Upper limit + color:"></TextBlock>
-                                <TextBox Grid.Row="3" Grid.Column="1" Width="40" VerticalAlignment="Center"
-                                     Text="{Binding OverlayItemUpperLimitString, UpdateSourceTrigger=PropertyChanged}">
+                                <TextBlock Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" Text="Upper limit + color:"></TextBlock>
+                                <TextBox Grid.Row="3" Grid.Column="1" Width="40" VerticalAlignment="Center" PreviewKeyDown="LostFocus_PreviewKeyDown"
+                                     Text="{Binding SelectedOverlayEntry.UpperLimitValue, UpdateSourceTrigger=LostFocus}">
                                 </TextBox>
                                 <xctk:ColorPicker Grid.Row="3" Grid.Column="2" Width="25" Height="25" Margin="0 0 0 0" Background="#e6e6e6" SelectedColor="{Binding OverlayItemUpperThresholdColor}" 
 										SelectedColorChanged="SelectedColorChanged" DisplayColorAndName="False" AvailableColorsSortingMode="HueSaturationBrightness">
@@ -579,8 +578,8 @@
                                     </xctk:ColorPicker.ButtonStyle>
                                 </xctk:ColorPicker>
                                 <TextBlock Grid.Row="4" Grid.Column="0"  VerticalAlignment="Center" Text="Lower limit + color:"></TextBlock>
-                                <TextBox Grid.Row="4" Grid.Column="1" Width="40" VerticalAlignment="Center"
-                                     Text="{Binding OverlayItemLowerLimitString, UpdateSourceTrigger=PropertyChanged}">
+                                <TextBox Grid.Row="4" Grid.Column="1" Width="40" VerticalAlignment="Center" PreviewKeyDown="LostFocus_PreviewKeyDown"
+                                     Text="{Binding SelectedOverlayEntry.LowerLimitValue, UpdateSourceTrigger=LostFocus}">
                                 </TextBox>
                                 <xctk:ColorPicker Grid.Row="4" Grid.Column="2" Width="25" Height="25" Margin="0 0 0 0" Background="#e6e6e6" SelectedColor="{Binding OverlayItemLowerThresholdColor}" 
 										SelectedColorChanged="SelectedColorChanged" DisplayColorAndName="False" AvailableColorsSortingMode="HueSaturationBrightness">
@@ -630,23 +629,23 @@
                                 </Grid.ColumnDefinitions>
                                 <TextBlock Grid.Row="0" Grid.ColumnSpan="3" VerticalAlignment="Center" HorizontalAlignment="Center" Text="Format options" FontSize="16"/>
                                 <TextBlock Grid.Row="1" Grid.Column="0"  VerticalAlignment="Center" Text="Group name font size"></TextBlock>
-                                <TextBox Grid.Row="1" Grid.Column="3" Width="25" VerticalAlignment="Center"
-                                     Text="{Binding OverlayItemGroupFonzSize, UpdateSourceTrigger=PropertyChanged}">
+                                <TextBox Grid.Row="1" Grid.Column="3" Width="25" VerticalAlignment="Center" PreviewKeyDown="LostFocus_PreviewKeyDown"
+                                     Text="{Binding SelectedOverlayEntry.GroupFontSize, UpdateSourceTrigger=LostFocus}">
                                 </TextBox>
                                 <TextBlock Grid.Row="2" Grid.Column="0"  VerticalAlignment="Center" Text="Value font size"></TextBlock>
-                                <TextBox Grid.Row="2" Grid.Column="3" Width="25" VerticalAlignment="Center"
-                                     Text="{Binding OverlayItemValueFonzSize, UpdateSourceTrigger=PropertyChanged}">
+                                <TextBox Grid.Row="2" Grid.Column="3" Width="25" VerticalAlignment="Center" PreviewKeyDown="LostFocus_PreviewKeyDown"
+                                     Text="{Binding SelectedOverlayEntry.ValueFontSize, UpdateSourceTrigger=LostFocus}">
                                 </TextBox>
                             </Grid>
                         </StackPanel>
                     </Border>
                     <Border Grid.Row="2" Grid.Column="0" Margin="5" Background="Transparent" BorderThickness=".2" BorderBrush="Black">
                         <DataGrid x:Name="SeparatorDataGrid" Background="#F5F5F5" FontSize="11"
-					      SelectedIndex="{Binding Path=OverlaySubModelGroupSeparating.SelectedOverlayGroupIndex}" 
-                          ItemsSource="{Binding Path=OverlaySubModelGroupSeparating.OverlayGroupNameSeparatorEntries}"
-					      CanUserSortColumns="False" CanUserAddRows="False" AutoGenerateColumns="False"
-					      materialDesign:DataGridAssist.CellPadding="13 3 0 0" materialDesign:DataGridAssist.ColumnHeaderPadding="8" IsSynchronizedWithCurrentItem="False"
-					      ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.CanContentScroll="True">
+					              SelectedIndex="{Binding Path=OverlaySubModelGroupSeparating.SelectedOverlayGroupIndex}" 
+                                  ItemsSource="{Binding Path=OverlaySubModelGroupSeparating.OverlayGroupNameSeparatorEntries}"
+					              CanUserSortColumns="False" CanUserAddRows="False" AutoGenerateColumns="False"
+					              materialDesign:DataGridAssist.CellPadding="13 3 0 0" materialDesign:DataGridAssist.ColumnHeaderPadding="8" IsSynchronizedWithCurrentItem="False"
+					              ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.CanContentScroll="True">
                             <DataGrid.Resources>
                                 <Style TargetType="DataGridRow">
                                     <Setter Property="DataGrid.Height" Value="25" />

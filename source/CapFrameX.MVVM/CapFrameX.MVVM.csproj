@@ -103,6 +103,7 @@
     <Compile Include="Converter\BoolToVisibilityConverter.cs" />
     <Compile Include="Converter\PlusHalfDifferenceConverter.cs" />
     <Compile Include="Converter\SelectedAreaWidthRatioConverter.cs" />
+    <Compile Include="Converter\StringColorConverter.cs" />
     <Compile Include="Converter\ZoomingModeConverter.cs" />
     <Compile Include="Dialogs\CreateFolderDialog.xaml.cs">
       <DependentUpon>CreateFolderDialog.xaml</DependentUpon>

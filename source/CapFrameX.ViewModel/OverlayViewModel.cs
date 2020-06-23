@@ -36,6 +36,7 @@ namespace CapFrameX.ViewModel
         private IKeyboardMouseEvents _globalOverlayHookEvent;
         private IKeyboardMouseEvents _globalResetHistoryHookEvent;
         private int _selectedOverlayEntryIndex = -1;
+        private IOverlayEntry _selectedOverlayEntry;
         private string _updateHpyerlinkText;
 
         public bool IsOverlayActive
@@ -233,6 +234,17 @@ namespace CapFrameX.ViewModel
             {
                 _selectedOverlayEntryIndex = value;
                 RaisePropertyChanged();
+                RaisePropertyChanged(nameof(SelectedOverlayItemName));
+            }
+        }
+
+        public IOverlayEntry SelectedOverlayEntry
+        {
+            get { return _selectedOverlayEntry; }
+            set
+            {
+                _selectedOverlayEntry = value;
+                RaisePropertyChanged();
             }
         }
 
@@ -301,6 +313,10 @@ namespace CapFrameX.ViewModel
                 RaisePropertyChanged();
             }
         }
+
+        public string SelectedOverlayItemName 
+            => SelectedOverlayEntryIndex > -1 ? 
+            OverlayEntries[SelectedOverlayEntryIndex].Description : null;
 
         public ICommand ConfigSwitchCommand { get; }
 

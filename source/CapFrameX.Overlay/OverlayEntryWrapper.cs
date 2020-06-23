@@ -8,8 +8,6 @@ namespace CapFrameX.Overlay
 {
     public class OverlayEntryWrapper : BindableBase, IOverlayEntry
     {
-        private object _lock = new object();
-
         private bool _showOnOverlay;
         private bool _showOnOverlayIsEnabled;
         private string _groupName;
@@ -113,7 +111,11 @@ namespace CapFrameX.Overlay
         /// </summary>
         public string Color
         {
-            get { return _color; }
+            get
+            {
+                return string.IsNullOrWhiteSpace(_color)
+                  ? GetDefaultValueColor() : _color;
+            }
             set
             {
                 _color = value;
@@ -133,19 +135,11 @@ namespace CapFrameX.Overlay
 
         public string GroupNameFormat
         {
+            get { return _groupNameFormat; }
             set
             {
-                lock (_lock)
-                {
-                    _groupNameFormat = value;
-                }
-            }
-            get
-            {
-                lock (_lock)
-                {
-                    return _groupNameFormat;
-                }
+                _groupNameFormat = value;
+                RaisePropertyChanged();
             }
         }
 
@@ -177,7 +171,8 @@ namespace CapFrameX.Overlay
 
         public string GroupColor
         {
-            get { return _groupColor; }
+            get { return string.IsNullOrWhiteSpace(_groupColor) 
+                    ? GetDefaultGroupColor() : _groupColor; }
             set
             {
                 _groupColor = value;
@@ -228,6 +223,38 @@ namespace CapFrameX.Overlay
         public OverlayEntryWrapper(string identifier)
         {
             Identifier = identifier;
+        }
+
+        private string GetDefaultValueColor()
+        {
+            //strOSD += "<C1=AEEA00>"; //CX Green
+            //strOSD += "<C2=FFFFFF>"; // White
+            //strOSD += "<C3=2297F3>"; //CX Blue
+            //strOSD += "<C4=F17D20>"; //CX Orange
+
+            return Identifier == "RunHistory" ? "#2297F3"
+                : Identifier == "CaptureServiceStatus" ? "#2297F3"
+                : Identifier == "CaptureTimer" ? "#F17D20"
+                : Identifier == "Framerate" ? "#AEEA00"
+                : Identifier == "Frametime" ? "#AEEA00"
+                // all other items
+                : "#F17D20";
+        }
+
+        private string GetDefaultGroupColor()
+        {
+            //strOSD += "<C1=AEEA00>"; //CX Green
+            //strOSD += "<C2=FFFFFF>"; // White
+            //strOSD += "<C3=2297F3>"; //CX Blue
+            //strOSD += "<C4=F17D20>"; //CX Orange
+
+            return Identifier == "RunHistory" ? "#FFFFFF"
+                : Identifier == "CaptureServiceStatus" ? "#FFFFFF"
+                : Identifier == "CaptureTimer" ? "#FFFFFF"
+                : Identifier == "Framerate" ? "#AEEA00"
+                : Identifier == "Frametime" ? "#AEEA00"
+                // all other items
+                : "#FFFFFF";
         }
     }
 }
