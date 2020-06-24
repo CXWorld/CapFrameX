@@ -81,6 +81,7 @@ namespace CapFrameX.ViewModel.SubModels
                 return;
 
             AddGroupNameSeparatorEntries(_overlayViewModel.OverlayEntries);
+            RaisePropertyChanged(nameof(_overlayViewModel.SelectedOverlayEntryIndex));
         }
 
         private void AddGroupNameSeparatorEntries(IEnumerable<IOverlayEntry> overlayEntries)

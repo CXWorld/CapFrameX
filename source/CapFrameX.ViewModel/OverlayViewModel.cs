@@ -38,13 +38,30 @@ namespace CapFrameX.ViewModel
         private int _selectedOverlayEntryIndex = -1;
         private IOverlayEntry _selectedOverlayEntry;
         private string _updateHpyerlinkText;
-
+        private bool _setSensorTypeButtonEnabled;
+        private bool _setGroupButtonEnabled;
 
         public bool OverlayItemsOptionsEnabled { get; set; }
 
-        public bool SetGroupButtonEnabled { get ; set; }
+        public bool SetGroupButtonEnabled 
+        {
+            get => _setGroupButtonEnabled;
+            set
+            {
+                _setGroupButtonEnabled = value;
+                RaisePropertyChanged();
+            }
+        }
 
-        public bool SetSensorTypeButtonEnabled { get; set; }
+        public bool SetSensorTypeButtonEnabled
+        {
+            get => _setSensorTypeButtonEnabled;
+            set
+            {
+                _setSensorTypeButtonEnabled = value;
+                RaisePropertyChanged();
+            }
+        }
 
         public bool IsOverlayActive
         {
@@ -246,6 +263,8 @@ namespace CapFrameX.ViewModel
                 RaisePropertyChanged(nameof(OverlayItemsOptionsEnabled));
                 RaisePropertyChanged(nameof(SelectedOverlayItemGroupName));
                 RaisePropertyChanged(nameof(SelectedOverlayItemSensorType));
+                DetermineMultipleGroupEntries(_selectedOverlayEntry);
+                DetermineMultipleSensorTypeEntries(_selectedOverlayEntry);
             }
         }
 
@@ -255,8 +274,6 @@ namespace CapFrameX.ViewModel
             set
             {
                 _selectedOverlayEntry = value;
-                DetermineMultipleGroupEntries(_selectedOverlayEntry);
-                DetermineMultipleSensorTypeEntries(_selectedOverlayEntry);
                 RaisePropertyChanged();
             }
         }
@@ -334,6 +351,7 @@ namespace CapFrameX.ViewModel
          public string SelectedOverlayItemGroupName
             => SelectedOverlayEntryIndex > -1 ?
             OverlayEntries[SelectedOverlayEntryIndex].GroupName : null;
+
           public string SelectedOverlayItemSensorType
             => SelectedOverlayEntryIndex > -1 ?
             GetSensorTypeString(OverlayEntries[SelectedOverlayEntryIndex]) : null;
@@ -517,25 +535,26 @@ namespace CapFrameX.ViewModel
 
         public void DetermineMultipleGroupEntries(IOverlayEntry selectedEntry)
         {
-            var numberOfGroupMembers = OverlayEntries.Where(entry => entry.GroupName == selectedEntry.GroupName).Count();
+            if (selectedEntry == null)
+                return;
 
-            SetGroupButtonEnabled = numberOfGroupMembers > 1 ? true : false;
-
-            RaisePropertyChanged(nameof(SetGroupButtonEnabled));
+            SetGroupButtonEnabled = 
+                OverlayEntries.Count(entry => entry.GroupName == selectedEntry.GroupName) > 1;
         }
 
         public void DetermineMultipleSensorTypeEntries(IOverlayEntry selectedEntry)
         {
-            var numberOfSensorTypeMembers = OverlayEntries.Where(entry => GetSensorTypeString(entry) != string.Empty && GetSensorTypeString(entry) == GetSensorTypeString(selectedEntry)).Count();
-
-            SetSensorTypeButtonEnabled = numberOfSensorTypeMembers > 1 ? true : false;
-
-            RaisePropertyChanged(nameof(SetSensorTypeButtonEnabled));
+            string selectedSensorType = GetSensorTypeString(selectedEntry);
+            SetSensorTypeButtonEnabled =  selectedSensorType != string.Empty &&
+                OverlayEntries.Count((entry => GetSensorTypeString(entry) == selectedSensorType)) > 1;
         }
 
 
         public string GetSensorTypeString(IOverlayEntry entry)
         {
+            if (entry == null)
+                return string.Empty;
+
             string SensorType;
 
             if (entry.Identifier.Contains("cpu"))
@@ -566,9 +585,10 @@ namespace CapFrameX.ViewModel
                     SensorType = "GPU Temperature";
                 else if (entry.Identifier.Contains("voltage"))
                     SensorType = "GPU Voltage";
+                else if (entry.Identifier.Contains("factor"))
+                    SensorType = "GPU Limits";
                 else
                     SensorType = string.Empty;
-
             }
 
             else
