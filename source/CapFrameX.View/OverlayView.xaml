@@ -474,7 +474,7 @@
                     </Grid.ColumnDefinitions>
                     <TextBlock Grid.Row="0" Grid.ColumnSpan="2"  VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="16" Text="{Binding SelectedOverlayItemName}"/>
                     <Border Grid.Row="1" Grid.Column="0" Margin="5" Background="Transparent" BorderThickness=".2" BorderBrush="Black">
-                        <StackPanel Margin="5">
+                        <StackPanel Margin="5" IsEnabled="{Binding OverlayItemsOptionsEnabled}">
                             <Grid>
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="25"></RowDefinition>
@@ -616,7 +616,7 @@
                     </Border>
                     <!-- Format options -->
                     <Border Grid.Row="1" Grid.Column="1" Margin="5" Background="Transparent" BorderThickness=".2" BorderBrush="Black">
-                        <StackPanel Margin="5">
+                        <StackPanel Margin="5" IsEnabled="{Binding OverlayItemsOptionsEnabled}">
                             <Grid>
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="25"></RowDefinition>
@@ -668,7 +668,7 @@
                         </DataGrid>
                     </Border>
                     <Border Grid.Row="2" Grid.Column="1" Margin="5" Background="Transparent" BorderThickness=".2" BorderBrush="Black">
-                        <Grid>
+                        <Grid IsEnabled="{Binding OverlayItemsOptionsEnabled}">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="1*"></RowDefinition>
                                 <RowDefinition Height="1*"></RowDefinition>
@@ -680,7 +680,7 @@
                             <StackPanel Grid.Row="1" Margin="10 0 0 0" Orientation="Horizontal" VerticalAlignment="Center">
                                 <TextBlock Margin="0 7 0 0" Text="{Binding SelectedOverlayItemGroupName}" Width="140" TextAlignment="Right" TextWrapping="Wrap"/>
                                 <Button Width="28" Height="28" Margin="20 0 0 0" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
-                                        Command="{Binding SetFormatForGroupName}"
+                                        IsEnabled="{Binding SetGroupButtonEnabled}" Command="{Binding SetFormatForGroupName}"
                                         materialDesign:RippleAssist.Feedback="#DD000000">
                                     <materialDesign:PackIcon Kind="BallotRecountOutline" Height="22" Width="22" />
                                 </Button>
@@ -688,7 +688,7 @@
                             <StackPanel Grid.Row="2" Margin="10 0 0 0" Orientation="Horizontal" VerticalAlignment="Center">
                                 <TextBlock Margin="0 7 0 0" Text="{Binding SelectedOverlayItemSensorType}" Width="140" TextAlignment="Right" TextWrapping="Wrap"/>
                                 <Button Width="28" Height="28" Margin="20 0 0 0" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
-                                        Command="{Binding SetFormatForSensorType}"
+                                        IsEnabled="{Binding SetSensorTypeButtonEnabled}" Command="{Binding SetFormatForSensorType}"
                                         materialDesign:RippleAssist.Feedback="#DD000000">
                                     <materialDesign:PackIcon Kind="BallotRecountOutline" Height="22" Width="22" />
                                 </Button>

@@ -39,6 +39,13 @@ namespace CapFrameX.ViewModel
         private IOverlayEntry _selectedOverlayEntry;
         private string _updateHpyerlinkText;
 
+
+        public bool OverlayItemsOptionsEnabled { get; set; }
+
+        public bool SetGroupButtonEnabled { get ; set; }
+
+        public bool SetSensorTypeButtonEnabled { get; set; }
+
         public bool IsOverlayActive
         {
             get { return _appConfiguration.IsOverlayActive; }
@@ -233,8 +240,10 @@ namespace CapFrameX.ViewModel
             set
             {
                 _selectedOverlayEntryIndex = value;
+                OverlayItemsOptionsEnabled = _selectedOverlayEntryIndex > -1 ? true :  false;
                 RaisePropertyChanged();
                 RaisePropertyChanged(nameof(SelectedOverlayItemName));
+                RaisePropertyChanged(nameof(OverlayItemsOptionsEnabled));
                 RaisePropertyChanged(nameof(SelectedOverlayItemGroupName));
                 RaisePropertyChanged(nameof(SelectedOverlayItemSensorType));
             }
@@ -246,8 +255,24 @@ namespace CapFrameX.ViewModel
             set
             {
                 _selectedOverlayEntry = value;
+                DetermineMultipleGroupEntries(_selectedOverlayEntry);
+                DetermineMultipleSensorTypeEntries(_selectedOverlayEntry);
                 RaisePropertyChanged();
             }
+        }
+
+        public void DetermineMultipleGroupEntries(IOverlayEntry selectedEntry)
+        {
+            var numberofGroupMembers = OverlayEntries.Where(entry => entry.GroupName == selectedEntry.GroupName).Count();
+
+            SetGroupButtonEnabled = numberofGroupMembers > 1 ? true : false;
+
+            RaisePropertyChanged(nameof(SetGroupButtonEnabled));
+        }
+
+        public void DetermineMultipleSensorTypeEntries(IOverlayEntry selectedEntry)
+        {
+            // To do...
         }
 
         public string UpdateHpyerlinkText
@@ -515,6 +540,7 @@ namespace CapFrameX.ViewModel
 
         public void OnNavigatedTo(NavigationContext navigationContext)
         {
+            OverlayItemsOptionsEnabled = _selectedOverlayEntryIndex > -1 ? true : false;
         }
 
         async void IDropTarget.Drop(IDropInfo dropInfo)
