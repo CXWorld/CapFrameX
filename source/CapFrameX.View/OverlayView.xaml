@@ -683,7 +683,7 @@
                             </TextBlock>
                             <StackPanel Grid.Row="2" Margin="10 0 0 0" Orientation="Horizontal" VerticalAlignment="Center">
                                 <Button Width="28" Height="28" Margin="5 0 10 0" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
-                                        IsEnabled="{Binding SetGroupButtonEnabled}" Command="{Binding SetFormatForGroupName}"
+                                        IsEnabled="{Binding SetGroupButtonEnabled}" Command="{Binding SetFormatForGroupName}" ToolTip="Set colors and formats for all entries with this group name"
                                         materialDesign:RippleAssist.Feedback="#DD000000">
                                     <materialDesign:PackIcon Kind="BallotRecountOutline" Height="22" Width="22" />
                                 </Button>
@@ -693,7 +693,7 @@
                             </TextBlock>
                             <StackPanel Grid.Row="4" Margin="10 0 0 0" Orientation="Horizontal" VerticalAlignment="Center">
                                 <Button Width="28" Height="28" Margin="5 0 10 0" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
-                                        IsEnabled="{Binding SetSensorTypeButtonEnabled}" Command="{Binding SetFormatForSensorType}"
+                                        IsEnabled="{Binding SetSensorTypeButtonEnabled}" Command="{Binding SetFormatForSensorType}" ToolTip="Set colors and formats for all entries with this sensor type"
                                         materialDesign:RippleAssist.Feedback="#DD000000">
                                     <materialDesign:PackIcon Kind="BallotRecountOutline" Height="22" Width="22" />
                                 </Button>
