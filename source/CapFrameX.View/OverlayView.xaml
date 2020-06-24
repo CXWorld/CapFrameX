@@ -670,28 +670,34 @@
                     <Border Grid.Row="2" Grid.Column="1" Margin="5" Background="Transparent" BorderThickness=".2" BorderBrush="Black">
                         <Grid IsEnabled="{Binding OverlayItemsOptionsEnabled}">
                             <Grid.RowDefinitions>
+                                <RowDefinition Height="65"></RowDefinition>
+                                <RowDefinition Height="20"></RowDefinition>
                                 <RowDefinition Height="1*"></RowDefinition>
-                                <RowDefinition Height="1*"></RowDefinition>
+                                <RowDefinition Height="20"></RowDefinition>
                                 <RowDefinition Height="1*"></RowDefinition>
                             </Grid.RowDefinitions>
                             <TextBlock Grid.Row="0" Margin="10" HorizontalAlignment="Center" Text="Set colors and formats for multiple entries" Width="180" 
                                        TextWrapping="Wrap" TextAlignment="Center" FontSize="16">
                             </TextBlock>
-                            <StackPanel Grid.Row="1" Margin="10 0 0 0" Orientation="Horizontal" VerticalAlignment="Center">
-                                <TextBlock Margin="0 7 0 0" Text="{Binding SelectedOverlayItemGroupName}" Width="140" TextAlignment="Right" TextWrapping="Wrap"/>
-                                <Button Width="28" Height="28" Margin="20 0 0 0" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
+                            <TextBlock Grid.Row="1"  Text="Group name" TextAlignment="Left" Margin="10 5 0 0">
+                            </TextBlock>
+                            <StackPanel Grid.Row="2" Margin="10 0 0 0" Orientation="Horizontal" VerticalAlignment="Center">
+                                <Button Width="28" Height="28" Margin="5 0 10 0" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
                                         IsEnabled="{Binding SetGroupButtonEnabled}" Command="{Binding SetFormatForGroupName}"
                                         materialDesign:RippleAssist.Feedback="#DD000000">
                                     <materialDesign:PackIcon Kind="BallotRecountOutline" Height="22" Width="22" />
                                 </Button>
+                                <TextBlock Margin="0 7 0 0" Text="{Binding SelectedOverlayItemGroupName}" Width="140" TextAlignment="Left" TextWrapping="Wrap" FontWeight="Bold"/>
                             </StackPanel>
-                            <StackPanel Grid.Row="2" Margin="10 0 0 0" Orientation="Horizontal" VerticalAlignment="Center">
-                                <TextBlock Margin="0 7 0 0" Text="{Binding SelectedOverlayItemSensorType}" Width="140" TextAlignment="Right" TextWrapping="Wrap"/>
-                                <Button Width="28" Height="28" Margin="20 0 0 0" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
+                            <TextBlock Grid.Row="3" TextAlignment="Left" Text="Sensor type" Margin="10 5 0 0">
+                            </TextBlock>
+                            <StackPanel Grid.Row="4" Margin="10 0 0 0" Orientation="Horizontal" VerticalAlignment="Center">
+                                <Button Width="28" Height="28" Margin="5 0 10 0" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
                                         IsEnabled="{Binding SetSensorTypeButtonEnabled}" Command="{Binding SetFormatForSensorType}"
                                         materialDesign:RippleAssist.Feedback="#DD000000">
                                     <materialDesign:PackIcon Kind="BallotRecountOutline" Height="22" Width="22" />
                                 </Button>
+                                <TextBlock Margin="0 7 0 0" Text="{Binding SelectedOverlayItemSensorType}" Width="140" TextAlignment="Left" TextWrapping="Wrap" FontWeight="Bold"/>
                             </StackPanel>
                         </Grid>
                     </Border>

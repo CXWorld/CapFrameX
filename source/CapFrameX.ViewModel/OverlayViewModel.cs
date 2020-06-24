@@ -261,20 +261,6 @@ namespace CapFrameX.ViewModel
             }
         }
 
-        public void DetermineMultipleGroupEntries(IOverlayEntry selectedEntry)
-        {
-            var numberofGroupMembers = OverlayEntries.Where(entry => entry.GroupName == selectedEntry.GroupName).Count();
-
-            SetGroupButtonEnabled = numberofGroupMembers > 1 ? true : false;
-
-            RaisePropertyChanged(nameof(SetGroupButtonEnabled));
-        }
-
-        public void DetermineMultipleSensorTypeEntries(IOverlayEntry selectedEntry)
-        {
-            // To do...
-        }
-
         public string UpdateHpyerlinkText
         {
             get { return _updateHpyerlinkText; }
@@ -350,7 +336,7 @@ namespace CapFrameX.ViewModel
             OverlayEntries[SelectedOverlayEntryIndex].GroupName : null;
           public string SelectedOverlayItemSensorType
             => SelectedOverlayEntryIndex > -1 ?
-            OverlayEntries[SelectedOverlayEntryIndex].Identifier : null;
+            GetSensorTypeString(OverlayEntries[SelectedOverlayEntryIndex]) : null;
 
         public ICommand ConfigSwitchCommand { get; }
 
@@ -528,6 +514,70 @@ namespace CapFrameX.ViewModel
             _globalResetHistoryHookEvent = Hook.GlobalEvents();
             _globalResetHistoryHookEvent.OnCXCombination(onCombinationDictionary);
         }
+
+        public void DetermineMultipleGroupEntries(IOverlayEntry selectedEntry)
+        {
+            var numberOfGroupMembers = OverlayEntries.Where(entry => entry.GroupName == selectedEntry.GroupName).Count();
+
+            SetGroupButtonEnabled = numberOfGroupMembers > 1 ? true : false;
+
+            RaisePropertyChanged(nameof(SetGroupButtonEnabled));
+        }
+
+        public void DetermineMultipleSensorTypeEntries(IOverlayEntry selectedEntry)
+        {
+            var numberOfSensorTypeMembers = OverlayEntries.Where(entry => GetSensorTypeString(entry) != string.Empty && GetSensorTypeString(entry) == GetSensorTypeString(selectedEntry)).Count();
+
+            SetSensorTypeButtonEnabled = numberOfSensorTypeMembers > 1 ? true : false;
+
+            RaisePropertyChanged(nameof(SetSensorTypeButtonEnabled));
+        }
+
+
+        public string GetSensorTypeString(IOverlayEntry entry)
+        {
+            string SensorType;
+
+            if (entry.Identifier.Contains("cpu"))
+            {
+                if (entry.Identifier.Contains("load"))
+                    SensorType = "CPU Load";
+                else if (entry.Identifier.Contains("clock"))
+                    SensorType = "CPU Clock";
+                else if (entry.Identifier.Contains("power"))
+                    SensorType = "CPU Power";
+                else if (entry.Identifier.Contains("temperature"))
+                    SensorType = "CPU Temperature";
+                else if (entry.Identifier.Contains("voltage"))
+                    SensorType = "CPU Voltage";
+                else
+                    SensorType = string.Empty;
+            }
+
+            else if (entry.Identifier.Contains("gpu"))
+            {
+                if (entry.Identifier.Contains("load"))
+                    SensorType = "GPU Load";
+                else if (entry.Identifier.Contains("clock"))
+                    SensorType = "GPU Clock";
+                else if (entry.Identifier.Contains("power"))
+                    SensorType = "GPU Power";
+                else if (entry.Identifier.Contains("temperature"))
+                    SensorType = "GPU Temperature";
+                else if (entry.Identifier.Contains("voltage"))
+                    SensorType = "GPU Voltage";
+                else
+                    SensorType = string.Empty;
+
+            }
+
+            else
+                SensorType = string.Empty;
+
+            return SensorType;
+        }
+
+
 
         public bool IsNavigationTarget(NavigationContext navigationContext)
         {
