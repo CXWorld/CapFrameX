@@ -263,8 +263,6 @@ namespace CapFrameX.ViewModel
                 RaisePropertyChanged(nameof(OverlayItemsOptionsEnabled));
                 RaisePropertyChanged(nameof(SelectedOverlayItemGroupName));
                 RaisePropertyChanged(nameof(SelectedOverlayItemSensorType));
-                DetermineMultipleGroupEntries(_selectedOverlayEntry);
-                DetermineMultipleSensorTypeEntries(_selectedOverlayEntry);
             }
         }
 
@@ -275,6 +273,8 @@ namespace CapFrameX.ViewModel
             {
                 _selectedOverlayEntry = value;
                 RaisePropertyChanged();
+                DetermineMultipleGroupEntries(_selectedOverlayEntry);
+                DetermineMultipleSensorTypeEntries(_selectedOverlayEntry);
             }
         }
 
@@ -531,6 +531,12 @@ namespace CapFrameX.ViewModel
 
             _globalResetHistoryHookEvent = Hook.GlobalEvents();
             _globalResetHistoryHookEvent.OnCXCombination(onCombinationDictionary);
+        }
+
+        public void UpdateGroupNameEnable()
+        {
+            RaisePropertyChanged(nameof(SelectedOverlayItemGroupName));
+            DetermineMultipleGroupEntries(_selectedOverlayEntry);
         }
 
         public void DetermineMultipleGroupEntries(IOverlayEntry selectedEntry)
