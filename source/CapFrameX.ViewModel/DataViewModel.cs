@@ -522,8 +522,8 @@ namespace CapFrameX.ViewModel
             var max = GeMetricValue(frametimes, EMetric.Max);
             var p99_quantile = GeMetricValue(frametimes, EMetric.P99);
             var p95_quantile = GeMetricValue(frametimes, EMetric.P95);
-            var average = GeMetricValue(frametimes, EMetric.Average);
             var median = GeMetricValue(frametimes, EMetric.Median);
+            var average = GeMetricValue(frametimes, EMetric.Average);
             var p0dot1_quantile = GeMetricValue(frametimes, EMetric.P0dot1);
             var p0dot2_quantile = GeMetricValue(frametimes, EMetric.P0dot2);
             var p1_quantile = GeMetricValue(frametimes, EMetric.P1);
@@ -551,10 +551,10 @@ namespace CapFrameX.ViewModel
                 builder.Append("P99" + "\t" + p99_quantile.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
             if (_appConfiguration.UseSingleRecordP95QuantileStatisticParameter)
                 builder.Append("P95" + "\t" + p95_quantile.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
-            if (_appConfiguration.UseSingleRecordAverageStatisticParameter)
-                builder.Append("Average" + "\t" + average.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
             if (_appConfiguration.UseSingleRecordMedianStatisticParameter)
                 builder.Append("Median" + "\t" + median.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
+            if (_appConfiguration.UseSingleRecordAverageStatisticParameter)
+                builder.Append("Average" + "\t" + average.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
             if (_appConfiguration.UseSingleRecordP5QuantileStatisticParameter)
                 builder.Append("P5" + "\t" + p5_quantile.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
             if (_appConfiguration.UseSingleRecordP1QuantileStatisticParameter)
@@ -798,8 +798,8 @@ namespace CapFrameX.ViewModel
             var max = GetMetricValue(frametimes, EMetric.Max);
             var p99_quantile = GetMetricValue(frametimes, EMetric.P99);
             var p95_quantile = GetMetricValue(frametimes, EMetric.P95);
-            var average = GetMetricValue(frametimes, EMetric.Average);
             var median = GetMetricValue(frametimes, EMetric.Median);
+            var average = GetMetricValue(frametimes, EMetric.Average);
             var p0dot1_quantile = GetMetricValue(frametimes, EMetric.P0dot1);
             var p0dot2_quantile = GetMetricValue(frametimes, EMetric.P0dot2);
             var p1_quantile = GetMetricValue(frametimes, EMetric.P1);
@@ -841,10 +841,10 @@ namespace CapFrameX.ViewModel
                     values.Add(p1_quantile);
                 if (_appConfiguration.UseSingleRecordP5QuantileStatisticParameter)
                     values.Add(p5_quantile);
-                if (_appConfiguration.UseSingleRecordMedianStatisticParameter)
-                    values.Add(median);
                 if (_appConfiguration.UseSingleRecordAverageStatisticParameter)
                     values.Add(average);
+                if (_appConfiguration.UseSingleRecordMedianStatisticParameter)
+                    values.Add(median);
                 if (_appConfiguration.UseSingleRecordP95QuantileStatisticParameter)
                     values.Add(p95_quantile);
                 if (_appConfiguration.UseSingleRecord99QuantileStatisticParameter)
@@ -892,10 +892,10 @@ namespace CapFrameX.ViewModel
                     parameterLabelList.Add("P1");
                 if (_appConfiguration.UseSingleRecordP5QuantileStatisticParameter)
                     parameterLabelList.Add("P5");
-                if (_appConfiguration.UseSingleRecordMedianStatisticParameter)
-                    parameterLabelList.Add("Median");
                 if (_appConfiguration.UseSingleRecordAverageStatisticParameter)
                     parameterLabelList.Add("Average");
+                if (_appConfiguration.UseSingleRecordMedianStatisticParameter)
+                    parameterLabelList.Add("Median");
                 if (_appConfiguration.UseSingleRecordP95QuantileStatisticParameter)
                     parameterLabelList.Add("P95");
                 if (_appConfiguration.UseSingleRecord99QuantileStatisticParameter)
