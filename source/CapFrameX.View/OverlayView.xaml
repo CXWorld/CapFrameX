@@ -627,18 +627,21 @@
                                     <RowDefinition Height="40"></RowDefinition>
                                 </Grid.RowDefinitions>
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="160"/>
-                                    <ColumnDefinition Width="1*"/>
+                                    <ColumnDefinition Width="130"/>
+                                    <ColumnDefinition Width="40"/>
+                                    <ColumnDefinition Width="20"/>
                                 </Grid.ColumnDefinitions>
                                 <TextBlock Grid.Row="0" Grid.ColumnSpan="3" VerticalAlignment="Center" HorizontalAlignment="Center" Text="Format options" FontSize="16"/>
                                 <TextBlock Grid.Row="1" Grid.Column="0"  VerticalAlignment="Center" Text="Group name font size"></TextBlock>
-                                <TextBox Grid.Row="1" Grid.Column="3" Width="25" VerticalAlignment="Center" PreviewKeyDown="LostFocus_PreviewKeyDown"
+                                <TextBox Grid.Row="1" Grid.Column="1" Width="25" VerticalAlignment="Center" PreviewKeyDown="LostFocus_PreviewKeyDown"
                                      Text="{Binding SelectedOverlayEntry.GroupFontSize, UpdateSourceTrigger=LostFocus}">
                                 </TextBox>
+                                <Label Grid.Row="1" Grid.Column="2" VerticalAlignment="Center" Content="%"/>
                                 <TextBlock Grid.Row="2" Grid.Column="0"  VerticalAlignment="Center" Text="Value font size"></TextBlock>
-                                <TextBox Grid.Row="2" Grid.Column="3" Width="25" VerticalAlignment="Center" PreviewKeyDown="LostFocus_PreviewKeyDown"
+                                <TextBox Grid.Row="2" Grid.Column="1" Width="25" VerticalAlignment="Center" PreviewKeyDown="LostFocus_PreviewKeyDown"
                                      Text="{Binding SelectedOverlayEntry.ValueFontSize, UpdateSourceTrigger=LostFocus}">
                                 </TextBox>
+                                <Label Grid.Row="2" Grid.Column="2" VerticalAlignment="Center" Content="%"/>
                             </Grid>
                         </StackPanel>
                     </Border>

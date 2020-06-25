@@ -115,6 +115,7 @@ namespace CapFrameX.Overlay
             {
                 _identifierOverlayEntryDict.TryAdd(entry.Identifier, entry);
             }
+            SetHardwareIsNumericState();
 
             return _overlayEntries.ToList();
         }

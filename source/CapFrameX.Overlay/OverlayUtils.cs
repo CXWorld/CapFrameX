@@ -188,7 +188,8 @@ namespace CapFrameX.Overlay
                         ValueFormat = default,
                         ShowGraph = false,
                         ShowGraphIsEnabled = false,
-                        Color = string.Empty
+                        Color = string.Empty,
+                        IsNumeric = true
                     },
 
                      // P1
@@ -203,7 +204,8 @@ namespace CapFrameX.Overlay
                         ValueFormat = default,
                         ShowGraph = false,
                         ShowGraphIsEnabled = false,
-                        Color = string.Empty
+                        Color = string.Empty,
+                        IsNumeric = true
                     },
 
                      // P0.2
@@ -218,7 +220,8 @@ namespace CapFrameX.Overlay
                         ValueFormat = default,
                         ShowGraph = false,
                         ShowGraphIsEnabled = false,
-                        Color = string.Empty
+                        Color = string.Empty,
+                        IsNumeric = true
                     }
             };
         }

@@ -11,7 +11,6 @@ namespace CapFrameX.Overlay
         private bool _showOnOverlay;
         private bool _showOnOverlayIsEnabled;
         private string _groupName;
-        private object _value;
         private bool _showGraph;
         private bool _showGraphIsEnabled;
         private string _color;
@@ -30,6 +29,8 @@ namespace CapFrameX.Overlay
         public EOverlayEntryType OverlayEntryType { get; set; }
 
         public string Description { get; set; }
+
+        public object Value { get; set; }
 
         [JsonIgnore]
         public bool FormatChanged { get; set; }
@@ -79,16 +80,6 @@ namespace CapFrameX.Overlay
             }
         }
 
-        public object Value
-        {
-            get { return _value; }
-            set
-            {
-                _value = value;
-                RaisePropertyChanged();
-            }
-        }
-
         public bool ShowGraph
         {
             get { return _showGraph; }
@@ -121,6 +112,7 @@ namespace CapFrameX.Overlay
             }
             set
             {
+                FormatChanged = _color != value;
                 _color = value;
                 RaisePropertyChanged();
             }
@@ -128,9 +120,10 @@ namespace CapFrameX.Overlay
 
         public int ValueFontSize
         {
-            get { return _valueFontSize; }
+            get { return _valueFontSize == 0 ? 50 : _valueFontSize; }
             set
             {
+                FormatChanged = _valueFontSize != value;
                 _valueFontSize = value;
                 RaisePropertyChanged();
             }
@@ -178,6 +171,7 @@ namespace CapFrameX.Overlay
                     ? GetDefaultGroupColor() : _groupColor; }
             set
             {
+                FormatChanged = _groupColor != value;
                 _groupColor = value;
                 RaisePropertyChanged();
             }
@@ -185,9 +179,10 @@ namespace CapFrameX.Overlay
 
         public int GroupFontSize
         {
-            get { return _groupFontSize; }
+            get { return _groupFontSize == 0 ? 50 : _groupFontSize; }
             set
             {
+                FormatChanged = _groupFontSize != value;
                 _groupFontSize = value;
                 RaisePropertyChanged();
             }
@@ -198,6 +193,7 @@ namespace CapFrameX.Overlay
             get { return _groupSeparators; }
             set
             {
+                FormatChanged = _groupSeparators != value;
                 _groupSeparators = value;
                 RaisePropertyChanged();
             }
@@ -208,6 +204,7 @@ namespace CapFrameX.Overlay
             get { return _upperLimitColor; }
             set
             {
+                FormatChanged = _upperLimitColor != value;
                 _upperLimitColor = value;
                 RaisePropertyChanged();
             }
@@ -218,6 +215,7 @@ namespace CapFrameX.Overlay
             get { return _lowerLimitColor; }
             set
             {
+                FormatChanged = _lowerLimitColor != value;
                 _lowerLimitColor = value;
                 RaisePropertyChanged();
             }
@@ -235,13 +233,13 @@ namespace CapFrameX.Overlay
             //strOSD += "<C3=2297F3>"; //CX Blue
             //strOSD += "<C4=F17D20>"; //CX Orange
 
-            return Identifier == "RunHistory" ? "#2297F3"
-                : Identifier == "CaptureServiceStatus" ? "#2297F3"
-                : Identifier == "CaptureTimer" ? "#F17D20"
-                : Identifier == "Framerate" ? "#AEEA00"
-                : Identifier == "Frametime" ? "#AEEA00"
+            return Identifier == "RunHistory" ? "2297F3"
+                : Identifier == "CaptureServiceStatus" ? "2297F3"
+                : Identifier == "CaptureTimer" ? "F17D20"
+                : Identifier == "Framerate" ? "AEEA00"
+                : Identifier == "Frametime" ? "AEEA00"
                 // all other items
-                : "#F17D20";
+                : "F17D20";
         }
 
         private string GetDefaultGroupColor()
@@ -251,13 +249,13 @@ namespace CapFrameX.Overlay
             //strOSD += "<C3=2297F3>"; //CX Blue
             //strOSD += "<C4=F17D20>"; //CX Orange
 
-            return Identifier == "RunHistory" ? "#FFFFFF"
-                : Identifier == "CaptureServiceStatus" ? "#FFFFFF"
-                : Identifier == "CaptureTimer" ? "#FFFFFF"
-                : Identifier == "Framerate" ? "#AEEA00"
-                : Identifier == "Frametime" ? "#AEEA00"
+            return Identifier == "RunHistory" ? "FFFFFF"
+                : Identifier == "CaptureServiceStatus" ? "FFFFFF"
+                : Identifier == "CaptureTimer" ? "FFFFFF"
+                : Identifier == "Framerate" ? "AEEA00"
+                : Identifier == "Frametime" ? "AEEA00"
                 // all other items
-                : "#FFFFFF";
+                : "FFFFFF";
         }
     }
 }

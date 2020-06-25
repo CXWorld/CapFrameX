@@ -114,7 +114,6 @@ namespace CapFrameX.ViewModel.SubModels
                 foreach (var targetEntry in targetEntries)
                 {
                     targetEntry.GroupSeparators = separators;
-                    targetEntry.FormatChanged = true;
                 }
             }
         }

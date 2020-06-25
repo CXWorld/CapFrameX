@@ -12,16 +12,16 @@ namespace CapFrameX.MVVM.Converter
             if (string.IsNullOrWhiteSpace((string)value))
                 return (Color?)Color.FromArgb(0, 0, 0, 0);
 
-            return (Color?)ColorConverter.ConvertFromString(value.ToString());
+            return (Color?)ColorConverter.ConvertFromString("#" + value.ToString());
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (value == null)
-                return "#000000";
+                return "000000";
 
             var color = (Color?)value;
-            return "#" + color.Value.R.ToString("X2") + color.Value.G.ToString("X2") + color.Value.B.ToString("X2");
+            return color.Value.R.ToString("X2") + color.Value.G.ToString("X2") + color.Value.B.ToString("X2");
         }
     }
 }
