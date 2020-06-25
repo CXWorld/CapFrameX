@@ -201,7 +201,8 @@ namespace CapFrameX.Overlay
 
         public string UpperLimitColor
         {
-            get { return _upperLimitColor; }
+            get { return string.IsNullOrWhiteSpace(_upperLimitColor)
+                    ? Color : _upperLimitColor; }
             set
             {
                 FormatChanged = _upperLimitColor != value;
@@ -212,7 +213,9 @@ namespace CapFrameX.Overlay
 
         public string LowerLimitColor
         {
-            get { return _lowerLimitColor; }
+            get { return string.IsNullOrWhiteSpace(_upperLimitColor)
+                    ? Color : _lowerLimitColor;
+            }
             set
             {
                 FormatChanged = _lowerLimitColor != value;
