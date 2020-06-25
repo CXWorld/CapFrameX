@@ -113,8 +113,8 @@ namespace CapFrameX.Overlay
             set
             {
                 FormatChanged = _color != value;
-                UpperLimitColor = UpperLimitColor == _color ? value : _upperLimitColor;
-                LowerLimitColor = LowerLimitColor == _color ? value : _lowerLimitColor;
+                UpperLimitColor = (UpperLimitColor == _color || string.IsNullOrWhiteSpace(_upperLimitColor)) ? value : _upperLimitColor;
+                LowerLimitColor = (LowerLimitColor == _color || string.IsNullOrWhiteSpace(_lowerLimitColor)) ? value : _lowerLimitColor;
                 _color = value;
                 RaisePropertyChanged();
             }
