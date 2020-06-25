@@ -44,6 +44,9 @@ namespace CapFrameX.Sensor.Reporting
                         case EReportSensorName.GpuUsage when HasValues(sessionsSensorData, session => session.GpuUsage, out var values):
                             AddSensorEntry(item, Math.Round(values.Average()), values.Min(), values.Max());
                             break;
+                        case EReportSensorName.GpuLimit when HasValues(sessionsSensorData, session => session.GpuUsage, out var values):
+                            AddSensorEntry(item, GetPercentageInGpuLoadLimit(values), GetPercentageInGpuLoadLimit(values), GetPercentageInGpuLoadLimit(values));
+                            break;
                         case EReportSensorName.GpuPower when HasValues(sessionsSensorData, session => session.GpuPower, out var values):
                             AddSensorEntry(item, Math.Round(values.Average()), values.Min(), values.Max());
                             break;
@@ -114,5 +117,13 @@ namespace CapFrameX.Sensor.Reporting
               reportItem.Name == EReportSensorName.GpuPower
               .GetAttribute<DescriptionAttribute>().Description).AverageValue;
         }
+
+        public static double GetPercentageInGpuLoadLimit(List<int> values)
+        {
+            double limitvalues = values.Count(val => val >= 97);
+            double percentage = Math.Round((limitvalues / values.Count()) * 100);
+
+            return percentage;
+        }          
     }
 }
