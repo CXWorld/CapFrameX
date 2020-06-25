@@ -97,7 +97,7 @@
                 </StackPanel>
             </Grid>
             <StackPanel DockPanel.Dock="Top" Orientation="Vertical" HorizontalAlignment="Center">
-                <DataGrid x:Name="OverlayItemDataGrid" Height="350" Width="400" Background="#F5F5F5" FontSize="11"
+                <DataGrid x:Name="OverlayItemDataGrid" FocusVisualStyle="{x:Null}" Height="350" Width="400" Background="#F5F5F5" FontSize="11"
 					      SelectedIndex="{Binding SelectedOverlayEntryIndex}" SelectedItem="{Binding SelectedOverlayEntry}" ItemsSource="{Binding OverlayEntries}"
 					      CanUserSortColumns="False" CanUserAddRows="False" AutoGenerateColumns="False"
 					      materialDesign:DataGridAssist.CellPadding="13 3 0 0" materialDesign:DataGridAssist.ColumnHeaderPadding="8" IsSynchronizedWithCurrentItem="False"
@@ -108,7 +108,8 @@
 					      dragdrop:DragDrop.UseDefaultDragAdorner="True"
 					      dragdrop:DragDrop.DefaultDragAdornerOpacity="0.5"
 					      dragdrop:DragDrop.UseDefaultEffectDataTemplate="False"
-                          ToolTip="Drag &amp; Drop to change order">
+                          ToolTip="Drag &amp; Drop to change order"
+                          ToolTipService.VerticalOffset="-6">
                     <DataGrid.Resources>
                         <Style TargetType="DataGridRow">
                             <Setter Property="DataGrid.Height" Value="25" />
@@ -679,7 +680,7 @@
                                 <RowDefinition Height="20"></RowDefinition>
                                 <RowDefinition Height="1*"></RowDefinition>
                             </Grid.RowDefinitions>
-                            <TextBlock Grid.Row="0" Margin="10" HorizontalAlignment="Center" Text="Set colors and formats for multiple entries" Width="180" 
+                            <TextBlock Grid.Row="0" Margin="10" HorizontalAlignment="Center" Text="Apply colors and formats to multiple entries" Width="180" 
                                        TextWrapping="Wrap" TextAlignment="Center" FontSize="16">
                             </TextBlock>
                             <TextBlock Grid.Row="1"  Text="Group name" TextAlignment="Left" Margin="10 5 0 0">
