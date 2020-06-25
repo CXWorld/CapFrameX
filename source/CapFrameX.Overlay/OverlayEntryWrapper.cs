@@ -213,7 +213,7 @@ namespace CapFrameX.Overlay
 
         public string LowerLimitColor
         {
-            get { return string.IsNullOrWhiteSpace(_upperLimitColor)
+            get { return string.IsNullOrWhiteSpace(_lowerLimitColor)
                     ? Color : _lowerLimitColor;
             }
             set
