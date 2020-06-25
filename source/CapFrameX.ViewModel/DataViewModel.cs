@@ -347,6 +347,8 @@ namespace CapFrameX.ViewModel
 
         public ICommand CopySystemInfoCommand { get; }
 
+        public ICommand CopySensorInfoCommand { get; }
+
         public ICommand AcceptParameterSettingsCommand { get; }
 
         public ICommand CutRecordCommand { get; }
@@ -422,6 +424,7 @@ namespace CapFrameX.ViewModel
             CopyStatisticalParameterCommand = new DelegateCommand(OnCopyStatisticalParameter);
             CopyLShapeQuantilesCommand = new DelegateCommand(OnCopyQuantiles);
             CopySystemInfoCommand = new DelegateCommand(OnCopySystemInfoCommand);
+            CopySensorInfoCommand = new DelegateCommand(OnCopySensorInfo);
             AcceptParameterSettingsCommand = new DelegateCommand(OnAcceptParameterSettings);
             CutRecordCommand = new DelegateCommand(OnCutRecord);
             CopyFPSThresholdDataCommand = new DelegateCommand(OnCopyFPSThresholdData);
@@ -611,6 +614,25 @@ namespace CapFrameX.ViewModel
             foreach (var systemInfo in systemInfos)
             {
                 builder.Append(systemInfo.Key + "\t" + systemInfo.Value + Environment.NewLine);
+            }
+
+            Clipboard.SetDataObject(builder.ToString(), false);
+        }
+
+        private void OnCopySensorInfo()
+        {
+            if (RecordInfo == null)
+                return;
+
+            var sensorInfos = SensorReport.GetReportFromSessionSensorData(_session.Runs.Select(run => run.SensorData),
+                _localRecordDataServer.CurrentTime, _localRecordDataServer.CurrentTime + _localRecordDataServer.WindowLength);
+
+            StringBuilder builder = new StringBuilder();
+
+            foreach (var sensorInfo in sensorInfos)
+            {
+                builder.Append(sensorInfo.Name + "\t" + sensorInfo.MinValue + "\t" + 
+                sensorInfo.AverageValue + "\t" + sensorInfo.MaxValue +  Environment.NewLine);
             }
 
             Clipboard.SetDataObject(builder.ToString(), false);
