@@ -632,7 +632,7 @@ namespace CapFrameX.ViewModel
             foreach (var sensorInfo in sensorInfos)
             {
                 builder.Append(sensorInfo.Name + "\t" + sensorInfo.MinValue + "\t" + 
-                sensorInfo.AverageValue + "\t" + sensorInfo.MaxValue +  Environment.NewLine);
+                sensorInfo.AverageValue + "\t" + sensorInfo.MaxValue + Environment.NewLine);
             }
 
             Clipboard.SetDataObject(builder.ToString(), false);
