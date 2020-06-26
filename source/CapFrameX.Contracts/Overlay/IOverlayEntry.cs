@@ -37,9 +37,9 @@ namespace CapFrameX.Contracts.Overlay
 
         string GroupNameFormat { get; set; }
 
-        double UpperLimitValue { get; set; }
+        string UpperLimitValue { get; set; }
 
-        double LowerLimitValue { get; set; }
+        string LowerLimitValue { get; set; }
 
         string GroupColor { get; set; }
 

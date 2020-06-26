@@ -15,8 +15,8 @@ namespace CapFrameX.Overlay
         private bool _showGraphIsEnabled;
         private string _color;
         private int _valueFontSize;
-        private double _upperLimitValue;
-        private double _lowerLimitValue;
+        private string _upperLimitValue = string.Empty;
+        private string _lowerLimitValue = string.Empty;
         private string _groupColor;
         private int _groupFontSize;
         private int _groupSeparators;
@@ -147,7 +147,7 @@ namespace CapFrameX.Overlay
         (GroupName == null ? string.Empty : GroupName.ToString())
         : string.Format(CultureInfo.InvariantCulture, GroupNameFormat, GroupName);
 
-        public double UpperLimitValue
+        public string UpperLimitValue
         {
             get { return _upperLimitValue; }
             set
@@ -157,7 +157,7 @@ namespace CapFrameX.Overlay
             }
         }
 
-        public double LowerLimitValue
+        public string LowerLimitValue
         {
             get { return _lowerLimitValue; }
             set

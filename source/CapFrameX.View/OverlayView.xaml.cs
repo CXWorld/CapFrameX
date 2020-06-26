@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using Prism.Events;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -153,5 +154,11 @@ namespace CapFrameX.View
 				OverlayItemDataGrid.Focus();
 			}
 		}
-    }
+
+		private void NumberValidationTextBox(object sender, TextCompositionEventArgs e)
+		{
+			Regex regex = new Regex("[^0-9.-]+");
+			e.Handled = regex.IsMatch(e.Text);
+		}
+	}
 }

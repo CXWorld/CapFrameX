@@ -548,7 +548,8 @@
                                     </xctk:ColorPicker.ButtonStyle>
                                 </xctk:ColorPicker>
                                 <TextBlock Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" Text="Upper limit + color:"></TextBlock>
-                                <TextBox Grid.Row="3" Grid.Column="1" Width="40" VerticalAlignment="Center" PreviewKeyDown="LostFocus_PreviewKeyDown"
+                                <TextBox Grid.Row="3" Grid.Column="1" Width="40" VerticalAlignment="Center" PreviewKeyDown="LostFocus_PreviewKeyDown" PreviewTextInput="NumberValidationTextBox" 
+                                         ToolTip="Clear this box to deactivate limit"
                                          Text="{Binding SelectedOverlayEntry.UpperLimitValue, UpdateSourceTrigger=LostFocus}" IsEnabled="{Binding SelectedOverlayEntry.IsNumeric}">
                                 </TextBox>
                                 <xctk:ColorPicker Grid.Row="3" Grid.Column="2" Width="25" Height="25" Margin="0 0 0 0" Background="#e6e6e6" SelectedColor="{Binding SelectedOverlayEntry.UpperLimitColor, Converter={StaticResource StringColorConverter}}" 
@@ -580,7 +581,8 @@
                                     </xctk:ColorPicker.ButtonStyle>
                                 </xctk:ColorPicker>
                                 <TextBlock Grid.Row="4" Grid.Column="0"  VerticalAlignment="Center" Text="Lower limit + color:"></TextBlock>
-                                <TextBox Grid.Row="4" Grid.Column="1" Width="40" VerticalAlignment="Center" PreviewKeyDown="LostFocus_PreviewKeyDown"
+                                <TextBox Grid.Row="4" Grid.Column="1" Width="40" VerticalAlignment="Center" PreviewKeyDown="LostFocus_PreviewKeyDown" PreviewTextInput="NumberValidationTextBox" 
+                                         ToolTip="Clear this box to deactivate limit"
                                          Text="{Binding SelectedOverlayEntry.LowerLimitValue, UpdateSourceTrigger=LostFocus}"
                                          IsEnabled="{Binding SelectedOverlayEntry.IsNumeric}">
                                 </TextBox>
