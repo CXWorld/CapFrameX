@@ -17,7 +17,9 @@ namespace CapFrameX.Sensor.Reporting
 		[Description("GPU load (%)")]
 		GpuUsage,
 		[Description("GPU load limit (%)")]
-		GpuLimit,
+		GpuLoadLimit,
+		[Description("GPU clock (MHz)")]
+		GpuClock,
 		[Description("GPU power (W)")]
 		GpuPower,
 		[Description("GPU temp. (°C)")]

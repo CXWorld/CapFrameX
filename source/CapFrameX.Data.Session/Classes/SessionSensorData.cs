@@ -20,6 +20,8 @@ namespace CapFrameX.Data.Session.Classes
 		[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
 		public int[] GpuUsage { get; set; } = new int[] { };
 		[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+		public int[] GpuClock{ get; set; } = new int[] { };
+		[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
 		public double[] RamUsage { get; set; } = new double[] { };
 		[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
 		public bool[] IsInGpuLimit { get; set; } = new bool[] { };

@@ -5,6 +5,7 @@
 		int[] GpuPower { get; set; }
 		int[] GpuTemp { get; set; }
 		int[] GpuUsage { get; set; }
+		int[] GpuClock { get; set; }
 		int[] CpuUsage { get; set; }
 		int[] CpuMaxThreadUsage { get; set; }
 		int[] CpuMaxClock { get; set; }
