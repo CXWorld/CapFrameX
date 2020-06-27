@@ -174,10 +174,10 @@
                                                 </Binding>
                                             </TextBox.Text>
                                         </TextBox>
-                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="15 5 0 5" Grid.Row="1" Grid.Column="0">
+                                        <!--<StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="15 5 0 5" Grid.Row="1" Grid.Column="0">
                                             <TextBlock Text="Dark mode"/>
                                             <ToggleButton Margin="15 0 0 0" Click="MenuDarkModeButton_Click"/>
-                                        </StackPanel>
+                                        </StackPanel>-->
                                         <StackPanel Orientation="Horizontal" Margin="40 5 0 5" Grid.Row="1" Grid.Column="1">
                                             <TextBlock Margin="0 0 0 0" Text="Start with Windows" TextAlignment="Center" TextWrapping="Wrap" Width="80"/>
                                             <CheckBox Margin="0 0 0 0" IsChecked="{Binding Autostart, Mode=TwoWay}">
