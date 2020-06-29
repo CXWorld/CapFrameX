@@ -284,7 +284,8 @@
                                         Tag="{Binding ElementName=DataViewUserControl, Path=DataContext}">
                                 <DataGrid.ContextMenu>
                                     <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
-                                        <MenuItem Header="Copy sensor info" Command="{Binding CopySensorInfoCommand}"/>
+                                        <MenuItem Header="Copy sensor data(min, avg, max)" Command="{Binding CopySensorInfoCommand}"/>
+                                        <MenuItem Header="Copy raw sensor data" Command="{Binding CopyRawSensorInfoCommand}"/>
                                     </ContextMenu>
                                 </DataGrid.ContextMenu>
                                 <DataGrid.Resources>
