@@ -8,7 +8,7 @@ namespace CapFrameX.Data.Session.Contracts
 		double[] MeasureTime { get; set; }
 		[SensorDataExport("CPU load(%)")]
 		int[] CpuUsage { get; set; }
-		[SensorDataExport("CPU max thread load(s)")]
+		[SensorDataExport("CPU max thread load(%)")]
 		int[] CpuMaxThreadUsage { get; set; }
 		[SensorDataExport("CPU max clock(MHz)")]
 		int[] CpuMaxClock { get; set; }
