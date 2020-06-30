@@ -1192,7 +1192,7 @@ namespace CapFrameX.ViewModel
             {
                 Tag = wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.Id,
                 Title = chartTitle,
-                StrokeThickness = SelectedFilterMode is EFilterMode.None ? 1 : 2,
+                StrokeThickness = 1,
                 LegendStrokeThickness = 4,
                 Color = wrappedComparisonInfo.IsHideModeSelected ?
                     OxyColors.Transparent : OxyColor.FromRgb(color.R, color.G, color.B),
