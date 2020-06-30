@@ -115,7 +115,8 @@ namespace CapFrameX.Overlay
             {
                 _identifierOverlayEntryDict.TryAdd(entry.Identifier, entry);
             }
-            SetHardwareIsNumericState();
+
+            ManageFormats();
 
             return _overlayEntries.ToList();
         }
@@ -139,6 +140,11 @@ namespace CapFrameX.Overlay
             CheckOSVersion();
             CheckGpuDriver();
 
+            ManageFormats();
+        }
+
+        private void ManageFormats()
+        {
             // copy formats from sensor service
             _overlayEntries.ForEach(entry =>
                 entry.ValueUnitFormat = _sensorService.GetSensorOverlayEntry(entry.Identifier)?.ValueUnitFormat);
@@ -431,9 +437,9 @@ namespace CapFrameX.Overlay
                     }
                 }
 
-                if (!upperLimit)
+                if (entry.LowerLimitValue != string.Empty)
                 {
-                    if (entry.LowerLimitValue != string.Empty)
+                    if (!upperLimit)
                     {
                         if (!double.TryParse(entry.Value.ToString(), out double currentConvertedValue))
                             continue;
@@ -452,7 +458,7 @@ namespace CapFrameX.Overlay
                     // value format
                     if (entry.ValueUnitFormat != null && entry.ValueAlignmentAndDigits != null)
                         entry.ValueFormat = "<S=" + entry.ValueFontSize + "><C=" + currentColor + ">" + entry.ValueAlignmentAndDigits + "<C><S>"
-                            + "<S=" + entry.ValueFontSize / 2 + "><C={" + currentColor + "}>" + entry.ValueUnitFormat + "<C><S>";
+                            + "<S=" + entry.ValueFontSize / 2 + "><C=" + currentColor + ">" + entry.ValueUnitFormat + "<C><S>";
                     else
                         entry.ValueFormat = "<S=" + entry.ValueFontSize + "><C={" + currentColor + "}>{0}<C><S>";
                 }
