@@ -153,8 +153,107 @@ namespace CapFrameX.Sensor
                 ShowOnOverlayIsEnabled = true,
                 ShowOnOverlay = GetOverlayToggle(sensor),
                 Value = 0,
-                ValueFormat = GetFormatString(sensor.SensorType)
+                ValueUnitFormat = GetValueUnitString(sensor.SensorType),
+                ValueAlignmentAndDigits = GetValueAlignmentAndDigitsString(sensor.SensorType)
             };
+        }
+
+        private string GetValueAlignmentAndDigitsString(SensorType sensorType)
+        {
+            string formatString = "{0}";
+            switch (sensorType)
+            {
+                case SensorType.Voltage:
+                    formatString = "{0,4:F2}";
+                    break;
+                case SensorType.Clock:
+                    formatString = "{0,4:F0}";
+                    break;
+                case SensorType.Temperature:
+                    formatString = "{0,4:F0}";
+                    break;
+                case SensorType.Load:
+                    formatString = "{0,4:F0}";
+                    break;
+                case SensorType.Fan:
+                    formatString = "{0,4:F0}";
+                    break;
+                case SensorType.Flow:
+                    formatString = "{0,4:F0}";
+                    break;
+                case SensorType.Control:
+                    formatString = "{0,4:F0}";
+                    break;
+                case SensorType.Level:
+                    formatString = "{0,4:F0}";
+                    break;
+                case SensorType.Factor:
+                    formatString = "{0,4:F0}";
+                    break;
+                case SensorType.Power:
+                    formatString = "{0,5:F1}";
+                    break;
+                case SensorType.Data:
+                    formatString = "{0,4:F2}";
+                    break;
+                case SensorType.SmallData:
+                    formatString = "{0,4:F0}";
+                    break;
+                case SensorType.Throughput:
+                    formatString = "{0,4:F0}";
+                    break;
+            }
+
+            return formatString;
+        }
+
+        private string GetValueUnitString(SensorType sensorType)
+        {
+            string formatString = "{0}";
+            switch (sensorType)
+            {
+                case SensorType.Voltage:
+                    formatString = "V  ";
+                    break;
+                case SensorType.Clock:
+                    formatString = "MHz";
+                    break;
+                case SensorType.Temperature:
+                    formatString = $"{GetDegreeCelciusUnitByCulture()}  ";
+                    break;
+                case SensorType.Load:
+                    formatString = "%  ";
+                    break;
+                case SensorType.Fan:
+                    formatString = "RPM";
+                    break;
+                case SensorType.Flow:
+                    formatString = "L/h";
+                    break;
+                case SensorType.Control:
+                    formatString = "%  ";
+                    break;
+                case SensorType.Level:
+                    formatString = "%  ";
+                    break;
+                case SensorType.Factor:
+                    formatString = "   ";
+                    break;
+                case SensorType.Power:
+                    formatString = "W  ";
+                    break;
+                case SensorType.Data:
+                    formatString = "GB ";
+                    break;
+                case SensorType.SmallData:
+                    formatString = "MB ";
+                    break;
+                case SensorType.Throughput:
+                    formatString = "MB/s";
+                    break;
+            }
+
+            return formatString;
         }
 
         private string GetDegreeCelciusUnitByCulture()
@@ -315,55 +414,6 @@ namespace CapFrameX.Sensor
             }
 
             return type;
-        }
-
-        private string GetFormatString(SensorType sensorType)
-        {
-            string formatString = "{0}";
-            switch (sensorType)
-            {
-                case SensorType.Voltage:
-                    formatString = "{0,4:F2}<S=50>V  <S>";
-                    break;
-                case SensorType.Clock:
-                    formatString = "{0,4:F0}<S=50>MHz<S>";
-                    break;
-                case SensorType.Temperature:
-                    formatString = "{0,4:F0}<S=50>" + GetDegreeCelciusUnitByCulture() + " <S>";
-                    break;
-                case SensorType.Load:
-                    formatString = "{0,4:F0}<S=50>%  <S>";
-                    break;
-                case SensorType.Fan:
-                    formatString = "{0,4:F0}<S=50>RPM<S>";
-                    break;
-                case SensorType.Flow:
-                    formatString = "{0,4:F0}<S=50>L/h<S>";
-                    break;
-                case SensorType.Control:
-                    formatString = "{0,4:F0}<S=50>%  <S>";
-                    break;
-                case SensorType.Level:
-                    formatString = "{0,4:F0}<S=50>%  <S>";
-                    break;
-                case SensorType.Factor:
-                    formatString = "{0,4:F0}<S=50>   <S>";
-                    break;
-                case SensorType.Power:
-                    formatString = "{0,5:F1}<S=50>W  <S>";
-                    break;
-                case SensorType.Data:
-                    formatString = "{0,4:F2}<S=50>GB <S>";
-                    break;
-                case SensorType.SmallData:
-                    formatString = "{0,4:F0}<S=50>MB <S>";
-                    break;
-                case SensorType.Throughput:
-                    formatString = "{0,4:F0}<S=50>MB/s<S>";
-                    break;
-            }
-
-            return formatString;
         }
 
         private IOverlayEntry[] GetSensorOverlayEntries()

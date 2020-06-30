@@ -8,6 +8,8 @@ namespace CapFrameX.Overlay
 {
     public class OverlayEntryWrapper : BindableBase, IOverlayEntry
     {
+        private const int DEFAULT_FONTSIZE = 100;
+
         private bool _showOnOverlay;
         private bool _showOnOverlayIsEnabled;
         private string _groupName;
@@ -40,6 +42,12 @@ namespace CapFrameX.Overlay
 
         [JsonIgnore]
         public Action UpdateGroupName { get; set; }
+
+        [JsonIgnore]
+        public string ValueAlignmentAndDigits { get; set; }
+
+        [JsonIgnore]
+        public string ValueUnitFormat { get; set; }
 
         [JsonIgnore]
         public string FormattedValue
@@ -122,7 +130,7 @@ namespace CapFrameX.Overlay
 
         public int ValueFontSize
         {
-            get { return _valueFontSize == 0 ? 50 : _valueFontSize; }
+            get { return _valueFontSize == 0 ? DEFAULT_FONTSIZE : _valueFontSize; }
             set
             {
                 FormatChanged = _valueFontSize != value;
@@ -181,7 +189,7 @@ namespace CapFrameX.Overlay
 
         public int GroupFontSize
         {
-            get { return _groupFontSize == 0 ? 50 : _groupFontSize; }
+            get { return _groupFontSize == 0 ? DEFAULT_FONTSIZE : _groupFontSize; }
             set
             {
                 FormatChanged = _groupFontSize != value;

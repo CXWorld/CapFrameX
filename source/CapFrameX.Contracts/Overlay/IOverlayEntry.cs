@@ -55,6 +55,10 @@ namespace CapFrameX.Contracts.Overlay
 
         bool IsNumeric { get; set; }
 
+        string ValueAlignmentAndDigits { get; set; }
+
+        string ValueUnitFormat { get; set; }
+
         Action UpdateGroupName { get; set; }
     }
 }

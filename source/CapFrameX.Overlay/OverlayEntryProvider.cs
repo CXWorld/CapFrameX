@@ -11,6 +11,7 @@ using Prism.Events;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
@@ -52,7 +53,7 @@ namespace CapFrameX.Overlay
                 .OnDictionaryUpdated
                 .Replay(1)
                 .AutoConnect(0);
-            
+
             _ = Task.Run(async () => await LoadOrSetDefault())
                 .ContinueWith(task => _taskCompletionSource.SetResult(true));
 
@@ -64,7 +65,7 @@ namespace CapFrameX.Overlay
             await _taskCompletionSource.Task;
             UpdateSensorData();
             UpdateOnlineMetrics();
-            UpdateAdvancedFormatting();
+            UpdateFormatting();
             return _overlayEntries.ToArray();
         }
 
@@ -139,8 +140,16 @@ namespace CapFrameX.Overlay
             CheckOSVersion();
             CheckGpuDriver();
 
+            // copy formats from sensor service
+            _overlayEntries.ForEach(entry =>
+                entry.ValueUnitFormat = _sensorService.GetSensorOverlayEntry(entry.Identifier)?.ValueUnitFormat);
+            _overlayEntries.ForEach(entry =>
+                entry.ValueAlignmentAndDigits = _sensorService.GetSensorOverlayEntry(entry.Identifier)?.ValueAlignmentAndDigits);
+            SetOnlineMetricFormats();
+
             SetOnlineMetricsIsNumericState();
             SetHardwareIsNumericState();
+            _overlayEntries.ForEach(entry => entry.FormatChanged = true);
         }
 
         private IObservable<BlockingCollection<IOverlayEntry>> InitializeOverlayEntryDictionary()
@@ -257,8 +266,8 @@ namespace CapFrameX.Overlay
 
         private void UpdateSensorData()
         {
-            foreach (var entry in _overlayEntries.Where(x => 
-                (x.OverlayEntryType == EOverlayEntryType.GPU 
+            foreach (var entry in _overlayEntries.Where(x =>
+                (x.OverlayEntryType == EOverlayEntryType.GPU
                  || x.OverlayEntryType == EOverlayEntryType.CPU
                  || x.OverlayEntryType == EOverlayEntryType.RAM)))
             {
@@ -275,7 +284,6 @@ namespace CapFrameX.Overlay
             if (averageEntry != null && averageEntry.ShowOnOverlay)
             {
                 averageEntry.Value = Math.Round(_onlineMetricService.GetOnlineFpsMetricValue(EMetric.Average));
-                averageEntry.ValueFormat = "{0,4:F0}<S=50>FPS<S>";
             }
 
             // P1
@@ -284,7 +292,6 @@ namespace CapFrameX.Overlay
             if (p1Entry != null && p1Entry.ShowOnOverlay)
             {
                 p1Entry.Value = Math.Round(_onlineMetricService.GetOnlineFpsMetricValue(EMetric.P1));
-                p1Entry.ValueFormat = "{0,4:F0}<S=50>FPS<S>";
             }
 
             // P0.2
@@ -293,7 +300,6 @@ namespace CapFrameX.Overlay
             if (p1dot2Entry != null && p1dot2Entry.ShowOnOverlay)
             {
                 p1dot2Entry.Value = Math.Round(_onlineMetricService.GetOnlineFpsMetricValue(EMetric.P0dot2));
-                p1dot2Entry.ValueFormat = "{0,4:F0}<S=50>FPS<S>";
             }
         }
 
@@ -324,6 +330,36 @@ namespace CapFrameX.Overlay
             }
         }
 
+        private void SetOnlineMetricFormats()
+        {
+            // average
+            _identifierOverlayEntryDict.TryGetValue("OnlineAverage", out IOverlayEntry averageEntry);
+
+            if (averageEntry != null)
+            {
+                averageEntry.ValueUnitFormat = "FPS";
+                averageEntry.ValueAlignmentAndDigits = "{0,4:F0}";
+            }
+
+            // P1
+            _identifierOverlayEntryDict.TryGetValue("OnlineP1", out IOverlayEntry p1Entry);
+
+            if (p1Entry != null)
+            {
+                p1Entry.ValueUnitFormat = "FPS";
+                p1Entry.ValueAlignmentAndDigits = "{0,4:F0}";
+            }
+
+            // P0.2
+            _identifierOverlayEntryDict.TryGetValue("OnlineP0dot2", out IOverlayEntry p1dot2Entry);
+
+            if (p1dot2Entry != null)
+            {
+                p1dot2Entry.ValueUnitFormat = "FPS";
+                p1dot2Entry.ValueAlignmentAndDigits = "{0,4:F0}";
+            }
+        }
+
         private void SetHardwareIsNumericState()
         {
             foreach (var entry in _overlayEntries.Where(x =>
@@ -335,14 +371,63 @@ namespace CapFrameX.Overlay
             }
         }
 
-        private void UpdateAdvancedFormatting()
+        private void UpdateFormatting()
         {
-            foreach (var entry in _overlayEntries.Where(x => x.FormatChanged))
+            foreach (var entry in _overlayEntries
+                .Where(x => x.FormatChanged))
             {
-                entry.GroupNameFormat 
-                    = entry.GroupSeparators == 0 ? "{0}" 
-                    : Enumerable.Repeat("\n", entry.GroupSeparators).Aggregate((i, j) => i + j) + "{0}";
+                // group name format
+                var basicGroupFormat = "<S=" + entry.GroupFontSize + "><C={" + entry.GroupColor + "}><{0}><C><S>";
+                entry.GroupNameFormat
+                    = entry.GroupSeparators == 0 ? basicGroupFormat
+                    : Enumerable.Repeat("\n", entry.GroupSeparators).Aggregate((i, j) => i + j) + basicGroupFormat;
+
+                // value format
+                if (entry.ValueUnitFormat != null && entry.ValueAlignmentAndDigits != null)
+                    entry.ValueFormat = "<S=" + entry.ValueFontSize + "><C={" + entry.Color + "}><" + entry.ValueAlignmentAndDigits + "><C><S>"
+                        + "<S=" + entry.ValueFontSize / 2 + "><C={" + entry.Color + "}><" + entry.ValueUnitFormat + "><C><S>";
+                else
+                    entry.ValueFormat = "<S=" + entry.ValueFontSize + "><C={" + entry.Color + "}><{0}><C><S>";
+
+                // reset format changed 
                 entry.FormatChanged = false;
+            }
+
+            // check value limits
+            foreach (var entry in _overlayEntries)
+            {
+                var currentColor = entry.Color;
+                bool upperLimit = false;
+
+                if (entry.UpperLimitValue != string.Empty)
+                {
+                    var currentConvertedValue = Convert.ToDouble(entry.Value);
+                    var convertedUpperValue = Convert.ToDouble(entry.UpperLimitValue);
+
+                    if (currentConvertedValue >= convertedUpperValue)
+                    {
+                        currentColor = entry.UpperLimitColor;
+                        upperLimit = true;
+                    }
+                }
+
+                if (!upperLimit)
+                {
+                    if (entry.LowerLimitValue != string.Empty)
+                    {
+                        var currentConvertedValue = Convert.ToDouble(entry.Value);
+                        var convertedLowerValue = Convert.ToDouble(entry.LowerLimitValue);
+
+                        if (currentConvertedValue <= convertedLowerValue)
+                            currentColor = entry.LowerLimitColor;
+                    }
+                }
+
+                // format has to be updated
+                if (currentColor != entry.Color)
+                {
+
+                }
             }
         }
 
