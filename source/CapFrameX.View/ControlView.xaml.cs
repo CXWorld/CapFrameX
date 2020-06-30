@@ -216,7 +216,11 @@ namespace CapFrameX.View
 			{
 				AddSortColumn(dataGrid, "CreationTimestamp", sortDirection);
 			}
-
+			else if (sortMemberPath != "CreationTimestamp")
+			{
+				AddSortColumn(dataGrid, "GameName", sortDirection);
+				AddSortColumn(dataGrid, "CreationTimestamp", sortDirection);
+			}
 		}
 
 		private void RecordInfoListOnFilter(object sender, FilterEventArgs e)

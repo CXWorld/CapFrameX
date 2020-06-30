@@ -259,10 +259,10 @@
             </StackPanel>
 
             <StackPanel Grid.Column="2" Margin="20 5 5 5" Orientation="Horizontal" Visibility="{Binding IsBarChartTabActive, Converter={StaticResource TrueToVisibleConverter}}"
-                        ToolTip="Select a second and third metric to be shown">
+                        ToolTip="Select metrics to be shown">
                 <TextBlock Margin="0 0 0 0" VerticalAlignment="Center"  HorizontalAlignment="Center"> Metrics</TextBlock>
                 <materialDesign:PopupBox StaysOpen="True" ToolTipService.ShowDuration="25000" PlacementMode="TopAndAlignCentres">
-                    <materialDesign:Card Width="300" Margin="0 0 0 -10">
+                    <materialDesign:Card Width="450" Margin="0 0 0 -10">
                         <StackPanel>
                             <Grid Margin="8 8 8 8">
                                 <Grid.RowDefinitions>
@@ -271,8 +271,19 @@
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
-                                <ComboBox Grid.Column="0" Width="125" VerticalAlignment="Center" Margin="5 5 5 5" materialDesign:HintAssist.Hint="Second metric"
+                                <ComboBox Grid.Column="0" Width="125" VerticalAlignment="Center" Margin="5 5 5 5" materialDesign:HintAssist.Hint="First metric"
+					                Visibility="{Binding IsBarChartTabActive, Converter={StaticResource TrueToVisibleConverter}}"
+					                materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="330" materialDesign:ComboBoxAssist.ClassicMode="True"
+					                ItemsSource="{Binding FirstMetricItems}" SelectedItem="{Binding SelectedFirstMetric}">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}"/>
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+                                <ComboBox Grid.Column="1" Width="125" VerticalAlignment="Center" Margin="15 5 5 5" materialDesign:HintAssist.Hint="Second metric"
 					                Visibility="{Binding IsBarChartTabActive, Converter={StaticResource TrueToVisibleConverter}}"
 					                materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="330" materialDesign:ComboBoxAssist.ClassicMode="True"
 					                ItemsSource="{Binding SecondMetricItems}" SelectedItem="{Binding SelectedSecondMetric}">
@@ -282,7 +293,7 @@
                                         </DataTemplate>
                                     </ComboBox.ItemTemplate>
                                 </ComboBox>
-                                <ComboBox Grid.Column="1" Width="125" VerticalAlignment="Center" Margin="15 5 5 5" materialDesign:HintAssist.Hint="Third metric"
+                                <ComboBox Grid.Column="2" Width="125" VerticalAlignment="Center" Margin="15 5 5 5" materialDesign:HintAssist.Hint="Third metric"
 					                materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="360" materialDesign:ComboBoxAssist.ClassicMode="True"
 					                ItemsSource="{Binding ThirdMetricItems}" SelectedItem="{Binding SelectedThirdMetric}">
                                     <ComboBox.ItemTemplate>
@@ -313,7 +324,9 @@
 
             <StackPanel Grid.Column="4" VerticalAlignment="Center" Margin="25 0 0 0" Orientation="Horizontal"
 						Visibility="{Binding IsBarChartTabActive, Converter={StaticResource TrueToVisibleConverter}}">
-                <TextBlock VerticalAlignment="Center">Sort mode:</TextBlock>
+                <ComboBox Width="80" Margin="0 0 0 10" materialDesign:HintAssist.Hint="Sort metric" materialDesign:ComboBoxAssist.ClassicMode="True" materialDesign:HintAssist.IsFloating="True"
+                          ItemsSource="{Binding SortMetricItemsSource}" SelectedItem="{Binding SelectedSortMetric}">
+                </ComboBox>
                 <ToggleButton Margin="5 0 0 0" Foreground="Black" BorderThickness="1" Background="Transparent"
 							  Style="{StaticResource MaterialDesignActionAccentToggleButton}" IsChecked="{Binding IsSortModeAscending}">
                     <ToggleButton.Content>

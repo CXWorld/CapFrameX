@@ -168,6 +168,12 @@ namespace CapFrameX.Configuration
             set { Settings.SimpleSoundLevel = value; Settings.Save(); }
         }
 
+		public string FirstMetric
+		{
+			get { return Settings.FirstMetric; }
+			set { Settings.FirstMetric = value; Settings.Save(); }
+		}
+
 		public string SecondMetric 
 		{
 			get { return Settings.SecondMetric; }
