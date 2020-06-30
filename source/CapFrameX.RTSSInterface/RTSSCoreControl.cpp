@@ -577,12 +577,11 @@ void RTSSCoreControl::AddOverlayEntry(CGroupedString* groupedString, OverlayEntr
 
 			if (groupName != "")
 			{
-				groupName = "<C2>" + groupName + " <C>";
-				groupedString->Add("<A=0><C3> " + entry->Value + "<C><A>", groupName, "\n", " ");
+				groupedString->Add(entry->Value, groupName, "\n", " ");
 			}
 			else
 			{
-				groupedString->Add("<A=0><C3>" + entry->Value + "<C><A>", groupName, "\n", " ");
+				groupedString->Add(entry->Value, "", "\n", " ");
 			}
 		}
 	}
@@ -591,15 +590,15 @@ void RTSSCoreControl::AddOverlayEntry(CGroupedString* groupedString, OverlayEntr
 		if (entry->ShowOnOverlay && IsCaptureTimerActive)
 		{
 			CString groupName = entry->GroupName;
-			CString value = entry->Value;
 
 			if (groupName != "")
 			{
-				groupName = "<C2>" + groupName + " <C>";
-				groupedString->Add("<C4> " + value + "<C>", groupName, "\n", " ");
+				groupedString->Add(entry->Value, groupName, "\n", " ");
 			}
 			else
-				groupedString->Add("<C4>" + value + "<C>", groupName, "\n", " ");
+			{
+				groupedString->Add(entry->Value, "", "\n", " ");
+			}
 		}
 	}
 	else if (entry->Identifier == "Framerate")
@@ -608,7 +607,7 @@ void RTSSCoreControl::AddOverlayEntry(CGroupedString* groupedString, OverlayEntr
 		{
 			if (bFormatTagsSupported && m_bFormatTags)
 			{
-				groupedString->Add("<A=-5><C1><FR><C><A><A=5><S1><C1>FPS<C><S><A>", "<C1><APP> <C>", "\n", m_bFormatTags ? " " : ", ");
+				groupedString->Add(entry->Value, entry->GroupName, "\n", m_bFormatTags ? " " : ", ");
 				//print application-specific 3D API, framerate and frametime using tags
 			}
 			else
@@ -624,7 +623,7 @@ void RTSSCoreControl::AddOverlayEntry(CGroupedString* groupedString, OverlayEntr
 		{
 			if (bFormatTagsSupported && m_bFormatTags)
 			{
-				groupedString->Add("<A=-5><C1><FT><C><A><A=5><S1><C1>ms<C><S><A>", "<C1><APP> <C>", "\n", m_bFormatTags ? " " : ", ");
+				groupedString->Add(entry->Value, entry->GroupName, "\n", m_bFormatTags ? " " : ", ");
 				//print application-specific 3D API, framerate and frametime using tags
 			}
 			else
@@ -639,15 +638,15 @@ void RTSSCoreControl::AddOverlayEntry(CGroupedString* groupedString, OverlayEntr
 		if (entry->ShowOnOverlay)
 		{
 			CString groupName = entry->GroupName;
-			CString value = entry->Value;
 
 			if (groupName != "")
 			{
-				groupName = "<C2>" + groupName + " <C>";
-				groupedString->Add("<C4> " + value + "<C>", groupName, "\n", " ");
+				groupedString->Add(entry->Value, groupName, "\n", " ");
 			}
 			else
-				groupedString->Add("<C4>" + value + "<C>", groupName, "\n", " ");
+			{
+				groupedString->Add(entry->Value, "", "\n", " ");
+			}
 		}
 	}
 }

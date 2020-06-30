@@ -11,7 +11,6 @@ using Prism.Events;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
@@ -377,17 +376,32 @@ namespace CapFrameX.Overlay
                 .Where(x => x.FormatChanged))
             {
                 // group name format
-                var basicGroupFormat = "<S=" + entry.GroupFontSize + "><C={" + entry.GroupColor + "}><{0}><C><S>";
+                var basicGroupFormat = "<S=" + entry.GroupFontSize + "><C=" + entry.GroupColor + ">{0}<C><S>";
                 entry.GroupNameFormat
                     = entry.GroupSeparators == 0 ? basicGroupFormat
                     : Enumerable.Repeat("\n", entry.GroupSeparators).Aggregate((i, j) => i + j) + basicGroupFormat;
 
                 // value format
-                if (entry.ValueUnitFormat != null && entry.ValueAlignmentAndDigits != null)
-                    entry.ValueFormat = "<S=" + entry.ValueFontSize + "><C={" + entry.Color + "}><" + entry.ValueAlignmentAndDigits + "><C><S>"
-                        + "<S=" + entry.ValueFontSize / 2 + "><C={" + entry.Color + "}><" + entry.ValueUnitFormat + "><C><S>";
+                if (entry.Identifier == "Framerate")
+                {
+                    entry.ValueFormat =
+                        "<A=-5><S=" + entry.ValueFontSize.ToString() + "><C=" + entry.Color + "><FR><C><S><A>" +
+                        "<A=5><S=" + (entry.ValueFontSize/2).ToString() + "><C=" + entry.Color + ">FPS<C><S><A>";
+                }
+                else if (entry.Identifier == "Frametime")
+                {
+                    entry.ValueFormat =
+                        "<A=-5><S=" + entry.ValueFontSize.ToString() + "><C=" + entry.Color + "><FT><C><S><A>" +
+                        "<A=5><S=" + (entry.ValueFontSize / 2).ToString() + "><C=" + entry.Color + ">ms<C><S><A>";
+                }
                 else
-                    entry.ValueFormat = "<S=" + entry.ValueFontSize + "><C={" + entry.Color + "}><{0}><C><S>";
+                {
+                    if (entry.ValueUnitFormat != null && entry.ValueAlignmentAndDigits != null)
+                        entry.ValueFormat = "<S=" + entry.ValueFontSize + "><C=" + entry.Color + ">" + entry.ValueAlignmentAndDigits + "<C><S>"
+                            + "<S=" + entry.ValueFontSize / 2 + "><C=" + entry.Color + ">" + entry.ValueUnitFormat + "<C><S>";
+                    else
+                        entry.ValueFormat = "<S=" + entry.ValueFontSize + "><C=" + entry.Color + ">{0}<C><S>";
+                }
 
                 // reset format changed 
                 entry.FormatChanged = false;
@@ -399,10 +413,16 @@ namespace CapFrameX.Overlay
                 var currentColor = entry.Color;
                 bool upperLimit = false;
 
+                if (entry.Value == null)
+                    continue;
+
                 if (entry.UpperLimitValue != string.Empty)
                 {
-                    var currentConvertedValue = Convert.ToDouble(entry.Value);
-                    var convertedUpperValue = Convert.ToDouble(entry.UpperLimitValue);
+                    if (!double.TryParse(entry.Value.ToString(), out double currentConvertedValue))
+                        continue;
+
+                    if (!double.TryParse(entry.UpperLimitValue, out double convertedUpperValue))
+                        continue;
 
                     if (currentConvertedValue >= convertedUpperValue)
                     {
@@ -415,8 +435,11 @@ namespace CapFrameX.Overlay
                 {
                     if (entry.LowerLimitValue != string.Empty)
                     {
-                        var currentConvertedValue = Convert.ToDouble(entry.Value);
-                        var convertedLowerValue = Convert.ToDouble(entry.LowerLimitValue);
+                        if (!double.TryParse(entry.Value.ToString(), out double currentConvertedValue))
+                            continue;
+
+                        if (!double.TryParse(entry.LowerLimitValue, out double convertedLowerValue))
+                            continue;
 
                         if (currentConvertedValue <= convertedLowerValue)
                             currentColor = entry.LowerLimitColor;
@@ -426,7 +449,12 @@ namespace CapFrameX.Overlay
                 // format has to be updated
                 if (currentColor != entry.Color)
                 {
-
+                    // value format
+                    if (entry.ValueUnitFormat != null && entry.ValueAlignmentAndDigits != null)
+                        entry.ValueFormat = "<S=" + entry.ValueFontSize + "><C=" + currentColor + ">" + entry.ValueAlignmentAndDigits + "<C><S>"
+                            + "<S=" + entry.ValueFontSize / 2 + "><C={" + currentColor + "}>" + entry.ValueUnitFormat + "<C><S>";
+                    else
+                        entry.ValueFormat = "<S=" + entry.ValueFontSize + "><C={" + currentColor + "}>{0}<C><S>";
                 }
             }
         }
