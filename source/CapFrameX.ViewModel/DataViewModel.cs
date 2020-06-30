@@ -664,19 +664,21 @@ namespace CapFrameX.ViewModel
 			{
 				var attribute = pi.GetCustomAttributes(false).OfType<SensorDataExportAttribute>().FirstOrDefault();
 				return attribute.Description;
-			})));
+			})) + "\t" + "Time in GPU limit(%)");
 
 			//Content
 			foreach (var run in rawSensorInfos)
 			{
 				for (int i = 0; i < run.MeasureTime.Length; i++)
 				{
+					var gpuLoadLimit = SensorReport.GetPercentageInGpuLoadLimit(run.GpuUsage.ToList());
+
 					var lineValues = propertyInfos.Select(pi =>
 					{
 						var array = pi.GetValue(run) as Array;
 						return array.Length >= run.MeasureTime.Length ? Convert.ToString(array.GetValue(i), CultureInfo.InvariantCulture) : string.Empty;
 					});
-					builder.AppendLine(string.Join("\t", lineValues));
+					builder.AppendLine(string.Join("\t", lineValues) + "\t" + gpuLoadLimit );
 				}
 			}
 
