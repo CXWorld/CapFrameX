@@ -121,6 +121,43 @@ namespace CapFrameX.Overlay
 			return _overlayEntries.ToList();
 		}
 
+		public void SetFormatForGroupName(string groupName, IOverlayEntry selectedEntry)
+		{
+			foreach (var entry in _overlayEntries
+					.Where(x => x.GroupName == groupName))
+			{
+				entry.GroupColor = selectedEntry.GroupColor;
+				entry.Color = selectedEntry.Color;
+				entry.UpperLimitColor = selectedEntry.UpperLimitColor;
+				entry.LowerLimitColor = selectedEntry.LowerLimitColor;
+				entry.UpperLimitValue = selectedEntry.UpperLimitValue;
+				entry.LowerLimitValue = selectedEntry.LowerLimitValue;
+				entry.GroupFontSize = selectedEntry.GroupFontSize;
+				entry.ValueFontSize = selectedEntry.ValueFontSize;
+				UpdateFormatting();
+			}
+			UpdateFormatting();
+		}
+
+		public void SetFormatForSensorType(string sensorType, IOverlayEntry selectedEntry)
+		{
+
+
+			foreach (var entry in _overlayEntries
+					.Where(x => GetSensorTypeString(x) == sensorType))
+			{
+				entry.GroupColor = selectedEntry.GroupColor;
+				entry.Color = selectedEntry.Color;
+				entry.UpperLimitColor = selectedEntry.UpperLimitColor;
+				entry.LowerLimitColor = selectedEntry.LowerLimitColor;
+				entry.UpperLimitValue = selectedEntry.UpperLimitValue;
+				entry.LowerLimitValue = selectedEntry.LowerLimitValue;
+				entry.GroupFontSize = selectedEntry.GroupFontSize;
+				entry.ValueFontSize = selectedEntry.ValueFontSize;
+				UpdateFormatting();
+			}
+		}
+
 		private async Task LoadOrSetDefault()
 		{
 			try
@@ -475,6 +512,53 @@ namespace CapFrameX.Overlay
 						entry.ValueFormat = "<S=" + entry.ValueFontSize + "><C={" + currentColor + "}>{0}<C><S>";
 				}
 			}
+		}
+
+		public string GetSensorTypeString(IOverlayEntry entry)
+		{
+			if (entry == null)
+				return string.Empty;
+
+			string SensorType;
+
+			if (entry.Identifier.Contains("cpu"))
+			{
+				if (entry.Identifier.Contains("load"))
+					SensorType = "CPU Load";
+				else if (entry.Identifier.Contains("clock"))
+					SensorType = "CPU Clock";
+				else if (entry.Identifier.Contains("power"))
+					SensorType = "CPU Power";
+				else if (entry.Identifier.Contains("temperature"))
+					SensorType = "CPU Temperature";
+				else if (entry.Identifier.Contains("voltage"))
+					SensorType = "CPU Voltage";
+				else
+					SensorType = string.Empty;
+			}
+
+			else if (entry.Identifier.Contains("gpu"))
+			{
+				if (entry.Identifier.Contains("load"))
+					SensorType = "GPU Load";
+				else if (entry.Identifier.Contains("clock"))
+					SensorType = "GPU Clock";
+				else if (entry.Identifier.Contains("power"))
+					SensorType = "GPU Power";
+				else if (entry.Identifier.Contains("temperature"))
+					SensorType = "GPU Temperature";
+				else if (entry.Identifier.Contains("voltage"))
+					SensorType = "GPU Voltage";
+				else if (entry.Identifier.Contains("factor"))
+					SensorType = "GPU Limits";
+				else
+					SensorType = string.Empty;
+			}
+
+			else
+				SensorType = string.Empty;
+
+			return SensorType;
 		}
 
 		private string GetConfigurationFileName()

@@ -362,6 +362,10 @@ namespace CapFrameX.ViewModel
 
         public ICommand ResetDefaultsCommand { get; }
 
+        public ICommand SetFormatForGroupNameCommand { get; }
+
+        public ICommand SetFormatForSensorTypeCommand { get; }
+
         public bool IsRTSSInstalled
             => _rTSSService.IsRTSSInstalled();
 
@@ -438,6 +442,13 @@ namespace CapFrameX.ViewModel
 
             ResetDefaultsCommand = new DelegateCommand(
                 async () => await OnResetDefaults());
+
+            SetFormatForGroupNameCommand = new DelegateCommand(
+               () => _overlayEntryProvider.SetFormatForGroupName(SelectedOverlayItemGroupName, SelectedOverlayEntry));
+
+            SetFormatForSensorTypeCommand = new DelegateCommand(
+               () => _overlayEntryProvider.SetFormatForSensorType(GetSensorTypeString(SelectedOverlayEntry), SelectedOverlayEntry));
+
 
             UpdateHpyerlinkText = "To use the overlay, install the latest" + Environment.NewLine +
                 "RivaTuner Statistics Server (RTSS)";
