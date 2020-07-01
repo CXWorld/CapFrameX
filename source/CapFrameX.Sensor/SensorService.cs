@@ -266,7 +266,7 @@ namespace CapFrameX.Sensor
                     formatString = "MHz";
                     break;
                 case SensorType.Temperature:
-                    formatString = $"{GetDegreeCelciusUnitByCulture()}  ";
+                    formatString = $"{GetDegreeCelciusUnitByCulture()} ";
                     break;
                 case SensorType.Load:
                     formatString = "%  ";

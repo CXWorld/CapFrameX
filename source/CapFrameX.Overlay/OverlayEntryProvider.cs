@@ -468,7 +468,8 @@ namespace CapFrameX.Overlay
 			}
 
 			// check value limits
-			foreach (var entry in _overlayEntries)
+			foreach (var entry in _overlayEntries
+				.Where(x => x.ShowOnOverlay))
 			{
 				if (!(entry.LowerLimitValue == string.Empty && entry.UpperLimitValue == string.Empty))
 				{
