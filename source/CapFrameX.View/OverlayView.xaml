@@ -4,14 +4,13 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:CapFrameX.View"
+             xmlns:ctrls="clr-namespace:CapFrameX.View.Controls"
 			 xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
 			 xmlns:dragdrop="urn:gong-wpf-dragdrop"
 			 xmlns:mvvm="clr-namespace:CapFrameX.MVVM.Converter;assembly=CapFrameX.MVVM"
 			 xmlns:validation ="clr-namespace:CapFrameX.MVVM.Validation;assembly=CapFrameX.MVVM"
 			 xmlns:wpf="clr-namespace:MaterialDesignThemes.Wpf;assembly=MaterialDesignThemes.Wpf"
 			 xmlns:prism="http://prismlibrary.com/"
-             xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
              mc:Ignorable="d" 
              d:DesignHeight="1000" d:DesignWidth="1200"
 			 Background="{DynamicResource MaterialDesignPaper}"
@@ -492,9 +491,9 @@
                                 </Grid.ColumnDefinitions>
                                 <TextBlock Grid.Row="0" Grid.ColumnSpan="3" VerticalAlignment="Center" HorizontalAlignment="Center" Text="Colors and limits" FontSize="16"/>
                                 <TextBlock Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Text="Group color:"/>
-                                <xctk:ColorPicker Grid.Row="1" Grid.Column="2" Width="25" Height="25" Margin="0 0 0 0" Background="#e6e6e6" SelectedColor="{Binding SelectedOverlayEntry.GroupColor, Converter={StaticResource StringColorConverter}}" 
+                                <ctrls:CXColorPicker Grid.Row="1" Grid.Column="2" Width="25" Height="25" Margin="0 0 0 0" Background="#e6e6e6" SelectedColor="{Binding SelectedOverlayEntry.GroupColor, Converter={StaticResource StringColorConverter}}" 
 										SelectedColorChanged="SelectedColorChanged" DisplayColorAndName="False" AvailableColorsSortingMode="HueSaturationBrightness">
-                                    <xctk:ColorPicker.ButtonStyle>
+                                    <ctrls:CXColorPicker.ButtonStyle>
                                         <Style TargetType="ToggleButton">
                                             <Setter Property="Template">
                                                 <Setter.Value>
@@ -517,12 +516,12 @@
                                                 </Setter.Value>
                                             </Setter>
                                         </Style>
-                                    </xctk:ColorPicker.ButtonStyle>
-                                </xctk:ColorPicker>
+                                    </ctrls:CXColorPicker.ButtonStyle>
+                                </ctrls:CXColorPicker>
                                 <TextBlock Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" Text="Standard value color:"/>
-                                <xctk:ColorPicker Grid.Row="2" Grid.Column="2" Width="25" Height="25" Margin="0 0 0 0" Background="#e6e6e6" SelectedColor="{Binding SelectedOverlayEntry.Color, Converter={StaticResource StringColorConverter}}" 
+                                <ctrls:CXColorPicker Grid.Row="2" Grid.Column="2" Width="25" Height="25" Margin="0 0 0 0" Background="#e6e6e6" SelectedColor="{Binding SelectedOverlayEntry.Color, Converter={StaticResource StringColorConverter}}" 
 										SelectedColorChanged="SelectedColorChanged" DisplayColorAndName="False" AvailableColorsSortingMode="HueSaturationBrightness">
-                                    <xctk:ColorPicker.ButtonStyle>
+                                    <ctrls:CXColorPicker.ButtonStyle>
                                         <Style TargetType="ToggleButton">
                                             <Setter Property="Template">
                                                 <Setter.Value>
@@ -545,17 +544,17 @@
                                                 </Setter.Value>
                                             </Setter>
                                         </Style>
-                                    </xctk:ColorPicker.ButtonStyle>
-                                </xctk:ColorPicker>
+                                    </ctrls:CXColorPicker.ButtonStyle>
+                                </ctrls:CXColorPicker>
                                 <TextBlock Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" Text="Upper limit + color:"></TextBlock>
                                 <TextBox Grid.Row="3" Grid.Column="1" Width="40" VerticalAlignment="Center" PreviewKeyDown="LostFocus_PreviewKeyDown" PreviewTextInput="NumberValidationTextBox" 
                                          ToolTip="Clear this box to deactivate limit"
                                          Text="{Binding SelectedOverlayEntry.UpperLimitValue, UpdateSourceTrigger=LostFocus}" IsEnabled="{Binding SelectedOverlayEntry.IsNumeric}">
                                 </TextBox>
-                                <xctk:ColorPicker Grid.Row="3" Grid.Column="2" Width="25" Height="25" Margin="0 0 0 0" Background="#e6e6e6" SelectedColor="{Binding SelectedOverlayEntry.UpperLimitColor, Converter={StaticResource StringColorConverter}}" 
+                                <ctrls:CXColorPicker Grid.Row="3" Grid.Column="2" Width="25" Height="25" Margin="0 0 0 0" Background="#e6e6e6" SelectedColor="{Binding SelectedOverlayEntry.UpperLimitColor, Converter={StaticResource StringColorConverter}}" 
 										          SelectedColorChanged="SelectedColorChanged" DisplayColorAndName="False" AvailableColorsSortingMode="HueSaturationBrightness"
                                                   IsEnabled="{Binding SelectedOverlayEntry.IsNumeric}">
-                                    <xctk:ColorPicker.ButtonStyle>
+                                    <ctrls:CXColorPicker.ButtonStyle>
                                         <Style TargetType="ToggleButton">
                                             <Setter Property="Template">
                                                 <Setter.Value>
@@ -578,18 +577,18 @@
                                                 </Setter.Value>
                                             </Setter>
                                         </Style>
-                                    </xctk:ColorPicker.ButtonStyle>
-                                </xctk:ColorPicker>
+                                    </ctrls:CXColorPicker.ButtonStyle>
+                                </ctrls:CXColorPicker>
                                 <TextBlock Grid.Row="4" Grid.Column="0"  VerticalAlignment="Center" Text="Lower limit + color:"></TextBlock>
                                 <TextBox Grid.Row="4" Grid.Column="1" Width="40" VerticalAlignment="Center" PreviewKeyDown="LostFocus_PreviewKeyDown" PreviewTextInput="NumberValidationTextBox" 
                                          ToolTip="Clear this box to deactivate limit"
                                          Text="{Binding SelectedOverlayEntry.LowerLimitValue, UpdateSourceTrigger=LostFocus}"
                                          IsEnabled="{Binding SelectedOverlayEntry.IsNumeric}">
                                 </TextBox>
-                                <xctk:ColorPicker Grid.Row="4" Grid.Column="2" Width="25" Height="25" Margin="0 0 0 0" Background="#e6e6e6" SelectedColor="{Binding SelectedOverlayEntry.LowerLimitColor, Converter={StaticResource StringColorConverter}}" 
+                                <ctrls:CXColorPicker Grid.Row="4" Grid.Column="2" Width="25" Height="25" Margin="0 0 0 0" Background="#e6e6e6" SelectedColor="{Binding SelectedOverlayEntry.LowerLimitColor, Converter={StaticResource StringColorConverter}}" 
 										          SelectedColorChanged="SelectedColorChanged" DisplayColorAndName="False" AvailableColorsSortingMode="HueSaturationBrightness"
                                                   IsEnabled="{Binding SelectedOverlayEntry.IsNumeric}">
-                                    <xctk:ColorPicker.ButtonStyle>
+                                    <ctrls:CXColorPicker.ButtonStyle>
                                         <Style TargetType="ToggleButton">
                                             <Setter Property="Template">
                                                 <Setter.Value>
@@ -612,8 +611,8 @@
                                                 </Setter.Value>
                                             </Setter>
                                         </Style>
-                                    </xctk:ColorPicker.ButtonStyle>
-                                </xctk:ColorPicker>
+                                    </ctrls:CXColorPicker.ButtonStyle>
+                                </ctrls:CXColorPicker>
                             </Grid>
                         </StackPanel>
                     </Border>
