@@ -136,7 +136,6 @@ namespace CapFrameX.Overlay
 				entry.ValueFontSize = selectedEntry.ValueFontSize;
 				entry.FormatChanged = true;
 			}
-			UpdateFormatting();
 		}
 
 		public void SetFormatForSensorType(string sensorType, IOverlayEntry selectedEntry)
@@ -156,7 +155,6 @@ namespace CapFrameX.Overlay
 				entry.ValueFontSize = selectedEntry.ValueFontSize;
 				entry.FormatChanged = true;
 			}
-			UpdateFormatting();
 		}
 
 		private async Task LoadOrSetDefault()
