@@ -134,7 +134,7 @@ namespace CapFrameX.Overlay
 				entry.LowerLimitValue = selectedEntry.LowerLimitValue;
 				entry.GroupFontSize = selectedEntry.GroupFontSize;
 				entry.ValueFontSize = selectedEntry.ValueFontSize;
-				UpdateFormatting();
+				entry.FormatChanged = true;
 			}
 			UpdateFormatting();
 		}
@@ -154,8 +154,9 @@ namespace CapFrameX.Overlay
 				entry.LowerLimitValue = selectedEntry.LowerLimitValue;
 				entry.GroupFontSize = selectedEntry.GroupFontSize;
 				entry.ValueFontSize = selectedEntry.ValueFontSize;
-				UpdateFormatting();
+				entry.FormatChanged = true;
 			}
+			UpdateFormatting();
 		}
 
 		private async Task LoadOrSetDefault()
