@@ -22,8 +22,8 @@ namespace CapFrameX.Overlay
         private string _groupColor;
         private int _groupFontSize;
         private int _groupSeparators;
-        private string _upperLimitColor;
-        private string _lowerLimitColor;
+        private string _upperLimitColor = "FFC80000";
+        private string _lowerLimitColor = "FFC80000";
         private string _groupNameFormat;
 
         public string Identifier { get; }
@@ -121,8 +121,6 @@ namespace CapFrameX.Overlay
             set
             {
                 FormatChanged = _color != value;
-                UpperLimitColor = (UpperLimitColor == _color || string.IsNullOrWhiteSpace(_upperLimitColor)) ? value : _upperLimitColor;
-                LowerLimitColor = (LowerLimitColor == _color || string.IsNullOrWhiteSpace(_lowerLimitColor)) ? value : _lowerLimitColor;
                 _color = value;
                 RaisePropertyChanged();
             }
@@ -213,8 +211,7 @@ namespace CapFrameX.Overlay
 
         public string UpperLimitColor
         {
-            get { return string.IsNullOrWhiteSpace(_upperLimitColor)
-                    ? Color : _upperLimitColor; }
+            get { return _upperLimitColor; }
             set
             {
                 FormatChanged = _upperLimitColor != value;
@@ -225,9 +222,7 @@ namespace CapFrameX.Overlay
 
         public string LowerLimitColor
         {
-            get { return string.IsNullOrWhiteSpace(_lowerLimitColor)
-                    ? Color : _lowerLimitColor;
-            }
+            get { return _lowerLimitColor; }
             set
             {
                 FormatChanged = _lowerLimitColor != value;
