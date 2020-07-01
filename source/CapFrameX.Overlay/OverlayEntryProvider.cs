@@ -523,17 +523,20 @@ namespace CapFrameX.Overlay
 
 					if (limitState != entry.LastLimitState)
 					{
-						// format has to be updated
+						// Update color and last limit state
 
 						if (entry.ValueUnitFormat != null && entry.ValueAlignmentAndDigits != null)
+						{
 							entry.ValueFormat = "<S=" + entry.ValueFontSize + "><C=" + currentColor + ">" + entry.ValueAlignmentAndDigits + "<C><S>"
-								+ "<S=" + entry.ValueFontSize / 2 + "><C=" + currentColor + ">" + entry.ValueUnitFormat + "<C><S>";
+							+ "<S=" + entry.ValueFontSize / 2 + "><C=" + currentColor + ">" + entry.ValueUnitFormat + "<C><S>";
+						}
 						else
+						{
 							entry.ValueFormat = "<S=" + entry.ValueFontSize + "><C={" + currentColor + "}>{0}<C><S>";
+						}
 
+						entry.LastLimitState = limitState;
 					}
-
-					entry.LastLimitState = limitState;
 				}
 			}
 		}

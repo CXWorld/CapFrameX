@@ -62,7 +62,7 @@ namespace CapFrameX.ViewModel
 
 		public void LockColorOnChange(SolidColorBrush color)
 		{
-			for (int i =0; i < _comparisonBrushes.Length; i++)
+			for (int i = 0; i < _comparisonBrushes.Length; i++)
 			{
 				if (_comparisonBrushes[i].Color == color.Color)
 				{
