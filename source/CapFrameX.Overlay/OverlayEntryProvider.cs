@@ -382,7 +382,7 @@ namespace CapFrameX.Overlay
                 .Where(x => x.FormatChanged))
             {
                 // group name format
-                var basicGroupFormat = "<S=" + entry.GroupFontSize + "><C=" + entry.GroupColor + ">{0}<C><S>";
+                var basicGroupFormat = "<S=" + entry.GroupFontSize + "><C=" + entry.GroupColor + ">{0}  <C><S>";
                 entry.GroupNameFormat
                     = entry.GroupSeparators == 0 ? basicGroupFormat
                     : Enumerable.Repeat("\n", entry.GroupSeparators).Aggregate((i, j) => i + j) + basicGroupFormat;
