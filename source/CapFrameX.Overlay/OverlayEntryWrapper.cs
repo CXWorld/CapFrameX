@@ -161,6 +161,7 @@ namespace CapFrameX.Overlay
             set
             {
                 _upperLimitValue = value;
+                FormatChanged = _upperLimitValue == string.Empty && _lowerLimitValue == string.Empty;
                 RaisePropertyChanged();
             }
         }
@@ -171,6 +172,7 @@ namespace CapFrameX.Overlay
             set
             {
                 _lowerLimitValue = value;
+                FormatChanged = _upperLimitValue == string.Empty && _lowerLimitValue == string.Empty;
                 RaisePropertyChanged();
             }
         }

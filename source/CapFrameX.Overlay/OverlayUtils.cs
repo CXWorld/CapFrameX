@@ -68,8 +68,7 @@ namespace CapFrameX.Overlay
                         ValueFormat = default,
                         ShowGraph = false,
                         ShowGraphIsEnabled = true,
-                        Color = string.Empty,
-                        IsNumeric = true
+                        Color = string.Empty
                     },
 
 					// Frametime
@@ -84,8 +83,7 @@ namespace CapFrameX.Overlay
                         ValueFormat = default,
                         ShowGraph = false,
                         ShowGraphIsEnabled = true,
-                        Color = string.Empty,
-                        IsNumeric = true
+                        Color = string.Empty
                     },
 
                     // Custom CPU
@@ -190,8 +188,7 @@ namespace CapFrameX.Overlay
                         ValueFormat = default,
                         ShowGraph = false,
                         ShowGraphIsEnabled = false,
-                        Color = string.Empty,
-                        IsNumeric = true
+                        Color = string.Empty
                     },
 
                      // P1
@@ -206,8 +203,7 @@ namespace CapFrameX.Overlay
                         ValueFormat = default,
                         ShowGraph = false,
                         ShowGraphIsEnabled = false,
-                        Color = string.Empty,
-                        IsNumeric = true
+                        Color = string.Empty
                     },
 
                      // P0.2
@@ -222,8 +218,7 @@ namespace CapFrameX.Overlay
                         ValueFormat = default,
                         ShowGraph = false,
                         ShowGraphIsEnabled = false,
-                        Color = string.Empty,
-                        IsNumeric = true
+                        Color = string.Empty
                     }
             };
         }

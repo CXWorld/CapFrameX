@@ -426,11 +426,10 @@ namespace CapFrameX.Overlay
 			// check value limits
 			foreach (var entry in _overlayEntries)
 			{
-				if (entry.IsNumeric)
+				if (entry.IsNumeric && (entry.LowerLimitValue != string.Empty || entry.UpperLimitValue != string.Empty))
 				{
 					var currentColor = entry.Color;
 					bool upperLimit = false;
-					bool lowerLimit = false;
 
 					if (entry.Value == null)
 						continue;
@@ -463,20 +462,17 @@ namespace CapFrameX.Overlay
 							if (currentConvertedValue <= convertedLowerValue)
 							{
 								currentColor = entry.LowerLimitColor;
-								lowerLimit = true;
 							}
 						}
 					}
 
 					// format has to be updated
 
-					// value format
 					if (entry.ValueUnitFormat != null && entry.ValueAlignmentAndDigits != null)
 						entry.ValueFormat = "<S=" + entry.ValueFontSize + "><C=" + currentColor + ">" + entry.ValueAlignmentAndDigits + "<C><S>"
 							+ "<S=" + entry.ValueFontSize / 2 + "><C=" + currentColor + ">" + entry.ValueUnitFormat + "<C><S>";
 					else
 						entry.ValueFormat = "<S=" + entry.ValueFontSize + "><C={" + currentColor + "}>{0}<C><S>";
-
 				}
 			}
 		}
