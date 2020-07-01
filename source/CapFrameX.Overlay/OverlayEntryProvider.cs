@@ -141,9 +141,8 @@ namespace CapFrameX.Overlay
 		public void SetFormatForSensorType(string sensorType, IOverlayEntry selectedEntry)
 		{
 
-
 			foreach (var entry in _overlayEntries
-					.Where(x => GetSensorTypeString(x) == sensorType))
+					.Where(x => _sensorService.GetSensorTypeString(x) == sensorType))
 			{
 				entry.GroupColor = selectedEntry.GroupColor;
 				entry.Color = selectedEntry.Color;
@@ -155,6 +154,17 @@ namespace CapFrameX.Overlay
 				entry.ValueFontSize = selectedEntry.ValueFontSize;
 				entry.FormatChanged = true;
 			}
+		}
+
+		public void ResetColorAndLimits(IOverlayEntry selectedEntry)
+		{
+			selectedEntry.UpperLimitValue = string.Empty;
+			selectedEntry.LowerLimitValue = string.Empty;
+			selectedEntry.GroupColor = string.Empty;
+			selectedEntry.Color = string.Empty;
+			selectedEntry.UpperLimitColor = string.Empty;
+			selectedEntry.LowerLimitColor = string.Empty;
+			selectedEntry.FormatChanged = true;
 		}
 
 		private async Task LoadOrSetDefault()
@@ -428,10 +438,8 @@ namespace CapFrameX.Overlay
 				.Where(x => x.FormatChanged))
 			{
 				// group name format
-				var basicGroupFormat = "<S=" + entry.GroupFontSize + "><C=" + entry.GroupColor + ">{0}  <C><S>";
-				entry.GroupNameFormat
-					= entry.GroupSeparators == 0 ? basicGroupFormat
-					: Enumerable.Repeat("\n", entry.GroupSeparators).Aggregate((i, j) => i + j) + basicGroupFormat;
+				var basicGroupFormat = entry.GroupSeparators == 0 ? "{0}" : Enumerable.Repeat("\n", entry.GroupSeparators).Aggregate((i, j) => i + j) + "{0}";
+				entry.GroupNameFormat = "<S=" + entry.GroupFontSize + "><C=" + entry.GroupColor + ">" + basicGroupFormat + " <C><S>";
 
 				// value format
 				if (entry.Identifier == "Framerate")
@@ -462,10 +470,12 @@ namespace CapFrameX.Overlay
 			// check value limits
 			foreach (var entry in _overlayEntries)
 			{
-				if (entry.IsNumeric && (entry.LowerLimitValue != string.Empty || entry.UpperLimitValue != string.Empty))
+				if (!(entry.LowerLimitValue == string.Empty && entry.UpperLimitValue == string.Empty))
 				{
-					var currentColor = entry.Color;
+					var currentColor = string.Empty;
 					bool upperLimit = false;
+					bool lowerLimit = false;
+					LimitState limitState = LimitState.Undefined;
 
 					if (entry.Value == null)
 						continue;
@@ -482,6 +492,7 @@ namespace CapFrameX.Overlay
 						{
 							currentColor = entry.UpperLimitColor;
 							upperLimit = true;
+							limitState = LimitState.Upper;
 						}
 					}
 
@@ -498,66 +509,33 @@ namespace CapFrameX.Overlay
 							if (currentConvertedValue <= convertedLowerValue)
 							{
 								currentColor = entry.LowerLimitColor;
+								lowerLimit = true;
+								limitState = LimitState.Lower;
 							}
 						}
 					}
 
-					// format has to be updated
+					if (!upperLimit && !lowerLimit)
+					{
+						currentColor = entry.Color;
+						limitState = LimitState.None;
+					}
 
-					if (entry.ValueUnitFormat != null && entry.ValueAlignmentAndDigits != null)
-						entry.ValueFormat = "<S=" + entry.ValueFontSize + "><C=" + currentColor + ">" + entry.ValueAlignmentAndDigits + "<C><S>"
-							+ "<S=" + entry.ValueFontSize / 2 + "><C=" + currentColor + ">" + entry.ValueUnitFormat + "<C><S>";
-					else
-						entry.ValueFormat = "<S=" + entry.ValueFontSize + "><C={" + currentColor + "}>{0}<C><S>";
+					if (limitState != entry.LastLimitState)
+					{
+						// format has to be updated
+
+						if (entry.ValueUnitFormat != null && entry.ValueAlignmentAndDigits != null)
+							entry.ValueFormat = "<S=" + entry.ValueFontSize + "><C=" + currentColor + ">" + entry.ValueAlignmentAndDigits + "<C><S>"
+								+ "<S=" + entry.ValueFontSize / 2 + "><C=" + currentColor + ">" + entry.ValueUnitFormat + "<C><S>";
+						else
+							entry.ValueFormat = "<S=" + entry.ValueFontSize + "><C={" + currentColor + "}>{0}<C><S>";
+
+					}
+
+					entry.LastLimitState = limitState;
 				}
 			}
-		}
-
-		public string GetSensorTypeString(IOverlayEntry entry)
-		{
-			if (entry == null)
-				return string.Empty;
-
-			string SensorType;
-
-			if (entry.Identifier.Contains("cpu"))
-			{
-				if (entry.Identifier.Contains("load"))
-					SensorType = "CPU Load";
-				else if (entry.Identifier.Contains("clock"))
-					SensorType = "CPU Clock";
-				else if (entry.Identifier.Contains("power"))
-					SensorType = "CPU Power";
-				else if (entry.Identifier.Contains("temperature"))
-					SensorType = "CPU Temperature";
-				else if (entry.Identifier.Contains("voltage"))
-					SensorType = "CPU Voltage";
-				else
-					SensorType = string.Empty;
-			}
-
-			else if (entry.Identifier.Contains("gpu"))
-			{
-				if (entry.Identifier.Contains("load"))
-					SensorType = "GPU Load";
-				else if (entry.Identifier.Contains("clock"))
-					SensorType = "GPU Clock";
-				else if (entry.Identifier.Contains("power"))
-					SensorType = "GPU Power";
-				else if (entry.Identifier.Contains("temperature"))
-					SensorType = "GPU Temperature";
-				else if (entry.Identifier.Contains("voltage"))
-					SensorType = "GPU Voltage";
-				else if (entry.Identifier.Contains("factor"))
-					SensorType = "GPU Limits";
-				else
-					SensorType = string.Empty;
-			}
-
-			else
-				SensorType = string.Empty;
-
-			return SensorType;
 		}
 
 		private string GetConfigurationFileName()

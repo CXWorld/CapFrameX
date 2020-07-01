@@ -101,6 +101,53 @@ namespace CapFrameX.Sensor
 
         }
 
+        public string GetSensorTypeString(IOverlayEntry entry)
+        {
+            if (entry == null)
+                return string.Empty;
+
+            string SensorType;
+
+            if (entry.Identifier.Contains("cpu"))
+            {
+                if (entry.Identifier.Contains("load"))
+                    SensorType = "CPU Load";
+                else if (entry.Identifier.Contains("clock"))
+                    SensorType = "CPU Clock";
+                else if (entry.Identifier.Contains("power"))
+                    SensorType = "CPU Power";
+                else if (entry.Identifier.Contains("temperature"))
+                    SensorType = "CPU Temperature";
+                else if (entry.Identifier.Contains("voltage"))
+                    SensorType = "CPU Voltage";
+                else
+                    SensorType = string.Empty;
+            }
+
+            else if (entry.Identifier.Contains("gpu"))
+            {
+                if (entry.Identifier.Contains("load"))
+                    SensorType = "GPU Load";
+                else if (entry.Identifier.Contains("clock"))
+                    SensorType = "GPU Clock";
+                else if (entry.Identifier.Contains("power"))
+                    SensorType = "GPU Power";
+                else if (entry.Identifier.Contains("temperature"))
+                    SensorType = "GPU Temperature";
+                else if (entry.Identifier.Contains("voltage"))
+                    SensorType = "GPU Voltage";
+                else if (entry.Identifier.Contains("factor"))
+                    SensorType = "GPU Limits";
+                else
+                    SensorType = string.Empty;
+            }
+
+            else
+                SensorType = string.Empty;
+
+            return SensorType;
+        }
+
         private void UpdateSensorInterval()
         {
             _sensorUpdateSubject.OnNext(_currentSensorTimespan);

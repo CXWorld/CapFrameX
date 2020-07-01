@@ -2,63 +2,73 @@
 
 namespace CapFrameX.Contracts.Overlay
 {
-    public interface IOverlayEntry
-    {
-        string Identifier { get; }
+	public enum LimitState
+	{
+		Lower,
+		Upper,
+		None,
+		Undefined
+	}
 
-        EOverlayEntryType OverlayEntryType { get; }
+	public interface IOverlayEntry
+	{
+		string Identifier { get; }
 
-        string Description { get; }
+		EOverlayEntryType OverlayEntryType { get; }
 
-        object Value { get; set; }
+		string Description { get; }
 
-        string ValueFormat { get; set; }
+		object Value { get; set; }
 
-        string FormattedValue { get; }
+		string ValueFormat { get; set; }
 
-        bool ShowOnOverlay { get; set; }
+		string FormattedValue { get; }
 
-        bool ShowOnOverlayIsEnabled { get; set; }
+		bool ShowOnOverlay { get; set; }
 
-        string GroupName { get; set; }
+		bool ShowOnOverlayIsEnabled { get; set; }
 
-        bool ShowGraph { get; set; }
+		string GroupName { get; set; }
 
-        bool ShowGraphIsEnabled { get; set; }
+		bool ShowGraph { get; set; }
 
-        /// <summary>
-        /// Value standard color
-        /// </summary>
-        string Color { get; set; }
+		bool ShowGraphIsEnabled { get; set; }
 
-        int ValueFontSize { get; set; }
+		/// <summary>
+		/// Value standard color
+		/// </summary>
+		string Color { get; set; }
 
-        string FormattedGroupName { get; }
+		int ValueFontSize { get; set; }
 
-        string GroupNameFormat { get; set; }
+		string FormattedGroupName { get; }
 
-        string UpperLimitValue { get; set; }
+		string GroupNameFormat { get; set; }
 
-        string LowerLimitValue { get; set; }
+		string UpperLimitValue { get; set; }
 
-        string GroupColor { get; set; }
+		string LowerLimitValue { get; set; }
 
-        int GroupFontSize { get; set; }
+		string GroupColor { get; set; }
 
-        int GroupSeparators { get; set; }
+		int GroupFontSize { get; set; }
 
-        string UpperLimitColor { get; set; }
+		int GroupSeparators { get; set; }
 
-        string LowerLimitColor { get; set; }
+		string UpperLimitColor { get; set; }
 
-        bool FormatChanged { get; set; }
+		string LowerLimitColor { get; set; }
 
-        bool IsNumeric { get; set; }
+		bool FormatChanged { get; set; }
 
-        string ValueAlignmentAndDigits { get; set; }
+		bool IsNumeric { get; set; }
 
-        string ValueUnitFormat { get; set; }
+		string ValueAlignmentAndDigits { get; set; }
 
-        Action UpdateGroupName { get; set; }
-    }
+		string ValueUnitFormat { get; set; }
+
+		LimitState LastLimitState { get; set; }
+
+		Action UpdateGroupName { get; set; }
+	}
 }

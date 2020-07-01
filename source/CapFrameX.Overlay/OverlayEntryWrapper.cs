@@ -22,8 +22,8 @@ namespace CapFrameX.Overlay
         private string _groupColor;
         private int _groupFontSize;
         private int _groupSeparators;
-        private string _upperLimitColor = "FFC80000";
-        private string _lowerLimitColor = "FFC80000";
+        private string _upperLimitColor;
+        private string _lowerLimitColor;
         private string _groupNameFormat;
 
         public string Identifier { get; }
@@ -48,6 +48,9 @@ namespace CapFrameX.Overlay
 
         [JsonIgnore]
         public string ValueUnitFormat { get; set; }
+
+        [JsonIgnore]
+        public LimitState LastLimitState { get; set; } = LimitState.Undefined;
 
         [JsonIgnore]
         public string FormattedValue
@@ -211,7 +214,11 @@ namespace CapFrameX.Overlay
 
         public string UpperLimitColor
         {
-            get { return _upperLimitColor; }
+            get
+            {
+                return string.IsNullOrWhiteSpace(_upperLimitColor)
+                  ? GetDefaultLimitColor() : _upperLimitColor;
+            }
             set
             {
                 FormatChanged = _upperLimitColor != value;
@@ -222,7 +229,11 @@ namespace CapFrameX.Overlay
 
         public string LowerLimitColor
         {
-            get { return _lowerLimitColor; }
+            get
+            {
+                return string.IsNullOrWhiteSpace(_lowerLimitColor)
+                  ? GetDefaultLimitColor() : _lowerLimitColor;
+            }
             set
             {
                 FormatChanged = _lowerLimitColor != value;
@@ -250,6 +261,11 @@ namespace CapFrameX.Overlay
                 : Identifier == "Frametime" ? "AEEA00"
                 // all other items
                 : "F17D20";
+        }
+
+        private string GetDefaultLimitColor()
+        {
+            return "FFC80000";
         }
 
         private string GetDefaultGroupColor()
