@@ -120,8 +120,9 @@ namespace CapFrameX.ViewModel
 				frametimesChart.Color = OxyColor.FromArgb(color.A, color.R, color.G, color.B);
 				lShapeChart.Stroke = solidColorBrush;
 
-				_viewModel.ComparisonColorManager.FreeColor(Color);
+				_viewModel.ComparisonColorManager.FreeColor(Color);				
 				Color = solidColorBrush;
+				_viewModel.ComparisonColorManager.LockColorOnChange(Color);
 
 				_viewModel.ComparisonFrametimesModel.InvalidatePlot(true);
 			}

@@ -60,6 +60,14 @@ namespace CapFrameX.ViewModel
 			return _comparisonBrushes[index];
 		}
 
+		public void LockColorOnChange(SolidColorBrush color)
+		{
+			int index = Array.IndexOf(_comparisonBrushes, color);
+
+			if (index >= 0)
+				_usedColorDictionary[index] = true;
+		}
+
 		public void FreeColor(SolidColorBrush color)
 		{
 			int index = Array.IndexOf(_comparisonBrushes, color);
