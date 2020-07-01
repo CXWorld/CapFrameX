@@ -153,7 +153,7 @@ namespace CapFrameX.Overlay
 			SetOnlineMetricFormats();
 
 			SetOnlineMetricsIsNumericState();
-			SetRTSSMetricIsNumericState();
+			//SetRTSSMetricIsNumericState();
 			SetHardwareIsNumericState();
 			_overlayEntries.ForEach(entry => entry.FormatChanged = true);
 		}
@@ -366,14 +366,14 @@ namespace CapFrameX.Overlay
 			}
 		}
 
-		private void SetRTSSMetricIsNumericState()
-		{
-			foreach (var entry in _overlayEntries.Where(x =>
-				(x.Identifier == "Framerate" || x.Identifier == "Frametime")))
-			{
-				entry.IsNumeric = true;
-			}
-		}
+		//private void SetRTSSMetricIsNumericState()
+		//{
+		//	foreach (var entry in _overlayEntries.Where(x =>
+		//		(x.Identifier == "Framerate" || x.Identifier == "Frametime")))
+		//	{
+		//		entry.IsNumeric = true;
+		//	}
+		//}
 
 		private void SetHardwareIsNumericState()
 		{

@@ -62,18 +62,27 @@ namespace CapFrameX.ViewModel
 
 		public void LockColorOnChange(SolidColorBrush color)
 		{
-			int index = Array.IndexOf(_comparisonBrushes, color);
+			for (int i =0; i < _comparisonBrushes.Length; i++)
+			{
+				if (_comparisonBrushes[i].Color == color.Color)
+				{
+					_usedColorDictionary[i] = true;
+					break;
+				}
+			}
 
-			if (index >= 0)
-				_usedColorDictionary[index] = true;
 		}
 
 		public void FreeColor(SolidColorBrush color)
 		{
-			int index = Array.IndexOf(_comparisonBrushes, color);
-
-			if (index >= 0)
-				_usedColorDictionary[index] = false;
+			for (int i = 0; i < _comparisonBrushes.Length; i++)
+			{
+				if (_comparisonBrushes[i].Color == color.Color)
+				{ 
+					_usedColorDictionary[i] = false;
+					break;
+				}
+			}
 		}
 
 		public void FreeAllColors()
