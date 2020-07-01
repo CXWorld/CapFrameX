@@ -68,7 +68,8 @@ namespace CapFrameX.Overlay
                         ValueFormat = default,
                         ShowGraph = false,
                         ShowGraphIsEnabled = true,
-                        Color = string.Empty
+                        Color = string.Empty,
+                        IsNumeric = true
                     },
 
 					// Frametime
@@ -83,7 +84,8 @@ namespace CapFrameX.Overlay
                         ValueFormat = default,
                         ShowGraph = false,
                         ShowGraphIsEnabled = true,
-                        Color = string.Empty
+                        Color = string.Empty,
+                        IsNumeric = true
                     },
 
                     // Custom CPU

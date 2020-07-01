@@ -153,6 +153,7 @@ namespace CapFrameX.Overlay
 			SetOnlineMetricFormats();
 
 			SetOnlineMetricsIsNumericState();
+			SetRTSSMetricIsNumericState();
 			SetHardwareIsNumericState();
 			_overlayEntries.ForEach(entry => entry.FormatChanged = true);
 		}
@@ -365,6 +366,15 @@ namespace CapFrameX.Overlay
 			}
 		}
 
+		private void SetRTSSMetricIsNumericState()
+		{
+			foreach (var entry in _overlayEntries.Where(x =>
+				(x.Identifier == "Framerate" || x.Identifier == "Frametime")))
+			{
+				entry.IsNumeric = true;
+			}
+		}
+
 		private void SetHardwareIsNumericState()
 		{
 			foreach (var entry in _overlayEntries.Where(x =>
@@ -460,12 +470,12 @@ namespace CapFrameX.Overlay
 
 					// format has to be updated
 
-						// value format
-						if (entry.ValueUnitFormat != null && entry.ValueAlignmentAndDigits != null)
-							entry.ValueFormat = "<S=" + entry.ValueFontSize + "><C=" + currentColor + ">" + entry.ValueAlignmentAndDigits + "<C><S>"
-								+ "<S=" + entry.ValueFontSize / 2 + "><C=" + currentColor + ">" + entry.ValueUnitFormat + "<C><S>";
-						else
-							entry.ValueFormat = "<S=" + entry.ValueFontSize + "><C={" + currentColor + "}>{0}<C><S>";
+					// value format
+					if (entry.ValueUnitFormat != null && entry.ValueAlignmentAndDigits != null)
+						entry.ValueFormat = "<S=" + entry.ValueFontSize + "><C=" + currentColor + ">" + entry.ValueAlignmentAndDigits + "<C><S>"
+							+ "<S=" + entry.ValueFontSize / 2 + "><C=" + currentColor + ">" + entry.ValueUnitFormat + "<C><S>";
+					else
+						entry.ValueFormat = "<S=" + entry.ValueFontSize + "><C={" + currentColor + "}>{0}<C><S>";
 
 				}
 			}
