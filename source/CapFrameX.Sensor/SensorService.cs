@@ -324,6 +324,8 @@ namespace CapFrameX.Sensor
             {
                 if ((sensor.SensorType == SensorType.Power &&
                     sensor.Name.Contains("CPU")) ||
+                    (sensor.SensorType == SensorType.Voltage &&
+                    sensor.Name.Contains("CPU")) ||
                     sensor.Name.Contains("VRM") ||
                     sensor.SensorType == SensorType.Voltage)
                     return false;
