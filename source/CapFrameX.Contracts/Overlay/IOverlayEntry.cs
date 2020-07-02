@@ -70,5 +70,7 @@ namespace CapFrameX.Contracts.Overlay
 		LimitState LastLimitState { get; set; }
 
 		Action UpdateGroupName { get; set; }
+
+		IOverlayEntry Clone();
 	}
 }

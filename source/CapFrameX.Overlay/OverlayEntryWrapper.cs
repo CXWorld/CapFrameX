@@ -32,6 +32,7 @@ namespace CapFrameX.Overlay
 
         public string Description { get; set; }
 
+        [JsonIgnore]
         public object Value { get; set; }
 
         [JsonIgnore]
@@ -245,6 +246,31 @@ namespace CapFrameX.Overlay
         public OverlayEntryWrapper(string identifier)
         {
             Identifier = identifier;
+        }
+
+        public IOverlayEntry Clone()
+        {
+            return new OverlayEntryWrapper(Identifier)
+            {
+                OverlayEntryType = OverlayEntryType,
+                Description = Description,
+                ValueFormat = ValueFormat,
+                ShowOnOverlay = ShowOnOverlay,
+                ShowOnOverlayIsEnabled= ShowOnOverlayIsEnabled,
+                GroupName = GroupName,
+                ShowGraph = ShowGraph,
+                ShowGraphIsEnabled = ShowGraphIsEnabled,
+                Color = Color,
+                ValueFontSize = ValueFontSize,
+                GroupNameFormat = GroupNameFormat,
+                UpperLimitValue = UpperLimitValue,
+                LowerLimitValue = LowerLimitValue,
+                GroupColor = GroupColor,
+                GroupFontSize = GroupFontSize,
+                GroupSeparators = GroupSeparators,
+                UpperLimitColor = UpperLimitColor,
+                LowerLimitColor = LowerLimitColor
+            };
         }
 
         private string GetDefaultValueColor()

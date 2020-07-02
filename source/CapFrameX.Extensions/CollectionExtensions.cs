@@ -63,5 +63,14 @@ namespace CapFrameX.Extensions
                 }
             }
         }
+
+        public static bool IsEquivalent<T>(this IEnumerable<T> source, IEnumerable<T> compareValues)
+        {
+            if (source.Count() != compareValues.Count())
+                return false;
+
+            return source.OrderBy(x => x).SequenceEqual(
+                 compareValues.OrderBy(x => x));
+        }
     }
 }
