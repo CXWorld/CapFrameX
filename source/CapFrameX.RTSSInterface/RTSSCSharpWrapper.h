@@ -187,7 +187,6 @@ public:
 					entry.GroupName = managedEntry->FormattedGroupName;
 					entry.Value = managedEntry->FormattedValue;
 					entry.ShowGraph = managedEntry->ShowGraph;
-					entry.Color = managedEntry->Color;
 
 					_coreControl->OverlayEntries.push_back(entry);
 				}
