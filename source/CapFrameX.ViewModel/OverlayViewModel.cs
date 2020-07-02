@@ -600,7 +600,14 @@ namespace CapFrameX.ViewModel
                             int sourceIndex = OverlayEntries.IndexOf(overlayEntry);
                             int targetIndex = dropInfo.InsertIndex;
 
-                            _overlayEntryProvider.MoveEntry(sourceIndex, targetIndex);
+                            if (sourceIndex < targetIndex)
+                            {
+                                _overlayEntryProvider.MoveEntry(sourceIndex, targetIndex - 1);
+                            }
+                            else
+                            {
+                                _overlayEntryProvider.MoveEntry(sourceIndex, targetIndex);
+                            }
 
                             OverlayEntries.Clear();
                             OverlayEntries.AddRange(await _overlayEntryProvider.GetOverlayEntries());
@@ -612,6 +619,7 @@ namespace CapFrameX.ViewModel
                             int sourceIndex = OverlayEntries.IndexOf(overlayEntries.First());
                             int targetIndex = dropInfo.InsertIndex;
 
+                            // move downwards
                             if (sourceIndex < targetIndex)
                             {
                                 for (int i = 0; i < count; i++)
@@ -619,11 +627,12 @@ namespace CapFrameX.ViewModel
                                     _overlayEntryProvider.MoveEntry(sourceIndex, targetIndex - 1);
                                 }
                             }
+                            // moving upwards
                             else
                             {
                                 for (int i = 0; i < count; i++)
                                 {
-                                    _overlayEntryProvider.MoveEntry(sourceIndex + i, targetIndex);
+                                    _overlayEntryProvider.MoveEntry(sourceIndex + i, targetIndex + i);
                                 }
                             }
 
