@@ -439,28 +439,28 @@ namespace CapFrameX.Overlay
 			{
 				// group name format
 				var basicGroupFormat = entry.GroupSeparators == 0 ? "{0}" : Enumerable.Repeat("\n", entry.GroupSeparators).Aggregate((i, j) => i + j) + "{0}";
-				entry.GroupNameFormat = "<S=" + entry.GroupFontSize + "><C=" + entry.GroupColor + ">" + basicGroupFormat + " <C><S>";
+				entry.GroupNameFormat = "<S=" + entry.GroupFontSize + "><C=" + entry.GroupColor + ">" + basicGroupFormat + "  <C><S>";
 
 				// value format
 				if (entry.Identifier == "Framerate")
 				{
 					entry.ValueFormat =
 						"<A=-4><S=" + entry.ValueFontSize.ToString() + "><C=" + entry.Color + "><FR><C><S><A>" +
-						"<A=4><S=" + (entry.ValueFontSize / 2).ToString() + "><C=" + entry.Color + ">FPS<C><S><A>" + "\t";
+						"<A=4><S=" + (entry.ValueFontSize / 2).ToString() + "><C=" + entry.Color + ">FPS<C><S><A>";
 				}
 				else if (entry.Identifier == "Frametime")
 				{
 					entry.ValueFormat =
 						"<A=-4><S=" + entry.ValueFontSize.ToString() + "><C=" + entry.Color + "><FT><C><S><A>" +
-						"<A=4><S=" + (entry.ValueFontSize / 2).ToString() + "><C=" + entry.Color + ">ms<C><S><A>" + "\t";
+						"<A=4><S=" + (entry.ValueFontSize / 2).ToString() + "><C=" + entry.Color + ">ms<C><S><A>";
 				}
 				else
 				{
 					if (entry.ValueUnitFormat != null && entry.ValueAlignmentAndDigits != null)
 						entry.ValueFormat = "<S=" + entry.ValueFontSize + "><C=" + entry.Color + ">" + entry.ValueAlignmentAndDigits + "<C><S>"
-							+ "<S=" + entry.ValueFontSize / 2 + "><C=" + entry.Color + ">" + entry.ValueUnitFormat + "<C><S>" + "\t";
+							+ "<S=" + entry.ValueFontSize / 2 + "><C=" + entry.Color + ">" + entry.ValueUnitFormat + "<C><S>";
 					else
-						entry.ValueFormat = "<S=" + entry.ValueFontSize + "><C=" + entry.Color + ">{0}<C><S>" + "\t";
+						entry.ValueFormat = "<S=" + entry.ValueFontSize + "><C=" + entry.Color + ">{0}<C><S>";
 				}
 
 				// reset format changed 
