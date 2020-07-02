@@ -29,13 +29,14 @@ namespace CapFrameX.Statistics.PlotBuilder
 
             plotModel.Series.Clear();
 
-            if (filterMode is EFilterMode.RawPlusAverage)
-            {               
-                var rawFpsPoints = session.GetFpsPointsTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod, EFilterMode.None);
-                SetRawFPS(plotModel, rawFpsPoints);
+            var rawFpsPoints = session.GetFpsPointsTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod, EFilterMode.None);
 
+            if (filterMode is EFilterMode.RawPlusAverage)
+            {
                 var avgFpsPoints = session.GetFpsPointsTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod, EFilterMode.TimeIntervalAverage);
-                SetFpsChart(plotModel, avgFpsPoints, average, 2, OxyColor.FromRgb(241, 125, 32));
+
+                SetRawFPS(plotModel, rawFpsPoints);
+                SetFpsChart(plotModel, avgFpsPoints, rawFpsPoints, average, 2, OxyColor.FromRgb(241, 125, 32));
 
 
                 yMin = rawFpsPoints.Min(pnt => pnt.Y);
@@ -45,8 +46,7 @@ namespace CapFrameX.Statistics.PlotBuilder
             {
                 var fpsPoints = session.GetFpsPointsTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod, filterMode);
 
-
-                SetFpsChart(plotModel, fpsPoints, average, filterMode is EFilterMode.None ? 1 : 2, Constants.FpsStroke);
+                SetFpsChart(plotModel, fpsPoints, rawFpsPoints, average, filterMode is EFilterMode.None ? 1 : 2, Constants.FpsStroke);
 
                  yMin = fpsPoints.Min(pnt => pnt.Y);
                  yMax = fpsPoints.Max(pnt => pnt.Y);
@@ -71,7 +71,7 @@ namespace CapFrameX.Statistics.PlotBuilder
             plotModel.InvalidatePlot(true);
         }
 
-        private void SetFpsChart(PlotModel plotModel, IList<Point> fpsPoints, double average, int stroke, OxyColor color)
+        private void SetFpsChart(PlotModel plotModel, IList<Point> fpsPoints, IList<Point> rawfpsPoints, double average, int stroke, OxyColor color)
         {
             if (fpsPoints == null || !fpsPoints.Any())
                 return;
@@ -107,8 +107,8 @@ namespace CapFrameX.Statistics.PlotBuilder
 
             UpdateAxis(EPlotAxis.XAXIS, (axis) =>
             {
-                axis.Minimum = 0;
-                axis.Maximum = fpsPoints.Last().X;
+                axis.Minimum = rawfpsPoints.First().X;
+                axis.Maximum = rawfpsPoints.Last().X;
             });
 
             plotModel.InvalidatePlot(true);

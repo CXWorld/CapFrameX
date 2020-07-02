@@ -189,12 +189,13 @@ namespace CapFrameX.Statistics.NetStandard
         {
             IList<Point> fpsPoints = null;
             var frametimePoints = session.GetFrametimePointsTimeWindow(startTime, endTime, options, eRemoveOutlierMethod);
+            var intervalFrametimePoints = session.GetFrametimePointsTimeWindow(0, endTime, options, eRemoveOutlierMethod);
             switch (filterMode)
             {
                 case EFilterMode.TimeIntervalAverage:
                     var timeIntervalAverageFilter = new IntervalTimeAverageFilter(options.IntervalAverageWindowTime);
                     var timeIntervalAveragePoints = timeIntervalAverageFilter
-                        .ProcessSamples(frametimePoints.Select(pnt => pnt.Y).ToList());
+                        .ProcessSamples(intervalFrametimePoints.Select(pnt => pnt.Y).ToList(), startTime * 1000, endTime * 1000, session.Runs.SelectMany(r => r.CaptureData.TimeInSeconds).Last() * 1000);
                     fpsPoints = timeIntervalAveragePoints.Select(pnt => new Point(pnt.X / 1000, 1000 / pnt.Y)).ToList();
                     break;
                 default:
