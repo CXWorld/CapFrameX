@@ -446,21 +446,21 @@ namespace CapFrameX.Overlay
 				{
 					entry.ValueFormat =
 						"<A=-4><S=" + entry.ValueFontSize.ToString() + "><C=" + entry.Color + "><FR><C><S><A>" +
-						"<A=4><S=" + (entry.ValueFontSize / 2).ToString() + "><C=" + entry.Color + ">FPS<C><S><A>";
+						"<A=4><S=" + (entry.ValueFontSize / 2).ToString() + "><C=" + entry.Color + ">FPS<C><S><A>" + "\t";
 				}
 				else if (entry.Identifier == "Frametime")
 				{
 					entry.ValueFormat =
 						"<A=-4><S=" + entry.ValueFontSize.ToString() + "><C=" + entry.Color + "><FT><C><S><A>" +
-						"<A=4><S=" + (entry.ValueFontSize / 2).ToString() + "><C=" + entry.Color + ">ms<C><S><A>";
+						"<A=4><S=" + (entry.ValueFontSize / 2).ToString() + "><C=" + entry.Color + ">ms<C><S><A>" + "\t";
 				}
 				else
 				{
 					if (entry.ValueUnitFormat != null && entry.ValueAlignmentAndDigits != null)
 						entry.ValueFormat = "<S=" + entry.ValueFontSize + "><C=" + entry.Color + ">" + entry.ValueAlignmentAndDigits + "<C><S>"
-							+ "<S=" + entry.ValueFontSize / 2 + "><C=" + entry.Color + ">" + entry.ValueUnitFormat + "<C><S>";
+							+ "<S=" + entry.ValueFontSize / 2 + "><C=" + entry.Color + ">" + entry.ValueUnitFormat + "<C><S>" + "\t";
 					else
-						entry.ValueFormat = "<S=" + entry.ValueFontSize + "><C=" + entry.Color + ">{0}<C><S>";
+						entry.ValueFormat = "<S=" + entry.ValueFontSize + "><C=" + entry.Color + ">{0}<C><S>" + "\t";
 				}
 
 				// reset format changed 
