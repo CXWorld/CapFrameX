@@ -746,6 +746,11 @@ namespace CapFrameX.ViewModel
 
         private void AddDataLineToArchive(string dataLine)
         {
+            if(string.IsNullOrWhiteSpace(dataLine))
+            {
+                return;
+            }
+
             if (_captureDataArchive.Count < ARCHIVE_LENGTH)
             {
                 _captureDataArchive.Add(dataLine);

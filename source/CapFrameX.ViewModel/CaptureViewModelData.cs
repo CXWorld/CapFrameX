@@ -170,7 +170,11 @@ namespace CapFrameX.ViewModel
 			}
 
 			if (distinctIndex == 0)
-				return null;
+            {
+				_logger.LogWarning("Something went wrong Getting Adjusted Capture Data. This is sad :( We cant use the Data from Archive.");
+				ResetArchive();
+				return Enumerable.Empty<string>().ToList();
+            }
 
 			var unionCaptureData = filteredArchive.Concat(filteredCaptureData.Skip(distinctIndex)).ToList();
 			var unionCaptureDataStartTime = GetStartTimeFromDataLine(unionCaptureData.First());
