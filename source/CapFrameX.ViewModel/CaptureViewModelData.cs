@@ -29,15 +29,31 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
+		private void PrepareForNextCapture()
+		{
+			StartFillArchive();
+			AddLoggerEntry("Started filling archive.");
+
+			Application.Current.Dispatcher.Invoke(new Action(() =>
+			{
+				_dataOffsetRunning = false;
+			}));
+		}
+
 		private async Task WriteExtractedCaptureDataToFileAsync(string processName)
 		{
 			try
 			{
 
 				if (string.IsNullOrWhiteSpace(processName))
+				{
+					PrepareForNextCapture();
 					return;
-
+				}
+					
 				var adjustedCaptureData = GetAdjustedCaptureData(processName);
+
+				PrepareForNextCapture();
 
 				if (!adjustedCaptureData.Any())
 				{
@@ -56,7 +72,6 @@ namespace CapFrameX.ViewModel
 					await Task.Factory.StartNew(() => _overlayService.AddRunToHistory(sessionRun, processName));
 				}
 
-				StartFillArchive();
 
 				// if aggregation mode is active and "Save aggregated result only" is checked, don't save single history items
 				if (AppConfiguration.UseAggregation && AppConfiguration.SaveAggregationOnly)
@@ -78,17 +93,10 @@ namespace CapFrameX.ViewModel
 			catch (Exception e)
 			{
 				_logger.LogError(e, "Error writing capture data");
-				StartFillArchive();
-			}
-			finally
-			{
-				Application.Current.Dispatcher.Invoke(new Action(() =>
-				{
-					// turn locking off 
-					_dataOffsetRunning = false;
-				}));
-			}
 
+				PrepareForNextCapture();
+
+			}
 		}
 
 		private List<string> GetAdjustedCaptureData(string processName)
@@ -171,7 +179,6 @@ namespace CapFrameX.ViewModel
 				_logger.LogWarning("Something went wrong Getting Adjusted Capture Data. This is sad :( We cant use the Data from Archive.");
 				AddLoggerEntry("Comparison with archive data is invalid.");
 
-				ResetArchive();
 				return Enumerable.Empty<string>().ToList();
             }
 
