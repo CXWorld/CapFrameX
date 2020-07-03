@@ -78,7 +78,7 @@ namespace CapFrameX.ViewModel
 			catch (Exception e)
 			{
 				_logger.LogError(e, "Error writing capture data");
-				ResetArchive();
+				StartFillArchive();
 			}
 			finally
 			{
