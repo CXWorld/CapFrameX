@@ -38,22 +38,18 @@ namespace CapFrameX.ViewModel
 					return;
 
 				var adjustedCaptureData = GetAdjustedCaptureData(processName);
-				// Skip first line to compensate the first frametime being one frame before original capture start point.
-				var normalizedAdjustedCaptureData = NormalizeTimes(adjustedCaptureData.Skip(1));
-				var sessionRun = _recordManager.ConvertPresentDataLinesToSessionRun(normalizedAdjustedCaptureData);
-				sessionRun.SensorData = _sensorService.GetSessionSensorData();
 
-				if (adjustedCaptureData == null)
+				if (!adjustedCaptureData.Any())
 				{
 					AddLoggerEntry("Error while extracting capture data. No file will be written.");
 					return;
 				}
 
-				if (!adjustedCaptureData.Any())
-				{
-					AddLoggerEntry("Error while extracting capture data. Empty list. No file will be written.");
-					return;
-				}
+				// Skip first line to compensate the first frametime being one frame before original capture start point.
+				var normalizedAdjustedCaptureData = NormalizeTimes(adjustedCaptureData.Skip(1));
+				var sessionRun = _recordManager.ConvertPresentDataLinesToSessionRun(normalizedAdjustedCaptureData);
+				sessionRun.SensorData = _sensorService.GetSessionSensorData();
+
 
 				if (AppConfiguration.UseRunHistory)
 				{
@@ -173,6 +169,8 @@ namespace CapFrameX.ViewModel
 			if (distinctIndex == 0)
             {
 				_logger.LogWarning("Something went wrong Getting Adjusted Capture Data. This is sad :( We cant use the Data from Archive.");
+				AddLoggerEntry("Comparison with archive data is invalid.");
+
 				ResetArchive();
 				return Enumerable.Empty<string>().ToList();
             }
