@@ -2,6 +2,7 @@
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.RTSS;
 using CapFrameX.Contracts.Sensor;
+using CapFrameX.Data;
 using CapFrameX.Extensions.NetStandard;
 using CapFrameX.Hotkey;
 using CapFrameX.Overlay;
@@ -37,12 +38,13 @@ namespace CapFrameX.ViewModel
 		private IKeyboardMouseEvents _globalResetHistoryHookEvent;
 		private int _selectedOverlayEntryIndex = -1;
 		private IOverlayEntry _selectedOverlayEntry;
+		private IOverlayEntryFormatChange _checkboxes = new OverlayEntryFormatChange();
 		private string _updateHpyerlinkText;
 		private bool _setSensorTypeButtonEnabled;
 		private bool _setGroupButtonEnabled;
 		private bool _overlayItemsOptionsEnabled = false;
 
-        public bool OverlayItemsOptionsEnabled
+		public bool OverlayItemsOptionsEnabled
 		{
 			get { return _overlayItemsOptionsEnabled; }
 			set
@@ -287,6 +289,16 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
+		public IOverlayEntryFormatChange Checkboxes
+		{
+			get { return _checkboxes; }
+			set
+			{
+				_checkboxes = value;
+				RaisePropertyChanged();
+			}
+		}
+
 		public string UpdateHpyerlinkText
 		{
 			get { return _updateHpyerlinkText; }
@@ -455,10 +467,10 @@ namespace CapFrameX.ViewModel
 				async () => await OnResetDefaults());
 
 			SetFormatForGroupNameCommand = new DelegateCommand(
-			   () => _overlayEntryProvider.SetFormatForGroupName(SelectedOverlayItemGroupName, SelectedOverlayEntry));
+			   () => _overlayEntryProvider.SetFormatForGroupName(SelectedOverlayItemGroupName, SelectedOverlayEntry, Checkboxes));
 
 			SetFormatForSensorTypeCommand = new DelegateCommand(
-			   () => _overlayEntryProvider.SetFormatForSensorType(_sensorService.GetSensorTypeString(SelectedOverlayEntry), SelectedOverlayEntry));
+			   () => _overlayEntryProvider.SetFormatForSensorType(_sensorService.GetSensorTypeString(SelectedOverlayEntry), SelectedOverlayEntry, Checkboxes));
 
 			ResetColorAndLimitDefaultsCommand = new DelegateCommand(
 				() => _overlayEntryProvider.ResetColorAndLimits(SelectedOverlayEntry));

@@ -680,30 +680,42 @@
                     <Border Grid.Row="2" Grid.Column="1" Margin="5" Background="Transparent" BorderThickness=".2" BorderBrush="Black">
                         <Grid IsEnabled="{Binding OverlayItemsOptionsEnabled}">
                             <Grid.RowDefinitions>
-                                <RowDefinition Height="65"></RowDefinition>
+                                <RowDefinition Height="30"></RowDefinition>
+                                <RowDefinition Height="40"></RowDefinition>
                                 <RowDefinition Height="20"></RowDefinition>
                                 <RowDefinition Height="1*"></RowDefinition>
                                 <RowDefinition Height="20"></RowDefinition>
                                 <RowDefinition Height="1*"></RowDefinition>
                             </Grid.RowDefinitions>
-                            <TextBlock Grid.Row="0" Margin="10" HorizontalAlignment="Center" Text="Apply colors and formats to multiple entries" Width="180" 
+                            <TextBlock Grid.Row="0" Margin="5" HorizontalAlignment="Center" Text="Apply to multiple entries" Width="180" 
                                        TextWrapping="Wrap" TextAlignment="Center" FontSize="16">
                             </TextBlock>
-                            <TextBlock Grid.Row="1"  Text="Group name" TextAlignment="Left" Margin="10 5 0 0">
+                            <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center">
+                                <CheckBox IsChecked="{Binding Path=Checkboxes.Colors, Mode=TwoWay}" Margin="5">
+                                    <TextBlock>Colors</TextBlock>
+                                </CheckBox>
+                                <CheckBox IsChecked="{Binding Path=Checkboxes.Limits, Mode=TwoWay}" Margin="5">
+                                    <TextBlock>Limits</TextBlock>
+                                </CheckBox>
+                                <CheckBox IsChecked="{Binding Path=Checkboxes.Format, Mode=TwoWay}" Margin="5">
+                                    <TextBlock>Format</TextBlock>
+                                </CheckBox>
+                            </StackPanel>
+                            <TextBlock Grid.Row="2"  Text="Group name" TextAlignment="Left" Margin="10 5 0 0">
                             </TextBlock>
-                            <StackPanel Grid.Row="2" Margin="10 0 0 0" Orientation="Horizontal" VerticalAlignment="Center">
+                            <StackPanel Grid.Row="3" Margin="10 0 0 0" Orientation="Horizontal" VerticalAlignment="Center">
                                 <Button Width="28" Height="28" Margin="5 0 10 0" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
-                                        IsEnabled="{Binding SetGroupButtonEnabled}" Command="{Binding SetFormatForGroupNameCommand}" ToolTip="Set colors and formats for all entries with this group name"
+                                        IsEnabled="{Binding SetGroupButtonEnabled}" Command="{Binding SetFormatForGroupNameCommand}" ToolTip="Set selected variables for all entries with this group name"
                                         materialDesign:RippleAssist.Feedback="#DD000000">
                                     <materialDesign:PackIcon Kind="BallotRecountOutline" Height="22" Width="22" />
                                 </Button>
                                 <TextBlock Margin="0 7 0 0" Text="{Binding SelectedOverlayItemGroupName}" Width="140" TextAlignment="Left" TextWrapping="Wrap" FontWeight="Bold"/>
                             </StackPanel>
-                            <TextBlock Grid.Row="3" TextAlignment="Left" Text="Sensor type" Margin="10 5 0 0">
+                            <TextBlock Grid.Row="4" TextAlignment="Left" Text="Sensor type" Margin="10 5 0 0">
                             </TextBlock>
-                            <StackPanel Grid.Row="4" Margin="10 0 0 0" Orientation="Horizontal" VerticalAlignment="Center">
+                            <StackPanel Grid.Row="5" Margin="10 0 0 0" Orientation="Horizontal" VerticalAlignment="Center">
                                 <Button Width="28" Height="28" Margin="5 0 10 0" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
-                                        IsEnabled="{Binding SetSensorTypeButtonEnabled}" Command="{Binding SetFormatForSensorTypeCommand}" ToolTip="Set colors and formats for all entries with this sensor type"
+                                        IsEnabled="{Binding SetSensorTypeButtonEnabled}" Command="{Binding SetFormatForSensorTypeCommand}" ToolTip="Set selected variables for all entries with this sensor type"
                                         materialDesign:RippleAssist.Feedback="#DD000000">
                                     <materialDesign:PackIcon Kind="BallotRecountOutline" Height="22" Width="22" />
                                 </Button>

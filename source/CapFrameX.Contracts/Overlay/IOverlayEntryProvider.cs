@@ -9,11 +9,11 @@ namespace CapFrameX.Contracts.Overlay
 
 		void MoveEntry(int sourceIndex, int targetIndex);
 
-		void SetFormatForGroupName(string groupName, IOverlayEntry selectedEntry);
-
-		void SetFormatForSensorType(string sensorType, IOverlayEntry selectedEntry);
-
 		void ResetColorAndLimits(IOverlayEntry selectedEntry);
+
+		void SetFormatForGroupName(string groupName, IOverlayEntry selectedEntry, IOverlayEntryFormatChange checkboxes);
+
+		void SetFormatForSensorType(string sensorType, IOverlayEntry selectedEntry, IOverlayEntryFormatChange checkboxes);
 
 		Task SaveOverlayEntriesToJson();
 
