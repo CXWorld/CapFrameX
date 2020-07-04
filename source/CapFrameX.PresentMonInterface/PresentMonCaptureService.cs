@@ -158,10 +158,18 @@ namespace CapFrameX.PresentMonInterface
 			{
 				foreach (var process in _presentMonProcesses)
 				{
-					var proc = Process.GetProcessesByName(process);
-					if (proc.Any())
+					try
 					{
-						updatedList.Add(process);
+						var proc = Process.GetProcessesByName(process);
+
+						if (proc.Any())
+						{
+							updatedList.Add(process);
+						}
+					}
+					catch(InvalidOperationException ex)
+                    {
+						_logger.LogError(ex, $"Failed to get process resources from {process}");
 					}
 				}
 			}
