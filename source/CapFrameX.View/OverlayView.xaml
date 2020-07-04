@@ -691,13 +691,13 @@
                                        TextWrapping="Wrap" TextAlignment="Center" FontSize="16">
                             </TextBlock>
                             <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center">
-                                <CheckBox IsChecked="{Binding Path=Checkboxes.Colors, Mode=TwoWay}" Margin="5">
+                                <CheckBox IsChecked="{Binding Checkboxes.Colors}" Margin="5">
                                     <TextBlock>Colors</TextBlock>
                                 </CheckBox>
-                                <CheckBox IsChecked="{Binding Path=Checkboxes.Limits, Mode=TwoWay}" Margin="5">
+                                <CheckBox IsChecked="{Binding Checkboxes.Limits}" Margin="5">
                                     <TextBlock>Limits</TextBlock>
                                 </CheckBox>
-                                <CheckBox IsChecked="{Binding Path=Checkboxes.Format, Mode=TwoWay}" Margin="5">
+                                <CheckBox IsChecked="{Binding Checkboxes.Format}" Margin="5">
                                     <TextBlock>Format</TextBlock>
                                 </CheckBox>
                             </StackPanel>
