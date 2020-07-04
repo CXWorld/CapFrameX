@@ -21,9 +21,9 @@ namespace CapFrameX.PresentMonInterface
 		private IDisposable _hearBeatDisposable;
 		private IDisposable _processNameDisposable;
 
-		public IObservable<string> RedirectedOutputDataStream 
+		public IObservable<string> RedirectedOutputDataStream
 			=> _outputDataStream.AsObservable();
-		public IObservable<string> RedirectedOutputErrorStream 
+		public IObservable<string> RedirectedOutputErrorStream
 			=> _outputErrorStream.AsObservable();
 		public Subject<bool> IsCaptureModeActiveStream { get; }
 		public Subject<bool> IsLoggingActiveStream { get; }
@@ -76,7 +76,8 @@ namespace CapFrameX.PresentMonInterface
 
 				_logger.LogInformation("PresentMon sucessfully started");
 				return true;
-			} catch(Exception e)
+			}
+			catch (Exception e)
 			{
 				_logger.LogError(e, "Failed to Start CaptureService");
 				return false;
@@ -116,37 +117,44 @@ namespace CapFrameX.PresentMonInterface
 					proc[0].Kill();
 				}
 			}
-			catch {}
+			catch { }
 		}
 
 		private void SubscribeToPresentMonCapturedProcesses()
 		{
-			_hearBeatDisposable = Observable.Generate(0, // dummy initialState
-										x => true, // dummy condition
-										x => x, // dummy iterate
-										x => x, // dummy resultSelector
-										x => TimeSpan.FromSeconds(1))
-										.Subscribe(x => UpdateProcessToCaptureList());
-
-			_processNameDisposable = _outputDataStream.ObserveOn(new EventLoopScheduler())
-				.Skip(2).Where(dataLine => _isUpdating == false).Subscribe(dataLine =>
+			try
 			{
-				if (string.IsNullOrWhiteSpace(dataLine))
-					return;
+				_hearBeatDisposable = Observable.Generate(0, // dummy initialState
+											x => true, // dummy condition
+											x => x, // dummy iterate
+											x => x, // dummy resultSelector
+											x => TimeSpan.FromSeconds(1))
+											.Subscribe(x => UpdateProcessToCaptureList());
 
-				int index = dataLine.IndexOf(".exe");
-
-				if (index > 0)
+				_processNameDisposable = _outputDataStream.ObserveOn(new EventLoopScheduler())
+					.Skip(2).Where(dataLine => _isUpdating == false).Subscribe(dataLine =>
 				{
-					var processName = dataLine.Substring(0, index);
+					if (string.IsNullOrWhiteSpace(dataLine))
+						return;
 
-					if (!_presentMonProcesses.Contains(processName))
+					int index = dataLine.IndexOf(".exe");
+
+					if (index > 0)
 					{
-						lock (_listLock)
-							_presentMonProcesses.Add(processName);
+						var processName = dataLine.Substring(0, index);
+
+						if (!_presentMonProcesses.Contains(processName))
+						{
+							lock (_listLock)
+								_presentMonProcesses.Add(processName);
+						}
 					}
-				}
-			});
+				});
+			}
+			catch (Exception e)
+			{
+				_logger.LogError(e, $"Failed to get process resources");
+			}
 		}
 
 		private void UpdateProcessToCaptureList()
@@ -167,8 +175,8 @@ namespace CapFrameX.PresentMonInterface
 							updatedList.Add(process);
 						}
 					}
-					catch(InvalidOperationException ex)
-                    {
+					catch (InvalidOperationException ex)
+					{
 						_logger.LogError(ex, $"Failed to get process resources from {process}");
 					}
 				}
