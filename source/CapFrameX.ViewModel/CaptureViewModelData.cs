@@ -179,8 +179,7 @@ namespace CapFrameX.ViewModel
 
 			if (distinctIndex == 0)
             {
-				_logger.LogWarning("Something went wrong getting union capture data. We cant use the data from archive(First CaptureDataTime was {firstArchiveTime}, last ArchiveTime was {lastArchiveTime})", GetStartTimeFromDataLine(filteredCaptureData.First()), lastArchiveTime);
-				File.WriteAllLines(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), @"CapFrameX\Logs", "defect_archive.csv"), filteredArchive);
+				_logger.LogWarning("Something went wrong getting union capture data. We cant use the data from archive(First CaptureDataTime was {firstCaptureTime}, last ArchiveTime was {lastArchiveTime})", GetStartTimeFromDataLine(filteredCaptureData.First()), lastArchiveTime);		
 				AddLoggerEntry("Comparison with archive data is invalid.");
 
 				return Enumerable.Empty<string>().ToList();

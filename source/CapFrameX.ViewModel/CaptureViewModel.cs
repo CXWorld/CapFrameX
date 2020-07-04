@@ -36,6 +36,8 @@ namespace CapFrameX.ViewModel
         private const int PRESICE_OFFSET = 2500;
         private const int ARCHIVE_LENGTH = 500;
 
+        private readonly object _archiveLock = new object();
+
         [DllImport("Kernel32.dll")]
         private static extern bool QueryPerformanceCounter(out long lpPerformanceCount);
 
@@ -473,6 +475,7 @@ namespace CapFrameX.ViewModel
             double delayCapture = Convert.ToInt32(CaptureStartDelayString);
             double captureTime = Convert.ToInt32(CaptureTimeString) + delayCapture;
             bool intializedStartTime = false;
+            double captureDataArchiveLastTime = 0;
 
             _disposableCaptureStream = _captureService.RedirectedOutputDataStream
                 .ObserveOn(new EventLoopScheduler()).Subscribe(dataLine =>
@@ -482,15 +485,22 @@ namespace CapFrameX.ViewModel
 
                     _captureData.Add(dataLine);
 
-                    if (!intializedStartTime && _captureData.Count > 10)
+                    if (!intializedStartTime)
                     {
-                        intializedStartTime = true;
+                        double captureDataFirstTime = GetStartTimeFromDataLine(_captureData.First());
+                        lock (_archiveLock)
+                            captureDataArchiveLastTime = GetStartTimeFromDataLine(_captureDataArchive.Last());
 
-                        // stop archive
-                        _fillArchive = false;
-                        _disposableArchiveStream?.Dispose();
+                        if (captureDataFirstTime < captureDataArchiveLastTime)
+                        {
+                            intializedStartTime = true;
 
-                        AddLoggerEntry("Stopped filling archive.");
+                            // stop archive
+                            _fillArchive = false;
+                            _disposableArchiveStream?.Dispose();
+
+                            AddLoggerEntry("Stopped filling archive.");
+                        }
                     }
                 });
 
@@ -746,19 +756,22 @@ namespace CapFrameX.ViewModel
 
         private void AddDataLineToArchive(string dataLine)
         {
-            if(string.IsNullOrWhiteSpace(dataLine))
+            if (string.IsNullOrWhiteSpace(dataLine))
             {
                 return;
             }
 
-            if (_captureDataArchive.Count < ARCHIVE_LENGTH)
+            lock (_archiveLock)
             {
-                _captureDataArchive.Add(dataLine);
-            }
-            else
-            {
-                _captureDataArchive.RemoveAt(0);
-                _captureDataArchive.Add(dataLine);
+                if (_captureDataArchive.Count < ARCHIVE_LENGTH)
+                {
+                    _captureDataArchive.Add(dataLine);
+                }
+                else
+                {
+                    _captureDataArchive.RemoveAt(0);
+                    _captureDataArchive.Add(dataLine);
+                }
             }
         }
 
