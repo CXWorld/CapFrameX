@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace CapFrameX.Webservice.Implementation.Services
 {
-	public class SquidexService : IProcessListService, ISessionService
+	public class SquidexService : IProcessListService, ISessionService, ICrashlogReportingService
 	{
 		private readonly SquidexClientManager _squidexClientManager;
 		private readonly SquidexOptions _squidexOptions;
@@ -66,6 +66,14 @@ namespace CapFrameX.Webservice.Implementation.Services
 			var client = _squidexClientManager.CreateAssetsClient();
 			var uploadedAsset = await client.PostAssetAsync(_squidexOptions.AppName, new FileParameter(new MemoryStream(data), fileName, "application/json"), SESSIONFOLDERID);
 			return uploadedAsset.Id;
+		}
+
+		public async Task<Guid> UploadCrashlog(byte[] data, string filename)
+		{
+			var SESSIONFOLDERID = Guid.Parse("df35dedd-94e1-4fbd-a0a4-fc1a965ba0a5");
+			var client = _squidexClientManager.CreateAssetsClient();
+			var uploadedCrashlog = await client.PostAssetAsync(_squidexOptions.AppName, new FileParameter(new MemoryStream(data), filename, "application/json"), SESSIONFOLDERID);
+			return uploadedCrashlog.Id;
 		}
 
 		public async Task<(string, byte[])> DownloadAsset(Guid id)

@@ -63,6 +63,7 @@ namespace CapFrameX.Webservice.Host
 			// Register Services
 			services.AddSingleton<ISessionService>(x => x.GetRequiredService<SquidexService>());
 			services.AddSingleton<IProcessListService>(x => x.GetRequiredService<SquidexService>());
+			services.AddSingleton<ICrashlogReportingService>(x => x.GetRequiredService<SquidexService>());
 
 			// Register Providers
 			services.AddScoped<IUserClaimsProvider, UserClaimsProvider>();

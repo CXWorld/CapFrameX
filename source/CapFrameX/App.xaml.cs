@@ -1,14 +1,19 @@
 ﻿using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.Sensor;
 using CapFrameX.Data;
+using CapFrameX.Extensions;
 using CapFrameX.PresentMonInterface;
+using Newtonsoft.Json;
 using Serilog;
 using Serilog.Formatting.Compact;
+using Serilog.Sinks.InMemory;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Security.Principal;
 using System.Threading.Tasks;
 using System.Windows;
@@ -34,7 +39,10 @@ namespace CapFrameX
 		private void SetupExceptionHandling()
 		{
 			AppDomain.CurrentDomain.UnhandledException += (s, e) =>
+			{
 				LogUnhandledException((Exception)e.ExceptionObject, "AppDomain.CurrentDomain.UnhandledException");
+				ShowCrashLogUploaderMessagebox();
+			};
 
 			DispatcherUnhandledException += (s, e) =>
 			{
@@ -65,6 +73,33 @@ namespace CapFrameX
 			{
 				Log.Logger.Fatal(exception, message);
 			}
+		}
+
+		private void ShowCrashLogUploaderMessagebox()
+        {
+			if (MessageBox.Show("An unexpected Error occured. Do you want to upload the CapFrameX Log for further analysis?", "Fatal Error", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+			{
+				using (var client = new HttpClient()
+				{
+					BaseAddress = new Uri(ConfigurationManager.AppSettings["WebserviceUri"])
+				})
+				{
+					var loggerEvents = InMemorySink.Instance.LogEvents;
+					client.DefaultRequestHeaders.AddCXClientUserAgent();
+
+					var content = new StringContent(JsonConvert.SerializeObject(loggerEvents));
+					content.Headers.ContentType.MediaType = "application/json";
+
+					var response = client.PostAsync("crashlogs", content).GetAwaiter().GetResult();
+
+					var reportId = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+
+					Log.Logger.Information("Uploading Logs. Report-ID is {reportId}", reportId);
+					MessageBox.Show($"Your Report-ID is {reportId}.\nPlease include this Id in your support inquiry. Visit https://www.capframex.com/support for further information.");
+				}
+			}
+
+			Current.Shutdown();
 		}
 
 		private void CapFrameXExit(object sender, ExitEventArgs e)
@@ -139,6 +174,7 @@ namespace CapFrameX
 			Log.Logger = new LoggerConfiguration()
 				.MinimumLevel.Debug()
 				.Enrich.FromLogContext()
+				.WriteTo.InMemory()
 				.WriteTo.File(
 					path: Path.Combine(path, "CapFrameX.log"),
 					fileSizeLimitBytes: 1024 * 10000, // approx 10MB
