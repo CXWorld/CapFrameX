@@ -6,6 +6,7 @@ using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using CapFrameX.Contracts.PresentMonInterface;
+using Microsoft.Extensions.Logging;
 
 namespace CapFrameX.PresentMonInterface
 {
@@ -14,7 +15,7 @@ namespace CapFrameX.PresentMonInterface
 		private readonly ISubject<string> _outputErrorStream;
 		private readonly ISubject<string> _outputDataStream;
 		private readonly object _listLock = new object();
-
+		private readonly ILogger<PresentMonCaptureService> _logger;
 		private HashSet<string> _presentMonProcesses;
 		private bool _isUpdating;
 		private IDisposable _hearBeatDisposable;
@@ -27,13 +28,14 @@ namespace CapFrameX.PresentMonInterface
 		public Subject<bool> IsCaptureModeActiveStream { get; }
 		public Subject<bool> IsLoggingActiveStream { get; }
 
-		public PresentMonCaptureService()
+		public PresentMonCaptureService(ILogger<PresentMonCaptureService> logger)
 		{
 			_outputDataStream = new Subject<string>();
 			_outputErrorStream = new Subject<string>();
 			IsCaptureModeActiveStream = new Subject<bool>();
 			IsLoggingActiveStream = new Subject<bool>();
 			_presentMonProcesses = new HashSet<string>();
+			_logger = logger;
 		}
 
 		public bool StartCaptureService(IServiceStartInfo startinfo)
@@ -43,34 +45,42 @@ namespace CapFrameX.PresentMonInterface
 				return false;
 			}
 
-			SubscribeToPresentMonCapturedProcesses();
-			TryKillPresentMon();
-
-			Process process = new Process
+			try
 			{
-				StartInfo = new ProcessStartInfo
+				SubscribeToPresentMonCapturedProcesses();
+				TryKillPresentMon();
+
+				Process process = new Process
 				{
-					FileName = startinfo.FileName,
-					Arguments = startinfo.Arguments,
-					UseShellExecute = startinfo.UseShellExecute,
-					RedirectStandardOutput = true,
-					RedirectStandardError = true,
-					RedirectStandardInput = true, // is it a MUST??
-					CreateNoWindow = startinfo.CreateNoWindow,
-					Verb = "runas",
-				}
-			};
+					StartInfo = new ProcessStartInfo
+					{
+						FileName = startinfo.FileName,
+						Arguments = startinfo.Arguments,
+						UseShellExecute = startinfo.UseShellExecute,
+						RedirectStandardOutput = true,
+						RedirectStandardError = true,
+						RedirectStandardInput = true, // is it a MUST??
+						CreateNoWindow = startinfo.CreateNoWindow,
+						Verb = "runas",
+					}
+				};
 
-			process.EnableRaisingEvents = true;
-			process.OutputDataReceived += (sender, e) => _outputDataStream.OnNext(e.Data);
-			process.ErrorDataReceived += (sender, e) => _outputErrorStream.OnNext(e.Data);
+				process.EnableRaisingEvents = true;
+				process.OutputDataReceived += (sender, e) => _outputDataStream.OnNext(e.Data);
+				process.ErrorDataReceived += (sender, e) => _outputErrorStream.OnNext(e.Data);
 
-			process.Start();
-			_outputDataStream.OnNext("Capture service started...");
-			process.BeginOutputReadLine();
-			process.BeginErrorReadLine();
+				process.Start();
+				_outputDataStream.OnNext("Capture service started...");
+				process.BeginOutputReadLine();
+				process.BeginErrorReadLine();
 
-			return true;
+				_logger.LogInformation("PresentMon sucessfully started");
+				return true;
+			} catch(Exception e)
+			{
+				_logger.LogError(e, "Failed to Start CaptureService");
+				return false;
+			}
 		}
 
 		public bool StopCaptureService()
@@ -106,7 +116,7 @@ namespace CapFrameX.PresentMonInterface
 					proc[0].Kill();
 				}
 			}
-			catch { }
+			catch {}
 		}
 
 		private void SubscribeToPresentMonCapturedProcesses()
