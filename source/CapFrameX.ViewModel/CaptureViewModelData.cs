@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
@@ -178,7 +179,8 @@ namespace CapFrameX.ViewModel
 
 			if (distinctIndex == 0)
             {
-				_logger.LogWarning($"Something went wrong getting union capture data. We cant use the data from archive (First CaptureDataTime was {GetStartTimeFromDataLine(filteredCaptureData.First())},  last ArchiveTime was {lastArchiveTime})");
+				_logger.LogWarning("Something went wrong getting union capture data. We cant use the data from archive(First CaptureDataTime was {firstArchiveTime}, last ArchiveTime was {lastArchiveTime})", GetStartTimeFromDataLine(filteredCaptureData.First()), lastArchiveTime);
+				File.WriteAllLines(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), @"CapFrameX\Logs", "defect_archive.csv"), filteredArchive);
 				AddLoggerEntry("Comparison with archive data is invalid.");
 
 				return Enumerable.Empty<string>().ToList();
