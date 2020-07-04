@@ -280,7 +280,7 @@ namespace CapFrameX.ViewModel
 			set
 			{
 				_selectedOverlayEntry = value;
-				OverlayItemsOptionsEnabled = _selectedOverlayEntry.Identifier != "RunHistory" ? true : false;
+				OverlayItemsOptionsEnabled = _selectedOverlayEntry?.Identifier != "RunHistory" ? true : false;
 				RaisePropertyChanged();
 				DetermineMultipleGroupEntries(_selectedOverlayEntry);
 				DetermineMultipleSensorTypeEntries(_selectedOverlayEntry);
@@ -575,6 +575,9 @@ namespace CapFrameX.ViewModel
 
 		public void DetermineMultipleSensorTypeEntries(IOverlayEntry selectedEntry)
 		{
+			if (selectedEntry == null)
+				return;
+
 			string selectedSensorType = _sensorService.GetSensorTypeString(selectedEntry);
 			SetSensorTypeButtonEnabled = selectedSensorType != string.Empty &&
 				OverlayEntries.Count((entry => _sensorService.GetSensorTypeString(entry) == selectedSensorType)) > 1;
