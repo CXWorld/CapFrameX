@@ -482,7 +482,7 @@ namespace CapFrameX.ViewModel
 
                     _captureData.Add(dataLine);
 
-                    if (!intializedStartTime)
+                    if (!intializedStartTime && _captureData.Count > 10)
                     {
                         intializedStartTime = true;
 
