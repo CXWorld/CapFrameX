@@ -1,6 +1,5 @@
 ﻿using CapFrameX.Data;
 using CapFrameX.Data.Session.Contracts;
-using CapFrameX.Extensions.NetStandard;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -155,12 +154,15 @@ namespace CapFrameX.ViewModel
 					return currentProcess == processName && uniqueProcessIdDict[currentProcess].Count() == 1;
 				}).ToList();
 
-			AddLoggerEntry($"Using archive with {filteredArchive.Count} frames.");
 
 			if (!filteredArchive.Any())
 			{
 				AddLoggerEntry($"Empty archive. No file will be written.");
 				return Enumerable.Empty<string>().ToList();
+			}
+			else
+			{
+				AddLoggerEntry($"Using archive with {filteredArchive.Count} frames.");
 			}
 
 			// Distinct archive and live stream
@@ -176,7 +178,7 @@ namespace CapFrameX.ViewModel
 
 			if (distinctIndex == 0)
             {
-				_logger.LogWarning("Something went wrong Getting Adjusted Capture Data. This is sad :( We cant use the Data from Archive.");
+				_logger.LogWarning($"Something went wrong getting union capture data. We cant use the data from archive (First CaptureDataTime was {GetStartTimeFromDataLine(filteredCaptureData.First())},  last ArchiveTime was {lastArchiveTime})");
 				AddLoggerEntry("Comparison with archive data is invalid.");
 
 				return Enumerable.Empty<string>().ToList();
