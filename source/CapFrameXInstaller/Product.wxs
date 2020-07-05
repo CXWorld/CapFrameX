@@ -19,14 +19,22 @@
 		  <Custom Action="WixCloseApplications" Before="InstallValidate">
 			  Installed
 		  </Custom>
+		  <Custom Action="CleanRegistry" Before="InstallFinalize">
+			  Installed
+		  </Custom>
 	  </InstallExecuteSequence>
 
 	  <util:CloseApplication Id="CloseCapFrameX" Target="CapFrameX.exe"
-							  CloseMessage="yes" RebootPrompt="no">
+							 CloseMessage="yes" RebootPrompt="no">
 		  Installed
 	  </util:CloseApplication>
 	</Product>
 
+	<Fragment>
+		<CustomAction Id="CleanRegistry" BinaryKey="CapFrameX.CustomInstallerActions.CA.dll" DllEntry="RemoveAutoStartKey" Execute="immediate" Return="check"/>
+		<Binary Id="CapFrameX.CustomInstallerActions.CA.dll" SourceFile="$(var.CapFrameX.CustomInstallerActions.TargetDir)$(var.CapFrameX.CustomInstallerActions.TargetName).CA.dll" />
+	</Fragment>
+	
 	<Fragment>		
 		<Directory Id="TARGETDIR" Name="SourceDir">
 			<Directory Id="ProgramFiles64Folder">

@@ -50,6 +50,14 @@
     </WixExtension>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\CapFrameX.CustomInstallerActions\CapFrameX.CustomInstallerActions.csproj">
+      <Name>CapFrameX.CustomInstallerActions</Name>
+      <Project>{d26ea74f-8d44-453c-ad70-3789affdf85f}</Project>
+      <Private>True</Private>
+      <DoNotHarvest>True</DoNotHarvest>
+      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
+      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
+    </ProjectReference>
     <ProjectReference Include="..\CapFrameX\CapFrameX.csproj">
       <Name>CapFrameX</Name>
       <Project>{aaa73d26-5cd6-4066-b84c-5bd34057b346}</Project>

@@ -18,6 +18,7 @@ using Microsoft.Extensions.Logging;
 using CapFrameX.Contracts.Data;
 using CapFrameX.EventAggregation.Messages;
 using Microsoft.Win32;
+using System.Threading.Tasks;
 
 namespace CapFrameX.ViewModel
 {
@@ -483,18 +484,24 @@ namespace CapFrameX.ViewModel
 
         public void OnAutostartChanged()
         {
-            string run = "SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Run";
-            string appName = "CapFrameX";
-            string appPath = System.Reflection.Assembly.GetEntryAssembly().Location;
-            if (Path.HasExtension(appPath))
-            {
-                RegistryKey startKey = Registry.LocalMachine.OpenSubKey(run, true);
+            const string run = "SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Run";
+            const string appName = "CapFrameX";            
 
-                if (Autostart)
-                    startKey.SetValue(appName, appPath);
-                if (!Autostart)
-                    startKey.DeleteValue(appName);
-            }
+            Task.Run(() =>
+            {
+                string appPath = System.Reflection.Assembly.GetEntryAssembly().Location;
+
+                if (Path.HasExtension(appPath))
+                {
+                    RegistryKey startKey = Registry.LocalMachine.OpenSubKey(run, true);
+
+                    if (Autostart)
+                        startKey.SetValue(appName, appPath);
+                    if (!Autostart)
+                        startKey.DeleteValue(appName);
+                }
+            });
+
         }
 
         private void SetAggregatorEvents()
