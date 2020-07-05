@@ -16,12 +16,12 @@ namespace CapFrameX.CustomInstallerActions
                 string appName = "CapFrameX";
 
                 RegistryKey startKey = Registry.LocalMachine.OpenSubKey(run, true);
-                startKey.DeleteValue(appName);
+                var val = startKey.GetValue("appName");
+
+                if (val != null)
+                    startKey.DeleteValue(appName);
             }
-            catch
-            {
-                return ActionResult.Failure;
-            }
+            catch { }
 
             return ActionResult.Success;
         }
