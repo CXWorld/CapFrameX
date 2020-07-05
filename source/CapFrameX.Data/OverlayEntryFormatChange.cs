@@ -6,9 +6,9 @@ namespace CapFrameX.Data
 {
 	public class OverlayEntryFormatChange : BindableBase, IOverlayEntryFormatChange
 	{
-		private bool _colorsSelected;
-		private bool _limitsSelected;
-		private bool _formatSelected;
+		private bool _colorsSelected = true;
+		private bool _limitsSelected = true;
+		private bool _formatSelected = true;
 
 		public bool Colors
 		{
