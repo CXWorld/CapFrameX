@@ -81,14 +81,9 @@
                 <File Id="filB564A04F334751CB9A1730CE3C9409C0" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.Sensor.Reporting.dll" />
             </Component>
             
-            <Component Id="cmp0FB30BFBF10002FEB8B1F262B927DE5E" Guid="*" Win64="yes">
-                <File Id="fil60A491409F9FE309FF63B17A92C963ED" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.Statistics.dll" />
-            </Component>
-            
             <Component Id="cmp4A14411E5B2D1C7D899B9637CD60A7CD" Guid="*" Win64="yes">
                 <File Id="fil16D7996D0A7821C067EFB1CE112D3697" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.Statistics.NetStandard.dll" />
             </Component>
-            
             
             <Component Id="cmpA370ED5AA85C29D5BFCB28B64725C072" Guid="*" Win64="yes">
                 <File Id="fil6B7F05642808F2CC0AC761685715D27B" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.Statistics.PlotBuilder.dll" />
@@ -227,6 +222,9 @@
                 <File Id="fil13620EBEA6F6420A02C733F8682CD641" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\MaterialDesignThemes.Wpf.dll" />
             </Component>
             
+            <Component Id="cmp508010C135AF223EB87100427362C0F7" Guid="*" Win64="yes">
+                <File Id="fil61C3AF32B1895314286CFDCFB37C0679" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\MathNet.Filtering.dll" />
+            </Component>
             <Component Id="cmp3ED5A0A4D782A8BF371C8403342D615B" Guid="*" Win64="yes">
                 <File Id="fil7074B34CCDD7ABC6B6FDB40762FB4CF9" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\MathNet.Numerics.dll" />
             </Component>
@@ -330,6 +328,9 @@
                 <File Id="fil1A12B15365165DDBE60433B150808BEE" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Serilog.Sinks.File.dll" />
             </Component>
             
+            <Component Id="cmpCA8C2FCDCB8F69949F999C60F873B47D" Guid="*" Win64="yes">
+                <File Id="fil9AC294200608B107174E1C25DBF01846" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Serilog.Sinks.InMemory.dll" />
+            </Component>
             <Component Id="cmp502591F7CF4C605EDE7BA63509CB751F" Guid="*" Win64="yes">
                 <File Id="fil880CC9252F2536067E68688D233C67AD" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\snapshot_blob.bin" />
             </Component>
@@ -630,10 +631,7 @@
             
             <ComponentRef Id="cmp0895AE10E5B3ECDA81D5DD888E741F15" />
             
-            <ComponentRef Id="cmp0FB30BFBF10002FEB8B1F262B927DE5E" />
-            
             <ComponentRef Id="cmp4A14411E5B2D1C7D899B9637CD60A7CD" />
-            
             
             <ComponentRef Id="cmpA370ED5AA85C29D5BFCB28B64725C072" />
             
@@ -696,6 +694,7 @@
             <ComponentRef Id="cmpBDFFFC10BC54483342036800228711F3" />
             <ComponentRef Id="cmp6D59DB1C8695088F09FD7F0B07ECD487" />
             
+            <ComponentRef Id="cmp508010C135AF223EB87100427362C0F7" />
             <ComponentRef Id="cmp3ED5A0A4D782A8BF371C8403342D615B" />
             <ComponentRef Id="cmp257EA8281FB771B78FAEDC2CD80B4A5F" />
             <ComponentRef Id="cmpB785B661067DB1CA34160E239CB75395" />
@@ -733,6 +732,7 @@
             <ComponentRef Id="cmpC08CEB1C24E4A6DA79EE83CFD8BDCD60" />
             <ComponentRef Id="cmp49818C715FF04B8E95F7B53BDDD323EF" />
             
+            <ComponentRef Id="cmpCA8C2FCDCB8F69949F999C60F873B47D" />
             <ComponentRef Id="cmp502591F7CF4C605EDE7BA63509CB751F" />
             <ComponentRef Id="cmp29B124E05CCAD23A5A2E64AF36D0DB99" />
             <ComponentRef Id="cmpA748C45814948C0E47F0962CF5A9E2C5" />
