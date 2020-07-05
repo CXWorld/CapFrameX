@@ -42,7 +42,7 @@ namespace CapFrameX.Overlay
         public bool IsNumeric { get; set; }
 
         [JsonIgnore]
-        public Action UpdateGroupName { get; set; }
+        public Action<string> UpdateGroupName { get; set; }
 
         [JsonIgnore]
         public string ValueAlignmentAndDigits { get; set; }
@@ -88,7 +88,7 @@ namespace CapFrameX.Overlay
             {
                 _groupName = value;
                 RaisePropertyChanged();
-                UpdateGroupName?.Invoke();
+                UpdateGroupName?.Invoke(value);
             }
         }
 

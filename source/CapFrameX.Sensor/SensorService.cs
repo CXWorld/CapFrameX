@@ -176,6 +176,13 @@ namespace CapFrameX.Sensor
             }
         }
 
+        public void ResetSensorOverlayEntries()
+        {
+            _overlayEntryDict.Clear();
+            InitializeOverlayEntryDict();
+            _onDictionaryUpdated.OnNext(GetSensorOverlayEntries());
+        }
+
         private void InitializeOverlayEntryDict()
         {
             if (_computer == null) return;

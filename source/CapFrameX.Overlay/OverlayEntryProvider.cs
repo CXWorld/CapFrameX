@@ -219,7 +219,7 @@ namespace CapFrameX.Overlay
 			SetOnlineMetricFormats();
 
 			SetOnlineMetricsIsNumericState();
-			SetRTSSMetricIsNumericState();
+			//SetRTSSMetricIsNumericState();
 			SetHardwareIsNumericState();
 			_overlayEntries.ForEach(entry => entry.FormatChanged = true);
 		}
@@ -381,6 +381,8 @@ namespace CapFrameX.Overlay
 			var overlayEntries = OverlayUtils.GetOverlayEntryDefaults()
 					.Select(item => item as IOverlayEntry).ToBlockingCollection();
 
+			_sensorService.ResetSensorOverlayEntries();
+
 			// Sensor data
 			return _onDictionaryUpdatedBuffered
 				.Take(1)
@@ -487,6 +489,7 @@ namespace CapFrameX.Overlay
 			}
 		}
 
+		// To do : Retrieve values from RTSS
 		private void SetRTSSMetricIsNumericState()
 		{
 			foreach (var entry in _overlayEntries.Where(x =>
@@ -609,7 +612,7 @@ namespace CapFrameX.Overlay
 							}
 							else
 							{
-								entry.ValueFormat = "<S=" + entry.ValueFontSize + "><C={" + currentColor + "}>{0}<C><S>";
+								entry.ValueFormat = "<S=" + entry.ValueFontSize + "><C=" + currentColor + ">{0}<C><S>";
 							}
 
 							entry.LastLimitState = limitState;
