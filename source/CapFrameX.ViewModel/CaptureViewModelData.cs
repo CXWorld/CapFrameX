@@ -4,7 +4,6 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
@@ -12,7 +11,7 @@ using System.Windows;
 
 namespace CapFrameX.ViewModel
 {
-	public partial class CaptureViewModel
+    public partial class CaptureViewModel
 	{
 		private void WriteCaptureDataToFile()
 		{

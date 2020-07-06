@@ -12,8 +12,8 @@ namespace CapFrameX.CustomInstallerActions
 
             try
             {
-                string run = "SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Run";
-                string appName = "CapFrameX";
+                const string run = "SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Run";
+                const string appName = "CapFrameX";
 
                 RegistryKey startKey = Registry.LocalMachine.OpenSubKey(run, true);
                 var val = startKey.GetValue("appName");
