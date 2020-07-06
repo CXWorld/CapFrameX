@@ -51,6 +51,8 @@ namespace CapFrameX.Sensor
 
         public bool UseSensorLogging => _appConfiguration.UseSensorLogging;
 
+        public bool IsOverlayActive => _appConfiguration.IsOverlayActive;
+
         public SensorService(IAppConfiguration appConfiguration,
                              ILogger<SensorService> logger)
         {
@@ -74,6 +76,7 @@ namespace CapFrameX.Sensor
 
             _sensorSnapshotStream
                 .Sample(_osdUpdateSubject.Select(timespan => Observable.Concat(Observable.Return(-1L), Observable.Interval(timespan))).Switch())
+                .Where(_ => IsOverlayActive)
                 .Subscribe(sensorData =>
                 {
                     UpdateOSD(sensorData.Item2);
