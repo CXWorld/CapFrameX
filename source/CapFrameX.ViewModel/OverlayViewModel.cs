@@ -361,7 +361,6 @@ namespace CapFrameX.ViewModel
 			}
 			set
 			{
-				OverlayItemsOptionsEnabled = false;
 				if (value)
 					_appConfiguration.OverlayEntryConfigurationFile = 2;
 				RaisePropertyChanged();
@@ -494,7 +493,7 @@ namespace CapFrameX.ViewModel
 			OverlayEntries.AddRange(overlayEntries);
 			await _overlayEntryProvider.SaveOverlayEntriesToJson();
 			OnUseRunHistoryChanged();
-			OverlayItemsOptionsEnabled = _selectedOverlayEntryIndex > -1 ? true : false;
+			OverlayItemsOptionsEnabled = false;
 		}
 
 		private void OnUseRunHistoryChanged()
