@@ -281,8 +281,10 @@ namespace CapFrameX.ViewModel
 			get { return _selectedOverlayEntry; }
 			set
 			{
+				if (value.Identifier == "RunHistory")
+					OverlayItemsOptionsEnabled = false;
+
 				_selectedOverlayEntry = value;
-				OverlayItemsOptionsEnabled = _selectedOverlayEntry?.Identifier != "RunHistory" ? true : false;
 				RaisePropertyChanged();
 				DetermineMultipleGroupEntries(_selectedOverlayEntry);
 				DetermineMultipleSensorTypeEntries(_selectedOverlayEntry);
@@ -359,6 +361,7 @@ namespace CapFrameX.ViewModel
 			}
 			set
 			{
+				OverlayItemsOptionsEnabled = false;
 				if (value)
 					_appConfiguration.OverlayEntryConfigurationFile = 2;
 				RaisePropertyChanged();
@@ -491,6 +494,7 @@ namespace CapFrameX.ViewModel
 			OverlayEntries.AddRange(overlayEntries);
 			await _overlayEntryProvider.SaveOverlayEntriesToJson();
 			OnUseRunHistoryChanged();
+			OverlayItemsOptionsEnabled = _selectedOverlayEntryIndex > -1 ? true : false;
 		}
 
 		private void OnUseRunHistoryChanged()

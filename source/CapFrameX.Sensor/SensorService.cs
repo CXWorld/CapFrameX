@@ -75,7 +75,7 @@ namespace CapFrameX.Sensor
 
 			StartOpenHardwareMonitor();
 
-			Task.Delay(100).ContinueWith(t =>
+			Task.Delay(200).ContinueWith(t =>
 			{
 				InitializeOverlayEntryDict();
 
