@@ -3,7 +3,6 @@ using Newtonsoft.Json;
 using Prism.Mvvm;
 using System;
 using System.Globalization;
-using System.Windows.Forms;
 
 namespace CapFrameX.Overlay
 {
