@@ -66,6 +66,7 @@ namespace CapFrameX.Sensor
             _sensorSnapshotStream = _sensorUpdateSubject
                 .Select(timespan => Observable.Concat(Observable.Return(-1L), Observable.Interval(timespan)))
                 .Switch()
+                .Where(_ => IsOverlayActive || (_isLoggingActive && UseSensorLogging))
                 .Select(_ => GetSensorValues())
                 .Replay(0).RefCount();
 
