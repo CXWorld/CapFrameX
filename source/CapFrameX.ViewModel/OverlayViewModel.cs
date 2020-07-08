@@ -281,7 +281,7 @@ namespace CapFrameX.ViewModel
 			get { return _selectedOverlayEntry; }
 			set
 			{
-				if (value.Identifier == "RunHistory")
+				if (value != null && value.Identifier == "RunHistory")
 					OverlayItemsOptionsEnabled = false;
 
 				_selectedOverlayEntry = value;
