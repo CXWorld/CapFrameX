@@ -22,6 +22,7 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 
 namespace CapFrameX.ViewModel
@@ -43,6 +44,7 @@ namespace CapFrameX.ViewModel
 		private bool _setSensorTypeButtonEnabled;
 		private bool _setGroupButtonEnabled;
 		private bool _overlayItemsOptionsEnabled = false;
+		private bool _saveButtonIsEnable;
 
 		public bool OverlayItemsOptionsEnabled
 		{
@@ -367,6 +369,16 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
+		public bool SaveButtonIsEnable
+        {
+            get { return _saveButtonIsEnable; }
+            set
+            {
+				_saveButtonIsEnable = value;
+				RaisePropertyChanged();
+			}
+        }
+
 		public string SelectedOverlayItemName
 			=> SelectedOverlayEntryIndex > -1 ?
 			OverlayEntries[SelectedOverlayEntryIndex].Description : null;
@@ -454,16 +466,31 @@ namespace CapFrameX.ViewModel
 				.Subscribe(entries =>
 				{
 					foreach (var entry in entries)
+					{
 						entry.UpdateGroupName = OverlaySubModelGroupSeparating.UpdateGroupName;
+						entry.PropertyChangedAction = SetSaveButtonEnable;
+					}
 
 					OverlaySubModelGroupSeparating.SetOverlayEntries(entries);
+
+					foreach (var entry in OverlaySubModelGroupSeparating.OverlayGroupNameSeparatorEntries)
+					{
+						entry.PropertyChangedAction = SetSaveButtonEnable;
+					}
+
 					OverlayEntries.Clear();
 					OverlayEntries.AddRange(entries);
 					OnUseRunHistoryChanged();
+
+					SaveButtonIsEnable = false;
 				});
 
 			SaveConfigCommand = new DelegateCommand(
-			   async () => await _overlayEntryProvider.SaveOverlayEntriesToJson());
+			   async () =>
+			   {
+				   SaveButtonIsEnable = false;
+				   await _overlayEntryProvider.SaveOverlayEntriesToJson();
+			   });
 
 			ResetDefaultsCommand = new DelegateCommand(
 				async () => await OnResetDefaults());
@@ -484,6 +511,9 @@ namespace CapFrameX.ViewModel
 			SetGlobalHookEventOverlayHotkey();
 			SetGlobalHookEventResetHistoryHotkey();
 		}
+
+		private void SetSaveButtonEnable()
+			=> SaveButtonIsEnable = true;
 
 		private async Task OnResetDefaults()
 		{

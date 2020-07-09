@@ -36,6 +36,8 @@ namespace CapFrameX.ViewModel.SubModels
 
 		public Action<string, int> UpdateGroupSeparator { get; set; }
 
+		public Action PropertyChangedAction { set; get; }
+
 		/// <summary>
 		/// Set field without side effects
 		/// </summary>
@@ -43,6 +45,7 @@ namespace CapFrameX.ViewModel.SubModels
 		public void SetGroupSeparators(int count)
 		{
 			_groupSeparators = count;
+			PropertyChanged += (s, e) => PropertyChangedAction?.Invoke();
 		}
 	}
 

@@ -63,7 +63,7 @@
                 <TextBlock Margin="20 0 0 10" HorizontalAlignment="Left" Text="Overlay items" FontSize="14" VerticalAlignment="Center"/>
                 <StackPanel Margin="0 0 10 10" Orientation="Horizontal" HorizontalAlignment="Right">
                     <Button Width="28" Height="28" Margin="0 0 10 0" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
-                            ToolTip="Save current config" Command="{Binding SaveConfigCommand}"
+                            ToolTip="Save current config" Command="{Binding SaveConfigCommand}" IsEnabled="{Binding SaveButtonIsEnable}"
                             materialDesign:RippleAssist.Feedback="#DD000000">
                         <materialDesign:PackIcon Kind="ContentSaveSettings" Height="22" Width="22" />
                     </Button>

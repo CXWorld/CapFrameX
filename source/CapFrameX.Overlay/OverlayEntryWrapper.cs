@@ -44,6 +44,9 @@ namespace CapFrameX.Overlay
         public string Description { get; set; }
 
         [JsonIgnore]
+        public Action PropertyChangedAction { set; get; }
+
+        [JsonIgnore]
         public object Value
         {
             get
@@ -76,13 +79,16 @@ namespace CapFrameX.Overlay
         [JsonIgnore]
         public bool IsNumeric
         {
-            get {
-                lock (_fieldLock)
-                    return _isNumeric; }
-            set 
+            get
             {
                 lock (_fieldLock)
-                    _isNumeric = value; }
+                    return _isNumeric;
+            }
+            set
+            {
+                lock (_fieldLock)
+                    _isNumeric = value;
+            }
         }
 
         [JsonIgnore]
@@ -297,7 +303,7 @@ namespace CapFrameX.Overlay
             {
                 _upperLimitValue = value;
                 lock (_limitsLock)
-                    FormatChanged = _upperLimitValue == string.Empty 
+                    FormatChanged = _upperLimitValue == string.Empty
                         && _lowerLimitValue == string.Empty;
                 RaisePropertyChanged();
             }
@@ -314,7 +320,7 @@ namespace CapFrameX.Overlay
             {
                 _lowerLimitValue = value;
                 lock (_limitsLock)
-                    FormatChanged = _upperLimitValue == string.Empty 
+                    FormatChanged = _upperLimitValue == string.Empty
                         && _lowerLimitValue == string.Empty;
                 RaisePropertyChanged();
             }
@@ -406,6 +412,7 @@ namespace CapFrameX.Overlay
         public OverlayEntryWrapper(string identifier)
         {
             Identifier = identifier;
+            PropertyChanged += (s, e) => PropertyChangedAction?.Invoke();
         }
 
         public IOverlayEntry Clone()

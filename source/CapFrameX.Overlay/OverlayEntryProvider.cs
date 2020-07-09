@@ -2,7 +2,6 @@
 using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.Sensor;
-using CapFrameX.Data;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Extensions;
 using CapFrameX.PresentMonInterface;
@@ -12,7 +11,6 @@ using Prism.Events;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
@@ -21,7 +19,7 @@ using System.Threading.Tasks;
 
 namespace CapFrameX.Overlay
 {
-	public class OverlayEntryProvider : IOverlayEntryProvider
+    public class OverlayEntryProvider : IOverlayEntryProvider
 	{
 		private static readonly string OVERLAY_CONFIG_FOLDER
 			= Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
