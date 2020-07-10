@@ -1,9 +1,4 @@
 ﻿using CapFrameX.Contracts.Overlay;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CapFrameX.Contracts.RTSS
 {
@@ -11,6 +6,7 @@ namespace CapFrameX.Contracts.RTSS
     {
         bool IsRTSSInstalled();
         string GetApiInfo(uint processId);
+        double GetCurrentFramerate(uint processId);
         void CheckRTSSRunningAndRefresh();
         void ResetOSD();
         void ReleaseOSD();

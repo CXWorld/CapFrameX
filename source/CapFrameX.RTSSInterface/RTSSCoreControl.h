@@ -34,6 +34,7 @@ public:
 	BOOL						IsCaptureTimerActive;
 	BOOL						UpdateOSD(LPCSTR lpText);
 	CString						GetApiInfo(DWORD processId);
+	double						GetCurrentFramerate(DWORD processId);
 
 // Implementation
 protected:

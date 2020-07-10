@@ -234,6 +234,11 @@ public:
 		return gcnew String(_coreControl->GetApiInfo(processId));
 	}
 
+	double GetCurrentFramerate(UINT processId)
+	{
+		return coreControl->GetCurrentFramerate(processId);
+	}
+
 private:
 	RTSSCoreControl* _coreControl;
 	Action<Exception^>^ _exceptionAction;

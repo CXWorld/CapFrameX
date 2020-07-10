@@ -81,6 +81,44 @@ CString RTSSCoreControl::GetApiInfo(DWORD processId)
 	return api;
 }
 
+double RTSSCoreControl::GetCurrentFramerate(DWORD processId)
+{
+	double currentFramerate = 0;
+	HANDLE hMapFile = OpenFileMapping(FILE_MAP_ALL_ACCESS, FALSE, "RTSSSharedMemoryV2");
+
+	if (hMapFile)
+	{
+		LPVOID pMapAddr = MapViewOfFile(hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, 0);
+		LPRTSS_SHARED_MEMORY pMem = (LPRTSS_SHARED_MEMORY)pMapAddr;
+
+		if (pMem)
+		{
+			if ((pMem->dwSignature == 'RTSS') &&
+				(pMem->dwVersion >= 0x00020000))
+			{
+				RTSS_SHARED_MEMORY::RTSS_SHARED_MEMORY_APP_ENTRY* arrAppInfos = pMem->arrApp;
+
+				for (size_t i = 0; i < 256; i++)
+				{
+					RTSS_SHARED_MEMORY::RTSS_SHARED_MEMORY_APP_ENTRY curAppInfos = arrAppInfos[i];
+
+					if (curAppInfos.dwProcessID == processId)
+					{
+						currentFramerate = 1000.0 * curAppInfos.dwFrames / (curAppInfos.dwTime1 - curAppInfos.dwTime0);
+						break;
+					}
+				}
+
+				UnmapViewOfFile(pMapAddr);
+			}
+
+			CloseHandle(hMapFile);
+		}
+	}
+
+	return currentFramerate;
+}
+
 DWORD RTSSCoreControl::GetSharedMemoryVersion()
 {
 	DWORD dwResult = 0;
