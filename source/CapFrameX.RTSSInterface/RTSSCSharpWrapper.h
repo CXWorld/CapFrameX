@@ -236,7 +236,7 @@ public:
 
 	double GetCurrentFramerate(UINT processId)
 	{
-		return coreControl->GetCurrentFramerate(processId);
+		return _coreControl->GetCurrentFramerate(processId);
 	}
 
 private:

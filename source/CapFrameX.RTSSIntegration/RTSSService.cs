@@ -1,14 +1,11 @@
-﻿using CapFrameX.Contracts.Overlay;
-using CapFrameX.Contracts.RTSS;
+﻿using CapFrameX.Contracts.RTSS;
 using Microsoft.Extensions.Logging;
 using Microsoft.Win32;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Reactive.Subjects;
 
 namespace CapFrameX.RTSSIntegration
 {
@@ -18,10 +15,13 @@ namespace CapFrameX.RTSSIntegration
 
 		private static ILogger<RTSSService> _logger;
 
-        public RTSSService(ILogger<RTSSService> logger): base(ExceptionAction)
+		public ISubject<uint> ProcessIdStream { get; }
+
+		public RTSSService(ILogger<RTSSService> logger): base(ExceptionAction)
         {
             _logger = logger;
-        }
+			ProcessIdStream = new Subject<uint>();
+		}
 
 		public bool IsRTSSInstalled()
         {

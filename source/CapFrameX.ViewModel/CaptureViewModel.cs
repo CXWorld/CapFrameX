@@ -2,6 +2,7 @@
 using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.PresentMonInterface;
+using CapFrameX.Contracts.RTSS;
 using CapFrameX.Contracts.Sensor;
 using CapFrameX.Data;
 using CapFrameX.Hotkey;
@@ -20,6 +21,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
@@ -49,6 +51,7 @@ namespace CapFrameX.ViewModel
         private readonly ISensorService _sensorService;
         private readonly IOnlineMetricService _onlineMetricService;
         private readonly IStatisticProvider _statisticProvider;
+        private readonly IRTSSService _rTSSService;
         private readonly ILogger<CaptureViewModel> _logger;
         private readonly ProcessList _processList;
         private readonly SoundManager _soundManager;
@@ -261,6 +264,7 @@ namespace CapFrameX.ViewModel
                                 ISensorService sensorService,
                                 IOnlineMetricService onlineMetricService,
                                 IStatisticProvider statisticProvider,
+                                IRTSSService rTSSService,
                                 ILogger<CaptureViewModel> logger,
                                 ProcessList processList,
                                 SoundManager soundManager)
@@ -273,6 +277,7 @@ namespace CapFrameX.ViewModel
             _sensorService = sensorService;
             _onlineMetricService = onlineMetricService;
             _statisticProvider = statisticProvider;
+            _rTSSService = rTSSService;
             _logger = logger;
             _processList = processList;
             _soundManager = soundManager;
@@ -384,6 +389,9 @@ namespace CapFrameX.ViewModel
                         currentProcess = ProcessesToCapture.FirstOrDefault();
                     }
 
+                    var process = Process.GetProcessesByName(currentProcess).FirstOrDefault();
+                    if (process != null)
+                        _rTSSService.ProcessIdStream.OnNext((uint)process.Id);
                     _onlineMetricService.ProcessDataLineStream.OnNext(Tuple.Create(currentProcess, dataLine));
                 });
         }
