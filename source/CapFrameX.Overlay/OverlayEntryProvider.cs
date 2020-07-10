@@ -1,6 +1,7 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.Overlay;
+using CapFrameX.Contracts.RTSS;
 using CapFrameX.Contracts.Sensor;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Extensions;
@@ -11,6 +12,7 @@ using Prism.Events;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
@@ -30,7 +32,7 @@ namespace CapFrameX.Overlay
 		private readonly IEventAggregator _eventAggregator;
 		private readonly IOnlineMetricService _onlineMetricService;
 		private readonly ISystemInfo _systemInfo;
-
+		private readonly IRTSSService _rTSSService;
 		private readonly ConcurrentDictionary<string, IOverlayEntry> _identifierOverlayEntryDict
 			 = new ConcurrentDictionary<string, IOverlayEntry>();
 		private readonly TaskCompletionSource<bool> _taskCompletionSource
@@ -42,13 +44,14 @@ namespace CapFrameX.Overlay
 			IAppConfiguration appConfiguration,
 			IEventAggregator eventAggregator,
 			IOnlineMetricService onlineMetricService,
-			ISystemInfo systemInfo)
+			ISystemInfo systemInfo, IRTSSService rTSSService)
 		{
 			_sensorService = sensorService;
 			_appConfiguration = appConfiguration;
 			_eventAggregator = eventAggregator;
 			_onlineMetricService = onlineMetricService;
 			_systemInfo = systemInfo;
+			_rTSSService = rTSSService;
 			_onDictionaryUpdatedBuffered = _sensorService
 				.OnDictionaryUpdated
 				.Replay(1)
@@ -216,9 +219,9 @@ namespace CapFrameX.Overlay
 			_overlayEntries.ForEach(entry =>
 				entry.ValueAlignmentAndDigits = _sensorService.GetSensorOverlayEntry(entry.Identifier)?.ValueAlignmentAndDigits);
 			SetOnlineMetricFormats();
-
 			SetOnlineMetricsIsNumericState();
-			//SetRTSSMetricIsNumericState();
+			SetRTSSMetricFormats();
+			SetRTSSMetricIsNumericState();
 			SetHardwareIsNumericState();
 			_overlayEntries.ForEach(entry => entry.FormatChanged = true);
 		}
@@ -392,16 +395,30 @@ namespace CapFrameX.Overlay
 				});
 		}
 
-		private void UpdateSensorData()
+		private async Task UpdateSensorData()
 		{
-			foreach (var entry in _overlayEntries.Where(x =>
-				(x.OverlayEntryType == EOverlayEntryType.GPU
-				 || x.OverlayEntryType == EOverlayEntryType.CPU
-				 || x.OverlayEntryType == EOverlayEntryType.RAM)))
+			var currentFramerate = _rTSSService.GetCurrentFramerate(await _rTSSService.ProcessIdStream.Take(1));
+			Console.WriteLine(currentFramerate);
+			foreach (var entry in _overlayEntries)
 			{
-				var sensorEntry = _sensorService.GetSensorOverlayEntry(entry.Identifier);
-				entry.Value = sensorEntry?.Value;
+				switch(entry.OverlayEntryType)
+				{
+					case EOverlayEntryType.GPU:
+					case EOverlayEntryType.CPU:
+					case EOverlayEntryType.RAM:
+						entry.Value = _sensorService.GetSensorOverlayEntry(entry.Identifier)?.Value;
+						break;
+					case EOverlayEntryType.CX when entry.Identifier == "Framerate":
+						entry.Value = currentFramerate.Item1;
+						break;
+					case EOverlayEntryType.CX when entry.Identifier == "Frametime":
+						entry.Value = currentFramerate.Item2;
+						break;
+					default:
+						break;
+				}
 			}
+
 		}
 
 		private void UpdateOnlineMetrics()
@@ -488,13 +505,33 @@ namespace CapFrameX.Overlay
 			}
 		}
 
-		// To do : Retrieve values from RTSS
 		private void SetRTSSMetricIsNumericState()
 		{
 			foreach (var entry in _overlayEntries.Where(x =>
 				(x.Identifier == "Framerate" || x.Identifier == "Frametime")))
 			{
 				entry.IsNumeric = true;
+			}
+		}
+
+		private void SetRTSSMetricFormats()
+		{
+			// framerate
+			_identifierOverlayEntryDict.TryGetValue("Framerate", out IOverlayEntry framerateEntry);
+
+			if (framerateEntry != null)
+			{
+				framerateEntry.ValueUnitFormat = "FPS";
+				framerateEntry.ValueAlignmentAndDigits = "{0,4:F0}";
+			}
+
+			// frametime
+			_identifierOverlayEntryDict.TryGetValue("Frametime", out IOverlayEntry frametimeEntry);
+
+			if (frametimeEntry != null)
+			{
+				frametimeEntry.ValueUnitFormat = "ms ";
+				frametimeEntry.ValueAlignmentAndDigits = "{0,4:F1}";
 			}
 		}
 
@@ -530,42 +567,42 @@ namespace CapFrameX.Overlay
 						// "<S=" + entry.GroupFontSize + "><C=" + entry.GroupColor + ">" + basicGroupFormat + "  <C><S>";
 
 					// value format
-					if (entry.Identifier == "Framerate")
-					{
-						var valueFormatStringBuilder = new StringBuilder();
-						valueFormatStringBuilder.Append("<A=-4><S=");
-						valueFormatStringBuilder.Append(entry.ValueFontSize.ToString());
-						valueFormatStringBuilder.Append("><C=");
-						valueFormatStringBuilder.Append(entry.Color);
-						valueFormatStringBuilder.Append("><FR><C><S><A>");
-						valueFormatStringBuilder.Append("<A=4><S=");
-						valueFormatStringBuilder.Append((entry.ValueFontSize / 2).ToString());
-						valueFormatStringBuilder.Append("><C=");
-						valueFormatStringBuilder.Append(entry.Color);
-						valueFormatStringBuilder.Append(">FPS<C><S><A>");
-						entry.ValueFormat = valueFormatStringBuilder.ToString();
-							//"<A=-4><S=" + entry.ValueFontSize.ToString() + "><C=" + entry.Color + "><FR><C><S><A>" +
-							//"<A=4><S=" + (entry.ValueFontSize / 2).ToString() + "><C=" + entry.Color + ">FPS<C><S><A>";
-					}
-					else if (entry.Identifier == "Frametime")
-					{
-						var valueFormatStringBuilder = new StringBuilder();
-						valueFormatStringBuilder.Append("<A=-4><S=");
-						valueFormatStringBuilder.Append(entry.ValueFontSize.ToString());
-						valueFormatStringBuilder.Append("><C=");
-						valueFormatStringBuilder.Append(entry.Color);
-						valueFormatStringBuilder.Append("><FT><C><S><A>");
-						valueFormatStringBuilder.Append("<A=4><S=");
-						valueFormatStringBuilder.Append((entry.ValueFontSize / 2).ToString());
-						valueFormatStringBuilder.Append("><C=");
-						valueFormatStringBuilder.Append(entry.Color);
-						valueFormatStringBuilder.Append(">ms<C><S><A>");
-						entry.ValueFormat = valueFormatStringBuilder.ToString();
-							//"<A=-4><S=" + entry.ValueFontSize.ToString() + "><C=" + entry.Color + "><FT><C><S><A>" +
-							//"<A=4><S=" + (entry.ValueFontSize / 2).ToString() + "><C=" + entry.Color + ">ms<C><S><A>";
-					}
-					else
-					{
+					//if (entry.Identifier == "Framerate")
+					//{
+					//	var valueFormatStringBuilder = new StringBuilder();
+					//	valueFormatStringBuilder.Append("<A=-4><S=");
+					//	valueFormatStringBuilder.Append(entry.ValueFontSize.ToString());
+					//	valueFormatStringBuilder.Append("><C=");
+					//	valueFormatStringBuilder.Append(entry.Color);
+					//	valueFormatStringBuilder.Append(">{0,4:F2}<C><S><A>");
+					//	valueFormatStringBuilder.Append("<A=4><S=");
+					//	valueFormatStringBuilder.Append((entry.ValueFontSize / 2).ToString());
+					//	valueFormatStringBuilder.Append("><C=");
+					//	valueFormatStringBuilder.Append(entry.Color);
+					//	valueFormatStringBuilder.Append(">FPS<C><S><A>");
+					//	entry.ValueFormat = valueFormatStringBuilder.ToString();
+					//		//"<A=-4><S=" + entry.ValueFontSize.ToString() + "><C=" + entry.Color + "><FR><C><S><A>" +
+					//		//"<A=4><S=" + (entry.ValueFontSize / 2).ToString() + "><C=" + entry.Color + ">FPS<C><S><A>";
+					//}
+					//else if (entry.Identifier == "Frametime")
+					//{
+					//	var valueFormatStringBuilder = new StringBuilder();
+					//	valueFormatStringBuilder.Append("<A=-4><S=");
+					//	valueFormatStringBuilder.Append(entry.ValueFontSize.ToString());
+					//	valueFormatStringBuilder.Append("><C=");
+					//	valueFormatStringBuilder.Append(entry.Color);
+					//	valueFormatStringBuilder.Append("><FT><C><S><A>");
+					//	valueFormatStringBuilder.Append("<A=4><S=");
+					//	valueFormatStringBuilder.Append((entry.ValueFontSize / 2).ToString());
+					//	valueFormatStringBuilder.Append("><C=");
+					//	valueFormatStringBuilder.Append(entry.Color);
+					//	valueFormatStringBuilder.Append(">ms<C><S><A>");
+					//	entry.ValueFormat = valueFormatStringBuilder.ToString();
+					//		//"<A=-4><S=" + entry.ValueFontSize.ToString() + "><C=" + entry.Color + "><FT><C><S><A>" +
+					//		//"<A=4><S=" + (entry.ValueFontSize / 2).ToString() + "><C=" + entry.Color + ">ms<C><S><A>";
+					//}
+					//else
+					//{
 						if (entry.ValueUnitFormat != null && entry.ValueAlignmentAndDigits != null)
 						{
 							var valueFormatStringBuilder = new StringBuilder();
@@ -598,7 +635,7 @@ namespace CapFrameX.Overlay
 							entry.ValueFormat = valueFormatStringBuilder.ToString();
 							// "<S=" + entry.ValueFontSize + "><C=" + entry.Color + ">{0}<C><S>";
 						}
-					}
+					//}
 
 					// reset format changed 
 					entry.FormatChanged = false;
@@ -623,7 +660,7 @@ namespace CapFrameX.Overlay
 							if (!double.TryParse(entry.Value.ToString(), out double currentConvertedValue))
 								continue;
 
-							if (!double.TryParse(entry.UpperLimitValue, out double convertedUpperValue))
+							if (!double.TryParse(entry.UpperLimitValue, NumberStyles.Float, CultureInfo.InvariantCulture, out double convertedUpperValue))
 								continue;
 
 							if (currentConvertedValue >= convertedUpperValue)
@@ -641,7 +678,7 @@ namespace CapFrameX.Overlay
 								if (!double.TryParse(entry.Value.ToString(), out double currentConvertedValue))
 									continue;
 
-								if (!double.TryParse(entry.LowerLimitValue, out double convertedLowerValue))
+								if (!double.TryParse(entry.LowerLimitValue, NumberStyles.Float, CultureInfo.InvariantCulture, out double convertedLowerValue))
 									continue;
 
 								if (currentConvertedValue <= convertedLowerValue)
@@ -663,38 +700,76 @@ namespace CapFrameX.Overlay
 						{
 							// Update color and last limit state
 
-							if (entry.ValueUnitFormat != null && entry.ValueAlignmentAndDigits != null)
-							{
-								var valueFormatStringBuilder = new StringBuilder();
-								valueFormatStringBuilder.Append("<S=");
-								valueFormatStringBuilder.Append(entry.ValueFontSize.ToString());
-								valueFormatStringBuilder.Append("><C=");
-								valueFormatStringBuilder.Append(currentColor);
-								valueFormatStringBuilder.Append(">");
-								valueFormatStringBuilder.Append(entry.ValueAlignmentAndDigits);
-								valueFormatStringBuilder.Append("<C><S>");
-								valueFormatStringBuilder.Append("<S=");
-								valueFormatStringBuilder.Append((entry.ValueFontSize / 2).ToString());
-								valueFormatStringBuilder.Append("><C=");
-								valueFormatStringBuilder.Append(currentColor);
-								valueFormatStringBuilder.Append(">");
-								valueFormatStringBuilder.Append(entry.ValueUnitFormat);
-								valueFormatStringBuilder.Append("<C><S>");
-								entry.ValueFormat = valueFormatStringBuilder.ToString();
+							//if (entry.Identifier == "Framerate")
+							//{
+							//	var valueFormatStringBuilder = new StringBuilder();
+							//	valueFormatStringBuilder.Append("<A=-4><S=");
+							//	valueFormatStringBuilder.Append(entry.ValueFontSize.ToString());
+							//	valueFormatStringBuilder.Append("><C=");
+							//	valueFormatStringBuilder.Append(currentColor);
+							//	valueFormatStringBuilder.Append(">{0,4:F2}<C><S><A>");
+							//	valueFormatStringBuilder.Append("<A=4><S=");
+							//	valueFormatStringBuilder.Append((entry.ValueFontSize / 2).ToString());
+							//	valueFormatStringBuilder.Append("><C=");
+							//	valueFormatStringBuilder.Append(currentColor);
+							//	valueFormatStringBuilder.Append(">FPS<C><S><A>");
+							//	entry.ValueFormat = valueFormatStringBuilder.ToString();
+							//	//"<A=-4><S=" + entry.ValueFontSize.ToString() + "><C=" + currentColor+ "><FR><C><S><A>" +
+							//	//"<A=4><S=" + (entry.ValueFontSize / 2).ToString() + "><C=" + currentColor + ">FPS<C><S><A>";
+							//}
+							//else if (entry.Identifier == "Frametime")
+							//{
+							//	var valueFormatStringBuilder = new StringBuilder();
+							//	valueFormatStringBuilder.Append("<A=-4><S=");
+							//	valueFormatStringBuilder.Append(entry.ValueFontSize.ToString());
+							//	valueFormatStringBuilder.Append("><C=");
+							//	valueFormatStringBuilder.Append(currentColor);
+							//	valueFormatStringBuilder.Append("><FT><C><S><A>");
+							//	valueFormatStringBuilder.Append("<A=4><S=");
+							//	valueFormatStringBuilder.Append((entry.ValueFontSize / 2).ToString());
+							//	valueFormatStringBuilder.Append("><C=");
+							//	valueFormatStringBuilder.Append(currentColor);
+							//	valueFormatStringBuilder.Append(">ms<C><S><A>");
+							//	entry.ValueFormat = valueFormatStringBuilder.ToString();
+							//	//"<A=-4><S=" + entry.ValueFontSize.ToString() + "><C=" + currentColor + "><FT><C><S><A>" +
+							//	//"<A=4><S=" + (entry.ValueFontSize / 2).ToString() + "><C=" + currentColor + ">ms<C><S><A>";
+							//}
+
+							//else
+							//{ 
+								if (entry.ValueUnitFormat != null && entry.ValueAlignmentAndDigits != null)
+								{
+									var valueFormatStringBuilder = new StringBuilder();
+									valueFormatStringBuilder.Append("<S=");
+									valueFormatStringBuilder.Append(entry.ValueFontSize.ToString());
+									valueFormatStringBuilder.Append("><C=");
+									valueFormatStringBuilder.Append(currentColor);
+									valueFormatStringBuilder.Append(">");
+									valueFormatStringBuilder.Append(entry.ValueAlignmentAndDigits);
+									valueFormatStringBuilder.Append("<C><S>");
+									valueFormatStringBuilder.Append("<S=");
+									valueFormatStringBuilder.Append((entry.ValueFontSize / 2).ToString());
+									valueFormatStringBuilder.Append("><C=");
+									valueFormatStringBuilder.Append(currentColor);
+									valueFormatStringBuilder.Append(">");
+									valueFormatStringBuilder.Append(entry.ValueUnitFormat);
+									valueFormatStringBuilder.Append("<C><S>");
+									entry.ValueFormat = valueFormatStringBuilder.ToString();
 									// "<S=" + entry.ValueFontSize + "><C=" + currentColor + ">" + entry.ValueAlignmentAndDigits + "<C><S>"
 									// + "<S=" + entry.ValueFontSize / 2 + "><C=" + currentColor + ">" + entry.ValueUnitFormat + "<C><S>";
-							}
-							else
-							{
-								var valueFormatStringBuilder = new StringBuilder();
-								valueFormatStringBuilder.Append("<S=");
-								valueFormatStringBuilder.Append(entry.ValueFontSize.ToString());
-								valueFormatStringBuilder.Append("><C=");
-								valueFormatStringBuilder.Append(currentColor);
-								valueFormatStringBuilder.Append(">{0}<C><S>");
-								entry.ValueFormat = valueFormatStringBuilder.ToString();
+								}
+								else
+								{
+									var valueFormatStringBuilder = new StringBuilder();
+									valueFormatStringBuilder.Append("<S=");
+									valueFormatStringBuilder.Append(entry.ValueFontSize.ToString());
+									valueFormatStringBuilder.Append("><C=");
+									valueFormatStringBuilder.Append(currentColor);
+									valueFormatStringBuilder.Append(">{0}<C><S>");
+									entry.ValueFormat = valueFormatStringBuilder.ToString();
 									// "<S=" + entry.ValueFontSize + "><C=" + currentColor + ">{0}<C><S>";
-							}
+								}
+							//}
 
 							entry.LastLimitState = limitState;
 						}

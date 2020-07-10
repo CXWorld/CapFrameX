@@ -20,7 +20,7 @@ namespace CapFrameX.RTSSIntegration
 		public RTSSService(ILogger<RTSSService> logger): base(ExceptionAction)
         {
             _logger = logger;
-			ProcessIdStream = new Subject<uint>();
+			ProcessIdStream = new BehaviorSubject<uint>(default);
 		}
 
 		public bool IsRTSSInstalled()

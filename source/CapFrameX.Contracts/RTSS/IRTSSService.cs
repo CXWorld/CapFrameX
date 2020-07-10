@@ -1,4 +1,5 @@
 ﻿using CapFrameX.Contracts.Overlay;
+using System;
 using System.Reactive.Subjects;
 
 namespace CapFrameX.Contracts.RTSS
@@ -8,7 +9,7 @@ namespace CapFrameX.Contracts.RTSS
         ISubject<uint> ProcessIdStream { get; }
         bool IsRTSSInstalled();
         string GetApiInfo(uint processId);
-        double GetCurrentFramerate(uint processId);
+        Tuple<double, double> GetCurrentFramerate(uint processId);
         void CheckRTSSRunningAndRefresh();
         void ResetOSD();
         void ReleaseOSD();

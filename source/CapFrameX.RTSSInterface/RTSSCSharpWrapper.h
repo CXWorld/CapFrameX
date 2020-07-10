@@ -234,9 +234,10 @@ public:
 		return gcnew String(_coreControl->GetApiInfo(processId));
 	}
 
-	double GetCurrentFramerate(UINT processId)
+	Tuple<double, double>^ GetCurrentFramerate(UINT processId)
 	{
-		return _coreControl->GetCurrentFramerate(processId);
+		std::vector<float> result = _coreControl->GetCurrentFramerate(processId);
+		return gcnew Tuple<double, double>(result[0], result[1]);
 	}
 
 private:

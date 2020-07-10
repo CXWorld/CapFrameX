@@ -11,6 +11,7 @@
 #include <shlwapi.h>
 #include <float.h>
 #include <io.h>
+#include <tuple>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -81,9 +82,11 @@ CString RTSSCoreControl::GetApiInfo(DWORD processId)
 	return api;
 }
 
-double RTSSCoreControl::GetCurrentFramerate(DWORD processId)
+std::vector<float> RTSSCoreControl::GetCurrentFramerate(DWORD processId)
 {
-	double currentFramerate = 0;
+	std::vector<float> result;
+	float currentFramerate = 0;
+	float currentFrametime = 0;
 	HANDLE hMapFile = OpenFileMapping(FILE_MAP_ALL_ACCESS, FALSE, "RTSSSharedMemoryV2");
 
 	if (hMapFile)
@@ -104,7 +107,9 @@ double RTSSCoreControl::GetCurrentFramerate(DWORD processId)
 
 					if (curAppInfos.dwProcessID == processId)
 					{
-						currentFramerate = 1000.0 * curAppInfos.dwFrames / (curAppInfos.dwTime1 - curAppInfos.dwTime0);
+						currentFrametime = curAppInfos.dwStatFrameTimeBuf[curAppInfos.dwStatFrameTimeBufPos] / 1000.0f;
+						currentFramerate = curAppInfos.dwStatFrameTimeBufFramerate / 10.0f;
+							/*1000.0f * curAppInfos.dwFrames / (curAppInfos.dwTime1 - curAppInfos.dwTime0);*/
 						break;
 					}
 				}
@@ -116,7 +121,9 @@ double RTSSCoreControl::GetCurrentFramerate(DWORD processId)
 		}
 	}
 
-	return currentFramerate;
+	result.push_back(currentFramerate);
+	result.push_back(currentFrametime);
+	return result;
 }
 
 DWORD RTSSCoreControl::GetSharedMemoryVersion()
