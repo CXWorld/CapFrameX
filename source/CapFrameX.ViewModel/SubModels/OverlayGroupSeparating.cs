@@ -28,7 +28,7 @@ namespace CapFrameX.ViewModel.SubModels
 			get => _groupSeparators;
 			set
 			{
-				_groupSeparators = value;
+				_groupSeparators = value >= 0 ? value : 0;
 				RaisePropertyChanged();
 				UpdateGroupSeparator?.Invoke(_groupName, _groupSeparators);
 			}
