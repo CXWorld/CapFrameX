@@ -107,7 +107,7 @@ std::vector<float> RTSSCoreControl::GetCurrentFramerate(DWORD processId)
 
 					if (curAppInfos.dwProcessID == processId)
 					{
-						currentFrametime = curAppInfos.dwStatFrameTimeBuf[curAppInfos.dwStatFrameTimeBufPos] / 1000.0f;
+						currentFrametime = curAppInfos.dwStatFrameTimeBuf[(curAppInfos.dwStatFrameTimeBufPos - 1) & 1023] / 1000.0f;
 						currentFramerate = curAppInfos.dwStatFrameTimeBufFramerate / 10.0f;
 							/*1000.0f * curAppInfos.dwFrames / (curAppInfos.dwTime1 - curAppInfos.dwTime0);*/
 						break;
