@@ -3,6 +3,7 @@ using CapFrameX.Statistics.NetStandard.Contracts;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Reactive.Subjects;
 
 namespace CapFrameX.PresentMonInterface
@@ -13,13 +14,13 @@ namespace CapFrameX.PresentMonInterface
 
         private readonly IStatisticProvider _frametimeStatisticProvider;
         private readonly List<double> _frametimes = new List<double>();
+        private readonly List<double> _measuretimes = new List<double>();
         private readonly object _lock = new object();
         private string _currentProcess;
-        private double _referenceTime = 0;
         private double _prevTime = 0;
         // ToDo: get value from config
         // length in seconds
-        private readonly double _maxOnlineIntervalLength = 30d;
+        private readonly double _maxOnlineIntervalLength = 20d;
 
         public ISubject<Tuple<string, string>> ProcessDataLineStream { get; }
             = new Subject<Tuple<string, string>>();
@@ -48,14 +49,6 @@ namespace CapFrameX.PresentMonInterface
             double.TryParse(lineSplit[11], NumberStyles.Any, CultureInfo.InvariantCulture, out double variable);
             var startTime = variable;
 
-            // if there's break in the frame times sequence, do a reset
-            // this is usually the case when the game has lost focus
-            // threshold should be greater than stuttering time
-            if (startTime - _prevTime > STUTTERING_THRESHOLD)
-                ResetMetrics(dataSet.Item2);
-
-            _prevTime = startTime;
-
             double.TryParse(lineSplit[12], NumberStyles.Any, CultureInfo.InvariantCulture, out variable);
             var frameTime = variable;
 
@@ -64,7 +57,6 @@ namespace CapFrameX.PresentMonInterface
             // filtering high frame times caused by focus lost for example
             if (frameTime > STUTTERING_THRESHOLD * 1E03)
             {
-                ResetMetrics(dataSet.Item2);
                 return;
             }
 
@@ -74,12 +66,18 @@ namespace CapFrameX.PresentMonInterface
             {
                 lock (_lock)
                 {
-                    if (startTime - _referenceTime <= _maxOnlineIntervalLength)
-                        _frametimes.Add(frameTime);
-                    else
+                    _measuretimes.Add(startTime);
+                    if (startTime - _measuretimes.First() <= _maxOnlineIntervalLength)
                     {
                         _frametimes.Add(frameTime);
-                        _frametimes.RemoveAt(0);
+                    }
+                    else
+                    {
+                        int position = 0;
+                        while (startTime - _measuretimes[position] > _maxOnlineIntervalLength) position++;
+                        _frametimes.Add(frameTime);
+                        _frametimes.RemoveRange(0, position);
+                        _measuretimes.RemoveRange(0, position);
                     }
                 }
             }
@@ -87,15 +85,11 @@ namespace CapFrameX.PresentMonInterface
 
         private void ResetMetrics(string dataLine)
         {
-            var lineSplit = dataLine.Split(',');
-            if (lineSplit.Length >= 12)
-            {
-                double.TryParse(lineSplit[11], NumberStyles.Any, CultureInfo.InvariantCulture, out double variable);
-                _referenceTime = variable;
-            }
-
             lock (_lock)
+            {
                 _frametimes.Clear();
+                _measuretimes.Clear();
+            }
         }
 
         public double GetOnlineFpsMetricValue(EMetric metric)

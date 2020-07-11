@@ -388,15 +388,17 @@ namespace CapFrameX.ViewModel
 					{
 						currentProcess = ProcessesToCapture.FirstOrDefault();
 					}
+
 					_onlineMetricService.ProcessDataLineStream.OnNext(Tuple.Create(currentProcess, dataLine));
 
 
 					var lineSplit = dataLine.Split(',');
 					if (currentProcess == lineSplit[0].Replace(".exe", ""))
 					{
-						uint.TryParse(lineSplit[1], out uint variable);
-						var processID = variable;
-						_rTSSService.ProcessIdStream.OnNext(processID);
+						if (uint.TryParse(lineSplit[1], out uint processID))
+						{
+							_rTSSService.ProcessIdStream.OnNext(processID);
+						}
 					}
 				});
 		}
