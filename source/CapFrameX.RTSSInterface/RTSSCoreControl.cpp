@@ -87,6 +87,7 @@ std::vector<float> RTSSCoreControl::GetCurrentFramerate(DWORD processId)
 	std::vector<float> result;
 	float currentFramerate = 0;
 	float currentFrametime = 0;
+	LPDWORD lpdwProcessiD = 0;
 	HANDLE hMapFile = OpenFileMapping(FILE_MAP_ALL_ACCESS, FALSE, "RTSSSharedMemoryV2");
 
 	if (hMapFile)
@@ -101,6 +102,8 @@ std::vector<float> RTSSCoreControl::GetCurrentFramerate(DWORD processId)
 			{
 				RTSS_SHARED_MEMORY::RTSS_SHARED_MEMORY_APP_ENTRY* arrAppInfos = pMem->arrApp;
 
+				HWND activeWindow = GetForegroundWindow();
+				GetWindowThreadProcessId(activeWindow, OUT lpdwProcessiD);
 				for (size_t i = 0; i < 256; i++)
 				{
 					RTSS_SHARED_MEMORY::RTSS_SHARED_MEMORY_APP_ENTRY curAppInfos = arrAppInfos[i];
