@@ -40,6 +40,8 @@ namespace CapFrameX.Overlay
 		private BlockingCollection<IOverlayEntry> _overlayEntries;
 		private IObservable<IOverlayEntry[]> _onDictionaryUpdatedBuffered;
 
+		public bool HasHardwareChanged { get; set; }
+
 		public OverlayEntryProvider(ISensorService sensorService,
 			IAppConfiguration appConfiguration,
 			IEventAggregator eventAggregator,
@@ -66,7 +68,7 @@ namespace CapFrameX.Overlay
 		public async Task<IOverlayEntry[]> GetOverlayEntries()
 		{
 			await _taskCompletionSource.Task;
-			UpdateSensorData();
+			await UpdateSensorData();
 			UpdateOnlineMetrics();
 			UpdateFormatting();
 			return _overlayEntries.ToArray();
@@ -263,9 +265,10 @@ namespace CapFrameX.Overlay
 
 					bool hasGpuChanged = !sensorGpuOverlayEntryIdentfiers.IsEquivalent(adjustedGpuOverlayEntryIdentfiers);
 					bool hasCpuChanged = !sensorCpuOverlayEntryIdentfiers.IsEquivalent(adjustedCpuOverlayEntryIdentfiers);
+					HasHardwareChanged = hasGpuChanged || hasCpuChanged;
 
-					if (true || hasCpuChanged)
-					{
+					if (HasHardwareChanged)
+					{						
 						for (int i = 0; i < sensorOverlayEntryIdentfiers.Count; i++)
 						{
 							if (adjustedOverlayEntryIdentfiers.Contains(sensorOverlayEntryIdentfiers[i]))
@@ -283,13 +286,12 @@ namespace CapFrameX.Overlay
 								sensorOverlayEntries[i].GroupSeparators = configEntry.GroupSeparators;
 								sensorOverlayEntries[i].UpperLimitColor = configEntry.UpperLimitColor;
 								sensorOverlayEntries[i].LowerLimitColor = configEntry.LowerLimitColor;
-								sensorOverlayEntries[i].FormatChanged = true;
 							}
 						}
 					}
 
 					// check GPU changed 
-					if (true)
+					if (hasGpuChanged)
 					{
 						var indexGpu = adjustedOverlayEntries
 							.TakeWhile(entry => entry.OverlayEntryType != EOverlayEntryType.GPU)
@@ -304,7 +306,7 @@ namespace CapFrameX.Overlay
 					}
 
 					// check CPU changed 
-					if (true)
+					if (hasCpuChanged)
 					{
 						var indexCpu = adjustedOverlayEntries
 							.TakeWhile(entry => entry.OverlayEntryType != EOverlayEntryType.CPU)

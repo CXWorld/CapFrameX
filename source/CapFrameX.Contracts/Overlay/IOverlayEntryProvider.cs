@@ -5,6 +5,8 @@ namespace CapFrameX.Contracts.Overlay
 {
 	public interface IOverlayEntryProvider
 	{
+		bool HasHardwareChanged { get; }
+
 		IOverlayEntry GetOverlayEntry(string identifier);
 
 		void MoveEntry(int sourceIndex, int targetIndex);

@@ -474,7 +474,7 @@ namespace CapFrameX.ViewModel
                     OnUseRunHistoryChanged();
 
                     SetSaveButtonIsEnableAction();
-                    SaveButtonIsEnable = false;
+                    SaveButtonIsEnable = _overlayEntryProvider.HasHardwareChanged;
                 });
 
             SaveConfigCommand = new DelegateCommand(
