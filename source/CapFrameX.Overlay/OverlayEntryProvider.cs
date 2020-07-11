@@ -264,7 +264,7 @@ namespace CapFrameX.Overlay
 					bool hasGpuChanged = !sensorGpuOverlayEntryIdentfiers.IsEquivalent(adjustedGpuOverlayEntryIdentfiers);
 					bool hasCpuChanged = !sensorCpuOverlayEntryIdentfiers.IsEquivalent(adjustedCpuOverlayEntryIdentfiers);
 
-					if (hasGpuChanged || hasCpuChanged)
+					if (true || hasCpuChanged)
 					{
 						for (int i = 0; i < sensorOverlayEntryIdentfiers.Count; i++)
 						{
@@ -283,12 +283,13 @@ namespace CapFrameX.Overlay
 								sensorOverlayEntries[i].GroupSeparators = configEntry.GroupSeparators;
 								sensorOverlayEntries[i].UpperLimitColor = configEntry.UpperLimitColor;
 								sensorOverlayEntries[i].LowerLimitColor = configEntry.LowerLimitColor;
+								sensorOverlayEntries[i].FormatChanged = true;
 							}
 						}
 					}
 
 					// check GPU changed 
-					if (hasGpuChanged)
+					if (true)
 					{
 						var indexGpu = adjustedOverlayEntries
 							.TakeWhile(entry => entry.OverlayEntryType != EOverlayEntryType.GPU)
@@ -303,7 +304,7 @@ namespace CapFrameX.Overlay
 					}
 
 					// check CPU changed 
-					if (hasCpuChanged)
+					if (true)
 					{
 						var indexCpu = adjustedOverlayEntries
 							.TakeWhile(entry => entry.OverlayEntryType != EOverlayEntryType.CPU)
