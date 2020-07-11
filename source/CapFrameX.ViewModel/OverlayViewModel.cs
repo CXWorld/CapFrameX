@@ -485,11 +485,7 @@ namespace CapFrameX.ViewModel
                });
 
             ResetDefaultsCommand = new DelegateCommand(
-                async () =>
-                {
-                    SetSaveButtonIsEnable();
-                    await OnResetDefaults();
-                });
+                async () => await OnResetDefaults());
 
             SetFormatForGroupNameCommand = new DelegateCommand(
                () => _overlayEntryProvider.SetFormatForGroupName(SelectedOverlayItemGroupName, SelectedOverlayEntry, Checkboxes));
@@ -507,7 +503,7 @@ namespace CapFrameX.ViewModel
             SetGlobalHookEventResetHistoryHotkey();
         }
 
-       private void SetSaveButtonIsEnableAction()
+        private void SetSaveButtonIsEnableAction()
         {
             OverlayEntries.ForEach(entry => entry.PropertyChangedAction = SetSaveButtonIsEnable);
             OverlaySubModelGroupSeparating.OverlayGroupNameSeparatorEntries.ForEach(entry => entry.PropertyChangedAction = SetSaveButtonIsEnable);
@@ -522,10 +518,9 @@ namespace CapFrameX.ViewModel
             OverlaySubModelGroupSeparating.SetOverlayEntries(overlayEntries);
             OverlayEntries.Clear();
             OverlayEntries.AddRange(overlayEntries);
-            await _overlayEntryProvider.SaveOverlayEntriesToJson();
+            SetSaveButtonIsEnableAction();
             OnUseRunHistoryChanged();
             OverlayItemsOptionsEnabled = false;
-            SetSaveButtonIsEnableAction();
         }
 
         private void OnUseRunHistoryChanged()
