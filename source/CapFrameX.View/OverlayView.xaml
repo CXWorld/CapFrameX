@@ -553,7 +553,7 @@
                                 </ctrls:CXColorPicker>
                                 <TextBlock Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" Text="Upper limit + color:"></TextBlock>
                                 <TextBox Grid.Row="3" Grid.Column="1" Width="40" VerticalAlignment="Center" PreviewKeyDown="LostFocus_PreviewKeyDown" PreviewTextInput="NumberValidationTextBox" 
-                                         ToolTip="Clear this box to deactivate limit"
+                                         ToolTip="Changes value color if value is equal or higher&#10;Clear this box to deactivate limit"
                                          Text="{Binding SelectedOverlayEntry.UpperLimitValue, UpdateSourceTrigger=LostFocus}" IsEnabled="{Binding SelectedOverlayEntry.IsNumeric}">
                                 </TextBox>
                                 <ctrls:CXColorPicker Grid.Row="3" Grid.Column="2" Width="25" Height="25" Margin="0 0 0 0" Background="#e6e6e6" SelectedColor="{Binding SelectedOverlayEntry.UpperLimitColor, Converter={StaticResource StringColorConverter}}" 
@@ -586,7 +586,7 @@
                                 </ctrls:CXColorPicker>
                                 <TextBlock Grid.Row="4" Grid.Column="0"  VerticalAlignment="Center" Text="Lower limit + color:"></TextBlock>
                                 <TextBox Grid.Row="4" Grid.Column="1" Width="40" VerticalAlignment="Center" PreviewKeyDown="LostFocus_PreviewKeyDown" PreviewTextInput="NumberValidationTextBox" 
-                                         ToolTip="Clear this box to deactivate limit"
+                                         ToolTip="Changes value color if value is equal or lower&#10;Clear this box to deactivate limit"
                                          Text="{Binding SelectedOverlayEntry.LowerLimitValue, UpdateSourceTrigger=LostFocus}"
                                          IsEnabled="{Binding SelectedOverlayEntry.IsNumeric}">
                                 </TextBox>
@@ -640,13 +640,15 @@
                                 </Grid.ColumnDefinitions>
                                 <TextBlock Grid.Row="0" Grid.ColumnSpan="3" VerticalAlignment="Center" HorizontalAlignment="Center" Text="Format options" FontSize="16"/>
                                 <TextBlock Grid.Row="1" Grid.Column="0"  VerticalAlignment="Center" Text="Group name font size"></TextBlock>
-                                <TextBox Grid.Row="1" Grid.Column="1" Width="25" VerticalAlignment="Center" PreviewKeyDown="LostFocus_PreviewKeyDown"
-                                     Text="{Binding SelectedOverlayEntry.GroupFontSize, UpdateSourceTrigger=LostFocus}">
+                                <TextBox Grid.Row="1" Grid.Column="1" Width="25" VerticalAlignment="Center" PreviewKeyDown="LostFocus_PreviewKeyDown" PreviewTextInput="NumberValidationTextBox" 
+                                         ToolTip="Positive percentage = superscript&#10;Negative percentage = subscript"
+                                         Text="{Binding SelectedOverlayEntry.GroupFontSize, UpdateSourceTrigger=LostFocus}">
                                 </TextBox>
                                 <Label Grid.Row="1" Grid.Column="2" VerticalAlignment="Center" Content="%"/>
                                 <TextBlock Grid.Row="2" Grid.Column="0"  VerticalAlignment="Center" Text="Value font size"></TextBlock>
-                                <TextBox Grid.Row="2" Grid.Column="1" Width="25" VerticalAlignment="Center" PreviewKeyDown="LostFocus_PreviewKeyDown"
-                                     Text="{Binding SelectedOverlayEntry.ValueFontSize, UpdateSourceTrigger=LostFocus}">
+                                <TextBox Grid.Row="2" Grid.Column="1" Width="25" VerticalAlignment="Center" PreviewKeyDown="LostFocus_PreviewKeyDown" PreviewTextInput="NumberValidationTextBox" 
+                                         ToolTip="Positive percentage = superscript&#10;Negative percentage = subscript"
+                                         Text="{Binding SelectedOverlayEntry.ValueFontSize, UpdateSourceTrigger=LostFocus}">
                                 </TextBox>
                                 <Label Grid.Row="2" Grid.Column="2" VerticalAlignment="Center" Content="%"/>
                             </Grid>

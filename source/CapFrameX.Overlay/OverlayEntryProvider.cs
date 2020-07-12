@@ -401,7 +401,6 @@ namespace CapFrameX.Overlay
 		private async Task UpdateSensorData()
 		{
 			var currentFramerate = _rTSSService.GetCurrentFramerate(await _rTSSService.ProcessIdStream.Take(1));
-			Console.WriteLine(currentFramerate);
 			foreach (var entry in _overlayEntries)
 			{
 				switch(entry.OverlayEntryType)
