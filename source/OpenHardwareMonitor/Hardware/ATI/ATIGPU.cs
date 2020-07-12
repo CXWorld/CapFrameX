@@ -106,7 +106,7 @@ namespace OpenHardwareMonitor.Hardware.ATI
             this.socVoltage = new Sensor("GPU SOC", 2, SensorType.Voltage, this, settings);
 
             this.coreLoad = new Sensor("GPU Core", 0, SensorType.Load, this, settings);
-            this.memoryLoad = new Sensor("GPU Memory", 1, SensorType.Load, this, settings);
+            this.memoryLoad = new Sensor("GPU Memory Controller", 1, SensorType.Load, this, settings);
 
             this.controlSensor = new Sensor("GPU Fan", 0, SensorType.Control, this, settings);
 

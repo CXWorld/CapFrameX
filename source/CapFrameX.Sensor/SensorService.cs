@@ -348,7 +348,8 @@ namespace CapFrameX.Sensor
 
 				return true;
 			}
-			else if (sensor.Name.Contains("Memory"))
+			else if (sensor.Name.Contains("Memory") 
+				&& !sensor.Name.Contains("Controller"))
 			{
 				if (sensor.SensorType == SensorType.Load)
 					return true;
@@ -373,6 +374,10 @@ namespace CapFrameX.Sensor
 			else if (name.Contains("GPU Core"))
 			{
 				name = name.Replace(" Core", "");
+			}
+			else if (name.Contains("Memory Controller"))
+			{
+				name = name.Replace("Memory Controller", "MemCtrl");
 			}
 			else if (name.Contains("Memory"))
 			{
