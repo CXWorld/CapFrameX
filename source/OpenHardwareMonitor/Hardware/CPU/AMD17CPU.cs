@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Threading;
 
 namespace OpenHardwareMonitor.Hardware.CPU
 {
@@ -101,20 +102,17 @@ namespace OpenHardwareMonitor.Hardware.CPU
                 case 0x70:
                     maxCcdCount = 8; break;
                 default:
-                    maxCcdCount = 4; break;
+                    maxCcdCount = 8; break;
             }
 
-            if (maxCcdCount > 0)
+            ccdTemperatures = new Sensor[maxCcdCount];
+            for (int i = 0; i < ccdTemperatures.Length; i++)
             {
-                ccdTemperatures = new Sensor[maxCcdCount];
-                for (int i = 0; i < ccdTemperatures.Length; i++)
-                {
-                    ccdTemperatures[i] = new Sensor(
-                    "CPU CCD #" + (i + 1), i + 4, SensorType.Temperature, this,
-                      new[] {
+                ccdTemperatures[i] = new Sensor(
+                "CPU CCD #" + (i + 1), i + 4, SensorType.Temperature, this,
+                  new[] {
                 new ParameterDescription("Offset [°C]", "Temperature offset.", 0)
-                      }, this.settings);
-                }
+                  }, this.settings);
             }
 
             if (Ring0.Rdmsr(MSR_RAPL_PWR_UNIT, out uint eax, out _))
@@ -251,7 +249,14 @@ namespace OpenHardwareMonitor.Hardware.CPU
                 if (ReadSmnRegister(FAMILY_17H_M70H_CCD_TEMP(i), out value))
                 {
                     if ((value & FAMILY_17H_M70H_CCD_TEMP_VALID) == 0)
+                        break;
+
+                    Thread.Sleep(1);
+
+                    if (!ReadSmnRegister(FAMILY_17H_M70H_CCD_TEMP(i), out value))
                         continue;
+                    if ((value & FAMILY_17H_M70H_CCD_TEMP_VALID) == 0)
+                        break;
 
                     float temperature = (value & 0x7FF) / 8.0f - 49;
                     temperature += ccdTemperatures[i].Parameters[0].Value;
@@ -282,7 +287,6 @@ namespace OpenHardwareMonitor.Hardware.CPU
                 float deltaTime = (float)(time - lastEnergyTime).TotalSeconds;
                 if (deltaTime > 0.01)
                 {
-
                     packagePowerSensor.Value = energyUnitMultiplier * unchecked(
                       energyConsumed - lastEnergyConsumed) / deltaTime;
                     lastEnergyTime = time;
