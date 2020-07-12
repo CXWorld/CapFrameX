@@ -238,43 +238,43 @@ namespace CapFrameX.Overlay
 				.Take(1)
 				.Select(sensorOverlayEntries =>
 				{
-					var sensorOverlayEntryIdentfiers = sensorOverlayEntries
-						.Select(entry => entry.Identifier)
+					var sensorOverlayEntryDescriptions = sensorOverlayEntries
+						.Select(entry => entry.Description)
 						.ToList();
-					var sensorGpuOverlayEntryIdentfiers = sensorOverlayEntries
+					var sensorGpuOverlayEntryDescriptions= sensorOverlayEntries
 						.Where(entry => entry.OverlayEntryType == EOverlayEntryType.GPU)
-						.Select(entry => entry.Identifier)
+						.Select(entry => entry.Description)
 						.ToList();
-					var sensorCpuOverlayEntryIdentfiers = sensorOverlayEntries
+					var sensorCpuOverlayEntryDescriptions = sensorOverlayEntries
 						.Where(entry => entry.OverlayEntryType == EOverlayEntryType.CPU)
-						.Select(entry => entry.Identifier)
+						.Select(entry => entry.Description)
 						.ToList();
 
 					var adjustedOverlayEntries = new List<IOverlayEntry>(overlayEntriesFromJson);
-					var adjustedOverlayEntryIdentfiers = adjustedOverlayEntries
-						.Select(entry => entry.Identifier)
+					var adjustedOverlayEntryDescriptions = adjustedOverlayEntries
+						.Select(entry => entry.Description)
 						.ToList();
-					var adjustedGpuOverlayEntryIdentfiers = adjustedOverlayEntries
+					var adjustedGpuOverlayEntryDescriptions = adjustedOverlayEntries
 						.Where(entry => entry.OverlayEntryType == EOverlayEntryType.GPU)
-						.Select(entry => entry.Identifier)
+						.Select(entry => entry.Description)
 						.ToList();
-					var adjustedCpuOverlayEntryIdentfiers = adjustedOverlayEntries
+					var adjustedCpuOverlayEntryDescriptions = adjustedOverlayEntries
 						.Where(entry => entry.OverlayEntryType == EOverlayEntryType.CPU)
-						.Select(entry => entry.Identifier)
+						.Select(entry => entry.Description)
 						.ToList();
 
-					bool hasGpuChanged = !sensorGpuOverlayEntryIdentfiers.IsEquivalent(adjustedGpuOverlayEntryIdentfiers);
-					bool hasCpuChanged = !sensorCpuOverlayEntryIdentfiers.IsEquivalent(adjustedCpuOverlayEntryIdentfiers);
+					bool hasGpuChanged = !sensorGpuOverlayEntryDescriptions.IsEquivalent(adjustedGpuOverlayEntryDescriptions);
+					bool hasCpuChanged = !sensorCpuOverlayEntryDescriptions.IsEquivalent(adjustedCpuOverlayEntryDescriptions);
 					HasHardwareChanged = hasGpuChanged || hasCpuChanged;
 
 					if (HasHardwareChanged)
 					{						
-						for (int i = 0; i < sensorOverlayEntryIdentfiers.Count; i++)
+						for (int i = 0; i < sensorOverlayEntryDescriptions.Count; i++)
 						{
-							if (adjustedOverlayEntryIdentfiers.Contains(sensorOverlayEntryIdentfiers[i]))
+							if (adjustedOverlayEntryDescriptions.Contains(sensorOverlayEntryDescriptions[i]))
 							{
 								var configEntry = adjustedOverlayEntries
-									.Find(entry => entry.Identifier == sensorOverlayEntryIdentfiers[i]);
+									.Find(entry => entry.Description == sensorOverlayEntryDescriptions[i]);
 								sensorOverlayEntries[i].ShowOnOverlay = configEntry.ShowOnOverlay;
 								sensorOverlayEntries[i].ShowGraph = configEntry.ShowGraph;
 								sensorOverlayEntries[i].Color = configEntry.Color;
