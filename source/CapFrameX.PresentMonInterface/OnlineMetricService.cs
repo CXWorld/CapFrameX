@@ -36,7 +36,7 @@ namespace CapFrameX.PresentMonInterface
 				return;
 
 			if (dataSet.Item1 == null || dataSet.Item1 != _currentProcess)
-				ResetMetrics(dataSet.Item2);
+				ResetMetrics();
 
 			_currentProcess = dataSet.Item1;
 
@@ -47,13 +47,13 @@ namespace CapFrameX.PresentMonInterface
 
 			if (!double.TryParse(lineSplit[11], NumberStyles.Any, CultureInfo.InvariantCulture, out double startTime))
 			{
-				ResetMetrics(dataSet.Item2);
+				ResetMetrics();
 				return;
 			}
 
 			if (!double.TryParse(lineSplit[12], NumberStyles.Any, CultureInfo.InvariantCulture, out double frameTime))
 			{
-				ResetMetrics(dataSet.Item2);
+				ResetMetrics();
 				return;
 			}
 
@@ -72,15 +72,15 @@ namespace CapFrameX.PresentMonInterface
 				lock (_lock)
 				{
 					_measuretimes.Add(startTime);
-					if (startTime - _measuretimes.First() <= _maxOnlineIntervalLength)
-					{
-						_frametimes.Add(frameTime);
-					}
-					else
+					_frametimes.Add(frameTime);
+
+					if (startTime - _measuretimes.First() > _maxOnlineIntervalLength)
 					{
 						int position = 0;
-						while (position < _measuretimes.Count && startTime - _measuretimes[position] > _maxOnlineIntervalLength) position++;
-						_frametimes.Add(frameTime);
+						while (position < _measuretimes.Count && 
+							startTime - _measuretimes[position] > _maxOnlineIntervalLength) 
+							position++;
+						
 						_frametimes.RemoveRange(0, position);
 						_measuretimes.RemoveRange(0, position);
 					}
@@ -88,7 +88,7 @@ namespace CapFrameX.PresentMonInterface
 			}
 		}
 
-		private void ResetMetrics(string dataLine)
+		private void ResetMetrics()
 		{
 			lock (_lock)
 			{
@@ -100,7 +100,8 @@ namespace CapFrameX.PresentMonInterface
 		public double GetOnlineFpsMetricValue(EMetric metric)
 		{
 			lock (_lock)
-				return _frametimeStatisticProvider.GetFpsMetricValue(_frametimes, metric);
+				return _frametimeStatisticProvider
+					.GetFpsMetricValue(_frametimes, metric);
 		}
 	}
 }
