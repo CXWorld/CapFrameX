@@ -33,7 +33,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
         private const uint FAMILY_17H_M01H_THM_TCON_TEMP_RANGE_SEL = 0x80000;
         private uint FAMILY_17H_M70H_CCD_TEMP(uint i) { return 0x00059954 + i * 4; }
         private const uint FAMILY_17H_M70H_CCD_TEMP_VALID = 0x800;
-        private uint maxCcdCount;
+        private uint maxCcdCount = 0;
 
         private const uint MSR_RAPL_PWR_UNIT = 0xC0010299;
         private const uint MSR_CORE_ENERGY_STAT = 0xC001029A;
@@ -53,13 +53,13 @@ namespace OpenHardwareMonitor.Hardware.CPU
             public float Offset { get; set; }
         }
         private IEnumerable<TctlOffsetItem> tctlOffsetItems = new[] {
-      new TctlOffsetItem { Name = "AMD Ryzen 5 1600X", Offset = 20.0f },
-      new TctlOffsetItem { Name = "AMD Ryzen 7 1700X", Offset = 20.0f },
-      new TctlOffsetItem { Name = "AMD Ryzen 7 1800X", Offset = 20.0f },
-      new TctlOffsetItem { Name = "AMD Ryzen 7 2700X", Offset = 10.0f },
-      new TctlOffsetItem { Name = "AMD Ryzen Threadripper 19", Offset = 27.0f },
-      new TctlOffsetItem { Name = "AMD Ryzen Threadripper 29", Offset = 27.0f }
-    };
+          new TctlOffsetItem { Name = "AMD Ryzen 5 1600X", Offset = 20.0f },
+          new TctlOffsetItem { Name = "AMD Ryzen 7 1700X", Offset = 20.0f },
+          new TctlOffsetItem { Name = "AMD Ryzen 7 1800X", Offset = 20.0f },
+          new TctlOffsetItem { Name = "AMD Ryzen 7 2700X", Offset = 10.0f },
+          new TctlOffsetItem { Name = "AMD Ryzen Threadripper 19", Offset = 27.0f },
+          new TctlOffsetItem { Name = "AMD Ryzen Threadripper 29", Offset = 27.0f }
+        };
         private readonly float tctlOffset = 0.0f;
 
         public AMD17CPU(int processorIndex, CPUID[][] cpuid, ISettings settings)
@@ -104,14 +104,17 @@ namespace OpenHardwareMonitor.Hardware.CPU
                     maxCcdCount = 4; break;
             }
 
-            ccdTemperatures = new Sensor[maxCcdCount];
-            for (int i = 0; i < ccdTemperatures.Length; i++)
+            if (maxCcdCount > 0)
             {
-                ccdTemperatures[i] = new Sensor(
-                "CPU CCD #" + (i + 1), i + 4, SensorType.Temperature, this,
-                  new[] {
-            new ParameterDescription("Offset [°C]", "Temperature offset.", 0)
-                  }, this.settings);
+                ccdTemperatures = new Sensor[maxCcdCount];
+                for (int i = 0; i < ccdTemperatures.Length; i++)
+                {
+                    ccdTemperatures[i] = new Sensor(
+                    "CPU CCD #" + (i + 1), i + 4, SensorType.Temperature, this,
+                      new[] {
+                new ParameterDescription("Offset [°C]", "Temperature offset.", 0)
+                      }, this.settings);
+                }
             }
 
             if (Ring0.Rdmsr(MSR_RAPL_PWR_UNIT, out uint eax, out _))
