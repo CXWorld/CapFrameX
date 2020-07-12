@@ -286,6 +286,9 @@ namespace CapFrameX.Overlay
 								sensorOverlayEntries[i].GroupSeparators = configEntry.GroupSeparators;
 								sensorOverlayEntries[i].UpperLimitColor = configEntry.UpperLimitColor;
 								sensorOverlayEntries[i].LowerLimitColor = configEntry.LowerLimitColor;
+
+								if (!sensorOverlayEntries[i].Description.Contains("CPU Core"))
+								   sensorOverlayEntries[i].GroupName = configEntry.GroupName;
 							}
 						}
 					}
@@ -318,6 +321,22 @@ namespace CapFrameX.Overlay
 
 						adjustedOverlayEntries
 							.InsertRange(indexCpu, sensorOverlayEntries.Where(entry => entry.OverlayEntryType == EOverlayEntryType.CPU));
+					}
+
+					// check separators
+					var separatorDict = new Dictionary<string, int>();
+
+					foreach (var entry in adjustedOverlayEntries)
+					{
+						if (!separatorDict.ContainsKey(entry.GroupName))
+							separatorDict.Add(entry.GroupName, entry.GroupSeparators);
+						else
+							separatorDict[entry.GroupName] = Math.Max(entry.GroupSeparators, separatorDict[entry.GroupName]);
+					}
+
+					foreach (var entry in adjustedOverlayEntries)
+					{
+						entry.GroupSeparators = separatorDict[entry.GroupName];
 					}
 
 					return adjustedOverlayEntries.ToBlockingCollection();
