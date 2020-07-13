@@ -251,13 +251,6 @@ namespace OpenHardwareMonitor.Hardware.CPU
                     if ((value & FAMILY_17H_M70H_CCD_TEMP_VALID) == 0)
                         break;
 
-                    Thread.Sleep(1);
-
-                    if (!ReadSmnRegister(FAMILY_17H_M70H_CCD_TEMP(i), out value))
-                        continue;
-                    if ((value & FAMILY_17H_M70H_CCD_TEMP_VALID) == 0)
-                        break;
-
                     float temperature = (value & 0x7FF) / 8.0f - 49;
                     temperature += ccdTemperatures[i].Parameters[0].Value;
 

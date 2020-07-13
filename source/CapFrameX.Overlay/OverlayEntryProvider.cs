@@ -68,7 +68,7 @@ namespace CapFrameX.Overlay
 		public async Task<IOverlayEntry[]> GetOverlayEntries()
 		{
 			await _taskCompletionSource.Task;
-			await UpdateSensorData();
+		    await UpdateSensorData();
 			UpdateOnlineMetrics();
 			UpdateFormatting();
 			return _overlayEntries.ToArray();
@@ -155,7 +155,6 @@ namespace CapFrameX.Overlay
 
 		public void SetFormatForSensorType(string sensorType, IOverlayEntry selectedEntry, IOverlayEntryFormatChange checkboxes)
 		{
-
 			foreach (var entry in _overlayEntries
 					.Where(x => _sensorService.GetSensorTypeString(x) == sensorType))
 			{
@@ -409,7 +408,7 @@ namespace CapFrameX.Overlay
 			var overlayEntries = OverlayUtils.GetOverlayEntryDefaults()
 					.Select(item => item as IOverlayEntry).ToBlockingCollection();
 
-			_sensorService.ResetSensorOverlayEntries();
+			//_sensorService.ResetSensorOverlayEntries();
 
 			// Sensor data
 			return _onDictionaryUpdatedBuffered
