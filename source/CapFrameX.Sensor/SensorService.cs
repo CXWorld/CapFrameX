@@ -233,43 +233,43 @@ namespace CapFrameX.Sensor
             switch (sensorType)
             {
                 case SensorType.Voltage:
-                    formatString = "{0,4:F2}";
+                    formatString = "{0,5:F2}";
                     break;
                 case SensorType.Clock:
-                    formatString = "{0,4:F0}";
+                    formatString = "{0,5:F0}";
                     break;
                 case SensorType.Temperature:
-                    formatString = "{0,4:F0}";
+                    formatString = "{0,5:F0}";
                     break;
                 case SensorType.Load:
-                    formatString = "{0,4:F0}";
+                    formatString = "{0,5:F0}";
                     break;
                 case SensorType.Fan:
-                    formatString = "{0,4:F0}";
+                    formatString = "{0,5:F0}";
                     break;
                 case SensorType.Flow:
-                    formatString = "{0,4:F0}";
+                    formatString = "{0,5:F0}";
                     break;
                 case SensorType.Control:
-                    formatString = "{0,4:F0}";
+                    formatString = "{0,5:F0}";
                     break;
                 case SensorType.Level:
-                    formatString = "{0,4:F0}";
+                    formatString = "{0,5:F0}";
                     break;
                 case SensorType.Factor:
-                    formatString = "{0,4:F0}";
+                    formatString = "{0,5:F0}";
                     break;
                 case SensorType.Power:
                     formatString = "{0,5:F1}";
                     break;
                 case SensorType.Data:
-                    formatString = "{0,4:F2}";
+                    formatString = "{0,5:F2}";
                     break;
                 case SensorType.SmallData:
-                    formatString = "{0,4:F0}";
+                    formatString = "{0,5:F0}";
                     break;
                 case SensorType.Throughput:
-                    formatString = "{0,4:F0}";
+                    formatString = "{0,5:F0}";
                     break;
             }
 

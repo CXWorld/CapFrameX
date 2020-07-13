@@ -507,7 +507,7 @@ namespace CapFrameX.Overlay
 			if (averageEntry != null)
 			{
 				averageEntry.ValueUnitFormat = "FPS";
-				averageEntry.ValueAlignmentAndDigits = "{0,4:F0}";
+				averageEntry.ValueAlignmentAndDigits = "{0,5:F0}";
 			}
 
 			// P1
@@ -516,7 +516,7 @@ namespace CapFrameX.Overlay
 			if (p1Entry != null)
 			{
 				p1Entry.ValueUnitFormat = "FPS";
-				p1Entry.ValueAlignmentAndDigits = "{0,4:F0}";
+				p1Entry.ValueAlignmentAndDigits = "{0,5:F0}";
 			}
 
 			// P0.2
@@ -525,7 +525,7 @@ namespace CapFrameX.Overlay
 			if (p1dot2Entry != null)
 			{
 				p1dot2Entry.ValueUnitFormat = "FPS";
-				p1dot2Entry.ValueAlignmentAndDigits = "{0,4:F0}";
+				p1dot2Entry.ValueAlignmentAndDigits = "{0,5:F0}";
 			}
 		}
 
@@ -546,7 +546,7 @@ namespace CapFrameX.Overlay
 			if (framerateEntry != null)
 			{
 				framerateEntry.ValueUnitFormat = "FPS";
-				framerateEntry.ValueAlignmentAndDigits = "{0,4:F0}";
+				framerateEntry.ValueAlignmentAndDigits = "{0,5:F0}";
 			}
 
 			// frametime
@@ -555,7 +555,7 @@ namespace CapFrameX.Overlay
 			if (frametimeEntry != null)
 			{
 				frametimeEntry.ValueUnitFormat = "ms ";
-				frametimeEntry.ValueAlignmentAndDigits = "{0,4:F1}";
+				frametimeEntry.ValueAlignmentAndDigits = "{0,5:F1}";
 			}
 		}
 
@@ -586,7 +586,7 @@ namespace CapFrameX.Overlay
 					groupNameFormatStringBuilder.Append(entry.GroupColor);
 					groupNameFormatStringBuilder.Append(">");
 					groupNameFormatStringBuilder.Append(basicGroupFormat);
-					groupNameFormatStringBuilder.Append("  <C><S>");
+					groupNameFormatStringBuilder.Append(" <C><S>");
 					entry.GroupNameFormat = groupNameFormatStringBuilder.ToString();
 						// "<S=" + entry.GroupFontSize + "><C=" + entry.GroupColor + ">" + basicGroupFormat + "  <C><S>";
 
