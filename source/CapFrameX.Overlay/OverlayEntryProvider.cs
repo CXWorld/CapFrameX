@@ -250,45 +250,49 @@ namespace CapFrameX.Overlay
 						.Select(entry => entry.Description)
 						.ToList();
 
-					var adjustedOverlayEntries = new List<IOverlayEntry>(overlayEntriesFromJson);
-					var adjustedOverlayEntryDescriptions = adjustedOverlayEntries
+					var configOverlayEntries = new List<IOverlayEntry>(overlayEntriesFromJson);
+					var configOverlayEntryDescriptions = configOverlayEntries
 						.Select(entry => entry.Description)
 						.ToList();
-					var adjustedGpuOverlayEntryDescriptions = adjustedOverlayEntries
+					var configGpuOverlayEntryDescriptions = configOverlayEntries
 						.Where(entry => entry.OverlayEntryType == EOverlayEntryType.GPU)
 						.Select(entry => entry.Description)
 						.ToList();
-					var adjustedCpuOverlayEntryDescriptions = adjustedOverlayEntries
+					var configCpuOverlayEntryDescriptions = configOverlayEntries
 						.Where(entry => entry.OverlayEntryType == EOverlayEntryType.CPU)
 						.Select(entry => entry.Description)
 						.ToList();
 
-					bool hasGpuChanged = !sensorGpuOverlayEntryDescriptions.IsEquivalent(adjustedGpuOverlayEntryDescriptions);
-					bool hasCpuChanged = !sensorCpuOverlayEntryDescriptions.IsEquivalent(adjustedCpuOverlayEntryDescriptions);
+					bool hasGpuChanged = !sensorGpuOverlayEntryDescriptions.IsEquivalent(configGpuOverlayEntryDescriptions);
+					bool hasCpuChanged = !sensorCpuOverlayEntryDescriptions.IsEquivalent(configCpuOverlayEntryDescriptions);
 					HasHardwareChanged = hasGpuChanged || hasCpuChanged;
 
 					if (HasHardwareChanged)
 					{						
 						for (int i = 0; i < sensorOverlayEntryDescriptions.Count; i++)
 						{
-							if (adjustedOverlayEntryDescriptions.Contains(sensorOverlayEntryDescriptions[i]))
+							if (configOverlayEntryDescriptions.Contains(sensorOverlayEntryDescriptions[i]))
 							{
-								var configEntry = adjustedOverlayEntries
+								var configEntry = configOverlayEntries
 									.Find(entry => entry.Description == sensorOverlayEntryDescriptions[i]);
-								sensorOverlayEntries[i].ShowOnOverlay = configEntry.ShowOnOverlay;
-								sensorOverlayEntries[i].ShowGraph = configEntry.ShowGraph;
-								sensorOverlayEntries[i].Color = configEntry.Color;
-								sensorOverlayEntries[i].ValueFontSize = configEntry.ValueFontSize;
-								sensorOverlayEntries[i].UpperLimitValue = configEntry.UpperLimitValue;
-								sensorOverlayEntries[i].LowerLimitValue = configEntry.LowerLimitValue;
-								sensorOverlayEntries[i].GroupColor = configEntry.GroupColor;
-								sensorOverlayEntries[i].GroupFontSize = configEntry.GroupFontSize;
-								sensorOverlayEntries[i].GroupSeparators = configEntry.GroupSeparators;
-								sensorOverlayEntries[i].UpperLimitColor = configEntry.UpperLimitColor;
-								sensorOverlayEntries[i].LowerLimitColor = configEntry.LowerLimitColor;
 
-								if (!sensorOverlayEntries[i].Description.Contains("CPU Core"))
-								   sensorOverlayEntries[i].GroupName = configEntry.GroupName;
+								if (configEntry != null)
+								{
+									sensorOverlayEntries[i].ShowOnOverlay = configEntry.ShowOnOverlay;
+									sensorOverlayEntries[i].ShowGraph = configEntry.ShowGraph;
+									sensorOverlayEntries[i].Color = configEntry.Color;
+									sensorOverlayEntries[i].ValueFontSize = configEntry.ValueFontSize;
+									sensorOverlayEntries[i].UpperLimitValue = configEntry.UpperLimitValue;
+									sensorOverlayEntries[i].LowerLimitValue = configEntry.LowerLimitValue;
+									sensorOverlayEntries[i].GroupColor = configEntry.GroupColor;
+									sensorOverlayEntries[i].GroupFontSize = configEntry.GroupFontSize;
+									sensorOverlayEntries[i].GroupSeparators = configEntry.GroupSeparators;
+									sensorOverlayEntries[i].UpperLimitColor = configEntry.UpperLimitColor;
+									sensorOverlayEntries[i].LowerLimitColor = configEntry.LowerLimitColor;
+
+									if (!sensorOverlayEntries[i].Description.Contains("CPU Core"))
+										sensorOverlayEntries[i].GroupName = configEntry.GroupName;
+								}
 							}
 						}
 					}
@@ -296,37 +300,37 @@ namespace CapFrameX.Overlay
 					// check GPU changed 
 					if (hasGpuChanged)
 					{
-						var indexGpu = adjustedOverlayEntries
+						var indexGpu = configOverlayEntries
 							.TakeWhile(entry => entry.OverlayEntryType != EOverlayEntryType.GPU)
 							.Count();
 
-						adjustedOverlayEntries = adjustedOverlayEntries
+						configOverlayEntries = configOverlayEntries
 							.Where(entry => entry.OverlayEntryType != EOverlayEntryType.GPU)
 							.ToList();
 
-						adjustedOverlayEntries
+						configOverlayEntries
 							.InsertRange(indexGpu, sensorOverlayEntries.Where(entry => entry.OverlayEntryType == EOverlayEntryType.GPU));
 					}
 
 					// check CPU changed 
 					if (hasCpuChanged)
 					{
-						var indexCpu = adjustedOverlayEntries
+						var indexCpu = configOverlayEntries
 							.TakeWhile(entry => entry.OverlayEntryType != EOverlayEntryType.CPU)
 							.Count();
 
-						adjustedOverlayEntries = adjustedOverlayEntries
+						configOverlayEntries = configOverlayEntries
 							.Where(entry => entry.OverlayEntryType != EOverlayEntryType.CPU)
 							.ToList();
 
-						adjustedOverlayEntries
+						configOverlayEntries
 							.InsertRange(indexCpu, sensorOverlayEntries.Where(entry => entry.OverlayEntryType == EOverlayEntryType.CPU));
 					}
 
 					// check separators
 					var separatorDict = new Dictionary<string, int>();
 
-					foreach (var entry in adjustedOverlayEntries)
+					foreach (var entry in configOverlayEntries)
 					{
 						if (!separatorDict.ContainsKey(entry.GroupName))
 							separatorDict.Add(entry.GroupName, entry.GroupSeparators);
@@ -334,12 +338,12 @@ namespace CapFrameX.Overlay
 							separatorDict[entry.GroupName] = Math.Max(entry.GroupSeparators, separatorDict[entry.GroupName]);
 					}
 
-					foreach (var entry in adjustedOverlayEntries)
+					foreach (var entry in configOverlayEntries)
 					{
 						entry.GroupSeparators = separatorDict[entry.GroupName];
 					}
 
-					return adjustedOverlayEntries.ToBlockingCollection();
+					return configOverlayEntries.ToBlockingCollection();
 				});
 		}
 

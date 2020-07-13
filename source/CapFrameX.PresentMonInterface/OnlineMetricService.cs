@@ -80,9 +80,12 @@ namespace CapFrameX.PresentMonInterface
 						while (position < _measuretimes.Count && 
 							startTime - _measuretimes[position] > _maxOnlineIntervalLength) 
 							position++;
-						
-						_frametimes.RemoveRange(0, position);
-						_measuretimes.RemoveRange(0, position);
+
+						if (position > 0)
+						{
+							_frametimes.RemoveRange(0, position);
+							_measuretimes.RemoveRange(0, position);
+						}
 					}
 				}
 			}
