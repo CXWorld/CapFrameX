@@ -661,8 +661,9 @@ namespace CapFrameX.Overlay
 						}
 					//}
 
-					// reset format changed 
+					// reset format changed  and last limit state 
 					entry.FormatChanged = false;
+					entry.LastLimitState = LimitState.Undefined;
 				}
 
 

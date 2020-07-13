@@ -301,10 +301,9 @@ namespace CapFrameX.Overlay
             }
             set
             {
-                _upperLimitValue = value;
+                FormatChanged = _upperLimitValue != value;               
                 lock (_limitsLock)
-                    FormatChanged = _upperLimitValue == string.Empty
-                        && _lowerLimitValue == string.Empty;
+                    _upperLimitValue = value;
                 RaisePropertyChanged();
             }
         }
@@ -318,10 +317,9 @@ namespace CapFrameX.Overlay
             }
             set
             {
-                _lowerLimitValue = value;
+                FormatChanged = _lowerLimitValue != value;
                 lock (_limitsLock)
-                    FormatChanged = _upperLimitValue == string.Empty
-                        && _lowerLimitValue == string.Empty;
+                    _lowerLimitValue = value;                   
                 RaisePropertyChanged();
             }
         }
