@@ -694,11 +694,9 @@ namespace CapFrameX.ViewModel
 
 		private IDisposable GetListUpdatHeartBeat()
 		{
-			var context = SynchronizationContext.Current;
 			return Observable
 				.Timer(DateTimeOffset.UtcNow, TimeSpan.FromSeconds(1))
-				.ObserveOn(context)
-				.SubscribeOn(context)
+				.ObserveOnDispatcher()
 				.Subscribe(x => UpdateProcessToCaptureList());
 		}
 
@@ -733,10 +731,7 @@ namespace CapFrameX.ViewModel
 			else
 				SelectedProcessToCapture = selectedProcessToCapture;
 
-			Application.Current.Dispatcher.Invoke(new Action(() =>
-			{
-				UpdateCaptureStateInfo();
-			}));
+			UpdateCaptureStateInfo();
 		}
 
 		private void OnSelectedProcessToCaptureChanged()
