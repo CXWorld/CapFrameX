@@ -252,7 +252,7 @@ namespace CapFrameX.ViewModel
 
 		public ICommand AddToProcessListCommand { get; }
 
-		public ICommand ResetCaptureProcessCommand { get; }
+		public ICommand ResetPresentMonCommand { get; }
 
 		public Array LoggingPeriodItemsSource => new[] { 250, 500 };
 
@@ -283,7 +283,7 @@ namespace CapFrameX.ViewModel
 			_soundManager = soundManager;
 			AddToIgonreListCommand = new DelegateCommand(OnAddToIgonreList);
 			AddToProcessListCommand = new DelegateCommand(OnAddToProcessList);
-			ResetCaptureProcessCommand = new DelegateCommand(OnResetCaptureProcess);
+			ResetPresentMonCommand = new DelegateCommand(OnResetCaptureProcess);
 
 			_logger.LogDebug("{viewName} Ready", this.GetType().Name);
 			CaptureStateInfo = "Service ready..." + Environment.NewLine +
@@ -688,6 +688,8 @@ namespace CapFrameX.ViewModel
 		private void OnResetCaptureProcess()
 		{
 			SelectedProcessToCapture = null;
+			StopCaptureService();
+			StartCaptureService();
 		}
 
 		private IDisposable GetListUpdatHeartBeat()
