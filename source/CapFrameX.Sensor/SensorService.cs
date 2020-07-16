@@ -220,7 +220,7 @@ namespace CapFrameX.Sensor
                 ShowGraph = false,
                 ShowGraphIsEnabled = false,
                 ShowOnOverlayIsEnabled = true,
-                ShowOnOverlay = GetOverlayToggle(sensor),
+                ShowOnOverlay = GetIsDefaultOverlayItem(sensor),
                 Value = 0,
                 ValueUnitFormat = GetValueUnitString(sensor.SensorType),
                 ValueAlignmentAndDigits = GetValueAlignmentAndDigitsString(sensor.SensorType)
@@ -340,7 +340,7 @@ namespace CapFrameX.Sensor
             }
         }
 
-        private bool GetOverlayToggle(ISensor sensor)
+        private bool GetIsDefaultOverlayItem(ISensor sensor)
         {
             if (sensor.Name.Contains("Core"))
             {
@@ -355,12 +355,10 @@ namespace CapFrameX.Sensor
                 return true;
             }
             else if (sensor.Name.Contains("Memory")
-                && !sensor.Name.Contains("Controller"))
+                && sensor.Hardware.HardwareType ==  HardwareType.RAM
+                && sensor.SensorType == SensorType.Load)
             {
-                if (sensor.SensorType == SensorType.Load)
-                    return true;
-                else
-                    return false;
+                return true; 
             }
             else
                 return false;

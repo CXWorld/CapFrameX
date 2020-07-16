@@ -391,7 +391,6 @@ namespace CapFrameX.ViewModel
 
 					_onlineMetricService.ProcessDataLineStream.OnNext(Tuple.Create(currentProcess, dataLine));
 
-
 					var lineSplit = dataLine.Split(',');
 					if (currentProcess == lineSplit[0].Replace(".exe", ""))
 					{
