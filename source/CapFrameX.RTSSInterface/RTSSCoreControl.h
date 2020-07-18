@@ -35,6 +35,7 @@ public:
 	BOOL						UpdateOSD(LPCSTR lpText);
 	CString						GetApiInfo(DWORD processId);
 	std::vector<float>		    GetCurrentFramerate(DWORD processId);
+	std::vector<float>			GetCurrentFramerateFromForegroundWindow();
 
 // Implementation
 protected:

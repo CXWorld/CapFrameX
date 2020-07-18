@@ -41,31 +41,29 @@ CString RTSSCoreControl::GetApiInfo(DWORD processId)
 	if (hMapFile)
 	{
 		LPVOID pMapAddr = MapViewOfFile(hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, 0);
+
 		LPRTSS_SHARED_MEMORY pMem = (LPRTSS_SHARED_MEMORY)pMapAddr;
 
 		if (pMem)
 		{
-			if ((pMem->dwSignature == 'RTSS') &&
-				(pMem->dwVersion >= 0x00020000))
+			if ((pMem->dwSignature == 'RTSS') && (pMem->dwVersion >= 0x00020000))
 			{
-				RTSS_SHARED_MEMORY::RTSS_SHARED_MEMORY_APP_ENTRY* arrAppInfos = pMem->arrApp;
-
-				for (size_t i = 0; i < 256; i++)
+				for (DWORD dwEntry = 0; dwEntry < pMem->dwAppArrSize; dwEntry++)
 				{
-					RTSS_SHARED_MEMORY::RTSS_SHARED_MEMORY_APP_ENTRY curAppInfos = arrAppInfos[i];
+					RTSS_SHARED_MEMORY::LPRTSS_SHARED_MEMORY_APP_ENTRY pEntry = (RTSS_SHARED_MEMORY::LPRTSS_SHARED_MEMORY_APP_ENTRY)((LPBYTE)pMem + pMem->dwAppArrOffset + dwEntry * pMem->dwAppEntrySize);
 
-					if (curAppInfos.dwProcessID == processId)
+					if (pEntry->dwProcessID == processId)
 					{
-						api = (curAppInfos.dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_OGL ? "OpenGL" 
-							: (curAppInfos.dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_DD ? "DirectDraw"
-							: (curAppInfos.dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_D3D8 ? "DX8"
-							: (curAppInfos.dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_D3D9 ? "DX9"
-							: (curAppInfos.dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_D3D9EX ? "DX9 EX"
-							: (curAppInfos.dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_D3D10 ? "DX10"
-							: (curAppInfos.dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_D3D11 ? "DX11"
-							: (curAppInfos.dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_D3D12 ? "DX12"
-							: (curAppInfos.dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_D3D12AFR ? "DX12 AFR"
-							: (curAppInfos.dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_VULKAN ? "Vulkan"
+						api = (pEntry->dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_OGL ? "OpenGL"
+							: (pEntry->dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_DD ? "DirectDraw"
+							: (pEntry->dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_D3D8 ? "DX8"
+							: (pEntry->dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_D3D9 ? "DX9"
+							: (pEntry->dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_D3D9EX ? "DX9 EX"
+							: (pEntry->dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_D3D10 ? "DX10"
+							: (pEntry->dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_D3D11 ? "DX11"
+							: (pEntry->dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_D3D12 ? "DX12"
+							: (pEntry->dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_D3D12AFR ? "DX12 AFR"
+							: (pEntry->dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_VULKAN ? "Vulkan"
 							: "unknown";
 
 						break;
@@ -93,35 +91,86 @@ std::vector<float> RTSSCoreControl::GetCurrentFramerate(DWORD processId)
 	if (hMapFile)
 	{
 		LPVOID pMapAddr = MapViewOfFile(hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, 0);
+
 		LPRTSS_SHARED_MEMORY pMem = (LPRTSS_SHARED_MEMORY)pMapAddr;
 
 		if (pMem)
 		{
-			if ((pMem->dwSignature == 'RTSS') &&
-				(pMem->dwVersion >= 0x00020000))
+			if ((pMem->dwSignature == 'RTSS') && (pMem->dwVersion >= 0x00020000))
 			{
-				RTSS_SHARED_MEMORY::RTSS_SHARED_MEMORY_APP_ENTRY* arrAppInfos = pMem->arrApp;
-
-				HWND activeWindow = GetForegroundWindow();
-				GetWindowThreadProcessId(activeWindow, OUT lpdwProcessiD);
-				for (size_t i = 0; i < 256; i++)
+				for (DWORD dwEntry = 0; dwEntry < pMem->dwAppArrSize; dwEntry++)
 				{
-					RTSS_SHARED_MEMORY::RTSS_SHARED_MEMORY_APP_ENTRY curAppInfos = arrAppInfos[i];
+					RTSS_SHARED_MEMORY::LPRTSS_SHARED_MEMORY_APP_ENTRY pEntry = (RTSS_SHARED_MEMORY::LPRTSS_SHARED_MEMORY_APP_ENTRY)((LPBYTE)pMem + pMem->dwAppArrOffset + dwEntry * pMem->dwAppEntrySize);
 
-					if (curAppInfos.dwProcessID == processId)
+					if (pEntry->dwProcessID)
 					{
-						currentFrametime = curAppInfos.dwStatFrameTimeBuf[(curAppInfos.dwStatFrameTimeBufPos - 1) & 1023] / 1000.0f;
-						currentFramerate = curAppInfos.dwStatFrameTimeBufFramerate / 10.0f;
-							/*1000.0f * curAppInfos.dwFrames / (curAppInfos.dwTime1 - curAppInfos.dwTime0);*/
-						break;
+						if (pEntry->dwProcessID == processId)
+						{
+							currentFrametime = pEntry->dwStatFrameTimeBuf[(pEntry->dwStatFrameTimeBufPos - 1) & 1023] / 1000.0f;
+							currentFramerate = pEntry->dwStatFrameTimeBufFramerate / 10.0f;
+							break;
+						}
 					}
 				}
-
-				UnmapViewOfFile(pMapAddr);
 			}
 
-			CloseHandle(hMapFile);
+			UnmapViewOfFile(pMapAddr);
 		}
+
+		CloseHandle(hMapFile);
+	}
+
+	result.push_back(currentFramerate);
+	result.push_back(currentFrametime);
+	return result;
+}
+
+std::vector<float> RTSSCoreControl::GetCurrentFramerateFromForegroundWindow()
+{
+	std::vector<float> result;
+	float currentFramerate = 0;
+	float currentFrametime = 0;
+	LPDWORD lpdwProcessiD = 0;
+	HANDLE hMapFile = OpenFileMapping(FILE_MAP_ALL_ACCESS, FALSE, "RTSSSharedMemoryV2");
+
+	if (hMapFile)
+	{
+		LPVOID pMapAddr = MapViewOfFile(hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, 0);
+
+		LPRTSS_SHARED_MEMORY pMem = (LPRTSS_SHARED_MEMORY)pMapAddr;
+
+		if (pMem)
+		{
+			if ((pMem->dwSignature == 'RTSS') && (pMem->dwVersion >= 0x00020000))
+			{
+				HWND	hWnd = GetForegroundWindow();
+				DWORD	dwProcessID = 0;
+
+				if (hWnd)
+					GetWindowThreadProcessId(hWnd, &dwProcessID);
+
+				for (DWORD dwEntry = 0; dwEntry < pMem->dwAppArrSize; dwEntry++)
+				{
+					RTSS_SHARED_MEMORY::LPRTSS_SHARED_MEMORY_APP_ENTRY pEntry = (RTSS_SHARED_MEMORY::LPRTSS_SHARED_MEMORY_APP_ENTRY)((LPBYTE)pMem + pMem->dwAppArrOffset + dwEntry * pMem->dwAppEntrySize);
+
+					if (pEntry->dwProcessID)
+					{
+						if (pEntry->dwProcessID == dwProcessID)
+						{
+							currentFrametime = pEntry->dwStatFrameTimeBuf[(pEntry->dwStatFrameTimeBufPos - 1) & 1023] / 1000.0f;
+							currentFramerate = pEntry->dwStatFrameTimeBufFramerate / 10.0f;
+						}
+
+						if ((dwProcessID == pEntry->dwProcessID) || !dwProcessID)
+							break;
+					}
+				}
+			}
+
+			UnmapViewOfFile(pMapAddr);
+		}
+
+		CloseHandle(hMapFile);
 	}
 
 	result.push_back(currentFramerate);

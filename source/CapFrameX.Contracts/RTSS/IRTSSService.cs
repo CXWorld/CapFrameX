@@ -10,6 +10,7 @@ namespace CapFrameX.Contracts.RTSS
         bool IsRTSSInstalled();
         string GetApiInfo(uint processId);
         Tuple<double, double> GetCurrentFramerate(uint processId);
+        Tuple<double, double> GetCurrentFramerateFromForegroundWindow();
         void CheckRTSSRunningAndRefresh();
         void ResetOSD();
         void ReleaseOSD();

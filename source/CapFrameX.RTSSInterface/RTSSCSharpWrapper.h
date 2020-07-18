@@ -240,6 +240,12 @@ public:
 		return gcnew Tuple<double, double>(result[0], result[1]);
 	}
 
+	Tuple<double, double>^ GetCurrentFramerateFromForegroundWindow()
+	{
+		std::vector<float> result = _coreControl->GetCurrentFramerateFromForegroundWindow();
+		return gcnew Tuple<double, double>(result[0], result[1]);
+	}
+
 private:
 	RTSSCoreControl* _coreControl;
 	Action<Exception^>^ _exceptionAction;
