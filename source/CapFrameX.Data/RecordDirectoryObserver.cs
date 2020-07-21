@@ -96,6 +96,9 @@ namespace CapFrameX.Data
 
 			void OnFileChanged(object sender, FileSystemEventArgs e)
 			{
+				if (_currentFiles == null || !_currentFiles.Any())
+					return;
+
 				var fileInfo = _currentFiles.FirstOrDefault(f => f.FullName.Equals(e.FullPath));
 				if (fileInfo is FileInfo)
 				{
@@ -108,6 +111,9 @@ namespace CapFrameX.Data
 
 			void OnFileRenamed(object sender, RenamedEventArgs e)
 			{
+				if (_currentFiles == null || !_currentFiles.Any())
+					return;
+
 				var oldFileInfo = new FileInfo(e.OldFullPath);
 				_fileDeletedSubject.OnNext(oldFileInfo);
 				var item = _currentFiles.First(f => f.FullName.Equals(oldFileInfo.FullName));
@@ -120,6 +126,9 @@ namespace CapFrameX.Data
 
 			void OnFileDeleted(object sender, FileSystemEventArgs e)
 			{
+				if (_currentFiles == null || !_currentFiles.Any())
+					return;
+
 				var fileInfo = new FileInfo(e.FullPath);
 				_fileDeletedSubject.OnNext(fileInfo);
 				_currentFiles.Remove(_currentFiles.First(f => f.FullName.Equals(fileInfo.FullName)));

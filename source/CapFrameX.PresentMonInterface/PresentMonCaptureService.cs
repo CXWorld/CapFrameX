@@ -126,6 +126,7 @@ namespace CapFrameX.PresentMonInterface
         {
             try
             {
+                bool hasInitialData = false;
                 _hearBeatDisposable = Observable.Generate(0, // dummy initialState
                                             x => true, // dummy condition
                                             x => x, // dummy iterate
@@ -138,6 +139,12 @@ namespace CapFrameX.PresentMonInterface
                     {
                         if (string.IsNullOrWhiteSpace(dataLine))
                             return;
+
+                        if (!hasInitialData)
+                        {
+                            _logger.LogInformation("Process name stream has initial data.");
+                            hasInitialData = true;
+                        }
 
                         int index = dataLine.IndexOf(".exe");
 
