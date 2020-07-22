@@ -342,7 +342,7 @@ namespace CapFrameX.Overlay
                         entry.GroupSeparators = separatorDict[entry.GroupName];
                     }
 
-                    return configOverlayEntries.ToBlockingCollection();
+                    return configOverlayEntries.Select(entry => entry.Clone()).ToBlockingCollection();
                 });
         }
 
@@ -406,7 +406,7 @@ namespace CapFrameX.Overlay
         private IObservable<BlockingCollection<IOverlayEntry>> SetOverlayEntryDefaults()
         {
             var overlayEntries = OverlayUtils.GetOverlayEntryDefaults()
-                    .Select(item => item as IOverlayEntry).ToBlockingCollection();
+                    .Select(item => (item as IOverlayEntry).Clone()).ToBlockingCollection();
 
             //_sensorService.ResetSensorOverlayEntries();
 
@@ -415,7 +415,7 @@ namespace CapFrameX.Overlay
                 .Take(1)
                 .Select(sensorOverlayEntries =>
                 {
-                    sensorOverlayEntries.ForEach(sensor => overlayEntries.TryAdd(sensor));
+                    sensorOverlayEntries.ForEach(sensor => overlayEntries.TryAdd(sensor.Clone()));
                     return overlayEntries;
                 });
         }

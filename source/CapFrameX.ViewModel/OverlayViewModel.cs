@@ -404,6 +404,8 @@ namespace CapFrameX.ViewModel
 
         public ICommand SetFormatForSensorTypeCommand { get; }
 
+        public ICommand SetToMinOsdCommand { get; }
+
         public bool IsRTSSInstalled
             => _rTSSService.IsRTSSInstalled();
 
@@ -496,6 +498,9 @@ namespace CapFrameX.ViewModel
             ResetColorAndLimitDefaultsCommand = new DelegateCommand(
                 () => _overlayEntryProvider.ResetColorAndLimits(SelectedOverlayEntry));
 
+            SetToMinOsdCommand = new DelegateCommand(
+                () => OnSetMinOsd());
+
             UpdateHpyerlinkText = "To use the overlay, install the latest" + Environment.NewLine +
                 "RivaTuner Statistics Server (RTSS)";
 
@@ -521,6 +526,15 @@ namespace CapFrameX.ViewModel
             SetSaveButtonIsEnableAction();
             OnUseRunHistoryChanged();
             OverlayItemsOptionsEnabled = false;
+        }
+
+        private void OnSetMinOsd()
+        {
+            OverlayEntries
+                .Where(entry => entry.Identifier != "CaptureTimer" 
+                && entry.Identifier != "Framerate" 
+                && entry.Identifier != "Frametime")
+                .ForEach(entry => entry.ShowOnOverlay = false);
         }
 
         private void OnUseRunHistoryChanged()

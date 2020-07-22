@@ -237,6 +237,11 @@
                                 </StackPanel>
                             </materialDesign:Card>
                         </materialDesign:PopupBox>
+                        <TextBlock VerticalAlignment="Center">Min OSD</TextBlock>
+                        <Button Margin="10 0 0 0" Width="20" Height="20" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
+                                Command="{Binding SetToMinOsdCommand}" materialDesign:RippleAssist.Feedback="#DD000000">
+                            <materialDesign:PackIcon Kind="FlipToFront" Height="15" Width="15" />
+                        </Button>
                     </StackPanel>
                 </Border>
             </StackPanel>

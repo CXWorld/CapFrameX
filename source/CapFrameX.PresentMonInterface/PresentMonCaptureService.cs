@@ -135,7 +135,7 @@ namespace CapFrameX.PresentMonInterface
                                             .Subscribe(x => UpdateProcessToCaptureList());
 
                 _processNameDisposable = _outputDataStream.ObserveOn(new EventLoopScheduler())
-                    .Skip(10).Where(dataLine => _isUpdating == false).Subscribe(dataLine =>
+                    .Skip(5).Where(dataLine => _isUpdating == false).Subscribe(dataLine =>
                     {
                         if (string.IsNullOrWhiteSpace(dataLine))
                             return;
