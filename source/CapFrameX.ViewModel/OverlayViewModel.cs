@@ -530,11 +530,20 @@ namespace CapFrameX.ViewModel
 
         private void OnSetMinOsd()
         {
-            OverlayEntries
-                .Where(entry => entry.Identifier != "CaptureTimer" 
-                && entry.Identifier != "Framerate" 
-                && entry.Identifier != "Frametime")
-                .ForEach(entry => entry.ShowOnOverlay = false);
+            foreach (var entry in OverlayEntries)
+            {
+                switch (entry.Identifier)
+                {
+                    case "CaptureTimer":
+                    case "Framerate":
+                    case "Frametime":
+                        entry.ShowOnOverlay = true;
+                        break;
+                    default:
+                        entry.ShowOnOverlay = false;
+                        break;
+                }
+            }
         }
 
         private void OnUseRunHistoryChanged()
