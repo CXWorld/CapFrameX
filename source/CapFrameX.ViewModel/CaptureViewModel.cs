@@ -499,7 +499,7 @@ namespace CapFrameX.ViewModel
 
 					_captureData.Add(dataLine);
 
-					if (!intializedStartTime)
+					if (!intializedStartTime && _captureData.Any())
 					{
 						double captureDataFirstTime = GetStartTimeFromDataLine(_captureData.First());
 						lock (_archiveLock)

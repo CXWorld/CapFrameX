@@ -76,7 +76,7 @@ namespace CapFrameX.PresentMonInterface
                 process.BeginOutputReadLine();
                 process.BeginErrorReadLine();
 
-                _logger.LogInformation("PresentMon sucessfully started");
+                _logger.LogInformation("PresentMon successfully started");
                 return true;
             }
             catch (Exception e)
