@@ -571,6 +571,7 @@ namespace CapFrameX.Sensor
             var sensors = GetSensors();
             foreach (var sensor in sensors)
             {
+                if (sensor.Value != null)
                 dict.TryAdd(sensor, sensor.Value.Value);
             }
 
