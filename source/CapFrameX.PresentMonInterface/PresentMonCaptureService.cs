@@ -5,8 +5,6 @@ using System.Linq;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using System.Threading.Tasks;
-using System.Windows.Threading;
 using CapFrameX.Contracts.PresentMonInterface;
 using Microsoft.Extensions.Logging;
 
@@ -49,8 +47,8 @@ namespace CapFrameX.PresentMonInterface
 
             try
             {
-                SubscribeToPresentMonCapturedProcesses();
                 TryKillPresentMon();
+                SubscribeToPresentMonCapturedProcesses();
 
                 Process process = new Process
                 {
