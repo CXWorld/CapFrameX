@@ -16,27 +16,28 @@ Download link: https://github.com/DevTechProfile/CapFrameX/releases
 ![Screenshot](Images/02_capture.png)
 
 # Overlay
-![Screenshot](Images/03_overlay.png)
+![Screenshot](Images/03_overlay_runhistory.png)
+![Screenshot](Images/03_overlay_options.png)
 
 # Analysis
-![Screenshot](Images/04_analysis.png)
+![Screenshot](Images/05_analysis.png)
 
 # Aggregation
-![Screenshot](Images/05_aggregation.png)
+![Screenshot](Images/06_aggregation.png)
 
 # Comparison
-![Screenshot](Images/06_comparison_bar.png)
-![Screenshot](Images/07_comparison_graph.png)
+![Screenshot](Images/07_comparison_bar.png)
+![Screenshot](Images/08_comparison_graph.png)
 
 # Synchronization (Input lag)
-![Screenshot](Images/09_sync_DT.png)
 ![Screenshot](Images/10_sync_IL.png)
+![Screenshot](Images/11_sync_DT.png)
 
 # Report table (Excel)
-![Screenshot](Images/08_report.png)
+![Screenshot](Images/09_report.png)
 
 # Cloud
-![Screenshot](Images/11_cloud.png)
+![Screenshot](Images/12_cloud.png)
 
 # Instruction manual
 Learn how to use CapFrameX.
@@ -63,13 +64,19 @@ The screenshot button takes a screenshot of the current view excluding the recor
 
 ## Options
 ![Screenshot](Images/01_global_options.png)
-* Moving average window size = The number of frames that are used for the average line in the frametime chart.(Analysis View)
-* FPS values rounding digits = The number of decimals for the FPS values
+* Graph filter window size = The time period in which the filtered FPS graphs are being averaged(Analysis & Comparison View)
+* FPS values decimals = The number of decimals for the FPS values
 * Stuttering factor = The factor a frametime has to be above average to be counted as stutter.(Analysis View)
+* Start with windows & Start minimized = Autostart option and starting in tray
 * Screenshot directory = The directory in which your screenshots are saved.
 * Hardware info source = What will be written into the capture file as your CPU, GPU and RAM config.  
   Automatic detection: What's delivered by the system  
   Custom description: What you write into the text boxes below  
+* Capture file mode = How capture files are saved  
+  JSON: Standard JSON file  
+  JSON + CSV: Additional CSV file that won't be used by CX but can be opened to get a better view on the raw PresentMon data  
+
+
 
 ## Capture view
 Here you can set your capture hotkey, the capture time(0=unlimited), choose if and how precise you want to log sensor data(like CPU/GPU load and power) and set the hotkey response sounds.  
@@ -84,7 +91,8 @@ If you have more than one process detected, you can still select the one you wan
 However you wouldn't want to tab out of your game to do this. This is where our ignore list comes into play.
 
 With the buttons below the two lists you can add or remove any process from the ignore list, the ideal scenario is a completely empty running processes list at the start of CapFrameX.
-With this, you can just start your game and since it'll be the only process in the list, just push the hotkey.
+With this, you can just start your game and since it'll be the only process in the list, just push the hotkey.  
+In case a process wasn't detected correctly you can try to rescan processes with the button at the top of the running processes list.
 
 The ignore list entries are drawn from the same process list that contains your game names, which gets updated with our own list on every new Version of CapFrameX.
 
@@ -96,22 +104,32 @@ Overlay items list where you can set the items you want to see in the OSD and ch
 Three profiles to save different overlay configurations.
 Overlay hotkey to show or hide CX items in OSD. This doesn't hide RTSS completely like the Afterburner hotkey does. If you have AB or any other App that uses RTSS running together with CX, only CX items will disappear.
 Right side  
+Run history and aggregation options  
 Run history to set a number of runs for which you get a simple analysis directly in the OSD. If the history is full, any additional run will replace the oldest one.    
 Aggregation to combine the runs in the history to a single record file once the history is full, while marking outliers within the history.  
 This doesn't take the calculated performance parameters of each record file and calculates an average out of them. It takes the raw frametimes of each record file and puts them into a new file, calculating every parameter based on that set of frametimes.  
 Aggregation outlier handling: A full history is checked for outliers using the median of a selectable metric and an also selectable percentage value.
 	"Mark & use": Outliers are marked, but all runs will be used for the aggregation.
-	"Mark & replace": If outliers exist, you have to do additional runs to replace them. Aggregation triggers when you have a full history without outliers. 
+	"Mark & replace": If outliers exist, you have to do additional runs to replace them. Aggregation triggers when you have a full history without outliers.  
+
+Overlay items options  
+Here you can set colors, limits and font sizes for each individual overlay entry. The currently selected entry is always displayed at the top.  
+If you want to apply one or more of these settings to multiple entries, e.g. red color above a limit of 95 for all CPU thread loads, you can set them for one entry and then click on the "Sensor type" button at the bottom right side.
+This will apply the settings for all entries that are CPU loads. The same is possible for entries with the same group name, e.g. if you want a certain group color for all entries with group name X.
+The group name or sensor type for which settings are applied is always displayed next to the buttons.  
+At the bottom left side you can set separators for all currently used group names, setting one separator for a group results in an empty line above that group.
 
 ## Analysis view
 This is where you can analyse the captures you made one by one.
 
-For the graphs you can choose between frametime graphs, FPS graphs and L-shapes.
+At the tops you can choose between frametime graphs, FPS graphs and L-shapes.  
+For the frametime graphs you can set a y-axis scale so that you are always looking at the same ms range for each record.  
+For the FPS graphs you can choose a filter mode so that you can either see the raw FPS data or a time based average filter to see a more clear FPS trendline.
 Below that you have your performance parameters like min, max, avg and percentiles on the left.  
 On the right you have three tabs, the first one is a pie chart which shows the amount of time you had stuttering (frametimes above 2.5x average(default)), the second one is a diagramm where you can see how many frames were below or above specific FPS thresholds.
 If you chose to log sensor data for a record, two additional options are enabled: You can see the min, avg and max values of various sensors over the course of the benchmark as well as adding additional graphs to show you CPU and GPU load directly in the frametime chart.  
-At the bottom is a toolbar where you can change the performance parameters, toggle the additional sensor data graphs, remove unusual outliers from the graphs and activate a range slider.
-On the very right of the page, there is also a "System info" expander which shows all the HW and SW information available for the selected benchmark.
+At the bottom is a toolbar where you can change the performance parameters, toggle the additional sensor data graphs, remove unusual outliers from the graphs and activate a range slider that you can also use to cut a record and saving it as a new file.
+On the very right side of the page, there is a "System info" expander which shows all the HW and SW information available for the selected benchmark.
 
 ## Aggregation view
 Here you can manually aggregate records that were already saved.
@@ -126,11 +144,12 @@ The first tab shows you the records as bar charts.
 If you compare records from just a single game, this game is set as a title above the diagramm. If you compare records from multiple games, the names are labeled on the bars.
 In addition you have two adjustable contexts that are set as labels for each record.
 At the bottom is a toolbar where you can change the sorting and adjust the displayed metrics aswell as the contexts.  
+For screenshot purposes you can activate "Custom title" to type in a title at the top yourself.
 The "Grouping" toggle switches between two sorting modes:  
 off-> all records are sorted by FPS  
 on-> records are sorted by game, then by FPS  
 
-The second tab shows you the frametime graphs and L-shapes.  
+The second tab shows you the frametime + FPS graphs and L-shapes.  
 You can highlight the graphs with a mousover in the comparison list and also change their color or hide them.
 The toolbar now shows you the options to activate the range slider and the context legend for the frametime graphs. The context setting is shared between the two tabs.
 
@@ -198,6 +217,6 @@ This doesn't affect any processes you already have on your list. If our online l
 * Solution Platform x64
 
 # Dev roadmap
-* Enhancements (new RTSS overlay features, second comparison context)
+* Enhancements
 
 
