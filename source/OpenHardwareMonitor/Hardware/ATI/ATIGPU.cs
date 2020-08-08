@@ -25,8 +25,8 @@ namespace OpenHardwareMonitor.Hardware.ATI
         private readonly Sensor temperatureMemory;
         private readonly Sensor temperatureVrmCore;
         private readonly Sensor temperatureVrmMemory;
-        private readonly Sensor temperatureVrmMemory0;
-        private readonly Sensor temperatureVrmMemory1;
+        //private readonly Sensor temperatureVrmMemory0;
+        //private readonly Sensor temperatureVrmMemory1;
         private readonly Sensor temperatureLiquid;
         private readonly Sensor temperaturePlx;
         private readonly Sensor temperatureHotSpot;
@@ -76,10 +76,10 @@ namespace OpenHardwareMonitor.Hardware.ATI
               new Sensor("GPU VRM Core", 2, SensorType.Temperature, this, settings);
             this.temperatureVrmMemory =
               new Sensor("GPU VRM Memory", 3, SensorType.Temperature, this, settings);
-            this.temperatureVrmMemory0 =
-              new Sensor("GPU VRM Memory #1", 4, SensorType.Temperature, this, settings);
-            this.temperatureVrmMemory1 =
-              new Sensor("GPU VRM Memory #2", 5, SensorType.Temperature, this, settings);
+            //this.temperatureVrmMemory0 =
+            //  new Sensor("GPU VRM Memory #1", 4, SensorType.Temperature, this, settings);
+            //this.temperatureVrmMemory1 =
+            //  new Sensor("GPU VRM Memory #2", 5, SensorType.Temperature, this, settings);
             this.temperatureVrmSoc =
               new Sensor("GPU VRM SOC", 6, SensorType.Temperature, this, settings);
             this.temperatureLiquid =
@@ -328,8 +328,8 @@ namespace OpenHardwareMonitor.Hardware.ATI
                 GetPMLog(data, ADLSensorType.TEMPERATURE_MEM, temperatureMemory);
                 GetPMLog(data, ADLSensorType.TEMPERATURE_VRVDDC, temperatureVrmCore);
                 GetPMLog(data, ADLSensorType.TEMPERATURE_VRMVDD, temperatureVrmMemory);
-                GetPMLog(data, ADLSensorType.TEMPERATURE_VRMVDD0, temperatureVrmMemory0);
-                GetPMLog(data, ADLSensorType.TEMPERATURE_VRMVDD1, temperatureVrmMemory1);
+                //GetPMLog(data, ADLSensorType.TEMPERATURE_VRMVDD0, temperatureVrmMemory0);
+                //GetPMLog(data, ADLSensorType.TEMPERATURE_VRMVDD1, temperatureVrmMemory1);
                 GetPMLog(data, ADLSensorType.TEMPERATURE_VRSOC, temperatureVrmSoc);
                 GetPMLog(data, ADLSensorType.TEMPERATURE_LIQUID, temperatureLiquid);
                 GetPMLog(data, ADLSensorType.TEMPERATURE_PLX, temperaturePlx);
