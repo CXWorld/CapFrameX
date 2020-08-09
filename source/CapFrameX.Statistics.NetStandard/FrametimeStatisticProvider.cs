@@ -97,26 +97,33 @@ namespace CapFrameX.Statistics.NetStandard
             return sequence.Quantile(pQuantile);
         }
 
-        public double GetPAverageLowSequence(IList<double> sequence, double pQuantile)
+        /// <summary>
+        /// Equivalent x% low metric definition to MSI Afterburner
+        /// </summary>
+        /// <param name="sequence"></param>
+        /// <param name="pQuantile"></param>
+        /// <returns></returns>
+        public double GetPercentageHighSequence(IList<double> sequence, double pQuantile)
         {
-            var pQuantileValue = sequence.Quantile(pQuantile);
-            var subSequence = sequence.Where(element => element <= pQuantileValue);
-
-            if (!subSequence.Any())
+            if (!sequence.Any())
                 return double.NaN;
 
-            return subSequence.Average();
-        }
+            var sequenceSorted = sequence.OrderByDescending(x => x).ToArray();
+            var totelTime = sequence.Sum();
+            var percentLowTime = totelTime * (1 - pQuantile);
+            var lowTimeSum = 0d;
+            var percentLowIndex = 0;
 
-        public double GetPAverageHighSequence(IList<double> sequence, double pQuantile)
-        {
-            var pQuantileValue = sequence.Quantile(pQuantile);
-            var subSequence = sequence.Where(element => element >= pQuantileValue);
+            for (int i = 0; i < sequenceSorted.Length; i++)
+            {
+                lowTimeSum += sequenceSorted[i];
+                percentLowIndex = i;
 
-            if (!subSequence.Any())
-                return double.NaN;
+                if (lowTimeSum >= percentLowTime)
+                    break;
+            }
 
-            return subSequence.Average();
+            return sequenceSorted[percentLowIndex];
         }
 
         /// <summary>
@@ -168,10 +175,10 @@ namespace CapFrameX.Statistics.NetStandard
                     metricValue = GetPQuantileSequence(fps, 0.001);
                     break;
                 case EMetric.OnePercentLow:
-                    metricValue = 1000 / GetPAverageHighSequence(sequence, 1 - 0.01);
+                    metricValue = 1000 / GetPercentageHighSequence(sequence, 1 - 0.01);
                     break;
                 case EMetric.ZerodotOnePercentLow:
-                    metricValue = 1000 / GetPAverageHighSequence(sequence, 1 - 0.001);
+                    metricValue = 1000 / GetPercentageHighSequence(sequence, 1 - 0.001);
                     break;
                 case EMetric.Min:
                     fps = sequence.Select(ft => 1000 / ft).ToList();

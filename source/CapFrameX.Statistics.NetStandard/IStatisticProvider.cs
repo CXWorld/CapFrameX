@@ -17,9 +17,7 @@ namespace CapFrameX.Statistics.NetStandard
 
         double GetPQuantileSequence(IList<double> sequence, double pQuantile);
 
-        double GetPAverageLowSequence(IList<double> sequence, double pQuantile);
-
-        double GetPAverageHighSequence(IList<double> sequence, double pQuantile);
+        double GetPercentageHighSequence(IList<double> sequence, double pQuantile);
 
         double GetFpsMetricValue(IList<double> sequence, EMetric metric);
 
