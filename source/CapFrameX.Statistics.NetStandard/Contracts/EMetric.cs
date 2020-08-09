@@ -32,10 +32,10 @@ namespace CapFrameX.Statistics.NetStandard.Contracts
 		[Description("0.1% percentile")]
 		[ShortDescription("P0.1")]
 		P0dot1 = 9,
-		[Description("1% low average")]
+		[Description("1% low integral")]
 		[ShortDescription("1% Low")]
 		OnePercentLow = 10,
-		[Description("0.1% low average")]
+		[Description("0.1% low integral")]
 		[ShortDescription("0.1% Low")]
 		ZerodotOnePercentLow = 11,
 		[Description("Minimum")]
