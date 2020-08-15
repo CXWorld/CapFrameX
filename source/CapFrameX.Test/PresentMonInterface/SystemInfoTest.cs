@@ -26,9 +26,9 @@ namespace CapFrameX.Test.PresentMonInterface
             var category = new PerformanceCounterCategory("GPU Adapter Memory");
             var instances = category.GetInstanceNames();
 
-            PerformanceCounter dedicatedUsage = new PerformanceCounter("GPU Adapter Memory", "Dedicated Usage", instances.Last());
-            PerformanceCounter shardUsage = new PerformanceCounter("GPU Adapter Memory", "Shared Usage", instances.Last());
-            PerformanceCounter totalCommitted = new PerformanceCounter("GPU Adapter Memory", "Total Committed", instances.Last());
+            PerformanceCounter dedicatedUsage = new PerformanceCounter("GPU Adapter Memory", "Dedicated Usage", instances.First());
+            PerformanceCounter shardUsage = new PerformanceCounter("GPU Adapter Memory", "Shared Usage", instances.First());
+            PerformanceCounter totalCommitted = new PerformanceCounter("GPU Adapter Memory", "Total Committed", instances.First());
 
             while (true)
             {
