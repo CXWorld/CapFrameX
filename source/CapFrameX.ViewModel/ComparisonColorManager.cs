@@ -10,28 +10,28 @@ namespace CapFrameX.ViewModel
 		private static readonly SolidColorBrush[] _comparisonBrushes =
 			new SolidColorBrush[]
 			{
-						// CX Green
-						new SolidColorBrush(Color.FromRgb(156, 210, 0)),
-						// CX Orange
-						new SolidColorBrush(Color.FromRgb(241, 125, 32)),
-						// CX Blue
-						new SolidColorBrush(Color.FromRgb(34, 151, 243)),                
-						// Light Orange / Dark Yellow
-						new SolidColorBrush(Color.FromRgb(255, 180, 0)),
-						// Red
-						new SolidColorBrush(Color.FromRgb(200, 0, 0)),
-						// Purple
-						new SolidColorBrush(Color.FromRgb(100, 0, 160)),
-						// Pink
-						new SolidColorBrush(Color.FromRgb(220, 0, 140)),
-						// Cyan
-						new SolidColorBrush(Color.FromRgb(40, 225, 200)),
-						// Brown
-						new SolidColorBrush(Color.FromRgb(180, 130, 0)),
-						// Dark Blue
-						new SolidColorBrush(Color.FromRgb(0, 0, 180)),
-						// Black
-						new SolidColorBrush(Color.FromRgb(0, 0, 0))
+				// CX Green
+				new SolidColorBrush(Color.FromRgb(156, 210, 0)),
+				// CX Orange
+				new SolidColorBrush(Color.FromRgb(241, 125, 32)),
+				// CX Blue
+				new SolidColorBrush(Color.FromRgb(34, 151, 243)),                
+				// Light Orange / Dark Yellow
+				new SolidColorBrush(Color.FromRgb(255, 180, 0)),
+				// Red
+				new SolidColorBrush(Color.FromRgb(200, 0, 0)),
+				// Purple
+				new SolidColorBrush(Color.FromRgb(100, 0, 160)),
+				// Pink
+				new SolidColorBrush(Color.FromRgb(220, 0, 140)),
+				// Cyan
+				new SolidColorBrush(Color.FromRgb(40, 225, 200)),
+				// Brown
+				new SolidColorBrush(Color.FromRgb(180, 130, 0)),
+				// Dark Blue
+				new SolidColorBrush(Color.FromRgb(0, 0, 180)),
+				// Black
+				new SolidColorBrush(Color.FromRgb(0, 0, 0))
 			};
 
 		private readonly Dictionary<int, bool> _usedColorDictionary;
@@ -60,12 +60,29 @@ namespace CapFrameX.ViewModel
 			return _comparisonBrushes[index];
 		}
 
+		public void LockColorOnChange(SolidColorBrush color)
+		{
+			for (int i = 0; i < _comparisonBrushes.Length; i++)
+			{
+				if (_comparisonBrushes[i].Color == color.Color)
+				{
+					_usedColorDictionary[i] = true;
+					break;
+				}
+			}
+
+		}
+
 		public void FreeColor(SolidColorBrush color)
 		{
-			int index = Array.IndexOf(_comparisonBrushes, color);
-
-			if (index >= 0)
-				_usedColorDictionary[index] = false;
+			for (int i = 0; i < _comparisonBrushes.Length; i++)
+			{
+				if (_comparisonBrushes[i].Color == color.Color)
+				{ 
+					_usedColorDictionary[i] = false;
+					break;
+				}
+			}
 		}
 
 		public void FreeAllColors()

@@ -44,13 +44,14 @@ namespace CapFrameX.Webservice.Implementation.Handlers
 
 			var frametimeStatisticsProviderOptions = new FrametimeStatisticProviderOptions()
 			{
-				MovingAverageWindowSize = 1000,
+				MovingAverageWindowSize = 500,
+				IntervalAverageWindowTime = 500,
 				FpsValuesRoundingDigits = 2
 			};
 			var plotSettings = new PlotSettings();
 			var frametimeStatisticProvider = new FrametimeStatisticProvider(frametimeStatisticsProviderOptions);
 			var fpsGraphBuilder = new FpsGraphPlotBuilder(frametimeStatisticsProviderOptions, frametimeStatisticProvider);
-			fpsGraphBuilder.BuildPlotmodel(session, plotSettings, 0, 1000, ERemoveOutlierMethod.None);
+			fpsGraphBuilder.BuildPlotmodel(session, plotSettings, 0, 1000, ERemoveOutlierMethod.None, EFilterMode.RawPlusAverage);
 			var frametimeGraphBuilder = new FrametimePlotBuilder(frametimeStatisticsProviderOptions, frametimeStatisticProvider);
 			frametimeGraphBuilder.BuildPlotmodel(session, plotSettings, 0, 1000, ERemoveOutlierMethod.None);
 
@@ -91,7 +92,8 @@ namespace CapFrameX.Webservice.Implementation.Handlers
 	{
 		public int MovingAverageWindowSize { get; set; }
 		public int FpsValuesRoundingDigits { get; set; }
-	}
+        public int IntervalAverageWindowTime { get; set; }
+    }
 
 	class PlotSettings : IPlotSettings
 	{

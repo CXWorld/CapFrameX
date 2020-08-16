@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace CapFrameX.Extensions
 {
-	public static class ObjectExtensions
+    public static class ObjectExtensions
 	{
 		public static TProp GetOrFallbackOnNull<TObj, TProp>(this TObj obj, Func<TObj, TProp> propertyGetter, TProp fallback) where TObj : class
 		{

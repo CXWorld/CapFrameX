@@ -1,5 +1,6 @@
 ﻿using CapFrameX.Contracts.Data;
 using CapFrameX.Data;
+using CapFrameX.Sensor.Reporting;
 using CapFrameX.Statistics.NetStandard;
 using CapFrameX.Statistics.NetStandard.Contracts;
 using System;
@@ -58,14 +59,65 @@ namespace CapFrameX.ViewModel
 			double GeMetricValue(IList<double> sequence, EMetric metric) =>
 					_frametimeStatisticProvider.GetFpsMetricValue(sequence, metric);
 
-			wrappedComparisonRecordInfo.WrappedRecordInfo.FirstMetric
-				= GeMetricValue(frametimeTimeWindow, EMetric.Average);
+			if (SelectedFirstMetric == EMetric.CpuFpsPerWatt)
+			{
+				wrappedComparisonRecordInfo.WrappedRecordInfo.FirstMetric =
+				_frametimeStatisticProvider.GetPhysicalMetricValue(frametimeTimeWindow, EMetric.CpuFpsPerWatt,
+					 SensorReport.GetAverageCpuPower(wrappedComparisonRecordInfo.WrappedRecordInfo.Session.Runs.Select(run => run.SensorData),
+					 startTime, endTime));
+			}
+			//else if (SelectedFirstMetric == EMetric.GpuFpsPerWatt)
+			//{
+			//wrappedComparisonRecordInfo.WrappedRecordInfo.FirstMetric =
+			//    _frametimeStatisticProvider.GetPhysicalMetricValue(frametimeTimeWindow, EMetric.GpuFpsPerWatt,
+			//         SensorReport.GetAverageGpuPower(wrappedComparisonRecordInfo.WrappedRecordInfo.Session.Runs.Select(run => run.SensorData),
+			//         startTime, endTime));
+			//}
+			else
+			{ 
+				wrappedComparisonRecordInfo.WrappedRecordInfo.FirstMetric
+				= GeMetricValue(frametimeTimeWindow, SelectedFirstMetric);
+			}
 
-			wrappedComparisonRecordInfo.WrappedRecordInfo.SecondMetric
-				= GeMetricValue(frametimeTimeWindow, SelectedSecondMetric);
+			if (SelectedSecondMetric == EMetric.CpuFpsPerWatt)
+			{
+				wrappedComparisonRecordInfo.WrappedRecordInfo.SecondMetric =
+				_frametimeStatisticProvider.GetPhysicalMetricValue(frametimeTimeWindow, EMetric.CpuFpsPerWatt,
+					 SensorReport.GetAverageCpuPower(wrappedComparisonRecordInfo.WrappedRecordInfo.Session.Runs.Select(run => run.SensorData),
+					 startTime, endTime));
+			}
+			//else if (SelectedSecondMetric == EMetric.GpuFpsPerWatt)
+			//{
+			//wrappedComparisonRecordInfo.WrappedRecordInfo.SecondMetric =
+			//    _frametimeStatisticProvider.GetPhysicalMetricValue(frametimeTimeWindow, EMetric.GpuFpsPerWatt,
+			//         SensorReport.GetAverageGpuPower(wrappedComparisonRecordInfo.WrappedRecordInfo.Session.Runs.Select(run => run.SensorData),
+			//         startTime, endTime));
+			//}
+			else
+			{
+				wrappedComparisonRecordInfo.WrappedRecordInfo.SecondMetric
+					= GeMetricValue(frametimeTimeWindow, SelectedSecondMetric);
+			}
 
-			wrappedComparisonRecordInfo.WrappedRecordInfo.ThirdMetric
-				= GeMetricValue(frametimeTimeWindow, SelectedThirdMetric);
+			if (SelectedThirdMetric == EMetric.CpuFpsPerWatt)
+			{
+				wrappedComparisonRecordInfo.WrappedRecordInfo.ThirdMetric =
+			   _frametimeStatisticProvider.GetPhysicalMetricValue(frametimeTimeWindow, EMetric.CpuFpsPerWatt,
+					SensorReport.GetAverageCpuPower(wrappedComparisonRecordInfo.WrappedRecordInfo.Session.Runs.Select(run => run.SensorData),
+					startTime, endTime));
+			}
+			//else if (SelectedSecondMetric == EMetric.GpuFpsPerWatt)
+			//{
+			//wrappedComparisonRecordInfo.WrappedRecordInfo.ThirdMetric =
+			//  _frametimeStatisticProvider.GetPhysicalMetricValue(frametimeTimeWindow, EMetric.GpuFpsPerWatt,
+			//       SensorReport.GetAverageGpuPower(wrappedComparisonRecordInfo.WrappedRecordInfo.Session.Runs.Select(run => run.SensorData),
+			//       startTime, endTime));
+			////}
+			else
+			{
+				wrappedComparisonRecordInfo.WrappedRecordInfo.ThirdMetric
+					= GeMetricValue(frametimeTimeWindow, SelectedThirdMetric);
+			}
 		}
 
 		private void InsertComparisonRecordsSorted(ComparisonRecordInfoWrapper wrappedComparisonRecordInfo)
@@ -85,13 +137,27 @@ namespace CapFrameX.ViewModel
 
 			if (UseComparisonGrouping)
 			{
-				orderedList = IsSortModeAscending ? list.OrderBy(x => x.WrappedRecordInfo.Game).ThenBy(x => x.WrappedRecordInfo.FirstMetric).ToList() :
-					list.OrderBy(x => x.WrappedRecordInfo.Game).ThenByDescending(x => x.WrappedRecordInfo.FirstMetric).ToList();
+				orderedList = IsSortModeAscending ? list.OrderBy(x => x.WrappedRecordInfo.Game).ThenBy(x =>
+					SelectedSortMetric == "First" ? x.WrappedRecordInfo.FirstMetric :
+					SelectedSortMetric == "Second" ? x.WrappedRecordInfo.SecondMetric :
+					x.WrappedRecordInfo.ThirdMetric).ToList() 
+					:
+					list.OrderBy(x => x.WrappedRecordInfo.Game).ThenByDescending(x =>
+					SelectedSortMetric == "First" ? x.WrappedRecordInfo.FirstMetric :
+					SelectedSortMetric == "Second" ? x.WrappedRecordInfo.SecondMetric :
+					x.WrappedRecordInfo.ThirdMetric).ToList();
 			}
 			else
 			{
-				orderedList = IsSortModeAscending ? list.OrderBy(x => x.WrappedRecordInfo.FirstMetric).ToList() :
-					list.OrderByDescending(x => x.WrappedRecordInfo.FirstMetric).ToList();
+				orderedList = IsSortModeAscending ? list.OrderBy(x =>
+					SelectedSortMetric == "First" ? x.WrappedRecordInfo.FirstMetric :
+					SelectedSortMetric == "Second" ? x.WrappedRecordInfo.SecondMetric :
+					x.WrappedRecordInfo.ThirdMetric).ToList() 
+					:
+					list.OrderByDescending(x =>
+					SelectedSortMetric == "First" ? x.WrappedRecordInfo.FirstMetric :
+					SelectedSortMetric == "Second" ? x.WrappedRecordInfo.SecondMetric :
+					x.WrappedRecordInfo.ThirdMetric).ToList();
 			}
 
 			if (orderedList != null)
@@ -116,7 +182,7 @@ namespace CapFrameX.ViewModel
 			if (HasUniqueGameNames)
 				CurrentGameName = ComparisonRecords.First().WrappedRecordInfo.Game;
 
-			ComparisonModel.InvalidatePlot(true);
+			ComparisonFrametimesModel.InvalidatePlot(true);
 		}
 
 		private bool GetHasUniqueGameNames()
@@ -153,7 +219,7 @@ namespace CapFrameX.ViewModel
 
 			RemainingRecordingTime = "0.0 s";
 			UpdateRangeSliderParameter();
-			ComparisonModel.InvalidatePlot(true);
+			ComparisonFrametimesModel.InvalidatePlot(true);
 		}
 
 		public void SortComparisonItems()
@@ -166,14 +232,28 @@ namespace CapFrameX.ViewModel
 			if (UseComparisonGrouping)
 			{
 				comparisonRecordList = IsSortModeAscending ? ComparisonRecords.ToList()
-					.Select(info => info.Clone()).OrderBy(x => x.WrappedRecordInfo.Game).ThenBy(x => x.WrappedRecordInfo.FirstMetric) :
-					ComparisonRecords.ToList().Select(info => info.Clone()).OrderBy(x => x.WrappedRecordInfo.Game).ThenByDescending(x => x.WrappedRecordInfo.FirstMetric);
+					.Select(info => info.Clone()).OrderBy(x => x.WrappedRecordInfo.Game).ThenBy(x =>
+					SelectedSortMetric == "First" ? x.WrappedRecordInfo.FirstMetric :
+					SelectedSortMetric == "Second" ? x.WrappedRecordInfo.SecondMetric :
+					x.WrappedRecordInfo.ThirdMetric)
+					:
+					ComparisonRecords.ToList().Select(info => info.Clone()).OrderBy(x => x.WrappedRecordInfo.Game).ThenByDescending(x =>
+					SelectedSortMetric == "First" ? x.WrappedRecordInfo.FirstMetric :
+					SelectedSortMetric == "Second" ? x.WrappedRecordInfo.SecondMetric :
+					x.WrappedRecordInfo.ThirdMetric);
 			}
 			else
 			{
 				comparisonRecordList = IsSortModeAscending ? ComparisonRecords.ToList()
-					.Select(info => info.Clone()).OrderBy(x => x.WrappedRecordInfo.FirstMetric) :
-					ComparisonRecords.ToList().Select(info => info.Clone()).OrderByDescending(x => x.WrappedRecordInfo.FirstMetric);
+					.Select(info => info.Clone()).OrderBy(x =>
+					SelectedSortMetric == "First" ? x.WrappedRecordInfo.FirstMetric :
+					SelectedSortMetric == "Second" ? x.WrappedRecordInfo.SecondMetric :
+					x.WrappedRecordInfo.ThirdMetric) 
+					:
+					ComparisonRecords.ToList().Select(info => info.Clone()).OrderByDescending(x =>
+					SelectedSortMetric == "First" ? x.WrappedRecordInfo.FirstMetric :
+					SelectedSortMetric == "Second" ? x.WrappedRecordInfo.SecondMetric :
+					x.WrappedRecordInfo.ThirdMetric);
 			}
 
 			if (comparisonRecordList != null)

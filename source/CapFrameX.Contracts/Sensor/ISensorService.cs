@@ -14,8 +14,10 @@ namespace CapFrameX.Contracts.Sensor
         string GetGpuDriverVersion();
         string GetCpuName();
         string GetGpuName();
+        string GetSensorTypeString(IOverlayEntry entry);
         void SetLoggingInterval(TimeSpan timeSpan);
         void SetOSDInterval(TimeSpan timeSpan);
+        // void ResetSensorOverlayEntries();
         IObservable<IOverlayEntry[]> OnDictionaryUpdated { get; }
     }
 }

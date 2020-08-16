@@ -2,16 +2,17 @@
 /////////////////////////////////////////////////////////////////////////////
 // created by Unwinder - modified by ZeroStrat
 /////////////////////////////////////////////////////////////////////////////
+
 #include "stdafx.h"
 #include "RTSSSharedMemory.h"
 #include "RTSSCoreControl.h"
 #include "GroupedString.h"
-/////////////////////////////////////////////////////////////////////////////
+
 #include <shlwapi.h>
 #include <float.h>
 #include <io.h>
+#include <tuple>
 
-/////////////////////////////////////////////////////////////////////////////
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -40,31 +41,29 @@ CString RTSSCoreControl::GetApiInfo(DWORD processId)
 	if (hMapFile)
 	{
 		LPVOID pMapAddr = MapViewOfFile(hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, 0);
+
 		LPRTSS_SHARED_MEMORY pMem = (LPRTSS_SHARED_MEMORY)pMapAddr;
 
 		if (pMem)
 		{
-			if ((pMem->dwSignature == 'RTSS') &&
-				(pMem->dwVersion >= 0x00020000))
+			if ((pMem->dwSignature == 'RTSS') && (pMem->dwVersion >= 0x00020000))
 			{
-				RTSS_SHARED_MEMORY::RTSS_SHARED_MEMORY_APP_ENTRY* arrAppInfos = pMem->arrApp;
-
-				for (size_t i = 0; i < 256; i++)
+				for (DWORD dwEntry = 0; dwEntry < pMem->dwAppArrSize; dwEntry++)
 				{
-					RTSS_SHARED_MEMORY::RTSS_SHARED_MEMORY_APP_ENTRY curAppInfos = arrAppInfos[i];
+					RTSS_SHARED_MEMORY::LPRTSS_SHARED_MEMORY_APP_ENTRY pEntry = (RTSS_SHARED_MEMORY::LPRTSS_SHARED_MEMORY_APP_ENTRY)((LPBYTE)pMem + pMem->dwAppArrOffset + dwEntry * pMem->dwAppEntrySize);
 
-					if (curAppInfos.dwProcessID == processId)
+					if (pEntry->dwProcessID == processId)
 					{
-						api = (curAppInfos.dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_OGL ? "OpenGL" 
-							: (curAppInfos.dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_DD ? "DirectDraw"
-							: (curAppInfos.dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_D3D8 ? "DX8"
-							: (curAppInfos.dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_D3D9 ? "DX9"
-							: (curAppInfos.dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_D3D9EX ? "DX9 EX"
-							: (curAppInfos.dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_D3D10 ? "DX10"
-							: (curAppInfos.dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_D3D11 ? "DX11"
-							: (curAppInfos.dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_D3D12 ? "DX12"
-							: (curAppInfos.dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_D3D12AFR ? "DX12 AFR"
-							: (curAppInfos.dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_VULKAN ? "Vulkan"
+						api = (pEntry->dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_OGL ? "OpenGL"
+							: (pEntry->dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_DD ? "DirectDraw"
+							: (pEntry->dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_D3D8 ? "DX8"
+							: (pEntry->dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_D3D9 ? "DX9"
+							: (pEntry->dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_D3D9EX ? "DX9 EX"
+							: (pEntry->dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_D3D10 ? "DX10"
+							: (pEntry->dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_D3D11 ? "DX11"
+							: (pEntry->dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_D3D12 ? "DX12"
+							: (pEntry->dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_D3D12AFR ? "DX12 AFR"
+							: (pEntry->dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_VULKAN ? "Vulkan"
 							: "unknown";
 
 						break;
@@ -81,7 +80,104 @@ CString RTSSCoreControl::GetApiInfo(DWORD processId)
 	return api;
 }
 
-/////////////////////////////////////////////////////////////////////////////
+std::vector<float> RTSSCoreControl::GetCurrentFramerate(DWORD processId)
+{
+	std::vector<float> result;
+	float currentFramerate = 0;
+	float currentFrametime = 0;
+	LPDWORD lpdwProcessiD = 0;
+	HANDLE hMapFile = OpenFileMapping(FILE_MAP_ALL_ACCESS, FALSE, "RTSSSharedMemoryV2");
+
+	if (hMapFile)
+	{
+		LPVOID pMapAddr = MapViewOfFile(hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, 0);
+
+		LPRTSS_SHARED_MEMORY pMem = (LPRTSS_SHARED_MEMORY)pMapAddr;
+
+		if (pMem)
+		{
+			if ((pMem->dwSignature == 'RTSS') && (pMem->dwVersion >= 0x00020000))
+			{
+				for (DWORD dwEntry = 0; dwEntry < pMem->dwAppArrSize; dwEntry++)
+				{
+					RTSS_SHARED_MEMORY::LPRTSS_SHARED_MEMORY_APP_ENTRY pEntry = (RTSS_SHARED_MEMORY::LPRTSS_SHARED_MEMORY_APP_ENTRY)((LPBYTE)pMem + pMem->dwAppArrOffset + dwEntry * pMem->dwAppEntrySize);
+
+					if (pEntry->dwProcessID)
+					{
+						if (pEntry->dwProcessID == processId)
+						{
+							currentFrametime = pEntry->dwStatFrameTimeBuf[(pEntry->dwStatFrameTimeBufPos - 1) & 1023] / 1000.0f;
+							currentFramerate = pEntry->dwStatFrameTimeBufFramerate / 10.0f;
+							break;
+						}
+					}
+				}
+			}
+
+			UnmapViewOfFile(pMapAddr);
+		}
+
+		CloseHandle(hMapFile);
+	}
+
+	result.push_back(currentFramerate);
+	result.push_back(currentFrametime);
+	return result;
+}
+
+std::vector<float> RTSSCoreControl::GetCurrentFramerateFromForegroundWindow()
+{
+	std::vector<float> result;
+	float currentFramerate = 0;
+	float currentFrametime = 0;
+	LPDWORD lpdwProcessiD = 0;
+	HANDLE hMapFile = OpenFileMapping(FILE_MAP_ALL_ACCESS, FALSE, "RTSSSharedMemoryV2");
+
+	if (hMapFile)
+	{
+		LPVOID pMapAddr = MapViewOfFile(hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, 0);
+
+		LPRTSS_SHARED_MEMORY pMem = (LPRTSS_SHARED_MEMORY)pMapAddr;
+
+		if (pMem)
+		{
+			if ((pMem->dwSignature == 'RTSS') && (pMem->dwVersion >= 0x00020000))
+			{
+				HWND	hWnd = GetForegroundWindow();
+				DWORD	dwProcessID = 0;
+
+				if (hWnd)
+					GetWindowThreadProcessId(hWnd, &dwProcessID);
+
+				for (DWORD dwEntry = 0; dwEntry < pMem->dwAppArrSize; dwEntry++)
+				{
+					RTSS_SHARED_MEMORY::LPRTSS_SHARED_MEMORY_APP_ENTRY pEntry = (RTSS_SHARED_MEMORY::LPRTSS_SHARED_MEMORY_APP_ENTRY)((LPBYTE)pMem + pMem->dwAppArrOffset + dwEntry * pMem->dwAppEntrySize);
+
+					if (pEntry->dwProcessID)
+					{
+						if (pEntry->dwProcessID == dwProcessID)
+						{
+							currentFrametime = pEntry->dwStatFrameTimeBuf[(pEntry->dwStatFrameTimeBufPos - 1) & 1023] / 1000.0f;
+							currentFramerate = pEntry->dwStatFrameTimeBufFramerate / 10.0f;
+						}
+
+						if ((dwProcessID == pEntry->dwProcessID) || !dwProcessID)
+							break;
+					}
+				}
+			}
+
+			UnmapViewOfFile(pMapAddr);
+		}
+
+		CloseHandle(hMapFile);
+	}
+
+	result.push_back(currentFramerate);
+	result.push_back(currentFrametime);
+	return result;
+}
+
 DWORD RTSSCoreControl::GetSharedMemoryVersion()
 {
 	DWORD dwResult = 0;
@@ -107,7 +203,7 @@ DWORD RTSSCoreControl::GetSharedMemoryVersion()
 
 	return dwResult;
 }
-/////////////////////////////////////////////////////////////////////////////
+
 DWORD RTSSCoreControl::EmbedGraph(DWORD dwOffset, FLOAT* lpBuffer, DWORD dwBufferPos, DWORD dwBufferSize, LONG dwWidth, LONG dwHeight, LONG dwMargin, FLOAT fltMin, FLOAT fltMax, DWORD dwFlags)
 {
 	DWORD dwResult = 0;
@@ -200,7 +296,7 @@ DWORD RTSSCoreControl::EmbedGraph(DWORD dwOffset, FLOAT* lpBuffer, DWORD dwBuffe
 
 	return dwResult;
 }
-/////////////////////////////////////////////////////////////////////////////
+
 BOOL RTSSCoreControl::UpdateOSD(LPCSTR lpText)
 {
 	BOOL bResult = FALSE;
@@ -282,7 +378,7 @@ BOOL RTSSCoreControl::UpdateOSD(LPCSTR lpText)
 
 	return bResult;
 }
-/////////////////////////////////////////////////////////////////////////////
+
 void RTSSCoreControl::ReleaseOSD()
 {
 	HANDLE hMapFile = OpenFileMapping(FILE_MAP_ALL_ACCESS, FALSE, "RTSSSharedMemoryV2");
@@ -316,7 +412,7 @@ void RTSSCoreControl::ReleaseOSD()
 		CloseHandle(hMapFile);
 	}
 }
-/////////////////////////////////////////////////////////////////////////////
+
 DWORD RTSSCoreControl::GetClientsNum()
 {
 	DWORD dwClients = 0;
@@ -578,12 +674,11 @@ void RTSSCoreControl::AddOverlayEntry(CGroupedString* groupedString, OverlayEntr
 
 			if (groupName != "")
 			{
-				groupName = "<C2>" + groupName + " <C>";
-				groupedString->Add("<A=0><C3> " + entry->Value + "<C><A>", groupName, "\n", " ");
+				groupedString->Add(entry->Value, groupName, "\n", " ");
 			}
 			else
 			{
-				groupedString->Add("<A=0><C3>" + entry->Value + "<C><A>", groupName, "\n", " ");
+				groupedString->Add(entry->Value, "", "\n", " ");
 			}
 		}
 	}
@@ -592,15 +687,15 @@ void RTSSCoreControl::AddOverlayEntry(CGroupedString* groupedString, OverlayEntr
 		if (entry->ShowOnOverlay && IsCaptureTimerActive)
 		{
 			CString groupName = entry->GroupName;
-			CString value = entry->Value;
 
 			if (groupName != "")
 			{
-				groupName = "<C2>" + groupName + " <C>";
-				groupedString->Add("<C4> " + value + "<C>", groupName, "\n", " ");
+				groupedString->Add(entry->Value, groupName, "\n", " ");
 			}
 			else
-				groupedString->Add("<C4>" + value + "<C>", groupName, "\n", " ");
+			{
+				groupedString->Add(entry->Value, "", "\n", " ");
+			}
 		}
 	}
 	else if (entry->Identifier == "Framerate")
@@ -609,7 +704,7 @@ void RTSSCoreControl::AddOverlayEntry(CGroupedString* groupedString, OverlayEntr
 		{
 			if (bFormatTagsSupported && m_bFormatTags)
 			{
-				groupedString->Add("<A=-5><C1><FR><C><A><A=5><S1><C1>FPS<C><S><A>", "<C1><APP> <C>", "\n", m_bFormatTags ? " " : ", ");
+				groupedString->Add(entry->Value, entry->GroupName, "\n", m_bFormatTags ? " " : ", ");
 				//print application-specific 3D API, framerate and frametime using tags
 			}
 			else
@@ -625,7 +720,7 @@ void RTSSCoreControl::AddOverlayEntry(CGroupedString* groupedString, OverlayEntr
 		{
 			if (bFormatTagsSupported && m_bFormatTags)
 			{
-				groupedString->Add("<A=-5><C1><FT><C><A><A=5><S1><C1>ms<C><S><A>", "<C1><APP> <C>", "\n", m_bFormatTags ? " " : ", ");
+				groupedString->Add(entry->Value, entry->GroupName, "\n", m_bFormatTags ? " " : ", ");
 				//print application-specific 3D API, framerate and frametime using tags
 			}
 			else
@@ -640,20 +735,19 @@ void RTSSCoreControl::AddOverlayEntry(CGroupedString* groupedString, OverlayEntr
 		if (entry->ShowOnOverlay)
 		{
 			CString groupName = entry->GroupName;
-			CString value = entry->Value;
 
 			if (groupName != "")
 			{
-				groupName = "<C2>" + groupName + " <C>";
-				groupedString->Add("<C4> " + value + "<C>", groupName, "\n", " ");
+				groupedString->Add(entry->Value, groupName, "\n", " ");
 			}
 			else
-				groupedString->Add("<C4>" + value + "<C>", groupName, "\n", " ");
+			{
+				groupedString->Add(entry->Value, "", "\n", " ");
+			}
 		}
 	}
 }
 
-/////////////////////////////////////////////////////////////////////////////
 void RTSSCoreControl::IncProfileProperty(LPCSTR lpProfile, LPCSTR lpProfileProperty, LONG dwIncrement)
 {
 	if (m_profileInterface.IsInitialized())
@@ -672,7 +766,7 @@ void RTSSCoreControl::IncProfileProperty(LPCSTR lpProfile, LPCSTR lpProfilePrope
 		}
 	}
 }
-/////////////////////////////////////////////////////////////////////////////
+
 void RTSSCoreControl::SetProfileProperty(LPCSTR lpProfile, LPCSTR lpProfileProperty, DWORD dwProperty)
 {
 	if (m_profileInterface.IsInitialized())
@@ -683,4 +777,3 @@ void RTSSCoreControl::SetProfileProperty(LPCSTR lpProfile, LPCSTR lpProfilePrope
 		m_profileInterface.UpdateProfiles();
 	}
 }
-/////////////////////////////////////////////////////////////////////////////

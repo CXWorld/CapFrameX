@@ -6,7 +6,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using CapFrameX.Extensions.NetStandard;
-using System.Net.Http.Headers;
 
 namespace CapFrameX.Statistics.NetStandard
 {
@@ -22,16 +21,17 @@ namespace CapFrameX.Statistics.NetStandard
             _options = options;
         }
 
-        public double GetAdaptiveStandardDeviation(IList<double> sequence, int windowSize)
+        public double GetAdaptiveStandardDeviation(IList<double> sequence, double timeWindow)
         {
-            var movingAverage = sequence.MovingAverage(windowSize).ToList();
+            var timeBasedMovingAverageFilter = new TimeBasedMovingAverage(timeWindow);
+            var timeBasedMovingAverage = timeBasedMovingAverageFilter.ProcessSamples(sequence);
 
-            if (movingAverage.Count != sequence.Count)
+            if (timeBasedMovingAverage.Count != sequence.Count)
             {
                 throw new InvalidDataException("Different sample count data vs. filtered data");
             }
 
-            var sumResidualSquares = sequence.Select((val, i) => Math.Pow(val - movingAverage[i], 2)).Sum();
+            var sumResidualSquares = sequence.Select((val, i) => Math.Pow(val - timeBasedMovingAverage[i], 2)).Sum();
             return Math.Sqrt(sumResidualSquares / (sequence.Count - 1));
         }
 
@@ -53,7 +53,8 @@ namespace CapFrameX.Statistics.NetStandard
 
         public IList<double> GetMovingAverage(IList<double> sequence)
         {
-            return sequence.MovingAverage(_options.MovingAverageWindowSize).ToList();
+            var timeBasedMovingAverageFilter = new TimeBasedMovingAverage(_options.IntervalAverageWindowTime);
+            return timeBasedMovingAverageFilter.ProcessSamples(sequence);
         }
 
         public IList<double> GetOutlierAdjustedSequence(IList<double> sequence, ERemoveOutlierMethod method)
@@ -96,26 +97,33 @@ namespace CapFrameX.Statistics.NetStandard
             return sequence.Quantile(pQuantile);
         }
 
-        public double GetPAverageLowSequence(IList<double> sequence, double pQuantile)
+        /// <summary>
+        /// Equivalent x% low metric definition to MSI Afterburner
+        /// </summary>
+        /// <param name="sequence"></param>
+        /// <param name="pQuantile"></param>
+        /// <returns></returns>
+        public double GetPercentageHighSequence(IList<double> sequence, double pQuantile)
         {
-            var pQuantileValue = sequence.Quantile(pQuantile);
-            var subSequence = sequence.Where(element => element <= pQuantileValue);
-
-            if (!subSequence.Any())
+            if (!sequence.Any())
                 return double.NaN;
 
-            return subSequence.Average();
-        }
+            var sequenceSorted = sequence.OrderByDescending(x => x).ToArray();
+            var totelTime = sequence.Sum();
+            var percentLowTime = totelTime * (1 - pQuantile);
+            var lowTimeSum = 0d;
+            var percentLowIndex = 0;
 
-        public double GetPAverageHighSequence(IList<double> sequence, double pQuantile)
-        {
-            var pQuantileValue = sequence.Quantile(pQuantile);
-            var subSequence = sequence.Where(element => element >= pQuantileValue);
+            for (int i = 0; i < sequenceSorted.Length; i++)
+            {
+                lowTimeSum += sequenceSorted[i];
+                percentLowIndex = i;
 
-            if (!subSequence.Any())
-                return double.NaN;
+                if (lowTimeSum >= percentLowTime)
+                    break;
+            }
 
-            return subSequence.Average();
+            return sequenceSorted[percentLowIndex];
         }
 
         /// <summary>
@@ -167,10 +175,10 @@ namespace CapFrameX.Statistics.NetStandard
                     metricValue = GetPQuantileSequence(fps, 0.001);
                     break;
                 case EMetric.OnePercentLow:
-                    metricValue = 1000 / GetPAverageHighSequence(sequence, 1 - 0.01);
+                    metricValue = 1000 / GetPercentageHighSequence(sequence, 1 - 0.01);
                     break;
                 case EMetric.ZerodotOnePercentLow:
-                    metricValue = 1000 / GetPAverageHighSequence(sequence, 1 - 0.001);
+                    metricValue = 1000 / GetPercentageHighSequence(sequence, 1 - 0.001);
                     break;
                 case EMetric.Min:
                     fps = sequence.Select(ft => 1000 / ft).ToList();
@@ -178,10 +186,35 @@ namespace CapFrameX.Statistics.NetStandard
                     break;
                 case EMetric.AdaptiveStd:
                     fps = sequence.Select(ft => 1000 / ft).ToList();
-                    metricValue = GetAdaptiveStandardDeviation(fps, _options.MovingAverageWindowSize);
+                    metricValue = GetAdaptiveStandardDeviation(fps, _options.IntervalAverageWindowTime);
                     break;
                 default:
                     metricValue = double.NaN;
+                    break;
+            }
+
+            return Math.Round(metricValue, _options.FpsValuesRoundingDigits);
+        }
+
+        public double GetPhysicalMetricValue(IList<double> sequence, EMetric metric, double coefficient)
+        {
+            double metricValue;
+            switch (metric)
+            {
+                case EMetric.CpuFpsPerWatt:
+                    if (coefficient > 0)
+                        metricValue = (sequence.Count * 1000 / sequence.Sum()) / coefficient;
+                    else
+                        metricValue = 0;
+                    break;
+                //case EMetric.GpuFpsPerWatt:
+                //if (coefficient > 0)
+                //    metricValue = (sequence.Count * 1000 / sequence.Sum()) / coefficient;
+                //else
+                //    metricValue = double.NaN;
+                //break;
+                default:
+                    metricValue = 0;
                     break;
             }
 

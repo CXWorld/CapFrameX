@@ -76,8 +76,8 @@
     <Reference Include="MaterialDesignThemes.Wpf, Version=2.6.0.325, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\MaterialDesignThemes.2.6.0\lib\net45\MaterialDesignThemes.Wpf.dll</HintPath>
     </Reference>
-    <Reference Include="MathNet.Filtering, Version=0.6.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\MathNet.Filtering.0.6.0\lib\net461\MathNet.Filtering.dll</HintPath>
+    <Reference Include="MathNet.Filtering, Version=0.7.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\MathNet.Filtering.0.7.0\lib\net461\MathNet.Filtering.dll</HintPath>
     </Reference>
     <Reference Include="MathNet.Numerics, Version=4.9.1.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\MathNet.Numerics.4.9.1\lib\net461\MathNet.Numerics.dll</HintPath>
@@ -172,6 +172,8 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ReportViewModel.cs" />
     <Compile Include="StateViewModel.cs" />
+    <Compile Include="SubModels\OverlayGroupControl.cs" />
+    <Compile Include="SubModels\OverlayGroupSeparating.cs" />
     <Compile Include="SynchronizationViewModel.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -243,10 +245,6 @@
     <ProjectReference Include="..\CapFrameX.Statistics.PlotBuilder\CapFrameX.Statistics.PlotBuilder.csproj">
       <Project>{80a26f08-6ae5-472d-bb13-b6fb9a37fdcb}</Project>
       <Name>CapFrameX.Statistics.PlotBuilder</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CapFrameX.Statistics\CapFrameX.Statistics.csproj">
-      <Project>{788F49CD-ABCB-4C7C-B1B6-BF9DC2482432}</Project>
-      <Name>CapFrameX.Statistics</Name>
     </ProjectReference>
     <ProjectReference Include="..\CapFrameX.Updater\CapFrameX.Updater.csproj">
       <Project>{5D12AA37-CC30-4476-94AD-11C15DC65518}</Project>

@@ -230,7 +230,7 @@
                                         Width="Auto"
                                         Header="Aggregated"
                                         IsReadOnly="True" 
-                                        MinWidth="55">
+                                        MinWidth="40">
                             <DataGridCheckBoxColumn.ElementStyle>
                                 <Style>
                                     <Setter Property="CheckBox.IsEnabled" Value="False" />
@@ -240,6 +240,36 @@
                                 </Style>
                             </DataGridCheckBoxColumn.ElementStyle>
                         </DataGridCheckBoxColumn>
+                        <DataGridTextColumn Binding="{Binding ProcessorName, Mode=OneWay}"
+										Width="Auto"
+                                        Header="CPU"
+                                        IsReadOnly="True">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style>
+                                    <Setter Property="TextBlock.VerticalAlignment" Value="Center" />
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+                        <DataGridTextColumn Binding="{Binding GraphicCardName, Mode=OneWay}"
+										Width="Auto"
+                                        Header="GPU"
+                                        IsReadOnly="True">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style>
+                                    <Setter Property="TextBlock.VerticalAlignment" Value="Center" />
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+                        <DataGridTextColumn Binding="{Binding SystemRamInfo, Mode=OneWay}"
+										Width="Auto"
+                                        Header="RAM"
+                                        IsReadOnly="True">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style>
+                                    <Setter Property="TextBlock.VerticalAlignment" Value="Center" />
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
                     </DataGrid.Columns>
                 </DataGrid>
             </Grid>

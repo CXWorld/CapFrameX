@@ -7,7 +7,7 @@ namespace CapFrameX.Statistics.NetStandard
     {
         IList<double> GetOutlierAdjustedSequence(IList<double> sequence, ERemoveOutlierMethod method);
 
-        double GetAdaptiveStandardDeviation(IList<double> sequence, int windowSize);
+        double GetAdaptiveStandardDeviation(IList<double> sequence, double timeWindow);
 
         double GetStutteringCountPercentage(IList<double> sequence, double stutteringFactor);
 
@@ -17,11 +17,11 @@ namespace CapFrameX.Statistics.NetStandard
 
         double GetPQuantileSequence(IList<double> sequence, double pQuantile);
 
-        double GetPAverageLowSequence(IList<double> sequence, double pQuantile);
-
-        double GetPAverageHighSequence(IList<double> sequence, double pQuantile);
+        double GetPercentageHighSequence(IList<double> sequence, double pQuantile);
 
         double GetFpsMetricValue(IList<double> sequence, EMetric metric);
+
+        double GetPhysicalMetricValue(IList<double> sequence, EMetric metric, double coefficient);
 
         IList<double>[] GetDiscreteDistribution(IList<double> sequence);
 

@@ -5,15 +5,14 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:prism="http://prismlibrary.com/"
-             xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
-             xmlns:local="clr-namespace:CapFrameX.View"
+             xmlns:ctrls="clr-namespace:CapFrameX.View.Controls"
              xmlns:vm="clr-namespace:CapFrameX.ViewModel;assembly=CapFrameX.ViewModel"
              xmlns:mvvm="clr-namespace:CapFrameX.MVVM.Converter;assembly=CapFrameX.MVVM"
 			 xmlns:attached="clr-namespace:CapFrameX.MVVM.AttachedProperties;assembly=CapFrameX.MVVM"
              xmlns:mahapps="http://metro.mahapps.com/winfx/xaml/controls"
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
-             xmlns:oxy="clr-namespace:OxyPlot.Wpf;assembly=OxyPlot.Wpf"
+             xmlns:controls="clr-namespace:CapFrameX.View.Controls"
              xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
              xmlns:dragdrop="urn:gong-wpf-dragdrop"
              mc:Ignorable="d"
@@ -53,12 +52,16 @@
 								   IsOpen="{Binding MessageDialogContentIsOpen}"
 								   DialogContent="{Binding MessageDialogContent}"
 								   CloseOnClickAway="True">
-            <TabControl Grid.Row="0" Grid.Column="0" Background="#F5F5F5"
-					SelectedItem="{Binding SelectedChartItem}">
+            <TabControl Name="GraphTab" Grid.Row="0" Grid.Column="0" Background="#F5F5F5"
+					SelectedItem="{Binding SelectedChartItem}" FocusVisualStyle="{x:Null}">
                 <TabItem Header="Bar charts" >
                     <DockPanel>
                         <TextBlock DockPanel.Dock="Top" Grid.Row="0" Margin="0 10 0 10" FontWeight="Bold" FontSize="16" Text="{Binding CurrentGameName}" HorizontalAlignment="Center"
-							   Visibility="{Binding HasUniqueGameNames, Converter={StaticResource TrueToVisibleConverter}}"/>
+							   Visibility="{Binding ShowGameNameTitle, Converter={StaticResource TrueToVisibleConverter}}"/>
+                        <TextBox DockPanel.Dock="Top" Grid.Row="0" HorizontalAlignment="Center" Visibility="{Binding Path=IsChecked, ElementName=ShowCustomTitleToggleButton, Converter={StaticResource TrueToVisibleConverter}}"
+                                 Text="Type your title here..." Margin="0 10 0 0" Height="30" Padding="0 -28 0 0"
+                                 Style="{StaticResource MaterialDesignFilledTextFieldTextBox}"
+                                 FontSize="18" />
                         <ScrollViewer VerticalScrollBarVisibility="Auto">
                             <lvc:CartesianChart Grid.Row="0" VerticalAlignment="Top" MaxWidth="1000" Margin="10" Series="{Binding ComparisonRowChartSeriesCollection}" Height="{Binding BarChartHeight}"
 											Visibility="{Binding HasComparisonItems, Converter={StaticResource TrueToVisibleConverter}}" DisableAnimations="True"
@@ -78,29 +81,110 @@
                         </ScrollViewer>
                     </DockPanel>
                 </TabItem>
-                <TabItem Header="Frametimes/ L-shapes">
+                <TabItem Header="Line charts/ L-shapes">
                     <Grid Name="ChartAndCuttingGrid">
                         <Grid.RowDefinitions>
+                            <!--Edit box for custom title-->
+                            <RowDefinition Height="Auto"></RowDefinition>
+                            <!--frametimes/fps-->
                             <RowDefinition Height="2*"></RowDefinition>
                             <RowDefinition Height="Auto"></RowDefinition>
                             <RowDefinition Height="1*"></RowDefinition>
                         </Grid.RowDefinitions>
-                        <Grid Grid.Row="0" Margin="0 0 0 -10">
-                            <oxy:PlotView Background="#F5F5F5" x:Name="ComparisonPlotView" Model="{Binding ComparisonModel}" MouseDoubleClick="ResetFrametimeChart_MouseDoubleClick"/>
+                        <TextBox Grid.Row="0" HorizontalAlignment="Center" Visibility="{Binding Path=IsChecked, ElementName=ShowCustomTitleToggleButton, Converter={StaticResource TrueToVisibleConverter}}"
+                                 Text="Type your title here..." Margin="0 10 0 0" Height="30" Padding="0 -28 0 0"
+                                 Style="{StaticResource MaterialDesignFilledTextFieldTextBox}"
+                                 FontSize="18" />
+                        <Grid Grid.Row="1" Margin="0 0 0 -10">
+                            <Grid>
+                                <Grid Margin="0 0 50 0" Panel.ZIndex="1" HorizontalAlignment="Left" VerticalAlignment="Bottom">
+                                    <ComboBox Grid.Column="5" Margin="45 0 0 15" HorizontalAlignment="Left" VerticalAlignment="Bottom" materialDesign:HintAssist.Hint="Values"
+					                    materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Width="80"  materialDesign:ComboBoxAssist.ClassicMode="True">
+                                        <ComboBoxItem IsSelected="True">Frametimes</ComboBoxItem>
+                                        <ComboBoxItem>FPS</ComboBoxItem>
+                                        <ComboBox.Text>
+                                            <Binding Path="SelectedChartView"
+						                    Mode="TwoWay"
+						                    UpdateSourceTrigger="PropertyChanged">
+                                            </Binding>
+                                        </ComboBox.Text>
+                                    </ComboBox>
+                                </Grid>
+                                <ContentPresenter x:Name="ChartsContentPresenter" Content="{Binding}">
+                                    <ContentPresenter.Resources>
+                                        <DataTemplate x:Key="FrametimeChartContent">
+                                            <controls:PlotViewCustomZoom Background="#F5F5F5" Model="{Binding DataContext.ComparisonFrametimesModel, ElementName=ComparisonViewUserControl}"/>
+                                        </DataTemplate>
+                                        <DataTemplate x:Key="FpsChartContent">
+                                            <Grid>
+                                                <Grid Margin="0 0 50 0" Panel.ZIndex="1" HorizontalAlignment="Left" VerticalAlignment="Bottom">
+                                                    <ComboBox Width="100" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="150 0 0 15" materialDesign:HintAssist.Hint="Filter mode"
+										                      materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="240" materialDesign:ComboBoxAssist.ClassicMode="True"
+                                                              SelectedItem="{Binding SelectedFilterMode}" SelectedIndex="1" ItemsSource="{Binding FilterModes}">
+                                                        <ComboBox.ItemTemplate>
+                                                            <DataTemplate>
+                                                                <TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}"/>
+                                                            </DataTemplate>
+                                                        </ComboBox.ItemTemplate>
+                                                    </ComboBox>
+                                                </Grid>
+                                                <controls:PlotViewCustomZoom Background="#F5F5F5" Model="{Binding DataContext.ComparisonFpsModel, ElementName=ComparisonViewUserControl}"/>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ContentPresenter.Resources>
+                                    <ContentPresenter.Style>
+                                        <Style TargetType="{x:Type ContentPresenter}">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding DataContext.SelectedChartView, ElementName=ComparisonViewUserControl}" Value="Frametimes">
+                                                    <Setter Property="ContentTemplate" Value="{StaticResource FrametimeChartContent}" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding DataContext.SelectedChartView, ElementName=ComparisonViewUserControl}" Value="FPS">
+                                                    <Setter Property="ContentTemplate" Value="{StaticResource FpsChartContent}" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </ContentPresenter.Style>
+                                </ContentPresenter>
+                            </Grid>
                         </Grid>
-                        <Grid Grid.Row="1" Visibility="{Binding ElementName=RangeSliderActiveToggleButton, Path=IsChecked, Converter={StaticResource TrueToVisibleConverter}}">
-                            <mahapps:RangeSlider Margin="50 10 5 25" LowerValue="{Binding FirstSeconds}" UpperValue="{Binding LastSeconds}"   
-                                     Maximum="{Binding MaxRecordingTime}"                                    
-									 TickPlacement="BottomRight" TickFrequency="2.5"                                     
-                                     MinRange="{Binding MinRangeSliderRange}"
-									 Style="{StaticResource CustomRangeSlider}"/>
+                        <Grid Grid.Row="2" Visibility="{Binding ElementName=RangeSliderActiveToggleButton, Path=IsChecked, Converter={StaticResource TrueToVisibleConverter}}">
+                            <mahapps:RangeSlider Margin="45 10 5 25" LowerValue="{Binding FirstSeconds}" UpperValue="{Binding LastSeconds}" 
+                                                 Maximum="{Binding MaxRecordingTime}"                                    
+									             TickPlacement="BottomRight" TickFrequency="2.5"      
+                                                 MinRange="{Binding MinRangeSliderRange}"
+									             Style="{StaticResource CustomRangeSlider}"/>
+                            <StackPanel HorizontalAlignment="Right" VerticalAlignment="Bottom" Orientation="Horizontal" Margin="0 0 10 -5" Height="25">
+                                <TextBlock Text="Start and end points:" Margin="0 5 5 0"/>
+                                <TextBox x:Name="FirsSecondsTextbox" Grid.Row="1" materialDesign:HintAssist.Hint="Start (s)" HorizontalAlignment="Center" Width="45"
+                                         ToolTip="Range Slider start point" PreviewKeyDown="FirstSecondsTextBox_PreviewKeyDown" PreviewTextInput="NumberValidationTextBox" TextAlignment="Center">
+                                    <TextBox.Text>
+                                        <Binding Path="FirstSeconds"
+                                                 StringFormat="F2"
+								                 Mode="TwoWay"
+								                 UpdateSourceTrigger="LostFocus">
+                                        </Binding>
+                                    </TextBox.Text>
+                                </TextBox>
+                                <TextBlock Text="-" Margin="3 3 3 0"/>
+                                <TextBox x:Name="LastSecondsTextbox" Grid.Row="1" materialDesign:HintAssist.Hint="End (s)" HorizontalAlignment="Center" Width="45"
+                                        ToolTip="Range Slider end point" PreviewKeyDown="LastSecondsTextBox_PreviewKeyDown" PreviewTextInput="NumberValidationTextBox" TextAlignment="Center">
+                                    <TextBox.Text>
+                                        <Binding Path="LastSeconds"
+                                                 StringFormat="F2"
+								                 Mode="TwoWay"
+								                 UpdateSourceTrigger="LostFocus">
+                                        </Binding>
+                                    </TextBox.Text>
+                                </TextBox>
+                            </StackPanel>
                             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Bottom" Orientation="Horizontal" Margin="45 0 0 0" Height="15">
                                 <TextBlock Text="Time window:"/>
                                 <TextBlock Text="{Binding RemainingRecordingTime}" Margin="5 0 0 0"/>
                             </StackPanel>
                         </Grid>
-                        <Grid Grid.Row="2">
-                            <lvc:CartesianChart MouseDoubleClick="ResetLShapeChart_MouseDoubleClick" Series="{Binding ComparisonLShapeCollection}" Zoom="Y">
+                        <Grid Grid.Row="3">
+                            <lvc:CartesianChart MouseDoubleClick="ResetLShapeChart_MouseDoubleClick" Series="{Binding ComparisonLShapeCollection}" Zoom="Y"
+                                                Margin="5 0 0 0">
                                 <lvc:CartesianChart.AxisX>
                                     <lvc:Axis Title="Percentiles (%)" Name="LShapeX" Foreground="Black">
                                         <lvc:Axis.Separator >
@@ -117,73 +201,25 @@
                 </TabItem>
             </TabControl>
         </materialDesign:DialogHost>
+        <!-- Toolbar-->
         <Grid Grid.Row="1" Grid.Column="0" Margin="5 0 0 5" Background="#e6e6e6">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"></ColumnDefinition>
                 <ColumnDefinition Width="Auto"></ColumnDefinition>
                 <ColumnDefinition Width="Auto"></ColumnDefinition>
                 <ColumnDefinition Width="Auto"></ColumnDefinition>
+                <ColumnDefinition Width="Auto"></ColumnDefinition>
+                <ColumnDefinition Width="Auto"></ColumnDefinition>
                 <ColumnDefinition Width="1*"></ColumnDefinition>
             </Grid.ColumnDefinitions>
-            <StackPanel VerticalAlignment="Center" Grid.Column="0" Margin="25 0 0 0" Orientation="Horizontal"
-						Visibility="{Binding IsBarChartTabActive, Converter={StaticResource TrueToVisibleConverter}}">
-                <TextBlock VerticalAlignment="Center">Sort mode:</TextBlock>
-                <ToggleButton Grid.Column="0" Margin="5 0 0 0" Foreground="Black" BorderThickness="1" Background="Transparent"
-							  Style="{StaticResource MaterialDesignActionAccentToggleButton}" IsChecked="{Binding IsSortModeAscending}">
-                    <ToggleButton.Content>
-                        <materialDesign:PackIcon Kind="SortDescending" />
-                    </ToggleButton.Content>
-                    <materialDesign:ToggleButtonAssist.OnContent>
-                        <materialDesign:PackIcon Kind="SortAscending" />
-                    </materialDesign:ToggleButtonAssist.OnContent >
-                </ToggleButton>
+
+            <StackPanel Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="20 0 10 0" Orientation="Horizontal">
+                <TextBlock VerticalAlignment="Center">Custom title:</TextBlock>
+                <ToggleButton x:Name="ShowCustomTitleToggleButton" Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
+								  ToolTip="Show custom title edit box" IsChecked="{Binding ShowCustomTitle}"/>
             </StackPanel>
-            <StackPanel Grid.Column="1" Margin="20 0 0 0" VerticalAlignment="Center" Orientation="Horizontal"
-						Visibility="{Binding IsBarChartTabActive, Converter={StaticResource TrueToVisibleConverter}}">
-                <TextBlock VerticalAlignment="Center">Grouping:</TextBlock>
-                <ToggleButton Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
-							  ToolTip="Sort entries by game first" IsChecked="{Binding UseComparisonGrouping}"/>
-                
-            </StackPanel>
-            <StackPanel Grid.Column="2" Margin="50 5 5 5" Orientation="Horizontal" Visibility="{Binding IsBarChartTabActive, Converter={StaticResource TrueToVisibleConverter}}"
-                        ToolTip="Select a second and third metric to be shown">
-                <TextBlock Margin="0 0 0 0" VerticalAlignment="Center"  HorizontalAlignment="Center"> Metrics</TextBlock>
-                <materialDesign:PopupBox StaysOpen="True" ToolTipService.ShowDuration="25000" PlacementMode="TopAndAlignCentres">
-                    <materialDesign:Card Width="300" Margin="0 0 0 -10">
-                        <StackPanel>
-                            <Grid Margin="8 8 8 8">
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="*" />
-                                </Grid.RowDefinitions>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                <ComboBox Grid.Column="0" Width="125" VerticalAlignment="Center" Margin="5 5 5 5" materialDesign:HintAssist.Hint="Second metric"
-					                Visibility="{Binding IsBarChartTabActive, Converter={StaticResource TrueToVisibleConverter}}"
-					                materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="330" materialDesign:ComboBoxAssist.ClassicMode="True"
-					                ItemsSource="{Binding SecondMetricItems}" SelectedItem="{Binding SelectedSecondMetric}">
-                                    <ComboBox.ItemTemplate>
-                                        <DataTemplate>
-                                            <TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}"/>
-                                        </DataTemplate>
-                                    </ComboBox.ItemTemplate>
-                                </ComboBox>
-                                <ComboBox Grid.Column="1" Width="125" VerticalAlignment="Center" Margin="15 5 5 5" materialDesign:HintAssist.Hint="Third metric"
-					                materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="360" materialDesign:ComboBoxAssist.ClassicMode="True"
-					                ItemsSource="{Binding ThirdMetricItems}" SelectedItem="{Binding SelectedThirdMetric}">
-                                    <ComboBox.ItemTemplate>
-                                        <DataTemplate>
-                                            <TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}"/>
-                                        </DataTemplate>
-                                    </ComboBox.ItemTemplate>
-                                </ComboBox>
-                            </Grid>
-                        </StackPanel>
-                    </materialDesign:Card>
-                </materialDesign:PopupBox>
-            </StackPanel>
-            <StackPanel Grid.Column="3" Margin="50 5 5 5" Orientation="Horizontal"
+
+            <StackPanel Grid.Column="1" Margin="20 5 5 5" Orientation="Horizontal"
                         ToolTip="Select up to 2 contexts to be shown">
                 <TextBlock Margin="0 0 0 0" VerticalAlignment="Center" HorizontalAlignment="Center">Contexts</TextBlock>
                 <materialDesign:PopupBox StaysOpen="True" ToolTipService.ShowDuration="25000" PlacementMode="TopAndAlignCentres">
@@ -220,21 +256,96 @@
                     </materialDesign:Card>
                 </materialDesign:PopupBox>
             </StackPanel>
-            
-            <StackPanel Grid.Column="0" Margin="30 0 0 0" VerticalAlignment="Center" Orientation="Horizontal"
+
+            <StackPanel Grid.Column="2" Margin="20 5 5 5" Orientation="Horizontal" Visibility="{Binding IsBarChartTabActive, Converter={StaticResource TrueToVisibleConverter}}"
+                        ToolTip="Select metrics to be shown">
+                <TextBlock Margin="0 0 0 0" VerticalAlignment="Center"  HorizontalAlignment="Center"> Metrics</TextBlock>
+                <materialDesign:PopupBox StaysOpen="True" ToolTipService.ShowDuration="25000" PlacementMode="TopAndAlignCentres">
+                    <materialDesign:Card Width="450" Margin="0 0 0 -10">
+                        <StackPanel>
+                            <Grid Margin="8 8 8 8">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*" />
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <ComboBox Grid.Column="0" Width="125" VerticalAlignment="Center" Margin="5 5 5 5" materialDesign:HintAssist.Hint="First metric"
+					                Visibility="{Binding IsBarChartTabActive, Converter={StaticResource TrueToVisibleConverter}}"
+					                materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="330" materialDesign:ComboBoxAssist.ClassicMode="True"
+					                ItemsSource="{Binding FirstMetricItems}" SelectedItem="{Binding SelectedFirstMetric}">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}"/>
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+                                <ComboBox Grid.Column="1" Width="125" VerticalAlignment="Center" Margin="15 5 5 5" materialDesign:HintAssist.Hint="Second metric"
+					                Visibility="{Binding IsBarChartTabActive, Converter={StaticResource TrueToVisibleConverter}}"
+					                materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="330" materialDesign:ComboBoxAssist.ClassicMode="True"
+					                ItemsSource="{Binding SecondMetricItems}" SelectedItem="{Binding SelectedSecondMetric}">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}"/>
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+                                <ComboBox Grid.Column="2" Width="125" VerticalAlignment="Center" Margin="15 5 5 5" materialDesign:HintAssist.Hint="Third metric"
+					                materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="360" materialDesign:ComboBoxAssist.ClassicMode="True"
+					                ItemsSource="{Binding ThirdMetricItems}" SelectedItem="{Binding SelectedThirdMetric}">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}"/>
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+                            </Grid>
+                        </StackPanel>
+                    </materialDesign:Card>
+                </materialDesign:PopupBox>
+            </StackPanel>
+
+            <StackPanel Grid.Column="2" Margin="20 0 0 0" VerticalAlignment="Center" Orientation="Horizontal"
 						Visibility="{Binding IsBarChartTabActive, Converter={StaticResource TrueToCollapsedConverter}}">
                 <TextBlock VerticalAlignment="Center">Range slider:</TextBlock>
                 <ToggleButton Name="RangeSliderActiveToggleButton" Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
 							  IsChecked="{Binding IsRangeSliderActive}"/>
             </StackPanel>
 
-            <StackPanel Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="50 0 10 0" Orientation="Horizontal"
+            <StackPanel Grid.Column="3" Margin="20 0 0 0" VerticalAlignment="Center" Orientation="Horizontal"
+						Visibility="{Binding IsBarChartTabActive, Converter={StaticResource TrueToVisibleConverter}}">
+                <TextBlock VerticalAlignment="Center">Grouping:</TextBlock>
+                <ToggleButton Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
+							  ToolTip="Sort entries by game first" IsChecked="{Binding UseComparisonGrouping}"/>
+            </StackPanel>
+
+            <StackPanel Grid.Column="4" VerticalAlignment="Center" Margin="25 0 0 0" Orientation="Horizontal"
+						Visibility="{Binding IsBarChartTabActive, Converter={StaticResource TrueToVisibleConverter}}">
+                <ComboBox Width="80" Margin="0 0 0 10" materialDesign:HintAssist.Hint="Sort metric" materialDesign:ComboBoxAssist.ClassicMode="True" materialDesign:HintAssist.IsFloating="True"
+                          ItemsSource="{Binding SortMetricItemsSource}" SelectedItem="{Binding SelectedSortMetric}">
+                </ComboBox>
+                <ToggleButton Margin="5 0 0 0" Foreground="Black" BorderThickness="1" Background="Transparent"
+							  Style="{StaticResource MaterialDesignActionAccentToggleButton}" IsChecked="{Binding IsSortModeAscending}">
+                    <ToggleButton.Content>
+                        <materialDesign:PackIcon Kind="SortDescending" />
+                    </ToggleButton.Content>
+                    <materialDesign:ToggleButtonAssist.OnContent>
+                        <materialDesign:PackIcon Kind="SortAscending" />
+                    </materialDesign:ToggleButtonAssist.OnContent >
+                </ToggleButton>
+            </StackPanel>
+
+            <StackPanel Grid.Column="4" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="20 0 10 0" Orientation="Horizontal"
 						Visibility="{Binding IsBarChartTabActive, Converter={StaticResource TrueToCollapsedConverter}}">
-                <TextBlock VerticalAlignment="Center">Show legend:</TextBlock>
+                <TextBlock VerticalAlignment="Center">Legend:</TextBlock>
                 <ToggleButton Name="ContextLegendActiveToggleButton" Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
 								  ToolTip="Show context legend" IsChecked="{Binding IsContextLegendActive}"/>
             </StackPanel>
+
         </Grid>
+        <!-- Copmparison List -->
         <StackPanel Margin="5 10 5 0" Grid.Column="1" Grid.RowSpan="2" Orientation="Vertical">
             <TextBox IsReadOnly="True" Background="#e6e6e6" materialDesign:HintAssist.Hint="Comparisons" />
             <Border Margin="0 5 0 5" BorderThickness="1" BorderBrush="#CCC" VerticalAlignment="Stretch">
@@ -301,10 +412,10 @@
 																   FontSize="12"
 																   LineHeight="14"
 																   MaxHeight="52"/>
-                                                    <xctk:ColorPicker Width="50" Height="25" Grid.Row="1" Grid.Column="1" Margin="0 0 0 0" Background="#e6e6e6" SelectedColor="{Binding FrametimeGraphColor}" 
+                                                    <ctrls:CXColorPicker Width="50" Height="25" Grid.Row="1" Grid.Column="1" Margin="0 0 0 0" Background="#e6e6e6" SelectedColor="{Binding FrametimeGraphColor}" 
 																      SelectedColorChanged="SelectedColorChanged" DisplayColorAndName="False" AvailableColorsSortingMode="HueSaturationBrightness" 
 																	  Visibility="{Binding ElementName=ComparisonRecordItemControl, Path=DataContext.ColorPickerVisibility, Converter={StaticResource FalseToHiddenConverter}}">
-                                                        <xctk:ColorPicker.ButtonStyle>
+                                                        <ctrls:CXColorPicker.ButtonStyle>
                                                             <Style TargetType="ToggleButton">
                                                                 <Setter Property="Template">
                                                                     <Setter.Value>
@@ -327,8 +438,8 @@
                                                                     </Setter.Value>
                                                                 </Setter>
                                                             </Style>
-                                                        </xctk:ColorPicker.ButtonStyle>
-                                                    </xctk:ColorPicker>
+                                                        </ctrls:CXColorPicker.ButtonStyle>
+                                                    </ctrls:CXColorPicker>
                                                     <Button Grid.Row="0" Grid.Column="2" Margin="0 -2 2 0" Padding="0" Width="12" Height="12" HorizontalAlignment="Right" VerticalAlignment="Top" BorderThickness="0" Background="Transparent" Foreground="Black"
 															Content="{materialDesign:PackIcon Close, Size=12}" Command="{Binding RemoveCommand}">
                                                     </Button>

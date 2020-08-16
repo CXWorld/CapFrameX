@@ -99,6 +99,7 @@
     <Compile Include="CloudManager.cs" />
     <Compile Include="ECaptureFileMode.cs" />
     <Compile Include="LoginManager.cs" />
+    <Compile Include="OverlayEntryFormatChange.cs" />
     <Compile Include="ProcessList.cs" />
     <Compile Include="SoundManager.cs" />
     <Compile Include="WebVersionProvider.cs" />
@@ -146,10 +147,6 @@
     <ProjectReference Include="..\CapFrameX.Statistics.NetStandard\CapFrameX.Statistics.NetStandard.csproj">
       <Project>{7D35C9C8-6E9A-4ABB-9042-930BE5E26DC6}</Project>
       <Name>CapFrameX.Statistics.NetStandard</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CapFrameX.Statistics\CapFrameX.Statistics.csproj">
-      <Project>{788f49cd-abcb-4c7c-b1b6-bf9dc2482432}</Project>
-      <Name>CapFrameX.Statistics</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

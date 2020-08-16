@@ -367,8 +367,7 @@ typedef struct RTSS_SHARED_MEMORY
 		//next fields are valid for v2.12 and newer shared memory format only
 
 		BYTE	buffer[262144];
-			//OSD slot data buffer
-
+			//OSD slot data bufferLPRTSS_SHARED_MEMORY_APP_ENTRY
 	} RTSS_SHARED_MEMORY_OSD_ENTRY, *LPRTSS_SHARED_MEMORY_OSD_ENTRY;
 
 	//application descriptor structure

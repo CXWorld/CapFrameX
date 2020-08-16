@@ -15,7 +15,6 @@ namespace OpenHardwareMonitor.Hardware
 {
     internal abstract class Hardware : IHardware
     {
-
         private readonly Identifier identifier;
         protected readonly string name;
         private string customName;
@@ -49,15 +48,13 @@ namespace OpenHardwareMonitor.Hardware
         protected virtual void ActivateSensor(ISensor sensor)
         {
             if (active.Add(sensor))
-                if (SensorAdded != null)
-                    SensorAdded(sensor);
+                SensorAdded?.Invoke(sensor);
         }
 
         protected virtual void DeactivateSensor(ISensor sensor)
         {
             if (active.Remove(sensor))
-                if (SensorRemoved != null)
-                    SensorRemoved(sensor);
+                SensorRemoved?.Invoke(sensor);
         }
 
         public string Name

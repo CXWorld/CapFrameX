@@ -184,10 +184,9 @@ public:
 					entry.Identifier = managedEntry->Identifier;
 					entry.Description = managedEntry->Description;
 					entry.ShowOnOverlay = managedEntry->ShowOnOverlay;
-					entry.GroupName = managedEntry->GroupName;
+					entry.GroupName = managedEntry->FormattedGroupName;
 					entry.Value = managedEntry->FormattedValue;
 					entry.ShowGraph = managedEntry->ShowGraph;
-					entry.Color = managedEntry->Color;
 
 					_coreControl->OverlayEntries.push_back(entry);
 				}
@@ -215,7 +214,7 @@ public:
 						// mapping member
 						_coreControl->OverlayEntries[i].Description = managedEntry->Description;
 						_coreControl->OverlayEntries[i].ShowOnOverlay = managedEntry->ShowOnOverlay;
-						_coreControl->OverlayEntries[i].GroupName = managedEntry->GroupName;
+						_coreControl->OverlayEntries[i].GroupName = managedEntry->FormattedGroupName;
 						_coreControl->OverlayEntries[i].Value = managedEntry->FormattedValue;
 						_coreControl->OverlayEntries[i].ShowGraph = managedEntry->ShowGraph;
 						_coreControl->OverlayEntries[i].Color = managedEntry->Color;
@@ -233,6 +232,18 @@ public:
 	String^ GetApiInfo(UINT processId)
 	{
 		return gcnew String(_coreControl->GetApiInfo(processId));
+	}
+
+	Tuple<double, double>^ GetCurrentFramerate(UINT processId)
+	{
+		std::vector<float> result = _coreControl->GetCurrentFramerate(processId);
+		return gcnew Tuple<double, double>(result[0], result[1]);
+	}
+
+	Tuple<double, double>^ GetCurrentFramerateFromForegroundWindow()
+	{
+		std::vector<float> result = _coreControl->GetCurrentFramerateFromForegroundWindow();
+		return gcnew Tuple<double, double>(result[0], result[1]);
 	}
 
 private:

@@ -12,11 +12,14 @@ using System.Globalization;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using System.Threading.Tasks;
 
 namespace CapFrameX.Sensor
 {
     public class SensorService : ISensorService
     {
+        private readonly object _lockComputer = new object();
+
         private readonly IAppConfiguration _appConfiguration;
         private readonly ILogger<SensorService> _logger;
         private readonly object _dictLock = new object();
@@ -49,6 +52,8 @@ namespace CapFrameX.Sensor
 
         public bool UseSensorLogging => _appConfiguration.UseSensorLogging;
 
+        public bool IsOverlayActive => _appConfiguration.IsOverlayActive;
+
         public SensorService(IAppConfiguration appConfiguration,
                              ILogger<SensorService> logger)
         {
@@ -62,26 +67,32 @@ namespace CapFrameX.Sensor
             _sensorSnapshotStream = _sensorUpdateSubject
                 .Select(timespan => Observable.Concat(Observable.Return(-1L), Observable.Interval(timespan)))
                 .Switch()
+                .Where(_ => IsOverlayActive || (_isLoggingActive && UseSensorLogging))
                 .Select(_ => GetSensorValues())
                 .Replay(0).RefCount();
 
             _logger.LogDebug("{componentName} Ready", this.GetType().Name);
 
             StartOpenHardwareMonitor();
-            InitializeOverlayEntryDict();
 
-            _sensorSnapshotStream
-                .Sample(_osdUpdateSubject.Select(timespan => Observable.Concat(Observable.Return(-1L), Observable.Interval(timespan))).Switch())
-                .Subscribe(sensorData =>
-                {
-                    UpdateOSD(sensorData.Item2);
-                    _onDictionaryUpdated.OnNext(GetSensorOverlayEntries());
-                });
+            Task.Delay(200).ContinueWith(t =>
+            {
+                InitializeOverlayEntryDict();
 
-            _sensorSnapshotStream
-                .Sample(_loggingUpdateSubject.Select(timespan => Observable.Concat(Observable.Return(-1L), Observable.Interval(timespan))).Switch())
-                .Where(_ => _isLoggingActive && UseSensorLogging)
-                .Subscribe(sensorData => LogCurrentValues(sensorData.Item2, sensorData.Item1));
+                _sensorSnapshotStream
+                    .Sample(_osdUpdateSubject.Select(timespan => Observable.Concat(Observable.Return(-1L), Observable.Interval(timespan))).Switch())
+                    .Where(_ => IsOverlayActive)
+                    .Subscribe(sensorData =>
+                    {
+                        UpdateOSD(sensorData.Item2);
+                        _onDictionaryUpdated.OnNext(GetSensorOverlayEntries());
+                    });
+
+                _sensorSnapshotStream
+                    .Sample(_loggingUpdateSubject.Select(timespan => Observable.Concat(Observable.Return(-1L), Observable.Interval(timespan))).Switch())
+                    .Where(_ => _isLoggingActive && UseSensorLogging)
+                    .Subscribe(sensorData => LogCurrentValues(sensorData.Item2, sensorData.Item1));
+            });
         }
 
         public void SetLoggingInterval(TimeSpan timeSpan)
@@ -96,7 +107,53 @@ namespace CapFrameX.Sensor
             _currentOSDTimespan = timeSpan;
             UpdateSensorInterval();
             _osdUpdateSubject.OnNext(timeSpan);
+        }
 
+        public string GetSensorTypeString(IOverlayEntry entry)
+        {
+            if (entry == null)
+                return string.Empty;
+
+            string SensorType;
+
+            if (entry.Identifier.Contains("cpu"))
+            {
+                if (entry.Identifier.Contains("load"))
+                    SensorType = "CPU Load";
+                else if (entry.Identifier.Contains("clock"))
+                    SensorType = "CPU Clock";
+                else if (entry.Identifier.Contains("power"))
+                    SensorType = "CPU Power";
+                else if (entry.Identifier.Contains("temperature"))
+                    SensorType = "CPU Temperature";
+                else if (entry.Identifier.Contains("voltage"))
+                    SensorType = "CPU Voltage";
+                else
+                    SensorType = string.Empty;
+            }
+
+            else if (entry.Identifier.Contains("gpu"))
+            {
+                if (entry.Identifier.Contains("load"))
+                    SensorType = "GPU Load";
+                else if (entry.Identifier.Contains("clock"))
+                    SensorType = "GPU Clock";
+                else if (entry.Identifier.Contains("power"))
+                    SensorType = "GPU Power";
+                else if (entry.Identifier.Contains("temperature"))
+                    SensorType = "GPU Temperature";
+                else if (entry.Identifier.Contains("voltage"))
+                    SensorType = "GPU Voltage";
+                else if (entry.Identifier.Contains("factor"))
+                    SensorType = "GPU Limits";
+                else
+                    SensorType = string.Empty;
+            }
+
+            else
+                SensorType = string.Empty;
+
+            return SensorType;
         }
 
         private void UpdateSensorInterval()
@@ -108,15 +165,18 @@ namespace CapFrameX.Sensor
         {
             try
             {
-                _computer = new Computer();
-                _computer.Open();
+                lock (_lockComputer)
+                {
+                    _computer = new Computer();
+                    _computer.Open();
 
-                _computer.GPUEnabled = true;
-                _computer.CPUEnabled = true;
-                _computer.RAMEnabled = true;
-                _computer.MainboardEnabled = false;
-                _computer.FanControllerEnabled = false;
-                _computer.HDDEnabled = false;
+                    _computer.GPUEnabled = true;
+                    _computer.CPUEnabled = true;
+                    _computer.RAMEnabled = true;
+                    _computer.MainboardEnabled = false;
+                    _computer.FanControllerEnabled = false;
+                    _computer.HDDEnabled = false;
+                }
             }
             catch (Exception ex)
             {
@@ -124,15 +184,29 @@ namespace CapFrameX.Sensor
             }
         }
 
+        //public void ResetSensorOverlayEntries()
+        //{
+        //    InitializeOverlayEntryDict();
+        //    _onDictionaryUpdated.OnNext(GetSensorOverlayEntries());
+        //}
+
         private void InitializeOverlayEntryDict()
         {
             if (_computer == null) return;
+
+            lock (_dictLock)
+                _overlayEntryDict.Clear();
 
             var sensors = GetSensors();
             foreach (var sensor in sensors)
             {
                 var dictEntry = CreateOverlayEntry(sensor);
-                _overlayEntryDict.Add(sensor.Identifier.ToString(), dictEntry);
+                var id = sensor.Identifier.ToString();
+                lock (_dictLock)
+                {
+                    if (!_overlayEntryDict.ContainsKey(id))
+                        _overlayEntryDict.Add(id, dictEntry);
+                }
             }
         }
 
@@ -146,10 +220,109 @@ namespace CapFrameX.Sensor
                 ShowGraph = false,
                 ShowGraphIsEnabled = false,
                 ShowOnOverlayIsEnabled = true,
-                ShowOnOverlay = GetOverlayToggle(sensor),
+                ShowOnOverlay = GetIsDefaultOverlayItem(sensor),
                 Value = 0,
-                ValueFormat = GetFormatString(sensor.SensorType),
+                ValueUnitFormat = GetValueUnitString(sensor.SensorType),
+                ValueAlignmentAndDigits = GetValueAlignmentAndDigitsString(sensor.SensorType)
             };
+        }
+
+        private string GetValueAlignmentAndDigitsString(SensorType sensorType)
+        {
+            string formatString = "{0}";
+            switch (sensorType)
+            {
+                case SensorType.Voltage:
+                    formatString = "{0,5:F2}";
+                    break;
+                case SensorType.Clock:
+                    formatString = "{0,5:F0}";
+                    break;
+                case SensorType.Temperature:
+                    formatString = "{0,5:F0}";
+                    break;
+                case SensorType.Load:
+                    formatString = "{0,5:F0}";
+                    break;
+                case SensorType.Fan:
+                    formatString = "{0,5:F0}";
+                    break;
+                case SensorType.Flow:
+                    formatString = "{0,5:F0}";
+                    break;
+                case SensorType.Control:
+                    formatString = "{0,5:F0}";
+                    break;
+                case SensorType.Level:
+                    formatString = "{0,5:F0}";
+                    break;
+                case SensorType.Factor:
+                    formatString = "{0,5:F0}";
+                    break;
+                case SensorType.Power:
+                    formatString = "{0,5:F1}";
+                    break;
+                case SensorType.Data:
+                    formatString = "{0,5:F2}";
+                    break;
+                case SensorType.SmallData:
+                    formatString = "{0,5:F0}";
+                    break;
+                case SensorType.Throughput:
+                    formatString = "{0,5:F0}";
+                    break;
+            }
+
+            return formatString;
+        }
+
+        private string GetValueUnitString(SensorType sensorType)
+        {
+            string formatString = "{0}";
+            switch (sensorType)
+            {
+                case SensorType.Voltage:
+                    formatString = "V  ";
+                    break;
+                case SensorType.Clock:
+                    formatString = "MHz";
+                    break;
+                case SensorType.Temperature:
+                    formatString = $"{GetDegreeCelciusUnitByCulture()} ";
+                    break;
+                case SensorType.Load:
+                    formatString = "%  ";
+                    break;
+                case SensorType.Fan:
+                    formatString = "RPM";
+                    break;
+                case SensorType.Flow:
+                    formatString = "L/h";
+                    break;
+                case SensorType.Control:
+                    formatString = "%  ";
+                    break;
+                case SensorType.Level:
+                    formatString = "%  ";
+                    break;
+                case SensorType.Factor:
+                    formatString = "   ";
+                    break;
+                case SensorType.Power:
+                    formatString = "W  ";
+                    break;
+                case SensorType.Data:
+                    formatString = "GB ";
+                    break;
+                case SensorType.SmallData:
+                    formatString = "MB ";
+                    break;
+                case SensorType.Throughput:
+                    formatString = "MB/s";
+                    break;
+            }
+
+            return formatString;
         }
 
         private string GetDegreeCelciusUnitByCulture()
@@ -167,15 +340,25 @@ namespace CapFrameX.Sensor
             }
         }
 
-        private bool GetOverlayToggle(ISensor sensor)
+        private bool GetIsDefaultOverlayItem(ISensor sensor)
         {
             if (sensor.Name.Contains("Core"))
             {
-                if (sensor.SensorType == SensorType.Power &&
-                    sensor.Name.Contains("CPU"))
+                if ((sensor.SensorType == SensorType.Power &&
+                    sensor.Name.Contains("CPU")) ||
+                    (sensor.SensorType == SensorType.Temperature &&
+                    sensor.Name.Contains("CPU")) ||
+                    sensor.Name.Contains("VRM") ||
+                    sensor.SensorType == SensorType.Voltage)
                     return false;
 
                 return true;
+            }
+            else if (sensor.Name.Contains("Memory")
+                && sensor.Hardware.HardwareType ==  HardwareType.RAM
+                && sensor.SensorType == SensorType.Load)
+            {
+                return true; 
             }
             else
                 return false;
@@ -195,6 +378,10 @@ namespace CapFrameX.Sensor
             else if (name.Contains("GPU Core"))
             {
                 name = name.Replace(" Core", "");
+            }
+            else if (name.Contains("Memory Controller"))
+            {
+                name = name.Replace("Memory Controller", "MemCtrl");
             }
             else if (name.Contains("Memory"))
             {
@@ -312,55 +499,6 @@ namespace CapFrameX.Sensor
             return type;
         }
 
-        private string GetFormatString(SensorType sensorType)
-        {
-            string formatString = "{0}";
-            switch (sensorType)
-            {
-                case SensorType.Voltage:
-                    formatString = "{0,4:F2}<S=50>V  <S>";
-                    break;
-                case SensorType.Clock:
-                    formatString = "{0,4:F0}<S=50>MHz<S>";
-                    break;
-                case SensorType.Temperature:
-                    formatString = "{0,4:F0}<S=50>" + GetDegreeCelciusUnitByCulture() + " <S>";
-                    break;
-                case SensorType.Load:
-                    formatString = "{0,4:F0}<S=50>%  <S>";
-                    break;
-                case SensorType.Fan:
-                    formatString = "{0,4:F0}<S=50>RPM<S>";
-                    break;
-                case SensorType.Flow:
-                    formatString = "{0,4:F0}<S=50>L/h<S>";
-                    break;
-                case SensorType.Control:
-                    formatString = "{0,4:F0}<S=50>%  <S>";
-                    break;
-                case SensorType.Level:
-                    formatString = "{0,4:F0}<S=50>%  <S>";
-                    break;
-                case SensorType.Factor:
-                    formatString = "{0,4:F0}<S=50>   <S>";
-                    break;
-                case SensorType.Power:
-                    formatString = "{0,4:F1}<S=50>W  <S>";
-                    break;
-                case SensorType.Data:
-                    formatString = "{0,4:F2}<S=50>GB <S>";
-                    break;
-                case SensorType.SmallData:
-                    formatString = "{0,4:F0}<S=50>MB <S>";
-                    break;
-                case SensorType.Throughput:
-                    formatString = "{0,4:F0}<S=50>MB/s<S>";
-                    break;
-            }
-
-            return formatString;
-        }
-
         private IOverlayEntry[] GetSensorOverlayEntries()
         {
             lock (_dictLock)
@@ -433,6 +571,7 @@ namespace CapFrameX.Sensor
             var sensors = GetSensors();
             foreach (var sensor in sensors)
             {
+                if (sensor.Value != null)
                 dict.TryAdd(sensor, sensor.Value.Value);
             }
 
@@ -441,45 +580,65 @@ namespace CapFrameX.Sensor
 
         private IEnumerable<ISensor> GetSensors()
         {
-            var sensors = _computer.Hardware.SelectMany(hardware =>
+            IEnumerable<ISensor> sensors = null;
+            lock (_lockComputer)
             {
-                hardware.Update();
-                return hardware.Sensors.Concat(hardware.SubHardware.SelectMany(subHardware =>
-                {
-                    subHardware.Update();
-                    return subHardware.Sensors;
-                }));
-            });
+                sensors = _computer.Hardware.SelectMany(hardware =>
+                   {
+                       hardware.Update();
+                       return hardware.Sensors.Concat(hardware.SubHardware.SelectMany(subHardware =>
+                       {
+                           subHardware.Update();
+                           return subHardware.Sensors;
+                       }));
+                   });
+            }
+
             return sensors;
         }
 
         public void CloseOpenHardwareMonitor()
         {
-            _computer?.Close();
+            lock (_lockComputer)
+            {
+                _computer?.Close();
+            }
         }
 
         public string GetGpuDriverVersion()
         {
-            var gpu = _computer.Hardware
-                .FirstOrDefault(hdw => hdw.HardwareType == HardwareType.GpuAti
-                    || hdw.HardwareType == HardwareType.GpuNvidia);
+            IHardware gpu = null;
+            lock (_lockComputer)
+            {
+                gpu = _computer.Hardware
+               .FirstOrDefault(hdw => hdw.HardwareType == HardwareType.GpuAti
+                   || hdw.HardwareType == HardwareType.GpuNvidia);
+            }
 
             return gpu != null ? gpu.GetDriverVersion() : "Unknown";
         }
 
         public string GetCpuName()
         {
-            var cpu = _computer.Hardware
-                .FirstOrDefault(hdw => hdw.HardwareType == HardwareType.CPU);
+            IHardware cpu = null;
+            lock (_lockComputer)
+            {
+                cpu = _computer.Hardware
+                    .FirstOrDefault(hdw => hdw.HardwareType == HardwareType.CPU);
+            }
 
             return cpu != null ? cpu.Name : "Unknown";
         }
 
         public string GetGpuName()
         {
-            var gpu = _computer.Hardware
-                .FirstOrDefault(hdw => hdw.HardwareType == HardwareType.GpuAti
-                    || hdw.HardwareType == HardwareType.GpuNvidia);
+            IHardware gpu = null;
+            lock (_lockComputer)
+            {
+                gpu = _computer.Hardware
+                   .FirstOrDefault(hdw => hdw.HardwareType == HardwareType.GpuAti
+                       || hdw.HardwareType == HardwareType.GpuNvidia);
+            }
 
             return gpu != null ? gpu.Name : "Unknown";
         }

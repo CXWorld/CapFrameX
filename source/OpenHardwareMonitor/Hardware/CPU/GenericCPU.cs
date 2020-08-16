@@ -50,7 +50,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
         private string CoreThreadString(int i)
         {
             if (coreThreadCount == 1)
-                return CoreString(i);
+                return CoreString(i) + " - Thread #1";
 
             if (coreCount == 1)
                 return "CPU Core - Thread #" + (i + 1);

@@ -60,7 +60,7 @@
         </tb:TaskbarIcon>
         <Grid>
 			<Grid.ColumnDefinitions>
-                <ColumnDefinition Width="400" MaxWidth="{Binding ElementName=ShellWindow, Path=ActualWidth, Converter={StaticResource AddValueConverter}}"/>
+                <ColumnDefinition Width="400" MaxWidth="{Binding ElementName=ShellWindow, Path=ActualWidth, Converter={StaticResource AddValueConverter}}" MinWidth="8"/>
                 <ColumnDefinition Width="5" />
 				<ColumnDefinition Width="1*" MinWidth="800"/>
 			</Grid.ColumnDefinitions>

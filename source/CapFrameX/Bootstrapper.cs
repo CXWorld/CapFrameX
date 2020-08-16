@@ -48,7 +48,15 @@ namespace CapFrameX
 			base.InitializeShell();
 			LogAppInfo();
 			Application.Current.MainWindow = (Window)Shell;
+
+			var config = Container.Resolve<CapFrameXConfiguration>();
+			if (config.StartMinimized)
+				Application.Current.MainWindow.WindowState = WindowState.Minimized;
+
 			Application.Current.MainWindow.Show();
+
+			if (config.StartMinimized)
+				Application.Current.MainWindow.Hide();
 		}
 
 		protected override void ConfigureContainer()
@@ -59,7 +67,7 @@ namespace CapFrameX
 			Container.Register<IEventAggregator, EventAggregator>(Reuse.Singleton, null, null, IfAlreadyRegistered.Replace, "EventAggregator");
 			Container.Register<IAppConfiguration, CapFrameXConfiguration>(Reuse.Singleton);
 			Container.RegisterInstance<IFrametimeStatisticProviderOptions>(Container.Resolve<CapFrameXConfiguration>());
-			Container.ConfigureSerilogILogger(CreateLoggerConfiguration(Container.Resolve<IAppConfiguration>()));
+			Container.ConfigureSerilogILogger(Log.Logger);
 
 			// Prism
 			Container.Register<IRegionManager, RegionManager>(Reuse.Singleton, null, null, IfAlreadyRegistered.Replace, "RegionManager");
@@ -71,11 +79,11 @@ namespace CapFrameX
 			Container.Register<ICaptureService, PresentMonCaptureService>(Reuse.Singleton);
 			Container.Register<IRTSSService, RTSSService>(Reuse.Singleton);
 			Container.Register<IOverlayService, OverlayService>(Reuse.Singleton);
-			Container.Register<ISystemInfo, SystemInfo>(Reuse.Singleton);
 			Container.Register<IOnlineMetricService, OnlineMetricService>(Reuse.Singleton);
 			Container.Register<ISensorService, SensorService>(Reuse.Singleton);
 			Container.Register<IOverlayEntryProvider, OverlayEntryProvider>(Reuse.Singleton);
 			Container.Register<IRecordManager, RecordManager>(Reuse.Singleton);
+			Container.Register<ISystemInfo, SystemInfo>(Reuse.Singleton);
 			Container.Register<IAppVersionProvider, AppVersionProvider>(Reuse.Singleton);
 			Container.RegisterInstance<IWebVersionProvider>(new WebVersionProvider(), Reuse.Singleton);
 			Container.Register<IUpdateCheck, UpdateCheck>(Reuse.Singleton);
@@ -125,22 +133,6 @@ namespace CapFrameX
 
 			ModuleCatalog moduleCatalog = (ModuleCatalog)ModuleCatalog;
 			moduleCatalog.AddModule(typeof(CapFrameXViewRegion));
-		}
-
-		private LoggerConfiguration CreateLoggerConfiguration(IAppConfiguration appConfiguration)
-		{
-			var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), @"CapFrameX\Logs");
-
-			return new LoggerConfiguration()
-				.MinimumLevel.Debug()
-				.Enrich.FromLogContext()
-				.WriteTo.File(
-					path: Path.Combine(path, "CapFrameX.log"),
-					fileSizeLimitBytes: 1024*10000, // approx 10MB
-					rollOnFileSizeLimit: true, // if filesize is reached, it created a new file
-					retainedFileCountLimit: 10, // it keeps max 10 files
-					formatter: new CompactJsonFormatter()
-				);
 		}
 
 		private void LogAppInfo()

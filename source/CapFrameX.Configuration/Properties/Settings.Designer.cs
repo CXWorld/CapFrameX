@@ -25,13 +25,25 @@ namespace CapFrameX.Configuration.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("40")]
+        [global::System.Configuration.DefaultSettingValueAttribute("100")]
         public int MovingAverageWindowSize {
             get {
                 return ((int)(this["MovingAverageWindowSize"]));
             }
             set {
                 this["MovingAverageWindowSize"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("500")]
+        public int IntervalAverageWindowTime {
+            get {
+                return ((int)(this["IntervalAverageWindowTime"]));
+            }
+            set {
+                this["IntervalAverageWindowTime"] = value;
             }
         }
         
@@ -812,6 +824,66 @@ namespace CapFrameX.Configuration.Properties {
             }
             set {
                 this["CaptureFileMode"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool UseSingleRecordCpuFpsPerWattParameter {
+            get {
+                return ((bool)(this["UseSingleRecordCpuFpsPerWattParameter"]));
+            }
+            set {
+                this["UseSingleRecordCpuFpsPerWattParameter"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool UseSingleRecordGpuFpsPerWattParameter {
+            get {
+                return ((bool)(this["UseSingleRecordGpuFpsPerWattParameter"]));
+            }
+            set {
+                this["UseSingleRecordGpuFpsPerWattParameter"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool StartMinimized {
+            get {
+                return ((bool)(this["StartMinimized"]));
+            }
+            set {
+                this["StartMinimized"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool Autostart {
+            get {
+                return ((bool)(this["Autostart"]));
+            }
+            set {
+                this["Autostart"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Average")]
+        public string FirstMetric {
+            get {
+                return ((string)(this["FirstMetric"]));
+            }
+            set {
+                this["FirstMetric"] = value;
             }
         }
     }

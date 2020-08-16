@@ -9,9 +9,11 @@ using Microsoft.Extensions.Logging;
 using Prism.Events;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 
 namespace CapFrameX.View
 {
@@ -135,15 +137,28 @@ namespace CapFrameX.View
 			Keyboard.ClearFocus();
 		}
 
-		private void OverlayItemDataGrid_MouseLeave(object sender, MouseEventArgs e)
-		{
-			(DataContext as OverlayViewModel).SelectedOverlayEntryIndex = -1;
-		}
-
 		private void Hyperlink_RequestNavigate(object sender, System.Windows.Navigation.RequestNavigateEventArgs e)
 		{
 			Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri));
 			e.Handled = true;
+		}
+
+		private void SelectedColorChanged(object sender, RoutedPropertyChangedEventArgs<Color?> e) { }
+
+        private void LostFocus_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+			var key = e.Key;
+
+			if (key == Key.Enter)
+			{
+				OverlayItemDataGrid.Focus();
+			}
+		}
+
+		private void NumberValidationTextBox(object sender, TextCompositionEventArgs e)
+		{
+			Regex regex = new Regex("[^0-9.-]+");
+			e.Handled = regex.IsMatch(e.Text);
 		}
 	}
 }

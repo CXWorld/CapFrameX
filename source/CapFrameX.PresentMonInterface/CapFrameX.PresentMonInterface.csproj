@@ -53,6 +53,9 @@
     <Reference Include="ConsoleAppLauncher, Version=1.0.6354.408, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\ConsoleAppLauncher.1.0.6354.408\lib\net40\ConsoleAppLauncher.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.Extensions.Logging.Abstractions, Version=3.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.Extensions.Logging.Abstractions.3.1.1\lib\netstandard2.0\Microsoft.Extensions.Logging.Abstractions.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Management" />
@@ -121,10 +124,6 @@
     <ProjectReference Include="..\CapFrameX.Statistics.NetStandard\CapFrameX.Statistics.NetStandard.csproj">
       <Project>{7D35C9C8-6E9A-4ABB-9042-930BE5E26DC6}</Project>
       <Name>CapFrameX.Statistics.NetStandard</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CapFrameX.Statistics\CapFrameX.Statistics.csproj">
-      <Project>{788F49CD-ABCB-4C7C-B1B6-BF9DC2482432}</Project>
-      <Name>CapFrameX.Statistics</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

@@ -37,6 +37,10 @@ namespace CapFrameX.Contracts.Configuration
 
 		bool UseSingleRecordAdaptiveSTDStatisticParameter { get; set; }
 
+		bool UseSingleRecordCpuFpsPerWattParameter { get; set; }
+
+		bool UseSingleRecordGpuFpsPerWattParameter { get; set; }
+
 		string CaptureHotKey { get; set; }
 
 		string OverlayHotKey { get; set; }
@@ -48,6 +52,8 @@ namespace CapFrameX.Contracts.Configuration
 		double VoiceSoundLevel { get; set; }
 
 		double SimpleSoundLevel { get; set; }
+
+		string FirstMetric { get; set; }
 
 		string SecondMetric { get; set; }
 
@@ -130,5 +136,9 @@ namespace CapFrameX.Contracts.Configuration
 		bool ShowThresholdTimes { get; set; }
 
 		string CaptureFileMode { get; set; }
+
+		bool StartMinimized { get; set; }
+
+		bool Autostart { get; set; }
 	}
 }

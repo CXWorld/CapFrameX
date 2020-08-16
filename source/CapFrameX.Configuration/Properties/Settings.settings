@@ -3,7 +3,10 @@
   <Profiles />
   <Settings>
     <Setting Name="MovingAverageWindowSize" Type="System.Int32" Scope="User">
-      <Value Profile="(Default)">40</Value>
+      <Value Profile="(Default)">100</Value>
+    </Setting>
+    <Setting Name="IntervalAverageWindowTime" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">500</Value>
     </Setting>
     <Setting Name="StutteringFactor" Type="System.Double" Scope="User">
       <Value Profile="(Default)">2.5</Value>
@@ -199,6 +202,21 @@
     </Setting>
     <Setting Name="CaptureFileMode" Type="System.String" Scope="User">
       <Value Profile="(Default)">Json</Value>
+    </Setting>
+    <Setting Name="UseSingleRecordCpuFpsPerWattParameter" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="UseSingleRecordGpuFpsPerWattParameter" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="StartMinimized" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="Autostart" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="FirstMetric" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Average</Value>
     </Setting>
   </Settings>
 </SettingsFile>

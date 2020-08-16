@@ -1,31 +1,78 @@
-﻿namespace CapFrameX.Contracts.Overlay
+﻿using System;
+
+namespace CapFrameX.Contracts.Overlay
 {
-	public interface IOverlayEntry
-	{
-		IOverlayEntryProvider OverlayEntryProvider { get; set; }
+    public enum LimitState
+    {
+        Lower,
+        Upper,
+        None,
+        Undefined
+    }
 
-		string Identifier { get; }
+    public interface IOverlayEntry
+    {
+        string Identifier { get; }
 
-		EOverlayEntryType OverlayEntryType { get; }
+        EOverlayEntryType OverlayEntryType { get; }
 
-		string Description { get; }
+        string Description { get; }
 
-		object Value { get; set; }
+        object Value { get; set; }
 
-		string ValueFormat { get; set; }
+        string ValueFormat { get; set; }
 
-		string FormattedValue { get; }
+        string FormattedValue { get; }
 
-	    bool ShowOnOverlay { get; set; }
+        bool ShowOnOverlay { get; set; }
 
-		bool ShowOnOverlayIsEnabled { get; set; }
+        bool ShowOnOverlayIsEnabled { get; set; }
 
-		string GroupName { get; set; }
+        string GroupName { get; set; }
 
-		bool ShowGraph { get; set; }
+        bool ShowGraph { get; set; }
 
-		bool ShowGraphIsEnabled { get; set; }
+        bool ShowGraphIsEnabled { get; set; }
 
-		string Color { get; set; }
-	}
+        /// <summary>
+        /// Value standard color
+        /// </summary>
+        string Color { get; set; }
+
+        int ValueFontSize { get; set; }
+
+        string FormattedGroupName { get; }
+
+        string GroupNameFormat { get; set; }
+
+        string UpperLimitValue { get; set; }
+
+        string LowerLimitValue { get; set; }
+
+        string GroupColor { get; set; }
+
+        int GroupFontSize { get; set; }
+
+        int GroupSeparators { get; set; }
+
+        string UpperLimitColor { get; set; }
+
+        string LowerLimitColor { get; set; }
+
+        bool FormatChanged { get; set; }
+
+        bool IsNumeric { get; set; }
+
+        string ValueAlignmentAndDigits { get; set; }
+
+        string ValueUnitFormat { get; set; }
+
+        LimitState LastLimitState { get; set; }
+
+        Action<string> UpdateGroupName { get; set; }
+
+        Action PropertyChangedAction { set; get; }
+
+        IOverlayEntry Clone();
+    }
 }

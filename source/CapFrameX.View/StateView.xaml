@@ -33,7 +33,7 @@
             <ColumnDefinition Width="2*"></ColumnDefinition>
             <ColumnDefinition Width="1*"></ColumnDefinition>
         </Grid.ColumnDefinitions>
-        <TextBlock Grid.Column="1" Grid.ColumnSpan="2" HorizontalAlignment="Center" VerticalAlignment="Center"
+        <TextBlock Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Center" VerticalAlignment="Center"
 				   Visibility="{Binding IsUpdateAvailable, Converter={StaticResource FalseToCollapsedConverter}}">           
 			<Hyperlink NavigateUri="https://github.com/DevTechProfile/CapFrameX/releases" RequestNavigate="Hyperlink_RequestNavigate">
 				<TextBlock Text="{Binding Path=UpdateHyperlinkText}"/>

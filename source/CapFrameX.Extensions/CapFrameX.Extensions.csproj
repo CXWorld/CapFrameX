@@ -106,6 +106,7 @@
     <Compile Include="EnumExtensions.cs" />
     <Compile Include="HttpRequestHeadersExtensions.cs" />
     <Compile Include="LinqExtensions.cs" />
+    <Compile Include="ObjectCopier.cs" />
     <Compile Include="ObjectExtensions.cs" />
     <Compile Include="ObservableExtensions.cs" />
     <Compile Include="ReflectionExtensions.cs" />

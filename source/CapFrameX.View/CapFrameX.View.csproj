@@ -179,6 +179,7 @@
       <DependentUpon>ComparisonView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controls\CustomPanManipulator.cs" />
+    <Compile Include="Controls\CXColorPicker.cs" />
     <Compile Include="Controls\EAxisDescription.cs" />
     <Compile Include="Controls\FpsGraphControl.xaml.cs">
       <DependentUpon>FpsGraphControl.xaml</DependentUpon>
@@ -190,8 +191,8 @@
     <Compile Include="ColorbarView.xaml.cs">
       <DependentUpon>ColorbarView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Controls\OxyPlotHelper.cs" />
     <Compile Include="Controls\CustomZoomStepManipulator.cs" />
+    <Compile Include="Controls\PlotViewCustomZoom.cs" />
     <Compile Include="ControlView.xaml.cs">
       <DependentUpon>ControlView.xaml</DependentUpon>
     </Compile>
@@ -327,10 +328,6 @@
     <ProjectReference Include="..\CapFrameX.Statistics.NetStandard\CapFrameX.Statistics.NetStandard.csproj">
       <Project>{7D35C9C8-6E9A-4ABB-9042-930BE5E26DC6}</Project>
       <Name>CapFrameX.Statistics.NetStandard</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CapFrameX.Statistics\CapFrameX.Statistics.csproj">
-      <Project>{788F49CD-ABCB-4C7C-B1B6-BF9DC2482432}</Project>
-      <Name>CapFrameX.Statistics</Name>
     </ProjectReference>
     <ProjectReference Include="..\CapFrameX.Updater\CapFrameX.Updater.csproj">
       <Project>{5D12AA37-CC30-4476-94AD-11C15DC65518}</Project>

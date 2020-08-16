@@ -3,105 +3,108 @@ using CapFrameX.Statistics.NetStandard.Contracts;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Reactive.Subjects;
 
 namespace CapFrameX.PresentMonInterface
 {
-    public class OnlineMetricService : IOnlineMetricService
-    {
-        private const double STUTTERING_THRESHOLD = 2d;
+	public class OnlineMetricService : IOnlineMetricService
+	{
+		private const double STUTTERING_THRESHOLD = 2d;
 
-        private readonly IStatisticProvider _frametimeStatisticProvider;
-        private readonly List<double> _frametimes = new List<double>();
-        private readonly object _lock = new object();
-        private string _currentProcess;
-        private double _referenceTime = 0;
-        private double _prevTime = 0;
-        // ToDo: get value from config
-        // length in seconds
-        private readonly double _maxOnlineIntervalLength = 30d;
+		private readonly IStatisticProvider _frametimeStatisticProvider;
+		private readonly List<double> _frametimes = new List<double>();
+		private readonly List<double> _measuretimes = new List<double>();
+		private readonly object _lock = new object();
+		private string _currentProcess;
+		// ToDo: get value from config
+		// length in seconds
+		private readonly double _maxOnlineIntervalLength = 20d;
 
-        public ISubject<Tuple<string, string>> ProcessDataLineStream { get; }
-            = new Subject<Tuple<string, string>>();
+		public ISubject<Tuple<string, string>> ProcessDataLineStream { get; }
+			= new Subject<Tuple<string, string>>();
 
-        public OnlineMetricService(IStatisticProvider frametimeStatisticProvider)
-        {
-            _frametimeStatisticProvider = frametimeStatisticProvider;
-            ProcessDataLineStream.Subscribe(UpdateOnlineMetrics);
-        }
+		public OnlineMetricService(IStatisticProvider frametimeStatisticProvider)
+		{
+			_frametimeStatisticProvider = frametimeStatisticProvider;
+			ProcessDataLineStream.Subscribe(UpdateOnlineMetrics);
+		}
 
-        private void UpdateOnlineMetrics(Tuple<string, string> dataSet)
-        {
-            if (dataSet == null)
-                return;
+		private void UpdateOnlineMetrics(Tuple<string, string> dataSet)
+		{
+			if (dataSet == null)
+				return;
 
-            if (dataSet.Item1 == null || dataSet.Item1 != _currentProcess)
-                ResetMetrics(dataSet.Item2);
+			if (dataSet.Item1 == null || dataSet.Item1 != _currentProcess)
+				ResetMetrics();
 
-            _currentProcess = dataSet.Item1;
+			_currentProcess = dataSet.Item1;
 
-            var lineSplit = dataSet.Item2.Split(',');
+			var lineSplit = dataSet.Item2.Split(',');
 
-            if (lineSplit.Length <= 12)
-                return;
+			if (lineSplit.Length <= 12)
+				return;
 
-            double.TryParse(lineSplit[11], NumberStyles.Any, CultureInfo.InvariantCulture, out double variable);
-            var startTime = variable;
+			if (!double.TryParse(lineSplit[11], NumberStyles.Any, CultureInfo.InvariantCulture, out double startTime))
+			{
+				ResetMetrics();
+				return;
+			}
 
-            // if there's break in the frame times sequence, do a reset
-            // this is usually the case when the game has lost focus
-            // threshold should be greater than stuttering time
-            if (startTime - _prevTime > STUTTERING_THRESHOLD)
-                ResetMetrics(dataSet.Item2);
+			if (!double.TryParse(lineSplit[12], NumberStyles.Any, CultureInfo.InvariantCulture, out double frameTime))
+			{
+				ResetMetrics();
+				return;
+			}
 
-            _prevTime = startTime;
+			// it makes no sense to calculate fps metrics with
+			// frame times above the stuttering threshold
+			// filtering high frame times caused by focus lost for example
+			if (frameTime > STUTTERING_THRESHOLD * 1E03)
+			{
+				return;
+			}
 
-            double.TryParse(lineSplit[12], NumberStyles.Any, CultureInfo.InvariantCulture, out variable);
-            var frameTime = variable;
+			string processName = lineSplit[0].Replace(".exe", "");
 
-            // it makes no sense to calculate fps metrics with
-            // frame times above the stuttering threshold
-            // filtering high frame times caused by focus lost for example
-            if (frameTime > STUTTERING_THRESHOLD * 1E03)
-            {
-                ResetMetrics(dataSet.Item2);
-                return;
-            }
+			if (_currentProcess == processName)
+			{
+				lock (_lock)
+				{
+					_measuretimes.Add(startTime);
+					_frametimes.Add(frameTime);
 
-            string processName = lineSplit[0].Replace(".exe", "");
+					if (startTime - _measuretimes.First() > _maxOnlineIntervalLength)
+					{
+						int position = 0;
+						while (position < _measuretimes.Count && 
+							startTime - _measuretimes[position] > _maxOnlineIntervalLength) 
+							position++;
 
-            if (_currentProcess == processName)
-            {
-                lock (_lock)
-                {
-                    if (startTime - _referenceTime <= _maxOnlineIntervalLength)
-                        _frametimes.Add(frameTime);
-                    else
-                    {
-                        _frametimes.Add(frameTime);
-                        _frametimes.RemoveAt(0);
-                    }
-                }
-            }
-        }
+						if (position > 0)
+						{
+							_frametimes.RemoveRange(0, position);
+							_measuretimes.RemoveRange(0, position);
+						}
+					}
+				}
+			}
+		}
 
-        private void ResetMetrics(string dataLine)
-        {
-            var lineSplit = dataLine.Split(',');
-            if (lineSplit.Length >= 12)
-            {
-                double.TryParse(lineSplit[11], NumberStyles.Any, CultureInfo.InvariantCulture, out double variable);
-                _referenceTime = variable;
-            }
+		private void ResetMetrics()
+		{
+			lock (_lock)
+			{
+				_frametimes.Clear();
+				_measuretimes.Clear();
+			}
+		}
 
-            lock (_lock)
-                _frametimes.Clear();
-        }
-
-        public double GetOnlineFpsMetricValue(EMetric metric)
-        {
-            lock (_lock)
-                return _frametimeStatisticProvider.GetFpsMetricValue(_frametimes, metric);
-        }
-    }
+		public double GetOnlineFpsMetricValue(EMetric metric)
+		{
+			lock (_lock)
+				return _frametimeStatisticProvider
+					.GetFpsMetricValue(_frametimes, metric);
+		}
+	}
 }

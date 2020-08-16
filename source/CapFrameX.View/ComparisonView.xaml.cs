@@ -1,16 +1,11 @@
-﻿using CapFrameX.Configuration;
-using CapFrameX.Data;
-using CapFrameX.Statistics;
-using CapFrameX.View.Controls;
-using CapFrameX.ViewModel;
-using Microsoft.Extensions.Logging;
-using Prism.Events;
+﻿using CapFrameX.ViewModel;
 using System;
-using System.ComponentModel;
 using System.Reactive.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 
 namespace CapFrameX.View
@@ -21,20 +16,14 @@ namespace CapFrameX.View
 	public partial class ComparisonView : UserControl
 	{
 		public ComparisonView()
-		{
+		{			
 			InitializeComponent();
-			OxyPlotHelper.SetAxisZoomWheelAndPan(ComparisonPlotView);
 
 			var context = SynchronizationContext.Current;
 			(DataContext as ComparisonViewModel)?.ResetLShapeChart
 				.ObserveOn(context)
 				.SubscribeOn(context)
 				.Subscribe(dummy => ResetLShapeChart());
-		}
-
-		private void ResetFrametimeChart_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
-		{
-			ComparisonPlotView.ResetAllAxes();
 		}
 
 		private void ResetLShapeChart_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
@@ -52,5 +41,33 @@ namespace CapFrameX.View
 		}
 
 		private void SelectedColorChanged(object sender, RoutedPropertyChangedEventArgs<Color?> e) { }
-	}
+
+		private void FirstSecondsTextBox_PreviewKeyDown(object sender, KeyEventArgs e)
+		{
+			var key = e.Key;
+
+			if (key == Key.Enter)
+			{
+				GraphTab.Focus();
+			}
+			(DataContext as ComparisonViewModel).OnRangeSliderValuesChanged();
+		}
+
+		private void LastSecondsTextBox_PreviewKeyDown(object sender, KeyEventArgs e)
+		{
+			var key = e.Key;
+
+			if (key == Key.Enter)
+			{
+				GraphTab.Focus();
+			}
+			(DataContext as ComparisonViewModel).OnRangeSliderValuesChanged();
+		}
+
+		private void NumberValidationTextBox(object sender, TextCompositionEventArgs e)
+		{
+			Regex regex = new Regex("[^0-9.-]+");
+			e.Handled = regex.IsMatch(e.Text);
+		}
+    }
 }

@@ -1,16 +1,16 @@
 ﻿using CapFrameX.Contracts.Overlay;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Reactive.Subjects;
 
 namespace CapFrameX.Contracts.RTSS
 {
     public interface IRTSSService
     {
+        ISubject<uint> ProcessIdStream { get; }
         bool IsRTSSInstalled();
         string GetApiInfo(uint processId);
+        Tuple<double, double> GetCurrentFramerate(uint processId);
+        Tuple<double, double> GetCurrentFramerateFromForegroundWindow();
         void CheckRTSSRunningAndRefresh();
         void ResetOSD();
         void ReleaseOSD();

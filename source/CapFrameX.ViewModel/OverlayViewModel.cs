@@ -2,11 +2,13 @@
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.RTSS;
 using CapFrameX.Contracts.Sensor;
+using CapFrameX.Data;
+using CapFrameX.Extensions;
 using CapFrameX.Extensions.NetStandard;
 using CapFrameX.Hotkey;
 using CapFrameX.Overlay;
-using CapFrameX.Statistics;
 using CapFrameX.Statistics.NetStandard.Contracts;
+using CapFrameX.ViewModel.SubModels;
 using Gma.System.MouseKeyHook;
 using GongSolutions.Wpf.DragDrop;
 using Prism.Commands;
@@ -21,6 +23,7 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 
 namespace CapFrameX.ViewModel
@@ -36,7 +39,43 @@ namespace CapFrameX.ViewModel
         private IKeyboardMouseEvents _globalOverlayHookEvent;
         private IKeyboardMouseEvents _globalResetHistoryHookEvent;
         private int _selectedOverlayEntryIndex = -1;
+        private IOverlayEntry _selectedOverlayEntry;
+        private IOverlayEntryFormatChange _checkboxes = new OverlayEntryFormatChange();
         private string _updateHpyerlinkText;
+        private bool _setSensorTypeButtonEnabled;
+        private bool _setGroupButtonEnabled;
+        private bool _overlayItemsOptionsEnabled = false;
+        private bool _saveButtonIsEnable;
+
+        public bool OverlayItemsOptionsEnabled
+        {
+            get { return _overlayItemsOptionsEnabled; }
+            set
+            {
+                _overlayItemsOptionsEnabled = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public bool SetGroupButtonEnabled
+        {
+            get => _setGroupButtonEnabled;
+            set
+            {
+                _setGroupButtonEnabled = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public bool SetSensorTypeButtonEnabled
+        {
+            get => _setSensorTypeButtonEnabled;
+            set
+            {
+                _setSensorTypeButtonEnabled = value;
+                RaisePropertyChanged();
+            }
+        }
 
         public bool IsOverlayActive
         {
@@ -232,6 +271,35 @@ namespace CapFrameX.ViewModel
             set
             {
                 _selectedOverlayEntryIndex = value;
+                OverlayItemsOptionsEnabled = _selectedOverlayEntryIndex > -1 ? true : false;
+                RaisePropertyChanged();
+                RaisePropertyChanged(nameof(SelectedOverlayItemName));
+                RaisePropertyChanged(nameof(SelectedOverlayItemGroupName));
+                RaisePropertyChanged(nameof(SelectedOverlayItemSensorType));
+            }
+        }
+
+        public IOverlayEntry SelectedOverlayEntry
+        {
+            get { return _selectedOverlayEntry; }
+            set
+            {
+                if (value != null && value.Identifier == "RunHistory")
+                    OverlayItemsOptionsEnabled = false;
+
+                _selectedOverlayEntry = value;
+                RaisePropertyChanged();
+                DetermineMultipleGroupEntries(_selectedOverlayEntry);
+                DetermineMultipleSensorTypeEntries(_selectedOverlayEntry);
+            }
+        }
+
+        public IOverlayEntryFormatChange Checkboxes
+        {
+            get { return _checkboxes; }
+            set
+            {
+                _checkboxes = value;
                 RaisePropertyChanged();
             }
         }
@@ -302,12 +370,41 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        public bool SaveButtonIsEnable
+        {
+            get { return _saveButtonIsEnable; }
+            set
+            {
+                _saveButtonIsEnable = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public string SelectedOverlayItemName
+            => SelectedOverlayEntryIndex > -1 ?
+            OverlayEntries[SelectedOverlayEntryIndex].Description : null;
+
+        public string SelectedOverlayItemGroupName
+           => SelectedOverlayEntryIndex > -1 ?
+           OverlayEntries[SelectedOverlayEntryIndex].GroupName : null;
+
+        public string SelectedOverlayItemSensorType
+          => SelectedOverlayEntryIndex > -1 ?
+          _sensorService.GetSensorTypeString(OverlayEntries[SelectedOverlayEntryIndex]) : null;
+
         public ICommand ConfigSwitchCommand { get; }
 
         public ICommand SaveConfigCommand { get; }
 
         public ICommand ResetDefaultsCommand { get; }
 
+        public ICommand ResetColorAndLimitDefaultsCommand { get; }
+
+        public ICommand SetFormatForGroupNameCommand { get; }
+
+        public ICommand SetFormatForSensorTypeCommand { get; }
+
+        public ICommand SetToMinOsdCommand { get; }
 
         public bool IsRTSSInstalled
             => _rTSSService.IsRTSSInstalled();
@@ -338,6 +435,9 @@ namespace CapFrameX.ViewModel
         public ObservableCollection<IOverlayEntry> OverlayEntries { get; private set; }
             = new ObservableCollection<IOverlayEntry>();
 
+        public OverlayGroupControl OverlaySubModelGroupControl { get; }
+
+        public OverlayGroupSeparating OverlaySubModelGroupSeparating { get; }
 
         public OverlayViewModel(IOverlayService overlayService, IOverlayEntryProvider overlayEntryProvider,
             IAppConfiguration appConfiguration, IEventAggregator eventAggregator, ISensorService sensorService, IRTSSService rTSSService)
@@ -348,44 +448,102 @@ namespace CapFrameX.ViewModel
             _eventAggregator = eventAggregator;
             _sensorService = sensorService;
             _rTSSService = rTSSService;
+
+            // define submodels
+            OverlaySubModelGroupControl = new OverlayGroupControl(this);
+            OverlaySubModelGroupSeparating = new OverlayGroupSeparating(this);
+
             var configSubject = new Subject<object>();
             ConfigSwitchCommand = new DelegateCommand<object>(configSubject.OnNext);
             configSubject
-                .Select(obj => Convert.ToInt32(obj)).DistinctUntilChanged()
+                .Select(obj => Convert.ToInt32(obj))
+                .DistinctUntilChanged()
                 .SelectMany(index =>
                 {
                     return Observable.FromAsync(() => _overlayEntryProvider.SwitchConfigurationTo(index))
                         .SelectMany(_ => _sensorService.OnDictionaryUpdated.Take(1));
                 })
                 .StartWith(Enumerable.Empty<IOverlayEntry>())
-                .SelectMany(_ => _overlayEntryProvider.GetOverlayEntries())
+                .SelectMany(_ => overlayEntryProvider.GetOverlayEntries())
                 .ObserveOnDispatcher()
                 .Subscribe(entries =>
                 {
+                    entries.ForEach(entry => entry.UpdateGroupName = OverlaySubModelGroupSeparating.UpdateGroupName);
+                    OverlaySubModelGroupSeparating.SetOverlayEntries(entries);
+
                     OverlayEntries.Clear();
                     OverlayEntries.AddRange(entries);
                     OnUseRunHistoryChanged();
+
+                    SetSaveButtonIsEnableAction();
+                    SaveButtonIsEnable = _overlayEntryProvider.HasHardwareChanged;
                 });
 
             SaveConfigCommand = new DelegateCommand(
-                () => _overlayEntryProvider.SaveOverlayEntriesToJson());
+               async () =>
+               {
+                   SaveButtonIsEnable = false;
+                   await _overlayEntryProvider.SaveOverlayEntriesToJson();
+               });
 
             ResetDefaultsCommand = new DelegateCommand(
                 async () => await OnResetDefaults());
 
+            SetFormatForGroupNameCommand = new DelegateCommand(
+               () => _overlayEntryProvider.SetFormatForGroupName(SelectedOverlayItemGroupName, SelectedOverlayEntry, Checkboxes));
+
+            SetFormatForSensorTypeCommand = new DelegateCommand(
+               () => _overlayEntryProvider.SetFormatForSensorType(_sensorService.GetSensorTypeString(SelectedOverlayEntry), SelectedOverlayEntry, Checkboxes));
+
+            ResetColorAndLimitDefaultsCommand = new DelegateCommand(
+                () => _overlayEntryProvider.ResetColorAndLimits(SelectedOverlayEntry));
+
+            SetToMinOsdCommand = new DelegateCommand(
+                () => OnSetMinOsd());
+
             UpdateHpyerlinkText = "To use the overlay, install the latest" + Environment.NewLine +
-                "RivaTuner  Statistics  Server  (RTSS)";
+                "RivaTuner Statistics Server (RTSS)";
 
             SetGlobalHookEventOverlayHotkey();
             SetGlobalHookEventResetHistoryHotkey();
         }
 
+        private void SetSaveButtonIsEnableAction()
+        {
+            OverlayEntries.ForEach(entry => entry.PropertyChangedAction = SetSaveButtonIsEnable);
+            OverlaySubModelGroupSeparating.OverlayGroupNameSeparatorEntries.ForEach(entry => entry.PropertyChangedAction = SetSaveButtonIsEnable);
+        }
+
+        private void SetSaveButtonIsEnable()
+            => SaveButtonIsEnable = true;
+
         private async Task OnResetDefaults()
         {
             var overlayEntries = await _overlayEntryProvider.GetDefaultOverlayEntries();
+            OverlaySubModelGroupSeparating.SetOverlayEntries(overlayEntries);
             OverlayEntries.Clear();
             OverlayEntries.AddRange(overlayEntries);
+            SetSaveButtonIsEnableAction();
             OnUseRunHistoryChanged();
+            OverlayItemsOptionsEnabled = false;
+        }
+
+        private void OnSetMinOsd()
+        {
+            foreach (var entry in OverlayEntries)
+            {
+                switch (entry.Identifier)
+                {
+                    case "CaptureTimer":
+                    case "Framerate":
+                    case "Frametime":
+                        entry.ShowOnOverlay = true;
+                        break;
+                    default:
+                        entry.ShowOnOverlay = false;
+                        break;
+                }
+            }
         }
 
         private void OnUseRunHistoryChanged()
@@ -465,6 +623,32 @@ namespace CapFrameX.ViewModel
             _globalResetHistoryHookEvent.OnCXCombination(onCombinationDictionary);
         }
 
+        public void UpdateGroupNameEnable()
+        {
+            RaisePropertyChanged(nameof(SelectedOverlayItemGroupName));
+            DetermineMultipleGroupEntries(_selectedOverlayEntry);
+        }
+
+        public void DetermineMultipleGroupEntries(IOverlayEntry selectedEntry)
+        {
+            if (selectedEntry == null)
+                return;
+
+            SetGroupButtonEnabled =
+                OverlayEntries.Count(entry => entry.GroupName == selectedEntry.GroupName) > 1;
+        }
+
+        public void DetermineMultipleSensorTypeEntries(IOverlayEntry selectedEntry)
+        {
+            if (selectedEntry == null)
+                return;
+
+            string selectedSensorType = _sensorService.GetSensorTypeString(selectedEntry);
+            SetSensorTypeButtonEnabled = selectedSensorType != string.Empty &&
+                OverlayEntries.Count((entry => _sensorService.GetSensorTypeString(entry) == selectedSensorType)) > 1;
+        }
+
+
         public bool IsNavigationTarget(NavigationContext navigationContext)
         {
             return true;
@@ -492,7 +676,16 @@ namespace CapFrameX.ViewModel
                             int sourceIndex = OverlayEntries.IndexOf(overlayEntry);
                             int targetIndex = dropInfo.InsertIndex;
 
-                            _overlayEntryProvider.MoveEntry(sourceIndex, targetIndex);
+                            // move downwards
+                            if (sourceIndex < targetIndex)
+                            {
+                                _overlayEntryProvider.MoveEntry(sourceIndex, targetIndex - 1);
+                            }
+                            // moving upwards
+                            else
+                            {
+                                _overlayEntryProvider.MoveEntry(sourceIndex, targetIndex);
+                            }
 
                             OverlayEntries.Clear();
                             OverlayEntries.AddRange(await _overlayEntryProvider.GetOverlayEntries());
@@ -504,6 +697,7 @@ namespace CapFrameX.ViewModel
                             int sourceIndex = OverlayEntries.IndexOf(overlayEntries.First());
                             int targetIndex = dropInfo.InsertIndex;
 
+                            // move downwards
                             if (sourceIndex < targetIndex)
                             {
                                 for (int i = 0; i < count; i++)
@@ -511,17 +705,20 @@ namespace CapFrameX.ViewModel
                                     _overlayEntryProvider.MoveEntry(sourceIndex, targetIndex - 1);
                                 }
                             }
+                            // moving upwards
                             else
                             {
                                 for (int i = 0; i < count; i++)
                                 {
-                                    _overlayEntryProvider.MoveEntry(sourceIndex + i, targetIndex);
+                                    _overlayEntryProvider.MoveEntry(sourceIndex + i, targetIndex + i);
                                 }
                             }
 
                             OverlayEntries.Clear();
                             OverlayEntries.AddRange(await _overlayEntryProvider.GetOverlayEntries());
                         }
+
+                        SetSaveButtonIsEnable();
                     }
                 }
             }

@@ -3,8 +3,10 @@ using LiveCharts;
 using LiveCharts.Wpf;
 using System;
 using System.Reactive.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows.Controls;
+using System.Windows.Input;
 
 namespace CapFrameX.View
 {
@@ -53,6 +55,35 @@ namespace CapFrameX.View
 		private void RangeSlider_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
 		{
 			(DataContext as DataViewModel).OnRangeSliderDragCompleted();
+		}
+
+		private void FirstSecondsTextBox_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+		{
+			var key = e.Key;
+
+			if (key == Key.Enter)
+			{
+				GraphTab.Focus();
+				(DataContext as DataViewModel).OnRangeSliderDragCompleted();
+			}
+				
+		}
+
+		private void LastSecondsTextBox_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+		{
+			var key = e.Key;
+
+			if (key == Key.Enter)
+			{
+				GraphTab.Focus();
+				(DataContext as DataViewModel).OnRangeSliderDragCompleted();
+			}			
+		}
+
+		private void NumberValidationTextBox(object sender, TextCompositionEventArgs e)
+		{
+			Regex regex = new Regex("[^0-9.-]+");
+			e.Handled = regex.IsMatch(e.Text);
 		}
 	}
 }

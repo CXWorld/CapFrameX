@@ -5,11 +5,19 @@ namespace CapFrameX.Contracts.Overlay
 {
 	public interface IOverlayEntryProvider
 	{
-		void MoveEntry(int sourceIndex, int targetIndex);
+		bool HasHardwareChanged { get; }
 
 		IOverlayEntry GetOverlayEntry(string identifier);
 
-		bool SaveOverlayEntriesToJson();
+		void MoveEntry(int sourceIndex, int targetIndex);
+
+		void ResetColorAndLimits(IOverlayEntry selectedEntry);
+
+		void SetFormatForGroupName(string groupName, IOverlayEntry selectedEntry, IOverlayEntryFormatChange checkboxes);
+
+		void SetFormatForSensorType(string sensorType, IOverlayEntry selectedEntry, IOverlayEntryFormatChange checkboxes);
+
+		Task SaveOverlayEntriesToJson();
 
 		Task SwitchConfigurationTo(int index);
 

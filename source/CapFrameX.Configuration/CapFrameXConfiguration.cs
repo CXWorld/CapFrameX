@@ -1,5 +1,4 @@
 ﻿using CapFrameX.Contracts.Configuration;
-using CapFrameX.Statistics.NetStandard.Contracts;
 
 namespace CapFrameX.Configuration
 {
@@ -11,6 +10,12 @@ namespace CapFrameX.Configuration
 		{
 			get { return Settings.MovingAverageWindowSize; }
 			set { Settings.MovingAverageWindowSize = value; Settings.Save(); }
+		}
+
+		public int IntervalAverageWindowTime
+		{
+			get { return Settings.IntervalAverageWindowTime; }
+			set { Settings.IntervalAverageWindowTime = value; Settings.Save(); }
 		}
 
 		public double StutteringFactor
@@ -115,7 +120,19 @@ namespace CapFrameX.Configuration
 			set { Settings.UseSingleRecordAdaptiveSTDStatisticParameter = value; Settings.Save(); }
 		}
 
-        public string CaptureHotKey
+		public bool UseSingleRecordCpuFpsPerWattParameter
+		{
+			get { return Settings.UseSingleRecordCpuFpsPerWattParameter; }
+			set { Settings.UseSingleRecordCpuFpsPerWattParameter = value; Settings.Save(); }
+		}
+
+		public bool UseSingleRecordGpuFpsPerWattParameter
+		{
+			get { return Settings.UseSingleRecordGpuFpsPerWattParameter; }
+			set { Settings.UseSingleRecordGpuFpsPerWattParameter = value; Settings.Save(); }
+		}
+
+		public string CaptureHotKey
         {
             get { return Settings.CaptureHotKey; }
             set { Settings.CaptureHotKey = value; Settings.Save(); }
@@ -150,6 +167,12 @@ namespace CapFrameX.Configuration
             get { return Settings.SimpleSoundLevel; }
             set { Settings.SimpleSoundLevel = value; Settings.Save(); }
         }
+
+		public string FirstMetric
+		{
+			get { return Settings.FirstMetric; }
+			set { Settings.FirstMetric = value; Settings.Save(); }
+		}
 
 		public string SecondMetric 
 		{
@@ -387,10 +410,23 @@ namespace CapFrameX.Configuration
 			get { return Settings.ShowThresholdTimes; }
 			set { Settings.ShowThresholdTimes = value; Settings.Save(); }
 		}
+
 		public string CaptureFileMode
 		{
 			get { return Settings.CaptureFileMode; }
 			set { Settings.CaptureFileMode = value; Settings.Save(); }
+		}
+
+		public bool StartMinimized
+		{
+			get { return Settings.StartMinimized; }
+			set { Settings.StartMinimized = value; Settings.Save(); }
+		}
+
+		public bool Autostart
+		{
+			get { return Settings.Autostart; }
+			set { Settings.Autostart = value; Settings.Save(); }
 		}
 	}
 }

@@ -2,6 +2,7 @@
 using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.PresentMonInterface;
+using CapFrameX.Contracts.RTSS;
 using CapFrameX.Contracts.Sensor;
 using CapFrameX.Data;
 using CapFrameX.Hotkey;
@@ -20,6 +21,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
@@ -36,6 +38,8 @@ namespace CapFrameX.ViewModel
         private const int PRESICE_OFFSET = 2500;
         private const int ARCHIVE_LENGTH = 500;
 
+        private readonly object _archiveLock = new object();
+
         [DllImport("Kernel32.dll")]
         private static extern bool QueryPerformanceCounter(out long lpPerformanceCount);
 
@@ -47,6 +51,7 @@ namespace CapFrameX.ViewModel
         private readonly ISensorService _sensorService;
         private readonly IOnlineMetricService _onlineMetricService;
         private readonly IStatisticProvider _statisticProvider;
+        private readonly IRTSSService _rTSSService;
         private readonly ILogger<CaptureViewModel> _logger;
         private readonly ProcessList _processList;
         private readonly SoundManager _soundManager;
@@ -247,7 +252,7 @@ namespace CapFrameX.ViewModel
 
         public ICommand AddToProcessListCommand { get; }
 
-        public ICommand ResetCaptureProcessCommand { get; }
+        public ICommand ResetPresentMonCommand { get; }
 
         public Array LoggingPeriodItemsSource => new[] { 250, 500 };
 
@@ -259,6 +264,7 @@ namespace CapFrameX.ViewModel
                                 ISensorService sensorService,
                                 IOnlineMetricService onlineMetricService,
                                 IStatisticProvider statisticProvider,
+                                IRTSSService rTSSService,
                                 ILogger<CaptureViewModel> logger,
                                 ProcessList processList,
                                 SoundManager soundManager)
@@ -271,12 +277,13 @@ namespace CapFrameX.ViewModel
             _sensorService = sensorService;
             _onlineMetricService = onlineMetricService;
             _statisticProvider = statisticProvider;
+            _rTSSService = rTSSService;
             _logger = logger;
             _processList = processList;
             _soundManager = soundManager;
             AddToIgonreListCommand = new DelegateCommand(OnAddToIgonreList);
             AddToProcessListCommand = new DelegateCommand(OnAddToProcessList);
-            ResetCaptureProcessCommand = new DelegateCommand(OnResetCaptureProcess);
+            ResetPresentMonCommand = new DelegateCommand(OnResetCaptureProcess);
 
             _logger.LogDebug("{viewName} Ready", this.GetType().Name);
             CaptureStateInfo = "Service ready..." + Environment.NewLine +
@@ -367,7 +374,7 @@ namespace CapFrameX.ViewModel
         {
             string currentProcess = null;
             _captureService.RedirectedOutputDataStream
-                .Skip(2)
+                .Skip(5)
                 .ObserveOn(new EventLoopScheduler()).Subscribe(dataLine =>
                 {
                     if (string.IsNullOrWhiteSpace(dataLine))
@@ -383,6 +390,15 @@ namespace CapFrameX.ViewModel
                     }
 
                     _onlineMetricService.ProcessDataLineStream.OnNext(Tuple.Create(currentProcess, dataLine));
+
+                    var lineSplit = dataLine.Split(',');
+                    if (currentProcess == lineSplit[0].Replace(".exe", ""))
+                    {
+                        if (uint.TryParse(lineSplit[1], out uint processID))
+                        {
+                            _rTSSService.ProcessIdStream.OnNext(processID);
+                        }
+                    }
                 });
         }
 
@@ -473,8 +489,10 @@ namespace CapFrameX.ViewModel
             double delayCapture = Convert.ToInt32(CaptureStartDelayString);
             double captureTime = Convert.ToInt32(CaptureTimeString) + delayCapture;
             bool intializedStartTime = false;
+            double captureDataArchiveLastTime = 0;
 
             _disposableCaptureStream = _captureService.RedirectedOutputDataStream
+                .Skip(5)
                 .ObserveOn(new EventLoopScheduler()).Subscribe(dataLine =>
                 {
                     if (string.IsNullOrWhiteSpace(dataLine))
@@ -482,15 +500,27 @@ namespace CapFrameX.ViewModel
 
                     _captureData.Add(dataLine);
 
-                    if (!intializedStartTime)
+                    if (!intializedStartTime && _captureData.Any())
                     {
-                        intializedStartTime = true;
+                        double captureDataFirstTime = GetStartTimeFromDataLine(_captureData.First());
+                        lock (_archiveLock)
+                        {
+                            if (_captureDataArchive.Any())
+                            {
+                                captureDataArchiveLastTime = GetStartTimeFromDataLine(_captureDataArchive.Last());
+                            }
+                        }
 
-                        // stop archive
-                        _fillArchive = false;
-                        _disposableArchiveStream?.Dispose();
+                        if (captureDataFirstTime < captureDataArchiveLastTime)
+                        {
+                            intializedStartTime = true;
 
-                        AddLoggerEntry("Stopped filling archive.");
+                            // stop archive
+                            _fillArchive = false;
+                            _disposableArchiveStream?.Dispose();
+
+                            AddLoggerEntry("Stopped filling archive.");
+                        }
                     }
                 });
 
@@ -663,15 +693,15 @@ namespace CapFrameX.ViewModel
         private void OnResetCaptureProcess()
         {
             SelectedProcessToCapture = null;
+            StopCaptureService();
+            StartCaptureService();
         }
 
         private IDisposable GetListUpdatHeartBeat()
         {
-            var context = SynchronizationContext.Current;
             return Observable
                 .Timer(DateTimeOffset.UtcNow, TimeSpan.FromSeconds(1))
-                .ObserveOn(context)
-                .SubscribeOn(context)
+                .ObserveOnDispatcher()
                 .Subscribe(x => UpdateProcessToCaptureList());
         }
 
@@ -706,10 +736,7 @@ namespace CapFrameX.ViewModel
             else
                 SelectedProcessToCapture = selectedProcessToCapture;
 
-            Application.Current.Dispatcher.Invoke(new Action(() =>
-            {
-                UpdateCaptureStateInfo();
-            }));
+            UpdateCaptureStateInfo();
         }
 
         private void OnSelectedProcessToCaptureChanged()
@@ -746,14 +773,22 @@ namespace CapFrameX.ViewModel
 
         private void AddDataLineToArchive(string dataLine)
         {
-            if (_captureDataArchive.Count < ARCHIVE_LENGTH)
+            if (string.IsNullOrWhiteSpace(dataLine))
             {
-                _captureDataArchive.Add(dataLine);
+                return;
             }
-            else
+
+            lock (_archiveLock)
             {
-                _captureDataArchive.RemoveAt(0);
-                _captureDataArchive.Add(dataLine);
+                if (_captureDataArchive.Count < ARCHIVE_LENGTH)
+                {
+                    _captureDataArchive.Add(dataLine);
+                }
+                else
+                {
+                    _captureDataArchive.RemoveAt(0);
+                    _captureDataArchive.Add(dataLine);
+                }
             }
         }
 

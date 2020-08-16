@@ -130,21 +130,24 @@
         <!--Record download-->
         <TextBlock Grid.Row="2" Grid.Column="1" Margin="0 25 0 0" HorizontalAlignment="Center" Text="Record download" FontSize="16"/>
         <Grid Grid.Row="3" Grid.Column="1">
-			<Grid.RowDefinitions>
-				<RowDefinition Height="1*"/>
-				<RowDefinition Height="1*"/>
-			</Grid.RowDefinitions>
-			<Grid.ColumnDefinitions>
-				<ColumnDefinition Width="1*"/>
-				<ColumnDefinition Width="1*"/>
-				<ColumnDefinition Width="120"/>
-			</Grid.ColumnDefinitions>
-			<TextBox Name="IDBox" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Width="400" HorizontalAlignment="Left" wpf:HintAssist.Hint="Download link / ID" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
+            <Grid.RowDefinitions>
+                <RowDefinition Height="1*"/>
+                <RowDefinition Height="1*"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="120"/>
+            </Grid.ColumnDefinitions>
+            <TextBox Name="IDBox" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Width="400" HorizontalAlignment="Left" wpf:HintAssist.Hint="Download link / ID" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
 					 Margin="5 0 0 10" FontSize="14" Text="{Binding DownloadIDString, UpdateSourceTrigger=PropertyChanged}">
-			</TextBox>
-            <TextBox Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Width="400" wpf:HintAssist.Hint="Download Folder" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
+            </TextBox>
+            <TextBox Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Width="380" wpf:HintAssist.Hint="Download Folder" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
 					 Margin="5 0 0 0" IsReadOnly="True" FontSize="14" HorizontalAlignment="Left" Text="{Binding CloudDownloadDirectory, Mode=OneWay}" PreviewMouseDown="DownloadFolder_PreviewMouseDown">
             </TextBox>
+            <Button Grid.Row="1" Grid.Column="1" HorizontalAlignment="Right" Margin="0 20 10 0" Height="25" Width="25" Command="{Binding SwitchToDownloadDirectoryCommand}" Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}" ToolTip="Observe download folder">
+                <materialDesign:PackIcon Kind="Search" Height="20" Width="20" />
+            </Button>
             <Button Grid.Row="0" Grid.RowSpan="2" Grid.Column="2" Margin="5 0 5 5" VerticalAlignment="Center" HorizontalAlignment="Right" Width="100" Height="45"
 					Command="{Binding DownloadRecordsCommand}" IsEnabled="{Binding EnableDownloadButton}"
                     ToolTipService.ShowDuration="25000">
