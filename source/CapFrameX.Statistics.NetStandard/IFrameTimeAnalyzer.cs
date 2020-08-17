@@ -2,6 +2,6 @@
 {
 	public interface IFrametimeAnalyzer
 	{
-		double[] GetLShapeQuantiles();
+		double[] GetLShapeQuantiles(ELShapeMetrics LShapeMetric);
 	}
 }

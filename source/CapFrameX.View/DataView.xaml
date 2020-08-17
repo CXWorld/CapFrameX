@@ -128,24 +128,37 @@
                                 </Grid>
                             </TabItem>
                             <TabItem Header="L-shape">
-                                <lvc:CartesianChart MouseDoubleClick="ResetChart_MouseDoubleClick" Series="{Binding LShapeCollection}" Zoom="Y" 
-										Tag="{Binding ElementName=DataViewUserControl, Path=DataContext}" DataTooltip="{x:Null}" >
+                                <Grid>
+                                    <Grid Margin="0 0 50 0" Panel.ZIndex="1" HorizontalAlignment="Left" VerticalAlignment="Bottom">
+                                        <ComboBox Width="96" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="25 8 0 8" materialDesign:HintAssist.Hint="Metric"
+										      materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="240" materialDesign:ComboBoxAssist.ClassicMode="True"
+                                              SelectedItem="{Binding SelectedLShapeMetric}" ItemsSource="{Binding LShapeMetrics}">
+                                            <ComboBox.ItemTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}"/>
+                                                </DataTemplate>
+                                            </ComboBox.ItemTemplate>
+                                        </ComboBox>
+                                    </Grid>
+                                    <lvc:CartesianChart Margin="20 10 10 40" MouseDoubleClick="ResetChart_MouseDoubleClick" Series="{Binding LShapeCollection}" Zoom="Y" 
+										Tag="{Binding ElementName=DataViewUserControl, Path=DataContext}" DataTooltip="{x:Null}">
                                     <lvc:CartesianChart.ContextMenu>
                                         <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
                                             <MenuItem Header="Copy quantiles" Command="{Binding CopyLShapeQuantilesCommand}"/>
                                         </ContextMenu>
                                     </lvc:CartesianChart.ContextMenu>
-                                    <lvc:CartesianChart.AxisX>
-                                        <lvc:Axis Title="Percentiles (%)" Name="LShapeX" Foreground="Black">
-                                            <lvc:Axis.Separator >
-                                                <lvc:Separator Step="1"></lvc:Separator>
-                                            </lvc:Axis.Separator>
-                                        </lvc:Axis>
+                                        <lvc:CartesianChart.AxisX>
+                                            <lvc:Axis Title="Percentiles (%)" Name="LShapeX" Foreground="Black">
+                                                <lvc:Axis.Separator >
+                                                    <lvc:Separator Step="1"></lvc:Separator>
+                                                </lvc:Axis.Separator>
+                                            </lvc:Axis>
                                     </lvc:CartesianChart.AxisX>
                                     <lvc:CartesianChart.AxisY>
-                                        <lvc:Axis Title="Frametime [ms]" Name="LShapeY" Foreground="Black"/>
+                                            <lvc:Axis Title="{Binding LShapeYaxisLabel}" Name="LShapeY" Foreground="Black"/>
                                     </lvc:CartesianChart.AxisY>
                                 </lvc:CartesianChart>
+                                </Grid>
                             </TabItem>
                         </TabControl>
                     </materialDesign:DialogHost>

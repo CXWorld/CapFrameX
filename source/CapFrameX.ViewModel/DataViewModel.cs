@@ -74,6 +74,8 @@ namespace CapFrameX.ViewModel
 		private bool _cpuMaxThreadLoad;
 		private bool _gpuPowerLimit;
 		private EFilterMode _selectedFilterMode;
+		private ELShapeMetrics _lShapeMetric = ELShapeMetrics.Frametimes;
+		private string _lShapeYaxisLabel = "Frametimes (ms)";
 
 		private ISubject<Unit> _onUpdateChart = new BehaviorSubject<Unit>(default);
 
@@ -90,6 +92,10 @@ namespace CapFrameX.ViewModel
 		public Array FilterModes => Enum.GetValues(typeof(EFilterMode))
 										  .Cast<EFilterMode>()
 										  .ToArray();
+
+		public Array LShapeMetrics => Enum.GetValues(typeof(ELShapeMetrics))
+								  .Cast<ELShapeMetrics>()
+								  .ToArray();
 
 		public bool IsGpuPowerLimitAvailable => GetIsPowerLimitAvailable();
 
@@ -282,6 +288,28 @@ namespace CapFrameX.ViewModel
 				_selecetedChartYAxisSetting = value;
 				RaisePropertyChanged();
 				SetFrametimeChartYAxisSetting(GetYAxisSettingFromSelection(value));
+			}
+		}
+
+		public ELShapeMetrics SelectedLShapeMetric
+		{
+			get { return _lShapeMetric; }
+			set
+			{
+				_lShapeMetric = value;
+				LShapeYaxisLabel = value == ELShapeMetrics.Frametimes ? "Frametimes (ms)" : "FPS";
+				RaisePropertyChanged();
+				UpdateSecondaryCharts();
+			}
+		}
+
+		public string LShapeYaxisLabel
+		{
+			get { return _lShapeYaxisLabel; }
+			set
+			{
+				_lShapeYaxisLabel = value;
+				RaisePropertyChanged();
 			}
 		}
 
@@ -590,9 +618,10 @@ namespace CapFrameX.ViewModel
 			if (RecordInfo == null)
 				return;
 
-			var lShapeQuantiles = _frametimeAnalyzer.GetLShapeQuantiles();
+			var lShapeQuantiles = _frametimeAnalyzer.GetLShapeQuantiles(SelectedLShapeMetric);
 			var frametimes = GetFrametimesSubset();
-			double action(double q) => Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(frametimes, q / 100), 2);
+			var fps = GetFPSSubset();
+			double action(double q) => Math.Round(_frametimeStatisticProvider.GetPQuantileSequence(SelectedLShapeMetric == ELShapeMetrics.Frametimes ? frametimes : fps, q / 100), 2);
 
 			StringBuilder builder = new StringBuilder();
 
@@ -842,19 +871,23 @@ namespace CapFrameX.ViewModel
 				return;
 
 			var headerName = SelectedChartItem.Header.ToString();
-			var subset = GetFrametimesSubset();
+			var frametimeSubset = GetFrametimesSubset();
+			var fpsSubset = GetFPSSubset();
 
-			if (subset == null)
+			if (frametimeSubset == null || fpsSubset == null)
 				return;
 
 			if (headerName == "L-shape")
 			{
-				Task.Factory.StartNew(() => SetLShapeChart(subset));
+				Task.Factory.StartNew(() => SetLShapeChart(frametimeSubset, fpsSubset));
 			}
 		}
 
 		private IList<double> GetFrametimesSubset()
 			=> _localRecordDataServer?.GetFrametimeTimeWindow();
+
+		private IList<double> GetFPSSubset()
+			=> _localRecordDataServer?.GetFpsTimeWindow();
 
 		private void SetStaticChart(IList<double> frametimes)
 		{
@@ -1011,16 +1044,18 @@ namespace CapFrameX.ViewModel
 			}));
 		}
 
-		private void SetLShapeChart(IList<double> frametimes)
+		private void SetLShapeChart(IList<double> frametimes, IList<double> fps)
 		{
 			if (frametimes == null || !frametimes.Any())
 				return;
 
-			var lShapeQuantiles = _frametimeAnalyzer.GetLShapeQuantiles();
-			double action(double q) => _frametimeStatisticProvider.GetPQuantileSequence(frametimes, q / 100);
+			var lShapeQuantiles = _frametimeAnalyzer.GetLShapeQuantiles(SelectedLShapeMetric);
+			double action(double q) => _frametimeStatisticProvider.GetPQuantileSequence(SelectedLShapeMetric == ELShapeMetrics.Frametimes ? frametimes : fps, q / 100);
 			var observablePoints = lShapeQuantiles.Select(q => new ObservablePoint(q, action(q)));
+
 			var chartValues = new ChartValues<ObservablePoint>();
 			chartValues.AddRange(observablePoints);
+			string unit = SelectedLShapeMetric == ELShapeMetrics.Frametimes ? " ms" : " fps";
 
 			Application.Current.Dispatcher.BeginInvoke(new Action(() =>
 			{
@@ -1037,7 +1072,7 @@ namespace CapFrameX.ViewModel
 						PointGeometry = DefaultGeometries.Square,
 						DataLabels = true,
 						LabelPoint = point => point.X.ToString(CultureInfo.InvariantCulture) + "%, " +
-							Math.Round(point.Y, 1).ToString(CultureInfo.InvariantCulture) + " ms"
+							Math.Round(point.Y, 1).ToString(CultureInfo.InvariantCulture) + unit
 					}
 				};
 

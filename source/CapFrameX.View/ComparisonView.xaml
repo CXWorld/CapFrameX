@@ -193,7 +193,7 @@
                                     </lvc:Axis>
                                 </lvc:CartesianChart.AxisX>
                                 <lvc:CartesianChart.AxisY>
-                                    <lvc:Axis Title="Frametime [ms]" Name="LShapeY" Foreground="Black"/>
+                                    <lvc:Axis Title="{Binding ComparisonLShapeYAxisLabel}" Name="LShapeY" Foreground="Black"/>
                                 </lvc:CartesianChart.AxisY>
                             </lvc:CartesianChart>
                         </Grid>
