@@ -12,6 +12,7 @@ namespace CapFrameX.RTSSIntegration
     public class RTSSService: RTSSCSharpWrapper, IRTSSService
     {
 		private const string RTSSPROCESSNAME = "RTSS";
+		private bool _isRTSSInstalled;
 
 		private static ILogger<RTSSService> _logger;
 
@@ -21,29 +22,35 @@ namespace CapFrameX.RTSSIntegration
         {
             _logger = logger;
 			ProcessIdStream = new BehaviorSubject<uint>(default);
+			_isRTSSInstalled = !string.IsNullOrEmpty(GetRTSSFullPath());
 		}
 
 		public bool IsRTSSInstalled()
         {
-			return !string.IsNullOrEmpty(GetRTSSFullPath());
+			return _isRTSSInstalled;
 		}
 
 		public void CheckRTSSRunningAndRefresh()
 		{
-			var processes = Process.GetProcessesByName(RTSSPROCESSNAME);
-			if (!processes.Any())
+			if (_isRTSSInstalled)
 			{
-				try
+				var processes = Process.GetProcessesByName(RTSSPROCESSNAME);
+				if (!processes.Any())
 				{
-					Process proc = new Process();
-					proc.StartInfo.FileName = Path.Combine(GetRTSSFullPath());
-					proc.StartInfo.UseShellExecute = false;
-					proc.StartInfo.Verb = "runas";
-					proc.Start();
+					try
+					{
+						Process proc = new Process();
+						proc.StartInfo.FileName = Path.Combine(GetRTSSFullPath());
+						proc.StartInfo.UseShellExecute = false;
+						proc.StartInfo.Verb = "runas";
+						proc.Start();
+					}
+					catch (Exception ex) { _logger.LogError(ex, "Error while starting RTSS process"); }
 				}
-				catch (Exception ex) { _logger.LogError(ex, "Error while starting RTSS process"); }
+				Refresh();
 			}
-			Refresh();
+			else
+				return;
 		}
 
 		private static void ExceptionAction(Exception ex)
