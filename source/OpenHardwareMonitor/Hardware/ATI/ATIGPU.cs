@@ -178,13 +178,13 @@ namespace OpenHardwareMonitor.Hardware.ATI
             if (ADL.ADL2_OverdriveN_Temperature_Get(context, adapterIndex,
                 type, out int temperature) == ADL.ADL_OK)
             {
-                if (temperature > 999)
-                    sensor.Value = 0.001f * temperature;
+                if (temperature >= 1E03)
+                    sensor.Value = 1E-03f * temperature;
                 else
                     sensor.Value = temperature;
 
                 if (sensor.Value != 0)
-                ActivateSensor(sensor);
+                    ActivateSensor(sensor);
             }
             else
             {
