@@ -386,6 +386,12 @@ namespace CapFrameX.Sensor
             else if (name.Contains("Memory"))
             {
                 name = name.Replace("Memory", "Mem");
+
+                if (name.Contains("Dedicated"))
+                    name = name.Replace("Dedicated", "");
+
+                else if (name.Contains("Shared"))
+                    name = name.Replace("Shared", "");
             }
             else if (name.Contains("Power Limit"))
             {
