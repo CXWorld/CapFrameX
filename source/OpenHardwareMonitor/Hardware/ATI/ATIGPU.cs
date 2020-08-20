@@ -46,11 +46,11 @@ namespace OpenHardwareMonitor.Hardware.ATI
         private readonly Sensor memoryVoltage;
         private readonly Sensor socVoltage;
         private readonly Sensor coreLoad;
-        private readonly Sensor memoryLoad;
+        private readonly Sensor memoryControllerLoad;
         private readonly Sensor controlSensor;
         private readonly Control fanControl;
-        private readonly Sensor dedicatedVramUsage;
-        private readonly Sensor sharedVramUsage;
+        private readonly Sensor memorUsageDedicated;
+        private readonly Sensor memoryUsageShared;
         private readonly PerformanceCounter dedicatedVramUsagePerformCounter;
         private readonly PerformanceCounter sharedVramUsagePerformCounter;
 
@@ -112,14 +112,14 @@ namespace OpenHardwareMonitor.Hardware.ATI
             this.socVoltage = new Sensor("GPU SOC", 2, SensorType.Voltage, this, settings);
 
             this.coreLoad = new Sensor("GPU Core", 0, SensorType.Load, this, settings);
-            this.memoryLoad = new Sensor("GPU Memory Controller", 1, SensorType.Load, this, settings);
+            this.memoryControllerLoad = new Sensor("GPU Memory Controller", 1, SensorType.Load, this, settings);
 
             this.controlSensor = new Sensor("GPU Fan", 0, SensorType.Control, this, settings);
 
             if (PerformanceCounterCategory.Exists("GPU Adapter Memory"))
             {
-                this.dedicatedVramUsage = new Sensor("Dedicated Vram Usage", 0, SensorType.SmallData, this, settings);
-                this.sharedVramUsage = new Sensor("Shared Vram Usage", 1, SensorType.SmallData, this, settings);
+                this.memorUsageDedicated = new Sensor("GPU Memory Dedicated", 0, SensorType.SmallData, this, settings);
+                this.memoryUsageShared = new Sensor("GPU Memory Shared", 1, SensorType.SmallData, this, settings);
 
                 var category = new PerformanceCounterCategory("GPU Adapter Memory");
                 var instances = category.GetInstanceNames();
@@ -371,7 +371,7 @@ namespace OpenHardwareMonitor.Hardware.ATI
                 GetPMLog(data, ADLSensorType.MEM_VOLTAGE, memoryVoltage, 0.001f);
                 GetPMLog(data, ADLSensorType.SOC_VOLTAGE, socVoltage, 0.001f);
                 GetPMLog(data, ADLSensorType.INFO_ACTIVITY_GFX, coreLoad);
-                GetPMLog(data, ADLSensorType.INFO_ACTIVITY_MEM, memoryLoad);
+                GetPMLog(data, ADLSensorType.INFO_ACTIVITY_MEM, memoryControllerLoad);
                 GetPMLog(data, ADLSensorType.FAN_PERCENTAGE, controlSensor);
             }
             else
@@ -484,10 +484,10 @@ namespace OpenHardwareMonitor.Hardware.ATI
             // update VRAM usage
             if (dedicatedVramUsagePerformCounter != null && sharedVramUsagePerformCounter != null)
             {
-                dedicatedVramUsage.Value = dedicatedVramUsagePerformCounter.RawValue / 1024 / 1024;
-                ActivateSensor(dedicatedVramUsage);
-                sharedVramUsage.Value = sharedVramUsagePerformCounter.RawValue / 1024 / 1024;
-                ActivateSensor(sharedVramUsage);
+                memorUsageDedicated.Value = dedicatedVramUsagePerformCounter.RawValue / 1024 / 1024;
+                ActivateSensor(memorUsageDedicated);
+                memoryUsageShared.Value = sharedVramUsagePerformCounter.RawValue / 1024 / 1024;
+                ActivateSensor(memoryUsageShared);
             }
         }
 
