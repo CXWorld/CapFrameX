@@ -103,7 +103,6 @@
   <ItemGroup>
     <Compile Include="CollectionExtensions.cs" />
     <Compile Include="ContainerExtensions.cs" />
-    <Compile Include="EnumExtensions.cs" />
     <Compile Include="HttpRequestHeadersExtensions.cs" />
     <Compile Include="LinqExtensions.cs" />
     <Compile Include="ObjectCopier.cs" />

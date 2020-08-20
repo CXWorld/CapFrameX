@@ -10,7 +10,9 @@
 
 using Microsoft.Win32;
 using System;
+using System.Diagnostics;
 using System.Globalization;
+using System.Linq;
 using System.Text;
 
 namespace OpenHardwareMonitor.Hardware.ATI
@@ -47,6 +49,10 @@ namespace OpenHardwareMonitor.Hardware.ATI
         private readonly Sensor memoryLoad;
         private readonly Sensor controlSensor;
         private readonly Control fanControl;
+        private readonly Sensor dedicatedVramUsage;
+        private readonly Sensor sharedVramUsage;
+        private readonly PerformanceCounter dedicatedVramUsagePerformCounter;
+        private readonly PerformanceCounter sharedVramUsagePerformCounter;
 
         private IntPtr context;
         private readonly int overdriveVersion;
@@ -109,6 +115,22 @@ namespace OpenHardwareMonitor.Hardware.ATI
             this.memoryLoad = new Sensor("GPU Memory Controller", 1, SensorType.Load, this, settings);
 
             this.controlSensor = new Sensor("GPU Fan", 0, SensorType.Control, this, settings);
+
+            if (PerformanceCounterCategory.Exists("GPU Adapter Memory"))
+            {
+                this.dedicatedVramUsage = new Sensor("Dedicated Vram Usage", 0, SensorType.SmallData, this, settings);
+                this.sharedVramUsage = new Sensor("Shared Vram Usage", 1, SensorType.SmallData, this, settings);
+
+                var category = new PerformanceCounterCategory("GPU Adapter Memory");
+                var instances = category.GetInstanceNames();
+
+                var (Usage, Index) = instances
+                    .Select(instance => new PerformanceCounter("GPU Adapter Memory", "Dedicated Usage", instance))
+                    .Select((u, i) => (Usage: u.RawValue, Index: i)).Max();
+
+                dedicatedVramUsagePerformCounter = new PerformanceCounter("GPU Adapter Memory", "Dedicated Usage", instances[Index]);
+                sharedVramUsagePerformCounter = new PerformanceCounter("GPU Adapter Memory", "Shared Usage", instances[Index]);
+            }
 
             ADLFanSpeedInfo afsi = new ADLFanSpeedInfo();
             if (ADL.ADL_Overdrive5_FanSpeedInfo_Get(adapterIndex, 0, ref afsi)
@@ -204,7 +226,6 @@ namespace OpenHardwareMonitor.Hardware.ATI
             {
                 sensor.Value = null;
             }
-
         }
 
         public override string GetReport()
@@ -458,6 +479,15 @@ namespace OpenHardwareMonitor.Hardware.ATI
                     coreVoltage.Value = null;
                     coreLoad.Value = null;
                 }
+            }
+
+            // update VRAM usage
+            if (dedicatedVramUsagePerformCounter != null && sharedVramUsagePerformCounter != null)
+            {
+                dedicatedVramUsage.Value = dedicatedVramUsagePerformCounter.RawValue / 1024 / 1024;
+                ActivateSensor(dedicatedVramUsage);
+                sharedVramUsage.Value = sharedVramUsagePerformCounter.RawValue / 1024 / 1024;
+                ActivateSensor(sharedVramUsage);
             }
         }
 

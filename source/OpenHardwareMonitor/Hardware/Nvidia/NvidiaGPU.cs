@@ -14,6 +14,8 @@ using NvAPIWrapper.Native.GPU;
 using System;
 using System.Globalization;
 using System.Text;
+using System.Diagnostics;
+using System.Linq;
 
 namespace OpenHardwareMonitor.Hardware.Nvidia
 {
@@ -42,6 +44,10 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
         private readonly Sensor powerLimit;
         private readonly Sensor temperatureLimit;
         private readonly Sensor voltageLimit;
+        private readonly Sensor dedicatedVramUsage;
+        private readonly Sensor sharedVramUsage;
+        private readonly PerformanceCounter dedicatedVramUsagePerformCounter;
+        private readonly PerformanceCounter sharedVramUsagePerformCounter;
 
         public NvidiaGPU(int adapterIndex, NvPhysicalGpuHandle handle,
           NvDisplayHandle? displayHandle, ISettings settings, PhysicalGPU physicalGPU = null)
@@ -126,6 +132,22 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
                           SensorType.Throughput, this, settings);
                     }
                 }
+            }
+
+            if (PerformanceCounterCategory.Exists("GPU Adapter Memory"))
+            {
+                this.dedicatedVramUsage = new Sensor("Dedicated Vram Usage", 0, SensorType.SmallData, this, settings);
+                this.sharedVramUsage = new Sensor("Shared Vram Usage", 1, SensorType.SmallData, this, settings);
+
+                var category = new PerformanceCounterCategory("GPU Adapter Memory");
+                var instances = category.GetInstanceNames();
+
+                var (Usage, Index) = instances
+                    .Select(instance => new PerformanceCounter("GPU Adapter Memory", "Dedicated Usage", instance))
+                    .Select((u, i) => (Usage: u.RawValue, Index: i)).Max();
+
+                dedicatedVramUsagePerformCounter = new PerformanceCounter("GPU Adapter Memory", "Dedicated Usage", instances[Index]);
+                sharedVramUsagePerformCounter = new PerformanceCounter("GPU Adapter Memory", "Shared Usage", instances[Index]);
             }
 
             Update();
@@ -397,6 +419,15 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
                     pcieThroughputTx.Value = value * (1.0f / 0x400);
                     ActivateSensor(pcieThroughputTx);
                 }
+            }
+
+            // update VRAM usage
+            if (dedicatedVramUsagePerformCounter != null && sharedVramUsagePerformCounter != null)
+            {
+                dedicatedVramUsage.Value = dedicatedVramUsagePerformCounter.RawValue / 1024 / 1024;
+                ActivateSensor(dedicatedVramUsage);
+                sharedVramUsage.Value = sharedVramUsagePerformCounter.RawValue / 1024 / 1024;
+                ActivateSensor(sharedVramUsage);
             }
         }
 
