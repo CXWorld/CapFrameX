@@ -406,15 +406,6 @@ namespace CapFrameX.Sensor
                 name = name.Replace("Voltage Limit", "VL");
             }
 
-            else if (name.Contains("Dedicated Vram Usage"))
-            {
-                name = name.Replace("Dedicated Vram Usage", "Dedicated Vram");
-            }
-            else if (name.Contains("Shared Vram Usage"))
-            {
-                name = name.Replace("Shared Vram Usage", "Shared Vram");
-            }
-
             if (name.Contains(" - Thread #1"))
             {
                 name = name.Replace(" - Thread #1", "");
