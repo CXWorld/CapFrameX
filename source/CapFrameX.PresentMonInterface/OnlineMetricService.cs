@@ -1,5 +1,6 @@
 ﻿using CapFrameX.Statistics.NetStandard;
 using CapFrameX.Statistics.NetStandard.Contracts;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -15,6 +16,7 @@ namespace CapFrameX.PresentMonInterface
 		private readonly IStatisticProvider _frametimeStatisticProvider;
 		private readonly List<double> _frametimes = new List<double>();
 		private readonly List<double> _measuretimes = new List<double>();
+		private readonly ILogger<OnlineMetricService> _logger;
 		private readonly object _lock = new object();
 		private string _currentProcess;
 		// ToDo: get value from config
@@ -24,10 +26,11 @@ namespace CapFrameX.PresentMonInterface
 		public ISubject<Tuple<string, string>> ProcessDataLineStream { get; }
 			= new Subject<Tuple<string, string>>();
 
-		public OnlineMetricService(IStatisticProvider frametimeStatisticProvider)
+		public OnlineMetricService(IStatisticProvider frametimeStatisticProvider, ILogger<OnlineMetricService> logger)
 		{
 			_frametimeStatisticProvider = frametimeStatisticProvider;
 			ProcessDataLineStream.Subscribe(UpdateOnlineMetrics);
+			_logger = logger;
 		}
 
 		private void UpdateOnlineMetrics(Tuple<string, string> dataSet)
@@ -43,7 +46,10 @@ namespace CapFrameX.PresentMonInterface
 			var lineSplit = dataSet.Item2.Split(',');
 
 			if (lineSplit.Length <= 12)
+				{ 
+				_logger.LogInformation("{dataLine} string unusable for online metrics.", dataSet.Item2);
 				return;
+				}
 
 			if (!double.TryParse(lineSplit[11], NumberStyles.Any, CultureInfo.InvariantCulture, out double startTime))
 			{
