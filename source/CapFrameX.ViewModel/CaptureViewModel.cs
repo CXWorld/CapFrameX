@@ -389,15 +389,15 @@ namespace CapFrameX.ViewModel
 						currentProcess = ProcessesToCapture.FirstOrDefault();
 					}
 
+					_onlineMetricService.ProcessDataLineStream.OnNext(Tuple.Create(currentProcess, dataLine));
+
 					var lineSplit = dataLine.Split(',');
 
-					if (lineSplit.Length <= 12)
+					if (lineSplit.Length < 2)
 					{
 						_logger.LogInformation("Unusable {dataLine} string.", dataLine);
 						return;
 					}
-
-					_onlineMetricService.ProcessDataLineStream.OnNext(Tuple.Create(currentProcess, dataLine));
 
 					if (currentProcess == lineSplit[0].Replace(".exe", ""))
 					{
