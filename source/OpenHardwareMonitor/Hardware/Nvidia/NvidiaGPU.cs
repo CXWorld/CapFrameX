@@ -44,8 +44,8 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
         private readonly Sensor powerLimit;
         private readonly Sensor temperatureLimit;
         private readonly Sensor voltageLimit;
-        private readonly Sensor dedicatedVramUsage;
-        private readonly Sensor sharedVramUsage;
+        private readonly Sensor memorUsageDedicated;
+        private readonly Sensor memoryUsageShared;
         private readonly PerformanceCounter dedicatedVramUsagePerformCounter;
         private readonly PerformanceCounter sharedVramUsagePerformCounter;
 
@@ -136,8 +136,8 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
 
             if (PerformanceCounterCategory.Exists("GPU Adapter Memory"))
             {
-                this.dedicatedVramUsage = new Sensor("Dedicated Vram Usage", 0, SensorType.SmallData, this, settings);
-                this.sharedVramUsage = new Sensor("Shared Vram Usage", 1, SensorType.SmallData, this, settings);
+                this.memorUsageDedicated = new Sensor("GPU Memory Dedicated", 0, SensorType.SmallData, this, settings);
+                this.memoryUsageShared = new Sensor("GPU Memory Shared", 1, SensorType.SmallData, this, settings);
 
                 var category = new PerformanceCounterCategory("GPU Adapter Memory");
                 var instances = category.GetInstanceNames();
@@ -424,10 +424,10 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
             // update VRAM usage
             if (dedicatedVramUsagePerformCounter != null && sharedVramUsagePerformCounter != null)
             {
-                dedicatedVramUsage.Value = dedicatedVramUsagePerformCounter.RawValue / 1024 / 1024;
-                ActivateSensor(dedicatedVramUsage);
-                sharedVramUsage.Value = sharedVramUsagePerformCounter.RawValue / 1024 / 1024;
-                ActivateSensor(sharedVramUsage);
+                memorUsageDedicated.Value = dedicatedVramUsagePerformCounter.RawValue / 1024 / 1024;
+                ActivateSensor(memorUsageDedicated);
+                memoryUsageShared.Value = sharedVramUsagePerformCounter.RawValue / 1024 / 1024;
+                ActivateSensor(memoryUsageShared);
             }
         }
 
