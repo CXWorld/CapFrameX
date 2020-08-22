@@ -114,8 +114,6 @@ namespace OpenHardwareMonitor.Hardware.ATI
             this.coreLoad = new Sensor("GPU Core", 0, SensorType.Load, this, settings);
             this.memoryControllerLoad = new Sensor("GPU Memory Controller", 1, SensorType.Load, this, settings);
 
-            this.controlSensor = new Sensor("GPU Fan", 0, SensorType.Control, this, settings);
-
             if (PerformanceCounterCategory.Exists("GPU Adapter Memory"))
             {
                 this.memorUsageDedicated = new Sensor("GPU Memory Dedicated", 0, SensorType.SmallData, this, settings);
@@ -131,6 +129,9 @@ namespace OpenHardwareMonitor.Hardware.ATI
                 dedicatedVramUsagePerformCounter = new PerformanceCounter("GPU Adapter Memory", "Dedicated Usage", instances[Index]);
                 sharedVramUsagePerformCounter = new PerformanceCounter("GPU Adapter Memory", "Shared Usage", instances[Index]);
             }
+
+
+            this.controlSensor = new Sensor("GPU Fan", 0, SensorType.Control, this, settings);
 
             ADLFanSpeedInfo afsi = new ADLFanSpeedInfo();
             if (ADL.ADL_Overdrive5_FanSpeedInfo_Get(adapterIndex, 0, ref afsi)
