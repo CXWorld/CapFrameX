@@ -22,7 +22,8 @@ namespace CapFrameX.Sensor
                 "GPU Total",
                 "GPU Power",
                 "GPU Memory Used",
-                "GPU Power Limit"
+                "GPU Power Limit",
+                "GPU Memory Dedicated"
             };
 
         private long _timestampStartLogging;
