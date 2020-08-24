@@ -1,6 +1,7 @@
 ﻿using CapFrameX.Configuration;
 using CapFrameX.Contracts.MVVM;
 using CapFrameX.MVVM;
+using GongSolutions.Wpf.DragDrop.Utilities;
 using System;
 using System.Drawing;
 using System.IO;
@@ -11,64 +12,73 @@ using System.Windows.Media.Imaging;
 
 namespace CapFrameX
 {
-	/// <summary>
-	/// Interaction logic for Shell.xaml
-	/// </summary>
-	public partial class Shell : Window, IShell
-	{
-		public System.Windows.Controls.ContentControl GlobalScreenshotArea => ScreenshotArea;
+    /// <summary>
+    /// Interaction logic for Shell.xaml
+    /// </summary>
+    public partial class Shell : Window, IShell
+    {
+        public System.Windows.Controls.ContentControl GlobalScreenshotArea => ScreenshotArea;
 
-		public Shell()
-		{
-			InitializeComponent();
+        public bool IsGpuAccelerationActive { get; set; } = true;
 
-			// Start tracking the Window instance.
-			WindowStatServices.Tracker.Track(this);
-			SourceInitialized += new EventHandler(OnSourceInitialized);
-		}
+        public Shell()
+        {
+            InitializeComponent();
 
-		private void OnSourceInitialized(object sender, EventArgs e)
-		{
-			HwndSource source = (HwndSource)PresentationSource.FromVisual(this);
-			source.AddHook(new HwndSourceHook(HandleMessages));
-		}
+            // Start tracking the Window instance.
+            WindowStatServices.Tracker.Track(this);
+        }
 
-		private IntPtr HandleMessages(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
-		{
-			// 0x0112 == WM_SYSCOMMAND, 'Window' command message.
-			// 0xF020 == SC_MINIMIZE, command to minimize the window.
-			if (msg == 0x0112 && ((int)wParam & 0xFFF0) == 0xF020)
-			{
-				// Cancel the minimize.
-				handled = true;
-				Hide();
-			}
+        protected override void OnSourceInitialized(EventArgs e)
+        {
+            HwndSource source = (HwndSource)PresentationSource.FromVisual(this);
 
-			return IntPtr.Zero;
-		}
+            if (source != null)
+            {
+                source.AddHook(new HwndSourceHook(HandleMessages));
+                source.CompositionTarget.RenderMode 
+                    = IsGpuAccelerationActive ? RenderMode.Default : RenderMode.SoftwareOnly;
+            }
 
-		private void SystemTray_TrayLeftMouseDownClick(object sender, RoutedEventArgs e)
-		{
-			if (Visibility == Visibility.Visible)
-			{
-				Hide();
-			}
-			else
-			{
-				this.ShowAndFocus();
-				WindowState = WindowState.Normal;
-			} 
-		}
+            base.OnSourceInitialized(e);
+        }
 
-		private void ShowMainWindow_Click(object sender, RoutedEventArgs e)
-		{
-			this.ShowAndFocus();
-			WindowState = WindowState.Normal;
-		}
+        private IntPtr HandleMessages(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
+        {
+            // 0x0112 == WM_SYSCOMMAND, 'Window' command message.
+            // 0xF020 == SC_MINIMIZE, command to minimize the window.
+            if (msg == 0x0112 && ((int)wParam & 0xFFF0) == 0xF020)
+            {
+                // Cancel the minimize.
+                handled = true;
+                Hide();
+            }
 
-		private void Exit_Click(object sender, RoutedEventArgs e)
-		{
-			Close();
-		}
-	}
+            return IntPtr.Zero;
+        }
+
+        private void SystemTray_TrayLeftMouseDownClick(object sender, RoutedEventArgs e)
+        {
+            if (Visibility == Visibility.Visible)
+            {
+                Hide();
+            }
+            else
+            {
+                this.ShowAndFocus();
+                WindowState = WindowState.Normal;
+            }
+        }
+
+        private void ShowMainWindow_Click(object sender, RoutedEventArgs e)
+        {
+            this.ShowAndFocus();
+            WindowState = WindowState.Normal;
+        }
+
+        private void Exit_Click(object sender, RoutedEventArgs e)
+        {
+            Close();
+        }
+    }
 }

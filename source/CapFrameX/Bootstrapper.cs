@@ -47,9 +47,16 @@ namespace CapFrameX
 		{
 			base.InitializeShell();
 			LogAppInfo();
+
+			// get config
+			var config = Container.Resolve<CapFrameXConfiguration>();
+
+			// get Shell to set the hardware acceleration
+			var shell = Container.Resolve<IShell>();
+			shell.IsGpuAccelerationActive = config.IsGpuAccelerationActive;
+
 			Application.Current.MainWindow = (Window)Shell;
 
-			var config = Container.Resolve<CapFrameXConfiguration>();
 			if (config.StartMinimized)
 				Application.Current.MainWindow.WindowState = WindowState.Minimized;
 

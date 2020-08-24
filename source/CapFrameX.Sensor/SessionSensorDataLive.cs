@@ -21,7 +21,6 @@ namespace CapFrameX.Sensor
                 "GPU Core",
                 "GPU Total",
                 "GPU Power",
-                "GPU Memory Used",
                 "GPU Power Limit",
                 "GPU Memory Dedicated"
             };

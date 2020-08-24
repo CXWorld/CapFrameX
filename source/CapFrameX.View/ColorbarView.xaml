@@ -165,7 +165,7 @@
                                                 </Binding>
                                             </ComboBox.Text>
                                         </ComboBox>
-                                        <TextBox Grid.Row="0" Grid.Column="2" materialDesign:HintAssist.Hint="Stuttering factor" HorizontalAlignment="Right" Width="90"  Margin="15 15"
+                                        <TextBox Grid.Row="0" Grid.Column="2" materialDesign:HintAssist.Hint="Stuttering factor" HorizontalAlignment="Right" Width="90"  Margin="0 15 15 15"
                                                  ToolTip="Sets the factor for the stuttering pie chart.&#10;Stuttering = frametimes > avg. frametime x factor">
                                             <TextBox.Text>
                                                 <Binding Path="StutteringFactor"
@@ -178,13 +178,17 @@
                                             <TextBlock Text="Dark mode"/>
                                             <ToggleButton Margin="15 0 0 0" Click="MenuDarkModeButton_Click"/>
                                         </StackPanel>-->
-                                        <StackPanel Orientation="Horizontal" Margin="40 5 0 5" Grid.Row="1" Grid.Column="1">
-                                            <TextBlock Margin="0 0 0 0" Text="Start with Windows" TextAlignment="Center" TextWrapping="Wrap" Width="80"/>
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="20 5 0 5" Grid.Row="1" Grid.Column="0" ToolTip="Sets the GPU acceleration. Needs a restart of CapFrameX.">
+                                            <TextBlock Text="GPU acceleration"/>
+                                            <ToggleButton Margin="15 0 0 0" IsChecked="{Binding IsGpuAccelerationActive, Mode=TwoWay}"/>
+                                        </StackPanel>
+                                        <StackPanel Orientation="Horizontal" Margin="30 5 0 5" Grid.Row="1" Grid.Column="1">
+                                            <TextBlock Margin="0 0 0 0" Text="Start with Windows" TextAlignment="Left" TextWrapping="Wrap" Width="80"/>
                                             <CheckBox Margin="0 0 0 0" IsChecked="{Binding Autostart, Mode=TwoWay}">
                                             </CheckBox>
                                         </StackPanel>
-                                        <StackPanel Orientation="Horizontal" Margin="10 5 0 5" Grid.Row="1" Grid.Column="2">
-                                            <TextBlock Margin="0 0 0 0" Text="Start minimized" TextAlignment="Center" TextWrapping="Wrap" Width="80"/>
+                                        <StackPanel Orientation="Horizontal" Margin="0 5 0 5" Grid.Row="1" Grid.Column="2">
+                                            <TextBlock Margin="0 0 0 0" Text="Start minimized" TextAlignment="Left" TextWrapping="Wrap" Width="80"/>
                                             <CheckBox Margin="0 0 0 0" IsChecked="{Binding StartMinimized, Mode=TwoWay}">
                                             </CheckBox>
                                         </StackPanel>

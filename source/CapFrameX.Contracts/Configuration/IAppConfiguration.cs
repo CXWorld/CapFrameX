@@ -4,7 +4,6 @@ namespace CapFrameX.Contracts.Configuration
 {
 	public interface IAppConfiguration : IFrametimeStatisticProviderOptions
 	{
-
 		double StutteringFactor { get; set; }
 
 		string ObservedDirectory { get; set; }
@@ -140,5 +139,7 @@ namespace CapFrameX.Contracts.Configuration
 		bool StartMinimized { get; set; }
 
 		bool Autostart { get; set; }
+
+		bool IsGpuAccelerationActive { get; set; }
 	}
 }

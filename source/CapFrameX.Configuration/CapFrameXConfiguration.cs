@@ -428,5 +428,11 @@ namespace CapFrameX.Configuration
 			get { return Settings.Autostart; }
 			set { Settings.Autostart = value; Settings.Save(); }
 		}
+
+		public bool IsGpuAccelerationActive
+		{
+			get { return Settings.IsGpuAccelerationActive; }
+			set { Settings.IsGpuAccelerationActive = value; Settings.Save(); }
+		}
 	}
 }
