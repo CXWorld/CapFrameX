@@ -128,6 +128,12 @@ namespace CapFrameX.ViewModel
 				var currentProcess = GetProcessNameFromDataLine(filteredCaptureDataLine);
 				var currentProcessId = GetProcessIdFromDataLine(filteredCaptureDataLine);
 
+				if (currentProcess == null)
+				{
+					_logger.LogInformation($"Could not retrieve process name from dataline. Dataline = {filteredCaptureDataLine}");
+					break;
+				}
+
 				if (!uniqueProcessIdDict.ContainsKey(currentProcess))
 				{
 					var idHashSet = new HashSet<string>
