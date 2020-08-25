@@ -128,12 +128,6 @@ namespace CapFrameX.ViewModel
 				var currentProcess = GetProcessNameFromDataLine(filteredCaptureDataLine);
 				var currentProcessId = GetProcessIdFromDataLine(filteredCaptureDataLine);
 
-				if (currentProcess == null)
-				{
-					_logger.LogInformation($"Could not retrieve process name from dataline. Dataline = {filteredCaptureDataLine}");
-					break;
-				}
-
 				if (!uniqueProcessIdDict.ContainsKey(currentProcess))
 				{
 					var idHashSet = new HashSet<string>
@@ -147,7 +141,7 @@ namespace CapFrameX.ViewModel
 			}
 
 			if (uniqueProcessIdDict.Any(dict => dict.Value.Count() > 1))
-				AddLoggerEntry($"Multi instances detected. Capture data is not valid.");
+				AddLoggerEntry($"Multi instances detected. Capture data will be filtered.");
 
 			var filteredArchive = _captureDataArchive.Where(line =>
 				{
@@ -267,15 +261,19 @@ namespace CapFrameX.ViewModel
 		private string GetProcessNameFromDataLine(string dataLine)
 		{
 			if (string.IsNullOrWhiteSpace(dataLine))
-				return null;
+				return "EmptyProcessName";
 
 			int index = dataLine.IndexOf(".exe");
-			string processName = null;
+
+			if (index == 0)
+				index = dataLine.IndexOf(".EXE");
+
+			string processName = "EmptyProcessName";
 
 			if (index > 0)
 			{
 				processName = dataLine.Substring(0, index);
-			}
+			}		
 
 			return processName;
 		}
@@ -283,7 +281,7 @@ namespace CapFrameX.ViewModel
 		private string GetProcessIdFromDataLine(string dataLine)
 		{
 			if (string.IsNullOrWhiteSpace(dataLine))
-				return null;
+				return "EmptyProcessID";
 
 			var lineSplit = dataLine.Split(',');
 			return lineSplit[1];
