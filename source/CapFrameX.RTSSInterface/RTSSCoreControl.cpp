@@ -12,6 +12,7 @@
 #include <float.h>
 #include <io.h>
 #include <tuple>
+#include <iostream>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -593,7 +594,10 @@ void RTSSCoreControl::Refresh()
 				if (OverlayEntries[i].Identifier == "Framerate")
 				{
 					// set graph name
-					strOSD += "<C1><S=50>Framerate\n<S><C>";
+					if (OverlayEntries[i].GroupName.Find("<APP>") != std::string::npos)
+						strOSD += "<C1><S=50>Framerate\n<S><C>";
+					else
+						strOSD += OverlayEntries[i].GroupName + "\n";
 					//embed framerate graph object into the buffer
 					dwObjectSize = EmbedGraph(dwObjectOffset, NULL, 0, 0, -32, -2, 1, 0.0f, 200.0f, dwFlags | RTSS_EMBEDDED_OBJECT_GRAPH_FLAG_FRAMERATE);
 
@@ -609,7 +613,11 @@ void RTSSCoreControl::Refresh()
 				else if (OverlayEntries[i].Identifier == "Frametime")
 				{
 					// set graph name
-					strOSD += "<C1><S=50>Frametime\n<S><C>";
+					if(OverlayEntries[i].GroupName.Find("<APP>") != std::string::npos)
+						strOSD += "<C1><S=50>Frametime\n<S><C>";
+					else
+						strOSD += OverlayEntries[i].GroupName + "\n";
+
 					//embed frametime graph object into the buffer
 					dwObjectSize = EmbedGraph(dwObjectOffset, NULL, 0, 0, -32, -2, 1, 0.0f, 50000.0f, dwFlags | RTSS_EMBEDDED_OBJECT_GRAPH_FLAG_FRAMETIME);
 
