@@ -263,19 +263,9 @@ namespace CapFrameX.ViewModel
 			if (string.IsNullOrWhiteSpace(dataLine))
 				return "EmptyProcessName";
 
-			int index = dataLine.IndexOf(".exe");
+			int index = dataLine.IndexOf(".exe", StringComparison.OrdinalIgnoreCase);
 
-			if (index == 0)
-				index = dataLine.IndexOf(".EXE");
-
-			string processName = "EmptyProcessName";
-
-			if (index > 0)
-			{
-				processName = dataLine.Substring(0, index);
-			}		
-
-			return processName;
+			return index > 0 ? dataLine.Substring(0, index) : "EmptyProcessName";
 		}
 
 		private string GetProcessIdFromDataLine(string dataLine)
