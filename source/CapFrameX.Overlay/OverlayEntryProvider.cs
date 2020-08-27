@@ -7,6 +7,7 @@ using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Extensions;
 using CapFrameX.PresentMonInterface;
 using CapFrameX.Statistics.NetStandard.Contracts;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Prism.Events;
 using System;
@@ -33,6 +34,7 @@ namespace CapFrameX.Overlay
         private readonly IOnlineMetricService _onlineMetricService;
         private readonly ISystemInfo _systemInfo;
         private readonly IRTSSService _rTSSService;
+        private readonly ILogger<OverlayEntryProvider> _logger;
         private readonly ConcurrentDictionary<string, IOverlayEntry> _identifierOverlayEntryDict
              = new ConcurrentDictionary<string, IOverlayEntry>();
         private readonly TaskCompletionSource<bool> _taskCompletionSource
@@ -46,7 +48,8 @@ namespace CapFrameX.Overlay
             IAppConfiguration appConfiguration,
             IEventAggregator eventAggregator,
             IOnlineMetricService onlineMetricService,
-            ISystemInfo systemInfo, IRTSSService rTSSService)
+            ISystemInfo systemInfo, IRTSSService rTSSService,
+            ILogger<OverlayEntryProvider> logger)
         {
             _sensorService = sensorService;
             _appConfiguration = appConfiguration;
@@ -54,6 +57,8 @@ namespace CapFrameX.Overlay
             _onlineMetricService = onlineMetricService;
             _systemInfo = systemInfo;
             _rTSSService = rTSSService;
+            _logger = logger;
+
             _onDictionaryUpdatedBuffered = _sensorService
                 .OnDictionaryUpdated
                 .Replay(1)
@@ -63,6 +68,8 @@ namespace CapFrameX.Overlay
                 .ContinueWith(task => _taskCompletionSource.SetResult(true));
 
             SubscribeToOptionPopupClosed();
+
+            _logger.LogDebug("{viewName} Ready", this.GetType().Name);
         }
 
         public async Task<IOverlayEntry[]> GetOverlayEntries()
@@ -299,6 +306,8 @@ namespace CapFrameX.Overlay
                     // check GPU changed 
                     if (hasGpuChanged)
                     {
+                        _logger.LogInformation("GPU changed. Config has to be updated.");
+
                         var indexGpu = configOverlayEntries
                             .TakeWhile(entry => entry.OverlayEntryType != EOverlayEntryType.GPU)
                             .Count();
@@ -314,6 +323,8 @@ namespace CapFrameX.Overlay
                     // check CPU changed 
                     if (hasCpuChanged)
                     {
+                        _logger.LogInformation("CPU changed. Config has to be updated.");
+
                         var indexCpu = configOverlayEntries
                             .TakeWhile(entry => entry.OverlayEntryType != EOverlayEntryType.CPU)
                             .Count();
@@ -408,7 +419,11 @@ namespace CapFrameX.Overlay
             var overlayEntries = OverlayUtils.GetOverlayEntryDefaults()
                     .Select(item => (item as IOverlayEntry).Clone()).ToBlockingCollection();
 
-            //_sensorService.ResetSensorOverlayEntries();
+            //log hardware configs
+            _logger.LogInformation("Set overlay defaults");
+            _logger.LogInformation("CPU detected: {cpuName}.", _sensorService.GetCpuName());
+            _logger.LogInformation("CPU threads detected: {threadCount}.", Environment.ProcessorCount);
+            _logger.LogInformation("GPU detected: {gpuName}.", _sensorService.GetGpuName());
 
             // Sensor data
             return _onDictionaryUpdatedBuffered
