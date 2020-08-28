@@ -77,16 +77,15 @@ namespace OpenHardwareMonitor.Hardware.CPU
         public CPUID(int thread)
         {
             this.thread = thread;
-
-            uint maxCpuid = 0;
-            uint maxCpuidExt = 0;
-
             uint eax, ebx, ecx, edx;
 
             if (thread >= 64)
                 throw new ArgumentOutOfRangeException("thread");
             ulong mask = 1UL << thread;
 
+
+            uint maxCpuid;
+            uint maxCpuidExt;
             if (Opcode.CpuidTx(CPUID_0, 0,
                 out eax, out ebx, out ecx, out edx, mask))
             {

@@ -69,7 +69,7 @@ namespace CapFrameX.Overlay
 
             SubscribeToOptionPopupClosed();
 
-            _logger.LogDebug("{viewName} Ready", this.GetType().Name);
+            _logger.LogDebug("{componentName} Ready", this.GetType().Name);
         }
 
         public async Task<IOverlayEntry[]> GetOverlayEntries()

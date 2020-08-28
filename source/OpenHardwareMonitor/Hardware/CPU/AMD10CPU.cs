@@ -19,7 +19,6 @@ using System.Threading;
 
 namespace OpenHardwareMonitor.Hardware.CPU
 {
-
     internal sealed class AMD10CPU : AMDCPU
     {
         private readonly Sensor coreTemperature;
@@ -70,16 +69,16 @@ namespace OpenHardwareMonitor.Hardware.CPU
             {
                 case 0x10:
                     miscellaneousControlDeviceId =
-           FAMILY_10H_MISCELLANEOUS_CONTROL_DEVICE_ID; break;
+                        FAMILY_10H_MISCELLANEOUS_CONTROL_DEVICE_ID; break;
                 case 0x11:
                     miscellaneousControlDeviceId =
-           FAMILY_11H_MISCELLANEOUS_CONTROL_DEVICE_ID; break;
+                        FAMILY_11H_MISCELLANEOUS_CONTROL_DEVICE_ID; break;
                 case 0x12:
                     miscellaneousControlDeviceId =
-           FAMILY_12H_MISCELLANEOUS_CONTROL_DEVICE_ID; break;
+                        FAMILY_12H_MISCELLANEOUS_CONTROL_DEVICE_ID; break;
                 case 0x14:
                     miscellaneousControlDeviceId =
-           FAMILY_14H_MISCELLANEOUS_CONTROL_DEVICE_ID; break;
+                        FAMILY_14H_MISCELLANEOUS_CONTROL_DEVICE_ID; break;
                 case 0x15:
                     switch (model & 0xF0)
                     {
@@ -100,10 +99,10 @@ namespace OpenHardwareMonitor.Hardware.CPU
                     {
                         case 0x00:
                             miscellaneousControlDeviceId =
-                   FAMILY_16H_MODEL_00_MISC_CONTROL_DEVICE_ID; break;
+                                FAMILY_16H_MODEL_00_MISC_CONTROL_DEVICE_ID; break;
                         case 0x30:
                             miscellaneousControlDeviceId =
-                   FAMILY_16H_MODEL_30_MISC_CONTROL_DEVICE_ID; break;
+                                FAMILY_16H_MODEL_30_MISC_CONTROL_DEVICE_ID; break;
                         default: miscellaneousControlDeviceId = 0; break;
                     }
                     break;

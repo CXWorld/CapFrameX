@@ -58,10 +58,9 @@ namespace OpenHardwareMonitor.Hardware.CPU
             idle = null;
             total = null;
 
-            IntPtr returnLength;
             if (NativeMethods.NtQuerySystemInformation(
               SystemInformationClass.SystemProcessorPerformanceInformation,
-              informations, informations.Length * size, out returnLength) != 0)
+              informations, informations.Length * size, out IntPtr returnLength) != 0)
                 return false;
 
             idle = new long[(int)returnLength / size];

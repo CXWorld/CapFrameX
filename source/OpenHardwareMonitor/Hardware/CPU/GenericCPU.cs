@@ -8,6 +8,7 @@
 	
 */
 
+using Serilog;
 using System;
 using System.Diagnostics;
 using System.Globalization;
@@ -69,9 +70,12 @@ namespace OpenHardwareMonitor.Hardware.CPU
             this.model = cpuid[0][0].Model;
             this.stepping = cpuid[0][0].Stepping;
 
+            Log.Logger.Information("CPUID core count: {coreCount}.", cpuid.Length);
+            Log.Logger.Information("CPUID thread count per core: {coreThreadCount}.", cpuid[0].Length);
+
             this.processorIndex = processorIndex;
             this.coreCount = cpuid.Length;
-            this.coreThreadCount = cpuid[0].Length;
+            this.coreThreadCount = Math.Min(cpuid[0].Length, 2);
 
             // check if processor has MSRs
             if (cpuid[0][0].Data.GetLength(0) > 1
@@ -284,7 +288,6 @@ namespace OpenHardwareMonitor.Hardware.CPU
         {
             if (HasTimeStampCounter && isInvariantTimeStampCounter)
             {
-
                 // make sure always the same thread is used
                 ulong mask = ThreadAffinity.Set(1UL << cpuid[0][0].Thread);
 
