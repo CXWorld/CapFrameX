@@ -30,6 +30,7 @@ namespace CapFrameX.Webservice.Implementation.Handlers
 			try
 			{
 				await _processListService.AddProcess(process);
+				_logger.LogInformation("Successfully added {processName} to processList", process.Name);
 			} catch (Exception e)
 			{
 				_logger.LogError(e, "Add Process failed for {@process}", process);
