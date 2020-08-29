@@ -75,7 +75,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
 
             this.processorIndex = processorIndex;
             this.coreCount = cpuid.Length;
-            this.coreThreadCount = Math.Min(cpuid[0].Length, 2);
+            this.coreThreadCount = cpuid[0].Length;
 
             // check if processor has MSRs
             if (cpuid[0][0].Data.GetLength(0) > 1
@@ -120,13 +120,13 @@ namespace OpenHardwareMonitor.Hardware.CPU
 
             if (HasTimeStampCounter)
             {
-                ulong mask = ThreadAffinity.Set(1UL << cpuid[0][0].Thread);
+                var previousAffinity = ThreadAffinity.Set(cpuid[0][0].Affinity);
 
                 EstimateTimeStampCounterFrequency(
                   out estimatedTimeStampCounterFrequency,
                   out estimatedTimeStampCounterFrequencyError);
 
-                ThreadAffinity.Set(mask);
+                ThreadAffinity.Set(previousAffinity);
             }
             else
             {
@@ -203,10 +203,10 @@ namespace OpenHardwareMonitor.Hardware.CPU
         }
 
 
-        private static void AppendMSRData(StringBuilder r, uint msr, int thread)
+        private static void AppendMSRData(StringBuilder r, uint msr, GroupAffinity affinity)
         {
             uint eax, edx;
-            if (Ring0.RdmsrTx(msr, out eax, out edx, 1UL << thread))
+            if (Ring0.RdmsrTx(msr, out eax, out edx, affinity))
             {
                 r.Append(" ");
                 r.Append((msr).ToString("X8", CultureInfo.InvariantCulture));
@@ -265,7 +265,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
                     r.AppendLine();
                     r.AppendLine(" MSR       EDX       EAX");
                     foreach (uint msr in msrArray)
-                        AppendMSRData(r, msr, cpuid[i][0].Thread);
+                        AppendMSRData(r, msr, cpuid[i][0].Affinity);
                     r.AppendLine();
                 }
             }
@@ -289,7 +289,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
             if (HasTimeStampCounter && isInvariantTimeStampCounter)
             {
                 // make sure always the same thread is used
-                ulong mask = ThreadAffinity.Set(1UL << cpuid[0][0].Thread);
+                var previousAffinity = ThreadAffinity.Set(cpuid[0][0].Affinity);
 
                 // read time before and after getting the TSC to estimate the error
                 long firstTime = Stopwatch.GetTimestamp();
@@ -297,7 +297,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
                 long time = Stopwatch.GetTimestamp();
 
                 // restore the thread affinity mask
-                ThreadAffinity.Set(mask);
+                ThreadAffinity.Set(previousAffinity);
 
                 double delta = ((double)(time - lastTime)) / Stopwatch.Frequency;
                 double error = ((double)(time - firstTime)) / Stopwatch.Frequency;

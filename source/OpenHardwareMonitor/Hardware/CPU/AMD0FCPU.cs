@@ -4,7 +4,7 @@
   License, v. 2.0. If a copy of the MPL was not distributed with this
   file, You can obtain one at http://mozilla.org/MPL/2.0/.
  
-  Copyright (C) 2009-2010 Michael Möller <mmoeller@openhardwaremonitor.org>
+  Copyright (C) 2009-2020 Michael Möller <mmoeller@openhardwaremonitor.org>
   Copyright (C) 2010 Paul Werelds <paul@werelds.net>
 
 */
@@ -19,6 +19,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
 {
     internal sealed class AMD0FCPU : AMDCPU
     {
+
         private readonly Sensor[] coreTemperatures;
         private readonly Sensor[] coreClocks;
         private readonly Sensor coreMaxClocks;
@@ -118,29 +119,35 @@ namespace OpenHardwareMonitor.Hardware.CPU
         {
             base.Update();
 
-            if (miscellaneousControlAddress != Ring0.InvalidPciAddress)
+            if (Ring0.WaitPciBusMutex(10))
             {
-                for (uint i = 0; i < coreTemperatures.Length; i++)
+
+                if (miscellaneousControlAddress != Ring0.InvalidPciAddress)
                 {
-                    if (Ring0.WritePciConfig(
-                      miscellaneousControlAddress, THERMTRIP_STATUS_REGISTER,
-                      i > 0 ? thermSenseCoreSelCPU1 : thermSenseCoreSelCPU0))
+                    for (uint i = 0; i < coreTemperatures.Length; i++)
                     {
-                        uint value;
-                        if (Ring0.ReadPciConfig(
+                        if (Ring0.WritePciConfig(
                           miscellaneousControlAddress, THERMTRIP_STATUS_REGISTER,
-                          out value))
+                          i > 0 ? thermSenseCoreSelCPU1 : thermSenseCoreSelCPU0))
                         {
-                            coreTemperatures[i].Value = ((value >> 16) & 0xFF) +
-                              coreTemperatures[i].Parameters[0].Value;
-                            ActivateSensor(coreTemperatures[i]);
-                        }
-                        else
-                        {
-                            DeactivateSensor(coreTemperatures[i]);
+                            uint value;
+                            if (Ring0.ReadPciConfig(
+                              miscellaneousControlAddress, THERMTRIP_STATUS_REGISTER,
+                              out value))
+                            {
+                                coreTemperatures[i].Value = ((value >> 16) & 0xFF) +
+                                  coreTemperatures[i].Parameters[0].Value;
+                                ActivateSensor(coreTemperatures[i]);
+                            }
+                            else
+                            {
+                                DeactivateSensor(coreTemperatures[i]);
+                            }
                         }
                     }
                 }
+
+                Ring0.ReleasePciBusMutex();
             }
 
             if (HasTimeStampCounter)
@@ -151,8 +158,9 @@ namespace OpenHardwareMonitor.Hardware.CPU
                 {
                     Thread.Sleep(1);
 
-                    if (Ring0.RdmsrTx(FIDVID_STATUS, out uint eax, out uint edx,
-                      1UL << cpuid[i][0].Thread))
+                    uint eax, edx;
+                    if (Ring0.RdmsrTx(FIDVID_STATUS, out eax, out edx,
+                      cpuid[i][0].Affinity))
                     {
                         // CurrFID can be found in eax bits 0-5, MaxFID in 16-21
                         // 8-13 hold StartFID, we don't use that here.
@@ -178,5 +186,6 @@ namespace OpenHardwareMonitor.Hardware.CPU
                 }
             }
         }
+
     }
 }

@@ -15,6 +15,7 @@ using System.Text;
 
 namespace OpenHardwareMonitor.Hardware.CPU
 {
+
     internal class CPUGroup : IGroup
     {
         private readonly List<GenericCPU> hardware = new List<GenericCPU>();
@@ -25,13 +26,22 @@ namespace OpenHardwareMonitor.Hardware.CPU
         {
 
             List<CPUID> threads = new List<CPUID>();
-            for (int i = 0; i < Math.Min(Environment.ProcessorCount, 64); i++)
+            for (int i = 0; i < ThreadAffinity.ProcessorGroupCount; i++)
             {
-                try
+                for (int j = 0; j < 64; j++)
                 {
-                    threads.Add(new CPUID(i));
+                    try
+                    {
+                        if (!ThreadAffinity.IsValid(GroupAffinity.Single((ushort)i, j)))
+                            continue;
+                        var cpuid = CPUID.Get(i, j);
+                        if (cpuid != null)
+                            threads.Add(cpuid);
+                    }
+                    catch (ArgumentOutOfRangeException)
+                    {
+                    }
                 }
-                catch (ArgumentOutOfRangeException) { }
             }
 
             SortedDictionary<uint, List<CPUID>> processors =
@@ -196,6 +206,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
                 for (int j = 0; j < threads[i].Length; j++)
                     for (int k = 0; k < threads[i][j].Length; k++)
                     {
+                        r.AppendLine(" CPU Group: " + threads[i][j][k].Group);
                         r.AppendLine(" CPU Thread: " + threads[i][j][k].Thread);
                         r.AppendLine(" APIC ID: " + threads[i][j][k].ApicId);
                         r.AppendLine(" Processor ID: " + threads[i][j][k].ProcessorId);

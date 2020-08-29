@@ -17,7 +17,6 @@ namespace OpenHardwareMonitor.Hardware.CPU
 {
     internal sealed class IntelCPU : GenericCPU
     {
-
         private enum Microarchitecture
         {
             Unknown,
@@ -64,12 +63,13 @@ namespace OpenHardwareMonitor.Hardware.CPU
         private const uint MSR_PP1_ENERY_STATUS = 0x641;
 
         private readonly uint[] energyStatusMSRs = { MSR_PKG_ENERY_STATUS,
-      MSR_PP0_ENERY_STATUS, MSR_PP1_ENERY_STATUS, MSR_DRAM_ENERGY_STATUS };
+            MSR_PP0_ENERY_STATUS, MSR_PP1_ENERY_STATUS, MSR_DRAM_ENERGY_STATUS };
         private readonly string[] powerSensorLabels =
           { "CPU Package", "CPU Cores", "CPU Graphics", "CPU DRAM" };
         private float energyUnitMultiplier = 0;
         private DateTime[] lastEnergyTime;
         private uint[] lastEnergyConsumed;
+
 
         private float[] Floats(float f)
         {
@@ -86,7 +86,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
             for (int i = 0; i < coreCount; i++)
             {
                 if (Ring0.RdmsrTx(IA32_TEMPERATURE_TARGET, out eax,
-                  out edx, 1UL << cpuid[i][0].Thread))
+                  out edx, cpuid[i][0].Affinity))
                 {
                     result[i] = (eax >> 16) & 0xFF;
                 }
@@ -308,7 +308,8 @@ namespace OpenHardwareMonitor.Hardware.CPU
                 case Microarchitecture.Tremont:
                 case Microarchitecture.TigerLake:
                     {
-                        if (Ring0.Rdmsr(MSR_PLATFORM_INFO, out uint eax, out uint edx))
+                        uint eax, edx;
+                        if (Ring0.Rdmsr(MSR_PLATFORM_INFO, out eax, out edx))
                         {
                             timeStampCounterMultiplier = (eax >> 8) & 0xff;
                         }
@@ -360,7 +361,6 @@ namespace OpenHardwareMonitor.Hardware.CPU
             }
 
             busClock = new Sensor("Bus Speed", 0, SensorType.Clock, this, settings);
-    
             coreClocks = new Sensor[coreCount];
             for (int i = 0; i < coreClocks.Length; i++)
             {
@@ -393,7 +393,8 @@ namespace OpenHardwareMonitor.Hardware.CPU
                 lastEnergyTime = new DateTime[energyStatusMSRs.Length];
                 lastEnergyConsumed = new uint[energyStatusMSRs.Length];
 
-                if (Ring0.Rdmsr(MSR_RAPL_POWER_UNIT, out uint eax, out uint edx))
+                uint eax, edx;
+                if (Ring0.Rdmsr(MSR_RAPL_POWER_UNIT, out eax, out edx))
                     switch (microarchitecture)
                     {
                         case Microarchitecture.Silvermont:
@@ -460,9 +461,10 @@ namespace OpenHardwareMonitor.Hardware.CPU
 
             for (int i = 0; i < coreTemperatures.Length; i++)
             {
+                uint eax, edx;
                 // if reading is valid
-                if (Ring0.RdmsrTx(IA32_THERM_STATUS_MSR, out uint eax, out uint edx,
-                    1UL << cpuid[i][0].Thread) && (eax & 0x80000000) != 0)
+                if (Ring0.RdmsrTx(IA32_THERM_STATUS_MSR, out eax, out edx,
+                    cpuid[i][0].Affinity) && (eax & 0x80000000) != 0)
                 {
                     // get the dist from tjMax from bits 22:16
                     float deltaT = ((eax & 0x007F0000) >> 16);
@@ -478,9 +480,10 @@ namespace OpenHardwareMonitor.Hardware.CPU
 
             if (packageTemperature != null)
             {
+                uint eax, edx;
                 // if reading is valid
-                if (Ring0.RdmsrTx(IA32_PACKAGE_THERM_STATUS, out uint eax, out uint edx,
-                    1UL << cpuid[0][0].Thread) && (eax & 0x80000000) != 0)
+                if (Ring0.RdmsrTx(IA32_PACKAGE_THERM_STATUS, out eax, out edx,
+                    cpuid[0][0].Affinity) && (eax & 0x80000000) != 0)
                 {
                     // get the dist from tjMax from bits 22:16
                     float deltaT = ((eax & 0x007F0000) >> 16);
@@ -497,11 +500,12 @@ namespace OpenHardwareMonitor.Hardware.CPU
             if (HasTimeStampCounter && timeStampCounterMultiplier > 0)
             {
                 double newBusClock = 0;
+                uint eax, edx;
                 for (int i = 0; i < coreClocks.Length; i++)
                 {
                     System.Threading.Thread.Sleep(1);
-                    if (Ring0.RdmsrTx(IA32_PERF_STATUS, out uint eax, out uint edx,
-                      1UL << cpuid[i][0].Thread))
+                    if (Ring0.RdmsrTx(IA32_PERF_STATUS, out eax, out edx,
+                      cpuid[i][0].Affinity))
                     {
                         newBusClock =
                           TimeStampCounterFrequency / timeStampCounterMultiplier;
@@ -564,7 +568,8 @@ namespace OpenHardwareMonitor.Hardware.CPU
                     if (sensor == null)
                         continue;
 
-                    if (!Ring0.Rdmsr(energyStatusMSRs[sensor.Index], out uint eax, out uint edx))
+                    uint eax, edx;
+                    if (!Ring0.Rdmsr(energyStatusMSRs[sensor.Index], out eax, out edx))
                         continue;
 
                     DateTime time = DateTime.UtcNow;

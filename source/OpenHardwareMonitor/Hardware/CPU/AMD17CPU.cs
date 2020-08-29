@@ -304,21 +304,23 @@ namespace OpenHardwareMonitor.Hardware.CPU
 
         private class Core
         {
+
             private readonly AMD17CPU cpu;
-            private readonly ulong threadAffinityMask;
+            private readonly GroupAffinity affinity;
 
             private readonly Sensor powerSensor;
             private readonly Sensor clockSensor;
 
             private DateTime lastEnergyTime;
             private uint lastEnergyConsumed;
+            private float? power = null;
 
             public float? CoreClock => clockSensor.Value;
 
             public Core(int index, CPUID[] threads, AMD17CPU cpu, ISettings settings)
             {
                 this.cpu = cpu;
-                this.threadAffinityMask = 1UL << threads[0].Thread;
+                this.affinity = threads[0].Affinity;
 
                 string coreString = cpu.CoreString(index);
                 this.powerSensor =
@@ -329,7 +331,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
                 if (cpu.energyUnitMultiplier != 0)
                 {
                     if (Ring0.RdmsrTx(MSR_CORE_ENERGY_STAT, out uint energyConsumed,
-                      out _, threadAffinityMask))
+                      out _, affinity))
                     {
                         lastEnergyTime = DateTime.UtcNow;
                         lastEnergyConsumed = energyConsumed;
@@ -352,28 +354,30 @@ namespace OpenHardwareMonitor.Hardware.CPU
                 }
             }
 
-            public float? Power { get; private set; } = null;
+            public float? Power { get { return power; } }
 
             public void Update()
             {
                 DateTime energyTime = DateTime.MinValue;
-                ulong mask = ThreadAffinity.Set(threadAffinityMask);
+                double? multiplier = null;
+
+                var previousAffinity = ThreadAffinity.Set(affinity);
                 if (Ring0.Rdmsr(MSR_CORE_ENERGY_STAT, out uint energyConsumed, out _))
                 {
                     energyTime = DateTime.UtcNow;
                 }
 
-                double? multiplier = GetMultiplier();
-                ThreadAffinity.Set(mask);
+                multiplier = GetMultiplier();
+                ThreadAffinity.Set(previousAffinity);
 
                 if (cpu.energyUnitMultiplier != 0)
                 {
                     float deltaTime = (float)(energyTime - lastEnergyTime).TotalSeconds;
                     if (deltaTime > 0.01)
                     {
-                        Power = cpu.energyUnitMultiplier *
+                        power = cpu.energyUnitMultiplier *
                           unchecked(energyConsumed - lastEnergyConsumed) / deltaTime;
-                        powerSensor.Value = Power;
+                        powerSensor.Value = power;
                         lastEnergyTime = energyTime;
                         lastEnergyConsumed = energyConsumed;
                     }

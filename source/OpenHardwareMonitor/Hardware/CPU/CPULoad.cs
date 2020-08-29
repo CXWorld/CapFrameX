@@ -15,7 +15,6 @@ namespace OpenHardwareMonitor.Hardware.CPU
 {
     internal class CPULoad
     {
-
         [StructLayout(LayoutKind.Sequential)]
         protected struct SystemProcessorPerformanceInformation
         {
@@ -175,7 +174,6 @@ namespace OpenHardwareMonitor.Hardware.CPU
 
         protected static class NativeMethods
         {
-
             [DllImport("ntdll.dll")]
             public static extern int NtQuerySystemInformation(
               SystemInformationClass informationClass,
