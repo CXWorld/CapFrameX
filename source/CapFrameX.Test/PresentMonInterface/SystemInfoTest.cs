@@ -4,6 +4,7 @@ using SharpDX.DXGI;
 using System.Diagnostics;
 using System.Threading;
 using System.Linq;
+using System.Management;
 
 namespace CapFrameX.Test.PresentMonInterface
 {
@@ -26,6 +27,12 @@ namespace CapFrameX.Test.PresentMonInterface
             var category = new PerformanceCounterCategory("GPU Adapter Memory");
             var instances = category.GetInstanceNames();
 
+            var dedicatedUsages = instances
+                    .Select(instance => new PerformanceCounter("GPU Adapter Memory", "Dedicated Usage", instance))
+                    .Select((u, i) => (dedicatedUsage: u, Index: i));
+
+            var maxUsage = dedicatedUsages.Max(tuple => (tuple.dedicatedUsage, tuple.Index));
+
             PerformanceCounter dedicatedUsage = new PerformanceCounter("GPU Adapter Memory", "Dedicated Usage", instances.First());
             PerformanceCounter shardUsage = new PerformanceCounter("GPU Adapter Memory", "Shared Usage", instances.First());
             PerformanceCounter totalCommitted = new PerformanceCounter("GPU Adapter Memory", "Total Committed", instances.First());
@@ -36,6 +43,28 @@ namespace CapFrameX.Test.PresentMonInterface
                 Console.WriteLine(dedicatedUsage.RawValue);
                 Console.WriteLine(shardUsage.RawValue);
                 Console.WriteLine(totalCommitted.RawValue);
+            }
+        }
+
+        [TestMethod]
+        public void CheckDeviceId_CorrectId()
+        {
+            // Win32_VideoController
+            var win32DeviceClassName = "Win32_VideoController";
+            // var win32DeviceClassName = "Win32_DisplayConfiguration";
+            var query = string.Format("select * from {0}", win32DeviceClassName);
+
+            using (var searcher = new ManagementObjectSearcher(query))
+            {
+                ManagementObjectCollection objectCollection = searcher.Get();
+
+                foreach (ManagementBaseObject managementBaseObject in objectCollection)
+                {
+                    foreach (PropertyData propertyData in managementBaseObject.Properties)
+                    {
+                        Console.WriteLine($"Name: {propertyData.Name}, Value: {propertyData.Value}");
+                    }
+                }
             }
         }
     }

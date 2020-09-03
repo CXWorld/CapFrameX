@@ -10,7 +10,9 @@
 
 using Microsoft.Win32;
 using System;
+using System.Diagnostics;
 using System.Globalization;
+using System.Linq;
 using System.Text;
 
 namespace OpenHardwareMonitor.Hardware.ATI
@@ -44,9 +46,13 @@ namespace OpenHardwareMonitor.Hardware.ATI
         private readonly Sensor memoryVoltage;
         private readonly Sensor socVoltage;
         private readonly Sensor coreLoad;
-        private readonly Sensor memoryLoad;
+        private readonly Sensor memoryControllerLoad;
         private readonly Sensor controlSensor;
         private readonly Control fanControl;
+        private readonly Sensor memorUsageDedicated;
+        private readonly Sensor memoryUsageShared;
+        private readonly PerformanceCounter dedicatedVramUsagePerformCounter;
+        private readonly PerformanceCounter sharedVramUsagePerformCounter;
 
         private IntPtr context;
         private readonly int overdriveVersion;
@@ -106,7 +112,24 @@ namespace OpenHardwareMonitor.Hardware.ATI
             this.socVoltage = new Sensor("GPU SOC", 2, SensorType.Voltage, this, settings);
 
             this.coreLoad = new Sensor("GPU Core", 0, SensorType.Load, this, settings);
-            this.memoryLoad = new Sensor("GPU Memory Controller", 1, SensorType.Load, this, settings);
+            this.memoryControllerLoad = new Sensor("GPU Memory Controller", 1, SensorType.Load, this, settings);
+
+            if (PerformanceCounterCategory.Exists("GPU Adapter Memory"))
+            {
+                this.memorUsageDedicated = new Sensor("GPU Memory Dedicated", 0, SensorType.SmallData, this, settings);
+                this.memoryUsageShared = new Sensor("GPU Memory Shared", 1, SensorType.SmallData, this, settings);
+
+                var category = new PerformanceCounterCategory("GPU Adapter Memory");
+                var instances = category.GetInstanceNames();
+
+                var (Usage, Index) = instances
+                    .Select(instance => new PerformanceCounter("GPU Adapter Memory", "Dedicated Usage", instance))
+                    .Select((u, i) => (Usage: u.RawValue, Index: i)).Max();
+
+                dedicatedVramUsagePerformCounter = new PerformanceCounter("GPU Adapter Memory", "Dedicated Usage", instances[Index]);
+                sharedVramUsagePerformCounter = new PerformanceCounter("GPU Adapter Memory", "Shared Usage", instances[Index]);
+            }
+
 
             this.controlSensor = new Sensor("GPU Fan", 0, SensorType.Control, this, settings);
 
@@ -204,7 +227,6 @@ namespace OpenHardwareMonitor.Hardware.ATI
             {
                 sensor.Value = null;
             }
-
         }
 
         public override string GetReport()
@@ -350,7 +372,7 @@ namespace OpenHardwareMonitor.Hardware.ATI
                 GetPMLog(data, ADLSensorType.MEM_VOLTAGE, memoryVoltage, 0.001f);
                 GetPMLog(data, ADLSensorType.SOC_VOLTAGE, socVoltage, 0.001f);
                 GetPMLog(data, ADLSensorType.INFO_ACTIVITY_GFX, coreLoad);
-                GetPMLog(data, ADLSensorType.INFO_ACTIVITY_MEM, memoryLoad);
+                GetPMLog(data, ADLSensorType.INFO_ACTIVITY_MEM, memoryControllerLoad);
                 GetPMLog(data, ADLSensorType.FAN_PERCENTAGE, controlSensor);
             }
             else
@@ -458,6 +480,15 @@ namespace OpenHardwareMonitor.Hardware.ATI
                     coreVoltage.Value = null;
                     coreLoad.Value = null;
                 }
+            }
+
+            // update VRAM usage
+            if (dedicatedVramUsagePerformCounter != null && sharedVramUsagePerformCounter != null)
+            {
+                memorUsageDedicated.Value = dedicatedVramUsagePerformCounter.RawValue / 1024 / 1024;
+                ActivateSensor(memorUsageDedicated);
+                memoryUsageShared.Value = sharedVramUsagePerformCounter.RawValue / 1024 / 1024;
+                ActivateSensor(memoryUsageShared);
             }
         }
 

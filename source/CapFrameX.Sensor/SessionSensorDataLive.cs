@@ -21,8 +21,8 @@ namespace CapFrameX.Sensor
                 "GPU Core",
                 "GPU Total",
                 "GPU Power",
-                "GPU Memory Used",
-                "GPU Power Limit"
+                "GPU Power Limit",
+                "GPU Memory Dedicated"
             };
 
         private long _timestampStartLogging;
@@ -112,8 +112,7 @@ namespace CapFrameX.Sensor
                 case "Used Memory" when sensor.Hardware.HardwareType == HardwareType.RAM:
                     _ramUsage.Add(Math.Round(currentValue, 2));
                     break;
-                case "GPU Memory Used" when sensor.SensorType == SensorType.SmallData
-                && sensor.Hardware.HardwareType == HardwareType.GpuNvidia:
+                case "GPU Memory Dedicated" when sensor.SensorType == SensorType.SmallData:
                     _vRamUsage.Add((int)Math.Round(currentValue, 0));
                     break;
             }

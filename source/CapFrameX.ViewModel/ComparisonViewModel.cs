@@ -81,6 +81,7 @@ namespace CapFrameX.ViewModel
         private bool _showCustomTitle;
         private string _selectedChartView = "Frametimes";
         private EFilterMode _selectedFilterMode;
+        private string _lShapeYaxisLabel = "Frametimes (ms)";
 
         public Array FirstMetricItems => Enum.GetValues(typeof(EMetric))
                                              .Cast<EMetric>().Where(metric => metric != EMetric.None)
@@ -221,6 +222,17 @@ namespace CapFrameX.ViewModel
                 _comparisonLShapeCollection = value;
                 RaisePropertyChanged();
             }
+        }
+
+        public string ComparisonLShapeYAxisLabel
+        {
+            get { return _lShapeYaxisLabel; }
+            set
+            {
+                _lShapeYaxisLabel = value;
+                RaisePropertyChanged();
+            }
+
         }
 
         public string[] ComparisonRowChartLabels
@@ -471,7 +483,9 @@ namespace CapFrameX.ViewModel
             set
             {
                 _selectedChartView = value;
+                ComparisonLShapeYAxisLabel = value == "Frametimes" ? "Frametimes (ms)" : "FPS";
                 RaisePropertyChanged();
+                UpdateCharts();
             }
         }
 
@@ -1205,12 +1219,15 @@ namespace CapFrameX.ViewModel
 
         private void AddToLShapeChart(ComparisonRecordInfoWrapper wrappedComparisonInfo)
         {
+            var LShapeMetric = SelectedChartView == "Frametimes" ? ELShapeMetrics.Frametimes : ELShapeMetrics.FPS;
             double startTime = FirstSeconds;
             double endTime = LastSeconds;
             var frametimeTimeWindow = wrappedComparisonInfo.WrappedRecordInfo.Session.GetFrametimeTimeWindow(startTime, endTime, _appConfiguration, ERemoveOutlierMethod.None);
+            var fpsTimeWindow = frametimeTimeWindow?.Select(ft => 1000 / ft).ToList();
+            string unit = LShapeMetric == ELShapeMetrics.Frametimes ? "ms" : "fps";
 
-            var lShapeQuantiles = _frametimeAnalyzer.GetLShapeQuantiles();
-            double action(double q) => _frametimeStatisticProvider.GetPQuantileSequence(frametimeTimeWindow, q / 100);
+            var lShapeQuantiles = _frametimeAnalyzer.GetLShapeQuantiles(LShapeMetric);
+            double action(double q) => _frametimeStatisticProvider.GetPQuantileSequence(LShapeMetric == ELShapeMetrics.Frametimes ? frametimeTimeWindow : fpsTimeWindow, q / 100);
             var quantiles = lShapeQuantiles.Select(q => new ObservablePoint(q, action(q)));
             var quantileValues = new ChartValues<ObservablePoint>();
             quantileValues.AddRange(quantiles);
@@ -1227,7 +1244,7 @@ namespace CapFrameX.ViewModel
                 PointGeometrySize = 5,
                 PointGeometry = DefaultGeometries.Square,
                 PointForeground = wrappedComparisonInfo.IsHideModeSelected ? Brushes.Transparent : wrappedComparisonInfo.Color,
-                LabelPoint = chartPoint => string.Format(CultureInfo.InvariantCulture, "{0:0.##}", chartPoint.Y, "ms")
+                LabelPoint = chartPoint => string.Format(CultureInfo.InvariantCulture, "{0:0.##}", chartPoint.Y, unit)
             });
         }
 

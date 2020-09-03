@@ -392,6 +392,13 @@ namespace CapFrameX.ViewModel
                     _onlineMetricService.ProcessDataLineStream.OnNext(Tuple.Create(currentProcess, dataLine));
 
                     var lineSplit = dataLine.Split(',');
+
+                    if (lineSplit.Length < 2)
+                    {
+                        _logger.LogInformation("Unusable string {dataLine}.", dataLine);
+                        return;
+                    }
+
                     if (currentProcess == lineSplit[0].Replace(".exe", ""))
                     {
                         if (uint.TryParse(lineSplit[1], out uint processID))

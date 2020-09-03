@@ -184,12 +184,6 @@ namespace CapFrameX.Sensor
             }
         }
 
-        //public void ResetSensorOverlayEntries()
-        //{
-        //    InitializeOverlayEntryDict();
-        //    _onDictionaryUpdated.OnNext(GetSensorOverlayEntries());
-        //}
-
         private void InitializeOverlayEntryDict()
         {
             if (_computer == null) return;
@@ -386,6 +380,12 @@ namespace CapFrameX.Sensor
             else if (name.Contains("Memory"))
             {
                 name = name.Replace("Memory", "Mem");
+
+                if (name.Contains("Dedicated"))
+                    name = name.Replace("GPU Mem Dedicated", "GPU Mem");
+
+                else if (name.Contains("Shared"))
+                    name = name.Replace("GPU Mem Shared", "GPU Mem");
             }
             else if (name.Contains("Power Limit"))
             {

@@ -209,5 +209,5 @@ namespace CapFrameX.View
 			modificationAction?.Invoke(theme);
 			paletteHelper.SetTheme(theme);
 		}
-	}
+    }
 }

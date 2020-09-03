@@ -14,6 +14,9 @@ using NvAPIWrapper.Native.GPU;
 using System;
 using System.Globalization;
 using System.Text;
+using System.Diagnostics;
+using System.Linq;
+using System.Threading;
 
 namespace OpenHardwareMonitor.Hardware.Nvidia
 {
@@ -42,6 +45,10 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
         private readonly Sensor powerLimit;
         private readonly Sensor temperatureLimit;
         private readonly Sensor voltageLimit;
+        private readonly Sensor memoryUsageDedicated;
+        private readonly Sensor memoryUsageShared;
+        private readonly PerformanceCounter dedicatedVramUsagePerformCounter;
+        private readonly PerformanceCounter sharedVramUsagePerformCounter;
 
         public NvidiaGPU(int adapterIndex, NvPhysicalGpuHandle handle,
           NvDisplayHandle? displayHandle, ISettings settings, PhysicalGPU physicalGPU = null)
@@ -89,6 +96,8 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
             memoryFree = new Sensor("GPU Memory Free", 1, SensorType.SmallData, this, settings);
             memoryUsed = new Sensor("GPU Memory Used", 2, SensorType.SmallData, this, settings);
             memoryAvail = new Sensor("GPU Memory Total", 3, SensorType.SmallData, this, settings);
+            memoryUsageDedicated = new Sensor("GPU Memory Dedicated", 4, SensorType.SmallData, this, settings);
+            memoryUsageShared = new Sensor("GPU Memory Shared", 5, SensorType.SmallData, this, settings);
             fan = new Sensor("GPU Fan", 0, SensorType.Fan, this, settings);
             control = new Sensor("GPU Fan", 1, SensorType.Control, this, settings);
             voltage = new Sensor("GPU Voltage", 0, SensorType.Voltage, this, settings);
@@ -106,6 +115,19 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
                 fanControl.SoftwareControlValueChanged += SoftwareControlValueChanged;
                 ControlModeChanged(fanControl);
                 control.Control = fanControl;
+            }
+
+            if (PerformanceCounterCategory.Exists("GPU Adapter Memory"))
+            {                
+                var category = new PerformanceCounterCategory("GPU Adapter Memory");
+                var instances = category.GetInstanceNames();
+
+                var (Usage, Index) = instances
+                    .Select(instance => new PerformanceCounter("GPU Adapter Memory", "Dedicated Usage", instance))
+                    .Select((u, i) => (Usage: u.RawValue, Index: i)).Max();
+
+                dedicatedVramUsagePerformCounter = new PerformanceCounter("GPU Adapter Memory", "Dedicated Usage", instances[Index]);
+                sharedVramUsagePerformCounter = new PerformanceCounter("GPU Adapter Memory", "Shared Usage", instances[Index]);
             }
 
             if (NVML.IsInitialized)
@@ -375,6 +397,19 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
                     power.Value = powerValue * 0.001f;
                     ActivateSensor(power);
                 }
+            }
+
+            // update VRAM usage
+            if (dedicatedVramUsagePerformCounter != null)
+            {
+                memoryUsageDedicated.Value = (float)dedicatedVramUsagePerformCounter.RawValue / 1024 / 1024;
+                ActivateSensor(memoryUsageDedicated);
+            }
+
+            if (sharedVramUsagePerformCounter != null)
+            {
+                memoryUsageShared.Value = (float)sharedVramUsagePerformCounter.RawValue / 1024 / 1024;
+                ActivateSensor(memoryUsageShared);
             }
 
             if (pcieThroughputRx != null)

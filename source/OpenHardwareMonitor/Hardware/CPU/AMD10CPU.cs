@@ -4,7 +4,7 @@
   License, v. 2.0. If a copy of the MPL was not distributed with this
   file, You can obtain one at http://mozilla.org/MPL/2.0/.
  
-  Copyright (C) 2009-2013 Michael Möller <mmoeller@openhardwaremonitor.org>
+  Copyright (C) 2009-2020 Michael Möller <mmoeller@openhardwaremonitor.org>
 	
 */
 
@@ -22,6 +22,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
 
     internal sealed class AMD10CPU : AMDCPU
     {
+
         private readonly Sensor coreTemperature;
         private readonly Sensor[] coreClocks;
         private readonly Sensor coreMaxClocks;
@@ -41,11 +42,16 @@ namespace OpenHardwareMonitor.Hardware.CPU
         private const ushort FAMILY_15H_MODEL_00_MISC_CONTROL_DEVICE_ID = 0x1603;
         private const ushort FAMILY_15H_MODEL_10_MISC_CONTROL_DEVICE_ID = 0x1403;
         private const ushort FAMILY_15H_MODEL_30_MISC_CONTROL_DEVICE_ID = 0x141D;
+        private const ushort FAMILY_15H_MODEL_60_MISC_CONTROL_DEVICE_ID = 0x1573;
+        private const ushort FAMILY_15H_MODEL_70_MISC_CONTROL_DEVICE_ID = 0x15B3;
         private const ushort FAMILY_16H_MODEL_00_MISC_CONTROL_DEVICE_ID = 0x1533;
         private const ushort FAMILY_16H_MODEL_30_MISC_CONTROL_DEVICE_ID = 0x1583;
 
         private const uint REPORTED_TEMPERATURE_CONTROL_REGISTER = 0xA4;
         private const uint CLOCK_POWER_TIMING_CONTROL_0_REGISTER = 0xD4;
+        private const uint SMU_REPORTED_TEMP_CONTROL_REGISTER = 0xD8200CA4;
+
+        private readonly bool hasSmuTemperatureRegister = false;
 
         private readonly uint miscellaneousControlAddress;
         private readonly ushort miscellaneousControlDeviceId;
@@ -61,10 +67,9 @@ namespace OpenHardwareMonitor.Hardware.CPU
             // AMD family 1Xh processors support only one temperature sensor
             coreTemperature = new Sensor(
               "Core" + (coreCount > 1 ? " #1 - #" + coreCount : ""), 0,
-              SensorType.Temperature, this, new[]
-              {
-                new ParameterDescription("Offset [°C]", "Temperature offset.", 0)
-              }, settings);
+              SensorType.Temperature, this, new[] {
+            new ParameterDescription("Offset [°C]", "Temperature offset.", 0)
+                }, settings);
 
             switch (family)
             {
@@ -92,6 +97,16 @@ namespace OpenHardwareMonitor.Hardware.CPU
                         case 0x30:
                             miscellaneousControlDeviceId =
                    FAMILY_15H_MODEL_30_MISC_CONTROL_DEVICE_ID; break;
+                        case 0x60:
+                            miscellaneousControlDeviceId =
+                   FAMILY_15H_MODEL_60_MISC_CONTROL_DEVICE_ID;
+                            hasSmuTemperatureRegister = true;
+                            break;
+                        case 0x70:
+                            miscellaneousControlDeviceId =
+                   FAMILY_15H_MODEL_70_MISC_CONTROL_DEVICE_ID;
+                            hasSmuTemperatureRegister = true;
+                            break;
                         default: miscellaneousControlDeviceId = 0; break;
                     }
                     break;
@@ -130,7 +145,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
             corePerformanceBoostSupport = (cpuid[0][0].ExtData[7, 3] & (1 << 9)) > 0;
 
             // set affinity to the first thread for all frequency estimations     
-            ulong mask = ThreadAffinity.Set(1UL << cpuid[0][0].Thread);
+            var previousAffinity = ThreadAffinity.Set(cpuid[0][0].Affinity);
 
             // disable core performance boost  
             uint hwcrEax, hwcrEdx;
@@ -143,7 +158,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
             uint ctrEax, ctrEdx;
             Ring0.Rdmsr(PERF_CTR_0, out ctrEax, out ctrEdx);
 
-            timeStampCounterMultiplier = EstimateTimeStampCounterMultiplier();
+            timeStampCounterMultiplier = estimateTimeStampCounterMultiplier();
 
             // restore the performance counter registers
             Ring0.Wrmsr(PERF_CTL_0, ctlEax, ctlEdx);
@@ -154,12 +169,11 @@ namespace OpenHardwareMonitor.Hardware.CPU
                 Ring0.Wrmsr(HWCR, hwcrEax, hwcrEdx);
 
             // restore the thread affinity.
-            ThreadAffinity.Set(mask);
+            ThreadAffinity.Set(previousAffinity);
 
             // the file reader for lm-sensors support on Linux
             temperatureStream = null;
-            int p = (int)Environment.OSVersion.Platform;
-            if ((p == 4) || (p == 128))
+            if (OperatingSystem.IsUnix)
             {
                 string[] devicePaths = Directory.GetDirectories("/sys/class/hwmon/");
                 foreach (string path in devicePaths)
@@ -184,21 +198,21 @@ namespace OpenHardwareMonitor.Hardware.CPU
             Update();
         }
 
-        private double EstimateTimeStampCounterMultiplier()
+        private double estimateTimeStampCounterMultiplier()
         {
             // preload the function
-            EstimateTimeStampCounterMultiplier(0);
-            EstimateTimeStampCounterMultiplier(0);
+            estimateTimeStampCounterMultiplier(0);
+            estimateTimeStampCounterMultiplier(0);
 
             // estimate the multiplier
             List<double> estimate = new List<double>(3);
             for (int i = 0; i < 3; i++)
-                estimate.Add(EstimateTimeStampCounterMultiplier(0.025));
+                estimate.Add(estimateTimeStampCounterMultiplier(0.025));
             estimate.Sort();
             return estimate[1];
         }
 
-        private double EstimateTimeStampCounterMultiplier(double timeWindow)
+        private double estimateTimeStampCounterMultiplier(double timeWindow)
         {
             uint eax, edx;
 
@@ -241,7 +255,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
         protected override uint[] GetMSRs()
         {
             return new uint[] { PERF_CTL_0, PERF_CTR_0, HWCR, P_STATE_0,
-                COFVID_STATUS };
+        COFVID_STATUS };
         }
 
         public override string GetReport()
@@ -340,6 +354,30 @@ namespace OpenHardwareMonitor.Hardware.CPU
             return sb.ToString();
         }
 
+        private bool ReadSmuRegister(uint address, out uint value)
+        {
+            if (Ring0.WaitPciBusMutex(10))
+            {
+
+                if (!Ring0.WritePciConfig(0, 0xB8, address))
+                {
+                    value = 0;
+
+                    Ring0.ReleasePciBusMutex();
+                    return false;
+                }
+                var result = Ring0.ReadPciConfig(0, 0xBC, out value);
+
+                Ring0.ReleasePciBusMutex();
+                return result;
+            }
+            else
+            {
+                value = 0;
+                return false;
+            }
+        }
+
         public override void Update()
         {
             base.Update();
@@ -349,31 +387,27 @@ namespace OpenHardwareMonitor.Hardware.CPU
                 if (miscellaneousControlAddress != Ring0.InvalidPciAddress)
                 {
                     uint value;
-                    if (Ring0.ReadPciConfig(miscellaneousControlAddress,
-                      REPORTED_TEMPERATURE_CONTROL_REGISTER, out value))
+                    bool valueValid;
+                    if (hasSmuTemperatureRegister)
                     {
-                        if (family == 0x15 && (value & 0x30000) == 0x30000)
+                        valueValid =
+                          ReadSmuRegister(SMU_REPORTED_TEMP_CONTROL_REGISTER, out value);
+                    }
+                    else
+                    {
+                        valueValid = Ring0.ReadPciConfig(miscellaneousControlAddress,
+                          REPORTED_TEMPERATURE_CONTROL_REGISTER, out value);
+                    }
+                    if (valueValid)
+                    {
+                        if ((family == 0x15 || family == 0x16) && (value & 0x30000) == 0x30000)
                         {
-                            if ((model & 0xF0) == 0x00)
-                            {
-                                coreTemperature.Value = ((value >> 21) & 0x7FC) / 8.0f +
-                                  coreTemperature.Parameters[0].Value - 49;
-                            }
-                            else
-                            {
-                                coreTemperature.Value = ((value >> 21) & 0x7FF) / 8.0f +
-                                  coreTemperature.Parameters[0].Value - 49;
-                            }
-                        }
-                        else if (family == 0x16 &&
-                        ((value & 0x30000) == 0x30000 || (value & 0x80000) == 0x80000))
-                        {
-                            coreTemperature.Value = ((value >> 21) & 0x7FF) / 8.0f +
+                            coreTemperature.Value = ((value >> 21) & 0x7FF) * 0.125f +
                               coreTemperature.Parameters[0].Value - 49;
                         }
                         else
                         {
-                            coreTemperature.Value = ((value >> 21) & 0x7FF) / 8.0f +
+                            coreTemperature.Value = ((value >> 21) & 0x7FF) * 0.125f +
                               coreTemperature.Parameters[0].Value;
                         }
                         ActivateSensor(coreTemperature);
@@ -407,8 +441,9 @@ namespace OpenHardwareMonitor.Hardware.CPU
                 {
                     Thread.Sleep(1);
 
-                    if (Ring0.RdmsrTx(COFVID_STATUS, out uint curEax, out uint curEdx,
-                      1UL << cpuid[i][0].Thread))
+                    uint curEax, curEdx;
+                    if (Ring0.RdmsrTx(COFVID_STATUS, out curEax, out curEdx,
+                      cpuid[i][0].Affinity))
                     {
                         double multiplier;
                         multiplier = GetCoreMultiplier(curEax);

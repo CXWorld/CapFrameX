@@ -57,7 +57,7 @@
                        FontWeight="Bold" Foreground="{Binding IsLoggedIn, Converter={StaticResource ModeColorConverter}}"></TextBlock>
         </StackPanel>
         <StackPanel HorizontalAlignment="Right" Grid.Column="1" Margin="0 0 10 0" Orientation="Horizontal">
-            <materialDesign:PackIcon Kind="Information" VerticalAlignment="Center" />
+            <materialDesign:PackIcon Kind="Information" VerticalAlignment="Center" ToolTip="{Binding InfoToolTipText, UpdateSourceTrigger=Default}"/>
             <TextBlock Margin="5 0 0 0" VerticalAlignment="Center">Version:</TextBlock>
             <TextBlock Margin="5 0 0 0" VerticalAlignment="Center" Text="{Binding VersionString, Mode=OneWay}"/>
         </StackPanel>

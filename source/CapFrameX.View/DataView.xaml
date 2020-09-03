@@ -128,24 +128,37 @@
                                 </Grid>
                             </TabItem>
                             <TabItem Header="L-shape">
-                                <lvc:CartesianChart MouseDoubleClick="ResetChart_MouseDoubleClick" Series="{Binding LShapeCollection}" Zoom="Y" 
-										Tag="{Binding ElementName=DataViewUserControl, Path=DataContext}" DataTooltip="{x:Null}" >
-                                    <lvc:CartesianChart.ContextMenu>
-                                        <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
-                                            <MenuItem Header="Copy quantiles" Command="{Binding CopyLShapeQuantilesCommand}"/>
-                                        </ContextMenu>
-                                    </lvc:CartesianChart.ContextMenu>
-                                    <lvc:CartesianChart.AxisX>
-                                        <lvc:Axis Title="Percentiles (%)" Name="LShapeX" Foreground="Black">
-                                            <lvc:Axis.Separator >
-                                                <lvc:Separator Step="1"></lvc:Separator>
-                                            </lvc:Axis.Separator>
-                                        </lvc:Axis>
-                                    </lvc:CartesianChart.AxisX>
-                                    <lvc:CartesianChart.AxisY>
-                                        <lvc:Axis Title="Frametime [ms]" Name="LShapeY" Foreground="Black"/>
-                                    </lvc:CartesianChart.AxisY>
-                                </lvc:CartesianChart>
+                                <Grid>
+                                    <Grid Margin="0 0 50 0" Panel.ZIndex="1" HorizontalAlignment="Left" VerticalAlignment="Bottom">
+                                        <ComboBox Width="96" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="25 8 0 8" materialDesign:HintAssist.Hint="Metric"
+										      materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="240" materialDesign:ComboBoxAssist.ClassicMode="True"
+                                              SelectedItem="{Binding SelectedLShapeMetric}" ItemsSource="{Binding LShapeMetrics}">
+                                            <ComboBox.ItemTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}"/>
+                                                </DataTemplate>
+                                            </ComboBox.ItemTemplate>
+                                        </ComboBox>
+                                    </Grid>
+                                    <lvc:CartesianChart Margin="20 10 10 40" MouseDoubleClick="ResetChart_MouseDoubleClick" Series="{Binding LShapeCollection}" Zoom="Y" 
+										Tag="{Binding ElementName=DataViewUserControl, Path=DataContext}" DataTooltip="{x:Null}">
+                                        <lvc:CartesianChart.ContextMenu>
+                                            <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
+                                                <MenuItem Header="Copy quantiles" Command="{Binding CopyLShapeQuantilesCommand}"/>
+                                            </ContextMenu>
+                                        </lvc:CartesianChart.ContextMenu>
+                                        <lvc:CartesianChart.AxisX>
+                                            <lvc:Axis Title="Percentiles (%)" Name="LShapeX" Foreground="Black">
+                                                <lvc:Axis.Separator >
+                                                    <lvc:Separator Step="1"></lvc:Separator>
+                                                </lvc:Axis.Separator>
+                                            </lvc:Axis>
+                                        </lvc:CartesianChart.AxisX>
+                                        <lvc:CartesianChart.AxisY>
+                                            <lvc:Axis Title="{Binding LShapeYaxisLabel}" Name="LShapeY" Foreground="Black"/>
+                                        </lvc:CartesianChart.AxisY>
+                                    </lvc:CartesianChart>
+                                </Grid>
                             </TabItem>
                         </TabControl>
                     </materialDesign:DialogHost>
@@ -159,7 +172,7 @@
                         <StackPanel HorizontalAlignment="Right" VerticalAlignment="Bottom" Orientation="Horizontal" Margin="0 0 10 0" Height="25">
                             <TextBlock Text="Start and end points:" Margin="0 5 5 0"/>
                             <TextBox Grid.Row="1" materialDesign:HintAssist.Hint="Start (s)" HorizontalAlignment="Center" Width="45"
-                         ToolTip="Range Slider start point" PreviewKeyDown="FirstSecondsTextBox_PreviewKeyDown" PreviewTextInput="NumberValidationTextBox" TextAlignment="Center">
+                                      ToolTip="Range Slider start point" PreviewKeyDown="FirstSecondsTextBox_PreviewKeyDown" PreviewTextInput="NumberValidationTextBox" TextAlignment="Center">
                                 <TextBox.Text>
                                     <Binding Path="FirstSeconds"
                                  StringFormat="F2"
@@ -170,7 +183,7 @@
                             </TextBox>
                             <TextBlock Text="-" Margin="3 5 3 0"/>
                             <TextBox Grid.Row="1" materialDesign:HintAssist.Hint="End (s)" HorizontalAlignment="Center" Width="45"
-                         ToolTip="Range Slider end point" PreviewKeyDown="LastSecondsTextBox_PreviewKeyDown" PreviewTextInput="NumberValidationTextBox" TextAlignment="Center">
+                                     ToolTip="Range Slider end point" PreviewKeyDown="LastSecondsTextBox_PreviewKeyDown" PreviewTextInput="NumberValidationTextBox" TextAlignment="Center">
                                 <TextBox.Text>
                                     <Binding Path="LastSeconds"
                                  StringFormat="F2"
@@ -180,8 +193,8 @@
                                 </TextBox.Text>
                             </TextBox>
                             <Button Grid.Row="1" Grid.Column="1" HorizontalAlignment="Right" Margin="10 0 0 0" Height="22" Width="22" Command="{Binding CutRecordCommand}" 
-                            Style="{StaticResource MaterialDesignFloatingActionMiniButton}" ToolTip="Cut the record based on range slider and save it as a new file">
-                                <materialDesign:PackIcon Kind="ContentCut" Height="15" Width="15" />
+                                    Style="{StaticResource MaterialDesignFloatingActionMiniButton}" ToolTip="Cut the record based on range slider and save it as a new file">
+                                        <materialDesign:PackIcon Kind="ContentCut" Height="15" Width="15" />
                             </Button>
                         </StackPanel>
                         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Bottom" Orientation="Horizontal" Margin="0 0 0 5" Height="15">
@@ -231,25 +244,25 @@
                             <TabItem Header="FPS thresholds">
                                 <Grid Margin="0 5 0 0">
                                     <RadioButton Panel.ZIndex="1" HorizontalAlignment="Left" VerticalAlignment="Top"
-                                 ToolTip="Show time above or below thresholds"
-                                 Style="{StaticResource MaterialDesignTabRadioButton}"
-                                 Margin="0 -5 0 0"
-                                 Width="80"
-                                 MinWidth="80"
-                                 Height="25"
-                                 IsChecked="{Binding ShowThresholdTimes}"
-                                 Content="Times"
-                                 Command="{Binding ThresholdTimesCommand}"/>
+                                                 ToolTip="Show time above or below thresholds"
+                                                 Style="{StaticResource MaterialDesignTabRadioButton}"
+                                                 Margin="0 -5 0 0"
+                                                 Width="80"
+                                                 MinWidth="80"
+                                                 Height="25"
+                                                 IsChecked="{Binding ShowThresholdTimes}"
+                                                 Content="Times"
+                                                 Command="{Binding ThresholdTimesCommand}"/>
                                     <RadioButton Panel.ZIndex="1" HorizontalAlignment="Left" VerticalAlignment="Top"
-                                 ToolTip="Show number of frames above or below thresholds"
-                                 Style="{StaticResource MaterialDesignTabRadioButton}"
-                                 Margin="80 -5 0 0"
-                                 Width="80"
-                                 MinWidth="80"
-                                 Height="25"
-                                 IsChecked="{Binding ShowThresholdTimes, Converter={StaticResource InvertBoolConverter}}"
-                                 Content="Counts"
-                                 Command="{Binding ThresholdCountsCommand}"/>
+                                                 ToolTip="Show number of frames above or below thresholds"
+                                                 Style="{StaticResource MaterialDesignTabRadioButton}"
+                                                 Margin="80 -5 0 0"
+                                                 Width="80"
+                                                 MinWidth="80"
+                                                 Height="25"
+                                                 IsChecked="{Binding ShowThresholdTimes, Converter={StaticResource InvertBoolConverter}}"
+                                                 Content="Counts"
+                                                 Command="{Binding ThresholdCountsCommand}"/>
                                     <Grid Margin="0 0 40 0" Panel.ZIndex="1" HorizontalAlignment="Right" VerticalAlignment="Top">
                                         <ToggleButton Width="25" Height="25" Style="{StaticResource MaterialDesignActionToggleButton}"
 												  ToolTip="Toggle between absolute and relative values" IsChecked="{Binding ThresholdPercentageButtonIsChecked}">
@@ -275,7 +288,7 @@
                                         </ToggleButton>
                                     </Grid>
                                     <lvc:CartesianChart Margin="5 10 5 5" Series="{Binding FPSThresholdCollection}" LegendLocation="None"
-								Tag="{Binding ElementName=DataViewUserControl, Path=DataContext}" DataTooltip="{x:Null}">
+								                        Tag="{Binding ElementName=DataViewUserControl, Path=DataContext}" DataTooltip="{x:Null}">
                                         <lvc:CartesianChart.ContextMenu>
                                             <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
                                                 <MenuItem Header="Copy threshold data" Command="{Binding CopyFPSThresholdDataCommand}"/>
@@ -300,8 +313,8 @@
                                 </Grid>
                             </TabItem>
                             <TabItem Header="Sensor statistics" IsEnabled="{Binding AdditionalGraphsEnabled}">
-                                <DataGrid Background="#F5F5F5" FontSize="11" 
-										ItemsSource="{Binding SensorReportItems}" ColumnHeaderHeight="25"
+                                <DataGrid Background="#F5F5F5" FontSize="11" AlternationCount="2" AlternatingRowBackground="#FFE6E6E6"
+										ItemsSource="{Binding SensorReportItems}" ColumnHeaderHeight="25" SelectionUnit="FullRow"
 										CanUserSortColumns="False" CanUserAddRows="False" AutoGenerateColumns="False"
 										materialDesign:DataGridAssist.CellPadding="13 3 0 0" materialDesign:DataGridAssist.ColumnHeaderPadding="8 0 0 0" IsSynchronizedWithCurrentItem="False"
 										ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True"
@@ -315,6 +328,45 @@
                                     <DataGrid.Resources>
                                         <Style TargetType="DataGridRow">
                                             <Setter Property="DataGrid.Height" Value="25" />
+                                        </Style>
+                                        <Style TargetType="DataGridCell">
+                                            <Setter Property="Padding" Value="5" />
+                                            <Setter Property="Background" Value="Transparent"/>
+                                            <Setter Property="BorderBrush" Value="Transparent"/>
+                                            <Setter Property="Validation.ErrorTemplate" Value="{x:Null}" />
+                                            <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBody}" />
+                                            <Setter Property="BorderThickness" Value="0"/>
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="{x:Type DataGridCell}">
+                                                        <Grid>
+                                                            <Border
+                                                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                                                    Background="{TemplateBinding Background}"
+                                                                    SnapsToDevicePixels="True" />
+                                                            <ContentPresenter
+                                                                    SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
+                                                                    Margin="{TemplateBinding Padding}" />
+                                                        </Grid>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                            <!--<Style.Triggers>
+                                                <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                                                    <Setter Property="BorderBrush" Value="{DynamicResource MaterialDesignTextBoxBorder}"/>
+                                                </Trigger>
+                                                <MultiDataTrigger>
+                                                    <MultiDataTrigger.Conditions>
+                                                        <Condition Binding="{Binding IsSelected, RelativeSource={RelativeSource Self}}" Value="True"/>
+                                                        <Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Value="False" />
+                                                    </MultiDataTrigger.Conditions>
+                                                    <Setter Property="Background" Value="{DynamicResource MaterialDesignSelection}" />
+                                                </MultiDataTrigger>
+                                                <Trigger Property="IsEnabled" Value="False">
+                                                    <Setter Property="Opacity" Value=".56"/>
+                                                </Trigger>
+                                            </Style.Triggers>-->
                                         </Style>
                                     </DataGrid.Resources>
                                     <DataGrid.Columns>

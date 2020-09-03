@@ -15,7 +15,6 @@ namespace OpenHardwareMonitor.Hardware.CPU
 {
     internal class CPULoad
     {
-
         [StructLayout(LayoutKind.Sequential)]
         protected struct SystemProcessorPerformanceInformation
         {
@@ -58,10 +57,9 @@ namespace OpenHardwareMonitor.Hardware.CPU
             idle = null;
             total = null;
 
-            IntPtr returnLength;
             if (NativeMethods.NtQuerySystemInformation(
               SystemInformationClass.SystemProcessorPerformanceInformation,
-              informations, informations.Length * size, out returnLength) != 0)
+              informations, informations.Length * size, out IntPtr returnLength) != 0)
                 return false;
 
             idle = new long[(int)returnLength / size];
@@ -176,7 +174,6 @@ namespace OpenHardwareMonitor.Hardware.CPU
 
         protected static class NativeMethods
         {
-
             [DllImport("ntdll.dll")]
             public static extern int NtQuerySystemInformation(
               SystemInformationClass informationClass,

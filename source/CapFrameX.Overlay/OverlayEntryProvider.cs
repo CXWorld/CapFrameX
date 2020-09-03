@@ -7,6 +7,7 @@ using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Extensions;
 using CapFrameX.PresentMonInterface;
 using CapFrameX.Statistics.NetStandard.Contracts;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Prism.Events;
 using System;
@@ -33,6 +34,7 @@ namespace CapFrameX.Overlay
         private readonly IOnlineMetricService _onlineMetricService;
         private readonly ISystemInfo _systemInfo;
         private readonly IRTSSService _rTSSService;
+        private readonly ILogger<OverlayEntryProvider> _logger;
         private readonly ConcurrentDictionary<string, IOverlayEntry> _identifierOverlayEntryDict
              = new ConcurrentDictionary<string, IOverlayEntry>();
         private readonly TaskCompletionSource<bool> _taskCompletionSource
@@ -46,7 +48,8 @@ namespace CapFrameX.Overlay
             IAppConfiguration appConfiguration,
             IEventAggregator eventAggregator,
             IOnlineMetricService onlineMetricService,
-            ISystemInfo systemInfo, IRTSSService rTSSService)
+            ISystemInfo systemInfo, IRTSSService rTSSService,
+            ILogger<OverlayEntryProvider> logger)
         {
             _sensorService = sensorService;
             _appConfiguration = appConfiguration;
@@ -54,6 +57,8 @@ namespace CapFrameX.Overlay
             _onlineMetricService = onlineMetricService;
             _systemInfo = systemInfo;
             _rTSSService = rTSSService;
+            _logger = logger;
+
             _onDictionaryUpdatedBuffered = _sensorService
                 .OnDictionaryUpdated
                 .Replay(1)
@@ -63,6 +68,8 @@ namespace CapFrameX.Overlay
                 .ContinueWith(task => _taskCompletionSource.SetResult(true));
 
             SubscribeToOptionPopupClosed();
+
+            _logger.LogDebug("{componentName} Ready", this.GetType().Name);
         }
 
         public async Task<IOverlayEntry[]> GetOverlayEntries()
@@ -115,7 +122,7 @@ namespace CapFrameX.Overlay
 
         public async Task<IEnumerable<IOverlayEntry>> GetDefaultOverlayEntries()
         {
-            _overlayEntries = await SetOverlayEntryDefaults();
+            _overlayEntries = await GetOverlayEntryDefaults();
             _identifierOverlayEntryDict.Clear();
             foreach (var entry in _overlayEntries)
             {
@@ -198,7 +205,7 @@ namespace CapFrameX.Overlay
             }
             catch
             {
-                _overlayEntries = await SetOverlayEntryDefaults();
+                _overlayEntries = await GetOverlayEntryDefaults();
             }
             _identifierOverlayEntryDict.Clear();
             foreach (var entry in _overlayEntries)
@@ -237,14 +244,16 @@ namespace CapFrameX.Overlay
                 .Take(1)
                 .Select(sensorOverlayEntries =>
                 {
-                    var sensorOverlayEntryDescriptions = sensorOverlayEntries
+                    var sensorOverlayEntryClones = sensorOverlayEntries.Select(entry => entry.Clone()).ToArray();
+
+                    var sensorOverlayEntryDescriptions = sensorOverlayEntryClones
                         .Select(entry => entry.Description)
                         .ToList();
-                    var sensorGpuOverlayEntryDescriptions = sensorOverlayEntries
+                    var sensorGpuOverlayEntryDescriptions = sensorOverlayEntryClones
                         .Where(entry => entry.OverlayEntryType == EOverlayEntryType.GPU)
                         .Select(entry => entry.Description)
                         .ToList();
-                    var sensorCpuOverlayEntryDescriptions = sensorOverlayEntries
+                    var sensorCpuOverlayEntryDescriptions = sensorOverlayEntryClones
                         .Where(entry => entry.OverlayEntryType == EOverlayEntryType.CPU)
                         .Select(entry => entry.Description)
                         .ToList();
@@ -277,20 +286,20 @@ namespace CapFrameX.Overlay
 
                                 if (configEntry != null)
                                 {
-                                    sensorOverlayEntries[i].ShowOnOverlay = configEntry.ShowOnOverlay;
-                                    sensorOverlayEntries[i].ShowGraph = configEntry.ShowGraph;
-                                    sensorOverlayEntries[i].Color = configEntry.Color;
-                                    sensorOverlayEntries[i].ValueFontSize = configEntry.ValueFontSize;
-                                    sensorOverlayEntries[i].UpperLimitValue = configEntry.UpperLimitValue;
-                                    sensorOverlayEntries[i].LowerLimitValue = configEntry.LowerLimitValue;
-                                    sensorOverlayEntries[i].GroupColor = configEntry.GroupColor;
-                                    sensorOverlayEntries[i].GroupFontSize = configEntry.GroupFontSize;
-                                    sensorOverlayEntries[i].GroupSeparators = configEntry.GroupSeparators;
-                                    sensorOverlayEntries[i].UpperLimitColor = configEntry.UpperLimitColor;
-                                    sensorOverlayEntries[i].LowerLimitColor = configEntry.LowerLimitColor;
+                                    sensorOverlayEntryClones[i].ShowOnOverlay = configEntry.ShowOnOverlay;
+                                    sensorOverlayEntryClones[i].ShowGraph = configEntry.ShowGraph;
+                                    sensorOverlayEntryClones[i].Color = configEntry.Color;
+                                    sensorOverlayEntryClones[i].ValueFontSize = configEntry.ValueFontSize;
+                                    sensorOverlayEntryClones[i].UpperLimitValue = configEntry.UpperLimitValue;
+                                    sensorOverlayEntryClones[i].LowerLimitValue = configEntry.LowerLimitValue;
+                                    sensorOverlayEntryClones[i].GroupColor = configEntry.GroupColor;
+                                    sensorOverlayEntryClones[i].GroupFontSize = configEntry.GroupFontSize;
+                                    sensorOverlayEntryClones[i].GroupSeparators = configEntry.GroupSeparators;
+                                    sensorOverlayEntryClones[i].UpperLimitColor = configEntry.UpperLimitColor;
+                                    sensorOverlayEntryClones[i].LowerLimitColor = configEntry.LowerLimitColor;
 
-                                    if (!sensorOverlayEntries[i].Description.Contains("CPU Core"))
-                                        sensorOverlayEntries[i].GroupName = configEntry.GroupName;
+                                    if (!sensorOverlayEntryClones[i].Description.Contains("CPU Core"))
+                                        sensorOverlayEntryClones[i].GroupName = configEntry.GroupName;
                                 }
                             }
                         }
@@ -299,6 +308,8 @@ namespace CapFrameX.Overlay
                     // check GPU changed 
                     if (hasGpuChanged)
                     {
+                        _logger.LogInformation("GPU changed. Config has to be updated.");
+
                         var indexGpu = configOverlayEntries
                             .TakeWhile(entry => entry.OverlayEntryType != EOverlayEntryType.GPU)
                             .Count();
@@ -308,12 +319,14 @@ namespace CapFrameX.Overlay
                             .ToList();
 
                         configOverlayEntries
-                            .InsertRange(indexGpu, sensorOverlayEntries.Where(entry => entry.OverlayEntryType == EOverlayEntryType.GPU));
+                            .InsertRange(indexGpu, sensorOverlayEntryClones.Where(entry => entry.OverlayEntryType == EOverlayEntryType.GPU));
                     }
 
                     // check CPU changed 
                     if (hasCpuChanged)
                     {
+                        _logger.LogInformation("CPU changed. Config has to be updated.");
+
                         var indexCpu = configOverlayEntries
                             .TakeWhile(entry => entry.OverlayEntryType != EOverlayEntryType.CPU)
                             .Count();
@@ -323,7 +336,7 @@ namespace CapFrameX.Overlay
                             .ToList();
 
                         configOverlayEntries
-                            .InsertRange(indexCpu, sensorOverlayEntries.Where(entry => entry.OverlayEntryType == EOverlayEntryType.CPU));
+                            .InsertRange(indexCpu, sensorOverlayEntryClones.Where(entry => entry.OverlayEntryType == EOverlayEntryType.CPU));
                     }
 
                     // check separators
@@ -342,7 +355,7 @@ namespace CapFrameX.Overlay
                         entry.GroupSeparators = separatorDict[entry.GroupName];
                     }
 
-                    return configOverlayEntries.Select(entry => entry.Clone()).ToBlockingCollection();
+                    return configOverlayEntries.ToBlockingCollection();
                 });
         }
 
@@ -403,12 +416,16 @@ namespace CapFrameX.Overlay
             }
         }
 
-        private IObservable<BlockingCollection<IOverlayEntry>> SetOverlayEntryDefaults()
+        private IObservable<BlockingCollection<IOverlayEntry>> GetOverlayEntryDefaults()
         {
             var overlayEntries = OverlayUtils.GetOverlayEntryDefaults()
                     .Select(item => (item as IOverlayEntry).Clone()).ToBlockingCollection();
 
-            //_sensorService.ResetSensorOverlayEntries();
+            //log hardware configs
+            _logger.LogInformation("Set overlay defaults");
+            _logger.LogInformation("CPU detected: {cpuName}.", _sensorService.GetCpuName());
+            _logger.LogInformation("CPU threads detected: {threadCount}.", Environment.ProcessorCount);
+            _logger.LogInformation("GPU detected: {gpuName}.", _sensorService.GetGpuName());
 
             // Sensor data
             return _onDictionaryUpdatedBuffered

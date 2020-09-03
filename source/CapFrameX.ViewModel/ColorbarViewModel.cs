@@ -255,6 +255,16 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        public bool IsGpuAccelerationActive
+        {
+            get { return _appConfiguration.IsGpuAccelerationActive; }
+            set
+            {
+                _appConfiguration.IsGpuAccelerationActive = value;
+                RaisePropertyChanged();
+            }
+        }
+
         public string SelectedView
         {
             get { return _selectedView; }
