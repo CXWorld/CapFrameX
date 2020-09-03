@@ -15,6 +15,7 @@
                 <File Id="filC5232FFF55D7F9A2D288A591C3B2723E" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.Contracts.dll" />
             </Component>
             
+            
             <Component Id="cmpBB82F84010B18BD471718A8F5192D809" Guid="*" Win64="yes">
                 <File Id="filF1AAE3D99497A2F202666A8EBE6BD1BE" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.Data.dll" />
             </Component>
@@ -68,6 +69,7 @@
                 <File Id="fil7AFFB42308C76B9846F5719763FD423F" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.RTSSIntegration.dll" />
             </Component>
             
+            
             <Component Id="cmp458D149F66896C1582130F4DAD13BA4A" Guid="*" Win64="yes">
                 <File Id="filDCAA7F5E2641CD0410CFA60223C12402" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.RTSSInterface.dll" />
             </Component>
@@ -92,6 +94,7 @@
             <Component Id="cmpF4AA3050A716E6F54BB951C2FD2122DC" Guid="*" Win64="yes">
                 <File Id="fil5F66D1BA3F0735980723B32E1A79E0B1" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.Updater.dll" />
             </Component>
+            
             
             <Component Id="cmp18FAC930D57ECB5DA84BC4EF8F1FF236" Guid="*" Win64="yes">
                 <File Id="fil5A22FA3F9BADD87BBA07D3CFC2BB585C" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.View.dll" />
@@ -293,6 +296,7 @@
             <Component Id="cmp36162545506C564646EFF7AED20D4D87" Guid="*" Win64="yes">
                 <File Id="filA005E04D6C984A8EF36F9653B3FA4555" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\OpenHardwareMonitorLib.dll" />
             </Component>
+            
             <Component Id="cmp9867DD01B906E145D73B1AA12191B24D" Guid="*" Win64="yes">
                 <File Id="filF3C7E1DBD3AD0BE68A0C0D000EC5A7D6" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\OxyPlot.dll" />
             </Component>
@@ -595,6 +599,7 @@
             
             <ComponentRef Id="cmpA4C1EAD31D80CA7A469C61E5F7BF0BE7" />
             
+            
             <ComponentRef Id="cmpBB82F84010B18BD471718A8F5192D809" />
             
             
@@ -624,6 +629,7 @@
             
             <ComponentRef Id="cmp7C05CDDFB82D6239D07041A7E6EB0982" />
             
+            
             <ComponentRef Id="cmp458D149F66896C1582130F4DAD13BA4A" />
             
             <ComponentRef Id="cmp7F114E6DD3365A0AC42A526666770850" />
@@ -636,6 +642,7 @@
             <ComponentRef Id="cmpA370ED5AA85C29D5BFCB28B64725C072" />
             
             <ComponentRef Id="cmpF4AA3050A716E6F54BB951C2FD2122DC" />
+            
             
             <ComponentRef Id="cmp18FAC930D57ECB5DA84BC4EF8F1FF236" />
             
@@ -719,6 +726,7 @@
             <ComponentRef Id="cmp610EABA50A2832119614E1381C9FF59B" />
             
             <ComponentRef Id="cmp36162545506C564646EFF7AED20D4D87" />
+            
             <ComponentRef Id="cmp9867DD01B906E145D73B1AA12191B24D" />
             <ComponentRef Id="cmp8F4FC608131CDC6A82B59CBB8B203778" />
             
