@@ -12,6 +12,7 @@ using GongSolutions.Wpf.DragDrop;
 using LiveCharts;
 using LiveCharts.Defaults;
 using LiveCharts.Wpf;
+using Microsoft.Extensions.Logging;
 using OxyPlot;
 using OxyPlot.Axes;
 using Prism.Commands;
@@ -20,6 +21,7 @@ using Prism.Mvvm;
 using Prism.Regions;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Reactive;
@@ -43,6 +45,8 @@ namespace CapFrameX.ViewModel
         private readonly IEventAggregator _eventAggregator;
         private readonly IAppConfiguration _appConfiguration;
         private readonly RecordManager _recordManager;
+        private readonly ILogger<ComparisonViewModel> _logger;
+
         private PlotModel _comparisonFrametimesModel;
         private PlotModel _comparisonFpsModel;
         private SeriesCollection _comparisonRowChartSeriesCollection;
@@ -527,13 +531,20 @@ namespace CapFrameX.ViewModel
         public ComparisonViewModel(IStatisticProvider frametimeStatisticProvider,
             IFrametimeAnalyzer frametimeAnalyzer,
             IEventAggregator eventAggregator,
-            IAppConfiguration appConfiguration, RecordManager recordManager)
+            IAppConfiguration appConfiguration, 
+            RecordManager recordManager,
+            ILogger<ComparisonViewModel> logger)
         {
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+
             _frametimeStatisticProvider = frametimeStatisticProvider;
             _frametimeAnalyzer = frametimeAnalyzer;
             _eventAggregator = eventAggregator;
             _appConfiguration = appConfiguration;
             _recordManager = recordManager;
+            _logger = logger;
+
             RemoveAllComparisonsCommand = new DelegateCommand(OnRemoveAllComparisons);
             ComparisonLShapeCollection = new SeriesCollection();
             MessageDialogContent = new MessageDialog();
@@ -548,6 +559,9 @@ namespace CapFrameX.ViewModel
             SetRowSeries();
             SubscribeToSelectRecord();
             SubscribeToUpdateRecordInfos();
+
+            stopwatch.Stop();
+            _logger.LogInformation(this.GetType().Name + " {initializationTime}s initialization time", Math.Round(stopwatch.ElapsedMilliseconds * 1E-03, 1));
         }
 
         private void InitializePlotModels()

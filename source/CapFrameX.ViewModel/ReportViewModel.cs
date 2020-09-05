@@ -20,6 +20,8 @@ using System.Collections.Specialized;
 using CapFrameX.Statistics.NetStandard;
 using CapFrameX.Statistics.NetStandard.Contracts;
 using CapFrameX.Sensor.Reporting;
+using Microsoft.Extensions.Logging;
+using System.Diagnostics;
 
 namespace CapFrameX.ViewModel
 {
@@ -29,6 +31,8 @@ namespace CapFrameX.ViewModel
 		private readonly IEventAggregator _eventAggregator;
 		private readonly IAppConfiguration _appConfiguration;
 		private readonly RecordManager _recordManager;
+		private static ILogger<ReportViewModel> _logger;
+
 		private bool _useEventMessages;
 		private bool _hasNoReportItems = true;
 
@@ -49,17 +53,27 @@ namespace CapFrameX.ViewModel
 
 		public ReportViewModel(IStatisticProvider frametimeStatisticProvider,
 							  IEventAggregator eventAggregator,
-							  IAppConfiguration appConfiguration, RecordManager recordManager)
+							  IAppConfiguration appConfiguration, 
+							  RecordManager recordManager,
+							  ILogger<ReportViewModel> logger)
 		{
+			Stopwatch stopwatch = new Stopwatch();
+			stopwatch.Start();
+
 			_frametimeStatisticProvider = frametimeStatisticProvider;
 			_eventAggregator = eventAggregator;
 			_appConfiguration = appConfiguration;
 			_recordManager = recordManager;
+			_logger = logger;
+
 			CopyTableDataCommand = new DelegateCommand(OnCopyTableData);
 			ReportInfoCollection.CollectionChanged += new NotifyCollectionChangedEventHandler
 				((sender, eventArg) => HasNoReportItems = !ReportInfoCollection.Any());
 
 			SubscribeToSelectRecord();
+
+			stopwatch.Stop();
+			_logger.LogInformation(this.GetType().Name + " {initializationTime}s initialization time", Math.Round(stopwatch.ElapsedMilliseconds * 1E-03, 1));
 		}
 
 		private void OnCopyTableData()

@@ -104,7 +104,7 @@ public:
 				}
 				else
 				{
-					for (size_t i = 0; i < runHistory->Length; i++)
+					for (int i = 0; i < runHistory->Length; i++)
 					{
 						String^ run = runHistory[i];
 						_coreControl->RunHistory.push_back(run);
@@ -135,7 +135,7 @@ public:
 				}
 				else
 				{
-					for (size_t i = 0; i < outlierFlags->Length; i++)
+					for (int i = 0; i < outlierFlags->Length; i++)
 					{
 						bool outlierFlag = outlierFlags[i];
 						_coreControl->RunHistoryOutlierFlags.push_back(outlierFlag);
@@ -175,7 +175,7 @@ public:
 				msclr::lock l(m_lock);
 				_coreControl->OverlayEntries.clear();
 
-				for (size_t i = 0; i < overlayEntries->Length; i++)
+				for (int i = 0; i < overlayEntries->Length; i++)
 				{
 					IOverlayEntry^ managedEntry = overlayEntries[i];
 					OverlayEntry entry;

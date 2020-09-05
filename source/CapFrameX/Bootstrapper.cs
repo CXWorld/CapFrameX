@@ -23,7 +23,6 @@ using CapFrameX.Extensions;
 using System.IO;
 using CapFrameX.Contracts.UpdateCheck;
 using CapFrameX.Updater;
-using Serilog.Formatting.Compact;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Contracts.Sensor;
 using CapFrameX.Sensor;

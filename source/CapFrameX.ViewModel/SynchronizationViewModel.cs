@@ -26,6 +26,8 @@ using OxyPlot.Series;
 using CapFrameX.Statistics.NetStandard;
 using CapFrameX.Statistics.PlotBuilder;
 using CapFrameX.Extensions;
+using Microsoft.Extensions.Logging;
+using System.Diagnostics;
 
 namespace CapFrameX.ViewModel
 {
@@ -34,6 +36,7 @@ namespace CapFrameX.ViewModel
         private readonly IStatisticProvider _frametimeStatisticProvider;
         private readonly IEventAggregator _eventAggregator;
         private readonly IAppConfiguration _appConfiguration;
+        private static ILogger<SynchronizationViewModel> _logger;
 
         private PlotModel _synchronizationModel;
         private PlotModel _inputLagModel;
@@ -254,11 +257,16 @@ namespace CapFrameX.ViewModel
 
         public SynchronizationViewModel(IStatisticProvider frametimeStatisticProvider,
                                         IEventAggregator eventAggregator,
-                                        IAppConfiguration appConfiguration)
+                                        IAppConfiguration appConfiguration,
+                                        ILogger<SynchronizationViewModel> logger)
         {
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+
             _frametimeStatisticProvider = frametimeStatisticProvider;
             _eventAggregator = eventAggregator;
             _appConfiguration = appConfiguration;
+            _logger = logger;
 
             CopyUntilDisplayedTimesValuesCommand = new DelegateCommand(OnCopyUntilDisplayedTimesValues);
             CopyDisplayTimesHistogramDataCommand = new DelegateCommand(CopDisplayTimesHistogramData);
@@ -284,6 +292,9 @@ namespace CapFrameX.ViewModel
                 PlotMargins = new OxyThickness(40, 10, 0, 40),
                 PlotAreaBorderColor = OxyColor.FromArgb(64, 204, 204, 204),
             };
+
+            stopwatch.Stop();
+            _logger.LogInformation(this.GetType().Name + " {initializationTime}s initialization time", Math.Round(stopwatch.ElapsedMilliseconds * 1E-03, 1));
         }
 
         private void SubscribeToUpdateSession()

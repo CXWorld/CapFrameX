@@ -7,7 +7,6 @@ using CapFrameX.Contracts.Sensor;
 using CapFrameX.Data;
 using CapFrameX.Hotkey;
 using CapFrameX.PresentMonInterface;
-using CapFrameX.Statistics;
 using CapFrameX.Statistics.NetStandard;
 using Gma.System.MouseKeyHook;
 using Microsoft.Extensions.Logging;
@@ -269,6 +268,9 @@ namespace CapFrameX.ViewModel
                                 ProcessList processList,
                                 SoundManager soundManager)
         {
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+
             _appConfiguration = appConfiguration;
             _captureService = captureService;
             _eventAggregator = eventAggregator;
@@ -304,6 +306,9 @@ namespace CapFrameX.ViewModel
 
             _captureService.IsCaptureModeActiveStream.OnNext(false);
             InitializeFrametimeModel();
+
+            stopwatch.Stop();
+            _logger.LogInformation(this.GetType().Name + " {initializationTime}s initialization time", Math.Round(stopwatch.ElapsedMilliseconds * 1E-03, 1));
         }
 
         public bool IsNavigationTarget(NavigationContext navigationContext)

@@ -13,6 +13,7 @@ using Prism.Events;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -51,6 +52,9 @@ namespace CapFrameX.Overlay
             ISystemInfo systemInfo, IRTSSService rTSSService,
             ILogger<OverlayEntryProvider> logger)
         {
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+
             _sensorService = sensorService;
             _appConfiguration = appConfiguration;
             _eventAggregator = eventAggregator;
@@ -70,6 +74,9 @@ namespace CapFrameX.Overlay
             SubscribeToOptionPopupClosed();
 
             _logger.LogDebug("{componentName} Ready", this.GetType().Name);
+
+            stopwatch.Stop();
+            _logger.LogInformation(this.GetType().Name + " {initializationTime}s initialization time", Math.Round(stopwatch.ElapsedMilliseconds * 1E-03, 1));
         }
 
         public async Task<IOverlayEntry[]> GetOverlayEntries()

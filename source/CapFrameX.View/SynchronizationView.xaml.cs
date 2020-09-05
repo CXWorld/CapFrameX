@@ -25,8 +25,6 @@ namespace CapFrameX.View
 			if (DesignerProperties.GetIsInDesignMode(this))
 			{
 				var appConfiguration = new CapFrameXConfiguration();
-				DataContext = new SynchronizationViewModel(new FrametimeStatisticProvider(appConfiguration),
-					new EventAggregator(), appConfiguration);
 			}
 		}
 

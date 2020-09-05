@@ -3,7 +3,6 @@ using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.RTSS;
 using CapFrameX.Contracts.Sensor;
-using CapFrameX.Data;
 using CapFrameX.Data.Session.Contracts;
 using CapFrameX.Extensions.NetStandard;
 using CapFrameX.Statistics.NetStandard;
@@ -12,7 +11,6 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
@@ -54,6 +52,9 @@ namespace CapFrameX.Overlay
 							  IRecordManager recordManager,
 							  IRTSSService rTSSService)
 		{
+			Stopwatch stopwatch = new Stopwatch();
+			stopwatch.Start();
+
 			_statisticProvider = statisticProvider;
 			_overlayEntryProvider = overlayEntryProvider;
 			_appConfiguration = appConfiguration;
@@ -94,6 +95,9 @@ namespace CapFrameX.Overlay
 			_rTSSService.SetRunHistoryAggregation(string.Empty);
 			_rTSSService.SetRunHistoryOutlierFlags(_runHistoryOutlierFlags);
 			_rTSSService.SetIsCaptureTimerActive(false);
+
+			stopwatch.Stop();
+			_logger.LogInformation(this.GetType().Name + " {initializationTime}s initialization time", Math.Round(stopwatch.ElapsedMilliseconds * 1E-03, 1));
 		}
 
 		public void StartCountdown(int seconds)

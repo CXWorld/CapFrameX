@@ -8,6 +8,7 @@ using OpenHardwareMonitor.Hardware;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Reactive.Linq;
@@ -57,6 +58,9 @@ namespace CapFrameX.Sensor
         public SensorService(IAppConfiguration appConfiguration,
                              ILogger<SensorService> logger)
         {
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+
             _appConfiguration = appConfiguration;
             _logger = logger;
             _currentOSDTimespan = TimeSpan.FromMilliseconds(_appConfiguration.OSDRefreshPeriod);
@@ -93,6 +97,9 @@ namespace CapFrameX.Sensor
                     .Where(_ => _isLoggingActive && UseSensorLogging)
                     .Subscribe(sensorData => LogCurrentValues(sensorData.Item2, sensorData.Item1));
             });
+
+            stopwatch.Stop();
+            _logger.LogInformation(this.GetType().Name + " {initializationTime}s initialization time", Math.Round(stopwatch.ElapsedMilliseconds * 1E-03), 1);
         }
 
         public void SetLoggingInterval(TimeSpan timeSpan)
@@ -349,10 +356,10 @@ namespace CapFrameX.Sensor
                 return true;
             }
             else if (sensor.Name.Contains("Memory")
-                && sensor.Hardware.HardwareType ==  HardwareType.RAM
+                && sensor.Hardware.HardwareType == HardwareType.RAM
                 && sensor.SensorType == SensorType.Load)
             {
-                return true; 
+                return true;
             }
             else
                 return false;
@@ -572,7 +579,7 @@ namespace CapFrameX.Sensor
             foreach (var sensor in sensors)
             {
                 if (sensor.Value != null)
-                dict.TryAdd(sensor, sensor.Value.Value);
+                    dict.TryAdd(sensor, sensor.Value.Value);
             }
 
             return (DateTime.UtcNow, dict.ToDictionary(x => x.Key, x => x.Value));

@@ -40,7 +40,6 @@ namespace CapFrameX.ViewModel
 		private PubSubEvent<ViewMessages.UpdateSession> _updateSessionEvent;
 		private PubSubEvent<ViewMessages.SelectSession> _selectSessionEvent;
 		private PubSubEvent<ViewMessages.UpdateRecordInfos> _updateRecordInfosEvent;
-		private PubSubEvent<AppMessages.CloudFolderChanged> _cloudFolderChanged;
 		private IFileRecordInfo _selectedRecordInfo;
 		private string _customCpuDescription;
 		private string _customGpuDescription;
@@ -234,6 +233,9 @@ namespace CapFrameX.ViewModel
 								ProcessList processList, 
 								ILogger<ControlViewModel> logger)
 		{
+			Stopwatch stopwatch = new Stopwatch();
+			stopwatch.Start();
+
 			_recordObserver = recordObserver;
 			_eventAggregator = eventAggregator;
 			_appConfiguration = appConfiguration;
@@ -284,6 +286,9 @@ namespace CapFrameX.ViewModel
 				RaisePropertyChanged(nameof(DirectoryIsEmpty));
 			};
 			SetupObservers(SynchronizationContext.Current);
+
+			stopwatch.Stop();
+			_logger.LogInformation(this.GetType().Name + " {initializationTime}s initialization time", Math.Round(stopwatch.ElapsedMilliseconds * 1E-03, 1));
 		}
 
 		private void OnCreateSubFolder()

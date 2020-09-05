@@ -6,9 +6,11 @@ using CapFrameX.Contracts.RTSS;
 using CapFrameX.Contracts.UpdateCheck;
 using CapFrameX.Data;
 using CapFrameX.EventAggregation.Messages;
+using Microsoft.Extensions.Logging;
 using Prism.Events;
 using Prism.Mvvm;
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reflection;
@@ -26,6 +28,8 @@ namespace CapFrameX.ViewModel
         private readonly IOverlayService _overlayService;
         private readonly IUpdateCheck _updateCheck;
         private readonly IAppVersionProvider _appVersionProvider;
+        private static ILogger<StateViewModel> _logger;
+
         private bool _isCaptureModeActive;
         private bool _isOverlayActive;
         private string _updateHyperlinkText;
@@ -108,8 +112,12 @@ namespace CapFrameX.ViewModel
                               IAppVersionProvider appVersionProvider,
                               IWebVersionProvider webVersionProvider,
                               LoginManager loginManager,
-                              IRTSSService rTSSService)
+                              IRTSSService rTSSService,
+                              ILogger<StateViewModel> logger)
         {
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+
             _recordObserver = recordObserver;
             _eventAggregator = eventAggregator;
             _appConfiguration = appConfiguration;
@@ -117,6 +125,8 @@ namespace CapFrameX.ViewModel
             _overlayService = overlayService;
             _updateCheck = updateCheck;
             _appVersionProvider = appVersionProvider;
+            _logger = logger;
+
             IsCaptureModeActive = false;
             IsOverlayActive = _appConfiguration.IsOverlayActive && rTSSService.IsRTSSInstalled();
 
@@ -149,6 +159,8 @@ namespace CapFrameX.ViewModel
                 });
             });
 
+            stopwatch.Stop();
+            _logger.LogInformation(this.GetType().Name + " {initializationTime}s initialization time", Math.Round(stopwatch.ElapsedMilliseconds * 1E-03, 1));
         }
 
         private Assembly GetAssemblyByName(string name)

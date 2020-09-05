@@ -65,7 +65,7 @@ namespace CapFrameX
 
 		private async Task SetupBrowser()
 		{
-			Wb.RequestHandler = new CustomRequestHandler();
+			await Task.Run(() => Wb.RequestHandler = new CustomRequestHandler());
 		}
 	}
 
@@ -79,7 +79,6 @@ namespace CapFrameX
 
 	class CustomResourceRequestHandler: ResourceRequestHandler
     {
-
         protected override CefReturnValue OnBeforeResourceLoad(IWebBrowser browserControl, IBrowser browser, IFrame frame, IRequest request, IRequestCallback callback)
         {
             var headers = request.Headers;

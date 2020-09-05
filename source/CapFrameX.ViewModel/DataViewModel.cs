@@ -31,8 +31,8 @@ using CapFrameX.Sensor.Reporting;
 using CapFrameX.Statistics.NetStandard;
 using CapFrameX.Statistics.NetStandard.Contracts;
 using CapFrameX.Statistics.PlotBuilder.Contracts;
-using CapFrameX.Extensions.NetStandard;
-using System.ComponentModel;
+using Microsoft.Extensions.Logging;
+using System.Diagnostics;
 
 namespace CapFrameX.ViewModel
 {
@@ -44,6 +44,7 @@ namespace CapFrameX.ViewModel
 		private readonly IAppConfiguration _appConfiguration;
 		private readonly RecordManager _recordManager;
 		private readonly IRecordDataServer _localRecordDataServer;
+		private static ILogger<DataViewModel> _logger;
 
 		private bool _useUpdateSession;
 		private ISession _session;
@@ -442,13 +443,20 @@ namespace CapFrameX.ViewModel
 		public DataViewModel(IStatisticProvider frametimeStatisticProvider,
 							 IFrametimeAnalyzer frametimeAnalyzer,
 							 IEventAggregator eventAggregator,
-							 IAppConfiguration appConfiguration, RecordManager recordManager)
+							 IAppConfiguration appConfiguration, 
+							 RecordManager recordManager,
+							 ILogger<DataViewModel> logger)
 		{
+			Stopwatch stopwatch = new Stopwatch();
+			stopwatch.Start();
+
 			_frametimeStatisticProvider = frametimeStatisticProvider;
 			_frametimeAnalyzer = frametimeAnalyzer;
 			_eventAggregator = eventAggregator;
 			_appConfiguration = appConfiguration;
 			_recordManager = recordManager;
+			_logger = logger;
+
 			SubscribeToUpdateSession();
 
 			CopyStatisticalParameterCommand = new DelegateCommand(OnCopyStatisticalParameter);
@@ -475,6 +483,9 @@ namespace CapFrameX.ViewModel
 			InitializeStatisticParameter();
 			SetThresholdLabels();
 			Setup();
+
+			stopwatch.Stop();
+			_logger.LogInformation(this.GetType().Name + " {initializationTime}s initialization time", Math.Round(stopwatch.ElapsedMilliseconds * 1E-03, 1));
 		}
 
 		private bool GetIsPowerLimitAvailable()

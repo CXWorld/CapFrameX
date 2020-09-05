@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Configuration;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -239,6 +240,9 @@ namespace CapFrameX.ViewModel
 		public CloudViewModel(IStatisticProvider statisticProvider, IRecordManager recordManager,
 			IEventAggregator eventAggregator, IAppConfiguration appConfiguration, ILogger<CloudViewModel> logger, IAppVersionProvider appVersionProvider, LoginManager loginManager)
 		{
+			Stopwatch stopwatch = new Stopwatch();
+			stopwatch.Start();
+
 			_statisticProvider = statisticProvider;
 			_recordManager = recordManager;
 			_eventAggregator = eventAggregator;
@@ -275,6 +279,9 @@ namespace CapFrameX.ViewModel
 				IsLoggedIn = state.IsLoggedIn;
 				RaisePropertyChanged(nameof(IsLoggedIn));
 			});
+
+			stopwatch.Stop();
+			_logger.LogInformation(this.GetType().Name + " {initializationTime}s initialization time", Math.Round(stopwatch.ElapsedMilliseconds * 1E-03, 1));
 		}
 
 		public void RemoveCloudEntry(ICloudEntry entry)

@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Configuration;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -31,9 +32,15 @@ namespace CapFrameX.Data
 
 		public LoginManager(ILogger<LoginManager> logger, IEventAggregator eventAggregator)
 		{
+			Stopwatch stopwatch = new Stopwatch();
+			stopwatch.Start();
+
 			_logger = logger;
 			_loginStateEvent = eventAggregator.GetEvent<PubSubEvent<AppMessages.LoginState>>();
 			Initialize();
+
+			stopwatch.Stop();
+			_logger.LogInformation(this.GetType().Name + " {initializationTime}s initialization time", Math.Round(stopwatch.ElapsedMilliseconds * 1E-03, 1));
 		}
 
 		public void Initialize()
@@ -55,7 +62,7 @@ namespace CapFrameX.Data
 
 		public async Task Logout()
 		{
-			ApplyToken(null);
+			await Task.Run(() => ApplyToken(null));
 		}
 
 		public async Task HandleRedirect(Func<string, Task> navigateAction)
@@ -307,7 +314,7 @@ namespace CapFrameX.Data
 					);
 
 				return TokenRequest(tokenRequestBody, oldToken.Scopes);
-			} catch(Exception e)
+			} catch(Exception)
 			{
 				return null;
 			}

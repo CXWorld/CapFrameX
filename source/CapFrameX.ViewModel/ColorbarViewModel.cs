@@ -354,6 +354,9 @@ namespace CapFrameX.ViewModel
                                  ISystemInfo systemInfo,
                                  LoginManager loginManager)
         {
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+
             _regionManager = regionManager;
             _eventAggregator = eventAggregator;
             _appConfiguration = appConfiguration;
@@ -372,6 +375,9 @@ namespace CapFrameX.ViewModel
             SetAggregatorEvents();
             SetHardwareInfoDefaultsFromDatabase();
             SubscribeToUpdateSession();
+
+            stopwatch.Stop();
+            _logger.LogInformation(this.GetType().Name + " {initializationTime}s initialization time", Math.Round(stopwatch.ElapsedMilliseconds * 1E-03, 1));
         }
 
         public void OpenLoginWindow()

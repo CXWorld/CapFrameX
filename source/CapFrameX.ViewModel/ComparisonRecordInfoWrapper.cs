@@ -109,7 +109,7 @@ namespace CapFrameX.ViewModel
 
 				var tag = WrappedRecordInfo.FileRecordInfo.Id;
 				var frametimesChart = _viewModel.ComparisonFrametimesModel
-					.Series.FirstOrDefault(chart => chart.Tag == tag) as OxyPlot.Series.LineSeries;
+					.Series.FirstOrDefault(chart => (string)chart.Tag == tag) as OxyPlot.Series.LineSeries;
 				var lShapeChart = _viewModel.ComparisonLShapeCollection
 					.FirstOrDefault(chart => chart.Id == tag) as LineSeries;
 
@@ -135,10 +135,10 @@ namespace CapFrameX.ViewModel
 			{
 				var tag = WrappedRecordInfo.FileRecordInfo.Id;
 				var frametimesChart = _viewModel.ComparisonFrametimesModel
-					.Series.FirstOrDefault(chart => chart.Tag == tag) as OxyPlot.Series.LineSeries;
+					.Series.FirstOrDefault(chart => (string)chart.Tag == tag) as OxyPlot.Series.LineSeries;
 
 				var fpsChart = _viewModel.ComparisonFpsModel
-					.Series.FirstOrDefault(chart => chart.Tag == tag) as OxyPlot.Series.LineSeries;
+					.Series.FirstOrDefault(chart => (string)chart.Tag == tag) as OxyPlot.Series.LineSeries;
 
 				var lShapeChart = _viewModel.ComparisonLShapeCollection
 					.FirstOrDefault(chart => chart.Id == tag) as LineSeries;
@@ -190,9 +190,9 @@ namespace CapFrameX.ViewModel
 			{
 				var tag = WrappedRecordInfo.FileRecordInfo.Id;
 				var frametimesChart = _viewModel.ComparisonFrametimesModel
-					.Series.FirstOrDefault(chart => chart.Tag == tag) as OxyPlot.Series.LineSeries;
+					.Series.FirstOrDefault(chart => (string)chart.Tag == tag) as OxyPlot.Series.LineSeries;
 				var fpsChart = _viewModel.ComparisonFpsModel
-					.Series.FirstOrDefault(chart => chart.Tag == tag) as OxyPlot.Series.LineSeries;
+					.Series.FirstOrDefault(chart => (string)chart.Tag == tag) as OxyPlot.Series.LineSeries;
 
 				if (frametimesChart == null
 					|| fpsChart == null)
@@ -238,10 +238,10 @@ namespace CapFrameX.ViewModel
 			{
 				var tag = WrappedRecordInfo.FileRecordInfo.Id;
 				var frametimesChart = _viewModel.ComparisonFrametimesModel
-					.Series.FirstOrDefault(chart => chart.Tag == tag) as OxyPlot.Series.LineSeries;
+					.Series.FirstOrDefault(chart => (string)chart.Tag == tag) as OxyPlot.Series.LineSeries;
 
 				var fpsChart = _viewModel.ComparisonFpsModel
-					.Series.FirstOrDefault(chart => chart.Tag == tag) as OxyPlot.Series.LineSeries;
+					.Series.FirstOrDefault(chart => (string)chart.Tag == tag) as OxyPlot.Series.LineSeries;
 
 				if (frametimesChart == null
 					|| fpsChart == null)

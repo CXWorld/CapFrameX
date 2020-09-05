@@ -116,7 +116,7 @@ namespace CapFrameX.Webservice.Implementation.Services
 				{
 					var result = await client.CreateAsync(sessionCollection, true);
 					return result.Id;
-				} catch(Exception e)
+				} catch(Exception)
 				{
 					throw;
 				}
