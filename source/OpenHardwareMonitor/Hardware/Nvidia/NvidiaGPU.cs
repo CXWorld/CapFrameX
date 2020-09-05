@@ -118,7 +118,7 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
             }
 
             if (PerformanceCounterCategory.Exists("GPU Adapter Memory"))
-            {                
+            {
                 var category = new PerformanceCounterCategory("GPU Adapter Memory");
                 var instances = category.GetInstanceNames();
 
@@ -418,7 +418,7 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
                   NVML.NvmlPcieUtilCounter.RxBytes, out uint value)
                   == NVML.NvmlReturn.Success)
                 {
-                    pcieThroughputRx.Value = value * (1.0f / 0x400);
+                    pcieThroughputRx.Value = value / 1024f;
                     ActivateSensor(pcieThroughputRx);
                 }
             }
@@ -429,7 +429,7 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
                   NVML.NvmlPcieUtilCounter.TxBytes, out uint value)
                   == NVML.NvmlReturn.Success)
                 {
-                    pcieThroughputTx.Value = value * (1.0f / 0x400);
+                    pcieThroughputTx.Value = value / 1024f;
                     ActivateSensor(pcieThroughputTx);
                 }
             }

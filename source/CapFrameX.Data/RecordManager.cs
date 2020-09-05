@@ -1,6 +1,5 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
-using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.PresentMonInterface;
 using CapFrameX.Contracts.RTSS;
 using CapFrameX.Contracts.Sensor;
@@ -21,11 +20,21 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace CapFrameX.Data
 {
+    [StructLayout(LayoutKind.Sequential)]
+    public struct WindowRect
+    {
+        public int left;
+        public int top;
+        public int right;
+        public int bottom;
+    }
+
     public class RecordManager : IRecordManager
     {
         private const string IGNOREFLAGMARKER = "//Ignore=true";
@@ -40,6 +49,10 @@ namespace CapFrameX.Data
         private readonly ISystemInfo _systemInfo;
         private readonly ProcessList _processList;
         private readonly IRTSSService _rTSSService;
+
+
+        [DllImport("user32.dll", SetLastError = true)]
+        static extern bool GetWindowRect(IntPtr hWnd, ref WindowRect Rect);
 
         public RecordManager(ILogger<RecordManager> logger,
                              IAppConfiguration appConfiguration,
@@ -59,12 +72,12 @@ namespace CapFrameX.Data
             _processList = processList;
             _rTSSService = rTSSService;
         }
-        public void UpdateCustomData(IFileRecordInfo recordInfo, 
-            string customCpuInfo, string customGpuInfo, 
+        public void UpdateCustomData(IFileRecordInfo recordInfo,
+            string customCpuInfo, string customGpuInfo,
             string customRamInfo, string customGameName, string customComment)
         {
             if (recordInfo == null || customCpuInfo == null ||
-                customGpuInfo == null || customRamInfo == null || 
+                customGpuInfo == null || customRamInfo == null ||
                 customGameName == null || customComment == null)
                 return;
 
@@ -190,6 +203,8 @@ namespace CapFrameX.Data
                 systemInfos.Add(new SystemInfoEntry() { Key = "API", Value = recordInfo.ApiInfo });
             if (!string.IsNullOrWhiteSpace(recordInfo.PresentationMode))
                 systemInfos.Add(new SystemInfoEntry() { Key = "Presentation Mode", Value = recordInfo.PresentationMode });
+            if (!string.IsNullOrWhiteSpace(recordInfo.Resolution))
+                systemInfos.Add(new SystemInfoEntry() { Key = "Resolution", Value = recordInfo.Resolution });
 
             return systemInfos;
         }
@@ -244,41 +259,41 @@ namespace CapFrameX.Data
         {
             using (var reader = new StreamReader(csvFile.FullName))
             {
-                    var lines = File.ReadAllLines(csvFile.FullName);
-                    if(lines.First().Equals(IGNOREFLAGMARKER))
-                    {
-                        throw new HasIgnoreFlagException();
-                    }
-                    var sessionRun = ConvertPresentDataLinesToSessionRun(lines.SkipWhile(line => line.Contains(FileRecordInfo.HEADER_MARKER)));
-                    var recordedFileInfo = FileRecordInfo.Create(csvFile, sessionRun.Hash);
-                    var systemInfos = GetSystemInfos(recordedFileInfo);
+                var lines = File.ReadAllLines(csvFile.FullName);
+                if (lines.First().Equals(IGNOREFLAGMARKER))
+                {
+                    throw new HasIgnoreFlagException();
+                }
+                var sessionRun = ConvertPresentDataLinesToSessionRun(lines.SkipWhile(line => line.Contains(FileRecordInfo.HEADER_MARKER)));
+                var recordedFileInfo = FileRecordInfo.Create(csvFile, sessionRun.Hash);
+                var systemInfos = GetSystemInfos(recordedFileInfo);
 
-                    return new Session.Classes.Session()
+                return new Session.Classes.Session()
+                {
+                    Hash = string.Join(",", new string[] { sessionRun.Hash }).GetSha1(),
+                    Runs = new List<ISessionRun>() { sessionRun },
+                    Info = new SessionInfo()
                     {
-                        Hash = string.Join(",", new string[] { sessionRun.Hash }).GetSha1(),
-                        Runs = new List<ISessionRun>() { sessionRun },
-                        Info = new SessionInfo()
-                        {
-                            ProcessName = recordedFileInfo.ProcessName,
-                            Processor = recordedFileInfo.ProcessorName,
-                            GPU = recordedFileInfo.GraphicCardName,
-                            BaseDriverVersion = recordedFileInfo.BaseDriverVersion,
-                            GameName = recordedFileInfo.GameName,
-                            Comment = recordedFileInfo.Comment,
-                            Id = Guid.TryParse(recordedFileInfo.Id, out var guidId) ? guidId : Guid.NewGuid(),
-                            OS = recordedFileInfo.OsVersion,
-                            GpuCoreClock = recordedFileInfo.GPUCoreClock,
-                            GPUCount = recordedFileInfo.NumberGPUs,
-                            SystemRam = recordedFileInfo.SystemRamInfo,
-                            Motherboard = recordedFileInfo.MotherboardName,
-                            DriverPackage = recordedFileInfo.DriverPackage,
-                            GpuMemoryClock = recordedFileInfo.GPUMemoryClock,
-                            CreationDate = DateTime.TryParse(recordedFileInfo.CreationDate + "T" + recordedFileInfo.CreationTime, out var creationDate) ? creationDate : new DateTime(),
-                            AppVersion = new Version(),
-                            ApiInfo = recordedFileInfo.ApiInfo
-                        }
-                    };
-                
+                        ProcessName = recordedFileInfo.ProcessName,
+                        Processor = recordedFileInfo.ProcessorName,
+                        GPU = recordedFileInfo.GraphicCardName,
+                        BaseDriverVersion = recordedFileInfo.BaseDriverVersion,
+                        GameName = recordedFileInfo.GameName,
+                        Comment = recordedFileInfo.Comment,
+                        Id = Guid.TryParse(recordedFileInfo.Id, out var guidId) ? guidId : Guid.NewGuid(),
+                        OS = recordedFileInfo.OsVersion,
+                        GpuCoreClock = recordedFileInfo.GPUCoreClock,
+                        GPUCount = recordedFileInfo.NumberGPUs,
+                        SystemRam = recordedFileInfo.SystemRamInfo,
+                        Motherboard = recordedFileInfo.MotherboardName,
+                        DriverPackage = recordedFileInfo.DriverPackage,
+                        GpuMemoryClock = recordedFileInfo.GPUMemoryClock,
+                        CreationDate = DateTime.TryParse(recordedFileInfo.CreationDate + "T" + recordedFileInfo.CreationTime, out var creationDate) ? creationDate : new DateTime(),
+                        AppVersion = new Version(),
+                        ApiInfo = recordedFileInfo.ApiInfo
+                    }
+                };
+
             }
         }
 
@@ -319,7 +334,9 @@ namespace CapFrameX.Data
                     if (e is IOException)
                     { // If e is IOException we will throw it again, so the retry will execute the function again
                         return Observable.Throw<IFileRecordInfo>(e);
-                    } else {// otherwise, we return empty
+                    }
+                    else
+                    {// otherwise, we return empty
                         if (!(e is HasIgnoreFlagException))
                         {
                             _logger.LogError(e, "Error Creating FileRecordInfo of {path}", fileInfo.FullName);
@@ -339,16 +356,19 @@ namespace CapFrameX.Data
 
         public async Task SavePresentmonRawToFile(IEnumerable<string> lines, string process)
         {
-            try {
+            try
+            {
                 var filePath = await GetOutputFilename(process);
-                lines = new string[] { IGNOREFLAGMARKER, COLUMN_HEADER}.Concat(lines);
+                lines = new string[] { IGNOREFLAGMARKER, COLUMN_HEADER }.Concat(lines);
                 File.WriteAllLines(filePath + ".csv", lines);
-            } catch(Exception) { }
+            }
+            catch (Exception) { }
         }
 
         public async Task<bool> SaveSessionRunsToFile(IEnumerable<ISessionRun> runs, string processName)
         {
             var filePath = await GetOutputFilename(processName);
+
             try
             {
                 if (runs.Count() > 1)
@@ -384,8 +404,16 @@ namespace CapFrameX.Data
                 IList<string> headerLines = Enumerable.Empty<string>().ToList();
                 var process = Process.GetProcessesByName(processName).FirstOrDefault();
                 string apiInfo = process != null ? _rTSSService.GetApiInfo((uint)process.Id) : "unknown";
-                if (apiInfo ==  "unknown")
+                if (apiInfo == "unknown")
                     apiInfo = runs.First().PresentMonRuntime;
+
+                string resolutionInfo = string.Empty;
+                if (process != null)
+                {
+                    WindowRect wndRect = new WindowRect();
+                    GetWindowRect(process.MainWindowHandle, ref wndRect);
+                    resolutionInfo = $"{ wndRect.right - wndRect.left}x{wndRect.bottom - wndRect.top}";
+                }
 
                 var session = new Session.Classes.Session()
                 {
@@ -405,7 +433,8 @@ namespace CapFrameX.Data
                         GPUDriverVersion = _sensorService.GetGpuDriverVersion(),
                         AppVersion = _appVersionProvider.GetAppVersion(),
                         ApiInfo = apiInfo,
-                        PresentationMode = runs.GetPresentationMode()
+                        PresentationMode = runs.GetPresentationMode(),
+                        ResolutionInfo = resolutionInfo
                     }
                 };
 
@@ -755,8 +784,5 @@ namespace CapFrameX.Data
         }
     }
 
-    class HasIgnoreFlagException: Exception
-    {
-
-    }
+    class HasIgnoreFlagException : Exception { }
 }

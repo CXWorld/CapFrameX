@@ -23,5 +23,6 @@ namespace CapFrameX.Data.Session.Contracts
 		string Comment { get; set; }
 		string ApiInfo { get; set; }
 		string PresentationMode { get; set; }
+		string ResolutionInfo { get; set; }
 	}
 }

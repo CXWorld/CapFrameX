@@ -54,6 +54,8 @@ namespace CapFrameX.Data
 		public string Hash { get; private set; }
 		public string ApiInfo { get; private set; }
 		public string PresentationMode { get; private set; }
+		public string Resolution { get; private set; }
+
 		private FileRecordInfo(FileInfo fileInfo, ISession session)
 		{
 			var creationDateTime = session.Info.CreationDate.ToLocalTime();
@@ -79,6 +81,7 @@ namespace CapFrameX.Data
 			Hash = session.Hash;
 			ApiInfo = session.Info.ApiInfo;
 			PresentationMode = session.Info.PresentationMode;
+			Resolution = session.Info.ResolutionInfo;
 		}
 
 		private FileRecordInfo(FileInfo fileInfo, string hash)

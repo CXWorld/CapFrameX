@@ -33,5 +33,6 @@ namespace CapFrameX.Contracts.Data
 		string Hash { get; }
 		string ApiInfo { get; }
 		string PresentationMode { get; }
+		string Resolution { get; }
 	}
 }
