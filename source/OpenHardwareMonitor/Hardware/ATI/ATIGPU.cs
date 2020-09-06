@@ -9,6 +9,7 @@
 */
 
 using Microsoft.Win32;
+using Serilog;
 using System;
 using System.Diagnostics;
 using System.Globalization;
@@ -19,7 +20,6 @@ namespace OpenHardwareMonitor.Hardware.ATI
 {
     internal sealed class ATIGPU : Hardware
     {
-
         private readonly int adapterIndex;
         private readonly int busNumber;
         private readonly int deviceNumber;
@@ -49,7 +49,7 @@ namespace OpenHardwareMonitor.Hardware.ATI
         private readonly Sensor memoryControllerLoad;
         private readonly Sensor controlSensor;
         private readonly Control fanControl;
-        private readonly Sensor memorUsageDedicated;
+        private readonly Sensor memoryUsageDedicated;
         private readonly Sensor memoryUsageShared;
         private readonly PerformanceCounter dedicatedVramUsagePerformCounter;
         private readonly PerformanceCounter sharedVramUsagePerformCounter;
@@ -114,22 +114,28 @@ namespace OpenHardwareMonitor.Hardware.ATI
             this.coreLoad = new Sensor("GPU Core", 0, SensorType.Load, this, settings);
             this.memoryControllerLoad = new Sensor("GPU Memory Controller", 1, SensorType.Load, this, settings);
 
-            if (PerformanceCounterCategory.Exists("GPU Adapter Memory"))
+            try
             {
-                this.memorUsageDedicated = new Sensor("GPU Memory Dedicated", 0, SensorType.SmallData, this, settings);
-                this.memoryUsageShared = new Sensor("GPU Memory Shared", 1, SensorType.SmallData, this, settings);
+                if (PerformanceCounterCategory.Exists("GPU Adapter Memory"))
+                {
+                    var category = new PerformanceCounterCategory("GPU Adapter Memory");
+                    var instances = category.GetInstanceNames();
 
-                var category = new PerformanceCounterCategory("GPU Adapter Memory");
-                var instances = category.GetInstanceNames();
+                    var (Usage, Index) = instances
+                        .Select(instance => new PerformanceCounter("GPU Adapter Memory", "Dedicated Usage", instance))
+                        .Select((u, i) => (Usage: u.RawValue, Index: i)).Max();
 
-                var (Usage, Index) = instances
-                    .Select(instance => new PerformanceCounter("GPU Adapter Memory", "Dedicated Usage", instance))
-                    .Select((u, i) => (Usage: u.RawValue, Index: i)).Max();
+                    dedicatedVramUsagePerformCounter = new PerformanceCounter("GPU Adapter Memory", "Dedicated Usage", instances[Index]);
+                    sharedVramUsagePerformCounter = new PerformanceCounter("GPU Adapter Memory", "Shared Usage", instances[Index]);
 
-                dedicatedVramUsagePerformCounter = new PerformanceCounter("GPU Adapter Memory", "Dedicated Usage", instances[Index]);
-                sharedVramUsagePerformCounter = new PerformanceCounter("GPU Adapter Memory", "Shared Usage", instances[Index]);
+                    this.memoryUsageDedicated = new Sensor("GPU Memory Dedicated", 0, SensorType.SmallData, this, settings);
+                    this.memoryUsageShared = new Sensor("GPU Memory Shared", 1, SensorType.SmallData, this, settings);
+                }
             }
-
+            catch (Exception ex)
+            {
+                Log.Logger.Error(ex, "Error while creating GPU memory performance counter.");
+            }
 
             this.controlSensor = new Sensor("GPU Fan", 0, SensorType.Control, this, settings);
 
@@ -485,8 +491,8 @@ namespace OpenHardwareMonitor.Hardware.ATI
             // update VRAM usage
             if (dedicatedVramUsagePerformCounter != null && sharedVramUsagePerformCounter != null)
             {
-                memorUsageDedicated.Value = dedicatedVramUsagePerformCounter.RawValue / 1024 / 1024;
-                ActivateSensor(memorUsageDedicated);
+                memoryUsageDedicated.Value = dedicatedVramUsagePerformCounter.RawValue / 1024 / 1024;
+                ActivateSensor(memoryUsageDedicated);
                 memoryUsageShared.Value = sharedVramUsagePerformCounter.RawValue / 1024 / 1024;
                 ActivateSensor(memoryUsageShared);
             }
