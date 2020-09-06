@@ -5,100 +5,104 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reactive.Concurrency;
 using System.Reactive.Subjects;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace CapFrameX.RTSSIntegration
 {
-    public class RTSSService: RTSSCSharpWrapper, IRTSSService
+    public class RTSSService : RTSSCSharpWrapper, IRTSSService
     {
-		private const string RTSSPROCESSNAME = "RTSS";
-		private bool _isRTSSInstalled;
+        private const string RTSSPROCESSNAME = "RTSS";
+        private bool _isRTSSInstalled;
 
-		private static ILogger<RTSSService> _logger;
+        private static ILogger<RTSSService> _logger;
 
-		public ISubject<uint> ProcessIdStream { get; }
+        public ISubject<uint> ProcessIdStream { get; }
 
-		public RTSSService(ILogger<RTSSService> logger): base(ExceptionAction)
+        public RTSSService(ILogger<RTSSService> logger) : base(ExceptionAction)
         {
             _logger = logger;
-			ProcessIdStream = new BehaviorSubject<uint>(default);
-			_isRTSSInstalled = !string.IsNullOrEmpty(GetRTSSFullPath());
-		}
+            ProcessIdStream = new BehaviorSubject<uint>(default);
+            _isRTSSInstalled = !string.IsNullOrEmpty(GetRTSSFullPath());
+        }
 
-		public bool IsRTSSInstalled()
+        public bool IsRTSSInstalled()
         {
-			return _isRTSSInstalled;
-		}
+            return _isRTSSInstalled;
+        }
 
-		public void CheckRTSSRunningAndRefresh()
-		{
-			if (_isRTSSInstalled)
-			{
-				var processes = Process.GetProcessesByName(RTSSPROCESSNAME);
-				if (!processes.Any())
-				{
-					try
-					{
-						Process proc = new Process();
-						proc.StartInfo.FileName = Path.Combine(GetRTSSFullPath());
-						proc.StartInfo.UseShellExecute = false;
-						proc.StartInfo.Verb = "runas";
-						proc.Start();
-					}
-					catch (Exception ex) { _logger.LogError(ex, "Error while starting RTSS process"); }
-				}
-				Refresh();
-			}
-			else
-				return;
-		}
+        public Task CheckRTSSRunningAndRefresh()
+        {
+            return Task.Run(() =>
+            {
+                if (_isRTSSInstalled)
+                {
+                    var processes = Process.GetProcessesByName(RTSSPROCESSNAME);
+                    if (!processes.Any())
+                    {
+                        try
+                        {
+                            Process proc = new Process();
+                            proc.StartInfo.FileName = Path.Combine(GetRTSSFullPath());
+                            proc.StartInfo.UseShellExecute = false;
+                            proc.StartInfo.Verb = "runas";
+                            proc.Start();
+                        }
+                        catch (Exception ex) { _logger.LogError(ex, "Error while starting RTSS process"); }
+                    }
+                    Refresh();
+                }
+            });
+        }
 
-		private static void ExceptionAction(Exception ex)
+        private static void ExceptionAction(Exception ex)
         {
             _logger.LogError(ex, "Exception thrown in RTSSCSharpWrapper");
         }
 
-		private string GetRTSSFullPath()
-		{
-			string installPath = string.Empty;
+        private string GetRTSSFullPath()
+        {
+            string installPath = string.Empty;
 
-			try
-			{
-				// SOFTWARE\WOW6432Node\Unwinder\RTSS
-				using (RegistryKey key = Registry.LocalMachine.OpenSubKey("Software\\WOW6432Node\\Unwinder\\RTSS"))
-				{
-					if (key != null)
-					{
-						object o = key.GetValue("InstallPath");
-						if (o != null)
-						{
-							installPath = o as string;  //"as" because it's REG_SZ...otherwise ToString() might be safe(r)
-						}
-					}
-				}
+            try
+            {
+                // SOFTWARE\WOW6432Node\Unwinder\RTSS
+                using (RegistryKey key = Registry.LocalMachine.OpenSubKey("Software\\WOW6432Node\\Unwinder\\RTSS"))
+                {
+                    if (key != null)
+                    {
+                        object o = key.GetValue("InstallPath");
+                        if (o != null)
+                        {
+                            installPath = o as string;  //"as" because it's REG_SZ...otherwise ToString() might be safe(r)
+                        }
+                    }
+                }
 
-				// SOFTWARE\Unwinder\RTSS
-				if (string.IsNullOrWhiteSpace(installPath))
-				{
-					using (RegistryKey key = Registry.LocalMachine.OpenSubKey("Software\\Unwinder\\RTSS"))
-					{
-						if (key != null)
-						{
-							object o = key.GetValue("InstallPath");
-							if (o != null)
-							{
-								installPath = o as string;  //"as" because it's REG_SZ...otherwise ToString() might be safe(r)
-							}
-						}
-					}
-				}
-			}
-			catch (Exception)
-			{
-				throw;
-			}
+                // SOFTWARE\Unwinder\RTSS
+                if (string.IsNullOrWhiteSpace(installPath))
+                {
+                    using (RegistryKey key = Registry.LocalMachine.OpenSubKey("Software\\Unwinder\\RTSS"))
+                    {
+                        if (key != null)
+                        {
+                            object o = key.GetValue("InstallPath");
+                            if (o != null)
+                            {
+                                installPath = o as string;  //"as" because it's REG_SZ...otherwise ToString() might be safe(r)
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                throw;
+            }
 
-			return installPath;
-		}
+            return installPath;
+        }
     }
 }

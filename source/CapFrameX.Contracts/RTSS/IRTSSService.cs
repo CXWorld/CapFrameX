@@ -1,6 +1,7 @@
 ﻿using CapFrameX.Contracts.Overlay;
 using System;
 using System.Reactive.Subjects;
+using System.Threading.Tasks;
 
 namespace CapFrameX.Contracts.RTSS
 {
@@ -11,7 +12,7 @@ namespace CapFrameX.Contracts.RTSS
         string GetApiInfo(uint processId);
         Tuple<double, double> GetCurrentFramerate(uint processId);
         Tuple<double, double> GetCurrentFramerateFromForegroundWindow();
-        void CheckRTSSRunningAndRefresh();
+        Task CheckRTSSRunningAndRefresh();
         void ResetOSD();
         void ReleaseOSD();
         void SetOverlayEntries(IOverlayEntry[] entries);

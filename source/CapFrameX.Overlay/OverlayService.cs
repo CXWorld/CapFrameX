@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
@@ -84,10 +85,11 @@ namespace CapFrameX.Overlay
 						return Observable.Empty<IOverlayEntry[]>();
 					}
 				}).Switch()
-				.Subscribe(entries =>
+				.SubscribeOn(Scheduler.Default)
+				.Subscribe(async entries =>
 				{
 					_rTSSService.SetOverlayEntries(entries);
-					_rTSSService.CheckRTSSRunningAndRefresh();
+					await _rTSSService.CheckRTSSRunningAndRefresh();
 				});
 
 			_runHistory = Enumerable.Repeat("N/A", _numberOfRuns).ToList();

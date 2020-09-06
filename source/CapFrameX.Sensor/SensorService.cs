@@ -11,12 +11,16 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Reactive.Concurrency;
+using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace CapFrameX.Sensor
 {
+
     public class SensorService : ISensorService
     {
         private readonly object _lockComputer = new object();
@@ -77,26 +81,29 @@ namespace CapFrameX.Sensor
 
             _logger.LogDebug("{componentName} Ready", this.GetType().Name);
 
-            StartOpenHardwareMonitor();
-
-            Task.Delay(200).ContinueWith(t =>
-            {
-                InitializeOverlayEntryDict();
-
-                _sensorSnapshotStream
-                    .Sample(_osdUpdateSubject.Select(timespan => Observable.Concat(Observable.Return(-1L), Observable.Interval(timespan))).Switch())
-                    .Where(_ => IsOverlayActive)
-                    .Subscribe(sensorData =>
+            Observable.FromAsync(() => StartOpenHardwareMonitor())
+                .Delay(TimeSpan.FromMilliseconds(200))
+                .SubscribeOn(Scheduler.Default)
+                .Subscribe(t =>
                     {
-                        UpdateOSD(sensorData.Item2);
-                        _onDictionaryUpdated.OnNext(GetSensorOverlayEntries());
-                    });
+                        InitializeOverlayEntryDict();
 
-                _sensorSnapshotStream
-                    .Sample(_loggingUpdateSubject.Select(timespan => Observable.Concat(Observable.Return(-1L), Observable.Interval(timespan))).Switch())
-                    .Where(_ => _isLoggingActive && UseSensorLogging)
-                    .Subscribe(sensorData => LogCurrentValues(sensorData.Item2, sensorData.Item1));
-            });
+                        _sensorSnapshotStream
+                            .Sample(_osdUpdateSubject.Select(timespan => Observable.Concat(Observable.Return(-1L), Observable.Interval(timespan))).Switch())
+                            .Where(_ => IsOverlayActive)
+                            .SubscribeOn(Scheduler.Default)
+                            .Subscribe(sensorData =>
+                            {
+                                UpdateOSD(sensorData.Item2);
+                                _onDictionaryUpdated.OnNext(GetSensorOverlayEntries());
+                            });
+
+                        _sensorSnapshotStream
+                            .Sample(_loggingUpdateSubject.Select(timespan => Observable.Concat(Observable.Return(-1L), Observable.Interval(timespan))).Switch())
+                            .Where(_ => _isLoggingActive && UseSensorLogging)
+                            .SubscribeOn(Scheduler.Default)
+                            .Subscribe(sensorData => LogCurrentValues(sensorData.Item2, sensorData.Item1));
+                    });
 
             stopwatch.Stop();
             _logger.LogInformation(this.GetType().Name + " {initializationTime}s initialization time", Math.Round(stopwatch.ElapsedMilliseconds * 1E-03), 1);
@@ -168,27 +175,30 @@ namespace CapFrameX.Sensor
             _sensorUpdateSubject.OnNext(_currentSensorTimespan);
         }
 
-        private void StartOpenHardwareMonitor()
+        private Task StartOpenHardwareMonitor()
         {
-            try
+            return Task.Run(() =>
             {
-                lock (_lockComputer)
+                try
                 {
-                    _computer = new Computer();
-                    _computer.Open();
+                    lock (_lockComputer)
+                    {
+                        _computer = new Computer();
+                        _computer.Open();
 
-                    _computer.GPUEnabled = true;
-                    _computer.CPUEnabled = true;
-                    _computer.RAMEnabled = true;
-                    _computer.MainboardEnabled = false;
-                    _computer.FanControllerEnabled = false;
-                    _computer.HDDEnabled = false;
+                        _computer.GPUEnabled = true;
+                        _computer.CPUEnabled = true;
+                        _computer.RAMEnabled = true;
+                        _computer.MainboardEnabled = false;
+                        _computer.FanControllerEnabled = false;
+                        _computer.HDDEnabled = false;
+                    }
                 }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error when starting OpenHardwareMonitor");
-            }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error when starting OpenHardwareMonitor");
+                }
+            });
         }
 
         private void InitializeOverlayEntryDict()
