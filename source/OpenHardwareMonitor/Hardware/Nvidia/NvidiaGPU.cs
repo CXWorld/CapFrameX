@@ -17,6 +17,7 @@ using System.Text;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
+using Serilog;
 
 namespace OpenHardwareMonitor.Hardware.Nvidia
 {
@@ -119,15 +120,22 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
 
             if (PerformanceCounterCategory.Exists("GPU Adapter Memory"))
             {
-                var category = new PerformanceCounterCategory("GPU Adapter Memory");
-                var instances = category.GetInstanceNames();
+                try
+                {
+                    var category = new PerformanceCounterCategory("GPU Adapter Memory");
+                    var instances = category.GetInstanceNames();
 
-                var (Usage, Index) = instances
-                    .Select(instance => new PerformanceCounter("GPU Adapter Memory", "Dedicated Usage", instance))
-                    .Select((u, i) => (Usage: u.RawValue, Index: i)).Max();
+                    var (Usage, Index) = instances
+                        .Select(instance => new PerformanceCounter("GPU Adapter Memory", "Dedicated Usage", instance))
+                        .Select((u, i) => (Usage: u.RawValue, Index: i)).Max();
 
-                dedicatedVramUsagePerformCounter = new PerformanceCounter("GPU Adapter Memory", "Dedicated Usage", instances[Index]);
-                sharedVramUsagePerformCounter = new PerformanceCounter("GPU Adapter Memory", "Shared Usage", instances[Index]);
+                    dedicatedVramUsagePerformCounter = new PerformanceCounter("GPU Adapter Memory", "Dedicated Usage", instances[Index]);
+                    sharedVramUsagePerformCounter = new PerformanceCounter("GPU Adapter Memory", "Shared Usage", instances[Index]);
+                }
+                catch (Exception ex)
+                {
+                    Log.Logger.Error(ex, "Error while creating GPU memory performance counter.");
+                }
             }
 
             if (NVML.IsInitialized)
