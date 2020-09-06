@@ -8,23 +8,22 @@
 	
 */
 
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Text;
 
 namespace OpenHardwareMonitor.Hardware.CPU
 {
-
     internal class CPUGroup : IGroup
     {
         private readonly List<GenericCPU> hardware = new List<GenericCPU>();
-
         private readonly CPUID[][][] threads;
 
         private static CPUID[][] GetProcessorThreads()
         {
-
             List<CPUID> threads = new List<CPUID>();
             for (int i = 0; i < ThreadAffinity.ProcessorGroupCount; i++)
             {
@@ -70,7 +69,6 @@ namespace OpenHardwareMonitor.Hardware.CPU
 
         private static CPUID[][] GroupThreadsByCore(IEnumerable<CPUID> threads)
         {
-
             SortedDictionary<uint, List<CPUID>> cores =
               new SortedDictionary<uint, List<CPUID>>();
             foreach (CPUID thread in threads)
@@ -97,9 +95,20 @@ namespace OpenHardwareMonitor.Hardware.CPU
 
         public CPUGroup(ISettings settings)
         {
+            Log.Logger.Information("Start creating CPU group.");
 
             CPUID[][] processorThreads = GetProcessorThreads();
             this.threads = new CPUID[processorThreads.Length][][];
+
+            if (!processorThreads.Any() || processorThreads[0].Length == 0)
+            {
+                Log.Logger.Error("Error getting infos from core 0.");
+            }
+            else
+            {
+                Log.Logger.Information("CPUID vendor info: {vendor}.", processorThreads[0][0].Vendor.ToString());
+                Log.Logger.Information("CPUID family code: {family}.", processorThreads[0][0].Family.ToString());
+            }
 
             int index = 0;
             foreach (CPUID[] threads in processorThreads)
