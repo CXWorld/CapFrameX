@@ -31,6 +31,7 @@ using System.Net;
 using System.Net.Mime;
 using CapFrameX.Webservice.Host.Attributes;
 using Squidex.ClientLibrary;
+using CapFrameX.Webservice.Data.Options;
 
 namespace CapFrameX.Webservice.Host
 {
@@ -55,6 +56,8 @@ namespace CapFrameX.Webservice.Host
 				typeof(UploadSessionsCommand).GetTypeInfo().Assembly // Register Commands
 			);
 			services.AddAutoMapper(typeof(SessionCollectionProfile).Assembly);
+
+			services.Configure<SmtpOptions>(Configuration.GetSection("SmtpOptions"));
 
 			// Setup and Register Squidex
 			services.Configure<SquidexOptions>(Configuration.GetSection("SquidexOptions"));
