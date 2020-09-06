@@ -114,9 +114,9 @@ namespace OpenHardwareMonitor.Hardware.ATI
             this.coreLoad = new Sensor("GPU Core", 0, SensorType.Load, this, settings);
             this.memoryControllerLoad = new Sensor("GPU Memory Controller", 1, SensorType.Load, this, settings);
 
-            if (PerformanceCounterCategory.Exists("GPU Adapter Memory"))
-            {                
-                try
+            try
+            {
+                if (PerformanceCounterCategory.Exists("GPU Adapter Memory"))
                 {
                     var category = new PerformanceCounterCategory("GPU Adapter Memory");
                     var instances = category.GetInstanceNames();
@@ -131,10 +131,10 @@ namespace OpenHardwareMonitor.Hardware.ATI
                     this.memoryUsageDedicated = new Sensor("GPU Memory Dedicated", 0, SensorType.SmallData, this, settings);
                     this.memoryUsageShared = new Sensor("GPU Memory Shared", 1, SensorType.SmallData, this, settings);
                 }
-                catch(Exception ex)
-                {
-                    Log.Logger.Error(ex, "Error while creating GPU memory performance counter.");
-                }
+            }
+            catch (Exception ex)
+            {
+                Log.Logger.Error(ex, "Error while creating GPU memory performance counter.");
             }
 
             this.controlSensor = new Sensor("GPU Fan", 0, SensorType.Control, this, settings);

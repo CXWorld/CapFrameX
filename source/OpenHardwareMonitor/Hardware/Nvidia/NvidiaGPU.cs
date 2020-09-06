@@ -118,9 +118,10 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
                 control.Control = fanControl;
             }
 
-            if (PerformanceCounterCategory.Exists("GPU Adapter Memory"))
+
+            try
             {
-                try
+                if (PerformanceCounterCategory.Exists("GPU Adapter Memory"))
                 {
                     var category = new PerformanceCounterCategory("GPU Adapter Memory");
                     var instances = category.GetInstanceNames();
@@ -132,11 +133,12 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
                     dedicatedVramUsagePerformCounter = new PerformanceCounter("GPU Adapter Memory", "Dedicated Usage", instances[Index]);
                     sharedVramUsagePerformCounter = new PerformanceCounter("GPU Adapter Memory", "Shared Usage", instances[Index]);
                 }
-                catch (Exception ex)
-                {
-                    Log.Logger.Error(ex, "Error while creating GPU memory performance counter.");
-                }
             }
+            catch (Exception ex)
+            {
+                Log.Logger.Error(ex, "Error while creating GPU memory performance counter.");
+            }
+
 
             if (NVML.IsInitialized)
             {
