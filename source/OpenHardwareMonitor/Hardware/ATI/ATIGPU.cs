@@ -489,12 +489,24 @@ namespace OpenHardwareMonitor.Hardware.ATI
             }
 
             // update VRAM usage
-            if (dedicatedVramUsagePerformCounter != null && sharedVramUsagePerformCounter != null)
+            if (dedicatedVramUsagePerformCounter != null)
             {
-                memoryUsageDedicated.Value = dedicatedVramUsagePerformCounter.RawValue / 1024 / 1024;
-                ActivateSensor(memoryUsageDedicated);
-                memoryUsageShared.Value = sharedVramUsagePerformCounter.RawValue / 1024 / 1024;
-                ActivateSensor(memoryUsageShared);
+                try
+                {
+                    memoryUsageDedicated.Value = dedicatedVramUsagePerformCounter.NextValue() / 1024f / 1024f;
+                    ActivateSensor(memoryUsageDedicated);
+                }
+                catch { }
+            }
+
+            if (sharedVramUsagePerformCounter != null)
+            {
+                try
+                {
+                    memoryUsageShared.Value = (float)sharedVramUsagePerformCounter.NextValue() / 1024f / 1024f;
+                    ActivateSensor(memoryUsageShared);
+                }
+                catch { }
             }
         }
 

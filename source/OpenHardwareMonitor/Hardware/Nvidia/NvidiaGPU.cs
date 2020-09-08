@@ -412,14 +412,22 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
             // update VRAM usage
             if (dedicatedVramUsagePerformCounter != null)
             {
-                memoryUsageDedicated.Value = (float)dedicatedVramUsagePerformCounter.RawValue / 1024 / 1024;
-                ActivateSensor(memoryUsageDedicated);
+                try
+                {
+                    memoryUsageDedicated.Value = dedicatedVramUsagePerformCounter.NextValue() / 1024f / 1024f;
+                    ActivateSensor(memoryUsageDedicated);
+                }
+                catch { }
             }
 
             if (sharedVramUsagePerformCounter != null)
             {
-                memoryUsageShared.Value = (float)sharedVramUsagePerformCounter.RawValue / 1024 / 1024;
-                ActivateSensor(memoryUsageShared);
+                try
+                {
+                    memoryUsageShared.Value = (float)sharedVramUsagePerformCounter.NextValue() / 1024f / 1024f;
+                    ActivateSensor(memoryUsageShared);
+                }
+                catch { }
             }
 
             if (pcieThroughputRx != null)

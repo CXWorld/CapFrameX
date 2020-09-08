@@ -741,6 +741,11 @@ namespace CapFrameX.Data
                         }
                     }
                 }
+
+                //Normalize times
+                var startTime = captureData.TimeInSeconds[0];
+                captureData.TimeInSeconds = captureData.TimeInSeconds.Select(time => time - startTime).ToArray();
+
                 sessionRun.CaptureData = captureData;
                 return sessionRun;
             }
