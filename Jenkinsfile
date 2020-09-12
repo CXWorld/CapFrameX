@@ -35,7 +35,7 @@ pipeline {
                 }
                 stage('Build Portable') {
                     when {
-                        tag pattern: '^v*', comparator: "REGEXP"
+                        tag pattern: '^v.*', comparator: "REGEXP"
                     }
 
                     stages {
@@ -68,7 +68,7 @@ pipeline {
 
                 stage('Upload Portable') {
                     when {
-                        tag pattern: '^v*', comparator: "REGEXP"
+                        tag pattern: '^v.*', comparator: "REGEXP"
                     }
                     steps {
                         zip archive: false, dir: 'source/CapFrameX/bin/x64/Debug', glob: '*', zipFile: "${filename}_portable.zip"
