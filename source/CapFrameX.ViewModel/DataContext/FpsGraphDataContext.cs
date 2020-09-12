@@ -21,6 +21,7 @@ namespace CapFrameX.ViewModel.DataContext
 
 		public ICommand CopyFpsValuesCommand { get; }
 		public ICommand CopyFpsPointsCommand { get; }
+		public ICommand SavePlotAsImage { get; }
 
 		private readonly FpsGraphPlotBuilder _graphPlotBuilder;
 
@@ -30,6 +31,7 @@ namespace CapFrameX.ViewModel.DataContext
 		{
 			CopyFpsValuesCommand = new DelegateCommand(OnCopyFpsValues);
 			CopyFpsPointsCommand = new DelegateCommand(OnCopyFpsPoints);
+			SavePlotAsImage = new DelegateCommand(() => OnSavePlotAsImage("fps"));
 			_graphPlotBuilder = new FpsGraphPlotBuilder(appConfiguration, frametimesStatisticProvider);
 		}
 

@@ -5,6 +5,10 @@ using CapFrameX.Statistics.NetStandard;
 using CapFrameX.Statistics.PlotBuilder.Contracts;
 using OxyPlot;
 using Prism.Mvvm;
+using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
+using System.Windows.Forms;
 
 namespace CapFrameX.ViewModel.DataContext
 {
@@ -34,6 +38,37 @@ namespace CapFrameX.ViewModel.DataContext
 			set
 			{
 				RecordDataServer.CurrentSession = value;
+			}
+		}
+
+		protected void OnSavePlotAsImage(string plotType)
+		{
+			var exporter = new SvgExporter { Width = 1000, Height = 400 };
+
+			using (var memStream = new MemoryStream())
+			{
+				var illegalFilenameCharsRegex = new Regex(@"[/:*?<>""|]");
+
+				exporter.Export(PlotModel, memStream);
+				var filename = string.Join("-", new string[] {
+					string.IsNullOrWhiteSpace(RecordSession.Info.GameName) ? RecordSession.Info.ProcessName: RecordSession.Info.GameName,
+					RecordSession.Info.Processor,
+					RecordSession.Info.GPU,
+					RecordSession.Info.SystemRam,
+					RecordSession.Info.Comment
+				}.Where(filenamePart => !string.IsNullOrWhiteSpace(filenamePart)));
+
+				SaveFileDialog dialog = new SaveFileDialog()
+				{
+					Filter = "SVG files|*.svg",
+					FileName = $"{illegalFilenameCharsRegex.Replace(filename, string.Empty)}_{plotType}",
+					DefaultExt = "svg",
+				};
+
+				if (dialog.ShowDialog() == DialogResult.OK)
+				{
+					File.WriteAllBytes(dialog.FileName, memStream.ToArray());
+				}
 			}
 		}
 	}
