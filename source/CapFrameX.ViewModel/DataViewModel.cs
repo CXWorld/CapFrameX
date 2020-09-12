@@ -380,8 +380,6 @@ namespace CapFrameX.ViewModel
 
 		public ICommand CopyRawSensorInfoCommand { get; }
 
-		public ICommand AcceptParameterSettingsCommand { get; }
-
 		public ICommand CutRecordCommand { get; }
 
 		public bool GpuLoad
@@ -464,7 +462,6 @@ namespace CapFrameX.ViewModel
 			CopySystemInfoCommand = new DelegateCommand(OnCopySystemInfoCommand);
 			CopySensorInfoCommand = new DelegateCommand(OnCopySensorInfo);
 			CopyRawSensorInfoCommand = new DelegateCommand(OnCopyRawSensorInfo);
-			AcceptParameterSettingsCommand = new DelegateCommand(OnAcceptParameterSettings);
 			CutRecordCommand = new DelegateCommand(OnCutRecord);
 			CopyFPSThresholdDataCommand = new DelegateCommand(OnCopyFPSThresholdData);
 			ThresholdCountsCommand = new DelegateCommand(() => _appConfiguration.ShowThresholdTimes = false);

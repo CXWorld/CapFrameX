@@ -44,6 +44,7 @@
 			{
 				_useMaxStatisticParameter = value;
 				_appConfiguration.UseSingleRecordMaxStatisticParameter = value;
+				OnAcceptParameterSettings();
 				RaisePropertyChanged();
 			}
 		}
@@ -55,6 +56,7 @@
 			{
 				_useP99QuantileStatisticParameter = value;
 				_appConfiguration.UseSingleRecord99QuantileStatisticParameter = value;
+				OnAcceptParameterSettings();
 				RaisePropertyChanged();
 			}
 		}
@@ -66,6 +68,7 @@
 			{
 				_useP95QuantileStatisticParameter = value;
 				_appConfiguration.UseSingleRecordP95QuantileStatisticParameter = value;
+				OnAcceptParameterSettings();
 				RaisePropertyChanged();
 			}
 		}
@@ -76,6 +79,7 @@
 			{
 				_useMedianStatisticParameter = value;
 				_appConfiguration.UseSingleRecordMedianStatisticParameter = value;
+				OnAcceptParameterSettings();
 				RaisePropertyChanged();
 			}
 		}
@@ -87,6 +91,7 @@
 			{
 				_useAverageStatisticParameter = value;
 				_appConfiguration.UseSingleRecordAverageStatisticParameter = value;
+				OnAcceptParameterSettings();
 				RaisePropertyChanged();
 			}
 		}
@@ -98,6 +103,7 @@
 			{
 				_useP5QuantileStatisticParameter = value;
 				_appConfiguration.UseSingleRecordP5QuantileStatisticParameter = value;
+				OnAcceptParameterSettings();
 				RaisePropertyChanged();
 			}
 		}
@@ -109,6 +115,7 @@
 			{
 				_useP1QuantileStatisticParameter = value;
 				_appConfiguration.UseSingleRecordP1QuantileStatisticParameter = value;
+				OnAcceptParameterSettings();
 				RaisePropertyChanged();
 			}
 		}
@@ -120,7 +127,8 @@
             {
                 _useP0Dot2QuantileStatisticParameter = value;
                 _appConfiguration.UseSingleRecordP0Dot2QuantileStatisticParameter = value;
-                RaisePropertyChanged();
+				OnAcceptParameterSettings();
+				RaisePropertyChanged();
             }
         }
 
@@ -131,6 +139,7 @@
 			{
 				_useP0Dot1QuantileStatisticParameter = value;
 				_appConfiguration.UseSingleRecordP0Dot1QuantileStatisticParameter = value;
+				OnAcceptParameterSettings();
 				RaisePropertyChanged();
 			}
 		}
@@ -142,6 +151,7 @@
 			{
 				_useP1LowAverageStatisticParameter = value;
 				_appConfiguration.UseSingleRecordP1LowAverageStatisticParameter = value;
+				OnAcceptParameterSettings();
 				RaisePropertyChanged();
 			}
 		}
@@ -153,6 +163,7 @@
 			{
 				_useP0Dot1LowAverageStatisticParameter = value;
 				_appConfiguration.UseSingleRecordP0Dot1LowAverageStatisticParameter = value;
+				OnAcceptParameterSettings();
 				RaisePropertyChanged();
 			}
 		}
@@ -164,6 +175,7 @@
 			{
 				_useMinStatisticParameter = value;
 				_appConfiguration.UseSingleRecordMinStatisticParameter = value;
+				OnAcceptParameterSettings();
 				RaisePropertyChanged();
 			}
 		}
@@ -175,6 +187,7 @@
 			{
 				_useAdaptiveSTDStatisticParameter = value;
 				_appConfiguration.UseSingleRecordAdaptiveSTDStatisticParameter = value;
+				OnAcceptParameterSettings();
 				RaisePropertyChanged();
 			}
 		}
@@ -186,6 +199,7 @@
 			{
 				_useSingleRecordCpuFpsPerWattParameter = value;
 				_appConfiguration.UseSingleRecordCpuFpsPerWattParameter = value;
+				OnAcceptParameterSettings();
 				RaisePropertyChanged();
 			}
 		}
@@ -196,6 +210,7 @@
 			{
 				_useSingleRecordGpuFpsPerWattParameter = value;
 				_appConfiguration.UseSingleRecordGpuFpsPerWattParameter = value;
+				OnAcceptParameterSettings();
 				RaisePropertyChanged();
 			}
 		}
