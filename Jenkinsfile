@@ -34,9 +34,6 @@ pipeline {
                     }
                 }
                 stage('Build Portable') {
-                    when {
-                        tag pattern: '^v.*', comparator: "REGEXP"
-                    }
 
                     stages {
                         stage('Build') {
@@ -67,9 +64,6 @@ pipeline {
                 }
 
                 stage('Upload Portable') {
-                    when {
-                        tag pattern: '^v.*', comparator: "REGEXP"
-                    }
                     steps {
                         zip archive: false, dir: 'source/CapFrameX/bin/x64/Debug', glob: '*', zipFile: "${filename}_portable.zip"
                         withCredentials([usernameColonPassword(credentialsId: 'nexus-admin', variable: 'credentials')]) {
@@ -83,9 +77,9 @@ pipeline {
 }
 
 def getFilename() {
-    return "${$TAG_NAME}".startsWith('v') ? "${$TAG_NAME}" : "${GIT_COMMIT}"
+    return "${TAG_NAME}".startsWith('v') ? "${TAG_NAME}" : "${GIT_COMMIT}"
 }
 
 def getUploadPath() {
-    return "${$TAG_NAME}".startsWith('v') ? "${CAPFRAMEX_REPO}/${$TAG_NAME}" : "${CAPFRAMEX_REPO}/${branch}/${date}"
+    return "${TAG_NAME}".startsWith('v') ? "${CAPFRAMEX_REPO}/${TAG_NAME}" : "${CAPFRAMEX_REPO}/${branch}/${date}"
 }
