@@ -53,7 +53,7 @@ pipeline {
 			environment {
 				branch = "${GIT_BRANCH}".replace("/", "__")
 				date = "${(new Date()).format( 'dd.MM.yyyy' )}"
-                filename = "${$TAG_NAME}".startsWith('v') ? "${$TAG_NAME}" : "${GIT_COMMIT}"
+                filename = getFilename()
 			}
             stages {
                 stage('Upload Installer') {
@@ -78,5 +78,9 @@ pipeline {
                 }
             }
 		}
+    }
+
+    def getFilename() {
+        return "${$TAG_NAME}".startsWith('v') ? "${$TAG_NAME}" : "${GIT_COMMIT}"
     }
 }
