@@ -48,8 +48,6 @@ pipeline {
 		
 		stage('Publish') {
 			environment {
-				branch = "${GIT_BRANCH}".replace("/", "__")
-				date = "${(new Date()).format( 'dd.MM.yyyy' )}"
                 filename = getFilename()
                 uploadPath = getUploadPath()
 			}
@@ -77,9 +75,11 @@ pipeline {
 }
 
 def getFilename() {
-    return "${TAG_NAME}".startsWith('v') ? "${TAG_NAME}" : "${GIT_COMMIT}"
+    return "${env.TAG_NAME}".startsWith('v') ? "${env.TAG_NAME}" : "${env.GIT_COMMIT}"
 }
 
 def getUploadPath() {
-    return "${TAG_NAME}".startsWith('v') ? "${CAPFRAMEX_REPO}/${TAG_NAME}" : "${CAPFRAMEX_REPO}/${branch}/${date}"
+    def branch = "${env.GIT_BRANCH}".replace("/", "__")
+    def date = "${(new Date()).format( 'dd.MM.yyyy' )}"
+    return "${env.TAG_NAME}".startsWith('v') ? "${env.CAPFRAMEX_REPO}/${env.TAG_NAME}" : "${env.CAPFRAMEX_REPO}/${branch}/${date}"
 }
