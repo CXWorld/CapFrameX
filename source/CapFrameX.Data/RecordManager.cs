@@ -50,7 +50,6 @@ namespace CapFrameX.Data
         private readonly ProcessList _processList;
         private readonly IRTSSService _rTSSService;
 
-
         [DllImport("user32.dll", SetLastError = true)]
         static extern bool GetWindowRect(IntPtr hWnd, ref WindowRect Rect);
 
