@@ -4,6 +4,7 @@ using CapFrameX.Contracts.Data;
 using CapFrameX.Data;
 using CapFrameX.Data.Session.Contracts;
 using CapFrameX.EventAggregation.Messages;
+using CapFrameX.Extensions;
 using CapFrameX.Extensions.NetStandard;
 using CapFrameX.Statistics;
 using CapFrameX.Statistics.NetStandard;
@@ -440,6 +441,10 @@ namespace CapFrameX.ViewModel
                         if (dropInfo.Data is IFileRecordInfo recordInfo)
                         {
                             AddAggregationEntry(recordInfo, null);
+                        }
+                        else if (dropInfo.Data is IEnumerable<IFileRecordInfo> recordInfos)
+                        {
+                            recordInfos.ForEach(info => AddAggregationEntry(info, null));
                         }
                     }
                 }
