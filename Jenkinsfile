@@ -35,7 +35,7 @@ pipeline {
                 }
                 stage('Build Portable') {
                     when {
-                        tag "v*"
+                        tag pattern: '^v*', comparator: "REGEXP"
                     }
 
                     stages {
@@ -54,25 +54,26 @@ pipeline {
 				branch = "${GIT_BRANCH}".replace("/", "__")
 				date = "${(new Date()).format( 'dd.MM.yyyy' )}"
                 filename = getFilename()
+                uploadPath = getUploadPath()
 			}
             stages {
                 stage('Upload Installer') {
                     steps {
                         zip archive: false, dir: 'source/CapFrameXBootstrapper/bin/x64/Release', glob: 'CapFrameXBootstrapper.exe', zipFile: "${filename}_insteller.zip"
                         withCredentials([usernameColonPassword(credentialsId: 'nexus-admin', variable: 'credentials')]) {
-                            bat "curl -L --fail -k -v --user $credentials --upload-file ${filename}_insteller.zip ${CAPFRAMEX_REPO}/${branch}/${date}/${filename}_insteller.zip"
+                            bat "curl -L --fail -k -v --user $credentials --upload-file ${filename}_insteller.zip ${uploadPath}/${filename}_insteller.zip"
                         }
                     }
                 }
 
                 stage('Upload Portable') {
                     when {
-                        tag "v*"
+                        tag pattern: '^v*', comparator: "REGEXP"
                     }
                     steps {
                         zip archive: false, dir: 'source/CapFrameX/bin/x64/Debug', glob: '*', zipFile: "${filename}_portable.zip"
                         withCredentials([usernameColonPassword(credentialsId: 'nexus-admin', variable: 'credentials')]) {
-                            bat "curl -L --fail -k -v --user $credentials --upload-file ${filename}_portable.zip ${CAPFRAMEX_REPO}/${branch}/${date}/${filename}_portable.zip"
+                            bat "curl -L --fail -k -v --user $credentials --upload-file ${filename}_portable.zip ${uploadPath}/${filename}_portable.zip"
                         }
                     }
                 }
@@ -83,4 +84,8 @@ pipeline {
 
 def getFilename() {
     return "${$TAG_NAME}".startsWith('v') ? "${$TAG_NAME}" : "${GIT_COMMIT}"
+}
+
+def getUploadPath() {
+    return "${$TAG_NAME}".startsWith('v') ? "${CAPFRAMEX_REPO}/${$TAG_NAME}" : "${CAPFRAMEX_REPO}/${branch}/${date}"
 }
