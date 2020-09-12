@@ -79,8 +79,8 @@ pipeline {
             }
 		}
     }
+}
 
-    def getFilename() {
-        return "${$TAG_NAME}".startsWith('v') ? "${$TAG_NAME}" : "${GIT_COMMIT}"
-    }
+def getFilename() {
+    return "${$TAG_NAME}".startsWith('v') ? "${$TAG_NAME}" : "${GIT_COMMIT}"
 }
