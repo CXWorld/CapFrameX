@@ -8,6 +8,7 @@ using OxyPlot.Axes;
 using Prism.Commands;
 using System;
 using System.Globalization;
+using System.IO;
 using System.Text;
 using System.Windows.Forms;
 using System.Windows.Input;
@@ -20,6 +21,7 @@ namespace CapFrameX.ViewModel.DataContext
         public ICommand CopyFrametimeValuesCommand { get; }
 
         public ICommand CopyFrametimePointsCommand { get; }
+        public ICommand SavePlotAsImage { get; }
 
         public PlotModel FrametimeModel { get => PlotModel; }
 
@@ -30,6 +32,7 @@ namespace CapFrameX.ViewModel.DataContext
         {
             CopyFrametimeValuesCommand = new DelegateCommand(OnCopyFrametimeValues);
             CopyFrametimePointsCommand = new DelegateCommand(OnCopyFrametimePoints);
+            SavePlotAsImage = new DelegateCommand(() => OnSavePlotAsImage("frametimes"));
             _frametimePlotBuilder = new FrametimePlotBuilder(appConfiguration, frametimesStatisticProvider);
         }
 
