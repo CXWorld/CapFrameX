@@ -416,8 +416,10 @@ namespace OpenHardwareMonitor.Hardware.ATI
                     GetOD6Power(ADLODNCurrentPowerType.SOCKET_POWER, powerSocket);
                 }
 
-                ADLFanSpeedValue adlf = new ADLFanSpeedValue();
-                adlf.SpeedType = ADL.ADL_DL_FANCTRL_SPEED_TYPE_RPM;
+                ADLFanSpeedValue adlf = new ADLFanSpeedValue
+                {
+                    SpeedType = ADL.ADL_DL_FANCTRL_SPEED_TYPE_RPM
+                };
                 if (ADL.ADL_Overdrive5_FanSpeed_Get(adapterIndex, 0, ref adlf)
                   == ADL.ADL_OK)
                 {
@@ -429,12 +431,15 @@ namespace OpenHardwareMonitor.Hardware.ATI
                     fan.Value = null;
                 }
 
-                adlf = new ADLFanSpeedValue();
-                adlf.SpeedType = ADL.ADL_DL_FANCTRL_SPEED_TYPE_PERCENT;
+                adlf = new ADLFanSpeedValue
+                {
+                    SpeedType = ADL.ADL_DL_FANCTRL_SPEED_TYPE_PERCENT
+                };
                 if (ADL.ADL_Overdrive5_FanSpeed_Get(adapterIndex, 0, ref adlf)
                   == ADL.ADL_OK)
                 {
-                    controlSensor.Value = adlf.FanSpeed;
+                    // ADL bug: percentage is not 0 when rpm is 0
+                    controlSensor.Value = fan.Value == 0 ? 0 : adlf.FanSpeed;
                     ActivateSensor(controlSensor);
                 }
                 else
