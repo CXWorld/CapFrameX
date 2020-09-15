@@ -12,6 +12,7 @@ using GongSolutions.Wpf.DragDrop;
 using Microsoft.Extensions.Logging;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Mvvm;
@@ -32,6 +33,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using CapFrameX.Extensions.NetStandard;
 
 namespace CapFrameX.ViewModel
 {
@@ -459,6 +461,11 @@ namespace CapFrameX.ViewModel
 				{
 					var responseBody = await response.Content.ReadAsStringAsync();
 					_logger.LogError("Upload of Captures failed. {error}", responseBody);
+					try
+                    {
+						var responseJson = JToken.Parse(responseBody);
+						MessageBox.Show($"Upload failed: {responseJson.GetValue<string>("message") ?? responseJson.GetValue<string>("title")}", "Error");
+					} catch { }
 				}
 			}
 		}
@@ -515,6 +522,12 @@ namespace CapFrameX.ViewModel
 					EnableDownloadButton = true;
 					ShowDownloadInfo = false;
 					RaisePropertyChanged(nameof(EnableDownloadButton));
+					try
+					{
+						var responseJson = JToken.Parse(content);
+						MessageBox.Show($"Download failed: {responseJson.GetValue<string>("message") ?? responseJson.GetValue<string>("title")}", "Error");
+					}
+					catch { }
 				}
 			}
 		}
