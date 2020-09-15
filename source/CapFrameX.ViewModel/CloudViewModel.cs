@@ -391,6 +391,10 @@ namespace CapFrameX.ViewModel
 						{
 							AddCloudEntry(recordInfo, null);
 						}
+						else if (dropInfo.Data is IEnumerable<IFileRecordInfo> recordInfos)
+						{
+							recordInfos.ForEach(info => AddCloudEntry(info, null));
+						}
 					}
 				}
 			}
