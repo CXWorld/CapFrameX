@@ -75,7 +75,7 @@ namespace CapFrameX.Data
 			}
 		}
 
-		public CXProcess FindProcessByProcessName(string processName)
+		public CXProcess FindProcessByName(string processName)
 		{
 			processName = processName.StripExeExtension();
 			var process = Processes.FirstOrDefault(p => p.Name == processName);

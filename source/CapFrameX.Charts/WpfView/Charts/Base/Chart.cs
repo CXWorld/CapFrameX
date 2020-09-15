@@ -903,6 +903,8 @@ namespace LiveCharts.Wpf.Charts.Base
 			element.MouseLeave += DataMouseLeave;
 		}
 
+		private bool _isFixedRelativeModeActive = false;
+
 		internal void AttachRelativeModeEventTo(FrameworkElement element, string label)
 		{
 			element.MouseEnter -= (s, e) => RelativeModeMouseEnter(label);
@@ -910,9 +912,12 @@ namespace LiveCharts.Wpf.Charts.Base
 
 			element.MouseEnter += (s, e) => RelativeModeMouseEnter(label);
 			element.MouseLeave += (s, e) => RelativeModeDataMouseLeave();
+
+			element.MouseLeftButtonDown -= (s, e) => _isFixedRelativeModeActive = !_isFixedRelativeModeActive;
+			element.MouseLeftButtonDown += (s, e) => _isFixedRelativeModeActive = !_isFixedRelativeModeActive;
 		}
 
-		private static List<List<double>> _backupChartValues = new List<List<double>>();
+        private static List<List<double>> _backupChartValues = new List<List<double>>();
 
 		private void RelativeModeMouseEnter(string label)
 		{
@@ -951,6 +956,8 @@ namespace LiveCharts.Wpf.Charts.Base
 
 		private void RelativeModeDataMouseLeave()
 		{
+			if (_isFixedRelativeModeActive) return;
+
 			if (_backupChartValues.Any())
 			{
 				for (int i = 0; i < Series.Count; i++)

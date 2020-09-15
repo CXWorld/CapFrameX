@@ -192,6 +192,7 @@
       <DependentUpon>ColorbarView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controls\CustomZoomStepManipulator.cs" />
+    <Compile Include="Controls\MultiSelectionDataGrid.cs" />
     <Compile Include="Controls\PlotViewCustomZoom.cs" />
     <Compile Include="ControlView.xaml.cs">
       <DependentUpon>ControlView.xaml</DependentUpon>

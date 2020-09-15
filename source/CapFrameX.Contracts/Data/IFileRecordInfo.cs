@@ -6,7 +6,7 @@ namespace CapFrameX.Contracts.Data
 	public interface IFileRecordInfo: INotifyPropertyChanged
 	{
 		string GameName { get; set; }
-		string ProcessName { get; }
+		string ProcessName { get; set; }
 		string CreationDate { get; }
 		string CreationTime { get; }
 		double RecordTime { get; }
@@ -15,18 +15,18 @@ namespace CapFrameX.Contracts.Data
 		string CombinedInfo { get; }
 		string MotherboardName { get; }
 		string OsVersion { get; }
-		string ProcessorName { get; }
-		string SystemRamInfo { get; }
+		string ProcessorName { get; set; }
+		string SystemRamInfo { get; set; }
 		string BaseDriverVersion { get; }
 		string DriverPackage { get; }
 		string NumberGPUs { get; }
-		string GraphicCardName { get; }
+		string GraphicCardName { get; set; }
 		string GPUCoreClock { get; }
 		string GPUMemoryClock { get; }
 		string GPUMemory { get; }
 		string GPUDriverVersion { get; }
 		string IsAggregated { get; }
-		string Comment { get; }
+		string Comment { get; set; }
 		bool IsValid { get; }
 		bool HasInfoHeader { get; }
 		string Id { get; }

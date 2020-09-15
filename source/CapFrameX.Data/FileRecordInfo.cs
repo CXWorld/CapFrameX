@@ -19,7 +19,7 @@ namespace CapFrameX.Data
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public void NotifyPropertyChanged([CallerMemberName] String propertyName = "")
+        public void NotifyPropertyChanged([CallerMemberName] string propertyName = "")
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
@@ -27,7 +27,7 @@ namespace CapFrameX.Data
         public string CreationTimestamp => $@"{CreationDate}" + Environment.NewLine + $@"{CreationTime}";
 
         public string GameName { get; set; }
-        public string ProcessName { get; private set; }
+        public string ProcessName { get; set; }
         public string CreationDate { get; private set; }
         public string CreationTime { get; private set; }
         public double RecordTime { get; private set; }
@@ -36,17 +36,17 @@ namespace CapFrameX.Data
         public string CombinedInfo { get; private set; }
         public string MotherboardName { get; private set; }
         public string OsVersion { get; private set; }
-        public string ProcessorName { get; private set; }
-        public string SystemRamInfo { get; private set; }
+        public string ProcessorName { get; set; }
+        public string SystemRamInfo { get; set; }
         public string BaseDriverVersion { get; private set; }
         public string DriverPackage { get; private set; }
         public string NumberGPUs { get; private set; }
-        public string GraphicCardName { get; private set; }
+        public string GraphicCardName { get; set; }
         public string GPUCoreClock { get; private set; }
         public string GPUMemoryClock { get; private set; }
         public string GPUMemory { get; private set; }
         public string GPUDriverVersion { get; private set; }
-        public string Comment { get; private set; }
+        public string Comment { get; set; }
         public string IsAggregated { get; private set; }
         public bool IsValid { get; private set; }
         public bool HasInfoHeader { get; private set; }
