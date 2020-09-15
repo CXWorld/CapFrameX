@@ -37,6 +37,7 @@ namespace CapFrameX.ViewModel
 {
 	public class CloudViewModel : BindableBase, INavigationAware, IDropTarget
 	{
+		private const int CLOUDUPLOAD_MAX_LENGTH = 32000000;
 		private readonly IStatisticProvider _statisticProvider;
 		private readonly IRecordManager _recordManager;
 		private readonly IEventAggregator _eventAggregator;
@@ -415,6 +416,11 @@ namespace CapFrameX.ViewModel
 			var sessions = CloudEntries.Select(ce => _recordManager.LoadData(ce.FileRecordInfo.FullPath));
 
 			var contentAsJson = JsonConvert.SerializeObject(sessions);
+			if(System.Text.Encoding.UTF8.GetByteCount(contentAsJson) > CLOUDUPLOAD_MAX_LENGTH)
+            {
+				MessageBox.Show($"Size of selected sessions exceed limit of {CLOUDUPLOAD_MAX_LENGTH} bytes per upload");
+				return;
+            }
 			using (var client = new HttpClient() {
 				BaseAddress = new Uri(ConfigurationManager.AppSettings["WebserviceUri"])
 			})
