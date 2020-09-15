@@ -913,6 +913,7 @@ namespace LiveCharts.Wpf.Charts.Base
 			element.MouseEnter += (s, e) => RelativeModeMouseEnter(label);
 			element.MouseLeave += (s, e) => RelativeModeDataMouseLeave();
 
+			// Just toggling the mode, no visual feedback
 			element.MouseLeftButtonDown -= (s, e) => _isFixedRelativeModeActive = !_isFixedRelativeModeActive;
 			element.MouseLeftButtonDown += (s, e) => _isFixedRelativeModeActive = !_isFixedRelativeModeActive;
 		}
