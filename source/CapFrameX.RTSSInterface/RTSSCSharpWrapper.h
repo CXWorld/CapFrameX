@@ -1,6 +1,7 @@
 #pragma once
 #include "RTSSCoreControl.h"
 #include <msclr\lock.h>
+#include <string>
 
 #pragma managed
 using namespace System;
@@ -9,6 +10,7 @@ using namespace System::Threading::Tasks;
 using namespace System::Collections::Generic;
 using namespace CapFrameX::Contracts::Overlay;
 using namespace System::Runtime::CompilerServices;
+using namespace System::Runtime::InteropServices;
 
 public ref class RTSSCSharpWrapper
 {
@@ -36,9 +38,9 @@ public:
 				_coreControl->UpdateOSD("");
 			}
 		}
-		catch (Exception ^ ex)
+		catch (SEHException^ ex)
 		{
-			_exceptionAction->Invoke(ex);
+			_exceptionAction->Invoke(gcnew Exception("Unmanaged Exception. Error while resetting OSD"));
 		}
 	}
 
@@ -51,9 +53,9 @@ public:
 				_coreControl->Refresh();
 			}
 		}
-		catch (Exception^ ex)
+		catch (SEHException^ ex)
 		{
-			_exceptionAction->Invoke(ex);
+			_exceptionAction->Invoke(gcnew Exception("Unmanaged Exception. Error while refreshing OSD"));
 		}
 	}
 
@@ -66,9 +68,9 @@ public:
 				_coreControl->ReleaseOSD();
 			}
 		}
-		catch (Exception^ ex)
+		catch (SEHException^ ex)
 		{
-			_exceptionAction->Invoke(ex);
+			_exceptionAction->Invoke(gcnew Exception("Unmanaged Exception. Error while releasing OSD"));
 		}
 	}
 
@@ -81,9 +83,9 @@ public:
 				_coreControl->IsCaptureTimerActive = isActive;
 			}
 		}
-		catch (Exception^ ex)
+		catch (SEHException^ ex)
 		{
-			_exceptionAction->Invoke(ex);
+			_exceptionAction->Invoke(gcnew Exception("Unmanaged Exception. Error while setting capture time to active"));
 		}
 	}
 
@@ -112,9 +114,9 @@ public:
 				}
 			}
 		}
-		catch (Exception^ ex)
+		catch (SEHException^ ex)
 		{
-			_exceptionAction->Invoke(ex);
+			_exceptionAction->Invoke(gcnew Exception("Unmanaged Exception. Error while setting run history"));
 		}
 	}
 
@@ -143,9 +145,9 @@ public:
 				}
 			}
 		}
-		catch (Exception^ ex)
+		catch (SEHException^ ex)
 		{
-			_exceptionAction->Invoke(ex);
+			_exceptionAction->Invoke(gcnew Exception("Unmanaged Exception. Error while setting outlier flags"));
 		}
 	}
 
@@ -158,9 +160,9 @@ public:
 				_coreControl->RunHistoryAggregation = aggregation;
 			}
 		}
-		catch (Exception^ ex)
+		catch (SEHException^ ex)
 		{
-			_exceptionAction->Invoke(ex);
+			_exceptionAction->Invoke(gcnew Exception("Unmanaged Exception. Error while setting run history aggregation"));
 		}
 	}
 
@@ -192,9 +194,9 @@ public:
 				}
 			}
 		}
-		catch (Exception^ ex)
+		catch (SEHException^ ex)
 		{
-			_exceptionAction->Invoke(ex);
+			_exceptionAction->Invoke(gcnew Exception("Unmanaged Exception. Error while setting overlay entries"));
 		}
 	}
 
@@ -223,9 +225,9 @@ public:
 				}
 			}
 		}
-		catch (Exception ^ ex)
+		catch (SEHException^ ex)
 		{
-			_exceptionAction->Invoke(ex);
+			_exceptionAction->Invoke(gcnew Exception("Unmanaged Exception. Error while setting single overlay enetry"));
 		}
 	}
 

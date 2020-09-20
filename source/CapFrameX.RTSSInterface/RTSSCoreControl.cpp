@@ -13,6 +13,7 @@
 #include <io.h>
 #include <tuple>
 #include <iostream>
+#include <stdexcept>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -370,12 +371,18 @@ BOOL RTSSCoreControl::UpdateOSD(LPCSTR lpText)
 						break;
 				}
 			}
+			else
+				throw std::exception();
 
 			UnmapViewOfFile(pMapAddr);
 		}
+		else
+			throw std::exception();
 
 		CloseHandle(hMapFile);
 	}
+	else
+		throw std::exception();
 
 	return bResult;
 }
@@ -452,7 +459,6 @@ DWORD RTSSCoreControl::GetClientsNum()
 void RTSSCoreControl::Refresh()
 {
 	//init RivaTuner Statistics Server installation path
-
 	if (m_strInstallPath.IsEmpty())
 	{
 		HKEY hKey;
@@ -475,12 +481,10 @@ void RTSSCoreControl::Refresh()
 	}
 
 	//validate RivaTuner Statistics Server installation path
-
 	if (_taccess(m_strInstallPath, 0))
 		m_strInstallPath = "";
 
 	//init profile interface 
-
 	if (!m_strInstallPath.IsEmpty())
 	{
 		if (!m_profileInterface.IsInitialized())
@@ -488,12 +492,10 @@ void RTSSCoreControl::Refresh()
 	}
 
 	//init shared memory version
-
 	DWORD dwSharedMemoryVersion = GetSharedMemoryVersion();
 
 	//init max OSD text size, we'll use extended text slot for v2.7 and higher shared memory, 
 	//it allows displaying 4096 symbols /instead of 256 for regular text slot
-
 	DWORD dwMaxTextSize = (dwSharedMemoryVersion >= 0x00020007) ? sizeof(RTSS_SHARED_MEMORY::RTSS_SHARED_MEMORY_OSD_ENTRY().szOSDEx)
 		: sizeof(RTSS_SHARED_MEMORY::RTSS_SHARED_MEMORY_OSD_ENTRY().szOSD);
 
@@ -501,10 +503,10 @@ void RTSSCoreControl::Refresh()
 	// RivaTuner based products use similar CGroupedString object for convenient OSD text formatting and length control
 	// You may use it to format your OSD similar to RivaTuner's one or just use your own routines to format OSD text
 
-	BOOL bFormatTagsSupported = (dwSharedMemoryVersion >= 0x0002000b);
 	//text format tags are supported for shared memory v2.11 and higher
-	BOOL bObjTagsSupported = (dwSharedMemoryVersion >= 0x0002000c);
+	BOOL bFormatTagsSupported = (dwSharedMemoryVersion >= 0x0002000b);
 	//embedded object tags are supporoted for shared memory v2.12 and higher
+	BOOL bObjTagsSupported = (dwSharedMemoryVersion >= 0x0002000c);
 
 	CString strOSD;
 
@@ -524,26 +526,26 @@ void RTSSCoreControl::Refresh()
 		//overlap with text slots displayed by other applications, so in this demo we explicitly disable this tag usage if more than
 		//one client is currently rendering something in OSD
 
-		strOSD += "<A0=-5>";
-		//define align variable A[0] as right alignment by 5 symbols (positive is left, negative is right)
-		strOSD += "<A1=4>";
-		//define align variable A[1] as left alignment by 4 symbols (positive is left, negative is right)
-		strOSD += "<C0=FFA0A0>";
-		//define color variable C[0] as R=FF,G=A0 and B=A0
-		strOSD += "<C1=AEEA00>"; //CX Green
-		//define color variable C[1] as R=FF,G=00 and B=A0
-		strOSD += "<C2=FFFFFF>"; // White
-		//define color variable C[1] as R=FF,G=FF and B=FF
-		// CX blue
-		strOSD += "<C3=2297F3>"; //CX Blue
-		//define color variable C[1] as R=FF,G=FF and B=FF
-		// CX orange
-		strOSD += "<C4=F17D20>"; //CX Orange
-		//define color variable C[1] as R=FF,G=FF and B=FF
-		strOSD += "<S0=-50>";
-		//define size variable S[0] as 50% subscript (positive is superscript, negative is subscript)
-		strOSD += "<S1=50>";
-		//define size variable S[0] as 50% supercript (positive is superscript, negative is subscript)
+		//strOSD += "<A0=-5>";
+		////define align variable A[0] as right alignment by 5 symbols (positive is left, negative is right)
+		//strOSD += "<A1=4>";
+		////define align variable A[1] as left alignment by 4 symbols (positive is left, negative is right)
+		//strOSD += "<C0=FFA0A0>";
+		////define color variable C[0] as R=FF,G=A0 and B=A0
+		//strOSD += "<C1=AEEA00>"; //CX Green
+		////define color variable C[1] as R=FF,G=00 and B=A0
+		//strOSD += "<C2=FFFFFF>"; // White
+		////define color variable C[1] as R=FF,G=FF and B=FF
+		//// CX blue
+		//strOSD += "<C3=2297F3>"; //CX Blue
+		////define color variable C[1] as R=FF,G=FF and B=FF
+		//// CX orange
+		//strOSD += "<C4=F17D20>"; //CX Orange
+		////define color variable C[1] as R=FF,G=FF and B=FF
+		//strOSD += "<S0=-50>";
+		////define size variable S[0] as 50% subscript (positive is superscript, negative is subscript)
+		//strOSD += "<S1=50>";
+		////define size variable S[0] as 50% supercript (positive is superscript, negative is subscript)
 
 		strOSD += "\r";
 		//add \r just for this demo to make tagged text more readable in demo preview window, OSD ignores \r anyway
@@ -563,7 +565,6 @@ void RTSSCoreControl::Refresh()
 	}
 
 	BOOL bTruncated = FALSE;
-
 	strOSD += groupedString.Get(bTruncated, FALSE, m_bFormatTags ? "\t" : " \t: ");
 
 	// manage graphs
@@ -636,9 +637,11 @@ void RTSSCoreControl::Refresh()
 
 	if (!strOSD.IsEmpty())
 	{
-		BOOL bResult = UpdateOSD(strOSD);;
+		BOOL bResult = UpdateOSD(strOSD);
 		m_bConnected = bResult;
 	}
+	else
+		throw std::exception();
 }
 
 void RTSSCoreControl::AddOverlayEntry(CGroupedString* groupedString, OverlayEntry* entry, BOOL bFormatTagsSupported)
