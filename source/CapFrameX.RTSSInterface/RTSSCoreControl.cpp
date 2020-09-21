@@ -35,6 +35,42 @@ RTSSCoreControl::RTSSCoreControl()
 	m_bConnected = FALSE;
 }
 
+BOOL RTSSCoreControl::IsProcessDetected(DWORD processId)
+{
+	BOOL isProcessDetected = false;
+	HANDLE hMapFile = OpenFileMapping(FILE_MAP_ALL_ACCESS, FALSE, "RTSSSharedMemoryV2");
+
+	if (hMapFile)
+	{
+		LPVOID pMapAddr = MapViewOfFile(hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, 0);
+
+		LPRTSS_SHARED_MEMORY pMem = (LPRTSS_SHARED_MEMORY)pMapAddr;
+
+		if (pMem)
+		{
+			if ((pMem->dwSignature == 'RTSS') && (pMem->dwVersion >= 0x00020000))
+			{
+				for (DWORD dwEntry = 0; dwEntry < pMem->dwAppArrSize; dwEntry++)
+				{
+					RTSS_SHARED_MEMORY::LPRTSS_SHARED_MEMORY_APP_ENTRY pEntry = (RTSS_SHARED_MEMORY::LPRTSS_SHARED_MEMORY_APP_ENTRY)((LPBYTE)pMem + pMem->dwAppArrOffset + dwEntry * pMem->dwAppEntrySize);
+
+					if (pEntry->dwProcessID == processId)
+					{
+						isProcessDetected = true;
+						break;
+					}
+				}
+
+				UnmapViewOfFile(pMapAddr);
+			}
+
+			CloseHandle(hMapFile);
+		}
+	}
+
+	return isProcessDetected;
+}
+
 CString RTSSCoreControl::GetApiInfo(DWORD processId)
 {
 	CString api = "unknown";
@@ -302,7 +338,6 @@ DWORD RTSSCoreControl::EmbedGraph(DWORD dwOffset, FLOAT* lpBuffer, DWORD dwBuffe
 BOOL RTSSCoreControl::UpdateOSD(LPCSTR lpText)
 {
 	BOOL bResult = FALSE;
-
 	HANDLE hMapFile = OpenFileMapping(FILE_MAP_ALL_ACCESS, FALSE, "RTSSSharedMemoryV2");
 
 	if (hMapFile)
@@ -387,6 +422,76 @@ BOOL RTSSCoreControl::UpdateOSD(LPCSTR lpText)
 	return bResult;
 }
 
+BOOL RTSSCoreControl::IsOSDLocked()
+{
+	BOOL islocked = FALSE;
+	HANDLE hMapFile = OpenFileMapping(FILE_MAP_ALL_ACCESS, FALSE, "RTSSSharedMemoryV2");
+
+	if (hMapFile)
+	{
+		LPVOID pMapAddr = MapViewOfFile(hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, 0);
+		LPRTSS_SHARED_MEMORY pMem = (LPRTSS_SHARED_MEMORY)pMapAddr;
+
+		if (pMem)
+		{
+			if ((pMem->dwSignature == 'RTSS') &&
+				(pMem->dwVersion >= 0x00020000))
+			{
+				for (DWORD dwPass = 0; dwPass < 2; dwPass++)
+					//1st pass : find previously captured OSD slot
+					//2nd pass : otherwise find the first unused OSD slot and capture it
+				{
+					for (DWORD dwEntry = 1; dwEntry < pMem->dwOSDArrSize; dwEntry++)
+						//allow primary OSD clients (i.e. EVGA Precision / MSI Afterburner) to use the first slot exclusively, so third party
+						//applications start scanning the slots from the second one
+					{
+						RTSS_SHARED_MEMORY::LPRTSS_SHARED_MEMORY_OSD_ENTRY pEntry =
+							(RTSS_SHARED_MEMORY::LPRTSS_SHARED_MEMORY_OSD_ENTRY)((LPBYTE)pMem + pMem->dwOSDArrOffset + dwEntry * pMem->dwOSDEntrySize);
+
+						if (dwPass)
+						{
+							if (!strlen(pEntry->szOSDOwner))
+								strcpy_s(pEntry->szOSDOwner, sizeof(pEntry->szOSDOwner), "CapFrameX");
+						}
+
+						if (!strcmp(pEntry->szOSDOwner, "CapFrameX"))
+						{
+							if (pMem->dwVersion >= 0x00020007)
+								//use extended text slot for v2.7 and higher shared memory, it allows displaying 4096 symbols
+								//instead of 256 for regular text slot
+							{
+								if (pMem->dwVersion >= 0x0002000e)
+									//OSD locking is supported on v2.14 and higher shared memory
+								{
+									DWORD dwBusy = _interlockedbittestandset(&pMem->dwBusy, 0);
+									//bit 0 of this variable will be set if OSD is locked by renderer and cannot be refreshed
+									//at the moment
+									islocked = dwBusy == 0;
+								}
+							}
+
+							pMem->dwOSDFrame++;
+							break;
+						}
+					}
+				}
+			}
+			else
+				throw std::exception();
+
+			UnmapViewOfFile(pMapAddr);
+		}
+		else
+			throw std::exception();
+
+		CloseHandle(hMapFile);
+	}
+	else
+		throw std::exception();
+
+	return islocked;
+}
+
 void RTSSCoreControl::ReleaseOSD()
 {
 	HANDLE hMapFile = OpenFileMapping(FILE_MAP_ALL_ACCESS, FALSE, "RTSSSharedMemoryV2");
@@ -404,7 +509,8 @@ void RTSSCoreControl::ReleaseOSD()
 			{
 				for (DWORD dwEntry = 1; dwEntry < pMem->dwOSDArrSize; dwEntry++)
 				{
-					RTSS_SHARED_MEMORY::LPRTSS_SHARED_MEMORY_OSD_ENTRY pEntry = (RTSS_SHARED_MEMORY::LPRTSS_SHARED_MEMORY_OSD_ENTRY)((LPBYTE)pMem + pMem->dwOSDArrOffset + dwEntry * pMem->dwOSDEntrySize);
+					RTSS_SHARED_MEMORY::LPRTSS_SHARED_MEMORY_OSD_ENTRY pEntry 
+						= (RTSS_SHARED_MEMORY::LPRTSS_SHARED_MEMORY_OSD_ENTRY)((LPBYTE)pMem + pMem->dwOSDArrOffset + dwEntry * pMem->dwOSDEntrySize);
 
 					if (!strcmp(pEntry->szOSDOwner, "CapFrameX"))
 					{
@@ -416,9 +522,13 @@ void RTSSCoreControl::ReleaseOSD()
 
 			UnmapViewOfFile(pMapAddr);
 		}
+		else
+			throw std::exception();
 
 		CloseHandle(hMapFile);
 	}
+	else
+		throw std::exception();
 }
 
 DWORD RTSSCoreControl::GetClientsNum()
@@ -520,35 +630,14 @@ void RTSSCoreControl::Refresh()
 			// Add CX label
 			groupedString.Add("", "<C3>\nCX OSD<C>", "\n", " ");
 		}
-		//move to position 0,0 (in zoomed pixel units)
 
 		//Note: take a note that position is specified in absolute coordinates so use this tag with caution because your text may
 		//overlap with text slots displayed by other applications, so in this demo we explicitly disable this tag usage if more than
 		//one client is currently rendering something in OSD
+		//move to position 0,0 (in zoomed pixel units)
 
-		//strOSD += "<A0=-5>";
-		////define align variable A[0] as right alignment by 5 symbols (positive is left, negative is right)
-		//strOSD += "<A1=4>";
-		////define align variable A[1] as left alignment by 4 symbols (positive is left, negative is right)
-		//strOSD += "<C0=FFA0A0>";
-		////define color variable C[0] as R=FF,G=A0 and B=A0
-		//strOSD += "<C1=AEEA00>"; //CX Green
-		////define color variable C[1] as R=FF,G=00 and B=A0
-		//strOSD += "<C2=FFFFFF>"; // White
-		////define color variable C[1] as R=FF,G=FF and B=FF
-		//// CX blue
-		//strOSD += "<C3=2297F3>"; //CX Blue
-		////define color variable C[1] as R=FF,G=FF and B=FF
-		//// CX orange
-		//strOSD += "<C4=F17D20>"; //CX Orange
-		////define color variable C[1] as R=FF,G=FF and B=FF
-		//strOSD += "<S0=-50>";
-		////define size variable S[0] as 50% subscript (positive is superscript, negative is subscript)
-		//strOSD += "<S1=50>";
-		////define size variable S[0] as 50% supercript (positive is superscript, negative is subscript)
-
-		strOSD += "\r";
 		//add \r just for this demo to make tagged text more readable in demo preview window, OSD ignores \r anyway
+		strOSD += "\r";
 
 	  //Note: we could apply explicit alignment,size and color definitions when necerrary (e.g. <C=FFFFFF>, however
 	  //variables usage makes tagged text more compact and readable

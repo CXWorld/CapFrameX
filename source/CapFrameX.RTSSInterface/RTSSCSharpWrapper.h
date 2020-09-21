@@ -231,6 +231,16 @@ public:
 		}
 	}
 
+	bool IsOSDLocked()
+	{
+		return _coreControl->IsOSDLocked();
+	}
+
+	bool IsProcessDetected(UINT processId)
+	{
+		return _coreControl->IsProcessDetected(processId);
+	}
+
 	String^ GetApiInfo(UINT processId)
 	{
 		return gcnew String(_coreControl->GetApiInfo(processId));
