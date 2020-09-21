@@ -210,16 +210,17 @@
                 <ColumnDefinition Width="Auto"></ColumnDefinition>
                 <ColumnDefinition Width="Auto"></ColumnDefinition>
                 <ColumnDefinition Width="Auto"></ColumnDefinition>
+                <ColumnDefinition Width="Auto"></ColumnDefinition>
                 <ColumnDefinition Width="1*"></ColumnDefinition>
             </Grid.ColumnDefinitions>
 
-            <StackPanel Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="20 0 10 0" Orientation="Horizontal">
+            <StackPanel Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="10 0 10 0" Orientation="Horizontal">
                 <TextBlock VerticalAlignment="Center">Custom title:</TextBlock>
                 <ToggleButton x:Name="ShowCustomTitleToggleButton" Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
 								  ToolTip="Show custom title edit box" IsChecked="{Binding ShowCustomTitle}"/>
             </StackPanel>
 
-            <StackPanel Grid.Column="1" Margin="20 5 5 5" Orientation="Horizontal"
+            <StackPanel Grid.Column="1" Margin="10 5 5 5" Orientation="Horizontal"
                         ToolTip="Select up to 2 contexts to be shown">
                 <TextBlock Margin="0 0 0 0" VerticalAlignment="Center" HorizontalAlignment="Center">Contexts</TextBlock>
                 <materialDesign:PopupBox StaysOpen="True" ToolTipService.ShowDuration="25000" PlacementMode="TopAndAlignCentres">
@@ -257,7 +258,7 @@
                 </materialDesign:PopupBox>
             </StackPanel>
 
-            <StackPanel Grid.Column="2" Margin="20 5 5 5" Orientation="Horizontal" Visibility="{Binding IsBarChartTabActive, Converter={StaticResource TrueToVisibleConverter}}"
+            <StackPanel Grid.Column="2" Margin="10 5 5 5" Orientation="Horizontal" Visibility="{Binding IsBarChartTabActive, Converter={StaticResource TrueToVisibleConverter}}"
                         ToolTip="Select metrics to be shown">
                 <TextBlock Margin="0 0 0 0" VerticalAlignment="Center"  HorizontalAlignment="Center"> Metrics</TextBlock>
                 <materialDesign:PopupBox StaysOpen="True" ToolTipService.ShowDuration="25000" PlacementMode="TopAndAlignCentres">
@@ -307,21 +308,21 @@
                 </materialDesign:PopupBox>
             </StackPanel>
 
-            <StackPanel Grid.Column="2" Margin="20 0 0 0" VerticalAlignment="Center" Orientation="Horizontal"
+            <StackPanel Grid.Column="2" Margin="10 0 0 0" VerticalAlignment="Center" Orientation="Horizontal"
 						Visibility="{Binding IsBarChartTabActive, Converter={StaticResource TrueToCollapsedConverter}}">
                 <TextBlock VerticalAlignment="Center">Range slider:</TextBlock>
                 <ToggleButton Name="RangeSliderActiveToggleButton" Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
 							  IsChecked="{Binding IsRangeSliderActive}"/>
             </StackPanel>
 
-            <StackPanel Grid.Column="3" Margin="20 0 0 0" VerticalAlignment="Center" Orientation="Horizontal"
+            <StackPanel Grid.Column="3" Margin="10 0 0 0" VerticalAlignment="Center" Orientation="Horizontal"
 						Visibility="{Binding IsBarChartTabActive, Converter={StaticResource TrueToVisibleConverter}}">
                 <TextBlock VerticalAlignment="Center">Grouping:</TextBlock>
                 <ToggleButton Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
 							  ToolTip="Sort entries by game first" IsChecked="{Binding UseComparisonGrouping}"/>
             </StackPanel>
 
-            <StackPanel Grid.Column="4" VerticalAlignment="Center" Margin="25 0 0 0" Orientation="Horizontal"
+            <StackPanel Grid.Column="4" VerticalAlignment="Center" Margin="15 0 0 0" Orientation="Horizontal"
 						Visibility="{Binding IsBarChartTabActive, Converter={StaticResource TrueToVisibleConverter}}">
                 <ComboBox Width="80" Margin="0 0 0 10" materialDesign:HintAssist.Hint="Sort metric" materialDesign:ComboBoxAssist.ClassicMode="True" materialDesign:HintAssist.IsFloating="True"
                           ItemsSource="{Binding SortMetricItemsSource}" SelectedItem="{Binding SelectedSortMetric}">
@@ -342,6 +343,12 @@
                 <TextBlock VerticalAlignment="Center">Legend:</TextBlock>
                 <ToggleButton Name="ContextLegendActiveToggleButton" Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
 								  ToolTip="Show context legend" IsChecked="{Binding IsContextLegendActive}"/>
+            </StackPanel>
+            <StackPanel Grid.Column="5" Margin="10 0 0 0" VerticalAlignment="Center" Orientation="Horizontal"
+						Visibility="{Binding IsBarChartTabActive, Converter={StaticResource TrueToVisibleConverter}}">
+                <TextBlock VerticalAlignment="Center">Relative Mode:</TextBlock>
+                <ToggleButton Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
+							  ToolTip="Toggle fixed relative mode. Target value selectable by mouse click." IsChecked="{Binding UseComparisonRelativeMode}"/>
             </StackPanel>
 
         </Grid>

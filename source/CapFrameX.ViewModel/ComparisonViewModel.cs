@@ -77,6 +77,7 @@ namespace CapFrameX.ViewModel
         private string _currentGameName;
         private bool _hasUniqueGameNames;
         private bool _useComparisonGrouping;
+        private bool _useComparisonRelativeMode;
         private bool _isRangeSliderActive;
         private bool _messageDialogContentIsOpen;
         private MessageDialog _messageDialogContent;
@@ -416,6 +417,16 @@ namespace CapFrameX.ViewModel
                 _useComparisonGrouping = value;
                 RaisePropertyChanged();
                 OnComparisonGroupingChanged();
+            }
+        }
+
+        public bool UseComparisonRelativeMode
+        {
+            get { return _useComparisonRelativeMode; }
+            set
+            {
+                _useComparisonRelativeMode = value;
+                RaisePropertyChanged();
             }
         }
 

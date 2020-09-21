@@ -904,54 +904,30 @@ namespace LiveCharts.Wpf.Charts.Base
 		}
 
 		private bool _isFixedRelativeModeActive = false;
-		private string _fixedLabel = string.Empty;
+
 
 		internal void AttachRelativeModeEventTo(FrameworkElement element, string label)
 		{
+			if(!_isFixedRelativeModeActive)
+			{ 
 			element.MouseEnter -= (s, e) => RelativeModeMouseEnter(label);
 			element.MouseLeave -= (s, e) => RelativeModeDataMouseLeave();
 
 			element.MouseEnter += (s, e) => RelativeModeMouseEnter(label);
 			element.MouseLeave += (s, e) => RelativeModeDataMouseLeave();
-
-            // Just toggling the mode, no visual feedback
-            element.MouseLeftButtonDown -= (s, e) => FixedRelativeModeSwitch(label); 
-            element.MouseLeftButtonDown += (s, e) => FixedRelativeModeSwitch(label);
-        }
+			}
+			else
+			{ 
+			// Just toggling the mode, no visual feedback
+			element.MouseLeftButtonDown -= (s, e) => RelativeModeMouseEnter(label);
+			element.MouseLeftButtonDown += (s, e) => RelativeModeMouseEnter(label);
+			}
+		}
 
         private static List<List<double>> _backupChartValues = new List<List<double>>();
 
-
-		private void FixedRelativeModeSwitch(string label)
-        {
-			if (!_isFixedRelativeModeActive)
-			{
-				_fixedLabel = label;
-				_isFixedRelativeModeActive = true;			
-			}
-			else
-			{
-				if (label == _fixedLabel)
-				{
-					_fixedLabel = string.Empty;
-					_isFixedRelativeModeActive = false;					
-				}
-				else
-				{
-					_isFixedRelativeModeActive = false;
-					RelativeModeMouseEnter(label);
-					_fixedLabel = label;
-					_isFixedRelativeModeActive = true;
-				}
-			}
-        }
-
-
 		private void RelativeModeMouseEnter(string label)
 		{
-			if (_isFixedRelativeModeActive) return;
-
-
 			_backupChartValues.Clear();
 
 			foreach (var item in this.Series)
@@ -987,8 +963,6 @@ namespace LiveCharts.Wpf.Charts.Base
 
 		private void RelativeModeDataMouseLeave()
 		{
-			if (_isFixedRelativeModeActive) return;
-
 			if (_backupChartValues.Any())
 			{
 				for (int i = 0; i < Series.Count; i++)
