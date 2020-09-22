@@ -14,6 +14,7 @@ namespace CapFrameX.Contracts.RTSS
         Tuple<double, double> GetCurrentFramerate(uint processId);
         Tuple<double, double> GetCurrentFramerateFromForegroundWindow();
         Task CheckRTSSRunningAndRefresh();
+        Task CheckRTSSRunning();
         void ResetOSD();
         bool IsOSDLocked();
         void ReleaseOSD();

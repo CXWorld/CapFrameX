@@ -406,24 +406,19 @@ BOOL RTSSCoreControl::UpdateOSD(LPCSTR lpText)
 						break;
 				}
 			}
-			else
-				throw std::exception();
 
 			UnmapViewOfFile(pMapAddr);
 		}
-		else
-			throw std::exception();
 
 		CloseHandle(hMapFile);
 	}
-	else
-		throw std::exception();
 
 	return bResult;
 }
 
 BOOL RTSSCoreControl::IsOSDLocked()
 {
+	BOOL bResult = FALSE;
 	BOOL islocked = FALSE;
 	HANDLE hMapFile = OpenFileMapping(FILE_MAP_ALL_ACCESS, FALSE, "RTSSSharedMemoryV2");
 
@@ -471,23 +466,21 @@ BOOL RTSSCoreControl::IsOSDLocked()
 							}
 
 							pMem->dwOSDFrame++;
+							bResult = TRUE;
 							break;
 						}
 					}
+
+					if (bResult)
+						break;
 				}
 			}
-			else
-				throw std::exception();
 
 			UnmapViewOfFile(pMapAddr);
 		}
-		else
-			throw std::exception();
 
 		CloseHandle(hMapFile);
 	}
-	else
-		throw std::exception();
 
 	return islocked;
 }
@@ -522,13 +515,9 @@ void RTSSCoreControl::ReleaseOSD()
 
 			UnmapViewOfFile(pMapAddr);
 		}
-		else
-			throw std::exception();
 
 		CloseHandle(hMapFile);
 	}
-	else
-		throw std::exception();
 }
 
 DWORD RTSSCoreControl::GetClientsNum()
@@ -636,6 +625,27 @@ void RTSSCoreControl::Refresh()
 		//one client is currently rendering something in OSD
 		//move to position 0,0 (in zoomed pixel units)
 
+		//strOSD += "<A0=-5>";
+		////define align variable A[0] as right alignment by 5 symbols (positive is left, negative is right)
+		//strOSD += "<A1=4>";
+		////define align variable A[1] as left alignment by 4 symbols (positive is left, negative is right)
+		//strOSD += "<C0=FFA0A0>";
+		////define color variable C[0] as R=FF,G=A0 and B=A0
+		//strOSD += "<C1=AEEA00>"; //CX Green
+		////define color variable C[1] as R=FF,G=00 and B=A0
+		//strOSD += "<C2=FFFFFF>"; // White
+		////define color variable C[1] as R=FF,G=FF and B=FF
+		//// CX blue
+		//strOSD += "<C3=2297F3>"; //CX Blue
+		////define color variable C[1] as R=FF,G=FF and B=FF
+		//// CX orange
+		//strOSD += "<C4=F17D20>"; //CX Orange
+		////define color variable C[1] as R=FF,G=FF and B=FF
+		//strOSD += "<S0=-50>";
+		////define size variable S[0] as 50% subscript (positive is superscript, negative is subscript)
+		//strOSD += "<S1=50>";
+		////define size variable S[0] as 50% supercript (positive is superscript, negative is subscript)
+
 		//add \r just for this demo to make tagged text more readable in demo preview window, OSD ignores \r anyway
 		strOSD += "\r";
 
@@ -729,8 +739,6 @@ void RTSSCoreControl::Refresh()
 		BOOL bResult = UpdateOSD(strOSD);
 		m_bConnected = bResult;
 	}
-	else
-		throw std::exception();
 }
 
 void RTSSCoreControl::AddOverlayEntry(CGroupedString* groupedString, OverlayEntry* entry, BOOL bFormatTagsSupported)

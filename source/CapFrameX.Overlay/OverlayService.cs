@@ -75,20 +75,38 @@ namespace CapFrameX.Overlay
                 {
                     if (isActive)
                     {
-                        TryKillRTSS();
-                        // OSD status logging
-                        Task.Run(async () =>
-                        {
-                            var processId = await _rTSSService.ProcessIdStream.Take(1);
-                            _logger.LogInformation("Is process {detectedProcess} detected: {isDetected}", processId, _rTSSService.IsProcessDetected(processId));
-                            _logger.LogInformation("Is OS locked: {isLocked}", _rTSSService.IsOSDLocked());
-                        });
+                        TryCloseRTSS();
+                        _rTSSService.CheckRTSSRunning().Wait();
                         _rTSSService.ResetOSD();
                         return sensorService.OnDictionaryUpdated
                             .SelectMany(_ => _overlayEntryProvider.GetOverlayEntries());
                     }
                     else
                     {
+                        // OSD status logging
+                        Task.Run(async () =>
+                        {
+                            var processId = await _rTSSService.ProcessIdStream.Take(1);
+                            try
+                            {
+                                _logger.LogInformation("Is process {detectedProcess} detected: {isDetected}", processId, _rTSSService.IsProcessDetected(processId));
+                            }
+                            catch
+                            {
+                                _logger.LogError("Error while checking RTSS core process detection");
+                            }
+
+                            //try
+                            //{
+                            //    _logger.LogInformation("Is OS locked: {isLocked}", _rTSSService.IsOSDLocked());
+                            //}
+                            //catch
+                            //{
+                            //    _logger.LogError("Error while checking RTSS core OSD lock status");
+                            //}
+
+                        }).Wait();
+
                         _rTSSService.ReleaseOSD();
                         return Observable.Empty<IOverlayEntry[]>();
                     }
@@ -126,14 +144,14 @@ namespace CapFrameX.Overlay
             });
         }
 
-        private void TryKillRTSS()
+        private void TryCloseRTSS()
         {
             try
             {
                 var proc = Process.GetProcessesByName("RTSS");
                 if (proc.Any())
                 {
-                    proc[0].Kill();
+                    proc[0].CloseMainWindow();
                 }
             }
             catch { }
