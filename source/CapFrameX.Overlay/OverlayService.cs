@@ -75,6 +75,7 @@ namespace CapFrameX.Overlay
                 {
                     if (isActive)
                     {
+                        TryKillRTSS();
                         // OSD status logging
                         Task.Run(async () =>
                         {
@@ -123,6 +124,19 @@ namespace CapFrameX.Overlay
                 if (t == 0)
                     _rTSSService.SetIsCaptureTimerActive(false);
             });
+        }
+
+        private void TryKillRTSS()
+        {
+            try
+            {
+                var proc = Process.GetProcessesByName("RTSS");
+                if (proc.Any())
+                {
+                    proc[0].Kill();
+                }
+            }
+            catch { }
         }
 
         public void StartCaptureTimer()

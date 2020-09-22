@@ -65,7 +65,7 @@
                         <ScrollViewer VerticalScrollBarVisibility="Auto">
                             <lvc:CartesianChart Grid.Row="0" VerticalAlignment="Top" MaxWidth="1000" Margin="10" Series="{Binding ComparisonRowChartSeriesCollection}" Height="{Binding BarChartHeight}"
 											Visibility="{Binding HasComparisonItems, Converter={StaticResource TrueToVisibleConverter}}" DisableAnimations="True"
-											Hoverable="False" DataTooltip="{x:Null}" LegendLocation="Top">
+											Hoverable="False" DataTooltip="{x:Null}" LegendLocation="Top" UseRelativeMode="{Binding UseComparisonRelativeMode, Mode=TwoWay}">
                                 <lvc:CartesianChart.AxisX>
                                     <lvc:Axis MinValue="0" MaxValue="{Binding BarMaxValue}" Foreground="Transparent"></lvc:Axis>
                                 </lvc:CartesianChart.AxisX>
