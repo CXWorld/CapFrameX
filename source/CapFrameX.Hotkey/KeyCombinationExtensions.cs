@@ -39,9 +39,7 @@ namespace CapFrameX.Hotkey
 				var state = KeyboardState.GetCurrent();
 				var action = reset;
 				var maxLength = 0;
-				int modifiersPressed = Convert.ToInt32(state.IsDown(Keys.Control))
-						+ Convert.ToInt32(state.IsDown(Keys.Alt))
-						+ Convert.ToInt32(state.IsDown(Keys.Shift));
+				int modifiersPressed = CountTrue(state.IsDown(Keys.Control), state.IsDown(Keys.Alt), state.IsDown(Keys.Shift));
 
 				foreach (var current in element)
 				{
@@ -53,6 +51,11 @@ namespace CapFrameX.Hotkey
 				}
 				action?.Invoke();
 			};
+		}
+
+		public static int CountTrue(params bool[] args)
+		{
+			return args.Count(t => t);
 		}
 	}
 }
