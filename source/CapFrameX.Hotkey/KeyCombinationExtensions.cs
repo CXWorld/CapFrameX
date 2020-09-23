@@ -3,6 +3,7 @@ using Gma.System.MouseKeyHook.Implementation;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows.Forms;
 
 namespace CapFrameX.Hotkey
 {
@@ -38,10 +39,14 @@ namespace CapFrameX.Hotkey
 				var state = KeyboardState.GetCurrent();
 				var action = reset;
 				var maxLength = 0;
+				int modifiersPressed = Convert.ToInt32(state.IsDown(Keys.Control))
+						+ Convert.ToInt32(state.IsDown(Keys.Alt))
+						+ Convert.ToInt32(state.IsDown(Keys.Shift));
+
 				foreach (var current in element)
 				{
-					var matches = current.Key.Chord.All(state.IsDown);
-					if (!matches) continue;
+					if (current.Key.ChordLength < modifiersPressed) continue;
+					if (!current.Key.Chord.All(state.IsDown)) continue;					
 					if (maxLength > current.Key.ChordLength) continue;
 					maxLength = current.Key.ChordLength;
 					action = current.Value;
