@@ -1342,6 +1342,10 @@ namespace CapFrameX.ViewModel
                         {
                             AddComparisonItem(recordInfo);
                         }
+                        else if (dropInfo.Data is IEnumerable<IFileRecordInfo> recordInfos)
+                        {
+                            recordInfos.ForEach(info => AddComparisonItem(info));
+                        }
 
                         if (dropInfo.Data is ComparisonRecordInfoWrapper wrappedRecordInfo)
                         {
