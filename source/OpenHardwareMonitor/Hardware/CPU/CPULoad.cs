@@ -50,7 +50,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
         private static bool GetTimes(out long[] idle, out long[] total)
         {
             SystemProcessorPerformanceInformation[] informations = new
-              SystemProcessorPerformanceInformation[64];
+              SystemProcessorPerformanceInformation[128];
 
             int size = Marshal.SizeOf(typeof(SystemProcessorPerformanceInformation));
 
@@ -67,8 +67,11 @@ namespace OpenHardwareMonitor.Hardware.CPU
 
             for (int i = 0; i < idle.Length; i++)
             {
-                idle[i] = informations[i].IdleTime;
-                total[i] = informations[i].KernelTime + informations[i].UserTime;
+                if (i < informations.Length)
+                {
+                    idle[i] = informations[i].IdleTime;
+                    total[i] = informations[i].KernelTime + informations[i].UserTime;
+                }
             }
 
             return true;
@@ -141,9 +144,12 @@ namespace OpenHardwareMonitor.Hardware.CPU
                     long index = cpuid[i][j].Thread;
                     if (index < newIdleTimes.Length && index < totalTimes.Length)
                     {
-                        float idle =
-                          (float)(newIdleTimes[index] - this.idleTimes[index]) /
-                          (float)(newTotalTimes[index] - this.totalTimes[index]);
+                        float idle = 0f;
+                        if (index < newIdleTimes.Length && index < newTotalTimes.Length)
+                        {
+                            idle = (float)(newIdleTimes[index] - this.idleTimes[index]) /
+                            (float)(newTotalTimes[index] - this.totalTimes[index]);
+                        }
                         value = idle;
                         total += idle;
                         count++;
