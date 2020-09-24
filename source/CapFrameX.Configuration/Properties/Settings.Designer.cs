@@ -266,9 +266,9 @@ namespace CapFrameX.Configuration.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("0")]
-        public int CaptureTime {
+        public double CaptureTime {
             get {
-                return ((int)(this["CaptureTime"]));
+                return ((double)(this["CaptureTime"]));
             }
             set {
                 this["CaptureTime"] = value;

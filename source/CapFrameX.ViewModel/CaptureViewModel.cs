@@ -21,6 +21,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
@@ -67,6 +68,7 @@ namespace CapFrameX.ViewModel
         private string _captureStateInfo = string.Empty;
         private string _captureTimeString = "0";
         private string _captureStartDelayString = "0";
+        private double _captureTime;
         private IKeyboardMouseEvents _globalCaptureHookEvent;
         private string _loggerOutput = string.Empty;
         private bool _fillArchive = false;
@@ -136,8 +138,18 @@ namespace CapFrameX.ViewModel
             {
                 _captureTimeString = value;
 
-                if (int.TryParse(_captureTimeString, out _))
-                    _appConfiguration.CaptureTime = Convert.ToInt32(value);
+                if (double.TryParse(_captureTimeString, out _))
+                    _appConfiguration.CaptureTime = Convert.ToDouble(value, CultureInfo.InvariantCulture);
+                RaisePropertyChanged();
+            }
+        }
+
+        public double CaptureTime
+        {
+            get { return _appConfiguration.CaptureTime; }
+            set
+            {
+                _captureTime = value;
                 RaisePropertyChanged();
             }
         }
@@ -291,7 +303,7 @@ namespace CapFrameX.ViewModel
             CaptureStateInfo = "Service ready..." + Environment.NewLine +
                 $"Press {CaptureHotkeyString} to start capture of the running process.";
             SelectedSoundMode = _appConfiguration.HotkeySoundMode;
-            CaptureTimeString = _appConfiguration.CaptureTime.ToString();
+            CaptureTimeString = _appConfiguration.CaptureTime.ToString(CultureInfo.InvariantCulture);
             _disposableHeartBeat = GetListUpdatHeartBeat();
 
             SubscribeToUpdateProcessIgnoreList();
@@ -497,9 +509,9 @@ namespace CapFrameX.ViewModel
             _sensorService.StartSensorLogging();
 
             _captureData = new List<string>();
-            bool autoTermination = Convert.ToInt32(CaptureTimeString) > 0;
-            double delayCapture = Convert.ToInt32(CaptureStartDelayString);
-            double captureTime = Convert.ToInt32(CaptureTimeString) + delayCapture;
+            bool autoTermination = CaptureTime > 0;
+            //double delayCapture = Convert.ToDouble(CaptureStartDelayString, CultureInfo.InvariantCulture);
+            double captureTime = CaptureTime /*+ delayCapture*/;
             bool intializedStartTime = false;
             double captureDataArchiveLastTime = 0;
 
@@ -543,7 +555,7 @@ namespace CapFrameX.ViewModel
                 AddLoggerEntry("Starting countdown...");
 
                 // Start overlay countdown timer
-                _overlayService.StartCountdown(Convert.ToInt32(CaptureTimeString));
+                _overlayService.StartCountdown(CaptureTime);
                 _cancellationTokenSource = new CancellationTokenSource();
 
                 // data timer
@@ -604,13 +616,13 @@ namespace CapFrameX.ViewModel
         private async Task SetTaskDelayData()
         {
             await Task.Delay(TimeSpan.FromMilliseconds(PRESICE_OFFSET +
-                1000 * Convert.ToInt32(CaptureTimeString)));
+                1000 * CaptureTime));
         }
 
         private async Task SetTaskDelaySound()
         {
             await Task.Delay(TimeSpan.FromMilliseconds(
-                1000 * Convert.ToInt32(CaptureTimeString)));
+                1000 * CaptureTime));
         }
 
         private bool StartCaptureService()

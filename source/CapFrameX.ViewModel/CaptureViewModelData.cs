@@ -111,8 +111,8 @@ namespace CapFrameX.ViewModel
                 AddLoggerEntry($"Wrong capture time string. Value will be set to default (0).");
             }
 
-            var definedTime = Convert.ToInt32(CaptureTimeString);
-            bool autoTermination = Convert.ToInt32(CaptureTimeString) > 0;
+            var definedTime = CaptureTime;
+            bool autoTermination = CaptureTime > 0;
 
             if (autoTermination)
             {
