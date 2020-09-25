@@ -234,13 +234,19 @@ namespace CapFrameX.ViewModel
                 AddLoggerEntry($"Length captured data QPCTime start to end with buffer in sec: " +
                     $"{ Math.Round(unionCaptureDataEndTime - startTime, 2)}");
 
+                double normalizeTimeOffset = 0;
+
                 for (int i = 0; i < unionCaptureData.Count; i++)
                 {
-                    var currentStartTime = GetStartTimeFromDataLine(unionCaptureData[i]);
-                    var normalizeTimeOffset = captureInterval.Count >= 2 ? GetStartTimeFromDataLine(captureInterval[1]) - startTime : 0;
+                    var currentStartTime = GetStartTimeFromDataLine(unionCaptureData[i]);                   
 
                     if (currentStartTime >= startTime && Math.Round((currentStartTime - startTime), 2) <= definedTime + normalizeTimeOffset)
+                    { 
                         captureInterval.Add(unionCaptureData[i]);
+
+                        if (captureInterval.Count == 2)
+                            normalizeTimeOffset = GetStartTimeFromDataLine(captureInterval[1]) - startTime;
+                    }
                 }
             }
 
