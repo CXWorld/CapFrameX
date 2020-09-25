@@ -237,8 +237,9 @@ namespace CapFrameX.ViewModel
                 for (int i = 0; i < unionCaptureData.Count; i++)
                 {
                     var currentStartTime = GetStartTimeFromDataLine(unionCaptureData[i]);
+                    var normalizeTimeOffset = captureInterval.Count >= 2 ? GetStartTimeFromDataLine(captureInterval[1]) - startTime : 0;
 
-                    if (currentStartTime >= startTime && currentStartTime - startTime <= definedTime)
+                    if (currentStartTime >= startTime && Math.Round((currentStartTime - startTime), 2) <= definedTime + normalizeTimeOffset)
                         captureInterval.Add(unionCaptureData[i]);
                 }
             }
