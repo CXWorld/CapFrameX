@@ -240,8 +240,8 @@ namespace CapFrameX.ViewModel
                 {
                     var currentStartTime = GetStartTimeFromDataLine(unionCaptureData[i]);
 
-                    var currentRecordTime = Math.Round(currentStartTime - startTime, 2);
-                    var maxRecordTime = Math.Round(definedTime + normalizeTimeOffset, 2);
+                    var currentRecordTime = Math.Round(currentStartTime - startTime, 3);
+                    var maxRecordTime = Math.Round(definedTime + normalizeTimeOffset, 3);
 
                     if (currentStartTime >= startTime && currentRecordTime <= maxRecordTime)
                     { 

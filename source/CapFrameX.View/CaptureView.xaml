@@ -123,11 +123,11 @@
                     </Binding>
                 </TextBox>
                 <TextBox Grid.Row="0" Grid.Column="1" Width="132" wpf:HintAssist.Hint="Capture time [s]" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
-					 Margin="50 0 0 0" FontSize="14" Text="{Binding CaptureTimeString, UpdateSourceTrigger=PropertyChanged}"
+					 Margin="50 0 0 0" FontSize="14" Text="{Binding CaptureTimeString, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding AreButtonsActive}"
                      PreviewMouseDown="TextBox_PreviewMouseDown" PreviewKeyDown="CaptureTimeTextBox_PreviewKeyDown" MouseLeave="TextBox_MouseLeave" ToolTip="0 = no limit"
                      PreviewTextInput="NumberValidationTextBox" />
-                <ComboBox Margin="50 40 0 0" Grid.Row="0" Grid.Column="2" 
-					  materialDesign:ComboBoxAssist.ClassicMode="True"
+                <StackPanel Margin="50 40 0 0" Grid.Row="0" Grid.Column="2" Grid.RowSpan="2" IsEnabled="{Binding AreButtonsActive}">
+                <ComboBox materialDesign:ComboBoxAssist.ClassicMode="True"
 					  materialDesign:HintAssist.Hint="Sensor polling [ms]"
 					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="200" Width="110"
 					  MouseLeave="LoggingPeriodComboBox_MouseLeave" FontSize="14"
@@ -143,8 +143,8 @@
                         Polling period [ms] for sensor logging
                     </ComboBox.ToolTip>
                 </ComboBox>
-                <StackPanel Margin="50 5 0 0" Grid.Row="1" Grid.Column="2" VerticalAlignment="Center" Orientation="Horizontal"                                >
-                    <CheckBox IsEnabled="{Binding AreButtonsActive}" IsChecked="{Binding UseSensorLogging, Mode=TwoWay}">
+                <StackPanel Margin="0 10 0 0" VerticalAlignment="Center" Orientation="Horizontal"                                >
+                    <CheckBox IsChecked="{Binding UseSensorLogging, Mode=TwoWay}">
                         <CheckBox.ToolTip>
                             <ToolTip MaxWidth="250">
                                 <TextBlock Text="Logs various sensor data like CPU and GPU load/power for analysis"                               
@@ -153,6 +153,7 @@
                         </CheckBox.ToolTip>
                     </CheckBox>
                     <TextBlock Margin="10 0 0 0" VerticalAlignment="Center" Text="Log sensors"/>
+                </StackPanel>
                 </StackPanel>
                 <ComboBox Grid.Row="0" Grid.Column="3" Width="132" Margin="50 0 0 0" materialDesign:HintAssist.Hint="Hotkey sound mode"
 						materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="200" FontSize="14" 

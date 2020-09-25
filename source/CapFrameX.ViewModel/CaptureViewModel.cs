@@ -484,7 +484,7 @@ namespace CapFrameX.ViewModel
                 _sensorService.StopSensorLogging();
                 var context = TaskScheduler.FromCurrentSynchronizationContext();
 
-                CaptureStateInfo = "Creating capture file...";
+                CaptureStateInfo = "Creating capture file..." + Environment.NewLine;
                 _overlayService.StopCaptureTimer();
                 _overlayService.SetCaptureServiceStatus("Processing data");
 
@@ -582,7 +582,7 @@ namespace CapFrameX.ViewModel
 
                             // turn locking on 
                             _dataOffsetRunning = true;
-                            CaptureStateInfo = "Creating capture file...";
+                            CaptureStateInfo = "Creating capture file..." + Environment.NewLine;
 
                             // update overlay
                             _overlayService.SetCaptureServiceStatus("Processing data");
