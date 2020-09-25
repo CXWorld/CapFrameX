@@ -106,7 +106,7 @@ namespace CapFrameX.Sensor
                     });
 
             stopwatch.Stop();
-            _logger.LogInformation(this.GetType().Name + " {initializationTime}s initialization time", Math.Round(stopwatch.ElapsedMilliseconds * 1E-03), 1);
+            _logger.LogInformation(GetType().Name + " {initializationTime}s initialization time", Math.Round(stopwatch.ElapsedMilliseconds * 1E-03), 1);
         }
 
         public void SetLoggingInterval(TimeSpan timeSpan)
@@ -208,16 +208,26 @@ namespace CapFrameX.Sensor
             lock (_dictLock)
                 _overlayEntryDict.Clear();
 
-            var sensors = GetSensors();
-            foreach (var sensor in sensors)
+            try
             {
-                var dictEntry = CreateOverlayEntry(sensor);
-                var id = sensor.Identifier.ToString();
-                lock (_dictLock)
+                var sensors = GetSensors();
+                if (sensors != null)
                 {
-                    if (!_overlayEntryDict.ContainsKey(id))
-                        _overlayEntryDict.Add(id, dictEntry);
+                    foreach (var sensor in sensors)
+                    {
+                        var dictEntry = CreateOverlayEntry(sensor);
+                        var id = sensor.Identifier.ToString();
+                        lock (_dictLock)
+                        {
+                            if (!_overlayEntryDict.ContainsKey(id))
+                                _overlayEntryDict.Add(id, dictEntry);
+                        }
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error while getting sensors.");
             }
         }
 
@@ -585,11 +595,21 @@ namespace CapFrameX.Sensor
         private (DateTime, Dictionary<ISensor, float>) GetSensorValues()
         {
             var dict = new ConcurrentDictionary<ISensor, float>();
-            var sensors = GetSensors();
-            foreach (var sensor in sensors)
+            try
             {
-                if (sensor.Value != null)
-                    dict.TryAdd(sensor, sensor.Value.Value);
+                var sensors = GetSensors();
+                if (sensors != null)
+                {
+                    foreach (var sensor in sensors)
+                    {
+                        if (sensor.Value != null)
+                            dict.TryAdd(sensor, sensor.Value.Value);
+                    }
+                }
+            }
+            catch 
+            {
+                // Don't write periodic log entries
             }
 
             return (DateTime.UtcNow, dict.ToDictionary(x => x.Key, x => x.Value));

@@ -108,6 +108,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
                   SensorType.Load, this, settings);
             maxLoad = new Sensor("CPU Max", coreLoads.Length + 1, SensorType.Load, this, settings);
             cpuLoad = new CPULoad(cpuid);
+
             if (cpuLoad.IsAvailable)
             {
                 foreach (Sensor sensor in coreLoads)

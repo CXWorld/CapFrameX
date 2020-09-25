@@ -427,17 +427,17 @@ namespace OpenHardwareMonitor.Hardware.CPU
         protected override uint[] GetMSRs()
         {
             return new[] {
-        MSR_PLATFORM_INFO,
-        IA32_PERF_STATUS ,
-        IA32_THERM_STATUS_MSR,
-        IA32_TEMPERATURE_TARGET,
-        IA32_PACKAGE_THERM_STATUS,
-        MSR_RAPL_POWER_UNIT,
-        MSR_PKG_ENERY_STATUS,
-        MSR_DRAM_ENERGY_STATUS,
-        MSR_PP0_ENERY_STATUS,
-        MSR_PP1_ENERY_STATUS
-      };
+            MSR_PLATFORM_INFO,
+            IA32_PERF_STATUS ,
+            IA32_THERM_STATUS_MSR,
+            IA32_TEMPERATURE_TARGET,
+            IA32_PACKAGE_THERM_STATUS,
+            MSR_RAPL_POWER_UNIT,
+            MSR_PKG_ENERY_STATUS,
+            MSR_DRAM_ENERGY_STATUS,
+            MSR_PP0_ENERY_STATUS,
+            MSR_PP1_ENERY_STATUS
+          };
         }
 
         public override string GetReport()

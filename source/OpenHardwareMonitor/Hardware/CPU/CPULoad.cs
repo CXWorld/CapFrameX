@@ -45,8 +45,6 @@ namespace OpenHardwareMonitor.Hardware.CPU
         private readonly float[] coreLoads;
         private float maxLoad;
 
-        private readonly bool available;
-
         private static bool GetTimes(out long[] idle, out long[] total)
         {
             SystemProcessorPerformanceInformation[] informations = new
@@ -92,13 +90,10 @@ namespace OpenHardwareMonitor.Hardware.CPU
                 this.totalTimes = null;
             }
             if (idleTimes != null)
-                available = true;
+                IsAvailable = true;
         }
 
-        public bool IsAvailable
-        {
-            get { return available; }
-        }
+        public bool IsAvailable { get; set; }
 
         public float GetMaxLoad()
         {
@@ -150,6 +145,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
                             idle = (float)(newIdleTimes[index] - this.idleTimes[index]) /
                             (float)(newTotalTimes[index] - this.totalTimes[index]);
                         }
+
                         value = idle;
                         total += idle;
                         count++;
