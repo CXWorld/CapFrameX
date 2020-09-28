@@ -128,7 +128,7 @@ namespace CapFrameX.Overlay
             _logger.LogInformation(GetType().Name + " {initializationTime}s initialization time", Math.Round(stopwatch.ElapsedMilliseconds * 1E-03, 1));
         }
 
-        public void StartCountdown(int seconds)
+        public void StartCountdown(double seconds)
         {
             IObservable<long> obs = Extensions.ObservableExtensions.CountDown(seconds);
             _rTSSService.SetIsCaptureTimerActive(true);

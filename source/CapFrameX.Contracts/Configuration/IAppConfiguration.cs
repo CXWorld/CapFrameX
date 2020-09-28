@@ -46,7 +46,7 @@ namespace CapFrameX.Contracts.Configuration
 
 		string HotkeySoundMode { get; set; }
 
-		int CaptureTime { get; set; }
+		double CaptureTime { get; set; }
 
 		double VoiceSoundLevel { get; set; }
 

@@ -18,7 +18,7 @@ namespace CapFrameX.Contracts.Overlay
 
 		void SetCaptureTimerValue(int t);
 
-		void StartCountdown(int seconds);
+		void StartCountdown(double seconds);
 
 		void StartCaptureTimer();
 

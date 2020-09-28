@@ -111,8 +111,8 @@ namespace CapFrameX.ViewModel
                 AddLoggerEntry($"Wrong capture time string. Value will be set to default (0).");
             }
 
-            var definedTime = Convert.ToInt32(CaptureTimeString);
-            bool autoTermination = Convert.ToInt32(CaptureTimeString) > 0;
+            var definedTime = CaptureTime;
+            bool autoTermination = CaptureTime > 0;
 
             if (autoTermination)
             {
@@ -234,12 +234,22 @@ namespace CapFrameX.ViewModel
                 AddLoggerEntry($"Length captured data QPCTime start to end with buffer in sec: " +
                     $"{ Math.Round(unionCaptureDataEndTime - startTime, 2)}");
 
+                double normalizeTimeOffset = 0;
+
                 for (int i = 0; i < unionCaptureData.Count; i++)
                 {
                     var currentStartTime = GetStartTimeFromDataLine(unionCaptureData[i]);
 
-                    if (currentStartTime >= startTime && currentStartTime - startTime <= definedTime)
+                    var currentRecordTime = Math.Round(currentStartTime - startTime, 3);
+                    var maxRecordTime = Math.Round(definedTime + normalizeTimeOffset, 3);
+
+                    if (currentStartTime >= startTime && currentRecordTime <= maxRecordTime)
+                    { 
                         captureInterval.Add(unionCaptureData[i]);
+
+                        if (captureInterval.Count == 2)
+                            normalizeTimeOffset = GetStartTimeFromDataLine(captureInterval[1]) - startTime;
+                    }
                 }
             }
 

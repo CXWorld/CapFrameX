@@ -62,7 +62,7 @@
     <Setting Name="HotkeySoundMode" Type="System.String" Scope="User">
       <Value Profile="(Default)">voice response</Value>
     </Setting>
-    <Setting Name="CaptureTime" Type="System.Int32" Scope="User">
+    <Setting Name="CaptureTime" Type="System.Double" Scope="User">
       <Value Profile="(Default)">0</Value>
     </Setting>
     <Setting Name="UseSingleRecordP0Dot2QuantileStatisticParameter" Type="System.Boolean" Scope="User">

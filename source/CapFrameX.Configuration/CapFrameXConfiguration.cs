@@ -150,7 +150,7 @@ namespace CapFrameX.Configuration
             set { Settings.HotkeySoundMode = value; Settings.Save(); }
         }
 
-        public int CaptureTime
+        public double CaptureTime
         {
             get { return Settings.CaptureTime; }
             set { Settings.CaptureTime = value; Settings.Save(); }

@@ -77,7 +77,7 @@ namespace CapFrameX.View
 				else
 				{
 					filename = Path.Combine(path, "CX" + "_" +
-						   DateTime.Now.ToString("yyyy-dd-M_HH-mm-ss") + "_" + $"{currentPageName}.png");
+						   DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss") + "_" + $"{currentPageName}.png");
 				}
 
 				if (!Directory.Exists(path))
