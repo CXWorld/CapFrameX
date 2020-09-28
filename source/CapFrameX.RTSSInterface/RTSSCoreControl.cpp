@@ -632,11 +632,11 @@ void RTSSCoreControl::Refresh()
 		//strOSD += "<C0=FFA0A0>";
 		////define color variable C[0] as R=FF,G=A0 and B=A0
 		//strOSD += "<C1=AEEA00>"; //CX Green
-		////define color variable C[1] as R=FF,G=00 and B=A0
-		//strOSD += "<C2=FFFFFF>"; // White
+		//define color variable C[1] as R=FF,G=00 and B=A0
+		strOSD += "<C2=FFFFFF>"; // White
 		////define color variable C[1] as R=FF,G=FF and B=FF
-		//// CX blue
-		//strOSD += "<C3=2297F3>"; //CX Blue
+		// CX blue
+		strOSD += "<C3=2297F3>"; //CX Blue
 		////define color variable C[1] as R=FF,G=FF and B=FF
 		//// CX orange
 		//strOSD += "<C4=F17D20>"; //CX Orange

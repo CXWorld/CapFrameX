@@ -18,6 +18,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using Serilog;
+using System.Runtime.CompilerServices;
 
 namespace OpenHardwareMonitor.Hardware.Nvidia
 {
@@ -400,11 +401,17 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
 
             if (power != null)
             {
+                //var channels = new NvGpuPowerMonitorPowerChannelStatus[NVAPI.POWER_STATUS_CHANNEL_COUNT];
+                //for (int i = 0; i < channels.Length; i++)
+                //{
+                //    channels[i].Rsvd = new sbyte[NVAPI.POWER_STATUS_RSVD_SIZE];
+                //}
+
                 var powerStatus = new NvGpuPowerStatus
                 {
                     Version = NVAPI.GPU_POWER_MONITOR_STATUS_VER,
-                    Rsvd = new sbyte[NVAPI.POWER_STATUS_RSVD_SIZE],
-                    Channels = new NvGpuPowerMonitorPowerChannelStatus[NVAPI.POWER_STATUS_CHANNEL_COUNT]
+                    //Rsvd = new sbyte[NVAPI.POWER_STATUS_RSVD_SIZE],
+                    //Channels = channels
                 };
 
                 if (NVAPI.NvAPI_GPU_PowerMonitorGetStatus != null &&
@@ -412,6 +419,15 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
                 {
                     power.Value = powerStatus.TotalGpuPowermW * 1E-03f;
                     ActivateSensor(power);
+
+                    //// Grap all other sensors/channels
+                    //var powerSensors = powerStatus.Channels.Where(ch => ch.PwrAvgmW != 0).Select(ch => ch.PwrAvgmW * 1E-03).ToArray();
+
+                    //for (int i = 0; i < powerSensors.Length; i++)
+                    //{
+                    //    Console.WriteLine($"Sensor {i}: {powerSensors[i]}W");
+                    //}
+                    //Console.WriteLine("------------------------------------------");
                 }
             }
 
