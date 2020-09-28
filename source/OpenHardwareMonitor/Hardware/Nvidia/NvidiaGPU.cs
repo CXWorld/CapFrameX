@@ -105,6 +105,7 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
             powerLimit = new Sensor("GPU Power Limit", 0, SensorType.Factor, this, settings);
             temperatureLimit = new Sensor("GPU Thermal Limit", 1, SensorType.Factor, this, settings);
             voltageLimit = new Sensor("GPU Voltage Limit", 2, SensorType.Factor, this, settings);
+            power = new Sensor("GPU Power", 0, SensorType.Power, this, settings);
 
             NvGPUCoolerSettings coolerSettings = GetCoolerSettings();
             if (coolerSettings.Count > 0)
@@ -117,7 +118,6 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
                 ControlModeChanged(fanControl);
                 control.Control = fanControl;
             }
-
 
             try
             {
@@ -150,8 +150,7 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
                       "0000:" + busId.ToString("X2") + ":00.0", out var result)
                       == NVML.NvmlReturn.Success)
                     {
-                        device = result;
-                        power = new Sensor("GPU Power", 0, SensorType.Power, this, settings);
+                        device = result;                        
                         pcieThroughputRx = new Sensor("GPU PCIE Rx", 0,
                           SensorType.Throughput, this, settings);
                         pcieThroughputTx = new Sensor("GPU PCIE Tx", 1,
@@ -401,10 +400,17 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
 
             if (power != null)
             {
-                if (NVML.NvmlDeviceGetPowerUsage(device.Value, out int powerValue)
-                  == NVML.NvmlReturn.Success)
+                var powerStatus = new NvGpuPowerStatus
                 {
-                    power.Value = powerValue * 0.001f;
+                    Version = NVAPI.GPU_POWER_MONITOR_STATUS_VER,
+                    Rsvd = new sbyte[NVAPI.POWER_STATUS_RSVD_SIZE],
+                    Channels = new NvGpuPowerMonitorPowerChannelStatus[NVAPI.POWER_STATUS_CHANNEL_COUNT]
+                };
+
+                if (NVAPI.NvAPI_GPU_PowerMonitorGetStatus != null &&
+                   NVAPI.NvAPI_GPU_PowerMonitorGetStatus(handle, ref powerStatus) == NvStatus.OK)
+                {
+                    power.Value = powerStatus.TotalGpuPowermW * 1E-03f;
                     ActivateSensor(power);
                 }
             }
