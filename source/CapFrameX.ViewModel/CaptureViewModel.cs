@@ -25,11 +25,13 @@ using System.Globalization;
 using System.Linq;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using static CapFrameX.EventAggregation.Messages.AppMessages;
 
 namespace CapFrameX.ViewModel
 {
@@ -278,7 +280,8 @@ namespace CapFrameX.ViewModel
                                 IRTSSService rTSSService,
                                 ILogger<CaptureViewModel> logger,
                                 ProcessList processList,
-                                SoundManager soundManager)
+                                SoundManager soundManager,
+                                ISubject<int> startCaptureSubject)
         {
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -321,6 +324,10 @@ namespace CapFrameX.ViewModel
 
             stopwatch.Stop();
             _logger.LogInformation(this.GetType().Name + " {initializationTime}s initialization time", Math.Round(stopwatch.ElapsedMilliseconds * 1E-03, 1));
+
+            startCaptureSubject.ObserveOnDispatcher().Subscribe(_ => {
+                SetCaptureMode();
+            });
         }
 
         public bool IsNavigationTarget(NavigationContext navigationContext)

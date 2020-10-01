@@ -3,6 +3,7 @@ using CapFrameX.Contracts.Sensor;
 using CapFrameX.Data;
 using CapFrameX.Extensions;
 using CapFrameX.PresentMonInterface;
+using CapFrameX.Remote;
 using Newtonsoft.Json;
 using Serilog;
 using Serilog.Formatting.Compact;
@@ -34,6 +35,10 @@ namespace CapFrameX
 			base.OnStartup(e);
 			_bootstrapper = new Bootstrapper();
 			_bootstrapper.Run(true);
+
+
+			var webserver = WebserverFactory.CreateWebServer(_bootstrapper.Container, "http://localhost:1339");
+			webserver.RunAsync();
 		}
 
 		private void SetupExceptionHandling()
