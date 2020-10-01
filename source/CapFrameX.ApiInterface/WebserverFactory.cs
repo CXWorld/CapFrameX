@@ -17,6 +17,7 @@ namespace CapFrameX.Remote
         public static WebServer CreateWebServer(IContainer iocContainer, string hostnameAndPort)
         {
             var server = new WebServer(hostnameAndPort)
+                .WithCors()
                 .WithWebApi("/api", m =>
                 {
                     m.WithController(() => new CaptureController(iocContainer.Resolve<ISubject<int>>()));

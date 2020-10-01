@@ -1,0 +1,25 @@
+<html>
+    <head></head>
+    <body>
+        <button type="button" onclick="alertVersion()">Show Version</button>
+        <button type="button" onclick="toggleCapture()">Toggle Capture</button>
+    </body>
+
+    <script>
+        window.toggleCapture = function() {
+            fetch("http://localhost:1339/api/capture", { method: "post" })
+            .then(response => response.json())
+            .then(result => {
+                console.log(result);
+            });
+        }
+
+        window.alertVersion = function() {
+            fetch("http://localhost:1339/api/version", { method: "get" })
+            .then(response => response.json())
+            .then(result => {
+                alert(result.Version);
+            });
+        }
+    </script>
+</html>
