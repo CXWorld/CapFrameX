@@ -57,7 +57,6 @@ namespace CapFrameX.ViewModel
         private readonly ProcessList _processList;
         private readonly SoundManager _soundManager;
         private readonly CaptureManager _captureManager;
-        private readonly List<string> _captureDataArchive = new List<string>(ARCHIVE_LENGTH);
 
         private IDisposable _disposableHeartBeat;
         private string _selectedProcessToCapture;
@@ -277,8 +276,15 @@ namespace CapFrameX.ViewModel
             ResetPresentMonCommand = new DelegateCommand(OnResetCaptureProcess);
 
             _captureManager.CaptureStatusChange.Subscribe(status => {
-                AreButtonsActive = status == CaptureStatus.Stopped;
-                RaisePropertyChanged(nameof(AreButtonsActive));
+                if (status == CaptureStatus.Processing)
+                {
+                    CaptureStateInfo = "Creating capture file..." + Environment.NewLine;
+                }
+                else
+                {
+                    AreButtonsActive = status == CaptureStatus.Stopped;
+                    RaisePropertyChanged(nameof(AreButtonsActive));
+                }
             });
 
             _logger.LogDebug("{viewName} Ready", this.GetType().Name);

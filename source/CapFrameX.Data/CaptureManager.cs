@@ -22,6 +22,7 @@ namespace CapFrameX.Data
     public enum CaptureStatus
     {
         Started,
+        Processing,
         Stopped
     }
 
@@ -94,6 +95,8 @@ namespace CapFrameX.Data
             _captureData.Clear();
             _sensorService.StartSensorLogging();
 
+            _overlayService.SetCaptureServiceStatus("Recording frametimes");
+
             bool intializedStartTime = false;
             double captureDataArchiveLastTime = 0;
 
@@ -154,6 +157,7 @@ namespace CapFrameX.Data
             _autoCompletionDisposableStream?.Dispose();
             DataOffsetRunning = true;
             _overlayService.SetCaptureServiceStatus("Processing data");
+            _captureStatusChange.OnNext(CaptureStatus.Processing);
             await Task.Delay(TimeSpan.FromMilliseconds(PRESICE_OFFSET));
             _disposableCaptureStream?.Dispose();
             _sensorService.StopSensorLogging();
