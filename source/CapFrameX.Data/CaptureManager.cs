@@ -137,15 +137,15 @@ namespace CapFrameX.Data
         public async Task StopCapture()
         {
             _timestampStopCapture = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds();
-            _disposableCaptureStream?.Dispose();
-            _autoCompletionDisposableStream?.Dispose();
-            _sensorService.StopSensorLogging();
-            _overlayService.StopCaptureTimer();
-            _overlayService.SetCaptureServiceStatus("Processing data");
-            IsCapturing = false;
             Application.Current.Dispatcher.Invoke(() => _soundManager.PlaySound(Sound.CaptureStopped));
+            _overlayService.StopCaptureTimer();
+            _autoCompletionDisposableStream?.Dispose();
             DataOffsetRunning = true;
+            _overlayService.SetCaptureServiceStatus("Processing data");
             await Task.Delay(TimeSpan.FromMilliseconds(PRESICE_OFFSET));
+            _disposableCaptureStream?.Dispose();
+            _sensorService.StopSensorLogging();
+            IsCapturing = false;
             await WriteCaptureDataToFile();
         }
 
