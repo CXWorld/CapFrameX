@@ -73,7 +73,6 @@ namespace CapFrameX.ViewModel
         private string _loggerOutput = string.Empty;
         private PlotModel _frametimeModel;
         private string _lastCapturedProcess;
-        private bool _dataOffsetRunning;
 
         private bool IsCapturing
         {
@@ -375,7 +374,7 @@ namespace CapFrameX.ViewModel
             {
                 {CXHotkeyCombination.FromString(CaptureHotkeyString), () =>
                 {
-                    if(!_dataOffsetRunning)
+                    if(!_captureManager.DataOffsetRunning)
                         SetCaptureMode();
                 }}
             };
@@ -476,7 +475,6 @@ namespace CapFrameX.ViewModel
                 {
                     Application.Current.Dispatcher.Invoke(() =>
                     {
-                        _dataOffsetRunning = true;
                         IsCapturing = false;
                         _disposableHeartBeat = GetListUpdatHeartBeat();
                         AreButtonsActive = true;

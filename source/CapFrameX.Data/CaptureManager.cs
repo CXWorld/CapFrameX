@@ -40,6 +40,9 @@ namespace CapFrameX.Data
         private long _timestampStartCapture;
         private CaptureOptions _currentCaptureOptions;
         private long _timestampStopCapture;
+        private bool _dataOffsetRunning;
+
+        public bool DataOffsetRunning => _dataOffsetRunning;
 
         [DllImport("Kernel32.dll")]
         private static extern bool QueryPerformanceCounter(out long lpPerformanceCount);
@@ -121,7 +124,7 @@ namespace CapFrameX.Data
             _overlayService.StopCaptureTimer();
             _overlayService.SetCaptureServiceStatus("Processing data");
             Application.Current.Dispatcher.Invoke(() => _soundManager.PlaySound(Sound.CaptureStopped));
-
+            _dataOffsetRunning = true;
             await Task.Delay(TimeSpan.FromMilliseconds(PRESICE_OFFSET));
             await WriteCaptureDataToFile();
         }
@@ -177,6 +180,7 @@ namespace CapFrameX.Data
 
         private void PrepareForNextCapture()
         {
+            _dataOffsetRunning = false;
             StartFillArchive();
             AddLoggerEntry("Started filling archive.");
         }
