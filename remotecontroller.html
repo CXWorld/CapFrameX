@@ -2,20 +2,46 @@
     <head></head>
     <body>
         <button type="button" onclick="alertVersion()">Show Version</button>
-        <button type="button" onclick="toggleCapture()">Toggle Capture</button>
+		
+		<div>
+			<div>
+				<label>Processname</label>
+				<input id="input-processname" type="text" />
+			</div>
+			<div style="display: flex">
+				<button type="button" onclick="startCapture()">Start Capture</button>
+				<button type="button" onclick="stopCapture()">Stop Capture</button>
+			</div>
+		</div>
     </body>
 
     <script>
-        window.toggleCapture = function() {
-            fetch("http://localhost:1339/api/capture", { method: "post" })
+        window.startCapture = function() {
+            fetch("http://localhost:1337/api/capture", { 
+				method: "post",
+				headers: {
+				  'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+					CaptureTime: 0,
+					ProcessName: document.getElementById("input-processname").value
+				})
+			})
             .then(response => response.json())
             .then(result => {
                 console.log(result);
             });
         }
+		
+		window.stopCapture = function() {
+			fetch("http://localhost:1337/api/capture", { method: "delete" })
+			.then(response => response.json())
+			.then(result => {
+			});
+		}
 
         window.alertVersion = function() {
-            fetch("http://localhost:1339/api/version", { method: "get" })
+            fetch("http://localhost:1337/api/version", { method: "get" })
             .then(response => response.json())
             .then(result => {
                 alert(result.Version);

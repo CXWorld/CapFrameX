@@ -2,6 +2,7 @@
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.PresentMonInterface;
 using CapFrameX.Contracts.Sensor;
+using CapFrameX.Data;
 using DryIoc;
 using EmbedIO;
 using EmbedIO.Actions;
@@ -20,7 +21,7 @@ namespace CapFrameX.Remote
                 .WithCors()
                 .WithWebApi("/api", m =>
                 {
-                    m.WithController(() => new CaptureController(iocContainer.Resolve<ISubject<int>>()));
+                    m.WithController(() => new CaptureController(iocContainer.Resolve<CaptureManager>()));
                     m.WithController(() => new VersionController(iocContainer.Resolve<IAppVersionProvider>()));
                 })
                 .WithModule(new ActionModule("/", HttpVerbs.Any, ctx => ctx.SendDataAsync(new { Message = "Error" })));

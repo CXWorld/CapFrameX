@@ -37,7 +37,7 @@ namespace CapFrameX
 			_bootstrapper.Run(true);
 
 
-			var webserver = WebserverFactory.CreateWebServer(_bootstrapper.Container, "http://localhost:1339");
+			var webserver = WebserverFactory.CreateWebServer(_bootstrapper.Container, "http://localhost:1337");
 			webserver.RunAsync();
 		}
 

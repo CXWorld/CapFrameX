@@ -105,8 +105,7 @@ namespace CapFrameX
 				var window = Container.Resolve<LoginWindow>();
 				window.Show();
 			});
-
-			Container.RegisterInstance<ISubject<int>>(new Subject<int>(), Reuse.Singleton);
+			Container.Register<CaptureManager>(Reuse.Singleton);
 		}
 
 		/// <summary>

@@ -27,6 +27,7 @@ using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -42,8 +43,7 @@ namespace CapFrameX.ViewModel
 
         private readonly object _archiveLock = new object();
 
-        [DllImport("Kernel32.dll")]
-        private static extern bool QueryPerformanceCounter(out long lpPerformanceCount);
+
 
         private readonly IAppConfiguration _appConfiguration;
         private readonly ICaptureService _captureService;
@@ -57,12 +57,10 @@ namespace CapFrameX.ViewModel
         private readonly ILogger<CaptureViewModel> _logger;
         private readonly ProcessList _processList;
         private readonly SoundManager _soundManager;
+        private readonly CaptureManager _captureManager;
         private readonly List<string> _captureDataArchive = new List<string>(ARCHIVE_LENGTH);
 
         private IDisposable _disposableHeartBeat;
-        private IDisposable _disposableCaptureStream;
-        private IDisposable _disposableArchiveStream;
-        private List<string> _captureData;
         private string _selectedProcessToCapture;
         private string _selectedProcessToIgnore;
         private bool _areButtonsActive = true;
@@ -73,14 +71,9 @@ namespace CapFrameX.ViewModel
         private double _captureTime;
         private IKeyboardMouseEvents _globalCaptureHookEvent;
         private string _loggerOutput = string.Empty;
-        private bool _fillArchive = false;
-        private CancellationTokenSource _cancellationTokenSource;
         private PlotModel _frametimeModel;
-        private long _qpcTimeStart;
-        private long _timestampStartCapture;
-        private long _timestampStopCapture;
-        private bool _dataOffsetRunning;
         private string _lastCapturedProcess;
+        private bool _dataOffsetRunning;
 
         private bool IsCapturing
         {
@@ -281,7 +274,7 @@ namespace CapFrameX.ViewModel
                                 ILogger<CaptureViewModel> logger,
                                 ProcessList processList,
                                 SoundManager soundManager,
-                                ISubject<int> startCaptureSubject)
+                                CaptureManager captureManager)
         {
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -298,6 +291,7 @@ namespace CapFrameX.ViewModel
             _logger = logger;
             _processList = processList;
             _soundManager = soundManager;
+            _captureManager = captureManager;
             AddToIgonreListCommand = new DelegateCommand(OnAddToIgonreList);
             AddToProcessListCommand = new DelegateCommand(OnAddToProcessList);
             ResetPresentMonCommand = new DelegateCommand(OnResetCaptureProcess);
@@ -324,10 +318,6 @@ namespace CapFrameX.ViewModel
 
             stopwatch.Stop();
             _logger.LogInformation(this.GetType().Name + " {initializationTime}s initialization time", Math.Round(stopwatch.ElapsedMilliseconds * 1E-03, 1));
-
-            startCaptureSubject.ObserveOnDispatcher().Subscribe(_ => {
-                SetCaptureMode();
-            });
         }
 
         public bool IsNavigationTarget(NavigationContext navigationContext)
@@ -447,189 +437,55 @@ namespace CapFrameX.ViewModel
             }
             else if (!IsCapturing)
             {
-                if (SelectedProcessToCapture != null)
-                    _lastCapturedProcess = SelectedProcessToCapture;
-                else
-                    _lastCapturedProcess = ProcessesToCapture.FirstOrDefault();
+                string processToCapture = SelectedProcessToCapture ?? ProcessesToCapture.FirstOrDefault();
 
-                _ = QueryPerformanceCounter(out long startCounter);
-                AddLoggerEntry($"Performance counter on start capturing: {startCounter}");
-                _qpcTimeStart = startCounter;
+                Task.Run(() => _captureManager.StartCapture(new CaptureOptions()
+                {
+                    CaptureTime = CaptureTime,
+                    CaptureFileMode = AppConfiguration.CaptureFileMode,
+                    UseAggregation = AppConfiguration.UseAggregation,
+                    UseRunHistory = AppConfiguration.UseRunHistory,
+                    SaveAggregationOnly = AppConfiguration.SaveAggregationOnly,
+                    ProcessName = processToCapture
+                })).ContinueWith((_) =>
+                {
+                    IsCapturing = !IsCapturing;
+                    _disposableHeartBeat?.Dispose();
+                    AreButtonsActive = false;
 
-                _timestampStartCapture = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds();
+                    if (CaptureTimeString == "0" && CaptureStartDelayString == "0")
+                        CaptureStateInfo = "Capturing in progress..." + Environment.NewLine + $"Press {CaptureHotkeyString} to stop capture.";
 
-                _soundManager.PlaySound(Sound.CaptureStarted);
+                    if (CaptureTimeString != "0" && CaptureStartDelayString == "0")
+                        CaptureStateInfo = $"Capturing in progress (Set Time: {CaptureTimeString} seconds)..." + Environment.NewLine
+                           + $"Press {CaptureHotkeyString} to stop capture.";
 
-                StartCaptureDataFromStream();
+                    if (CaptureTimeString != "0" && CaptureStartDelayString != "0")
+                        CaptureStateInfo = $"Capturing starts with delay of {CaptureStartDelayString} seconds. " +
+                            $"Capture will stop after {CaptureTimeString} seconds." + Environment.NewLine + $"Press {CaptureHotkeyString} to stop capture.";
 
-                IsCapturing = !IsCapturing;
-                _disposableHeartBeat?.Dispose();
-                AreButtonsActive = false;
+                    return Task.CompletedTask;
+                });
 
-                if (CaptureTimeString == "0" && CaptureStartDelayString == "0")
-                    CaptureStateInfo = "Capturing in progress..." + Environment.NewLine + $"Press {CaptureHotkeyString} to stop capture.";
-
-                if (CaptureTimeString != "0" && CaptureStartDelayString == "0")
-                    CaptureStateInfo = $"Capturing in progress (Set Time: {CaptureTimeString} seconds)..." + Environment.NewLine
-                       + $"Press {CaptureHotkeyString} to stop capture.";
-
-                if (CaptureTimeString != "0" && CaptureStartDelayString != "0")
-                    CaptureStateInfo = $"Capturing starts with delay of {CaptureStartDelayString} seconds. " +
-                        $"Capture will stop after {CaptureTimeString} seconds." + Environment.NewLine + $"Press {CaptureHotkeyString} to stop capture.";
+                _lastCapturedProcess = processToCapture;
             }
             else
             {
-                // manual termination (hotkey triggered)
-                // turn locking on 
-                _dataOffsetRunning = true;
-
-                _timestampStopCapture = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds();
-                _cancellationTokenSource?.Cancel();
-
-                _soundManager.PlaySound(Sound.CaptureStopped);
-
-                _sensorService.StopSensorLogging();
-                var context = TaskScheduler.FromCurrentSynchronizationContext();
-
-                CaptureStateInfo = "Creating capture file..." + Environment.NewLine;
-                _overlayService.StopCaptureTimer();
-                _overlayService.SetCaptureServiceStatus("Processing data");
-
-                // offset timer
-                Task.Run(async () =>
+                Task.Run(() => _captureManager.StopCapture())
+                    .ContinueWith((_) =>
                 {
-                    await SetTaskDelayOffset().ContinueWith(_ =>
+                    Application.Current.Dispatcher.Invoke(() =>
                     {
-                        Application.Current.Dispatcher.Invoke(new Action(() =>
-                        {
-                            FinishCapturingAndUpdateUi();
-                        }));
-                    }, CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, context);
+                        _dataOffsetRunning = true;
+                        IsCapturing = false;
+                        _disposableHeartBeat = GetListUpdatHeartBeat();
+                        AreButtonsActive = true;
+
+                        UpdateCaptureStateInfo();
+                    });
+                    return Task.CompletedTask;
                 });
             }
-        }
-
-        private void StartCaptureDataFromStream()
-        {
-            AddLoggerEntry("Capturing started.");
-            _overlayService.SetCaptureServiceStatus("Recording frametimes");
-            _sensorService.StartSensorLogging();
-
-            _captureData = new List<string>();
-            bool autoTermination = CaptureTime > 0;
-            //double delayCapture = Convert.ToDouble(CaptureStartDelayString, CultureInfo.InvariantCulture);
-            double captureTime = CaptureTime /*+ delayCapture*/;
-            bool intializedStartTime = false;
-            double captureDataArchiveLastTime = 0;
-
-            _disposableCaptureStream = _captureService.RedirectedOutputDataStream
-                .Skip(5)
-                .ObserveOn(new EventLoopScheduler()).Subscribe(dataLine =>
-                {
-                    if (string.IsNullOrWhiteSpace(dataLine))
-                        return;
-
-                    _captureData.Add(dataLine);
-
-                    if (!intializedStartTime && _captureData.Any())
-                    {
-                        double captureDataFirstTime = GetStartTimeFromDataLine(_captureData.First());
-                        lock (_archiveLock)
-                        {
-                            if (_captureDataArchive.Any())
-                            {
-                                captureDataArchiveLastTime = GetStartTimeFromDataLine(_captureDataArchive.Last());
-                            }
-                        }
-
-                        if (captureDataFirstTime < captureDataArchiveLastTime)
-                        {
-                            intializedStartTime = true;
-
-                            // stop archive
-                            _fillArchive = false;
-                            _disposableArchiveStream?.Dispose();
-
-                            AddLoggerEntry("Stopped filling archive.");
-                        }
-                    }
-                });
-
-            var context = TaskScheduler.FromCurrentSynchronizationContext();
-
-            if (autoTermination)
-            {
-                AddLoggerEntry("Starting countdown...");
-
-                // Start overlay countdown timer
-                _overlayService.StartCountdown(CaptureTime);
-                _cancellationTokenSource = new CancellationTokenSource();
-
-                // data timer
-                Task.Run(async () =>
-                {
-                    await SetTaskDelayData().ContinueWith(_ =>
-                    {
-                        Application.Current.Dispatcher.Invoke(new Action(() =>
-                        {
-                            FinishCapturingAndUpdateUi();
-                        }));
-                    }, _cancellationTokenSource.Token, TaskContinuationOptions.ExecuteSynchronously, context);
-                });
-
-                // sound timer
-                Task.Run(async () =>
-                {
-                    await SetTaskDelaySound().ContinueWith(_ =>
-                    {
-                        Application.Current.Dispatcher.Invoke(new Action(() =>
-                        {
-                            // stop sensor data logging
-                            _sensorService.StopSensorLogging();
-
-                            // turn locking on 
-                            _dataOffsetRunning = true;
-                            CaptureStateInfo = "Creating capture file..." + Environment.NewLine;
-
-                            // update overlay
-                            _overlayService.SetCaptureServiceStatus("Processing data");
-                            _soundManager.PlaySound(Sound.CaptureStopped);
-                        }));
-                    }, _cancellationTokenSource.Token, TaskContinuationOptions.ExecuteSynchronously, context);
-                });
-            }
-            else
-                _overlayService.StartCaptureTimer();
-        }
-
-        private void FinishCapturingAndUpdateUi()
-        {
-            _disposableCaptureStream?.Dispose();
-            AddLoggerEntry("Capturing stopped.");
-            WriteCaptureDataToFile();
-
-            IsCapturing = !IsCapturing;
-            _disposableHeartBeat = GetListUpdatHeartBeat();
-            AreButtonsActive = true;
-
-            UpdateCaptureStateInfo();
-        }
-
-        private async Task SetTaskDelayOffset()
-        {
-            await Task.Delay(TimeSpan.FromMilliseconds(PRESICE_OFFSET));
-        }
-
-        private async Task SetTaskDelayData()
-        {
-            await Task.Delay(TimeSpan.FromMilliseconds(PRESICE_OFFSET +
-                1000 * CaptureTime));
-        }
-
-        private async Task SetTaskDelaySound()
-        {
-            await Task.Delay(TimeSpan.FromMilliseconds(
-                1000 * CaptureTime));
         }
 
         private bool StartCaptureService()
@@ -640,36 +496,14 @@ namespace CapFrameX.ViewModel
                 .GetServiceStartInfo(serviceConfig.ConfigParameterToArguments());
             success = _captureService.StartCaptureService(startInfo);
 
-            StartFillArchive();
+            _captureManager.StartFillArchive();
 
             return success;
         }
 
-        private void StartFillArchive()
-        {
-            _disposableArchiveStream?.Dispose();
-            _fillArchive = true;
-            ResetArchive();
-
-            _disposableArchiveStream = _captureService
-                .RedirectedOutputDataStream.Where(x => _fillArchive == true)
-                .ObserveOn(new EventLoopScheduler())
-                .Subscribe(dataLine =>
-                {
-                    AddDataLineToArchive(dataLine);
-                });
-        }
-
-        private void StopFillArchive()
-        {
-            _disposableArchiveStream?.Dispose();
-            _fillArchive = false;
-            ResetArchive();
-        }
-
         private void StopCaptureService()
         {
-            StopFillArchive();
+            _captureManager.StopFillArchive();
             _captureService.StopCaptureService();
         }
 
@@ -801,29 +635,6 @@ namespace CapFrameX.ViewModel
             CaptureStateInfo = $"{SelectedProcessToCapture} selected." + Environment.NewLine + $"Press {CaptureHotkeyString} to start capture.";
             _overlayService.SetCaptureServiceStatus("Ready to capture...");
         }
-
-        private void AddDataLineToArchive(string dataLine)
-        {
-            if (string.IsNullOrWhiteSpace(dataLine))
-            {
-                return;
-            }
-
-            lock (_archiveLock)
-            {
-                if (_captureDataArchive.Count < ARCHIVE_LENGTH)
-                {
-                    _captureDataArchive.Add(dataLine);
-                }
-                else
-                {
-                    _captureDataArchive.RemoveAt(0);
-                    _captureDataArchive.Add(dataLine);
-                }
-            }
-        }
-
-        private void ResetArchive() => _captureDataArchive.Clear();
 
         private void InitializeFrametimeModel()
         {

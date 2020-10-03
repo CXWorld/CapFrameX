@@ -9,5 +9,6 @@ namespace CapFrameX.Remote.JsonPayload
     public class StartCapturePayload
     {
         public double CaptureTime { get; set; }
+        public string ProcessName { get; set; }
     }
 }
