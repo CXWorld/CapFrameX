@@ -34,15 +34,15 @@ namespace CapFrameX.Data
 
         private IDisposable _disposableCaptureStream;
         private IDisposable _disposableArchiveStream;
+        private IDisposable _autoCompletionDisposableStream;
         private bool _fillArchive;
         private long _qpcTimeStart;
         private string _captureTimeString = "0";
         private long _timestampStartCapture;
         private CaptureOptions _currentCaptureOptions;
         private long _timestampStopCapture;
-        private bool _dataOffsetRunning;
 
-        public bool DataOffsetRunning => _dataOffsetRunning;
+        public bool DataOffsetRunning { get; private set; }
 
         [DllImport("Kernel32.dll")]
         private static extern bool QueryPerformanceCounter(out long lpPerformanceCount);
@@ -106,7 +106,7 @@ namespace CapFrameX.Data
             {
                 // Start overlay countdown timer
                 _overlayService.StartCountdown(options.CaptureTime);
-                Observable.Timer(TimeSpan.FromSeconds(options.CaptureTime))
+                _autoCompletionDisposableStream = Observable.Timer(TimeSpan.FromSeconds(options.CaptureTime))
                     .Subscribe(async _ => await StopCapture());
             }
             else
@@ -120,11 +120,12 @@ namespace CapFrameX.Data
         {
             _timestampStopCapture = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds();
             _disposableCaptureStream?.Dispose();
+            _autoCompletionDisposableStream?.Dispose();
             _sensorService.StopSensorLogging();
             _overlayService.StopCaptureTimer();
             _overlayService.SetCaptureServiceStatus("Processing data");
             Application.Current.Dispatcher.Invoke(() => _soundManager.PlaySound(Sound.CaptureStopped));
-            _dataOffsetRunning = true;
+            DataOffsetRunning = true;
             await Task.Delay(TimeSpan.FromMilliseconds(PRESICE_OFFSET));
             await WriteCaptureDataToFile();
         }
@@ -180,7 +181,7 @@ namespace CapFrameX.Data
 
         private void PrepareForNextCapture()
         {
-            _dataOffsetRunning = false;
+            DataOffsetRunning = false;
             StartFillArchive();
             AddLoggerEntry("Started filling archive.");
         }
