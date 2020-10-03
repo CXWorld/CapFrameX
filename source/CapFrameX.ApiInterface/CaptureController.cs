@@ -43,7 +43,6 @@ namespace CapFrameX.Remote
             return "ok";
         }
 
-
         [Route(HttpVerbs.Delete, "/capture")]
         public async Task<string> StopCapture()
         {

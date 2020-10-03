@@ -2,9 +2,9 @@
 using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.PresentMonInterface;
-using CapFrameX.Contracts.RTSS;
 using CapFrameX.Contracts.Sensor;
 using CapFrameX.Data;
+using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Hotkey;
 using CapFrameX.PresentMonInterface;
 using CapFrameX.Statistics.NetStandard;
@@ -20,31 +20,19 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
-using System.Reactive.Concurrency;
 using System.Reactive.Linq;
-using System.Reactive.Subjects;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
-using static CapFrameX.EventAggregation.Messages.AppMessages;
 
 namespace CapFrameX.ViewModel
 {
     public partial class CaptureViewModel : BindableBase, INavigationAware
     {
-        private const int PRESICE_OFFSET = 2500;
-        private const int ARCHIVE_LENGTH = 500;
-
-        private readonly object _archiveLock = new object();
-
-
-
         private readonly IAppConfiguration _appConfiguration;
         private readonly IEventAggregator _eventAggregator;
         private readonly IRecordManager _recordManager;
@@ -52,7 +40,6 @@ namespace CapFrameX.ViewModel
         private readonly ISensorService _sensorService;
         private readonly IOnlineMetricService _onlineMetricService;
         private readonly IStatisticProvider _statisticProvider;
-        private readonly IRTSSService _rTSSService;
         private readonly ILogger<CaptureViewModel> _logger;
         private readonly ProcessList _processList;
         private readonly SoundManager _soundManager;
@@ -61,8 +48,6 @@ namespace CapFrameX.ViewModel
         private IDisposable _disposableHeartBeat;
         private string _selectedProcessToCapture;
         private string _selectedProcessToIgnore;
-        private bool _areButtonsActive = true;
-        private bool _isCapturing;
         private string _captureStateInfo = string.Empty;
         private string _captureTimeString = "0";
         private string _captureStartDelayString = "0";
@@ -72,7 +57,7 @@ namespace CapFrameX.ViewModel
         private PlotModel _frametimeModel;
         private string _lastCapturedProcess;
 
-
+        private PubSubEvent<ViewMessages.CurrentProcessToCapture> _updateCurrentProcess;
 
         public string SelectedProcessToCapture
         {
@@ -249,8 +234,7 @@ namespace CapFrameX.ViewModel
                                 IOverlayService overlayService,
                                 ISensorService sensorService,
                                 IOnlineMetricService onlineMetricService,
-                                IStatisticProvider statisticProvider,
-                                IRTSSService rTSSService,
+                                IStatisticProvider statisticProvider,                                
                                 ILogger<CaptureViewModel> logger,
                                 ProcessList processList,
                                 SoundManager soundManager,
@@ -265,8 +249,7 @@ namespace CapFrameX.ViewModel
             _overlayService = overlayService;
             _sensorService = sensorService;
             _onlineMetricService = onlineMetricService;
-            _statisticProvider = statisticProvider;
-            _rTSSService = rTSSService;
+            _statisticProvider = statisticProvider;            
             _logger = logger;
             _processList = processList;
             _soundManager = soundManager;
@@ -274,6 +257,9 @@ namespace CapFrameX.ViewModel
             AddToIgonreListCommand = new DelegateCommand(OnAddToIgonreList);
             AddToProcessListCommand = new DelegateCommand(OnAddToProcessList);
             ResetPresentMonCommand = new DelegateCommand(OnResetCaptureProcess);
+
+            ProcessesToCapture.CollectionChanged += new NotifyCollectionChangedEventHandler
+            ((sender, eventArg) => UpdateProcessToCapture());
 
             _captureManager.CaptureStatusChange.Subscribe(status => {
                 if (status.Status != null)
@@ -300,16 +286,15 @@ namespace CapFrameX.ViewModel
             SelectedSoundMode = _appConfiguration.HotkeySoundMode;
             CaptureTimeString = _appConfiguration.CaptureTime.ToString(CultureInfo.InvariantCulture);
             _disposableHeartBeat = GetListUpdatHeartBeat();
+            _updateCurrentProcess = _eventAggregator.GetEvent<PubSubEvent<ViewMessages.CurrentProcessToCapture>>(); ;
 
             SubscribeToUpdateProcessIgnoreList();
             SubscribeToGlobalCaptureHookEvent();
-            ConnectOnlineMetricDataStream();
 
             bool captureServiceStarted = StartCaptureService();
 
             if (captureServiceStarted)
                 _overlayService.SetCaptureServiceStatus("Capture service ready...");
-
 
             InitializeFrametimeModel();
 
@@ -374,45 +359,6 @@ namespace CapFrameX.ViewModel
 
             _globalCaptureHookEvent = Hook.GlobalEvents();
             _globalCaptureHookEvent.OnCXCombination(onCombinationDictionary);
-        }
-
-        private void ConnectOnlineMetricDataStream()
-        {
-            string currentProcess = null;
-                _captureManager.GetRedirectedOutputDataStream()
-                .Skip(5)
-                .ObserveOn(new EventLoopScheduler()).Subscribe(dataLine =>
-                {
-                    if (string.IsNullOrWhiteSpace(dataLine))
-                        return;
-
-                    // explicit hook, only one process
-                    if (!string.IsNullOrWhiteSpace(SelectedProcessToCapture))
-                        currentProcess = SelectedProcessToCapture;
-                    // auto hook with filtered process list
-                    else
-                    {
-                        currentProcess = ProcessesToCapture.FirstOrDefault();
-                    }
-
-                    _onlineMetricService.ProcessDataLineStream.OnNext(Tuple.Create(currentProcess, dataLine));
-
-                    var lineSplit = dataLine.Split(',');
-
-                    if (lineSplit.Length < 2)
-                    {
-                        _logger.LogInformation("Unusable string {dataLine}.", dataLine);
-                        return;
-                    }
-
-                    if (currentProcess == lineSplit[0].Replace(".exe", ""))
-                    {
-                        if (uint.TryParse(lineSplit[1], out uint processID))
-                        {
-                            _rTSSService.ProcessIdStream.OnNext(processID);
-                        }
-                    }
-                });
         }
 
         private void SetCaptureMode()
@@ -593,6 +539,22 @@ namespace CapFrameX.ViewModel
         private void OnSelectedProcessToCaptureChanged()
         {
             UpdateCaptureStateInfo();
+            UpdateProcessToCapture();
+        }
+
+        private void UpdateProcessToCapture()
+        {
+            string currentProcess;
+            // explicit hook, only one process
+            if (!string.IsNullOrWhiteSpace(SelectedProcessToCapture))
+                currentProcess = SelectedProcessToCapture;
+            // auto hook with filtered process list
+            else
+            {
+                currentProcess = ProcessesToCapture.FirstOrDefault();
+            }
+
+            _updateCurrentProcess?.Publish(new ViewMessages.CurrentProcessToCapture(currentProcess));
         }
 
         private void UpdateCaptureStateInfo()

@@ -198,7 +198,8 @@ namespace CapFrameX.Data
             _presentMonCaptureService.StopCaptureService();
         }
 
-        public IObservable<string> GetRedirectedOutputDataStream() => _presentMonCaptureService.RedirectedOutputDataStream;
+        public IObservable<string> GetRedirectedOutputDataStream() 
+            => _presentMonCaptureService.RedirectedOutputDataStream;
 
         public bool StartCaptureService(IServiceStartInfo startInfo)
         {
