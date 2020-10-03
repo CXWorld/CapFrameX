@@ -46,7 +46,6 @@ namespace CapFrameX.ViewModel
 
 
         private readonly IAppConfiguration _appConfiguration;
-        private readonly ICaptureService _captureService;
         private readonly IEventAggregator _eventAggregator;
         private readonly IRecordManager _recordManager;
         private readonly IOverlayService _overlayService;
@@ -74,15 +73,7 @@ namespace CapFrameX.ViewModel
         private PlotModel _frametimeModel;
         private string _lastCapturedProcess;
 
-        private bool IsCapturing
-        {
-            get { return _isCapturing; }
-            set
-            {
-                _isCapturing = value;
-                _captureService.IsCaptureModeActiveStream.OnNext(value);
-            }
-        }
+
 
         public string SelectedProcessToCapture
         {
@@ -179,7 +170,7 @@ namespace CapFrameX.ViewModel
             set
             {
                 _appConfiguration.UseSensorLogging = value;
-                _captureService.IsLoggingActiveStream.OnNext(value);
+                _captureManager.ToggleSensorLogging(value);
                 RaisePropertyChanged();
             }
         }
@@ -262,7 +253,6 @@ namespace CapFrameX.ViewModel
         public Array LoggingPeriodItemsSource => new[] { 250, 500 };
 
         public CaptureViewModel(IAppConfiguration appConfiguration,
-                                ICaptureService captureService,
                                 IEventAggregator eventAggregator,
                                 IRecordManager recordManager,
                                 IOverlayService overlayService,
@@ -279,7 +269,6 @@ namespace CapFrameX.ViewModel
             stopwatch.Start();
 
             _appConfiguration = appConfiguration;
-            _captureService = captureService;
             _eventAggregator = eventAggregator;
             _recordManager = recordManager;
             _overlayService = overlayService;
@@ -312,7 +301,6 @@ namespace CapFrameX.ViewModel
                 _overlayService.SetCaptureServiceStatus("Capture service ready...");
 
 
-            _captureService.IsCaptureModeActiveStream.OnNext(false);
             InitializeFrametimeModel();
 
             stopwatch.Stop();
@@ -386,7 +374,7 @@ namespace CapFrameX.ViewModel
         private void ConnectOnlineMetricDataStream()
         {
             string currentProcess = null;
-            _captureService.RedirectedOutputDataStream
+                _captureManager.GetRedirectedOutputDataStream()
                 .Skip(5)
                 .ObserveOn(new EventLoopScheduler()).Subscribe(dataLine =>
                 {
@@ -434,7 +422,7 @@ namespace CapFrameX.ViewModel
                 _soundManager.PlaySound(Sound.MoreThanOneProcess);
                 return;
             }
-            else if (!IsCapturing)
+            else if (!_captureManager.IsCapturing)
             {
                 string processToCapture = SelectedProcessToCapture ?? ProcessesToCapture.FirstOrDefault();
 
@@ -448,7 +436,6 @@ namespace CapFrameX.ViewModel
                     ProcessName = processToCapture
                 })).ContinueWith((_) =>
                 {
-                    IsCapturing = !IsCapturing;
                     _disposableHeartBeat?.Dispose();
                     AreButtonsActive = false;
 
@@ -475,7 +462,6 @@ namespace CapFrameX.ViewModel
                 {
                     Application.Current.Dispatcher.Invoke(() =>
                     {
-                        IsCapturing = false;
                         _disposableHeartBeat = GetListUpdatHeartBeat();
                         AreButtonsActive = true;
 
@@ -492,7 +478,7 @@ namespace CapFrameX.ViewModel
             var serviceConfig = GetRedirectedServiceConfig();
             var startInfo = CaptureServiceConfiguration
                 .GetServiceStartInfo(serviceConfig.ConfigParameterToArguments());
-            success = _captureService.StartCaptureService(startInfo);
+            success = _captureManager.StartCaptureService(startInfo);
 
             _captureManager.StartFillArchive();
 
@@ -502,7 +488,6 @@ namespace CapFrameX.ViewModel
         private void StopCaptureService()
         {
             _captureManager.StopFillArchive();
-            _captureService.StopCaptureService();
         }
 
         private ICaptureServiceConfiguration GetRedirectedServiceConfig()
@@ -576,7 +561,7 @@ namespace CapFrameX.ViewModel
             ProcessesToCapture.Clear();
 
             var filter = _processList.GetIgnoredProcessNames().ToHashSet();
-            var processList = _captureService.GetAllFilteredProcesses(filter).Distinct();
+            var processList = _captureManager.GetAllFilteredProcesses(filter).Distinct();
 
             ProcessesToCapture.AddFromEnumerable(processList);
 

@@ -41,8 +41,19 @@ namespace CapFrameX.Data
         private long _timestampStartCapture;
         private CaptureOptions _currentCaptureOptions;
         private long _timestampStopCapture;
+        private bool _isCapturing;
 
         public bool DataOffsetRunning { get; private set; }
+
+        public bool IsCapturing
+        {
+            get { return _isCapturing; }
+            set
+            {
+                _isCapturing = value;
+                _presentMonCaptureService.IsCaptureModeActiveStream.OnNext(value);
+            }
+        }
 
         [DllImport("Kernel32.dll")]
         private static extern bool QueryPerformanceCounter(out long lpPerformanceCount);
@@ -55,6 +66,13 @@ namespace CapFrameX.Data
             _soundManager = soundManager;
             _recordManager = recordManager;
             _logger = logger;
+
+            _presentMonCaptureService.IsCaptureModeActiveStream.OnNext(false);
+        }
+
+        public IEnumerable<string> GetAllFilteredProcesses(HashSet<string> filter)
+        {
+            return _presentMonCaptureService.GetAllFilteredProcesses(filter);
         }
 
         public async Task StartCapture(CaptureOptions options)
@@ -70,7 +88,7 @@ namespace CapFrameX.Data
             _ = QueryPerformanceCounter(out long startCounter);
             AddLoggerEntry($"Performance counter on start capturing: {startCounter}");
             _qpcTimeStart = startCounter;
-
+            IsCapturing = true;
             _disposableCaptureStream = _presentMonCaptureService.RedirectedOutputDataStream
                 .Skip(5)
                 .Where(dataLine => !string.IsNullOrWhiteSpace(dataLine))
@@ -124,6 +142,7 @@ namespace CapFrameX.Data
             _sensorService.StopSensorLogging();
             _overlayService.StopCaptureTimer();
             _overlayService.SetCaptureServiceStatus("Processing data");
+            IsCapturing = false;
             Application.Current.Dispatcher.Invoke(() => _soundManager.PlaySound(Sound.CaptureStopped));
             DataOffsetRunning = true;
             await Task.Delay(TimeSpan.FromMilliseconds(PRESICE_OFFSET));
@@ -154,6 +173,19 @@ namespace CapFrameX.Data
             _disposableArchiveStream?.Dispose();
             _fillArchive = false;
             ResetArchive();
+            _presentMonCaptureService.StopCaptureService();
+        }
+
+        public IObservable<string> GetRedirectedOutputDataStream() => _presentMonCaptureService.RedirectedOutputDataStream;
+
+        public bool StartCaptureService(IServiceStartInfo startInfo)
+        {
+            return _presentMonCaptureService.StartCaptureService(startInfo);
+        }
+
+        public void ToggleSensorLogging(bool enabled)
+        {
+            _presentMonCaptureService.IsLoggingActiveStream.OnNext(enabled);
         }
 
         private void AddDataLineToArchive(string dataLine)
