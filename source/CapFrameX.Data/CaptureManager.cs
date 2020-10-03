@@ -162,7 +162,6 @@ namespace CapFrameX.Data
             _overlayService.StopCaptureTimer();
             _autoCompletionDisposableStream?.Dispose();
             DataOffsetRunning = true;
-            _overlayService.SetCaptureServiceStatus("Processing data");
             _captureStatusChange.OnNext(new CaptureStatus() { Status = ECaptureStatus.Processing});
             await Task.Delay(TimeSpan.FromMilliseconds(PRESICE_OFFSET));
             _disposableCaptureStream?.Dispose();
