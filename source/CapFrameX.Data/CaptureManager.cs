@@ -19,11 +19,17 @@ using System.Windows;
 namespace CapFrameX.Data
 {
 
-    public enum CaptureStatus
+    public enum ECaptureStatus
     {
         Started,
         Processing,
         Stopped
+    }
+
+    public struct CaptureStatus
+    {
+        public ECaptureStatus? Status;
+        public string Message;
     }
 
 
@@ -53,7 +59,7 @@ namespace CapFrameX.Data
         private long _timestampStopCapture;
         private bool _isCapturing;
 
-        private ISubject<CaptureStatus> _captureStatusChange = new BehaviorSubject<CaptureStatus>(CaptureStatus.Stopped);
+        private ISubject<CaptureStatus> _captureStatusChange = new BehaviorSubject<CaptureStatus>(new CaptureStatus { Status = ECaptureStatus.Stopped });
         public IObservable<CaptureStatus> CaptureStatusChange => _captureStatusChange.AsObservable();
         public bool DataOffsetRunning { get; private set; }
 
@@ -64,7 +70,7 @@ namespace CapFrameX.Data
             {
                 _isCapturing = value;
                 _presentMonCaptureService.IsCaptureModeActiveStream.OnNext(value);
-                _captureStatusChange.OnNext(value == true ? CaptureStatus.Started : CaptureStatus.Stopped);
+                _captureStatusChange.OnNext(new CaptureStatus { Status = value == true ? ECaptureStatus.Started : ECaptureStatus.Stopped });
             }
         }
 
@@ -157,7 +163,7 @@ namespace CapFrameX.Data
             _autoCompletionDisposableStream?.Dispose();
             DataOffsetRunning = true;
             _overlayService.SetCaptureServiceStatus("Processing data");
-            _captureStatusChange.OnNext(CaptureStatus.Processing);
+            _captureStatusChange.OnNext(new CaptureStatus() { Status = ECaptureStatus.Processing});
             await Task.Delay(TimeSpan.FromMilliseconds(PRESICE_OFFSET));
             _disposableCaptureStream?.Dispose();
             _sensorService.StopSensorLogging();
@@ -522,7 +528,10 @@ namespace CapFrameX.Data
 
         private void AddLoggerEntry(string entry)
         {
-
+            _captureStatusChange.OnNext(new CaptureStatus()
+            {
+                Message = entry
+            });
         }
     }
 

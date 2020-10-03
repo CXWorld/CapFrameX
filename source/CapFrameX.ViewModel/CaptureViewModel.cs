@@ -276,14 +276,21 @@ namespace CapFrameX.ViewModel
             ResetPresentMonCommand = new DelegateCommand(OnResetCaptureProcess);
 
             _captureManager.CaptureStatusChange.Subscribe(status => {
-                if (status == CaptureStatus.Processing)
+                if (status.Status != null)
                 {
-                    CaptureStateInfo = "Creating capture file..." + Environment.NewLine;
+                    if (status.Status == ECaptureStatus.Processing)
+                    {
+                        CaptureStateInfo = "Creating capture file..." + Environment.NewLine;
+                    }
+                    else
+                    {
+                        AreButtonsActive = status.Status == ECaptureStatus.Stopped;
+                        RaisePropertyChanged(nameof(AreButtonsActive));
+                    }
                 }
-                else
+                if(status.Message != null)
                 {
-                    AreButtonsActive = status == CaptureStatus.Stopped;
-                    RaisePropertyChanged(nameof(AreButtonsActive));
+                    LoggerOutput += $"{DateTime.Now.ToLongTimeString()}: {status.Message}" + Environment.NewLine;
                 }
             });
 
@@ -326,11 +333,6 @@ namespace CapFrameX.ViewModel
         public void OnSoundLevelChanged()
         {
             _soundManager.PlaySound(Sound.CaptureStarted);
-        }
-
-        private void AddLoggerEntry(string entry)
-        {
-            LoggerOutput += $"{DateTime.Now.ToLongTimeString()}: {entry}" + Environment.NewLine;
         }
 
         private void SubscribeToUpdateProcessIgnoreList()
