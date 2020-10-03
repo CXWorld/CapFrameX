@@ -267,10 +267,12 @@ namespace CapFrameX.ViewModel
                     if (status.Status == ECaptureStatus.Processing)
                     {
                         CaptureStateInfo = "Creating capture file..." + Environment.NewLine;
+                        _overlayService.SetCaptureServiceStatus("Processing data");
                     }
                     else
                     {
                         AreButtonsActive = status.Status == ECaptureStatus.Stopped;
+                        UpdateCaptureStateInfo();
                         RaisePropertyChanged(nameof(AreButtonsActive));
                     }
                 }

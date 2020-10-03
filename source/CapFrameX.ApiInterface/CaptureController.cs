@@ -50,5 +50,11 @@ namespace CapFrameX.Remote
 
             return "ok";
         }
+
+        [Route(HttpVerbs.Get, "/processes")]
+        public async Task<IEnumerable<string>> GetProcesses()
+        {
+            return _captureManager.GetAllFilteredProcesses(new HashSet<string>());
+        }
     }
 }

@@ -6,7 +6,8 @@
 		<div>
 			<div>
 				<label>Processname</label>
-				<input id="input-processname" type="text" />
+				<select id="input-processname">
+				</select>
 			</div>
 			<div style="display: flex">
 				<button type="button" onclick="startCapture()">Start Capture</button>
@@ -16,6 +17,19 @@
     </body>
 
     <script>
+		(function(){
+			fetch("http://localhost:1337/api/processes", { method: "get" })
+            .then(response => response.json())
+            .then(result => {
+                result.forEach(process => {	
+					var option = document.createElement("option");
+					option.text = process;
+					option.value = process;
+					document.getElementById("input-processname").add(option);
+				});
+            });
+		})();
+	
         window.startCapture = function() {
             fetch("http://localhost:1337/api/capture", { 
 				method: "post",
