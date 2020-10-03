@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
@@ -17,6 +18,14 @@ using System.Windows;
 
 namespace CapFrameX.Data
 {
+
+    public enum CaptureStatus
+    {
+        Started,
+        Stopped
+    }
+
+
     public class CaptureManager
     {
         private const int PRESICE_OFFSET = 2500;
@@ -43,6 +52,8 @@ namespace CapFrameX.Data
         private long _timestampStopCapture;
         private bool _isCapturing;
 
+        private ISubject<CaptureStatus> _captureStatusChange = new BehaviorSubject<CaptureStatus>(CaptureStatus.Stopped);
+        public IObservable<CaptureStatus> CaptureStatusChange => _captureStatusChange.AsObservable();
         public bool DataOffsetRunning { get; private set; }
 
         public bool IsCapturing
@@ -52,6 +63,7 @@ namespace CapFrameX.Data
             {
                 _isCapturing = value;
                 _presentMonCaptureService.IsCaptureModeActiveStream.OnNext(value);
+                _captureStatusChange.OnNext(value == true ? CaptureStatus.Started : CaptureStatus.Stopped);
             }
         }
 

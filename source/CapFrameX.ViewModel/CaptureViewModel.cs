@@ -96,15 +96,7 @@ namespace CapFrameX.ViewModel
             }
         }
 
-        public bool AreButtonsActive
-        {
-            get { return _areButtonsActive; }
-            set
-            {
-                _areButtonsActive = value;
-                RaisePropertyChanged();
-            }
-        }
+        public bool AreButtonsActive { get; set; } = true;
 
         public string CaptureStateInfo
         {
@@ -284,6 +276,11 @@ namespace CapFrameX.ViewModel
             AddToProcessListCommand = new DelegateCommand(OnAddToProcessList);
             ResetPresentMonCommand = new DelegateCommand(OnResetCaptureProcess);
 
+            _captureManager.CaptureStatusChange.Subscribe(status => {
+                AreButtonsActive = status == CaptureStatus.Stopped;
+                RaisePropertyChanged(nameof(AreButtonsActive));
+            });
+
             _logger.LogDebug("{viewName} Ready", this.GetType().Name);
             CaptureStateInfo = "Service ready..." + Environment.NewLine +
                 $"Press {CaptureHotkeyString} to start capture of the running process.";
@@ -437,7 +434,6 @@ namespace CapFrameX.ViewModel
                 })).ContinueWith((_) =>
                 {
                     _disposableHeartBeat?.Dispose();
-                    AreButtonsActive = false;
 
                     if (CaptureTimeString == "0" && CaptureStartDelayString == "0")
                         CaptureStateInfo = "Capturing in progress..." + Environment.NewLine + $"Press {CaptureHotkeyString} to stop capture.";
@@ -463,7 +459,6 @@ namespace CapFrameX.ViewModel
                     Application.Current.Dispatcher.Invoke(() =>
                     {
                         _disposableHeartBeat = GetListUpdatHeartBeat();
-                        AreButtonsActive = true;
 
                         UpdateCaptureStateInfo();
                     });
