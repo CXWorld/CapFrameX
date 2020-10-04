@@ -268,7 +268,7 @@ namespace CapFrameX.Data
 
                 if (_currentCaptureOptions.UseRunHistory)
                 {
-                    await Task.Factory.StartNew(() => _overlayService.AddRunToHistory(sessionRun, _currentCaptureOptions.ProcessName));
+                    await Task.Factory.StartNew(() => _overlayService.AddRunToHistory(sessionRun, _currentCaptureOptions.ProcessName, _currentCaptureOptions.RecordDirectory));
                 }
 
 

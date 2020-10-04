@@ -30,7 +30,7 @@ namespace CapFrameX.Contracts.Overlay
 
 		void ResetHistory();
 
-		void AddRunToHistory(ISessionRun captureData, string process);
+		void AddRunToHistory(ISessionRun captureData, string process, string recordDirectory);
 
 		
 	}
