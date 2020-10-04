@@ -37,7 +37,8 @@ namespace CapFrameX.Remote
                 UseAggregation = parameters.UseAggregation,
                 UseRunHistory = parameters.UseRunHistory,
                 SaveAggregationOnly = parameters.SaveAggregationOnly,
-                ProcessName = parameters.ProcessName
+                ProcessName = parameters.ProcessName,
+                RecordDirectory = parameters.RecordDirectory
             });
 
             return "ok";

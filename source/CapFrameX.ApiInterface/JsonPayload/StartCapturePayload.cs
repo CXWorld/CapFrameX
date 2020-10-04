@@ -15,5 +15,6 @@ namespace CapFrameX.Remote.JsonPayload
         public bool UseAggregation { get; set; }
         public bool SaveAggregationOnly { get; set; }
         public string CaptureFileMode { get; set; } = Enum.GetName(typeof(ECaptureFileMode), ECaptureFileMode.Json);
+        public string RecordDirectory { get; set; }
     }
 }

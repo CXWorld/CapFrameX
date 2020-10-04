@@ -6,8 +6,12 @@
 		<div>
 			<div>
 				<label>Processname</label>
-				<select id="input-processname">
+					<select id="input-processname">
 				</select>
+			</div>
+			<div>
+				<label>Record Directory</label>
+				<input type="string" id="input-recordDirectory" value="C:\" />
 			</div>
 			<div style="display: flex">
 				<button type="button" onclick="startCapture()">Start Capture</button>
@@ -38,7 +42,8 @@
 				},
 				body: JSON.stringify({
 					CaptureTime: 0,
-					ProcessName: document.getElementById("input-processname").value
+					ProcessName: document.getElementById("input-processname").value,
+					RecordDirectory: document.getElementById("input-recordDirectory").value
 				})
 			})
             .then(response => response.json())

@@ -358,20 +358,20 @@ namespace CapFrameX.Data
                 });
         }
 
-        public async Task SavePresentmonRawToFile(IEnumerable<string> lines, string process)
+        public async Task SavePresentmonRawToFile(IEnumerable<string> lines, string process, string recordDirectory = null)
         {
             try
             {
-                var filePath = await GetOutputFilename(process);
+                var filePath = await GetOutputFilename(process, recordDirectory);
                 lines = new string[] { IGNOREFLAGMARKER, COLUMN_HEADER }.Concat(lines);
                 File.WriteAllLines(filePath + ".csv", lines);
             }
             catch (Exception) { }
         }
 
-        public async Task<bool> SaveSessionRunsToFile(IEnumerable<ISessionRun> runs, string processName)
+        public async Task<bool> SaveSessionRunsToFile(IEnumerable<ISessionRun> runs, string processName, string recordDirectory = null)
         {
-            var filePath = await GetOutputFilename(processName);
+            var filePath = await GetOutputFilename(processName, recordDirectory);
 
             try
             {
@@ -507,7 +507,7 @@ namespace CapFrameX.Data
             clone.Hash = string.Join(",", clone.Runs.Select(r => r.Hash).OrderBy(h => h)).GetSha1();
             clone.Info.Id = Guid.NewGuid();
             NormalizeStartTimesOfSessionRuns(clone.Runs);
-            var filePath = await GetOutputFilename(clone.Info.ProcessName);
+            var filePath = await GetOutputFilename(clone.Info.ProcessName, null);
             SaveSessionToFile(filePath, clone);
         }
 
@@ -541,10 +541,10 @@ namespace CapFrameX.Data
             return _processList.FindProcessByName(processName)?.DisplayName ?? processName.Replace(".exe", string.Empty);
         }
 
-        private async Task<string> GetOutputFilename(string processName)
+        private async Task<string> GetOutputFilename(string processName, string recordDirectory)
         {
             var filename = CaptureServiceConfiguration.GetCaptureFilename(processName);
-            var directory = await _recordObserver.ObservingDirectoryStream.Take(1);
+            var directory = recordDirectory is null ? await _recordObserver.ObservingDirectoryStream.Take(1): new DirectoryInfo(recordDirectory);
             return Path.Combine(directory.FullName, filename);
         }
 

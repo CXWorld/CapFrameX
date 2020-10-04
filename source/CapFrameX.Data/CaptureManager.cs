@@ -278,10 +278,10 @@ namespace CapFrameX.Data
 
                 if (_currentCaptureOptions.CaptureFileMode == Enum.GetName(typeof(ECaptureFileMode), ECaptureFileMode.JsonCsv))
                 {
-                    await _recordManager.SavePresentmonRawToFile(normalizedAdjustedCaptureData, _currentCaptureOptions.ProcessName);
+                    await _recordManager.SavePresentmonRawToFile(normalizedAdjustedCaptureData, _currentCaptureOptions.ProcessName, _currentCaptureOptions.RecordDirectory);
                 }
 
-                bool checkSave = await _recordManager.SaveSessionRunsToFile(new ISessionRun[] { sessionRun }, _currentCaptureOptions.ProcessName);
+                bool checkSave = await _recordManager.SaveSessionRunsToFile(new ISessionRun[] { sessionRun }, _currentCaptureOptions.ProcessName, _currentCaptureOptions.RecordDirectory);
 
 
                 if (!checkSave)
@@ -543,5 +543,6 @@ namespace CapFrameX.Data
         public bool UseAggregation;
         public bool SaveAggregationOnly;
         public string CaptureFileMode;
+        public string RecordDirectory;
     }
 }
