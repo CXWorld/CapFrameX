@@ -11,7 +11,6 @@ using System.Globalization;
 using System.Linq;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
-using System.Reactive.Subjects;
 
 namespace CapFrameX.PresentMonInterface
 {
@@ -32,9 +31,6 @@ namespace CapFrameX.PresentMonInterface
         // length in seconds
         private readonly double _maxOnlineIntervalLength = 20d;
 
-        public ISubject<Tuple<string, string>> ProcessDataLineStream { get; }
-            = new Subject<Tuple<string, string>>();
-
         public OnlineMetricService(IStatisticProvider frametimeStatisticProvider,
             IRTSSService rTSSService,
             ICaptureService captureServive,
@@ -47,7 +43,6 @@ namespace CapFrameX.PresentMonInterface
             _logger = logger;
 
             _frametimeStatisticProvider = frametimeStatisticProvider;
-            ProcessDataLineStream.Subscribe(UpdateOnlineMetrics);
 
             SubscribeToUpdateSession();
             ConnectOnlineMetricDataStream();
@@ -69,9 +64,9 @@ namespace CapFrameX.PresentMonInterface
             .ObserveOn(new EventLoopScheduler()).Subscribe(dataLine =>
             {
                 if (string.IsNullOrWhiteSpace(dataLine))
-                    return;         
+                    return;
 
-                ProcessDataLineStream.OnNext(Tuple.Create(_currentProcess, dataLine));
+                UpdateOnlineMetrics(Tuple.Create(_currentProcess, dataLine));
 
                 var lineSplit = dataLine.Split(',');
 
