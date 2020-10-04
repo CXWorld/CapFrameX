@@ -1,4 +1,5 @@
-﻿using CapFrameX.Contracts.Data;
+﻿using CapFrameX.Contracts.Configuration;
+using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.PresentMonInterface;
 using CapFrameX.Contracts.Sensor;
@@ -44,6 +45,7 @@ namespace CapFrameX.Data
         private readonly SoundManager _soundManager;
         private readonly IRecordManager _recordManager;
         private readonly ILogger<CaptureManager> _logger;
+        private readonly IAppConfiguration _appConfiguration;
         private readonly List<string> _captureDataArchive = new List<string>();
         private readonly List<string> _captureData = new List<string>();
         private readonly object _archiveLock = new object();
@@ -77,7 +79,7 @@ namespace CapFrameX.Data
         [DllImport("Kernel32.dll")]
         private static extern bool QueryPerformanceCounter(out long lpPerformanceCount);
 
-        public CaptureManager(ICaptureService presentMonCaptureService, ISensorService sensorService, IOverlayService overlayService, SoundManager soundManager, IRecordManager recordManager, ILogger<CaptureManager> logger)
+        public CaptureManager(ICaptureService presentMonCaptureService, ISensorService sensorService, IOverlayService overlayService, SoundManager soundManager, IRecordManager recordManager, ILogger<CaptureManager> logger, IAppConfiguration appConfiguration)
         {
             _presentMonCaptureService = presentMonCaptureService;
             _sensorService = sensorService;
@@ -85,7 +87,7 @@ namespace CapFrameX.Data
             _soundManager = soundManager;
             _recordManager = recordManager;
             _logger = logger;
-
+            _appConfiguration = appConfiguration;
             _presentMonCaptureService.IsCaptureModeActiveStream.OnNext(false);
         }
 
@@ -266,14 +268,14 @@ namespace CapFrameX.Data
                 sessionRun.SensorData = _sensorService.GetSessionSensorData();
 
 
-                if (_currentCaptureOptions.UseRunHistory)
+                if (_appConfiguration.UseRunHistory)
                 {
                     await Task.Factory.StartNew(() => _overlayService.AddRunToHistory(sessionRun, _currentCaptureOptions.ProcessName, _currentCaptureOptions.RecordDirectory));
                 }
 
 
                 // if aggregation mode is active and "Save aggregated result only" is checked, don't save single history items
-                if (_currentCaptureOptions.UseAggregation && _currentCaptureOptions.SaveAggregationOnly)
+                if (_appConfiguration.UseAggregation && _appConfiguration.SaveAggregationOnly)
                     return;
 
                 if (_currentCaptureOptions.CaptureFileMode == Enum.GetName(typeof(ECaptureFileMode), ECaptureFileMode.JsonCsv))
@@ -539,9 +541,6 @@ namespace CapFrameX.Data
     {
         public string ProcessName;
         public double CaptureTime;
-        public bool UseRunHistory;
-        public bool UseAggregation;
-        public bool SaveAggregationOnly;
         public string CaptureFileMode;
         public string RecordDirectory;
     }
