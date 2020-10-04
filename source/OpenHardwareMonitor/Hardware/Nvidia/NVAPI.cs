@@ -266,7 +266,7 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
         public uint TotalGpuPowermW;
 
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = NVAPI.POWER_STATUS_RSVD_SIZE)]
-        public sbyte[] Rsvd;
+        public byte[] Rsvd;
 
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = NVAPI.POWER_STATUS_CHANNEL_COUNT)]
         public NvGpuPowerMonitorPowerChannelStatus[] Channels;
@@ -283,7 +283,7 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
         public ulong EnergymJ;
 
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = NVAPI.POWER_STATUS_RSVD_SIZE)]
-        public sbyte[] Rsvd;
+        public byte[] Rsvd;
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 8)]
@@ -317,7 +317,7 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
         public const int MAX_MEMORY_VALUES_PER_GPU = 5;
         public const int MAX_FAN_COOLERS_STATUS_ITEMS = 32;
         public const int POWER_STATUS_RSVD_SIZE = 16;
-        public const int POWER_STATUS_CHANNEL_COUNT= 32;
+        public const int POWER_STATUS_CHANNEL_COUNT = 32;
 
         public static readonly uint GPU_THERMAL_SETTINGS_VER = (uint)
           Marshal.SizeOf(typeof(NvGPUThermalSettings)) | 0x10000;

@@ -401,17 +401,17 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
 
             if (power != null)
             {
-                //var channels = new NvGpuPowerMonitorPowerChannelStatus[NVAPI.POWER_STATUS_CHANNEL_COUNT];
-                //for (int i = 0; i < channels.Length; i++)
-                //{
-                //    channels[i].Rsvd = new sbyte[NVAPI.POWER_STATUS_RSVD_SIZE];
-                //}
+                var channels = new NvGpuPowerMonitorPowerChannelStatus[NVAPI.POWER_STATUS_CHANNEL_COUNT];
+                for (int i = 0; i < channels.Length; i++)
+                {
+                    channels[i].Rsvd = new byte[NVAPI.POWER_STATUS_RSVD_SIZE];
+                }
 
                 var powerStatus = new NvGpuPowerStatus
                 {
                     Version = NVAPI.GPU_POWER_MONITOR_STATUS_VER,
-                    //Rsvd = new sbyte[NVAPI.POWER_STATUS_RSVD_SIZE],
-                    //Channels = channels
+                    Rsvd = new byte[NVAPI.POWER_STATUS_RSVD_SIZE],
+                    Channels = channels
                 };
 
                 if (NVAPI.NvAPI_GPU_PowerMonitorGetStatus != null &&
