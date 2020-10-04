@@ -12,14 +12,11 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 
 namespace CapFrameX.Data
 {
-
     public enum ECaptureStatus
     {
         Started,
@@ -32,7 +29,6 @@ namespace CapFrameX.Data
         public ECaptureStatus? Status;
         public string Message;
     }
-
 
     public class CaptureManager
     {
@@ -61,8 +57,10 @@ namespace CapFrameX.Data
         private long _timestampStopCapture;
         private bool _isCapturing;
 
-        private ISubject<CaptureStatus> _captureStatusChange = new BehaviorSubject<CaptureStatus>(new CaptureStatus { Status = ECaptureStatus.Stopped });
-        public IObservable<CaptureStatus> CaptureStatusChange => _captureStatusChange.AsObservable();
+        private ISubject<CaptureStatus> _captureStatusChange = 
+            new BehaviorSubject<CaptureStatus>(new CaptureStatus { Status = ECaptureStatus.Stopped });
+        public IObservable<CaptureStatus> CaptureStatusChange 
+            => _captureStatusChange.AsObservable();
         public bool DataOffsetRunning { get; private set; }
 
         public bool IsCapturing
@@ -79,7 +77,13 @@ namespace CapFrameX.Data
         [DllImport("Kernel32.dll")]
         private static extern bool QueryPerformanceCounter(out long lpPerformanceCount);
 
-        public CaptureManager(ICaptureService presentMonCaptureService, ISensorService sensorService, IOverlayService overlayService, SoundManager soundManager, IRecordManager recordManager, ILogger<CaptureManager> logger, IAppConfiguration appConfiguration)
+        public CaptureManager(ICaptureService presentMonCaptureService, 
+            ISensorService sensorService, 
+            IOverlayService overlayService, 
+            SoundManager soundManager, 
+            IRecordManager recordManager, 
+            ILogger<CaptureManager> logger, 
+            IAppConfiguration appConfiguration)
         {
             _presentMonCaptureService = presentMonCaptureService;
             _sensorService = sensorService;
@@ -102,6 +106,7 @@ namespace CapFrameX.Data
             _currentCaptureOptions = options;
             _captureData.Clear();
             _sensorService.StartSensorLogging();
+            IsCapturing = true;
 
             _overlayService.SetCaptureServiceStatus("Recording frametimes");
 
@@ -111,7 +116,7 @@ namespace CapFrameX.Data
             _ = QueryPerformanceCounter(out long startCounter);
             AddLoggerEntry($"Performance counter on start capturing: {startCounter}");
             _qpcTimeStart = startCounter;
-            IsCapturing = true;
+           
             _disposableCaptureStream = _presentMonCaptureService.RedirectedOutputDataStream
                 .Skip(5)
                 .Where(dataLine => !string.IsNullOrWhiteSpace(dataLine))
@@ -154,7 +159,6 @@ namespace CapFrameX.Data
             {
                 _overlayService.StartCaptureTimer();
             }
-
         }
 
         public async Task StopCapture()
@@ -294,9 +298,7 @@ namespace CapFrameX.Data
             catch (Exception e)
             {
                 _logger.LogError(e, "Error writing capture data");
-
                 PrepareForNextCapture();
-
             }
         }
 

@@ -412,7 +412,6 @@ namespace CapFrameX.ViewModel
                     Application.Current.Dispatcher.Invoke(() =>
                     {
                         _disposableHeartBeat = GetListUpdatHeartBeat();
-
                         UpdateCaptureStateInfo();
                     });
                     return Task.CompletedTask;
@@ -498,6 +497,7 @@ namespace CapFrameX.ViewModel
             return Observable
                 .Timer(DateTimeOffset.UtcNow, TimeSpan.FromSeconds(1))
                 .ObserveOnDispatcher()
+                .Where(x => !_captureManager.IsCapturing)
                 .Subscribe(x => UpdateProcessToCaptureList());
         }
 
