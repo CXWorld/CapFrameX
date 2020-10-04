@@ -383,9 +383,6 @@ namespace CapFrameX.ViewModel
                 {
                     CaptureTime = CaptureTime,
                     CaptureFileMode = AppConfiguration.CaptureFileMode,
-                    UseAggregation = AppConfiguration.UseAggregation,
-                    UseRunHistory = AppConfiguration.UseRunHistory,
-                    SaveAggregationOnly = AppConfiguration.SaveAggregationOnly,
                     ProcessName = processToCapture
                 })).ContinueWith((_) =>
                 {
