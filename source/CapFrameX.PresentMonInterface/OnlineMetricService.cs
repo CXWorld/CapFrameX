@@ -68,7 +68,7 @@ namespace CapFrameX.PresentMonInterface
             .Skip(5)
             .ObserveOn(new EventLoopScheduler()).Subscribe(dataLine =>
             {
-                if (string.IsNullOrWhiteSpace(dataLine) || _currentProcess == null)
+                if (string.IsNullOrWhiteSpace(dataLine))
                     return;         
 
                 ProcessDataLineStream.OnNext(Tuple.Create(_currentProcess, dataLine));
