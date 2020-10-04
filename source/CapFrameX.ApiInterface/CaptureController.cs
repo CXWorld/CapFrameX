@@ -34,9 +34,6 @@ namespace CapFrameX.Remote
             await _captureManager.StartCapture(new CaptureOptions() {
                 CaptureTime = parameters.CaptureTime,
                 CaptureFileMode = parameters.CaptureFileMode,
-                UseAggregation = parameters.UseAggregation,
-                UseRunHistory = parameters.UseRunHistory,
-                SaveAggregationOnly = parameters.SaveAggregationOnly,
                 ProcessName = parameters.ProcessName,
                 RecordDirectory = parameters.RecordDirectory
             });
