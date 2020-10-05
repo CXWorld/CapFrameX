@@ -411,6 +411,7 @@ namespace CapFrameX.ViewModel
                 {
                     Application.Current.Dispatcher.Invoke(() =>
                     {
+                        _disposableHeartBeat?.Dispose();
                         _disposableHeartBeat = GetListUpdatHeartBeat();
                         UpdateCaptureStateInfo();
                     });
