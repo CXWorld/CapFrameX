@@ -100,7 +100,12 @@ namespace CapFrameX.ViewModel
         private List<string> GetAdjustedCaptureData(string processName)
         {
             if (!_captureData.Any())
+            { 
+                AddLoggerEntry($"No available capture Data...");
                 return Enumerable.Empty<string>().ToList();
+            }
+                
+
 
             var startTimeWithOffset = GetStartTimeFromDataLine(_captureData.First());
             var stopwatchTime = (_timestampStopCapture - _timestampStartCapture) / 1000d;
