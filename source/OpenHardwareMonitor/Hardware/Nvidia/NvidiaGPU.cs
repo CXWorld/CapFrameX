@@ -127,12 +127,32 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
                     var category = new PerformanceCounterCategory("GPU Adapter Memory");
                     var instances = category.GetInstanceNames();
 
-                    var (Usage, Index) = instances
-                        .Select(instance => new PerformanceCounter("GPU Adapter Memory", "Dedicated Usage", instance))
-                        .Select((u, i) => (Usage: u.RawValue, Index: i)).Max();
+                    if (instances.Any())
+                    {
+                        long maxRawValue = 0;
+                        int maxIndex = 0;
+                        for (int i = 0; i < instances.Length; i++)
+                        {
+                            try
+                            {
+                                var currentPerfCounter = new PerformanceCounter("GPU Adapter Memory", "Dedicated Usage", instances[i]);
 
-                    dedicatedVramUsagePerformCounter = new PerformanceCounter("GPU Adapter Memory", "Dedicated Usage", instances[Index]);
-                    sharedVramUsagePerformCounter = new PerformanceCounter("GPU Adapter Memory", "Shared Usage", instances[Index]);
+                                if (currentPerfCounter.RawValue > maxRawValue)
+                                {
+                                    maxRawValue = currentPerfCounter.RawValue;
+                                    maxIndex = i;
+                                }
+
+                            }
+                            catch (Exception ex)
+                            {
+                                Log.Logger.Error(ex, $"Error while creating performance counter with instance {i}.");
+                            }
+                        }
+
+                        dedicatedVramUsagePerformCounter = new PerformanceCounter("GPU Adapter Memory", "Dedicated Usage", instances[maxIndex]);
+                        sharedVramUsagePerformCounter = new PerformanceCounter("GPU Adapter Memory", "Shared Usage", instances[maxIndex]);
+                    }
                 }
             }
             catch (Exception ex)
@@ -151,7 +171,7 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
                       "0000:" + busId.ToString("X2") + ":00.0", out var result)
                       == NVML.NvmlReturn.Success)
                     {
-                        device = result;                        
+                        device = result;
                         pcieThroughputRx = new Sensor("GPU PCIE Rx", 0,
                           SensorType.Throughput, this, settings);
                         pcieThroughputTx = new Sensor("GPU PCIE Tx", 1,
