@@ -898,5 +898,17 @@ namespace CapFrameX.Configuration.Properties {
                 this["IsGpuAccelerationActive"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("30")]
+        public double StutteringThreshold {
+            get {
+                return ((double)(this["StutteringThreshold"]));
+            }
+            set {
+                this["StutteringThreshold"] = value;
+            }
+        }
     }
 }

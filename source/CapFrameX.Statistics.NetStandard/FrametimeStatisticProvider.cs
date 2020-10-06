@@ -43,12 +43,33 @@ namespace CapFrameX.Statistics.NetStandard
             return 100 * (double)stutteringCount / sequence.Count;
         }
 
-        public double GetStutteringTimePercentage(IList<double> sequence, double stutteringFactor)
+        public double GetStutteringTimePercentage(IList<double> sequence, double stutteringFactor, double stutteringThreshold)
         {
             var average = sequence.Average();
             var stutteringTime = sequence.Where(element => element > stutteringFactor * average).Sum();
 
-            return 100 * stutteringTime / sequence.Sum();
+
+            double stutteringThresholdTime= 0;
+            var elements = new List<double>();
+            foreach (var element in sequence)
+            {
+                
+                if (element <= stutteringFactor * average)
+                {
+                    elements.Add(element);
+
+                    if (elements.Count == 4)
+                    {
+                        if (elements.Average() > 1000 / stutteringThreshold)
+                            stutteringThresholdTime += elements.Sum();
+
+                        elements.Clear();
+                    }                       
+                }
+
+            }
+
+            return 100 * (stutteringTime + stutteringThresholdTime) / sequence.Sum();
         }
 
         public IList<double> GetMovingAverage(IList<double> sequence)

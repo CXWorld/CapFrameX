@@ -33,6 +33,7 @@ using CapFrameX.Statistics.NetStandard.Contracts;
 using CapFrameX.Statistics.PlotBuilder.Contracts;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;
+using System.Security.Policy;
 
 namespace CapFrameX.ViewModel
 {
@@ -281,6 +282,25 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
+		public double StutteringFactor
+		{
+			get { return _appConfiguration.StutteringFactor; }
+			set
+			{
+				_appConfiguration.StutteringFactor = value;
+				RaisePropertyChanged();
+			}
+		}
+
+		public double StutteringThreshold
+        {
+			get { return _appConfiguration.StutteringThreshold; }
+			set
+			{
+                _appConfiguration.StutteringThreshold = value;
+				RaisePropertyChanged();
+			}
+        }
 		public EChartYAxisSetting SelecetedChartYAxisSetting
 		{
 			get { return _selecetedChartYAxisSetting; }
@@ -552,7 +572,7 @@ namespace CapFrameX.ViewModel
 				.ToString(CultureInfo.InvariantCulture) + " s";
 		}
 
-		private void OnCopyStatisticalParameter()
+	private void OnCopyStatisticalParameter()
 		{
 			if (_session == null)
 				return;
@@ -1022,7 +1042,7 @@ namespace CapFrameX.ViewModel
 			if (frametimes == null || !frametimes.Any())
 				return;
 
-			var stutteringTimePercentage = _frametimeStatisticProvider.GetStutteringTimePercentage(frametimes, _appConfiguration.StutteringFactor);
+			var stutteringTimePercentage = _frametimeStatisticProvider.GetStutteringTimePercentage(frametimes, _appConfiguration.StutteringFactor, _appConfiguration.StutteringThreshold);
 
 			Application.Current.Dispatcher.BeginInvoke(new Action(() =>
 			{
@@ -1163,6 +1183,11 @@ namespace CapFrameX.ViewModel
 			}
 
 			return setting;
+		}
+
+		public void OnStutteringOptionsChanged()
+		{
+			DemandUpdateCharts();
 		}
 
 		public void OnRangeSliderDragCompleted()

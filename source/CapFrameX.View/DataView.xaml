@@ -238,8 +238,32 @@
                     <Grid Grid.Column="2" Margin="5 5 0 0" >
                         <TabControl Background="#F5F5F5" >
                             <TabItem Header="Stuttering analysis">
-                                <lvc:PieChart Width="250" Hoverable="False" Series="{Binding StutteringStatisticCollection}" 
+                                <Grid>
+                                    <lvc:PieChart Width="250" Hoverable="False" Series="{Binding StutteringStatisticCollection}" 
 								  LegendLocation="Bottom" DataClick="Chart_OnDataClick"/>
+                                    <StackPanel Panel.ZIndex="1" Margin="5" HorizontalAlignment="Right" VerticalAlignment="Top" Orientation="Vertical">
+                                        <TextBox Margin="0 0 0 10" materialDesign:HintAssist.Hint="Stuttering factor" materialDesign:HintAssist.IsFloating="True" Width="65"
+                                                 HorizontalContentAlignment="Center" Text="{Binding StutteringFactor}" 
+                                                 PreviewKeyDown="StutteringFactor_PreviewKeyDown" PreviewTextInput="NumberValidationTextBox" ToolTipService.ShowDuration="25000">
+                                            <TextBox.ToolTip>
+                                                <ToolTip Width="300">
+                                                    <TextBlock Text="Factor for the stuttering diagramm.&#10;Every frametime that is higher than the average frametime x factor is added to the stuttering time."
+										            TextWrapping="Wrap"/>
+                                                </ToolTip>
+                                            </TextBox.ToolTip>
+                                        </TextBox>
+                                        <TextBox materialDesign:HintAssist.Hint="FPS threshold" materialDesign:HintAssist.IsFloating="True" Width="65" 
+                                                 HorizontalContentAlignment="Center" Text="{Binding StutteringThreshold}"
+                                                 PreviewKeyDown="StutteringThreshold_PreviewKeyDown" PreviewTextInput="NumberValidationTextBox" ToolTipService.ShowDuration="25000">
+                                            <TextBox.ToolTip>
+                                                <ToolTip Width="300">
+                                                    <TextBlock Text="Additional FPS threshold for the stuttering diagramm.&#10;If the average FPS of 4 consecutive frames are lower than this threshold, the frametimes are added to the stuttering time."
+										            TextWrapping="Wrap"/>
+                                                </ToolTip>
+                                            </TextBox.ToolTip>
+                                        </TextBox>
+                                    </StackPanel>
+                                </Grid>
                             </TabItem>
                             <TabItem Header="FPS thresholds">
                                 <Grid Margin="0 5 0 0">

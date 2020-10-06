@@ -6,6 +6,8 @@ namespace CapFrameX.Contracts.Configuration
 	{
 		double StutteringFactor { get; set; }
 
+		double StutteringThreshold { get; set; }
+
 		string ObservedDirectory { get; set; }
 
 		string ScreenshotDirectory { get; set; }

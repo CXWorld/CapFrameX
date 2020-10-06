@@ -24,6 +24,12 @@ namespace CapFrameX.Configuration
 			set { Settings.StutteringFactor = value; Settings.Save(); }
 		}
 
+		public double StutteringThreshold
+		{
+			get { return Settings.StutteringThreshold; }
+			set { Settings.StutteringThreshold = value; Settings.Save(); }
+		}
+
 		public string ObservedDirectory
 		{
 			get { return Settings.ObservedDirectory; }

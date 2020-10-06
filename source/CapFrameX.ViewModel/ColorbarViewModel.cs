@@ -165,16 +165,6 @@ namespace CapFrameX.ViewModel
             }
         }
 
-        public double StutteringFactor
-        {
-            get { return _appConfiguration.StutteringFactor; }
-            set
-            {
-                _appConfiguration.StutteringFactor = value;
-                RaisePropertyChanged();
-            }
-        }
-
         public int FpsValuesRoundingDigits
         {
             get { return _appConfiguration.FpsValuesRoundingDigits; }

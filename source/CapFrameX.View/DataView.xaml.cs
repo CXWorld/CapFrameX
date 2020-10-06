@@ -80,6 +80,28 @@ namespace CapFrameX.View
 			}			
 		}
 
+		private void StutteringThreshold_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+			var key = e.Key;
+
+			if (key == Key.Enter)
+			{
+				GraphTab.Focus();
+				(DataContext as DataViewModel).OnStutteringOptionsChanged();
+			}
+		}
+
+		private void StutteringFactor_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+		{
+			var key = e.Key;
+
+			if (key == Key.Enter)
+			{
+				GraphTab.Focus();
+				(DataContext as DataViewModel).OnStutteringOptionsChanged();
+			}
+		}
+		
 		private void NumberValidationTextBox(object sender, TextCompositionEventArgs e)
 		{
 			Regex regex = new Regex("[^0-9.-]+");

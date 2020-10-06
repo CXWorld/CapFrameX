@@ -165,15 +165,6 @@
                                                 </Binding>
                                             </ComboBox.Text>
                                         </ComboBox>
-                                        <TextBox Grid.Row="0" Grid.Column="2" materialDesign:HintAssist.Hint="Stuttering factor" HorizontalAlignment="Right" Width="90"  Margin="0 15 15 15"
-                                                 ToolTip="Sets the factor for the stuttering pie chart.&#10;Stuttering = frametimes > avg. frametime x factor">
-                                            <TextBox.Text>
-                                                <Binding Path="StutteringFactor"
-														 Mode="TwoWay"
-														 UpdateSourceTrigger="PropertyChanged">
-                                                </Binding>
-                                            </TextBox.Text>
-                                        </TextBox>
                                         <!--<StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="15 5 0 5" Grid.Row="1" Grid.Column="0">
                                             <TextBlock Text="Dark mode"/>
                                             <ToggleButton Margin="15 0 0 0" Click="MenuDarkModeButton_Click"/>
