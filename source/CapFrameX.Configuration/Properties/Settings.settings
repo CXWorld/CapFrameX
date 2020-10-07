@@ -222,7 +222,7 @@
       <Value Profile="(Default)">True</Value>
     </Setting>
     <Setting Name="StutteringThreshold" Type="System.Double" Scope="User">
-      <Value Profile="(Default)">30</Value>
+      <Value Profile="(Default)">25</Value>
     </Setting>
   </Settings>
 </SettingsFile>

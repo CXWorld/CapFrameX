@@ -48,27 +48,23 @@ namespace CapFrameX.Statistics.NetStandard
             var average = sequence.Average();
             var stutteringTime = sequence.Where(element => element > stutteringFactor * average).Sum();
 
-
-            double stutteringThresholdTime= 0;
+            double stutteringThresholdTime = 0;
             var elements = new List<double>();
-            foreach (var element in sequence)
-            {
-                
-                if (element <= stutteringFactor * average)
+            foreach (var frametime in sequence)
+            {              
+                if (frametime <= stutteringFactor * average)
                 {
-                    elements.Add(element);
+                    elements.Add(frametime);
 
                     if (elements.Count == 4)
                     {
-                        if (elements.Average() > 1000 / stutteringThreshold)
+                        if (Math.Round(1000 / elements.Average()) < stutteringThreshold)
                             stutteringThresholdTime += elements.Sum();
 
                         elements.Clear();
                     }                       
                 }
-
             }
-
             return 100 * (stutteringTime + stutteringThresholdTime) / sequence.Sum();
         }
 
