@@ -30,6 +30,7 @@ using CapFrameX.Statistics.NetStandard;
 using CapFrameX.Statistics.NetStandard.Contracts;
 using CapFrameX.Contracts.RTSS;
 using CapFrameX.RTSSIntegration;
+using System.Reactive.Subjects;
 
 namespace CapFrameX
 {
@@ -104,6 +105,7 @@ namespace CapFrameX
 				var window = Container.Resolve<LoginWindow>();
 				window.Show();
 			});
+			Container.Register<CaptureManager>(Reuse.Singleton);
 		}
 
 		/// <summary>

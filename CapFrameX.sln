@@ -67,6 +67,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.RTSSIntegration",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.CustomInstallerActions", "source\CapFrameX.CustomInstallerActions\CapFrameX.CustomInstallerActions.csproj", "{D26EA74F-8D44-453C-AD70-3789AFFDF85F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.Remote", "source\CapFrameX.ApiInterface\CapFrameX.Remote.csproj", "{A692A512-627A-4896-9D2D-4412FDD8C78C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -436,6 +438,18 @@ Global
 		{D26EA74F-8D44-453C-AD70-3789AFFDF85F}.Release|x64.Build.0 = Release|x64
 		{D26EA74F-8D44-453C-AD70-3789AFFDF85F}.Release|x86.ActiveCfg = Release|x86
 		{D26EA74F-8D44-453C-AD70-3789AFFDF85F}.Release|x86.Build.0 = Release|x86
+		{A692A512-627A-4896-9D2D-4412FDD8C78C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A692A512-627A-4896-9D2D-4412FDD8C78C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A692A512-627A-4896-9D2D-4412FDD8C78C}.Debug|x64.ActiveCfg = Debug|x64
+		{A692A512-627A-4896-9D2D-4412FDD8C78C}.Debug|x64.Build.0 = Debug|x64
+		{A692A512-627A-4896-9D2D-4412FDD8C78C}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A692A512-627A-4896-9D2D-4412FDD8C78C}.Debug|x86.Build.0 = Debug|Any CPU
+		{A692A512-627A-4896-9D2D-4412FDD8C78C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A692A512-627A-4896-9D2D-4412FDD8C78C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A692A512-627A-4896-9D2D-4412FDD8C78C}.Release|x64.ActiveCfg = Release|Any CPU
+		{A692A512-627A-4896-9D2D-4412FDD8C78C}.Release|x64.Build.0 = Release|Any CPU
+		{A692A512-627A-4896-9D2D-4412FDD8C78C}.Release|x86.ActiveCfg = Release|Any CPU
+		{A692A512-627A-4896-9D2D-4412FDD8C78C}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

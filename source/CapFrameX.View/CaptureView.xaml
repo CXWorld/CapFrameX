@@ -54,12 +54,12 @@
                             </Grid.ColumnDefinitions>
                             <Border Grid.Column="0" Margin="0 0 20 0" Background="Transparent" BorderThickness="0.2" BorderBrush="Black">
                                 <Grid Margin="0 20 0 20">
-                                    <StackPanel Margin="0" Orientation="Vertical" Width="250">
+                                    <StackPanel Orientation="Vertical" Width="250">
                                         <StackPanel Orientation="Horizontal">
                                             <TextBlock Style="{StaticResource MaterialDesignTitleTextBlock}">Running processes</TextBlock>
-                                            <Button Padding="0 0 25 4" Width="64" Height="24" Foreground="Black" BorderThickness="0" Background="Transparent" VerticalAlignment="Top"
-													HorizontalAlignment="Center" Command="{Binding ResetPresentMonCommand}" ToolTip="Reset and rescan processes"
-													IsEnabled="{Binding AreButtonsActive}">
+                                            <Button Margin="30 0 0 0" Padding="0" Width="24" Height="24" Foreground="Black" BorderThickness="0" Background="Transparent"
+													Command="{Binding ResetPresentMonCommand}" ToolTip="Reset and rescan processes"
+													IsEnabled="{Binding AreButtonsActive}" materialDesign:RippleAssist.Feedback="#DD000000">
                                                 <materialDesign:PackIcon Kind="Autorenew" Width="22" Height="22"/>
                                             </Button>
                                         </StackPanel>

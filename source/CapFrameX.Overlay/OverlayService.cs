@@ -212,7 +212,7 @@ namespace CapFrameX.Overlay
             _rTSSService.SetRunHistoryOutlierFlags(_runHistoryOutlierFlags);
         }
 
-        public void AddRunToHistory(ISessionRun sessionRun, string process)
+        public void AddRunToHistory(ISessionRun sessionRun, string process, string recordDirectory)
         {
             var frametimes = sessionRun.CaptureData.MsBetweenPresents;
 
@@ -283,7 +283,7 @@ namespace CapFrameX.Overlay
                         Task.Run(async () =>
                         {
                             await Task.Delay(1000);
-                            await _recordManager.SaveSessionRunsToFile(_captureDataHistory, process);
+                            await _recordManager.SaveSessionRunsToFile(_captureDataHistory, process, recordDirectory);
                         });
                     }
                 }

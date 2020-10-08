@@ -151,7 +151,6 @@
     <Compile Include="CloudViewModel.cs" />
     <Compile Include="AggregationViewModel.cs" />
     <Compile Include="CaptureViewModel.cs" />
-    <Compile Include="CaptureViewModelData.cs" />
     <Compile Include="ColorRessource.cs" />
     <Compile Include="ComparisonColorManager.cs" />
     <Compile Include="ComparisonRecordInfoWrapper.cs" />

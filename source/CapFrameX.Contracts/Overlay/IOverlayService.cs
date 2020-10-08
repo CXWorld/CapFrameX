@@ -1,6 +1,5 @@
 ﻿using CapFrameX.Data.Session.Contracts;
 using System.Reactive.Subjects;
-using System.Threading.Tasks;
 
 namespace CapFrameX.Contracts.Overlay
 {
@@ -30,8 +29,6 @@ namespace CapFrameX.Contracts.Overlay
 
 		void ResetHistory();
 
-		void AddRunToHistory(ISessionRun captureData, string process);
-
-		
+		void AddRunToHistory(ISessionRun captureData, string process, string recordDirectory);
 	}
 }

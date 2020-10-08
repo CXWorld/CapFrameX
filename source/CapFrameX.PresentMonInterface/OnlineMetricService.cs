@@ -1,11 +1,16 @@
-﻿using CapFrameX.Statistics.NetStandard;
+﻿using CapFrameX.Contracts.PresentMonInterface;
+using CapFrameX.Contracts.RTSS;
+using CapFrameX.EventAggregation.Messages;
+using CapFrameX.Statistics.NetStandard;
 using CapFrameX.Statistics.NetStandard.Contracts;
 using Microsoft.Extensions.Logging;
+using Prism.Events;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Reactive.Subjects;
+using System.Reactive.Concurrency;
+using System.Reactive.Linq;
 
 namespace CapFrameX.PresentMonInterface
 {
@@ -14,6 +19,9 @@ namespace CapFrameX.PresentMonInterface
         private const double STUTTERING_THRESHOLD = 2d;
 
         private readonly IStatisticProvider _frametimeStatisticProvider;
+        private readonly IRTSSService _rTSSService;
+        private readonly ICaptureService _captureServive;
+        private readonly IEventAggregator _eventAggregator;
         private readonly List<double> _frametimes = new List<double>();
         private readonly List<double> _measuretimes = new List<double>();
         private readonly ILogger<OnlineMetricService> _logger;
@@ -23,14 +31,59 @@ namespace CapFrameX.PresentMonInterface
         // length in seconds
         private readonly double _maxOnlineIntervalLength = 20d;
 
-        public ISubject<Tuple<string, string>> ProcessDataLineStream { get; }
-            = new Subject<Tuple<string, string>>();
-
-        public OnlineMetricService(IStatisticProvider frametimeStatisticProvider, ILogger<OnlineMetricService> logger)
+        public OnlineMetricService(IStatisticProvider frametimeStatisticProvider,
+            IRTSSService rTSSService,
+            ICaptureService captureServive,
+            IEventAggregator eventAggregator,
+            ILogger<OnlineMetricService> logger)
         {
-            _frametimeStatisticProvider = frametimeStatisticProvider;
-            ProcessDataLineStream.Subscribe(UpdateOnlineMetrics);
+            _rTSSService = rTSSService;
+            _captureServive = captureServive;
+            _eventAggregator = eventAggregator;
             _logger = logger;
+
+            _frametimeStatisticProvider = frametimeStatisticProvider;
+
+            SubscribeToUpdateSession();
+            ConnectOnlineMetricDataStream();
+        }
+
+        private void SubscribeToUpdateSession()
+        {
+            _eventAggregator.GetEvent<PubSubEvent<ViewMessages.CurrentProcessToCapture>>()
+                            .Subscribe(msg =>
+                            {
+                                _currentProcess = msg.Process;
+                            });
+        }
+
+        private void ConnectOnlineMetricDataStream()
+        {
+            _captureServive.RedirectedOutputDataStream
+            .Skip(5)
+            .ObserveOn(new EventLoopScheduler()).Subscribe(dataLine =>
+            {
+                if (string.IsNullOrWhiteSpace(dataLine))
+                    return;
+
+                UpdateOnlineMetrics(Tuple.Create(_currentProcess, dataLine));
+
+                var lineSplit = dataLine.Split(',');
+
+                if (lineSplit.Length < 2)
+                {
+                    _logger.LogInformation("Unusable string {dataLine}.", dataLine);
+                    return;
+                }
+
+                if (_currentProcess == lineSplit[0].Replace(".exe", ""))
+                {
+                    if (uint.TryParse(lineSplit[1], out uint processID))
+                    {
+                        _rTSSService.ProcessIdStream.OnNext(processID);
+                    }
+                }
+            });
         }
 
         private void UpdateOnlineMetrics(Tuple<string, string> dataSet)
