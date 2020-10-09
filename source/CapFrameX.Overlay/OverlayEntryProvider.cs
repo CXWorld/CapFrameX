@@ -38,8 +38,10 @@ namespace CapFrameX.Overlay
         private readonly ILogger<OverlayEntryProvider> _logger;
         private readonly ConcurrentDictionary<string, IOverlayEntry> _identifierOverlayEntryDict
              = new ConcurrentDictionary<string, IOverlayEntry>();
-        private readonly TaskCompletionSource<bool> _taskCompletionSource
+        private readonly TaskCompletionSource<bool> _taskCompletionSource 
             = new TaskCompletionSource<bool>();
+        private readonly ConcurrentDictionary<string, int> _colorIndexDictionary 
+            = new ConcurrentDictionary<string, int>();
         private BlockingCollection<IOverlayEntry> _overlayEntries;
         private IObservable<IOverlayEntry[]> _onDictionaryUpdatedBuffered;
 
@@ -595,118 +597,49 @@ namespace CapFrameX.Overlay
 
         private void UpdateFormatting()
         {
-            var colorIndexDictionary = new Dictionary<string, int>();
+            bool updateVariables = false;
 
             foreach (var entry in _overlayEntries)
             {
                 if (entry.FormatChanged)
                 {
+                    updateVariables = true;
+
                     // group name format
                     var basicGroupFormat = entry.GroupSeparators == 0 ? "{0}"
                         : Enumerable.Repeat("\n", entry.GroupSeparators).Aggregate((i, j) => i + j) + "{0}";
                     var groupNameFormatStringBuilder = new StringBuilder();
                     groupNameFormatStringBuilder.Append("<S=");
                     groupNameFormatStringBuilder.Append(entry.GroupFontSize.ToString());
-
-                    // {
-                    AppendColorFormat(groupNameFormatStringBuilder, entry.GroupColor, colorIndexDictionary);
-                    //groupNameFormatStringBuilder.Append("><C=");
-                    //groupNameFormatStringBuilder.Append(entry.GroupColor);
-                    //groupNameFormatStringBuilder.Append(">");
-                    // }
-
+                    AppendColorFormat(groupNameFormatStringBuilder, entry.GroupColor);
                     groupNameFormatStringBuilder.Append(basicGroupFormat);
                     groupNameFormatStringBuilder.Append(" <C><S>");
                     entry.GroupNameFormat = groupNameFormatStringBuilder.ToString();
-                    // "<S=" + entry.GroupFontSize + "><C=" + entry.GroupColor + ">" + basicGroupFormat + "  <C><S>";
-
-                    // value format
-                    //if (entry.Identifier == "Framerate")
-                    //{
-                    //	var valueFormatStringBuilder = new StringBuilder();
-                    //	valueFormatStringBuilder.Append("<A=-4><S=");
-                    //	valueFormatStringBuilder.Append(entry.ValueFontSize.ToString());
-                    //	valueFormatStringBuilder.Append("><C=");
-                    //	valueFormatStringBuilder.Append(entry.Color);
-                    //	valueFormatStringBuilder.Append(">{0,4:F2}<C><S><A>");
-                    //	valueFormatStringBuilder.Append("<A=4><S=");
-                    //	valueFormatStringBuilder.Append((entry.ValueFontSize / 2).ToString());
-                    //	valueFormatStringBuilder.Append("><C=");
-                    //	valueFormatStringBuilder.Append(entry.Color);
-                    //	valueFormatStringBuilder.Append(">FPS<C><S><A>");
-                    //	entry.ValueFormat = valueFormatStringBuilder.ToString();
-                    //		//"<A=-4><S=" + entry.ValueFontSize.ToString() + "><C=" + entry.Color + "><FR><C><S><A>" +
-                    //		//"<A=4><S=" + (entry.ValueFontSize / 2).ToString() + "><C=" + entry.Color + ">FPS<C><S><A>";
-                    //}
-                    //else if (entry.Identifier == "Frametime")
-                    //{
-                    //	var valueFormatStringBuilder = new StringBuilder();
-                    //	valueFormatStringBuilder.Append("<A=-4><S=");
-                    //	valueFormatStringBuilder.Append(entry.ValueFontSize.ToString());
-                    //	valueFormatStringBuilder.Append("><C=");
-                    //	valueFormatStringBuilder.Append(entry.Color);
-                    //	valueFormatStringBuilder.Append("><FT><C><S><A>");
-                    //	valueFormatStringBuilder.Append("<A=4><S=");
-                    //	valueFormatStringBuilder.Append((entry.ValueFontSize / 2).ToString());
-                    //	valueFormatStringBuilder.Append("><C=");
-                    //	valueFormatStringBuilder.Append(entry.Color);
-                    //	valueFormatStringBuilder.Append(">ms<C><S><A>");
-                    //	entry.ValueFormat = valueFormatStringBuilder.ToString();
-                    //		//"<A=-4><S=" + entry.ValueFontSize.ToString() + "><C=" + entry.Color + "><FT><C><S><A>" +
-                    //		//"<A=4><S=" + (entry.ValueFontSize / 2).ToString() + "><C=" + entry.Color + ">ms<C><S><A>";
-                    //}
-                    //else
-                    //{
+                   
                     if (entry.ValueUnitFormat != null && entry.ValueAlignmentAndDigits != null)
                     {
                         var valueFormatStringBuilder = new StringBuilder();
                         valueFormatStringBuilder.Append("<S=");
                         valueFormatStringBuilder.Append(entry.ValueFontSize.ToString());
-
-                        // {
-                        AppendColorFormat(valueFormatStringBuilder, entry.Color, colorIndexDictionary);
-                        //valueFormatStringBuilder.Append("><C=");
-                        //valueFormatStringBuilder.Append(entry.Color);
-                        //valueFormatStringBuilder.Append(">");
-                        // }
-
-
+                        AppendColorFormat(valueFormatStringBuilder, entry.Color);
                         valueFormatStringBuilder.Append(entry.ValueAlignmentAndDigits);
                         valueFormatStringBuilder.Append("<C><S>");
                         valueFormatStringBuilder.Append("<S=");
                         valueFormatStringBuilder.Append((entry.ValueFontSize / 2).ToString());
-
-                        // {
-                        AppendColorFormat(valueFormatStringBuilder, entry.Color, colorIndexDictionary);
-                        //valueFormatStringBuilder.Append("><C=");
-                        //valueFormatStringBuilder.Append(entry.Color);
-                        //valueFormatStringBuilder.Append(">");
-                        // }
-
+                        AppendColorFormat(valueFormatStringBuilder, entry.Color);
                         valueFormatStringBuilder.Append(entry.ValueUnitFormat);
                         valueFormatStringBuilder.Append("<C><S>");
                         entry.ValueFormat = valueFormatStringBuilder.ToString();
-                        // "<S=" + entry.ValueFontSize + "><C=" + entry.Color + ">" + entry.ValueAlignmentAndDigits + "<C><S>"
-                        //	+ "<S=" + entry.ValueFontSize / 2 + "><C=" + entry.Color + ">" + entry.ValueUnitFormat + "<C><S>";
                     }
                     else
                     {
                         var valueFormatStringBuilder = new StringBuilder();
                         valueFormatStringBuilder.Append("<S=");
                         valueFormatStringBuilder.Append(entry.ValueFontSize.ToString());
-
-                        // {
-                        AppendColorFormat(valueFormatStringBuilder, entry.Color, colorIndexDictionary);
-                        //valueFormatStringBuilder.Append("><C=");
-                        //valueFormatStringBuilder.Append(entry.Color);
-                        //valueFormatStringBuilder.Append(">");
-                        // }
-
+                        AppendColorFormat(valueFormatStringBuilder, entry.Color);
                         valueFormatStringBuilder.Append("{0}<C><S>");
                         entry.ValueFormat = valueFormatStringBuilder.ToString();
-                        // "<S=" + entry.ValueFontSize + "><C=" + entry.Color + ">{0}<C><S>";
                     }
-                    //}
 
                     // reset format changed  and last limit state 
                     entry.FormatChanged = false;
@@ -769,95 +702,34 @@ namespace CapFrameX.Overlay
 
                         if (limitState != entry.LastLimitState)
                         {
-                            // Update color and last limit state
-
-                            //if (entry.Identifier == "Framerate")
-                            //{
-                            //	var valueFormatStringBuilder = new StringBuilder();
-                            //	valueFormatStringBuilder.Append("<A=-4><S=");
-                            //	valueFormatStringBuilder.Append(entry.ValueFontSize.ToString());
-                            //	valueFormatStringBuilder.Append("><C=");
-                            //	valueFormatStringBuilder.Append(currentColor);
-                            //	valueFormatStringBuilder.Append(">{0,4:F2}<C><S><A>");
-                            //	valueFormatStringBuilder.Append("<A=4><S=");
-                            //	valueFormatStringBuilder.Append((entry.ValueFontSize / 2).ToString());
-                            //	valueFormatStringBuilder.Append("><C=");
-                            //	valueFormatStringBuilder.Append(currentColor);
-                            //	valueFormatStringBuilder.Append(">FPS<C><S><A>");
-                            //	entry.ValueFormat = valueFormatStringBuilder.ToString();
-                            //	//"<A=-4><S=" + entry.ValueFontSize.ToString() + "><C=" + currentColor+ "><FR><C><S><A>" +
-                            //	//"<A=4><S=" + (entry.ValueFontSize / 2).ToString() + "><C=" + currentColor + ">FPS<C><S><A>";
-                            //}
-                            //else if (entry.Identifier == "Frametime")
-                            //{
-                            //	var valueFormatStringBuilder = new StringBuilder();
-                            //	valueFormatStringBuilder.Append("<A=-4><S=");
-                            //	valueFormatStringBuilder.Append(entry.ValueFontSize.ToString());
-                            //	valueFormatStringBuilder.Append("><C=");
-                            //	valueFormatStringBuilder.Append(currentColor);
-                            //	valueFormatStringBuilder.Append("><FT><C><S><A>");
-                            //	valueFormatStringBuilder.Append("<A=4><S=");
-                            //	valueFormatStringBuilder.Append((entry.ValueFontSize / 2).ToString());
-                            //	valueFormatStringBuilder.Append("><C=");
-                            //	valueFormatStringBuilder.Append(currentColor);
-                            //	valueFormatStringBuilder.Append(">ms<C><S><A>");
-                            //	entry.ValueFormat = valueFormatStringBuilder.ToString();
-                            //	//"<A=-4><S=" + entry.ValueFontSize.ToString() + "><C=" + currentColor + "><FT><C><S><A>" +
-                            //	//"<A=4><S=" + (entry.ValueFontSize / 2).ToString() + "><C=" + currentColor + ">ms<C><S><A>";
-                            //}
-
-                            //else
-                            //{ 
                             if (entry.ValueUnitFormat != null && entry.ValueAlignmentAndDigits != null)
                             {
+                                updateVariables = true;
+
                                 var valueFormatStringBuilder = new StringBuilder();
                                 valueFormatStringBuilder.Append("<S=");
                                 valueFormatStringBuilder.Append(entry.ValueFontSize.ToString());
-                
-
-                                // {
-                                AppendColorFormat(valueFormatStringBuilder, currentColor, colorIndexDictionary);
-                                //valueFormatStringBuilder.Append("><C=");
-                                //valueFormatStringBuilder.Append(currentColor);
-                                //valueFormatStringBuilder.Append(">");
-                                // }
-
+                                AppendColorFormat(valueFormatStringBuilder, currentColor);
                                 valueFormatStringBuilder.Append(entry.ValueAlignmentAndDigits);
                                 valueFormatStringBuilder.Append("<C><S>");
                                 valueFormatStringBuilder.Append("<S=");
                                 valueFormatStringBuilder.Append((entry.ValueFontSize / 2).ToString());
-
-                                // {
-                                AppendColorFormat(valueFormatStringBuilder, currentColor, colorIndexDictionary);
-                                //valueFormatStringBuilder.Append("><C=");
-                                //valueFormatStringBuilder.Append(currentColor);
-                                //valueFormatStringBuilder.Append(">");
-                                // }
-
+                                AppendColorFormat(valueFormatStringBuilder, currentColor);
                                 valueFormatStringBuilder.Append(entry.ValueUnitFormat);
                                 valueFormatStringBuilder.Append("<C><S>");
                                 entry.ValueFormat = valueFormatStringBuilder.ToString();
-                                // "<S=" + entry.ValueFontSize + "><C=" + currentColor + ">" + entry.ValueAlignmentAndDigits + "<C><S>"
-                                // + "<S=" + entry.ValueFontSize / 2 + "><C=" + currentColor + ">" + entry.ValueUnitFormat + "<C><S>";
                             }
                             else
                             {
+                                updateVariables = true;
+
                                 var valueFormatStringBuilder = new StringBuilder();
                                 valueFormatStringBuilder.Append("<S=");
                                 valueFormatStringBuilder.Append(entry.ValueFontSize.ToString());
-
-                                // {
-                                AppendColorFormat(valueFormatStringBuilder, currentColor, colorIndexDictionary);
-                                //valueFormatStringBuilder.Append("><C=");
-                                //valueFormatStringBuilder.Append(currentColor);
-                                //valueFormatStringBuilder.Append(">");
-                                // }                        
-
+                                AppendColorFormat(valueFormatStringBuilder, currentColor);                   
                                 valueFormatStringBuilder.Append("{0}<C><S>");
                                 entry.ValueFormat = valueFormatStringBuilder.ToString();
-                                // "<S=" + entry.ValueFontSize + "><C=" + currentColor + ">{0}<C><S>";
                             }
-                            //}
 
                             entry.LastLimitState = limitState;
                         }
@@ -865,28 +737,24 @@ namespace CapFrameX.Overlay
                 }
             }
 
-            if (colorIndexDictionary.Any())
+            if (updateVariables)
             {
                 var colorVariablesStringBuilder = new StringBuilder();
-                colorIndexDictionary.ForEach(pair => colorVariablesStringBuilder.Append($"<C{pair.Value}={pair.Key}>"));
+                _colorIndexDictionary.ForEach(pair => colorVariablesStringBuilder.Append($"<C{pair.Value}={pair.Key}>"));
                 _rTSSService.SetFormatVariables(colorVariablesStringBuilder.ToString());
             }
         }
 
-        private void AppendColorFormat(StringBuilder groupNameFormatStringBuilder,
-            string groupColor, Dictionary<string, int> colorIndexDictionary)
+        private void AppendColorFormat(StringBuilder groupNameFormatStringBuilder, string groupColor)
         {
-            //groupNameFormatStringBuilder.Append("><C=");
-            //groupNameFormatStringBuilder.Append(entry.GroupColor);
-
-            if (colorIndexDictionary.ContainsKey(groupColor))
+            if (_colorIndexDictionary.ContainsKey(groupColor))
             {
-                groupNameFormatStringBuilder.Append($"><C{colorIndexDictionary[groupColor]}>");
+                groupNameFormatStringBuilder.Append($"><C{_colorIndexDictionary[groupColor]}>");
             }
             else
             {
-                int index = !colorIndexDictionary.Any() ? 0 : colorIndexDictionary.Values.Last() + 1;
-                colorIndexDictionary.Add(groupColor, index);
+                int index = !_colorIndexDictionary.Any() ? 0 : _colorIndexDictionary.Values.Last() + 1;
+                _colorIndexDictionary.TryAdd(groupColor, index);
 
                 groupNameFormatStringBuilder.Append($"><C{index}>");
             }
