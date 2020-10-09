@@ -595,6 +595,8 @@ namespace CapFrameX.Overlay
 
         private void UpdateFormatting()
         {
+            var colorIndexDictionary = new Dictionary<string, int>();
+
             foreach (var entry in _overlayEntries)
             {
                 if (entry.FormatChanged)
@@ -605,9 +607,14 @@ namespace CapFrameX.Overlay
                     var groupNameFormatStringBuilder = new StringBuilder();
                     groupNameFormatStringBuilder.Append("<S=");
                     groupNameFormatStringBuilder.Append(entry.GroupFontSize.ToString());
-                    groupNameFormatStringBuilder.Append("><C=");
-                    groupNameFormatStringBuilder.Append(entry.GroupColor);
-                    groupNameFormatStringBuilder.Append(">");
+
+                    // {
+                    AppendColorFormat(groupNameFormatStringBuilder, entry.GroupColor, colorIndexDictionary);
+                    //groupNameFormatStringBuilder.Append("><C=");
+                    //groupNameFormatStringBuilder.Append(entry.GroupColor);
+                    //groupNameFormatStringBuilder.Append(">");
+                    // }
+
                     groupNameFormatStringBuilder.Append(basicGroupFormat);
                     groupNameFormatStringBuilder.Append(" <C><S>");
                     entry.GroupNameFormat = groupNameFormatStringBuilder.ToString();
@@ -655,16 +662,27 @@ namespace CapFrameX.Overlay
                         var valueFormatStringBuilder = new StringBuilder();
                         valueFormatStringBuilder.Append("<S=");
                         valueFormatStringBuilder.Append(entry.ValueFontSize.ToString());
-                        valueFormatStringBuilder.Append("><C=");
-                        valueFormatStringBuilder.Append(entry.Color);
-                        valueFormatStringBuilder.Append(">");
+
+                        // {
+                        AppendColorFormat(valueFormatStringBuilder, entry.Color, colorIndexDictionary);
+                        //valueFormatStringBuilder.Append("><C=");
+                        //valueFormatStringBuilder.Append(entry.Color);
+                        //valueFormatStringBuilder.Append(">");
+                        // }
+
+
                         valueFormatStringBuilder.Append(entry.ValueAlignmentAndDigits);
                         valueFormatStringBuilder.Append("<C><S>");
                         valueFormatStringBuilder.Append("<S=");
                         valueFormatStringBuilder.Append((entry.ValueFontSize / 2).ToString());
-                        valueFormatStringBuilder.Append("><C=");
-                        valueFormatStringBuilder.Append(entry.Color);
-                        valueFormatStringBuilder.Append(">");
+
+                        // {
+                        AppendColorFormat(valueFormatStringBuilder, entry.Color, colorIndexDictionary);
+                        //valueFormatStringBuilder.Append("><C=");
+                        //valueFormatStringBuilder.Append(entry.Color);
+                        //valueFormatStringBuilder.Append(">");
+                        // }
+
                         valueFormatStringBuilder.Append(entry.ValueUnitFormat);
                         valueFormatStringBuilder.Append("<C><S>");
                         entry.ValueFormat = valueFormatStringBuilder.ToString();
@@ -676,9 +694,15 @@ namespace CapFrameX.Overlay
                         var valueFormatStringBuilder = new StringBuilder();
                         valueFormatStringBuilder.Append("<S=");
                         valueFormatStringBuilder.Append(entry.ValueFontSize.ToString());
-                        valueFormatStringBuilder.Append("><C=");
-                        valueFormatStringBuilder.Append(entry.Color);
-                        valueFormatStringBuilder.Append(">{0}<C><S>");
+
+                        // {
+                        AppendColorFormat(valueFormatStringBuilder, entry.Color, colorIndexDictionary);
+                        //valueFormatStringBuilder.Append("><C=");
+                        //valueFormatStringBuilder.Append(entry.Color);
+                        //valueFormatStringBuilder.Append(">");
+                        // }
+
+                        valueFormatStringBuilder.Append("{0}<C><S>");
                         entry.ValueFormat = valueFormatStringBuilder.ToString();
                         // "<S=" + entry.ValueFontSize + "><C=" + entry.Color + ">{0}<C><S>";
                     }
@@ -688,7 +712,6 @@ namespace CapFrameX.Overlay
                     entry.FormatChanged = false;
                     entry.LastLimitState = LimitState.Undefined;
                 }
-
 
                 // check value limits
                 if (entry.ShowOnOverlay)
@@ -790,16 +813,27 @@ namespace CapFrameX.Overlay
                                 var valueFormatStringBuilder = new StringBuilder();
                                 valueFormatStringBuilder.Append("<S=");
                                 valueFormatStringBuilder.Append(entry.ValueFontSize.ToString());
-                                valueFormatStringBuilder.Append("><C=");
-                                valueFormatStringBuilder.Append(currentColor);
-                                valueFormatStringBuilder.Append(">");
+                
+
+                                // {
+                                AppendColorFormat(valueFormatStringBuilder, currentColor, colorIndexDictionary);
+                                //valueFormatStringBuilder.Append("><C=");
+                                //valueFormatStringBuilder.Append(currentColor);
+                                //valueFormatStringBuilder.Append(">");
+                                // }
+
                                 valueFormatStringBuilder.Append(entry.ValueAlignmentAndDigits);
                                 valueFormatStringBuilder.Append("<C><S>");
                                 valueFormatStringBuilder.Append("<S=");
                                 valueFormatStringBuilder.Append((entry.ValueFontSize / 2).ToString());
-                                valueFormatStringBuilder.Append("><C=");
-                                valueFormatStringBuilder.Append(currentColor);
-                                valueFormatStringBuilder.Append(">");
+
+                                // {
+                                AppendColorFormat(valueFormatStringBuilder, currentColor, colorIndexDictionary);
+                                //valueFormatStringBuilder.Append("><C=");
+                                //valueFormatStringBuilder.Append(currentColor);
+                                //valueFormatStringBuilder.Append(">");
+                                // }
+
                                 valueFormatStringBuilder.Append(entry.ValueUnitFormat);
                                 valueFormatStringBuilder.Append("<C><S>");
                                 entry.ValueFormat = valueFormatStringBuilder.ToString();
@@ -811,9 +845,15 @@ namespace CapFrameX.Overlay
                                 var valueFormatStringBuilder = new StringBuilder();
                                 valueFormatStringBuilder.Append("<S=");
                                 valueFormatStringBuilder.Append(entry.ValueFontSize.ToString());
-                                valueFormatStringBuilder.Append("><C=");
-                                valueFormatStringBuilder.Append(currentColor);
-                                valueFormatStringBuilder.Append(">{0}<C><S>");
+
+                                // {
+                                AppendColorFormat(valueFormatStringBuilder, currentColor, colorIndexDictionary);
+                                //valueFormatStringBuilder.Append("><C=");
+                                //valueFormatStringBuilder.Append(currentColor);
+                                //valueFormatStringBuilder.Append(">");
+                                // }                        
+
+                                valueFormatStringBuilder.Append("{0}<C><S>");
                                 entry.ValueFormat = valueFormatStringBuilder.ToString();
                                 // "<S=" + entry.ValueFontSize + "><C=" + currentColor + ">{0}<C><S>";
                             }
@@ -824,7 +864,34 @@ namespace CapFrameX.Overlay
                     }
                 }
             }
+
+            if (colorIndexDictionary.Any())
+            {
+                var colorVariablesStringBuilder = new StringBuilder();
+                colorIndexDictionary.ForEach(pair => colorVariablesStringBuilder.Append($"<C{pair.Value}={pair.Key}>"));
+                _rTSSService.SetFormatVariables(colorVariablesStringBuilder.ToString());
+            }
         }
+
+        private void AppendColorFormat(StringBuilder groupNameFormatStringBuilder,
+            string groupColor, Dictionary<string, int> colorIndexDictionary)
+        {
+            //groupNameFormatStringBuilder.Append("><C=");
+            //groupNameFormatStringBuilder.Append(entry.GroupColor);
+
+            if (colorIndexDictionary.ContainsKey(groupColor))
+            {
+                groupNameFormatStringBuilder.Append($"><C{colorIndexDictionary[groupColor]}>");
+            }
+            else
+            {
+                int index = !colorIndexDictionary.Any() ? 0 : colorIndexDictionary.Values.Last() + 1;
+                colorIndexDictionary.Add(groupColor, index);
+
+                groupNameFormatStringBuilder.Append($"><C{index}>");
+            }
+        }
+
         private string GetConfigurationFileName()
         {
             return Path.Combine(OVERLAY_CONFIG_FOLDER, $"OverlayEntryConfiguration_" +

@@ -502,7 +502,7 @@ void RTSSCoreControl::ReleaseOSD()
 			{
 				for (DWORD dwEntry = 1; dwEntry < pMem->dwOSDArrSize; dwEntry++)
 				{
-					RTSS_SHARED_MEMORY::LPRTSS_SHARED_MEMORY_OSD_ENTRY pEntry 
+					RTSS_SHARED_MEMORY::LPRTSS_SHARED_MEMORY_OSD_ENTRY pEntry
 						= (RTSS_SHARED_MEMORY::LPRTSS_SHARED_MEMORY_OSD_ENTRY)((LPBYTE)pMem + pMem->dwOSDArrOffset + dwEntry * pMem->dwOSDEntrySize);
 
 					if (!strcmp(pEntry->szOSDOwner, "CapFrameX"))
@@ -617,7 +617,13 @@ void RTSSCoreControl::Refresh()
 		else if (clientCount > 1)
 		{
 			// Add CX label
-			groupedString.Add("", "<C3>\nCX OSD<C>", "\n", " ");
+			groupedString.Add("", "<C300>\nCX OSD<C>", "\n", " ");
+		}
+
+		// add format variables
+		if (!m_formatVariables.IsEmpty())
+		{
+			strOSD += m_formatVariables;
 		}
 
 		//Note: take a note that position is specified in absolute coordinates so use this tag with caution because your text may
@@ -631,26 +637,26 @@ void RTSSCoreControl::Refresh()
 		////define align variable A[1] as left alignment by 4 symbols (positive is left, negative is right)
 		//strOSD += "<C0=FFA0A0>";
 		////define color variable C[0] as R=FF,G=A0 and B=A0
-		//strOSD += "<C1=AEEA00>"; //CX Green
+		strOSD += "<C100=AEEA00>"; //CX Green
 		//define color variable C[1] as R=FF,G=00 and B=A0
-		strOSD += "<C2=FFFFFF>"; // White
+		strOSD += "<C200=FFFFFF>"; // White
 		////define color variable C[1] as R=FF,G=FF and B=FF
 		// CX blue
-		strOSD += "<C3=2297F3>"; //CX Blue
+		strOSD += "<C300=2297F3>"; //CX Blue
 		////define color variable C[1] as R=FF,G=FF and B=FF
 		//// CX orange
 		//strOSD += "<C4=F17D20>"; //CX Orange
 		////define color variable C[1] as R=FF,G=FF and B=FF
 		//strOSD += "<S0=-50>";
 		////define size variable S[0] as 50% subscript (positive is superscript, negative is subscript)
-		//strOSD += "<S1=50>";
+		strOSD += "<S100=50>";
 		////define size variable S[0] as 50% supercript (positive is superscript, negative is subscript)
 
 		//add \r just for this demo to make tagged text more readable in demo preview window, OSD ignores \r anyway
 		strOSD += "\r";
 
-	  //Note: we could apply explicit alignment,size and color definitions when necerrary (e.g. <C=FFFFFF>, however
-	  //variables usage makes tagged text more compact and readable
+		//Note: we could apply explicit alignment,size and color definitions when necerrary (e.g. <C=FFFFFF>, however
+		//variables usage makes tagged text more compact and readable
 	}
 	else
 		strOSD = "";
@@ -695,7 +701,7 @@ void RTSSCoreControl::Refresh()
 				{
 					// set graph name
 					if (OverlayEntries[i].GroupName.Find("<APP>") != std::string::npos)
-						strOSD += "<C1><S=50>Framerate\n<S><C>";
+						strOSD += "<C100><S=50>Framerate\n<S><C>";
 					else
 						strOSD += OverlayEntries[i].GroupName + "\n";
 					//embed framerate graph object into the buffer
@@ -703,7 +709,7 @@ void RTSSCoreControl::Refresh()
 
 					if (dwObjectSize)
 					{
-						strObj.Format("<C2><OBJ=%08X><A0><S1><FR><A> FPS<S><C>\n", dwObjectOffset);
+						strObj.Format("<C200><OBJ=%08X><A0><S100><FR><A> FPS<S><C>\n", dwObjectOffset);
 						//print embedded object
 						strOSD += strObj;
 						//modify object offset
@@ -713,8 +719,8 @@ void RTSSCoreControl::Refresh()
 				else if (OverlayEntries[i].Identifier == "Frametime")
 				{
 					// set graph name
-					if(OverlayEntries[i].GroupName.Find("<APP>") != std::string::npos)
-						strOSD += "<C1><S=50>Frametime\n<S><C>";
+					if (OverlayEntries[i].GroupName.Find("<APP>") != std::string::npos)
+						strOSD += "<C100><S=50>Frametime\n<S><C>";
 					else
 						strOSD += OverlayEntries[i].GroupName + "\n";
 
@@ -723,7 +729,7 @@ void RTSSCoreControl::Refresh()
 
 					if (dwObjectSize)
 					{
-						strObj.Format("<C2><OBJ=%08X><A0><S1><FT><A> ms<S><C>\n", dwObjectOffset);
+						strObj.Format("<C200><OBJ=%08X><A0><S100><FT><A> ms<S><C>\n", dwObjectOffset);
 						//print embedded object
 						strOSD += strObj;
 						//modify object offset
@@ -741,6 +747,11 @@ void RTSSCoreControl::Refresh()
 	}
 }
 
+void RTSSCoreControl::SetFormatVariables(CString variables)
+{
+	m_formatVariables = variables;
+}
+
 void RTSSCoreControl::AddOverlayEntry(CGroupedString* groupedString, OverlayEntry* entry, BOOL bFormatTagsSupported)
 {
 	// handle special cases first
@@ -752,25 +763,25 @@ void RTSSCoreControl::AddOverlayEntry(CGroupedString* groupedString, OverlayEntr
 			for (int i = 0; i < RunHistory.size(); i++)
 			{
 				CString strGroup;
-				strGroup.Format("<C2>Run %d: <C>", i + 1);
+				strGroup.Format("<C200>Run %d: <C>", i + 1);
 
 				if (RunHistoryOutlierFlags.size() == RunHistory.size())
 				{
 					if (!RunHistoryOutlierFlags[i])
-						groupedString->Add("<C3> " + RunHistory[i] + "<C>", strGroup, "\n");
+						groupedString->Add("<C300> " + RunHistory[i] + "<C>", strGroup, "\n");
 					else
 						groupedString->Add("<C=C80000> " + RunHistory[i] + "<C>", strGroup, "\n");
 				}
 				else
 				{
-					groupedString->Add("<C3> " + RunHistory[i] + "<C>", strGroup, "\n");
+					groupedString->Add("<C300> " + RunHistory[i] + "<C>", strGroup, "\n");
 				}
 			}
 
 			// add aggregation
 			if (RunHistoryAggregation != "")
 			{
-				groupedString->Add("<C3> " + RunHistoryAggregation + "<C>", "<C2>Result: <C>", "\n");
+				groupedString->Add("<C300> " + RunHistoryAggregation + "<C>", "<C200>Result: <C>", "\n");
 			}
 		}
 	}

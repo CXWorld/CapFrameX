@@ -19,6 +19,7 @@ namespace CapFrameX.Contracts.RTSS
         bool IsOSDLocked();
         void ReleaseOSD();
         void SetOverlayEntries(IOverlayEntry[] entries);
+        void SetFormatVariables(string variables);
         void SetOverlayEntry(IOverlayEntry entry);
         void SetIsCaptureTimerActive(bool active);
         void SetRunHistoryOutlierFlags(bool[] flags);

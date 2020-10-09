@@ -27,6 +27,7 @@ public:
 public:
 	void						ReleaseOSD();
 	void						Refresh();
+	void						SetFormatVariables(CString variables);
 	std::vector<CString>		RunHistory;
 	std::vector<BOOL>			RunHistoryOutlierFlags;
 	CString						RunHistoryAggregation;
@@ -57,6 +58,8 @@ protected:
 	UINT						m_nTimerID;
 
 	CString						m_strInstallPath;
+
+	CString						m_formatVariables;
 
 	CRTSSProfileInterface		m_profileInterface;
 };

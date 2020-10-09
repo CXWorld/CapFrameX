@@ -40,7 +40,7 @@ public:
 		}
 		catch (SEHException^ ex)
 		{
-			_exceptionAction->Invoke(gcnew Exception("Unmanaged Exception. Error while resetting OSD"));
+			_exceptionAction->Invoke(gcnew Exception("Unmanaged Exception. Error while resetting OSD."));
 		}
 	}
 
@@ -55,7 +55,7 @@ public:
 		}
 		catch (SEHException^ ex)
 		{
-			_exceptionAction->Invoke(gcnew Exception("Unmanaged Exception. Error while refreshing OSD"));
+			_exceptionAction->Invoke(gcnew Exception("Unmanaged Exception. Error while refreshing OSD."));
 		}
 	}
 
@@ -70,7 +70,22 @@ public:
 		}
 		catch (SEHException^ ex)
 		{
-			_exceptionAction->Invoke(gcnew Exception("Unmanaged Exception. Error while releasing OSD"));
+			_exceptionAction->Invoke(gcnew Exception("Unmanaged Exception. Error while releasing OSD."));
+		}
+	}
+
+	void SetFormatVariables(String^ variables)
+	{
+		try
+		{
+			{
+				msclr::lock l(m_lock);
+				_coreControl->SetFormatVariables(variables);
+			}
+		}
+		catch (SEHException^ ex)
+		{
+			_exceptionAction->Invoke(gcnew Exception("Unmanaged Exception. Error while setting format variables."));
 		}
 	}
 
@@ -85,7 +100,7 @@ public:
 		}
 		catch (SEHException^ ex)
 		{
-			_exceptionAction->Invoke(gcnew Exception("Unmanaged Exception. Error while setting capture time to active"));
+			_exceptionAction->Invoke(gcnew Exception("Unmanaged Exception. Error while setting capture time to active."));
 		}
 	}
 
@@ -116,7 +131,7 @@ public:
 		}
 		catch (SEHException^ ex)
 		{
-			_exceptionAction->Invoke(gcnew Exception("Unmanaged Exception. Error while setting run history"));
+			_exceptionAction->Invoke(gcnew Exception("Unmanaged Exception. Error while setting run history."));
 		}
 	}
 
@@ -147,7 +162,7 @@ public:
 		}
 		catch (SEHException^ ex)
 		{
-			_exceptionAction->Invoke(gcnew Exception("Unmanaged Exception. Error while setting outlier flags"));
+			_exceptionAction->Invoke(gcnew Exception("Unmanaged Exception. Error while setting outlier flags."));
 		}
 	}
 
@@ -162,7 +177,7 @@ public:
 		}
 		catch (SEHException^ ex)
 		{
-			_exceptionAction->Invoke(gcnew Exception("Unmanaged Exception. Error while setting run history aggregation"));
+			_exceptionAction->Invoke(gcnew Exception("Unmanaged Exception. Error while setting run history aggregation."));
 		}
 	}
 
@@ -196,7 +211,7 @@ public:
 		}
 		catch (SEHException^ ex)
 		{
-			_exceptionAction->Invoke(gcnew Exception("Unmanaged Exception. Error while setting overlay entries"));
+			_exceptionAction->Invoke(gcnew Exception("Unmanaged Exception. Error while setting overlay entries."));
 		}
 	}
 
@@ -227,7 +242,7 @@ public:
 		}
 		catch (SEHException^ ex)
 		{
-			_exceptionAction->Invoke(gcnew Exception("Unmanaged Exception. Error while setting single overlay enetry"));
+			_exceptionAction->Invoke(gcnew Exception("Unmanaged Exception. Error while setting single overlay enetry."));
 		}
 	}
 

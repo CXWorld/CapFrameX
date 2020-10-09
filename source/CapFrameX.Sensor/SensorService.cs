@@ -12,10 +12,8 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Reactive.Concurrency;
-using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace CapFrameX.Sensor
@@ -94,7 +92,7 @@ namespace CapFrameX.Sensor
                             .SubscribeOn(Scheduler.Default)
                             .Subscribe(sensorData =>
                             {
-                                UpdateOSD(sensorData.Item2);
+                                UpdateOverlayEntries(sensorData.Item2);
                                 _onDictionaryUpdated.OnNext(GetSensorOverlayEntries());
                             });
 
@@ -565,7 +563,7 @@ namespace CapFrameX.Sensor
             });
         }
 
-        private void UpdateOSD(Dictionary<ISensor, float> sensorData)
+        private void UpdateOverlayEntries(Dictionary<ISensor, float> sensorData)
         {
             if (_computer == null) return;
 
@@ -573,9 +571,9 @@ namespace CapFrameX.Sensor
             {
                 var sensorIdentifier = sensorPair.Key.Identifier.ToString();
                 var sensorValue = sensorPair.Value;
-                if (_overlayEntryDict.TryGetValue(sensorIdentifier, out IOverlayEntry entry))
+                lock (_dictLock)
                 {
-                    lock (_dictLock)
+                    if (_overlayEntryDict.TryGetValue(sensorIdentifier, out IOverlayEntry entry))
                     {
                         entry.Value = sensorValue;
                     }
@@ -607,7 +605,7 @@ namespace CapFrameX.Sensor
                     }
                 }
             }
-            catch 
+            catch
             {
                 // Don't write periodic log entries
             }
