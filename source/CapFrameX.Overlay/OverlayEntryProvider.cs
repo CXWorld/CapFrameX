@@ -38,9 +38,9 @@ namespace CapFrameX.Overlay
         private readonly ILogger<OverlayEntryProvider> _logger;
         private readonly ConcurrentDictionary<string, IOverlayEntry> _identifierOverlayEntryDict
              = new ConcurrentDictionary<string, IOverlayEntry>();
-        private readonly TaskCompletionSource<bool> _taskCompletionSource 
+        private readonly TaskCompletionSource<bool> _taskCompletionSource
             = new TaskCompletionSource<bool>();
-        private readonly ConcurrentDictionary<string, int> _colorIndexDictionary 
+        private readonly ConcurrentDictionary<string, int> _colorIndexDictionary
             = new ConcurrentDictionary<string, int>();
         private BlockingCollection<IOverlayEntry> _overlayEntries;
         private IObservable<IOverlayEntry[]> _onDictionaryUpdatedBuffered;
@@ -618,7 +618,7 @@ namespace CapFrameX.Overlay
                     groupNameFormatStringBuilder.Append(basicGroupFormat);
                     groupNameFormatStringBuilder.Append(" <C><S>");
                     entry.GroupNameFormat = groupNameFormatStringBuilder.ToString();
-                   
+
                     if (entry.ValueUnitFormat != null && entry.ValueAlignmentAndDigits != null)
                     {
                         var valueFormatStringBuilder = new StringBuilder();
@@ -729,7 +729,7 @@ namespace CapFrameX.Overlay
                                 var valueFormatStringBuilder = new StringBuilder();
                                 valueFormatStringBuilder.Append("<S=");
                                 valueFormatStringBuilder.Append(entry.ValueFontSize.ToString());
-                                AppendColorFormat(valueFormatStringBuilder, currentColor);                   
+                                AppendColorFormat(valueFormatStringBuilder, currentColor);
                                 valueFormatStringBuilder.Append("{0}<C><S>");
                                 entry.ValueFormat = valueFormatStringBuilder.ToString();
                             }
@@ -757,7 +757,7 @@ namespace CapFrameX.Overlay
             else
             {
                 int index = _colorIndexDictionary.Count() + 1;
-                var addSuccess = _colorIndexDictionary.TryAdd(groupColor, index);
+                _colorIndexDictionary.TryAdd(groupColor, index);
 
                 groupNameFormatStringBuilder.Append($"><C{index}>");
             }
