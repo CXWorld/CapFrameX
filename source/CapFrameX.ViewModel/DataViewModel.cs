@@ -1042,7 +1042,13 @@ namespace CapFrameX.ViewModel
 			if (frametimes == null || !frametimes.Any())
 				return;
 
-			var stutteringTimePercentage = _frametimeStatisticProvider.GetStutteringTimePercentage(frametimes, _appConfiguration.StutteringFactor, _appConfiguration.StutteringThreshold);
+			var stutteringTimePercentage = _frametimeStatisticProvider.GetStutteringTimePercentage(frametimes, _appConfiguration.StutteringFactor);
+
+			var lowFPSTimePercentage = _frametimeStatisticProvider.GetLowFPSTimePercentage(frametimes, _appConfiguration.StutteringFactor, _appConfiguration.StutteringThreshold);
+
+			double stutteringTotalTime = Math.Round(stutteringTimePercentage / 100 * frametimes.Skip(1).Sum() / 1000, 2);
+			double lowFPSTotalTime = Math.Round(lowFPSTimePercentage / 100 * frametimes.Skip(1).Sum() / 1000, 2);
+			double smoothTotalTime = Math.Round((1 - (stutteringTimePercentage + lowFPSTimePercentage) / 100) * frametimes.Skip(1).Sum() / 1000, 2);
 
 			Application.Current.Dispatcher.BeginInvoke(new Action(() =>
 			{
@@ -1050,23 +1056,32 @@ namespace CapFrameX.ViewModel
 				{
 					new PieSeries
 					{
-						Title = "Smooth time (s)",
-						Values = new ChartValues<double>(){ Math.Round((1 - stutteringTimePercentage / 100) * frametimes.Skip(1).Sum() / 1000, 2) },
-						DataLabels = true,
-						Fill = ColorRessource.PieChartSmmoothFill,
+						Title = $"Smooth:  {Math.Round(smoothTotalTime, 2).ToString(CultureInfo.InvariantCulture)}s ({Math.Round(100 - (stutteringTimePercentage + lowFPSTimePercentage), 2).ToString(CultureInfo.InvariantCulture)}%)",
+						Values = new ChartValues<double>(){ smoothTotalTime },
+						DataLabels = false,
+						Fill = ColorRessource.PieChartSmoothFill,
 						Foreground = Brushes.Black,
-						LabelPoint = PieChartPointLabel,
-						FontSize = 12
+						FontSize = 18,
 					},
+
 					new PieSeries
 					{
-						Title = "Stuttering time (s)",
-						Values = new ChartValues<double>(){ Math.Round(stutteringTimePercentage / 100 * frametimes.Skip(1).Sum() / 1000, 2) },
-						DataLabels = true,
+						Title = $"Low FPS:  {Math.Round(lowFPSTotalTime, 2).ToString(CultureInfo.InvariantCulture)}s ({Math.Round(lowFPSTimePercentage, 2).ToString(CultureInfo.InvariantCulture)}%)",
+						Values = new ChartValues<double>(){ lowFPSTotalTime },
+						DataLabels = false,
+						Fill = ColorRessource.PieChartLowFPSFill,
+						Foreground = Brushes.Black,
+						FontSize = 18,
+					},
+
+					new PieSeries
+					{
+						Title = $"Stutter:  {Math.Round(stutteringTotalTime, 2).ToString(CultureInfo.InvariantCulture)}s ({Math.Round(stutteringTimePercentage, 2).ToString(CultureInfo.InvariantCulture)}%)",
+						Values = new ChartValues<double>(){ stutteringTotalTime },
+						DataLabels = false,
 						Fill = ColorRessource.PieChartStutterFill,
 						Foreground = Brushes.Black,
-						LabelPoint = PieChartPointLabel,
-						FontSize = 12
+						FontSize = 18,
 					}
 				};
 			}));
