@@ -66,7 +66,7 @@ namespace CapFrameX.Statistics.NetStandard
 
                     if (elements.Count == 2)
                     {
-                        if (Math.Round(1000 / elements.Average()) < stutteringThreshold)
+                        if (Math.Round(1000 / elements.Average(), 1) < stutteringThreshold)
                             stutteringThresholdTime += elements.Sum();
 
                         elements.Clear();

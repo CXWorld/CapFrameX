@@ -240,7 +240,7 @@
                             <TabItem Header="Stuttering analysis">
                                 <Grid>
                                     <lvc:PieChart Margin="10 5 200 5" MaxHeight="250" Hoverable="False" Series="{Binding StutteringStatisticCollection}" 
-								  LegendLocation="Left" DataClick="Chart_OnDataClick">
+								  LegendLocation="Left" DataClick="Chart_OnDataClick" DataTooltip="{x:Null}">
                                         <lvc:PieChart.ChartLegend>
                                             <lvc:DefaultLegend FontSize="14" FontWeight="Medium"></lvc:DefaultLegend>
                                         </lvc:PieChart.ChartLegend>
@@ -263,7 +263,7 @@
                                                  PreviewKeyDown="StutteringThreshold_PreviewKeyDown" PreviewTextInput="NumberValidationTextBox" ToolTipService.ShowDuration="25000">
                                                 <TextBox.ToolTip>
                                                     <ToolTip Width="300">
-                                                        <TextBlock Text="FPS threshold for the low FPS time.&#10;If the average FPS of 4 consecutive frames are lower than this threshold, the frametimes are added to the low FPS time."
+                                                        <TextBlock Text="FPS threshold for the low FPS time.&#10;If the average FPS of 2 consecutive frames are lower than this threshold, the frametimes are added to the low FPS time."
 										            TextWrapping="Wrap"/>
                                                     </ToolTip>
                                                 </TextBox.ToolTip>
