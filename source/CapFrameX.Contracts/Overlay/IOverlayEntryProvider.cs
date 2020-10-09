@@ -21,7 +21,7 @@ namespace CapFrameX.Contracts.Overlay
 
 		Task SwitchConfigurationTo(int index);
 
-		Task<IOverlayEntry[]> GetOverlayEntries();
+		Task<IOverlayEntry[]> GetOverlayEntries(bool updateFormats = true);
 
 		Task<IEnumerable<IOverlayEntry>> GetDefaultOverlayEntries();
 	}

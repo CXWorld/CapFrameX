@@ -464,7 +464,7 @@ namespace CapFrameX.ViewModel
                         .SelectMany(_ => _sensorService.OnDictionaryUpdated.Take(1));
                 })
                 .StartWith(Enumerable.Empty<IOverlayEntry>())
-                .SelectMany(_ => overlayEntryProvider.GetOverlayEntries())
+                .SelectMany(_ => overlayEntryProvider.GetOverlayEntries(false))
                 .ObserveOnDispatcher()
                 .Subscribe(entries =>
                 {

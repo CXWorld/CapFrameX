@@ -81,12 +81,15 @@ namespace CapFrameX.Overlay
             _logger.LogInformation(this.GetType().Name + " {initializationTime}s initialization time", Math.Round(stopwatch.ElapsedMilliseconds * 1E-03, 1));
         }
 
-        public async Task<IOverlayEntry[]> GetOverlayEntries()
+        public async Task<IOverlayEntry[]> GetOverlayEntries(bool updateFormats = true)
         {
             await _taskCompletionSource.Task;
             await UpdateSensorData();
             UpdateOnlineMetrics();
-            UpdateFormatting();
+            if (updateFormats)
+            {
+                UpdateFormatting();
+            }
             return _overlayEntries.ToArray();
         }
 
@@ -747,14 +750,14 @@ namespace CapFrameX.Overlay
 
         private void AppendColorFormat(StringBuilder groupNameFormatStringBuilder, string groupColor)
         {
-            if (_colorIndexDictionary.ContainsKey(groupColor))
+            if (_colorIndexDictionary.TryGetValue(groupColor, out var value))
             {
-                groupNameFormatStringBuilder.Append($"><C{_colorIndexDictionary[groupColor]}>");
+                groupNameFormatStringBuilder.Append($"><C{value}>");
             }
             else
             {
-                int index = !_colorIndexDictionary.Any() ? 0 : _colorIndexDictionary.Values.Last() + 1;
-                _colorIndexDictionary.TryAdd(groupColor, index);
+                int index = _colorIndexDictionary.Count() + 1;
+                var addSuccess = _colorIndexDictionary.TryAdd(groupColor, index);
 
                 groupNameFormatStringBuilder.Append($"><C{index}>");
             }
