@@ -238,8 +238,51 @@
                     <Grid Grid.Column="2" Margin="5 5 0 0" >
                         <TabControl Background="#F5F5F5" >
                             <TabItem Header="Stuttering analysis">
-                                <lvc:PieChart Width="250" Hoverable="False" Series="{Binding StutteringStatisticCollection}" 
-								  LegendLocation="Bottom" DataClick="Chart_OnDataClick"/>
+                                <Grid>
+                                    <lvc:PieChart Margin="10 5 200 5" MaxHeight="250" Hoverable="False" Series="{Binding StutteringStatisticCollection}" 
+								  LegendLocation="Left" DataClick="Chart_OnDataClick" DataTooltip="{x:Null}">
+                                        <lvc:PieChart.ChartLegend>
+                                            <lvc:DefaultLegend FontSize="14" FontWeight="Medium"></lvc:DefaultLegend>
+                                        </lvc:PieChart.ChartLegend>
+                                    </lvc:PieChart>
+                                    <StackPanel Panel.ZIndex="1" Margin="2 5 0 0" HorizontalAlignment="Left" VerticalAlignment="Top" Orientation="Horizontal">
+                                    <materialDesign:PopupBox  StaysOpen="True" ToolTipService.ShowDuration="25000">
+                                        <materialDesign:PopupBox.ToolTip>
+                                            <ToolTip MaxWidth="275" Placement="Top">
+                                                <TextBlock Text="Options for the stutter and low FPS values of the pie chart" 
+										   TextWrapping="Wrap"/>
+                                            </ToolTip>
+                                        </materialDesign:PopupBox.ToolTip>
+                                        <Grid Margin="5" Width="110">
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="*" />
+                                                <RowDefinition Height="*" />
+                                            </Grid.RowDefinitions>
+                                            <TextBox Grid.Row="0" materialDesign:HintAssist.Hint="Low FPS threshold" materialDesign:HintAssist.IsFloating="True" Width="100"
+                                                 HorizontalContentAlignment="Center" Text="{Binding StutteringLowFPSThreshold}"
+                                                 PreviewKeyDown="StutteringThreshold_PreviewKeyDown" PreviewTextInput="NumberValidationTextBox" ToolTipService.ShowDuration="25000">
+                                                <TextBox.ToolTip>
+                                                    <ToolTip Width="300">
+                                                        <TextBlock Text="FPS threshold for the low FPS time.&#10;Every frametime that isn't already counted as stutter and for which the converted FPS are lower than this threshold, is added to the low FPS time."
+										            TextWrapping="Wrap"/>
+                                                    </ToolTip>
+                                                </TextBox.ToolTip>
+                                            </TextBox>
+                                            <TextBox Grid.Row="1" Margin="0 20 0 0" materialDesign:HintAssist.Hint="Stuttering factor" materialDesign:HintAssist.IsFloating="True" Width="100"
+                                                 HorizontalContentAlignment="Center" Text="{Binding StutteringFactor}" 
+                                                 PreviewKeyDown="StutteringFactor_PreviewKeyDown" PreviewTextInput="NumberValidationTextBox" ToolTipService.ShowDuration="25000">
+                                                <TextBox.ToolTip>
+                                                    <ToolTip Width="300">
+                                                        <TextBlock Text="Factor for the stuttering time.&#10;Every frametime that is higher than the average frametime x factor is added to the stuttering time."
+										            TextWrapping="Wrap"/>
+                                                    </ToolTip>
+                                                </TextBox.ToolTip>
+                                            </TextBox>
+                                        </Grid>
+                                    </materialDesign:PopupBox>
+                                        <TextBlock VerticalAlignment="Center" Text="Options"></TextBlock>
+                                    </StackPanel>
+                                </Grid>
                             </TabItem>
                             <TabItem Header="FPS thresholds">
                                 <Grid Margin="0 5 0 0">

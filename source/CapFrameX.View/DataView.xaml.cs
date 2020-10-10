@@ -10,80 +10,108 @@ using System.Windows.Input;
 
 namespace CapFrameX.View
 {
-	/// <summary>
-	/// Interaction logic for DataView.xaml
-	/// </summary>
-	public partial class DataView : UserControl
-	{
-		public DataView()
-		{
-			InitializeComponent();
+    /// <summary>
+    /// Interaction logic for DataView.xaml
+    /// </summary>
+    public partial class DataView : UserControl
+    {
+        public DataView()
+        {
+            InitializeComponent();
 
-			var context = SynchronizationContext.Current;
-			(DataContext as DataViewModel)?.ResetLShapeChart
-				.ObserveOn(context)
-				.SubscribeOn(context)
-				.Subscribe(dummy => ResetLShapeChart());
-		}
+            var context = SynchronizationContext.Current;
+            (DataContext as DataViewModel)?.ResetLShapeChart
+                .ObserveOn(context)
+                .SubscribeOn(context)
+                .Subscribe(dummy => ResetLShapeChart());
+        }
 
-		private void Chart_OnDataClick(object sender, ChartPoint chartpoint)
-		{
-			var chart = (PieChart)chartpoint.ChartView;
+        private void Chart_OnDataClick(object sender, ChartPoint chartpoint)
+        {
+            var chart = (PieChart)chartpoint.ChartView;
+            var selectedSeries = (PieSeries)chartpoint.SeriesView;
 
-			//clear selected slice
-			foreach (PieSeries series in chart.Series)
-				series.PushOut = 0;
+            //clear selected slice
+            if (selectedSeries.PushOut == 8)
+                selectedSeries.PushOut = 0;
 
-			var selectedSeries = (PieSeries)chartpoint.SeriesView;
-			selectedSeries.PushOut = 8;
-		}
+            else
+            {
+                foreach (PieSeries series in chart.Series)
+                    series.PushOut = 0;
 
-		private void ResetChart_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
-			=> ResetLShapeChart();
+                selectedSeries.PushOut = 8;
+            }
+        }
 
-		private void ResetLShapeChart()
-		{
-			//Use the axis MinValue/MaxValue properties to specify the values to display.
-			//use double.Nan to clear it.
+        private void ResetChart_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
+            => ResetLShapeChart();
 
-			LShapeX.MinValue = double.NaN;
-			LShapeX.MaxValue = double.NaN;
-			LShapeY.MinValue = double.NaN;
-			LShapeY.MaxValue = double.NaN;
-		}
+        private void ResetLShapeChart()
+        {
+            //Use the axis MinValue/MaxValue properties to specify the values to display.
+            //use double.Nan to clear it.
 
-		private void RangeSlider_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
-		{
-			(DataContext as DataViewModel).OnRangeSliderDragCompleted();
-		}
+            LShapeX.MinValue = double.NaN;
+            LShapeX.MaxValue = double.NaN;
+            LShapeY.MinValue = double.NaN;
+            LShapeY.MaxValue = double.NaN;
+        }
 
-		private void FirstSecondsTextBox_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
-		{
-			var key = e.Key;
+        private void RangeSlider_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
+        {
+            (DataContext as DataViewModel).OnRangeSliderDragCompleted();
+        }
 
-			if (key == Key.Enter)
-			{
-				GraphTab.Focus();
-				(DataContext as DataViewModel).OnRangeSliderDragCompleted();
-			}
-				
-		}
+        private void FirstSecondsTextBox_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            var key = e.Key;
 
-		private void LastSecondsTextBox_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
-		{
-			var key = e.Key;
+            if (key == Key.Enter)
+            {
+                GraphTab.Focus();
+                (DataContext as DataViewModel).OnRangeSliderDragCompleted();
+            }
 
-			if (key == Key.Enter)
-			{
-				GraphTab.Focus();
-				(DataContext as DataViewModel).OnRangeSliderDragCompleted();
-			}			
-		}
+        }
 
-		private void NumberValidationTextBox(object sender, TextCompositionEventArgs e)
-		{
-			Regex regex = new Regex("[^0-9.-]+");
-			e.Handled = regex.IsMatch(e.Text);
-		}
-	}
+        private void LastSecondsTextBox_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            var key = e.Key;
+
+            if (key == Key.Enter)
+            {
+                GraphTab.Focus();
+                (DataContext as DataViewModel).OnRangeSliderDragCompleted();
+            }
+        }
+
+        private void StutteringThreshold_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            var key = e.Key;
+
+            if (key == Key.Enter)
+            {
+                GraphTab.Focus();
+                (DataContext as DataViewModel).OnStutteringOptionsChanged();
+            }
+        }
+
+        private void StutteringFactor_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            var key = e.Key;
+
+            if (key == Key.Enter)
+            {
+                GraphTab.Focus();
+                (DataContext as DataViewModel).OnStutteringOptionsChanged();
+            }
+        }
+
+        private void NumberValidationTextBox(object sender, TextCompositionEventArgs e)
+        {
+            Regex regex = new Regex("[^0-9.-]+");
+            e.Handled = regex.IsMatch(e.Text);
+        }
+    }
 }
