@@ -1060,6 +1060,7 @@ namespace CapFrameX.ViewModel
 						Values = new ChartValues<double>(){ smoothTotalTime },
 						DataLabels = false,
 						Fill = ColorRessource.PieChartSmoothFill,
+						StrokeThickness = 0
 					},
 
 					new PieSeries
@@ -1068,6 +1069,7 @@ namespace CapFrameX.ViewModel
 						Values = new ChartValues<double>(){ lowFPSTotalTime },
 						DataLabels = false,
 						Fill = ColorRessource.PieChartLowFPSFill,
+						StrokeThickness = 0
 					},
 
 					new PieSeries
@@ -1076,6 +1078,7 @@ namespace CapFrameX.ViewModel
 						Values = new ChartValues<double>(){ stutteringTotalTime },
 						DataLabels = false,
 						Fill = ColorRessource.PieChartStutterFill,
+						StrokeThickness = 0
 					}
 				};
 			}));
