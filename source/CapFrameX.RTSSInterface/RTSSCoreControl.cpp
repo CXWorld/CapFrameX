@@ -617,7 +617,7 @@ void RTSSCoreControl::Refresh()
 		else if (clientCount > 1)
 		{
 			// Add CX label
-			groupedString.Add("", "<C300>\nCX OSD<C>", "\n", " ");
+			groupedString.Add("", "<C250>\nCX OSD<C>", "\n", " ");
 		}
 
 		// add format variables
@@ -642,7 +642,7 @@ void RTSSCoreControl::Refresh()
 		strOSD += "<C200=FFFFFF>"; // White
 		////define color variable C[1] as R=FF,G=FF and B=FF
 		// CX blue
-		strOSD += "<C300=2297F3>"; //CX Blue
+		strOSD += "<C250=2297F3>"; //CX Blue
 		////define color variable C[1] as R=FF,G=FF and B=FF
 		//// CX orange
 		//strOSD += "<C4=F17D20>"; //CX Orange
@@ -768,20 +768,20 @@ void RTSSCoreControl::AddOverlayEntry(CGroupedString* groupedString, OverlayEntr
 				if (RunHistoryOutlierFlags.size() == RunHistory.size())
 				{
 					if (!RunHistoryOutlierFlags[i])
-						groupedString->Add("<C300> " + RunHistory[i] + "<C>", strGroup, "\n");
+						groupedString->Add("<C250> " + RunHistory[i] + "<C>", strGroup, "\n");
 					else
 						groupedString->Add("<C=C80000> " + RunHistory[i] + "<C>", strGroup, "\n");
 				}
 				else
 				{
-					groupedString->Add("<C300> " + RunHistory[i] + "<C>", strGroup, "\n");
+					groupedString->Add("<C250> " + RunHistory[i] + "<C>", strGroup, "\n");
 				}
 			}
 
 			// add aggregation
 			if (RunHistoryAggregation != "")
 			{
-				groupedString->Add("<C300> " + RunHistoryAggregation + "<C>", "<C200>Result: <C>", "\n");
+				groupedString->Add("<C250> " + RunHistoryAggregation + "<C>", "<C200>Result: <C>", "\n");
 			}
 		}
 	}
