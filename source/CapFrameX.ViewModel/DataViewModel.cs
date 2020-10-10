@@ -292,8 +292,8 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
-		public double StutteringThreshold
-        {
+		public double StutteringLowFPSThreshold
+		{
 			get { return _appConfiguration.StutteringThreshold; }
 			set
 			{
@@ -1076,7 +1076,7 @@ namespace CapFrameX.ViewModel
 
 					new PieSeries
 					{
-						Title = $"Stutter:  {Math.Round(stutteringTotalTime, 2).ToString(CultureInfo.InvariantCulture)}s ({Math.Round(stutteringTimePercentage, 1).ToString(CultureInfo.InvariantCulture)}%)",
+						Title = $"Stuttering:  {Math.Round(stutteringTotalTime, 2).ToString(CultureInfo.InvariantCulture)}s ({Math.Round(stutteringTimePercentage, 1).ToString(CultureInfo.InvariantCulture)}%)",
 						Values = new ChartValues<double>(){ stutteringTotalTime },
 						DataLabels = false,
 						Fill = ColorRessource.PieChartStutterFill,

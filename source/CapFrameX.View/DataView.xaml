@@ -259,7 +259,7 @@
                                                 <RowDefinition Height="*" />
                                             </Grid.RowDefinitions>
                                             <TextBox Grid.Row="0" materialDesign:HintAssist.Hint="Low FPS threshold" materialDesign:HintAssist.IsFloating="True" Width="100"
-                                                 HorizontalContentAlignment="Center" Text="{Binding StutteringThreshold}"
+                                                 HorizontalContentAlignment="Center" Text="{Binding StutteringLowFPSThreshold}"
                                                  PreviewKeyDown="StutteringThreshold_PreviewKeyDown" PreviewTextInput="NumberValidationTextBox" ToolTipService.ShowDuration="25000">
                                                 <TextBox.ToolTip>
                                                     <ToolTip Width="300">

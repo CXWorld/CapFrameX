@@ -13,7 +13,7 @@ namespace CapFrameX.Statistics.NetStandard
 
         double GetStutteringTimePercentage(IList<double> sequence, double stutteringFactor);
 
-        double GetLowFPSTimePercentage(IList<double> sequence, double stutteringFactor, double stutteringThreshold);
+        double GetLowFPSTimePercentage(IList<double> sequence, double stutteringFactor, double lowFPSThreshold);
 
         IList<double> GetMovingAverage(IList<double> sequence);
 
