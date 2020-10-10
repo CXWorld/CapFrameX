@@ -240,7 +240,7 @@
                             <TabItem Header="Stuttering analysis">
                                 <Grid>
                                     <lvc:PieChart Margin="10 5 200 5" MaxHeight="250" Hoverable="False" Series="{Binding StutteringStatisticCollection}" 
-								  LegendLocation="Left" DataClick="Chart_OnDataClick" DataTooltip="{x:Null}">
+								  LegendLocation="Left" DataClick="Chart_OnDataClick" DataTooltip="{x:Null}" StartingRotationAngle="0">
                                         <lvc:PieChart.ChartLegend>
                                             <lvc:DefaultLegend FontSize="14" FontWeight="Medium"></lvc:DefaultLegend>
                                         </lvc:PieChart.ChartLegend>

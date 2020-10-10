@@ -33,14 +33,21 @@ namespace CapFrameX.View
 
             //clear selected slice
             if (selectedSeries.PushOut == 8)
+            { 
                 selectedSeries.PushOut = 0;
+                selectedSeries.StrokeThickness = 0;
+            }
 
             else
             {
                 foreach (PieSeries series in chart.Series)
+                { 
                     series.PushOut = 0;
+                    series.StrokeThickness = 0;
+                }
 
                 selectedSeries.PushOut = 8;
+                selectedSeries.StrokeThickness = 1;
             }
         }
 
