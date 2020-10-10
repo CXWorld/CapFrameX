@@ -234,7 +234,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
                     coreMaskWith = NextLog2(maxCoreIdPerPackage);
                     break;
                 case Vendor.AMD:
-                    if (this.family == 0x17)
+                    if (this.family == 0x17 || this.family == 0x19)
                     {
                         coreMaskWith = (cpuidExtData[8, 2] >> 12) & 0xF;
                         threadMaskWith =
