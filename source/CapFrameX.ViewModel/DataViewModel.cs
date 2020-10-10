@@ -1056,32 +1056,26 @@ namespace CapFrameX.ViewModel
 				{
 					new PieSeries
 					{
-						Title = $"Smooth:  {Math.Round(smoothTotalTime, 2).ToString(CultureInfo.InvariantCulture)}s ({Math.Round(100 - (stutteringTimePercentage + lowFPSTimePercentage), 1).ToString(CultureInfo.InvariantCulture)}%)",
+						Title = $"Smooth:  { smoothTotalTime.ToString(CultureInfo.InvariantCulture) }s ({ Math.Round(100 - (stutteringTimePercentage + lowFPSTimePercentage), 1).ToString(CultureInfo.InvariantCulture) }%)",
 						Values = new ChartValues<double>(){ smoothTotalTime },
 						DataLabels = false,
 						Fill = ColorRessource.PieChartSmoothFill,
-						Foreground = Brushes.Black,
-						FontSize = 18,
 					},
 
 					new PieSeries
 					{
-						Title = $"Low FPS:  {Math.Round(lowFPSTotalTime, 2).ToString(CultureInfo.InvariantCulture)}s ({Math.Round(lowFPSTimePercentage, 1).ToString(CultureInfo.InvariantCulture)}%)",
+						Title = $"Low FPS:  { lowFPSTotalTime.ToString(CultureInfo.InvariantCulture) }s ({ Math.Round(lowFPSTimePercentage, 1).ToString(CultureInfo.InvariantCulture) }%)",
 						Values = new ChartValues<double>(){ lowFPSTotalTime },
 						DataLabels = false,
 						Fill = ColorRessource.PieChartLowFPSFill,
-						Foreground = Brushes.Black,
-						FontSize = 18,
 					},
 
 					new PieSeries
 					{
-						Title = $"Stuttering:  {Math.Round(stutteringTotalTime, 2).ToString(CultureInfo.InvariantCulture)}s ({Math.Round(stutteringTimePercentage, 1).ToString(CultureInfo.InvariantCulture)}%)",
+						Title = $"Stuttering:  { stutteringTotalTime.ToString(CultureInfo.InvariantCulture) }s ({ Math.Round(stutteringTimePercentage, 1).ToString(CultureInfo.InvariantCulture) }%)",
 						Values = new ChartValues<double>(){ stutteringTotalTime },
 						DataLabels = false,
 						Fill = ColorRessource.PieChartStutterFill,
-						Foreground = Brushes.Black,
-						FontSize = 18,
 					}
 				};
 			}));

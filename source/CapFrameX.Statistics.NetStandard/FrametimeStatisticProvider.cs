@@ -145,42 +145,34 @@ namespace CapFrameX.Statistics.NetStandard
         public double GetFpsMetricValue(IList<double> sequence, EMetric metric)
         {
             double metricValue;
-            IList<double> fps;
+            IList<double> fps = sequence.Select(ft => 1000 / ft).ToList();
             switch (metric)
             {
                 case EMetric.Max:
-                    fps = sequence.Select(ft => 1000 / ft).ToList();
                     metricValue = fps.Max();
                     break;
                 case EMetric.P99:
-                    fps = sequence.Select(ft => 1000 / ft).ToList();
                     metricValue = GetPQuantileSequence(fps, 0.99);
                     break;
                 case EMetric.P95:
-                    fps = sequence.Select(ft => 1000 / ft).ToList();
                     metricValue = GetPQuantileSequence(fps, 0.95);
                     break;
                 case EMetric.Average:
                     metricValue = sequence.Count * 1000 / sequence.Sum();
                     break;
                 case EMetric.Median:
-                    fps = sequence.Select(ft => 1000 / ft).ToList();
                     metricValue = GetPQuantileSequence(fps, 0.5);
                     break;
                 case EMetric.P5:
-                    fps = sequence.Select(ft => 1000 / ft).ToList();
                     metricValue = GetPQuantileSequence(fps, 0.05);
                     break;
                 case EMetric.P1:
-                    fps = sequence.Select(ft => 1000 / ft).ToList();
                     metricValue = GetPQuantileSequence(fps, 0.01);
                     break;
                 case EMetric.P0dot2:
-                    fps = sequence.Select(ft => 1000 / ft).ToList();
                     metricValue = GetPQuantileSequence(fps, 0.002);
                     break;
                 case EMetric.P0dot1:
-                    fps = sequence.Select(ft => 1000 / ft).ToList();
                     metricValue = GetPQuantileSequence(fps, 0.001);
                     break;
                 case EMetric.OnePercentLow:
@@ -190,11 +182,9 @@ namespace CapFrameX.Statistics.NetStandard
                     metricValue = 1000 / GetPercentageHighSequence(sequence, 1 - 0.001);
                     break;
                 case EMetric.Min:
-                    fps = sequence.Select(ft => 1000 / ft).ToList();
                     metricValue = fps.Min();
                     break;
                 case EMetric.AdaptiveStd:
-                    fps = sequence.Select(ft => 1000 / ft).ToList();
                     metricValue = GetAdaptiveStandardDeviation(fps, _options.IntervalAverageWindowTime);
                     break;
                 default:
