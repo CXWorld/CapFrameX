@@ -422,7 +422,7 @@ namespace CapFrameX.ViewModel
 
         public Array NumberOfRunsItemsSource => Enumerable.Range(2, 9).ToArray();
 
-        public Array OutlierPercentageItemsSource => Enumerable.Range(2, 9).ToArray();
+        public Array OutlierPercentageItemsSource => Enumerable.Range(1, 9).ToArray();
 
         public Array OutlierHandlingItems => Enum.GetValues(typeof(EOutlierHandling))
                                                  .Cast<EOutlierHandling>()

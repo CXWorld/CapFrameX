@@ -553,7 +553,7 @@ namespace CapFrameX.Configuration.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("Ignore")]
+        [global::System.Configuration.DefaultSettingValueAttribute("Replace")]
         public string OutlierHandling {
             get {
                 return ((string)(this["OutlierHandling"]));

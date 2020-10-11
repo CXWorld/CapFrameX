@@ -178,7 +178,7 @@ namespace CapFrameX.ViewModel
 
         public Array RelatedMetricItemsSource => new[] { "Average", "Second", "Third" };
 
-        public Array OutlierPercentageItemsSource => Enumerable.Range(2, 9).ToArray();
+        public Array OutlierPercentageItemsSource => Enumerable.Range(1, 9).ToArray();
 
         public Array SecondMetricItems => Enum.GetValues(typeof(EMetric))
                                       .Cast<EMetric>()
