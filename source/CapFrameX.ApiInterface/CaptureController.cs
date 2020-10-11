@@ -35,7 +35,8 @@ namespace CapFrameX.Remote
                 CaptureTime = parameters.CaptureTime,
                 CaptureFileMode = parameters.CaptureFileMode,
                 ProcessName = parameters.ProcessName,
-                RecordDirectory = parameters.RecordDirectory
+                RecordDirectory = parameters.RecordDirectory,
+                Remote = true
             });
 
             return "ok";

@@ -25,6 +25,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Reactive.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
@@ -275,6 +276,11 @@ namespace CapFrameX.ViewModel
                         UpdateCaptureStateInfo();
                         RaisePropertyChanged(nameof(AreButtonsActive));
                     }
+
+                    if (status.Status == ECaptureStatus.StartedRemote)
+                    {
+                        CaptureStateInfo = "Remote capturing in progress..." + Environment.NewLine;
+                    }
                 }
                 if(status.Message != null)
                 {
@@ -383,7 +389,8 @@ namespace CapFrameX.ViewModel
                 {
                     CaptureTime = CaptureTime,
                     CaptureFileMode = AppConfiguration.CaptureFileMode,
-                    ProcessName = processToCapture
+                    ProcessName = processToCapture,
+                    Remote = false
                 })).ContinueWith((_) =>
                 {
                     _disposableHeartBeat?.Dispose();

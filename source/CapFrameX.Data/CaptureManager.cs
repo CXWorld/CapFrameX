@@ -20,6 +20,7 @@ namespace CapFrameX.Data
     public enum ECaptureStatus
     {
         Started,
+        StartedRemote,
         Processing,
         Stopped
     }
@@ -70,7 +71,8 @@ namespace CapFrameX.Data
             {
                 _isCapturing = value;
                 _presentMonCaptureService.IsCaptureModeActiveStream.OnNext(value);
-                _captureStatusChange.OnNext(new CaptureStatus { Status = value == true ? ECaptureStatus.Started : ECaptureStatus.Stopped });
+                if(!value)
+                _captureStatusChange.OnNext(new CaptureStatus { Status = ECaptureStatus.Stopped });
             }
         }
 
@@ -102,6 +104,9 @@ namespace CapFrameX.Data
 
         public async Task StartCapture(CaptureOptions options)
         {
+            if (IsCapturing)
+                return;
+
             _timestampStartCapture = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds();
             _currentCaptureOptions = options;
             _captureData.Clear();
@@ -109,6 +114,11 @@ namespace CapFrameX.Data
             IsCapturing = true;
 
             _overlayService.SetCaptureServiceStatus("Recording frametimes");
+
+            if(options.Remote)
+                _captureStatusChange.OnNext(new CaptureStatus() { Status = ECaptureStatus.StartedRemote }); 
+            else
+                _captureStatusChange.OnNext(new CaptureStatus() { Status = ECaptureStatus.Started });
 
             bool intializedStartTime = false;
             double captureDataArchiveLastTime = 0;
@@ -163,6 +173,9 @@ namespace CapFrameX.Data
 
         public async Task StopCapture()
         {
+            if (!IsCapturing)
+                return;
+
             _timestampStopCapture = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds();
             Application.Current.Dispatcher.Invoke(() => _soundManager.PlaySound(Sound.CaptureStopped));
             _overlayService.StopCaptureTimer();
@@ -550,5 +563,6 @@ namespace CapFrameX.Data
         public double CaptureTime;
         public string CaptureFileMode;
         public string RecordDirectory;
+        public bool Remote;
     }
 }
