@@ -1,25 +1,17 @@
-﻿using CapFrameX.Contracts.Overlay;
-using CapFrameX.Contracts.PresentMonInterface;
-using CapFrameX.Contracts.Sensor;
-using CapFrameX.Data;
+﻿using CapFrameX.Data;
 using CapFrameX.Remote.JsonPayload;
 using EmbedIO;
 using EmbedIO.Routing;
 using EmbedIO.WebApi;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
 using System.Net;
-using System.Reactive.Linq;
-using System.Reactive.Subjects;
 using System.Threading.Tasks;
 
 namespace CapFrameX.Remote
 {
     public class CaptureController : WebApiController
     {
-        private readonly ISubject<int> _startCaptureSubject;
         private readonly CaptureManager _captureManager;
 
         public CaptureController(CaptureManager captureManager)
