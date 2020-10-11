@@ -455,79 +455,81 @@ namespace CapFrameX.Data
 
         public async Task DuplicateSession(ISession session, double startTime = 0, double endTime = double.PositiveInfinity)
         {
-            var json = JsonConvert.SerializeObject(session);
-            var clone = JsonConvert.DeserializeObject<Session.Classes.Session>(json);
-
-            var dataPropertyInfos = typeof(SessionCaptureData).GetProperties().Where(pi => pi.PropertyType.IsArray);
-            var sensorPropertyInfos = typeof(SessionSensorData).GetProperties().Where(pi => pi.PropertyType.IsArray);
-
-            void SetArray(IEnumerable<PropertyInfo> propertyInfos, object sourceObject, object targetObject, IEnumerable<int> indicesToKeep)
+            try
             {
-                foreach (var dataPi in propertyInfos)
+
+
+                var json = JsonConvert.SerializeObject(session);
+                var clone = JsonConvert.DeserializeObject<Session.Classes.Session>(json);
+
+                var dataPropertyInfos = typeof(SessionCaptureData).GetProperties().Where(pi => pi.PropertyType.IsArray);
+                var sensorPropertyInfos = typeof(SessionSensorData).GetProperties().Where(pi => pi.PropertyType.IsArray);
+
+                void SetArray(IEnumerable<PropertyInfo> propertyInfos, object sourceObject, object targetObject, IEnumerable<int> indicesToKeep)
                 {
-                    var type = dataPi.PropertyType.GetElementType();
-                    var array = Array.CreateInstance(type, 0);
-                    if (dataPi.GetValue(sourceObject) is Array source && source.Length > 0)
+                    foreach (var dataPi in propertyInfos)
                     {
-                        array = Array.CreateInstance(type, indicesToKeep.Count());
-                        int targetIndex = 0;
-                        foreach (var indexToKeep in indicesToKeep)
+                        var type = dataPi.PropertyType.GetElementType();
+                        var array = Array.CreateInstance(type, 0);
+                        if (dataPi.GetValue(sourceObject) is Array source && source.Length > 0)
                         {
-                            array.SetValue(source.GetValue(indexToKeep), targetIndex++);
+                            array = Array.CreateInstance(type, indicesToKeep.Count());
+                            int targetIndex = 0;
+                            foreach (var indexToKeep in indicesToKeep)
+                            {
+                                array.SetValue(source.GetValue(indexToKeep), targetIndex++);
+                            }
+                        }
+                        dataPi.SetValue(targetObject, array);
+                    }
+                }
+
+                int[] DetermineIndicesToKeep(double[] reference)
+                {
+                    var indicesToKeep = new List<int>();
+                    for (int index = 0; index < reference.Count(); index++)
+                    {
+                        if (reference[index] >= startTime && reference[index] <= endTime)
+                        {
+                            indicesToKeep.Add(index);
                         }
                     }
-                    dataPi.SetValue(targetObject, array);
+                    return indicesToKeep.ToArray();
                 }
-            }
 
-            int[] DetermineIndicesToKeep(double[] reference)
-            {
-                var indicesToKeep = new List<int>();
-                for (int index = 0; index < reference.Count(); index++)
+                for (int sessionRunIndex = 0; sessionRunIndex < clone.Runs.Count(); sessionRunIndex++)
                 {
-                    if (reference[index] >= startTime && reference[index] <= endTime)
-                    {
-                        indicesToKeep.Add(index);
-                    }
+                    var sourceSessionRun = session.Runs[sessionRunIndex];
+                    var targetSessionRun = clone.Runs[sessionRunIndex];
+                    var dataIndicesToKeep = DetermineIndicesToKeep(sourceSessionRun.CaptureData.TimeInSeconds);
+                    var sensorIndicesToKeep = DetermineIndicesToKeep(sourceSessionRun.SensorData.MeasureTime);
+                    SetArray(dataPropertyInfos, sourceSessionRun.CaptureData, clone.Runs[sessionRunIndex].CaptureData, dataIndicesToKeep);
+                    SetArray(sensorPropertyInfos, sourceSessionRun.SensorData, clone.Runs[sessionRunIndex].SensorData, sensorIndicesToKeep);
+                    targetSessionRun.Hash = Convert.ToString(targetSessionRun.GetHashCode()); // Dirty Hack weil Rohdaten nicht mehr vorhanden. Hash ist nicht vergleichbar mit dem Hash, welcher aus den PresentMonLines erstellt wird
                 }
-                return indicesToKeep.ToArray();
-            }
 
-            for (int sessionRunIndex = 0; sessionRunIndex < clone.Runs.Count(); sessionRunIndex++)
+                clone.Hash = string.Join(",", clone.Runs.Select(r => r.Hash).OrderBy(h => h)).GetSha1();
+                clone.Info.Id = Guid.NewGuid();
+                NormalizeStartTimesOfSessionRuns(clone.Runs);
+                var filePath = await GetOutputFilename(clone.Info.ProcessName, null);
+                SaveSessionToFile(filePath, clone);
+            }
+            catch (Exception e)
             {
-                var sourceSessionRun = session.Runs[sessionRunIndex];
-                var targetSessionRun = clone.Runs[sessionRunIndex];
-                var dataIndicesToKeep = DetermineIndicesToKeep(sourceSessionRun.CaptureData.TimeInSeconds);
-                var sensorIndicesToKeep = DetermineIndicesToKeep(sourceSessionRun.SensorData.MeasureTime);
-                SetArray(dataPropertyInfos, sourceSessionRun.CaptureData, clone.Runs[sessionRunIndex].CaptureData, dataIndicesToKeep);
-                SetArray(sensorPropertyInfos, sourceSessionRun.SensorData, clone.Runs[sessionRunIndex].SensorData, sensorIndicesToKeep);
-                targetSessionRun.Hash = Convert.ToString(targetSessionRun.GetHashCode()); // Dirty Hack weil Rohdaten nicht mehr vorhanden. Hash ist nicht vergleichbar mit dem Hash, welcher aus den PresentMonLines erstellt wird
+                _logger.LogError(e, "Error duplicating session");
             }
-
-            clone.Hash = string.Join(",", clone.Runs.Select(r => r.Hash).OrderBy(h => h)).GetSha1();
-            clone.Info.Id = Guid.NewGuid();
-            NormalizeStartTimesOfSessionRuns(clone.Runs);
-            var filePath = await GetOutputFilename(clone.Info.ProcessName, null);
-            SaveSessionToFile(filePath, clone);
         }
 
         private void SaveSessionToFile(string filePath, ISession session)
         {
-            try
+            using (var streamWriter = new StreamWriter(filePath))
             {
-                using (var streamWriter = new StreamWriter(filePath))
+                using (JsonWriter jsonWriter = new JsonTextWriter(streamWriter))
                 {
-                    using (JsonWriter jsonWriter = new JsonTextWriter(streamWriter))
-                    {
-                        var serializer = new JsonSerializer();
-                        serializer.Serialize(jsonWriter, session);
-                        _logger.LogInformation("{filePath} successfully written", filePath);
-                    }
+                    var serializer = new JsonSerializer();
+                    serializer.Serialize(jsonWriter, session);
+                    _logger.LogInformation("{filePath} successfully written", filePath);
                 }
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e, "Error writing JSON file");
             }
         }
 
@@ -544,7 +546,7 @@ namespace CapFrameX.Data
         private async Task<string> GetOutputFilename(string processName, string recordDirectory)
         {
             var filename = CaptureServiceConfiguration.GetCaptureFilename(processName);
-            var directory = recordDirectory is null ? await _recordObserver.ObservingDirectoryStream.Take(1): new DirectoryInfo(recordDirectory);
+            var directory = recordDirectory is null ? await _recordObserver.ObservingDirectoryStream.Take(1) : new DirectoryInfo(recordDirectory);
             return Path.Combine(directory.FullName, filename);
         }
 

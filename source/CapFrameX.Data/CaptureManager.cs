@@ -113,6 +113,7 @@ namespace CapFrameX.Data
             _sensorService.StartSensorLogging();
             IsCapturing = true;
 
+            AddLoggerEntry("Capturing started.");
             _overlayService.SetCaptureServiceStatus("Recording frametimes");
 
             if(options.Remote)
@@ -152,6 +153,8 @@ namespace CapFrameX.Data
                             // stop archive
                             _fillArchive = false;
                             _disposableArchiveStream?.Dispose();
+
+                            AddLoggerEntry("Stopped filling Archive");
                         }
                     }
                 });
