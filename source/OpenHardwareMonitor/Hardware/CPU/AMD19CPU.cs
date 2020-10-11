@@ -1,14 +1,4 @@
-﻿/*
- 
-  This Source Code Form is subject to the terms of the Mozilla Public
-  License, v. 2.0. If a copy of the MPL was not distributed with this
-  file, You can obtain one at http://mozilla.org/MPL/2.0/.
- 
-  Copyright (C) 2020 Michael Möller <mmoeller@openhardwaremonitor.org>
-	
-*/
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -16,7 +6,7 @@ using System.Text;
 
 namespace OpenHardwareMonitor.Hardware.CPU
 {
-    internal sealed class AMD17CPU : AMDCPU
+    internal sealed class AMD19CPU : AMDCPU
     {
         private readonly Core[] cores;
         private readonly Sensor coreMaxClocks;
@@ -29,17 +19,17 @@ namespace OpenHardwareMonitor.Hardware.CPU
         private readonly Sensor coresPowerSensor;
         private readonly Sensor busClock;
 
-        private const uint FAMILY_17H_M01H_THM_TCON_TEMP = 0x00059800;
-        private const uint FAMILY_17H_M01H_THM_TCON_TEMP_RANGE_SEL = 0x80000;
-        private uint FAMILY_17H_M70H_CCD_TEMP(uint i) { return 0x00059954 + i * 4; }
-        private const uint FAMILY_17H_M70H_CCD_TEMP_VALID = 0x800;
+        private const uint FAMILY_19H_M20H_THM_TCON_TEMP = 0x00059800;
+        private const uint FAMILY_19H_M20H_THM_TCON_TEMP_RANGE_SEL = 0x80000;
+        private uint FAMILY_19H_M20H_CCD_TEMP(uint i) { return 0x00059954 + i * 4; }
+        private const uint FAMILY_19H_M20H_CCD_TEMP_VALID = 0x800;
         private const uint MAX_CCD_COUNT = 8;
 
         private const uint MSR_RAPL_PWR_UNIT = 0xC0010299;
         private const uint MSR_CORE_ENERGY_STAT = 0xC001029A;
         private const uint MSR_PKG_ENERGY_STAT = 0xC001029B;
         private const uint MSR_P_STATE_0 = 0xC0010064;
-        private const uint MSR_FAMILY_17H_P_STATE = 0xc0010293;
+        private const uint MSR_FAMILY_19H_P_STATE = 0xc0010293;
 
         private readonly float energyUnitMultiplier = 0;
         private uint lastEnergyConsumed;
@@ -47,43 +37,14 @@ namespace OpenHardwareMonitor.Hardware.CPU
 
         private readonly double timeStampCounterMultiplier;
 
-        private struct TctlOffsetItem
-        {
-            public string Name { get; set; }
-            public float Offset { get; set; }
-        }
-        private IEnumerable<TctlOffsetItem> tctlOffsetItems = new[] {
-          new TctlOffsetItem { Name = "AMD Ryzen 5 1600X", Offset = 20.0f },
-          new TctlOffsetItem { Name = "AMD Ryzen 7 1700X", Offset = 20.0f },
-          new TctlOffsetItem { Name = "AMD Ryzen 7 1800X", Offset = 20.0f },
-          new TctlOffsetItem { Name = "AMD Ryzen 7 2700X", Offset = 10.0f },
-          new TctlOffsetItem { Name = "AMD Ryzen Threadripper 19", Offset = 27.0f },
-          new TctlOffsetItem { Name = "AMD Ryzen Threadripper 29", Offset = 27.0f }
-        };
-        private readonly float tctlOffset = 0.0f;
-
-        public AMD17CPU(int processorIndex, CPUID[][] cpuid, ISettings settings)
+        public AMD19CPU(int processorIndex, CPUID[][] cpuid, ISettings settings)
           : base(processorIndex, cpuid, settings)
         {
-            string cpuName = cpuid[0][0].BrandString;
-            if (!string.IsNullOrEmpty(cpuName))
-            {
-                foreach (var item in tctlOffsetItems)
-                {
-                    if (cpuName.StartsWith(item.Name))
-                    {
-                        tctlOffset = item.Offset;
-                        break;
-                    }
-                }
-            }
-
             coreTemperature = new Sensor(
               "CPU Package", 0, SensorType.Temperature, this, new[] {
             new ParameterDescription("Offset [°C]", "Temperature offset.", 0)
                 }, this.settings);
 
-            if (tctlOffset != 0.0f)
                 tctlTemperature = new Sensor(
                 "CPU Tctl", 1, true, SensorType.Temperature, this, new[] {
             new ParameterDescription("Offset [°C]", "Temperature offset.", 0)
@@ -145,17 +106,19 @@ namespace OpenHardwareMonitor.Hardware.CPU
 
         protected override uint[] GetMSRs()
         {
-            return new uint[] { MSR_P_STATE_0, MSR_FAMILY_17H_P_STATE,
+            return new uint[] { MSR_P_STATE_0, MSR_FAMILY_19H_P_STATE,
                 MSR_RAPL_PWR_UNIT, MSR_CORE_ENERGY_STAT, MSR_PKG_ENERGY_STAT };
         }
 
         private IList<uint> GetSmnRegisters()
         {
-            var registers = new List<uint>();
-            registers.Add(FAMILY_17H_M01H_THM_TCON_TEMP);
+            var registers = new List<uint>
+            {
+                FAMILY_19H_M20H_THM_TCON_TEMP
+            };
             for (uint i = 0; i < MAX_CCD_COUNT; i++)
             {
-                registers.Add(FAMILY_17H_M70H_CCD_TEMP(i));
+                registers.Add(FAMILY_19H_M20H_CCD_TEMP(i));
             }
             return registers;
         }
@@ -210,10 +173,10 @@ namespace OpenHardwareMonitor.Hardware.CPU
         {
             base.Update();
 
-            if (ReadSmnRegister(FAMILY_17H_M01H_THM_TCON_TEMP, out uint value))
+            if (ReadSmnRegister(FAMILY_19H_M20H_THM_TCON_TEMP, out uint value))
             {
                 float temperature = ((value >> 21) & 0x7FF) / 8.0f;
-                if ((value & FAMILY_17H_M01H_THM_TCON_TEMP_RANGE_SEL) != 0)
+                if ((value & FAMILY_19H_M20H_THM_TCON_TEMP_RANGE_SEL) != 0)
                     temperature -= 49;
 
                 if (tctlTemperature != null)
@@ -222,8 +185,6 @@ namespace OpenHardwareMonitor.Hardware.CPU
                       tctlTemperature.Parameters[0].Value;
                     ActivateSensor(tctlTemperature);
                 }
-
-                temperature -= tctlOffset;
 
                 coreTemperature.Value = temperature +
                   coreTemperature.Parameters[0].Value;
@@ -235,9 +196,9 @@ namespace OpenHardwareMonitor.Hardware.CPU
             float ccdTemperatureSum = 0;
             for (uint i = 0; i < ccdTemperatures.Length; i++)
             {
-                if (ReadSmnRegister(FAMILY_17H_M70H_CCD_TEMP(i), out value))
+                if (ReadSmnRegister(FAMILY_19H_M20H_CCD_TEMP(i), out value))
                 {
-                    if ((value & FAMILY_17H_M70H_CCD_TEMP_VALID) == 0)
+                    if ((value & FAMILY_19H_M20H_CCD_TEMP_VALID) == 0)
                         break;
 
                     float temperature = (value & 0x7FF) / 8.0f - 49;
@@ -294,8 +255,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
 
         private class Core
         {
-
-            private readonly AMD17CPU cpu;
+            private readonly AMD19CPU cpu;
             private readonly GroupAffinity affinity;
 
             private readonly Sensor powerSensor;
@@ -307,7 +267,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
 
             public float? CoreClock => clockSensor.Value;
 
-            public Core(int index, CPUID[] threads, AMD17CPU cpu, ISettings settings)
+            public Core(int index, CPUID[] threads, AMD19CPU cpu, ISettings settings)
             {
                 this.cpu = cpu;
                 this.affinity = threads[0].Affinity;
@@ -332,7 +292,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
 
             private double? GetMultiplier()
             {
-                if (Ring0.Rdmsr(MSR_FAMILY_17H_P_STATE, out uint eax, out _))
+                if (Ring0.Rdmsr(MSR_FAMILY_19H_P_STATE, out uint eax, out _))
                 {
                     uint cpuDfsId = (eax >> 8) & 0x3f;
                     uint cpuFid = eax & 0xff;
@@ -379,7 +339,6 @@ namespace OpenHardwareMonitor.Hardware.CPU
                         cpu.ActivateSensor(clockSensor);
                 }
             }
-
         }
     }
 }

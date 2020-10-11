@@ -20,7 +20,7 @@ xmlns:wix="http://schemas.microsoft.com/wix/2006/wi">
 			<xsl:apply-templates select="node()" />
 		</xsl:copy>
 	</xsl:template>
-	<xsl:key name="search" match="wix:Component[contains(wix:File/@Source, '.pdb')]" use="@Id" />
+	<!-- <xsl:key name="search" match="wix:Component[contains(wix:File/@Source, '.pdb')]" use="@Id" /> -->
 	<xsl:key name="search" match="wix:Component[contains(wix:File/@Source, '.xml')]" use="@Id" />
 	<xsl:key name="search" match="wix:Component[contains(wix:File/@Source, '.ilk')]" use="@Id" />
 	<xsl:key name="search" match="wix:Component[contains(wix:File/@Source, '.lib')]" use="@Id" />

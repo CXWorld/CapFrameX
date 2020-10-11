@@ -112,6 +112,7 @@
     <Compile Include="Hardware\ATI\ATIGroup.cs" />
     <Compile Include="Hardware\Control.cs" />
     <Compile Include="Hardware\CPU\AMD17CPU.cs" />
+    <Compile Include="Hardware\CPU\AMD19CPU.cs" />
     <Compile Include="Hardware\FirmwareTable.cs" />
     <Compile Include="Hardware\GroupAffinity.cs" />
     <Compile Include="Hardware\HDD\DebugSmart.cs" />

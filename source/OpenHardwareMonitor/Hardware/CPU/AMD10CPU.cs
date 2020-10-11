@@ -19,10 +19,8 @@ using System.Threading;
 
 namespace OpenHardwareMonitor.Hardware.CPU
 {
-
     internal sealed class AMD10CPU : AMDCPU
     {
-
         private readonly Sensor coreTemperature;
         private readonly Sensor[] coreClocks;
         private readonly Sensor coreMaxClocks;
