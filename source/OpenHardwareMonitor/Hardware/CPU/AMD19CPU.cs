@@ -19,10 +19,10 @@ namespace OpenHardwareMonitor.Hardware.CPU
         private readonly Sensor coresPowerSensor;
         private readonly Sensor busClock;
 
-        private const uint FAMILY_19H_M01H_THM_TCON_TEMP = 0x00059800;
-        private const uint FAMILY_19H_M01H_THM_TCON_TEMP_RANGE_SEL = 0x80000;
-        private uint FAMILY_19H_M70H_CCD_TEMP(uint i) { return 0x00059954 + i * 4; }
-        private const uint FAMILY_19H_M70H_CCD_TEMP_VALID = 0x800;
+        private const uint FAMILY_19H_M20H_THM_TCON_TEMP = 0x00059800;
+        private const uint FAMILY_19H_M20H_THM_TCON_TEMP_RANGE_SEL = 0x80000;
+        private uint FAMILY_19H_M20H_CCD_TEMP(uint i) { return 0x00059954 + i * 4; }
+        private const uint FAMILY_19H_M20H_CCD_TEMP_VALID = 0x800;
         private readonly uint maxCcdCount = 0;
 
         private const uint MSR_RAPL_PWR_UNIT = 0xC0010299;
@@ -123,11 +123,11 @@ namespace OpenHardwareMonitor.Hardware.CPU
         {
             var registers = new List<uint>
             {
-                FAMILY_19H_M01H_THM_TCON_TEMP
+                FAMILY_19H_M20H_THM_TCON_TEMP
             };
             for (uint i = 0; i < maxCcdCount; i++)
             {
-                registers.Add(FAMILY_19H_M70H_CCD_TEMP(i));
+                registers.Add(FAMILY_19H_M20H_CCD_TEMP(i));
             }
             return registers;
         }
@@ -182,10 +182,10 @@ namespace OpenHardwareMonitor.Hardware.CPU
         {
             base.Update();
 
-            if (ReadSmnRegister(FAMILY_19H_M01H_THM_TCON_TEMP, out uint value))
+            if (ReadSmnRegister(FAMILY_19H_M20H_THM_TCON_TEMP, out uint value))
             {
                 float temperature = ((value >> 21) & 0x7FF) / 8.0f;
-                if ((value & FAMILY_19H_M01H_THM_TCON_TEMP_RANGE_SEL) != 0)
+                if ((value & FAMILY_19H_M20H_THM_TCON_TEMP_RANGE_SEL) != 0)
                     temperature -= 49;
 
                 if (tctlTemperature != null)
@@ -205,9 +205,9 @@ namespace OpenHardwareMonitor.Hardware.CPU
             float ccdTemperatureSum = 0;
             for (uint i = 0; i < ccdTemperatures.Length; i++)
             {
-                if (ReadSmnRegister(FAMILY_19H_M70H_CCD_TEMP(i), out value))
+                if (ReadSmnRegister(FAMILY_19H_M20H_CCD_TEMP(i), out value))
                 {
-                    if ((value & FAMILY_19H_M70H_CCD_TEMP_VALID) == 0)
+                    if ((value & FAMILY_19H_M20H_CCD_TEMP_VALID) == 0)
                         break;
 
                     float temperature = (value & 0x7FF) / 8.0f - 49;
