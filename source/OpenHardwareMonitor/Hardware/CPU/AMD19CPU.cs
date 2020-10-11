@@ -23,7 +23,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
         private const uint FAMILY_19H_M20H_THM_TCON_TEMP_RANGE_SEL = 0x80000;
         private uint FAMILY_19H_M20H_CCD_TEMP(uint i) { return 0x00059954 + i * 4; }
         private const uint FAMILY_19H_M20H_CCD_TEMP_VALID = 0x800;
-        private readonly uint maxCcdCount = 0;
+        private const uint MAX_CCD_COUNT = 8;
 
         private const uint MSR_RAPL_PWR_UNIT = 0xC0010299;
         private const uint MSR_CORE_ENERGY_STAT = 0xC001029A;
@@ -56,16 +56,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
             ccdAvgTemperature = new Sensor(
               "CPU CCD Average", 3, SensorType.Temperature, this, this.settings);
 
-            switch (model & 0xf0)
-            {
-                case 0x30:
-                case 0x70:
-                    maxCcdCount = 8; break;
-                default:
-                    maxCcdCount = 8; break;
-            }
-
-            ccdTemperatures = new Sensor[maxCcdCount];
+            ccdTemperatures = new Sensor[MAX_CCD_COUNT];
             for (int i = 0; i < ccdTemperatures.Length; i++)
             {
                 ccdTemperatures[i] = new Sensor(
@@ -125,7 +116,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
             {
                 FAMILY_19H_M20H_THM_TCON_TEMP
             };
-            for (uint i = 0; i < maxCcdCount; i++)
+            for (uint i = 0; i < MAX_CCD_COUNT; i++)
             {
                 registers.Add(FAMILY_19H_M20H_CCD_TEMP(i));
             }
