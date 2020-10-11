@@ -4,6 +4,7 @@ using CapFrameX.Data;
 using CapFrameX.Extensions;
 using CapFrameX.PresentMonInterface;
 using CapFrameX.Remote;
+using EmbedIO;
 using Newtonsoft.Json;
 using Serilog;
 using Serilog.Formatting.Compact;
@@ -27,6 +28,7 @@ namespace CapFrameX
 	public partial class App : Application
 	{
 		private Bootstrapper _bootstrapper;
+		private WebServer _webServer;
 
 		protected override void OnStartup(StartupEventArgs e)
 		{
@@ -37,8 +39,8 @@ namespace CapFrameX
 			_bootstrapper.Run(true);
 
 
-			var webserver = WebserverFactory.CreateWebServer(_bootstrapper.Container, "http://localhost:1337");
-			webserver.RunAsync();
+			_webServer = WebserverFactory.CreateWebServer(_bootstrapper.Container, "http://localhost:1337");
+			_webServer.RunAsync();
 		}
 
 		private void SetupExceptionHandling()
@@ -116,6 +118,8 @@ namespace CapFrameX
 
 			var sensorService = _bootstrapper.Container.Resolve(typeof(ISensorService), true) as ISensorService;
 			sensorService?.CloseOpenHardwareMonitor();
+
+			_webServer.Dispose();
 		}
 
 		private void Application_Startup(object sender, StartupEventArgs e)
