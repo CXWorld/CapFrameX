@@ -7,7 +7,9 @@ using CapFrameX.Data.Session.Contracts;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
@@ -105,7 +107,11 @@ namespace CapFrameX.Data
         public async Task StartCapture(CaptureOptions options)
         {
             if (IsCapturing)
-                return;
+                throw new Exception("Capture already running");
+            if (!Process.GetProcesses().Any(p => p.ProcessName.Equals(options.ProcessName)))
+                throw new Exception($"Process {options.ProcessName} not found");
+            if (options.RecordDirectory != null && !Directory.Exists(options.RecordDirectory))
+                throw new Exception($"RecordDirectory {options.RecordDirectory} does not exist");
 
             _timestampStartCapture = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds();
             _currentCaptureOptions = options;
@@ -177,7 +183,7 @@ namespace CapFrameX.Data
         public async Task StopCapture()
         {
             if (!IsCapturing)
-                return;
+                throw new Exception("No Capture running");
 
             _timestampStopCapture = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds();
             Application.Current.Dispatcher.Invoke(() => _soundManager.PlaySound(Sound.CaptureStopped));

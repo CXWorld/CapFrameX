@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Net;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
@@ -27,27 +28,56 @@ namespace CapFrameX.Remote
         }
 
         [Route(HttpVerbs.Post, "/capture")]
-        public async Task<string> StartCapture()
+        public async Task<object> StartCapture()
         {
-            var parameters = await HttpContext.GetRequestDataAsync<StartCapturePayload>();
+            try
+            {
+                var parameters = await HttpContext.GetRequestDataAsync<StartCapturePayload>();
 
-            await _captureManager.StartCapture(new CaptureOptions() {
-                CaptureTime = parameters.CaptureTime,
-                CaptureFileMode = parameters.CaptureFileMode,
-                ProcessName = parameters.ProcessName,
-                RecordDirectory = parameters.RecordDirectory,
-                Remote = true
-            });
+                await _captureManager.StartCapture(new CaptureOptions()
+                {
+                    CaptureTime = parameters.CaptureTime,
+                    CaptureFileMode = parameters.CaptureFileMode,
+                    ProcessName = parameters.ProcessName,
+                    RecordDirectory = parameters.RecordDirectory,
+                    Remote = true
+                });
 
-            return "ok";
+                return new
+                {
+                    Message = "Capture started"
+                };
+            }
+            catch (Exception ecx)
+            {
+                Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                return new
+                {
+                    Message = ecx.Message
+                };
+            }
         }
 
         [Route(HttpVerbs.Delete, "/capture")]
-        public async Task<string> StopCapture()
+        public async Task<object> StopCapture()
         {
-            await _captureManager.StopCapture();
+            try
+            {
+                await _captureManager.StopCapture();
 
-            return "ok";
+                return new
+                {
+                    Message = "Capture stopped"
+                };
+            }
+            catch (Exception ecx)
+            {
+                Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                return new
+                {
+                    Message = ecx.Message
+                };
+            }
         }
 
         [Route(HttpVerbs.Get, "/processes")]
