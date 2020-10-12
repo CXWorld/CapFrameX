@@ -16,9 +16,9 @@ namespace CapFrameX.View.Controls
                 new ColorItem(Color.FromRgb(200, 0, 0), "Red"),
                 new ColorItem(Color.FromRgb(100, 0, 160), "Purple"),
                 new ColorItem(Color.FromRgb(220, 0, 140), "Pink"),
-                new ColorItem(Color.FromRgb(40, 225, 200), "Cyan"),
-                new ColorItem(Color.FromRgb(0, 0, 180), "Dark Blue"),
-                new ColorItem(Color.FromRgb(180, 130, 0), "Brown")
+                new ColorItem(Color.FromRgb(237, 28, 36), "AMD Red"),
+                new ColorItem(Color.FromRgb(0, 113, 197), "Intel Blue"),
+                new ColorItem(Color.FromRgb(118, 185, 0), "Nvidia Green")
             };
         }
     }
