@@ -46,6 +46,8 @@ namespace CapFrameX.Contracts.Configuration
 
 		string OverlayHotKey { get; set; }
 
+		string OverlayConfigHotKey { get; set; }
+
 		string HotkeySoundMode { get; set; }
 
 		double CaptureTime { get; set; }

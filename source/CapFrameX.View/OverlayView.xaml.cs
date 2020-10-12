@@ -26,6 +26,10 @@ namespace CapFrameX.View
 		DependencyProperty.Register(nameof(OverlayHotkey), typeof(CXHotkey), typeof(OverlayView),
 		 new FrameworkPropertyMetadata(default(CXHotkey), FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
+		public static readonly DependencyProperty OverlayConfigHotkeyProperty =
+		DependencyProperty.Register(nameof(OverlayConfigHotkey), typeof(CXHotkey), typeof(OverlayView),
+		new FrameworkPropertyMetadata(default(CXHotkey), FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
 		public static readonly DependencyProperty ResetHistoryHotkeyProperty =
 		DependencyProperty.Register(nameof(ResetHistoryHotkey), typeof(CXHotkey), typeof(OverlayView),
 		 new FrameworkPropertyMetadata(default(CXHotkey), FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
@@ -34,6 +38,12 @@ namespace CapFrameX.View
 		{
 			get => (CXHotkey)GetValue(OverlayHotkeyProperty);
 			set => SetValue(OverlayHotkeyProperty, value);
+		}
+
+		public CXHotkey OverlayConfigHotkey
+		{
+			get => (CXHotkey)GetValue(OverlayConfigHotkeyProperty);
+			set => SetValue(OverlayConfigHotkeyProperty, value);
 		}
 
 		public CXHotkey ResetHistoryHotkey
@@ -55,6 +65,16 @@ namespace CapFrameX.View
 				OverlayHotkey = CXHotkey.Create(keyStrings, Key.O, ModifierKeys.Alt);
 			}
 			catch { OverlayHotkey = new CXHotkey(Key.O, ModifierKeys.Alt); }
+
+			// Overlay config hotkey
+			try
+			{
+				var overlayConfigHotkeyString = (DataContext as OverlayViewModel).AppConfiguration.OverlayConfigHotKey;
+				var keyStrings = overlayConfigHotkeyString.Split('+');
+
+				OverlayConfigHotkey = CXHotkey.Create(keyStrings, Key.C, ModifierKeys.Alt);
+			}
+			catch { OverlayConfigHotkey = new CXHotkey(Key.C, ModifierKeys.Alt); }
 
 			// Reset history hotkey
 			try
@@ -96,6 +116,39 @@ namespace CapFrameX.View
 			OverlayHotkey = new CXHotkey(key, modifiers);
 			var dataContext = DataContext as OverlayViewModel;
 			dataContext.OverlayHotkeyString = OverlayHotkey.ToString();
+
+			Keyboard.ClearFocus();
+		}
+
+		private void ConfigHotkeyTextBox_PreviewKeyDown(object sender, KeyEventArgs e)
+		{
+			e.Handled = true;
+
+			var modifiers = Keyboard.Modifiers;
+			var key = e.Key;
+
+			if (key == Key.System)
+			{
+				key = e.SystemKey;
+			}
+
+			if (modifiers == ModifierKeys.None && key.IsEither(Key.Delete, Key.Back, Key.Escape))
+			{
+				OverlayConfigHotkey = null;
+				return;
+			}
+
+			if (key.IsEither(
+				Key.LeftCtrl, Key.RightCtrl, Key.LeftAlt, Key.RightAlt,
+				Key.LeftShift, Key.RightShift, Key.LWin, Key.RWin,
+				Key.Clear, Key.OemClear, Key.Apps))
+			{
+				return;
+			}
+
+			OverlayConfigHotkey = new CXHotkey(key, modifiers);
+			var dataContext = DataContext as OverlayViewModel;
+			dataContext.OverlayConfigHotkeyString = OverlayConfigHotkey.ToString();
 
 			Keyboard.ClearFocus();
 		}

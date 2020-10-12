@@ -910,5 +910,17 @@ namespace CapFrameX.Configuration.Properties {
                 this["StutteringThreshold"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Alt+C")]
+        public string OverlayConfigHotKey {
+            get {
+                return ((string)(this["OverlayConfigHotKey"]));
+            }
+            set {
+                this["OverlayConfigHotKey"] = value;
+            }
+        }
     }
 }

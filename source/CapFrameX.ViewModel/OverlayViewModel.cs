@@ -37,6 +37,7 @@ namespace CapFrameX.ViewModel
         private readonly ISensorService _sensorService;
         private readonly IRTSSService _rTSSService;
         private IKeyboardMouseEvents _globalOverlayHookEvent;
+        private IKeyboardMouseEvents _globalOverlayConfigHookEvent;
         private IKeyboardMouseEvents _globalResetHistoryHookEvent;
         private int _selectedOverlayEntryIndex = -1;
         private IOverlayEntry _selectedOverlayEntry;
@@ -46,6 +47,7 @@ namespace CapFrameX.ViewModel
         private bool _setGroupButtonEnabled;
         private bool _overlayItemsOptionsEnabled = false;
         private bool _saveButtonIsEnable;
+        private Subject<object> _configSubject;
 
         public bool OverlayItemsOptionsEnabled
         {
@@ -102,6 +104,19 @@ namespace CapFrameX.ViewModel
 
                 _appConfiguration.OverlayHotKey = value;
                 UpdateGlobalOverlayHookEvent();
+                RaisePropertyChanged();
+            }
+        }
+        public string OverlayConfigHotkeyString
+        {
+            get { return _appConfiguration.OverlayConfigHotKey; }
+            set
+            {
+                if (!CXHotkey.IsValidHotkey(value))
+                    return;
+
+                _appConfiguration.OverlayConfigHotKey = value;
+                UpdateGlobalOverlayConfigHookEvent();
                 RaisePropertyChanged();
             }
         }
@@ -439,6 +454,8 @@ namespace CapFrameX.ViewModel
 
         public OverlayGroupSeparating OverlaySubModelGroupSeparating { get; }
 
+
+
         public OverlayViewModel(IOverlayService overlayService, IOverlayEntryProvider overlayEntryProvider,
             IAppConfiguration appConfiguration, IEventAggregator eventAggregator, ISensorService sensorService, IRTSSService rTSSService)
         {
@@ -453,9 +470,9 @@ namespace CapFrameX.ViewModel
             OverlaySubModelGroupControl = new OverlayGroupControl(this);
             OverlaySubModelGroupSeparating = new OverlayGroupSeparating(this);
 
-            var configSubject = new Subject<object>();
-            ConfigSwitchCommand = new DelegateCommand<object>(configSubject.OnNext);
-            configSubject
+            _configSubject = new Subject<object>();
+            ConfigSwitchCommand = new DelegateCommand<object>(_configSubject.OnNext);
+            _configSubject
                 .Select(obj => Convert.ToInt32(obj))
                 .DistinctUntilChanged()
                 .SelectMany(index =>
@@ -505,6 +522,7 @@ namespace CapFrameX.ViewModel
                 "RivaTuner Statistics Server (RTSS)";
 
             SetGlobalHookEventOverlayHotkey();
+            SetGlobalHookEventOverlayConfigHotkey();
             SetGlobalHookEventResetHistoryHotkey();
         }
 
@@ -580,6 +598,15 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        private void UpdateGlobalOverlayConfigHookEvent()
+        {
+            if (_globalOverlayConfigHookEvent != null)
+            {
+                _globalOverlayConfigHookEvent.Dispose();
+                SetGlobalHookEventOverlayConfigHotkey();
+            }
+        }
+
         private void UpdateGlobalResetHistoryHookEvent()
         {
             if (_globalResetHistoryHookEvent != null)
@@ -606,6 +633,25 @@ namespace CapFrameX.ViewModel
             _globalOverlayHookEvent.OnCXCombination(onCombinationDictionary);
         }
 
+        private void SetGlobalHookEventOverlayConfigHotkey()
+        {
+            if (!CXHotkey.IsValidHotkey(OverlayConfigHotkeyString))
+                return;
+
+            var onCombinationDictionary = new Dictionary<CXHotkeyCombination, Action>
+            {
+                {CXHotkeyCombination.FromString(OverlayConfigHotkeyString), () =>
+                    {
+                        var nextConfig = GetNextConfig();
+                        Task.Run( () => _configSubject.OnNext(nextConfig));
+                    }
+                }
+            };
+
+            _globalOverlayConfigHookEvent = Hook.GlobalEvents();
+            _globalOverlayConfigHookEvent.OnCXCombination(onCombinationDictionary);
+        }
+
         private void SetGlobalHookEventResetHistoryHotkey()
         {
             if (!CXHotkey.IsValidHotkey(ResetHistoryHotkeyString))
@@ -621,6 +667,26 @@ namespace CapFrameX.ViewModel
 
             _globalResetHistoryHookEvent = Hook.GlobalEvents();
             _globalResetHistoryHookEvent.OnCXCombination(onCombinationDictionary);
+        }
+
+        private string GetNextConfig()
+        {
+            if (IsConfig0Checked)
+            {
+                IsConfig1Checked = true;
+                return "1";
+            }
+
+            else if (IsConfig1Checked)
+            {
+                IsConfig2Checked = true;
+                return "2";
+            }
+            else
+            {
+                IsConfig0Checked = true;
+                return "0";
+            }
         }
 
         public void UpdateGroupNameEnable()
