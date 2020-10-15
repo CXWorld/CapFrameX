@@ -1,11 +1,8 @@
-﻿using CapFrameX.Configuration;
-using CapFrameX.Data;
-using CapFrameX.Statistics;
+﻿using CapFrameX.Data;
 using CapFrameX.ViewModel;
-using Microsoft.Extensions.Logging;
-using Prism.Events;
 using System.ComponentModel;
 using System.Windows.Controls;
+using System.Windows.Input;
 
 namespace CapFrameX.View
 {
@@ -19,7 +16,21 @@ namespace CapFrameX.View
             InitializeComponent();
         }
 
-		private void OnAutoGeneratingColumn(object sender, DataGridAutoGeneratingColumnEventArgs e)
-			=> e.Column.Header = ((PropertyDescriptor)e.PropertyDescriptor).DisplayName;
-	}
+        private void OnAutoGeneratingColumn(object sender, DataGridAutoGeneratingColumnEventArgs e)
+            => e.Column.Header = ((PropertyDescriptor)e.PropertyDescriptor).DisplayName;
+
+        private void ReportDataGrid_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Delete)
+            {
+                if (ReportDataGrid.SelectedItem != null)
+                {
+                    if (ReportDataGrid.SelectedItem is ReportInfo selectedItem)
+                        (DataContext as ReportViewModel).RemoveReportEntry(selectedItem);
+                }
+
+                e.Handled = true;
+            }
+        }
+    }
 }

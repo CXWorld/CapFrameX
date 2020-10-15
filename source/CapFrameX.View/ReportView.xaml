@@ -50,6 +50,7 @@
 				  CanUserAddRows="False"
                   IsReadOnly="True"
 				  ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.CanContentScroll="True"
+                  PreviewKeyDown="ReportDataGrid_PreviewKeyDown"
 				  dragdrop:DragDrop.IsDropTarget="True"
 				  dragdrop:DragDrop.IsDragSource="True"
 				  dragdrop:DragDrop.DropHandler="{Binding}"
@@ -63,16 +64,16 @@
 				</ContextMenu>
 			</DataGrid.ContextMenu>
 		</DataGrid>
-        <ItemsControl Grid.Row="1" VerticalAlignment="Bottom"
-					  Margin="5 5 5 5"
-					  Name="RemoveRecordItemControl"
-				      dragdrop:DragDrop.IsDropTarget="True"
-				      dragdrop:DragDrop.DropHandler="{Binding}"
-					  dragdrop:DragDrop.UseDefaultEffectDataTemplate="False">
-            <Border Background="#e6e6e6" Height="60"> 
-                <materialDesign:PackIcon Kind="DeleteForeverOutline" VerticalAlignment="Center" HorizontalAlignment="Center"
-													 Width="32" Height="32" />
-            </Border>
-        </ItemsControl>
+        <Grid Grid.Row="1" Margin="5" Background="#e6e6e6">
+            <Button Style="{StaticResource MaterialDesignFloatingActionMiniButton}"                
+				Margin="0 0 0 0"
+				HorizontalAlignment="Center"
+				VerticalAlignment="Center"
+				Width="30" Height="30"
+				ToolTip="Remove all report entries"
+				Command="{Binding RemoveAllReportEntriesCommand}">
+                <materialDesign:PackIcon Kind="PlaylistRemove" Height="24" Width="24" />
+            </Button>
+        </Grid>
     </Grid>
 </UserControl>

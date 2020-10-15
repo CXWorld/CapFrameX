@@ -451,7 +451,7 @@
 															Content="{materialDesign:PackIcon Close, Size=12}" Command="{Binding RemoveCommand}">
                                                     </Button>
                                                     <ToggleButton Grid.Row="1" Grid.Column="2" Margin="0 0 -2 6" Width="20" Height="20" HorizontalAlignment="Right" VerticalAlignment="Bottom" 
-																  ToolTip="MaterialDesignActionLightToggleButton" Style="{StaticResource MaterialDesignActionToggleButton}"
+																  Style="{StaticResource MaterialDesignActionToggleButton}"
 																  Visibility="{Binding ElementName=ComparisonRecordItemControl, Path=DataContext.ColorPickerVisibility, Converter={StaticResource FalseToHiddenConverter}}"
 																  IsChecked="{Binding IsHideModeSelected}">
                                                         <ToggleButton.Content>

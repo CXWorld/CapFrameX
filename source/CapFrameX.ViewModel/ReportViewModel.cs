@@ -51,6 +51,8 @@ namespace CapFrameX.ViewModel
 
         public ICommand CopyTableDataCommand { get; }
 
+        public ICommand RemoveAllReportEntriesCommand { get; }
+
         public ReportViewModel(IStatisticProvider frametimeStatisticProvider,
                               IEventAggregator eventAggregator,
                               IAppConfiguration appConfiguration,
@@ -67,13 +69,21 @@ namespace CapFrameX.ViewModel
             _logger = logger;
 
             CopyTableDataCommand = new DelegateCommand(OnCopyTableData);
+            RemoveAllReportEntriesCommand = new DelegateCommand(() => ReportInfoCollection.Clear());
             ReportInfoCollection.CollectionChanged += new NotifyCollectionChangedEventHandler
                 ((sender, eventArg) => HasNoReportItems = !ReportInfoCollection.Any());
 
             SubscribeToSelectRecord();
 
             stopwatch.Stop();
-            _logger.LogInformation(this.GetType().Name + " {initializationTime}s initialization time", Math.Round(stopwatch.ElapsedMilliseconds * 1E-03, 1));
+            _logger.LogInformation(this.GetType().Name + " {initializationTime}s initialization time", 
+                Math.Round(stopwatch.ElapsedMilliseconds * 1E-03, 1));
+        }
+
+
+        public void RemoveReportEntry(ReportInfo selectedItem)
+        {
+            ReportInfoCollection.Remove(selectedItem);
         }
 
         private void OnCopyTableData()
@@ -135,31 +145,33 @@ namespace CapFrameX.ViewModel
                            displayNameCustomComment +
                            Environment.NewLine);
 
+            var cultureInfo = CultureInfo.CurrentCulture;
+
             foreach (var reportInfo in ReportInfoCollection)
             {
                 builder.Append(reportInfo.Game + "\t" +
-                               reportInfo.Date + "\t" +
-                               reportInfo.Time + "\t" +
+                               reportInfo.Date.ToString(cultureInfo) + "\t" +
+                               reportInfo.Time.ToString(cultureInfo) + "\t" +
                                reportInfo.NumberOfSamples + "\t" +
-                               reportInfo.RecordTime + "\t" +
+                               reportInfo.RecordTime.ToString(cultureInfo) + "\t" +
                                reportInfo.Cpu + "\t" +
                                reportInfo.GraphicCard + "\t" +
                                reportInfo.Ram + "\t" +
-                               reportInfo.MaxFps.ToString(CultureInfo.InvariantCulture) + "\t" +
-                               reportInfo.NinetyNinePercentQuantileFps.ToString(CultureInfo.InvariantCulture) + "\t" +
-                               reportInfo.NinetyFivePercentQuantileFps.ToString(CultureInfo.InvariantCulture) + "\t" +
-                               reportInfo.AverageFps.ToString(CultureInfo.InvariantCulture) + "\t" +
-                               reportInfo.MedianFps.ToString(CultureInfo.InvariantCulture) + "\t" +
-                               reportInfo.FivePercentQuantileFps.ToString(CultureInfo.InvariantCulture) + "\t" +
-                               reportInfo.OnePercentQuantileFps.ToString(CultureInfo.InvariantCulture) + "\t" +
-                               reportInfo.OnePercentLowAverageFps.ToString(CultureInfo.InvariantCulture) + "\t" +
-                               reportInfo.ZeroDotTwoPercentQuantileFps.ToString(CultureInfo.InvariantCulture) + "\t" +
-                               reportInfo.ZeroDotOnePercentQuantileFps.ToString(CultureInfo.InvariantCulture) + "\t" +
-                               reportInfo.ZeroDotOnePercentLowAverageFps.ToString(CultureInfo.InvariantCulture) + "\t" +
-                               reportInfo.MinFps.ToString(CultureInfo.InvariantCulture) + "\t" +
-                               reportInfo.AdaptiveSTDFps.ToString(CultureInfo.InvariantCulture) + "\t" +
-                               reportInfo.CpuFpsPerWatt.ToString(CultureInfo.InvariantCulture) + "\t" +
-                               //reportInfo.GpuFpsPerWatt.ToString(CultureInfo.InvariantCulture) + "\t" +
+                               reportInfo.MaxFps.ToString(cultureInfo) + "\t" +
+                               reportInfo.NinetyNinePercentQuantileFps.ToString(cultureInfo) + "\t" +
+                               reportInfo.NinetyFivePercentQuantileFps.ToString(cultureInfo) + "\t" +
+                               reportInfo.AverageFps.ToString(cultureInfo) + "\t" +
+                               reportInfo.MedianFps.ToString(cultureInfo) + "\t" +
+                               reportInfo.FivePercentQuantileFps.ToString(cultureInfo) + "\t" +
+                               reportInfo.OnePercentQuantileFps.ToString(cultureInfo) + "\t" +
+                               reportInfo.OnePercentLowAverageFps.ToString(cultureInfo) + "\t" +
+                               reportInfo.ZeroDotTwoPercentQuantileFps.ToString(cultureInfo) + "\t" +
+                               reportInfo.ZeroDotOnePercentQuantileFps.ToString(cultureInfo) + "\t" +
+                               reportInfo.ZeroDotOnePercentLowAverageFps.ToString(cultureInfo) + "\t" +
+                               reportInfo.MinFps.ToString(cultureInfo) + "\t" +
+                               reportInfo.AdaptiveSTDFps.ToString(cultureInfo) + "\t" +
+                               reportInfo.CpuFpsPerWatt.ToString(cultureInfo) + "\t" +
+                               //reportInfo.GpuFpsPerWatt.ToString(cultureInfo) + "\t" +
                                reportInfo.CustomComment +
                                Environment.NewLine);
             }
@@ -217,7 +229,7 @@ namespace CapFrameX.ViewModel
                 Date = recordInfo.CreationDate,
                 Time = recordInfo.CreationTime,
                 NumberOfSamples = frameTimes.Count,
-                RecordTime = Math.Round(recordTime, 2).ToString(CultureInfo.InvariantCulture),
+                RecordTime = Math.Round(recordTime, 2).ToString(),
                 Cpu = recordInfo.ProcessorName == null ? "" : recordInfo.ProcessorName.Trim(new Char[] { ' ', '"' }),
                 GraphicCard = recordInfo.GraphicCardName == null ? "" : recordInfo.GraphicCardName.Trim(new Char[] { ' ', '"' }),
                 Ram = recordInfo.SystemRamInfo == null ? "" : recordInfo.SystemRamInfo.Trim(new Char[] { ' ', '"' }),
@@ -291,18 +303,6 @@ namespace CapFrameX.ViewModel
                                 ReportInfo reportInfo = GetReportInfoFromRecordInfo(item);
                                 AddReportRecord(reportInfo);
                             }
-                        }
-                    }
-                    else if (frameworkElement.Name == "RemoveRecordItemControl")
-                    {
-                        if (dropInfo.Data is ReportInfo reportInfo)
-                        {
-                            ReportInfoCollection.Remove(reportInfo);
-                        }
-
-                        if (dropInfo.Data is IEnumerable<ReportInfo> reportInfos)
-                        {
-                            reportInfos.ForEach(info => ReportInfoCollection.Remove(info));
                         }
                     }
                 }
