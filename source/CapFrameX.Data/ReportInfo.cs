@@ -6,6 +6,8 @@ namespace CapFrameX.Data
 	{
 		[DisplayName("Game")]
 		public string Game { get; set; }
+		[DisplayName("Resolution")]
+		public string Resolution { get; set; }
 		[DisplayName("Creation date")]
 		public string Date { get; set; }
 		[DisplayName("Creation time")]
