@@ -45,10 +45,10 @@ namespace OpenHardwareMonitor.Hardware.CPU
             new ParameterDescription("Offset [°C]", "Temperature offset.", 0)
                 }, this.settings);
 
-                tctlTemperature = new Sensor(
-                "CPU Tctl", 1, true, SensorType.Temperature, this, new[] {
+            tctlTemperature = new Sensor(
+            "CPU Tctl", 1, true, SensorType.Temperature, this, new[] {
             new ParameterDescription("Offset [°C]", "Temperature offset.", 0)
-                  }, this.settings);
+              }, this.settings);
 
             ccdMaxTemperature = new Sensor(
               "CPU CCD Max", 2, SensorType.Temperature, this, this.settings);
@@ -82,8 +82,8 @@ namespace OpenHardwareMonitor.Hardware.CPU
                     ActivateSensor(packagePowerSensor);
                 }
             }
-            coresPowerSensor = new Sensor("CPU Cores", 1, SensorType.Power, this,
-              settings);
+
+            coresPowerSensor = new Sensor("CPU Cores", 1, SensorType.Power, this, settings);
 
             busClock = new Sensor("Bus Speed", 0, SensorType.Clock, this, settings);
             timeStampCounterMultiplier = GetTimeStampCounterMultiplier();
@@ -153,9 +153,13 @@ namespace OpenHardwareMonitor.Hardware.CPU
 
         private double GetTimeStampCounterMultiplier()
         {
-            Ring0.Rdmsr(MSR_P_STATE_0, out uint eax, out _);
-            uint cpuDfsId = (eax >> 8) & 0x3f;
-            uint cpuFid = eax & 0xff;
+            uint cpuDfsId = 0;
+            uint cpuFid = 0;
+            if (Ring0.Rdmsr(MSR_P_STATE_0, out uint eax, out _))
+            {
+                cpuDfsId = (eax >> 8) & 0x3f;
+                cpuFid = eax & 0xff;
+            }
             return 2.0 * cpuFid / cpuDfsId;
         }
 
