@@ -235,7 +235,7 @@ namespace CapFrameX.ViewModel
                                 IOverlayService overlayService,
                                 ISensorService sensorService,
                                 IOnlineMetricService onlineMetricService,
-                                IStatisticProvider statisticProvider,                                
+                                IStatisticProvider statisticProvider,
                                 ILogger<CaptureViewModel> logger,
                                 ProcessList processList,
                                 SoundManager soundManager,
@@ -250,7 +250,7 @@ namespace CapFrameX.ViewModel
             _overlayService = overlayService;
             _sensorService = sensorService;
             _onlineMetricService = onlineMetricService;
-            _statisticProvider = statisticProvider;            
+            _statisticProvider = statisticProvider;
             _logger = logger;
             _processList = processList;
             _soundManager = soundManager;
@@ -262,7 +262,8 @@ namespace CapFrameX.ViewModel
             ProcessesToCapture.CollectionChanged += new NotifyCollectionChangedEventHandler
             ((sender, eventArg) => UpdateProcessToCapture());
 
-            _captureManager.CaptureStatusChange.Subscribe(status => {
+            _captureManager.CaptureStatusChange.Subscribe(status =>
+            {
                 if (status.Status != null)
                 {
                     if (status.Status == ECaptureStatus.Processing)
@@ -273,8 +274,10 @@ namespace CapFrameX.ViewModel
                     else
                     {
                         AreButtonsActive = status.Status == ECaptureStatus.Stopped;
-                        UpdateCaptureStateInfo();
                         RaisePropertyChanged(nameof(AreButtonsActive));
+
+                        if (status.Status == ECaptureStatus.Stopped)
+                            UpdateCaptureStateInfo();
                     }
 
                     if (status.Status == ECaptureStatus.StartedRemote)
@@ -282,7 +285,7 @@ namespace CapFrameX.ViewModel
                         CaptureStateInfo = "Remote capturing in progress..." + Environment.NewLine;
                     }
                 }
-                if(status.Message != null)
+                if (status.Message != null)
                 {
                     LoggerOutput += $"{DateTime.Now.ToLongTimeString()}: {status.Message}" + Environment.NewLine;
                 }
@@ -383,6 +386,7 @@ namespace CapFrameX.ViewModel
             }
             else if (!_captureManager.IsCapturing)
             {
+                _disposableHeartBeat?.Dispose();
                 string processToCapture = SelectedProcessToCapture ?? ProcessesToCapture.FirstOrDefault();
 
                 Task.Run(() => _captureManager.StartCapture(new CaptureOptions()
@@ -393,8 +397,6 @@ namespace CapFrameX.ViewModel
                     Remote = false
                 })).ContinueWith((_) =>
                 {
-                    _disposableHeartBeat?.Dispose();
-
                     if (CaptureTimeString == "0" && CaptureStartDelayString == "0")
                         CaptureStateInfo = "Capturing in progress..." + Environment.NewLine + $"Press {CaptureHotkeyString} to stop capture.";
 
@@ -418,7 +420,6 @@ namespace CapFrameX.ViewModel
                 {
                     Application.Current.Dispatcher.Invoke(() =>
                     {
-                        _disposableHeartBeat?.Dispose();
                         _disposableHeartBeat = GetListUpdatHeartBeat();
                         UpdateCaptureStateInfo();
                     });
@@ -505,7 +506,6 @@ namespace CapFrameX.ViewModel
             return Observable
                 .Timer(DateTimeOffset.UtcNow, TimeSpan.FromSeconds(1))
                 .ObserveOnDispatcher()
-                .Where(x => !_captureManager.IsCapturing)
                 .Subscribe(x => UpdateProcessToCaptureList());
         }
 
