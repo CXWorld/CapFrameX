@@ -16,9 +16,7 @@ using System.Globalization;
 using System.Text;
 using System.Diagnostics;
 using System.Linq;
-using System.Threading;
 using Serilog;
-using System.Runtime.CompilerServices;
 
 namespace OpenHardwareMonitor.Hardware.Nvidia
 {

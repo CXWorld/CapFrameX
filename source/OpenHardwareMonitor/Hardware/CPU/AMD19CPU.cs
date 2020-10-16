@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using Serilog;
 
 namespace OpenHardwareMonitor.Hardware.CPU
 {
@@ -70,6 +71,10 @@ namespace OpenHardwareMonitor.Hardware.CPU
             {
                 energyUnitMultiplier = 1.0f / (1 << (int)((eax >> 8) & 0x1F));
             }
+            else
+            {
+                Log.Logger.Error($"Failed getting 19h family energy unit multiplier.");
+            }
 
             if (energyUnitMultiplier != 0)
             {
@@ -80,6 +85,10 @@ namespace OpenHardwareMonitor.Hardware.CPU
                     packagePowerSensor = new Sensor(
                       "CPU Package", 0, SensorType.Power, this, settings);
                     ActivateSensor(packagePowerSensor);
+                }
+                else
+                {
+                    Log.Logger.Error($"Failed getting 19h family power sensor.");
                 }
             }
 
@@ -93,6 +102,10 @@ namespace OpenHardwareMonitor.Hardware.CPU
                   timeStampCounterMultiplier);
                 ActivateSensor(busClock);
             }
+            else
+            {
+                Log.Logger.Error($"19h family invalid time stamp counter multiplier.");
+            }
 
             this.cores = new Core[coreCount];
             for (int i = 0; i < this.cores.Length; i++)
@@ -102,6 +115,8 @@ namespace OpenHardwareMonitor.Hardware.CPU
 
             coreMaxClocks = new Sensor("CPU Max Clock", this.cores.Length + 1, SensorType.Clock, this, settings);
             ActivateSensor(coreMaxClocks);
+
+            Log.Logger.Information($"Family 19h processor successfully initialized.");
         }
 
         protected override uint[] GetMSRs()
