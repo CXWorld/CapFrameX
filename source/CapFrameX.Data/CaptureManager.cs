@@ -108,6 +108,9 @@ namespace CapFrameX.Data
 
         public async Task StartCapture(CaptureOptions options)
         {
+            if (IsCapturing)
+                throw new Exception("Capture already running.");
+
             IsCapturing = true;
 
             if (!GetAllFilteredProcesses(new HashSet<string>()).Contains(options.ProcessName))
@@ -185,6 +188,9 @@ namespace CapFrameX.Data
 
         public async Task StopCapture()
         {
+            if (!IsCapturing)
+                throw new Exception("No capture running.");
+
             LockCaptureService = true;
             IsCapturing = false;
 
