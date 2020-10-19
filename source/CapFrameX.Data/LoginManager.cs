@@ -182,8 +182,10 @@ namespace CapFrameX.Data
 		public bool IsNotSigned => !IsSigned;
 	}
 
-	public class OAuthToken
-	{
+#pragma warning disable CS0659 // Typ überschreibt Object.Equals(object o), überschreibt jedoch nicht Object.GetHashCode()
+    public class OAuthToken
+#pragma warning restore CS0659 // Typ überschreibt Object.Equals(object o), überschreibt jedoch nicht Object.GetHashCode()
+    {
 		[JsonProperty("access_token")]
 		public string AccessToken { get; set; }
 

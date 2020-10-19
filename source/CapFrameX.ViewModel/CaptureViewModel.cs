@@ -24,6 +24,7 @@ using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -262,7 +263,10 @@ namespace CapFrameX.ViewModel
             ProcessesToCapture.CollectionChanged += new NotifyCollectionChangedEventHandler
             ((sender, eventArg) => UpdateProcessToCapture());
 
-            _captureManager.CaptureStatusChange.Subscribe(status =>
+            _captureManager
+                .CaptureStatusChange
+                .SubscribeOnDispatcher()
+                .Subscribe(status =>
             {
                 if (status.Status != null)
                 {
@@ -285,6 +289,7 @@ namespace CapFrameX.ViewModel
                         CaptureStateInfo = "Remote capturing in progress..." + Environment.NewLine;
                     }
                 }
+
                 if (status.Message != null)
                 {
                     LoggerOutput += $"{DateTime.Now.ToLongTimeString()}: {status.Message}" + Environment.NewLine;
@@ -296,6 +301,7 @@ namespace CapFrameX.ViewModel
                 $"Press {CaptureHotkeyString} to start capture of the running process.";
             SelectedSoundMode = _appConfiguration.HotkeySoundMode;
             CaptureTimeString = _appConfiguration.CaptureTime.ToString(CultureInfo.InvariantCulture);
+            _disposableHeartBeat?.Dispose();
             _disposableHeartBeat = GetListUpdatHeartBeat();
             _updateCurrentProcess = _eventAggregator.GetEvent<PubSubEvent<ViewMessages.CurrentProcessToCapture>>(); ;
 
@@ -363,7 +369,7 @@ namespace CapFrameX.ViewModel
             {
                 {CXHotkeyCombination.FromString(CaptureHotkeyString), () =>
                 {
-                    if(!_captureManager.DataOffsetRunning)
+                    if(!_captureManager.LockCaptureService)
                         SetCaptureMode();
                 }}
             };
@@ -420,6 +426,7 @@ namespace CapFrameX.ViewModel
                 {
                     Application.Current.Dispatcher.Invoke(() =>
                     {
+                        _disposableHeartBeat?.Dispose();
                         _disposableHeartBeat = GetListUpdatHeartBeat();
                         UpdateCaptureStateInfo();
                     });

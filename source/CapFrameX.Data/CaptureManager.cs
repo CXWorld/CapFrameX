@@ -11,11 +11,13 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net.Http.Headers;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 
 namespace CapFrameX.Data
 {
@@ -60,11 +62,11 @@ namespace CapFrameX.Data
         private long _timestampStopCapture;
         private bool _isCapturing;
 
-        private ISubject<CaptureStatus> _captureStatusChange = 
+        private ISubject<CaptureStatus> _captureStatusChange =
             new BehaviorSubject<CaptureStatus>(new CaptureStatus { Status = ECaptureStatus.Stopped });
-        public IObservable<CaptureStatus> CaptureStatusChange 
+        public IObservable<CaptureStatus> CaptureStatusChange
             => _captureStatusChange.AsObservable();
-        public bool DataOffsetRunning { get; private set; }
+        public bool LockCaptureService { get; private set; }
 
         public bool IsCapturing
         {
@@ -73,20 +75,20 @@ namespace CapFrameX.Data
             {
                 _isCapturing = value;
                 _presentMonCaptureService.IsCaptureModeActiveStream.OnNext(value);
-                if(!value)
-                _captureStatusChange.OnNext(new CaptureStatus { Status = ECaptureStatus.Stopped });
+                if (!value)
+                    _captureStatusChange.OnNext(new CaptureStatus { Status = ECaptureStatus.Stopped });
             }
         }
 
         [DllImport("Kernel32.dll")]
         private static extern bool QueryPerformanceCounter(out long lpPerformanceCount);
 
-        public CaptureManager(ICaptureService presentMonCaptureService, 
-            ISensorService sensorService, 
-            IOverlayService overlayService, 
-            SoundManager soundManager, 
-            IRecordManager recordManager, 
-            ILogger<CaptureManager> logger, 
+        public CaptureManager(ICaptureService presentMonCaptureService,
+            ISensorService sensorService,
+            IOverlayService overlayService,
+            SoundManager soundManager,
+            IRecordManager recordManager,
+            ILogger<CaptureManager> logger,
             IAppConfiguration appConfiguration)
         {
             _presentMonCaptureService = presentMonCaptureService;
@@ -106,8 +108,8 @@ namespace CapFrameX.Data
 
         public async Task StartCapture(CaptureOptions options)
         {
-            if (IsCapturing)
-                throw new Exception("Capture already running");
+            IsCapturing = true;
+
             if (!GetAllFilteredProcesses(new HashSet<string>()).Contains(options.ProcessName))
                 throw new Exception($"Process {options.ProcessName} not found");
             if (options.RecordDirectory != null && !Directory.Exists(options.RecordDirectory))
@@ -117,13 +119,12 @@ namespace CapFrameX.Data
             _currentCaptureOptions = options;
             _captureData.Clear();
             _sensorService.StartSensorLogging();
-            IsCapturing = true;
 
             AddLoggerEntry("Capturing started.");
             _overlayService.SetCaptureServiceStatus("Recording frametimes");
 
-            if(options.Remote)
-                _captureStatusChange.OnNext(new CaptureStatus() { Status = ECaptureStatus.StartedRemote }); 
+            if (options.Remote)
+                _captureStatusChange.OnNext(new CaptureStatus() { Status = ECaptureStatus.StartedRemote });
             else
                 _captureStatusChange.OnNext(new CaptureStatus() { Status = ECaptureStatus.Started });
 
@@ -133,7 +134,7 @@ namespace CapFrameX.Data
             _ = QueryPerformanceCounter(out long startCounter);
             AddLoggerEntry($"Performance counter on start capturing: {startCounter}");
             _qpcTimeStart = startCounter;
-           
+
             _disposableCaptureStream = _presentMonCaptureService.RedirectedOutputDataStream
                 .Skip(5)
                 .Where(dataLine => !string.IsNullOrWhiteSpace(dataLine))
@@ -178,29 +179,25 @@ namespace CapFrameX.Data
             {
                 _overlayService.StartCaptureTimer();
             }
+
+            await Task.FromResult(true);
         }
 
         public async Task StopCapture()
         {
-            if (!IsCapturing)
-                throw new Exception("No Capture running");
+            LockCaptureService = true;
+            IsCapturing = false;
 
             _timestampStopCapture = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds();
             Application.Current.Dispatcher.Invoke(() => _soundManager.PlaySound(Sound.CaptureStopped));
             _overlayService.StopCaptureTimer();
             _autoCompletionDisposableStream?.Dispose();
-            DataOffsetRunning = true;
-            _captureStatusChange.OnNext(new CaptureStatus() { Status = ECaptureStatus.Processing});
+            _captureStatusChange.OnNext(new CaptureStatus() { Status = ECaptureStatus.Processing });
             await Task.Delay(TimeSpan.FromMilliseconds(PRESICE_OFFSET));
             _disposableCaptureStream?.Dispose();
             _sensorService.StopSensorLogging();
-            IsCapturing = false;
-            await WriteCaptureDataToFile();
-        }
-
-        private async Task WriteCaptureDataToFile()
-        {
             await WriteExtractedCaptureDataToFileAsync();
+            LockCaptureService = false;
         }
 
         public void StartFillArchive()
@@ -225,7 +222,7 @@ namespace CapFrameX.Data
             _presentMonCaptureService.StopCaptureService();
         }
 
-        public IObservable<string> GetRedirectedOutputDataStream() 
+        public IObservable<string> GetRedirectedOutputDataStream()
             => _presentMonCaptureService.RedirectedOutputDataStream;
 
         public bool StartCaptureService(IServiceStartInfo startInfo)
@@ -263,7 +260,6 @@ namespace CapFrameX.Data
 
         private void PrepareForNextCapture()
         {
-            DataOffsetRunning = false;
             StartFillArchive();
             AddLoggerEntry("Started filling archive.");
         }
@@ -273,10 +269,7 @@ namespace CapFrameX.Data
             try
             {
                 if (string.IsNullOrWhiteSpace(_currentCaptureOptions.ProcessName))
-                {
-                    PrepareForNextCapture();
-                    return;
-                }
+                    throw new InvalidDataException("Invalid process name!");
 
                 var adjustedCaptureData = GetAdjustedCaptureData();
 
@@ -293,12 +286,10 @@ namespace CapFrameX.Data
                 var sessionRun = _recordManager.ConvertPresentDataLinesToSessionRun(normalizedAdjustedCaptureData);
                 sessionRun.SensorData = _sensorService.GetSessionSensorData();
 
-
                 if (_appConfiguration.UseRunHistory)
                 {
                     await Task.Factory.StartNew(() => _overlayService.AddRunToHistory(sessionRun, _currentCaptureOptions.ProcessName, _currentCaptureOptions.RecordDirectory));
                 }
-
 
                 // if aggregation mode is active and "Save aggregated result only" is checked, don't save single history items
                 if (_appConfiguration.UseAggregation && _appConfiguration.SaveAggregationOnly)
@@ -311,11 +302,12 @@ namespace CapFrameX.Data
 
                 bool checkSave = await _recordManager.SaveSessionRunsToFile(new ISessionRun[] { sessionRun }, _currentCaptureOptions.ProcessName, _currentCaptureOptions.RecordDirectory);
 
-
                 if (!checkSave)
                     AddLoggerEntry("Error while saving capture data.");
                 else
                     AddLoggerEntry("Capture file is successfully written into directory.");
+
+                LockCaptureService = false;
             }
             catch (Exception e)
             {
@@ -327,12 +319,10 @@ namespace CapFrameX.Data
         private List<string> GetAdjustedCaptureData()
         {
             if (!_captureData.Any())
-            { 
+            {
                 AddLoggerEntry($"No available capture Data...");
                 return Enumerable.Empty<string>().ToList();
             }
-                
-
 
             var startTimeWithOffset = GetStartTimeFromDataLine(_captureData.First());
             var stopwatchTime = (_timestampStopCapture - _timestampStartCapture) / 1000d;
