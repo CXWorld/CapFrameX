@@ -192,7 +192,7 @@ namespace CapFrameX.Data
                 throw new Exception("No capture running.");
 
             LockCaptureService = true;
-            IsCapturing = false;
+
 
             _timestampStopCapture = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds();
             Application.Current.Dispatcher.Invoke(() => _soundManager.PlaySound(Sound.CaptureStopped));
@@ -200,6 +200,7 @@ namespace CapFrameX.Data
             _autoCompletionDisposableStream?.Dispose();
             _captureStatusChange.OnNext(new CaptureStatus() { Status = ECaptureStatus.Processing });
             await Task.Delay(TimeSpan.FromMilliseconds(PRESICE_OFFSET));
+            IsCapturing = false;
             _disposableCaptureStream?.Dispose();
             _sensorService.StopSensorLogging();
             await WriteExtractedCaptureDataToFileAsync();
