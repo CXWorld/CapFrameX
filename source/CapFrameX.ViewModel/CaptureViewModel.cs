@@ -395,14 +395,22 @@ namespace CapFrameX.ViewModel
                 _disposableHeartBeat?.Dispose();
                 string processToCapture = SelectedProcessToCapture ?? ProcessesToCapture.FirstOrDefault();
 
-                Task.Run(() => _captureManager.StartCapture(new CaptureOptions()
+                Task.Run(async () =>
                 {
-                    CaptureTime = CaptureTime,
-                    CaptureFileMode = AppConfiguration.CaptureFileMode,
-                    ProcessName = processToCapture,
-                    Remote = false
-                })).ContinueWith((_) =>
-                {
+                    try
+                    {
+                        await _captureManager.StartCapture(new CaptureOptions()
+                        {
+                            CaptureTime = CaptureTime,
+                            CaptureFileMode = AppConfiguration.CaptureFileMode,
+                            ProcessName = processToCapture,
+                            Remote = false
+                        });
+                    } catch(Exception e)
+                    {
+                        LoggerOutput += $"{DateTime.Now.ToLongTimeString()}: Error: {e.Message}" + Environment.NewLine;
+                    }
+
                     if (CaptureTimeString == "0" && CaptureStartDelayString == "0")
                         CaptureStateInfo = "Capturing in progress..." + Environment.NewLine + $"Press {CaptureHotkeyString} to stop capture.";
 
@@ -413,8 +421,6 @@ namespace CapFrameX.ViewModel
                     if (CaptureTimeString != "0" && CaptureStartDelayString != "0")
                         CaptureStateInfo = $"Capturing starts with delay of {CaptureStartDelayString} seconds. " +
                             $"Capture will stop after {CaptureTimeString} seconds." + Environment.NewLine + $"Press {CaptureHotkeyString} to stop capture.";
-
-                    return Task.CompletedTask;
                 });
 
                 _lastCapturedProcess = processToCapture;
