@@ -417,7 +417,7 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
                 ActivateSensor(memoryLoad);
             }
 
-            if (power != null)
+            if (false/*power != null*/)
             {
                 var channels = new NvGpuPowerMonitorPowerChannelStatus[NVAPI.POWER_STATUS_CHANNEL_COUNT];
                 for (int i = 0; i < channels.Length; i++)
