@@ -406,7 +406,8 @@ namespace CapFrameX.ViewModel
                             ProcessName = processToCapture,
                             Remote = false
                         });
-                    } catch(Exception e)
+                    }
+                    catch (Exception e)
                     {
                         LoggerOutput += $"{DateTime.Now.ToLongTimeString()}: Error: {e.Message}" + Environment.NewLine;
                     }
@@ -427,16 +428,25 @@ namespace CapFrameX.ViewModel
             }
             else
             {
-                Task.Run(() => _captureManager.StopCapture())
-                    .ContinueWith((_) =>
+                Task.Run(async () =>
                 {
-                    Application.Current.Dispatcher.Invoke(() =>
+                    try
                     {
-                        _disposableHeartBeat?.Dispose();
-                        _disposableHeartBeat = GetListUpdatHeartBeat();
-                        UpdateCaptureStateInfo();
-                    });
-                    return Task.CompletedTask;
+                        await _captureManager.StopCapture();
+                    }
+                    catch (Exception e)
+                    {
+                        LoggerOutput += $"{DateTime.Now.ToLongTimeString()}: Error: {e.Message}" + Environment.NewLine;
+                    }
+                    finally
+                    {
+                        Application.Current.Dispatcher.Invoke(() =>
+                        {
+                            _disposableHeartBeat?.Dispose();
+                            _disposableHeartBeat = GetListUpdatHeartBeat();
+                            UpdateCaptureStateInfo();
+                        });
+                    }
                 });
             }
         }
