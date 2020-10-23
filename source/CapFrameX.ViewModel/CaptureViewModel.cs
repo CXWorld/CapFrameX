@@ -24,9 +24,7 @@ using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
-using System.Reactive.Concurrency;
 using System.Reactive.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
@@ -261,7 +259,7 @@ namespace CapFrameX.ViewModel
             ResetPresentMonCommand = new DelegateCommand(OnResetCaptureProcess);
 
             ProcessesToCapture.CollectionChanged += new NotifyCollectionChangedEventHandler
-            ((sender, eventArg) => UpdateProcessToCapture());
+                ((sender, eventArg) => UpdateProcessToCapture());
 
             _captureManager
                 .CaptureStatusChange
@@ -297,8 +295,6 @@ namespace CapFrameX.ViewModel
                     {
                         CaptureStateInfo = "Capturing in progress..." + Environment.NewLine + $"Press {CaptureHotkeyString} to stop capture.";
                     }
-
-
                 }
 
                 if (status.Message != null)
