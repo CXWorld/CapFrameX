@@ -403,7 +403,6 @@ namespace CapFrameX.ViewModel
             }
             else if (!_captureManager.IsCapturing)
             {
-                _disposableHeartBeat?.Dispose();
                 string processToCapture = SelectedProcessToCapture ?? ProcessesToCapture.FirstOrDefault();
 
                 Task.Run(async () =>
@@ -442,8 +441,6 @@ namespace CapFrameX.ViewModel
                     {
                         Application.Current.Dispatcher.Invoke(() =>
                         {
-                            _disposableHeartBeat?.Dispose();
-                            _disposableHeartBeat = GetListUpdatHeartBeat();
                             UpdateCaptureStateInfo();
                         });
                     }
@@ -528,6 +525,7 @@ namespace CapFrameX.ViewModel
         {
             return Observable
                 .Timer(DateTimeOffset.UtcNow, TimeSpan.FromSeconds(1))
+                .Where(x => !_captureManager.IsCapturing)
                 .ObserveOnDispatcher()
                 .Subscribe(x => UpdateProcessToCaptureList());
         }
