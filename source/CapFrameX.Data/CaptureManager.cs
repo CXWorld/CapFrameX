@@ -24,6 +24,7 @@ namespace CapFrameX.Data
     public enum ECaptureStatus
     {
         Started,
+        StartedTimer,
         StartedRemote,
         Processing,
         Stopped
@@ -128,8 +129,10 @@ namespace CapFrameX.Data
 
             if (options.Remote)
                 _captureStatusChange.OnNext(new CaptureStatus() { Status = ECaptureStatus.StartedRemote });
-            else
+            else if (options.CaptureTime == 0.0)
                 _captureStatusChange.OnNext(new CaptureStatus() { Status = ECaptureStatus.Started });
+            else
+                _captureStatusChange.OnNext(new CaptureStatus() { Status = ECaptureStatus.StartedTimer });
 
             bool intializedStartTime = false;
             double captureDataArchiveLastTime = 0;

@@ -284,10 +284,21 @@ namespace CapFrameX.ViewModel
                             UpdateCaptureStateInfo();
                     }
 
-                    if (status.Status == ECaptureStatus.StartedRemote)
+                    if (status.Status == ECaptureStatus.StartedTimer)
+                    {
+                        CaptureStateInfo = $"Capturing in progress (Set Time: {CaptureTimeString} seconds)..." + Environment.NewLine
+                          + $"Press {CaptureHotkeyString} to stop capture.";
+                    }
+                    else if (status.Status == ECaptureStatus.StartedRemote)
                     {
                         CaptureStateInfo = "Remote capturing in progress..." + Environment.NewLine;
                     }
+                    else if (status.Status == ECaptureStatus.Started)
+                    {
+                        CaptureStateInfo = "Capturing in progress..." + Environment.NewLine + $"Press {CaptureHotkeyString} to stop capture.";
+                    }
+
+
                 }
 
                 if (status.Message != null)
@@ -411,17 +422,6 @@ namespace CapFrameX.ViewModel
                     {
                         LoggerOutput += $"{DateTime.Now.ToLongTimeString()}: Error: {e.Message}" + Environment.NewLine;
                     }
-
-                    if (CaptureTimeString == "0" && CaptureStartDelayString == "0")
-                        CaptureStateInfo = "Capturing in progress..." + Environment.NewLine + $"Press {CaptureHotkeyString} to stop capture.";
-
-                    if (CaptureTimeString != "0" && CaptureStartDelayString == "0")
-                        CaptureStateInfo = $"Capturing in progress (Set Time: {CaptureTimeString} seconds)..." + Environment.NewLine
-                           + $"Press {CaptureHotkeyString} to stop capture.";
-
-                    if (CaptureTimeString != "0" && CaptureStartDelayString != "0")
-                        CaptureStateInfo = $"Capturing starts with delay of {CaptureStartDelayString} seconds. " +
-                            $"Capture will stop after {CaptureTimeString} seconds." + Environment.NewLine + $"Press {CaptureHotkeyString} to stop capture.";
                 });
 
                 _lastCapturedProcess = processToCapture;
