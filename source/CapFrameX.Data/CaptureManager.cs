@@ -111,12 +111,12 @@ namespace CapFrameX.Data
             if (IsCapturing)
                 throw new Exception("Capture already running.");
 
-            IsCapturing = true;
-
             if (!GetAllFilteredProcesses(new HashSet<string>()).Contains(options.ProcessName))
                 throw new Exception($"Process {options.ProcessName} not found");
             if (options.RecordDirectory != null && !Directory.Exists(options.RecordDirectory))
                 throw new Exception($"RecordDirectory {options.RecordDirectory} does not exist");
+
+            IsCapturing = true;
 
             _timestampStartCapture = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds();
             _currentCaptureOptions = options;
