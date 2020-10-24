@@ -177,6 +177,7 @@
     <Compile Include="Hardware\Mainboard\MainboardGroup.cs" />
     <Compile Include="Hardware\Mainboard\Manufacturer.cs" />
     <Compile Include="Hardware\Mainboard\Model.cs" />
+    <Compile Include="Hardware\SensorConfig.cs" />
     <Compile Include="Hardware\SMBIOS.cs" />
     <Compile Include="Hardware\Mainboard\SuperIOHardware.cs" />
     <Compile Include="Hardware\Nvidia\NVAPI.cs" />
@@ -222,6 +223,12 @@
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CapFrameX.Contracts\CapFrameX.Contracts.csproj">
+      <Project>{4C3B8B5C-54D7-46A1-91A1-32BF82FD42CD}</Project>
+      <Name>CapFrameX.Contracts</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

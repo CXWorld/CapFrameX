@@ -31,6 +31,7 @@ using CapFrameX.Statistics.NetStandard.Contracts;
 using CapFrameX.Contracts.RTSS;
 using CapFrameX.RTSSIntegration;
 using System.Reactive.Subjects;
+using OpenHardwareMonitor.Hardware;
 
 namespace CapFrameX
 {
@@ -88,6 +89,7 @@ namespace CapFrameX
 			Container.Register<IOverlayService, OverlayService>(Reuse.Singleton);
 			Container.Register<IOnlineMetricService, OnlineMetricService>(Reuse.Singleton);
 			Container.Register<ISensorService, SensorService>(Reuse.Singleton);
+			Container.Register<ISensorConfig, SensorConfig>(Reuse.Singleton);
 			Container.Register<IOverlayEntryProvider, OverlayEntryProvider>(Reuse.Singleton);
 			Container.Register<IRecordManager, RecordManager>(Reuse.Singleton);
 			Container.Register<ISystemInfo, SystemInfo>(Reuse.Singleton);

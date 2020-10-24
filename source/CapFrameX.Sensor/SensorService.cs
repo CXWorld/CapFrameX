@@ -25,6 +25,7 @@ namespace CapFrameX.Sensor
 
         private readonly IAppConfiguration _appConfiguration;
         private readonly ILogger<SensorService> _logger;
+        private readonly ISensorConfig _sensorConfig;
         private readonly object _dictLock = new object();
         private readonly Dictionary<string, IOverlayEntry> _overlayEntryDict
             = new Dictionary<string, IOverlayEntry>();
@@ -58,13 +59,15 @@ namespace CapFrameX.Sensor
         public bool IsOverlayActive => _appConfiguration.IsOverlayActive;
 
         public SensorService(IAppConfiguration appConfiguration,
-                             ILogger<SensorService> logger)
+                             ILogger<SensorService> logger,
+                             ISensorConfig sensorConfig)
         {
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
 
             _appConfiguration = appConfiguration;
             _logger = logger;
+            _sensorConfig = sensorConfig;
             _currentOSDTimespan = TimeSpan.FromMilliseconds(_appConfiguration.OSDRefreshPeriod);
             _currentLoggingTimespan = TimeSpan.FromMilliseconds(_appConfiguration.SensorLoggingRefreshPeriod);
             _loggingUpdateSubject = new BehaviorSubject<TimeSpan>(_currentLoggingTimespan);
@@ -85,6 +88,7 @@ namespace CapFrameX.Sensor
                 .Subscribe(t =>
                     {
                         InitializeOverlayEntryDict();
+                        InitializeSensorConfig();
 
                         _sensorSnapshotStream
                             .Sample(_osdUpdateSubject.Select(timespan => Observable.Concat(Observable.Return(-1L), Observable.Interval(timespan))).Switch())
@@ -181,7 +185,7 @@ namespace CapFrameX.Sensor
                 {
                     lock (_lockComputer)
                     {
-                        _computer = new Computer();
+                        _computer = new Computer(_sensorConfig);
                         _computer.Open();
 
                         _computer.GPUEnabled = true;
@@ -227,6 +231,16 @@ namespace CapFrameX.Sensor
             {
                 _logger.LogError(ex, "Error while getting sensors.");
             }
+        }
+
+        private void InitializeSensorConfig()
+        {
+            foreach (var key in _overlayEntryDict.Keys)
+            {
+                _sensorConfig.SetSensorIsActive(key, true);
+            }
+
+            _sensorConfig.IsInitialized = true;
         }
 
         private IOverlayEntry CreateOverlayEntry(ISensor sensor)

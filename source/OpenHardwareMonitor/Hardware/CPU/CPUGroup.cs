@@ -8,6 +8,7 @@
 	
 */
 
+using CapFrameX.Contracts.Sensor;
 using Serilog;
 using System;
 using System.Collections.Generic;
@@ -21,6 +22,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
     {
         private readonly List<GenericCPU> hardware = new List<GenericCPU>();
         private readonly CPUID[][][] threads;
+        private readonly ISensorConfig sensorConfig;
 
         private static CPUID[][] GetProcessorThreads()
         {
@@ -93,8 +95,10 @@ namespace OpenHardwareMonitor.Hardware.CPU
             return coreThreads;
         }
 
-        public CPUGroup(ISettings settings)
+        public CPUGroup(ISettings settings, ISensorConfig config)
         {
+            sensorConfig = config;
+
             Log.Logger.Information("Start creating CPU group.");
 
             CPUID[][] processorThreads = GetProcessorThreads();
