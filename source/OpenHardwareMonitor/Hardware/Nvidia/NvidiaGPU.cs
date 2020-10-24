@@ -417,7 +417,7 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
                 ActivateSensor(memoryLoad);
             }
 
-            if (false/*power != null*/)
+            if (power != null)
             {
                 var channels = new NvGpuPowerMonitorPowerChannelStatus[NVAPI.POWER_STATUS_CHANNEL_COUNT];
                 for (int i = 0; i < channels.Length; i++)
@@ -437,15 +437,6 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
                 {
                     power.Value = powerStatus.TotalGpuPowermW * 1E-03f;
                     ActivateSensor(power);
-
-                    //// Grap all other sensors/channels
-                    //var powerSensors = powerStatus.Channels.Where(ch => ch.PwrAvgmW != 0).Select(ch => ch.PwrAvgmW * 1E-03).ToArray();
-
-                    //for (int i = 0; i < powerSensors.Length; i++)
-                    //{
-                    //    Console.WriteLine($"Sensor {i}: {powerSensors[i]}W");
-                    //}
-                    //Console.WriteLine("------------------------------------------");
                 }
             }
 

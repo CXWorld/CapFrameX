@@ -8,6 +8,7 @@
 	
 */
 
+using CapFrameX.Contracts.Sensor;
 using NvAPIWrapper.Native;
 using NvAPIWrapper.Native.GPU.Structures;
 using System.Collections.Generic;
@@ -19,15 +20,16 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
 {
     internal class NvidiaGroup : IGroup
     {
-
         private readonly List<Hardware> hardware = new List<Hardware>();
         private readonly StringBuilder report = new StringBuilder();
+        private readonly ISensorConfig sensorConfig;
 
-        public NvidiaGroup(ISettings settings)
+        public NvidiaGroup(ISettings settings, ISensorConfig config)
         {
             if (!NVAPI.IsAvailable)
                 return;
 
+            sensorConfig = config;
             report.AppendLine("NVAPI");
             report.AppendLine();
 
@@ -83,9 +85,9 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
                     {
                         NvPhysicalGpuHandle[] handlesFromDisplay =
                           new NvPhysicalGpuHandle[NVAPI.MAX_PHYSICAL_GPUS];
-                        uint countFromDisplay;
+
                         if (NVAPI.NvAPI_GetPhysicalGPUsFromDisplay(displayHandle,
-                          handlesFromDisplay, out countFromDisplay) == NvStatus.OK)
+                          handlesFromDisplay, out uint countFromDisplay) == NvStatus.OK)
                         {
                             for (int j = 0; j < countFromDisplay; j++)
                             {
