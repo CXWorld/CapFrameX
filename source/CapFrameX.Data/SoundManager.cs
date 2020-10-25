@@ -1,10 +1,8 @@
 ﻿using CapFrameX.Contracts.Configuration;
-using CapFrameX.Extensions;
 using CapFrameX.Extensions.NetStandard;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
 
@@ -12,8 +10,7 @@ namespace CapFrameX.Data
 {
     public class SoundManager
     {
-        private readonly MediaPlayer[] _soundPlayers = new MediaPlayer[6];
-        private readonly Dictionary<string, int> _playerIndexDict = new Dictionary<string, int>(6);
+        private readonly Dictionary<string, MediaPlayer> _playerDictionary = new Dictionary<string, MediaPlayer>(6);
         private readonly IAppConfiguration _configuration;
 
         public SoundMode SoundMode
@@ -71,56 +68,48 @@ namespace CapFrameX.Data
             _configuration = configuration;
             string soundPath;
 
+            void addPlayer(string path)
+            {
+                _playerDictionary.Add(path, new MediaPlayer());
+                _playerDictionary[path].Open(new Uri(path, UriKind.Relative));
+            }
+
             // capture started (voice)
-            _soundPlayers[0] = new MediaPlayer();
             soundPath = Path.Combine("Sounds", SoundMode.Voice.ConvertToString(), $"{Sound.CaptureStarted.ConvertToString()}.mp3");
-            _playerIndexDict.Add(soundPath, 0);
-            _soundPlayers[0].Open(new Uri(soundPath, UriKind.Relative));
+            addPlayer(soundPath);
 
             // capture started (simple)
-            _soundPlayers[1] = new MediaPlayer();
             soundPath = Path.Combine("Sounds", SoundMode.Simple.ConvertToString(), $"{Sound.CaptureStarted.ConvertToString()}.mp3");
-            _playerIndexDict.Add(soundPath, 1);
-            _soundPlayers[1].Open(new Uri(soundPath, UriKind.Relative));
+            addPlayer(soundPath);
 
             // capture stopped (voice)
-            _soundPlayers[2] = new MediaPlayer();
             soundPath = Path.Combine("Sounds", SoundMode.Voice.ConvertToString(), $"{Sound.CaptureStopped.ConvertToString()}.mp3");
-            _playerIndexDict.Add(soundPath, 2);
-            _soundPlayers[2].Open(new Uri(soundPath, UriKind.Relative));
+            addPlayer(soundPath);
 
             // capture stopped (simple)
-            _soundPlayers[3] = new MediaPlayer();
             soundPath = Path.Combine("Sounds", SoundMode.Simple.ConvertToString(), $"{Sound.CaptureStopped.ConvertToString()}.mp3");
-            _playerIndexDict.Add(soundPath, 3);
-            _soundPlayers[3].Open(new Uri(soundPath, UriKind.Relative));
+            addPlayer(soundPath);
 
             // more than one process (voice)
-            _soundPlayers[4] = new MediaPlayer();
             soundPath = Path.Combine("Sounds", SoundMode.Voice.ConvertToString(), $"{Sound.MoreThanOneProcess.ConvertToString()}.mp3");
-            _playerIndexDict.Add(soundPath, 4);
-            _soundPlayers[4].Open(new Uri(soundPath, UriKind.Relative));
+            addPlayer(soundPath);
 
             // no process detected (voice)
-            _soundPlayers[5] = new MediaPlayer();
             soundPath = Path.Combine("Sounds", SoundMode.Voice.ConvertToString(), $"{Sound.NoProcess.ConvertToString()}.mp3");
-            _playerIndexDict.Add(soundPath, 5);
-            _soundPlayers[5].Open(new Uri(soundPath, UriKind.Relative));
+            addPlayer(soundPath);
         }
 
         public void PlaySound(Sound sound)
         {
-            if (SoundMode is SoundMode.None)
-            {
+            if ((SoundMode is SoundMode.Simple && (sound == Sound.MoreThanOneProcess || sound == Sound.NoProcess)) || SoundMode is SoundMode.None)
                 return;
-            }
 
             var currentSoundMode = SoundMode;
             double currentVolume = Volume;
             Application.Current.Dispatcher.Invoke(() =>
             {
                 var path = Path.Combine("Sounds", currentSoundMode.ConvertToString(), $"{sound.ConvertToString()}.mp3");
-                var player = _soundPlayers[_playerIndexDict[path]];
+                var player = _playerDictionary[path];
                 player.Volume = currentVolume;
                 player.Play();
                 player.Open(new Uri(path, UriKind.Relative));
