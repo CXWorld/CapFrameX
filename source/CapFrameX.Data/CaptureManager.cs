@@ -14,7 +14,6 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using System.Windows;
 
 namespace CapFrameX.Data
 {
@@ -169,7 +168,7 @@ namespace CapFrameX.Data
                     }
                 });
 
-            Application.Current.Dispatcher.Invoke(() => _soundManager.PlaySound(Sound.CaptureStarted));
+            _soundManager.PlaySound(Sound.CaptureStarted);
 
             if (options.CaptureTime > 0d)
             {
@@ -193,9 +192,8 @@ namespace CapFrameX.Data
 
             LockCaptureService = true;
 
-
             _timestampStopCapture = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds();
-            Application.Current.Dispatcher.Invoke(() => _soundManager.PlaySound(Sound.CaptureStopped));
+            _soundManager.PlaySound(Sound.CaptureStopped);
             _overlayService.StopCaptureTimer();
             _autoCompletionDisposableStream?.Dispose();
             _captureStatusChange.OnNext(new CaptureStatus() { Status = ECaptureStatus.Processing });

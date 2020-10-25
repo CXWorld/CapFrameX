@@ -2,6 +2,7 @@
 using CapFrameX.Extensions.NetStandard;
 using System;
 using System.IO;
+using System.Windows;
 using System.Windows.Media;
 
 namespace CapFrameX.Data
@@ -73,8 +74,13 @@ namespace CapFrameX.Data
                 return;
             }
 
-            var path = Path.Combine("Sounds", SoundMode.ConvertToString(), $"{sound.ConvertToString()}.mp3");
-            PlayFile(new Uri(path, UriKind.Relative), Volume);
+            var currentSoundMode = SoundMode;
+            double currentVolume = Volume;
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                var path = Path.Combine("Sounds", currentSoundMode.ConvertToString(), $"{sound.ConvertToString()}.mp3");
+                PlayFile(new Uri(path, UriKind.Relative), currentVolume);
+            });
         }
 
         private void PlayFile(Uri uri, double volume)
