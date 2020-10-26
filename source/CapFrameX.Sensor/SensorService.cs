@@ -39,7 +39,8 @@ namespace CapFrameX.Sensor
         private ISubject<TimeSpan> _loggingUpdateSubject;
         private TimeSpan _currentLoggingTimespan;
         private TimeSpan _currentOSDTimespan;
-        private TimeSpan _currentSensorTimespan
+
+        private TimeSpan CurrentSensorTimespan
         {
             get
             {
@@ -50,6 +51,7 @@ namespace CapFrameX.Sensor
                 return _currentOSDTimespan;
             }
         }
+
         private IObservable<(DateTime, Dictionary<ISensor, float>)> _sensorSnapshotStream;
         private ISubject<IOverlayEntry[]> _onDictionaryUpdated = new Subject<IOverlayEntry[]>();
         public IObservable<IOverlayEntry[]> OnDictionaryUpdated => _onDictionaryUpdated;
@@ -72,7 +74,7 @@ namespace CapFrameX.Sensor
             _currentLoggingTimespan = TimeSpan.FromMilliseconds(_appConfiguration.SensorLoggingRefreshPeriod);
             _loggingUpdateSubject = new BehaviorSubject<TimeSpan>(_currentLoggingTimespan);
             _osdUpdateSubject = new BehaviorSubject<TimeSpan>(_currentOSDTimespan);
-            _sensorUpdateSubject = new BehaviorSubject<TimeSpan>(_currentSensorTimespan);
+            _sensorUpdateSubject = new BehaviorSubject<TimeSpan>(CurrentSensorTimespan);
             _sensorSnapshotStream = _sensorUpdateSubject
                 .Select(timespan => Observable.Concat(Observable.Return(-1L), Observable.Interval(timespan)))
                 .Switch()
@@ -174,7 +176,7 @@ namespace CapFrameX.Sensor
 
         private void UpdateSensorInterval()
         {
-            _sensorUpdateSubject.OnNext(_currentSensorTimespan);
+            _sensorUpdateSubject.OnNext(CurrentSensorTimespan);
         }
 
         private Task StartOpenHardwareMonitor()
@@ -563,9 +565,11 @@ namespace CapFrameX.Sensor
         {
             if (UseSensorLogging)
             {
-                _isLoggingActive = true;
                 _sessionSensorDataLive = new SessionSensorDataLive();
-                _sensorUpdateSubject.OnNext(_currentSensorTimespan);
+                // Logging must be activated after creating a session data object
+                // because of time stamp consistency
+                _isLoggingActive = true;
+                _sensorUpdateSubject.OnNext(CurrentSensorTimespan);
             }
         }
 

@@ -7,9 +7,11 @@ using CapFrameX.Data.Session.Contracts;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Runtime.InteropServices;
@@ -45,12 +47,12 @@ namespace CapFrameX.Data
         private readonly ILogger<CaptureManager> _logger;
         private readonly IAppConfiguration _appConfiguration;
         private readonly List<string> _captureDataArchive = new List<string>();
-        private readonly List<string> _captureData = new List<string>();
         private readonly object _archiveLock = new object();
 
         private IDisposable _disposableCaptureStream;
         private IDisposable _disposableArchiveStream;
         private IDisposable _autoCompletionDisposableStream;
+        private List<string> _captureData = new List<string>();
         private bool _fillArchive;
         private long _qpcTimeStart;
         private string _captureTimeString = "0";
@@ -108,17 +110,21 @@ namespace CapFrameX.Data
             if (IsCapturing)
                 throw new Exception("Capture already running.");
 
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+
             if (!GetAllFilteredProcesses(new HashSet<string>()).Contains(options.ProcessName))
                 throw new Exception($"Process {options.ProcessName} not found");
             if (options.RecordDirectory != null && !Directory.Exists(options.RecordDirectory))
                 throw new Exception($"RecordDirectory {options.RecordDirectory} does not exist");
 
             IsCapturing = true;
+            _soundManager.PlaySound(Sound.CaptureStarted);
 
             _timestampStartCapture = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds();
             _currentCaptureOptions = options;
-            _captureData.Clear();
-            _sensorService.StartSensorLogging();
+
+            _captureData = new List<string>();
 
             AddLoggerEntry("Capturing started.");
             _overlayService.SetCaptureServiceStatus("Recording frametimes");
@@ -139,6 +145,7 @@ namespace CapFrameX.Data
 
             _disposableCaptureStream = _presentMonCaptureService.RedirectedOutputDataStream
                 .Skip(5)
+                .ObserveOn(new EventLoopScheduler())
                 .Where(dataLine => !string.IsNullOrWhiteSpace(dataLine))
                 .Subscribe(dataLine =>
                 {
@@ -168,7 +175,10 @@ namespace CapFrameX.Data
                     }
                 });
 
-            _soundManager.PlaySound(Sound.CaptureStarted);
+            _sensorService.StartSensorLogging();
+
+            stopwatch.Stop();
+            AddLoggerEntry($"Time between capture start entry and finished in ms: {stopwatch.ElapsedMilliseconds}");
 
             if (options.CaptureTime > 0d)
             {
@@ -181,8 +191,6 @@ namespace CapFrameX.Data
             {
                 _overlayService.StartCaptureTimer();
             }
-
-            await Task.FromResult(true);
         }
 
         public async Task StopCapture()
@@ -196,11 +204,11 @@ namespace CapFrameX.Data
             _soundManager.PlaySound(Sound.CaptureStopped);
             _overlayService.StopCaptureTimer();
             _autoCompletionDisposableStream?.Dispose();
+            _sensorService.StopSensorLogging();
             _captureStatusChange.OnNext(new CaptureStatus() { Status = ECaptureStatus.Processing });
             await Task.Delay(TimeSpan.FromMilliseconds(PRESICE_OFFSET));
             IsCapturing = false;
             _disposableCaptureStream?.Dispose();
-            _sensorService.StopSensorLogging();
             await WriteExtractedCaptureDataToFileAsync();
             LockCaptureService = false;
         }
@@ -289,6 +297,8 @@ namespace CapFrameX.Data
                 // Skip first line to compensate the first frametime being one frame before original capture start point.
                 var normalizedAdjustedCaptureData = NormalizeTimes(adjustedCaptureData.Skip(1));
                 var sessionRun = _recordManager.ConvertPresentDataLinesToSessionRun(normalizedAdjustedCaptureData);
+
+                //ToDo: data could be adjusted (cutting at end)
                 sessionRun.SensorData = _sensorService.GetSessionSensorData();
 
                 if (_appConfiguration.UseRunHistory)

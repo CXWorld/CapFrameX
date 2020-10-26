@@ -43,7 +43,6 @@ namespace CapFrameX.Sensor
 
         public SessionSensorDataLive()
         {
-            _timestampStartLogging = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds();
             _measureTime = new List<double>();
             _cpuUsage = new List<int>();
             _cpuMaxThreadUsage = new List<int>();
@@ -58,6 +57,8 @@ namespace CapFrameX.Sensor
             _gpuTemp = new List<int>();
             _gpuPowerLimit = new List<int>();
             _vRamUsage = new List<int>();
+
+            _timestampStartLogging = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds();
         }
 
         public void AddMeasureTime(DateTime dateTime)
@@ -151,7 +152,7 @@ namespace CapFrameX.Sensor
                 RamUsage = _ramUsage.ToArray(),
                 IsInGpuLimit = _isInGpuLimit.ToArray(),
                 GpuPower = _gpuPower.ToArray(),
-                GpuPowerLimit = _gpuPowerLimit.Select( state => state == 1).ToArray(),
+                GpuPowerLimit = _gpuPowerLimit.Select(state => state == 1).ToArray(),
                 GpuTemp = _gpuTemp.ToArray(),
                 VRamUsage = _vRamUsage.ToArray()
             };
