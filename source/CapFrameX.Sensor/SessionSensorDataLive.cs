@@ -27,36 +27,36 @@ namespace CapFrameX.Sensor
 
         private long _timestampStartLogging;
         private List<double> _measureTime;
-        private List<int> _cpuUsage;
-        private List<int> _cpuPower;
-        private List<int> _cpuTemp;
-        private List<int> _cpuMaxThreadUsage;
-        private List<int> _cpuMaxClock;
-        private List<int> _gpuUsage;
-        private List<int> _gpuClock;
-        private List<double> _ramUsage;
-        private List<bool> _isInGpuLimit;
-        private List<int> _gpuPower;
-        private List<int> _gpuTemp;
-        private List<int> _gpuPowerLimit;
-        private List<int> _vRamUsage;
+        private LinkedList<int> _cpuUsage;
+        private LinkedList<int> _cpuPower;
+        private LinkedList<int> _cpuTemp;
+        private LinkedList<int> _cpuMaxThreadUsage;
+        private LinkedList<int> _cpuMaxClock;
+        private LinkedList<int> _gpuUsage;
+        private LinkedList<int> _gpuClock;
+        private LinkedList<double> _ramUsage;
+        private LinkedList<bool> _isInGpuLimit;
+        private LinkedList<int> _gpuPower;
+        private LinkedList<int> _gpuTemp;
+        private LinkedList<int> _gpuPowerLimit;
+        private LinkedList<int> _vRamUsage;
 
         public SessionSensorDataLive()
         {
             _measureTime = new List<double>();
-            _cpuUsage = new List<int>();
-            _cpuMaxThreadUsage = new List<int>();
-            _cpuPower = new List<int>();
-            _cpuTemp = new List<int>();
-            _cpuMaxClock = new List<int>();
-            _gpuUsage = new List<int>();
-            _gpuClock = new List<int>();
-            _ramUsage = new List<double>();
-            _isInGpuLimit = new List<bool>();
-            _gpuPower = new List<int>();
-            _gpuTemp = new List<int>();
-            _gpuPowerLimit = new List<int>();
-            _vRamUsage = new List<int>();
+            _cpuUsage = new LinkedList<int>();
+            _cpuMaxThreadUsage = new LinkedList<int>();
+            _cpuPower = new LinkedList<int>();
+            _cpuTemp = new LinkedList<int>();
+            _cpuMaxClock = new LinkedList<int>();
+            _gpuUsage = new LinkedList<int>();
+            _gpuClock = new LinkedList<int>();
+            _ramUsage = new LinkedList<double>();
+            _isInGpuLimit = new LinkedList<bool>();
+            _gpuPower = new LinkedList<int>();
+            _gpuTemp = new LinkedList<int>();
+            _gpuPowerLimit = new LinkedList<int>();
+            _vRamUsage = new LinkedList<int>();
 
             _timestampStartLogging = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds();
         }
@@ -78,43 +78,43 @@ namespace CapFrameX.Sensor
             switch (name)
             {
                 case "CPU Total" when sensor.Hardware.HardwareType == HardwareType.CPU:
-                    _cpuUsage.Add((int)Math.Round(currentValue));
+                    _cpuUsage.AddLast((int)Math.Round(currentValue));
                     break;
                 case "CPU Max" when sensor.Hardware.HardwareType == HardwareType.CPU:
-                    _cpuMaxThreadUsage.Add((int)Math.Round(currentValue));
+                    _cpuMaxThreadUsage.AddLast((int)Math.Round(currentValue));
                     break;
                 case "CPU Max Clock" when sensor.SensorType == SensorType.Clock:
-                    _cpuMaxClock.Add((int)Math.Round(currentValue));
+                    _cpuMaxClock.AddLast((int)Math.Round(currentValue));
                     break;
                 case "CPU Package" when sensor.SensorType == SensorType.Power:
-                    _cpuPower.Add((int)Math.Round(currentValue));
+                    _cpuPower.AddLast((int)Math.Round(currentValue));
                     break;
                 case "CPU Package" when sensor.SensorType == SensorType.Temperature:
-                    _cpuTemp.Add((int)Math.Round(currentValue));
+                    _cpuTemp.AddLast((int)Math.Round(currentValue));
                     break;
                 case "GPU Core" when sensor.SensorType == SensorType.Load:
-                    _gpuUsage.Add((int)Math.Round(currentValue));
+                    _gpuUsage.AddLast((int)Math.Round(currentValue));
                     break;
                 case "GPU Core" when sensor.SensorType == SensorType.Temperature:
-                    _gpuTemp.Add((int)Math.Round(currentValue));
+                    _gpuTemp.AddLast((int)Math.Round(currentValue));
                     break;
                 case "GPU Core" when sensor.SensorType == SensorType.Clock:
-                    _gpuClock.Add((int)Math.Round(currentValue));
+                    _gpuClock.AddLast((int)Math.Round(currentValue));
                     break;
                 case "GPU Power" when sensor.Hardware.HardwareType == HardwareType.GpuNvidia:
-                    _gpuPower.Add((int)Math.Round(currentValue));
+                    _gpuPower.AddLast((int)Math.Round(currentValue));
                     break;
                 case "GPU Power Limit" when sensor.Hardware.HardwareType == HardwareType.GpuNvidia:
-                    _gpuPowerLimit.Add((int)Math.Round(currentValue));
+                    _gpuPowerLimit.AddLast((int)Math.Round(currentValue));
                     break;
                 case "GPU Total" when sensor.Hardware.HardwareType == HardwareType.GpuAti:
-                    _gpuPower.Add((int)Math.Round(currentValue));
+                    _gpuPower.AddLast((int)Math.Round(currentValue));
                     break;
                 case "Used Memory" when sensor.Hardware.HardwareType == HardwareType.RAM:
-                    _ramUsage.Add(Math.Round(currentValue, 2));
+                    _ramUsage.AddLast(Math.Round(currentValue, 2));
                     break;
                 case "GPU Memory Dedicated" when sensor.SensorType == SensorType.SmallData:
-                    _vRamUsage.Add((int)Math.Round(currentValue, 0));
+                    _vRamUsage.AddLast((int)Math.Round(currentValue, 0));
                     break;
             }
         }
