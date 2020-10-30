@@ -213,6 +213,8 @@ namespace CapFrameX.ViewModel
 
         public ICommand MoveRecordFileCommand { get; }
 
+        public ICommand DuplicateRecordFileCommand { get; }
+
         public ICommand AcceptEditingDialogCommand { get; }
 
         public ICommand CancelEditingDialogCommand { get; }
@@ -268,6 +270,7 @@ namespace CapFrameX.ViewModel
             //Commands
             DeleteRecordFileCommand = new DelegateCommand(OnDeleteRecordFile);
             MoveRecordFileCommand = new DelegateCommand(OnMoveRecordFile);
+            DuplicateRecordFileCommand = new DelegateCommand(OnDuplicateRecordFile);
             AcceptEditingDialogCommand = new DelegateCommand(OnAcceptEditingDialog);
             CancelEditingDialogCommand = new DelegateCommand(OnCancelEditingDialog);
             AddCpuInfoCommand = new DelegateCommand(OnAddCpuInfo);
@@ -518,6 +521,49 @@ namespace CapFrameX.ViewModel
                     {
                         string destinationFullPath = Path.Combine(destinationfolder, SelectedRecordInfo.FileInfo.Name);
                         FileSystem.MoveFile(SelectedRecordInfo.FullPath, destinationFullPath);
+                    }
+
+                    SelectedRecordInfo = null;
+                    _selectedRecordings = null;
+
+                    _updateSessionEvent.Publish(new ViewMessages.UpdateSession(null, null));
+
+                }
+                catch { }
+            }
+            TreeViewUpdateStream.OnNext(default);
+        }
+
+        private void OnDuplicateRecordFile()
+        {
+            if (!RecordInfoList.Any())
+                return;
+
+            var dialog = new CommonOpenFileDialog
+            {
+                IsFolderPicker = true
+            };
+
+            CommonFileDialogResult result = dialog.ShowDialog();
+
+            if (result == CommonFileDialogResult.Ok)
+            {
+                string destinationfolder = dialog.FileName;
+                try
+                {
+
+                    if (_selectedRecordings?.Count > 1)
+                    {
+                        foreach (var item in _selectedRecordings)
+                        {
+                            string destinationFullPath = Path.Combine(destinationfolder, item.FileInfo.Name);
+                            FileSystem.CopyFile(item.FullPath, destinationFullPath);
+                        }
+                    }
+                    else
+                    {
+                        string destinationFullPath = Path.Combine(destinationfolder, SelectedRecordInfo.FileInfo.Name);
+                        FileSystem.CopyFile(SelectedRecordInfo.FullPath, destinationFullPath);
                     }
 
                     SelectedRecordInfo = null;
