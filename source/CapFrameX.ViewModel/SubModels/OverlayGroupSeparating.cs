@@ -74,9 +74,7 @@ namespace CapFrameX.ViewModel.SubModels
 		}
 
 		public void SetOverlayEntries(IEnumerable<IOverlayEntry> overlayEntries)
-		{
-			AddGroupNameSeparatorEntries(overlayEntries);
-		}
+			=> AddGroupNameSeparatorEntries(overlayEntries);
 
 		public void UpdateGroupName(string groupName)
 		{

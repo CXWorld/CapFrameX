@@ -1,4 +1,5 @@
 ﻿using CapFrameX.Contracts.Overlay;
+using CapFrameX.Contracts.Sensor;
 using Newtonsoft.Json;
 using Prism.Mvvm;
 using System;
@@ -36,6 +37,9 @@ namespace CapFrameX.Overlay
         private bool _isNumeric;
         private bool _formatChanged;
         private object _value;
+
+        [JsonIgnore]
+        public ISensorConfig SensorConfig { get; set; }
 
         public string Identifier { get; }
 
@@ -170,6 +174,7 @@ namespace CapFrameX.Overlay
             {
                 lock (_fieldLock)
                     _showOnOverlay = value;
+                SensorConfig?.SetSensorIsActive(Identifier, value);
                 RaisePropertyChanged();
             }
         }
@@ -417,6 +422,7 @@ namespace CapFrameX.Overlay
         {
             return new OverlayEntryWrapper(Identifier)
             {
+                SensorConfig = SensorConfig,
                 OverlayEntryType = OverlayEntryType,
                 Description = Description,
                 ValueFormat = ValueFormat,

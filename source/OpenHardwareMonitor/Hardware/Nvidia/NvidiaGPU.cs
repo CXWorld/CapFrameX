@@ -17,6 +17,7 @@ using System.Text;
 using System.Diagnostics;
 using System.Linq;
 using Serilog;
+using CapFrameX.Contracts.Sensor;
 
 namespace OpenHardwareMonitor.Hardware.Nvidia
 {
@@ -27,6 +28,7 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
         private readonly PhysicalGPU physicalGPU;
         private readonly NvDisplayHandle? displayHandle;
         private readonly NVML.NvmlDevice? device;
+        private readonly ISensorConfig sensorConfig;
 
         private readonly Sensor[] temperatures;
         private readonly Sensor fan;
@@ -51,7 +53,7 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
         private readonly PerformanceCounter sharedVramUsagePerformCounter;
 
         public NvidiaGPU(int adapterIndex, NvPhysicalGpuHandle handle,
-          NvDisplayHandle? displayHandle, ISettings settings, PhysicalGPU physicalGPU = null)
+          NvDisplayHandle? displayHandle, ISettings settings, ISensorConfig config, PhysicalGPU physicalGPU = null)
           : base(GetName(handle), new Identifier("nvidiagpu",
               adapterIndex.ToString(CultureInfo.InvariantCulture)), settings)
         {
@@ -59,6 +61,7 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
             this.handle = handle;
             this.displayHandle = displayHandle;
             this.physicalGPU = physicalGPU;
+            this.sensorConfig = config;
 
             NvGPUThermalSettings thermalSettings = GetThermalSettings();
             temperatures = new Sensor[thermalSettings.Count];
@@ -419,25 +422,30 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
 
             if (power != null)
             {
-                var channels = new NvGpuPowerMonitorPowerChannelStatus[NVAPI.POWER_STATUS_CHANNEL_COUNT];
-                for (int i = 0; i < channels.Length; i++)
+                if (sensorConfig.GetSensorIsActive(power.Identifier.ToString()))
                 {
-                    channels[i].Rsvd = new byte[NVAPI.POWER_STATUS_RSVD_SIZE];
-                }
+                    var channels = new NvGpuPowerMonitorPowerChannelStatus[NVAPI.POWER_STATUS_CHANNEL_COUNT];
+                    for (int i = 0; i < channels.Length; i++)
+                    {
+                        channels[i].Rsvd = new byte[NVAPI.POWER_STATUS_RSVD_SIZE];
+                    }
 
-                var powerStatus = new NvGpuPowerStatus
-                {
-                    Version = NVAPI.GPU_POWER_MONITOR_STATUS_VER,
-                    Rsvd = new byte[NVAPI.POWER_STATUS_RSVD_SIZE],
-                    Channels = channels
-                };
+                    var powerStatus = new NvGpuPowerStatus
+                    {
+                        Version = NVAPI.GPU_POWER_MONITOR_STATUS_VER,
+                        Rsvd = new byte[NVAPI.POWER_STATUS_RSVD_SIZE],
+                        Channels = channels
+                    };
 
-                if (NVAPI.NvAPI_GPU_PowerMonitorGetStatus != null &&
-                   NVAPI.NvAPI_GPU_PowerMonitorGetStatus(handle, ref powerStatus) == NvStatus.OK)
-                {
-                    power.Value = powerStatus.TotalGpuPowermW * 1E-03f;
-                    ActivateSensor(power);
+                    if (NVAPI.NvAPI_GPU_PowerMonitorGetStatus != null &&
+                       NVAPI.NvAPI_GPU_PowerMonitorGetStatus(handle, ref powerStatus) == NvStatus.OK)
+                    {
+                        power.Value = powerStatus.TotalGpuPowermW * 1E-03f;
+                        ActivateSensor(power);
+                    }
                 }
+                else
+                    power.Value = null;
             }
 
             // update VRAM usage

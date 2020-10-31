@@ -22,14 +22,12 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
     {
         private readonly List<Hardware> hardware = new List<Hardware>();
         private readonly StringBuilder report = new StringBuilder();
-        private readonly ISensorConfig sensorConfig;
 
-        public NvidiaGroup(ISettings settings, ISensorConfig config)
+        public NvidiaGroup(ISettings settings, ISensorConfig sensorConfig)
         {
             if (!NVAPI.IsAvailable)
                 return;
 
-            sensorConfig = config;
             report.AppendLine("NVAPI");
             report.AppendLine();
 
@@ -114,9 +112,9 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
             {
                 displayHandles.TryGetValue(handles[i], out NvDisplayHandle displayHandle);
                 if (physicalGPUHandles == null || !physicalGPUHandles.Any())
-                    hardware.Add(new NvidiaGPU(i, handles[i], displayHandle, settings));
+                    hardware.Add(new NvidiaGPU(i, handles[i], displayHandle, settings, sensorConfig));
                 else
-                    hardware.Add(new NvidiaGPU(i, handles[i], displayHandle, settings, 
+                    hardware.Add(new NvidiaGPU(i, handles[i], displayHandle, settings, sensorConfig,
                         new NvAPIWrapper.GPU.PhysicalGPU(physicalGPUHandles[i])));
             }
 

@@ -35,6 +35,7 @@ namespace CapFrameX.Overlay
         private readonly IOnlineMetricService _onlineMetricService;
         private readonly ISystemInfo _systemInfo;
         private readonly IRTSSService _rTSSService;
+        private readonly ISensorConfig _sensorConfig;
         private readonly ILogger<OverlayEntryProvider> _logger;
         private readonly ConcurrentDictionary<string, IOverlayEntry> _identifierOverlayEntryDict
              = new ConcurrentDictionary<string, IOverlayEntry>();
@@ -52,6 +53,7 @@ namespace CapFrameX.Overlay
             IEventAggregator eventAggregator,
             IOnlineMetricService onlineMetricService,
             ISystemInfo systemInfo, IRTSSService rTSSService,
+            ISensorConfig sensorConfig,
             ILogger<OverlayEntryProvider> logger)
         {
             Stopwatch stopwatch = new Stopwatch();
@@ -63,6 +65,7 @@ namespace CapFrameX.Overlay
             _onlineMetricService = onlineMetricService;
             _systemInfo = systemInfo;
             _rTSSService = rTSSService;
+            _sensorConfig = sensorConfig;
             _logger = logger;
 
             _onDictionaryUpdatedBuffered = _sensorService
@@ -213,15 +216,17 @@ namespace CapFrameX.Overlay
         {
             try
             {
-                _overlayEntries = await InitializeOverlayEntryDictionary();
+                _overlayEntries = await GetInitializedOverlayEntryDictionary();
             }
             catch
             {
                 _overlayEntries = await GetOverlayEntryDefaults();
             }
+            _sensorConfig.IsInitialized = true;
             _identifierOverlayEntryDict.Clear();
             foreach (var entry in _overlayEntries)
             {
+                entry.SensorConfig = _sensorConfig;
                 _identifierOverlayEntryDict.TryAdd(entry.Identifier, entry);
             }
             CheckCustomSystemInfo();
@@ -246,7 +251,7 @@ namespace CapFrameX.Overlay
             _overlayEntries.ForEach(entry => entry.FormatChanged = true);
         }
 
-        private IObservable<BlockingCollection<IOverlayEntry>> InitializeOverlayEntryDictionary()
+        private IObservable<BlockingCollection<IOverlayEntry>> GetInitializedOverlayEntryDictionary()
         {
             string json = File.ReadAllText(GetConfigurationFileName());
             var overlayEntriesFromJson = JsonConvert.DeserializeObject<OverlayEntryPersistence>(json)

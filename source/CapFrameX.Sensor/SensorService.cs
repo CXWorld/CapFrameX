@@ -80,7 +80,8 @@ namespace CapFrameX.Sensor
                 .Switch()
                 .Where((_, idx) => idx == 0 || IsOverlayActive || (_isLoggingActive && UseSensorLogging))
                 .Select(_ => GetSensorValues())
-                .Replay(0).RefCount();
+                .Replay(0)
+                .RefCount();
 
             _logger.LogDebug("{componentName} Ready", this.GetType().Name);
 
@@ -241,14 +242,13 @@ namespace CapFrameX.Sensor
             {
                 _sensorConfig.SetSensorIsActive(key, true);
             }
-
-            _sensorConfig.IsInitialized = true;
         }
 
         private IOverlayEntry CreateOverlayEntry(ISensor sensor)
         {
             return new OverlayEntryWrapper(sensor.Identifier.ToString())
             {
+                SensorConfig = _sensorConfig,
                 Description = GetDescription(sensor),
                 OverlayEntryType = MapType(sensor.Hardware.HardwareType),
                 GroupName = GetGroupName(sensor),

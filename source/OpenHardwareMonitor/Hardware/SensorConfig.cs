@@ -29,6 +29,8 @@ namespace OpenHardwareMonitor.Hardware
 
         public void SetSensorIsActive(string identifier, bool isActive)
         {
+            isActive = !IsInitialized || isActive;
+
             if (_activeSensorsDict.ContainsKey(identifier))
                 _activeSensorsDict[identifier] = isActive;
             else

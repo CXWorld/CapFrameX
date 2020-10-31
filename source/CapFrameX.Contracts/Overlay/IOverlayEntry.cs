@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CapFrameX.Contracts.Sensor;
+using System;
 
 namespace CapFrameX.Contracts.Overlay
 {
@@ -12,6 +13,8 @@ namespace CapFrameX.Contracts.Overlay
 
     public interface IOverlayEntry
     {
+        ISensorConfig SensorConfig { get; set; }
+
         string Identifier { get; }
 
         EOverlayEntryType OverlayEntryType { get; }
