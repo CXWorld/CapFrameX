@@ -21,14 +21,11 @@ namespace OpenHardwareMonitor.Hardware.ATI
 
         private readonly List<ATIGPU> hardware = new List<ATIGPU>();
         private readonly StringBuilder report = new StringBuilder();
-        private readonly ISensorConfig sensorConfig;
 
         private IntPtr context = IntPtr.Zero;
 
-        public ATIGroup(ISettings settings, ISensorConfig config)
+        public ATIGroup(ISettings settings, ISensorConfig sensorConfig)
         {
-            sensorConfig = config;
-
             try
             {
                 int adlStatus = ADL.ADL_Main_Control_Create(1);
@@ -109,7 +106,9 @@ namespace OpenHardwareMonitor.Hardware.ATI
                                           adapterInfo[i].AdapterName.Trim(),
                                           adapterInfo[i].AdapterIndex,
                                           adapterInfo[i].BusNumber,
-                                          adapterInfo[i].DeviceNumber, context, settings));
+                                          adapterInfo[i].DeviceNumber, 
+                                          context, settings,
+                                          sensorConfig));
                                 }
 
                                 report.AppendLine();

@@ -453,20 +453,31 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
             {
                 try
                 {
-                    memoryUsageDedicated.Value = dedicatedVramUsagePerformCounter.NextValue() / 1024f / 1024f;
-                    ActivateSensor(memoryUsageDedicated);
+                    if (sensorConfig.GetSensorIsActive(memoryUsageDedicated.Identifier.ToString()))
+                    {
+                        memoryUsageDedicated.Value = dedicatedVramUsagePerformCounter.NextValue() / 1024f / 1024f;
+                        ActivateSensor(memoryUsageDedicated);
+                    }
+                    else
+                        memoryUsageDedicated.Value = null;
+
                 }
-                catch { }
+                catch { memoryUsageDedicated.Value = null; }
             }
 
             if (sharedVramUsagePerformCounter != null)
             {
                 try
                 {
-                    memoryUsageShared.Value = (float)sharedVramUsagePerformCounter.NextValue() / 1024f / 1024f;
-                    ActivateSensor(memoryUsageShared);
+                    if (sensorConfig.GetSensorIsActive(memoryUsageShared.Identifier.ToString()))
+                    {
+                        memoryUsageShared.Value = (float)sharedVramUsagePerformCounter.NextValue() / 1024f / 1024f;
+                        ActivateSensor(memoryUsageShared);
+                    }
+                    else
+                        memoryUsageShared.Value = null;
                 }
-                catch { }
+                catch { memoryUsageShared.Value = null; }
             }
 
             if (pcieThroughputRx != null)

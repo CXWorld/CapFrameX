@@ -3,21 +3,23 @@ using System.Collections.Generic;
 
 namespace OpenHardwareMonitor.Hardware
 {
+    /// <summary>
+    /// Already implemented: 
+    /// GPU Power (Nvidia/AMD)
+    /// GPU Memory (Dedicated/Shared) Usage (Nvidia/AMD)
+    /// </summary>
     public class SensorConfig : ISensorConfig
     {
-        public bool IsInitialized { get; set; }
+        public bool IsInitialized { get; set; } = false;
 
-        private readonly Dictionary<string, bool> _activeSensorsDict 
+        public bool GlobalIsActivated { get; set; } = false;
+
+        private readonly Dictionary<string, bool> _activeSensorsDict
             = new Dictionary<string, bool>();
-
-        public SensorConfig()
-        {
-            IsInitialized = false;
-        }
 
         public bool GetSensorIsActive(string identifier)
         {
-            if (!IsInitialized)
+            if (!IsInitialized || GlobalIsActivated)
                 return true;
 
             bool isActive = false;

@@ -8,10 +8,12 @@
 	
 */
 
+using CapFrameX.Contracts.Sensor;
 using Microsoft.Win32;
 using Serilog;
 using System;
 using System.Diagnostics;
+using System.Diagnostics.Eventing.Reader;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -23,6 +25,7 @@ namespace OpenHardwareMonitor.Hardware.ATI
         private readonly int adapterIndex;
         private readonly int busNumber;
         private readonly int deviceNumber;
+        private readonly ISensorConfig sensorConfig;
         private readonly Sensor temperatureCore;
         private readonly Sensor temperatureMemory;
         private readonly Sensor temperatureVrmCore;
@@ -58,13 +61,14 @@ namespace OpenHardwareMonitor.Hardware.ATI
         private readonly int overdriveVersion;
 
         public ATIGPU(string name, int adapterIndex, int busNumber,
-          int deviceNumber, IntPtr context, ISettings settings)
+          int deviceNumber, IntPtr context, ISettings settings, ISensorConfig config)
           : base(name, new Identifier("atigpu",
             adapterIndex.ToString(CultureInfo.InvariantCulture)), settings)
         {
             this.adapterIndex = adapterIndex;
             this.busNumber = busNumber;
             this.deviceNumber = deviceNumber;
+            this.sensorConfig = config;
 
             this.context = context;
 
@@ -223,16 +227,22 @@ namespace OpenHardwareMonitor.Hardware.ATI
 
         private void GetOD6Power(ADLODNCurrentPowerType type, Sensor sensor)
         {
-            if (ADL.ADL2_Overdrive6_CurrentPower_Get(context, adapterIndex, type,
-              out int power) == ADL.ADL_OK)
+            if (sensorConfig.GetSensorIsActive(sensor.Identifier.ToString()))
             {
-                sensor.Value = power * (1.0f / 0xFF);
-                ActivateSensor(sensor);
+                if (ADL.ADL2_Overdrive6_CurrentPower_Get(context, adapterIndex, type,
+                  out int power) == ADL.ADL_OK)
+                {
+                    sensor.Value = power * (1.0f / 0xFF);
+                    ActivateSensor(sensor);
+                }
+                else
+                {
+                    sensor.Value = null;
+                }
             }
             else
-            {
                 sensor.Value = null;
-            }
+
         }
 
         public override string GetReport()
@@ -343,12 +353,17 @@ namespace OpenHardwareMonitor.Hardware.ATI
         private void GetPMLog(ADLPMLogDataOutput data,
           ADLSensorType sensorType, Sensor sensor, float factor = 1.0f)
         {
-            int i = (int)sensorType;
-            if (i < data.Sensors.Length && data.Sensors[i].Supported)
+            if (sensorConfig.GetSensorIsActive(sensor.Identifier.ToString()))
             {
-                sensor.Value = data.Sensors[i].Value * factor;
-                ActivateSensor(sensor);
+                int i = (int)sensorType;
+                if (i < data.Sensors.Length && data.Sensors[i].Supported)
+                {
+                    sensor.Value = data.Sensors[i].Value * factor;
+                    ActivateSensor(sensor);
+                }
             }
+            else
+                sensor.Value = null;
         }
 
         public override void Update()
@@ -498,20 +513,31 @@ namespace OpenHardwareMonitor.Hardware.ATI
             {
                 try
                 {
-                    memoryUsageDedicated.Value = dedicatedVramUsagePerformCounter.NextValue() / 1024f / 1024f;
-                    ActivateSensor(memoryUsageDedicated);
+                    if (sensorConfig.GetSensorIsActive(memoryUsageDedicated.Identifier.ToString()))
+                    {
+                        memoryUsageDedicated.Value = dedicatedVramUsagePerformCounter.NextValue() / 1024f / 1024f;
+                        ActivateSensor(memoryUsageDedicated);
+                    }
+                    else
+                        memoryUsageDedicated.Value = null;
+
                 }
-                catch { }
+                catch { memoryUsageDedicated.Value = null; }
             }
 
             if (sharedVramUsagePerformCounter != null)
             {
                 try
                 {
-                    memoryUsageShared.Value = (float)sharedVramUsagePerformCounter.NextValue() / 1024f / 1024f;
-                    ActivateSensor(memoryUsageShared);
+                    if (sensorConfig.GetSensorIsActive(memoryUsageShared.Identifier.ToString()))
+                    {
+                        memoryUsageShared.Value = (float)sharedVramUsagePerformCounter.NextValue() / 1024f / 1024f;
+                        ActivateSensor(memoryUsageShared);
+                    }
+                    else
+                        memoryUsageShared.Value = null;
                 }
-                catch { }
+                catch { memoryUsageShared.Value = null; }
             }
         }
 

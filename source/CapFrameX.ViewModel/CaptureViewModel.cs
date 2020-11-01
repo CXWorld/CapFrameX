@@ -44,6 +44,7 @@ namespace CapFrameX.ViewModel
         private readonly ProcessList _processList;
         private readonly SoundManager _soundManager;
         private readonly CaptureManager _captureManager;
+        private readonly ISensorConfig _sensorConfig;
 
         private IDisposable _disposableHeartBeat;
         private string _selectedProcessToCapture;
@@ -147,6 +148,7 @@ namespace CapFrameX.ViewModel
             {
                 _appConfiguration.UseSensorLogging = value;
                 _captureManager.ToggleSensorLogging(value);
+                _sensorConfig.GlobalIsActivated = value;
                 RaisePropertyChanged();
             }
         }
@@ -238,7 +240,8 @@ namespace CapFrameX.ViewModel
                                 ILogger<CaptureViewModel> logger,
                                 ProcessList processList,
                                 SoundManager soundManager,
-                                CaptureManager captureManager)
+                                CaptureManager captureManager,
+                                ISensorConfig sensorConfig)
         {
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -254,6 +257,10 @@ namespace CapFrameX.ViewModel
             _processList = processList;
             _soundManager = soundManager;
             _captureManager = captureManager;
+            _sensorConfig = sensorConfig;
+
+            _sensorConfig.GlobalIsActivated = UseSensorLogging;
+
             AddToIgonreListCommand = new DelegateCommand(OnAddToIgonreList);
             AddToProcessListCommand = new DelegateCommand(OnAddToProcessList);
             ResetPresentMonCommand = new DelegateCommand(OnResetCaptureProcess);
