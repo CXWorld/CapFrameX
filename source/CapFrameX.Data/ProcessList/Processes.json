@@ -315,6 +315,11 @@
     "IsBlacklisted": false
   },
   {
+    "Name": "BsgLauncher",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
     "Name": "cabal2main",
     "DisplayName": "Cabal 2",
     "IsBlacklisted": false
@@ -331,6 +336,11 @@
   },
   {
     "Name": "CapFrameX",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "CCleaner64",
     "DisplayName": null,
     "IsBlacklisted": true
   },
@@ -352,6 +362,11 @@
   {
     "Name": "CivilizationV_DX11",
     "DisplayName": "Civilization V",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "ck3",
+    "DisplayName": "Crusader Kings III",
     "IsBlacklisted": false
   },
   {
@@ -415,6 +430,11 @@
     "IsBlacklisted": false
   },
   {
+    "Name": "CrysisRemastered",
+    "DisplayName": "Crysis Remastered",
+    "IsBlacklisted": false
+  },
+  {
     "Name": "csgo",
     "DisplayName": "Counter Strike: Global Offensive",
     "IsBlacklisted": false
@@ -452,6 +472,16 @@
   {
     "Name": "DATA",
     "DisplayName": "Dark Souls",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "DataExchangeHost",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "DayZ_x64",
+    "DisplayName": "DayZ",
     "IsBlacklisted": false
   },
   {
@@ -595,6 +625,11 @@
     "IsBlacklisted": false
   },
   {
+    "Name": "ed8_3_PC",
+    "DisplayName": "The Legend of Heroes: Trails of Cold Steel III",
+    "IsBlacklisted": false
+  },
+  {
     "Name": "ELEX",
     "DisplayName": "ELEX",
     "IsBlacklisted": false
@@ -735,6 +770,11 @@
     "IsBlacklisted": false
   },
   {
+    "Name": "ffxv",
+    "DisplayName": "Final Fantasy XV",
+    "IsBlacklisted": false
+  },
+  {
     "Name": "ffxv_s",
     "DisplayName": "Final Fantasy XV",
     "IsBlacklisted": false
@@ -753,6 +793,11 @@
     "Name": "FlightDashboard",
     "DisplayName": null,
     "IsBlacklisted": true
+  },
+  {
+    "Name": "FlightSimulator",
+    "DisplayName": "Microsoft Flight Simulator",
+    "IsBlacklisted": false
   },
   {
     "Name": "fork",
@@ -780,8 +825,13 @@
     "IsBlacklisted": false
   },
   {
-    "Name": "Fusion360",
+    "Name": "FurMark",
     "DisplayName": null,
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "Fusion360",
+    "DisplayName": "Autodesk Fusion 360",
     "IsBlacklisted": true
   },
   {
@@ -807,6 +857,11 @@
   {
     "Name": "GearGame",
     "DisplayName": "Gears of War 4",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "GenshinImpact",
+    "DisplayName": "Genshin Impact",
     "IsBlacklisted": false
   },
   {
@@ -895,6 +950,11 @@
     "IsBlacklisted": false
   },
   {
+    "Name": "HLL-Win64-Shipping",
+    "DisplayName": "Hell Let Loose",
+    "IsBlacklisted": false
+  },
+  {
     "Name": "HMA",
     "DisplayName": "Hitman Absolution",
     "IsBlacklisted": false
@@ -937,6 +997,16 @@
   {
     "Name": "Insurgency",
     "DisplayName": "Insurgency",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "Intel(R) Core(TM) i7-7700K CPU @ 4.20GHz",
+    "DisplayName": "Shadow of the Tomb Raider",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "IronHarvest",
+    "DisplayName": "Iron Harvest",
     "IsBlacklisted": false
   },
   {
@@ -1070,6 +1140,11 @@
     "IsBlacklisted": false
   },
   {
+    "Name": "mafiadefinitiveedition",
+    "DisplayName": "Mafia: Definitive Edition",
+    "IsBlacklisted": false
+  },
+  {
     "Name": "Magicka",
     "DisplayName": "Magicka",
     "IsBlacklisted": false
@@ -1135,6 +1210,11 @@
     "IsBlacklisted": false
   },
   {
+    "Name": "Microsoft.Notes",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
     "Name": "Microsoft.Photos",
     "DisplayName": null,
     "IsBlacklisted": true
@@ -1142,7 +1222,7 @@
   {
     "Name": "MicrosoftEdge",
     "DisplayName": null,
-    "IsBlacklisted": true
+    "IsBlacklisted": false
   },
   {
     "Name": "MicrosoftEdgeCP",
@@ -1182,6 +1262,11 @@
   {
     "Name": "MonsterHunterWorld",
     "DisplayName": "Monster Hunter: World",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "MoonMan-Win64-Shipping",
+    "DisplayName": "Deliver Us The Moon",
     "IsBlacklisted": false
   },
   {
@@ -1250,17 +1335,27 @@
     "IsBlacklisted": true
   },
   {
+    "Name": "NZXT CAM Beta",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
     "Name": "Oblivion",
     "DisplayName": "The Elder Scrolls IV: Oblivion",
     "IsBlacklisted": false
   },
   {
     "Name": "obs64",
-    "DisplayName": null,
+    "DisplayName": "OBS Studio",
     "IsBlacklisted": true
   },
   {
     "Name": "obs-browser-page",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "OCAT",
     "DisplayName": null,
     "IsBlacklisted": true
   },
@@ -1322,6 +1417,11 @@
   {
     "Name": "pCARS",
     "DisplayName": "Project Cars",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "pCARS3",
+    "DisplayName": "Project Cars 3",
     "IsBlacklisted": false
   },
   {
@@ -1455,6 +1555,11 @@
     "IsBlacklisted": false
   },
   {
+    "Name": "rFactor2",
+    "DisplayName": "rFactor 2",
+    "IsBlacklisted": false
+  },
+  {
     "Name": "rift",
     "DisplayName": "Rift",
     "IsBlacklisted": false
@@ -1502,6 +1607,11 @@
   {
     "Name": "SaintsRowTheThird_DX11",
     "DisplayName": "Saints Row 3",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "Sam4",
+    "DisplayName": "Serious Sam 4",
     "IsBlacklisted": false
   },
   {
@@ -1635,6 +1745,16 @@
     "IsBlacklisted": false
   },
   {
+    "Name": "starwarssquadrons",
+    "DisplayName": "Star Wars: Squadrons",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "steam",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
     "Name": "steamwebhelper",
     "DisplayName": null,
     "IsBlacklisted": true
@@ -1696,13 +1816,18 @@
   },
   {
     "Name": "TeamViewer",
-    "DisplayName": null,
+    "DisplayName": "TeamViewer",
     "IsBlacklisted": true
   },
   {
     "Name": "TeamViewer_Desktop",
     "DisplayName": null,
     "IsBlacklisted": true
+  },
+  {
+    "Name": "teardown",
+    "DisplayName": "Teardown",
+    "IsBlacklisted": false
   },
   {
     "Name": "Temtem",
@@ -1748,6 +1873,11 @@
     "Name": "Three_Kingdoms",
     "DisplayName": "Total War: Three Kingdoms",
     "IsBlacklisted": false
+  },
+  {
+    "Name": "thunderbird",
+    "DisplayName": null,
+    "IsBlacklisted": true
   },
   {
     "Name": "TiberianDawn",
@@ -1810,8 +1940,13 @@
     "IsBlacklisted": false
   },
   {
+    "Name": "Troy",
+    "DisplayName": "Total War Saga: Troy",
+    "IsBlacklisted": false
+  },
+  {
     "Name": "ts3client_win64",
-    "DisplayName": "Teamspeak 3",
+    "DisplayName": null,
     "IsBlacklisted": true
   },
   {
@@ -1840,9 +1975,24 @@
     "IsBlacklisted": true
   },
   {
+    "Name": "vs_installershell",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "wallpaper32",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
     "Name": "Warcraft III",
     "DisplayName": "Warcraft III",
     "IsBlacklisted": false
+  },
+  {
+    "Name": "Warcraft Logs Uploader",
+    "DisplayName": null,
+    "IsBlacklisted": true
   },
   {
     "Name": "Warframe",
@@ -1865,12 +2015,22 @@
     "IsBlacklisted": false
   },
   {
+    "Name": "WatchDogsLegion",
+    "DisplayName": "Watch Dogs Legion",
+    "IsBlacklisted": false
+  },
+  {
     "Name": "WeMod",
     "DisplayName": null,
     "IsBlacklisted": true
   },
   {
     "Name": "wgc_renderer",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "WhatsApp",
     "DisplayName": null,
     "IsBlacklisted": true
   },
@@ -1958,6 +2118,11 @@
     "Name": "X4",
     "DisplayName": "X4: Foundations",
     "IsBlacklisted": false
+  },
+  {
+    "Name": "XboxApp",
+    "DisplayName": null,
+    "IsBlacklisted": true
   },
   {
     "Name": "XboxPcApp",
