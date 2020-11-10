@@ -241,12 +241,12 @@
                                 Command="{Binding SetToMinOsdCommand}" materialDesign:RippleAssist.Feedback="#DD000000">
                                 <materialDesign:PackIcon Kind="FlipToFront" Height="15" Width="15" />
                             </Button>
-                            <StackPanel Margin="120 0 0 0" Orientation="Horizontal">
-                            <TextBlock Text="Overlay toggle" VerticalAlignment="Center" />
-                            <ToggleButton Margin="5 0 0 0" IsChecked="{Binding IsOverlayActive, Mode=TwoWay}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                            <StackPanel Margin="50 0 0 0" Orientation="Horizontal">
+                            <TextBlock Text="Disable overlay on capture" VerticalAlignment="Center" />
+                                <ToggleButton Margin="5 0 0 0" IsChecked="{Binding AutoDisableOverlay, Mode=TwoWay}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
                             <StackPanel.ToolTip>
                                 <ToolTip MaxWidth="250">
-                                    <TextBlock Text="Shows the CX overlay items in RTSS. Make sure global RTSS OSD is ON" TextWrapping="Wrap"/>
+                                    <TextBlock Text="Disables the overlay and closes RTSS while running a capture" TextWrapping="Wrap"/>
                                 </ToolTip>
                             </StackPanel.ToolTip>
                             </StackPanel>

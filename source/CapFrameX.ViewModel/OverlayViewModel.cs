@@ -394,6 +394,18 @@ namespace CapFrameX.ViewModel
                 RaisePropertyChanged();
             }
         }
+        public bool AutoDisableOverlay
+        {
+            get
+            {
+                return _appConfiguration.AutoDisableOverlay;
+            }
+            set
+            {
+                _appConfiguration.AutoDisableOverlay = value;
+                RaisePropertyChanged();
+            }
+        }
 
         public string SelectedOverlayItemName
             => SelectedOverlayEntryIndex > -1 ?

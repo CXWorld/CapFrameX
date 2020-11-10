@@ -227,5 +227,8 @@
     <Setting Name="OverlayConfigHotKey" Type="System.String" Scope="User">
       <Value Profile="(Default)">Alt+C</Value>
     </Setting>
+    <Setting Name="AutoDisableOverlay" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

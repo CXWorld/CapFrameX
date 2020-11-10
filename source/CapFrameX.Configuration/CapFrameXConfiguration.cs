@@ -155,6 +155,11 @@ namespace CapFrameX.Configuration
 			get { return Settings.OverlayConfigHotKey; }
 			set { Settings.OverlayConfigHotKey = value; Settings.Save(); }
 		}
+		public bool AutoDisableOverlay
+		{
+			get { return Settings.AutoDisableOverlay; }
+			set { Settings.AutoDisableOverlay = value; Settings.Save(); }
+		}
 
 		public string HotkeySoundMode
         {

@@ -1,4 +1,5 @@
 ﻿using CapFrameX.Statistics.NetStandard.Contracts;
+using System.Windows.Forms;
 
 namespace CapFrameX.Contracts.Configuration
 {
@@ -47,6 +48,8 @@ namespace CapFrameX.Contracts.Configuration
 		string OverlayHotKey { get; set; }
 
 		string OverlayConfigHotKey { get; set; }
+
+		bool AutoDisableOverlay { get; set; }
 
 		string HotkeySoundMode { get; set; }
 

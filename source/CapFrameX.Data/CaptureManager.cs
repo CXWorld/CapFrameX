@@ -15,6 +15,7 @@ using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Runtime.InteropServices;
+using System.Security;
 using System.Threading.Tasks;
 
 namespace CapFrameX.Data
@@ -118,6 +119,14 @@ namespace CapFrameX.Data
             if (options.RecordDirectory != null && !Directory.Exists(options.RecordDirectory))
                 throw new Exception($"RecordDirectory {options.RecordDirectory} does not exist");
 
+            if (_appConfiguration.IsOverlayActive && _appConfiguration.AutoDisableOverlay)
+            {
+                TryCloseRTSS();
+                _appConfiguration.IsOverlayActive = false;
+                _overlayService.IsOverlayActiveStream.OnNext(false);
+                
+            }
+
             IsCapturing = true;
             _soundManager.PlaySound(Sound.CaptureStarted);
 
@@ -206,6 +215,13 @@ namespace CapFrameX.Data
             _autoCompletionDisposableStream?.Dispose();
             _sensorService.StopSensorLogging();
             _captureStatusChange.OnNext(new CaptureStatus() { Status = ECaptureStatus.Processing });
+
+            if (_appConfiguration.AutoDisableOverlay)
+            {
+                _appConfiguration.IsOverlayActive = true;
+                _overlayService.IsOverlayActiveStream.OnNext(true);
+            }
+
             await Task.Delay(TimeSpan.FromMilliseconds(PRESICE_OFFSET));
             IsCapturing = false;
             _disposableCaptureStream?.Dispose();
@@ -568,6 +584,24 @@ namespace CapFrameX.Data
             {
                 Message = entry
             });
+        }
+
+        private void TryCloseRTSS()
+        {
+            try
+            {
+                var proc1 = Process.GetProcessesByName("RTSS");
+                if (proc1.Any())
+                {
+                    proc1[0].Kill();
+                }
+                var proc2 = Process.GetProcessesByName("RTSSHooksLoader64");
+                if (proc2.Any())
+                {
+                    proc2[0].Kill();
+                }
+            }
+            catch { }
         }
     }
 
