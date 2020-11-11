@@ -45,6 +45,7 @@ namespace CapFrameX.RTSSIntegration
                             Process proc = new Process();
                             proc.StartInfo.FileName = Path.Combine(GetRTSSFullPath());
                             proc.StartInfo.UseShellExecute = false;
+                            proc.StartInfo.Arguments = "-u";
                             //proc.StartInfo.Verb = "runas";
                             proc.Start();
                         }
@@ -69,6 +70,7 @@ namespace CapFrameX.RTSSIntegration
                             Process proc = new Process();
                             proc.StartInfo.FileName = Path.Combine(GetRTSSFullPath());
                             proc.StartInfo.UseShellExecute = false;
+                            proc.StartInfo.Arguments = "-u";
                             //proc.StartInfo.Verb = "runas";
                             proc.Start();
                         }

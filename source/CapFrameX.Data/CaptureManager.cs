@@ -593,13 +593,13 @@ namespace CapFrameX.Data
                 var proc1 = Process.GetProcessesByName("RTSS");
                 if (proc1.Any())
                 {
-                    proc1[0].Kill();
+                    proc1[0].CloseMainWindow();
                 }
-                var proc2 = Process.GetProcessesByName("RTSSHooksLoader64");
-                if (proc2.Any())
-                {
-                    proc2[0].Kill();
-                }
+                //var proc2 = Process.GetProcessesByName("RTSSHooksLoader64");
+                //if (proc2.Any())
+                //{
+                //    proc2[0].Kill();
+                //}
             }
             catch { }
         }
