@@ -94,6 +94,16 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        public bool ToggleGlobalRTSSOSD
+        {
+            get { return _appConfiguration.ToggleGlobalRTSSOSD; }
+            set
+            {
+                _appConfiguration.ToggleGlobalRTSSOSD = value;
+                RaisePropertyChanged();
+            }
+        }
+
         public string OverlayHotkeyString
         {
             get { return _appConfiguration.OverlayHotKey; }
@@ -638,6 +648,11 @@ namespace CapFrameX.ViewModel
                 {CXHotkeyCombination.FromString(OverlayHotkeyString), () =>
                 {
                     IsOverlayActive = !IsOverlayActive;
+
+                    if(_appConfiguration.ToggleGlobalRTSSOSD && !IsOverlayActive)
+                        _rTSSService.OnOSDOff();
+                    if(_appConfiguration.ToggleGlobalRTSSOSD && IsOverlayActive)
+                        _rTSSService.OnOSDOn();
                 }}
             };
 

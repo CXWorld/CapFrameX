@@ -17,7 +17,7 @@ DWORD CRTSSHooksInterface::SetFlags(DWORD dwAND, DWORD dwXOR)
 {
 	DWORD	dwResult	= 0;
 
-	HMODULE hRTSSHooks	= GetModuleHandle("RTSSHooks.dll");
+	HMODULE hRTSSHooks	= GetModuleHandle("RTSSHooks64.dll");
 
 	if (hRTSSHooks)
 	{

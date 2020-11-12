@@ -934,5 +934,17 @@ namespace CapFrameX.Configuration.Properties {
                 this["AutoDisableOverlay"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool ToggleGlobalRTSSOSD {
+            get {
+                return ((bool)(this["ToggleGlobalRTSSOSD"]));
+            }
+            set {
+                this["ToggleGlobalRTSSOSD"] = value;
+            }
+        }
     }
 }

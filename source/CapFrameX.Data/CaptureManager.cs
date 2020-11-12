@@ -2,6 +2,7 @@
 using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.PresentMonInterface;
+using CapFrameX.Contracts.RTSS;
 using CapFrameX.Contracts.Sensor;
 using CapFrameX.Data.Session.Contracts;
 using Microsoft.Extensions.Logging;
@@ -47,6 +48,7 @@ namespace CapFrameX.Data
         private readonly IRecordManager _recordManager;
         private readonly ILogger<CaptureManager> _logger;
         private readonly IAppConfiguration _appConfiguration;
+        private readonly IRTSSService _rtssService;
         private readonly List<string> _captureDataArchive = new List<string>();
         private readonly object _archiveLock = new object();
 
@@ -61,12 +63,22 @@ namespace CapFrameX.Data
         private CaptureOptions _currentCaptureOptions;
         private long _timestampStopCapture;
         private bool _isCapturing;
+        private bool _oSDAutoDisabled = false;
 
         private ISubject<CaptureStatus> _captureStatusChange =
             new BehaviorSubject<CaptureStatus>(new CaptureStatus { Status = ECaptureStatus.Stopped });
         public IObservable<CaptureStatus> CaptureStatusChange
             => _captureStatusChange.AsObservable();
         public bool LockCaptureService { get; private set; }
+
+        public bool OSDAutoDisabled
+        {
+            get { return _oSDAutoDisabled; }
+            set
+            {
+                _oSDAutoDisabled = value;
+            }
+        }
 
         public bool IsCapturing
         {
@@ -89,7 +101,8 @@ namespace CapFrameX.Data
             SoundManager soundManager,
             IRecordManager recordManager,
             ILogger<CaptureManager> logger,
-            IAppConfiguration appConfiguration)
+            IAppConfiguration appConfiguration,
+            IRTSSService rtssService)
         {
             _presentMonCaptureService = presentMonCaptureService;
             _sensorService = sensorService;
@@ -98,6 +111,7 @@ namespace CapFrameX.Data
             _recordManager = recordManager;
             _logger = logger;
             _appConfiguration = appConfiguration;
+            _rtssService = rtssService;
             _presentMonCaptureService.IsCaptureModeActiveStream.OnNext(false);
         }
 
@@ -121,10 +135,10 @@ namespace CapFrameX.Data
 
             if (_appConfiguration.IsOverlayActive && _appConfiguration.AutoDisableOverlay)
             {
-                TryCloseRTSS();
+                _rtssService.OnOSDOff();
                 _appConfiguration.IsOverlayActive = false;
                 _overlayService.IsOverlayActiveStream.OnNext(false);
-                
+                OSDAutoDisabled = true;
             }
 
             IsCapturing = true;
@@ -216,10 +230,12 @@ namespace CapFrameX.Data
             _sensorService.StopSensorLogging();
             _captureStatusChange.OnNext(new CaptureStatus() { Status = ECaptureStatus.Processing });
 
-            if (_appConfiguration.AutoDisableOverlay)
+            if (_appConfiguration.AutoDisableOverlay && OSDAutoDisabled)
             {
                 _appConfiguration.IsOverlayActive = true;
                 _overlayService.IsOverlayActiveStream.OnNext(true);
+                _rtssService.OnOSDOn();
+                OSDAutoDisabled = false;
             }
 
             await Task.Delay(TimeSpan.FromMilliseconds(PRESICE_OFFSET));
@@ -584,24 +600,6 @@ namespace CapFrameX.Data
             {
                 Message = entry
             });
-        }
-
-        private void TryCloseRTSS()
-        {
-            try
-            {
-                var proc1 = Process.GetProcessesByName("RTSS");
-                if (proc1.Any())
-                {
-                    proc1[0].CloseMainWindow();
-                }
-                //var proc2 = Process.GetProcessesByName("RTSSHooksLoader64");
-                //if (proc2.Any())
-                //{
-                //    proc2[0].Kill();
-                //}
-            }
-            catch { }
         }
     }
 

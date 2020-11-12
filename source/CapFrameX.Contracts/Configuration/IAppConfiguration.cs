@@ -51,6 +51,8 @@ namespace CapFrameX.Contracts.Configuration
 
 		bool AutoDisableOverlay { get; set; }
 
+		bool ToggleGlobalRTSSOSD { get; set; }
+
 		string HotkeySoundMode { get; set; }
 
 		double CaptureTime { get; set; }
