@@ -29,6 +29,21 @@ public:
 		delete _exceptionAction;
 	}
 
+	void OnOSDOn()
+	{
+		_coreControl->OnOSDOn();
+	}
+
+	void OnOSDOff()
+	{
+		_coreControl->OnOSDOff();
+	}
+
+	void OnOSDToggle()
+	{
+		_coreControl->OnOSDToggle();
+	}
+
 	void ResetOSD()
 	{
 		try

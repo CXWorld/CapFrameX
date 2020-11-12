@@ -1,4 +1,3 @@
-
 /////////////////////////////////////////////////////////////////////////////
 // created by Unwinder - modified by ZeroStrat
 /////////////////////////////////////////////////////////////////////////////
@@ -750,6 +749,21 @@ void RTSSCoreControl::Refresh()
 void RTSSCoreControl::SetFormatVariables(CString variables)
 {
 	m_formatVariables = variables;
+}
+
+void RTSSCoreControl::OnOSDOn()
+{
+	m_rtssInterface.SetFlags(~RTSSHOOKSFLAG_OSD_VISIBLE, RTSSHOOKSFLAG_OSD_VISIBLE);
+}
+
+void RTSSCoreControl::OnOSDOff()
+{
+	m_rtssInterface.SetFlags(~RTSSHOOKSFLAG_OSD_VISIBLE, 0);
+}
+
+void RTSSCoreControl::OnOSDToggle()
+{
+	m_rtssInterface.SetFlags(0xFFFFFFFF, RTSSHOOKSFLAG_OSD_VISIBLE);
 }
 
 void RTSSCoreControl::AddOverlayEntry(CGroupedString* groupedString, OverlayEntry* entry, BOOL bFormatTagsSupported)

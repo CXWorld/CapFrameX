@@ -224,7 +224,7 @@ namespace OpenHardwareMonitor.Hardware
 
                 try
                 {
-                    // try to delte the driver file
+                    // try to delete the driver file
                     if (File.Exists(fileName))
                         File.Delete(fileName);
                     fileName = null;

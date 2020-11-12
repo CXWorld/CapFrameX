@@ -25,5 +25,8 @@ namespace CapFrameX.Contracts.RTSS
         void SetRunHistoryOutlierFlags(bool[] flags);
         void SetRunHistory(string[] history);
         void SetRunHistoryAggregation(string aggregation);
+        void OnOSDOn();
+        void OnOSDOff();
+        void OnOSDToggle();
     }
 }

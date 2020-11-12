@@ -162,6 +162,7 @@
     <ClInclude Include="OverlayEntry.h" />
     <ClInclude Include="RTSSCoreControl.h" />
     <ClInclude Include="RTSSCSharpWrapper.h" />
+    <ClInclude Include="RTSSHooksInterface.h" />
     <ClInclude Include="RTSSProfileInterface.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
@@ -172,6 +173,7 @@
     <ClCompile Include="OverlayEntry.cpp" />
     <ClCompile Include="RTSSCoreControl.cpp" />
     <ClCompile Include="RTSSCSharpWrapper.cpp" />
+    <ClCompile Include="RTSSHooksInterface.cpp" />
     <ClCompile Include="RTSSProfileInterface.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

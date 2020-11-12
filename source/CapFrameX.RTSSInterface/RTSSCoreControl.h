@@ -12,6 +12,7 @@
 #include "OverlayEntry.h"
 #include "RTSSSharedMemory.h"
 #include "RTSSProfileInterface.h"
+#include "RTSSHooksInterface.h"
 #include <vector>
 /////////////////////////////////////////////////////////////////////////////
 // define constants / structures and function prototype for NTDLL.dll
@@ -28,6 +29,9 @@ public:
 	void						ReleaseOSD();
 	void						Refresh();
 	void						SetFormatVariables(CString variables);
+	void						OnOSDOn();
+	void						OnOSDOff();
+	void						OnOSDToggle();
 	std::vector<CString>		RunHistory;
 	std::vector<BOOL>			RunHistoryOutlierFlags;
 	CString						RunHistoryAggregation;
@@ -62,6 +66,7 @@ protected:
 	CString						m_formatVariables;
 
 	CRTSSProfileInterface		m_profileInterface;
+	CRTSSHooksInterface			m_rtssInterface;
 };
 /////////////////////////////////////////////////////////////////////////////
 //{{AFX_INSERT_LOCATION}}
