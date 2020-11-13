@@ -73,6 +73,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CapFrameX.CXServicex86", "s
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.InterprocessCommunication", "source\CapFrameX.InterprocessCommunication\CapFrameX.InterprocessCommunication.csproj", "{260646CA-EEC3-4FA2-8458-9BDCCC837C6D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PipeTestConsoleApp", "source\PipeTestConsoleApp\PipeTestConsoleApp.csproj", "{978C4E1A-642D-4956-8FF0-747AE0340173}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -476,6 +478,18 @@ Global
 		{260646CA-EEC3-4FA2-8458-9BDCCC837C6D}.Release|x64.Build.0 = Release|Any CPU
 		{260646CA-EEC3-4FA2-8458-9BDCCC837C6D}.Release|x86.ActiveCfg = Release|Any CPU
 		{260646CA-EEC3-4FA2-8458-9BDCCC837C6D}.Release|x86.Build.0 = Release|Any CPU
+		{978C4E1A-642D-4956-8FF0-747AE0340173}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{978C4E1A-642D-4956-8FF0-747AE0340173}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{978C4E1A-642D-4956-8FF0-747AE0340173}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{978C4E1A-642D-4956-8FF0-747AE0340173}.Debug|x64.Build.0 = Debug|Any CPU
+		{978C4E1A-642D-4956-8FF0-747AE0340173}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{978C4E1A-642D-4956-8FF0-747AE0340173}.Debug|x86.Build.0 = Debug|Any CPU
+		{978C4E1A-642D-4956-8FF0-747AE0340173}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{978C4E1A-642D-4956-8FF0-747AE0340173}.Release|Any CPU.Build.0 = Release|Any CPU
+		{978C4E1A-642D-4956-8FF0-747AE0340173}.Release|x64.ActiveCfg = Release|Any CPU
+		{978C4E1A-642D-4956-8FF0-747AE0340173}.Release|x64.Build.0 = Release|Any CPU
+		{978C4E1A-642D-4956-8FF0-747AE0340173}.Release|x86.ActiveCfg = Release|Any CPU
+		{978C4E1A-642D-4956-8FF0-747AE0340173}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

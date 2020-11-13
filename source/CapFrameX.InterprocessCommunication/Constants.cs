@@ -6,8 +6,16 @@ using System.Threading.Tasks;
 
 namespace CapFrameX.InterprocessCommunication
 {
-    internal class Constants
+    internal static class Constants
     {
-        public int Port { get; set; }
+        public const int Port = 12345;
+        public const string PipeName = "CXPipe";
+    }
+
+    internal enum Topic
+    {
+        OSDOn,
+        OSDOff,
+        OSDToggle
     }
 }
