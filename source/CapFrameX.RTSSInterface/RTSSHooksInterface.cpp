@@ -45,7 +45,7 @@ void CRTSSHooksInterface::PostMessage(UINT Msg, WPARAM wParam, LPARAM lParam)
 /////////////////////////////////////////////////////////////////////////////
 void CRTSSHooksInterface::ScreenCapture(LPCSTR lpFilename, DWORD dwQuality, DWORD dwThreads, BOOL bCaptureOSD)
 {
-	HMODULE hRTSSHooks	= GetModuleHandle("RTSSHooks.dll");
+	HMODULE hRTSSHooks	= GetModuleHandle("RTSSHooks64.dll");
 
 	if (hRTSSHooks)
 	{
@@ -58,7 +58,7 @@ void CRTSSHooksInterface::ScreenCapture(LPCSTR lpFilename, DWORD dwQuality, DWOR
 /////////////////////////////////////////////////////////////////////////////
 void CRTSSHooksInterface::VideoCaptureEx(LPVIDEO_CAPTURE_PARAM lpParam)
 {
-	HMODULE hRTSSHooks	= GetModuleHandle("RTSSHooks.dll");
+	HMODULE hRTSSHooks	= GetModuleHandle("RTSSHooks64.dll");
 
 	if (hRTSSHooks)
 	{
@@ -71,7 +71,7 @@ void CRTSSHooksInterface::VideoCaptureEx(LPVIDEO_CAPTURE_PARAM lpParam)
 /////////////////////////////////////////////////////////////////////////////
 void CRTSSHooksInterface::PTTEvent(BOOL bPush, DWORD dwTrack)
 {
-	HMODULE hRTSSHooks	= GetModuleHandle("RTSSHooks.dll");
+	HMODULE hRTSSHooks	= GetModuleHandle("RTSSHooks64.dll");
 
 	if (hRTSSHooks)
 	{
@@ -84,7 +84,7 @@ void CRTSSHooksInterface::PTTEvent(BOOL bPush, DWORD dwTrack)
 /////////////////////////////////////////////////////////////////////////////
 void CRTSSHooksInterface::BeingRecord()
 {
-	HMODULE hRTSSHooks	= GetModuleHandle("RTSSHooks.dll");
+	HMODULE hRTSSHooks	= GetModuleHandle("RTSSHooks64.dll");
 
 	if (hRTSSHooks)
 	{
@@ -97,7 +97,7 @@ void CRTSSHooksInterface::BeingRecord()
 /////////////////////////////////////////////////////////////////////////////
 void CRTSSHooksInterface::EndRecord(LPCSTR lpFilename, BOOL bAppend)
 {
-	HMODULE hRTSSHooks	= GetModuleHandle("RTSSHooks.dll");
+	HMODULE hRTSSHooks	= GetModuleHandle("RTSSHooks64.dll");
 
 	if (hRTSSHooks)
 	{
@@ -110,7 +110,7 @@ void CRTSSHooksInterface::EndRecord(LPCSTR lpFilename, BOOL bAppend)
 /////////////////////////////////////////////////////////////////////////////
 void CRTSSHooksInterface::LoadProfile(LPCSTR lpProfile)
 {
-	HMODULE hRTSSHooks	= GetModuleHandle("RTSSHooks.dll");
+	HMODULE hRTSSHooks	= GetModuleHandle("RTSSHooks64.dll");
 
 	if (hRTSSHooks)
 	{
@@ -123,7 +123,7 @@ void CRTSSHooksInterface::LoadProfile(LPCSTR lpProfile)
 /////////////////////////////////////////////////////////////////////////////
 void CRTSSHooksInterface::SaveProfile(LPCSTR lpProfile)
 {
-	HMODULE hRTSSHooks	= GetModuleHandle("RTSSHooks.dll");
+	HMODULE hRTSSHooks	= GetModuleHandle("RTSSHooks64.dll");
 
 	if (hRTSSHooks)
 	{
@@ -136,7 +136,7 @@ void CRTSSHooksInterface::SaveProfile(LPCSTR lpProfile)
 /////////////////////////////////////////////////////////////////////////////
 BOOL CRTSSHooksInterface::GetProfileProperty(LPCSTR lpPropertyName, LPBYTE lpPropertyData, DWORD dwPropertySize)
 {
-	HMODULE hRTSSHooks	= GetModuleHandle("RTSSHooks.dll");
+	HMODULE hRTSSHooks	= GetModuleHandle("RTSSHooks64.dll");
 
 	if (hRTSSHooks)
 	{
@@ -151,7 +151,7 @@ BOOL CRTSSHooksInterface::GetProfileProperty(LPCSTR lpPropertyName, LPBYTE lpPro
 /////////////////////////////////////////////////////////////////////////////
 BOOL CRTSSHooksInterface::SetProfileProperty(LPCSTR lpPropertyName, LPBYTE lpPropertyData, DWORD dwPropertySize)
 {
-	HMODULE hRTSSHooks	= GetModuleHandle("RTSSHooks.dll");
+	HMODULE hRTSSHooks	= GetModuleHandle("RTSSHooks64.dll");
 
 	if (hRTSSHooks)
 	{
@@ -166,7 +166,7 @@ BOOL CRTSSHooksInterface::SetProfileProperty(LPCSTR lpPropertyName, LPBYTE lpPro
 /////////////////////////////////////////////////////////////////////////////
 void CRTSSHooksInterface::DeleteProfile(LPCSTR lpProfile)
 {
-	HMODULE hRTSSHooks	= GetModuleHandle("RTSSHooks.dll");
+	HMODULE hRTSSHooks	= GetModuleHandle("RTSSHooks64.dll");
 
 	if (hRTSSHooks)
 	{
@@ -179,7 +179,7 @@ void CRTSSHooksInterface::DeleteProfile(LPCSTR lpProfile)
 /////////////////////////////////////////////////////////////////////////////
 void CRTSSHooksInterface::ResetProfile(LPCSTR lpProfile)
 {
-	HMODULE hRTSSHooks	= GetModuleHandle("RTSSHooks.dll");
+	HMODULE hRTSSHooks	= GetModuleHandle("RTSSHooks64.dll");
 
 	if (hRTSSHooks)
 	{
@@ -192,7 +192,7 @@ void CRTSSHooksInterface::ResetProfile(LPCSTR lpProfile)
 /////////////////////////////////////////////////////////////////////////////
 void CRTSSHooksInterface::UpdateProfiles()
 {
-	HMODULE hRTSSHooks	= GetModuleHandle("RTSSHooks.dll");
+	HMODULE hRTSSHooks	= GetModuleHandle("RTSSHooks64.dll");
 
 	if (hRTSSHooks)
 	{
