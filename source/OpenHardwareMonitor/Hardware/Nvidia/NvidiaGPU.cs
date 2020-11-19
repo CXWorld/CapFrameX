@@ -290,7 +290,7 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
                 }
             }
 
-            var gpuVoltageStatus = new NvGPuVoltageStatus
+            var gpuVoltageStatus = new NvGpuVoltageStatus
             {
                 Version = NVAPI.GPU_VOLTAGE_STATUS_VER,
                 Unknown2 = new uint[8],
