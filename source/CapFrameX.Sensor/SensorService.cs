@@ -663,7 +663,7 @@ namespace CapFrameX.Sensor
             IHardware gpu = null;
             lock (_lockComputer)
             {
-                gpu = _computer.Hardware
+                gpu = _computer?.Hardware
                .FirstOrDefault(hdw => hdw.HardwareType == HardwareType.GpuAti
                    || hdw.HardwareType == HardwareType.GpuNvidia);
             }
@@ -676,7 +676,7 @@ namespace CapFrameX.Sensor
             IHardware cpu = null;
             lock (_lockComputer)
             {
-                cpu = _computer.Hardware
+                cpu = _computer?.Hardware
                     .FirstOrDefault(hdw => hdw.HardwareType == HardwareType.CPU);
             }
 
@@ -688,7 +688,7 @@ namespace CapFrameX.Sensor
             IHardware gpu = null;
             lock (_lockComputer)
             {
-                gpu = _computer.Hardware
+                gpu = _computer?.Hardware
                    .FirstOrDefault(hdw => hdw.HardwareType == HardwareType.GpuAti
                        || hdw.HardwareType == HardwareType.GpuNvidia);
             }

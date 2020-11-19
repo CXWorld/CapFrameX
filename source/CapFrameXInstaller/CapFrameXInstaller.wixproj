@@ -76,7 +76,7 @@
     <Error Text="The WiX Toolset v3.11 (or newer) build tools must be installed to build this project. To download the WiX Toolset, see http://wixtoolset.org/releases/" />
   </Target>
   <PropertyGroup>
-    <PreBuildEvent>"%25WIX%25\bin\heat.exe" dir "$(SolutionDir)source\CapFrameX\bin\x64\$(ConfigurationName)" -var var.CapFrameXInstaller.BinaryDir -dr INSTALLFOLDER -ag -cg CapFrameXBinaries -scom -sreg -sfrag -srd -o "$(SolutionDir)source\CapFrameXInstaller\CapFrameX.Binaries.wxs" -t "$(SolutionDir)source\CapFrameXInstaller\filter.xslt"</PreBuildEvent>
+    <PreBuildEvent>"%25WIX%25\bin\heat.exe" dir "$(SolutionDir)source\CapFrameX\bin\x86\$(ConfigurationName)" -var var.CapFrameXInstaller.BinaryDir -dr INSTALLFOLDER -ag -cg CapFrameXBinaries -scom -sreg -sfrag -srd -o "$(SolutionDir)source\CapFrameXInstaller\CapFrameX.Binaries.wxs" -t "$(SolutionDir)source\CapFrameXInstaller\filter.xslt"</PreBuildEvent>
   </PropertyGroup>
   <!--
 	To modify your build process, add your task inside one of the targets below and uncomment it.

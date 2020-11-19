@@ -104,7 +104,7 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
             PhysicalGPUHandle[] physicalGPUHandles = null;
             try
             {
-                physicalGPUHandles = GPUApi.EnumPhysicalGPUs();
+                // physicalGPUHandles = GPUApi.EnumPhysicalGPUs();
             }
             catch { }
 
