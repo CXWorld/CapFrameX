@@ -272,6 +272,21 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
         public NvGpuPowerMonitorPowerChannelStatus[] Channels;
     }
 
+    [StructLayout(LayoutKind.Sequential, Pack = 8)]
+    internal struct NvGPuVoltageStatus
+    {
+        public uint Version;
+        public uint Unknown1;
+
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 8)]
+        public uint[] Unknown2;
+
+        public uint ValueInuV;
+
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 8)]
+        public uint[] Unknown3;
+    }
+
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     internal struct NvGpuPowerMonitorPowerChannelStatus
     {
@@ -339,6 +354,8 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
           Marshal.SizeOf(typeof(NvFanCoolersStatus)) | 0x10000;
         public static readonly uint GPU_POWER_MONITOR_STATUS_VER = (uint)
           Marshal.SizeOf(typeof(NvGpuPowerStatus)) | 0x10000;
+        public static readonly uint GPU_VOLTAGE_STATUS_VER = (uint)
+          Marshal.SizeOf(typeof(NvGPuVoltageStatus)) | 0x10000;
 
         private delegate IntPtr nvapi_QueryInterfaceDelegate(uint id);
 
@@ -425,6 +442,10 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
         public delegate NvStatus NvAPI_GPU_PowerMonitorGetStatusDelegate(
             NvPhysicalGpuHandle gpuHandle, ref NvGpuPowerStatus gpuPowerStatus);
 
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate NvStatus NvAPI_GPU_GetCurrentVoltageDelegate(
+           NvPhysicalGpuHandle gpuHandle, ref NvGPuVoltageStatus volatageStatus);
+
         private static readonly bool available;
         private static readonly nvapi_QueryInterfaceDelegate nvapi_QueryInterface;
         private static readonly NvAPI_InitializeDelegate NvAPI_Initialize;
@@ -465,6 +486,8 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
           NvAPI_GPU_ClientFanCoolersGetStatus;
         public static readonly NvAPI_GPU_PowerMonitorGetStatusDelegate
           NvAPI_GPU_PowerMonitorGetStatus;
+        public static readonly NvAPI_GPU_GetCurrentVoltageDelegate
+            NvAPI_GPU_GetCurrentVoltage;
 
         private NVAPI() { }
 
@@ -560,6 +583,7 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
                 GetDelegate(0x1BE0B8E5, out NvAPI_GPU_GetBusId);
                 GetDelegate(0x35AED5E8, out NvAPI_GPU_ClientFanCoolersGetStatus);
                 GetDelegate(0xF40238EF, out NvAPI_GPU_PowerMonitorGetStatus);
+                GetDelegate(0x465f9bcf, out NvAPI_GPU_GetCurrentVoltage);
 
                 available = true;
             }

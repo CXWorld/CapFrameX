@@ -288,6 +288,8 @@
             <Component Id="cmpD640FE63E82A6DF755F8660DDA0B7863" Guid="*" Win64="yes">
                 <File Id="filDA886BFA46B5C7075B3E38B7D4B3A798" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\LiveCharts.Wpf.pdb" />
             </Component>
+            
+            
             <Component Id="cmp223D4754378C01052DA8253A843FD297" Guid="*" Win64="yes">
                 <File Id="filBC562C5B3D9848A2114F0AF7275FF1E6" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\MahApps.Metro.dll" />
             </Component>
@@ -375,10 +377,6 @@
             <Component Id="cmpBC4FC00A26E7D32479D42D3411317FC5" Guid="*" Win64="yes">
                 <File Id="fil90A8AAD9FC612906D405476D61CEA3F4" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Newtonsoft.Json.dll" />
             </Component>
-            <Component Id="cmp610EABA50A2832119614E1381C9FF59B" Guid="*" Win64="yes">
-                <File Id="filE2C9AF7587725B00F2EDDBE77E7E18A5" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\NvAPIWrapper.dll" />
-            </Component>
-            
             <Component Id="cmp36162545506C564646EFF7AED20D4D87" Guid="*" Win64="yes">
                 <File Id="filA005E04D6C984A8EF36F9653B3FA4555" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\OpenHardwareMonitorLib.dll" />
             </Component>
@@ -789,6 +787,8 @@
             <ComponentRef Id="cmpB80EB57EF2904D1A74E508B15C150404" />
             
             <ComponentRef Id="cmpD640FE63E82A6DF755F8660DDA0B7863" />
+            
+            
             <ComponentRef Id="cmp223D4754378C01052DA8253A843FD297" />
             <ComponentRef Id="cmp31541C871E68AFBC70137561BF857C7B" />
             <ComponentRef Id="cmpF79A41B26948F126556619AD15586E53" />
@@ -818,8 +818,6 @@
             <ComponentRef Id="cmp702FCD8F941D530EED089ED86491F3AF" />
             <ComponentRef Id="cmpD2494A4F9168D06F172F90837CA4F9FB" />
             <ComponentRef Id="cmpBC4FC00A26E7D32479D42D3411317FC5" />
-            <ComponentRef Id="cmp610EABA50A2832119614E1381C9FF59B" />
-            
             <ComponentRef Id="cmp36162545506C564646EFF7AED20D4D87" />
             
             <ComponentRef Id="cmp9867DD01B906E145D73B1AA12191B24D" />

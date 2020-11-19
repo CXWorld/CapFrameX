@@ -8,9 +8,6 @@
   Copyright (C) 2011 Christian Vallières
 */
 
-using NvAPIWrapper.GPU;
-using NvAPIWrapper.Native;
-using NvAPIWrapper.Native.GPU;
 using System;
 using System.Globalization;
 using System.Text;
@@ -25,7 +22,6 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
     {
         private readonly int adapterIndex;
         private readonly NvPhysicalGpuHandle handle;
-        private readonly PhysicalGPU physicalGPU;
         private readonly NvDisplayHandle? displayHandle;
         private readonly NVML.NvmlDevice? device;
         private readonly ISensorConfig sensorConfig;
@@ -44,23 +40,19 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
         private readonly Sensor pcieThroughputRx;
         private readonly Sensor pcieThroughputTx;
         private readonly Control fanControl;
-        private readonly Sensor powerLimit;
-        private readonly Sensor temperatureLimit;
-        private readonly Sensor voltageLimit;
         private readonly Sensor memoryUsageDedicated;
         private readonly Sensor memoryUsageShared;
         private readonly PerformanceCounter dedicatedVramUsagePerformCounter;
         private readonly PerformanceCounter sharedVramUsagePerformCounter;
 
         public NvidiaGPU(int adapterIndex, NvPhysicalGpuHandle handle,
-          NvDisplayHandle? displayHandle, ISettings settings, ISensorConfig config, PhysicalGPU physicalGPU = null)
+          NvDisplayHandle? displayHandle, ISettings settings, ISensorConfig config)
           : base(GetName(handle), new Identifier("nvidiagpu",
               adapterIndex.ToString(CultureInfo.InvariantCulture)), settings)
         {
             this.adapterIndex = adapterIndex;
             this.handle = handle;
             this.displayHandle = displayHandle;
-            this.physicalGPU = physicalGPU;
             this.sensorConfig = config;
 
             NvGPUThermalSettings thermalSettings = GetThermalSettings();
@@ -104,9 +96,6 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
             fan = new Sensor("GPU Fan", 0, SensorType.Fan, this, settings);
             control = new Sensor("GPU Fan", 1, SensorType.Control, this, settings);
             voltage = new Sensor("GPU Voltage", 0, SensorType.Voltage, this, settings);
-            powerLimit = new Sensor("GPU Power Limit", 0, SensorType.Factor, this, settings);
-            temperatureLimit = new Sensor("GPU Thermal Limit", 1, SensorType.Factor, this, settings);
-            voltageLimit = new Sensor("GPU Voltage Limit", 2, SensorType.Factor, this, settings);
             power = new Sensor("GPU Power", 0, SensorType.Power, this, settings);
 
             NvGPUCoolerSettings coolerSettings = GetCoolerSettings();
@@ -301,32 +290,18 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
                 }
             }
 
-            // set extra sensors from external NvAPI wrapper
-            if (physicalGPU != null)
+            var gpuVoltageStatus = new NvGPuVoltageStatus
             {
-                try
-                {
-                    voltage.Value = GPUApi.GetCurrentVoltage(physicalGPU.Handle).ValueInMicroVolt / 1E06f;
-                    ActivateSensor(voltage);
+                Version = NVAPI.GPU_VOLTAGE_STATUS_VER,
+                Unknown2 = new uint[8],
+                Unknown3 = new uint[8]
+            };
 
-                    var currentActiveLimit = physicalGPU.PerformanceControl.CurrentActiveLimit;
-                    powerLimit.Value = ((currentActiveLimit & PerformanceLimit.PowerLimit)
-                        == PerformanceLimit.PowerLimit) ? 1 : 0;
-                    ActivateSensor(powerLimit);
-                    temperatureLimit.Value = ((currentActiveLimit & PerformanceLimit.TemperatureLimit)
-                        == PerformanceLimit.TemperatureLimit) ? 1 : 0;
-                    ActivateSensor(temperatureLimit);
-                    voltageLimit.Value = ((currentActiveLimit & PerformanceLimit.VoltageLimit)
-                        == PerformanceLimit.VoltageLimit) ? 1 : 0;
-                    ActivateSensor(voltageLimit);
-                }
-                catch
-                {
-                    voltage.Value = float.NaN;
-                    powerLimit.Value = float.NaN;
-                    temperatureLimit.Value = float.NaN;
-                    voltageLimit.Value = float.NaN;
-                }
+            if (NVAPI.NvAPI_GPU_GetCurrentVoltage != null &&
+                 NVAPI.NvAPI_GPU_GetCurrentVoltage(handle, ref gpuVoltageStatus) == NvStatus.OK)
+            {
+                voltage.Value = gpuVoltageStatus.ValueInuV / 1E06f;
+                ActivateSensor(voltage);
             }
 
             var infoEx = new NvDynamicPstatesInfoEx();
