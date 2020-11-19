@@ -273,7 +273,7 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 8)]
-    internal struct NvGPuVoltageStatus
+    internal struct NvGpuVoltageStatus
     {
         public uint Version;
         public uint Unknown1;
@@ -355,7 +355,7 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
         public static readonly uint GPU_POWER_MONITOR_STATUS_VER = (uint)
           Marshal.SizeOf(typeof(NvGpuPowerStatus)) | 0x10000;
         public static readonly uint GPU_VOLTAGE_STATUS_VER = (uint)
-          Marshal.SizeOf(typeof(NvGPuVoltageStatus)) | 0x10000;
+          Marshal.SizeOf(typeof(NvGpuVoltageStatus)) | 0x10000;
 
         private delegate IntPtr nvapi_QueryInterfaceDelegate(uint id);
 
@@ -444,7 +444,7 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate NvStatus NvAPI_GPU_GetCurrentVoltageDelegate(
-           NvPhysicalGpuHandle gpuHandle, ref NvGPuVoltageStatus volatageStatus);
+           NvPhysicalGpuHandle gpuHandle, ref NvGpuVoltageStatus volatageStatus);
 
         private static readonly bool available;
         private static readonly nvapi_QueryInterfaceDelegate nvapi_QueryInterface;
