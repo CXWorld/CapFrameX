@@ -53,7 +53,7 @@ pipeline {
 
                 stage('Upload Portable') {
                     steps {
-                        zip archive: false, dir: 'source/CapFrameX/bin/x86/Release', glob: '*', zipFile: "${filename}_portable.zip"
+                        zip archive: false, dir: 'source/CapFrameX/bin/Release', glob: '*', zipFile: "${filename}_portable.zip"
                         withCredentials([usernameColonPassword(credentialsId: 'nexus-admin', variable: 'credentials')]) {
                             bat "curl -L --fail -k -v --user $credentials --upload-file ${filename}_portable.zip ${uploadPath}/${filename}_portable.zip"
                         }
