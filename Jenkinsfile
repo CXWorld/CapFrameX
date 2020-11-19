@@ -44,7 +44,7 @@ pipeline {
             stages {
                 stage('Upload Installer') {
                     steps {
-                        zip archive: false, dir: 'source/CapFrameXBootstrapper/bin/x86/Release', glob: 'CapFrameXBootstrapper.exe', zipFile: "${filename}_installer.zip"
+                        zip archive: false, dir: 'source/CapFrameXBootstrapper/bin/Release', glob: 'CapFrameXBootstrapper.exe', zipFile: "${filename}_installer.zip"
                         withCredentials([usernameColonPassword(credentialsId: 'nexus-admin', variable: 'credentials')]) {
                             bat "curl -L --fail -k -v --user $credentials --upload-file ${filename}_installer.zip ${uploadPath}/${filename}_installer.zip"
                         }
