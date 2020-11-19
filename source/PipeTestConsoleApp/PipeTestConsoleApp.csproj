@@ -89,11 +89,5 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\CapFrameX.InterprocessCommunication\CapFrameX.InterprocessCommunication.csproj">
-      <Project>{260646CA-EEC3-4FA2-8458-9BDCCC837C6D}</Project>
-      <Name>CapFrameX.InterprocessCommunication</Name>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

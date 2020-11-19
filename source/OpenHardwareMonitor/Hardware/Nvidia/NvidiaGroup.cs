@@ -9,11 +9,8 @@
 */
 
 using CapFrameX.Contracts.Sensor;
-using NvAPIWrapper.Native;
-using NvAPIWrapper.Native.GPU.Structures;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Text;
 
 namespace OpenHardwareMonitor.Hardware.Nvidia
@@ -100,22 +97,10 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
             report.Append("Number of GPUs: ");
             report.AppendLine(count.ToString(CultureInfo.InvariantCulture));
 
-            // API wrapper calls 
-            PhysicalGPUHandle[] physicalGPUHandles = null;
-            try
-            {
-                // physicalGPUHandles = GPUApi.EnumPhysicalGPUs();
-            }
-            catch { }
-
             for (int i = 0; i < count; i++)
             {
                 displayHandles.TryGetValue(handles[i], out NvDisplayHandle displayHandle);
-                if (physicalGPUHandles == null || !physicalGPUHandles.Any())
-                    hardware.Add(new NvidiaGPU(i, handles[i], displayHandle, settings, sensorConfig));
-                else
-                    hardware.Add(new NvidiaGPU(i, handles[i], displayHandle, settings, sensorConfig,
-                        new NvAPIWrapper.GPU.PhysicalGPU(physicalGPUHandles[i])));
+                hardware.Add(new NvidiaGPU(i, handles[i], displayHandle, settings, sensorConfig));
             }
 
             report.AppendLine();
