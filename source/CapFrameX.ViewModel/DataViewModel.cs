@@ -70,7 +70,7 @@ namespace CapFrameX.ViewModel
 		private ContitionalMessageDialog _messageDialogContent;
 		private bool _messageDialogContentIsOpen;
 		private string _messageText;
-		private int _barMaxValue;
+		private int _barMaxValue = 100;
 		private bool _gpuLoad;
 		private bool _cpuLoad;
 		private bool _cpuMaxThreadLoad;
