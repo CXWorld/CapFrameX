@@ -909,13 +909,15 @@ namespace CapFrameX.ViewModel
             if (ComparisonRecords == null || !ComparisonRecords.Any())
                 return;
 
-            MaxRecordingTime = double.MinValue;
+            double longestRecord = 0;
 
             foreach (var record in ComparisonRecords)
             {
-                if (record.WrappedRecordInfo.Session.Runs.SelectMany(r => r.CaptureData.TimeInSeconds).Last() > MaxRecordingTime)
-                    MaxRecordingTime = record.WrappedRecordInfo.Session.Runs.SelectMany(r => r.CaptureData.TimeInSeconds).Last();
+                if (record.WrappedRecordInfo.Session.Runs.SelectMany(r => r.CaptureData.TimeInSeconds).Last() > longestRecord)
+                    longestRecord = record.WrappedRecordInfo.Session.Runs.SelectMany(r => r.CaptureData.TimeInSeconds).Last();
             }
+
+            MaxRecordingTime = longestRecord;
 
             _doUpdateCharts = false;
             FirstSeconds = 0;
