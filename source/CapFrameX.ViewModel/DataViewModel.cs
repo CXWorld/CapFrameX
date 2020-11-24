@@ -487,9 +487,8 @@ namespace CapFrameX.ViewModel
 			ThresholdCountsCommand = new DelegateCommand(() => _appConfiguration.ShowThresholdTimes = false);
 			ThresholdTimesCommand = new DelegateCommand(() => _appConfiguration.ShowThresholdTimes = true);
 
-			ParameterFormatter = value => value.ToString(string.Format("F{0}",
-				_appConfiguration.FpsValuesRoundingDigits), CultureInfo.InvariantCulture);
-			_localRecordDataServer = new LocalRecordDataServer();
+            ParameterFormatter = value => value.ToString(CultureInfo.InvariantCulture);
+            _localRecordDataServer = new LocalRecordDataServer();
 			FrametimeGraphDataContext = new FrametimeGraphDataContext(_localRecordDataServer,
 				_appConfiguration, _frametimeStatisticProvider);
 			FpsGraphDataContext = new FpsGraphDataContext(_localRecordDataServer,
@@ -942,18 +941,18 @@ namespace CapFrameX.ViewModel
 				.GetPhysicalMetricValue(frametimes, EMetric.CpuFpsPerWatt,
 				SensorReport.GetAverageCpuPower(_session.Runs.Select(run => run.SensorData),
 				_localRecordDataServer.CurrentTime, _localRecordDataServer.CurrentTime + _localRecordDataServer.WindowLength));
-			//var gpuFpsPerWatt = _frametimeStatisticProvider
-			//.GetPhysicalMetricValue(frametimes, EMetric.GpuFpsPerWatt,
-			//SensorReport.GetAverageGpuPower(_session.Runs.Select(run => run.SensorData),
-			//_localRecordDataServer.CurrentTime, _localRecordDataServer.CurrentTime + _localRecordDataServer.WindowLength));
+            //var gpuFpsPerWatt = _frametimeStatisticProvider
+            //.GetPhysicalMetricValue(frametimes, EMetric.GpuFpsPerWatt,
+            //SensorReport.GetAverageGpuPower(_session.Runs.Select(run => run.SensorData),
+            //_localRecordDataServer.CurrentTime, _localRecordDataServer.CurrentTime + _localRecordDataServer.WindowLength));
 
-			Application.Current.Dispatcher.Invoke(new Action(() =>
+            Application.Current.Dispatcher.Invoke(new Action(() =>
 			{
 				IChartValues values = new ChartValues<double>();
 
-				//if (_appConfiguration.UseSingleRecordGpuFpsPerWattParameter)
-				//    values.Add(gpuFpsPerWatt);
-				if (_appConfiguration.UseSingleRecordCpuFpsPerWattParameter)
+                //if (_appConfiguration.UseSingleRecordGpuFpsPerWattParameter)
+                //    values.Add(gpuFpsPerWatt);
+                if (_appConfiguration.UseSingleRecordCpuFpsPerWattParameter)
 					values.Add(cpuFpsPerWatt);
 				if (_appConfiguration.UseSingleRecordAdaptiveSTDStatisticParameter && !double.IsNaN(adaptiveStandardDeviation))
 					values.Add(adaptiveStandardDeviation);

@@ -780,12 +780,12 @@ namespace CapFrameX.ViewModel
                              SensorReport.GetAverageCpuPower(currentWrappedComparisonInfo.WrappedRecordInfo.Session.Runs.Select(run => run.SensorData),
                              startTime, endTime));
                     }
-                    //else if (SelectedSecondMetric == EMetric.GpuFpsPerWatt)
+                    //else if (metric == EMetric.GpuFpsPerWatt)
                     //{
-                    //currentWrappedComparisonInfo.WrappedRecordInfo.SecondMetric =
-                    //    _frametimeStatisticProvider.GetPhysicalMetricValue(frametimeTimeWindow, EMetric.GpuFpsPerWatt,
-                    //         SensorReport.GetAverageGpuPower(currentWrappedComparisonInfo.WrappedRecordInfo.Session.Runs.Select(run => run.SensorData),
-                    //         startTime, endTime));
+                    //    metricValue =
+                    //        _frametimeStatisticProvider.GetPhysicalMetricValue(frametimeTimeWindow, EMetric.GpuFpsPerWatt,
+                    //             SensorReport.GetAverageGpuPower(currentWrappedComparisonInfo.WrappedRecordInfo.Session.Runs.Select(run => run.SensorData),
+                    //             startTime, endTime));
                     //}
                     else
                     {
@@ -793,7 +793,7 @@ namespace CapFrameX.ViewModel
 
                     }
 
-                    (ComparisonRowChartSeriesCollection[j] as RowSeries).Title = $"{GetMetricByIndex(j).GetDescription()} FPS";
+                    (ComparisonRowChartSeriesCollection[j] as RowSeries).Title = GetDescriptionAndFpsUnit(metric); 
                     ComparisonRowChartSeriesCollection[j].Values.Insert(0, metricValue);
                 }
             }

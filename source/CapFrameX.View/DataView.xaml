@@ -537,6 +537,8 @@
                                 <ToggleButton Margin="5" Grid.Row="4" Grid.Column="4" IsChecked="{Binding UseAdaptiveSTDStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
                                 <TextBlock Margin="5" Grid.Row="5" Grid.Column="3" Text="CPU FPS/W" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="5" Grid.Column="4" IsChecked="{Binding UseCpuFpsPerWattParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                                <!--<TextBlock Margin="5" Grid.Row="6" Grid.Column="3" Text="GPU FPS/W" VerticalAlignment="Center"/>
+                                <ToggleButton Margin="5" Grid.Row="6" Grid.Column="4" IsChecked="{Binding UseGpuFpsPerWattParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>-->
                             </Grid>
                         </materialDesign:Card>
                     </materialDesign:PopupBox>

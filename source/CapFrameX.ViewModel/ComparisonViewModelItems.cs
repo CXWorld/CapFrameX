@@ -66,14 +66,14 @@ namespace CapFrameX.ViewModel
 					 SensorReport.GetAverageCpuPower(wrappedComparisonRecordInfo.WrappedRecordInfo.Session.Runs.Select(run => run.SensorData),
 					 startTime, endTime));
 			}
-			//else if (SelectedFirstMetric == EMetric.GpuFpsPerWatt)
-			//{
-			//wrappedComparisonRecordInfo.WrappedRecordInfo.FirstMetric =
-			//    _frametimeStatisticProvider.GetPhysicalMetricValue(frametimeTimeWindow, EMetric.GpuFpsPerWatt,
-			//         SensorReport.GetAverageGpuPower(wrappedComparisonRecordInfo.WrappedRecordInfo.Session.Runs.Select(run => run.SensorData),
-			//         startTime, endTime));
-			//}
-			else
+            //else if (SelectedFirstMetric == EMetric.GpuFpsPerWatt)
+            //{
+            //    wrappedComparisonRecordInfo.WrappedRecordInfo.FirstMetric =
+            //        _frametimeStatisticProvider.GetPhysicalMetricValue(frametimeTimeWindow, EMetric.GpuFpsPerWatt,
+            //             SensorReport.GetAverageGpuPower(wrappedComparisonRecordInfo.WrappedRecordInfo.Session.Runs.Select(run => run.SensorData),
+            //             startTime, endTime));
+            //}
+            else
 			{ 
 				wrappedComparisonRecordInfo.WrappedRecordInfo.FirstMetric
 				= GeMetricValue(frametimeTimeWindow, SelectedFirstMetric);
@@ -86,14 +86,14 @@ namespace CapFrameX.ViewModel
 					 SensorReport.GetAverageCpuPower(wrappedComparisonRecordInfo.WrappedRecordInfo.Session.Runs.Select(run => run.SensorData),
 					 startTime, endTime));
 			}
-			//else if (SelectedSecondMetric == EMetric.GpuFpsPerWatt)
-			//{
-			//wrappedComparisonRecordInfo.WrappedRecordInfo.SecondMetric =
-			//    _frametimeStatisticProvider.GetPhysicalMetricValue(frametimeTimeWindow, EMetric.GpuFpsPerWatt,
-			//         SensorReport.GetAverageGpuPower(wrappedComparisonRecordInfo.WrappedRecordInfo.Session.Runs.Select(run => run.SensorData),
-			//         startTime, endTime));
-			//}
-			else
+            //else if (SelectedSecondMetric == EMetric.GpuFpsPerWatt)
+            //{
+            //    wrappedComparisonRecordInfo.WrappedRecordInfo.SecondMetric =
+            //        _frametimeStatisticProvider.GetPhysicalMetricValue(frametimeTimeWindow, EMetric.GpuFpsPerWatt,
+            //             SensorReport.GetAverageGpuPower(wrappedComparisonRecordInfo.WrappedRecordInfo.Session.Runs.Select(run => run.SensorData),
+            //             startTime, endTime));
+            //}
+            else
 			{
 				wrappedComparisonRecordInfo.WrappedRecordInfo.SecondMetric
 					= GeMetricValue(frametimeTimeWindow, SelectedSecondMetric);
@@ -106,15 +106,15 @@ namespace CapFrameX.ViewModel
 					SensorReport.GetAverageCpuPower(wrappedComparisonRecordInfo.WrappedRecordInfo.Session.Runs.Select(run => run.SensorData),
 					startTime, endTime));
 			}
-			//else if (SelectedSecondMetric == EMetric.GpuFpsPerWatt)
-			//{
-			//wrappedComparisonRecordInfo.WrappedRecordInfo.ThirdMetric =
-			//  _frametimeStatisticProvider.GetPhysicalMetricValue(frametimeTimeWindow, EMetric.GpuFpsPerWatt,
-			//       SensorReport.GetAverageGpuPower(wrappedComparisonRecordInfo.WrappedRecordInfo.Session.Runs.Select(run => run.SensorData),
-			//       startTime, endTime));
-			////}
-			else
-			{
+            //else if (SelectedThirdMetric == EMetric.GpuFpsPerWatt)
+            //{
+            //    wrappedComparisonRecordInfo.WrappedRecordInfo.ThirdMetric =
+            //      _frametimeStatisticProvider.GetPhysicalMetricValue(frametimeTimeWindow, EMetric.GpuFpsPerWatt,
+            //           SensorReport.GetAverageGpuPower(wrappedComparisonRecordInfo.WrappedRecordInfo.Session.Runs.Select(run => run.SensorData),
+            //           startTime, endTime));
+            //}
+            else
+                {
 				wrappedComparisonRecordInfo.WrappedRecordInfo.ThirdMetric
 					= GeMetricValue(frametimeTimeWindow, SelectedThirdMetric);
 			}
