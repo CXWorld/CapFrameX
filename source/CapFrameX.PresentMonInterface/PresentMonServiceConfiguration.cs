@@ -34,12 +34,17 @@ namespace CapFrameX.PresentMonInterface
                 arguments += "-output_file";
                 arguments += " ";
 				arguments += "-qpc_time";
-				arguments += OutputFilename;
+                arguments += " ";
+                arguments += "-dont_restart_as_admin";
+                arguments += " ";
+                arguments += OutputFilename;
+
                 if (!string.IsNullOrWhiteSpace(OutputLevelofDetail))
                 {
                     arguments += " ";
                     arguments += "-" + OutputLevelofDetail;
                 }
+
                 if (ExcludeProcesses != null && ExcludeProcesses.Any())
                 {
                     arguments += " ";
@@ -60,11 +65,15 @@ namespace CapFrameX.PresentMonInterface
 					arguments += "-output_stdout";
 					arguments += " ";
 					arguments += "-qpc_time";
-					if (!string.IsNullOrWhiteSpace(OutputLevelofDetail))
+                    arguments += " ";
+                    arguments += "-dont_restart_as_admin";
+
+                    if (!string.IsNullOrWhiteSpace(OutputLevelofDetail))
                     {
                         arguments += " ";
                         arguments += "-" + OutputLevelofDetail;
                     }
+
 					if (ExcludeProcesses != null && ExcludeProcesses.Any())
 					{
 						foreach (var process in ExcludeProcesses.Where(proc => !proc.Contains(" ")))
@@ -92,7 +101,10 @@ namespace CapFrameX.PresentMonInterface
                     arguments += OutputFilename;
 					arguments += " ";
 					arguments += "-qpc_time";
-					if (!string.IsNullOrWhiteSpace(OutputLevelofDetail))
+                    arguments += " ";
+                    arguments += "-dont_restart_as_admin";
+
+                    if (!string.IsNullOrWhiteSpace(OutputLevelofDetail))
                     {
                         arguments += " ";
                         arguments += "-" + OutputLevelofDetail;
