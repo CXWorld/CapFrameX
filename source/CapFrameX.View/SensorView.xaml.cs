@@ -24,5 +24,9 @@ namespace CapFrameX.View
         {
             InitializeComponent();
         }
+        private void LoggingPeriodComboBox_MouseLeave(object sender, MouseEventArgs e)
+        {
+            Keyboard.ClearFocus();
+        }
     }
 }
