@@ -32,7 +32,6 @@
             <mvvm:BoolToVisibilityConverter x:Key="TrueToVisibleConverter" FalseValue="Collapsed" TrueValue="Visible"/>
             <mvvm:InvertBoolConverter x:Key="InvertBoolConverter"/>
             <mvvm:EnumDescriptionConverter x:Key="EnumDescriptionConverter"/>
-            <mvvm:StringColorConverter x:Key="StringColorConverter"/>
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid HorizontalAlignment="Center">
@@ -93,17 +92,16 @@
                                             </Trigger>
                                         </Style.Triggers>
                                     </Style>
-
                                 </DataGridCheckBoxColumn.CellStyle>
                             </DataGridCheckBoxColumn>
                         </DataGrid.Columns>
                     </DataGrid>
-                    <StackPanel Margin="0 0 0 0" Orientation="Horizontal" IsEnabled="{Binding AreButtonsActive}">
+                    <StackPanel Margin="0 5 0 0" Orientation="Horizontal" IsEnabled="{Binding AreButtonsActive}">
                         <StackPanel Margin="0 15 0 0" VerticalAlignment="Center" Orientation="Horizontal"                                >
                             <CheckBox IsChecked="{Binding UseSensorLogging, Mode=TwoWay}">
                                 <CheckBox.ToolTip>
                                     <ToolTip MaxWidth="250">
-                                        <TextBlock Text="Logs various sensor data like CPU and GPU load/power for analysis"                               
+                                        <TextBlock Text="Logs selected sensor values during a capture"                               
 										   TextWrapping="Wrap"/>
                                     </ToolTip>
                                 </CheckBox.ToolTip>
@@ -127,9 +125,9 @@
                             </ComboBox.ToolTip>
                         </ComboBox>
                         <Button Width="28" Height="28" HorizontalAlignment="Right" Margin="175 10 0 0" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
-                            ToolTip="Save current logging config" Command="{Binding SaveSensorsCommand}" IsEnabled="{Binding SaveButtonIsEnable}"
+                            ToolTip="Apply selected sensors for logging" Command="{Binding ApplySensorsCommand}" IsEnabled="{Binding ApplyButtonIsEnable}"
                             materialDesign:RippleAssist.Feedback="#DD000000">
-                            <materialDesign:PackIcon Kind="ContentSaveSettings" Height="22" Width="22" />
+                            <materialDesign:PackIcon Kind="DoneAll" Height="22" Width="22" />
                         </Button>
                     </StackPanel>
                 </StackPanel>

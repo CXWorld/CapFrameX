@@ -141,33 +141,6 @@ namespace CapFrameX.ViewModel
             }
         }
 
-        public bool UseSensorLogging
-        {
-            get { return _appConfiguration.UseSensorLogging; }
-            set
-            {
-                _appConfiguration.UseSensorLogging = value;
-                _captureManager.ToggleSensorLogging(value);
-                _sensorConfig.GlobalIsActivated = value;
-                RaisePropertyChanged();
-            }
-        }
-        public int LoggingPeriod
-        {
-            get
-            {
-                return _appConfiguration
-                  .SensorLoggingRefreshPeriod;
-            }
-            set
-            {
-                _appConfiguration
-                   .SensorLoggingRefreshPeriod = value;
-                _sensorService.SetLoggingInterval(TimeSpan.FromMilliseconds(value));
-                RaisePropertyChanged();
-            }
-        }
-
         public string LoggerOutput
         {
             get { return _loggerOutput; }
@@ -259,7 +232,6 @@ namespace CapFrameX.ViewModel
             _captureManager = captureManager;
             _sensorConfig = sensorConfig;
 
-            _sensorConfig.GlobalIsActivated = UseSensorLogging;
 
             AddToIgonreListCommand = new DelegateCommand(OnAddToIgonreList);
             AddToProcessListCommand = new DelegateCommand(OnAddToProcessList);
