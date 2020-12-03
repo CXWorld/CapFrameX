@@ -383,6 +383,8 @@ namespace CapFrameX.ViewModel
             {
                 {CXHotkeyCombination.FromString(CaptureHotkeyString), () =>
                 {
+                    _logger.LogInformation("Hotkey ({captureHotkeyString}) callback triggered. Lock capture service state is {lockCaptureServiceState}.", CaptureHotkeyString, _captureManager.LockCaptureService);
+                    _logger.LogInformation("IsCapturing state: {isCapturingState}", _captureManager.IsCapturing);
                     if(!_captureManager.LockCaptureService)
                         SetCaptureMode();
                 }}
