@@ -23,7 +23,6 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Input;
 
 namespace CapFrameX.ViewModel
@@ -112,6 +111,7 @@ namespace CapFrameX.ViewModel
                 if (!CXHotkey.IsValidHotkey(value))
                     return;
 
+                CXHotkey.UpdateGlobalHotkeyList(_appConfiguration);
                 _appConfiguration.OverlayHotKey = value;
                 UpdateGlobalOverlayHookEvent();
                 RaisePropertyChanged();
@@ -125,6 +125,7 @@ namespace CapFrameX.ViewModel
                 if (!CXHotkey.IsValidHotkey(value))
                     return;
 
+                CXHotkey.UpdateGlobalHotkeyList(_appConfiguration);
                 _appConfiguration.OverlayConfigHotKey = value;
                 UpdateGlobalOverlayConfigHookEvent();
                 RaisePropertyChanged();
@@ -139,6 +140,7 @@ namespace CapFrameX.ViewModel
                 if (!CXHotkey.IsValidHotkey(value))
                     return;
 
+                CXHotkey.UpdateGlobalHotkeyList(_appConfiguration);
                 _appConfiguration.ResetHistoryHotkey = value;
                 UpdateGlobalResetHistoryHookEvent();
                 RaisePropertyChanged();
@@ -546,6 +548,8 @@ namespace CapFrameX.ViewModel
             SetGlobalHookEventOverlayHotkey();
             SetGlobalHookEventOverlayConfigHotkey();
             SetGlobalHookEventResetHistoryHotkey();
+
+            CXHotkey.UpdateGlobalHotkeyList(_appConfiguration);
         }
 
         private void SetSaveButtonIsEnableAction()

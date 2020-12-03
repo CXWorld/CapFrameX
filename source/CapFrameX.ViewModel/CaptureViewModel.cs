@@ -134,6 +134,7 @@ namespace CapFrameX.ViewModel
                 if (!CXHotkey.IsValidHotkey(value))
                     return;
 
+                CXHotkey.UpdateGlobalHotkeyList(_appConfiguration);
                 _appConfiguration.CaptureHotKey = value;
                 UpdateCaptureStateInfo();
                 UpdateGlobalCaptureHookEvent();
@@ -331,6 +332,7 @@ namespace CapFrameX.ViewModel
 
             stopwatch.Stop();
             _logger.LogInformation(this.GetType().Name + " {initializationTime}s initialization time", Math.Round(stopwatch.ElapsedMilliseconds * 1E-03, 1));
+            CXHotkey.UpdateGlobalHotkeyList(_appConfiguration);
         }
 
         public bool IsNavigationTarget(NavigationContext navigationContext)

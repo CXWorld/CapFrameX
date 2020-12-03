@@ -1,4 +1,6 @@
-﻿using System;
+﻿using CapFrameX.Contracts.Configuration;
+using System;
+using System.Collections.Generic;
 using System.Text;
 using System.Windows.Input;
 
@@ -6,6 +8,8 @@ namespace CapFrameX.Hotkey
 {
 	public class CXHotkey
 	{
+        public static List<string> GlobalHotkeyList = new List<string>();
+
 		public Key Key { get; }
 
 		public ModifierKeys Modifiers { get; }
@@ -105,6 +109,15 @@ namespace CapFrameX.Hotkey
             catch { isValid = false; }
 
             return isValid;
+        }
+
+        public static void UpdateGlobalHotkeyList(IAppConfiguration appConfiguration)
+        {
+            GlobalHotkeyList.Clear();
+            GlobalHotkeyList.Add(appConfiguration.CaptureHotKey);
+            GlobalHotkeyList.Add(appConfiguration.OverlayConfigHotKey);
+            GlobalHotkeyList.Add(appConfiguration.ResetHistoryHotkey);
+            GlobalHotkeyList.Add(appConfiguration.OverlayHotKey);
         }
     }
 }
