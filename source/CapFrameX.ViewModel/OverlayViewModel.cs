@@ -111,9 +111,9 @@ namespace CapFrameX.ViewModel
                 if (!CXHotkey.IsValidHotkey(value))
                     return;
 
-                CXHotkey.UpdateGlobalHotkeyList(_appConfiguration);
                 _appConfiguration.OverlayHotKey = value;
                 UpdateGlobalOverlayHookEvent();
+                CXHotkey.UpdateGlobalHotkeyList(_appConfiguration);
                 RaisePropertyChanged();
             }
         }
@@ -125,9 +125,9 @@ namespace CapFrameX.ViewModel
                 if (!CXHotkey.IsValidHotkey(value))
                     return;
 
-                CXHotkey.UpdateGlobalHotkeyList(_appConfiguration);
                 _appConfiguration.OverlayConfigHotKey = value;
                 UpdateGlobalOverlayConfigHookEvent();
+                CXHotkey.UpdateGlobalHotkeyList(_appConfiguration);
                 RaisePropertyChanged();
             }
         }
@@ -140,9 +140,9 @@ namespace CapFrameX.ViewModel
                 if (!CXHotkey.IsValidHotkey(value))
                     return;
 
-                CXHotkey.UpdateGlobalHotkeyList(_appConfiguration);
                 _appConfiguration.ResetHistoryHotkey = value;
                 UpdateGlobalResetHistoryHookEvent();
+                CXHotkey.UpdateGlobalHotkeyList(_appConfiguration);
                 RaisePropertyChanged();
             }
         }

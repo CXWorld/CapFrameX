@@ -36,26 +36,37 @@ namespace CapFrameX.Hotkey
 					reset?.Invoke();
 					return;
 				}
+
 				var state = KeyboardState.GetCurrent();
 				var action = reset;
-				var maxLength = 0;
-				int modifiersPressed = CountTrue(state.IsDown(Keys.Control), state.IsDown(Keys.Alt), state.IsDown(Keys.Shift));
 
-				foreach (var current in element)
-				{
-					if (current.Key.ChordLength < modifiersPressed) continue;
-					if (!current.Key.Chord.All(state.IsDown)) continue;					
-					if (maxLength > current.Key.ChordLength) continue;
-					maxLength = current.Key.ChordLength;
-					action = current.Value;
-				}
+				var chordList = new List<string>();
+				string HotkeyString = string.Empty;
+				if (state.IsDown(Keys.Control))
+					chordList.Add("Control");
+				if (state.IsDown(Keys.Shift))
+					chordList.Add("Shift");
+				if (state.IsDown(Keys.Alt))
+					chordList.Add("Alt");
+
+				var hotkeyList = CXHotkey.GlobalHotkeyListArray.Where(hotkey => {
+						return hotkey.Last().Equals(e.KeyCode.ToString());
+						}).Select(hotkey => hotkey.Take(hotkey.Length-1)).Where(x => x.Any());
+
+				var intersectingGlobalChords = hotkeyList.Where(hotkey => hotkey.Intersect(chordList).Count() == hotkey.Count());
+				var globalChordMatchCount = intersectingGlobalChords.Any() ? intersectingGlobalChords.Max(hotkey => hotkey.Count()): 0;
+
+				action = element.Select(kvp => {
+						var matchingCount = kvp.Key.Chord.Select(x => x.ToString()).Intersect(chordList).Count();
+						return new {
+							Action = kvp.Value,
+							IsMatch = matchingCount == kvp.Key.ChordLength && matchingCount >= globalChordMatchCount,
+							MatchingCount = matchingCount
+						};
+					}).Where(x => x.IsMatch).OrderByDescending(x => x.MatchingCount).FirstOrDefault()?.Action;
+
 				action?.Invoke();
 			};
-		}
-
-		public static int CountTrue(params bool[] args)
-		{
-			return args.Count(t => t);
 		}
 	}
 }

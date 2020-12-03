@@ -134,10 +134,10 @@ namespace CapFrameX.ViewModel
                 if (!CXHotkey.IsValidHotkey(value))
                     return;
 
-                CXHotkey.UpdateGlobalHotkeyList(_appConfiguration);
                 _appConfiguration.CaptureHotKey = value;
                 UpdateCaptureStateInfo();
                 UpdateGlobalCaptureHookEvent();
+                CXHotkey.UpdateGlobalHotkeyList(_appConfiguration);
                 RaisePropertyChanged();
             }
         }

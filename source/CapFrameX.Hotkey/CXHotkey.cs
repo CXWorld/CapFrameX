@@ -1,6 +1,7 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Windows.Input;
 
@@ -13,8 +14,9 @@ namespace CapFrameX.Hotkey
 		public Key Key { get; }
 
 		public ModifierKeys Modifiers { get; }
+        public static string[][] GlobalHotkeyListArray { get; private set; }
 
-		public CXHotkey(Key defaultKey)
+        public CXHotkey(Key defaultKey)
 		{
 			Key = defaultKey;
 			Modifiers = ModifierKeys.None;
@@ -31,13 +33,13 @@ namespace CapFrameX.Hotkey
 			var str = new StringBuilder();
 
 			if (Modifiers.HasFlag(ModifierKeys.Control))
-				str.Append("Control + ");
+				str.Append("Control+");
 			if (Modifiers.HasFlag(ModifierKeys.Shift))
-				str.Append("Shift + ");
+				str.Append("Shift+");
 			if (Modifiers.HasFlag(ModifierKeys.Alt))
-				str.Append("Alt + ");
+				str.Append("Alt+");
 			if (Modifiers.HasFlag(ModifierKeys.Windows))
-				str.Append("Win + ");
+				str.Append("Win+");
 
 			str.Append(Key);
 
@@ -118,6 +120,11 @@ namespace CapFrameX.Hotkey
             GlobalHotkeyList.Add(appConfiguration.OverlayConfigHotKey);
             GlobalHotkeyList.Add(appConfiguration.ResetHistoryHotkey);
             GlobalHotkeyList.Add(appConfiguration.OverlayHotKey);
+
+            GlobalHotkeyListArray = GlobalHotkeyList.Select(hotkey => hotkey.Split('+')).OrderByDescending(hotkey =>
+            {
+                return hotkey.Length;
+            }).ToArray();
         }
     }
 }
