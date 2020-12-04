@@ -85,6 +85,7 @@
     <Compile Include="Chord.cs" />
     <Compile Include="CXHotkey.cs" />
     <Compile Include="CXHotkeyCombination.cs" />
+    <Compile Include="HotkeyDictionaryBuilder.cs" />
     <Compile Include="KeyCombinationExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

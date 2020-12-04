@@ -9,12 +9,10 @@ namespace CapFrameX.Hotkey
 {
 	public class CXHotkey
 	{
-        public static List<string> GlobalHotkeyList = new List<string>();
 
-		public Key Key { get; }
+        public Key Key { get; }
 
 		public ModifierKeys Modifiers { get; }
-        public static string[][] GlobalHotkeyListArray { get; private set; }
 
         public CXHotkey(Key defaultKey)
 		{
@@ -111,20 +109,6 @@ namespace CapFrameX.Hotkey
             catch { isValid = false; }
 
             return isValid;
-        }
-
-        public static void UpdateGlobalHotkeyList(IAppConfiguration appConfiguration)
-        {
-            GlobalHotkeyList.Clear();
-            GlobalHotkeyList.Add(appConfiguration.CaptureHotKey);
-            GlobalHotkeyList.Add(appConfiguration.OverlayConfigHotKey);
-            GlobalHotkeyList.Add(appConfiguration.ResetHistoryHotkey);
-            GlobalHotkeyList.Add(appConfiguration.OverlayHotKey);
-
-            GlobalHotkeyListArray = GlobalHotkeyList.Select(hotkey => hotkey.Split('+')).OrderByDescending(hotkey =>
-            {
-                return hotkey.Length;
-            }).ToArray();
         }
     }
 }

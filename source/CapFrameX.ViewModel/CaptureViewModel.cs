@@ -136,8 +136,7 @@ namespace CapFrameX.ViewModel
 
                 _appConfiguration.CaptureHotKey = value;
                 UpdateCaptureStateInfo();
-                UpdateGlobalCaptureHookEvent();
-                CXHotkey.UpdateGlobalHotkeyList(_appConfiguration);
+                SetGlobalHookEventCaptureHotkey();
                 RaisePropertyChanged();
             }
         }
@@ -332,7 +331,6 @@ namespace CapFrameX.ViewModel
 
             stopwatch.Stop();
             _logger.LogInformation(this.GetType().Name + " {initializationTime}s initialization time", Math.Round(stopwatch.ElapsedMilliseconds * 1E-03, 1));
-            CXHotkey.UpdateGlobalHotkeyList(_appConfiguration);
         }
 
         public bool IsNavigationTarget(NavigationContext navigationContext)
@@ -367,33 +365,18 @@ namespace CapFrameX.ViewModel
             SetGlobalHookEventCaptureHotkey();
         }
 
-        private void UpdateGlobalCaptureHookEvent()
-        {
-            if (_globalCaptureHookEvent != null)
-            {
-                _globalCaptureHookEvent.Dispose();
-                SetGlobalHookEventCaptureHotkey();
-            }
-        }
-
         private void SetGlobalHookEventCaptureHotkey()
         {
             if (!CXHotkey.IsValidHotkey(CaptureHotkeyString))
                 return;
 
-            var onCombinationDictionary = new Dictionary<CXHotkeyCombination, Action>
+            HotkeyDictionaryBuilder.SetHotkey(AppConfiguration, HotkeyAction.Capture, () =>
             {
-                {CXHotkeyCombination.FromString(CaptureHotkeyString), () =>
-                {
-                    _logger.LogInformation("Hotkey ({captureHotkeyString}) callback triggered. Lock capture service state is {lockCaptureServiceState}.", CaptureHotkeyString, _captureManager.LockCaptureService);
-                    _logger.LogInformation("IsCapturing state: {isCapturingState}", _captureManager.IsCapturing);
-                    if(!_captureManager.LockCaptureService)
-                        SetCaptureMode();
-                }}
-            };
-
-            _globalCaptureHookEvent = Hook.GlobalEvents();
-            _globalCaptureHookEvent.OnCXCombination(onCombinationDictionary);
+                _logger.LogInformation("Hotkey ({captureHotkeyString}) callback triggered. Lock capture service state is {lockCaptureServiceState}.", CaptureHotkeyString, _captureManager.LockCaptureService);
+                _logger.LogInformation("IsCapturing state: {isCapturingState}", _captureManager.IsCapturing);
+                if (!_captureManager.LockCaptureService)
+                    SetCaptureMode();
+            });
         }
 
         private void SetCaptureMode()
@@ -560,7 +543,7 @@ namespace CapFrameX.ViewModel
             // fire update global hook if new process is detected
             if (backupProcessList.Count != ProcessesToCapture.Count)
             {
-                UpdateGlobalCaptureHookEvent();
+                SetGlobalHookEventCaptureHotkey();
             }
 
             if (!processList.Contains(selectedProcessToCapture))

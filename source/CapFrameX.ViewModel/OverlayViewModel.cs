@@ -112,8 +112,7 @@ namespace CapFrameX.ViewModel
                     return;
 
                 _appConfiguration.OverlayHotKey = value;
-                UpdateGlobalOverlayHookEvent();
-                CXHotkey.UpdateGlobalHotkeyList(_appConfiguration);
+                SetGlobalHookEventOverlayHotkey();
                 RaisePropertyChanged();
             }
         }
@@ -126,8 +125,7 @@ namespace CapFrameX.ViewModel
                     return;
 
                 _appConfiguration.OverlayConfigHotKey = value;
-                UpdateGlobalOverlayConfigHookEvent();
-                CXHotkey.UpdateGlobalHotkeyList(_appConfiguration);
+                SetGlobalHookEventOverlayConfigHotkey();
                 RaisePropertyChanged();
             }
         }
@@ -141,8 +139,7 @@ namespace CapFrameX.ViewModel
                     return;
 
                 _appConfiguration.ResetHistoryHotkey = value;
-                UpdateGlobalResetHistoryHookEvent();
-                CXHotkey.UpdateGlobalHotkeyList(_appConfiguration);
+                SetGlobalHookEventResetHistoryHotkey();
                 RaisePropertyChanged();
             }
         }
@@ -549,7 +546,6 @@ namespace CapFrameX.ViewModel
             SetGlobalHookEventOverlayConfigHotkey();
             SetGlobalHookEventResetHistoryHotkey();
 
-            CXHotkey.UpdateGlobalHotkeyList(_appConfiguration);
         }
 
         private void SetSaveButtonIsEnableAction()
@@ -615,53 +611,20 @@ namespace CapFrameX.ViewModel
             }
         }
 
-        private void UpdateGlobalOverlayHookEvent()
-        {
-            if (_globalOverlayHookEvent != null)
-            {
-                _globalOverlayHookEvent.Dispose();
-                SetGlobalHookEventOverlayHotkey();
-            }
-        }
-
-        private void UpdateGlobalOverlayConfigHookEvent()
-        {
-            if (_globalOverlayConfigHookEvent != null)
-            {
-                _globalOverlayConfigHookEvent.Dispose();
-                SetGlobalHookEventOverlayConfigHotkey();
-            }
-        }
-
-        private void UpdateGlobalResetHistoryHookEvent()
-        {
-            if (_globalResetHistoryHookEvent != null)
-            {
-                _globalResetHistoryHookEvent.Dispose();
-                SetGlobalHookEventResetHistoryHotkey();
-            }
-        }
-
         private void SetGlobalHookEventOverlayHotkey()
         {
             if (!CXHotkey.IsValidHotkey(OverlayHotkeyString))
                 return;
 
-            var onCombinationDictionary = new Dictionary<CXHotkeyCombination, Action>
+            HotkeyDictionaryBuilder.SetHotkey(AppConfiguration, HotkeyAction.Overlay, () =>
             {
-                {CXHotkeyCombination.FromString(OverlayHotkeyString), () =>
-                {
-                    IsOverlayActive = !IsOverlayActive;
+                IsOverlayActive = !IsOverlayActive;
 
-                    if(_appConfiguration.ToggleGlobalRTSSOSD && !IsOverlayActive)
-                        _rTSSService.OnOSDOff();
-                    if(_appConfiguration.ToggleGlobalRTSSOSD && IsOverlayActive)
-                        _rTSSService.OnOSDOn();
-                }}
-            };
-
-            _globalOverlayHookEvent = Hook.GlobalEvents();
-            _globalOverlayHookEvent.OnCXCombination(onCombinationDictionary);
+                if (_appConfiguration.ToggleGlobalRTSSOSD && !IsOverlayActive)
+                    _rTSSService.OnOSDOff();
+                if (_appConfiguration.ToggleGlobalRTSSOSD && IsOverlayActive)
+                    _rTSSService.OnOSDOn();
+            });
         }
 
         private void SetGlobalHookEventOverlayConfigHotkey()
@@ -669,18 +632,11 @@ namespace CapFrameX.ViewModel
             if (!CXHotkey.IsValidHotkey(OverlayConfigHotkeyString))
                 return;
 
-            var onCombinationDictionary = new Dictionary<CXHotkeyCombination, Action>
+            HotkeyDictionaryBuilder.SetHotkey(AppConfiguration, HotkeyAction.OverlayConfig, () =>
             {
-                {CXHotkeyCombination.FromString(OverlayConfigHotkeyString), () =>
-                    {
-                        var nextConfig = GetNextConfig();
-                        Task.Run( () => _configSubject.OnNext(nextConfig));
-                    }
-                }
-            };
-
-            _globalOverlayConfigHookEvent = Hook.GlobalEvents();
-            _globalOverlayConfigHookEvent.OnCXCombination(onCombinationDictionary);
+                var nextConfig = GetNextConfig();
+                Task.Run(() => _configSubject.OnNext(nextConfig));
+            });
         }
 
         private void SetGlobalHookEventResetHistoryHotkey()
@@ -688,16 +644,7 @@ namespace CapFrameX.ViewModel
             if (!CXHotkey.IsValidHotkey(ResetHistoryHotkeyString))
                 return;
 
-            var onCombinationDictionary = new Dictionary<CXHotkeyCombination, Action>
-            {
-                {CXHotkeyCombination.FromString(ResetHistoryHotkeyString), () =>
-                {
-                    _overlayService.ResetHistory();
-                }}
-            };
-
-            _globalResetHistoryHookEvent = Hook.GlobalEvents();
-            _globalResetHistoryHookEvent.OnCXCombination(onCombinationDictionary);
+            HotkeyDictionaryBuilder.SetHotkey(AppConfiguration, HotkeyAction.ResetHistory, () => _overlayService.ResetHistory());
         }
 
         private string GetNextConfig()

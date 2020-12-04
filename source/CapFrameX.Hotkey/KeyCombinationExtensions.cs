@@ -24,47 +24,27 @@ namespace CapFrameX.Hotkey
 		/// <param name="reset">
 		/// This optional action will be executed when some key was pressed but it was not part of any wanted combinations.
 		/// </param>
-		public static void OnCXCombination(this IKeyboardEvents source,
-			IEnumerable<KeyValuePair<CXHotkeyCombination, Action>> map, Action reset = null)
+		public static void OnCXCombination(this IKeyboardEvents source, string key, Dictionary<string, Action> map, Action reset = null)
 		{
-			var watchlists = map.GroupBy(k => k.Key.TriggerKey)
-				.ToDictionary(g => g.Key, g => g.ToArray());
 			source.KeyDown += (sender, e) =>
 			{
-				if (!watchlists.TryGetValue(e.KeyCode, out KeyValuePair<CXHotkeyCombination, Action>[] element))
+				Action action = reset;
+				if (e.KeyCode.ToString() == key)
 				{
-					reset?.Invoke();
-					return;
+					var state = KeyboardState.GetCurrent();
+
+
+					var hotkeyString = string.Empty;
+					if (state.IsDown(Keys.Control))
+						hotkeyString += "Control+";
+					if (state.IsDown(Keys.Shift))
+						hotkeyString += "Shift+";
+					if (state.IsDown(Keys.Alt))
+						hotkeyString += "Alt+";
+					hotkeyString += e.KeyCode.ToString();
+
+					map.TryGetValue(hotkeyString, out action);
 				}
-
-				var state = KeyboardState.GetCurrent();
-				var action = reset;
-
-				var chordList = new List<string>();
-				string HotkeyString = string.Empty;
-				if (state.IsDown(Keys.Control))
-					chordList.Add("Control");
-				if (state.IsDown(Keys.Shift))
-					chordList.Add("Shift");
-				if (state.IsDown(Keys.Alt))
-					chordList.Add("Alt");
-
-				var hotkeyList = CXHotkey.GlobalHotkeyListArray.Where(hotkey => {
-						return hotkey.Last().Equals(e.KeyCode.ToString());
-						}).Select(hotkey => hotkey.Take(hotkey.Length-1)).Where(x => x.Any());
-
-				var intersectingGlobalChords = hotkeyList.Where(hotkey => hotkey.Intersect(chordList).Count() == hotkey.Count());
-				var globalChordMatchCount = intersectingGlobalChords.Any() ? intersectingGlobalChords.Max(hotkey => hotkey.Count()): 0;
-
-				action = element.Select(kvp => {
-						var matchingCount = kvp.Key.Chord.Select(x => x.ToString()).Intersect(chordList).Count();
-						return new {
-							Action = kvp.Value,
-							IsMatch = matchingCount == kvp.Key.ChordLength && matchingCount >= globalChordMatchCount,
-							MatchingCount = matchingCount
-						};
-					}).Where(x => x.IsMatch).OrderByDescending(x => x.MatchingCount).FirstOrDefault()?.Action;
-
 				action?.Invoke();
 			};
 		}
