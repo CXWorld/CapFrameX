@@ -67,16 +67,19 @@ namespace CapFrameX.Hotkey
         private static Dictionary<string, Action> BuildList(string key, IEnumerable<string> chords, Action action)
         {
             var dict = new Dictionary<string, Action>();
-            if (!chords.Any())
-            {
-                dict[key] = action;
-                chords = new string[] { "Control", "Shift", "Alt" };
-            }
 
             if (chords.Count() > 1)
+            { 
                 dict[chords.ElementAt(0) + "+" + chords.ElementAt(1) + "+" + key] = action;
+            }
             else
             {
+                if (!chords.Any())
+                {
+                    dict[key] = action;
+                    chords = new string[] { "Control", "Shift", "Alt" };
+                }
+
                 foreach (var chord in chords)
                 {
                     switch (chord)
