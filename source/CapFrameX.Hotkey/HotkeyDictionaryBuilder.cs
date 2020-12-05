@@ -24,32 +24,13 @@ namespace CapFrameX.Hotkey
                 registeredEvent.Dispose();
             }
 
+
             var actionList = new List<(string key, string combination, Dictionary<string, Action> actionDictionary)>();
-            // building list
-            var captureHotkeySplit = appConfiguration.CaptureHotKey.Split('+');
-            var captureHotkeyChords = captureHotkeySplit.Take(captureHotkeySplit.Length - 1);
-            var captureHotkeyTriggerKey = captureHotkeySplit.Last();
-            var captureHotkeyActions = dict.TryGetValue(HotkeyAction.Capture, out var action) ? BuildList(captureHotkeyTriggerKey, captureHotkeyChords, action) : new Dictionary<string, Action>();
-            actionList.Add((captureHotkeyTriggerKey, appConfiguration.CaptureHotKey, captureHotkeyActions));
 
-
-            var overlayHotkeySplit = appConfiguration.OverlayHotKey.Split('+');
-            var overlayHotkeyChords = overlayHotkeySplit.Take(overlayHotkeySplit.Length - 1);
-            var overlayHotkeyTriggerKey = overlayHotkeySplit.Last();
-            var overlayHotkeyActions = dict.TryGetValue(HotkeyAction.Overlay, out var action1) ? BuildList(overlayHotkeyTriggerKey, overlayHotkeyChords, action1) : new Dictionary<string, Action>();
-            actionList.Add((overlayHotkeyTriggerKey, appConfiguration.OverlayHotKey, overlayHotkeyActions));
-
-            var configHotkeySplit = appConfiguration.OverlayConfigHotKey.Split('+');
-            var configHotkeyChords = configHotkeySplit.Take(configHotkeySplit.Length - 1);
-            var configHotkeyTriggerKey = configHotkeySplit.Last();
-            var configHotkeyActions = dict.TryGetValue(HotkeyAction.OverlayConfig, out var action2) ? BuildList(configHotkeyTriggerKey, configHotkeyChords, action2) : new Dictionary<string, Action>();
-            actionList.Add((configHotkeyTriggerKey, appConfiguration.OverlayConfigHotKey, configHotkeyActions));
-
-            var resetHistoryHotkeySplit = appConfiguration.ResetHistoryHotkey.Split('+');
-            var resetHistoryHotkeyChords = resetHistoryHotkeySplit.Take(resetHistoryHotkeySplit.Length - 1);
-            var resetHistoryHotkeyTriggerKey = resetHistoryHotkeySplit.Last();
-            var resetHistoryHotkeyActions = dict.TryGetValue(HotkeyAction.ResetHistory, out var action3) ? BuildList(resetHistoryHotkeyTriggerKey, resetHistoryHotkeyChords, action3) : new Dictionary<string, Action>();
-            actionList.Add((resetHistoryHotkeyTriggerKey, appConfiguration.ResetHistoryHotkey, resetHistoryHotkeyActions));
+            AddToList(appConfiguration.CaptureHotKey, HotkeyAction.Capture, actionList);
+            AddToList(appConfiguration.OverlayHotKey, HotkeyAction.Overlay, actionList);
+            AddToList(appConfiguration.OverlayConfigHotKey, HotkeyAction.OverlayConfig, actionList);
+            AddToList(appConfiguration.ResetHistoryHotkey, HotkeyAction.ResetHistory, actionList);
 
             foreach (var item in actionList)
             {
@@ -62,6 +43,15 @@ namespace CapFrameX.Hotkey
                 hook.OnCXCombination(item.key, item.actionDictionary);
                 registeredEvents.Add(hook);
             }
+        }
+
+        private static void AddToList(string hotkey, HotkeyAction hotkeyaction, List<(string key, string combination, Dictionary<string, Action> actionDictionary)> actionList)
+        {
+            var hotkeySplit = hotkey.Split('+');
+            var hotkeyChords = hotkeySplit.Take(hotkeySplit.Length - 1);
+            var hotkeyTriggerKey = hotkeySplit.Last();
+            var hotkeyActions = dict.TryGetValue(hotkeyaction, out var action) ? BuildList(hotkeyTriggerKey, hotkeyChords, action) : new Dictionary<string, Action>();
+            actionList.Add((hotkeyTriggerKey, hotkey, hotkeyActions));
         }
 
         private static Dictionary<string, Action> BuildList(string key, IEnumerable<string> chords, Action action)
