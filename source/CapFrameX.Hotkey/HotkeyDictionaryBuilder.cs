@@ -71,6 +71,7 @@ namespace CapFrameX.Hotkey
             if (chords.Count() == 2)
             { 
                 dict[chords.ElementAt(0) + "+" + chords.ElementAt(1) + "+" + key] = action;
+                dict["Control+Shift+Alt+" + key] = action;
             }
             else
             {
@@ -88,16 +89,19 @@ namespace CapFrameX.Hotkey
                             dict["Control+" + key] = action;
                             dict["Control+Shift+" + key] = action;
                             dict["Control+Alt+" + key] = action;
+                            dict["Control+Shift+Alt+" + key] = action;
                             break;
                         case "Shift":
                             dict["Shift+" + key] = action;
                             dict["Shift+Alt+" + key] = action;
                             dict["Control+Shift+" + key] = action;
+                            dict["Control+Shift+Alt+" + key] = action;
                             break;
                         case "Alt":
                             dict["Alt+" + key] = action;
                             dict["Control+Alt+" + key] = action;
                             dict["Shift+Alt+" + key] = action;
+                            dict["Control+Shift+Alt+" + key] = action;
                             break;
                     }
                 }
@@ -115,9 +119,17 @@ namespace CapFrameX.Hotkey
                     var chordsOfOther = GetChordsFromCombination(other);
                     var intersectingChords = chordsOfOther.Intersect(chordsOfActualHotkey);
                     var chordsToRemove = chordsOfOther.Where(c => !intersectingChords.Contains(c));
-                    foreach (var chordToRemove in chordsToRemove)
+
+                    if (chordsToRemove.Count() == 2)
                     {
-                        foreach (var keyToRemove in toBeModified.Keys.Where(k => k.Contains(chordToRemove)).ToArray())
+                        foreach (var keyToRemove in toBeModified.Keys.Where(k => k.Contains(chordsToRemove.ElementAt(0)) && k.Contains(chordsToRemove.ElementAt(1))).ToArray())
+                        {
+                                toBeModified.Remove(keyToRemove);
+                        }
+                    }
+                    else if (chordsToRemove.Count() == 1)
+                    {
+                        foreach (var keyToRemove in toBeModified.Keys.Where(k => k.Contains(chordsToRemove.ElementAt(0))).ToArray())
                         {
                             toBeModified.Remove(keyToRemove);
                         }
