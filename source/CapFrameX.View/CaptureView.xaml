@@ -111,7 +111,7 @@
                 <TextBox Grid.Row="0" Grid.Column="0" Width="132" wpf:HintAssist.Hint="Capture hotkey" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
 						 Margin="0" FontSize="14"
 						 IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False" PreviewKeyDown="CaptureHotkeyTextBox_PreviewKeyDown"
-						 ToolTip="combinable with Ctrl/Shift/Alt">
+						 ToolTip="Hotkey combinable with up to two modifier keys (Ctrl, Shift or Alt)">
                     <Binding  Path="CaptureHotkey"
 							  ElementName="CaptureViewControl"
 							  Mode="OneWay"

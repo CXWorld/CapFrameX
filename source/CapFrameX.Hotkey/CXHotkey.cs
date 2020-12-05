@@ -105,6 +105,7 @@ namespace CapFrameX.Hotkey
 
                     captureHotkey = new CXHotkey(key, keyModifierA | keyModifierB);
                 }
+                else isValid = false;
             }
             catch { isValid = false; }
 

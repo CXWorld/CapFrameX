@@ -68,7 +68,7 @@ namespace CapFrameX.Hotkey
         {
             var dict = new Dictionary<string, Action>();
 
-            if (chords.Count() > 1)
+            if (chords.Count() == 2)
             { 
                 dict[chords.ElementAt(0) + "+" + chords.ElementAt(1) + "+" + key] = action;
             }
@@ -102,7 +102,6 @@ namespace CapFrameX.Hotkey
                     }
                 }
             }
-
             return dict;
         }
 

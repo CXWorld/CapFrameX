@@ -304,7 +304,7 @@
             <StackPanel Margin="20 0 0 0" DockPanel.Dock="Bottom" Orientation="Horizontal">
                 <TextBox Margin="0 0 0 0" materialDesign:HintAssist.Hint="Toggle Overlay hotkey" Width="132" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" FontSize="14"
 					 IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False" PreviewKeyDown="OverlayHotkeyTextBox_PreviewKeyDown"
-					 ToolTip="combinable with Ctrl/Shift/Alt">
+					 ToolTip="Hotkey combinable with up to two modifier keys (Ctrl, Shift or Alt)">
                     <Binding Path="OverlayHotkey"
 						 ElementName="OverlayViewControl"
 						 Mode="OneWay"
@@ -317,7 +317,7 @@
                 </TextBox>
                     <TextBox Margin="25 0 0 0" materialDesign:HintAssist.Hint="Toggle Config hotkey" Width="132" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" FontSize="14"
 					 IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False" PreviewKeyDown="ConfigHotkeyTextBox_PreviewKeyDown"
-					 ToolTip="combinable with Ctrl/Shift/Alt">
+					 ToolTip="Hotkey combinable with up to two modifier keys (Ctrl, Shift or Alt)">
                         <Binding Path="OverlayConfigHotkey"
 						 ElementName="OverlayViewControl"
 						 Mode="OneWay"
@@ -667,7 +667,7 @@
                         <!--Reset run history hotkey-->
                         <TextBox Grid.Row="0" Grid.Column="1" Width="120" wpf:HintAssist.Hint="Reset run history hotkey" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" FontSize="14"
 					 IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False" PreviewKeyDown="ResetHistoryHotkeyTextBox_PreviewKeyDown"
-					 ToolTip="combinable with Ctrl/Shift/Alt">
+					 ToolTip="Hotkey combinable with up to two modifier keys (Ctrl, Shift or Alt)">
                             <Binding Path="ResetHistoryHotkey"
 						 ElementName="OverlayViewControl"
 						 Mode="OneWay"
