@@ -1,4 +1,5 @@
 ﻿using CapFrameX.Data.Session.Contracts;
+using System;
 using System.Reactive.Subjects;
 
 namespace CapFrameX.Contracts.Overlay
@@ -6,6 +7,8 @@ namespace CapFrameX.Contracts.Overlay
 	public interface IOverlayService
 	{
 		ISubject<bool> IsOverlayActiveStream { get; }
+
+		IObservable<IOverlayEntry[]> OnDictionaryUpdated { get; }
 
 		string SecondMetric { get; set; }
 
@@ -30,5 +33,7 @@ namespace CapFrameX.Contracts.Overlay
 		void ResetHistory();
 
 		void AddRunToHistory(ISessionRun captureData, string process, string recordDirectory);
+
+		IOverlayEntry GetSensorOverlayEntry(string identifier);
 	}
 }

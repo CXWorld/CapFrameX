@@ -1,12 +1,12 @@
-﻿using CapFrameX.Contracts.Overlay;
-using CapFrameX.Data.Session.Contracts;
+﻿using CapFrameX.Data.Session.Contracts;
 using System;
+using System.Collections.Generic;
 
 namespace CapFrameX.Contracts.Sensor
 {
     public interface ISensorService
     {
-        IOverlayEntry GetSensorOverlayEntry(string identifier);
+        IObservable<(DateTime, Dictionary<ISensorEntry, float>)> SensorSnapshotStream { get; }
         void StartSensorLogging();
         void StopSensorLogging();
         ISessionSensorData GetSessionSensorData();
@@ -14,10 +14,9 @@ namespace CapFrameX.Contracts.Sensor
         string GetGpuDriverVersion();
         string GetCpuName();
         string GetGpuName();
-        string GetSensorTypeString(IOverlayEntry entry);
+        string GetSensorTypeString(string identifier);
         void SetLoggingInterval(TimeSpan timeSpan);
         void SetOSDInterval(TimeSpan timeSpan);
-        // void ResetSensorOverlayEntries();
-        IObservable<IOverlayEntry[]> OnDictionaryUpdated { get; }
+        IEnumerable<ISensorEntry> GetSensorEntries();
     }
 }

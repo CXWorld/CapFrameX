@@ -36,6 +36,7 @@ namespace CapFrameX.Overlay
         private readonly ISystemInfo _systemInfo;
         private readonly IRTSSService _rTSSService;
         private readonly ISensorConfig _sensorConfig;
+        private readonly IOverlayService _overlayService;
         private readonly ILogger<OverlayEntryProvider> _logger;
         private readonly ConcurrentDictionary<string, IOverlayEntry> _identifierOverlayEntryDict
              = new ConcurrentDictionary<string, IOverlayEntry>();
@@ -54,6 +55,7 @@ namespace CapFrameX.Overlay
             IOnlineMetricService onlineMetricService,
             ISystemInfo systemInfo, IRTSSService rTSSService,
             ISensorConfig sensorConfig,
+            IOverlayService overlayService,
             ILogger<OverlayEntryProvider> logger)
         {
             Stopwatch stopwatch = new Stopwatch();
@@ -66,9 +68,10 @@ namespace CapFrameX.Overlay
             _systemInfo = systemInfo;
             _rTSSService = rTSSService;
             _sensorConfig = sensorConfig;
+            _overlayService = overlayService;
             _logger = logger;
 
-            _onDictionaryUpdatedBuffered = _sensorService
+            _onDictionaryUpdatedBuffered = _overlayService
                 .OnDictionaryUpdated
                 .Replay(1)
                 .AutoConnect(0);
@@ -178,7 +181,7 @@ namespace CapFrameX.Overlay
         public void SetFormatForSensorType(string sensorType, IOverlayEntry selectedEntry, IOverlayEntryFormatChange checkboxes)
         {
             foreach (var entry in _overlayEntries
-                    .Where(x => _sensorService.GetSensorTypeString(x) == sensorType))
+                    .Where(x => _sensorService.GetSensorTypeString(x.Identifier) == sensorType))
             {
                 if (checkboxes.Colors)
                 {
@@ -240,9 +243,9 @@ namespace CapFrameX.Overlay
         {
             // copy formats from sensor service
             _overlayEntries.ForEach(entry =>
-                entry.ValueUnitFormat = _sensorService.GetSensorOverlayEntry(entry.Identifier)?.ValueUnitFormat);
+                entry.ValueUnitFormat = _overlayService.GetSensorOverlayEntry(entry.Identifier)?.ValueUnitFormat);
             _overlayEntries.ForEach(entry =>
-                entry.ValueAlignmentAndDigits = _sensorService.GetSensorOverlayEntry(entry.Identifier)?.ValueAlignmentAndDigits);
+                entry.ValueAlignmentAndDigits = _overlayService.GetSensorOverlayEntry(entry.Identifier)?.ValueAlignmentAndDigits);
             SetOnlineMetricFormats();
             SetOnlineMetricsIsNumericState();
             SetRTSSMetricFormats();
@@ -464,7 +467,7 @@ namespace CapFrameX.Overlay
                     case EOverlayEntryType.GPU:
                     case EOverlayEntryType.CPU:
                     case EOverlayEntryType.RAM:
-                        entry.Value = _sensorService.GetSensorOverlayEntry(entry.Identifier)?.Value;
+                        entry.Value = _overlayService.GetSensorOverlayEntry(entry.Identifier)?.Value;
                         break;
                     case EOverlayEntryType.CX when entry.Identifier == "Framerate":
                         entry.Value = currentFramerate.Item1;

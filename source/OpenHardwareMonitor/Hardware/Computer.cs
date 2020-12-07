@@ -36,22 +36,12 @@ namespace OpenHardwareMonitor.Hardware
         private bool fanControllerEnabled;
         private bool hddEnabled;
 
-        public Computer()
-        {
-            this.settings = new Settings();
-        }
-
 #pragma warning disable CS3001 // Argumenttyp ist nicht CLS-kompatibel
         public Computer(ISensorConfig config)
 #pragma warning restore CS3001 // Argumenttyp ist nicht CLS-kompatibel
         {
             this.settings = new Settings();
             sensorConfig = config;
-        }
-
-        public Computer(ISettings settings)
-        {
-            this.settings = settings ?? new Settings();
         }
 
         private void Add(IGroup group)

@@ -1,4 +1,5 @@
-﻿using CapFrameX.Data.Session.Classes;
+﻿using CapFrameX.Contracts.Sensor;
+using CapFrameX.Data.Session.Classes;
 using CapFrameX.Data.Session.Contracts;
 using OpenHardwareMonitor.Hardware;
 using System;
@@ -68,52 +69,55 @@ namespace CapFrameX.Sensor
             _measureTime.Add(ellapsedMilliseconds * 1E-03);
         }
 
-        public void AddSensorValue(ISensor sensor, float currentValue)
+        public void AddSensorValue(ISensorEntry sensor, float currentValue)
         {
             var name = sensor.Name;
 
             if (!_relevantNames.Contains(name))
                 return;
 
+            Enum.TryParse(sensor.HardwareType, out HardwareType hardwareType);
+            Enum.TryParse(sensor.SensorType, out SensorType sensorType);
+
             switch (name)
             {
-                case "CPU Total" when sensor.Hardware.HardwareType == HardwareType.CPU:
+                case "CPU Total" when hardwareType == HardwareType.CPU:
                     _cpuUsage.AddLast((int)Math.Round(currentValue));
                     break;
-                case "CPU Max" when sensor.Hardware.HardwareType == HardwareType.CPU:
+                case "CPU Max" when hardwareType == HardwareType.CPU:
                     _cpuMaxThreadUsage.AddLast((int)Math.Round(currentValue));
                     break;
-                case "CPU Max Clock" when sensor.SensorType == SensorType.Clock:
+                case "CPU Max Clock" when sensorType == SensorType.Clock:
                     _cpuMaxClock.AddLast((int)Math.Round(currentValue));
                     break;
-                case "CPU Package" when sensor.SensorType == SensorType.Power:
+                case "CPU Package" when sensorType == SensorType.Power:
                     _cpuPower.AddLast((int)Math.Round(currentValue));
                     break;
-                case "CPU Package" when sensor.SensorType == SensorType.Temperature:
+                case "CPU Package" when sensorType == SensorType.Temperature:
                     _cpuTemp.AddLast((int)Math.Round(currentValue));
                     break;
-                case "GPU Core" when sensor.SensorType == SensorType.Load:
+                case "GPU Core" when sensorType == SensorType.Load:
                     _gpuUsage.AddLast((int)Math.Round(currentValue));
                     break;
-                case "GPU Core" when sensor.SensorType == SensorType.Temperature:
+                case "GPU Core" when sensorType == SensorType.Temperature:
                     _gpuTemp.AddLast((int)Math.Round(currentValue));
                     break;
-                case "GPU Core" when sensor.SensorType == SensorType.Clock:
+                case "GPU Core" when sensorType == SensorType.Clock:
                     _gpuClock.AddLast((int)Math.Round(currentValue));
                     break;
-                case "GPU Power" when sensor.Hardware.HardwareType == HardwareType.GpuNvidia:
+                case "GPU Power" when hardwareType == HardwareType.GpuNvidia:
                     _gpuPower.AddLast((int)Math.Round(currentValue));
                     break;
-                case "GPU Power Limit" when sensor.Hardware.HardwareType == HardwareType.GpuNvidia:
+                case "GPU Power Limit" when hardwareType == HardwareType.GpuNvidia:
                     _gpuPowerLimit.AddLast((int)Math.Round(currentValue));
                     break;
-                case "GPU Total" when sensor.Hardware.HardwareType == HardwareType.GpuAti:
+                case "GPU Total" when hardwareType == HardwareType.GpuAti:
                     _gpuPower.AddLast((int)Math.Round(currentValue));
                     break;
-                case "Used Memory" when sensor.Hardware.HardwareType == HardwareType.RAM:
+                case "Used Memory" when hardwareType == HardwareType.RAM:
                     _ramUsage.AddLast(Math.Round(currentValue, 2));
                     break;
-                case "GPU Memory Dedicated" when sensor.SensorType == SensorType.SmallData:
+                case "GPU Memory Dedicated" when sensorType == SensorType.SmallData:
                     _vRamUsage.AddLast((int)Math.Round(currentValue, 0));
                     break;
             }

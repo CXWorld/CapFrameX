@@ -122,6 +122,7 @@
     <Compile Include="RTSS\IRTSSService.cs" />
     <Compile Include="Sensor\EHardwareType.cs" />
     <Compile Include="Sensor\ISensorConfig.cs" />
+    <Compile Include="Sensor\ISensorEntry.cs" />
     <Compile Include="Sensor\ISensorService.cs" />
     <Compile Include="UpdateCheck\IUpdateCheck.cs" />
   </ItemGroup>

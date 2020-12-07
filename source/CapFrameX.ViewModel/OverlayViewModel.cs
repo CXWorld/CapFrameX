@@ -23,7 +23,6 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Input;
 
 namespace CapFrameX.ViewModel
@@ -427,7 +426,7 @@ namespace CapFrameX.ViewModel
 
         public string SelectedOverlayItemSensorType
           => SelectedOverlayEntryIndex > -1 ?
-          _sensorService.GetSensorTypeString(OverlayEntries[SelectedOverlayEntryIndex]) : null;
+          _sensorService.GetSensorTypeString(OverlayEntries[SelectedOverlayEntryIndex].Identifier) : null;
 
         public ICommand ConfigSwitchCommand { get; }
 
@@ -476,8 +475,6 @@ namespace CapFrameX.ViewModel
 
         public OverlayGroupSeparating OverlaySubModelGroupSeparating { get; }
 
-
-
         public OverlayViewModel(IOverlayService overlayService, IOverlayEntryProvider overlayEntryProvider,
             IAppConfiguration appConfiguration, IEventAggregator eventAggregator, ISensorService sensorService, IRTSSService rTSSService)
         {
@@ -500,7 +497,7 @@ namespace CapFrameX.ViewModel
                 .SelectMany(index =>
                 {
                     return Observable.FromAsync(() => _overlayEntryProvider.SwitchConfigurationTo(index))
-                        .SelectMany(_ => _sensorService.OnDictionaryUpdated.Take(1));
+                        .SelectMany(_ => _overlayService.OnDictionaryUpdated.Take(1));
                 })
                 .StartWith(Enumerable.Empty<IOverlayEntry>())
                 .SelectMany(_ => overlayEntryProvider.GetOverlayEntries(false))
@@ -532,7 +529,7 @@ namespace CapFrameX.ViewModel
                () => _overlayEntryProvider.SetFormatForGroupName(SelectedOverlayItemGroupName, SelectedOverlayEntry, Checkboxes));
 
             SetFormatForSensorTypeCommand = new DelegateCommand(
-               () => _overlayEntryProvider.SetFormatForSensorType(_sensorService.GetSensorTypeString(SelectedOverlayEntry), SelectedOverlayEntry, Checkboxes));
+               () => _overlayEntryProvider.SetFormatForSensorType(_sensorService.GetSensorTypeString(SelectedOverlayEntry.Identifier), SelectedOverlayEntry, Checkboxes));
 
             ResetColorAndLimitDefaultsCommand = new DelegateCommand(
                 () => _overlayEntryProvider.ResetColorAndLimits(SelectedOverlayEntry));
@@ -736,9 +733,9 @@ namespace CapFrameX.ViewModel
             if (selectedEntry == null)
                 return;
 
-            string selectedSensorType = _sensorService.GetSensorTypeString(selectedEntry);
+            string selectedSensorType = _sensorService.GetSensorTypeString(selectedEntry.Identifier);
             SetSensorTypeButtonEnabled = selectedSensorType != string.Empty &&
-                OverlayEntries.Count((entry => _sensorService.GetSensorTypeString(entry) == selectedSensorType)) > 1;
+                OverlayEntries.Count((entry => _sensorService.GetSensorTypeString(entry.Identifier) == selectedSensorType)) > 1;
         }
 
 
