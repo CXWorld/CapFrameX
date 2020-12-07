@@ -24,38 +24,29 @@ namespace CapFrameX.Hotkey
 		/// <param name="reset">
 		/// This optional action will be executed when some key was pressed but it was not part of any wanted combinations.
 		/// </param>
-		public static void OnCXCombination(this IKeyboardEvents source,
-			IEnumerable<KeyValuePair<CXHotkeyCombination, Action>> map, Action reset = null)
+		public static void OnCXCombination(this IKeyboardEvents source, string key, Dictionary<string, Action> map, Action reset = null)
 		{
-			var watchlists = map.GroupBy(k => k.Key.TriggerKey)
-				.ToDictionary(g => g.Key, g => g.ToArray());
 			source.KeyDown += (sender, e) =>
 			{
-				if (!watchlists.TryGetValue(e.KeyCode, out KeyValuePair<CXHotkeyCombination, Action>[] element))
+				Action action = reset;
+				if (e.KeyCode.ToString() == key)
 				{
-					reset?.Invoke();
-					return;
-				}
-				var state = KeyboardState.GetCurrent();
-				var action = reset;
-				var maxLength = 0;
-				int modifiersPressed = CountTrue(state.IsDown(Keys.Control), state.IsDown(Keys.Alt), state.IsDown(Keys.Shift));
+					var state = KeyboardState.GetCurrent();
 
-				foreach (var current in element)
-				{
-					if (current.Key.ChordLength < modifiersPressed) continue;
-					if (!current.Key.Chord.All(state.IsDown)) continue;					
-					if (maxLength > current.Key.ChordLength) continue;
-					maxLength = current.Key.ChordLength;
-					action = current.Value;
+
+					var hotkeyString = string.Empty;
+					if (state.IsDown(Keys.Control))
+						hotkeyString += "Control+";
+					if (state.IsDown(Keys.Shift))
+						hotkeyString += "Shift+";
+					if (state.IsDown(Keys.Alt))
+						hotkeyString += "Alt+";
+					hotkeyString += e.KeyCode.ToString();
+
+					map.TryGetValue(hotkeyString, out action);
 				}
 				action?.Invoke();
 			};
-		}
-
-		public static int CountTrue(params bool[] args)
-		{
-			return args.Count(t => t);
 		}
 	}
 }

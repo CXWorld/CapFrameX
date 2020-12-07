@@ -38,7 +38,8 @@ namespace OpenHardwareMonitor.Hardware.CPU
             IceLake,
             CometLake,
             Tremont,
-            TigerLake
+            TigerLake,
+            RocketLake
         }
 
         private readonly Sensor[] coreTemperatures;
@@ -66,9 +67,9 @@ namespace OpenHardwareMonitor.Hardware.CPU
             MSR_PP0_ENERY_STATUS, MSR_PP1_ENERY_STATUS, MSR_DRAM_ENERGY_STATUS };
         private readonly string[] powerSensorLabels =
           { "CPU Package", "CPU Cores", "CPU Graphics", "CPU DRAM" };
-        private float energyUnitMultiplier = 0;
-        private DateTime[] lastEnergyTime;
-        private uint[] lastEnergyConsumed;
+        private readonly float energyUnitMultiplier = 0;
+        private readonly DateTime[] lastEnergyTime;
+        private readonly uint[] lastEnergyConsumed;
 
 
         private float[] Floats(float f)
@@ -81,12 +82,11 @@ namespace OpenHardwareMonitor.Hardware.CPU
 
         private float[] GetTjMaxFromMSR()
         {
-            uint eax, edx;
             float[] result = new float[coreCount];
             for (int i = 0; i < coreCount; i++)
             {
-                if (Ring0.RdmsrTx(IA32_TEMPERATURE_TARGET, out eax,
-                  out edx, cpuid[i][0].Affinity))
+                if (Ring0.RdmsrTx(IA32_TEMPERATURE_TARGET, out uint eax,
+                  out _, cpuid[i][0].Affinity))
                 {
                     result[i] = (eax >> 16) & 0xFF;
                 }
@@ -243,6 +243,10 @@ namespace OpenHardwareMonitor.Hardware.CPU
                                 microarchitecture = Microarchitecture.TigerLake;
                                 tjMax = GetTjMaxFromMSR();
                                 break;
+                            case 0xA7: // Rocket Lake (14nm)
+                                microarchitecture = Microarchitecture.RocketLake;
+                                tjMax = GetTjMaxFromMSR();
+                                break;
                             default:
                                 microarchitecture = Microarchitecture.Unknown;
                                 tjMax = Floats(100);
@@ -283,8 +287,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
                 case Microarchitecture.Atom:
                 case Microarchitecture.Core:
                     {
-                        uint eax, edx;
-                        if (Ring0.Rdmsr(IA32_PERF_STATUS, out eax, out edx))
+                        if (Ring0.Rdmsr(IA32_PERF_STATUS, out _, out uint edx))
                         {
                             timeStampCounterMultiplier =
                               ((edx >> 8) & 0x1f) + 0.5 * ((edx >> 14) & 1);
@@ -307,9 +310,9 @@ namespace OpenHardwareMonitor.Hardware.CPU
                 case Microarchitecture.CometLake:
                 case Microarchitecture.Tremont:
                 case Microarchitecture.TigerLake:
+                case Microarchitecture.RocketLake:
                     {
-                        uint eax, edx;
-                        if (Ring0.Rdmsr(MSR_PLATFORM_INFO, out eax, out edx))
+                        if (Ring0.Rdmsr(MSR_PLATFORM_INFO, out uint eax, out _))
                         {
                             timeStampCounterMultiplier = (eax >> 8) & 0xff;
                         }
@@ -387,7 +390,8 @@ namespace OpenHardwareMonitor.Hardware.CPU
                 microarchitecture == Microarchitecture.IceLake ||
                 microarchitecture == Microarchitecture.CometLake ||
                 microarchitecture == Microarchitecture.Tremont ||
-                microarchitecture == Microarchitecture.TigerLake)
+                microarchitecture == Microarchitecture.TigerLake ||
+                microarchitecture == Microarchitecture.RocketLake)
             {
                 powerSensors = new Sensor[energyStatusMSRs.Length];
                 lastEnergyTime = new DateTime[energyStatusMSRs.Length];
@@ -461,9 +465,8 @@ namespace OpenHardwareMonitor.Hardware.CPU
 
             for (int i = 0; i < coreTemperatures.Length; i++)
             {
-                uint eax, edx;
                 // if reading is valid
-                if (Ring0.RdmsrTx(IA32_THERM_STATUS_MSR, out eax, out edx,
+                if (Ring0.RdmsrTx(IA32_THERM_STATUS_MSR, out uint eax, out uint edx,
                     cpuid[i][0].Affinity) && (eax & 0x80000000) != 0)
                 {
                     // get the dist from tjMax from bits 22:16
@@ -480,9 +483,8 @@ namespace OpenHardwareMonitor.Hardware.CPU
 
             if (packageTemperature != null)
             {
-                uint eax, edx;
                 // if reading is valid
-                if (Ring0.RdmsrTx(IA32_PACKAGE_THERM_STATUS, out eax, out edx,
+                if (Ring0.RdmsrTx(IA32_PACKAGE_THERM_STATUS, out uint eax, out uint edx,
                     cpuid[0][0].Affinity) && (eax & 0x80000000) != 0)
                 {
                     // get the dist from tjMax from bits 22:16
@@ -500,11 +502,10 @@ namespace OpenHardwareMonitor.Hardware.CPU
             if (HasTimeStampCounter && timeStampCounterMultiplier > 0)
             {
                 double newBusClock = 0;
-                uint eax, edx;
                 for (int i = 0; i < coreClocks.Length; i++)
                 {
                     System.Threading.Thread.Sleep(1);
-                    if (Ring0.RdmsrTx(IA32_PERF_STATUS, out eax, out edx,
+                    if (Ring0.RdmsrTx(IA32_PERF_STATUS, out uint eax, out uint edx,
                       cpuid[i][0].Affinity))
                     {
                         newBusClock =
@@ -531,6 +532,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
                             case Microarchitecture.CometLake:
                             case Microarchitecture.Tremont:
                             case Microarchitecture.TigerLake:
+                            case Microarchitecture.RocketLake:
                                 {
                                     uint multiplier = (eax >> 8) & 0xff;
                                     coreClocks[i].Value = (float)(multiplier * newBusClock);
@@ -568,8 +570,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
                     if (sensor == null)
                         continue;
 
-                    uint eax, edx;
-                    if (!Ring0.Rdmsr(energyStatusMSRs[sensor.Index], out eax, out edx))
+                    if (!Ring0.Rdmsr(energyStatusMSRs[sensor.Index], out uint eax, out uint edx))
                         continue;
 
                     DateTime time = DateTime.UtcNow;
