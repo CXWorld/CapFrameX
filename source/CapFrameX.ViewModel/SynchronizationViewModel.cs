@@ -54,7 +54,7 @@ namespace CapFrameX.ViewModel
         private string _syncRangePercentage = "0%";
         private string _syncRangeLower;
         private string _syncRangeUpper;
-        private int _inputLagBarMaxValue;
+        private int _inputLagBarMaxValue = 100;
         private Func<double, string> _inputLagParameterFormatter;
         private string[] _inputLagParameterLabels;
 

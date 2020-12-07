@@ -1,4 +1,7 @@
-﻿using System;
+﻿using CapFrameX.Contracts.Configuration;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Windows.Input;
 
@@ -6,11 +9,12 @@ namespace CapFrameX.Hotkey
 {
 	public class CXHotkey
 	{
-		public Key Key { get; }
+
+        public Key Key { get; }
 
 		public ModifierKeys Modifiers { get; }
 
-		public CXHotkey(Key defaultKey)
+        public CXHotkey(Key defaultKey)
 		{
 			Key = defaultKey;
 			Modifiers = ModifierKeys.None;
@@ -27,13 +31,13 @@ namespace CapFrameX.Hotkey
 			var str = new StringBuilder();
 
 			if (Modifiers.HasFlag(ModifierKeys.Control))
-				str.Append("Control + ");
+				str.Append("Control+");
 			if (Modifiers.HasFlag(ModifierKeys.Shift))
-				str.Append("Shift + ");
+				str.Append("Shift+");
 			if (Modifiers.HasFlag(ModifierKeys.Alt))
-				str.Append("Alt + ");
+				str.Append("Alt+");
 			if (Modifiers.HasFlag(ModifierKeys.Windows))
-				str.Append("Win + ");
+				str.Append("Win+");
 
 			str.Append(Key);
 
@@ -101,6 +105,7 @@ namespace CapFrameX.Hotkey
 
                     captureHotkey = new CXHotkey(key, keyModifierA | keyModifierB);
                 }
+                else isValid = false;
             }
             catch { isValid = false; }
 

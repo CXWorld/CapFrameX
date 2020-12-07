@@ -85,11 +85,22 @@
     <Compile Include="Chord.cs" />
     <Compile Include="CXHotkey.cs" />
     <Compile Include="CXHotkeyCombination.cs" />
+    <Compile Include="HotkeyDictionaryBuilder.cs" />
     <Compile Include="KeyCombinationExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CapFrameX.Contracts\CapFrameX.Contracts.csproj">
+      <Project>{4c3b8b5c-54d7-46a1-91a1-32bf82fd42cd}</Project>
+      <Name>CapFrameX.Contracts</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CapFrameX.Statistics.NetStandard\CapFrameX.Statistics.NetStandard.csproj">
+      <Project>{7D35C9C8-6E9A-4ABB-9042-930BE5E26DC6}</Project>
+      <Name>CapFrameX.Statistics.NetStandard</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
