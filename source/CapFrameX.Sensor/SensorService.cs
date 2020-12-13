@@ -1,5 +1,4 @@
 ﻿using CapFrameX.Contracts.Configuration;
-using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.Sensor;
 using CapFrameX.Data.Session.Contracts;
 using Microsoft.Extensions.Logging;
@@ -19,11 +18,10 @@ namespace CapFrameX.Sensor
     public class SensorService : ISensorService
     {
         private readonly object _lockComputer = new object();
-
+        private readonly Computer _computer;
         private readonly IAppConfiguration _appConfiguration;
         private readonly ILogger<SensorService> _logger;
 
-        private Computer _computer;
         private SessionSensorDataLive _sessionSensorDataLive;
         private bool _isLoggingActive = false;
 
