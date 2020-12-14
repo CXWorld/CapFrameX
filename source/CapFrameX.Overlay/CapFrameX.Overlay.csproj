@@ -108,6 +108,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="EOutlierHandling.cs" />
+    <Compile Include="OverlayEntryCore.cs" />
     <Compile Include="OverlayEntryPersistence.cs" />
     <Compile Include="OverlayEntryProvider.cs" />
     <Compile Include="OverlayEntryWrapper.cs" />

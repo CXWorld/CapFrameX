@@ -496,7 +496,7 @@ namespace CapFrameX.ViewModel
                 .DistinctUntilChanged()
                 .SelectMany(index =>
                 {
-                    return Observable.FromAsync(() => _overlayEntryProvider.SwitchConfigurationTo(index))
+                    return Observable.FromAsync(() => Task.Run(() => _overlayEntryProvider.SwitchConfigurationTo(index)))
                         .SelectMany(_ => _overlayService.OnDictionaryUpdated.Take(1));
                 })
                 .StartWith(Enumerable.Empty<IOverlayEntry>())
@@ -523,7 +523,7 @@ namespace CapFrameX.ViewModel
                });
 
             ResetDefaultsCommand = new DelegateCommand(
-                async () => await OnResetDefaults());
+                 () => OnResetDefaults());
 
             SetFormatForGroupNameCommand = new DelegateCommand(
                () => _overlayEntryProvider.SetFormatForGroupName(SelectedOverlayItemGroupName, SelectedOverlayEntry, Checkboxes));
@@ -555,9 +555,9 @@ namespace CapFrameX.ViewModel
         private void SetSaveButtonIsEnable()
             => SaveButtonIsEnable = true;
 
-        private async Task OnResetDefaults()
+        private void OnResetDefaults()
         {
-            var overlayEntries = await _overlayEntryProvider.GetDefaultOverlayEntries();
+            var overlayEntries = _overlayEntryProvider.GetDefaultOverlayEntries();
             OverlaySubModelGroupSeparating.SetOverlayEntries(overlayEntries);
             OverlayEntries.Clear();
             OverlayEntries.AddRange(overlayEntries);

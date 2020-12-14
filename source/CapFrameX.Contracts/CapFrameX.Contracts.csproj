@@ -111,6 +111,7 @@
     <Compile Include="Overlay\EOverlayEntryConfig.cs" />
     <Compile Include="Overlay\EOverlayEntryType.cs" />
     <Compile Include="Overlay\IOverlayEntry.cs" />
+    <Compile Include="Overlay\IOverlayEntryCore.cs" />
     <Compile Include="Overlay\IOverlayEntryFormatChange.cs" />
     <Compile Include="Overlay\IOverlayEntryProvider.cs" />
     <Compile Include="PresentMonInterface\IRecordDirectoryObserver.cs" />

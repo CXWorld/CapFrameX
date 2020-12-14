@@ -34,9 +34,8 @@ namespace CapFrameX.Overlay
         private readonly IRTSSService _rTSSService;
         private readonly IComputer _computer;
         private readonly ISensorConfig _sensorConfig;
+        private readonly IOverlayEntryCore _overlayEntryCore;
         private ISubject<TimeSpan> _osdUpdateSubject;
-        private readonly Dictionary<string, IOverlayEntry> _overlayEntryDict
-            = new Dictionary<string, IOverlayEntry>();
 
         private IDisposable _disposableCaptureTimer;
         private IDisposable _disposableCountdown;
@@ -62,14 +61,15 @@ namespace CapFrameX.Overlay
         public IObservable<IOverlayEntry[]> OnDictionaryUpdated => _onDictionaryUpdated;
 
         public OverlayService(IStatisticProvider statisticProvider,
-                              ISensorService sensorService,
-                              IOverlayEntryProvider overlayEntryProvider,
-                              IAppConfiguration appConfiguration,
-                              ILogger<OverlayService> logger,
-                              IRecordManager recordManager,
-                              IRTSSService rTSSService,
-                              IComputer computer,
-                              ISensorConfig sensorConfig)
+            ISensorService sensorService,
+            IOverlayEntryProvider overlayEntryProvider,
+            IAppConfiguration appConfiguration,
+            ILogger<OverlayService> logger,
+            IRecordManager recordManager,
+            IRTSSService rTSSService,
+            IComputer computer,
+            ISensorConfig sensorConfig,
+            IOverlayEntryCore overlayEntryCore)
         {
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -83,6 +83,7 @@ namespace CapFrameX.Overlay
             _rTSSService = rTSSService;
             _computer = computer;
             _sensorConfig = sensorConfig;
+            _overlayEntryCore = overlayEntryCore;
 
             _numberOfRuns = _appConfiguration.SelectedHistoryRuns;
             SecondMetric = _appConfiguration.SecondMetricOverlay;
@@ -146,7 +147,7 @@ namespace CapFrameX.Overlay
             .Subscribe(sensorData =>
             {
                 UpdateOverlayEntries(sensorData.Item2);
-                _onDictionaryUpdated.OnNext(_overlayEntryDict.Values.ToArray());
+                _onDictionaryUpdated.OnNext(_overlayEntryCore.OverlayEntryDict.Values.ToArray());
             });
 
             _runHistory = Enumerable.Repeat("N/A", _numberOfRuns).ToList();
@@ -318,7 +319,7 @@ namespace CapFrameX.Overlay
         {
             lock (_dictLock)
             {
-                _overlayEntryDict.TryGetValue(identifier, out IOverlayEntry entry);
+                _overlayEntryCore.OverlayEntryDict.TryGetValue(identifier, out IOverlayEntry entry);
                 return entry;
             }
         }
@@ -333,7 +334,7 @@ namespace CapFrameX.Overlay
                 var sensorValue = sensorPair.Value;
                 lock (_dictLock)
                 {
-                    if (_overlayEntryDict.TryGetValue(sensorIdentifier, out IOverlayEntry entry))
+                    if (_overlayEntryCore.OverlayEntryDict.TryGetValue(sensorIdentifier, out IOverlayEntry entry))
                     {
                         entry.Value = sensorValue;
                     }
@@ -343,7 +344,7 @@ namespace CapFrameX.Overlay
 
         private void InitializeOverlayEntryDict()
         {
-            _overlayEntryDict.Clear();
+            _overlayEntryCore.OverlayEntryDict.Clear();
 
             try
             {
@@ -354,8 +355,8 @@ namespace CapFrameX.Overlay
                     {
                         var dictEntry = CreateOverlayEntry(sensor);
                         var id = sensor.Identifier.ToString();
-                        if (!_overlayEntryDict.ContainsKey(id))
-                            _overlayEntryDict.Add(id, dictEntry);
+                        if (!_overlayEntryCore.OverlayEntryDict.ContainsKey(id))
+                            _overlayEntryCore.OverlayEntryDict.Add(id, dictEntry);
                     }
                 }
             }
@@ -367,7 +368,7 @@ namespace CapFrameX.Overlay
 
         private void InitializeSensorConfig()
         {
-            foreach (var key in _overlayEntryDict.Keys)
+            foreach (var key in _overlayEntryCore.OverlayEntryDict.Keys)
             {
                 _sensorConfig.SetSensorIsActive(key, true);
             }

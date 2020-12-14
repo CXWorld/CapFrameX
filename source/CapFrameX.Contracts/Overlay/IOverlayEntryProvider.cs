@@ -19,10 +19,10 @@ namespace CapFrameX.Contracts.Overlay
 
 		Task SaveOverlayEntriesToJson();
 
-		Task SwitchConfigurationTo(int index);
+	    void SwitchConfigurationTo(int index);
 
 		Task<IOverlayEntry[]> GetOverlayEntries(bool updateFormats = true);
 
-		Task<IEnumerable<IOverlayEntry>> GetDefaultOverlayEntries();
+		IEnumerable<IOverlayEntry> GetDefaultOverlayEntries();
 	}
 }
