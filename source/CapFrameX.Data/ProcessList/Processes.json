@@ -1830,6 +1830,11 @@
     "IsBlacklisted": false
   },
   {
+    "Name": "Viber",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
     "Name": "Video.UI",
     "DisplayName": null,
     "IsBlacklisted": true
