@@ -30,7 +30,6 @@ using CapFrameX.Statistics.NetStandard;
 using CapFrameX.Statistics.NetStandard.Contracts;
 using CapFrameX.Contracts.RTSS;
 using CapFrameX.RTSSIntegration;
-using System.Reactive.Subjects;
 using OpenHardwareMonitor.Hardware;
 
 namespace CapFrameX

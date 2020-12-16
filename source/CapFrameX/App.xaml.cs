@@ -1,6 +1,5 @@
 ﻿using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.Sensor;
-using CapFrameX.Data;
 using CapFrameX.Extensions;
 using CapFrameX.PresentMonInterface;
 using CapFrameX.Remote;
@@ -10,7 +9,6 @@ using Serilog;
 using Serilog.Formatting.Compact;
 using Serilog.Sinks.InMemory;
 using System;
-using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
 using System.IO;
