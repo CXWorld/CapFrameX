@@ -52,7 +52,8 @@ namespace CapFrameX.Overlay
             IAppConfiguration appConfiguration,
             IEventAggregator eventAggregator,
             IOnlineMetricService onlineMetricService,
-            ISystemInfo systemInfo, IRTSSService rTSSService,
+            ISystemInfo systemInfo, 
+            IRTSSService rTSSService,
             ISensorConfig sensorConfig,
             IOverlayEntryCore overlayEntryCore,
             ILogger<OverlayEntryProvider> logger)
@@ -70,7 +71,7 @@ namespace CapFrameX.Overlay
             _overlayEntryCore = overlayEntryCore;
             _logger = logger;
 
-            _ = Task.Run(() => LoadOrSetDefault())
+            _ = Task.Run(async () => await LoadOrSetDefault())
                 .ContinueWith(task => _taskCompletionSource.SetResult(true));
 
             SubscribeToOptionPopupClosed();
@@ -126,15 +127,15 @@ namespace CapFrameX.Overlay
             catch { return; }
         }
 
-        public void SwitchConfigurationTo(int index)
+        public async Task SwitchConfigurationTo(int index)
         {
             SetConfigurationFileName(index);
-            LoadOrSetDefault();
+            await LoadOrSetDefault();
         }
 
-        public IEnumerable<IOverlayEntry> GetDefaultOverlayEntries()
+        public async Task<IEnumerable<IOverlayEntry>> GetDefaultOverlayEntries()
         {
-            _overlayEntries = GetOverlayEntryDefaults();
+            _overlayEntries = await GetOverlayEntryDefaults();
             _identifierOverlayEntryDict.Clear();
             foreach (var entry in _overlayEntries)
             {
@@ -209,15 +210,15 @@ namespace CapFrameX.Overlay
             selectedEntry.FormatChanged = true;
         }
 
-        private void LoadOrSetDefault()
+        public async Task LoadOrSetDefault()
         {
             try
             {
-                _overlayEntries = GetInitializedOverlayEntryDictionary();
+                _overlayEntries = await GetInitializedOverlayEntryDictionary();
             }
             catch
             {
-                _overlayEntries = GetOverlayEntryDefaults();
+                _overlayEntries = await GetOverlayEntryDefaults();
             }
             _sensorConfig.IsInitialized = true;
             _identifierOverlayEntryDict.Clear();
@@ -248,8 +249,11 @@ namespace CapFrameX.Overlay
             _overlayEntries.ForEach(entry => entry.FormatChanged = true);
         }
 
-        private BlockingCollection<IOverlayEntry> GetInitializedOverlayEntryDictionary()
+        private async Task <BlockingCollection<IOverlayEntry>> GetInitializedOverlayEntryDictionary()
         {
+            await _sensorService.SensorServiceCompletionSource.Task;
+            await _overlayEntryCore.OverlayEntryCoreCompletionSource.Task;
+
             string json = File.ReadAllText(GetConfigurationFileName());
             var overlayEntriesFromJson = JsonConvert.DeserializeObject<OverlayEntryPersistence>(json)
                 .OverlayEntries.ToBlockingCollection<IOverlayEntry>();
@@ -425,7 +429,7 @@ namespace CapFrameX.Overlay
             }
         }
 
-        private BlockingCollection<IOverlayEntry> GetOverlayEntryDefaults()
+        private async Task<BlockingCollection<IOverlayEntry>> GetOverlayEntryDefaults()
         {
             var overlayEntries = OverlayUtils.GetOverlayEntryDefaults()
                     .Select(item => (item as IOverlayEntry).Clone()).ToBlockingCollection();
@@ -439,6 +443,7 @@ namespace CapFrameX.Overlay
             // Sensor data
 
             _overlayEntryCore.OverlayEntryDict.Values.ForEach(sensor => overlayEntries.TryAdd(sensor.Clone()));
+            await Task.FromResult(true);
             return overlayEntries;
         }
 

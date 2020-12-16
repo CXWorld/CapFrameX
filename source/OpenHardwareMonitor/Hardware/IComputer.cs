@@ -27,6 +27,7 @@ namespace OpenHardwareMonitor.Hardware
 
         string GetReport();
         void Open();
+        void Close();
 
         event HardwareEventHandler HardwareAdded;
         event HardwareEventHandler HardwareRemoved;

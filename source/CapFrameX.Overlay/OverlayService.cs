@@ -32,7 +32,6 @@ namespace CapFrameX.Overlay
         private readonly IRecordManager _recordManager;
         private readonly ISensorService _sensorService;
         private readonly IRTSSService _rTSSService;
-        private readonly IComputer _computer;
         private readonly ISensorConfig _sensorConfig;
         private readonly IOverlayEntryCore _overlayEntryCore;
         private ISubject<TimeSpan> _osdUpdateSubject;
@@ -67,7 +66,6 @@ namespace CapFrameX.Overlay
             ILogger<OverlayService> logger,
             IRecordManager recordManager,
             IRTSSService rTSSService,
-            IComputer computer,
             ISensorConfig sensorConfig,
             IOverlayEntryCore overlayEntryCore)
         {
@@ -81,7 +79,6 @@ namespace CapFrameX.Overlay
             _recordManager = recordManager;
             _sensorService = sensorService;
             _rTSSService = rTSSService;
-            _computer = computer;
             _sensorConfig = sensorConfig;
             _overlayEntryCore = overlayEntryCore;
 
@@ -90,12 +87,12 @@ namespace CapFrameX.Overlay
             ThirdMetric = _appConfiguration.ThirdMetricOverlay;
             IsOverlayActiveStream = new BehaviorSubject<bool>(_appConfiguration.IsOverlayActive);
             _runHistoryOutlierFlags = Enumerable.Repeat(false, _numberOfRuns).ToArray();
-         
+
             _osdUpdateSubject = new BehaviorSubject<TimeSpan>(TimeSpan.FromMilliseconds(_appConfiguration.OSDRefreshPeriod));
 
             _logger.LogDebug("{componentName} Ready", this.GetType().Name);
 
-            InitializeOverlayEntryDict();
+            Task.Run(async () => await InitializeOverlayEntryDict());
             InitializeSensorConfig();
 
             IsOverlayActiveStream.AsObservable()
@@ -326,8 +323,6 @@ namespace CapFrameX.Overlay
 
         private void UpdateOverlayEntries(Dictionary<ISensorEntry, float> sensorData)
         {
-            if (_computer == null) return;
-
             foreach (var sensorPair in sensorData)
             {
                 var sensorIdentifier = sensorPair.Key.Identifier.ToString();
@@ -342,8 +337,9 @@ namespace CapFrameX.Overlay
             }
         }
 
-        private void InitializeOverlayEntryDict()
+        private async Task InitializeOverlayEntryDict()
         {
+            await _sensorService.SensorServiceCompletionSource.Task;
             _overlayEntryCore.OverlayEntryDict.Clear();
 
             try
@@ -359,6 +355,8 @@ namespace CapFrameX.Overlay
                             _overlayEntryCore.OverlayEntryDict.Add(id, dictEntry);
                     }
                 }
+
+                _overlayEntryCore.OverlayEntryCoreCompletionSource.SetResult(true);
             }
             catch (Exception ex)
             {

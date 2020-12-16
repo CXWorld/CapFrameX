@@ -523,7 +523,7 @@ namespace CapFrameX.ViewModel
                });
 
             ResetDefaultsCommand = new DelegateCommand(
-                 () => OnResetDefaults());
+                 async () => await OnResetDefaults());
 
             SetFormatForGroupNameCommand = new DelegateCommand(
                () => _overlayEntryProvider.SetFormatForGroupName(SelectedOverlayItemGroupName, SelectedOverlayEntry, Checkboxes));
@@ -555,9 +555,9 @@ namespace CapFrameX.ViewModel
         private void SetSaveButtonIsEnable()
             => SaveButtonIsEnable = true;
 
-        private void OnResetDefaults()
+        private async Task OnResetDefaults()
         {
-            var overlayEntries = _overlayEntryProvider.GetDefaultOverlayEntries();
+            var overlayEntries = await _overlayEntryProvider.GetDefaultOverlayEntries();
             OverlaySubModelGroupSeparating.SetOverlayEntries(overlayEntries);
             OverlayEntries.Clear();
             OverlayEntries.AddRange(overlayEntries);

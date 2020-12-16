@@ -18,10 +18,11 @@ namespace CapFrameX.Sensor
     public class SensorService : ISensorService
     {
         private readonly object _lockComputer = new object();
-        private readonly Computer _computer;
+        private readonly ISensorConfig _sensorConfig;
         private readonly IAppConfiguration _appConfiguration;
         private readonly ILogger<SensorService> _logger;
 
+        private IComputer _computer;
         private SessionSensorDataLive _sessionSensorDataLive;
         private bool _isLoggingActive = false;
 
@@ -43,46 +44,54 @@ namespace CapFrameX.Sensor
             }
         }
 
-        public IObservable<(DateTime, Dictionary<ISensorEntry, float>)> SensorSnapshotStream { get; }
+        public IObservable<(DateTime, Dictionary<ISensorEntry, float>)> SensorSnapshotStream { get; private set; }
 
         public bool UseSensorLogging => _appConfiguration.UseSensorLogging;
 
         public bool IsOverlayActive => _appConfiguration.IsOverlayActive;
 
+        public TaskCompletionSource<bool> SensorServiceCompletionSource { get; }
+           = new TaskCompletionSource<bool>();
+
         public SensorService(IAppConfiguration appConfiguration,
+                             ISensorConfig sensorConfig,
                              ILogger<SensorService> logger)
         {
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
 
             _appConfiguration = appConfiguration;
+            _sensorConfig = sensorConfig;
             _logger = logger;
             _currentOSDTimespan = TimeSpan.FromMilliseconds(_appConfiguration.OSDRefreshPeriod);
             _currentLoggingTimespan = TimeSpan.FromMilliseconds(_appConfiguration.SensorLoggingRefreshPeriod);
             _loggingUpdateSubject = new BehaviorSubject<TimeSpan>(_currentLoggingTimespan);
             _osdUpdateSubject = new BehaviorSubject<TimeSpan>(_currentOSDTimespan);
             _sensorUpdateSubject = new BehaviorSubject<TimeSpan>(CurrentSensorTimespan);
-            SensorSnapshotStream = _sensorUpdateSubject
-                .Select(timespan => Observable.Concat(Observable.Return(-1L), Observable.Interval(timespan)))
-                .Switch()
-                .Where((_, idx) => idx == 0 || IsOverlayActive || (_isLoggingActive && UseSensorLogging))
-                .Select(_ => GetSensorValues())
-                .Replay(0)
-                .RefCount();
-
-            _logger.LogDebug("{componentName} Ready", this.GetType().Name);
 
             Observable.FromAsync(() => StartOpenHardwareMonitor())
-                .Delay(TimeSpan.FromMilliseconds(200))
+               .Delay(TimeSpan.FromMilliseconds(200))
+               .SubscribeOn(Scheduler.Default)
+               .Subscribe(t =>
+               {
+                   SensorServiceCompletionSource.SetResult(true);
+               });
+
+            SensorSnapshotStream = _sensorUpdateSubject
+               .Select(timespan => Observable.Concat(Observable.Return(-1L), Observable.Interval(timespan)))
+               .Switch()
+               .Where((_, idx) => idx == 0 || IsOverlayActive || (_isLoggingActive && UseSensorLogging))
+               .SelectMany(_ => GetSensorValues())
+               .Replay(0)
+               .RefCount();
+
+            SensorSnapshotStream
+                .Sample(_loggingUpdateSubject.Select(timespan => Observable.Concat(Observable.Return(-1L), Observable.Interval(timespan))).Switch())
+                .Where(_ => _isLoggingActive && UseSensorLogging)
                 .SubscribeOn(Scheduler.Default)
-                .Subscribe(t =>
-                {
-                    SensorSnapshotStream
-                        .Sample(_loggingUpdateSubject.Select(timespan => Observable.Concat(Observable.Return(-1L), Observable.Interval(timespan))).Switch())
-                        .Where(_ => _isLoggingActive && UseSensorLogging)
-                        .SubscribeOn(Scheduler.Default)
-                        .Subscribe(sensorData => LogCurrentValues(sensorData.Item2, sensorData.Item1));
-                });
+                .Subscribe(sensorData => LogCurrentValues(sensorData.Item2, sensorData.Item1));
+
+            _logger.LogDebug("{componentName} Ready", this.GetType().Name);
 
             stopwatch.Stop();
             _logger.LogInformation(GetType().Name + " {initializationTime}s initialization time", Math.Round(stopwatch.ElapsedMilliseconds * 1E-03), 1);
@@ -155,6 +164,7 @@ namespace CapFrameX.Sensor
             {
                 try
                 {
+                    _computer = new Computer(_sensorConfig);
                     _computer.Open();
                     _computer.GPUEnabled = true;
                     _computer.CPUEnabled = true;
@@ -219,6 +229,7 @@ namespace CapFrameX.Sensor
                             {
                                 Identifier = sensor.Identifier.ToString(),
                                 Value = sensor.Value,
+                                Name = sensor.Name,
                                 SensorType = sensor.SensorType.ToString(),
                                 HardwareType = sensor.Hardware.HardwareType.ToString()
                             });
@@ -243,8 +254,9 @@ namespace CapFrameX.Sensor
             }
         }
 
-        private (DateTime, Dictionary<ISensorEntry, float>) GetSensorValues()
+        private async Task<(DateTime, Dictionary<ISensorEntry, float>)> GetSensorValues()
         {
+            await SensorServiceCompletionSource.Task;
             var dict = new ConcurrentDictionary<ISensorEntry, float>();
             try
             {
