@@ -24,23 +24,23 @@ namespace CapFrameX.Data
 		public string Ram { get; set; }
 		[DisplayName("Max FPS")]
 		public double MaxFps { get; set; }
-		[DisplayName("99% quantile")]
+		[DisplayName("99th percentile")]
 		public double NinetyNinePercentQuantileFps { get; set; }
-		[DisplayName("95% quantile")]
+		[DisplayName("95th percentile")]
 		public double NinetyFivePercentQuantileFps { get; set; }
 		[DisplayName("Average FPS")]
 		public double AverageFps { get; set; }
 		[DisplayName("Median FPS")]
 		public double MedianFps { get; set; }
-		[DisplayName("5% quantile")]
+		[DisplayName("5th percentile")]
 		public double FivePercentQuantileFps { get; set; }
-		[DisplayName("1% quantile")]
+		[DisplayName("1th percentile")]
 		public double OnePercentQuantileFps { get; set; }
 		[DisplayName("1% low average")]
         public double OnePercentLowAverageFps { get; set; }
-        [DisplayName("0.2 % quantile")]
+        [DisplayName("0.2th percentile")]
 		public double ZeroDotTwoPercentQuantileFps { get; set; }
-		[DisplayName("0.1% quantile")]
+		[DisplayName("0.1th percentile")]
         public double ZeroDotOnePercentQuantileFps { get; set; }
 		[DisplayName("0.1% low average")]
 		public double ZeroDotOnePercentLowAverageFps { get; set; }

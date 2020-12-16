@@ -6,12 +6,13 @@ namespace CapFrameX.PresentMonInterface
 {
     public static class CaptureServiceConfiguration
     {
+        public static string PresentMonAppName = "PresentMon-1.6.0-x64";
 
         public static IServiceStartInfo GetServiceStartInfo(string arguments)
         {
             var startInfo = new PresentMonStartInfo
             {
-                FileName = Path.Combine("PresentMon", "PresentMon64-1.5.2.exe"),
+                FileName = Path.Combine("PresentMon", PresentMonAppName + ".exe"),
                 Arguments = arguments,
                 CreateNoWindow = true,
                 RunWithAdminRights = true,
@@ -26,7 +27,7 @@ namespace CapFrameX.PresentMonInterface
         {
             DateTime now = DateTime.Now;
             string dateTimeFormat = $"{now.Year}-{now.Month:d2}-" +
-				$"{now.Day:d2}T{now.Hour}{now.Minute}{now.Second}";
+                $"{now.Day:d2}T{now.Hour}{now.Minute}{now.Second}";
             return $"CapFrameX-{processName}.exe-{dateTimeFormat}.json";
         }
     }

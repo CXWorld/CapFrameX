@@ -35,8 +35,6 @@ namespace CapFrameX.PresentMonInterface
                 arguments += " ";
 				arguments += "-qpc_time";
                 arguments += " ";
-                arguments += "-dont_restart_as_admin";
-                arguments += " ";
                 arguments += OutputFilename;
 
                 if (!string.IsNullOrWhiteSpace(OutputLevelofDetail))
@@ -65,8 +63,6 @@ namespace CapFrameX.PresentMonInterface
 					arguments += "-output_stdout";
 					arguments += " ";
 					arguments += "-qpc_time";
-                    arguments += " ";
-                    arguments += "-dont_restart_as_admin";
 
                     if (!string.IsNullOrWhiteSpace(OutputLevelofDetail))
                     {
@@ -101,8 +97,6 @@ namespace CapFrameX.PresentMonInterface
                     arguments += OutputFilename;
 					arguments += " ";
 					arguments += "-qpc_time";
-                    arguments += " ";
-                    arguments += "-dont_restart_as_admin";
 
                     if (!string.IsNullOrWhiteSpace(OutputLevelofDetail))
                     {

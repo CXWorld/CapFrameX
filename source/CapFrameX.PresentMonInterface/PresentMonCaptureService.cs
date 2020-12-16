@@ -111,7 +111,7 @@ namespace CapFrameX.PresentMonInterface
         {
             try
             {
-                var proc = Process.GetProcessesByName("PresentMon64-1.5.2");
+                var proc = Process.GetProcessesByName(CaptureServiceConfiguration.PresentMonAppName);
                 if (proc.Any())
                 {
                     proc[0].Kill();

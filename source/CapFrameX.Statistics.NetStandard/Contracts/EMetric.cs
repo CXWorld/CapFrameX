@@ -8,10 +8,10 @@ namespace CapFrameX.Statistics.NetStandard.Contracts
 		[Description("Maximum")]
 		[ShortDescription("Max")]
 		Max = 1,
-		[Description("99% percentile")]
+		[Description("99th percentile")]
 		[ShortDescription("P99")]
 		P99 = 2,
-		[Description("95% percentile")]
+		[Description("95th percentile")]
 		[ShortDescription("P95")]
 		P95 = 3,
 		[Description("Average")]
@@ -20,16 +20,16 @@ namespace CapFrameX.Statistics.NetStandard.Contracts
 		[Description("Median")]
 		[ShortDescription("Med")]
 		Median = 5,
-		[Description("5% percentile")]
+		[Description("5th percentile")]
 		[ShortDescription("P5")]
 		P5 = 6,
-		[Description("1% percentile")]
+		[Description("1th percentile")]
 		[ShortDescription("P1")]
 		P1 = 7,
-		[Description("0.2% percentile")]
+		[Description("0.2th percentile")]
 		[ShortDescription("P0.2")]
 		P0dot2 = 8,
-		[Description("0.1% percentile")]
+		[Description("0.1th percentile")]
 		[ShortDescription("P0.1")]
 		P0dot1 = 9,
 		[Description("1% low integral")]
