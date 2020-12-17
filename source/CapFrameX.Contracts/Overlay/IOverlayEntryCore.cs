@@ -5,7 +5,7 @@ namespace CapFrameX.Contracts.Overlay
 {
     public interface IOverlayEntryCore
     {
-        Dictionary<string, IOverlayEntry> OverlayEntryDict { get; set; }
+        Dictionary<string, IOverlayEntry> OverlayEntryDict { get; }
 
         TaskCompletionSource<bool> OverlayEntryCoreCompletionSource { get; }
     }

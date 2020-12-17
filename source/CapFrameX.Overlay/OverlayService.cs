@@ -93,7 +93,6 @@ namespace CapFrameX.Overlay
             _logger.LogDebug("{componentName} Ready", this.GetType().Name);
 
             Task.Run(async () => await InitializeOverlayEntryDict());
-            InitializeSensorConfig();
 
             IsOverlayActiveStream.AsObservable()
                 .Select(isActive =>
@@ -339,12 +338,11 @@ namespace CapFrameX.Overlay
 
         private async Task InitializeOverlayEntryDict()
         {
-            await _sensorService.SensorServiceCompletionSource.Task;
             _overlayEntryCore.OverlayEntryDict.Clear();
 
             try
             {
-                var sensors = _sensorService.GetSensorEntries();
+                var sensors = await _sensorService.GetSensorEntries();
                 if (sensors != null)
                 {
                     foreach (var sensor in sensors)
@@ -356,6 +354,7 @@ namespace CapFrameX.Overlay
                     }
                 }
 
+                InitializeSensorConfig();
                 _overlayEntryCore.OverlayEntryCoreCompletionSource.SetResult(true);
             }
             catch (Exception ex)

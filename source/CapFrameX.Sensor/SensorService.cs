@@ -81,7 +81,7 @@ namespace CapFrameX.Sensor
                .Select(timespan => Observable.Concat(Observable.Return(-1L), Observable.Interval(timespan)))
                .Switch()
                .Where((_, idx) => idx == 0 || IsOverlayActive || (_isLoggingActive && UseSensorLogging))
-               .SelectMany(_ => GetSensorValues())
+               .SelectMany(_ => GetTimeStampedSensorValues())
                .Replay(0)
                .RefCount();
 
@@ -185,7 +185,7 @@ namespace CapFrameX.Sensor
             _sensorUpdateSubject.OnNext(CurrentSensorTimespan);
         }
 
-        public ISessionSensorData GetSessionSensorData()
+        public ISessionSensorData GetSensorSessionData()
         {
             return UseSensorLogging ? _sessionSensorDataLive
                 .ToSessionSensorData() : null;
@@ -211,10 +211,10 @@ namespace CapFrameX.Sensor
             });
         }
 
-        public IEnumerable<ISensorEntry> GetSensorEntries()
+        public async Task<IEnumerable<ISensorEntry>> GetSensorEntries()
         {
+            await SensorServiceCompletionSource.Task;
             var entries = new List<ISensorEntry>();
-
             try
             {
                 var sensors = GetSensors();
@@ -254,7 +254,7 @@ namespace CapFrameX.Sensor
             }
         }
 
-        private async Task<(DateTime, Dictionary<ISensorEntry, float>)> GetSensorValues()
+        private async Task<(DateTime, Dictionary<ISensorEntry, float>)> GetTimeStampedSensorValues()
         {
             await SensorServiceCompletionSource.Task;
             var dict = new ConcurrentDictionary<ISensorEntry, float>();

@@ -61,7 +61,9 @@ namespace CapFrameX.PresentMonInterface
         {
             _captureServive.RedirectedOutputDataStream
             .Skip(5)
-            .ObserveOn(new EventLoopScheduler()).Subscribe(dataLine =>
+            .ObserveOn(new EventLoopScheduler())
+            .Where(x => true)
+            .Subscribe(dataLine =>
             {
                 if (string.IsNullOrWhiteSpace(dataLine))
                     return;

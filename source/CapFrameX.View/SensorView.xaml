@@ -70,9 +70,9 @@
                             </Style>
                         </DataGrid.Resources>
                         <DataGrid.Columns>
-                            <DataGridTextColumn Binding="{Binding Description, Mode=TwoWay}"
+                            <DataGridTextColumn Binding="{Binding Name, Mode=TwoWay}"
                                                 Header="Sensor" IsReadOnly="True" MinWidth="150"/>
-                            <DataGridCheckBoxColumn Binding="{Binding LogSensor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Header="Use for logging">
+                            <DataGridCheckBoxColumn Binding="{Binding UseForLogging, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Header="Use for logging">
                                 <DataGridCheckBoxColumn.CellStyle>
                                     <Style TargetType="DataGridCell">
                                         <Setter Property="IsEnabled" 

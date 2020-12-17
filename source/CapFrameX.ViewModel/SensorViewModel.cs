@@ -1,16 +1,19 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Sensor;
 using CapFrameX.Data;
+using CapFrameX.Sensor;
 using Microsoft.Extensions.Logging;
 using Prism.Events;
 using Prism.Mvvm;
 using Prism.Regions;
 using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Threading;
 
 namespace CapFrameX.ViewModel
 {
@@ -22,6 +25,9 @@ namespace CapFrameX.ViewModel
         private readonly ISensorConfig _sensorConfig;
         private readonly ILogger<SensorViewModel> _logger;
         private readonly CaptureManager _captureManager;
+
+        private int _selectedSensorEntryIndex;
+        private SensorEntryWrapper _selectedSensorEntry;
 
         public bool UseSensorLogging
         {
@@ -51,7 +57,30 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        public int SelectedSensorEntryIndex
+        {
+            get => _selectedSensorEntryIndex;
+            set
+            {
+                _selectedSensorEntryIndex = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public SensorEntryWrapper SelectedSensorEntry
+        {
+            get => _selectedSensorEntry;
+            set
+            {
+                _selectedSensorEntry = value;
+                RaisePropertyChanged();
+            }
+        }
+
         public Array LoggingPeriodItemsSource => new[] { 250, 500 };
+
+        public ObservableCollection<SensorEntryWrapper> SensorEntries { get; }
+          = new ObservableCollection<SensorEntryWrapper>();
 
         public SensorViewModel(IAppConfiguration appConfiguration,
                                IEventAggregator eventAggregator,
@@ -70,10 +99,38 @@ namespace CapFrameX.ViewModel
             _captureManager = captureManager;
             _sensorConfig = sensorConfig;
 
+            // ToDo: Später durch Einzelsteuerungskonzept ersetzen
             _sensorConfig.GlobalIsActivated = UseSensorLogging;
+
+            _ = Task.Run(async () => await SetWrappedSensorEntries());
 
             stopwatch.Stop();
             _logger.LogInformation(this.GetType().Name + " {initializationTime}s initialization time", Math.Round(stopwatch.ElapsedMilliseconds * 1E-03, 1));
+        }
+
+        private async Task SetWrappedSensorEntries()
+        {
+            var sensorEntries = await _sensorService.GetSensorEntries();
+            var wrappedSensorEntries = sensorEntries.Select(WrapSensorEntry);
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                SensorEntries.AddRange(wrappedSensorEntries);
+            });
+        }
+
+        private SensorEntryWrapper WrapSensorEntry(ISensorEntry entry)
+        {
+            return new SensorEntryWrapper()
+            {
+                Name = entry.Name,
+                UseForLogging = _sensorConfig.GetSensorIsActive(entry.Identifier),
+                UpdateLogState = UptdateLogState
+            };
+        }
+
+        void UptdateLogState(string identifier)
+        {
+
         }
 
         public bool IsNavigationTarget(NavigationContext navigationContext)
@@ -88,6 +145,5 @@ namespace CapFrameX.ViewModel
         public void OnNavigatedTo(NavigationContext navigationContext)
         {
         }
-
     }
 }

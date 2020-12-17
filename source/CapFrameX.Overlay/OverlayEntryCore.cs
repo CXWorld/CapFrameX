@@ -6,7 +6,7 @@ namespace CapFrameX.Overlay
 {
     public class OverlayEntryCore : IOverlayEntryCore
     {
-        public Dictionary<string, IOverlayEntry> OverlayEntryDict { get; set; }
+        public Dictionary<string, IOverlayEntry> OverlayEntryDict { get; }
 
         public TaskCompletionSource<bool> OverlayEntryCoreCompletionSource { get; }
 

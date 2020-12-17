@@ -441,10 +441,8 @@ namespace CapFrameX.Overlay
             _logger.LogInformation("GPU detected: {gpuName}.", _sensorService.GetGpuName());
 
             // Sensor data
-
             _overlayEntryCore.OverlayEntryDict.Values.ForEach(sensor => overlayEntries.TryAdd(sensor.Clone()));
-            await Task.FromResult(true);
-            return overlayEntries;
+            return await Task.FromResult(overlayEntries);
         }
 
         private async Task UpdateSensorData()

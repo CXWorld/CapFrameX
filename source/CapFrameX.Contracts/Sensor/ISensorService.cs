@@ -11,7 +11,7 @@ namespace CapFrameX.Contracts.Sensor
         TaskCompletionSource<bool> SensorServiceCompletionSource { get; }
         void StartSensorLogging();
         void StopSensorLogging();
-        ISessionSensorData GetSessionSensorData();
+        ISessionSensorData GetSensorSessionData();
         void CloseOpenHardwareMonitor();
         string GetGpuDriverVersion();
         string GetCpuName();
@@ -19,6 +19,6 @@ namespace CapFrameX.Contracts.Sensor
         string GetSensorTypeString(string identifier);
         void SetLoggingInterval(TimeSpan timeSpan);
         void SetOSDInterval(TimeSpan timeSpan);
-        IEnumerable<ISensorEntry> GetSensorEntries();
+        Task<IEnumerable<ISensorEntry>> GetSensorEntries();
     }
 }
