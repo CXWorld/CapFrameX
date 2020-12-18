@@ -121,6 +121,7 @@ namespace CapFrameX.ViewModel
             return new SensorEntryWrapper()
             {
                 Name = entry.Name,
+                SensorType = entry.SensorType,
                 UseForLogging = _sensorConfig.GetSensorIsActive(entry.Identifier),
                 UpdateLogState = UptdateLogState
             };

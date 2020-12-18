@@ -71,7 +71,9 @@
                         </DataGrid.Resources>
                         <DataGrid.Columns>
                             <DataGridTextColumn Binding="{Binding Name, Mode=TwoWay}"
-                                                Header="Sensor" IsReadOnly="True" MinWidth="150"/>
+                                                Header="Sensor" IsReadOnly="True" MinWidth="175"/>
+                            <DataGridTextColumn Binding="{Binding SensorType, Mode=TwoWay}"
+                                                Header="Type" IsReadOnly="True" MinWidth="100"/>
                             <DataGridCheckBoxColumn Binding="{Binding UseForLogging, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Header="Use for logging">
                                 <DataGridCheckBoxColumn.CellStyle>
                                     <Style TargetType="DataGridCell">
