@@ -1,4 +1,6 @@
-﻿namespace CapFrameX.Contracts.Sensor
+﻿using System.Threading.Tasks;
+
+namespace CapFrameX.Contracts.Sensor
 {
     public interface ISensorConfig
     {
@@ -9,5 +11,7 @@
         bool GetSensorIsActive(string identifier);
 
         void SetSensorIsActive(string identifier, bool isActive);
+
+        Task Save();
     }
 }

@@ -125,6 +125,7 @@
     <Compile Include="Sensor\ISensorConfig.cs" />
     <Compile Include="Sensor\ISensorEntry.cs" />
     <Compile Include="Sensor\ISensorService.cs" />
+    <Compile Include="Sensor\ISensorEntryProvider.cs" />
     <Compile Include="UpdateCheck\IUpdateCheck.cs" />
   </ItemGroup>
   <ItemGroup>

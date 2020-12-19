@@ -20,7 +20,7 @@ namespace CapFrameX.ViewModel
         private readonly ISensorService _sensorService;
         private readonly IEventAggregator _eventAggregator;
         private readonly IAppConfiguration _appConfiguration;
-        private readonly ISensorConfig _sensorConfig;
+        private readonly ISensorEntryProvider _sensorEntryProvider;
         private readonly ILogger<SensorViewModel> _logger;
         private readonly CaptureManager _captureManager;
 
@@ -34,7 +34,7 @@ namespace CapFrameX.ViewModel
             {
                 _appConfiguration.UseSensorLogging = value;
                 _captureManager.ToggleSensorLogging(value);
-                _sensorConfig.GlobalIsActivated = value;
+                //_sensorConfig.GlobalIsActivated = value;
                 RaisePropertyChanged();
             }
         }
@@ -81,11 +81,11 @@ namespace CapFrameX.ViewModel
           = new ObservableCollection<SensorEntryWrapper>();
 
         public SensorViewModel(IAppConfiguration appConfiguration,
-                               IEventAggregator eventAggregator,
-                               ISensorService sensorService,
-                               ILogger<SensorViewModel> logger,
-                               CaptureManager captureManager,
-                               ISensorConfig sensorConfig)
+            IEventAggregator eventAggregator,
+            ISensorService sensorService,
+            ISensorEntryProvider sensorEntryProvider,
+            ILogger<SensorViewModel> logger,
+            CaptureManager captureManager)
         {
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -93,12 +93,12 @@ namespace CapFrameX.ViewModel
             _appConfiguration = appConfiguration;
             _eventAggregator = eventAggregator;
             _sensorService = sensorService;
+            _sensorEntryProvider = sensorEntryProvider;
             _logger = logger;
             _captureManager = captureManager;
-            _sensorConfig = sensorConfig;
 
-            // ToDo: Später durch Einzelsteuerungskonzept ersetzen
-            _sensorConfig.GlobalIsActivated = UseSensorLogging;
+            //// ToDo: Später durch Einzelsteuerungskonzept ersetzen
+            //_sensorConfig.GlobalIsActivated = UseSensorLogging;
 
             _ = Task.Run(async () => await SetWrappedSensorEntries());
 
@@ -108,28 +108,12 @@ namespace CapFrameX.ViewModel
 
         private async Task SetWrappedSensorEntries()
         {
-            var sensorEntries = await _sensorService.GetSensorEntries();
-            var wrappedSensorEntries = sensorEntries.Select(WrapSensorEntry);
+            var wrappedSensorEntries = await _sensorEntryProvider.GetWrappedSensorEntries();
+
             Application.Current.Dispatcher.Invoke(() =>
             {
-                SensorEntries.AddRange(wrappedSensorEntries);
+                SensorEntries.AddRange(wrappedSensorEntries.Select(entry => entry as SensorEntryWrapper));
             });
-        }
-
-        private SensorEntryWrapper WrapSensorEntry(ISensorEntry entry)
-        {
-            return new SensorEntryWrapper()
-            {
-                Name = entry.Name,
-                SensorType = entry.SensorType,
-                UseForLogging = _sensorConfig.GetSensorIsActive(entry.Identifier),
-                UpdateLogState = UptdateLogState
-            };
-        }
-
-        void UptdateLogState(string identifier)
-        {
-
         }
 
         public bool IsNavigationTarget(NavigationContext navigationContext)

@@ -90,6 +90,7 @@ namespace CapFrameX
 			Container.Register<IOnlineMetricService, OnlineMetricService>(Reuse.Singleton);
 			Container.Register<ISensorService, SensorService>(Reuse.Singleton);
 			Container.Register<ISensorConfig, SensorConfig>(Reuse.Singleton);
+			Container.Register<ISensorEntryProvider, SensorEntryProvider>(Reuse.Singleton);
 			Container.Register<IOverlayEntryProvider, OverlayEntryProvider>(Reuse.Singleton);
 			Container.Register<IRecordManager, RecordManager>(Reuse.Singleton);
 			Container.Register<ISystemInfo, SystemInfo>(Reuse.Singleton);
