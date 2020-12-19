@@ -102,11 +102,13 @@ namespace CapFrameX.Sensor.Reporting
             var reportItems = GetReportFromSessionSensorData(sessionsSensorData, startTime, endTime);
 
             if (reportItems == null || !reportItems.Any())
-                return 0; 
+                return 0;
 
-            return reportItems.FirstOrDefault(reportItem =>
+            var item = reportItems.FirstOrDefault(reportItem =>
               reportItem.Name == EReportSensorName.CpuPower
-              .GetAttribute<DescriptionAttribute>().Description).AverageValue;
+              .GetAttribute<DescriptionAttribute>().Description);
+
+            return item != null ? item.AverageValue : 0;
         }
 
         public static double GetAverageGpuPower(IEnumerable<ISessionSensorData> sessionsSensorData, double startTime = 0, double endTime = double.PositiveInfinity)
@@ -116,9 +118,11 @@ namespace CapFrameX.Sensor.Reporting
             if (reportItems == null || !reportItems.Any())
                 return 0;
 
-            return reportItems.FirstOrDefault(reportItem =>
+            var item = reportItems.FirstOrDefault(reportItem =>
               reportItem.Name == EReportSensorName.GpuPower
-              .GetAttribute<DescriptionAttribute>().Description).AverageValue;
+              .GetAttribute<DescriptionAttribute>().Description);
+
+            return item != null ? item.AverageValue : 0;
         }
 
         public static double GetPercentageInGpuLoadLimit(List<int> values)
