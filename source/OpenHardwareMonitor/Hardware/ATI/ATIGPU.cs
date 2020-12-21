@@ -227,7 +227,7 @@ namespace OpenHardwareMonitor.Hardware.ATI
 
         private void GetOD6Power(ADLODNCurrentPowerType type, Sensor sensor)
         {
-            if (sensorConfig.GetSensorIsActive(sensor.Identifier.ToString()))
+            if (sensorConfig.GetSensorEvaluate(sensor.Identifier.ToString()))
             {
                 if (ADL.ADL2_Overdrive6_CurrentPower_Get(context, adapterIndex, type,
                   out int power) == ADL.ADL_OK)
@@ -353,7 +353,7 @@ namespace OpenHardwareMonitor.Hardware.ATI
         private void GetPMLog(ADLPMLogDataOutput data,
           ADLSensorType sensorType, Sensor sensor, float factor = 1.0f)
         {
-            if (sensorConfig.GetSensorIsActive(sensor.Identifier.ToString()))
+            if (sensorConfig.GetSensorEvaluate(sensor.Identifier.ToString()))
             {
                 int i = (int)sensorType;
                 if (i < data.Sensors.Length && data.Sensors[i].Supported)
@@ -513,7 +513,7 @@ namespace OpenHardwareMonitor.Hardware.ATI
             {
                 try
                 {
-                    if (sensorConfig.GetSensorIsActive(memoryUsageDedicated.Identifier.ToString()))
+                    if (sensorConfig.GetSensorEvaluate(memoryUsageDedicated.Identifier.ToString()))
                     {
                         memoryUsageDedicated.Value = dedicatedVramUsagePerformCounter.NextValue() / 1024f / 1024f;
                         ActivateSensor(memoryUsageDedicated);
@@ -529,7 +529,7 @@ namespace OpenHardwareMonitor.Hardware.ATI
             {
                 try
                 {
-                    if (sensorConfig.GetSensorIsActive(memoryUsageShared.Identifier.ToString()))
+                    if (sensorConfig.GetSensorEvaluate(memoryUsageShared.Identifier.ToString()))
                     {
                         memoryUsageShared.Value = (float)sharedVramUsagePerformCounter.NextValue() / 1024f / 1024f;
                         ActivateSensor(memoryUsageShared);

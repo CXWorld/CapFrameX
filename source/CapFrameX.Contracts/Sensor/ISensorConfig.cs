@@ -6,11 +6,15 @@ namespace CapFrameX.Contracts.Sensor
     {
         bool IsInitialized { get; set; }
 
-        bool GlobalIsActivated{ get; set; }
+        bool HasConfigFile { get; }
 
         bool GetSensorIsActive(string identifier);
 
         void SetSensorIsActive(string identifier, bool isActive);
+
+        bool GetSensorEvaluate(string identifier);
+
+        void SetSensorEvaluate(string identifier, bool isActive);
 
         Task Save();
     }

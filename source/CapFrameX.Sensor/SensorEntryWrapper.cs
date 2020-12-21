@@ -24,11 +24,11 @@ namespace CapFrameX.Sensor
             set
             {
                 _useForLogging = value;
-                UpdateLogState?.Invoke(Identifier);
+                UpdateLogState?.Invoke(Identifier, value);
                 RaisePropertyChanged();
             }
         }
 
-        public Action<string> UpdateLogState { get; set; }
+        public Action<string, bool> UpdateLogState { get; set; }
     }
 }

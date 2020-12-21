@@ -5,6 +5,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Serilog;
 using Newtonsoft.Json;
+using CapFrameX.Extensions;
 
 namespace OpenHardwareMonitor.Hardware
 {
@@ -19,27 +20,26 @@ namespace OpenHardwareMonitor.Hardware
             = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
                     @"CapFrameX\SensorConfiguration\");
 
-        private static readonly string GetConfigurationFileName = 
+        private static readonly string CONFIG_FILENAME =
             "SensorEntryConfiguration.json";
-
-        private readonly TaskCompletionSource<bool> _taskCompletionSource
-            = new TaskCompletionSource<bool>();
 
         private Dictionary<string, bool> _activeSensorsDict;
 
+        private Dictionary<string, bool> _evalSensorsDict
+            = new Dictionary<string, bool>();
+
         public bool IsInitialized { get; set; } = false;
 
-        public bool GlobalIsActivated { get; set; } = false;
+        public bool HasConfigFile => File.Exists(Path.Combine(SENSOR_CONFIG_FOLDER, CONFIG_FILENAME));
 
         public SensorConfig()
         {
-            _ = Task.Run(async () => await LoadOrSetDefault())
-                .ContinueWith(task => _taskCompletionSource.SetResult(true));
+            Task.Run(async () => await LoadOrSetDefault());
         }
 
         public bool GetSensorIsActive(string identifier)
         {
-            if (!IsInitialized || GlobalIsActivated)
+            if (!IsInitialized)
                 return true;
 
             bool isActive = false;
@@ -59,21 +59,47 @@ namespace OpenHardwareMonitor.Hardware
                 _activeSensorsDict.Add(identifier, isActive);
         }
 
+        public bool GetSensorEvaluate(string identifier)
+        {
+            if (!IsInitialized)
+                return true;
+
+            bool isActive = false;
+            if (_activeSensorsDict.ContainsKey(identifier))
+                isActive = _activeSensorsDict[identifier];
+
+            bool evaluate = false;
+            if (_evalSensorsDict.ContainsKey(identifier))
+                isActive = _evalSensorsDict[identifier];
+
+            return isActive || evaluate;
+        }
+
+        public void SetSensorEvaluate(string identifier, bool evaluate)
+        {
+            evaluate = !IsInitialized || evaluate;
+
+            if (_evalSensorsDict.ContainsKey(identifier))
+                _evalSensorsDict[identifier] = evaluate;
+            else
+                _evalSensorsDict.Add(identifier, evaluate);
+        }
+
         public async Task Save()
         {
             try
-            {               
+            {
                 var json = JsonConvert.SerializeObject(_activeSensorsDict);
 
                 if (!Directory.Exists(SENSOR_CONFIG_FOLDER))
                     Directory.CreateDirectory(SENSOR_CONFIG_FOLDER);
 
-                using (StreamWriter outputFile = new StreamWriter(GetConfigurationFileName))
+                using (StreamWriter outputFile = new StreamWriter(Path.Combine(SENSOR_CONFIG_FOLDER, CONFIG_FILENAME)))
                 {
                     await outputFile.WriteAsync(json);
                 }
             }
-            catch 
+            catch
             {
                 Log.Logger.Error("Error while saving sensor config.");
             }
@@ -91,16 +117,15 @@ namespace OpenHardwareMonitor.Hardware
             }
         }
 
-        private Task<Dictionary<string, bool>> GetSensorEntryDefaults()
+        private async Task<Dictionary<string, bool>> GetSensorEntryDefaults()
         {
-            throw new NotImplementedException();
+            return await Task.FromResult(new Dictionary<string, bool>());
         }
 
         private async Task<Dictionary<string, bool>> GetInitializedSensorEntryDictionary()
         {
-            string json = await FileExtensions.ReadAllTextAsync(GetConfigurationFileName);
-            var overlayEntriesFromJson = JsonConvert.DeserializeObject<OverlayEntryPersistence>(json)
-                .OverlayEntries.ToBlockingCollection<IOverlayEntry>();
+            string json = await FileExtensions.ReadAllTextAsync(Path.Combine(SENSOR_CONFIG_FOLDER, CONFIG_FILENAME));
+            return JsonConvert.DeserializeObject<Dictionary<string, bool>>(json);
         }
     }
 }

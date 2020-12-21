@@ -38,9 +38,6 @@ namespace CapFrameX.Overlay
         private bool _formatChanged;
         private object _value;
 
-        [JsonIgnore]
-        public ISensorConfig SensorConfig { get; set; }
-
         public string Identifier { get; }
 
         public EOverlayEntryType OverlayEntryType { get; set; }
@@ -49,6 +46,9 @@ namespace CapFrameX.Overlay
 
         [JsonIgnore]
         public Action PropertyChangedAction { set; get; }
+
+        [JsonIgnore]
+        public Action<string, bool> UpdateShowOnOverlay { set; get; }
 
         [JsonIgnore]
         public object Value
@@ -174,7 +174,7 @@ namespace CapFrameX.Overlay
             {
                 lock (_fieldLock)
                     _showOnOverlay = value;
-                SensorConfig?.SetSensorIsActive(Identifier, value);
+                UpdateShowOnOverlay?.Invoke(Identifier, value);
                 RaisePropertyChanged();
             }
         }
@@ -422,7 +422,6 @@ namespace CapFrameX.Overlay
         {
             return new OverlayEntryWrapper(Identifier)
             {
-                SensorConfig = SensorConfig,
                 OverlayEntryType = OverlayEntryType,
                 Description = Description,
                 ValueFormat = ValueFormat,

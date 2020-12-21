@@ -397,7 +397,7 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
 
             if (power != null)
             {
-                if (sensorConfig.GetSensorIsActive(power.Identifier.ToString()))
+                if (sensorConfig.GetSensorEvaluate(power.Identifier.ToString()))
                 {
                     var channels = new NvGpuPowerMonitorPowerChannelStatus[NVAPI.POWER_STATUS_CHANNEL_COUNT];
                     for (int i = 0; i < channels.Length; i++)
@@ -428,7 +428,7 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
             {
                 try
                 {
-                    if (sensorConfig.GetSensorIsActive(memoryUsageDedicated.Identifier.ToString()))
+                    if (sensorConfig.GetSensorEvaluate(memoryUsageDedicated.Identifier.ToString()))
                     {
                         memoryUsageDedicated.Value = dedicatedVramUsagePerformCounter.NextValue() / 1024f / 1024f;
                         ActivateSensor(memoryUsageDedicated);
@@ -444,7 +444,7 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
             {
                 try
                 {
-                    if (sensorConfig.GetSensorIsActive(memoryUsageShared.Identifier.ToString()))
+                    if (sensorConfig.GetSensorEvaluate(memoryUsageShared.Identifier.ToString()))
                     {
                         memoryUsageShared.Value = (float)sharedVramUsagePerformCounter.NextValue() / 1024f / 1024f;
                         ActivateSensor(memoryUsageShared);

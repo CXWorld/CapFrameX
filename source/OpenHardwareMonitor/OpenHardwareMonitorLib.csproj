@@ -248,6 +248,10 @@
       <Project>{4C3B8B5C-54D7-46A1-91A1-32BF82FD42CD}</Project>
       <Name>CapFrameX.Contracts</Name>
     </ProjectReference>
+    <ProjectReference Include="..\CapFrameX.Extensions\CapFrameX.Extensions.csproj">
+      <Project>{a4559b99-7fcb-40ef-bf97-d293a2b7d6d3}</Project>
+      <Name>CapFrameX.Extensions</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -213,6 +213,8 @@ namespace CapFrameX.Data
             {
                 _overlayService.StartCaptureTimer();
             }
+
+            await Task.FromResult(1);
         }
 
         public async Task StopCapture()

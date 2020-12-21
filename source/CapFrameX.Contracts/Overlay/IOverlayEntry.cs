@@ -13,8 +13,6 @@ namespace CapFrameX.Contracts.Overlay
 
     public interface IOverlayEntry
     {
-        ISensorConfig SensorConfig { get; set; }
-
         string Identifier { get; }
 
         EOverlayEntryType OverlayEntryType { get; }
@@ -75,6 +73,8 @@ namespace CapFrameX.Contracts.Overlay
         Action<string> UpdateGroupName { get; set; }
 
         Action PropertyChangedAction { set; get; }
+
+        Action<string, bool> UpdateShowOnOverlay { set; get; }
 
         IOverlayEntry Clone();
     }

@@ -3,6 +3,7 @@ using CapFrameX.Contracts.Sensor;
 using CapFrameX.Data;
 using CapFrameX.Sensor;
 using Microsoft.Extensions.Logging;
+using Prism.Commands;
 using Prism.Events;
 using Prism.Mvvm;
 using Prism.Regions;
@@ -12,6 +13,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Input;
 
 namespace CapFrameX.ViewModel
 {
@@ -26,6 +28,7 @@ namespace CapFrameX.ViewModel
 
         private int _selectedSensorEntryIndex;
         private SensorEntryWrapper _selectedSensorEntry;
+        private bool _saveButtonIsEnable;
 
         public bool UseSensorLogging
         {
@@ -75,10 +78,22 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        public bool SaveButtonIsEnable
+        {
+            get => _saveButtonIsEnable;
+            set
+            {
+                _saveButtonIsEnable = value;
+                RaisePropertyChanged();
+            }
+        }
+
         public Array LoggingPeriodItemsSource => new[] { 250, 500 };
 
         public ObservableCollection<SensorEntryWrapper> SensorEntries { get; }
           = new ObservableCollection<SensorEntryWrapper>();
+
+        public ICommand SaveConfigCommand { get; }
 
         public SensorViewModel(IAppConfiguration appConfiguration,
             IEventAggregator eventAggregator,
@@ -97,10 +112,19 @@ namespace CapFrameX.ViewModel
             _logger = logger;
             _captureManager = captureManager;
 
+            SaveConfigCommand = new DelegateCommand(
+                async () =>
+                {
+                    await _sensorEntryProvider.SaveSensorConfig();
+                    SaveButtonIsEnable = false;
+                });
+
+            _sensorEntryProvider.ConfigChanged = () => SaveButtonIsEnable = true;
+
             //// ToDo: Später durch Einzelsteuerungskonzept ersetzen
             //_sensorConfig.GlobalIsActivated = UseSensorLogging;
 
-            _ = Task.Run(async () => await SetWrappedSensorEntries());
+            Task.Run(async () => await SetWrappedSensorEntries());
 
             stopwatch.Stop();
             _logger.LogInformation(this.GetType().Name + " {initializationTime}s initialization time", Math.Round(stopwatch.ElapsedMilliseconds * 1E-03, 1));

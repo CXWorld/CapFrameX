@@ -1,4 +1,7 @@
 ﻿using CapFrameX.Contracts.Sensor;
+using CapFrameX.Extensions;
+using OpenHardwareMonitor.Hardware;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -10,6 +13,8 @@ namespace CapFrameX.Sensor
         private readonly ISensorService _sensorService;
         private readonly ISensorConfig _sensorConfig;
 
+        public Action ConfigChanged { get; set; }
+
         public SensorEntryProvider(ISensorService sensorService,
             ISensorConfig sensorConfig)
         {
@@ -20,22 +25,64 @@ namespace CapFrameX.Sensor
         public async Task<IEnumerable<ISensorEntry>> GetWrappedSensorEntries()
         {
             var sensorEntries = await _sensorService.GetSensorEntries();
-            return sensorEntries.Select(WrapSensorEntry);
+            var wrappedEntries = sensorEntries.Select(WrapSensorEntry);
+
+            if (!_sensorConfig.HasConfigFile)
+            {
+                wrappedEntries.ForEach(SetIsActiveDefault);
+                await SaveSensorConfig();
+            }
+
+            return wrappedEntries;
+        }
+
+        public async Task SaveSensorConfig()
+        {
+            await _sensorConfig.Save();
         }
 
         private SensorEntryWrapper WrapSensorEntry(ISensorEntry entry)
         {
             return new SensorEntryWrapper()
             {
+                Identifier = entry.Identifier,
                 Name = entry.Name,
                 SensorType = entry.SensorType,
+                HardwareType = entry.HardwareType,
                 UseForLogging = _sensorConfig.GetSensorIsActive(entry.Identifier),
                 UpdateLogState = UptdateLogState
             };
         }
 
-        void UptdateLogState(string identifier)
+        private void UptdateLogState(string identifier, bool useForLogging)
         {
+            ConfigChanged?.Invoke();
+            _sensorConfig.SetSensorIsActive(identifier, useForLogging);
+        }
+
+        private void SetIsActiveDefault(ISensorEntry sensor)
+        {
+            Enum.TryParse(sensor.HardwareType, out HardwareType hardwareType);
+            Enum.TryParse(sensor.SensorType, out SensorType sensorType);
+
+            switch (sensor.Name)
+            {
+                case "CPU Total" when hardwareType == HardwareType.CPU:
+                case "CPU Max" when hardwareType == HardwareType.CPU:
+                case "CPU Max Clock" when sensorType == SensorType.Clock:
+                case "CPU Package" when sensorType == SensorType.Power:
+                case "CPU Package" when sensorType == SensorType.Temperature:
+                case "GPU Core" when sensorType == SensorType.Load:
+                case "GPU Core" when sensorType == SensorType.Temperature:
+                case "GPU Core" when sensorType == SensorType.Clock:
+                case "GPU Power" when hardwareType == HardwareType.GpuNvidia:
+                case "GPU Power Limit" when hardwareType == HardwareType.GpuNvidia:
+                case "GPU Total" when hardwareType == HardwareType.GpuAti:
+                case "Used Memory" when hardwareType == HardwareType.RAM:
+                case "GPU Memory Dedicated" when sensorType == SensorType.SmallData:
+                    _sensorConfig.SetSensorIsActive(sensor.Identifier, true);
+                    break;
+            }
         }
     }
 }

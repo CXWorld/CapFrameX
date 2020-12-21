@@ -127,9 +127,9 @@
                             </ComboBox.ToolTip>
                         </ComboBox>
                         <Button Width="28" Height="28" HorizontalAlignment="Right" Margin="175 10 0 0" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
-                            ToolTip="Apply selected sensors for logging" Command="{Binding ApplySensorsCommand}" IsEnabled="{Binding ApplyButtonIsEnable}"
-                            materialDesign:RippleAssist.Feedback="#DD000000">
-                            <materialDesign:PackIcon Kind="DoneAll" Height="22" Width="22" />
+                                ToolTip="Save selected sensors for logging" Command="{Binding SaveConfigCommand}" IsEnabled="{Binding SaveButtonIsEnable}"
+                                materialDesign:RippleAssist.Feedback="#DD000000">
+                            <materialDesign:PackIcon Kind="ContentSaveSettings" Height="22" Width="22" />
                         </Button>
                     </StackPanel>
                 </StackPanel>

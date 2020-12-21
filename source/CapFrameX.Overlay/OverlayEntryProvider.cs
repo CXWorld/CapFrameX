@@ -220,18 +220,29 @@ namespace CapFrameX.Overlay
             {
                 _overlayEntries = await GetOverlayEntryDefaults();
             }
-            _sensorConfig.IsInitialized = true;
+
             _identifierOverlayEntryDict.Clear();
             foreach (var entry in _overlayEntries)
             {
-                entry.SensorConfig = _sensorConfig;
+                entry.UpdateShowOnOverlay = UpdateSensorIsActive;
+                _sensorConfig.SetSensorEvaluate(entry.Identifier, entry.ShowOnOverlay);
                 _identifierOverlayEntryDict.TryAdd(entry.Identifier, entry);
             }
+
+            _sensorConfig.IsInitialized = true;
+
             CheckCustomSystemInfo();
             CheckOSVersion();
             CheckGpuDriver();
 
             ManageFormats();
+        }
+
+        private void UpdateSensorIsActive(string identifier, bool isShownOnOverlay)
+        {
+            if (identifier == null)
+                return;
+            _sensorConfig.SetSensorEvaluate(identifier, isShownOnOverlay);
         }
 
         private void ManageFormats()

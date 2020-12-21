@@ -32,7 +32,6 @@ namespace CapFrameX.Overlay
         private readonly IRecordManager _recordManager;
         private readonly ISensorService _sensorService;
         private readonly IRTSSService _rTSSService;
-        private readonly ISensorConfig _sensorConfig;
         private readonly IOverlayEntryCore _overlayEntryCore;
         private ISubject<TimeSpan> _osdUpdateSubject;
 
@@ -66,7 +65,6 @@ namespace CapFrameX.Overlay
             ILogger<OverlayService> logger,
             IRecordManager recordManager,
             IRTSSService rTSSService,
-            ISensorConfig sensorConfig,
             IOverlayEntryCore overlayEntryCore)
         {
             Stopwatch stopwatch = new Stopwatch();
@@ -79,7 +77,6 @@ namespace CapFrameX.Overlay
             _recordManager = recordManager;
             _sensorService = sensorService;
             _rTSSService = rTSSService;
-            _sensorConfig = sensorConfig;
             _overlayEntryCore = overlayEntryCore;
 
             _numberOfRuns = _appConfiguration.SelectedHistoryRuns;
@@ -354,7 +351,6 @@ namespace CapFrameX.Overlay
                     }
                 }
 
-                InitializeSensorConfig();
                 _overlayEntryCore.OverlayEntryCoreCompletionSource.SetResult(true);
             }
             catch (Exception ex)
@@ -363,19 +359,10 @@ namespace CapFrameX.Overlay
             }
         }
 
-        private void InitializeSensorConfig()
-        {
-            foreach (var key in _overlayEntryCore.OverlayEntryDict.Keys)
-            {
-                _sensorConfig.SetSensorIsActive(key, true);
-            }
-        }
-
         private IOverlayEntry CreateOverlayEntry(ISensorEntry sensor)
         {
             return new OverlayEntryWrapper(sensor.Identifier.ToString())
             {
-                SensorConfig = _sensorConfig,
                 Description = GetDescription(sensor),
                 OverlayEntryType = MapType(sensor.HardwareType),
                 GroupName = GetGroupName(sensor),
