@@ -205,11 +205,11 @@ namespace OpenHardwareMonitor.Hardware.ATI
             get { return HardwareType.GpuAti; }
         }
 
-        private void GetODNTemperature(ADLODNTemperatureType type,
-          Sensor sensor)
+        private void GetODNTemperature(ADLODNTemperatureType type, Sensor sensor)
         {
-            if (ADL.ADL2_OverdriveN_Temperature_Get(context, adapterIndex,
-                type, out int temperature) == ADL.ADL_OK)
+            bool eval = sensorConfig.GetSensorEvaluate(sensor.IdentifierString);
+            if (eval && (ADL.ADL2_OverdriveN_Temperature_Get(context, adapterIndex,
+                    type, out int temperature) == ADL.ADL_OK))
             {
                 if (temperature >= 1E03)
                     sensor.Value = 1E-03f * temperature;
@@ -227,22 +227,17 @@ namespace OpenHardwareMonitor.Hardware.ATI
 
         private void GetOD6Power(ADLODNCurrentPowerType type, Sensor sensor)
         {
-            if (sensorConfig.GetSensorEvaluate(sensor.Identifier.ToString()))
+            bool eval = sensorConfig.GetSensorEvaluate(sensor.IdentifierString);
+            if (eval && (ADL.ADL2_Overdrive6_CurrentPower_Get(context, adapterIndex, type,
+              out int power) == ADL.ADL_OK))
             {
-                if (ADL.ADL2_Overdrive6_CurrentPower_Get(context, adapterIndex, type,
-                  out int power) == ADL.ADL_OK)
-                {
-                    sensor.Value = power * (1.0f / 0xFF);
-                    ActivateSensor(sensor);
-                }
-                else
-                {
-                    sensor.Value = null;
-                }
+                sensor.Value = power * (1.0f / 0xFF);
+                ActivateSensor(sensor);
             }
             else
+            {
                 sensor.Value = null;
-
+            }
         }
 
         public override string GetReport()
@@ -353,7 +348,7 @@ namespace OpenHardwareMonitor.Hardware.ATI
         private void GetPMLog(ADLPMLogDataOutput data,
           ADLSensorType sensorType, Sensor sensor, float factor = 1.0f)
         {
-            if (sensorConfig.GetSensorEvaluate(sensor.Identifier.ToString()))
+            if (sensorConfig.GetSensorEvaluate(sensor.IdentifierString))
             {
                 int i = (int)sensorType;
                 if (i < data.Sensors.Length && data.Sensors[i].Supported)
@@ -411,8 +406,9 @@ namespace OpenHardwareMonitor.Hardware.ATI
                 else
                 {
                     ADLTemperature adlt = new ADLTemperature();
-                    if (ADL.ADL_Overdrive5_Temperature_Get(adapterIndex, 0, ref adlt)
-                      == ADL.ADL_OK)
+                    bool evalTemperatureCore = sensorConfig.GetSensorEvaluate(temperatureCore.IdentifierString);
+                    if (evalTemperatureCore && (ADL.ADL_Overdrive5_Temperature_Get(adapterIndex, 0, ref adlt)
+                        == ADL.ADL_OK))
                     {
                         temperatureCore.Value = 0.001f * adlt.Temperature;
                         ActivateSensor(temperatureCore);
@@ -435,8 +431,10 @@ namespace OpenHardwareMonitor.Hardware.ATI
                 {
                     SpeedType = ADL.ADL_DL_FANCTRL_SPEED_TYPE_RPM
                 };
-                if (ADL.ADL_Overdrive5_FanSpeed_Get(adapterIndex, 0, ref adlf)
-                  == ADL.ADL_OK)
+
+                bool evalFan = sensorConfig.GetSensorEvaluate(fan.IdentifierString);
+                if (evalFan && (ADL.ADL_Overdrive5_FanSpeed_Get(adapterIndex, 0, ref adlf)
+                      == ADL.ADL_OK))
                 {
                     fan.Value = adlf.FanSpeed;
                     ActivateSensor(fan);
@@ -450,8 +448,10 @@ namespace OpenHardwareMonitor.Hardware.ATI
                 {
                     SpeedType = ADL.ADL_DL_FANCTRL_SPEED_TYPE_PERCENT
                 };
-                if (ADL.ADL_Overdrive5_FanSpeed_Get(adapterIndex, 0, ref adlf)
-                  == ADL.ADL_OK)
+
+                bool evalControlSensor = sensorConfig.GetSensorEvaluate(controlSensor.IdentifierString);
+                if (evalControlSensor && (ADL.ADL_Overdrive5_FanSpeed_Get(adapterIndex, 0, ref adlf)
+                    == ADL.ADL_OK))
                 {
                     // ADL bug: percentage is not 0 when rpm is 0
                     controlSensor.Value = fan.Value == 0 ? 0 : adlf.FanSpeed;
@@ -463,10 +463,10 @@ namespace OpenHardwareMonitor.Hardware.ATI
                 }
 
                 ADLPMActivity adlp = new ADLPMActivity();
-                if (ADL.ADL_Overdrive5_CurrentActivity_Get(adapterIndex, ref adlp)
-                  == ADL.ADL_OK)
+                if (ADL.ADL_Overdrive5_CurrentActivity_Get(adapterIndex, ref adlp) == ADL.ADL_OK)
                 {
-                    if (adlp.EngineClock > 0)
+                    bool evalCoreClock = sensorConfig.GetSensorEvaluate(coreClock.IdentifierString);
+                    if (adlp.EngineClock > 0 && evalCoreClock)
                     {
                         coreClock.Value = 0.01f * adlp.EngineClock;
                         ActivateSensor(coreClock);
@@ -476,7 +476,8 @@ namespace OpenHardwareMonitor.Hardware.ATI
                         coreClock.Value = null;
                     }
 
-                    if (adlp.MemoryClock > 0)
+                    bool evalMemoryClock = sensorConfig.GetSensorEvaluate(memoryClock.IdentifierString);
+                    if (adlp.MemoryClock > 0 && evalMemoryClock)
                     {
                         memoryClock.Value = 0.01f * adlp.MemoryClock;
                         ActivateSensor(memoryClock);
@@ -486,7 +487,8 @@ namespace OpenHardwareMonitor.Hardware.ATI
                         memoryClock.Value = null;
                     }
 
-                    if (adlp.Vddc > 0)
+                    bool evalCoreVoltage = sensorConfig.GetSensorEvaluate(coreVoltage.IdentifierString);
+                    if (adlp.Vddc > 0 && evalCoreVoltage)
                     {
                         coreVoltage.Value = 0.001f * adlp.Vddc;
                         ActivateSensor(coreVoltage);
@@ -496,8 +498,11 @@ namespace OpenHardwareMonitor.Hardware.ATI
                         coreVoltage.Value = null;
                     }
 
-                    coreLoad.Value = Math.Min(adlp.ActivityPercent, 100);
-                    ActivateSensor(coreLoad);
+                    if (sensorConfig.GetSensorEvaluate(coreLoad.IdentifierString))
+                    {
+                        coreLoad.Value = Math.Min(adlp.ActivityPercent, 100);
+                        ActivateSensor(coreLoad);
+                    }
                 }
                 else
                 {
@@ -513,7 +518,7 @@ namespace OpenHardwareMonitor.Hardware.ATI
             {
                 try
                 {
-                    if (sensorConfig.GetSensorEvaluate(memoryUsageDedicated.Identifier.ToString()))
+                    if (sensorConfig.GetSensorEvaluate(memoryUsageDedicated.IdentifierString))
                     {
                         memoryUsageDedicated.Value = dedicatedVramUsagePerformCounter.NextValue() / 1024f / 1024f;
                         ActivateSensor(memoryUsageDedicated);
@@ -529,7 +534,7 @@ namespace OpenHardwareMonitor.Hardware.ATI
             {
                 try
                 {
-                    if (sensorConfig.GetSensorEvaluate(memoryUsageShared.Identifier.ToString()))
+                    if (sensorConfig.GetSensorEvaluate(memoryUsageShared.IdentifierString))
                     {
                         memoryUsageShared.Value = (float)sharedVramUsagePerformCounter.NextValue() / 1024f / 1024f;
                         ActivateSensor(memoryUsageShared);

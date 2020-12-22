@@ -29,6 +29,8 @@ namespace OpenHardwareMonitor.Hardware
         private float? currentValue;
         private float? minValue;
         private float? maxValue;
+        private readonly Identifier identifier;
+        private readonly string identifierString;
         private readonly RingCollection<SensorValue>
           values = new RingCollection<SensorValue>();
         private readonly ISettings settings;
@@ -57,6 +59,10 @@ namespace OpenHardwareMonitor.Hardware
             this.defaultHidden = defaultHidden;
             this.sensorType = sensorType;
             this.hardware = hardware;
+            this.identifier = new Identifier(hardware.Identifier,
+                sensorType.ToString().ToLowerInvariant(),
+                index.ToString(CultureInfo.InvariantCulture));
+            this.identifierString = this.identifier.ToString();
             Parameter[] parameters = new Parameter[parameterDescriptions == null ?
               0 : parameterDescriptions.Length];
             for (int i = 0; i < parameters.Length; i++)
@@ -66,7 +72,7 @@ namespace OpenHardwareMonitor.Hardware
             this.settings = settings;
             this.defaultName = name;
             this.name = settings.GetValue(
-              new Identifier(Identifier, "name").ToString(), name);
+              new Identifier(Identifier, "name").ToString(), name);          
 
             GetSensorValuesFromSettings();
 
@@ -162,15 +168,9 @@ namespace OpenHardwareMonitor.Hardware
             get { return sensorType; }
         }
 
-        public Identifier Identifier
-        {
-            get
-            {
-                return new Identifier(hardware.Identifier,
-                  sensorType.ToString().ToLowerInvariant(),
-                  index.ToString(CultureInfo.InvariantCulture));
-            }
-        }
+        public Identifier Identifier => this.identifier;
+
+        public string IdentifierString => this.identifierString;
 
         public string Name
         {

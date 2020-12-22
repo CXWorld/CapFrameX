@@ -227,7 +227,7 @@ namespace CapFrameX.Sensor
 
                             entries.Add(new SensorEntry()
                             {
-                                Identifier = sensor.Identifier.ToString(),
+                                Identifier = sensor.IdentifierString,
                                 Value = sensor.Value,
                                 Name = sensor.Name,
                                 SensorType = sensor.SensorType.ToString(),
@@ -268,7 +268,7 @@ namespace CapFrameX.Sensor
                         if (sensor.Value != null)
                             dict.TryAdd(new SensorEntry()
                             {
-                                Identifier = sensor.Identifier.ToString(),
+                                Identifier = sensor.IdentifierString,
                                 Value = sensor.Value,
                                 SensorType = sensor.SensorType.ToString(),
                                 HardwareType = sensor.Hardware.HardwareType.ToString()
