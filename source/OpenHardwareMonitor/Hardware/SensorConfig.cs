@@ -11,8 +11,8 @@ namespace OpenHardwareMonitor.Hardware
 {
     /// <summary>
     /// Already implemented: 
-    /// GPU Power (Nvidia/AMD)
-    /// GPU Memory (Dedicated/Shared) Usage (Nvidia/AMD)
+    /// AMD GPU
+    /// Nvidia GPU
     /// </summary>
     public class SensorConfig : ISensorConfig
     {
@@ -70,7 +70,7 @@ namespace OpenHardwareMonitor.Hardware
 
             bool evaluate = false;
             if (_evalSensorsDict.ContainsKey(identifier))
-                isActive = _evalSensorsDict[identifier];
+                evaluate = _evalSensorsDict[identifier];
 
             return isActive || evaluate;
         }

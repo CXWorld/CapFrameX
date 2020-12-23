@@ -52,6 +52,7 @@ namespace OpenHardwareMonitor.Hardware
 
         SensorType SensorType { get; }
         Identifier Identifier { get; }
+        string IdentifierString { get; }
 
         string Name { get; set; }
         int Index { get; }
