@@ -2,6 +2,7 @@
 using CapFrameX.Contracts.Sensor;
 using CapFrameX.Data;
 using CapFrameX.Sensor;
+using CapFrameX.ViewModel.SubModels;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
@@ -95,6 +96,8 @@ namespace CapFrameX.ViewModel
 
         public ICommand SaveConfigCommand { get; }
 
+        public SensorGroupControl SensorSubModelGroupControl { get; }
+
         public SensorViewModel(IAppConfiguration appConfiguration,
             IEventAggregator eventAggregator,
             ISensorService sensorService,
@@ -111,6 +114,9 @@ namespace CapFrameX.ViewModel
             _sensorEntryProvider = sensorEntryProvider;
             _logger = logger;
             _captureManager = captureManager;
+
+            // define submodels
+            SensorSubModelGroupControl = new SensorGroupControl(this);
 
             SaveConfigCommand = new DelegateCommand(
                 async () =>
