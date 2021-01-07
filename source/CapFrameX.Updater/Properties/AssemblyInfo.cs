@@ -8,9 +8,9 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("CapFrameX.Updater")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("UGG")]
+[assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("CapFrameX.Updater")]
-[assembly: AssemblyCopyright("Copyright © UGG 2020")]
+[assembly: AssemblyCopyright("Copyright © 2021")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
