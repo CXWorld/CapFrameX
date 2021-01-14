@@ -117,7 +117,7 @@ namespace CapFrameX.ViewModel
             var displayNameMinFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.MinFps);
             var displayNameAdaptiveSTDFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.AdaptiveSTDFps);
             var displayNameCpuFpsPerWatt = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.CpuFpsPerWatt);
-            //var displayNameGpuFpsPerWatt = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.GpuFpsPerWatt);
+            var displayNameGpuFpsPerWatt = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.GpuFpsPerWatt);
             var displayNameCustomComment = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.CustomComment);
 
             builder.Append(displayNameGame + "\t" +
@@ -143,7 +143,7 @@ namespace CapFrameX.ViewModel
                            displayNameMinFps + "\t" +
                            displayNameAdaptiveSTDFps + "\t" +
                            displayNameCpuFpsPerWatt + "\t" +
-                           //displayNameGpuFpsPerWatt + "\t" +
+                           displayNameGpuFpsPerWatt + "\t" +
                            displayNameCustomComment +
                            Environment.NewLine);
 
@@ -174,7 +174,7 @@ namespace CapFrameX.ViewModel
                                reportInfo.MinFps.ToString(cultureInfo) + "\t" +
                                reportInfo.AdaptiveSTDFps.ToString(cultureInfo) + "\t" +
                                reportInfo.CpuFpsPerWatt.ToString(cultureInfo) + "\t" +
-                               //reportInfo.GpuFpsPerWatt.ToString(cultureInfo) + "\t" +
+                               reportInfo.GpuFpsPerWatt.ToString(cultureInfo) + "\t" +
                                reportInfo.CustomComment +
                                Environment.NewLine);
             }
@@ -221,10 +221,10 @@ namespace CapFrameX.ViewModel
                 .GetPhysicalMetricValue(frameTimes, EMetric.CpuFpsPerWatt,
                 SensorReport.GetAverageCpuPower(session.Runs.Select(run => run.SensorData),
                 0, double.PositiveInfinity));
-            //var gpuFpsPerWatt =  _frametimeStatisticProvider
-            //	.GetPhysicalMetricValue(frameTimes, EMetric.GpuFpsPerWatt,
-            //	SensorReport.GetAverageGpuPower(session.Runs.Select(run => run.SensorData),
-            //	0, double.PositiveInfinity));
+            var gpuFpsPerWatt = _frametimeStatisticProvider
+                .GetPhysicalMetricValue(frameTimes, EMetric.GpuFpsPerWatt,
+                SensorReport.GetAverageGpuPower(session.Runs.Select(run => run.SensorData),
+                0, double.PositiveInfinity));
 
             var reportInfo = new ReportInfo()
             {
@@ -251,7 +251,7 @@ namespace CapFrameX.ViewModel
                 MinFps = min,
                 AdaptiveSTDFps = adaptiveStandardDeviation,
                 CpuFpsPerWatt = cpuFpsPerWatt,
-                //GpuFpsPerWatt = gpuFpsPerWatt,
+                GpuFpsPerWatt = gpuFpsPerWatt,
                 CustomComment = recordInfo.Comment
             };
 
