@@ -16,7 +16,6 @@ using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Runtime.InteropServices;
-using System.Security;
 using System.Threading.Tasks;
 
 namespace CapFrameX.Data
