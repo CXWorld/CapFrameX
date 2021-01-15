@@ -780,13 +780,13 @@ namespace CapFrameX.ViewModel
                              SensorReport.GetAverageCpuPower(currentWrappedComparisonInfo.WrappedRecordInfo.Session.Runs.Select(run => run.SensorData),
                              startTime, endTime));
                     }
-                    //else if (metric == EMetric.GpuFpsPerWatt)
-                    //{
-                    //    metricValue =
-                    //        _frametimeStatisticProvider.GetPhysicalMetricValue(frametimeTimeWindow, EMetric.GpuFpsPerWatt,
-                    //             SensorReport.GetAverageGpuPower(currentWrappedComparisonInfo.WrappedRecordInfo.Session.Runs.Select(run => run.SensorData),
-                    //             startTime, endTime));
-                    //}
+                    else if (metric == EMetric.GpuFpsPerWatt)
+                    {
+                        metricValue =
+                            _frametimeStatisticProvider.GetPhysicalMetricValue(frametimeTimeWindow, EMetric.GpuFpsPerWatt,
+                                 SensorReport.GetAverageGpuPower(currentWrappedComparisonInfo.WrappedRecordInfo.Session.Runs.Select(run => run.SensorData),
+                                 startTime, endTime));
+                    }
                     else
                     {
                         metricValue = GetMetricValue(frametimeTimeWindow, metric);
@@ -805,7 +805,7 @@ namespace CapFrameX.ViewModel
         private string GetDescriptionAndFpsUnit(EMetric metric)
         {
             string description;
-            if (metric == EMetric.CpuFpsPerWatt /*|| metric == EMetric.GpuFpsPerWatt*/)
+            if (metric == EMetric.CpuFpsPerWatt || metric == EMetric.GpuFpsPerWatt)
             {
                 description = metric.GetDescription();
             }

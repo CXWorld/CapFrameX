@@ -48,11 +48,11 @@ namespace CapFrameX.Data
 		public double MinFps { get; set; }
 		[DisplayName("Adaptive STDEV")]
 		public double AdaptiveSTDFps { get; set; }
-		[DisplayName("CPU FPS/W")]
+		[DisplayName("CPU FPS / 10W")]
 		public double CpuFpsPerWatt { get; set; }
-		//[DisplayName("GPU FPS/W")]
-		//public double GpuFpsPerWatt { get; set; }
-		[DisplayName("Comment")]
+        [DisplayName("GPU FPS / 10W")]
+        public double GpuFpsPerWatt { get; set; }
+        [DisplayName("Comment")]
 		public string CustomComment { get; set; }
 	}
 }

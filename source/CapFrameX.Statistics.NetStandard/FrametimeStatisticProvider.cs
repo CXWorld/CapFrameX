@@ -202,22 +202,22 @@ namespace CapFrameX.Statistics.NetStandard
             {
                 case EMetric.CpuFpsPerWatt:
                     if (coefficient > 0)
-                        metricValue = (sequence.Count * 1000 / sequence.Sum()) / coefficient;
+                        metricValue = ((sequence.Count * 1000 / sequence.Sum()) / coefficient) * 10;
                     else
                         metricValue = 0;
                     break;
-                //case EMetric.GpuFpsPerWatt:
-                //    if (coefficient > 0)
-                //        metricValue = (sequence.Count * 1000 / sequence.Sum()) / coefficient;
-                //    else
-                //        metricValue = double.NaN;
-                //    break;
+                case EMetric.GpuFpsPerWatt:
+                    if (coefficient > 0)
+                        metricValue = ((sequence.Count * 1000 / sequence.Sum()) / coefficient) * 10;
+                    else
+                        metricValue = double.NaN;
+                    break;
                 default:
                     metricValue = 0;
                     break;
             }
 
-            return Math.Round(metricValue, 3);
+            return Math.Round(metricValue, 2);
         }
 
         public IList<double>[] GetDiscreteDistribution(IList<double> sequence)
