@@ -33,7 +33,7 @@ namespace CapFrameX.Sensor
         public void AddSensorValue(ISensorEntry sensor, float currentValue)
         { 
             if(!_data.TryGetValue(sensor.Identifier, out var collection)) {
-                collection = new SessionSensorEntry<double>(sensor.Name, sensor.SensorType);
+                collection = new SessionSensorEntry(sensor.Name, sensor.SensorType);
                 _data.Add(sensor.Identifier, collection);
             }
             collection.Values.AddLast(currentValue);

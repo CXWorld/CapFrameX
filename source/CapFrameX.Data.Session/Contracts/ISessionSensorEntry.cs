@@ -4,10 +4,10 @@ using System.Text;
 
 namespace CapFrameX.Data.Session.Contracts
 {
-    public interface ISessionSensorEntry<T>
+    public interface ISessionSensorEntry
     {
         string Name { get; }
         string Type { get; }
-        LinkedList<T> Values { get; }
+        LinkedList<double> Values { get; }
     }
 }

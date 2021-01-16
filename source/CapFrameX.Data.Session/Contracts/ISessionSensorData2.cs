@@ -4,9 +4,9 @@ using System.Text;
 
 namespace CapFrameX.Data.Session.Contracts
 {
-    public interface ISessionSensorData2: IDictionary<string, ISessionSensorEntry<double>>
+    public interface ISessionSensorData2: IDictionary<string, ISessionSensorEntry>
     {
-        ISessionSensorEntry<double> MeasureTime { get; }
-        ISessionSensorEntry<double> BetweenMeasureTime { get; }
+        ISessionSensorEntry MeasureTime { get; }
+        ISessionSensorEntry BetweenMeasureTime { get; }
     }
 }
