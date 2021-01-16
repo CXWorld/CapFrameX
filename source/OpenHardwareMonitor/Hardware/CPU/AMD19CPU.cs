@@ -21,6 +21,8 @@ namespace OpenHardwareMonitor.Hardware.CPU
         private readonly Sensor coresPowerSensor;
         private readonly Sensor busClock;
 
+        private readonly ISensorConfig sensorConfig;
+
         private const uint FAMILY_19H_M20H_THM_TCON_TEMP = 0x00059800;
         private const uint FAMILY_19H_M20H_THM_TCON_TEMP_RANGE_SEL = 0x80000;
         private uint FAMILY_19H_M20H_CCD_TEMP(uint i) { return 0x00059954 + i * 4; }
@@ -42,6 +44,8 @@ namespace OpenHardwareMonitor.Hardware.CPU
         public AMD19CPU(int processorIndex, CPUID[][] cpuid, ISettings settings, ISensorConfig config)
           : base(processorIndex, cpuid, settings, config)
         {
+            this.sensorConfig = config;
+
             coreTemperature = new Sensor(
               "CPU Package", 0, SensorType.Temperature, this, new[] {
             new ParameterDescription("Offset [°C]", "Temperature offset.", 0)
@@ -193,83 +197,99 @@ namespace OpenHardwareMonitor.Hardware.CPU
         {
             base.Update();
 
-            if (ReadSmnRegister(FAMILY_19H_M20H_THM_TCON_TEMP, out uint value))
+            if (sensorConfig.GetSensorEvaluate(coreTemperature.IdentifierString))
             {
-                float temperature = ((value >> 21) & 0x7FF) / 8.0f;
-                if ((value & FAMILY_19H_M20H_THM_TCON_TEMP_RANGE_SEL) != 0)
-                    temperature -= 49;
-
-                if (tctlTemperature != null)
+                if (ReadSmnRegister(FAMILY_19H_M20H_THM_TCON_TEMP, out uint value))
                 {
-                    tctlTemperature.Value = temperature +
-                      tctlTemperature.Parameters[0].Value;
-                    ActivateSensor(tctlTemperature);
-                }
+                    float temperature = ((value >> 21) & 0x7FF) / 8.0f;
+                    if ((value & FAMILY_19H_M20H_THM_TCON_TEMP_RANGE_SEL) != 0)
+                        temperature -= 49;
 
-                coreTemperature.Value = temperature +
-                  coreTemperature.Parameters[0].Value;
-                ActivateSensor(coreTemperature);
-            }
+                    if (tctlTemperature != null)
+                    {
+                        tctlTemperature.Value = temperature +
+                          tctlTemperature.Parameters[0].Value;
+                        ActivateSensor(tctlTemperature);
+                    }
 
-            float maxTemperature = float.MinValue;
-            int ccdCount = 0;
-            float ccdTemperatureSum = 0;
-            for (uint i = 0; i < ccdTemperatures.Length; i++)
-            {
-                if (ReadSmnRegister(FAMILY_19H_M20H_CCD_TEMP(i), out value))
-                {
-                    if ((value & FAMILY_19H_M20H_CCD_TEMP_VALID) == 0)
-                        break;
-
-                    float temperature = (value & 0x7FF) / 8.0f - 49;
-                    temperature += ccdTemperatures[i].Parameters[0].Value;
-
-                    if (temperature > maxTemperature)
-                        maxTemperature = temperature;
-                    ccdCount++;
-                    ccdTemperatureSum += temperature;
-
-                    ccdTemperatures[i].Value = temperature;
-                    ActivateSensor(ccdTemperatures[i]);
+                    coreTemperature.Value = temperature +
+                      coreTemperature.Parameters[0].Value;
+                    ActivateSensor(coreTemperature);
                 }
             }
 
-            if (ccdCount > 1)
+            if (ccdTemperatures.Any(sensor => sensorConfig.GetSensorEvaluate(sensor.IdentifierString))
+              || sensorConfig.GetSensorEvaluate(ccdMaxTemperature.IdentifierString)
+              || sensorConfig.GetSensorEvaluate(ccdAvgTemperature.IdentifierString))
             {
-                ccdMaxTemperature.Value = maxTemperature;
-                ActivateSensor(ccdMaxTemperature);
-
-                ccdAvgTemperature.Value = ccdTemperatureSum / ccdCount;
-                ActivateSensor(ccdAvgTemperature);
-            }
-
-            if (energyUnitMultiplier != 0 &&
-              Ring0.Rdmsr(MSR_PKG_ENERGY_STAT, out uint energyConsumed, out _))
-            {
-                DateTime time = DateTime.UtcNow;
-                float deltaTime = (float)(time - lastEnergyTime).TotalSeconds;
-                if (deltaTime > 0.01)
+                float maxTemperature = float.MinValue;
+                int ccdCount = 0;
+                float ccdTemperatureSum = 0;
+                for (uint i = 0; i < ccdTemperatures.Length; i++)
                 {
-                    packagePowerSensor.Value = energyUnitMultiplier * unchecked(
-                      energyConsumed - lastEnergyConsumed) / deltaTime;
-                    lastEnergyTime = time;
-                    lastEnergyConsumed = energyConsumed;
+                    if (ReadSmnRegister(FAMILY_19H_M20H_CCD_TEMP(i), out uint value))
+                    {
+                        if ((value & FAMILY_19H_M20H_CCD_TEMP_VALID) == 0)
+                            break;
+
+                        float temperature = (value & 0x7FF) / 8.0f - 49;
+                        temperature += ccdTemperatures[i].Parameters[0].Value;
+
+                        if (temperature > maxTemperature)
+                            maxTemperature = temperature;
+                        ccdCount++;
+                        ccdTemperatureSum += temperature;
+
+                        ccdTemperatures[i].Value = temperature;
+                        ActivateSensor(ccdTemperatures[i]);
+                    }
+                }
+
+                if (ccdCount > 1)
+                {
+                    ccdMaxTemperature.Value = maxTemperature;
+                    ActivateSensor(ccdMaxTemperature);
+
+                    ccdAvgTemperature.Value = ccdTemperatureSum / ccdCount;
+                    ActivateSensor(ccdAvgTemperature);
                 }
             }
 
-            float? coresPower = 0f;
-            for (int i = 0; i < cores.Length; i++)
+            if (sensorConfig.GetSensorEvaluate(packagePowerSensor.IdentifierString))
             {
-                cores[i].Update();
-                coresPower += cores[i].Power;
+                if (energyUnitMultiplier != 0 &&
+                    Ring0.Rdmsr(MSR_PKG_ENERGY_STAT, out uint energyConsumed, out _))
+                {
+                    DateTime time = DateTime.UtcNow;
+                    float deltaTime = (float)(time - lastEnergyTime).TotalSeconds;
+                    if (deltaTime > 0.01)
+                    {
+                        packagePowerSensor.Value = energyUnitMultiplier * unchecked(
+                          energyConsumed - lastEnergyConsumed) / deltaTime;
+                        lastEnergyTime = time;
+                        lastEnergyConsumed = energyConsumed;
+                    }
+                }
             }
 
-            coresPowerSensor.Value = coresPower;
-            coreMaxClocks.Value = cores.Max(crs => crs.CoreClock);
-
-            if (coresPower.HasValue)
+            if (cores.Any(core => sensorConfig.GetSensorEvaluate(core.ClockSensor.IdentifierString))
+                || sensorConfig.GetSensorEvaluate(coresPowerSensor.IdentifierString)
+                || sensorConfig.GetSensorEvaluate(coreMaxClocks.IdentifierString))
             {
-                ActivateSensor(coresPowerSensor);
+                float? coresPower = 0f;
+                for (int i = 0; i < cores.Length; i++)
+                {
+                    cores[i].Update();
+                    coresPower += cores[i].Power;
+                }
+
+                coresPowerSensor.Value = coresPower;
+                coreMaxClocks.Value = cores.Max(crs => crs.CoreClock);
+
+                if (coresPower.HasValue)
+                {
+                    ActivateSensor(coresPowerSensor);
+                }
             }
         }
 
@@ -286,6 +306,8 @@ namespace OpenHardwareMonitor.Hardware.CPU
             private float? power = null;
 
             public float? CoreClock => clockSensor.Value;
+
+            public Sensor ClockSensor => clockSensor;
 
             public Core(int index, CPUID[] threads, AMD19CPU cpu, ISettings settings)
             {

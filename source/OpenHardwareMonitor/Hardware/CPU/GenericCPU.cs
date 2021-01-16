@@ -208,7 +208,6 @@ namespace OpenHardwareMonitor.Hardware.CPU
             error = beginError + endError;
         }
 
-
         private static void AppendMSRData(StringBuilder r, uint msr, GroupAffinity affinity)
         {
             if (Ring0.RdmsrTx(msr, out uint eax, out uint edx, affinity))
@@ -292,8 +291,8 @@ namespace OpenHardwareMonitor.Hardware.CPU
         public override void Update()
         {
             if (sensorConfig.GetSensorEvaluate(totalLoad.IdentifierString)
-                   || sensorConfig.GetSensorEvaluate(maxLoad.IdentifierString)
-                   || coreLoads.Any(sensor => sensorConfig.GetSensorEvaluate(sensor.IdentifierString)))
+                || sensorConfig.GetSensorEvaluate(maxLoad.IdentifierString)
+                || coreLoads.Any(sensor => sensorConfig.GetSensorEvaluate(sensor.IdentifierString)))
             {
                 if (HasTimeStampCounter && isInvariantTimeStampCounter)
                 {

@@ -25,6 +25,8 @@ namespace OpenHardwareMonitor.Hardware.CPU
         private readonly Sensor coreMaxClocks;
         private readonly Sensor busClock;
 
+        private readonly ISensorConfig sensorConfig;
+
         private const uint FIDVID_STATUS = 0xC0010042;
 
         private const byte MISCELLANEOUS_CONTROL_FUNCTION = 3;
@@ -38,6 +40,8 @@ namespace OpenHardwareMonitor.Hardware.CPU
         public AMD0FCPU(int processorIndex, CPUID[][] cpuid, ISettings settings, ISensorConfig config)
           : base(processorIndex, cpuid, settings, config)
         {
+            this.sensorConfig = config;
+
             float offset = -49.0f;
 
             // AM2+ 65nm +21 offset
@@ -119,70 +123,75 @@ namespace OpenHardwareMonitor.Hardware.CPU
         {
             base.Update();
 
-            if (Ring0.WaitPciBusMutex(10))
+            if (coreTemperatures.Any(temps => sensorConfig.GetSensorEvaluate(temps.IdentifierString)))
             {
-
-                if (miscellaneousControlAddress != Ring0.InvalidPciAddress)
+                if (Ring0.WaitPciBusMutex(10))
                 {
-                    for (uint i = 0; i < coreTemperatures.Length; i++)
+                    if (miscellaneousControlAddress != Ring0.InvalidPciAddress)
                     {
-                        if (Ring0.WritePciConfig(
-                          miscellaneousControlAddress, THERMTRIP_STATUS_REGISTER,
-                          i > 0 ? thermSenseCoreSelCPU1 : thermSenseCoreSelCPU0))
+                        for (uint i = 0; i < coreTemperatures.Length; i++)
                         {
-                            uint value;
-                            if (Ring0.ReadPciConfig(
+                            if (Ring0.WritePciConfig(
                               miscellaneousControlAddress, THERMTRIP_STATUS_REGISTER,
-                              out value))
+                              i > 0 ? thermSenseCoreSelCPU1 : thermSenseCoreSelCPU0))
                             {
-                                coreTemperatures[i].Value = ((value >> 16) & 0xFF) +
-                                  coreTemperatures[i].Parameters[0].Value;
-                                ActivateSensor(coreTemperatures[i]);
-                            }
-                            else
-                            {
-                                DeactivateSensor(coreTemperatures[i]);
+                                if (Ring0.ReadPciConfig(
+                                  miscellaneousControlAddress, THERMTRIP_STATUS_REGISTER,
+                                  out uint value))
+                                {
+                                    coreTemperatures[i].Value = ((value >> 16) & 0xFF) +
+                                      coreTemperatures[i].Parameters[0].Value;
+                                    ActivateSensor(coreTemperatures[i]);
+                                }
+                                else
+                                {
+                                    DeactivateSensor(coreTemperatures[i]);
+                                }
                             }
                         }
                     }
-                }
 
-                Ring0.ReleasePciBusMutex();
+                    Ring0.ReleasePciBusMutex();
+                }
             }
 
-            if (HasTimeStampCounter)
+            if (coreClocks.Any(clocks => sensorConfig.GetSensorEvaluate(clocks.IdentifierString))
+               || sensorConfig.GetSensorEvaluate(coreMaxClocks.IdentifierString)
+               || sensorConfig.GetSensorEvaluate(busClock.IdentifierString))
             {
-                double newBusClock = 0;
-
-                for (int i = 0; i < coreClocks.Length; i++)
+                if (HasTimeStampCounter)
                 {
-                    Thread.Sleep(1);
+                    double newBusClock = 0;
 
-                    uint eax, edx;
-                    if (Ring0.RdmsrTx(FIDVID_STATUS, out eax, out edx,
-                      cpuid[i][0].Affinity))
+                    for (int i = 0; i < coreClocks.Length; i++)
                     {
-                        // CurrFID can be found in eax bits 0-5, MaxFID in 16-21
-                        // 8-13 hold StartFID, we don't use that here.
-                        double curMP = 0.5 * ((eax & 0x3F) + 8);
-                        double maxMP = 0.5 * ((eax >> 16 & 0x3F) + 8);
-                        coreClocks[i].Value =
-                          (float)(curMP * TimeStampCounterFrequency / maxMP);
-                        newBusClock = (float)(TimeStampCounterFrequency / maxMP);
+                        Thread.Sleep(1);
+
+                        if (Ring0.RdmsrTx(FIDVID_STATUS, out uint eax, out uint edx,
+                          cpuid[i][0].Affinity))
+                        {
+                            // CurrFID can be found in eax bits 0-5, MaxFID in 16-21
+                            // 8-13 hold StartFID, we don't use that here.
+                            double curMP = 0.5 * ((eax & 0x3F) + 8);
+                            double maxMP = 0.5 * ((eax >> 16 & 0x3F) + 8);
+                            coreClocks[i].Value =
+                              (float)(curMP * TimeStampCounterFrequency / maxMP);
+                            newBusClock = (float)(TimeStampCounterFrequency / maxMP);
+                        }
+                        else
+                        {
+                            // Fail-safe value - if the code above fails, we'll use this instead
+                            coreClocks[i].Value = (float)TimeStampCounterFrequency;
+                        }
                     }
-                    else
+
+                    coreMaxClocks.Value = coreClocks.Max(clk => clk.Value);
+
+                    if (newBusClock > 0)
                     {
-                        // Fail-safe value - if the code above fails, we'll use this instead
-                        coreClocks[i].Value = (float)TimeStampCounterFrequency;
+                        this.busClock.Value = (float)newBusClock;
+                        ActivateSensor(this.busClock);
                     }
-                }
-
-                coreMaxClocks.Value = coreClocks.Max(clk => clk.Value);
-
-                if (newBusClock > 0)
-                {
-                    this.busClock.Value = (float)newBusClock;
-                    ActivateSensor(this.busClock);
                 }
             }
         }
