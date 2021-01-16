@@ -219,11 +219,11 @@ namespace CapFrameX.ViewModel
             var adaptiveStandardDeviation = GeMetricValue(frameTimes, EMetric.AdaptiveStd);
             var cpuFpsPerWatt = _frametimeStatisticProvider
                 .GetPhysicalMetricValue(frameTimes, EMetric.CpuFpsPerWatt,
-                SensorReport.GetAverageCpuPower(session.Runs.Select(run => run.SensorData),
+                SensorReport.GetAverageCpuPower(session.Runs.Select(run => run.SensorData2),
                 0, double.PositiveInfinity));
             var gpuFpsPerWatt = _frametimeStatisticProvider
                 .GetPhysicalMetricValue(frameTimes, EMetric.GpuFpsPerWatt,
-                SensorReport.GetAverageGpuPower(session.Runs.Select(run => run.SensorData),
+                SensorReport.GetAverageGpuPower(session.Runs.Select(run => run.SensorData2),
                 0, double.PositiveInfinity));
 
             var reportInfo = new ReportInfo()

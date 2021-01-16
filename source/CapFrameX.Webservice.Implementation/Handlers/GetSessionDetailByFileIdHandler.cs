@@ -40,7 +40,7 @@ namespace CapFrameX.Webservice.Implementation.Handlers
 			var session = JsonConvert.DeserializeObject<Session>(Encoding.UTF8.GetString(fileBytes));
 
 			var infos = session.Info.GetType().GetProperties().Where(p => p.GetCustomAttributes(false).Any(a => a is DescriptionAttribute)).ToDictionary(p => (p.GetCustomAttributes(false).First(a => a is DescriptionAttribute) as DescriptionAttribute)?.Description, p => Convert.ToString(p.GetValue(session.Info)));
-			var sensorItems = SensorReport.GetReportFromSessionSensorData(session.Runs.Select(r => r.SensorData)).ToArray();
+			var sensorItems = SensorReport.GetReportFromSessionSensorData(session.Runs.Select(r => r.SensorData2)).ToArray();
 
 			var frametimeStatisticsProviderOptions = new FrametimeStatisticProviderOptions()
 			{

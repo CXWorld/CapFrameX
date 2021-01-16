@@ -210,7 +210,7 @@ namespace CapFrameX.Statistics.NetStandard
                     if (coefficient > 0)
                         metricValue = ((sequence.Count * 1000 / sequence.Sum()) / coefficient) * 10;
                     else
-                        metricValue = double.NaN;
+                        metricValue = 0;
                     break;
                 default:
                     metricValue = 0;

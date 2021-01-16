@@ -28,10 +28,6 @@ namespace CapFrameX.Data.Session.Contracts
 		double[] RamUsage { get; set; }
 		[SensorDataExport("VRAM usage(GB)")]
 		int[] VRamUsage { get; set; }
-		[SensorDataExport("Is in GPU limit")]
-		bool[] IsInGpuLimit { get; set; }
-		[SensorDataExport("GPU power limit")]
-		bool[] GpuPowerLimit { get; set; }
 		double[] BetweenMeasureTimes { get; set; }
 	}
 

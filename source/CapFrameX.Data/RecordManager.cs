@@ -284,7 +284,7 @@ namespace CapFrameX.Data
                 }
                 foreach (var value in values)
                 {
-                    container.Values.AddLast(Convert.ToDouble(value));
+                    container.Values.Add(Convert.ToDouble(value));
                 }
             }
 
@@ -293,21 +293,20 @@ namespace CapFrameX.Data
             InsertValues("BetweenMeasureTime", "BetweenMeasureTime", "Time", sessionRun.SensorData.BetweenMeasureTimes.Cast<object>());
 
             //CPU
-            InsertValues("CpuPower", "CpuPower", "Clock", sessionRun.SensorData.CpuPower.Cast<object>());
-            InsertValues("CpuTemp", "CpuTemp", "Temperature", sessionRun.SensorData.CpuTemp.Cast<object>());
-            InsertValues("CpuLoad", "CpuLoad", "Load", sessionRun.SensorData.CpuUsage.Cast<object>());
-            InsertValues("CpuMaxClock", "CpuMaxClock", "Clock", sessionRun.SensorData.CpuMaxClock.Cast<object>());
-            InsertValues("CpuMaxThreadLoad", "CpuMaxThreadLoad", "Load", sessionRun.SensorData.CpuMaxThreadUsage.Cast<object>());
+            InsertValues("CpuPower", "CPU Package", "Power", sessionRun.SensorData.CpuPower.Cast<object>());
+            InsertValues("CpuTemp", "CPU Package", "Temperature", sessionRun.SensorData.CpuTemp.Cast<object>());
+            InsertValues("CpuLoad", "CPU Total", "Load", sessionRun.SensorData.CpuUsage.Cast<object>());
+            InsertValues("CpuMaxClock", "CPU Max Clock", "Clock", sessionRun.SensorData.CpuMaxClock.Cast<object>());
+            InsertValues("CpuMaxThreadLoad", "CPU Max", "Load", sessionRun.SensorData.CpuMaxThreadUsage.Cast<object>());
 
             //GPU
             InsertValues("GpuClock", "GPU Core", "Clock", sessionRun.SensorData.GpuClock.Cast<object>());
-            InsertValues("GpuPower", "GpuPower", "Power", sessionRun.SensorData.GpuPower.Cast<object>());
-            InsertValues("GpuPowerLimit", "GpuPowerLimit", "Power", sessionRun.SensorData.GpuPowerLimit.Cast<object>());
-            InsertValues("GpuTemp", "GpuTemp", "Temperature", sessionRun.SensorData.GpuTemp.Cast<object>());
-            InsertValues("GpuUsage", "GpuUsage", "Load", sessionRun.SensorData.GpuUsage.Cast<object>());
+            InsertValues("GpuPower", "GPU Power", "Power", sessionRun.SensorData.GpuPower.Cast<object>());
+            InsertValues("GpuTemp", "GPU Core", "Temperature", sessionRun.SensorData.GpuTemp.Cast<object>());
+            InsertValues("GpuUsage", "GPU Core", "Load", sessionRun.SensorData.GpuUsage.Cast<object>());
 
-            InsertValues("RamUsage", "Used Memory", "Load", sessionRun.SensorData.RamUsage.Cast<object>());
-            InsertValues("VRamUsage", "GPU Memory Dedicated", "Load", sessionRun.SensorData.VRamUsage.Cast<object>());
+            InsertValues("RamUsage", "Used Memory", "Data", sessionRun.SensorData.RamUsage.Cast<object>());
+            InsertValues("VRamUsage", "GPU Memory Dedicated", "SmallData", sessionRun.SensorData.VRamUsage.Cast<object>());
 
         }
 
@@ -515,7 +514,6 @@ namespace CapFrameX.Data
                 var clone = JsonConvert.DeserializeObject<Session.Classes.Session>(json);
 
                 var dataPropertyInfos = typeof(SessionCaptureData).GetProperties().Where(pi => pi.PropertyType.IsArray);
-                var sensorPropertyInfos = typeof(SessionSensorData).GetProperties().Where(pi => pi.PropertyType.IsArray);
 
                 void SetArray(IEnumerable<PropertyInfo> propertyInfos, object sourceObject, object targetObject, IEnumerable<int> indicesToKeep)
                 {
@@ -554,9 +552,18 @@ namespace CapFrameX.Data
                     var sourceSessionRun = session.Runs[sessionRunIndex];
                     var targetSessionRun = clone.Runs[sessionRunIndex];
                     var dataIndicesToKeep = DetermineIndicesToKeep(sourceSessionRun.CaptureData.TimeInSeconds);
-                    var sensorIndicesToKeep = DetermineIndicesToKeep(sourceSessionRun.SensorData.MeasureTime);
+                    var sensorIndicesToKeep = DetermineIndicesToKeep(sourceSessionRun.SensorData2.MeasureTime.Values.ToArray());
                     SetArray(dataPropertyInfos, sourceSessionRun.CaptureData, clone.Runs[sessionRunIndex].CaptureData, dataIndicesToKeep);
-                    SetArray(sensorPropertyInfos, sourceSessionRun.SensorData, clone.Runs[sessionRunIndex].SensorData, sensorIndicesToKeep);
+                    clone.Runs[sessionRunIndex].SensorData2 = new SessionSensorData2();
+                    foreach(var collection in sourceSessionRun.SensorData2)
+                    {
+                        var clonedSensorEntry = new SessionSensorEntry(collection.Value.Name, collection.Value.Type);
+                        foreach(var indexToKeep in sensorIndicesToKeep)
+                        {
+                            clonedSensorEntry.Values.Add(collection.Value.Values.ElementAt(indexToKeep));
+                        }
+                        clone.Runs[sessionRunIndex].SensorData2.Add(collection.Key, clonedSensorEntry);
+                    }
                     targetSessionRun.Hash = Convert.ToString(targetSessionRun.GetHashCode()); // Dirty Hack weil Rohdaten nicht mehr vorhanden. Hash ist nicht vergleichbar mit dem Hash, welcher aus den PresentMonLines erstellt wird
                 }
 
@@ -829,20 +836,20 @@ namespace CapFrameX.Data
                 }
             }
 
-            if (sessionRuns.All(sr => sr.SensorData != null))
+            if (sessionRuns.All(sr => sr.SensorData2 != null))
             {
                 foreach (var sessionRun in sessionRuns)
                 {
-                    for (int i = 0; i < sessionRun.SensorData.BetweenMeasureTimes.Count(); i++)
+                    for (int i = 0; i < sessionRun.SensorData2.BetweenMeasureTimes.Count(); i++)
                     {
-                        lastSensorMeasureTime += sessionRun.SensorData.BetweenMeasureTimes[i];
-                        sessionRun.SensorData.MeasureTime[i] = lastSensorMeasureTime;
+                        lastSensorMeasureTime += sessionRun.SensorData2.BetweenMeasureTimes[i];
+                        sessionRun.SensorData2.MeasureTime.Values[i] = lastSensorMeasureTime;
                     }
                 }
             }
             else
             {
-                sessionRuns.ForEach(sr => sr.SensorData = null);
+                sessionRuns.ForEach(sr => sr.SensorData2 = null);
             }
         }
     }

@@ -387,7 +387,7 @@ namespace CapFrameX.ViewModel
 		public bool AdditionalGraphsEnabled
 		{
 			get => _session == null ? false
-				: _session.Runs.Any(r => r.SensorData != null);
+				: _session.Runs.Any(r => r.SensorData != null || r.SensorData2 != null);
 		}
 
 		public ICommand CopyStatisticalParameterCommand { get; }
@@ -516,9 +516,7 @@ namespace CapFrameX.ViewModel
 				|| !_localRecordDataServer.CurrentSession.Runs.Any())
 				return false;
 
-			return _localRecordDataServer.CurrentSession.Runs
-				.Where(session => session.SensorData != null)
-				.All(session => session.SensorData.GpuPowerLimit.Any());
+			return false;
 		}
 
 		private void Setup()
@@ -595,11 +593,11 @@ namespace CapFrameX.ViewModel
 			var adaptiveStandardDeviation = GeMetricValue(frametimes, EMetric.AdaptiveStd);
 			var cpuFpsPerWatt = _frametimeStatisticProvider
 				 .GetPhysicalMetricValue(frametimes, EMetric.CpuFpsPerWatt,
-				 SensorReport.GetAverageCpuPower(_session.Runs.Select(run => run.SensorData),
+				 SensorReport.GetAverageCpuPower(_session.Runs.Select(run => run.SensorData2),
 				 _localRecordDataServer.CurrentTime, _localRecordDataServer.CurrentTime + _localRecordDataServer.WindowLength));
             var gpuFpsPerWatt = _frametimeStatisticProvider
             .GetPhysicalMetricValue(frametimes, EMetric.GpuFpsPerWatt,
-            SensorReport.GetAverageGpuPower(_session.Runs.Select(run => run.SensorData),
+            SensorReport.GetAverageGpuPower(_session.Runs.Select(run => run.SensorData2),
             _localRecordDataServer.CurrentTime, _localRecordDataServer.CurrentTime + _localRecordDataServer.WindowLength));
 
             StringBuilder builder = new StringBuilder();
@@ -683,7 +681,7 @@ namespace CapFrameX.ViewModel
 			if (RecordInfo == null)
 				return;
 
-			var sensorInfos = SensorReport.GetReportFromSessionSensorData(_session.Runs.Select(run => run.SensorData),
+			var sensorInfos = SensorReport.GetReportFromSessionSensorData(_session.Runs.Select(run => run.SensorData2),
 				_localRecordDataServer.CurrentTime, _localRecordDataServer.CurrentTime + _localRecordDataServer.WindowLength);
 
 			StringBuilder builder = new StringBuilder();
@@ -703,7 +701,7 @@ namespace CapFrameX.ViewModel
 				return;
 
 
-			var rawSensorInfos = _session.Runs.Select(run => run.SensorData);
+			var rawSensorInfos = _session.Runs.Select(run => run.SensorData2);
 
 			var propertyInfos = typeof(ISessionSensorData).GetProperties()
 				.Where(pi => pi.GetCustomAttributes(false).OfType<SensorDataExportAttribute>().Any())
@@ -725,14 +723,14 @@ namespace CapFrameX.ViewModel
 			//Content
 			foreach (var run in rawSensorInfos)
 			{
-				for (int i = 0; i < run.MeasureTime.Length; i++)
+				for (int i = 0; i < run.MeasureTime.Values.Count; i++)
 				{
 					var gpuLoadLimit = SensorReport.GetPercentageInGpuLoadLimit(run.GpuUsage.ToList());
 
 					var lineValues = propertyInfos.Select(pi =>
 					{
 						var array = pi.GetValue(run) as Array;
-						return array.Length >= run.MeasureTime.Length ? Convert.ToString(array.GetValue(i), CultureInfo.InvariantCulture) : string.Empty;
+						return array.Length >= run.MeasureTime.Values.Count ? Convert.ToString(array.GetValue(i), CultureInfo.InvariantCulture) : string.Empty;
 					});
 					builder.AppendLine(string.Join("\t", lineValues) + "\t" + gpuLoadLimit );
 				}
@@ -838,7 +836,7 @@ namespace CapFrameX.ViewModel
 		private void UpdateSensorSessionReport()
 		{
 			SensorReportItems.Clear();
-			var items = SensorReport.GetReportFromSessionSensorData(_session.Runs.Select(run => run.SensorData),
+			var items = SensorReport.GetReportFromSessionSensorData(_session.Runs.Select(run => run.SensorData2).Cast<ISessionSensorData>(),
 				_localRecordDataServer.CurrentTime, _localRecordDataServer.CurrentTime + _localRecordDataServer.WindowLength);
 			foreach (var item in items)
 			{
@@ -939,11 +937,11 @@ namespace CapFrameX.ViewModel
 			var adaptiveStandardDeviation = GetMetricValue(frametimes, EMetric.AdaptiveStd);
 			var cpuFpsPerWatt = _frametimeStatisticProvider
 				.GetPhysicalMetricValue(frametimes, EMetric.CpuFpsPerWatt,
-				SensorReport.GetAverageCpuPower(_session.Runs.Select(run => run.SensorData),
+				SensorReport.GetAverageCpuPower(_session.Runs.Select(run => run.SensorData2),
 				_localRecordDataServer.CurrentTime, _localRecordDataServer.CurrentTime + _localRecordDataServer.WindowLength));
             var gpuFpsPerWatt = _frametimeStatisticProvider
             .GetPhysicalMetricValue(frametimes, EMetric.GpuFpsPerWatt,
-            SensorReport.GetAverageGpuPower(_session.Runs.Select(run => run.SensorData),
+            SensorReport.GetAverageGpuPower(_session.Runs.Select(run => run.SensorData2),
             _localRecordDataServer.CurrentTime, _localRecordDataServer.CurrentTime + _localRecordDataServer.WindowLength));
 
             Application.Current.Dispatcher.Invoke(new Action(() =>

@@ -73,7 +73,14 @@ namespace CapFrameX.Sensor.Reporting
             {
                 values = new List<T>();
                 var measureTimes = sessionSensorData.SelectMany(x => x.MeasureTime).ToArray();
-                var selectedValues = sessionsSensorData.SelectMany(selector).ToArray();
+                var selectedValues = sessionsSensorData.SelectMany(run => {
+                    var selectedValuesOfRun = selector(run);
+                    return selectedValuesOfRun ?? Enumerable.Empty<T>();
+                })?.ToArray();
+                if(selectedValues is null)
+                {
+                    return values.Any();
+                }
                 for (int i = 0; i < selectedValues.Count(); i++)
                 {
                     var measureTime = measureTimes[i];
