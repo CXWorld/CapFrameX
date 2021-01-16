@@ -300,14 +300,14 @@ namespace CapFrameX.Data
             InsertValues("CpuMaxThreadLoad", "CpuMaxThreadLoad", "Load", sessionRun.SensorData.CpuMaxThreadUsage.Cast<object>());
 
             //GPU
-            InsertValues("GpuClock", "GpuClock", "Clock", sessionRun.SensorData.GpuClock.Cast<object>());
+            InsertValues("GpuClock", "GPU Core", "Clock", sessionRun.SensorData.GpuClock.Cast<object>());
             InsertValues("GpuPower", "GpuPower", "Power", sessionRun.SensorData.GpuPower.Cast<object>());
             InsertValues("GpuPowerLimit", "GpuPowerLimit", "Power", sessionRun.SensorData.GpuPowerLimit.Cast<object>());
             InsertValues("GpuTemp", "GpuTemp", "Temperature", sessionRun.SensorData.GpuTemp.Cast<object>());
             InsertValues("GpuUsage", "GpuUsage", "Load", sessionRun.SensorData.GpuUsage.Cast<object>());
 
-            InsertValues("RamUsage", "RamUsage", "Load", sessionRun.SensorData.RamUsage.Cast<object>());
-            InsertValues("VRamUsage", "VRamUsage", "Load", sessionRun.SensorData.VRamUsage.Cast<object>());
+            InsertValues("RamUsage", "Used Memory", "Load", sessionRun.SensorData.RamUsage.Cast<object>());
+            InsertValues("VRamUsage", "GPU Memory Dedicated", "Load", sessionRun.SensorData.VRamUsage.Cast<object>());
 
         }
 
