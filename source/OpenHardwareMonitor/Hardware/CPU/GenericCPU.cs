@@ -8,10 +8,12 @@
 	
 */
 
+using CapFrameX.Contracts.Sensor;
 using Serilog;
 using System;
 using System.Diagnostics;
 using System.Globalization;
+using System.Linq;
 using System.Text;
 
 namespace OpenHardwareMonitor.Hardware.CPU
@@ -19,6 +21,8 @@ namespace OpenHardwareMonitor.Hardware.CPU
     internal class GenericCPU : Hardware
     {
         protected readonly CPUID[][] cpuid;
+
+        private readonly ISensorConfig sensorConfig;
 
         protected readonly uint family;
         protected readonly uint model;
@@ -59,9 +63,10 @@ namespace OpenHardwareMonitor.Hardware.CPU
                 return "CPU Core #" + ((i / coreThreadCount) + 1) + " - Thread #" + ((i % coreThreadCount) + 1);
         }
 
-        public GenericCPU(int processorIndex, CPUID[][] cpuid, ISettings settings)
+        public GenericCPU(int processorIndex, CPUID[][] cpuid, ISettings settings, ISensorConfig config)
         : base(cpuid[0][0].Name, CreateIdentifier(cpuid[0][0].Vendor, processorIndex), settings)
         {
+            this.sensorConfig = config;
             this.cpuid = cpuid;
 
             this.vendor = cpuid[0][0].Vendor;
@@ -203,11 +208,9 @@ namespace OpenHardwareMonitor.Hardware.CPU
             error = beginError + endError;
         }
 
-
         private static void AppendMSRData(StringBuilder r, uint msr, GroupAffinity affinity)
         {
-            uint eax, edx;
-            if (Ring0.RdmsrTx(msr, out eax, out edx, affinity))
+            if (Ring0.RdmsrTx(msr, out uint eax, out uint edx, affinity))
             {
                 r.Append(" ");
                 r.Append((msr).ToString("X8", CultureInfo.InvariantCulture));
@@ -287,38 +290,41 @@ namespace OpenHardwareMonitor.Hardware.CPU
 
         public override void Update()
         {
-            if (HasTimeStampCounter && isInvariantTimeStampCounter)
+            if (sensorConfig.GetSensorEvaluate(totalLoad.IdentifierString)
+                || sensorConfig.GetSensorEvaluate(maxLoad.IdentifierString)
+                || coreLoads.Any(sensor => sensorConfig.GetSensorEvaluate(sensor.IdentifierString)))
             {
-                // make sure always the same thread is used
-                var previousAffinity = ThreadAffinity.Set(cpuid[0][0].Affinity);
-
-                // read time before and after getting the TSC to estimate the error
-                long firstTime = Stopwatch.GetTimestamp();
-                ulong timeStampCount = Opcode.Rdtsc();
-                long time = Stopwatch.GetTimestamp();
-
-                // restore the thread affinity mask
-                ThreadAffinity.Set(previousAffinity);
-
-                double delta = ((double)(time - lastTime)) / Stopwatch.Frequency;
-                double error = ((double)(time - firstTime)) / Stopwatch.Frequency;
-
-                // only use data if they are measured accuarte enough (max 0.1ms delay)
-                if (error < 0.0001)
+                if (HasTimeStampCounter && isInvariantTimeStampCounter)
                 {
+                    // make sure always the same thread is used
+                    var previousAffinity = ThreadAffinity.Set(cpuid[0][0].Affinity);
 
-                    // ignore the first reading because there are no initial values 
-                    // ignore readings with too large or too small time window
-                    if (lastTime != 0 && delta > 0.5 && delta < 2)
+                    // read time before and after getting the TSC to estimate the error
+                    long firstTime = Stopwatch.GetTimestamp();
+                    ulong timeStampCount = Opcode.Rdtsc();
+                    long time = Stopwatch.GetTimestamp();
+
+                    // restore the thread affinity mask
+                    ThreadAffinity.Set(previousAffinity);
+
+                    double delta = ((double)(time - lastTime)) / Stopwatch.Frequency;
+                    double error = ((double)(time - firstTime)) / Stopwatch.Frequency;
+
+                    // only use data if they are measured accuarte enough (max 0.1ms delay)
+                    if (error < 1E-04)
                     {
+                        // ignore the first reading because there are no initial values 
+                        // ignore readings with too large or too small time window
+                        if (lastTime != 0 && delta > 0.5 && delta < 2)
+                        {
+                            // update the TSC frequency with the new value
+                            TimeStampCounterFrequency =
+                              (timeStampCount - lastTimeStampCount) / (1e6 * delta);
+                        }
 
-                        // update the TSC frequency with the new value
-                        TimeStampCounterFrequency =
-                          (timeStampCount - lastTimeStampCount) / (1e6 * delta);
+                        lastTimeStampCount = timeStampCount;
+                        lastTime = time;
                     }
-
-                    lastTimeStampCount = timeStampCount;
-                    lastTime = time;
                 }
             }
 

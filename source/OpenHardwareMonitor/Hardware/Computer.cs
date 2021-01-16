@@ -98,7 +98,7 @@ namespace OpenHardwareMonitor.Hardware
                 Add(new CPU.CPUGroup(settings, sensorConfig));
 
             if (ramEnabled)
-                Add(new RAM.RAMGroup(smbios, settings));
+                Add(new RAM.RAMGroup(settings, sensorConfig));
 
             if (gpuEnabled)
             {
@@ -164,7 +164,7 @@ namespace OpenHardwareMonitor.Hardware
                 if (open && value != ramEnabled)
                 {
                     if (value)
-                        Add(new RAM.RAMGroup(smbios, settings));
+                        Add(new RAM.RAMGroup(settings, sensorConfig));
                     else
                         RemoveType<RAM.RAMGroup>();
                 }

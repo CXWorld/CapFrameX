@@ -8,6 +8,7 @@
 	
 */
 
+using CapFrameX.Contracts.Sensor;
 using System;
 using System.Globalization;
 using System.Linq;
@@ -48,6 +49,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
         private readonly Sensor coreMaxClock;
         private readonly Sensor busClock;
         private readonly Sensor[] powerSensors;
+        private readonly ISensorConfig sensorConfig;
 
         private readonly Microarchitecture microarchitecture;
         private readonly double timeStampCounterMultiplier;
@@ -98,9 +100,11 @@ namespace OpenHardwareMonitor.Hardware.CPU
             return result;
         }
 
-        public IntelCPU(int processorIndex, CPUID[][] cpuid, ISettings settings)
-          : base(processorIndex, cpuid, settings)
+        public IntelCPU(int processorIndex, CPUID[][] cpuid, ISettings settings, ISensorConfig config)
+          : base(processorIndex, cpuid, settings, config)
         {
+            this.sensorConfig = config;
+
             // set tjMax
             float[] tjMax;
             switch (family)
@@ -397,8 +401,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
                 lastEnergyTime = new DateTime[energyStatusMSRs.Length];
                 lastEnergyConsumed = new uint[energyStatusMSRs.Length];
 
-                uint eax, edx;
-                if (Ring0.Rdmsr(MSR_RAPL_POWER_UNIT, out eax, out edx))
+                if (Ring0.Rdmsr(MSR_RAPL_POWER_UNIT, out uint eax, out uint edx))
                     switch (microarchitecture)
                     {
                         case Microarchitecture.Silvermont:
@@ -463,25 +466,28 @@ namespace OpenHardwareMonitor.Hardware.CPU
         {
             base.Update();
 
-            for (int i = 0; i < coreTemperatures.Length; i++)
+            if (coreTemperatures.Any(sensor => sensorConfig.GetSensorEvaluate(sensor.IdentifierString)))
             {
-                // if reading is valid
-                if (Ring0.RdmsrTx(IA32_THERM_STATUS_MSR, out uint eax, out uint edx,
-                    cpuid[i][0].Affinity) && (eax & 0x80000000) != 0)
+                for (int i = 0; i < coreTemperatures.Length; i++)
                 {
-                    // get the dist from tjMax from bits 22:16
-                    float deltaT = ((eax & 0x007F0000) >> 16);
-                    float tjMax = coreTemperatures[i].Parameters[0].Value;
-                    float tSlope = coreTemperatures[i].Parameters[1].Value;
-                    coreTemperatures[i].Value = tjMax - tSlope * deltaT;
-                }
-                else
-                {
-                    coreTemperatures[i].Value = null;
+                    // if reading is valid
+                    if (Ring0.RdmsrTx(IA32_THERM_STATUS_MSR, out uint eax, out uint edx,
+                        cpuid[i][0].Affinity) && (eax & 0x80000000) != 0)
+                    {
+                        // get the dist from tjMax from bits 22:16
+                        float deltaT = ((eax & 0x007F0000) >> 16);
+                        float tjMax = coreTemperatures[i].Parameters[0].Value;
+                        float tSlope = coreTemperatures[i].Parameters[1].Value;
+                        coreTemperatures[i].Value = tjMax - tSlope * deltaT;
+                    }
+                    else
+                    {
+                        coreTemperatures[i].Value = null;
+                    }
                 }
             }
 
-            if (packageTemperature != null)
+            if (packageTemperature != null && sensorConfig.GetSensorEvaluate(packageTemperature.IdentifierString))
             {
                 // if reading is valid
                 if (Ring0.RdmsrTx(IA32_PACKAGE_THERM_STATUS, out uint eax, out uint edx,
@@ -499,71 +505,75 @@ namespace OpenHardwareMonitor.Hardware.CPU
                 }
             }
 
-            if (HasTimeStampCounter && timeStampCounterMultiplier > 0)
+            if (coreClocks.Any(sensor => sensorConfig.GetSensorEvaluate(sensor.IdentifierString))
+                || sensorConfig.GetSensorEvaluate(coreMaxClock.IdentifierString))
             {
-                double newBusClock = 0;
-                for (int i = 0; i < coreClocks.Length; i++)
+                if (HasTimeStampCounter && timeStampCounterMultiplier > 0)
                 {
-                    System.Threading.Thread.Sleep(1);
-                    if (Ring0.RdmsrTx(IA32_PERF_STATUS, out uint eax, out uint edx,
-                      cpuid[i][0].Affinity))
+                    double newBusClock = 0;
+                    for (int i = 0; i < coreClocks.Length; i++)
                     {
-                        newBusClock =
-                          TimeStampCounterFrequency / timeStampCounterMultiplier;
-                        switch (microarchitecture)
+                        System.Threading.Thread.Sleep(1);
+                        if (Ring0.RdmsrTx(IA32_PERF_STATUS, out uint eax, out uint edx,
+                          cpuid[i][0].Affinity))
                         {
-                            case Microarchitecture.Nehalem:
-                                {
-                                    uint multiplier = eax & 0xff;
-                                    coreClocks[i].Value = (float)(multiplier * newBusClock);
-                                }
-                                break;
-                            case Microarchitecture.SandyBridge:
-                            case Microarchitecture.IvyBridge:
-                            case Microarchitecture.Haswell:
-                            case Microarchitecture.Broadwell:
-                            case Microarchitecture.Silvermont:
-                            case Microarchitecture.Skylake:
-                            case Microarchitecture.KabyLake:
-                            case Microarchitecture.Goldmont:
-                            case Microarchitecture.GoldmontPlus:
-                            case Microarchitecture.CannonLake:
-                            case Microarchitecture.IceLake:
-                            case Microarchitecture.CometLake:
-                            case Microarchitecture.Tremont:
-                            case Microarchitecture.TigerLake:
-                            case Microarchitecture.RocketLake:
-                                {
-                                    uint multiplier = (eax >> 8) & 0xff;
-                                    coreClocks[i].Value = (float)(multiplier * newBusClock);
-                                }
-                                break;
-                            default:
-                                {
-                                    double multiplier =
-                                      ((eax >> 8) & 0x1f) + 0.5 * ((eax >> 14) & 1);
-                                    coreClocks[i].Value = (float)(multiplier * newBusClock);
-                                }
-                                break;
+                            newBusClock =
+                              TimeStampCounterFrequency / timeStampCounterMultiplier;
+                            switch (microarchitecture)
+                            {
+                                case Microarchitecture.Nehalem:
+                                    {
+                                        uint multiplier = eax & 0xff;
+                                        coreClocks[i].Value = (float)(multiplier * newBusClock);
+                                    }
+                                    break;
+                                case Microarchitecture.SandyBridge:
+                                case Microarchitecture.IvyBridge:
+                                case Microarchitecture.Haswell:
+                                case Microarchitecture.Broadwell:
+                                case Microarchitecture.Silvermont:
+                                case Microarchitecture.Skylake:
+                                case Microarchitecture.KabyLake:
+                                case Microarchitecture.Goldmont:
+                                case Microarchitecture.GoldmontPlus:
+                                case Microarchitecture.CannonLake:
+                                case Microarchitecture.IceLake:
+                                case Microarchitecture.CometLake:
+                                case Microarchitecture.Tremont:
+                                case Microarchitecture.TigerLake:
+                                case Microarchitecture.RocketLake:
+                                    {
+                                        uint multiplier = (eax >> 8) & 0xff;
+                                        coreClocks[i].Value = (float)(multiplier * newBusClock);
+                                    }
+                                    break;
+                                default:
+                                    {
+                                        double multiplier =
+                                          ((eax >> 8) & 0x1f) + 0.5 * ((eax >> 14) & 1);
+                                        coreClocks[i].Value = (float)(multiplier * newBusClock);
+                                    }
+                                    break;
+                            }
+                        }
+                        else
+                        {
+                            // if IA32_PERF_STATUS is not available, assume TSC frequency
+                            coreClocks[i].Value = (float)TimeStampCounterFrequency;
                         }
                     }
-                    else
+
+                    coreMaxClock.Value = coreClocks.Max(clk => clk.Value);
+
+                    if (newBusClock > 0)
                     {
-                        // if IA32_PERF_STATUS is not available, assume TSC frequency
-                        coreClocks[i].Value = (float)TimeStampCounterFrequency;
+                        this.busClock.Value = (float)newBusClock;
+                        ActivateSensor(this.busClock);
                     }
-                }
-
-                coreMaxClock.Value = coreClocks.Max(clk => clk.Value);
-
-                if (newBusClock > 0)
-                {
-                    this.busClock.Value = (float)newBusClock;
-                    ActivateSensor(this.busClock);
                 }
             }
 
-            if (powerSensors != null)
+            if (powerSensors != null && powerSensors.Any(sensor => sensorConfig.GetSensorEvaluate(sensor.IdentifierString)))
             {
                 foreach (Sensor sensor in powerSensors)
                 {
@@ -577,7 +587,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
                     uint energyConsumed = eax;
                     float deltaTime =
                       (float)(time - lastEnergyTime[sensor.Index]).TotalSeconds;
-                    if (deltaTime < 0.01)
+                    if (deltaTime < 1E-02)
                         continue;
 
                     sensor.Value = energyUnitMultiplier * unchecked(

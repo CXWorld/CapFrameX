@@ -8,6 +8,7 @@
 	
 */
 
+using CapFrameX.Contracts.Sensor;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -25,6 +26,8 @@ namespace OpenHardwareMonitor.Hardware.CPU
         private readonly Sensor[] coreClocks;
         private readonly Sensor coreMaxClocks;
         private readonly Sensor busClock;
+
+        private readonly ISensorConfig sensorConfig;
 
         private const uint PERF_CTL_0 = 0xC0010000;
         private const uint PERF_CTR_0 = 0xC0010004;
@@ -59,9 +62,11 @@ namespace OpenHardwareMonitor.Hardware.CPU
         private readonly double timeStampCounterMultiplier;
         private readonly bool corePerformanceBoostSupport;
 
-        public AMD10CPU(int processorIndex, CPUID[][] cpuid, ISettings settings)
-          : base(processorIndex, cpuid, settings)
+        public AMD10CPU(int processorIndex, CPUID[][] cpuid, ISettings settings, ISensorConfig config)
+          : base(processorIndex, cpuid, settings, config)
         {
+            this.sensorConfig = config;
+
             // AMD family 1Xh processors support only one temperature sensor
             coreTemperature = new Sensor(
               "Core" + (coreCount > 1 ? " #1 - #" + coreCount : ""), 0,
@@ -156,7 +161,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
             uint ctrEax, ctrEdx;
             Ring0.Rdmsr(PERF_CTR_0, out ctrEax, out ctrEdx);
 
-            timeStampCounterMultiplier = estimateTimeStampCounterMultiplier();
+            timeStampCounterMultiplier = EstimateTimeStampCounterMultiplier();
 
             // restore the performance counter registers
             Ring0.Wrmsr(PERF_CTL_0, ctlEax, ctlEdx);
@@ -196,7 +201,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
             Update();
         }
 
-        private double estimateTimeStampCounterMultiplier()
+        private double EstimateTimeStampCounterMultiplier()
         {
             // preload the function
             estimateTimeStampCounterMultiplier(0);
@@ -380,90 +385,97 @@ namespace OpenHardwareMonitor.Hardware.CPU
         {
             base.Update();
 
-            if (temperatureStream == null)
+            if (sensorConfig.GetSensorEvaluate(coreTemperature.IdentifierString))
             {
-                if (miscellaneousControlAddress != Ring0.InvalidPciAddress)
+                if (temperatureStream == null)
                 {
-                    uint value;
-                    bool valueValid;
-                    if (hasSmuTemperatureRegister)
+                    if (miscellaneousControlAddress != Ring0.InvalidPciAddress)
                     {
-                        valueValid =
-                          ReadSmuRegister(SMU_REPORTED_TEMP_CONTROL_REGISTER, out value);
-                    }
-                    else
-                    {
-                        valueValid = Ring0.ReadPciConfig(miscellaneousControlAddress,
-                          REPORTED_TEMPERATURE_CONTROL_REGISTER, out value);
-                    }
-                    if (valueValid)
-                    {
-                        if ((family == 0x15 || family == 0x16) && (value & 0x30000) == 0x30000)
+                        uint value;
+                        bool valueValid;
+                        if (hasSmuTemperatureRegister)
                         {
-                            coreTemperature.Value = ((value >> 21) & 0x7FF) * 0.125f +
-                              coreTemperature.Parameters[0].Value - 49;
+                            valueValid =
+                              ReadSmuRegister(SMU_REPORTED_TEMP_CONTROL_REGISTER, out value);
                         }
                         else
                         {
-                            coreTemperature.Value = ((value >> 21) & 0x7FF) * 0.125f +
-                              coreTemperature.Parameters[0].Value;
+                            valueValid = Ring0.ReadPciConfig(miscellaneousControlAddress,
+                              REPORTED_TEMPERATURE_CONTROL_REGISTER, out value);
                         }
+                        if (valueValid)
+                        {
+                            if ((family == 0x15 || family == 0x16) && (value & 0x30000) == 0x30000)
+                            {
+                                coreTemperature.Value = ((value >> 21) & 0x7FF) * 0.125f +
+                                  coreTemperature.Parameters[0].Value - 49;
+                            }
+                            else
+                            {
+                                coreTemperature.Value = ((value >> 21) & 0x7FF) * 0.125f +
+                                  coreTemperature.Parameters[0].Value;
+                            }
+                            ActivateSensor(coreTemperature);
+                        }
+                        else
+                        {
+                            DeactivateSensor(coreTemperature);
+                        }
+                    }
+                }
+                else
+                {
+                    string s = ReadFirstLine(temperatureStream);
+                    try
+                    {
+                        coreTemperature.Value = 0.001f *
+                          long.Parse(s, CultureInfo.InvariantCulture);
                         ActivateSensor(coreTemperature);
                     }
-                    else
+                    catch
                     {
                         DeactivateSensor(coreTemperature);
                     }
                 }
             }
-            else
+
+            if (coreClocks.Any(clock => sensorConfig.GetSensorEvaluate(clock.IdentifierString))
+                || sensorConfig.GetSensorEvaluate(coreMaxClocks.IdentifierString)
+                || sensorConfig.GetSensorEvaluate(busClock.IdentifierString))
             {
-                string s = ReadFirstLine(temperatureStream);
-                try
+                if (HasTimeStampCounter)
                 {
-                    coreTemperature.Value = 0.001f *
-                      long.Parse(s, CultureInfo.InvariantCulture);
-                    ActivateSensor(coreTemperature);
-                }
-                catch
-                {
-                    DeactivateSensor(coreTemperature);
-                }
-            }
+                    double newBusClock = 0;
 
-            if (HasTimeStampCounter)
-            {
-                double newBusClock = 0;
-
-                for (int i = 0; i < coreClocks.Length; i++)
-                {
-                    Thread.Sleep(1);
-
-                    uint curEax, curEdx;
-                    if (Ring0.RdmsrTx(COFVID_STATUS, out curEax, out curEdx,
-                      cpuid[i][0].Affinity))
+                    for (int i = 0; i < coreClocks.Length; i++)
                     {
-                        double multiplier;
-                        multiplier = GetCoreMultiplier(curEax);
+                        Thread.Sleep(1);
 
-                        coreClocks[i].Value =
-                          (float)(multiplier * TimeStampCounterFrequency /
-                          timeStampCounterMultiplier);
-                        newBusClock =
-                          (float)(TimeStampCounterFrequency / timeStampCounterMultiplier);
+                        if (Ring0.RdmsrTx(COFVID_STATUS, out uint curEax, out uint curEdx,
+                          cpuid[i][0].Affinity))
+                        {
+                            double multiplier;
+                            multiplier = GetCoreMultiplier(curEax);
+
+                            coreClocks[i].Value =
+                              (float)(multiplier * TimeStampCounterFrequency /
+                              timeStampCounterMultiplier);
+                            newBusClock =
+                              (float)(TimeStampCounterFrequency / timeStampCounterMultiplier);
+                        }
+                        else
+                        {
+                            coreClocks[i].Value = (float)TimeStampCounterFrequency;
+                        }
                     }
-                    else
+
+                    coreMaxClocks.Value = coreClocks.Max(clk => clk.Value);
+
+                    if (newBusClock > 0)
                     {
-                        coreClocks[i].Value = (float)TimeStampCounterFrequency;
+                        this.busClock.Value = (float)newBusClock;
+                        ActivateSensor(this.busClock);
                     }
-                }
-
-                coreMaxClocks.Value = coreClocks.Max(clk => clk.Value);
-
-                if (newBusClock > 0)
-                {
-                    this.busClock.Value = (float)newBusClock;
-                    ActivateSensor(this.busClock);
                 }
             }
         }
