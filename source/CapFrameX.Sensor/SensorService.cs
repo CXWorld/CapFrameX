@@ -185,7 +185,7 @@ namespace CapFrameX.Sensor
             _sensorUpdateSubject.OnNext(CurrentSensorTimespan);
         }
 
-        public ISessionSensorData GetSensorSessionData()
+        public ISessionSensorData2 GetSensorSessionData()
         {
             return UseSensorLogging ? _sessionSensorDataLive
                 .ToSessionSensorData() : null;
@@ -250,7 +250,9 @@ namespace CapFrameX.Sensor
             _sessionSensorDataLive.AddMeasureTime(timestamp);
             foreach (var sensorPair in currentValues)
             {
-                _sessionSensorDataLive.AddSensorValue(sensorPair.Key, sensorPair.Value);
+                if (_sensorConfig.GetSensorIsActive(sensorPair.Key.Identifier)) {
+                    _sessionSensorDataLive.AddSensorValue(sensorPair.Key, sensorPair.Value);
+                }
             }
         }
 
@@ -270,6 +272,7 @@ namespace CapFrameX.Sensor
                             {
                                 Identifier = sensor.IdentifierString,
                                 Value = sensor.Value,
+                                Name = sensor.Name,
                                 SensorType = sensor.SensorType.ToString(),
                                 HardwareType = sensor.Hardware.HardwareType.ToString()
                             },

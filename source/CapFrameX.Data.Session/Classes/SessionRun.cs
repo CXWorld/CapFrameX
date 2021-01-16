@@ -14,6 +14,9 @@ namespace CapFrameX.Data.Session.Classes
 		[JsonProperty("SensorData")]
 		[JsonConverter(typeof(ConcreteTypeConverter<SessionSensorData>))]
 		public ISessionSensorData SensorData { get; set; }
+		[JsonProperty("SensorData2")]
+		[JsonConverter(typeof(ConcreteTypeConverter<SessionSensorData2>))]
+		public ISessionSensorData2 SensorData2 { get; set; }
 
 		[JsonConstructor]
 		public SessionRun(SessionCaptureData captureData, SessionSensorData sensorData)

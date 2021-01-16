@@ -11,7 +11,7 @@ namespace CapFrameX.Contracts.Sensor
         TaskCompletionSource<bool> SensorServiceCompletionSource { get; }
         void StartSensorLogging();
         void StopSensorLogging();
-        ISessionSensorData GetSensorSessionData();
+        ISessionSensorData2 GetSensorSessionData();
         void CloseOpenHardwareMonitor();
         string GetGpuDriverVersion();
         string GetCpuName();

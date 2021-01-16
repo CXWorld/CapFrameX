@@ -50,11 +50,11 @@ namespace CapFrameX.Sensor
                 SensorType = entry.SensorType,
                 HardwareType = entry.HardwareType,
                 UseForLogging = _sensorConfig.GetSensorIsActive(entry.Identifier),
-                UpdateLogState = UptdateLogState
+                UpdateLogState = UpdateLogState
             };
         }
 
-        private void UptdateLogState(string identifier, bool useForLogging)
+        private void UpdateLogState(string identifier, bool useForLogging)
         {
             ConfigChanged?.Invoke();
             _sensorConfig.SetSensorIsActive(identifier, useForLogging);

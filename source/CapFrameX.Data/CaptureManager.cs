@@ -332,7 +332,7 @@ namespace CapFrameX.Data
                 var sessionRun = _recordManager.ConvertPresentDataLinesToSessionRun(normalizedAdjustedCaptureData);
 
                 //ToDo: data could be adjusted (cutting at end)
-                sessionRun.SensorData = _sensorService.GetSensorSessionData();
+                sessionRun.SensorData2 = _sensorService.GetSensorSessionData();
 
                 if (_appConfiguration.UseRunHistory)
                 {
