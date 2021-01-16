@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using CapFrameX.Contracts.Sensor;
 using Serilog;
 
 namespace OpenHardwareMonitor.Hardware.CPU
@@ -38,8 +39,8 @@ namespace OpenHardwareMonitor.Hardware.CPU
 
         private readonly double timeStampCounterMultiplier;
 
-        public AMD19CPU(int processorIndex, CPUID[][] cpuid, ISettings settings)
-          : base(processorIndex, cpuid, settings)
+        public AMD19CPU(int processorIndex, CPUID[][] cpuid, ISettings settings, ISensorConfig config)
+          : base(processorIndex, cpuid, settings, config)
         {
             coreTemperature = new Sensor(
               "CPU Package", 0, SensorType.Temperature, this, new[] {

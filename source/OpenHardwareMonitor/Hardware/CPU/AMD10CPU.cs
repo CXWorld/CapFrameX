@@ -8,6 +8,7 @@
 	
 */
 
+using CapFrameX.Contracts.Sensor;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -59,8 +60,8 @@ namespace OpenHardwareMonitor.Hardware.CPU
         private readonly double timeStampCounterMultiplier;
         private readonly bool corePerformanceBoostSupport;
 
-        public AMD10CPU(int processorIndex, CPUID[][] cpuid, ISettings settings)
-          : base(processorIndex, cpuid, settings)
+        public AMD10CPU(int processorIndex, CPUID[][] cpuid, ISettings settings, ISensorConfig config)
+          : base(processorIndex, cpuid, settings, config)
         {
             // AMD family 1Xh processors support only one temperature sensor
             coreTemperature = new Sensor(

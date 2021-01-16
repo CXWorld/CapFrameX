@@ -8,6 +8,8 @@
 	
 */
 
+using CapFrameX.Contracts.Sensor;
+
 namespace OpenHardwareMonitor.Hardware.CPU
 {
     internal abstract class AMDCPU : GenericCPU
@@ -17,8 +19,8 @@ namespace OpenHardwareMonitor.Hardware.CPU
         private const byte DEVICE_VENDOR_ID_REGISTER = 0;
         private const ushort AMD_VENDOR_ID = 0x1022;
 
-        public AMDCPU(int processorIndex, CPUID[][] cpuid, ISettings settings)
-          : base(processorIndex, cpuid, settings) { }
+        public AMDCPU(int processorIndex, CPUID[][] cpuid, ISettings settings, ISensorConfig config)
+          : base(processorIndex, cpuid, settings, config) { }
 
         protected uint GetPciAddress(byte function, ushort deviceId)
         {

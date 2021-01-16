@@ -22,7 +22,6 @@ namespace OpenHardwareMonitor.Hardware.CPU
     {
         private readonly List<GenericCPU> hardware = new List<GenericCPU>();
         private readonly CPUID[][][] threads;
-        private readonly ISensorConfig sensorConfig;
 
         private static CPUID[][] GetProcessorThreads()
         {
@@ -39,9 +38,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
                         if (cpuid != null)
                             threads.Add(cpuid);
                     }
-                    catch (ArgumentOutOfRangeException)
-                    {
-                    }
+                    catch { }
                 }
             }
 
@@ -49,8 +46,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
               new SortedDictionary<uint, List<CPUID>>();
             foreach (CPUID thread in threads)
             {
-                List<CPUID> list;
-                processors.TryGetValue(thread.ProcessorId, out list);
+                processors.TryGetValue(thread.ProcessorId, out List<CPUID> list);
                 if (list == null)
                 {
                     list = new List<CPUID>();
@@ -75,8 +71,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
               new SortedDictionary<uint, List<CPUID>>();
             foreach (CPUID thread in threads)
             {
-                List<CPUID> coreList;
-                cores.TryGetValue(thread.CoreId, out coreList);
+                cores.TryGetValue(thread.CoreId, out List<CPUID> coreList);
                 if (coreList == null)
                 {
                     coreList = new List<CPUID>();
@@ -95,10 +90,8 @@ namespace OpenHardwareMonitor.Hardware.CPU
             return coreThreads;
         }
 
-        public CPUGroup(ISettings settings, ISensorConfig config)
+        public CPUGroup(ISettings settings, ISensorConfig sensorConfig)
         {
-            sensorConfig = config;
-
             Log.Logger.Information("Start creating CPU group.");
 
             CPUID[][] processorThreads = GetProcessorThreads();
@@ -127,13 +120,13 @@ namespace OpenHardwareMonitor.Hardware.CPU
                 switch (threads[0].Vendor)
                 {
                     case Vendor.Intel:
-                        hardware.Add(new IntelCPU(index, coreThreads, settings));
+                        hardware.Add(new IntelCPU(index, coreThreads, settings, sensorConfig));
                         break;
                     case Vendor.AMD:
                         switch (threads[0].Family)
                         {
                             case 0x0F:
-                                hardware.Add(new AMD0FCPU(index, coreThreads, settings));
+                                hardware.Add(new AMD0FCPU(index, coreThreads, settings, sensorConfig));
                                 break;
                             case 0x10:
                             case 0x11:
@@ -141,21 +134,21 @@ namespace OpenHardwareMonitor.Hardware.CPU
                             case 0x14:
                             case 0x15:
                             case 0x16:
-                                hardware.Add(new AMD10CPU(index, coreThreads, settings));
+                                hardware.Add(new AMD10CPU(index, coreThreads, settings, sensorConfig));
                                 break;
                             case 0x17:
-                                hardware.Add(new AMD17CPU(index, coreThreads, settings));
+                                hardware.Add(new AMD17CPU(index, coreThreads, settings, sensorConfig));
                                 break;
                             case 0x19:
-                                hardware.Add(new AMD19CPU(index, coreThreads, settings));
+                                hardware.Add(new AMD19CPU(index, coreThreads, settings, sensorConfig));
                                 break;
                             default:
-                                hardware.Add(new GenericCPU(index, coreThreads, settings));
+                                hardware.Add(new GenericCPU(index, coreThreads, settings, sensorConfig));
                                 break;
                         }
                         break;
                     default:
-                        hardware.Add(new GenericCPU(index, coreThreads, settings));
+                        hardware.Add(new GenericCPU(index, coreThreads, settings, sensorConfig));
                         break;
                 }
 

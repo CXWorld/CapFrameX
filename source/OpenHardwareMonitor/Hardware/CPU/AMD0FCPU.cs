@@ -9,6 +9,7 @@
 
 */
 
+using CapFrameX.Contracts.Sensor;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -34,8 +35,8 @@ namespace OpenHardwareMonitor.Hardware.CPU
         private readonly byte thermSenseCoreSelCPU1;
         private readonly uint miscellaneousControlAddress;
 
-        public AMD0FCPU(int processorIndex, CPUID[][] cpuid, ISettings settings)
-          : base(processorIndex, cpuid, settings)
+        public AMD0FCPU(int processorIndex, CPUID[][] cpuid, ISettings settings, ISensorConfig config)
+          : base(processorIndex, cpuid, settings, config)
         {
             float offset = -49.0f;
 

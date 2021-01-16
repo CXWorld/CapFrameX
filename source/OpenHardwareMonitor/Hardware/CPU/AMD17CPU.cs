@@ -8,6 +8,7 @@
 	
 */
 
+using CapFrameX.Contracts.Sensor;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -62,8 +63,8 @@ namespace OpenHardwareMonitor.Hardware.CPU
         };
         private readonly float tctlOffset = 0.0f;
 
-        public AMD17CPU(int processorIndex, CPUID[][] cpuid, ISettings settings)
-          : base(processorIndex, cpuid, settings)
+        public AMD17CPU(int processorIndex, CPUID[][] cpuid, ISettings settings, ISensorConfig config)
+          : base(processorIndex, cpuid, settings, config)
         {
             string cpuName = cpuid[0][0].BrandString;
             if (!string.IsNullOrEmpty(cpuName))
