@@ -7,8 +7,6 @@ namespace CapFrameX.ViewModel
 {
 	public partial class ComparisonViewModel
 	{
-		// partial void xyz -> initialize
-
 		private void OnShowContextLegendChanged()
 		{
 			if (!ComparisonRecords.Any())
@@ -17,6 +15,7 @@ namespace CapFrameX.ViewModel
 			if (!IsContextLegendActive)
 			{
 				ComparisonFrametimesModel.Series.ForEach(series => series.Title = null);
+				ComparisonFpsModel.Series.ForEach(series => series.Title = null);
 			}
 			else
 			{
@@ -24,6 +23,7 @@ namespace CapFrameX.ViewModel
 			}
 
 			ComparisonFrametimesModel.InvalidatePlot(true);
+			ComparisonFpsModel.InvalidatePlot(true);
 		}
 
 		private string[] GetLabelForContext(ComparisonRecordInfo record, EComparisonContext context)
