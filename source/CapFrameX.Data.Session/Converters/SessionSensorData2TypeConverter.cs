@@ -17,7 +17,7 @@ namespace CapFrameX.Data.Session.Converters
             var sessionSensorData = new SessionSensorData2();
             foreach(var entry in dictionary)
             {
-                sessionSensorData.Add(entry.Key, entry.Value);
+                sessionSensorData[entry.Key] = entry.Value;
             }
             return sessionSensorData;
         }
