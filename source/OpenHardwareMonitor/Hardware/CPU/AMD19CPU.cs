@@ -273,6 +273,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
             }
 
             if (cores.Any(core => sensorConfig.GetSensorEvaluate(core.ClockSensor.IdentifierString))
+                || cores.Any(core => sensorConfig.GetSensorEvaluate(core.PowerSensor.IdentifierString))
                 || sensorConfig.GetSensorEvaluate(coresPowerSensor.IdentifierString)
                 || sensorConfig.GetSensorEvaluate(coreMaxClocks.IdentifierString))
             {
@@ -306,6 +307,8 @@ namespace OpenHardwareMonitor.Hardware.CPU
             private float? power = null;
 
             public float? CoreClock => clockSensor.Value;
+
+            public Sensor PowerSensor => powerSensor;
 
             public Sensor ClockSensor => clockSensor;
 

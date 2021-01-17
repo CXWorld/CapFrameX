@@ -222,14 +222,13 @@ namespace CapFrameX.Overlay
             }
 
             _identifierOverlayEntryDict.Clear();
+            _sensorConfig.IsInitialized = true;
             foreach (var entry in _overlayEntries)
             {
                 entry.UpdateShowOnOverlay = UpdateSensorIsActive;
                 _sensorConfig.SetSensorEvaluate(entry.Identifier, entry.ShowOnOverlay);
                 _identifierOverlayEntryDict.TryAdd(entry.Identifier, entry);
             }
-
-            _sensorConfig.IsInitialized = true;
 
             CheckCustomSystemInfo();
             CheckOSVersion();
