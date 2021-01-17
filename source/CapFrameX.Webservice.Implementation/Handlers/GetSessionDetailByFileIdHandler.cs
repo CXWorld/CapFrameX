@@ -19,6 +19,8 @@ using System.IO;
 using OxyPlot;
 using CapFrameX.Extensions.NetStandard;
 using System.ComponentModel;
+using CapFrameX.Data.Session.Contracts;
+using CapFrameX.Data.Session.Converters;
 
 namespace CapFrameX.Webservice.Implementation.Handlers
 {
@@ -38,6 +40,13 @@ namespace CapFrameX.Webservice.Implementation.Handlers
 				fileBytes = fileBytes.Decompress();
 			}
 			var session = JsonConvert.DeserializeObject<Session>(Encoding.UTF8.GetString(fileBytes));
+			foreach (var sessionrun in session.Runs)
+			{
+				if (sessionrun.SensorData != null & sessionrun.SensorData2 == null)
+				{
+					SessionSensorDataConverter.ConvertToSensorData2(sessionrun);
+				}
+			}
 
 			var infos = session.Info.GetType().GetProperties().Where(p => p.GetCustomAttributes(false).Any(a => a is DescriptionAttribute)).ToDictionary(p => (p.GetCustomAttributes(false).First(a => a is DescriptionAttribute) as DescriptionAttribute)?.Description, p => Convert.ToString(p.GetValue(session.Info)));
 			var sensorItems = SensorReport.GetReportFromSessionSensorData(session.Runs.Select(r => r.SensorData2)).ToArray();
