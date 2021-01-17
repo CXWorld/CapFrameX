@@ -1,6 +1,7 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Sensor;
 using CapFrameX.Data;
+using CapFrameX.Extensions;
 using CapFrameX.Sensor;
 using CapFrameX.ViewModel.SubModels;
 using Microsoft.Extensions.Logging;
@@ -96,6 +97,8 @@ namespace CapFrameX.ViewModel
 
         public ICommand SaveConfigCommand { get; }
 
+        public ICommand ResetToDefaultCommand { get; }
+
         public SensorGroupControl SensorSubModelGroupControl { get; }
 
         public SensorViewModel(IAppConfiguration appConfiguration,
@@ -125,6 +128,8 @@ namespace CapFrameX.ViewModel
                     SaveButtonIsEnable = false;
                 });
 
+            ResetToDefaultCommand = new DelegateCommand(OnResetToDefault);
+
             _sensorEntryProvider.ConfigChanged = () => SaveButtonIsEnable = true;
 
             //// ToDo: Später durch Einzelsteuerungskonzept ersetzen
@@ -134,6 +139,16 @@ namespace CapFrameX.ViewModel
 
             stopwatch.Stop();
             _logger.LogInformation(this.GetType().Name + " {initializationTime}s initialization time", Math.Round(stopwatch.ElapsedMilliseconds * 1E-03, 1));
+        }
+
+        private void OnResetToDefault()
+        {
+            foreach (var entry in SensorEntries)
+            {
+                if (_sensorEntryProvider.GetIsDefaultActiveSensor(entry))
+                    entry.UseForLogging = true;
+
+            }
         }
 
         private async Task SetWrappedSensorEntries()

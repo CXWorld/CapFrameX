@@ -11,5 +11,7 @@ namespace CapFrameX.Contracts.Sensor
         Task SaveSensorConfig();
 
         Action ConfigChanged { get; set; }
+
+        bool GetIsDefaultActiveSensor(ISensorEntry sensor);
     }
 }

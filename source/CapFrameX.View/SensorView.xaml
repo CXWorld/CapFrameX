@@ -111,11 +111,11 @@
                             <TextBlock Margin="10 0 20 0" VerticalAlignment="Center" Text="Log sensors"/>
                         </StackPanel>
                         <ComboBox Margin="15 0 0 0" materialDesign:ComboBoxAssist.ClassicMode="True"
-					  materialDesign:HintAssist.Hint="Sensor polling [ms]"
-					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="200" Width="110"
-					  MouseLeave="LoggingPeriodComboBox_MouseLeave" FontSize="14"
-					  ItemsSource="{Binding Path=LoggingPeriodItemsSource}"
-                      IsEnabled="{Binding UseSensorLogging}">
+					              materialDesign:HintAssist.Hint="Sensor polling [ms]"
+					              materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="200" Width="110"
+					              MouseLeave="LoggingPeriodComboBox_MouseLeave" FontSize="14"
+					              ItemsSource="{Binding Path=LoggingPeriodItemsSource}"
+                                  IsEnabled="{Binding UseSensorLogging}">
                             <ComboBox.Text>
                                 <Binding Path="LoggingPeriod"
 							 Mode="TwoWay"
@@ -126,11 +126,18 @@
                                 Polling period [ms] for sensor logging
                             </ComboBox.ToolTip>
                         </ComboBox>
-                        <Button Width="28" Height="28" HorizontalAlignment="Right" Margin="160 10 15 0" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
-                                ToolTip="Save selected sensors for logging" Command="{Binding SaveConfigCommand}" IsEnabled="{Binding SaveButtonIsEnable}"
+                        <Grid Width="210">
+                            <Button Width="28" Height="28" Margin="20 10 15 0" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
+                                ToolTip="Reset to defaults" Command="{Binding ResetToDefaultCommand}"
                                 materialDesign:RippleAssist.Feedback="#DD000000">
-                            <materialDesign:PackIcon Kind="ContentSaveSettings" Height="22" Width="22" />
-                        </Button>
+                                <materialDesign:PackIcon Kind="Restore" Height="22" Width="22" />
+                            </Button>
+                            <Button Width="28" Height="28" Margin="0 10 15 0" HorizontalAlignment="Right" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
+                                    ToolTip="Save selected sensors for logging" Command="{Binding SaveConfigCommand}" IsEnabled="{Binding SaveButtonIsEnable}"
+                                    materialDesign:RippleAssist.Feedback="#DD000000">
+                                <materialDesign:PackIcon Kind="ContentSaveSettings" Height="22" Width="22" />
+                            </Button>
+                        </Grid>
                     </StackPanel>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="15 0 0 0">

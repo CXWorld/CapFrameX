@@ -62,8 +62,16 @@ namespace CapFrameX.Sensor
 
         private void SetIsActiveDefault(ISensorEntry sensor)
         {
+            if (GetIsDefaultActiveSensor(sensor))
+                _sensorConfig.SetSensorIsActive(sensor.Identifier, true);
+        }
+
+        public bool GetIsDefaultActiveSensor(ISensorEntry sensor)
+        {
             Enum.TryParse(sensor.HardwareType, out HardwareType hardwareType);
             Enum.TryParse(sensor.SensorType, out SensorType sensorType);
+
+            bool isDefault = false;
 
             switch (sensor.Name)
             {
@@ -80,9 +88,11 @@ namespace CapFrameX.Sensor
                 case "GPU Total" when hardwareType == HardwareType.GpuAti:
                 case "Used Memory" when hardwareType == HardwareType.RAM:
                 case "GPU Memory Dedicated" when sensorType == SensorType.SmallData:
-                    _sensorConfig.SetSensorIsActive(sensor.Identifier, true);
+                    isDefault = true;
                     break;
             }
+
+            return isDefault;
         }
     }
 }
