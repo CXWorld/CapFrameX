@@ -1,7 +1,6 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Sensor;
 using CapFrameX.Data;
-using CapFrameX.Extensions;
 using CapFrameX.Sensor;
 using CapFrameX.ViewModel.SubModels;
 using Microsoft.Extensions.Logging;
@@ -39,7 +38,6 @@ namespace CapFrameX.ViewModel
             {
                 _appConfiguration.UseSensorLogging = value;
                 _captureManager.ToggleSensorLogging(value);
-                //_sensorConfig.GlobalIsActivated = value;
                 RaisePropertyChanged();
             }
         }
@@ -131,9 +129,6 @@ namespace CapFrameX.ViewModel
             ResetToDefaultCommand = new DelegateCommand(OnResetToDefault);
 
             _sensorEntryProvider.ConfigChanged = () => SaveButtonIsEnable = true;
-
-            //// ToDo: Später durch Einzelsteuerungskonzept ersetzen
-            //_sensorConfig.GlobalIsActivated = UseSensorLogging;
 
             Task.Run(async () => await SetWrappedSensorEntries());
 
