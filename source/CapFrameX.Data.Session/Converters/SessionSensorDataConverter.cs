@@ -36,20 +36,20 @@ namespace CapFrameX.Data.Session.Converters
             InsertValues("BetweenMeasureTime", "BetweenMeasureTime", "Time", sessionRun.SensorData.BetweenMeasureTimes.Cast<object>());
 
             //CPU
-            InsertValues("CpuPower", "CpuPower", "Clock", sessionRun.SensorData.CpuPower.Cast<object>());
-            InsertValues("CpuTemp", "CpuTemp", "Temperature", sessionRun.SensorData.CpuTemp.Cast<object>());
-            InsertValues("CpuLoad", "CpuLoad", "Load", sessionRun.SensorData.CpuUsage.Cast<object>());
-            InsertValues("CpuMaxClock", "CpuMaxClock", "Clock", sessionRun.SensorData.CpuMaxClock.Cast<object>());
-            InsertValues("CpuMaxThreadLoad", "CpuMaxThreadLoad", "Load", sessionRun.SensorData.CpuMaxThreadUsage.Cast<object>());
+            InsertValues("CpuPower", "CPU Package", "Power", sessionRun.SensorData.CpuPower.Cast<object>());
+            InsertValues("CpuTemp", "CPU Package", "Temperature", sessionRun.SensorData.CpuTemp.Cast<object>());
+            InsertValues("CpuLoad", "CPU Total", "Load", sessionRun.SensorData.CpuUsage.Cast<object>());
+            InsertValues("CpuMaxClock", "CPU Max Clock", "Clock", sessionRun.SensorData.CpuMaxClock.Cast<object>());
+            InsertValues("CpuMaxThreadLoad", "CPU Max", "Load", sessionRun.SensorData.CpuMaxThreadUsage.Cast<object>());
 
             //GPU
             InsertValues("GpuClock", "GPU Core", "Clock", sessionRun.SensorData.GpuClock.Cast<object>());
-            InsertValues("GpuPower", "GpuPower", "Power", sessionRun.SensorData.GpuPower.Cast<object>());
-            InsertValues("GpuTemp", "GpuTemp", "Temperature", sessionRun.SensorData.GpuTemp.Cast<object>());
-            InsertValues("GpuUsage", "GpuUsage", "Load", sessionRun.SensorData.GpuUsage.Cast<object>());
+            InsertValues("GpuPower", "GPU Power", "Power", sessionRun.SensorData.GpuPower.Cast<object>());
+            InsertValues("GpuTemp", "GPU Core", "Temperature", sessionRun.SensorData.GpuTemp.Cast<object>());
+            InsertValues("GpuUsage", "GPU Core", "Load", sessionRun.SensorData.GpuUsage.Cast<object>());
 
-            InsertValues("RamUsage", "Used Memory", "Load", sessionRun.SensorData.RamUsage.Cast<object>());
-            InsertValues("VRamUsage", "GPU Memory Dedicated", "Load", sessionRun.SensorData.VRamUsage.Cast<object>());
+            InsertValues("RamUsage", "Used Memory", "Data", sessionRun.SensorData.RamUsage.Cast<object>());
+            InsertValues("VRamUsage", "GPU Memory Dedicated", "SmallData", sessionRun.SensorData.VRamUsage.Cast<object>());
         }
     }
 }
