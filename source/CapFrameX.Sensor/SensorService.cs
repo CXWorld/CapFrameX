@@ -70,7 +70,7 @@ namespace CapFrameX.Sensor
             _sensorUpdateSubject = new BehaviorSubject<TimeSpan>(CurrentSensorTimespan);
 
             Observable.FromAsync(() => StartOpenHardwareMonitor())
-               .Delay(TimeSpan.FromMilliseconds(200))
+               .Delay(TimeSpan.FromMilliseconds(500))
                .SubscribeOn(Scheduler.Default)
                .Subscribe(t =>
                {
@@ -222,9 +222,8 @@ namespace CapFrameX.Sensor
                 {
                     foreach (var sensor in sensors)
                     {
-                        if (sensor.Value != null)
+                        if (sensor != null)
                         {
-
                             entries.Add(new SensorEntry()
                             {
                                 Identifier = sensor.IdentifierString,

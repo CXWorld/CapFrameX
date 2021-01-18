@@ -27,8 +27,11 @@ namespace CapFrameX.Sensor
             var sensorEntries = await _sensorService.GetSensorEntries();
             var wrappedEntries = sensorEntries.Select(WrapSensorEntry);
 
-            if (!_sensorConfig.HasConfigFile)
+            if (!_sensorConfig.HasConfigFile
+              // reset config when hardware has changed
+              || _sensorConfig.SensorEntryCount != sensorEntries.Count())
             {
+                _sensorConfig.ResetConfig();
                 wrappedEntries.ForEach(SetIsActiveDefault);
                 await SaveSensorConfig();
             }
@@ -64,6 +67,8 @@ namespace CapFrameX.Sensor
         {
             if (GetIsDefaultActiveSensor(sensor))
                 _sensorConfig.SetSensorIsActive(sensor.Identifier, true);
+            else
+                _sensorConfig.SetSensorIsActive(sensor.Identifier, false);
         }
 
         public bool GetIsDefaultActiveSensor(ISensorEntry sensor)
