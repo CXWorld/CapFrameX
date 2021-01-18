@@ -1,8 +1,11 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Sensor;
 using CapFrameX.Data;
+using CapFrameX.Data.Session.Contracts;
 using CapFrameX.Extensions;
 using CapFrameX.Sensor;
+using CapFrameX.Sensor.Reporting;
+using CapFrameX.Sensor.Reporting.Contracts;
 using CapFrameX.ViewModel.SubModels;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
@@ -95,6 +98,9 @@ namespace CapFrameX.ViewModel
         public ObservableCollection<SensorEntryWrapper> SensorEntries { get; }
           = new ObservableCollection<SensorEntryWrapper>();
 
+        public ObservableCollection<ISensorReportItem> SensorReportItems { get; }
+        = new ObservableCollection<ISensorReportItem>();
+
         public ICommand SaveConfigCommand { get; }
 
         public ICommand ResetToDefaultCommand { get; }
@@ -117,6 +123,7 @@ namespace CapFrameX.ViewModel
             _sensorEntryProvider = sensorEntryProvider;
             _logger = logger;
             _captureManager = captureManager;
+
 
             // define submodels
             SensorSubModelGroupControl = new SensorGroupControl(this);
