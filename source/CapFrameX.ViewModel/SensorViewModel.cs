@@ -2,7 +2,7 @@
 using CapFrameX.Contracts.Sensor;
 using CapFrameX.Data;
 using CapFrameX.Data.Session.Contracts;
-using CapFrameX.Extensions;
+using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Sensor;
 using CapFrameX.Sensor.Reporting;
 using CapFrameX.Sensor.Reporting.Contracts;
@@ -42,7 +42,6 @@ namespace CapFrameX.ViewModel
             {
                 _appConfiguration.UseSensorLogging = value;
                 _captureManager.ToggleSensorLogging(value);
-                //_sensorConfig.GlobalIsActivated = value;
                 RaisePropertyChanged();
             }
         }
@@ -96,10 +95,10 @@ namespace CapFrameX.ViewModel
         public Array LoggingPeriodItemsSource => new[] { 250, 500 };
 
         public ObservableCollection<SensorEntryWrapper> SensorEntries { get; }
-          = new ObservableCollection<SensorEntryWrapper>();
+            = new ObservableCollection<SensorEntryWrapper>();
 
         public ObservableCollection<ISensorReportItem> SensorReportItems { get; }
-        = new ObservableCollection<ISensorReportItem>();
+            = new ObservableCollection<ISensorReportItem>();
 
         public ICommand SaveConfigCommand { get; }
 
@@ -136,13 +135,10 @@ namespace CapFrameX.ViewModel
                 });
 
             ResetToDefaultCommand = new DelegateCommand(OnResetToDefault);
-
             _sensorEntryProvider.ConfigChanged = () => SaveButtonIsEnable = true;
 
-            //// ToDo: Später durch Einzelsteuerungskonzept ersetzen
-            //_sensorConfig.GlobalIsActivated = UseSensorLogging;
-
             Task.Run(async () => await SetWrappedSensorEntries());
+            SubscribeToUpdateSession();
 
             stopwatch.Stop();
             _logger.LogInformation(this.GetType().Name + " {initializationTime}s initialization time", Math.Round(stopwatch.ElapsedMilliseconds * 1E-03, 1));
@@ -164,6 +160,25 @@ namespace CapFrameX.ViewModel
             {
                 SensorEntries.AddRange(wrappedSensorEntries.Select(entry => entry as SensorEntryWrapper));
             });
+        }
+
+        private void SubscribeToUpdateSession()
+        {
+            _eventAggregator.GetEvent<PubSubEvent<ViewMessages.UpdateSession>>()
+                            .Subscribe(msg =>
+                            {
+                                UpdateSensorSessionReport(msg.CurrentSession);
+                            });
+        }
+
+        private void UpdateSensorSessionReport(ISession session)
+        {
+            SensorReportItems.Clear();
+            var items = SensorReport.GetReportFromSessionSensorData(session.Runs.Select(run => run.SensorData2).Cast<ISessionSensorData>());
+            foreach (var item in items)
+            {
+                SensorReportItems.Add(item);
+            };
         }
 
         public bool IsNavigationTarget(NavigationContext navigationContext)

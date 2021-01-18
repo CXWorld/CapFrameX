@@ -65,10 +65,7 @@ namespace CapFrameX.Sensor
 
         private void SetIsActiveDefault(ISensorEntry sensor)
         {
-            if (GetIsDefaultActiveSensor(sensor))
-                _sensorConfig.SetSensorIsActive(sensor.Identifier, true);
-            else
-                _sensorConfig.SetSensorIsActive(sensor.Identifier, false);
+            _sensorConfig.SetSensorIsActive(sensor.Identifier, GetIsDefaultActiveSensor(sensor));
         }
 
         public bool GetIsDefaultActiveSensor(ISensorEntry sensor)

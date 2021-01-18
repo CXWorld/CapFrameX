@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using CapFrameX.Extensions.NetStandard;
 using System.Linq;
 using System.ComponentModel;
-using System.Runtime.CompilerServices;
 
 namespace CapFrameX.Sensor.Reporting
 {
