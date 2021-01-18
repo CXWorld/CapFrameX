@@ -99,6 +99,7 @@ namespace CapFrameX.ViewModel
             set
             {
                 _appConfiguration.ToggleGlobalRTSSOSD = value;
+                _rTSSService.OnOSDToggle();
                 RaisePropertyChanged();
             }
         }
