@@ -190,5 +190,80 @@
                 </StackPanel>
             </DockPanel>
         </Border>
+        <Border BorderBrush="Black" BorderThickness="0.2" Grid.Row="1" Grid.Column="2" >
+            <DockPanel Margin="0 10 0 10">
+                <Grid DockPanel.Dock="Top">
+                    <TextBlock Margin="25 0 0 10" HorizontalAlignment="Left" Text="Sensor statistics" FontSize="14" VerticalAlignment="Center"/>
+                </Grid>
+                <StackPanel DockPanel.Dock="Top" Orientation="Vertical" HorizontalAlignment="Center">
+                    <DataGrid x:Name="SensorStatisticsDataGrid" FocusVisualStyle="{x:Null}" Height="460" Width="430" Background="#F5F5F5" FontSize="11"
+                             ItemsSource="{Binding SensorReportItems}"
+					         CanUserSortColumns="False" CanUserAddRows="False" AutoGenerateColumns="False"
+					         materialDesign:DataGridAssist.CellPadding="13 3 0 0" materialDesign:DataGridAssist.ColumnHeaderPadding="8" IsSynchronizedWithCurrentItem="False"
+					         ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.CanContentScroll="True"
+					         dragdrop:DragDrop.IsDragSource="True"
+					         dragdrop:DragDrop.IsDropTarget="True"
+						     dragdrop:DragDrop.DropHandler="{Binding}"
+					         dragdrop:DragDrop.UseDefaultDragAdorner="True"
+					         dragdrop:DragDrop.DefaultDragAdornerOpacity="0.5"
+					         dragdrop:DragDrop.UseDefaultEffectDataTemplate="False">
+                        <DataGrid.ContextMenu>
+                            <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
+                                <MenuItem Header="Copy sensor data(min, avg, max)" Command="{Binding CopySensorInfoCommand}"/>
+                                <MenuItem Header="Copy raw sensor data" Command="{Binding CopyRawSensorInfoCommand}"/>
+                            </ContextMenu>
+                        </DataGrid.ContextMenu>
+                        <DataGrid.Resources>
+                            <Style TargetType="DataGridRow">
+                                <Setter Property="DataGrid.Height" Value="25" />
+                            </Style>
+                            <Style TargetType="DataGridCell">
+                                <Setter Property="Padding" Value="5" />
+                                <Setter Property="Background" Value="Transparent"/>
+                                <Setter Property="BorderBrush" Value="Transparent"/>
+                                <Setter Property="Validation.ErrorTemplate" Value="{x:Null}" />
+                                <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBody}" />
+                                <Setter Property="BorderThickness" Value="0"/>
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="{x:Type DataGridCell}">
+                                            <Grid>
+                                                <Border
+                                                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                                                    Background="{TemplateBinding Background}"
+                                                                    SnapsToDevicePixels="True" />
+                                                <ContentPresenter
+                                                                    SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
+                                                                    Margin="{TemplateBinding Padding}" />
+                                            </Grid>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </DataGrid.Resources>
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Binding="{Binding Name, Mode=OneWay}"                                                           
+                                            Header="Sensor"                 
+                                            MinWidth="180"
+                                            IsReadOnly="True">
+                            </DataGridTextColumn>
+                            <DataGridTextColumn Binding="{Binding MinValue, Mode=OneWay}"
+                                            Header="Min"
+                                            Width="75"
+                                            IsReadOnly="True"/>
+                            <DataGridTextColumn Binding="{Binding AverageValue, Mode=OneWay}"
+                                            Header="Average"
+                                            Width="75"
+                                            IsReadOnly="True"/>
+                            <DataGridTextColumn Binding="{Binding MaxValue, Mode=OneWay}"
+                                            Header="Max"
+                                            Width="75"
+                                            IsReadOnly="True"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </StackPanel>
+            </DockPanel>
+        </Border>
     </Grid>
 </UserControl>
