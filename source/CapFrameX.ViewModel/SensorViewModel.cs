@@ -152,9 +152,7 @@ namespace CapFrameX.ViewModel
         {
             foreach (var entry in SensorEntries)
             {
-                if (_sensorEntryProvider.GetIsDefaultActiveSensor(entry))
-                    entry.UseForLogging = true;
-
+                entry.UseForLogging = _sensorEntryProvider.GetIsDefaultActiveSensor(entry);
             }
         }
 
