@@ -51,6 +51,11 @@
                         <!--Input lag chart-->
                         <controls:PlotViewCustomZoom Background="#F5F5F5" x:Name="InputLagPlotView" Model="{Binding InputLagModel}" Tag="{Binding ElementName=SynchronizationViewUserControl, Path=DataContext}"
 								 MouseDoubleClick="ResetInputLagChart_MouseDoubleClick">
+                            <controls:PlotViewCustomZoom.ContextMenu>
+                                <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
+                                    <MenuItem Header="Save plot as image" Command="{Binding SaveInputLagPlotAsImage }"/>
+                                </ContextMenu>
+                            </controls:PlotViewCustomZoom.ContextMenu>
                         </controls:PlotViewCustomZoom>
                     </DockPanel>
                     <!--Input lag offset-->
@@ -124,6 +129,7 @@
                             <controls:PlotViewCustomZoom.ContextMenu>
                                 <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
                                     <MenuItem Header="Copy until displayed time values" Command="{Binding CopyUntilDisplayedTimesValuesCommand}"/>
+                                    <MenuItem Header="Save plot as image" Command="{Binding SaveDisplayTimesPlotAsImage}"/>
                                 </ContextMenu>
                             </controls:PlotViewCustomZoom.ContextMenu>
                         </controls:PlotViewCustomZoom>

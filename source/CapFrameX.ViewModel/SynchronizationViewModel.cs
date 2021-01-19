@@ -28,6 +28,10 @@ using CapFrameX.Statistics.PlotBuilder;
 using CapFrameX.Extensions;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;
+using System.IO;
+using System.Text.RegularExpressions;
+using SaveFileDialog = System.Windows.Forms.SaveFileDialog;
+using DialogResult = System.Windows.Forms.DialogResult;
 
 namespace CapFrameX.ViewModel
 {
@@ -255,6 +259,11 @@ namespace CapFrameX.ViewModel
 
         public ICommand CopyInputLagStatisticalParameterCommand { get; }
 
+        public ICommand SaveInputLagPlotAsImage { get; }
+
+        public ICommand SaveDisplayTimesPlotAsImage { get; }
+
+
         public SynchronizationViewModel(IStatisticProvider frametimeStatisticProvider,
                                         IEventAggregator eventAggregator,
                                         IAppConfiguration appConfiguration,
@@ -272,6 +281,8 @@ namespace CapFrameX.ViewModel
             CopyDisplayTimesHistogramDataCommand = new DelegateCommand(CopDisplayTimesHistogramData);
             CopyInputLagHistogramDataCommand = new DelegateCommand(CopyInputLagHistogramData);
             CopyInputLagStatisticalParameterCommand = new DelegateCommand(CopyInputLagStatisticalParameter);
+            SaveInputLagPlotAsImage = new DelegateCommand(() => OnSavePlotAsImage("inputlag"));
+            SaveDisplayTimesPlotAsImage = new DelegateCommand(() => OnSavePlotAsImage("displaytimes"));
 
             InputLagParameterFormatter = value => value.ToString(string.Format("F{0}",
                 _appConfiguration.FpsValuesRoundingDigits), CultureInfo.InvariantCulture);
@@ -675,7 +686,7 @@ namespace CapFrameX.ViewModel
 
             var upperBoundInputLagSeries = new Statistics.PlotBuilder.LineSeries
             {
-                Title = "Input lag upper bound",
+                Title = "Input lag high",
                 StrokeThickness = 1,
                 LegendStrokeThickness = 4,
                 Color = OxyColor.FromRgb(255, 150, 150)
@@ -683,7 +694,7 @@ namespace CapFrameX.ViewModel
 
             var lowerBoundInputLagSeries = new Statistics.PlotBuilder.LineSeries
             {
-                Title = "Input lag lower bound",
+                Title = "Input lag low",
                 StrokeThickness = 1,
                 LegendStrokeThickness = 4,
                 Color = OxyColor.FromRgb(200, 140, 140)
@@ -750,6 +761,36 @@ namespace CapFrameX.ViewModel
 
                 InputLagModel = tmp;
             }));
+        }
+
+        protected void OnSavePlotAsImage(string plotType)
+        {
+            var exporter = new SvgExporter { Width = _appConfiguration.HorizontalGraphExportRes, Height = _appConfiguration.VerticalGraphExportRes };
+
+            using (var memStream = new MemoryStream())
+            {
+                var illegalFilenameCharsRegex = new Regex(@"[/:*?<>""|]");
+
+                if (plotType == "inputlag")
+                    exporter.Export(InputLagModel, memStream);
+
+                if (plotType == "displaytimes")
+                    exporter.Export(SynchronizationModel, memStream);
+
+                var filename = $"{CurrentGameName}_Synchronization_ChartExport";
+
+                SaveFileDialog dialog = new SaveFileDialog()
+                {
+                    Filter = "SVG files|*.svg",
+                    FileName = $"{illegalFilenameCharsRegex.Replace(filename, string.Empty)}_{plotType}",
+                    DefaultExt = "svg",
+                };
+
+                if (dialog.ShowDialog() == DialogResult.OK)
+                {
+                    File.WriteAllBytes(dialog.FileName, memStream.ToArray());
+                }
+            }
         }
 
         public void OnNavigatedTo(NavigationContext navigationContext)
