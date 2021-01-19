@@ -150,5 +150,9 @@ namespace CapFrameX.Contracts.Configuration
 		bool Autostart { get; set; }
 
 		bool IsGpuAccelerationActive { get; set; }
+
+		int HorizontalGraphExportRes { get; set; }
+
+		int VerticalGraphExportRes { get; set; }
 	}
 }

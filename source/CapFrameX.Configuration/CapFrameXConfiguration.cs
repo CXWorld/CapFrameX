@@ -458,5 +458,16 @@ namespace CapFrameX.Configuration
 			get { return Settings.IsGpuAccelerationActive; }
 			set { Settings.IsGpuAccelerationActive = value; Settings.Save(); }
 		}
+
+		public int HorizontalGraphExportRes
+		{
+			get { return Settings.HorizontalGraphExportRes; }
+			set { Settings.HorizontalGraphExportRes = value; Settings.Save(); }
+		}
+		public int VerticalGraphExportRes
+		{
+			get { return Settings.VerticalGraphExportRes; }
+			set { Settings.VerticalGraphExportRes = value; Settings.Save(); }
+		}
 	}
 }

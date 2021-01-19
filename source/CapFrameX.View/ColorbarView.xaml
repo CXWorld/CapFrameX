@@ -141,6 +141,7 @@
                                             <RowDefinition Height="*" />
                                             <RowDefinition Height="*" />
                                             <RowDefinition Height="*" />
+                                            <RowDefinition Height="*" />
                                         </Grid.RowDefinitions>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*"/>
@@ -173,22 +174,47 @@
                                             <TextBlock Text="Dark mode"/>
                                             <ToggleButton Margin="15 0 0 0" Click="MenuDarkModeButton_Click"/>
                                         </StackPanel>-->
-                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="20 5 0 5" Grid.Row="1" Grid.Column="0" ToolTip="Sets the GPU acceleration. Needs a restart of CapFrameX.">
+                                        <StackPanel Grid.Row="1" Grid.Column="0" Margin="20 5 0 5" Orientation="Horizontal"
+                                            ToolTip="Select resolution for graph export(via context menu)">
+                                            <TextBlock Margin="0 0 10 0" VerticalAlignment="Center" HorizontalAlignment="Center"> Graph export res.</TextBlock>
+                                            <materialDesign:PopupBox StaysOpen="True" ToolTipService.ShowDuration="25000" PlacementMode="TopAndAlignCentres">
+                                                <materialDesign:Card Width="270" Margin="0 0 0 -10">
+                                                    <StackPanel>
+                                                        <Grid Margin="8 8 8 8">
+                                                            <Grid.RowDefinitions>
+                                                                <RowDefinition Height="*" />
+                                                            </Grid.RowDefinitions>
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="Auto"/>
+                                                                <ColumnDefinition Width="Auto"/>
+                                                            </Grid.ColumnDefinitions>
+                                                            <TextBox Grid.Row="0" Grid.Column="0" Width="110" Margin="5 0 10 0" Text="{Binding HorizontalGraphExportRes, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
+                                                                     HorizontalContentAlignment="Center" materialDesign:HintAssist.Hint="Horizontal resolution" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
+                                                                     PreviewKeyDown="ResolutionTextBox_PreviewKeyDown" MouseLeave="TextBox_MouseLeave" PreviewTextInput="NumberValidationTextBox"></TextBox>
+                                                            <TextBox Grid.Row="0" Grid.Column="1" Width="110" Margin="10 0 5 0" Text="{Binding VerticalGraphExportRes, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
+                                                                     HorizontalContentAlignment="Center" materialDesign:HintAssist.Hint="Vertical resolution" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
+                                                                     PreviewKeyDown="ResolutionTextBox_PreviewKeyDown" MouseLeave="TextBox_MouseLeave" PreviewTextInput="NumberValidationTextBox"></TextBox>
+                                                        </Grid>
+                                                    </StackPanel>
+                                                </materialDesign:Card>
+                                            </materialDesign:PopupBox>
+                                        </StackPanel>
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="20 5 0 5" Grid.Row="2" Grid.Column="0" ToolTip="Sets the GPU acceleration. Needs a restart of CapFrameX.">
                                             <TextBlock Text="GPU acceleration"/>
                                             <ToggleButton Margin="15 0 0 0" IsChecked="{Binding IsGpuAccelerationActive, Mode=TwoWay}"/>
                                         </StackPanel>
-                                        <StackPanel Orientation="Horizontal" Margin="30 5 0 5" Grid.Row="1" Grid.Column="1">
+                                        <StackPanel Orientation="Horizontal" Margin="30 5 0 5" Grid.Row="2" Grid.Column="1">
                                             <TextBlock Margin="0 0 0 0" Text="Start with Windows" TextAlignment="Left" TextWrapping="Wrap" Width="80"/>
                                             <CheckBox Margin="0 0 0 0" IsChecked="{Binding Autostart, Mode=TwoWay}">
                                             </CheckBox>
                                         </StackPanel>
-                                        <StackPanel Orientation="Horizontal" Margin="0 5 0 5" Grid.Row="1" Grid.Column="2">
+                                        <StackPanel Orientation="Horizontal" Margin="0 5 0 5" Grid.Row="2" Grid.Column="2">
                                             <TextBlock Margin="0 0 0 0" Text="Start minimized" TextAlignment="Left" TextWrapping="Wrap" Width="80"/>
                                             <CheckBox Margin="0 0 0 0" IsChecked="{Binding StartMinimized, Mode=TwoWay}">
                                             </CheckBox>
                                         </StackPanel>
 
-                                        <StackPanel Grid.Row="2" Grid.ColumnSpan="3" Orientation="Horizontal" HorizontalAlignment="Left"  Margin="10 5 0 5">
+                                        <StackPanel Grid.Row="3" Grid.ColumnSpan="3" Orientation="Horizontal" HorizontalAlignment="Left"  Margin="10 5 0 5">
                                             <TextBox Width="350" IsReadOnly="True" materialDesign:HintAssist.Hint="Screenshot directory" Text="{Binding ScreenshotDirectory, Mode=OneWay}" />
                                             <Button Margin="15 0 0 0" Height="35" Width="35" Command="{Binding Path=DataContext.SelectScreenshotFolderCommand, ElementName=ColorbarViewName}" Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}" ToolTip="Select screenshot folder">
                                                 <materialDesign:PackIcon Kind="Folder" Height="25" Width="25" />
@@ -198,7 +224,7 @@
                                             </Button>
                                         </StackPanel>
                                                                                
-                                        <ComboBox Grid.Row="3" Grid.Column="0" materialDesign:HintAssist.Hint="Hardware info source"
+                                        <ComboBox Grid.Row="4" Grid.Column="0" materialDesign:HintAssist.Hint="Hardware info source"
 												  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Margin="15 15 0 0" Width="160"
 												  ItemsSource="{Binding Path=DataContext.HardwareInfoSourceItems, ElementName=ColorbarViewName}" 
 												  SelectedItem="{Binding Path=DataContext.SelectedHardwareInfoSource, ElementName=ColorbarViewName}">
@@ -208,7 +234,7 @@
                                                 </DataTemplate>
                                             </ComboBox.ItemTemplate>
                                         </ComboBox>
-                                        <ComboBox Grid.Row="3" Grid.Column="1" materialDesign:HintAssist.Hint="Capture file mode" ToolTipService.ShowDuration="25000"
+                                        <ComboBox Grid.Row="4" Grid.Column="1" materialDesign:HintAssist.Hint="Capture file mode" ToolTipService.ShowDuration="25000"
 												  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Margin="35 15 0 0" Width="160"
 												  ItemsSource="{Binding Path=DataContext.CaptureFileModeItems, ElementName=ColorbarViewName}" 
 												  SelectedItem="{Binding Path=DataContext.SelectedCaptureFileMode, ElementName=ColorbarViewName}">
@@ -229,7 +255,7 @@
                                             </ComboBox.ItemTemplate>
                                         </ComboBox>
                                         
-                                        <TextBox Grid.Row="4" Grid.ColumnSpan="2" materialDesign:HintAssist.Hint="CPU" Margin="15 15 0 0"
+                                        <TextBox Grid.Row="5" Grid.ColumnSpan="2" materialDesign:HintAssist.Hint="CPU" Margin="15 15 0 0"
 												Visibility="{Binding Path=DataContext.HasCustomInfo, ElementName=ColorbarViewName, Converter={StaticResource FalseToCollapsedConverter}}">
                                             <TextBox.Text>
                                                 <Binding Path="DataContext.CustomCpuDescription"
@@ -239,7 +265,7 @@
                                                 </Binding>
                                             </TextBox.Text>
                                         </TextBox>
-                                        <TextBox Grid.Row="5" Grid.ColumnSpan="2" materialDesign:HintAssist.Hint="GPU" Margin="15 10 0 0"
+                                        <TextBox Grid.Row="6" Grid.ColumnSpan="2" materialDesign:HintAssist.Hint="GPU" Margin="15 10 0 0"
 												Visibility="{Binding Path=DataContext.HasCustomInfo, ElementName=ColorbarViewName, Converter={StaticResource FalseToCollapsedConverter}}">
                                             <TextBox.Text>
                                                 <Binding Path="DataContext.CustomGpuDescription"
@@ -249,7 +275,7 @@
                                                 </Binding>
                                             </TextBox.Text>
                                         </TextBox>
-                                        <TextBox Grid.Row="6" Grid.ColumnSpan="2" materialDesign:HintAssist.Hint="RAM" Margin="15 10 0 0"
+                                        <TextBox Grid.Row="7" Grid.ColumnSpan="2" materialDesign:HintAssist.Hint="RAM" Margin="15 10 0 0"
 												Visibility="{Binding Path=DataContext.HasCustomInfo, ElementName=ColorbarViewName, Converter={StaticResource FalseToCollapsedConverter}}">
                                             <TextBox.Text>
                                                 <Binding Path="DataContext.CustomRamDescription"

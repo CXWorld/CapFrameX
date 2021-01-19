@@ -15,6 +15,7 @@ using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
@@ -173,6 +174,34 @@ namespace CapFrameX.View
 			return bitmap;
 		}
 
+		private void TextBox_MouseLeave(object sender, MouseEventArgs e)
+		{
+			var textBox = sender as TextBox;
+			if (textBox.Text == string.Empty || textBox.Text == "0")
+				textBox.Text = "500";
+
+			Keyboard.ClearFocus();
+		}
+
+		private void ResolutionTextBox_PreviewKeyDown(object sender, KeyEventArgs e)
+		{
+			var key = e.Key;
+			var textBox = sender as TextBox;
+			if (key == Key.Enter)
+			{
+				if (textBox.Text == string.Empty || textBox.Text == "0")
+					textBox.Text = "500";
+
+				Keyboard.ClearFocus();
+			}
+		}
+
+		private void NumberValidationTextBox(object sender, TextCompositionEventArgs e)
+		{
+			Regex regex = new Regex("[^0-9.]+");
+			e.Handled = regex.IsMatch(e.Text);
+		}
+
 		private void PopupBox_Closed(object sender, RoutedEventArgs e)
 		{
 			var viewModel = DataContext as ColorbarViewModel;
@@ -209,5 +238,10 @@ namespace CapFrameX.View
 			modificationAction?.Invoke(theme);
 			paletteHelper.SetTheme(theme);
 		}
+
+        private void HorizontalRes_PreviewMouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+
+        }
     }
 }
