@@ -23,16 +23,21 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Subjects;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Media;
 using ComparisonCollection = System.Collections.ObjectModel
     .ObservableCollection<CapFrameX.ViewModel.ComparisonRecordInfoWrapper>;
 using Point = CapFrameX.Statistics.NetStandard.Point;
+using IDropTarget = GongSolutions.Wpf.DragDrop.IDropTarget;
+using DragDropEffects = System.Windows.DragDropEffects;
 
 namespace CapFrameX.ViewModel
 {
@@ -532,6 +537,10 @@ namespace CapFrameX.ViewModel
 
         public ICommand RemoveAllComparisonsCommand { get; }
 
+        public ICommand SaveFrametimePlotAsImage { get; }
+
+        public ICommand SaveFPSPlotAsImage { get; }
+
         public ComparisonCollection ComparisonRecords { get; private set; }
             = new ComparisonCollection();
 
@@ -559,6 +568,8 @@ namespace CapFrameX.ViewModel
             RemoveAllComparisonsCommand = new DelegateCommand(OnRemoveAllComparisons);
             ComparisonLShapeCollection = new SeriesCollection();
             MessageDialogContent = new MessageDialog();
+            SaveFrametimePlotAsImage = new DelegateCommand(() => OnSavePlotAsImage("frametimes"));
+            SaveFPSPlotAsImage = new DelegateCommand(() => OnSavePlotAsImage("fps"));
 
             ComparisonColumnChartFormatter = value => value.ToString(string.Format("F{0}",
             _appConfiguration.FpsValuesRoundingDigits), CultureInfo.InvariantCulture);
@@ -1329,6 +1340,37 @@ namespace CapFrameX.ViewModel
             wrappedComparisonRecordInfo.FrametimeGraphColor = color.Color;
 
             return wrappedComparisonRecordInfo;
+        }
+
+
+        protected void OnSavePlotAsImage(string plotType)
+        {
+            var exporter = new SvgExporter { Width = _appConfiguration.HorizontalGraphExportRes, Height = _appConfiguration.VerticalGraphExportRes };
+
+            using (var memStream = new MemoryStream())
+            {
+                var illegalFilenameCharsRegex = new Regex(@"[/:*?<>""|]");
+
+                if (plotType == "frametimes")
+                exporter.Export(ComparisonFrametimesModel, memStream);
+
+                if (plotType == "fps")
+                    exporter.Export(ComparisonFpsModel, memStream);
+
+                var filename = $"{CurrentGameName}_ComparisonChartExport";
+
+                SaveFileDialog dialog = new SaveFileDialog()
+                {
+                    Filter = "SVG files|*.svg",
+                    FileName = $"{illegalFilenameCharsRegex.Replace(filename, string.Empty)}_{plotType}",
+                    DefaultExt = "svg",
+                };
+
+                if (dialog.ShowDialog() == DialogResult.OK)
+                {
+                    File.WriteAllBytes(dialog.FileName, memStream.ToArray());
+                }
+            }
         }
 
         void IDropTarget.Drop(IDropInfo dropInfo)
