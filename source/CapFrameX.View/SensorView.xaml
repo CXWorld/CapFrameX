@@ -55,15 +55,7 @@
 					         SelectedIndex="{Binding SelectedSensorEntryIndex}" SelectedItem="{Binding SelectedSensorEntry}" ItemsSource="{Binding SensorEntries}"
 					         CanUserSortColumns="False" CanUserAddRows="False" AutoGenerateColumns="False" IsEnabled="{Binding Path=UseSensorLogging}"
 					         materialDesign:DataGridAssist.CellPadding="13 3 0 0" materialDesign:DataGridAssist.ColumnHeaderPadding="8" IsSynchronizedWithCurrentItem="False"
-					         ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.CanContentScroll="True"
-					         dragdrop:DragDrop.IsDragSource="True"
-					         dragdrop:DragDrop.IsDropTarget="True"
-						     dragdrop:DragDrop.DropHandler="{Binding}"
-					         dragdrop:DragDrop.UseDefaultDragAdorner="True"
-					         dragdrop:DragDrop.DefaultDragAdornerOpacity="0.5"
-					         dragdrop:DragDrop.UseDefaultEffectDataTemplate="False"
-                             ToolTip="Drag &amp; Drop to change order"
-                             ToolTipService.VerticalOffset="-6">
+					         ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.CanContentScroll="True">
                         <DataGrid.Resources>
                             <Style TargetType="DataGridRow">
                                 <Setter Property="DataGrid.Height" Value="25" />
@@ -200,13 +192,7 @@
 					         CanUserSortColumns="False" CanUserAddRows="False" AutoGenerateColumns="False"
 					         materialDesign:DataGridAssist.CellPadding="13 3 0 0" materialDesign:DataGridAssist.ColumnHeaderPadding="8" IsSynchronizedWithCurrentItem="False"
 					         ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.CanContentScroll="True"
-                             Tag="{Binding ElementName=SensorViewUserControl, Path=DataContext}"
-					         dragdrop:DragDrop.IsDragSource="True"
-					         dragdrop:DragDrop.IsDropTarget="True"
-						     dragdrop:DragDrop.DropHandler="{Binding}"
-					         dragdrop:DragDrop.UseDefaultDragAdorner="True"
-					         dragdrop:DragDrop.DefaultDragAdornerOpacity="0.5"
-					         dragdrop:DragDrop.UseDefaultEffectDataTemplate="False">
+                             Tag="{Binding ElementName=SensorViewUserControl, Path=DataContext}">
                         <DataGrid.ContextMenu>
                             <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
                                 <MenuItem Header="Copy sensor data(min, avg, max)" Command="{Binding CopySensorInfoCommand}"/>
@@ -219,6 +205,7 @@
                             </Style>
                             <Style TargetType="DataGridCell">
                                 <Setter Property="Padding" Value="5" />
+                                <Setter Property="Margin" Value="10 0 0 0"/>
                                 <Setter Property="Background" Value="Transparent"/>
                                 <Setter Property="BorderBrush" Value="Transparent"/>
                                 <Setter Property="Validation.ErrorTemplate" Value="{x:Null}" />

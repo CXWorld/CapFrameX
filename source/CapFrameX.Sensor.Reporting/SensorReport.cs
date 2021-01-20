@@ -219,7 +219,7 @@ namespace CapFrameX.Sensor.Reporting
                 sensorDict.Add("GPU Limit Time/LoadLimit", Enumerable.Repeat(GetPercentageInGpuLoadLimit(gpuCoreLoadValues.Select(Convert.ToInt32)), gpuCoreLoadValues.Count()).ToList());
             }
 
-            var order = new string[] { "measuretime", "cpu", "gpu" }.ToList();
+            var order = new string[] { "measuretime", "gpu", "cpu"  }.ToList();
             var sensorDictOrdered = sensorDict.Select(x =>
             {
                 var nameSplitted = x.Key.Split('/');
