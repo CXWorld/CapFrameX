@@ -27,7 +27,7 @@ namespace CapFrameX.Data.Session.Converters
                 }
                 foreach (var value in values)
                 {
-                    container.Values.Add(Convert.ToDouble(value));
+                    container.Values.AddLast(Convert.ToDouble(value));
                 }
             }
 

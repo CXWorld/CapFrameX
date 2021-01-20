@@ -517,7 +517,7 @@ namespace CapFrameX.Data
                         var clonedSensorEntry = new SessionSensorEntry(collection.Value.Name, collection.Value.Type);
                         foreach(var indexToKeep in sensorIndicesToKeep)
                         {
-                            clonedSensorEntry.Values.Add(collection.Value.Values.ElementAt(indexToKeep));
+                            clonedSensorEntry.Values.AddLast(collection.Value.Values.ElementAt(indexToKeep));
                         }
                         clone.Runs[sessionRunIndex].SensorData2.Add(collection.Key, clonedSensorEntry);
                     }

@@ -11,7 +11,7 @@ namespace CapFrameX.Data.Session.Classes
     public class SessionSensorEntry: ISessionSensorEntry {
         public string Name { get; }
         public string Type { get; }
-        public List<double> Values { get; } = new List<double>();
+        public LinkedList<double> Values { get; } = new LinkedList<double>();
 
         public SessionSensorEntry(string name, string type) {
             Name = name;
