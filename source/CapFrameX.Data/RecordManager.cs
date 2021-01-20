@@ -797,11 +797,14 @@ namespace CapFrameX.Data
             {
                 foreach (var sessionRun in sessionRuns)
                 {
+                    var tmpMeasureTimeList = new List<double>();
                     for (int i = 0; i < sessionRun.SensorData2.BetweenMeasureTimes.Count(); i++)
                     {
                         lastSensorMeasureTime += sessionRun.SensorData2.BetweenMeasureTimes[i];
-                        sessionRun.SensorData2.MeasureTime.Values[i] = lastSensorMeasureTime;
+                        tmpMeasureTimeList[i] = lastSensorMeasureTime;
                     }
+                    sessionRun.SensorData2.MeasureTime.Values.Clear();
+                    tmpMeasureTimeList.ForEach(x => sessionRun.SensorData2.MeasureTime.Values.AddLast(x));
                 }
             }
             else
