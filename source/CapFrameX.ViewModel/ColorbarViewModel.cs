@@ -199,6 +199,26 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        public int HorizontalGraphExportRes
+        {
+            get { return _appConfiguration.HorizontalGraphExportRes; }
+            set
+            {
+                _appConfiguration.HorizontalGraphExportRes = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public int VerticalGraphExportRes
+        {
+            get { return _appConfiguration.VerticalGraphExportRes; }
+            set
+            {
+                _appConfiguration.VerticalGraphExportRes = value;
+                RaisePropertyChanged();
+            }
+        }
+
         public EHardwareInfoSource SelectedHardwareInfoSource
         {
             get { return _appConfiguration.HardwareInfoSource.ConvertToEnum<EHardwareInfoSource>(); }

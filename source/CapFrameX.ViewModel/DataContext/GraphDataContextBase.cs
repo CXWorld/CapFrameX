@@ -43,7 +43,7 @@ namespace CapFrameX.ViewModel.DataContext
 
 		protected void OnSavePlotAsImage(string plotType)
 		{
-			var exporter = new SvgExporter { Width = 1000, Height = 400 };
+			var exporter = new SvgExporter { Width = AppConfiguration.HorizontalGraphExportRes, Height = AppConfiguration.VerticalGraphExportRes};
 
 			using (var memStream = new MemoryStream())
 			{

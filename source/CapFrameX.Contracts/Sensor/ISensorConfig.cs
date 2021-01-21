@@ -8,6 +8,8 @@ namespace CapFrameX.Contracts.Sensor
 
         bool HasConfigFile { get; }
 
+        int SensorEntryCount { get; }
+
         bool GetSensorIsActive(string identifier);
 
         void SetSensorIsActive(string identifier, bool isActive);
@@ -17,5 +19,7 @@ namespace CapFrameX.Contracts.Sensor
         void SetSensorEvaluate(string identifier, bool isActive);
 
         Task Save();
+
+        void ResetConfig();
     }
 }

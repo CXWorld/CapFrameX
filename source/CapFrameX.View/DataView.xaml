@@ -374,6 +374,7 @@
                                         </Style>
                                         <Style TargetType="DataGridCell">
                                             <Setter Property="Padding" Value="5" />
+                                            <Setter Property="Margin" Value="10 0 0 0"/>
                                             <Setter Property="Background" Value="Transparent"/>
                                             <Setter Property="BorderBrush" Value="Transparent"/>
                                             <Setter Property="Validation.ErrorTemplate" Value="{x:Null}" />

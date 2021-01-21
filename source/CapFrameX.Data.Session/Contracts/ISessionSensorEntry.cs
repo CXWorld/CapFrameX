@@ -8,6 +8,6 @@ namespace CapFrameX.Data.Session.Contracts
     {
         string Name { get; }
         string Type { get; }
-        List<double> Values { get; }
+        LinkedList<double> Values { get; }
     }
 }

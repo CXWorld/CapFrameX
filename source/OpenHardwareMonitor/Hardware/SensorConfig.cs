@@ -32,6 +32,8 @@ namespace OpenHardwareMonitor.Hardware
 
         public bool HasConfigFile => File.Exists(Path.Combine(SENSOR_CONFIG_FOLDER, CONFIG_FILENAME));
 
+        public int SensorEntryCount => _activeSensorsDict.Count;
+
         public SensorConfig()
         {
             Task.Run(async () => await LoadOrSetDefault());
@@ -103,6 +105,11 @@ namespace OpenHardwareMonitor.Hardware
             {
                 Log.Logger.Error("Error while saving sensor config.");
             }
+        }
+
+        public void ResetConfig()
+        {
+            _activeSensorsDict?.Clear();
         }
 
         private async Task LoadOrSetDefault()

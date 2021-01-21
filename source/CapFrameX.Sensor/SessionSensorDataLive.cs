@@ -26,8 +26,8 @@ namespace CapFrameX.Sensor
             long ellapsedMilliseconds = timestampLogging - _timestampStartLogging;
             var measureTimeToAdd = ellapsedMilliseconds * 1E-03;
             var latestMeasureTime = _data.MeasureTime.Values.LastOrDefault();
-            _data.MeasureTime.Values.Add(measureTimeToAdd);
-            _data.BetweenMeasureTime.Values.Add(measureTimeToAdd - latestMeasureTime);
+            _data.MeasureTime.Values.AddLast(measureTimeToAdd);
+            _data.BetweenMeasureTime.Values.AddLast(measureTimeToAdd - latestMeasureTime);
         }
 
         public void AddSensorValue(ISensorEntry sensor, float currentValue)
@@ -36,7 +36,7 @@ namespace CapFrameX.Sensor
                 collection = new SessionSensorEntry(sensor.Name, sensor.SensorType);
                 _data.Add(sensor.Identifier, collection);
             }
-            collection.Values.Add(currentValue);
+            collection.Values.AddLast(currentValue);
         }
 
         public ISessionSensorData2 ToSessionSensorData()

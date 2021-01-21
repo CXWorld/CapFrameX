@@ -14,6 +14,10 @@ namespace CapFrameX.Data.Session.Converters
          Type objectType, object existingValue, JsonSerializer serializer)
         {
             var dictionary = serializer.Deserialize<Dictionary<string, SessionSensorEntry>>(reader);
+            if(dictionary is null)
+            {
+                return null;
+            }
             var sessionSensorData = new SessionSensorData2();
             foreach(var entry in dictionary)
             {

@@ -1,5 +1,5 @@
 ﻿<UserControl x:Class="CapFrameX.View.SensorView"
-             x:Name="SensorViewControl"
+             Name="SensorViewUserControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -37,33 +37,29 @@
     <Grid HorizontalAlignment="Center">
         <Grid.RowDefinitions>
             <RowDefinition Height="50"></RowDefinition>
-            <RowDefinition Height="510"></RowDefinition>
-            <RowDefinition Height="100"></RowDefinition>
+            <RowDefinition Height="20*"></RowDefinition>
+            <RowDefinition Height="0.5*"></RowDefinition>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="480"/>
+            <ColumnDefinition Width="460"/>
             <ColumnDefinition Width="10"/>
-            <ColumnDefinition Width="450"/>
+            <ColumnDefinition Width="460"/>
         </Grid.ColumnDefinitions>
         <Border BorderBrush="Black" BorderThickness="0.2" Grid.Row="1" Grid.Column="0" >
             <DockPanel Margin="0 10 0 10">
                 <Grid DockPanel.Dock="Top">
-                    <TextBlock Margin="25 0 0 10" HorizontalAlignment="Left" Text="Sensor items" FontSize="14" VerticalAlignment="Center"/>
+                    <TextBlock Margin="15 0 0 10" HorizontalAlignment="Left" Text="Sensor items" FontSize="14" VerticalAlignment="Center"/>
                 </Grid>
-                <StackPanel DockPanel.Dock="Top" Orientation="Vertical" HorizontalAlignment="Center">
-                    <DataGrid x:Name="SensorItemDataGrid" FocusVisualStyle="{x:Null}" Height="350" Width="430" Background="#F5F5F5" FontSize="11"
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="1*"></RowDefinition>
+                        <RowDefinition Height="100"></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <DataGrid Grid.Row="0" x:Name="SensorItemDataGrid" FocusVisualStyle="{x:Null}" Height="Auto" Width="440" Background="#F5F5F5" FontSize="11"
 					         SelectedIndex="{Binding SelectedSensorEntryIndex}" SelectedItem="{Binding SelectedSensorEntry}" ItemsSource="{Binding SensorEntries}"
-					         CanUserSortColumns="False" CanUserAddRows="False" AutoGenerateColumns="False"
+					         CanUserSortColumns="False" CanUserAddRows="False" AutoGenerateColumns="False" IsEnabled="{Binding Path=UseSensorLogging}"
 					         materialDesign:DataGridAssist.CellPadding="13 3 0 0" materialDesign:DataGridAssist.ColumnHeaderPadding="8" IsSynchronizedWithCurrentItem="False"
-					         ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.CanContentScroll="True"
-					         dragdrop:DragDrop.IsDragSource="True"
-					         dragdrop:DragDrop.IsDropTarget="True"
-						     dragdrop:DragDrop.DropHandler="{Binding}"
-					         dragdrop:DragDrop.UseDefaultDragAdorner="True"
-					         dragdrop:DragDrop.DefaultDragAdornerOpacity="0.5"
-					         dragdrop:DragDrop.UseDefaultEffectDataTemplate="False"
-                             ToolTip="Drag &amp; Drop to change order"
-                             ToolTipService.VerticalOffset="-6">
+					         ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.CanContentScroll="True">
                         <DataGrid.Resources>
                             <Style TargetType="DataGridRow">
                                 <Setter Property="DataGrid.Height" Value="25" />
@@ -77,8 +73,7 @@
                             <DataGridCheckBoxColumn Binding="{Binding UseForLogging, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Header="Use for logging">
                                 <DataGridCheckBoxColumn.CellStyle>
                                     <Style TargetType="DataGridCell">
-                                        <Setter Property="IsEnabled" 
-                                                        Value="{Binding Path=LogSensorIsEnabled}" />
+                                        <!--<Setter Property="IsEnabled" Value="{Binding Path=UseSensorLogging, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}}" />-->
                                         <Setter Property="Template">
                                             <Setter.Value>
                                                 <ControlTemplate TargetType="{x:Type DataGridCell}">
@@ -98,7 +93,9 @@
                             </DataGridCheckBoxColumn>
                         </DataGrid.Columns>
                     </DataGrid>
-                    <StackPanel Margin="15 5 0 0" Orientation="Horizontal" IsEnabled="{Binding AreButtonsActive}">
+                    
+                    <StackPanel Grid.Row="1" Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Bottom">
+                        <StackPanel Height="75" Margin="15 5 0 0" Orientation="Horizontal" IsEnabled="{Binding AreButtonsActive}">
                         <StackPanel Margin="0 15 0 0" VerticalAlignment="Center" Orientation="Horizontal"                                >
                             <CheckBox IsChecked="{Binding UseSensorLogging, Mode=TwoWay}">
                                 <CheckBox.ToolTip>
@@ -128,20 +125,19 @@
                         </ComboBox>
                         <Grid Width="210">
                             <Button Width="28" Height="28" Margin="20 10 15 0" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
-                                ToolTip="Reset to defaults" Command="{Binding ResetToDefaultCommand}"
+                                ToolTip="Reset to defaults" Command="{Binding ResetToDefaultCommand}" IsEnabled="{Binding Path=UseSensorLogging}"
                                 materialDesign:RippleAssist.Feedback="#DD000000">
                                 <materialDesign:PackIcon Kind="Restore" Height="22" Width="22" />
                             </Button>
-                            <Button Width="28" Height="28" Margin="0 10 15 0" HorizontalAlignment="Right" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
+                            <Button Width="28" Height="28" Margin="0 10 20 0" HorizontalAlignment="Right" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
                                     ToolTip="Save selected sensors for logging" Command="{Binding SaveConfigCommand}" IsEnabled="{Binding SaveButtonIsEnable}"
                                     materialDesign:RippleAssist.Feedback="#DD000000">
                                 <materialDesign:PackIcon Kind="ContentSaveSettings" Height="22" Width="22" />
                             </Button>
                         </Grid>
                     </StackPanel>
-                </StackPanel>
-                <StackPanel Orientation="Horizontal" Margin="15 0 0 0">
-                <materialDesign:PopupBox StaysOpen="True" ToolTipService.ShowDuration="25000">
+                    <StackPanel Orientation="Horizontal" Margin="5 0 0 0">
+                    <materialDesign:PopupBox StaysOpen="True" ToolTipService.ShowDuration="25000" IsEnabled="{Binding Path=UseSensorLogging}">
                     <materialDesign:PopupBox.ToolTip>
                         <ToolTip MaxWidth="275" Placement="Top">
                             <TextBlock Text="Sensor group control" 
@@ -188,6 +184,84 @@
                 </materialDesign:PopupBox>
                 <TextBlock VerticalAlignment="Center">Group control</TextBlock>
                 </StackPanel>
+                </StackPanel>
+                </Grid>
+            </DockPanel>
+        </Border>
+            
+        <Border BorderBrush="Black" BorderThickness="0.2" Grid.Row="1" Grid.Column="2" >
+            <DockPanel Margin="0 10 0 10">
+                <Grid DockPanel.Dock="Top">
+                    <TextBlock Margin="15 0 0 10" HorizontalAlignment="Left" Text="Sensor statistics for selected record" FontSize="14" VerticalAlignment="Center"/>
+                </Grid>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="1*"></RowDefinition>
+                        <RowDefinition Height="100"></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <DataGrid x:Name="SensorStatisticsDataGrid" FocusVisualStyle="{x:Null}" Height="Auto" Width="440" Background="#F5F5F5" FontSize="11"
+                             ItemsSource="{Binding SensorReportItems}"
+					         CanUserSortColumns="False" CanUserAddRows="False" AutoGenerateColumns="False"
+					         materialDesign:DataGridAssist.CellPadding="13 3 0 0" materialDesign:DataGridAssist.ColumnHeaderPadding="8" IsSynchronizedWithCurrentItem="False"
+					         ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.CanContentScroll="True"
+                             Tag="{Binding ElementName=SensorViewUserControl, Path=DataContext}">
+                        <DataGrid.ContextMenu>
+                            <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
+                                <MenuItem Header="Copy sensor data(min, avg, max)" Command="{Binding CopySensorInfoCommand}"/>
+                                <MenuItem Header="Copy raw sensor data" Command="{Binding CopyRawSensorInfoCommand}"/>
+                            </ContextMenu>
+                        </DataGrid.ContextMenu>
+                        <DataGrid.Resources>
+                            <Style TargetType="DataGridRow">
+                                <Setter Property="DataGrid.Height" Value="25" />
+                            </Style>
+                            <Style TargetType="DataGridCell">
+                                <Setter Property="Padding" Value="5" />
+                                <Setter Property="Margin" Value="10 0 0 0"/>
+                                <Setter Property="Background" Value="Transparent"/>
+                                <Setter Property="BorderBrush" Value="Transparent"/>
+                                <Setter Property="Validation.ErrorTemplate" Value="{x:Null}" />
+                                <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBody}" />
+                                <Setter Property="BorderThickness" Value="0"/>
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="{x:Type DataGridCell}">
+                                            <Grid>
+                                                <Border
+                                                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                                                    Background="{TemplateBinding Background}"
+                                                                    SnapsToDevicePixels="True" />
+                                                <ContentPresenter
+                                                                    SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
+                                                                    Margin="{TemplateBinding Padding}" />
+                                            </Grid>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </DataGrid.Resources>
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Binding="{Binding Name, Mode=OneWay}"                                                           
+                                            Header="Sensor"                 
+                                            MinWidth="180"
+                                            IsReadOnly="True">
+                            </DataGridTextColumn>
+                            <DataGridTextColumn Binding="{Binding MinValue, Mode=OneWay}"
+                                            Header="Min"
+                                            Width="75"
+                                            IsReadOnly="True"/>
+                            <DataGridTextColumn Binding="{Binding AverageValue, Mode=OneWay}"
+                                            Header="Average"
+                                            Width="75"
+                                            IsReadOnly="True"/>
+                            <DataGridTextColumn Binding="{Binding MaxValue, Mode=OneWay}"
+                                            Header="Max"
+                                            Width="75"
+                                            IsReadOnly="True"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
             </DockPanel>
         </Border>
     </Grid>

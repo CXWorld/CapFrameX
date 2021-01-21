@@ -113,7 +113,13 @@
                                 <ContentPresenter x:Name="ChartsContentPresenter" Content="{Binding}">
                                     <ContentPresenter.Resources>
                                         <DataTemplate x:Key="FrametimeChartContent">
-                                            <controls:PlotViewCustomZoom Background="#F5F5F5" Model="{Binding DataContext.ComparisonFrametimesModel, ElementName=ComparisonViewUserControl}"/>
+                                            <controls:PlotViewCustomZoom Background="#F5F5F5" Model="{Binding DataContext.ComparisonFrametimesModel, ElementName=ComparisonViewUserControl}">
+                                                <controls:PlotViewCustomZoom.ContextMenu>
+                                                    <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
+                                                        <MenuItem Header="Save plot as image" Command="{Binding SaveFrametimePlotAsImage }"/>
+                                                    </ContextMenu>
+                                                </controls:PlotViewCustomZoom.ContextMenu>
+                                            </controls:PlotViewCustomZoom>
                                         </DataTemplate>
                                         <DataTemplate x:Key="FpsChartContent">
                                             <Grid>
@@ -128,7 +134,13 @@
                                                         </ComboBox.ItemTemplate>
                                                     </ComboBox>
                                                 </Grid>
-                                                <controls:PlotViewCustomZoom Background="#F5F5F5" Model="{Binding DataContext.ComparisonFpsModel, ElementName=ComparisonViewUserControl}"/>
+                                                <controls:PlotViewCustomZoom Background="#F5F5F5" Model="{Binding DataContext.ComparisonFpsModel, ElementName=ComparisonViewUserControl}">
+                                                    <controls:PlotViewCustomZoom.ContextMenu>
+                                                        <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
+                                                            <MenuItem Header="Save plot as image" Command="{Binding SaveFPSPlotAsImage }"/>
+                                                        </ContextMenu>
+                                                    </controls:PlotViewCustomZoom.ContextMenu>
+                                                </controls:PlotViewCustomZoom>
                                             </Grid>
                                         </DataTemplate>
                                     </ContentPresenter.Resources>
