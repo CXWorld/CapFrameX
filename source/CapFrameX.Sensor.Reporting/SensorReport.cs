@@ -12,7 +12,8 @@ namespace CapFrameX.Sensor.Reporting
     public static class SensorReport
     {
 
-        public static Dictionary<string, int> roundingDictionary = new Dictionary<string, int>() {
+        public static Dictionary<string, int> roundingDictionary = new Dictionary<string, int>()
+        {
             ["Power"] = 1,
             ["Data"] = 2,
             ["Voltage"] = 3,
@@ -130,14 +131,17 @@ namespace CapFrameX.Sensor.Reporting
             var sensorReportItems = new List<ISensorReportItem>();
             foreach (var sensor in GetSensorReportEntries(sessionsSensorData, startTime, endTime).Where(x => x.Type != "Time"))
             {
-                roundingDictionary.TryGetValue(sensor.Type, out var roundingDigits);
-                sensorReportItems.Add(new SensorReportItem
+                if (sensor.Values.Any())
                 {
-                    Name = sensor.DisplayName,
-                    MinValue = Math.Round(sensor.Values.Min(), roundingDigits),
-                    AverageValue = Math.Round(sensor.Values.Average(), roundingDigits),
-                    MaxValue = Math.Round(sensor.Values.Max(), roundingDigits)
-                });
+                    roundingDictionary.TryGetValue(sensor.Type, out var roundingDigits);
+                    sensorReportItems.Add(new SensorReportItem
+                    {
+                        Name = sensor.DisplayName,
+                        MinValue = Math.Round(sensor.Values.Min(), roundingDigits),
+                        AverageValue = Math.Round(sensor.Values.Average(), roundingDigits),
+                        MaxValue = Math.Round(sensor.Values.Max(), roundingDigits)
+                    });
+                }
             }
 
             return sensorReportItems;
@@ -214,12 +218,12 @@ namespace CapFrameX.Sensor.Reporting
                 }
             }
 
-            if(sensorDict.TryGetValue("GPU Core/Load", out var gpuCoreLoadValues))
+            if (sensorDict.TryGetValue("GPU Core/Load", out var gpuCoreLoadValues))
             {
                 sensorDict.Add("GPU Limit Time/LoadLimit", Enumerable.Repeat(GetPercentageInGpuLoadLimit(gpuCoreLoadValues.Select(Convert.ToInt32)), gpuCoreLoadValues.Count()).ToList());
             }
 
-            var order = new string[] { "measuretime", "gpu", "cpu"  }.ToList();
+            var order = new string[] { "measuretime", "gpu", "cpu" }.ToList();
             var sensorDictOrdered = sensorDict.Select(x =>
             {
                 var nameSplitted = x.Key.Split('/');
@@ -230,7 +234,8 @@ namespace CapFrameX.Sensor.Reporting
                     Values = x.Value.ToArray(),
                     DisplayName = $"{nameSplitted[0]} {GetSensorNameSuffix(nameSplitted[1])}"
                 };
-            }).OrderBy(entry => entry.Name, Comparer<string>.Create((a, b) => {
+            }).OrderBy(entry => entry.Name, Comparer<string>.Create((a, b) =>
+            {
                 var orderA = order.FindIndex(x => a.IndexOf(x, StringComparison.OrdinalIgnoreCase) > -1);
                 if (orderA == -1) orderA = order.Count;
                 var orderB = order.FindIndex(x => b.IndexOf(x, StringComparison.OrdinalIgnoreCase) > -1);
