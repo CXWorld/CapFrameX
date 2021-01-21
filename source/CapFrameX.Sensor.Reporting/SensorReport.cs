@@ -242,7 +242,7 @@ namespace CapFrameX.Sensor.Reporting
                 if (orderB == -1) orderB = order.Count;
 
                 return orderA.CompareTo(orderB);
-            })).ThenBy(entry => entry.Type.Replace("SmallData", "Z")).ThenBy(x => x.DisplayName);
+            })).ThenBy(entry => entry.Type.Replace("SmallData", "Z")).ThenBy(x => x.DisplayName.Replace("Package", " ").Length).ThenBy(x => x.DisplayName);
 
 
             return sensorDictOrdered;
