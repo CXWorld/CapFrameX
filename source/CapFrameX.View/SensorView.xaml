@@ -37,8 +37,8 @@
     <Grid HorizontalAlignment="Center">
         <Grid.RowDefinitions>
             <RowDefinition Height="50"></RowDefinition>
-            <RowDefinition Height="510"></RowDefinition>
-            <RowDefinition Height="110"></RowDefinition>
+            <RowDefinition Height="20*"></RowDefinition>
+            <RowDefinition Height="0.5*"></RowDefinition>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="460"/>
@@ -50,8 +50,12 @@
                 <Grid DockPanel.Dock="Top">
                     <TextBlock Margin="15 0 0 10" HorizontalAlignment="Left" Text="Sensor items" FontSize="14" VerticalAlignment="Center"/>
                 </Grid>
-                <StackPanel DockPanel.Dock="Top" Orientation="Vertical" HorizontalAlignment="Center">
-                    <DataGrid x:Name="SensorItemDataGrid" FocusVisualStyle="{x:Null}" Height="350" Width="430" Background="#F5F5F5" FontSize="11"
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="1*"></RowDefinition>
+                        <RowDefinition Height="100"></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <DataGrid Grid.Row="0" x:Name="SensorItemDataGrid" FocusVisualStyle="{x:Null}" Height="Auto" Width="440" Background="#F5F5F5" FontSize="11"
 					         SelectedIndex="{Binding SelectedSensorEntryIndex}" SelectedItem="{Binding SelectedSensorEntry}" ItemsSource="{Binding SensorEntries}"
 					         CanUserSortColumns="False" CanUserAddRows="False" AutoGenerateColumns="False" IsEnabled="{Binding Path=UseSensorLogging}"
 					         materialDesign:DataGridAssist.CellPadding="13 3 0 0" materialDesign:DataGridAssist.ColumnHeaderPadding="8" IsSynchronizedWithCurrentItem="False"
@@ -89,7 +93,9 @@
                             </DataGridCheckBoxColumn>
                         </DataGrid.Columns>
                     </DataGrid>
-                    <StackPanel Height="50" Margin="15 5 0 0" Orientation="Horizontal" IsEnabled="{Binding AreButtonsActive}">
+                    
+                    <StackPanel Grid.Row="1" Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Bottom">
+                        <StackPanel Height="75" Margin="15 5 0 0" Orientation="Horizontal" IsEnabled="{Binding AreButtonsActive}">
                         <StackPanel Margin="0 15 0 0" VerticalAlignment="Center" Orientation="Horizontal"                                >
                             <CheckBox IsChecked="{Binding UseSensorLogging, Mode=TwoWay}">
                                 <CheckBox.ToolTip>
@@ -130,8 +136,7 @@
                             </Button>
                         </Grid>
                     </StackPanel>
-                </StackPanel>
-                <StackPanel Orientation="Horizontal" Margin="5 0 0 0">
+                    <StackPanel Orientation="Horizontal" Margin="5 0 0 0">
                     <materialDesign:PopupBox StaysOpen="True" ToolTipService.ShowDuration="25000" IsEnabled="{Binding Path=UseSensorLogging}">
                     <materialDesign:PopupBox.ToolTip>
                         <ToolTip MaxWidth="275" Placement="Top">
@@ -179,15 +184,22 @@
                 </materialDesign:PopupBox>
                 <TextBlock VerticalAlignment="Center">Group control</TextBlock>
                 </StackPanel>
+                </StackPanel>
+                </Grid>
             </DockPanel>
         </Border>
+            
         <Border BorderBrush="Black" BorderThickness="0.2" Grid.Row="1" Grid.Column="2" >
             <DockPanel Margin="0 10 0 10">
                 <Grid DockPanel.Dock="Top">
                     <TextBlock Margin="15 0 0 10" HorizontalAlignment="Left" Text="Sensor statistics for selected record" FontSize="14" VerticalAlignment="Center"/>
                 </Grid>
-                <StackPanel DockPanel.Dock="Top" Orientation="Vertical" HorizontalAlignment="Center">
-                    <DataGrid x:Name="SensorStatisticsDataGrid" FocusVisualStyle="{x:Null}" Height="460" Width="430" Background="#F5F5F5" FontSize="11"
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="1*"></RowDefinition>
+                        <RowDefinition Height="100"></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <DataGrid x:Name="SensorStatisticsDataGrid" FocusVisualStyle="{x:Null}" Height="Auto" Width="440" Background="#F5F5F5" FontSize="11"
                              ItemsSource="{Binding SensorReportItems}"
 					         CanUserSortColumns="False" CanUserAddRows="False" AutoGenerateColumns="False"
 					         materialDesign:DataGridAssist.CellPadding="13 3 0 0" materialDesign:DataGridAssist.ColumnHeaderPadding="8" IsSynchronizedWithCurrentItem="False"
@@ -249,7 +261,7 @@
                                             IsReadOnly="True"/>
                         </DataGrid.Columns>
                     </DataGrid>
-                </StackPanel>
+                </Grid>
             </DockPanel>
         </Border>
     </Grid>

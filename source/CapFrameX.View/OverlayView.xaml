@@ -38,8 +38,8 @@
     <Grid HorizontalAlignment="Center">
         <Grid.RowDefinitions>
             <RowDefinition Height="50"></RowDefinition>
-            <RowDefinition Height="510"></RowDefinition>
-            <RowDefinition Height="100"></RowDefinition>
+            <RowDefinition Height="20*"></RowDefinition>
+            <RowDefinition Height="0.5*"></RowDefinition>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="480"/>
@@ -57,45 +57,48 @@
             <DockPanel Margin="0 10 0 10"
                    Visibility="{Binding  IsRTSSInstalled, Converter={StaticResource TrueToVisibleConverter}}">
             <!--DataGrid and Overlay hotkey-->
-            <Grid DockPanel.Dock="Top">
-                <TextBlock Margin="20 0 0 10" HorizontalAlignment="Left" Text="Overlay items" FontSize="14" VerticalAlignment="Center"/>
-                <StackPanel Margin="0 0 10 10" Orientation="Horizontal" HorizontalAlignment="Right">
-                    <Button Width="28" Height="28" Margin="0 0 10 0" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="45"></RowDefinition>
+                        <RowDefinition Height="1*"></RowDefinition>
+                        <RowDefinition Height="50"></RowDefinition>
+                        <RowDefinition Height="60"></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <TextBlock Margin="20 0 0 10" HorizontalAlignment="Left" Text="Overlay items" FontSize="14" VerticalAlignment="Center"/>
+                    <StackPanel Grid.Row="0" Margin="0 0 10 10" Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button Width="28" Height="28" Margin="0 0 10 0" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
                             ToolTip="Save current config" Command="{Binding SaveConfigCommand}" IsEnabled="{Binding SaveButtonIsEnable}"
                             materialDesign:RippleAssist.Feedback="#DD000000">
-                        <materialDesign:PackIcon Kind="ContentSaveSettings" Height="22" Width="22" />
-                    </Button>
-                    <RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
+                            <materialDesign:PackIcon Kind="ContentSaveSettings" Height="22" Width="22" />
+                        </Button>
+                        <RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
                                  Padding="0 0 0 0"
                                  Width="30"
                                  MinWidth="30"
                                  IsChecked="{Binding IsConfig0Checked}"
                                  Content="1"
                                  Command="{Binding ConfigSwitchCommand}" CommandParameter="0"/>
-                    <RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
+                        <RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
                                  Padding="0 0 0 0"
                                  Width="30"
                                  MinWidth="30"
                                  IsChecked="{Binding IsConfig1Checked}"
                                  Content="2" 
                                  Command="{Binding ConfigSwitchCommand}" CommandParameter="1"/>
-                    <RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
+                        <RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
                                  Padding="0 0 0 0"
                                  Width="30"
                                  MinWidth="30"
                                  IsChecked="{Binding IsConfig2Checked}"
                                  Content="3" 
                                  Command="{Binding ConfigSwitchCommand}" CommandParameter="2"/>
-                    <Button Width="28" Height="28" Margin="7 0 10 0" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
+                        <Button Width="28" Height="28" Margin="7 0 10 0" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
                             ToolTip="Reset to defaults" Command="{Binding ResetDefaultsCommand}"
                             materialDesign:RippleAssist.Feedback="#DD000000">
-                        <materialDesign:PackIcon Kind="Restore" Height="22" Width="22" />
-                    </Button>
-                </StackPanel>
-            </Grid>
-      
-            <StackPanel DockPanel.Dock="Top" Orientation="Vertical" HorizontalAlignment="Center">
-                <DataGrid x:Name="OverlayItemDataGrid" FocusVisualStyle="{x:Null}" Height="350" Width="430" Background="#F5F5F5" FontSize="11"
+                            <materialDesign:PackIcon Kind="Restore" Height="22" Width="22" />
+                        </Button>
+                    </StackPanel>
+                    <DataGrid Grid.Row="1" x:Name="OverlayItemDataGrid" FocusVisualStyle="{x:Null}" Height="Auto" Width="440" Background="#F5F5F5" FontSize="11"
 					      SelectedIndex="{Binding SelectedOverlayEntryIndex}" SelectedItem="{Binding SelectedOverlayEntry}" ItemsSource="{Binding OverlayEntries}"
 					      CanUserSortColumns="False" CanUserAddRows="False" AutoGenerateColumns="False"
 					      materialDesign:DataGridAssist.CellPadding="13 3 0 0" materialDesign:DataGridAssist.ColumnHeaderPadding="8" IsSynchronizedWithCurrentItem="False"
@@ -172,7 +175,8 @@
                                             IsReadOnly="False"/>-->
                     </DataGrid.Columns>
                 </DataGrid>
-                <Border Margin="0 5 0 0"  BorderThickness="0.2" BorderBrush="Black">
+                    <StackPanel Grid.Row="2" Orientation="Vertical" HorizontalAlignment="Center">
+                        <Border Margin="0 5 0 0"  BorderThickness="0.4" BorderBrush="Black">
                     <StackPanel Margin="5 5 0 5"  Orientation="Horizontal">
                         <TextBlock VerticalAlignment="Center">Group control:</TextBlock>
                         <materialDesign:PopupBox StaysOpen="True" ToolTipService.ShowDuration="25000">
@@ -298,53 +302,55 @@
                                 </materialDesign:PopupBox>
                             </StackPanel>
                         </StackPanel>
-                </Border>
+
+    </Border>
             </StackPanel>
             <!--Global overlay toggle-->
-            <StackPanel Margin="20 0 0 0" DockPanel.Dock="Bottom" Orientation="Horizontal">
-                <TextBox Margin="0 0 0 0" materialDesign:HintAssist.Hint="Toggle Overlay hotkey" Width="132" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" FontSize="14"
+                    <StackPanel Grid.Row="3" Margin="20 0 0 0" DockPanel.Dock="Bottom" Orientation="Horizontal">
+                        <TextBox Margin="0 0 0 0" materialDesign:HintAssist.Hint="Toggle Overlay hotkey" Width="132" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" FontSize="14"
 					 IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False" PreviewKeyDown="OverlayHotkeyTextBox_PreviewKeyDown"
 					 ToolTip="Hotkey combinable with up to two modifier keys (Ctrl, Shift or Alt)">
-                    <Binding Path="OverlayHotkey"
+                            <Binding Path="OverlayHotkey"
 						 ElementName="OverlayViewControl"
 						 Mode="OneWay"
 						 TargetNullValue="&lt; not set &gt;">
-                        <Binding.ValidationRules>
-                            <validation:HotkeyValidationRule
+                                <Binding.ValidationRules>
+                                    <validation:HotkeyValidationRule
                           ValidatesOnTargetUpdated="True" />
-                        </Binding.ValidationRules>
-                    </Binding>
-                </TextBox>
-                    <TextBox Margin="25 0 0 0" materialDesign:HintAssist.Hint="Toggle Config hotkey" Width="132" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" FontSize="14"
+                                </Binding.ValidationRules>
+                            </Binding>
+                        </TextBox>
+                        <TextBox Margin="25 0 0 0" materialDesign:HintAssist.Hint="Toggle Config hotkey" Width="132" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" FontSize="14"
 					 IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False" PreviewKeyDown="ConfigHotkeyTextBox_PreviewKeyDown"
 					 ToolTip="Hotkey combinable with up to two modifier keys (Ctrl, Shift or Alt)">
-                        <Binding Path="OverlayConfigHotkey"
+                            <Binding Path="OverlayConfigHotkey"
 						 ElementName="OverlayViewControl"
 						 Mode="OneWay"
 						 TargetNullValue="&lt; not set &gt;">
-                            <Binding.ValidationRules>
-                                <validation:HotkeyValidationRule
+                                <Binding.ValidationRules>
+                                    <validation:HotkeyValidationRule
                           ValidatesOnTargetUpdated="True" />
-                            </Binding.ValidationRules>
-                        </Binding>
-                    </TextBox>
-                    <ComboBox Margin="25 15 0 0" 
+                                </Binding.ValidationRules>
+                            </Binding>
+                        </TextBox>
+                        <ComboBox Margin="25 15 0 0" 
 					  materialDesign:ComboBoxAssist.ClassicMode="True"
 					  materialDesign:HintAssist.Hint="Refresh period (ms)"
 					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="200" Width="110"
 					  MouseLeave="OSDRefreshPeriodComboBox_MouseLeave" FontSize="14"
 					  ItemsSource="{Binding Path=RefreshPeriodItemsSource}">
-                        <ComboBox.Text>
-                            <Binding Path="OSDRefreshPeriod"
+                            <ComboBox.Text>
+                                <Binding Path="OSDRefreshPeriod"
 							     Mode="TwoWay"
 							     UpdateSourceTrigger="PropertyChanged">
-                            </Binding>
-                        </ComboBox.Text>
-                    </ComboBox>
-                </StackPanel>
-        </DockPanel>
+                                </Binding>
+                            </ComboBox.Text>
+                        </ComboBox>
+                    </StackPanel>
+                </Grid>
+            </DockPanel>
         </Border>
-        <TabControl Grid.Row="1" Grid.Column="2" Margin="0 0 0 0" Background="Transparent" BorderThickness=".2" BorderBrush="Black">
+        <TabControl Grid.Row="1" Grid.Column="2" Height="502" VerticalAlignment="Top" Margin="0 0 0 0" Background="Transparent" BorderThickness=".2" BorderBrush="Black">
             <TabItem Header="Overlay items options">
                 <Grid HorizontalAlignment="Center">
                     <Grid.RowDefinitions>
