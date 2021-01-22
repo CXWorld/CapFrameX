@@ -134,7 +134,7 @@ namespace CapFrameX.ViewModel
             _logger = logger;
             _captureManager = captureManager;
 
-            _localRecordDataServer = new LocalRecordDataServer();
+            _localRecordDataServer = new LocalRecordDataServer(appConfiguration);
             // define submodels
             SensorSubModelGroupControl = new SensorGroupControl(this);
 

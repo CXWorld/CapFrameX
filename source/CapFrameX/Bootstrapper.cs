@@ -49,7 +49,7 @@ namespace CapFrameX
 			LogAppInfo();
 
 			// get config
-			var config = Container.Resolve<CapFrameXConfiguration>();
+			var config = Container.Resolve<IAppConfiguration>();
 
 			// get Shell to set the hardware acceleration
 			var shell = Container.Resolve<IShell>();
@@ -71,10 +71,11 @@ namespace CapFrameX
 			base.ConfigureContainer();
 
 			// Vertical components
-			Container.Register<IEventAggregator, EventAggregator>(Reuse.Singleton, null, null, IfAlreadyRegistered.Replace, "EventAggregator");
-			Container.Register<IAppConfiguration, CapFrameXConfiguration>(Reuse.Singleton);
-			Container.RegisterInstance<IFrametimeStatisticProviderOptions>(Container.Resolve<CapFrameXConfiguration>());
 			Container.ConfigureSerilogILogger(Log.Logger);
+			Container.Register<IEventAggregator, EventAggregator>(Reuse.Singleton, null, null, IfAlreadyRegistered.Replace, "EventAggregator");
+			Container.Register<ISettingsStorage, JsonSettingsStorage>(Reuse.Singleton);
+			Container.Register<IAppConfiguration, CapFrameXConfiguration>(Reuse.Singleton);
+			Container.RegisterInstance<IFrametimeStatisticProviderOptions>(Container.Resolve<IAppConfiguration>());
 
 			// Prism
 			Container.Register<IRegionManager, RegionManager>(Reuse.Singleton, null, null, IfAlreadyRegistered.Replace, "RegionManager");

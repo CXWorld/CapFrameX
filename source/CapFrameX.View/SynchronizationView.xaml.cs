@@ -20,12 +20,6 @@ namespace CapFrameX.View
 		public SynchronizationView()
 		{
 			InitializeComponent();
-
-			// Design time!
-			if (DesignerProperties.GetIsInDesignMode(this))
-			{
-				var appConfiguration = new CapFrameXConfiguration();
-			}
 		}
 
 		private void ResetSynchronizationChart_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)

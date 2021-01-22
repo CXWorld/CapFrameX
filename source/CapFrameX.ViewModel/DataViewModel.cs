@@ -488,7 +488,7 @@ namespace CapFrameX.ViewModel
 			ThresholdTimesCommand = new DelegateCommand(() => _appConfiguration.ShowThresholdTimes = true);
 
             ParameterFormatter = value => value.ToString(CultureInfo.InvariantCulture);
-            _localRecordDataServer = new LocalRecordDataServer();
+            _localRecordDataServer = new LocalRecordDataServer(appConfiguration);
 			FrametimeGraphDataContext = new FrametimeGraphDataContext(_localRecordDataServer,
 				_appConfiguration, _frametimeStatisticProvider);
 			FpsGraphDataContext = new FpsGraphDataContext(_localRecordDataServer,

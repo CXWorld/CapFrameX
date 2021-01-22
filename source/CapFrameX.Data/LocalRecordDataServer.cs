@@ -8,6 +8,7 @@ using CapFrameX.Data.Session.Contracts;
 using CapFrameX.Statistics.NetStandard.Contracts;
 using CapFrameX.Statistics.NetStandard;
 using CapFrameX.Configuration;
+using CapFrameX.Contracts.Configuration;
 
 namespace CapFrameX.Data
 {
@@ -20,8 +21,9 @@ namespace CapFrameX.Data
 		private ISubject<IList<double>> _fpsDataSubject;
 		private ISubject<IList<Point>> _fpsPointDataSubject;
 		private ISubject<IList<Point>> _loadsPointDataSubject;
+        private readonly IAppConfiguration _appConfiguration;
 
-		public bool IsActive { get; set; }
+        public bool IsActive { get; set; }
 
 		public ISession CurrentSession { get; set; }
 
@@ -57,7 +59,7 @@ namespace CapFrameX.Data
 
 		public IObservable<IList<Point>> FpsPointDataStream => _fpsPointDataSubject.AsObservable();
 
-		public LocalRecordDataServer()
+		public LocalRecordDataServer(IAppConfiguration appConfiguration)
 		{
 			_frametimeDataSubject = new Subject<IList<double>>();
 			_frametimePointDataSubject = new Subject<IList<Point>>();
@@ -66,7 +68,8 @@ namespace CapFrameX.Data
 			_loadsPointDataSubject = new Subject<IList<Point>>();
 
 			IsActive = true;
-		}
+            _appConfiguration = appConfiguration;
+        }
 
 		public IList<double> GetFrametimeTimeWindow()
 		{
@@ -75,7 +78,7 @@ namespace CapFrameX.Data
 
 			double startTime = CurrentTime;
 			double endTime = startTime + WindowLength;
-			return CurrentSession.GetFrametimeTimeWindow(startTime, endTime, new CapFrameXConfiguration() ,RemoveOutlierMethod);
+			return CurrentSession.GetFrametimeTimeWindow(startTime, endTime, _appConfiguration ,RemoveOutlierMethod);
 		}
 
 		public IList<Point> GetFrametimePointTimeWindow()
@@ -85,7 +88,7 @@ namespace CapFrameX.Data
 
 			double startTime = CurrentTime;
 			double endTime = startTime + WindowLength;
-			return CurrentSession.GetFrametimePointsTimeWindow(startTime, endTime, new CapFrameXConfiguration(), RemoveOutlierMethod);
+			return CurrentSession.GetFrametimePointsTimeWindow(startTime, endTime, _appConfiguration, RemoveOutlierMethod);
 		}
 
 		public IList<double> GetFpsTimeWindow()
