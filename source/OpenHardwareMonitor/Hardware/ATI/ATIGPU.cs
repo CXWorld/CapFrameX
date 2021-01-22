@@ -49,6 +49,7 @@ namespace OpenHardwareMonitor.Hardware.ATI
         private readonly Sensor memoryControllerLoad;
         private readonly Sensor controlSensor;
         private readonly Control fanControl;
+        private readonly Sensor memoryUsed;
 
         private IntPtr context;
         private readonly int overdriveVersion;
@@ -113,6 +114,7 @@ namespace OpenHardwareMonitor.Hardware.ATI
 
             this.controlSensor = new Sensor("GPU Fan", 0, SensorType.Control, this, settings);
 
+            this.memoryUsed = new Sensor("GPU Memory Used", 4, SensorType.SmallData, this, settings);
             this.memoryUsageDedicated = new Sensor("GPU Memory Dedicated", 0, SensorType.SmallData, this, settings);
             this.memoryUsageShared = new Sensor("GPU Memory Shared", 1, SensorType.SmallData, this, settings);
             this.processMemoryUsageDedicated = new Sensor("GPU Memory Dedicated Game", 2, SensorType.SmallData, this, settings);
@@ -365,6 +367,12 @@ namespace OpenHardwareMonitor.Hardware.ATI
                 GetPMLog(data, ADLSensorType.INFO_ACTIVITY_GFX, coreLoad);
                 GetPMLog(data, ADLSensorType.INFO_ACTIVITY_MEM, memoryControllerLoad);
                 GetPMLog(data, ADLSensorType.FAN_PERCENTAGE, controlSensor);
+
+                if (ADL.ADL2_Adapter_VRAMUsage_Get(context, adapterIndex, out int vramUsage) == ADL.ADL_OK)
+                {
+                    this.memoryUsed.Value = vramUsage;
+                    ActivateSensor(this.memoryUsed);
+                }
             }
             else
             {
