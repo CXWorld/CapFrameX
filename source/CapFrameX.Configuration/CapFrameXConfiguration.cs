@@ -1,473 +1,508 @@
 ﻿using CapFrameX.Contracts.Configuration;
+using System;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace CapFrameX.Configuration
 {
 	public class CapFrameXConfiguration : IAppConfiguration
 	{
-		private static Properties.Settings Settings => Properties.Settings.Default;
+		private readonly ISettingsStorage _settingsStorage;
 
 		public int MovingAverageWindowSize
 		{
-			get { return Settings.MovingAverageWindowSize; }
-			set { Settings.MovingAverageWindowSize = value; Settings.Save(); }
+			get => Get<int>(100);
+			set => Set(value);
 		}
 
 		public int IntervalAverageWindowTime
 		{
-			get { return Settings.IntervalAverageWindowTime; }
-			set { Settings.IntervalAverageWindowTime = value; Settings.Save(); }
+			get => Get<int>(500);
+			set => Set(value);
 		}
 
 		public double StutteringFactor
 		{
-			get { return Settings.StutteringFactor; }
-			set { Settings.StutteringFactor = value; Settings.Save(); }
+			get => Get<double>(2.5);
+			set => Set(value);
 		}
 
 		public double StutteringThreshold
 		{
-			get { return Settings.StutteringThreshold; }
-			set { Settings.StutteringThreshold = value; Settings.Save(); }
+			get => Get<double>(25d);
+			set => Set(value);
 		}
 
 		public string ObservedDirectory
 		{
-			get { return Settings.ObservedDirectory; }
-			set { Settings.ObservedDirectory = value; Settings.Save(); }
+			get => Get<string>(@"MyDocuments\CapFrameX\Captures");
+			set => Set(value);
 		}
 
 		public string ScreenshotDirectory
 		{
-			get { return Settings.ScreenshotDirectory; }
-			set { Settings.ScreenshotDirectory = value; Settings.Save(); }
+			get => Get<string>(@"MyDocuments\CapFrameX\Screenshots");
+			set => Set(value);
 		}
 
 		public int FpsValuesRoundingDigits
 		{
-			get { return Settings.FpsValuesRoundingDigits; }
-			set { Settings.FpsValuesRoundingDigits = value; Settings.Save(); }
+			get => Get<int>(1);
+			set => Set(value);
 		}
 
 		public bool UseSingleRecordMaxStatisticParameter
 		{
-			get { return Settings.UseSingleRecordMaxStatisticParameter; }
-			set { Settings.UseSingleRecordMaxStatisticParameter = value; Settings.Save(); }
+			get => Get<bool>(false);
+			set => Set(value);
 		}
 
 		public bool UseSingleRecord99QuantileStatisticParameter
 		{
-			get { return Settings.UseSingleRecordP99QuantileStatisticParameter; }
-			set { Settings.UseSingleRecordP99QuantileStatisticParameter = value; Settings.Save(); }
+			get => Get<bool>(false);
+			set => Set(value);
 		}
 
 		public bool UseSingleRecordP95QuantileStatisticParameter
 		{
-			get { return Settings.UseSingleRecordP95QuantileStatisticParameter; }
-			set { Settings.UseSingleRecordP95QuantileStatisticParameter = value; Settings.Save(); }
+			get => Get<bool>(false);
+			set => Set(value);
 		}
 
 		public bool UseSingleRecordAverageStatisticParameter
 		{
-			get { return Settings.UseSingleRecordAverageStatisticParameter; }
-			set { Settings.UseSingleRecordAverageStatisticParameter = value; Settings.Save(); }
+			get => Get<bool>(false);
+			set => Set(value);
 		}
 
 		public bool UseSingleRecordMedianStatisticParameter
 		{
-			get { return Settings.UseSingleRecordMedianStatisticParameter; }
-			set { Settings.UseSingleRecordMedianStatisticParameter = value; Settings.Save(); }
+			get => Get<bool>(false);
+			set => Set(value);
 		}
 
 		public bool UseSingleRecordP5QuantileStatisticParameter
 		{
-			get { return Settings.UseSingleRecordP5QuantileStatisticParameter; }
-			set { Settings.UseSingleRecordP5QuantileStatisticParameter = value; Settings.Save(); }
+			get => Get<bool>(false);
+			set => Set(value);
 		}
 
 		public bool UseSingleRecordP1QuantileStatisticParameter
 		{
-			get { return Settings.UseSingleRecordP1QuantileStatisticParameter; }
-			set { Settings.UseSingleRecordP1QuantileStatisticParameter = value; Settings.Save(); }
+			get => Get<bool>(false);
+			set => Set(value);
 		}
 
 		public bool UseSingleRecordP0Dot1QuantileStatisticParameter
 		{
-			get { return Settings.UseSingleRecordP0Dot1QuantileStatisticParameter; }
-			set { Settings.UseSingleRecordP0Dot1QuantileStatisticParameter = value; Settings.Save(); }
+			get => Get<bool>(false);
+			set => Set(value);
 		}
 
         public bool UseSingleRecordP0Dot2QuantileStatisticParameter
         {
-            get { return Settings.UseSingleRecordP0Dot2QuantileStatisticParameter; }
-            set { Settings.UseSingleRecordP0Dot2QuantileStatisticParameter = value; Settings.Save(); }
+            get => Get<bool>(false);
+            set => Set(value);
         }
 
         public bool UseSingleRecordP1LowAverageStatisticParameter
 		{
-			get { return Settings.UseSingleRecordP1LowAverageStatisticParameter; }
-			set { Settings.UseSingleRecordP1LowAverageStatisticParameter = value; Settings.Save(); }
+			get => Get<bool>(false);
+			set => Set(value);
 		}
 
 		public bool UseSingleRecordP0Dot1LowAverageStatisticParameter
 		{
-			get { return Settings.UseSingleRecordP0Dot1LowAverageStatisticParameter; }
-			set { Settings.UseSingleRecordP0Dot1LowAverageStatisticParameter = value; Settings.Save(); }
+			get => Get<bool>(false);
+			set => Set(value);
 		}
 
 		public bool UseSingleRecordMinStatisticParameter
 		{
-			get { return Settings.UseSingleRecordMinStatisticParameter; }
-			set { Settings.UseSingleRecordMinStatisticParameter = value; Settings.Save(); }
+			get => Get<bool>(false);
+			set => Set(value);
 		}
 
 		public bool UseSingleRecordAdaptiveSTDStatisticParameter
 		{
-			get { return Settings.UseSingleRecordAdaptiveSTDStatisticParameter; }
-			set { Settings.UseSingleRecordAdaptiveSTDStatisticParameter = value; Settings.Save(); }
+			get => Get<bool>(false);
+			set => Set(value);
 		}
 
 		public bool UseSingleRecordCpuFpsPerWattParameter
 		{
-			get { return Settings.UseSingleRecordCpuFpsPerWattParameter; }
-			set { Settings.UseSingleRecordCpuFpsPerWattParameter = value; Settings.Save(); }
+			get => Get<bool>(false);
+			set => Set(value);
 		}
 
 		public bool UseSingleRecordGpuFpsPerWattParameter
 		{
-			get { return Settings.UseSingleRecordGpuFpsPerWattParameter; }
-			set { Settings.UseSingleRecordGpuFpsPerWattParameter = value; Settings.Save(); }
+			get => Get<bool>(false);
+			set => Set(value);
 		}
 
 		public string CaptureHotKey
         {
-            get { return Settings.CaptureHotKey; }
-            set { Settings.CaptureHotKey = value; Settings.Save(); }
+            get => Get<string>("F11");
+            set => Set(value);
         }
 
 		public string OverlayHotKey
 		{
-			get { return Settings.OverlayHotKey; }
-			set { Settings.OverlayHotKey = value; Settings.Save(); }
+			get => Get<string>("Alt+O");
+			set => Set(value);
 		}
 
 		public string OverlayConfigHotKey
 		{
-			get { return Settings.OverlayConfigHotKey; }
-			set { Settings.OverlayConfigHotKey = value; Settings.Save(); }
+			get => Get<string>("Alt+C");
+			set => Set(value);
 		}
 
 		public bool AutoDisableOverlay
 		{
-			get { return Settings.AutoDisableOverlay; }
-			set { Settings.AutoDisableOverlay = value; Settings.Save(); }
+			get => Get<bool>(false);
+			set => Set(value);
 		}
 
 		public bool ToggleGlobalRTSSOSD
 		{
-			get { return Settings.ToggleGlobalRTSSOSD; }
-			set { Settings.ToggleGlobalRTSSOSD = value; Settings.Save(); }
+			get => Get<bool>(false);
+			set => Set(value);
 		}
 
 		public string HotkeySoundMode
         {
-            get { return Settings.HotkeySoundMode; }
-            set { Settings.HotkeySoundMode = value; Settings.Save(); }
+            get => Get<string>("voice response");
+            set => Set(value);
         }
 
         public double CaptureTime
         {
-            get { return Settings.CaptureTime; }
-            set { Settings.CaptureTime = value; Settings.Save(); }
+            get => Get<double>(30d);
+            set => Set(value);
         }
 
         public double VoiceSoundLevel
         {
-            get { return Settings.VoiceSoundLevel; }
-            set { Settings.VoiceSoundLevel = value; Settings.Save(); }
+            get => Get<double>(0.25);
+            set => Set(value);
         }
 
         public double SimpleSoundLevel
         {
-            get { return Settings.SimpleSoundLevel; }
-            set { Settings.SimpleSoundLevel = value; Settings.Save(); }
+            get => Get<double>(0.25);
+            set => Set(value);
         }
 
 		public string FirstMetric
 		{
-			get { return Settings.FirstMetric; }
-			set { Settings.FirstMetric = value; Settings.Save(); }
+			get => Get<string>("Average");
+			set => Set(value);
 		}
 
 		public string SecondMetric 
 		{
-			get { return Settings.SecondMetric; }
-			set { Settings.SecondMetric = value; Settings.Save(); }
+			get => Get<string>("P1");
+			set => Set(value);
 		}
 
 		public string ThirdMetric
 		{
-			get { return Settings.ThirdMetric; }
-			set { Settings.ThirdMetric = value; Settings.Save(); }
+			get => Get<string>("P0dot2");
+			set => Set(value);
 		}
 
 		public string SecondMetricOverlay
 		{
-			get { return Settings.SecondMetricOverlay; }
-			set { Settings.SecondMetricOverlay = value; Settings.Save(); }
+			get => Get<string>("P1");
+			set => Set(value);
 		}
 
 		public string ThirdMetricOverlay
 		{
-			get { return Settings.ThirdMetricOverlay; }
-			set { Settings.ThirdMetricOverlay = value; Settings.Save(); }
+			get => Get<string>("P0dot2");
+			set => Set(value);
 		}
 
 		public int SelectedHistoryRuns
 		{
-			get { return Settings.SelectedHistoryRuns; }
-			set { Settings.SelectedHistoryRuns = value; Settings.Save(); }
+			get => Get<int>(3);
+			set => Set(value);
 		}
 
 		public string OutlierHandling
 		{
-			get { return Settings.OutlierHandling; }
-			set { Settings.OutlierHandling = value; Settings.Save(); }
+			get => Get<string>("Replace");
+			set => Set(value);
 		}
 
 		public int OSDRefreshPeriod
 		{
-			get { return Settings.OSDRefreshPeriod; }
-			set { Settings.OSDRefreshPeriod = value; Settings.Save(); }
+			get => Get<int>(250);
+			set => Set(value);
 		}
 
 		public string ComparisonContext
 		{
-			get { return Settings.ComparisonContext; }
-			set { Settings.ComparisonContext = value; Settings.Save(); }
+			get => Get<string>("CPU");
+			set => Set(value);
 		}
 		public string SecondComparisonContext
 		{
-			get { return Settings.SecondComparisonContext; }
-			set { Settings.SecondComparisonContext = value; Settings.Save(); }
+			get => Get<string>("GPU");
+			set => Set(value);
 		}
 
 		public string RecordingListSortMemberPath
 		{
-			get { return Settings.RecordingListSortMemberPath; }
-			set { Settings.RecordingListSortMemberPath = value; Settings.Save(); }
+			get => Get<string>("GameName");
+			set => Set(value);
 		}
 
 		public string RecordingListSortDirection
 		{
-			get { return Settings.RecordingListSortDirection; }
-			set { Settings.RecordingListSortDirection = value; Settings.Save(); }
+			get => Get<string>("Ascending");
+			set => Set(value);
 		}
 
 		public string SyncRangeLower
 		{
-			get { return Settings.SyncRangeLower; }
-			set { Settings.SyncRangeLower = value; Settings.Save(); }
+			get => Get<string>(40.ToString());
+			set => Set(value);
 		}
 
 		public string SyncRangeUpper
 		{
-			get { return Settings.SyncRangeUpper; }
-			set { Settings.SyncRangeUpper = value; Settings.Save(); }
+			get => Get<string>(120.ToString());
+			set => Set(value);
 		}
 
 		public bool ShowOutlierWarning
 		{
-			get { return Settings.ShowOutlierWarning; }
-			set { Settings.ShowOutlierWarning = value; Settings.Save(); }
+			get => Get<bool>(true);
+			set => Set(value);
 		}
 
 		public string HardwareInfoSource
 		{
-			get { return Settings.HardwareInfoSource; }
-			set { Settings.HardwareInfoSource = value; Settings.Save(); }
+			get => Get<string>("Auto");
+			set => Set(value);
 		}
 
 		public string CustomCpuDescription
 		{
-			get { return Settings.CustomCpuDescription; }
-			set { Settings.CustomCpuDescription = value; Settings.Save(); }
+			get => Get<string>("Cpu");
+			set => Set(value);
 		}
 
 		public string CustomGpuDescription
 		{
-			get { return Settings.CustomGpuDescription; }
-			set { Settings.CustomGpuDescription = value; Settings.Save(); }
+			get => Get<string>("Gpu");
+			set => Set(value);
 		}
 
 		public string CustomRamDescription
 		{
-			get { return Settings.CustomRamDescription; }
-			set { Settings.CustomRamDescription = value; Settings.Save(); }
+			get => Get<string>("Ram");
+			set => Set(value);
 		}
 
 		public bool IsOverlayActive
 		{
-			get { return Settings.IsOverlayActive; }
-			set { Settings.IsOverlayActive = value; Settings.Save(); }
+			get => Get<bool>(true);
+			set => Set(value);
 		}
 
 		public string ResetHistoryHotkey
 		{
-			get { return Settings.ResetHistoryHotkey; }
-			set { Settings.ResetHistoryHotkey = value; Settings.Save(); }
+			get => Get<string>("Alt+R");
+			set => Set(value);
 		}
 
 		public bool UseRunHistory
 		{
-			get { return Settings.UseRunHistory; }
-			set { Settings.UseRunHistory = value; Settings.Save(); }
+			get => Get<bool>(false);
+			set => Set(value);
 		}
 
 		public bool UseAggregation
 		{
-			get { return Settings.UseAggregation; }
-			set { Settings.UseAggregation = value; Settings.Save(); }
+			get => Get<bool>(false);
+			set => Set(value);
 		}
 
 		public bool SaveAggregationOnly
 		{
-			get { return Settings.SaveAggregationOnly; }
-			set { Settings.SaveAggregationOnly = value; Settings.Save(); }
+			get => Get<bool>(false);
+			set => Set(value);
 		}
 
 		public int OutlierPercentageOverlay
 		{
-			get { return Settings.OutlierPercentageOverlay; }
-			set { Settings.OutlierPercentageOverlay = value; Settings.Save(); }
+			get => Get<int>(3);
+			set => Set(value);
 		}
 
 		public string RelatedMetricOverlay
 		{
-			get { return Settings.RelatedMetricOverlay; }
-			set { Settings.RelatedMetricOverlay = value; Settings.Save(); }
+			get => Get<string>("Second");
+			set => Set(value);
 		}
 
 		public int InputLagOffset
 		{
-			get { return Settings.InputLagOffset; }
-			set { Settings.InputLagOffset = value; Settings.Save(); }
+			get => Get<int>(10);
+			set => Set(value);
 		}
 
 		public string SecondMetricAggregation
 		{
-			get { return Settings.SecondMetricAggregation; }
-			set { Settings.SecondMetricAggregation = value; Settings.Save(); }
+			get => Get<string>("P1");
+			set => Set(value);
 		}
 
 		public string ThirdMetricAggregation
 		{
-			get { return Settings.ThirdMetricAggregation; }
-			set { Settings.ThirdMetricAggregation = value; Settings.Save(); }
+			get => Get<string>("P0dot2");
+			set => Set(value);
 		}
 		public string RelatedMetricAggregation
 		{
-			get { return Settings.RelatedMetricAggregation; }
-			set { Settings.RelatedMetricAggregation = value; Settings.Save(); }
+			get => Get<string>("Second");
+			set => Set(value);
 		}
 		public int OutlierPercentageAggregation
 		{
-			get { return Settings.OutlierPercentageAggregation; }
-			set { Settings.OutlierPercentageAggregation = value; Settings.Save(); }
+			get => Get<int>(3);
+			set => Set(value);
 		}
 
 		public bool AreThresholdsReversed
 		{
-			get { return Settings.AreThresholdsReversed; }
-			set { Settings.AreThresholdsReversed = value; Settings.Save(); }
+			get => Get<bool>(false);
+			set => Set(value);
 		}
 
 		public string CloudDownloadDirectory
 		{
-			get { return Settings.CloudDownloadDirectory; }
-			set { Settings.CloudDownloadDirectory = value; Settings.Save(); }
+			get => Get<string>(@"MyDocuments\CapFrameX\Captures\Cloud");
+			set => Set(value);
 		}
 
 		public string CaptureRootDirectory
 		{
-			get { return Settings.CaptureRootDirectory; }
-			set { Settings.CaptureRootDirectory = value; Settings.Save(); }
+			get => Get<string>(@"MyDocuments\CapFrameX\Captures");
+			set => Set(value);
 		}
 
 		public bool ShareProcessListEntries
 		{
-			get { return Settings.ShareProcessListEntries; }
-			set { Settings.ShareProcessListEntries = value; Settings.Save(); }
+			get => Get<bool>(false);
+			set => Set(value);
 		}
 
 		public bool AutoUpdateProcessList
 		{
-			get { return Settings.AutoUpdateProcessList; }
-			set { Settings.AutoUpdateProcessList = value; Settings.Save(); }
+			get => Get<bool>(false);
+			set => Set(value);
 		}
 
 		public bool UseSensorLogging
 		{
-			get { return Settings.UseSensorLogging; }
-			set { Settings.UseSensorLogging = value; Settings.Save(); }
+			get => Get<bool>(true);
+			set => Set(value);
 		}
 		
 		public bool AreThresholdsPercentage
 		{
-			get { return Settings.AreThresholdsPercentage; }
-			set { Settings.AreThresholdsPercentage = value; Settings.Save(); }
+			get => Get<bool>(false);
+			set => Set(value);
 		}
 
 		public int OverlayEntryConfigurationFile
 		{
-			get { return Settings.OverlayEntryConfigurationFile; }
-			set { Settings.OverlayEntryConfigurationFile = value; Settings.Save(); }
+			get => Get<int>(0);
+			set => Set(value);
 		}
 		
 		public int SensorLoggingRefreshPeriod
 		{
-			get { return Settings.SensorLoggingRefreshPeriod; }
-			set { Settings.SensorLoggingRefreshPeriod = value; Settings.Save(); }
+			get => Get<int>(250);
+			set => Set(value);
 		}
 		
 		public bool ShowThresholdTimes
 		{
-			get { return Settings.ShowThresholdTimes; }
-			set { Settings.ShowThresholdTimes = value; Settings.Save(); }
+			get => Get<bool>(true);
+			set => Set(value);
 		}
 
 		public string CaptureFileMode
 		{
-			get { return Settings.CaptureFileMode; }
-			set { Settings.CaptureFileMode = value; Settings.Save(); }
+			get => Get<string>("Json");
+			set => Set(value);
 		}
 
 		public bool StartMinimized
 		{
-			get { return Settings.StartMinimized; }
-			set { Settings.StartMinimized = value; Settings.Save(); }
+			get => Get<bool>(false);
+			set => Set(value);
 		}
 
 		public bool Autostart
 		{
-			get { return Settings.Autostart; }
-			set { Settings.Autostart = value; Settings.Save(); }
+			get => Get<bool>(false);
+			set => Set(value);
 		}
 
 		public bool IsGpuAccelerationActive
 		{
-			get { return Settings.IsGpuAccelerationActive; }
-			set { Settings.IsGpuAccelerationActive = value; Settings.Save(); }
+			get => Get<bool>(true);
+			set => Set(value);
 		}
 
 		public int HorizontalGraphExportRes
 		{
-			get { return Settings.HorizontalGraphExportRes; }
-			set { Settings.HorizontalGraphExportRes = value; Settings.Save(); }
+			get => Get<int>(1200);
+			set => Set(value);
 		}
 		public int VerticalGraphExportRes
 		{
-			get { return Settings.VerticalGraphExportRes; }
-			set { Settings.VerticalGraphExportRes = value; Settings.Save(); }
+			get => Get<int>(600);
+			set => Set(value);
 		}
+
+		T Get<T>(T defaultValue, [CallerMemberName] string key = null)
+		{
+			if(string.IsNullOrWhiteSpace(key))
+            {
+				throw new ArgumentException(key);
+            }
+
+            try
+            {
+				return _settingsStorage.GetValue<T>(key);
+			} catch (KeyNotFoundException)
+            {
+				Set(defaultValue, key);
+				return defaultValue;
+            }
+		}
+
+		void Set<T>(T value, [CallerMemberName] string key = null)
+        {
+			if (string.IsNullOrWhiteSpace(key))
+			{
+				throw new ArgumentException(key);
+			}
+			_settingsStorage.SetValue(key, value);
+		}
+
+		public CapFrameXConfiguration(ISettingsStorage settingsStorage)
+        {
+            _settingsStorage = settingsStorage;
+			_settingsStorage.Load().Wait();
+        }
 	}
 }
