@@ -9,8 +9,34 @@ namespace CapFrameX.Configuration
 	{
 		private readonly ISettingsStorage _settingsStorage;
 
-		// General Settings
 
+		// Directories
+		public string ObservedDirectory
+		{
+			get => Get<string>(@"MyDocuments\CapFrameX\Captures");
+			set => Set(value);
+		}
+
+		public string CaptureRootDirectory
+		{
+			get => Get<string>(@"MyDocuments\CapFrameX\Captures");
+			set => Set(value);
+		}
+
+		public string ScreenshotDirectory
+		{
+			get => Get<string>(@"MyDocuments\CapFrameX\Screenshots");
+			set => Set(value);
+		}
+
+		public string CloudDownloadDirectory
+		{
+			get => Get<string>(@"MyDocuments\CapFrameX\Captures\Cloud");
+			set => Set(value);
+		}
+
+
+		// General Settings
 		public int MovingAverageWindowSize
 		{
 			get => Get<int>(100);
@@ -20,12 +46,6 @@ namespace CapFrameX.Configuration
 		public int IntervalAverageWindowTime
 		{
 			get => Get<int>(500);
-			set => Set(value);
-		}
-
-		public string ScreenshotDirectory
-		{
-			get => Get<string>(@"MyDocuments\CapFrameX\Screenshots");
 			set => Set(value);
 		}
 
@@ -43,19 +63,19 @@ namespace CapFrameX.Configuration
 
 		public string CustomCpuDescription
 		{
-			get => Get<string>("Cpu");
+			get => Get<string>("CPU");
 			set => Set(value);
 		}
 
 		public string CustomGpuDescription
 		{
-			get => Get<string>("Gpu");
+			get => Get<string>("GPU");
 			set => Set(value);
 		}
 
 		public string CustomRamDescription
 		{
-			get => Get<string>("Ram");
+			get => Get<string>("RAM");
 			set => Set(value);
 		}
 
@@ -89,20 +109,8 @@ namespace CapFrameX.Configuration
 			set => Set(value);
 		}
 
+
 		// Record List Settings
-
-		public string ObservedDirectory
-		{
-			get => Get<string>(@"MyDocuments\CapFrameX\Captures");
-			set => Set(value);
-		}
-
-		public string CaptureRootDirectory
-		{
-			get => Get<string>(@"MyDocuments\CapFrameX\Captures");
-			set => Set(value);
-		}
-
 		public string RecordingListSortMemberPath
 		{
 			get => Get<string>("GameName");
@@ -115,8 +123,8 @@ namespace CapFrameX.Configuration
 			set => Set(value);
 		}
 
-		// Capture Settings
 
+		// Capture Settings
 		public string CaptureHotKey
 		{
 			get => Get<string>("F11");
@@ -153,8 +161,8 @@ namespace CapFrameX.Configuration
 			set => Set(value);
 		}
 
-		// Analysis Settings
 
+		// Analysis Settings
 		public double StutteringFactor
 		{
 			get => Get<double>(2.5);
@@ -281,8 +289,8 @@ namespace CapFrameX.Configuration
 			set => Set(value);
 		}
 
-		// Aggregation Settings
 
+		// Aggregation Settings
 		public string SecondMetricAggregation
 		{
 			get => Get<string>("P1");
@@ -307,8 +315,8 @@ namespace CapFrameX.Configuration
 			set => Set(value);
 		}
 
-		// Overlay Settings
 
+		// Overlay Settings
 		public int OverlayEntryConfigurationFile
 		{
 			get => Get<int>(0);
@@ -412,9 +420,7 @@ namespace CapFrameX.Configuration
 		}
 
 
-
 		// Comparison Settings
-
 		public string ComparisonFirstMetric
 		{
 			get => Get<string>("Average");
@@ -443,8 +449,8 @@ namespace CapFrameX.Configuration
 			set => Set(value);
 		}
 
-		// Sensor Settings
 
+		// Sensor Settings
 		public bool UseSensorLogging
 		{
 			get => Get<bool>(true);
@@ -461,8 +467,8 @@ namespace CapFrameX.Configuration
 		// Report Settings
 
 
-		// Sync Settings
 
+		// Sync Settings
 		public int InputLagOffset
 		{
 			get => Get<int>(10);
@@ -481,14 +487,8 @@ namespace CapFrameX.Configuration
 			set => Set(value);
 		}
 
+
 		// Cloud Settings
-
-		public string CloudDownloadDirectory
-		{
-			get => Get<string>(@"MyDocuments\CapFrameX\Captures\Cloud");
-			set => Set(value);
-		}
-
 		public bool ShareProcessListEntries
 		{
 			get => Get<bool>(false);
