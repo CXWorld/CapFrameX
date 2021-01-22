@@ -350,11 +350,11 @@
                 </Grid>
             </DockPanel>
         </Border>
-        <TabControl Grid.Row="1" Grid.Column="2" Height="502" VerticalAlignment="Top" Margin="0 0 0 0" Background="Transparent" BorderThickness=".2" BorderBrush="Black">
+        <TabControl Grid.Row="1" Grid.Column="2" Margin="0 0 0 0" Background="Transparent" BorderThickness=".2" BorderBrush="Black">
             <TabItem Header="Overlay items options">
                 <Grid HorizontalAlignment="Center">
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="50"></RowDefinition>
+                        <RowDefinition Height="30"></RowDefinition>
                         <RowDefinition Height="200"></RowDefinition>
                         <RowDefinition Height="215"></RowDefinition>
                     </Grid.RowDefinitions>
