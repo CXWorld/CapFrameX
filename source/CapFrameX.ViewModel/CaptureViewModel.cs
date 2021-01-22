@@ -166,7 +166,7 @@ namespace CapFrameX.ViewModel
             get => Enum.GetName(typeof(SoundMode), _soundManager.SoundMode);
             set
             {
-                _soundManager.SetSoundMode(value);
+                _soundManager.SoundMode = (SoundMode)Enum.Parse(typeof(SoundMode), value);
                 RaisePropertyChanged();
                 RaisePropertyChanged(nameof(SliderSoundLevel));
                 RaisePropertyChanged(nameof(ShowVolumeController));
