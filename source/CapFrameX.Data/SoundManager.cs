@@ -115,11 +115,6 @@ namespace CapFrameX.Data
                 player.Open(new Uri(path, UriKind.Relative));
             });
         }
-
-        public void SetSoundMode(string value)
-        {
-            SoundMode = Enum.TryParse<SoundMode>(value, out var soundMode) ? soundMode : SoundMode.None;
-        }
     }
 
     public enum Sound

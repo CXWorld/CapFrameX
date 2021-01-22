@@ -16,7 +16,7 @@ namespace CapFrameX.Configuration
                 "CapFrameX", "Configuration", "settings.json");
         private readonly ILogger<JsonSettingsStorage> _logger;
         private readonly Subject<int> _saveFileSubject = new Subject<int>();
-        private Dictionary<string, object> _configDictionary;
+        private readonly Dictionary<string, object> _configDictionary = new Dictionary<string, object>();
 
         public JsonSettingsStorage(ILogger<JsonSettingsStorage> logger)
         {
@@ -58,12 +58,20 @@ namespace CapFrameX.Configuration
                     Directory.CreateDirectory(file.DirectoryName);
                     File.WriteAllText(file.FullName, "{}");
                 }
+
                 var fileContent = File.ReadAllText(file.FullName);
-                _configDictionary = JsonConvert.DeserializeObject<Dictionary<string, object>>(fileContent);
-                if(_configDictionary is null)
+                var dict = JsonConvert.DeserializeObject<Dictionary<string, object>>(fileContent);
+
+                if(dict is null)
                 {
                     throw new Exception($"Configurationfile {file.FullName} is corrupted");
                 }
+
+                foreach(var kvp in dict)
+                {
+                    _configDictionary.Add(kvp.Key, kvp.Value);
+                }
+
                 return Task.FromResult(true);
             } catch(Exception exc)
             {
@@ -78,7 +86,14 @@ namespace CapFrameX.Configuration
             {
                 var file = new FileInfo(_jsonFilePath);
                 var fileContent = JsonConvert.SerializeObject(_configDictionary, Formatting.Indented);
-                File.WriteAllText(file.FullName, fileContent);
+                if (string.IsNullOrWhiteSpace(fileContent))
+                {
+                    _logger.LogError("Error writing Configurationfile. Cannot create config from Dictionary", _configDictionary);
+                }
+                else
+                {
+                    File.WriteAllText(file.FullName, fileContent);
+                }
                 return Task.FromResult(true);
             }
             catch (Exception exc)

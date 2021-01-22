@@ -173,7 +173,7 @@ namespace CapFrameX.Configuration
 
 		public string HotkeySoundMode
         {
-            get => Get<string>("voice response");
+            get => Get<string>("Voice");
             set => Set(value);
         }
 
