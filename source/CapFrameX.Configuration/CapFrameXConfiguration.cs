@@ -7,7 +7,6 @@ namespace CapFrameX.Configuration
 {
 	public class CapFrameXConfiguration : IAppConfiguration
 	{
-		private static Properties.Settings Settings => Properties.Settings.Default;
 		private readonly ISettingsStorage _settingsStorage;
 
 		public int MovingAverageWindowSize
@@ -480,10 +479,11 @@ namespace CapFrameX.Configuration
             {
 				throw new ArgumentException(key);
             }
-			try
-			{
+
+            try
+            {
 				return _settingsStorage.GetValue<T>(key);
-			} catch(KeyNotFoundException e)
+			} catch (KeyNotFoundException)
             {
 				Set(defaultValue, key);
 				return defaultValue;

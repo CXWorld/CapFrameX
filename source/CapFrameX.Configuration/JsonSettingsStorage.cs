@@ -3,17 +3,17 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace CapFrameX.Configuration
 {
     public class JsonSettingsStorage : ISettingsStorage
     {
-        private readonly string _jsonFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "CapFrameX", "Configuration", "settings.json");
+        private readonly string _jsonFilePath 
+            = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), 
+                "CapFrameX", "Configuration", "settings.json");
         private readonly ILogger<JsonSettingsStorage> _logger;
         private readonly Subject<int> _saveFileSubject = new Subject<int>();
         private Dictionary<string, object> _configDictionary;
@@ -30,10 +30,11 @@ namespace CapFrameX.Configuration
         public T GetValue<T>(string key)
         {
             if (_configDictionary.TryGetValue(key, out var value)) {
-                if (value is Int64) value = Convert.ToInt32(value);
+                if (value is long) value = Convert.ToInt32(value);
                 if(!(value is T val))
                 {
-                    throw new InvalidOperationException($"Value of Key {key} has invalid Format: Expected value of type {typeof(T).Name} but found {value.GetType().Name}");
+                    throw new InvalidOperationException($"Value of Key {key} has invalid Format: Expected value of type " +
+                        $"{typeof(T).Name} but found {value.GetType().Name}");
                 }
                 return val;
             }
