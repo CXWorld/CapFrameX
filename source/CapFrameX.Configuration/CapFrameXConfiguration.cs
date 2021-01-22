@@ -179,11 +179,11 @@ namespace CapFrameX.Configuration
 			set => Set(value);
 		}
 
-		public string HotkeySoundMode
-        {
-            get => Get<string>("Voice");
-            set => Set(value);
-        }
+		public bool UseSingleRecordP95QuantileStatisticParameter
+		{
+			get => Get<bool>(true);
+			set => Set(value);
+		}
 
 		public bool UseSingleRecordAverageStatisticParameter
 		{
