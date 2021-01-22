@@ -80,8 +80,8 @@ namespace CapFrameX.Overlay
             _overlayEntryCore = overlayEntryCore;
 
             _numberOfRuns = _appConfiguration.SelectedHistoryRuns;
-            SecondMetric = _appConfiguration.SecondMetricOverlay;
-            ThirdMetric = _appConfiguration.ThirdMetricOverlay;
+            SecondMetric = _appConfiguration.RunHistorySecondMetric;
+            ThirdMetric = _appConfiguration.RunHistoryThirdMetric;
             IsOverlayActiveStream = new BehaviorSubject<bool>(_appConfiguration.IsOverlayActive);
             _runHistoryOutlierFlags = Enumerable.Repeat(false, _numberOfRuns).ToArray();
 

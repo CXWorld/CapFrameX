@@ -126,7 +126,7 @@ namespace CapFrameX.ViewModel
             get { return _selectedFirstMetric; }
             set
             {
-                _appConfiguration.FirstMetric =
+                _appConfiguration.ComparisonFirstMetric =
                     value.ConvertToString();
                 _selectedFirstMetric = value;
                 RaisePropertyChanged();
@@ -139,7 +139,7 @@ namespace CapFrameX.ViewModel
             get { return _selectedSecondMetric; }
             set
             {
-                _appConfiguration.SecondMetric =
+                _appConfiguration.ComparisonSecondMetric =
                     value.ConvertToString();
                 _selectedSecondMetric = value;
                 RaisePropertyChanged();
@@ -151,7 +151,7 @@ namespace CapFrameX.ViewModel
             get { return _selectedThirdMetric; }
             set
             {
-                _appConfiguration.ThirdMetric =
+                _appConfiguration.ComparisonThirdMetric =
                     value.ConvertToString();
                 _selectedThirdMetric = value;
                 RaisePropertyChanged();
@@ -575,8 +575,8 @@ namespace CapFrameX.ViewModel
             _appConfiguration.FpsValuesRoundingDigits), CultureInfo.InvariantCulture);
             SelectedComparisonContext = _appConfiguration.ComparisonContext.ConvertToEnum<EComparisonContext>();
             SelectedSecondComparisonContext = _appConfiguration.SecondComparisonContext.ConvertToEnum<EComparisonContext>();
-            SelectedSecondMetric = _appConfiguration.SecondMetric.ConvertToEnum<EMetric>();
-            SelectedThirdMetric = _appConfiguration.ThirdMetric.ConvertToEnum<EMetric>();
+            SelectedSecondMetric = _appConfiguration.ComparisonSecondMetric.ConvertToEnum<EMetric>();
+            SelectedThirdMetric = _appConfiguration.ComparisonThirdMetric.ConvertToEnum<EMetric>();
 
             SetRowSeries();
             SubscribeToSelectRecord();

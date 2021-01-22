@@ -150,12 +150,12 @@ namespace CapFrameX.ViewModel
             get
             {
                 return _appConfiguration
-                  .SecondMetricOverlay
+                  .RunHistorySecondMetric
                   .ConvertToEnum<EMetric>();
             }
             set
             {
-                _appConfiguration.SecondMetricOverlay =
+                _appConfiguration.RunHistorySecondMetric =
                     value.ConvertToString();
                 _overlayService.SecondMetric = value.ConvertToString();
                 RaisePropertyChanged();
@@ -167,12 +167,12 @@ namespace CapFrameX.ViewModel
             get
             {
                 return _appConfiguration
-                  .ThirdMetricOverlay
+                  .RunHistoryThirdMetric
                   .ConvertToEnum<EMetric>();
             }
             set
             {
-                _appConfiguration.ThirdMetricOverlay =
+                _appConfiguration.RunHistoryThirdMetric =
                     value.ConvertToString();
                 _overlayService.ThirdMetric = value.ConvertToString();
                 RaisePropertyChanged();
