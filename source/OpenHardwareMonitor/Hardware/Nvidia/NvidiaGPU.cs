@@ -11,14 +11,12 @@
 using System;
 using System.Globalization;
 using System.Text;
-using System.Diagnostics;
 using System.Linq;
-using Serilog;
 using CapFrameX.Contracts.Sensor;
 
 namespace OpenHardwareMonitor.Hardware.Nvidia
 {
-    internal class NvidiaGPU : Hardware
+    internal class NvidiaGPU : GPUBase
     {
         private readonly int adapterIndex;
         private readonly NvPhysicalGpuHandle handle;
@@ -40,10 +38,6 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
         private readonly Sensor pcieThroughputRx;
         private readonly Sensor pcieThroughputTx;
         private readonly Control fanControl;
-        private readonly Sensor memoryUsageDedicated;
-        private readonly Sensor memoryUsageShared;
-        private readonly PerformanceCounter dedicatedVramUsagePerformCounter;
-        private readonly PerformanceCounter sharedVramUsagePerformCounter;
 
         public NvidiaGPU(int adapterIndex, NvPhysicalGpuHandle handle,
           NvDisplayHandle? displayHandle, ISettings settings, ISensorConfig config)
@@ -110,47 +104,6 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
                 ControlModeChanged(fanControl);
                 control.Control = fanControl;
             }
-
-            try
-            {
-                if (PerformanceCounterCategory.Exists("GPU Adapter Memory"))
-                {
-                    var category = new PerformanceCounterCategory("GPU Adapter Memory");
-                    var instances = category.GetInstanceNames();
-
-                    if (instances.Any())
-                    {
-                        long maxRawValue = 0;
-                        int maxIndex = 0;
-                        for (int i = 0; i < instances.Length; i++)
-                        {
-                            try
-                            {
-                                var currentPerfCounter = new PerformanceCounter("GPU Adapter Memory", "Dedicated Usage", instances[i]);
-
-                                if (currentPerfCounter.RawValue > maxRawValue)
-                                {
-                                    maxRawValue = currentPerfCounter.RawValue;
-                                    maxIndex = i;
-                                }
-
-                            }
-                            catch (Exception ex)
-                            {
-                                Log.Logger.Error(ex, $"Error while creating performance counter with instance {i}.");
-                            }
-                        }
-
-                        dedicatedVramUsagePerformCounter = new PerformanceCounter("GPU Adapter Memory", "Dedicated Usage", instances[maxIndex]);
-                        sharedVramUsagePerformCounter = new PerformanceCounter("GPU Adapter Memory", "Shared Usage", instances[maxIndex]);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Log.Logger.Error(ex, "Error while creating GPU memory performance counter.");
-            }
-
 
             if (NVML.IsInitialized)
             {

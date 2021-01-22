@@ -10,16 +10,13 @@
 
 using CapFrameX.Contracts.Sensor;
 using Microsoft.Win32;
-using Serilog;
 using System;
-using System.Diagnostics;
 using System.Globalization;
-using System.Linq;
 using System.Text;
 
 namespace OpenHardwareMonitor.Hardware.ATI
 {
-    internal sealed class ATIGPU : Hardware
+    internal sealed class ATIGPU : GPUBase
     {
         private readonly int adapterIndex;
         private readonly int busNumber;
@@ -51,10 +48,6 @@ namespace OpenHardwareMonitor.Hardware.ATI
         private readonly Sensor memoryControllerLoad;
         private readonly Sensor controlSensor;
         private readonly Control fanControl;
-        private readonly Sensor memoryUsageDedicated;
-        private readonly Sensor memoryUsageShared;
-        private readonly PerformanceCounter dedicatedVramUsagePerformCounter;
-        private readonly PerformanceCounter sharedVramUsagePerformCounter;
 
         private IntPtr context;
         private readonly int overdriveVersion;
@@ -114,48 +107,11 @@ namespace OpenHardwareMonitor.Hardware.ATI
             this.memoryVoltage = new Sensor("GPU Memory", 1, SensorType.Voltage, this, settings);
             this.socVoltage = new Sensor("GPU SOC", 2, SensorType.Voltage, this, settings);
 
+            this.memoryUsageDedicated = new Sensor("GPU Memory Dedicated", 0, SensorType.SmallData, this, settings);
+            this.memoryUsageShared = new Sensor("GPU Memory Shared", 1, SensorType.SmallData, this, settings);
+
             this.coreLoad = new Sensor("GPU Core", 0, SensorType.Load, this, settings);
             this.memoryControllerLoad = new Sensor("GPU Memory Controller", 1, SensorType.Load, this, settings);
-
-            try
-            {
-                if (PerformanceCounterCategory.Exists("GPU Adapter Memory"))
-                {
-                    var category = new PerformanceCounterCategory("GPU Adapter Memory");
-                    var instances = category.GetInstanceNames();
-
-                    if (instances.Any())
-                    {
-                        long maxRawValue = 0;
-                        int maxIndex = 0;
-                        for (int i = 0; i < instances.Length; i++)
-                        {
-                            try
-                            {
-                                var currentPerfCounter = new PerformanceCounter("GPU Adapter Memory", "Dedicated Usage", instances[i]);
-
-                                if (currentPerfCounter.RawValue > maxRawValue)
-                                {
-                                    maxRawValue = currentPerfCounter.RawValue;
-                                    maxIndex = i;
-                                }
-
-                            }
-                            catch (Exception ex)
-                            {
-                                Log.Logger.Error(ex, $"Error while creating performance counter with instance {i}.");
-                            }
-                        }
-
-                        dedicatedVramUsagePerformCounter = new PerformanceCounter("GPU Adapter Memory", "Dedicated Usage", instances[maxIndex]);
-                        sharedVramUsagePerformCounter = new PerformanceCounter("GPU Adapter Memory", "Shared Usage", instances[maxIndex]);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Log.Logger.Error(ex, "Error while creating GPU memory performance counter.");
-            }
 
             this.controlSensor = new Sensor("GPU Fan", 0, SensorType.Control, this, settings);
 
