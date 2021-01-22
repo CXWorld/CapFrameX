@@ -368,10 +368,13 @@ namespace OpenHardwareMonitor.Hardware.ATI
                 GetPMLog(data, ADLSensorType.INFO_ACTIVITY_MEM, memoryControllerLoad);
                 GetPMLog(data, ADLSensorType.FAN_PERCENTAGE, controlSensor);
 
-                if (ADL.ADL2_Adapter_VRAMUsage_Get(context, adapterIndex, out int vramUsage) == ADL.ADL_OK)
+                if (sensorConfig.GetSensorEvaluate(this.memoryUsed.IdentifierString))
                 {
-                    this.memoryUsed.Value = vramUsage;
-                    ActivateSensor(this.memoryUsed);
+                    if (ADL.ADL2_Adapter_VRAMUsage_Get(context, adapterIndex, out int vramUsage) == ADL.ADL_OK)
+                    {
+                        this.memoryUsed.Value = vramUsage;
+                        ActivateSensor(this.memoryUsed);
+                    }
                 }
             }
             else
