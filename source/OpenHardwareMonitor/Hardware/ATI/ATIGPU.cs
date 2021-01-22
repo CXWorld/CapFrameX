@@ -8,6 +8,7 @@
 	
 */
 
+using CapFrameX.Contracts.RTSS;
 using CapFrameX.Contracts.Sensor;
 using Microsoft.Win32;
 using System;
@@ -53,9 +54,9 @@ namespace OpenHardwareMonitor.Hardware.ATI
         private readonly int overdriveVersion;
 
         public ATIGPU(string name, int adapterIndex, int busNumber,
-          int deviceNumber, IntPtr context, ISettings settings, ISensorConfig config)
+          int deviceNumber, IntPtr context, ISettings settings, ISensorConfig config, IRTSSService rTSSService)
           : base(name, new Identifier("atigpu",
-            adapterIndex.ToString(CultureInfo.InvariantCulture)), settings)
+            adapterIndex.ToString(CultureInfo.InvariantCulture)), settings, rTSSService)
         {
             this.adapterIndex = adapterIndex;
             this.busNumber = busNumber;
@@ -107,13 +108,15 @@ namespace OpenHardwareMonitor.Hardware.ATI
             this.memoryVoltage = new Sensor("GPU Memory", 1, SensorType.Voltage, this, settings);
             this.socVoltage = new Sensor("GPU SOC", 2, SensorType.Voltage, this, settings);
 
-            this.memoryUsageDedicated = new Sensor("GPU Memory Dedicated", 0, SensorType.SmallData, this, settings);
-            this.memoryUsageShared = new Sensor("GPU Memory Shared", 1, SensorType.SmallData, this, settings);
-
             this.coreLoad = new Sensor("GPU Core", 0, SensorType.Load, this, settings);
             this.memoryControllerLoad = new Sensor("GPU Memory Controller", 1, SensorType.Load, this, settings);
 
             this.controlSensor = new Sensor("GPU Fan", 0, SensorType.Control, this, settings);
+
+            this.memoryUsageDedicated = new Sensor("GPU Memory Dedicated", 0, SensorType.SmallData, this, settings);
+            this.memoryUsageShared = new Sensor("GPU Memory Shared", 1, SensorType.SmallData, this, settings);
+            this.processMemoryUsageDedicated = new Sensor("GPU Memory Dedicated Game", 2, SensorType.SmallData, this, settings);
+            this.processMemoryUsageShared = new Sensor("GPU Memory Shared Game", 3, SensorType.SmallData, this, settings);
 
             ADLFanSpeedInfo afsi = new ADLFanSpeedInfo();
             if (ADL.ADL_Overdrive5_FanSpeedInfo_Get(adapterIndex, 0, ref afsi)
@@ -516,6 +519,32 @@ namespace OpenHardwareMonitor.Hardware.ATI
                 }
                 catch { memoryUsageShared.Value = null; }
             }
+
+            try
+            {
+                if (sensorConfig.GetSensorEvaluate(processMemoryUsageDedicated.IdentifierString))
+                {
+                    processMemoryUsageDedicated.Value = dedicatedVramUsageProcessPerformCounter == null
+                        ? 0f : (float)dedicatedVramUsageProcessPerformCounter.NextValue() / 1024f / 1024f;
+                    ActivateSensor(processMemoryUsageDedicated);
+                }
+                else
+                    processMemoryUsageDedicated.Value = null;
+            }
+            catch { processMemoryUsageDedicated.Value = null; }
+
+            try
+            {
+                if (sensorConfig.GetSensorEvaluate(processMemoryUsageShared.IdentifierString))
+                {
+                    processMemoryUsageShared.Value = sharedVramUsageProcessPerformCounter == null
+                        ? 0f : (float)sharedVramUsageProcessPerformCounter.NextValue() / 1024f / 1024f;
+                    ActivateSensor(processMemoryUsageShared);
+                }
+                else
+                    processMemoryUsageShared.Value = null;
+            }
+            catch { processMemoryUsageShared.Value = null; }
         }
 
         public override void Close()

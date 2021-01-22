@@ -1,4 +1,5 @@
 ﻿using CapFrameX.Contracts.Configuration;
+using CapFrameX.Contracts.RTSS;
 using CapFrameX.Contracts.Sensor;
 using CapFrameX.Data.Session.Contracts;
 using Microsoft.Extensions.Logging;
@@ -19,6 +20,7 @@ namespace CapFrameX.Sensor
     {
         private readonly object _lockComputer = new object();
         private readonly ISensorConfig _sensorConfig;
+        private readonly IRTSSService _rTSSService;
         private readonly IAppConfiguration _appConfiguration;
         private readonly ILogger<SensorService> _logger;
 
@@ -55,6 +57,7 @@ namespace CapFrameX.Sensor
 
         public SensorService(IAppConfiguration appConfiguration,
                              ISensorConfig sensorConfig,
+                             IRTSSService rTSSService,
                              ILogger<SensorService> logger)
         {
             Stopwatch stopwatch = new Stopwatch();
@@ -62,6 +65,7 @@ namespace CapFrameX.Sensor
 
             _appConfiguration = appConfiguration;
             _sensorConfig = sensorConfig;
+            _rTSSService = rTSSService;
             _logger = logger;
             _currentOSDTimespan = TimeSpan.FromMilliseconds(_appConfiguration.OSDRefreshPeriod);
             _currentLoggingTimespan = TimeSpan.FromMilliseconds(_appConfiguration.SensorLoggingRefreshPeriod);
@@ -164,7 +168,7 @@ namespace CapFrameX.Sensor
             {
                 try
                 {
-                    _computer = new Computer(_sensorConfig);
+                    _computer = new Computer(_sensorConfig, _rTSSService);
                     _computer.Open();
                     _computer.GPUEnabled = true;
                     _computer.CPUEnabled = true;

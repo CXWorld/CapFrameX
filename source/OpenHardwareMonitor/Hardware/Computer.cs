@@ -8,6 +8,7 @@
 	
 */
 
+using CapFrameX.Contracts.RTSS;
 using CapFrameX.Contracts.Sensor;
 using System;
 using System.Collections.Generic;
@@ -20,10 +21,10 @@ namespace OpenHardwareMonitor.Hardware
 
     public class Computer : IComputer
     {
-
         private readonly List<IGroup> groups = new List<IGroup>();
         private readonly ISettings settings;
         private readonly ISensorConfig sensorConfig;
+        private readonly IRTSSService rTSSService;
 
         private SMBIOS smbios;
 
@@ -37,11 +38,12 @@ namespace OpenHardwareMonitor.Hardware
         private bool hddEnabled;
 
 #pragma warning disable CS3001 // Argumenttyp ist nicht CLS-kompatibel
-        public Computer(ISensorConfig config)
+        public Computer(ISensorConfig config, IRTSSService service)
 #pragma warning restore CS3001 // Argumenttyp ist nicht CLS-kompatibel
         {
             this.settings = new Settings();
             sensorConfig = config;
+            rTSSService = service;
         }
 
         private void Add(IGroup group)
@@ -102,8 +104,8 @@ namespace OpenHardwareMonitor.Hardware
 
             if (gpuEnabled)
             {
-                Add(new ATI.ATIGroup(settings, sensorConfig));
-                Add(new Nvidia.NvidiaGroup(settings, sensorConfig));
+                Add(new ATI.ATIGroup(settings, sensorConfig, rTSSService));
+                Add(new Nvidia.NvidiaGroup(settings, sensorConfig, rTSSService));
             }
 
             if (fanControllerEnabled)
@@ -183,8 +185,8 @@ namespace OpenHardwareMonitor.Hardware
                 {
                     if (value)
                     {
-                        Add(new ATI.ATIGroup(settings, sensorConfig));
-                        Add(new Nvidia.NvidiaGroup(settings, sensorConfig));
+                        Add(new ATI.ATIGroup(settings, sensorConfig, rTSSService));
+                        Add(new Nvidia.NvidiaGroup(settings, sensorConfig, rTSSService));
                     }
                     else
                     {

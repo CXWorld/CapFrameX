@@ -13,6 +13,7 @@ using System.Globalization;
 using System.Text;
 using System.Linq;
 using CapFrameX.Contracts.Sensor;
+using CapFrameX.Contracts.RTSS;
 
 namespace OpenHardwareMonitor.Hardware.Nvidia
 {
@@ -40,9 +41,9 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
         private readonly Control fanControl;
 
         public NvidiaGPU(int adapterIndex, NvPhysicalGpuHandle handle,
-          NvDisplayHandle? displayHandle, ISettings settings, ISensorConfig config)
+          NvDisplayHandle? displayHandle, ISettings settings, ISensorConfig config, IRTSSService rTSSService)
           : base(GetName(handle), new Identifier("nvidiagpu",
-              adapterIndex.ToString(CultureInfo.InvariantCulture)), settings)
+              adapterIndex.ToString(CultureInfo.InvariantCulture)), settings, rTSSService)
         {
             this.adapterIndex = adapterIndex;
             this.handle = handle;
@@ -88,6 +89,9 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
             memoryAvail = new Sensor("GPU Memory Total", 3, SensorType.SmallData, this, settings);
             memoryUsageDedicated = new Sensor("GPU Memory Dedicated", 4, SensorType.SmallData, this, settings);
             memoryUsageShared = new Sensor("GPU Memory Shared", 5, SensorType.SmallData, this, settings);
+            processMemoryUsageDedicated = new Sensor("GPU Memory Dedicated Game", 6, SensorType.SmallData, this, settings);
+            processMemoryUsageShared = new Sensor("GPU Memory Shared Game", 7, SensorType.SmallData, this, settings);
+
             fan = new Sensor("GPU Fan", 0, SensorType.Fan, this, settings);
             control = new Sensor("GPU Fan", 1, SensorType.Control, this, settings);
             voltage = new Sensor("GPU Voltage", 0, SensorType.Voltage, this, settings);
@@ -474,6 +478,32 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
                 }
                 catch { memoryUsageShared.Value = null; }
             }
+
+            try
+            {
+                if (sensorConfig.GetSensorEvaluate(processMemoryUsageDedicated.IdentifierString))
+                {
+                    processMemoryUsageDedicated.Value = dedicatedVramUsageProcessPerformCounter == null
+                        ? 0f : (float)dedicatedVramUsageProcessPerformCounter.NextValue() / 1024f / 1024f;
+                    ActivateSensor(processMemoryUsageDedicated);
+                }
+                else
+                    processMemoryUsageDedicated.Value = null;
+            }
+            catch { processMemoryUsageDedicated.Value = null; }
+
+            try
+            {
+                if (sensorConfig.GetSensorEvaluate(processMemoryUsageShared.IdentifierString))
+                {
+                    processMemoryUsageShared.Value = sharedVramUsageProcessPerformCounter == null
+                        ? 0f : (float)sharedVramUsageProcessPerformCounter.NextValue() / 1024f / 1024f;
+                    ActivateSensor(processMemoryUsageShared);
+                }
+                else
+                    processMemoryUsageShared.Value = null;
+            }
+            catch { processMemoryUsageShared.Value = null; }
 
             if (pcieThroughputRx != null)
             {

@@ -1,26 +1,30 @@
-﻿using Serilog;
+﻿using CapFrameX.Contracts.RTSS;
+using Serilog;
 using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Reactive.Linq;
 
 namespace OpenHardwareMonitor.Hardware
 {
     internal abstract class GPUBase : Hardware
     {
-        protected  Sensor memoryUsageDedicated;
-        protected  Sensor memoryUsageShared;
+        protected Sensor memoryUsageDedicated;
+        protected Sensor memoryUsageShared;
+        protected Sensor processMemoryUsageDedicated;
+        protected Sensor processMemoryUsageShared;
 
         protected readonly PerformanceCounter dedicatedVramUsagePerformCounter;
         protected readonly PerformanceCounter sharedVramUsagePerformCounter;
+        protected PerformanceCounter dedicatedVramUsageProcessPerformCounter;
+        protected PerformanceCounter sharedVramUsageProcessPerformCounter;
 
-        public GPUBase(string name, Identifier identifier, ISettings settings) : base(name, identifier, settings)
+        public GPUBase(string name, Identifier identifier, ISettings settings, IRTSSService rTSSService) : base(name, identifier, settings)
         {
             try
             {
                 if (PerformanceCounterCategory.Exists("GPU Adapter Memory"))
                 {
-                    var gpuCatCategories = PerformanceCounterCategory.GetCategories().Where(cat => cat.CategoryName.Contains("GPU"));
-
                     var category = new PerformanceCounterCategory("GPU Adapter Memory");
                     var instances = category.GetInstanceNames();
 
@@ -32,7 +36,6 @@ namespace OpenHardwareMonitor.Hardware
                         {
                             try
                             {
-                                var currentPerfCounterPerProcess = new PerformanceCounter("GPU Process Memory", "Dedicated Usage", "FurMark");
                                 var currentPerfCounter = new PerformanceCounter("GPU Adapter Memory", "Dedicated Usage", instances[i]);
 
                                 if (currentPerfCounter.RawValue > maxRawValue)
@@ -56,6 +59,41 @@ namespace OpenHardwareMonitor.Hardware
             catch (Exception ex)
             {
                 Log.Logger.Error(ex, "Error while creating GPU memory performance counter.");
+            }
+
+            try
+            {
+                if (PerformanceCounterCategory.Exists("GPU Process Memory"))
+                {
+                    var category = new PerformanceCounterCategory("GPU Process Memory");
+                    rTSSService
+                    .ProcessIdStream
+                    .DistinctUntilChanged()
+                    .Subscribe(id =>
+                    {
+                        var instances = category.GetInstanceNames();
+                        if (instances != null)
+                        {
+                            var pid = instances.FirstOrDefault(instance => instance.Contains(id.ToString()));
+
+                            if (pid != null)
+                            {
+                                dedicatedVramUsageProcessPerformCounter = new PerformanceCounter("GPU Process Memory", "Dedicated Usage", pid);
+                                sharedVramUsageProcessPerformCounter = new PerformanceCounter("GPU Process Memory", "Shared Usage", pid);
+                            }
+                            else
+                            {
+                                dedicatedVramUsageProcessPerformCounter = null;
+                                sharedVramUsageProcessPerformCounter = null;
+                            }
+                        }
+
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Logger.Error(ex, "Error while creating GPU process memory performance counter.");
             }
         }
     }

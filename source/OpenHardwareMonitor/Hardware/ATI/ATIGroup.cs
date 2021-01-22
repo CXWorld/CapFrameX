@@ -8,6 +8,7 @@
 	
 */
 
+using CapFrameX.Contracts.RTSS;
 using CapFrameX.Contracts.Sensor;
 using System;
 using System.Collections.Generic;
@@ -24,7 +25,7 @@ namespace OpenHardwareMonitor.Hardware.ATI
 
         private IntPtr context = IntPtr.Zero;
 
-        public ATIGroup(ISettings settings, ISensorConfig sensorConfig)
+        public ATIGroup(ISettings settings, ISensorConfig sensorConfig, IRTSSService rTSSService)
         {
             try
             {
@@ -108,7 +109,8 @@ namespace OpenHardwareMonitor.Hardware.ATI
                                           adapterInfo[i].BusNumber,
                                           adapterInfo[i].DeviceNumber, 
                                           context, settings,
-                                          sensorConfig));
+                                          sensorConfig,
+                                          rTSSService));
                                 }
 
                                 report.AppendLine();
