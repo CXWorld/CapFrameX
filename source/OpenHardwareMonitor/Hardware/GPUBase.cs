@@ -66,6 +66,7 @@ namespace OpenHardwareMonitor.Hardware
                 if (PerformanceCounterCategory.Exists("GPU Process Memory"))
                 {
                     var category = new PerformanceCounterCategory("GPU Process Memory");
+
                     rTSSService
                     .ProcessIdStream
                     .DistinctUntilChanged()

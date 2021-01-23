@@ -8,22 +8,53 @@
 	
 */
 
+using CapFrameX.Contracts.RTSS;
 using CapFrameX.Contracts.Sensor;
+using System.Reactive.Linq;
 using System.Runtime.InteropServices;
+using System;
+using System.Diagnostics;
+using System.Linq;
 
 namespace OpenHardwareMonitor.Hardware.RAM
 {
     internal class GenericRAM : Hardware
     {
+        private readonly IRTSSService rTSSService;
+
         private Sensor loadSensor;
         private Sensor usedMemory;
         private Sensor availableMemory;
+        private Sensor usedMemoryProcess;
         private ISensorConfig sensorConfig;
+        private uint currentProcessId;
+        private PerformanceCounter ramUsageGamePerformanceCounter;
 
-        public GenericRAM(string name, ISettings settings, ISensorConfig config)
+        public GenericRAM(string name, ISettings settings, ISensorConfig config, IRTSSService service)
           : base(name, new Identifier("ram"), settings)
         {
             sensorConfig = config;
+            rTSSService = service;
+
+            if (PerformanceCounterCategory.Exists("Process"))
+            {
+                service
+                .ProcessIdStream
+                .DistinctUntilChanged()
+                .Subscribe(id =>
+                {
+                    var process = Process.GetProcessById((int)id);
+
+                    if (process != null)
+                    {
+                        ramUsageGamePerformanceCounter = new PerformanceCounter("Process", "Working Set - Private", process.ProcessName);
+                    }
+                    else
+                    {
+                        ramUsageGamePerformanceCounter = null;
+                    }
+                });
+            }
 
             loadSensor = new Sensor("Memory", 0, SensorType.Load, this, settings);
             ActivateSensor(loadSensor);
@@ -35,6 +66,10 @@ namespace OpenHardwareMonitor.Hardware.RAM
             availableMemory = new Sensor("Available Memory", 1, SensorType.Data, this,
               settings);
             ActivateSensor(availableMemory);
+
+            usedMemoryProcess = new Sensor("Used Memory Game", 0, SensorType.SmallData, this,
+              settings);
+            ActivateSensor(usedMemoryProcess);
         }
 
         public override HardwareType HardwareType
@@ -70,6 +105,14 @@ namespace OpenHardwareMonitor.Hardware.RAM
                 availableMemory.Value = (float)status.AvailablePhysicalMemory /
                   (1024 * 1024 * 1024);
             }
+
+            if (sensorConfig.GetSensorEvaluate(usedMemoryProcess.IdentifierString))
+            {
+                if (ramUsageGamePerformanceCounter != null)
+                    usedMemoryProcess.Value = ramUsageGamePerformanceCounter.NextValue() / (1024 * 1024);
+                else
+                    usedMemoryProcess.Value = 0;
+            }
         }
 
         private class NativeMethods
@@ -91,7 +134,7 @@ namespace OpenHardwareMonitor.Hardware.RAM
             [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
             [return: MarshalAs(UnmanagedType.Bool)]
             internal static extern bool GlobalMemoryStatusEx(
-              ref NativeMethods.MemoryStatusEx buffer);
+              ref MemoryStatusEx buffer);
         }
     }
 }

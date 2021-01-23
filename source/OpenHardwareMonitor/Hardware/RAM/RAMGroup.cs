@@ -8,6 +8,7 @@
 	
 */
 
+using CapFrameX.Contracts.RTSS;
 using CapFrameX.Contracts.Sensor;
 using System;
 
@@ -17,7 +18,7 @@ namespace OpenHardwareMonitor.Hardware.RAM
     {
         private Hardware[] hardware;
 
-        public RAMGroup(ISettings settings, ISensorConfig sensorConfig)
+        public RAMGroup(ISettings settings, ISensorConfig sensorConfig, IRTSSService rTSSService)
         {
             // No implementation for RAM on Unix systems
             int p = (int)Environment.OSVersion.Platform;
@@ -27,7 +28,7 @@ namespace OpenHardwareMonitor.Hardware.RAM
                 return;
             }
 
-            hardware = new Hardware[] { new GenericRAM("Generic Memory", settings, sensorConfig) };
+            hardware = new Hardware[] { new GenericRAM("Generic Memory", settings, sensorConfig, rTSSService) };
         }
 
         public string GetReport()
