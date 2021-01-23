@@ -753,7 +753,7 @@ namespace CapFrameX.ViewModel
                             {
                                 for (int i = 0; i < count; i++)
                                 {
-                                    _overlayEntryProvider.MoveEntry(sourceIndex + i, targetIndex + i);
+                                    _overlayEntryProvider.MoveEntry(sourceIndex, targetIndex);
                                 }
                             }
 
