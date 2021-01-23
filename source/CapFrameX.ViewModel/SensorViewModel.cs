@@ -16,7 +16,6 @@ using Prism.Regions;
 using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -39,6 +38,7 @@ namespace CapFrameX.ViewModel
         private int _selectedSensorEntryIndex;
         private SensorEntryWrapper _selectedSensorEntry;
         private bool _saveButtonIsEnable;
+        private bool _isActive;
 
         public IFileRecordInfo RecordInfo { get; private set; }
 
@@ -192,7 +192,7 @@ namespace CapFrameX.ViewModel
         {
             SensorReportItems.Clear();
 
-            if (RecordInfo == null)
+            if (RecordInfo == null || !_isActive)
                 return;
            
             var items = SensorReport.GetFullReportFromSessionSensorData(session.Runs.Select(run => run.SensorData2));
@@ -254,10 +254,12 @@ namespace CapFrameX.ViewModel
 
         public void OnNavigatedFrom(NavigationContext navigationContext)
         {
+            _isActive = false;
         }
 
         public void OnNavigatedTo(NavigationContext navigationContext)
         {
+            _isActive = true;
         }
     }
 }

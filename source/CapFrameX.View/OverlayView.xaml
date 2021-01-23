@@ -42,11 +42,11 @@
             <RowDefinition Height="0.5*"></RowDefinition>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="480"/>
+            <ColumnDefinition Width="460"/>
             <ColumnDefinition Width="10"/>
             <ColumnDefinition Width="450"/>
         </Grid.ColumnDefinitions>
-        <TextBlock Margin="0 0 0 0" Grid.Column="0" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center"
+        <TextBlock Margin="0" Grid.Column="0" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center"
 				    FontSize="18" Visibility="{Binding IsRTSSInstalled, Converter={StaticResource FalseToVisibleConverter}}">             
 			<Hyperlink NavigateUri="https://www.guru3d.com/files-details/rtss-rivatuner-statistics-server-download.html" 
 					   RequestNavigate="Hyperlink_RequestNavigate">
@@ -64,8 +64,8 @@
                         <RowDefinition Height="50"></RowDefinition>
                         <RowDefinition Height="60"></RowDefinition>
                     </Grid.RowDefinitions>
-                    <TextBlock Margin="20 0 0 10" HorizontalAlignment="Left" Text="Overlay items" FontSize="14" VerticalAlignment="Center"/>
-                    <StackPanel Grid.Row="0" Margin="0 0 10 10" Orientation="Horizontal" HorizontalAlignment="Right">
+                    <TextBlock Margin="10 0 0 10" HorizontalAlignment="Left" Text="Overlay items" FontSize="14" VerticalAlignment="Center"/>
+                    <StackPanel Grid.Row="0" Margin="0 0 0 10" Orientation="Horizontal" HorizontalAlignment="Right">
                         <Button Width="28" Height="28" Margin="0 0 10 0" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
                             ToolTip="Save current config" Command="{Binding SaveConfigCommand}" IsEnabled="{Binding SaveButtonIsEnable}"
                             materialDesign:RippleAssist.Feedback="#DD000000">
@@ -175,9 +175,9 @@
                                             IsReadOnly="False"/>-->
                     </DataGrid.Columns>
                 </DataGrid>
-                    <StackPanel Grid.Row="2" Orientation="Vertical" HorizontalAlignment="Center">
-                        <Border Margin="0 5 0 0"  BorderThickness="0.4" BorderBrush="Black">
-                    <StackPanel Margin="5 5 0 5"  Orientation="Horizontal">
+                    <StackPanel Grid.Row="2" Orientation="Vertical">
+                        <Border Margin="10 5 10 0" BorderThickness="0.4" BorderBrush="Black">
+                        <StackPanel Margin="5 5 0 5" Orientation="Horizontal">
                         <TextBlock VerticalAlignment="Center">Group control:</TextBlock>
                         <materialDesign:PopupBox StaysOpen="True" ToolTipService.ShowDuration="25000">
                             <materialDesign:PopupBox.ToolTip>

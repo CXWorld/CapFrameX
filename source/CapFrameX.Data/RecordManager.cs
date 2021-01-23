@@ -419,13 +419,14 @@ namespace CapFrameX.Data
                 if (apiInfo == "unknown")
                     apiInfo = runs.First().PresentMonRuntime;
 
-                string resolutionInfo = string.Empty;
-                if (process != null)
-                {
-                    WindowRect wndRect = new WindowRect();
-                    GetWindowRect(process.MainWindowHandle, ref wndRect);
-                    resolutionInfo = $"{ wndRect.right - wndRect.left}x{wndRect.bottom - wndRect.top}";
-                }
+                // ToDo: muste be improved, doesn't work in many cases
+                const string resolutionInfo = "unknown";
+                //if (process != null)
+                //{
+                //    WindowRect wndRect = new WindowRect();
+                //    GetWindowRect(process.MainWindowHandle, ref wndRect);
+                //    resolutionInfo = $"{ wndRect.right - wndRect.left}x{wndRect.bottom - wndRect.top}";
+                //}
 
                 var session = new Session.Classes.Session()
                 {
