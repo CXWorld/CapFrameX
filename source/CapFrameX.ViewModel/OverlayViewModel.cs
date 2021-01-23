@@ -737,7 +737,7 @@ namespace CapFrameX.ViewModel
                         {
                             // get source index
                             int count = overlayEntries.Count();
-                            int sourceIndex = OverlayEntries.IndexOf(overlayEntries.First());
+                            int sourceIndex = overlayEntries.Min(entry => OverlayEntries.IndexOf(entry));
                             int targetIndex = dropInfo.InsertIndex;
 
                             // move downwards
