@@ -67,7 +67,7 @@ namespace OpenHardwareMonitor.Hardware.RAM
               settings);
             ActivateSensor(availableMemory);
 
-            usedMemoryProcess = new Sensor("Used Memory Game", 0, SensorType.SmallData, this,
+            usedMemoryProcess = new Sensor("Used Memory Game", 2, SensorType.Data, this,
               settings);
             ActivateSensor(usedMemoryProcess);
         }
@@ -109,7 +109,7 @@ namespace OpenHardwareMonitor.Hardware.RAM
             if (sensorConfig.GetSensorEvaluate(usedMemoryProcess.IdentifierString))
             {
                 if (ramUsageGamePerformanceCounter != null)
-                    usedMemoryProcess.Value = ramUsageGamePerformanceCounter.NextValue() / (1024 * 1024);
+                    usedMemoryProcess.Value = ramUsageGamePerformanceCounter.NextValue() / (1024 * 1024 * 1024);
                 else
                     usedMemoryProcess.Value = 0;
             }
