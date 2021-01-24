@@ -14,27 +14,22 @@ using System.Reactive.Linq;
 using System.Runtime.InteropServices;
 using System;
 using System.Diagnostics;
-using System.Linq;
 
 namespace OpenHardwareMonitor.Hardware.RAM
 {
     internal class GenericRAM : Hardware
     {
-        private readonly IRTSSService rTSSService;
-
         private Sensor loadSensor;
         private Sensor usedMemory;
         private Sensor availableMemory;
         private Sensor usedMemoryProcess;
         private ISensorConfig sensorConfig;
-        private uint currentProcessId;
         private PerformanceCounter ramUsageGamePerformanceCounter;
 
         public GenericRAM(string name, ISettings settings, ISensorConfig config, IRTSSService service)
           : base(name, new Identifier("ram"), settings)
         {
             sensorConfig = config;
-            rTSSService = service;
 
             if (PerformanceCounterCategory.Exists("Process"))
             {
@@ -108,10 +103,8 @@ namespace OpenHardwareMonitor.Hardware.RAM
 
             if (sensorConfig.GetSensorEvaluate(usedMemoryProcess.IdentifierString))
             {
-                if (ramUsageGamePerformanceCounter != null)
-                    usedMemoryProcess.Value = ramUsageGamePerformanceCounter.NextValue() / (1024 * 1024 * 1024);
-                else
-                    usedMemoryProcess.Value = 0;
+                usedMemoryProcess.Value = ramUsageGamePerformanceCounter != null 
+                    ? ramUsageGamePerformanceCounter.NextValue() / (1024 * 1024 * 1024) : 0f;
             }
         }
 
