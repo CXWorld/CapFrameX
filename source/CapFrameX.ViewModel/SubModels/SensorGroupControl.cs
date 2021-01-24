@@ -11,7 +11,7 @@ namespace CapFrameX.ViewModel.SubModels
         private bool _sensorGroupCpuThreadLoads;
         private bool _sensorGroupCpuCoreClocks;
         private bool _sensorGroupGpuBasics;
-        private bool _sensorGroupAll;
+
 
         public bool SensorGroupCpuBasics
         {
@@ -20,9 +20,8 @@ namespace CapFrameX.ViewModel.SubModels
             {
                 _sensorGroupCpuBasics = value;
                 RaisePropertyChanged();
-                if (value && SensorGroupAll)
-                    return;
-                RaisePropertyChanged(nameof(SensorGroupAll));
+                if (!value)
+                    RaisePropertyChanged(nameof(SensorGroupAll));
                 ManageCpuBasicEntries();
             }
         }
@@ -32,11 +31,11 @@ namespace CapFrameX.ViewModel.SubModels
             get { return _sensorGroupCpuThreadLoads; }
             set
             {
+
                 _sensorGroupCpuThreadLoads = value;
                 RaisePropertyChanged();
-                if (value && SensorGroupAll)
-                    return;
-                RaisePropertyChanged(nameof(SensorGroupAll));
+                if (!value)
+                    RaisePropertyChanged(nameof(SensorGroupAll));
                 ManageCpuThreadLoadEntries();
             }
         }
@@ -48,9 +47,8 @@ namespace CapFrameX.ViewModel.SubModels
             {
                 _sensorGroupCpuCoreClocks = value;
                 RaisePropertyChanged();
-                if (value && SensorGroupAll)
-                    return;
-                RaisePropertyChanged(nameof(SensorGroupAll));
+                if (!value)
+                    RaisePropertyChanged(nameof(SensorGroupAll));
                 ManageCpuCoreClocksEntries();
             }
         }
@@ -60,21 +58,21 @@ namespace CapFrameX.ViewModel.SubModels
             get { return _sensorGroupGpuBasics; }
             set
             {
+
                 _sensorGroupGpuBasics = value;
                 RaisePropertyChanged();
-                if (value && SensorGroupAll)
-                    return;
-                RaisePropertyChanged(nameof(SensorGroupAll));
+                if(!value)
+                    RaisePropertyChanged(nameof(SensorGroupAll));
+
                 ManageGpuBasicEntries();
             }
         }
 
         public bool SensorGroupAll
         {
-            get { return (SensorGroupCpuBasics && SensorGroupCpuCoreClocks && SensorGroupCpuThreadLoads && SensorGroupGpuBasics); }
+            get { return (SensorGroupGpuBasics && SensorGroupCpuCoreClocks && SensorGroupCpuThreadLoads && SensorGroupCpuBasics); }
             set
             {
-                _sensorGroupAll = value;
                 SensorGroupCpuBasics = value;
                 SensorGroupCpuThreadLoads = value;
                 SensorGroupCpuCoreClocks = value;
