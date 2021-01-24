@@ -6,6 +6,8 @@ namespace CapFrameX.Contracts.Sensor
     {
         bool IsInitialized { get; set; }
 
+        bool IsCapturing { get; set; }
+
         bool HasConfigFile { get; }
 
         int SensorEntryCount { get; }

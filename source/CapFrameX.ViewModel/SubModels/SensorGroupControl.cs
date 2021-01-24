@@ -11,6 +11,7 @@ namespace CapFrameX.ViewModel.SubModels
         private bool _sensorGroupCpuThreadLoads;
         private bool _sensorGroupCpuCoreClocks;
         private bool _sensorGroupGpuBasics;
+        private bool _sensorGroupAll;
 
         public bool SensorGroupCpuBasics
         {
@@ -56,6 +57,17 @@ namespace CapFrameX.ViewModel.SubModels
             }
         }
 
+        public bool SensorGroupAll
+        {
+            get { return _sensorGroupAll; }
+            set
+            {
+                _sensorGroupAll = value;
+                RaisePropertyChanged();
+                ManageAllEntries();
+            }
+        }
+
         public SensorGroupControl(SensorViewModel sensorViewModel)
         {
             _sensorViewModel = sensorViewModel;
@@ -98,6 +110,14 @@ namespace CapFrameX.ViewModel.SubModels
             {
                 if (entry.Name.Contains("GPU Core") || entry.Name == "GPU Memory Dedicated" || entry.SensorType == "Power")
                     entry.UseForLogging = SensorGroupGpuBasics;
+            }
+        }
+
+        private void ManageAllEntries()
+        {
+            foreach (var entry in _sensorViewModel.SensorEntries)
+            {
+                entry.UseForLogging = SensorGroupAll;
             }
         }
     }

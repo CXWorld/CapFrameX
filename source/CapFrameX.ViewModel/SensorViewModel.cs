@@ -260,6 +260,7 @@ namespace CapFrameX.ViewModel
         public void OnNavigatedTo(NavigationContext navigationContext)
         {
             _isActive = true;
+            UpdateSensorSessionReport(_session);
         }
     }
 }

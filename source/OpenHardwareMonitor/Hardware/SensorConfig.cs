@@ -9,11 +9,6 @@ using CapFrameX.Extensions;
 
 namespace OpenHardwareMonitor.Hardware
 {
-    /// <summary>
-    /// Already implemented: 
-    /// AMD GPU
-    /// Nvidia GPU
-    /// </summary>
     public class SensorConfig : ISensorConfig
     {
         private static readonly string SENSOR_CONFIG_FOLDER
@@ -29,6 +24,8 @@ namespace OpenHardwareMonitor.Hardware
             = new Dictionary<string, bool>();
 
         public bool IsInitialized { get; set; } = false;
+
+        public bool IsCapturing { get; set; } = false;
 
         public bool HasConfigFile => File.Exists(Path.Combine(SENSOR_CONFIG_FOLDER, CONFIG_FILENAME));
 
@@ -74,7 +71,7 @@ namespace OpenHardwareMonitor.Hardware
             if (_evalSensorsDict.ContainsKey(identifier))
                 evaluate = _evalSensorsDict[identifier];
 
-            return isActive || evaluate;
+            return (isActive && IsCapturing) || evaluate;
         }
 
         public void SetSensorEvaluate(string identifier, bool evaluate)

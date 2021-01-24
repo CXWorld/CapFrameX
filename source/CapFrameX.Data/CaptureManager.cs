@@ -48,6 +48,7 @@ namespace CapFrameX.Data
         private readonly ILogger<CaptureManager> _logger;
         private readonly IAppConfiguration _appConfiguration;
         private readonly IRTSSService _rtssService;
+        private readonly ISensorConfig _sensorConfig;
         private readonly List<string> _captureDataArchive = new List<string>();
         private readonly object _archiveLock = new object();
 
@@ -86,6 +87,7 @@ namespace CapFrameX.Data
             {
                 _isCapturing = value;
                 _presentMonCaptureService.IsCaptureModeActiveStream.OnNext(value);
+                _sensorConfig.IsCapturing = value;
                 if (!value)
                     _captureStatusChange.OnNext(new CaptureStatus { Status = ECaptureStatus.Stopped });
             }
@@ -101,7 +103,8 @@ namespace CapFrameX.Data
             IRecordManager recordManager,
             ILogger<CaptureManager> logger,
             IAppConfiguration appConfiguration,
-            IRTSSService rtssService)
+            IRTSSService rtssService,
+            ISensorConfig sensorConfig)
         {
             _presentMonCaptureService = presentMonCaptureService;
             _sensorService = sensorService;
@@ -111,6 +114,7 @@ namespace CapFrameX.Data
             _logger = logger;
             _appConfiguration = appConfiguration;
             _rtssService = rtssService;
+            _sensorConfig = sensorConfig;
             _presentMonCaptureService.IsCaptureModeActiveStream.OnNext(false);
         }
 
