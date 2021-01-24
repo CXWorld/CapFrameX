@@ -10,9 +10,12 @@ namespace CapFrameX.Overlay
 
         public TaskCompletionSource<bool> OverlayEntryCoreCompletionSource { get; }
 
+        public Dictionary<string, IOverlayEntry> RealtimeMetricEntryDict { get; }
+
         public OverlayEntryCore()
         {
             OverlayEntryDict = new Dictionary<string, IOverlayEntry>();
+            RealtimeMetricEntryDict = new Dictionary<string, IOverlayEntry>();
             OverlayEntryCoreCompletionSource = new TaskCompletionSource<bool>();
         }
     }

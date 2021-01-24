@@ -228,6 +228,15 @@ namespace CapFrameX.Overlay
                 entry.UpdateShowOnOverlay = UpdateSensorIsActive;
                 _sensorConfig.SetSensorEvaluate(entry.Identifier, entry.ShowOnOverlay);
                 _identifierOverlayEntryDict.TryAdd(entry.Identifier, entry);
+
+                if (entry.Identifier == "OnlineAverage")
+                    _overlayEntryCore.RealtimeMetricEntryDict.Add("OnlineAverage", entry);
+
+                if (entry.Identifier == "OnlineP1")
+                    _overlayEntryCore.RealtimeMetricEntryDict.Add("OnlineP1", entry);
+
+                if (entry.Identifier == "OnlineP0dot2")
+                    _overlayEntryCore.RealtimeMetricEntryDict.Add("OnlineP0dot2", entry);
             }
 
             CheckCustomSystemInfo();
@@ -273,8 +282,8 @@ namespace CapFrameX.Overlay
                 .Select(entry => entry.Description)
                 .ToList();
             var sensorGpuOverlayEntryDescriptions = GetOverlayentries(sensorOverlayEntryClones, EOverlayEntryType.GPU);
-            var sensorCpuOverlayEntryDescriptions = GetOverlayentries(sensorOverlayEntryClones, EOverlayEntryType.CPU); 
-            var sensorRamOverlayEntryDescriptions = GetOverlayentries(sensorOverlayEntryClones, EOverlayEntryType.RAM); 
+            var sensorCpuOverlayEntryDescriptions = GetOverlayentries(sensorOverlayEntryClones, EOverlayEntryType.CPU);
+            var sensorRamOverlayEntryDescriptions = GetOverlayentries(sensorOverlayEntryClones, EOverlayEntryType.RAM);
 
 
             var configOverlayEntries = new List<IOverlayEntry>(overlayEntriesFromJson);
@@ -283,7 +292,7 @@ namespace CapFrameX.Overlay
                 .Select(entry => entry.Description)
                 .ToList();
             var configGpuOverlayEntryDescriptions = GetOverlayentries(configOverlayEntries, EOverlayEntryType.GPU);
-            var configCpuOverlayEntryDescriptions = GetOverlayentries(configOverlayEntries, EOverlayEntryType.CPU);           
+            var configCpuOverlayEntryDescriptions = GetOverlayentries(configOverlayEntries, EOverlayEntryType.CPU);
             var configRamOverlayEntryDescriptions = GetOverlayentries(configOverlayEntries, EOverlayEntryType.RAM);
 
 

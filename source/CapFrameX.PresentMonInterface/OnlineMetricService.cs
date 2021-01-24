@@ -1,4 +1,5 @@
-﻿using CapFrameX.Contracts.PresentMonInterface;
+﻿using CapFrameX.Contracts.Overlay;
+using CapFrameX.Contracts.PresentMonInterface;
 using CapFrameX.Contracts.RTSS;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Statistics.NetStandard;
@@ -22,6 +23,7 @@ namespace CapFrameX.PresentMonInterface
         private readonly IRTSSService _rTSSService;
         private readonly ICaptureService _captureServive;
         private readonly IEventAggregator _eventAggregator;
+        private readonly IOverlayEntryCore _overlayEntryCore;
         private readonly List<double> _frametimes = new List<double>();
         private readonly List<double> _measuretimes = new List<double>();
         private readonly ILogger<OnlineMetricService> _logger;
@@ -35,11 +37,13 @@ namespace CapFrameX.PresentMonInterface
             IRTSSService rTSSService,
             ICaptureService captureServive,
             IEventAggregator eventAggregator,
+            IOverlayEntryCore oerlayEntryCore,
             ILogger<OnlineMetricService> logger)
         {
             _rTSSService = rTSSService;
             _captureServive = captureServive;
             _eventAggregator = eventAggregator;
+            _overlayEntryCore = oerlayEntryCore;
             _logger = logger;
 
             _frametimeStatisticProvider = frametimeStatisticProvider;
@@ -62,22 +66,13 @@ namespace CapFrameX.PresentMonInterface
             _captureServive.RedirectedOutputDataStream
             .Skip(5)
             .ObserveOn(new EventLoopScheduler())
-            .Where(x => true)
-            .Subscribe(dataLine =>
+            .Where(line => !string.IsNullOrWhiteSpace(line))
+            .Select(line => line.Split(','))
+            .Where(lineSplit => lineSplit.Length > 1)
+            .Do(UpdateOnlineMetrics)
+            .Where((_, i) => i % 10 == 0)
+            .Subscribe(lineSplit =>
             {
-                if (string.IsNullOrWhiteSpace(dataLine))
-                    return;
-
-                UpdateOnlineMetrics(Tuple.Create(_currentProcess, dataLine));
-
-                var lineSplit = dataLine.Split(',');
-
-                if (lineSplit.Length < 2)
-                {
-                    _logger.LogInformation("Unusable string {dataLine}.", dataLine);
-                    return;
-                }
-
                 if (_currentProcess == lineSplit[0].Replace(".exe", ""))
                 {
                     if (uint.TryParse(lineSplit[1], out uint processID))
@@ -88,21 +83,42 @@ namespace CapFrameX.PresentMonInterface
             });
         }
 
-        private void UpdateOnlineMetrics(Tuple<string, string> dataSet)
+        private void UpdateOnlineMetrics(string[] lineSplit)
         {
-            if (dataSet == null)
-                return;
-
-            if (dataSet.Item1 == null || dataSet.Item1 != _currentProcess)
+            var process = lineSplit[0].Replace(".exe", "");
+            if (process != _currentProcess)
                 ResetMetrics();
 
-            _currentProcess = dataSet.Item1;
+            _currentProcess = process;
 
-            var lineSplit = dataSet.Item2.Split(',');
+            bool realtimeAverageIsActive = false;
+            if (_overlayEntryCore.RealtimeMetricEntryDict.ContainsKey("OnlineAverage"))
+            {
+                var realtimeAverage= _overlayEntryCore.RealtimeMetricEntryDict["OnlineAverage"];
+                realtimeAverageIsActive = realtimeAverage.ShowOnOverlay;
+            }
+
+            bool realtimeP1IsActive = false;
+            if (_overlayEntryCore.RealtimeMetricEntryDict.ContainsKey("OnlineP1"))
+            {
+                var realtimeP1 = _overlayEntryCore.RealtimeMetricEntryDict["OnlineP1"];
+                realtimeP1IsActive = realtimeP1.ShowOnOverlay;
+            }
+
+            bool realtimeP0dot2IsActive = false;
+            if (_overlayEntryCore.RealtimeMetricEntryDict.ContainsKey("OnlineP0dot2"))
+            {
+                var realtimeP0dot2 = _overlayEntryCore.RealtimeMetricEntryDict["OnlineP0dot2"];
+                realtimeP0dot2IsActive = realtimeP0dot2.ShowOnOverlay;
+            }
+
+
+            if (!(realtimeAverageIsActive || realtimeP1IsActive || realtimeP0dot2IsActive))
+                return;
 
             if (lineSplit.Length <= 12)
             {
-                _logger.LogInformation("{dataLine} string unusable for online metrics.", dataSet.Item2);
+                _logger.LogInformation("{dataLine} string unusable for online metrics.", string.Join(",", lineSplit));
                 return;
             }
 
