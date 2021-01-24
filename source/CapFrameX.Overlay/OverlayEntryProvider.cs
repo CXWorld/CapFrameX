@@ -268,14 +268,13 @@ namespace CapFrameX.Overlay
             var overlayEntriesFromJson = JsonConvert.DeserializeObject<OverlayEntryPersistence>(json)
                 .OverlayEntries.ToBlockingCollection<IOverlayEntry>();
 
-            var sensorOverlayEntryClones = _overlayEntryCore.OverlayEntryDict.Values.Select(entry => entry.Clone()).ToArray();
-
+            var sensorOverlayEntryClones = _overlayEntryCore.OverlayEntryDict.Values.Select(entry => entry.Clone()).ToList();
             var sensorOverlayEntryDescriptions = sensorOverlayEntryClones
                 .Select(entry => entry.Description)
                 .ToList();
-            var sensorGpuOverlayEntryDescriptions = GetSensorOverlayentries(sensorOverlayEntryClones, EOverlayEntryType.GPU);
-            var sensorCpuOverlayEntryDescriptions = GetSensorOverlayentries(sensorOverlayEntryClones, EOverlayEntryType.CPU); 
-            var sensorRamOverlayEntryDescriptions = GetSensorOverlayentries(sensorOverlayEntryClones, EOverlayEntryType.RAM); 
+            var sensorGpuOverlayEntryDescriptions = GetOverlayentries(sensorOverlayEntryClones, EOverlayEntryType.GPU);
+            var sensorCpuOverlayEntryDescriptions = GetOverlayentries(sensorOverlayEntryClones, EOverlayEntryType.CPU); 
+            var sensorRamOverlayEntryDescriptions = GetOverlayentries(sensorOverlayEntryClones, EOverlayEntryType.RAM); 
 
 
             var configOverlayEntries = new List<IOverlayEntry>(overlayEntriesFromJson);
@@ -283,22 +282,14 @@ namespace CapFrameX.Overlay
             var configOverlayEntryDescriptions = configOverlayEntries
                 .Select(entry => entry.Description)
                 .ToList();
-            var configGpuOverlayEntryDescriptions = GetConfigOverlayentries(configOverlayEntries, EOverlayEntryType.GPU);
-            var configCpuOverlayEntryDescriptions = GetConfigOverlayentries(configOverlayEntries, EOverlayEntryType.CPU);           
-            var configRamOverlayEntryDescriptions = GetConfigOverlayentries(configOverlayEntries, EOverlayEntryType.RAM);
+            var configGpuOverlayEntryDescriptions = GetOverlayentries(configOverlayEntries, EOverlayEntryType.GPU);
+            var configCpuOverlayEntryDescriptions = GetOverlayentries(configOverlayEntries, EOverlayEntryType.CPU);           
+            var configRamOverlayEntryDescriptions = GetOverlayentries(configOverlayEntries, EOverlayEntryType.RAM);
 
 
-            List<string> GetSensorOverlayentries(IOverlayEntry[] Clones, EOverlayEntryType type)
+            List<string> GetOverlayentries(List<IOverlayEntry> Clones, EOverlayEntryType type)
             {
                 return Clones
-                .Where(entry => entry.OverlayEntryType == type)
-                .Select(entry => entry.Description)
-                .ToList();
-            }
-
-            List<string> GetConfigOverlayentries(List<IOverlayEntry> Entries, EOverlayEntryType type)
-            {
-                return Entries
                 .Where(entry => entry.OverlayEntryType == type)
                 .Select(entry => entry.Description)
                 .ToList();
@@ -373,7 +364,6 @@ namespace CapFrameX.Overlay
                 configOverlayEntries
                     .InsertRange(index, sensorOverlayEntryClones.Where(entry => entry.OverlayEntryType == type));
             }
-
 
             // check separators
             var separatorDict = new Dictionary<string, int>();
