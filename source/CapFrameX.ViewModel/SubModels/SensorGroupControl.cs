@@ -20,6 +20,9 @@ namespace CapFrameX.ViewModel.SubModels
             {
                 _sensorGroupCpuBasics = value;
                 RaisePropertyChanged();
+                if (value && SensorGroupAll)
+                    return;
+                RaisePropertyChanged(nameof(SensorGroupAll));
                 ManageCpuBasicEntries();
             }
         }
@@ -31,6 +34,9 @@ namespace CapFrameX.ViewModel.SubModels
             {
                 _sensorGroupCpuThreadLoads = value;
                 RaisePropertyChanged();
+                if (value && SensorGroupAll)
+                    return;
+                RaisePropertyChanged(nameof(SensorGroupAll));
                 ManageCpuThreadLoadEntries();
             }
         }
@@ -42,6 +48,9 @@ namespace CapFrameX.ViewModel.SubModels
             {
                 _sensorGroupCpuCoreClocks = value;
                 RaisePropertyChanged();
+                if (value && SensorGroupAll)
+                    return;
+                RaisePropertyChanged(nameof(SensorGroupAll));
                 ManageCpuCoreClocksEntries();
             }
         }
@@ -53,16 +62,23 @@ namespace CapFrameX.ViewModel.SubModels
             {
                 _sensorGroupGpuBasics = value;
                 RaisePropertyChanged();
+                if (value && SensorGroupAll)
+                    return;
+                RaisePropertyChanged(nameof(SensorGroupAll));
                 ManageGpuBasicEntries();
             }
         }
 
         public bool SensorGroupAll
         {
-            get { return _sensorGroupAll; }
+            get { return (SensorGroupCpuBasics && SensorGroupCpuCoreClocks && SensorGroupCpuThreadLoads && SensorGroupGpuBasics); }
             set
             {
                 _sensorGroupAll = value;
+                SensorGroupCpuBasics = value;
+                SensorGroupCpuThreadLoads = value;
+                SensorGroupCpuCoreClocks = value;
+                SensorGroupGpuBasics = value;
                 RaisePropertyChanged();
                 ManageAllEntries();
             }
