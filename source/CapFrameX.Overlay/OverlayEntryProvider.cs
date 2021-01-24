@@ -52,7 +52,7 @@ namespace CapFrameX.Overlay
             IAppConfiguration appConfiguration,
             IEventAggregator eventAggregator,
             IOnlineMetricService onlineMetricService,
-            ISystemInfo systemInfo, 
+            ISystemInfo systemInfo,
             IRTSSService rTSSService,
             ISensorConfig sensorConfig,
             IOverlayEntryCore overlayEntryCore,
@@ -259,7 +259,7 @@ namespace CapFrameX.Overlay
             _overlayEntries.ForEach(entry => entry.FormatChanged = true);
         }
 
-        private async Task <BlockingCollection<IOverlayEntry>> GetInitializedOverlayEntryDictionary()
+        private async Task<BlockingCollection<IOverlayEntry>> GetInitializedOverlayEntryDictionary()
         {
             await _sensorService.SensorServiceCompletionSource.Task;
             await _overlayEntryCore.OverlayEntryCoreCompletionSource.Task;
@@ -281,6 +281,10 @@ namespace CapFrameX.Overlay
                 .Where(entry => entry.OverlayEntryType == EOverlayEntryType.CPU)
                 .Select(entry => entry.Description)
                 .ToList();
+            var sensorRamOverlayEntryDescriptions = sensorOverlayEntryClones
+                .Where(entry => entry.OverlayEntryType == EOverlayEntryType.RAM)
+                .Select(entry => entry.Description)
+                .ToList();
 
             var configOverlayEntries = new List<IOverlayEntry>(overlayEntriesFromJson);
             var configOverlayEntryDescriptions = configOverlayEntries
@@ -294,10 +298,15 @@ namespace CapFrameX.Overlay
                 .Where(entry => entry.OverlayEntryType == EOverlayEntryType.CPU)
                 .Select(entry => entry.Description)
                 .ToList();
+            var configRamOverlayEntryDescriptions = configOverlayEntries
+                .Where(entry => entry.OverlayEntryType == EOverlayEntryType.RAM)
+                .Select(entry => entry.Description)
+                .ToList();
 
             bool hasGpuChanged = !sensorGpuOverlayEntryDescriptions.IsEquivalent(configGpuOverlayEntryDescriptions);
             bool hasCpuChanged = !sensorCpuOverlayEntryDescriptions.IsEquivalent(configCpuOverlayEntryDescriptions);
-            HasHardwareChanged = hasGpuChanged || hasCpuChanged;
+            bool hasRamChanged = !sensorRamOverlayEntryDescriptions.IsEquivalent(configRamOverlayEntryDescriptions);
+            HasHardwareChanged = hasGpuChanged || hasCpuChanged || hasRamChanged;
 
             if (HasHardwareChanged)
             {
@@ -361,6 +370,23 @@ namespace CapFrameX.Overlay
 
                 configOverlayEntries
                     .InsertRange(indexCpu, sensorOverlayEntryClones.Where(entry => entry.OverlayEntryType == EOverlayEntryType.CPU));
+            }
+
+            // check other sensor changed
+            if (hasRamChanged)
+            {
+                _logger.LogInformation("Sensors changed. Config has to be updated.");
+
+                var indexRam = configOverlayEntries
+                    .TakeWhile(entry => entry.OverlayEntryType != EOverlayEntryType.RAM)
+                    .Count();
+
+                configOverlayEntries = configOverlayEntries
+                    .Where(entry => entry.OverlayEntryType != EOverlayEntryType.RAM)
+                    .ToList();
+
+                configOverlayEntries
+                    .InsertRange(indexRam, sensorOverlayEntryClones.Where(entry => entry.OverlayEntryType == EOverlayEntryType.RAM));
             }
 
             // check separators
