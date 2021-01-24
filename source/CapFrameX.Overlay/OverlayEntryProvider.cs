@@ -273,35 +273,36 @@ namespace CapFrameX.Overlay
             var sensorOverlayEntryDescriptions = sensorOverlayEntryClones
                 .Select(entry => entry.Description)
                 .ToList();
-            var sensorGpuOverlayEntryDescriptions = sensorOverlayEntryClones
-                .Where(entry => entry.OverlayEntryType == EOverlayEntryType.GPU)
-                .Select(entry => entry.Description)
-                .ToList();
-            var sensorCpuOverlayEntryDescriptions = sensorOverlayEntryClones
-                .Where(entry => entry.OverlayEntryType == EOverlayEntryType.CPU)
-                .Select(entry => entry.Description)
-                .ToList();
-            var sensorRamOverlayEntryDescriptions = sensorOverlayEntryClones
-                .Where(entry => entry.OverlayEntryType == EOverlayEntryType.RAM)
-                .Select(entry => entry.Description)
-                .ToList();
+            var sensorGpuOverlayEntryDescriptions = GetSensorOverlayentries(sensorOverlayEntryClones, EOverlayEntryType.GPU);
+            var sensorCpuOverlayEntryDescriptions = GetSensorOverlayentries(sensorOverlayEntryClones, EOverlayEntryType.CPU); 
+            var sensorRamOverlayEntryDescriptions = GetSensorOverlayentries(sensorOverlayEntryClones, EOverlayEntryType.RAM); 
+
 
             var configOverlayEntries = new List<IOverlayEntry>(overlayEntriesFromJson);
+
             var configOverlayEntryDescriptions = configOverlayEntries
                 .Select(entry => entry.Description)
                 .ToList();
-            var configGpuOverlayEntryDescriptions = configOverlayEntries
-                .Where(entry => entry.OverlayEntryType == EOverlayEntryType.GPU)
+            var configGpuOverlayEntryDescriptions = GetConfigOverlayentries(configOverlayEntries, EOverlayEntryType.GPU);
+            var configCpuOverlayEntryDescriptions = GetConfigOverlayentries(configOverlayEntries, EOverlayEntryType.CPU);           
+            var configRamOverlayEntryDescriptions = GetConfigOverlayentries(configOverlayEntries, EOverlayEntryType.RAM);
+
+
+            List<string> GetSensorOverlayentries(IOverlayEntry[] Clones, EOverlayEntryType type)
+            {
+                return Clones
+                .Where(entry => entry.OverlayEntryType == type)
                 .Select(entry => entry.Description)
                 .ToList();
-            var configCpuOverlayEntryDescriptions = configOverlayEntries
-                .Where(entry => entry.OverlayEntryType == EOverlayEntryType.CPU)
+            }
+
+            List<string> GetConfigOverlayentries(List<IOverlayEntry> Entries, EOverlayEntryType type)
+            {
+                return Entries
+                .Where(entry => entry.OverlayEntryType == type)
                 .Select(entry => entry.Description)
                 .ToList();
-            var configRamOverlayEntryDescriptions = configOverlayEntries
-                .Where(entry => entry.OverlayEntryType == EOverlayEntryType.RAM)
-                .Select(entry => entry.Description)
-                .ToList();
+            }
 
             bool hasGpuChanged = !sensorGpuOverlayEntryDescriptions.IsEquivalent(configGpuOverlayEntryDescriptions);
             bool hasCpuChanged = !sensorCpuOverlayEntryDescriptions.IsEquivalent(configCpuOverlayEntryDescriptions);
@@ -342,52 +343,37 @@ namespace CapFrameX.Overlay
             if (hasGpuChanged)
             {
                 _logger.LogInformation("GPU changed. Config has to be updated.");
-
-                var indexGpu = configOverlayEntries
-                    .TakeWhile(entry => entry.OverlayEntryType != EOverlayEntryType.GPU)
-                    .Count();
-
-                configOverlayEntries = configOverlayEntries
-                    .Where(entry => entry.OverlayEntryType != EOverlayEntryType.GPU)
-                    .ToList();
-
-                configOverlayEntries
-                    .InsertRange(indexGpu, sensorOverlayEntryClones.Where(entry => entry.OverlayEntryType == EOverlayEntryType.GPU));
+                EvaluateSensorEntries(EOverlayEntryType.GPU);
             }
 
             // check CPU changed 
             if (hasCpuChanged)
             {
                 _logger.LogInformation("CPU changed. Config has to be updated.");
-
-                var indexCpu = configOverlayEntries
-                    .TakeWhile(entry => entry.OverlayEntryType != EOverlayEntryType.CPU)
-                    .Count();
-
-                configOverlayEntries = configOverlayEntries
-                    .Where(entry => entry.OverlayEntryType != EOverlayEntryType.CPU)
-                    .ToList();
-
-                configOverlayEntries
-                    .InsertRange(indexCpu, sensorOverlayEntryClones.Where(entry => entry.OverlayEntryType == EOverlayEntryType.CPU));
+                EvaluateSensorEntries(EOverlayEntryType.CPU);
             }
 
-            // check other sensor changed
+            // check RAM changed
             if (hasRamChanged)
             {
-                _logger.LogInformation("Sensors changed. Config has to be updated.");
+                _logger.LogInformation("RAM. Config has to be updated.");
+                EvaluateSensorEntries(EOverlayEntryType.RAM);
+            }
 
-                var indexRam = configOverlayEntries
-                    .TakeWhile(entry => entry.OverlayEntryType != EOverlayEntryType.RAM)
+            void EvaluateSensorEntries(EOverlayEntryType type)
+            {
+                var index = configOverlayEntries
+                    .TakeWhile(entry => entry.OverlayEntryType != type)
                     .Count();
 
                 configOverlayEntries = configOverlayEntries
-                    .Where(entry => entry.OverlayEntryType != EOverlayEntryType.RAM)
+                    .Where(entry => entry.OverlayEntryType != type)
                     .ToList();
 
                 configOverlayEntries
-                    .InsertRange(indexRam, sensorOverlayEntryClones.Where(entry => entry.OverlayEntryType == EOverlayEntryType.RAM));
+                    .InsertRange(index, sensorOverlayEntryClones.Where(entry => entry.OverlayEntryType == type));
             }
+
 
             // check separators
             var separatorDict = new Dictionary<string, int>();
