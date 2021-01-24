@@ -84,13 +84,13 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
             loads[2] = new Sensor("GPU Video Engine", 2, SensorType.Load, this, settings);
             loads[3] = new Sensor("GPU Bus Interface", 3, SensorType.Load, this, settings);
             memoryLoad = new Sensor("GPU Memory", 4, SensorType.Load, this, settings);
-            memoryFree = new Sensor("GPU Memory Free", 1, SensorType.SmallData, this, settings);
-            memoryUsed = new Sensor("GPU Memory Used", 2, SensorType.SmallData, this, settings);
-            memoryAvail = new Sensor("GPU Memory Total", 3, SensorType.SmallData, this, settings);
-            memoryUsageDedicated = new Sensor("GPU Memory Dedicated", 4, SensorType.SmallData, this, settings);
-            memoryUsageShared = new Sensor("GPU Memory Shared", 5, SensorType.SmallData, this, settings);
-            processMemoryUsageDedicated = new Sensor("GPU Memory Dedicated Game", 6, SensorType.SmallData, this, settings);
-            processMemoryUsageShared = new Sensor("GPU Memory Shared Game", 7, SensorType.SmallData, this, settings);
+            memoryFree = new Sensor("GPU Memory Free", 1, SensorType.Data, this, settings);
+            memoryUsed = new Sensor("GPU Memory Used", 2, SensorType.Data, this, settings);
+            memoryAvail = new Sensor("GPU Memory Total", 3, SensorType.Data, this, settings);
+            memoryUsageDedicated = new Sensor("GPU Memory Dedicated", 4, SensorType.Data, this, settings);
+            memoryUsageShared = new Sensor("GPU Memory Shared", 5, SensorType.Data, this, settings);
+            processMemoryUsageDedicated = new Sensor("GPU Memory Dedicated Game", 6, SensorType.Data, this, settings);
+            processMemoryUsageShared = new Sensor("GPU Memory Shared Game", 7, SensorType.Data, this, settings);
 
             fan = new Sensor("GPU Fan", 0, SensorType.Fan, this, settings);
             control = new Sensor("GPU Fan", 1, SensorType.Control, this, settings);
@@ -401,9 +401,9 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
                     uint totalMemory = memoryInfo.Values[0];
                     uint freeMemory = memoryInfo.Values[4];
                     float usedMemory = Math.Max(totalMemory - freeMemory, 0);
-                    memoryFree.Value = (float)freeMemory / 1024;
-                    memoryAvail.Value = (float)totalMemory / 1024;
-                    memoryUsed.Value = usedMemory / 1024;
+                    memoryFree.Value = (float)freeMemory / 1024 / 1024;
+                    memoryAvail.Value = (float)totalMemory / 1024 / 1024;
+                    memoryUsed.Value = usedMemory / 1024 / 1024;
                     memoryLoad.Value = 100f * usedMemory / totalMemory;
                     ActivateSensor(memoryAvail);
                     ActivateSensor(memoryUsed);
@@ -454,7 +454,7 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
                 {
                     if (sensorConfig.GetSensorEvaluate(memoryUsageDedicated.IdentifierString))
                     {
-                        memoryUsageDedicated.Value = dedicatedVramUsagePerformCounter.NextValue() / 1024f / 1024f;
+                        memoryUsageDedicated.Value = dedicatedVramUsagePerformCounter.NextValue() / 1024f / 1024f / 1024f;
                         ActivateSensor(memoryUsageDedicated);
                     }
                     else
@@ -470,7 +470,7 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
                 {
                     if (sensorConfig.GetSensorEvaluate(memoryUsageShared.IdentifierString))
                     {
-                        memoryUsageShared.Value = (float)sharedVramUsagePerformCounter.NextValue() / 1024f / 1024f;
+                        memoryUsageShared.Value = (float)sharedVramUsagePerformCounter.NextValue() / 1024f / 1024f / 1024f;
                         ActivateSensor(memoryUsageShared);
                     }
                     else
@@ -484,7 +484,7 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
                 if (sensorConfig.GetSensorEvaluate(processMemoryUsageDedicated.IdentifierString))
                 {
                     processMemoryUsageDedicated.Value = dedicatedVramUsageProcessPerformCounter == null
-                        ? 0f : (float)dedicatedVramUsageProcessPerformCounter.NextValue() / 1024f / 1024f;
+                        ? 0f : (float)dedicatedVramUsageProcessPerformCounter.NextValue() / 1024f / 1024f / 1024f;
                     ActivateSensor(processMemoryUsageDedicated);
                 }
                 else
@@ -497,7 +497,7 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
                 if (sensorConfig.GetSensorEvaluate(processMemoryUsageShared.IdentifierString))
                 {
                     processMemoryUsageShared.Value = sharedVramUsageProcessPerformCounter == null
-                        ? 0f : (float)sharedVramUsageProcessPerformCounter.NextValue() / 1024f / 1024f;
+                        ? 0f : (float)sharedVramUsageProcessPerformCounter.NextValue() / 1024f / 1024f / 1024f;
                     ActivateSensor(processMemoryUsageShared);
                 }
                 else

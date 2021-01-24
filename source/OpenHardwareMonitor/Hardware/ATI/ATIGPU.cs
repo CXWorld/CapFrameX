@@ -114,11 +114,11 @@ namespace OpenHardwareMonitor.Hardware.ATI
 
             this.controlSensor = new Sensor("GPU Fan", 0, SensorType.Control, this, settings);
 
-            this.memoryUsed = new Sensor("GPU Memory Used", 4, SensorType.SmallData, this, settings);
-            this.memoryUsageDedicated = new Sensor("GPU Memory Dedicated", 0, SensorType.SmallData, this, settings);
-            this.memoryUsageShared = new Sensor("GPU Memory Shared", 1, SensorType.SmallData, this, settings);
-            this.processMemoryUsageDedicated = new Sensor("GPU Memory Dedicated Game", 2, SensorType.SmallData, this, settings);
-            this.processMemoryUsageShared = new Sensor("GPU Memory Shared Game", 3, SensorType.SmallData, this, settings);
+            this.memoryUsed = new Sensor("GPU Memory Used", 4, SensorType.Data, this, settings);
+            this.memoryUsageDedicated = new Sensor("GPU Memory Dedicated", 0, SensorType.Data, this, settings);
+            this.memoryUsageShared = new Sensor("GPU Memory Shared", 1, SensorType.Data, this, settings);
+            this.processMemoryUsageDedicated = new Sensor("GPU Memory Dedicated Game", 2, SensorType.Data, this, settings);
+            this.processMemoryUsageShared = new Sensor("GPU Memory Shared Game", 3, SensorType.Data, this, settings);
 
             ADLFanSpeedInfo afsi = new ADLFanSpeedInfo();
             if (ADL.ADL_Overdrive5_FanSpeedInfo_Get(adapterIndex, 0, ref afsi)
@@ -372,7 +372,7 @@ namespace OpenHardwareMonitor.Hardware.ATI
                 {
                     if (ADL.ADL2_Adapter_VRAMUsage_Get(context, adapterIndex, out int vramUsage) == ADL.ADL_OK)
                     {
-                        this.memoryUsed.Value = vramUsage;
+                        this.memoryUsed.Value = vramUsage / 1024f;
                         ActivateSensor(this.memoryUsed);
                     }
                 }
@@ -506,7 +506,7 @@ namespace OpenHardwareMonitor.Hardware.ATI
                 {
                     if (sensorConfig.GetSensorEvaluate(memoryUsageDedicated.IdentifierString))
                     {
-                        memoryUsageDedicated.Value = dedicatedVramUsagePerformCounter.NextValue() / 1024f / 1024f;
+                        memoryUsageDedicated.Value = dedicatedVramUsagePerformCounter.NextValue() / 1024f / 1024f / 1024f;
                         ActivateSensor(memoryUsageDedicated);
                     }
                     else
@@ -522,7 +522,7 @@ namespace OpenHardwareMonitor.Hardware.ATI
                 {
                     if (sensorConfig.GetSensorEvaluate(memoryUsageShared.IdentifierString))
                     {
-                        memoryUsageShared.Value = (float)sharedVramUsagePerformCounter.NextValue() / 1024f / 1024f;
+                        memoryUsageShared.Value = (float)sharedVramUsagePerformCounter.NextValue() / 1024f / 1024f / 1024f;
                         ActivateSensor(memoryUsageShared);
                     }
                     else
@@ -536,7 +536,7 @@ namespace OpenHardwareMonitor.Hardware.ATI
                 if (sensorConfig.GetSensorEvaluate(processMemoryUsageDedicated.IdentifierString))
                 {
                     processMemoryUsageDedicated.Value = dedicatedVramUsageProcessPerformCounter == null
-                        ? 0f : (float)dedicatedVramUsageProcessPerformCounter.NextValue() / 1024f / 1024f;
+                        ? 0f : (float)dedicatedVramUsageProcessPerformCounter.NextValue() / 1024f / 1024f / 1024f;
                     ActivateSensor(processMemoryUsageDedicated);
                 }
                 else
@@ -549,7 +549,7 @@ namespace OpenHardwareMonitor.Hardware.ATI
                 if (sensorConfig.GetSensorEvaluate(processMemoryUsageShared.IdentifierString))
                 {
                     processMemoryUsageShared.Value = sharedVramUsageProcessPerformCounter == null
-                        ? 0f : (float)sharedVramUsageProcessPerformCounter.NextValue() / 1024f / 1024f;
+                        ? 0f : (float)sharedVramUsageProcessPerformCounter.NextValue() / 1024f / 1024f / 1024f;
                     ActivateSensor(processMemoryUsageShared);
                 }
                 else
