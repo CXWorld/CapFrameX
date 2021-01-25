@@ -33,7 +33,6 @@ namespace CapFrameX.Overlay
         private readonly ISensorService _sensorService;
         private readonly IRTSSService _rTSSService;
         private readonly IOverlayEntryCore _overlayEntryCore;
-        private ISubject<TimeSpan> _osdUpdateSubject;
 
         private IDisposable _disposableCaptureTimer;
         private IDisposable _disposableCountdown;
@@ -85,8 +84,6 @@ namespace CapFrameX.Overlay
             IsOverlayActiveStream = new BehaviorSubject<bool>(_appConfiguration.IsOverlayActive);
             _runHistoryOutlierFlags = Enumerable.Repeat(false, _numberOfRuns).ToArray();
 
-            _osdUpdateSubject = new BehaviorSubject<TimeSpan>(TimeSpan.FromMilliseconds(_appConfiguration.OSDRefreshPeriod));
-
             _logger.LogDebug("{componentName} Ready", this.GetType().Name);
 
             Task.Run(async () => await InitializeOverlayEntryDict());
@@ -134,14 +131,14 @@ namespace CapFrameX.Overlay
                 });
 
             _sensorService.SensorSnapshotStream
-            .Sample(_osdUpdateSubject.Select(timespan => Observable.Concat(Observable.Return(-1L), Observable.Interval(timespan))).Switch())
-            .Where((_, idx) => idx == 0 || IsOverlayActive)
-            .SubscribeOn(Scheduler.Default)
-            .Subscribe(sensorData =>
-            {
-                UpdateOverlayEntries(sensorData.Item2);
-                _onDictionaryUpdated.OnNext(_overlayEntryCore.OverlayEntryDict.Values.ToArray());
-            });
+                .Sample(_sensorService.OsdUpdateStream.Select(timespan => Observable.Concat(Observable.Return(-1L), Observable.Interval(timespan))).Switch())
+                .Where((_, idx) => idx == 0 || IsOverlayActive)
+                .SubscribeOn(Scheduler.Default)
+                .Subscribe(sensorData =>
+                {
+                    UpdateOverlayEntries(sensorData.Item2);
+                    _onDictionaryUpdated.OnNext(_overlayEntryCore.OverlayEntryDict.Values.ToArray());
+                });
 
             _runHistory = Enumerable.Repeat("N/A", _numberOfRuns).ToList();
             _rTSSService.SetRunHistory(_runHistory.ToArray());

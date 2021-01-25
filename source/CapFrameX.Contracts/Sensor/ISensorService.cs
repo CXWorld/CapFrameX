@@ -8,6 +8,7 @@ namespace CapFrameX.Contracts.Sensor
     public interface ISensorService
     {
         IObservable<(DateTime, Dictionary<ISensorEntry, float>)> SensorSnapshotStream { get; }
+        IObservable<TimeSpan> OsdUpdateStream { get; }
         TaskCompletionSource<bool> SensorServiceCompletionSource { get; }
         void StartSensorLogging();
         void StopSensorLogging();
