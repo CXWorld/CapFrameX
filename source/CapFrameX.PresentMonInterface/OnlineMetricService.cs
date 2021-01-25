@@ -1,6 +1,5 @@
 ﻿using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.PresentMonInterface;
-using CapFrameX.Contracts.RTSS;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Statistics.NetStandard;
 using CapFrameX.Statistics.NetStandard.Contracts;
@@ -18,29 +17,28 @@ namespace CapFrameX.PresentMonInterface
     public class OnlineMetricService : IOnlineMetricService
     {
         private const double STUTTERING_THRESHOLD = 2d;
+        private const int LIST_CAPACITY = 20000;
 
         private readonly IStatisticProvider _frametimeStatisticProvider;
-        private readonly IRTSSService _rTSSService;
         private readonly ICaptureService _captureServive;
         private readonly IEventAggregator _eventAggregator;
         private readonly IOverlayEntryCore _overlayEntryCore;
-        private readonly List<double> _frametimes = new List<double>();
-        private readonly List<double> _measuretimes = new List<double>();
         private readonly ILogger<OnlineMetricService> _logger;
         private readonly object _lock = new object();
+        private List<double> _frametimes = new List<double>(LIST_CAPACITY);
+        private List<double> _measuretimes = new List<double>(LIST_CAPACITY);
         private string _currentProcess;
+        private uint _currentProcessId;
         // ToDo: get value from config
         // length in seconds
         private readonly double _maxOnlineIntervalLength = 20d;
 
         public OnlineMetricService(IStatisticProvider frametimeStatisticProvider,
-            IRTSSService rTSSService,
             ICaptureService captureServive,
             IEventAggregator eventAggregator,
             IOverlayEntryCore oerlayEntryCore,
             ILogger<OnlineMetricService> logger)
         {
-            _rTSSService = rTSSService;
             _captureServive = captureServive;
             _eventAggregator = eventAggregator;
             _overlayEntryCore = oerlayEntryCore;
@@ -57,7 +55,12 @@ namespace CapFrameX.PresentMonInterface
             _eventAggregator.GetEvent<PubSubEvent<ViewMessages.CurrentProcessToCapture>>()
                             .Subscribe(msg =>
                             {
+                                if (_currentProcess == null
+                                || _currentProcess != msg.Process)
+                                    ResetMetrics();
+
                                 _currentProcess = msg.Process;
+                                _currentProcessId = msg.ProcessId;
                             });
         }
 
@@ -69,51 +72,35 @@ namespace CapFrameX.PresentMonInterface
             .Where(line => !string.IsNullOrWhiteSpace(line))
             .Select(line => line.Split(','))
             .Where(lineSplit => lineSplit.Length > 1)
-            .Do(UpdateOnlineMetrics)
-            .Where((_, i) => i % 10 == 0)
-            .Subscribe(lineSplit =>
+            .Where(x => EvaluateRealtimeMetrics())
+            .Subscribe(UpdateOnlineMetrics);
+        }
+
+        private bool EvaluateRealtimeMetrics()
+        {
+            try
             {
-                if (_currentProcess == lineSplit[0].Replace(".exe", ""))
-                {
-                    if (uint.TryParse(lineSplit[1], out uint processID))
-                    {
-                        _rTSSService.ProcessIdStream.OnNext(processID);
-                    }
-                }
-            });
+                var realtimeAverage = _overlayEntryCore.RealtimeMetricEntryDict["OnlineAverage"];
+                var realtimeP1 = _overlayEntryCore.RealtimeMetricEntryDict["OnlineP1"];
+                var realtimeP0dot2 = _overlayEntryCore.RealtimeMetricEntryDict["OnlineP0dot2"];
+                return realtimeAverage.ShowOnOverlay || realtimeP1.ShowOnOverlay || realtimeP0dot2.ShowOnOverlay;
+            }
+            catch { return false; }
         }
 
         private void UpdateOnlineMetrics(string[] lineSplit)
         {
             var process = lineSplit[0].Replace(".exe", "");
             if (process != _currentProcess)
+                return;
+
+            if (!uint.TryParse(lineSplit[1], out uint processId))
+            {
                 ResetMetrics();
-
-            _currentProcess = process;
-
-            bool realtimeAverageIsActive = false;
-            if (_overlayEntryCore.RealtimeMetricEntryDict.ContainsKey("OnlineAverage"))
-            {
-                var realtimeAverage= _overlayEntryCore.RealtimeMetricEntryDict["OnlineAverage"];
-                realtimeAverageIsActive = realtimeAverage.ShowOnOverlay;
+                return;
             }
 
-            bool realtimeP1IsActive = false;
-            if (_overlayEntryCore.RealtimeMetricEntryDict.ContainsKey("OnlineP1"))
-            {
-                var realtimeP1 = _overlayEntryCore.RealtimeMetricEntryDict["OnlineP1"];
-                realtimeP1IsActive = realtimeP1.ShowOnOverlay;
-            }
-
-            bool realtimeP0dot2IsActive = false;
-            if (_overlayEntryCore.RealtimeMetricEntryDict.ContainsKey("OnlineP0dot2"))
-            {
-                var realtimeP0dot2 = _overlayEntryCore.RealtimeMetricEntryDict["OnlineP0dot2"];
-                realtimeP0dot2IsActive = realtimeP0dot2.ShowOnOverlay;
-            }
-
-
-            if (!(realtimeAverageIsActive || realtimeP1IsActive || realtimeP0dot2IsActive))
+            if (_currentProcessId != processId)
                 return;
 
             if (lineSplit.Length <= 12)
@@ -142,12 +129,11 @@ namespace CapFrameX.PresentMonInterface
                 return;
             }
 
-            string processName = lineSplit[0].Replace(".exe", "");
-
-            if (_currentProcess == processName)
+            try
             {
                 lock (_lock)
                 {
+
                     _measuretimes.Add(startTime);
                     _frametimes.Add(frameTime);
 
@@ -166,22 +152,25 @@ namespace CapFrameX.PresentMonInterface
                     }
                 }
             }
+            catch { ResetMetrics(); }
         }
 
         private void ResetMetrics()
         {
             lock (_lock)
             {
-                _frametimes.Clear();
-                _measuretimes.Clear();
+                _frametimes = new List<double>(LIST_CAPACITY);
+                _measuretimes = new List<double>(LIST_CAPACITY);
             }
         }
 
         public double GetOnlineFpsMetricValue(EMetric metric)
         {
             lock (_lock)
+            {
                 return _frametimeStatisticProvider
                     .GetFpsMetricValue(_frametimes, metric);
+            }
         }
     }
 }

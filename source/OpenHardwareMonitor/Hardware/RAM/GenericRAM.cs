@@ -38,7 +38,12 @@ namespace OpenHardwareMonitor.Hardware.RAM
                 .DistinctUntilChanged()
                 .Subscribe(id =>
                 {
-                    var process = Process.GetProcessById((int)id);
+                    Process process = null;
+                    try
+                    {
+                        process = Process.GetProcessById((int)id);
+                    }
+                    catch { }
 
                     if (process != null)
                     {
@@ -103,7 +108,7 @@ namespace OpenHardwareMonitor.Hardware.RAM
 
             if (sensorConfig.GetSensorEvaluate(usedMemoryProcess.IdentifierString))
             {
-                usedMemoryProcess.Value = ramUsageGamePerformanceCounter != null 
+                usedMemoryProcess.Value = ramUsageGamePerformanceCounter != null
                     ? ramUsageGamePerformanceCounter.NextValue() / (1024 * 1024 * 1024) : 0f;
             }
         }

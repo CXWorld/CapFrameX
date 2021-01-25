@@ -2,6 +2,7 @@
 using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.PresentMonInterface;
+using CapFrameX.Contracts.RTSS;
 using CapFrameX.Contracts.Sensor;
 using CapFrameX.Data;
 using CapFrameX.EventAggregation.Messages;
@@ -45,6 +46,7 @@ namespace CapFrameX.ViewModel
         private readonly SoundManager _soundManager;
         private readonly CaptureManager _captureManager;
         private readonly ISensorConfig _sensorConfig;
+        private readonly IRTSSService _rTSSService;
 
         private IDisposable _disposableHeartBeat;
         private string _selectedProcessToCapture;
@@ -214,7 +216,8 @@ namespace CapFrameX.ViewModel
                                 ProcessList processList,
                                 SoundManager soundManager,
                                 CaptureManager captureManager,
-                                ISensorConfig sensorConfig)
+                                ISensorConfig sensorConfig,
+                                IRTSSService rTSSService)
         {
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -231,7 +234,7 @@ namespace CapFrameX.ViewModel
             _soundManager = soundManager;
             _captureManager = captureManager;
             _sensorConfig = sensorConfig;
-
+            _rTSSService = rTSSService;
 
             AddToIgonreListCommand = new DelegateCommand(OnAddToIgonreList);
             AddToProcessListCommand = new DelegateCommand(OnAddToProcessList);
@@ -544,7 +547,11 @@ namespace CapFrameX.ViewModel
                 currentProcess = ProcessesToCapture.FirstOrDefault();
             }
 
-            _updateCurrentProcess?.Publish(new ViewMessages.CurrentProcessToCapture(currentProcess));
+            var process = Process.GetProcessesByName(currentProcess).FirstOrDefault();
+            var processId = (uint)(process != null ? process.Id : 0);
+
+            _rTSSService.ProcessIdStream.OnNext(processId);
+            _updateCurrentProcess?.Publish(new ViewMessages.CurrentProcessToCapture(currentProcess, processId));
         }
 
         private void UpdateCaptureStateInfo()

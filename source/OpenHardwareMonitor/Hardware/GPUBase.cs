@@ -67,11 +67,18 @@ namespace OpenHardwareMonitor.Hardware
                 {
                     var category = new PerformanceCounterCategory("GPU Process Memory");
 
-                    rTSSService
+                    _ = rTSSService
                     .ProcessIdStream
                     .DistinctUntilChanged()
                     .Subscribe(id =>
                     {
+                        if (id == 0)
+                        {
+                            dedicatedVramUsageProcessPerformCounter = null;
+                            sharedVramUsageProcessPerformCounter = null;
+                            return;
+                        }
+
                         var instances = category.GetInstanceNames();
                         if (instances != null)
                         {
