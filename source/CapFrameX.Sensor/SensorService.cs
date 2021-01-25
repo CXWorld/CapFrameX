@@ -47,6 +47,7 @@ namespace CapFrameX.Sensor
         }
 
         public IObservable<(DateTime, Dictionary<ISensorEntry, float>)> SensorSnapshotStream { get; private set; }
+        public IObservable<TimeSpan> OsdUpdateStream => _osdUpdateSubject.AsObservable();
 
         public bool UseSensorLogging => _appConfiguration.UseSensorLogging;
 
