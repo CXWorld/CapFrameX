@@ -467,6 +467,7 @@ void RTSSCoreControl::CloseHandles()
 
 void RTSSCoreControl::CreateHandles()
 {
+	CloseHandles();
 	m_hMapFile = OpenFileMapping(FILE_MAP_ALL_ACCESS, FALSE, "RTSSSharedMemoryV2");
 	if (m_hMapFile)
 		m_pMapAddr = MapViewOfFile(m_hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, 0);
