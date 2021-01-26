@@ -94,8 +94,9 @@ namespace CapFrameX.Overlay
                     if (isActive)
                     {
                         _rTSSService.CheckRTSSRunning().Wait();
+                        _rTSSService.CreateHandles();
                         _rTSSService.OnOSDOn();
-                        _rTSSService.ResetOSD();
+                        _rTSSService.ClearOSD();
                         return _onDictionaryUpdated.
                             SelectMany(_ => _overlayEntryProvider.GetOverlayEntries());
                     }

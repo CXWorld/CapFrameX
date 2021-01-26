@@ -44,7 +44,7 @@ public:
 		_coreControl->OnOSDToggle();
 	}
 
-	void ResetOSD()
+	void ClearOSD()
 	{
 		try
 		{
@@ -291,6 +291,11 @@ public:
 	void CloseHandles()
 	{
 		_coreControl->CloseHandles();
+	}
+
+	void CreateHandles()
+	{
+		_coreControl->CreateHandles();
 	}
 
 private:

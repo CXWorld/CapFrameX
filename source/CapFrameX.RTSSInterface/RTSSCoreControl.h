@@ -34,6 +34,7 @@ public:
 	void						OnOSDOff();
 	void						OnOSDToggle();
 	void						CloseHandles();
+	void						CreateHandles();
 	std::vector<CString>		RunHistory;
 	std::vector<BOOL>			RunHistoryOutlierFlags;
 	CString						RunHistoryAggregation;

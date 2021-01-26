@@ -12,7 +12,7 @@ namespace CapFrameX.RTSSIntegration
 {
     public class RTSSService : RTSSCSharpWrapper, IRTSSService
     {
-        private const string RTSSPROCESSNAME = "RTSS";
+        private const string RTSS_PROCESS_NAME = "RTSS";
         private bool _isRTSSInstalled;
 
         private static ILogger<RTSSService> _logger;
@@ -37,7 +37,7 @@ namespace CapFrameX.RTSSIntegration
             {
                 if (_isRTSSInstalled)
                 {
-                    var processes = Process.GetProcessesByName(RTSSPROCESSNAME);
+                    var processes = Process.GetProcessesByName(RTSS_PROCESS_NAME);
                     if (!processes.Any())
                     {
                         try
@@ -60,7 +60,7 @@ namespace CapFrameX.RTSSIntegration
             {
                 if (_isRTSSInstalled)
                 {
-                    var processes = Process.GetProcessesByName(RTSSPROCESSNAME);
+                    var processes = Process.GetProcessesByName(RTSS_PROCESS_NAME);
                     if (!processes.Any())
                     {
                         try

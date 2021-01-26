@@ -32,10 +32,6 @@ RTSSCoreControl::RTSSCoreControl()
 	m_bFormatTags = TRUE;
 	m_bFillGraphs = FALSE;
 	m_bConnected = FALSE;
-
-	m_hMapFile = OpenFileMapping(FILE_MAP_ALL_ACCESS, FALSE, "RTSSSharedMemoryV2");
-	if (m_hMapFile)
-		m_pMapAddr = MapViewOfFile(m_hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, 0);
 }
 
 RTSSCoreControl::~RTSSCoreControl() { }
@@ -467,6 +463,13 @@ void RTSSCoreControl::CloseHandles()
 
 	if (m_pMapAddr)
 		UnmapViewOfFile(m_pMapAddr);
+}
+
+void RTSSCoreControl::CreateHandles()
+{
+	m_hMapFile = OpenFileMapping(FILE_MAP_ALL_ACCESS, FALSE, "RTSSSharedMemoryV2");
+	if (m_hMapFile)
+		m_pMapAddr = MapViewOfFile(m_hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, 0);
 }
 
 DWORD RTSSCoreControl::GetClientsNum()
