@@ -396,7 +396,7 @@ namespace CapFrameX.Configuration
 
 		public bool SaveAggregationOnly
 		{
-			get => Get<bool>(false);
+			get => Get<bool>(true);
 			set => Set(value);
 		}
 
