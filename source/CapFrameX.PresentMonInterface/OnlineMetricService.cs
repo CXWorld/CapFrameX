@@ -20,7 +20,7 @@ namespace CapFrameX.PresentMonInterface
         private const int LIST_CAPACITY = 20000;
 
         private readonly IStatisticProvider _frametimeStatisticProvider;
-        private readonly ICaptureService _captureServive;
+        private readonly ICaptureService _captureService;
         private readonly IEventAggregator _eventAggregator;
         private readonly IOverlayEntryCore _overlayEntryCore;
         private readonly ILogger<OnlineMetricService> _logger;
@@ -39,7 +39,7 @@ namespace CapFrameX.PresentMonInterface
             IOverlayEntryCore oerlayEntryCore,
             ILogger<OnlineMetricService> logger)
         {
-            _captureServive = captureServive;
+            _captureService = captureServive;
             _eventAggregator = eventAggregator;
             _overlayEntryCore = oerlayEntryCore;
             _logger = logger;
@@ -66,13 +66,13 @@ namespace CapFrameX.PresentMonInterface
 
         private void ConnectOnlineMetricDataStream()
         {
-            _captureServive.RedirectedOutputDataStream
+            _captureService.RedirectedOutputDataStream
             .Skip(5)
             .ObserveOn(new EventLoopScheduler())
+            .Where(x => EvaluateRealtimeMetrics())
             .Where(line => !string.IsNullOrWhiteSpace(line))
             .Select(line => line.Split(','))
             .Where(lineSplit => lineSplit.Length > 1)
-            .Where(x => EvaluateRealtimeMetrics())
             .Subscribe(UpdateOnlineMetrics);
         }
 
@@ -80,10 +80,9 @@ namespace CapFrameX.PresentMonInterface
         {
             try
             {
-                var realtimeAverage = _overlayEntryCore.RealtimeMetricEntryDict["OnlineAverage"];
-                var realtimeP1 = _overlayEntryCore.RealtimeMetricEntryDict["OnlineP1"];
-                var realtimeP0dot2 = _overlayEntryCore.RealtimeMetricEntryDict["OnlineP0dot2"];
-                return realtimeAverage.ShowOnOverlay || realtimeP1.ShowOnOverlay || realtimeP0dot2.ShowOnOverlay;
+                return _overlayEntryCore.RealtimeMetricEntryDict["OnlineAverage"].ShowOnOverlay 
+                    || _overlayEntryCore.RealtimeMetricEntryDict["OnlineP1"].ShowOnOverlay 
+                    || _overlayEntryCore.RealtimeMetricEntryDict["OnlineP0dot2"].ShowOnOverlay;
             }
             catch { return false; }
         }

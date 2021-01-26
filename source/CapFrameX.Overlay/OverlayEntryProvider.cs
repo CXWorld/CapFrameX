@@ -87,6 +87,7 @@ namespace CapFrameX.Overlay
             await _taskCompletionSource.Task;
             await UpdateSensorData();
             UpdateOnlineMetrics();
+
             if (updateFormats)
             {
                 UpdateFormatting();
@@ -469,6 +470,7 @@ namespace CapFrameX.Overlay
         private async Task UpdateSensorData()
         {
             var currentFramerate = _rTSSService.GetCurrentFramerate(await _rTSSService.ProcessIdStream.Take(1));
+
             foreach (var entry in _overlayEntries)
             {
                 switch (entry.OverlayEntryType)

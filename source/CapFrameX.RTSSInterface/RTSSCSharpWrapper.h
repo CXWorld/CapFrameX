@@ -53,7 +53,7 @@ public:
 				_coreControl->UpdateOSD("");
 			}
 		}
-		catch(SEHException^)
+		catch (SEHException^)
 		{
 			_exceptionAction->Invoke(gcnew Exception("Unmanaged Exception. Error while resetting OSD."));
 		}
@@ -286,6 +286,11 @@ public:
 	{
 		std::vector<float> result = _coreControl->GetCurrentFramerateFromForegroundWindow();
 		return gcnew Tuple<double, double>(result[0], result[1]);
+	}
+
+	void CloseHandles()
+	{
+		_coreControl->CloseHandles();
 	}
 
 private:

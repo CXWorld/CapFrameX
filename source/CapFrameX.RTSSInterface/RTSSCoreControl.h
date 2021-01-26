@@ -24,6 +24,7 @@ class RTSSCoreControl
 	// Construction
 public:
 	RTSSCoreControl();	// standard constructor
+	~RTSSCoreControl();	// standard detructor
 
 public:
 	void						ReleaseOSD();
@@ -32,6 +33,7 @@ public:
 	void						OnOSDOn();
 	void						OnOSDOff();
 	void						OnOSDToggle();
+	void						CloseHandles();
 	std::vector<CString>		RunHistory;
 	std::vector<BOOL>			RunHistoryOutlierFlags;
 	CString						RunHistoryAggregation;
@@ -67,6 +69,8 @@ protected:
 
 	CRTSSProfileInterface		m_profileInterface;
 	CRTSSHooksInterface			m_rtssInterface;
+	LPVOID						m_pMapAddr;
+	HANDLE						m_hMapFile;
 };
 /////////////////////////////////////////////////////////////////////////////
 //{{AFX_INSERT_LOCATION}}

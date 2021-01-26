@@ -28,5 +28,6 @@ namespace CapFrameX.Contracts.RTSS
         void OnOSDOn();
         void OnOSDOff();
         void OnOSDToggle();
+        void CloseHandles();
     }
 }
