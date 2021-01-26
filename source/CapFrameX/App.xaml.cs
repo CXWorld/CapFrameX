@@ -112,13 +112,11 @@ namespace CapFrameX
 		{
 			PresentMonCaptureService.TryKillPresentMon();
 
-			var overlayService = _bootstrapper.Container.Resolve(typeof(IOverlayService), true) as IOverlayService;
-			overlayService?.IsOverlayActiveStream.OnNext(false);
-
 			var sensorService = _bootstrapper.Container.Resolve(typeof(ISensorService), true) as ISensorService;
 			sensorService?.CloseOpenHardwareMonitor();
 
 			var rtssService = _bootstrapper.Container.Resolve(typeof(IRTSSService), true) as IRTSSService;
+			rtssService.ClearOSD();
 			rtssService.CloseHandles();
 
 			_webServer.Dispose();
