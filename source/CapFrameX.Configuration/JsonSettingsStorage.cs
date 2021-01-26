@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
@@ -88,7 +89,7 @@ namespace CapFrameX.Configuration
                 var fileContent = JsonConvert.SerializeObject(_configDictionary, Formatting.Indented);
                 if (string.IsNullOrWhiteSpace(fileContent))
                 {
-                    _logger.LogError("Error writing Configurationfile. Cannot create config from Dictionary", _configDictionary);
+                    _logger.LogError("Error writing Configurationfile. Cannot create config from Dictionary", _configDictionary.ToDictionary(x => x.Key, x => x.Value));
                 }
                 else
                 {
