@@ -44,8 +44,11 @@ namespace CapFrameX.Configuration
 
         public void SetValue(string key, object value)
         {
-            _configDictionary[key] = value;
-            _saveFileSubject.OnNext(default);
+            if (!_configDictionary.TryGetValue(key, out var oldValue) || !oldValue.Equals(value))
+            {
+                _configDictionary[key] = value;
+                _saveFileSubject.OnNext(default);
+            }
         }
 
         public Task Load()
