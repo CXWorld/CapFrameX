@@ -86,10 +86,10 @@ namespace CapFrameX.Configuration
             try
             {
                 var file = new FileInfo(_jsonFilePath);
-                var fileContent = JsonConvert.SerializeObject(_configDictionary, Formatting.Indented);
+                var fileContent = JsonConvert.SerializeObject(_configDictionary.ToDictionary(x => x.Key, x => x.Value), Formatting.Indented);
                 if (string.IsNullOrWhiteSpace(fileContent))
                 {
-                    _logger.LogError("Error writing Configurationfile. Cannot create config from Dictionary", _configDictionary.ToDictionary(x => x.Key, x => x.Value));
+                    _logger.LogError("Error writing Configurationfile. Cannot create config from Dictionary", _configDictionary);
                 }
                 else
                 {
