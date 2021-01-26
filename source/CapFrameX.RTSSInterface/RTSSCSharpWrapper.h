@@ -293,11 +293,6 @@ public:
 		_coreControl->CloseHandles();
 	}
 
-	void CreateHandles()
-	{
-		_coreControl->CreateHandles();
-	}
-
 private:
 	RTSSCoreControl* _coreControl;
 	Action<Exception^>^ _exceptionAction;

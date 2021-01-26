@@ -34,7 +34,6 @@ public:
 	void						OnOSDOff();
 	void						OnOSDToggle();
 	void						CloseHandles();
-	void						CreateHandles();
 	std::vector<CString>		RunHistory;
 	std::vector<BOOL>			RunHistoryOutlierFlags;
 	CString						RunHistoryAggregation;
@@ -56,6 +55,7 @@ protected:
 	void						IncProfileProperty(LPCSTR lpProfile, LPCSTR lpProfileProperty, LONG dwIncrement);
 	void						SetProfileProperty(LPCSTR lpProfile, LPCSTR lpProfileProperty, DWORD dwProperty);
 	void						AddOverlayEntry(CGroupedString* groupedString, OverlayEntry* entry, BOOL bFormatTagsSupported);
+	void						CreateHandles();
 
 	BOOL						m_bMultiLineOutput;
 	BOOL						m_bFormatTags;
