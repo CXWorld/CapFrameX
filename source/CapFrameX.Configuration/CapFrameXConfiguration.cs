@@ -9,7 +9,6 @@ namespace CapFrameX.Configuration
 	{
 		private readonly ISettingsStorage _settingsStorage;
 
-
 		// Directories
 		public string ObservedDirectory
 		{
@@ -337,7 +336,7 @@ namespace CapFrameX.Configuration
 
 		public int OSDRefreshPeriod
 		{
-			get => Get<int>(500);
+			get => Get<int>(1000);
 			set => Set(value);
 		}
 
@@ -463,10 +462,7 @@ namespace CapFrameX.Configuration
 			set => Set(value);
 		}
 
-
 		// Report Settings
-
-
 
 		// Sync Settings
 		public int InputLagOffset
@@ -497,12 +493,9 @@ namespace CapFrameX.Configuration
 
 		public bool AutoUpdateProcessList
 		{
-			get => Get<bool>(false);
+			get => Get<bool>(true);
 			set => Set(value);
 		}
-
-
-		
 
 		T Get<T>(T defaultValue, [CallerMemberName] string key = null)
 		{

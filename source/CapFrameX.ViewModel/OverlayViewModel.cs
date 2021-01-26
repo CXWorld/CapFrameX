@@ -46,7 +46,7 @@ namespace CapFrameX.ViewModel
         private bool _setGroupButtonEnabled;
         private bool _overlayItemsOptionsEnabled = false;
         private bool _saveButtonIsEnable;
-        private Subject<object> _configSubject;
+        private Subject<object> _configSubject = new Subject<object>();
 
         public bool OverlayItemsOptionsEnabled
         {
@@ -490,10 +490,12 @@ namespace CapFrameX.ViewModel
             OverlaySubModelGroupControl = new OverlayGroupControl(this);
             OverlaySubModelGroupSeparating = new OverlayGroupSeparating(this);
 
-            _configSubject = new Subject<object>();
             ConfigSwitchCommand = new DelegateCommand<object>(_configSubject.OnNext);
             _configSubject
-                .Select(obj => Convert.ToInt32(obj))
+                .Select(obj =>
+                {
+                   return Convert.ToInt32(obj);
+                })
                 .DistinctUntilChanged()
                 .SelectMany(index =>
                 {
