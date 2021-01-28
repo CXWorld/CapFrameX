@@ -19,6 +19,8 @@ namespace OpenHardwareMonitor.Hardware.RAM
 {
     internal class GenericRAM : Hardware
     {
+        private const long SCALE = 1024 * 1024 * 1024;
+
         private Sensor loadSensor;
         private Sensor usedMemory;
         private Sensor availableMemory;
@@ -47,7 +49,7 @@ namespace OpenHardwareMonitor.Hardware.RAM
 
                     if (process != null)
                     {
-                        ramUsageGamePerformanceCounter = new PerformanceCounter("Process", "Working Set - Private", process.ProcessName);
+                        ramUsageGamePerformanceCounter = new PerformanceCounter("Process", "Virtual Bytes", process.ProcessName);
                     }
                     else
                     {
@@ -100,16 +102,15 @@ namespace OpenHardwareMonitor.Hardware.RAM
                   status.TotalPhysicalMemory;
 
                 usedMemory.Value = (float)(status.TotalPhysicalMemory
-                  - status.AvailablePhysicalMemory) / (1024 * 1024 * 1024);
+                  - status.AvailablePhysicalMemory) / SCALE;
 
-                availableMemory.Value = (float)status.AvailablePhysicalMemory /
-                  (1024 * 1024 * 1024);
+                availableMemory.Value = (float)status.AvailablePhysicalMemory / SCALE;
             }
 
             if (sensorConfig.GetSensorEvaluate(usedMemoryProcess.IdentifierString))
             {
                 usedMemoryProcess.Value = ramUsageGamePerformanceCounter != null
-                    ? ramUsageGamePerformanceCounter.NextValue() / (1024 * 1024 * 1024) : 0f;
+                    ? ramUsageGamePerformanceCounter.NextValue() / SCALE : 0f;
             }
         }
 
