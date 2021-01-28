@@ -506,7 +506,7 @@ namespace OpenHardwareMonitor.Hardware.ATI
                 {
                     if (sensorConfig.GetSensorEvaluate(memoryUsageDedicated.IdentifierString))
                     {
-                        memoryUsageDedicated.Value = dedicatedVramUsagePerformCounter.NextValue() / 1024f / 1024f / 1024f;
+                        memoryUsageDedicated.Value = dedicatedVramUsagePerformCounter.NextValue() / SCALE;
                         ActivateSensor(memoryUsageDedicated);
                     }
                     else
@@ -522,7 +522,7 @@ namespace OpenHardwareMonitor.Hardware.ATI
                 {
                     if (sensorConfig.GetSensorEvaluate(memoryUsageShared.IdentifierString))
                     {
-                        memoryUsageShared.Value = (float)sharedVramUsagePerformCounter.NextValue() / 1024f / 1024f / 1024f;
+                        memoryUsageShared.Value = (float)sharedVramUsagePerformCounter.NextValue() / SCALE;
                         ActivateSensor(memoryUsageShared);
                     }
                     else
@@ -536,7 +536,7 @@ namespace OpenHardwareMonitor.Hardware.ATI
                 if (sensorConfig.GetSensorEvaluate(processMemoryUsageDedicated.IdentifierString))
                 {
                     processMemoryUsageDedicated.Value = dedicatedVramUsageProcessPerformCounter == null
-                        ? 0f : (float)dedicatedVramUsageProcessPerformCounter.NextValue() / 1024f / 1024f / 1024f;
+                        ? 0f : (float)dedicatedVramUsageProcessPerformCounter.NextValue() / SCALE;
                     ActivateSensor(processMemoryUsageDedicated);
                 }
                 else
@@ -549,7 +549,7 @@ namespace OpenHardwareMonitor.Hardware.ATI
                 if (sensorConfig.GetSensorEvaluate(processMemoryUsageShared.IdentifierString))
                 {
                     processMemoryUsageShared.Value = sharedVramUsageProcessPerformCounter == null
-                        ? 0f : (float)sharedVramUsageProcessPerformCounter.NextValue() / 1024f / 1024f / 1024f;
+                        ? 0f : (float)sharedVramUsageProcessPerformCounter.NextValue() / SCALE;
                     ActivateSensor(processMemoryUsageShared);
                 }
                 else

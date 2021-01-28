@@ -19,7 +19,7 @@ namespace OpenHardwareMonitor.Hardware.RAM
 {
     internal class GenericRAM : Hardware
     {
-        private const long SCALE = 1024 * 1024 * 1024;
+        private const float SCALE = 1024 * 1024 * 1024;
 
         private Sensor loadSensor;
         private Sensor usedMemory;
@@ -49,7 +49,9 @@ namespace OpenHardwareMonitor.Hardware.RAM
 
                     if (process != null)
                     {
-                        ramUsageGamePerformanceCounter = new PerformanceCounter("Process", "Virtual Bytes", process.ProcessName);
+                        // Working Set (private + shared)
+                        // Virtual Bytes leads to constant 4GB usage in every case
+                        ramUsageGamePerformanceCounter = new PerformanceCounter("Process", "Working Set", process.ProcessName);
                     }
                     else
                     {
@@ -101,10 +103,10 @@ namespace OpenHardwareMonitor.Hardware.RAM
                   (100.0f * status.AvailablePhysicalMemory) /
                   status.TotalPhysicalMemory;
 
-                usedMemory.Value = (float)(status.TotalPhysicalMemory
+                usedMemory.Value = (status.TotalPhysicalMemory
                   - status.AvailablePhysicalMemory) / SCALE;
 
-                availableMemory.Value = (float)status.AvailablePhysicalMemory / SCALE;
+                availableMemory.Value = status.AvailablePhysicalMemory / SCALE;
             }
 
             if (sensorConfig.GetSensorEvaluate(usedMemoryProcess.IdentifierString))

@@ -9,6 +9,8 @@ namespace OpenHardwareMonitor.Hardware
 {
     internal abstract class GPUBase : Hardware
     {
+        protected const float SCALE = 1024 * 1024 * 1024;
+
         protected Sensor memoryUsageDedicated;
         protected Sensor memoryUsageShared;
         protected Sensor processMemoryUsageDedicated;
@@ -30,7 +32,7 @@ namespace OpenHardwareMonitor.Hardware
 
                     if (instances.Any())
                     {
-                        long maxRawValue = 0;
+                        float maxValue = 0;
                         int maxIndex = 0;
                         for (int i = 0; i < instances.Length; i++)
                         {
@@ -38,9 +40,9 @@ namespace OpenHardwareMonitor.Hardware
                             {
                                 var currentPerfCounter = new PerformanceCounter("GPU Adapter Memory", "Dedicated Usage", instances[i]);
 
-                                if (currentPerfCounter.RawValue > maxRawValue)
+                                if (currentPerfCounter.NextValue() > maxValue)
                                 {
-                                    maxRawValue = currentPerfCounter.RawValue;
+                                    maxValue = currentPerfCounter.NextValue();
                                     maxIndex = i;
                                 }
 

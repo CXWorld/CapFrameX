@@ -40,9 +40,9 @@ namespace CapFrameX.Test.PresentMonInterface
             while (true)
             {
                 Thread.Sleep(1000);
-                Console.WriteLine(dedicatedUsage.RawValue);
-                Console.WriteLine(shardUsage.RawValue);
-                Console.WriteLine(totalCommitted.RawValue);
+                Console.WriteLine(dedicatedUsage.NextValue());
+                Console.WriteLine(shardUsage.NextValue());
+                Console.WriteLine(totalCommitted.NextValue());
             }
         }
 
