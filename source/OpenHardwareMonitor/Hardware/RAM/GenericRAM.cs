@@ -25,8 +25,10 @@ namespace OpenHardwareMonitor.Hardware.RAM
         private Sensor usedMemory;
         private Sensor availableMemory;
         private Sensor usedMemoryProcess;
+        private Sensor usedMemoryAndCacheProcess;
         private ISensorConfig sensorConfig;
         private PerformanceCounter ramUsageGamePerformanceCounter;
+        private PerformanceCounter ramAndCacheUsageGamePerformanceCounter;
 
         public GenericRAM(string name, ISettings settings, ISensorConfig config, IRTSSService service)
           : base(name, new Identifier("ram"), settings)
@@ -49,13 +51,15 @@ namespace OpenHardwareMonitor.Hardware.RAM
 
                     if (process != null)
                     {
-                        // Working Set (private + shared)
-                        // Because of 32bit, all counters but "Working Set - Private" return a max value of 4GB usage.
+                        // Working Set - Private (private + shared)
                         ramUsageGamePerformanceCounter = new PerformanceCounter("Process", "Working Set - Private", process.ProcessName);
+                        // Working Set (private + cache)
+                        ramAndCacheUsageGamePerformanceCounter = new PerformanceCounter("Process", "Working Set", process.ProcessName);
                     }
                     else
                     {
                         ramUsageGamePerformanceCounter = null;
+                        ramAndCacheUsageGamePerformanceCounter = null;
                     }
                 });
             }
@@ -74,6 +78,10 @@ namespace OpenHardwareMonitor.Hardware.RAM
             usedMemoryProcess = new Sensor("Used Memory Game", 2, SensorType.Data, this,
               settings);
             ActivateSensor(usedMemoryProcess);
+
+            usedMemoryAndCacheProcess = new Sensor("Memory + Cache Game", 3, SensorType.Data, this,
+              settings);
+            ActivateSensor(usedMemoryAndCacheProcess);
         }
 
         public override HardwareType HardwareType
@@ -113,6 +121,12 @@ namespace OpenHardwareMonitor.Hardware.RAM
             {
                 usedMemoryProcess.Value = ramUsageGamePerformanceCounter != null
                     ? ramUsageGamePerformanceCounter.NextValue() / SCALE : 0f;
+            }
+
+            if (sensorConfig.GetSensorEvaluate(usedMemoryAndCacheProcess.IdentifierString))
+            {
+                usedMemoryAndCacheProcess.Value = ramAndCacheUsageGamePerformanceCounter != null
+                    ? ramAndCacheUsageGamePerformanceCounter.NextValue() / SCALE : 0f;
             }
         }
 
