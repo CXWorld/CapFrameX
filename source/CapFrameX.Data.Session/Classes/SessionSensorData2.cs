@@ -8,18 +8,20 @@ using System.Text;
 
 namespace CapFrameX.Data.Session.Classes
 {
-    public class SessionSensorEntry: ISessionSensorEntry {
+    public class SessionSensorEntry : ISessionSensorEntry
+    {
         public string Name { get; }
         public string Type { get; }
         public LinkedList<double> Values { get; } = new LinkedList<double>();
 
-        public SessionSensorEntry(string name, string type) {
+        public SessionSensorEntry(string name, string type)
+        {
             Name = name;
             Type = type;
         }
     }
 
-    public class SessionSensorData2: Dictionary<string, ISessionSensorEntry>, ISessionSensorData2
+    public class SessionSensorData2 : Dictionary<string, ISessionSensorEntry>, ISessionSensorData2
     {
         [JsonIgnore]
         public ISessionSensorEntry MeasureTime => this[nameof(MeasureTime)];
@@ -52,10 +54,13 @@ namespace CapFrameX.Data.Session.Classes
         [JsonIgnore]
         public double[] BetweenMeasureTimes { get => BetweenMeasureTime.Values.ToArray(); set => throw new NotImplementedException(); }
 
-        public SessionSensorData2()
+        public SessionSensorData2(bool initialAdd = true)
         {
-            Add("MeasureTime", new SessionSensorEntry("MeasureTime", "Time"));
-            Add("BetweenMeasureTime", new SessionSensorEntry("BetweenMeasureTime", "Time"));
+            if (initialAdd)
+            {
+                Add("MeasureTime", new SessionSensorEntry("MeasureTime", "Time"));
+                Add("BetweenMeasureTime", new SessionSensorEntry("BetweenMeasureTime", "Time"));
+            }
         }
     }
 }

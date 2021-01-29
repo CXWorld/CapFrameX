@@ -255,9 +255,9 @@ namespace CapFrameX.Data
                 {
                     JsonSerializer serializer = new JsonSerializer();
                     var session = serializer.Deserialize<Session.Classes.Session>(jsonReader);
-                    foreach(var sessionrun in session.Runs)
+                    foreach (var sessionrun in session.Runs)
                     {
-                        if(sessionrun.SensorData != null & sessionrun.SensorData2 == null)
+                        if (sessionrun.SensorData != null & sessionrun.SensorData2 == null)
                         {
                             SessionSensorDataConverter.ConvertToSensorData2(sessionrun);
                         }
@@ -513,11 +513,11 @@ namespace CapFrameX.Data
                     var dataIndicesToKeep = DetermineIndicesToKeep(sourceSessionRun.CaptureData.TimeInSeconds);
                     var sensorIndicesToKeep = DetermineIndicesToKeep(sourceSessionRun.SensorData2.MeasureTime.Values.ToArray());
                     SetArray(dataPropertyInfos, sourceSessionRun.CaptureData, clone.Runs[sessionRunIndex].CaptureData, dataIndicesToKeep);
-                    clone.Runs[sessionRunIndex].SensorData2 = new SessionSensorData2();
-                    foreach(var collection in sourceSessionRun.SensorData2)
+                    clone.Runs[sessionRunIndex].SensorData2 = new SessionSensorData2(initialAdd: false);
+                    foreach (var collection in sourceSessionRun.SensorData2)
                     {
                         var clonedSensorEntry = new SessionSensorEntry(collection.Value.Name, collection.Value.Type);
-                        foreach(var indexToKeep in sensorIndicesToKeep)
+                        foreach (var indexToKeep in sensorIndicesToKeep)
                         {
                             clonedSensorEntry.Values.AddLast(collection.Value.Values.ElementAt(indexToKeep));
                         }
