@@ -92,6 +92,6 @@ public:
 	void UpdateProfiles();	
 		//force all currently running 3D applications to reload the profiles
 private:
-	const CString RTSSHooksDllName = "RTSSHooks.dll";
+	const CString RTSSHooksDllName = "RTSSHooks64.dll";
 };
 //////////////////////////////////////////////////////////////////////
