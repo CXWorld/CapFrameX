@@ -465,10 +465,11 @@ namespace CapFrameX.Data
 
         public async Task DuplicateSession(ISession session, double startTime = 0, double endTime = double.PositiveInfinity)
         {
+            if (session == null)
+                return;
+
             try
             {
-
-
                 var json = JsonConvert.SerializeObject(session);
                 var clone = JsonConvert.DeserializeObject<Session.Classes.Session>(json);
 
