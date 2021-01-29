@@ -117,8 +117,8 @@ namespace CapFrameX.Overlay
                         }).Wait();
 
                         _rTSSService.ReleaseOSD();
-                        if (_appConfiguration.ToggleGlobalRTSSOSD)
-                            _rTSSService.OnOSDOff();
+                        //if (_appConfiguration.ToggleGlobalRTSSOSD)
+                        //    _rTSSService.OnOSDOff();
 
                         return Observable.Empty<IOverlayEntry[]>();
                     }

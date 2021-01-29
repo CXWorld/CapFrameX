@@ -50,8 +50,8 @@ namespace OpenHardwareMonitor.Hardware.RAM
                     if (process != null)
                     {
                         // Working Set (private + shared)
-                        // Virtual Bytes leads to constant 4GB usage in every case
-                        ramUsageGamePerformanceCounter = new PerformanceCounter("Process", "Working Set", process.ProcessName);
+                        // Because of 32bit, all counters but "Working Set - Private" return a max value of 4GB usage.
+                        ramUsageGamePerformanceCounter = new PerformanceCounter("Process", "Working Set - Private", process.ProcessName);
                     }
                     else
                     {

@@ -93,15 +93,15 @@ namespace CapFrameX.ViewModel
             }
         }
 
-        public bool ToggleGlobalRTSSOSD
-        {
-            get { return _appConfiguration.ToggleGlobalRTSSOSD; }
-            set
-            {
-                _appConfiguration.ToggleGlobalRTSSOSD = value;
-                RaisePropertyChanged();
-            }
-        }
+        //public bool ToggleGlobalRTSSOSD
+        //{
+        //    get { return _appConfiguration.ToggleGlobalRTSSOSD; }
+        //    set
+        //    {
+        //        _appConfiguration.ToggleGlobalRTSSOSD = value;
+        //        RaisePropertyChanged();
+        //    }
+        //}
 
         public string OverlayHotkeyString
         {
@@ -620,10 +620,10 @@ namespace CapFrameX.ViewModel
             {
                 IsOverlayActive = !IsOverlayActive;
 
-                if (_appConfiguration.ToggleGlobalRTSSOSD && !IsOverlayActive)
-                    _rTSSService.OnOSDOff();
-                if (_appConfiguration.ToggleGlobalRTSSOSD && IsOverlayActive)
-                    _rTSSService.OnOSDOn();
+                //if (_appConfiguration.ToggleGlobalRTSSOSD && !IsOverlayActive)
+                //    _rTSSService.OnOSDOff();
+                //if (_appConfiguration.ToggleGlobalRTSSOSD && IsOverlayActive)
+                //    _rTSSService.OnOSDOn();
             });
         }
 

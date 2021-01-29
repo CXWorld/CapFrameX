@@ -263,17 +263,17 @@
                                                         <ColumnDefinition Width="Auto"/>
                                                     </Grid.ColumnDefinitions>
 
-                                                    <TextBlock Margin="5" Grid.Row="0" Grid.Column="0" Text="CX OSD toggle" VerticalAlignment="Center"/>
+                                                    <TextBlock Margin="5" Grid.Row="0" Grid.Column="0" Text="CX overlay toggle" VerticalAlignment="Center"/>
                                                     <ToggleButton Margin="0 0 0 0" Grid.Row="0" Grid.Column="1" HorizontalAlignment="Right" IsChecked="{Binding IsOverlayActive, Mode=TwoWay}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTipService.ShowDuration="25000">
                                                         <ToggleButton.ToolTip>
                                                             <ToolTip>
-                                                                <TextBlock Width="275" Text="Activates or deactivates the OSD, same funtionality as the overlay hotkey." TextWrapping="Wrap">
+                                                                <TextBlock Width="275" Text="Activates or deactivates the CX overlay, same funtionality as the overlay hotkey." TextWrapping="Wrap">
                                                                 </TextBlock>
                                                             </ToolTip>
                                                         </ToggleButton.ToolTip>
                                                     </ToggleButton>
 
-                                                    <TextBlock Margin="5" Grid.Row="1" Grid.Column="0" Text="Link global OSD" VerticalAlignment="Center"/>
+                                                    <!--<TextBlock Margin="5" Grid.Row="1" Grid.Column="0" Text="Link global OSD" VerticalAlignment="Center"/>
                                                     <CheckBox Margin="5 0 0 0" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Center" IsChecked="{Binding ToggleGlobalRTSSOSD, Mode=TwoWay}" Style="{StaticResource MaterialDesignCheckBox}" ToolTipService.ShowDuration="25000">
                                                         <CheckBox.ToolTip>
                                                             <ToolTip>
@@ -281,13 +281,13 @@
                                                                 </TextBlock>
                                                             </ToolTip>
                                                         </CheckBox.ToolTip>
-                                                    </CheckBox>
+                                                    </CheckBox>-->
 
                                                     <TextBlock Margin="5" Grid.Row="2" Grid.Column="0" Text="Auto-disable OSD" VerticalAlignment="Center"/>
                                                     <CheckBox Margin="5 0 0 0" Grid.Row="2" Grid.Column="1" HorizontalAlignment="Center" IsChecked="{Binding AutoDisableOverlay, Mode=TwoWay}" Style="{StaticResource MaterialDesignCheckBox}" ToolTipService.ShowDuration="25000">
                                                         <CheckBox.ToolTip>
                                                             <ToolTip>
-                                                                <TextBlock Width="275" Text="If checked, the global RTSS OSD will be disabled when running a benchmark and enabled again once the benchmark is finished." TextWrapping="Wrap">
+                                                                <TextBlock Width="275" Text="If checked, the global RTSS OSD will be disabled while running a benchmark. For 32bit applications, only the CX overlay items will be disabled." TextWrapping="Wrap">
                                                                 </TextBlock>
                                                             </ToolTip>
                                                         </CheckBox.ToolTip>
