@@ -48,8 +48,9 @@ namespace CapFrameX.Data.Session.Converters
             InsertValues("GpuTemp", "GPU Core", "Temperature", sessionRun.SensorData.GpuTemp.Cast<object>());
             InsertValues("GpuUsage", "GPU Core", "Load", sessionRun.SensorData.GpuUsage.Cast<object>());
 
-            InsertValues("RamUsage", "Used Memory", "Data", sessionRun.SensorData.RamUsage.Cast<object>());
+            InsertValues("RamUsage", "Used Memory Game", "Data", sessionRun.SensorData.RamUsage.Cast<object>());
             InsertValues("VRamUsage", "GPU Memory Dedicated", "SmallData", sessionRun.SensorData.VRamUsage.Cast<object>());
+            InsertValues("VRamUsageGB", "GPU Memory Dedicated", "Data", sessionRun.SensorData.VRamUsageGB.Cast<object>());
         }
     }
 }

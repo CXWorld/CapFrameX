@@ -26,8 +26,10 @@ namespace CapFrameX.Data.Session.Contracts
 		int[] GpuTemp { get; set; }
 		[SensorDataExport("RAM usage(GB)")]
 		double[] RamUsage { get; set; }
-		[SensorDataExport("VRAM usage(GB)")]
+		[SensorDataExport("VRAM usage(MB)")]
 		int[] VRamUsage { get; set; }
+		[SensorDataExport("VRAM usage(GB)")]
+		double[] VRamUsageGB { get; set; }
 		double[] BetweenMeasureTimes { get; set; }
 	}
 

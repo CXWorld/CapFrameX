@@ -30,6 +30,8 @@ namespace CapFrameX.Data.Session.Classes
 		[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
 		public int[] VRamUsage { get; set; } = new int[] { };
 		[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+		public double[] VRamUsageGB { get; set; } = new double[] { };
+		[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
 		public double[] BetweenMeasureTimes { get; set; } = new double[] { };
 	}
 }

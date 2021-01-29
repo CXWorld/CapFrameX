@@ -67,6 +67,9 @@ namespace CapFrameX.Sensor.Reporting
                         case EReportSensorName.VRamUsage when HasValues(sessionsSensorData, session => session.VRamUsage, out var values):
                             AddSensorEntry(item, Math.Round(values.Average()), values.Min(), values.Max());
                             break;
+                        case EReportSensorName.VRamUsageGB when HasValues(sessionsSensorData, session => session.VRamUsageGB, out var values):
+                            AddSensorEntry(item, Math.Round(values.Average(), 2), Math.Round(values.Min(), 2), Math.Round(values.Max(), 2));
+                            break;
                         case EReportSensorName.RamUsage when HasValues(sessionsSensorData, session => session.RamUsage, out var values):
                             AddSensorEntry(item, Math.Round(values.Average(), 2), Math.Round(values.Min(), 2), Math.Round(values.Max(), 2));
                             break;
@@ -242,7 +245,7 @@ namespace CapFrameX.Sensor.Reporting
                 if (orderB == -1) orderB = order.Count;
 
                 return orderA.CompareTo(orderB);
-            })).ThenBy(entry => entry.Type.Replace("SmallData", "Z")).ThenBy(x => x.DisplayName.Replace("Package", " ").Length).ThenBy(x => x.DisplayName);
+            })).ThenBy(entry => entry.Type.Replace("SmallData", "Z").Replace("Data", "Z")).ThenBy(x => x.DisplayName.Replace("Package", " ").Length).ThenBy(x => x.DisplayName);
 
 
             return sensorDictOrdered;
