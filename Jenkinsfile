@@ -45,18 +45,14 @@ pipeline {
                 stage('Upload Installer') {
                     steps {
                         zip archive: false, dir: 'source/CapFrameXBootstrapper/bin/x64/Release', glob: 'CapFrameXBootstrapper.exe', zipFile: "${filename}_installer.zip"
-                        withCredentials([usernameColonPassword(credentialsId: 'nexus-admin', variable: 'credentials')]) {
-                            bat "curl -L --fail -k -v --user $credentials --upload-file ${filename}_installer.zip ${uploadPath}/${filename}_installer.zip"
-                        }
+						archiveArtifacts artifacts: '${filename}_installer.zip', followSymlinks: false
                     }
                 }
 
                 stage('Upload Portable') {
                     steps {
                         zip archive: false, dir: 'source/CapFrameX/bin/x64/Release', glob: '*', zipFile: "${filename}_portable.zip"
-                        withCredentials([usernameColonPassword(credentialsId: 'nexus-admin', variable: 'credentials')]) {
-                            bat "curl -L --fail -k -v --user $credentials --upload-file ${filename}_portable.zip ${uploadPath}/${filename}_portable.zip"
-                        }
+						archiveArtifacts artifacts: '${filename}_portable.zip', followSymlinks: false
                     }
                 }
             }
