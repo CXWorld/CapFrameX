@@ -46,21 +46,26 @@ namespace OpenHardwareMonitor.Hardware.RAM
                     try
                     {
                         process = Process.GetProcessById((int)id);
-                    }
-                    catch { }
 
-                    if (process != null)
-                    {
-                        // Working Set - Private (private + shared)
-                        ramUsageGamePerformanceCounter = new PerformanceCounter("Process", "Working Set - Private", process.ProcessName);
-                        // Working Set (private + cache)
-                        ramAndCacheUsageGamePerformanceCounter = new PerformanceCounter("Process", "Working Set", process.ProcessName);
+                        if (process != null)
+                        {
+                            // Working Set - Private
+                            ramUsageGamePerformanceCounter = new PerformanceCounter("Process", "Working Set - Private", process.ProcessName);
+                            // Working Set (private + resources)
+                            ramAndCacheUsageGamePerformanceCounter = new PerformanceCounter("Process", "Working Set", process.ProcessName);
+                        }
+                        else
+                        {
+                            ramUsageGamePerformanceCounter = null;
+                            ramAndCacheUsageGamePerformanceCounter = null;
+                        }
                     }
-                    else
+                    catch
                     {
                         ramUsageGamePerformanceCounter = null;
                         ramAndCacheUsageGamePerformanceCounter = null;
                     }
+
                 });
             }
 

@@ -374,7 +374,10 @@ namespace CapFrameX.Data
                 lines = new string[] { IGNOREFLAGMARKER, COLUMN_HEADER }.Concat(lines);
                 File.WriteAllLines(filePath + ".csv", lines);
             }
-            catch (Exception) { }
+            catch (Exception ex) 
+            {
+                _logger.LogError(ex, "Error while saving PresentMon raw file.");
+            }
         }
 
         public async Task<bool> SaveSessionRunsToFile(IEnumerable<ISessionRun> runs, string processName, string recordDirectory = null)
@@ -524,7 +527,7 @@ namespace CapFrameX.Data
                         }
                         clone.Runs[sessionRunIndex].SensorData2.Add(collection.Key, clonedSensorEntry);
                     }
-                    targetSessionRun.Hash = Convert.ToString(targetSessionRun.GetHashCode()); // Dirty Hack weil Rohdaten nicht mehr vorhanden. Hash ist nicht vergleichbar mit dem Hash, welcher aus den PresentMonLines erstellt wird
+                    targetSessionRun.Hash = Convert.ToString(targetSessionRun.GetHashCode()); // Dirty Hack weil (weil Alex Hacks mag) Rohdaten nicht mehr vorhanden. Hash ist nicht vergleichbar mit dem Hash, welcher aus den PresentMonLines erstellt wird
                 }
 
                 clone.Hash = string.Join(",", clone.Runs.Select(r => r.Hash).OrderBy(h => h)).GetSha1();
