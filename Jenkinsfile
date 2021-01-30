@@ -45,14 +45,14 @@ pipeline {
                 stage('Upload Installer') {
                     steps {
                         zip archive: false, dir: 'source/CapFrameXBootstrapper/bin/x64/Release', glob: 'CapFrameXBootstrapper.exe', zipFile: "${filename}_installer.zip"
-						archiveArtifacts artifacts: '${filename}_installer.zip', followSymlinks: false
+						azureUpload blobProperties: [cacheControl: '', contentEncoding: '', contentLanguage: '', contentType: '', detectContentType: true], containerName: 'builds/${JOB_NAME}', fileShareName: '', filesPath: '${filename}_installer.zip', storageCredentialId: 'cxblobs-azure-storage', storageType: 'blobstorage'
                     }
                 }
 
                 stage('Upload Portable') {
                     steps {
                         zip archive: false, dir: 'source/CapFrameX/bin/x64/Release', glob: '*', zipFile: "${filename}_portable.zip"
-						archiveArtifacts artifacts: '${filename}_portable.zip', followSymlinks: false
+						azureUpload blobProperties: [cacheControl: '', contentEncoding: '', contentLanguage: '', contentType: '', detectContentType: true], containerName: 'builds/${JOB_NAME}', fileShareName: '', filesPath: '${filename}_portable.zip', storageCredentialId: 'cxblobs-azure-storage', storageType: 'blobstorage'
                     }
                 }
             }
