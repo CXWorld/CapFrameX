@@ -49,6 +49,7 @@ namespace CapFrameX.ViewModel
 
 		private bool _useUpdateSession;
 		private ISession _session;
+		private ISession _previousSession;
 		private SeriesCollection _statisticCollection;
 		private SeriesCollection _lShapeCollection;
 		private SeriesCollection _stutteringStatisticCollection;
@@ -1214,12 +1215,15 @@ namespace CapFrameX.ViewModel
 		public void OnNavigatedTo(NavigationContext navigationContext)
 		{
 			_useUpdateSession = true;
+			if (_session == null || _session != _previousSession)
+			{ 
 			try
 			{
 				UpdateAnalysisPage();
 			}
 			catch
 			{ return; }
+			}
 		}
 
 		public bool IsNavigationTarget(NavigationContext navigationContext)
@@ -1229,6 +1233,7 @@ namespace CapFrameX.ViewModel
 
 		public void OnNavigatedFrom(NavigationContext navigationContext)
 		{
+            _previousSession = _session;
 			_useUpdateSession = false;
 		}
 	}
