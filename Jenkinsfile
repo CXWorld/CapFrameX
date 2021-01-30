@@ -45,14 +45,14 @@ pipeline {
                 stage('Upload Installer') {
                     steps {
                         zip archive: false, dir: 'source/CapFrameXBootstrapper/bin/x64/Release', glob: 'CapFrameXBootstrapper.exe', zipFile: "${filename}_installer.zip"
-						azureUpload blobProperties: [cacheControl: '', contentEncoding: '', contentLanguage: '', contentType: '', detectContentType: true], containerName: 'builds/${JOB_NAME}', fileShareName: '', filesPath: '${filename}_installer.zip', storageCredentialId: 'cxblobs-azure-storage', storageType: 'blobstorage'
+						azureUpload blobProperties: [cacheControl: '', contentEncoding: '', contentLanguage: '', contentType: '', detectContentType: true], containerName: 'builds', fileShareName: '', filesPath: '${filename}_installer.zip', storageCredentialId: 'cxblobs-azure-storage', storageType: 'blobstorage', virtualPath: '${JOB_NAME}/${BUILD_NUMBER}/'
                     }
                 }
 
                 stage('Upload Portable') {
                     steps {
                         zip archive: false, dir: 'source/CapFrameX/bin/x64/Release', glob: '*', zipFile: "${filename}_portable.zip"
-						azureUpload blobProperties: [cacheControl: '', contentEncoding: '', contentLanguage: '', contentType: '', detectContentType: true], containerName: 'builds/${JOB_NAME}', fileShareName: '', filesPath: '${filename}_portable.zip', storageCredentialId: 'cxblobs-azure-storage', storageType: 'blobstorage'
+						azureUpload blobProperties: [cacheControl: '', contentEncoding: '', contentLanguage: '', contentType: '', detectContentType: true], containerName: 'builds', fileShareName: '', filesPath: '${filename}_portable.zip', storageCredentialId: 'cxblobs-azure-storage', storageType: 'blobstorage', virtualPath: '${JOB_NAME}/${BUILD_NUMBER}/'
                     }
                 }
             }
