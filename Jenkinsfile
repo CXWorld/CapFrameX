@@ -51,7 +51,7 @@ pipeline {
 
                 stage('Upload Archives') {
                     steps {
-						azureUpload blobProperties: [cacheControl: '', contentEncoding: '', contentLanguage: '', contentType: '', detectContentType: true], containerName: 'builds', fileShareName: '', filesPath: '*.zip', storageCredentialId: 'cxblobs-azure-storage', storageType: 'blobstorage', virtualPath: '${JOB_NAME}/${BUILD_NUMBER}/'
+						azureUpload blobProperties: [cacheControl: '', contentEncoding: '', contentLanguage: '', contentType: '', detectContentType: true], containerName: 'builds', fileShareName: '', filesPath: '*.zip', storageCredentialId: 'cxblobs-azure-storage', storageType: 'blobstorage', virtualPath: '${env.GIT_BRANCH}/${BUILD_NUMBER}/'
                     }
                 }
             }
