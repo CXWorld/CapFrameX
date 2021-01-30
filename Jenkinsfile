@@ -40,6 +40,7 @@ pipeline {
 			environment {
                 filename = getFilename()
                 uploadPath = getUploadPath()
+				branch = getBranch()
 			}
             stages {
                 stage('Create Archive') {
@@ -51,12 +52,15 @@ pipeline {
 
                 stage('Upload Archives') {
                     steps {
-						azureUpload blobProperties: [cacheControl: '', contentEncoding: '', contentLanguage: '', contentType: '', detectContentType: true], containerName: 'builds', fileShareName: '', filesPath: '*.zip', storageCredentialId: 'cxblobs-azure-storage', storageType: 'blobstorage', virtualPath: '${env.GIT_BRANCH}/${BUILD_NUMBER}/'
+						azureUpload blobProperties: [cacheControl: '', contentEncoding: '', contentLanguage: '', contentType: '', detectContentType: true], containerName: 'builds', fileShareName: '', filesPath: '*.zip', storageCredentialId: 'cxblobs-azure-storage', storageType: 'blobstorage', virtualPath: "${branch}/${BUILD_NUMBER}/"
                     }
                 }
             }
 		}
     }
+}
+def getBranch() {
+	return "${env.GIT_BRANCH}";
 }
 
 def getFilename() {
