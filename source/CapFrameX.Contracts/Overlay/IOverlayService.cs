@@ -28,8 +28,6 @@ namespace CapFrameX.Contracts.Overlay
 
 		void SetCaptureServiceStatus(string status);
 
-		void SetShowRunHistory(bool showHistory);
-
 		void ResetHistory();
 
 		void AddRunToHistory(ISessionRun captureData, string process, string recordDirectory);

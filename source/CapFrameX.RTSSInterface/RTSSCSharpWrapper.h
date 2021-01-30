@@ -293,6 +293,11 @@ public:
 		_coreControl->CloseHandles();
 	}
 
+	void SetShowRunHistory(bool showRunHistory)
+	{
+		_coreControl->ShowRunHistory = showRunHistory;
+	}
+
 private:
 	RTSSCoreControl* _coreControl;
 	Action<Exception^>^ _exceptionAction;

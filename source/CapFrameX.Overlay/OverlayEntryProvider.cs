@@ -234,18 +234,24 @@ namespace CapFrameX.Overlay
                 {
                     if (!_overlayEntryCore.RealtimeMetricEntryDict.ContainsKey("OnlineAverage"))
                         _overlayEntryCore.RealtimeMetricEntryDict.Add("OnlineAverage", entry);
+                    else
+                        _overlayEntryCore.RealtimeMetricEntryDict["OnlineAverage"] = entry;
                 }
 
                 if (entry.Identifier == "OnlineP1")
                 {
                     if (!_overlayEntryCore.RealtimeMetricEntryDict.ContainsKey("OnlineP1"))
                         _overlayEntryCore.RealtimeMetricEntryDict.Add("OnlineP1", entry);
+                    else
+                        _overlayEntryCore.RealtimeMetricEntryDict["OnlineP1"] = entry;
                 }
 
                 if (entry.Identifier == "OnlineP0dot2")
                 {
                     if (!_overlayEntryCore.RealtimeMetricEntryDict.ContainsKey("OnlineP0dot2"))
                         _overlayEntryCore.RealtimeMetricEntryDict.Add("OnlineP0dot2", entry);
+                    else
+                        _overlayEntryCore.RealtimeMetricEntryDict["OnlineP0dot2"] = entry;
                 }
             }
 

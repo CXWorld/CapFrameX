@@ -29,5 +29,6 @@ namespace CapFrameX.Contracts.RTSS
         void OnOSDOff();
         void OnOSDToggle();
         void CloseHandles();
+        void SetShowRunHistory(bool showRunHistory);
     }
 }

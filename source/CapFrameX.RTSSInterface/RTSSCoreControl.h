@@ -45,6 +45,7 @@ public:
 	CString						GetApiInfo(DWORD processId);
 	std::vector<float>		    GetCurrentFramerate(DWORD processId);
 	std::vector<float>			GetCurrentFramerateFromForegroundWindow();
+	BOOL						ShowRunHistory;
 
 // Implementation
 protected:

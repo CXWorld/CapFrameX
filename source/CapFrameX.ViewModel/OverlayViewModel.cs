@@ -254,6 +254,7 @@ namespace CapFrameX.ViewModel
             set
             {
                 _appConfiguration.UseRunHistory = value;
+                _rTSSService.SetShowRunHistory(value);
                 OnUseRunHistoryChanged();
                 RaisePropertyChanged();
             }
@@ -489,11 +490,13 @@ namespace CapFrameX.ViewModel
             OverlaySubModelGroupControl = new OverlayGroupControl(this);
             OverlaySubModelGroupSeparating = new OverlayGroupSeparating(this);
 
+            _rTSSService.SetShowRunHistory(UseRunHistory);
+
             ConfigSwitchCommand = new DelegateCommand<object>(_configSubject.OnNext);
             _configSubject
                 .Select(obj =>
                 {
-                   return Convert.ToInt32(obj);
+                    return Convert.ToInt32(obj);
                 })
                 .DistinctUntilChanged()
                 .SelectMany(index =>

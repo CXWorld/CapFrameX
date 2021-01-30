@@ -199,16 +199,6 @@ namespace CapFrameX.Overlay
             }
         }
 
-        public void SetShowRunHistory(bool showHistory)
-        {
-            var history = _overlayEntryProvider.GetOverlayEntry("RunHistory");
-            if (history != null)
-            {
-                history.ShowOnOverlay = showHistory;
-                _rTSSService.SetOverlayEntry(history);
-            }
-        }
-
         public void ResetHistory()
         {
             _runHistory = Enumerable.Repeat("N/A", _numberOfRuns).ToList();

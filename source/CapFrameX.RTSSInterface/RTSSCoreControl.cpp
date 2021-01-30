@@ -730,7 +730,7 @@ void RTSSCoreControl::AddOverlayEntry(CGroupedString* groupedString, OverlayEntr
 	// ToDo: When more special cases, better use switch-case with string/index mapping table
 	if (entry->Identifier == "RunHistory")
 	{
-		if (entry->ShowOnOverlay)
+		if (entry->ShowOnOverlay && ShowRunHistory)
 		{
 			for (int i = 0; i < RunHistory.size(); i++)
 			{
