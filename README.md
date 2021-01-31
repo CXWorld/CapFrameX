@@ -29,6 +29,9 @@ Download link: https://github.com/DevTechProfile/CapFrameX/releases
 ![Screenshot](Images/07_comparison_bar.png)
 ![Screenshot](Images/08_comparison_graph.png)
 
+# Sensor
+![Screenshot](Images/08b_sensor.png)
+
 # Synchronization (Input lag)
 ![Screenshot](Images/10_sync_IL.png)
 ![Screenshot](Images/11_sync_DT.png)
@@ -66,7 +69,6 @@ The screenshot button takes a screenshot of the current view excluding the recor
 ![Screenshot](Images/01_global_options.png)
 * Graph filter window size = The time period in which the filtered FPS graphs are being averaged(Analysis & Comparison View)
 * FPS values decimals = The number of decimals for the FPS values
-* Stuttering factor = The factor a frametime has to be above average to be counted as stutter.(Analysis View)
 * Start with windows & Start minimized = Autostart option and starting in tray
 * Screenshot directory = The directory in which your screenshots are saved.
 * Hardware info source = What will be written into the capture file as your CPU, GPU and RAM config.  
@@ -126,8 +128,8 @@ At the tops you can choose between frametime graphs, FPS graphs and L-shapes.
 For the frametime graphs you can set a y-axis scale so that you are always looking at the same ms range for each record.  
 For the FPS graphs you can choose a filter mode so that you can either see the raw FPS data or a time based average filter to see a more clear FPS trendline.
 Below that you have your performance parameters like min, max, avg and percentiles on the left.  
-On the right you have three tabs, the first one is a pie chart which shows the amount of time you had stuttering (frametimes above 2.5x average(default)), the second one is a diagramm where you can see how many frames were below or above specific FPS thresholds.
-If you chose to log sensor data for a record, two additional options are enabled: You can see the min, avg and max values of various sensors over the course of the benchmark as well as adding additional graphs to show you CPU and GPU load directly in the frametime chart.  
+On the right you have three tabs, the first one is a pie chart which shows the amount of time you had stuttering (frametimes above 2.5x average(default)) or low FPS(frametimes above converted 25FPS(default), the second one is a diagramm where you can see how many frames were below or above specific FPS thresholds.
+If you chose to log sensor data for a record, two additional options are enabled: You can see the min, avg and max values of some basic sensors over the course of the benchmark as well as adding additional graphs to show you CPU and GPU load directly in the frametime chart.  
 At the bottom is a toolbar where you can change the performance parameters, toggle the additional sensor data graphs, remove unusual outliers from the graphs and activate a range slider that you can also use to cut a record and saving it as a new file.
 On the very right side of the page, there is a "System info" expander which shows all the HW and SW information available for the selected benchmark.
 
@@ -169,6 +171,10 @@ Copy values| Right mouse button context menu |
 
 You can also zoom/pan a single axis by positioning the mouse cursor over the axis before starting the zoom/pan.  
 This manual is also available through the context menu.
+
+## Sensor View
+In this view you can choose to log sensor data along with your frametimes. You can freely select any number of sensors available and when selecting a record that contains sensor data, all sensor values are displayed in the list on the right.
+These values can be copied to clipboard via context menu, either as min/avg/max values like seen in the list or as raw values with every single sensor reading included.
 
 ## Report view
 This is a simple view where you can add your records to see all the relevant parameters all at once. You can also just copy them with a right-click to add them into any other programm. This is also possible for the graphs and performance parameters in the single record view.
