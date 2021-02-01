@@ -35,9 +35,6 @@ namespace CapFrameX.ViewModel
         private readonly IEventAggregator _eventAggregator;
         private readonly ISensorService _sensorService;
         private readonly IRTSSService _rTSSService;
-        private IKeyboardMouseEvents _globalOverlayHookEvent;
-        private IKeyboardMouseEvents _globalOverlayConfigHookEvent;
-        private IKeyboardMouseEvents _globalResetHistoryHookEvent;
         private int _selectedOverlayEntryIndex = -1;
         private IOverlayEntry _selectedOverlayEntry;
         private IOverlayEntryFormatChange _checkboxes = new OverlayEntryFormatChange();

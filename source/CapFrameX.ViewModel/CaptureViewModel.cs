@@ -55,7 +55,6 @@ namespace CapFrameX.ViewModel
         private string _captureTimeString = "0";
         private string _captureStartDelayString = "0";
         private double _captureTime;
-        private IKeyboardMouseEvents _globalCaptureHookEvent;
         private string _loggerOutput = string.Empty;
         private PlotModel _frametimeModel;
         private string _lastCapturedProcess;
