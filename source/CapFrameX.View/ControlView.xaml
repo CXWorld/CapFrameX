@@ -100,6 +100,7 @@
 					  ItemsSource="{Binding Source={StaticResource RecordInfoListKey}}"
                       SelectedItemsList="{Binding SelectedRecordInfos, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                       SelectedItem="{Binding SelectedRecordInfo}" CanUserSortColumns="True" CanUserAddRows="False" AutoGenerateColumns="False"
+                      PreviewLostKeyboardFocus="RecordDataGrid_PreviewLostKeyboardFocus"
 					  materialDesign:DataGridAssist.CellPadding="13 8 8 8" materialDesign:DataGridAssist.ColumnHeaderPadding="8" IsSynchronizedWithCurrentItem="False"
 					  ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.CanContentScroll="True"
 					  dragdrop:DragDrop.IsDragSource="True"
@@ -221,10 +222,10 @@
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
-                        <DataGridTextColumn Binding="{Binding Comment, Mode=OneWay}"
+                        <DataGridTextColumn Binding="{Binding Comment, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
 										Width="100"
                                         Header="Comment"
-                                        IsReadOnly="True">
+                                        IsReadOnly="False">
                             <DataGridTextColumn.ElementStyle>
                                 <Style>
                                     <Setter Property="TextBlock.VerticalAlignment" Value="Center" />

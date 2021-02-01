@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Automation.Peers;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
@@ -20,9 +21,21 @@ namespace CapFrameX.MVVM.Dialogs
 	/// </summary>
 	public partial class CreateFolderDialog : UserControl
 	{
-		public CreateFolderDialog()
+        private readonly Action createDirectoryAction;
+
+        public CreateFolderDialog(Action createDirectoryAction)
 		{
 			InitializeComponent();
+            this.createDirectoryAction = createDirectoryAction;
+        }
+
+        private void TextBox_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+			if (e.Key != Key.Enter)
+				return;
+
+			createDirectoryAction();
+			e.Handled = true;
 		}
-	}
+    }
 }

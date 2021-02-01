@@ -64,6 +64,7 @@ namespace CapFrameX.ViewModel
             get { return _selectedRecordInfo; }
             set
             {
+
                 _selectedRecordInfo = value;
                 OnSelectedRecordInfoChanged();
                 RaisePropertyChanged();
@@ -297,7 +298,7 @@ namespace CapFrameX.ViewModel
 
             RecordDataGridSelectedIndex = -1;
 
-            CreateFolderDialogContent = new CreateFolderDialog();
+            CreateFolderDialogContent = new CreateFolderDialog(() => OnCreateSubFolder());
 
             SetAggregatorEvents();
             SubscribeToCloudFolderChanged();

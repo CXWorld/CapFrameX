@@ -17,9 +17,9 @@
             <ColumnDefinition Width="1*"></ColumnDefinition>
         </Grid.ColumnDefinitions>
         <TextBox Margin="10" VerticalAlignment="Center" Grid.Row="0" Grid.ColumnSpan="2"  materialDesign:HintAssist.Hint="New subfolder name"
-                 Text="{Binding TreeViewSubFolderName}" FontSize="16" >
+                 Text="{Binding TreeViewSubFolderName,UpdateSourceTrigger=PropertyChanged}" FontSize="16"  PreviewKeyDown="TextBox_PreviewKeyDown">
         </TextBox>
-        <Button Margin="0 0 0 15" Grid.Row="1" Grid.Column="0" Width="80" Height="30" Content="Create"
+        <Button Name="CreateButton" Margin="0 0 0 15" Grid.Row="1" Grid.Column="0" Width="80" Height="30" Content="Create"
                 Command="{Binding CreateFolderCommand}">
         </Button>
         <Button  Margin="0 0 0 15" Grid.Row="1" Grid.Column="1" Width="80" Height="30" Content="Cancel"

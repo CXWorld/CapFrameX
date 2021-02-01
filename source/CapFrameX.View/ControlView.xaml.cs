@@ -14,6 +14,7 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
+using CapFrameX.View.Controls;
 
 namespace CapFrameX.View
 {
@@ -22,19 +23,23 @@ namespace CapFrameX.View
 	/// </summary>
 	public partial class ControlView : UserControl
 	{
+		private ControlViewModel _viewModel => DataContext as ControlViewModel;
+
 		private const int SEARCH_REFRESH_DELAY_MS = 100;
 		private readonly CollectionViewSource _recordInfoCollection;
 
 		private bool CreateFolderDialogIsOpen;
 
 		private string ObservedDirectory
-			=> (DataContext as ControlViewModel).AppConfiguration.ObservedDirectory;
+			=> _viewModel.AppConfiguration.ObservedDirectory;
 		private string CaptureRootDirectory
-			=> (DataContext as ControlViewModel).AppConfiguration.CaptureRootDirectory;
+			=> _viewModel.AppConfiguration.CaptureRootDirectory;
 
 		private string DefaultPath = Path.Combine
 						(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
 						@"CapFrameX\Captures\");
+
+
 
 		public ControlView()
 		{
@@ -46,9 +51,9 @@ namespace CapFrameX.View
 				.ObserveOnDispatcher()
 				.Subscribe(t => _recordInfoCollection.View.Refresh());
 
-			(DataContext as ControlViewModel).TreeViewUpdateStream.Subscribe(_ => BuildTreeView());
+			_viewModel.TreeViewUpdateStream.Subscribe(_ => BuildTreeView());
 
-			(DataContext as ControlViewModel).CreateFolderdialogIsOpenStream
+			_viewModel.CreateFolderdialogIsOpenStream
 				.SelectMany(isOpen => {
 					if(isOpen)
 					{
@@ -59,7 +64,7 @@ namespace CapFrameX.View
 				.Subscribe(isOpen => CreateFolderDialogIsOpen = isOpen);
 
 			BuildTreeView();
-			SetSortSettings((DataContext as ControlViewModel).AppConfiguration);
+			SetSortSettings(_viewModel.AppConfiguration);
 
 			Observable.FromEventPattern(Expander, "MouseLeave")
 				.Where(_ => !trvStructure.ContextMenu.IsOpen)
@@ -83,11 +88,11 @@ namespace CapFrameX.View
 			if (!directoryFound)
 			{
 				if (Directory.Exists(ObservedDirectory))
-					(DataContext as ControlViewModel).RootDirectory = ObservedDirectory;
+					_viewModel.RootDirectory = ObservedDirectory;
 				else
 				{
-					(DataContext as ControlViewModel).AppConfiguration.ObservedDirectory = DefaultPath;				
-					(DataContext as ControlViewModel).RootDirectory = DefaultPath;
+					_viewModel.AppConfiguration.ObservedDirectory = DefaultPath;
+					_viewModel.RootDirectory = DefaultPath;
 				}
 				BuildTreeView();
 			}
@@ -181,7 +186,7 @@ namespace CapFrameX.View
 		private void RecordDataGrid_Sorting(object sender, DataGridSortingEventArgs e)
 		{
 			var dataGrid = (DataGrid)sender;
-			var appConfiguration = (DataContext as ControlViewModel).AppConfiguration;
+			var appConfiguration = _viewModel.AppConfiguration;
 			var collectionView = CollectionViewSource.GetDefaultView(dataGrid.ItemsSource);
 
 			ListSortDirection direction = ListSortDirection.Ascending;
@@ -236,7 +241,7 @@ namespace CapFrameX.View
 
 		private void DataGridRow_MouseDoubleClick(object sender, MouseButtonEventArgs e)
 		{
-			(DataContext as ControlViewModel).OnRecordSelectByDoubleClick();
+			_viewModel.OnRecordSelectByDoubleClick();
 		}
 
 		private void ScrollViewer_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
@@ -251,7 +256,7 @@ namespace CapFrameX.View
 		private void TreeViewItem_Selected(object sender, RoutedEventArgs e)
 		{
 			TreeViewItem item = e.Source as TreeViewItem;
-			(DataContext as ControlViewModel).RecordObserver.ObserveDirectory((item.Tag as DirectoryInfo).FullName);
+			_viewModel.RecordObserver.ObserveDirectory((item.Tag as DirectoryInfo).FullName);
 		}
 
 		private string ExtractFullPath(string path)
@@ -267,7 +272,7 @@ namespace CapFrameX.View
 
 		private void RootFolder_PreviewMouseDown(object sender, MouseButtonEventArgs e)
 		{
-			var result = (DataContext as ControlViewModel).OnSelectRootFolder();
+			var result = _viewModel.OnSelectRootFolder();
 			if (result)
 			{
 				BuildTreeView();
@@ -299,8 +304,22 @@ namespace CapFrameX.View
 				return;
 
 			Keyboard.ClearFocus();
-			(DataContext as ControlViewModel).SaveDescriptions();
+			_viewModel.SaveDescriptions();
 			e.Handled = true;
 		}
-	}
+
+        private void RecordDataGrid_PreviewLostKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
+        {
+			var myCell = (sender as MultiSelectionDataGrid).CurrentCell;
+			if (myCell.Column.Header.ToString() == "Comment")
+			{
+				if(_viewModel.CustomComment != _viewModel.SelectedRecordInfo.Comment)
+                {
+					_viewModel.CustomComment = _viewModel.SelectedRecordInfo.Comment;
+					_viewModel.SaveDescriptions();
+				}
+
+			}
+		}
+    }
 }
