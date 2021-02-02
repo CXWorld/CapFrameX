@@ -14,6 +14,7 @@ using System.Reactive.Linq;
 using System.Runtime.InteropServices;
 using System;
 using System.Diagnostics;
+using Serilog;
 
 namespace OpenHardwareMonitor.Hardware.RAM
 {
@@ -35,38 +36,51 @@ namespace OpenHardwareMonitor.Hardware.RAM
         {
             sensorConfig = config;
 
-            if (PerformanceCounterCategory.Exists("Process"))
+            try
             {
-                service
-                .ProcessIdStream
-                .DistinctUntilChanged()
-                .Subscribe(id =>
+                if (PerformanceCounterCategory.Exists("Process"))
                 {
-                    Process process = null;
-                    try
+                    service
+                    .ProcessIdStream
+                    .DistinctUntilChanged()
+                    .Subscribe(id =>
                     {
-                        process = Process.GetProcessById((int)id);
-
-                        if (process != null)
+                        Process process = null;
+                        try
                         {
+                            process = Process.GetProcessById((int)id);
+
+                            if (process != null)
+                            {
                             // Working Set - Private
                             ramUsageGamePerformanceCounter = new PerformanceCounter("Process", "Working Set - Private", process.ProcessName);
                             // Working Set (private + resources)
                             ramAndCacheUsageGamePerformanceCounter = new PerformanceCounter("Process", "Working Set", process.ProcessName);
+                            }
+                            else
+                            {
+                                Log.Logger.Error("Failed to get process by Id={Id}.", id);
+                                ramUsageGamePerformanceCounter = null;
+                                ramAndCacheUsageGamePerformanceCounter = null;
+                            }
                         }
-                        else
+                        catch
                         {
+                            Log.Logger.Error("Failed to get process by Id={Id}.", id);
                             ramUsageGamePerformanceCounter = null;
                             ramAndCacheUsageGamePerformanceCounter = null;
                         }
-                    }
-                    catch
-                    {
-                        ramUsageGamePerformanceCounter = null;
-                        ramAndCacheUsageGamePerformanceCounter = null;
-                    }
 
-                });
+                    });
+                }
+                else
+                {
+                    Log.Logger.Error("Failed to create memory performance counter. Category Process does not exist.");
+                }
+            }
+            catch(Exception ex)
+            {
+                Log.Logger.Error(ex, "Failed to create memory performance counter.");
             }
 
             loadSensor = new Sensor("Memory", 0, SensorType.Load, this, settings);
