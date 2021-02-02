@@ -10,7 +10,7 @@
              xmlns:mvvm="clr-namespace:CapFrameX.MVVM.Converter;assembly=CapFrameX.MVVM"
              xmlns:controls="clr-namespace:CapFrameX.View.Controls"	
 			 xmlns:wpf="clr-namespace:MaterialDesignThemes.Wpf;assembly=MaterialDesignThemes.Wpf"
-			 xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
+			 xmlns:i="clr-namespace:Microsoft.Xaml.Behaviors;assembly=Microsoft.Xaml.Behaviors"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800"
 			 Background="{DynamicResource MaterialDesignPaper}"
@@ -24,6 +24,7 @@
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ToggleButton.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.DataGrid.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Slider.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Expander.xaml" />
             </ResourceDictionary.MergedDictionaries>
             <CollectionViewSource x:Key="RecordInfoListKey" Source="{Binding RecordInfoList}" Filter="RecordInfoListOnFilter"/>
             <mvvm:AddValueConverter x:Key="AddValueConverter" Offset="-315"/>
@@ -39,15 +40,15 @@
             <RowDefinition Height="270"></RowDefinition>
         </Grid.RowDefinitions>
         <!--Record folder management expander-->
-        <Expander Name="Expander" Margin="0 10 0 0" MaxWidth="350" Background="#e6e6e6" Grid.Row="0" Panel.ZIndex="1" ExpandDirection="Right" HorizontalAlignment="Left">
+        <Expander Name="Expander" Margin="0 10 0 0" MaxWidth="350" Grid.Row="0" Panel.ZIndex="1" ExpandDirection="Right" HorizontalAlignment="Left">
             <Expander.Header>
-                <TextBlock  Text="Observed directory" RenderTransformOrigin=".5,.5">
+                <TextBlock Text="Observed directory" RenderTransformOrigin=".5,.5">
                     <TextBlock.LayoutTransform>
                         <RotateTransform Angle="90" />
                     </TextBlock.LayoutTransform>
                 </TextBlock>
             </Expander.Header>
-            <materialDesign:DialogHost  Margin="5 0 5 0"
+            <materialDesign:DialogHost Margin="5 0 5 0"
 									   IsOpen="{Binding CreateFolderDialogIsOpen}"
 									   DialogContent="{Binding CreateFolderDialogContent}"
 									   CloseOnClickAway="False">
@@ -82,8 +83,9 @@
         </Expander>
         <!--Record list-->
         <Border Visibility="{Binding HasValidSource, Converter={StaticResource FalseToVisibleConverter}}" Margin="0 10 5 0" BorderBrush="#e6e6e6" BorderThickness="1" Background="#F5F5F5">
+            <!--Style="{StaticResource MaterialDesignHeadlineTextBlock}"-->
             <TextBlock Text="Observed directory missing.&#10;Open expander and select a folder." TextAlignment="Center"
-                       TextWrapping="Wrap" Width="220" Margin="60 0 10 0" HorizontalAlignment="Center" VerticalAlignment="Center" Style="{StaticResource MaterialDesignHeadlineTextBlock}" />
+                       TextWrapping="Wrap" Width="220" Margin="60 0 10 0" HorizontalAlignment="Center" VerticalAlignment="Center"/>
         </Border>
         <StackPanel Margin="50 0 0 0" Grid.Row="0"  Orientation="Vertical" >
             <Grid  Visibility="{Binding HasValidSource, Converter={StaticResource FalseToCollapsedConverter}}">

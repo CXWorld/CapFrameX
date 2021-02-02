@@ -6,8 +6,6 @@
 			 xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
 			 xmlns:prism="http://prismlibrary.com/"
              xmlns:mvvm="clr-namespace:CapFrameX.MVVM.Converter;assembly=CapFrameX.MVVM"
-			 xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
-             xmlns:local="clr-namespace:CapFrameX.View"
 			 xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
              mc:Ignorable="d"
 			 x:Name="ColorbarViewName"
@@ -170,10 +168,10 @@
                                                 </Binding>
                                             </ComboBox.Text>
                                         </ComboBox>
-                                        <!--<StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="15 5 0 5" Grid.Row="1" Grid.Column="0">
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="15 5 0 5" Grid.Row="1" Grid.Column="1">
                                             <TextBlock Text="Dark mode"/>
                                             <ToggleButton Margin="15 0 0 0" Click="MenuDarkModeButton_Click"/>
-                                        </StackPanel>-->
+                                        </StackPanel>
                                         <StackPanel Grid.Row="1" Grid.Column="0" Margin="20 5 0 5" Orientation="Horizontal"
                                             ToolTip="Select resolution for graph export(via context menu)">
                                             <TextBlock Margin="0 0 10 0" VerticalAlignment="Center" HorizontalAlignment="Center"> Graph export res.</TextBlock>
