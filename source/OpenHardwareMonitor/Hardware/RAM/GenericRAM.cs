@@ -52,10 +52,10 @@ namespace OpenHardwareMonitor.Hardware.RAM
 
                             if (process != null)
                             {
-                            // Working Set - Private
-                            ramUsageGamePerformanceCounter = new PerformanceCounter("Process", "Working Set - Private", process.ProcessName);
-                            // Working Set (private + resources)
-                            ramAndCacheUsageGamePerformanceCounter = new PerformanceCounter("Process", "Working Set", process.ProcessName);
+                                // Working Set - Private
+                                ramUsageGamePerformanceCounter = new PerformanceCounter("Process", "Working Set - Private", process.ProcessName);
+                                // Working Set (private + resources)
+                                ramAndCacheUsageGamePerformanceCounter = new PerformanceCounter("Process", "Working Set", process.ProcessName);
                             }
                             else
                             {
@@ -66,7 +66,7 @@ namespace OpenHardwareMonitor.Hardware.RAM
                         }
                         catch
                         {
-                            Log.Logger.Error("Failed to get process by Id={Id}.", id);
+                            Log.Logger.Error("Failed to create performance counter Working Set or Working Set - Private");
                             ramUsageGamePerformanceCounter = null;
                             ramAndCacheUsageGamePerformanceCounter = null;
                         }
@@ -78,7 +78,7 @@ namespace OpenHardwareMonitor.Hardware.RAM
                     Log.Logger.Error("Failed to create memory performance counter. Category Process does not exist.");
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Log.Logger.Error(ex, "Failed to create memory performance counter.");
             }
