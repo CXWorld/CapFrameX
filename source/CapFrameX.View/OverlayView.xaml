@@ -704,7 +704,7 @@
                     <!--Aggregation of run history toogle-->
                     <StackPanel Margin="0 -20 0 0" Grid.Row="23" Grid.ColumnSpan="2" HorizontalAlignment="Center" VerticalAlignment="Top">
                         <TextBlock Text="Aggregation of run history" Margin="5"/>
-                        <ToggleButton IsChecked="{Binding UseAggregation}" Style="{StaticResource MaterialDesignSwitchToggleButton}" IsEnabled="{Binding UseRunHistory}" 
+                        <ToggleButton IsChecked="{Binding UseAggregation}" Style="{StaticResource MaterialDesignSwitchToggleButton}" IsEnabled="{Binding AggregationButtonEnabled}" 
                                   ToolTipService.ShowDuration="25000">
                             <ToggleButton.ToolTip>
                                 <ToolTip MaxWidth="350">
