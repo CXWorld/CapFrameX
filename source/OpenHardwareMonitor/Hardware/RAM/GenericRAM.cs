@@ -66,9 +66,9 @@ namespace OpenHardwareMonitor.Hardware.RAM
                         }
                         catch
                         {
-                            Log.Logger.Error("Failed to create performance counter Working Set or Working Set - Private");
                             ramUsageGamePerformanceCounter = null;
                             ramAndCacheUsageGamePerformanceCounter = null;
+                            Log.Logger.Error("Failed to create performance counter Working Set or Working Set - Private");
                         }
 
                     });
