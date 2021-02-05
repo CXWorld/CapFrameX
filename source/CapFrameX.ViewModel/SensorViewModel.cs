@@ -24,6 +24,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Threading;
 
 namespace CapFrameX.ViewModel
 {
@@ -37,12 +38,17 @@ namespace CapFrameX.ViewModel
         private readonly ILogger<SensorViewModel> _logger;
         private readonly CaptureManager _captureManager;
         private readonly IRecordManager _recordManager;
+        private readonly ApplicationState _applicationState;
         private ISession _session;
+        private ISession _previousSession;
         private int _selectedSensorEntryIndex;
         private SensorEntryWrapper _selectedSensorEntry;
         private bool _saveButtonIsEnable;
         private bool _isActive;
-        private bool _aggregateButtonIsEnable = false;
+        private bool _aggregateButtonIsEnable = true;
+        private string _aggregationButtonText = "Evaluate" + Environment.NewLine + "multiple entries";
+        private string _sensorStatisticsText = "Sensor statistics for selected record";
+        private bool _selectedRecordChanged;
 
         public IFileRecordInfo RecordInfo { get; private set; }
 
@@ -105,10 +111,31 @@ namespace CapFrameX.ViewModel
 
         public bool AggregateButtonIsEnable
         {
-            get { return true; }
+            get { return _aggregateButtonIsEnable; }
             set
             {
                 _aggregateButtonIsEnable = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public bool CopyRawSensorsEnable { get; set; }
+
+        public string AggregateButtonText
+        {
+            get { return _aggregationButtonText; }
+            set
+            {
+                _aggregationButtonText = value;
+                RaisePropertyChanged();
+            }
+        }
+        public string SensorStatisticsText
+        {
+            get { return _sensorStatisticsText; }
+            set
+            {
+                _sensorStatisticsText = value;
                 RaisePropertyChanged();
             }
         }
@@ -139,7 +166,8 @@ namespace CapFrameX.ViewModel
             ISensorEntryProvider sensorEntryProvider,
             ILogger<SensorViewModel> logger,
             CaptureManager captureManager,
-            IRecordManager recordManager)
+            IRecordManager recordManager,
+            ApplicationState applicationState)
         {
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -151,6 +179,7 @@ namespace CapFrameX.ViewModel
             _logger = logger;
             _captureManager = captureManager;
             _recordManager = recordManager;
+            _applicationState = applicationState;
             _localRecordDataServer = new LocalRecordDataServer(appConfiguration);
             // define submodels
             SensorSubModelGroupControl = new SensorGroupControl(this);
@@ -165,7 +194,29 @@ namespace CapFrameX.ViewModel
             CopySensorInfoCommand = new DelegateCommand(OnCopySensorInfo);
             CopyRawSensorInfoCommand = new DelegateCommand(OnCopyRawSensorInfo);
             ResetToDefaultCommand = new DelegateCommand(OnResetToDefault);
-            AggregateSensorEntries = new DelegateCommand(OnAggregateSensors);
+            AggregateSensorEntries = new DelegateCommand(() =>
+            {
+                Task.Run(() =>
+                {
+                    if (_applicationState.SelectedRecords.Count > 1)
+                    {
+                        AggregateButtonText = "Working";
+                        AggregateButtonIsEnable = false;
+                        CopyRawSensorsEnable = false;
+                        _selectedRecordChanged = false;
+                        var sessions = _applicationState.SelectedRecords.Select(ri =>
+                    {
+                        var session = _recordManager.LoadData(ri.FileInfo.FullName);
+                        return session;
+                    });
+
+                        AggregateSensorDataOfSessions(sessions);
+                        AggregateButtonText = "Evaluate" + Environment.NewLine + "multiple entries";
+                        SensorStatisticsText = "Sensor statistics for multiple selected records";
+                        AggregateButtonIsEnable = true;
+                    }
+                });
+            });
             _sensorEntryProvider.ConfigChanged = () => SaveButtonIsEnable = true;
 
             Task.Run(async () => await SetWrappedSensorEntries());
@@ -203,36 +254,44 @@ namespace CapFrameX.ViewModel
                                 _session = msg.CurrentSession;
                                 RecordInfo = msg.RecordInfo;
                                 UpdateSensorSessionReport(msg.CurrentSession);
+                                CopyRawSensorsEnable = true;
+                                _selectedRecordChanged = true;
+                                SensorStatisticsText = "Sensor statistics for selected record";
                             });
         }
 
         private void UpdateSensorSessionReport(ISession session)
         {
-            SensorReportItems.Clear();
+                SensorReportItems.Clear();
 
-            if (RecordInfo == null || !_isActive)
-                return;
-           
-            var items = SensorReport.GetFullReportFromSessionSensorData(session.Runs.Select(run => run.SensorData2));
-            foreach (var item in items)
-            {
-                SensorReportItems.Add(item);
-            };
+                if (RecordInfo == null || !_isActive)
+                    return;
+
+                var items = SensorReport.GetFullReportFromSessionSensorData(session.Runs.Select(run => run.SensorData2));
+                foreach (var item in items)
+                {
+                    SensorReportItems.Add(item);
+                };
         }
 
         private void AggregateSensorDataOfSessions(IEnumerable<ISession> sessions)
         {
-            var clonedSessions = sessions.Select(session => JsonConvert.DeserializeObject<Session>(JsonConvert.SerializeObject(session)));
-            var runs = clonedSessions.SelectMany(s => s.Runs);
+            var runs = sessions.SelectMany(s => s.Runs);
             _recordManager.NormalizeStartTimesOfSessionRuns(runs);
 
             var items = SensorReport.GetFullReportFromSessionSensorData(runs.Select(r => r.SensorData2));
 
-            SensorReportItems.Clear();
-            foreach (var item in items)
+            if (!_selectedRecordChanged)
             {
-                SensorReportItems.Add(item);
-            };
+                Application.Current.Dispatcher.Invoke(() =>
+            {
+                SensorReportItems.Clear();
+                foreach (var item in items)
+                {
+                    SensorReportItems.Add(item);
+                };
+            });
+            }
         }
 
         private void OnCopySensorInfo()
@@ -240,11 +299,9 @@ namespace CapFrameX.ViewModel
             if (RecordInfo == null)
                 return;
 
-            var sensorInfos = SensorReport.GetFullReportFromSessionSensorData(_session.Runs.Select(run => run.SensorData2));
-
             StringBuilder builder = new StringBuilder();
 
-            foreach (var sensorInfo in sensorInfos)
+            foreach (var sensorInfo in SensorReportItems)
             {
                 builder.Append(sensorInfo.Name + "\t" + sensorInfo.MinValue + "\t" +
                 sensorInfo.AverageValue + "\t" + sensorInfo.MaxValue + Environment.NewLine);
@@ -271,18 +328,14 @@ namespace CapFrameX.ViewModel
 
             for (int i = 0; i < data.First().Values.Count(); i++)
             {
-                builder.AppendLine(string.Join("\t", data.Select(x => {
+                builder.AppendLine(string.Join("\t", data.Select(x =>
+                {
                     SensorReport.roundingDictionary.TryGetValue(x.Type, out var roundingDigit);
-                    return Math.Round(x.Values[i], roundingDigit);
+                    return Math.Round(x.Values.ElementAtOrDefault(i), roundingDigit);
                 })));
             }
 
             Clipboard.SetDataObject(builder.ToString(), false);
-        }
-
-        private void OnAggregateSensors()
-        {
-
         }
 
         public bool IsNavigationTarget(NavigationContext navigationContext)
@@ -292,13 +345,15 @@ namespace CapFrameX.ViewModel
 
         public void OnNavigatedFrom(NavigationContext navigationContext)
         {
+            _previousSession = _session;
             _isActive = false;
         }
 
         public void OnNavigatedTo(NavigationContext navigationContext)
         {
             _isActive = true;
-            UpdateSensorSessionReport(_session);
+            if(_session?.Hash != _previousSession?.Hash)
+                UpdateSensorSessionReport(_session);
         }
     }
 }

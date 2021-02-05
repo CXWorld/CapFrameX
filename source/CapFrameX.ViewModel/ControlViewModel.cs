@@ -37,11 +37,11 @@ namespace CapFrameX.ViewModel
         private readonly ISystemInfo _systemInfo;
         private readonly ProcessList _processList;
         private readonly ILogger<ControlViewModel> _logger;
+        private readonly ApplicationState _applicationState;
         private PubSubEvent<ViewMessages.UpdateSession> _updateSessionEvent;
         private PubSubEvent<ViewMessages.SelectSession> _selectSessionEvent;
         private PubSubEvent<ViewMessages.UpdateRecordInfos> _updateRecordInfosEvent;
         private IFileRecordInfo _selectedRecordInfo;
-        private IList _selectedRecordInfos;
         private string _customCpuDescription;
         private string _customGpuDescription;
         private string _customRamDescription;
@@ -73,10 +73,10 @@ namespace CapFrameX.ViewModel
 
         public IList SelectedRecordInfos
         {
-            get { return _selectedRecordInfos; }
+            get { return _applicationState.SelectedRecords as IList; }
             set
             {
-                _selectedRecordInfos = value;
+                _applicationState.SelectedRecords = value.Cast<IFileRecordInfo>().ToList();
                 RaisePropertyChanged();
             }
         }
@@ -255,7 +255,8 @@ namespace CapFrameX.ViewModel
                                 IAppConfiguration appConfiguration, RecordManager recordManager,
                                 ISystemInfo systemInfo,
                                 ProcessList processList,
-                                ILogger<ControlViewModel> logger)
+                                ILogger<ControlViewModel> logger,
+                                ApplicationState applicationState)
         {
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -267,6 +268,7 @@ namespace CapFrameX.ViewModel
             _systemInfo = systemInfo;
             _processList = processList;
             _logger = logger;
+            _applicationState = applicationState;
 
             //Commands
             DeleteRecordFileCommand = new DelegateCommand(OnDeleteRecordFile);
@@ -618,17 +620,17 @@ namespace CapFrameX.ViewModel
         {
             if (!ObjectExtensions.IsAllNotNull(CustomCpuDescription,
                 CustomGpuDescription, CustomRamDescription, CustomGameName,
-                CustomComment, _selectedRecordInfo, _selectedRecordInfos))
+                CustomComment, _selectedRecordInfo, _applicationState.SelectedRecords))
                 return;
 
-            if (_selectedRecordInfos.Count == 1)
+            if (_applicationState.SelectedRecords.Count == 1)
             {
                 _recordManager.UpdateCustomData(_selectedRecordInfo, CustomCpuDescription,
                     CustomGpuDescription, CustomRamDescription, CustomGameName, CustomComment);
             }
-            else if (_selectedRecordInfos.Count > 1)
+            else if (_applicationState.SelectedRecords.Count > 1)
             {
-                foreach (var recordInfoObject in _selectedRecordInfos)
+                foreach (var recordInfoObject in _applicationState.SelectedRecords)
                 {
                     var recordInfo = recordInfoObject as IFileRecordInfo;
                     var session = _recordManager.LoadData(recordInfo.FullPath);
