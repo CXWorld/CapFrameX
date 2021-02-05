@@ -2,6 +2,7 @@
 using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.Sensor;
 using CapFrameX.Data;
+using CapFrameX.Data.Session.Classes;
 using CapFrameX.Data.Session.Contracts;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Sensor;
@@ -9,11 +10,13 @@ using CapFrameX.Sensor.Reporting;
 using CapFrameX.Sensor.Reporting.Contracts;
 using CapFrameX.ViewModel.SubModels;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Mvvm;
 using Prism.Regions;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
@@ -33,7 +36,7 @@ namespace CapFrameX.ViewModel
         private readonly IRecordDataServer _localRecordDataServer;
         private readonly ILogger<SensorViewModel> _logger;
         private readonly CaptureManager _captureManager;
-
+        private readonly IRecordManager _recordManager;
         private ISession _session;
         private int _selectedSensorEntryIndex;
         private SensorEntryWrapper _selectedSensorEntry;
@@ -122,7 +125,8 @@ namespace CapFrameX.ViewModel
             ISensorService sensorService,
             ISensorEntryProvider sensorEntryProvider,
             ILogger<SensorViewModel> logger,
-            CaptureManager captureManager)
+            CaptureManager captureManager,
+            IRecordManager recordManager)
         {
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -133,7 +137,7 @@ namespace CapFrameX.ViewModel
             _sensorEntryProvider = sensorEntryProvider;
             _logger = logger;
             _captureManager = captureManager;
-
+            _recordManager = recordManager;
             _localRecordDataServer = new LocalRecordDataServer(appConfiguration);
             // define submodels
             SensorSubModelGroupControl = new SensorGroupControl(this);
@@ -196,6 +200,21 @@ namespace CapFrameX.ViewModel
                 return;
            
             var items = SensorReport.GetFullReportFromSessionSensorData(session.Runs.Select(run => run.SensorData2));
+            foreach (var item in items)
+            {
+                SensorReportItems.Add(item);
+            };
+        }
+
+        private void AggregateSensorDataOfSessions(IEnumerable<ISession> sessions)
+        {
+            var clonedSessions = sessions.Select(session => JsonConvert.DeserializeObject<Session>(JsonConvert.SerializeObject(session)));
+            var runs = clonedSessions.SelectMany(s => s.Runs);
+            _recordManager.NormalizeStartTimesOfSessionRuns(runs);
+
+            var items = SensorReport.GetFullReportFromSessionSensorData(runs.Select(r => r.SensorData2));
+
+            SensorReportItems.Clear();
             foreach (var item in items)
             {
                 SensorReportItems.Add(item);

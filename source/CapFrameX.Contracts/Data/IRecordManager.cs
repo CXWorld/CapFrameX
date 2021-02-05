@@ -22,5 +22,6 @@ namespace CapFrameX.Contracts.Data
 		ISessionRun ConvertPresentDataLinesToSessionRun(IEnumerable<string> presentLines);
 
 		Task SavePresentmonRawToFile(IEnumerable<string> lines, string process, string recordDirectory);
+		void NormalizeStartTimesOfSessionRuns(IEnumerable<ISessionRun> sessionRuns);
 	}
 }
