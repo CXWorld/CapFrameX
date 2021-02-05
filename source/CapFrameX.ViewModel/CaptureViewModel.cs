@@ -327,11 +327,14 @@ namespace CapFrameX.ViewModel
 
         private void SubscribeToUpdateProcessIgnoreList()
         {
-            _processList.ProcessesUpdate.StartWith(default(int)).Subscribe(_ =>
-            {
-                ProcessesToIgnore.Clear();
-                ProcessesToIgnore.AddRange(_processList.GetIgnoredProcessNames());
-            });
+            _processList.ProcessesUpdate
+                .StartWith(default(int))
+                .ObserveOnDispatcher()
+                .Subscribe(_ =>
+                {
+                    ProcessesToIgnore.Clear();
+                    ProcessesToIgnore.AddRange(_processList.GetIgnoredProcessNames());
+                });
         }
 
         private void SubscribeToGlobalCaptureHookEvent()
