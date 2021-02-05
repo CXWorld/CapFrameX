@@ -265,6 +265,18 @@
                                             IsReadOnly="True"/>
                         </DataGrid.Columns>
                     </DataGrid>
+                    <Button Grid.Row="1"  Width="150" Height="45"
+					Command="{Binding AggregateSensorEntries}" IsEnabled="{Binding AggregateButtonIsEnable}"
+                    ToolTipService.ShowDuration="25000">
+                        <TextBlock Text="Evaluate&#10;multiple entries" TextWrapping="Wrap" TextAlignment="Center"/>
+                        <Button.ToolTip>
+                            <ToolTip MaxWidth="250">
+                                <TextBlock
+                             Text="Show sensor statistics averaged for all entries currently selected in the record list." 
+                             TextWrapping="Wrap"/>
+                            </ToolTip>
+                        </Button.ToolTip>
+                    </Button>
                 </Grid>
             </DockPanel>
         </Border>

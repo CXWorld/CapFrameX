@@ -42,6 +42,7 @@ namespace CapFrameX.ViewModel
         private SensorEntryWrapper _selectedSensorEntry;
         private bool _saveButtonIsEnable;
         private bool _isActive;
+        private bool _aggregateButtonIsEnable = false;
 
         public IFileRecordInfo RecordInfo { get; private set; }
 
@@ -102,6 +103,16 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        public bool AggregateButtonIsEnable
+        {
+            get { return true; }
+            set
+            {
+                _aggregateButtonIsEnable = value;
+                RaisePropertyChanged();
+            }
+        }
+
         public Array LoggingPeriodItemsSource => new[] { 250, 500 };
 
         public ObservableCollection<SensorEntryWrapper> SensorEntries { get; }
@@ -117,6 +128,8 @@ namespace CapFrameX.ViewModel
         public ICommand CopySensorInfoCommand { get; }
 
         public ICommand CopyRawSensorInfoCommand { get; }
+
+        public ICommand AggregateSensorEntries { get; }
 
         public SensorGroupControl SensorSubModelGroupControl { get; }
 
@@ -152,6 +165,7 @@ namespace CapFrameX.ViewModel
             CopySensorInfoCommand = new DelegateCommand(OnCopySensorInfo);
             CopyRawSensorInfoCommand = new DelegateCommand(OnCopyRawSensorInfo);
             ResetToDefaultCommand = new DelegateCommand(OnResetToDefault);
+            AggregateSensorEntries = new DelegateCommand(OnAggregateSensors);
             _sensorEntryProvider.ConfigChanged = () => SaveButtonIsEnable = true;
 
             Task.Run(async () => await SetWrappedSensorEntries());
@@ -264,6 +278,11 @@ namespace CapFrameX.ViewModel
             }
 
             Clipboard.SetDataObject(builder.ToString(), false);
+        }
+
+        private void OnAggregateSensors()
+        {
+
         }
 
         public bool IsNavigationTarget(NavigationContext navigationContext)
