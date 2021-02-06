@@ -157,6 +157,11 @@ namespace CapFrameX.Contracts.Configuration
 
 		bool ReportShowAverageRow { get; set; }
 
+		IReportDataGridColumnSettings ReportDataGridColumnSettings { get; set; }
+	}
+
+	public interface IReportDataGridColumnSettings
+    {
 		bool ReportShowCreationDate { get; set; }
 
 		bool ReportShowCreationTime { get; set; }
@@ -202,5 +207,7 @@ namespace CapFrameX.Contracts.Configuration
 		bool ReportShowCpuFpsPerWatt { get; set; }
 
 		bool ReportShowGpuFpsPerWatt { get; set; }
+
+		IReportDataGridColumnSettings Clone();
 	}
 }

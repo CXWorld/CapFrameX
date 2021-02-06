@@ -470,141 +470,10 @@ namespace CapFrameX.Configuration
 			set => Set(value);
 		}
 
-		public bool ReportShowCreationDate
-		{
-			get => Get<bool>(true);
-			set => Set(value);
-		}
-
-		public bool ReportShowCreationTime
-		{
-			get => Get<bool>(true);
-			set => Set(value);
-		}
-
-		public bool ReportShowNumberOfSamples
-		{
-			get => Get<bool>(false);
-			set => Set(value);
-		}
-
-		public bool ReportShowRecordTime
-		{
-			get => Get<bool>(true);
-			set => Set(value);
-		}
-
-		public bool ReportShowCpuName
-		{
-			get => Get<bool>(false);
-			set => Set(value);
-		}
-
-		public bool ReportShowGpuName
-		{
-			get => Get<bool>(false);
-			set => Set(value);
-		}
-
-		public bool ReportShowRamName
-		{
-			get => Get<bool>(false);
-			set => Set(value);
-		}
-
-		public bool ReportShowComment
-		{
-			get => Get<bool>(true);
-			set => Set(value);
-		}
-
-		public bool ReportShowMaxFPS
-		{
-			get => Get<bool>(true);
-			set => Set(value);
-		}
-
-		public bool ReportShowP99FPS
-		{
-			get => Get<bool>(true);
-			set => Set(value);
-		}
-
-		public bool ReportShowP95FS
-		{
-			get => Get<bool>(true);
-			set => Set(value);
-		}
-
-		public bool ReportShowMedianFPS
-		{
-			get => Get<bool>(true);
-			set => Set(value);
-		}
-		public bool ReportShowAverageFPS
-		{
-			get => Get<bool>(true);
-			set => Set(value);
-		}
-
-		public bool ReportShowP5FPS
-		{
-			get => Get<bool>(true);
-			set => Set(value);
-		}
-
-		public bool ReportShowP1FPS
-		{
-			get => Get<bool>(true);
-			set => Set(value);
-		}
-
-		public bool ReportShowP0Dot2FPS
-		{
-			get => Get<bool>(true);
-			set => Set(value);
-		}
-
-		public bool ReportShowP0Dot1FPS
-		{
-			get => Get<bool>(true);
-			set => Set(value);
-		}
-
-		public bool ReportShowP1LowFPS
-		{
-			get => Get<bool>(true);
-			set => Set(value);
-		}
-
-		public bool ReportShowP0Dot1LowFPS
-		{
-			get => Get<bool>(true);
-			set => Set(value);
-		}
-
-		public bool ReportShowMinFPS
-		{
-			get => Get<bool>(true);
-			set => Set(value);
-		}
-
-		public bool ReportShowAdaptiveSTD
-		{
-			get => Get<bool>(true);
-			set => Set(value);
-		}
-
-		public bool ReportShowCpuFpsPerWatt
-		{
-			get => Get<bool>(true);
-			set => Set(value);
-		}
-
-		public bool ReportShowGpuFpsPerWatt
-		{
-			get => Get<bool>(true);
-			set => Set(value);
+		public IReportDataGridColumnSettings ReportDataGridColumnSettings
+        {
+			get => Get<ReportDataGridColumnSettings>(new ReportDataGridColumnSettings());
+			set => Set(value.Clone());
 		}
 
 
@@ -671,6 +540,38 @@ namespace CapFrameX.Configuration
         {
             _settingsStorage = settingsStorage;
 			_settingsStorage.Load().Wait();
+        }
+	}
+
+    public class ReportDataGridColumnSettings : IReportDataGridColumnSettings
+    {
+		public bool ReportShowCreationDate { get; set; } = true;
+        public bool ReportShowCreationTime {get; set; } = true;
+		public bool ReportShowNumberOfSamples {get; set; }
+        public bool ReportShowRecordTime {get; set; }
+		public bool ReportShowCpuName {get; set; }
+        public bool ReportShowGpuName {get; set; }
+        public bool ReportShowRamName {get; set; }
+        public bool ReportShowComment {get; set; } = true;
+		public bool ReportShowMaxFPS {get; set; } = true;
+		public bool ReportShowP99FPS {get; set; } = true;
+		public bool ReportShowP95FS {get; set; } = true;
+		public bool ReportShowMedianFPS {get; set; } = true;
+		public bool ReportShowAverageFPS {get; set; } = true;
+		public bool ReportShowP5FPS {get; set; } = true;
+		public bool ReportShowP1FPS {get; set; } = true;
+		public bool ReportShowP0Dot2FPS {get; set; } = true;
+		public bool ReportShowP0Dot1FPS {get; set; } = true;
+		public bool ReportShowP1LowFPS {get; set; } = true;
+		public bool ReportShowP0Dot1LowFPS {get; set; } = true;
+		public bool ReportShowMinFPS {get; set; } = true;
+		public bool ReportShowAdaptiveSTD {get; set; } = true;
+		public bool ReportShowCpuFpsPerWatt {get; set; } = true;
+		public bool ReportShowGpuFpsPerWatt {get; set; } = true;
+
+		public IReportDataGridColumnSettings Clone()
+        {
+			return (ReportDataGridColumnSettings)this.MemberwiseClone();
         }
 	}
 }

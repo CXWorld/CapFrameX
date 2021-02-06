@@ -22,6 +22,8 @@ using CapFrameX.Statistics.NetStandard.Contracts;
 using CapFrameX.Sensor.Reporting;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;
+using System.Windows.Controls;
+using System.ComponentModel;
 
 namespace CapFrameX.ViewModel
 {
@@ -314,6 +316,31 @@ namespace CapFrameX.ViewModel
 
             if (ReportShowAverageRow)
                 AddAverageReportInfo(ReportInfoCollection);
+        }
+
+        public void OnGridSorting(object sender, DataGridSortingEventArgs e)
+        {
+            switch (e.Column.SortDirection)
+            {
+                case ListSortDirection.Ascending:
+                    e.Column.SortDirection = ListSortDirection.Descending;
+                    break;
+
+                case ListSortDirection.Descending:
+                    e.Column.SortDirection = ListSortDirection.Ascending;
+                    break;
+
+                default:
+                    e.Column.SortDirection = ListSortDirection.Ascending;
+                    break;
+            }
+
+            var column = e.Column.SortMemberPath;
+            var propertyInfo = typeof(ReportInfo).GetProperty(column);
+            ReportInfoCollection.Sort(c => propertyInfo.GetValue(c), e.Column.SortDirection);
+
+            var averageRow = ReportInfoCollection.FirstOrDefault(x => x.Game == "Averaged values");
+            ReportInfoCollection.Move(ReportInfoCollection.IndexOf(averageRow), ReportInfoCollection.Count - 1);
         }
 
         public bool IsNavigationTarget(NavigationContext navigationContext)
