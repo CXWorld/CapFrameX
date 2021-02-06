@@ -470,12 +470,6 @@ namespace CapFrameX.Configuration
 			set => Set(value);
 		}
 
-		public bool ReportShowResolution
-		{
-			get => Get<bool>(false);
-			set => Set(value);
-		}
-
 		public bool ReportShowCreationDate
 		{
 			get => Get<bool>(true);

@@ -157,8 +157,6 @@ namespace CapFrameX.Contracts.Configuration
 
 		bool ReportShowAverageRow { get; set; }
 
-		bool ReportShowResolution { get; set; }
-
 		bool ReportShowCreationDate { get; set; }
 
 		bool ReportShowCreationTime { get; set; }

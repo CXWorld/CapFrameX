@@ -5,7 +5,6 @@ namespace CapFrameX.ViewModel
 {
     public partial class ReportViewModel
     {
-        private bool _showResolution;
         private bool _showCreationDate;
         private bool _showCreationTime;
         private bool _showNumberOfSamples;
@@ -32,7 +31,6 @@ namespace CapFrameX.ViewModel
 
         partial void InitializeReportParameters()
         {
-            ShowResolution = _appConfiguration.ReportShowResolution;
             ShowCreationDate = _appConfiguration.ReportShowCreationDate;
             ShowCreationTime = _appConfiguration.ReportShowCreationTime;
             ShowNumberOfSamples = _appConfiguration.ReportShowNumberOfSamples;
@@ -58,17 +56,6 @@ namespace CapFrameX.ViewModel
             ShowGpuFpsPerWatt = _appConfiguration.ReportShowGpuFpsPerWatt;
         }
 
-        public bool ShowResolution
-        {
-            get { return _showResolution; }
-            set
-            {
-                _showResolution = value;
-                _appConfiguration.ReportShowResolution = value;
-
-                RaisePropertyChanged();
-            }
-        }
         public bool ShowCreationDate
         {
             get { return _showCreationDate; }
