@@ -16,7 +16,7 @@ namespace CapFrameX.Data
 		public string RecordTime { get; set; }
 		[DisplayName("CPU")]
 		public string Cpu { get; set; }
-		[DisplayName("Graphic card")]
+		[DisplayName("GPU")]
 		public string GraphicCard { get; set; }
 		[DisplayName("RAM")]
 		public string Ram { get; set; }

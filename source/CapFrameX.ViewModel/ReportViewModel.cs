@@ -340,7 +340,8 @@ namespace CapFrameX.ViewModel
             ReportInfoCollection.Sort(c => propertyInfo.GetValue(c), e.Column.SortDirection);
 
             var averageRow = ReportInfoCollection.FirstOrDefault(x => x.Game == "Averaged values");
-            ReportInfoCollection.Move(ReportInfoCollection.IndexOf(averageRow), ReportInfoCollection.Count - 1);
+            if (averageRow != null)
+                ReportInfoCollection.Move(ReportInfoCollection.IndexOf(averageRow), ReportInfoCollection.Count - 1);
         }
 
         public bool IsNavigationTarget(NavigationContext navigationContext)
