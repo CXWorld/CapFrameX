@@ -76,6 +76,7 @@ namespace CapFrameX
 			Container.Register<ISettingsStorage, JsonSettingsStorage>(Reuse.Singleton);
 			Container.Register<IAppConfiguration, CapFrameXConfiguration>(Reuse.Singleton);
 			Container.RegisterInstance<IFrametimeStatisticProviderOptions>(Container.Resolve<IAppConfiguration>());
+			Container.RegisterInstance(new ApplicationState(), Reuse.Singleton);
 
 			// Prism
 			Container.Register<IRegionManager, RegionManager>(Reuse.Singleton, null, null, IfAlreadyRegistered.Replace, "RegionManager");

@@ -1114,9 +1114,7 @@ namespace CapFrameX.ViewModel
 					}
 				};
 
-#pragma warning disable IDE0034 // simplify "default" expression
-				ResetLShapeChart.OnNext(default(Unit));
-#pragma warning restore IDE0034 // simplify "default" expression
+				ResetLShapeChart.OnNext(default);
 			}));
 		}
 
@@ -1215,7 +1213,7 @@ namespace CapFrameX.ViewModel
 		public void OnNavigatedTo(NavigationContext navigationContext)
 		{
 			_useUpdateSession = true;
-			if (_session == null || _session != _previousSession)
+			if (_session == null || _session?.Hash != _previousSession?.Hash)
 			{ 
 			try
 			{

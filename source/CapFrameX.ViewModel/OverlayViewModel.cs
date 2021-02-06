@@ -188,6 +188,9 @@ namespace CapFrameX.ViewModel
                     value;
 
                 _overlayService.UpdateNumberOfRuns(value);
+                if (value == 1)
+                    UseAggregation = false;
+                RaisePropertyChanged(nameof(AggregationButtonEnabled));
                 RaisePropertyChanged();
             }
         }
@@ -253,6 +256,7 @@ namespace CapFrameX.ViewModel
                 _appConfiguration.UseRunHistory = value;
                 _rTSSService.SetShowRunHistory(value);
                 OnUseRunHistoryChanged();
+                RaisePropertyChanged(nameof(AggregationButtonEnabled));
                 RaisePropertyChanged();
             }
         }
@@ -269,6 +273,15 @@ namespace CapFrameX.ViewModel
                 _appConfiguration.UseAggregation =
                     value;
                 RaisePropertyChanged();
+            }
+        }
+
+        
+        public bool AggregationButtonEnabled
+        {
+            get
+            {
+                return (UseRunHistory && SelectedNumberOfRuns > 1);
             }
         }
 
@@ -454,7 +467,7 @@ namespace CapFrameX.ViewModel
                                              .Where(metric => metric != EMetric.Average)
                                              .ToArray();
 
-        public Array NumberOfRunsItemsSource => Enumerable.Range(2, 9).ToArray();
+        public Array NumberOfRunsItemsSource => Enumerable.Range(1, 20).ToArray();
 
         public Array OutlierPercentageItemsSource => Enumerable.Range(1, 9).ToArray();
 
@@ -589,7 +602,7 @@ namespace CapFrameX.ViewModel
         private void OnUseRunHistoryChanged()
         {
             var historyEntry = _overlayEntryProvider.GetOverlayEntry("RunHistory");
-
+            
             if (!UseRunHistory)
             {
                 UseAggregation = false;

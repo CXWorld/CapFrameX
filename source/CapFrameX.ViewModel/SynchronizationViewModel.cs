@@ -53,6 +53,7 @@ namespace CapFrameX.ViewModel
         private string[] _inputLagHistogramLabels;
         private bool _useUpdateSession;
         private ISession _session;
+        private ISession _previousSession;
         private IFileRecordInfo _recordInfo;
         private string _currentGameName;
         private string _syncRangePercentage = "0%";
@@ -797,7 +798,7 @@ namespace CapFrameX.ViewModel
         {
             _useUpdateSession = true;
 
-            if (_session != null && _recordInfo != null)
+            if (_session != null && _recordInfo != null && _session?.Hash != _previousSession?.Hash)
             {
                 CurrentGameName = _recordInfo.GameName;
                 UpdateCharts();
@@ -812,6 +813,7 @@ namespace CapFrameX.ViewModel
 
         public void OnNavigatedFrom(NavigationContext navigationContext)
         {
+            _previousSession = _session;
             _useUpdateSession = false;
         }
     }

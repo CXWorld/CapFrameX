@@ -45,10 +45,12 @@
 				  Height="{Binding ElementName=ReportViewControl, Path=ActualHeight, Converter={StaticResource AddValueConverter}}"
 				  ItemsSource="{Binding ReportInfoCollection}"
 				  Background="#F5F5F5" 
+                  FocusVisualStyle="{x:Null}"
 				  materialDesign:DataGridAssist.CellPadding="13 8 8 8" materialDesign:DataGridAssist.ColumnHeaderPadding="8" IsSynchronizedWithCurrentItem="False"
 				  CanUserSortColumns="True"
 				  CanUserAddRows="False"
                   IsReadOnly="True"
+                  LoadingRow="ReportDataGrid_LoadingRow"
 				  ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.CanContentScroll="True"
                   PreviewKeyDown="ReportDataGrid_PreviewKeyDown"
 				  dragdrop:DragDrop.IsDropTarget="True"
@@ -65,14 +67,119 @@
 			</DataGrid.ContextMenu>
 		</DataGrid>
         <Grid Grid.Row="1" Margin="5" Background="#e6e6e6">
-            <Button Style="{StaticResource MaterialDesignFloatingActionMiniButton}"                
-				Margin="0 0 0 0"
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1*"></ColumnDefinition>
+                <ColumnDefinition Width="1*"></ColumnDefinition>
+                <ColumnDefinition Width="1*"></ColumnDefinition>
+                <ColumnDefinition Width="1*"></ColumnDefinition>
+                <ColumnDefinition Width="1*"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0 5 0 0" Orientation="Horizontal">
+                <TextBlock Margin="20 0 10 0" Text="Show average row"></TextBlock>
+                <ToggleButton IsChecked="{Binding ReportShowAverageRow}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Shows an additional row containing the averaged FPS metrics of all inserted records."/>
+            </StackPanel>
+            <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0 5 0 0" Orientation="Horizontal">
+                <TextBlock VerticalAlignment="Center">Metrics settings:</TextBlock>
+                <materialDesign:PopupBox StaysOpen="True" ToolTip="Select metrics to be shown">
+                    <materialDesign:Card Width="Auto" Margin="0 0 0 -10">
+                        <Grid Margin="8 8 8 8">
+                            <Grid.Resources>
+                                <Style TargetType="CheckBox"
+											BasedOn="{StaticResource MaterialDesignCheckBox}">
+                                    <Setter Property="Margin" Value="8,8,10,8" />
+                                </Style>
+                                <Style TargetType="TextBox" BasedOn="{StaticResource MaterialDesignTextBox}">
+                                    <Setter Property="materialDesign:HintAssist.IsFloating" Value="True" />
+                                    <Setter Property="Margin" Value="8,8,8,8" />
+                                </Style>
+                            </Grid.Resources>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="50"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="50"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Margin="5" Grid.Row="0" Grid.Column="0" Text="Resolution" VerticalAlignment="Center"/>
+                            <ToggleButton Margin="5" Grid.Row="0" Grid.Column="1" IsChecked="{Binding ShowResolution}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                            <TextBlock Margin="5" Grid.Row="1" Grid.Column="0" Text="Creation date" VerticalAlignment="Center"/>
+                            <ToggleButton Margin="5" Grid.Row="1" Grid.Column="1" IsChecked="{Binding ShowCreationDate}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                            <TextBlock Margin="5" Grid.Row="2" Grid.Column="0" Text="Creation time" VerticalAlignment="Center"/>
+                            <ToggleButton Margin="5" Grid.Row="2" Grid.Column="1" IsChecked="{Binding ShowCreationTime}" Style="{StaticResource MaterialDesignSwitchToggleButton}" />
+                            <TextBlock Margin="5" Grid.Row="3" Grid.Column="0" Text="# Samples" VerticalAlignment="Center"/>
+                            <ToggleButton Margin="5" Grid.Row="3" Grid.Column="1" IsChecked="{Binding ShowNumberOfSamples}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                            <TextBlock Margin="5" Grid.Row="4" Grid.Column="0" Text="Recording time" VerticalAlignment="Center"/>
+                            <ToggleButton Margin="5" Grid.Row="4" Grid.Column="1" IsChecked="{Binding ShowRecordTime}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                            <TextBlock Margin="5" Grid.Row="5" Grid.Column="0" Text="CPU name" VerticalAlignment="Center"/>
+                            <ToggleButton Margin="5" Grid.Row="5" Grid.Column="1" IsChecked="{Binding ShowCpuName}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                            <TextBlock Margin="5" Grid.Row="6" Grid.Column="0" Text="GPU name" VerticalAlignment="Center"/>
+                            <ToggleButton Margin="5" Grid.Row="6" Grid.Column="1" IsChecked="{Binding ShowGpuName}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                            <TextBlock Margin="5" Grid.Row="7" Grid.Column="0" Text="RAM name" VerticalAlignment="Center"/>
+                            <ToggleButton Margin="5" Grid.Row="7" Grid.Column="1" IsChecked="{Binding ShowRamName}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                            <TextBlock Margin="5" Grid.Row="8" Grid.Column="0" Text="Comment" VerticalAlignment="Center"/>
+                            <ToggleButton Margin="5" Grid.Row="8" Grid.Column="1" IsChecked="{Binding ShowComment}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                            <TextBlock Margin="5" Grid.Row="0" Grid.Column="3" Text="Maximum" VerticalAlignment="Center"/>
+                            <ToggleButton Margin="5" Grid.Row="0" Grid.Column="4" IsChecked="{Binding ShowMaxFPS}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                            <TextBlock Margin="5" Grid.Row="1" Grid.Column="3" Text="99% percentile" VerticalAlignment="Center"/>
+                            <ToggleButton Margin="5" Grid.Row="1" Grid.Column="4" IsChecked="{Binding ShowP99FPS}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                            <TextBlock Margin="5" Grid.Row="2" Grid.Column="3" Text="95% percentile" VerticalAlignment="Center"/>
+                            <ToggleButton Margin="5" Grid.Row="2" Grid.Column="4" IsChecked="{Binding ShowP95FS}" Style="{StaticResource MaterialDesignSwitchToggleButton}" />
+                            <TextBlock Margin="5" Grid.Row="3" Grid.Column="3" Text="Average" VerticalAlignment="Center"/>
+                            <ToggleButton Margin="5" Grid.Row="3" Grid.Column="4" IsChecked="{Binding ShowMedianFPS}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                            <TextBlock Margin="5" Grid.Row="4" Grid.Column="3" Text="Median" VerticalAlignment="Center"/>
+                            <ToggleButton Margin="5" Grid.Row="4" Grid.Column="4" IsChecked="{Binding ShowAverageFPS}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                            <TextBlock Margin="5" Grid.Row="5" Grid.Column="3" Text="5% percentile" VerticalAlignment="Center"/>
+                            <ToggleButton Margin="5" Grid.Row="5" Grid.Column="4" IsChecked="{Binding ShowP5FPS}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                            <TextBlock Margin="5" Grid.Row="6" Grid.Column="3" Text="1% percentile" VerticalAlignment="Center"/>
+                            <ToggleButton Margin="5" Grid.Row="6" Grid.Column="4" IsChecked="{Binding ShowP1FPS}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                            <TextBlock Margin="5" Grid.Row="7" Grid.Column="3" Text="0.2% percentile" VerticalAlignment="Center"/>
+                            <ToggleButton Margin="5" Grid.Row="7" Grid.Column="4" IsChecked="{Binding ShowP0Dot2FPS}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                            <TextBlock Margin="5" Grid.Row="8" Grid.Column="3" Text="0.1% percentile" VerticalAlignment="Center"/>
+                            <ToggleButton Margin="5" Grid.Row="8" Grid.Column="4" IsChecked="{Binding ShowP0Dot1FPS}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                            <TextBlock Margin="5" Grid.Row="0" Grid.Column="6" Text="1% low integral" VerticalAlignment="Center"/>
+                            <ToggleButton Margin="5" Grid.Row="0" Grid.Column="7" IsChecked="{Binding ShowP1LowFPS}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                            <TextBlock Margin="5" Grid.Row="1" Grid.Column="6" Text="0.1% low integral" VerticalAlignment="Center"/>
+                            <ToggleButton Margin="5" Grid.Row="1" Grid.Column="7" IsChecked="{Binding ShowP0Dot1LowFPS}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                            <TextBlock Margin="5" Grid.Row="2" Grid.Column="6" Text="Minimum" VerticalAlignment="Center"/>
+                            <ToggleButton Margin="5" Grid.Row="2" Grid.Column="7" IsChecked="{Binding ShowMinFPS}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                            <TextBlock Margin="5" Grid.Row="3" Grid.Column="6" Text="Adaptive STDEV" VerticalAlignment="Center"/>
+                            <ToggleButton Margin="5" Grid.Row="3" Grid.Column="7" IsChecked="{Binding ShowAdaptiveSTD}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                            <TextBlock Margin="5" Grid.Row="4" Grid.Column="6" Text="CPU FPS/10W" VerticalAlignment="Center"/>
+                            <ToggleButton Margin="5" Grid.Row="4" Grid.Column="7" IsChecked="{Binding ShowCpuFpsPerWatt}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                            <TextBlock Margin="5" Grid.Row="5" Grid.Column="6" Text="GPU FPS/10W" VerticalAlignment="Center"/>
+                            <ToggleButton Margin="5" Grid.Row="5" Grid.Column="7" IsChecked="{Binding ShowGpuFpsPerWatt}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                        </Grid>
+                    </materialDesign:Card>
+                </materialDesign:PopupBox>
+            </StackPanel>
+            <Button Grid.Column="2" Style="{StaticResource MaterialDesignFloatingActionMiniButton}"                
+				Margin="0 0 20 0"
 				HorizontalAlignment="Center"
 				VerticalAlignment="Center"
-				Width="30" Height="30"
+				Width="35" Height="35"
 				ToolTip="Remove all report entries"
 				Command="{Binding RemoveAllReportEntriesCommand}">
-                <materialDesign:PackIcon Kind="PlaylistRemove" Height="24" Width="24" />
+                <materialDesign:PackIcon Kind="PlaylistRemove" Height="25" Width="25" />
             </Button>
         </Grid>
     </Grid>

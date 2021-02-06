@@ -462,7 +462,157 @@ namespace CapFrameX.Configuration
 			set => Set(value);
 		}
 
+
 		// Report Settings
+		 public bool ReportShowAverageRow
+		{
+			get => Get<bool>(false);
+			set => Set(value);
+		}
+
+		public bool ReportShowResolution
+		{
+			get => Get<bool>(false);
+			set => Set(value);
+		}
+
+		public bool ReportShowCreationDate
+		{
+			get => Get<bool>(true);
+			set => Set(value);
+		}
+
+		public bool ReportShowCreationTime
+		{
+			get => Get<bool>(true);
+			set => Set(value);
+		}
+
+		public bool ReportShowNumberOfSamples
+		{
+			get => Get<bool>(false);
+			set => Set(value);
+		}
+
+		public bool ReportShowRecordTime
+		{
+			get => Get<bool>(true);
+			set => Set(value);
+		}
+
+		public bool ReportShowCpuName
+		{
+			get => Get<bool>(false);
+			set => Set(value);
+		}
+
+		public bool ReportShowGpuName
+		{
+			get => Get<bool>(false);
+			set => Set(value);
+		}
+
+		public bool ReportShowRamName
+		{
+			get => Get<bool>(false);
+			set => Set(value);
+		}
+
+		public bool ReportShowComment
+		{
+			get => Get<bool>(true);
+			set => Set(value);
+		}
+
+		public bool ReportShowMaxFPS
+		{
+			get => Get<bool>(true);
+			set => Set(value);
+		}
+
+		public bool ReportShowP99FPS
+		{
+			get => Get<bool>(true);
+			set => Set(value);
+		}
+
+		public bool ReportShowP95FS
+		{
+			get => Get<bool>(true);
+			set => Set(value);
+		}
+
+		public bool ReportShowMedianFPS
+		{
+			get => Get<bool>(true);
+			set => Set(value);
+		}
+		public bool ReportShowAverageFPS
+		{
+			get => Get<bool>(true);
+			set => Set(value);
+		}
+
+		public bool ReportShowP5FPS
+		{
+			get => Get<bool>(true);
+			set => Set(value);
+		}
+
+		public bool ReportShowP1FPS
+		{
+			get => Get<bool>(true);
+			set => Set(value);
+		}
+
+		public bool ReportShowP0Dot2FPS
+		{
+			get => Get<bool>(true);
+			set => Set(value);
+		}
+
+		public bool ReportShowP0Dot1FPS
+		{
+			get => Get<bool>(true);
+			set => Set(value);
+		}
+
+		public bool ReportShowP1LowFPS
+		{
+			get => Get<bool>(true);
+			set => Set(value);
+		}
+
+		public bool ReportShowP0Dot1LowFPS
+		{
+			get => Get<bool>(true);
+			set => Set(value);
+		}
+
+		public bool ReportShowMinFPS
+		{
+			get => Get<bool>(true);
+			set => Set(value);
+		}
+
+		public bool ReportShowAdaptiveSTD
+		{
+			get => Get<bool>(true);
+			set => Set(value);
+		}
+
+		public bool ReportShowCpuFpsPerWatt
+		{
+			get => Get<bool>(true);
+			set => Set(value);
+		}
+
+		public bool ReportShowGpuFpsPerWatt
+		{
+			get => Get<bool>(true);
+			set => Set(value);
+		}
+
 
 		// Sync Settings
 		public int InputLagOffset

@@ -28,7 +28,7 @@ namespace OpenHardwareMonitor.Hardware
                 if (PerformanceCounterCategory.Exists("GPU Adapter Memory"))
                 {
                     var category = new PerformanceCounterCategory("GPU Adapter Memory");
-                    var instances = category.GetInstanceNames();
+                    var instances = category.GetInstanceNames().Where(inst => inst != string.Empty).ToArray();
 
                     if (instances.Any())
                     {
@@ -56,6 +56,10 @@ namespace OpenHardwareMonitor.Hardware
                         dedicatedVramUsagePerformCounter = new PerformanceCounter("GPU Adapter Memory", "Dedicated Usage", instances[maxIndex]);
                         sharedVramUsagePerformCounter = new PerformanceCounter("GPU Adapter Memory", "Shared Usage", instances[maxIndex]);
                     }
+                    else
+                    {
+                        Log.Logger.Error("Error while creating GPU memory performance counter. No instances found.");
+                    }
                 }
             }
             catch (Exception ex)
@@ -81,10 +85,12 @@ namespace OpenHardwareMonitor.Hardware
                             return;
                         }
 
+                        string idString = $"pid_{id}_luid";
+
                         var instances = category.GetInstanceNames();
-                        if (instances != null)
+                        if (instances != null && instances.Any())
                         {
-                            var pid = instances.FirstOrDefault(instance => instance.Contains(id.ToString()));
+                            var pid = instances.FirstOrDefault(instance => instance.Contains(idString));
 
                             if (pid != null)
                             {
@@ -96,6 +102,12 @@ namespace OpenHardwareMonitor.Hardware
                                 dedicatedVramUsageProcessPerformCounter = null;
                                 sharedVramUsageProcessPerformCounter = null;
                             }
+                        }
+                        else
+                        {
+                            dedicatedVramUsageProcessPerformCounter = null;
+                            sharedVramUsageProcessPerformCounter = null;
+                            Log.Logger.Error("Error while creating GPU process memory performance counter. No instances found.");
                         }
 
                     });

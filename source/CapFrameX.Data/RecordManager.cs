@@ -784,7 +784,7 @@ namespace CapFrameX.Data
             }
         }
 
-        private void NormalizeStartTimesOfSessionRuns(IEnumerable<ISessionRun> sessionRuns)
+        public void NormalizeStartTimesOfSessionRuns(IEnumerable<ISessionRun> sessionRuns)
         {
             double startTimePresents = 0;
             double lastSensorMeasureTime = 0;

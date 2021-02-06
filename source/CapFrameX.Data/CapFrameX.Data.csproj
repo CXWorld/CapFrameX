@@ -110,6 +110,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ApplicationState.cs" />
     <Compile Include="CaptureManager.cs" />
     <Compile Include="CloudEntry.cs" />
     <Compile Include="AggregationEntry.cs" />
