@@ -118,7 +118,6 @@ namespace CapFrameX.ViewModel
 
             // Header
             var displayNameGame = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.Game);
-            var displayNameResolution = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.Resolution);
             var displayNameDate = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.Date);
             var displayNameTime = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.Time);
             var displayNameNumberOfSamples = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.NumberOfSamples);
@@ -144,7 +143,6 @@ namespace CapFrameX.ViewModel
             var displayNameCustomComment = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.CustomComment);
 
             builder.Append(displayNameGame + "\t" +
-                           displayNameResolution + "\t" +
                            displayNameDate + "\t" +
                            displayNameTime + "\t" +
                            displayNameNumberOfSamples + "\t" +
@@ -175,7 +173,6 @@ namespace CapFrameX.ViewModel
             foreach (var reportInfo in ReportInfoCollection)
             {
                 builder.Append(reportInfo.Game + "\t" +
-                               reportInfo.Resolution + "\t" +
                                reportInfo.Date?.ToString(cultureInfo) + "\t" +
                                reportInfo.Time?.ToString(cultureInfo) + "\t" +
                                reportInfo.NumberOfSamples + "\t" +
@@ -255,7 +252,6 @@ namespace CapFrameX.ViewModel
             var reportInfo = new ReportInfo()
             {
                 Game = recordInfo.GameName,
-                Resolution = recordInfo.Resolution,
                 Date = recordInfo.CreationDate,
                 Time = recordInfo.CreationTime,
                 NumberOfSamples = frameTimes.Count.ToString(),
@@ -279,7 +275,7 @@ namespace CapFrameX.ViewModel
                 CpuFpsPerWatt = cpuFpsPerWatt,
                 GpuFpsPerWatt = gpuFpsPerWatt,
                 CustomComment = recordInfo.Comment
-            };  
+            };
 
             return reportInfo;
         }

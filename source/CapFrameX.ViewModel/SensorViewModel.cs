@@ -198,7 +198,7 @@ namespace CapFrameX.ViewModel
             {
                 Task.Run(() =>
                 {
-                    if (_applicationState.SelectedRecords != null && _applicationState.SelectedRecords.Any())
+                    if (_applicationState.SelectedRecords != null && _applicationState.SelectedRecords.Count > 1)
                     {
                         AggregateButtonText = "Working";
                         AggregateButtonIsEnable = false;
