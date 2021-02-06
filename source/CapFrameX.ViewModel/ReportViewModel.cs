@@ -25,7 +25,7 @@ using System.Diagnostics;
 
 namespace CapFrameX.ViewModel
 {
-    public class ReportViewModel : BindableBase, INavigationAware, IDropTarget
+    public partial class ReportViewModel : BindableBase, INavigationAware, IDropTarget
     {
         private readonly IStatisticProvider _frametimeStatisticProvider;
         private readonly IEventAggregator _eventAggregator;
@@ -91,6 +91,7 @@ namespace CapFrameX.ViewModel
                     HasNoReportItems = !ReportInfoCollection.Any();
                 });
 
+            InitializeReportParameters();
             SubscribeToSelectRecord();
 
             stopwatch.Stop();
@@ -217,6 +218,9 @@ namespace CapFrameX.ViewModel
                             });
         }
 
+        partial void InitializeReportParameters();
+
+
         private ReportInfo GetReportInfoFromRecordInfo(IFileRecordInfo recordInfo)
         {
             var session = _recordManager.LoadData(recordInfo.FullPath);
@@ -275,7 +279,7 @@ namespace CapFrameX.ViewModel
                 CpuFpsPerWatt = cpuFpsPerWatt,
                 GpuFpsPerWatt = gpuFpsPerWatt,
                 CustomComment = recordInfo.Comment
-            };
+            };  
 
             return reportInfo;
         }

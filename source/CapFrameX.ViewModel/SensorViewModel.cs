@@ -277,7 +277,6 @@ namespace CapFrameX.ViewModel
         private void AggregateSensorDataOfSessions(IEnumerable<ISession> sessions)
         {
             var runs = sessions.SelectMany(s => s.Runs);
-            _recordManager.NormalizeStartTimesOfSessionRuns(runs);
 
             var items = SensorReport.GetFullReportFromSessionSensorData(runs.Select(r => r.SensorData2));
 

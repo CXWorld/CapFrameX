@@ -156,5 +156,53 @@ namespace CapFrameX.Contracts.Configuration
 		int VerticalGraphExportRes { get; set; }
 
 		bool ReportShowAverageRow { get; set; }
+
+		bool ReportShowResolution { get; set; }
+
+		bool ReportShowCreationDate { get; set; }
+
+		bool ReportShowCreationTime { get; set; }
+
+		bool ReportShowNumberOfSamples { get; set; }
+
+		bool ReportShowRecordTime { get; set; }
+
+		bool ReportShowCpuName { get; set; }
+
+		bool ReportShowGpuName { get; set; }
+
+		bool ReportShowRamName { get; set; }
+
+		bool ReportShowComment { get; set; }
+
+		bool ReportShowMaxFPS { get; set; }
+
+		bool ReportShowP99FPS { get; set; }
+
+		bool ReportShowP95FS { get; set; }
+
+		bool ReportShowMedianFPS { get; set; }
+
+		bool ReportShowAverageFPS { get; set; }
+
+		bool ReportShowP5FPS { get; set; }
+
+		bool ReportShowP1FPS { get; set; }
+
+		bool ReportShowP0Dot2FPS { get; set; }
+
+		bool ReportShowP0Dot1FPS { get; set; }
+
+		bool ReportShowP1LowFPS { get; set; }
+
+		bool ReportShowP0Dot1LowFPS { get; set; }
+
+		bool ReportShowMinFPS { get; set; }
+
+		bool ReportShowAdaptiveSTD { get; set; }
+
+		bool ReportShowCpuFpsPerWatt { get; set; }
+
+		bool ReportShowGpuFpsPerWatt { get; set; }
 	}
 }
