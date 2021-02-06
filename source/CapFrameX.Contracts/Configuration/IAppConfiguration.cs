@@ -154,5 +154,7 @@ namespace CapFrameX.Contracts.Configuration
 		int HorizontalGraphExportRes { get; set; }
 
 		int VerticalGraphExportRes { get; set; }
+
+		bool ReportShowAverageRow { get; set; }
 	}
 }

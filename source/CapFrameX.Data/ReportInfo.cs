@@ -13,7 +13,7 @@ namespace CapFrameX.Data
 		[DisplayName("Creation time")]
 		public string Time { get; set; }
 		[DisplayName("# samples")]
-		public int NumberOfSamples {get; set; }
+		public string NumberOfSamples {get; set; }
 		[DisplayName("Record time")]
 		public string RecordTime { get; set; }
 		[DisplayName("CPU")]

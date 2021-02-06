@@ -462,7 +462,14 @@ namespace CapFrameX.Configuration
 			set => Set(value);
 		}
 
+
 		// Report Settings
+		 public bool ReportShowAverageRow
+		{
+			get => Get<bool>(false);
+			set => Set(value);
+		}
+
 
 		// Sync Settings
 		public int InputLagOffset

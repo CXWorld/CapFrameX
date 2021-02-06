@@ -1,8 +1,11 @@
 ﻿using CapFrameX.Data;
 using CapFrameX.ViewModel;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 
 namespace CapFrameX.View
 {
@@ -30,6 +33,14 @@ namespace CapFrameX.View
                 }
 
                 e.Handled = true;
+            }
+        }
+
+        private void ReportDataGrid_LoadingRow(object sender, DataGridRowEventArgs e)
+        {
+            if(e.Row.Item is ReportInfo reportInfo && reportInfo.Game.Equals("Averaged values"))
+            {
+                e.Row.Background = new SolidColorBrush(Color.FromArgb(150, 34, 151, 243));
             }
         }
     }

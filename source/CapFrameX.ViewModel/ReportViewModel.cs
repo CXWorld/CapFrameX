@@ -46,6 +46,21 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        public bool ReportShowAverageRow
+        {
+            get { return _appConfiguration.ReportShowAverageRow; }
+            set
+            {
+                _appConfiguration.ReportShowAverageRow = value;
+                if (value)
+                    AddAverageReportInfo(ReportInfoCollection);
+                else
+                    ReportInfoCollection.RemoveAt(ReportInfoCollection.Count-1);
+
+                RaisePropertyChanged();
+            }
+        }
+
         public ObservableCollection<ReportInfo> ReportInfoCollection { get; }
             = new ObservableCollection<ReportInfo>();
 
@@ -71,19 +86,26 @@ namespace CapFrameX.ViewModel
             CopyTableDataCommand = new DelegateCommand(OnCopyTableData);
             RemoveAllReportEntriesCommand = new DelegateCommand(() => ReportInfoCollection.Clear());
             ReportInfoCollection.CollectionChanged += new NotifyCollectionChangedEventHandler
-                ((sender, eventArg) => HasNoReportItems = !ReportInfoCollection.Any());
+                ((sender, eventArg) =>
+                {
+                    HasNoReportItems = !ReportInfoCollection.Any();
+                });
 
             SubscribeToSelectRecord();
 
             stopwatch.Stop();
-            _logger.LogInformation(this.GetType().Name + " {initializationTime}s initialization time", 
+            _logger.LogInformation(this.GetType().Name + " {initializationTime}s initialization time",
                 Math.Round(stopwatch.ElapsedMilliseconds * 1E-03, 1));
         }
 
 
         public void RemoveReportEntry(ReportInfo selectedItem)
         {
+
             ReportInfoCollection.Remove(selectedItem);
+
+            if(!selectedItem.Game.Equals("Averaged values") && ReportShowAverageRow)
+                AddAverageReportInfo(ReportInfoCollection);
         }
 
         private void OnCopyTableData()
@@ -153,10 +175,10 @@ namespace CapFrameX.ViewModel
             {
                 builder.Append(reportInfo.Game + "\t" +
                                reportInfo.Resolution + "\t" +
-                               reportInfo.Date.ToString(cultureInfo) + "\t" +
-                               reportInfo.Time.ToString(cultureInfo) + "\t" +
+                               reportInfo.Date?.ToString(cultureInfo) + "\t" +
+                               reportInfo.Time?.ToString(cultureInfo) + "\t" +
                                reportInfo.NumberOfSamples + "\t" +
-                               reportInfo.RecordTime.ToString(cultureInfo) + "\t" +
+                               reportInfo.RecordTime?.ToString(cultureInfo) + "\t" +
                                reportInfo.Cpu + "\t" +
                                reportInfo.GraphicCard + "\t" +
                                reportInfo.Ram + "\t" +
@@ -232,7 +254,7 @@ namespace CapFrameX.ViewModel
                 Resolution = recordInfo.Resolution,
                 Date = recordInfo.CreationDate,
                 Time = recordInfo.CreationTime,
-                NumberOfSamples = frameTimes.Count,
+                NumberOfSamples = frameTimes.Count.ToString(),
                 RecordTime = Math.Round(recordTime, 2).ToString(),
                 Cpu = recordInfo.ProcessorName == null ? "" : recordInfo.ProcessorName.Trim(new char[] { ' ', '"' }),
                 GraphicCard = recordInfo.GraphicCardName == null ? "" : recordInfo.GraphicCardName.Trim(new char[] { ' ', '"' }),
@@ -258,9 +280,38 @@ namespace CapFrameX.ViewModel
             return reportInfo;
         }
 
+        private void AddAverageReportInfo(ObservableCollection<ReportInfo> reportInfoCollection)
+        {
+            var averageInfo = reportInfoCollection.FirstOrDefault(x => x.Game == "Averaged values");
+
+            if(averageInfo != null)
+            {
+                reportInfoCollection.Remove(averageInfo);
+            }
+
+            if (reportInfoCollection.Count() > 1)
+            {
+                var propertyInfos = typeof(ReportInfo).GetProperties().Where(pi => pi.PropertyType == typeof(double));
+
+                var report = new ReportInfo();
+
+                report.Game = "Averaged values";
+                foreach (var propertyInfo in propertyInfos)
+                {
+
+                    var average = reportInfoCollection.Select(x => propertyInfo.GetValue(x)).Select(x => Convert.ToDouble(x)).Average();
+                    propertyInfo.SetValue(report, Math.Round(average, 2));
+                }
+                reportInfoCollection.Add(report);
+            }
+        }
+
         private void AddReportRecord(ReportInfo reportInfo)
         {
             ReportInfoCollection.Add(reportInfo);
+
+            if (ReportShowAverageRow)
+                AddAverageReportInfo(ReportInfoCollection);
         }
 
         public bool IsNavigationTarget(NavigationContext navigationContext)
