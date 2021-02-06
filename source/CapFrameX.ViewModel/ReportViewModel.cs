@@ -55,7 +55,7 @@ namespace CapFrameX.ViewModel
                 if (value)
                     AddAverageReportInfo(ReportInfoCollection);
                 else
-                    ReportInfoCollection.RemoveAt(ReportInfoCollection.Count-1);
+                    ReportInfoCollection.RemoveAt(ReportInfoCollection.Count - 1);
 
                 RaisePropertyChanged();
             }
@@ -102,11 +102,13 @@ namespace CapFrameX.ViewModel
 
         public void RemoveReportEntry(ReportInfo selectedItem)
         {
-
-            ReportInfoCollection.Remove(selectedItem);
-
-            if(!selectedItem.Game.Equals("Averaged values") && ReportShowAverageRow)
+            if (selectedItem.Game.Equals("Averaged values"))
+                return;
+            else
+            {
+                ReportInfoCollection.Remove(selectedItem);
                 AddAverageReportInfo(ReportInfoCollection);
+            }
         }
 
         private void OnCopyTableData()
@@ -284,7 +286,7 @@ namespace CapFrameX.ViewModel
         {
             var averageInfo = reportInfoCollection.FirstOrDefault(x => x.Game == "Averaged values");
 
-            if(averageInfo != null)
+            if (averageInfo != null)
             {
                 reportInfoCollection.Remove(averageInfo);
             }
