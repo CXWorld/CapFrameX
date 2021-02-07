@@ -70,9 +70,10 @@
 				</ContextMenu>
 			</DataGrid.ContextMenu>
                 <DataGrid.Columns>
-                <DataGridTextColumn Binding="{Binding Game, Mode=OneWay}"
-                                            Header="Game Name"
+                    <DataGridTextColumn Binding="{Binding Game, Mode=OneWay}"
+                                            Header="Game"
                                             Width="Auto"
+                                            MinWidth="150"
                                             IsReadOnly="True"/>
                     <DataGridTextColumn Binding="{Binding Date, Mode=OneWay}"
                                             Header="Creation Date"

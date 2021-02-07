@@ -272,7 +272,7 @@
                         <Button.ToolTip>
                             <ToolTip MaxWidth="250">
                                 <TextBlock
-                             Text="Show sensor statistics averaged for all entries currently selected in the record list." 
+                             Text="Show sensor statistics aggregated out of all entries currently selected in the record list." 
                              TextWrapping="Wrap"/>
                             </ToolTip>
                         </Button.ToolTip>
