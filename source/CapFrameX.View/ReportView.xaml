@@ -14,7 +14,7 @@
 			 Background="{DynamicResource MaterialDesignPaper}"
              FontFamily="{StaticResource MaterialDesignFont}"
 			 prism:ViewModelLocator.AutoWireViewModel="True">
-	<UserControl.Resources>
+    <UserControl.Resources>
 		<ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Button.xaml" />
@@ -36,9 +36,11 @@
         <Border VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="{Binding HasNoReportItems, Converter={StaticResource TrueToVisibleConverter}}"  Grid.ZIndex="1">
             <TextBlock Text="Drop items here or double click them in the record list." FontSize="18"/>
         </Border>
-        <DataGrid Grid.Row="0"
+        <StackPanel>
+            <FrameworkElement x:Name="ColumnHeaders" Visibility="Collapsed"/>
+            <DataGrid Grid.Row="0"
 				  Margin="5 10 5 0"
-				  AutoGenerateColumns="True"
+				  AutoGenerateColumns="False"
 				  AutoGeneratingColumn="OnAutoGeneratingColumn"
 				  Tag="{Binding ElementName=ReportViewControl, Path=DataContext}" 
 				  Name ="ReportDataGrid"
@@ -48,6 +50,7 @@
                   FocusVisualStyle="{x:Null}"
 				  materialDesign:DataGridAssist.CellPadding="13 8 8 8" materialDesign:DataGridAssist.ColumnHeaderPadding="8" IsSynchronizedWithCurrentItem="False"
 				  CanUserSortColumns="True"
+                  SelectionUnit="FullRow"
 				  CanUserAddRows="False"
                   IsReadOnly="True"
                   LoadingRow="ReportDataGrid_LoadingRow"
@@ -66,7 +69,134 @@
 					<MenuItem Header="Copy table" Command="{Binding CopyTableDataCommand}"/>
 				</ContextMenu>
 			</DataGrid.ContextMenu>
-		</DataGrid>
+                <DataGrid.Columns>
+                <DataGridTextColumn Binding="{Binding Game, Mode=OneWay}"
+                                            Header="Game Name"
+                                            Width="Auto"
+                                            IsReadOnly="True"/>
+                    <DataGridTextColumn Binding="{Binding Date, Mode=OneWay}"
+                                            Header="Creation Date"
+                                            Width="Auto"
+                                            IsReadOnly="True"
+                                            Visibility="{Binding DataContext.ShowCreationDate, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
+                    <DataGridTextColumn Binding="{Binding Time, Mode=OneWay}"
+                                            Header="Creation Time"
+                                            Width="Auto"
+                                            IsReadOnly="True"
+                                            Visibility="{Binding DataContext.ShowCreationTime, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
+                    <DataGridTextColumn Binding="{Binding NumberOfSamples, Mode=OneWay}"
+                                            Header="Samples"
+                                            Width="Auto"
+                                            IsReadOnly="True"
+                                            Visibility="{Binding DataContext.ShowNumberOfSamples, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
+                    <DataGridTextColumn Binding="{Binding RecordTime, Mode=OneWay}"
+                                            Header="Record Time"
+                                            Width="Auto"
+                                            IsReadOnly="True"
+                                            Visibility="{Binding DataContext.ShowRecordTime, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
+                    <DataGridTextColumn Binding="{Binding Cpu, Mode=OneWay}"
+                                            Header="CPU"
+                                            Width="Auto"
+                                            IsReadOnly="True"
+                                            Visibility="{Binding DataContext.ShowCpuName, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
+                    <DataGridTextColumn Binding="{Binding GraphicCard, Mode=OneWay}"
+                                            Header="GPU"
+                                            Width="Auto"
+                                            IsReadOnly="True"
+                                            Visibility="{Binding DataContext.ShowGpuName, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
+                    <DataGridTextColumn Binding="{Binding Ram, Mode=OneWay}"
+                                            Header="RAM"
+                                            Width="Auto"
+                                            IsReadOnly="True"
+                                            Visibility="{Binding DataContext.ShowRamName, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
+                    <DataGridTextColumn Binding="{Binding CustomComment, Mode=OneWay}"
+                                            Header="Comment"
+                                            Width="Auto"
+                                            IsReadOnly="True"
+                                            Visibility="{Binding DataContext.ShowComment, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
+                    <DataGridTextColumn Binding="{Binding MaxFps, Mode=OneWay}"
+                                            Header="Max FPS"
+                                            Width="Auto"
+                                            IsReadOnly="True"
+                                            Visibility="{Binding DataContext.ShowMaxFPS, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
+                    <DataGridTextColumn Binding="{Binding NinetyNinePercentQuantileFps, Mode=OneWay}"
+                                            Header="99% percentile"
+                                            Width="Auto"
+                                            IsReadOnly="True"
+                                            Visibility="{Binding DataContext.ShowP99FPS, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
+                    <DataGridTextColumn Binding="{Binding NinetyFivePercentQuantileFps, Mode=OneWay}"
+                                            Header="95% percentile"
+                                            Width="Auto"
+                                            IsReadOnly="True"
+                                            Visibility="{Binding DataContext.ShowP95FS, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
+                    <DataGridTextColumn Binding="{Binding AverageFps, Mode=OneWay}"
+                                            Header="Average FPS"
+                                            Width="Auto"
+                                            IsReadOnly="True"
+                                            Visibility="{Binding DataContext.ShowAverageFPS, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
+                    <DataGridTextColumn Binding="{Binding MedianFps, Mode=OneWay}"
+                                            Header="Median FPS"
+                                            Width="Auto"
+                                            IsReadOnly="True"
+                                            Visibility="{Binding DataContext.ShowMedianFPS, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
+                    <DataGridTextColumn Binding="{Binding FivePercentQuantileFps, Mode=OneWay}"
+                                            Header="5% percentile"
+                                            Width="Auto"
+                                            IsReadOnly="True"
+                                            Visibility="{Binding DataContext.ShowP5FPS, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
+                    <DataGridTextColumn Binding="{Binding OnePercentQuantileFps, Mode=OneWay}"
+                                            Header="1% percentile"
+                                            Width="Auto"
+                                            IsReadOnly="True"
+                                            Visibility="{Binding DataContext.ShowP1FPS, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
+                    <DataGridTextColumn Binding="{Binding OnePercentLowAverageFps, Mode=OneWay}"
+                                            Header="1% low integral"
+                                            Width="Auto"
+                                            IsReadOnly="True"
+                                            Visibility="{Binding DataContext.ShowP1LowFPS, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
+                    <DataGridTextColumn Binding="{Binding ZeroDotTwoPercentQuantileFps, Mode=OneWay}"
+                                            Header="0.2% percentile"
+                                            Width="Auto"
+                                            IsReadOnly="True"
+                                            Visibility="{Binding DataContext.ShowP0Dot2FPS, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
+                    <DataGridTextColumn Binding="{Binding ZeroDotOnePercentQuantileFps, Mode=OneWay}"
+                                            Header="0.1% percentile"
+                                            Width="Auto"
+                                            IsReadOnly="True"
+                                            Visibility="{Binding DataContext.ShowP0Dot1FPS, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
+                    <DataGridTextColumn Binding="{Binding ZeroDotOnePercentQuantileFps, Mode=OneWay}"
+                                            Header="0.1% percentile"
+                                            Width="Auto"
+                                            IsReadOnly="True"
+                                            Visibility="{Binding DataContext.ShowP1LowFPS, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
+                    <DataGridTextColumn Binding="{Binding ZeroDotOnePercentLowAverageFps, Mode=OneWay}"
+                                            Header="0.1% low integral"
+                                            Width="Auto"
+                                            IsReadOnly="True"
+                                            Visibility="{Binding DataContext.ShowP0Dot1LowFPS, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
+                    <DataGridTextColumn Binding="{Binding MinFps, Mode=OneWay}"
+                                            Header="Min FPS"
+                                            Width="Auto"
+                                            IsReadOnly="True"
+                                            Visibility="{Binding DataContext.ShowMinFPS, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
+                    <DataGridTextColumn Binding="{Binding AdaptiveSTDFps, Mode=OneWay}"
+                                            Header="Adaptive STDEV"
+                                            Width="Auto"
+                                            IsReadOnly="True"
+                                            Visibility="{Binding DataContext.ShowAdaptiveSTD, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
+                    <DataGridTextColumn Binding="{Binding CpuFpsPerWatt, Mode=OneWay}"
+                                            Header="CPU FPS / 10W Name"
+                                            Width="Auto"
+                                            IsReadOnly="True"
+                                            Visibility="{Binding DataContext.ShowCpuFpsPerWatt, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
+                    <DataGridTextColumn Binding="{Binding GpuFpsPerWatt, Mode=OneWay}"
+                                            Header="GPU FPS / 10W"
+                                            Width="Auto"
+                                            IsReadOnly="True"
+                                            Visibility="{Binding DataContext.ShowGpuFpsPerWatt, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
+                </DataGrid.Columns>
+            </DataGrid>
+        </StackPanel>
         <Grid Grid.Row="1" Margin="5" Background="#e6e6e6">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="1*"></ColumnDefinition>
@@ -79,7 +209,7 @@
                 <TextBlock Margin="20 0 10 0" Text="Show average row"></TextBlock>
                 <ToggleButton IsChecked="{Binding ReportShowAverageRow}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Shows an additional row containing the averaged FPS metrics of all inserted records."/>
             </StackPanel>
-            <!--<StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0 5 0 0" Orientation="Horizontal">
+            <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0 5 0 0" Orientation="Horizontal">
                 <TextBlock VerticalAlignment="Center">Metrics settings:</TextBlock>
                 <materialDesign:PopupBox StaysOpen="True" ToolTip="Select metrics to be shown">
                     <materialDesign:Card Width="Auto" Margin="0 0 0 -10">
@@ -144,9 +274,9 @@
                             <TextBlock Margin="5" Grid.Row="2" Grid.Column="3" Text="95% percentile" VerticalAlignment="Center"/>
                             <ToggleButton Margin="5" Grid.Row="2" Grid.Column="4" IsChecked="{Binding ShowP95FS}" Style="{StaticResource MaterialDesignSwitchToggleButton}" />
                             <TextBlock Margin="5" Grid.Row="3" Grid.Column="3" Text="Average" VerticalAlignment="Center"/>
-                            <ToggleButton Margin="5" Grid.Row="3" Grid.Column="4" IsChecked="{Binding ShowMedianFPS}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                            <ToggleButton Margin="5" Grid.Row="3" Grid.Column="4" IsChecked="{Binding ShowAverageFPS}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
                             <TextBlock Margin="5" Grid.Row="4" Grid.Column="3" Text="Median" VerticalAlignment="Center"/>
-                            <ToggleButton Margin="5" Grid.Row="4" Grid.Column="4" IsChecked="{Binding ShowAverageFPS}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                            <ToggleButton Margin="5" Grid.Row="4" Grid.Column="4" IsChecked="{Binding ShowMedianFPS}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
                             <TextBlock Margin="5" Grid.Row="5" Grid.Column="3" Text="5% percentile" VerticalAlignment="Center"/>
                             <ToggleButton Margin="5" Grid.Row="5" Grid.Column="4" IsChecked="{Binding ShowP5FPS}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
                             <TextBlock Margin="5" Grid.Row="6" Grid.Column="3" Text="1% percentile" VerticalAlignment="Center"/>
@@ -170,7 +300,7 @@
                         </Grid>
                     </materialDesign:Card>
                 </materialDesign:PopupBox>
-            </StackPanel>-->
+            </StackPanel>
             <Button Grid.Column="2" Style="{StaticResource MaterialDesignFloatingActionMiniButton}"                
 				Margin="0 0 20 0"
 				HorizontalAlignment="Center"
