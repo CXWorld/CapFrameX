@@ -142,7 +142,8 @@ namespace CapFrameX.Sensor.Reporting
                         Name = sensor.DisplayName,
                         MinValue = Math.Round(sensor.Values.Min(), roundingDigits),
                         AverageValue = Math.Round(sensor.Values.Average(), roundingDigits),
-                        MaxValue = Math.Round(sensor.Values.Max(), roundingDigits)
+                        MaxValue = Math.Round(sensor.Values.Max(), roundingDigits),
+                        RoundingDigits = roundingDigits
                     });
                 }
             }

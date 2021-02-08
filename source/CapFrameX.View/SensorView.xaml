@@ -293,7 +293,8 @@
                         <ComboBox.ToolTip>
                             <TextBlock Text="Select the method for evaluating multiple entries.&#10;
                                            &#10;Aggregate: Generate the report based on the combined sensor data of all entries.&#10;
-                                           &#10;Average: Generate the report based on the average of each individual report."
+                                           &#10;Average: Generate the report based on the average of each individual report.
+                                           &#10;(only includes sensors that are present in all entries)"
                                     TextWrapping="Wrap">
 
                             </TextBlock>

@@ -11,5 +11,7 @@ namespace CapFrameX.Sensor.Reporting.Data
         public double AverageValue { get; set; }
 
         public double MaxValue { get; set; }
+
+        public int RoundingDigits { get; set; }
     }
 }

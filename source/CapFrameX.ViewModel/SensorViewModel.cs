@@ -320,14 +320,16 @@ namespace CapFrameX.ViewModel
 
         private void AverageSensorDataOfSessions(IEnumerable<ISession> sessions)
         {
+            var sessionCount = sessions.Count();
             var sensorReportFromSessions = sessions.SelectMany(s => SensorReport.GetFullReportFromSessionSensorData(s.Runs.Select(r => r.SensorData2)))
                 .GroupBy(x => x.Name)
+                .Where(x => x.Count() == sessionCount)
                 .Select(group => new SensorReportItem()
                 {
                     Name = group.Key,
-                    AverageValue = Math.Round(group.Average(g => g.AverageValue), 2),
-                    MaxValue = Math.Round(group.Average(g => g.MaxValue), 2),
-                    MinValue = Math.Round(group.Average(g => g.MinValue), 2)
+                    AverageValue = Math.Round(group.Average(g => g.AverageValue), group.First().RoundingDigits),
+                    MaxValue = Math.Round(group.Average(g => g.MaxValue), group.First().RoundingDigits),
+                    MinValue = Math.Round(group.Average(g => g.MinValue), group.First().RoundingDigits)
                 });
 
 
