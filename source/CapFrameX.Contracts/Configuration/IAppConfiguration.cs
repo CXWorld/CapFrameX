@@ -158,6 +158,8 @@ namespace CapFrameX.Contracts.Configuration
 		bool ReportShowAverageRow { get; set; }
 
 		IReportDataGridColumnSettings ReportDataGridColumnSettings { get; set; }
+
+		string SensorReportEvaluationMethod { get; set; }
 	}
 
 	public interface IReportDataGridColumnSettings

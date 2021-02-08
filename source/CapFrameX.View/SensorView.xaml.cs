@@ -28,5 +28,9 @@ namespace CapFrameX.View
         {
             Keyboard.ClearFocus();
         }
+        private void EvaluationComboBox_MouseLeave(object sender, MouseEventArgs e)
+        {
+            Keyboard.ClearFocus();
+        }
     }
 }
