@@ -1,4 +1,5 @@
 ﻿using CapFrameX.EventAggregation.Messages;
+using CapFrameX.View.Themes;
 using CapFrameX.ViewModel;
 using MaterialDesignThemes.Wpf;
 using Microsoft.Extensions.Logging;
@@ -230,7 +231,7 @@ namespace CapFrameX.View
         {
             PaletteHelper paletteHelper = new PaletteHelper();
             ITheme theme = paletteHelper.GetTheme();
-            theme.SetBaseTheme(isDarkTheme ? Theme.Dark : Theme.Light);
+            theme.SetBaseTheme(isDarkTheme ? new DarkTheme() : (IBaseTheme)new LightTheme());
             paletteHelper.SetTheme(theme);
         }
 

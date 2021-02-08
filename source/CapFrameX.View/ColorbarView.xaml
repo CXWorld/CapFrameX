@@ -13,13 +13,6 @@
 			 prism:ViewModelLocator.AutoWireViewModel="True">
     <UserControl.Resources>
         <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <!--<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Button.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Shadows.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ToggleButton.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.DataGrid.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Slider.xaml" />-->
-            </ResourceDictionary.MergedDictionaries>
             <mvvm:BoolToVisibilityConverter x:Key="FalseToCollapsedConverter" TrueValue="Visible" FalseValue="Collapsed"/>
 			<mvvm:BoolToVisibilityConverter x:Key="FalseToVisibleConverter" TrueValue="Hidden" FalseValue="Visible"/>
 			<mvvm:BoolToVisibilityConverter x:Key="TrueToVisibleConverter" TrueValue="Visible" FalseValue="Collapsed"/>
@@ -27,7 +20,7 @@
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid>
-        <materialDesign:ColorZone Mode="PrimaryMid">
+        <materialDesign:ColorZone Mode="PrimaryMid" Foreground="{DynamicResource MaterialDesignBody}">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="3*"/>
@@ -80,7 +73,7 @@
 						ToolTip="Take a screenshot"
 						materialDesign:RippleAssist.Feedback="#DD000000"
 						Width="32" Height="32" Click="TakeScreenShotButton_Click">
-                    <materialDesign:PackIcon Kind="PhotoLibrary"/>
+                    <materialDesign:PackIcon Kind="PhotoLibrary" Foreground="{DynamicResource MaterialDesignBody}"/>
                 </Button>
 
 				<Button Grid.Column="1" Style="{StaticResource MaterialDesignFloatingActionMiniButton}"
@@ -90,7 +83,7 @@
 						    materialDesign:RippleAssist.Feedback="#DD000000"
 						    Width="32" Height="32" Click="Login_Click"
 							Visibility="{Binding Path=DataContext.IsLoggedIn, ElementName=ColorbarViewName, Converter={StaticResource FalseToVisibleConverter}}">
-					<materialDesign:PackIcon Kind="Login"/>
+                    <materialDesign:PackIcon Kind="Login" Foreground="{DynamicResource MaterialDesignBody}"/>
 				</Button>
 				<Button Grid.Column="1" Style="{StaticResource MaterialDesignFloatingActionMiniButton}"
                             Margin="0 0 210 0"
@@ -99,12 +92,12 @@
 						    materialDesign:RippleAssist.Feedback="#DD000000"
 						    Width="32" Height="32" Click="Logout_Click"
 							Visibility="{Binding Path=DataContext.IsLoggedIn, ElementName=ColorbarViewName, Converter={StaticResource TrueToVisibleConverter}}">
-					<materialDesign:PackIcon Kind="Logout"/>
+                    <materialDesign:PackIcon Kind="Logout" Foreground="{DynamicResource MaterialDesignBody}"/>
 				</Button>
 
 				<TextBlock Grid.Column="1" Margin="0 0 70 2" HorizontalAlignment="Right" VerticalAlignment="Center">           
 			        <Hyperlink NavigateUri="https://capframex.com/" RequestNavigate="Hyperlink_RequestNavigate" TextDecorations="None">
-				        <TextBlock FontSize="16" Foreground="White" Text="CapFrameX.com"/>
+				        <TextBlock FontSize="16" Text="CapFrameX.com" Foreground="{DynamicResource MaterialDesignBody}"/>
 			        </Hyperlink>	
 		        </TextBlock>
 

@@ -14,20 +14,10 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800"
              prism:ViewModelLocator.AutoWireViewModel="True">
-    <!--Background="{DynamicResource MaterialDesignPaper}"
-             FontFamily="{DynamicResource MaterialDesignFont}"-->
     <UserControl.Resources>
         <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <!--<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Button.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Shadows.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ToggleButton.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.DataGrid.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Slider.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Expander.xaml" />-->
-            </ResourceDictionary.MergedDictionaries>
             <CollectionViewSource x:Key="RecordInfoListKey" Source="{Binding RecordInfoList}" Filter="RecordInfoListOnFilter"/>
-            <mvvm:AddValueConverter x:Key="AddValueConverter" Offset="-315"/>
+            <mvvm:AddValueConverter x:Key="AddValueConverter" Offset="-345"/>
             <mvvm:AddValueConverter x:Key="AddValueConverterExpander" Offset="-345"/>
             <mvvm:BoolToVisibilityConverter x:Key="FalseToVisibleConverter" FalseValue="Visible" TrueValue="Collapsed"/>
             <mvvm:BoolToVisibilityConverter x:Key="TrueToVisibleConverter" FalseValue="Collapsed" TrueValue="Visible"/>
@@ -37,10 +27,11 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="1*"></RowDefinition>
-            <RowDefinition Height="270"></RowDefinition>
+            <RowDefinition Height="300"></RowDefinition>
         </Grid.RowDefinitions>
         <!--Record folder management expander-->
-        <Expander Name="Expander" Margin="0 10 0 0" MaxWidth="350" Grid.Row="0" Panel.ZIndex="1" ExpandDirection="Right" HorizontalAlignment="Left">
+        <Expander Name="Expander" Margin="0 10 0 0" MaxWidth="350" Grid.Row="0" Panel.ZIndex="1" ExpandDirection="Right" HorizontalAlignment="Left"
+                  Foreground="{DynamicResource MaterialDesignBody}">
             <Expander.Header>
                 <TextBlock Text="Observed directory" RenderTransformOrigin=".5,.5">
                     <TextBlock.LayoutTransform>
@@ -49,9 +40,9 @@
                 </TextBlock>
             </Expander.Header>
             <materialDesign:DialogHost Margin="5 0 5 0"
-									   IsOpen="{Binding CreateFolderDialogIsOpen}"
-									   DialogContent="{Binding CreateFolderDialogContent}"
-									   CloseOnClickAway="False">
+							IsOpen="{Binding CreateFolderDialogIsOpen}"
+							DialogContent="{Binding CreateFolderDialogContent}"
+							CloseOnClickAway="False">
                 <Grid Name="ExpanderGrid">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" ></RowDefinition>
@@ -82,35 +73,39 @@
             </materialDesign:DialogHost>
         </Expander>
         <!--Record list-->
-        <Border Visibility="{Binding HasValidSource, Converter={StaticResource FalseToVisibleConverter}}" Margin="0 10 5 0" BorderBrush="#e6e6e6" BorderThickness="1" Background="#F5F5F5">
+        <Border Visibility="{Binding HasValidSource, Converter={StaticResource FalseToVisibleConverter}}" Margin="0 10 5 0" BorderThickness="1">
             <!--Style="{StaticResource MaterialDesignHeadlineTextBlock}"-->
             <TextBlock Text="Observed directory missing.&#10;Open expander and select a folder." TextAlignment="Center"
-                       TextWrapping="Wrap" Width="220" Margin="60 0 10 0" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                       TextWrapping="Wrap" Width="220" Margin="60 0 10 0" HorizontalAlignment="Center" VerticalAlignment="Center"
+                       Foreground="{DynamicResource MaterialDesignBody}"/>
         </Border>
-        <StackPanel Margin="50 0 0 0" Grid.Row="0"  Orientation="Vertical" >
-            <Grid  Visibility="{Binding HasValidSource, Converter={StaticResource FalseToCollapsedConverter}}">
+        <StackPanel Margin="50 0 0 0" Grid.Row="0" Orientation="Vertical" >
+            <Grid Visibility="{Binding HasValidSource, Converter={StaticResource FalseToCollapsedConverter}}">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"></RowDefinition>
                     <RowDefinition Height="Auto"></RowDefinition>
                 </Grid.RowDefinitions>
-                <TextBox Grid.Row="0" Margin="5 10 5 0" Background="#e6e6e6" Name="RecordSearchBox" materialDesign:HintAssist.Hint="Search" />
-                <TextBlock Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Loading records..." FontSize="16" Panel.ZIndex="1" Visibility="{Binding DirectoryLoading, Converter={StaticResource TrueToVisibleConverter}}"/>
-                <TextBlock Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Directory doesn't contain any valid records..." TextWrapping="Wrap" Width="200" TextAlignment="Center" FontSize="16" Panel.ZIndex="1" Visibility="{Binding DirectoryIsEmpty, Converter={StaticResource TrueToVisibleConverter}}"/>
-                <controls:MultiSelectionDataGrid Grid.Row="1" x:Name="RecordDataGrid" Height="{Binding ElementName=ControlViewControl, Path=ActualHeight, Converter={StaticResource AddValueConverter}}" Background="#F5F5F5" Margin="0 10 5 0" 
-					  Sorting="RecordDataGrid_Sorting" SelectionMode="Extended" SelectedIndex="{Binding RecordDataGridSelectedIndex}"
-					  Tag="{Binding ElementName=ControlViewControl, Path=DataContext}" FontSize="11"
-					  ItemsSource="{Binding Source={StaticResource RecordInfoListKey}}"
-                      SelectedItemsList="{Binding SelectedRecordInfos, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                      SelectedItem="{Binding SelectedRecordInfo}" CanUserSortColumns="True" CanUserAddRows="False" AutoGenerateColumns="False"
-                      PreviewLostKeyboardFocus="RecordDataGrid_PreviewLostKeyboardFocus"
-					  materialDesign:DataGridAssist.CellPadding="13 8 8 8" materialDesign:DataGridAssist.ColumnHeaderPadding="8" IsSynchronizedWithCurrentItem="False"
-					  ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.CanContentScroll="True"
-					  dragdrop:DragDrop.IsDragSource="True"
-					  dragdrop:DragDrop.IsDropTarget="False"
-					  dragdrop:DragDrop.UseDefaultDragAdorner="True"
-					  dragdrop:DragDrop.DefaultDragAdornerOpacity="0.5"
-					  dragdrop:DragDrop.UseDefaultEffectDataTemplate="False"
-                      Style="{StaticResource MaterialDesignDataGrid}">
+                <TextBox Grid.Row="0" Margin="0 10 5 0" Foreground="{DynamicResource MaterialDesignBody}" Name="RecordSearchBox" materialDesign:HintAssist.Hint="Search" />
+                <TextBlock Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Loading records..." FontSize="16" Panel.ZIndex="1" Visibility="{Binding DirectoryLoading, Converter={StaticResource TrueToVisibleConverter}}"
+                           Foreground="{DynamicResource MaterialDesignBody}"/>
+                <TextBlock Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Directory doesn't contain any valid records..." TextWrapping="Wrap" Width="200" TextAlignment="Center" FontSize="16" Panel.ZIndex="1" Visibility="{Binding DirectoryIsEmpty, Converter={StaticResource TrueToVisibleConverter}}"
+                           Foreground="{DynamicResource MaterialDesignBody}"/>
+                <controls:MultiSelectionDataGrid Grid.Row="1" x:Name="RecordDataGrid" Height="{Binding ElementName=ControlViewControl, Path=ActualHeight, Converter={StaticResource AddValueConverter}}" 
+                                                 Margin="0 10 5 0" Sorting="RecordDataGrid_Sorting" SelectionMode="Extended" SelectedIndex="{Binding RecordDataGridSelectedIndex}"
+					                             Tag="{Binding ElementName=ControlViewControl, Path=DataContext}" FontSize="11"
+					                             ItemsSource="{Binding Source={StaticResource RecordInfoListKey}}"
+                                                 SelectedItemsList="{Binding SelectedRecordInfos, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                 SelectedItem="{Binding SelectedRecordInfo}" CanUserSortColumns="True" CanUserAddRows="False" AutoGenerateColumns="False"
+                                                 PreviewLostKeyboardFocus="RecordDataGrid_PreviewLostKeyboardFocus"
+                                                 Foreground="Black"               
+					                             materialDesign:DataGridAssist.CellPadding="13 8 8 8" materialDesign:DataGridAssist.ColumnHeaderPadding="8" IsSynchronizedWithCurrentItem="False"
+					                             ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.CanContentScroll="True"
+					                             dragdrop:DragDrop.IsDragSource="True"
+					                             dragdrop:DragDrop.IsDropTarget="False"
+					                             dragdrop:DragDrop.UseDefaultDragAdorner="True"
+					                             dragdrop:DragDrop.DefaultDragAdornerOpacity="0.5"
+					                             dragdrop:DragDrop.UseDefaultEffectDataTemplate="False"
+                                                 Style="{StaticResource MaterialDesignDataGrid}">
                     <DataGrid.Resources>
                         <Style TargetType="DataGridRow">
                             <EventSetter Event="MouseDoubleClick" Handler="DataGridRow_MouseDoubleClick"/>
@@ -283,7 +278,7 @@
             </Grid>
             <Border Margin="0 5 5 0" BorderThickness="0 1 0 0" BorderBrush="{DynamicResource MaterialDesignDivider}" />
         </StackPanel>
-        <Grid Grid.Row="1" Grid.ColumnSpan="2" Margin="0 5 5 0" Background="#F5F5F5" >
+        <Grid Grid.Row="1" Grid.ColumnSpan="2" Margin="0 5 5 0">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
@@ -299,7 +294,7 @@
             <!--CPU-->
             <TextBox Grid.Row="0" Grid.Column="0" wpf:HintAssist.Hint="Custom CPU description" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
 						 Margin="5 6 5 0" FontSize="12" Text="{Binding CustomCpuDescription, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Stretch"
-                         KeyDown="TextBox_KeyDown"/>
+                         KeyDown="TextBox_KeyDown" Foreground="{DynamicResource MaterialDesignBody}"/>
             <Button Grid.Row="0" Grid.Column="1" Margin="5 6 5 0" Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}"
 							VerticalAlignment="Bottom" HorizontalAlignment="Right"
 							Width="20" Height="20"
@@ -310,7 +305,7 @@
             <!--GPU-->
             <TextBox Grid.Row="1" Grid.Column="0" wpf:HintAssist.Hint="Custom GPU description" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
 						 Margin="5 6 5 0" FontSize="12" Text="{Binding CustomGpuDescription, UpdateSourceTrigger=PropertyChanged}"
-                         KeyDown="TextBox_KeyDown"/>
+                         KeyDown="TextBox_KeyDown" Foreground="{DynamicResource MaterialDesignBody}"/>
             <Button Grid.Row="1" Grid.Column="1" Margin="5 6 5 0" Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}"
 							VerticalAlignment="Bottom" HorizontalAlignment="Right"
 							Width="20" Height="20"
@@ -321,7 +316,7 @@
             <!--RAM-->
             <TextBox Grid.Row="2" Grid.Column="0" wpf:HintAssist.Hint="Custom RAM description" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
 						 Margin="5 6 5 0" FontSize="12" Text="{Binding CustomRamDescription, UpdateSourceTrigger=PropertyChanged}"
-                         KeyDown="TextBox_KeyDown"/>
+                         KeyDown="TextBox_KeyDown" Foreground="{DynamicResource MaterialDesignBody}"/>
             <Button Grid.Row="2" Grid.Column="1" Margin="5 6 5 0" Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}"
 							VerticalAlignment="Bottom" HorizontalAlignment="Right"
 							Width="20" Height="20"
@@ -332,10 +327,10 @@
 
             <TextBox Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" wpf:HintAssist.Hint="Game" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
 						 Margin="5 6 5 0" FontSize="12" Text="{Binding CustomGameName, UpdateSourceTrigger=PropertyChanged}"
-                         KeyDown="TextBox_KeyDown"/>
+                         KeyDown="TextBox_KeyDown" Foreground="{DynamicResource MaterialDesignBody}"/>
             <TextBox Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" wpf:HintAssist.Hint="Comment" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
 						 Margin="5 6 5 0" FontSize="12" Text="{Binding CustomComment, UpdateSourceTrigger=PropertyChanged}"
-                         KeyDown="TextBox_KeyDown"/>
+                         KeyDown="TextBox_KeyDown" Foreground="{DynamicResource MaterialDesignBody}"/>
             <StackPanel Grid.Row="5" Orientation="Horizontal" HorizontalAlignment="Center"
 							Grid.Column="0" Grid.ColumnSpan="2" Margin="0 16 0 5">
                 <Button Style="{DynamicResource MaterialDesignFlatButton}"
