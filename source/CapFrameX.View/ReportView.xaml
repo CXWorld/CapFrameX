@@ -186,7 +186,7 @@
                                             IsReadOnly="True"
                                             Visibility="{Binding DataContext.ShowAdaptiveSTD, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
                     <DataGridTextColumn Binding="{Binding CpuFpsPerWatt, Mode=OneWay}"
-                                            Header="CPU FPS / 10W Name"
+                                            Header="CPU FPS / 10W"
                                             Width="Auto"
                                             IsReadOnly="True"
                                             Visibility="{Binding DataContext.ShowCpuFpsPerWatt, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
