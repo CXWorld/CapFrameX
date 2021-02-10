@@ -30,7 +30,7 @@
             <RowDefinition Height="300"></RowDefinition>
         </Grid.RowDefinitions>
         <!--Record folder management expander-->
-        <Expander Name="Expander" Margin="0 0 0 0" MaxWidth="350" Grid.Row="0" Panel.ZIndex="1" ExpandDirection="Right" HorizontalAlignment="Left"
+        <Expander Name="Expander" Margin="0 0 0 0" MaxWidth="365" Grid.Row="0" Panel.ZIndex="1" ExpandDirection="Right" HorizontalAlignment="Left"
                   Foreground="{DynamicResource MaterialDesignBody}" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
             <Expander.Header>
                 <TextBlock Text="Observed directory" RenderTransformOrigin=".5,.5" HorizontalAlignment="Center">
@@ -39,11 +39,11 @@
                     </TextBlock.LayoutTransform>
                 </TextBlock>
             </Expander.Header>
-            <materialDesign:DialogHost Margin="5 0 5 0"
+            <materialDesign:DialogHost Margin="0 0 5 0"
 							IsOpen="{Binding CreateFolderDialogIsOpen}"
 							DialogContent="{Binding CreateFolderDialogContent}"
 							CloseOnClickAway="False">
-                <Grid Name="ExpanderGrid">
+                <Grid Name="ExpanderGrid" Background="{DynamicResource MaterialDesignPaper}">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" ></RowDefinition>
                         <RowDefinition Height="Auto" ></RowDefinition>
