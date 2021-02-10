@@ -30,10 +30,10 @@
             <RowDefinition Height="300"></RowDefinition>
         </Grid.RowDefinitions>
         <!--Record folder management expander-->
-        <Expander Name="Expander" Margin="0 10 0 0" MaxWidth="350" Grid.Row="0" Panel.ZIndex="1" ExpandDirection="Right" HorizontalAlignment="Left"
-                  Foreground="{DynamicResource MaterialDesignBody}">
+        <Expander Name="Expander" Margin="0 0 0 0" MaxWidth="350" Grid.Row="0" Panel.ZIndex="1" ExpandDirection="Right" HorizontalAlignment="Left"
+                  Foreground="{DynamicResource MaterialDesignBody}" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
             <Expander.Header>
-                <TextBlock Text="Observed directory" RenderTransformOrigin=".5,.5">
+                <TextBlock Text="Observed directory" RenderTransformOrigin=".5,.5" HorizontalAlignment="Center">
                     <TextBlock.LayoutTransform>
                         <RotateTransform Angle="90" />
                     </TextBlock.LayoutTransform>
@@ -97,7 +97,7 @@
                                                  SelectedItemsList="{Binding SelectedRecordInfos, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                  SelectedItem="{Binding SelectedRecordInfo}" CanUserSortColumns="True" CanUserAddRows="False" AutoGenerateColumns="False"
                                                  PreviewLostKeyboardFocus="RecordDataGrid_PreviewLostKeyboardFocus"
-                                                 Foreground="Black"               
+                                                 Foreground="{DynamicResource MaterialDesignBody}"             
 					                             materialDesign:DataGridAssist.CellPadding="13 8 8 8" materialDesign:DataGridAssist.ColumnHeaderPadding="8" IsSynchronizedWithCurrentItem="False"
 					                             ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.CanContentScroll="True"
 					                             dragdrop:DragDrop.IsDragSource="True"
@@ -107,10 +107,65 @@
 					                             dragdrop:DragDrop.UseDefaultEffectDataTemplate="False"
                                                  Style="{StaticResource MaterialDesignDataGrid}">
                     <DataGrid.Resources>
-                        <Style TargetType="DataGridRow">
+                        <Style TargetType="{x:Type DataGridRow}">
                             <EventSetter Event="MouseDoubleClick" Handler="DataGridRow_MouseDoubleClick"/>
                             <Setter Property="DataGrid.Height" Value="40" />
-                        </Style>
+                            <Setter Property="Background" Value="Transparent"/>
+                            <Setter Property="SnapsToDevicePixels" Value="true"/>
+                            <Setter Property="Validation.ErrorTemplate" Value="{x:Null}"/>
+                            <Setter Property="ValidationErrorTemplate">
+                                <Setter.Value>
+                                    <ControlTemplate>
+                                        <TextBlock Foreground="#d50000" Margin="2,0,0,0" Text="!" VerticalAlignment="Center"/>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="{x:Type DataGridRow}">
+                                        <Border x:Name="DGR_Border"
+                                                BorderBrush="{TemplateBinding BorderBrush}"
+                                                BorderThickness="{TemplateBinding BorderThickness}"
+                                                Background="{TemplateBinding Background}"                                                                  
+                                                SnapsToDevicePixels="True">
+                                            <SelectiveScrollingGrid>
+                                                <SelectiveScrollingGrid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                </SelectiveScrollingGrid.ColumnDefinitions>
+                                                <SelectiveScrollingGrid.RowDefinitions>
+                                                    <RowDefinition Height="*"/>
+                                                    <RowDefinition Height="Auto"/>
+                                                </SelectiveScrollingGrid.RowDefinitions>
+                                                <DataGridCellsPresenter Grid.Column="1"
+                                                                        ItemsPanel="{TemplateBinding ItemsPanel}"
+                                                                        SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                                                <DataGridDetailsPresenter Grid.Column="1"
+                                                                        Grid.Row="1"
+                                                                        SelectiveScrollingGrid.SelectiveScrollingOrientation="{Binding AreRowDetailsFrozen, ConverterParameter={x:Static SelectiveScrollingOrientation.Vertical}, Converter={x:Static DataGrid.RowDetailsScrollingConverter}, RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}"
+                                                                        Visibility="{TemplateBinding DetailsVisibility}" />
+                                                <DataGridRowHeader Grid.Column="0"
+                                                                    Grid.Row="0"
+                                                                    Grid.RowSpan="2"
+                                                                    SelectiveScrollingGrid.SelectiveScrollingOrientation="Vertical"
+                                                                    Visibility="{Binding HeadersVisibility, ConverterParameter={x:Static DataGridHeadersVisibility.Row}, Converter={x:Static DataGrid.HeadersVisibilityConverter}, RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}" />
+                                            </SelectiveScrollingGrid>
+                                        </Border>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                            <Style.Triggers>
+                                <Trigger Property="IsSelected" Value="True">
+                                    <Setter Property="Background" Value="{DynamicResource MaterialDesignSelection}" />
+                                </Trigger>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="{DynamicResource MaterialDesignDataGridRowHoverBackground}" />
+                                </Trigger>
+                                <Trigger Property="IsNewItem" Value="True">
+                                    <Setter Property="Margin" Value="{Binding NewItemMargin, RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}"/>
+                                </Trigger>
+                            </Style.Triggers>
+                            </Style>
                     </DataGrid.Resources>
                     <i:Interaction.Triggers>
                         <i:EventTrigger EventName="SelectionChanged">
@@ -197,7 +252,7 @@
                         </Style>
                     </DataGrid.ColumnHeaderStyle>
                     <DataGrid.Columns>
-                        <DataGridTextColumn  Binding="{Binding GameName, Mode=OneWay}"
+                        <DataGridTextColumn Binding="{Binding GameName, Mode=OneWay}"
                                         Width="Auto"
                                         Header="Game"
                                         IsReadOnly="True">
