@@ -61,5 +61,7 @@ namespace CapFrameX.EventAggregation.Messages
                 ProcessId = processId;
             }
         }
+
+        public class ThemeChanged { }
     }
 }

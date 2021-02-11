@@ -165,7 +165,7 @@
                                         </ComboBox>
                                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="15 5 0 5" Grid.Row="1" Grid.Column="1">
                                             <TextBlock Text="Dark mode"/>
-                                            <ToggleButton Margin="15 0 0 0" Click="MenuDarkModeButton_Click"/>
+                                            <ToggleButton Margin="15 0 0 0" Click="MenuDarkModeButton_Click" IsChecked="{Binding IsDarkModeToggleChecked}"/>
                                         </StackPanel>
                                         <StackPanel Grid.Row="1" Grid.Column="0" Margin="20 5 0 5" Orientation="Horizontal"
                                             ToolTip="Select resolution for graph export(via context menu)">

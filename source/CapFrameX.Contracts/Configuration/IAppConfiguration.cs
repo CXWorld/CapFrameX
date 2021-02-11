@@ -204,5 +204,7 @@ namespace CapFrameX.Contracts.Configuration
 		bool ReportShowCpuFpsPerWatt { get; set; }
 
 		bool ReportShowGpuFpsPerWatt { get; set; }
+
+		bool UseDarkMode { get; set; }
 	}
 }

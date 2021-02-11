@@ -31,10 +31,9 @@ namespace CapFrameX.ViewModel
         private readonly IShell _shell;
         private readonly ISystemInfo _systemInfo;
         private readonly LoginManager _loginManager;
-        private PubSubEvent<AppMessages.UpdateObservedDirectory> _updateObservedFolder;
         private PubSubEvent<AppMessages.OpenLoginWindow> _openLoginWindow;
-        private PubSubEvent<AppMessages.LoginState> _logout;
         public PubSubEvent<ViewMessages.OptionPopupClosed> OptionPopupClosed;
+        public PubSubEvent<ViewMessages.ThemeChanged> _themeChanged;
 
         private bool _captureIsChecked = true;
         private bool _overlayIsChecked;
@@ -343,6 +342,16 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        public bool IsDarkModeToggleChecked
+        {
+            get { return _appConfiguration.UseDarkMode; }
+            set
+            {
+                _appConfiguration.UseDarkMode = value;
+                _themeChanged.Publish(new ViewMessages.ThemeChanged());
+            }
+        }
+
         public string HelpText => File.ReadAllText(@"HelpTexts\ChartControls.rtf");
 
         public bool IsCompatibleWithRunningOS => CaptureServiceInfo.IsCompatibleWithRunningOS;
@@ -392,13 +401,12 @@ namespace CapFrameX.ViewModel
             RoundingDigits = new List<int>(Enumerable.Range(0, 8));
             SelectScreenshotFolderCommand = new DelegateCommand(OnSelectScreenshotFolder);
             OpenScreenshotFolderCommand = new DelegateCommand(OnOpenScreenshotFolder);
-            OptionPopupClosed = eventAggregator.GetEvent<PubSubEvent<ViewMessages.OptionPopupClosed>>();
 
             HasCustomInfo = SelectedHardwareInfoSource == EHardwareInfoSource.Custom;
             IsLoggedIn = _loginManager.State.Token != null;
             SetAggregatorEvents();
+            SubscribeToAggregatorEvents();
             SetHardwareInfoDefaultsFromDatabase();
-            SubscribeToUpdateSession();
 
             stopwatch.Stop();
             _logger.LogInformation(this.GetType().Name + " {initializationTime}s initialization time", Math.Round(stopwatch.ElapsedMilliseconds * 1E-03, 1));
@@ -454,7 +462,7 @@ namespace CapFrameX.ViewModel
                 }
                 Process.Start(path);
             }
-            catch { }
+            catch { _logger.LogError("Error while opening screenshot folder."); }
         }
 
         private void OnCaptureIsCheckedChanged()
@@ -552,22 +560,24 @@ namespace CapFrameX.ViewModel
 
         private void SetAggregatorEvents()
         {
-            _updateObservedFolder = _eventAggregator.GetEvent<PubSubEvent<AppMessages.UpdateObservedDirectory>>();
-            _openLoginWindow = _eventAggregator.GetEvent<PubSubEvent<AppMessages.OpenLoginWindow>>();
-            _logout = _eventAggregator.GetEvent<PubSubEvent<AppMessages.LoginState>>();
-            _eventAggregator.GetEvent<PubSubEvent<AppMessages.LoginState>>().Subscribe(state =>
-            {
-                IsLoggedIn = state.IsLoggedIn;
-                RaisePropertyChanged(nameof(IsLoggedIn));
-            });
+            OptionPopupClosed = _eventAggregator.GetEvent<PubSubEvent<ViewMessages.OptionPopupClosed>>();
+            _openLoginWindow = _eventAggregator.GetEvent<PubSubEvent<AppMessages.OpenLoginWindow>>();     
+            _themeChanged = _eventAggregator.GetEvent<PubSubEvent<ViewMessages.ThemeChanged>>();
         }
-        private void SubscribeToUpdateSession()
+        private void SubscribeToAggregatorEvents()
         {
+            _eventAggregator.GetEvent<PubSubEvent<AppMessages.LoginState>>()
+                .Subscribe(state =>
+                {
+                    IsLoggedIn = state.IsLoggedIn;
+                    RaisePropertyChanged(nameof(IsLoggedIn));
+                });
+
             _eventAggregator.GetEvent<PubSubEvent<ViewMessages.UpdateSession>>()
-                            .Subscribe(msg =>
-                            {
-                                RecordInfo = msg.RecordInfo;
-                            });
+                .Subscribe(msg =>
+                {
+                    RecordInfo = msg.RecordInfo;
+                });
         }
     }
 }

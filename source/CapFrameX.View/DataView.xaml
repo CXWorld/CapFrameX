@@ -45,7 +45,7 @@
                 <Setter Property="Background" Value="{DynamicResource PrimaryHueMidBrush}"/>
                 <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBody}"/>
                 <Setter Property="Padding" Value="0"/>
-                <Setter Property="Height" Value="30" />
+                <Setter Property="Height" Value="25" />
             </Style>
         </ResourceDictionary>
     </UserControl.Resources>
@@ -220,7 +220,7 @@
                         <ColumnDefinition Width="100*" MaxWidth="600"/>
                     </Grid.ColumnDefinitions>
                     <!--FPS metrics-->
-                    <Grid Grid.Column="0"  Margin="0 5 0 0" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
+                    <Grid Grid.Column="0" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
                         <lvc:CartesianChart Margin="15 10 0 5" Series="{Binding StatisticCollection}" LegendLocation="None"
 									Tag="{Binding ElementName=DataViewUserControl, Path=DataContext}" DataTooltip="{x:Null}">
                             <lvc:CartesianChart.ContextMenu>
@@ -242,7 +242,7 @@
                         </lvc:CartesianChart>
                     </Grid>
                     <!--FPS thresholds and stuttering analysis-->
-                    <Grid Grid.Column="2" Margin="5 5 0 0" >
+                    <Grid Grid.Column="2" Margin="5 0 0 0" >
                         <TabControl Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
                             <TabItem Width="110">
                                 <TabItem.Header>
@@ -440,7 +440,7 @@
                 </Grid>
             </Grid>
             <!--Toolbar grid-->
-            <Grid Grid.Row="1" Margin="5 5 5 5">
+            <Grid Grid.Row="1" Margin="5 5 5 5" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="Auto" />

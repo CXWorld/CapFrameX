@@ -19,9 +19,7 @@
 //SOFTWARE.
 
 using System;
-using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
 using System.Windows.Shapes;
 using LiveCharts.Charts;
 using LiveCharts.Definitions.Points;
@@ -29,7 +27,7 @@ using LiveCharts.Dtos;
 
 namespace LiveCharts.Wpf.Points
 {
-    internal class PointView : IChartPointView
+    public class PointView : IChartPointView
     {
         public Shape HoverShape { get; set; }
         public ContentControl DataLabel { get; set; }
