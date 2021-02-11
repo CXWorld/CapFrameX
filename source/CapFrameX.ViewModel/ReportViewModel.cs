@@ -55,7 +55,10 @@ namespace CapFrameX.ViewModel
                 if (value)
                     AddAverageReportInfo(ReportInfoCollection);
                 else
-                    ReportInfoCollection.RemoveAt(ReportInfoCollection.Count-1);
+                {
+                    if (ReportInfoCollection.Any())
+                        ReportInfoCollection.RemoveAt(ReportInfoCollection.Count - 1);
+                }
 
                 RaisePropertyChanged();
             }
@@ -105,7 +108,7 @@ namespace CapFrameX.ViewModel
 
             ReportInfoCollection.Remove(selectedItem);
 
-            if(!selectedItem.Game.Equals("Averaged values") && ReportShowAverageRow)
+            if (!selectedItem.Game.Equals("Averaged values") && ReportShowAverageRow)
                 AddAverageReportInfo(ReportInfoCollection);
         }
 
@@ -279,7 +282,7 @@ namespace CapFrameX.ViewModel
                 CpuFpsPerWatt = cpuFpsPerWatt,
                 GpuFpsPerWatt = gpuFpsPerWatt,
                 CustomComment = recordInfo.Comment
-            };  
+            };
 
             return reportInfo;
         }
@@ -288,7 +291,7 @@ namespace CapFrameX.ViewModel
         {
             var averageInfo = reportInfoCollection.FirstOrDefault(x => x.Game == "Averaged values");
 
-            if(averageInfo != null)
+            if (averageInfo != null)
             {
                 reportInfoCollection.Remove(averageInfo);
             }

@@ -13,15 +13,7 @@
              d:DesignHeight="450" d:DesignWidth="800"
 			 prism:ViewModelLocator.AutoWireViewModel="True">
 	<UserControl.Resources>
-		<ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Button.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Shadows.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ToggleButton.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.DataGrid.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Slider.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.PopupBox.xaml" />
-            </ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary>
             <mvvm:BoolToVisibilityConverter x:Key="TrueToVisibleConverter" FalseValue="Collapsed" TrueValue="Visible"/>
 			<mvvm:AddValueConverter x:Key="AddValueConverter" Offset="-75"/>
 		</ResourceDictionary>
@@ -32,23 +24,14 @@
             <RowDefinition Height="65"/>
         </Grid.RowDefinitions>
         <Border VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="{Binding HasNoReportItems, Converter={StaticResource TrueToVisibleConverter}}"  Grid.ZIndex="1">
-            <TextBlock Text="Drop items here or double click them in the record list." FontSize="18"/>
+            <TextBlock Text="Drop items here or double click them in the record list." FontSize="18" Foreground="{DynamicResource MaterialDesignBody}"/>
         </Border>
-        <DataGrid Grid.Row="0"
-				  Margin="5 10 5 0"
-				  AutoGenerateColumns="True"
-				  AutoGeneratingColumn="OnAutoGeneratingColumn"
-				  Tag="{Binding ElementName=ReportViewControl, Path=DataContext}" 
-				  Name ="ReportDataGrid"
+        <DataGrid Grid.Row="0" Margin="5 10 5 0" AutoGenerateColumns="True" AutoGeneratingColumn="OnAutoGeneratingColumn"
+				  Tag="{Binding ElementName=ReportViewControl, Path=DataContext}" Name ="ReportDataGrid"
 				  Height="{Binding ElementName=ReportViewControl, Path=ActualHeight, Converter={StaticResource AddValueConverter}}"
-				  ItemsSource="{Binding ReportInfoCollection}"
-				  Background="#F5F5F5" 
-                  FocusVisualStyle="{x:Null}"
+				  ItemsSource="{Binding ReportInfoCollection}" FocusVisualStyle="{x:Null}"
 				  materialDesign:DataGridAssist.CellPadding="13 8 8 8" materialDesign:DataGridAssist.ColumnHeaderPadding="8" IsSynchronizedWithCurrentItem="False"
-				  CanUserSortColumns="True"
-				  CanUserAddRows="False"
-                  IsReadOnly="True"
-                  LoadingRow="ReportDataGrid_LoadingRow"
+				  CanUserSortColumns="True" CanUserAddRows="False" IsReadOnly="True" LoadingRow="ReportDataGrid_LoadingRow"
 				  ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.CanContentScroll="True"
                   PreviewKeyDown="ReportDataGrid_PreviewKeyDown"
 				  dragdrop:DragDrop.IsDropTarget="True"
@@ -57,14 +40,15 @@
 				  dragdrop:DragDrop.UseDefaultDragAdorner="True"
 				  dragdrop:DragDrop.DropTargetAdornerBrush="White"
 				  dragdrop:DragDrop.DefaultDragAdornerOpacity="0.5"
-				  dragdrop:DragDrop.UseDefaultEffectDataTemplate="False">
+				  dragdrop:DragDrop.UseDefaultEffectDataTemplate="False"
+                  Style="{StaticResource MaterialDesignDataGrid}">
 			<DataGrid.ContextMenu>
 				<ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
 					<MenuItem Header="Copy table" Command="{Binding CopyTableDataCommand}"/>
 				</ContextMenu>
 			</DataGrid.ContextMenu>
 		</DataGrid>
-        <Grid Grid.Row="1" Margin="5" Background="#e6e6e6">
+        <Grid Grid.Row="1" Margin="5" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="1*"></ColumnDefinition>
                 <ColumnDefinition Width="1*"></ColumnDefinition>
@@ -73,12 +57,12 @@
                 <ColumnDefinition Width="1*"></ColumnDefinition>
             </Grid.ColumnDefinitions>
             <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0 5 0 0" Orientation="Horizontal">
-                <TextBlock Margin="20 0 10 0" Text="Show average row"></TextBlock>
+                <TextBlock Margin="20 0 10 0" Text="Show average row" Foreground="{DynamicResource MaterialDesignBody}"></TextBlock>
                 <ToggleButton IsChecked="{Binding ReportShowAverageRow}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Shows an additional row containing the averaged FPS metrics of all inserted records."/>
             </StackPanel>
             <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0 5 0 0" Orientation="Horizontal">
-                <TextBlock VerticalAlignment="Center">Metrics settings:</TextBlock>
-                <materialDesign:PopupBox StaysOpen="True" ToolTip="Select metrics to be shown">
+                <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}">Metrics settings:</TextBlock>
+                <materialDesign:PopupBox StaysOpen="True" ToolTip="Select metrics to be shown" Foreground="{DynamicResource MaterialDesignBody}">
                     <materialDesign:Card Width="Auto" Margin="0 0 0 -10">
                         <Grid Margin="8 8 8 8">
                             <Grid.Resources>

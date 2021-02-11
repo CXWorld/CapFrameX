@@ -21,6 +21,7 @@
 using System;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 using System.Windows.Shapes;
 using LiveCharts.Charts;
 using LiveCharts.Definitions.Points;
