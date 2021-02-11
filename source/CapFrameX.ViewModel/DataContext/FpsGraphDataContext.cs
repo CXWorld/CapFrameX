@@ -12,6 +12,7 @@ using CapFrameX.Statistics.NetStandard;
 using System.Windows.Forms;
 using CapFrameX.Statistics.PlotBuilder;
 using CapFrameX.Statistics.PlotBuilder.Contracts;
+using Prism.Events;
 
 namespace CapFrameX.ViewModel.DataContext
 {
@@ -23,40 +24,48 @@ namespace CapFrameX.ViewModel.DataContext
 		public ICommand CopyFpsPointsCommand { get; }
 		public ICommand SavePlotAsImage { get; }
 
-		private readonly FpsGraphPlotBuilder _graphPlotBuilder;
+		private readonly FpsGraphPlotBuilder _fpsPlotBuilder;
 
 		public FpsGraphDataContext(IRecordDataServer recordDataServer,
-			IAppConfiguration appConfiguration, IStatisticProvider frametimesStatisticProvider) :
-			base(appConfiguration, recordDataServer, frametimesStatisticProvider)
+								   IAppConfiguration appConfiguration, 
+								   IStatisticProvider frametimesStatisticProvider, 
+								   IEventAggregator eventAggregator) :
+			base(appConfiguration, recordDataServer, frametimesStatisticProvider, eventAggregator)
 		{
 			CopyFpsValuesCommand = new DelegateCommand(OnCopyFpsValues);
 			CopyFpsPointsCommand = new DelegateCommand(OnCopyFpsPoints);
 			SavePlotAsImage = new DelegateCommand(() => OnSavePlotAsImage("fps"));
-			_graphPlotBuilder = new FpsGraphPlotBuilder(appConfiguration, frametimesStatisticProvider);
+			_fpsPlotBuilder = new FpsGraphPlotBuilder(appConfiguration, frametimesStatisticProvider);
 		}
 
 
 		public void BuildPlotmodel(IPlotSettings plotSettings, Action<PlotModel> onFinishAction = null)
 		{
 			Dispatcher.CurrentDispatcher.Invoke(() => {
-				_graphPlotBuilder.BuildPlotmodel(RecordDataServer.CurrentSession, plotSettings, 
+				_fpsPlotBuilder.BuildPlotmodel(RecordDataServer.CurrentSession, plotSettings, 
 					RecordDataServer.CurrentTime, RecordDataServer.CurrentTime + RecordDataServer.WindowLength, 
 					RecordDataServer.RemoveOutlierMethod, RecordDataServer.FilterMode, onFinishAction);
-				PlotModel = _graphPlotBuilder.PlotModel;
+
+				var plotModel = _fpsPlotBuilder.PlotModel;
+				plotModel.TextColor = AppConfiguration.UseDarkMode ? OxyColors.White : OxyColors.Black;
+				PlotModel = plotModel;
 			});
 		}
 
 		public void Reset()
 		{
-			Dispatcher.CurrentDispatcher.Invoke(() => {
-				_graphPlotBuilder.Reset();
-				PlotModel = _graphPlotBuilder.PlotModel;
+			Dispatcher.CurrentDispatcher.Invoke(() => 
+			{
+				_fpsPlotBuilder.Reset();
+				var plotModel = _fpsPlotBuilder.PlotModel;
+				plotModel.TextColor = AppConfiguration.UseDarkMode ? OxyColors.White : OxyColors.Black;
+				PlotModel = plotModel;
 			});
 		}
 
 		public void UpdateAxis(EPlotAxis axis, Action<Axis> action)
 		{
-			_graphPlotBuilder.UpdateAxis(axis, action);
+			_fpsPlotBuilder.UpdateAxis(axis, action);
 		}
 
 		private void OnCopyFpsValues()

@@ -12,16 +12,8 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
 	<UserControl.Resources>
-		<ResourceDictionary>
-			<ResourceDictionary.MergedDictionaries>
-				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Button.xaml" />
-				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Shadows.xaml" />
-				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ToggleButton.xaml" />
-				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.DataGrid.xaml" />
-				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Slider.xaml" />
-				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.GridSplitter.xaml" />
-			</ResourceDictionary.MergedDictionaries>
-			<mvvm:ZoomingModeConverter x:Key="ZoomingModeConverter"/>
+        <ResourceDictionary>
+            <mvvm:ZoomingModeConverter x:Key="ZoomingModeConverter"/>
 			<mvvm:NegateBoolConverter x:Key="NegateBoolConverter"/>
 			<mvvm:BoolToVisibilityConverter x:Key="TrueToCollapsedConverter" TrueValue="Collapsed" FalseValue="Visible"/>
 			<mvvm:BoolToVisibilityConverter x:Key="FalseToCollapsedConverter" TrueValue="Visible" FalseValue="Collapsed"/>
@@ -34,17 +26,18 @@
 		<Grid.RowDefinitions>
 			<RowDefinition Height="1*"></RowDefinition>
 		</Grid.RowDefinitions>
-		<Grid Grid.Row="0" Background="#F0F0F0">
-            <controls:PlotViewCustomZoom Background="#F0F0F0" x:Name="FrametimePlotView" Model="{Binding FrametimeModel}" Tag="{Binding ElementName=FrametimeGraphControlName, Path=DataContext}"
-						  MouseDoubleClick="ResetChart_MouseDoubleClick">
+		<Grid Grid.Row="0">
+            <controls:PlotViewCustomZoom Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" x:Name="FrametimePlotView" 
+                                         Model="{Binding FrametimeModel}" Tag="{Binding ElementName=FrametimeGraphControlName, Path=DataContext}"
+										 MouseDoubleClick="ResetChart_MouseDoubleClick">
                 <controls:PlotViewCustomZoom.ContextMenu>
-					<ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
-						<MenuItem Header="Copy frametime values (f)" Command="{Binding CopyFrametimeValuesCommand}"/>
+                    <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
+                        <MenuItem Header="Copy frametime values (f)" Command="{Binding CopyFrametimeValuesCommand}"/>
                         <MenuItem Header="Copy frametime points (t, f(t))" Command="{Binding CopyFrametimePointsCommand}"/>
-						<MenuItem Header="Save plot as image" Command="{Binding SavePlotAsImage }"/>
+                        <MenuItem Header="Save plot as image" Command="{Binding SavePlotAsImage }"/>
                     </ContextMenu>
-				</controls:PlotViewCustomZoom.ContextMenu>
-			</controls:PlotViewCustomZoom>
+                </controls:PlotViewCustomZoom.ContextMenu>
+            </controls:PlotViewCustomZoom>
 		</Grid>
 	</Grid>
 </UserControl>

@@ -234,7 +234,7 @@
                     <!--FPS thresholds and stuttering analysis-->
                     <Grid Grid.Column="2" Margin="5 0 0 0" >
                         <TabControl Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
-                            <TabItem Width="110">
+                            <TabItem Width="105">
                                 <TabItem.Header>
                                     <TextBlock Text="Stuttering analysis" FontSize="12" />
                                 </TabItem.Header>
@@ -284,7 +284,7 @@
                                     </StackPanel>
                                 </Grid>
                             </TabItem>
-                            <TabItem Width="110">
+                            <TabItem Width="105">
                                 <TabItem.Header>
                                     <TextBlock Text="FPS thresholds" FontSize="12" />
                                 </TabItem.Header>
@@ -351,7 +351,7 @@
                                     </lvc:CartesianChart>
                                 </Grid>
                             </TabItem>
-                            <TabItem Width="110" IsEnabled="{Binding AdditionalGraphsEnabled}">
+                            <TabItem Width="105" IsEnabled="{Binding AdditionalGraphsEnabled}">
                                 <TabItem.Header>
                                     <TextBlock Text="Sensor statistics" FontSize="12" />
                                 </TabItem.Header>
@@ -576,7 +576,7 @@
                 </StackPanel>
             </Grid>
             <!--System info expander-->
-            <Expander Margin="0 -35 0 0" Grid.Row="0" Grid.RowSpan="3" Grid.Column="1" ExpandDirection="Left"
+            <Expander Margin="0 -27 0 0" Grid.Row="0" Grid.RowSpan="3" Grid.Column="1" ExpandDirection="Left"
                       Foreground="{DynamicResource MaterialDesignBody}" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
                 <Expander.Header>
                     <TextBlock Text="System Info" RenderTransformOrigin=".5,.5" HorizontalAlignment="Center">

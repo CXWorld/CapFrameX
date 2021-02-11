@@ -6,6 +6,7 @@ using CapFrameX.Statistics.PlotBuilder.Contracts;
 using OxyPlot;
 using OxyPlot.Axes;
 using Prism.Commands;
+using Prism.Events;
 using System;
 using System.Globalization;
 using System.IO;
@@ -27,8 +28,11 @@ namespace CapFrameX.ViewModel.DataContext
 
         private readonly FrametimePlotBuilder _frametimePlotBuilder;
 
-        public FrametimeGraphDataContext(IRecordDataServer recordDataServer, IAppConfiguration appConfiguration, IStatisticProvider frametimesStatisticProvider) :
-            base(appConfiguration, recordDataServer, frametimesStatisticProvider)
+        public FrametimeGraphDataContext(IRecordDataServer recordDataServer, 
+                                         IAppConfiguration appConfiguration, 
+                                         IStatisticProvider frametimesStatisticProvider, 
+                                         IEventAggregator eventAggregator) :
+            base(appConfiguration, recordDataServer, frametimesStatisticProvider, eventAggregator)
         {
             CopyFrametimeValuesCommand = new DelegateCommand(OnCopyFrametimeValues);
             CopyFrametimePointsCommand = new DelegateCommand(OnCopyFrametimePoints);
@@ -41,7 +45,9 @@ namespace CapFrameX.ViewModel.DataContext
             Dispatcher.CurrentDispatcher.Invoke(() =>
             {
                 _frametimePlotBuilder.BuildPlotmodel(RecordDataServer.CurrentSession, plotSettings, RecordDataServer.CurrentTime, RecordDataServer.CurrentTime + RecordDataServer.WindowLength, RecordDataServer.RemoveOutlierMethod, onFinishAction);
-                PlotModel = _frametimePlotBuilder.PlotModel;
+                var plotModel = _frametimePlotBuilder.PlotModel;
+                plotModel.TextColor = AppConfiguration.UseDarkMode ? OxyColors.White : OxyColors.Black;
+                PlotModel = plotModel;
             });
         }
 
@@ -50,7 +56,9 @@ namespace CapFrameX.ViewModel.DataContext
             Dispatcher.CurrentDispatcher.Invoke(() =>
             {
                 _frametimePlotBuilder.Reset();
-                PlotModel = _frametimePlotBuilder.PlotModel;
+                var plotModel = _frametimePlotBuilder.PlotModel;
+                plotModel.TextColor = AppConfiguration.UseDarkMode ? OxyColors.White : OxyColors.Black;
+                PlotModel = plotModel;
             });
         }
 

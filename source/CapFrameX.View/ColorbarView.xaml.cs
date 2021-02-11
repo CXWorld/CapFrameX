@@ -28,6 +28,7 @@ namespace CapFrameX.View
         public ColorbarView()
         {
             InitializeComponent();
+            ModifyTheme((DataContext as ColorbarViewModel).AppConfiguration.UseDarkMode);
         }
 
         private void PopupBox_RequestBringIntoView(object sender, RequestBringIntoViewEventArgs e) { }
