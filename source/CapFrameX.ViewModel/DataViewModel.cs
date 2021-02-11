@@ -506,8 +506,6 @@ namespace CapFrameX.ViewModel
             _recordManager = recordManager;
             _logger = logger;
 
-            SubscribeToUpdateSession();
-
             CopyStatisticalParameterCommand = new DelegateCommand(OnCopyStatisticalParameter);
             CopyLShapeQuantilesCommand = new DelegateCommand(OnCopyQuantiles);
             CopySystemInfoCommand = new DelegateCommand(OnCopySystemInfoCommand);
@@ -521,12 +519,13 @@ namespace CapFrameX.ViewModel
             ParameterFormatter = value => value.ToString(CultureInfo.InvariantCulture);
             _localRecordDataServer = new LocalRecordDataServer(appConfiguration);
             FrametimeGraphDataContext = new FrametimeGraphDataContext(_localRecordDataServer,
-                _appConfiguration, _frametimeStatisticProvider);
+                _appConfiguration, _frametimeStatisticProvider, _eventAggregator);
             FpsGraphDataContext = new FpsGraphDataContext(_localRecordDataServer,
-                _appConfiguration, _frametimeStatisticProvider);
+                _appConfiguration, _frametimeStatisticProvider, _eventAggregator);
 
             MessageDialogContent = new ContitionalMessageDialog();
 
+            SubscribeToAggregatorEvents();
             InitializeStatisticParameter();
             SetThresholdLabels();
             Setup();
@@ -825,7 +824,7 @@ namespace CapFrameX.ViewModel
                 .ToString(CultureInfo.InvariantCulture) + " s";
         }
 
-        private void SubscribeToUpdateSession()
+        private void SubscribeToAggregatorEvents()
         {
             _eventAggregator.GetEvent<PubSubEvent<ViewMessages.UpdateSession>>()
                             .Subscribe(msg =>
@@ -834,6 +833,15 @@ namespace CapFrameX.ViewModel
                                 RecordInfo = msg.RecordInfo;
                                 RaisePropertyChanged(nameof(AdditionalGraphsEnabled));
 
+                                if (_useUpdateSession)
+                                {
+                                    UpdateAnalysisPage();
+                                }
+                            });
+
+            _eventAggregator.GetEvent<PubSubEvent<ViewMessages.ThemeChanged>>()
+                            .Subscribe(msg =>
+                            {
                                 if (_useUpdateSession)
                                 {
                                     UpdateAnalysisPage();

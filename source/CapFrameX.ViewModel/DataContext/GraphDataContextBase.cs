@@ -1,9 +1,11 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using CapFrameX.Data;
 using CapFrameX.Data.Session.Contracts;
+using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Statistics.NetStandard;
 using CapFrameX.Statistics.PlotBuilder.Contracts;
 using OxyPlot;
+using Prism.Events;
 using Prism.Mvvm;
 using System.IO;
 using System.Linq;
@@ -16,7 +18,8 @@ namespace CapFrameX.ViewModel.DataContext
 	{
 		public const int SCALE_RESOLUTION = 200;
 
-		protected readonly IStatisticProvider FrrametimesStatisticProvider;
+		protected readonly IStatisticProvider _frametimesStatisticProvider;
+		protected readonly IEventAggregator _eventAggregator;
 
 		protected PlotModel PlotModel { get; set; }
 
@@ -25,14 +28,19 @@ namespace CapFrameX.ViewModel.DataContext
 		protected IRecordDataServer RecordDataServer { get; }
 
 		public GraphDataContextBase(IAppConfiguration appConfiguration, 
-			IRecordDataServer recordDataServer, IStatisticProvider frametimesStatisticProvider)
+									IRecordDataServer recordDataServer, 
+									IStatisticProvider frametimesStatisticProvider,
+									IEventAggregator eventAggregator)
 		{
 			AppConfiguration = appConfiguration;
 			RecordDataServer = recordDataServer;
-			FrrametimesStatisticProvider = frametimesStatisticProvider;
+			_frametimesStatisticProvider = frametimesStatisticProvider;
+			_eventAggregator = eventAggregator;
+
+			SubscribeToAggregatorEvents();
 		}
 
-		public ISession RecordSession
+        public ISession RecordSession
 		{
 			get => RecordDataServer.CurrentSession;
 			set
@@ -70,6 +78,16 @@ namespace CapFrameX.ViewModel.DataContext
 					File.WriteAllBytes(dialog.FileName, memStream.ToArray());
 				}
 			}
+		}
+
+		private void SubscribeToAggregatorEvents()
+		{
+			_eventAggregator.GetEvent<PubSubEvent<ViewMessages.ThemeChanged>>()
+							.Subscribe(msg =>
+							{
+								PlotModel.TextColor = AppConfiguration.UseDarkMode ? OxyColors.White : OxyColors.Black;
+								PlotModel.InvalidatePlot(false);
+							});
 		}
 	}
 
