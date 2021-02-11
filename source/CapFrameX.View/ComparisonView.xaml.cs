@@ -52,7 +52,7 @@ namespace CapFrameX.View
 			}
 			(DataContext as ComparisonViewModel).OnRangeSliderValuesChanged();
 		}
-
+		
 		private void LastSecondsTextBox_PreviewKeyDown(object sender, KeyEventArgs e)
 		{
 			var key = e.Key;
@@ -62,6 +62,16 @@ namespace CapFrameX.View
 				GraphTab.Focus();
 			}
 			(DataContext as ComparisonViewModel).OnRangeSliderValuesChanged();
+		}
+
+		private void CustomTitle_PreviewKeyDown(object sender, KeyEventArgs e)
+		{
+			var key = e.Key;
+
+			if (key == Key.Enter)
+			{
+				GraphTab.Focus();
+			}
 		}
 
 		private void NumberValidationTextBox(object sender, TextCompositionEventArgs e)

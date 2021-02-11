@@ -22,6 +22,8 @@ using CapFrameX.Statistics.NetStandard.Contracts;
 using CapFrameX.Sensor.Reporting;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;
+using System.Windows.Controls;
+using System.ComponentModel;
 
 namespace CapFrameX.ViewModel
 {
@@ -105,11 +107,13 @@ namespace CapFrameX.ViewModel
 
         public void RemoveReportEntry(ReportInfo selectedItem)
         {
-
-            ReportInfoCollection.Remove(selectedItem);
-
-            if (!selectedItem.Game.Equals("Averaged values") && ReportShowAverageRow)
+            if (selectedItem.Game.Equals("Averaged values"))
+                return;
+            else
+            {
+                ReportInfoCollection.Remove(selectedItem);
                 AddAverageReportInfo(ReportInfoCollection);
+            }
         }
 
         private void OnCopyTableData()
@@ -121,7 +125,6 @@ namespace CapFrameX.ViewModel
 
             // Header
             var displayNameGame = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.Game);
-            var displayNameResolution = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.Resolution);
             var displayNameDate = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.Date);
             var displayNameTime = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.Time);
             var displayNameNumberOfSamples = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.NumberOfSamples);
@@ -147,7 +150,6 @@ namespace CapFrameX.ViewModel
             var displayNameCustomComment = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.CustomComment);
 
             builder.Append(displayNameGame + "\t" +
-                           displayNameResolution + "\t" +
                            displayNameDate + "\t" +
                            displayNameTime + "\t" +
                            displayNameNumberOfSamples + "\t" +
@@ -178,7 +180,6 @@ namespace CapFrameX.ViewModel
             foreach (var reportInfo in ReportInfoCollection)
             {
                 builder.Append(reportInfo.Game + "\t" +
-                               reportInfo.Resolution + "\t" +
                                reportInfo.Date?.ToString(cultureInfo) + "\t" +
                                reportInfo.Time?.ToString(cultureInfo) + "\t" +
                                reportInfo.NumberOfSamples + "\t" +
@@ -258,7 +259,6 @@ namespace CapFrameX.ViewModel
             var reportInfo = new ReportInfo()
             {
                 Game = recordInfo.GameName,
-                Resolution = recordInfo.Resolution,
                 Date = recordInfo.CreationDate,
                 Time = recordInfo.CreationTime,
                 NumberOfSamples = frameTimes.Count.ToString(),
@@ -319,6 +319,32 @@ namespace CapFrameX.ViewModel
 
             if (ReportShowAverageRow)
                 AddAverageReportInfo(ReportInfoCollection);
+        }
+
+        public void OnGridSorting(object sender, DataGridSortingEventArgs e)
+        {
+            switch (e.Column.SortDirection)
+            {
+                case ListSortDirection.Ascending:
+                    e.Column.SortDirection = ListSortDirection.Descending;
+                    break;
+
+                case ListSortDirection.Descending:
+                    e.Column.SortDirection = ListSortDirection.Ascending;
+                    break;
+
+                default:
+                    e.Column.SortDirection = ListSortDirection.Ascending;
+                    break;
+            }
+
+            var column = e.Column.SortMemberPath;
+            var propertyInfo = typeof(ReportInfo).GetProperty(column);
+            ReportInfoCollection.Sort(c => propertyInfo.GetValue(c), e.Column.SortDirection);
+
+            var averageRow = ReportInfoCollection.FirstOrDefault(x => x.Game == "Averaged values");
+            if (averageRow != null)
+                ReportInfoCollection.Move(ReportInfoCollection.IndexOf(averageRow), ReportInfoCollection.Count - 1);
         }
 
         public bool IsNavigationTarget(NavigationContext navigationContext)

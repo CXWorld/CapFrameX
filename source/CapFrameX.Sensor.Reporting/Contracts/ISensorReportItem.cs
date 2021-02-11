@@ -6,5 +6,6 @@
         double MinValue { get; set; }
         double AverageValue { get; set; }
         double MaxValue { get; set; }
+        int RoundingDigits { get; set; }
     }
 }

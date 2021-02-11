@@ -115,6 +115,17 @@ namespace CapFrameX.View
             }
         }
 
+        private void CustomTitle_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            var key = e.Key;
+
+            if (key == Key.Enter)
+            {
+                GraphTab.Focus();
+            }
+        }
+
+
         private void NumberValidationTextBox(object sender, TextCompositionEventArgs e)
         {
             Regex regex = new Regex("[^0-9.-]+");

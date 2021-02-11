@@ -6,8 +6,6 @@ namespace CapFrameX.Data
 	{
 		[DisplayName("Game")]
 		public string Game { get; set; }
-		[DisplayName("Resolution")]
-		public string Resolution { get; set; }
 		[DisplayName("Creation date")]
 		public string Date { get; set; }
 		[DisplayName("Creation time")]
@@ -18,7 +16,7 @@ namespace CapFrameX.Data
 		public string RecordTime { get; set; }
 		[DisplayName("CPU")]
 		public string Cpu { get; set; }
-		[DisplayName("Graphic card")]
+		[DisplayName("GPU")]
 		public string GraphicCard { get; set; }
 		[DisplayName("RAM")]
 		public string Ram { get; set; }

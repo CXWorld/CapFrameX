@@ -126,6 +126,7 @@
     <Compile Include="LinqExtensions.cs" />
     <Compile Include="ObjectCopier.cs" />
     <Compile Include="ObjectExtensions.cs" />
+    <Compile Include="ObservableCollectionExtensions.cs" />
     <Compile Include="ObservableExtensions.cs" />
     <Compile Include="ReflectionExtensions.cs" />
     <Compile Include="StringExtensions.cs" />

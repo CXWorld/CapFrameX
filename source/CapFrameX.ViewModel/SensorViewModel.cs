@@ -8,6 +8,7 @@ using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Sensor;
 using CapFrameX.Sensor.Reporting;
 using CapFrameX.Sensor.Reporting.Contracts;
+using CapFrameX.Sensor.Reporting.Data;
 using CapFrameX.ViewModel.SubModels;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -21,6 +22,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
@@ -49,6 +51,7 @@ namespace CapFrameX.ViewModel
         private string _aggregationButtonText = "Evaluate" + Environment.NewLine + "multiple entries";
         private string _sensorStatisticsText = "Sensor statistics for selected record";
         private bool _selectedRecordChanged;
+        private bool _useAverageMethod;
 
         public IFileRecordInfo RecordInfo { get; private set; }
 
@@ -75,6 +78,20 @@ namespace CapFrameX.ViewModel
                 _appConfiguration
                    .SensorLoggingRefreshPeriod = value;
                 _sensorService.SetLoggingInterval(TimeSpan.FromMilliseconds(value));
+                RaisePropertyChanged();
+            }
+        }
+        public string EvaluationMethod
+        {
+            get
+            {
+                return _appConfiguration
+                  .SensorReportEvaluationMethod;
+            }
+            set
+            {
+                _appConfiguration
+                   .SensorReportEvaluationMethod = value;
                 RaisePropertyChanged();
             }
         }
@@ -140,7 +157,10 @@ namespace CapFrameX.ViewModel
             }
         }
 
+
         public Array LoggingPeriodItemsSource => new[] { 250, 500 };
+
+        public Array EvaluationMethodItemsSource => new[] { "Aggregate", "Average" };
 
         public ObservableCollection<SensorEntryWrapper> SensorEntries { get; }
             = new ObservableCollection<SensorEntryWrapper>();
@@ -196,21 +216,26 @@ namespace CapFrameX.ViewModel
             ResetToDefaultCommand = new DelegateCommand(OnResetToDefault);
             AggregateSensorEntries = new DelegateCommand(() =>
             {
+
                 Task.Run(() =>
                 {
-                    if (_applicationState.SelectedRecords != null && _applicationState.SelectedRecords.Any())
+                    if (_applicationState.SelectedRecords != null && _applicationState.SelectedRecords.Count > 1)
                     {
                         AggregateButtonText = "Working";
                         AggregateButtonIsEnable = false;
                         CopyRawSensorsEnable = false;
                         _selectedRecordChanged = false;
+                        Thread.Sleep(100);
                         var sessions = _applicationState.SelectedRecords.Select(ri =>
                     {
                         var session = _recordManager.LoadData(ri.FileInfo.FullName);
                         return session;
                     });
+                        if(EvaluationMethod == "Average")
+                            AverageSensorDataOfSessions(sessions);
+                        else
+                            AggregateSensorDataOfSessions(sessions);
 
-                        AggregateSensorDataOfSessions(sessions);
                         AggregateButtonText = "Evaluate" + Environment.NewLine + "multiple entries";
                         SensorStatisticsText = "Sensor statistics for multiple selected records";
                         AggregateButtonIsEnable = true;
@@ -262,16 +287,16 @@ namespace CapFrameX.ViewModel
 
         private void UpdateSensorSessionReport(ISession session)
         {
-                SensorReportItems.Clear();
+            SensorReportItems.Clear();
 
-                if (RecordInfo == null || !_isActive)
-                    return;
+            if (RecordInfo == null || !_isActive)
+                return;
 
-                var items = SensorReport.GetFullReportFromSessionSensorData(session.Runs.Select(run => run.SensorData2));
-                foreach (var item in items)
-                {
-                    SensorReportItems.Add(item);
-                };
+            var items = SensorReport.GetFullReportFromSessionSensorData(session.Runs.Select(run => run.SensorData2));
+            foreach (var item in items)
+            {
+                SensorReportItems.Add(item);
+            };
         }
 
         private void AggregateSensorDataOfSessions(IEnumerable<ISession> sessions)
@@ -290,6 +315,31 @@ namespace CapFrameX.ViewModel
                     SensorReportItems.Add(item);
                 };
             });
+            }
+        }
+
+        private void AverageSensorDataOfSessions(IEnumerable<ISession> sessions)
+        {
+            var sessionCount = sessions.Count();
+            var sensorReportFromSessions = sessions.SelectMany(s => SensorReport.GetFullReportFromSessionSensorData(s.Runs.Select(r => r.SensorData2)))
+                .GroupBy(x => x.Name)
+                .Where(x => x.Count() == sessionCount)
+                .Select(group => new SensorReportItem()
+                {
+                    Name = group.Key,
+                    AverageValue = Math.Round(group.Average(g => g.AverageValue), group.First().RoundingDigits),
+                    MaxValue = Math.Round(group.Average(g => g.MaxValue), group.First().RoundingDigits),
+                    MinValue = Math.Round(group.Average(g => g.MinValue), group.First().RoundingDigits)
+                });
+
+
+            if (!_selectedRecordChanged)
+            {
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    SensorReportItems.Clear();
+                    SensorReportItems.AddRange(sensorReportFromSessions);
+                });
             }
         }
 
@@ -351,7 +401,7 @@ namespace CapFrameX.ViewModel
         public void OnNavigatedTo(NavigationContext navigationContext)
         {
             _isActive = true;
-            if(_session?.Hash != _previousSession?.Hash)
+            if (_session?.Hash != _previousSession?.Hash)
                 UpdateSensorSessionReport(_session);
         }
     }

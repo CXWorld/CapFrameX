@@ -157,8 +157,15 @@ namespace CapFrameX.Contracts.Configuration
 
 		bool ReportShowAverageRow { get; set; }
 
-		bool ReportShowResolution { get; set; }
+		IReportDataGridColumnSettings ReportDataGridColumnSettings { get; set; }
 
+		string SensorReportEvaluationMethod { get; set; }
+
+		bool UseDarkMode { get; set; }
+	}
+
+	public interface IReportDataGridColumnSettings
+    {
 		bool ReportShowCreationDate { get; set; }
 
 		bool ReportShowCreationTime { get; set; }
@@ -205,6 +212,6 @@ namespace CapFrameX.Contracts.Configuration
 
 		bool ReportShowGpuFpsPerWatt { get; set; }
 
-		bool UseDarkMode { get; set; }
+		IReportDataGridColumnSettings Clone();
 	}
 }

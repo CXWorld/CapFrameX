@@ -66,16 +66,15 @@ namespace CapFrameX.View
 			BuildTreeView();
 			SetSortSettings(_viewModel.AppConfiguration);
 
-            Observable.FromEventPattern(Expander, "MouseLeave")
-                .Where(_ => !trvStructure.ContextMenu.IsOpen)
-                .Where(_ => Expander.IsExpanded)
-                .Where(isOpen => !CreateFolderDialogIsOpen)
-                .ObserveOnDispatcher()
-                .Subscribe(_ =>
-                {
-                    Expander.IsExpanded = false;
-                });
-        }
+			Observable.FromEventPattern(Expander, "MouseLeave")
+				.Where(_ => !trvStructure.ContextMenu.IsOpen)
+				.Where(_ => Expander.IsExpanded)
+				.Where(isOpen => !CreateFolderDialogIsOpen)
+				.ObserveOnDispatcher()
+				.Subscribe(_ => {
+					Expander.IsExpanded = false;
+				});
+		}
 
 		private void BuildTreeView()
 		{
@@ -309,21 +308,41 @@ namespace CapFrameX.View
 			e.Handled = true;
 		}
 
-        private void RecordDataGrid_PreviewLostKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
-        {
+		private void RecordDataGrid_PreviewLostKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
+		{
 			if (_viewModel.SelectedRecordInfo == null)
 				return;
 
 			var myCell = (sender as MultiSelectionDataGrid).CurrentCell;
 			if (myCell.Column.Header.ToString() == "Comment")
 			{
-				if(_viewModel.CustomComment != _viewModel.SelectedRecordInfo.Comment)
-                {
+				if (_viewModel.CustomComment != _viewModel.SelectedRecordInfo.Comment)
+				{
+					_viewModel.SelectedRecordInfo.Comment = _viewModel.CustomComment;
+					//_viewModel.SaveDescriptions();
+				}
+
+			}
+		}
+
+		private void RecordDataGrid_PreviewKeyDown(object sender, KeyEventArgs e)
+		{
+			if (e.Key != Key.Enter)
+				return;
+
+			if (_viewModel.SelectedRecordInfo == null)
+				return;
+
+			var myCell = (sender as MultiSelectionDataGrid).CurrentCell;
+			if (myCell.Column.Header.ToString() == "Comment")
+			{
+				if (_viewModel.CustomComment != _viewModel.SelectedRecordInfo.Comment)
+				{
 					_viewModel.CustomComment = _viewModel.SelectedRecordInfo.Comment;
 					_viewModel.SaveDescriptions();
 				}
 
 			}
 		}
-    }
+	}
 }

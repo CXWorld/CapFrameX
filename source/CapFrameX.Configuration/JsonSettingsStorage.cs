@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -34,6 +35,13 @@ namespace CapFrameX.Configuration
                 if (value is long) value = Convert.ToInt32(value);
                 if(!(value is T val))
                 {
+                    if(value is JObject jObject)
+                    {
+                        var convertedObject = jObject.ToObject(typeof(T));
+                        if(convertedObject is T convertedObjectTyped) {
+                            return convertedObjectTyped;
+                        }
+                    }
                     throw new InvalidOperationException($"Value of Key {key} has invalid Format: Expected value of type " +
                         $"{typeof(T).Name} but found {value.GetType().Name}");
                 }

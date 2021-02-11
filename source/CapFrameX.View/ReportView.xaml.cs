@@ -1,6 +1,7 @@
 ﻿using CapFrameX.Data;
 using CapFrameX.ViewModel;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Windows.Controls;
@@ -42,6 +43,14 @@ namespace CapFrameX.View
             {
                 e.Row.Background = new SolidColorBrush(Color.FromArgb(150, 34, 151, 243));
             }
+        }
+
+        private void ReportDataGrid_Sorting(object sender, DataGridSortingEventArgs e)
+        {
+            e.Handled = true;
+
+            (DataContext as ReportViewModel).OnGridSorting(sender, e);
+
         }
     }
 }

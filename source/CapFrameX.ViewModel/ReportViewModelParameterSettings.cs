@@ -1,157 +1,101 @@
-﻿using System;
+﻿using CapFrameX.Contracts.Configuration;
+using System;
 using System.Collections.Generic;
 
 namespace CapFrameX.ViewModel
 {
     public partial class ReportViewModel
     {
-        private bool _showResolution;
-        private bool _showCreationDate;
-        private bool _showCreationTime;
-        private bool _showNumberOfSamples;
-        private bool _showRecordTime;
-        private bool _showCpuName;
-        private bool _showGpuName;
-        private bool _showRamName;
-        private bool _showComment;
-        private bool _showMaxFPS;
-        private bool _showP99FPS;
-        private bool _showP95FS;
-        private bool _showMedianFPS;
-        private bool _showAverageFPS;
-        private bool _showP5FPS;
-        private bool _showP1FPS;
-        private bool _showP0Dot2FPS;
-        private bool _showP0Dot1FPS;
-        private bool _showP1LowFPS;
-        private bool _showP0Dot1LowFPS;
-        private bool _showMinFPS;
-        private bool _showAdaptiveSTD;
-        private bool _showCpuFpsPerWatt;
-        private bool _showGpuFpsPerWatt;
+
+        private IReportDataGridColumnSettings _settings;
 
         partial void InitializeReportParameters()
         {
-            ShowResolution = _appConfiguration.ReportShowResolution;
-            ShowCreationDate = _appConfiguration.ReportShowCreationDate;
-            ShowCreationTime = _appConfiguration.ReportShowCreationTime;
-            ShowNumberOfSamples = _appConfiguration.ReportShowNumberOfSamples;
-            ShowRecordTime = _appConfiguration.ReportShowRecordTime;
-            ShowCpuName = _appConfiguration.ReportShowCpuName;
-            ShowGpuName = _appConfiguration.ReportShowGpuName;
-            ShowRamName = _appConfiguration.ReportShowRamName;
-            ShowComment = _appConfiguration.ReportShowComment;
-            ShowMaxFPS = _appConfiguration.ReportShowMaxFPS;
-            ShowP99FPS = _appConfiguration.ReportShowP99FPS;
-            ShowP95FS = _appConfiguration.ReportShowP95FS;
-            ShowMedianFPS = _appConfiguration.ReportShowMedianFPS;
-            ShowAverageFPS = _appConfiguration.ReportShowAverageFPS;
-            ShowP5FPS = _appConfiguration.ReportShowP5FPS;
-            ShowP1FPS = _appConfiguration.ReportShowP1FPS;
-            ShowP0Dot2FPS = _appConfiguration.ReportShowP0Dot2FPS;
-            ShowP0Dot1FPS = _appConfiguration.ReportShowP0Dot1FPS;
-            ShowP1LowFPS = _appConfiguration.ReportShowP1LowFPS;
-            ShowP0Dot1LowFPS = _appConfiguration.ReportShowP0Dot1LowFPS;
-            ShowMinFPS = _appConfiguration.ReportShowMinFPS;
-            ShowAdaptiveSTD = _appConfiguration.ReportShowAdaptiveSTD;
-            ShowCpuFpsPerWatt = _appConfiguration.ReportShowCpuFpsPerWatt;
-            ShowGpuFpsPerWatt = _appConfiguration.ReportShowGpuFpsPerWatt;
+            _settings = _appConfiguration.ReportDataGridColumnSettings;
         }
 
-        public bool ShowResolution
-        {
-            get { return _showResolution; }
-            set
-            {
-                _showResolution = value;
-                _appConfiguration.ReportShowResolution = value;
-
-                RaisePropertyChanged();
-            }
-        }
         public bool ShowCreationDate
         {
-            get { return _showCreationDate; }
+            get { return _settings.ReportShowCreationDate; }
             set
             {
-                _showCreationDate = value;
-                _appConfiguration.ReportShowCreationDate = value;
-
+                _settings.ReportShowCreationDate = value;
+                _appConfiguration.ReportDataGridColumnSettings = _settings;
                 RaisePropertyChanged();
             }
         }
         public bool ShowCreationTime
         {
-            get { return _showCreationTime; }
+            get { return _settings.ReportShowCreationTime; }
             set
             {
-                _showCreationTime = value;
-                _appConfiguration.ReportShowCreationTime = value;
+                _settings.ReportShowCreationTime = value;
+                _appConfiguration.ReportDataGridColumnSettings = _settings;
 
                 RaisePropertyChanged();
             }
         }
         public bool ShowNumberOfSamples
         {
-            get { return _showNumberOfSamples; }
+            get { return _settings.ReportShowNumberOfSamples; }
             set
             {
-                _showNumberOfSamples = value;
-                _appConfiguration.ReportShowNumberOfSamples = value;
+                _settings.ReportShowNumberOfSamples = value;
+                _appConfiguration.ReportDataGridColumnSettings = _settings;
 
                 RaisePropertyChanged();
             }
         }
         public bool ShowRecordTime
         {
-            get { return _showRecordTime; }
+            get { return _settings.ReportShowRecordTime; }
             set
             {
-                _showRecordTime = value;
-                _appConfiguration.ReportShowRecordTime = value;
+                _settings.ReportShowRecordTime = value;
+                _appConfiguration.ReportDataGridColumnSettings = _settings;
                 RaisePropertyChanged();
             }
         }
         public bool ShowCpuName
         {
-            get { return _showCpuName; }
+            get { return _settings.ReportShowCpuName; }
             set
             {
-                _showCpuName = value;
-                _appConfiguration.ReportShowCpuName = value;
+                _settings.ReportShowCpuName = value;
+                _appConfiguration.ReportDataGridColumnSettings = _settings;
 
                 RaisePropertyChanged();
             }
         }
         public bool ShowGpuName
         {
-            get { return _showGpuName; }
+            get { return _settings.ReportShowGpuName; }
             set
             {
-                _showGpuName = value;
-                _appConfiguration.ReportShowGpuName = value;
+                _settings.ReportShowGpuName = value;
+                _appConfiguration.ReportDataGridColumnSettings = _settings;
 
                 RaisePropertyChanged();
             }
         }
         public bool ShowRamName
         {
-            get { return _showRamName; }
+            get { return _settings.ReportShowRamName; }
             set
             {
-                _showRamName = value;
-                _appConfiguration.ReportShowRamName = value;
+                _settings.ReportShowRamName = value;
+                _appConfiguration.ReportDataGridColumnSettings = _settings;
 
                 RaisePropertyChanged();
             }
         }
         public bool ShowComment
         {
-            get { return _showComment; }
+            get { return _settings.ReportShowComment; }
             set
             {
-                _showComment = value;
-                _appConfiguration.ReportShowComment = value;
+                _settings.ReportShowComment = value;
+                _appConfiguration.ReportDataGridColumnSettings = _settings;
 
                 RaisePropertyChanged();
             }
@@ -159,11 +103,11 @@ namespace CapFrameX.ViewModel
 
         public bool ShowMaxFPS
         {
-            get { return _showMaxFPS; }
+            get { return _settings.ReportShowMaxFPS; }
             set
             {
-                _showMaxFPS = value;
-                _appConfiguration.ReportShowMaxFPS = value;
+                _settings.ReportShowMaxFPS = value;
+                _appConfiguration.ReportDataGridColumnSettings = _settings;
 
                 RaisePropertyChanged();
             }
@@ -171,11 +115,11 @@ namespace CapFrameX.ViewModel
 
         public bool ShowP99FPS
         {
-            get { return _showP99FPS; }
+            get { return _settings.ReportShowP99FPS; }
             set
             {
-                _showP99FPS = value;
-                _appConfiguration.ReportShowP99FPS = value;
+                _settings.ReportShowP99FPS = value;
+                _appConfiguration.ReportDataGridColumnSettings = _settings;
 
                 RaisePropertyChanged();
             }
@@ -183,22 +127,22 @@ namespace CapFrameX.ViewModel
 
         public bool ShowP95FS
         {
-            get { return _showP95FS; }
+            get { return _settings.ReportShowP95FS; }
             set
             {
-                _showP95FS = value;
-                _appConfiguration.ReportShowP95FS = value;
+                _settings.ReportShowP95FS = value;
+                _appConfiguration.ReportDataGridColumnSettings = _settings;
 
                 RaisePropertyChanged();
             }
         }
         public bool ShowMedianFPS
         {
-            get { return _showMedianFPS; }
+            get { return _settings.ReportShowMedianFPS; }
             set
             {
-                _showMedianFPS = value;
-                _appConfiguration.ReportShowMedianFPS = value;
+                _settings.ReportShowMedianFPS = value;
+                _appConfiguration.ReportDataGridColumnSettings = _settings;
 
                 RaisePropertyChanged();
             }
@@ -206,11 +150,11 @@ namespace CapFrameX.ViewModel
 
         public bool ShowAverageFPS
         {
-            get { return _showAverageFPS; }
+            get { return _settings.ReportShowAverageFPS; }
             set
             {
-                _showAverageFPS = value;
-                _appConfiguration.ReportShowAverageFPS = value;
+                _settings.ReportShowAverageFPS = value;
+                _appConfiguration.ReportDataGridColumnSettings = _settings;
 
                 RaisePropertyChanged();
             }
@@ -218,11 +162,11 @@ namespace CapFrameX.ViewModel
 
         public bool ShowP5FPS
         {
-            get { return _showP5FPS; }
+            get { return _settings.ReportShowP5FPS; }
             set
             {
-                _showP5FPS = value;
-                _appConfiguration.ReportShowP5FPS = value;
+                _settings.ReportShowP5FPS = value;
+                _appConfiguration.ReportDataGridColumnSettings = _settings;
 
                 RaisePropertyChanged();
             }
@@ -230,11 +174,11 @@ namespace CapFrameX.ViewModel
 
         public bool ShowP1FPS
         {
-            get { return _showP1FPS; }
+            get { return _settings.ReportShowP1FPS; }
             set
             {
-                _showP1FPS = value;
-                _appConfiguration.ReportShowP1FPS = value;
+                _settings.ReportShowP1FPS = value;
+                _appConfiguration.ReportDataGridColumnSettings = _settings;
 
                 RaisePropertyChanged();
             }
@@ -242,11 +186,11 @@ namespace CapFrameX.ViewModel
 
         public bool ShowP0Dot2FPS
         {
-            get { return _showP0Dot2FPS; }
+            get { return _settings.ReportShowP0Dot2FPS; }
             set
             {
-                _showP0Dot2FPS = value;
-                _appConfiguration.ReportShowP0Dot2FPS = value;
+                _settings.ReportShowP0Dot2FPS = value;
+                _appConfiguration.ReportDataGridColumnSettings = _settings;
 
                 RaisePropertyChanged();
             }
@@ -254,11 +198,11 @@ namespace CapFrameX.ViewModel
 
         public bool ShowP0Dot1FPS
         {
-            get { return _showP0Dot1FPS; }
+            get { return _settings.ReportShowP0Dot1FPS; }
             set
             {
-                _showP0Dot1FPS = value;
-                _appConfiguration.ReportShowP0Dot1FPS = value;
+                _settings.ReportShowP0Dot1FPS = value;
+                _appConfiguration.ReportDataGridColumnSettings = _settings;
 
                 RaisePropertyChanged();
             }
@@ -266,11 +210,11 @@ namespace CapFrameX.ViewModel
 
         public bool ShowP1LowFPS
         {
-            get { return _showP1LowFPS; }
+            get { return _settings.ReportShowP1LowFPS; }
             set
             {
-                _showP1LowFPS = value;
-                _appConfiguration.ReportShowP1LowFPS = value;
+                _settings.ReportShowP1LowFPS = value;
+                _appConfiguration.ReportDataGridColumnSettings = _settings;
 
                 RaisePropertyChanged();
             }
@@ -278,23 +222,22 @@ namespace CapFrameX.ViewModel
 
         public bool ShowP0Dot1LowFPS
         {
-            get { return _showP0Dot1LowFPS; }
+            get { return _settings.ReportShowP0Dot1LowFPS; }
             set
             {
-                _showP0Dot1LowFPS = value;
-                _appConfiguration.ReportShowP0Dot1LowFPS = value;
-
+                _settings.ReportShowP0Dot1LowFPS = value;
+                _appConfiguration.ReportDataGridColumnSettings = _settings;
                 RaisePropertyChanged();
             }
         }
 
         public bool ShowMinFPS
         {
-            get { return _showMinFPS; }
+            get { return _settings.ReportShowMinFPS; }
             set
             {
-                _showMinFPS = value;
-                _appConfiguration.ReportShowMinFPS = value;
+                _settings.ReportShowMinFPS = value;
+                _appConfiguration.ReportDataGridColumnSettings = _settings;
 
                 RaisePropertyChanged();
             }
@@ -302,11 +245,11 @@ namespace CapFrameX.ViewModel
 
         public bool ShowAdaptiveSTD
         {
-            get { return _showAdaptiveSTD; }
+            get { return _settings.ReportShowAdaptiveSTD; }
             set
             {
-                _showAdaptiveSTD = value;
-                _appConfiguration.ReportShowAdaptiveSTD = value;
+                _settings.ReportShowAdaptiveSTD = value;
+                _appConfiguration.ReportDataGridColumnSettings = _settings;
 
                 RaisePropertyChanged();
             }
@@ -314,22 +257,22 @@ namespace CapFrameX.ViewModel
 
         public bool ShowCpuFpsPerWatt
         {
-            get { return _showCpuFpsPerWatt; }
+            get { return _settings.ReportShowCpuFpsPerWatt; }
             set
             {
-                _showCpuFpsPerWatt = value;
-                _appConfiguration.ReportShowCpuFpsPerWatt = value;
+                _settings.ReportShowCpuFpsPerWatt = value;
+                _appConfiguration.ReportDataGridColumnSettings = _settings;
 
                 RaisePropertyChanged();
             }
         }
         public bool ShowGpuFpsPerWatt
         {
-            get { return _showGpuFpsPerWatt; }
+            get { return _settings.ReportShowGpuFpsPerWatt; }
             set
             {
-                _showGpuFpsPerWatt = value;
-                _appConfiguration.ReportShowGpuFpsPerWatt = value;
+                _settings.ReportShowGpuFpsPerWatt = value;
+                _appConfiguration.ReportDataGridColumnSettings = _settings;
 
                 RaisePropertyChanged();
             }

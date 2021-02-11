@@ -51,12 +51,17 @@
     </UserControl.Resources>
     <Grid Margin="0 10 0 0">
         <Grid.RowDefinitions>
-            <RowDefinition Height="25"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
             <RowDefinition Height="1*"></RowDefinition>
         </Grid.RowDefinitions>
         <Grid Grid.Row="0">
-            <TextBlock HorizontalAlignment="Center" FontWeight="Bold" FontSize="16" VerticalAlignment="Bottom" Text="{Binding CurrentGameName}"
-                       Foreground="{DynamicResource MaterialDesignBody}"/>
+            <TextBlock HorizontalAlignment="Center" FontWeight="Bold" FontSize="18" Margin="0 0 0 -5" Text="{Binding CurrentGameName}" 
+                       Visibility="{Binding Path=IsChecked, ElementName=ShowCustomTitleToggleButton, Converter={StaticResource TrueToCollapsedConverter}}"
+					   Foreground="{DynamicResource MaterialDesignBody}"/>
+            <TextBox HorizontalAlignment="Center" Visibility="{Binding Path=IsChecked, ElementName=ShowCustomTitleToggleButton, Converter={StaticResource TrueToVisibleConverter}}"
+                                 Text="Type your title here..."  Height="30" Padding="0 -28 0 0"
+                                 Style="{StaticResource MaterialDesignFilledTextFieldTextBox}"
+                                 FontSize="18" PreviewKeyDown="CustomTitle_PreviewKeyDown"/>
         </Grid>
         <!--Analysis main grid-->
         <Grid Grid.Row="1">
@@ -593,17 +598,22 @@
                         </materialDesign:Card>
                     </materialDesign:PopupBox>
                 </StackPanel>
-                <Grid Grid.Column="3" HorizontalAlignment="Right">
-                    <StackPanel  Margin="0 0 0 0" VerticalAlignment="Center" Orientation="Horizontal">
-                        <TextBlock Text="Remove outliers:" Foreground="{DynamicResource MaterialDesignBody}"/>
-                        <ToggleButton Margin="10 0 0 0" IsChecked="{Binding RemoveOutliers}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                <StackPanel Grid.Column="3" HorizontalAlignment="Right" Orientation="Horizontal">
+                    <StackPanel Margin="10 0 10 0" VerticalAlignment="Center"  Orientation="Horizontal">
+                        <TextBlock Foreground="{DynamicResource MaterialDesignBody}">Custom title:</TextBlock>
+                        <ToggleButton x:Name="ShowCustomTitleToggleButton" VerticalAlignment="Center" Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
+								  ToolTip="Show custom title edit box" IsChecked="{Binding ShowCustomTitle}"/>
                     </StackPanel>
-                    <StackPanel Margin="175 0 25 0"  Orientation="Horizontal" VerticalAlignment="Center">
-                        <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}">Range slider:</TextBlock>
-                        <ToggleButton Name="RangeSliderActiveToggleButton" Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
+                    <StackPanel  Margin="10 0 10 0" VerticalAlignment="Center" Orientation="Horizontal">
+                        <TextBlock Foreground="{DynamicResource MaterialDesignBody}">Remove outliers:</TextBlock>
+                        <ToggleButton Margin="10 0 0 0" VerticalAlignment="Center" IsChecked="{Binding RemoveOutliers}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                    </StackPanel>
+                    <StackPanel Margin="10 0 10 0" VerticalAlignment="Center" Orientation="Horizontal">
+                        <TextBlock Foreground="{DynamicResource MaterialDesignBody}">Range slider:</TextBlock>
+                        <ToggleButton Name="RangeSliderActiveToggleButton" VerticalAlignment="Center" Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
 									  IsChecked="{Binding IsRangeSliderActive}"/>
                     </StackPanel>
-                </Grid>
+                </StackPanel>
             </Grid>
             <!--System info expander-->
             <Expander Margin="0 -35 0 0" Grid.Row="0" Grid.RowSpan="3" Grid.Column="1" ExpandDirection="Left"
