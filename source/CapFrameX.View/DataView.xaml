@@ -219,8 +219,12 @@
                                 </ContextMenu>
                             </lvc:CartesianChart.ContextMenu>
                             <lvc:CartesianChart.AxisX>
-                                <lvc:Axis Title="FPS" FontSize="11" MinValue="0" MaxValue="{Binding BarMaxValue}"
-								  LabelFormatter="{Binding ParameterFormatter}" Foreground="{DynamicResource MaterialDesignBody}"/>
+                                <lvc:Axis Title="FPS" FontSize="11" MinValue="0" MaxValue="{Binding BarMaxValue}" 
+								  LabelFormatter="{Binding ParameterFormatter}" Foreground="{DynamicResource MaterialDesignBody}">
+                                    <lvc:Axis.Separator>
+                                        <lvc:Separator StrokeThickness="0.3" IsEnabled="True" Step="{Binding BarChartSeparators}" />
+                                    </lvc:Axis.Separator>
+                                </lvc:Axis>
                             </lvc:CartesianChart.AxisX>
                             <lvc:CartesianChart.AxisY>
                                 <lvc:Axis FontSize="11" Labels="{Binding ParameterLabels}" Foreground="{DynamicResource MaterialDesignBody}">

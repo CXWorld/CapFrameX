@@ -383,6 +383,33 @@ namespace CapFrameX.ViewModel
             {
                 _barMaxValue = value;
                 RaisePropertyChanged();
+                RaisePropertyChanged(nameof(BarChartSeparators));
+            }
+        }
+
+        public int BarChartSeparators
+        {
+            get 
+            {
+                int steps;
+                double maxValueFracture = _barMaxValue / 3;
+
+                if (maxValueFracture <= 25)
+                    steps = 15;
+                else if (maxValueFracture <= 50)
+                    steps = 25;
+                else if (maxValueFracture <= 75)
+                    steps = 50;
+                else if (maxValueFracture <= 100)
+                    steps = 75;
+                else if (maxValueFracture <= 150)
+                    steps = 100;
+                else if (maxValueFracture <= 250)
+                    steps = 150;
+                else
+                    steps = 200;
+
+                return steps; 
             }
         }
 
@@ -454,6 +481,8 @@ namespace CapFrameX.ViewModel
                 OnFilterModeChanged();
             }
         }
+
+
 
         public bool IsAnyGraphActive()
         {
