@@ -141,7 +141,7 @@
                             </TabItem>
                             <TabItem>
                                 <TabItem.Header>
-                                    <TextBlock Text="L-shape" FontSize="12" />
+                                    <Label FontSize="12">L-shape</Label>
                                 </TabItem.Header>
                                 <Grid>
                                     <Grid Margin="0 0 50 0" Panel.ZIndex="1" HorizontalAlignment="Left" VerticalAlignment="Bottom">

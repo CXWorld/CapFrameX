@@ -941,7 +941,7 @@ namespace CapFrameX.ViewModel
             if (frametimeSubset == null || fpsSubset == null)
                 return;
 
-            if (headerName == "L-shape")
+            if (headerName.Contains("L-shape"))
             {
                 Task.Factory.StartNew(() => SetLShapeChart(frametimeSubset, fpsSubset));
             }
