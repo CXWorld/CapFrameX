@@ -103,7 +103,7 @@
                         <TabControl x:Name="GraphTab" Grid.Row="0" SelectedItem="{Binding SelectedChartItem}" FocusVisualStyle="{x:Null}" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
                             <TabItem>
                                 <TabItem.Header>
-                                    <TextBlock Text="Frametimes" FontSize="12" />
+                                    <Label FontSize="12">Frametimes</Label>
                                 </TabItem.Header>
                                 <Grid>
                                     <Grid Margin="0 0 50 0" Panel.ZIndex="1" HorizontalAlignment="Left" VerticalAlignment="Bottom">
@@ -122,7 +122,7 @@
                             </TabItem>
                             <TabItem>
                                 <TabItem.Header>
-                                    <TextBlock Text="FPS" FontSize="12" />
+                                    <Label FontSize="12">FPS</Label>
                                 </TabItem.Header>
                                 <Grid>
                                     <Grid Margin="0 0 50 0" Panel.ZIndex="1" HorizontalAlignment="Left" VerticalAlignment="Bottom">
@@ -163,14 +163,18 @@
                                             </ContextMenu>
                                         </lvc:CartesianChart.ContextMenu>
                                         <lvc:CartesianChart.AxisX>
-                                            <lvc:Axis Title="Percentiles (%)" x:Name="LShapeX" Foreground="Black">
-                                                <lvc:Axis.Separator >
-                                                    <lvc:Separator Step="1"/>
+                                            <lvc:Axis Title="Percentiles (%)" x:Name="LShapeX" Foreground="{DynamicResource MaterialDesignBody}">
+                                                <lvc:Axis.Separator>
+                                                    <lvc:Separator StrokeThickness="0.1" Step="1"/>
                                                 </lvc:Axis.Separator>
                                             </lvc:Axis>
                                         </lvc:CartesianChart.AxisX>
                                         <lvc:CartesianChart.AxisY>
-                                            <lvc:Axis Title="{Binding LShapeYaxisLabel}" x:Name="LShapeY" Foreground="Black"/>
+                                            <lvc:Axis Title="{Binding LShapeYaxisLabel}" x:Name="LShapeY" Foreground="{DynamicResource MaterialDesignBody}">
+                                                <lvc:Axis.Separator>
+                                                    <lvc:Separator StrokeThickness="0.1"/>
+                                                </lvc:Axis.Separator>
+                                            </lvc:Axis>
                                         </lvc:CartesianChart.AxisY>
                                     </lvc:CartesianChart>
                                 </Grid>
@@ -212,7 +216,7 @@
                     <!--FPS metrics-->
                     <Grid Grid.Column="0" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
                         <lvc:CartesianChart Margin="15 10 0 5" Series="{Binding StatisticCollection}" LegendLocation="None"
-									Tag="{Binding DataContext, ElementName=DataViewUserControl}" DataTooltip="{x:Null}">
+									Tag="{Binding DataContext, ElementName=DataViewUserControl}" DataTooltip="{x:Null}" Foreground="{DynamicResource MaterialDesignBody}">
                             <lvc:CartesianChart.ContextMenu>
                                 <ContextMenu DataContext="{Binding PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
                                     <MenuItem Header="Copy statistical parameter" Command="{Binding CopyStatisticalParameterCommand}"/>
@@ -314,13 +318,13 @@
                                                  Content="Counts"
                                                  Command="{Binding ThresholdCountsCommand}"/>
                                     <Grid Margin="0 0 40 0" Panel.ZIndex="1" HorizontalAlignment="Right" VerticalAlignment="Top">
-                                        <ToggleButton Width="25" Height="25" Style="{StaticResource MaterialDesignActionToggleButton}"
+                                        <ToggleButton Width="25" Height="25" Style="{StaticResource MaterialDesignActionToggleButton}" Foreground="White" 
 												  ToolTip="Toggle between absolute and relative values" IsChecked="{Binding ThresholdPercentageButtonIsChecked}">
                                             <materialDesign:ToggleButtonAssist.OnContent>#</materialDesign:ToggleButtonAssist.OnContent> %
                                         </ToggleButton>
                                     </Grid>
                                     <Grid Margin="0 0 5 0" Panel.ZIndex="1" HorizontalAlignment="Right" VerticalAlignment="Top">
-                                        <ToggleButton Width="25" Height="25" Style="{StaticResource MaterialDesignActionToggleButton}"
+                                        <ToggleButton Width="25" Height="25" Style="{StaticResource MaterialDesignActionToggleButton}" Foreground="White" 
 												  ToolTip="Change fps thresholds direction" IsChecked="{Binding ThresholdToggleButtonIsChecked}">
                                             <materialDesign:ToggleButtonAssist.OnContent>
                                                 <materialDesign:PackIcon Width="25" Margin="1 0 0 0"
@@ -338,7 +342,7 @@
                                             </ContextMenu>
                                         </lvc:CartesianChart.ContextMenu>
                                         <lvc:CartesianChart.AxisX>
-                                            <lvc:Axis ShowLabels="True" BarUnit="1" Foreground="Black"
+                                            <lvc:Axis ShowLabels="True" BarUnit="1" Foreground="{DynamicResource MaterialDesignBody}"
                                                   Labels="{Binding FPSThresholdLabels}" LabelFormatter="{Binding XAxisFormatter}">
                                                 <lvc:Axis.Separator>
                                                     <lvc:Separator Step="1" IsEnabled="False"/>
@@ -346,7 +350,7 @@
                                             </lvc:Axis>
                                         </lvc:CartesianChart.AxisX>
                                         <lvc:CartesianChart.AxisY>
-                                            <lvc:Axis Title="{Binding YAxisLabel}" MinValue="0" MaxValue="1.2" Foreground="Black" LabelFormatter="{Binding YAxisFormatter}">
+                                            <lvc:Axis Title="{Binding YAxisLabel}" MinValue="0" MaxValue="1.2" Foreground="{DynamicResource MaterialDesignBody}" LabelFormatter="{Binding YAxisFormatter}">
                                                 <lvc:Axis.Separator>
                                                     <lvc:Separator Step="0.25" StrokeThickness="0.5" Stroke="Gray"/>
                                                 </lvc:Axis.Separator>

@@ -36,9 +36,12 @@
             <RowDefinition Height="1*"></RowDefinition>
             <RowDefinition Height="65"></RowDefinition>
         </Grid.RowDefinitions>
-        <TextBlock Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Bottom" FontWeight="Bold" FontSize="16" Text="{Binding CurrentGameName}"/>
-        <TabControl Grid.Row="1" Grid.Column="0">
-            <TabItem Header="Input lag approximation">
+        <TextBlock Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Bottom" FontWeight="Bold" FontSize="16" Foreground="{DynamicResource MaterialDesignBody}" Text="{Binding CurrentGameName}"/>
+        <TabControl Grid.Row="1" Grid.Column="0" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
+            <TabItem Foreground="{DynamicResource MaterialDesignBody}">
+                <TabItem.Header>
+                    <Label FontSize="12">Input lag approximation</Label>
+                </TabItem.Header>
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="5*"></RowDefinition>
@@ -47,8 +50,8 @@
                     </Grid.RowDefinitions>
                     <DockPanel Grid.Row="0">
                         <!--Input lag chart-->
-                        <controls:PlotViewCustomZoom Background="#F5F5F5" x:Name="InputLagPlotView" Model="{Binding InputLagModel}" Tag="{Binding ElementName=SynchronizationViewUserControl, Path=DataContext}"
-								 MouseDoubleClick="ResetInputLagChart_MouseDoubleClick">
+                        <controls:PlotViewCustomZoom x:Name="InputLagPlotView" Model="{Binding InputLagModel}" Tag="{Binding ElementName=SynchronizationViewUserControl, Path=DataContext}"
+								 MouseDoubleClick="ResetInputLagChart_MouseDoubleClick" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
                             <controls:PlotViewCustomZoom.ContextMenu>
                                 <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
                                     <MenuItem Header="Save plot as image" Command="{Binding SaveInputLagPlotAsImage }"/>
@@ -57,10 +60,10 @@
                         </controls:PlotViewCustomZoom>
                     </DockPanel>
                     <!--Input lag offset-->
-                    <Grid Grid.Row="1" Margin="0 5 0 0" Background="#F5F5F5">
+                    <Grid Grid.Row="1" Margin="0 5 0 0" >
                         <StackPanel Margin="20 0 0 0" Orientation="Horizontal" HorizontalAlignment="Left">
                             <TextBlock VerticalAlignment="Center">Input lag offset (ms):</TextBlock>
-                            <TextBox Height="25" Margin="5 0 0 0" Background="#e6e6e6" TextAlignment="Center" Text="{Binding InputLagOffset, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="Offset" 
+                            <TextBox Height="25" Margin="5 0 0 0" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" TextAlignment="Center" Text="{Binding InputLagOffset, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="Offset" 
 									 PreviewKeyDown="InputLagOffsetTextBox_PreviewKeyDown" ToolTip="Offset for display and mouse/keyboard/gamepad latency"/>
                         </StackPanel>
                     </Grid>
@@ -70,7 +73,7 @@
                             <ColumnDefinition Width="2*" />
                         </Grid.ColumnDefinitions>
                         <!--Input histogram-->
-                        <Grid  Background="#F5F5F5" Grid.Column="0" Margin="0 5 0 0" >
+                        <Grid Grid.Column="0" Margin="0 5 0 0" >
                             <lvc:CartesianChart Margin="5" Series="{Binding InputLagHistogramCollection}" LegendLocation="Bottom"
 								Tag="{Binding ElementName=SynchronizationViewUserControl, Path=DataContext}" DataTooltip="{x:Null}">
                                 <lvc:CartesianChart.ContextMenu>
@@ -79,18 +82,22 @@
                                     </ContextMenu>
                                 </lvc:CartesianChart.ContextMenu>
                                 <lvc:CartesianChart.AxisX>
-                                    <lvc:Axis Title="Expected input lag (ms)" BarUnit="1" Labels="{Binding InputLagHistogramLabels}" LabelFormatter="{Binding HistogramFormatter}" Foreground="Black">
+                                    <lvc:Axis Title="Expected input lag (ms)" BarUnit="1" Labels="{Binding InputLagHistogramLabels}" LabelFormatter="{Binding HistogramFormatter}" Foreground="{DynamicResource MaterialDesignBody}">
                                         <lvc:Axis.Separator>
-                                            <lvc:Separator Step="1" IsEnabled="True"></lvc:Separator>
+                                            <lvc:Separator Step="1" StrokeThickness="0" IsEnabled="True"></lvc:Separator>
                                         </lvc:Axis.Separator>
                                     </lvc:Axis>
                                 </lvc:CartesianChart.AxisX>
                                 <lvc:CartesianChart.AxisY>
-                                    <lvc:Axis Title="Distribution" Foreground="Black"/>
+                                    <lvc:Axis Title="Distribution" Foreground="{DynamicResource MaterialDesignBody}">
+                                    <lvc:Axis.Separator>
+                                        <lvc:Separator  StrokeThickness="0.2" IsEnabled="True"></lvc:Separator>
+                                    </lvc:Axis.Separator>
+                                    </lvc:Axis>
                                 </lvc:CartesianChart.AxisY>
                             </lvc:CartesianChart>
                         </Grid>
-                        <Grid Grid.Column="1" Margin="5 5 0 0" Background="#F5F5F5">
+                        <Grid Grid.Column="1" Margin="5 5 0 0">
                             <lvc:CartesianChart Margin="10 20 10 5" Series="{Binding InputLagStatisticCollection}" LegendLocation="Bottom"
 									Tag="{Binding ElementName=SynchronizationViewUserControl, Path=DataContext}" DataTooltip="{x:Null}" >
                                 <lvc:CartesianChart.ContextMenu>
@@ -100,10 +107,14 @@
                                 </lvc:CartesianChart.ContextMenu>
                                 <lvc:CartesianChart.AxisX>
                                     <lvc:Axis Title="ms" FontSize="11" MinValue="0" MaxValue="{Binding InputLagBarMaxValue}" 
-								  LabelFormatter="{Binding InputLagParameterFormatter}" Foreground="Black"/>
+								  LabelFormatter="{Binding InputLagParameterFormatter}" Foreground="{DynamicResource MaterialDesignBody}">
+                                        <lvc:Axis.Separator>
+                                            <lvc:Separator  StrokeThickness="0.2" IsEnabled="True"></lvc:Separator>
+                                        </lvc:Axis.Separator>
+                                    </lvc:Axis>
                                 </lvc:CartesianChart.AxisX>
                                 <lvc:CartesianChart.AxisY>
-                                    <lvc:Axis FontSize="11" Labels="{Binding InputLagParameterLabels}" Foreground="Black">
+                                    <lvc:Axis FontSize="11" Labels="{Binding InputLagParameterLabels}" Foreground="{DynamicResource MaterialDesignBody}">
                                         <lvc:Axis.Separator>
                                             <lvc:Separator Step="1" IsEnabled="False"></lvc:Separator>
                                         </lvc:Axis.Separator>
@@ -114,7 +125,10 @@
                     </Grid>
                 </Grid>
             </TabItem>
-            <TabItem Header="Until displayed times">
+            <TabItem Foreground="{DynamicResource MaterialDesignBody}" >
+                <TabItem.Header>
+                    <Label FontSize="12">Until displayed times</Label>
+                </TabItem.Header>
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="5*"></RowDefinition>
@@ -122,8 +136,8 @@
                         <RowDefinition Height="3*" MaxHeight="300"></RowDefinition>
                     </Grid.RowDefinitions>
                     <DockPanel Grid.Row="0">
-                        <controls:PlotViewCustomZoom x:Name="SynchronizationPlotView" Background="#F5F5F5" Model="{Binding SynchronizationModel}" Tag="{Binding ElementName=SynchronizationViewUserControl, Path=DataContext}"
-						  MouseDoubleClick="ResetSynchronizationChart_MouseDoubleClick">
+                        <controls:PlotViewCustomZoom x:Name="SynchronizationPlotView" Model="{Binding SynchronizationModel}" Tag="{Binding ElementName=SynchronizationViewUserControl, Path=DataContext}"
+						  MouseDoubleClick="ResetSynchronizationChart_MouseDoubleClick" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
                             <controls:PlotViewCustomZoom.ContextMenu>
                                 <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
                                     <MenuItem Header="Copy until displayed time values" Command="{Binding CopyUntilDisplayedTimesValuesCommand}"/>
@@ -132,15 +146,17 @@
                             </controls:PlotViewCustomZoom.ContextMenu>
                         </controls:PlotViewCustomZoom>
                     </DockPanel>
-                    <Grid Grid.Row="1" Margin="0 5 0 0" Background="#F5F5F5">
+                    <Grid Grid.Row="1" Margin="0 5 0 0">
                         <StackPanel Margin="20 0 0 0" Orientation="Horizontal" HorizontalAlignment="Left">
                             <TextBlock VerticalAlignment="Center">Frames within monitor sync range:</TextBlock>
                             <TextBlock Width="40" Height="27" Margin="10 0 0 0" Padding="0 7 0 0" FontWeight="Bold" TextAlignment="Center"
-						   Background="#e6e6e6" Text="{Binding SyncRangePercentage}"/>
+						    Text="{Binding SyncRangePercentage}" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}"/>
                             <TextBlock Margin="5 0 0 0" VerticalAlignment="Center">(Range:</TextBlock>
-                            <TextBox Height="25" Margin="5 0 0 0" Background="#e6e6e6" TextAlignment="Center" Text="{Binding SyncRangeLower, UpdateSourceTrigger=PropertyChanged}" materialDesign:HintAssist.Hint="Upper" />
+                            <TextBox Height="25" Margin="5 0 0 0" TextAlignment="Center" Text="{Binding SyncRangeLower, UpdateSourceTrigger=PropertyChanged}" 
+                                     materialDesign:HintAssist.Hint="Upper" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}"/>
                             <TextBlock Margin="5 0 0 0" VerticalAlignment="Center">-</TextBlock>
-                            <TextBox Height="25" Margin="5 0 0 0" Background="#e6e6e6" TextAlignment="Center" Text="{Binding SyncRangeUpper, UpdateSourceTrigger=PropertyChanged}" materialDesign:HintAssist.Hint="Lower" />
+                            <TextBox Height="25" Margin="5 0 0 0" TextAlignment="Center" Text="{Binding SyncRangeUpper, UpdateSourceTrigger=PropertyChanged}" 
+                                     materialDesign:HintAssist.Hint="Lower" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}"/>
                             <TextBlock Margin="5 0 0 0" VerticalAlignment="Center">Hz)</TextBlock>
                         </StackPanel>
                     </Grid>
@@ -150,7 +166,7 @@
                             <ColumnDefinition Width="2*" />
                         </Grid.ColumnDefinitions>
                         <!--Display times histogram chart-->
-                        <Grid Background="#F5F5F5" Grid.Column="0" Margin="0 5 0 0">
+                        <Grid Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" Grid.Column="0" Margin="0 5 0 0">
                             <lvc:CartesianChart Margin="5" Series="{Binding DisplayTimesHistogramCollection}" LegendLocation="Bottom"
 								Tag="{Binding ElementName=SynchronizationViewUserControl, Path=DataContext}" DataTooltip="{x:Null}">
                                 <lvc:CartesianChart.ContextMenu>
@@ -159,25 +175,29 @@
                                     </ContextMenu>
                                 </lvc:CartesianChart.ContextMenu>
                                 <lvc:CartesianChart.AxisX>
-                                    <lvc:Axis Title="Until displayed time (ms)" BarUnit="1" Labels="{Binding DisplayTimesHistogramLabels}" LabelFormatter="{Binding HistogramFormatter}" Foreground="Black">
+                                    <lvc:Axis Title="Until displayed time (ms)" BarUnit="1" Labels="{Binding DisplayTimesHistogramLabels}" LabelFormatter="{Binding HistogramFormatter}" Foreground="{DynamicResource MaterialDesignBody}">
                                         <lvc:Axis.Separator>
-                                            <lvc:Separator Step="1" IsEnabled="True"></lvc:Separator>
+                                            <lvc:Separator Step="1" StrokeThickness="0" IsEnabled="True"></lvc:Separator>
                                         </lvc:Axis.Separator>
                                     </lvc:Axis>
                                 </lvc:CartesianChart.AxisX>
                                 <lvc:CartesianChart.AxisY>
-                                    <lvc:Axis Title="Distribution" Foreground="Black"/>
+                                    <lvc:Axis Title="Distribution" Foreground="{DynamicResource MaterialDesignBody}">
+                                        <lvc:Axis.Separator>
+                                            <lvc:Separator StrokeThickness="0.2" IsEnabled="True"></lvc:Separator>
+                                        </lvc:Axis.Separator>
+                                    </lvc:Axis>
                                 </lvc:CartesianChart.AxisY>
                             </lvc:CartesianChart>
                         </Grid>
-                        <DockPanel Background="#F5F5F5" Grid.Column="1" Margin="5 5 0 0" HorizontalAlignment="Stretch">
+                        <DockPanel Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" Grid.Column="1" Margin="5 5 0 0" HorizontalAlignment="Stretch">
                             <lvc:PieChart Margin="0 0 0 5" Width="250" HorizontalAlignment="Center" Hoverable="False" Series="{Binding DroppedFramesStatisticCollection}" 
-								  LegendLocation="Bottom" DataClick="Chart_OnDataClick"/>
+								  LegendLocation="Bottom" DataClick="Chart_OnDataClick" Foreground="{DynamicResource MaterialDesignBody}"/>
                         </DockPanel>
                     </Grid>
                 </Grid>
             </TabItem>
         </TabControl>
-        <Grid Grid.Row="2" Margin="0 5 0 5" Background="#e6e6e6"/>
+        <Grid Grid.Row="2" Margin="0 5 0 5" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}"/>
     </Grid>
 </UserControl>

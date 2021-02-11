@@ -29,7 +29,7 @@ using LiveCharts.Definitions.Points;
 
 namespace LiveCharts.Wpf.Points
 {
-    internal class StepLinePointView : PointView, IStepPointView
+    public class StepLinePointView : PointView, IStepPointView
     {
         public double DeltaX { get; set; }
         public double DeltaY { get; set; }

@@ -262,20 +262,20 @@ namespace LiveCharts.Wpf
 					Point = point
 				}, pbv.DataLabel);
 
-				//public void SetDataLabelForeground(Color color)
-				//{
-				//	var chartPoints = ActualValues.GetPoints(this);
+                //public void SetDataLabelForeground(Color color)
+                //{
+                //    var chartPoints = ActualValues.GetPoints(this);
 
-				//	if (chartPoints == null)
-				//		return;
+                //    if (chartPoints == null)
+                //        return;
 
-				//	foreach (var point in chartPoints)
-				//	{
-				//		//var pbv = (RowPointView)point.View;
-				//		//pbv.DataLabel.Foreground = new SolidColorBrush(color);
-				//	}
-				//}
-			}
+                //    foreach (var point in chartPoints)
+                //    {
+                //        var pbv = (RowPointView)point.View;
+                //        pbv.DataLabel.Foreground = new SolidColorBrush(color);
+                //    }
+                //}
+            }
 
 			if (!DataLabels && pbv.DataLabel != null)
 			{

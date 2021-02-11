@@ -622,7 +622,7 @@ namespace CapFrameX.ViewModel
                         Title = "Synced frames",
                         Values = new ChartValues<int>(){ appMissed.Count(flag => flag == false) },
                         DataLabels = true,
-                        Foreground = Brushes.Black,
+                        StrokeThickness = 0,
                         LabelPosition = PieLabelPosition.InsideSlice,
                         LabelPoint = PieChartPointLabel,
                         FontSize = 12
@@ -632,7 +632,7 @@ namespace CapFrameX.ViewModel
                         Title = "Dropped frames",
                         Values = new ChartValues<int>(){ appMissed.Count(flag => flag == true) },
                         DataLabels = true,
-                        Foreground = Brushes.Black,
+                        StrokeThickness = 0,
                         LabelPosition = PieLabelPosition.InsideSlice,
                         LabelPoint = PieChartPointLabel,
                         FontSize = 12
