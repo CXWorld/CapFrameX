@@ -165,6 +165,15 @@
                                 <Trigger Property="IsNewItem" Value="True">
                                     <Setter Property="Margin" Value="{Binding NewItemMargin, RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}"/>
                                 </Trigger>
+                                <MultiTrigger>
+                                    <MultiTrigger.Conditions>
+                                        <Condition Property="IsSelected" Value="True"/>
+                                        <Condition Property="IsMouseOver" Value="True" />
+                                    </MultiTrigger.Conditions>
+                                    <MultiTrigger.Setters>
+                                        <Setter Property="Background" Value="{DynamicResource MaterialDesignSelection}" />
+                                    </MultiTrigger.Setters>
+                                </MultiTrigger>
                             </Style.Triggers>
                             </Style>
                     </DataGrid.Resources>
