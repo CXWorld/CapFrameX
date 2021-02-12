@@ -8,6 +8,7 @@
 			 xmlns:mvvm="clr-namespace:CapFrameX.MVVM.Converter;assembly=CapFrameX.MVVM"
 			 xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"	
              xmlns:local="clr-namespace:CapFrameX.View.Controls"
+             xmlns:oxy="http://oxyplot.org/wpf"
 			 xmlns:controls="clr-namespace:CapFrameX.View.Controls"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
@@ -29,6 +30,15 @@
         <Grid Grid.Row="0">
             <controls:PlotViewCustomZoom  Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" x:Name="FpsPlotView" Model="{Binding FpsModel}" Tag="{Binding ElementName=FpsGraphControlName, Path=DataContext}"
 						  MouseDoubleClick="ResetChart_MouseDoubleClick">
+                <controls:PlotViewCustomZoom.DefaultTrackerTemplate>
+                    <ControlTemplate>
+                        <oxy:TrackerControl Position="{Binding Position}" Background="{DynamicResource MaterialDesignCardBackground}">
+                            <oxy:TrackerControl.Content>
+                                <TextBlock Text="{Binding}" Margin="5" />
+                            </oxy:TrackerControl.Content>
+                        </oxy:TrackerControl>
+                    </ControlTemplate>
+                </controls:PlotViewCustomZoom.DefaultTrackerTemplate>
                 <controls:PlotViewCustomZoom.ContextMenu>
 					<ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
 						<MenuItem Header="Copy fps values (f)" Command="{Binding CopyFpsValuesCommand}"/>

@@ -10,7 +10,7 @@ namespace CapFrameX.View.Themes
         // #f7f6f2" (Taxxor)
         public Color MaterialDesignPaper { get; } = (Color)ColorConverter.ConvertFromString("#fafbfc");
         // original: "#FFFAFAFA"
-        public Color MaterialDesignCardBackground { get; } = (Color)ColorConverter.ConvertFromString("#f7f6f2");
+        public Color MaterialDesignCardBackground { get; } = (Color)ColorConverter.ConvertFromString("#fafbfc");
         // original #FFFFFFFF
         public Color MaterialDesignToolBarBackground { get; } = (Color)ColorConverter.ConvertFromString("#FFF5F5F5");
         public Color MaterialDesignBody { get; } = (Color)ColorConverter.ConvertFromString("#DD000000");
