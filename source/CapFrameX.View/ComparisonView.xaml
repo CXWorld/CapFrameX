@@ -112,7 +112,7 @@
                             <Grid>
                                 <Grid Margin="0 0 50 0" Panel.ZIndex="1" HorizontalAlignment="Left" VerticalAlignment="Bottom">
                                     <ComboBox Grid.Column="5" Margin="45 0 0 15" HorizontalAlignment="Left" VerticalAlignment="Bottom" materialDesign:HintAssist.Hint="Values"
-					                    materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Width="80" Height="40"  materialDesign:ComboBoxAssist.ClassicMode="True">
+					                    materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Width="80" Height="40">
                                         <ComboBoxItem IsSelected="True">Frametimes</ComboBoxItem>
                                         <ComboBoxItem>FPS</ComboBoxItem>
                                         <ComboBox.Text>
@@ -126,7 +126,7 @@
                                 <ContentPresenter x:Name="ChartsContentPresenter" Content="{Binding}">
                                     <ContentPresenter.Resources>
                                         <DataTemplate x:Key="FrametimeChartContent">
-                                            <controls:PlotViewCustomZoom Background="{DynamicResource MaterialDesignTextFieldBoxBackground}"  Model="{Binding DataContext.ComparisonFrametimesModel, ElementName=ComparisonViewUserControl}">
+                                            <controls:PlotViewCustomZoom Background="Transparent"  Model="{Binding DataContext.ComparisonFrametimesModel, ElementName=ComparisonViewUserControl}">
                                                 <controls:PlotViewCustomZoom.ContextMenu>
                                                     <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
                                                         <MenuItem Header="Save plot as image" Command="{Binding SaveFrametimePlotAsImage }"/>
@@ -147,7 +147,7 @@
                                                         </ComboBox.ItemTemplate>
                                                     </ComboBox>
                                                 </Grid>
-                                                <controls:PlotViewCustomZoom Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" Model="{Binding DataContext.ComparisonFpsModel, ElementName=ComparisonViewUserControl}">
+                                                <controls:PlotViewCustomZoom Background="Transparent" Model="{Binding DataContext.ComparisonFpsModel, ElementName=ComparisonViewUserControl}">
                                                     <controls:PlotViewCustomZoom.ContextMenu>
                                                         <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
                                                             <MenuItem Header="Save plot as image" Command="{Binding SaveFPSPlotAsImage }"/>
@@ -172,7 +172,13 @@
                                 </ContentPresenter>
                             </Grid>
                         </Grid>
-                        <Grid Grid.Row="2" Margin="0 5 0 0"  Visibility="{Binding ElementName=RangeSliderActiveToggleButton, Path=IsChecked, Converter={StaticResource TrueToVisibleConverter}}">
+                        <Grid Grid.Row="2" Margin="0 5 0 0" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" 
+                              Visibility="{Binding ElementName=RangeSliderActiveToggleButton, Path=IsChecked, Converter={StaticResource TrueToCollapsedConverter}}">
+                            <Border Grid.Row="2" BorderThickness="5" BorderBrush="Transparent">
+                            </Border>
+                        </Grid>
+                        <Grid Grid.Row="2" Margin="0 5 0 0"  Visibility="{Binding ElementName=RangeSliderActiveToggleButton, Path=IsChecked, Converter={StaticResource TrueToVisibleConverter}}"
+                              Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
                             <mahapps:RangeSlider Margin="45 10 10 30" LowerValue="{Binding FirstSeconds}" UpperValue="{Binding LastSeconds}" 
                                                  Maximum="{Binding MaxRecordingTime}"                                    
 									             TickPlacement="BottomRight" TickFrequency="2.5"
@@ -207,7 +213,7 @@
                                 <TextBlock Text="{Binding RemainingRecordingTime}" Margin="5 0 0 0"/>
                             </StackPanel>
                         </Grid>
-                        <Grid Grid.Row="3" Margin="0 5 0 0" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
+                        <Grid Grid.Row="3" Margin="0 5 0 0" Background="Transparent">
                             <lvc:CartesianChart MouseDoubleClick="ResetLShapeChart_MouseDoubleClick" Series="{Binding ComparisonLShapeCollection}" Zoom="Y"
                                                 Margin="5 5 0 0">
                                 <lvc:CartesianChart.AxisX>
@@ -263,7 +269,7 @@
                                     <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
-                                <ComboBox Grid.Column="0" Width="140" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="5 5 5 5" materialDesign:HintAssist.Hint="Context 1"
+                                <ComboBox Grid.Column="0" Width="140" Height="40" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="5 5 5 5" materialDesign:HintAssist.Hint="Context 1"
 					                materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="150" materialDesign:ComboBoxAssist.ClassicMode="True"
 					                ItemsSource="{Binding ComparisonContextItems}" SelectedItem="{Binding SelectedComparisonContext}">
                                     <ComboBox.ItemTemplate>
@@ -272,7 +278,7 @@
                                         </DataTemplate>
                                     </ComboBox.ItemTemplate>
                                 </ComboBox>
-                                <ComboBox Grid.Column="1" Width="140" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="15 5 5 5" materialDesign:HintAssist.Hint="Context 2"
+                                <ComboBox Grid.Column="1" Width="140" Height="40" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="15 5 5 5" materialDesign:HintAssist.Hint="Context 2"
 					                materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="150" materialDesign:ComboBoxAssist.ClassicMode="True"
 					                ItemsSource="{Binding ComparisonContextItems}" SelectedItem="{Binding SelectedSecondComparisonContext}">
                                     <ComboBox.ItemTemplate>
@@ -302,7 +308,7 @@
                                     <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
-                                <ComboBox Grid.Column="0" Width="125" VerticalAlignment="Center" Margin="5 5 5 5" materialDesign:HintAssist.Hint="First metric"
+                                <ComboBox Grid.Column="0" Width="125" Height="40" VerticalAlignment="Center" Margin="5 5 5 5" materialDesign:HintAssist.Hint="First metric"
 					                Visibility="{Binding IsBarChartTabActive, Converter={StaticResource TrueToVisibleConverter}}"
 					                materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="330" materialDesign:ComboBoxAssist.ClassicMode="True"
 					                ItemsSource="{Binding FirstMetricItems}" SelectedItem="{Binding SelectedFirstMetric}">
@@ -312,7 +318,7 @@
                                         </DataTemplate>
                                     </ComboBox.ItemTemplate>
                                 </ComboBox>
-                                <ComboBox Grid.Column="1" Width="125" VerticalAlignment="Center" Margin="15 5 5 5" materialDesign:HintAssist.Hint="Second metric"
+                                <ComboBox Grid.Column="1" Width="125" Height="40" VerticalAlignment="Center" Margin="15 5 5 5" materialDesign:HintAssist.Hint="Second metric"
 					                Visibility="{Binding IsBarChartTabActive, Converter={StaticResource TrueToVisibleConverter}}"
 					                materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="330" materialDesign:ComboBoxAssist.ClassicMode="True"
 					                ItemsSource="{Binding SecondMetricItems}" SelectedItem="{Binding SelectedSecondMetric}">
@@ -322,7 +328,7 @@
                                         </DataTemplate>
                                     </ComboBox.ItemTemplate>
                                 </ComboBox>
-                                <ComboBox Grid.Column="2" Width="125" VerticalAlignment="Center" Margin="15 5 5 5" materialDesign:HintAssist.Hint="Third metric"
+                                <ComboBox Grid.Column="2" Width="125" Height="40" VerticalAlignment="Center" Margin="15 5 5 5" materialDesign:HintAssist.Hint="Third metric"
 					                materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="360" materialDesign:ComboBoxAssist.ClassicMode="True"
 					                ItemsSource="{Binding ThirdMetricItems}" SelectedItem="{Binding SelectedThirdMetric}">
                                     <ComboBox.ItemTemplate>
@@ -353,7 +359,7 @@
 
             <StackPanel Grid.Column="4" VerticalAlignment="Center" Margin="15 0 0 0" Orientation="Horizontal"
 						Visibility="{Binding IsBarChartTabActive, Converter={StaticResource TrueToVisibleConverter}}">
-                <ComboBox Width="80" Height="40" Margin="0 0 0 10" materialDesign:HintAssist.Hint="Sort metric" materialDesign:ComboBoxAssist.ClassicMode="True" materialDesign:HintAssist.IsFloating="True"
+                <ComboBox Width="80" Height="40" Margin="0 0 0 10" materialDesign:HintAssist.Hint="Sort metric" materialDesign:HintAssist.IsFloating="True"
                           ItemsSource="{Binding SortMetricItemsSource}" SelectedItem="{Binding SelectedSortMetric}" Foreground="{DynamicResource MaterialDesignBody}"> 
                 </ComboBox>
                 <ToggleButton Margin="5 0 0 0" Foreground="{DynamicResource MaterialDesignBody}" BorderThickness="1" Background="Transparent"
