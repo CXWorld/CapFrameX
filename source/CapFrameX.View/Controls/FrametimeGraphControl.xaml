@@ -9,6 +9,7 @@
 			 xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"		
              xmlns:local="clr-namespace:CapFrameX.View.Controls"
 			 xmlns:controls="clr-namespace:CapFrameX.View.Controls"
+             xmlns:oxy="http://oxyplot.org/wpf"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
 	<UserControl.Resources>
@@ -30,6 +31,15 @@
             <controls:PlotViewCustomZoom Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" x:Name="FrametimePlotView" 
                                          Model="{Binding FrametimeModel}" Tag="{Binding ElementName=FrametimeGraphControlName, Path=DataContext}"
 										 MouseDoubleClick="ResetChart_MouseDoubleClick">
+                <controls:PlotViewCustomZoom.DefaultTrackerTemplate>
+                    <ControlTemplate>
+                        <oxy:TrackerControl Position="{Binding Position}" Background="{DynamicResource MaterialDesignCardBackground}">
+                            <oxy:TrackerControl.Content>
+                                <TextBlock Text="{Binding}" Margin="5" />
+                            </oxy:TrackerControl.Content>
+                        </oxy:TrackerControl>
+                    </ControlTemplate>
+                </controls:PlotViewCustomZoom.DefaultTrackerTemplate>
                 <controls:PlotViewCustomZoom.ContextMenu>
                     <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
                         <MenuItem Header="Copy frametime values (f)" Command="{Binding CopyFrametimeValuesCommand}"/>
