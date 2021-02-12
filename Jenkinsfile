@@ -46,7 +46,7 @@ pipeline {
                 stage('Create Archive') {
                     steps {
                         zip archive: false, dir: 'source/CapFrameXBootstrapper/bin/x64/Release', glob: 'CapFrameXBootstrapper.exe', zipFile: "${filename}_installer.zip"
-						zip archive: false, dir: 'source/CapFrameX/bin/x64/Release', glob: '*', zipFile: "${filename}_portable.zip"
+						zip archive: false, dir: 'source/CapFrameX/bin/x64/Release', glob: '**/*', zipFile: "${filename}_portable.zip"
                     }
                 }
 
