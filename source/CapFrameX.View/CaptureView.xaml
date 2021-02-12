@@ -119,7 +119,7 @@
 					 Margin="50 0 0 0" FontSize="14" Text="{Binding CaptureTimeString, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding AreButtonsActive}"
                      PreviewMouseDown="TextBox_PreviewMouseDown" PreviewKeyDown="CaptureTimeTextBox_PreviewKeyDown" MouseLeave="TextBox_MouseLeave" ToolTip="0 = no limit"
                      PreviewTextInput="NumberValidationTextBox" Foreground="{DynamicResource MaterialDesignBody}"/>
-                <ComboBox Grid.Row="0" Grid.Column="3" Width="132" Margin="50 0 0 0" materialDesign:HintAssist.Hint="Hotkey sound mode"
+                <ComboBox Grid.Row="0" Grid.Column="3" Width="132" Margin="50 0 0 0" materialDesign:HintAssist.Hint="Hotkey sound"
 						materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="200" FontSize="14" 
 						ItemsSource="{Binding SoundModes}" HorizontalAlignment="Right" VerticalAlignment="Bottom" Foreground="{DynamicResource MaterialDesignBody}">
                     <ComboBox.Text>

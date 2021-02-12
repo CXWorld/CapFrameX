@@ -581,6 +581,7 @@ namespace CapFrameX.ViewModel
             SetRowSeries();
             SubscribeToSelectRecord();
             SubscribeToUpdateRecordInfos();
+            SubscribeToThemeChanged();
 
             stopwatch.Stop();
             _logger.LogInformation(this.GetType().Name + " {initializationTime}s initialization time", Math.Round(stopwatch.ElapsedMilliseconds * 1E-03, 1));
@@ -594,7 +595,8 @@ namespace CapFrameX.ViewModel
                 PlotMargins = new OxyThickness(40, 10, 10, 70),
                 PlotAreaBorderColor = OxyColor.FromArgb(64, 204, 204, 204),
                 LegendPosition = LegendPosition.TopCenter,
-                LegendOrientation = LegendOrientation.Horizontal
+                LegendOrientation = LegendOrientation.Horizontal,
+                TextColor = _appConfiguration.UseDarkMode ? OxyColors.White : OxyColors.Black
             };
 
             //Axes
@@ -610,6 +612,7 @@ namespace CapFrameX.ViewModel
                 MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
                 MinorTickSize = 0,
                 MajorTickSize = 0
+
             });
 
             //Y
@@ -632,7 +635,8 @@ namespace CapFrameX.ViewModel
                 PlotMargins = new OxyThickness(40, 10, 10, 70),
                 PlotAreaBorderColor = OxyColor.FromArgb(64, 204, 204, 204),
                 LegendPosition = LegendPosition.TopCenter,
-                LegendOrientation = LegendOrientation.Horizontal
+                LegendOrientation = LegendOrientation.Horizontal,
+                TextColor = _appConfiguration.UseDarkMode ? OxyColors.White : OxyColors.Black
             };
 
             //Axes
@@ -695,6 +699,16 @@ namespace CapFrameX.ViewModel
                                     }
                                 }
                             });
+        }
+
+        private void SubscribeToThemeChanged()
+        {
+            _eventAggregator.GetEvent<PubSubEvent<ViewMessages.ThemeChanged>>()
+                              .Subscribe(msg =>
+                              {                               
+                                      InitializePlotModels();
+                                      UpdateCharts();
+                              });
         }
 
         private void OnChartItemChanged()
@@ -885,7 +899,8 @@ namespace CapFrameX.ViewModel
                     {
                         for (int i = 0; i < ComparisonRecords.Count; i++)
                         {
-                            ComparisonFrametimesModel.Series[i].Title = labels[i].Context;
+                            if (!ComparisonRecords[i].IsHideModeSelected)
+                                ComparisonFrametimesModel.Series[i].Title = labels[i].Context;
                         }
                     }
 
@@ -893,7 +908,8 @@ namespace CapFrameX.ViewModel
                     {
                         for (int i = 0; i < ComparisonRecords.Count; i++)
                         {
-                            ComparisonFpsModel.Series[i].Title = labels[i].Context;
+                            if (!ComparisonRecords[i].IsHideModeSelected)
+                                ComparisonFpsModel.Series[i].Title = labels[i].Context;
                         }
                     }
                 }
@@ -1214,6 +1230,7 @@ namespace CapFrameX.ViewModel
 
             var chartTitle = string.Empty;
 
+
             var color = wrappedComparisonInfo.FrametimeGraphColor.Value;
             var frametimeSeries = new Statistics.PlotBuilder.LineSeries()
             {
@@ -1222,7 +1239,8 @@ namespace CapFrameX.ViewModel
                 StrokeThickness = 1,
                 LegendStrokeThickness = 4,
                 Color = wrappedComparisonInfo.IsHideModeSelected ?
-                    OxyColors.Transparent : OxyColor.FromRgb(color.R, color.G, color.B)
+                    OxyColors.Transparent : OxyColor.FromRgb(color.R, color.G, color.B),
+
             };
 
             frametimeSeries.Points.AddRange(frametimePoints.Select(pnt => new DataPoint(pnt.X, pnt.Y)));

@@ -44,18 +44,19 @@
 				   dragdrop:DragDrop.DefaultDragAdornerOpacity="0.5"
 				   dragdrop:DragDrop.UseDefaultEffectDataTemplate="False"/>
         <DataGrid Grid.Row="1" Grid.Column="1" x:Name="AggregationItemDataGrid" Height="275" Width="700" FontSize="11"
-				    MouseLeave="AggregationItemDataGrid_MouseLeave" SelectionMode="Single" VirtualizingStackPanel.VirtualizationMode="Standard"
-				    SelectedIndex="{Binding SelectedAggregationEntryIndex}" ItemsSource="{Binding AggregationEntries}"
-				    CanUserSortColumns="False" CanUserAddRows="False" AutoGenerateColumns="False" PreviewKeyDown="AggregationItemDataGrid_PreviewKeyDown"
-				    materialDesign:DataGridAssist.CellPadding="13 8 8 8" materialDesign:DataGridAssist.ColumnHeaderPadding="8" IsSynchronizedWithCurrentItem="False"
-				    ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.CanContentScroll="True"
-				    dragdrop:DragDrop.IsDragSource="False"
-				    dragdrop:DragDrop.IsDropTarget="True"
-				    dragdrop:DragDrop.DropHandler="{Binding}"
-				    dragdrop:DragDrop.UseDefaultDragAdorner="True"
-				    dragdrop:DragDrop.DefaultDragAdornerOpacity="0.5"
-				    dragdrop:DragDrop.UseDefaultEffectDataTemplate="False"
-                   Style="{StaticResource MaterialDesignDataGrid}">
+				  MouseLeave="AggregationItemDataGrid_MouseLeave" SelectionMode="Single" VirtualizingStackPanel.VirtualizationMode="Standard"
+				  SelectedIndex="{Binding SelectedAggregationEntryIndex}" ItemsSource="{Binding AggregationEntries}"
+				  CanUserSortColumns="False" CanUserAddRows="False" AutoGenerateColumns="False" PreviewKeyDown="AggregationItemDataGrid_PreviewKeyDown"
+				  materialDesign:DataGridAssist.CellPadding="13 8 8 8" materialDesign:DataGridAssist.ColumnHeaderPadding="8" IsSynchronizedWithCurrentItem="False"
+				  ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.CanContentScroll="True"
+				  dragdrop:DragDrop.IsDragSource="False"
+				  dragdrop:DragDrop.IsDropTarget="True"
+				  dragdrop:DragDrop.DropHandler="{Binding}"
+				  dragdrop:DragDrop.UseDefaultDragAdorner="True"
+				  dragdrop:DragDrop.DefaultDragAdornerOpacity="0.5"
+				  dragdrop:DragDrop.UseDefaultEffectDataTemplate="False"
+                  Background="{DynamicResource MaterialDesignTextFieldBoxBackground}"
+                  Style="{StaticResource MaterialDesignDataGrid}">
             <DataGrid.Resources>
                 <proxy:BindingProxy x:Key="proxy" Data="{Binding}" />
             </DataGrid.Resources>
@@ -144,7 +145,7 @@
                     </ToolTip>
                 </Button.ToolTip>
             </Button>
-            <ComboBox Grid.Row="1" Grid.Column="0" Width="120" materialDesign:HintAssist.Hint="Second metric" 
+            <ComboBox Grid.Row="1" Grid.Column="0" Width="120" Height="40" materialDesign:HintAssist.Hint="Second metric" 
 					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="330" materialDesign:ComboBoxAssist.ClassicMode="True"
 					  ItemsSource="{Binding SecondMetricItems}" SelectedItem="{Binding SelectedSecondMetric}"
                       ToolTip="Second metric shown in aggregation table" Foreground="{DynamicResource MaterialDesignBody}">
@@ -154,7 +155,7 @@
                     </DataTemplate>
                 </ComboBox.ItemTemplate>
             </ComboBox>
-            <ComboBox Grid.Row="1" Grid.Column="1" Width="120" materialDesign:HintAssist.Hint="Third metric" 
+            <ComboBox Grid.Row="1" Grid.Column="1" Width="120" Height="40" materialDesign:HintAssist.Hint="Third metric" 
 					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="330" materialDesign:ComboBoxAssist.ClassicMode="True"
 					  ItemsSource="{Binding ThirdMetricItems}" SelectedItem="{Binding SelectedThirdMetric}"
                       ToolTip="Third metric shown in aggregation table" Foreground="{DynamicResource MaterialDesignBody}">
@@ -164,12 +165,12 @@
                     </DataTemplate>
                 </ComboBox.ItemTemplate>
             </ComboBox>
-            <ComboBox Grid.Row="1" Grid.Column="3" Width="120" materialDesign:HintAssist.Hint="Outlier metric" 
+            <ComboBox Grid.Row="1" Grid.Column="3" Width="120" Height="40" materialDesign:HintAssist.Hint="Outlier metric" 
 					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="330" materialDesign:ComboBoxAssist.ClassicMode="True"
 					  ItemsSource="{Binding RelatedMetricItemsSource}" SelectedItem="{Binding SelectedRelatedMetric}"
                       ToolTip="Metric used to determine outliers" Foreground="{DynamicResource MaterialDesignBody}">
             </ComboBox>
-            <ComboBox Grid.Row="1" Grid.Column="4" Width="120" materialDesign:HintAssist.Hint="Outlier percentage" 
+            <ComboBox Grid.Row="1" Grid.Column="4" Width="120" Height="40" materialDesign:HintAssist.Hint="Outlier percentage" 
 					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="330" materialDesign:ComboBoxAssist.ClassicMode="True"
 					  ItemsSource="{Binding OutlierPercentageItemsSource}" SelectedItem="{Binding SelectedOutlierPercentage}"
                       ToolTipService.ShowDuration="25000" Foreground="{DynamicResource MaterialDesignBody}">

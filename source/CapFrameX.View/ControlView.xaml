@@ -98,7 +98,6 @@
                                                  SelectedItem="{Binding SelectedRecordInfo}" CanUserSortColumns="True" CanUserAddRows="False" AutoGenerateColumns="False"
                                                  PreviewLostKeyboardFocus="RecordDataGrid_PreviewLostKeyboardFocus"
 												 PreviewKeyDown="RecordDataGrid_PreviewKeyDown"
-                                                 Foreground="{DynamicResource MaterialDesignBody}"             
 					                             materialDesign:DataGridAssist.CellPadding="13 8 8 8" materialDesign:DataGridAssist.ColumnHeaderPadding="8" IsSynchronizedWithCurrentItem="False"
 					                             ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.CanContentScroll="True"
 					                             dragdrop:DragDrop.IsDragSource="True"
@@ -165,6 +164,15 @@
                                 <Trigger Property="IsNewItem" Value="True">
                                     <Setter Property="Margin" Value="{Binding NewItemMargin, RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}"/>
                                 </Trigger>
+                                <MultiTrigger>
+                                    <MultiTrigger.Conditions>
+                                        <Condition Property="IsSelected" Value="True"/>
+                                        <Condition Property="IsMouseOver" Value="True" />
+                                    </MultiTrigger.Conditions>
+                                    <MultiTrigger.Setters>
+                                        <Setter Property="Background" Value="{DynamicResource MaterialDesignSelection}" />
+                                    </MultiTrigger.Setters>
+                                </MultiTrigger>
                             </Style.Triggers>
                             </Style>
                     </DataGrid.Resources>
