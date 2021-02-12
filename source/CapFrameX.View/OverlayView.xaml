@@ -31,6 +31,13 @@
             <mvvm:InvertBoolConverter x:Key="InvertBoolConverter"/>
             <mvvm:EnumDescriptionConverter x:Key="EnumDescriptionConverter"/>
             <mvvm:StringColorConverter x:Key="StringColorConverter"/>
+            <Style TargetType="{x:Type TabItem}" BasedOn="{StaticResource MaterialDesignNavigationRailTabItem}">
+                <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+                <Setter Property="Background" Value="{DynamicResource PrimaryHueMidBrush}"/>
+                <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBody}"/>
+                <Setter Property="Padding" Value="0"/>
+                <Setter Property="Height" Value="25" />
+            </Style>
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid HorizontalAlignment="Center">
@@ -44,7 +51,7 @@
             <ColumnDefinition Width="10"/>
             <ColumnDefinition Width="450"/>
         </Grid.ColumnDefinitions>
-        <TextBlock Margin="0" Grid.Column="0" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center"
+        <TextBlock Margin="0" Grid.Column="0" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}"
 				    FontSize="18" Visibility="{Binding IsRTSSInstalled, Converter={StaticResource FalseToVisibleConverter}}">             
 			<Hyperlink NavigateUri="https://www.guru3d.com/files-details/rtss-rivatuner-statistics-server-download.html" 
 					   RequestNavigate="Hyperlink_RequestNavigate">
@@ -62,7 +69,7 @@
                         <RowDefinition Height="50"></RowDefinition>
                         <RowDefinition Height="60"></RowDefinition>
                     </Grid.RowDefinitions>
-                    <TextBlock Margin="10 0 0 10" HorizontalAlignment="Left" Text="Overlay items" FontSize="14" VerticalAlignment="Center"/>
+                    <TextBlock Margin="10 0 0 10" HorizontalAlignment="Left" Text="Overlay items" FontSize="14" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}"/>
                     <StackPanel Grid.Row="0" Margin="0 0 0 10" Orientation="Horizontal" HorizontalAlignment="Right">
                         <Button Width="28" Height="28" Margin="0 0 10 0" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
                             ToolTip="Save current config" Command="{Binding SaveConfigCommand}" IsEnabled="{Binding SaveButtonIsEnable}"
@@ -75,6 +82,7 @@
                                  MinWidth="30"
                                  IsChecked="{Binding IsConfig0Checked}"
                                  Content="1"
+                                 Foreground="{DynamicResource MaterialDesignBody}"
                                  Command="{Binding ConfigSwitchCommand}" CommandParameter="0"/>
                         <RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
                                  Padding="0 0 0 0"
@@ -82,6 +90,7 @@
                                  MinWidth="30"
                                  IsChecked="{Binding IsConfig1Checked}"
                                  Content="2" 
+                                 Foreground="{DynamicResource MaterialDesignBody}"
                                  Command="{Binding ConfigSwitchCommand}" CommandParameter="1"/>
                         <RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
                                  Padding="0 0 0 0"
@@ -89,6 +98,7 @@
                                  MinWidth="30"
                                  IsChecked="{Binding IsConfig2Checked}"
                                  Content="3" 
+                                 Foreground="{DynamicResource MaterialDesignBody}"
                                  Command="{Binding ConfigSwitchCommand}" CommandParameter="2"/>
                         <Button Width="28" Height="28" Margin="7 0 10 0" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
                             ToolTip="Reset to defaults" Command="{Binding ResetDefaultsCommand}"
@@ -96,7 +106,7 @@
                             <materialDesign:PackIcon Kind="Restore" Height="22" Width="22" />
                         </Button>
                     </StackPanel>
-                    <DataGrid Grid.Row="1" x:Name="OverlayItemDataGrid" FocusVisualStyle="{x:Null}" Height="Auto" Width="440" Background="#F5F5F5" FontSize="11"
+                    <DataGrid Grid.Row="1" x:Name="OverlayItemDataGrid" FocusVisualStyle="{x:Null}" Height="Auto" Width="440" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" FontSize="11"
 					      SelectedIndex="{Binding SelectedOverlayEntryIndex}" SelectedItem="{Binding SelectedOverlayEntry}" ItemsSource="{Binding OverlayEntries}"
 					      CanUserSortColumns="False" CanUserAddRows="False" AutoGenerateColumns="False"
 					      materialDesign:DataGridAssist.CellPadding="13 3 0 0" materialDesign:DataGridAssist.ColumnHeaderPadding="8" IsSynchronizedWithCurrentItem="False"
@@ -172,8 +182,8 @@
                     <StackPanel Grid.Row="2" Orientation="Vertical">
                         <Border Margin="10 5 10 0" BorderThickness="0.4" BorderBrush="Black">
                             <StackPanel Margin="5 5 0 5" Orientation="Horizontal">
-                                <TextBlock VerticalAlignment="Center">Group control:</TextBlock>
-                                <materialDesign:PopupBox StaysOpen="True" ToolTipService.ShowDuration="25000">
+                                <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}">Group control:</TextBlock>
+                                <materialDesign:PopupBox StaysOpen="True" ToolTipService.ShowDuration="25000" Foreground="{DynamicResource MaterialDesignBody}">
                                     <materialDesign:PopupBox.ToolTip>
                                         <ToolTip MaxWidth="275" Placement="Top">
                                             <TextBlock Text="OSD parameter group control" 
@@ -234,14 +244,14 @@
                                         </StackPanel>
                                     </materialDesign:Card>
                                 </materialDesign:PopupBox>
-                                <TextBlock VerticalAlignment="Center">Min OSD</TextBlock>
+                                <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}">Min OSD</TextBlock>
                                 <Button Margin="10 0 0 0" Width="20" Height="20" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
                                 Command="{Binding SetToMinOsdCommand}" materialDesign:RippleAssist.Feedback="#DD000000">
                                     <materialDesign:PackIcon Kind="FlipToFront" Height="15" Width="15" />
                                 </Button>
                                 <StackPanel Margin="125 0 0 0" Orientation="Horizontal">
-                                    <TextBlock Text="OSD options" VerticalAlignment="Center" />
-                                    <materialDesign:PopupBox StaysOpen="True">
+                                    <TextBlock Text="OSD options" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}"/>
+                                    <materialDesign:PopupBox StaysOpen="True" Foreground="{DynamicResource MaterialDesignBody}">
                                         <materialDesign:Card  Margin="0 0 0 -10">
                                             <StackPanel>
                                                 <Grid Margin="8 8 8 8">
@@ -300,38 +310,39 @@
                     </StackPanel>
                     <!--Global overlay toggle-->
                     <StackPanel Grid.Row="3" Margin="20 0 0 0" DockPanel.Dock="Bottom" Orientation="Horizontal">
-                        <TextBox Margin="0 0 0 0" materialDesign:HintAssist.Hint="Toggle Overlay hotkey" Width="132" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" FontSize="14"
-					 IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False" PreviewKeyDown="OverlayHotkeyTextBox_PreviewKeyDown"
-					 ToolTip="Hotkey combinable with up to two modifier keys (Ctrl, Shift or Alt)">
+                        <TextBox Margin="0 0 0 0" materialDesign:HintAssist.Hint="Toggle Overlay hotkey" Width="140" Height="45" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" FontSize="14"
+					         IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False" PreviewKeyDown="OverlayHotkeyTextBox_PreviewKeyDown"
+					         ToolTip="Hotkey combinable with up to two modifier keys (Ctrl, Shift or Alt)" Foreground="{DynamicResource MaterialDesignBody}">
                             <Binding Path="OverlayHotkey"
-						 ElementName="OverlayViewControl"
-						 Mode="OneWay"
-						 TargetNullValue="&lt; not set &gt;">
+						    ElementName="OverlayViewControl"
+						    Mode="OneWay"
+						    TargetNullValue="&lt; not set &gt;">
                                 <Binding.ValidationRules>
                                     <validation:HotkeyValidationRule
-                          ValidatesOnTargetUpdated="True" />
+                            ValidatesOnTargetUpdated="True" />
                                 </Binding.ValidationRules>
                             </Binding>
                         </TextBox>
-                        <TextBox Margin="25 0 0 0" materialDesign:HintAssist.Hint="Toggle Config hotkey" Width="132" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" FontSize="14"
-					 IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False" PreviewKeyDown="ConfigHotkeyTextBox_PreviewKeyDown"
-					 ToolTip="Hotkey combinable with up to two modifier keys (Ctrl, Shift or Alt)">
+                        <TextBox Margin="25 0 0 0" materialDesign:HintAssist.Hint="Toggle Config hotkey" Width="132" Height="45" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" FontSize="14"
+					        IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False" PreviewKeyDown="ConfigHotkeyTextBox_PreviewKeyDown"
+					        ToolTip="Hotkey combinable with up to two modifier keys (Ctrl, Shift or Alt)" Foreground="{DynamicResource MaterialDesignBody}">
                             <Binding Path="OverlayConfigHotkey"
-						 ElementName="OverlayViewControl"
-						 Mode="OneWay"
-						 TargetNullValue="&lt; not set &gt;">
+						    ElementName="OverlayViewControl"
+						    Mode="OneWay"
+						    TargetNullValue="&lt; not set &gt;">
                                 <Binding.ValidationRules>
                                     <validation:HotkeyValidationRule
-                          ValidatesOnTargetUpdated="True" />
+                            ValidatesOnTargetUpdated="True" />
                                 </Binding.ValidationRules>
                             </Binding>
                         </TextBox>
-                        <ComboBox Margin="25 15 0 0" 
-					  materialDesign:ComboBoxAssist.ClassicMode="True"
-					  materialDesign:HintAssist.Hint="Refresh period (ms)"
-					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="200" Width="110"
-					  MouseLeave="OSDRefreshPeriodComboBox_MouseLeave" FontSize="14"
-					  ItemsSource="{Binding Path=RefreshPeriodItemsSource}">
+                        <ComboBox Margin="25 0 0 0" 
+					        materialDesign:ComboBoxAssist.ClassicMode="True"
+					        materialDesign:HintAssist.Hint="Refresh period (ms)"
+					        materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="200" Width="110" Height="40"
+					        MouseLeave="OSDRefreshPeriodComboBox_MouseLeave" FontSize="14"
+                            Foreground="{DynamicResource MaterialDesignBody}"
+					        ItemsSource="{Binding Path=RefreshPeriodItemsSource}">
                             <ComboBox.Text>
                                 <Binding Path="OSDRefreshPeriod"
 							     Mode="TwoWay"
@@ -344,7 +355,10 @@
             </DockPanel>
         </Border>
         <TabControl Grid.Row="1" Grid.Column="2" Margin="0 0 0 0" Background="Transparent" BorderThickness=".2" BorderBrush="Black">
-            <TabItem Header="Overlay items options">
+            <TabItem Width="150" Foreground="{DynamicResource MaterialDesignBody}">
+                <TabItem.Header>
+                    <Label FontSize="12">Overlay items options</Label>
+                </TabItem.Header>
                 <Grid HorizontalAlignment="Center">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="30"></RowDefinition>
@@ -379,7 +393,7 @@
                                     <materialDesign:PackIcon Kind="Restore" Height="15" Width="15" />
                                 </Button>
                                 <TextBlock Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Text="Group color:"/>
-                                <ctrls:CXColorPicker Grid.Row="1" Grid.Column="2" Width="25" Height="25" Margin="0 0 0 0" Background="#e6e6e6" SelectedColor="{Binding SelectedOverlayEntry.GroupColor, Converter={StaticResource StringColorConverter}}" 
+                                <ctrls:CXColorPicker Grid.Row="1" Grid.Column="2" Width="25" Height="25" Margin="0 0 0 0" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" SelectedColor="{Binding SelectedOverlayEntry.GroupColor, Converter={StaticResource StringColorConverter}}" 
 										SelectedColorChanged="SelectedColorChanged" DisplayColorAndName="False" AvailableColorsSortingMode="HueSaturationBrightness">
                                     <ctrls:CXColorPicker.ButtonStyle>
                                         <Style TargetType="ToggleButton">
@@ -407,7 +421,7 @@
                                     </ctrls:CXColorPicker.ButtonStyle>
                                 </ctrls:CXColorPicker>
                                 <TextBlock Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" Text="Standard value color:"/>
-                                <ctrls:CXColorPicker Grid.Row="2" Grid.Column="2" Width="25" Height="25" Margin="0 0 0 0" Background="#e6e6e6" SelectedColor="{Binding SelectedOverlayEntry.Color, Converter={StaticResource StringColorConverter}}" 
+                                <ctrls:CXColorPicker Grid.Row="2" Grid.Column="2" Width="25" Height="25" Margin="0 0 0 0" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" SelectedColor="{Binding SelectedOverlayEntry.Color, Converter={StaticResource StringColorConverter}}" 
 										SelectedColorChanged="SelectedColorChanged" DisplayColorAndName="False" AvailableColorsSortingMode="HueSaturationBrightness">
                                     <ctrls:CXColorPicker.ButtonStyle>
                                         <Style TargetType="ToggleButton">
@@ -439,7 +453,7 @@
                                          ToolTip="Changes value color if value is equal or higher&#10;Clear this box to deactivate limit"
                                          Text="{Binding SelectedOverlayEntry.UpperLimitValue, UpdateSourceTrigger=LostFocus}" IsEnabled="{Binding SelectedOverlayEntry.IsNumeric}">
                                 </TextBox>
-                                <ctrls:CXColorPicker Grid.Row="3" Grid.Column="2" Width="25" Height="25" Margin="0 0 0 0" Background="#e6e6e6" SelectedColor="{Binding SelectedOverlayEntry.UpperLimitColor, Converter={StaticResource StringColorConverter}}" 
+                                <ctrls:CXColorPicker Grid.Row="3" Grid.Column="2" Width="25" Height="25" Margin="0 0 0 0" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" SelectedColor="{Binding SelectedOverlayEntry.UpperLimitColor, Converter={StaticResource StringColorConverter}}" 
 										          SelectedColorChanged="SelectedColorChanged" DisplayColorAndName="False" AvailableColorsSortingMode="HueSaturationBrightness"
                                                   IsEnabled="{Binding SelectedOverlayEntry.IsNumeric}">
                                     <ctrls:CXColorPicker.ButtonStyle>
@@ -473,7 +487,7 @@
                                          Text="{Binding SelectedOverlayEntry.LowerLimitValue, UpdateSourceTrigger=LostFocus}"
                                          IsEnabled="{Binding SelectedOverlayEntry.IsNumeric}">
                                 </TextBox>
-                                <ctrls:CXColorPicker Grid.Row="4" Grid.Column="2" Width="25" Height="25" Margin="0 0 0 0" Background="#e6e6e6" SelectedColor="{Binding SelectedOverlayEntry.LowerLimitColor, Converter={StaticResource StringColorConverter}}" 
+                                <ctrls:CXColorPicker Grid.Row="4" Grid.Column="2" Width="25" Height="25" Margin="0 0 0 0" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" SelectedColor="{Binding SelectedOverlayEntry.LowerLimitColor, Converter={StaticResource StringColorConverter}}" 
 										          SelectedColorChanged="SelectedColorChanged" DisplayColorAndName="False" AvailableColorsSortingMode="HueSaturationBrightness"
                                                   IsEnabled="{Binding SelectedOverlayEntry.IsNumeric}">
                                     <ctrls:CXColorPicker.ButtonStyle>
@@ -610,7 +624,10 @@
                     </Border>
                 </Grid>
             </TabItem>
-            <TabItem Header="Run history and aggregation options">
+            <TabItem Width="220" Foreground="{DynamicResource MaterialDesignBody}">
+                <TabItem.Header>
+                    <Label FontSize="12">Run history and aggregation options</Label>
+                </TabItem.Header>
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="50"></RowDefinition>
@@ -647,7 +664,7 @@
                             <ColumnDefinition Width="225"/>
                         </Grid.ColumnDefinitions>
                         <ComboBox Grid.Row="0" Grid.Column="0" materialDesign:HintAssist.Hint="Number of runs" VerticalAlignment="Bottom"
-					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Width="120" materialDesign:ComboBoxAssist.ClassicMode="True"
+					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Width="120" Height="40" materialDesign:ComboBoxAssist.ClassicMode="True"
 					  ItemsSource="{Binding Path=NumberOfRunsItemsSource}" ToolTipService.ShowDuration="25000">
                             <ComboBox.ToolTip>
                                 <ToolTip StaysOpen="True" MaxWidth="275">
@@ -664,9 +681,9 @@
                             </ComboBox.Text>
                         </ComboBox>
                         <!--Reset run history hotkey-->
-                        <TextBox Grid.Row="0" Grid.Column="1" Width="120" wpf:HintAssist.Hint="Reset run history hotkey" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" FontSize="14"
-					 IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False" PreviewKeyDown="ResetHistoryHotkeyTextBox_PreviewKeyDown"
-					 ToolTip="Hotkey combinable with up to two modifier keys (Ctrl, Shift or Alt)">
+                        <TextBox Grid.Row="0" Grid.Column="1" Width="120" Height="45" Margin="0 20 0 0" materialDesign:HintAssist.Hint="Reset run history hotkey" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" FontSize="14"
+					             IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False" PreviewKeyDown="ResetHistoryHotkeyTextBox_PreviewKeyDown" 
+					             ToolTip="Hotkey combinable with up to two modifier keys (Ctrl, Shift or Alt)">
                             <Binding Path="ResetHistoryHotkey"
 						 ElementName="OverlayViewControl"
 						 Mode="OneWay"
@@ -678,7 +695,7 @@
                             </Binding>
                         </TextBox>
                         <!--Metrics shown on overlay-->
-                        <ComboBox  Grid.Row="1" Grid.Column="0" Width="120" materialDesign:HintAssist.Hint="Second metric" 
+                        <ComboBox  Grid.Row="1" Grid.Column="0" Width="120" Height="40" materialDesign:HintAssist.Hint="Second metric" 
 					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="330" materialDesign:ComboBoxAssist.ClassicMode="True"
 					  ItemsSource="{Binding SecondMetricItems}" SelectedItem="{Binding SelectedSecondMetric}"
                       ToolTip="Second metric shown in history entries">
@@ -688,7 +705,7 @@
                                 </DataTemplate>
                             </ComboBox.ItemTemplate>
                         </ComboBox>
-                        <ComboBox Grid.Row="1" Grid.Column="1" Width="120" materialDesign:HintAssist.Hint="Third metric"
+                        <ComboBox Grid.Row="1" Grid.Column="1" Width="120" Height="40" materialDesign:HintAssist.Hint="Third metric"
 					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="360" materialDesign:ComboBoxAssist.ClassicMode="True"
 					  ItemsSource="{Binding ThirdMetricItems}" SelectedItem="{Binding SelectedThirdMetric}"
                       ToolTip="Third metric shown in history entries">
@@ -728,9 +745,9 @@
                             </Grid.ColumnDefinitions>
                             <!--Outlier handling-->
                             <ComboBox Grid.Row="0" Grid.Column="0" materialDesign:HintAssist.Hint="Outlier handling" materialDesign:ComboBoxAssist.ClassicMode="True"
-					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Width="120"
-					  ItemsSource="{Binding OutlierHandlingItems}" SelectedItem="{Binding SelectedOutlierHandling}" 
-                              ToolTipService.ShowDuration="25000">
+					                  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Width="120" Height="40"
+					                  ItemsSource="{Binding OutlierHandlingItems}" SelectedItem="{Binding SelectedOutlierHandling}" 
+                                      ToolTipService.ShowDuration="25000">
                                 <ComboBox.ToolTip>
                                     <ToolTip MaxWidth="350">
                                         <TextBlock
@@ -763,8 +780,8 @@
                             </CheckBox>
                             <!--Outlier metric-->
                             <ComboBox Grid.Row="1" Grid.Column="0"  materialDesign:HintAssist.Hint="Outlier metric" materialDesign:ComboBoxAssist.ClassicMode="True"
-					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Width="120" 
-					  ItemsSource="{Binding RelatedMetricItemsSource}" SelectedItem="{Binding SelectedRelatedMetric}" 
+					                  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Width="120" Height="40"
+					                  ItemsSource="{Binding RelatedMetricItemsSource}" SelectedItem="{Binding SelectedRelatedMetric}" 
                               ToolTipService.ShowDuration="25000">
                                 <ComboBox.ToolTip>
                                     <ToolTip MaxWidth="350">
@@ -776,9 +793,9 @@
                             </ComboBox>
                             <!--Outlier percentage-->
                             <ComboBox Grid.Row="1" Grid.Column="1" materialDesign:HintAssist.Hint="Outlier percentage" materialDesign:ComboBoxAssist.ClassicMode="True"
-					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="200" Width="120" 
-					  ItemsSource="{Binding OutlierPercentageItemsSource}" SelectedItem="{Binding SelectedOutlierPercentage}" 
-                              ToolTipService.ShowDuration="25000">
+					                  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="200" Width="120" Height="40"
+					                  ItemsSource="{Binding OutlierPercentageItemsSource}" SelectedItem="{Binding SelectedOutlierPercentage}" 
+                                      ToolTipService.ShowDuration="25000">
                                 <ComboBox.ToolTip>
                                     <ToolTip MaxWidth="350">
                                         <TextBlock

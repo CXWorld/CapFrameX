@@ -28,6 +28,13 @@
             <Style x:Key="CleanSeparator" TargetType="lvc:Separator">
                 <Setter Property="IsEnabled" Value="False"></Setter>
             </Style>
+            <Style TargetType="{x:Type TabItem}" BasedOn="{StaticResource MaterialDesignNavigationRailTabItem}">
+                <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+                <Setter Property="Background" Value="{DynamicResource PrimaryHueMidBrush}"/>
+                <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBody}"/>
+                <Setter Property="Padding" Value="0"/>
+                <Setter Property="Height" Value="25" />
+            </Style>
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid Margin="5 0 5 0">
@@ -38,7 +45,7 @@
         </Grid.RowDefinitions>
         <TextBlock Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Bottom" FontWeight="Bold" FontSize="16" Foreground="{DynamicResource MaterialDesignBody}" Text="{Binding CurrentGameName}"/>
         <TabControl Grid.Row="1" Grid.Column="0" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
-            <TabItem Foreground="{DynamicResource MaterialDesignBody}">
+            <TabItem Width="150" Foreground="{DynamicResource MaterialDesignBody}">
                 <TabItem.Header>
                     <Label FontSize="12">Input lag approximation</Label>
                 </TabItem.Header>
@@ -125,7 +132,7 @@
                     </Grid>
                 </Grid>
             </TabItem>
-            <TabItem Foreground="{DynamicResource MaterialDesignBody}" >
+            <TabItem Width="150" Foreground="{DynamicResource MaterialDesignBody}" >
                 <TabItem.Header>
                     <Label FontSize="12">Until displayed times</Label>
                 </TabItem.Header>
