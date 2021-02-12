@@ -401,16 +401,16 @@
                                    Text="Drop items here or double click them in the record list." Foreground="{DynamicResource MaterialDesignBody}"
                                    FontSize="18" Width="250" TextAlignment="Center" TextWrapping="Wrap"/>
                         </Border>
-                        <DockPanel Height="{Binding ElementName=ComparisonAreaGrid, Path=ActualHeight, Converter={StaticResource AddValueConverter}}">
-                            <ScrollViewer VerticalScrollBarVisibility="Auto" CanContentScroll="True">
-                                <ItemsControl ItemsSource="{Binding ComparisonRecords}" Foreground="{DynamicResource MaterialDesignBody}"
-										  x:Name="ComparisonRecordItemControl"										  
+                        <DockPanel Height="{Binding ElementName=ComparisonAreaGrid, Path=ActualHeight, Converter={StaticResource AddValueConverter}}"
+                                   	      x:Name="ComparisonRecordItemControl"										  
 										  dragdrop:DragDrop.IsDropTarget="True"
 										  dragdrop:DragDrop.IsDragSource="False"
 										  dragdrop:DragDrop.DropHandler="{Binding}"
 										  dragdrop:DragDrop.UseDefaultDragAdorner="True"
 										  dragdrop:DragDrop.DefaultDragAdornerOpacity="0.5"
 										  dragdrop:DragDrop.UseDefaultEffectDataTemplate="False">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto" CanContentScroll="True">
+                                <ItemsControl ItemsSource="{Binding ComparisonRecords}" Foreground="{DynamicResource MaterialDesignBody}">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate DataType="{x:Type vm:ComparisonRecordInfoWrapper}">
                                             <Border x:Name="Border"
