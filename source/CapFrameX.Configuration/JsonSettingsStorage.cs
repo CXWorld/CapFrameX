@@ -22,11 +22,13 @@ namespace CapFrameX.Configuration
 
         public JsonSettingsStorage(ILogger<JsonSettingsStorage> logger)
         {
+
             _logger = logger;
             _saveFileSubject
                 .AsObservable()
                 .Throttle(TimeSpan.FromMilliseconds(500))
-                .Subscribe(async x => await Save());
+                .SelectMany(_ => Observable.FromAsync(() => Save()).Retry(2))
+                .Subscribe();
         }
 
         public T GetValue<T>(string key)
@@ -92,7 +94,7 @@ namespace CapFrameX.Configuration
             }
         }
 
-        private Task Save()
+        private Task<bool> Save()
         {
             try
             {
@@ -101,12 +103,13 @@ namespace CapFrameX.Configuration
                 if (string.IsNullOrWhiteSpace(fileContent))
                 {
                     _logger.LogError("Error writing Configurationfile. Cannot create config from Dictionary", _configDictionary);
+                    return Task.FromResult(false);
                 }
                 else
                 {
                     File.WriteAllText(file.FullName, fileContent);
+                    return Task.FromResult(true);
                 }
-                return Task.FromResult(true);
             }
             catch (Exception exc)
             {
