@@ -331,6 +331,12 @@ namespace CapFrameX.ViewModel
                                     }
                                 }
                             });
+
+            _eventAggregator.GetEvent<PubSubEvent<ViewMessages.ThemeChanged>>()
+                  .Subscribe(msg =>
+                  {
+                      UpdateCharts();
+                  });
         }
 
         private void OnCopyUntilDisplayedTimesValues()
@@ -434,10 +440,11 @@ namespace CapFrameX.ViewModel
                 var tmp = new PlotModel
                 {
                     PlotMargins = new OxyThickness(40, 10, 40, 40),
-                    PlotAreaBorderColor = OxyColor.FromArgb(64, 204, 204, 204),
+                    PlotAreaBorderColor = _appConfiguration.UseDarkMode ? OxyColor.FromArgb(100, 204, 204, 204) : OxyColor.FromArgb(50, 30, 30, 30),
                     LegendPosition = LegendPosition.TopCenter,
-                    LegendOrientation = LegendOrientation.Horizontal
-                     
+                    LegendOrientation = LegendOrientation.Horizontal,
+                    TextColor = _appConfiguration.UseDarkMode ? OxyColors.White : OxyColors.Black
+
                 };
 
                 tmp.Series.Add(frametimeSeries);
@@ -454,7 +461,7 @@ namespace CapFrameX.ViewModel
                     Maximum = frametimes.Count,
                     MajorGridlineStyle = LineStyle.Solid,
                     MajorGridlineThickness = 1,
-                    MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
+                    MajorGridlineColor = _appConfiguration.UseDarkMode ? OxyColor.FromArgb(40, 204, 204, 204) : OxyColor.FromArgb(20, 30, 30, 30),
                     MinorTickSize = 0,
                     MajorTickSize = 0
                 });
@@ -469,7 +476,7 @@ namespace CapFrameX.ViewModel
                     Maximum = yMax + (yMax - yMin) / 6,
                     MajorGridlineStyle = LineStyle.Solid,
                     MajorGridlineThickness = 1,
-                    MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
+                    MajorGridlineColor = _appConfiguration.UseDarkMode ? OxyColor.FromArgb(40, 204, 204, 204) : OxyColor.FromArgb(20, 30, 30, 30),
                     MinorTickSize = 0,
                     MajorTickSize = 0
                 });
@@ -664,12 +671,13 @@ namespace CapFrameX.ViewModel
                 upperBoundInputlagtimes.IsNullOrEmpty() ||
                 lowerBoundInputlagtimes.IsNullOrEmpty())
             {
+
                 InputLagModel = new PlotModel
                 {
                     PlotMargins = new OxyThickness(40, 10, 0, 40),
-                    PlotAreaBorderColor = OxyColor.FromArgb(64, 204, 204, 204),
+                    PlotAreaBorderColor = _appConfiguration.UseDarkMode ? OxyColor.FromArgb(100, 204, 204, 204) : OxyColor.FromArgb(50, 30, 30, 30),
                     LegendPosition = LegendPosition.TopCenter,
-                    LegendOrientation = LegendOrientation.Horizontal
+                    LegendOrientation = LegendOrientation.Horizontal,
                 };
                 return;
             }
@@ -724,7 +732,8 @@ namespace CapFrameX.ViewModel
                     PlotMargins = new OxyThickness(40, 10, 40, 40),
                     PlotAreaBorderColor = OxyColor.FromArgb(64, 204, 204, 204),
                     LegendPosition = LegendPosition.TopCenter,
-                    LegendOrientation = LegendOrientation.Horizontal
+                    LegendOrientation = LegendOrientation.Horizontal,
+                    TextColor = _appConfiguration.UseDarkMode ? OxyColors.White : OxyColors.Black
                 };
 
                 tmp.Series.Add(frametimeSeries);
@@ -743,7 +752,7 @@ namespace CapFrameX.ViewModel
                     Maximum = filteredFrametimes.Count(),
                     MajorGridlineStyle = LineStyle.Solid,
                     MajorGridlineThickness = 1,
-                    MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
+                    MajorGridlineColor = _appConfiguration.UseDarkMode ? OxyColor.FromArgb(40, 204, 204, 204) : OxyColor.FromArgb(20, 30, 30, 30),
                     MinorTickSize = 0,
                     MajorTickSize = 0
                 });
@@ -758,7 +767,7 @@ namespace CapFrameX.ViewModel
                     Maximum = yMax + (yMax - yMin) / 6,
                     MajorGridlineStyle = LineStyle.Solid,
                     MajorGridlineThickness = 1,
-                    MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
+                    MajorGridlineColor = _appConfiguration.UseDarkMode ? OxyColor.FromArgb(40, 204, 204, 204) : OxyColor.FromArgb(20, 30, 30, 30),
                     MinorTickSize = 0,
                     MajorTickSize = 0
                 });

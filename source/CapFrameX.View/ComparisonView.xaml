@@ -67,7 +67,7 @@
                         <TextBlock DockPanel.Dock="Top" Grid.Row="0" Margin="0 10 0 10" FontWeight="Bold" FontSize="16" Text="{Binding CurrentGameName}" HorizontalAlignment="Center"
 							   Visibility="{Binding ShowGameNameTitle, Converter={StaticResource TrueToVisibleConverter}}"/>
                         <TextBox DockPanel.Dock="Top" Grid.Row="0" HorizontalAlignment="Center" Visibility="{Binding Path=IsChecked, ElementName=ShowCustomTitleToggleButton, Converter={StaticResource TrueToVisibleConverter}}"
-                                 Text="Type your title here..." Margin="0 10 0 0" Height="30" MinWidth="50" 
+                                 Text="Type your title here..." Height="30" MinWidth="50" 
                                  FontSize="18" PreviewKeyDown="CustomTitle_PreviewKeyDown" />
                         <ScrollViewer VerticalScrollBarVisibility="Auto">
                             <lvc:CartesianChart Grid.Row="0" VerticalAlignment="Top" MaxWidth="1000" Margin="10" Series="{Binding ComparisonRowChartSeriesCollection}" Height="{Binding BarChartHeight}"
@@ -106,8 +106,7 @@
                             <RowDefinition Height="1*"></RowDefinition>
                         </Grid.RowDefinitions>
                         <TextBox Grid.Row="0" HorizontalAlignment="Center" Visibility="{Binding Path=IsChecked, ElementName=ShowCustomTitleToggleButton, Converter={StaticResource TrueToVisibleConverter}}"
-                                 Text="Type your title here..." Margin="0 10 0 0" Height="30" Padding="0 -28 0 0"
-                                 Style="{StaticResource MaterialDesignFilledTextFieldTextBox}"
+                                 Text="Type your title here..." Height="30" MinWidth="50" 
                                  FontSize="18" />
                         <Grid Grid.Row="1" Margin="0 0 0 0">
                             <Grid>

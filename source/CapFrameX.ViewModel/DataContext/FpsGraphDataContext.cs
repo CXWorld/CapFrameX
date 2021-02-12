@@ -13,6 +13,7 @@ using System.Windows.Forms;
 using CapFrameX.Statistics.PlotBuilder;
 using CapFrameX.Statistics.PlotBuilder.Contracts;
 using Prism.Events;
+using CapFrameX.Extensions.NetStandard;
 
 namespace CapFrameX.ViewModel.DataContext
 {
@@ -48,6 +49,16 @@ namespace CapFrameX.ViewModel.DataContext
 
 				var plotModel = _fpsPlotBuilder.PlotModel;
 				plotModel.TextColor = AppConfiguration.UseDarkMode ? OxyColors.White : OxyColors.Black;
+				plotModel.PlotAreaBorderColor = AppConfiguration.UseDarkMode? OxyColor.FromArgb(100, 204, 204, 204) : OxyColor.FromArgb(50, 30, 30, 30);
+
+				var xAxis = plotModel.GetAxisOrDefault(EPlotAxis.XAXIS.GetDescription(), null);
+				if (xAxis != null)
+					xAxis.MajorGridlineColor = AppConfiguration.UseDarkMode ? OxyColor.FromArgb(40, 204, 204, 204) : OxyColor.FromArgb(20, 30, 30, 30);
+
+				var yAxis = plotModel.GetAxisOrDefault(EPlotAxis.YAXISFPS.GetDescription(), null);
+				if (yAxis != null)
+					yAxis.MajorGridlineColor = AppConfiguration.UseDarkMode ? OxyColor.FromArgb(40, 204, 204, 204) : OxyColor.FromArgb(20, 30, 30, 30);
+
 				PlotModel = plotModel;
 			});
 		}
