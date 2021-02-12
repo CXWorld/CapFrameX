@@ -49,7 +49,7 @@
 				<TextBlock Text="{Binding Path=UpdateHpyerlinkText}" TextAlignment="Center"/>
 			</Hyperlink>
 		</TextBlock>
-        <Border BorderBrush="Black" BorderThickness="0.2" Grid.Row="1" Grid.Column="0" >
+        <Border BorderBrush="{DynamicResource MaterialDesignBody}" BorderThickness="0.3" Grid.Row="1" Grid.Column="0" >
             <DockPanel Margin="0 10 0 10"
                    Visibility="{Binding  IsRTSSInstalled, Converter={StaticResource TrueToVisibleConverter}}">
                 <!--DataGrid and Overlay hotkey-->
@@ -235,7 +235,7 @@
                         </DataGrid.Columns>
                     </DataGrid>
                     <StackPanel Grid.Row="2" Orientation="Vertical">
-                        <Border Margin="10 5 10 0" BorderThickness="0.4" BorderBrush="Black">
+                        <Border Margin="10 5 10 0" BorderThickness="0.4" BorderBrush="{DynamicResource MaterialDesignBody}">
                             <StackPanel Margin="5 5 0 5" Orientation="Horizontal">
                                 <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}">Group control:</TextBlock>
                                 <materialDesign:PopupBox StaysOpen="True" ToolTipService.ShowDuration="25000" Foreground="{DynamicResource MaterialDesignBody}">
@@ -409,7 +409,7 @@
                 </Grid>
             </DockPanel>
         </Border>
-        <TabControl Grid.Row="1" Grid.Column="2" Margin="0 0 0 0" Background="Transparent" BorderThickness=".2" BorderBrush="Black">
+        <TabControl Grid.Row="1" Grid.Column="2" Margin="0 0 0 0" Background="Transparent" BorderThickness="0.3" BorderBrush="{DynamicResource MaterialDesignBody}">
             <TabItem Width="150" Foreground="{DynamicResource MaterialDesignBody}">
                 <TabItem.Header>
                     <Label FontSize="12">Overlay items options</Label>
@@ -425,7 +425,7 @@
                         <ColumnDefinition Width="220"/>
                     </Grid.ColumnDefinitions>
                     <TextBlock Grid.Row="0" Grid.ColumnSpan="2"  VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="16" Text="{Binding SelectedOverlayItemName}"/>
-                    <Border Grid.Row="1" Grid.Column="0" Margin="5" Background="Transparent" BorderThickness=".2" BorderBrush="Black">
+                    <Border Grid.Row="1" Grid.Column="0" Margin="5" Background="Transparent" BorderThickness="0.3" BorderBrush="{DynamicResource MaterialDesignBody}">
                         <StackPanel Margin="5" IsEnabled="{Binding OverlayItemsOptionsEnabled}">
                             <Grid>
                                 <Grid.RowDefinitions>
@@ -574,7 +574,7 @@
                         </StackPanel>
                     </Border>
                     <!-- Format options -->
-                    <Border Grid.Row="1" Grid.Column="1" Margin="5" Background="Transparent" BorderThickness=".2" BorderBrush="Black">
+                    <Border Grid.Row="1" Grid.Column="1" Margin="5" Background="Transparent" BorderThickness="0.3" BorderBrush="{DynamicResource MaterialDesignBody}">
                         <StackPanel Margin="5" IsEnabled="{Binding OverlayItemsOptionsEnabled}">
                             <Grid>
                                 <Grid.RowDefinitions>
@@ -606,7 +606,7 @@
                             </Grid>
                         </StackPanel>
                     </Border>
-                    <Border Grid.Row="2" Grid.Column="0" Margin="5" BorderThickness=".2" BorderBrush="Black">
+                    <Border Grid.Row="2" Grid.Column="0" Margin="5" BorderThickness="0.3" BorderBrush="{DynamicResource MaterialDesignBody}">
                         <DataGrid x:Name="SeparatorDataGrid" FontSize="11"
 					              SelectedIndex="{Binding Path=OverlaySubModelGroupSeparating.SelectedOverlayGroupIndex}" 
                                   ItemsSource="{Binding Path=OverlaySubModelGroupSeparating.OverlayGroupNameSeparatorEntries}"
@@ -693,7 +693,7 @@
                             </DataGrid.Columns>
                         </DataGrid>
                     </Border>
-                    <Border Grid.Row="2" Grid.Column="1" Margin="5" Background="Transparent" BorderThickness=".2" BorderBrush="Black">
+                    <Border Grid.Row="2" Grid.Column="1" Margin="5" Background="Transparent" BorderThickness="0.3" BorderBrush="{DynamicResource MaterialDesignBody}">
                         <Grid IsEnabled="{Binding OverlayItemsOptionsEnabled}">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="30"></RowDefinition>
@@ -798,7 +798,7 @@
                             </ComboBox.Text>
                         </ComboBox>
                         <!--Reset run history hotkey-->
-                        <TextBox Grid.Row="0" Grid.Column="1" Width="120" Height="45" Margin="0 20 0 0" materialDesign:HintAssist.Hint="Reset run history hotkey" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" FontSize="14"
+                        <TextBox Grid.Row="0" Grid.Column="1" Width="120" Height="45" Margin="0 20 0 0" materialDesign:HintAssist.Hint="Reset run history" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" FontSize="14"
 					             IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False" PreviewKeyDown="ResetHistoryHotkeyTextBox_PreviewKeyDown" 
 					             ToolTip="Hotkey combinable with up to two modifier keys (Ctrl, Shift or Alt)">
                             <Binding Path="ResetHistoryHotkey"

@@ -108,7 +108,7 @@
                                 <Grid>
                                     <Grid Margin="0 0 0 0" Panel.ZIndex="1" HorizontalAlignment="Left" VerticalAlignment="Bottom">
                                         <ComboBox Width="85" Height="40" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="10 0 0 10" materialDesign:HintAssist.Hint="Y-Axis scale"
-										          materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="240" materialDesign:ComboBoxAssist.ClassicMode="True"
+										          materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="240" 
 										          ItemsSource="{Binding ChartYAxisSettings}" SelectedItem="{Binding SelecetedChartYAxisSetting}">
                                             <ComboBox.ItemTemplate>
                                                 <DataTemplate>
@@ -117,7 +117,7 @@
                                             </ComboBox.ItemTemplate>
                                         </ComboBox>
                                     </Grid>
-                                    <controls:FrametimeGraphControl DataContext="{Binding FrametimeGraphDataContext}"/>
+                                    <controls:FrametimeGraphControl DataContext="{Binding FrametimeGraphDataContext}" Background="{DynamicResource MaterialDesignPaper}"/>
                                 </Grid>
                             </TabItem>
                             <TabItem>
@@ -125,9 +125,9 @@
                                     <Label FontSize="12">FPS</Label>
                                 </TabItem.Header>
                                 <Grid>
-                                    <Grid Margin="0 0 50 0" Panel.ZIndex="1" HorizontalAlignment="Left" VerticalAlignment="Bottom">
-                                        <ComboBox Width="96" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="25 8 0 8" materialDesign:HintAssist.Hint="Filter mode"
-										      materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="240" materialDesign:ComboBoxAssist.ClassicMode="True"
+                                    <Grid Margin="-15 0 0 1" Panel.ZIndex="1" HorizontalAlignment="Left" VerticalAlignment="Bottom">
+                                        <ComboBox Width="96" Height="40" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="25 8 0 8" materialDesign:HintAssist.Hint="Filter mode"
+										      materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="240"
                                               SelectedItem="{Binding SelectedFilterMode}" SelectedIndex="1" ItemsSource="{Binding FilterModes}">
                                             <ComboBox.ItemTemplate>
                                                 <DataTemplate>
@@ -136,7 +136,7 @@
                                             </ComboBox.ItemTemplate>
                                         </ComboBox>
                                     </Grid>
-                                    <controls:FpsGraphControl DataContext="{Binding FpsGraphDataContext}"/>
+                                    <controls:FpsGraphControl DataContext="{Binding FpsGraphDataContext}" Background="{DynamicResource MaterialDesignPaper}"/>
                                 </Grid>
                             </TabItem>
                             <TabItem>
@@ -144,9 +144,9 @@
                                     <Label FontSize="12">L-shape</Label>
                                 </TabItem.Header>
                                 <Grid>
-                                    <Grid Margin="0 0 50 0" Panel.ZIndex="1" HorizontalAlignment="Left" VerticalAlignment="Bottom">
-                                        <ComboBox Width="96" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="25 8 0 8" materialDesign:HintAssist.Hint="Metric"
-										      materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="240" materialDesign:ComboBoxAssist.ClassicMode="True"
+                                    <Grid Margin="-15 0 0 1" Panel.ZIndex="1" HorizontalAlignment="Left" VerticalAlignment="Bottom">
+                                        <ComboBox Width="96" Height="40" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="25 8 0 8" materialDesign:HintAssist.Hint="Metric"
+										      materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="240" 
                                               SelectedItem="{Binding SelectedLShapeMetric}" ItemsSource="{Binding LShapeMetrics}">
                                             <ComboBox.ItemTemplate>
                                                 <DataTemplate>
