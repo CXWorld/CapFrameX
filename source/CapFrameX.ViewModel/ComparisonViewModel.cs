@@ -705,13 +705,9 @@ namespace CapFrameX.ViewModel
         {
             _eventAggregator.GetEvent<PubSubEvent<ViewMessages.ThemeChanged>>()
                               .Subscribe(msg =>
-                              {
-                                  if (_useEventMessages)
-                                  {
+                              {                               
                                       InitializePlotModels();
                                       UpdateCharts();
-                                      
-                                  }
                               });
         }
 
