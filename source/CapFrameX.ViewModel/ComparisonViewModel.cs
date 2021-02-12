@@ -532,7 +532,7 @@ namespace CapFrameX.ViewModel
 
         public bool IsBarChartTabActive
         {
-            get { return SelectedChartItem?.Header.ToString() == "Bar charts"; }
+            get { return SelectedChartItem?.Header.ToString().Contains("Bar charts") ?? false; }
         }
 
         public ICommand RemoveAllComparisonsCommand { get; }
@@ -698,7 +698,7 @@ namespace CapFrameX.ViewModel
         }
 
         private void OnChartItemChanged()
-            => ColorPickerVisibility = SelectedChartItem.Header.ToString() != "Bar charts";
+            => ColorPickerVisibility = !SelectedChartItem?.Header.ToString().Contains("Bar charts") ?? false;
 
         private void OnSortModeChanged()
             => SortComparisonItems();
@@ -1139,7 +1139,7 @@ namespace CapFrameX.ViewModel
             ComparisonFpsModel.Series.Clear();
             ComparisonLShapeCollection.Clear();
 
-            if (SelectedChartItem.Header.ToString() == "Bar charts")
+            if (SelectedChartItem?.Header.ToString().Contains("Bar charts") ?? false)
                 SetColumnChart();
             else
             {

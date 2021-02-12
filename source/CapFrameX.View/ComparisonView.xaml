@@ -52,7 +52,10 @@
 								   CloseOnClickAway="True">
             <TabControl Name="GraphTab" Grid.Row="0" Grid.Column="0" Background="#F5F5F5"
 					SelectedItem="{Binding SelectedChartItem}" FocusVisualStyle="{x:Null}">
-                <TabItem Header="Bar charts" >
+                <TabItem>
+                    <TabItem.Header>
+                        <Label FontSize="12">Bar charts</Label>
+                    </TabItem.Header>
                     <DockPanel>
                         <TextBlock DockPanel.Dock="Top" Grid.Row="0" Margin="0 10 0 10" FontWeight="Bold" FontSize="16" Text="{Binding CurrentGameName}" HorizontalAlignment="Center"
 							   Visibility="{Binding ShowGameNameTitle, Converter={StaticResource TrueToVisibleConverter}}"/>
@@ -78,7 +81,10 @@
                         </ScrollViewer>
                     </DockPanel>
                 </TabItem>
-                <TabItem Header="Line charts/ L-shapes">
+                <TabItem>
+                    <TabItem.Header>
+                        <Label FontSize="12">Line charts/ L-shapes</Label>
+                    </TabItem.Header>
                     <Grid Name="ChartAndCuttingGrid">
                         <Grid.RowDefinitions>
                             <!--Edit box for custom title-->

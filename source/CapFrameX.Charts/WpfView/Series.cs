@@ -457,7 +457,7 @@ namespace LiveCharts.Wpf
             control.FontStretch = FontStretch;
             control.FontStyle = FontStyle;
             control.FontWeight = FontWeight;
-            control.Foreground = Foreground;
+            //control.Foreground = Foreground;
 
             return control;
         }
