@@ -112,9 +112,72 @@
                               ToolTipService.VerticalOffset="-6"
                               Style="{StaticResource MaterialDesignDataGrid}">
                         <DataGrid.Resources>
-                            <Style TargetType="DataGridRow">
+                            <Style TargetType="{x:Type DataGridRow}">
                                 <Setter Property="DataGrid.Height" Value="25" />
-                                <Setter Property="Background" Value="{DynamicResource MaterialDesignPaper}"/>
+                                <Setter Property="Background" Value="Transparent"/>
+                                <Setter Property="SnapsToDevicePixels" Value="true"/>
+                                <Setter Property="Validation.ErrorTemplate" Value="{x:Null}"/>
+                                <Setter Property="ValidationErrorTemplate">
+                                    <Setter.Value>
+                                        <ControlTemplate>
+                                            <TextBlock Foreground="#d50000" Margin="2,0,0,0" Text="!" VerticalAlignment="Center"/>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="{x:Type DataGridRow}">
+                                            <Border x:Name="DGR_Border"
+                                                BorderBrush="{TemplateBinding BorderBrush}"
+                                                BorderThickness="{TemplateBinding BorderThickness}"
+                                                Background="{TemplateBinding Background}"                                                                  
+                                                SnapsToDevicePixels="True">
+                                                <SelectiveScrollingGrid>
+                                                    <SelectiveScrollingGrid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                    </SelectiveScrollingGrid.ColumnDefinitions>
+                                                    <SelectiveScrollingGrid.RowDefinitions>
+                                                        <RowDefinition Height="*"/>
+                                                        <RowDefinition Height="Auto"/>
+                                                    </SelectiveScrollingGrid.RowDefinitions>
+                                                    <DataGridCellsPresenter Grid.Column="1"
+                                                                        ItemsPanel="{TemplateBinding ItemsPanel}"
+                                                                        SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                                                    <DataGridDetailsPresenter Grid.Column="1"
+                                                                        Grid.Row="1"
+                                                                        SelectiveScrollingGrid.SelectiveScrollingOrientation="{Binding AreRowDetailsFrozen, ConverterParameter={x:Static SelectiveScrollingOrientation.Vertical}, Converter={x:Static DataGrid.RowDetailsScrollingConverter}, RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}"
+                                                                        Visibility="{TemplateBinding DetailsVisibility}" />
+                                                    <DataGridRowHeader Grid.Column="0"
+                                                                    Grid.Row="0"
+                                                                    Grid.RowSpan="2"
+                                                                    SelectiveScrollingGrid.SelectiveScrollingOrientation="Vertical"
+                                                                    Visibility="{Binding HeadersVisibility, ConverterParameter={x:Static DataGridHeadersVisibility.Row}, Converter={x:Static DataGrid.HeadersVisibilityConverter}, RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}" />
+                                                </SelectiveScrollingGrid>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <Trigger Property="IsSelected" Value="True">
+                                        <Setter Property="Background" Value="{DynamicResource MaterialDesignSelection}" />
+                                    </Trigger>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="{DynamicResource MaterialDesignDataGridRowHoverBackground}" />
+                                    </Trigger>
+                                    <Trigger Property="IsNewItem" Value="True">
+                                        <Setter Property="Margin" Value="{Binding NewItemMargin, RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}"/>
+                                    </Trigger>
+                                    <MultiTrigger>
+                                        <MultiTrigger.Conditions>
+                                            <Condition Property="IsSelected" Value="True"/>
+                                            <Condition Property="IsMouseOver" Value="True" />
+                                        </MultiTrigger.Conditions>
+                                        <MultiTrigger.Setters>
+                                            <Setter Property="Background" Value="{DynamicResource MaterialDesignSelection}" />
+                                        </MultiTrigger.Setters>
+                                    </MultiTrigger>
+                                </Style.Triggers>
                             </Style>
                         </DataGrid.Resources>
                         <DataGrid.Columns>
@@ -134,11 +197,10 @@
                                         </Setter>
                                         <Style.Triggers>
                                             <Trigger Property="DataGridCell.IsSelected" Value="True">
-                                                <Setter Property="Background" Value="#DCDCDC" />
+                                                <Setter Property="Background" Value="{DynamicResource MaterialDesignSelection}" />
                                             </Trigger>
                                         </Style.Triggers>
                                     </Style>
-
                                 </DataGridCheckBoxColumn.CellStyle>
                             </DataGridCheckBoxColumn>
                             <DataGridTextColumn Binding="{Binding Description, Mode=TwoWay}"
@@ -164,7 +226,7 @@
                                         </Setter>
                                         <Style.Triggers>
                                             <Trigger Property="DataGridCell.IsSelected" Value="True">
-                                                <Setter Property="Background" Value="#DCDCDC" />
+                                                <Setter Property="Background" Value="{DynamicResource MaterialDesignSelection}"  />
                                             </Trigger>
                                         </Style.Triggers>
                                     </Style>
@@ -544,7 +606,7 @@
                             </Grid>
                         </StackPanel>
                     </Border>
-                    <Border Grid.Row="2" Grid.Column="0" Margin="5" Background="Transparent" BorderThickness=".2" BorderBrush="Black">
+                    <Border Grid.Row="2" Grid.Column="0" Margin="5" BorderThickness=".2" BorderBrush="Black">
                         <DataGrid x:Name="SeparatorDataGrid" FontSize="11"
 					              SelectedIndex="{Binding Path=OverlaySubModelGroupSeparating.SelectedOverlayGroupIndex}" 
                                   ItemsSource="{Binding Path=OverlaySubModelGroupSeparating.OverlayGroupNameSeparatorEntries}"
@@ -553,9 +615,72 @@
 					              ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.CanContentScroll="True"
                                   Style="{StaticResource MaterialDesignDataGrid}">
                             <DataGrid.Resources>
-                                <Style TargetType="DataGridRow">
+                                <Style TargetType="{x:Type DataGridRow}">
                                     <Setter Property="DataGrid.Height" Value="25" />
-                                    <Setter Property="Background" Value="{DynamicResource MaterialDesignPaper}"/>
+                                    <Setter Property="Background" Value="Transparent"/>
+                                    <Setter Property="SnapsToDevicePixels" Value="true"/>
+                                    <Setter Property="Validation.ErrorTemplate" Value="{x:Null}"/>
+                                    <Setter Property="ValidationErrorTemplate">
+                                        <Setter.Value>
+                                            <ControlTemplate>
+                                                <TextBlock Foreground="#d50000" Margin="2,0,0,0" Text="!" VerticalAlignment="Center"/>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="{x:Type DataGridRow}">
+                                                <Border x:Name="DGR_Border"
+                                                BorderBrush="{TemplateBinding BorderBrush}"
+                                                BorderThickness="{TemplateBinding BorderThickness}"
+                                                Background="{TemplateBinding Background}"                                                                  
+                                                SnapsToDevicePixels="True">
+                                                    <SelectiveScrollingGrid>
+                                                        <SelectiveScrollingGrid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                        </SelectiveScrollingGrid.ColumnDefinitions>
+                                                        <SelectiveScrollingGrid.RowDefinitions>
+                                                            <RowDefinition Height="*"/>
+                                                            <RowDefinition Height="Auto"/>
+                                                        </SelectiveScrollingGrid.RowDefinitions>
+                                                        <DataGridCellsPresenter Grid.Column="1"
+                                                                        ItemsPanel="{TemplateBinding ItemsPanel}"
+                                                                        SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                                                        <DataGridDetailsPresenter Grid.Column="1"
+                                                                        Grid.Row="1"
+                                                                        SelectiveScrollingGrid.SelectiveScrollingOrientation="{Binding AreRowDetailsFrozen, ConverterParameter={x:Static SelectiveScrollingOrientation.Vertical}, Converter={x:Static DataGrid.RowDetailsScrollingConverter}, RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}"
+                                                                        Visibility="{TemplateBinding DetailsVisibility}" />
+                                                        <DataGridRowHeader Grid.Column="0"
+                                                                    Grid.Row="0"
+                                                                    Grid.RowSpan="2"
+                                                                    SelectiveScrollingGrid.SelectiveScrollingOrientation="Vertical"
+                                                                    Visibility="{Binding HeadersVisibility, ConverterParameter={x:Static DataGridHeadersVisibility.Row}, Converter={x:Static DataGrid.HeadersVisibilityConverter}, RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}" />
+                                                    </SelectiveScrollingGrid>
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Style.Triggers>
+                                        <Trigger Property="IsSelected" Value="True">
+                                            <Setter Property="Background" Value="{DynamicResource MaterialDesignSelection}" />
+                                        </Trigger>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="{DynamicResource MaterialDesignDataGridRowHoverBackground}" />
+                                        </Trigger>
+                                        <Trigger Property="IsNewItem" Value="True">
+                                            <Setter Property="Margin" Value="{Binding NewItemMargin, RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}"/>
+                                        </Trigger>
+                                        <MultiTrigger>
+                                            <MultiTrigger.Conditions>
+                                                <Condition Property="IsSelected" Value="True"/>
+                                                <Condition Property="IsMouseOver" Value="True" />
+                                            </MultiTrigger.Conditions>
+                                            <MultiTrigger.Setters>
+                                                <Setter Property="Background" Value="{DynamicResource MaterialDesignSelection}" />
+                                            </MultiTrigger.Setters>
+                                        </MultiTrigger>
+                                    </Style.Triggers>
                                 </Style>
                             </DataGrid.Resources>
                             <DataGrid.Columns>

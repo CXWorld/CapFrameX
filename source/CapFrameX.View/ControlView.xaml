@@ -98,7 +98,6 @@
                                                  SelectedItem="{Binding SelectedRecordInfo}" CanUserSortColumns="True" CanUserAddRows="False" AutoGenerateColumns="False"
                                                  PreviewLostKeyboardFocus="RecordDataGrid_PreviewLostKeyboardFocus"
 												 PreviewKeyDown="RecordDataGrid_PreviewKeyDown"
-                                                 Foreground="{DynamicResource MaterialDesignBody}"             
 					                             materialDesign:DataGridAssist.CellPadding="13 8 8 8" materialDesign:DataGridAssist.ColumnHeaderPadding="8" IsSynchronizedWithCurrentItem="False"
 					                             ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.CanContentScroll="True"
 					                             dragdrop:DragDrop.IsDragSource="True"
