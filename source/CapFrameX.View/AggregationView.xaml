@@ -117,13 +117,13 @@
             </Grid.ColumnDefinitions>
             <Button Grid.Row="0" Grid.Column="4" VerticalAlignment="Top" HorizontalAlignment="Right" Width="40" Height="40"
 					Command="{Binding ClearTableCommand}" IsEnabled="{Binding EnableClearButton}"
-                    Style="{StaticResource MaterialDesignFloatingActionMiniButton}"
+                    Style="{StaticResource MaterialDesignFloatingActionMiniButton}" Foreground="White"
                     ToolTip="Remove all entries">
                 <materialDesign:PackIcon Kind="PlaylistRemove" Height="24" Width="24" />
             </Button>
             <Button Grid.Row="0" Grid.Column="0" VerticalAlignment="Top" Width="150" Height="45"
 					Command="{Binding AggregateIncludeCommand}" IsEnabled="{Binding EnableIncludeButton}"
-                    ToolTipService.ShowDuration="25000">
+                    ToolTipService.ShowDuration="25000" Foreground="White">
                 <TextBlock Text="Aggregate&#10;including outliers" TextWrapping="Wrap" TextAlignment="Center"/>
                 <Button.ToolTip>
                     <ToolTip MaxWidth="200">
@@ -135,7 +135,7 @@
             </Button>
             <Button Grid.Row="0" Grid.Column="1" VerticalAlignment="Top" Width="150" Height="45"
 					Command="{Binding AggregateExcludeCommand}" IsEnabled="{Binding EnableExcludeButton}"
-                    ToolTipService.ShowDuration="25000">
+                    ToolTipService.ShowDuration="25000" Foreground="White">
                 <TextBlock Text="Aggregate excluding outliers" TextWrapping="Wrap"  TextAlignment="Center"/>
                 <Button.ToolTip>
                     <ToolTip MaxWidth="200">

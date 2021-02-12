@@ -397,7 +397,7 @@
                     </DataGrid>
                     <Button Grid.Row="1"  Width="150" Height="45"
 					Command="{Binding AggregateSensorEntries}" IsEnabled="{Binding AggregateButtonIsEnable}"
-                    ToolTipService.ShowDuration="25000">
+                    ToolTipService.ShowDuration="25000" Foreground="White"> 
                         <TextBlock Text="{Binding AggregateButtonText}" TextWrapping="Wrap" TextAlignment="Center"/>
                         <Button.ToolTip>
                             <ToolTip MaxWidth="250">
@@ -409,7 +409,7 @@
                     </Button>
                     <ComboBox Grid.Row="1" Margin="10 0 20 0" VerticalAlignment="Center" HorizontalAlignment="Right"
                                   materialDesign:ComboBoxAssist.ClassicMode="True"
-					              materialDesign:HintAssist.Hint="Evaluation method"
+					              materialDesign:HintAssist.Hint="Evaluation"
 					              materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="200" Width="105"
                                   ToolTipService.ShowDuration="25000"
 					              MouseLeave="EvaluationComboBox_MouseLeave" FontSize="14"

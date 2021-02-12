@@ -216,7 +216,7 @@
                         <ColumnDefinition Width="100*" MaxWidth="600"/>
                     </Grid.ColumnDefinitions>
                     <!--FPS metrics-->
-                    <Grid Grid.Column="0" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
+                    <Grid Grid.Column="0" >
                         <lvc:CartesianChart Margin="15 10 10 5" Series="{Binding StatisticCollection}" LegendLocation="None"
 									Tag="{Binding DataContext, ElementName=DataViewUserControl}" DataTooltip="{x:Null}" Foreground="{DynamicResource MaterialDesignBody}">
                             <lvc:CartesianChart.ContextMenu>

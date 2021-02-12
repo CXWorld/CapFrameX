@@ -60,7 +60,7 @@
                                             </ListView>
                                         </Border>
                                         <Button Margin="0 10 0 0" HorizontalAlignment="Right" Width="120" Height="45" 
-												Command="{Binding AddToIgonreListCommand}" IsEnabled="{Binding AreButtonsActive}">
+												Command="{Binding AddToIgonreListCommand}" IsEnabled="{Binding AreButtonsActive}" Foreground="White">
                                             <TextBlock Text="Move to ignore list" TextWrapping="Wrap" TextAlignment="Center"/>
                                         </Button>
                                     </StackPanel>
@@ -78,7 +78,7 @@
                                             </ListView>
                                         </Border>
                                         <Button Margin="0 10 0 0" HorizontalAlignment="Right" Width="120" Height="45"
-												Command="{Binding AddToProcessListCommand}" IsEnabled="{Binding AreButtonsActive}">
+												Command="{Binding AddToProcessListCommand}" IsEnabled="{Binding AreButtonsActive}" Foreground="White">
                                             <TextBlock Text="Remove from ignore list" TextWrapping="Wrap" TextAlignment="Center"/>
                                         </Button>
                                     </StackPanel>

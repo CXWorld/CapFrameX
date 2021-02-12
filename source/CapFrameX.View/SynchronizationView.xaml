@@ -44,7 +44,7 @@
             <RowDefinition Height="65"></RowDefinition>
         </Grid.RowDefinitions>
         <TextBlock Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Bottom" FontWeight="Bold" FontSize="16" Foreground="{DynamicResource MaterialDesignBody}" Text="{Binding CurrentGameName}"/>
-        <TabControl Grid.Row="1" Grid.Column="0" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
+        <TabControl Grid.Row="1" Grid.Column="0" Background="{DynamicResource MaterialDesignPaper}">
             <TabItem Width="150" Foreground="{DynamicResource MaterialDesignBody}">
                 <TabItem.Header>
                     <Label FontSize="12">Input lag approximation</Label>
@@ -167,13 +167,13 @@
                             <TextBlock Margin="5 0 0 0" VerticalAlignment="Center">Hz)</TextBlock>
                         </StackPanel>
                     </Grid>
-                    <Grid Grid.Row="2">
+                    <Grid Grid.Row="1" Grid.RowSpan="2">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="3*" />
                             <ColumnDefinition Width="2*" />
                         </Grid.ColumnDefinitions>
                         <!--Display times histogram chart-->
-                        <Grid Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" Grid.Column="0" Margin="0 5 0 0">
+                        <Grid Grid.Column="0" Margin="0 50 0 10">
                             <lvc:CartesianChart Margin="5" Series="{Binding DisplayTimesHistogramCollection}" LegendLocation="Bottom"
 								Tag="{Binding ElementName=SynchronizationViewUserControl, Path=DataContext}" DataTooltip="{x:Null}">
                                 <lvc:CartesianChart.ContextMenu>
@@ -197,7 +197,7 @@
                                 </lvc:CartesianChart.AxisY>
                             </lvc:CartesianChart>
                         </Grid>
-                        <DockPanel Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" Grid.Column="1" Margin="5 5 0 0" HorizontalAlignment="Stretch">
+                        <DockPanel Grid.Column="1" Margin="0 20 0 10" HorizontalAlignment="Stretch">
                             <lvc:PieChart Margin="0 0 0 5" Width="250" HorizontalAlignment="Center" Hoverable="False" Series="{Binding DroppedFramesStatisticCollection}" 
 								  LegendLocation="Bottom" DataClick="Chart_OnDataClick" Foreground="{DynamicResource MaterialDesignBody}"/>
                         </DockPanel>

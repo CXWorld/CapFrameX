@@ -297,6 +297,7 @@
 				VerticalAlignment="Center"
 				Width="35" Height="35"
 				ToolTip="Remove all report entries"
+                Foreground="White"
 				Command="{Binding RemoveAllReportEntriesCommand}">
                 <materialDesign:PackIcon Kind="PlaylistRemove" Height="25" Width="25" />
             </Button>

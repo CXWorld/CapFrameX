@@ -98,7 +98,7 @@
                                             IsReadOnly="True"/>
                 </DataGrid.Columns>
             </DataGrid>
-            <Button Grid.Row="1" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="5"  Width="40" Height="40"
+            <Button Grid.Row="1" Foreground="White" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="5"  Width="40" Height="40"
                     Style="{StaticResource MaterialDesignFloatingActionMiniButton}"
 					Command="{Binding ClearTableCommand}" IsEnabled="{Binding EnableClearAndUploadButton}"
                     ToolTip="Remove all entries">
@@ -107,7 +107,7 @@
             <TextBox Grid.Row="1" Width="350" wpf:HintAssist.Hint="Download link / ID" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
 					 Margin="50 0 0 0" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"  Text="{Binding ShareUrl, Mode=OneWay}" PreviewMouseDoubleClick="ShareUrlFocusHandler" IsReadOnly="True" 
                      Visibility="{Binding ShareUrlVisible, Converter={StaticResource TrueToVisibleConverter}}" Foreground="{DynamicResource MaterialDesignBody}"/>
-            <TextBlock Grid.Row="1" FontSize="16" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Uploading..."  
+            <TextBlock Grid.Row="1" FontSize="16" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Uploading..." Foreground="{DynamicResource MaterialDesignBody}"
                        Visibility="{Binding ShowUploadInfo, Converter={StaticResource TrueToVisibleConverter}}"/>
             <TextBox Name="UploadDescription"  Grid.Row="1" Margin="50 0 0 0" FontSize="16" Width="350" wpf:HintAssist.Hint="(Optional) Upload description" HorizontalAlignment="Center" VerticalAlignment="Center" 
                      Text="{Binding UploadDescription, UpdateSourceTrigger=PropertyChanged}" Visibility="{Binding ShowUploadDescriptionTextBox, Converter={StaticResource TrueToVisibleConverter}}"
@@ -115,7 +115,7 @@
             <Button Grid.Row="1" Grid.Column="2" Margin="5" VerticalAlignment="Top" HorizontalAlignment="Left" Width="100" Height="45"
 					Command="{Binding UploadRecordsCommand}" IsEnabled="{Binding EnableClearAndUploadButton}" Visibility="{Binding ShareUrlVisible, Converter={StaticResource FalseToVisibleConverter}}"
                     ToolTipService.ShowDuration="25000">
-				<TextBlock Text="Upload records" TextWrapping="Wrap"  TextAlignment="Center"/>
+				<TextBlock Text="Upload records" TextWrapping="Wrap" Foreground="White"  TextAlignment="Center"/>
 				<Button.ToolTip>
 					<ToolTip MaxWidth="200">
 						<TextBlock
@@ -126,7 +126,7 @@
 			</Button>
             <Button Grid.Row="1" Grid.Column="2" Margin="5" VerticalAlignment="Top" HorizontalAlignment="Left" Width="100" Height="45"
 					Command="{Binding CopyURLCommand}" Visibility="{Binding ShareUrlVisible, Converter={StaticResource TrueToVisibleConverter}}">
-                <TextBlock Text="Copy to clipboard" TextWrapping="Wrap"  TextAlignment="Center"/>
+                <TextBlock Text="Copy to clipboard" TextWrapping="Wrap" Foreground="White" TextAlignment="Center"/>
             </Button>
         </Grid>
         <!--Record download-->
@@ -148,10 +148,11 @@
 					 Margin="5 0 0 0" IsReadOnly="True" FontSize="14" HorizontalAlignment="Left" Text="{Binding CloudDownloadDirectory, Mode=OneWay}" PreviewMouseDown="DownloadFolder_PreviewMouseDown"
                      Foreground="{DynamicResource MaterialDesignBody}">
             </TextBox>
-            <Button Grid.Row="1" Grid.Column="1" HorizontalAlignment="Right" Margin="0 20 10 0" Height="25" Width="25" Command="{Binding SwitchToDownloadDirectoryCommand}" Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}" ToolTip="Observe download folder">
+            <Button Grid.Row="1" Grid.Column="1" HorizontalAlignment="Right" Margin="0 20 10 0" Height="25" Width="25" Command="{Binding SwitchToDownloadDirectoryCommand}" 
+                    Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}" ToolTip="Observe download folder">
                 <materialDesign:PackIcon Kind="Search" Height="20" Width="20" />
             </Button>
-            <Button Grid.Row="0" Grid.RowSpan="2" Grid.Column="2" Margin="5 0 5 5" VerticalAlignment="Center" HorizontalAlignment="Right" Width="100" Height="45"
+            <Button Grid.Row="0" Grid.RowSpan="2" Grid.Column="2" Foreground="White" Margin="5 0 5 5" VerticalAlignment="Center" HorizontalAlignment="Right" Width="100" Height="45"
 					Command="{Binding DownloadRecordsCommand}" IsEnabled="{Binding EnableDownloadButton}"
                     ToolTipService.ShowDuration="25000">
                 <TextBlock Text="Download records" TextWrapping="Wrap" TextAlignment="Center"/>

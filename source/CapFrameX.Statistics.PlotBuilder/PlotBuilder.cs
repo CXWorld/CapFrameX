@@ -115,9 +115,9 @@ namespace CapFrameX.Statistics.PlotBuilder
 			var series = new LineSeries
 			{
 				Title = "GPU load",
-				StrokeThickness = 1.5,
+				StrokeThickness = 2,
 				LegendStrokeThickness = 4,
-				Color = OxyColor.FromArgb(150, 32, 141, 228),
+				Color = OxyColor.FromArgb(175, 32, 141, 228),
 				YAxisKey = EPlotAxis.YAXISPERCENTAGE.GetDescription()
 			};
 
@@ -129,9 +129,9 @@ namespace CapFrameX.Statistics.PlotBuilder
 			var series = new LineSeries
 			{
 				Title = "CPU total load",
-				StrokeThickness = 1.5,
+				StrokeThickness = 2,
 				LegendStrokeThickness = 4,
-				Color = OxyColor.FromArgb(150, 241, 125, 32),
+				Color = OxyColor.FromArgb(175, 241, 125, 32),
 				YAxisKey = EPlotAxis.YAXISPERCENTAGE.GetDescription()
 			};
 
@@ -143,9 +143,9 @@ namespace CapFrameX.Statistics.PlotBuilder
 			var series = new LineSeries
 			{
 				Title = "CPU max thread load",
-				StrokeThickness = 1.5,
+				StrokeThickness = 2,
 				LegendStrokeThickness = 4,
-				Color = OxyColor.FromArgb(150, 250, 25, 30),
+				Color = OxyColor.FromArgb(175, 250, 25, 30),
 				YAxisKey = EPlotAxis.YAXISPERCENTAGE.GetDescription()
 			};
 

@@ -410,18 +410,20 @@ namespace CapFrameX.ViewModel
             var yMin = Math.Min(frametimes.Min(), displaytimes.Min());
             var yMax = Math.Max(frametimes.Max(), displaytimes.Max());
 
-            var frametimeSeries = new OxyPlot.Series.LineSeries
+            var frametimeSeries = new Statistics.PlotBuilder.LineSeries
             {
                 Title = "Frametimes",
                 StrokeThickness = 1,
+                LegendStrokeThickness = 4,
                 Color = Constants.FrametimeStroke
             };
 
-            var untilDisplayedTimesSeries = new OxyPlot.Series.LineSeries
+            var untilDisplayedTimesSeries = new Statistics.PlotBuilder.LineSeries
             {
                 Title = "Until displayed times",
                 StrokeThickness = 1,
-                Color = Constants.FrametimeMovingAverageStroke
+                LegendStrokeThickness = 4,
+                Color = OxyColor.FromArgb(150, 241, 125, 32)
             };
 
             frametimeSeries.Points.AddRange(frametimes.Select((x, i) => new DataPoint(i, x)));
@@ -431,10 +433,11 @@ namespace CapFrameX.ViewModel
             {
                 var tmp = new PlotModel
                 {
-                    PlotMargins = new OxyThickness(40, 10, 0, 40),
+                    PlotMargins = new OxyThickness(40, 10, 40, 40),
                     PlotAreaBorderColor = OxyColor.FromArgb(64, 204, 204, 204),
                     LegendPosition = LegendPosition.TopCenter,
                     LegendOrientation = LegendOrientation.Horizontal
+                     
                 };
 
                 tmp.Series.Add(frametimeSeries);
@@ -718,7 +721,7 @@ namespace CapFrameX.ViewModel
             {
                 var tmp = new PlotModel
                 {
-                    PlotMargins = new OxyThickness(40, 10, 0, 40),
+                    PlotMargins = new OxyThickness(40, 10, 40, 40),
                     PlotAreaBorderColor = OxyColor.FromArgb(64, 204, 204, 204),
                     LegendPosition = LegendPosition.TopCenter,
                     LegendOrientation = LegendOrientation.Horizontal

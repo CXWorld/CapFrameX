@@ -7,8 +7,10 @@ namespace CapFrameX.View.Themes
     {
         public Color ValidationErrorColor { get; } = (Color)ColorConverter.ConvertFromString("#F44336");
         public Color MaterialDesignBackground { get; } = (Color)ColorConverter.ConvertFromString("#FFFFFFFF");
-        public Color MaterialDesignPaper { get; } = (Color)ColorConverter.ConvertFromString("#FFFAFAFA");
-        public Color MaterialDesignCardBackground { get; } = (Color)ColorConverter.ConvertFromString("#FFFFFFFF");
+        public Color MaterialDesignPaper { get; } = (Color)ColorConverter.ConvertFromString("#f7f6f2");
+        // original: "#FFFAFAFA"
+        public Color MaterialDesignCardBackground { get; } = (Color)ColorConverter.ConvertFromString("#f7f6f2");
+        // original #FFFFFFFF
         public Color MaterialDesignToolBarBackground { get; } = (Color)ColorConverter.ConvertFromString("#FFF5F5F5");
         public Color MaterialDesignBody { get; } = (Color)ColorConverter.ConvertFromString("#DD000000");
         public Color MaterialDesignBodyLight { get; } = (Color)ColorConverter.ConvertFromString("#89000000");

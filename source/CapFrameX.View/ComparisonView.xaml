@@ -354,8 +354,8 @@
 
             <StackPanel Grid.Column="4" VerticalAlignment="Center" Margin="15 0 0 0" Orientation="Horizontal"
 						Visibility="{Binding IsBarChartTabActive, Converter={StaticResource TrueToVisibleConverter}}">
-                <ComboBox Width="80" Margin="0 0 0 10" materialDesign:HintAssist.Hint="Sort metric" materialDesign:ComboBoxAssist.ClassicMode="True" materialDesign:HintAssist.IsFloating="True"
-                          ItemsSource="{Binding SortMetricItemsSource}" SelectedItem="{Binding SelectedSortMetric}" Foreground="{DynamicResource MaterialDesignBody}">
+                <ComboBox Width="80" Height="40" Margin="0 0 0 10" materialDesign:HintAssist.Hint="Sort metric" materialDesign:ComboBoxAssist.ClassicMode="True" materialDesign:HintAssist.IsFloating="True"
+                          ItemsSource="{Binding SortMetricItemsSource}" SelectedItem="{Binding SelectedSortMetric}" Foreground="{DynamicResource MaterialDesignBody}"> 
                 </ComboBox>
                 <ToggleButton Margin="5 0 0 0" Foreground="{DynamicResource MaterialDesignBody}" BorderThickness="1" Background="Transparent"
 							  Style="{StaticResource MaterialDesignActionAccentToggleButton}" IsChecked="{Binding IsSortModeAscending}">
