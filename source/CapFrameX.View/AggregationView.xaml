@@ -55,6 +55,7 @@
 				    dragdrop:DragDrop.UseDefaultDragAdorner="True"
 				    dragdrop:DragDrop.DefaultDragAdornerOpacity="0.5"
 				    dragdrop:DragDrop.UseDefaultEffectDataTemplate="False"
+                  Background="{DynamicResource MaterialDesignTextFieldBoxBackground}"
                    Style="{StaticResource MaterialDesignDataGrid}">
             <DataGrid.Resources>
                 <proxy:BindingProxy x:Key="proxy" Data="{Binding}" />

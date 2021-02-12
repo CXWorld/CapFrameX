@@ -16,15 +16,6 @@
 			 prism:ViewModelLocator.AutoWireViewModel="True">
     <UserControl.Resources>
         <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Button.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Shadows.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ToggleButton.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.DataGrid.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Slider.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.GridSplitter.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Flipper.xaml" />
-            </ResourceDictionary.MergedDictionaries>
             <mvvm:BoolToVisibilityConverter x:Key="FalseToVisibleConverter" TrueValue="Collapsed" FalseValue="Visible"/>
             <mvvm:BoolToVisibilityConverter x:Key="FalseToCollapsedConverter" TrueValue="Visible" FalseValue="Collapsed"/>
             <mvvm:BoolToVisibilityConverter x:Key="TrueToVisibleConverter" FalseValue="Collapsed" TrueValue="Visible"/>
@@ -106,22 +97,24 @@
                             <materialDesign:PackIcon Kind="Restore" Height="22" Width="22" />
                         </Button>
                     </StackPanel>
-                    <DataGrid Grid.Row="1" x:Name="OverlayItemDataGrid" FocusVisualStyle="{x:Null}" Height="Auto" Width="440" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" FontSize="11"
-					      SelectedIndex="{Binding SelectedOverlayEntryIndex}" SelectedItem="{Binding SelectedOverlayEntry}" ItemsSource="{Binding OverlayEntries}"
-					      CanUserSortColumns="False" CanUserAddRows="False" AutoGenerateColumns="False"
-					      materialDesign:DataGridAssist.CellPadding="13 3 0 0" materialDesign:DataGridAssist.ColumnHeaderPadding="8" IsSynchronizedWithCurrentItem="False"
-					      ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.CanContentScroll="True"
-					      dragdrop:DragDrop.IsDragSource="True"
-					      dragdrop:DragDrop.IsDropTarget="True"
-						  dragdrop:DragDrop.DropHandler="{Binding}"
-					      dragdrop:DragDrop.UseDefaultDragAdorner="True"
-					      dragdrop:DragDrop.DefaultDragAdornerOpacity="0.5"
-					      dragdrop:DragDrop.UseDefaultEffectDataTemplate="False"
-                          ToolTip="Drag &amp; Drop to change order"
-                          ToolTipService.VerticalOffset="-6">
+                    <DataGrid Grid.Row="1" x:Name="OverlayItemDataGrid" FocusVisualStyle="{x:Null}" Height="Auto" Width="440" FontSize="11"
+					          SelectedIndex="{Binding SelectedOverlayEntryIndex}" SelectedItem="{Binding SelectedOverlayEntry}" ItemsSource="{Binding OverlayEntries}"
+					          CanUserSortColumns="False" CanUserAddRows="False" AutoGenerateColumns="False"
+					          materialDesign:DataGridAssist.CellPadding="13 3 0 0" materialDesign:DataGridAssist.ColumnHeaderPadding="8" IsSynchronizedWithCurrentItem="False"
+					          ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.CanContentScroll="True"
+					          dragdrop:DragDrop.IsDragSource="True"
+					          dragdrop:DragDrop.IsDropTarget="True"
+						      dragdrop:DragDrop.DropHandler="{Binding}"
+					          dragdrop:DragDrop.UseDefaultDragAdorner="True"
+					          dragdrop:DragDrop.DefaultDragAdornerOpacity="0.5"
+					          dragdrop:DragDrop.UseDefaultEffectDataTemplate="False"
+                              ToolTip="Drag &amp; Drop to change order"
+                              ToolTipService.VerticalOffset="-6"
+                              Style="{StaticResource MaterialDesignDataGrid}">
                         <DataGrid.Resources>
                             <Style TargetType="DataGridRow">
                                 <Setter Property="DataGrid.Height" Value="25" />
+                                <Setter Property="Background" Value="{DynamicResource MaterialDesignPaper}"/>
                             </Style>
                         </DataGrid.Resources>
                         <DataGrid.Columns>
@@ -552,18 +545,17 @@
                         </StackPanel>
                     </Border>
                     <Border Grid.Row="2" Grid.Column="0" Margin="5" Background="Transparent" BorderThickness=".2" BorderBrush="Black">
-                        <DataGrid x:Name="SeparatorDataGrid" Background="#F5F5F5" FontSize="11"
+                        <DataGrid x:Name="SeparatorDataGrid" FontSize="11"
 					              SelectedIndex="{Binding Path=OverlaySubModelGroupSeparating.SelectedOverlayGroupIndex}" 
                                   ItemsSource="{Binding Path=OverlaySubModelGroupSeparating.OverlayGroupNameSeparatorEntries}"
 					              CanUserSortColumns="False" CanUserAddRows="False" AutoGenerateColumns="False"
 					              materialDesign:DataGridAssist.CellPadding="13 3 0 0" materialDesign:DataGridAssist.ColumnHeaderPadding="8" IsSynchronizedWithCurrentItem="False"
-					              ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.CanContentScroll="True">
+					              ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.CanContentScroll="True"
+                                  Style="{StaticResource MaterialDesignDataGrid}">
                             <DataGrid.Resources>
                                 <Style TargetType="DataGridRow">
                                     <Setter Property="DataGrid.Height" Value="25" />
-                                </Style>
-                                <Style TargetType="DataGridColumnHeader">
-                                    <Setter Property="DataGrid.Height" Value="25" />
+                                    <Setter Property="Background" Value="{DynamicResource MaterialDesignPaper}"/>
                                 </Style>
                             </DataGrid.Resources>
                             <DataGrid.Columns>
