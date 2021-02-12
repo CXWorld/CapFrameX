@@ -109,7 +109,7 @@
                                  Text="Type your title here..." Margin="0 10 0 0" Height="30" Padding="0 -28 0 0"
                                  Style="{StaticResource MaterialDesignFilledTextFieldTextBox}"
                                  FontSize="18" />
-                        <Grid Grid.Row="1" Margin="0 0 0 -10">
+                        <Grid Grid.Row="1" Margin="0 0 0 0">
                             <Grid>
                                 <Grid Margin="0 0 50 0" Panel.ZIndex="1" HorizontalAlignment="Left" VerticalAlignment="Bottom">
                                     <ComboBox Grid.Column="5" Margin="45 0 0 15" HorizontalAlignment="Left" VerticalAlignment="Bottom" materialDesign:HintAssist.Hint="Values"
@@ -127,7 +127,7 @@
                                 <ContentPresenter x:Name="ChartsContentPresenter" Content="{Binding}">
                                     <ContentPresenter.Resources>
                                         <DataTemplate x:Key="FrametimeChartContent">
-                                            <controls:PlotViewCustomZoom Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" Model="{Binding DataContext.ComparisonFrametimesModel, ElementName=ComparisonViewUserControl}">
+                                            <controls:PlotViewCustomZoom Background="{DynamicResource MaterialDesignTextFieldBoxBackground}"  Model="{Binding DataContext.ComparisonFrametimesModel, ElementName=ComparisonViewUserControl}">
                                                 <controls:PlotViewCustomZoom.ContextMenu>
                                                     <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
                                                         <MenuItem Header="Save plot as image" Command="{Binding SaveFrametimePlotAsImage }"/>
@@ -173,15 +173,13 @@
                                 </ContentPresenter>
                             </Grid>
                         </Grid>
-                        <Grid Grid.Row="2" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" Visibility="{Binding ElementName=RangeSliderActiveToggleButton, Path=IsChecked, Converter={StaticResource TrueToVisibleConverter}}">
-                            <mahapps:RangeSlider Margin="45 10 5 25" LowerValue="{Binding FirstSeconds}" UpperValue="{Binding LastSeconds}" 
+                        <Grid Grid.Row="2" Margin="0 5 0 0"  Visibility="{Binding ElementName=RangeSliderActiveToggleButton, Path=IsChecked, Converter={StaticResource TrueToVisibleConverter}}">
+                            <mahapps:RangeSlider Margin="45 10 10 30" LowerValue="{Binding FirstSeconds}" UpperValue="{Binding LastSeconds}" 
                                                  Maximum="{Binding MaxRecordingTime}"                                    
-									             TickPlacement="BottomRight" TickFrequency="2.5"      
+									             TickPlacement="BottomRight" TickFrequency="2.5"
                                                  MinRange="{Binding MinRangeSliderRange}"
-									             Style="{StaticResource CustomRangeSlider}"
-                                                 Background="{DynamicResource MaterialDesignTextFieldBoxBackground}"
-                                                 Foreground="{DynamicResource MaterialDesignBody}"/>
-                            <StackPanel HorizontalAlignment="Right" VerticalAlignment="Bottom" Orientation="Horizontal" Margin="0 0 10 0" Height="25">
+									             Style="{StaticResource CustomRangeSlider}"/>
+                            <StackPanel HorizontalAlignment="Right" VerticalAlignment="Bottom" Orientation="Horizontal" Margin="0 0 10 5" Height="22">
                                 <TextBlock Text="Start and end points:" Margin="0 5 5 0"/>
                                 <TextBox x:Name="FirsSecondsTextbox" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" Grid.Row="1" materialDesign:HintAssist.Hint="Start (s)" HorizontalAlignment="Center" Width="45"
                                          ToolTip="Range Slider start point" PreviewKeyDown="FirstSecondsTextBox_PreviewKeyDown" PreviewTextInput="NumberValidationTextBox" TextAlignment="Center">
@@ -205,12 +203,12 @@
                                     </TextBox.Text>
                                 </TextBox>
                             </StackPanel>
-                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Bottom" Orientation="Horizontal" Margin="45 0 0 5" Height="15">
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Bottom" Orientation="Horizontal" Margin="45 0 0 10" Height="15">
                                 <TextBlock Text="Time window:"/>
                                 <TextBlock Text="{Binding RemainingRecordingTime}" Margin="5 0 0 0"/>
                             </StackPanel>
                         </Grid>
-                        <Grid Grid.Row="3">
+                        <Grid Grid.Row="3" Margin="0 5 0 0" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
                             <lvc:CartesianChart MouseDoubleClick="ResetLShapeChart_MouseDoubleClick" Series="{Binding ComparisonLShapeCollection}" Zoom="Y"
                                                 Margin="5 5 0 0">
                                 <lvc:CartesianChart.AxisX>
@@ -426,7 +424,7 @@
                                                         <Style.Triggers>
                                                             <Trigger Property="Border.IsMouseOver" Value="True">
                                                                 <Setter Property="attached:MouseHelper.IsMouseOver" Value="True"/>
-                                                                <Setter Property="Border.Background" Value="#cfcfcf" />
+                                                                <Setter Property="Border.Background" Value="{DynamicResource MaterialDesignSelection}" />
                                                             </Trigger>
                                                             <Trigger Property="Border.IsMouseOver" Value="False">
                                                                 <Setter Property="attached:MouseHelper.IsMouseOver" Value="False"/>
@@ -480,11 +478,12 @@
                                                             </Style>
                                                         </ctrls:CXColorPicker.ButtonStyle>
                                                     </ctrls:CXColorPicker>
-                                                    <Button Grid.Row="0" Grid.Column="2" Margin="0 -2 2 0" Padding="0" Width="12" Height="12" HorizontalAlignment="Right" VerticalAlignment="Top" BorderThickness="0" Background="Transparent" Foreground="Black"
+                                                    <Button Grid.Row="0" Grid.Column="2" Margin="0 -2 2 0" Padding="0" Width="12" Height="12" HorizontalAlignment="Right" VerticalAlignment="Top" BorderThickness="0" Background="Transparent" Foreground="{DynamicResource MaterialDesignBody}"
 															Content="{materialDesign:PackIcon Close, Size=12}" Command="{Binding RemoveCommand}">
                                                     </Button>
                                                     <ToggleButton Grid.Row="1" Grid.Column="2" Margin="0 0 -2 6" Width="20" Height="20" HorizontalAlignment="Right" VerticalAlignment="Bottom" 
 																  Style="{StaticResource MaterialDesignActionToggleButton}"
+                                                                  Foreground="White"
 																  Visibility="{Binding ElementName=ComparisonRecordItemControl, Path=DataContext.ColorPickerVisibility, Converter={StaticResource FalseToHiddenConverter}}"
 																  IsChecked="{Binding IsHideModeSelected}">
                                                         <ToggleButton.Content>
@@ -510,7 +509,8 @@
 								VerticalAlignment="Center"
 								Width="30" Height="30"
 								ToolTip="Remove all comparisons"
-								Command="{Binding RemoveAllComparisonsCommand}">
+								Command="{Binding RemoveAllComparisonsCommand}"
+                                Foreground="White">
                             <materialDesign:PackIcon Kind="PlaylistRemove" Height="24" Width="24" />
                         </Button>
                     </Grid>

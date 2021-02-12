@@ -609,7 +609,9 @@ namespace CapFrameX.ViewModel
                 MajorGridlineThickness = 1,
                 MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
                 MinorTickSize = 0,
-                MajorTickSize = 0
+                MajorTickSize = 0,
+                TextColor = _appConfiguration.UseDarkMode ? OxyColors.White : OxyColors.Black,
+                TitleColor = _appConfiguration.UseDarkMode ? OxyColors.White : OxyColors.Black
             });
 
             //Y
@@ -623,7 +625,9 @@ namespace CapFrameX.ViewModel
                 MajorGridlineThickness = 1,
                 MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
                 MinorTickSize = 0,
-                MajorTickSize = 0
+                MajorTickSize = 0,
+                TextColor = _appConfiguration.UseDarkMode ? OxyColors.White : OxyColors.Black,
+                TitleColor = _appConfiguration.UseDarkMode ? OxyColors.White : OxyColors.Black
             });
 
             // FPS
@@ -647,7 +651,9 @@ namespace CapFrameX.ViewModel
                 MajorGridlineThickness = 1,
                 MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
                 MinorTickSize = 0,
-                MajorTickSize = 0
+                MajorTickSize = 0,
+                TextColor = _appConfiguration.UseDarkMode ? OxyColors.White : OxyColors.Black,
+                TitleColor = _appConfiguration.UseDarkMode ? OxyColors.White : OxyColors.Black
             });
 
             //Y
@@ -661,7 +667,9 @@ namespace CapFrameX.ViewModel
                 MajorGridlineThickness = 1,
                 MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
                 MinorTickSize = 0,
-                MajorTickSize = 0
+                MajorTickSize = 0,
+                TextColor = _appConfiguration.UseDarkMode ? OxyColors.White : OxyColors.Black,
+                TitleColor = _appConfiguration.UseDarkMode ? OxyColors.White : OxyColors.Black
             });
         }
 
@@ -1214,6 +1222,7 @@ namespace CapFrameX.ViewModel
 
             var chartTitle = string.Empty;
 
+
             var color = wrappedComparisonInfo.FrametimeGraphColor.Value;
             var frametimeSeries = new Statistics.PlotBuilder.LineSeries()
             {
@@ -1222,7 +1231,8 @@ namespace CapFrameX.ViewModel
                 StrokeThickness = 1,
                 LegendStrokeThickness = 4,
                 Color = wrappedComparisonInfo.IsHideModeSelected ?
-                    OxyColors.Transparent : OxyColor.FromRgb(color.R, color.G, color.B)
+                    OxyColors.Transparent : OxyColor.FromRgb(color.R, color.G, color.B),
+
             };
 
             frametimeSeries.Points.AddRange(frametimePoints.Select(pnt => new DataPoint(pnt.X, pnt.Y)));
