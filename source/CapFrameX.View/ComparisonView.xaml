@@ -233,8 +233,11 @@
                             </StackPanel>
                         </Grid>
                         <Grid Grid.Row="3" Margin="0 5 0 0" Background="Transparent">
-                            <lvc:CartesianChart Foreground="Black" MouseDoubleClick="ResetLShapeChart_MouseDoubleClick" Series="{Binding ComparisonLShapeCollection}" Zoom="Y"
+                            <lvc:CartesianChart Foreground="{DynamicResource MaterialDesignBody}" MouseDoubleClick="ResetLShapeChart_MouseDoubleClick" Series="{Binding ComparisonLShapeCollection}" Zoom="Y"
                                                 Margin="5 5 0 0" ToolTipService.IsEnabled="False">
+                                <lvc:CartesianChart.DataTooltip>
+                                    <lvc:DefaultTooltip BulletSize="20" Background="{DynamicResource MaterialDesignPaper}"/>
+                                </lvc:CartesianChart.DataTooltip>
                                 <lvc:CartesianChart.AxisX>
                                     <lvc:Axis Title="Percentiles (%)" Name="LShapeX" Foreground="{DynamicResource MaterialDesignBody}">
                                         <lvc:Axis.Separator >

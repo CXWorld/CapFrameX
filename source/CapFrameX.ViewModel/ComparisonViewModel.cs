@@ -530,6 +530,9 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        public TooltipData LShapeTolTipData { get; set; }
+
+
         public bool IsBarChartTabActive
         {
             get { return SelectedChartItem?.Header.ToString().Contains("Bar charts") ?? false; }
@@ -1288,8 +1291,9 @@ namespace CapFrameX.ViewModel
             var quantileValues = new ChartValues<ObservablePoint>();
             quantileValues.AddRange(quantiles);
 
+
             ComparisonLShapeCollection.Add(
-            new LineSeries
+            new LineSeries()
             {
                 Id = wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.Id,
                 Values = quantileValues,
@@ -1300,7 +1304,7 @@ namespace CapFrameX.ViewModel
                 PointGeometrySize = 5,
                 PointGeometry = DefaultGeometries.Square,
                 PointForeground = wrappedComparisonInfo.IsHideModeSelected ? Brushes.Transparent : wrappedComparisonInfo.Color,
-                LabelPoint = chartPoint => string.Format(CultureInfo.InvariantCulture, "{0:0.##}", chartPoint.Y, unit),
+                LabelPoint = chartPoint => string.Format(CultureInfo.InvariantCulture, "{0:0.##}", chartPoint.Y, unit)
             });
         }
 
