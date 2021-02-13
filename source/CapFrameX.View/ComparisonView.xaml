@@ -233,8 +233,8 @@
                             </StackPanel>
                         </Grid>
                         <Grid Grid.Row="3" Margin="0 5 0 0" Background="Transparent">
-                            <lvc:CartesianChart MouseDoubleClick="ResetLShapeChart_MouseDoubleClick" Series="{Binding ComparisonLShapeCollection}" Zoom="Y"
-                                                Margin="5 5 0 0">
+                            <lvc:CartesianChart Foreground="Black" MouseDoubleClick="ResetLShapeChart_MouseDoubleClick" Series="{Binding ComparisonLShapeCollection}" Zoom="Y"
+                                                Margin="5 5 0 0" ToolTipService.IsEnabled="False">
                                 <lvc:CartesianChart.AxisX>
                                     <lvc:Axis Title="Percentiles (%)" Name="LShapeX" Foreground="{DynamicResource MaterialDesignBody}">
                                         <lvc:Axis.Separator >
@@ -245,7 +245,7 @@
                                 <lvc:CartesianChart.AxisY>
                                     <lvc:Axis Title="{Binding ComparisonLShapeYAxisLabel}" Name="LShapeY" Foreground="{DynamicResource MaterialDesignBody}">
                                         <lvc:Axis.Separator>
-                                            <lvc:Separator StrokeThickness="0.3"></lvc:Separator>
+                                            <lvc:Separator StrokeThickness="0.2" Stroke="{DynamicResource MaterialDesignBody}"></lvc:Separator>
                                         </lvc:Axis.Separator>
                                     </lvc:Axis>
                                 </lvc:CartesianChart.AxisY>

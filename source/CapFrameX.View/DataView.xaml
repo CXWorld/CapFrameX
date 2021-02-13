@@ -165,14 +165,14 @@
                                         <lvc:CartesianChart.AxisX>
                                             <lvc:Axis Title="Percentiles (%)" x:Name="LShapeX" Foreground="{DynamicResource MaterialDesignBody}">
                                                 <lvc:Axis.Separator>
-                                                    <lvc:Separator StrokeThickness="0.2" Step="1"/>
+                                                    <lvc:Separator StrokeThickness="0" Step="1"/>
                                                 </lvc:Axis.Separator>
                                             </lvc:Axis>
                                         </lvc:CartesianChart.AxisX>
                                         <lvc:CartesianChart.AxisY>
                                             <lvc:Axis Title="{Binding LShapeYaxisLabel}" x:Name="LShapeY" Foreground="{DynamicResource MaterialDesignBody}">
                                                 <lvc:Axis.Separator>
-                                                    <lvc:Separator StrokeThickness="0.2"/>
+                                                    <lvc:Separator StrokeThickness="0.2" Stroke="{DynamicResource MaterialDesignBody}"/>
                                                 </lvc:Axis.Separator>
                                             </lvc:Axis>
                                         </lvc:CartesianChart.AxisY>

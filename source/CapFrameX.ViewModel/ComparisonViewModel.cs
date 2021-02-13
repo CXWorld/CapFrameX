@@ -1300,7 +1300,7 @@ namespace CapFrameX.ViewModel
                 PointGeometrySize = 5,
                 PointGeometry = DefaultGeometries.Square,
                 PointForeground = wrappedComparisonInfo.IsHideModeSelected ? Brushes.Transparent : wrappedComparisonInfo.Color,
-                LabelPoint = chartPoint => string.Format(CultureInfo.InvariantCulture, "{0:0.##}", chartPoint.Y, unit)
+                LabelPoint = chartPoint => string.Format(CultureInfo.InvariantCulture, "{0:0.##}", chartPoint.Y, unit),
             });
         }
 
