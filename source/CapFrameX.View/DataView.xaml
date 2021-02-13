@@ -108,7 +108,7 @@
                                 <Grid>
                                     <Grid Margin="0 0 0 0" Panel.ZIndex="1" HorizontalAlignment="Left" VerticalAlignment="Bottom">
                                         <ComboBox Width="85" Height="40" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="10 0 0 10" materialDesign:HintAssist.Hint="Y-Axis scale"
-										          materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="240" materialDesign:ComboBoxAssist.ClassicMode="True"
+										          materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="240" materialDesign:HintAssist.HintOpacity=".8"
 										          ItemsSource="{Binding ChartYAxisSettings}" SelectedItem="{Binding SelecetedChartYAxisSetting}">
                                             <ComboBox.ItemTemplate>
                                                 <DataTemplate>
@@ -127,7 +127,7 @@
                                 <Grid>
                                     <Grid Margin="-15 0 0 1" Panel.ZIndex="1" HorizontalAlignment="Left" VerticalAlignment="Bottom">
                                         <ComboBox Width="96" Height="40" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="25 8 0 8" materialDesign:HintAssist.Hint="Filter mode"
-										      materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="240" materialDesign:ComboBoxAssist.ClassicMode="True"
+										      materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="240" materialDesign:HintAssist.HintOpacity=".8"
                                               SelectedItem="{Binding SelectedFilterMode}" SelectedIndex="1" ItemsSource="{Binding FilterModes}">
                                             <ComboBox.ItemTemplate>
                                                 <DataTemplate>
@@ -146,7 +146,7 @@
                                 <Grid>
                                     <Grid Margin="-15 0 0 1" Panel.ZIndex="1" HorizontalAlignment="Left" VerticalAlignment="Bottom">
                                         <ComboBox Width="96" Height="40" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="25 8 0 8" materialDesign:HintAssist.Hint="Metric"
-										      materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="240" materialDesign:ComboBoxAssist.ClassicMode="True"
+										      materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="240" materialDesign:HintAssist.HintOpacity=".8"
                                               SelectedItem="{Binding SelectedLShapeMetric}" ItemsSource="{Binding LShapeMetrics}">
                                             <ComboBox.ItemTemplate>
                                                 <DataTemplate>
@@ -192,11 +192,11 @@
                             <TextBlock Text="Start and end points:" Margin="0 5 5 0" Foreground="{DynamicResource MaterialDesignBody}"/>
                             <TextBox Grid.Row="1" materialDesign:HintAssist.Hint="Start (s)" HorizontalAlignment="Center" Width="45" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}"
                                       ToolTip="Range Slider start point" PreviewKeyDown="FirstSecondsTextBox_PreviewKeyDown" PreviewTextInput="NumberValidationTextBox" TextAlignment="Center" Text="{Binding FirstSeconds, Mode=TwoWay, StringFormat=F2, UpdateSourceTrigger=LostFocus}"
-                                     Foreground="{DynamicResource MaterialDesignBody}"/>
+                                     Foreground="{DynamicResource MaterialDesignBody}" materialDesign:HintAssist.HintOpacity=".8"/>
                             <TextBlock Text="-" Margin="3 5 3 0" Foreground="{DynamicResource MaterialDesignBody}"/>
                             <TextBox Grid.Row="1" materialDesign:HintAssist.Hint="End (s)" HorizontalAlignment="Center" Width="45" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}"
                                      ToolTip="Range Slider end point" PreviewKeyDown="LastSecondsTextBox_PreviewKeyDown" PreviewTextInput="NumberValidationTextBox" TextAlignment="Center" Text="{Binding LastSeconds, Mode=TwoWay, StringFormat=F2, UpdateSourceTrigger=LostFocus}"
-                                     Foreground="{DynamicResource MaterialDesignBody}"/>
+                                     Foreground="{DynamicResource MaterialDesignBody}" materialDesign:HintAssist.HintOpacity=".8"/>
                             <Button Grid.Row="1" Grid.Column="1" HorizontalAlignment="Right" Margin="10 0 0 0" Height="22" Width="22" Command="{Binding CutRecordCommand}"  Foreground="White"
                                     Style="{StaticResource MaterialDesignFloatingActionMiniButton}" ToolTip="Cut the record based on range slider and save it as a new file">
                                 <materialDesign:PackIcon Kind="ContentCut" Height="15" Width="15" />
@@ -269,7 +269,7 @@
                                                     <RowDefinition Height="*" />
                                                 </Grid.RowDefinitions>
                                                 <TextBox Grid.Row="0" materialDesign:HintAssist.Hint="Low FPS threshold" materialDesign:HintAssist.IsFloating="True" Width="100"
-                                                 HorizontalContentAlignment="Center" Text="{Binding StutteringLowFPSThreshold}"
+                                                 HorizontalContentAlignment="Center" Text="{Binding StutteringLowFPSThreshold}" materialDesign:HintAssist.HintOpacity=".8"
                                                  PreviewKeyDown="StutteringThreshold_PreviewKeyDown" PreviewTextInput="NumberValidationTextBox" ToolTipService.ShowDuration="25000">
                                                     <TextBox.ToolTip>
                                                         <ToolTip Width="300">
@@ -279,7 +279,7 @@
                                                     </TextBox.ToolTip>
                                                 </TextBox>
                                                 <TextBox Grid.Row="1" Margin="0 20 0 0" materialDesign:HintAssist.Hint="Stuttering factor" materialDesign:HintAssist.IsFloating="True" Width="100"
-                                                 HorizontalContentAlignment="Center" Text="{Binding StutteringFactor}" 
+                                                 HorizontalContentAlignment="Center" Text="{Binding StutteringFactor}" materialDesign:HintAssist.HintOpacity=".8" 
                                                  PreviewKeyDown="StutteringFactor_PreviewKeyDown" PreviewTextInput="NumberValidationTextBox" ToolTipService.ShowDuration="25000">
                                                     <TextBox.ToolTip>
                                                         <ToolTip Width="300">
