@@ -105,23 +105,24 @@
 						 Margin="0" FontSize="14" Foreground="{DynamicResource MaterialDesignBody}"
 						 IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False" PreviewKeyDown="CaptureHotkeyTextBox_PreviewKeyDown"
 						 ToolTip="Hotkey combinable with up to two modifier keys (Ctrl, Shift or Alt)">
-                    <Binding  Path="CaptureHotkey"
+                    <Binding Path="CaptureHotkey"
 							  ElementName="CaptureViewControl"
 							  Mode="OneWay"
 							  TargetNullValue="&lt; not set &gt;">
                         <Binding.ValidationRules>
-                            <validation:HotkeyValidationRule
-                          ValidatesOnTargetUpdated="True" />
+                            <validation:HotkeyValidationRule ValidatesOnTargetUpdated="True" />
                         </Binding.ValidationRules>
                     </Binding>
                 </TextBox>
+                
                 <TextBox Grid.Row="0" Grid.Column="1" Width="132" wpf:HintAssist.Hint="Capture time [s]" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
 					 Margin="50 0 0 0" FontSize="14" Text="{Binding CaptureTimeString, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding AreButtonsActive}"
                      PreviewMouseDown="TextBox_PreviewMouseDown" PreviewKeyDown="CaptureTimeTextBox_PreviewKeyDown" MouseLeave="TextBox_MouseLeave" ToolTip="0 = no limit"
                      PreviewTextInput="NumberValidationTextBox" Foreground="{DynamicResource MaterialDesignBody}"/>
-                <ComboBox Grid.Row="0" Grid.Column="3" Width="132" Margin="50 0 0 0" materialDesign:HintAssist.Hint="Hotkey sound"
-						materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="200" FontSize="14" materialDesign:ComboBoxAssist.ClassicMode="True"
-						ItemsSource="{Binding SoundModes}" HorizontalAlignment="Right" VerticalAlignment="Bottom" Foreground="{DynamicResource MaterialDesignBody}">
+                
+                <ComboBox Grid.Row="0" Grid.Column="3" Width="132" Height="40" materialDesign:HintAssist.Hint="Hotkey sound" Style="{StaticResource MaterialDesignComboBox}"
+						  MaxDropDownHeight="200" FontSize="14" materialDesign:HintAssist.IsFloating="True"
+						  ItemsSource="{Binding SoundModes}" HorizontalAlignment="Right" VerticalAlignment="Bottom" Foreground="{DynamicResource MaterialDesignBody}">
                     <ComboBox.Text>
                         <Binding Path="SelectedSoundMode"
 								 Mode="TwoWay"
@@ -129,6 +130,7 @@
                         </Binding>
                     </ComboBox.Text>
                 </ComboBox>
+                
                 <Grid Grid.Row="1" Grid.Column="3" Visibility="{Binding ShowVolumeController, Converter={StaticResource FalseToCollapsedConverter}}" Margin="50 10 0 0" Width="140" HorizontalAlignment="Right">
                     <materialDesign:PackIcon Kind="VolumeMedium" Foreground="{DynamicResource MaterialDesignBody}"/>
                     <Slider HorizontalAlignment="Center"
