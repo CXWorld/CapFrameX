@@ -6,35 +6,32 @@ using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using CapFrameX.Contracts.PresentMonInterface;
+using CapFrameX.Extensions;
 using Microsoft.Extensions.Logging;
 
 namespace CapFrameX.PresentMonInterface
 {
     public class PresentMonCaptureService : ICaptureService
     {
-        private readonly ISubject<string> _outputErrorStream;
-        private readonly ISubject<string> _outputDataStream;
+        private readonly ISubject<string[]> _outputDataStream;
         private readonly object _listLock = new object();
         private readonly ILogger<PresentMonCaptureService> _logger;
-        private HashSet<string> _presentMonProcesses;
+        private HashSet<(string, int)> _presentMonProcesses;
         private bool _isUpdating;
         private IDisposable _hearBeatDisposable;
         private IDisposable _processNameDisposable;
 
-        public IObservable<string> RedirectedOutputDataStream
+        public IObservable<string[]> RedirectedOutputDataStream
             => _outputDataStream.AsObservable();
-        public IObservable<string> RedirectedOutputErrorStream
-            => _outputErrorStream.AsObservable();
         public Subject<bool> IsCaptureModeActiveStream { get; }
         public Subject<bool> IsLoggingActiveStream { get; }
 
         public PresentMonCaptureService(ILogger<PresentMonCaptureService> logger)
         {
-            _outputDataStream = new Subject<string>();
-            _outputErrorStream = new Subject<string>();
+            _outputDataStream = new Subject<string[]>();
             IsCaptureModeActiveStream = new Subject<bool>();
             IsLoggingActiveStream = new Subject<bool>();
-            _presentMonProcesses = new HashSet<string>();
+            _presentMonProcesses = new HashSet<(string, int)>();
             _logger = logger;
         }
 
@@ -66,11 +63,17 @@ namespace CapFrameX.PresentMonInterface
                 };
 
                 process.EnableRaisingEvents = true;
-                process.OutputDataReceived += (sender, e) => _outputDataStream.OnNext(e.Data);
-                process.ErrorDataReceived += (sender, e) => _outputErrorStream.OnNext(e.Data);
+                process.OutputDataReceived += (sender, e) =>
+                {
+                    if (!string.IsNullOrWhiteSpace(e.Data))
+                    {
+                        var split = e.Data.Split(',');
+                        if (split.Length > 1)
+                            _outputDataStream.OnNext(split);
+                    }
+                };
 
                 process.Start();
-                _outputDataStream.OnNext("Capture service started...");
                 process.BeginOutputReadLine();
                 process.BeginErrorReadLine();
 
@@ -101,10 +104,10 @@ namespace CapFrameX.PresentMonInterface
 
         }
 
-        public IEnumerable<string> GetAllFilteredProcesses(HashSet<string> filter)
+        public IEnumerable<(string, int)> GetAllFilteredProcesses(HashSet<string> filter)
         {
             lock (_listLock)
-                return _presentMonProcesses?.Where(processName => !filter.Contains(processName));
+                return _presentMonProcesses?.Where(processInfo => !filter.Contains(processInfo.Item1));
         }
 
         public static void TryKillPresentMon()
@@ -126,36 +129,32 @@ namespace CapFrameX.PresentMonInterface
             {
                 bool hasInitialData = false;
                 _hearBeatDisposable = Observable.Generate(0, // dummy initialState
-                                            x => true, // dummy condition
-                                            x => x, // dummy iterate
-                                            x => x, // dummy resultSelector
-                                            x => TimeSpan.FromSeconds(1))
-                                            .Subscribe(x => UpdateProcessToCaptureList());
+                    x => true, // dummy condition
+                    x => x, // dummy iterate
+                    x => x, // dummy resultSelector
+                    x => TimeSpan.FromSeconds(1))
+                    .Subscribe(x => UpdateProcessToCaptureList());
 
-                _processNameDisposable = _outputDataStream.ObserveOn(new EventLoopScheduler())
-                    .Skip(5).Where(dataLine => _isUpdating == false).Subscribe(dataLine =>
+                _processNameDisposable = _outputDataStream
+                    .Skip(1)
+                    .ObserveOn(new EventLoopScheduler())
+                    .Where(lineSplit => _isUpdating == false)
+                    .Subscribe(lineSplit =>
                     {
-                        if (string.IsNullOrWhiteSpace(dataLine))
-                            return;
-
                         if (!hasInitialData)
                         {
                             _logger.LogInformation("Process name stream has initial data.");
                             hasInitialData = true;
                         }
+                        var processName = lineSplit[0].Replace(".exe", "");
+                        var processId =  Convert.ToInt32(lineSplit[1]);
 
-                        int index = dataLine.IndexOf(".exe");
-
-                        if (index > 0)
+                        lock (_listLock)
                         {
-                            var processName = dataLine.Substring(0, index);
-
-                            lock (_listLock)
+                            var processInfo = (processName, processId);
+                            if (processName != null && !_presentMonProcesses.Contains(processInfo))
                             {
-                                if (processName != null && !_presentMonProcesses.Contains(processName))
-                                {
-                                    _presentMonProcesses.Add(processName);
-                                }
+                                _presentMonProcesses.Add(processInfo);
                             }
                         }
                     });
@@ -169,28 +168,26 @@ namespace CapFrameX.PresentMonInterface
         private void UpdateProcessToCaptureList()
         {
             _isUpdating = true;
-            var updatedList = new List<string>();
+            var updatedList = new List<(string, int)>();
 
             lock (_listLock)
             {
-                foreach (var process in _presentMonProcesses)
+                foreach (var processInfo in _presentMonProcesses)
                 {
                     try
                     {
-                        var proc = Process.GetProcessesByName(process);
-
-                        if (proc.Any())
+                        if (ProcessHelper.IsProcessAlive(processInfo.Item2))
                         {
-                            updatedList.Add(process);
+                            updatedList.Add(processInfo);
                         }
                     }
-                    catch (InvalidOperationException ex)
+                    catch (Exception ex)
                     {
-                        _logger.LogError(ex, $"Failed to get process resources from {process}");
+                        _logger.LogError(ex, $"Failed to get process resources from {processInfo.Item1}");
                     }
                 }
 
-                _presentMonProcesses = new HashSet<string>(updatedList);
+                _presentMonProcesses = new HashSet<(string, int)>(updatedList);
             }
             _isUpdating = false;
         }

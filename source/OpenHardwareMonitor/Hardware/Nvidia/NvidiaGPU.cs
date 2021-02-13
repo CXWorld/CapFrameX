@@ -483,8 +483,11 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
             {
                 if (sensorConfig.GetSensorEvaluate(processMemoryUsageDedicated.IdentifierString))
                 {
-                    processMemoryUsageDedicated.Value = dedicatedVramUsageProcessPerformCounter == null
+                    lock (_performanceCounterLock)
+                    {
+                        processMemoryUsageDedicated.Value = dedicatedVramUsageProcessPerformCounter == null
                         ? 0f : (float)dedicatedVramUsageProcessPerformCounter.NextValue() / SCALE;
+                    }
                     ActivateSensor(processMemoryUsageDedicated);
                 }
                 else
@@ -496,8 +499,11 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
             {
                 if (sensorConfig.GetSensorEvaluate(processMemoryUsageShared.IdentifierString))
                 {
-                    processMemoryUsageShared.Value = sharedVramUsageProcessPerformCounter == null
+                    lock (_performanceCounterLock)
+                    {
+                        processMemoryUsageShared.Value = sharedVramUsageProcessPerformCounter == null
                         ? 0f : (float)sharedVramUsageProcessPerformCounter.NextValue() / SCALE;
+                    }
                     ActivateSensor(processMemoryUsageShared);
                 }
                 else

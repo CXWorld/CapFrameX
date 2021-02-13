@@ -6,9 +6,7 @@ namespace CapFrameX.Contracts.PresentMonInterface
 {
     public interface ICaptureService
     {
-        IObservable<string> RedirectedOutputDataStream { get; }
-
-        IObservable<string> RedirectedOutputErrorStream { get; }
+        IObservable<string[]> RedirectedOutputDataStream { get; }
 
         Subject<bool> IsCaptureModeActiveStream { get; }
 
@@ -18,6 +16,6 @@ namespace CapFrameX.Contracts.PresentMonInterface
 
         bool StopCaptureService();
 
-        IEnumerable<string> GetAllFilteredProcesses(HashSet<string> filter);
+        IEnumerable<(string, int)> GetAllFilteredProcesses(HashSet<string> filter);
     }
 }

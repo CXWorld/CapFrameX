@@ -22,6 +22,8 @@ namespace OpenHardwareMonitor.Hardware.RAM
     {
         private const float SCALE = 1024 * 1024 * 1024;
 
+        private readonly object _performanceCounterLock = new object();
+
         private Sensor loadSensor;
         private Sensor usedMemory;
         private Sensor availableMemory;
@@ -45,32 +47,34 @@ namespace OpenHardwareMonitor.Hardware.RAM
                     .DistinctUntilChanged()
                     .Subscribe(id =>
                     {
-                        Process process = null;
-                        try
+                        lock (_performanceCounterLock)
                         {
-                            process = Process.GetProcessById((int)id);
+                            Process process = null;
+                            try
+                            {
+                                process = Process.GetProcessById((int)id);
 
-                            if (process != null)
-                            {
-                                // Working Set - Private
-                                ramUsageGamePerformanceCounter = new PerformanceCounter("Process", "Working Set - Private", process.ProcessName);
-                                // Working Set (private + resources)
-                                ramAndCacheUsageGamePerformanceCounter = new PerformanceCounter("Process", "Working Set", process.ProcessName);
+                                if (process != null)
+                                {
+                                    // Working Set - Private
+                                    ramUsageGamePerformanceCounter = new PerformanceCounter("Process", "Working Set - Private", process.ProcessName);
+                                    // Working Set (private + resources)
+                                    ramAndCacheUsageGamePerformanceCounter = new PerformanceCounter("Process", "Working Set", process.ProcessName);
+                                }
+                                else
+                                {
+                                    Log.Logger.Error("Failed to get process by Id={Id}.", id);
+                                    ramUsageGamePerformanceCounter = null;
+                                    ramAndCacheUsageGamePerformanceCounter = null;
+                                }
                             }
-                            else
+                            catch
                             {
-                                Log.Logger.Error("Failed to get process by Id={Id}.", id);
                                 ramUsageGamePerformanceCounter = null;
                                 ramAndCacheUsageGamePerformanceCounter = null;
+                                Log.Logger.Error("Failed to create performance counter Working Set or Working Set - Private");
                             }
                         }
-                        catch
-                        {
-                            ramUsageGamePerformanceCounter = null;
-                            ramAndCacheUsageGamePerformanceCounter = null;
-                            Log.Logger.Error("Failed to create performance counter Working Set or Working Set - Private");
-                        }
-
                     });
                 }
                 else
@@ -103,13 +107,7 @@ namespace OpenHardwareMonitor.Hardware.RAM
             ActivateSensor(usedMemoryAndCacheProcess);
         }
 
-        public override HardwareType HardwareType
-        {
-            get
-            {
-                return HardwareType.RAM;
-            }
-        }
+        public override HardwareType HardwareType => HardwareType.RAM;
 
         public override void Update()
         {
@@ -138,14 +136,20 @@ namespace OpenHardwareMonitor.Hardware.RAM
 
             if (sensorConfig.GetSensorEvaluate(usedMemoryProcess.IdentifierString))
             {
-                usedMemoryProcess.Value = ramUsageGamePerformanceCounter != null
+                lock (_performanceCounterLock)
+                {
+                    usedMemoryProcess.Value = ramUsageGamePerformanceCounter != null
                     ? ramUsageGamePerformanceCounter.NextValue() / SCALE : 0f;
+                }
             }
 
             if (sensorConfig.GetSensorEvaluate(usedMemoryAndCacheProcess.IdentifierString))
             {
-                usedMemoryAndCacheProcess.Value = ramAndCacheUsageGamePerformanceCounter != null
+                lock (_performanceCounterLock)
+                {
+                    usedMemoryAndCacheProcess.Value = ramAndCacheUsageGamePerformanceCounter != null
                     ? ramAndCacheUsageGamePerformanceCounter.NextValue() / SCALE : 0f;
+                }
             }
         }
 

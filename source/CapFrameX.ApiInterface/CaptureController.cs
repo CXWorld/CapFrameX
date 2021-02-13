@@ -5,6 +5,8 @@ using EmbedIO.Routing;
 using EmbedIO.WebApi;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 
@@ -25,12 +27,13 @@ namespace CapFrameX.Remote
             try
             {
                 var parameters = await HttpContext.GetRequestDataAsync<StartCapturePayload>();
+                var processes = Process.GetProcessesByName(parameters.ProcessName);
 
                 await _captureManager.StartCapture(new CaptureOptions()
                 {
                     CaptureTime = parameters.CaptureTime,
                     CaptureFileMode = parameters.CaptureFileMode,
-                    ProcessName = parameters.ProcessName,
+                    ProcessInfo = (parameters.ProcessName, processes.FirstOrDefault().Id),
                     RecordDirectory = parameters.RecordDirectory,
                     Remote = true
                 });
@@ -75,7 +78,7 @@ namespace CapFrameX.Remote
         [Route(HttpVerbs.Get, "/processes")]
         public async Task<IEnumerable<string>> GetProcesses()
         {
-            return await Task.FromResult( _captureManager.GetAllFilteredProcesses(new HashSet<string>()));
+            return await Task.FromResult( _captureManager.GetAllFilteredProcesses(new HashSet<string>()).Select(info => info.Item1));
         }
     }
 }

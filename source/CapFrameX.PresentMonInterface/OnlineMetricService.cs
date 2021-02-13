@@ -19,6 +19,8 @@ namespace CapFrameX.PresentMonInterface
         private const double STUTTERING_THRESHOLD = 2d;
         private const int LIST_CAPACITY = 20000;
 
+        private readonly object _currentProcessLock = new object();
+
         private readonly IStatisticProvider _frametimeStatisticProvider;
         private readonly ICaptureService _captureService;
         private readonly IEventAggregator _eventAggregator;
@@ -55,33 +57,35 @@ namespace CapFrameX.PresentMonInterface
             _eventAggregator.GetEvent<PubSubEvent<ViewMessages.CurrentProcessToCapture>>()
                             .Subscribe(msg =>
                             {
-                                if (_currentProcess == null
-                                || _currentProcess != msg.Process)
-                                    ResetMetrics();
+                                lock (_currentProcessLock)
+                                {
+                                    if (_currentProcess == null
+                                    || _currentProcess != msg.Process)
+                                        ResetMetrics();
 
-                                _currentProcess = msg.Process;
-                                _currentProcessId = msg.ProcessId;
+                                    _currentProcess = msg.Process;
+                                    _currentProcessId = msg.ProcessId;
+                                }
                             });
         }
 
         private void ConnectOnlineMetricDataStream()
         {
-            _captureService.RedirectedOutputDataStream
-            .Skip(5)
-            .ObserveOn(new EventLoopScheduler())
-            .Where(x => EvaluateRealtimeMetrics())
-            .Where(line => !string.IsNullOrWhiteSpace(line))
-            .Select(line => line.Split(','))
-            .Where(lineSplit => lineSplit.Length > 1)
-            .Subscribe(UpdateOnlineMetrics);
+            _captureService
+                .RedirectedOutputDataStream
+                .Skip(1)
+                .ObserveOn(new EventLoopScheduler())
+                .Where(x => EvaluateRealtimeMetrics())
+                .Where(lineSplit => lineSplit.Length > 1)
+                .Subscribe(UpdateOnlineMetrics);
         }
 
         private bool EvaluateRealtimeMetrics()
         {
             try
             {
-                return _overlayEntryCore.RealtimeMetricEntryDict["OnlineAverage"].ShowOnOverlay 
-                    || _overlayEntryCore.RealtimeMetricEntryDict["OnlineP1"].ShowOnOverlay 
+                return _overlayEntryCore.RealtimeMetricEntryDict["OnlineAverage"].ShowOnOverlay
+                    || _overlayEntryCore.RealtimeMetricEntryDict["OnlineP1"].ShowOnOverlay
                     || _overlayEntryCore.RealtimeMetricEntryDict["OnlineP0dot2"].ShowOnOverlay;
             }
             catch { return false; }
@@ -90,8 +94,12 @@ namespace CapFrameX.PresentMonInterface
         private void UpdateOnlineMetrics(string[] lineSplit)
         {
             var process = lineSplit[0].Replace(".exe", "");
-            if (process != _currentProcess)
-                return;
+
+            lock (_currentProcessLock)
+            {
+                if (process != _currentProcess)
+                    return;
+            }
 
             if (!uint.TryParse(lineSplit[1], out uint processId))
             {
@@ -99,8 +107,11 @@ namespace CapFrameX.PresentMonInterface
                 return;
             }
 
-            if (_currentProcessId != processId)
-                return;
+            lock (_currentProcessLock)
+            {
+                if (_currentProcessId != processId)
+                    return;
+            }
 
             if (lineSplit.Length <= 12)
             {
@@ -132,7 +143,6 @@ namespace CapFrameX.PresentMonInterface
             {
                 lock (_lock)
                 {
-
                     _measuretimes.Add(startTime);
                     _frametimes.Add(frameTime);
 

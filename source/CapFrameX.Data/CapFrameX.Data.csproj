@@ -118,7 +118,6 @@
     <Compile Include="ECaptureFileMode.cs" />
     <Compile Include="LoginManager.cs" />
     <Compile Include="OverlayEntryFormatChange.cs" />
-    <Compile Include="ProcessList.cs" />
     <Compile Include="SoundManager.cs" />
     <Compile Include="WebVersionProvider.cs" />
     <Compile Include="AppVersionProvider.cs" />

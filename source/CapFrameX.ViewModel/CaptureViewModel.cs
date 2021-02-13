@@ -193,6 +193,9 @@ namespace CapFrameX.ViewModel
         public ObservableConcurrentCollection<string> ProcessesToCapture { get; }
             = new ObservableConcurrentCollection<string>();
 
+        public ObservableConcurrentCollection<(string, int)> ProcessesInfo { get; }
+            = new ObservableConcurrentCollection<(string, int)>();
+
         public ObservableCollection<string> ProcessesToIgnore { get; }
             = new ObservableCollection<string>();
 
@@ -239,8 +242,8 @@ namespace CapFrameX.ViewModel
             AddToProcessListCommand = new DelegateCommand(OnAddToProcessList);
             ResetPresentMonCommand = new DelegateCommand(OnResetCaptureProcess);
 
-            ProcessesToCapture.CollectionChanged += new NotifyCollectionChangedEventHandler
-                ((sender, eventArg) => UpdateProcessToCapture());
+            //ProcessesToCapture.CollectionChanged += new NotifyCollectionChangedEventHandler
+            //    ((sender, eventArg) => UpdateProcessToCapture());
 
             _captureManager
                 .CaptureStatusChange
@@ -371,6 +374,7 @@ namespace CapFrameX.ViewModel
             else if (!_captureManager.IsCapturing)
             {
                 string processToCapture = SelectedProcessToCapture ?? ProcessesToCapture.FirstOrDefault();
+                var processInfo = ProcessesInfo.FirstOrDefault(info => info.Item1 == processToCapture);
 
                 Task.Run(async () =>
                 {
@@ -380,7 +384,7 @@ namespace CapFrameX.ViewModel
                         {
                             CaptureTime = CaptureTime,
                             CaptureFileMode = AppConfiguration.CaptureFileMode,
-                            ProcessName = processToCapture,
+                            ProcessInfo = processInfo,
                             Remote = false
                         });
                     }
@@ -503,11 +507,14 @@ namespace CapFrameX.ViewModel
             var backupProcessList = new List<string>(ProcessesToCapture);
 
             ProcessesToCapture.Clear();
+            ProcessesInfo.Clear();
 
             var filter = _processList.GetIgnoredProcessNames().ToHashSet();
-            var processList = _captureManager.GetAllFilteredProcesses(filter).Distinct();
+            var processesInfo = _captureManager.GetAllFilteredProcesses(filter);
+            var processList = processesInfo.Select(info => info.Item1);
 
             ProcessesToCapture.AddFromEnumerable(processList);
+            ProcessesInfo.AddFromEnumerable(processesInfo);
 
             if (ProcessesToCapture.Any() && !string.IsNullOrWhiteSpace(_lastCapturedProcess))
             {
@@ -549,10 +556,11 @@ namespace CapFrameX.ViewModel
                 currentProcess = ProcessesToCapture.FirstOrDefault();
             }
 
-            var process = Process.GetProcessesByName(currentProcess).FirstOrDefault();
-            var processId = (uint)(process != null ? process.Id : 0);
+            var processId = (uint)ProcessesInfo.FirstOrDefault(info => info.Item1 == currentProcess).Item2;
 
-            _rTSSService.ProcessIdStream.OnNext(processId);
+            if (processId != 0)
+                _rTSSService.ProcessIdStream.OnNext(processId);
+
             _updateCurrentProcess?.Publish(new ViewMessages.CurrentProcessToCapture(currentProcess, processId));
         }
 

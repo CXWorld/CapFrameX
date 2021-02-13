@@ -49,13 +49,13 @@ namespace CapFrameX.Data
         private readonly IAppConfiguration _appConfiguration;
         private readonly IRTSSService _rtssService;
         private readonly ISensorConfig _sensorConfig;
-        private readonly List<string> _captureDataArchive = new List<string>();
+        private readonly List<string[]> _captureDataArchive = new List<string[]>();
         private readonly object _archiveLock = new object();
 
         private IDisposable _disposableCaptureStream;
         private IDisposable _disposableArchiveStream;
         private IDisposable _autoCompletionDisposableStream;
-        private List<string> _captureData = new List<string>();
+        private List<string[]> _captureData = new List<string[]>();
         private bool _fillArchive;
         private long _qpcTimeStart;
         private string _captureTimeString = "0";
@@ -118,7 +118,7 @@ namespace CapFrameX.Data
             _presentMonCaptureService.IsCaptureModeActiveStream.OnNext(false);
         }
 
-        public IEnumerable<string> GetAllFilteredProcesses(HashSet<string> filter)
+        public IEnumerable<(string, int)> GetAllFilteredProcesses(HashSet<string> filter)
         {
             return _presentMonCaptureService.GetAllFilteredProcesses(filter);
         }
@@ -131,8 +131,8 @@ namespace CapFrameX.Data
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
-            if (!GetAllFilteredProcesses(new HashSet<string>()).Contains(options.ProcessName))
-                throw new Exception($"Process {options.ProcessName} not found");
+            if (!GetAllFilteredProcesses(new HashSet<string>()).Contains(options.ProcessInfo))
+                throw new Exception($"Process {options.ProcessInfo} not found");
             if (options.RecordDirectory != null && !Directory.Exists(options.RecordDirectory))
                 throw new Exception($"RecordDirectory {options.RecordDirectory} does not exist");
 
@@ -150,7 +150,7 @@ namespace CapFrameX.Data
             _timestampStartCapture = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds();
             _currentCaptureOptions = options;
 
-            _captureData = new List<string>();
+            _captureData = new List<string[]>();
 
             AddLoggerEntry("Capturing started.");
             _overlayService.SetCaptureServiceStatus("Recording frametimes");
@@ -169,13 +169,13 @@ namespace CapFrameX.Data
             AddLoggerEntry($"Performance counter on start capturing: {startCounter}");
             _qpcTimeStart = startCounter;
 
-            _disposableCaptureStream = _presentMonCaptureService.RedirectedOutputDataStream
-                .Skip(5)
+            _disposableCaptureStream = _presentMonCaptureService
+                .RedirectedOutputDataStream
+                .Skip(1)
                 .ObserveOn(new EventLoopScheduler())
-                .Where(dataLine => !string.IsNullOrWhiteSpace(dataLine))
-                .Subscribe(dataLine =>
+                .Subscribe(lineSplit =>
                 {
-                    _captureData.Add(dataLine);
+                    _captureData.Add(lineSplit);
 
                     if (!intializedStartTime && _captureData.Any())
                     {
@@ -257,10 +257,12 @@ namespace CapFrameX.Data
             ResetArchive();
 
             _disposableArchiveStream = _presentMonCaptureService
-                .RedirectedOutputDataStream.Where(x => _fillArchive == true)
-                .Subscribe(dataLine =>
+                .RedirectedOutputDataStream
+                .Skip(1)
+                .Where(x => _fillArchive == true)
+                .Subscribe(lineSplit =>
                 {
-                    AddDataLineToArchive(dataLine);
+                    AddDataLineToArchive(lineSplit);
                 });
         }
 
@@ -272,9 +274,6 @@ namespace CapFrameX.Data
             _presentMonCaptureService.StopCaptureService();
         }
 
-        public IObservable<string> GetRedirectedOutputDataStream()
-            => _presentMonCaptureService.RedirectedOutputDataStream;
-
         public bool StartCaptureService(IServiceStartInfo startInfo)
         {
             return _presentMonCaptureService.StartCaptureService(startInfo);
@@ -285,23 +284,18 @@ namespace CapFrameX.Data
             _presentMonCaptureService.IsLoggingActiveStream.OnNext(enabled);
         }
 
-        private void AddDataLineToArchive(string dataLine)
+        private void AddDataLineToArchive(string[] lineSplit)
         {
-            if (string.IsNullOrWhiteSpace(dataLine))
-            {
-                return;
-            }
-
             lock (_archiveLock)
             {
                 if (_captureDataArchive.Count < ARCHIVE_LENGTH)
                 {
-                    _captureDataArchive.Add(dataLine);
+                    _captureDataArchive.Add(lineSplit);
                 }
                 else
                 {
                     _captureDataArchive.RemoveAt(0);
-                    _captureDataArchive.Add(dataLine);
+                    _captureDataArchive.Add(lineSplit);
                 }
             }
         }
@@ -318,7 +312,7 @@ namespace CapFrameX.Data
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(_currentCaptureOptions.ProcessName))
+                if (string.IsNullOrWhiteSpace(_currentCaptureOptions.ProcessInfo.Item1))
                     throw new InvalidDataException("Invalid process name!");
 
                 var adjustedCaptureData = GetAdjustedCaptureData();
@@ -340,7 +334,7 @@ namespace CapFrameX.Data
 
                 if (_appConfiguration.UseRunHistory)
                 {
-                    await Task.Factory.StartNew(() => _overlayService.AddRunToHistory(sessionRun, _currentCaptureOptions.ProcessName, _currentCaptureOptions.RecordDirectory));
+                    await Task.Factory.StartNew(() => _overlayService.AddRunToHistory(sessionRun, _currentCaptureOptions.ProcessInfo.Item1, _currentCaptureOptions.RecordDirectory));
                 }
 
                 // if aggregation mode is active and "Save aggregated result only" is checked, don't save single history items
@@ -349,10 +343,10 @@ namespace CapFrameX.Data
 
                 if (_currentCaptureOptions.CaptureFileMode == Enum.GetName(typeof(ECaptureFileMode), ECaptureFileMode.JsonCsv))
                 {
-                    await _recordManager.SavePresentmonRawToFile(normalizedAdjustedCaptureData, _currentCaptureOptions.ProcessName, _currentCaptureOptions.RecordDirectory);
+                    await _recordManager.SavePresentmonRawToFile(normalizedAdjustedCaptureData, _currentCaptureOptions.ProcessInfo.Item1, _currentCaptureOptions.RecordDirectory);
                 }
 
-                bool checkSave = await _recordManager.SaveSessionRunsToFile(new ISessionRun[] { sessionRun }, _currentCaptureOptions.ProcessName, _currentCaptureOptions.RecordDirectory);
+                bool checkSave = await _recordManager.SaveSessionRunsToFile(new ISessionRun[] { sessionRun }, _currentCaptureOptions.ProcessInfo.Item1, _currentCaptureOptions.RecordDirectory);
 
                 if (!checkSave)
                     AddLoggerEntry("Error while saving capture data.");
@@ -368,12 +362,12 @@ namespace CapFrameX.Data
             }
         }
 
-        private List<string> GetAdjustedCaptureData()
+        private List<string[]> GetAdjustedCaptureData()
         {
             if (!_captureData.Any())
             {
                 AddLoggerEntry($"No available capture Data...");
-                return Enumerable.Empty<string>().ToList();
+                return Enumerable.Empty<string[]>().ToList();
             }
 
             var startTimeWithOffset = GetStartTimeFromDataLine(_captureData.First());
@@ -419,19 +413,19 @@ namespace CapFrameX.Data
             var filteredArchive = _captureDataArchive.Where(line =>
             {
                 var currentProcess = GetProcessNameFromDataLine(line);
-                return currentProcess == _currentCaptureOptions.ProcessName && uniqueProcessIdDict[currentProcess].Count() == 1;
+                return currentProcess == _currentCaptureOptions.ProcessInfo.Item1 && uniqueProcessIdDict[currentProcess].Count() == 1;
             }).ToList();
             var filteredCaptureData = _captureData.Where(line =>
             {
                 var currentProcess = GetProcessNameFromDataLine(line);
-                return currentProcess == _currentCaptureOptions.ProcessName && uniqueProcessIdDict[currentProcess].Count() == 1;
+                return currentProcess == _currentCaptureOptions.ProcessInfo.Item1 && uniqueProcessIdDict[currentProcess].Count() == 1;
             }).ToList();
 
 
             if (!filteredArchive.Any())
             {
                 AddLoggerEntry($"Empty archive. No file will be written.");
-                return Enumerable.Empty<string>().ToList();
+                return Enumerable.Empty<string[]>().ToList();
             }
             else
             {
@@ -454,7 +448,7 @@ namespace CapFrameX.Data
                 _logger.LogWarning("Something went wrong getting union capture data. We cant use the data from archive(First CaptureDataTime was {firstCaptureTime}, last ArchiveTime was {lastArchiveTime})", GetStartTimeFromDataLine(filteredCaptureData.First()), lastArchiveTime);
                 AddLoggerEntry("Comparison with archive data is invalid.");
 
-                return Enumerable.Empty<string>().ToList();
+                return Enumerable.Empty<string[]>().ToList();
             }
 
             var unionCaptureData = filteredArchive.Concat(filteredCaptureData.Skip(distinctIndex)).ToList();
@@ -464,7 +458,7 @@ namespace CapFrameX.Data
             AddLoggerEntry($"Length captured data + archive in sec: " +
                 $"{ Math.Round(unionCaptureDataEndTime - unionCaptureDataStartTime, 2)}");
 
-            var captureInterval = new List<string>();
+            var captureInterval = new List<string[]>();
 
             double startTime = 0;
 
@@ -483,7 +477,7 @@ namespace CapFrameX.Data
             if (startTime == 0)
             {
                 AddLoggerEntry($"Start time is invalid. Error while evaluating QPCTime start.");
-                return Enumerable.Empty<string>().ToList();
+                return Enumerable.Empty<string[]>().ToList();
             }
 
             if (!autoTermination)
@@ -500,7 +494,7 @@ namespace CapFrameX.Data
                 if (!captureInterval.Any())
                 {
                     AddLoggerEntry($"Empty capture interval. Error while evaluating start and end time.");
-                    return Enumerable.Empty<string>().ToList();
+                    return Enumerable.Empty<string[]>().ToList();
                 }
             }
             else
@@ -530,57 +524,42 @@ namespace CapFrameX.Data
             return captureInterval;
         }
 
-        private string GetProcessNameFromDataLine(string dataLine)
+        private string GetProcessNameFromDataLine(string[] lineSplit)
         {
-            if (string.IsNullOrWhiteSpace(dataLine))
-                return "EmptyProcessName";
-
-            int index = dataLine.IndexOf(".exe", StringComparison.OrdinalIgnoreCase);
-
-            return index > 0 ? dataLine.Substring(0, index) : "EmptyProcessName";
+            return lineSplit[0].Replace(".exe", "");
         }
 
-        private string GetProcessIdFromDataLine(string dataLine)
+        private string GetProcessIdFromDataLine(string[] lineSplit)
         {
-            if (string.IsNullOrWhiteSpace(dataLine))
-                return "EmptyProcessID";
-
-            var lineSplit = dataLine.Split(',');
             return lineSplit[1];
         }
 
-        private long GetQpcTimeFromDataLine(string dataLine)
+        private long GetQpcTimeFromDataLine(string[] lineSplit)
         {
-            if (string.IsNullOrWhiteSpace(dataLine))
-                return 0;
-
-            var lineSplit = dataLine.Split(',');
-            var qpcTime = lineSplit[17];
-
-            return Convert.ToInt64(qpcTime, CultureInfo.InvariantCulture);
+            return Convert.ToInt64(lineSplit[17], CultureInfo.InvariantCulture);
         }
 
-        private IEnumerable<string> NormalizeTimes(IEnumerable<string> recordLines)
+        private IEnumerable<string> NormalizeTimes(IEnumerable<string[]> recordLines)
         {
-            string firstDataLine = recordLines.First();
+            string[] firstLineSplit = recordLines.First();
             var lines = new List<string>();
             //start time
-            var timeStart = GetStartTimeFromDataLine(firstDataLine);
+            var timeStart = GetStartTimeFromDataLine(firstLineSplit);
 
             // normalize time
-            var currentLineSplit = firstDataLine.Split(',');
+            var currentLineSplit = firstLineSplit;
             currentLineSplit[11] = "0";
 
             lines.Add(string.Join(",", currentLineSplit));
 
-            foreach (var dataLine in recordLines.Skip(1))
+            foreach (var lineSplit in recordLines.Skip(1))
             {
-                double currentStartTime = GetStartTimeFromDataLine(dataLine);
+                double currentStartTime = GetStartTimeFromDataLine(lineSplit);
 
                 // normalize time
                 double normalizedTime = currentStartTime - timeStart;
 
-                currentLineSplit = dataLine.Split(',');
+                currentLineSplit = lineSplit;
                 currentLineSplit[11] = normalizedTime.ToString(CultureInfo.InvariantCulture);
 
                 lines.Add(string.Join(",", currentLineSplit));
@@ -588,15 +567,12 @@ namespace CapFrameX.Data
             return lines;
         }
 
-        private double GetStartTimeFromDataLine(string dataLine)
+        private double GetStartTimeFromDataLine(string[] lineSplit)
         {
-            if (string.IsNullOrWhiteSpace(dataLine))
+            if (lineSplit.Length < 10)
                 return 0;
 
-            var lineSplit = dataLine.Split(',');
-            var startTime = lineSplit[11];
-
-            return Convert.ToDouble(startTime, CultureInfo.InvariantCulture);
+            return Convert.ToDouble(lineSplit[11], CultureInfo.InvariantCulture);
         }
 
         private void AddLoggerEntry(string entry)
@@ -610,7 +586,7 @@ namespace CapFrameX.Data
 
     public class CaptureOptions
     {
-        public string ProcessName;
+        public (string, int) ProcessInfo;
         public double CaptureTime;
         public string CaptureFileMode;
         public string RecordDirectory;

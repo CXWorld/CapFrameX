@@ -20,7 +20,6 @@ namespace OpenHardwareMonitor.Hardware
 {
     internal static class Ring0
     {
-
         private static KernelDriver driver;
         private static string fileName;
         private static Mutex isaBusMutex;
@@ -55,7 +54,6 @@ namespace OpenHardwareMonitor.Hardware
 
         private static string GetTempFileName()
         {
-
             // try to create one in the application folder
             string location = GetAssembly().Location;
             if (!string.IsNullOrEmpty(location))

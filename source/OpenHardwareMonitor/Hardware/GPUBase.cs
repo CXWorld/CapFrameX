@@ -11,6 +11,8 @@ namespace OpenHardwareMonitor.Hardware
     {
         protected const float SCALE = 1024 * 1024 * 1024;
 
+        protected readonly object _performanceCounterLock = new object();
+
         protected Sensor memoryUsageDedicated;
         protected Sensor memoryUsageShared;
         protected Sensor processMemoryUsageDedicated;
@@ -78,38 +80,40 @@ namespace OpenHardwareMonitor.Hardware
                     .DistinctUntilChanged()
                     .Subscribe(id =>
                     {
-                        if (id == 0)
+                        lock (_performanceCounterLock)
                         {
-                            dedicatedVramUsageProcessPerformCounter = null;
-                            sharedVramUsageProcessPerformCounter = null;
-                            return;
-                        }
-
-                        string idString = $"pid_{id}_luid";
-
-                        var instances = category.GetInstanceNames();
-                        if (instances != null && instances.Any())
-                        {
-                            var pid = instances.FirstOrDefault(instance => instance.Contains(idString));
-
-                            if (pid != null)
+                            if (id == 0)
                             {
-                                dedicatedVramUsageProcessPerformCounter = new PerformanceCounter("GPU Process Memory", "Dedicated Usage", pid);
-                                sharedVramUsageProcessPerformCounter = new PerformanceCounter("GPU Process Memory", "Shared Usage", pid);
+                                dedicatedVramUsageProcessPerformCounter = null;
+                                sharedVramUsageProcessPerformCounter = null;
+                                return;
+                            }
+
+                            string idString = $"pid_{id}_luid";
+
+                            var instances = category.GetInstanceNames();
+                            if (instances != null && instances.Any())
+                            {
+                                var pid = instances.FirstOrDefault(instance => instance.Contains(idString));
+
+                                if (pid != null)
+                                {
+                                    dedicatedVramUsageProcessPerformCounter = new PerformanceCounter("GPU Process Memory", "Dedicated Usage", pid);
+                                    sharedVramUsageProcessPerformCounter = new PerformanceCounter("GPU Process Memory", "Shared Usage", pid);
+                                }
+                                else
+                                {
+                                    dedicatedVramUsageProcessPerformCounter = null;
+                                    sharedVramUsageProcessPerformCounter = null;
+                                }
                             }
                             else
                             {
                                 dedicatedVramUsageProcessPerformCounter = null;
                                 sharedVramUsageProcessPerformCounter = null;
+                                Log.Logger.Error("Error while creating GPU process memory performance counter. No instances found.");
                             }
                         }
-                        else
-                        {
-                            dedicatedVramUsageProcessPerformCounter = null;
-                            sharedVramUsageProcessPerformCounter = null;
-                            Log.Logger.Error("Error while creating GPU process memory performance counter. No instances found.");
-                        }
-
                     });
                 }
             }

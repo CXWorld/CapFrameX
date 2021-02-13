@@ -26,7 +26,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
-using System.Windows.Threading;
 
 namespace CapFrameX.ViewModel
 {
@@ -51,7 +50,6 @@ namespace CapFrameX.ViewModel
         private string _aggregationButtonText = "Evaluate" + Environment.NewLine + "multiple entries";
         private string _sensorStatisticsText = "Sensor statistics for selected record";
         private bool _selectedRecordChanged;
-        private bool _useAverageMethod;
 
         public IFileRecordInfo RecordInfo { get; private set; }
 
