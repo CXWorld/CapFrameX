@@ -9,11 +9,13 @@ namespace CapFrameX.View.Themes
         public Color MaterialDesignBackground { get; } = (Color)ColorConverter.ConvertFromString("#FFFFFFFF");
         // #f7f6f2" (Taxxor)
         public Color MaterialDesignPaper { get; } = (Color)ColorConverter.ConvertFromString("#fafbfc");
+        // Standard color
         // original: "#FFFAFAFA"
         public Color MaterialDesignCardBackground { get; } = (Color)ColorConverter.ConvertFromString("#fafbfc");
         // original #FFFFFFFF
         public Color MaterialDesignToolBarBackground { get; } = (Color)ColorConverter.ConvertFromString("#FFF5F5F5");
         public Color MaterialDesignBody { get; } = (Color)ColorConverter.ConvertFromString("#DD000000");
+        // Text color
         public Color MaterialDesignBodyLight { get; } = (Color)ColorConverter.ConvertFromString("#89000000");
         public Color MaterialDesignColumnHeader { get; } = (Color)ColorConverter.ConvertFromString("#BC000000");
         public Color MaterialDesignCheckBoxOff { get; } = (Color)ColorConverter.ConvertFromString("#89000000");
@@ -31,6 +33,7 @@ namespace CapFrameX.View.Themes
         public Color MaterialDesignSnackbarMouseOver { get; } = (Color)ColorConverter.ConvertFromString("#FF464642");
         public Color MaterialDesignSnackbarRipple { get; } = (Color)ColorConverter.ConvertFromString("#FFB6B6B6");
         public Color MaterialDesignTextFieldBoxBackground { get; } = (Color)ColorConverter.ConvertFromString("#0F000000");
+        // Secondary standard color
         public Color MaterialDesignTextFieldBoxHoverBackground { get; } = (Color)ColorConverter.ConvertFromString("#14000000");
         public Color MaterialDesignTextFieldBoxDisabledBackground { get; } = (Color)ColorConverter.ConvertFromString("#08000000");
         public Color MaterialDesignTextAreaBorder { get; } = (Color)ColorConverter.ConvertFromString("#BC000000");

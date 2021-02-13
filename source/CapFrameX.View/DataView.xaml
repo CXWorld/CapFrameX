@@ -43,7 +43,7 @@
 
             <Style TargetType="{x:Type TabItem}" BasedOn="{StaticResource MaterialDesignNavigationRailTabItem}">
                 <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
-                <Setter Property="Background" Value="{DynamicResource PrimaryHueMidBrush}"/>
+                <Setter Property="Background" Value="{DynamicResource MaterialDesignToolBackground}"/>
                 <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBody}"/>
                 <Setter Property="Padding" Value="0"/>
                 <Setter Property="Height" Value="25" />
@@ -243,10 +243,10 @@
                     </Grid>
                     <!--FPS thresholds and stuttering analysis-->
                     <Grid Grid.Column="2" Margin="5 0 0 0" >
-                        <TabControl Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
-                            <TabItem Width="105">
+                        <TabControl Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" FocusVisualStyle="{x:Null}" >
+                            <TabItem Width="110">
                                 <TabItem.Header>
-                                    <TextBlock Text="Stuttering analysis" FontSize="12" />
+                                    <Label FontSize="12">Stuttering analysis</Label>
                                 </TabItem.Header>
                                 <Grid>
                                     <lvc:PieChart Margin="10 5 200 5" MaxHeight="250" Hoverable="False" Series="{Binding StutteringStatisticCollection}" 
@@ -296,7 +296,7 @@
                             </TabItem>
                             <TabItem Width="105">
                                 <TabItem.Header>
-                                    <TextBlock Text="FPS thresholds" FontSize="12" />
+                                    <Label FontSize="12">FPS thresholds</Label>
                                 </TabItem.Header>
                                 <Grid Margin="0 5 0 0">
                                     <RadioButton Panel.ZIndex="1" HorizontalAlignment="Left" VerticalAlignment="Top"
@@ -363,7 +363,7 @@
                             </TabItem>
                             <TabItem Width="105" IsEnabled="{Binding AdditionalGraphsEnabled}">
                                 <TabItem.Header>
-                                    <TextBlock Text="Sensor statistics" FontSize="12" />
+                                    <Label FontSize="12">Sensor statistics</Label>
                                 </TabItem.Header>
                                 <DataGrid FontSize="11" ItemsSource="{Binding SensorReportItems}" ColumnHeaderHeight="25" SelectionUnit="FullRow"
 										CanUserSortColumns="False" CanUserAddRows="False" AutoGenerateColumns="False"
