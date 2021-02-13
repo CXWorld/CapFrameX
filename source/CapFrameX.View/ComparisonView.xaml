@@ -112,7 +112,7 @@
                             <Grid>
                                 <Grid Margin="0 0 50 0" Panel.ZIndex="1" HorizontalAlignment="Left" VerticalAlignment="Bottom">
                                     <ComboBox Grid.Column="5" Margin="45 0 0 15" HorizontalAlignment="Left" VerticalAlignment="Bottom" materialDesign:HintAssist.Hint="Values"
-					                    materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Width="80" Height="40">
+					                    materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Width="80" Height="40" materialDesign:ComboBoxAssist.ClassicMode="True">
                                         <ComboBoxItem IsSelected="True">Frametimes</ComboBoxItem>
                                         <ComboBoxItem>FPS</ComboBoxItem>
                                         <ComboBox.Text>
@@ -359,7 +359,7 @@
 
             <StackPanel Grid.Column="4" VerticalAlignment="Center" Margin="15 0 0 0" Orientation="Horizontal"
 						Visibility="{Binding IsBarChartTabActive, Converter={StaticResource TrueToVisibleConverter}}">
-                <ComboBox Width="80" Height="40" Margin="0 0 0 10" materialDesign:HintAssist.Hint="Sort metric" materialDesign:HintAssist.IsFloating="True"
+                <ComboBox Width="80" Height="40" Margin="0 0 0 10" materialDesign:HintAssist.Hint="Sort metric" materialDesign:HintAssist.IsFloating="True" materialDesign:ComboBoxAssist.ClassicMode="True"
                           ItemsSource="{Binding SortMetricItemsSource}" SelectedItem="{Binding SelectedSortMetric}" Foreground="{DynamicResource MaterialDesignBody}"> 
                 </ComboBox>
                 <ToggleButton Margin="5 0 0 0" Foreground="{DynamicResource MaterialDesignBody}" BorderThickness="1" Background="Transparent"

@@ -410,7 +410,7 @@
                     <ComboBox Grid.Row="1" Margin="10 0 20 0" VerticalAlignment="Center" HorizontalAlignment="Right"
 					              materialDesign:HintAssist.Hint="Evaluation"
 					              materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="200" Width="105"
-                                  ToolTipService.ShowDuration="25000"
+                                  ToolTipService.ShowDuration="25000" materialDesign:ComboBoxAssist.ClassicMode="True"
 					              MouseLeave="EvaluationComboBox_MouseLeave" FontSize="14"
 					              ItemsSource="{Binding Path=EvaluationMethodItemsSource}"
                                   Foreground="{DynamicResource MaterialDesignBody}">
