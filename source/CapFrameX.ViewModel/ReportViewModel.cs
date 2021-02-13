@@ -57,7 +57,10 @@ namespace CapFrameX.ViewModel
                 if (value)
                     AddAverageReportInfo(ReportInfoCollection);
                 else
-                    ReportInfoCollection.RemoveAt(ReportInfoCollection.Count - 1);
+                {
+                    if (ReportInfoCollection.Any())
+                        ReportInfoCollection.RemoveAt(ReportInfoCollection.Count - 1);
+                }
 
                 RaisePropertyChanged();
             }

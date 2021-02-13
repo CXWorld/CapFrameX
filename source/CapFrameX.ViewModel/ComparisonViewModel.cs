@@ -532,7 +532,7 @@ namespace CapFrameX.ViewModel
 
         public bool IsBarChartTabActive
         {
-            get { return SelectedChartItem?.Header.ToString() == "Bar charts"; }
+            get { return SelectedChartItem?.Header.ToString().Contains("Bar charts") ?? false; }
         }
 
         public ICommand RemoveAllComparisonsCommand { get; }
@@ -581,6 +581,7 @@ namespace CapFrameX.ViewModel
             SetRowSeries();
             SubscribeToSelectRecord();
             SubscribeToUpdateRecordInfos();
+            SubscribeToThemeChanged();
 
             stopwatch.Stop();
             _logger.LogInformation(this.GetType().Name + " {initializationTime}s initialization time", Math.Round(stopwatch.ElapsedMilliseconds * 1E-03, 1));
@@ -592,9 +593,10 @@ namespace CapFrameX.ViewModel
             ComparisonFrametimesModel = new PlotModel
             {
                 PlotMargins = new OxyThickness(40, 10, 10, 70),
-                PlotAreaBorderColor = OxyColor.FromArgb(64, 204, 204, 204),
-                LegendPosition = LegendPosition.TopCenter,
-                LegendOrientation = LegendOrientation.Horizontal
+                PlotAreaBorderColor = _appConfiguration.UseDarkMode ? OxyColor.FromArgb(100, 204, 204, 204) : OxyColor.FromArgb(50, 30, 30, 30),
+            LegendPosition = LegendPosition.TopCenter,
+                LegendOrientation = LegendOrientation.Horizontal,
+                TextColor = _appConfiguration.UseDarkMode ? OxyColors.White : OxyColors.Black
             };
 
             //Axes
@@ -607,9 +609,10 @@ namespace CapFrameX.ViewModel
                 AxisTitleDistance = 15,
                 MajorGridlineStyle = LineStyle.Solid,
                 MajorGridlineThickness = 1,
-                MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
-                MinorTickSize = 0,
+                MajorGridlineColor = _appConfiguration.UseDarkMode ? OxyColor.FromArgb(40, 204, 204, 204) : OxyColor.FromArgb(20, 30, 30, 30),
+            MinorTickSize = 0,
                 MajorTickSize = 0
+
             });
 
             //Y
@@ -621,7 +624,7 @@ namespace CapFrameX.ViewModel
                 AxisTitleDistance = 10,
                 MajorGridlineStyle = LineStyle.Solid,
                 MajorGridlineThickness = 1,
-                MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
+                MajorGridlineColor = _appConfiguration.UseDarkMode ? OxyColor.FromArgb(40, 204, 204, 204) : OxyColor.FromArgb(20, 30, 30, 30),
                 MinorTickSize = 0,
                 MajorTickSize = 0
             });
@@ -630,9 +633,10 @@ namespace CapFrameX.ViewModel
             ComparisonFpsModel = new PlotModel
             {
                 PlotMargins = new OxyThickness(40, 10, 10, 70),
-                PlotAreaBorderColor = OxyColor.FromArgb(64, 204, 204, 204),
+                PlotAreaBorderColor = _appConfiguration.UseDarkMode ? OxyColor.FromArgb(40, 204, 204, 204) : OxyColor.FromArgb(20, 30, 30, 30),
                 LegendPosition = LegendPosition.TopCenter,
-                LegendOrientation = LegendOrientation.Horizontal
+                LegendOrientation = LegendOrientation.Horizontal,
+                TextColor = _appConfiguration.UseDarkMode ? OxyColors.White : OxyColors.Black
             };
 
             //Axes
@@ -645,7 +649,7 @@ namespace CapFrameX.ViewModel
                 AxisTitleDistance = 15,
                 MajorGridlineStyle = LineStyle.Solid,
                 MajorGridlineThickness = 1,
-                MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
+                MajorGridlineColor = _appConfiguration.UseDarkMode ? OxyColor.FromArgb(40, 204, 204, 204) : OxyColor.FromArgb(20, 30, 30, 30),
                 MinorTickSize = 0,
                 MajorTickSize = 0
             });
@@ -659,7 +663,7 @@ namespace CapFrameX.ViewModel
                 AxisTitleDistance = 10,
                 MajorGridlineStyle = LineStyle.Solid,
                 MajorGridlineThickness = 1,
-                MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
+                MajorGridlineColor = _appConfiguration.UseDarkMode ? OxyColor.FromArgb(40, 204, 204, 204) : OxyColor.FromArgb(20, 30, 30, 30),
                 MinorTickSize = 0,
                 MajorTickSize = 0
             });
@@ -697,8 +701,18 @@ namespace CapFrameX.ViewModel
                             });
         }
 
+        private void SubscribeToThemeChanged()
+        {
+            _eventAggregator.GetEvent<PubSubEvent<ViewMessages.ThemeChanged>>()
+                              .Subscribe(msg =>
+                              {                               
+                                      InitializePlotModels();
+                                      UpdateCharts();
+                              });
+        }
+
         private void OnChartItemChanged()
-            => ColorPickerVisibility = SelectedChartItem.Header.ToString() != "Bar charts";
+            => ColorPickerVisibility = !SelectedChartItem?.Header.ToString().Contains("Bar charts") ?? false;
 
         private void OnSortModeChanged()
             => SortComparisonItems();
@@ -885,7 +899,8 @@ namespace CapFrameX.ViewModel
                     {
                         for (int i = 0; i < ComparisonRecords.Count; i++)
                         {
-                            ComparisonFrametimesModel.Series[i].Title = labels[i].Context;
+                            if (!ComparisonRecords[i].IsHideModeSelected)
+                                ComparisonFrametimesModel.Series[i].Title = labels[i].Context;
                         }
                     }
 
@@ -893,7 +908,8 @@ namespace CapFrameX.ViewModel
                     {
                         for (int i = 0; i < ComparisonRecords.Count; i++)
                         {
-                            ComparisonFpsModel.Series[i].Title = labels[i].Context;
+                            if (!ComparisonRecords[i].IsHideModeSelected)
+                                ComparisonFpsModel.Series[i].Title = labels[i].Context;
                         }
                     }
                 }
@@ -1139,7 +1155,7 @@ namespace CapFrameX.ViewModel
             ComparisonFpsModel.Series.Clear();
             ComparisonLShapeCollection.Clear();
 
-            if (SelectedChartItem.Header.ToString() == "Bar charts")
+            if (SelectedChartItem?.Header.ToString().Contains("Bar charts") ?? false)
                 SetColumnChart();
             else
             {
@@ -1214,6 +1230,7 @@ namespace CapFrameX.ViewModel
 
             var chartTitle = string.Empty;
 
+
             var color = wrappedComparisonInfo.FrametimeGraphColor.Value;
             var frametimeSeries = new Statistics.PlotBuilder.LineSeries()
             {
@@ -1222,7 +1239,8 @@ namespace CapFrameX.ViewModel
                 StrokeThickness = 1,
                 LegendStrokeThickness = 4,
                 Color = wrappedComparisonInfo.IsHideModeSelected ?
-                    OxyColors.Transparent : OxyColor.FromRgb(color.R, color.G, color.B)
+                    OxyColors.Transparent : OxyColor.FromRgb(color.R, color.G, color.B),
+
             };
 
             frametimeSeries.Points.AddRange(frametimePoints.Select(pnt => new DataPoint(pnt.X, pnt.Y)));

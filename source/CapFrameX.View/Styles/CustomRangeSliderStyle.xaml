@@ -9,13 +9,13 @@
     </ResourceDictionary.MergedDictionaries>
 
     <Style x:Key="MaterialDesign.RangeSlider.Thumb"
-           BasedOn="{StaticResource MahApps.Metro.Styles.Slider.Thumb}"
+           BasedOn="{StaticResource MaterialDesignThumb}"
            TargetType="Thumb">
         <Setter Property="Template" Value="{DynamicResource MaterialDesignSliderThumb}" />
     </Style>
 
     <Style x:Key="MaterialDesign.RangeSlider.HorizontalMiddleThumb"
-           BasedOn="{StaticResource MahApps.Metro.Styles.RangeSlider.HorizontalMiddleThumb}"
+           BasedOn="{StaticResource MahApps.Styles.MetroThumb.RangeSlider.Horizontal.Middle}"
            TargetType="{x:Type controls:MetroThumb}">
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="BorderThickness" Value="0" />
@@ -47,7 +47,7 @@
     </Style>
 
     <Style x:Key="MaterialDesign.RangeSlider.HorizontalTrack"
-           BasedOn="{StaticResource MahApps.Metro.Styles.Slider.HorizontalTrack}"
+           BasedOn="{StaticResource MahApps.Styles.RepeatButton.Slider.HorizontalTrack}"
            TargetType="{x:Type RepeatButton}">
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="Focusable" Value="False" />

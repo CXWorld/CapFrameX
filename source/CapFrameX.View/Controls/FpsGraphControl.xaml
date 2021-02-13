@@ -8,20 +8,13 @@
 			 xmlns:mvvm="clr-namespace:CapFrameX.MVVM.Converter;assembly=CapFrameX.MVVM"
 			 xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"	
              xmlns:local="clr-namespace:CapFrameX.View.Controls"
+             xmlns:oxy="http://oxyplot.org/wpf"
 			 xmlns:controls="clr-namespace:CapFrameX.View.Controls"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
 	<UserControl.Resources>
-		<ResourceDictionary>
-			<ResourceDictionary.MergedDictionaries>
-				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Button.xaml" />
-				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Shadows.xaml" />
-				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ToggleButton.xaml" />
-				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.DataGrid.xaml" />
-				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Slider.xaml" />
-				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.GridSplitter.xaml" />
-			</ResourceDictionary.MergedDictionaries>
-			<mvvm:ZoomingModeConverter x:Key="ZoomingModeConverter"/>
+        <ResourceDictionary>
+            <mvvm:ZoomingModeConverter x:Key="ZoomingModeConverter"/>
 			<mvvm:NegateBoolConverter x:Key="NegateBoolConverter"/>
 			<mvvm:BoolToVisibilityConverter x:Key="TrueToCollapsedConverter" TrueValue="Collapsed" FalseValue="Visible"/>
 			<mvvm:BoolToVisibilityConverter x:Key="FalseToCollapsedConverter" TrueValue="Visible" FalseValue="Collapsed"/>
@@ -34,9 +27,18 @@
 		<Grid.RowDefinitions>
 			<RowDefinition Height="1*"></RowDefinition>
 		</Grid.RowDefinitions>
-		<Grid Grid.Row="0" Background="#F0F0F0">
-			<controls:PlotViewCustomZoom Margin="10 0 0 0" Background="#F0F0F0" x:Name="FpsPlotView" Model="{Binding FpsModel}" Tag="{Binding ElementName=FpsGraphControlName, Path=DataContext}"
+        <Grid Grid.Row="0">
+            <controls:PlotViewCustomZoom  Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" x:Name="FpsPlotView" Model="{Binding FpsModel}" Tag="{Binding ElementName=FpsGraphControlName, Path=DataContext}"
 						  MouseDoubleClick="ResetChart_MouseDoubleClick">
+                <controls:PlotViewCustomZoom.DefaultTrackerTemplate>
+                    <ControlTemplate>
+                        <oxy:TrackerControl Position="{Binding Position}" Background="{DynamicResource MaterialDesignCardBackground}">
+                            <oxy:TrackerControl.Content>
+                                <TextBlock Text="{Binding}" Margin="5" />
+                            </oxy:TrackerControl.Content>
+                        </oxy:TrackerControl>
+                    </ControlTemplate>
+                </controls:PlotViewCustomZoom.DefaultTrackerTemplate>
                 <controls:PlotViewCustomZoom.ContextMenu>
 					<ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
 						<MenuItem Header="Copy fps values (f)" Command="{Binding CopyFpsValuesCommand}"/>

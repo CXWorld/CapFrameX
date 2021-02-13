@@ -6,8 +6,6 @@
 			 xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
 			 xmlns:prism="http://prismlibrary.com/"
              xmlns:mvvm="clr-namespace:CapFrameX.MVVM.Converter;assembly=CapFrameX.MVVM"
-			 xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
-             xmlns:local="clr-namespace:CapFrameX.View"
 			 xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
              mc:Ignorable="d"
 			 x:Name="ColorbarViewName"
@@ -15,13 +13,6 @@
 			 prism:ViewModelLocator.AutoWireViewModel="True">
     <UserControl.Resources>
         <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Button.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Shadows.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ToggleButton.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.DataGrid.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Slider.xaml" />
-            </ResourceDictionary.MergedDictionaries>
             <mvvm:BoolToVisibilityConverter x:Key="FalseToCollapsedConverter" TrueValue="Visible" FalseValue="Collapsed"/>
 			<mvvm:BoolToVisibilityConverter x:Key="FalseToVisibleConverter" TrueValue="Hidden" FalseValue="Visible"/>
 			<mvvm:BoolToVisibilityConverter x:Key="TrueToVisibleConverter" TrueValue="Visible" FalseValue="Collapsed"/>
@@ -29,7 +20,7 @@
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid>
-        <materialDesign:ColorZone Mode="PrimaryMid">
+        <materialDesign:ColorZone Mode="PrimaryMid" Foreground="White">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="3*"/>
@@ -82,17 +73,17 @@
 						ToolTip="Take a screenshot"
 						materialDesign:RippleAssist.Feedback="#DD000000"
 						Width="32" Height="32" Click="TakeScreenShotButton_Click">
-                    <materialDesign:PackIcon Kind="PhotoLibrary"/>
+                    <materialDesign:PackIcon Kind="PhotoLibrary" Foreground="White"/>
                 </Button>
 
-				<Button Grid.Column="1" Style="{StaticResource MaterialDesignFloatingActionMiniButton}"
+                <Button Grid.Column="1" Style="{StaticResource MaterialDesignFloatingActionMiniButton}"
                             Margin="0 0 210 0"
 						    ToolTip="Login"
                             HorizontalAlignment="Right"
 						    materialDesign:RippleAssist.Feedback="#DD000000"
 						    Width="32" Height="32" Click="Login_Click"
 							Visibility="{Binding Path=DataContext.IsLoggedIn, ElementName=ColorbarViewName, Converter={StaticResource FalseToVisibleConverter}}">
-					<materialDesign:PackIcon Kind="Login"/>
+                    <materialDesign:PackIcon Kind="Login" Foreground="GreenYellow"/>
 				</Button>
 				<Button Grid.Column="1" Style="{StaticResource MaterialDesignFloatingActionMiniButton}"
                             Margin="0 0 210 0"
@@ -101,16 +92,18 @@
 						    materialDesign:RippleAssist.Feedback="#DD000000"
 						    Width="32" Height="32" Click="Logout_Click"
 							Visibility="{Binding Path=DataContext.IsLoggedIn, ElementName=ColorbarViewName, Converter={StaticResource TrueToVisibleConverter}}">
-					<materialDesign:PackIcon Kind="Logout"/>
+                    <materialDesign:PackIcon Kind="Logout" Foreground="DarkRed"/>
 				</Button>
 
 				<TextBlock Grid.Column="1" Margin="0 0 70 2" HorizontalAlignment="Right" VerticalAlignment="Center">           
 			        <Hyperlink NavigateUri="https://capframex.com/" RequestNavigate="Hyperlink_RequestNavigate" TextDecorations="None">
-				        <TextBlock FontSize="16" Foreground="White" Text="CapFrameX.com"/>
+				        <TextBlock FontSize="16" Text="CapFrameX.com" Foreground="White"/>
 			        </Hyperlink>	
 		        </TextBlock>
 
-                <materialDesign:PopupBox Grid.Column="1" DataContext="{Binding Path=DataContext, ElementName=ColorbarViewName}" materialDesign:Closed="PopupBox_Closed" RequestBringIntoView="PopupBox_RequestBringIntoView" Margin="16,0,16,0" StaysOpen="True" PlacementMode="BottomAndAlignRightEdges" HorizontalAlignment="Right">
+                <materialDesign:PopupBox Grid.Column="1" DataContext="{Binding Path=DataContext, ElementName=ColorbarViewName}" 
+                                         materialDesign:Closed="PopupBox_Closed" RequestBringIntoView="PopupBox_RequestBringIntoView" 
+                                         Margin="16,0,16,0" StaysOpen="True" PlacementMode="BottomAndAlignRightEdges" HorizontalAlignment="Right">
                     <DockPanel>
                         <StackPanel Margin="10" DockPanel.Dock="Top" Orientation="Horizontal">
                             <RadioButton Margin="18 0 0 0" Style="{StaticResource MaterialDesignTabRadioButton}"
@@ -170,10 +163,10 @@
                                                 </Binding>
                                             </ComboBox.Text>
                                         </ComboBox>
-                                        <!--<StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="15 5 0 5" Grid.Row="1" Grid.Column="0">
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="15 5 0 5" Grid.Row="1" Grid.Column="1">
                                             <TextBlock Text="Dark mode"/>
-                                            <ToggleButton Margin="15 0 0 0" Click="MenuDarkModeButton_Click"/>
-                                        </StackPanel>-->
+                                            <ToggleButton Margin="15 0 0 0" Click="MenuDarkModeButton_Click" IsChecked="{Binding IsDarkModeToggleChecked}"/>
+                                        </StackPanel>
                                         <StackPanel Grid.Row="1" Grid.Column="0" Margin="20 5 0 5" Orientation="Horizontal"
                                             ToolTip="Select resolution for graph export(via context menu)">
                                             <TextBlock Margin="0 0 10 0" VerticalAlignment="Center" HorizontalAlignment="Center"> Graph export res.</TextBlock>

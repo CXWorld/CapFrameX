@@ -108,6 +108,11 @@ namespace CapFrameX.Configuration
             set => Set(value);
         }
 
+        public bool UseDarkMode
+        {
+            get => Get<bool>(false);
+            set => Set(value);
+        }
 
         // Record List Settings
         public string RecordingListSortMemberPath
@@ -462,17 +467,17 @@ namespace CapFrameX.Configuration
             set => Set(value);
         }
 
+        public string SensorReportEvaluationMethod
+        {
+            get => Get<string>("Aggregate");
+            set => Set(value);
+        }
+
 
         // Report Settings
         public bool ReportShowAverageRow
         {
             get => Get<bool>(false);
-            set => Set(value);
-        }
-
-        public string SensorReportEvaluationMethod
-        {
-            get => Get<string>("Aggregate");
             set => Set(value);
         }
 

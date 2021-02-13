@@ -3,15 +3,13 @@ using CapFrameX.Statistics.NetStandard;
 using CapFrameX.Statistics.NetStandard.Contracts;
 using CapFrameX.Statistics.PlotBuilder.Contracts;
 using OxyPlot;
-using OxyPlot.Series;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace CapFrameX.Statistics.PlotBuilder
 {
-	public class FrametimePlotBuilder : PlotBuilder
+    public class FrametimePlotBuilder : PlotBuilder
 	{
 		public FrametimePlotBuilder(IFrametimeStatisticProviderOptions options, IStatisticProvider frametimeStatisticProvider) : base(options, frametimeStatisticProvider) { }
 

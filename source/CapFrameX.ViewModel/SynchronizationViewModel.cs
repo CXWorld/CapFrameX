@@ -331,6 +331,12 @@ namespace CapFrameX.ViewModel
                                     }
                                 }
                             });
+
+            _eventAggregator.GetEvent<PubSubEvent<ViewMessages.ThemeChanged>>()
+                  .Subscribe(msg =>
+                  {
+                      UpdateCharts();
+                  });
         }
 
         private void OnCopyUntilDisplayedTimesValues()
@@ -410,18 +416,20 @@ namespace CapFrameX.ViewModel
             var yMin = Math.Min(frametimes.Min(), displaytimes.Min());
             var yMax = Math.Max(frametimes.Max(), displaytimes.Max());
 
-            var frametimeSeries = new OxyPlot.Series.LineSeries
+            var frametimeSeries = new Statistics.PlotBuilder.LineSeries
             {
                 Title = "Frametimes",
                 StrokeThickness = 1,
+                LegendStrokeThickness = 4,
                 Color = Constants.FrametimeStroke
             };
 
-            var untilDisplayedTimesSeries = new OxyPlot.Series.LineSeries
+            var untilDisplayedTimesSeries = new Statistics.PlotBuilder.LineSeries
             {
                 Title = "Until displayed times",
                 StrokeThickness = 1,
-                Color = Constants.FrametimeMovingAverageStroke
+                LegendStrokeThickness = 4,
+                Color = OxyColor.FromArgb(150, 241, 125, 32)
             };
 
             frametimeSeries.Points.AddRange(frametimes.Select((x, i) => new DataPoint(i, x)));
@@ -431,10 +439,12 @@ namespace CapFrameX.ViewModel
             {
                 var tmp = new PlotModel
                 {
-                    PlotMargins = new OxyThickness(40, 10, 0, 40),
-                    PlotAreaBorderColor = OxyColor.FromArgb(64, 204, 204, 204),
+                    PlotMargins = new OxyThickness(40, 10, 40, 40),
+                    PlotAreaBorderColor = _appConfiguration.UseDarkMode ? OxyColor.FromArgb(100, 204, 204, 204) : OxyColor.FromArgb(50, 30, 30, 30),
                     LegendPosition = LegendPosition.TopCenter,
-                    LegendOrientation = LegendOrientation.Horizontal
+                    LegendOrientation = LegendOrientation.Horizontal,
+                    TextColor = _appConfiguration.UseDarkMode ? OxyColors.White : OxyColors.Black
+
                 };
 
                 tmp.Series.Add(frametimeSeries);
@@ -451,7 +461,7 @@ namespace CapFrameX.ViewModel
                     Maximum = frametimes.Count,
                     MajorGridlineStyle = LineStyle.Solid,
                     MajorGridlineThickness = 1,
-                    MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
+                    MajorGridlineColor = _appConfiguration.UseDarkMode ? OxyColor.FromArgb(40, 204, 204, 204) : OxyColor.FromArgb(20, 30, 30, 30),
                     MinorTickSize = 0,
                     MajorTickSize = 0
                 });
@@ -466,7 +476,7 @@ namespace CapFrameX.ViewModel
                     Maximum = yMax + (yMax - yMin) / 6,
                     MajorGridlineStyle = LineStyle.Solid,
                     MajorGridlineThickness = 1,
-                    MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
+                    MajorGridlineColor = _appConfiguration.UseDarkMode ? OxyColor.FromArgb(40, 204, 204, 204) : OxyColor.FromArgb(20, 30, 30, 30),
                     MinorTickSize = 0,
                     MajorTickSize = 0
                 });
@@ -622,7 +632,7 @@ namespace CapFrameX.ViewModel
                         Title = "Synced frames",
                         Values = new ChartValues<int>(){ appMissed.Count(flag => flag == false) },
                         DataLabels = true,
-                        Foreground = Brushes.Black,
+                        StrokeThickness = 0,
                         LabelPosition = PieLabelPosition.InsideSlice,
                         LabelPoint = PieChartPointLabel,
                         FontSize = 12
@@ -632,7 +642,7 @@ namespace CapFrameX.ViewModel
                         Title = "Dropped frames",
                         Values = new ChartValues<int>(){ appMissed.Count(flag => flag == true) },
                         DataLabels = true,
-                        Foreground = Brushes.Black,
+                        StrokeThickness = 0,
                         LabelPosition = PieLabelPosition.InsideSlice,
                         LabelPoint = PieChartPointLabel,
                         FontSize = 12
@@ -661,12 +671,13 @@ namespace CapFrameX.ViewModel
                 upperBoundInputlagtimes.IsNullOrEmpty() ||
                 lowerBoundInputlagtimes.IsNullOrEmpty())
             {
+
                 InputLagModel = new PlotModel
                 {
                     PlotMargins = new OxyThickness(40, 10, 0, 40),
-                    PlotAreaBorderColor = OxyColor.FromArgb(64, 204, 204, 204),
+                    PlotAreaBorderColor = _appConfiguration.UseDarkMode ? OxyColor.FromArgb(100, 204, 204, 204) : OxyColor.FromArgb(50, 30, 30, 30),
                     LegendPosition = LegendPosition.TopCenter,
-                    LegendOrientation = LegendOrientation.Horizontal
+                    LegendOrientation = LegendOrientation.Horizontal,
                 };
                 return;
             }
@@ -718,10 +729,11 @@ namespace CapFrameX.ViewModel
             {
                 var tmp = new PlotModel
                 {
-                    PlotMargins = new OxyThickness(40, 10, 0, 40),
+                    PlotMargins = new OxyThickness(40, 10, 40, 40),
                     PlotAreaBorderColor = OxyColor.FromArgb(64, 204, 204, 204),
                     LegendPosition = LegendPosition.TopCenter,
-                    LegendOrientation = LegendOrientation.Horizontal
+                    LegendOrientation = LegendOrientation.Horizontal,
+                    TextColor = _appConfiguration.UseDarkMode ? OxyColors.White : OxyColors.Black
                 };
 
                 tmp.Series.Add(frametimeSeries);
@@ -740,7 +752,7 @@ namespace CapFrameX.ViewModel
                     Maximum = filteredFrametimes.Count(),
                     MajorGridlineStyle = LineStyle.Solid,
                     MajorGridlineThickness = 1,
-                    MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
+                    MajorGridlineColor = _appConfiguration.UseDarkMode ? OxyColor.FromArgb(40, 204, 204, 204) : OxyColor.FromArgb(20, 30, 30, 30),
                     MinorTickSize = 0,
                     MajorTickSize = 0
                 });
@@ -755,7 +767,7 @@ namespace CapFrameX.ViewModel
                     Maximum = yMax + (yMax - yMin) / 6,
                     MajorGridlineStyle = LineStyle.Solid,
                     MajorGridlineThickness = 1,
-                    MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
+                    MajorGridlineColor = _appConfiguration.UseDarkMode ? OxyColor.FromArgb(40, 204, 204, 204) : OxyColor.FromArgb(20, 30, 30, 30),
                     MinorTickSize = 0,
                     MajorTickSize = 0
                 });

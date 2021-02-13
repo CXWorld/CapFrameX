@@ -12,8 +12,8 @@ using System.Windows.Media.Imaging;
 
 namespace CapFrameX
 {
-    /// <summary>
-    /// Interaction logic for Shell.xaml
+    ///// <summary>
+    ///// Interaction logic for Shell.xaml
     /// </summary>
     public partial class Shell : Window, IShell
     {
