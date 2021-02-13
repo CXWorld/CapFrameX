@@ -30,7 +30,7 @@
             </Style>
             <Style TargetType="{x:Type TabItem}" BasedOn="{StaticResource MaterialDesignNavigationRailTabItem}">
                 <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
-                <Setter Property="Background" Value="{DynamicResource PrimaryHueMidBrush}"/>
+                <Setter Property="Background" Value="{DynamicResource MaterialDesignBody}"/>
                 <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBody}"/>
                 <Setter Property="Padding" Value="0"/>
                 <Setter Property="Height" Value="25" />
@@ -160,10 +160,10 @@
 						    Text="{Binding SyncRangePercentage}" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}"/>
                             <TextBlock Margin="5 0 0 0" VerticalAlignment="Center">(Range:</TextBlock>
                             <TextBox Height="25" Margin="5 0 0 0" TextAlignment="Center" Text="{Binding SyncRangeLower, UpdateSourceTrigger=PropertyChanged}" 
-                                     materialDesign:HintAssist.Hint="Upper" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}"/>
+                                     materialDesign:HintAssist.Hint="Lower" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}"/>
                             <TextBlock Margin="5 0 0 0" VerticalAlignment="Center">-</TextBlock>
                             <TextBox Height="25" Margin="5 0 0 0" TextAlignment="Center" Text="{Binding SyncRangeUpper, UpdateSourceTrigger=PropertyChanged}" 
-                                     materialDesign:HintAssist.Hint="Lower" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}"/>
+                                     materialDesign:HintAssist.Hint="Upper" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}"/>
                             <TextBlock Margin="5 0 0 0" VerticalAlignment="Center">Hz)</TextBlock>
                         </StackPanel>
                     </Grid>
@@ -199,7 +199,7 @@
                         </Grid>
                         <DockPanel Grid.Column="1" Margin="0 20 0 10" HorizontalAlignment="Stretch">
                             <lvc:PieChart Margin="0 0 0 5" Width="250" HorizontalAlignment="Center" Hoverable="False" Series="{Binding DroppedFramesStatisticCollection}" 
-								  LegendLocation="Bottom" DataClick="Chart_OnDataClick" Foreground="{DynamicResource MaterialDesignBody}"/>
+								  LegendLocation="Bottom" DataClick="Chart_OnDataClick" DataTooltip="{x:Null}" Foreground="{DynamicResource MaterialDesignBody}"/>
                         </DockPanel>
                     </Grid>
                 </Grid>

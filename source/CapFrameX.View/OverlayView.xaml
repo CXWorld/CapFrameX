@@ -24,7 +24,7 @@
             <mvvm:StringColorConverter x:Key="StringColorConverter"/>
             <Style TargetType="{x:Type TabItem}" BasedOn="{StaticResource MaterialDesignNavigationRailTabItem}">
                 <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
-                <Setter Property="Background" Value="{DynamicResource PrimaryHueMidBrush}"/>
+                <Setter Property="Background" Value="{DynamicResource MaterialDesignBody}"/>
                 <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBody}"/>
                 <Setter Property="Padding" Value="0"/>
                 <Setter Property="Height" Value="25" />

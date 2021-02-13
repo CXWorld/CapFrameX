@@ -171,7 +171,7 @@
                                 <TextBlock Margin="10 0 20 0" VerticalAlignment="Center" Text="Log sensors" Foreground="{DynamicResource MaterialDesignBody}"/>
                             </StackPanel>
                             <ComboBox Margin="15 0 0 0" materialDesign:ComboBoxAssist.ClassicMode="True"
-					              materialDesign:HintAssist.Hint="Sensor polling [ms]"
+					              materialDesign:HintAssist.Hint="Sensor polling [ms]" materialDesign:HintAssist.HintOpacity=".8"
 					              materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="200" Width="110"
 					              MouseLeave="LoggingPeriodComboBox_MouseLeave" FontSize="14"
 					              ItemsSource="{Binding Path=LoggingPeriodItemsSource}"
@@ -409,6 +409,7 @@
                     </Button>
                     <ComboBox Grid.Row="1" Margin="10 0 20 0" VerticalAlignment="Center" HorizontalAlignment="Right"
 					              materialDesign:HintAssist.Hint="Evaluation"
+                                  materialDesign:HintAssist.HintOpacity=".8"
 					              materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="200" Width="105" Height="40"
                                   ToolTipService.ShowDuration="25000"
 					              MouseLeave="EvaluationComboBox_MouseLeave" FontSize="14"
