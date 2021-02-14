@@ -145,7 +145,7 @@
                     </ToolTip>
                 </Button.ToolTip>
             </Button>
-            <ComboBox Grid.Row="1" Grid.Column="0" Width="120" Height="40" materialDesign:HintAssist.Hint="Second metric" 
+            <ComboBox Grid.Row="1" Grid.Column="0" Width="120" Height="40" materialDesign:HintAssist.Hint="Second metric" materialDesign:HintAssist.HintOpacity=".8"
 					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="330" materialDesign:ComboBoxAssist.ClassicMode="True"
 					  ItemsSource="{Binding SecondMetricItems}" SelectedItem="{Binding SelectedSecondMetric}"
                       ToolTip="Second metric shown in aggregation table" Foreground="{DynamicResource MaterialDesignBody}">
@@ -155,7 +155,7 @@
                     </DataTemplate>
                 </ComboBox.ItemTemplate>
             </ComboBox>
-            <ComboBox Grid.Row="1" Grid.Column="1" Width="120" Height="40" materialDesign:HintAssist.Hint="Third metric" 
+            <ComboBox Grid.Row="1" Grid.Column="1" Width="120" Height="40" materialDesign:HintAssist.Hint="Third metric" materialDesign:HintAssist.HintOpacity=".8"
 					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="330" materialDesign:ComboBoxAssist.ClassicMode="True"
 					  ItemsSource="{Binding ThirdMetricItems}" SelectedItem="{Binding SelectedThirdMetric}"
                       ToolTip="Third metric shown in aggregation table" Foreground="{DynamicResource MaterialDesignBody}">
@@ -165,12 +165,12 @@
                     </DataTemplate>
                 </ComboBox.ItemTemplate>
             </ComboBox>
-            <ComboBox Grid.Row="1" Grid.Column="3" Width="120" Height="40" materialDesign:HintAssist.Hint="Outlier metric" 
+            <ComboBox Grid.Row="1" Grid.Column="3" Width="120" Height="40" materialDesign:HintAssist.Hint="Outlier metric" materialDesign:HintAssist.HintOpacity=".8"
 					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="330" materialDesign:ComboBoxAssist.ClassicMode="True"
 					  ItemsSource="{Binding RelatedMetricItemsSource}" SelectedItem="{Binding SelectedRelatedMetric}"
                       ToolTip="Metric used to determine outliers" Foreground="{DynamicResource MaterialDesignBody}">
             </ComboBox>
-            <ComboBox Grid.Row="1" Grid.Column="4" Width="120" Height="40" materialDesign:HintAssist.Hint="Outlier percentage" 
+            <ComboBox Grid.Row="1" Grid.Column="4" Width="120" Height="40" materialDesign:HintAssist.Hint="Outlier percentage" materialDesign:HintAssist.HintOpacity=".8"
 					  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="330" materialDesign:ComboBoxAssist.ClassicMode="True"
 					  ItemsSource="{Binding OutlierPercentageItemsSource}" SelectedItem="{Binding SelectedOutlierPercentage}"
                       ToolTipService.ShowDuration="25000" Foreground="{DynamicResource MaterialDesignBody}">

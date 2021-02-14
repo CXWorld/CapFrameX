@@ -255,6 +255,7 @@
                                                     </Style>
                                                     <Style TargetType="TextBox" BasedOn="{StaticResource MaterialDesignTextBox}">
                                                         <Setter Property="materialDesign:HintAssist.IsFloating" Value="True" />
+                                                        <Setter Property="materialDesign:HintAssist.HintOpacity" Value=".8"/>
                                                         <Setter Property="Margin" Value="8,8,8,8" />
                                                     </Style>
                                                 </Grid.Resources>
@@ -366,7 +367,7 @@
                     <!--Global overlay toggle-->
                     <StackPanel Grid.Row="3" Margin="20 0 0 0" DockPanel.Dock="Bottom" Orientation="Horizontal">
                         <TextBox Margin="0 0 0 0" materialDesign:HintAssist.Hint="Toggle Overlay hotkey" Width="140" Height="45" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" FontSize="14"
-					         IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False" PreviewKeyDown="OverlayHotkeyTextBox_PreviewKeyDown"
+					         IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False" PreviewKeyDown="OverlayHotkeyTextBox_PreviewKeyDown" materialDesign:HintAssist.HintOpacity=".8"
 					         ToolTip="Hotkey combinable with up to two modifier keys (Ctrl, Shift or Alt)" Foreground="{DynamicResource MaterialDesignBody}">
                             <Binding Path="OverlayHotkey"
 						    ElementName="OverlayViewControl"
@@ -379,7 +380,7 @@
                             </Binding>
                         </TextBox>
                         <TextBox Margin="25 0 0 0" materialDesign:HintAssist.Hint="Toggle Config hotkey" Width="132" Height="45" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" FontSize="14"
-					        IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False" PreviewKeyDown="ConfigHotkeyTextBox_PreviewKeyDown"
+					        IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False" PreviewKeyDown="ConfigHotkeyTextBox_PreviewKeyDown" materialDesign:HintAssist.HintOpacity=".8"
 					        ToolTip="Hotkey combinable with up to two modifier keys (Ctrl, Shift or Alt)" Foreground="{DynamicResource MaterialDesignBody}">
                             <Binding Path="OverlayConfigHotkey"
 						    ElementName="OverlayViewControl"
@@ -393,7 +394,7 @@
                         </TextBox>
                         <ComboBox Margin="25 0 0 0" 
 					        materialDesign:ComboBoxAssist.ClassicMode="True"
-					        materialDesign:HintAssist.Hint="Refresh period (ms)"
+					        materialDesign:HintAssist.Hint="Refresh period (ms)" materialDesign:HintAssist.HintOpacity=".8"
 					        materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="200" Width="110" Height="40"
 					        MouseLeave="OSDRefreshPeriodComboBox_MouseLeave" FontSize="14"
                             Foreground="{DynamicResource MaterialDesignBody}"
@@ -779,7 +780,7 @@
                             <ColumnDefinition Width="225"/>
                             <ColumnDefinition Width="225"/>
                         </Grid.ColumnDefinitions>
-                        <ComboBox Grid.Row="0" Grid.Column="0" materialDesign:HintAssist.Hint="Number of runs" VerticalAlignment="Bottom"
+                        <ComboBox Grid.Row="0" Grid.Column="0" materialDesign:HintAssist.Hint="Number of runs" VerticalAlignment="Bottom" materialDesign:HintAssist.HintOpacity=".8"
 					              materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Width="120" Height="40" materialDesign:ComboBoxAssist.ClassicMode="True"
 					              ItemsSource="{Binding Path=NumberOfRunsItemsSource}" ToolTipService.ShowDuration="25000">
                             <ComboBox.ToolTip>
@@ -799,7 +800,7 @@
                         <!--Reset run history hotkey-->
                         <TextBox Grid.Row="0" Grid.Column="1" Width="120" Height="45" Margin="0 20 0 0" materialDesign:HintAssist.Hint="Reset run history" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" FontSize="14"
 					             IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False" PreviewKeyDown="ResetHistoryHotkeyTextBox_PreviewKeyDown" 
-					             ToolTip="Hotkey combinable with up to two modifier keys (Ctrl, Shift or Alt)">
+					             ToolTip="Hotkey combinable with up to two modifier keys (Ctrl, Shift or Alt)" materialDesign:HintAssist.HintOpacity=".8">
                             <Binding Path="ResetHistoryHotkey"
 						             ElementName="OverlayViewControl"
 						             Mode="OneWay"
@@ -810,7 +811,7 @@
                             </Binding>
                         </TextBox>
                         <!--Metrics shown on overlay-->
-                        <ComboBox  Grid.Row="1" Grid.Column="0" Width="120" Height="40" materialDesign:HintAssist.Hint="Second metric" 
+                        <ComboBox  Grid.Row="1" Grid.Column="0" Width="120" Height="40" materialDesign:HintAssist.Hint="Second metric" materialDesign:HintAssist.HintOpacity=".8"
 					              materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="330" materialDesign:ComboBoxAssist.ClassicMode="True"
 					              ItemsSource="{Binding SecondMetricItems}" SelectedItem="{Binding SelectedSecondMetric}"
                                   ToolTip="Second metric shown in history entries">
@@ -820,7 +821,7 @@
                                 </DataTemplate>
                             </ComboBox.ItemTemplate>
                         </ComboBox>
-                        <ComboBox Grid.Row="1" Grid.Column="1" Width="120" Height="40" materialDesign:HintAssist.Hint="Third metric"
+                        <ComboBox Grid.Row="1" Grid.Column="1" Width="120" Height="40" materialDesign:HintAssist.Hint="Third metric" materialDesign:HintAssist.HintOpacity=".8"
 					              materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="360" materialDesign:ComboBoxAssist.ClassicMode="True"
 					              ItemsSource="{Binding ThirdMetricItems}" SelectedItem="{Binding SelectedThirdMetric}"
                                   ToolTip="Third metric shown in history entries">
@@ -860,7 +861,7 @@
                             </Grid.ColumnDefinitions>
                             <!--Outlier handling-->
                             <ComboBox Grid.Row="0" Grid.Column="0" materialDesign:HintAssist.Hint="Outlier handling" materialDesign:ComboBoxAssist.ClassicMode="True"
-					                  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Width="120" Height="40"
+					                  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Width="120" Height="40" materialDesign:HintAssist.HintOpacity=".8"
 					                  ItemsSource="{Binding OutlierHandlingItems}" SelectedItem="{Binding SelectedOutlierHandling}" 
                                       ToolTipService.ShowDuration="25000">
                                 <ComboBox.ToolTip>
@@ -895,7 +896,7 @@
                             </CheckBox>
                             <!--Outlier metric-->
                             <ComboBox Grid.Row="1" Grid.Column="0"  materialDesign:HintAssist.Hint="Outlier metric" materialDesign:ComboBoxAssist.ClassicMode="True"
-					                  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Width="120" Height="40"
+					                  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Width="120" Height="40" materialDesign:HintAssist.HintOpacity=".8"
 					                  ItemsSource="{Binding RelatedMetricItemsSource}" SelectedItem="{Binding SelectedRelatedMetric}" 
                               ToolTipService.ShowDuration="25000">
                                 <ComboBox.ToolTip>
@@ -908,7 +909,7 @@
                             </ComboBox>
                             <!--Outlier percentage-->
                             <ComboBox Grid.Row="1" Grid.Column="1" materialDesign:HintAssist.Hint="Outlier percentage" materialDesign:ComboBoxAssist.ClassicMode="True"
-					                  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="200" Width="120" Height="40"
+					                  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="200" Width="120" Height="40" materialDesign:HintAssist.HintOpacity=".8"
 					                  ItemsSource="{Binding OutlierPercentageItemsSource}" SelectedItem="{Binding SelectedOutlierPercentage}" 
                                       ToolTipService.ShowDuration="25000">
                                 <ComboBox.ToolTip>

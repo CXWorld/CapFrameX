@@ -104,7 +104,7 @@
                     ToolTip="Remove all entries">
                 <materialDesign:PackIcon Kind="PlaylistRemove" Height="24" Width="24" />
             </Button>
-            <TextBox Grid.Row="1" Width="350" wpf:HintAssist.Hint="Download link / ID" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
+            <TextBox Grid.Row="1" Width="350" wpf:HintAssist.Hint="Download link / ID" materialDesign:HintAssist.HintOpacity=".8" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
 					 Margin="50 0 0 0" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"  Text="{Binding ShareUrl, Mode=OneWay}" PreviewMouseDoubleClick="ShareUrlFocusHandler" IsReadOnly="True" 
                      Visibility="{Binding ShareUrlVisible, Converter={StaticResource TrueToVisibleConverter}}" Foreground="{DynamicResource MaterialDesignBody}"/>
             <TextBlock Grid.Row="1" FontSize="16" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Uploading..." Foreground="{DynamicResource MaterialDesignBody}"
@@ -142,9 +142,9 @@
                 <ColumnDefinition Width="120"/>
             </Grid.ColumnDefinitions>
             <TextBox Name="IDBox" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Width="400" HorizontalAlignment="Left" wpf:HintAssist.Hint="Download link / ID" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
-					 Margin="5 0 0 10" FontSize="14" Text="{Binding DownloadIDString, UpdateSourceTrigger=PropertyChanged}" Foreground="{DynamicResource MaterialDesignBody}">
+					 Margin="5 0 0 10" FontSize="14" Text="{Binding DownloadIDString, UpdateSourceTrigger=PropertyChanged}" materialDesign:HintAssist.HintOpacity=".8" Foreground="{DynamicResource MaterialDesignBody}">
             </TextBox>
-            <TextBox Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Width="380" wpf:HintAssist.Hint="Download Folder" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
+            <TextBox Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Width="380" wpf:HintAssist.Hint="Download Folder" materialDesign:HintAssist.HintOpacity=".8" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
 					 Margin="5 0 0 0" IsReadOnly="True" FontSize="14" HorizontalAlignment="Left" Text="{Binding CloudDownloadDirectory, Mode=OneWay}" PreviewMouseDown="DownloadFolder_PreviewMouseDown"
                      Foreground="{DynamicResource MaterialDesignBody}">
             </TextBox>
