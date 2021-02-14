@@ -179,12 +179,22 @@ namespace CapFrameX.Data
 
                     if (!intializedStartTime && _captureData.Any())
                     {
-                        double captureDataFirstTime = GetStartTimeFromDataLine(_captureData.First());
+                        double captureDataFirstTime = 0;
+                        try
+                        {
+                            captureDataFirstTime = GetStartTimeFromDataLine(_captureData.First());
+                        }
+                        catch { return; }
+
                         lock (_archiveLock)
                         {
                             if (_captureDataArchive.Any())
                             {
-                                captureDataArchiveLastTime = GetStartTimeFromDataLine(_captureDataArchive.Last());
+                                try
+                                {
+                                    captureDataArchiveLastTime = GetStartTimeFromDataLine(_captureDataArchive.Last());
+                                }
+                                catch { return; }
                             }
                         }
 
@@ -339,7 +349,7 @@ namespace CapFrameX.Data
 
                 // if aggregation mode is active and "Save aggregated result only" is checked, don't save single history items
                 if (_appConfiguration.UseAggregation && _appConfiguration.SaveAggregationOnly)
-                { 
+                {
                     AddLoggerEntry("Aggregation active, adding to history...");
                     return;
                 }

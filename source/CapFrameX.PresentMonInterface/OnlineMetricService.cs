@@ -91,7 +91,12 @@ namespace CapFrameX.PresentMonInterface
 
         private void UpdateOnlineMetrics(string[] lineSplit)
         {
-            var process = lineSplit[0].Replace(".exe", "");
+            string process;
+            try
+            {
+                process = lineSplit[0].Replace(".exe", "");
+            }
+            catch { return; }
 
             lock (_currentProcessLock)
             {

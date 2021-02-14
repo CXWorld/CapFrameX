@@ -68,7 +68,7 @@ namespace CapFrameX.PresentMonInterface
                     if (!string.IsNullOrWhiteSpace(e.Data))
                     {
                         var split = e.Data.Split(',');
-                        if (split.Length > 1)
+                        if (split.Length == 18)
                             _outputDataStream.OnNext(split);
                     }
                 };
@@ -146,8 +146,20 @@ namespace CapFrameX.PresentMonInterface
                             _logger.LogInformation("Process name stream has initial data.");
                             hasInitialData = true;
                         }
-                        var processName = lineSplit[0].Replace(".exe", "");
-                        var processId =  Convert.ToInt32(lineSplit[1]);
+
+                        string processName = string.Empty;
+                        int processId = 0;
+
+                        try
+                        {
+                            processName = lineSplit[0].Replace(".exe", "");
+                            processId = Convert.ToInt32(lineSplit[1]);
+                        }
+                        catch(Exception ex)
+                        {
+                            _logger.LogError(ex, "Error while extracting process name and ID from line split. {lineSplit}", string.Join(",", lineSplit));
+                            return;
+                        }
 
                         lock (_listLock)
                         {
