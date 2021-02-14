@@ -143,7 +143,7 @@
                                         </Grid.ColumnDefinitions>
                                         <ComboBox Grid.Row="0" Grid.Column="0" materialDesign:HintAssist.Hint="Graph filter window(ms)" HorizontalAlignment="Left"
                                                   ToolTip="Sets the time window for creating the moving average frametime and average FPS graphs"
-												  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Width="140" Margin="20 15 15 15"
+												  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Width="140" Height="40" Margin="20 15 15 15"
 												  ItemsSource="{Binding Path=DataContext.AverageTimeWindows, ElementName=ColorbarViewName}">
                                             <ComboBox.Text>
                                                 <Binding Path="SelectedAverageTimeWindow"
@@ -154,7 +154,7 @@
                                         </ComboBox>
                                         <ComboBox Grid.Row="0" Grid.Column="1" materialDesign:HintAssist.Hint="FPS values decimals" HorizontalAlignment="Center"
                                                   ToolTip="Sets the number of decimal points for displayed FPS values"
-												  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Width="120" Margin="0 15 15 15"
+												  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Width="120" Height="40" Margin="0 15 15 15"
 												  ItemsSource="{Binding Path=DataContext.RoundingDigits, ElementName=ColorbarViewName}">
                                             <ComboBox.Text>
                                                 <Binding Path="FpsValuesRoundingDigits"
@@ -281,7 +281,7 @@
                                     </Grid>
                                 </DataTemplate>
                                 <DataTemplate x:Key="HelpContent">
-                                    <xctk:RichTextBox Margin="10" Width="475" Height="300" IsHitTestVisible="False" IsReadOnly="True"
+                                    <xctk:RichTextBox Margin="10" Width="475" Height="300" IsHitTestVisible="False" IsReadOnly="True"  Foreground="{DynamicResource MaterialDesignBody}"
 													  Text="{Binding Path=DataContext.HelpText, ElementName=ColorbarViewName, Mode=OneWay}"></xctk:RichTextBox>
                                 </DataTemplate>
                             </ContentPresenter.Resources>
