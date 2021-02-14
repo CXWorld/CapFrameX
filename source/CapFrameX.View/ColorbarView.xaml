@@ -73,6 +73,7 @@
 						ToolTip="Take a screenshot"
 						materialDesign:RippleAssist.Feedback="#DD000000"
                         Background="{DynamicResource MaterialDesignToolBackground}"
+                        BorderBrush="Transparent"
 						Width="32" Height="32" Click="TakeScreenShotButton_Click">
                     <materialDesign:PackIcon Kind="PhotoLibrary" Foreground="White"/>
                 </Button>
@@ -83,16 +84,16 @@
                             HorizontalAlignment="Right"
 						    materialDesign:RippleAssist.Feedback="#DD000000"
 						    Width="32" Height="32" Click="Login_Click"
-                            Background="{DynamicResource MaterialDesignToolBackground}"
+                            Background="{DynamicResource MaterialDesignToolBackground}" BorderBrush="Transparent"
 							Visibility="{Binding Path=DataContext.IsLoggedIn, ElementName=ColorbarViewName, Converter={StaticResource FalseToVisibleConverter}}">
-                    <materialDesign:PackIcon Kind="Login" Background="{DynamicResource MaterialDesignToolBackground}" Foreground="GreenYellow"/>
+                    <materialDesign:PackIcon Kind="Login" Foreground="GreenYellow"/>
 				</Button>
 				<Button Grid.Column="1" Style="{StaticResource MaterialDesignFloatingActionMiniButton}"
                             Margin="0 0 210 0"
 						    ToolTip="Logout"
                             HorizontalAlignment="Right"
 						    materialDesign:RippleAssist.Feedback="#DD000000"
-						    Width="32" Height="32" Click="Logout_Click"
+						    Width="32" Height="32" Click="Logout_Click" BorderBrush="Transparent"
 							Visibility="{Binding Path=DataContext.IsLoggedIn, ElementName=ColorbarViewName, Converter={StaticResource TrueToVisibleConverter}}">
                     <materialDesign:PackIcon Kind="Logout" Foreground="DarkRed"/>
 				</Button>

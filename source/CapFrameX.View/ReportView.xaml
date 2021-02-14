@@ -298,7 +298,9 @@
 				Width="35" Height="35"
 				ToolTip="Remove all report entries"
                 Foreground="White"
-				Command="{Binding RemoveAllReportEntriesCommand}">
+                BorderBrush="Transparent"
+				Command="{Binding RemoveAllReportEntriesCommand}"
+                Background="{DynamicResource MaterialDesignToolBackground}">
                 <materialDesign:PackIcon Kind="PlaylistRemove" Height="25" Width="25" />
             </Button>
         </Grid>

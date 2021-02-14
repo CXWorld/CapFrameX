@@ -59,8 +59,8 @@
 													  IsEnabled="{Binding AreButtonsActive}">
                                             </ListView>
                                         </Border>
-                                        <Button Margin="0 10 0 0" HorizontalAlignment="Right" Width="120" Height="45" 
-												Command="{Binding AddToIgonreListCommand}" IsEnabled="{Binding AreButtonsActive}" Foreground="White">
+                                        <Button Margin="0 10 0 0" HorizontalAlignment="Right" BorderThickness="0" Width="120" Height="45" 
+												Command="{Binding AddToIgonreListCommand}" IsEnabled="{Binding AreButtonsActive}" Foreground="White" Background="{DynamicResource MaterialDesignToolBackground}">
                                             <TextBlock Text="Move to ignore list" TextWrapping="Wrap" TextAlignment="Center"/>
                                         </Button>
                                     </StackPanel>
@@ -77,8 +77,8 @@
 										              ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True" Height="150" Width="250">
                                             </ListView>
                                         </Border>
-                                        <Button Margin="0 10 0 0" HorizontalAlignment="Right" Width="120" Height="45"
-												Command="{Binding AddToProcessListCommand}" IsEnabled="{Binding AreButtonsActive}" Foreground="White">
+                                        <Button Margin="0 10 0 0" HorizontalAlignment="Right" BorderThickness="0" Width="120" Height="45"
+												Command="{Binding AddToProcessListCommand}" IsEnabled="{Binding AreButtonsActive}" Foreground="White" Background="{DynamicResource MaterialDesignToolBackground}">
                                             <TextBlock Text="Remove from ignore list" TextWrapping="Wrap" TextAlignment="Center"/>
                                         </Button>
                                     </StackPanel>

@@ -116,14 +116,14 @@
                 <ColumnDefinition Width="2*"/>
             </Grid.ColumnDefinitions>
             <Button Grid.Row="0" Grid.Column="4" VerticalAlignment="Top" HorizontalAlignment="Right" Width="40" Height="40"
-					Command="{Binding ClearTableCommand}" IsEnabled="{Binding EnableClearButton}"
-                    Style="{StaticResource MaterialDesignFloatingActionMiniButton}" Foreground="White"
+					Command="{Binding ClearTableCommand}" IsEnabled="{Binding EnableClearButton}" BorderBrush="Transparent"
+                    Style="{StaticResource MaterialDesignFloatingActionMiniButton}" Foreground="White" Background="{DynamicResource MaterialDesignToolBackground}"
                     ToolTip="Remove all entries">
                 <materialDesign:PackIcon Kind="PlaylistRemove" Height="24" Width="24" />
             </Button>
-            <Button Grid.Row="0" Grid.Column="0" VerticalAlignment="Top" Width="150" Height="45"
+            <Button Grid.Row="0" Grid.Column="0" VerticalAlignment="Top" Width="150" Height="45" BorderBrush="Transparent"
 					Command="{Binding AggregateIncludeCommand}" IsEnabled="{Binding EnableIncludeButton}"
-                    ToolTipService.ShowDuration="25000" Foreground="White">
+                    ToolTipService.ShowDuration="25000" Foreground="White" Background="{DynamicResource MaterialDesignToolBackground}">
                 <TextBlock Text="Aggregate&#10;including outliers" TextWrapping="Wrap" TextAlignment="Center"/>
                 <Button.ToolTip>
                     <ToolTip MaxWidth="200">
@@ -133,9 +133,9 @@
                     </ToolTip>
                 </Button.ToolTip>
             </Button>
-            <Button Grid.Row="0" Grid.Column="1" VerticalAlignment="Top" Width="150" Height="45"
+            <Button Grid.Row="0" Grid.Column="1" VerticalAlignment="Top" Width="150" Height="45" BorderBrush="Transparent"
 					Command="{Binding AggregateExcludeCommand}" IsEnabled="{Binding EnableExcludeButton}"
-                    ToolTipService.ShowDuration="25000" Foreground="White">
+                    ToolTipService.ShowDuration="25000" Foreground="White" Background="{DynamicResource MaterialDesignToolBackground}">
                 <TextBlock Text="Aggregate excluding outliers" TextWrapping="Wrap"  TextAlignment="Center"/>
                 <Button.ToolTip>
                     <ToolTip MaxWidth="200">

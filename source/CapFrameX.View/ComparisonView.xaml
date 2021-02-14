@@ -531,14 +531,16 @@
                     <Separator Grid.Row="1" Margin="5 0 5 0" Style="{StaticResource MaterialDesignDarkSeparator}"/>
                     <Grid Grid.Row="2">
                         <Button Style="{StaticResource MaterialDesignFloatingActionMiniButton}"
-								Margin="0 0 10 0"
+								Margin="0 0 0 5"
 								HorizontalAlignment="Center"
 								VerticalAlignment="Center"
-								Width="30" Height="30"
+								Width="35" Height="35"
 								ToolTip="Remove all comparisons"
 								Command="{Binding RemoveAllComparisonsCommand}"
-                                Foreground="White">
-                            <materialDesign:PackIcon Kind="PlaylistRemove" Height="24" Width="24" />
+                                Foreground="White"
+                                Background="{DynamicResource MaterialDesignToolBackground}"
+                                BorderBrush="Transparent">
+                            <materialDesign:PackIcon Kind="PlaylistRemove" Height="25" Width="25" />
                         </Button>
                     </Grid>
                 </Grid>
