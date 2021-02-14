@@ -339,7 +339,10 @@ namespace CapFrameX.Data
 
                 // if aggregation mode is active and "Save aggregated result only" is checked, don't save single history items
                 if (_appConfiguration.UseAggregation && _appConfiguration.SaveAggregationOnly)
+                { 
+                    AddLoggerEntry("Aggregation active, adding to history...");
                     return;
+                }
 
                 if (_currentCaptureOptions.CaptureFileMode == Enum.GetName(typeof(ECaptureFileMode), ECaptureFileMode.JsonCsv))
                 {
