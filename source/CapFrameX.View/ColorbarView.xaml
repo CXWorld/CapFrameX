@@ -93,7 +93,8 @@
 						    ToolTip="Logout"
                             HorizontalAlignment="Right"
 						    materialDesign:RippleAssist.Feedback="#DD000000"
-						    Width="32" Height="32" Click="Logout_Click" BorderBrush="Transparent"
+						    Width="32" Height="32" Click="Logout_Click" 
+                            Background="{DynamicResource MaterialDesignToolBackground}" BorderBrush="Transparent"
 							Visibility="{Binding Path=DataContext.IsLoggedIn, ElementName=ColorbarViewName, Converter={StaticResource TrueToVisibleConverter}}">
                     <materialDesign:PackIcon Kind="Logout" Foreground="DarkRed"/>
 				</Button>
