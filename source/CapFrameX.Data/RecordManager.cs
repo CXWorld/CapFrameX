@@ -418,7 +418,7 @@ namespace CapFrameX.Data
 
                 IList<string> headerLines = Enumerable.Empty<string>().ToList();
                 var process = Process.GetProcessesByName(processName).FirstOrDefault();
-                string apiInfo = process != null ? _rTSSService.GetApiInfo((uint)process.Id) : "unknown";
+                string apiInfo = process != null ? _rTSSService.GetApiInfo(process.Id) : "unknown";
 
                 if (apiInfo == "unknown")
                     apiInfo = runs.First().PresentMonRuntime;

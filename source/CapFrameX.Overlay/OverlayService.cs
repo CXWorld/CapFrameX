@@ -101,25 +101,7 @@ namespace CapFrameX.Overlay
                     }
                     else
                     {
-                        // OSD status logging
-                        Task.Run(async () =>
-                        {
-                            var processId = await _rTSSService.ProcessIdStream.Take(1);
-                            try
-                            {
-                                _logger.LogInformation("Is process {detectedProcess} detected: {isDetected}", processId, _rTSSService.IsProcessDetected(processId));
-                            }
-                            catch
-                            {
-                                _logger.LogError("Error while checking RTSS core process detection");
-                            }
-
-                        }).Wait();
-
                         _rTSSService.ReleaseOSD();
-                        //if (_appConfiguration.ToggleGlobalRTSSOSD)
-                        //    _rTSSService.OnOSDOff();
-
                         return Observable.Empty<IOverlayEntry[]>();
                     }
                 }).Switch()

@@ -30,9 +30,7 @@ namespace CapFrameX.PresentMonInterface
         private List<double> _frametimes = new List<double>(LIST_CAPACITY);
         private List<double> _measuretimes = new List<double>(LIST_CAPACITY);
         private string _currentProcess;
-        private uint _currentProcessId;
-        // ToDo: get value from config
-        // length in seconds
+        private int _currentProcessId;
         private readonly double _maxOnlineIntervalLength = 20d;
 
         public OnlineMetricService(IStatisticProvider frametimeStatisticProvider,
@@ -101,7 +99,7 @@ namespace CapFrameX.PresentMonInterface
                     return;
             }
 
-            if (!uint.TryParse(lineSplit[1], out uint processId))
+            if (!int.TryParse(lineSplit[1], out int processId))
             {
                 ResetMetrics();
                 return;

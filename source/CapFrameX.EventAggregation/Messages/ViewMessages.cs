@@ -53,9 +53,9 @@ namespace CapFrameX.EventAggregation.Messages
         {
             public string Process { get; }
 
-            public uint ProcessId { get; }
+            public int ProcessId { get; }
 
-            public CurrentProcessToCapture(string process, uint processId)
+            public CurrentProcessToCapture(string process, int processId)
             {
                 Process = process;
                 ProcessId = processId;

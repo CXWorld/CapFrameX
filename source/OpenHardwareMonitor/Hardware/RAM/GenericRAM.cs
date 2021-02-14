@@ -49,10 +49,16 @@ namespace OpenHardwareMonitor.Hardware.RAM
                     {
                         lock (_performanceCounterLock)
                         {
-                            Process process = null;
                             try
                             {
-                                process = Process.GetProcessById((int)id);
+                                if (id == 0)
+                                {
+                                    ramUsageGamePerformanceCounter = null;
+                                    ramAndCacheUsageGamePerformanceCounter = null;
+                                    return;
+                                }
+
+                                var process = Process.GetProcessById(id);
 
                                 if (process != null)
                                 {
