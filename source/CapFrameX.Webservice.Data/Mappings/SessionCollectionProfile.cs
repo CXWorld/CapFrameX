@@ -1,16 +1,13 @@
 ﻿using AutoMapper;
 using CapFrameX.Data.Session.Classes;
 using CapFrameX.Webservice.Data.DTO;
-using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace CapFrameX.Webservice.Data.Mappings
 {
 	public class SessionCollectionProfile : Profile
 	{
+
 		public SessionCollectionProfile()
 		{
 			CreateMap<SqSessionCollection, SessionCollectionDTO>()
@@ -42,7 +39,13 @@ namespace CapFrameX.Webservice.Data.Mappings
 				.ForMember(dest => dest.CreationDate, opts => opts.MapFrom(src => src.Info.CreationDate))
 				.ForMember(dest => dest.GameName, opts => opts.MapFrom(src => src.Info.GameName))
 				.ForMember(dest => dest.ProcessName, opts => opts.MapFrom(src => src.Info.ProcessName))
-				.ForMember(dest => dest.Hash, opts => opts.MapFrom(src => src.Hash));
+				.ForMember(dest => dest.Hash, opts => opts.MapFrom(src => src.Hash))
+				.ForMember(dest => dest.Cpu, opts => opts.MapFrom(src => src.Info.Processor))
+				.ForMember(dest => dest.Gpu, opts => opts.MapFrom(src => src.Info.GPU))
+				.ForMember(dest => dest.Mainboard, opts => opts.MapFrom(src => src.Info.Motherboard))
+				.ForMember(dest => dest.Ram, opts => opts.MapFrom(src => src.Info.SystemRam))
+				.ForMember(dest => dest.AverageFps, opts => opts.MapFrom(src => 0))
+				.ForMember(dest => dest.P1Fps, opts => opts.MapFrom(src => 0));
 		}
 	}
 }

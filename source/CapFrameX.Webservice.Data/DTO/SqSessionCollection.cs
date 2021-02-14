@@ -15,6 +15,12 @@ namespace CapFrameX.Webservice.Data.DTO
 		public string GameName { get; set; }
 		public string Comment { get; set; }
 		public DateTime CreationDate { get; set; }
+		public string Cpu { get; set; }
+		public string Gpu { get; set; }
+		public string Mainboard { get; set; }
+		public string Ram { get; set; }
+		public double AverageFps { get; set; }
+		public double P1Fps { get; set; }
 	}
 	public class SqSessionCollectionData
 	{
