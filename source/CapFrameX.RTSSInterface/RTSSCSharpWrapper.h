@@ -266,19 +266,19 @@ public:
 		return _coreControl->IsOSDLocked();
 	}
 
-	bool IsProcessDetected(UINT processId)
+	bool IsProcessDetected(INT processId)
 	{
-		return _coreControl->IsProcessDetected(processId);
+		return _coreControl->IsProcessDetected((UINT)processId);
 	}
 
-	String^ GetApiInfo(UINT processId)
+	String^ GetApiInfo(INT processId)
 	{
-		return gcnew String(_coreControl->GetApiInfo(processId));
+		return gcnew String(_coreControl->GetApiInfo((UINT)processId));
 	}
 
-	Tuple<double, double>^ GetCurrentFramerate(UINT processId)
+	Tuple<double, double>^ GetCurrentFramerate(INT processId)
 	{
-		std::vector<float> result = _coreControl->GetCurrentFramerate(processId);
+		std::vector<float> result = _coreControl->GetCurrentFramerate((UINT)processId);
 		return gcnew Tuple<double, double>(result[0], result[1]);
 	}
 

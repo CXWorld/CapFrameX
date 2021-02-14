@@ -556,10 +556,8 @@ namespace CapFrameX.ViewModel
                 currentProcess = ProcessesToCapture.FirstOrDefault();
             }
 
-            var processId = (uint)ProcessesInfo.FirstOrDefault(info => info.Item1 == currentProcess).Item2;
-
-            if (processId != 0)
-                _rTSSService.ProcessIdStream.OnNext(processId);
+            var processId = ProcessesInfo.FirstOrDefault(info => info.Item1 == currentProcess).Item2;
+            _rTSSService.ProcessIdStream.OnNext(processId);
 
             _updateCurrentProcess?.Publish(new ViewMessages.CurrentProcessToCapture(currentProcess, processId));
         }

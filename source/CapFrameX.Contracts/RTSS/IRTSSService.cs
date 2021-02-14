@@ -7,11 +7,11 @@ namespace CapFrameX.Contracts.RTSS
 {
     public interface IRTSSService
     {
-        ISubject<uint> ProcessIdStream { get; }
+        ISubject<int> ProcessIdStream { get; }
         bool IsRTSSInstalled();
-        bool IsProcessDetected(uint processId);
-        string GetApiInfo(uint processId);
-        Tuple<double, double> GetCurrentFramerate(uint processId);
+        bool IsProcessDetected(int processId);
+        string GetApiInfo(int processId);
+        Tuple<double, double> GetCurrentFramerate(int processId);
         Tuple<double, double> GetCurrentFramerateFromForegroundWindow();
         Task CheckRTSSRunningAndRefresh();
         Task CheckRTSSRunning();

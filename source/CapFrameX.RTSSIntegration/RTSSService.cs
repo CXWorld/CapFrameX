@@ -17,12 +17,12 @@ namespace CapFrameX.RTSSIntegration
 
         private static ILogger<RTSSService> _logger;
 
-        public ISubject<uint> ProcessIdStream { get; }
+        public ISubject<int> ProcessIdStream { get; }
 
         public RTSSService(ILogger<RTSSService> logger) : base(ExceptionAction)
         {
             _logger = logger;
-            ProcessIdStream = new BehaviorSubject<uint>(default);
+            ProcessIdStream = new BehaviorSubject<int>(default);
             _isRTSSInstalled = !string.IsNullOrEmpty(GetRTSSFullPath());
         }
 
