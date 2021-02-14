@@ -24,7 +24,8 @@ namespace CapFrameX.View.Themes
         public Color MaterialDesignDivider { get; } = (Color)ColorConverter.ConvertFromString("#1FFFFFFF");
         public Color MaterialDesignSelection { get; } = (Color)ColorConverter.ConvertFromString("#757575");
         public Color MaterialDesignToolForeground { get; } = (Color)ColorConverter.ConvertFromString("#FF616161");
-        public Color MaterialDesignToolBackground { get; } = (Color)ColorConverter.ConvertFromString("#FFe0e0e0");
+        public Color MaterialDesignToolBackground { get; } = (Color)ColorConverter.ConvertFromString("#1c5f8a");
+        // CX blue switch
         public Color MaterialDesignFlatButtonClick { get; } = (Color)ColorConverter.ConvertFromString("#19757575");
         public Color MaterialDesignFlatButtonRipple { get; } = (Color)ColorConverter.ConvertFromString("#FFB6B6B6");
         public Color MaterialDesignToolTipBackground { get; } = (Color)ColorConverter.ConvertFromString("#eeeeee");

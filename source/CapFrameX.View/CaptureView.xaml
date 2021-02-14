@@ -46,7 +46,7 @@
                                     <StackPanel Orientation="Vertical" Width="250">
                                         <StackPanel Orientation="Horizontal">
                                             <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}">Running processes</TextBlock>
-                                            <Button Margin="20 0 0 0" Padding="0" Width="24" Height="24" BorderThickness="0"
+                                            <Button Margin="20 0 0 0" Padding="0" Width="24" Height="24" BorderThickness="0" Background="{DynamicResource MaterialDesignToolBackground}"
 													Command="{Binding ResetPresentMonCommand}" ToolTip="Reset and rescan processes"
 													IsEnabled="{Binding AreButtonsActive}" materialDesign:RippleAssist.Feedback="#DD000000">
                                                 <materialDesign:PackIcon Kind="Autorenew" Width="22" Height="22"/>
