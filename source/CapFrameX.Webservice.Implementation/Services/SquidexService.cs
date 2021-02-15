@@ -164,7 +164,7 @@ namespace CapFrameX.Webservice.Implementation.Services
             using ((IDisposable)client)
             {
                 var filter = new List<string>();
-                if (!string.IsNullOrWhiteSpace(cpu)) filter.Add($"contains(data/sessions/iv/gameName, '{cpu}')");
+                if (!string.IsNullOrWhiteSpace(cpu)) filter.Add($"contains(data/sessions/iv/cpu, '{cpu}')");
                 if (!string.IsNullOrWhiteSpace(gpu)) filter.Add($"contains(data/sessions/iv/gpu, '{gpu}')");
                 if (!string.IsNullOrWhiteSpace(ram)) filter.Add($"contains(data/sessions/iv/ram, '{ram}')");
                 if (!string.IsNullOrWhiteSpace(mainboard)) filter.Add($"contains(data/sessions/iv/mainboard, '{mainboard}')");
