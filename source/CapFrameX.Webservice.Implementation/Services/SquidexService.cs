@@ -164,7 +164,7 @@ namespace CapFrameX.Webservice.Implementation.Services
             using ((IDisposable)client)
             {
                 var filter = new List<string>();
-                if (!string.IsNullOrWhiteSpace(cpu)) filter.Add($"contains(data/sessions/iv/gameName, '{gameName}')");
+                if (!string.IsNullOrWhiteSpace(cpu)) filter.Add($"contains(data/sessions/iv/gameName, '{cpu}')");
                 if (!string.IsNullOrWhiteSpace(gpu)) filter.Add($"contains(data/sessions/iv/gpu, '{gpu}')");
                 if (!string.IsNullOrWhiteSpace(ram)) filter.Add($"contains(data/sessions/iv/ram, '{ram}')");
                 if (!string.IsNullOrWhiteSpace(mainboard)) filter.Add($"contains(data/sessions/iv/mainboard, '{mainboard}')");
@@ -176,15 +176,16 @@ namespace CapFrameX.Webservice.Implementation.Services
                     Filter = string.Join(" and ", filter)
                 });
 
-                Func<string, string, bool> checkContainsString = (value, searchTerm) => string.IsNullOrWhiteSpace(value) || value.IndexOf(searchTerm, StringComparison.OrdinalIgnoreCase) > -1;
+                Func<string, string, bool> checkContainsString = (value, searchTerm) => string.IsNullOrWhiteSpace(value) || string.IsNullOrWhiteSpace(searchTerm) || value.IndexOf(searchTerm, StringComparison.OrdinalIgnoreCase) > -1;
                 Func<SqSessionData, bool> sessionMatchesFilter = (SqSessionData session) =>
                        checkContainsString(session.Cpu, cpu)
                     && checkContainsString(session.Gpu, gpu)
                     && checkContainsString(session.GameName, gameName)
                     && checkContainsString(session.Mainboard, mainboard)
-                    && checkContainsString(session.Ram, ram);
+                    && checkContainsString(session.Ram, ram)
+                    && checkContainsString(session.Comment, comment);
 
-                return sessionCollectionResponse.Items.SelectMany(collection => collection.Data.Sessions.Where(sessionMatchesFilter));
+                return sessionCollectionResponse.Items.SelectMany(collection => collection.Data.Sessions.Where(sessionMatchesFilter)).OrderByDescending(x => x.CreationDate);
             }
         }
     }
