@@ -15,5 +15,6 @@ namespace CapFrameX.Webservice.Data.Interfaces
 		Task DeleteCollection(Guid id, Guid userId);
 		Task<Guid> UploadAsset(byte[] data, string fileName);
 		Task<(string, byte[])> DownloadAsset(Guid id);
+		Task<IEnumerable<SqSessionData>> SearchSessions(string cpu, string gpu, string mainboard, string ram, string gameName, string comment);
 	}
 }

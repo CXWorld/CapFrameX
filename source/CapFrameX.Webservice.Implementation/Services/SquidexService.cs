@@ -10,6 +10,11 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CapFrameX.Webservice.Data.Extensions;
+using CapFrameX.Data.Session.Classes;
+using CapFrameX.Statistics.NetStandard.Contracts;
+using CapFrameX.Statistics.NetStandard;
+using CapFrameX.Webservice.Implementation.Handlers;
 
 namespace CapFrameX.Webservice.Implementation.Services
 {
@@ -155,6 +160,97 @@ namespace CapFrameX.Webservice.Implementation.Services
                     throw new UnauthorizedAccessException("You cannot delete this session.");
                 }
                 await client.DeleteAsync(id);
+            }
+        }
+
+        public async Task<IEnumerable<SqSessionData>> SearchSessions(string cpu, string gpu, string mainboard, string ram, string gameName, string comment)
+        {
+            var client = _squidexClientManager.CreateContentsClient<SqSessionCollection, SqSessionCollectionData>("sessioncollections");
+            using ((IDisposable)client)
+            {
+                var filter = new List<string>();
+                if (!string.IsNullOrWhiteSpace(cpu)) filter.Add($"contains(data/sessions/iv/cpu, '{cpu}')");
+                if (!string.IsNullOrWhiteSpace(gpu)) filter.Add($"contains(data/sessions/iv/gpu, '{gpu}')");
+                if (!string.IsNullOrWhiteSpace(ram)) filter.Add($"contains(data/sessions/iv/ram, '{ram}')");
+                if (!string.IsNullOrWhiteSpace(mainboard)) filter.Add($"contains(data/sessions/iv/mainboard, '{mainboard}')");
+                if (!string.IsNullOrWhiteSpace(gameName)) filter.Add($"contains(data/sessions/iv/gameName, '{gameName}')");
+                if (!string.IsNullOrWhiteSpace(comment)) filter.Add($"contains(data/sessions/iv/comment, '{comment}')");
+
+                int skip = 0;
+                long total = 0;
+                var sessionCollectionResponseItems = new List<SqSessionCollection>();
+
+                Func<int, Task> loadBatch = async (itemsToSkip) => {
+                    var response = await client.GetAsync(new ContentQuery()
+                    {
+                        Skip = itemsToSkip,
+                        Top = 200,
+                        Filter = string.Join(" and ", filter)
+                    });
+                    total = response.Total;
+                    skip += response.Items.Count();
+                    sessionCollectionResponseItems.AddRange(response.Items);
+                };
+                do {
+                    await loadBatch(skip);
+                } while (sessionCollectionResponseItems.Count() < total);
+
+                Func<string, string, bool> checkContainsString = (value, searchTerm) => string.IsNullOrWhiteSpace(value) || string.IsNullOrWhiteSpace(searchTerm) || value.IndexOf(searchTerm, StringComparison.OrdinalIgnoreCase) > -1;
+                Func<SqSessionData, bool> sessionMatchesFilter = (SqSessionData session) =>
+                       checkContainsString(session.Cpu, cpu)
+                    && checkContainsString(session.Gpu, gpu)
+                    && checkContainsString(session.GameName, gameName)
+                    && checkContainsString(session.Mainboard, mainboard)
+                    && checkContainsString(session.Ram, ram)
+                    && checkContainsString(session.Comment, comment);
+
+                return sessionCollectionResponseItems.SelectMany(collection => collection.Data.Sessions.Where(sessionMatchesFilter)).OrderByDescending(x => x.CreationDate);
+            }
+        }
+
+        private async Task UpdateMissingModelData(List<SqSessionCollection> sessionCollectionItems)
+        {
+            var client2 = _squidexClientManager.CreateContentsClient<SqSessionCollection, SqSessionCollectionData>("sessioncollections");
+            using ((IDisposable)client2)
+            {
+                foreach (var collection in sessionCollectionItems)
+                {
+                    if (collection.Data.Sessions.Any(s => string.IsNullOrWhiteSpace(s.Cpu)))
+                    {
+                        foreach (var session in collection.Data.Sessions)
+                        {
+                            if (session.File.FirstOrDefault() != null)
+                            {
+                                string fileName;
+                                byte[] fileBytes;
+                                (fileName, fileBytes) = await DownloadAsset(new Guid(session.File.First()));
+                                if (fileName.EndsWith(".gz"))
+                                {
+                                    fileBytes = fileBytes.Decompress();
+                                }
+                                var sessionFromJson = JsonConvert.DeserializeObject<Session>(Encoding.UTF8.GetString(fileBytes));
+                                session.GameName = sessionFromJson.Info.GameName;
+                                session.Cpu = sessionFromJson.Info.Processor;
+                                session.Gpu = sessionFromJson.Info.GPU;
+                                session.Ram = sessionFromJson.Info.SystemRam;
+                                session.Mainboard = sessionFromJson.Info.Motherboard;
+
+                                IFrametimeStatisticProviderOptions _frametimeStatisticProviderOptions = new FrametimeStatisticProviderOptions()
+                                {
+                                    MovingAverageWindowSize = 500,
+                                    IntervalAverageWindowTime = 500,
+                                    FpsValuesRoundingDigits = 2
+                                };
+                                FrametimeStatisticProvider _frametimeStatisticProvider = new FrametimeStatisticProvider(_frametimeStatisticProviderOptions);
+                                var frametimes = sessionFromJson.GetFrametimeTimeWindow(0, 1000, _frametimeStatisticProviderOptions);
+
+                                session.AverageFps = _frametimeStatisticProvider.GetFpsMetricValue(frametimes, EMetric.Average);
+                                session.P1Fps = _frametimeStatisticProvider.GetFpsMetricValue(frametimes, EMetric.P1);
+                            }
+                        }
+                        await client2.UpdateAsync(collection.Id, collection.Data);
+                    }
+                }
             }
         }
     }
