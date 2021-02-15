@@ -157,5 +157,35 @@ namespace CapFrameX.Webservice.Implementation.Services
                 await client.DeleteAsync(id);
             }
         }
+
+        public async Task<IEnumerable<SqSessionData>> SearchSessions(string cpu, string gpu, string mainboard, string ram, string gameName, string comment)
+        {
+            var client = _squidexClientManager.CreateContentsClient<SqSessionCollection, SqSessionCollectionData>("sessioncollections");
+            using ((IDisposable)client)
+            {
+                var filter = new List<string>();
+                if (!string.IsNullOrWhiteSpace(cpu)) filter.Add($"contains(data/sessions/iv/gameName, '{gameName}')");
+                if (!string.IsNullOrWhiteSpace(gpu)) filter.Add($"contains(data/sessions/iv/gpu, '{gpu}')");
+                if (!string.IsNullOrWhiteSpace(ram)) filter.Add($"contains(data/sessions/iv/ram, '{ram}')");
+                if (!string.IsNullOrWhiteSpace(mainboard)) filter.Add($"contains(data/sessions/iv/mainboard, '{mainboard}')");
+                if (!string.IsNullOrWhiteSpace(gameName)) filter.Add($"contains(data/sessions/iv/gameName, '{gameName}')");
+                if (!string.IsNullOrWhiteSpace(comment)) filter.Add($"contains(data/sessions/iv/comment, '{comment}')");
+                var sessionCollectionResponse = await client.GetAsync(new ContentQuery()
+                {
+                    Top = 20,
+                    Filter = string.Join(" and ", filter)
+                });
+
+                Func<string, string, bool> checkContainsString = (value, searchTerm) => string.IsNullOrWhiteSpace(value) || value.IndexOf(searchTerm, StringComparison.OrdinalIgnoreCase) > -1;
+                Func<SqSessionData, bool> sessionMatchesFilter = (SqSessionData session) =>
+                       checkContainsString(session.Cpu, cpu)
+                    && checkContainsString(session.Gpu, gpu)
+                    && checkContainsString(session.GameName, gameName)
+                    && checkContainsString(session.Mainboard, mainboard)
+                    && checkContainsString(session.Ram, ram);
+
+                return sessionCollectionResponse.Items.SelectMany(collection => collection.Data.Sessions.Where(sessionMatchesFilter));
+            }
+        }
     }
 }
