@@ -40,8 +40,6 @@ public:
 	std::vector<OverlayEntry>	OverlayEntries;
 	BOOL						IsCaptureTimerActive;
 	BOOL						UpdateOSD(LPCSTR lpText);
-	BOOL						IsOSDLocked();
-	BOOL						IsProcessDetected(DWORD processId);
 	CString						GetApiInfo(DWORD processId);
 	std::vector<float>		    GetCurrentFramerate(DWORD processId);
 	std::vector<float>			GetCurrentFramerateFromForegroundWindow();

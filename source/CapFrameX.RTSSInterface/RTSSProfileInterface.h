@@ -4,11 +4,11 @@
 /////////////////////////////////////////////////////////////////////////////
 #pragma once
 /////////////////////////////////////////////////////////////////////////////
-typedef DWORD(*PFNENUMPROFILES)(LPSTR lpProfilesList, DWORD dwProfilesListSize);
+typedef DWORD	(*PFNENUMPROFILES)(LPSTR lpProfilesList, DWORD dwProfilesListSize);
 typedef void	(*PFNLOADPROFILE)(LPCSTR lpProfile);
 typedef void	(*PFNSAVEPROFILE)(LPCSTR lpProfile);
-typedef BOOL(*PFNGETPROFILEPROPERTY)(LPCSTR lpPropertyName, LPBYTE lpPropertyData, DWORD dwPropertySize);
-typedef BOOL(*PFNSETPROFILEPROPERTY)(LPCSTR lpPropertyName, LPBYTE lpPropertyData, DWORD dwPropertySize);
+typedef BOOL	(*PFNGETPROFILEPROPERTY)(LPCSTR lpPropertyName, LPBYTE lpPropertyData, DWORD dwPropertySize);
+typedef BOOL	(*PFNSETPROFILEPROPERTY)(LPCSTR lpPropertyName, LPBYTE lpPropertyData, DWORD dwPropertySize);
 typedef void	(*PFNDELETEPROFILE)(LPCSTR lpProfile);
 typedef void	(*PFNRESETPROFILE)(LPCSTR lpProfile);
 typedef void	(*PFNUPDATEPROFILES)();

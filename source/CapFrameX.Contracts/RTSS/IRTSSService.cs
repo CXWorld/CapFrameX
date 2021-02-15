@@ -9,14 +9,12 @@ namespace CapFrameX.Contracts.RTSS
     {
         ISubject<int> ProcessIdStream { get; }
         bool IsRTSSInstalled();
-        bool IsProcessDetected(int processId);
         string GetApiInfo(int processId);
         Tuple<double, double> GetCurrentFramerate(int processId);
         Tuple<double, double> GetCurrentFramerateFromForegroundWindow();
         Task CheckRTSSRunningAndRefresh();
         Task CheckRTSSRunning();
         void ClearOSD();
-        bool IsOSDLocked();
         void ReleaseOSD();
         void SetOverlayEntries(IOverlayEntry[] entries);
         void SetFormatVariables(string variables);

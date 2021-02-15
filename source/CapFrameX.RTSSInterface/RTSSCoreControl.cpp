@@ -36,36 +36,6 @@ RTSSCoreControl::RTSSCoreControl()
 
 RTSSCoreControl::~RTSSCoreControl() { }
 
-BOOL RTSSCoreControl::IsProcessDetected(DWORD processId)
-{
-	BOOL isProcessDetected = false;
-
-	CreateHandles();
-	if (m_hMapFile)
-	{
-		LPRTSS_SHARED_MEMORY pMem = (LPRTSS_SHARED_MEMORY)m_pMapAddr;
-
-		if (pMem)
-		{
-			if ((pMem->dwSignature == 'RTSS') && (pMem->dwVersion >= 0x00020000))
-			{
-				for (DWORD dwEntry = 0; dwEntry < pMem->dwAppArrSize; dwEntry++)
-				{
-					RTSS_SHARED_MEMORY::LPRTSS_SHARED_MEMORY_APP_ENTRY pEntry = (RTSS_SHARED_MEMORY::LPRTSS_SHARED_MEMORY_APP_ENTRY)((LPBYTE)pMem + pMem->dwAppArrOffset + dwEntry * pMem->dwAppEntrySize);
-
-					if (pEntry->dwProcessID == processId)
-					{
-						isProcessDetected = true;
-						break;
-					}
-				}
-			}
-		}
-	}
-
-	return isProcessDetected;
-}
-
 CString RTSSCoreControl::GetApiInfo(DWORD processId)
 {
 	CString api = "unknown";
@@ -252,6 +222,9 @@ DWORD RTSSCoreControl::EmbedGraph(DWORD dwOffset, FLOAT* lpBuffer, DWORD dwBuffe
 								if (dwOffset + sizeof(RTSS_EMBEDDED_OBJECT_GRAPH) + dwBufferSize * sizeof(FLOAT) > sizeof(pEntry->buffer))
 									//validate embedded object offset and size and ensure that we don't overrun the buffer
 								{
+									UnmapViewOfFile(m_pMapAddr);
+									CloseHandle(m_hMapFile);
+
 									return 0;
 								}
 
@@ -319,8 +292,7 @@ BOOL RTSSCoreControl::UpdateOSD(LPCSTR lpText)
 						//allow primary OSD clients (i.e. EVGA Precision / MSI Afterburner) to use the first slot exclusively, so third party
 						//applications start scanning the slots from the second one
 					{
-						RTSS_SHARED_MEMORY::LPRTSS_SHARED_MEMORY_OSD_ENTRY pEntry =
-							(RTSS_SHARED_MEMORY::LPRTSS_SHARED_MEMORY_OSD_ENTRY)((LPBYTE)pMem + pMem->dwOSDArrOffset + dwEntry * pMem->dwOSDEntrySize);
+						RTSS_SHARED_MEMORY::LPRTSS_SHARED_MEMORY_OSD_ENTRY pEntry = (RTSS_SHARED_MEMORY::LPRTSS_SHARED_MEMORY_OSD_ENTRY)((LPBYTE)pMem + pMem->dwOSDArrOffset + dwEntry * pMem->dwOSDEntrySize);
 
 						if (dwPass)
 						{
@@ -371,70 +343,6 @@ BOOL RTSSCoreControl::UpdateOSD(LPCSTR lpText)
 	}
 
 	return bResult;
-}
-
-BOOL RTSSCoreControl::IsOSDLocked()
-{
-	BOOL bResult = FALSE;
-	BOOL islocked = FALSE;
-
-	CreateHandles();
-	if (m_hMapFile)
-	{
-		LPRTSS_SHARED_MEMORY pMem = (LPRTSS_SHARED_MEMORY)m_pMapAddr;
-
-		if (pMem)
-		{
-			if ((pMem->dwSignature == 'RTSS') &&
-				(pMem->dwVersion >= 0x00020000))
-			{
-				for (DWORD dwPass = 0; dwPass < 2; dwPass++)
-					//1st pass : find previously captured OSD slot
-					//2nd pass : otherwise find the first unused OSD slot and capture it
-				{
-					for (DWORD dwEntry = 1; dwEntry < pMem->dwOSDArrSize; dwEntry++)
-						//allow primary OSD clients (i.e. EVGA Precision / MSI Afterburner) to use the first slot exclusively, so third party
-						//applications start scanning the slots from the second one
-					{
-						RTSS_SHARED_MEMORY::LPRTSS_SHARED_MEMORY_OSD_ENTRY pEntry =
-							(RTSS_SHARED_MEMORY::LPRTSS_SHARED_MEMORY_OSD_ENTRY)((LPBYTE)pMem + pMem->dwOSDArrOffset + dwEntry * pMem->dwOSDEntrySize);
-
-						if (dwPass)
-						{
-							if (!strlen(pEntry->szOSDOwner))
-								strcpy_s(pEntry->szOSDOwner, sizeof(pEntry->szOSDOwner), "CapFrameX");
-						}
-
-						if (!strcmp(pEntry->szOSDOwner, "CapFrameX"))
-						{
-							if (pMem->dwVersion >= 0x00020007)
-								//use extended text slot for v2.7 and higher shared memory, it allows displaying 4096 symbols
-								//instead of 256 for regular text slot
-							{
-								if (pMem->dwVersion >= 0x0002000e)
-									//OSD locking is supported on v2.14 and higher shared memory
-								{
-									DWORD dwBusy = _interlockedbittestandset(&pMem->dwBusy, 0);
-									//bit 0 of this variable will be set if OSD is locked by renderer and cannot be refreshed
-									//at the moment
-									islocked = dwBusy == 0;
-								}
-							}
-
-							pMem->dwOSDFrame++;
-							bResult = TRUE;
-							break;
-						}
-					}
-
-					if (bResult)
-						break;
-				}
-			}
-		}
-	}
-
-	return islocked;
 }
 
 void RTSSCoreControl::ReleaseOSD()
