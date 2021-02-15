@@ -175,10 +175,25 @@ namespace CapFrameX.Webservice.Implementation.Services
                 if (!string.IsNullOrWhiteSpace(mainboard)) filter.Add($"contains(data/sessions/iv/mainboard, '{mainboard}')");
                 if (!string.IsNullOrWhiteSpace(gameName)) filter.Add($"contains(data/sessions/iv/gameName, '{gameName}')");
                 if (!string.IsNullOrWhiteSpace(comment)) filter.Add($"contains(data/sessions/iv/comment, '{comment}')");
-                var sessionCollectionResponse = await client.GetAsync(new ContentQuery()
-                {
-                    Filter = string.Join(" and ", filter)
-                });
+
+                int skip = 0;
+                long total = 0;
+                var sessionCollectionResponseItems = new List<SqSessionCollection>();
+
+                Func<int, Task> loadBatch = async (itemsToSkip) => {
+                    var response = await client.GetAsync(new ContentQuery()
+                    {
+                        Skip = itemsToSkip,
+                        Top = 200,
+                        Filter = string.Join(" and ", filter)
+                    });
+                    total = response.Total;
+                    skip += response.Items.Count();
+                    sessionCollectionResponseItems.AddRange(response.Items);
+                };
+                do {
+                    await loadBatch(skip);
+                } while (sessionCollectionResponseItems.Count() < total);
 
                 Func<string, string, bool> checkContainsString = (value, searchTerm) => string.IsNullOrWhiteSpace(value) || string.IsNullOrWhiteSpace(searchTerm) || value.IndexOf(searchTerm, StringComparison.OrdinalIgnoreCase) > -1;
                 Func<SqSessionData, bool> sessionMatchesFilter = (SqSessionData session) =>
@@ -189,16 +204,16 @@ namespace CapFrameX.Webservice.Implementation.Services
                     && checkContainsString(session.Ram, ram)
                     && checkContainsString(session.Comment, comment);
 
-                return sessionCollectionResponse.Items.SelectMany(collection => collection.Data.Sessions.Where(sessionMatchesFilter)).OrderByDescending(x => x.CreationDate);
+                return sessionCollectionResponseItems.SelectMany(collection => collection.Data.Sessions.Where(sessionMatchesFilter)).OrderByDescending(x => x.CreationDate);
             }
         }
 
-        private async Task UpdateMissingModelData(ContentsResult<SqSessionCollection, SqSessionCollectionData> sessionCollectionResponse)
+        private async Task UpdateMissingModelData(List<SqSessionCollection> sessionCollectionItems)
         {
             var client2 = _squidexClientManager.CreateContentsClient<SqSessionCollection, SqSessionCollectionData>("sessioncollections");
             using ((IDisposable)client2)
             {
-                foreach (var collection in sessionCollectionResponse.Items)
+                foreach (var collection in sessionCollectionItems)
                 {
                     if (collection.Data.Sessions.Any(s => string.IsNullOrWhiteSpace(s.Cpu)))
                     {
