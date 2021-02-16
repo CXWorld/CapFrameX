@@ -29,6 +29,7 @@ namespace OpenHardwareMonitor.Hardware
         Data, // GB = 2^30 Bytes    
         SmallData, // MB = 2^20 Bytes
         Throughput, // MB/s = 2^20 Bytes/s
+        Frequency, // Hz
     }
 
     public struct SensorValue

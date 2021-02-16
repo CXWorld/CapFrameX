@@ -14,6 +14,7 @@ using System.Text;
 using System.Linq;
 using CapFrameX.Contracts.Sensor;
 using CapFrameX.Contracts.RTSS;
+using System.Diagnostics;
 
 namespace OpenHardwareMonitor.Hardware.Nvidia
 {
@@ -24,6 +25,8 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
         private readonly NvDisplayHandle? displayHandle;
         private readonly NVML.NvmlDevice? device;
         private readonly ISensorConfig sensorConfig;
+        private readonly Stopwatch stopwatch;
+        private uint lastpCounter;
 
         private readonly Sensor[] temperatures;
         private readonly Sensor fan;
@@ -39,6 +42,7 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
         private readonly Sensor pcieThroughputRx;
         private readonly Sensor pcieThroughputTx;
         private readonly Control fanControl;
+        private readonly Sensor variableRefreshRate;
 
         public NvidiaGPU(int adapterIndex, NvPhysicalGpuHandle handle,
           NvDisplayHandle? displayHandle, ISettings settings, ISensorConfig config, IRTSSService rTSSService)
@@ -49,6 +53,7 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
             this.handle = handle;
             this.displayHandle = displayHandle;
             this.sensorConfig = config;
+            this.stopwatch = new Stopwatch();
 
             NvGPUThermalSettings thermalSettings = GetThermalSettings();
             temperatures = new Sensor[thermalSettings.Count];
@@ -108,6 +113,8 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
                 ControlModeChanged(fanControl);
                 control.Control = fanControl;
             }
+
+            variableRefreshRate = new Sensor("Variable Refresh Rate", 0, SensorType.Frequency, this, settings);
 
             if (NVML.IsInitialized)
             {
@@ -230,7 +237,6 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
                 foreach (Sensor sensor in temperatures)
                     sensor.Value = null;
             }
-
 
             bool tachReadingOk = false;
             if (sensorConfig.GetSensorEvaluate(fan.IdentifierString))
@@ -545,6 +551,23 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
                 {
                     pcieThroughputTx.Value = null;
                 }
+            }
+
+            if (sensorConfig.GetSensorEvaluate(variableRefreshRate.IdentifierString))
+            {
+                var deltaTicks = stopwatch.ElapsedTicks;
+                stopwatch.Restart();
+                if (NVAPI.NvAPI_GetVBlankCounter(displayHandle.Value, out uint pCounter)
+                    == NvStatus.OK)
+                {
+                    variableRefreshRate.Value = (float)Math.Round((double)(pCounter - lastpCounter) / deltaTicks * Stopwatch.Frequency);
+                    lastpCounter = pCounter;
+                    ActivateSensor(variableRefreshRate);
+                }
+            }
+            else
+            {
+                variableRefreshRate.Value = null;
             }
         }
 

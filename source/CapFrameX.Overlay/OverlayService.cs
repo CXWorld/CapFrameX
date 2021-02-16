@@ -390,6 +390,9 @@ namespace CapFrameX.Overlay
                 case SensorType.Throughput:
                     formatString = "{0,5:F0}";
                     break;
+                case SensorType.Frequency:
+                    formatString = "{0,5:F0}";
+                    break;
             }
 
             return formatString;
@@ -439,6 +442,9 @@ namespace CapFrameX.Overlay
                     break;
                 case SensorType.Throughput:
                     formatString = "MB/s";
+                    break;
+                case SensorType.Frequency:
+                    formatString = "Hz ";
                     break;
             }
 
@@ -539,6 +545,11 @@ namespace CapFrameX.Overlay
                 name = name.Replace(" - Thread #2", "");
             }
 
+            if(name.Contains("Variable Refresh Rate"))
+            {
+                name = "VRR";
+            }
+
             return name;
         }
 
@@ -586,6 +597,9 @@ namespace CapFrameX.Overlay
                     break;
                 case SensorType.Throughput:
                     description = $"{sensor.Name} (MB/s)";
+                    break;
+                case SensorType.Frequency:
+                    description = $"{sensor.Name} (Hz)";
                     break;
             }
 
