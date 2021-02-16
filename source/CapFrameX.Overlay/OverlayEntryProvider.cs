@@ -79,7 +79,8 @@ namespace CapFrameX.Overlay
             _logger.LogDebug("{componentName} Ready", this.GetType().Name);
 
             stopwatch.Stop();
-            _logger.LogInformation(this.GetType().Name + " {initializationTime}s initialization time", Math.Round(stopwatch.ElapsedMilliseconds * 1E-03, 1));
+            _logger.LogInformation(this.GetType().Name + " {initializationTime}s initialization time", 
+                Math.Round(stopwatch.ElapsedMilliseconds * 1E-03, 1));
         }
 
         public async Task<IOverlayEntry[]> GetOverlayEntries(bool updateFormats = true)
@@ -138,8 +139,11 @@ namespace CapFrameX.Overlay
         {
             _overlayEntries = await GetOverlayEntryDefaults();
             _identifierOverlayEntryDict.Clear();
+            _sensorConfig.ResetEvaluate();
             foreach (var entry in _overlayEntries)
             {
+                entry.UpdateShowOnOverlay = UpdateSensorIsActive;
+                _sensorConfig.SetSensorEvaluate(entry.Identifier, entry.ShowOnOverlay);
                 _identifierOverlayEntryDict.TryAdd(entry.Identifier, entry);
             }
 
@@ -476,6 +480,8 @@ namespace CapFrameX.Overlay
             _logger.LogInformation("CPU detected: {cpuName}.", _sensorService.GetCpuName());
             _logger.LogInformation("CPU threads detected: {threadCount}.", Environment.ProcessorCount);
             _logger.LogInformation("GPU detected: {gpuName}.", _sensorService.GetGpuName());
+
+            await _overlayEntryCore.OverlayEntryCoreCompletionSource.Task;
 
             // Sensor data
             _overlayEntryCore.OverlayEntryDict.Values.ForEach(sensor => overlayEntries.TryAdd(sensor.Clone()));

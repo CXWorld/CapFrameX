@@ -23,5 +23,7 @@ namespace CapFrameX.Contracts.Sensor
         Task Save();
 
         void ResetConfig();
+
+        void ResetEvaluate();
     }
 }

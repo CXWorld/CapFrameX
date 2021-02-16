@@ -109,6 +109,11 @@ namespace OpenHardwareMonitor.Hardware
             _activeSensorsDict?.Clear();
         }
 
+        public void ResetEvaluate()
+        {
+            _evalSensorsDict?.Clear();
+        }
+
         private async Task LoadOrSetDefault()
         {
             try
