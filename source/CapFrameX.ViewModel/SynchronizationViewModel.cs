@@ -260,9 +260,13 @@ namespace CapFrameX.ViewModel
 
         public ICommand CopyInputLagStatisticalParameterCommand { get; }
 
-        public ICommand SaveInputLagPlotAsImage { get; }
+        public ICommand SaveInputLagPlotAsSVG{ get; }
 
-        public ICommand SaveDisplayTimesPlotAsImage { get; }
+        public ICommand SaveDisplayTimesPlotAsSVG { get; }
+
+        public ICommand SaveInputLagPlotAsPNG { get; }
+
+        public ICommand SaveDisplayTimesPlotAsPNG { get; }
 
 
         public SynchronizationViewModel(IStatisticProvider frametimeStatisticProvider,
@@ -282,8 +286,10 @@ namespace CapFrameX.ViewModel
             CopyDisplayTimesHistogramDataCommand = new DelegateCommand(CopDisplayTimesHistogramData);
             CopyInputLagHistogramDataCommand = new DelegateCommand(CopyInputLagHistogramData);
             CopyInputLagStatisticalParameterCommand = new DelegateCommand(CopyInputLagStatisticalParameter);
-            SaveInputLagPlotAsImage = new DelegateCommand(() => OnSavePlotAsImage("inputlag"));
-            SaveDisplayTimesPlotAsImage = new DelegateCommand(() => OnSavePlotAsImage("displaytimes"));
+            SaveInputLagPlotAsSVG = new DelegateCommand(() => OnSavePlotAsImage("inputlag", "svg"));
+            SaveDisplayTimesPlotAsSVG = new DelegateCommand(() => OnSavePlotAsImage("displaytimes", "svg"));
+            SaveInputLagPlotAsPNG = new DelegateCommand(() => OnSavePlotAsImage("inputlag", "png"));
+            SaveDisplayTimesPlotAsPNG = new DelegateCommand(() => OnSavePlotAsImage("displaytimes", "png"));
 
             InputLagParameterFormatter = value => value.ToString(string.Format("F{0}",
                 _appConfiguration.FpsValuesRoundingDigits), CultureInfo.InvariantCulture);
@@ -776,33 +782,20 @@ namespace CapFrameX.ViewModel
             }));
         }
 
-        protected void OnSavePlotAsImage(string plotType)
+
+
+        protected void OnSavePlotAsImage(string plotType, string fileFormat)
         {
-            var exporter = new SvgExporter { Width = _appConfiguration.HorizontalGraphExportRes, Height = _appConfiguration.VerticalGraphExportRes };
+            var filename = $"{CurrentGameName}_SynchronizationChartExport_{plotType}";
 
-            using (var memStream = new MemoryStream())
+
+            if (fileFormat == "svg")
             {
-                var illegalFilenameCharsRegex = new Regex(@"[/:*?<>""|]");
-
-                if (plotType == "inputlag")
-                    exporter.Export(InputLagModel, memStream);
-
-                if (plotType == "displaytimes")
-                    exporter.Export(SynchronizationModel, memStream);
-
-                var filename = $"{CurrentGameName}_Synchronization_ChartExport";
-
-                SaveFileDialog dialog = new SaveFileDialog()
-                {
-                    Filter = "SVG files|*.svg",
-                    FileName = $"{illegalFilenameCharsRegex.Replace(filename, string.Empty)}_{plotType}",
-                    DefaultExt = "svg",
-                };
-
-                if (dialog.ShowDialog() == DialogResult.OK)
-                {
-                    File.WriteAllBytes(dialog.FileName, memStream.ToArray());
-                }
+                ImageExport.SavePlotAsSVG(plotType == "inputlag" ? InputLagModel : SynchronizationModel, filename, _appConfiguration.HorizontalGraphExportRes, _appConfiguration.VerticalGraphExportRes);
+            }
+            else if (fileFormat == "png")
+            {
+                ImageExport.SavePlotAsPNG(plotType == "inputlag" ? InputLagModel : SynchronizationModel, filename, _appConfiguration.HorizontalGraphExportRes, _appConfiguration.VerticalGraphExportRes, _appConfiguration.UseDarkMode);
             }
         }
 

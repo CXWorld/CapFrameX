@@ -43,7 +43,8 @@
 					<ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
 						<MenuItem Header="Copy fps values (f)" Command="{Binding CopyFpsValuesCommand}"/>
                         <MenuItem Header="Copy fps points (t, f(t))" Command="{Binding CopyFpsPointsCommand}"/>
-						<MenuItem Header="Save plot as image" Command="{Binding SavePlotAsImage }"/>
+                        <MenuItem Header="Save plot as SVG" Command="{Binding SavePlotAsSVG }"/>
+                        <MenuItem Header="Save plot as PNG" Command="{Binding SavePlotAsPNG }"/>
 					</ContextMenu>
                 </controls:PlotViewCustomZoom.ContextMenu>
 			</controls:PlotViewCustomZoom>

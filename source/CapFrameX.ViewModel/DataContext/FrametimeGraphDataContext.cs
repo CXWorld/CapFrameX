@@ -23,7 +23,10 @@ namespace CapFrameX.ViewModel.DataContext
         public ICommand CopyFrametimeValuesCommand { get; }
 
         public ICommand CopyFrametimePointsCommand { get; }
-        public ICommand SavePlotAsImage { get; }
+
+        public ICommand SavePlotAsSVG { get; }
+
+        public ICommand SavePlotAsPNG { get; }
 
         public PlotModel FrametimeModel { get => PlotModel; }
 
@@ -37,7 +40,8 @@ namespace CapFrameX.ViewModel.DataContext
         {
             CopyFrametimeValuesCommand = new DelegateCommand(OnCopyFrametimeValues);
             CopyFrametimePointsCommand = new DelegateCommand(OnCopyFrametimePoints);
-            SavePlotAsImage = new DelegateCommand(() => OnSavePlotAsImage("frametimes"));
+            SavePlotAsSVG = new DelegateCommand(() => OnSavePlotAsImage("frametimes", "svg"));
+            SavePlotAsPNG = new DelegateCommand(() => OnSavePlotAsImage("frametimes", "png"));
             _frametimePlotBuilder = new FrametimePlotBuilder(appConfiguration, frametimesStatisticProvider);
         }
 

@@ -139,7 +139,8 @@
                                                 </controls:PlotViewCustomZoom.DefaultTrackerTemplate>
                                                 <controls:PlotViewCustomZoom.ContextMenu>
                                                     <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
-                                                        <MenuItem Header="Save plot as image" Command="{Binding SaveFrametimePlotAsImage }"/>
+                                                        <MenuItem Header="Save plot as SVG" Command="{Binding SaveFrametimePlotAsSVG }"/>
+                                                        <MenuItem Header="Save plot as PNG" Command="{Binding SaveFrametimePlotAsPNG }"/>
                                                     </ContextMenu>
                                                 </controls:PlotViewCustomZoom.ContextMenu>
                                             </controls:PlotViewCustomZoom>
@@ -169,7 +170,8 @@
                                                     </controls:PlotViewCustomZoom.DefaultTrackerTemplate>
                                                     <controls:PlotViewCustomZoom.ContextMenu>
                                                         <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
-                                                            <MenuItem Header="Save plot as image" Command="{Binding SaveFPSPlotAsImage }"/>
+                                                            <MenuItem Header="Save plot as SVG" Command="{Binding SaveFPSPlotAsSVG }"/>
+                                                            <MenuItem Header="Save plot as PNG" Command="{Binding SaveFPSPlotAsPNG }"/>
                                                         </ContextMenu>
                                                     </controls:PlotViewCustomZoom.ContextMenu>
                                                 </controls:PlotViewCustomZoom>

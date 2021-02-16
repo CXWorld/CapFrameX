@@ -61,7 +61,8 @@
 								 MouseDoubleClick="ResetInputLagChart_MouseDoubleClick" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
                             <controls:PlotViewCustomZoom.ContextMenu>
                                 <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
-                                    <MenuItem Header="Save plot as image" Command="{Binding SaveInputLagPlotAsImage }"/>
+                                    <MenuItem Header="Save plot as SVG" Command="{Binding SaveInputLagPlotAsSVG }"/>
+                                    <MenuItem Header="Save plot as PNG" Command="{Binding SaveInputLagPlotAsPNG }"/>
                                 </ContextMenu>
                             </controls:PlotViewCustomZoom.ContextMenu>
                         </controls:PlotViewCustomZoom>
@@ -148,7 +149,8 @@
                             <controls:PlotViewCustomZoom.ContextMenu>
                                 <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
                                     <MenuItem Header="Copy until displayed time values" Command="{Binding CopyUntilDisplayedTimesValuesCommand}"/>
-                                    <MenuItem Header="Save plot as image" Command="{Binding SaveDisplayTimesPlotAsImage}"/>
+                                    <MenuItem Header="Save plot as SVG" Command="{Binding SaveDisplayTimesPlotAsSVG}"/>
+                                    <MenuItem Header="Save plot as PNG" Command="{Binding SaveDisplayTimesPlotAsPNG}"/>
                                 </ContextMenu>
                             </controls:PlotViewCustomZoom.ContextMenu>
                         </controls:PlotViewCustomZoom>

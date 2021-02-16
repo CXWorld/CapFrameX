@@ -7,10 +7,7 @@ using CapFrameX.Statistics.PlotBuilder.Contracts;
 using OxyPlot;
 using Prism.Events;
 using Prism.Mvvm;
-using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
-using System.Windows.Forms;
 
 namespace CapFrameX.ViewModel.DataContext
 {
@@ -49,34 +46,22 @@ namespace CapFrameX.ViewModel.DataContext
 			}
 		}
 
-		protected void OnSavePlotAsImage(string plotType)
+		protected void OnSavePlotAsImage(string plotType, string fileFormat)
 		{
-			var exporter = new SvgExporter { Width = AppConfiguration.HorizontalGraphExportRes, Height = AppConfiguration.VerticalGraphExportRes};
-
-			using (var memStream = new MemoryStream())
-			{
-				var illegalFilenameCharsRegex = new Regex(@"[/:*?<>""|]");
-
-				exporter.Export(PlotModel, memStream);
-				var filename = string.Join("-", new string[] {
+			var filename = string.Join("-", new string[] {
 					string.IsNullOrWhiteSpace(RecordSession.Info.GameName) ? RecordSession.Info.ProcessName: RecordSession.Info.GameName,
 					RecordSession.Info.Processor,
 					RecordSession.Info.GPU,
 					RecordSession.Info.SystemRam,
-					RecordSession.Info.Comment
+					RecordSession.Info.Comment,
+					plotType
 				}.Where(filenamePart => !string.IsNullOrWhiteSpace(filenamePart)));
-
-				SaveFileDialog dialog = new SaveFileDialog()
-				{
-					Filter = "SVG files|*.svg",
-					FileName = $"{illegalFilenameCharsRegex.Replace(filename, string.Empty)}_{plotType}",
-					DefaultExt = "svg",
-				};
-
-				if (dialog.ShowDialog() == DialogResult.OK)
-				{
-					File.WriteAllBytes(dialog.FileName, memStream.ToArray());
-				}
+			if (fileFormat == "svg")
+			{
+				ImageExport.SavePlotAsSVG(PlotModel, filename, AppConfiguration.HorizontalGraphExportRes, AppConfiguration.VerticalGraphExportRes);
+			} else if(fileFormat == "png")
+            {
+				ImageExport.SavePlotAsPNG(PlotModel, filename, AppConfiguration.HorizontalGraphExportRes, AppConfiguration.VerticalGraphExportRes, AppConfiguration.UseDarkMode);
 			}
 		}
 
