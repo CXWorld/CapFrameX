@@ -12,13 +12,15 @@ namespace CapFrameX.ViewModel
 		Zero_Ten = 3,
 		[Description("0-20ms")]
 		Zero_Twenty = 4,
+		[Description("0-30ms")]
+		Zero_Thirty = 5,
 		[Description("0-40ms")]
-		Zero_Forty = 5,
+		Zero_Forty = 6,
 		[Description("0-60ms")]
-		Zero_Sixty = 6,
+		Zero_Sixty = 7,
 		[Description("0-80ms")]
-		Zero_Eighty = 7,
+		Zero_Eighty = 8,
 		[Description("0-100ms")]
-		Zero_Hundred = 8
+		Zero_Hundred = 9
 	}
 }

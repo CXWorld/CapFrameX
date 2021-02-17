@@ -1215,6 +1215,9 @@ namespace CapFrameX.ViewModel
                 case EChartYAxisSetting.Zero_Twenty:
                     setting = new Tuple<double, double>(0, 20);
                     break;
+                case EChartYAxisSetting.Zero_Thirty:
+                    setting = new Tuple<double, double>(0, 30);
+                    break;
                 case EChartYAxisSetting.Zero_Forty:
                     setting = new Tuple<double, double>(0, 40);
                     break;
