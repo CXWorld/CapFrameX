@@ -45,7 +45,7 @@ namespace CapFrameX.Data
             var exporter = new OxyPlot.Wpf.PngExporter {
                 Width = horizontalRes,
                 Height = verticalRes,
-                Background = isDarkMode ? OxyColor.Parse("#1AFFFFFF") : OxyColor.Parse("#f2f2f2")
+                Background = isDarkMode ? OxyColor.Parse("#414b54") : OxyColor.Parse("#f2f2f2")
             };  
 
             using(var memoryStream = new MemoryStream())
