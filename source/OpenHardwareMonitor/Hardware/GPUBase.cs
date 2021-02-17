@@ -1,17 +1,48 @@
 ﻿using CapFrameX.Contracts.RTSS;
 using Serilog;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reactive.Linq;
 
 namespace OpenHardwareMonitor.Hardware
 {
+    internal class RefreshRateBuffer
+    {
+        private int _size;
+        private List<float> _buffer;
+
+        public IEnumerable<float> RefreshRates => _buffer;
+
+        public RefreshRateBuffer(int size)
+        {
+            _size = size;
+            _buffer = new List<float>(size + 1);
+        }
+
+        public void Add(float sample)
+        {
+            _buffer.Add(sample);
+            if (_buffer.Count > _size)
+            {
+                _buffer.RemoveAt(0);
+            }
+        }
+
+        public void Clear()
+        {
+            _buffer?.Clear();
+        }
+    }
+
+
     internal abstract class GPUBase : Hardware
     {
         protected const float SCALE = 1024 * 1024 * 1024;
 
         protected readonly object _performanceCounterLock = new object();
+        protected readonly object _displayLock = new object();
 
         protected Sensor memoryUsageDedicated;
         protected Sensor memoryUsageShared;
@@ -23,8 +54,14 @@ namespace OpenHardwareMonitor.Hardware
         protected PerformanceCounter dedicatedVramUsageProcessPerformCounter;
         protected PerformanceCounter sharedVramUsageProcessPerformCounter;
 
+        protected Display display;
+        protected float refreshRateCurrentWindowHandle;
+        protected RefreshRateBuffer refreshRateBuffer;
+
         public GPUBase(string name, Identifier identifier, ISettings settings, IRTSSService rTSSService) : base(name, identifier, settings)
         {
+            refreshRateBuffer = new RefreshRateBuffer(2);
+
             try
             {
                 if (PerformanceCounterCategory.Exists("GPU Adapter Memory"))
@@ -86,32 +123,58 @@ namespace OpenHardwareMonitor.Hardware
                             {
                                 dedicatedVramUsageProcessPerformCounter = null;
                                 sharedVramUsageProcessPerformCounter = null;
-                                return;
                             }
-
-                            string idString = $"pid_{id}_luid";
-
-                            var instances = category.GetInstanceNames();
-                            if (instances != null && instances.Any())
+                            else
                             {
-                                var pid = instances.FirstOrDefault(instance => instance.Contains(idString));
+                                string idString = $"pid_{id}_luid";
 
-                                if (pid != null)
+                                var instances = category.GetInstanceNames();
+                                if (instances != null && instances.Any())
                                 {
-                                    dedicatedVramUsageProcessPerformCounter = new PerformanceCounter("GPU Process Memory", "Dedicated Usage", pid);
-                                    sharedVramUsageProcessPerformCounter = new PerformanceCounter("GPU Process Memory", "Shared Usage", pid);
+                                    var pid = instances.FirstOrDefault(instance => instance.Contains(idString));
+
+                                    if (pid != null)
+                                    {
+                                        dedicatedVramUsageProcessPerformCounter = new PerformanceCounter("GPU Process Memory", "Dedicated Usage", pid);
+                                        sharedVramUsageProcessPerformCounter = new PerformanceCounter("GPU Process Memory", "Shared Usage", pid);
+                                    }
+                                    else
+                                    {
+                                        dedicatedVramUsageProcessPerformCounter = null;
+                                        sharedVramUsageProcessPerformCounter = null;
+                                    }
                                 }
                                 else
                                 {
                                     dedicatedVramUsageProcessPerformCounter = null;
                                     sharedVramUsageProcessPerformCounter = null;
+                                    Log.Logger.Error("Error while creating GPU process memory performance counter. No instances found.");
                                 }
+                            }
+                        }
+
+                        lock (_displayLock)
+                        {
+                            refreshRateBuffer.Clear();
+
+                            if (id == 0)
+                            {
+                                display = null;
+                                refreshRateCurrentWindowHandle = 0;
                             }
                             else
                             {
-                                dedicatedVramUsageProcessPerformCounter = null;
-                                sharedVramUsageProcessPerformCounter = null;
-                                Log.Logger.Error("Error while creating GPU process memory performance counter. No instances found.");
+                                try
+                                {
+                                    var process = Process.GetProcessById(id);
+                                    display = new Display(process.MainWindowHandle);
+                                    refreshRateCurrentWindowHandle = display.GetDisplayRefreshRate();
+                                }
+                                catch
+                                {
+                                    display = null;
+                                    refreshRateCurrentWindowHandle = 0;
+                                }
                             }
                         }
                     });

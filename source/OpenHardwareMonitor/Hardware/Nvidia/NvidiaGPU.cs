@@ -555,12 +555,20 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
 
             if (sensorConfig.GetSensorEvaluate(variableRefreshRate.IdentifierString))
             {
-                var deltaTicks = stopwatch.ElapsedTicks;
-                stopwatch.Restart();
                 if (NVAPI.NvAPI_GetVBlankCounter(displayHandle.Value, out uint pCounter)
                     == NvStatus.OK)
                 {
-                    variableRefreshRate.Value = (float)Math.Round((double)(pCounter - lastpCounter) / deltaTicks * Stopwatch.Frequency);
+                    var deltaTicks = stopwatch.ElapsedTicks;
+                    stopwatch.Restart();
+
+                    lock (_displayLock)
+                    {
+                        var currentRefreshRate = (float)(pCounter - lastpCounter) / deltaTicks * Stopwatch.Frequency;
+                        refreshRateBuffer.Add(currentRefreshRate);
+                        var refreshRateFiltered = (float)Math.Ceiling(refreshRateBuffer.RefreshRates.Average());
+                        variableRefreshRate.Value = refreshRateFiltered > refreshRateCurrentWindowHandle ? refreshRateCurrentWindowHandle : refreshRateFiltered;
+                    }
+
                     lastpCounter = pCounter;
                     ActivateSensor(variableRefreshRate);
                 }
