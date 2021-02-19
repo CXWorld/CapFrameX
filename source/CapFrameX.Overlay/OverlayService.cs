@@ -149,7 +149,7 @@ namespace CapFrameX.Overlay
             });
         }
 
-        public void StartDelayCountdown(double seconds)
+        public void SetDelayCountdown(double seconds)
         {
             IObservable<long> obs = Extensions.ObservableExtensions.CountDown(seconds);
             _rTSSService.SetIsCaptureTimerActive(true);

@@ -71,6 +71,8 @@ namespace CapFrameX.Data
             => _captureStatusChange.AsObservable();
         public bool LockCaptureService { get; private set; }
 
+        public bool DelayRunning { get; set; }
+
         public bool OSDAutoDisabled
         {
             get { return _oSDAutoDisabled; }
@@ -136,13 +138,22 @@ namespace CapFrameX.Data
             if (options.RecordDirectory != null && !Directory.Exists(options.RecordDirectory))
                 throw new Exception($"RecordDirectory {options.RecordDirectory} does not exist");
 
-            IsCapturing = true;
+
             if (options.CaptureDelay > 0d)
             {
+                DelayRunning = true;
                 // Start overlay delay countdown timer
-                _overlayService.StartDelayCountdown(options.CaptureDelay);
+                _overlayService.SetDelayCountdown(options.CaptureDelay);
                 await Task.Delay(TimeSpan.FromSeconds(options.CaptureDelay + 1));
             }
+
+            if (options.CaptureDelay > 0d && !DelayRunning)
+            {
+                return;
+            }
+
+            DelayRunning = false;
+            IsCapturing = true;
 
             if (_appConfiguration.IsOverlayActive && _appConfiguration.AutoDisableOverlay)
             {
@@ -151,7 +162,7 @@ namespace CapFrameX.Data
                 _overlayService.IsOverlayActiveStream.OnNext(false);
                 OSDAutoDisabled = true;
             }
-            
+
             _soundManager.PlaySound(Sound.CaptureStarted);
 
             _timestampStartCapture = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds();
@@ -209,8 +220,8 @@ namespace CapFrameX.Data
                         {
                             intializedStartTime = true;
 
-                            // stop archive
-                            _fillArchive = false;
+                                // stop archive
+                                _fillArchive = false;
                             _disposableArchiveStream?.Dispose();
 
                             AddLoggerEntry("Stopped filling Archive");

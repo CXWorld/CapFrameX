@@ -374,7 +374,7 @@ namespace CapFrameX.ViewModel
                 _soundManager.PlaySound(Sound.MoreThanOneProcess);
                 return;
             }
-            else if (!_captureManager.IsCapturing)
+            else if (!_captureManager.IsCapturing && !_captureManager.DelayRunning)
             {
                 string processToCapture = SelectedProcessToCapture ?? ProcessesToCapture.FirstOrDefault();
                 var processInfo = ProcessesInfo.FirstOrDefault(info => info.Item1 == processToCapture);
@@ -402,6 +402,12 @@ namespace CapFrameX.ViewModel
             }
             else
             {
+                if(_captureManager.DelayRunning)
+                {
+                    _captureManager.DelayRunning = false;
+                    _overlayService.SetDelayCountdown(0);
+                    return;
+                }
                 Task.Run(async () =>
                 {
                     try
