@@ -158,7 +158,7 @@
                     </DataGrid>
 
                     <StackPanel Grid.Row="1" Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Bottom">
-                        <StackPanel Height="75" Margin="15 5 0 0" Orientation="Horizontal" IsEnabled="{Binding AreButtonsActive}">
+                        <StackPanel Height="75" Margin="15 5 0 0" Orientation="Horizontal">
                             <StackPanel Margin="0 15 0 0" VerticalAlignment="Center" Orientation="Horizontal">
                                 <CheckBox IsChecked="{Binding UseSensorLogging, Mode=TwoWay}">
                                     <CheckBox.ToolTip>

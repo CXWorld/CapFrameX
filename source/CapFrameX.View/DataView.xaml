@@ -572,7 +572,7 @@
                     <StackPanel Margin="10 0 10 0" VerticalAlignment="Center"  Orientation="Horizontal">
                         <TextBlock Foreground="{DynamicResource MaterialDesignBody}"><Run Text="Custom title:"/></TextBlock>
                         <ToggleButton x:Name="ShowCustomTitleToggleButton" VerticalAlignment="Center" Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
-								  ToolTip="Show custom title edit box" IsChecked="{Binding ShowCustomTitle}"/>
+								  ToolTip="Show custom title edit box"/>
                     </StackPanel>
                     <StackPanel  Margin="10 0 10 0" VerticalAlignment="Center" Orientation="Horizontal">
                         <TextBlock Foreground="{DynamicResource MaterialDesignBody}"><Run Text="Remove outliers:"/></TextBlock>
