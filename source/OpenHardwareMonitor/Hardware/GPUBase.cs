@@ -131,10 +131,11 @@ namespace OpenHardwareMonitor.Hardware
                                 var instances = category.GetInstanceNames();
                                 if (instances != null && instances.Any())
                                 {
-                                    var pid = instances.FirstOrDefault(instance => instance.Contains(idString));
+                                    var pids = instances.Where(instance => instance.Contains(idString));
 
-                                    if (pid != null)
+                                    if (pids != null)
                                     {
+                                        var pid = GetMaximumPid(pids);
                                         dedicatedVramUsageProcessPerformCounter = new PerformanceCounter("GPU Process Memory", "Dedicated Usage", pid);
                                         sharedVramUsageProcessPerformCounter = new PerformanceCounter("GPU Process Memory", "Shared Usage", pid);
                                     }
@@ -184,6 +185,25 @@ namespace OpenHardwareMonitor.Hardware
             {
                 Log.Logger.Error(ex, "Error while creating GPU process memory performance counter.");
             }
+        }
+
+        private string GetMaximumPid(IEnumerable<string> pids)
+        {
+            string maxPid = string.Empty;
+            float maxVramUsage = 0f;
+            foreach (var pid in pids)
+            {
+                var currentDedicatedVramUsageProcessPerformCounter = new PerformanceCounter("GPU Process Memory", "Dedicated Usage", pid);
+
+                float currentVramUsage = currentDedicatedVramUsageProcessPerformCounter.NextValue();
+                if (currentDedicatedVramUsageProcessPerformCounter.NextValue() >= maxVramUsage)
+                {
+                    maxVramUsage = currentVramUsage;
+                    maxPid = pid;
+                }
+            }
+
+            return maxPid;
         }
     }
 }
