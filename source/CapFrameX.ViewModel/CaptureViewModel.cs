@@ -9,7 +9,6 @@ using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Hotkey;
 using CapFrameX.PresentMonInterface;
 using CapFrameX.Statistics.NetStandard;
-using Gma.System.MouseKeyHook;
 using Microsoft.Extensions.Logging;
 using OxyPlot;
 using OxyPlot.Axes;
@@ -21,7 +20,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
@@ -53,6 +51,7 @@ namespace CapFrameX.ViewModel
         private string _selectedProcessToIgnore;
         private string _captureStateInfo = string.Empty;
         private string _captureTimeString = "0";
+        private string _captureDelayString = "0";
         private string _captureStartDelayString = "0";
         private double _captureTime;
         private string _loggerOutput = string.Empty;
@@ -107,12 +106,15 @@ namespace CapFrameX.ViewModel
             }
         }
 
-        public double CaptureTime
+        public string CaptureDelayString
         {
-            get { return _appConfiguration.CaptureTime; }
+            get { return _captureDelayString; }
             set
             {
-                _captureTime = value;
+                _captureDelayString = value;
+
+                if (double.TryParse(_captureDelayString, out _))
+                    _appConfiguration.CaptureDelay = Convert.ToDouble(value, CultureInfo.InvariantCulture);
                 RaisePropertyChanged();
             }
         }
@@ -292,6 +294,7 @@ namespace CapFrameX.ViewModel
                 $"Press {CaptureHotkeyString} to start capture of the running process.";
             SelectedSoundMode = _appConfiguration.HotkeySoundMode;
             CaptureTimeString = _appConfiguration.CaptureTime.ToString(CultureInfo.InvariantCulture);
+            CaptureDelayString = _appConfiguration.CaptureDelay.ToString(CultureInfo.InvariantCulture);
             _disposableHeartBeat?.Dispose();
             _disposableHeartBeat = GetListUpdatHeartBeat();
             _updateCurrentProcess = _eventAggregator.GetEvent<PubSubEvent<ViewMessages.CurrentProcessToCapture>>(); ;
@@ -382,7 +385,8 @@ namespace CapFrameX.ViewModel
                     {
                         await _captureManager.StartCapture(new CaptureOptions()
                         {
-                            CaptureTime = CaptureTime,
+                            CaptureTime = _appConfiguration.CaptureTime,
+                            CaptureDelay = _appConfiguration.CaptureDelay,
                             CaptureFileMode = AppConfiguration.CaptureFileMode,
                             ProcessInfo = processInfo,
                             Remote = false

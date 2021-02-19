@@ -35,6 +35,7 @@ namespace CapFrameX.Overlay
         private readonly IOverlayEntryCore _overlayEntryCore;
 
         private IDisposable _disposableCaptureTimer;
+        private IDisposable _disposableDelayCountdown;
         private IDisposable _disposableCountdown;
 
         private IList<string> _runHistory = new List<string>();
@@ -142,6 +143,24 @@ namespace CapFrameX.Overlay
             _disposableCountdown = obs.Subscribe(t =>
             {
                 SetCaptureTimerValue((int)t);
+
+                if (t == 0)
+                    _rTSSService.SetIsCaptureTimerActive(false);
+            });
+        }
+
+        public void StartDelayCountdown(double seconds)
+        {
+            IObservable<long> obs = Extensions.ObservableExtensions.CountDown(seconds);
+            _rTSSService.SetIsCaptureTimerActive(true);
+
+            SetCaptureTimerValue(-(int)seconds);
+            _disposableDelayCountdown?.Dispose();
+            _disposableDelayCountdown = obs.Subscribe(t =>
+            {
+                SetCaptureTimerValue((int)-t);
+
+                Console.WriteLine($"Capture delay countdown: {-t}s");
 
                 if (t == 0)
                     _rTSSService.SetIsCaptureTimerActive(false);
@@ -545,7 +564,7 @@ namespace CapFrameX.Overlay
                 name = name.Replace(" - Thread #2", "");
             }
 
-            if(name.Contains("Variable Refresh Rate"))
+            if (name.Contains("Variable Refresh Rate"))
             {
                 name = "VRR";
             }
@@ -648,7 +667,7 @@ namespace CapFrameX.Overlay
         {
             return Observable
                 .Timer(DateTimeOffset.UtcNow, TimeSpan.FromSeconds(1))
-                .Subscribe(x => SetCaptureTimerValue((int)x));
+                .Subscribe(t => SetCaptureTimerValue((int)t));
         }
 
         private string GetAggregation()

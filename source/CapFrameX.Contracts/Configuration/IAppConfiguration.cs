@@ -57,6 +57,8 @@ namespace CapFrameX.Contracts.Configuration
 
 		double CaptureTime { get; set; }
 
+		double CaptureDelay { get; set; }
+
 		double VoiceSoundLevel { get; set; }
 
 		double SimpleSoundLevel { get; set; }

@@ -136,6 +136,14 @@ namespace CapFrameX.Data
             if (options.RecordDirectory != null && !Directory.Exists(options.RecordDirectory))
                 throw new Exception($"RecordDirectory {options.RecordDirectory} does not exist");
 
+            IsCapturing = true;
+            if (options.CaptureDelay > 0d)
+            {
+                // Start overlay delay countdown timer
+                _overlayService.StartDelayCountdown(options.CaptureDelay);
+                await Task.Delay(TimeSpan.FromSeconds(options.CaptureDelay + 1));
+            }
+
             if (_appConfiguration.IsOverlayActive && _appConfiguration.AutoDisableOverlay)
             {
                 _rtssService.OnOSDOff();
@@ -143,8 +151,7 @@ namespace CapFrameX.Data
                 _overlayService.IsOverlayActiveStream.OnNext(false);
                 OSDAutoDisabled = true;
             }
-
-            IsCapturing = true;
+            
             _soundManager.PlaySound(Sound.CaptureStarted);
 
             _timestampStartCapture = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds();
@@ -601,6 +608,7 @@ namespace CapFrameX.Data
     {
         public (string, int) ProcessInfo;
         public double CaptureTime;
+        public double CaptureDelay;
         public string CaptureFileMode;
         public string RecordDirectory;
         public bool Remote;

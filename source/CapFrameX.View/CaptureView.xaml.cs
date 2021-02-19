@@ -102,7 +102,7 @@ namespace CapFrameX.View
 			// FrametimePlotView.ResetAllAxes();
 		}
 
-		private void CaptureTimeTextBox_PreviewKeyDown(object sender, KeyEventArgs e)
+		private void TextBox_PreviewKeyDown(object sender, KeyEventArgs e)
 		{
 			var key = e.Key;
 

@@ -92,7 +92,7 @@ namespace CapFrameX.Configuration
 
         public bool IsGpuAccelerationActive
         {
-            get => Get<bool>(true);
+            get => Get<bool>(false);
             set => Set(value);
         }
 
@@ -137,7 +137,13 @@ namespace CapFrameX.Configuration
 
         public double CaptureTime
         {
-            get => Get<double>(30d);
+            get => Get<double>(20d);
+            set => Set(value);
+        }
+
+        public double CaptureDelay
+        {
+            get => Get<double>(0d);
             set => Set(value);
         }
 
