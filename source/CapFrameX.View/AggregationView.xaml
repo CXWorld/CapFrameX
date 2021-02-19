@@ -11,6 +11,7 @@
 			 xmlns:proxy="clr-namespace:CapFrameX.MVVM;assembly=CapFrameX.MVVM"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800"
+             Background="{DynamicResource MaterialDesignBackground}"
 			 prism:ViewModelLocator.AutoWireViewModel="True">
 	<UserControl.Resources>
         <ResourceDictionary>
@@ -18,7 +19,7 @@
 			<mvvm:EnumDescriptionConverter x:Key="EnumDescriptionConverter"/>
 		</ResourceDictionary>
 	</UserControl.Resources>
-	<Grid>
+    <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="50"/>
             <RowDefinition Height="Auto"/>

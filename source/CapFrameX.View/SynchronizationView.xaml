@@ -12,6 +12,7 @@
 			 xmlns:controls="clr-namespace:CapFrameX.View.Controls"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800"
+             Background="{DynamicResource MaterialDesignBackground}"
 			 prism:ViewModelLocator.AutoWireViewModel="True">
     <UserControl.Resources>
         <ResourceDictionary>
@@ -44,7 +45,7 @@
             <RowDefinition Height="65"></RowDefinition>
         </Grid.RowDefinitions>
         <TextBlock Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Bottom" FontWeight="Bold" FontSize="16" Foreground="{DynamicResource MaterialDesignBody}" Text="{Binding CurrentGameName}"/>
-        <TabControl Grid.Row="1" Grid.Column="0" Background="{DynamicResource MaterialDesignPaper}">
+        <TabControl Grid.Row="1" Grid.Column="0" Background="{DynamicResource MaterialDesignBackground}">
             <TabItem Width="150" Foreground="{DynamicResource MaterialDesignBody}">
                 <TabItem.Header>
                     <Label FontSize="12">Input lag approximation</Label>

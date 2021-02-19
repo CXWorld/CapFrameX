@@ -13,6 +13,7 @@
 			 xmlns:i="clr-namespace:Microsoft.Xaml.Behaviors;assembly=Microsoft.Xaml.Behaviors"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800"
+             Background="{DynamicResource MaterialDesignBackground}"
              prism:ViewModelLocator.AutoWireViewModel="True">
     <UserControl.Resources>
         <ResourceDictionary>
@@ -43,7 +44,7 @@
 							IsOpen="{Binding CreateFolderDialogIsOpen}"
 							DialogContent="{Binding CreateFolderDialogContent}"
 							CloseOnClickAway="False">
-                <Grid Name="ExpanderGrid" Background="{DynamicResource MaterialDesignPaper}">
+                <Grid Name="ExpanderGrid" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" ></RowDefinition>
                         <RowDefinition Height="Auto" ></RowDefinition>

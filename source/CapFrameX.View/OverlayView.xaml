@@ -13,6 +13,7 @@
 			 xmlns:prism="http://prismlibrary.com/"
              mc:Ignorable="d" 
              d:DesignHeight="1000" d:DesignWidth="1200"
+             Background="{DynamicResource MaterialDesignBackground}"
 			 prism:ViewModelLocator.AutoWireViewModel="True">
     <UserControl.Resources>
         <ResourceDictionary>
@@ -53,7 +54,7 @@
             <DockPanel Margin="0 10 0 10"
                    Visibility="{Binding  IsRTSSInstalled, Converter={StaticResource TrueToVisibleConverter}}">
                 <!--DataGrid and Overlay hotkey-->
-                <Grid>
+                <Grid >
                     <Grid.RowDefinitions>
                         <RowDefinition Height="45"></RowDefinition>
                         <RowDefinition Height="1*"></RowDefinition>

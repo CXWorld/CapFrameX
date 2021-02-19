@@ -13,6 +13,7 @@
 			 xmlns:prism="http://prismlibrary.com/"
              mc:Ignorable="d" 
              d:DesignHeight="1000" d:DesignWidth="1200"
+             Background="{DynamicResource MaterialDesignBackground}"
 			 prism:ViewModelLocator.AutoWireViewModel="True">
     <UserControl.Resources>
         <ResourceDictionary>

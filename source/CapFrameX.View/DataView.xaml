@@ -1,5 +1,4 @@
-﻿<UserControl
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+﻿<UserControl xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -15,6 +14,7 @@
 			 x:Name="DataViewUserControl"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800"
+             Background="{DynamicResource MaterialDesignBackground}"
              prism:ViewModelLocator.AutoWireViewModel="True">
     <UserControl.Resources>
         <ResourceDictionary>
@@ -50,13 +50,13 @@
             </Style>
         </ResourceDictionary>
     </UserControl.Resources>
-    <Grid Margin="0 10 0 0">
+    <Grid Margin="0 6 0 0">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="1*"/>
         </Grid.RowDefinitions>
         <Grid Grid.Row="0">
-            <TextBlock HorizontalAlignment="Center" FontWeight="Bold" FontSize="18" Margin="0 0 0 -5" Text="{Binding CurrentGameName}" 
+            <TextBlock HorizontalAlignment="Center" FontWeight="Bold" FontSize="18" Text="{Binding CurrentGameName}" 
                        Visibility="{Binding IsChecked, Converter={StaticResource TrueToCollapsedConverter}, ElementName=ShowCustomTitleToggleButton}"
 					   Foreground="{DynamicResource MaterialDesignBody}"/>
             <TextBox HorizontalAlignment="Center" Visibility="{Binding IsChecked, Converter={StaticResource TrueToVisibleConverter}, ElementName=ShowCustomTitleToggleButton}"
@@ -117,7 +117,7 @@
                                             </ComboBox.ItemTemplate>
                                         </ComboBox>
                                     </Grid>
-                                    <controls:FrametimeGraphControl DataContext="{Binding FrametimeGraphDataContext}" Background="{DynamicResource MaterialDesignPaper}"/>
+                                    <controls:FrametimeGraphControl DataContext="{Binding FrametimeGraphDataContext}" Background="{DynamicResource MaterialDesignBackground}"/>
                                 </Grid>
                             </TabItem>
                             <TabItem>
@@ -136,7 +136,7 @@
                                             </ComboBox.ItemTemplate>
                                         </ComboBox>
                                     </Grid>
-                                    <controls:FpsGraphControl DataContext="{Binding FpsGraphDataContext}" Background="{DynamicResource MaterialDesignPaper}"/>
+                                    <controls:FpsGraphControl DataContext="{Binding FpsGraphDataContext}" Background="{DynamicResource MaterialDesignBackground}"/>
                                 </Grid>
                             </TabItem>
                             <TabItem>
@@ -374,11 +374,11 @@
                                     <DataGrid.Resources>
                                         <Style TargetType="{x:Type DataGridRow}">
                                             <Setter Property="Height" Value="25" />
-                                            <Setter Property="Background" Value="{DynamicResource MaterialDesignPaper}"/>
+                                            <Setter Property="Background" Value="{DynamicResource MaterialDesignBackground}"/>
                                         </Style>
                                         <Style TargetType="{x:Type DataGridCell}">
                                             <Setter Property="Padding" Value="5 5 5 0" />
-                                            <Setter Property="Background" Value="{DynamicResource MaterialDesignPaper}"/>
+                                            <Setter Property="Background" Value="{DynamicResource MaterialDesignBackground}"/>
                                             <Setter Property="BorderBrush" Value="Transparent"/>
                                             <Setter Property="Validation.ErrorTemplate" Value="{x:Null}" />
                                             <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBody}" />
@@ -599,7 +599,7 @@
                     <ScrollViewer.Resources>
                         <sys:Double x:Key="{x:Static SystemParameters.VerticalScrollBarWidthKey}">3</sys:Double>
                     </ScrollViewer.Resources>
-                    <ItemsControl ItemsSource="{Binding SystemInfos}" Grid.IsSharedSizeScope="True" Background="{DynamicResource MaterialDesignPaper}"
+                    <ItemsControl ItemsSource="{Binding SystemInfos}" Grid.IsSharedSizeScope="True" 
 										  Tag="{Binding DataContext, ElementName=DataViewUserControl}">
                         <ItemsControl.ContextMenu>
                             <ContextMenu DataContext="{Binding PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
