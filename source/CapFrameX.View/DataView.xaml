@@ -228,7 +228,7 @@
                                 <lvc:Axis Title="FPS" FontSize="11" MinValue="0" MaxValue="{Binding BarMaxValue}" 
 								  LabelFormatter="{Binding ParameterFormatter}" Foreground="{DynamicResource MaterialDesignBody}">
                                     <lvc:Axis.Separator>
-                                        <lvc:Separator StrokeThickness="0.3" IsEnabled="True" Step="{Binding BarChartSeparators}" />
+                                        <lvc:Separator  StrokeThickness=".2" Stroke="{DynamicResource MaterialDesignBody}" IsEnabled="True" Step="{Binding BarChartSeparators}"/>
                                     </lvc:Axis.Separator>
                                 </lvc:Axis>
                             </lvc:CartesianChart.AxisX>

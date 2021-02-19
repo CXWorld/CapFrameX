@@ -100,7 +100,7 @@
                                 <lvc:CartesianChart.AxisY>
                                     <lvc:Axis Title="Distribution" Foreground="{DynamicResource MaterialDesignBody}">
                                     <lvc:Axis.Separator>
-                                        <lvc:Separator  StrokeThickness="0.2" IsEnabled="True"></lvc:Separator>
+                                            <lvc:Separator Stroke="{DynamicResource MaterialDesignBody}" StrokeThickness=".3" IsEnabled="True"></lvc:Separator>
                                     </lvc:Axis.Separator>
                                     </lvc:Axis>
                                 </lvc:CartesianChart.AxisY>
@@ -118,7 +118,7 @@
                                     <lvc:Axis Title="ms" FontSize="11" MinValue="0" MaxValue="{Binding InputLagBarMaxValue}" 
 								  LabelFormatter="{Binding InputLagParameterFormatter}" Foreground="{DynamicResource MaterialDesignBody}">
                                         <lvc:Axis.Separator>
-                                            <lvc:Separator  StrokeThickness="0.2" IsEnabled="True"></lvc:Separator>
+                                            <lvc:Separator Stroke="{DynamicResource MaterialDesignBody}" StrokeThickness=".3" IsEnabled="True"></lvc:Separator>
                                         </lvc:Axis.Separator>
                                     </lvc:Axis>
                                 </lvc:CartesianChart.AxisX>
@@ -194,7 +194,7 @@
                                 <lvc:CartesianChart.AxisY>
                                     <lvc:Axis Title="Distribution" Foreground="{DynamicResource MaterialDesignBody}">
                                         <lvc:Axis.Separator>
-                                            <lvc:Separator StrokeThickness="0.2" IsEnabled="True"></lvc:Separator>
+                                            <lvc:Separator Stroke="{DynamicResource MaterialDesignBody}" StrokeThickness=".2" IsEnabled="True"></lvc:Separator>
                                         </lvc:Axis.Separator>
                                     </lvc:Axis>
                                 </lvc:CartesianChart.AxisY>
