@@ -113,7 +113,7 @@ namespace OpenHardwareMonitor.Hardware
 
         public int GetDisplayRefreshRate()
         {
-            // 1. Get a monitor handle ("HMONITOR") for the window. 
+            // Get a monitor handle ("HMONITOR") for the window. 
             //    If the window is straddling more than one monitor, Windows will pick the "best" one.
             IntPtr hmonitor = MonitorFromWindow(_hwnd, MONITOR_DEFAULTTONEAREST);
             if (hmonitor == IntPtr.Zero)
@@ -121,7 +121,7 @@ namespace OpenHardwareMonitor.Hardware
                 return 0;
             }
 
-            // 2. Get more information about the monitor.
+            // Get more information about the monitor.
             MONITORINFOEXW monitorInfo = new MONITORINFOEXW
             {
                 cbSize = (uint)Marshal.SizeOf<MONITORINFOEXW>()
@@ -133,6 +133,7 @@ namespace OpenHardwareMonitor.Hardware
                 return 0;
             }
 
+            // Get display settings from Windows API
             bResult = EnumDisplaySettingsW(monitorInfo.szDevice, ENUM_CURRENT_SETTINGS, out DEVMODEW devMode);
             if (!bResult)
             {
