@@ -52,6 +52,7 @@ namespace CapFrameX.Data
         private readonly ISensorConfig _sensorConfig;
         private readonly List<string[]> _captureDataArchive = new List<string[]>();
         private readonly object _archiveLock = new object();
+        private CancellationTokenSource cancelDelay = new CancellationTokenSource();
 
         private IDisposable _disposableCaptureStream;
         private IDisposable _disposableArchiveStream;
@@ -72,7 +73,6 @@ namespace CapFrameX.Data
             => _captureStatusChange.AsObservable();
         public bool LockCaptureService { get; private set; }
 
-        private CancellationTokenSource cancelDelay = new CancellationTokenSource();
         public bool DelayRunning { get; set; }
 
         public bool OSDAutoDisabled
@@ -142,8 +142,7 @@ namespace CapFrameX.Data
 
 
             if (options.CaptureDelay > 0d)
-            {
-                
+            {              
                 DelayRunning = true;
                 // Start overlay delay countdown timer
                 _overlayService.SetDelayCountdown(options.CaptureDelay);
@@ -154,6 +153,7 @@ namespace CapFrameX.Data
                 catch (OperationCanceledException) when (cancelDelay.IsCancellationRequested)
                 {
                     stopwatch.Reset();
+                    cancelDelay?.Dispose();
                     cancelDelay = new CancellationTokenSource();
                     return;
                 }
