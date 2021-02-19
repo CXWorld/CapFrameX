@@ -402,12 +402,6 @@ namespace CapFrameX.ViewModel
             }
             else
             {
-                if(_captureManager.DelayRunning)
-                {
-                    _captureManager.DelayRunning = false;
-                    _overlayService.SetDelayCountdown(0);
-                    return;
-                }
                 Task.Run(async () =>
                 {
                     try

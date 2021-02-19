@@ -16,6 +16,7 @@ using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace CapFrameX.Data
@@ -71,6 +72,7 @@ namespace CapFrameX.Data
             => _captureStatusChange.AsObservable();
         public bool LockCaptureService { get; private set; }
 
+        private CancellationTokenSource cancelDelay = new CancellationTokenSource();
         public bool DelayRunning { get; set; }
 
         public bool OSDAutoDisabled
@@ -141,19 +143,25 @@ namespace CapFrameX.Data
 
             if (options.CaptureDelay > 0d)
             {
+                
                 DelayRunning = true;
                 // Start overlay delay countdown timer
                 _overlayService.SetDelayCountdown(options.CaptureDelay);
-                await Task.Delay(TimeSpan.FromSeconds(options.CaptureDelay + 1));
+                try
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(options.CaptureDelay + 1), cancelDelay.Token);
+                }
+                catch (OperationCanceledException) when (cancelDelay.IsCancellationRequested)
+                {
+                    stopwatch.Reset();
+                    cancelDelay = new CancellationTokenSource();
+                    return;
+                }
+                
             }
-
-            if (options.CaptureDelay > 0d && !DelayRunning)
-            {
-                return;
-            }
-
-            DelayRunning = false;
+           
             IsCapturing = true;
+            DelayRunning = false;
 
             if (_appConfiguration.IsOverlayActive && _appConfiguration.AutoDisableOverlay)
             {
@@ -251,6 +259,14 @@ namespace CapFrameX.Data
 
         public async Task StopCapture()
         {
+            if (DelayRunning)
+            {
+                cancelDelay.Cancel();
+                DelayRunning = false;
+                _overlayService.SetDelayCountdown(0);
+                return;
+            }
+
             if (!IsCapturing)
                 throw new Exception("No capture running.");
 
