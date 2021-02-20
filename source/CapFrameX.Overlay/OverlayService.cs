@@ -162,9 +162,13 @@ namespace CapFrameX.Overlay
 
                 Console.WriteLine($"Capture delay countdown: {-t}s");
 
-                if (t == 0)
-                    _rTSSService.SetIsCaptureTimerActive(false);
             });
+        }
+
+        public void CancelDelayCountdown()
+        {
+            _disposableDelayCountdown?.Dispose();
+            _rTSSService.SetIsCaptureTimerActive(false);
         }
 
         public void StartCaptureTimer()

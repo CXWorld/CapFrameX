@@ -148,7 +148,7 @@ namespace CapFrameX.Data
                 _overlayService.SetDelayCountdown(options.CaptureDelay);
                 try
                 {
-                    await Task.Delay(TimeSpan.FromSeconds(options.CaptureDelay + 1), cancelDelay.Token);
+                    await Task.Delay(TimeSpan.FromSeconds(options.CaptureDelay), cancelDelay.Token);
                 }
                 catch (OperationCanceledException) when (cancelDelay.IsCancellationRequested)
                 {
@@ -263,7 +263,7 @@ namespace CapFrameX.Data
             {
                 cancelDelay.Cancel();
                 DelayRunning = false;
-                _overlayService.SetDelayCountdown(0);
+                _overlayService.CancelDelayCountdown();
                 return;
             }
 

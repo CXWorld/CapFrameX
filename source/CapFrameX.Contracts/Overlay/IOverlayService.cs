@@ -24,6 +24,8 @@ namespace CapFrameX.Contracts.Overlay
 
 		void SetDelayCountdown(double seconds);
 
+		void CancelDelayCountdown();
+
 		void StartCaptureTimer();
 
 		void StopCaptureTimer();
