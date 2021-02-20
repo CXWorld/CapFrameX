@@ -9,102 +9,6 @@ namespace CapFrameX.ViewModel.SubModels
     {
         private readonly OverlayViewModel _overlayViewModel;
 
-        private bool _overlayGroupCaptureItems;
-        private bool _overlayGroupSystemInfo;
-        private bool _overlayGroupOnlineMetrics;
-        private bool _overlayGroupGpuBasics;
-        private bool _overlayGroupCPULoads;
-        private bool _overlayGroupCPUClocks;
-        private bool _overlayGroupCPUTemps;
-        private bool _overlayGroupRAMItems;
-
-        public bool OverlayGroupCaptureItems
-        {
-            get { return _overlayGroupCaptureItems; }
-            set
-            {
-                _overlayGroupCaptureItems = value;
-                RaisePropertyChanged();
-                ManageCXEntries();
-            }
-        }
-
-        public bool OverlayGroupSystemInfo
-        {
-            get { return _overlayGroupSystemInfo; }
-            set
-            {
-                _overlayGroupSystemInfo = value;
-                RaisePropertyChanged();
-                ManageSystemInfoEntries();
-            }
-        }
-
-        public bool OverlayGroupOnlineMetrics
-        {
-            get { return _overlayGroupOnlineMetrics; }
-            set
-            {
-                _overlayGroupOnlineMetrics = value;
-                RaisePropertyChanged();
-                ManageOnlineMetricEntries();
-            }
-        }
-
-        public bool OverlayGroupGpuBasics
-        {
-            get { return _overlayGroupGpuBasics; }
-            set
-            {
-                _overlayGroupGpuBasics = value;
-                RaisePropertyChanged();
-                ManageGpuBasicEntries();
-            }
-        }
-
-        public bool OverlayGroupCPULoads
-        {
-            get { return _overlayGroupCPULoads; }
-            set
-            {
-                _overlayGroupCPULoads = value;
-                RaisePropertyChanged();
-                ManageCPULoadEntries();
-            }
-        }
-
-        public bool OverlayGroupCPUClocks
-        {
-            get { return _overlayGroupCPUClocks; }
-            set
-            {
-                _overlayGroupCPUClocks = value;
-                RaisePropertyChanged();
-                ManageCPUClockEntries();
-            }
-        }
-
-        public bool OverlayGroupCPUTemps
-        {
-            get { return _overlayGroupCPUTemps; }
-            set
-            {
-                _overlayGroupCPUTemps = value;
-                RaisePropertyChanged();
-                ManageCPUTemperatureEntries();
-            }
-        }
-
-        public bool OverlayGroupRAMItems
-        {
-            get { return _overlayGroupRAMItems; }
-            set
-            {
-                _overlayGroupRAMItems = value;
-                RaisePropertyChanged();
-                ManageRAMEntries();
-            }
-        }
         public ICommand CheckCaptureItems { get; }
         public ICommand CheckSystemInfo { get; }
         public ICommand CheckOnlineMetrics { get; }
@@ -126,26 +30,26 @@ namespace CapFrameX.ViewModel.SubModels
         {
             _overlayViewModel = overlayViewModel;
 
-            CheckCaptureItems = new DelegateCommand(() => OverlayGroupCaptureItems = true);
-            CheckSystemInfo = new DelegateCommand(() => OverlayGroupSystemInfo = true);
-            CheckOnlineMetrics = new DelegateCommand(() => OverlayGroupOnlineMetrics = true);
-            CheckGpuBasics = new DelegateCommand(() => OverlayGroupGpuBasics = true);
-            CheckCpuLoads = new DelegateCommand(() => OverlayGroupCPULoads = true);
-            CheckCpuClocks = new DelegateCommand(() => OverlayGroupCPUClocks = true);
-            CheckCpuTemps = new DelegateCommand(() => OverlayGroupCPUTemps = true);
-            CheckRamItems = new DelegateCommand(() => OverlayGroupRAMItems = true);
+            CheckCaptureItems = new DelegateCommand(() => ManageCXEntries(true));
+            CheckSystemInfo = new DelegateCommand(() => ManageSystemInfoEntries(true));
+            CheckOnlineMetrics = new DelegateCommand(() => ManageOnlineMetricEntries(true));
+            CheckGpuBasics = new DelegateCommand(() => ManageGpuBasicEntries(true));
+            CheckCpuLoads = new DelegateCommand(() => ManageCPULoadEntries(true));
+            CheckCpuClocks = new DelegateCommand(() => ManageCPUClockEntries(true));
+            CheckCpuTemps = new DelegateCommand(() => ManageCPUTemperatureEntries(true));
+            CheckRamItems = new DelegateCommand(() => ManageRAMEntries(true));
 
-            UncheckCaptureItems = new DelegateCommand(() => OverlayGroupCaptureItems = false);
-            UncheckSystemInfo = new DelegateCommand(() => OverlayGroupSystemInfo = false);
-            UncheckOnlineMetrics = new DelegateCommand(() => OverlayGroupOnlineMetrics = false);
-            UncheckGpuBasics = new DelegateCommand(() => OverlayGroupGpuBasics = false);
-            UncheckCpuLoads = new DelegateCommand(() => OverlayGroupCPULoads = false);
-            UncheckCpuClocks = new DelegateCommand(() => OverlayGroupCPUClocks = false);
-            UncheckCpuTemps = new DelegateCommand(() => OverlayGroupCPUTemps = false);
-            UncheckRamItems = new DelegateCommand(() => OverlayGroupRAMItems = false);
+            UncheckCaptureItems = new DelegateCommand(() => ManageCXEntries(false));
+            UncheckSystemInfo = new DelegateCommand(() => ManageSystemInfoEntries(false));
+            UncheckOnlineMetrics = new DelegateCommand(() => ManageOnlineMetricEntries(false));
+            UncheckGpuBasics = new DelegateCommand(() => ManageGpuBasicEntries(false));
+            UncheckCpuLoads = new DelegateCommand(() => ManageCPULoadEntries(false));
+            UncheckCpuClocks = new DelegateCommand(() => ManageCPUClockEntries(false));
+            UncheckCpuTemps = new DelegateCommand(() => ManageCPUTemperatureEntries(false));
+            UncheckRamItems = new DelegateCommand(() => ManageRAMEntries(false));
         }
 
-        private void ManageCXEntries()
+        private void ManageCXEntries( bool showEntry)
         {
             foreach (var entry in _overlayViewModel.OverlayEntries
                    .Where(item => item.Identifier == "CaptureServiceStatus"
@@ -153,11 +57,11 @@ namespace CapFrameX.ViewModel.SubModels
                        || item.Identifier == "RunHistory"))
             {
                 if (entry.ShowOnOverlayIsEnabled)
-                    entry.ShowOnOverlay = OverlayGroupCaptureItems;
+                    entry.ShowOnOverlay = showEntry;
             }
         }
 
-        private void ManageSystemInfoEntries()
+        private void ManageSystemInfoEntries(bool showEntry)
         {
             foreach (var entry in _overlayViewModel.OverlayEntries
                    .Where(item => item.Identifier == "CustomCPU"
@@ -168,11 +72,11 @@ namespace CapFrameX.ViewModel.SubModels
                        || item.Identifier == "GPUDriver"))
             {
                 if (entry.ShowOnOverlayIsEnabled)
-                    entry.ShowOnOverlay = OverlayGroupSystemInfo;
+                    entry.ShowOnOverlay = showEntry;
             }
         }
 
-        private void ManageOnlineMetricEntries()
+        private void ManageOnlineMetricEntries(bool showEntry)
         {
             foreach (var entry in _overlayViewModel.OverlayEntries
                    .Where(item => item.Identifier == "OnlineAverage"
@@ -180,60 +84,60 @@ namespace CapFrameX.ViewModel.SubModels
                        || item.Identifier == "OnlineP0dot2"))
             {
                 if (entry.ShowOnOverlayIsEnabled)
-                    entry.ShowOnOverlay = OverlayGroupOnlineMetrics;
+                    entry.ShowOnOverlay = showEntry;
             }
         }
 
-        private void ManageGpuBasicEntries()
+        private void ManageGpuBasicEntries(bool showEntry)
         {
             foreach (var entry in _overlayViewModel.OverlayEntries
                  .Where(item => item.OverlayEntryType == Contracts.Overlay.EOverlayEntryType.GPU))
             {
                 if (entry.Description.Contains("GPU Core") && entry.ShowOnOverlayIsEnabled)
-                    entry.ShowOnOverlay = OverlayGroupGpuBasics;
+                    entry.ShowOnOverlay = showEntry;
             }
         }
 
-        private void ManageCPULoadEntries()
+        private void ManageCPULoadEntries(bool showEntry)
         {
             foreach (var entry in _overlayViewModel.OverlayEntries
                    .Where(item => item.OverlayEntryType == Contracts.Overlay.EOverlayEntryType.CPU))
             {
                 if (entry.Identifier.Contains("load") && entry.Description.Contains("CPU Core") 
                     && entry.ShowOnOverlayIsEnabled)
-                    entry.ShowOnOverlay = OverlayGroupCPULoads;
+                    entry.ShowOnOverlay = showEntry;
             }
         }
 
-        private void ManageCPUClockEntries()
+        private void ManageCPUClockEntries(bool showEntry)
         {
             foreach (var entry in _overlayViewModel.OverlayEntries
                    .Where(item => item.OverlayEntryType == Contracts.Overlay.EOverlayEntryType.CPU))
             {
                 if (entry.Identifier.Contains("clock") && entry.Description.Contains("CPU Core") 
                     && entry.ShowOnOverlayIsEnabled)
-                    entry.ShowOnOverlay = OverlayGroupCPUClocks;
+                    entry.ShowOnOverlay = showEntry;
             }
         }
 
-        private void ManageCPUTemperatureEntries()
+        private void ManageCPUTemperatureEntries(bool showEntry)
         {
             foreach (var entry in _overlayViewModel.OverlayEntries
                    .Where(item => item.OverlayEntryType == Contracts.Overlay.EOverlayEntryType.CPU))
             {
                 if (entry.Identifier.Contains("temperature") && entry.Description.Contains("CPU Core") 
                     && entry.ShowOnOverlayIsEnabled)
-                    entry.ShowOnOverlay = OverlayGroupCPUTemps;
+                    entry.ShowOnOverlay = showEntry;
             }
         }
 
-        private void ManageRAMEntries()
+        private void ManageRAMEntries(bool showEntry)
         {
             foreach (var entry in _overlayViewModel.OverlayEntries
                    .Where(item => item.OverlayEntryType == Contracts.Overlay.EOverlayEntryType.RAM))
             {
                 if (entry.ShowOnOverlayIsEnabled)
-                    entry.ShowOnOverlay = OverlayGroupRAMItems;
+                    entry.ShowOnOverlay = showEntry;
             }
         }
     }

@@ -9,68 +9,6 @@ namespace CapFrameX.ViewModel.SubModels
     {
         private readonly SensorViewModel _sensorViewModel;
 
-        private bool _sensorGroupCpuBasics;
-        private bool _sensorGroupCpuThreadLoads;
-        private bool _sensorGroupCpuCoreClocks;
-        private bool _sensorGroupGpuBasics;
-        private bool _sensorGroupAll;
-
-
-        public bool SensorGroupCpuBasics
-        {
-            get { return _sensorGroupCpuBasics; }
-            set
-            {
-                _sensorGroupCpuBasics = value;
-                RaisePropertyChanged();
-                ManageCpuBasicEntries();
-            }
-        }
-
-        public bool SensorGroupCpuThreadLoads
-        {
-            get { return _sensorGroupCpuThreadLoads; }
-            set
-            {
-                _sensorGroupCpuThreadLoads = value;
-                RaisePropertyChanged();
-                ManageCpuThreadLoadEntries();
-            }
-        }
-
-        public bool SensorGroupCpuCoreClocks
-        {
-            get { return _sensorGroupCpuCoreClocks; }
-            set
-            {
-                _sensorGroupCpuCoreClocks = value;
-                RaisePropertyChanged();
-                ManageCpuCoreClocksEntries();
-            }
-        }
-
-        public bool SensorGroupGpuBasics
-        {
-            get { return _sensorGroupGpuBasics; }
-            set
-            {
-                _sensorGroupGpuBasics = value;
-                RaisePropertyChanged();
-                ManageGpuBasicEntries();
-            }
-        }
-
-        public bool SensorGroupAll
-        {
-            get { return _sensorGroupAll; }
-            set
-            {
-                _sensorGroupAll = value;
-                RaisePropertyChanged();
-                ManageAllEntries();
-            }
-        }
-
         public ICommand CheckCpuBasics { get; }
         public ICommand CheckCpuThreadLoads { get; }
         public ICommand CheckCpuCoreClocks { get; }
@@ -86,19 +24,20 @@ namespace CapFrameX.ViewModel.SubModels
         {
             _sensorViewModel = sensorViewModel;
 
-            CheckCpuBasics = new DelegateCommand(() => SensorGroupCpuBasics = true);
-            CheckCpuThreadLoads = new DelegateCommand(() => SensorGroupCpuThreadLoads = true);
-            CheckCpuCoreClocks = new DelegateCommand(() => SensorGroupCpuCoreClocks = true);
-            CheckGpuBasics = new DelegateCommand(() => SensorGroupGpuBasics = true);
-            CheckAll = new DelegateCommand(() => SensorGroupAll = true);
-            UncheckCpuBasics = new DelegateCommand(() => SensorGroupCpuBasics = false);
-            UncheckCpuThreadLoads = new DelegateCommand(() => SensorGroupCpuThreadLoads = false);
-            UncheckCpuCoreClocks = new DelegateCommand(() => SensorGroupCpuCoreClocks = false);
-            UncheckGpuBasics = new DelegateCommand(() => SensorGroupGpuBasics = false);
-            UncheckAll = new DelegateCommand(() => SensorGroupAll = false);
+            CheckCpuBasics = new DelegateCommand(() => ManageCpuBasicEntries(true));
+            CheckCpuThreadLoads = new DelegateCommand(() => ManageCpuThreadLoadEntries(true));
+            CheckCpuCoreClocks = new DelegateCommand(() => ManageCpuCoreClocksEntries(true));
+            CheckGpuBasics = new DelegateCommand(() => ManageGpuBasicEntries(true));
+            CheckAll = new DelegateCommand(() => ManageAllEntries(true));
+
+            UncheckCpuBasics = new DelegateCommand(() => ManageCpuBasicEntries(false));
+            UncheckCpuThreadLoads = new DelegateCommand(() => ManageCpuThreadLoadEntries(false));
+            UncheckCpuCoreClocks = new DelegateCommand(() => ManageCpuCoreClocksEntries(false));
+            UncheckGpuBasics = new DelegateCommand(() => ManageGpuBasicEntries(false));
+            UncheckAll = new DelegateCommand(() => ManageAllEntries(false));
         }
 
-        private void ManageCpuBasicEntries()
+        private void ManageCpuBasicEntries(bool logEntry)
         {
             foreach (var entry in _sensorViewModel.SensorEntries
                    .Where(item => item.Name == "CPU Total"
@@ -106,43 +45,43 @@ namespace CapFrameX.ViewModel.SubModels
                        || item.Name == "CPU Max Clock"
                        || item.Name == "CPU Package"))
             {
-                entry.UseForLogging = SensorGroupCpuBasics;
+                entry.UseForLogging = logEntry;
             }
         }
 
-        private void ManageCpuThreadLoadEntries()
+        private void ManageCpuThreadLoadEntries(bool logEntry)
         {
             foreach (var entry in _sensorViewModel.SensorEntries
                    .Where(item => item.SensorType == "Load" && item.Name.Contains("CPU Core")))
             {
-                entry.UseForLogging = SensorGroupCpuThreadLoads;
+                entry.UseForLogging = logEntry;
             }
         }
 
-        private void ManageCpuCoreClocksEntries()
+        private void ManageCpuCoreClocksEntries(bool logEntry)
         {
             foreach (var entry in _sensorViewModel.SensorEntries
                    .Where(item => item.SensorType == "Clock" && item.Name.Contains("CPU Core")))
             {
-                entry.UseForLogging = SensorGroupCpuCoreClocks;
+                entry.UseForLogging = logEntry;
             }
         }
 
-        private void ManageGpuBasicEntries()
+        private void ManageGpuBasicEntries(bool logEntry)
         {
             foreach (var entry in _sensorViewModel.SensorEntries
                  .Where(item => item.Name.Contains("GPU")))
             {
                 if (entry.Name.Contains("GPU Core") || entry.Name == "GPU Memory Dedicated" || entry.SensorType == "Power")
-                    entry.UseForLogging = SensorGroupGpuBasics;
+                    entry.UseForLogging = logEntry;
             }
         }
 
-        private void ManageAllEntries()
+        private void ManageAllEntries(bool logEntry)
         {
             foreach (var entry in _sensorViewModel.SensorEntries)
             {
-                entry.UseForLogging = SensorGroupAll;
+                entry.UseForLogging = logEntry;
             }
         }
     }
