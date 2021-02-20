@@ -353,7 +353,8 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
                 }
             }
 
-            if (sensorConfig.GetSensorEvaluate(control.IdentifierString))
+            if (sensorConfig.GetSensorEvaluate(control.IdentifierString)
+                || sensorConfig.GetSensorEvaluate(fan.IdentifierString))
             {
                 var coolerSettings = GetCoolerSettings();
                 var coolerSettingsOk = false;
@@ -387,6 +388,7 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
             else
             {
                 control.Value = null;
+                fan.Value = null;
             }
 
             if (!(!sensorConfig.GetSensorEvaluate(memoryAvail.IdentifierString) &&

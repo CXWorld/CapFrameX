@@ -47,6 +47,7 @@ namespace CapFrameX.Sensor
         }
 
         public IObservable<(DateTime, Dictionary<ISensorEntry, float>)> SensorSnapshotStream { get; private set; }
+
         public IObservable<TimeSpan> OsdUpdateStream => _osdUpdateSubject.AsObservable();
 
         public bool UseSensorLogging => _appConfiguration.UseSensorLogging;
@@ -76,7 +77,6 @@ namespace CapFrameX.Sensor
 
             Observable.FromAsync(() => StartOpenHardwareMonitor())
                .Delay(TimeSpan.FromMilliseconds(500))
-               .SubscribeOn(Scheduler.Default)
                .Subscribe(t =>
                {
                    SensorServiceCompletionSource.SetResult(true);

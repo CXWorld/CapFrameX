@@ -12,7 +12,8 @@ namespace OpenHardwareMonitor.Hardware
     public class SensorConfig : ISensorConfig
     {
         private static readonly string SENSOR_CONFIG_FOLDER
-            = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+            = Path.Combine(Environment
+                .GetFolderPath(Environment.SpecialFolder.MyDocuments),
                     @"CapFrameX\SensorConfiguration\");
 
         private static readonly string CONFIG_FILENAME =
@@ -27,9 +28,11 @@ namespace OpenHardwareMonitor.Hardware
 
         public bool IsCapturing { get; set; } = false;
 
-        public bool HasConfigFile => File.Exists(Path.Combine(SENSOR_CONFIG_FOLDER, CONFIG_FILENAME));
+        public bool HasConfigFile
+            => File.Exists(Path.Combine(SENSOR_CONFIG_FOLDER, CONFIG_FILENAME));
 
-        public int SensorEntryCount => _activeSensorsDict.Count;
+        public int SensorEntryCount 
+            => _activeSensorsDict == null ? 0 : _activeSensorsDict.Count;
 
         public SensorConfig()
         {
@@ -98,21 +101,17 @@ namespace OpenHardwareMonitor.Hardware
                     await outputFile.WriteAsync(json);
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                Log.Logger.Error("Error while saving sensor config.");
+                Log.Logger.Error(ex, "Error while saving sensor config.");
             }
         }
 
         public void ResetConfig()
-        {
-            _activeSensorsDict?.Clear();
-        }
+            => _activeSensorsDict?.Clear();
 
         public void ResetEvaluate()
-        {
-            _evalSensorsDict?.Clear();
-        }
+            => _evalSensorsDict?.Clear();
 
         private async Task LoadOrSetDefault()
         {
@@ -120,16 +119,15 @@ namespace OpenHardwareMonitor.Hardware
             {
                 _activeSensorsDict = await GetInitializedSensorEntryDictionary();
             }
-            catch
+            catch (Exception ex)
             {
                 _activeSensorsDict = await GetSensorEntryDefaults();
+                Log.Logger.Error(ex, "Error while loading sensor config. Default config loading instead...");
             }
         }
 
         private async Task<Dictionary<string, bool>> GetSensorEntryDefaults()
-        {
-            return await Task.FromResult(new Dictionary<string, bool>());
-        }
+            => await Task.FromResult(new Dictionary<string, bool>());
 
         private async Task<Dictionary<string, bool>> GetInitializedSensorEntryDictionary()
         {
