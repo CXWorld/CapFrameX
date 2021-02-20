@@ -374,7 +374,7 @@ namespace CapFrameX.ViewModel
                 _soundManager.PlaySound(Sound.MoreThanOneProcess);
                 return;
             }
-            else if (!_captureManager.IsCapturing && !_captureManager.DelayRunning)
+            else if (!_captureManager.IsCapturing && !_captureManager.DelayCountdownRunning)
             {
                 string processToCapture = SelectedProcessToCapture ?? ProcessesToCapture.FirstOrDefault();
                 var processInfo = ProcessesInfo.FirstOrDefault(info => info.Item1 == processToCapture);

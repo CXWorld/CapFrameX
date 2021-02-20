@@ -52,7 +52,7 @@ namespace CapFrameX.Data
         private readonly ISensorConfig _sensorConfig;
         private readonly List<string[]> _captureDataArchive = new List<string[]>();
         private readonly object _archiveLock = new object();
-        private CancellationTokenSource cancelDelay = new CancellationTokenSource();
+        private CancellationTokenSource _cancelDelay = new CancellationTokenSource();
 
         private IDisposable _disposableCaptureStream;
         private IDisposable _disposableArchiveStream;
@@ -73,7 +73,7 @@ namespace CapFrameX.Data
             => _captureStatusChange.AsObservable();
         public bool LockCaptureService { get; private set; }
 
-        public bool DelayRunning { get; set; }
+        public bool DelayCountdownRunning { get; set; }
 
         public bool OSDAutoDisabled
         {
@@ -123,45 +123,42 @@ namespace CapFrameX.Data
         }
 
         public IEnumerable<(string, int)> GetAllFilteredProcesses(HashSet<string> filter)
-        {
-            return _presentMonCaptureService.GetAllFilteredProcesses(filter);
-        }
+            => _presentMonCaptureService.GetAllFilteredProcesses(filter);
 
         public async Task StartCapture(CaptureOptions options)
         {
             if (IsCapturing)
                 throw new Exception("Capture already running.");
 
-            var stopwatch = new Stopwatch();
-            stopwatch.Start();
-
             if (!GetAllFilteredProcesses(new HashSet<string>()).Contains(options.ProcessInfo))
                 throw new Exception($"Process {options.ProcessInfo} not found");
             if (options.RecordDirectory != null && !Directory.Exists(options.RecordDirectory))
                 throw new Exception($"RecordDirectory {options.RecordDirectory} does not exist");
 
+            var delayStopwatch = new Stopwatch();
+            delayStopwatch.Start();
 
             if (options.CaptureDelay > 0d)
-            {              
-                DelayRunning = true;
+            {
+                DelayCountdownRunning = true;
+                var delay = options.CaptureDelay;
                 // Start overlay delay countdown timer
-                _overlayService.SetDelayCountdown(options.CaptureDelay);
+                _overlayService.SetDelayCountdown(delay);
                 try
                 {
-                    await Task.Delay(TimeSpan.FromSeconds(options.CaptureDelay), cancelDelay.Token);
+                    await Task.Delay(TimeSpan.FromSeconds(delay), _cancelDelay.Token);
                 }
-                catch (OperationCanceledException) when (cancelDelay.IsCancellationRequested)
+                catch (OperationCanceledException) when (_cancelDelay.IsCancellationRequested)
                 {
-                    stopwatch.Reset();
-                    cancelDelay?.Dispose();
-                    cancelDelay = new CancellationTokenSource();
+                    delayStopwatch.Reset();
+                    _cancelDelay?.Dispose();
+                    _cancelDelay = new CancellationTokenSource();
                     return;
                 }
-                
             }
-           
+
             IsCapturing = true;
-            DelayRunning = false;
+            DelayCountdownRunning = false;
 
             if (_appConfiguration.IsOverlayActive && _appConfiguration.AutoDisableOverlay)
             {
@@ -172,7 +169,6 @@ namespace CapFrameX.Data
             }
 
             _soundManager.PlaySound(Sound.CaptureStarted);
-
             _timestampStartCapture = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds();
             _currentCaptureOptions = options;
 
@@ -228,8 +224,8 @@ namespace CapFrameX.Data
                         {
                             intializedStartTime = true;
 
-                                // stop archive
-                                _fillArchive = false;
+                            // stop archive
+                            _fillArchive = false;
                             _disposableArchiveStream?.Dispose();
 
                             AddLoggerEntry("Stopped filling Archive");
@@ -239,8 +235,8 @@ namespace CapFrameX.Data
 
             _sensorService.StartSensorLogging();
 
-            stopwatch.Stop();
-            AddLoggerEntry($"Time between capture start entry and finished in ms: {stopwatch.ElapsedMilliseconds}");
+            delayStopwatch.Stop();
+            AddLoggerEntry($"Time between capture start request and execution in ms: {delayStopwatch.ElapsedMilliseconds}");
 
             if (options.CaptureTime > 0d)
             {
@@ -259,10 +255,10 @@ namespace CapFrameX.Data
 
         public async Task StopCapture()
         {
-            if (DelayRunning)
+            if (DelayCountdownRunning)
             {
-                cancelDelay.Cancel();
-                DelayRunning = false;
+                _cancelDelay.Cancel();
+                DelayCountdownRunning = false;
                 _overlayService.CancelDelayCountdown();
                 return;
             }

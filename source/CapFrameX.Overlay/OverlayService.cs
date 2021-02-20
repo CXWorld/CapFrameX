@@ -159,9 +159,6 @@ namespace CapFrameX.Overlay
             _disposableDelayCountdown = obs.Subscribe(t =>
             {
                 SetCaptureTimerValue((int)-t);
-
-                Console.WriteLine($"Capture delay countdown: {-t}s");
-
             });
         }
 
@@ -179,9 +176,10 @@ namespace CapFrameX.Overlay
 
         public void StopCaptureTimer()
         {
+            _disposableCaptureTimer?.Dispose();
+            _disposableCountdown?.Dispose();
             _rTSSService.SetIsCaptureTimerActive(false);
             SetCaptureTimerValue(0);
-            _disposableCaptureTimer?.Dispose();
         }
 
         public void SetCaptureTimerValue(int t)
