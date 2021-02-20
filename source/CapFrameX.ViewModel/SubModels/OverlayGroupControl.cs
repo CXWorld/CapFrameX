@@ -1,5 +1,7 @@
-﻿using Prism.Mvvm;
+﻿using Prism.Commands;
+using Prism.Mvvm;
 using System.Linq;
+using System.Windows.Input;
 
 namespace CapFrameX.ViewModel.SubModels
 {
@@ -103,10 +105,44 @@ namespace CapFrameX.ViewModel.SubModels
                 ManageRAMEntries();
             }
         }
+        public ICommand CheckCaptureItems { get; }
+        public ICommand CheckSystemInfo { get; }
+        public ICommand CheckOnlineMetrics { get; }
+        public ICommand CheckGpuBasics { get; }
+        public ICommand CheckCpuLoads { get; }
+        public ICommand CheckCpuClocks { get; }
+        public ICommand CheckCpuTemps { get; }
+        public ICommand CheckRamItems { get; }
+        public ICommand UncheckCaptureItems { get; }
+        public ICommand UncheckSystemInfo { get; }
+        public ICommand UncheckOnlineMetrics { get; }
+        public ICommand UncheckGpuBasics { get; }
+        public ICommand UncheckCpuLoads { get; }
+        public ICommand UncheckCpuClocks { get; }
+        public ICommand UncheckCpuTemps{ get; }
+        public ICommand UncheckRamItems { get; }
 
         public OverlayGroupControl(OverlayViewModel overlayViewModel)
         {
             _overlayViewModel = overlayViewModel;
+
+            CheckCaptureItems = new DelegateCommand(() => OverlayGroupCaptureItems = true);
+            CheckSystemInfo = new DelegateCommand(() => OverlayGroupSystemInfo = true);
+            CheckOnlineMetrics = new DelegateCommand(() => OverlayGroupOnlineMetrics = true);
+            CheckGpuBasics = new DelegateCommand(() => OverlayGroupGpuBasics = true);
+            CheckCpuLoads = new DelegateCommand(() => OverlayGroupCPULoads = true);
+            CheckCpuClocks = new DelegateCommand(() => OverlayGroupCPUClocks = true);
+            CheckCpuTemps = new DelegateCommand(() => OverlayGroupCPUTemps = true);
+            CheckRamItems = new DelegateCommand(() => OverlayGroupRAMItems = true);
+
+            UncheckCaptureItems = new DelegateCommand(() => OverlayGroupCaptureItems = false);
+            UncheckSystemInfo = new DelegateCommand(() => OverlayGroupSystemInfo = false);
+            UncheckOnlineMetrics = new DelegateCommand(() => OverlayGroupOnlineMetrics = false);
+            UncheckGpuBasics = new DelegateCommand(() => OverlayGroupGpuBasics = false);
+            UncheckCpuLoads = new DelegateCommand(() => OverlayGroupCPULoads = false);
+            UncheckCpuClocks = new DelegateCommand(() => OverlayGroupCPUClocks = false);
+            UncheckCpuTemps = new DelegateCommand(() => OverlayGroupCPUTemps = false);
+            UncheckRamItems = new DelegateCommand(() => OverlayGroupRAMItems = false);
         }
 
         private void ManageCXEntries()

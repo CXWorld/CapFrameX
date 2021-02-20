@@ -1,5 +1,7 @@
-﻿using Prism.Mvvm;
+﻿using Prism.Commands;
+using Prism.Mvvm;
 using System.Linq;
+using System.Windows.Input;
 
 namespace CapFrameX.ViewModel.SubModels
 {
@@ -11,6 +13,7 @@ namespace CapFrameX.ViewModel.SubModels
         private bool _sensorGroupCpuThreadLoads;
         private bool _sensorGroupCpuCoreClocks;
         private bool _sensorGroupGpuBasics;
+        private bool _sensorGroupAll;
 
 
         public bool SensorGroupCpuBasics
@@ -20,8 +23,6 @@ namespace CapFrameX.ViewModel.SubModels
             {
                 _sensorGroupCpuBasics = value;
                 RaisePropertyChanged();
-                if (!value)
-                    RaisePropertyChanged(nameof(SensorGroupAll));
                 ManageCpuBasicEntries();
             }
         }
@@ -31,11 +32,8 @@ namespace CapFrameX.ViewModel.SubModels
             get { return _sensorGroupCpuThreadLoads; }
             set
             {
-
                 _sensorGroupCpuThreadLoads = value;
                 RaisePropertyChanged();
-                if (!value)
-                    RaisePropertyChanged(nameof(SensorGroupAll));
                 ManageCpuThreadLoadEntries();
             }
         }
@@ -47,8 +45,6 @@ namespace CapFrameX.ViewModel.SubModels
             {
                 _sensorGroupCpuCoreClocks = value;
                 RaisePropertyChanged();
-                if (!value)
-                    RaisePropertyChanged(nameof(SensorGroupAll));
                 ManageCpuCoreClocksEntries();
             }
         }
@@ -58,33 +54,48 @@ namespace CapFrameX.ViewModel.SubModels
             get { return _sensorGroupGpuBasics; }
             set
             {
-
                 _sensorGroupGpuBasics = value;
                 RaisePropertyChanged();
-                if(!value)
-                    RaisePropertyChanged(nameof(SensorGroupAll));
-
                 ManageGpuBasicEntries();
             }
         }
 
         public bool SensorGroupAll
         {
-            get { return (SensorGroupGpuBasics && SensorGroupCpuCoreClocks && SensorGroupCpuThreadLoads && SensorGroupCpuBasics); }
+            get { return _sensorGroupAll; }
             set
             {
-                SensorGroupCpuBasics = value;
-                SensorGroupCpuThreadLoads = value;
-                SensorGroupCpuCoreClocks = value;
-                SensorGroupGpuBasics = value;
+                _sensorGroupAll = value;
                 RaisePropertyChanged();
                 ManageAllEntries();
             }
         }
 
+        public ICommand CheckCpuBasics { get; }
+        public ICommand CheckCpuThreadLoads { get; }
+        public ICommand CheckCpuCoreClocks { get; }
+        public ICommand CheckGpuBasics { get; }
+        public ICommand CheckAll { get; }
+        public ICommand UncheckCpuBasics { get; }
+        public ICommand UncheckCpuThreadLoads { get; }
+        public ICommand UncheckCpuCoreClocks { get; }
+        public ICommand UncheckGpuBasics { get; }
+        public ICommand UncheckAll { get; }
+
         public SensorGroupControl(SensorViewModel sensorViewModel)
         {
             _sensorViewModel = sensorViewModel;
+
+            CheckCpuBasics = new DelegateCommand(() => SensorGroupCpuBasics = true);
+            CheckCpuThreadLoads = new DelegateCommand(() => SensorGroupCpuThreadLoads = true);
+            CheckCpuCoreClocks = new DelegateCommand(() => SensorGroupCpuCoreClocks = true);
+            CheckGpuBasics = new DelegateCommand(() => SensorGroupGpuBasics = true);
+            CheckAll = new DelegateCommand(() => SensorGroupAll = true);
+            UncheckCpuBasics = new DelegateCommand(() => SensorGroupCpuBasics = false);
+            UncheckCpuThreadLoads = new DelegateCommand(() => SensorGroupCpuThreadLoads = false);
+            UncheckCpuCoreClocks = new DelegateCommand(() => SensorGroupCpuCoreClocks = false);
+            UncheckGpuBasics = new DelegateCommand(() => SensorGroupGpuBasics = false);
+            UncheckAll = new DelegateCommand(() => SensorGroupAll = false);
         }
 
         private void ManageCpuBasicEntries()

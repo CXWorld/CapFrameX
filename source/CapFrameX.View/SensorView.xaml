@@ -201,14 +201,8 @@
                                 </Button>
                             </Grid>
                         </StackPanel>
-                        <StackPanel Orientation="Horizontal" Margin="5 0 0 0">
-                            <materialDesign:PopupBox StaysOpen="True" ToolTipService.ShowDuration="25000" IsEnabled="{Binding Path=UseSensorLogging}" Foreground="{DynamicResource MaterialDesignBody}">
-                                <materialDesign:PopupBox.ToolTip>
-                                    <ToolTip MaxWidth="275" Placement="Top">
-                                        <TextBlock Text="Sensor group control" 
-										   TextWrapping="Wrap"/>
-                                    </ToolTip>
-                                </materialDesign:PopupBox.ToolTip>
+                        <StackPanel Orientation="Horizontal" Margin="5 0 0 0" ToolTip="Check or uncheck groups of sensors" ToolTipService.Placement="Top">
+                            <materialDesign:PopupBox StaysOpen="True" IsEnabled="{Binding Path=UseSensorLogging}" Foreground="{DynamicResource MaterialDesignBody}">
                                 <materialDesign:Card Width="220" Margin="0 0 0 -10">
                                     <StackPanel>
                                         <Grid Margin="8 8 8 8">
@@ -230,23 +224,59 @@
                                                 <RowDefinition Height="*" />
                                             </Grid.RowDefinitions>
                                             <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="Auto"/>
-                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="3*"/>
+                                                <ColumnDefinition Width="1*"/>
+                                                <ColumnDefinition Width="1*"/>
                                             </Grid.ColumnDefinitions>
                                             <TextBlock Margin="5" Grid.Row="0" Grid.Column="0" Text="CPU basics" VerticalAlignment="Center"/>
-                                            <ToggleButton Margin="5" Grid.Row="0" Grid.Column="1" IsChecked="{Binding Path=SensorSubModelGroupControl.SensorGroupCpuBasics}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Group control CPU basics" />
+                                            <Button Margin="5" Grid.Row="0" Grid.Column="1" Command="{Binding Path=SensorSubModelGroupControl.CheckCpuBasics}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}"  
+                                                    Width="20" Height="20" ToolTip="Check CPU basics" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
+                                                <materialDesign:PackIcon Kind="Done" Height="15" Width="15" />
+                                            </Button>
+                                            <Button Margin="5" Grid.Row="0" Grid.Column="2" Command="{Binding Path=SensorSubModelGroupControl.UncheckCpuBasics}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}" 
+                                                    Width="20" Height="20" ToolTip="Uncheck CPU basics" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
+                                                <materialDesign:PackIcon Kind="Remove"  Height="15" Width="15" />
+                                            </Button>
 
                                             <TextBlock Margin="5" Grid.Row="1" Grid.Column="0" Text="GPU basics" VerticalAlignment="Center"/>
-                                            <ToggleButton Margin="5" Grid.Row="1" Grid.Column="1" IsChecked="{Binding Path=SensorSubModelGroupControl.SensorGroupGpuBasics}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Group control GPU basics" />
-
+                                            <Button Margin="5" Grid.Row="1" Grid.Column="1" Command="{Binding Path=SensorSubModelGroupControl.CheckGpuBasics}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}" 
+                                                    Width="20" Height="20" ToolTip="Check GPU basics" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
+                                                <materialDesign:PackIcon Kind="Done" Height="15" Width="15" />
+                                            </Button>
+                                            <Button Margin="5" Grid.Row="1" Grid.Column="2" Command="{Binding Path=SensorSubModelGroupControl.UncheckGpuBasics}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}" 
+                                                    Width="20" Height="20" ToolTip="Uncheck GPU basics" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
+                                                <materialDesign:PackIcon Kind="Remove" Height="20" Width="15" />
+                                            </Button>
+                                            
                                             <TextBlock Margin="5" Grid.Row="2" Grid.Column="0" Text="CPU thread loads" VerticalAlignment="Center"/>
-                                            <ToggleButton Margin="5" Grid.Row="2" Grid.Column="1" IsChecked="{Binding Path=SensorSubModelGroupControl.SensorGroupCpuThreadLoads}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Group control CPU loads" />
+                                            <Button Margin="5" Grid.Row="2" Grid.Column="1" Command="{Binding Path=SensorSubModelGroupControl.CheckCpuThreadLoads}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}" 
+                                                    Width="20" Height="20" ToolTip="Check CPU thread loads" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
+                                                <materialDesign:PackIcon Kind="Done" Height="15" Width="15" />
+                                            </Button>
+                                            <Button Margin="5" Grid.Row="2" Grid.Column="2" Command="{Binding Path=SensorSubModelGroupControl.UncheckCpuThreadLoads}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}" 
+                                                    Width="20" Height="20" ToolTip="Uncheck CPU thread loads" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
+                                                <materialDesign:PackIcon Kind="Remove" Height="15" Width="15" />
+                                            </Button>
 
                                             <TextBlock Margin="5" Grid.Row="3" Grid.Column="0" Text="CPU core clocks" VerticalAlignment="Center"/>
-                                            <ToggleButton Margin="5" Grid.Row="3" Grid.Column="1" IsChecked="{Binding Path=SensorSubModelGroupControl.SensorGroupCpuCoreClocks}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Group control CPU Clocks" />
-                                            
+                                            <Button Margin="5" Grid.Row="3" Grid.Column="1" Command="{Binding Path=SensorSubModelGroupControl.CheckCpuCoreClocks}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}" 
+                                                    Width="20" Height="20" ToolTip="Check CPU core clocks" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
+                                                <materialDesign:PackIcon Kind="Done" Height="15" Width="15" />
+                                            </Button>
+                                            <Button Margin="5" Grid.Row="3" Grid.Column="2" Command="{Binding Path=SensorSubModelGroupControl.UncheckCpuCoreClocks}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}" 
+                                                    Width="20" Height="20" ToolTip="Uncheck CPU core clocks" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
+                                                <materialDesign:PackIcon Kind="Remove" Height="15" Width="15" />
+                                            </Button>
+
                                             <TextBlock Margin="5" Grid.Row="4" Grid.Column="0" Text="All sensors" VerticalAlignment="Center"/>
-                                            <ToggleButton Margin="5" Grid.Row="4" Grid.Column="1" IsChecked="{Binding Path=SensorSubModelGroupControl.SensorGroupAll}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Group control all sensors" />
+                                            <Button Margin="5" Grid.Row="4" Grid.Column="1" Command="{Binding Path=SensorSubModelGroupControl.CheckAll}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}" 
+                                                    Width="20" Height="20" ToolTip="Check all sensors" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
+                                                <materialDesign:PackIcon Kind="Done" Height="15" Width="15" />
+                                            </Button>
+                                            <Button Margin="5" Grid.Row="4" Grid.Column="2" Command="{Binding Path=SensorSubModelGroupControl.UncheckAll}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}" 
+                                                    Width="20" Height="20" ToolTip="Uncheck all sensors" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
+                                                <materialDesign:PackIcon Kind="Remove" Height="15" Width="15" />
+                                            </Button>
                                         </Grid>
                                     </StackPanel>
                                 </materialDesign:Card>

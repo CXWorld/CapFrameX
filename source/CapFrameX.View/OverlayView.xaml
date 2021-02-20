@@ -271,32 +271,89 @@
                                                     <RowDefinition Height="*" />
                                                 </Grid.RowDefinitions>
                                                 <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="Auto"/>
-                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="3*"/>
+                                                    <ColumnDefinition Width="1*"/>
+                                                    <ColumnDefinition Width="1*"/>
                                                 </Grid.ColumnDefinitions>
                                                 <TextBlock Margin="5" Grid.Row="0" Grid.Column="0" Text="Capture items" VerticalAlignment="Center"/>
-                                                <ToggleButton Margin="5" Grid.Row="0" Grid.Column="1" IsChecked="{Binding Path=OverlaySubModelGroupControl.OverlayGroupCaptureItems}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Group control capture items" />
+                                                <Button Margin="5" Grid.Row="0" Grid.Column="1" Command="{Binding Path=OverlaySubModelGroupControl.CheckCaptureItems}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}"  
+                                                    Width="20" Height="20" ToolTip="Check capture items" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
+                                                    <materialDesign:PackIcon Kind="Done" Height="15" Width="15" />
+                                                </Button>
+                                                <Button Margin="5" Grid.Row="0" Grid.Column="2" Command="{Binding Path=OverlaySubModelGroupControl.UncheckCaptureItems}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}" 
+                                                    Width="20" Height="20" ToolTip="Uncheck capture items" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
+                                                    <materialDesign:PackIcon Kind="Remove"  Height="15" Width="15" />
+                                                </Button>
 
                                                 <TextBlock Margin="5" Grid.Row="1" Grid.Column="0" Text="System infos" VerticalAlignment="Center"/>
-                                                <ToggleButton Margin="5" Grid.Row="1" Grid.Column="1" IsChecked="{Binding Path=OverlaySubModelGroupControl.OverlayGroupSystemInfo}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Group control system info" />
+                                                <Button Margin="5" Grid.Row="1" Grid.Column="1" Command="{Binding Path=OverlaySubModelGroupControl.CheckSystemInfo}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}"  
+                                                    Width="20" Height="20" ToolTip="Check system info" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
+                                                    <materialDesign:PackIcon Kind="Done" Height="15" Width="15" />
+                                                </Button>
+                                                <Button Margin="5" Grid.Row="1" Grid.Column="2" Command="{Binding Path=OverlaySubModelGroupControl.UncheckSystemInfo}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}" 
+                                                    Width="20" Height="20" ToolTip="Uncheck system info" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
+                                                    <materialDesign:PackIcon Kind="Remove"  Height="15" Width="15" />
+                                                </Button>
 
                                                 <TextBlock Margin="5" Grid.Row="2" Grid.Column="0" Text="Real-time metrics" VerticalAlignment="Center"/>
-                                                <ToggleButton Margin="5" Grid.Row="2" Grid.Column="1" IsChecked="{Binding Path=OverlaySubModelGroupControl.OverlayGroupOnlineMetrics}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Group control online metrics" />
+                                                <Button Margin="5" Grid.Row="2" Grid.Column="1" Command="{Binding Path=OverlaySubModelGroupControl.CheckOnlineMetrics}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}"  
+                                                    Width="20" Height="20" ToolTip="Check real-time metrics" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
+                                                    <materialDesign:PackIcon Kind="Done" Height="15" Width="15" />
+                                                </Button>
+                                                <Button Margin="5" Grid.Row="2" Grid.Column="2" Command="{Binding Path=OverlaySubModelGroupControl.UncheckOnlineMetrics}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}" 
+                                                    Width="20" Height="20" ToolTip="Uncheck real-time metrics" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
+                                                    <materialDesign:PackIcon Kind="Remove"  Height="15" Width="15" />
+                                                </Button>
 
                                                 <TextBlock Margin="5" Grid.Row="3" Grid.Column="0" Text="GPU basics" VerticalAlignment="Center"/>
-                                                <ToggleButton Margin="5" Grid.Row="3" Grid.Column="1" IsChecked="{Binding Path=OverlaySubModelGroupControl.OverlayGroupGpuBasics}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Group control GPU basic sensors" />
+                                                <Button Margin="5" Grid.Row="3" Grid.Column="1" Command="{Binding Path=OverlaySubModelGroupControl.CheckGpuBasics}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}"  
+                                                    Width="20" Height="20" ToolTip="Check GPU basics" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
+                                                    <materialDesign:PackIcon Kind="Done" Height="15" Width="15" />
+                                                </Button>
+                                                <Button Margin="5" Grid.Row="3" Grid.Column="2" Command="{Binding Path=OverlaySubModelGroupControl.UncheckGpuBasics}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}" 
+                                                    Width="20" Height="20" ToolTip="Uncheck GPU basics" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
+                                                    <materialDesign:PackIcon Kind="Remove"  Height="15" Width="15" />
+                                                </Button>
 
                                                 <TextBlock Margin="5" Grid.Row="4" Grid.Column="0" Text="CPU loads" VerticalAlignment="Center"/>
-                                                <ToggleButton Margin="5" Grid.Row="4" Grid.Column="1" IsChecked="{Binding Path=OverlaySubModelGroupControl.OverlayGroupCPULoads}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Group control CPU loads" />
+                                                <Button Margin="5" Grid.Row="4" Grid.Column="1" Command="{Binding Path=OverlaySubModelGroupControl.CheckCpuLoads}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}"  
+                                                    Width="20" Height="20" ToolTip="Check CPU loads" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
+                                                    <materialDesign:PackIcon Kind="Done" Height="15" Width="15" />
+                                                </Button>
+                                                <Button Margin="5" Grid.Row="4" Grid.Column="2" Command="{Binding Path=OverlaySubModelGroupControl.UncheckCpuLoads}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}" 
+                                                    Width="20" Height="20" ToolTip="Uncheck CPU loads" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
+                                                    <materialDesign:PackIcon Kind="Remove"  Height="15" Width="15" />
+                                                </Button>
 
                                                 <TextBlock Margin="5" Grid.Row="5" Grid.Column="0" Text="CPU clocks" VerticalAlignment="Center"/>
-                                                <ToggleButton Margin="5" Grid.Row="5" Grid.Column="1" IsChecked="{Binding Path=OverlaySubModelGroupControl.OverlayGroupCPUClocks}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Group control CPU Clocks" />
+                                                <Button Margin="5" Grid.Row="5" Grid.Column="1" Command="{Binding Path=OverlaySubModelGroupControl.CheckCpuClocks}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}"  
+                                                    Width="20" Height="20" ToolTip="Check CPU clocks" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
+                                                    <materialDesign:PackIcon Kind="Done" Height="15" Width="15" />
+                                                </Button>
+                                                <Button Margin="5" Grid.Row="5" Grid.Column="2" Command="{Binding Path=OverlaySubModelGroupControl.UncheckCpuClocks}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}" 
+                                                    Width="20" Height="20" ToolTip="Uncheck CPU clocks" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
+                                                    <materialDesign:PackIcon Kind="Remove"  Height="15" Width="15" />
+                                                </Button>
 
-                                                <TextBlock Margin="5" Grid.Row="6" Grid.Column="0" Text="CPU temps" VerticalAlignment="Center"/>
-                                                <ToggleButton Margin="5" Grid.Row="6" Grid.Column="1" IsChecked="{Binding Path=OverlaySubModelGroupControl.OverlayGroupCPUTemps}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Group control CPU temps" />
+                                                <TextBlock Margin="5" Grid.Row="6" Grid.Column="0" Text="CPU Core temps" VerticalAlignment="Center"/>
+                                                <Button Margin="5" Grid.Row="6" Grid.Column="1" Command="{Binding Path=OverlaySubModelGroupControl.CheckCpuTemps}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}"  
+                                                    Width="20" Height="20" ToolTip="Check CPU Core temps" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
+                                                    <materialDesign:PackIcon Kind="Done" Height="15" Width="15" />
+                                                </Button>
+                                                <Button Margin="5" Grid.Row="6" Grid.Column="2" Command="{Binding Path=OverlaySubModelGroupControl.UncheckCpuTemps}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}" 
+                                                    Width="20" Height="20" ToolTip="Uncheck CPU Core temps" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
+                                                    <materialDesign:PackIcon Kind="Remove"  Height="15" Width="15" />
+                                                </Button>
 
                                                 <TextBlock Margin="5" Grid.Row="7" Grid.Column="0" Text="RAM items" VerticalAlignment="Center"/>
-                                                <ToggleButton Margin="5" Grid.Row="7" Grid.Column="1" IsChecked="{Binding Path=OverlaySubModelGroupControl.OverlayGroupRAMItems}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Group control RAM items" />
+                                                <Button Margin="5" Grid.Row="7" Grid.Column="1" Command="{Binding Path=OverlaySubModelGroupControl.CheckRamItems}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}"  
+                                                    Width="20" Height="20" ToolTip="Check RAM items" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
+                                                    <materialDesign:PackIcon Kind="Done" Height="15" Width="15" />
+                                                </Button>
+                                                <Button Margin="5" Grid.Row="7" Grid.Column="2" Command="{Binding Path=OverlaySubModelGroupControl.UncheckRamItems}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}" 
+                                                    Width="20" Height="20" ToolTip="Uncheck RAM items" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
+                                                    <materialDesign:PackIcon Kind="Remove"  Height="15" Width="15" />
+                                                </Button>
                                             </Grid>
                                         </StackPanel>
                                     </materialDesign:Card>
