@@ -100,8 +100,8 @@
                     </StackPanel>
                     <DataGrid Grid.Row="1" x:Name="OverlayItemDataGrid" FocusVisualStyle="{x:Null}" Height="Auto" Width="440" FontSize="11"
 					          SelectedIndex="{Binding SelectedOverlayEntryIndex}" SelectedItem="{Binding SelectedOverlayEntry}" ItemsSource="{Binding OverlayEntries}"
-					          CanUserSortColumns="False" CanUserAddRows="False" AutoGenerateColumns="False"
-					          materialDesign:DataGridAssist.CellPadding="13 3 0 0" materialDesign:DataGridAssist.ColumnHeaderPadding="8" IsSynchronizedWithCurrentItem="False"
+					          CanUserSortColumns="False" CanUserAddRows="False" AutoGenerateColumns="False" ColumnHeaderHeight="15"
+					          materialDesign:DataGridAssist.CellPadding="13 5 0 0" materialDesign:DataGridAssist.ColumnHeaderPadding="15 0 0 0" IsSynchronizedWithCurrentItem="False"
 					          ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.CanContentScroll="True"
 					          dragdrop:DragDrop.IsDragSource="True"
 					          dragdrop:DragDrop.IsDropTarget="True"
