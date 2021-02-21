@@ -119,6 +119,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ApplicationState.cs" />
+    <Compile Include="AtomicTime.cs" />
     <Compile Include="CaptureManager.cs" />
     <Compile Include="CloudEntry.cs" />
     <Compile Include="AggregationEntry.cs" />

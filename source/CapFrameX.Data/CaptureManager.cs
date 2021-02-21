@@ -191,6 +191,9 @@ namespace CapFrameX.Data
             AddLoggerEntry($"Performance counter on start capturing: {startCounter}");
             _qpcTimeStart = startCounter;
 
+            // atomic time
+            AddLoggerEntry($"Atomic time (UTC): {AtomicTime.Now.TimeOfDay}");
+
             _disposableCaptureStream = _presentMonCaptureService
                 .RedirectedOutputDataStream
                 .Skip(1)

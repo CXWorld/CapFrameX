@@ -70,15 +70,6 @@ namespace OpenHardwareMonitor.Hardware
             public ushort dmDriverExtra;
             public uint dmFields;
 
-            /*public short dmOrientation;
-            public short dmPaperSize;
-            public short dmPaperLength;
-            public short dmPaperWidth;
-            public short dmScale;
-            public short dmCopies;
-            public short dmDefaultSource;
-            public short dmPrintQuality;*/
-            // These next 4 int fields are a union with the above 8 shorts, but we don't need them right now
             public int dmPositionX;
             public int dmPositionY;
             public uint dmDisplayOrientation;

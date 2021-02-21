@@ -30,7 +30,7 @@
                 <TextBlock Text= "Infobox" HorizontalAlignment="Left"/>
             </Expander.Header>
             <ScrollViewer MaxHeight="200"  VerticalScrollBarVisibility="Visible" Margin="20 10 20 10" >
-                <TextBlock Text="{Binding LoggerOutput}"/>
+                <TextBox Text="{Binding LoggerOutput}"/>
             </ScrollViewer>
         </Expander>
         <DockPanel Grid.Row="1">
