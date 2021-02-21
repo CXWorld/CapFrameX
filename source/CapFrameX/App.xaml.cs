@@ -8,7 +8,6 @@ using EmbedIO;
 using Newtonsoft.Json;
 using Serilog;
 using Serilog.Formatting.Compact;
-using Serilog.Sinks.InMemory;
 using System;
 using System.Configuration;
 using System.Diagnostics;
@@ -16,6 +15,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Security.Principal;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 
@@ -36,7 +36,6 @@ namespace CapFrameX
 			base.OnStartup(e);
 			_bootstrapper = new Bootstrapper();
 			_bootstrapper.Run(true);
-
 
 			_webServer = WebserverFactory.CreateWebServer(_bootstrapper.Container, "http://localhost:1337");
 			_webServer.RunAsync();
@@ -90,7 +89,7 @@ namespace CapFrameX
 					BaseAddress = new Uri(ConfigurationManager.AppSettings["WebserviceUri"])
 				})
 				{
-					var loggerEvents = InMemorySink.Instance.LogEvents;
+					var loggerEvents = InMemorySink.LogEvents;
 					client.DefaultRequestHeaders.AddCXClientUserAgent();
 
 					var content = new StringContent(JsonConvert.SerializeObject(loggerEvents));
@@ -183,7 +182,7 @@ namespace CapFrameX
 			Log.Logger = new LoggerConfiguration()
 				.MinimumLevel.Debug()
 				.Enrich.FromLogContext()
-				.WriteTo.InMemory()
+				.AuditTo.Sink<InMemorySink>()
 				.WriteTo.File(
 					path: Path.Combine(path, "CapFrameX.log"),
 					fileSizeLimitBytes: 1024 * 10000, // approx 10MB
