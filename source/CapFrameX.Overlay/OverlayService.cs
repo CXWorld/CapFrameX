@@ -143,6 +143,7 @@ namespace CapFrameX.Overlay
             _disposableCountdown = obs.Subscribe(t =>
             {
                 SetCaptureTimerValue((int)t);
+                _rTSSService.Refresh();
 
                 if (t == 0)
                     _rTSSService.SetIsCaptureTimerActive(false);
@@ -159,6 +160,8 @@ namespace CapFrameX.Overlay
             _disposableDelayCountdown = obs.Subscribe(t =>
             {
                 SetCaptureTimerValue((int)-t);
+                if(t > 0)
+                _rTSSService.Refresh();
             });
         }
 
@@ -166,6 +169,7 @@ namespace CapFrameX.Overlay
         {
             _disposableDelayCountdown?.Dispose();
             _rTSSService.SetIsCaptureTimerActive(false);
+            _rTSSService.Refresh();
         }
 
         public void StartCaptureTimer()
@@ -669,7 +673,10 @@ namespace CapFrameX.Overlay
         {
             return Observable
                 .Timer(DateTimeOffset.UtcNow, TimeSpan.FromSeconds(1))
-                .Subscribe(t => SetCaptureTimerValue((int)t));
+                .Subscribe(t => {
+                    SetCaptureTimerValue((int)t);
+                    _rTSSService.Refresh();
+                });
         }
 
         private string GetAggregation()

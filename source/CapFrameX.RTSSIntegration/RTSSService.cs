@@ -54,6 +54,7 @@ namespace CapFrameX.RTSSIntegration
             });
         }
 
+
         public Task CheckRTSSRunning()
         {
             return Task.Run(() =>

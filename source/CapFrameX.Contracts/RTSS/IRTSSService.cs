@@ -14,6 +14,7 @@ namespace CapFrameX.Contracts.RTSS
         Tuple<double, double> GetCurrentFramerateFromForegroundWindow();
         Task CheckRTSSRunningAndRefresh();
         Task CheckRTSSRunning();
+        void Refresh();
         void ClearOSD();
         void ReleaseOSD();
         void SetOverlayEntries(IOverlayEntry[] entries);
