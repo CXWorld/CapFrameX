@@ -113,6 +113,9 @@
                             <RadioButton Margin="18 0 0 0" Style="{StaticResource MaterialDesignTabRadioButton}"
 										 IsChecked="{Binding OptionsViewSelected}"
 										 Content="OPTIONS" />
+                            <RadioButton Margin="18 0 0 0" Style="{StaticResource MaterialDesignTabRadioButton}"
+										 IsChecked="{Binding AppViewSelected}"
+										 Content="APP" />
                             <RadioButton Margin="20 0 0 0" Style="{StaticResource MaterialDesignTabRadioButton}"
 										 IsChecked="{Binding HelpViewSelected}"
 										 Content="HELP" />
@@ -131,8 +134,6 @@
                                             </Style>
                                         </Grid.Resources>
                                         <Grid.RowDefinitions>
-                                            <RowDefinition Height="*" />
-                                            <RowDefinition Height="*" />
                                             <RowDefinition Height="*" />
                                             <RowDefinition Height="*" />
                                             <RowDefinition Height="*" />
@@ -167,11 +168,8 @@
                                                 </Binding>
                                             </ComboBox.Text>
                                         </ComboBox>
-                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="15 5 0 5" Grid.Row="1" Grid.Column="1">
-                                            <TextBlock Text="Dark mode"/>
-                                            <ToggleButton Margin="15 0 0 0" Click="MenuDarkModeButton_Click" IsChecked="{Binding IsDarkModeToggleChecked}"/>
-                                        </StackPanel>
-                                        <StackPanel Grid.Row="1" Grid.Column="0" Margin="20 5 0 5" Orientation="Horizontal"
+
+                                        <StackPanel Grid.Row="0" Grid.Column="2" Margin="0 5 0 5" Orientation="Horizontal"
                                             ToolTip="Select resolution for graph export(via context menu)">
                                             <TextBlock Margin="0 0 10 0" VerticalAlignment="Center" HorizontalAlignment="Center"> Graph export res.</TextBlock>
                                             <materialDesign:PopupBox StaysOpen="True" ToolTipService.ShowDuration="25000" PlacementMode="TopAndAlignCentres">
@@ -196,22 +194,7 @@
                                                 </materialDesign:Card>
                                             </materialDesign:PopupBox>
                                         </StackPanel>
-                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="20 5 0 5" Grid.Row="2" Grid.Column="0" ToolTip="Sets the GPU acceleration. Needs a restart of CapFrameX.">
-                                            <TextBlock Text="GPU acceleration"/>
-                                            <ToggleButton Margin="15 0 0 0" IsChecked="{Binding IsGpuAccelerationActive, Mode=TwoWay}"/>
-                                        </StackPanel>
-                                        <StackPanel Orientation="Horizontal" Margin="30 5 0 5" Grid.Row="2" Grid.Column="1">
-                                            <TextBlock Margin="0 0 0 0" Text="Start with Windows" TextAlignment="Left" TextWrapping="Wrap" Width="80"/>
-                                            <CheckBox Margin="0 0 0 0" IsChecked="{Binding Autostart, Mode=TwoWay}">
-                                            </CheckBox>
-                                        </StackPanel>
-                                        <StackPanel Orientation="Horizontal" Margin="0 5 0 5" Grid.Row="2" Grid.Column="2">
-                                            <TextBlock Margin="0 0 0 0" Text="Start minimized" TextAlignment="Left" TextWrapping="Wrap" Width="80"/>
-                                            <CheckBox Margin="0 0 0 0" IsChecked="{Binding StartMinimized, Mode=TwoWay}">
-                                            </CheckBox>
-                                        </StackPanel>
-
-                                        <StackPanel Grid.Row="3" Grid.ColumnSpan="3" Orientation="Horizontal" HorizontalAlignment="Left"  Margin="10 5 0 5">
+                                        <StackPanel Grid.Row="1" Grid.ColumnSpan="3" Orientation="Horizontal" HorizontalAlignment="Left"  Margin="10 5 0 5">
                                             <TextBox Width="350" IsReadOnly="True" materialDesign:HintAssist.Hint="Screenshot directory" Text="{Binding ScreenshotDirectory, Mode=OneWay}" />
                                             <Button Margin="15 0 0 0" Height="35" Width="35" Command="{Binding Path=DataContext.SelectScreenshotFolderCommand, ElementName=ColorbarViewName}" Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}" ToolTip="Select screenshot folder">
                                                 <materialDesign:PackIcon Kind="Folder" Height="25" Width="25" />
@@ -221,7 +204,7 @@
                                             </Button>
                                         </StackPanel>
                                                                                
-                                        <ComboBox Grid.Row="4" Grid.Column="0" materialDesign:HintAssist.Hint="Hardware info source"
+                                        <ComboBox Grid.Row="2" Grid.Column="0" materialDesign:HintAssist.Hint="Hardware info source"
 												  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Margin="15 15 0 0" Width="160" Height="40"
 												  ItemsSource="{Binding Path=DataContext.HardwareInfoSourceItems, ElementName=ColorbarViewName}" 
 												  SelectedItem="{Binding Path=DataContext.SelectedHardwareInfoSource, ElementName=ColorbarViewName}">
@@ -231,7 +214,7 @@
                                                 </DataTemplate>
                                             </ComboBox.ItemTemplate>
                                         </ComboBox>
-                                        <ComboBox Grid.Row="4" Grid.Column="1" materialDesign:HintAssist.Hint="Capture file mode" ToolTipService.ShowDuration="25000"
+                                        <ComboBox Grid.Row="2" Grid.Column="1" materialDesign:HintAssist.Hint="Capture file mode" ToolTipService.ShowDuration="25000"
 												  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Margin="35 15 0 0" Width="160" Height="40"
 												  ItemsSource="{Binding Path=DataContext.CaptureFileModeItems, ElementName=ColorbarViewName}" 
 												  SelectedItem="{Binding Path=DataContext.SelectedCaptureFileMode, ElementName=ColorbarViewName}">
@@ -252,7 +235,7 @@
                                             </ComboBox.ItemTemplate>
                                         </ComboBox>
                                         
-                                        <TextBox Grid.Row="5" Grid.ColumnSpan="2" materialDesign:HintAssist.Hint="CPU" materialDesign:HintAssist.HintOpacity="1" Margin="15 15 0 0"
+                                        <TextBox Grid.Row="3" Grid.ColumnSpan="2" materialDesign:HintAssist.Hint="CPU" materialDesign:HintAssist.HintOpacity="1" Margin="15 15 0 0"
 												Visibility="{Binding Path=DataContext.HasCustomInfo, ElementName=ColorbarViewName, Converter={StaticResource FalseToCollapsedConverter}}">
                                             <TextBox.Text>
                                                 <Binding Path="DataContext.CustomCpuDescription"
@@ -262,7 +245,7 @@
                                                 </Binding>
                                             </TextBox.Text>
                                         </TextBox>
-                                        <TextBox Grid.Row="6" Grid.ColumnSpan="2" materialDesign:HintAssist.Hint="GPU" Margin="15 10 0 0"
+                                        <TextBox Grid.Row="4" Grid.ColumnSpan="2" materialDesign:HintAssist.Hint="GPU" Margin="15 10 0 0"
 												Visibility="{Binding Path=DataContext.HasCustomInfo, ElementName=ColorbarViewName, Converter={StaticResource FalseToCollapsedConverter}}">
                                             <TextBox.Text>
                                                 <Binding Path="DataContext.CustomGpuDescription"
@@ -272,7 +255,7 @@
                                                 </Binding>
                                             </TextBox.Text>
                                         </TextBox>
-                                        <TextBox Grid.Row="7" Grid.ColumnSpan="2" materialDesign:HintAssist.Hint="RAM" Margin="15 10 0 0"
+                                        <TextBox Grid.Row="5" Grid.ColumnSpan="2" materialDesign:HintAssist.Hint="RAM" Margin="15 10 0 0"
 												Visibility="{Binding Path=DataContext.HasCustomInfo, ElementName=ColorbarViewName, Converter={StaticResource FalseToCollapsedConverter}}">
                                             <TextBox.Text>
                                                 <Binding Path="DataContext.CustomRamDescription"
@@ -282,6 +265,45 @@
                                                 </Binding>
                                             </TextBox.Text>
                                         </TextBox>
+                                    </Grid>
+                                </DataTemplate>
+                                <DataTemplate x:Key="AppContent">
+                                    <Grid Margin="10">
+                                        <Grid.Resources>
+                                            <Style TargetType="CheckBox" BasedOn="{StaticResource MaterialDesignCheckBox}">
+                                                <Setter Property="Margin" Value="8,8,10,8" />
+                                            </Style>
+                                            <Style TargetType="TextBox" BasedOn="{StaticResource MaterialDesignTextBox}">
+                                                <Setter Property="materialDesign:HintAssist.IsFloating" Value="True" />
+                                                <Setter Property="Margin" Value="8,8,8,8" />
+                                            </Style>
+                                        </Grid.Resources>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="*" />
+                                            <RowDefinition Height="*" />
+                                        </Grid.RowDefinitions>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="15 5 0 5">
+                                            <TextBlock Text="Dark mode"/>
+                                            <ToggleButton Margin="15 0 0 0" Click="MenuDarkModeButton_Click" IsChecked="{Binding IsDarkModeToggleChecked}"/>
+                                        </StackPanel>
+                                        <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="20 5 0 5" ToolTip="Sets the GPU acceleration. Needs a restart of CapFrameX.">
+                                            <TextBlock Text="GPU acceleration"/>
+                                            <ToggleButton Margin="15 0 0 0" IsChecked="{Binding IsGpuAccelerationActive, Mode=TwoWay}"/>
+                                        </StackPanel>
+                                        <StackPanel Grid.Row="1" Grid.Column="0" Orientation="Horizontal" Margin="15 5 0 5">
+                                            <TextBlock Margin="0 0 0 0" Text="Start with Windows" TextAlignment="Left" TextWrapping="Wrap" Width="80"/>
+                                            <CheckBox Margin="0 0 0 0" IsChecked="{Binding Autostart, Mode=TwoWay}">
+                                            </CheckBox>
+                                        </StackPanel>
+                                        <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" Margin="20 5 0 5" >
+                                            <TextBlock Margin="0 0 0 0" Text="Start minimized" TextAlignment="Left" TextWrapping="Wrap" Width="80"/>
+                                            <CheckBox Margin="0 0 0 0" IsChecked="{Binding StartMinimized, Mode=TwoWay}">
+                                            </CheckBox>
+                                        </StackPanel>
                                     </Grid>
                                 </DataTemplate>
                                 <DataTemplate x:Key="HelpContent">
@@ -295,6 +317,9 @@
                                     <Style.Triggers>
                                         <DataTrigger Binding="{Binding DataContext.SelectedView, ElementName=ColorbarViewName}" Value="Options">
                                             <Setter Property="ContentTemplate" Value="{StaticResource OptionsContent}" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding DataContext.SelectedView, ElementName=ColorbarViewName}" Value="App">
+                                            <Setter Property="ContentTemplate" Value="{StaticResource AppContent}" />
                                         </DataTrigger>
                                         <DataTrigger Binding="{Binding DataContext.SelectedView, ElementName=ColorbarViewName}" Value="Help">
                                             <Setter Property="ContentTemplate" Value="{StaticResource HelpContent}" />

@@ -47,6 +47,7 @@ namespace CapFrameX.ViewModel
         private bool _hasCustomInfo;
         private string _selectedView = "Options";
         private bool _optionsViewSelected = true;
+        private bool _appViewSelected;
         private bool _helpViewSelected;
 
         public string CurrentPageName { get; set; }
@@ -310,6 +311,17 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        public bool AppViewSelected
+        {
+            get { return _appViewSelected; }
+            set
+            {
+                _appViewSelected = value;
+                OnViewSelectionChanged();
+                RaisePropertyChanged();
+            }
+        }
+
         public bool HelpViewSelected
         {
             get { return _helpViewSelected; }
@@ -531,6 +543,9 @@ namespace CapFrameX.ViewModel
         {
             if (OptionsViewSelected)
                 SelectedView = "Options";
+
+            if (AppViewSelected)
+                SelectedView = "App";
 
             if (HelpViewSelected)
                 SelectedView = "Help";
