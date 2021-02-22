@@ -24,6 +24,7 @@ namespace CapFrameX.Data
     public enum ECaptureStatus
     {
         Started,
+        StartedDelay,
         StartedTimer,
         StartedRemote,
         Processing,
@@ -143,6 +144,7 @@ namespace CapFrameX.Data
                 DelayCountdownRunning = true;
                 var delay = options.CaptureDelay;
                 // Start overlay delay countdown timer
+                _captureStatusChange.OnNext(new CaptureStatus() { Status = ECaptureStatus.StartedDelay });
                 _overlayService.SetDelayCountdown(delay);
 
                 try
@@ -151,6 +153,8 @@ namespace CapFrameX.Data
                 }
                 catch (OperationCanceledException) when (_cancelDelay.IsCancellationRequested)
                 {
+                    _overlayService.SetCaptureServiceStatus("Ready to capture...");
+                    _captureStatusChange.OnNext(new CaptureStatus() { Status = ECaptureStatus.Stopped });
                     delayStopwatch.Reset();
                     _cancelDelay?.Dispose();
                     _cancelDelay = new CancellationTokenSource();

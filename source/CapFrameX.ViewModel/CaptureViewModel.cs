@@ -259,6 +259,11 @@ namespace CapFrameX.ViewModel
                         CaptureStateInfo = "Creating capture file..." + Environment.NewLine;
                         _overlayService.SetCaptureServiceStatus("Processing data");
                     }
+                    else if (status.Status == ECaptureStatus.StartedDelay)
+                    {
+                        CaptureStateInfo = $"Capture starting with delay of {CaptureDelayString} seconds..." + Environment.NewLine;
+                        _overlayService.SetCaptureServiceStatus("Capture starting in");
+                    }
                     else
                     {
                         AreButtonsActive = status.Status == ECaptureStatus.Stopped;
@@ -575,7 +580,7 @@ namespace CapFrameX.ViewModel
                     CaptureStateInfo = "Process list clear." + Environment.NewLine + $"Start any game / application and press  {CaptureHotkeyString} to start capture.";
                     _overlayService.SetCaptureServiceStatus("Scanning for process...");
                 }
-                else if (ProcessesToCapture.Count == 1)
+                else if (ProcessesToCapture.Count == 1 && !_captureManager.DelayCountdownRunning)
                 {
                     CaptureStateInfo = "Process auto-detected." + Environment.NewLine + $"Press {CaptureHotkeyString} to start capture.";
                     _overlayService.SetCaptureServiceStatus("Ready to capture...");
@@ -589,8 +594,11 @@ namespace CapFrameX.ViewModel
                 return;
             }
 
-            CaptureStateInfo = $"{SelectedProcessToCapture} selected." + Environment.NewLine + $"Press {CaptureHotkeyString} to start capture.";
-            _overlayService.SetCaptureServiceStatus("Ready to capture...");
+            if (!_captureManager.DelayCountdownRunning)
+            {
+                CaptureStateInfo = $"{SelectedProcessToCapture} selected." + Environment.NewLine + $"Press {CaptureHotkeyString} to start capture.";
+                _overlayService.SetCaptureServiceStatus("Ready to capture...");
+            }
         }
 
         private void InitializeFrametimeModel()
