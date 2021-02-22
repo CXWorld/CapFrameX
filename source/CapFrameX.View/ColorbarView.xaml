@@ -108,7 +108,7 @@
                 <materialDesign:PopupBox Grid.Column="1" DataContext="{Binding Path=DataContext, ElementName=ColorbarViewName}" 
                                          materialDesign:Closed="PopupBox_Closed" RequestBringIntoView="PopupBox_RequestBringIntoView" 
                                          Margin="16,0,16,0" StaysOpen="True" PlacementMode="BottomAndAlignRightEdges" HorizontalAlignment="Right">
-                    <DockPanel>
+                    <DockPanel Width="550">
                         <StackPanel Margin="10" DockPanel.Dock="Top" Orientation="Horizontal">
                             <RadioButton Margin="18 0 0 0" Style="{StaticResource MaterialDesignTabRadioButton}"
 										 IsChecked="{Binding OptionsViewSelected}"
@@ -205,7 +205,7 @@
                                         </StackPanel>
                                                                                
                                         <ComboBox Grid.Row="2" Grid.Column="0" materialDesign:HintAssist.Hint="Hardware info source"
-												  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Margin="15 15 0 0" Width="160" Height="40"
+												  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Margin="0 15 0 0" Width="140" Height="40"
 												  ItemsSource="{Binding Path=DataContext.HardwareInfoSourceItems, ElementName=ColorbarViewName}" 
 												  SelectedItem="{Binding Path=DataContext.SelectedHardwareInfoSource, ElementName=ColorbarViewName}">
                                             <ComboBox.ItemTemplate>
@@ -215,7 +215,7 @@
                                             </ComboBox.ItemTemplate>
                                         </ComboBox>
                                         <ComboBox Grid.Row="2" Grid.Column="1" materialDesign:HintAssist.Hint="Capture file mode" ToolTipService.ShowDuration="25000"
-												  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Margin="35 15 0 0" Width="160" Height="40"
+												  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Margin="0 15 0 0" Width="120" Height="40"
 												  ItemsSource="{Binding Path=DataContext.CaptureFileModeItems, ElementName=ColorbarViewName}" 
 												  SelectedItem="{Binding Path=DataContext.SelectedCaptureFileMode, ElementName=ColorbarViewName}">
                                             <ComboBox.ToolTip>
@@ -288,13 +288,13 @@
                                         </Grid.ColumnDefinitions>
                                         <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="15 5 0 5">
                                             <TextBlock Text="Dark mode"/>
-                                            <ToggleButton Margin="15 0 0 0" Click="MenuDarkModeButton_Click" IsChecked="{Binding IsDarkModeToggleChecked}"/>
+                                            <ToggleButton Margin="48 0 0 0" Click="MenuDarkModeButton_Click" IsChecked="{Binding IsDarkModeToggleChecked}"/>
                                         </StackPanel>
-                                        <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="20 5 0 5" ToolTip="Sets the GPU acceleration. Needs a restart of CapFrameX.">
+                                        <StackPanel Grid.Row="1" Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="15 5 0 5" ToolTip="Sets the GPU acceleration. Needs a restart of CapFrameX.">
                                             <TextBlock Text="GPU acceleration"/>
                                             <ToggleButton Margin="15 0 0 0" IsChecked="{Binding IsGpuAccelerationActive, Mode=TwoWay}"/>
                                         </StackPanel>
-                                        <StackPanel Grid.Row="1" Grid.Column="0" Orientation="Horizontal" Margin="15 5 0 5">
+                                        <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" Margin="20 5 0 5">
                                             <TextBlock Margin="0 0 0 0" Text="Start with Windows" TextAlignment="Left" TextWrapping="Wrap" Width="80"/>
                                             <CheckBox Margin="0 0 0 0" IsChecked="{Binding Autostart, Mode=TwoWay}">
                                             </CheckBox>
