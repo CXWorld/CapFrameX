@@ -53,10 +53,10 @@ namespace CapFrameX.ViewModel
         private string _captureTimeString = "0";
         private string _captureDelayString = "0";
         private string _captureStartDelayString = "0";
-        private double _captureTime;
         private string _loggerOutput = string.Empty;
         private PlotModel _frametimeModel;
         private string _lastCapturedProcess;
+        private bool _hotkeyLocked = false;
 
         private PubSubEvent<ViewMessages.CurrentProcessToCapture> _updateCurrentProcess;
 
@@ -360,10 +360,15 @@ namespace CapFrameX.ViewModel
 
             HotkeyDictionaryBuilder.SetHotkey(AppConfiguration, HotkeyAction.Capture, () =>
             {
-                _logger.LogInformation("Hotkey ({captureHotkeyString}) callback triggered. Lock capture service state is {lockCaptureServiceState}.", CaptureHotkeyString, _captureManager.LockCaptureService);
-                _logger.LogInformation("IsCapturing state: {isCapturingState}", _captureManager.IsCapturing);
-                if (!_captureManager.LockCaptureService)
-                    SetCaptureMode();
+                if (!_hotkeyLocked)
+                {
+                    _hotkeyLocked = true;
+                    Task.Run(async () => await Task.Delay(250)).ContinueWith( t => _hotkeyLocked = false);
+                    _logger.LogInformation("Hotkey ({captureHotkeyString}) callback triggered. Lock capture service state is {lockCaptureServiceState}.", CaptureHotkeyString, _captureManager.LockCaptureService);
+                    _logger.LogInformation("IsCapturing state: {isCapturingState}", _captureManager.IsCapturing);
+                    if (!_captureManager.LockCaptureService)
+                        SetCaptureMode();
+                }
             });
         }
 
