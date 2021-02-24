@@ -50,7 +50,8 @@
                         <RowDefinition Height="Auto" ></RowDefinition>
                     </Grid.RowDefinitions>
                     <TextBox Grid.Row="0" Margin="10 10 10 0" Width="250" IsReadOnly="True" HorizontalAlignment="Right" materialDesign:HintAssist.Hint="Root capture folder" materialDesign:HintAssist.IsFloating="True"
-                             Text="{Binding DataContext.RootDirectory, ElementName=ControlViewControl, Mode=OneWay}" TextWrapping="Wrap" PreviewMouseDown="RootFolder_PreviewMouseDown" materialDesign:HintAssist.HintOpacity=".8"/>
+                             Text="{Binding DataContext.RootDirectory, ElementName=ControlViewControl, Mode=OneWay}" TextWrapping="NoWrap" PreviewMouseDown="RootFolder_PreviewMouseDown" materialDesign:HintAssist.HintOpacity=".8"
+                             ToolTip="{Binding DataContext.RootDirectory, ElementName=ControlViewControl, Mode=OneWay}"/>
                     <Button Grid.Row="0" Margin="5 0 0 5" Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}"
 							VerticalAlignment="Bottom" HorizontalAlignment="Left"
 							Width="20" Height="20"
