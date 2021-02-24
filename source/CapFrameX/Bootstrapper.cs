@@ -152,7 +152,8 @@ namespace CapFrameX
 		{
 			var loggerFactory = Container.Resolve<ILoggerFactory>();
 			var version = Container.Resolve<IAppVersionProvider>().GetAppVersion().ToString();
-			loggerFactory.CreateLogger<ILogger<Bootstrapper>>().LogInformation("CapFrameX {version} started", version);
+			var atomicTime = AtomicTime.Now.TimeOfDay;
+			loggerFactory.CreateLogger<ILogger<Bootstrapper>>().LogInformation("CapFrameX {version} started at UTC {atomicTime}", version, atomicTime);
 		}
 	}
 }

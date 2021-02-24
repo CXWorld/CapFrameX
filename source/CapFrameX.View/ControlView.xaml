@@ -19,7 +19,7 @@
         <ResourceDictionary>
             <CollectionViewSource x:Key="RecordInfoListKey" Source="{Binding RecordInfoList}" Filter="RecordInfoListOnFilter"/>
             <mvvm:AddValueConverter x:Key="AddValueConverter" Offset="-345"/>
-            <mvvm:AddValueConverter x:Key="AddValueConverterExpander" Offset="-345"/>
+            <mvvm:AddValueConverter x:Key="AddValueConverterExpander" Offset="-375"/>
             <mvvm:BoolToVisibilityConverter x:Key="FalseToVisibleConverter" FalseValue="Visible" TrueValue="Collapsed"/>
             <mvvm:BoolToVisibilityConverter x:Key="TrueToVisibleConverter" FalseValue="Collapsed" TrueValue="Visible"/>
             <mvvm:BoolToVisibilityConverter x:Key="FalseToCollapsedConverter" FalseValue="Collapsed" TrueValue="Visible"/>
