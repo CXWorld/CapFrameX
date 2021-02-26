@@ -162,6 +162,10 @@ namespace CapFrameX.Data
 				{
 					//ToDo: logging!
 				}
+				finally
+				{
+					processList.ProcesslistInitialized = true;
+				}
 			});
 			return processList;
 		}
