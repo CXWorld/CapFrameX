@@ -17,7 +17,7 @@ namespace CapFrameX.Contracts.Overlay
 
 		void SetFormatForSensorType(string sensorType, IOverlayEntry selectedEntry, IOverlayEntryFormatChange checkboxes);
 
-		Task SaveOverlayEntriesToJson();
+		Task SaveOverlayEntriesToJson(int targetConfig);
 
 	    Task SwitchConfigurationTo(int index);
 

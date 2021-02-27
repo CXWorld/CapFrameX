@@ -213,5 +213,10 @@ namespace CapFrameX.View
 			Regex regex = new Regex("[^0-9.-]+");
 			e.Handled = regex.IsMatch(e.Text);
 		}
-	}
+
+        private void CopyButton_Click(object sender, RoutedEventArgs e)
+        {
+			CopyButtonPopup.IsOpen = true;
+		}
+    }
 }

@@ -63,8 +63,48 @@
                     </Grid.RowDefinitions>
                     <TextBlock Margin="10 0 0 10" HorizontalAlignment="Left" Text="Overlay items" FontSize="14" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}"/>
                     <StackPanel Grid.Row="0" Margin="0 0 0 10" Orientation="Horizontal" HorizontalAlignment="Right">
+                        
                         <Button Width="28" Height="28" Margin="0 0 10 0" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
-                            ToolTip="Save current config" Command="{Binding SaveConfigCommand}" IsEnabled="{Binding SaveButtonIsEnable}"
+                            ToolTip="Save selection to other configs" Click="CopyButton_Click" 
+                            materialDesign:RippleAssist.Feedback="#DD000000">
+                            <materialDesign:PackIcon Kind="ContentCopy" Height="22" Width="22"/>
+                        </Button>
+                        <Popup x:Name="CopyButtonPopup" Placement="Mouse" StaysOpen="False" >
+                            <materialDesign:Card Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
+                                <Grid Margin="8 8 8 8">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"></RowDefinition>
+                                        <RowDefinition Height="Auto"></RowDefinition>
+                                        <RowDefinition Height="Auto"></RowDefinition>
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"></ColumnDefinition>
+                                        <ColumnDefinition Width="Auto"></ColumnDefinition>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Margin="0 5 25 5" Text="Config  1" Foreground="{DynamicResource MaterialDesignBody}"></TextBlock>
+                                    <TextBlock Grid.Row="1" Grid.Column="0" Margin="0 5 25 5" Text="Config  2" Foreground="{DynamicResource MaterialDesignBody}"></TextBlock>
+                                    <TextBlock Grid.Row="2" Grid.Column="0" Margin="0 5 25 5" Text="Config  3" Foreground="{DynamicResource MaterialDesignBody}"></TextBlock>
+                                    <Button Grid.Row="0" Grid.Column="1" Width="20" Height="20" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
+                                        Command="{Binding SaveConfigCommand}" CommandParameter="0"
+                                        materialDesign:RippleAssist.Feedback="#DD000000">
+                                        <materialDesign:PackIcon Kind="ArrowRight" Height="15" Width="15" />
+                                    </Button>
+                                    <Button Grid.Row="1" Grid.Column="1" Width="20" Height="20" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
+                                        Command="{Binding SaveConfigCommand}" CommandParameter="1"
+                                        materialDesign:RippleAssist.Feedback="#DD000000">
+                                        <materialDesign:PackIcon Kind="ArrowRight" Height="15" Width="15" />
+                                    </Button>
+                                    <Button Grid.Row="2" Grid.Column="1" Width="20" Height="20" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
+                                        Command="{Binding SaveConfigCommand}" CommandParameter="2"
+                                        materialDesign:RippleAssist.Feedback="#DD000000">
+                                        <materialDesign:PackIcon Kind="ArrowRight" Height="15" Width="15" />
+                                    </Button>
+                                </Grid>
+                            </materialDesign:Card>
+                        </Popup>
+                        
+                        <Button Width="28" Height="28" Margin="0 0 10 0" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
+                            ToolTip="Save selection to current config" Command="{Binding SaveConfigCommand}" CommandParameter="3" IsEnabled="{Binding SaveButtonIsEnable}"
                             materialDesign:RippleAssist.Feedback="#DD000000">
                             <materialDesign:PackIcon Kind="ContentSaveSettings" Height="22" Width="22" />
                         </Button>

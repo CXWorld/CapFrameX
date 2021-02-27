@@ -276,7 +276,7 @@ namespace CapFrameX.ViewModel
             }
         }
 
-        
+
         public bool AggregationButtonEnabled
         {
             get
@@ -443,6 +443,12 @@ namespace CapFrameX.ViewModel
 
         public ICommand SaveConfigCommand { get; }
 
+        public ICommand SaveToConfig0Command { get; }
+
+        public ICommand SaveToConfig1Command { get; }
+
+        public ICommand SaveToConfig2Command { get; }
+
         public ICommand ResetDefaultsCommand { get; }
 
         public ICommand ResetColorAndLimitDefaultsCommand { get; }
@@ -530,11 +536,19 @@ namespace CapFrameX.ViewModel
                     SaveButtonIsEnable = _overlayEntryProvider.HasHardwareChanged;
                 });
 
-            SaveConfigCommand = new DelegateCommand(
-               async () =>
+            SaveConfigCommand = new DelegateCommand<object>(
+               async (object targetConfig) =>
                {
-                   SaveButtonIsEnable = false;
-                   await _overlayEntryProvider.SaveOverlayEntriesToJson();
+                   int index = Convert.ToInt32(targetConfig);
+                   if (index == 3)
+                   {
+                       SaveButtonIsEnable = false;
+                       await _overlayEntryProvider.SaveOverlayEntriesToJson(_appConfiguration.OverlayEntryConfigurationFile);
+                   }
+                   else
+                   {
+                       await _overlayEntryProvider.SaveOverlayEntriesToJson(index);
+                   }
                });
 
             ResetDefaultsCommand = new DelegateCommand(
@@ -602,7 +616,7 @@ namespace CapFrameX.ViewModel
         private void OnUseRunHistoryChanged()
         {
             var historyEntry = _overlayEntryProvider.GetOverlayEntry("RunHistory");
-            
+
             if (!UseRunHistory)
             {
                 UseAggregation = false;

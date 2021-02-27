@@ -107,7 +107,7 @@ namespace CapFrameX.Overlay
             _overlayEntries.Move(sourceIndex, targetIndex);
         }
 
-        public async Task SaveOverlayEntriesToJson()
+        public async Task SaveOverlayEntriesToJson(int targetConfig)
         {
             try
             {
@@ -121,7 +121,7 @@ namespace CapFrameX.Overlay
                 if (!Directory.Exists(OVERLAY_CONFIG_FOLDER))
                     Directory.CreateDirectory(OVERLAY_CONFIG_FOLDER);
 
-                using (StreamWriter outputFile = new StreamWriter(GetConfigurationFileName()))
+                using (StreamWriter outputFile = new StreamWriter(GetConfigurationFileName(targetConfig)))
                 {
                     await outputFile.WriteAsync(json);
                 }
@@ -293,7 +293,7 @@ namespace CapFrameX.Overlay
             await _sensorService.SensorServiceCompletionSource.Task;
             await _overlayEntryCore.OverlayEntryCoreCompletionSource.Task;
 
-            string json = File.ReadAllText(GetConfigurationFileName());
+            string json = File.ReadAllText(GetConfigurationFileName(_appConfiguration.OverlayEntryConfigurationFile));
             var overlayEntriesFromJson = JsonConvert.DeserializeObject<OverlayEntryPersistence>(json)
                 .OverlayEntries.ToBlockingCollection<IOverlayEntry>();
 
@@ -809,10 +809,11 @@ namespace CapFrameX.Overlay
             }
         }
 
-        private string GetConfigurationFileName()
+        private string GetConfigurationFileName(int targetConfig)
         {
-            return Path.Combine(OVERLAY_CONFIG_FOLDER, $"OverlayEntryConfiguration_" +
-                $"{_appConfiguration.OverlayEntryConfigurationFile}.json");
+
+                    return Path.Combine(OVERLAY_CONFIG_FOLDER, $"OverlayEntryConfiguration_" +
+                            $"{targetConfig}.json");
         }
 
         private void SetConfigurationFileName(int index)
