@@ -9,7 +9,7 @@ namespace CapFrameX.View.Themes
 
 
         // Standard Background color
-        public Color MaterialDesignBackground { get; } = (Color)ColorConverter.ConvertFromString("#fafbfc");
+        public Color MaterialDesignBackground { get; } = (Color)ColorConverter.ConvertFromString("#fafafa");
 
 
         // Standard color

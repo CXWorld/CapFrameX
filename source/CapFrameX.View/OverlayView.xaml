@@ -111,7 +111,8 @@
 					          dragdrop:DragDrop.UseDefaultEffectDataTemplate="False"
                               ToolTip="Drag &amp; Drop to change order"
                               ToolTipService.VerticalOffset="-6"
-                              Style="{StaticResource MaterialDesignDataGrid}">
+                              Style="{StaticResource MaterialDesignDataGrid}"
+                              Background="{DynamicResource MaterialDesignBackground}">
                         <DataGrid.Resources>
                             <Style TargetType="{x:Type DataGridRow}">
                                 <Setter Property="DataGrid.Height" Value="25" />
@@ -676,7 +677,8 @@
 					              CanUserSortColumns="False" CanUserAddRows="False" AutoGenerateColumns="False"
 					              materialDesign:DataGridAssist.CellPadding="13 3 0 0" materialDesign:DataGridAssist.ColumnHeaderPadding="8" IsSynchronizedWithCurrentItem="False"
 					              ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.CanContentScroll="True"
-                                  Style="{StaticResource MaterialDesignDataGrid}">
+                                  Style="{StaticResource MaterialDesignDataGrid}"
+                                  Background="{DynamicResource MaterialDesignBackground}">
                             <DataGrid.Resources>
                                 <Style TargetType="{x:Type DataGridRow}">
                                     <Setter Property="DataGrid.Height" Value="25" />

@@ -180,7 +180,7 @@
                 <ColumnDefinition Width="1*"/>
                 <ColumnDefinition Width="1*"/>
             </Grid.ColumnDefinitions>
-            <Expander Grid.Row="0" Grid.ColumnSpan="2" ExpandDirection="Down" HorizontalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}">
+            <Expander Grid.Row="0" Grid.ColumnSpan="2" ExpandDirection="Down" HorizontalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}" Background="{DynamicResource MaterialDesignBackground}">
                 <Expander.Header>
                     <TextBlock Margin="50 0 0 0" HorizontalAlignment="Center" FontWeight="Bold" Text="What is the process list?" RenderTransformOrigin=".5,.5">
                     </TextBlock>

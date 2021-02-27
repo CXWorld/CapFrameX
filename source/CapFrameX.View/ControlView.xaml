@@ -107,7 +107,8 @@
 					                             dragdrop:DragDrop.UseDefaultDragAdorner="True"
 					                             dragdrop:DragDrop.DefaultDragAdornerOpacity="0.5"
 					                             dragdrop:DragDrop.UseDefaultEffectDataTemplate="False"
-                                                 Style="{StaticResource MaterialDesignDataGrid}">
+                                                 Style="{StaticResource MaterialDesignDataGrid}"
+                                                 Background="{DynamicResource MaterialDesignBackground}">
                     <DataGrid.Resources>
                         <Style TargetType="{x:Type DataGridRow}">
                             <EventSetter Event="MouseDoubleClick" Handler="DataGridRow_MouseDoubleClick"/>

@@ -53,7 +53,8 @@
 				  dragdrop:DragDrop.DropTargetAdornerBrush="White"
 				  dragdrop:DragDrop.DefaultDragAdornerOpacity="0.5"
 				  dragdrop:DragDrop.UseDefaultEffectDataTemplate="False"
-                  Style="{StaticResource MaterialDesignDataGrid}">
+                  Style="{StaticResource MaterialDesignDataGrid}"
+                  Background="{DynamicResource MaterialDesignBackground}">
 			<DataGrid.ContextMenu>
 				<ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
 					<MenuItem Header="Copy table" Command="{Binding CopyTableDataCommand}"/>

@@ -25,7 +25,7 @@
             <RowDefinition Height="Auto"></RowDefinition>
             <RowDefinition Height="600"></RowDefinition>
         </Grid.RowDefinitions>
-        <Expander HorizontalAlignment="Stretch" Grid.Row="0" ExpandDirection="Down" Foreground="{DynamicResource MaterialDesignBody}">
+        <Expander HorizontalAlignment="Stretch" Grid.Row="0" ExpandDirection="Down" Foreground="{DynamicResource MaterialDesignBody}" Background="{DynamicResource MaterialDesignBackground}">
             <Expander.Header>
                 <TextBlock Text= "Infobox" HorizontalAlignment="Left"/>
             </Expander.Header>

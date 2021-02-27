@@ -59,7 +59,8 @@
 					         CanUserSortColumns="False" CanUserAddRows="False" AutoGenerateColumns="False" IsEnabled="{Binding Path=UseSensorLogging}"
 					         materialDesign:DataGridAssist.CellPadding="13 3 0 0" materialDesign:DataGridAssist.ColumnHeaderPadding="8" IsSynchronizedWithCurrentItem="False"
 					         ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.CanContentScroll="True"
-                             Style="{StaticResource MaterialDesignDataGrid}">
+                             Style="{StaticResource MaterialDesignDataGrid}"
+                             Background="{DynamicResource MaterialDesignBackground}">
                         <DataGrid.Resources>
                             <Style TargetType="{x:Type DataGridRow}">
                                 <Setter Property="DataGrid.Height" Value="25" />
@@ -303,9 +304,10 @@
                                 ItemsSource="{Binding SensorReportItems}"
 					            CanUserSortColumns="False" CanUserAddRows="False" AutoGenerateColumns="False"
 					            materialDesign:DataGridAssist.CellPadding="13 3 0 0" materialDesign:DataGridAssist.ColumnHeaderPadding="8" IsSynchronizedWithCurrentItem="False"
-					             ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.CanContentScroll="True"
+					            ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.CanContentScroll="True"
                                 Tag="{Binding ElementName=SensorViewUserControl, Path=DataContext}"
-                              Style="{StaticResource MaterialDesignDataGrid}">
+                                Style="{StaticResource MaterialDesignDataGrid}"
+                                Background="{DynamicResource MaterialDesignBackground}">
                         <DataGrid.ContextMenu>
                             <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
                                 <MenuItem Header="Copy sensor data(min, avg, max)" Command="{Binding CopySensorInfoCommand}"/>
