@@ -450,11 +450,11 @@
                                                         </CheckBox.ToolTip>
                                                     </CheckBox>
                                                     
-                                                    <TextBlock Grid.Row="2" Grid.Column="0" Margin="5 0 0 0" VerticalAlignment="Center" Text="OSD position"></TextBlock>
-                                                    <StackPanel Grid.Row="2" Grid.Column="1" Margin="8 0 0 0" Orientation="Horizontal">
-                                                        <TextBox Width="30" Height="25" Text="{Binding OSDPositionX, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" HorizontalContentAlignment="Center" MouseLeave="OSDPosition_PreviewMouseLeave" PreviewTextInput="IntegerNumberValidationTextBox"></TextBox>
+                                                    <TextBlock Grid.Row="2" Grid.Column="0" Margin="5 0 0 0" VerticalAlignment="Center" Text="CX overlay position"></TextBlock>
+                                                    <StackPanel Grid.Row="2" Grid.Column="1" Margin="8 0 0 0" Orientation="Horizontal" ToolTip="Changes position of the CX overlay items (not of the global OSD)">
+                                                        <TextBox Width="30" Height="25" Text="{Binding OSDPositionX, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" HorizontalContentAlignment="Center" PreviewTextInput="IntegerNumberValidationTextBox"></TextBox>
                                                         <TextBlock VerticalAlignment="Center" Margin="5 0 5 0" Text="x"></TextBlock>
-                                                        <TextBox Width="30" Height="25" Text="{Binding OSDPositionY, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" HorizontalContentAlignment="Center" MouseLeave="OSDPosition_PreviewMouseLeave" PreviewTextInput="IntegerNumberValidationTextBox"></TextBox>
+                                                        <TextBox Width="30" Height="25" Text="{Binding OSDPositionY, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" HorizontalContentAlignment="Center" PreviewTextInput="IntegerNumberValidationTextBox"></TextBox>
                                                     </StackPanel>
                                                 </Grid>
                                             </StackPanel>

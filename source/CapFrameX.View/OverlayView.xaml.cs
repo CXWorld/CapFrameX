@@ -224,14 +224,5 @@ namespace CapFrameX.View
         {
 			CopyButtonPopup.IsOpen = true;
 		}
-
-        private void OSDPosition_PreviewMouseLeave(object sender, MouseEventArgs e)
-        {
-			var textBox = sender as TextBox;
-			if (textBox.Text == string.Empty)
-				textBox.Text = "0";
-
-			Keyboard.ClearFocus();
-		}
     }
 }
