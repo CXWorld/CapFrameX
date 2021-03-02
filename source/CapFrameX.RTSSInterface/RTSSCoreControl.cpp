@@ -13,6 +13,7 @@
 #include <tuple>
 #include <iostream>
 #include <stdexcept>
+#include <string>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -32,6 +33,9 @@ RTSSCoreControl::RTSSCoreControl()
 	m_bFormatTags = TRUE;
 	m_bFillGraphs = FALSE;
 	m_bConnected = FALSE;
+
+	OverlayPositionX = 0;
+	OverlayPositionY = 0;
 }
 
 RTSSCoreControl::~RTSSCoreControl() { }
@@ -476,7 +480,9 @@ void RTSSCoreControl::Refresh()
 
 	if (bFormatTagsSupported && m_bFormatTags)
 	{
-			strOSD += "<P=0,0>";
+		std::string posString = "<P=" + std::to_string(OverlayPositionX) + "," + std::to_string(OverlayPositionY) + ">";
+		CString posCString(posString.c_str());
+		strOSD += posCString;
 
 		// add format variables
 		if (!m_formatVariables.IsEmpty())

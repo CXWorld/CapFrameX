@@ -44,6 +44,8 @@ public:
 	std::vector<float>		    GetCurrentFramerate(DWORD processId);
 	std::vector<float>			GetCurrentFramerateFromForegroundWindow();
 	BOOL						ShowRunHistory;
+	DWORD						OverlayPositionX;
+	DWORD						OverlayPositionY;
 
 // Implementation
 protected:

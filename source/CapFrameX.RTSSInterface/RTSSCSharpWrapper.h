@@ -288,6 +288,12 @@ public:
 		_coreControl->ShowRunHistory = showRunHistory;
 	}
 
+	void SetOverlayPosition(INT x, INT y)
+	{
+		_coreControl->OverlayPositionX = x;
+		_coreControl->OverlayPositionY = y;
+	}
+
 private:
 	RTSSCoreControl* _coreControl;
 	Action<Exception^>^ _exceptionAction;
