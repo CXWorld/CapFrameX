@@ -357,6 +357,17 @@ namespace CapFrameX.Configuration
             set => Set(value);
         }
 
+        public int OSDPositionX
+        {
+            get => Get<int>(0);
+            set => Set(value);
+        }
+        public int OSDPositionY
+        {
+            get => Get<int>(0);
+            set => Set(value);
+        }
+
         public bool ToggleGlobalRTSSOSD
         {
             get => Get<bool>(false);

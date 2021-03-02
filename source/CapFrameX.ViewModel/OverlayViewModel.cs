@@ -100,6 +100,30 @@ namespace CapFrameX.ViewModel
         //    }
         //}
 
+        public int OSDPositionX
+        {
+            get { return _appConfiguration.OSDPositionX; }
+            set
+            {
+
+                _appConfiguration.OSDPositionX = value;
+                _rTSSService.SetOverlayPosition(value, _appConfiguration.OSDPositionY);
+                RaisePropertyChanged();
+            }
+        }
+
+        public int OSDPositionY
+        {
+            get { return _appConfiguration.OSDPositionY; }
+            set
+            {
+
+                _appConfiguration.OSDPositionY = value;
+                _rTSSService.SetOverlayPosition(_appConfiguration.OSDPositionX, value);
+                RaisePropertyChanged();
+            }
+        }
+
         public string OverlayHotkeyString
         {
             get { return _appConfiguration.OverlayHotKey; }
