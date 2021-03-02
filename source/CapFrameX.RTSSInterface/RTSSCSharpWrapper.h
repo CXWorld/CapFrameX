@@ -280,18 +280,27 @@ public:
 
 	void CloseHandles()
 	{
-		_coreControl->CloseHandles();
+		{
+			msclr::lock l(m_lock);
+			_coreControl->CloseHandles();
+		}
 	}
 
 	void SetShowRunHistory(bool showRunHistory)
 	{
-		_coreControl->ShowRunHistory = showRunHistory;
+		{
+			msclr::lock l(m_lock);
+			_coreControl->ShowRunHistory = showRunHistory;
+		}
 	}
 
 	void SetOverlayPosition(INT x, INT y)
 	{
-		_coreControl->OverlayPositionX = x;
-		_coreControl->OverlayPositionY = y;
+		{
+			msclr::lock l(m_lock);
+			_coreControl->OverlayPositionX = x;
+			_coreControl->OverlayPositionY = y;
+		}
 	}
 
 private:
