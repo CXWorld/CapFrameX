@@ -357,6 +357,12 @@ namespace CapFrameX.Configuration
             set => Set(value);
         }
 
+        public bool OSDCustomPosition
+        {
+            get => Get<bool>(false);
+            set => Set(value);
+        }
+
         public int OSDPositionX
         {
             get => Get<int>(0);

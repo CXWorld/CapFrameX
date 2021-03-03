@@ -29,6 +29,7 @@ namespace CapFrameX.Contracts.RTSS
         void OnOSDToggle();
         void CloseHandles();
         void SetShowRunHistory(bool showRunHistory);
+        void SetOSDCustomPosition(bool active);
         void SetOverlayPosition(int x, int y);
     }
 }

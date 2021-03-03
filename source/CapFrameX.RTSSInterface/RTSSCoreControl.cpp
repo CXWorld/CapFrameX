@@ -34,8 +34,10 @@ RTSSCoreControl::RTSSCoreControl()
 	m_bFillGraphs = FALSE;
 	m_bConnected = FALSE;
 
+	OSDCustomPosition = FALSE;
 	OverlayPositionX = 0;
 	OverlayPositionY = 0;
+
 }
 
 RTSSCoreControl::~RTSSCoreControl() { }
@@ -480,9 +482,13 @@ void RTSSCoreControl::Refresh()
 
 	if (bFormatTagsSupported && m_bFormatTags)
 	{
-		std::string posString = "<P=" + std::to_string(OverlayPositionX) + "," + std::to_string(OverlayPositionY) + ">";
-		CString posCString(posString.c_str());
-		strOSD += posCString;
+		if (OSDCustomPosition)
+		{
+				std::string posString = "<P=" + std::to_string(OverlayPositionX) + "," + std::to_string(OverlayPositionY) + ">";
+				CString posCString(posString.c_str());
+				strOSD += posCString;
+		}
+			
 
 		// add format variables
 		if (!m_formatVariables.IsEmpty())

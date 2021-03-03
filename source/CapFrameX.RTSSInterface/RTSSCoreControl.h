@@ -46,6 +46,7 @@ public:
 	BOOL						ShowRunHistory;
 	DWORD						OverlayPositionX;
 	DWORD						OverlayPositionY;
+	BOOL						OSDCustomPosition;
 
 // Implementation
 protected:

@@ -100,6 +100,16 @@ namespace CapFrameX.ViewModel
         //    }
         //}
 
+        public bool OSDCustomPosition
+        {
+            get { return _appConfiguration.OSDCustomPosition; }
+            set
+            {
+                _appConfiguration.OSDCustomPosition = value;
+                _rTSSService.SetOSDCustomPosition(value);
+                RaisePropertyChanged();
+            }
+        }
         public int OSDPositionX
         {
             get { return _appConfiguration.OSDPositionX; }
