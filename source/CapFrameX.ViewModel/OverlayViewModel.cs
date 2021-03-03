@@ -607,6 +607,8 @@ namespace CapFrameX.ViewModel
             SetGlobalHookEventOverlayConfigHotkey();
             SetGlobalHookEventResetHistoryHotkey();
 
+            InitializeOSDCustomPosition();
+
         }
 
         private void SetSaveButtonIsEnableAction()
@@ -726,6 +728,12 @@ namespace CapFrameX.ViewModel
                 IsConfig0Checked = true;
                 return "0";
             }
+        }
+
+        private void InitializeOSDCustomPosition()
+        {
+            _rTSSService.SetOSDCustomPosition(_appConfiguration.OSDCustomPosition);
+            _rTSSService.SetOverlayPosition(_appConfiguration.OSDPositionX, _appConfiguration.OSDPositionY);
         }
 
         public void UpdateGroupNameEnable()
