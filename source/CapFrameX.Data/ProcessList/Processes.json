@@ -35,6 +35,16 @@
     "IsBlacklisted": false
   },
   {
+    "Name": "ACValhalla",
+    "DisplayName": "Assassin's Creed Valhalla",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "Adobe Premiere Pro",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
     "Name": "age3y",
     "DisplayName": "Age of Empires III",
     "IsBlacklisted": false
@@ -53,6 +63,11 @@
     "Name": "Allegiance",
     "DisplayName": "Allegiance",
     "IsBlacklisted": false
+  },
+  {
+    "Name": "ALOTInstaller",
+    "DisplayName": null,
+    "IsBlacklisted": true
   },
   {
     "Name": "altitude",
@@ -87,6 +102,11 @@
   {
     "Name": "AoK HD",
     "DisplayName": " Age of Empires II",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "Aperion-Win64-Shipping",
+    "DisplayName": "Godfall",
     "IsBlacklisted": false
   },
   {
@@ -285,6 +305,11 @@
     "IsBlacklisted": false
   },
   {
+    "Name": "BlackOpsColdWar",
+    "DisplayName": "Call of Duty: Black Ops Cold War",
+    "IsBlacklisted": false
+  },
+  {
     "Name": "BlackOpsMP",
     "DisplayName": "Call of Duty: Black Ops",
     "IsBlacklisted": false
@@ -307,6 +332,11 @@
   {
     "Name": "Borderlands3",
     "DisplayName": "Borderlands 3",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "BrightMemory_EP1-Win64-Shipping",
+    "DisplayName": "Bright Memory",
     "IsBlacklisted": false
   },
   {
@@ -400,9 +430,19 @@
     "IsBlacklisted": false
   },
   {
+    "Name": "Cortana",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
     "Name": "cossacks",
     "DisplayName": "Cossacks 3",
     "IsBlacklisted": false
+  },
+  {
+    "Name": "CrashReportClient",
+    "DisplayName": null,
+    "IsBlacklisted": true
   },
   {
     "Name": "CRYENGINE_Launcher",
@@ -448,6 +488,11 @@
     "Name": "Cura",
     "DisplayName": null,
     "IsBlacklisted": true
+  },
+  {
+    "Name": "Cyberpunk2077",
+    "DisplayName": "Cyberpunk 2077",
+    "IsBlacklisted": false
   },
   {
     "Name": "daorigins",
@@ -530,6 +575,11 @@
     "IsBlacklisted": false
   },
   {
+    "Name": "DIRT5",
+    "DisplayName": "Dirt 5",
+    "IsBlacklisted": false
+  },
+  {
     "Name": "Discord",
     "DisplayName": null,
     "IsBlacklisted": true
@@ -543,6 +593,11 @@
     "Name": "DMC-DevilMayCry",
     "DisplayName": "DmC Devil May Cry",
     "IsBlacklisted": false
+  },
+  {
+    "Name": "Docker Desktop",
+    "DisplayName": null,
+    "IsBlacklisted": true
   },
   {
     "Name": "DOOMEternalx64vk",
@@ -656,6 +711,11 @@
   },
   {
     "Name": "EpicGamesLauncher",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "EpicWebHelper",
     "DisplayName": null,
     "IsBlacklisted": true
   },
@@ -860,6 +920,11 @@
     "IsBlacklisted": false
   },
   {
+    "Name": "Gears5",
+    "DisplayName": "Gears 5",
+    "IsBlacklisted": false
+  },
+  {
     "Name": "GenshinImpact",
     "DisplayName": "Genshin Impact",
     "IsBlacklisted": false
@@ -915,6 +980,11 @@
     "IsBlacklisted": false
   },
   {
+    "Name": "HandBrake",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
     "Name": "Hearthstone",
     "DisplayName": "Hearthstone",
     "IsBlacklisted": false
@@ -932,6 +1002,11 @@
   {
     "Name": "HITMAN",
     "DisplayName": "Hitman",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "HITMAN3",
+    "DisplayName": "Hitman 3",
     "IsBlacklisted": false
   },
   {
@@ -1172,6 +1247,11 @@
   {
     "Name": "MechWarrior-Win64-Shipping",
     "DisplayName": "MechWarrior 5: Mercenaries",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "Medium-Win64-Shipping",
+    "DisplayName": "The Medium",
     "IsBlacklisted": false
   },
   {
@@ -1425,6 +1505,11 @@
     "IsBlacklisted": false
   },
   {
+    "Name": "PerfTune",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
     "Name": "PillarsOfEternity",
     "DisplayName": "Pillars of Eternity",
     "IsBlacklisted": false
@@ -1448,6 +1533,11 @@
     "Name": "PlanetZoo",
     "DisplayName": "Planet Zoo",
     "IsBlacklisted": false
+  },
+  {
+    "Name": "Playnite.DesktopApp",
+    "DisplayName": null,
+    "IsBlacklisted": true
   },
   {
     "Name": "pol",
@@ -1695,6 +1785,11 @@
     "IsBlacklisted": true
   },
   {
+    "Name": "slack",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
     "Name": "SocialClubHelper",
     "DisplayName": null,
     "IsBlacklisted": true
@@ -1790,6 +1885,11 @@
     "IsBlacklisted": false
   },
   {
+    "Name": "svchost",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
     "Name": "swtor",
     "DisplayName": "Star Wars: The Old Republic",
     "IsBlacklisted": false
@@ -1840,6 +1940,11 @@
     "IsBlacklisted": false
   },
   {
+    "Name": "Terminator-Win64-Shipping",
+    "DisplayName": "Terminator Resistance",
+    "IsBlacklisted": false
+  },
+  {
     "Name": "Terraria",
     "DisplayName": "Terraria",
     "IsBlacklisted": false
@@ -1862,6 +1967,11 @@
   {
     "Name": "TheDivision2",
     "DisplayName": "The Division 2",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "ThePed_Win_64",
+    "DisplayName": "The Pedestrian",
     "IsBlacklisted": false
   },
   {
@@ -1955,6 +2065,11 @@
     "IsBlacklisted": false
   },
   {
+    "Name": "UEBS",
+    "DisplayName": "Ultimate Epic Battle Simulator",
+    "IsBlacklisted": false
+  },
+  {
     "Name": "UnrealCEFSubProcess",
     "DisplayName": null,
     "IsBlacklisted": true
@@ -1975,8 +2090,18 @@
     "IsBlacklisted": true
   },
   {
+    "Name": "vivaldi",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
     "Name": "vlc",
     "DisplayName": "VLC Player",
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "Vortex",
+    "DisplayName": null,
     "IsBlacklisted": true
   },
   {
@@ -2100,6 +2225,11 @@
     "IsBlacklisted": false
   },
   {
+    "Name": "WowUp",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
     "Name": "WWAHost",
     "DisplayName": null,
     "IsBlacklisted": true
@@ -2148,6 +2278,16 @@
     "Name": "XRebirth",
     "DisplayName": "X Rebirth",
     "IsBlacklisted": false
+  },
+  {
+    "Name": "XSplit.Core",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "XSplit.xbcbp",
+    "DisplayName": null,
+    "IsBlacklisted": true
   },
   {
     "Name": "Youngblood_x64vk",

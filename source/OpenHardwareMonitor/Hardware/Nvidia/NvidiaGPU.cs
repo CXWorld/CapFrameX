@@ -42,7 +42,7 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
         private readonly Sensor pcieThroughputRx;
         private readonly Sensor pcieThroughputTx;
         private readonly Control fanControl;
-        private readonly Sensor variableRefreshRate;
+        private readonly Sensor monitorRefreshRate;
 
         public NvidiaGPU(int adapterIndex, NvPhysicalGpuHandle handle,
           NvDisplayHandle? displayHandle, ISettings settings, ISensorConfig config, IRTSSService rTSSService)
@@ -114,7 +114,7 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
                 control.Control = fanControl;
             }
 
-            variableRefreshRate = new Sensor("Variable Refresh Rate", 0, SensorType.Frequency, this, settings);
+            monitorRefreshRate = new Sensor("Monitor Refresh Rate", 0, SensorType.Frequency, this, settings);
 
             if (NVML.IsInitialized)
             {
@@ -555,7 +555,7 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
                 }
             }
 
-            if (sensorConfig.GetSensorEvaluate(variableRefreshRate.IdentifierString))
+            if (sensorConfig.GetSensorEvaluate(monitorRefreshRate.IdentifierString))
             {
                 if (NVAPI.NvAPI_GetVBlankCounter(displayHandle.Value, out uint pCounter)
                     == NvStatus.OK)
@@ -568,16 +568,16 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
                         var currentRefreshRate = (float)(pCounter - lastpCounter) / deltaTicks * Stopwatch.Frequency;
                         refreshRateBuffer.Add(currentRefreshRate);
                         var refreshRateFiltered = (float)Math.Ceiling(refreshRateBuffer.RefreshRates.Average());
-                        variableRefreshRate.Value = refreshRateFiltered > refreshRateCurrentWindowHandle ? refreshRateCurrentWindowHandle : refreshRateFiltered;
+                        monitorRefreshRate.Value = refreshRateFiltered > refreshRateCurrentWindowHandle ? refreshRateCurrentWindowHandle : refreshRateFiltered;
                     }
 
                     lastpCounter = pCounter;
-                    ActivateSensor(variableRefreshRate);
+                    ActivateSensor(monitorRefreshRate);
                 }
             }
             else
             {
-                variableRefreshRate.Value = null;
+                monitorRefreshRate.Value = null;
             }
         }
 

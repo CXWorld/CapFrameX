@@ -572,9 +572,9 @@ namespace CapFrameX.Overlay
                 name = name.Replace(" - Thread #2", "");
             }
 
-            if (name.Contains("Variable Refresh Rate"))
+            if (name.Contains("Monitor Refresh Rate"))
             {
-                name = "VRR";
+                name = "MRR";
             }
 
             return name;
