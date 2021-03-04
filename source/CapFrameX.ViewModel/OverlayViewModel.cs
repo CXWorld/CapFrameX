@@ -6,10 +6,10 @@ using CapFrameX.Data;
 using CapFrameX.Extensions;
 using CapFrameX.Extensions.NetStandard;
 using CapFrameX.Hotkey;
+using CapFrameX.MVVM.Dialogs;
 using CapFrameX.Overlay;
 using CapFrameX.Statistics.NetStandard.Contracts;
 using CapFrameX.ViewModel.SubModels;
-using Gma.System.MouseKeyHook;
 using GongSolutions.Wpf.DragDrop;
 using Prism.Commands;
 using Prism.Events;
@@ -44,6 +44,8 @@ namespace CapFrameX.ViewModel
         private bool _overlayItemsOptionsEnabled = false;
         private bool _saveButtonIsEnable;
         private Subject<object> _configSubject = new Subject<object>();
+        private ResetOverlayConfigDialog _resetOverlayConfigContent;
+        private bool _resetOverlayConfigContentIsOpen;
 
         public bool OverlayItemsOptionsEnabled
         {
@@ -451,6 +453,26 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        public ResetOverlayConfigDialog ResetOverlayConfigContent
+        {
+            get { return _resetOverlayConfigContent; }
+            set
+            {
+                _resetOverlayConfigContent = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public bool ResetOverlayConfigContentIsOpen
+        {
+            get { return _resetOverlayConfigContentIsOpen; }
+            set
+            {
+                _resetOverlayConfigContentIsOpen = value;
+                RaisePropertyChanged();
+            }
+        }
+
         public string SelectedOverlayItemName
             => SelectedOverlayEntryIndex > -1 ?
             OverlayEntries[SelectedOverlayEntryIndex].Description : null;
@@ -473,7 +495,9 @@ namespace CapFrameX.ViewModel
 
         public ICommand SaveToConfig2Command { get; }
 
-        public ICommand ResetDefaultsCommand { get; }
+        public ICommand OpenResetDialogCommand { get; }
+
+        public ICommand ResetConfigCommand { get; }
 
         public ICommand ResetColorAndLimitDefaultsCommand { get; }
 
@@ -530,6 +554,8 @@ namespace CapFrameX.ViewModel
             OverlaySubModelGroupControl = new OverlayGroupControl(this);
             OverlaySubModelGroupSeparating = new OverlayGroupSeparating(this);
 
+            ResetOverlayConfigContent = new ResetOverlayConfigDialog();
+
             _rTSSService.SetShowRunHistory(UseRunHistory);
 
             ConfigSwitchCommand = new DelegateCommand<object>(_configSubject.OnNext);
@@ -538,7 +564,6 @@ namespace CapFrameX.ViewModel
                 {
                     return Convert.ToInt32(obj);
                 })
-                .DistinctUntilChanged()
                 .SelectMany(index =>
                 {
                     return Observable.FromAsync(() => Task.Run(() => _overlayEntryProvider.SwitchConfigurationTo(index)))
@@ -575,8 +600,8 @@ namespace CapFrameX.ViewModel
                    }
                });
 
-            ResetDefaultsCommand = new DelegateCommand(
-                 async () => await OnResetDefaults());
+            OpenResetDialogCommand = new DelegateCommand(() => ResetOverlayConfigContentIsOpen = true);
+            ResetConfigCommand = new DelegateCommand(async () => await OnResetDefaults());
 
             SetFormatForGroupNameCommand = new DelegateCommand(
                () => _overlayEntryProvider.SetFormatForGroupName(SelectedOverlayItemGroupName, SelectedOverlayEntry, Checkboxes));
@@ -596,7 +621,6 @@ namespace CapFrameX.ViewModel
             SetGlobalHookEventOverlayHotkey();
             SetGlobalHookEventOverlayConfigHotkey();
             SetGlobalHookEventResetHistoryHotkey();
-
         }
 
         private void SetSaveButtonIsEnableAction()
@@ -617,6 +641,11 @@ namespace CapFrameX.ViewModel
             SetSaveButtonIsEnableAction();
             OnUseRunHistoryChanged();
             OverlayItemsOptionsEnabled = false;
+
+            await _overlayEntryProvider.SaveOverlayEntriesToJson(_appConfiguration.OverlayEntryConfigurationFile);
+            await Task.Run(() => _configSubject.OnNext(_appConfiguration.OverlayEntryConfigurationFile));
+            SaveButtonIsEnable = false;
+            ResetOverlayConfigContentIsOpen = false;
         }
 
         private void OnSetMinOsd()

@@ -87,31 +87,33 @@ namespace CapFrameX.Overlay
 
             _logger.LogDebug("{componentName} Ready", this.GetType().Name);
 
-            Task.Run(async () => await InitializeOverlayEntryDict());
-
-            IsOverlayActiveStream.AsObservable()
-                .Select(isActive =>
-                {
-                    if (isActive)
-                    {
-                        _rTSSService.CheckRTSSRunning().Wait();
-                        _rTSSService.OnOSDOn();
-                        _rTSSService.ClearOSD();
-                        return _onDictionaryUpdated.
-                            SelectMany(_ => _overlayEntryProvider.GetOverlayEntries());
-                    }
-                    else
-                    {
-                        _rTSSService.ReleaseOSD();
-                        return Observable.Empty<IOverlayEntry[]>();
-                    }
-                }).Switch()
-                .SubscribeOn(Scheduler.Default)
-                .Subscribe(async entries =>
-                {
-                    _rTSSService.SetOverlayEntries(entries);
-                    await _rTSSService.CheckRTSSRunningAndRefresh();
-                });
+            Task.Run(async () => await InitializeOverlayEntryDict())
+                .ContinueWith(t =>
+               {
+                   IsOverlayActiveStream.AsObservable()
+                       .Select(isActive =>
+                       {
+                           if (isActive)
+                           {
+                               _rTSSService.CheckRTSSRunning().Wait();
+                               _rTSSService.OnOSDOn();
+                               _rTSSService.ClearOSD();
+                               return _onDictionaryUpdated.
+                                   SelectMany(_ => _overlayEntryProvider.GetOverlayEntries());
+                           }
+                           else
+                           {
+                               _rTSSService.ReleaseOSD();
+                               return Observable.Empty<IOverlayEntry[]>();
+                           }
+                       }).Switch()
+                       .SubscribeOn(Scheduler.Default)
+                       .Subscribe(async entries =>
+                       {
+                           _rTSSService.SetOverlayEntries(entries);
+                           await _rTSSService.CheckRTSSRunningAndRefresh();
+                       });
+               });
 
             _sensorService.SensorSnapshotStream
                 .Sample(_sensorService.OsdUpdateStream.Select(timespan => Observable.Concat(Observable.Return(-1L), Observable.Interval(timespan))).Switch())
