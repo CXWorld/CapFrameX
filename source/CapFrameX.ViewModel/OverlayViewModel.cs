@@ -102,6 +102,16 @@ namespace CapFrameX.ViewModel
         //    }
         //}
 
+        public bool OSDCustomPosition
+        {
+            get { return _appConfiguration.OSDCustomPosition; }
+            set
+            {
+                _appConfiguration.OSDCustomPosition = value;
+                _rTSSService.SetOSDCustomPosition(value);
+                RaisePropertyChanged();
+            }
+        }
         public int OSDPositionX
         {
             get { return _appConfiguration.OSDPositionX; }
@@ -621,6 +631,8 @@ namespace CapFrameX.ViewModel
             SetGlobalHookEventOverlayHotkey();
             SetGlobalHookEventOverlayConfigHotkey();
             SetGlobalHookEventResetHistoryHotkey();
+
+            InitializeOSDCustomPosition();
         }
 
         private void SetSaveButtonIsEnableAction()
@@ -745,6 +757,12 @@ namespace CapFrameX.ViewModel
                 IsConfig0Checked = true;
                 return "0";
             }
+        }
+
+        private void InitializeOSDCustomPosition()
+        {
+            _rTSSService.SetOSDCustomPosition(_appConfiguration.OSDCustomPosition);
+            _rTSSService.SetOverlayPosition(_appConfiguration.OSDPositionX, _appConfiguration.OSDPositionY);
         }
 
         public void UpdateGroupNameEnable()

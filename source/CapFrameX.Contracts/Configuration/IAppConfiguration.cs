@@ -51,6 +51,8 @@ namespace CapFrameX.Contracts.Configuration
 
 		bool AutoDisableOverlay { get; set; }
 
+		bool OSDCustomPosition { get; set; }
+
 		int OSDPositionX { get; set; }
 
 		int OSDPositionY { get; set; }

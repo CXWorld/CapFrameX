@@ -294,6 +294,14 @@ public:
 		}
 	}
 
+	void SetOSDCustomPosition(bool active)
+	{
+		{
+			msclr::lock l(m_lock);
+			_coreControl->OSDCustomPosition = active;
+		}
+	}
+
 	void SetOverlayPosition(INT x, INT y)
 	{
 		{

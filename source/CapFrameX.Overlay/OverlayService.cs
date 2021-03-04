@@ -90,7 +90,8 @@ namespace CapFrameX.Overlay
             Task.Run(async () => await InitializeOverlayEntryDict())
                 .ContinueWith(t =>
                {
-                   IsOverlayActiveStream.AsObservable()
+                   IsOverlayActiveStream
+                       .AsObservable()
                        .Select(isActive =>
                        {
                            if (isActive)
@@ -106,14 +107,16 @@ namespace CapFrameX.Overlay
                                _rTSSService.ReleaseOSD();
                                return Observable.Empty<IOverlayEntry[]>();
                            }
-                       }).Switch()
-                       .SubscribeOn(Scheduler.Default)
+                       })
+                       .Switch()
                        .Subscribe(async entries =>
                        {
                            _rTSSService.SetOverlayEntries(entries);
                            await _rTSSService.CheckRTSSRunningAndRefresh();
                        });
                });
+
+
 
             _sensorService.SensorSnapshotStream
                 .Sample(_sensorService.OsdUpdateStream.Select(timespan => Observable.Concat(Observable.Return(-1L), Observable.Interval(timespan))).Switch())
@@ -574,9 +577,9 @@ namespace CapFrameX.Overlay
                 name = name.Replace(" - Thread #2", "");
             }
 
-            if (name.Contains("Variable Refresh Rate"))
+            if (name.Contains("Monitor Refresh Rate"))
             {
-                name = "VRR";
+                name = "MRR";
             }
 
             return name;
