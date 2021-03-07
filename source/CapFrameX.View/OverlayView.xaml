@@ -51,8 +51,11 @@
 			</Hyperlink>
 		</TextBlock>
         <Border BorderBrush="{DynamicResource MaterialDesignBody}" BorderThickness="0.3" Grid.Row="1" Grid.Column="0" >
+		   <materialDesign:DialogHost IsOpen="{Binding ResetOverlayConfigContentIsOpen}"
+								        DialogContent="{Binding ResetOverlayConfigContent}"
+								        CloseOnClickAway="True">
             <DockPanel Margin="0 10 0 10"
-                   Visibility="{Binding  IsRTSSInstalled, Converter={StaticResource TrueToVisibleConverter}}">
+                   Visibility="{Binding  IsRTSSInstalled, Converter={StaticResource TrueToVisibleConverter}}">				   
                 <!--DataGrid and Overlay hotkey-->
                 <Grid >
                     <Grid.RowDefinitions>
@@ -520,7 +523,8 @@
                     </StackPanel>
                 </Grid>
             </DockPanel>
-        </Border>
+		</materialDesign:DialogHost>
+		</Border>
         <TabControl Grid.Row="1" Grid.Column="2" Margin="0 0 0 0" Background="Transparent" BorderThickness="0.3" BorderBrush="{DynamicResource MaterialDesignBody}">
             <TabItem Width="150" Foreground="{DynamicResource MaterialDesignBody}">
                 <TabItem.Header>
