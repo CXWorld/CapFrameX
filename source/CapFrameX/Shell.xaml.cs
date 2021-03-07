@@ -66,6 +66,7 @@ namespace CapFrameX
             else
             {
                 this.ShowAndFocus();
+                if (WindowState == WindowState.Minimized)
                 WindowState = WindowState.Normal;
             }
         }
@@ -73,7 +74,8 @@ namespace CapFrameX
         private void ShowMainWindow_Click(object sender, RoutedEventArgs e)
         {
             this.ShowAndFocus();
-            WindowState = WindowState.Normal;
+            if (WindowState == WindowState.Minimized)
+                WindowState = WindowState.Normal;
         }
 
         private void Exit_Click(object sender, RoutedEventArgs e)
