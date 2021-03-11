@@ -84,26 +84,10 @@
         </DataGrid>
 		
 		<!--Result Line-->
-		<TextBox Grid.Row="2" Grid.Column="1" Margin="0 5 0 0" Visibility="{Binding ShowResultString, Converter={StaticResource TrueToVisibleConverter}}" IsReadOnly="True" BorderThickness="0"
-				 VerticalAlignment="Top"  HorizontalAlignment="Center" FontSize="16" Text="{Binding AggregationResultString}" Foreground="{DynamicResource MaterialDesignBody}">
-			<TextBox.Style>
-				<Style>
-					<Style.Triggers>
-						<Trigger Property="TextBox.Visibility" Value="Visible">
-							<Trigger.EnterActions>
-								<BeginStoryboard>
-									<Storyboard>
-										<DoubleAnimation From="0" To="25" Storyboard.TargetProperty="Height" Duration="0:00:00.5"/>
-									</Storyboard>
-								</BeginStoryboard>
-							</Trigger.EnterActions>
-						</Trigger>
-					</Style.Triggers>
-				</Style>
-			</TextBox.Style>
-		</TextBox>
-		
-		<!--Settings-->
+        <TextBox Grid.Row="2" Grid.Column="1" Margin="0 5 0 5" Padding="0 0 0 -2" Visibility="{Binding ShowResultString, Converter={StaticResource TrueToVisibleConverter}}" IsReadOnly="True" BorderThickness="0"
+				 VerticalAlignment="Top" HorizontalAlignment="Center" FontSize="16" Text="{Binding AggregationResultString}" Foreground="{DynamicResource MaterialDesignBody}"/>
+
+        <!--Settings-->
         <Grid Grid.Row="3" Grid.Column="1" Margin="0 5 0 0">
             <Grid.RowDefinitions>
                 <RowDefinition Height="1*"/>
