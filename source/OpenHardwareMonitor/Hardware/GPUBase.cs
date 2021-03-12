@@ -196,7 +196,7 @@ namespace OpenHardwareMonitor.Hardware
                 var currentDedicatedVramUsageProcessPerformCounter = new PerformanceCounter("GPU Process Memory", "Dedicated Usage", pid);
 
                 float currentVramUsage = currentDedicatedVramUsageProcessPerformCounter.NextValue();
-                if (currentDedicatedVramUsageProcessPerformCounter.NextValue() >= maxVramUsage)
+                if (currentVramUsage >= maxVramUsage)
                 {
                     maxVramUsage = currentVramUsage;
                     maxPid = pid;

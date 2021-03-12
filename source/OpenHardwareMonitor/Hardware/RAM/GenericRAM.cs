@@ -59,13 +59,26 @@ namespace OpenHardwareMonitor.Hardware.RAM
                                 }
 
                                 var process = Process.GetProcessById(id);
-
                                 if (process != null)
                                 {
-                                    // Working Set - Private
-                                    ramUsageGamePerformanceCounter = new PerformanceCounter("Process", "Working Set - Private", process.ProcessName);
-                                    // Working Set (private + resources)
-                                    ramAndCacheUsageGamePerformanceCounter = new PerformanceCounter("Process", "Working Set", process.ProcessName);
+                                    var processes = Process.GetProcessesByName(process.ProcessName);
+
+                                    if (processes.Length == 1)
+                                    {
+                                        // Working Set - Private
+                                        ramUsageGamePerformanceCounter = new PerformanceCounter("Process", "Working Set - Private", process.ProcessName);
+                                        // Working Set (private + resources)
+                                        ramAndCacheUsageGamePerformanceCounter = new PerformanceCounter("Process", "Working Set", process.ProcessName);
+                                    }
+                                    else
+                                    {
+                                        var maxUsageName = GetMaximumProcessName(processes);
+
+                                        // Working Set - Private
+                                        ramUsageGamePerformanceCounter = new PerformanceCounter("Process", "Working Set - Private", maxUsageName);
+                                        // Working Set (private + resources)
+                                        ramAndCacheUsageGamePerformanceCounter = new PerformanceCounter("Process", "Working Set", maxUsageName);
+                                    }
                                 }
                                 else
                                 {
@@ -73,6 +86,7 @@ namespace OpenHardwareMonitor.Hardware.RAM
                                     ramUsageGamePerformanceCounter = null;
                                     ramAndCacheUsageGamePerformanceCounter = null;
                                 }
+
                             }
                             catch
                             {
@@ -179,6 +193,25 @@ namespace OpenHardwareMonitor.Hardware.RAM
             [return: MarshalAs(UnmanagedType.Bool)]
             internal static extern bool GlobalMemoryStatusEx(
               ref MemoryStatusEx buffer);
+        }
+
+        private string GetMaximumProcessName(Process[] processes)
+        {
+            string maxProcessName = string.Empty;
+            float maxRamUsageGam = 0f;
+            foreach (var process in processes)
+            {
+                var ramUsageGamePerformanceCounter = new PerformanceCounter("Process", "Working Set - Private", process.ProcessName);
+
+                float currentRamUsageGam = ramUsageGamePerformanceCounter.NextValue();
+                if (currentRamUsageGam >= maxRamUsageGam)
+                {
+                    maxRamUsageGam = currentRamUsageGam;
+                    maxProcessName = process.ProcessName;
+                }
+            }
+
+            return maxProcessName;
         }
     }
 }
