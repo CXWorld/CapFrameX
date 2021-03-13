@@ -72,6 +72,7 @@ namespace OpenHardwareMonitor.Hardware.RAM
                                     }
                                     else
                                     {
+                                        Log.Logger.Information("Multiple processes with same name detected: {processName}.", process.ProcessName);
                                         var maxUsageName = GetMaximumProcessName(processes);
 
                                         // Working Set - Private
@@ -86,7 +87,6 @@ namespace OpenHardwareMonitor.Hardware.RAM
                                     ramUsageGamePerformanceCounter = null;
                                     ramAndCacheUsageGamePerformanceCounter = null;
                                 }
-
                             }
                             catch
                             {
@@ -201,7 +201,7 @@ namespace OpenHardwareMonitor.Hardware.RAM
             float maxRamUsageGam = 0f;
             foreach (var process in processes)
             {
-                var ramUsageGamePerformanceCounter = new PerformanceCounter("Process", "Working Set - Private", process.ProcessName);
+                var ramUsageGamePerformanceCounter = new PerformanceCounter("Process", "Working Set", process.ProcessName);
 
                 float currentRamUsageGam = ramUsageGamePerformanceCounter.NextValue();
                 if (currentRamUsageGam >= maxRamUsageGam)
