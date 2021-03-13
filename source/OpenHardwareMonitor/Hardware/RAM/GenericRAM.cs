@@ -208,6 +208,8 @@ namespace OpenHardwareMonitor.Hardware.RAM
                 {
                     maxRamUsageGam = currentRamUsageGam;
                     maxProcessName = process.ProcessName;
+
+                    Log.Logger.Information("Call from GetMaximumProcessName: {processName} with {ramUsageGame} KiB.", process.ProcessName, currentRamUsageGam);
                 }
             }
 
