@@ -15,6 +15,7 @@ using System.Runtime.InteropServices;
 using System;
 using System.Diagnostics;
 using Serilog;
+using System.Linq;
 
 namespace OpenHardwareMonitor.Hardware.RAM
 {
@@ -61,25 +62,13 @@ namespace OpenHardwareMonitor.Hardware.RAM
                                 var process = Process.GetProcessById(id);
                                 if (process != null)
                                 {
-                                    var processes = Process.GetProcessesByName(process.ProcessName);
+                                    var validInstanceName = GetValidInstanceName(process);
+                                    Log.Logger.Information("Valid instance name for memory performance counter: {instanceName}", validInstanceName);
 
-                                    if (processes.Length == 1)
-                                    {
-                                        // Working Set - Private
-                                        ramUsageGamePerformanceCounter = new PerformanceCounter("Process", "Working Set - Private", process.ProcessName);
-                                        // Working Set (private + resources)
-                                        ramAndCacheUsageGamePerformanceCounter = new PerformanceCounter("Process", "Working Set", process.ProcessName);
-                                    }
-                                    else
-                                    {
-                                        Log.Logger.Information("Multiple processes with same name detected: {processName}.", process.ProcessName);
-                                        var maxUsageName = GetMaximumProcessName(processes);
-
-                                        // Working Set - Private
-                                        ramUsageGamePerformanceCounter = new PerformanceCounter("Process", "Working Set - Private", maxUsageName);
-                                        // Working Set (private + resources)
-                                        ramAndCacheUsageGamePerformanceCounter = new PerformanceCounter("Process", "Working Set", maxUsageName);
-                                    }
+                                    // Working Set - Private
+                                    ramUsageGamePerformanceCounter = new PerformanceCounter("Process", "Working Set - Private", validInstanceName, true);
+                                    // Working Set (private + resources)
+                                    ramAndCacheUsageGamePerformanceCounter = new PerformanceCounter("Process", "Working Set", validInstanceName, true);
                                 }
                                 else
                                 {
@@ -195,25 +184,23 @@ namespace OpenHardwareMonitor.Hardware.RAM
               ref MemoryStatusEx buffer);
         }
 
-        private string GetMaximumProcessName(Process[] processes)
+        private string GetValidInstanceName(Process process)
         {
-            string maxProcessName = string.Empty;
-            float maxRamUsageGam = 0f;
-            foreach (var process in processes)
+            var nameToUseForMemory = string.Empty;
+            var category = new PerformanceCounterCategory("Process");
+            var instanceNames = category.GetInstanceNames().Where(x => x.Contains(process.ProcessName));
+            foreach (var instanceName in instanceNames)
             {
-                var ramUsageGamePerformanceCounter = new PerformanceCounter("Process", "Working Set", process.ProcessName);
-
-                float currentRamUsageGam = ramUsageGamePerformanceCounter.NextValue();
-                if (currentRamUsageGam >= maxRamUsageGam)
+                using (var performanceCounter = new PerformanceCounter("Process", "ID Process", instanceName, true))
                 {
-                    maxRamUsageGam = currentRamUsageGam;
-                    maxProcessName = process.ProcessName;
-
-                    Log.Logger.Information("Call from GetMaximumProcessName: {processName} with {ramUsageGame} KiB.", process.ProcessName, currentRamUsageGam);
+                    if (performanceCounter.RawValue != process.Id)
+                        continue;
+                    nameToUseForMemory = instanceName;
+                    break;
                 }
             }
 
-            return maxProcessName;
+            return nameToUseForMemory;
         }
     }
 }
