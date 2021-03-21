@@ -15,6 +15,7 @@ namespace CapFrameX.ViewModel.SubModels
         public ICommand CheckGpuBasics { get; }
         public ICommand CheckCpuLoads { get; }
         public ICommand CheckCpuClocks { get; }
+        public ICommand CheckCpuPowers { get; }
         public ICommand CheckCpuTemps { get; }
         public ICommand CheckRamItems { get; }
         public ICommand UncheckCaptureItems { get; }
@@ -23,6 +24,7 @@ namespace CapFrameX.ViewModel.SubModels
         public ICommand UncheckGpuBasics { get; }
         public ICommand UncheckCpuLoads { get; }
         public ICommand UncheckCpuClocks { get; }
+        public ICommand UncheckCpuPowers { get; }
         public ICommand UncheckCpuTemps{ get; }
         public ICommand UncheckRamItems { get; }
 
@@ -36,6 +38,7 @@ namespace CapFrameX.ViewModel.SubModels
             CheckGpuBasics = new DelegateCommand(() => ManageGpuBasicEntries(true));
             CheckCpuLoads = new DelegateCommand(() => ManageCPULoadEntries(true));
             CheckCpuClocks = new DelegateCommand(() => ManageCPUClockEntries(true));
+            CheckCpuPowers = new DelegateCommand(() => ManageCPUPowerEntries(true));
             CheckCpuTemps = new DelegateCommand(() => ManageCPUTemperatureEntries(true));
             CheckRamItems = new DelegateCommand(() => ManageRAMEntries(true));
 
@@ -45,6 +48,7 @@ namespace CapFrameX.ViewModel.SubModels
             UncheckGpuBasics = new DelegateCommand(() => ManageGpuBasicEntries(false));
             UncheckCpuLoads = new DelegateCommand(() => ManageCPULoadEntries(false));
             UncheckCpuClocks = new DelegateCommand(() => ManageCPUClockEntries(false));
+            UncheckCpuPowers = new DelegateCommand(() => ManageCPUPowerEntries(false));
             UncheckCpuTemps = new DelegateCommand(() => ManageCPUTemperatureEntries(false));
             UncheckRamItems = new DelegateCommand(() => ManageRAMEntries(false));
         }
@@ -103,7 +107,7 @@ namespace CapFrameX.ViewModel.SubModels
             foreach (var entry in _overlayViewModel.OverlayEntries
                    .Where(item => item.OverlayEntryType == Contracts.Overlay.EOverlayEntryType.CPU))
             {
-                if (entry.Identifier.Contains("load") && entry.Description.Contains("CPU Core") 
+                if (entry.Identifier.Contains("load") && entry.Description.Contains("CPU Core #") 
                     && entry.ShowOnOverlayIsEnabled)
                     entry.ShowOnOverlay = showEntry;
             }
@@ -114,7 +118,17 @@ namespace CapFrameX.ViewModel.SubModels
             foreach (var entry in _overlayViewModel.OverlayEntries
                    .Where(item => item.OverlayEntryType == Contracts.Overlay.EOverlayEntryType.CPU))
             {
-                if (entry.Identifier.Contains("clock") && entry.Description.Contains("CPU Core") 
+                if (entry.Identifier.Contains("clock") && entry.Description.Contains("CPU Core #") 
+                    && entry.ShowOnOverlayIsEnabled)
+                    entry.ShowOnOverlay = showEntry;
+            }
+        }
+        private void ManageCPUPowerEntries(bool showEntry)
+        {
+            foreach (var entry in _overlayViewModel.OverlayEntries
+                   .Where(item => item.OverlayEntryType == Contracts.Overlay.EOverlayEntryType.CPU))
+            {
+                if (entry.Identifier.Contains("power") && entry.Description.Contains("CPU Core #")
                     && entry.ShowOnOverlayIsEnabled)
                     entry.ShowOnOverlay = showEntry;
             }
@@ -125,7 +139,7 @@ namespace CapFrameX.ViewModel.SubModels
             foreach (var entry in _overlayViewModel.OverlayEntries
                    .Where(item => item.OverlayEntryType == Contracts.Overlay.EOverlayEntryType.CPU))
             {
-                if (entry.Identifier.Contains("temperature") && entry.Description.Contains("CPU Core") 
+                if (entry.Identifier.Contains("temperature") && entry.Description.Contains("CPU Core #") 
                     && entry.ShowOnOverlayIsEnabled)
                     entry.ShowOnOverlay = showEntry;
             }
