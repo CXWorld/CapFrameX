@@ -13,6 +13,13 @@ namespace CapFrameX.PresentMonInterface
 {
     public class PresentMonCaptureService : ICaptureService
     {
+        public const int Application_INDEX = 0;
+        public const int ProcessID_INDEX = 1;
+        public const int TimeInSeconds_INDEX = 7;
+        public const int MsBetweenPresents_INDEX = 9;
+        public const int QPCTime_INDEX = 17;
+        public const int VALID_LINE_LENGTH = 18;
+
         private readonly ISubject<string[]> _outputDataStream;
         private readonly object _listLock = new object();
         private readonly ILogger<PresentMonCaptureService> _logger;
@@ -68,7 +75,7 @@ namespace CapFrameX.PresentMonInterface
                     if (!string.IsNullOrWhiteSpace(e.Data))
                     {
                         var split = e.Data.Split(',');
-                        if (split.Length == 18)
+                        if (split.Length == VALID_LINE_LENGTH)
                             _outputDataStream.OnNext(split);
                     }
                 };
@@ -152,7 +159,7 @@ namespace CapFrameX.PresentMonInterface
 
                         try
                         {
-                            processName = lineSplit[0].Replace(".exe", "");
+                            processName = lineSplit[Application_INDEX].Replace(".exe", "");
                             processId = Convert.ToInt32(lineSplit[1]);
                         }
                         catch(Exception ex)

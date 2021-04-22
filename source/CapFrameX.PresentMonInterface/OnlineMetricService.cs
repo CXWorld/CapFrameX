@@ -74,7 +74,6 @@ namespace CapFrameX.PresentMonInterface
                 .Skip(1)
                 .ObserveOn(new EventLoopScheduler())
                 .Where(x => EvaluateRealtimeMetrics())
-                .Where(lineSplit => lineSplit.Length > 1)
                 .Subscribe(UpdateOnlineMetrics);
         }
 
@@ -94,7 +93,7 @@ namespace CapFrameX.PresentMonInterface
             string process;
             try
             {
-                process = lineSplit[0].Replace(".exe", "");
+                process = lineSplit[PresentMonCaptureService.Application_INDEX].Replace(".exe", "");
             }
             catch { return; }
 
@@ -104,7 +103,7 @@ namespace CapFrameX.PresentMonInterface
                     return;
             }
 
-            if (!int.TryParse(lineSplit[1], out int processId))
+            if (!int.TryParse(lineSplit[PresentMonCaptureService.ProcessID_INDEX], out int processId))
             {
                 ResetMetrics();
                 return;
@@ -116,19 +115,13 @@ namespace CapFrameX.PresentMonInterface
                     return;
             }
 
-            if (lineSplit.Length <= 12)
-            {
-                _logger.LogInformation("{dataLine} string unusable for online metrics.", string.Join(",", lineSplit));
-                return;
-            }
-
-            if (!double.TryParse(lineSplit[11], NumberStyles.Any, CultureInfo.InvariantCulture, out double startTime))
+            if (!double.TryParse(lineSplit[PresentMonCaptureService.TimeInSeconds_INDEX], NumberStyles.Any, CultureInfo.InvariantCulture, out double startTime))
             {
                 ResetMetrics();
                 return;
             }
 
-            if (!double.TryParse(lineSplit[12], NumberStyles.Any, CultureInfo.InvariantCulture, out double frameTime))
+            if (!double.TryParse(lineSplit[PresentMonCaptureService.MsBetweenPresents_INDEX], NumberStyles.Any, CultureInfo.InvariantCulture, out double frameTime))
             {
                 ResetMetrics();
                 return;

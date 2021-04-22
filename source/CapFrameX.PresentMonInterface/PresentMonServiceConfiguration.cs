@@ -14,7 +14,7 @@ namespace CapFrameX.PresentMonInterface
         /// <summary>
         /// verbose or simple
         /// </summary>
-        public string OutputLevelofDetail { get; set; } = "verbose";
+        public string OutputLevelofDetail { get; set; } = "track_debug";
 
         public bool CaptureAllProcesses { get; set; } = false;
 
@@ -27,6 +27,10 @@ namespace CapFrameX.PresentMonInterface
             var arguments = string.Empty;
             if (CaptureAllProcesses)
             {
+                arguments += "-restart_as_admin";
+                arguments += " ";
+                arguments += "-stop_existing_session";
+                arguments += " ";
                 arguments += "-captureall";
                 arguments += " ";
                 arguments += "-multi_csv";
@@ -58,7 +62,9 @@ namespace CapFrameX.PresentMonInterface
             {
                 if (RedirectOutputStream)
                 {
-					arguments += "-stop_existing_session";
+                    arguments += "-restart_as_admin";
+                    arguments += " ";
+                    arguments += "-stop_existing_session";
 					arguments += " ";
 					arguments += "-output_stdout";
 					arguments += " ";
@@ -88,7 +94,11 @@ namespace CapFrameX.PresentMonInterface
 						throw new ArgumentException("Process name must be set!");
 					}
 
-					arguments += "-process_name";
+                    arguments += "-restart_as_admin";
+                    arguments += " ";
+                    arguments += "-stop_existing_session";
+                    arguments += " ";
+                    arguments += "-process_name";
                     arguments += " ";
                     arguments += ProcessName;
                     arguments += " ";

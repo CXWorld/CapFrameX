@@ -52,16 +52,16 @@
     </UserControl.Resources>
     <Grid Margin="0 6 0 0">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="35"/>
             <RowDefinition Height="1*"/>
         </Grid.RowDefinitions>
         <Grid Grid.Row="0">
-            <TextBlock HorizontalAlignment="Center" FontWeight="Bold" FontSize="18" Text="{Binding CurrentGameName}" 
+            <TextBlock HorizontalAlignment="Center" VerticalAlignment="Bottom" FontWeight="Bold" FontSize="16" Text="{Binding CurrentGameName}" 
                        Visibility="{Binding IsChecked, Converter={StaticResource TrueToCollapsedConverter}, ElementName=ShowCustomTitleToggleButton}"
 					   Foreground="{DynamicResource MaterialDesignBody}"/>
-            <TextBox HorizontalAlignment="Center" Visibility="{Binding IsChecked, Converter={StaticResource TrueToVisibleConverter}, ElementName=ShowCustomTitleToggleButton}"
+            <TextBox HorizontalAlignment="Center" VerticalAlignment="Bottom" Visibility="{Binding IsChecked, Converter={StaticResource TrueToVisibleConverter}, ElementName=ShowCustomTitleToggleButton}"
                                  Text="Type your title here..."  Height="30" MinWidth="50"                                
-                                 FontWeight="Bold" FontSize="18" PreviewKeyDown="CustomTitle_PreviewKeyDown"
+                                 FontWeight="Bold" FontSize="16" PreviewKeyDown="CustomTitle_PreviewKeyDown"
                                  Foreground="{DynamicResource MaterialDesignBody}"/>
         </Grid>
         <!--Analysis main grid-->
@@ -586,7 +586,7 @@
                 </StackPanel>
             </Grid>
             <!--System info expander-->
-            <Expander Margin="0 -27 0 0" Grid.Row="0" Grid.RowSpan="3" Grid.Column="1" ExpandDirection="Left"
+            <Expander Margin="0 -41 0 0" Grid.Row="0" Grid.RowSpan="3" Grid.Column="1" ExpandDirection="Left"
                       Foreground="{DynamicResource MaterialDesignBody}" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
                 <Expander.Header>
                     <TextBlock Text="System Info" RenderTransformOrigin=".5,.5" HorizontalAlignment="Center">

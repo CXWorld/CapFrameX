@@ -5,6 +5,7 @@ using CapFrameX.Contracts.PresentMonInterface;
 using CapFrameX.Contracts.RTSS;
 using CapFrameX.Contracts.Sensor;
 using CapFrameX.Data.Session.Contracts;
+using CapFrameX.PresentMonInterface;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -261,7 +262,7 @@ namespace CapFrameX.Data
                     _overlayService.StartCaptureTimer();
             }
 
-            await Task.FromResult(1);
+            await Task.FromResult(0);
         }
 
         public async Task StopCapture()
@@ -582,17 +583,17 @@ namespace CapFrameX.Data
 
         private string GetProcessNameFromDataLine(string[] lineSplit)
         {
-            return lineSplit[0].Replace(".exe", "");
+            return lineSplit[PresentMonCaptureService.Application_INDEX].Replace(".exe", "");
         }
 
         private string GetProcessIdFromDataLine(string[] lineSplit)
         {
-            return lineSplit[1];
+            return lineSplit[PresentMonCaptureService.ProcessID_INDEX];
         }
 
         private long GetQpcTimeFromDataLine(string[] lineSplit)
         {
-            return Convert.ToInt64(lineSplit[17], CultureInfo.InvariantCulture);
+            return Convert.ToInt64(lineSplit[PresentMonCaptureService.QPCTime_INDEX], CultureInfo.InvariantCulture);
         }
 
         private IEnumerable<string> NormalizeTimes(IEnumerable<string[]> recordLines)
@@ -604,7 +605,7 @@ namespace CapFrameX.Data
 
             // normalize time
             var currentLineSplit = firstLineSplit;
-            currentLineSplit[11] = "0";
+            currentLineSplit[PresentMonCaptureService.TimeInSeconds_INDEX] = "0";
 
             lines.Add(string.Join(",", currentLineSplit));
 
@@ -616,7 +617,7 @@ namespace CapFrameX.Data
                 double normalizedTime = currentStartTime - timeStart;
 
                 currentLineSplit = lineSplit;
-                currentLineSplit[11] = normalizedTime.ToString(CultureInfo.InvariantCulture);
+                currentLineSplit[PresentMonCaptureService.TimeInSeconds_INDEX] = normalizedTime.ToString(CultureInfo.InvariantCulture);
 
                 lines.Add(string.Join(",", currentLineSplit));
             }
@@ -625,10 +626,7 @@ namespace CapFrameX.Data
 
         private double GetStartTimeFromDataLine(string[] lineSplit)
         {
-            if (lineSplit.Length < 10)
-                return 0;
-
-            return Convert.ToDouble(lineSplit[11], CultureInfo.InvariantCulture);
+            return Convert.ToDouble(lineSplit[PresentMonCaptureService.TimeInSeconds_INDEX], CultureInfo.InvariantCulture);
         }
 
         private void AddLoggerEntry(string entry)

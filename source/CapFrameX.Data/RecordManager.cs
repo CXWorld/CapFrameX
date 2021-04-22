@@ -319,10 +319,17 @@ namespace CapFrameX.Data
             return string.Empty;
         }
 
+        // PresentMon smaller than v1.7.0
+        //private static readonly string COLUMN_HEADER =
+        //    $"Application,ProcessID,SwapChainAddress,Runtime,SyncInterval,PresentFlags," +
+        //    $"AllowsTearing,PresentMode,WasBatched,DwmNotified,Dropped,TimeInSeconds,MsBetweenPresents," +
+        //    $"MsBetweenDisplayChange,MsInPresentAPI,MsUntilRenderComplete,MsUntilDisplayed,QPCTime";
+
+        // PresentMon v1.7.0
         private static readonly string COLUMN_HEADER =
             $"Application,ProcessID,SwapChainAddress,Runtime,SyncInterval,PresentFlags," +
-            $"AllowsTearing,PresentMode,WasBatched,DwmNotified,Dropped,TimeInSeconds,MsBetweenPresents," +
-            $"MsBetweenDisplayChange,MsInPresentAPI,MsUntilRenderComplete,MsUntilDisplayed,QPCTime";
+            $"Dropped,TimeInSeconds,msInPresentAPI,msBetweenPresents,AllowsTearing,PresentMode," +
+            $"msUntilRenderComplete,msUntilDisplayed,msBetweenDisplayChange,WasBatched,DwmNotified,QPCTime";
 
         public async Task<IFileRecordInfo> GetFileRecordInfo(FileInfo fileInfo)
         {
@@ -374,7 +381,7 @@ namespace CapFrameX.Data
                 lines = new string[] { IGNOREFLAGMARKER, COLUMN_HEADER }.Concat(lines);
                 File.WriteAllLines(filePath + ".csv", lines);
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 _logger.LogError(ex, "Error while saving PresentMon raw file.");
             }
@@ -612,11 +619,11 @@ namespace CapFrameX.Data
                     {
                         indexFrameStart = i;
                     }
-                    if (string.Compare(metrics[i], "MsBetweenAppPresents") == 0 || string.Compare(metrics[i], "MsBetweenPresents") == 0)
+                    if (string.Compare(metrics[i], "MsBetweenAppPresents", true) == 0 || string.Compare(metrics[i], "MsBetweenPresents", true) == 0)
                     {
                         indexFrameTimes = i;
                     }
-                    if (string.Compare(metrics[i], "MsUntilDisplayed") == 0)
+                    if (string.Compare(metrics[i], "MsUntilDisplayed", true) == 0)
                     {
                         indexUntilDisplayedTimes = i;
                     }
@@ -624,11 +631,11 @@ namespace CapFrameX.Data
                     {
                         indexAppMissed = i;
                     }
-                    if (string.Compare(metrics[i], "MsInPresentAPI") == 0)
+                    if (string.Compare(metrics[i], "MsInPresentAPI", true) == 0)
                     {
                         indexMsInPresentAPI = i;
                     }
-                    if (string.Compare(metrics[i], "MsBetweenDisplayChange") == 0)
+                    if (string.Compare(metrics[i], "MsBetweenDisplayChange", true) == 0)
                     {
                         indexDisplayTimes = i;
                     }
