@@ -935,6 +935,11 @@
     "IsBlacklisted": false
   },
   {
+    "Name": "gitkraken",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
     "Name": "GPU-Z.2.30.0",
     "DisplayName": null,
     "IsBlacklisted": true
@@ -2160,6 +2165,11 @@
     "IsBlacklisted": true
   },
   {
+    "Name": "wgc_renderer_host",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
     "Name": "WhatsApp",
     "DisplayName": null,
     "IsBlacklisted": true
@@ -2286,6 +2296,11 @@
   },
   {
     "Name": "XSplit.xbcbp",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "Y.Music",
     "DisplayName": null,
     "IsBlacklisted": true
   },
