@@ -42,12 +42,12 @@
 							 Content="ANALYSIS" />
                     <RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
 							 Margin="5"
-							 IsChecked="{Binding AggregationIsChecked}"
-							 Content="AGGREGATION" />
-                    <RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
-							 Margin="5"
 							 IsChecked="{Binding RecordComparisonIsChecked}"
 							 Content="COMPARISON" />
+                    <RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
+							 Margin="5"
+							 IsChecked="{Binding AggregationIsChecked}"
+							 Content="AGGREGATION" />
                     <RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
                              Margin="5"
                              IsChecked="{Binding SensorIsChecked}"
