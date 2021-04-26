@@ -574,6 +574,7 @@ namespace CapFrameX.ViewModel
             _rTSSService.ProcessIdStream.OnNext(processId);
 
             _updateCurrentProcess?.Publish(new ViewMessages.CurrentProcessToCapture(currentProcess, processId));
+
         }
 
         private void UpdateCaptureStateInfo()
@@ -588,7 +589,7 @@ namespace CapFrameX.ViewModel
                 else if (ProcessesToCapture.Count == 1 && !_captureManager.DelayCountdownRunning)
                 {
                     CaptureStateInfo = "Process auto-detected." + Environment.NewLine + $"Press {CaptureHotkeyString} to start capture.";
-                    _overlayService.SetCaptureServiceStatus("Ready to capture...");
+                    _overlayService.SetCaptureServiceStatus($"{ProcessesToCapture.FirstOrDefault()} ready to capture...");
                 }
                 else if (ProcessesToCapture.Count > 1)
                 {
@@ -602,7 +603,7 @@ namespace CapFrameX.ViewModel
             if (!_captureManager.DelayCountdownRunning)
             {
                 CaptureStateInfo = $"{SelectedProcessToCapture} selected." + Environment.NewLine + $"Press {CaptureHotkeyString} to start capture.";
-                _overlayService.SetCaptureServiceStatus("Ready to capture...");
+                _overlayService.SetCaptureServiceStatus($"{SelectedProcessToCapture} ready to capture...");
             }
         }
 
