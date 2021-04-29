@@ -57,6 +57,8 @@ namespace CapFrameX.ViewModel
         private PlotModel _frametimeModel;
         private string _lastCapturedProcess;
         private bool _hotkeyLocked = false;
+        private string _currentGameNameToCapture = string.Empty;
+        private string _currentProcessToCapture = string.Empty;
 
         private PubSubEvent<ViewMessages.CurrentProcessToCapture> _updateCurrentProcess;
 
@@ -569,12 +571,31 @@ namespace CapFrameX.ViewModel
             {
                 currentProcess = ProcessesToCapture.FirstOrDefault();
             }
+            
+            GetGameNameFromProcessList(currentProcess);
+            _currentProcessToCapture = currentProcess;
 
             var processId = ProcessesInfo.FirstOrDefault(info => info.Item1 == currentProcess).Item2;
             _rTSSService.ProcessIdStream.OnNext(processId);
 
             _updateCurrentProcess?.Publish(new ViewMessages.CurrentProcessToCapture(currentProcess, processId));
 
+        }
+
+        private void GetGameNameFromProcessList(string process)
+        {
+            if (process == _currentProcessToCapture)
+                return;
+
+
+            string gameName = string.Empty;
+            if (!string.IsNullOrWhiteSpace(process))
+            gameName = _processList.FindProcessByName(process).DisplayName;
+
+            if (!string.IsNullOrWhiteSpace(gameName))
+                _currentGameNameToCapture = gameName;
+            else
+                _currentGameNameToCapture = process;
         }
 
         private void UpdateCaptureStateInfo()
@@ -589,7 +610,7 @@ namespace CapFrameX.ViewModel
                 else if (ProcessesToCapture.Count == 1 && !_captureManager.DelayCountdownRunning)
                 {
                     CaptureStateInfo = "Process auto-detected." + Environment.NewLine + $"Press {CaptureHotkeyString} to start capture.";
-                    _overlayService.SetCaptureServiceStatus($"{ProcessesToCapture.FirstOrDefault()} ready to capture...");
+                    _overlayService.SetCaptureServiceStatus($"{_currentGameNameToCapture} ready to capture...");
                 }
                 else if (ProcessesToCapture.Count > 1)
                 {
@@ -602,7 +623,7 @@ namespace CapFrameX.ViewModel
 
             if (!_captureManager.DelayCountdownRunning)
             {
-                CaptureStateInfo = $"{SelectedProcessToCapture} selected." + Environment.NewLine + $"Press {CaptureHotkeyString} to start capture.";
+                CaptureStateInfo = $"{_currentGameNameToCapture} selected." + Environment.NewLine + $"Press {CaptureHotkeyString} to start capture.";
                 _overlayService.SetCaptureServiceStatus($"{SelectedProcessToCapture} ready to capture...");
             }
         }
