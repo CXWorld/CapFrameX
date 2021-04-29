@@ -587,10 +587,9 @@ namespace CapFrameX.ViewModel
             if (process == _currentProcessToCapture)
                 return;
 
-
             string gameName = string.Empty;
             if (!string.IsNullOrWhiteSpace(process))
-            gameName = _processList.FindProcessByName(process).DisplayName;
+            gameName = _processList.FindProcessByName(process)?.DisplayName;
 
             if (!string.IsNullOrWhiteSpace(gameName))
                 _currentGameNameToCapture = gameName;
