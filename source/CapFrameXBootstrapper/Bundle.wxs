@@ -19,7 +19,9 @@
             LogoFile="../CapFrameX/Icons/CX_Icon.png"
             ThemeFile="theme.xml"/>
 		</BootstrapperApplicationRef>
+    
 		<Variable Name="InstallFolder" Type="string" Value="[ProgramFilesFolder]CapFrameX" />
+    <Variable Name="InstallShortcut" Type="numeric" Value="1" />
 
     <!-- v6.0 Service Pack 2 -->
     <bal:Condition Message="This application requires Service Pack 2 for Windows Vista / Server 2008.">
@@ -117,8 +119,11 @@
       
       <!--Install .Net Framework 4.7.2-->
       <PackageGroupRef Id="NetFx472Redist"/>
-			<MsiPackage Id="CapFrameXPackage" SourceFile="$(var.CapFrameXInstaller.TargetPath)" DisplayInternalUI="no" Compressed="yes" Vital="yes">
+      
+      <!--CapFrameX Msi package-->
+			<MsiPackage Id="CapFrameXPackage" SourceFile="$(var.CapFrameXInstaller.TargetPath)" DisplayInternalUI="yes" Compressed="yes" Vital="yes">
 				<MsiProperty Name="INSTALLFOLDER" Value="[InstallFolder]" />
+        <MsiProperty Name="INSTALLSHORTCUT" Value="[InstallShortcut]" />
 			</MsiPackage>
 		</Chain>
 	</Bundle>

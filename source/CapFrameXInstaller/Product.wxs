@@ -14,8 +14,10 @@
 			<ComponentRef Id="ApplicationShortcut"/>
 			<ComponentRef Id="ApplicationShortcutDesktop" />
 		</Feature>
-	  
-	  <InstallExecuteSequence>
+
+    <Property Id="INSTALLSHORTCUT" Secure="yes"/>
+
+    <InstallExecuteSequence>
 		  <Custom Action="WixCloseApplications" Before="InstallValidate">
 			  Installed
 		  </Custom>
@@ -63,6 +65,7 @@
 		</DirectoryRef>
 		<DirectoryRef Id="DesktopFolder">
 			<Component Id="ApplicationShortcutDesktop" Guid="*">
+        <Condition>INSTALLSHORTCUT="1"</Condition>
 				<Shortcut Id="ApplicationDesktopShortcut" Name="CapFrameX" Description="Open Capture and Analytics Tool" Target="[INSTALLFOLDER]\CapFrameX.exe" WorkingDirectory="INSTALLFOLDER">
 					<Icon Id="ShortcutDesktopIconID" SourceFile="..\CapFrameX\Icons\cx_icon_BUC_icon.ico"></Icon>
 				</Shortcut>
