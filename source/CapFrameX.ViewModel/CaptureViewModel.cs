@@ -602,13 +602,13 @@ namespace CapFrameX.ViewModel
             {
                 if (!ProcessesToCapture.Any())
                 {
-                    CaptureStateInfo = "Process list clear." + Environment.NewLine + $"Start any game / application and press  {CaptureHotkeyString} to start capture.";
+                    CaptureStateInfo = "Process list clear." + Environment.NewLine + $"Start any game / application and press \"{CaptureHotkeyString}\" to start capture.";
                     _overlayService.SetCaptureServiceStatus("Scanning for process...");
                 }
                 else if (ProcessesToCapture.Count == 1 && !_captureManager.DelayCountdownRunning)
                 {
-                    CaptureStateInfo = "Process auto-detected." + Environment.NewLine + $"Press {CaptureHotkeyString} to start capture.";
-                    _overlayService.SetCaptureServiceStatus($"{_currentGameNameToCapture} ready to capture...");
+                    CaptureStateInfo = $"\"{_currentGameNameToCapture}\" auto-detected." + Environment.NewLine + $"Press \"{CaptureHotkeyString}\" to start capture.";
+                    _overlayService.SetCaptureServiceStatus($"\"{_currentGameNameToCapture}\" ready to capture...");
                 }
                 else if (ProcessesToCapture.Count > 1)
                 {
@@ -621,8 +621,8 @@ namespace CapFrameX.ViewModel
 
             if (!_captureManager.DelayCountdownRunning)
             {
-                CaptureStateInfo = $"{_currentGameNameToCapture} selected." + Environment.NewLine + $"Press {CaptureHotkeyString} to start capture.";
-                _overlayService.SetCaptureServiceStatus($"{_currentGameNameToCapture} ready to capture...");
+                CaptureStateInfo = $"\"{_currentGameNameToCapture}\" selected." + Environment.NewLine + $"Press \"{CaptureHotkeyString}\" to start capture.";
+                _overlayService.SetCaptureServiceStatus($"\"{_currentGameNameToCapture}\" ready to capture...");
             }
         }
 
