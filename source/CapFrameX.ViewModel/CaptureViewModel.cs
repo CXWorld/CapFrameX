@@ -622,7 +622,7 @@ namespace CapFrameX.ViewModel
             if (!_captureManager.DelayCountdownRunning)
             {
                 CaptureStateInfo = $"{_currentGameNameToCapture} selected." + Environment.NewLine + $"Press {CaptureHotkeyString} to start capture.";
-                _overlayService.SetCaptureServiceStatus($"{SelectedProcessToCapture} ready to capture...");
+                _overlayService.SetCaptureServiceStatus($"{_currentGameNameToCapture} ready to capture...");
             }
         }
 
