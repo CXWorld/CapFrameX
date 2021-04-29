@@ -365,7 +365,7 @@ namespace CapFrameX.ViewModel
                 if (!_hotkeyLocked)
                 {
                     _hotkeyLocked = true;
-                    Task.Run(async () => await Task.Delay(250)).ContinueWith( t => _hotkeyLocked = false);
+                    Task.Run(async () => await Task.Delay(250)).ContinueWith(t => _hotkeyLocked = false);
                     _logger.LogInformation("Hotkey ({captureHotkeyString}) callback triggered. Lock capture service state is {lockCaptureServiceState}.", CaptureHotkeyString, _captureManager.LockCaptureService);
                     _logger.LogInformation("IsCapturing state: {isCapturingState}", _captureManager.IsCapturing);
                     if (!_captureManager.LockCaptureService)
@@ -571,7 +571,7 @@ namespace CapFrameX.ViewModel
             {
                 currentProcess = ProcessesToCapture.FirstOrDefault();
             }
-            
+
             GetGameNameFromProcessList(currentProcess);
             _currentProcessToCapture = currentProcess;
 
@@ -579,7 +579,6 @@ namespace CapFrameX.ViewModel
             _rTSSService.ProcessIdStream.OnNext(processId);
 
             _updateCurrentProcess?.Publish(new ViewMessages.CurrentProcessToCapture(currentProcess, processId));
-
         }
 
         private void GetGameNameFromProcessList(string process)
@@ -589,7 +588,7 @@ namespace CapFrameX.ViewModel
 
             string gameName = string.Empty;
             if (!string.IsNullOrWhiteSpace(process))
-            gameName = _processList.FindProcessByName(process)?.DisplayName;
+                gameName = _processList.FindProcessByName(process)?.DisplayName;
 
             if (!string.IsNullOrWhiteSpace(gameName))
                 _currentGameNameToCapture = gameName;
