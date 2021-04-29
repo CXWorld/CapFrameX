@@ -493,11 +493,13 @@ namespace CapFrameX.ViewModel
             StopCaptureService();
             var process = _processList.Processes
                 .FirstOrDefault(p => p.Name == SelectedProcessToIgnore);
+
             if (process is CXProcess)
             {
                 process.Whitelist();
                 _processList.Save();
             }
+
             StartCaptureService();
         }
 

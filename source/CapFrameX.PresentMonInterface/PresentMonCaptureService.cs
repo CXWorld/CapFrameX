@@ -74,9 +74,15 @@ namespace CapFrameX.PresentMonInterface
                 {
                     if (!string.IsNullOrWhiteSpace(e.Data))
                     {
-                        var split = e.Data.Split(',');
-                        if (split.Length == VALID_LINE_LENGTH)
-                            _outputDataStream.OnNext(split);
+                        var lineSplit = e.Data.Split(',');
+                        if (lineSplit.Length == VALID_LINE_LENGTH)
+                        {
+                            var processName = lineSplit[Application_INDEX].Replace(".exe", "");
+                            if (processName != "<error>")
+                            {
+                                _outputDataStream.OnNext(lineSplit);
+                            }
+                        }
                     }
                 };
 
@@ -160,9 +166,9 @@ namespace CapFrameX.PresentMonInterface
                         try
                         {
                             processName = lineSplit[Application_INDEX].Replace(".exe", "");
-                            processId = Convert.ToInt32(lineSplit[1]);
+                            processId = Convert.ToInt32(lineSplit[ProcessID_INDEX]);
                         }
-                        catch(Exception ex)
+                        catch (Exception ex)
                         {
                             _logger.LogError(ex, "Error while extracting process name and ID from line split. {lineSplit}", string.Join(",", lineSplit));
                             return;
