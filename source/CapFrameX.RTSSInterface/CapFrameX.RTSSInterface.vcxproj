@@ -23,7 +23,7 @@
     <ProjectGuid>{9C46D3F3-72E0-4E6C-AD3E-54A5EE121475}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>CapFrameXRTSSInterface</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.18362.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />

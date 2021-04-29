@@ -80,8 +80,8 @@ namespace CapFrameX.Data
                             _countdown = new Countdown(5);
                             foreach (string server in servers.OrderBy(s => rnd.NextDouble()).Take(5))
                             {
-                                string server1 = server;
-                                var t = new Thread(o => GetDateTimeFromServer(server1));
+                                string currentServer = server;
+                                var t = new Thread(o => GetDateTimeFromServer(currentServer));
                                 t.SetApartmentState(ApartmentState.STA);
                                 t.Start();
                             }

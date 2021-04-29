@@ -25,7 +25,7 @@ namespace CapFrameX.PresentMonInterface
         {
             var name = _sensorService.GetGpuName();
             return name == "Unknown" ? 
-                GetGraphicCardNameFromWMI() : name;
+                GetGraphicsCardNameFromWMI() : name;
         }
 
         public string GetOSVersion()
@@ -113,7 +113,7 @@ namespace CapFrameX.PresentMonInterface
         {
             const string propertyDataNameCapacity = "Capacity";
             string propertyDataValueSpeed = "unknown";
-            const string propertyDataNameSpeed = "Speed";
+            const string propertyDataNameSpeed = "ConfiguredClockSpeed";
 
             var win32DeviceClassName = "Win32_PhysicalMemory";
             var query = string.Format("select * from {0}", win32DeviceClassName);
@@ -164,6 +164,7 @@ namespace CapFrameX.PresentMonInterface
             // example: 48GB (4x4GB+4x8GB)
             var infoString = string.Empty;
             long wholeCapacity = 0;
+
             foreach (var item in moduleSetting)
             {
                 wholeCapacity += item.Value * item.Key;
@@ -173,7 +174,7 @@ namespace CapFrameX.PresentMonInterface
             return $"{wholeCapacity / ONE_GIB}GB ({infoString.Remove(infoString.Length - 1)}) {propertyDataValueSpeed}MT/s";
         }
 
-        private static string GetGraphicCardNameFromWMI()
+        private static string GetGraphicsCardNameFromWMI()
         {
             string propertyDataValue = string.Empty;
             const string propertyDataName = "DeviceName";
