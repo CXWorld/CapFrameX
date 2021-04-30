@@ -8,12 +8,13 @@ using System.Reactive.Subjects;
 using CapFrameX.Contracts.PresentMonInterface;
 using CapFrameX.Extensions;
 using Microsoft.Extensions.Logging;
+using Serilog;
 
 namespace CapFrameX.PresentMonInterface
 {
     public class PresentMonCaptureService : ICaptureService
     {
-        public const int Application_INDEX = 0;
+        public const int ApplicationName_INDEX = 0;
         public const int ProcessID_INDEX = 1;
         public const int TimeInSeconds_INDEX = 7;
         public const int MsBetweenPresents_INDEX = 9;
@@ -77,8 +78,7 @@ namespace CapFrameX.PresentMonInterface
                         var lineSplit = e.Data.Split(',');
                         if (lineSplit.Length == VALID_LINE_LENGTH)
                         {
-                            var processName = lineSplit[Application_INDEX].Replace(".exe", "");
-                            if (processName != "<error>")
+                            if (lineSplit[ApplicationName_INDEX] != "<error>")
                             {
                                 _outputDataStream.OnNext(lineSplit);
                             }
@@ -95,7 +95,7 @@ namespace CapFrameX.PresentMonInterface
             }
             catch (Exception e)
             {
-                _logger.LogError(e, "Failed to Start CaptureService");
+                _logger.LogError(e, "Failed to start CaptureService");
                 return false;
             }
         }
@@ -120,7 +120,9 @@ namespace CapFrameX.PresentMonInterface
         public IEnumerable<(string, int)> GetAllFilteredProcesses(HashSet<string> filter)
         {
             lock (_listLock)
+            {
                 return _presentMonProcesses?.Where(processInfo => !filter.Contains(processInfo.Item1));
+            }
         }
 
         public static void TryKillPresentMon()
@@ -133,7 +135,10 @@ namespace CapFrameX.PresentMonInterface
                     proc[0].Kill();
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                Log.Logger.Error(ex, "Error while killing PresentMon process.");
+            }
         }
 
         private void SubscribeToPresentMonCapturedProcesses()
@@ -165,7 +170,7 @@ namespace CapFrameX.PresentMonInterface
 
                         try
                         {
-                            processName = lineSplit[Application_INDEX].Replace(".exe", "");
+                            processName = lineSplit[ApplicationName_INDEX].Replace(".exe", "");
                             processId = Convert.ToInt32(lineSplit[ProcessID_INDEX]);
                         }
                         catch (Exception ex)
