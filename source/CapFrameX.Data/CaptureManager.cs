@@ -583,7 +583,7 @@ namespace CapFrameX.Data
 
         private string GetProcessNameFromDataLine(string[] lineSplit)
         {
-            return lineSplit[PresentMonCaptureService.Application_INDEX].Replace(".exe", "");
+            return lineSplit[PresentMonCaptureService.ApplicationName_INDEX].Replace(".exe", "");
         }
 
         private string GetProcessIdFromDataLine(string[] lineSplit)

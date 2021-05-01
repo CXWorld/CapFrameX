@@ -93,7 +93,7 @@ namespace CapFrameX.PresentMonInterface
             string process;
             try
             {
-                process = lineSplit[PresentMonCaptureService.Application_INDEX].Replace(".exe", "");
+                process = lineSplit[PresentMonCaptureService.ApplicationName_INDEX].Replace(".exe", "");
             }
             catch { return; }
 
