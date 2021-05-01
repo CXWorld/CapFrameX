@@ -111,7 +111,7 @@ namespace CapFrameX.Data
 
             void OnFileRenamed(object sender, RenamedEventArgs e)
             {
-                if (_currentFiles == null || !_currentFiles.Any())
+                if (_currentFiles == null || !_currentFiles.Any() || e.OldFullPath.EndsWith("\\"))
                     return;
 
                 var oldFileInfo = new FileInfo(e.OldFullPath);
