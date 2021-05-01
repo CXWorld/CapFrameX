@@ -87,6 +87,7 @@ namespace CapFrameX.Overlay
 
             _logger.LogDebug("{componentName} Ready", this.GetType().Name);
 
+
             Task.Run(async () => await InitializeOverlayEntryDict())
                 .ContinueWith(t =>
                {
@@ -140,76 +141,97 @@ namespace CapFrameX.Overlay
 
         public void StartCountdown(double seconds)
         {
-            IObservable<long> obs = Extensions.ObservableExtensions.CountDown(seconds);
-            _rTSSService.SetIsCaptureTimerActive(true);
-
-            SetCaptureTimerValue(0);
-            _disposableCountdown?.Dispose();
-            _disposableCountdown = obs.Subscribe(t =>
+            if (_appConfiguration.IsOverlayActive)
             {
-                SetCaptureTimerValue((int)t);
-                _rTSSService.Refresh();
+                IObservable<long> obs = Extensions.ObservableExtensions.CountDown(seconds);
+                _rTSSService.SetIsCaptureTimerActive(true);
 
-                if (t == 0)
-                    _rTSSService.SetIsCaptureTimerActive(false);
-            });
+                SetCaptureTimerValue(0);
+                _disposableCountdown?.Dispose();
+                _disposableCountdown = obs.Subscribe(t =>
+                {
+                    SetCaptureTimerValue((int)t);
+                    _rTSSService.Refresh();
+
+                    if (t == 0)
+                        _rTSSService.SetIsCaptureTimerActive(false);
+                });
+            }
         }
 
         public void SetDelayCountdown(double seconds)
         {
-            IObservable<long> obs = Extensions.ObservableExtensions.CountDown(seconds);
-            _rTSSService.SetIsCaptureTimerActive(true);
-
-            SetCaptureTimerValue(-(int)seconds);
-            _disposableDelayCountdown?.Dispose();
-            _disposableDelayCountdown = obs.Subscribe(t =>
+            if (_appConfiguration.IsOverlayActive)
             {
-                if (t > 0)
+                IObservable<long> obs = Extensions.ObservableExtensions.CountDown(seconds);
+                _rTSSService.SetIsCaptureTimerActive(true);
+
+                SetCaptureTimerValue(-(int)seconds);
+                _disposableDelayCountdown?.Dispose();
+                _disposableDelayCountdown = obs.Subscribe(t =>
                 {
-                    SetCaptureTimerValue((int)-t);
-                    _rTSSService.Refresh();
-                }
-            });
+                    if (t > 0)
+                    {
+                        SetCaptureTimerValue((int)-t);
+                        _rTSSService.Refresh();
+                    }
+                });
+            }
         }
 
         public void CancelDelayCountdown()
         {
-            _disposableDelayCountdown?.Dispose();
-            _rTSSService.SetIsCaptureTimerActive(false);
-            _rTSSService.Refresh();
+            if (_appConfiguration.IsOverlayActive)
+            {
+                _disposableDelayCountdown?.Dispose();
+                _rTSSService.SetIsCaptureTimerActive(false);
+                _rTSSService.Refresh();
+            }
         }
 
         public void StartCaptureTimer()
         {
-            _disposableCaptureTimer = GetCaptureTimer();
-            _rTSSService.SetIsCaptureTimerActive(true);
+            if (_appConfiguration.IsOverlayActive)
+            {
+                _disposableCaptureTimer = GetCaptureTimer();
+                _rTSSService.SetIsCaptureTimerActive(true);
+            }
         }
 
         public void StopCaptureTimer()
         {
-            _disposableCaptureTimer?.Dispose();
-            _disposableCountdown?.Dispose();
-            _rTSSService.SetIsCaptureTimerActive(false);
-            SetCaptureTimerValue(0);
+            if (_appConfiguration.IsOverlayActive)
+            {
+                _disposableCaptureTimer?.Dispose();
+                _disposableCountdown?.Dispose();
+                _rTSSService.SetIsCaptureTimerActive(false);
+                SetCaptureTimerValue(0);
+            }
         }
 
         public void SetCaptureTimerValue(int t)
         {
-            var captureTimer = _overlayEntryProvider.GetOverlayEntry("CaptureTimer");
-            if (captureTimer != null)
+            if (_appConfiguration.IsOverlayActive)
             {
-                captureTimer.Value = $"{t} s";
-                _rTSSService.SetOverlayEntry(captureTimer);
+                var captureTimer = _overlayEntryProvider.GetOverlayEntry("CaptureTimer");
+                if (captureTimer != null)
+                {
+                    captureTimer.Value = $"{t} s";
+                    _rTSSService.SetOverlayEntry(captureTimer);
+                }
             }
         }
 
         public void SetCaptureServiceStatus(string status)
         {
-            var captureStatus = _overlayEntryProvider.GetOverlayEntry("CaptureServiceStatus");
-            if (captureStatus != null)
+            if (_appConfiguration.IsOverlayActive)
             {
-                captureStatus.Value = status;
-                _rTSSService.SetOverlayEntry(captureStatus);
+                var captureStatus = _overlayEntryProvider.GetOverlayEntry("CaptureServiceStatus");
+                if (captureStatus != null)
+                {
+                    captureStatus.Value = status;
+                    _rTSSService.SetOverlayEntry(captureStatus);
+                }
             }
         }
 

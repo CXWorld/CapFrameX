@@ -146,6 +146,8 @@ namespace CapFrameX.Data
                 var delay = options.CaptureDelay;
                 // Start overlay delay countdown timer
                 _captureStatusChange.OnNext(new CaptureStatus() { Status = ECaptureStatus.StartedDelay });
+
+                if(_appConfiguration.IsOverlayActive)
                 _overlayService.SetDelayCountdown(delay);
 
                 try
@@ -249,9 +251,9 @@ namespace CapFrameX.Data
 
             if (options.CaptureTime > 0d)
             {
-                // Start overlay countdown timer
+                //Start overlay countdown timer
                 if (!OSDAutoDisabled)
-                    _overlayService.StartCountdown(options.CaptureTime);                
+                    _overlayService.StartCountdown(options.CaptureTime);
 
                 _autoCompletionDisposableStream = Observable.Timer(TimeSpan.FromSeconds(options.CaptureTime))
                     .Subscribe(async _ => await StopCapture());
@@ -295,11 +297,16 @@ namespace CapFrameX.Data
                 OSDAutoDisabled = false;
             }
 
-            _rtssService.Refresh();
+            if(_appConfiguration.IsOverlayActive)
+                _rtssService.Refresh();
+
             await Task.Delay(TimeSpan.FromMilliseconds(PRESICE_OFFSET));
             IsCapturing = false;
             _disposableCaptureStream?.Dispose();
-            _rtssService.Refresh();
+
+            if (_appConfiguration.IsOverlayActive)
+                _rtssService.Refresh();
+
             await WriteExtractedCaptureDataToFileAsync();
             LockCaptureService = false;
         }
