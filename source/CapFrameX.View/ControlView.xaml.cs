@@ -344,5 +344,10 @@ namespace CapFrameX.View
 
 			}
 		}
+		private void RecordDataGrid_BeginningEdit(object sender, DataGridBeginningEditEventArgs e)
+		{
+			var myCell = (sender as MultiSelectionDataGrid).CurrentCell;
+			RecordDataGrid.SelectedItem = myCell.Item;
+		}
 	}
 }
