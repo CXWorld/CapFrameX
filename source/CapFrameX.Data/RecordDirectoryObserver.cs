@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.PresentMonInterface;
 using Microsoft.Extensions.Logging;
+using System.Runtime.InteropServices;
 
 namespace CapFrameX.Data
 {
@@ -19,13 +20,16 @@ namespace CapFrameX.Data
         private readonly ISubject<FileInfo> _fileChangedSubject = new ReplaySubject<FileInfo>();
         private readonly ISubject<FileInfo> _fileDeletedSubject = new ReplaySubject<FileInfo>();
         private readonly ISubject<IEnumerable<FileInfo>> _directoryFilesSubject = new BehaviorSubject<IEnumerable<FileInfo>>(new FileInfo[] { });
-        private readonly ISubject<DirectoryInfo> _observingDirectorySubject = new BehaviorSubject<DirectoryInfo>(null);
+        private readonly ISubject<DirectoryInfo> _observingDirectorySubject = new BehaviorSubject<DirectoryInfo>(null);   
 
         public IObservable<FileInfo> FileCreatedStream => _fileCreatedSubject.AsObservable();
         public IObservable<FileInfo> FileChangedStream => _fileChangedSubject.AsObservable();
         public IObservable<FileInfo> FileDeletedStream => _fileDeletedSubject.AsObservable();
         public IObservable<IEnumerable<FileInfo>> DirectoryFilesStream => _directoryFilesSubject.AsObservable();
         public IObservable<DirectoryInfo> ObservingDirectoryStream => _observingDirectorySubject.AsObservable();
+
+        [DllImport("shlwapi.dll")]
+        public static extern bool PathIsNetworkPath(string pszPath);
 
         private FileSystemWatcher _watcher;
         private List<FileInfo> _currentFiles = new List<FileInfo>();
@@ -93,6 +97,8 @@ namespace CapFrameX.Data
                 _currentFiles.Add(fileInfo);
                 _directoryFilesSubject.OnNext(_currentFiles);
             }
+
+            
 
             void OnFileChanged(object sender, FileSystemEventArgs e)
             {
