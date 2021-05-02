@@ -347,6 +347,9 @@ namespace CapFrameX.View
 		private void RecordDataGrid_BeginningEdit(object sender, DataGridBeginningEditEventArgs e)
 		{
 			var myCell = (sender as MultiSelectionDataGrid).CurrentCell;
+			// The TextBlock control doesn't support vertical text alignment.
+			// Must be a child of a Grid or a Border to be able to center the text.
+			// myCell.Column.GetCellContent(myCell.Item).VerticalAlignment = VerticalAlignment.Center;
 			RecordDataGrid.SelectedItem = myCell.Item;
 		}
 	}
