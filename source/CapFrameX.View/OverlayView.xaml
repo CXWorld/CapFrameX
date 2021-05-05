@@ -295,7 +295,7 @@
                                                 <Grid Margin="8 8 8 8">
                                                     <Grid.Resources>
                                                         <Style TargetType="CheckBox"
-											BasedOn="{StaticResource MaterialDesignCheckBox}">
+											                    BasedOn="{StaticResource MaterialDesignCheckBox}">
                                                             <Setter Property="Margin" Value="8,8,10,8" />
                                                         </Style>
                                                         <Style TargetType="TextBox" BasedOn="{StaticResource MaterialDesignTextBox}">
@@ -415,10 +415,21 @@
                                     </materialDesign:PopupBox>
                                     <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}">Min OSD</TextBlock>
                                     <Button Margin="10 0 0 0" Width="20" Height="20" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
-                                Command="{Binding SetToMinOsdCommand}" materialDesign:RippleAssist.Feedback="#DD000000">
+                                            Command="{Binding SetToMinOsdCommand}" materialDesign:RippleAssist.Feedback="#DD000000">
                                         <materialDesign:PackIcon Kind="FlipToFront" Height="15" Width="15" />
                                     </Button>
-                                    <StackPanel Margin="125 0 0 0" Orientation="Horizontal">
+                                    <TextBlock Margin="10 0 0 0"  VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}">Resync Perfmon</TextBlock>
+                                    <Button Margin="10 0 0 0" Width="20" Height="20" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
+                                            Command="{Binding ResyncPerfmonCommand}" materialDesign:RippleAssist.Feedback="#DD000000">
+                                        <materialDesign:PackIcon Kind="Update" Height="15" Width="15" />
+                                        <Button.ToolTip>
+                                            <ToolTip>
+                                                <TextBlock Width="275" Text="Resync Windows performance monitor when you have issues with 0 memory counter. Restart CX after execution." TextWrapping="Wrap">
+                                                </TextBlock>
+                                            </ToolTip>
+                                        </Button.ToolTip>
+                                    </Button>
+                                    <StackPanel Margin="20 0 0 0" Orientation="Horizontal">
                                         <TextBlock Text="OSD options" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}"/>
                                         <materialDesign:PopupBox StaysOpen="True" Foreground="{DynamicResource MaterialDesignBody}">
                                             <materialDesign:Card  Margin="0 0 0 -10">

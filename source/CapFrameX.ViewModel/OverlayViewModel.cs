@@ -18,6 +18,8 @@ using Prism.Regions;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
@@ -517,6 +519,8 @@ namespace CapFrameX.ViewModel
 
         public ICommand SetToMinOsdCommand { get; }
 
+        public ICommand ResyncPerfmonCommand { get; }
+
         public bool IsRTSSInstalled
             => _rTSSService.IsRTSSInstalled();
 
@@ -625,6 +629,9 @@ namespace CapFrameX.ViewModel
             SetToMinOsdCommand = new DelegateCommand(
                 () => OnSetMinOsd());
 
+            ResyncPerfmonCommand = new DelegateCommand(
+                () => OnResyncPerfmon());
+
             UpdateHpyerlinkText = "To use the overlay, install the latest" + Environment.NewLine +
                 "RivaTuner Statistics Server (RTSS)";
 
@@ -676,6 +683,24 @@ namespace CapFrameX.ViewModel
                         break;
                 }
             }
+        }
+
+        private void OnResyncPerfmon()
+        {
+            ProcessStartInfo processStartInfo = new ProcessStartInfo("cmd.exe", "/c " + @"Files\bf0822e8-2e55-4b99-82ee-939d8ac2384e.bat")
+            {
+                CreateNoWindow = false,
+                WindowStyle = ProcessWindowStyle.Normal,
+                Verb = "runas"
+            };
+
+            Process p = new Process
+            {
+                StartInfo = processStartInfo
+            };
+
+            p.Start();
+            p.WaitForExit();
         }
 
         private void OnUseRunHistoryChanged()

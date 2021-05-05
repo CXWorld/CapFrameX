@@ -341,7 +341,6 @@ namespace CapFrameX.View
 					_viewModel.CustomComment = _viewModel.SelectedRecordInfo.Comment;
 					_viewModel.SaveDescriptions();
 				}
-
 			}
 		}
 		private void RecordDataGrid_BeginningEdit(object sender, DataGridBeginningEditEventArgs e)
