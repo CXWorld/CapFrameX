@@ -1,5 +1,4 @@
-﻿using CapFrameX.Contracts.Overlay;
-using CapFrameX.Contracts.RTSS;
+﻿using CapFrameX.Contracts.RTSS;
 using CapFrameX.Contracts.Sensor;
 using CapFrameX.Extensions;
 using CapFrameX.PresentMonInterface;
@@ -15,7 +14,6 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Security.Principal;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 
@@ -32,14 +30,24 @@ namespace CapFrameX
 
         protected override void OnStartup(StartupEventArgs e)
         {
-            InitializeLogger();
-            SetupExceptionHandling();
-            base.OnStartup(e);
-            _bootstrapper = new Bootstrapper();
-            _bootstrapper.Run(true);
+            Process currentProcess = Process.GetCurrentProcess();
+            if (Process.GetProcesses().Any(p => p.ProcessName == currentProcess.ProcessName && p.Id != currentProcess.Id))
+            {
+                _isSingleInstance = false;
+                MessageBox.Show("Already an instance running...");
+                Current.Shutdown();
+            }
+            else
+            {
+                InitializeLogger();
+                SetupExceptionHandling();
+                base.OnStartup(e);
+                _bootstrapper = new Bootstrapper();
+                _bootstrapper.Run(true);
 
-            _webServer = WebserverFactory.CreateWebServer(_bootstrapper.Container, "http://localhost:1337");
-            _webServer.RunAsync();
+                _webServer = WebserverFactory.CreateWebServer(_bootstrapper.Container, "http://localhost:1337");
+                _webServer.RunAsync();
+            }
         }
 
         private void SetupExceptionHandling()
@@ -110,8 +118,10 @@ namespace CapFrameX
 
         private void CapFrameXExit(object sender, ExitEventArgs e)
         {
-            if (_isSingleInstance)
-                PresentMonCaptureService.TryKillPresentMon();
+            if (!_isSingleInstance)
+                return;
+
+            PresentMonCaptureService.TryKillPresentMon();
 
             var sensorService = _bootstrapper.Container.Resolve(typeof(ISensorService), true) as ISensorService;
             sensorService?.CloseOpenHardwareMonitor();
@@ -132,34 +142,6 @@ namespace CapFrameX
                 Current.Shutdown();
             }
 
-            Process currentProcess = Process.GetCurrentProcess();
-            if (Process.GetProcesses().Any(p => p.ProcessName == currentProcess.ProcessName && p.Id != currentProcess.Id))
-            {
-                _isSingleInstance = false;
-                MessageBox.Show("Already an instance running...");
-                Current.Shutdown();
-            }
-
-            // check resource folder spelling
-            try
-            {
-                var sourceFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
-                    @"CapFrameX\Ressources\");
-                var destinationFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
-                    @"CapFrameX\Resources\");
-
-                if (Directory.Exists(sourceFolder))
-                {
-                    Directory.Move(sourceFolder, destinationFolder);
-                }
-
-                if (!Directory.Exists(destinationFolder))
-                {
-                    Directory.CreateDirectory(destinationFolder);
-                }
-            }
-            catch { }
-
             // create capture folder
             try
             {
@@ -171,7 +153,10 @@ namespace CapFrameX
                     Directory.CreateDirectory(captureFolder);
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                Log.Logger.Error(ex, "Error while creating capture folder.");
+            }
         }
 
         public static bool IsAdministrator =>

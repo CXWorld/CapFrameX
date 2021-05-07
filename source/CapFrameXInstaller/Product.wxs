@@ -15,7 +15,7 @@
 			<ComponentRef Id="ApplicationShortcutDesktop" />
 		</Feature>
 
-    <Property Id="INSTALLSHORTCUT" Secure="yes"/>
+    <Property Id="INSTALLSHORTCUT" Value="1" Secure="yes"/>
 
     <InstallExecuteSequence>
 		  <Custom Action="WixCloseApplications" Before="InstallValidate">
@@ -36,6 +36,18 @@
 		<CustomAction Id="CleanRegistry" BinaryKey="CapFrameX.CustomInstallerActions.CA.dll" DllEntry="RemoveAutoStartKey" Execute="immediate" Return="check"/>
 		<Binary Id="CapFrameX.CustomInstallerActions.CA.dll" SourceFile="$(var.CapFrameX.CustomInstallerActions.TargetDir)$(var.CapFrameX.CustomInstallerActions.TargetName).CA.dll" />
 	</Fragment>
+
+  <!--https://stackoverflow.com/questions/4658220/create-shortcut-checkbox-->
+  <!--<Fragment>
+    <UI>
+      <Dialog Id="InstallDirAndOptionalShortcutDlg">
+        <Control Id="InstallShortcutCheckbox" Type="CheckBox"
+                 X="20" Y="140" Width="200" Height="17"
+                 Property="INSTALLSHORTCUT" CheckBoxValue="1"
+                 Text="Do you want to create a start menu shortcut?" />
+      </Dialog>
+    </UI>
+  </Fragment>-->
 	
 	<Fragment>		
 		<Directory Id="TARGETDIR" Name="SourceDir">

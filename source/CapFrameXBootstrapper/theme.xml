@@ -35,7 +35,6 @@
     <Button Name="BrowseButton" X="-11" Y="142" Width="75" Height="23" TabStop="yes" FontId="3">#(loc.OptionsBrowseButton)</Button>
     <Button Name="OptionsOkButton" X="-91" Y="-11" Width="75" Height="23" TabStop="yes" FontId="0">#(loc.OptionsOkButton)</Button>
     <Button Name="OptionsCancelButton" X="-11" Y="-11" Width="75" Height="23" TabStop="yes" FontId="0">#(loc.OptionsCancelButton)</Button>
-    <!--<Checkbox Name="ShortcutCheckbox" X="-11" Y="170" Width="260" Height="17" TabStop="yes" FontId="3" HideWhenDisabled="no">#(loc.InstallShortcut)</Checkbox>-->
   </Page>
   <Page Name="FilesInUse">
     <Text X="11" Y="90" Width="-11" Height="30" FontId="2" DisablePrefix="yes">#(loc.FilesInUseHeader)</Text>

@@ -478,6 +478,11 @@
                     <File Id="fil1424015000F4C871286F581C5375B980" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\de\MahApps.Metro.resources.dll" />
                 </Component>
             </Directory>
+            <Directory Id="dir69A81B71B3436B3F1BF22FB24CE6929D" Name="Files">
+                <Component Id="cmp5BA55150B20FDB5D6A2679B4DDE154F0" Guid="*" Win64="yes">
+                    <File Id="fil596E1F10777F520C99F1485337D49EFE" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Files\bf0822e8-2e55-4b99-82ee-939d8ac2384e.bat" />
+                </Component>
+            </Directory>
             <Directory Id="dirED1C7BF395F6825C5E6AA296F629EF5A" Name="HelpTexts">
                 <Component Id="cmpEEF8583F33AC9DCDC349C22B5162CEF5" Guid="*" Win64="yes">
                     <File Id="filE1F227BC37167083E8389BD7591F66D3" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\HelpTexts\ChartControls.rtf" />
@@ -860,6 +865,7 @@
             <ComponentRef Id="cmp49BE6E207D2A07FADE852DF8D84126A7" />
             <ComponentRef Id="cmpC85BD7478E073743A39F17DF06865203" />
             <ComponentRef Id="cmp55E09061A1DF30E9878313719FAE6664" />
+            <ComponentRef Id="cmp5BA55150B20FDB5D6A2679B4DDE154F0" />
             <ComponentRef Id="cmpEEF8583F33AC9DCDC349C22B5162CEF5" />
             <ComponentRef Id="cmp93B53FD801CE3270DE5D9AF01811CD8F" />
             <ComponentRef Id="cmpD2797D63574120F1A02B6E6185F4B7E2" />
