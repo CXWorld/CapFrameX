@@ -15,6 +15,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Security.Principal;
 using System.Threading.Tasks;
+using System.Web;
 using System.Windows;
 
 namespace CapFrameX
@@ -57,7 +58,6 @@ namespace CapFrameX
                 LogUnhandledException((Exception)e.ExceptionObject, "AppDomain.CurrentDomain.UnhandledException");
                 ShowCrashLogUploaderMessagebox();
             };
-
             DispatcherUnhandledException += (s, e) =>
             {
                 LogUnhandledException(e.Exception, "Application.Current.DispatcherUnhandledException");
@@ -110,6 +110,17 @@ namespace CapFrameX
 
                     Log.Logger.Information("Uploading Logs. Report-ID is {reportId}", reportId);
                     MessageBox.Show($"Your Report-ID is {reportId}.\nPlease include this Id in your support inquiry. Visit https://www.capframex.com/support for further information.");
+                    Process.Start(
+                        string.Format(
+                            ConfigurationManager.AppSettings.Get("ContactFormUriTemplate"), 
+                            HttpUtility.UrlEncode($"Crashlog-Report: {reportId}"), 
+                            HttpUtility.UrlEncode($@"Dear CapframeX Team,
+I encountered a fatal Crash.
+Please have a look at the Crashlog with Id {reportId}.
+Feel free to contact me by mail."), 
+                            string.Empty
+                            )
+                        );
                 }
             }
 
