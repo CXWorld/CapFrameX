@@ -142,11 +142,11 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
         {
             if (NVAPI.NvAPI_GPU_GetFullName(handle, out string gpuName) == NvStatus.OK)
             {
-                return "NVIDIA " + gpuName.Trim();
+                return gpuName.Trim();
             }
             else
             {
-                return "NVIDIA";
+                return "NVIDIA GPU";
             }
         }
 
