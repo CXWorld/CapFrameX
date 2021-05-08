@@ -91,6 +91,9 @@ namespace CapFrameX.Data
 
             void OnFileCreated(object sender, FileSystemEventArgs e)
             {
+                if (!e.FullPath.EndsWith(".json"))
+                    return;
+
                 var fileInfo = new FileInfo(e.FullPath);
                 _logger.LogInformation("File created: {path}", fileInfo.FullName);
                 _fileCreatedSubject.OnNext(fileInfo);
@@ -102,7 +105,7 @@ namespace CapFrameX.Data
 
             void OnFileChanged(object sender, FileSystemEventArgs e)
             {
-                if (_currentFiles == null || !_currentFiles.Any())
+                if (_currentFiles == null || !_currentFiles.Any() || !e.FullPath.EndsWith(".json"))
                     return;
 
                 var fileInfo = _currentFiles.FirstOrDefault(f => f.FullName.Equals(e.FullPath));
@@ -117,7 +120,7 @@ namespace CapFrameX.Data
 
             void OnFileRenamed(object sender, RenamedEventArgs e)
             {
-                if (_currentFiles == null || !_currentFiles.Any() || e.OldFullPath.EndsWith("\\"))
+                if (_currentFiles == null || !_currentFiles.Any() || !e.OldFullPath.EndsWith(".json"))
                     return;
 
                 var oldFileInfo = new FileInfo(e.OldFullPath);
@@ -132,7 +135,7 @@ namespace CapFrameX.Data
 
             void OnFileDeleted(object sender, FileSystemEventArgs e)
             {
-                if (_currentFiles == null || !_currentFiles.Any())
+                if (_currentFiles == null || !_currentFiles.Any() || !e.FullPath.EndsWith(".json"))
                     return;
                 try
                 {
