@@ -91,7 +91,7 @@ namespace CapFrameX.Data
 
             void OnFileCreated(object sender, FileSystemEventArgs e)
             {
-                if (!e.FullPath.EndsWith(".json"))
+                if (!CheckRelevantFiles(e.FullPath))
                     return;
 
                 var fileInfo = new FileInfo(e.FullPath);
@@ -105,7 +105,7 @@ namespace CapFrameX.Data
 
             void OnFileChanged(object sender, FileSystemEventArgs e)
             {
-                if (_currentFiles == null || !_currentFiles.Any() || !e.FullPath.EndsWith(".json"))
+                if (_currentFiles == null || !_currentFiles.Any() || !CheckRelevantFiles(e.FullPath))
                     return;
 
                 var fileInfo = _currentFiles.FirstOrDefault(f => f.FullName.Equals(e.FullPath));
@@ -120,7 +120,7 @@ namespace CapFrameX.Data
 
             void OnFileRenamed(object sender, RenamedEventArgs e)
             {
-                if (_currentFiles == null || !_currentFiles.Any() || !e.OldFullPath.EndsWith(".json"))
+                if (_currentFiles == null || !_currentFiles.Any() || !CheckRelevantFiles(e.OldFullPath))
                     return;
 
                 var oldFileInfo = new FileInfo(e.OldFullPath);
@@ -135,7 +135,7 @@ namespace CapFrameX.Data
 
             void OnFileDeleted(object sender, FileSystemEventArgs e)
             {
-                if (_currentFiles == null || !_currentFiles.Any() || !e.FullPath.EndsWith(".json"))
+                if (_currentFiles == null || !_currentFiles.Any() || !CheckRelevantFiles(e.FullPath))
                     return;
                 try
                 {
@@ -151,6 +151,14 @@ namespace CapFrameX.Data
                     _logger.LogInformation($"Error deleting file: {fileInfo.FullName}");
                 }
             }
+        }
+
+        private bool CheckRelevantFiles(string path)
+        {
+            if (path.EndsWith(".json") || path.EndsWith(".csv"))
+                return true;
+            else
+                return false;
         }
 
         private string GetInitialObservedDirectory(string observedDirectory)
