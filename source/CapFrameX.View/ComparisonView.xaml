@@ -76,7 +76,7 @@
 											Visibility="{Binding HasComparisonItems, Converter={StaticResource TrueToVisibleConverter}}" DisableAnimations="True"
 											Hoverable="False" DataTooltip="{x:Null}" LegendLocation="Top" UseRelativeMode="{Binding UseComparisonRelativeMode, Mode=TwoWay}">
                                 <lvc:CartesianChart.AxisX>
-                                    <lvc:Axis MinValue="0" MaxValue="{Binding BarMaxValue}" Foreground="Transparent">
+                                    <lvc:Axis MinValue="{Binding BarMinValue}" MaxValue="{Binding BarMaxValue}" Foreground="Transparent">
                                         <lvc:Axis.Separator>
                                             <lvc:Separator StrokeThickness="0" IsEnabled="False"></lvc:Separator>
                                         </lvc:Axis.Separator>

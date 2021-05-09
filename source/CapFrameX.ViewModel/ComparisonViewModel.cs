@@ -88,6 +88,7 @@ namespace CapFrameX.ViewModel
         private MessageDialog _messageDialogContent;
         private string _messageText;
         private int _barMaxValue;
+        private int _barMinValue;
         private bool _showCustomTitle;
         private string _selectedChartView = "Frametimes";
         private EFilterMode _selectedFilterMode;
@@ -482,6 +483,17 @@ namespace CapFrameX.ViewModel
             set
             {
                 _barMaxValue = value;
+                BarMinValue = (int)( - value * 0.05);
+                RaisePropertyChanged();
+            }
+        }
+
+        public int BarMinValue
+        {
+            get { return _barMinValue; }
+            set
+            {
+                _barMinValue = value;
                 RaisePropertyChanged();
             }
         }
@@ -832,7 +844,7 @@ namespace CapFrameX.ViewModel
                 }
             }
 
-            SetBarMaxValue();
+            SetBarMinMaxValues();
             UpdateBarChartHeight();
         }
 
@@ -1195,12 +1207,12 @@ namespace CapFrameX.ViewModel
                 ComparisonRowChartSeriesCollection[2].Values.Insert(0, wrappedComparisonInfo.WrappedRecordInfo.ThirdMetric);
             }
 
-            SetBarMaxValue();
+            SetBarMinMaxValues();
 
             OnComparisonContextChanged();
         }
 
-        private void SetBarMaxValue()
+        private void SetBarMinMaxValues()
         {
             if (!ComparisonRowChartSeriesCollection.Any())
                 return;
