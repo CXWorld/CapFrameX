@@ -139,24 +139,27 @@ namespace CapFrameX.Statistics.PlotBuilder
                 var axisMaximum = yMax + (yMax - yMin) / 6;
 
                 // min range of y-axis
-                if (average - axisMinimum < 15)
-                    axis.Minimum = average - 15;
+                if (average - axisMinimum < 5)
+                    axis.Minimum = average - 5;
                 else
                     axis.Minimum = axisMinimum;
 
-                if (axisMaximum - average < 15)
-                    axis.Maximum = average + 15;
+                if (axis.Minimum < 0)
+                    axis.Minimum = 0;
+
+                if (axisMaximum - average < 5)
+                    axis.Maximum = average + 5;
                 else
                     axis.Maximum = axisMaximum;
 
                 // center average FPS line
-                var rangeAvgMin = average - axis.Minimum;
-                var rangeAvgMax = axis.Maximum - average;
+                //var rangeAvgMin = average - axis.Minimum;
+                //var rangeAvgMax = axis.Maximum - average;
 
-                if (rangeAvgMin > rangeAvgMax)
-                    axis.Maximum += (rangeAvgMin - rangeAvgMax);
-                else if (rangeAvgMin < rangeAvgMax)
-                    axis.Minimum -= (rangeAvgMax - rangeAvgMin);
+                //if (rangeAvgMin > rangeAvgMax)
+                //    axis.Maximum += (rangeAvgMin - rangeAvgMax);
+                //else if (rangeAvgMin < rangeAvgMax)
+                //    axis.Minimum -= (rangeAvgMax - rangeAvgMin);
             });
         }
     }
