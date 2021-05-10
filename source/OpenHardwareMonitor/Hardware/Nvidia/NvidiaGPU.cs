@@ -43,6 +43,9 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
         private readonly Sensor pcieThroughputTx;
         private readonly Control fanControl;
         private readonly Sensor monitorRefreshRate;
+        private readonly Sensor powerLimit;
+        private readonly Sensor temperatureLimit;
+        private readonly Sensor voltageLimit;
 
         public NvidiaGPU(int adapterIndex, NvPhysicalGpuHandle handle,
           NvDisplayHandle? displayHandle, ISettings settings, ISensorConfig config, IRTSSService rTSSService)
@@ -99,6 +102,9 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
 
             fan = new Sensor("GPU Fan", 0, SensorType.Fan, this, settings);
             control = new Sensor("GPU Fan", 1, SensorType.Control, this, settings);
+            powerLimit = new Sensor("GPU Power Limit", 0, SensorType.Factor, this, settings);
+            temperatureLimit = new Sensor("GPU Thermal Limit", 1, SensorType.Factor, this, settings);
+            voltageLimit = new Sensor("GPU Voltage Limit", 2, SensorType.Factor, this, settings);
             voltage = new Sensor("GPU Voltage", 0, SensorType.Voltage, this, settings);
             power = new Sensor("GPU Power", 0, SensorType.Power, this, settings);
 
@@ -579,6 +585,33 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
             else
             {
                 monitorRefreshRate.Value = null;
+            }
+
+            // Performance limits
+            if (!(!sensorConfig.GetSensorEvaluate(powerLimit.IdentifierString) &&
+              !sensorConfig.GetSensorEvaluate(temperatureLimit.IdentifierString) &&
+              !sensorConfig.GetSensorEvaluate(voltageLimit.IdentifierString)))
+            {
+                PerformanceStatusV1 performanceStatus = new PerformanceStatusV1
+                {
+                    Version = NVAPI.GPU_PERFORMANCE_STATUS_VER,
+                    TimersInNanoSecond = new ulong[NVAPI.PERFORMANCE_STATUS_TIMER_COUNT],
+                    Unknown5 = new uint[NVAPI.PERFORMANCE_STATUS_UNKNOWN_COUNT]
+                };
+
+                if (NVAPI.NvAPI_GPU_PerfGetStatus(handle, ref performanceStatus) == NvStatus.OK)
+                {
+                    var currentActiveLimit = performanceStatus.PerformanceLimit;
+                    powerLimit.Value = ((currentActiveLimit & PerformanceLimit.PowerLimit)
+                        == PerformanceLimit.PowerLimit) ? 1 : 0;
+                    ActivateSensor(powerLimit);
+                    temperatureLimit.Value = ((currentActiveLimit & PerformanceLimit.TemperatureLimit)
+                        == PerformanceLimit.TemperatureLimit) ? 1 : 0;
+                    ActivateSensor(temperatureLimit);
+                    voltageLimit.Value = ((currentActiveLimit & PerformanceLimit.VoltageLimit)
+                        == PerformanceLimit.VoltageLimit) ? 1 : 0;
+                    ActivateSensor(voltageLimit);
+                }
             }
         }
 

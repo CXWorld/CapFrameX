@@ -98,6 +98,17 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
         UNKNOWN = -1
     };
 
+    [Flags]
+    internal enum PerformanceLimit : uint
+    {
+        None = 0,
+        PowerLimit = 0b1,
+        TemperatureLimit = 0b10,
+        VoltageLimit = 0b100,
+        Unknown8 = 0b1000,
+        NoLoadLimit = 0b10000
+    }
+
     [StructLayout(LayoutKind.Sequential, Pack = 8)]
     internal struct NvSensor
     {
@@ -320,6 +331,24 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
         public uint Reserved8;
     }
 
+    [StructLayout(LayoutKind.Sequential, Pack = 8)]
+    public struct PerformanceStatusV1
+    {
+        internal uint Version;
+        internal uint Unknown1;
+        internal ulong TimerInNanoSecond;
+        internal PerformanceLimit PerformanceLimit;
+        internal uint Unknown2;
+        internal uint Unknown3;
+        internal uint Unknown4;
+
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = NVAPI.PERFORMANCE_STATUS_TIMER_COUNT)]
+        internal ulong[] TimersInNanoSecond;
+
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = NVAPI.PERFORMANCE_STATUS_UNKNOWN_COUNT)]
+        internal uint[] Unknown5;
+    }
+
     internal class NVAPI
     {
         public const int MAX_PHYSICAL_GPUS = 64;
@@ -333,6 +362,8 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
         public const int MAX_FAN_COOLERS_STATUS_ITEMS = 32;
         public const int POWER_STATUS_RSVD_SIZE = 16;
         public const int POWER_STATUS_CHANNEL_COUNT = 32;
+        public const int PERFORMANCE_STATUS_TIMER_COUNT = 3;
+        public const int PERFORMANCE_STATUS_UNKNOWN_COUNT = 326;
 
         public static readonly uint GPU_THERMAL_SETTINGS_VER = (uint)
           Marshal.SizeOf(typeof(NvGPUThermalSettings)) | 0x10000;
@@ -356,6 +387,8 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
           Marshal.SizeOf(typeof(NvGpuPowerStatus)) | 0x10000;
         public static readonly uint GPU_VOLTAGE_STATUS_VER = (uint)
           Marshal.SizeOf(typeof(NvGpuVoltageStatus)) | 0x10000;
+        public static readonly uint GPU_PERFORMANCE_STATUS_VER = (uint)
+          Marshal.SizeOf(typeof(PerformanceStatusV1)) | 0x10000;
 
         private delegate IntPtr nvapi_QueryInterfaceDelegate(uint id);
 
@@ -450,6 +483,10 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
         public delegate NvStatus NvAPI_GetVBlankCounterDelegate(
             NvDisplayHandle displayHandle, out uint pCounter);
 
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate NvStatus NvAPI_GPU_PerfGetStatusDelegate(
+           NvPhysicalGpuHandle gpuHandle, ref PerformanceStatusV1 performanceStatus);
+
         private static readonly bool available;
         private static readonly nvapi_QueryInterfaceDelegate nvapi_QueryInterface;
         private static readonly NvAPI_InitializeDelegate NvAPI_Initialize;
@@ -494,6 +531,8 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
             NvAPI_GPU_GetCurrentVoltage;
         public static readonly NvAPI_GetVBlankCounterDelegate
             NvAPI_GetVBlankCounter;
+        public static readonly NvAPI_GPU_PerfGetStatusDelegate
+            NvAPI_GPU_PerfGetStatus;
 
         private NVAPI() { }
 
@@ -591,6 +630,7 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
                 GetDelegate(0xF40238EF, out NvAPI_GPU_PowerMonitorGetStatus);
                 GetDelegate(0x465f9bcf, out NvAPI_GPU_GetCurrentVoltage);
                 GetDelegate(0x67B5DB55, out NvAPI_GetVBlankCounter);
+                GetDelegate(0x3d358a0c, out NvAPI_GPU_PerfGetStatus);
 
                 available = true;
             }
