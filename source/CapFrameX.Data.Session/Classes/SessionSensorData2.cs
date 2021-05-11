@@ -52,6 +52,8 @@ namespace CapFrameX.Data.Session.Classes
         [JsonIgnore]
         public double[] VRamUsageGB { get => Values.FirstOrDefault(c => c.Name.Contains("Dedicated") && !c.Name.Contains("Game") && c.Type == "Data")?.Values.ToArray() ?? Array.Empty<double>(); set => throw new NotImplementedException(); }
         [JsonIgnore]
+        public int[] GPUPowerLimit { get => Values.FirstOrDefault(c => c.Name.Contains("GPU Power Limit") && c.Type == "Factor")?.Values.Select(Convert.ToInt32).ToArray() ?? Array.Empty<int>(); set => throw new NotImplementedException(); }
+        [JsonIgnore]
         public double[] BetweenMeasureTimes { get => BetweenMeasureTime.Values.ToArray(); set => throw new NotImplementedException(); }
 
         public SessionSensorData2(bool initialAdd = true)

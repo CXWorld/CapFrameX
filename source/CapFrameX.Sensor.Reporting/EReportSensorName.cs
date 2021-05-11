@@ -29,6 +29,6 @@ namespace CapFrameX.Sensor.Reporting
 		[Description("GPU VRAM usage (GB)")]
 		VRamUsageGB,
 		[Description("RAM usage (GB)")]
-		RamUsage
+		RamUsage,
 	}
 }

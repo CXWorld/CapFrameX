@@ -33,8 +33,7 @@ using CapFrameX.Statistics.NetStandard.Contracts;
 using CapFrameX.Statistics.PlotBuilder.Contracts;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;
-using System.Security.Policy;
-using LiveCharts.Wpf.Points;
+using CapFrameX.Extensions;
 
 namespace CapFrameX.ViewModel
 {
@@ -389,7 +388,7 @@ namespace CapFrameX.ViewModel
 
         public int BarChartSeparators
         {
-            get 
+            get
             {
                 int steps;
                 double maxValueFracture = _barMaxValue / 3;
@@ -409,7 +408,7 @@ namespace CapFrameX.ViewModel
                 else
                     steps = 200;
 
-                return steps; 
+                return steps;
             }
         }
 
@@ -546,12 +545,17 @@ namespace CapFrameX.ViewModel
                 || !_localRecordDataServer.CurrentSession.Runs.Any())
                 return false;
 
-            return false;
+            if (_localRecordDataServer.CurrentSession.Runs
+                .Any(run => run.SensorData2.GPUPowerLimit == null 
+                || !run.SensorData2.GPUPowerLimit.Any()))
+                return false;
+
+            return true;
         }
 
         private void Setup()
         {
-            void updatePlot()
+            _onUpdateChart.Subscribe(_ =>
             {
                 FpsGraphDataContext.BuildPlotmodel(new VisibleGraphs(GpuLoad, CpuLoad, CpuMaxThreadLoad, GpuPowerLimit));
 
@@ -563,11 +567,8 @@ namespace CapFrameX.ViewModel
                         SetFrametimeChartYAxisSetting(tuple);
                     });
                 });
-            }
 
-            _onUpdateChart.Subscribe(_ =>
-            {
-                updatePlot();
+                // Warum diese Updates der Properties hier?
                 RaisePropertyChanged(nameof(GpuPowerLimit));
                 RaisePropertyChanged(nameof(IsGpuPowerLimitAvailable));
             });
@@ -875,12 +876,9 @@ namespace CapFrameX.ViewModel
         private void UpdateSensorSessionReport()
         {
             SensorReportItems.Clear();
-            var items = SensorReport.GetReportFromSessionSensorData(_session.Runs.Select(run => run.SensorData2).Cast<ISessionSensorData>(),
-                _localRecordDataServer.CurrentTime, _localRecordDataServer.CurrentTime + _localRecordDataServer.WindowLength);
-            foreach (var item in items)
-            {
-                SensorReportItems.Add(item);
-            };
+            SensorReport.GetReportFromSessionSensorData(_session.Runs.Select(run => run.SensorData2).Cast<ISessionSensorData>(),
+               _localRecordDataServer.CurrentTime, _localRecordDataServer.CurrentTime + _localRecordDataServer.WindowLength)
+               .ForEach(SensorReportItems.Add);
         }
 
         private void UpdateMainCharts()

@@ -161,7 +161,7 @@ namespace CapFrameX.Statistics.PlotBuilder
 				LineStyle = LineStyle.None,
 				MarkerType = MarkerType.Square,
 				MarkerSize = 3,
-				MarkerFill = OxyColor.FromArgb(100, 228, 32, 141),
+				MarkerFill = OxyColor.FromArgb(255, 228, 32, 141),
 				YAxisKey = EPlotAxis.YAXISPERCENTAGE.GetDescription()
 			};
 

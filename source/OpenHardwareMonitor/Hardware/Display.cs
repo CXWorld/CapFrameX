@@ -105,7 +105,7 @@ namespace OpenHardwareMonitor.Hardware
         public int GetDisplayRefreshRate()
         {
             // Get a monitor handle ("HMONITOR") for the window. 
-            //    If the window is straddling more than one monitor, Windows will pick the "best" one.
+            // If the window is straddling more than one monitor, Windows will pick the "best" one.
             IntPtr hmonitor = MonitorFromWindow(_hwnd, MONITOR_DEFAULTTONEAREST);
             if (hmonitor == IntPtr.Zero)
             {

@@ -182,7 +182,16 @@ namespace CapFrameX.Statistics.NetStandard
         public static IList<Point> GetGpuPowerLimitPointTimeWindow(this ISession session)
         {
             var list = new List<Point>();
+            var times = session.Runs.SelectMany(r => r.SensorData2.MeasureTime.Values).ToArray();
+            var limits = session.Runs.SelectMany(r => r.SensorData2.GPUPowerLimit).Select(limit => limit * 100).ToArray();
 
+            if (limits.Any())
+            {
+                for (int i = 0; i < times.Count(); i++)
+                {
+                    list.Add(new Point(times[i], limits[i]));
+                }
+            }
             return list;
         }
 

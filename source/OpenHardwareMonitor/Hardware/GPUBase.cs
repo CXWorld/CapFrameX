@@ -8,20 +8,20 @@ using System.Reactive.Linq;
 
 namespace OpenHardwareMonitor.Hardware
 {
-    internal class RefreshRateBuffer
+    internal class RefreshRateBuffer<T>
     {
-        private int _size;
-        private List<float> _buffer;
+        private readonly int _size;
+        private readonly List<T> _buffer;
 
-        public IEnumerable<float> RefreshRates => _buffer;
+        public IEnumerable<T> RefreshRates => _buffer;
 
         public RefreshRateBuffer(int size)
         {
             _size = size;
-            _buffer = new List<float>(size + 1);
+            _buffer = new List<T>(size + 1);
         }
 
-        public void Add(float sample)
+        public void Add(T sample)
         {
             _buffer.Add(sample);
             if (_buffer.Count > _size)
@@ -35,7 +35,6 @@ namespace OpenHardwareMonitor.Hardware
             _buffer?.Clear();
         }
     }
-
 
     internal abstract class GPUBase : Hardware
     {
@@ -56,11 +55,11 @@ namespace OpenHardwareMonitor.Hardware
 
         protected Display display;
         protected float refreshRateCurrentWindowHandle;
-        protected RefreshRateBuffer refreshRateBuffer;
+        protected RefreshRateBuffer<float> refreshRateBuffer;
 
         public GPUBase(string name, Identifier identifier, ISettings settings, IRTSSService rTSSService) : base(name, identifier, settings)
         {
-            refreshRateBuffer = new RefreshRateBuffer(2);
+            refreshRateBuffer = new RefreshRateBuffer<float>(2);
 
             try
             {
@@ -133,7 +132,7 @@ namespace OpenHardwareMonitor.Hardware
                                 {
                                     var pids = instances.Where(instance => instance.Contains(idString));
 
-                                    if (pids != null)
+                                    if (pids != null && pids.Any())
                                     {
                                         var pid = GetMaximumPid(pids);
                                         dedicatedVramUsageProcessPerformCounter = new PerformanceCounter("GPU Process Memory", "Dedicated Usage", pid);

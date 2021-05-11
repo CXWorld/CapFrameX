@@ -3,7 +3,6 @@ using CapFrameX.Data.Session.Contracts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace CapFrameX.Data.Session.Converters
 {
@@ -51,6 +50,7 @@ namespace CapFrameX.Data.Session.Converters
             InsertValues("RamUsage", "Used Memory", "Data", sessionRun.SensorData.RamUsage.Cast<object>());
             InsertValues("VRamUsage", "GPU Memory Dedicated", "SmallData", sessionRun.SensorData.VRamUsage.Cast<object>());
             InsertValues("VRamUsageGB", "GPU Memory Dedicated", "Data", sessionRun.SensorData.VRamUsageGB.Cast<object>());
+            InsertValues("GPUPowerLimit", "GPU Power Limit", "Factor", sessionRun.SensorData.GPUPowerLimit.Cast<object>());
         }
     }
 }

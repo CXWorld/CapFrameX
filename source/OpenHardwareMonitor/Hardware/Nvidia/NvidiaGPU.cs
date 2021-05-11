@@ -434,32 +434,31 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
                 memoryLoad.Value = null;
             }
 
-            if (power != null)
+            if (sensorConfig.GetSensorEvaluate(power.IdentifierString))
             {
-                if (sensorConfig.GetSensorEvaluate(power.IdentifierString))
+                var channels = new NvGpuPowerMonitorPowerChannelStatus[NVAPI.POWER_STATUS_CHANNEL_COUNT];
+                for (int i = 0; i < channels.Length; i++)
                 {
-                    var channels = new NvGpuPowerMonitorPowerChannelStatus[NVAPI.POWER_STATUS_CHANNEL_COUNT];
-                    for (int i = 0; i < channels.Length; i++)
-                    {
-                        channels[i].Rsvd = new byte[NVAPI.POWER_STATUS_RSVD_SIZE];
-                    }
-
-                    var powerStatus = new NvGpuPowerStatus
-                    {
-                        Version = NVAPI.GPU_POWER_MONITOR_STATUS_VER,
-                        Rsvd = new byte[NVAPI.POWER_STATUS_RSVD_SIZE],
-                        Channels = channels
-                    };
-
-                    if (NVAPI.NvAPI_GPU_PowerMonitorGetStatus != null &&
-                       NVAPI.NvAPI_GPU_PowerMonitorGetStatus(handle, ref powerStatus) == NvStatus.OK)
-                    {
-                        power.Value = powerStatus.TotalGpuPowermW * 1E-03f;
-                        ActivateSensor(power);
-                    }
+                    channels[i].Rsvd = new byte[NVAPI.POWER_STATUS_RSVD_SIZE];
                 }
-                else
-                    power.Value = null;
+
+                var powerStatus = new NvGpuPowerStatus
+                {
+                    Version = NVAPI.GPU_POWER_MONITOR_STATUS_VER,
+                    Rsvd = new byte[NVAPI.POWER_STATUS_RSVD_SIZE],
+                    Channels = channels
+                };
+
+                if (NVAPI.NvAPI_GPU_PowerMonitorGetStatus != null &&
+                   NVAPI.NvAPI_GPU_PowerMonitorGetStatus(handle, ref powerStatus) == NvStatus.OK)
+                {
+                    power.Value = powerStatus.TotalGpuPowermW * 1E-03f;
+                    ActivateSensor(power);
+                }
+            }
+            else
+            {
+                power.Value = null;
             }
 
             // update VRAM usage
@@ -612,6 +611,12 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
                         == PerformanceLimit.VoltageLimit) ? 1 : 0;
                     ActivateSensor(voltageLimit);
                 }
+            }
+            else
+            {
+                powerLimit.Value = null;
+                temperatureLimit.Value = null;
+                voltageLimit.Value = null;
             }
         }
 
