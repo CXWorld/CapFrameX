@@ -16,6 +16,7 @@ namespace CapFrameX.Sensor.Reporting
         {
             ["Power"] = 1,
             ["Data"] = 2,
+            ["Factor"] = 2,
             ["Voltage"] = 3,
             ["Time"] = 3
         };
