@@ -40,7 +40,8 @@ namespace OpenHardwareMonitor.Hardware.CPU
             CometLake,
             Tremont,
             TigerLake,
-            RocketLake
+            RocketLake,
+            AlderLake
         }
 
         private readonly Sensor[] coreTemperatures;
@@ -251,6 +252,11 @@ namespace OpenHardwareMonitor.Hardware.CPU
                                 microarchitecture = Microarchitecture.RocketLake;
                                 tjMax = GetTjMaxFromMSR();
                                 break;
+                            case 0x97: // Alder Lake (10nm)
+                            case 0x9A:
+                                microarchitecture = Microarchitecture.AlderLake;
+                                tjMax = GetTjMaxFromMSR();
+                                break;
                             default:
                                 microarchitecture = Microarchitecture.Unknown;
                                 tjMax = Floats(100);
@@ -315,6 +321,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
                 case Microarchitecture.Tremont:
                 case Microarchitecture.TigerLake:
                 case Microarchitecture.RocketLake:
+                case Microarchitecture.AlderLake:
                     {
                         if (Ring0.Rdmsr(MSR_PLATFORM_INFO, out uint eax, out _))
                         {
@@ -337,12 +344,12 @@ namespace OpenHardwareMonitor.Hardware.CPU
                 {
                     coreTemperatures[i] = new Sensor(CoreString(i), i,
                       SensorType.Temperature, this, new[] {
-              new ParameterDescription(
-                "TjMax [°C]", "TjMax temperature of the core sensor.\n" +
-                "Temperature = TjMax - TSlope * Value.", tjMax[i]),
-              new ParameterDescription("TSlope [°C]",
-                "Temperature slope of the digital thermal sensor.\n" +
-                "Temperature = TjMax - TSlope * Value.", 1)}, settings);
+                      new ParameterDescription(
+                        "TjMax [°C]", "TjMax temperature of the core sensor.\n" +
+                        "Temperature = TjMax - TSlope * Value.", tjMax[i]),
+                      new ParameterDescription("TSlope [°C]",
+                        "Temperature slope of the digital thermal sensor.\n" +
+                        "Temperature = TjMax - TSlope * Value.", 1)}, settings);
                     ActivateSensor(coreTemperatures[i]);
                 }
             }
@@ -395,13 +402,15 @@ namespace OpenHardwareMonitor.Hardware.CPU
                 microarchitecture == Microarchitecture.CometLake ||
                 microarchitecture == Microarchitecture.Tremont ||
                 microarchitecture == Microarchitecture.TigerLake ||
-                microarchitecture == Microarchitecture.RocketLake)
+                microarchitecture == Microarchitecture.RocketLake ||
+                microarchitecture == Microarchitecture.AlderLake)
             {
                 powerSensors = new Sensor[energyStatusMSRs.Length];
                 lastEnergyTime = new DateTime[energyStatusMSRs.Length];
                 lastEnergyConsumed = new uint[energyStatusMSRs.Length];
 
                 if (Ring0.Rdmsr(MSR_RAPL_POWER_UNIT, out uint eax, out uint edx))
+                {
                     switch (microarchitecture)
                     {
                         case Microarchitecture.Silvermont:
@@ -412,6 +421,8 @@ namespace OpenHardwareMonitor.Hardware.CPU
                             energyUnitMultiplier = 1.0f / (1 << (int)((eax >> 8) & 0x1F));
                             break;
                     }
+                }
+
                 if (energyUnitMultiplier != 0)
                 {
                     for (int i = 0; i < energyStatusMSRs.Length; i++)
@@ -542,6 +553,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
                                 case Microarchitecture.Tremont:
                                 case Microarchitecture.TigerLake:
                                 case Microarchitecture.RocketLake:
+                                case Microarchitecture.AlderLake:
                                     {
                                         uint multiplier = (eax >> 8) & 0xff;
                                         coreClocks[i].Value = (float)(multiplier * newBusClock);
