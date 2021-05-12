@@ -39,20 +39,29 @@
 		</TextBlock>
         <StackPanel HorizontalAlignment="Left" Grid.Column="0" Margin="10 0 0 0" Orientation="Horizontal">
             <TextBlock Margin="0 0 5 0" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}" >Capture service:</TextBlock>
-            <TextBlock Width="55" VerticalAlignment="Center" Text="{Binding IsCaptureModeActive, Converter={StaticResource ModeDescriptionConverter}, ConverterParameter=Capturing|Ready}" 
+            <TextBlock Width="Auto" VerticalAlignment="Center" Text="{Binding IsCaptureModeActive, Converter={StaticResource ModeDescriptionConverter}, ConverterParameter=Capturing|Ready}" 
                        FontWeight="Bold" Foreground="{Binding IsCaptureModeActive, Converter={StaticResource ModeColorConverterReverse}}"></TextBlock>
 
             <TextBlock Margin="20 0 5 0" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}" >Overlay:</TextBlock>
-            <TextBlock Width="20" VerticalAlignment="Center" Text="{Binding IsOverlayActive, Converter={StaticResource ModeDescriptionConverter}, ConverterParameter=On|Off}" 
+            <TextBlock Width="Auto" VerticalAlignment="Center" Text="{Binding IsOverlayActive, Converter={StaticResource ModeDescriptionConverter}, ConverterParameter=On|Off}" 
                        FontWeight="Bold" Foreground="{Binding IsOverlayActive, Converter={StaticResource ModeColorConverter}}"></TextBlock>
 
             <TextBlock Margin="20 0 5 0" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}" >Sensor logging:</TextBlock>
-            <TextBlock Width="20" VerticalAlignment="Center" Text="{Binding IsLoggingActive, Converter={StaticResource ModeDescriptionConverter}, ConverterParameter=On|Off}" 
+            <TextBlock Width="Auto" VerticalAlignment="Center" Text="{Binding IsLoggingActive, Converter={StaticResource ModeDescriptionConverter}, ConverterParameter=On|Off}" 
                        FontWeight="Bold" Foreground="{Binding IsLoggingActive, Converter={StaticResource ModeColorConverter}}"></TextBlock>
 
             <TextBlock Margin="20 0 5 0" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}" >Login status:</TextBlock>
-            <TextBlock Width="75" VerticalAlignment="Center" Text="{Binding IsLoggedIn, Converter={StaticResource ModeDescriptionConverter}, ConverterParameter= Logged in|Not logged in}" 
+            <TextBlock Width="Auto" VerticalAlignment="Center" Text="{Binding IsLoggedIn, Converter={StaticResource ModeDescriptionConverter}, ConverterParameter= Logged in|Not logged in}" 
                        FontWeight="Bold" Foreground="{Binding IsLoggedIn, Converter={StaticResource ModeColorConverter}}"></TextBlock>
+
+            <TextBlock Margin="20 0 5 0" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}" >Above 4G Decoding:</TextBlock>
+            <TextBlock Width="Auto" VerticalAlignment="Center" Text="{Binding IsPciAbove4GDecodingEnabled, Converter={StaticResource ModeDescriptionConverter}, ConverterParameter= On|Off}" 
+                       FontWeight="Bold" Foreground="{Binding IsPciAbove4GDecodingEnabled, Converter={StaticResource ModeColorConverter}}"></TextBlock>
+            <TextBlock Margin="20 0 5 0" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}" >Large Memory:</TextBlock>
+            <TextBlock Width="Auto" VerticalAlignment="Center" Text="{Binding IsPciLargeMemoryEnabled, Converter={StaticResource ModeDescriptionConverter}, ConverterParameter= On|Off}" 
+                       FontWeight="Bold" Foreground="{Binding IsPciLargeMemoryEnabled, Converter={StaticResource ModeColorConverter}}"></TextBlock>
+
+
         </StackPanel>
         <StackPanel HorizontalAlignment="Right" Grid.Column="1" Margin="0 0 10 0" Orientation="Horizontal">
             <materialDesign:PackIcon Foreground="{DynamicResource MaterialDesignBody}"  Kind="Information" VerticalAlignment="Center" ToolTip="{Binding InfoToolTipText, UpdateSourceTrigger=Default}"/>

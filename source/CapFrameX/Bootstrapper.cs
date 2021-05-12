@@ -31,6 +31,7 @@ using CapFrameX.Statistics.NetStandard.Contracts;
 using CapFrameX.Contracts.RTSS;
 using CapFrameX.RTSSIntegration;
 using OpenHardwareMonitor.Hardware;
+using CapFrameX.SetupAPI.NetStandard;
 
 namespace CapFrameX
 {
@@ -111,6 +112,7 @@ namespace CapFrameX
 				window.Show();
 			});
 			Container.Register<CaptureManager>(Reuse.Singleton);
+			Container.Register<ISetupAPI, SetupAPIWrapper>(Reuse.Singleton);
 		}
 
 		/// <summary>

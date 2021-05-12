@@ -6,6 +6,7 @@ using CapFrameX.Contracts.RTSS;
 using CapFrameX.Contracts.UpdateCheck;
 using CapFrameX.Data;
 using CapFrameX.EventAggregation.Messages;
+using CapFrameX.SetupAPI.NetStandard;
 using Microsoft.Extensions.Logging;
 using Prism.Events;
 using Prism.Mvvm;
@@ -28,6 +29,7 @@ namespace CapFrameX.ViewModel
         private readonly IOverlayService _overlayService;
         private readonly IUpdateCheck _updateCheck;
         private readonly IAppVersionProvider _appVersionProvider;
+        private readonly ISetupAPI _setupAPI;
         private static ILogger<StateViewModel> _logger;
 
         private bool _isCaptureModeActive;
@@ -99,9 +101,14 @@ namespace CapFrameX.ViewModel
         }
 
         public bool IsUpdateAvailable { get; private set; }
+
         public bool IsLoggedIn { get; private set; }
 
         public string InfoToolTipText => GetInfoText();
+
+        public bool IsPciAbove4GDecodingEnabled => _setupAPI.GetPciAbove4GDecodingStatus();
+
+        public bool IsPciLargeMemoryEnabled => _setupAPI.GetPciLargeMemoryStatus();
 
         public StateViewModel(IRecordDirectoryObserver recordObserver,
                               IEventAggregator eventAggregator,
@@ -113,6 +120,7 @@ namespace CapFrameX.ViewModel
                               IWebVersionProvider webVersionProvider,
                               LoginManager loginManager,
                               IRTSSService rTSSService,
+                              ISetupAPI setupAPI,
                               ILogger<StateViewModel> logger)
         {
             Stopwatch stopwatch = new Stopwatch();
@@ -125,6 +133,7 @@ namespace CapFrameX.ViewModel
             _overlayService = overlayService;
             _updateCheck = updateCheck;
             _appVersionProvider = appVersionProvider;
+            _setupAPI = setupAPI;
             _logger = logger;
 
             IsCaptureModeActive = false;

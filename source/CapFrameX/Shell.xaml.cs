@@ -1,14 +1,8 @@
-﻿using CapFrameX.Configuration;
-using CapFrameX.Contracts.MVVM;
+﻿using CapFrameX.Contracts.MVVM;
 using CapFrameX.MVVM;
-using GongSolutions.Wpf.DragDrop.Utilities;
 using System;
-using System.Drawing;
-using System.IO;
 using System.Windows;
 using System.Windows.Interop;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
 
 namespace CapFrameX
 {
