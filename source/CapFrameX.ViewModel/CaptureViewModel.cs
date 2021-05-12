@@ -9,6 +9,7 @@ using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Hotkey;
 using CapFrameX.PresentMonInterface;
 using CapFrameX.Statistics.NetStandard;
+using CapFrameX.Statistics.NetStandard.Contracts;
 using Microsoft.Extensions.Logging;
 using OxyPlot;
 using OxyPlot.Axes;

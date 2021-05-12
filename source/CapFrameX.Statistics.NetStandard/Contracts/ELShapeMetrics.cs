@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 
-namespace CapFrameX.Statistics.NetStandard
+namespace CapFrameX.Statistics.NetStandard.Contracts
 {
 	public enum ELShapeMetrics
 	{

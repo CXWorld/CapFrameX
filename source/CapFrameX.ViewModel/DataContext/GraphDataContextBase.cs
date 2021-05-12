@@ -3,6 +3,7 @@ using CapFrameX.Data;
 using CapFrameX.Data.Session.Contracts;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Statistics.NetStandard;
+using CapFrameX.Statistics.NetStandard.Contracts;
 using CapFrameX.Statistics.PlotBuilder.Contracts;
 using OxyPlot;
 using Prism.Events;

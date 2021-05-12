@@ -35,7 +35,7 @@ namespace CapFrameX.Webservice.Host.Controllers
 				});
 				return Ok(result);
 			}
-			catch (Exception e)
+			catch
 			{
 				return BadRequest();
 			}

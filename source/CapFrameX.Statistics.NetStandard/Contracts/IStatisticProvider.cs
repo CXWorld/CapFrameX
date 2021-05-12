@@ -1,7 +1,6 @@
-﻿using CapFrameX.Statistics.NetStandard.Contracts;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
-namespace CapFrameX.Statistics.NetStandard
+namespace CapFrameX.Statistics.NetStandard.Contracts
 {
     public interface IStatisticProvider
     {

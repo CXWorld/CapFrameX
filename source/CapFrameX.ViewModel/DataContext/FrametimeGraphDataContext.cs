@@ -2,6 +2,7 @@
 using CapFrameX.Data;
 using CapFrameX.Extensions.NetStandard;
 using CapFrameX.Statistics.NetStandard;
+using CapFrameX.Statistics.NetStandard.Contracts;
 using CapFrameX.Statistics.PlotBuilder;
 using CapFrameX.Statistics.PlotBuilder.Contracts;
 using OxyPlot;

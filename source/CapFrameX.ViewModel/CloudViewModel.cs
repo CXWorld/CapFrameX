@@ -34,6 +34,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using CapFrameX.Extensions.NetStandard;
+using CapFrameX.Statistics.NetStandard.Contracts;
 
 namespace CapFrameX.ViewModel
 {

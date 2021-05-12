@@ -32,6 +32,7 @@ using System.IO;
 using System.Text.RegularExpressions;
 using SaveFileDialog = System.Windows.Forms.SaveFileDialog;
 using DialogResult = System.Windows.Forms.DialogResult;
+using CapFrameX.Statistics.NetStandard.Contracts;
 
 namespace CapFrameX.ViewModel
 {

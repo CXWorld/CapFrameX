@@ -14,6 +14,7 @@ using CapFrameX.Statistics.PlotBuilder;
 using CapFrameX.Statistics.PlotBuilder.Contracts;
 using Prism.Events;
 using CapFrameX.Extensions.NetStandard;
+using CapFrameX.Statistics.NetStandard.Contracts;
 
 namespace CapFrameX.ViewModel.DataContext
 {
