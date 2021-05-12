@@ -22,7 +22,6 @@ namespace CapFrameX.ViewModel
 {
     public class StateViewModel : BindableBase
     {
-        private readonly IRecordDirectoryObserver _recordObserver;
         private readonly IEventAggregator _eventAggregator;
         private readonly IAppConfiguration _appConfiguration;
         private readonly ICaptureService _captureService;
@@ -110,14 +109,12 @@ namespace CapFrameX.ViewModel
 
         public bool IsPciLargeMemoryEnabled => _setupAPI.GetPciLargeMemoryStatus();
 
-        public StateViewModel(IRecordDirectoryObserver recordObserver,
-                              IEventAggregator eventAggregator,
+        public StateViewModel(IEventAggregator eventAggregator,
                               IAppConfiguration appConfiguration,
                               ICaptureService captureService,
                               IOverlayService overlayService,
                               IUpdateCheck updateCheck,
                               IAppVersionProvider appVersionProvider,
-                              IWebVersionProvider webVersionProvider,
                               LoginManager loginManager,
                               IRTSSService rTSSService,
                               ISetupAPI setupAPI,
@@ -126,7 +123,6 @@ namespace CapFrameX.ViewModel
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
 
-            _recordObserver = recordObserver;
             _eventAggregator = eventAggregator;
             _appConfiguration = appConfiguration;
             _captureService = captureService;
