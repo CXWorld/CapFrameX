@@ -2,8 +2,8 @@
 {
     public interface ISetupAPI
     {
-        bool PciAbove4GDecodingStatus { get; }
+        EPciDeviceInfoStatus PciAbove4GDecodingStatus { get; }
 
-        bool PciLargeMemoryStatus { get; }
+        EPciDeviceInfoStatus PciLargeMemoryStatus { get; }
     }
 }

@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
+using Microsoft.Extensions.Logging;
 using Mixaill.HwInfo.SetupApi;
 using Mixaill.HwInfo.SetupApi.Defines;
 
@@ -9,15 +11,27 @@ namespace CapFrameX.SetupAPI.NetStandard
     /// </summary>
     public class SetupAPIWrapper : ISetupAPI
     {
-        public bool PciAbove4GDecodingStatus { get; } = false;
-        public bool PciLargeMemoryStatus { get; } = false;
+        public EPciDeviceInfoStatus PciAbove4GDecodingStatus { get; } = EPciDeviceInfoStatus.Invalid;
+        public EPciDeviceInfoStatus PciLargeMemoryStatus { get; } = EPciDeviceInfoStatus.Invalid;
 
-        public SetupAPIWrapper()
+        public SetupAPIWrapper(ILogger<SetupAPIWrapper> logger)
         {
-            using (var displayDevices = new DeviceInfoSet(DeviceClassGuid.Display))
+            try
             {
-                PciAbove4GDecodingStatus = displayDevices.Devices.Any(x => (x as DeviceInfoPci)?.Pci_Above4GDecoding == true);
-                PciLargeMemoryStatus = displayDevices.Devices.Any(x => (x as DeviceInfoPci)?.Pci_LargeMemory == true);
+                using (var displayDevices = new DeviceInfoSet(DeviceClassGuid.Display))
+                {
+                    throw new Exception("Test exception");
+
+                    var decodingStatus = displayDevices.Devices.Any(x => (x as DeviceInfoPci)?.Pci_Above4GDecoding == true);
+                    var largeMemoryStatus = displayDevices.Devices.Any(x => (x as DeviceInfoPci)?.Pci_LargeMemory == true);
+
+                    PciAbove4GDecodingStatus = decodingStatus ? EPciDeviceInfoStatus.Enabled : EPciDeviceInfoStatus.Disabled;
+                    PciLargeMemoryStatus = largeMemoryStatus ? EPciDeviceInfoStatus.Enabled : EPciDeviceInfoStatus.Disabled;                   
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error while getting PCI device infos.");
             }
         }
     }
