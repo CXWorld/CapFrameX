@@ -7,7 +7,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Logging" Version="2.0.0" />
-    <PackageReference Include="Mixaill.HwInfo.SetupApi" Version="0.3.3" />
+    <PackageReference Include="Mixaill.HwInfo.SetupApi" Version="0.3.4" />
   </ItemGroup>
 
 </Project>
