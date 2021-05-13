@@ -20,8 +20,6 @@ namespace CapFrameX.SetupAPI.NetStandard
             {
                 using (var displayDevices = new DeviceInfoSet(DeviceClassGuid.Display))
                 {
-                    throw new Exception("Test exception");
-
                     var decodingStatus = displayDevices.Devices.Any(x => (x as DeviceInfoPci)?.Pci_Above4GDecoding == true);
                     var largeMemoryStatus = displayDevices.Devices.Any(x => (x as DeviceInfoPci)?.Pci_LargeMemory == true);
 
