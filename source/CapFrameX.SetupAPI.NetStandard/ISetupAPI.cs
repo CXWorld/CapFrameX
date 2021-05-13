@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace CapFrameX.SetupAPI.NetStandard
+﻿namespace CapFrameX.SetupAPI.NetStandard
 {
     public interface ISetupAPI
     {
-       bool GetPciAbove4GDecodingStatus();
+        bool PciAbove4GDecodingStatus { get; }
 
-        bool GetPciLargeMemoryStatus();
+        bool PciLargeMemoryStatus { get; }
     }
 }

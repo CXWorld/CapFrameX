@@ -105,9 +105,9 @@ namespace CapFrameX.ViewModel
 
         public string InfoToolTipText => GetInfoText();
 
-        public bool IsPciAbove4GDecodingEnabled => _setupAPI.GetPciAbove4GDecodingStatus();
+        public bool IsPciAbove4GDecodingEnabled => _setupAPI.PciAbove4GDecodingStatus;
 
-        public bool IsPciLargeMemoryEnabled => _setupAPI.GetPciLargeMemoryStatus();
+        public bool IsPciLargeMemoryEnabled => _setupAPI.PciLargeMemoryStatus;
 
         public StateViewModel(IEventAggregator eventAggregator,
                               IAppConfiguration appConfiguration,
