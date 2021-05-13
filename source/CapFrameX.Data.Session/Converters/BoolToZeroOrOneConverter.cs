@@ -18,7 +18,7 @@ namespace CapFrameX.Data.Session.Converters
             {
                 return valueAsBool ? 1 : 0;
             }
-            return (int)reader.Value;
+            return Convert.ToInt32(reader.Value);
         }
 
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
