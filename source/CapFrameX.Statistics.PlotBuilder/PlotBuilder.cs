@@ -37,8 +37,8 @@ namespace CapFrameX.Statistics.PlotBuilder
 					MinorTickSize = 0,
 					MajorTickSize = 0,
 					Minimum = 0,
-					Maximum = 100,
-					AbsoluteMaximum = 100,
+					Maximum = 101,
+					AbsoluteMaximum = 101,
 					AbsoluteMinimum = 0,
 					AxisTitleDistance = 10
 				}
