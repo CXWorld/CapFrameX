@@ -1,4 +1,5 @@
 ﻿using CapFrameX.Data.Session.Contracts;
+using CapFrameX.Data.Session.Converters;
 using Newtonsoft.Json;
 
 namespace CapFrameX.Data.Session.Classes
@@ -31,7 +32,7 @@ namespace CapFrameX.Data.Session.Classes
 		public int[] VRamUsage { get; set; } = new int[] { };
 		[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
 		public double[] VRamUsageGB { get; set; } = new double[] { };
-		[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+		[JsonProperty(NullValueHandling = NullValueHandling.Ignore, ItemConverterType = typeof(BoolToZeroOrOneConverter))]
 		public int[] GPUPowerLimit { get; set; } = new int[] { };
 		[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
 		public double[] BetweenMeasureTimes { get; set; } = new double[] { };
