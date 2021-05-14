@@ -1,21 +1,108 @@
 ﻿using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.Sensor;
+using Microsoft.Extensions.Logging;
+using Mixaill.HwInfo.SetupApi;
+using Mixaill.HwInfo.SetupApi.Defines;
+using Mixaill.HwInfo.Vulkan;
+using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Management;
 
-namespace CapFrameX.PresentMonInterface
+namespace CapFrameX.SystemInfo.NetStandard
 {
     public class SystemInfo : ISystemInfo
     {
         private static readonly long ONE_GIB = 1073741824;
 
         private readonly ISensorService _sensorService;
+        private readonly ILogger<SystemInfo> _logger;
 
-        public SystemInfo(ISensorService sensorService)
+        public ESystemInfoTertiaryStatus ResizableBarHardwareStatus { get; private set; } = ESystemInfoTertiaryStatus.Error;
+
+        public ESystemInfoTertiaryStatus ResizableBarSoftwareStatus { get; private set; } = ESystemInfoTertiaryStatus.Error;
+
+        public ESystemInfoTertiaryStatus GameModeStatus { get; private set; } = ESystemInfoTertiaryStatus.Error;
+
+        public ESystemInfoTertiaryStatus HardwareAcceleratedGPUSchedulingStatus { get; private set; } = ESystemInfoTertiaryStatus.Error;
+
+        public SystemInfo(ISensorService sensorService,
+                          ILogger<SystemInfo> logger)
         {
             _sensorService = sensorService;
+            _logger = logger;
+
+            SetSystemInfosStatus();
+        }
+
+        private void SetSystemInfosStatus()
+        {
+            try
+            {
+                using (var displayDevices = new DeviceInfoSet(DeviceClassGuid.Display))
+                {
+                    var largeMemoryStatus = displayDevices.Devices.Any(x => (x as DeviceInfoPci)?.Pci_LargeMemory == true);
+                    ResizableBarHardwareStatus = largeMemoryStatus
+                        ? ESystemInfoTertiaryStatus.Enabled : ESystemInfoTertiaryStatus.Disabled;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error while getting Resizable Bar hardware status.");
+            }
+
+            try
+            {
+                using (var vk = new Vulkan())
+                {
+                    var devices = vk.GetPhysicalDevices();
+                    ResizableBarSoftwareStatus = devices.Any(dev => dev.DeviceResizableBarInUse)
+                        ? ESystemInfoTertiaryStatus.Enabled : ESystemInfoTertiaryStatus.Disabled;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error while getting Resizable Bar software status.");
+            }
+
+            try
+            {
+                const string gameBar = "SOFTWARE\\Microsoft\\GameBar";
+                using (RegistryKey gameBarKey = Registry.CurrentUser.OpenSubKey(gameBar, true))
+                {
+                    var val = gameBarKey.GetValue("AutoGameModeEnabled");
+                    if (val != null)
+                    {
+                        bool valConverted = Convert.ToBoolean(val);
+                        GameModeStatus = valConverted ? ESystemInfoTertiaryStatus.Enabled : ESystemInfoTertiaryStatus.Disabled;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error while getting Windows Game Mode status.");
+            }
+
+            try
+            {
+                const string graphcisDriver = "SYSTEM\\CurrentControlSet\\Control\\GraphicsDrivers";
+                using (RegistryKey graphcisDriverKey = Registry.LocalMachine.OpenSubKey(graphcisDriver, true))
+                {
+                    var val = graphcisDriverKey.GetValue("HwSchMode");
+                    if (val != null)
+                    {
+                        int valConverted = Convert.ToInt32(val);
+                        HardwareAcceleratedGPUSchedulingStatus = valConverted == 2
+                            ? ESystemInfoTertiaryStatus.Enabled :
+                            (valConverted == 1 ? ESystemInfoTertiaryStatus.Disabled : ESystemInfoTertiaryStatus.Error);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error while getting Hardware-accelereated GPU scheduling status.");
+            }
         }
 
         public string GetProcessorName()
@@ -24,7 +111,7 @@ namespace CapFrameX.PresentMonInterface
         public string GetGraphicCardName()
         {
             var name = _sensorService.GetGpuName();
-            return name == "Unknown" ? 
+            return name == "Unknown" ?
                 GetGraphicsCardNameFromWMI() : name;
         }
 

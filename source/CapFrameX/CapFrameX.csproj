@@ -252,13 +252,13 @@
       <Project>{B1B0E5F1-942A-476C-BEA4-8B9FFBCA04C6}</Project>
       <Name>CapFrameX.Sensor</Name>
     </ProjectReference>
-    <ProjectReference Include="..\CapFrameX.SetupAPI.NetStandard\CapFrameX.SetupAPI.NetStandard.csproj">
-      <Project>{81CF9D01-7E1B-4AFB-86AE-DFFDC71801BB}</Project>
-      <Name>CapFrameX.SetupAPI.NetStandard</Name>
-    </ProjectReference>
     <ProjectReference Include="..\CapFrameX.Statistics.NetStandard\CapFrameX.Statistics.NetStandard.csproj">
       <Project>{7D35C9C8-6E9A-4ABB-9042-930BE5E26DC6}</Project>
       <Name>CapFrameX.Statistics.NetStandard</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CapFrameX.SystemInfo.NetStandard\CapFrameX.SystemInfo.NetStandard.csproj">
+      <Project>{6CDB7AB8-0A71-4950-8EC3-A5D8F43CB074}</Project>
+      <Name>CapFrameX.SystemInfo.NetStandard</Name>
     </ProjectReference>
     <ProjectReference Include="..\CapFrameX.Updater\CapFrameX.Updater.csproj">
       <Project>{5D12AA37-CC30-4476-94AD-11C15DC65518}</Project>

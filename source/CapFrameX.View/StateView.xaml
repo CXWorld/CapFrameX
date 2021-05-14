@@ -28,7 +28,7 @@
     </UserControl.Resources>
     <Grid Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="2*"></ColumnDefinition>
+            <ColumnDefinition Width="3*"></ColumnDefinition>
             <ColumnDefinition Width="1*"></ColumnDefinition>
         </Grid.ColumnDefinitions>
         <TextBlock Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Center" VerticalAlignment="Center"
@@ -54,13 +54,25 @@
             <TextBlock Width="Auto" VerticalAlignment="Center" Text="{Binding IsLoggedIn, Converter={StaticResource ModeDescriptionConverter}, ConverterParameter= Logged in|Not logged in}" 
                        FontWeight="Bold" Foreground="{Binding IsLoggedIn, Converter={StaticResource ModeColorConverter}}"></TextBlock>
 
-            <TextBlock Margin="20 0 5 0" Visibility="{Binding PciDeviceInfoIsValid, Converter={StaticResource FalseToCollapsedConverter}}" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}" >Above 4G Decoding:</TextBlock>
-            <TextBlock Width="Auto" Visibility="{Binding PciDeviceInfoIsValid, Converter={StaticResource FalseToCollapsedConverter}}" VerticalAlignment="Center" Text="{Binding IsPciAbove4GDecodingEnabled, Converter={StaticResource ModeDescriptionConverter}, ConverterParameter= On|Off}" 
-                       FontWeight="Bold" Foreground="{Binding IsPciAbove4GDecodingEnabled, Converter={StaticResource ModeColorConverter}}"></TextBlock>
+            <GridSplitter Margin="15 5 0 5" IsEnabled="False" Width="2" Visibility="{Binding IsResizableBarAnyStatusValid, Converter={StaticResource FalseToCollapsedConverter}}"/>
 
-            <TextBlock Margin="20 0 5 0" Visibility="{Binding PciDeviceInfoIsValid, Converter={StaticResource FalseToCollapsedConverter}}" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}" >Large Memory:</TextBlock>
-            <TextBlock Width="Auto" Visibility="{Binding PciDeviceInfoIsValid, Converter={StaticResource FalseToCollapsedConverter}}" VerticalAlignment="Center" Text="{Binding IsPciLargeMemoryEnabled, Converter={StaticResource ModeDescriptionConverter}, ConverterParameter= On|Off}" 
-                       FontWeight="Bold" Foreground="{Binding IsPciLargeMemoryEnabled, Converter={StaticResource ModeColorConverter}}"></TextBlock>
+            <TextBlock Margin="15 0 5 0" Visibility="{Binding IsResizableBarHardwareStatusValid, Converter={StaticResource FalseToCollapsedConverter}}" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}" >Resizable Bar HW:</TextBlock>
+            <TextBlock Width="Auto" Visibility="{Binding IsResizableBarHardwareStatusValid, Converter={StaticResource FalseToCollapsedConverter}}" VerticalAlignment="Center" Text="{Binding IsResizableBarHardwareEnabled, Converter={StaticResource ModeDescriptionConverter}, ConverterParameter= On|Off}" 
+                       FontWeight="Bold" Foreground="{Binding IsResizableBarHardwareEnabled, Converter={StaticResource ModeColorConverter}}"></TextBlock>
+            
+            <TextBlock Margin="20 0 5 0" Visibility="{Binding IsResizableBarSoftwareStatusValid, Converter={StaticResource FalseToCollapsedConverter}}" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}" >Resizable Bar SW:</TextBlock>
+            <TextBlock Width="Auto" Visibility="{Binding IsResizableBarSoftwareStatusValid, Converter={StaticResource FalseToCollapsedConverter}}" VerticalAlignment="Center" Text="{Binding IsResizableBarSoftwareEnabled, Converter={StaticResource ModeDescriptionConverter}, ConverterParameter= On|Off}" 
+                       FontWeight="Bold" Foreground="{Binding IsResizableBarSoftwareEnabled, Converter={StaticResource ModeColorConverter}}"></TextBlock>
+
+            <GridSplitter Margin="15 5 0 5" IsEnabled="False" Width="2" Visibility="{Binding IsWindowsAnyStatusValid, Converter={StaticResource FalseToCollapsedConverter}}" />
+
+            <TextBlock Margin="15 0 5 0" Visibility="{Binding IsGameModeStatusValid, Converter={StaticResource FalseToCollapsedConverter}}" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}" >Win Game Mode:</TextBlock>
+            <TextBlock Width="Auto" Visibility="{Binding IsGameModeStatusValid, Converter={StaticResource FalseToCollapsedConverter}}" VerticalAlignment="Center" Text="{Binding IsGameModeEnabled, Converter={StaticResource ModeDescriptionConverter}, ConverterParameter= On|Off}" 
+                       FontWeight="Bold" Foreground="{Binding IsGameModeEnabled, Converter={StaticResource ModeColorConverter}}"></TextBlock>
+
+            <TextBlock Margin="20 0 5 0" Visibility="{Binding IsHAGSStatusValid, Converter={StaticResource FalseToCollapsedConverter}}" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}" >HAGS:</TextBlock>
+            <TextBlock Width="Auto" Visibility="{Binding IsHAGSStatusValid, Converter={StaticResource FalseToCollapsedConverter}}" VerticalAlignment="Center" Text="{Binding IsHAGSEnabled, Converter={StaticResource ModeDescriptionConverter}, ConverterParameter= On|Off}" 
+                       FontWeight="Bold" Foreground="{Binding IsHAGSEnabled, Converter={StaticResource ModeColorConverter}}"></TextBlock>
         </StackPanel>
         <StackPanel HorizontalAlignment="Right" Grid.Column="1" Margin="0 0 10 0" Orientation="Horizontal">
             <materialDesign:PackIcon Foreground="{DynamicResource MaterialDesignBody}"  Kind="Information" VerticalAlignment="Center" ToolTip="{Binding InfoToolTipText, UpdateSourceTrigger=Default}"/>

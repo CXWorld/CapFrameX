@@ -112,7 +112,6 @@
     <Compile Include="CaptureServiceInfo.cs" />
     <Compile Include="IOnlineMetricService.cs" />
     <Compile Include="OnlineMetricService.cs" />
-    <Compile Include="SystemInfo.cs" />
     <Compile Include="PresentMonCaptureService.cs" />
     <Compile Include="PresentMonServiceConfiguration.cs" />
     <Compile Include="PresentMonStartInfo.cs" />

@@ -195,6 +195,7 @@
     <Compile Include="ReportViewModel.cs" />
     <Compile Include="SensorViewModel.cs" />
     <Compile Include="StateViewModel.cs" />
+    <Compile Include="StateViewModelSystemStatus.cs" />
     <Compile Include="SubModels\SensorGroupControl.cs" />
     <Compile Include="SubModels\OverlayGroupControl.cs" />
     <Compile Include="SubModels\OverlayGroupSeparating.cs" />
@@ -261,10 +262,6 @@
     <ProjectReference Include="..\CapFrameX.Sensor\CapFrameX.Sensor.csproj">
       <Project>{B1B0E5F1-942A-476C-BEA4-8B9FFBCA04C6}</Project>
       <Name>CapFrameX.Sensor</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CapFrameX.SetupAPI.NetStandard\CapFrameX.SetupAPI.NetStandard.csproj">
-      <Project>{81CF9D01-7E1B-4AFB-86AE-DFFDC71801BB}</Project>
-      <Name>CapFrameX.SetupAPI.NetStandard</Name>
     </ProjectReference>
     <ProjectReference Include="..\CapFrameX.Statistics.NetStandard\CapFrameX.Statistics.NetStandard.csproj">
       <Project>{7D35C9C8-6E9A-4ABB-9042-930BE5E26DC6}</Project>

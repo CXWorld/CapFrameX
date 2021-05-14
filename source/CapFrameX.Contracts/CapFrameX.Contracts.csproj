@@ -97,6 +97,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Aggregation\IAggregationEntry.cs" />
+    <Compile Include="Data\ESystemInfoTertiaryStatus.cs" />
     <Compile Include="Data\ICloudManager.cs" />
     <Compile Include="Cloud\ICloudEntry.cs" />
     <Compile Include="Configuration\IAppConfiguration.cs" />

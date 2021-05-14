@@ -6,7 +6,6 @@ using CapFrameX.Contracts.RTSS;
 using CapFrameX.Contracts.UpdateCheck;
 using CapFrameX.Data;
 using CapFrameX.EventAggregation.Messages;
-using CapFrameX.SetupAPI.NetStandard;
 using Microsoft.Extensions.Logging;
 using Prism.Events;
 using Prism.Mvvm;
@@ -20,7 +19,7 @@ using System.Windows.Threading;
 
 namespace CapFrameX.ViewModel
 {
-    public class StateViewModel : BindableBase
+    public partial class StateViewModel : BindableBase
     {
         private readonly IEventAggregator _eventAggregator;
         private readonly IAppConfiguration _appConfiguration;
@@ -28,7 +27,7 @@ namespace CapFrameX.ViewModel
         private readonly IOverlayService _overlayService;
         private readonly IUpdateCheck _updateCheck;
         private readonly IAppVersionProvider _appVersionProvider;
-        private readonly ISetupAPI _setupAPI;
+        private readonly ISystemInfo _systemInfo;
         private static ILogger<StateViewModel> _logger;
 
         private bool _isCaptureModeActive;
@@ -105,14 +104,6 @@ namespace CapFrameX.ViewModel
 
         public string InfoToolTipText => GetInfoText();
 
-        public bool IsPciAbove4GDecodingEnabled => _setupAPI.PciAbove4GDecodingStatus == EPciDeviceInfoStatus.Enabled;
-
-        public bool IsPciLargeMemoryEnabled => _setupAPI.PciLargeMemoryStatus == EPciDeviceInfoStatus.Enabled;
-
-        public bool PciDeviceInfoIsValid => 
-            _setupAPI.PciAbove4GDecodingStatus != EPciDeviceInfoStatus.Invalid 
-            && _setupAPI.PciLargeMemoryStatus != EPciDeviceInfoStatus.Invalid;
-
         public StateViewModel(IEventAggregator eventAggregator,
                               IAppConfiguration appConfiguration,
                               ICaptureService captureService,
@@ -121,7 +112,7 @@ namespace CapFrameX.ViewModel
                               IAppVersionProvider appVersionProvider,
                               LoginManager loginManager,
                               IRTSSService rTSSService,
-                              ISetupAPI setupAPI,
+                              ISystemInfo systemInfo,
                               ILogger<StateViewModel> logger)
         {
             Stopwatch stopwatch = new Stopwatch();
@@ -133,7 +124,7 @@ namespace CapFrameX.ViewModel
             _overlayService = overlayService;
             _updateCheck = updateCheck;
             _appVersionProvider = appVersionProvider;
-            _setupAPI = setupAPI;
+            _systemInfo = systemInfo;
             _logger = logger;
 
             IsCaptureModeActive = false;

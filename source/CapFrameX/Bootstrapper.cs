@@ -31,7 +31,6 @@ using CapFrameX.Statistics.NetStandard.Contracts;
 using CapFrameX.Contracts.RTSS;
 using CapFrameX.RTSSIntegration;
 using OpenHardwareMonitor.Hardware;
-using CapFrameX.SetupAPI.NetStandard;
 
 namespace CapFrameX
 {
@@ -96,7 +95,7 @@ namespace CapFrameX
 			Container.Register<ISensorEntryProvider, SensorEntryProvider>(Reuse.Singleton);
 			Container.Register<IOverlayEntryProvider, OverlayEntryProvider>(Reuse.Singleton);
 			Container.Register<IRecordManager, RecordManager>(Reuse.Singleton);
-			Container.Register<ISystemInfo, SystemInfo>(Reuse.Singleton);
+			Container.Register<ISystemInfo, SystemInfo.NetStandard.SystemInfo>(Reuse.Singleton);
 			Container.Register<IAppVersionProvider, AppVersionProvider>(Reuse.Singleton);
 			Container.RegisterInstance<IWebVersionProvider>(new WebVersionProvider(), Reuse.Singleton);
 			Container.Register<IUpdateCheck, UpdateCheck>(Reuse.Singleton);
@@ -112,7 +111,6 @@ namespace CapFrameX
 				window.Show();
 			});
 			Container.Register<CaptureManager>(Reuse.Singleton);
-			Container.Register<ISetupAPI, SetupAPIWrapper>(Reuse.Singleton);
 		}
 
 		/// <summary>

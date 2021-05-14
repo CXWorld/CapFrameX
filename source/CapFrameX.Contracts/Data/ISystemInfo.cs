@@ -2,6 +2,14 @@
 {
     public interface ISystemInfo
     {
+        ESystemInfoTertiaryStatus ResizableBarSoftwareStatus { get; }
+
+        ESystemInfoTertiaryStatus ResizableBarHardwareStatus { get; }
+
+        ESystemInfoTertiaryStatus GameModeStatus { get; }
+
+        ESystemInfoTertiaryStatus HardwareAcceleratedGPUSchedulingStatus { get; }
+
         string GetProcessorName();
 
         string GetGraphicCardName();
