@@ -38,6 +38,7 @@ namespace CapFrameX.SystemInfo.NetStandard
 
         private void SetSystemInfosStatus()
         {
+            bool amdGpuDetected = true;
             try
             {
                 using (var displayDevices = new DeviceInfoSet(DeviceClassGuid.Display))
@@ -59,6 +60,8 @@ namespace CapFrameX.SystemInfo.NetStandard
                     var devices = vk.GetPhysicalDevices();
                     ResizableBarSoftwareStatus = devices.Any(dev => dev.DeviceResizableBarInUse)
                         ? ESystemInfoTertiaryStatus.Enabled : ESystemInfoTertiaryStatus.Disabled;
+
+                    amdGpuDetected = devices.Any(dev => dev.VendorId == 4098);
                 }
             }
             catch (Exception ex)
@@ -77,6 +80,11 @@ namespace CapFrameX.SystemInfo.NetStandard
                         bool valConverted = Convert.ToBoolean(val);
                         GameModeStatus = valConverted ? ESystemInfoTertiaryStatus.Enabled : ESystemInfoTertiaryStatus.Disabled;
                     }
+                    else 
+                    {
+                        // default enabled
+                        GameModeStatus = ESystemInfoTertiaryStatus.Enabled;
+                    }
                 }
             }
             catch (Exception ex)
@@ -84,24 +92,27 @@ namespace CapFrameX.SystemInfo.NetStandard
                 _logger.LogError(ex, "Error while getting Windows Game Mode status.");
             }
 
-            try
+            if (!amdGpuDetected)
             {
-                const string graphcisDriver = "SYSTEM\\CurrentControlSet\\Control\\GraphicsDrivers";
-                using (RegistryKey graphcisDriverKey = Registry.LocalMachine.OpenSubKey(graphcisDriver, true))
+                try
                 {
-                    var val = graphcisDriverKey.GetValue("HwSchMode");
-                    if (val != null)
+                    const string graphcisDriver = "SYSTEM\\CurrentControlSet\\Control\\GraphicsDrivers";
+                    using (RegistryKey graphcisDriverKey = Registry.LocalMachine.OpenSubKey(graphcisDriver, true))
                     {
-                        int valConverted = Convert.ToInt32(val);
-                        HardwareAcceleratedGPUSchedulingStatus = valConverted == 2
-                            ? ESystemInfoTertiaryStatus.Enabled :
-                            (valConverted == 1 ? ESystemInfoTertiaryStatus.Disabled : ESystemInfoTertiaryStatus.Error);
+                        var val = graphcisDriverKey.GetValue("HwSchMode");
+                        if (val != null)
+                        {
+                            int valConverted = Convert.ToInt32(val);
+                            HardwareAcceleratedGPUSchedulingStatus = valConverted == 2
+                                ? ESystemInfoTertiaryStatus.Enabled :
+                                (valConverted == 1 ? ESystemInfoTertiaryStatus.Disabled : ESystemInfoTertiaryStatus.Error);
+                        }
                     }
                 }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error while getting Hardware-accelereated GPU scheduling status.");
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error while getting Hardware-accelereated GPU scheduling status.");
+                }
             }
         }
 
