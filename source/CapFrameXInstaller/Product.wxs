@@ -21,9 +21,14 @@
 		  <Custom Action="WixCloseApplications" Before="InstallValidate">
 			  Installed
 		  </Custom>
+      
 		  <Custom Action="CleanRegistry" Before="InstallFinalize">
 			  Installed
 		  </Custom>
+
+      <Custom Action="ResourceManagement" Before="InstallFinalize">
+        Installed
+      </Custom>
 	  </InstallExecuteSequence>
 
 	  <util:CloseApplication Id="CloseCapFrameX" Target="CapFrameX.exe"
@@ -33,9 +38,15 @@
 	</Product>
 
 	<Fragment>
-		<CustomAction Id="CleanRegistry" BinaryKey="CapFrameX.CustomInstallerActions.CA.dll" DllEntry="RemoveAutoStartKey" Execute="immediate" Return="check"/>
+    <CustomAction Id="CleanRegistry" BinaryKey="CapFrameX.CustomInstallerActions.CA.dll" DllEntry="RemoveAutoStartKey" Execute="immediate" Return="check"/>
+    <CustomAction Id="ResourceManagement" BinaryKey="CapFrameX.CustomInstallerActions.CA.dll" DllEntry="CleanupConfigResources" Execute="immediate" Return="check"/>
 		<Binary Id="CapFrameX.CustomInstallerActions.CA.dll" SourceFile="$(var.CapFrameX.CustomInstallerActions.TargetDir)$(var.CapFrameX.CustomInstallerActions.TargetName).CA.dll" />
 	</Fragment>
+
+  <!--<Fragment>
+   
+    <Binary Id="CapFrameX.CustomInstallerActions.CA.dll" SourceFile="$(var.CapFrameX.CustomInstallerActions.TargetDir)$(var.CapFrameX.CustomInstallerActions.TargetName).CA.dll" />
+  </Fragment>-->
 
   <!--https://stackoverflow.com/questions/4658220/create-shortcut-checkbox-->
   <!--<Fragment>
