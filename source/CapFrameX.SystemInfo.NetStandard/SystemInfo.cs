@@ -39,8 +39,6 @@ namespace CapFrameX.SystemInfo.NetStandard
 
         private void SetSystemInfosStatus()
         {
-            bool amdGpuDetected = true;
-
             //PCI Resizable BAR HW support
             try
             {
@@ -64,8 +62,6 @@ namespace CapFrameX.SystemInfo.NetStandard
                     var devices = vk.GetPhysicalDevices();
                     ResizableBarSoftwareStatus = devices.Any(dev => dev.DeviceResizableBarInUse)
                         ? ESystemInfoTertiaryStatus.Enabled : ESystemInfoTertiaryStatus.Disabled;
-
-                    amdGpuDetected = devices.Any(dev => dev.VendorId == 4098);
                 }
             }
             catch (Exception ex)
@@ -84,10 +80,6 @@ namespace CapFrameX.SystemInfo.NetStandard
                 else if(kmtAdapters.Any(x => x.WddmCapabilities_27.HagsSupported))
                 {
                     HardwareAcceleratedGPUSchedulingStatus = ESystemInfoTertiaryStatus.Disabled;
-                }
-                else
-                {
-                    HardwareAcceleratedGPUSchedulingStatus = ESystemInfoTertiaryStatus.Error;
                 }
 
                 kmtAdapters.ForEach(x => x.Dispose());

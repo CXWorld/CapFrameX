@@ -12,6 +12,8 @@ namespace CapFrameX.ViewModel
 
         public bool IsResizableBarHardwareStatusValid => _systemInfo.ResizableBarHardwareStatus != ESystemInfoTertiaryStatus.Error;
 
+        public bool IsResizableBarEnabled => IsResizableBarSoftwareEnabled && IsResizableBarHardwareEnabled;
+
         public bool IsResizableBarAnyStatusValid => IsResizableBarSoftwareStatusValid || IsResizableBarHardwareStatusValid;
 
         public bool IsGameModeEnabled => _systemInfo.GameModeStatus == ESystemInfoTertiaryStatus.Enabled;
