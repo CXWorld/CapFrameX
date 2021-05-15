@@ -6,8 +6,9 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
-    <PackageReference Include="Mixaill.HwInfo.SetupApi" Version="0.3.5" />
-    <PackageReference Include="Mixaill.HwInfo.Vulkan" Version="0.3.5" />
+    <PackageReference Include="Mixaill.HwInfo.D3DKMT" Version="0.3.6" />
+    <PackageReference Include="Mixaill.HwInfo.SetupApi" Version="0.3.6" />
+    <PackageReference Include="Mixaill.HwInfo.Vulkan" Version="0.3.6" />
   </ItemGroup>
 
   <ItemGroup>

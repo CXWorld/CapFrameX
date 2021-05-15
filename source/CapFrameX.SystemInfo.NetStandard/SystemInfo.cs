@@ -1,6 +1,7 @@
 ﻿using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.Sensor;
 using Microsoft.Extensions.Logging;
+using Mixaill.HwInfo.D3DKMT;
 using Mixaill.HwInfo.SetupApi;
 using Mixaill.HwInfo.SetupApi.Defines;
 using Mixaill.HwInfo.Vulkan;
@@ -39,6 +40,8 @@ namespace CapFrameX.SystemInfo.NetStandard
         private void SetSystemInfosStatus()
         {
             bool amdGpuDetected = true;
+
+            //PCI Resizable BAR HW support
             try
             {
                 using (var displayDevices = new DeviceInfoSet(DeviceClassGuid.Display))
@@ -53,6 +56,7 @@ namespace CapFrameX.SystemInfo.NetStandard
                 _logger.LogError(ex, "Error while getting Resizable Bar hardware status.");
             }
 
+            //PCI Resizable BAR SW support
             try
             {
                 using (var vk = new Vulkan())
@@ -69,6 +73,31 @@ namespace CapFrameX.SystemInfo.NetStandard
                 _logger.LogError(ex, "Error while getting Resizable Bar software status.");
             }
 
+            //Hardware-Accelerated GPU Scheduling
+            try
+            {
+                var kmtAdapters = new Kmt().GetAdapters();
+                if(kmtAdapters.Any(x => x.WddmCapabilities_27.HagsEnabled))
+                {
+                    HardwareAcceleratedGPUSchedulingStatus = ESystemInfoTertiaryStatus.Enabled;
+                }
+                else if(kmtAdapters.Any(x => x.WddmCapabilities_27.HagsSupported))
+                {
+                    HardwareAcceleratedGPUSchedulingStatus = ESystemInfoTertiaryStatus.Disabled;
+                }
+                else
+                {
+                    HardwareAcceleratedGPUSchedulingStatus = ESystemInfoTertiaryStatus.Error;
+                }
+
+                kmtAdapters.ForEach(x => x.Dispose());
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error while getting HAGS status.");
+            }
+
+            //Windows Game Mode
             try
             {
                 const string gameBar = "SOFTWARE\\Microsoft\\GameBar";
@@ -90,29 +119,6 @@ namespace CapFrameX.SystemInfo.NetStandard
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error while getting Windows Game Mode status.");
-            }
-
-            if (!amdGpuDetected)
-            {
-                try
-                {
-                    const string graphcisDriver = "SYSTEM\\CurrentControlSet\\Control\\GraphicsDrivers";
-                    using (RegistryKey graphcisDriverKey = Registry.LocalMachine.OpenSubKey(graphcisDriver, true))
-                    {
-                        var val = graphcisDriverKey.GetValue("HwSchMode");
-                        if (val != null)
-                        {
-                            int valConverted = Convert.ToInt32(val);
-                            HardwareAcceleratedGPUSchedulingStatus = valConverted == 2
-                                ? ESystemInfoTertiaryStatus.Enabled :
-                                (valConverted == 1 ? ESystemInfoTertiaryStatus.Disabled : ESystemInfoTertiaryStatus.Error);
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error while getting Hardware-accelereated GPU scheduling status.");
-                }
             }
         }
 
