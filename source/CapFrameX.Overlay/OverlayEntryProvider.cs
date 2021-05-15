@@ -27,7 +27,7 @@ namespace CapFrameX.Overlay
     {
         private static readonly string OVERLAY_CONFIG_FOLDER
             = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
-                    @"CapFrameX\OverlayConfiguration\");
+                    @"CapFrameX\Configuration\");
 
         private readonly ISensorService _sensorService;
         private readonly IAppConfiguration _appConfiguration;

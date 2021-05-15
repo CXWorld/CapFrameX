@@ -14,7 +14,7 @@ namespace OpenHardwareMonitor.Hardware
         private static readonly string SENSOR_CONFIG_FOLDER
             = Path.Combine(Environment
                 .GetFolderPath(Environment.SpecialFolder.MyDocuments),
-                    @"CapFrameX\SensorConfiguration\");
+                    @"CapFrameX\Configuration\");
 
         private static readonly string CONFIG_FILENAME =
             "SensorEntryConfiguration.json";

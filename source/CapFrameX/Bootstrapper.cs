@@ -104,7 +104,7 @@ namespace CapFrameX
 			Container.Register<LoginWindow>(Reuse.Transient);
 			Container.RegisterInstance(ProcessList.Create(
 				filename: "Processes.json",
-				foldername: Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), @"CapFrameX\Resources"),
+				foldername: Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), @"CapFrameX\Configuration"),
 				appConfiguration: Container.Resolve<IAppConfiguration>()));
 			Container.Register<SoundManager>(Reuse.Singleton);
 			Container.Resolve<IEventAggregator>().GetEvent<PubSubEvent<AppMessages.OpenLoginWindow>>().Subscribe(_ => {
