@@ -11,7 +11,7 @@ namespace CapFrameX.Statistics.PlotBuilder
 
 		public readonly static OxyColor FrametimeStroke = OxyColor.FromRgb(156, 210, 0);
 
-		public readonly static OxyColor FpsAverageStroke = OxyColor.FromArgb(100, 50, 50, 50);
+		public readonly static OxyColor FpsAverageStroke = OxyColor.FromArgb(100, 50, 190, 50);
 
 		public readonly static OxyColor FpsStroke = OxyColor.FromRgb(156, 210, 0);
 	}

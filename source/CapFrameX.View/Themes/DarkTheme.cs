@@ -20,7 +20,7 @@ namespace CapFrameX.View.Themes
         // darker #2d2d30
 
         //Popup Color
-        public Color MaterialDesignCardBackground { get; } = (Color)ColorConverter.ConvertFromString("#2d2d30");
+        public Color MaterialDesignCardBackground { get; } = (Color)ColorConverter.ConvertFromString("#252526");
         // brighter #414b54
         // darker #2d2d30
 
