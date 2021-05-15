@@ -6,17 +6,25 @@ namespace CapFrameX.View.Themes
     public class DarkTheme : IBaseTheme
     {
         public Color ValidationErrorColor { get; } = (Color)ColorConverter.ConvertFromString("#f44336");
-
+        
 
         // Standard Background color
-        public Color MaterialDesignBackground { get; } = (Color)ColorConverter.ConvertFromString("#3d4750");
+        public Color MaterialDesignBackground { get; } = (Color)ColorConverter.ConvertFromString("#252526");
+        // brighter #3d4750
+        // darker #252526
 
 
         // Standard color
-        public Color MaterialDesignPaper { get; } = (Color)ColorConverter.ConvertFromString("#414b54");
+        public Color MaterialDesignPaper { get; } = (Color)ColorConverter.ConvertFromString("#2d2d30");
+        // brighter #414b54
+        // darker #2d2d30
+
+        //Popup Color
+        public Color MaterialDesignCardBackground { get; } = (Color)ColorConverter.ConvertFromString("#2d2d30");
+        // brighter #414b54
+        // darker #2d2d30
 
 
-        public Color MaterialDesignCardBackground { get; } = (Color)ColorConverter.ConvertFromString("#414b54");
         public Color MaterialDesignToolBarBackground { get; } = (Color)ColorConverter.ConvertFromString("#FF212121");
 
 
@@ -48,10 +56,9 @@ namespace CapFrameX.View.Themes
 
 
         // Secondary standard color
-        public Color MaterialDesignTextFieldBoxBackground { get; } = (Color)ColorConverter.ConvertFromString("#545d65");
-        // 
-        // #545d65
-        // #414a52
+        public Color MaterialDesignTextFieldBoxBackground { get; } = (Color)ColorConverter.ConvertFromString("#2d2d30");
+        // brighter #545d65
+        // darker #2d2d30
 
 
         public Color MaterialDesignTextFieldBoxHoverBackground { get; } = (Color)ColorConverter.ConvertFromString("#1FFFFFFF");
