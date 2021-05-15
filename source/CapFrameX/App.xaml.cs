@@ -115,12 +115,12 @@ namespace CapFrameX
                             ConfigurationManager.AppSettings.Get("ContactFormUriTemplate"), 
                             HttpUtility.UrlEncode($"Crashlog-Report: {reportId}"), 
                             HttpUtility.UrlEncode($@"Dear CapframeX Team,
-I encountered a fatal Crash.
-Please have a look at the Crashlog with Id {reportId}.
+                                I encountered a fatal Crash.
+                                Please have a look at the Crashlog with Id {reportId}.
 
-<<< Please describe briefly what you did when the error occurred >>>
+                                <<< Please describe briefly what you did when the error occurred >>>
 
-Feel free to contact me by mail."), 
+                                Feel free to contact me by mail."), 
                             string.Empty
                             )
                         );

@@ -103,7 +103,8 @@ namespace CapFrameX
 			Container.Register<ICloudManager, CloudManager>(Reuse.Singleton);
 			Container.Register<LoginWindow>(Reuse.Transient);
 			Container.RegisterInstance(ProcessList.Create(
-				filename: Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), @"CapFrameX\Resources\Processes.json"),
+				filename: "Processes.json",
+				foldername: Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), @"CapFrameX\Resources"),
 				appConfiguration: Container.Resolve<IAppConfiguration>()));
 			Container.Register<SoundManager>(Reuse.Singleton);
 			Container.Resolve<IEventAggregator>().GetEvent<PubSubEvent<AppMessages.OpenLoginWindow>>().Subscribe(_ => {

@@ -121,9 +121,11 @@ namespace CapFrameX.Data
 			}
 		}
 
-		public static ProcessList Create(string filename, IAppConfiguration appConfiguration)
+		public static ProcessList Create(string filename, string foldername, IAppConfiguration appConfiguration)
 		{
-			ProcessList processList = new ProcessList(filename, appConfiguration);
+			if (!Directory.Exists(foldername)) Directory.CreateDirectory(foldername);
+			var fullpath = Path.Combine(foldername, filename);
+			ProcessList processList = new ProcessList(fullpath, appConfiguration);
 			Task.Run(() =>
 			{
 				try
@@ -131,7 +133,6 @@ namespace CapFrameX.Data
 					try
 					{
 						processList.ReadFromFile();
-
 					}
 					catch { }
 					var defaultProcesslistFileInfo = new FileInfo(Path.Combine("ProcessList", "Processes.json"));
