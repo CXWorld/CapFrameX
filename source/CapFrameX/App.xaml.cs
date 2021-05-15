@@ -112,15 +112,15 @@ namespace CapFrameX
                     MessageBox.Show($"Your Report-ID is {reportId}.\nPlease include this Id in your support inquiry. Visit https://www.capframex.com/support for further information.");
                     Process.Start(
                         string.Format(
-                            ConfigurationManager.AppSettings.Get("ContactFormUriTemplate"), 
-                            HttpUtility.UrlEncode($"Crashlog-Report: {reportId}"), 
+                            ConfigurationManager.AppSettings.Get("ContactFormUriTemplate"),
+                            HttpUtility.UrlEncode($"Crashlog-Report: {reportId}"),
                             HttpUtility.UrlEncode($@"Dear CapframeX Team,
                                 I encountered a fatal Crash.
                                 Please have a look at the Crashlog with Id {reportId}.
 
                                 <<< Please describe briefly what you did when the error occurred >>>
 
-                                Feel free to contact me by mail."), 
+                                Feel free to contact me by mail."),
                             string.Empty
                             )
                         );
@@ -154,6 +154,63 @@ namespace CapFrameX
                 MessageBox.Show("Run CapFrameX as administrator. Right click on desktop shortcut" + Environment.NewLine
                     + "and got to Properties -> Shortcut -> Advanced then check option Run as administrator.");
                 Current.Shutdown();
+            }
+
+            // unify old config folders
+            try
+            {
+                var configFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                        @"CapFrameX\Configuration\");
+                var sensorConfigFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                        @"CapFrameX\SensorConfiguration\");
+                var overlayConfigFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                        @"CapFrameX\OverlayConfiguration\");
+                var processListFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                        @"CapFrameX\Resources\");
+
+
+                if (!Directory.Exists(configFolder))
+                    Directory.CreateDirectory(configFolder);
+
+                if (Directory.Exists(sensorConfigFolder))
+                {
+                    foreach (var file in Directory.EnumerateFiles(sensorConfigFolder))
+                    {
+                        string destFile = Path.Combine(configFolder, Path.GetFileName(file));
+                        if (!File.Exists(destFile))
+                            File.Move(file, destFile);
+
+                    }
+                    Directory.Delete(sensorConfigFolder);
+                }
+
+                if (Directory.Exists(overlayConfigFolder))
+                {
+                    foreach (var file in Directory.EnumerateFiles(overlayConfigFolder))
+                    {
+                        string destFile = Path.Combine(configFolder, Path.GetFileName(file));
+                        if (!File.Exists(destFile))
+                            File.Move(file, destFile);
+
+                    }
+                    Directory.Delete(overlayConfigFolder);
+                }
+
+                if (Directory.Exists(processListFolder))
+                {
+                    foreach (var file in Directory.EnumerateFiles(processListFolder))
+                    {
+                        string destFile = Path.Combine(configFolder, Path.GetFileName(file));
+                        if (!File.Exists(destFile))
+                            File.Move(file, destFile);
+
+                    }
+                    Directory.Delete(processListFolder);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Logger.Error(ex, "Error while creating config folder.");
             }
 
             // create capture folder
