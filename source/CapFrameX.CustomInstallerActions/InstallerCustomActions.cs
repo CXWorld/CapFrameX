@@ -47,6 +47,7 @@ namespace CapFrameX.CustomInstallerActions
 
             try
             {
+                // https://www.advancedinstaller.com/user-guide/set-windows-installer-property-custom-action.html
                 var configSourcePath = Path.Combine(session["INSTALLLOCATION"], "Configuration");
                 if (Directory.Exists(configSourcePath))
                 {

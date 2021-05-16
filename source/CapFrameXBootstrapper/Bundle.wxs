@@ -123,6 +123,7 @@
       <!--CapFrameX Msi package-->
 			<MsiPackage Id="CapFrameXPackage" SourceFile="$(var.CapFrameXInstaller.TargetPath)" DisplayInternalUI="no" Compressed="yes" Vital="yes">
 				<MsiProperty Name="INSTALLFOLDER" Value="[InstallFolder]" />
+        <!--https://stackoverflow.com/questions/24068798/how-to-access-the-folder-where-the-exe-is-running-wix-bootstrapper-->
         <MsiProperty Name="INSTALLLOCATION" Value="[OriginalSourceFolder]" />
       </MsiPackage>
 		</Chain>
