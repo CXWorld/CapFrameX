@@ -42,7 +42,7 @@ namespace CapFrameX.SystemInfo.NetStandard
             //PCI Resizable BAR HW support
             try
             {
-                using (var displayDevices = new DeviceInfoSet(DeviceClassGuid.Display))
+                using (var displayDevices = new DeviceInfoSet(DeviceClassGuid.Display, _logger))
                 {
                     var largeMemoryStatus = displayDevices.Devices.Any(x => (x as DeviceInfoPci)?.Pci_LargeMemory == true);
                     ResizableBarHardwareStatus = largeMemoryStatus
@@ -57,7 +57,7 @@ namespace CapFrameX.SystemInfo.NetStandard
             //PCI Resizable BAR SW support
             try
             {
-                using (var vk = new Vulkan())
+                using (var vk = new Vulkan(_logger))
                 {
                     var devices = vk.GetPhysicalDevices();
                     ResizableBarSoftwareStatus = devices.Any(dev => dev.DeviceResizableBarInUse)
@@ -72,7 +72,7 @@ namespace CapFrameX.SystemInfo.NetStandard
             //Hardware-Accelerated GPU Scheduling
             try
             {
-                var kmtAdapters = new Kmt().GetAdapters();
+                var kmtAdapters = new Kmt(_logger).GetAdapters();
                 if(kmtAdapters.Any(x => x.WddmCapabilities_27.HagsEnabled))
                 {
                     HardwareAcceleratedGPUSchedulingStatus = ESystemInfoTertiaryStatus.Enabled;
