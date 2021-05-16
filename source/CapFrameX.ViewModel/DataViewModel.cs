@@ -761,7 +761,7 @@ namespace CapFrameX.ViewModel
                     var lineValues = propertyInfos.Select(pi =>
                     {
                         var array = pi.GetValue(run) as Array;
-                        return array.Length >= run.MeasureTime.Values.Count ? Convert.ToString(array.GetValue(i), CultureInfo.InvariantCulture) : string.Empty;
+                        return array.Length >= run.MeasureTime.Values.Count ? string.Format("{0:0.##}", array.GetValue(i)) : string.Empty;
                     });
                     builder.AppendLine(string.Join("\t", lineValues) + "\t" + gpuLoadLimit);
                 }
