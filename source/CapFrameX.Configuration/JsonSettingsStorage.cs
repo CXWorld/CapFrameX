@@ -15,7 +15,7 @@ namespace CapFrameX.Configuration
     {
         private readonly string _jsonFilePath 
             = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), 
-                "CapFrameX", "Configuration", "settings.json");
+                "CapFrameX", "Configuration", "AppSettings.json");
         private readonly ILogger<JsonSettingsStorage> _logger;
         private readonly Subject<int> _saveFileSubject = new Subject<int>();
         private readonly Dictionary<string, object> _configDictionary = new Dictionary<string, object>();

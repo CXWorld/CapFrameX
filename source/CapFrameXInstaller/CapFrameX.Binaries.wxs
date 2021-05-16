@@ -415,6 +415,9 @@
                 <File Id="filA005E04D6C984A8EF36F9653B3FA4555" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\OpenHardwareMonitorLib.dll" />
             </Component>
             
+            <Component Id="cmpB1E64B83A59AC916B9DDC1837635D99B" Guid="*" Win64="yes">
+                <File Id="filC1BF8928A7B3074836B9FA4ADF1166FB" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\OpenHardwareMonitorLib.sys" />
+            </Component>
             <Component Id="cmp9867DD01B906E145D73B1AA12191B24D" Guid="*" Win64="yes">
                 <File Id="filF3C7E1DBD3AD0BE68A0C0D000EC5A7D6" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\OxyPlot.dll" />
             </Component>
@@ -512,6 +515,19 @@
             <Component Id="cmpC85BD7478E073743A39F17DF06865203" Guid="*" Win64="yes">
                 <File Id="fil3DAD59899DDA1B0FCEDF95F84CB3C475" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Xceed.Wpf.Toolkit.dll" />
             </Component>
+            <Directory Id="dirE857A8323103F08132678C35C227E3FB" Name="Configuration">
+                <Component Id="cmpDD11A3A6CCACB15D98C200F09FFD3F1B" Guid="*" Win64="yes">
+                    <File Id="filF4A6F4011F5DEEC65270A66E5D133B35" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Configuration\AppSettings.json" />
+                </Component>
+                
+                
+                <Component Id="cmpCDCAA927BDA4D614B0F1DA261342C3B0" Guid="*" Win64="yes">
+                    <File Id="fil61E07E38AB001BFA1D091632468588B8" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Configuration\Processes.json" />
+                </Component>
+                <Component Id="cmpCB8BDAC97F87EAAE84FE1B18743B2988" Guid="*" Win64="yes">
+                    <File Id="fil90F55A0039C6A8B3967BA5D0DBBC17A0" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Configuration\SensorEntryConfiguration.json" />
+                </Component>
+            </Directory>
             <Directory Id="dir242DC17B8DFC53C13CAF172FC08B730A" Name="de">
                 <Component Id="cmp55E09061A1DF30E9878313719FAE6664" Guid="*" Win64="yes">
                     <File Id="fil1424015000F4C871286F581C5375B980" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\de\MahApps.Metro.resources.dll" />
@@ -883,6 +899,7 @@
             <ComponentRef Id="cmpBC4FC00A26E7D32479D42D3411317FC5" />
             <ComponentRef Id="cmp36162545506C564646EFF7AED20D4D87" />
             
+            <ComponentRef Id="cmpB1E64B83A59AC916B9DDC1837635D99B" />
             <ComponentRef Id="cmp9867DD01B906E145D73B1AA12191B24D" />
             <ComponentRef Id="cmp8F4FC608131CDC6A82B59CBB8B203778" />
             
@@ -916,6 +933,11 @@
             <ComponentRef Id="cmp017BFB3832A5B110A2B3A350E13F2A5C" />
             <ComponentRef Id="cmp49BE6E207D2A07FADE852DF8D84126A7" />
             <ComponentRef Id="cmpC85BD7478E073743A39F17DF06865203" />
+            <ComponentRef Id="cmpDD11A3A6CCACB15D98C200F09FFD3F1B" />
+            
+            
+            <ComponentRef Id="cmpCDCAA927BDA4D614B0F1DA261342C3B0" />
+            <ComponentRef Id="cmpCB8BDAC97F87EAAE84FE1B18743B2988" />
             <ComponentRef Id="cmp55E09061A1DF30E9878313719FAE6664" />
             <ComponentRef Id="cmp5BA55150B20FDB5D6A2679B4DDE154F0" />
             <ComponentRef Id="cmpEEF8583F33AC9DCDC349C22B5162CEF5" />

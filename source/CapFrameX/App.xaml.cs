@@ -111,18 +111,16 @@ namespace CapFrameX
                     Log.Logger.Information("Uploading Logs. Report-ID is {reportId}", reportId);
                     MessageBox.Show($"Your Report-ID is {reportId}.\nPlease include this Id in your support inquiry. Visit https://www.capframex.com/support for further information.");
                     Process.Start(
-                        string.Format(
-                            ConfigurationManager.AppSettings.Get("ContactFormUriTemplate"),
-                            HttpUtility.UrlEncode($"Crashlog-Report: {reportId}"),
-                            HttpUtility.UrlEncode($@"Dear CapframeX Team,
-                                I encountered a fatal Crash.
-                                Please have a look at the Crashlog with Id {reportId}.
+                        string.Format(ConfigurationManager.AppSettings.Get("ContactFormUriTemplate"),
+                                     HttpUtility.UrlEncode($"Crashlog-Report: {reportId}"),
+                                     HttpUtility.UrlEncode($@"Dear CapframeX Team,
+                                        I encountered a fatal Crash.
+                                        Please have a look at the Crashlog with Id {reportId}.
 
-                                <<< Please describe briefly what you did when the error occurred >>>
+                                        <<< Please describe briefly what you did when the error occurred >>>
 
-                                Feel free to contact me by mail."),
-                            string.Empty
-                            )
+                                        Feel free to contact me by mail."),
+                                     string.Empty)
                         );
                 }
             }
@@ -170,15 +168,27 @@ namespace CapFrameX
 
 
                 if (!Directory.Exists(configFolder))
+                {
                     Directory.CreateDirectory(configFolder);
+                }
+                else
+                {
+                    var oldSettingsFileName = Path.Combine(configFolder, "settings.json");
+                    var newSettingsFileName = Path.Combine(configFolder, "AppSettings.json");
+                    if (File.Exists(oldSettingsFileName))
+                    {
+                        File.Move(oldSettingsFileName, newSettingsFileName);
+                        File.Delete(oldSettingsFileName);
+                    }
+                }
 
                 if (Directory.Exists(sensorConfigFolder))
                 {
-                    foreach (var file in Directory.EnumerateFiles(sensorConfigFolder))
+                    foreach (var fullPath in Directory.EnumerateFiles(sensorConfigFolder))
                     {
-                        string destFile = Path.Combine(configFolder, Path.GetFileName(file));
+                        string destFile = Path.Combine(configFolder, Path.GetFileName(fullPath));
                         if (!File.Exists(destFile))
-                            File.Move(file, destFile);
+                            File.Move(fullPath, destFile);
 
                     }
                     Directory.Delete(sensorConfigFolder);
@@ -186,23 +196,22 @@ namespace CapFrameX
 
                 if (Directory.Exists(overlayConfigFolder))
                 {
-                    foreach (var file in Directory.EnumerateFiles(overlayConfigFolder))
+                    foreach (var fullPath in Directory.EnumerateFiles(overlayConfigFolder))
                     {
-                        string destFile = Path.Combine(configFolder, Path.GetFileName(file));
+                        string destFile = Path.Combine(configFolder, Path.GetFileName(fullPath));
                         if (!File.Exists(destFile))
-                            File.Move(file, destFile);
-
+                            File.Move(fullPath, destFile);
                     }
                     Directory.Delete(overlayConfigFolder);
                 }
 
                 if (Directory.Exists(processListFolder))
                 {
-                    foreach (var file in Directory.EnumerateFiles(processListFolder))
+                    foreach (var fullPath in Directory.EnumerateFiles(processListFolder))
                     {
-                        string destFile = Path.Combine(configFolder, Path.GetFileName(file));
+                        string destFile = Path.Combine(configFolder, Path.GetFileName(fullPath));
                         if (!File.Exists(destFile))
-                            File.Move(file, destFile);
+                            File.Move(fullPath, destFile);
 
                     }
                     Directory.Delete(processListFolder);
