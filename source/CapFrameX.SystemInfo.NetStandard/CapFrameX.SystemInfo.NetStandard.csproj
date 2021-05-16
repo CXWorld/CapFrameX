@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
@@ -6,9 +6,9 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
-    <PackageReference Include="Mixaill.HwInfo.D3DKMT" Version="0.3.6" />
-    <PackageReference Include="Mixaill.HwInfo.SetupApi" Version="0.3.6" />
-    <PackageReference Include="Mixaill.HwInfo.Vulkan" Version="0.3.6" />
+    <PackageReference Include="Mixaill.HwInfo.D3DKMT" Version="0.3.7" />
+    <PackageReference Include="Mixaill.HwInfo.SetupApi" Version="0.3.7" />
+    <PackageReference Include="Mixaill.HwInfo.Vulkan" Version="0.3.7" />
   </ItemGroup>
 
   <ItemGroup>
