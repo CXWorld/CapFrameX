@@ -25,8 +25,8 @@
     <Text Name="InstallVersion" X="100" Y="21" Width="210" Height="30" FontId="2" DisablePrefix="yes" HideWhenDisabled="yes">#(loc.InstallVersion)</Text>
     <Checkbox Name="EulaAcceptCheckbox" X="-11" Y="-111" Width="260" Height="17" TabStop="yes" FontId="3" HideWhenDisabled="yes">#(loc.InstallAcceptCheckbox)</Checkbox>
 
-    <Text X="12" Y="-44" Width="-12" Height="60" FontId="5" HideWhenDisabled="no">
-      Import your configuration: If this is the first installation on this system you can&#x0a;transfer your settings from another system. Just have your wanted "Configuration"&#x0a;folder in the same directory you're running this setup from before you continue.&#x0a;All configs within that folder will be copied  to Documents/CapFrameX.
+    <Text X="12" Y="-44" Width="-10" Height="60" FontId="5" HideWhenDisabled="no">
+      Import your configuration: If this is the first installation on this system you can&#x0a;transfer your settings from another system. Just have your "Configuration"&#x0a;folder in the same directory you're running this setup from before you continue.&#x0a;All configs within that folder will be copied  to Documents/CapFrameX.
     </Text>
     <Button Name="OptionsButton" X="-171" Y="-11" Width="75" Height="23" TabStop="yes" FontId="0" HideWhenDisabled="yes">#(loc.InstallOptionsButton)</Button>
     <Button Name="InstallButton" X="-91" Y="-11" Width="75" Height="23" TabStop="yes" FontId="0">#(loc.InstallInstallButton)</Button>
