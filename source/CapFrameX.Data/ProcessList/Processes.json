@@ -375,6 +375,11 @@
     "IsBlacklisted": true
   },
   {
+    "Name": "CefSharp.BrowserSubprocess",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
     "Name": "chrome",
     "DisplayName": null,
     "IsBlacklisted": true
@@ -407,6 +412,11 @@
   {
     "Name": "Code",
     "DisplayName": "Visual Studio Code",
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "Code - Insiders",
+    "DisplayName": null,
     "IsBlacklisted": true
   },
   {
@@ -630,6 +640,11 @@
     "IsBlacklisted": false
   },
   {
+    "Name": "Dropbox",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
     "Name": "drt",
     "DisplayName": "Dirt Rally",
     "IsBlacklisted": false
@@ -738,6 +753,11 @@
     "Name": "EthanCarter-Win64-Shipping",
     "DisplayName": "The Vanishing of Ethan Carter Redux",
     "IsBlacklisted": false
+  },
+  {
+    "Name": "EXCEL.EXE",
+    "DisplayName": null,
+    "IsBlacklisted": true
   },
   {
     "Name": "exefile",
@@ -886,7 +906,7 @@
   },
   {
     "Name": "FurMark",
-    "DisplayName": null,
+    "DisplayName": "Fur Mark",
     "IsBlacklisted": false
   },
   {
@@ -933,6 +953,16 @@
     "Name": "Ghostrunner-Win64-Shipping",
     "DisplayName": "Ghostrunner",
     "IsBlacklisted": false
+  },
+  {
+    "Name": "gitkraken",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "GoogleDriveFS",
+    "DisplayName": null,
+    "IsBlacklisted": true
   },
   {
     "Name": "GPU-Z.2.30.0",
@@ -1072,6 +1102,11 @@
   {
     "Name": "Insurgency",
     "DisplayName": "Insurgency",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "Intel(R) Core(TM) i7-7700K CPU @ 4.20GHz",
+    "DisplayName": "Shadow of the Tomb Raider",
     "IsBlacklisted": false
   },
   {
@@ -1240,8 +1275,18 @@
     "IsBlacklisted": false
   },
   {
+    "Name": "MassEffectLauncher",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
     "Name": "MechWarrior-Win64-Shipping",
     "DisplayName": "MechWarrior 5: Mercenaries",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "Medieval_Dynasty-Win64-Shipping",
+    "DisplayName": "Medieval Dynasty",
     "IsBlacklisted": false
   },
   {
@@ -1375,6 +1420,11 @@
     "IsBlacklisted": false
   },
   {
+    "Name": "Nino2",
+    "DisplayName": "Ni No Kuni 2: Revenant Kingdom",
+    "IsBlacklisted": false
+  },
+  {
     "Name": "NMS",
     "DisplayName": "No Man's Sky",
     "IsBlacklisted": false
@@ -1445,6 +1495,11 @@
     "IsBlacklisted": true
   },
   {
+    "Name": "opera",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
     "Name": "Origin",
     "DisplayName": null,
     "IsBlacklisted": true
@@ -1452,6 +1507,16 @@
   {
     "Name": "OSBuddy",
     "DisplayName": "RuneScape",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "OUTLOOK.EXE",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "OUTRIDERS-Win64-Shipping",
+    "DisplayName": "Outriders",
     "IsBlacklisted": false
   },
   {
@@ -1531,6 +1596,11 @@
   },
   {
     "Name": "Playnite.DesktopApp",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "Plitch",
     "DisplayName": null,
     "IsBlacklisted": true
   },
@@ -1617,6 +1687,11 @@
   {
     "Name": "re3",
     "DisplayName": "Resident Evil 3",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "re8",
+    "DisplayName": "Resident Evil Village",
     "IsBlacklisted": false
   },
   {
@@ -1848,6 +1923,16 @@
     "Name": "steamwebhelper",
     "DisplayName": null,
     "IsBlacklisted": true
+  },
+  {
+    "Name": "stellaris",
+    "DisplayName": "Stellaris",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "Stranded_Deep",
+    "DisplayName": "Stranded Deep",
+    "IsBlacklisted": false
   },
   {
     "Name": "StrangeBrigade_DX12",
@@ -2155,6 +2240,11 @@
     "IsBlacklisted": true
   },
   {
+    "Name": "wgc_renderer_host",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
     "Name": "WhatsApp",
     "DisplayName": null,
     "IsBlacklisted": true
@@ -2281,6 +2371,11 @@
   },
   {
     "Name": "XSplit.xbcbp",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "Y.Music",
     "DisplayName": null,
     "IsBlacklisted": true
   },
