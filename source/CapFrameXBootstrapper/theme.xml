@@ -3,27 +3,31 @@
 
 
 <Theme xmlns="http://wixtoolset.org/schemas/thmutil/2010">
-  <Window Width="500" Height="485" HexStyle="100a0000" FontId="0">#(loc.Caption)</Window>
+  <Window Width="500" Height="555" HexStyle="100a0000" FontId="0">#(loc.Caption)</Window>
   <Font Id="0" Height="-12" Weight="500" Foreground="000000" Background="FFFFFF">Segoe UI</Font>
   <Font Id="1" Height="-24" Weight="500" Foreground="000000">Segoe UI</Font>
   <Font Id="2" Height="-22" Weight="500" Foreground="666666">Segoe UI</Font>
   <Font Id="3" Height="-12" Weight="500" Foreground="000000" Background="FFFFFF">Segoe UI</Font>
   <Font Id="4" Height="-12" Weight="500" Foreground="ff0000" Background="FFFFFF" Underline="yes">Segoe UI</Font>
+  <Font Id="5" Height="-12" Weight="700" Foreground="000000">Segoe UI</Font>
 
   <Image X="11" Y="5" Width="256" Height="68" ImageFile="logo.png" Visible="yes"/>
-  <!--
-  <Text X="272" Y="11" Width="-11" Height="64" FontId="1" Visible="yes" DisablePrefix="yes">#(loc.Title)</Text>
-  -->
+  
   <Page Name="Help">
     <Text X="11" Y="90" Width="-11" Height="30" FontId="2" DisablePrefix="yes">#(loc.HelpHeader)</Text>
     <Text X="11" Y="112" Width="-11" Height="-35" FontId="3" DisablePrefix="yes">#(loc.HelpText)</Text>
     <Button Name="HelpCancelButton" X="-11" Y="-11" Width="75" Height="23" TabStop="yes" FontId="0">#(loc.HelpCloseButton)</Button>
   </Page>
   <Page Name="Install">
-    <Text X="11" Y="90" Width="-11" Height="-70" TabStop="no" FontId="2" HexStyle="0x800000" DisablePrefix="yes" />
-    <Richedit Name="EulaRichedit" X="12" Y="92" Width="-12" Height="-71" TabStop="yes" FontId="0" />
-    <Text Name="InstallVersion" X="11" Y="-41" Width="210" Height="17" FontId="3" DisablePrefix="yes" HideWhenDisabled="yes">#(loc.InstallVersion)</Text>
-    <Checkbox Name="EulaAcceptCheckbox" X="-11" Y="-41" Width="260" Height="17" TabStop="yes" FontId="3" HideWhenDisabled="yes">#(loc.InstallAcceptCheckbox)</Checkbox>
+    <Text X="11" Y="90" Width="-11" Height="-140" TabStop="no" FontId="2" HexStyle="0x800000" DisablePrefix="yes" />
+    <Richedit Name="EulaRichedit" X="12" Y="92" Width="-12" Height="-141" TabStop="yes" FontId="0" />
+    
+    <Text Name="InstallVersion" X="100" Y="21" Width="210" Height="30" FontId="2" DisablePrefix="yes" HideWhenDisabled="yes">#(loc.InstallVersion)</Text>
+    <Checkbox Name="EulaAcceptCheckbox" X="-11" Y="-111" Width="260" Height="17" TabStop="yes" FontId="3" HideWhenDisabled="yes">#(loc.InstallAcceptCheckbox)</Checkbox>
+
+    <Text X="12" Y="-44" Width="-12" Height="60" FontId="5" HideWhenDisabled="no">
+      Import your configuration: If this is the first installation on this system you can transfer your settings from another system. Just have your wanted "Configuration" folder in the same directory you're running this setup from before you continue.&#x0a;All configs within that folder will be copied  to Documents/CapFrameX.
+    </Text>
     <Button Name="OptionsButton" X="-171" Y="-11" Width="75" Height="23" TabStop="yes" FontId="0" HideWhenDisabled="yes">#(loc.InstallOptionsButton)</Button>
     <Button Name="InstallButton" X="-91" Y="-11" Width="75" Height="23" TabStop="yes" FontId="0">#(loc.InstallInstallButton)</Button>
     <Button Name="WelcomeCancelButton" X="-11" Y="-11" Width="75" Height="23" TabStop="yes" FontId="0">#(loc.InstallCloseButton)</Button>
