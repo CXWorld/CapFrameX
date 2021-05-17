@@ -1105,11 +1105,6 @@
     "IsBlacklisted": false
   },
   {
-    "Name": "Intel(R) Core(TM) i7-7700K CPU @ 4.20GHz",
-    "DisplayName": "Shadow of the Tomb Raider",
-    "IsBlacklisted": false
-  },
-  {
     "Name": "IronHarvest",
     "DisplayName": "Iron Harvest",
     "IsBlacklisted": false
