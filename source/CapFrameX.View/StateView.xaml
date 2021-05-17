@@ -31,15 +31,9 @@
     </UserControl.Resources>
     <Grid Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="3*"></ColumnDefinition>
-            <ColumnDefinition Width="1*"></ColumnDefinition>
+            <ColumnDefinition Width="10*"></ColumnDefinition>
+            <ColumnDefinition Width="4*"></ColumnDefinition>
         </Grid.ColumnDefinitions>
-        <TextBlock Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Center" VerticalAlignment="Center"
-				   Visibility="{Binding IsUpdateAvailable, Converter={StaticResource FalseToCollapsedConverter}}">           
-			<Hyperlink NavigateUri="https://github.com/DevTechProfile/CapFrameX/releases" RequestNavigate="Hyperlink_RequestNavigate">
-				<TextBlock Text="{Binding Path=UpdateHyperlinkText}"/>
-			</Hyperlink>	
-		</TextBlock>
         <StackPanel HorizontalAlignment="Left" Grid.Column="0" Margin="10 0 0 0" Orientation="Horizontal">
             <TextBlock Margin="0 0 5 0" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}" >Capture Service:</TextBlock>
             <TextBlock Width="Auto" VerticalAlignment="Center" Text="{Binding IsCaptureModeActive, Converter={StaticResource ModeDescriptionConverter}, ConverterParameter=Capturing|Ready}" 
@@ -93,7 +87,17 @@
                        FontWeight="Bold" Foreground="{Binding IsHAGSEnabled, Converter={StaticResource ModeColorConverter}}"></TextBlock>
         </StackPanel>
         <StackPanel HorizontalAlignment="Right" Grid.Column="1" Margin="0 0 10 0" Orientation="Horizontal">
-            <materialDesign:PackIcon Foreground="{DynamicResource MaterialDesignBody}"  Kind="Information" VerticalAlignment="Center" ToolTip="{Binding InfoToolTipText, UpdateSourceTrigger=Default}"/>
+            <TextBlock VerticalAlignment="Center" Margin="0 0 5 0"
+				   Visibility="{Binding IsUpdateAvailable, Converter={StaticResource FalseToCollapsedConverter}}"> 
+			    <Hyperlink NavigateUri="https://github.com/DevTechProfile/CapFrameX/releases" RequestNavigate="Hyperlink_RequestNavigate">
+				    <TextBlock Text="{Binding Path=UpdateHyperlinkText}"/>
+			    </Hyperlink>
+		    </TextBlock>
+            <materialDesign:PackIcon Foreground="{DynamicResource MaterialDesignBody}"  Kind="Information" VerticalAlignment="Center">
+                <materialDesign:PackIcon.ToolTip>
+                    <TextBlock Text="{Binding InfoToolTipText, UpdateSourceTrigger=Default}" Foreground="{DynamicResource MaterialDesignBody}"/>
+                </materialDesign:PackIcon.ToolTip>
+            </materialDesign:PackIcon>
             <TextBlock Margin="5 0 0 0" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}" >Version:</TextBlock>
             <TextBlock Margin="5 0 0 0" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}"  Text="{Binding VersionString, Mode=OneWay}"/>
         </StackPanel>
