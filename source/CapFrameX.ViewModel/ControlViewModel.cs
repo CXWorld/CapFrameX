@@ -156,6 +156,7 @@ namespace CapFrameX.ViewModel
                 _directoryLoading = value;
                 RaisePropertyChanged();
                 RaisePropertyChanged(nameof(DirectoryIsEmpty));
+                RaisePropertyChanged(nameof(ObservedFolderName));
             }
         }
 
@@ -198,6 +199,8 @@ namespace CapFrameX.ViewModel
                 RaisePropertyChanged();
             }
         }
+
+        public string ObservedFolderName => $" Search in \"{new DirectoryInfo(_appConfiguration.ObservedDirectory).Name}\"";
 
         public string ObservedDirectory { get; private set; }
 
