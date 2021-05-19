@@ -34,7 +34,7 @@ namespace CapFrameX.SystemInfo.NetStandard
             _sensorService = sensorService;
             _logger = logger;
 
-            SetSystemInfosStatus();
+            // SetSystemInfosStatus();
         }
 
         private void SetSystemInfosStatus()
