@@ -22,12 +22,11 @@ namespace CapFrameX.Configuration
 
         public JsonSettingsStorage(ILogger<JsonSettingsStorage> logger)
         {
-
             _logger = logger;
             _saveFileSubject
                 .AsObservable()
-                .Throttle(TimeSpan.FromMilliseconds(500))
-                .SelectMany(_ => Observable.FromAsync(() => Save()).Retry(2))
+                .Throttle(TimeSpan.FromMilliseconds(1000))
+                .SelectMany(_ => Observable.Timer(TimeSpan.FromMilliseconds(200)).Select(x => Save()).Retry(4))
                 .Subscribe();
         }
 
