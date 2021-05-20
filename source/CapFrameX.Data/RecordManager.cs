@@ -402,34 +402,26 @@ namespace CapFrameX.Data
                 var csv = new StringBuilder();
                 var datetime = DateTime.Now;
 
-                // manage custom hardware info
+                // manage hardware info
                 var cpuInfo = string.Empty;
                 var gpuInfo = string.Empty;
                 var ramInfo = string.Empty;
 
-                if (HWInfo != null)
+
+                bool hasCustomInfo = _appConfiguration.HardwareInfoSource
+                    .ConvertToEnum<EHardwareInfoSource>() == EHardwareInfoSource.Custom;
+
+                if (hasCustomInfo)
                 {
-                    cpuInfo = HWInfo.First().Processor;
-                    gpuInfo = HWInfo.First().GPU;
-                    ramInfo = HWInfo.First().SystemRam;
+                    cpuInfo = _appConfiguration.CustomCpuDescription;
+                    gpuInfo = _appConfiguration.CustomGpuDescription;
+                    ramInfo = _appConfiguration.CustomRamDescription;
                 }
                 else
                 {
-                    bool hasCustomInfo = _appConfiguration.HardwareInfoSource
-                        .ConvertToEnum<EHardwareInfoSource>() == EHardwareInfoSource.Custom;
-
-                    if (hasCustomInfo)
-                    {
-                        cpuInfo = _appConfiguration.CustomCpuDescription;
-                        gpuInfo = _appConfiguration.CustomGpuDescription;
-                        ramInfo = _appConfiguration.CustomRamDescription;
-                    }
-                    else
-                    {
-                        cpuInfo = _systemInfo.GetProcessorName();
-                        gpuInfo = _systemInfo.GetGraphicCardName();
-                        ramInfo = _systemInfo.GetSystemRAMInfoName();
-                    }
+                    cpuInfo = _systemInfo.GetProcessorName();
+                    gpuInfo = _systemInfo.GetGraphicCardName();
+                    ramInfo = _systemInfo.GetSystemRAMInfoName();
                 }
 
                 IList<string> headerLines = Enumerable.Empty<string>().ToList();
@@ -440,7 +432,7 @@ namespace CapFrameX.Data
                     apiInfo = runs.First().PresentMonRuntime;
 
                 // ToDo: muste be improved, doesn't work in many cases
-                const string resolutionInfo = "unknown";
+                //string resolutionInfo = "unknown";
                 //if (process != null)
                 //{
                 //    WindowRect wndRect = new WindowRect();
@@ -458,16 +450,16 @@ namespace CapFrameX.Data
                         ProcessName = processName.Contains(".exe") ? processName : $"{processName}.exe",
                         GameName = GetGamenameForProcess(processName),
                         CreationDate = DateTime.UtcNow,
-                        Motherboard = _systemInfo.GetMotherboardName(),
-                        OS = _systemInfo.GetOSVersion(),
-                        Processor = cpuInfo,
-                        SystemRam = ramInfo,
-                        GPU = gpuInfo,
-                        GPUDriverVersion = _sensorService.GetGpuDriverVersion(),
-                        AppVersion = _appVersionProvider.GetAppVersion(),
-                        ApiInfo = apiInfo,
-                        PresentationMode = runs.GetPresentationMode(),
-                        ResolutionInfo = resolutionInfo
+                        Motherboard = HWInfo?.First().Motherboard ?? _systemInfo.GetMotherboardName(),
+                        OS = HWInfo?.First().OS ?? _systemInfo.GetOSVersion(),
+                        Processor = HWInfo?.First().Processor ?? cpuInfo,
+                        SystemRam = HWInfo?.First().SystemRam ?? ramInfo,
+                        GPU = HWInfo?.First().GPU ?? gpuInfo,
+                        GPUDriverVersion = HWInfo?.First().GPUDriverVersion ?? _sensorService.GetGpuDriverVersion(),
+                        AppVersion = HWInfo?.First().AppVersion ?? _appVersionProvider.GetAppVersion(),
+                        ApiInfo = HWInfo?.First().ApiInfo ?? apiInfo,
+                        PresentationMode = runs.GetPresentationMode()
+                        //ResolutionInfo = resolutionInfo
                     }
                 };
 
