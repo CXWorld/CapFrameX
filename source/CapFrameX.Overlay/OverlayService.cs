@@ -318,7 +318,7 @@ namespace CapFrameX.Overlay
                         Task.Run(async () =>
                         {
                             await Task.Delay(1000);
-                            await _recordManager.SaveSessionRunsToFile(_captureDataHistory, process, recordDirectory);
+                            await _recordManager.SaveSessionRunsToFile(_captureDataHistory, process, recordDirectory, null);
                         });
                     }
                 }

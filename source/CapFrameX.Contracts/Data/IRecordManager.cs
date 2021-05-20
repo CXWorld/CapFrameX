@@ -10,7 +10,7 @@ namespace CapFrameX.Contracts.Data
 	{
 		Task<IFileRecordInfo> GetFileRecordInfo(FileInfo fileInfo);
 
-		Task<bool> SaveSessionRunsToFile(IEnumerable<ISessionRun> runs, string processName, string recordDirectory);
+		Task<bool> SaveSessionRunsToFile(IEnumerable<ISessionRun> runs, string processName, string recordDirectory, List<ISessionInfo> HWInfo);
 
 		void UpdateCustomData(IFileRecordInfo recordInfo, string customCpuInfo,
 			string customGpuInfo, string customRamInfo, string customGameName, string customComment);

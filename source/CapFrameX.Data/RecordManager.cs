@@ -387,7 +387,7 @@ namespace CapFrameX.Data
             }
         }
 
-        public async Task<bool> SaveSessionRunsToFile(IEnumerable<ISessionRun> runs, string processName, string recordDirectory = null)
+        public async Task<bool> SaveSessionRunsToFile(IEnumerable<ISessionRun> runs, string processName, string recordDirectory = null, List<ISessionInfo> HWInfo = null)
         {
             var filePath = await GetOutputFilename(processName, recordDirectory);
 
@@ -403,24 +403,33 @@ namespace CapFrameX.Data
                 var datetime = DateTime.Now;
 
                 // manage custom hardware info
-                bool hasCustomInfo = _appConfiguration.HardwareInfoSource
-                    .ConvertToEnum<EHardwareInfoSource>() == EHardwareInfoSource.Custom;
-
                 var cpuInfo = string.Empty;
                 var gpuInfo = string.Empty;
                 var ramInfo = string.Empty;
 
-                if (hasCustomInfo)
+                if (HWInfo != null)
                 {
-                    cpuInfo = _appConfiguration.CustomCpuDescription;
-                    gpuInfo = _appConfiguration.CustomGpuDescription;
-                    ramInfo = _appConfiguration.CustomRamDescription;
+                    cpuInfo = HWInfo.First().Processor;
+                    gpuInfo = HWInfo.First().GPU;
+                    ramInfo = HWInfo.First().SystemRam;
                 }
                 else
                 {
-                    cpuInfo = _systemInfo.GetProcessorName();
-                    gpuInfo = _systemInfo.GetGraphicCardName();
-                    ramInfo = _systemInfo.GetSystemRAMInfoName();
+                    bool hasCustomInfo = _appConfiguration.HardwareInfoSource
+                        .ConvertToEnum<EHardwareInfoSource>() == EHardwareInfoSource.Custom;
+
+                    if (hasCustomInfo)
+                    {
+                        cpuInfo = _appConfiguration.CustomCpuDescription;
+                        gpuInfo = _appConfiguration.CustomGpuDescription;
+                        ramInfo = _appConfiguration.CustomRamDescription;
+                    }
+                    else
+                    {
+                        cpuInfo = _systemInfo.GetProcessorName();
+                        gpuInfo = _systemInfo.GetGraphicCardName();
+                        ramInfo = _systemInfo.GetSystemRAMInfoName();
+                    }
                 }
 
                 IList<string> headerLines = Enumerable.Empty<string>().ToList();

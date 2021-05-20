@@ -401,16 +401,19 @@ namespace CapFrameX.ViewModel
                 string process = string.Empty;
                 var filteredFileRecordInfoList = _fileRecordInfoList.Where((x, i) => !outlierFlags[i]);
 
+                var HWInfo = new List<ISessionInfo>();
+
                 var runs = new List<ISessionRun>();
 
                 foreach (var recordInfo in filteredFileRecordInfoList)
                 {
                     var otherSession = _recordManager.LoadData(recordInfo.FullPath);
                     process = otherSession.Info.ProcessName;
+                    HWInfo.Add(otherSession.Info);
                     runs.AddRange(otherSession.Runs);
                 }
 
-                _recordManager.SaveSessionRunsToFile(runs, process, null);
+                _recordManager.SaveSessionRunsToFile(runs, process, null, HWInfo);
             });
         }
 
