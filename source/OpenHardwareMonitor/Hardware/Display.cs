@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Serilog;
+using System;
 using System.Runtime.InteropServices;
 
 namespace OpenHardwareMonitor.Hardware
@@ -104,34 +105,45 @@ namespace OpenHardwareMonitor.Hardware
 
         public int GetDisplayRefreshRate()
         {
-            // Get a monitor handle ("HMONITOR") for the window. 
-            // If the window is straddling more than one monitor, Windows will pick the "best" one.
-            IntPtr hmonitor = MonitorFromWindow(_hwnd, MONITOR_DEFAULTTONEAREST);
-            if (hmonitor == IntPtr.Zero)
+            int refreshRate = 0;
+
+            try
             {
-                return 0;
+                // Get a monitor handle ("HMONITOR") for the window. 
+                // If the window is straddling more than one monitor, Windows will pick the "best" one.
+                IntPtr hmonitor = MonitorFromWindow(_hwnd, MONITOR_DEFAULTTONEAREST);
+                if (hmonitor == IntPtr.Zero)
+                {
+                    return 0;
+                }
+
+                // Get more information about the monitor.
+                MONITORINFOEXW monitorInfo = new MONITORINFOEXW
+                {
+                    cbSize = (uint)Marshal.SizeOf<MONITORINFOEXW>()
+                };
+
+                bool bResult = GetMonitorInfoW(hmonitor, ref monitorInfo);
+                if (!bResult)
+                {
+                    return 0;
+                }
+
+                // Get display settings from Windows API
+                bResult = EnumDisplaySettingsW(monitorInfo.szDevice, ENUM_CURRENT_SETTINGS, out DEVMODEW devMode);
+                if (!bResult)
+                {
+                    return 0;
+                }
+
+                refreshRate = (int)devMode.dmDisplayFrequency;
+            }
+            catch (Exception ex)
+            {
+                Log.Logger.Error(ex, $"Error while getting monitor refresh rate.");
             }
 
-            // Get more information about the monitor.
-            MONITORINFOEXW monitorInfo = new MONITORINFOEXW
-            {
-                cbSize = (uint)Marshal.SizeOf<MONITORINFOEXW>()
-            };
-
-            bool bResult = GetMonitorInfoW(hmonitor, ref monitorInfo);
-            if (!bResult)
-            {
-                return 0;
-            }
-
-            // Get display settings from Windows API
-            bResult = EnumDisplaySettingsW(monitorInfo.szDevice, ENUM_CURRENT_SETTINGS, out DEVMODEW devMode);
-            if (!bResult)
-            {
-                return 0;
-            }
-
-            return (int)devMode.dmDisplayFrequency;
+            return refreshRate;
         }
     }
 }
