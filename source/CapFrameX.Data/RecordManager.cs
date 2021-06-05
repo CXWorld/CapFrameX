@@ -402,44 +402,72 @@ namespace CapFrameX.Data
                 var csv = new StringBuilder();
                 var datetime = DateTime.Now;
 
-                // manage hardware info
-                var cpuInfo = string.Empty;
-                var gpuInfo = string.Empty;
-                var ramInfo = string.Empty;
+
+                // manage system info
+                string cpuInfo = string.Empty;
+                string gpuInfo = string.Empty;
+                string ramInfo = string.Empty;
+                string mbInfo = string.Empty;
+                string osInfo = string.Empty;
+                string gpuDriverInfo = string.Empty;
+                string apiInfo = string.Empty;
+                string resolutionInfo = string.Empty;
+                Version appVersion = new Version();
 
 
-                bool hasCustomInfo = _appConfiguration.HardwareInfoSource
-                    .ConvertToEnum<EHardwareInfoSource>() == EHardwareInfoSource.Custom;
-
-                if (hasCustomInfo)
+                if (HWInfo != null)
                 {
-                    cpuInfo = _appConfiguration.CustomCpuDescription;
-                    gpuInfo = _appConfiguration.CustomGpuDescription;
-                    ramInfo = _appConfiguration.CustomRamDescription;
+                    cpuInfo = HWInfo?.First().Processor;
+                    gpuInfo = HWInfo?.First().GPU;
+                    ramInfo = HWInfo?.First().SystemRam;
+                    mbInfo = HWInfo?.First().Motherboard;
+                    osInfo = HWInfo?.First().OS;
+                    gpuDriverInfo = HWInfo?.First().GPUDriverVersion;
+                    appVersion = HWInfo?.First().AppVersion;
+                    apiInfo = HWInfo?.First().ApiInfo;
+                    resolutionInfo = HWInfo?.First().ResolutionInfo;
                 }
+
                 else
                 {
-                    cpuInfo = _systemInfo.GetProcessorName();
-                    gpuInfo = _systemInfo.GetGraphicCardName();
-                    ramInfo = _systemInfo.GetSystemRAMInfoName();
+                    bool hasCustomInfo = _appConfiguration.HardwareInfoSource
+                        .ConvertToEnum<EHardwareInfoSource>() == EHardwareInfoSource.Custom;
+
+                    if (hasCustomInfo)
+                    {
+                        cpuInfo = _appConfiguration.CustomCpuDescription;
+                        gpuInfo = _appConfiguration.CustomGpuDescription;
+                        ramInfo = _appConfiguration.CustomRamDescription;
+                    }
+                    else
+                    {
+                        cpuInfo = _systemInfo.GetProcessorName();
+                        gpuInfo = _systemInfo.GetGraphicCardName();
+                        ramInfo = _systemInfo.GetSystemRAMInfoName();
+                    }
+
+                    mbInfo = _systemInfo.GetMotherboardName();
+                    osInfo = _systemInfo.GetOSVersion();
+                    gpuDriverInfo = _sensorService.GetGpuDriverVersion();
+                    appVersion = _appVersionProvider.GetAppVersion();
+
+                    var process = Process.GetProcessesByName(processName).FirstOrDefault();
+                    apiInfo = process != null ? _rTSSService.GetApiInfo(process.Id) : "unknown";
+
+                    if (apiInfo == "unknown")
+                        apiInfo = runs.First().PresentMonRuntime;
+
+                    // ToDo: muste be improved, doesn't work in many cases
+                    //string resolutionInfo = "unknown";
+                    //if (process != null)
+                    //{
+                    //    WindowRect wndRect = new WindowRect();
+                    //    GetWindowRect(process.MainWindowHandle, ref wndRect);
+                    //    resolutionInfo = $"{ wndRect.right - wndRect.left}x{wndRect.bottom - wndRect.top}";
+                    //}
                 }
 
                 IList<string> headerLines = Enumerable.Empty<string>().ToList();
-                var process = Process.GetProcessesByName(processName).FirstOrDefault();
-                string apiInfo = process != null ? _rTSSService.GetApiInfo(process.Id) : "unknown";
-
-                if (apiInfo == "unknown")
-                    apiInfo = runs.First().PresentMonRuntime;
-
-                // ToDo: muste be improved, doesn't work in many cases
-                //string resolutionInfo = "unknown";
-                //if (process != null)
-                //{
-                //    WindowRect wndRect = new WindowRect();
-                //    GetWindowRect(process.MainWindowHandle, ref wndRect);
-                //    resolutionInfo = $"{ wndRect.right - wndRect.left}x{wndRect.bottom - wndRect.top}";
-                //}
-
                 var session = new Session.Classes.Session()
                 {
                     Hash = string.Join(",", runs.Select(r => r.Hash).OrderBy(h => h)).GetSha1(),
@@ -450,14 +478,14 @@ namespace CapFrameX.Data
                         ProcessName = processName.Contains(".exe") ? processName : $"{processName}.exe",
                         GameName = GetGamenameForProcess(processName),
                         CreationDate = DateTime.UtcNow,
-                        Motherboard = HWInfo?.First().Motherboard ?? _systemInfo.GetMotherboardName(),
-                        OS = HWInfo?.First().OS ?? _systemInfo.GetOSVersion(),
-                        Processor = HWInfo?.First().Processor ?? cpuInfo,
-                        SystemRam = HWInfo?.First().SystemRam ?? ramInfo,
-                        GPU = HWInfo?.First().GPU ?? gpuInfo,
-                        GPUDriverVersion = HWInfo?.First().GPUDriverVersion ?? _sensorService.GetGpuDriverVersion(),
-                        AppVersion = HWInfo?.First().AppVersion ?? _appVersionProvider.GetAppVersion(),
-                        ApiInfo = HWInfo?.First().ApiInfo ?? apiInfo,
+                        Motherboard = mbInfo,
+                        OS = osInfo,
+                        Processor = cpuInfo,
+                        SystemRam = ramInfo,
+                        GPU = gpuInfo,
+                        GPUDriverVersion = gpuDriverInfo,
+                        AppVersion = appVersion,
+                        ApiInfo = apiInfo,
                         PresentationMode = runs.GetPresentationMode()
                         //ResolutionInfo = resolutionInfo
                     }
