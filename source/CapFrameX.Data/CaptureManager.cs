@@ -147,7 +147,7 @@ namespace CapFrameX.Data
                 // Start overlay delay countdown timer
                 _captureStatusChange.OnNext(new CaptureStatus() { Status = ECaptureStatus.StartedDelay });
 
-                if(_appConfiguration.IsOverlayActive)
+                
                 _overlayService.SetDelayCountdown(delay);
 
                 try

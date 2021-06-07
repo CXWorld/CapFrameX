@@ -141,28 +141,26 @@ namespace CapFrameX.Overlay
 
         public void StartCountdown(double seconds)
         {
-            if (_appConfiguration.IsOverlayActive)
-            {
                 IObservable<long> obs = Extensions.ObservableExtensions.CountDown(seconds);
                 _rTSSService.SetIsCaptureTimerActive(true);
 
                 SetCaptureTimerValue(0);
                 _disposableCountdown?.Dispose();
                 _disposableCountdown = obs.Subscribe(t =>
-                {
-                    SetCaptureTimerValue((int)t);
-                    _rTSSService.Refresh();
+                {                  
+                        SetCaptureTimerValue((int)t);
+
+                        if (IsOverlayActive)
+                            _rTSSService.Refresh();
 
                     if (t == 0)
                         _rTSSService.SetIsCaptureTimerActive(false);
+
                 });
-            }
         }
 
         public void SetDelayCountdown(double seconds)
         {
-            if (_appConfiguration.IsOverlayActive)
-            {
                 IObservable<long> obs = Extensions.ObservableExtensions.CountDown(seconds);
                 _rTSSService.SetIsCaptureTimerActive(true);
 
@@ -173,58 +171,49 @@ namespace CapFrameX.Overlay
                     if (t > 0)
                     {
                         SetCaptureTimerValue((int)-t);
-                        _rTSSService.Refresh();
+
+                        if (IsOverlayActive)
+                            _rTSSService.Refresh();
                     }
                 });
-            }
         }
 
         public void CancelDelayCountdown()
         {
-            if (_appConfiguration.IsOverlayActive)
-            {
                 _disposableDelayCountdown?.Dispose();
                 _rTSSService.SetIsCaptureTimerActive(false);
-                _rTSSService.Refresh();
-            }
+
+                if (IsOverlayActive)
+                    _rTSSService.Refresh();
         }
 
         public void StartCaptureTimer()
         {
-            if (_appConfiguration.IsOverlayActive)
-            {
                 _disposableCaptureTimer = GetCaptureTimer();
                 _rTSSService.SetIsCaptureTimerActive(true);
-            }
         }
 
         public void StopCaptureTimer()
         {
-            if (_appConfiguration.IsOverlayActive)
-            {
                 _disposableCaptureTimer?.Dispose();
                 _disposableCountdown?.Dispose();
                 _rTSSService.SetIsCaptureTimerActive(false);
                 SetCaptureTimerValue(0);
-            }
         }
 
         public void SetCaptureTimerValue(int t)
         {
-            if (_appConfiguration.IsOverlayActive)
-            {
                 var captureTimer = _overlayEntryProvider.GetOverlayEntry("CaptureTimer");
                 if (captureTimer != null)
                 {
                     captureTimer.Value = $"{t} s";
                     _rTSSService.SetOverlayEntry(captureTimer);
                 }
-            }
         }
 
         public void SetCaptureServiceStatus(string status)
         {
-            if (_appConfiguration.IsOverlayActive)
+            if (IsOverlayActive)
             {
                 var captureStatus = _overlayEntryProvider.GetOverlayEntry("CaptureServiceStatus");
                 if (captureStatus != null)
@@ -703,12 +692,11 @@ namespace CapFrameX.Overlay
             return Observable
                 .Timer(DateTimeOffset.UtcNow, TimeSpan.FromSeconds(1))
                 .Subscribe(t =>
-                {
-                    if (_appConfiguration.IsOverlayActive)
-                    {
+                {                 
                         SetCaptureTimerValue((int)t);
-                        _rTSSService.Refresh();
-                    }
+
+                        if (IsOverlayActive)
+                            _rTSSService.Refresh();
                 });
         }
 
