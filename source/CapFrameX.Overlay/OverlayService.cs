@@ -704,8 +704,11 @@ namespace CapFrameX.Overlay
                 .Timer(DateTimeOffset.UtcNow, TimeSpan.FromSeconds(1))
                 .Subscribe(t =>
                 {
-                    SetCaptureTimerValue((int)t);
-                    _rTSSService.Refresh();
+                    if (_appConfiguration.IsOverlayActive)
+                    {
+                        SetCaptureTimerValue((int)t);
+                        _rTSSService.Refresh();
+                    }
                 });
         }
 
