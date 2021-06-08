@@ -666,7 +666,7 @@ namespace CapFrameX.ViewModel
             {
                 LoggerOutput.Add(new LogEntry()
                 {
-                    FormattedDateTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
+                    FormattedDateTime = DateTime.Now.ToString("HH:mm:ss"),
                     Message = message
                 });
             }));
