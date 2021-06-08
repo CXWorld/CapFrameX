@@ -9,8 +9,6 @@ namespace CapFrameX.ViewModel.LoggerEntry
     {
         public string FormattedDateTime { get; set; }
 
-        public int Index { get; set; }
-
         public string Message { get; set; }
     }
 

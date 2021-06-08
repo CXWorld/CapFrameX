@@ -42,16 +42,12 @@
             <DataTemplate DataType="{x:Type log:LogEntry}">
                 <Grid IsSharedSizeScope="True">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition SharedSizeGroup="Index" Width="Auto"/>
                         <ColumnDefinition SharedSizeGroup="Date" Width="Auto"/>
                         <ColumnDefinition/>
                     </Grid.ColumnDefinitions>
 
                     <TextBlock Text="{Binding FormattedDateTime}" Grid.Column="0" Foreground="{DynamicResource MaterialDesignBody}"
                        FontWeight="Bold" Margin="5,0,5,0"/>
-
-                    <TextBlock Text="{Binding Index}" Grid.Column="1" Foreground="{DynamicResource MaterialDesignBody}"
-                       FontWeight="Bold" Margin="0,0,2,0" />
 
                     <TextBlock Text="{Binding Message}" Grid.Column="2" Foreground="{DynamicResource MaterialDesignBody}"
                        TextWrapping="Wrap"/>
@@ -61,7 +57,6 @@
             <DataTemplate DataType="{x:Type log:CollapsibleLogEntry}">
                 <Grid IsSharedSizeScope="True">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition SharedSizeGroup="Index" Width="Auto"/>
                         <ColumnDefinition SharedSizeGroup="Date" Width="Auto"/>
                         <ColumnDefinition/>
                     </Grid.ColumnDefinitions>
@@ -73,9 +68,6 @@
 
                     <TextBlock Text="{Binding FormattedDateTime}" Grid.Column="0" Foreground="{DynamicResource MaterialDesignBody}"
                        FontWeight="Bold" Margin="5,0,5,0"/>
-
-                    <TextBlock Text="{Binding Index}" Grid.Column="1" Foreground="{DynamicResource MaterialDesignBody}"
-                       FontWeight="Bold" Margin="0,0,2,0" />
 
                     <TextBlock Text="{Binding Message}" Grid.Column="2" Foreground="{DynamicResource MaterialDesignBody}"
                        TextWrapping="Wrap"/>
@@ -220,7 +212,6 @@
         </DockPanel>
         <DockPanel Grid.Column="1" Margin="20 40 20 20">
             <Grid Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
-                <!--<TextBlock Text="{Binding LoggerEntryCount, StringFormat='{}{0} Items'}" DockPanel.Dock="Top" Foreground="{DynamicResource MaterialDesignBody}"/>-->
                 <ItemsControl ItemsSource="{Binding LoggerOutput}" Style="{StaticResource LogViewerStyle}">
                     <ItemsControl.Template>
                         <ControlTemplate>
