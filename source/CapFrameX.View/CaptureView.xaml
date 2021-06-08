@@ -195,9 +195,9 @@
                      PreviewMouseDown="TextBox_PreviewMouseDown" PreviewKeyDown="TextBox_PreviewKeyDown" MouseLeave="TextBox_MouseLeave" ToolTip="0 = no delay"
                      PreviewTextInput="NumberValidationTextBox" Foreground="{DynamicResource MaterialDesignBody}" wpf:HintAssist.HintOpacity=".8"/>
 
-                <ComboBox Grid.Row="0" Grid.Column="3" Width="110" Height="40" materialDesign:HintAssist.Hint="Hotkey sound" Style="{StaticResource MaterialDesignComboBox}"                          
+                <ComboBox Grid.Row="0" Grid.Column="3" Width="102" Height="40" materialDesign:HintAssist.Hint="Hotkey sound" Style="{StaticResource MaterialDesignComboBox}"                          
 						  Margin="30 0 0 0" MaxDropDownHeight="200" FontSize="14" materialDesign:HintAssist.IsFloating="True" materialDesign:HintAssist.HintOpacity=".8"
-						  ItemsSource="{Binding SoundModes}" HorizontalAlignment="Right" VerticalAlignment="Bottom" Foreground="{DynamicResource MaterialDesignBody}">
+						  ItemsSource="{Binding SoundModes}" HorizontalAlignment="Left" HorizontalContentAlignment="Left" VerticalAlignment="Bottom" Foreground="{DynamicResource MaterialDesignBody}">
                     <ComboBox.Text>
                         <Binding Path="SelectedSoundMode"
 								 Mode="TwoWay"
@@ -206,7 +206,7 @@
                     </ComboBox.Text>
                 </ComboBox>
 
-                <Grid Grid.Row="1" Grid.Column="3" Margin="30 10 0 0" Width="110" Visibility="{Binding ShowVolumeController, Converter={StaticResource FalseToCollapsedConverter}}">
+                <Grid Grid.Row="1" Grid.Column="3" Margin="20 10 -5 0" Width="110" Visibility="{Binding ShowVolumeController, Converter={StaticResource FalseToCollapsedConverter}}">
                     <materialDesign:PackIcon Kind="VolumeMedium" Foreground="{DynamicResource MaterialDesignBody}"/>
                     <Slider HorizontalAlignment="Center"
 							Minimum="0" 
