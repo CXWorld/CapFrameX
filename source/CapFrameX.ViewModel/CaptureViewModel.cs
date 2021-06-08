@@ -60,7 +60,6 @@ namespace CapFrameX.ViewModel
         private bool _hotkeyLocked = false;
         private string _currentGameNameToCapture = string.Empty;
         private string _currentProcessToCapture = string.Empty;
-        private int _loggerEntryIndex = 0;
 
         private PubSubEvent<ViewMessages.CurrentProcessToCapture> _updateCurrentProcess;
 
@@ -180,11 +179,6 @@ namespace CapFrameX.ViewModel
                 _soundManager.Volume = value / 100;
                 RaisePropertyChanged();
             }
-        }
-
-        public int LoggerEntryCount
-        {
-            get => _loggerEntryIndex + 1;
         }
 
         public string[] SoundModes => _soundManager.AvailableSoundModes;
@@ -672,12 +666,9 @@ namespace CapFrameX.ViewModel
             {
                 LoggerOutput.Add(new LogEntry()
                 {
-                    Index = _loggerEntryIndex++,
                     FormattedDateTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
                     Message = message
                 });
-
-                RaisePropertyChanged(nameof(LoggerEntryCount));
             }));
         }
     }
