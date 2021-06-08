@@ -8,8 +8,8 @@ using CapFrameX.Data;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Hotkey;
 using CapFrameX.PresentMonInterface;
-using CapFrameX.Statistics.NetStandard;
 using CapFrameX.Statistics.NetStandard.Contracts;
+using CapFrameX.ViewModel.LoggerEntry;
 using Microsoft.Extensions.Logging;
 using OxyPlot;
 using OxyPlot.Axes;
@@ -28,6 +28,7 @@ using System.Reactive.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Threading;
 
 namespace CapFrameX.ViewModel
 {
@@ -54,12 +55,12 @@ namespace CapFrameX.ViewModel
         private string _captureTimeString = "0";
         private string _captureDelayString = "0";
         private string _captureStartDelayString = "0";
-        private string _loggerOutput = string.Empty;
         private PlotModel _frametimeModel;
         private string _lastCapturedProcess;
         private bool _hotkeyLocked = false;
         private string _currentGameNameToCapture = string.Empty;
         private string _currentProcessToCapture = string.Empty;
+        private int _loggerEntryIndex = 0;
 
         private PubSubEvent<ViewMessages.CurrentProcessToCapture> _updateCurrentProcess;
 
@@ -147,16 +148,6 @@ namespace CapFrameX.ViewModel
             }
         }
 
-        public string LoggerOutput
-        {
-            get { return _loggerOutput; }
-            set
-            {
-                _loggerOutput = value;
-                RaisePropertyChanged();
-            }
-        }
-
         public PlotModel FrametimeModel
         {
             get { return _frametimeModel; }
@@ -191,6 +182,11 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        public int LoggerEntryCount
+        {
+            get => _loggerEntryIndex + 1;
+        }
+
         public string[] SoundModes => _soundManager.AvailableSoundModes;
 
         public IAppConfiguration AppConfiguration => _appConfiguration;
@@ -203,6 +199,9 @@ namespace CapFrameX.ViewModel
 
         public ObservableCollection<string> ProcessesToIgnore { get; }
             = new ObservableCollection<string>();
+
+        public ObservableCollection<LogEntry> LoggerOutput { get; set; }
+            = new ObservableCollection<LogEntry>();
 
         public ICommand AddToIgonreListCommand { get; }
 
@@ -293,7 +292,7 @@ namespace CapFrameX.ViewModel
 
                 if (status.Message != null)
                 {
-                    LoggerOutput += $"{DateTime.Now.ToLongTimeString()}: {status.Message}" + Environment.NewLine;
+                    AddLoggerEntry(status.Message);
                 }
             });
 
@@ -407,7 +406,7 @@ namespace CapFrameX.ViewModel
                     }
                     catch (Exception e)
                     {
-                        LoggerOutput += $"{DateTime.Now.ToLongTimeString()}: Error: {e.Message}" + Environment.NewLine;
+                        AddLoggerEntry($"Error: {e.Message}");
                     }
                 });
 
@@ -423,7 +422,7 @@ namespace CapFrameX.ViewModel
                     }
                     catch (Exception e)
                     {
-                        LoggerOutput += $"{DateTime.Now.ToLongTimeString()}: Error: {e.Message}" + Environment.NewLine;
+                        AddLoggerEntry($"Error: {e.Message}");
                     }
                     finally
                     {
@@ -665,6 +664,21 @@ namespace CapFrameX.ViewModel
                 MinorTickSize = 0,
                 MajorTickSize = 0
             });
+        }
+
+        private void AddLoggerEntry(string message)
+        {
+            Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.Normal, (Action)(() =>
+            {
+                LoggerOutput.Add(new LogEntry()
+                {
+                    Index = _loggerEntryIndex++,
+                    FormattedDateTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
+                    Message = message
+                });
+
+                RaisePropertyChanged(nameof(LoggerEntryCount));
+            }));
         }
     }
 }

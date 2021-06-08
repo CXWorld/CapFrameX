@@ -24,7 +24,6 @@ using CapFrameX.Data.Session.Contracts;
 using System.Reactive;
 using CapFrameX.MVVM.Dialogs;
 using Microsoft.Extensions.Logging;
-using System.Threading.Tasks;
 
 namespace CapFrameX.ViewModel
 {
@@ -221,14 +220,6 @@ namespace CapFrameX.ViewModel
 
         public ICommand AcceptEditingDialogCommand { get; }
 
-        public ICommand CancelEditingDialogCommand { get; }
-
-        public ICommand AddCpuInfoCommand { get; }
-
-        public ICommand AddGpuInfoCommand { get; }
-
-        public ICommand AddRamInfoCommand { get; }
-
         public ICommand DeleteRecordCommand { get; }
 
         public ICommand OpenObservedFolderCommand { get; }
@@ -278,10 +269,6 @@ namespace CapFrameX.ViewModel
             MoveRecordFileCommand = new DelegateCommand(OnMoveRecordFile);
             DuplicateRecordFileCommand = new DelegateCommand(OnDuplicateRecordFile);
             AcceptEditingDialogCommand = new DelegateCommand(OnAcceptEditingDialog);
-            CancelEditingDialogCommand = new DelegateCommand(OnCancelEditingDialog);
-            AddCpuInfoCommand = new DelegateCommand(OnAddCpuInfo);
-            AddGpuInfoCommand = new DelegateCommand(OnAddGpuInfo);
-            AddRamInfoCommand = new DelegateCommand(OnAddRamInfo);
             DeleteRecordCommand = new DelegateCommand(OnPressDeleteKey);
             OpenObservedFolderCommand = new DelegateCommand(OnOpenObservedFolder);
             DeleteFolderCommand = new DelegateCommand(OnDeleteFolder);
@@ -583,22 +570,6 @@ namespace CapFrameX.ViewModel
             TreeViewUpdateStream.OnNext(default);
         }
 
-        private void OnCancelEditingDialog()
-        {
-            if (SelectedRecordInfo != null)
-            {
-                CustomCpuDescription = string.Copy(SelectedRecordInfo.ProcessorName ?? string.Empty);
-                CustomGpuDescription = string.Copy(SelectedRecordInfo.GraphicCardName ?? string.Empty);
-                CustomRamDescription = string.Copy(SelectedRecordInfo.SystemRamInfo ?? string.Empty);
-                CustomGameName = string.Copy(SelectedRecordInfo.GameName ?? string.Empty);
-                CustomComment = string.Copy(SelectedRecordInfo.Comment ?? string.Empty);
-            }
-            else
-            {
-                ResetInfoEditBoxes();
-            }
-        }
-
         private void ResetInfoEditBoxes()
         {
             CustomCpuDescription = string.Empty;
@@ -719,21 +690,6 @@ namespace CapFrameX.ViewModel
             }
 
             ResetDescriptionChangedFlags();
-        }
-
-        private void OnAddCpuInfo()
-        {
-            CustomCpuDescription = _systemInfo.GetProcessorName();
-        }
-
-        private void OnAddGpuInfo()
-        {
-            CustomGpuDescription = _systemInfo.GetGraphicCardName();
-        }
-
-        private void OnAddRamInfo()
-        {
-            CustomRamDescription = _systemInfo.GetSystemRAMInfoName();
         }
 
         private void OnPressDeleteKey()
