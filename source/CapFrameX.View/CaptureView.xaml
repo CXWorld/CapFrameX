@@ -40,17 +40,17 @@
             </Style>
 
             <DataTemplate DataType="{x:Type log:LogEntry}">
-                <Grid IsSharedSizeScope="True">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition SharedSizeGroup="Date" Width="Auto"/>
-                        <ColumnDefinition/>
-                    </Grid.ColumnDefinitions>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"></RowDefinition>
+                        <RowDefinition Height="Auto"></RowDefinition>
+                    </Grid.RowDefinitions>
 
-                    <TextBlock Text="{Binding FormattedDateTime}" Grid.Column="0" Foreground="{DynamicResource MaterialDesignBody}"
-                       FontWeight="Bold" Margin="5,0,5,0"/>
+                    <TextBlock Text="{Binding MessageInfo}" Grid.Row="0" Grid.Column="0" Foreground="{DynamicResource MaterialDesignBody}"
+                       FontWeight="Bold" Margin="5,5,5,0"/>
 
-                    <TextBlock Text="{Binding Message}" Grid.Column="2" Foreground="{DynamicResource MaterialDesignBody}"
-                       TextWrapping="Wrap"/>
+                    <TextBlock Text="{Binding Message}" Grid.Row="1" Grid.ColumnSpan="3" Foreground="{DynamicResource MaterialDesignBody}"
+                       TextWrapping="Wrap" Margin="5,0,5,10"/>
                 </Grid>
             </DataTemplate>
 
@@ -89,6 +89,7 @@
             </DataTemplate>
         </ResourceDictionary>
     </UserControl.Resources>
+    <Grid VerticalAlignment="Top" HorizontalAlignment="Center">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="5*"></ColumnDefinition>
@@ -210,8 +211,10 @@
                 </Grid>
             </Grid>
         </DockPanel>
-        <DockPanel Grid.Column="1" Margin="20 40 20 20">
-            <Grid Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
+            <TextBlock Grid.Column="1" HorizontalAlignment="Center" Text="Capture service logger" FontSize="14" Margin="0 40 0 0" 
+                       Foreground="{DynamicResource MaterialDesignBody}"></TextBlock>
+            <DockPanel Grid.Column="1" Margin="20 40 20 20" Width="380" Height="500">
+                <Grid Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" Height="450">
                 <ItemsControl ItemsSource="{Binding LoggerOutput}" Style="{StaticResource LogViewerStyle}">
                     <ItemsControl.Template>
                         <ControlTemplate>
@@ -228,5 +231,6 @@
                 </ItemsControl>
             </Grid>
         </DockPanel>
+    </Grid>
     </Grid>
 </UserControl>

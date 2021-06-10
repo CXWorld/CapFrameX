@@ -7,8 +7,9 @@ namespace CapFrameX.ViewModel.LoggerEntry
 {
     public class LogEntry : PropertyChangedDispatcherBase
     {
-        public string FormattedDateTime { get; set; }
-
+        public string MessageInfo { get; set; }
+        public string MessageType { get; set; }
+        public int PriorityLevel { get; set; }
         public string Message { get; set; }
     }
 

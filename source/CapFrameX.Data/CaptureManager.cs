@@ -35,6 +35,8 @@ namespace CapFrameX.Data
     public struct CaptureStatus
     {
         public ECaptureStatus? Status;
+        public string MessageType;
+        public int PriorityLevel;
         public string Message;
     }
 
@@ -147,7 +149,8 @@ namespace CapFrameX.Data
                 // Start overlay delay countdown timer
                 _captureStatusChange.OnNext(new CaptureStatus() { Status = ECaptureStatus.StartedDelay });
 
-                
+                AddLoggerEntry($"Capture delay timer of {delay} seconds started", "Info", 1);
+
                 _overlayService.SetDelayCountdown(delay);
 
                 try
@@ -159,6 +162,7 @@ namespace CapFrameX.Data
                     _overlayService.SetCaptureServiceStatus("Ready to capture...");
                     _captureStatusChange.OnNext(new CaptureStatus() { Status = ECaptureStatus.Stopped });
                     delayStopwatch.Reset();
+                    AddLoggerEntry("Delay countdown canceled before capture start.", "Info", 1);
                     _cancelDelay?.Dispose();
                     _cancelDelay = new CancellationTokenSource();
                     return;
@@ -182,7 +186,6 @@ namespace CapFrameX.Data
 
             _captureData = new List<string[]>();
 
-            AddLoggerEntry("Capturing started.");
             _overlayService.SetCaptureServiceStatus("Recording frametimes");
 
             if (options.Remote)
@@ -196,11 +199,11 @@ namespace CapFrameX.Data
             double captureDataArchiveLastTime = 0;
 
             _ = QueryPerformanceCounter(out long startCounter);
-            AddLoggerEntry($"Performance counter on start capturing: {startCounter}");
+            AddLoggerEntry($"Performance counter on start capturing: {startCounter}", "Info", 2);
             _qpcTimeStart = startCounter;
 
             // atomic time
-            AddLoggerEntry($"Atomic time (UTC): {AtomicTime.Now.TimeOfDay}");
+            AddLoggerEntry($"Atomic time (UTC): {AtomicTime.Now.TimeOfDay}", "Info", 2);
 
             _disposableCaptureStream = _presentMonCaptureService
                 .RedirectedOutputDataStream
@@ -239,7 +242,7 @@ namespace CapFrameX.Data
                             _fillArchive = false;
                             _disposableArchiveStream?.Dispose();
 
-                            AddLoggerEntry("Stopped filling Archive");
+                            AddLoggerEntry("Stopped filling Archive", "Info", 2);
                         }
                     }
                 });
@@ -247,13 +250,15 @@ namespace CapFrameX.Data
             _sensorService.StartSensorLogging();
 
             delayStopwatch.Stop();
-            AddLoggerEntry($"Time between capture start request and execution in ms: {delayStopwatch.ElapsedMilliseconds}");
+            AddLoggerEntry($"Time between capture start request and execution in ms: {delayStopwatch.ElapsedMilliseconds}", "Info", 2);
 
             if (options.CaptureTime > 0d)
             {
                 //Start overlay countdown timer
                 if (!OSDAutoDisabled)
                     _overlayService.StartCountdown(options.CaptureTime);
+
+                AddLoggerEntry($"Capture started. Set time: {options.CaptureTime} seconds", "Info", 1);
 
                 _autoCompletionDisposableStream = Observable.Timer(TimeSpan.FromSeconds(options.CaptureTime))
                     .Subscribe(async _ => await StopCapture());
@@ -262,6 +267,8 @@ namespace CapFrameX.Data
             {
                 if (!OSDAutoDisabled)
                     _overlayService.StartCaptureTimer();
+
+                AddLoggerEntry($"Capture started", "Info", 1);
             }
 
             await Task.FromResult(0);
@@ -289,6 +296,8 @@ namespace CapFrameX.Data
             _sensorService.StopSensorLogging();
             _captureStatusChange.OnNext(new CaptureStatus() { Status = ECaptureStatus.Processing });
 
+            AddLoggerEntry("Capture finished", "Info", 1);
+
             if (_appConfiguration.AutoDisableOverlay && OSDAutoDisabled)
             {
                 _appConfiguration.IsOverlayActive = true;
@@ -297,12 +306,16 @@ namespace CapFrameX.Data
                 OSDAutoDisabled = false;
             }
 
-            if(_appConfiguration.IsOverlayActive)
+            if (_appConfiguration.IsOverlayActive)
                 _rtssService.Refresh();
+
+            AddLoggerEntry($"Running offset of {PRESICE_OFFSET}ms to gather latest frames", "Info", 2);
 
             await Task.Delay(TimeSpan.FromMilliseconds(PRESICE_OFFSET));
             IsCapturing = false;
             _disposableCaptureStream?.Dispose();
+
+            AddLoggerEntry("Creating capture file", "Info", 1);
 
             if (_appConfiguration.IsOverlayActive)
                 _rtssService.Refresh();
@@ -366,7 +379,7 @@ namespace CapFrameX.Data
         private void PrepareForNextCapture()
         {
             StartFillArchive();
-            AddLoggerEntry("Started filling archive.");
+            AddLoggerEntry("Started filling archive.", "Info", 2);
         }
 
         private async Task WriteExtractedCaptureDataToFileAsync()
@@ -382,7 +395,7 @@ namespace CapFrameX.Data
 
                 if (!adjustedCaptureData.Any())
                 {
-                    AddLoggerEntry("Error while extracting capture data. No file will be written.");
+                    AddLoggerEntry("Error while extracting capture data. No file will be written.", "Error", 1);
                     return;
                 }
 
@@ -401,7 +414,7 @@ namespace CapFrameX.Data
                 // if aggregation mode is active and "Save aggregated result only" is checked, don't save single history items
                 if (_appConfiguration.UseAggregation && _appConfiguration.SaveAggregationOnly)
                 {
-                    AddLoggerEntry("Aggregation active, adding to history...");
+                    AddLoggerEntry("Aggregation active, adding to history...", "Info", 1);
                     return;
                 }
 
@@ -413,9 +426,9 @@ namespace CapFrameX.Data
                 bool checkSave = await _recordManager.SaveSessionRunsToFile(new ISessionRun[] { sessionRun }, _currentCaptureOptions.ProcessInfo.Item1, _currentCaptureOptions.RecordDirectory, null);
 
                 if (!checkSave)
-                    AddLoggerEntry("Error while saving capture data.");
+                    AddLoggerEntry("Error while saving capture data.", "Error", 1);
                 else
-                    AddLoggerEntry("Capture file is successfully written into directory.");
+                    AddLoggerEntry("Capture file is successfully written into directory.", "Info", 1);
 
                 LockCaptureService = false;
             }
@@ -430,7 +443,7 @@ namespace CapFrameX.Data
         {
             if (!_captureData.Any())
             {
-                AddLoggerEntry($"No available capture Data...");
+                AddLoggerEntry($"No available capture Data...", "Info", 1);
                 return Enumerable.Empty<string[]>().ToList();
             }
 
@@ -440,7 +453,7 @@ namespace CapFrameX.Data
             if (string.IsNullOrWhiteSpace(_captureTimeString))
             {
                 _captureTimeString = "0";
-                AddLoggerEntry($"Wrong capture time string. Value will be set to default (0).");
+                AddLoggerEntry($"Wrong capture time string. Value will be set to default (0).", "Info", 2);
             }
 
             var definedTime = _currentCaptureOptions.CaptureTime;
@@ -472,7 +485,7 @@ namespace CapFrameX.Data
             }
 
             if (uniqueProcessIdDict.Any(dict => dict.Value.Count() > 1))
-                AddLoggerEntry($"Multi instances detected. Capture data will be filtered.");
+                AddLoggerEntry($"Multi instances detected. Capture data will be filtered.", "Info", 2);
 
             var filteredArchive = _captureDataArchive.Where(line =>
             {
@@ -488,12 +501,12 @@ namespace CapFrameX.Data
 
             if (!filteredArchive.Any())
             {
-                AddLoggerEntry($"Empty archive. No file will be written.");
+                AddLoggerEntry($"Empty archive. No file will be written.", "Error", 1);
                 return Enumerable.Empty<string[]>().ToList();
             }
             else
             {
-                AddLoggerEntry($"Using archive with {filteredArchive.Count} frames.");
+                AddLoggerEntry($"Using archive with {filteredArchive.Count} frames.", "Info", 2);
             }
 
             // Distinct archive and live stream
@@ -510,7 +523,7 @@ namespace CapFrameX.Data
             if (distinctIndex == 0)
             {
                 _logger.LogWarning("Something went wrong getting union capture data. We cant use the data from archive(First CaptureDataTime was {firstCaptureTime}, last ArchiveTime was {lastArchiveTime})", GetStartTimeFromDataLine(filteredCaptureData.First()), lastArchiveTime);
-                AddLoggerEntry("Comparison with archive data is invalid.");
+                AddLoggerEntry("Comparison with archive data is invalid.", "Error", 1);
 
                 return Enumerable.Empty<string[]>().ToList();
             }
@@ -520,7 +533,7 @@ namespace CapFrameX.Data
             var unionCaptureDataEndTime = GetStartTimeFromDataLine(unionCaptureData.Last());
 
             AddLoggerEntry($"Length captured data + archive in sec: " +
-                $"{ Math.Round(unionCaptureDataEndTime - unionCaptureDataStartTime, 2)}");
+                $"{ Math.Round(unionCaptureDataEndTime - unionCaptureDataStartTime, 2)}", "Info", 2);
 
             var captureInterval = new List<string[]>();
 
@@ -540,7 +553,7 @@ namespace CapFrameX.Data
 
             if (startTime == 0)
             {
-                AddLoggerEntry($"Start time is invalid. Error while evaluating QPCTime start.");
+                AddLoggerEntry($"Start time is invalid. Error while evaluating QPCTime start.", "Error", 1);
                 return Enumerable.Empty<string[]>().ToList();
             }
 
@@ -557,14 +570,14 @@ namespace CapFrameX.Data
 
                 if (!captureInterval.Any())
                 {
-                    AddLoggerEntry($"Empty capture interval. Error while evaluating start and end time.");
+                    AddLoggerEntry($"Empty capture interval. Error while evaluating start and end time.", "Error", 1);
                     return Enumerable.Empty<string[]>().ToList();
                 }
             }
             else
             {
                 AddLoggerEntry($"Length captured data QPCTime start to end with buffer in sec: " +
-                    $"{ Math.Round(unionCaptureDataEndTime - startTime, 2)}");
+                    $"{ Math.Round(unionCaptureDataEndTime - startTime, 2)}", "Info", 2);
 
                 double normalizeTimeOffset = 0;
 
@@ -636,11 +649,15 @@ namespace CapFrameX.Data
             return Convert.ToDouble(lineSplit[PresentMonCaptureService.TimeInSeconds_INDEX], CultureInfo.InvariantCulture);
         }
 
-        private void AddLoggerEntry(string entry)
+        private void AddLoggerEntry(string entry, string messageType, int priorityLevel)
         {
             _captureStatusChange.OnNext(new CaptureStatus()
             {
+                MessageType = messageType,
+                PriorityLevel = priorityLevel,
                 Message = entry
+                
+               
             });
         }
     }

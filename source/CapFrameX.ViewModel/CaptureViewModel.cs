@@ -286,7 +286,7 @@ namespace CapFrameX.ViewModel
 
                 if (status.Message != null)
                 {
-                    AddLoggerEntry(status.Message);
+                    AddLoggerEntry(status.Message, status.MessageType, status.PriorityLevel);
                 }
             });
 
@@ -400,7 +400,7 @@ namespace CapFrameX.ViewModel
                     }
                     catch (Exception e)
                     {
-                        AddLoggerEntry($"Error: {e.Message}");
+                        AddLoggerEntry($"Error: {e.Message}", "Exception", 1);
                     }
                 });
 
@@ -416,7 +416,7 @@ namespace CapFrameX.ViewModel
                     }
                     catch (Exception e)
                     {
-                        AddLoggerEntry($"Error: {e.Message}");
+                        AddLoggerEntry($"Error: {e.Message}", "Exception", 1);
                     }
                     finally
                     {
@@ -660,13 +660,15 @@ namespace CapFrameX.ViewModel
             });
         }
 
-        private void AddLoggerEntry(string message)
+        private void AddLoggerEntry(string message, string messageType, int priorityLevel)
         {
             Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.Normal, (Action)(() =>
             {
                 LoggerOutput.Add(new LogEntry()
                 {
-                    FormattedDateTime = DateTime.Now.ToString("HH:mm:ss"),
+                    MessageType = messageType,
+                    PriorityLevel = priorityLevel,
+                    MessageInfo = DateTime.Now.ToString("HH:mm:ss") + $" ( Type: {messageType},  Level: {priorityLevel} )",
                     Message = message
                 });
             }));
