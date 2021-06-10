@@ -100,6 +100,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Aggregation\IAggregationEntry.cs" />
+    <Compile Include="Capture\ELogMessageType.cs" />
     <Compile Include="Data\ESystemInfoTertiaryStatus.cs" />
     <Compile Include="Data\ICloudManager.cs" />
     <Compile Include="Cloud\ICloudEntry.cs" />
@@ -146,8 +147,6 @@
     <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Statistics\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

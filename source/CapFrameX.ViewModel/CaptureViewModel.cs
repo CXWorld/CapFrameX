@@ -1,4 +1,5 @@
-﻿using CapFrameX.Contracts.Configuration;
+﻿using CapFrameX.Contracts.Capture;
+using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.PresentMonInterface;
@@ -6,6 +7,7 @@ using CapFrameX.Contracts.RTSS;
 using CapFrameX.Contracts.Sensor;
 using CapFrameX.Data;
 using CapFrameX.EventAggregation.Messages;
+using CapFrameX.Extensions.NetStandard;
 using CapFrameX.Hotkey;
 using CapFrameX.PresentMonInterface;
 using CapFrameX.Statistics.NetStandard.Contracts;
@@ -286,7 +288,7 @@ namespace CapFrameX.ViewModel
 
                 if (status.Message != null)
                 {
-                    AddLoggerEntry(status.Message, status.MessageType, status.PriorityLevel);
+                    AddLoggerEntry(status.Message, status.MessageType);
                 }
             });
 
@@ -400,7 +402,7 @@ namespace CapFrameX.ViewModel
                     }
                     catch (Exception e)
                     {
-                        AddLoggerEntry($"Error: {e.Message}", "Exception", 1);
+                        AddLoggerEntry($"Error: {e.Message}", ELogMessageType.Error);
                     }
                 });
 
@@ -416,7 +418,7 @@ namespace CapFrameX.ViewModel
                     }
                     catch (Exception e)
                     {
-                        AddLoggerEntry($"Error: {e.Message}", "Exception", 1);
+                        AddLoggerEntry($"Error: {e.Message}", ELogMessageType.Error);
                     }
                     finally
                     {
@@ -660,15 +662,14 @@ namespace CapFrameX.ViewModel
             });
         }
 
-        private void AddLoggerEntry(string message, string messageType, int priorityLevel)
+        private void AddLoggerEntry(string message, ELogMessageType messageType)
         {
             Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.Normal, (Action)(() =>
             {
                 LoggerOutput.Add(new LogEntry()
                 {
                     MessageType = messageType,
-                    PriorityLevel = priorityLevel,
-                    MessageInfo = DateTime.Now.ToString("HH:mm:ss") + $" ( Type: {messageType},  Level: {priorityLevel} )",
+                    MessageInfo = DateTime.Now.ToString("HH:mm:ss") + $" ( Type: {messageType.GetDescription()} )",
                     Message = message
                 });
             }));

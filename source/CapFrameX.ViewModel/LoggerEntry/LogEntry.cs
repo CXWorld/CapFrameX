@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CapFrameX.Contracts.Capture;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows;
@@ -8,8 +9,7 @@ namespace CapFrameX.ViewModel.LoggerEntry
     public class LogEntry : PropertyChangedDispatcherBase
     {
         public string MessageInfo { get; set; }
-        public string MessageType { get; set; }
-        public int PriorityLevel { get; set; }
+        public ELogMessageType MessageType { get; set; }
         public string Message { get; set; }
     }
 

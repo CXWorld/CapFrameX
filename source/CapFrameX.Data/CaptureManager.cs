@@ -1,4 +1,5 @@
-﻿using CapFrameX.Contracts.Configuration;
+﻿using CapFrameX.Contracts.Capture;
+using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.PresentMonInterface;
@@ -35,8 +36,7 @@ namespace CapFrameX.Data
     public struct CaptureStatus
     {
         public ECaptureStatus? Status;
-        public string MessageType;
-        public int PriorityLevel;
+        public ELogMessageType MessageType;
         public string Message;
     }
 
@@ -149,7 +149,7 @@ namespace CapFrameX.Data
                 // Start overlay delay countdown timer
                 _captureStatusChange.OnNext(new CaptureStatus() { Status = ECaptureStatus.StartedDelay });
 
-                AddLoggerEntry($"Capture delay timer of {delay} seconds started", "Info", 1);
+                AddLoggerEntry($"Capture delay timer of {delay} seconds started", ELogMessageType.BasicInfo);
 
                 _overlayService.SetDelayCountdown(delay);
 
@@ -162,7 +162,7 @@ namespace CapFrameX.Data
                     _overlayService.SetCaptureServiceStatus("Ready to capture...");
                     _captureStatusChange.OnNext(new CaptureStatus() { Status = ECaptureStatus.Stopped });
                     delayStopwatch.Reset();
-                    AddLoggerEntry("Delay countdown canceled before capture start.", "Info", 1);
+                    AddLoggerEntry("Delay countdown canceled before capture start.", ELogMessageType.BasicInfo);
                     _cancelDelay?.Dispose();
                     _cancelDelay = new CancellationTokenSource();
                     return;
@@ -199,11 +199,11 @@ namespace CapFrameX.Data
             double captureDataArchiveLastTime = 0;
 
             _ = QueryPerformanceCounter(out long startCounter);
-            AddLoggerEntry($"Performance counter on start capturing: {startCounter}", "Info", 2);
+            AddLoggerEntry($"Performance counter on start capturing: {startCounter}", ELogMessageType.AdvancedInfo);
             _qpcTimeStart = startCounter;
 
             // atomic time
-            AddLoggerEntry($"Atomic time (UTC): {AtomicTime.Now.TimeOfDay}", "Info", 2);
+            AddLoggerEntry($"Atomic time (UTC): {AtomicTime.Now.TimeOfDay}", ELogMessageType.AdvancedInfo);
 
             _disposableCaptureStream = _presentMonCaptureService
                 .RedirectedOutputDataStream
@@ -242,7 +242,7 @@ namespace CapFrameX.Data
                             _fillArchive = false;
                             _disposableArchiveStream?.Dispose();
 
-                            AddLoggerEntry("Stopped filling Archive", "Info", 2);
+                            AddLoggerEntry("Stopped filling Archive", ELogMessageType.AdvancedInfo);
                         }
                     }
                 });
@@ -250,7 +250,7 @@ namespace CapFrameX.Data
             _sensorService.StartSensorLogging();
 
             delayStopwatch.Stop();
-            AddLoggerEntry($"Time between capture start request and execution in ms: {delayStopwatch.ElapsedMilliseconds}", "Info", 2);
+            AddLoggerEntry($"Time between capture start request and execution in ms: {delayStopwatch.ElapsedMilliseconds}", ELogMessageType.AdvancedInfo);
 
             if (options.CaptureTime > 0d)
             {
@@ -258,7 +258,7 @@ namespace CapFrameX.Data
                 if (!OSDAutoDisabled)
                     _overlayService.StartCountdown(options.CaptureTime);
 
-                AddLoggerEntry($"Capture started. Set time: {options.CaptureTime} seconds", "Info", 1);
+                AddLoggerEntry($"Capture started. Set time: {options.CaptureTime} seconds", ELogMessageType.BasicInfo);
 
                 _autoCompletionDisposableStream = Observable.Timer(TimeSpan.FromSeconds(options.CaptureTime))
                     .Subscribe(async _ => await StopCapture());
@@ -268,7 +268,7 @@ namespace CapFrameX.Data
                 if (!OSDAutoDisabled)
                     _overlayService.StartCaptureTimer();
 
-                AddLoggerEntry($"Capture started", "Info", 1);
+                AddLoggerEntry($"Capture started", ELogMessageType.BasicInfo);
             }
 
             await Task.FromResult(0);
@@ -296,7 +296,7 @@ namespace CapFrameX.Data
             _sensorService.StopSensorLogging();
             _captureStatusChange.OnNext(new CaptureStatus() { Status = ECaptureStatus.Processing });
 
-            AddLoggerEntry("Capture finished", "Info", 1);
+            AddLoggerEntry("Capture finished", ELogMessageType.AdvancedInfo);
 
             if (_appConfiguration.AutoDisableOverlay && OSDAutoDisabled)
             {
@@ -309,13 +309,13 @@ namespace CapFrameX.Data
             if (_appConfiguration.IsOverlayActive)
                 _rtssService.Refresh();
 
-            AddLoggerEntry($"Running offset of {PRESICE_OFFSET}ms to gather latest frames", "Info", 2);
+            AddLoggerEntry($"Running offset of {PRESICE_OFFSET}ms to gather latest frames", ELogMessageType.BasicInfo);
 
             await Task.Delay(TimeSpan.FromMilliseconds(PRESICE_OFFSET));
             IsCapturing = false;
             _disposableCaptureStream?.Dispose();
 
-            AddLoggerEntry("Creating capture file", "Info", 1);
+            AddLoggerEntry("Creating capture file", ELogMessageType.AdvancedInfo);
 
             if (_appConfiguration.IsOverlayActive)
                 _rtssService.Refresh();
@@ -379,7 +379,7 @@ namespace CapFrameX.Data
         private void PrepareForNextCapture()
         {
             StartFillArchive();
-            AddLoggerEntry("Started filling archive.", "Info", 2);
+            AddLoggerEntry("Started filling archive.", ELogMessageType.AdvancedInfo);
         }
 
         private async Task WriteExtractedCaptureDataToFileAsync()
@@ -395,7 +395,7 @@ namespace CapFrameX.Data
 
                 if (!adjustedCaptureData.Any())
                 {
-                    AddLoggerEntry("Error while extracting capture data. No file will be written.", "Error", 1);
+                    AddLoggerEntry("Error while extracting capture data. No file will be written.", ELogMessageType.Error);
                     return;
                 }
 
@@ -414,7 +414,7 @@ namespace CapFrameX.Data
                 // if aggregation mode is active and "Save aggregated result only" is checked, don't save single history items
                 if (_appConfiguration.UseAggregation && _appConfiguration.SaveAggregationOnly)
                 {
-                    AddLoggerEntry("Aggregation active, adding to history...", "Info", 1);
+                    AddLoggerEntry("Aggregation active, adding to history...", ELogMessageType.BasicInfo);
                     return;
                 }
 
@@ -426,9 +426,9 @@ namespace CapFrameX.Data
                 bool checkSave = await _recordManager.SaveSessionRunsToFile(new ISessionRun[] { sessionRun }, _currentCaptureOptions.ProcessInfo.Item1, _currentCaptureOptions.RecordDirectory, null);
 
                 if (!checkSave)
-                    AddLoggerEntry("Error while saving capture data.", "Error", 1);
+                    AddLoggerEntry("Error while saving capture data.", ELogMessageType.Error);
                 else
-                    AddLoggerEntry("Capture file is successfully written into directory.", "Info", 1);
+                    AddLoggerEntry("Capture file is successfully written into directory.", ELogMessageType.AdvancedInfo);
 
                 LockCaptureService = false;
             }
@@ -443,7 +443,7 @@ namespace CapFrameX.Data
         {
             if (!_captureData.Any())
             {
-                AddLoggerEntry($"No available capture Data...", "Info", 1);
+                AddLoggerEntry($"No available capture Data...", ELogMessageType.AdvancedInfo);
                 return Enumerable.Empty<string[]>().ToList();
             }
 
@@ -453,7 +453,7 @@ namespace CapFrameX.Data
             if (string.IsNullOrWhiteSpace(_captureTimeString))
             {
                 _captureTimeString = "0";
-                AddLoggerEntry($"Wrong capture time string. Value will be set to default (0).", "Info", 2);
+                AddLoggerEntry($"Wrong capture time string. Value will be set to default (0).", ELogMessageType.BasicInfo);
             }
 
             var definedTime = _currentCaptureOptions.CaptureTime;
@@ -485,7 +485,7 @@ namespace CapFrameX.Data
             }
 
             if (uniqueProcessIdDict.Any(dict => dict.Value.Count() > 1))
-                AddLoggerEntry($"Multi instances detected. Capture data will be filtered.", "Info", 2);
+                AddLoggerEntry($"Multi instances detected. Capture data will be filtered.", ELogMessageType.BasicInfo);
 
             var filteredArchive = _captureDataArchive.Where(line =>
             {
@@ -501,12 +501,12 @@ namespace CapFrameX.Data
 
             if (!filteredArchive.Any())
             {
-                AddLoggerEntry($"Empty archive. No file will be written.", "Error", 1);
+                AddLoggerEntry($"Empty archive. No file will be written.", ELogMessageType.Error);
                 return Enumerable.Empty<string[]>().ToList();
             }
             else
             {
-                AddLoggerEntry($"Using archive with {filteredArchive.Count} frames.", "Info", 2);
+                AddLoggerEntry($"Using archive with {filteredArchive.Count} frames.", ELogMessageType.BasicInfo);
             }
 
             // Distinct archive and live stream
@@ -523,7 +523,7 @@ namespace CapFrameX.Data
             if (distinctIndex == 0)
             {
                 _logger.LogWarning("Something went wrong getting union capture data. We cant use the data from archive(First CaptureDataTime was {firstCaptureTime}, last ArchiveTime was {lastArchiveTime})", GetStartTimeFromDataLine(filteredCaptureData.First()), lastArchiveTime);
-                AddLoggerEntry("Comparison with archive data is invalid.", "Error", 1);
+                AddLoggerEntry("Comparison with archive data is invalid.", ELogMessageType.Error);
 
                 return Enumerable.Empty<string[]>().ToList();
             }
@@ -533,7 +533,7 @@ namespace CapFrameX.Data
             var unionCaptureDataEndTime = GetStartTimeFromDataLine(unionCaptureData.Last());
 
             AddLoggerEntry($"Length captured data + archive in sec: " +
-                $"{ Math.Round(unionCaptureDataEndTime - unionCaptureDataStartTime, 2)}", "Info", 2);
+                $"{ Math.Round(unionCaptureDataEndTime - unionCaptureDataStartTime, 2)}", ELogMessageType.BasicInfo);
 
             var captureInterval = new List<string[]>();
 
@@ -553,7 +553,7 @@ namespace CapFrameX.Data
 
             if (startTime == 0)
             {
-                AddLoggerEntry($"Start time is invalid. Error while evaluating QPCTime start.", "Error", 1);
+                AddLoggerEntry($"Start time is invalid. Error while evaluating QPCTime start.", ELogMessageType.Error);
                 return Enumerable.Empty<string[]>().ToList();
             }
 
@@ -570,14 +570,14 @@ namespace CapFrameX.Data
 
                 if (!captureInterval.Any())
                 {
-                    AddLoggerEntry($"Empty capture interval. Error while evaluating start and end time.", "Error", 1);
+                    AddLoggerEntry($"Empty capture interval. Error while evaluating start and end time.", ELogMessageType.Error);
                     return Enumerable.Empty<string[]>().ToList();
                 }
             }
             else
             {
                 AddLoggerEntry($"Length captured data QPCTime start to end with buffer in sec: " +
-                    $"{ Math.Round(unionCaptureDataEndTime - startTime, 2)}", "Info", 2);
+                    $"{ Math.Round(unionCaptureDataEndTime - startTime, 2)}", ELogMessageType.BasicInfo);
 
                 double normalizeTimeOffset = 0;
 
@@ -649,15 +649,12 @@ namespace CapFrameX.Data
             return Convert.ToDouble(lineSplit[PresentMonCaptureService.TimeInSeconds_INDEX], CultureInfo.InvariantCulture);
         }
 
-        private void AddLoggerEntry(string entry, string messageType, int priorityLevel)
+        private void AddLoggerEntry(string entry, ELogMessageType messageType)
         {
             _captureStatusChange.OnNext(new CaptureStatus()
             {
                 MessageType = messageType,
-                PriorityLevel = priorityLevel,
-                Message = entry
-                
-               
+                Message = entry                              
             });
         }
     }
