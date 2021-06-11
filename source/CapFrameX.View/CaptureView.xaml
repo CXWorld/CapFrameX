@@ -47,10 +47,10 @@
                     </Grid.RowDefinitions>
 
                     <TextBlock Text="{Binding MessageInfo}" Grid.Row="0" Grid.Column="0" Foreground="{DynamicResource MaterialDesignBody}"
-                       FontWeight="Bold" Margin="5,5,5,0"/>
+                       FontWeight="Bold" FontSize="11"  Margin="5,3,5,0"/>
 
                     <TextBlock Text="{Binding Message}" Grid.Row="1" Grid.ColumnSpan="3" Foreground="{DynamicResource MaterialDesignBody}"
-                       TextWrapping="Wrap" Margin="5,0,5,10"/>
+                       TextWrapping="Wrap" FontSize="11"  Margin="5,0,5,5"/>
                 </Grid>
             </DataTemplate>
 
@@ -95,142 +95,181 @@
             <ColumnDefinition Width="5*"></ColumnDefinition>
             <ColumnDefinition Width="4*"></ColumnDefinition>
         </Grid.ColumnDefinitions>
-        <DockPanel Grid.Column="0" Margin="20 40 0 0">
-            <Grid DockPanel.Dock="Top" HorizontalAlignment="Center">
-                <Grid HorizontalAlignment="Center">
-                    <DockPanel>
-                        <Grid DockPanel.Dock="Top" >
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="260"/>
-                                <ColumnDefinition Width="260"/>
-                            </Grid.ColumnDefinitions>
-                            <Border Grid.Column="0" Margin="0 0 20 0" BorderThickness="0.2" BorderBrush="{DynamicResource MaterialDesignBody}">
-                                <Grid Margin="0 20 0 20">
-                                    <StackPanel Orientation="Vertical" Width="190">
-                                        <StackPanel Orientation="Horizontal">
-                                            <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}">Running processes</TextBlock>
-                                            <Button Margin="20 0 0 0" Padding="0" Width="24" Height="24" BorderThickness="0" Background="{DynamicResource MaterialDesignToolBackground}"
+            <DockPanel Grid.Column="0" Margin="20 40 0 0">
+                <Grid DockPanel.Dock="Top" HorizontalAlignment="Center">
+                    <Grid HorizontalAlignment="Center">
+                        <DockPanel>
+                            <Grid DockPanel.Dock="Top" >
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="260"/>
+                                    <ColumnDefinition Width="260"/>
+                                </Grid.ColumnDefinitions>
+                                <Border Grid.Column="0" Margin="0 0 20 0" BorderThickness="0.2" BorderBrush="{DynamicResource MaterialDesignBody}">
+                                    <Grid Margin="0 20 0 20">
+                                        <StackPanel Orientation="Vertical" Width="190">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}">Running processes</TextBlock>
+                                                <Button Margin="20 0 0 0" Padding="0" Width="24" Height="24" BorderThickness="0" Background="{DynamicResource MaterialDesignToolBackground}"
 													Command="{Binding ResetPresentMonCommand}" ToolTip="Reset and rescan processes"
 													IsEnabled="{Binding AreButtonsActive}" materialDesign:RippleAssist.Feedback="#DD000000">
-                                                <materialDesign:PackIcon Kind="Autorenew" Width="22" Height="22"/>
-                                            </Button>
-                                        </StackPanel>
-                                        <Border Margin="0 10 0 0" BorderThickness="0.1" BorderBrush="{DynamicResource MaterialDesignBody}"
+                                                    <materialDesign:PackIcon Kind="Autorenew" Width="22" Height="22"/>
+                                                </Button>
+                                            </StackPanel>
+                                            <Border Margin="0 10 0 0" BorderThickness="0.1" BorderBrush="{DynamicResource MaterialDesignBody}"
                                                 Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
-                                            <ListView IsSynchronizedWithCurrentItem="False" ItemsSource="{Binding ProcessesToCapture}" SelectedItem="{Binding SelectedProcessToCapture}"
+                                                <ListView IsSynchronizedWithCurrentItem="False" ItemsSource="{Binding ProcessesToCapture}" SelectedItem="{Binding SelectedProcessToCapture}"
 													  ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True" Height="150" Width="250"
 													  IsEnabled="{Binding AreButtonsActive}">
-                                            </ListView>
-                                        </Border>
-                                        <Button Margin="0 10 0 0" HorizontalAlignment="Right" BorderThickness="0" Width="120" Height="45" 
+                                                </ListView>
+                                            </Border>
+                                            <Button Margin="0 10 0 0" HorizontalAlignment="Right" BorderThickness="0" Width="120" Height="45" 
 												Command="{Binding AddToIgonreListCommand}" IsEnabled="{Binding AreButtonsActive}" Foreground="White" Background="{DynamicResource MaterialDesignToolBackground}">
-                                            <TextBlock Text="Move to ignore list" TextWrapping="Wrap" TextAlignment="Center"/>
-                                        </Button>
-                                    </StackPanel>
-                                </Grid>
-                            </Border>
-                            <Border Grid.Column="1" Margin="20 0 0 0" BorderThickness="0.2" BorderBrush="{DynamicResource MaterialDesignBody}">
-                                <Grid Margin="0 25 0 20">
-                                    <StackPanel  Orientation="Vertical" Width="190">
-                                        <!--Style="{StaticResource MaterialDesignTitleTextBlock}"-->
-                                        <TextBlock Margin="0 0 0 5" Foreground="{DynamicResource MaterialDesignBody}">Process ignore list</TextBlock>
-                                        <Border Margin="0 10 0 0" BorderThickness="0.1" BorderBrush="{DynamicResource MaterialDesignBody}"
+                                                <TextBlock Text="Move to ignore list" TextWrapping="Wrap" TextAlignment="Center"/>
+                                            </Button>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+                                <Border Grid.Column="1" Margin="20 0 0 0" BorderThickness="0.2" BorderBrush="{DynamicResource MaterialDesignBody}">
+                                    <Grid Margin="0 25 0 20">
+                                        <StackPanel  Orientation="Vertical" Width="190">
+                                            <!--Style="{StaticResource MaterialDesignTitleTextBlock}"-->
+                                            <TextBlock Margin="0 0 0 5" Foreground="{DynamicResource MaterialDesignBody}">Process ignore list</TextBlock>
+                                            <Border Margin="0 10 0 0" BorderThickness="0.1" BorderBrush="{DynamicResource MaterialDesignBody}"
                                                 Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
-                                            <ListView IsSynchronizedWithCurrentItem="False" ItemsSource="{Binding ProcessesToIgnore}" SelectedItem="{Binding SelectedProcessToIgnore}"
+                                                <ListView IsSynchronizedWithCurrentItem="False" ItemsSource="{Binding ProcessesToIgnore}" SelectedItem="{Binding SelectedProcessToIgnore}"
 										              ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True" Height="150" Width="250">
-                                            </ListView>
-                                        </Border>
-                                        <Button Margin="0 10 0 0" HorizontalAlignment="Right" BorderThickness="0" Width="120" Height="45"
+                                                </ListView>
+                                            </Border>
+                                            <Button Margin="0 10 0 0" HorizontalAlignment="Right" BorderThickness="0" Width="120" Height="45"
 												Command="{Binding AddToProcessListCommand}" IsEnabled="{Binding AreButtonsActive}" Foreground="White" Background="{DynamicResource MaterialDesignToolBackground}">
-                                            <TextBlock Text="Remove from ignore list" TextWrapping="Wrap" TextAlignment="Center"/>
-                                        </Button>
-                                    </StackPanel>
-                                </Grid>
-                            </Border>
-                        </Grid>
-                        <TextBlock DockPanel.Dock="Bottom" Grid.Column="0" Grid.ColumnSpan="2" TextAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}"
+                                                <TextBlock Text="Remove from ignore list" TextWrapping="Wrap" TextAlignment="Center"/>
+                                            </Button>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+                            </Grid>
+                            <TextBlock DockPanel.Dock="Bottom" Grid.Column="0" Grid.ColumnSpan="2" TextAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}"
                                    Margin="0 20 0 0" Text="{Binding CaptureStateInfo}" HorizontalAlignment="Center" FontSize="16" Style="{StaticResource MaterialDesignCaptionTextBlock}" />
-                    </DockPanel>
+                        </DockPanel>
+                    </Grid>
                 </Grid>
-            </Grid>
-            <Grid x:Name="HotkeyTextBox" Margin="0 30 0 0" DockPanel.Dock="Bottom" HorizontalAlignment="Center">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="45"/>
-                    <RowDefinition Height="30"/>
-                </Grid.RowDefinitions>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="1*"/>
-                    <ColumnDefinition Width="1*"/>
-                    <ColumnDefinition Width="1*"/>
-                    <ColumnDefinition Width="1*"/>
-                </Grid.ColumnDefinitions>
-                <TextBox Grid.Row="0" Grid.Column="0" Width="110" wpf:HintAssist.Hint="Capture hotkey" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
+                <Grid x:Name="HotkeyTextBox" Margin="0 30 0 0" DockPanel.Dock="Bottom" HorizontalAlignment="Center">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="45"/>
+                        <RowDefinition Height="30"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="1*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBox Grid.Row="0" Grid.Column="0" Width="110" wpf:HintAssist.Hint="Capture hotkey" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
 						 Margin="0" FontSize="14" Foreground="{DynamicResource MaterialDesignBody}" wpf:HintAssist.HintOpacity=".8"
 						 IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False" PreviewKeyDown="CaptureHotkeyTextBox_PreviewKeyDown"
 						 ToolTip="Hotkey combinable with up to two modifier keys (Ctrl, Shift or Alt)">
-                    <Binding Path="CaptureHotkey"
+                        <Binding Path="CaptureHotkey"
 							  ElementName="CaptureViewControl"
 							  Mode="OneWay"
 							  TargetNullValue="&lt; not set &gt;">
-                        <Binding.ValidationRules>
-                            <validation:HotkeyValidationRule ValidatesOnTargetUpdated="True" />
-                        </Binding.ValidationRules>
-                    </Binding>
-                </TextBox>
+                            <Binding.ValidationRules>
+                                <validation:HotkeyValidationRule ValidatesOnTargetUpdated="True" />
+                            </Binding.ValidationRules>
+                        </Binding>
+                    </TextBox>
 
-                <TextBox Grid.Row="0" Grid.Column="1" Width="110" wpf:HintAssist.Hint="Capture time [s]" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
+                    <TextBox Grid.Row="0" Grid.Column="1" Width="110" wpf:HintAssist.Hint="Capture time [s]" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
 					 Margin="30 0 0 0" FontSize="14" Text="{Binding CaptureTimeString, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding AreButtonsActive}"
                      PreviewMouseDown="TextBox_PreviewMouseDown" PreviewKeyDown="TextBox_PreviewKeyDown" MouseLeave="TextBox_MouseLeave" ToolTip="0 = no limit"
                      PreviewTextInput="NumberValidationTextBox" Foreground="{DynamicResource MaterialDesignBody}" wpf:HintAssist.HintOpacity=".8"/>
 
-                <TextBox Grid.Row="0" Grid.Column="2" Width="110" wpf:HintAssist.Hint="Capture delay [s]" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
+                    <TextBox Grid.Row="0" Grid.Column="2" Width="110" wpf:HintAssist.Hint="Capture delay [s]" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
 					 Margin="30 0 0 0" FontSize="14" Text="{Binding CaptureDelayString, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding AreButtonsActive}"
                      PreviewMouseDown="TextBox_PreviewMouseDown" PreviewKeyDown="TextBox_PreviewKeyDown" MouseLeave="TextBox_MouseLeave" ToolTip="0 = no delay"
                      PreviewTextInput="NumberValidationTextBox" Foreground="{DynamicResource MaterialDesignBody}" wpf:HintAssist.HintOpacity=".8"/>
 
-                <ComboBox Grid.Row="0" Grid.Column="3" Width="102" Height="40" materialDesign:HintAssist.Hint="Hotkey sound" Style="{StaticResource MaterialDesignComboBox}"                          
+                    <ComboBox Grid.Row="0" Grid.Column="3" Width="102" Height="40" materialDesign:HintAssist.Hint="Hotkey sound" Style="{StaticResource MaterialDesignComboBox}"                          
 						  Margin="30 0 0 0" MaxDropDownHeight="200" FontSize="14" materialDesign:HintAssist.IsFloating="True" materialDesign:HintAssist.HintOpacity=".8"
 						  ItemsSource="{Binding SoundModes}" HorizontalAlignment="Left" HorizontalContentAlignment="Left" VerticalAlignment="Bottom" Foreground="{DynamicResource MaterialDesignBody}">
-                    <ComboBox.Text>
-                        <Binding Path="SelectedSoundMode"
+                        <ComboBox.Text>
+                            <Binding Path="SelectedSoundMode"
 								 Mode="TwoWay"
 								 UpdateSourceTrigger="PropertyChanged">
-                        </Binding>
-                    </ComboBox.Text>
-                </ComboBox>
+                            </Binding>
+                        </ComboBox.Text>
+                    </ComboBox>
 
-                <Grid Grid.Row="1" Grid.Column="3" Margin="20 10 -5 0" Width="110" Visibility="{Binding ShowVolumeController, Converter={StaticResource FalseToCollapsedConverter}}">
-                    <materialDesign:PackIcon Kind="VolumeMedium" Foreground="{DynamicResource MaterialDesignBody}"/>
-                    <Slider HorizontalAlignment="Center"
+                    <Grid Grid.Row="1" Grid.Column="3" Margin="20 10 -5 0" Width="110" Visibility="{Binding ShowVolumeController, Converter={StaticResource FalseToCollapsedConverter}}">
+                        <materialDesign:PackIcon Kind="VolumeMedium" Foreground="{DynamicResource MaterialDesignBody}"/>
+                        <Slider HorizontalAlignment="Center"
 							Minimum="0" 
 							Maximum="100" 
 							ToolTip="Sound level control"
 							Value="{Binding SliderSoundLevel}"
 							Width="65" Thumb.DragCompleted="Slider_DragCompleted" />
-                    <TextBlock HorizontalAlignment="Right" Text="{Binding SliderSoundLevel}" Foreground="{DynamicResource MaterialDesignBody}"/>
+                        <TextBlock HorizontalAlignment="Right" Text="{Binding SliderSoundLevel}" Foreground="{DynamicResource MaterialDesignBody}"/>
+                    </Grid>
                 </Grid>
-            </Grid>
-        </DockPanel>
-            <TextBlock Grid.Column="1" HorizontalAlignment="Center" Text="Capture service logger" FontSize="14" Margin="0 40 0 0" 
-                       Foreground="{DynamicResource MaterialDesignBody}"></TextBlock>
-            <DockPanel Grid.Column="1" Margin="20 40 20 20" Width="380" Height="500">
-                <Grid Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" Height="450">
-                <ItemsControl ItemsSource="{Binding LoggerOutput}" Style="{StaticResource LogViewerStyle}">
-                    <ItemsControl.Template>
-                        <ControlTemplate>
-                            <ScrollViewer CanContentScroll="True">
-                                <ItemsPresenter/>
-                            </ScrollViewer>
-                        </ControlTemplate>
-                    </ItemsControl.Template>
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <VirtualizingStackPanel IsItemsHost="True"/>
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                </ItemsControl>
-            </Grid>
-        </DockPanel>
-    </Grid>
+            </DockPanel>
+            <StackPanel Grid.Column="1" Margin="20 40 20 20" Width="380" Height="450">
+                <Grid Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" Height="415" VerticalAlignment="Top">
+                    <TextBlock Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Top" Text="Capture service logger output..." FontSize="14" Margin="10 10 0 0" 
+                       Foreground="{DynamicResource MaterialDesignBody}" Visibility="{Binding IsLoggerOutputEmpty, Converter={StaticResource FalseToCollapsedConverter}}"></TextBlock>
+                    <ItemsControl ItemsSource="{Binding LoggerOutput}" Style="{StaticResource LogViewerStyle}">
+                        <ItemsControl.Template>
+                            <ControlTemplate>
+                                <ScrollViewer CanContentScroll="True">
+                                    <ItemsPresenter/>
+                                </ScrollViewer>
+                            </ControlTemplate>
+                        </ItemsControl.Template>
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <VirtualizingStackPanel IsItemsHost="True"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                    </ItemsControl>
+                </Grid>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button HorizontalAlignment="Left" Margin="0 10 10 0" Width="25" Height="25" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
+                                            Command="{Binding ClearLogCommand}" materialDesign:RippleAssist.Feedback="#DD000000">
+                    <materialDesign:PackIcon Kind="Update" Height="18" Width="18" />
+                    <Button.ToolTip>
+                        <ToolTip>
+                            <TextBlock Text="Clear logger output">
+                            </TextBlock>
+                        </ToolTip>
+                    </Button.ToolTip>
+                </Button>
+                    <StackPanel  VerticalAlignment="Bottom" Margin="25 0 0 0" Orientation="Horizontal">
+                    <TextBlock Text="Message filter" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}"/>
+                    <materialDesign:PopupBox StaysOpen="True" Foreground="{DynamicResource MaterialDesignBody}">
+                        <materialDesign:Card  Margin="0 0 0 -10">
+                            <StackPanel>
+                                <Grid Margin="8 8 8 8">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="30" />
+                                        <RowDefinition Height="30" />
+                                        <RowDefinition Height="30" />
+                                        </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="90"/>
+                                        <ColumnDefinition Width="30"/>
+                                    </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Basic Info"></TextBlock>
+                                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Advanced Info"></TextBlock>
+                                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Errors"></TextBlock>
+
+                                        <CheckBox Grid.Row="0" Grid.Column="1" VerticalAlignment="Top"></CheckBox>
+                                        <CheckBox Grid.Row="1" Grid.Column="1" VerticalAlignment="Top"></CheckBox>
+                                        <CheckBox Grid.Row="2" Grid.Column="1" VerticalAlignment="Top"></CheckBox>
+                                    </Grid>
+                            </StackPanel>
+                        </materialDesign:Card>
+                    </materialDesign:PopupBox>
+                </StackPanel>
+                </StackPanel>
+            </StackPanel>
+        </Grid>
     </Grid>
 </UserControl>

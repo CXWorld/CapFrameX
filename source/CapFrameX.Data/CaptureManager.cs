@@ -287,6 +287,8 @@ namespace CapFrameX.Data
             if (!IsCapturing)
                 throw new Exception("No capture running.");
 
+            AddLoggerEntry("Capture finished", ELogMessageType.BasicInfo);
+
             LockCaptureService = true;
 
             _timestampStopCapture = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds();
@@ -295,8 +297,7 @@ namespace CapFrameX.Data
             _autoCompletionDisposableStream?.Dispose();
             _sensorService.StopSensorLogging();
             _captureStatusChange.OnNext(new CaptureStatus() { Status = ECaptureStatus.Processing });
-
-            AddLoggerEntry("Capture finished", ELogMessageType.BasicInfo);
+          
 
             if (_appConfiguration.AutoDisableOverlay && OSDAutoDisabled)
             {
@@ -430,7 +431,7 @@ namespace CapFrameX.Data
                 if (!checkSave)
                     AddLoggerEntry("Error while saving capture data.", ELogMessageType.Error);
                 else
-                    AddLoggerEntry("Capture file is successfully written into directory.", ELogMessageType.BasicInfo);
+                    AddLoggerEntry("Capture file successfully written into directory.", ELogMessageType.BasicInfo);
 
                 LockCaptureService = false;
             }

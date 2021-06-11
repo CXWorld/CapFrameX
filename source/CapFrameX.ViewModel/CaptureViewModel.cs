@@ -62,6 +62,7 @@ namespace CapFrameX.ViewModel
         private bool _hotkeyLocked = false;
         private string _currentGameNameToCapture = string.Empty;
         private string _currentProcessToCapture = string.Empty;
+        private bool _isLoggerOutputEmpty = true;
 
         private PubSubEvent<ViewMessages.CurrentProcessToCapture> _updateCurrentProcess;
 
@@ -87,6 +88,16 @@ namespace CapFrameX.ViewModel
         }
 
         public bool AreButtonsActive { get; set; } = true;
+
+        public bool IsLoggerOutputEmpty
+        {
+            get { return _isLoggerOutputEmpty; }
+            set
+            {
+                _isLoggerOutputEmpty = value;
+                RaisePropertyChanged();
+            }
+        }
 
         public string CaptureStateInfo
         {
@@ -205,6 +216,8 @@ namespace CapFrameX.ViewModel
 
         public ICommand ResetPresentMonCommand { get; }
 
+        public ICommand ClearLogCommand { get; }
+
         public Array LoggingPeriodItemsSource => new[] { 250, 500 };
 
         public CaptureViewModel(IAppConfiguration appConfiguration,
@@ -241,6 +254,7 @@ namespace CapFrameX.ViewModel
             AddToIgonreListCommand = new DelegateCommand(OnAddToIgonreList);
             AddToProcessListCommand = new DelegateCommand(OnAddToProcessList);
             ResetPresentMonCommand = new DelegateCommand(OnResetCaptureProcess);
+            ClearLogCommand = new DelegateCommand(OnClearLog);
 
             //ProcessesToCapture.CollectionChanged += new NotifyCollectionChangedEventHandler
             //    ((sender, eventArg) => UpdateProcessToCapture());
@@ -506,6 +520,16 @@ namespace CapFrameX.ViewModel
             StartCaptureService();
         }
 
+        private void OnClearLog()
+        {
+            if (LoggerOutput.Any())
+            {
+                LoggerOutput.Clear();
+                IsLoggerOutputEmpty = true;
+            }
+                
+        }
+
         private IDisposable GetListUpdatHeartBeat()
         {
             return Observable
@@ -673,6 +697,8 @@ namespace CapFrameX.ViewModel
                     Message = message
                 });
             }));
+            if (LoggerOutput.Any())
+                IsLoggerOutputEmpty = false;
         }
     }
 }
