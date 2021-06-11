@@ -31,6 +31,8 @@ using CapFrameX.Statistics.NetStandard.Contracts;
 using CapFrameX.Contracts.RTSS;
 using CapFrameX.RTSSIntegration;
 using OpenHardwareMonitor.Hardware;
+using CapFrameX.Data.Logging;
+using CapFrameX.Contracts.Logging;
 
 namespace CapFrameX
 {
@@ -99,6 +101,7 @@ namespace CapFrameX
 			Container.Register<IAppVersionProvider, AppVersionProvider>(Reuse.Singleton);
 			Container.RegisterInstance<IWebVersionProvider>(new WebVersionProvider(), Reuse.Singleton);
 			Container.Register<IUpdateCheck, UpdateCheck>(Reuse.Singleton);
+			Container.Register<ILogEntryManager, LogEntryManager>(Reuse.Singleton);
 			Container.Register<LoginManager>(Reuse.Singleton);
 			Container.Register<ICloudManager, CloudManager>(Reuse.Singleton);
 			Container.Register<LoginWindow>(Reuse.Transient);

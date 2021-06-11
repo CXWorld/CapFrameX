@@ -183,7 +183,6 @@
     <Compile Include="DataContext\FrametimeGraphDataContext.cs" />
     <Compile Include="DataContext\GraphDataContextBase.cs" />
     <Compile Include="DataThresholdViewModel.cs" />
-    <Compile Include="LoggerEntry\LogEntry.cs" />
     <Compile Include="ReportViewModelParameterSettings.cs" />
     <Compile Include="DataViewModelParameterSettings.cs" />
     <Compile Include="EChartYAxisSetting.cs" />

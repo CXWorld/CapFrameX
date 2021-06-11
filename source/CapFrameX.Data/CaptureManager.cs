@@ -1,4 +1,4 @@
-﻿using CapFrameX.Contracts.Capture;
+﻿using CapFrameX.Contracts.Logging;
 using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.Overlay;

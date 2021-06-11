@@ -126,6 +126,8 @@
     <Compile Include="CloudManager.cs" />
     <Compile Include="ECaptureFileMode.cs" />
     <Compile Include="ImageExport.cs" />
+    <Compile Include="Logging\LogEntry.cs" />
+    <Compile Include="Logging\LogEntryManager.cs" />
     <Compile Include="LoginManager.cs" />
     <Compile Include="OverlayEntryFormatChange.cs" />
     <Compile Include="ProcessList.cs" />

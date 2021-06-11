@@ -100,7 +100,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Aggregation\IAggregationEntry.cs" />
-    <Compile Include="Capture\ELogMessageType.cs" />
+    <Compile Include="Logging\ELogMessageType.cs" />
     <Compile Include="Data\ESystemInfoTertiaryStatus.cs" />
     <Compile Include="Data\ICloudManager.cs" />
     <Compile Include="Cloud\ICloudEntry.cs" />
@@ -111,6 +111,8 @@
     <Compile Include="Data\IAppVersionProvider.cs" />
     <Compile Include="Data\IFileRecordInfo.cs" />
     <Compile Include="Data\IRecordManager.cs" />
+    <Compile Include="Logging\ILogEntry.cs" />
+    <Compile Include="Logging\ILogEntryManager.cs" />
     <Compile Include="MVVM\IMouseEventHandler.cs" />
     <Compile Include="MVVM\IShell.cs" />
     <Compile Include="Overlay\EOverlayEntryConfig.cs" />

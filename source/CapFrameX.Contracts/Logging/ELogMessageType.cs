@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 
-namespace CapFrameX.Contracts.Capture
+namespace CapFrameX.Contracts.Logging
 {
     public enum ELogMessageType
     {

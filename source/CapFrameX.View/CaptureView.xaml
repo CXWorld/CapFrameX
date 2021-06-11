@@ -9,7 +9,7 @@
 			 xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
 			 xmlns:wpf="clr-namespace:MaterialDesignThemes.Wpf;assembly=MaterialDesignThemes.Wpf"
 			 xmlns:prism="http://prismlibrary.com/"	
-             xmlns:log="clr-namespace:CapFrameX.ViewModel.LoggerEntry;assembly=CapFrameX.ViewModel"
+             xmlns:log="clr-namespace:CapFrameX.Data.Logging;assembly=CapFrameX.Data"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800"
              Background="{DynamicResource MaterialDesignBackground}"

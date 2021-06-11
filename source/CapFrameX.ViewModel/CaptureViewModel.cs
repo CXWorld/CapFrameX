@@ -1,4 +1,4 @@
-﻿using CapFrameX.Contracts.Capture;
+﻿using CapFrameX.Contracts.Logging;
 using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.Overlay;
@@ -6,12 +6,11 @@ using CapFrameX.Contracts.PresentMonInterface;
 using CapFrameX.Contracts.RTSS;
 using CapFrameX.Contracts.Sensor;
 using CapFrameX.Data;
+using CapFrameX.Data.Logging;
 using CapFrameX.EventAggregation.Messages;
-using CapFrameX.Extensions.NetStandard;
 using CapFrameX.Hotkey;
 using CapFrameX.PresentMonInterface;
 using CapFrameX.Statistics.NetStandard.Contracts;
-using CapFrameX.ViewModel.LoggerEntry;
 using Microsoft.Extensions.Logging;
 using OxyPlot;
 using OxyPlot.Axes;
@@ -30,7 +29,6 @@ using System.Reactive.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
-using System.Windows.Threading;
 
 namespace CapFrameX.ViewModel
 {
@@ -49,6 +47,7 @@ namespace CapFrameX.ViewModel
         private readonly CaptureManager _captureManager;
         private readonly ISensorConfig _sensorConfig;
         private readonly IRTSSService _rTSSService;
+        private readonly ILogEntryManager _logEntryManager;
 
         private IDisposable _disposableHeartBeat;
         private string _selectedProcessToCapture;
@@ -207,8 +206,8 @@ namespace CapFrameX.ViewModel
         public ObservableCollection<string> ProcessesToIgnore { get; }
             = new ObservableCollection<string>();
 
-        public ObservableCollection<LogEntry> LoggerOutput { get; set; }
-            = new ObservableCollection<LogEntry>();
+        public ObservableCollection<ILogEntry> LoggerOutput
+            => _logEntryManager.LogEntryOutput;
 
         public ICommand AddToIgonreListCommand { get; }
 
@@ -232,7 +231,8 @@ namespace CapFrameX.ViewModel
                                 SoundManager soundManager,
                                 CaptureManager captureManager,
                                 ISensorConfig sensorConfig,
-                                IRTSSService rTSSService)
+                                IRTSSService rTSSService,
+                                ILogEntryManager logEntryManager)
         {
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -250,6 +250,7 @@ namespace CapFrameX.ViewModel
             _captureManager = captureManager;
             _sensorConfig = sensorConfig;
             _rTSSService = rTSSService;
+            _logEntryManager = logEntryManager;
 
             AddToIgonreListCommand = new DelegateCommand(OnAddToIgonreList);
             AddToProcessListCommand = new DelegateCommand(OnAddToProcessList);
@@ -527,7 +528,7 @@ namespace CapFrameX.ViewModel
                 LoggerOutput.Clear();
                 IsLoggerOutputEmpty = true;
             }
-                
+
         }
 
         private IDisposable GetListUpdatHeartBeat()
@@ -688,17 +689,8 @@ namespace CapFrameX.ViewModel
 
         private void AddLoggerEntry(string message, ELogMessageType messageType)
         {
-            Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.Normal, (Action)(() =>
-            {
-                LoggerOutput.Add(new LogEntry()
-                {
-                    MessageType = messageType,
-                    MessageInfo = DateTime.Now.ToString("HH:mm:ss") + $" ( Type: {messageType.GetDescription()} )",
-                    Message = message
-                });
-            }));
-            if (LoggerOutput.Any())
-                IsLoggerOutputEmpty = false;
+            _logEntryManager.AddLogEntry(message, messageType);
+            IsLoggerOutputEmpty = !LoggerOutput.Any();
         }
     }
 }
