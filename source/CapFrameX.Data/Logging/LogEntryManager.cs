@@ -92,5 +92,11 @@ namespace CapFrameX.Data.Logging
                     break;
             }
         }
+
+        public void ClearLog()
+        {
+            _logEntryHistory?.Clear();
+            LogEntryOutput?.Clear();
+        }
     }
 }

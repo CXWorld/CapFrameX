@@ -15,5 +15,7 @@ namespace CapFrameX.Contracts.Logging
         void AddLogEntry(string message, ELogMessageType messageType);
 
         void UpdateFilter();
+
+        void ClearLog();
     }
 }

@@ -231,16 +231,16 @@
                     </ItemsControl>
                 </Grid>
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right" Height="60">
-                    <!--<Button HorizontalAlignment="Left" Margin="0 0 10 0" Width="25" Height="25" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
-                                            Command="{Binding UpdateLogCommand}" materialDesign:RippleAssist.Feedback="#DD000000">
-                        <materialDesign:PackIcon Kind="Update" Height="18" Width="18" />
+                    <Button HorizontalAlignment="Left" Margin="0 0 10 0" Width="25" Height="25" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
+                                            Command="{Binding ClearLogCommand}" materialDesign:RippleAssist.Feedback="#DD000000">
+                        <materialDesign:PackIcon Kind="Update"  Height="18" Width="18" />
                         <Button.ToolTip>
                             <ToolTip>
                                 <TextBlock Text="Clear logger output">
                                 </TextBlock>
                             </ToolTip>
                         </Button.ToolTip>
-                    </Button>-->
+                    </Button>
                     <StackPanel Margin="25 0 0 0" Orientation="Horizontal">
                         <TextBlock Text="Message filter" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}"/>
                         <materialDesign:PopupBox StaysOpen="True" Foreground="{DynamicResource MaterialDesignBody}">

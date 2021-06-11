@@ -247,6 +247,8 @@ namespace CapFrameX.ViewModel
 
         public ICommand UpdateLogCommand { get; }
 
+        public ICommand ClearLogCommand { get; }
+
         public Array LoggingPeriodItemsSource => new[] { 250, 500 };
 
         public CaptureViewModel(IAppConfiguration appConfiguration,
@@ -286,6 +288,7 @@ namespace CapFrameX.ViewModel
             AddToProcessListCommand = new DelegateCommand(OnAddToProcessList);
             ResetPresentMonCommand = new DelegateCommand(OnResetCaptureProcess);
             UpdateLogCommand = new DelegateCommand( () => _logEntryManager?.UpdateFilter());
+            ClearLogCommand = new DelegateCommand(OnClearLog);
 
             _captureManager
                 .CaptureStatusChange
@@ -546,6 +549,12 @@ namespace CapFrameX.ViewModel
             SelectedProcessToCapture = null;
             StopCaptureService();
             StartCaptureService();
+        }
+
+        private void OnClearLog()
+        {
+            _logEntryManager?.ClearLog();
+            IsLoggerOutputEmpty = !LoggerOutput.Any();
         }
 
         private IDisposable GetListUpdatHeartBeat()
