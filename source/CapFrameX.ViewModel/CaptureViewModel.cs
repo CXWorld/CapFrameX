@@ -193,6 +193,36 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        public bool ShowBasicInfo
+        {
+            get => _logEntryManager.ShowBasicInfo;
+            set
+            {
+                _logEntryManager.ShowBasicInfo = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public bool ShowAdvancedInfo
+        {
+            get => _logEntryManager.ShowAdvancedInfo;
+            set
+            {
+                _logEntryManager.ShowAdvancedInfo = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public bool ShowErrors
+        {
+            get => _logEntryManager.ShowErrors;
+            set
+            {
+                _logEntryManager.ShowErrors = value;
+                RaisePropertyChanged();
+            }
+        }
+
         public string[] SoundModes => _soundManager.AvailableSoundModes;
 
         public IAppConfiguration AppConfiguration => _appConfiguration;
@@ -215,7 +245,7 @@ namespace CapFrameX.ViewModel
 
         public ICommand ResetPresentMonCommand { get; }
 
-        public ICommand ClearLogCommand { get; }
+        public ICommand UpdateLogCommand { get; }
 
         public Array LoggingPeriodItemsSource => new[] { 250, 500 };
 
@@ -255,10 +285,7 @@ namespace CapFrameX.ViewModel
             AddToIgonreListCommand = new DelegateCommand(OnAddToIgonreList);
             AddToProcessListCommand = new DelegateCommand(OnAddToProcessList);
             ResetPresentMonCommand = new DelegateCommand(OnResetCaptureProcess);
-            ClearLogCommand = new DelegateCommand(OnClearLog);
-
-            //ProcessesToCapture.CollectionChanged += new NotifyCollectionChangedEventHandler
-            //    ((sender, eventArg) => UpdateProcessToCapture());
+            UpdateLogCommand = new DelegateCommand( () => _logEntryManager?.UpdateFilter());
 
             _captureManager
                 .CaptureStatusChange
@@ -519,16 +546,6 @@ namespace CapFrameX.ViewModel
             SelectedProcessToCapture = null;
             StopCaptureService();
             StartCaptureService();
-        }
-
-        private void OnClearLog()
-        {
-            if (LoggerOutput.Any())
-            {
-                LoggerOutput.Clear();
-                IsLoggerOutputEmpty = true;
-            }
-
         }
 
         private IDisposable GetListUpdatHeartBeat()

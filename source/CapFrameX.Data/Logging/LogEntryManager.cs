@@ -10,17 +10,45 @@ namespace CapFrameX.Data.Logging
 {
     public class LogEntryManager : ILogEntryManager
     {
+        private bool _showBasicInfo = true;
+        private bool _showAdvancedInfo = true;
+        private bool _showErrors = true;
+
         private List<ILogEntry> _logEntryHistory { get; set; }
            = new List<ILogEntry>();
 
         public ObservableCollection<ILogEntry> LogEntryOutput { get; set; }
            = new ObservableCollection<ILogEntry>();
 
-        public bool ShowBasicInfo { get; set; } = true;
+        public bool ShowBasicInfo 
+        {
+            get => _showBasicInfo;
+            set
+            {
+                _showBasicInfo = value;
+                UpdateFilter();
+            }
+        }
 
-        public bool ShowAdvancedInfo { get; set; } = true;
+        public bool ShowAdvancedInfo
+        {
+            get => _showAdvancedInfo;
+            set
+            {
+                _showAdvancedInfo = value;
+                UpdateFilter();
+            }
+        }
 
-        public bool ShowErrors { get; set; } = true;
+        public bool ShowErrors
+        {
+            get => _showErrors;
+            set
+            {
+                _showErrors = value;
+                UpdateFilter();
+            }
+        }
 
         public void AddLogEntry(string message, ELogMessageType messageType)
         {
@@ -42,9 +70,9 @@ namespace CapFrameX.Data.Logging
         {
             Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.Normal, (Action)(() =>
             {
-                LogEntryOutput = new ObservableCollection<ILogEntry>();
-                _logEntryHistory.ForEach(AddLogEntryByFilter);           
-            }));           
+                LogEntryOutput.Clear();
+                _logEntryHistory.ForEach(AddLogEntryByFilter);
+            }));
         }
 
         private void AddLogEntryByFilter(ILogEntry logEntry)
