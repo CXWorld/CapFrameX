@@ -1,6 +1,7 @@
 ﻿using CapFrameX.Contracts.Logging;
 using CapFrameX.Extensions.NetStandard;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Threading;
@@ -9,8 +10,8 @@ namespace CapFrameX.Data.Logging
 {
     public class LogEntryManager : ILogEntryManager
     {
-        private ObservableCollection<ILogEntry> _logEntryHistory { get; set; }
-           = new ObservableCollection<ILogEntry>();
+        private List<ILogEntry> _logEntryHistory { get; set; }
+           = new List<ILogEntry>();
 
         public ObservableCollection<ILogEntry> LogEntryOutput { get; set; }
            = new ObservableCollection<ILogEntry>();
@@ -23,30 +24,27 @@ namespace CapFrameX.Data.Logging
 
         public void AddLogEntry(string message, ELogMessageType messageType)
         {
-            void Add(ObservableCollection<ILogEntry> collection)
+            var logEntry = new LogEntry()
             {
-                collection.Add(new LogEntry()
-                {
-                    MessageType = messageType,
-                    MessageInfo = DateTime.Now.ToString("HH:mm:ss") + $" ( Type: {messageType.GetDescription()} )",
-                    Message = message
-                });
-            }
+                MessageType = messageType,
+                MessageInfo = DateTime.Now.ToString("HH:mm:ss") + $" ( Type: {messageType.GetDescription()} )",
+                Message = message
+            };
+
+            _logEntryHistory.Add(logEntry);
 
             Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.Normal, (Action)(() =>
             {
-                Add(_logEntryHistory);
-
                 switch (messageType)
                 {
                     case ELogMessageType.Error when ShowErrors:
-                        Add(LogEntryOutput);
+                        LogEntryOutput.Add(logEntry);
                         break;
                     case ELogMessageType.BasicInfo when ShowBasicInfo:
-                        Add(LogEntryOutput);
+                        LogEntryOutput.Add(logEntry);
                         break;
-                    case ELogMessageType.AdvancedInfo when ShowAdvancedInfo: 
-                        Add(LogEntryOutput);
+                    case ELogMessageType.AdvancedInfo when ShowAdvancedInfo:
+                        LogEntryOutput.Add(logEntry);
                         break;
                     default:
                         break;
