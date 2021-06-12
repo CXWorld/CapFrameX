@@ -1,5 +1,6 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
+using CapFrameX.Contracts.Logging;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.RTSS;
 using CapFrameX.Contracts.Sensor;
@@ -33,6 +34,7 @@ namespace CapFrameX.Overlay
         private readonly ISensorService _sensorService;
         private readonly IRTSSService _rTSSService;
         private readonly IOverlayEntryCore _overlayEntryCore;
+        private readonly ILogEntryManager _logEntryManager;
 
         private IDisposable _disposableCaptureTimer;
         private IDisposable _disposableDelayCountdown;
@@ -65,7 +67,8 @@ namespace CapFrameX.Overlay
             ILogger<OverlayService> logger,
             IRecordManager recordManager,
             IRTSSService rTSSService,
-            IOverlayEntryCore overlayEntryCore)
+            IOverlayEntryCore overlayEntryCore,
+            ILogEntryManager logEntryManager)
         {
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -76,6 +79,7 @@ namespace CapFrameX.Overlay
             _logger = logger;
             _recordManager = recordManager;
             _sensorService = sensorService;
+            _logEntryManager = logEntryManager;
             _rTSSService = rTSSService;
             _overlayEntryCore = overlayEntryCore;
 
@@ -141,74 +145,74 @@ namespace CapFrameX.Overlay
 
         public void StartCountdown(double seconds)
         {
-                IObservable<long> obs = Extensions.ObservableExtensions.CountDown(seconds);
-                _rTSSService.SetIsCaptureTimerActive(true);
+            IObservable<long> obs = Extensions.ObservableExtensions.CountDown(seconds);
+            _rTSSService.SetIsCaptureTimerActive(true);
 
-                SetCaptureTimerValue(0);
-                _disposableCountdown?.Dispose();
-                _disposableCountdown = obs.Subscribe(t =>
-                {                  
-                        SetCaptureTimerValue((int)t);
+            SetCaptureTimerValue(0);
+            _disposableCountdown?.Dispose();
+            _disposableCountdown = obs.Subscribe(t =>
+            {
+                SetCaptureTimerValue((int)t);
 
-                        if (IsOverlayActive)
-                            _rTSSService.Refresh();
+                if (IsOverlayActive)
+                    _rTSSService.Refresh();
 
-                    if (t == 0)
-                        _rTSSService.SetIsCaptureTimerActive(false);
+                if (t == 0)
+                    _rTSSService.SetIsCaptureTimerActive(false);
 
-                });
+            });
         }
 
         public void SetDelayCountdown(double seconds)
         {
-                IObservable<long> obs = Extensions.ObservableExtensions.CountDown(seconds);
-                _rTSSService.SetIsCaptureTimerActive(true);
+            IObservable<long> obs = Extensions.ObservableExtensions.CountDown(seconds);
+            _rTSSService.SetIsCaptureTimerActive(true);
 
-                SetCaptureTimerValue(-(int)seconds);
-                _disposableDelayCountdown?.Dispose();
-                _disposableDelayCountdown = obs.Subscribe(t =>
+            SetCaptureTimerValue(-(int)seconds);
+            _disposableDelayCountdown?.Dispose();
+            _disposableDelayCountdown = obs.Subscribe(t =>
+            {
+                if (t > 0)
                 {
-                    if (t > 0)
-                    {
-                        SetCaptureTimerValue((int)-t);
+                    SetCaptureTimerValue((int)-t);
 
-                        if (IsOverlayActive)
-                            _rTSSService.Refresh();
-                    }
-                });
+                    if (IsOverlayActive)
+                        _rTSSService.Refresh();
+                }
+            });
         }
 
         public void CancelDelayCountdown()
         {
-                _disposableDelayCountdown?.Dispose();
-                _rTSSService.SetIsCaptureTimerActive(false);
+            _disposableDelayCountdown?.Dispose();
+            _rTSSService.SetIsCaptureTimerActive(false);
 
-                if (IsOverlayActive)
-                    _rTSSService.Refresh();
+            if (IsOverlayActive)
+                _rTSSService.Refresh();
         }
 
         public void StartCaptureTimer()
         {
-                _disposableCaptureTimer = GetCaptureTimer();
-                _rTSSService.SetIsCaptureTimerActive(true);
+            _disposableCaptureTimer = GetCaptureTimer();
+            _rTSSService.SetIsCaptureTimerActive(true);
         }
 
         public void StopCaptureTimer()
         {
-                _disposableCaptureTimer?.Dispose();
-                _disposableCountdown?.Dispose();
-                _rTSSService.SetIsCaptureTimerActive(false);
-                SetCaptureTimerValue(0);
+            _disposableCaptureTimer?.Dispose();
+            _disposableCountdown?.Dispose();
+            _rTSSService.SetIsCaptureTimerActive(false);
+            SetCaptureTimerValue(0);
         }
 
         public void SetCaptureTimerValue(int t)
         {
-                var captureTimer = _overlayEntryProvider.GetOverlayEntry("CaptureTimer");
-                if (captureTimer != null)
-                {
-                    captureTimer.Value = $"{t} s";
-                    _rTSSService.SetOverlayEntry(captureTimer);
-                }
+            var captureTimer = _overlayEntryProvider.GetOverlayEntry("CaptureTimer");
+            if (captureTimer != null)
+            {
+                captureTimer.Value = $"{t} s";
+                _rTSSService.SetOverlayEntry(captureTimer);
+            }
         }
 
         public void SetCaptureServiceStatus(string status)
@@ -276,6 +280,7 @@ namespace CapFrameX.Overlay
 
             if (RunHistoryCount < _numberOfRuns)
             {
+
                 // metric history
                 var currentAnalysis = _statisticProvider.GetMetricAnalysis(frametimes, SecondMetric, ThirdMetric);
                 _metricAnalysis.Add(currentAnalysis);
@@ -288,27 +293,39 @@ namespace CapFrameX.Overlay
                 // frametime history
                 _frametimeHistory.Add(frametimes);
 
-                if (_appConfiguration.UseAggregation
-                    && RunHistoryCount == _numberOfRuns)
+                if (_appConfiguration.UseAggregation)
                 {
-                    _runHistoryOutlierFlags = _statisticProvider
-                        .GetOutlierAnalysis(_metricAnalysis,
-                                            _appConfiguration.RelatedMetricOverlay,
-                                            _appConfiguration.OutlierPercentageOverlay);
-                    _rTSSService.SetRunHistoryOutlierFlags(_runHistoryOutlierFlags);
+                    _logEntryManager.AddLogEntry($"Aggregation active. Adding captured data to history ({RunHistoryCount} of {_numberOfRuns})", ELogMessageType.BasicInfo);
 
-                    if ((_runHistoryOutlierFlags.All(x => x == false)
-                        && _appConfiguration.OutlierHandling == EOutlierHandling.Replace.ConvertToString())
-                        || _appConfiguration.OutlierHandling == EOutlierHandling.Ignore.ConvertToString())
+                    if (RunHistoryCount == _numberOfRuns)
                     {
-                        _rTSSService.SetRunHistoryAggregation(GetAggregation());
+                        _runHistoryOutlierFlags = _statisticProvider
+                            .GetOutlierAnalysis(_metricAnalysis,
+                                                _appConfiguration.RelatedMetricOverlay,
+                                                _appConfiguration.OutlierPercentageOverlay);
+                        _rTSSService.SetRunHistoryOutlierFlags(_runHistoryOutlierFlags);
 
-                        // write aggregated file
-                        Task.Run(async () =>
+                        if ((_runHistoryOutlierFlags.All(x => x == false)
+                            && _appConfiguration.OutlierHandling == EOutlierHandling.Replace.ConvertToString())
+                            || _appConfiguration.OutlierHandling == EOutlierHandling.Ignore.ConvertToString())
                         {
-                            await Task.Delay(1000);
-                            await _recordManager.SaveSessionRunsToFile(_captureDataHistory, process, recordDirectory, null);
-                        });
+                            _rTSSService.SetRunHistoryAggregation(GetAggregation());
+
+
+                            // write aggregated file
+                            Task.Run(async () =>
+                            {
+                                await Task.Delay(1000);
+                                bool checkSave = await _recordManager.SaveSessionRunsToFile(_captureDataHistory, process, recordDirectory, null);
+
+                                if (!checkSave)
+                                    _logEntryManager.AddLogEntry("Error while saving aggregated file.", ELogMessageType.Error);
+                                else
+                                    _logEntryManager.AddLogEntry("Aggregated file successfully written into directory.", ELogMessageType.BasicInfo);
+                            });
+                        }
+                        else
+                            _logEntryManager.AddLogEntry($"Aggregation outliers detected. Additional runs required.", ELogMessageType.BasicInfo);
                     }
                 }
             }
@@ -692,11 +709,11 @@ namespace CapFrameX.Overlay
             return Observable
                 .Timer(DateTimeOffset.UtcNow, TimeSpan.FromSeconds(1))
                 .Subscribe(t =>
-                {                 
-                        SetCaptureTimerValue((int)t);
+                {
+                    SetCaptureTimerValue((int)t);
 
-                        if (IsOverlayActive)
-                            _rTSSService.Refresh();
+                    if (IsOverlayActive)
+                        _rTSSService.Refresh();
                 });
         }
 

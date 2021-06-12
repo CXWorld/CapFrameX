@@ -288,7 +288,11 @@ namespace CapFrameX.ViewModel
             AddToProcessListCommand = new DelegateCommand(OnAddToProcessList);
             ResetPresentMonCommand = new DelegateCommand(OnResetCaptureProcess);
             UpdateLogCommand = new DelegateCommand( () => _logEntryManager?.UpdateFilter());
-            ClearLogCommand = new DelegateCommand(OnClearLog);
+            ClearLogCommand = new DelegateCommand( () => _logEntryManager?.ClearLog());
+
+            LoggerOutput.CollectionChanged += (e, x) => {
+                IsLoggerOutputEmpty = (x.NewItems?.Count ?? 0) == 0;
+            };
 
             _captureManager
                 .CaptureStatusChange
@@ -333,7 +337,7 @@ namespace CapFrameX.ViewModel
 
                 if (status.Message != null)
                 {
-                    AddLoggerEntry(status.Message, status.MessageType);
+                    _logEntryManager.AddLogEntry(status.Message, status.MessageType);
                 }
             });
 
@@ -420,13 +424,13 @@ namespace CapFrameX.ViewModel
             if (!ProcessesToCapture.Any())
             {
                 _soundManager.PlaySound(Sound.NoProcess);
-                AddLoggerEntry("Capture triggered, but no process was detected", ELogMessageType.Error);
+                _logEntryManager.AddLogEntry("Capture triggered, but no process was detected", ELogMessageType.Error);
                 return;
             }
             else if (ProcessesToCapture.Count > 1 && string.IsNullOrWhiteSpace(SelectedProcessToCapture))
             {
                 _soundManager.PlaySound(Sound.MoreThanOneProcess);
-                AddLoggerEntry("Capture triggered, but multiple proccesses were detected", ELogMessageType.Error);
+                _logEntryManager.AddLogEntry("Capture triggered, but multiple proccesses were detected", ELogMessageType.Error);
                 return;
             }
             else if (!_captureManager.IsCapturing && !_captureManager.DelayCountdownRunning)
@@ -449,7 +453,7 @@ namespace CapFrameX.ViewModel
                     }
                     catch (Exception e)
                     {
-                        AddLoggerEntry($"Error: {e.Message}", ELogMessageType.Error);
+                        _logEntryManager.AddLogEntry($"Error: {e.Message}", ELogMessageType.Error);
                     }
                 });
 
@@ -465,7 +469,7 @@ namespace CapFrameX.ViewModel
                     }
                     catch (Exception e)
                     {
-                        AddLoggerEntry($"Error: {e.Message}", ELogMessageType.Error);
+                        _logEntryManager.AddLogEntry($"Error: {e.Message}", ELogMessageType.Error);
                     }
                     finally
                     {
@@ -551,12 +555,6 @@ namespace CapFrameX.ViewModel
             SelectedProcessToCapture = null;
             StopCaptureService();
             StartCaptureService();
-        }
-
-        private void OnClearLog()
-        {
-            _logEntryManager?.ClearLog();
-            IsLoggerOutputEmpty = !LoggerOutput.Any();
         }
 
         private IDisposable GetListUpdatHeartBeat()
@@ -713,12 +711,6 @@ namespace CapFrameX.ViewModel
                 MinorTickSize = 0,
                 MajorTickSize = 0
             });
-        }
-
-        private void AddLoggerEntry(string message, ELogMessageType messageType)
-        {
-            _logEntryManager.AddLogEntry(message, messageType);
-            IsLoggerOutputEmpty = !LoggerOutput.Any();
         }
     }
 }

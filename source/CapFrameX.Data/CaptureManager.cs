@@ -317,7 +317,7 @@ namespace CapFrameX.Data
             IsCapturing = false;
             _disposableCaptureStream?.Dispose();
 
-            AddLoggerEntry("Creating capture file", ELogMessageType.BasicInfo);
+            AddLoggerEntry("Processing captured data", ELogMessageType.BasicInfo);
 
             if (_appConfiguration.IsOverlayActive)
                 _rtssService.Refresh();
@@ -418,10 +418,7 @@ namespace CapFrameX.Data
 
                 // if aggregation mode is active and "Save aggregated result only" is checked, don't save single history items
                 if (_appConfiguration.UseAggregation && _appConfiguration.SaveAggregationOnly)
-                {
-                    AddLoggerEntry("Aggregation active, adding to history...", ELogMessageType.BasicInfo);
                     return;
-                }
 
                 if (_currentCaptureOptions.CaptureFileMode == Enum.GetName(typeof(ECaptureFileMode), ECaptureFileMode.JsonCsv))
                 {
@@ -533,9 +530,6 @@ namespace CapFrameX.Data
             var unionCaptureDataStartTime = GetStartTimeFromDataLine(unionCaptureData.First());
             var unionCaptureDataEndTime = GetStartTimeFromDataLine(unionCaptureData.Last());
 
-            AddLoggerEntry($"Archive contains {filteredArchive.Count} frames." + Environment.NewLine +
-                $"Length captured data + archive in sec: " + $"{ Math.Round(unionCaptureDataEndTime - unionCaptureDataStartTime, 2)}", ELogMessageType.AdvancedInfo);
-
             var captureInterval = new List<string[]>();
 
             double startTime = 0;
@@ -558,6 +552,10 @@ namespace CapFrameX.Data
                 return Enumerable.Empty<string[]>().ToList();
             }
 
+            AddLoggerEntry($"Length captured data + archive ({filteredArchive.Count} frames) in sec: " + $"{ Math.Round(unionCaptureDataEndTime - unionCaptureDataStartTime, 2)}" + Environment.NewLine
+                + $"Length captured data QPCTime start to end with buffer in sec: " + $"{ Math.Round(unionCaptureDataEndTime - startTime, 2)}", ELogMessageType.AdvancedInfo);
+
+
             if (!autoTermination)
             {
                 for (int i = 0; i < unionCaptureData.Count; i++)
@@ -577,9 +575,6 @@ namespace CapFrameX.Data
             }
             else
             {
-                AddLoggerEntry($"Length captured data QPCTime start to end with buffer in sec: " +
-                    $"{ Math.Round(unionCaptureDataEndTime - startTime, 2)}", ELogMessageType.AdvancedInfo);
-
                 double normalizeTimeOffset = 0;
 
                 for (int i = 0; i < unionCaptureData.Count; i++)
@@ -657,7 +652,7 @@ namespace CapFrameX.Data
             return Convert.ToDouble(lineSplit[PresentMonCaptureService.TimeInSeconds_INDEX], CultureInfo.InvariantCulture);
         }
 
-        private void AddLoggerEntry(string entry, ELogMessageType messageType)
+        public void AddLoggerEntry(string entry, ELogMessageType messageType)
         {
             _captureStatusChange.OnNext(new CaptureStatus()
             {
