@@ -56,12 +56,15 @@
                     </Grid.RowDefinitions>
                     <ToggleButton Panel.ZIndex="2" Grid.Row="0" HorizontalAlignment="Right" Padding="0" Margin="0 0 5 -25" IsChecked="{Binding FixedExpanderPosition, Mode=TwoWay}" 
                         Style="{StaticResource MaterialDesignActionToggleButton}" Height="20" Width="20" ToolTip="Lock expander position" Background="#6ec6ff">
-                        <materialDesign:PackIcon Kind="PinOff">
+                        <materialDesign:PackIcon Kind="PinOff" RenderTransformOrigin=".5,.5">
+                            <materialDesign:PackIcon.RenderTransform>
+                                <RotateTransform Angle="90"/>
+                            </materialDesign:PackIcon.RenderTransform>
                         </materialDesign:PackIcon>
                         <materialDesign:ToggleButtonAssist.OnContent>
                             <materialDesign:PackIcon Kind="Pin" RenderTransformOrigin=".5,.5">
                                 <materialDesign:PackIcon.RenderTransform>
-                                    <RotateTransform Angle="45"/>
+                                    <RotateTransform Angle="0"/>
                                 </materialDesign:PackIcon.RenderTransform>
                                 </materialDesign:PackIcon>
                         </materialDesign:ToggleButtonAssist.OnContent>
