@@ -159,6 +159,16 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        public bool FixedExpanderPosition
+        {
+            get { return _appConfiguration.FixedExpanderPosition; }
+            set
+            {
+                _appConfiguration.FixedExpanderPosition = value;
+                RaisePropertyChanged();
+            }
+        }
+
         public string RootDirectory
         {
             get { return _appConfiguration.CaptureRootDirectory; }

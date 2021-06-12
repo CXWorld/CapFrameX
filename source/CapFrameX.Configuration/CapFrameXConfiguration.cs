@@ -115,6 +115,12 @@ namespace CapFrameX.Configuration
         }
 
         // Record List Settings
+
+        public bool FixedExpanderPosition
+        {
+            get => Get<bool>(false);
+            set => Set(value);
+        }
         public string RecordingListSortMemberPath
         {
             get => Get<string>("GameName");

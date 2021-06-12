@@ -30,6 +30,8 @@ namespace CapFrameX.View
 
 		private bool CreateFolderDialogIsOpen;
 
+		private bool FixedExpanderPosition => _viewModel.FixedExpanderPosition;
+
 		private string ObservedDirectory
 			=> _viewModel.AppConfiguration.ObservedDirectory;
 		private string CaptureRootDirectory
@@ -44,6 +46,9 @@ namespace CapFrameX.View
 		public ControlView()
 		{
 			InitializeComponent();
+
+			if (FixedExpanderPosition)
+				Expander.IsExpanded = true;
 
 			_recordInfoCollection = (CollectionViewSource)Resources["RecordInfoListKey"];
 			Observable.FromEventPattern<TextChangedEventArgs>(RecordSearchBox, "TextChanged")
@@ -70,6 +75,7 @@ namespace CapFrameX.View
 				.Where(_ => !trvStructure.ContextMenu.IsOpen)
 				.Where(_ => Expander.IsExpanded)
 				.Where(isOpen => !CreateFolderDialogIsOpen)
+				.Where(_ => !FixedExpanderPosition)
 				.ObserveOnDispatcher()
 				.Subscribe(_ => {
 					Expander.IsExpanded = false;

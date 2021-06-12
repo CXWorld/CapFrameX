@@ -30,13 +30,17 @@
             <RowDefinition Height="1*"></RowDefinition>
             <RowDefinition Height="300"></RowDefinition>
         </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"></ColumnDefinition>
+            <ColumnDefinition Width="1*"></ColumnDefinition>
+        </Grid.ColumnDefinitions>
         <!--Record folder management expander-->
-        <Expander Name="Expander" Margin="0 0 0 0" MaxWidth="365" Grid.Row="0" Panel.ZIndex="1" ExpandDirection="Right" HorizontalAlignment="Left"
+        <Expander Name="Expander" Margin="0 0 0 0" MaxWidth="365" Grid.Row="0" Grid.Column="0" Panel.ZIndex="1" ExpandDirection="Right" HorizontalAlignment="Left"
                   Foreground="{DynamicResource MaterialDesignBody}" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
             <Expander.Header>
                 <TextBlock Text="Observed directory" RenderTransformOrigin=".5,.5" HorizontalAlignment="Center">
                     <TextBlock.LayoutTransform>
-                        <RotateTransform Angle="90" />
+                        <RotateTransform Angle="90"/>
                     </TextBlock.LayoutTransform>
                 </TextBlock>
             </Expander.Header>
@@ -46,20 +50,33 @@
 							CloseOnClickAway="False">
                 <Grid Name="ExpanderGrid" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
                     <Grid.RowDefinitions>
+                        <RowDefinition Height="10" ></RowDefinition>
                         <RowDefinition Height="Auto" ></RowDefinition>
                         <RowDefinition Height="Auto" ></RowDefinition>
                     </Grid.RowDefinitions>
-                    <TextBox Grid.Row="0" Margin="10 10 10 0" Width="250" IsReadOnly="True" HorizontalAlignment="Right" materialDesign:HintAssist.Hint="Root capture folder" materialDesign:HintAssist.IsFloating="True"
+                    <ToggleButton Panel.ZIndex="2" Grid.Row="0" HorizontalAlignment="Right" Padding="0" Margin="0 0 5 -25" IsChecked="{Binding FixedExpanderPosition, Mode=TwoWay}" 
+                        Style="{StaticResource MaterialDesignActionToggleButton}" Height="20" Width="20" ToolTip="Lock expander position" Background="#6ec6ff">
+                        <materialDesign:PackIcon Kind="PinOff">
+                        </materialDesign:PackIcon>
+                        <materialDesign:ToggleButtonAssist.OnContent>
+                            <materialDesign:PackIcon Kind="Pin" RenderTransformOrigin=".5,.5">
+                                <materialDesign:PackIcon.RenderTransform>
+                                    <RotateTransform Angle="45"/>
+                                </materialDesign:PackIcon.RenderTransform>
+                                </materialDesign:PackIcon>
+                        </materialDesign:ToggleButtonAssist.OnContent>
+                    </ToggleButton>
+                    <TextBox Grid.Row="1" Margin="10 0 10 0" Width="250" IsReadOnly="True" HorizontalAlignment="Right" materialDesign:HintAssist.Hint="Root capture folder" materialDesign:HintAssist.IsFloating="True"
                              Text="{Binding DataContext.RootDirectory, ElementName=ControlViewControl, Mode=OneWay}" TextWrapping="NoWrap" PreviewMouseDown="RootFolder_PreviewMouseDown" materialDesign:HintAssist.HintOpacity=".8"
                              ToolTip="{Binding DataContext.RootDirectory, ElementName=ControlViewControl, Mode=OneWay}"/>
-                    <Button Grid.Row="0" Margin="5 0 0 5" Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}"
+                    <Button Grid.Row="1" Margin="5 0 0 5" Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}"
 							VerticalAlignment="Bottom" HorizontalAlignment="Left"
 							Width="20" Height="20"
 							ToolTip="Reload root folder"
 							Command="{Binding ReloadRootFolderCommand}">
                         <materialDesign:PackIcon Kind="Cached" Width="15" Height="15"/>
                     </Button>
-                    <ScrollViewer Margin="0 20 0 0" Width="300" Grid.Row="1" Height="{Binding ElementName=ControlViewControl, Path=ActualHeight, Converter={StaticResource AddValueConverterExpander}}" PreviewMouseWheel="ScrollViewer_PreviewMouseWheel" >
+                    <ScrollViewer Margin="0 20 0 0" Width="300" Grid.Row="2" Height="{Binding ElementName=ControlViewControl, Path=ActualHeight, Converter={StaticResource AddValueConverterExpander}}" PreviewMouseWheel="ScrollViewer_PreviewMouseWheel" >
                         <TreeView Name="trvStructure" TreeViewItem.Selected="TreeViewItem_Selected" PreviewMouseRightButtonDown="TreeView_PreviewMouseRightButtonDown"
                                   Tag="{Binding ElementName=ControlViewControl, Path=DataContext}" FontSize="12" >
                             <TreeView.ContextMenu>
@@ -75,13 +92,13 @@
             </materialDesign:DialogHost>
         </Expander>
         <!--Record list-->
-        <Border Visibility="{Binding HasValidSource, Converter={StaticResource FalseToVisibleConverter}}" Margin="0 10 5 0" BorderThickness="1">
+        <Border Grid.Column="1" Visibility="{Binding HasValidSource, Converter={StaticResource FalseToVisibleConverter}}" Margin="0 10 5 0" BorderThickness="1">
             <!--Style="{StaticResource MaterialDesignHeadlineTextBlock}"-->
             <TextBlock Text="Observed directory missing.&#10;Open expander and select a folder." TextAlignment="Center"
                        TextWrapping="Wrap" Width="220" Margin="60 0 10 0" HorizontalAlignment="Center" VerticalAlignment="Center"
                        Foreground="{DynamicResource MaterialDesignBody}"/>
         </Border>
-        <StackPanel Margin="50 0 0 0" Grid.Row="0" Orientation="Vertical" >
+        <StackPanel Margin="0 0 0 0" Grid.Row="0" Grid.Column="1" Orientation="Vertical" >
             <Grid Visibility="{Binding HasValidSource, Converter={StaticResource FalseToCollapsedConverter}}">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"></RowDefinition>
@@ -178,7 +195,7 @@
                                     </MultiTrigger.Setters>
                                 </MultiTrigger>
                             </Style.Triggers>
-                            </Style>
+                        </Style>
                     </DataGrid.Resources>
                     <i:Interaction.Triggers>
                         <i:EventTrigger EventName="SelectionChanged">
@@ -346,6 +363,8 @@
             </Grid>
             <Border Margin="0 5 5 0" BorderThickness="0 1 0 0" BorderBrush="{DynamicResource MaterialDesignDivider}" />
         </StackPanel>
+
+
         <Grid Grid.Row="1" Grid.ColumnSpan="2" Margin="0 5 5 0" >
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>

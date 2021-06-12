@@ -54,7 +54,7 @@
                 </Grid>
             </DataTemplate>
 
-            <DataTemplate DataType="{x:Type log:CollapsibleLogEntry}">
+            <!--<DataTemplate DataType="{x:Type log:CollapsibleLogEntry}">
                 <Grid IsSharedSizeScope="True">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition SharedSizeGroup="Date" Width="Auto"/>
@@ -66,11 +66,11 @@
                         <RowDefinition/>
                     </Grid.RowDefinitions>
 
-                    <TextBlock Text="{Binding FormattedDateTime}" Grid.Column="0" Foreground="{DynamicResource MaterialDesignBody}"
-                       FontWeight="Bold" Margin="5,0,5,0"/>
+                    <TextBlock Text="{Binding MessageInfo}" Grid.Column="0" Foreground="{DynamicResource MaterialDesignBody}"
+                       FontWeight="Bold" FontSize="11"  Margin="5,3,5,0"/>
 
                     <TextBlock Text="{Binding Message}" Grid.Column="2" Foreground="{DynamicResource MaterialDesignBody}"
-                       TextWrapping="Wrap"/>
+                       TextWrapping="Wrap" FontSize="11"  Margin="5,0,5,5"/>
 
                     <ToggleButton x:Name="Expander" Grid.Row="1" Grid.Column="0"
                           VerticalAlignment="Top" Content="+" HorizontalAlignment="Right"/>
@@ -86,7 +86,7 @@
                         <Setter TargetName="Expander" Property="Content" Value="-"/>
                     </Trigger>
                 </DataTemplate.Triggers>
-            </DataTemplate>
+            </DataTemplate>-->
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid VerticalAlignment="Top" HorizontalAlignment="Center">

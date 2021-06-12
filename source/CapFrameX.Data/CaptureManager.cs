@@ -139,6 +139,11 @@ namespace CapFrameX.Data
             if (options.RecordDirectory != null && !Directory.Exists(options.RecordDirectory))
                 throw new Exception($"RecordDirectory {options.RecordDirectory} does not exist");
 
+            _ = QueryPerformanceCounter(out long startCounter);
+            _qpcTimeStart = startCounter;
+
+            var atomicTime = AtomicTime.Now.TimeOfDay;
+
             var delayStopwatch = new Stopwatch();
             delayStopwatch.Start();
 
@@ -198,10 +203,6 @@ namespace CapFrameX.Data
             bool intializedStartTime = false;
             double captureDataArchiveLastTime = 0;
 
-            _ = QueryPerformanceCounter(out long startCounter);
-            _qpcTimeStart = startCounter;
-
-
             _disposableCaptureStream = _presentMonCaptureService
                 .RedirectedOutputDataStream
                 .Skip(1)
@@ -246,7 +247,7 @@ namespace CapFrameX.Data
 
             _sensorService.StartSensorLogging();
 
-            delayStopwatch.Stop();           
+            delayStopwatch.Stop();
 
             if (options.CaptureTime > 0d)
             {
@@ -267,8 +268,8 @@ namespace CapFrameX.Data
                 AddLoggerEntry($"Capturing of process \"{options.ProcessInfo.Item1}\" started", ELogMessageType.BasicInfo);
             }
 
-            AddLoggerEntry($"Atomic time(UTC): { AtomicTime.Now.TimeOfDay}" + Environment.NewLine
-                + $"Performance counter on start capturing: {startCounter}" + Environment.NewLine
+            AddLoggerEntry($"Atomic time(UTC) on capture start request: {atomicTime}" + Environment.NewLine
+                + $"Performance counter on capture start request: {startCounter}" + Environment.NewLine
                 + $"Time between capture start request and execution in ms: {delayStopwatch.ElapsedMilliseconds}", ELogMessageType.AdvancedInfo);
 
             await Task.FromResult(0);

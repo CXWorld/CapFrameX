@@ -170,6 +170,8 @@ namespace CapFrameX.Contracts.Configuration
 		string SensorReportEvaluationMethod { get; set; }
 
 		bool UseDarkMode { get; set; }
+
+		bool FixedExpanderPosition { get; set; }
 	}
 
 	public interface IReportDataGridColumnSettings

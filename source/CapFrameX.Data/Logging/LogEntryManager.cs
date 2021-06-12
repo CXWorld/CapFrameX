@@ -11,7 +11,7 @@ namespace CapFrameX.Data.Logging
     public class LogEntryManager : ILogEntryManager
     {
         private bool _showBasicInfo = true;
-        private bool _showAdvancedInfo = true;
+        private bool _showAdvancedInfo = false;
         private bool _showErrors = true;
 
         private List<ILogEntry> _logEntryHistory { get; set; }
@@ -52,7 +52,7 @@ namespace CapFrameX.Data.Logging
 
         public void AddLogEntry(string message, ELogMessageType messageType)
         {
-            Application.Current.Dispatcher.BeginInvoke((Action)(() =>
+            Application.Current.Dispatcher.Invoke((() =>
             {
                 var logEntry = new LogEntry()
                 {
