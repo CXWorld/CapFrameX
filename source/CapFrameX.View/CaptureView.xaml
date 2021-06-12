@@ -118,7 +118,7 @@
                                             <Border Margin="0 10 0 0" BorderThickness="0.1" BorderBrush="{DynamicResource MaterialDesignBody}"
                                                 Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
                                                 <ListView IsSynchronizedWithCurrentItem="False" ItemsSource="{Binding ProcessesToCapture}" SelectedItem="{Binding SelectedProcessToCapture}"
-													  ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True" Height="150" Width="250"
+													  ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True" Height="150" Width="190"
 													  IsEnabled="{Binding AreButtonsActive}">
                                                 </ListView>
                                             </Border>
@@ -137,7 +137,7 @@
                                             <Border Margin="0 10 0 0" BorderThickness="0.1" BorderBrush="{DynamicResource MaterialDesignBody}"
                                                 Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
                                                 <ListView IsSynchronizedWithCurrentItem="False" ItemsSource="{Binding ProcessesToIgnore}" SelectedItem="{Binding SelectedProcessToIgnore}"
-										              ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True" Height="150" Width="250">
+										              ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True" Height="150" Width="190">
                                                 </ListView>
                                             </Border>
                                             <Button Margin="0 10 0 0" HorizontalAlignment="Right" BorderThickness="0" Width="120" Height="45"

@@ -13,7 +13,7 @@ namespace CapFrameX
     {
         public System.Windows.Controls.ContentControl GlobalScreenshotArea => ScreenshotArea;
 
-        public bool IsGpuAccelerationActive { get; set; } = true;
+        public bool IsGpuAccelerationActive { get; set; }
 
         public Shell()
         {
