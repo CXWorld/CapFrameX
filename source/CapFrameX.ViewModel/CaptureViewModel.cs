@@ -419,13 +419,13 @@ namespace CapFrameX.ViewModel
             if (!ProcessesToCapture.Any())
             {
                 _soundManager.PlaySound(Sound.NoProcess);
-                _logEntryManager.AddLogEntry("Capture triggered, but no process was detected", ELogMessageType.Error, false);
+                _logEntryManager.AddLogEntry("Capture triggered, but no process was detected", ELogMessageType.BasicInfo, true);
                 return;
             }
             else if (ProcessesToCapture.Count > 1 && string.IsNullOrWhiteSpace(SelectedProcessToCapture))
             {
                 _soundManager.PlaySound(Sound.MoreThanOneProcess);
-                _logEntryManager.AddLogEntry("Capture triggered, but multiple proccesses were detected", ELogMessageType.Error, false);
+                _logEntryManager.AddLogEntry("Capture triggered, but multiple proccesses were detected", ELogMessageType.BasicInfo, true);
                 return;
             }
             else if (!_captureManager.IsCapturing && !_captureManager.DelayCountdownRunning)
