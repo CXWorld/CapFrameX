@@ -325,7 +325,7 @@ namespace CapFrameX.Overlay
                             });
                         }
                         else
-                            _logEntryManager.AddLogEntry($"Aggregation outliers detected. Additional runs required.", ELogMessageType.BasicInfo, false);
+                            _logEntryManager.AddLogEntry($"Aggregation outliers detected ({_runHistoryOutlierFlags.Where(x => x == true).Count()}). Additional runs required.", ELogMessageType.BasicInfo, false);
                     }
                 }
             }
