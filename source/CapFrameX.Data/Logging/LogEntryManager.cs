@@ -50,14 +50,18 @@ namespace CapFrameX.Data.Logging
             }
         }
 
-        public void AddLogEntry(string message, ELogMessageType messageType)
+        public void AddLogEntry(string message, ELogMessageType messageType, bool isNewLogGroup)
         {
+            string newLine = "\n\n";
+            if (!isNewLogGroup || LogEntryOutput.Count == 0)
+                newLine = string.Empty;
+
             Application.Current.Dispatcher.Invoke((() =>
             {
                 var logEntry = new LogEntry()
                 {
                     MessageType = messageType,
-                    MessageInfo = DateTime.Now.ToString("HH:mm:ss") + $" ( Type: {messageType.GetDescription()} )",
+                    MessageInfo = newLine + DateTime.Now.ToString("HH:mm:ss") + $" ( Type: {messageType.GetDescription()} )",
                     Message = message
                 };
 

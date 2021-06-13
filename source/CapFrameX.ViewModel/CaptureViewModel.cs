@@ -334,11 +334,6 @@ namespace CapFrameX.ViewModel
                         CaptureStateInfo = "Capturing in progress..." + Environment.NewLine + $"Press {CaptureHotkeyString} to stop capture.";
                     }
                 }
-
-                if (status.Message != null)
-                {
-                    _logEntryManager.AddLogEntry(status.Message, status.MessageType);
-                }
             });
 
             _logger.LogDebug("{viewName} Ready", this.GetType().Name);
@@ -424,13 +419,13 @@ namespace CapFrameX.ViewModel
             if (!ProcessesToCapture.Any())
             {
                 _soundManager.PlaySound(Sound.NoProcess);
-                _logEntryManager.AddLogEntry("Capture triggered, but no process was detected", ELogMessageType.Error);
+                _logEntryManager.AddLogEntry("Capture triggered, but no process was detected", ELogMessageType.Error, false);
                 return;
             }
             else if (ProcessesToCapture.Count > 1 && string.IsNullOrWhiteSpace(SelectedProcessToCapture))
             {
                 _soundManager.PlaySound(Sound.MoreThanOneProcess);
-                _logEntryManager.AddLogEntry("Capture triggered, but multiple proccesses were detected", ELogMessageType.Error);
+                _logEntryManager.AddLogEntry("Capture triggered, but multiple proccesses were detected", ELogMessageType.Error, false);
                 return;
             }
             else if (!_captureManager.IsCapturing && !_captureManager.DelayCountdownRunning)
@@ -453,7 +448,7 @@ namespace CapFrameX.ViewModel
                     }
                     catch (Exception e)
                     {
-                        _logEntryManager.AddLogEntry($"Error: {e.Message}", ELogMessageType.Error);
+                        _logEntryManager.AddLogEntry($"Error: {e.Message}", ELogMessageType.Error, false);
                     }
                 });
 
@@ -469,7 +464,7 @@ namespace CapFrameX.ViewModel
                     }
                     catch (Exception e)
                     {
-                        _logEntryManager.AddLogEntry($"Error: {e.Message}", ELogMessageType.Error);
+                        _logEntryManager.AddLogEntry($"Error: {e.Message}", ELogMessageType.Error, false);
                     }
                     finally
                     {

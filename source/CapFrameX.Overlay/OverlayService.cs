@@ -295,7 +295,7 @@ namespace CapFrameX.Overlay
 
                 if (_appConfiguration.UseAggregation)
                 {
-                    _logEntryManager.AddLogEntry($"Aggregation active. Adding captured data to history ({RunHistoryCount} of {_numberOfRuns})", ELogMessageType.BasicInfo);
+                    _logEntryManager.AddLogEntry($"Aggregation active. Adding captured data to history ({RunHistoryCount} of {_numberOfRuns})", ELogMessageType.BasicInfo, false);
 
                     if (RunHistoryCount == _numberOfRuns)
                     {
@@ -319,13 +319,13 @@ namespace CapFrameX.Overlay
                                 bool checkSave = await _recordManager.SaveSessionRunsToFile(_captureDataHistory, process, recordDirectory, null);
 
                                 if (!checkSave)
-                                    _logEntryManager.AddLogEntry("Error while saving aggregated file.", ELogMessageType.Error);
+                                    _logEntryManager.AddLogEntry("Error while saving aggregated file.", ELogMessageType.Error, false);
                                 else
-                                    _logEntryManager.AddLogEntry("Aggregated file successfully written into directory.", ELogMessageType.BasicInfo);
+                                    _logEntryManager.AddLogEntry("Aggregated file successfully written into directory.", ELogMessageType.BasicInfo, false);
                             });
                         }
                         else
-                            _logEntryManager.AddLogEntry($"Aggregation outliers detected. Additional runs required.", ELogMessageType.BasicInfo);
+                            _logEntryManager.AddLogEntry($"Aggregation outliers detected. Additional runs required.", ELogMessageType.BasicInfo, false);
                     }
                 }
             }

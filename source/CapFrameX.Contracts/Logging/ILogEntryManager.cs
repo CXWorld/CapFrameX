@@ -12,7 +12,7 @@ namespace CapFrameX.Contracts.Logging
 
         ObservableCollection<ILogEntry> LogEntryOutput { get; }
 
-        void AddLogEntry(string message, ELogMessageType messageType);
+        void AddLogEntry(string message, ELogMessageType messageType, bool isNewLogGroup);
 
         void UpdateFilter();
 
