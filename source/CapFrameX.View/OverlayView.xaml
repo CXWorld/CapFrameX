@@ -47,6 +47,11 @@
 				    FontSize="18" Visibility="{Binding IsRTSSInstalled, Converter={StaticResource FalseToVisibleConverter}}">             
 			<Hyperlink NavigateUri="https://www.guru3d.com/files-details/rtss-rivatuner-statistics-server-download.html" 
 					   RequestNavigate="Hyperlink_RequestNavigate">
+                     <Hyperlink.Style>
+                        <Style TargetType="Hyperlink" BasedOn="{StaticResource {x:Type Hyperlink}}">
+                            <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBodyLight}"/>
+                        </Style>
+                    </Hyperlink.Style>
 				<TextBlock Text="{Binding Path=UpdateHpyerlinkText}" TextAlignment="Center"/>
 			</Hyperlink>
 		</TextBlock>
