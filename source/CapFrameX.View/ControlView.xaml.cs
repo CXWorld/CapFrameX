@@ -325,7 +325,30 @@ namespace CapFrameX.View
 				if (_viewModel.CustomComment != _viewModel.SelectedRecordInfo.Comment)
 				{
 					_viewModel.SelectedRecordInfo.Comment = _viewModel.CustomComment;
-					//_viewModel.SaveDescriptions();
+				}
+
+			}
+			else if (myCell.Column.Header.ToString() == "CPU")
+			{
+				if (_viewModel.CustomCpuDescription != _viewModel.SelectedRecordInfo.ProcessorName)
+				{
+					_viewModel.SelectedRecordInfo.ProcessorName = _viewModel.CustomCpuDescription;
+				}
+
+			}
+			else if (myCell.Column.Header.ToString() == "GPU")
+			{
+				if (_viewModel.CustomGpuDescription != _viewModel.SelectedRecordInfo.GraphicCardName)
+				{
+					_viewModel.SelectedRecordInfo.GraphicCardName = _viewModel.CustomGpuDescription;
+				}
+
+			}
+			else if (myCell.Column.Header.ToString() == "RAM")
+			{
+				if (_viewModel.CustomRamDescription != _viewModel.SelectedRecordInfo.SystemRamInfo)
+				{
+					_viewModel.SelectedRecordInfo.SystemRamInfo = _viewModel.CustomRamDescription;
 				}
 
 			}
@@ -348,7 +371,32 @@ namespace CapFrameX.View
 					_viewModel.SaveDescriptions();
 				}
 			}
+			else if (myCell.Column.Header.ToString() == "CPU")
+			{
+				if (_viewModel.CustomCpuDescription != _viewModel.SelectedRecordInfo.ProcessorName)
+				{
+					_viewModel.CustomCpuDescription = _viewModel.SelectedRecordInfo.ProcessorName;
+					_viewModel.SaveDescriptions();
+				}
+			}
+			else if (myCell.Column.Header.ToString() == "GPU")
+			{
+				if (_viewModel.CustomGpuDescription != _viewModel.SelectedRecordInfo.GraphicCardName)
+				{
+					_viewModel.CustomGpuDescription = _viewModel.SelectedRecordInfo.GraphicCardName;
+					_viewModel.SaveDescriptions();
+				}
+			}
+			else if (myCell.Column.Header.ToString() == "RAM")
+			{
+				if (_viewModel.CustomRamDescription != _viewModel.SelectedRecordInfo.SystemRamInfo)
+				{
+					_viewModel.CustomRamDescription = _viewModel.SelectedRecordInfo.SystemRamInfo;
+					_viewModel.SaveDescriptions();
+				}
+			}
 		}
+
 		private void RecordDataGrid_BeginningEdit(object sender, DataGridBeginningEditEventArgs e)
 		{
 			var myCell = (sender as MultiSelectionDataGrid).CurrentCell;
