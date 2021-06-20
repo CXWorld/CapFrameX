@@ -1,5 +1,6 @@
 ﻿using CapFrameX.Contracts.MVVM;
 using CapFrameX.MVVM;
+using CapFrameX.View.UITracker;
 using System;
 using System.Windows;
 using System.Windows.Controls;

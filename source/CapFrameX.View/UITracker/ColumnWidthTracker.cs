@@ -2,7 +2,7 @@
 using System.Windows;
 using System.Windows.Controls;
 
-namespace CapFrameX
+namespace CapFrameX.View.UITracker
 {
     public class ColumnWidthTracker
 	{

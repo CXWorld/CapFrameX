@@ -235,6 +235,8 @@
     <Compile Include="Controls\CustomZoomStepManipulator.cs" />
     <Compile Include="Controls\MultiSelectionDataGrid.cs" />
     <Compile Include="Controls\PlotViewCustomZoom.cs" />
+    <Compile Include="UITracker\ColumnWidthTracker.cs" />
+    <Compile Include="UITracker\RowHeightTracker.cs" />
     <Compile Include="ControlView.xaml.cs">
       <DependentUpon>ControlView.xaml</DependentUpon>
     </Compile>

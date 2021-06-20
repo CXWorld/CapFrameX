@@ -74,9 +74,9 @@
             </Grid>
             <Grid Grid.Row="1">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="4*" MinHeight="250"/>
+                    <RowDefinition x:Name="UpperRow" Height="4*" MinHeight="250"/>
                     <RowDefinition Height="15"/>
-                    <RowDefinition Height="2*" MinHeight="200"/>
+                    <RowDefinition x:Name="LowerRow" Height="2*" MinHeight="200"/>
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="1*"/>

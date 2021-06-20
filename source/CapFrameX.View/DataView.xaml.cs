@@ -1,10 +1,12 @@
-﻿using CapFrameX.ViewModel;
+﻿using CapFrameX.View.UITracker;
+using CapFrameX.ViewModel;
 using LiveCharts;
 using LiveCharts.Wpf;
 using System;
 using System.Reactive.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 
@@ -19,12 +21,24 @@ namespace CapFrameX.View
         {
             InitializeComponent();
 
+            var viewmodel = (DataContext as DataViewModel);
+
             var context = SynchronizationContext.Current;
-            (DataContext as DataViewModel)?.ResetLShapeChart
+            viewmodel?.ResetLShapeChart
                 .ObserveOn(context)
                 .SubscribeOn(context)
                 .Subscribe(dummy => ResetLShapeChart());
+
+            
+
+            var rowAWidthTracker = new RowHeightTracker(Application.Current.MainWindow);
+            var rowBWidthTracker = new RowHeightTracker(Application.Current.MainWindow);
+
+            rowAWidthTracker.Tracker.Track(UpperRow);
+            rowBWidthTracker.Tracker.Track(LowerRow);
         }
+
+
 
         private void Chart_OnDataClick(object sender, ChartPoint chartpoint)
         {
