@@ -2,6 +2,7 @@
 using CapFrameX.MVVM;
 using System;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Interop;
 
 namespace CapFrameX
@@ -21,6 +22,13 @@ namespace CapFrameX
 
             // Start tracking the Window instance.
             WindowStatServices.Tracker.Track(this);
+
+            // Start tracking column width
+            var columnAWidthTracker = new ColumnWidthTracker(this);
+            var columnBWidthTracker = new ColumnWidthTracker(this);
+
+            columnAWidthTracker.Tracker.Track(LeftColumn);
+            columnBWidthTracker.Tracker.Track(RightColumn);
         }
 
         protected override void OnSourceInitialized(EventArgs e)
@@ -30,7 +38,7 @@ namespace CapFrameX
             if (source != null)
             {
                 source.AddHook(new HwndSourceHook(HandleMessages));
-                source.CompositionTarget.RenderMode 
+                source.CompositionTarget.RenderMode
                     = IsGpuAccelerationActive ? RenderMode.Default : RenderMode.SoftwareOnly;
             }
 
@@ -61,7 +69,7 @@ namespace CapFrameX
             {
                 this.ShowAndFocus();
                 if (WindowState == WindowState.Minimized)
-                WindowState = WindowState.Normal;
+                    WindowState = WindowState.Normal;
             }
         }
 

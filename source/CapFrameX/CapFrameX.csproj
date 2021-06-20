@@ -143,6 +143,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="ColumnWidthTracker.cs" />
     <Compile Include="InMemorySink.cs" />
     <Compile Include="RegionManagerWrapper.cs" />
     <Compile Include="Shell.xaml.cs">
