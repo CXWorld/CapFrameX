@@ -90,6 +90,11 @@
             <TextBlock VerticalAlignment="Center" Margin="0 0 5 0"
 				   Visibility="{Binding IsUpdateAvailable, Converter={StaticResource FalseToCollapsedConverter}}"> 
 			    <Hyperlink NavigateUri="https://github.com/DevTechProfile/CapFrameX/releases" RequestNavigate="Hyperlink_RequestNavigate">
+                    <Hyperlink.Style>
+                        <Style TargetType="Hyperlink" BasedOn="{StaticResource {x:Type Hyperlink}}">
+                            <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBodyLight}"/>
+                        </Style>
+                    </Hyperlink.Style>
 				    <TextBlock Text="{Binding Path=UpdateHyperlinkText}"/>
 			    </Hyperlink>
 		    </TextBlock>

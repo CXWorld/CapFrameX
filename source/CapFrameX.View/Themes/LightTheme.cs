@@ -24,7 +24,10 @@ namespace CapFrameX.View.Themes
         public Color MaterialDesignBody { get; } = (Color)ColorConverter.ConvertFromString("#DD000000");
 
 
-        public Color MaterialDesignBodyLight { get; } = (Color)ColorConverter.ConvertFromString("#89000000");
+        // Hyperlink color
+        public Color MaterialDesignBodyLight { get; } = (Color)ColorConverter.ConvertFromString("#1c5f8a");
+
+
         public Color MaterialDesignColumnHeader { get; } = (Color)ColorConverter.ConvertFromString("#BC000000");
         public Color MaterialDesignCheckBoxOff { get; } = (Color)ColorConverter.ConvertFromString("#89000000");
         public Color MaterialDesignCheckBoxDisabled { get; } = (Color)ColorConverter.ConvertFromString("#FFBDBDBD");
