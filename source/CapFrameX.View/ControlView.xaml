@@ -19,7 +19,7 @@
         <ResourceDictionary>
             <CollectionViewSource x:Key="RecordInfoListKey" Source="{Binding RecordInfoList}" Filter="RecordInfoListOnFilter"/>
             <mvvm:AddValueConverter x:Key="AddValueConverter" Offset="-345"/>
-            <mvvm:AddValueConverter x:Key="AddValueConverterExpander" Offset="-375"/>
+            <mvvm:AddValueConverter x:Key="AddValueConverterExpander" Offset="-70"/>
             <mvvm:BoolToVisibilityConverter x:Key="FalseToVisibleConverter" FalseValue="Visible" TrueValue="Collapsed"/>
             <mvvm:BoolToVisibilityConverter x:Key="TrueToVisibleConverter" FalseValue="Collapsed" TrueValue="Visible"/>
             <mvvm:BoolToVisibilityConverter x:Key="FalseToCollapsedConverter" FalseValue="Collapsed" TrueValue="Visible"/>
@@ -35,7 +35,7 @@
             <ColumnDefinition Width="1*"></ColumnDefinition>
         </Grid.ColumnDefinitions>
         <!--Record folder management expander-->
-        <Expander Name="Expander" Margin="0 0 0 0" MaxWidth="365" Grid.Row="0" Grid.Column="0" Panel.ZIndex="1" ExpandDirection="Right" HorizontalAlignment="Left"
+        <Expander Name="Expander" Margin="0 0 0 0" MaxWidth="365" Grid.RowSpan="2" Grid.Column="0" Panel.ZIndex="1" ExpandDirection="Right" HorizontalAlignment="Left"
                   Foreground="{DynamicResource MaterialDesignBody}" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
             <Expander.Header>
                 <TextBlock Text="Observed directory" RenderTransformOrigin=".5,.5" HorizontalAlignment="Center">
@@ -368,7 +368,7 @@
         </StackPanel>
 
 
-        <Grid Grid.Row="1" Grid.ColumnSpan="2" Margin="0 5 5 0" >
+        <Grid Grid.Row="1" Grid.Column="1" Margin="0 5 5 0" >
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
