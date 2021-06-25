@@ -375,7 +375,7 @@
                 <Expander.Header>
                     <TextBlock Text="Record Info" RenderTransformOrigin=".5,.5" HorizontalAlignment="Center" Margin="35 0 0 0"></TextBlock>
                 </Expander.Header>
-                <Grid Grid.Row="1" Grid.Column="1" Margin="0 5 5 0" HorizontalAlignment="Center" >
+                <Grid Grid.Row="1" Grid.Column="1" Margin="0 5 5 0" HorizontalAlignment="Left">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
