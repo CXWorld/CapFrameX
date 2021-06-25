@@ -105,7 +105,7 @@
                 <RowDefinition Height="1*"></RowDefinition>
                 <RowDefinition Height="Auto"></RowDefinition>
             </Grid.RowDefinitions>
-            <DockPanel Margin="0 0 0 0"  VerticalAlignment="Stretch" >
+            <DockPanel Margin="5 0 0 0"  VerticalAlignment="Stretch" >
                 <Grid Grid.Row="0" Visibility="{Binding HasValidSource, Converter={StaticResource FalseToCollapsedConverter}}">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="35"></RowDefinition>
@@ -370,7 +370,7 @@
                 </Grid>
             </DockPanel>
             <Expander BorderBrush="{DynamicResource MaterialDesignBackground}" BorderThickness="5" Name="RecordInfoExpander" Margin="0 0 0 0" Grid.Row="1" Grid.Column="1" VerticalAlignment="Bottom" Panel.ZIndex="1" ExpandDirection="Down"
-                      IsExpanded="True" wpf:ExpanderAssist.HorizontalHeaderPadding="5"
+                      IsExpanded="False" wpf:ExpanderAssist.HorizontalHeaderPadding="5"
                   Foreground="{DynamicResource MaterialDesignBody}" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
                 <Expander.Header>
                     <TextBlock Text="Record Info" RenderTransformOrigin=".5,.5" HorizontalAlignment="Center" Margin="35 0 0 0"></TextBlock>
