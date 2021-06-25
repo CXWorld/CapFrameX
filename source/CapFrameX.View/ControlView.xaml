@@ -18,7 +18,6 @@
     <UserControl.Resources>
         <ResourceDictionary>
             <CollectionViewSource x:Key="RecordInfoListKey" Source="{Binding RecordInfoList}" Filter="RecordInfoListOnFilter"/>
-            <mvvm:AddValueConverter x:Key="AddValueConverter" Offset="-345"/>
             <mvvm:AddValueConverter x:Key="AddValueConverterExpander" Offset="-70"/>
             <mvvm:BoolToVisibilityConverter x:Key="FalseToVisibleConverter" FalseValue="Visible" TrueValue="Collapsed"/>
             <mvvm:BoolToVisibilityConverter x:Key="TrueToVisibleConverter" FalseValue="Collapsed" TrueValue="Visible"/>
@@ -28,7 +27,7 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="1*"></RowDefinition>
-            <RowDefinition Height="300"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto"></ColumnDefinition>
@@ -95,24 +94,29 @@
             </materialDesign:DialogHost>
         </Expander>
         <!--Record list-->
-        <Border Grid.Column="1" Visibility="{Binding HasValidSource, Converter={StaticResource FalseToVisibleConverter}}" Margin="0 10 5 0" BorderThickness="1">
+        <Border Grid.Column="1" Grid.Row="0" Visibility="{Binding HasValidSource, Converter={StaticResource FalseToVisibleConverter}}" Margin="0 10 5 0" BorderThickness="1">
             <!--Style="{StaticResource MaterialDesignHeadlineTextBlock}"-->
             <TextBlock Text="Observed directory missing.&#10;Open expander and select a folder." TextAlignment="Center"
                        TextWrapping="Wrap" Width="220" Margin="60 0 10 0" HorizontalAlignment="Center" VerticalAlignment="Center"
                        Foreground="{DynamicResource MaterialDesignBody}"/>
         </Border>
-        <StackPanel Margin="0 0 0 0" Grid.Row="0" Grid.Column="1" Orientation="Vertical" >
-            <Grid Visibility="{Binding HasValidSource, Converter={StaticResource FalseToCollapsedConverter}}">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"></RowDefinition>
-                    <RowDefinition Height="Auto"></RowDefinition>
-                </Grid.RowDefinitions>
-                <TextBox Grid.Row="0" Margin="0 10 5 0" Foreground="{DynamicResource MaterialDesignBody}" Name="RecordSearchBox" materialDesign:HintAssist.Hint="{Binding ObservedFolderName}" materialDesign:HintAssist.HintOpacity=".8"/>
-                <TextBlock Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Loading records..." FontSize="16" Panel.ZIndex="1" Visibility="{Binding DirectoryLoading, Converter={StaticResource TrueToVisibleConverter}}"
+        <Grid Grid.Row="0" Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="1*"></RowDefinition>
+                <RowDefinition Height="Auto"></RowDefinition>
+            </Grid.RowDefinitions>
+            <DockPanel Margin="0 0 0 0"  VerticalAlignment="Top" >
+                <Grid Grid.Row="0" Visibility="{Binding HasValidSource, Converter={StaticResource FalseToCollapsedConverter}}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"></RowDefinition>
+                        <RowDefinition Height="1*"></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <TextBox Grid.Row="0" Margin="0 10 5 0" Foreground="{DynamicResource MaterialDesignBody}" Name="RecordSearchBox" materialDesign:HintAssist.Hint="{Binding ObservedFolderName}" materialDesign:HintAssist.HintOpacity=".8"/>
+                    <TextBlock Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Loading records..." FontSize="16" Panel.ZIndex="1" Visibility="{Binding DirectoryLoading, Converter={StaticResource TrueToVisibleConverter}}"
                            Foreground="{DynamicResource MaterialDesignBody}"/>
-                <TextBlock Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Directory doesn't contain any valid records..." TextWrapping="Wrap" Width="200" TextAlignment="Center" FontSize="16" Panel.ZIndex="1" Visibility="{Binding DirectoryIsEmpty, Converter={StaticResource TrueToVisibleConverter}}"
+                    <TextBlock Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Directory doesn't contain any valid records..." TextWrapping="Wrap" Width="200" TextAlignment="Center" FontSize="16" Panel.ZIndex="1" Visibility="{Binding DirectoryIsEmpty, Converter={StaticResource TrueToVisibleConverter}}"
                            Foreground="{DynamicResource MaterialDesignBody}"/>
-                <controls:MultiSelectionDataGrid Grid.Row="1" x:Name="RecordDataGrid" Height="{Binding ElementName=ControlViewControl, Path=ActualHeight, Converter={StaticResource AddValueConverter}}" 
+                    <controls:MultiSelectionDataGrid Grid.Row="1" x:Name="RecordDataGrid"
                                                  Margin="0 10 5 0" Sorting="RecordDataGrid_Sorting" SelectionMode="Extended" SelectedIndex="{Binding RecordDataGridSelectedIndex}"
 					                             Tag="{Binding ElementName=ControlViewControl, Path=DataContext}" FontSize="11"
 					                             ItemsSource="{Binding Source={StaticResource RecordInfoListKey}}"
@@ -130,279 +134,283 @@
 					                             dragdrop:DragDrop.UseDefaultEffectDataTemplate="False"
                                                  Style="{StaticResource MaterialDesignDataGrid}"
                                                  Background="{DynamicResource MaterialDesignBackground}">
-                    <DataGrid.Resources>
-                        <Style TargetType="{x:Type DataGridRow}">
-                            <EventSetter Event="MouseDoubleClick" Handler="DataGridRow_MouseDoubleClick"/>
-                            <Setter Property="DataGrid.Height" Value="40" />
-                            <Setter Property="Background" Value="Transparent"/>
-                            <Setter Property="SnapsToDevicePixels" Value="true"/>
-                            <Setter Property="Validation.ErrorTemplate" Value="{x:Null}"/>
-                            <Setter Property="ValidationErrorTemplate">
-                                <Setter.Value>
-                                    <ControlTemplate>
-                                        <TextBlock Foreground="#d50000" Margin="2,0,0,0" Text="!" VerticalAlignment="Center"/>
-                                    </ControlTemplate>
-                                </Setter.Value>
-                            </Setter>
-                            <Setter Property="Template">
-                                <Setter.Value>
-                                    <ControlTemplate TargetType="{x:Type DataGridRow}">
-                                        <Border x:Name="DGR_Border"
+                        <DataGrid.Resources>
+                            <Style TargetType="{x:Type DataGridRow}">
+                                <EventSetter Event="MouseDoubleClick" Handler="DataGridRow_MouseDoubleClick"/>
+                                <Setter Property="DataGrid.Height" Value="40" />
+                                <Setter Property="Background" Value="Transparent"/>
+                                <Setter Property="SnapsToDevicePixels" Value="true"/>
+                                <Setter Property="Validation.ErrorTemplate" Value="{x:Null}"/>
+                                <Setter Property="ValidationErrorTemplate">
+                                    <Setter.Value>
+                                        <ControlTemplate>
+                                            <TextBlock Foreground="#d50000" Margin="2,0,0,0" Text="!" VerticalAlignment="Center"/>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="{x:Type DataGridRow}">
+                                            <Border x:Name="DGR_Border"
                                                 BorderBrush="{TemplateBinding BorderBrush}"
                                                 BorderThickness="{TemplateBinding BorderThickness}"
                                                 Background="{TemplateBinding Background}"                                                                  
                                                 SnapsToDevicePixels="True">
-                                            <SelectiveScrollingGrid>
-                                                <SelectiveScrollingGrid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="Auto"/>
-                                                    <ColumnDefinition Width="*"/>
-                                                </SelectiveScrollingGrid.ColumnDefinitions>
-                                                <SelectiveScrollingGrid.RowDefinitions>
-                                                    <RowDefinition Height="*"/>
-                                                    <RowDefinition Height="Auto"/>
-                                                </SelectiveScrollingGrid.RowDefinitions>
-                                                <DataGridCellsPresenter Grid.Column="1"
+                                                <SelectiveScrollingGrid>
+                                                    <SelectiveScrollingGrid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                    </SelectiveScrollingGrid.ColumnDefinitions>
+                                                    <SelectiveScrollingGrid.RowDefinitions>
+                                                        <RowDefinition Height="*"/>
+                                                        <RowDefinition Height="Auto"/>
+                                                    </SelectiveScrollingGrid.RowDefinitions>
+                                                    <DataGridCellsPresenter Grid.Column="1"
                                                                         ItemsPanel="{TemplateBinding ItemsPanel}"
                                                                         SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
-                                                <DataGridDetailsPresenter Grid.Column="1"
+                                                    <DataGridDetailsPresenter Grid.Column="1"
                                                                         Grid.Row="1"
                                                                         SelectiveScrollingGrid.SelectiveScrollingOrientation="{Binding AreRowDetailsFrozen, ConverterParameter={x:Static SelectiveScrollingOrientation.Vertical}, Converter={x:Static DataGrid.RowDetailsScrollingConverter}, RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}"
                                                                         Visibility="{TemplateBinding DetailsVisibility}" />
-                                                <DataGridRowHeader Grid.Column="0"
+                                                    <DataGridRowHeader Grid.Column="0"
                                                                     Grid.Row="0"
                                                                     Grid.RowSpan="2"
                                                                     SelectiveScrollingGrid.SelectiveScrollingOrientation="Vertical"
                                                                     Visibility="{Binding HeadersVisibility, ConverterParameter={x:Static DataGridHeadersVisibility.Row}, Converter={x:Static DataGrid.HeadersVisibilityConverter}, RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}" />
-                                            </SelectiveScrollingGrid>
-                                        </Border>
-                                    </ControlTemplate>
-                                </Setter.Value>
-                            </Setter>
-                            <Style.Triggers>
-                                <Trigger Property="IsSelected" Value="True">
-                                    <Setter Property="Background" Value="{DynamicResource MaterialDesignSelection}" />
-                                </Trigger>
-                                <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter Property="Background" Value="{DynamicResource MaterialDesignDataGridRowHoverBackground}" />
-                                </Trigger>
-                                <Trigger Property="IsNewItem" Value="True">
-                                    <Setter Property="Margin" Value="{Binding NewItemMargin, RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}"/>
-                                </Trigger>
-                                <MultiTrigger>
-                                    <MultiTrigger.Conditions>
-                                        <Condition Property="IsSelected" Value="True"/>
-                                        <Condition Property="IsMouseOver" Value="True" />
-                                    </MultiTrigger.Conditions>
-                                    <MultiTrigger.Setters>
+                                                </SelectiveScrollingGrid>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <Trigger Property="IsSelected" Value="True">
                                         <Setter Property="Background" Value="{DynamicResource MaterialDesignSelection}" />
-                                    </MultiTrigger.Setters>
-                                </MultiTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </DataGrid.Resources>
-                    <i:Interaction.Triggers>
-                        <i:EventTrigger EventName="SelectionChanged">
-                            <i:InvokeCommandAction Command="{Binding SelectedRecordingsCommand}" 
+                                    </Trigger>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="{DynamicResource MaterialDesignDataGridRowHoverBackground}" />
+                                    </Trigger>
+                                    <Trigger Property="IsNewItem" Value="True">
+                                        <Setter Property="Margin" Value="{Binding NewItemMargin, RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}"/>
+                                    </Trigger>
+                                    <MultiTrigger>
+                                        <MultiTrigger.Conditions>
+                                            <Condition Property="IsSelected" Value="True"/>
+                                            <Condition Property="IsMouseOver" Value="True" />
+                                        </MultiTrigger.Conditions>
+                                        <MultiTrigger.Setters>
+                                            <Setter Property="Background" Value="{DynamicResource MaterialDesignSelection}" />
+                                        </MultiTrigger.Setters>
+                                    </MultiTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </DataGrid.Resources>
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="SelectionChanged">
+                                <i:InvokeCommandAction Command="{Binding SelectedRecordingsCommand}" 
                                CommandParameter="{Binding ElementName=RecordDataGrid, Path=SelectedItems}" />
-                        </i:EventTrigger>
-                    </i:Interaction.Triggers>
-                    <DataGrid.InputBindings>
-                        <KeyBinding Key="Delete" Command="{Binding Path=DeleteRecordCommand}" />
-                    </DataGrid.InputBindings>
-                    <DataGrid.ContextMenu>
-                        <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
-                            <MenuItem Header="Delete recording file(s)" Command="{Binding DeleteRecordFileCommand}"/>
-                            <MenuItem Header="Move recording file(s)" Command="{Binding MoveRecordFileCommand}"/>
-                            <MenuItem Header="Copy/paste recording file(s)" Command="{Binding DuplicateRecordFileCommand}"/>
-                        </ContextMenu>
-                    </DataGrid.ContextMenu>
-                    <DataGrid.ColumnHeaderStyle>
-                        <Style TargetType="{x:Type DataGridColumnHeader}">
-                            <Setter Property="BorderThickness" Value="0, 0, 1, 0"/>
-                            <Setter Property="BorderBrush" Value="{DynamicResource MaterialDesignDivider}" />
-                            <Setter Property="VerticalContentAlignment" Value="Center"/>
-                            <Setter Property="TextBlock.FontSize" Value="12" />
-                            <Setter Property="TextBlock.FontWeight" Value="Medium" />
-                            <Setter Property="Padding" Value="8, 5, 0, 0"/>
-                            <Setter Property="Foreground" Value="{DynamicResource MaterialDesignColumnHeader}" />
-                            <Setter Property="Template">
-                                <Setter.Value>
-                                    <ControlTemplate TargetType="{x:Type DataGridColumnHeader}">
-                                        <ControlTemplate.Resources>
-                                            <Storyboard x:Key="GoToVisible">
-                                                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="SortDirectionIndicator" Storyboard.TargetProperty="Width">
-                                                    <EasingDoubleKeyFrame KeyTime="0:0:0.0" Value="0" />
-                                                    <EasingDoubleKeyFrame KeyTime="0:0:0.2" Value="12" />
-                                                </DoubleAnimationUsingKeyFrames>
-                                            </Storyboard>
-                                            <Storyboard x:Key="GoToHidden">
-                                                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="SortDirectionIndicator" Storyboard.TargetProperty="Width">
-                                                    <EasingDoubleKeyFrame KeyTime="0:0:0.0" Value="12" />
-                                                    <EasingDoubleKeyFrame KeyTime="0:0:0.2" Value="0" />
-                                                </DoubleAnimationUsingKeyFrames>
-                                            </Storyboard>
-                                        </ControlTemplate.Resources>
-                                        <Grid>
-                                            <Border Margin="0 5 0 5" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
-                                                <Grid Background="Transparent">
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="Auto"/>
-                                                        <ColumnDefinition Width="*"/>
-                                                    </Grid.ColumnDefinitions>
-                                                    <wpf:ListSortDirectionIndicator Grid.Column="0" Width="0" Height="14" 
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>
+                        <DataGrid.InputBindings>
+                            <KeyBinding Key="Delete" Command="{Binding Path=DeleteRecordCommand}" />
+                        </DataGrid.InputBindings>
+                        <DataGrid.ContextMenu>
+                            <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
+                                <MenuItem Header="Delete recording file(s)" Command="{Binding DeleteRecordFileCommand}"/>
+                                <MenuItem Header="Move recording file(s)" Command="{Binding MoveRecordFileCommand}"/>
+                                <MenuItem Header="Copy/paste recording file(s)" Command="{Binding DuplicateRecordFileCommand}"/>
+                            </ContextMenu>
+                        </DataGrid.ContextMenu>
+                        <DataGrid.ColumnHeaderStyle>
+                            <Style TargetType="{x:Type DataGridColumnHeader}">
+                                <Setter Property="BorderThickness" Value="0, 0, 1, 0"/>
+                                <Setter Property="BorderBrush" Value="{DynamicResource MaterialDesignDivider}" />
+                                <Setter Property="VerticalContentAlignment" Value="Center"/>
+                                <Setter Property="TextBlock.FontSize" Value="12" />
+                                <Setter Property="TextBlock.FontWeight" Value="Medium" />
+                                <Setter Property="Padding" Value="8, 5, 0, 0"/>
+                                <Setter Property="Foreground" Value="{DynamicResource MaterialDesignColumnHeader}" />
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="{x:Type DataGridColumnHeader}">
+                                            <ControlTemplate.Resources>
+                                                <Storyboard x:Key="GoToVisible">
+                                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetName="SortDirectionIndicator" Storyboard.TargetProperty="Width">
+                                                        <EasingDoubleKeyFrame KeyTime="0:0:0.0" Value="0" />
+                                                        <EasingDoubleKeyFrame KeyTime="0:0:0.2" Value="12" />
+                                                    </DoubleAnimationUsingKeyFrames>
+                                                </Storyboard>
+                                                <Storyboard x:Key="GoToHidden">
+                                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetName="SortDirectionIndicator" Storyboard.TargetProperty="Width">
+                                                        <EasingDoubleKeyFrame KeyTime="0:0:0.0" Value="12" />
+                                                        <EasingDoubleKeyFrame KeyTime="0:0:0.2" Value="0" />
+                                                    </DoubleAnimationUsingKeyFrames>
+                                                </Storyboard>
+                                            </ControlTemplate.Resources>
+                                            <Grid>
+                                                <Border Margin="0 5 0 5" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
+                                                    <Grid Background="Transparent">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                        </Grid.ColumnDefinitions>
+                                                        <wpf:ListSortDirectionIndicator Grid.Column="0" Width="0" Height="14" 
                                                                 x:Name="SortDirectionIndicator"
                                                                 ListSortDirection="{TemplateBinding SortDirection}"/>
-                                                    <ContentPresenter Height="20" Grid.Column="1" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                                        <ContentPresenter Height="20" Grid.Column="1" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                                                   Margin="{TemplateBinding Padding}"/>
-                                                </Grid>
-                                            </Border>
-                                            <Thumb x:Name="PART_LeftHeaderGripper" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignGridColumnHeaderGripper}"/>
-                                            <Thumb x:Name="PART_RightHeaderGripper" HorizontalAlignment="Right" Style="{StaticResource MaterialDesignGridColumnHeaderGripper}"/>
-                                        </Grid>
-                                        <ControlTemplate.Triggers>
-                                            <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBody}" />
-                                            </Trigger>
-                                            <Trigger Property="SortDirection" Value="Ascending">
-                                                <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBody}" />
-                                            </Trigger>
-                                            <Trigger Property="SortDirection" Value="Descending">
-                                                <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBody}" />
-                                            </Trigger>
-                                            <Trigger SourceName="SortDirectionIndicator" Property="IsNeutral" Value="False">
-                                                <Trigger.EnterActions>
-                                                    <BeginStoryboard Storyboard="{StaticResource GoToVisible}" Name="GoToVisible" />
-                                                </Trigger.EnterActions>
-                                                <Trigger.ExitActions>
-                                                    <RemoveStoryboard BeginStoryboardName="GoToVisible" />
-                                                    <BeginStoryboard Storyboard="{StaticResource GoToHidden}" />
-                                                </Trigger.ExitActions>
-                                            </Trigger>
-                                        </ControlTemplate.Triggers>
-                                    </ControlTemplate>
-                                </Setter.Value>
-                            </Setter>
-                        </Style>
-                    </DataGrid.ColumnHeaderStyle>
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Binding="{Binding GameName, Mode=OneWay}"
+                                                    </Grid>
+                                                </Border>
+                                                <Thumb x:Name="PART_LeftHeaderGripper" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignGridColumnHeaderGripper}"/>
+                                                <Thumb x:Name="PART_RightHeaderGripper" HorizontalAlignment="Right" Style="{StaticResource MaterialDesignGridColumnHeaderGripper}"/>
+                                            </Grid>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBody}" />
+                                                </Trigger>
+                                                <Trigger Property="SortDirection" Value="Ascending">
+                                                    <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBody}" />
+                                                </Trigger>
+                                                <Trigger Property="SortDirection" Value="Descending">
+                                                    <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBody}" />
+                                                </Trigger>
+                                                <Trigger SourceName="SortDirectionIndicator" Property="IsNeutral" Value="False">
+                                                    <Trigger.EnterActions>
+                                                        <BeginStoryboard Storyboard="{StaticResource GoToVisible}" Name="GoToVisible" />
+                                                    </Trigger.EnterActions>
+                                                    <Trigger.ExitActions>
+                                                        <RemoveStoryboard BeginStoryboardName="GoToVisible" />
+                                                        <BeginStoryboard Storyboard="{StaticResource GoToHidden}" />
+                                                    </Trigger.ExitActions>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </DataGrid.ColumnHeaderStyle>
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Binding="{Binding GameName, Mode=OneWay}"
                                         Width="Auto"
                                         Header="Game"
                                         IsReadOnly="True">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style>
-                                    <Setter Property="TextBlock.VerticalAlignment" Value="Center" />
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
-                        <DataGridTextColumn Binding="{Binding CreationTimestamp, Mode=OneWay}"
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style>
+                                        <Setter Property="TextBlock.VerticalAlignment" Value="Center" />
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn Binding="{Binding CreationTimestamp, Mode=OneWay}"
                                         Width="Auto"
                                         MinWidth="95"
                                         Header="Date / Time"
                                         IsReadOnly="True">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style>
-                                    <Setter Property="TextBlock.TextAlignment" Value="Center" />
-                                    <Setter Property="TextBlock.VerticalAlignment" Value="Center" />
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
-                        <DataGridTextColumn Binding="{Binding Comment, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style>
+                                        <Setter Property="TextBlock.TextAlignment" Value="Center" />
+                                        <Setter Property="TextBlock.VerticalAlignment" Value="Center" />
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn Binding="{Binding Comment, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
 										Width="100"
                                         Header="Comment"
                                         IsReadOnly="False">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style>
-                                    <Setter Property="TextBlock.VerticalAlignment" Value="Center" />
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
-                        <DataGridCheckBoxColumn Binding="{Binding IsAggregated, Mode=OneWay}"
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style>
+                                        <Setter Property="TextBlock.VerticalAlignment" Value="Center" />
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                            <DataGridCheckBoxColumn Binding="{Binding IsAggregated, Mode=OneWay}"
                                         Width="Auto"
                                         Header="Aggregated"
                                         IsReadOnly="True" 
                                         MinWidth="40">
-                            <DataGridCheckBoxColumn.ElementStyle>
-                                <Style>
-                                    <Setter Property="CheckBox.IsEnabled" Value="False" />
-                                    <Setter Property="CheckBox.VerticalAlignment" Value="Center" />
-                                    <Setter Property="CheckBox.HorizontalAlignment" Value="Center" />
-                                    <Setter Property="CheckBox.IsHitTestVisible" Value="False"/>
-                                </Style>
-                            </DataGridCheckBoxColumn.ElementStyle>
-                        </DataGridCheckBoxColumn>
-                        <DataGridTextColumn Binding="{Binding ProcessorName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                <DataGridCheckBoxColumn.ElementStyle>
+                                    <Style>
+                                        <Setter Property="CheckBox.IsEnabled" Value="False" />
+                                        <Setter Property="CheckBox.VerticalAlignment" Value="Center" />
+                                        <Setter Property="CheckBox.HorizontalAlignment" Value="Center" />
+                                        <Setter Property="CheckBox.IsHitTestVisible" Value="False"/>
+                                    </Style>
+                                </DataGridCheckBoxColumn.ElementStyle>
+                            </DataGridCheckBoxColumn>
+                            <DataGridTextColumn Binding="{Binding ProcessorName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
 										Width="Auto"
                                         Header="CPU"
                                         IsReadOnly="False">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style>
-                                    <Setter Property="TextBlock.VerticalAlignment" Value="Center" />
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
-                        <DataGridTextColumn Binding="{Binding GraphicCardName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style>
+                                        <Setter Property="TextBlock.VerticalAlignment" Value="Center" />
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn Binding="{Binding GraphicCardName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
 										Width="Auto"
                                         Header="GPU"
                                         IsReadOnly="False">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style>
-                                    <Setter Property="TextBlock.VerticalAlignment" Value="Center" />
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
-                        <DataGridTextColumn Binding="{Binding SystemRamInfo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style>
+                                        <Setter Property="TextBlock.VerticalAlignment" Value="Center" />
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn Binding="{Binding SystemRamInfo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
 										Width="Auto"
                                         Header="RAM"
                                         IsReadOnly="False">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style>
-                                    <Setter Property="TextBlock.VerticalAlignment" Value="Center" />
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
-                    </DataGrid.Columns>
-                </controls:MultiSelectionDataGrid>
-            </Grid>
-            <Border Margin="0 5 5 0" BorderThickness="0 1 0 0" BorderBrush="{DynamicResource MaterialDesignDivider}" />
-        </StackPanel>
-
-
-        <Grid Grid.Row="1" Grid.Column="1" Margin="0 5 5 0" HorizontalAlignment="Center">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-            </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="300"/>
-            </Grid.ColumnDefinitions>
-            <!--CPU-->
-            <TextBox Grid.Row="0" Grid.Column="0" wpf:HintAssist.Hint="Custom CPU description" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style>
+                                        <Setter Property="TextBlock.VerticalAlignment" Value="Center" />
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                        </DataGrid.Columns>
+                    </controls:MultiSelectionDataGrid>
+                </Grid>
+            </DockPanel>
+            <Expander Name="RecordInfoExpander" Margin="0 0 0 0" Grid.Row="1" Grid.Column="1" VerticalAlignment="Bottom" Panel.ZIndex="1" ExpandDirection="Up" IsExpanded="True"
+                  Foreground="{DynamicResource MaterialDesignBody}" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
+                <Expander.Header>
+                    <TextBlock Text="Record Info" RenderTransformOrigin=".5,.5" HorizontalAlignment="Center"></TextBlock>
+                </Expander.Header>
+                <Grid Grid.Row="1" Grid.Column="1" Margin="0 5 5 0" HorizontalAlignment="Center">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="300"/>
+                    </Grid.ColumnDefinitions>
+                    <!--CPU-->
+                    <TextBox Grid.Row="0" Grid.Column="0" wpf:HintAssist.Hint="Custom CPU description" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
 						 Margin="5 6 5 0" FontSize="12" Text="{Binding CustomCpuDescription, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Stretch"
                          KeyDown="TextBox_KeyDown" Foreground="{DynamicResource MaterialDesignBody}" wpf:HintAssist.HintOpacity=".8"/>
-            <!--GPU-->
-            <TextBox Grid.Row="1" Grid.Column="0" wpf:HintAssist.Hint="Custom GPU description" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
+                    <!--GPU-->
+                    <TextBox Grid.Row="1" Grid.Column="0" wpf:HintAssist.Hint="Custom GPU description" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
 						 Margin="5 6 5 0" FontSize="12" Text="{Binding CustomGpuDescription, UpdateSourceTrigger=PropertyChanged}"
                          KeyDown="TextBox_KeyDown" Foreground="{DynamicResource MaterialDesignBody}" wpf:HintAssist.HintOpacity=".8"/>
-            <!--RAM-->
-            <TextBox Grid.Row="2" Grid.Column="0" wpf:HintAssist.Hint="Custom RAM description" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
+                    <!--RAM-->
+                    <TextBox Grid.Row="2" Grid.Column="0" wpf:HintAssist.Hint="Custom RAM description" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
 						 Margin="5 6 5 0" FontSize="12" Text="{Binding CustomRamDescription, UpdateSourceTrigger=PropertyChanged}"
                          KeyDown="TextBox_KeyDown" Foreground="{DynamicResource MaterialDesignBody}" wpf:HintAssist.HintOpacity=".8"/>
 
-            <TextBox Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" wpf:HintAssist.Hint="Game" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
+                    <TextBox Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" wpf:HintAssist.Hint="Game" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
 						 Margin="5 6 5 0" FontSize="12" Text="{Binding CustomGameName, UpdateSourceTrigger=PropertyChanged}"
                          KeyDown="TextBox_KeyDown" Foreground="{DynamicResource MaterialDesignBody}" wpf:HintAssist.HintOpacity=".8"/>
-            <TextBox Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" wpf:HintAssist.Hint="Comment" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
+                    <TextBox Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" wpf:HintAssist.Hint="Comment" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
 						 Margin="5 6 5 0" FontSize="12" Text="{Binding CustomComment, UpdateSourceTrigger=PropertyChanged}"
                          KeyDown="TextBox_KeyDown" Foreground="{DynamicResource MaterialDesignBody}" wpf:HintAssist.HintOpacity=".8"/>
-            <Button Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2" Margin="0 16 0 0" Width="80" HorizontalAlignment="Center"
+                    <Button Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2" Margin="0 16 0 0" Width="80" HorizontalAlignment="Center"
                     Style="{DynamicResource MaterialDesignFlatButton}" Command="{Binding AcceptEditingDialogCommand}">
-                SAVE
-            </Button>
+                        SAVE
+                    </Button>
+                </Grid>
+            </Expander>
         </Grid>
     </Grid>
 </UserControl>
