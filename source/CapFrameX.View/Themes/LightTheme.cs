@@ -9,7 +9,7 @@ namespace CapFrameX.View.Themes
 
 
         // Standard Background color
-        public Color MaterialDesignBackground { get; } = (Color)ColorConverter.ConvertFromString("#fafafa");
+        public Color MaterialDesignBackground { get; } = (Color)ColorConverter.ConvertFromString("#f8f8f8");
 
 
         // Standard color
@@ -51,7 +51,7 @@ namespace CapFrameX.View.Themes
 
 
         // Secondary standard color
-        public Color MaterialDesignTextFieldBoxBackground { get; } = (Color)ColorConverter.ConvertFromString("#f2f2f2");
+        public Color MaterialDesignTextFieldBoxBackground { get; } = (Color)ColorConverter.ConvertFromString("#ededed");
 
 
         public Color MaterialDesignTextFieldBoxHoverBackground { get; } = (Color)ColorConverter.ConvertFromString("#14000000");
