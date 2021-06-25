@@ -584,7 +584,7 @@
                 </StackPanel>
             </Grid>
             <!--System info expander-->
-            <Expander Margin="0 -6 0 0" Grid.Row="0" Grid.RowSpan="3" Grid.Column="1" ExpandDirection="Left"
+            <Expander Margin="0 -6 0 0" Grid.Row="0" Grid.RowSpan="3" Grid.Column="1" ExpandDirection="Left" materialDesign:ExpanderAssist.VerticalHeaderPadding="5"
                       Foreground="{DynamicResource MaterialDesignBody}" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
                 <Expander.Header>
                     <TextBlock Text="System Info" RenderTransformOrigin=".5,.5" HorizontalAlignment="Center">

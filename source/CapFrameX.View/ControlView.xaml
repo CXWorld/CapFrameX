@@ -35,7 +35,7 @@
         </Grid.ColumnDefinitions>
         <!--Record folder management expander-->
         <Expander Name="Expander" Margin="0 0 0 0" MaxWidth="365" Grid.RowSpan="2" Grid.Column="0" Panel.ZIndex="1" ExpandDirection="Right" HorizontalAlignment="Left"
-                  Foreground="{DynamicResource MaterialDesignBody}" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
+                  Foreground="{DynamicResource MaterialDesignBody}" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" wpf:ExpanderAssist.VerticalHeaderPadding="5">
             <Expander.Header>
                 <TextBlock Text="Observed directory" RenderTransformOrigin=".5,.5" HorizontalAlignment="Center">
                     <TextBlock.LayoutTransform>
@@ -105,10 +105,10 @@
                 <RowDefinition Height="1*"></RowDefinition>
                 <RowDefinition Height="Auto"></RowDefinition>
             </Grid.RowDefinitions>
-            <DockPanel Margin="0 0 0 0"  VerticalAlignment="Top" >
+            <DockPanel Margin="0 0 0 0"  VerticalAlignment="Stretch" >
                 <Grid Grid.Row="0" Visibility="{Binding HasValidSource, Converter={StaticResource FalseToCollapsedConverter}}">
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"></RowDefinition>
+                        <RowDefinition Height="35"></RowDefinition>
                         <RowDefinition Height="1*"></RowDefinition>
                     </Grid.RowDefinitions>
                     <TextBox Grid.Row="0" Margin="0 10 5 0" Foreground="{DynamicResource MaterialDesignBody}" Name="RecordSearchBox" materialDesign:HintAssist.Hint="{Binding ObservedFolderName}" materialDesign:HintAssist.HintOpacity=".8"/>
@@ -116,7 +116,7 @@
                            Foreground="{DynamicResource MaterialDesignBody}"/>
                     <TextBlock Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Directory doesn't contain any valid records..." TextWrapping="Wrap" Width="200" TextAlignment="Center" FontSize="16" Panel.ZIndex="1" Visibility="{Binding DirectoryIsEmpty, Converter={StaticResource TrueToVisibleConverter}}"
                            Foreground="{DynamicResource MaterialDesignBody}"/>
-                    <controls:MultiSelectionDataGrid Grid.Row="1" x:Name="RecordDataGrid"
+                    <controls:MultiSelectionDataGrid Grid.Row="1" x:Name="RecordDataGrid" Height="Auto"
                                                  Margin="0 10 5 0" Sorting="RecordDataGrid_Sorting" SelectionMode="Extended" SelectedIndex="{Binding RecordDataGridSelectedIndex}"
 					                             Tag="{Binding ElementName=ControlViewControl, Path=DataContext}" FontSize="11"
 					                             ItemsSource="{Binding Source={StaticResource RecordInfoListKey}}"
@@ -352,7 +352,7 @@
                                 <DataGridTextColumn.ElementStyle>
                                     <Style>
                                         <Setter Property="TextBlock.VerticalAlignment" Value="Center" />
-                                    </Style>
+                                    </Style> 
                                 </DataGridTextColumn.ElementStyle>
                             </DataGridTextColumn>
                             <DataGridTextColumn Binding="{Binding SystemRamInfo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
@@ -369,43 +369,44 @@
                     </controls:MultiSelectionDataGrid>
                 </Grid>
             </DockPanel>
-            <Expander Name="RecordInfoExpander" Margin="0 0 0 0" Grid.Row="1" Grid.Column="1" VerticalAlignment="Bottom" Panel.ZIndex="1" ExpandDirection="Up" IsExpanded="True"
+            <Expander BorderBrush="{DynamicResource MaterialDesignBackground}" BorderThickness="5" Name="RecordInfoExpander" Margin="0 0 0 0" Grid.Row="1" Grid.Column="1" VerticalAlignment="Bottom" Panel.ZIndex="1" ExpandDirection="Down"
+                      IsExpanded="True" wpf:ExpanderAssist.HorizontalHeaderPadding="5"
                   Foreground="{DynamicResource MaterialDesignBody}" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
                 <Expander.Header>
-                    <TextBlock Text="Record Info" RenderTransformOrigin=".5,.5" HorizontalAlignment="Center"></TextBlock>
+                    <TextBlock Text="Record Info" RenderTransformOrigin=".5,.5" HorizontalAlignment="Center" Margin="35 0 0 0"></TextBlock>
                 </Expander.Header>
-                <Grid Grid.Row="1" Grid.Column="1" Margin="0 5 5 0" HorizontalAlignment="Center">
+                <Grid Grid.Row="1" Grid.Column="1" Margin="0 5 5 0" HorizontalAlignment="Center" >
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="45"/>
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="300"/>
+                        <ColumnDefinition Width="340"/>
                     </Grid.ColumnDefinitions>
                     <!--CPU-->
                     <TextBox Grid.Row="0" Grid.Column="0" wpf:HintAssist.Hint="Custom CPU description" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
-						 Margin="5 6 5 0" FontSize="12" Text="{Binding CustomCpuDescription, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Stretch"
+						 Margin="5 -5 5 0" FontSize="12" Text="{Binding CustomCpuDescription, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Stretch"
                          KeyDown="TextBox_KeyDown" Foreground="{DynamicResource MaterialDesignBody}" wpf:HintAssist.HintOpacity=".8"/>
                     <!--GPU-->
                     <TextBox Grid.Row="1" Grid.Column="0" wpf:HintAssist.Hint="Custom GPU description" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
-						 Margin="5 6 5 0" FontSize="12" Text="{Binding CustomGpuDescription, UpdateSourceTrigger=PropertyChanged}"
+						 Margin="5 0 5 0" FontSize="12" Text="{Binding CustomGpuDescription, UpdateSourceTrigger=PropertyChanged}"
                          KeyDown="TextBox_KeyDown" Foreground="{DynamicResource MaterialDesignBody}" wpf:HintAssist.HintOpacity=".8"/>
                     <!--RAM-->
                     <TextBox Grid.Row="2" Grid.Column="0" wpf:HintAssist.Hint="Custom RAM description" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
-						 Margin="5 6 5 0" FontSize="12" Text="{Binding CustomRamDescription, UpdateSourceTrigger=PropertyChanged}"
+						 Margin="5 0 5 0" FontSize="12" Text="{Binding CustomRamDescription, UpdateSourceTrigger=PropertyChanged}"
                          KeyDown="TextBox_KeyDown" Foreground="{DynamicResource MaterialDesignBody}" wpf:HintAssist.HintOpacity=".8"/>
 
                     <TextBox Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" wpf:HintAssist.Hint="Game" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
-						 Margin="5 6 5 0" FontSize="12" Text="{Binding CustomGameName, UpdateSourceTrigger=PropertyChanged}"
+						 Margin="5 0 5 0" FontSize="12" Text="{Binding CustomGameName, UpdateSourceTrigger=PropertyChanged}"
                          KeyDown="TextBox_KeyDown" Foreground="{DynamicResource MaterialDesignBody}" wpf:HintAssist.HintOpacity=".8"/>
                     <TextBox Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" wpf:HintAssist.Hint="Comment" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
-						 Margin="5 6 5 0" FontSize="12" Text="{Binding CustomComment, UpdateSourceTrigger=PropertyChanged}"
+						 Margin="5 0 5 0" FontSize="12" Text="{Binding CustomComment, UpdateSourceTrigger=PropertyChanged}"
                          KeyDown="TextBox_KeyDown" Foreground="{DynamicResource MaterialDesignBody}" wpf:HintAssist.HintOpacity=".8"/>
-                    <Button Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2" Margin="0 16 0 0" Width="80" HorizontalAlignment="Center"
+                    <Button Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2" Margin="0 0 0 0" Width="80" HorizontalAlignment="Center"
                     Style="{DynamicResource MaterialDesignFlatButton}" Command="{Binding AcceptEditingDialogCommand}">
                         SAVE
                     </Button>
