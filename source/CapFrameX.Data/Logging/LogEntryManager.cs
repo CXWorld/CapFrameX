@@ -52,7 +52,7 @@ namespace CapFrameX.Data.Logging
 
         public void AddLogEntry(string message, ELogMessageType messageType, bool isNewLogGroup)
         {
-            string newLine = "\n\n";
+            string newLine = "\n";
             if (!isNewLogGroup || LogEntryOutput.Count == 0)
                 newLine = string.Empty;
 
