@@ -23,10 +23,10 @@ namespace CapFrameX.View
 			InitializeComponent();
 		}
 
-		private void Hyperlink_RequestNavigate(object sender, System.Windows.Navigation.RequestNavigateEventArgs e)
-		{
-			Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri));
+        private void PackIcon_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+			Process.Start(new ProcessStartInfo("https://github.com/DevTechProfile/CapFrameX/releases"));
 			e.Handled = true;
 		}
-	}
+    }
 }
