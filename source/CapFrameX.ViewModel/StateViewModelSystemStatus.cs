@@ -25,5 +25,13 @@ namespace CapFrameX.ViewModel
         public bool IsHAGSStatusValid => _systemInfo.HardwareAcceleratedGPUSchedulingStatus != ESystemInfoTertiaryStatus.Error;
 
         public bool IsWindowsAnyStatusValid => IsGameModeStatusValid || IsHAGSStatusValid;
+
+
+        public void UpdateSystemInfoStatus()
+        {
+            RaisePropertyChanged(nameof(IsResizableBarEnabled));
+            RaisePropertyChanged(nameof(IsGameModeEnabled));
+            RaisePropertyChanged(nameof(IsHAGSEnabled));
+        }
     }
 }

@@ -169,6 +169,12 @@ namespace CapFrameX.ViewModel
                    SingleOrDefault(assembly => assembly.GetName().Name == name);
         }
 
+        public void RefreshSystemInfo()
+        {
+            _systemInfo.SetSystemInfosStatus();
+            UpdateSystemInfoStatus();
+        }
+
         private string GetInfoText()
         {
             string info;

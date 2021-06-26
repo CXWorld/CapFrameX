@@ -19,5 +19,7 @@
         string GetMotherboardName();
 
         string GetSystemRAMInfoName();
+
+        void SetSystemInfosStatus();
     }
 }

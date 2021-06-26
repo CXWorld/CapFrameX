@@ -37,7 +37,7 @@ namespace CapFrameX.SystemInfo.NetStandard
             SetSystemInfosStatus();
         }
 
-        private void SetSystemInfosStatus()
+        public void SetSystemInfosStatus()
         {
             //PCI Resizable BAR HW support
             try

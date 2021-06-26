@@ -53,6 +53,15 @@
 
             <GridSplitter Margin="15 5 0 5" IsEnabled="False" Width="2" Visibility="{Binding IsResizableBarAnyStatusValid, Converter={StaticResource FalseToCollapsedConverter}}"/>
 
+            <Border Background="Transparent" 
+                    Cursor="Hand" MouseLeftButtonDown="SystemInfo_MouseLeftButtonDown">
+                <Border.ToolTip>
+                    <TextBlock Text="Update system info status" Foreground="{DynamicResource MaterialDesignBody}"/>
+                </Border.ToolTip>
+                <materialDesign:PackIcon Foreground="{DynamicResource MaterialDesignBodyLight}" Height="18" Width="18" Margin="10 0 -5 0" Kind="Update" VerticalAlignment="Center" >
+                </materialDesign:PackIcon>
+            </Border>
+            
             <Grid Margin="15 0 0 0" Visibility="{Binding IsResizableBarAnyStatusValid, Converter={StaticResource FalseToCollapsedConverter}}"
                   ToolTipService.ShowDuration="120000">
                 <StackPanel Orientation="Horizontal">
@@ -75,8 +84,6 @@
                     </StackPanel>
                 </Grid.ToolTip>
             </Grid>
-
-            <GridSplitter Margin="15 5 0 5" IsEnabled="False" Width="2" Visibility="{Binding IsWindowsAnyStatusValid, Converter={StaticResource FalseToCollapsedConverter}}" />
 
             <TextBlock Margin="15 0 5 0" Visibility="{Binding IsGameModeStatusValid, Converter={StaticResource FalseToCollapsedConverter}}" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}" >Win Game Mode:</TextBlock>
             <TextBlock Width="Auto" Visibility="{Binding IsGameModeStatusValid, Converter={StaticResource FalseToCollapsedConverter}}" VerticalAlignment="Center" Text="{Binding IsGameModeEnabled, Converter={StaticResource ModeDescriptionConverter}, ConverterParameter= On|Off}" 
