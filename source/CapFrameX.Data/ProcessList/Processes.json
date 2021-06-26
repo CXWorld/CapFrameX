@@ -275,6 +275,11 @@
     "IsBlacklisted": false
   },
   {
+    "Name": "Biomutant-Win64-Shipping",
+    "DisplayName": "Biomutant",
+    "IsBlacklisted": false
+  },
+  {
     "Name": "Bioshock",
     "DisplayName": "Bioshock",
     "IsBlacklisted": false
@@ -348,6 +353,11 @@
     "Name": "BsgLauncher",
     "DisplayName": null,
     "IsBlacklisted": true
+  },
+  {
+    "Name": "Builder's Journey",
+    "DisplayName": "Lego Builder's Journey",
+    "IsBlacklisted": false
   },
   {
     "Name": "cabal2main",
@@ -455,6 +465,11 @@
     "IsBlacklisted": true
   },
   {
+    "Name": "CredentialUIBroker",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
     "Name": "CRYENGINE_Launcher",
     "DisplayName": null,
     "IsBlacklisted": true
@@ -535,9 +550,19 @@
     "IsBlacklisted": true
   },
   {
+    "Name": "DaysGone",
+    "DisplayName": "Days Gone",
+    "IsBlacklisted": false
+  },
+  {
     "Name": "DayZ_x64",
     "DisplayName": "DayZ",
     "IsBlacklisted": false
+  },
+  {
+    "Name": "DCv2",
+    "DisplayName": null,
+    "IsBlacklisted": true
   },
   {
     "Name": "DeadIslandGame",
@@ -640,6 +665,16 @@
     "IsBlacklisted": false
   },
   {
+    "Name": "DRE Launcher",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "DriverInformation",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
     "Name": "Dropbox",
     "DisplayName": null,
     "IsBlacklisted": true
@@ -698,6 +733,16 @@
     "Name": "ed8_3_PC",
     "DisplayName": "The Legend of Heroes: Trails of Cold Steel III",
     "IsBlacklisted": false
+  },
+  {
+    "Name": "EDLaunch",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "electron-overlays",
+    "DisplayName": null,
+    "IsBlacklisted": true
   },
   {
     "Name": "ELEX",
@@ -803,6 +848,11 @@
     "Name": "FalloutNV",
     "DisplayName": "Fallout New Vegas",
     "IsBlacklisted": false
+  },
+  {
+    "Name": "FanaLab",
+    "DisplayName": null,
+    "IsBlacklisted": true
   },
   {
     "Name": "FarCry2",
@@ -926,6 +976,11 @@
   },
   {
     "Name": "GameBar",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "Gamebar_Widget",
     "DisplayName": null,
     "IsBlacklisted": true
   },
@@ -1105,6 +1160,11 @@
     "IsBlacklisted": false
   },
   {
+    "Name": "iPitting.LiveCompanion",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
     "Name": "IronHarvest",
     "DisplayName": "Iron Harvest",
     "IsBlacklisted": false
@@ -1218,6 +1278,11 @@
     "Name": "limbo",
     "DisplayName": "Limbo",
     "IsBlacklisted": false
+  },
+  {
+    "Name": "livelywpf",
+    "DisplayName": null,
+    "IsBlacklisted": true
   },
   {
     "Name": "LockApp",
@@ -1395,6 +1460,11 @@
     "IsBlacklisted": true
   },
   {
+    "Name": "mstsc",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
     "Name": "mwoclient",
     "DisplayName": "MechWarrior Online",
     "IsBlacklisted": false
@@ -1426,6 +1496,11 @@
   },
   {
     "Name": "NordVPN",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "NortonSecurity",
     "DisplayName": null,
     "IsBlacklisted": true
   },
@@ -1518,6 +1593,16 @@
     "Name": "overwatch",
     "DisplayName": "Overwatch",
     "IsBlacklisted": false
+  },
+  {
+    "Name": "OverwolfBrowser",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "PAD.Console.Host",
+    "DisplayName": null,
+    "IsBlacklisted": true
   },
   {
     "Name": "PaintDotNet",
@@ -1720,6 +1805,11 @@
     "IsBlacklisted": false
   },
   {
+    "Name": "riftbreaker_win_release",
+    "DisplayName": "The Riftbreaker",
+    "IsBlacklisted": false
+  },
+  {
     "Name": "RiotClientUxRender",
     "DisplayName": null,
     "IsBlacklisted": false
@@ -1768,6 +1858,11 @@
     "Name": "Sam4",
     "DisplayName": "Serious Sam 4",
     "IsBlacklisted": false
+  },
+  {
+    "Name": "Satisfactory Mod Manager",
+    "DisplayName": null,
+    "IsBlacklisted": true
   },
   {
     "Name": "SC2_x64",
@@ -1835,6 +1930,11 @@
     "IsBlacklisted": true
   },
   {
+    "Name": "SimHubWPF",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
     "Name": "SKIF",
     "DisplayName": null,
     "IsBlacklisted": true
@@ -1856,6 +1956,11 @@
   },
   {
     "Name": "SocialClubHelper",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "soffice.bin",
     "DisplayName": null,
     "IsBlacklisted": true
   },
@@ -1923,6 +2028,11 @@
     "Name": "stellaris",
     "DisplayName": "Stellaris",
     "IsBlacklisted": false
+  },
+  {
+    "Name": "StorageExplorer",
+    "DisplayName": null,
+    "IsBlacklisted": true
   },
   {
     "Name": "Stranded_Deep",
@@ -2130,6 +2240,11 @@
     "IsBlacklisted": false
   },
   {
+    "Name": "TrueImageMonitor",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
     "Name": "ts3client_win64",
     "DisplayName": null,
     "IsBlacklisted": true
@@ -2137,6 +2252,11 @@
   {
     "Name": "tslgame",
     "DisplayName": "Player Unknowns BattleGrounds",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "TslGame",
+    "DisplayName": "PUBG",
     "IsBlacklisted": false
   },
   {
@@ -2246,6 +2366,11 @@
   },
   {
     "Name": "WinStore.App",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "WINWORD.EXE",
     "DisplayName": null,
     "IsBlacklisted": true
   },
@@ -2378,6 +2503,11 @@
     "Name": "Youngblood_x64vk",
     "DisplayName": "Wolfenstein: Youngblood (Vulkan)",
     "IsBlacklisted": false
+  },
+  {
+    "Name": "Z1Analyzer",
+    "DisplayName": null,
+    "IsBlacklisted": true
   },
   {
     "Name": "ZA4_dx12",
