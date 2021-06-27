@@ -370,7 +370,7 @@
                 </Grid>
             </DockPanel>
             <Expander BorderBrush="{DynamicResource MaterialDesignBackground}" BorderThickness="5" Name="RecordInfoExpander" Margin="0 0 0 0" Grid.Row="1" Grid.Column="1" VerticalAlignment="Bottom" Panel.ZIndex="1" ExpandDirection="Down"
-                      IsExpanded="{Binding IsRecordInfoExpanded}" wpf:ExpanderAssist.HorizontalHeaderPadding="5" Expanded="RecordInfoExpander_Change" Collapsed="RecordInfoExpander_Change"
+                      IsExpanded="False" wpf:ExpanderAssist.HorizontalHeaderPadding="5" Expanded="RecordInfoExpander_Change" Collapsed="RecordInfoExpander_Change"
                   Foreground="{DynamicResource MaterialDesignBody}" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
                 <Expander.Header>
                     <TextBlock Text="Record Info" RenderTransformOrigin=".5,.5" HorizontalAlignment="Center" Margin="35 0 0 0"></TextBlock>

@@ -32,6 +32,8 @@ namespace CapFrameX.View
 
         private bool FixedExpanderPosition => _viewModel.FixedExpanderPosition;
 
+        private bool RecordInfoExpanderinitialPosition => _viewModel.AppConfiguration.IsRecordInfoExpanded;
+
         private string ObservedDirectory
             => _viewModel.AppConfiguration.ObservedDirectory;
         private string CaptureRootDirectory
@@ -49,6 +51,9 @@ namespace CapFrameX.View
 
             if (FixedExpanderPosition)
                 Expander.IsExpanded = true;
+
+            if (RecordInfoExpanderinitialPosition)
+                RecordInfoExpander.IsExpanded = true;
 
             _recordInfoCollection = (CollectionViewSource)Resources["RecordInfoListKey"];
             Observable.FromEventPattern<TextChangedEventArgs>(RecordSearchBox, "TextChanged")
@@ -410,7 +415,7 @@ namespace CapFrameX.View
 
         private void RecordInfoExpander_Change(object sender, RoutedEventArgs e)
         {
-            _viewModel.IsRecordInfoExpanded = RecordInfoExpander.IsExpanded;
+            _viewModel.AppConfiguration.IsRecordInfoExpanded = RecordInfoExpander.IsExpanded;
         }
     }
 }

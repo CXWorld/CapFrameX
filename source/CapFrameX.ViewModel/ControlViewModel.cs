@@ -57,7 +57,6 @@ namespace CapFrameX.ViewModel
         private bool _customRamDescriptionChanged = false;
         private bool _customGameNameChanged = false;
         private bool _customCommentChanged = false;
-        private bool _isRecordInfoExpanded;
 
         public IFileRecordInfo SelectedRecordInfo
         {
@@ -82,16 +81,6 @@ namespace CapFrameX.ViewModel
         }
 
         public bool HasValidSource { set; get; }
-
-        public bool IsRecordInfoExpanded
-        {
-            get { return _appConfiguration.IsRecordInfoExpanded; }
-            set
-            {
-                _appConfiguration.IsRecordInfoExpanded = value;
-                RaisePropertyChanged();
-            }
-        }
 
         public string CustomCpuDescription
         {
