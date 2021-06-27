@@ -133,6 +133,12 @@ namespace CapFrameX.Configuration
             set => Set(value);
         }
 
+        public bool IsRecordInfoExpanded
+        {
+            get => Get<bool>(false);
+            set => Set(value);
+        }
+
 
         // Capture Settings
         public string CaptureHotKey

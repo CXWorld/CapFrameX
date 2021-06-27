@@ -407,5 +407,10 @@ namespace CapFrameX.View
             // myCell.Column.GetCellContent(myCell.Item).VerticalAlignment = VerticalAlignment.Center;
             RecordDataGrid.SelectedItem = myCell.Item;
         }
+
+        private void RecordInfoExpander_Change(object sender, RoutedEventArgs e)
+        {
+            _viewModel.IsRecordInfoExpanded = RecordInfoExpander.IsExpanded;
+        }
     }
 }

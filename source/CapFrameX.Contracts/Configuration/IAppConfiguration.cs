@@ -172,6 +172,8 @@ namespace CapFrameX.Contracts.Configuration
 		bool UseDarkMode { get; set; }
 
 		bool FixedExpanderPosition { get; set; }
+
+		bool IsRecordInfoExpanded { get; set; }
 	}
 
 	public interface IReportDataGridColumnSettings
