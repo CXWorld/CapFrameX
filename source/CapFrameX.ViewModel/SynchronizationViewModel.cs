@@ -429,7 +429,8 @@ namespace CapFrameX.ViewModel
                 Title = "Frametimes",
                 StrokeThickness = 1,
                 LegendStrokeThickness = 4,
-                Color = Constants.FrametimeStroke
+                Color = Constants.FrametimeStroke,
+                EdgeRenderingMode = EdgeRenderingMode.PreferSpeed
             };
 
             var untilDisplayedTimesSeries = new Statistics.PlotBuilder.LineSeries
@@ -437,7 +438,8 @@ namespace CapFrameX.ViewModel
                 Title = "Until displayed times",
                 StrokeThickness = 1,
                 LegendStrokeThickness = 4,
-                Color = OxyColor.FromArgb(150, 241, 125, 32)
+                Color = OxyColor.FromArgb(150, 241, 125, 32),
+                EdgeRenderingMode = EdgeRenderingMode.PreferSpeed
             };
 
             frametimeSeries.Points.AddRange(frametimes.Select((x, i) => new DataPoint(i, x)));
@@ -709,7 +711,8 @@ namespace CapFrameX.ViewModel
                 Title = "Frametimes",
                 StrokeThickness = 1,
                 LegendStrokeThickness = 4,
-                Color = Constants.FrametimeStroke
+                Color = Constants.FrametimeStroke,
+                EdgeRenderingMode = EdgeRenderingMode.PreferSpeed
             };
 
             var upperBoundInputLagSeries = new Statistics.PlotBuilder.LineSeries
@@ -717,7 +720,8 @@ namespace CapFrameX.ViewModel
                 Title = "Input lag high",
                 StrokeThickness = 1,
                 LegendStrokeThickness = 4,
-                Color = OxyColor.FromRgb(255, 150, 150)
+                Color = OxyColor.FromRgb(255, 150, 150),
+                EdgeRenderingMode = EdgeRenderingMode.PreferSpeed
             };
 
             var lowerBoundInputLagSeries = new Statistics.PlotBuilder.LineSeries
@@ -725,7 +729,8 @@ namespace CapFrameX.ViewModel
                 Title = "Input lag low",
                 StrokeThickness = 1,
                 LegendStrokeThickness = 4,
-                Color = OxyColor.FromRgb(200, 140, 140)
+                Color = OxyColor.FromRgb(200, 140, 140),
+                EdgeRenderingMode = EdgeRenderingMode.PreferSpeed
             };
 
             var areaSeries = new AreaSeries()
