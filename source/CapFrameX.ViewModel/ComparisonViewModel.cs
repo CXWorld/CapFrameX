@@ -1269,7 +1269,8 @@ namespace CapFrameX.ViewModel
                 StrokeThickness = 1,
                 LegendStrokeThickness = 4,
                 Color = wrappedComparisonInfo.IsHideModeSelected ?
-                    OxyColors.Transparent : OxyColor.FromRgb(color.R, color.G, color.B),
+                OxyColors.Transparent : OxyColor.FromRgb(color.R, color.G, color.B),
+                EdgeRenderingMode = EdgeRenderingMode.PreferSpeed
 
             };
 
@@ -1295,8 +1296,10 @@ namespace CapFrameX.ViewModel
                 StrokeThickness = 1,
                 LegendStrokeThickness = 4,
                 Color = wrappedComparisonInfo.IsHideModeSelected ?
-                    OxyColors.Transparent : OxyColor.FromRgb(color.R, color.G, color.B),
-                InterpolationAlgorithm = InterpolationAlgorithms.CanonicalSpline
+                OxyColors.Transparent : OxyColor.FromRgb(color.R, color.G, color.B),
+                InterpolationAlgorithm = SelectedFilterMode == EFilterMode.TimeIntervalAverage ? InterpolationAlgorithms.CanonicalSpline : null,
+                EdgeRenderingMode = SelectedFilterMode == EFilterMode.TimeIntervalAverage ? EdgeRenderingMode.PreferGeometricAccuracy : EdgeRenderingMode.PreferSpeed
+                
             };
 
             fpsSeries.Points.AddRange(fpsPoints.Select(pnt => new DataPoint(pnt.X, pnt.Y)));

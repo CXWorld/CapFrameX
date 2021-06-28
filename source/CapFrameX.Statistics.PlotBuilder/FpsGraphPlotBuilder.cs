@@ -37,7 +37,7 @@ namespace CapFrameX.Statistics.PlotBuilder
                 var avgFpsPoints = session.GetFpsPointsTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod, EFilterMode.TimeIntervalAverage);
 
                 SetRawFPS(plotModel, rawFpsPoints);
-                SetFpsChart(plotModel, avgFpsPoints, rawFpsPoints, average, 2, OxyColor.FromRgb(241, 125, 32));
+                SetFpsChart(plotModel, avgFpsPoints, rawFpsPoints, average, 2, OxyColor.FromRgb(241, 125, 32), filterMode);
 
 
                 yMin = rawFpsPoints.Min(pnt => pnt.Y);
@@ -47,7 +47,7 @@ namespace CapFrameX.Statistics.PlotBuilder
             {
                 var fpsPoints = session.GetFpsPointsTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod, filterMode);
 
-                SetFpsChart(plotModel, fpsPoints, rawFpsPoints, average, filterMode is EFilterMode.None ? 1 : 2, Constants.FpsStroke);
+                SetFpsChart(plotModel, fpsPoints, rawFpsPoints, average, filterMode is EFilterMode.None ? 1 : 2, Constants.FpsStroke, filterMode);
 
                  yMin = fpsPoints.Min(pnt => pnt.Y);
                  yMax = fpsPoints.Max(pnt => pnt.Y);
@@ -72,7 +72,7 @@ namespace CapFrameX.Statistics.PlotBuilder
             plotModel.InvalidatePlot(true);
         }
 
-        private void SetFpsChart(PlotModel plotModel, IList<Point> fpsPoints, IList<Point> rawfpsPoints, double average, int stroke, OxyColor color)
+        private void SetFpsChart(PlotModel plotModel, IList<Point> fpsPoints, IList<Point> rawfpsPoints, double average, int stroke, OxyColor color, EFilterMode filtermode)
         {
             if (fpsPoints == null || !fpsPoints.Any())
                 return;
@@ -80,13 +80,16 @@ namespace CapFrameX.Statistics.PlotBuilder
             int count = fpsPoints.Count;
             var fpsDataPoints = fpsPoints.Select(pnt => new DataPoint(pnt.X, pnt.Y));
 
+            // Filter mode = Raw+Average -> filtered average FPS
+            // Filter mode = None -> Raw inverted frametimes
             var fpsSeries = new LineSeries
             {
                 Title = "FPS",
                 StrokeThickness = stroke,
                 LegendStrokeThickness = 4,
                 Color = color,
-                EdgeRenderingMode = EdgeRenderingMode.PreferSpeed
+                EdgeRenderingMode = filtermode == EFilterMode.None ? EdgeRenderingMode.PreferSpeed : EdgeRenderingMode.PreferGeometricAccuracy,
+                InterpolationAlgorithm = filtermode == EFilterMode.None ? null : InterpolationAlgorithms.CanonicalSpline
             };
 
             fpsSeries.Points.AddRange(fpsDataPoints);
@@ -117,6 +120,7 @@ namespace CapFrameX.Statistics.PlotBuilder
 
         private void SetRawFPS(PlotModel plotModel, IList<Point> fpsPoints)
         {
+            // Only used when filter mode = Raw+Average
             var fpsSeries = new LineSeries
             { 
                 Title = "Raw FPS",
