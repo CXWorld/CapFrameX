@@ -12,6 +12,7 @@ namespace CapFrameX.Statistics.PlotBuilder
     public class FpsGraphPlotBuilder : PlotBuilder
     {
         public FpsGraphPlotBuilder(IFrametimeStatisticProviderOptions options, IStatisticProvider frametimeStatisticProvider) : base(options, frametimeStatisticProvider) { }
+
         public void BuildPlotmodel(ISession session, IPlotSettings plotSettings, double startTime, double endTime, ERemoveOutlierMethod eRemoveOutlinerMethod, EFilterMode filterMode, Action<PlotModel> onFinishAction = null)
         {
             var plotModel = PlotModel;
@@ -85,7 +86,7 @@ namespace CapFrameX.Statistics.PlotBuilder
                 StrokeThickness = stroke,
                 LegendStrokeThickness = 4,
                 Color = color,
-                InterpolationAlgorithm = InterpolationAlgorithms.CanonicalSpline
+                EdgeRenderingMode = EdgeRenderingMode.PreferSpeed
             };
 
             fpsSeries.Points.AddRange(fpsDataPoints);
@@ -151,15 +152,6 @@ namespace CapFrameX.Statistics.PlotBuilder
                     axis.Maximum = average + 5;
                 else
                     axis.Maximum = axisMaximum;
-
-                // center average FPS line
-                //var rangeAvgMin = average - axis.Minimum;
-                //var rangeAvgMax = axis.Maximum - average;
-
-                //if (rangeAvgMin > rangeAvgMax)
-                //    axis.Maximum += (rangeAvgMin - rangeAvgMax);
-                //else if (rangeAvgMin < rangeAvgMax)
-                //    axis.Minimum -= (rangeAvgMax - rangeAvgMin);
             });
         }
     }
