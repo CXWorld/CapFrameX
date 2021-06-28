@@ -42,10 +42,11 @@ namespace CapFrameX.Data
 
         public static void SavePlotAsPNG(PlotModel plot, string filename, int horizontalRes, int verticalRes, bool isDarkMode)
         {
+            plot.Background = isDarkMode ? OxyColor.Parse("#414b54") : OxyColor.Parse("#f2f2f2");
+
             var exporter = new OxyPlot.Wpf.PngExporter {
                 Width = horizontalRes,
-                Height = verticalRes,
-                Background = isDarkMode ? OxyColor.Parse("#414b54") : OxyColor.Parse("#f2f2f2")
+                Height = verticalRes
             };  
 
             using(var memoryStream = new MemoryStream())
