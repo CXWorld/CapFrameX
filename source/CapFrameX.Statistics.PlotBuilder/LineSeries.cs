@@ -15,17 +15,20 @@ namespace CapFrameX.Statistics.PlotBuilder
                 pts,
                 this.GetSelectableColor(this.ActualColor),
                 this.LegendStrokeThickness,
+                this.EdgeRenderingMode,
                 this.ActualDashArray);
+
             var midpt = new ScreenPoint(xmid, ymid);
+
             rc.DrawMarker(
-                legendBox,
                 midpt,
                 this.MarkerType,
                 this.MarkerOutline,
                 this.MarkerSize,
                 this.ActualMarkerFill,
                 this.MarkerStroke,
-                this.MarkerStrokeThickness);
+                this.MarkerStrokeThickness,
+                this.EdgeRenderingMode);
         }
     }
 }

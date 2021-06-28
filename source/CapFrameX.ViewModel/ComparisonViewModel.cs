@@ -38,6 +38,7 @@ using ComparisonCollection = System.Collections.ObjectModel
 using Point = CapFrameX.Statistics.NetStandard.Point;
 using IDropTarget = GongSolutions.Wpf.DragDrop.IDropTarget;
 using DragDropEffects = System.Windows.DragDropEffects;
+using OxyPlot.Legends;
 
 namespace CapFrameX.ViewModel
 {
@@ -615,10 +616,14 @@ namespace CapFrameX.ViewModel
             {
                 PlotMargins = new OxyThickness(40, 10, 10, 70),
                 PlotAreaBorderColor = _appConfiguration.UseDarkMode ? OxyColor.FromArgb(100, 204, 204, 204) : OxyColor.FromArgb(50, 30, 30, 30),
-            LegendPosition = LegendPosition.TopCenter,
-                LegendOrientation = LegendOrientation.Horizontal,
                 TextColor = _appConfiguration.UseDarkMode ? OxyColors.White : OxyColors.Black
             };
+
+            ComparisonFrametimesModel.Legends.Add(new Legend()
+            {
+                LegendPosition = LegendPosition.TopCenter,
+                LegendOrientation = LegendOrientation.Horizontal
+            });
 
             //Axes
             //X
@@ -631,7 +636,7 @@ namespace CapFrameX.ViewModel
                 MajorGridlineStyle = LineStyle.Solid,
                 MajorGridlineThickness = 1,
                 MajorGridlineColor = _appConfiguration.UseDarkMode ? OxyColor.FromArgb(40, 204, 204, 204) : OxyColor.FromArgb(20, 30, 30, 30),
-            MinorTickSize = 0,
+                MinorTickSize = 0,
                 MajorTickSize = 0
 
             });
@@ -655,10 +660,14 @@ namespace CapFrameX.ViewModel
             {
                 PlotMargins = new OxyThickness(40, 10, 10, 70),
                 PlotAreaBorderColor = _appConfiguration.UseDarkMode ? OxyColor.FromArgb(40, 204, 204, 204) : OxyColor.FromArgb(20, 30, 30, 30),
-                LegendPosition = LegendPosition.TopCenter,
-                LegendOrientation = LegendOrientation.Horizontal,
                 TextColor = _appConfiguration.UseDarkMode ? OxyColors.White : OxyColors.Black
             };
+
+            ComparisonFpsModel.Legends.Add(new Legend()
+            {
+                LegendPosition = LegendPosition.TopCenter,
+                LegendOrientation = LegendOrientation.Horizontal
+            });
 
             //Axes
             //X
