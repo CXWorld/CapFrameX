@@ -122,7 +122,7 @@ namespace CapFrameX.Statistics.PlotBuilder
                 StrokeThickness = 1,
                 LegendStrokeThickness = 4,
                 Color = OxyColor.FromAColor(200, Constants.FpsStroke),
-                InterpolationAlgorithm = InterpolationAlgorithms.CanonicalSpline
+                EdgeRenderingMode = EdgeRenderingMode.PreferSpeed
             };
             var points = fpsPoints.Select(pnt => new DataPoint(pnt.X, pnt.Y));
             fpsSeries.Points.AddRange(points);
