@@ -45,11 +45,12 @@ RTSSCoreControl::~RTSSCoreControl() { }
 CString RTSSCoreControl::GetApiInfo(DWORD processId)
 {
 	CString api = "unknown";
+	HANDLE hMapFile = OpenFileMapping(FILE_MAP_ALL_ACCESS, FALSE, "RTSSSharedMemoryV2");
 
-	CreateHandles();
-	if (m_hMapFile)
+	if (hMapFile)
 	{
-		LPRTSS_SHARED_MEMORY pMem = (LPRTSS_SHARED_MEMORY)m_pMapAddr;
+		LPVOID pMapAddr = MapViewOfFile(hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, 0);
+		LPRTSS_SHARED_MEMORY pMem = (LPRTSS_SHARED_MEMORY)pMapAddr;
 
 		if (pMem)
 		{
@@ -76,7 +77,9 @@ CString RTSSCoreControl::GetApiInfo(DWORD processId)
 						break;
 					}
 				}
+				UnmapViewOfFile(pMapAddr);
 			}
+			CloseHandle(hMapFile);
 		}
 	}
 
@@ -89,11 +92,12 @@ std::vector<float> RTSSCoreControl::GetCurrentFramerate(DWORD processId)
 	float currentFramerate = 0;
 	float currentFrametime = 0;
 	LPDWORD lpdwProcessiD = 0;
+	HANDLE hMapFile = OpenFileMapping(FILE_MAP_ALL_ACCESS, FALSE, "RTSSSharedMemoryV2");
 
-	CreateHandles();
-	if (m_hMapFile)
+	if (hMapFile)
 	{
-		LPRTSS_SHARED_MEMORY pMem = (LPRTSS_SHARED_MEMORY)m_pMapAddr;
+		LPVOID pMapAddr = MapViewOfFile(hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, 0);
+		LPRTSS_SHARED_MEMORY pMem = (LPRTSS_SHARED_MEMORY)pMapAddr;
 
 		if (pMem)
 		{
@@ -114,54 +118,9 @@ std::vector<float> RTSSCoreControl::GetCurrentFramerate(DWORD processId)
 					}
 				}
 			}
+			UnmapViewOfFile(pMapAddr);
 		}
-	}
-
-	result.push_back(currentFramerate);
-	result.push_back(currentFrametime);
-	return result;
-}
-
-std::vector<float> RTSSCoreControl::GetCurrentFramerateFromForegroundWindow()
-{
-	std::vector<float> result;
-	float currentFramerate = 0;
-	float currentFrametime = 0;
-	LPDWORD lpdwProcessiD = 0;
-
-	CreateHandles();
-	if (m_hMapFile)
-	{
-		LPRTSS_SHARED_MEMORY pMem = (LPRTSS_SHARED_MEMORY)m_pMapAddr;
-
-		if (pMem)
-		{
-			if ((pMem->dwSignature == 'RTSS') && (pMem->dwVersion >= 0x00020000))
-			{
-				HWND	hWnd = GetForegroundWindow();
-				DWORD	dwProcessID = 0;
-
-				if (hWnd)
-					GetWindowThreadProcessId(hWnd, &dwProcessID);
-
-				for (DWORD dwEntry = 0; dwEntry < pMem->dwAppArrSize; dwEntry++)
-				{
-					RTSS_SHARED_MEMORY::LPRTSS_SHARED_MEMORY_APP_ENTRY pEntry = (RTSS_SHARED_MEMORY::LPRTSS_SHARED_MEMORY_APP_ENTRY)((LPBYTE)pMem + pMem->dwAppArrOffset + dwEntry * pMem->dwAppEntrySize);
-
-					if (pEntry->dwProcessID)
-					{
-						if (pEntry->dwProcessID == dwProcessID)
-						{
-							currentFrametime = pEntry->dwStatFrameTimeBuf[(pEntry->dwStatFrameTimeBufPos - 1) & 1023] / 1000.0f;
-							currentFramerate = pEntry->dwStatFrameTimeBufFramerate / 10.0f;
-						}
-
-						if ((dwProcessID == pEntry->dwProcessID) || !dwProcessID)
-							break;
-					}
-				}
-			}
-		}
+		CloseHandle(hMapFile);
 	}
 
 	result.push_back(currentFramerate);
@@ -172,18 +131,23 @@ std::vector<float> RTSSCoreControl::GetCurrentFramerateFromForegroundWindow()
 DWORD RTSSCoreControl::GetSharedMemoryVersion()
 {
 	DWORD dwResult = 0;
+	HANDLE hMapFile = OpenFileMapping(FILE_MAP_ALL_ACCESS, FALSE, "RTSSSharedMemoryV2");
 
-	CreateHandles();
-	if (m_hMapFile)
+	if (hMapFile)
 	{
-		LPRTSS_SHARED_MEMORY pMem = (LPRTSS_SHARED_MEMORY)m_pMapAddr;
+		LPVOID pMapAddr = MapViewOfFile(hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, 0);
+		LPRTSS_SHARED_MEMORY pMem = (LPRTSS_SHARED_MEMORY)pMapAddr;
 
 		if (pMem)
 		{
 			if ((pMem->dwSignature == 'RTSS') &&
 				(pMem->dwVersion >= 0x00020000))
 				dwResult = pMem->dwVersion;
+
+			UnmapViewOfFile(pMapAddr);
 		}
+
+		CloseHandle(hMapFile);
 	}
 
 	return dwResult;
@@ -192,11 +156,12 @@ DWORD RTSSCoreControl::GetSharedMemoryVersion()
 DWORD RTSSCoreControl::EmbedGraph(DWORD dwOffset, FLOAT* lpBuffer, DWORD dwBufferPos, DWORD dwBufferSize, LONG dwWidth, LONG dwHeight, LONG dwMargin, FLOAT fltMin, FLOAT fltMax, DWORD dwFlags)
 {
 	DWORD dwResult = 0;
+	HANDLE hMapFile = OpenFileMapping(FILE_MAP_ALL_ACCESS, FALSE, "RTSSSharedMemoryV2");
 
-	CreateHandles();
-	if (m_hMapFile)
+	if (hMapFile)
 	{
-		LPRTSS_SHARED_MEMORY pMem = (LPRTSS_SHARED_MEMORY)m_pMapAddr;
+		LPVOID pMapAddr = MapViewOfFile(hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, 0);
+		LPRTSS_SHARED_MEMORY pMem = (LPRTSS_SHARED_MEMORY)pMapAddr;
 
 		if (pMem)
 		{
@@ -228,8 +193,8 @@ DWORD RTSSCoreControl::EmbedGraph(DWORD dwOffset, FLOAT* lpBuffer, DWORD dwBuffe
 								if (dwOffset + sizeof(RTSS_EMBEDDED_OBJECT_GRAPH) + dwBufferSize * sizeof(FLOAT) > sizeof(pEntry->buffer))
 									//validate embedded object offset and size and ensure that we don't overrun the buffer
 								{
-									UnmapViewOfFile(m_pMapAddr);
-									CloseHandle(m_hMapFile);
+									UnmapViewOfFile(pMapAddr);
+									CloseHandle(hMapFile);
 
 									return 0;
 								}
@@ -270,7 +235,9 @@ DWORD RTSSCoreControl::EmbedGraph(DWORD dwOffset, FLOAT* lpBuffer, DWORD dwBuffe
 						break;
 				}
 			}
+			UnmapViewOfFile(pMapAddr);
 		}
+		CloseHandle(hMapFile);
 	}
 
 	return dwResult;
@@ -279,11 +246,12 @@ DWORD RTSSCoreControl::EmbedGraph(DWORD dwOffset, FLOAT* lpBuffer, DWORD dwBuffe
 BOOL RTSSCoreControl::UpdateOSD(LPCSTR lpText)
 {
 	BOOL bResult = FALSE;
+	HANDLE hMapFile = OpenFileMapping(FILE_MAP_ALL_ACCESS, FALSE, "RTSSSharedMemoryV2");
 
-	CreateHandles();
-	if (m_hMapFile)
+	if (hMapFile)
 	{
-		LPRTSS_SHARED_MEMORY pMem = (LPRTSS_SHARED_MEMORY)m_pMapAddr;
+		LPVOID pMapAddr = MapViewOfFile(hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, 0);
+		LPRTSS_SHARED_MEMORY pMem = (LPRTSS_SHARED_MEMORY)pMapAddr;
 
 		if (pMem)
 		{
@@ -345,7 +313,9 @@ BOOL RTSSCoreControl::UpdateOSD(LPCSTR lpText)
 						break;
 				}
 			}
+			UnmapViewOfFile(pMapAddr);
 		}
+		CloseHandle(hMapFile);
 	}
 
 	return bResult;
@@ -353,10 +323,12 @@ BOOL RTSSCoreControl::UpdateOSD(LPCSTR lpText)
 
 void RTSSCoreControl::ReleaseOSD()
 {
-	CreateHandles();
-	if (m_hMapFile)
+	HANDLE hMapFile = OpenFileMapping(FILE_MAP_ALL_ACCESS, FALSE, "RTSSSharedMemoryV2");
+
+	if (hMapFile)
 	{
-		LPRTSS_SHARED_MEMORY pMem = (LPRTSS_SHARED_MEMORY)m_pMapAddr;
+		LPVOID pMapAddr = MapViewOfFile(hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, 0);
+		LPRTSS_SHARED_MEMORY pMem = (LPRTSS_SHARED_MEMORY)pMapAddr;
 
 		if (pMem)
 		{
@@ -375,37 +347,21 @@ void RTSSCoreControl::ReleaseOSD()
 					}
 				}
 			}
+			UnmapViewOfFile(pMapAddr);
 		}
-	}
-}
-
-void RTSSCoreControl::CloseHandles()
-{
-	if (m_hMapFile)
-		CloseHandle(m_hMapFile);
-
-	if (m_pMapAddr)
-		UnmapViewOfFile(m_pMapAddr);
-}
-
-void RTSSCoreControl::CreateHandles()
-{
-	if (!m_hMapFile)
-	{
-		m_hMapFile = OpenFileMapping(FILE_MAP_ALL_ACCESS, FALSE, "RTSSSharedMemoryV2");
-		if (m_hMapFile)
-			m_pMapAddr = MapViewOfFile(m_hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, 0);
+		CloseHandle(hMapFile);
 	}
 }
 
 DWORD RTSSCoreControl::GetClientsNum()
 {
 	DWORD dwClients = 0;
+	HANDLE hMapFile = OpenFileMapping(FILE_MAP_ALL_ACCESS, FALSE, "RTSSSharedMemoryV2");
 
-	CreateHandles();
-	if (m_hMapFile)
+	if (hMapFile)
 	{
-		LPRTSS_SHARED_MEMORY pMem = (LPRTSS_SHARED_MEMORY)m_pMapAddr;
+		LPVOID pMapAddr = MapViewOfFile(hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, 0);
+		LPRTSS_SHARED_MEMORY pMem = (LPRTSS_SHARED_MEMORY)pMapAddr;
 
 		if (pMem)
 		{
@@ -420,7 +376,9 @@ DWORD RTSSCoreControl::GetClientsNum()
 						dwClients++;
 				}
 			}
+			UnmapViewOfFile(pMapAddr);
 		}
+		CloseHandle(hMapFile);
 	}
 
 	return dwClients;

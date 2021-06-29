@@ -140,7 +140,6 @@ namespace CapFrameX
 
             var rtssService = _bootstrapper.Container.Resolve(typeof(IRTSSService), true) as IRTSSService;
             rtssService.ClearOSD();
-            rtssService.CloseHandles();
 
             _webServer.Dispose();
         }

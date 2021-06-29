@@ -33,7 +33,6 @@ public:
 	void						OnOSDOn();
 	void						OnOSDOff();
 	void						OnOSDToggle();
-	void						CloseHandles();
 	std::vector<CString>		RunHistory;
 	std::vector<BOOL>			RunHistoryOutlierFlags;
 	CString						RunHistoryAggregation;
@@ -42,7 +41,6 @@ public:
 	BOOL						UpdateOSD(LPCSTR lpText);
 	CString						GetApiInfo(DWORD processId);
 	std::vector<float>		    GetCurrentFramerate(DWORD processId);
-	std::vector<float>			GetCurrentFramerateFromForegroundWindow();
 	BOOL						ShowRunHistory;
 	DWORD						OverlayPositionX;
 	DWORD						OverlayPositionY;
@@ -72,8 +70,6 @@ protected:
 
 	CRTSSProfileInterface		m_profileInterface;
 	CRTSSHooksInterface			m_rtssInterface;
-	LPVOID						m_pMapAddr;
-	HANDLE						m_hMapFile;
 };
 /////////////////////////////////////////////////////////////////////////////
 //{{AFX_INSERT_LOCATION}}

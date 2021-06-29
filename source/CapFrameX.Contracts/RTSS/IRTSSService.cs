@@ -11,7 +11,6 @@ namespace CapFrameX.Contracts.RTSS
         bool IsRTSSInstalled();
         string GetApiInfo(int processId);
         Tuple<double, double> GetCurrentFramerate(int processId);
-        Tuple<double, double> GetCurrentFramerateFromForegroundWindow();
         Task CheckRTSSRunningAndRefresh();
         Task CheckRTSSRunning();
         void Refresh();
@@ -27,7 +26,6 @@ namespace CapFrameX.Contracts.RTSS
         void OnOSDOn();
         void OnOSDOff();
         void OnOSDToggle();
-        void CloseHandles();
         void SetShowRunHistory(bool showRunHistory);
         void SetOSDCustomPosition(bool active);
         void SetOverlayPosition(int x, int y);
