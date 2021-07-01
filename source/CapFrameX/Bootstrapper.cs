@@ -49,7 +49,6 @@ namespace CapFrameX
 		{
 			base.InitializeShell();
 			LogAppInfo();
-			LogWindowState();
 
 			// get config
 			var config = Container.Resolve<IAppConfiguration>();
@@ -60,14 +59,20 @@ namespace CapFrameX
 
 			Application.Current.MainWindow = (Window)Shell;
 
-			if (config.StartMinimized)
-				Application.Current.MainWindow.WindowState = WindowState.Minimized;
+			// get last tracked WindowState
+			var startupWindowState = Application.Current.MainWindow.WindowState;
 
+			// initial startup with minimized window
+            Application.Current.MainWindow.WindowState = WindowState.Minimized;
 			Application.Current.MainWindow.Show();
 
+			// set window to tray or revert back to last tracked WindowState
 			if (config.StartMinimized)
 				Application.Current.MainWindow.Hide();
+            else
+                Application.Current.MainWindow.WindowState = startupWindowState;
 
+			LogWindowState();
 		}
 
 		protected override void ConfigureContainer()
