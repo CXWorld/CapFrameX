@@ -49,6 +49,7 @@ namespace CapFrameX
 		{
 			base.InitializeShell();
 			LogAppInfo();
+			LogWindowState();
 
 			// get config
 			var config = Container.Resolve<IAppConfiguration>();
@@ -66,6 +67,7 @@ namespace CapFrameX
 
 			if (config.StartMinimized)
 				Application.Current.MainWindow.Hide();
+
 		}
 
 		protected override void ConfigureContainer()
@@ -158,6 +160,18 @@ namespace CapFrameX
 			var version = Container.Resolve<IAppVersionProvider>().GetAppVersion().ToString();
 			var atomicTime = AtomicTime.Now.TimeOfDay;
 			loggerFactory.CreateLogger<ILogger<Bootstrapper>>().LogInformation("CapFrameX {version} started at UTC {atomicTime}", version, atomicTime);
+		}
+
+		private void LogWindowState()
+        {
+			var loggerFactory = Container.Resolve<ILoggerFactory>();
+
+			double height = Application.Current.MainWindow.Height;
+			double width = Application.Current.MainWindow.Width;
+			double positionLeft = Application.Current.MainWindow.Left;
+			double positionTop = Application.Current.MainWindow.Top;
+
+			loggerFactory.CreateLogger<ILogger<Bootstrapper>>().LogInformation("Window dimensions are {width} x {height}. Window position is {positionLeft} x {positionTop}", height, width, positionLeft, positionTop);
 		}
 	}
 }
