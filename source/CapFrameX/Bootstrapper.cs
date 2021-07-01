@@ -59,13 +59,20 @@ namespace CapFrameX
 
 			Application.Current.MainWindow = (Window)Shell;
 
-			if (config.StartMinimized)
-				Application.Current.MainWindow.WindowState = WindowState.Minimized;
+			// get last tracked WindowState
+			var startupWindowState = Application.Current.MainWindow.WindowState;
 
+			// initial startup with minimized window
+            Application.Current.MainWindow.WindowState = WindowState.Minimized;
 			Application.Current.MainWindow.Show();
 
+			// set window to tray or revert back to last tracked WindowState
 			if (config.StartMinimized)
 				Application.Current.MainWindow.Hide();
+            else
+                Application.Current.MainWindow.WindowState = startupWindowState;
+
+			LogWindowState();
 		}
 
 		protected override void ConfigureContainer()
@@ -158,6 +165,18 @@ namespace CapFrameX
 			var version = Container.Resolve<IAppVersionProvider>().GetAppVersion().ToString();
 			var atomicTime = AtomicTime.Now.TimeOfDay;
 			loggerFactory.CreateLogger<ILogger<Bootstrapper>>().LogInformation("CapFrameX {version} started at UTC {atomicTime}", version, atomicTime);
+		}
+
+		private void LogWindowState()
+        {
+			var loggerFactory = Container.Resolve<ILoggerFactory>();
+
+			double height = Application.Current.MainWindow.Height;
+			double width = Application.Current.MainWindow.Width;
+			double positionLeft = Application.Current.MainWindow.Left;
+			double positionTop = Application.Current.MainWindow.Top;
+
+			loggerFactory.CreateLogger<ILogger<Bootstrapper>>().LogInformation("Window dimensions are {width} x {height}. Window position is {positionLeft} x {positionTop}", width, height, positionLeft, positionTop);
 		}
 	}
 }
