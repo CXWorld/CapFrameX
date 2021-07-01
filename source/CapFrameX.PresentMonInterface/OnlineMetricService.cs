@@ -67,6 +67,21 @@ namespace CapFrameX.PresentMonInterface
                             });
         }
 
+        //var frameTimes = session.Runs.SelectMany(r => r.CaptureData.MsBetweenPresents).ToArray();
+        //var appMissed = session.Runs.SelectMany(r => r.CaptureData.Dropped).ToArray();
+        //var untilDisplayedTimes = session.Runs.SelectMany(r => r.CaptureData.MsUntilDisplayed).ToArray();
+        //var inPresentAPITimes = session.Runs.SelectMany(r => r.CaptureData.MsInPresentAPI).ToArray();
+        //var inputLagTimes = new List<double>(frameTimes.Count() - 1);
+
+        //    for (int i = 2; i<frameTimes.Count(); i++)
+        //    {
+        //        if (appMissed[i] != true)
+        //            inputLagTimes.Add(frameTimes[i] + untilDisplayedTimes[i] + (0.5 * frameTimes[i - 1])
+        //                - (0.5 * inPresentAPITimes[i - 1]) - (0.5 * inPresentAPITimes[i - 2]));
+        //    }
+
+        //    return inputLagTimes;
+
         private void ConnectOnlineMetricDataStream()
         {
             _captureService
@@ -130,10 +145,7 @@ namespace CapFrameX.PresentMonInterface
             // it makes no sense to calculate fps metrics with
             // frame times above the stuttering threshold
             // filtering high frame times caused by focus lost for example
-            if (frameTime > STUTTERING_THRESHOLD * 1E03)
-            {
-                return;
-            }
+            if (frameTime > STUTTERING_THRESHOLD * 1E03) return;
 
             try
             {
