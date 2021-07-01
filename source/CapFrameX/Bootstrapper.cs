@@ -171,7 +171,7 @@ namespace CapFrameX
 			double positionLeft = Application.Current.MainWindow.Left;
 			double positionTop = Application.Current.MainWindow.Top;
 
-			loggerFactory.CreateLogger<ILogger<Bootstrapper>>().LogInformation("Window dimensions are {width} x {height}. Window position is {positionLeft} x {positionTop}", height, width, positionLeft, positionTop);
+			loggerFactory.CreateLogger<ILogger<Bootstrapper>>().LogInformation("Window dimensions are {width} x {height}. Window position is {positionLeft} x {positionTop}", width, height, positionLeft, positionTop);
 		}
 	}
 }
