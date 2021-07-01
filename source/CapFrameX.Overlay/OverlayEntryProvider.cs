@@ -432,7 +432,7 @@ namespace CapFrameX.Overlay
                         var predecessorEntry = utilsDefaults[index];
                         var predecessorConfigOverlayEntry = configOverlayEntries.FirstOrDefault(entry => entry.Identifier == predecessorEntry.Identifier);
                         int predecessorConfigOverlayEntryIndex = configOverlayEntries.IndexOf(predecessorConfigOverlayEntry);
-                        configOverlayEntries.Insert(predecessorConfigOverlayEntryIndex, defaultEntry);
+                        configOverlayEntries.Insert(predecessorConfigOverlayEntryIndex + 1, defaultEntry);
                     }
                 }
             }
