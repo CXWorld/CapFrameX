@@ -10,6 +10,7 @@
 			 xmlns:mvvm="clr-namespace:CapFrameX.MVVM.Converter;assembly=CapFrameX.MVVM"
              xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
 			 xmlns:controls="clr-namespace:CapFrameX.View.Controls"
+             xmlns:oxy="http://oxyplot.org/wpf"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800"
              Background="{DynamicResource MaterialDesignBackground}"
@@ -60,6 +61,15 @@
                         <!--Input lag chart-->
                         <controls:PlotViewCustomZoom x:Name="InputLagPlotView" Model="{Binding InputLagModel}" Tag="{Binding ElementName=SynchronizationViewUserControl, Path=DataContext}"
 								 MouseDoubleClick="ResetInputLagChart_MouseDoubleClick" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
+                            <controls:PlotViewCustomZoom.DefaultTrackerTemplate>
+                                <ControlTemplate>
+                                    <oxy:TrackerControl Position="{Binding Position}" Background="{DynamicResource MaterialDesignCardBackground}">
+                                        <oxy:TrackerControl.Content>
+                                            <TextBlock Text="{Binding}" Margin="5" />
+                                        </oxy:TrackerControl.Content>
+                                    </oxy:TrackerControl>
+                                </ControlTemplate>
+                            </controls:PlotViewCustomZoom.DefaultTrackerTemplate>
                             <controls:PlotViewCustomZoom.ContextMenu>
                                 <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
                                     <MenuItem Header="Save plot as SVG" Command="{Binding SaveInputLagPlotAsSVG }"/>
@@ -147,6 +157,15 @@
                     <DockPanel Grid.Row="0">
                         <controls:PlotViewCustomZoom x:Name="SynchronizationPlotView" Model="{Binding SynchronizationModel}" Tag="{Binding ElementName=SynchronizationViewUserControl, Path=DataContext}"
 						  MouseDoubleClick="ResetSynchronizationChart_MouseDoubleClick" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
+                            <controls:PlotViewCustomZoom.DefaultTrackerTemplate>
+                                <ControlTemplate>
+                                    <oxy:TrackerControl Position="{Binding Position}" Background="{DynamicResource MaterialDesignCardBackground}">
+                                        <oxy:TrackerControl.Content>
+                                            <TextBlock Text="{Binding}" Margin="5" />
+                                        </oxy:TrackerControl.Content>
+                                    </oxy:TrackerControl>
+                                </ControlTemplate>
+                            </controls:PlotViewCustomZoom.DefaultTrackerTemplate>
                             <controls:PlotViewCustomZoom.ContextMenu>
                                 <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
                                     <MenuItem Header="Copy until displayed time values" Command="{Binding CopyUntilDisplayedTimesValuesCommand}"/>
