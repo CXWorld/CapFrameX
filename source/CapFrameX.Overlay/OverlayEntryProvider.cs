@@ -79,7 +79,7 @@ namespace CapFrameX.Overlay
             _logger.LogDebug("{componentName} Ready", this.GetType().Name);
 
             stopwatch.Stop();
-            _logger.LogInformation(this.GetType().Name + " {initializationTime}s initialization time", 
+            _logger.LogInformation(this.GetType().Name + " {initializationTime}s initialization time",
                 Math.Round(stopwatch.ElapsedMilliseconds * 1E-03, 1));
         }
 
@@ -257,6 +257,14 @@ namespace CapFrameX.Overlay
                     else
                         _overlayEntryCore.RealtimeMetricEntryDict["OnlineP0dot2"] = entry;
                 }
+
+                if (entry.Identifier == "OnlineRenderLag")
+                {
+                    if (!_overlayEntryCore.RealtimeMetricEntryDict.ContainsKey("OnlineRenderLag"))
+                        _overlayEntryCore.RealtimeMetricEntryDict.Add("OnlineRenderLag", entry);
+                    else
+                        _overlayEntryCore.RealtimeMetricEntryDict["OnlineRenderLag"] = entry;
+                }
             }
 
             CheckCustomSystemInfo();
@@ -363,24 +371,24 @@ namespace CapFrameX.Overlay
             if (hasGpuChanged)
             {
                 _logger.LogInformation("GPU changed. Config has to be updated.");
-                EvaluateSensorEntries(EOverlayEntryType.GPU);
+                InsertSensorEntries(EOverlayEntryType.GPU);
             }
 
             // check CPU changed 
             if (hasCpuChanged)
             {
                 _logger.LogInformation("CPU changed. Config has to be updated.");
-                EvaluateSensorEntries(EOverlayEntryType.CPU);
+                InsertSensorEntries(EOverlayEntryType.CPU);
             }
 
             // check RAM changed
             if (hasRamChanged)
             {
                 _logger.LogInformation("RAM. Config has to be updated.");
-                EvaluateSensorEntries(EOverlayEntryType.RAM);
+                InsertSensorEntries(EOverlayEntryType.RAM);
             }
 
-            void EvaluateSensorEntries(EOverlayEntryType type)
+            void InsertSensorEntries(EOverlayEntryType type)
             {
                 var index = configOverlayEntries
                     .TakeWhile(entry => entry.OverlayEntryType != type)
@@ -408,6 +416,25 @@ namespace CapFrameX.Overlay
             foreach (var entry in configOverlayEntries)
             {
                 entry.GroupSeparators = separatorDict[entry.GroupName];
+            }
+
+            // Manage default entries from Utils list
+            var utilsDefaults = OverlayUtils.GetOverlayEntryDefaults();
+
+            foreach (var defaultEntry in utilsDefaults)
+            {
+                if (configOverlayEntries.FirstOrDefault(entry => entry.Identifier == defaultEntry.Identifier) == null)
+                {
+                    int index = utilsDefaults.IndexOf(defaultEntry) - 1;
+
+                    if (index >= 0)
+                    {
+                        var predecessorEntry = utilsDefaults[index];
+                        var predecessorConfigOverlayEntry = configOverlayEntries.FirstOrDefault(entry => entry.Identifier == predecessorEntry.Identifier);
+                        int predecessorConfigOverlayEntryIndex = configOverlayEntries.IndexOf(predecessorConfigOverlayEntry);
+                        configOverlayEntries.Insert(predecessorConfigOverlayEntryIndex, defaultEntry);
+                    }
+                }
             }
 
             return configOverlayEntries.ToBlockingCollection();
@@ -544,6 +571,14 @@ namespace CapFrameX.Overlay
             {
                 p1dot2Entry.Value = Math.Round(_onlineMetricService.GetOnlineFpsMetricValue(EMetric.P0dot2));
             }
+
+            // render lag
+            _identifierOverlayEntryDict.TryGetValue("OnlineRenderLag", out IOverlayEntry renderLagEntry);
+
+            if (renderLagEntry != null && renderLagEntry.ShowOnOverlay)
+            {
+                renderLagEntry.Value = Math.Round(_onlineMetricService.GetOnlineRenderLagValue());
+            }
         }
 
         private void SetOnlineMetricsIsNumericState()
@@ -570,6 +605,14 @@ namespace CapFrameX.Overlay
             if (p1dot2Entry != null)
             {
                 p1dot2Entry.IsNumeric = true;
+            }
+
+            // render lag
+            _identifierOverlayEntryDict.TryGetValue("OnlineRenderLag", out IOverlayEntry renderLagEntry);
+
+            if (renderLagEntry != null)
+            {
+                renderLagEntry.IsNumeric = true;
             }
         }
 
@@ -601,12 +644,21 @@ namespace CapFrameX.Overlay
                 p1dot2Entry.ValueUnitFormat = "FPS";
                 p1dot2Entry.ValueAlignmentAndDigits = "{0,5:F0}";
             }
+
+            // render lag
+            _identifierOverlayEntryDict.TryGetValue("OnlineRenderLag", out IOverlayEntry renderLagEntry);
+
+            if (renderLagEntry != null)
+            {
+                renderLagEntry.ValueUnitFormat = "ms";
+                renderLagEntry.ValueAlignmentAndDigits = "{0,5:F0}";
+            }
         }
 
         private void SetRTSSMetricIsNumericState()
         {
             foreach (var entry in _overlayEntries.Where(x =>
-                (x.Identifier == "Framerate" || x.Identifier == "Frametime")))
+                x.Identifier == "Framerate" || x.Identifier == "Frametime"))
             {
                 entry.IsNumeric = true;
             }
@@ -636,9 +688,9 @@ namespace CapFrameX.Overlay
         private void SetHardwareIsNumericState()
         {
             foreach (var entry in _overlayEntries.Where(x =>
-               (x.OverlayEntryType == EOverlayEntryType.GPU
+               x.OverlayEntryType == EOverlayEntryType.GPU
                 || x.OverlayEntryType == EOverlayEntryType.CPU
-                || x.OverlayEntryType == EOverlayEntryType.RAM)))
+                || x.OverlayEntryType == EOverlayEntryType.RAM))
             {
                 entry.IsNumeric = true;
             }
@@ -811,9 +863,8 @@ namespace CapFrameX.Overlay
 
         private string GetConfigurationFileName(int targetConfig)
         {
-
-                    return Path.Combine(OVERLAY_CONFIG_FOLDER, $"OverlayEntryConfiguration_" +
-                            $"{targetConfig}.json");
+            return Path.Combine(OVERLAY_CONFIG_FOLDER, $"OverlayEntryConfiguration_" +
+                    $"{targetConfig}.json");
         }
 
         private void SetConfigurationFileName(int index)
