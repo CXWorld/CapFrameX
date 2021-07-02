@@ -67,8 +67,7 @@ namespace CapFrameX.Statistics.NetStandard
             for (int i = 2; i < frameTimes.Count(); i++)
             {
                 if (appMissed[i] != true)
-                    inputLagTimes.Add(frameTimes[i] + untilDisplayedTimes[i] + (0.5 * frameTimes[i - 1])
-                        - (0.5 * inPresentAPITimes[i - 1]) - (0.5 * inPresentAPITimes[i - 2]));
+                    inputLagTimes.Add(frameTimes[i] + untilDisplayedTimes[i] + 0.5 * (frameTimes[i - 1] - inPresentAPITimes[i - 1] - inPresentAPITimes[i - 2]));
             }
 
             return inputLagTimes;

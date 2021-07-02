@@ -254,8 +254,7 @@ namespace CapFrameX.PresentMonInterface
                 lock (_lockRenderLag)
                 {
                     _measuretimesRenderLag.Add(startTime);
-                    _renderLagValues.Add(frameTime_a + untilDisplayedTimes_a + (0.5 * frameTime_b)
-                        - (0.5 * inPresentAPITimes_b) - (0.5 * inPresentAPITimes_c));
+                    _renderLagValues.Add(frameTime_a + untilDisplayedTimes_a + 0.5 * (frameTime_b - inPresentAPITimes_b - inPresentAPITimes_c));
 
                     if (startTime - _measuretimesRenderLag.First() > _maxOnlineRenderLagIntervalLength)
                     {
