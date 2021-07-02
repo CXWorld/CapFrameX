@@ -533,7 +533,7 @@
                                     </Binding.ValidationRules>
                                 </Binding>
                             </TextBox>
-                            <ComboBox Margin="25 0 0 0" 
+                            <ComboBox Margin="25 5 0 0" 
 					        materialDesign:ComboBoxAssist.ClassicMode="True"
 					        materialDesign:HintAssist.Hint="Refresh period (ms)" materialDesign:HintAssist.HintOpacity=".8"
 					        materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="200" Width="110" Height="40"
