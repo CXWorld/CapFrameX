@@ -182,6 +182,14 @@
 					 Margin="30 0 0 0" FontSize="14" Text="{Binding CaptureTimeString, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding AreButtonsActive}"
                      PreviewMouseDown="TextBox_PreviewMouseDown" PreviewKeyDown="TextBox_PreviewKeyDown" MouseLeave="TextBox_MouseLeave" ToolTip="0 = no limit"
                      PreviewTextInput="NumberValidationTextBox" Foreground="{DynamicResource MaterialDesignBody}" wpf:HintAssist.HintOpacity=".8"/>
+                    <StackPanel Grid.Row="1" Grid.Column="1"  Orientation="Horizontal" HorizontalAlignment="Center">
+                        <TextBlock Text="Custom time" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}"/>
+                        <ToggleButton HorizontalAlignment="Right" Margin="5 0 -35 0" IsChecked="{Binding UseCustomCaptureTime}"></ToggleButton>
+                        <StackPanel.ToolTip >
+                            <TextBlock Width="250" Text="Activate to automatically set the capture time for each process according to the last capture time used for that process. The global time will be used as default"
+                                       TextWrapping="Wrap"></TextBlock>
+                        </StackPanel.ToolTip>
+                    </StackPanel>
 
                     <TextBox Grid.Row="0" Grid.Column="2" Width="110" wpf:HintAssist.Hint="Capture delay [s]" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
 					 Margin="30 0 0 0" FontSize="14" Text="{Binding CaptureDelayString, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding AreButtonsActive}"

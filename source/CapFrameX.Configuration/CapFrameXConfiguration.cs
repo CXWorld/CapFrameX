@@ -153,6 +153,12 @@ namespace CapFrameX.Configuration
             set => Set(value);
         }
 
+        public bool UseCustomCaptureTime
+        {
+            get => Get<bool>(false);
+            set => Set(value);
+        }
+
         public double CaptureDelay
         {
             get => Get<double>(0d);

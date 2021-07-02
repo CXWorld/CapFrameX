@@ -650,7 +650,13 @@ namespace CapFrameX.ViewModel
                 }
                 else
                 {
+                    var isNewDisplayName = process.DisplayName == null;
                     process.UpdateDisplayName(gameName);
+
+                    if (isNewDisplayName)
+                    { 
+                        _processList.UploadProcessInfo(processName, gameName);
+                    }
                 }
                 _processList.Save();
                 RecordInfoList.Where(record => record.ProcessName == processName).ForEach(record =>

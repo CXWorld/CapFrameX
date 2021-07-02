@@ -43,15 +43,24 @@ namespace CapFrameX.Data
 			{
 				throw new ArgumentException(nameof(processName) + "is required");
 			}
+
 			if (_processList.Any(p => p.Name == processName))
 			{
 				return;
 			}
+
 			var process = new CXProcess(processName, displayName, blacklist, lastCaptureTime);
 			process.RegisterOnChange(() => _processListUpdate.OnNext(default));
 			_processList.Add(process);
 			_processListUpdate.OnNext(default);
 
+			if (blacklist = true || displayName != null)
+			UploadProcessInfo(processName, processName, blacklist);
+		}
+
+
+		public void UploadProcessInfo(string processName, string displayName, bool blacklist = false)
+        {
 			if (_appConfiguration.ShareProcessListEntries && ProcesslistInitialized)
 			{
 				Task.Run(async () =>
@@ -195,7 +204,7 @@ namespace CapFrameX.Data
 		[JsonConstructor]
 		public CXProcess() { }
 
-		public CXProcess(string name, string displayName, bool isBlacklisted, double? lastCaptureTime = null)
+		public CXProcess(string name, string displayName, bool isBlacklisted, double? lastCaptureTime)
 		{
 			Name = name;
 			DisplayName = displayName;

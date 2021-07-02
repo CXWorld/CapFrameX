@@ -83,6 +83,8 @@ namespace CapFrameX.Data
 
         public string LastCapturedProcess { get; set; }
 
+        public double LastCaptureTime{ get; set; }
+
         public bool OSDAutoDisabled
         {
             get { return _oSDAutoDisabled; }
@@ -148,6 +150,7 @@ namespace CapFrameX.Data
                 throw new Exception($"RecordDirectory {options.RecordDirectory} does not exist");
 
             LastCapturedProcess = options.ProcessInfo.Item1;
+            LastCaptureTime = options.CaptureTime;
 
             _ = QueryPerformanceCounter(out long startCounter);
             _qpcTimeStart = startCounter;
@@ -336,16 +339,19 @@ namespace CapFrameX.Data
 
         private void SaveCaptureTime()
         {
+            if (LastCaptureTime == _appConfiguration.CaptureTime)
+                return;
+
             var process = _processList.Processes
             .FirstOrDefault(p => p.Name == LastCapturedProcess);
 
             if (process is null)
             {
-                _processList.AddEntry(LastCapturedProcess, null, false, _appConfiguration.CaptureTime);
+                _processList.AddEntry(LastCapturedProcess, null, false);
             }
             else if (process is CXProcess)
             {
-                process.UpdateCaptureTime(_appConfiguration.CaptureTime);
+                process.UpdateCaptureTime(LastCaptureTime);
 
             }
             _processList.Save();

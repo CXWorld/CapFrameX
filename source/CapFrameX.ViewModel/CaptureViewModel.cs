@@ -116,8 +116,9 @@ namespace CapFrameX.ViewModel
             {
                 _captureTimeString = value;
 
-                if (double.TryParse(_captureTimeString, out _))
-                    _appConfiguration.CaptureTime = Convert.ToDouble(value, CultureInfo.InvariantCulture);
+                if (!UseCustomCaptureTime && double.TryParse(_captureTimeString, out _))
+                        _appConfiguration.CaptureTime = Convert.ToDouble(value, CultureInfo.InvariantCulture);
+
                 RaisePropertyChanged();
             }
         }
@@ -220,6 +221,20 @@ namespace CapFrameX.ViewModel
             set
             {
                 _logEntryManager.ShowErrors = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public bool UseCustomCaptureTime
+        {
+            get { return _appConfiguration.UseCustomCaptureTime; }
+            set
+            {
+                _appConfiguration.UseCustomCaptureTime = value;
+                if (value)
+                    UdateCustomCaptureTime(_currentProcessToCapture);
+                else
+                    CaptureTimeString = Convert.ToString(_appConfiguration.CaptureTime, CultureInfo.InvariantCulture);
                 RaisePropertyChanged();
             }
         }
@@ -440,7 +455,7 @@ namespace CapFrameX.ViewModel
                     {
                         await _captureManager.StartCapture(new CaptureOptions()
                         {
-                            CaptureTime = _appConfiguration.CaptureTime,
+                            CaptureTime = Convert.ToDouble(_captureTimeString, CultureInfo.InvariantCulture),
                             CaptureDelay = _appConfiguration.CaptureDelay,
                             CaptureFileMode = AppConfiguration.CaptureFileMode,
                             ProcessInfo = processInfo,
@@ -618,12 +633,30 @@ namespace CapFrameX.ViewModel
             }
 
             GetGameNameFromProcessList(currentProcess);
+
+            if(UseCustomCaptureTime &&_currentProcessToCapture != currentProcess)
+                UdateCustomCaptureTime(currentProcess);
+
             _currentProcessToCapture = currentProcess;
 
             var processId = ProcessesInfo.FirstOrDefault(info => info.Item1 == currentProcess).Item2;
             _rTSSService.ProcessIdStream.OnNext(processId);
 
+         
+
             _updateCurrentProcess?.Publish(new ViewMessages.CurrentProcessToCapture(currentProcess, processId));
+        }
+
+        private void UdateCustomCaptureTime(string currentProcess)
+        {
+            if (currentProcess != null)
+            {
+                var lastProcessCaptureTime = _processList.FindProcessByName(currentProcess)?.LastCaptureTime;
+                if (lastProcessCaptureTime != null)
+                    CaptureTimeString = Convert.ToString(lastProcessCaptureTime, CultureInfo.InvariantCulture);
+                else
+                    CaptureTimeString = Convert.ToString(_appConfiguration.CaptureTime, CultureInfo.InvariantCulture);
+            }
         }
 
         private void GetGameNameFromProcessList(string process)
