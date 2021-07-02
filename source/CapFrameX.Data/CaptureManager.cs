@@ -57,6 +57,7 @@ namespace CapFrameX.Data
         private readonly ILogEntryManager _logEntryManager;
         private readonly List<string[]> _captureDataArchive = new List<string[]>();
         private readonly object _archiveLock = new object();
+        private readonly ProcessList _processList;
         private CancellationTokenSource _cancelDelay = new CancellationTokenSource();
 
         private IDisposable _disposableCaptureStream;
@@ -79,6 +80,8 @@ namespace CapFrameX.Data
         public bool LockCaptureService { get; private set; }
 
         public bool DelayCountdownRunning { get; set; }
+
+        public string LastCapturedProcess { get; set; }
 
         public bool OSDAutoDisabled
         {
@@ -114,6 +117,7 @@ namespace CapFrameX.Data
             IAppConfiguration appConfiguration,
             IRTSSService rtssService,
             ISensorConfig sensorConfig,
+            ProcessList processList,
             ILogEntryManager logEntryManager)
         {
             _presentMonCaptureService = presentMonCaptureService;
@@ -125,6 +129,7 @@ namespace CapFrameX.Data
             _appConfiguration = appConfiguration;
             _rtssService = rtssService;
             _sensorConfig = sensorConfig;
+            _processList = processList;
             _logEntryManager = logEntryManager;
             _presentMonCaptureService.IsCaptureModeActiveStream.OnNext(false);
         }
@@ -141,6 +146,8 @@ namespace CapFrameX.Data
                 throw new Exception($"Process {options.ProcessInfo} not found");
             if (options.RecordDirectory != null && !Directory.Exists(options.RecordDirectory))
                 throw new Exception($"RecordDirectory {options.RecordDirectory} does not exist");
+
+            LastCapturedProcess = options.ProcessInfo.Item1;
 
             _ = QueryPerformanceCounter(out long startCounter);
             _qpcTimeStart = startCounter;
@@ -316,6 +323,8 @@ namespace CapFrameX.Data
             IsCapturing = false;
             _disposableCaptureStream?.Dispose();
 
+            SaveCaptureTime();            
+
             _logEntryManager.AddLogEntry("Processing captured data", ELogMessageType.BasicInfo, false);
 
             if (_appConfiguration.IsOverlayActive)
@@ -323,6 +332,24 @@ namespace CapFrameX.Data
 
             await WriteExtractedCaptureDataToFileAsync();
             LockCaptureService = false;
+        }
+
+        private void SaveCaptureTime()
+        {
+            var process = _processList.Processes
+            .FirstOrDefault(p => p.Name == LastCapturedProcess);
+
+            if (process is null)
+            {
+                _processList.AddEntry(LastCapturedProcess, null, false, _appConfiguration.CaptureTime);
+            }
+            else if (process is CXProcess)
+            {
+                process.UpdateCaptureTime(_appConfiguration.CaptureTime);
+
+            }
+            _processList.Save();
+
         }
 
         public void StartFillArchive()

@@ -36,7 +36,7 @@ namespace CapFrameX.Data
 			return Processes.Where(p => p.IsBlacklisted).Select(p => p.Name).OrderBy(p => p).ToArray();
 		}
 
-		public void AddEntry(string processName, string displayName, bool blacklist = false)
+		public void AddEntry(string processName, string displayName, bool blacklist = false, double? lastCaptureTime = null)
 		{
 			processName = processName.StripExeExtension();
 			if (processName is null)
@@ -47,7 +47,7 @@ namespace CapFrameX.Data
 			{
 				return;
 			}
-			var process = new CXProcess(processName, displayName, blacklist);
+			var process = new CXProcess(processName, displayName, blacklist, lastCaptureTime);
 			process.RegisterOnChange(() => _processListUpdate.OnNext(default));
 			_processList.Add(process);
 			_processListUpdate.OnNext(default);
@@ -115,7 +115,7 @@ namespace CapFrameX.Data
 
 				foreach (var proc in processes)
 				{
-					AddEntry(proc.Name, proc.DisplayName, proc.IsBlacklisted);
+					AddEntry(proc.Name, proc.DisplayName, proc.IsBlacklisted, proc.LastCaptureTime);
 				}
 				Save();
 			}
@@ -144,7 +144,7 @@ namespace CapFrameX.Data
 					var defaultProcesses = JsonConvert.DeserializeObject<List<CXProcess>>(File.ReadAllText(defaultProcesslistFileInfo.FullName));
 					foreach (var process in defaultProcesses)
 					{
-						processList.AddEntry(process.Name, process.DisplayName, process.IsBlacklisted);
+						processList.AddEntry(process.Name, process.DisplayName, process.IsBlacklisted, process.LastCaptureTime);
 					}
 					processList.Save();
 
@@ -189,15 +189,18 @@ namespace CapFrameX.Data
 		public string DisplayName { get; private set; }
 		[JsonProperty]
 		public bool IsBlacklisted { get; private set; }
+		[JsonProperty]
+		public double? LastCaptureTime { get; private set; }
 
 		[JsonConstructor]
 		public CXProcess() { }
 
-		public CXProcess(string name, string displayName, bool isBlacklisted)
+		public CXProcess(string name, string displayName, bool isBlacklisted, double? lastCaptureTime = null)
 		{
 			Name = name;
 			DisplayName = displayName;
 			IsBlacklisted = isBlacklisted;
+			LastCaptureTime = lastCaptureTime;
 		}
 
 		public void Blacklist()
@@ -215,6 +218,12 @@ namespace CapFrameX.Data
 		public void UpdateDisplayName(string newName)
 		{
 			DisplayName = newName;
+			_onChange();
+		}
+
+		public void UpdateCaptureTime(double lastCaptureTime)
+		{
+			LastCaptureTime = lastCaptureTime;
 			_onChange();
 		}
 
