@@ -153,9 +153,9 @@ namespace CapFrameX.Configuration
             set => Set(value);
         }
 
-        public bool UseCustomCaptureTime
+        public bool UseGlobalCaptureTime
         {
-            get => Get<bool>(false);
+            get => Get<bool>(true);
             set => Set(value);
         }
 
