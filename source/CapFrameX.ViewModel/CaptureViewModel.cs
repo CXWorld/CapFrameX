@@ -116,7 +116,7 @@ namespace CapFrameX.ViewModel
             {
                 _captureTimeString = value;
 
-                if (!UseCustomCaptureTime && double.TryParse(_captureTimeString, out _))
+                if (UseGlobalCaptureTime && double.TryParse(_captureTimeString, out _))
                         _appConfiguration.CaptureTime = Convert.ToDouble(value, CultureInfo.InvariantCulture);
 
                 RaisePropertyChanged();
@@ -225,16 +225,18 @@ namespace CapFrameX.ViewModel
             }
         }
 
-        public bool UseCustomCaptureTime
+        public bool UseGlobalCaptureTime
         {
-            get { return _appConfiguration.UseCustomCaptureTime; }
+            get { return _appConfiguration.UseGlobalCaptureTime; }
             set
             {
-                _appConfiguration.UseCustomCaptureTime = value;
+                _appConfiguration.UseGlobalCaptureTime = value;
+
                 if (value)
-                    UdateCustomCaptureTime(_currentProcessToCapture);
+                    CaptureTimeString = Convert.ToString(_appConfiguration.CaptureTime, CultureInfo.InvariantCulture);              
                 else
-                    CaptureTimeString = Convert.ToString(_appConfiguration.CaptureTime, CultureInfo.InvariantCulture);
+                    UdateCustomCaptureTime(_currentProcessToCapture);
+
                 RaisePropertyChanged();
             }
         }
@@ -455,7 +457,7 @@ namespace CapFrameX.ViewModel
                     {
                         await _captureManager.StartCapture(new CaptureOptions()
                         {
-                            CaptureTime = Convert.ToDouble(_captureTimeString, CultureInfo.InvariantCulture),
+                            CaptureTime = double.TryParse(_captureTimeString, out _) ? Convert.ToDouble(_captureTimeString, CultureInfo.InvariantCulture) : _appConfiguration.CaptureTime,
                             CaptureDelay = _appConfiguration.CaptureDelay,
                             CaptureFileMode = AppConfiguration.CaptureFileMode,
                             ProcessInfo = processInfo,
@@ -634,14 +636,13 @@ namespace CapFrameX.ViewModel
 
             GetGameNameFromProcessList(currentProcess);
 
-            if(UseCustomCaptureTime &&_currentProcessToCapture != currentProcess)
+            if(!UseGlobalCaptureTime &&_currentProcessToCapture != currentProcess)
                 UdateCustomCaptureTime(currentProcess);
 
             _currentProcessToCapture = currentProcess;
 
             var processId = ProcessesInfo.FirstOrDefault(info => info.Item1 == currentProcess).Item2;
             _rTSSService.ProcessIdStream.OnNext(processId);
-
          
 
             _updateCurrentProcess?.Publish(new ViewMessages.CurrentProcessToCapture(currentProcess, processId));

@@ -63,7 +63,7 @@ namespace CapFrameX.Contracts.Configuration
 
 		double CaptureTime { get; set; }
 
-		bool UseCustomCaptureTime { get; set; }
+		bool UseGlobalCaptureTime { get; set; }
 
 		double CaptureDelay { get; set; }
 
