@@ -186,8 +186,8 @@
                         <TextBlock Text="Global time" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}"/>
                         <ToggleButton HorizontalAlignment="Right" Margin="5 0 -30 0" IsChecked="{Binding UseGlobalCaptureTime}"></ToggleButton>
                         <StackPanel.ToolTip >
-                            <TextBlock Width="280" Text="Uses the same capture time for all processes. Unchecked, the capture time will be set automatically for each process according to the last capture time used for that process that wasn't a global time.
-                                       &#xA;&#xA;Specific capture times for processes are only saved when not using the global time (toggle off)"
+                            <TextBlock Width="280" Text="Uses the same capture time for all processes.&#xA;Unchecked, the capture time will be set automatically for each process according to the last capture time used for that process that wasn't a global time.
+                                       &#xA;&#xA;Specific capture times for processes are only saved when they were different from the global time."
                                        TextWrapping="Wrap"></TextBlock>
                         </StackPanel.ToolTip>
                     </StackPanel>
