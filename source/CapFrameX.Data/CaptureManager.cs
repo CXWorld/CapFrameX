@@ -347,7 +347,7 @@ namespace CapFrameX.Data
 
             if (process is null)
             {
-                _processList.AddEntry(LastCapturedProcess, null, false);
+                _processList.AddEntry(LastCapturedProcess, null, false, LastCaptureTime);
             }
             else if (process is CXProcess)
             {
