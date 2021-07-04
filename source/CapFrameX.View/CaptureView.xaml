@@ -182,12 +182,12 @@
 					 Margin="30 0 0 0" FontSize="14" Text="{Binding CaptureTimeString, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding AreButtonsActive}"
                      PreviewMouseDown="TextBox_PreviewMouseDown" PreviewKeyDown="TextBox_PreviewKeyDown" MouseLeave="TextBox_MouseLeave" ToolTip="0 = no limit"
                      PreviewTextInput="NumberValidationTextBox" Foreground="{DynamicResource MaterialDesignBody}" wpf:HintAssist.HintOpacity=".8"/>
-                    <StackPanel Grid.Row="1" Grid.Column="1" Margin="30 0 0 0" Orientation="Horizontal" HorizontalAlignment="Left" ToolTipService.ShowDuration="25000">
+                    <StackPanel Grid.Row="1" Grid.Column="1" Margin="30 0 0 0" Orientation="Horizontal" HorizontalAlignment="Left" ToolTipService.ShowDuration="25000" IsEnabled="{Binding AreButtonsActive}">
                         <TextBlock Text="Global time" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}"/>
                         <ToggleButton HorizontalAlignment="Right" Margin="5 0 -30 0" IsChecked="{Binding UseGlobalCaptureTime}"></ToggleButton>
                         <StackPanel.ToolTip >
-                            <TextBlock Width="280" Text="Uses the same capture time for all processes.&#xA;Unchecked, the capture time will be set automatically for each process according to the last capture time used for that process that wasn't a global time.
-                                       &#xA;&#xA;Specific capture times for processes are only saved when they were different from the global time."
+                            <TextBlock Width="280" Text="Uses the same capture time for all processes.&#xA;Unchecked, when detecting a process this box will be filled with the last capture time used for that process.
+                                       &#xA;&#xA;Times for specific processes are only saved when not using global time (toggle off)."
                                        TextWrapping="Wrap"></TextBlock>
                         </StackPanel.ToolTip>
                     </StackPanel>

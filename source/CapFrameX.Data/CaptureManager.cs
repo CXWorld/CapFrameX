@@ -71,8 +71,6 @@ namespace CapFrameX.Data
         private CaptureOptions _currentCaptureOptions;
         private long _timestampStopCapture;
         private bool _isCapturing;
-        private bool _oSDAutoDisabled = false;
-
         private ISubject<CaptureStatus> _captureStatusChange =
             new BehaviorSubject<CaptureStatus>(new CaptureStatus { Status = ECaptureStatus.Stopped });
         public IObservable<CaptureStatus> CaptureStatusChange
@@ -85,14 +83,7 @@ namespace CapFrameX.Data
 
         public double LastCaptureTime{ get; set; }
 
-        public bool OSDAutoDisabled
-        {
-            get { return _oSDAutoDisabled; }
-            set
-            {
-                _oSDAutoDisabled = value;
-            }
-        }
+        public bool OSDAutoDisabled { get; set; } = false;
 
         public bool IsCapturing
         {
@@ -339,7 +330,7 @@ namespace CapFrameX.Data
 
         private void SaveCaptureTime()
         {
-            if (LastCaptureTime == _appConfiguration.CaptureTime)
+            if (_appConfiguration.UseGlobalCaptureTime)
                 return;
 
             var process = _processList.Processes
@@ -355,7 +346,6 @@ namespace CapFrameX.Data
 
             }
             _processList.Save();
-
         }
 
         public void StartFillArchive()
