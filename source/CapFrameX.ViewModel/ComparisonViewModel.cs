@@ -597,6 +597,7 @@ namespace CapFrameX.ViewModel
             _appConfiguration.FpsValuesRoundingDigits), CultureInfo.InvariantCulture);
             SelectedComparisonContext = _appConfiguration.ComparisonContext.ConvertToEnum<EComparisonContext>();
             SelectedSecondComparisonContext = _appConfiguration.SecondComparisonContext.ConvertToEnum<EComparisonContext>();
+            SelectedFirstMetric = _appConfiguration.ComparisonFirstMetric.ConvertToEnum<EMetric>();
             SelectedSecondMetric = _appConfiguration.ComparisonSecondMetric.ConvertToEnum<EMetric>();
             SelectedThirdMetric = _appConfiguration.ComparisonThirdMetric.ConvertToEnum<EMetric>();
 
