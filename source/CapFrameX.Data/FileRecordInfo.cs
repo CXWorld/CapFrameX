@@ -363,11 +363,11 @@ namespace CapFrameX.Data
 
                 var columnHeaderLine = _lines[headerCount];
 
-                isValid = columnHeaderLine.Contains("Application") &&
-                    columnHeaderLine.Contains("Dropped") &&
-                    columnHeaderLine.Contains("TimeInSeconds") &&
-                    columnHeaderLine.Contains("MsBetweenPresents") &&
-                    columnHeaderLine.Contains("MsBetweenDisplayChange");
+                isValid = columnHeaderLine.IndexOf("Application", StringComparison.OrdinalIgnoreCase) >=0 &&
+                    columnHeaderLine.IndexOf("Dropped", StringComparison.OrdinalIgnoreCase) >= 0 &&
+                    columnHeaderLine.IndexOf("TimeInSeconds", StringComparison.OrdinalIgnoreCase) >= 0 &&
+                    columnHeaderLine.IndexOf("MsBetweenPresents", StringComparison.OrdinalIgnoreCase) >= 0 &&
+                    columnHeaderLine.IndexOf("MsBetweenDisplayChange", StringComparison.OrdinalIgnoreCase) >= 0;
             }
 
             return isValid;
