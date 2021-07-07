@@ -139,6 +139,42 @@ namespace CapFrameX.Configuration
             set => Set(value);
         }
 
+        public bool RecordListShowCreationTime
+        {
+            get => Get<bool>(true);
+            set => Set(value);
+        }
+
+        public bool RecordListShowComment
+        {
+            get => Get<bool>(true);
+            set => Set(value);
+        }
+
+        public bool RecordListShowIsAggregated
+        {
+            get => Get<bool>(true);
+            set => Set(value);
+        }
+
+        public bool RecordListShowCpuName
+        {
+            get => Get<bool>(true);
+            set => Set(value);
+        }
+
+        public bool RecordListShowGpuName
+        {
+            get => Get<bool>(true);
+            set => Set(value);
+        }
+
+        public bool RecordListShowRamName
+        {
+            get => Get<bool>(true);
+            set => Set(value);
+        }
+
 
         // Capture Settings
         public string CaptureHotKey

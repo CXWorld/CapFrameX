@@ -58,6 +58,66 @@ namespace CapFrameX.ViewModel
         private bool _customGameNameChanged = false;
         private bool _customCommentChanged = false;
 
+
+        public bool ShowCreationDate
+        {
+            get { return _appConfiguration.RecordListShowCreationTime; }
+            set
+            {
+                _appConfiguration.RecordListShowCreationTime = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public bool ShowComment
+        {
+            get { return _appConfiguration.RecordListShowComment; }
+            set
+            {
+                _appConfiguration.RecordListShowComment = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public bool ShowIsAggregated
+        {
+            get { return _appConfiguration.RecordListShowIsAggregated; }
+            set
+            {
+                _appConfiguration.RecordListShowIsAggregated = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public bool ShowCpuName
+        {
+            get { return _appConfiguration.RecordListShowCpuName; }
+            set
+            {
+                _appConfiguration.RecordListShowCpuName = value;
+                RaisePropertyChanged();
+            }
+        }
+        public bool ShowGpuName
+        {
+            get { return _appConfiguration.RecordListShowGpuName; }
+            set
+            {
+                _appConfiguration.RecordListShowGpuName = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public bool ShowRamName
+        {
+            get { return _appConfiguration.RecordListShowRamName; }
+            set
+            {
+                _appConfiguration.RecordListShowRamName = value;
+                RaisePropertyChanged();
+            }
+        }
+
         public IFileRecordInfo SelectedRecordInfo
         {
             get { return _selectedRecordInfo; }
