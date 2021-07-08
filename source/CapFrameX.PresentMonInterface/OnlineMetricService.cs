@@ -26,15 +26,15 @@ namespace CapFrameX.PresentMonInterface
         private readonly IOverlayEntryCore _overlayEntryCore;
         private readonly ILogger<OnlineMetricService> _logger;
         private readonly object _lockMetric = new object();
-        private readonly object _lockRenderLag = new object();
+        private readonly object _lockApplicationLatency = new object();
         private List<double> _frametimes = new List<double>(LIST_CAPACITY);
         private List<double> _measuretimesMetrics = new List<double>(LIST_CAPACITY);
-        private List<double> _measuretimesRenderLag = new List<double>(LIST_CAPACITY / 10);
-        private List<double> _renderLagValues = new List<double>(LIST_CAPACITY / 10);
+        private List<double> _measuretimesApplicationLatency = new List<double>(LIST_CAPACITY / 10);
+        private List<double> _applicationLatencyValues = new List<double>(LIST_CAPACITY / 10);
         private string _currentProcess;
         private int _currentProcessId;
         private readonly double _maxOnlineMetricIntervalLength = 20d;
-        private readonly double _maxOnlineRenderLagIntervalLength = 2d;
+        private readonly double _maxOnlineApplicationLatencyIntervalLength = 2d;
 
         public OnlineMetricService(IStatisticProvider frametimeStatisticProvider,
             ICaptureService captureServive,
@@ -64,7 +64,7 @@ namespace CapFrameX.PresentMonInterface
                                     || _currentProcess != msg.Process)
                                     {
                                         ResetMetrics();
-                                        ResetRenderLag();
+                                        ResetApplicationLatency();
                                     }
 
                                     _currentProcess = msg.Process;
@@ -98,7 +98,7 @@ namespace CapFrameX.PresentMonInterface
                     return acc;
                 })
                 .Where(acc => acc.Count == 3)
-                .Subscribe(UpdateOnlineRenderLag);
+                .Subscribe(UpdateOnlineApplicationLatency);
         }
 
         private bool IsNotDropped(string[] line)
@@ -125,7 +125,7 @@ namespace CapFrameX.PresentMonInterface
         {
             try
             {
-                return _overlayEntryCore.RealtimeMetricEntryDict["OnlineRenderLag"].ShowOnOverlay;
+                return _overlayEntryCore.RealtimeMetricEntryDict["OnlineApplicationLatency"].ShowOnOverlay;
             }
             catch { return false; }
         }
@@ -199,7 +199,7 @@ namespace CapFrameX.PresentMonInterface
             catch { ResetMetrics(); }
         }
 
-        private void UpdateOnlineRenderLag(List<string[]> lineSplits)
+        private void UpdateOnlineApplicationLatency(List<string[]> lineSplits)
         {
             string process;
             try
@@ -216,7 +216,7 @@ namespace CapFrameX.PresentMonInterface
 
             if (!int.TryParse(lineSplits[2][PresentMonCaptureService.ProcessID_INDEX], out int processId))
             {
-                ResetRenderLag();
+                ResetApplicationLatency();
                 return;
             }
 
@@ -228,13 +228,13 @@ namespace CapFrameX.PresentMonInterface
 
             if (!double.TryParse(lineSplits[2][PresentMonCaptureService.TimeInSeconds_INDEX], NumberStyles.Any, CultureInfo.InvariantCulture, out double startTime))
             {
-                ResetRenderLag();
+                ResetApplicationLatency();
                 return;
             }
 
             if (!double.TryParse(lineSplits[2][PresentMonCaptureService.MsBetweenPresents_INDEX], NumberStyles.Any, CultureInfo.InvariantCulture, out double frameTime))
             {
-                ResetRenderLag();
+                ResetApplicationLatency();
                 return;
             }
 
@@ -251,27 +251,27 @@ namespace CapFrameX.PresentMonInterface
                 var inPresentAPITimes_b = Convert.ToDouble(lineSplits[1][PresentMonCaptureService.MsInPresentAPI_INDEX], CultureInfo.InvariantCulture);
                 var inPresentAPITimes_c = Convert.ToDouble(lineSplits[0][PresentMonCaptureService.MsInPresentAPI_INDEX], CultureInfo.InvariantCulture);
 
-                lock (_lockRenderLag)
+                lock (_lockApplicationLatency)
                 {
-                    _measuretimesRenderLag.Add(startTime);
-                    _renderLagValues.Add(frameTime_a + untilDisplayedTimes_a + 0.5 * (frameTime_b - inPresentAPITimes_b - inPresentAPITimes_c));
+                    _measuretimesApplicationLatency.Add(startTime);
+                    _applicationLatencyValues.Add(frameTime_a + untilDisplayedTimes_a + 0.5 * (frameTime_b - inPresentAPITimes_b - inPresentAPITimes_c));
 
-                    if (startTime - _measuretimesRenderLag.First() > _maxOnlineRenderLagIntervalLength)
+                    if (startTime - _measuretimesApplicationLatency.First() > _maxOnlineApplicationLatencyIntervalLength)
                     {
                         int position = 0;
-                        while (position < _measuretimesRenderLag.Count &&
-                            startTime - _measuretimesRenderLag[position] > _maxOnlineRenderLagIntervalLength)
+                        while (position < _measuretimesApplicationLatency.Count &&
+                            startTime - _measuretimesApplicationLatency[position] > _maxOnlineApplicationLatencyIntervalLength)
                             position++;
 
                         if (position > 0)
                         {
-                            _renderLagValues.RemoveRange(0, position);
-                            _measuretimesRenderLag.RemoveRange(0, position);
+                            _applicationLatencyValues.RemoveRange(0, position);
+                            _measuretimesApplicationLatency.RemoveRange(0, position);
                         }
                     }
                 }
             }
-            catch { ResetRenderLag(); }
+            catch { ResetApplicationLatency(); }
         }
 
         private void ResetMetrics()
@@ -283,12 +283,12 @@ namespace CapFrameX.PresentMonInterface
             }
         }
 
-        private void ResetRenderLag()
+        private void ResetApplicationLatency()
         {
-            lock (_lockRenderLag)
+            lock (_lockApplicationLatency)
             {
-                _renderLagValues = new List<double>(LIST_CAPACITY / 10);
-                _measuretimesRenderLag = new List<double>(LIST_CAPACITY / 10);
+                _applicationLatencyValues = new List<double>(LIST_CAPACITY / 10);
+                _measuretimesApplicationLatency = new List<double>(LIST_CAPACITY / 10);
             }
         }
 
@@ -301,14 +301,14 @@ namespace CapFrameX.PresentMonInterface
             }
         }
 
-        public double GetOnlineRenderLagValue()
+        public double GetOnlineApplicationLatencyValue()
         {
-            lock (_lockRenderLag)
+            lock (_lockApplicationLatency)
             {
-                if (!_renderLagValues.Any())
+                if (!_applicationLatencyValues.Any())
                     return 0;
 
-                return _renderLagValues.Average();
+                return _applicationLatencyValues.Average();
             }
         }
     }

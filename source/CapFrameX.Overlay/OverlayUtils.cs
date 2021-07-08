@@ -221,20 +221,20 @@ namespace CapFrameX.Overlay
                         Color = string.Empty
                     },
 
-                    //// Render lag
-                    //new OverlayEntryWrapper("OnlineRenderLag")
-                    //{
-                    //    OverlayEntryType = EOverlayEntryType.OnlineMetric,
-                    //    ShowOnOverlay = false,
-                    //    ShowOnOverlayIsEnabled = true,
-                    //    Description = "Render Lag (ms)",
-                    //    GroupName = "Render Lag",
-                    //    Value = "0",
-                    //    ValueFormat = default,
-                    //    ShowGraph = false,
-                    //    ShowGraphIsEnabled = false,
-                    //    Color = string.Empty
-                    //}
+                    // Render lag
+                    new OverlayEntryWrapper("OnlineApplicationLatency")
+                    {
+                        OverlayEntryType = EOverlayEntryType.OnlineMetric,
+                        ShowOnOverlay = false,
+                        ShowOnOverlayIsEnabled = true,
+                        Description = "Application Latency (ms)",
+                        GroupName = "App Latency",
+                        Value = "0",
+                        ValueFormat = default,
+                        ShowGraph = false,
+                        ShowGraphIsEnabled = false,
+                        Color = string.Empty
+                    }
             };
         }
     }
