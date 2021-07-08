@@ -6,6 +6,6 @@ namespace CapFrameX.PresentMonInterface
     {
         double GetOnlineFpsMetricValue(EMetric metric);
 
-        double GetOnlineRenderLagValue();
+        double GetOnlineApplicationLatencyValue();
     }
 }

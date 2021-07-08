@@ -258,12 +258,12 @@ namespace CapFrameX.Overlay
                         _overlayEntryCore.RealtimeMetricEntryDict["OnlineP0dot2"] = entry;
                 }
 
-                if (entry.Identifier == "OnlineRenderLag")
+                if (entry.Identifier == "OnlineApplicationLatency")
                 {
-                    if (!_overlayEntryCore.RealtimeMetricEntryDict.ContainsKey("OnlineRenderLag"))
-                        _overlayEntryCore.RealtimeMetricEntryDict.Add("OnlineRenderLag", entry);
+                    if (!_overlayEntryCore.RealtimeMetricEntryDict.ContainsKey("OnlineApplicationLatency"))
+                        _overlayEntryCore.RealtimeMetricEntryDict.Add("OnlineApplicationLatency", entry);
                     else
-                        _overlayEntryCore.RealtimeMetricEntryDict["OnlineRenderLag"] = entry;
+                        _overlayEntryCore.RealtimeMetricEntryDict["OnlineApplicationLatency"] = entry;
                 }
             }
 
@@ -572,12 +572,12 @@ namespace CapFrameX.Overlay
                 p1dot2Entry.Value = Math.Round(_onlineMetricService.GetOnlineFpsMetricValue(EMetric.P0dot2));
             }
 
-            // render lag
-            _identifierOverlayEntryDict.TryGetValue("OnlineRenderLag", out IOverlayEntry renderLagEntry);
+            // application latency
+            _identifierOverlayEntryDict.TryGetValue("OnlineApplicationLatency", out IOverlayEntry renderApplicationLatency);
 
-            if (renderLagEntry != null && renderLagEntry.ShowOnOverlay)
+            if (renderApplicationLatency != null && renderApplicationLatency.ShowOnOverlay)
             {
-                renderLagEntry.Value = Math.Round(_onlineMetricService.GetOnlineRenderLagValue());
+                renderApplicationLatency.Value = Math.Round(_onlineMetricService.GetOnlineApplicationLatencyValue());
             }
         }
 
@@ -608,11 +608,11 @@ namespace CapFrameX.Overlay
             }
 
             // render lag
-            _identifierOverlayEntryDict.TryGetValue("OnlineRenderLag", out IOverlayEntry renderLagEntry);
+            _identifierOverlayEntryDict.TryGetValue("OnlineApplicationLatency", out IOverlayEntry applicationLatency);
 
-            if (renderLagEntry != null)
+            if (applicationLatency != null)
             {
-                renderLagEntry.IsNumeric = true;
+                applicationLatency.IsNumeric = true;
             }
         }
 
@@ -646,12 +646,12 @@ namespace CapFrameX.Overlay
             }
 
             // render lag
-            _identifierOverlayEntryDict.TryGetValue("OnlineRenderLag", out IOverlayEntry renderLagEntry);
+            _identifierOverlayEntryDict.TryGetValue("OnlineApplicationLatency", out IOverlayEntry applicationLatency);
 
-            if (renderLagEntry != null)
+            if (applicationLatency != null)
             {
-                renderLagEntry.ValueUnitFormat = "ms";
-                renderLagEntry.ValueAlignmentAndDigits = "{0,5:F0}";
+                applicationLatency.ValueUnitFormat = "ms";
+                applicationLatency.ValueAlignmentAndDigits = "{0,5:F0}";
             }
         }
 
