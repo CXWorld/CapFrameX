@@ -177,6 +177,7 @@
                                                  PreviewLostKeyboardFocus="RecordDataGrid_PreviewLostKeyboardFocus"
 												 PreviewKeyDown="RecordDataGrid_PreviewKeyDown"
                                                  BeginningEdit="RecordDataGrid_BeginningEdit"
+                                                 ColumnDisplayIndexChanged="RecordDataGrid_ColumnDisplayIndexChanged"
 					                             materialDesign:DataGridAssist.CellPadding="13 8 8 8" materialDesign:DataGridAssist.ColumnHeaderPadding="8" IsSynchronizedWithCurrentItem="False"
 					                             ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.CanContentScroll="True"
 					                             dragdrop:DragDrop.IsDragSource="True"

@@ -176,12 +176,20 @@ namespace CapFrameX.Contracts.Configuration
 		bool FixedExpanderPosition { get; set; }
 
 		bool IsRecordInfoExpanded { get; set; }
+
 		bool RecordListShowCreationTime { get; set; }
+
 		bool RecordListShowComment { get; set; }
+
 		bool RecordListShowIsAggregated { get; set; }
+
 		bool RecordListShowCpuName { get; set; }
+
 		bool RecordListShowGpuName { get; set; }
+
 		bool RecordListShowRamName { get; set; }
+
+		int[] RecordListHeaderOrder { get; set; }
 	}
 
 	public interface IReportDataGridColumnSettings

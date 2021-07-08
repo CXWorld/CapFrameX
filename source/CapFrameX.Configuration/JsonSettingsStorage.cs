@@ -43,6 +43,15 @@ namespace CapFrameX.Configuration
                             return convertedObjectTyped;
                         }
                     }
+                    else if (value is JArray jArray)
+                    {
+                        var convertedObject = jArray.ToObject(typeof(T));
+                        if (convertedObject is T convertedObjectTyped)
+                        {
+                            return convertedObjectTyped;
+                        }
+                    }
+
                     throw new InvalidOperationException($"Value of Key {key} has invalid Format: Expected value of type " +
                         $"{typeof(T).Name} but found {value.GetType().Name}");
                 }

@@ -48,6 +48,7 @@ namespace CapFrameX.View
         public ControlView()
         {
             InitializeComponent();
+            SetHeaders();
 
             if (FixedExpanderPosition)
                 Expander.IsExpanded = true;
@@ -87,6 +88,8 @@ namespace CapFrameX.View
                 {
                     Expander.IsExpanded = false;
                 });
+
+
         }
 
         private void BuildTreeView()
@@ -416,6 +419,33 @@ namespace CapFrameX.View
         private void RecordInfoExpander_Change(object sender, RoutedEventArgs e)
         {
             _viewModel.AppConfiguration.IsRecordInfoExpanded = RecordInfoExpander.IsExpanded;
+        }
+
+        private void RecordDataGrid_ColumnDisplayIndexChanged(object sender, DataGridColumnEventArgs e)
+        {
+            _viewModel.AppConfiguration.RecordListHeaderOrder = new int[7]
+            {
+                 RecordDataGrid.Columns.FirstOrDefault(c => c.Header.ToString() == "Game").DisplayIndex,
+                 RecordDataGrid.Columns.FirstOrDefault(c => c.Header.ToString() == "Date / Time").DisplayIndex,
+                 RecordDataGrid.Columns.FirstOrDefault(c => c.Header.ToString() == "Comment").DisplayIndex,
+                 RecordDataGrid.Columns.FirstOrDefault(c => c.Header.ToString() == "Aggregated").DisplayIndex,
+                 RecordDataGrid.Columns.FirstOrDefault(c => c.Header.ToString() == "CPU").DisplayIndex,
+                 RecordDataGrid.Columns.FirstOrDefault(c => c.Header.ToString() == "GPU").DisplayIndex,
+                 RecordDataGrid.Columns.FirstOrDefault(c => c.Header.ToString() == "RAM").DisplayIndex
+            };
+        }
+
+        private void SetHeaders()
+        {
+            var indices = _viewModel.AppConfiguration.RecordListHeaderOrder;
+
+            RecordDataGrid.Columns.FirstOrDefault(c => c.Header.ToString() == "Game").DisplayIndex = indices[0];
+            RecordDataGrid.Columns.FirstOrDefault(c => c.Header.ToString() == "Date / Time").DisplayIndex = indices[1];
+            RecordDataGrid.Columns.FirstOrDefault(c => c.Header.ToString() == "Comment").DisplayIndex = indices[2];
+            RecordDataGrid.Columns.FirstOrDefault(c => c.Header.ToString() == "Aggregated").DisplayIndex = indices[3];
+            RecordDataGrid.Columns.FirstOrDefault(c => c.Header.ToString() == "CPU").DisplayIndex = indices[4];
+            RecordDataGrid.Columns.FirstOrDefault(c => c.Header.ToString() == "GPU").DisplayIndex = indices[5];
+            RecordDataGrid.Columns.FirstOrDefault(c => c.Header.ToString() == "RAM").DisplayIndex = indices[6];
         }
     }
 }

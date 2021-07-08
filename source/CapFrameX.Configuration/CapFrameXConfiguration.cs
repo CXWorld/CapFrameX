@@ -1,6 +1,7 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 
 namespace CapFrameX.Configuration
@@ -136,6 +137,12 @@ namespace CapFrameX.Configuration
         public bool IsRecordInfoExpanded
         {
             get => Get<bool>(false);
+            set => Set(value);
+        }
+
+        public int[] RecordListHeaderOrder
+        {
+            get => Get<int[]>(Enumerable.Range(0, 7).ToArray());
             set => Set(value);
         }
 
