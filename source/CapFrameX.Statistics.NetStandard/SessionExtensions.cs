@@ -64,23 +64,12 @@ namespace CapFrameX.Statistics.NetStandard
             var inPresentAPITimes = session.Runs.SelectMany(r => r.CaptureData.MsInPresentAPI).ToArray();
             var inputLagTimes = new List<double>(frameTimes.Count() - 1);
 
-            var appMissedFrametimes = 0.0;
-            var appMissedCount = 0;
-
             for (int i = 2; i < frameTimes.Count(); i++)
             {
                 if (!appMissed[i])
-                {
-                    inputLagTimes.Add(frameTimes[i] + appMissedFrametimes + untilDisplayedTimes[i] + 0.5 * (frameTimes[i - 1] - inPresentAPITimes[i - appMissedCount - 1] - inPresentAPITimes[i - appMissedCount - 2]));
-                    appMissedFrametimes = 0.0;
-                    appMissedCount = 0;
-                }
-                else
-                {
-                    appMissedFrametimes += frameTimes[i];
-                    appMissedCount++;
-                }
+                    inputLagTimes.Add(frameTimes[i] + untilDisplayedTimes[i] + (0.5 * frameTimes[i - 1]) - (0.5 * inPresentAPITimes[i - 1]) - (0.5 * inPresentAPITimes[i - 2]));
             }
+
             return inputLagTimes;
         }
 
@@ -92,23 +81,12 @@ namespace CapFrameX.Statistics.NetStandard
             var inPresentAPITimes = session.Runs.SelectMany(r => r.CaptureData.MsInPresentAPI).ToArray();
             var upperBoundInputLagTimes = new List<double>(frameTimes.Count() - 1);
 
-            var appMissedFrametimes = 0.0;
-            var appMissedCount = 0;
-
             for (int i = 2; i < frameTimes.Count(); i++)
             {
                 if (!appMissed[i])
-                {
-                    upperBoundInputLagTimes.Add(frameTimes[i] + appMissedFrametimes + untilDisplayedTimes[i] + frameTimes[i - 1] - inPresentAPITimes[i - appMissedCount - 2]);
-                    appMissedFrametimes = 0.0;
-                    appMissedCount = 0;
-                }
-                else
-                {
-                    appMissedFrametimes += frameTimes[i];
-                    appMissedCount++;
-                }
+                    upperBoundInputLagTimes.Add(frameTimes[i] + untilDisplayedTimes[i] + frameTimes[i - 1] - inPresentAPITimes[i - 2]);
             }
+
                 return upperBoundInputLagTimes;
         }
 
@@ -120,23 +98,12 @@ namespace CapFrameX.Statistics.NetStandard
             var inPresentAPITimes = session.Runs.SelectMany(r => r.CaptureData.MsInPresentAPI).ToArray();
             var lowerBoundInputLagTimes = new List<double>(frameTimes.Count() - 1);
 
-            var appMissedFrametimes = 0.0;
-            var appMissedCount = 0;
-
             for (int i = 2; i < frameTimes.Count(); i++)
             {
                 if (!appMissed[i])
-                {
-                    lowerBoundInputLagTimes.Add(frameTimes[i] + appMissedFrametimes + untilDisplayedTimes[i] - inPresentAPITimes[i - appMissedCount - 1]);
-                    appMissedFrametimes = 0.0;
-                    appMissedCount = 0;
-                }
-                else
-                {
-                    appMissedFrametimes += frameTimes[i];
-                    appMissedCount++;
-                }
+                    lowerBoundInputLagTimes.Add(frameTimes[i] + untilDisplayedTimes[i] - inPresentAPITimes[i - 1]);
             }
+
             return lowerBoundInputLagTimes;
         }
 
