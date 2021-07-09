@@ -119,6 +119,9 @@
     <Compile Include="CaptureServiceConfiguration.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="PresentMon\license.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="PresentMon\PresentMon-1.7.0-x64.exe">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
