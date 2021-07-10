@@ -1,6 +1,7 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 
 namespace CapFrameX.Configuration
@@ -133,6 +134,54 @@ namespace CapFrameX.Configuration
             set => Set(value);
         }
 
+        public bool IsRecordInfoExpanded
+        {
+            get => Get<bool>(false);
+            set => Set(value);
+        }
+
+        public int[] RecordListHeaderOrder
+        {
+            get => Get<int[]>(Enumerable.Range(0, 7).ToArray());
+            set => Set(value);
+        }
+
+        public bool RecordListShowCreationTime
+        {
+            get => Get<bool>(true);
+            set => Set(value);
+        }
+
+        public bool RecordListShowComment
+        {
+            get => Get<bool>(true);
+            set => Set(value);
+        }
+
+        public bool RecordListShowIsAggregated
+        {
+            get => Get<bool>(true);
+            set => Set(value);
+        }
+
+        public bool RecordListShowCpuName
+        {
+            get => Get<bool>(true);
+            set => Set(value);
+        }
+
+        public bool RecordListShowGpuName
+        {
+            get => Get<bool>(true);
+            set => Set(value);
+        }
+
+        public bool RecordListShowRamName
+        {
+            get => Get<bool>(true);
+            set => Set(value);
+        }
+
 
         // Capture Settings
         public string CaptureHotKey
@@ -144,6 +193,12 @@ namespace CapFrameX.Configuration
         public double CaptureTime
         {
             get => Get<double>(20d);
+            set => Set(value);
+        }
+
+        public bool UseGlobalCaptureTime
+        {
+            get => Get<bool>(true);
             set => Set(value);
         }
 

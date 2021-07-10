@@ -272,20 +272,6 @@ public:
 		return gcnew Tuple<double, double>(result[0], result[1]);
 	}
 
-	Tuple<double, double>^ GetCurrentFramerateFromForegroundWindow()
-	{
-		std::vector<float> result = _coreControl->GetCurrentFramerateFromForegroundWindow();
-		return gcnew Tuple<double, double>(result[0], result[1]);
-	}
-
-	void CloseHandles()
-	{
-		{
-			msclr::lock l(m_lock);
-			_coreControl->CloseHandles();
-		}
-	}
-
 	void SetShowRunHistory(bool showRunHistory)
 	{
 		{

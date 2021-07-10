@@ -33,6 +33,7 @@
             <ColumnDefinition Width="Auto"></ColumnDefinition>
             <ColumnDefinition Width="1*"></ColumnDefinition>
         </Grid.ColumnDefinitions>
+        <FrameworkElement x:Name="ColumnHeaders" Visibility="Collapsed"/>
         <!--Record folder management expander-->
         <Expander Name="Expander" Margin="0 0 0 0" MaxWidth="365" Grid.RowSpan="2" Grid.Column="0" Panel.ZIndex="1" ExpandDirection="Right" HorizontalAlignment="Left"
                   Foreground="{DynamicResource MaterialDesignBody}" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" wpf:ExpanderAssist.VerticalHeaderPadding="5">
@@ -94,28 +95,80 @@
             </materialDesign:DialogHost>
         </Expander>
         <!--Record list-->
-        <Border Grid.Column="1" Grid.Row="0" Visibility="{Binding HasValidSource, Converter={StaticResource FalseToVisibleConverter}}" Margin="0 10 5 0" BorderThickness="1">
-            <!--Style="{StaticResource MaterialDesignHeadlineTextBlock}"-->
-            <TextBlock Text="Observed directory missing.&#10;Open expander and select a folder." TextAlignment="Center"
-                       TextWrapping="Wrap" Width="220" Margin="60 0 10 0" HorizontalAlignment="Center" VerticalAlignment="Center"
-                       Foreground="{DynamicResource MaterialDesignBody}"/>
-        </Border>
         <Grid Grid.Row="0" Grid.Column="1">
             <Grid.RowDefinitions>
                 <RowDefinition Height="1*"></RowDefinition>
                 <RowDefinition Height="Auto"></RowDefinition>
             </Grid.RowDefinitions>
+            <Border Grid.Column="0" Grid.Row="0" Visibility="{Binding HasValidSource, Converter={StaticResource FalseToVisibleConverter}}" Margin="0 0 50 0" BorderThickness="1" Panel.ZIndex="2">
+                <!--Style="{StaticResource MaterialDesignHeadlineTextBlock}"-->
+                <TextBlock Text="Observed directory missing.&#10;Open expander and select a folder." TextAlignment="Center"
+                       TextWrapping="Wrap" Width="220" Margin="60 0 10 0" HorizontalAlignment="Center" VerticalAlignment="Center"
+                       Foreground="{DynamicResource MaterialDesignBody}"/>
+            </Border>
             <DockPanel Margin="5 0 0 0"  VerticalAlignment="Stretch" >
                 <Grid Grid.Row="0" Visibility="{Binding HasValidSource, Converter={StaticResource FalseToCollapsedConverter}}">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="35"></RowDefinition>
                         <RowDefinition Height="1*"></RowDefinition>
                     </Grid.RowDefinitions>
-                    <TextBox Grid.Row="0" Margin="0 10 5 0" Foreground="{DynamicResource MaterialDesignBody}" Name="RecordSearchBox" materialDesign:HintAssist.Hint="{Binding ObservedFolderName}" materialDesign:HintAssist.HintOpacity=".8"/>
+                    
                     <TextBlock Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Loading records..." FontSize="16" Panel.ZIndex="1" Visibility="{Binding DirectoryLoading, Converter={StaticResource TrueToVisibleConverter}}"
                            Foreground="{DynamicResource MaterialDesignBody}"/>
-                    <TextBlock Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Directory doesn't contain any valid records..." TextWrapping="Wrap" Width="200" TextAlignment="Center" FontSize="16" Panel.ZIndex="1" Visibility="{Binding DirectoryIsEmpty, Converter={StaticResource TrueToVisibleConverter}}"
+                    <TextBlock Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Directory doesn't contain any valid records..." TextWrapping="Wrap" Width="200" TextAlignment="Center" FontSize="16" Panel.ZIndex="1"
+                               Visibility="{Binding DirectoryIsEmpty, Converter={StaticResource TrueToVisibleConverter}}"
                            Foreground="{DynamicResource MaterialDesignBody}"/>
+
+                    <!--Column options & search bar-->
+                    <TextBox Grid.Row="0" Margin="40 10 5 0" Foreground="{DynamicResource MaterialDesignBody}" Name="RecordSearchBox" materialDesign:HintAssist.Hint="{Binding ObservedFolderName}" materialDesign:HintAssist.HintOpacity=".8"/>
+                    <materialDesign:PopupBox Grid.Row="0" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="0 10 0 0" Panel.ZIndex="1" StaysOpen="True" ToolTipService.ShowDuration="25000"
+                                             Foreground="{DynamicResource MaterialDesignBody}">
+                        <materialDesign:PopupBox.ToolTip>
+                            <ToolTip Placement="Top">
+                                <TextBlock Text="Column options"/>
+                            </ToolTip>
+                        </materialDesign:PopupBox.ToolTip>
+                        <materialDesign:Card Width="Auto" Margin="0 0 0 -10">
+                            <Grid Margin="8 8 8 8">
+                                <Grid.Resources>
+                                    <Style TargetType="{x:Type CheckBox}"
+											BasedOn="{StaticResource MaterialDesignCheckBox}">
+                                        <Setter Property="Margin" Value="8,8,10,8" />
+                                    </Style>
+                                    <Style TargetType="{x:Type TextBox}" BasedOn="{StaticResource MaterialDesignTextBox}">
+                                        <Setter Property="materialDesign:HintAssist.IsFloating" Value="True" />
+                                        <Setter Property="Margin" Value="8,8,8,8" />
+                                    </Style>
+                                </Grid.Resources>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*" />
+                                    <RowDefinition Height="*" />
+                                    <RowDefinition Height="*" />
+                                    <RowDefinition Height="*" />
+                                    <RowDefinition Height="*" />
+                                    <RowDefinition Height="*" />
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="100"/>
+                                    <ColumnDefinition Width="50"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Margin="5" Grid.Row="0" Grid.Column="0" Text="Date / Time" VerticalAlignment="Center"/>
+                                <ToggleButton Margin="5" Grid.Row="0" Grid.Column="1" IsChecked="{Binding ShowCreationDate}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                                <TextBlock Margin="5" Grid.Row="1" Grid.Column="0" Text="Comment" VerticalAlignment="Center"/>
+                                <ToggleButton Margin="5" Grid.Row="1" Grid.Column="1" IsChecked="{Binding ShowComment}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                                <TextBlock Margin="5" Grid.Row="2" Grid.Column="0" Text="Aggregated" VerticalAlignment="Center"/>
+                                <ToggleButton Margin="5" Grid.Row="2" Grid.Column="1" IsChecked="{Binding ShowIsAggregated}" Style="{StaticResource MaterialDesignSwitchToggleButton}" />
+                                <TextBlock Margin="5" Grid.Row="3" Grid.Column="0" Text="CPU" VerticalAlignment="Center"/>
+                                <ToggleButton Margin="5" Grid.Row="3" Grid.Column="1" IsChecked="{Binding ShowCpuName}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                                <TextBlock Margin="5" Grid.Row="4" Grid.Column="0" Text="GPU" VerticalAlignment="Center"/>
+                                <ToggleButton Margin="5" Grid.Row="4" Grid.Column="1" IsChecked="{Binding ShowGpuName}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                                <TextBlock Margin="5" Grid.Row="5" Grid.Column="0" Text="RAM" VerticalAlignment="Center"/>
+                                <ToggleButton Margin="5" Grid.Row="5" Grid.Column="1" IsChecked="{Binding ShowRamName}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                            </Grid>
+                        </materialDesign:Card>
+                    </materialDesign:PopupBox>
+
+                    <!--Datagrid-->
                     <controls:MultiSelectionDataGrid Grid.Row="1" x:Name="RecordDataGrid" Height="Auto"
                                                  Margin="0 10 5 0" Sorting="RecordDataGrid_Sorting" SelectionMode="Extended" SelectedIndex="{Binding RecordDataGridSelectedIndex}"
 					                             Tag="{Binding ElementName=ControlViewControl, Path=DataContext}" FontSize="11"
@@ -125,6 +178,7 @@
                                                  PreviewLostKeyboardFocus="RecordDataGrid_PreviewLostKeyboardFocus"
 												 PreviewKeyDown="RecordDataGrid_PreviewKeyDown"
                                                  BeginningEdit="RecordDataGrid_BeginningEdit"
+                                                 ColumnDisplayIndexChanged="RecordDataGrid_ColumnDisplayIndexChanged"
 					                             materialDesign:DataGridAssist.CellPadding="13 8 8 8" materialDesign:DataGridAssist.ColumnHeaderPadding="8" IsSynchronizedWithCurrentItem="False"
 					                             ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.CanContentScroll="True"
 					                             dragdrop:DragDrop.IsDragSource="True"
@@ -303,7 +357,8 @@
                                         Width="Auto"
                                         MinWidth="95"
                                         Header="Date / Time"
-                                        IsReadOnly="True">
+                                        IsReadOnly="True"
+                                        Visibility="{Binding DataContext.ShowCreationDate, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}">
                                 <DataGridTextColumn.ElementStyle>
                                     <Style>
                                         <Setter Property="TextBlock.TextAlignment" Value="Center" />
@@ -314,7 +369,8 @@
                             <DataGridTextColumn Binding="{Binding Comment, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
 										Width="100"
                                         Header="Comment"
-                                        IsReadOnly="False">
+                                        IsReadOnly="False"
+                                        Visibility="{Binding DataContext.ShowComment, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}">
                                 <DataGridTextColumn.ElementStyle>
                                     <Style>
                                         <Setter Property="TextBlock.VerticalAlignment" Value="Center" />
@@ -325,7 +381,8 @@
                                         Width="Auto"
                                         Header="Aggregated"
                                         IsReadOnly="True" 
-                                        MinWidth="40">
+                                        MinWidth="40"
+                                        Visibility="{Binding DataContext.ShowIsAggregated, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}">
                                 <DataGridCheckBoxColumn.ElementStyle>
                                     <Style>
                                         <Setter Property="CheckBox.IsEnabled" Value="False" />
@@ -338,7 +395,8 @@
                             <DataGridTextColumn Binding="{Binding ProcessorName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
 										Width="Auto"
                                         Header="CPU"
-                                        IsReadOnly="False">
+                                        IsReadOnly="False"
+                                        Visibility="{Binding DataContext.ShowCpuName, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}">
                                 <DataGridTextColumn.ElementStyle>
                                     <Style>
                                         <Setter Property="TextBlock.VerticalAlignment" Value="Center" />
@@ -348,7 +406,8 @@
                             <DataGridTextColumn Binding="{Binding GraphicCardName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
 										Width="Auto"
                                         Header="GPU"
-                                        IsReadOnly="False">
+                                        IsReadOnly="False"
+                                        Visibility="{Binding DataContext.ShowGpuName, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}">
                                 <DataGridTextColumn.ElementStyle>
                                     <Style>
                                         <Setter Property="TextBlock.VerticalAlignment" Value="Center" />
@@ -358,7 +417,8 @@
                             <DataGridTextColumn Binding="{Binding SystemRamInfo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
 										Width="Auto"
                                         Header="RAM"
-                                        IsReadOnly="False">
+                                        IsReadOnly="False"
+                                        Visibility="{Binding DataContext.ShowRamName, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}">
                                 <DataGridTextColumn.ElementStyle>
                                     <Style>
                                         <Setter Property="TextBlock.VerticalAlignment" Value="Center" />
@@ -370,7 +430,7 @@
                 </Grid>
             </DockPanel>
             <Expander BorderBrush="{DynamicResource MaterialDesignBackground}" BorderThickness="5" Name="RecordInfoExpander" Margin="0 0 0 0" Grid.Row="1" Grid.Column="1" VerticalAlignment="Bottom" Panel.ZIndex="1" ExpandDirection="Down"
-                      IsExpanded="False" wpf:ExpanderAssist.HorizontalHeaderPadding="5"
+                      IsExpanded="False" wpf:ExpanderAssist.HorizontalHeaderPadding="5" Expanded="RecordInfoExpander_Change" Collapsed="RecordInfoExpander_Change"
                   Foreground="{DynamicResource MaterialDesignBody}" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
                 <Expander.Header>
                     <TextBlock Text="Record Info" RenderTransformOrigin=".5,.5" HorizontalAlignment="Center" Margin="35 0 0 0"></TextBlock>

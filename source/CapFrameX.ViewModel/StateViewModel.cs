@@ -7,6 +7,7 @@ using CapFrameX.Contracts.UpdateCheck;
 using CapFrameX.Data;
 using CapFrameX.EventAggregation.Messages;
 using Microsoft.Extensions.Logging;
+using Prism.Commands;
 using Prism.Events;
 using Prism.Mvvm;
 using System;
@@ -15,6 +16,7 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using System.Windows.Input;
 using System.Windows.Threading;
 
 namespace CapFrameX.ViewModel
@@ -104,6 +106,8 @@ namespace CapFrameX.ViewModel
 
         public string InfoToolTipText => GetInfoText();
 
+        public ICommand UpdateStatusInfoCommand { get; }
+
         public StateViewModel(IEventAggregator eventAggregator,
                               IAppConfiguration appConfiguration,
                               ICaptureService captureService,
@@ -126,6 +130,8 @@ namespace CapFrameX.ViewModel
             _appVersionProvider = appVersionProvider;
             _systemInfo = systemInfo;
             _logger = logger;
+
+            UpdateStatusInfoCommand = new DelegateCommand(RefreshSystemInfo);
 
             IsCaptureModeActive = false;
             IsOverlayActive = _appConfiguration.IsOverlayActive && rTSSService.IsRTSSInstalled();

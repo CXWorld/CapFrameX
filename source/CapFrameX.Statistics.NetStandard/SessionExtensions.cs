@@ -66,14 +66,13 @@ namespace CapFrameX.Statistics.NetStandard
 
             for (int i = 2; i < frameTimes.Count(); i++)
             {
-                if (appMissed[i] != true)
-                    inputLagTimes.Add(frameTimes[i] + untilDisplayedTimes[i] + (0.5 * frameTimes[i - 1])
-                        - (0.5 * inPresentAPITimes[i - 1]) - (0.5 * inPresentAPITimes[i - 2]));
+                if (!appMissed[i])
+                    inputLagTimes.Add(frameTimes[i] + untilDisplayedTimes[i] + (0.5 * frameTimes[i - 1]) - (0.5 * inPresentAPITimes[i - 1]) - (0.5 * inPresentAPITimes[i - 2]));
             }
 
             return inputLagTimes;
-
         }
+
         public static IList<double> GetUpperBoundInputLagTimes(this ISession session)
         {
             var frameTimes = session.Runs.SelectMany(r => r.CaptureData.MsBetweenPresents).ToArray();
@@ -84,13 +83,13 @@ namespace CapFrameX.Statistics.NetStandard
 
             for (int i = 2; i < frameTimes.Count(); i++)
             {
-                if (appMissed[i] != true)
+                if (!appMissed[i])
                     upperBoundInputLagTimes.Add(frameTimes[i] + untilDisplayedTimes[i] + frameTimes[i - 1] - inPresentAPITimes[i - 2]);
             }
 
-            return upperBoundInputLagTimes;
-
+                return upperBoundInputLagTimes;
         }
+
         public static IList<double> GetLowerBoundInputLagTimes(this ISession session)
         {
             var frameTimes = session.Runs.SelectMany(r => r.CaptureData.MsBetweenPresents).ToArray();
@@ -101,12 +100,11 @@ namespace CapFrameX.Statistics.NetStandard
 
             for (int i = 2; i < frameTimes.Count(); i++)
             {
-                if (appMissed[i] != true)
+                if (!appMissed[i])
                     lowerBoundInputLagTimes.Add(frameTimes[i] + untilDisplayedTimes[i] - inPresentAPITimes[i - 1]);
             }
 
             return lowerBoundInputLagTimes;
-
         }
 
         public static double GetSyncRangePercentage(this ISession session, int syncRangeLower, int syncRangeUpper)

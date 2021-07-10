@@ -32,6 +32,8 @@ namespace CapFrameX.View
 
         private bool FixedExpanderPosition => _viewModel.FixedExpanderPosition;
 
+        private bool RecordInfoExpanderinitialPosition => _viewModel.AppConfiguration.IsRecordInfoExpanded;
+
         private string ObservedDirectory
             => _viewModel.AppConfiguration.ObservedDirectory;
         private string CaptureRootDirectory
@@ -46,9 +48,13 @@ namespace CapFrameX.View
         public ControlView()
         {
             InitializeComponent();
+            SetHeaders();
 
             if (FixedExpanderPosition)
                 Expander.IsExpanded = true;
+
+            if (RecordInfoExpanderinitialPosition)
+                RecordInfoExpander.IsExpanded = true;
 
             _recordInfoCollection = (CollectionViewSource)Resources["RecordInfoListKey"];
             Observable.FromEventPattern<TextChangedEventArgs>(RecordSearchBox, "TextChanged")
@@ -82,6 +88,8 @@ namespace CapFrameX.View
                 {
                     Expander.IsExpanded = false;
                 });
+
+
         }
 
         private void BuildTreeView()
@@ -406,6 +414,38 @@ namespace CapFrameX.View
             // Must be a child of a Grid or a Border to be able to center the text.
             // myCell.Column.GetCellContent(myCell.Item).VerticalAlignment = VerticalAlignment.Center;
             RecordDataGrid.SelectedItem = myCell.Item;
+        }
+
+        private void RecordInfoExpander_Change(object sender, RoutedEventArgs e)
+        {
+            _viewModel.AppConfiguration.IsRecordInfoExpanded = RecordInfoExpander.IsExpanded;
+        }
+
+        private void RecordDataGrid_ColumnDisplayIndexChanged(object sender, DataGridColumnEventArgs e)
+        {
+            _viewModel.AppConfiguration.RecordListHeaderOrder = new int[7]
+            {
+                 RecordDataGrid.Columns.FirstOrDefault(c => c.Header.ToString() == "Game").DisplayIndex,
+                 RecordDataGrid.Columns.FirstOrDefault(c => c.Header.ToString() == "Date / Time").DisplayIndex,
+                 RecordDataGrid.Columns.FirstOrDefault(c => c.Header.ToString() == "Comment").DisplayIndex,
+                 RecordDataGrid.Columns.FirstOrDefault(c => c.Header.ToString() == "Aggregated").DisplayIndex,
+                 RecordDataGrid.Columns.FirstOrDefault(c => c.Header.ToString() == "CPU").DisplayIndex,
+                 RecordDataGrid.Columns.FirstOrDefault(c => c.Header.ToString() == "GPU").DisplayIndex,
+                 RecordDataGrid.Columns.FirstOrDefault(c => c.Header.ToString() == "RAM").DisplayIndex
+            };
+        }
+
+        private void SetHeaders()
+        {
+            var indices = _viewModel.AppConfiguration.RecordListHeaderOrder;
+
+            RecordDataGrid.Columns.FirstOrDefault(c => c.Header.ToString() == "Game").DisplayIndex = indices[0];
+            RecordDataGrid.Columns.FirstOrDefault(c => c.Header.ToString() == "Date / Time").DisplayIndex = indices[1];
+            RecordDataGrid.Columns.FirstOrDefault(c => c.Header.ToString() == "Comment").DisplayIndex = indices[2];
+            RecordDataGrid.Columns.FirstOrDefault(c => c.Header.ToString() == "Aggregated").DisplayIndex = indices[3];
+            RecordDataGrid.Columns.FirstOrDefault(c => c.Header.ToString() == "CPU").DisplayIndex = indices[4];
+            RecordDataGrid.Columns.FirstOrDefault(c => c.Header.ToString() == "GPU").DisplayIndex = indices[5];
+            RecordDataGrid.Columns.FirstOrDefault(c => c.Header.ToString() == "RAM").DisplayIndex = indices[6];
         }
     }
 }

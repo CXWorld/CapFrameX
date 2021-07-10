@@ -52,16 +52,14 @@ namespace CapFrameX.Data.Logging
 
         public void AddLogEntry(string message, ELogMessageType messageType, bool isNewLogGroup)
         {
-            string newLine = "\n";
-            if (!isNewLogGroup || LogEntryOutput.Count == 0)
-                newLine = string.Empty;
+            string newLogString = isNewLogGroup && LogEntryOutput.Count > 0 ? new string('=', 55) + "\n" : string.Empty; 
 
             Application.Current.Dispatcher.Invoke((() =>
             {
                 var logEntry = new LogEntry()
                 {
                     MessageType = messageType,
-                    MessageInfo = newLine + DateTime.Now.ToString("HH:mm:ss") + $" ( Type: {messageType.GetDescription()} )",
+                    MessageInfo = newLogString + DateTime.Now.ToString("HH:mm:ss") + $" ( Type: {messageType.GetDescription()} )",
                     Message = message
                 };
 

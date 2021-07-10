@@ -12,6 +12,7 @@ namespace CapFrameX.Statistics.PlotBuilder
     public class FpsGraphPlotBuilder : PlotBuilder
     {
         public FpsGraphPlotBuilder(IFrametimeStatisticProviderOptions options, IStatisticProvider frametimeStatisticProvider) : base(options, frametimeStatisticProvider) { }
+
         public void BuildPlotmodel(ISession session, IPlotSettings plotSettings, double startTime, double endTime, ERemoveOutlierMethod eRemoveOutlinerMethod, EFilterMode filterMode, Action<PlotModel> onFinishAction = null)
         {
             var plotModel = PlotModel;
@@ -36,7 +37,7 @@ namespace CapFrameX.Statistics.PlotBuilder
                 var avgFpsPoints = session.GetFpsPointsTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod, EFilterMode.TimeIntervalAverage);
 
                 SetRawFPS(plotModel, rawFpsPoints);
-                SetFpsChart(plotModel, avgFpsPoints, rawFpsPoints, average, 2, OxyColor.FromRgb(241, 125, 32));
+                SetFpsChart(plotModel, avgFpsPoints, rawFpsPoints, average, 2, OxyColor.FromRgb(241, 125, 32), filterMode);
 
 
                 yMin = rawFpsPoints.Min(pnt => pnt.Y);
@@ -46,7 +47,7 @@ namespace CapFrameX.Statistics.PlotBuilder
             {
                 var fpsPoints = session.GetFpsPointsTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod, filterMode);
 
-                SetFpsChart(plotModel, fpsPoints, rawFpsPoints, average, filterMode is EFilterMode.None ? 1 : 2, Constants.FpsStroke);
+                SetFpsChart(plotModel, fpsPoints, rawFpsPoints, average, filterMode is EFilterMode.None ? 1 : 2, Constants.FpsStroke, filterMode);
 
                  yMin = fpsPoints.Min(pnt => pnt.Y);
                  yMax = fpsPoints.Max(pnt => pnt.Y);
@@ -71,7 +72,7 @@ namespace CapFrameX.Statistics.PlotBuilder
             plotModel.InvalidatePlot(true);
         }
 
-        private void SetFpsChart(PlotModel plotModel, IList<Point> fpsPoints, IList<Point> rawfpsPoints, double average, int stroke, OxyColor color)
+        private void SetFpsChart(PlotModel plotModel, IList<Point> fpsPoints, IList<Point> rawfpsPoints, double average, int stroke, OxyColor color, EFilterMode filtermode)
         {
             if (fpsPoints == null || !fpsPoints.Any())
                 return;
@@ -79,13 +80,16 @@ namespace CapFrameX.Statistics.PlotBuilder
             int count = fpsPoints.Count;
             var fpsDataPoints = fpsPoints.Select(pnt => new DataPoint(pnt.X, pnt.Y));
 
+            // Filter mode = Raw+Average -> filtered average FPS
+            // Filter mode = None -> Raw inverted frametimes
             var fpsSeries = new LineSeries
             {
                 Title = "FPS",
                 StrokeThickness = stroke,
                 LegendStrokeThickness = 4,
                 Color = color,
-                InterpolationAlgorithm = InterpolationAlgorithms.CanonicalSpline
+                EdgeRenderingMode = filtermode == EFilterMode.None ? EdgeRenderingMode.PreferSpeed : EdgeRenderingMode.PreferGeometricAccuracy,
+                InterpolationAlgorithm = filtermode == EFilterMode.None ? null : InterpolationAlgorithms.CanonicalSpline
             };
 
             fpsSeries.Points.AddRange(fpsDataPoints);
@@ -116,13 +120,14 @@ namespace CapFrameX.Statistics.PlotBuilder
 
         private void SetRawFPS(PlotModel plotModel, IList<Point> fpsPoints)
         {
+            // Only used when filter mode = Raw+Average
             var fpsSeries = new LineSeries
             { 
                 Title = "Raw FPS",
                 StrokeThickness = 1,
                 LegendStrokeThickness = 4,
                 Color = OxyColor.FromAColor(200, Constants.FpsStroke),
-                InterpolationAlgorithm = InterpolationAlgorithms.CanonicalSpline
+                EdgeRenderingMode = EdgeRenderingMode.PreferSpeed
             };
             var points = fpsPoints.Select(pnt => new DataPoint(pnt.X, pnt.Y));
             fpsSeries.Points.AddRange(points);
@@ -151,15 +156,6 @@ namespace CapFrameX.Statistics.PlotBuilder
                     axis.Maximum = average + 5;
                 else
                     axis.Maximum = axisMaximum;
-
-                // center average FPS line
-                //var rangeAvgMin = average - axis.Minimum;
-                //var rangeAvgMax = axis.Maximum - average;
-
-                //if (rangeAvgMin > rangeAvgMax)
-                //    axis.Maximum += (rangeAvgMin - rangeAvgMax);
-                //else if (rangeAvgMin < rangeAvgMax)
-                //    axis.Minimum -= (rangeAvgMax - rangeAvgMin);
             });
         }
     }

@@ -53,15 +53,18 @@
 
             <GridSplitter Margin="15 5 0 5" IsEnabled="False" Width="2" Visibility="{Binding IsResizableBarAnyStatusValid, Converter={StaticResource FalseToCollapsedConverter}}"/>
 
-            <Border Background="Transparent" 
-                    Cursor="Hand" MouseLeftButtonDown="SystemInfo_MouseLeftButtonDown">
-                <Border.ToolTip>
-                    <TextBlock Text="Update system info status" Foreground="{DynamicResource MaterialDesignBody}"/>
-                </Border.ToolTip>
-                <materialDesign:PackIcon Foreground="{DynamicResource MaterialDesignBodyLight}" Height="18" Width="18" Margin="10 0 -5 0" Kind="Update" VerticalAlignment="Center" >
-                </materialDesign:PackIcon>
-            </Border>
-            
+            <Button Margin="10 2 -5 0" Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}"
+							VerticalAlignment="Center" HorizontalAlignment="Left"
+							Width="20" Height="20"
+                            Background="Transparent"
+                            BorderBrush="Transparent"
+							Command="{Binding UpdateStatusInfoCommand}">
+                <materialDesign:PackIcon Foreground="{DynamicResource MaterialDesignBodyLight}" Kind="Update" Width="18" Height="18" Margin="-2 -2 0 0"/>
+                <Button.ToolTip>
+                    <TextBlock  Text="Update system info status" Foreground="{DynamicResource MaterialDesignBody}"/>
+                </Button.ToolTip>
+            </Button>
+                     
             <Grid Margin="15 0 0 0" Visibility="{Binding IsResizableBarAnyStatusValid, Converter={StaticResource FalseToCollapsedConverter}}"
                   ToolTipService.ShowDuration="120000">
                 <StackPanel Orientation="Horizontal">

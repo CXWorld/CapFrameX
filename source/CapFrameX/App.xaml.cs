@@ -140,7 +140,6 @@ namespace CapFrameX
 
             var rtssService = _bootstrapper.Container.Resolve(typeof(IRTSSService), true) as IRTSSService;
             rtssService.ClearOSD();
-            rtssService.CloseHandles();
 
             _webServer.Dispose();
         }
@@ -177,7 +176,9 @@ namespace CapFrameX
                     var newSettingsFileName = Path.Combine(configFolder, "AppSettings.json");
                     if (File.Exists(oldSettingsFileName))
                     {
-                        File.Move(oldSettingsFileName, newSettingsFileName);
+                        if (!File.Exists(newSettingsFileName))
+                            File.Move(oldSettingsFileName, newSettingsFileName);
+
                         File.Delete(oldSettingsFileName);
                     }
                 }
@@ -189,6 +190,8 @@ namespace CapFrameX
                         string destFile = Path.Combine(configFolder, Path.GetFileName(fullPath));
                         if (!File.Exists(destFile))
                             File.Move(fullPath, destFile);
+                        else
+                            File.Delete(fullPath);
 
                     }
                     Directory.Delete(sensorConfigFolder);
@@ -201,6 +204,8 @@ namespace CapFrameX
                         string destFile = Path.Combine(configFolder, Path.GetFileName(fullPath));
                         if (!File.Exists(destFile))
                             File.Move(fullPath, destFile);
+                        else
+                            File.Delete(fullPath);
                     }
                     Directory.Delete(overlayConfigFolder);
                 }
@@ -212,6 +217,8 @@ namespace CapFrameX
                         string destFile = Path.Combine(configFolder, Path.GetFileName(fullPath));
                         if (!File.Exists(destFile))
                             File.Move(fullPath, destFile);
+                        else
+                            File.Delete(fullPath);
 
                     }
                     Directory.Delete(processListFolder);

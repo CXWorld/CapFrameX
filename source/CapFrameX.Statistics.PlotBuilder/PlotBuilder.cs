@@ -4,6 +4,7 @@ using CapFrameX.Statistics.NetStandard.Contracts;
 using CapFrameX.Statistics.PlotBuilder.Contracts;
 using OxyPlot;
 using OxyPlot.Axes;
+using OxyPlot.Legends;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,11 +19,7 @@ namespace CapFrameX.Statistics.PlotBuilder
 		public PlotModel PlotModel { get; protected set; } = new PlotModel
 		{
 			PlotMargins = new OxyThickness(35, 0, 35, 35),
-			PlotAreaBorderColor = OxyColor.FromArgb(64, 204, 204, 204),
-			LegendPlacement = LegendPlacement.Outside,
-			LegendPosition = LegendPosition.BottomCenter,
-			LegendOrientation = LegendOrientation.Horizontal,
-			LegendMaxHeight = 25
+			PlotAreaBorderColor = OxyColor.FromArgb(64, 204, 204, 204)
 		};
 
 		protected Dictionary<EPlotAxis, LinearAxis> AxisDefinitions { get; set; } 
@@ -108,6 +105,14 @@ namespace CapFrameX.Statistics.PlotBuilder
 		{
 			_frametimeStatisticProviderOptions = options;
 			_frametimesStatisticProvider = frametimeStatisticProvider;
+
+			PlotModel.Legends?.Add(new Legend()
+			{
+                LegendPlacement = LegendPlacement.Outside,
+                LegendPosition = LegendPosition.BottomCenter,
+                LegendOrientation = LegendOrientation.Horizontal,
+                LegendMaxHeight = 25
+            });
 		}
 
 		protected void SetGPULoadChart(PlotModel plotModel, IList<Point> points)

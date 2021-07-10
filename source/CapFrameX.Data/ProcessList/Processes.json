@@ -1780,11 +1780,6 @@
     "IsBlacklisted": false
   },
   {
-    "Name": "RedAlert",
-    "DisplayName": "Red Alert (OpenRA)",
-    "IsBlacklisted": false
-  },
-  {
     "Name": "RelicCOH",
     "DisplayName": "Company of Heroes",
     "IsBlacklisted": false

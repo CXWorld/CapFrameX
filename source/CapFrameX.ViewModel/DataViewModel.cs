@@ -546,6 +546,10 @@ namespace CapFrameX.ViewModel
                 return false;
 
             if (_localRecordDataServer.CurrentSession.Runs
+                .Any(run => run.SensorData2 == null))
+                return false;
+
+            if (_localRecordDataServer.CurrentSession.Runs
                 .Any(run => run.SensorData2.GPUPowerLimit == null 
                 || !run.SensorData2.GPUPowerLimit.Any()))
                 return false;

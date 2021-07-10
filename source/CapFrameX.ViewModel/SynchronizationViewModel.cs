@@ -33,6 +33,7 @@ using System.Text.RegularExpressions;
 using SaveFileDialog = System.Windows.Forms.SaveFileDialog;
 using DialogResult = System.Windows.Forms.DialogResult;
 using CapFrameX.Statistics.NetStandard.Contracts;
+using OxyPlot.Legends;
 
 namespace CapFrameX.ViewModel
 {
@@ -428,7 +429,8 @@ namespace CapFrameX.ViewModel
                 Title = "Frametimes",
                 StrokeThickness = 1,
                 LegendStrokeThickness = 4,
-                Color = Constants.FrametimeStroke
+                Color = Constants.FrametimeStroke,
+                EdgeRenderingMode = EdgeRenderingMode.PreferSpeed
             };
 
             var untilDisplayedTimesSeries = new Statistics.PlotBuilder.LineSeries
@@ -436,7 +438,8 @@ namespace CapFrameX.ViewModel
                 Title = "Until displayed times",
                 StrokeThickness = 1,
                 LegendStrokeThickness = 4,
-                Color = OxyColor.FromArgb(150, 241, 125, 32)
+                Color = OxyColor.FromArgb(150, 241, 125, 32),
+                EdgeRenderingMode = EdgeRenderingMode.PreferSpeed
             };
 
             frametimeSeries.Points.AddRange(frametimes.Select((x, i) => new DataPoint(i, x)));
@@ -448,11 +451,14 @@ namespace CapFrameX.ViewModel
                 {
                     PlotMargins = new OxyThickness(40, 10, 40, 40),
                     PlotAreaBorderColor = _appConfiguration.UseDarkMode ? OxyColor.FromArgb(100, 204, 204, 204) : OxyColor.FromArgb(50, 30, 30, 30),
-                    LegendPosition = LegendPosition.TopCenter,
-                    LegendOrientation = LegendOrientation.Horizontal,
                     TextColor = _appConfiguration.UseDarkMode ? OxyColors.White : OxyColors.Black
-
                 };
+
+                tmp.Legends.Add(new Legend()
+                {
+                    LegendPosition = LegendPosition.TopCenter,
+                    LegendOrientation = LegendOrientation.Horizontal
+                });
 
                 tmp.Series.Add(frametimeSeries);
                 tmp.Series.Add(untilDisplayedTimesSeries);
@@ -682,10 +688,15 @@ namespace CapFrameX.ViewModel
                 InputLagModel = new PlotModel
                 {
                     PlotMargins = new OxyThickness(40, 10, 0, 40),
-                    PlotAreaBorderColor = _appConfiguration.UseDarkMode ? OxyColor.FromArgb(100, 204, 204, 204) : OxyColor.FromArgb(50, 30, 30, 30),
-                    LegendPosition = LegendPosition.TopCenter,
-                    LegendOrientation = LegendOrientation.Horizontal,
+                    PlotAreaBorderColor = _appConfiguration.UseDarkMode ? OxyColor.FromArgb(100, 204, 204, 204) : OxyColor.FromArgb(50, 30, 30, 30)
                 };
+
+                InputLagModel.Legends.Add(new Legend()
+                {
+                    LegendPosition = LegendPosition.TopCenter,
+                    LegendOrientation = LegendOrientation.Horizontal
+                });
+
                 return;
             }
 
@@ -700,7 +711,8 @@ namespace CapFrameX.ViewModel
                 Title = "Frametimes",
                 StrokeThickness = 1,
                 LegendStrokeThickness = 4,
-                Color = Constants.FrametimeStroke
+                Color = Constants.FrametimeStroke,
+                EdgeRenderingMode = EdgeRenderingMode.PreferSpeed
             };
 
             var upperBoundInputLagSeries = new Statistics.PlotBuilder.LineSeries
@@ -708,7 +720,8 @@ namespace CapFrameX.ViewModel
                 Title = "Input lag high",
                 StrokeThickness = 1,
                 LegendStrokeThickness = 4,
-                Color = OxyColor.FromRgb(255, 150, 150)
+                Color = OxyColor.FromRgb(255, 150, 150),
+                EdgeRenderingMode = EdgeRenderingMode.PreferSpeed
             };
 
             var lowerBoundInputLagSeries = new Statistics.PlotBuilder.LineSeries
@@ -716,7 +729,8 @@ namespace CapFrameX.ViewModel
                 Title = "Input lag low",
                 StrokeThickness = 1,
                 LegendStrokeThickness = 4,
-                Color = OxyColor.FromRgb(200, 140, 140)
+                Color = OxyColor.FromRgb(200, 140, 140),
+                EdgeRenderingMode = EdgeRenderingMode.PreferSpeed
             };
 
             var areaSeries = new AreaSeries()
@@ -738,10 +752,14 @@ namespace CapFrameX.ViewModel
                 {
                     PlotMargins = new OxyThickness(40, 10, 40, 40),
                     PlotAreaBorderColor = OxyColor.FromArgb(64, 204, 204, 204),
-                    LegendPosition = LegendPosition.TopCenter,
-                    LegendOrientation = LegendOrientation.Horizontal,
                     TextColor = _appConfiguration.UseDarkMode ? OxyColors.White : OxyColors.Black
                 };
+
+                tmp.Legends.Add(new Legend()
+                {
+                    LegendPosition = LegendPosition.TopCenter,
+                    LegendOrientation = LegendOrientation.Horizontal
+                });
 
                 tmp.Series.Add(frametimeSeries);
                 tmp.Series.Add(upperBoundInputLagSeries);

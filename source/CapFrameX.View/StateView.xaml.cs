@@ -28,11 +28,5 @@ namespace CapFrameX.View
 			Process.Start(new ProcessStartInfo("https://github.com/DevTechProfile/CapFrameX/releases"));
 			e.Handled = true;
 		}
-
-        private void SystemInfo_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
-        {
-			(DataContext as StateViewModel).RefreshSystemInfo();
-			e.Handled = true;
-		}
     }
 }

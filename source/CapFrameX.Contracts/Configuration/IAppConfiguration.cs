@@ -63,6 +63,8 @@ namespace CapFrameX.Contracts.Configuration
 
 		double CaptureTime { get; set; }
 
+		bool UseGlobalCaptureTime { get; set; }
+
 		double CaptureDelay { get; set; }
 
 		double VoiceSoundLevel { get; set; }
@@ -172,6 +174,22 @@ namespace CapFrameX.Contracts.Configuration
 		bool UseDarkMode { get; set; }
 
 		bool FixedExpanderPosition { get; set; }
+
+		bool IsRecordInfoExpanded { get; set; }
+
+		bool RecordListShowCreationTime { get; set; }
+
+		bool RecordListShowComment { get; set; }
+
+		bool RecordListShowIsAggregated { get; set; }
+
+		bool RecordListShowCpuName { get; set; }
+
+		bool RecordListShowGpuName { get; set; }
+
+		bool RecordListShowRamName { get; set; }
+
+		int[] RecordListHeaderOrder { get; set; }
 	}
 
 	public interface IReportDataGridColumnSettings

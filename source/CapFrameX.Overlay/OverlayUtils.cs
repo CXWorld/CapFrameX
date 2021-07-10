@@ -191,7 +191,7 @@ namespace CapFrameX.Overlay
                         Color = string.Empty
                     },
 
-                     // P1
+                    // P1
                     new OverlayEntryWrapper("OnlineP1")
                     {
                         OverlayEntryType = EOverlayEntryType.OnlineMetric,
@@ -206,7 +206,7 @@ namespace CapFrameX.Overlay
                         Color = string.Empty
                     },
 
-                     // P0.2
+                    // P0.2
                     new OverlayEntryWrapper("OnlineP0dot2")
                     {
                         OverlayEntryType = EOverlayEntryType.OnlineMetric,
@@ -214,6 +214,21 @@ namespace CapFrameX.Overlay
                         ShowOnOverlayIsEnabled = true,
                         Description = "Real-time P0.2 FPS",
                         GroupName = "P0.2%",
+                        Value = "0",
+                        ValueFormat = default,
+                        ShowGraph = false,
+                        ShowGraphIsEnabled = false,
+                        Color = string.Empty
+                    },
+
+                    // Render lag
+                    new OverlayEntryWrapper("OnlineApplicationLatency")
+                    {
+                        OverlayEntryType = EOverlayEntryType.OnlineMetric,
+                        ShowOnOverlay = false,
+                        ShowOnOverlayIsEnabled = true,
+                        Description = "Application Latency (ms)",
+                        GroupName = "App Latency",
                         Value = "0",
                         ValueFormat = default,
                         ShowGraph = false,
