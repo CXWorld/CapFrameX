@@ -69,10 +69,8 @@ namespace CapFrameX.Statistics.PlotBuilder
                     SetGpuPowerLimitChart(plotModel, session.GetGpuPowerLimitPointTimeWindow());
             }
 
-            if (plotSettings.ShowAggregationSeparators)
-                SetAggregationSeparators(session, plotModel);
-            else
-                plotModel.Annotations.Clear();
+            SetAggregationSeparators(session, plotModel, plotSettings.ShowAggregationSeparators);
+
 
             onFinishAction?.Invoke(plotModel);
             plotModel.InvalidatePlot(true);

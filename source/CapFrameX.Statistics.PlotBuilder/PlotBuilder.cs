@@ -176,24 +176,24 @@ namespace CapFrameX.Statistics.PlotBuilder
 			plotModel.Series.Add(series);
 		}
 
-		public void SetAggregationSeparators(ISession session, PlotModel plotModel)
+		public void SetAggregationSeparators(ISession session, PlotModel plotModel, bool showSeparators)
 		{
+
 			plotModel.Annotations.Clear();
 
-			// get start points of each run
-			var sessionTimes = new List<double>();
+			if (!showSeparators || session.Runs.Count < 2)
+				return;
 
+			// get start points of each run and end point of last run
+			var sessionTimes = new List<double>();
 			foreach (var singlesession in session.Runs)
 			{
 				sessionTimes.Add(singlesession.CaptureData.TimeInSeconds.FirstOrDefault());
 			}
-
-			if (sessionTimes.Count < 2)
-				return;
-
 			sessionTimes.Add(session.Runs.LastOrDefault().CaptureData.TimeInSeconds.LastOrDefault());
-			var sceneNumber = 1;
 
+			// draw and label separators 
+			var sceneNumber = 1;
 			foreach (var time in sessionTimes)
 			{
 
