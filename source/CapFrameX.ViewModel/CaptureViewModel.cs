@@ -655,8 +655,6 @@ namespace CapFrameX.ViewModel
                 var lastProcessCaptureTime = _processList.FindProcessByName(currentProcess)?.LastCaptureTime;
                 if (lastProcessCaptureTime != null)
                     CaptureTimeString = Convert.ToString(lastProcessCaptureTime, CultureInfo.InvariantCulture);
-                else
-                    CaptureTimeString = Convert.ToString(_appConfiguration.CaptureTime, CultureInfo.InvariantCulture);
             }
         }
 
