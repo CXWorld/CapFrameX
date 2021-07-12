@@ -202,10 +202,13 @@ namespace CapFrameX.Statistics.PlotBuilder
 					StrokeThickness = 2,
 					Color = OxyColors.Gray,
 					Type = LineAnnotationType.Vertical,
-					TextColor = OxyColors.Gray,
 					Text = sceneNumber < sessionTimes.Count ? $"Scene {sceneNumber}" : string.Empty,
+					FontWeight = FontWeights.Bold,
+					FontSize = 14,
+					TextColor = OxyColor.FromRgb(150, 150, 150),
 					TextOrientation = AnnotationTextOrientation.Horizontal,
-					TextPadding = -50,
+					TextVerticalAlignment = VerticalAlignment.Middle,
+					TextPadding = -60,
 					X = time
 				};
 
