@@ -83,15 +83,18 @@ namespace CapFrameX.ViewModel.DataContext
 		public bool ShowCpuLoad { get; private set; }
 		public bool ShowCpuMaxThreadLoad { get; private set; }
 		public bool ShowGpuPowerLimit { get; private set; }
+		public bool ShowAggregationSeparators { get; private set; }
 
-		public bool IsAnyGraphVisible => ShowGpuLoad || ShowCpuLoad || ShowCpuMaxThreadLoad || ShowGpuPowerLimit;
+		public bool IsAnyPercentageGraphVisible => ShowGpuLoad || ShowCpuLoad || ShowCpuMaxThreadLoad || ShowGpuPowerLimit;
 
-		public VisibleGraphs(bool gpuLoad, bool cpuLoad, bool cpuMaxThreadLoad, bool gpuPowerLimit)
+		public VisibleGraphs(bool gpuLoad, bool cpuLoad, bool cpuMaxThreadLoad, bool gpuPowerLimit, bool aggregationSeparators)
 		{
 			ShowGpuLoad = gpuLoad;
 			ShowCpuLoad = cpuLoad;
 			ShowCpuMaxThreadLoad = cpuMaxThreadLoad;
 			ShowGpuPowerLimit = gpuPowerLimit;
+			ShowAggregationSeparators = aggregationSeparators;
 		}
+
 	}
 }

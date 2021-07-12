@@ -7,6 +7,8 @@
 		bool ShowCpuMaxThreadLoad { get; }
 		bool ShowGpuPowerLimit { get; }
 
-		bool IsAnyGraphVisible { get; }
+		bool IsAnyPercentageGraphVisible { get; }
+
+		bool ShowAggregationSeparators { get; }
 	}
 }

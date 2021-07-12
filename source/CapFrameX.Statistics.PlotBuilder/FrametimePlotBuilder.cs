@@ -27,7 +27,7 @@ namespace CapFrameX.Statistics.PlotBuilder
 
             SetFrametimeChart(plotModel, session.GetFrametimePointsTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod));
 
-            if (plotSettings.IsAnyGraphVisible && session.HasValidSensorData())
+            if (plotSettings.IsAnyPercentageGraphVisible && session.HasValidSensorData())
             {
                 plotModel.Axes.Add(AxisDefinitions[EPlotAxis.YAXISPERCENTAGE]);
 
@@ -40,6 +40,13 @@ namespace CapFrameX.Statistics.PlotBuilder
                 if (plotSettings.ShowGpuPowerLimit)
                     SetGpuPowerLimitChart(plotModel, session.GetGpuPowerLimitPointTimeWindow());
             }
+
+            if (plotSettings.ShowAggregationSeparators)
+                SetAggregationSeparators(session, plotModel);
+            else
+                plotModel.Annotations.Clear();
+
+
             onFinishAction?.Invoke(plotModel);
             plotModel.InvalidatePlot(true);
         }

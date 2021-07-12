@@ -3,6 +3,7 @@ using CapFrameX.Statistics.NetStandard;
 using CapFrameX.Statistics.NetStandard.Contracts;
 using CapFrameX.Statistics.PlotBuilder.Contracts;
 using OxyPlot;
+using OxyPlot.Annotations;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -54,7 +55,7 @@ namespace CapFrameX.Statistics.PlotBuilder
             }
             UpdateYAxisMinMaxBorders(yMin, yMax, average);
 
-            if (plotSettings.IsAnyGraphVisible && session.HasValidSensorData())
+            if (plotSettings.IsAnyPercentageGraphVisible && session.HasValidSensorData())
             {
                 plotModel.Axes.Add(AxisDefinitions[EPlotAxis.YAXISPERCENTAGE]);
 
@@ -67,6 +68,11 @@ namespace CapFrameX.Statistics.PlotBuilder
                 if (plotSettings.ShowGpuPowerLimit)
                     SetGpuPowerLimitChart(plotModel, session.GetGpuPowerLimitPointTimeWindow());
             }
+
+            if (plotSettings.ShowAggregationSeparators)
+                SetAggregationSeparators(session, plotModel);
+            else
+                plotModel.Annotations.Clear();
 
             onFinishAction?.Invoke(plotModel);
             plotModel.InvalidatePlot(true);

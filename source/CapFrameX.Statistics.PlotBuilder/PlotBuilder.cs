@@ -1,8 +1,10 @@
-﻿using CapFrameX.Extensions.NetStandard;
+﻿using CapFrameX.Data.Session.Contracts;
+using CapFrameX.Extensions.NetStandard;
 using CapFrameX.Statistics.NetStandard;
 using CapFrameX.Statistics.NetStandard.Contracts;
 using CapFrameX.Statistics.PlotBuilder.Contracts;
 using OxyPlot;
+using OxyPlot.Annotations;
 using OxyPlot.Axes;
 using OxyPlot.Legends;
 using System;
@@ -172,6 +174,44 @@ namespace CapFrameX.Statistics.PlotBuilder
 
 			series.Points.AddRange(points.Select(p => new DataPoint(p.X, p.Y)));
 			plotModel.Series.Add(series);
+		}
+
+		public void SetAggregationSeparators(ISession session, PlotModel plotModel)
+		{
+			plotModel.Annotations.Clear();
+
+			// get start points of each run
+			var sessionTimes = new List<double>();
+
+			foreach (var singlesession in session.Runs)
+			{
+				sessionTimes.Add(singlesession.CaptureData.TimeInSeconds.FirstOrDefault());
+			}
+
+			if (sessionTimes.Count < 2)
+				return;
+
+			sessionTimes.Add(session.Runs.LastOrDefault().CaptureData.TimeInSeconds.LastOrDefault());
+			var sceneNumber = 1;
+
+			foreach (var time in sessionTimes)
+			{
+
+				LineAnnotation Line = new LineAnnotation()
+				{
+					StrokeThickness = 2,
+					Color = OxyColors.Gray,
+					Type = LineAnnotationType.Vertical,
+					TextColor = OxyColors.Gray,
+					Text = sceneNumber < sessionTimes.Count ? $"Scene {sceneNumber}" : string.Empty,
+					TextOrientation = AnnotationTextOrientation.Horizontal,
+					TextPadding = -50,
+					X = time
+				};
+
+				plotModel.Annotations.Add(Line);
+				sceneNumber++;
+			}
 		}
 	}
 }

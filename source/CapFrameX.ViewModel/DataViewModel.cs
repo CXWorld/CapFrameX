@@ -76,6 +76,7 @@ namespace CapFrameX.ViewModel
         private bool _cpuLoad;
         private bool _cpuMaxThreadLoad;
         private bool _gpuPowerLimit;
+        private bool _aggregationSeparators;
         private EFilterMode _selectedFilterMode;
         private ELShapeMetrics _lShapeMetric = ELShapeMetrics.Frametimes;
         private string _lShapeYaxisLabel = "Frametimes (ms)";
@@ -488,6 +489,17 @@ namespace CapFrameX.ViewModel
             return GpuLoad || CpuLoad || CpuMaxThreadLoad;
         }
 
+        public bool ShowAggregationSeparators
+        {
+            get { return _aggregationSeparators; }
+            set
+            {
+                _aggregationSeparators = value;
+                RaisePropertyChanged();
+                _onUpdateChart.OnNext(default);
+            }
+        }
+
         public DataViewModel(IStatisticProvider frametimeStatisticProvider,
                              IFrametimeAnalyzer frametimeAnalyzer,
                              IEventAggregator eventAggregator,
@@ -561,9 +573,9 @@ namespace CapFrameX.ViewModel
         {
             _onUpdateChart.Subscribe(_ =>
             {
-                FpsGraphDataContext.BuildPlotmodel(new VisibleGraphs(GpuLoad, CpuLoad, CpuMaxThreadLoad, GpuPowerLimit));
+                FpsGraphDataContext.BuildPlotmodel(new VisibleGraphs(GpuLoad, CpuLoad, CpuMaxThreadLoad, GpuPowerLimit, ShowAggregationSeparators));
 
-                FrametimeGraphDataContext.BuildPlotmodel(new VisibleGraphs(GpuLoad, CpuLoad, CpuMaxThreadLoad, GpuPowerLimit), plotModel =>
+                FrametimeGraphDataContext.BuildPlotmodel(new VisibleGraphs(GpuLoad, CpuLoad, CpuMaxThreadLoad, GpuPowerLimit, ShowAggregationSeparators), plotModel =>
                 {
                     FrametimeGraphDataContext.UpdateAxis(EPlotAxis.YAXISFRAMETIMES, axis =>
                     {
@@ -806,7 +818,7 @@ namespace CapFrameX.ViewModel
         private void OnFilterModeChanged()
         {
             _localRecordDataServer.FilterMode = SelectedFilterMode;
-            FpsGraphDataContext.BuildPlotmodel(new VisibleGraphs(GpuLoad, CpuLoad, CpuMaxThreadLoad, GpuPowerLimit));
+            FpsGraphDataContext.BuildPlotmodel(new VisibleGraphs(GpuLoad, CpuLoad, CpuMaxThreadLoad, GpuPowerLimit, ShowAggregationSeparators));
         }
 
         private async void OnCutRecord()

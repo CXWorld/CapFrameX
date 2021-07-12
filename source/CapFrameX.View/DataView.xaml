@@ -567,16 +567,21 @@
                     </materialDesign:PopupBox>
                 </StackPanel>
                 <StackPanel Grid.Column="3" HorizontalAlignment="Right" Orientation="Horizontal">
-                    <StackPanel Margin="10 0 10 0" VerticalAlignment="Center"  Orientation="Horizontal">
+                    <StackPanel Margin="10 0 0 0" VerticalAlignment="Center"  Orientation="Horizontal">
+                        <TextBlock Foreground="{DynamicResource MaterialDesignBody}"><Run Text="Show aggregation:"/></TextBlock>
+                        <ToggleButton VerticalAlignment="Center" Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}" IsChecked="{Binding ShowAggregationSeparators}"
+								  ToolTip="Show separator lines for the different runs within the session"/>
+                    </StackPanel>
+                    <StackPanel Margin="10 0 0 0" VerticalAlignment="Center"  Orientation="Horizontal">
                         <TextBlock Foreground="{DynamicResource MaterialDesignBody}"><Run Text="Custom title:"/></TextBlock>
                         <ToggleButton x:Name="ShowCustomTitleToggleButton" VerticalAlignment="Center" Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
 								  ToolTip="Show custom title edit box"/>
                     </StackPanel>
-                    <StackPanel  Margin="10 0 10 0" VerticalAlignment="Center" Orientation="Horizontal">
+                    <StackPanel  Margin="10 0 0 0" VerticalAlignment="Center" Orientation="Horizontal">
                         <TextBlock Foreground="{DynamicResource MaterialDesignBody}"><Run Text="Remove outliers:"/></TextBlock>
                         <ToggleButton Margin="10 0 0 0" VerticalAlignment="Center" IsChecked="{Binding RemoveOutliers}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
                     </StackPanel>
-                    <StackPanel Margin="10 0 10 0" VerticalAlignment="Center" Orientation="Horizontal">
+                    <StackPanel Margin="10 0 5 0" VerticalAlignment="Center" Orientation="Horizontal">
                         <TextBlock Foreground="{DynamicResource MaterialDesignBody}"><Run Text="Range slider:"/></TextBlock>
                         <ToggleButton x:Name="RangeSliderActiveToggleButton" VerticalAlignment="Center" Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
 									  IsChecked="{Binding IsRangeSliderActive}"/>
