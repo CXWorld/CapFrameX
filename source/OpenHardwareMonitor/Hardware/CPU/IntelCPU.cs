@@ -585,7 +585,8 @@ namespace OpenHardwareMonitor.Hardware.CPU
                 }
             }
 
-            if (powerSensors != null && powerSensors.Any(sensor => sensorConfig.GetSensorEvaluate(sensor.IdentifierString)))
+            if (powerSensors != null && powerSensors.Where(sensor => sensor != null)
+                .Any(sensor => sensorConfig.GetSensorEvaluate(sensor.IdentifierString)))
             {
                 foreach (Sensor sensor in powerSensors)
                 {
