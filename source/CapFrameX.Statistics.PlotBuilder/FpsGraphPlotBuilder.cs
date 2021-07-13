@@ -33,11 +33,14 @@ namespace CapFrameX.Statistics.PlotBuilder
 
             var rawFpsPoints = session.GetFpsPointsTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod, EFilterMode.None);
 
+
+
             if (filterMode is EFilterMode.RawPlusAverage)
             {
                 var avgFpsPoints = session.GetFpsPointsTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod, EFilterMode.TimeIntervalAverage);
 
                 SetRawFPS(plotModel, rawFpsPoints);
+                SetLoadCharts(plotModel, plotSettings, session);
                 SetFpsChart(plotModel, avgFpsPoints, rawFpsPoints, average, 2, OxyColor.FromRgb(241, 125, 32), filterMode);
 
 
@@ -48,13 +51,28 @@ namespace CapFrameX.Statistics.PlotBuilder
             {
                 var fpsPoints = session.GetFpsPointsTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod, filterMode);
 
+                if(filterMode == EFilterMode.TimeIntervalAverage)
+                    SetLoadCharts(plotModel, plotSettings, session);
+
                 SetFpsChart(plotModel, fpsPoints, rawFpsPoints, average, filterMode is EFilterMode.None ? 1 : 2, Constants.FpsStroke, filterMode);
 
-                 yMin = fpsPoints.Min(pnt => pnt.Y);
-                 yMax = fpsPoints.Max(pnt => pnt.Y);
+                if(filterMode is EFilterMode.None)
+                    SetLoadCharts(plotModel, plotSettings, session);
+
+                yMin = fpsPoints.Min(pnt => pnt.Y);
+                yMax = fpsPoints.Max(pnt => pnt.Y);
             }
             UpdateYAxisMinMaxBorders(yMin, yMax, average);
 
+            SetAggregationSeparators(session, plotModel, plotSettings.ShowAggregationSeparators);
+
+
+            onFinishAction?.Invoke(plotModel);
+            plotModel.InvalidatePlot(true);
+        }
+
+        private void SetLoadCharts(PlotModel plotModel, IPlotSettings plotSettings, ISession session)
+        {
             if (plotSettings.IsAnyPercentageGraphVisible && session.HasValidSensorData())
             {
                 plotModel.Axes.Add(AxisDefinitions[EPlotAxis.YAXISPERCENTAGE]);
@@ -68,12 +86,6 @@ namespace CapFrameX.Statistics.PlotBuilder
                 if (plotSettings.ShowGpuPowerLimit)
                     SetGpuPowerLimitChart(plotModel, session.GetGpuPowerLimitPointTimeWindow());
             }
-
-            SetAggregationSeparators(session, plotModel, plotSettings.ShowAggregationSeparators);
-
-
-            onFinishAction?.Invoke(plotModel);
-            plotModel.InvalidatePlot(true);
         }
 
         private void SetFpsChart(PlotModel plotModel, IList<Point> fpsPoints, IList<Point> rawfpsPoints, double average, int stroke, OxyColor color, EFilterMode filtermode)
