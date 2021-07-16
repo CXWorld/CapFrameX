@@ -298,7 +298,7 @@
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="1*"></RowDefinition>
-                        <RowDefinition Height="100"></RowDefinition>
+                        <RowDefinition Height="120"></RowDefinition>
                     </Grid.RowDefinitions>
                     <DataGrid x:Name="SensorStatisticsDataGrid" FocusVisualStyle="{x:Null}" Height="Auto" Width="440" FontSize="11"
                                 ItemsSource="{Binding SensorReportItems}"
