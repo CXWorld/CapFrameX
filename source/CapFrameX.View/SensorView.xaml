@@ -428,9 +428,9 @@
                                             IsReadOnly="True"/>
                         </DataGrid.Columns>
                     </DataGrid>
-                    <Button Grid.Row="1"  Width="150" Height="45" BorderBrush="Transparent"
-					Command="{Binding AggregateSensorEntries}" IsEnabled="{Binding AggregateButtonIsEnable}"
-                    ToolTipService.ShowDuration="25000" Foreground="White" Background="{DynamicResource MaterialDesignToolBackground}"> 
+                    <Button Grid.Row="1" Width="150" Height="45" BorderBrush="Transparent"
+					        Command="{Binding AggregateSensorEntries}" IsEnabled="{Binding AggregateButtonIsEnable}"
+                            ToolTipService.ShowDuration="25000" Foreground="White" Background="{DynamicResource MaterialDesignToolBackground}"> 
                         <TextBlock Text="{Binding AggregateButtonText}" TextWrapping="Wrap" TextAlignment="Center"/>
                         <Button.ToolTip>
                             <ToolTip MaxWidth="250">

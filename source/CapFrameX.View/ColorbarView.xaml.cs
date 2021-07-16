@@ -35,12 +35,12 @@ namespace CapFrameX.View
 
         private void GitHubButton_Click(object sender, RoutedEventArgs e)
         {
-            Process.Start("https://github.com/DevTechProfile/CapFrameX#capframex");
+            _ = Process.Start("https://github.com/DevTechProfile/CapFrameX#capframex");
         }
 
         private void Donate_Button_Click(object sender, RoutedEventArgs e)
         {
-            Process.Start("https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=A4VJPT9NB7G28&source=url");
+            _ = Process.Start("https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=A4VJPT9NB7G28&source=url");
         }
 
         /// <summary>
@@ -48,7 +48,7 @@ namespace CapFrameX.View
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void TakeScreenShotButton_Click(object sender, RoutedEventArgs e)
+        private void SaveScreenShotButton_Click(object sender, RoutedEventArgs e)
         {
             string path = (DataContext as ColorbarViewModel).AppConfiguration.ScreenshotDirectory;
             var filename = string.Empty;
@@ -80,63 +80,85 @@ namespace CapFrameX.View
 
                 if (!Directory.Exists(path))
                 {
-                    Directory.CreateDirectory(path);
+                    _ = Directory.CreateDirectory(path);
                 }
 
-                var screenShotArea = (DataContext as ColorbarViewModel).Shell.GlobalScreenshotArea;
-
-                if (screenShotArea == null)
-                    return;
-
-                VisualBrush visualBrush = new VisualBrush(screenShotArea);
-
-                // Gets the size of the images (I assume each image has the same size)
-                int imageWidth = (int)screenShotArea.ActualWidth;
-                int imageHeight = (int)screenShotArea.ActualHeight;
-
-                // Draws the images into a DrawingVisual component
-                DrawingVisual drawingVisual = new DrawingVisual();
-                using (DrawingContext drawingContext = drawingVisual.RenderOpen())
-                {
-                    drawingContext.DrawRectangle(visualBrush, null, new Rect(new System.Windows.Point(0, 0), new System.Windows.Point(imageWidth, imageHeight)));
-                }
-
-                // Converts the Visual (DrawingVisual) into a BitmapSource
-                RenderTargetBitmap rtb = new RenderTargetBitmap(
-                imageWidth, imageHeight, 96, 96, PixelFormats.Pbgra32);
-                rtb.Render(drawingVisual);
-
-                using (MemoryStream stream = new MemoryStream())
-                {
-                    BitmapEncoder encoder = new PngBitmapEncoder();
-                    encoder.Frames.Add(BitmapFrame.Create(rtb));
-                    encoder.Save(stream);
-
-                    Bitmap bitmap = new Bitmap(stream);
-                    System.Drawing.Image logoName = (System.Drawing.Image)Properties.Resources.ResourceManager.GetObject("CX_Screen_Logo_Name");
-                    System.Drawing.Image logoDescription = (System.Drawing.Image)Properties.Resources.ResourceManager.GetObject("CX_Screen_Logo_Description");
-
-
-                    // Add fill rectangle
-                    AddFillRectangle(bitmap, new System.Drawing.Point(0, imageHeight - logoDescription.Height),
-                        new System.Drawing.Size(imageWidth, logoDescription.Height), new SolidBrush(System.Drawing.Color.FromArgb(255, 32, 141, 228)));
-
-                    // Add frame
-                    AddRectangle(bitmap, new System.Drawing.Point(1, 1),
-                        new System.Drawing.Size(imageWidth - 2, imageHeight), new SolidBrush(System.Drawing.Color.FromArgb(255, 32, 141, 228)));
-
-                    // Add CX logos
-                    AddLogo(bitmap, logoName, new System.Drawing.Point(0, imageHeight - logoName.Height));
-                    AddLogo(bitmap, logoDescription, new System.Drawing.Point(imageWidth - logoDescription.Width, imageHeight - logoDescription.Height));
-
-                    bitmap.Save(filename);
-                }
+                var bitmap = GetBitmapFromScreenshotArea();
+                bitmap.Save(filename);
             }
             catch (Exception ex)
             {
                 var logger = (DataContext as ColorbarViewModel).Logger;
                 logger.LogError(ex, "Screenshot {filename} could not be created", filename);
             }
+        }
+
+        /// <summary>
+        /// Copy png to clipboard
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void CopyScreenShotButton_Click(object sender, RoutedEventArgs e)
+        {
+            var bitmap = GetBitmapFromScreenshotArea();
+            Clipboard.SetDataObject(bitmap);
+        }
+
+        private Bitmap GetBitmapFromScreenshotArea()
+        {
+            var screenShotArea = (DataContext as ColorbarViewModel).Shell.GlobalScreenshotArea;
+
+            if (screenShotArea == null)
+                return null;
+
+            Bitmap bitmap = null;
+            VisualBrush visualBrush = new VisualBrush(screenShotArea);
+
+            // Gets the size of the images (I assume each image has the same size)
+            const int upperRectangleHeight = 40;
+            int imageWidth = (int)screenShotArea.ActualWidth;
+            int imageHeight = (int)screenShotArea.ActualHeight + upperRectangleHeight;
+
+            // Draws the images into a DrawingVisual component
+            DrawingVisual drawingVisual = new DrawingVisual();
+            using (DrawingContext drawingContext = drawingVisual.RenderOpen())
+            {
+                drawingContext.DrawRectangle(visualBrush, null, new Rect(new System.Windows.Point(0, upperRectangleHeight), new System.Windows.Point(imageWidth, imageHeight)));
+            }
+
+            // Converts the Visual (DrawingVisual) into a BitmapSource
+            RenderTargetBitmap rtb = new RenderTargetBitmap(
+            imageWidth, imageHeight, 96, 96, PixelFormats.Pbgra32);
+            rtb.Render(drawingVisual);
+
+            using (MemoryStream stream = new MemoryStream())
+            {
+                BitmapEncoder encoder = new PngBitmapEncoder();
+                encoder.Frames.Add(BitmapFrame.Create(rtb));
+                encoder.Save(stream);
+
+                bitmap = new Bitmap(stream);
+                System.Drawing.Image logoName = (System.Drawing.Image)Properties.Resources.ResourceManager.GetObject("CX_Screen_Logo_Name");
+                System.Drawing.Image logoDescription = (System.Drawing.Image)Properties.Resources.ResourceManager.GetObject("CX_Screen_Logo_Description");
+
+                // Add upper rectangle
+                AddFillRectangle(bitmap, new System.Drawing.Point(0, 0),
+                    new System.Drawing.Size(imageWidth, upperRectangleHeight), new SolidBrush(System.Drawing.Color.FromArgb(255, 32, 141, 228)));
+
+                // Add lower rectangle
+                AddFillRectangle(bitmap, new System.Drawing.Point(0, imageHeight - logoDescription.Height),
+                    new System.Drawing.Size(imageWidth, logoDescription.Height), new SolidBrush(System.Drawing.Color.FromArgb(255, 32, 141, 228)));
+
+                // Add frame
+                AddRectangle(bitmap, new System.Drawing.Point(1, 1),
+                    new System.Drawing.Size(imageWidth - 2, imageHeight), new SolidBrush(System.Drawing.Color.FromArgb(255, 32, 141, 228)));
+
+                // Add CX logos
+                AddLogo(bitmap, logoName, new System.Drawing.Point(0, imageHeight - logoName.Height));
+                AddLogo(bitmap, logoDescription, new System.Drawing.Point(imageWidth - logoDescription.Width, imageHeight - logoDescription.Height));
+            }
+
+            return bitmap;
         }
 
         private static Bitmap AddRectangle(Bitmap bitmap, System.Drawing.Point position, System.Drawing.Size size, System.Drawing.Brush brush)
@@ -237,5 +259,10 @@ namespace CapFrameX.View
         }
 
         private void HorizontalRes_PreviewMouseDown(object sender, MouseButtonEventArgs e) { }
+
+        private void ScreenshotPopupBox_Open(object sender, RoutedEventArgs e)
+        {
+            ScreenshotPopupBox.IsPopupOpen = true;
+        }
     }
 }
