@@ -82,9 +82,15 @@
                         </Button>
                     </materialDesign:PopupBox.ToggleContent>
                     <UniformGrid Columns="2" Width="180" Height="50">
-                        <Button Width="70" Height="40" BorderThickness="1" BorderBrush="Black"
+                        <Button Width="70" Height="40" VerticalContentAlignment="Center"
+                                Style="{StaticResource MaterialDesignRaisedButton}"
+                                Background="#FF1C5F8A" Foreground="White"
+                                HorizontalContentAlignment="Center" Padding="0"
                                 Content="Save" Click="SaveScreenShotButton_Click"/>
-                        <Button Width="70" Height="40" BorderThickness="1" BorderBrush="Black"
+                        <Button Width="70" Height="40" VerticalContentAlignment="Center"
+                                Style="{StaticResource MaterialDesignRaisedButton}"
+                                Background="#FF1C5F8A" Foreground="White" 
+                                HorizontalContentAlignment="Center" Padding="0"
                                 Content="Copy" Click="CopyScreenShotButton_Click"/>
                     </UniformGrid>
                 </materialDesign:PopupBox>

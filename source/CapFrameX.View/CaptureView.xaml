@@ -132,7 +132,6 @@
                                 <Border Grid.Column="1" Margin="20 0 0 0" BorderThickness="0.2" BorderBrush="{DynamicResource MaterialDesignBody}">
                                     <Grid Margin="0 25 0 20">
                                         <StackPanel  Orientation="Vertical" Width="190">
-                                            <!--Style="{StaticResource MaterialDesignTitleTextBlock}"-->
                                             <TextBlock Margin="0 0 0 5" Foreground="{DynamicResource MaterialDesignBody}">Process ignore list</TextBlock>
                                             <Border Margin="0 10 0 0" BorderThickness="0.1" BorderBrush="{DynamicResource MaterialDesignBody}"
                                                 Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
