@@ -1,4 +1,4 @@
-![Screenshot](Images/CX_Header_Logo_Wide.png)
+![Screenshot](images/CX_Header_Logo_Wide.png)
 # CapFrameX
 Frametimes capture and analysis tool based on Intel's [PresentMon](https://github.com/GameTechDev/PresentMon). Overlay provided by [Rivatuner Statistics Server](https://www.guru3d.com/content-page/rivatuner.html).
 
@@ -13,34 +13,34 @@ If you want to use images of the CapFrameX analysis, you could use the built in 
 Download link: https://github.com/DevTechProfile/CapFrameX/releases
 
 # Capture frametimes
-![Screenshot](Images/02_capture.png)
+![Screenshot](images/02_capture.png)
 
 # Overlay
-![Screenshot](Images/03_overlay_runhistory.png)
-![Screenshot](Images/04_overlay_options.png)
+![Screenshot](images/03_overlay_runhistory.png)
+![Screenshot](images/04_overlay_options.png)
 
 # Analysis
-![Screenshot](Images/05_analysis.png)
+![Screenshot](images/05_analysis.png)
 
 # Aggregation
-![Screenshot](Images/06_aggregation.png)
+![Screenshot](images/06_aggregation.png)
 
 # Comparison
-![Screenshot](Images/07_comparison_bar.png)
-![Screenshot](Images/08_comparison_graph.png)
+![Screenshot](images/07_comparison_bar.png)
+![Screenshot](images/08_comparison_graph.png)
 
 # Sensor
-![Screenshot](Images/08b_sensor.png)
+![Screenshot](images/08b_sensor.png)
 
 # Synchronization (Input lag)
-![Screenshot](Images/10_sync_IL.png)
-![Screenshot](Images/11_sync_DT.png)
+![Screenshot](images/10_sync_IL.png)
+![Screenshot](images/11_sync_DT.png)
 
 # Report table (Excel)
-![Screenshot](Images/09_report.png)
+![Screenshot](images/09_report.png)
 
 # Cloud
-![Screenshot](Images/12_cloud.png)
+![Screenshot](images/12_cloud.png)
 
 # Instruction manual
 Learn how to use CapFrameX.
@@ -66,7 +66,7 @@ Contains all the different views, a screenshot button, a login button(for additi
 The screenshot button takes a screenshot of the current view excluding the record list.
 
 ## Options
-![Screenshot](Images/01_global_options.png)
+![Screenshot](images/01_global_options.png)
 * Graph filter window size = The time period in which the filtered FPS graphs are being averaged(Analysis & Comparison View)
 * FPS values decimals = The number of decimals for the FPS values
 * Start with windows & Start minimized = Autostart option and starting in tray
