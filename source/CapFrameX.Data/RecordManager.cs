@@ -575,6 +575,9 @@ namespace CapFrameX.Data
                         }
                     }
 
+                    // remove runs without data
+                    clone.Runs = clone.Runs.Where(r => r.CaptureData.TimeInSeconds.Length != 0).ToList();
+
                     targetSessionRun.Hash = Convert.ToString(targetSessionRun.GetHashCode()); // Dirty Hack weil (weil Alex Hacks mag) Rohdaten nicht mehr vorhanden. Hash ist nicht vergleichbar mit dem Hash, welcher aus den PresentMonLines erstellt wird
                 }
 
