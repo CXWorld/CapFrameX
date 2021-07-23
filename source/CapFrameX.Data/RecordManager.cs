@@ -505,7 +505,11 @@ namespace CapFrameX.Data
         public async Task DuplicateSession(ISession session, double startTime = 0, double endTime = double.PositiveInfinity)
         {
             if (session == null)
+            {
+                _logger.LogError("Error duplicating session. No session found.");
                 return;
+            }
+
 
             try
             {
@@ -535,6 +539,9 @@ namespace CapFrameX.Data
 
                 int[] DetermineIndicesToKeep(double[] reference)
                 {
+                    if (reference == null)
+                        return new int[0];
+
                     var indicesToKeep = new List<int>();
                     for (int index = 0; index < reference.Count(); index++)
                     {
@@ -551,18 +558,23 @@ namespace CapFrameX.Data
                     var sourceSessionRun = session.Runs[sessionRunIndex];
                     var targetSessionRun = clone.Runs[sessionRunIndex];
                     var dataIndicesToKeep = DetermineIndicesToKeep(sourceSessionRun.CaptureData.TimeInSeconds);
-                    var sensorIndicesToKeep = DetermineIndicesToKeep(sourceSessionRun.SensorData2.MeasureTime.Values.ToArray());
                     SetArray(dataPropertyInfos, sourceSessionRun.CaptureData, clone.Runs[sessionRunIndex].CaptureData, dataIndicesToKeep);
-                    clone.Runs[sessionRunIndex].SensorData2 = new SessionSensorData2(initialAdd: false);
-                    foreach (var collection in sourceSessionRun.SensorData2)
+
+                    if (sourceSessionRun.SensorData2 != null)
                     {
-                        var clonedSensorEntry = new SessionSensorEntry(collection.Value.Name, collection.Value.Type);
-                        foreach (var indexToKeep in sensorIndicesToKeep)
+                        var sensorIndicesToKeep = DetermineIndicesToKeep(sourceSessionRun.SensorData2.MeasureTime.Values.ToArray());
+                        clone.Runs[sessionRunIndex].SensorData2 = new SessionSensorData2(initialAdd: false);
+                        foreach (var collection in sourceSessionRun.SensorData2)
                         {
-                            clonedSensorEntry.Values.AddLast(collection.Value.Values.ElementAt(indexToKeep));
+                            var clonedSensorEntry = new SessionSensorEntry(collection.Value.Name, collection.Value.Type);
+                            foreach (var indexToKeep in sensorIndicesToKeep)
+                            {
+                                clonedSensorEntry.Values.AddLast(collection.Value.Values.ElementAt(indexToKeep));
+                            }
+                            clone.Runs[sessionRunIndex].SensorData2.Add(collection.Key, clonedSensorEntry);
                         }
-                        clone.Runs[sessionRunIndex].SensorData2.Add(collection.Key, clonedSensorEntry);
                     }
+
                     targetSessionRun.Hash = Convert.ToString(targetSessionRun.GetHashCode()); // Dirty Hack weil (weil Alex Hacks mag) Rohdaten nicht mehr vorhanden. Hash ist nicht vergleichbar mit dem Hash, welcher aus den PresentMonLines erstellt wird
                 }
 
