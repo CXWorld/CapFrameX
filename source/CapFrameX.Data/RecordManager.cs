@@ -569,6 +569,7 @@ namespace CapFrameX.Data
                 clone.Hash = string.Join(",", clone.Runs.Select(r => r.Hash).OrderBy(h => h)).GetSha1();
                 clone.Info.Id = Guid.NewGuid();
                 NormalizeStartTimesOfSessionRuns(clone.Runs);
+                clone.Info.Comment = $"(Cut) {clone.Info.Comment}";
                 var filePath = await GetOutputFilename(clone.Info.ProcessName, null);
                 SaveSessionToFile(filePath, clone);
             }
