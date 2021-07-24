@@ -310,10 +310,10 @@
                                             <TextBlock Text="Dark mode"/>
                                             <ToggleButton Margin="48 0 0 0" Click="MenuDarkModeButton_Click" IsChecked="{Binding IsDarkModeToggleChecked}"/>
                                         </StackPanel>
-                                        <StackPanel Grid.Row="1" Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="15 5 0 5" ToolTip="Sets the GPU acceleration. Needs a restart of CapFrameX.">
+                                        <!--<StackPanel Grid.Row="1" Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="15 5 0 5" ToolTip="Sets the GPU acceleration. Needs a restart of CapFrameX.">
                                             <TextBlock Text="GPU acceleration"/>
                                             <ToggleButton Margin="15 0 0 0" IsChecked="{Binding IsGpuAccelerationActive, Mode=TwoWay}"/>
-                                        </StackPanel>
+                                        </StackPanel>-->
                                         <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" Margin="20 5 0 5">
                                             <TextBlock Margin="0 0 0 0" Text="Start with Windows" TextAlignment="Left" TextWrapping="Wrap" Width="80"/>
                                             <CheckBox Margin="0 0 0 0" IsChecked="{Binding Autostart, Mode=TwoWay}">

@@ -40,7 +40,7 @@ namespace CapFrameX
             {
                 source.AddHook(new HwndSourceHook(HandleMessages));
                 source.CompositionTarget.RenderMode
-                    = IsGpuAccelerationActive ? RenderMode.Default : RenderMode.SoftwareOnly;
+                    = /*IsGpuAccelerationActive ? RenderMode.Default :*/ RenderMode.SoftwareOnly;
             }
 
             base.OnSourceInitialized(e);
