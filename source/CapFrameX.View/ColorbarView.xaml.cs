@@ -115,7 +115,7 @@ namespace CapFrameX.View
             VisualBrush visualBrush = new VisualBrush(screenShotArea);
 
             // Gets the size of the images (I assume each image has the same size)
-            const int upperRectangleHeight = 40;
+            const int upperRectangleHeight = 20;
             int imageWidth = (int)screenShotArea.ActualWidth;
             int imageHeight = (int)screenShotArea.ActualHeight + upperRectangleHeight;
 
