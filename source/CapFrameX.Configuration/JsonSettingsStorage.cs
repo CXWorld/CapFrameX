@@ -13,6 +13,7 @@ namespace CapFrameX.Configuration
 {
     public class JsonSettingsStorage : ISettingsStorage
     {
+        private readonly object _iOLock = new object();
         private readonly string _jsonFilePath 
             = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), 
                 "CapFrameX", "Configuration", "AppSettings.json");
@@ -73,28 +74,31 @@ namespace CapFrameX.Configuration
         {
             try
             {
-                var file = new FileInfo(_jsonFilePath);
-                if(!file.Exists)
+                lock (_iOLock)
                 {
-                    _logger.LogInformation($"File {_jsonFilePath} does not exist. Creating it...");
-                    Directory.CreateDirectory(file.DirectoryName);
-                    File.WriteAllText(file.FullName, "{}");
+                    var file = new FileInfo(_jsonFilePath);
+                    if (!file.Exists)
+                    {
+                        _logger.LogInformation($"File {_jsonFilePath} does not exist. Creating it...");
+                        Directory.CreateDirectory(file.DirectoryName);
+                        File.WriteAllText(file.FullName, "{}");
+                    }
+
+                    var fileContent = File.ReadAllText(file.FullName);
+                    var dict = JsonConvert.DeserializeObject<Dictionary<string, object>>(fileContent);
+
+                    if (dict is null)
+                    {
+                        throw new Exception($"Configurationfile {file.FullName} is corrupted");
+                    }
+
+                    foreach (var kvp in dict)
+                    {
+                        _configDictionary.Add(kvp.Key, kvp.Value);
+                    }
+
+                    return Task.FromResult(true);
                 }
-
-                var fileContent = File.ReadAllText(file.FullName);
-                var dict = JsonConvert.DeserializeObject<Dictionary<string, object>>(fileContent);
-
-                if(dict is null)
-                {
-                    throw new Exception($"Configurationfile {file.FullName} is corrupted");
-                }
-
-                foreach(var kvp in dict)
-                {
-                    _configDictionary.Add(kvp.Key, kvp.Value);
-                }
-
-                return Task.FromResult(true);
             } catch(Exception exc)
             {
                 _logger.LogError(exc, $"Unable to load Configuration from path {_jsonFilePath}");
@@ -106,17 +110,20 @@ namespace CapFrameX.Configuration
         {
             try
             {
-                var file = new FileInfo(_jsonFilePath);
-                var fileContent = JsonConvert.SerializeObject(_configDictionary.ToDictionary(x => x.Key, x => x.Value), Formatting.Indented);
-                if (string.IsNullOrWhiteSpace(fileContent))
+                lock (_iOLock)
                 {
-                    _logger.LogError("Error writing Configurationfile. Cannot create config from Dictionary", _configDictionary);
-                    return Task.FromResult(false);
-                }
-                else
-                {
-                    File.WriteAllText(file.FullName, fileContent);
-                    return Task.FromResult(true);
+                    var file = new FileInfo(_jsonFilePath);
+                    var fileContent = JsonConvert.SerializeObject(_configDictionary.ToDictionary(x => x.Key, x => x.Value), Formatting.Indented);
+                    if (string.IsNullOrWhiteSpace(fileContent))
+                    {
+                        _logger.LogError("Error writing Configurationfile. Cannot create config from Dictionary", _configDictionary);
+                        return Task.FromResult(false);
+                    }
+                    else
+                    {
+                        File.WriteAllText(file.FullName, fileContent);
+                        return Task.FromResult(true);
+                    }
                 }
             }
             catch (Exception exc)
