@@ -121,16 +121,16 @@ namespace CapFrameX.Overlay
                        });
                });
 
-
-
             _sensorService.SensorSnapshotStream
                 .Sample(_sensorService.OsdUpdateStream.Select(timespan => Observable.Concat(Observable.Return(-1L), Observable.Interval(timespan))).Switch())
                 .Where((_, idx) => idx == 0 || IsOverlayActive)
-                .SubscribeOn(Scheduler.Default)
                 .Subscribe(sensorData =>
                 {
-                    UpdateOverlayEntries(sensorData.Item2);
-                    _onDictionaryUpdated.OnNext(_overlayEntryCore.OverlayEntryDict.Values.ToArray());
+                    if (sensorData.Item2.Any())
+                        UpdateOverlayEntries(sensorData.Item2);
+
+                    if (_overlayEntryCore.OverlayEntryDict.Values.Any())
+                        _onDictionaryUpdated.OnNext(_overlayEntryCore.OverlayEntryDict.Values.ToArray());
                 });
 
             _runHistory = Enumerable.Repeat("N/A", _numberOfRuns).ToList();
