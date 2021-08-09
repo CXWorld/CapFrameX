@@ -577,7 +577,7 @@ namespace CapFrameX.Overlay
 
             if (renderApplicationLatency != null && renderApplicationLatency.ShowOnOverlay)
             {
-                renderApplicationLatency.Value = Math.Round(_onlineMetricService.GetOnlineApplicationLatencyValue());
+                renderApplicationLatency.Value = Math.Round(_onlineMetricService.GetOnlineApplicationLatencyValue(), 1);
             }
         }
 
@@ -651,7 +651,7 @@ namespace CapFrameX.Overlay
             if (applicationLatency != null)
             {
                 applicationLatency.ValueUnitFormat = "ms";
-                applicationLatency.ValueAlignmentAndDigits = "{0,5:F0}";
+                applicationLatency.ValueAlignmentAndDigits = "{0,5:F1}";
             }
         }
 
