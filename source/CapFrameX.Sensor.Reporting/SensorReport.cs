@@ -253,7 +253,7 @@ namespace CapFrameX.Sensor.Reporting
             return sensorDictOrdered;
         }
 
-        public static double GetAverageCpuPower(IEnumerable<ISessionSensorData> sessionsSensorData, double startTime = 0, double endTime = double.PositiveInfinity)
+        public static double GetAverageSensorValues(IEnumerable<ISessionSensorData> sessionsSensorData, EReportSensorName sensorname, double startTime = 0, double endTime = double.PositiveInfinity)
         {
             var reportItems = GetReportFromSessionSensorData(sessionsSensorData, startTime, endTime);
 
@@ -261,21 +261,7 @@ namespace CapFrameX.Sensor.Reporting
                 return 0;
 
             var item = reportItems.FirstOrDefault(reportItem =>
-              reportItem.Name == EReportSensorName.CpuPower
-              .GetAttribute<DescriptionAttribute>().Description);
-
-            return item != null ? item.AverageValue : 0;
-        }
-
-        public static double GetAverageGpuPower(IEnumerable<ISessionSensorData> sessionsSensorData, double startTime = 0, double endTime = double.PositiveInfinity)
-        {
-            var reportItems = GetReportFromSessionSensorData(sessionsSensorData, startTime, endTime);
-
-            if (reportItems == null || !reportItems.Any())
-                return 0;
-
-            var item = reportItems.FirstOrDefault(reportItem =>
-              reportItem.Name == EReportSensorName.GpuPower
+              reportItem.Name == sensorname
               .GetAttribute<DescriptionAttribute>().Description);
 
             return item != null ? item.AverageValue : 0;

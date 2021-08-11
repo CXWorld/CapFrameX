@@ -664,6 +664,15 @@ namespace CapFrameX.Configuration
         public bool ReportShowAdaptiveSTD { get; set; } = true;
         public bool ReportShowCpuFpsPerWatt { get; set; } = true;
         public bool ReportShowGpuFpsPerWatt { get; set; } = true;
+        public bool ReportShowAppLatency { get; set; } = false;
+        public bool ReportShowCpuMaxUsage { get; set; } = false;
+        public bool ReportShowCpuPower { get; set; } = false;
+        public bool ReportShowCpuMaxClock { get; set; } = false;
+        public bool ReportShowCpuTemp { get; set; } = false;
+        public bool ReportShowGpuUsage { get; set; } = false;
+        public bool ReportShowGpuPower { get; set; } = false;
+        public bool ReportShowGpuClock { get; set; } = false;
+        public bool ReportShowGpuTemp { get; set; } = false;
 
         public IReportDataGridColumnSettings Clone()
         {

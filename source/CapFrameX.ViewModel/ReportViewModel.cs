@@ -23,6 +23,7 @@ using Microsoft.Extensions.Logging;
 using System.Diagnostics;
 using System.Windows.Controls;
 using System.ComponentModel;
+using CapFrameX.Statistics.NetStandard;
 
 namespace CapFrameX.ViewModel
 {
@@ -248,12 +249,21 @@ namespace CapFrameX.ViewModel
             var adaptiveStandardDeviation = GeMetricValue(frameTimes, EMetric.AdaptiveStd);
             var cpuFpsPerWatt = _frametimeStatisticProvider
                 .GetPhysicalMetricValue(frameTimes, EMetric.CpuFpsPerWatt,
-                SensorReport.GetAverageCpuPower(session.Runs.Select(run => run.SensorData2),
+                SensorReport.GetAverageSensorValues(session.Runs.Select(run => run.SensorData2), EReportSensorName.CpuPower,
                 0, double.PositiveInfinity));
             var gpuFpsPerWatt = _frametimeStatisticProvider
                 .GetPhysicalMetricValue(frameTimes, EMetric.GpuFpsPerWatt,
-                SensorReport.GetAverageGpuPower(session.Runs.Select(run => run.SensorData2),
+                SensorReport.GetAverageSensorValues(session.Runs.Select(run => run.SensorData2), EReportSensorName.GpuPower,
                 0, double.PositiveInfinity));
+            var cpuUsage = SensorReport.GetAverageSensorValues(session.Runs.Select(run => run.SensorData2), EReportSensorName.CpuMaxThreadUsage, 0, double.PositiveInfinity);
+            var cpuPower = SensorReport.GetAverageSensorValues(session.Runs.Select(run => run.SensorData2), EReportSensorName.CpuPower, 0, double.PositiveInfinity);
+            var cpuClock = SensorReport.GetAverageSensorValues(session.Runs.Select(run => run.SensorData2), EReportSensorName.CpuMaxClock, 0, double.PositiveInfinity);
+            var cpuTemp = SensorReport.GetAverageSensorValues(session.Runs.Select(run => run.SensorData2), EReportSensorName.CpuTemp, 0, double.PositiveInfinity);
+            var gpuUsage = SensorReport.GetAverageSensorValues(session.Runs.Select(run => run.SensorData2), EReportSensorName.GpuUsage, 0, double.PositiveInfinity);
+            var gpuPower = SensorReport.GetAverageSensorValues(session.Runs.Select(run => run.SensorData2), EReportSensorName.GpuPower, 0, double.PositiveInfinity);
+            var gpuClock = SensorReport.GetAverageSensorValues(session.Runs.Select(run => run.SensorData2), EReportSensorName.GpuClock, 0, double.PositiveInfinity);
+            var gpuTemp = SensorReport.GetAverageSensorValues(session.Runs.Select(run => run.SensorData2), EReportSensorName.GpuTemp, 0, double.PositiveInfinity);
+            var appLatency = Math.Round(session.GetApproxInputLagTimes().Average(), 1);
 
             var reportInfo = new ReportInfo()
             {
@@ -280,6 +290,15 @@ namespace CapFrameX.ViewModel
                 AdaptiveSTDFps = adaptiveStandardDeviation,
                 CpuFpsPerWatt = cpuFpsPerWatt,
                 GpuFpsPerWatt = gpuFpsPerWatt,
+                CpuMaxUsage = cpuUsage,
+                CpuPower = cpuPower,
+                CpuMaxClock = cpuClock,
+                CpuTemp = cpuTemp,
+                GpuUsage = gpuUsage,
+                GpuPower = gpuPower,
+                GpuClock = gpuClock,
+                GpuTemp = gpuTemp,
+                AppLatency = appLatency,
                 CustomComment = recordInfo.Comment
             };
 
@@ -306,7 +325,7 @@ namespace CapFrameX.ViewModel
                 {
 
                     var average = reportInfoCollection.Select(x => propertyInfo.GetValue(x)).Select(x => Convert.ToDouble(x)).Average();
-                    propertyInfo.SetValue(report, Math.Round(average, 2));
+                    propertyInfo.SetValue(report, Math.Round(average, 1));
                 }
                 reportInfoCollection.Add(report);
             }

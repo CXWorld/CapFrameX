@@ -640,11 +640,11 @@ namespace CapFrameX.ViewModel
             var adaptiveStandardDeviation = GeMetricValue(frametimes, EMetric.AdaptiveStd);
             var cpuFpsPerWatt = _frametimeStatisticProvider
                  .GetPhysicalMetricValue(frametimes, EMetric.CpuFpsPerWatt,
-                 SensorReport.GetAverageCpuPower(_session.Runs.Select(run => run.SensorData2),
+                 SensorReport.GetAverageSensorValues(_session.Runs.Select(run => run.SensorData2), EReportSensorName.CpuPower,
                  _localRecordDataServer.CurrentTime, _localRecordDataServer.CurrentTime + _localRecordDataServer.WindowLength));
             var gpuFpsPerWatt = _frametimeStatisticProvider
             .GetPhysicalMetricValue(frametimes, EMetric.GpuFpsPerWatt,
-            SensorReport.GetAverageGpuPower(_session.Runs.Select(run => run.SensorData2),
+            SensorReport.GetAverageSensorValues(_session.Runs.Select(run => run.SensorData2), EReportSensorName.GpuPower,
             _localRecordDataServer.CurrentTime, _localRecordDataServer.CurrentTime + _localRecordDataServer.WindowLength));
 
             StringBuilder builder = new StringBuilder();
@@ -990,11 +990,11 @@ namespace CapFrameX.ViewModel
             var adaptiveStandardDeviation = GetMetricValue(frametimes, EMetric.AdaptiveStd);
             var cpuFpsPerWatt = _frametimeStatisticProvider
                 .GetPhysicalMetricValue(frametimes, EMetric.CpuFpsPerWatt,
-                SensorReport.GetAverageCpuPower(_session.Runs.Select(run => run.SensorData2),
+                SensorReport.GetAverageSensorValues(_session.Runs.Select(run => run.SensorData2), EReportSensorName.CpuPower,
                 _localRecordDataServer.CurrentTime, _localRecordDataServer.CurrentTime + _localRecordDataServer.WindowLength));
             var gpuFpsPerWatt = _frametimeStatisticProvider
             .GetPhysicalMetricValue(frametimes, EMetric.GpuFpsPerWatt,
-            SensorReport.GetAverageGpuPower(_session.Runs.Select(run => run.SensorData2),
+            SensorReport.GetAverageSensorValues(_session.Runs.Select(run => run.SensorData2), EReportSensorName.GpuPower,
             _localRecordDataServer.CurrentTime, _localRecordDataServer.CurrentTime + _localRecordDataServer.WindowLength));
 
             Application.Current.Dispatcher.Invoke(new Action(() =>

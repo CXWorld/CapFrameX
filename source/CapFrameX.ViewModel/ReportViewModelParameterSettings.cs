@@ -266,12 +266,119 @@ namespace CapFrameX.ViewModel
                 RaisePropertyChanged();
             }
         }
+
         public bool ShowGpuFpsPerWatt
         {
             get { return _settings.ReportShowGpuFpsPerWatt; }
             set
             {
                 _settings.ReportShowGpuFpsPerWatt = value;
+                _appConfiguration.ReportDataGridColumnSettings = _settings;
+
+                RaisePropertyChanged();
+            }
+        }
+
+        public bool ShowAppLatency
+        {
+            get { return _settings.ReportShowAppLatency; }
+            set
+            {
+                _settings.ReportShowAppLatency = value;
+                _appConfiguration.ReportDataGridColumnSettings = _settings;
+
+                RaisePropertyChanged();
+            }
+        }
+
+        public bool ShowCpuMaxUsage
+        {
+            get { return _settings.ReportShowCpuMaxUsage; }
+            set
+            {
+                _settings.ReportShowCpuMaxUsage = value;
+                _appConfiguration.ReportDataGridColumnSettings = _settings;
+
+                RaisePropertyChanged();
+            }
+        }
+
+        public bool ShowCpuPower
+        {
+            get { return _settings.ReportShowCpuPower; }
+            set
+            {
+                _settings.ReportShowCpuPower = value;
+                _appConfiguration.ReportDataGridColumnSettings = _settings;
+
+                RaisePropertyChanged();
+            }
+        }
+        public bool ShowCpuMaxClock
+        {
+            get { return _settings.ReportShowCpuMaxClock; }
+            set
+            {
+                _settings.ReportShowCpuMaxClock = value;
+                _appConfiguration.ReportDataGridColumnSettings = _settings;
+
+                RaisePropertyChanged();
+            }
+        }
+
+        public bool ShowCpuTemp
+        {
+            get { return _settings.ReportShowCpuTemp; }
+            set
+            {
+                _settings.ReportShowCpuTemp = value;
+                _appConfiguration.ReportDataGridColumnSettings = _settings;
+
+                RaisePropertyChanged();
+            }
+        }
+        public bool ShowGpuUsage
+        {
+            get { return _settings.ReportShowGpuUsage; }
+            set
+            {
+                _settings.ReportShowGpuUsage = value;
+                _appConfiguration.ReportDataGridColumnSettings = _settings;
+
+                RaisePropertyChanged();
+            }
+        }
+
+        public bool ShowGpuPower
+        {
+            get { return _settings.ReportShowGpuPower; }
+            set
+            {
+                _settings.ReportShowGpuPower = value;
+                _appConfiguration.ReportDataGridColumnSettings = _settings;
+
+                RaisePropertyChanged();
+            }
+        }
+
+        public bool ShowGpuClock
+        {
+            get { return _settings.ReportShowGpuClock; }
+            set
+            {
+                _settings.ReportShowGpuClock = value;
+                _appConfiguration.ReportDataGridColumnSettings = _settings;
+
+                RaisePropertyChanged();
+            }
+        }
+
+        public bool ShowGpuTemp
+        {
+            get { return _settings.ReportShowGpuTemp; }
+            set
+            {
+                _settings.ReportShowGpuTemp = value;
                 _appConfiguration.ReportDataGridColumnSettings = _settings;
 
                 RaisePropertyChanged();

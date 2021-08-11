@@ -240,6 +240,24 @@ namespace CapFrameX.Contracts.Configuration
 
 		bool ReportShowGpuFpsPerWatt { get; set; }
 
+        bool ReportShowAppLatency { get; set; }
+
+		bool ReportShowCpuMaxUsage { get; set; }
+
+		bool ReportShowCpuPower { get; set; }
+
+		bool ReportShowCpuMaxClock { get; set; }
+
+		bool ReportShowCpuTemp{ get; set; }
+
+		bool ReportShowGpuUsage { get; set; }
+
+		bool ReportShowGpuPower { get; set; }
+
+		bool ReportShowGpuClock { get; set; }
+
+		bool ReportShowGpuTemp { get; set; }
+
 		IReportDataGridColumnSettings Clone();
 	}
 }

@@ -186,6 +186,51 @@
                                             Width="Auto"
                                             IsReadOnly="True"
                                             Visibility="{Binding DataContext.ShowGpuFpsPerWatt, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
+                    <DataGridTextColumn Binding="{Binding AppLatency, Mode=OneWay}"
+                                            Header="App Latency (ms)"
+                                            Width="Auto"
+                                            IsReadOnly="True"
+                                            Visibility="{Binding DataContext.ShowAppLatency, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
+                    <DataGridTextColumn Binding="{Binding CpuMaxUsage, Mode=OneWay}"
+                                            Header="CPU max Thread (%)"
+                                            Width="Auto"
+                                            IsReadOnly="True"
+                                            Visibility="{Binding DataContext.ShowCpuMaxUsage, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
+                    <DataGridTextColumn Binding="{Binding CpuPower, Mode=OneWay}"
+                                            Header="CPU Power (W)"
+                                            Width="Auto"
+                                            IsReadOnly="True"
+                                            Visibility="{Binding DataContext.ShowCpuPower, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
+                    <DataGridTextColumn Binding="{Binding CpuMaxClock, Mode=OneWay}"
+                                            Header="CPU Clock (MHz)"
+                                            Width="Auto"
+                                            IsReadOnly="True"
+                                            Visibility="{Binding DataContext.ShowCpuMaxClock, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
+                    <DataGridTextColumn Binding="{Binding CpuTemp, Mode=OneWay}"
+                                            Header="CPU Temp (°C)"
+                                            Width="Auto"
+                                            IsReadOnly="True"
+                                            Visibility="{Binding DataContext.ShowCpuTemp, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
+                    <DataGridTextColumn Binding="{Binding GpuUsage, Mode=OneWay}"
+                                            Header="GPU Usage (%)"
+                                            Width="Auto"
+                                            IsReadOnly="True"
+                                            Visibility="{Binding DataContext.ShowGpuUsage, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
+                    <DataGridTextColumn Binding="{Binding GpuPower, Mode=OneWay}"
+                                            Header="GPU Power (W)"
+                                            Width="Auto"
+                                            IsReadOnly="True"
+                                            Visibility="{Binding DataContext.ShowGpuPower, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
+                    <DataGridTextColumn Binding="{Binding GpuClock, Mode=OneWay}"
+                                            Header="GPU Clock (MHz)"
+                                            Width="Auto"
+                                            IsReadOnly="True"
+                                            Visibility="{Binding DataContext.ShowGpuClock, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
+                    <DataGridTextColumn Binding="{Binding GpuTemp, Mode=OneWay}"
+                                            Header="GPU Temp (°C)"
+                                            Width="Auto"
+                                            IsReadOnly="True"
+                                            Visibility="{Binding DataContext.ShowGpuTemp, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
                 </DataGrid.Columns>
             </DataGrid>
         </StackPanel>
@@ -242,6 +287,9 @@
                                 <ColumnDefinition Width="50"/>
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="50"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <TextBlock Margin="5" Grid.Row="0" Grid.Column="0" Text="Creation date" VerticalAlignment="Center"/>
                             <ToggleButton Margin="5" Grid.Row="0" Grid.Column="1" IsChecked="{Binding ShowCreationDate}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
@@ -289,6 +337,24 @@
                             <ToggleButton Margin="5" Grid.Row="5" Grid.Column="7" IsChecked="{Binding ShowCpuFpsPerWatt}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
                             <TextBlock Margin="5" Grid.Row="6" Grid.Column="6" Text="GPU FPS/10W" VerticalAlignment="Center"/>
                             <ToggleButton Margin="5" Grid.Row="6" Grid.Column="7" IsChecked="{Binding ShowGpuFpsPerWatt}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                            <TextBlock Margin="5" Grid.Row="7" Grid.Column="6" Text="App latency (ms)" VerticalAlignment="Center"/>
+                            <ToggleButton Margin="5" Grid.Row="7" Grid.Column="7" IsChecked="{Binding ShowAppLatency}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                            <TextBlock Margin="5" Grid.Row="0" Grid.Column="9" Text="CPU max thread (%)" VerticalAlignment="Center"/>
+                            <ToggleButton Margin="5" Grid.Row="0" Grid.Column="10" IsChecked="{Binding ShowCpuMaxUsage}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                            <TextBlock Margin="5" Grid.Row="1" Grid.Column="9" Text="CPU power (W)" VerticalAlignment="Center"/>
+                            <ToggleButton Margin="5" Grid.Row="1" Grid.Column="10" IsChecked="{Binding ShowCpuPower}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                            <TextBlock Margin="5" Grid.Row="2" Grid.Column="9" Text="CPU clock (MHz)" VerticalAlignment="Center"/>
+                            <ToggleButton Margin="5" Grid.Row="2" Grid.Column="10" IsChecked="{Binding ShowCpuMaxClock}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                            <TextBlock Margin="5" Grid.Row="3" Grid.Column="9" Text="CPU temp (°C)" VerticalAlignment="Center"/>
+                            <ToggleButton Margin="5" Grid.Row="3" Grid.Column="10" IsChecked="{Binding ShowCpuTemp}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                            <TextBlock Margin="5" Grid.Row="4" Grid.Column="9" Text="GPU usage (%)" VerticalAlignment="Center"/>
+                            <ToggleButton Margin="5" Grid.Row="4" Grid.Column="10" IsChecked="{Binding ShowGpuUsage}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                            <TextBlock Margin="5" Grid.Row="5" Grid.Column="9" Text="GPU power (W)" VerticalAlignment="Center"/>
+                            <ToggleButton Margin="5" Grid.Row="5" Grid.Column="10" IsChecked="{Binding ShowGpuPower}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                            <TextBlock Margin="5" Grid.Row="6" Grid.Column="9" Text="GPU clock (MHz)" VerticalAlignment="Center"/>
+                            <ToggleButton Margin="5" Grid.Row="6" Grid.Column="10" IsChecked="{Binding ShowGpuClock}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                            <TextBlock Margin="5" Grid.Row="7" Grid.Column="9" Text="GPU temp (°C)" VerticalAlignment="Center"/>
+                            <ToggleButton Margin="5" Grid.Row="7" Grid.Column="10" IsChecked="{Binding ShowGpuTemp}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
                         </Grid>
                     </materialDesign:Card>
                 </materialDesign:PopupBox>

@@ -50,7 +50,25 @@ namespace CapFrameX.Data
 		public double CpuFpsPerWatt { get; set; }
         [DisplayName("GPU FPS / 10W")]
         public double GpuFpsPerWatt { get; set; }
-        [DisplayName("Comment")]
+		[DisplayName("App latency")]
+		public double AppLatency { get; set; }
+		[DisplayName("CPU Max Thread Usage (%)")]
+		public double CpuMaxUsage { get; set; }
+		[DisplayName("CPU Power (W)")]
+		public double CpuPower { get; set; }
+		[DisplayName("CPU Clock (MHz)")]
+		public double CpuMaxClock { get; set; }
+		[DisplayName("CPU Temp (°C)")]
+		public double CpuTemp { get; set; }
+		[DisplayName("GPU Usage (%)")]
+		public double GpuUsage { get; set; }
+		[DisplayName("GPU Power (W)")]
+		public double GpuPower { get; set; }
+		[DisplayName("GPU Clock (MHz)")]
+		public double GpuClock { get; set; }
+		[DisplayName("GPU Temp (°C)")]
+		public double GpuTemp { get; set; }
+		[DisplayName("Comment")]
 		public string CustomComment { get; set; }
 	}
 }
