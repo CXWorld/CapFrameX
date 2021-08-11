@@ -121,6 +121,9 @@ namespace CapFrameX.ViewModel
             if (!ReportInfoCollection.Any())
                 return;
 
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+
             StringBuilder builder = new StringBuilder();
 
             // Header
@@ -147,66 +150,96 @@ namespace CapFrameX.ViewModel
             var displayNameAdaptiveSTDFps = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.AdaptiveSTDFps);
             var displayNameCpuFpsPerWatt = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.CpuFpsPerWatt);
             var displayNameGpuFpsPerWatt = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.GpuFpsPerWatt);
+            var displayNameAppLatency = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.AppLatency);
+            var displayNameCpuUsage = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.CpuMaxUsage);
+            var displayNameCpuPower = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.CpuPower);
+            var displayNameCpuClock = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.CpuMaxClock);
+            var displayNameCpuTemp = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.CpuTemp);
+            var displayNameGpuUsage = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.GpuUsage);
+            var displayNameGpuPower = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.GpuPower);
+            var displayNameGpuClock = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.GpuClock);
+            var displayNameGpuTemp = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.GpuTemp);
             var displayNameCustomComment = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.CustomComment);
 
-            builder.Append(displayNameGame + "\t" +
-                           displayNameDate + "\t" +
-                           displayNameTime + "\t" +
-                           displayNameNumberOfSamples + "\t" +
-                           displayNameRecordTime + "\t" +
-                           displayNameCpu + "\t" +
-                           displayNameGraphicCard + "\t" +
-                           displayNameRam + "\t" +
-                           displayNameMaxFps + "\t" +
-                           displayNameNinetyNinePercentQuantileFps + "\t" +
-                           displayNameNinetyFivePercentQuantileFps + "\t" +
-                           displayNameAverageFps + "\t" +
-                           displayNameMedianFps + "\t" +
-                           displayNameFivePercentQuantileFps + "\t" +
-                           displayNameOnePercentQuantileFps + "\t" +
-                           displayNameOnePercentLowAverageFps + "\t" +
-                           displayNameZeroDotTwoPercentQuantileFps + "\t" +
-                           displayNameZeroDotOnePercentQuantileFps + "\t" +
-                           displayNameZeroDotOnePercentLowAverageFps + "\t" +
-                           displayNameMinFps + "\t" +
-                           displayNameAdaptiveSTDFps + "\t" +
-                           displayNameCpuFpsPerWatt + "\t" +
-                           displayNameGpuFpsPerWatt + "\t" +
-                           displayNameCustomComment +
-                           Environment.NewLine);
+            builder.Append(displayNameGame + 
+                (ShowCreationDate ? "\t" + displayNameDate : "") + 
+                (ShowCreationTime ? "\t" + displayNameTime : "") + 
+                (ShowNumberOfSamples ?  "\t" + displayNameNumberOfSamples : "" )+ 
+                (ShowRecordTime ?  "\t" + displayNameRecordTime : "") + 
+                (ShowCpuName ? "\t" + displayNameCpu : "") + 
+                (ShowGpuName ? "\t" + displayNameGraphicCard : "") + 
+                (ShowRamName ? "\t" + displayNameRam : "") + 
+                (ShowComment ? "\t" + displayNameCustomComment : "") + 
+                (ShowMaxFPS ? "\t" + displayNameMaxFps : "") + 
+                (ShowP99FPS ? "\t" + displayNameNinetyNinePercentQuantileFps : "") + 
+                (ShowP95FS ? "\t" + displayNameNinetyFivePercentQuantileFps : "") + 
+                (ShowAverageFPS ? "\t" + displayNameAverageFps : "") + 
+                (ShowMedianFPS ? "\t" + displayNameMedianFps : "") + 
+                (ShowP5FPS ? "\t" + displayNameFivePercentQuantileFps : "") + 
+                (ShowP1FPS ? "\t" + displayNameOnePercentQuantileFps : "") + 
+                (ShowP1LowFPS ? "\t" + displayNameOnePercentLowAverageFps : "") + 
+                (ShowP0Dot2FPS ? "\t" + displayNameZeroDotTwoPercentQuantileFps : "") + 
+                (ShowP0Dot1FPS ? "\t" + displayNameZeroDotOnePercentQuantileFps : "") + 
+                (ShowP0Dot1LowFPS ? "\t" + displayNameZeroDotOnePercentLowAverageFps : "") + 
+                (ShowMinFPS ? "\t" + displayNameMinFps : "") + 
+                (ShowAdaptiveSTD ? "\t" + displayNameAdaptiveSTDFps : "") +
+                (ShowCpuFpsPerWatt ? "\t" + displayNameCpuFpsPerWatt : "") +
+                (ShowGpuFpsPerWatt ? "\t" + displayNameGpuFpsPerWatt : "") + 
+                (ShowAppLatency ? "\t" + displayNameAppLatency : "") + 
+                (ShowCpuMaxUsage ? "\t" + displayNameCpuUsage : "") + 
+                (ShowCpuPower ? "\t" + displayNameCpuPower : "") + 
+                (ShowCpuMaxClock ? "\t" + displayNameCpuClock : "") + 
+                (ShowCpuTemp ? "\t" + displayNameCpuTemp : "") + 
+                (ShowGpuUsage ? "\t" + displayNameGpuUsage : "") + 
+                (ShowGpuPower ? "\t" + displayNameGpuPower : "") + 
+                (ShowGpuClock ? "\t" + displayNameGpuClock : "") + 
+                (ShowGpuTemp ? "\t" + displayNameGpuTemp : "") +
+                Environment.NewLine);
 
             var cultureInfo = CultureInfo.CurrentCulture;
 
             foreach (var reportInfo in ReportInfoCollection)
             {
-                builder.Append(reportInfo.Game + "\t" +
-                               reportInfo.Date?.ToString(cultureInfo) + "\t" +
-                               reportInfo.Time?.ToString(cultureInfo) + "\t" +
-                               reportInfo.NumberOfSamples + "\t" +
-                               reportInfo.RecordTime?.ToString(cultureInfo) + "\t" +
-                               reportInfo.Cpu + "\t" +
-                               reportInfo.GraphicCard + "\t" +
-                               reportInfo.Ram + "\t" +
-                               reportInfo.MaxFps.ToString(cultureInfo) + "\t" +
-                               reportInfo.NinetyNinePercentQuantileFps.ToString(cultureInfo) + "\t" +
-                               reportInfo.NinetyFivePercentQuantileFps.ToString(cultureInfo) + "\t" +
-                               reportInfo.AverageFps.ToString(cultureInfo) + "\t" +
-                               reportInfo.MedianFps.ToString(cultureInfo) + "\t" +
-                               reportInfo.FivePercentQuantileFps.ToString(cultureInfo) + "\t" +
-                               reportInfo.OnePercentQuantileFps.ToString(cultureInfo) + "\t" +
-                               reportInfo.OnePercentLowAverageFps.ToString(cultureInfo) + "\t" +
-                               reportInfo.ZeroDotTwoPercentQuantileFps.ToString(cultureInfo) + "\t" +
-                               reportInfo.ZeroDotOnePercentQuantileFps.ToString(cultureInfo) + "\t" +
-                               reportInfo.ZeroDotOnePercentLowAverageFps.ToString(cultureInfo) + "\t" +
-                               reportInfo.MinFps.ToString(cultureInfo) + "\t" +
-                               reportInfo.AdaptiveSTDFps.ToString(cultureInfo) + "\t" +
-                               reportInfo.CpuFpsPerWatt.ToString(cultureInfo) + "\t" +
-                               reportInfo.GpuFpsPerWatt.ToString(cultureInfo) + "\t" +
-                               reportInfo.CustomComment +
-                               Environment.NewLine);
+                builder.Append(reportInfo.Game +
+                    (ShowCreationDate ? "\t" + reportInfo.Date?.ToString(cultureInfo) : "") +
+                    (ShowCreationTime ? "\t" + reportInfo.Time?.ToString(cultureInfo) : "") +
+                    (ShowNumberOfSamples ? "\t" + reportInfo.NumberOfSamples : "") +
+                    (ShowRecordTime ? "\t" + reportInfo.RecordTime?.ToString(cultureInfo) : "") +
+                    (ShowCpuName ? "\t" + reportInfo.Cpu : "") +
+                    (ShowGpuName ? "\t" + reportInfo.GraphicCard : "") +
+                    (ShowRamName ? "\t" + reportInfo.Ram : "") +
+                    (ShowComment ? "\t" + reportInfo.CustomComment : "") +
+                    (ShowMaxFPS ? "\t" + reportInfo.MaxFps.ToString(cultureInfo) : "") +
+                    (ShowP99FPS ? "\t" + reportInfo.NinetyNinePercentQuantileFps.ToString(cultureInfo) : "") +
+                    (ShowP95FS ? "\t" + reportInfo.NinetyFivePercentQuantileFps.ToString(cultureInfo) : "") +
+                    (ShowAverageFPS ? "\t" + reportInfo.AverageFps.ToString(cultureInfo) : "") +
+                    (ShowMedianFPS ? "\t" + reportInfo.MedianFps.ToString(cultureInfo) : "") +
+                    (ShowP5FPS ? "\t" + reportInfo.FivePercentQuantileFps.ToString(cultureInfo) : "") +
+                    (ShowP1FPS ? "\t" + reportInfo.OnePercentQuantileFps.ToString(cultureInfo) : "") +
+                    (ShowP1LowFPS ? "\t" + reportInfo.OnePercentLowAverageFps.ToString(cultureInfo) : "") +
+                    (ShowP0Dot2FPS ? "\t" + reportInfo.ZeroDotTwoPercentQuantileFps.ToString(cultureInfo) : "") +
+                    (ShowP0Dot1FPS ? "\t" + reportInfo.ZeroDotOnePercentQuantileFps.ToString(cultureInfo) : "") +
+                    (ShowP0Dot1LowFPS ? "\t" + reportInfo.ZeroDotOnePercentLowAverageFps.ToString(cultureInfo) : "") +
+                    (ShowMinFPS ? "\t" + reportInfo.MinFps.ToString(cultureInfo) : "") +
+                    (ShowAdaptiveSTD ? "\t" + reportInfo.AdaptiveSTDFps.ToString(cultureInfo) : "") +
+                    (ShowCpuFpsPerWatt ? "\t" + reportInfo.CpuFpsPerWatt.ToString(cultureInfo) : "") +
+                    (ShowGpuFpsPerWatt ? "\t" + reportInfo.GpuFpsPerWatt.ToString(cultureInfo) : "") +
+                    (ShowAppLatency ? "\t" + reportInfo.AppLatency.ToString(cultureInfo) : "") +
+                    (ShowCpuMaxUsage ? "\t" + reportInfo.CpuMaxUsage.ToString(cultureInfo) : "") +
+                    (ShowCpuPower ? "\t" + reportInfo.CpuPower.ToString(cultureInfo) : "") +
+                    (ShowCpuMaxClock ? "\t" + reportInfo.CpuMaxClock.ToString(cultureInfo) : "") +
+                    (ShowCpuTemp ? "\t" + reportInfo.CpuTemp.ToString(cultureInfo) : "") +
+                    (ShowGpuUsage ? "\t" + reportInfo.GpuUsage.ToString(cultureInfo) : "") +
+                    (ShowGpuPower ? "\t" + reportInfo.GpuPower.ToString(cultureInfo) : "") +
+                    (ShowGpuClock ? "\t" + reportInfo.GpuClock.ToString(cultureInfo) : "") +
+                    (ShowGpuTemp ? "\t" + reportInfo.GpuTemp.ToString(cultureInfo) : "") + 
+                    Environment.NewLine);
             }
 
             Clipboard.SetDataObject(builder.ToString(), false);
+
+            stopwatch.Stop();
+            Console.WriteLine(stopwatch.ElapsedMilliseconds);
         }
 
         private void SubscribeToSelectRecord()

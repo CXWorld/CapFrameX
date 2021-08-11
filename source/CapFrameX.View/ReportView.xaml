@@ -62,7 +62,7 @@
 			</DataGrid.ContextMenu>
 			<DataGrid.Columns>
                     <DataGridTextColumn Binding="{Binding Game, Mode=OneWay}"
-                                            Header="Game"
+                                            Header="Game Name"
                                             Width="Auto"
                                             MinWidth="150"
                                             IsReadOnly="True"/>
@@ -82,7 +82,7 @@
                                             IsReadOnly="True"
                                             Visibility="{Binding DataContext.ShowNumberOfSamples, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
                     <DataGridTextColumn Binding="{Binding RecordTime, Mode=OneWay}"
-                                            Header="Record Time"
+                                            Header="Record Time (s)"
                                             Width="Auto"
                                             IsReadOnly="True"
                                             Visibility="{Binding DataContext.ShowRecordTime, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
@@ -112,12 +112,12 @@
                                             IsReadOnly="True"
                                             Visibility="{Binding DataContext.ShowMaxFPS, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
                     <DataGridTextColumn Binding="{Binding NinetyNinePercentQuantileFps, Mode=OneWay}"
-                                            Header="99% percentile"
+                                            Header="P99 FPS"
                                             Width="Auto"
                                             IsReadOnly="True"
                                             Visibility="{Binding DataContext.ShowP99FPS, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
                     <DataGridTextColumn Binding="{Binding NinetyFivePercentQuantileFps, Mode=OneWay}"
-                                            Header="95% percentile"
+                                            Header="P95 FPS"
                                             Width="Auto"
                                             IsReadOnly="True"
                                             Visibility="{Binding DataContext.ShowP95FS, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
@@ -132,37 +132,32 @@
                                             IsReadOnly="True"
                                             Visibility="{Binding DataContext.ShowMedianFPS, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
                     <DataGridTextColumn Binding="{Binding FivePercentQuantileFps, Mode=OneWay}"
-                                            Header="5% percentile"
+                                            Header="P5 FPS"
                                             Width="Auto"
                                             IsReadOnly="True"
                                             Visibility="{Binding DataContext.ShowP5FPS, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
                     <DataGridTextColumn Binding="{Binding OnePercentQuantileFps, Mode=OneWay}"
-                                            Header="1% percentile"
+                                            Header="P1 FPS"
                                             Width="Auto"
                                             IsReadOnly="True"
                                             Visibility="{Binding DataContext.ShowP1FPS, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
                     <DataGridTextColumn Binding="{Binding OnePercentLowAverageFps, Mode=OneWay}"
-                                            Header="1% low integral"
+                                            Header="1% low integral FPS"
                                             Width="Auto"
                                             IsReadOnly="True"
                                             Visibility="{Binding DataContext.ShowP1LowFPS, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
                     <DataGridTextColumn Binding="{Binding ZeroDotTwoPercentQuantileFps, Mode=OneWay}"
-                                            Header="0.2% percentile"
+                                            Header="P0.2 FPS"
                                             Width="Auto"
                                             IsReadOnly="True"
                                             Visibility="{Binding DataContext.ShowP0Dot2FPS, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
                     <DataGridTextColumn Binding="{Binding ZeroDotOnePercentQuantileFps, Mode=OneWay}"
-                                            Header="0.1% percentile"
+                                            Header="P0.1 FPS"
                                             Width="Auto"
                                             IsReadOnly="True"
                                             Visibility="{Binding DataContext.ShowP0Dot1FPS, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
-                    <DataGridTextColumn Binding="{Binding ZeroDotOnePercentQuantileFps, Mode=OneWay}"
-                                            Header="0.1% percentile"
-                                            Width="Auto"
-                                            IsReadOnly="True"
-                                            Visibility="{Binding DataContext.ShowP1LowFPS, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
                     <DataGridTextColumn Binding="{Binding ZeroDotOnePercentLowAverageFps, Mode=OneWay}"
-                                            Header="0.1% low integral"
+                                            Header="0.1% low integral FPS"
                                             Width="Auto"
                                             IsReadOnly="True"
                                             Visibility="{Binding DataContext.ShowP0Dot1LowFPS, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>

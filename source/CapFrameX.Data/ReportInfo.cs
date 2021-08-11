@@ -4,7 +4,7 @@ namespace CapFrameX.Data
 {
 	public class ReportInfo
 	{
-		[DisplayName("Game")]
+		[DisplayName("Game Name")]
 		public string Game { get; set; }
 		[DisplayName("Creation date")]
 		public string Date { get; set; }
@@ -12,35 +12,35 @@ namespace CapFrameX.Data
 		public string Time { get; set; }
 		[DisplayName("# samples")]
 		public string NumberOfSamples {get; set; }
-		[DisplayName("Record time")]
+		[DisplayName("Record time (s)")]
 		public string RecordTime { get; set; }
-		[DisplayName("CPU")]
+		[DisplayName("CPU Name")]
 		public string Cpu { get; set; }
-		[DisplayName("GPU")]
+		[DisplayName("GPU Name")]
 		public string GraphicCard { get; set; }
 		[DisplayName("RAM")]
 		public string Ram { get; set; }
 		[DisplayName("Max FPS")]
 		public double MaxFps { get; set; }
-		[DisplayName("99% percentile")]
+		[DisplayName("P99 FPS")]
 		public double NinetyNinePercentQuantileFps { get; set; }
-		[DisplayName("95% percentile")]
+		[DisplayName("P95 FPS")]
 		public double NinetyFivePercentQuantileFps { get; set; }
 		[DisplayName("Average FPS")]
 		public double AverageFps { get; set; }
 		[DisplayName("Median FPS")]
 		public double MedianFps { get; set; }
-		[DisplayName("5% percentile")]
+		[DisplayName("P5 FPS")]
 		public double FivePercentQuantileFps { get; set; }
-		[DisplayName("1% percentile")]
+		[DisplayName("P1 FPS")]
 		public double OnePercentQuantileFps { get; set; }
-		[DisplayName("1% low average")]
+		[DisplayName("1% low integral FPS")]
         public double OnePercentLowAverageFps { get; set; }
-        [DisplayName("0.2% percentile")]
+        [DisplayName("P0.2 FPS")]
 		public double ZeroDotTwoPercentQuantileFps { get; set; }
-		[DisplayName("0.1% percentile")]
+		[DisplayName("P0.1 FPS")]
         public double ZeroDotOnePercentQuantileFps { get; set; }
-		[DisplayName("0.1% low average")]
+		[DisplayName("0.1% low integral FPS")]
 		public double ZeroDotOnePercentLowAverageFps { get; set; }
 		[DisplayName("Min FPS")]
 		public double MinFps { get; set; }
@@ -50,7 +50,7 @@ namespace CapFrameX.Data
 		public double CpuFpsPerWatt { get; set; }
         [DisplayName("GPU FPS / 10W")]
         public double GpuFpsPerWatt { get; set; }
-		[DisplayName("App latency")]
+		[DisplayName("App latency (ms)")]
 		public double AppLatency { get; set; }
 		[DisplayName("CPU Max Thread Usage (%)")]
 		public double CpuMaxUsage { get; set; }
