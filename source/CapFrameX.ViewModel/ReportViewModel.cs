@@ -120,10 +120,7 @@ namespace CapFrameX.ViewModel
         {
             if (!ReportInfoCollection.Any())
                 return;
-
-            var stopwatch = new Stopwatch();
-            stopwatch.Start();
-
+            
             StringBuilder builder = new StringBuilder();
 
             // Header
@@ -237,9 +234,6 @@ namespace CapFrameX.ViewModel
             }
 
             Clipboard.SetDataObject(builder.ToString(), false);
-
-            stopwatch.Stop();
-            Console.WriteLine(stopwatch.ElapsedMilliseconds);
         }
 
         private void SubscribeToSelectRecord()
