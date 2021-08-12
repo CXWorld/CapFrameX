@@ -410,8 +410,8 @@
                                     </DataGrid.ContextMenu>
                                     <DataGrid.Columns>
                                         <DataGridTextColumn Binding="{Binding Name, Mode=OneWay}"                                                           
-                                            Header="Sensor"                 
-                                            MinWidth="200"
+                                            Header="Sensor"       
+                                            MinWidth="175"
                                             IsReadOnly="True"/>
                                         <DataGridTextColumn Binding="{Binding MinValue, Mode=OneWay}"
                                             Header="Min"
