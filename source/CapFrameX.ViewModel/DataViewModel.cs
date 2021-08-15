@@ -270,7 +270,7 @@ namespace CapFrameX.ViewModel
 
         public double MinRangeSliderRange
         {
-            get { return MaxRecordingTime * 0.05; }
+            get { return MaxRecordingTime * 0.01; }
         }
 
         public double FirstSeconds
@@ -442,6 +442,8 @@ namespace CapFrameX.ViewModel
 
         public ICommand CutRecordCommand { get; }
 
+        public ICommand CutRecordInverseCommand { get; }
+
         public bool GpuLoad
         {
             get => _gpuLoad;
@@ -533,7 +535,8 @@ namespace CapFrameX.ViewModel
             CopySystemInfoCommand = new DelegateCommand(OnCopySystemInfoCommand);
             CopySensorInfoCommand = new DelegateCommand(OnCopySensorInfo);
             CopyRawSensorInfoCommand = new DelegateCommand(OnCopyRawSensorInfo);
-            CutRecordCommand = new DelegateCommand(OnCutRecord);
+            CutRecordCommand = new DelegateCommand(() => OnCutRecord(false));
+            CutRecordInverseCommand = new DelegateCommand(() => OnCutRecord(true));
             CopyFPSThresholdDataCommand = new DelegateCommand(OnCopyFPSThresholdData);
             ThresholdCountsCommand = new DelegateCommand(() => _appConfiguration.ShowThresholdTimes = false);
             ThresholdTimesCommand = new DelegateCommand(() => _appConfiguration.ShowThresholdTimes = true);
@@ -832,9 +835,9 @@ namespace CapFrameX.ViewModel
             FpsGraphDataContext.BuildPlotmodel(new VisibleGraphs(GpuLoad, CpuLoad, CpuMaxThreadLoad, GpuPowerLimit, ShowAggregationSeparators));
         }
 
-        private async void OnCutRecord()
+        private async void OnCutRecord(bool inverse)
         {
-            await _recordManager.DuplicateSession(_localRecordDataServer.CurrentSession, FirstSeconds, LastSeconds);
+            await _recordManager.DuplicateSession(_localRecordDataServer.CurrentSession, inverse, FirstSeconds, LastSeconds);
         }
 
         private void UpdateRangeSliderParameter()

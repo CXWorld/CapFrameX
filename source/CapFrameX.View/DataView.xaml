@@ -183,11 +183,12 @@
                         <mahapps:RangeSlider Margin="40 10 40 30" LowerValue="{Binding FirstSeconds}" UpperValue="{Binding LastSeconds}" Panel.ZIndex="1"
                                      Maximum="{Binding MaxRecordingTime}"                                    
 									 TickPlacement="BottomRight" TickFrequency="2.5"                                     
-                                     MinRange="{Binding MinRangeSliderRange}"
+                                     MinRange="0.1"
+                                     MinRangeWidth="0"
 									 Style="{StaticResource CustomRangeSlider}"
                                      Thumb.DragCompleted="RangeSlider_DragCompleted"/>
                         <StackPanel HorizontalAlignment="Right" VerticalAlignment="Bottom" Orientation="Horizontal" Margin="0 0 10 0" Height="25">
-                            <TextBlock Text="Start and end points:" Margin="0 5 5 0" Foreground="{DynamicResource MaterialDesignBody}"/>
+                            <TextBlock Text="Range:" Margin="0 5 5 0" Foreground="{DynamicResource MaterialDesignBody}"/>
                             <TextBox Grid.Row="1" materialDesign:HintAssist.Hint="Start (s)" HorizontalAlignment="Center" Width="45" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}"
                                       ToolTip="Range Slider start point" PreviewKeyDown="FirstSecondsTextBox_PreviewKeyDown" PreviewTextInput="NumberValidationTextBox" TextAlignment="Center" Text="{Binding FirstSeconds, Mode=TwoWay, StringFormat=F2, UpdateSourceTrigger=LostFocus}"
                                      Foreground="{DynamicResource MaterialDesignBody}" materialDesign:HintAssist.HintOpacity=".8"/>
@@ -196,8 +197,16 @@
                                      ToolTip="Range Slider end point" PreviewKeyDown="LastSecondsTextBox_PreviewKeyDown" PreviewTextInput="NumberValidationTextBox" TextAlignment="Center" Text="{Binding LastSeconds, Mode=TwoWay, StringFormat=F2, UpdateSourceTrigger=LostFocus}"
                                      Foreground="{DynamicResource MaterialDesignBody}" materialDesign:HintAssist.HintOpacity=".8"/>
                             <Button Grid.Row="1" Grid.Column="1" HorizontalAlignment="Right" Margin="10 0 0 0" Height="22" Width="22" Command="{Binding CutRecordCommand}"  Foreground="White"
-                                    Style="{StaticResource MaterialDesignFloatingActionMiniButton}" ToolTip="Cut the record based on range slider and save it as a new file">
+                                    Style="{StaticResource MaterialDesignFloatingActionMiniButton}" ToolTip="Cut and duplicate data inside of range slider position and save it as new file">
                                 <materialDesign:PackIcon Kind="ContentCut" Height="15" Width="15" />
+                            </Button>
+                            <Button Grid.Row="1" Grid.Column="1" HorizontalAlignment="Right" Margin="10 0 0 0" Height="22" Width="22" Command="{Binding CutRecordInverseCommand}"  Foreground="White" Background="OrangeRed" BorderBrush="OrangeRed"
+                                    Style="{StaticResource MaterialDesignFloatingActionMiniButton}" ToolTip="Cut and duplicate data outside of range slider position and save it as new file">
+                                <materialDesign:PackIcon Kind="ContentCut" Height="15" Width="15" RenderTransformOrigin=".5,.5">
+                                    <materialDesign:PackIcon.RenderTransform>
+                                        <RotateTransform Angle="180"/>
+                                    </materialDesign:PackIcon.RenderTransform>
+                                </materialDesign:PackIcon>
                             </Button>
                         </StackPanel>
                         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Bottom" Orientation="Horizontal" Margin="0 0 0 5" Height="15">

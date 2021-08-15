@@ -502,14 +502,13 @@ namespace CapFrameX.Data
             }
         }
 
-        public async Task DuplicateSession(ISession session, double startTime = 0, double endTime = double.PositiveInfinity)
+        public async Task DuplicateSession(ISession session, bool inverse, double startTime = 0, double endTime = double.PositiveInfinity)
         {
             if (session == null)
             {
                 _logger.LogError("Error duplicating session. No session found.");
                 return;
             }
-
 
             try
             {
@@ -545,15 +544,25 @@ namespace CapFrameX.Data
                     var indicesToKeep = new List<int>();
                     for (int index = 0; index < reference.Count(); index++)
                     {
-                        if (reference[index] >= startTime && reference[index] <= endTime)
+                        if (!inverse)
                         {
-                            indicesToKeep.Add(index);
+                            if (reference[index] >= startTime && reference[index] <= endTime)
+                            {
+                                indicesToKeep.Add(index);
+                            }
+                        }
+                        else
+                        {
+                            if (reference[index] <= startTime || reference[index] >= endTime)
+                            {
+                                indicesToKeep.Add(index);
+                            }
                         }
                     }
                     return indicesToKeep.ToArray();
                 }
 
-                for (int sessionRunIndex = 0; sessionRunIndex < clone.Runs.Count(); sessionRunIndex++)
+                for (int sessionRunIndex = 0; sessionRunIndex < clone.Runs.Count; sessionRunIndex++)
                 {
                     var sourceSessionRun = session.Runs[sessionRunIndex];
                     var targetSessionRun = clone.Runs[sessionRunIndex];
@@ -574,12 +583,13 @@ namespace CapFrameX.Data
                             clone.Runs[sessionRunIndex].SensorData2.Add(collection.Key, clonedSensorEntry);
                         }
                     }
-
-                    // remove runs without data
-                    clone.Runs = clone.Runs.Where(r => r.CaptureData.TimeInSeconds.Length != 0).ToList();
-
+                    
                     targetSessionRun.Hash = Convert.ToString(targetSessionRun.GetHashCode()); // Dirty Hack weil (weil Alex Hacks mag) Rohdaten nicht mehr vorhanden. Hash ist nicht vergleichbar mit dem Hash, welcher aus den PresentMonLines erstellt wird
                 }
+
+                // remove runs without data
+                clone.Runs = clone.Runs.Where(r => r.CaptureData.TimeInSeconds.Length != 0).ToList();
+
 
                 clone.Hash = string.Join(",", clone.Runs.Select(r => r.Hash).OrderBy(h => h)).GetSha1();
                 clone.Info.Id = Guid.NewGuid();
