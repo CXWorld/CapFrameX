@@ -242,9 +242,9 @@
                     <!--FPS thresholds and stuttering analysis-->
                     <Grid Grid.Column="2" Margin="5 0 0 0" >
                         <TabControl Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" FocusVisualStyle="{x:Null}" >
-                            <TabItem Width="110">
+                            <TabItem Width="75">
                                 <TabItem.Header>
-                                    <Label FontSize="12">Stuttering analysis</Label>
+                                    <Label FontSize="12">Stuttering</Label>
                                 </TabItem.Header>
                                 <Grid>
                                     <lvc:PieChart Margin="10 5 200 5" MaxHeight="250" Hoverable="False" Series="{Binding StutteringStatisticCollection}" 
@@ -290,6 +290,20 @@
                                         </materialDesign:PopupBox>
                                         <TextBlock VerticalAlignment="Center" Text="Options"/>
                                     </StackPanel>
+                                </Grid>
+                            </TabItem>
+                            <TabItem Width="75">
+                                <TabItem.Header>
+                                    <Label FontSize="12">Variances</Label>
+                                </TabItem.Header>
+                                <Grid>
+                                    <TextBlock Margin="10 3 0 0" Text="Difference between&#xA;successive frametime values"></TextBlock>
+                                    <lvc:PieChart Margin="10 5 115 5" MaxHeight="250" Hoverable="False" Series="{Binding VarianceStatisticCollection}" 
+								        LegendLocation="Left" DataClick="Chart_OnDataClick" DataTooltip="{x:Null}" StartingRotationAngle="0">
+                                        <lvc:PieChart.ChartLegend>
+                                            <lvc:DefaultLegend FontSize="14" FontWeight="Medium" Margin="0 10 0 0"/>
+                                        </lvc:PieChart.ChartLegend>
+                                    </lvc:PieChart>
                                 </Grid>
                             </TabItem>
                             <TabItem Width="105">
@@ -359,9 +373,9 @@
                                     </lvc:CartesianChart>
                                 </Grid>
                             </TabItem>
-                            <TabItem Width="105" IsEnabled="{Binding AdditionalGraphsEnabled}">
+                            <TabItem Width="75" IsEnabled="{Binding AdditionalGraphsEnabled}">
                                 <TabItem.Header>
-                                    <Label FontSize="12">Sensor statistics</Label>
+                                    <Label FontSize="12">Sensor data</Label>
                                 </TabItem.Header>
                                 <DataGrid FontSize="11" ItemsSource="{Binding SensorReportItems}" ColumnHeaderHeight="25" SelectionUnit="FullRow"
 										CanUserSortColumns="False" CanUserAddRows="False" AutoGenerateColumns="False"

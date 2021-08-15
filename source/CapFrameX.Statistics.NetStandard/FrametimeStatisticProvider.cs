@@ -101,6 +101,7 @@ namespace CapFrameX.Statistics.NetStandard
             return adjustedSequence;
         }
 
+
         public double GetPQuantileSequence(IList<double> sequence, double pQuantile)
         {
             return sequence.Quantile(pQuantile);
@@ -423,6 +424,57 @@ namespace CapFrameX.Statistics.NetStandard
             }
 
             return times;
+        }
+
+        public IList<double> GetFrametimeVariancePercentages(IList<double> frametimes)
+        {
+
+            if (!frametimes.Any())
+                return new List<double>();
+
+            // Get frametime variances
+            var frametimeVariances = new List<double>();
+
+            for (int i = 1; i < frametimes.Count(); i++)
+            {
+                frametimeVariances.Add(Math.Abs(frametimes[i] - frametimes[i - 1]));
+            }
+
+            // Create bins for variance thresholds
+            int threshold2Count = 0;
+            int threshold4Count = 0;
+            int threshold8Count = 0;
+            int threshold12Count = 0;
+            int thresholdOver12Count = 0;
+
+            var average = frametimes.Average();
+
+            foreach (var variance in frametimeVariances)
+            {
+                if (variance < 2)
+                    threshold2Count++;
+                else if (variance < 4)
+                    threshold4Count++;
+                else if (variance < 8)
+                    threshold8Count++;
+                else if (variance < 12)
+                    threshold12Count++;
+                else
+                    thresholdOver12Count++;
+            }
+
+            // Add percentage of variance bins to List
+            IList<double> variancePercentages = new List<double>();
+
+            double varianceCount = frametimeVariances.Count();
+
+            variancePercentages.Add(Math.Round(threshold2Count * 100 / varianceCount, 3));
+            variancePercentages.Add(Math.Round(threshold4Count * 100 / varianceCount, 3));
+            variancePercentages.Add(Math.Round(threshold8Count * 100 / varianceCount, 3));
+            variancePercentages.Add(Math.Round(threshold12Count * 100 / varianceCount, 3));
+            variancePercentages.Add(Math.Round(thresholdOver12Count * 100 / varianceCount, 3));
+
+            return variancePercentages;
         }
     }
 }

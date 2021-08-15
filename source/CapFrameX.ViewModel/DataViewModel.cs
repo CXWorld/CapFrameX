@@ -53,6 +53,7 @@ namespace CapFrameX.ViewModel
         private SeriesCollection _statisticCollection;
         private SeriesCollection _lShapeCollection;
         private SeriesCollection _stutteringStatisticCollection;
+        private SeriesCollection _variancetatisticCollection;
         private string[] _parameterLabels;
         private string[] _lShapeLabels;
         private string[] _advancedParameterLabels;
@@ -183,6 +184,16 @@ namespace CapFrameX.ViewModel
             set
             {
                 _stutteringStatisticCollection = value;
+                RaisePropertyChanged();
+            }
+        }
+        
+        public SeriesCollection VarianceStatisticCollection
+        {
+            get { return _variancetatisticCollection; }
+            set
+            {
+                _variancetatisticCollection = value;
                 RaisePropertyChanged();
             }
         }
@@ -910,6 +921,7 @@ namespace CapFrameX.ViewModel
 
                 Task.Factory.StartNew(() => SetStaticChart(subset));
                 Task.Factory.StartNew(() => SetStutteringChart(subset));
+                Task.Factory.StartNew(() => SetVarianceChart(subset));
                 Task.Factory.StartNew(() => SetFpsThresholdChart(subset));
             }
         }
@@ -938,6 +950,7 @@ namespace CapFrameX.ViewModel
             {
                 Task.Factory.StartNew(() => SetStaticChart(subset));
                 Task.Factory.StartNew(() => SetStutteringChart(subset));
+                Task.Factory.StartNew(() => SetVarianceChart(subset));
                 Task.Factory.StartNew(() => SetFpsThresholdChart(subset));
                 UpdateSensorSessionReport();
             }
@@ -1135,6 +1148,66 @@ namespace CapFrameX.ViewModel
             }));
         }
 
+        private void SetVarianceChart(IList<double> frametimes)
+        {
+            if (frametimes == null || !frametimes.Any())
+                return;
+
+            var variances = _frametimeStatisticProvider.GetFrametimeVariancePercentages(frametimes);
+
+
+            Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+            {
+                VarianceStatisticCollection = new SeriesCollection
+                {
+                    new PieSeries
+                    {
+                        Title = $"< 2ms ({Math.Round(variances[0], 2)}%)",
+                        Values = new ChartValues<double>() { variances[0] },
+                        DataLabels = false,
+                        Fill = new SolidColorBrush(Color.FromRgb(34, 151, 243)), // blue
+                        StrokeThickness = 0
+                    },
+
+                    new PieSeries
+                    {
+                        Title = $"< 4ms ({ Math.Round(variances[1], 2) }%)",
+                        Values = new ChartValues<double>() { variances[1] },
+                        DataLabels = false,
+                        Fill = new SolidColorBrush(Color.FromRgb(28, 95, 138)), // dark blue
+                        StrokeThickness = 0
+                    },
+
+                    new PieSeries
+                    {
+                        Title = $"< 8ms ({ Math.Round(variances[2], 2) }%)",
+                        Values = new ChartValues<double>() { variances[2] },
+                        DataLabels = false,
+                        Fill = new SolidColorBrush(Color.FromRgb(255, 180, 0)), // yellow
+                        StrokeThickness = 0
+                    },
+
+                    new PieSeries
+                    {
+                        Title = $"< 12ms ({ Math.Round(variances[3], 2) }%)",
+                        Values = new ChartValues<double>() { variances[3] },
+                        DataLabels = false,
+                        Fill = new SolidColorBrush(Color.FromRgb(241, 125, 32)), // orange
+                        StrokeThickness = 0
+                    },
+
+                    new PieSeries
+                    {
+                        Title = $"> 12ms ({ Math.Round(variances[4], 2) }%)",
+                        Values = new ChartValues<double>() { variances[4] },
+                        DataLabels = false,
+                        Fill = new SolidColorBrush(Color.FromRgb(200, 0, 0)), // red
+                        StrokeThickness = 0
+                    },
+                };
+            }));
+        }
+
         private void SetLShapeChart(IList<double> frametimes, IList<double> fps)
         {
             if (frametimes == null || !frametimes.Any())
@@ -1179,6 +1252,7 @@ namespace CapFrameX.ViewModel
             LShapeCollection?.Clear();
             StatisticCollection?.Clear();
             StutteringStatisticCollection?.Clear();
+            VarianceStatisticCollection?.Clear();
             SystemInfos?.Clear();
         }
 
@@ -1248,6 +1322,7 @@ namespace CapFrameX.ViewModel
 
             return setting;
         }
+
 
         public void OnStutteringOptionsChanged()
         {

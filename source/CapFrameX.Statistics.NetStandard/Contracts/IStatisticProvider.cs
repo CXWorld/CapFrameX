@@ -33,5 +33,7 @@ namespace CapFrameX.Statistics.NetStandard.Contracts
         IList<int> GetFpsThresholdCounts(IList<double> frametimes, bool isReversed);
 
         IList<double> GetFpsThresholdTimes(IList<double> frametimes, bool isReversed);
+
+        IList<double> GetFrametimeVariancePercentages(IList<double> frametimes);
     }
 }
