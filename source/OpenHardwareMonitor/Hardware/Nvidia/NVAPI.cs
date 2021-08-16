@@ -349,6 +349,19 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
         internal uint[] Unknown5;
     }
 
+    [StructLayout(LayoutKind.Sequential, Pack = 8)]
+    public struct PrivateThermalSensorsV2
+    {
+        internal uint Version;
+        internal uint Mask;
+
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = NVAPI.THERMAL_SENSOR_RESERVED_COUNT)]
+        internal int[] Reserved;
+
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = NVAPI.THERMAL_SENSOR_TEMPERATURE_COUNT)]
+        internal int[] Temperatures;
+    }
+
     internal class NVAPI
     {
         public const int MAX_PHYSICAL_GPUS = 64;
@@ -364,6 +377,8 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
         public const int POWER_STATUS_CHANNEL_COUNT = 32;
         public const int PERFORMANCE_STATUS_TIMER_COUNT = 3;
         public const int PERFORMANCE_STATUS_UNKNOWN_COUNT = 326;
+        public const int THERMAL_SENSOR_RESERVED_COUNT = 8;
+        public const int THERMAL_SENSOR_TEMPERATURE_COUNT = 32;
 
         public static readonly uint GPU_THERMAL_SETTINGS_VER = (uint)
           Marshal.SizeOf(typeof(NvGPUThermalSettings)) | 0x10000;
@@ -389,6 +404,8 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
           Marshal.SizeOf(typeof(NvGpuVoltageStatus)) | 0x10000;
         public static readonly uint GPU_PERFORMANCE_STATUS_VER = (uint)
           Marshal.SizeOf(typeof(PerformanceStatusV1)) | 0x10000;
+        public static readonly uint GPU_THERMAL_STATUS_VER = (uint)
+          Marshal.SizeOf(typeof(PrivateThermalSensorsV2)) | 0x20000;
 
         private delegate IntPtr nvapi_QueryInterfaceDelegate(uint id);
 
@@ -487,6 +504,10 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
         public delegate NvStatus NvAPI_GPU_PerfGetStatusDelegate(
            NvPhysicalGpuHandle gpuHandle, ref PerformanceStatusV1 performanceStatus);
 
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate NvStatus NvAPI_GPU_GetThermalStatusDelegate(
+            NvPhysicalGpuHandle gpuHandle, ref PrivateThermalSensorsV2 thermalSensorsStatus);
+
         private static readonly bool available;
         private static readonly nvapi_QueryInterfaceDelegate nvapi_QueryInterface;
         private static readonly NvAPI_InitializeDelegate NvAPI_Initialize;
@@ -533,6 +554,8 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
             NvAPI_GetVBlankCounter;
         public static readonly NvAPI_GPU_PerfGetStatusDelegate
             NvAPI_GPU_PerfGetStatus;
+        public static readonly NvAPI_GPU_GetThermalStatusDelegate
+            NvAPI_GPU_ThermalGetStatus;
 
         private NVAPI() { }
 
@@ -631,6 +654,7 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
                 GetDelegate(0x465f9bcf, out NvAPI_GPU_GetCurrentVoltage);
                 GetDelegate(0x67B5DB55, out NvAPI_GetVBlankCounter);
                 GetDelegate(0x3d358a0c, out NvAPI_GPU_PerfGetStatus);
+                GetDelegate(0x65FE3AAD, out NvAPI_GPU_ThermalGetStatus);
 
                 available = true;
             }
