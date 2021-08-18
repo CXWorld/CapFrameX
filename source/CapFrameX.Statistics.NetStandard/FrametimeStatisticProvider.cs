@@ -468,11 +468,11 @@ namespace CapFrameX.Statistics.NetStandard
 
             double varianceCount = frametimeVariances.Count();
 
-            variancePercentages.Add(Math.Round(threshold2Count * 100 / varianceCount, 3));
-            variancePercentages.Add(Math.Round(threshold4Count * 100 / varianceCount, 3));
-            variancePercentages.Add(Math.Round(threshold8Count * 100 / varianceCount, 3));
-            variancePercentages.Add(Math.Round(threshold12Count * 100 / varianceCount, 3));
-            variancePercentages.Add(Math.Round(thresholdOver12Count * 100 / varianceCount, 3));
+            variancePercentages.Add(Math.Round(threshold2Count  / varianceCount, 4));
+            variancePercentages.Add(Math.Round(threshold4Count / varianceCount, 4));
+            variancePercentages.Add(Math.Round(threshold8Count  / varianceCount, 4));
+            variancePercentages.Add(Math.Round(threshold12Count / varianceCount, 4));
+            variancePercentages.Add(Math.Round(thresholdOver12Count  / varianceCount, 4));
 
             return variancePercentages;
         }

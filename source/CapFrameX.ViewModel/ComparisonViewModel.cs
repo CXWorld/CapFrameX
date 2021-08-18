@@ -56,7 +56,9 @@ namespace CapFrameX.ViewModel
         private PlotModel _comparisonFrametimesModel;
         private PlotModel _comparisonFpsModel;
         private SeriesCollection _comparisonRowChartSeriesCollection;
+        private SeriesCollection _varianceStatisticCollection;
         private string[] _comparisonRowChartLabels;
+        private Func<double, string> _percentageFormatter;
         private SeriesCollection _comparisonLShapeCollection;
         private string _comparisonItemControlHeight = "300";
         private string _columnChartYAxisTitle = "FPS";
@@ -69,6 +71,7 @@ namespace CapFrameX.ViewModel
         private double _maxRecordingTime;
         private bool _doUpdateCharts = true;
         private double _barChartHeight;
+        private double _varianceChartHeight;
         private bool _hasComparisonItems;
         private TabItem _selectedChartItem;
         private bool _isSortModeAscending = false;
@@ -90,6 +93,7 @@ namespace CapFrameX.ViewModel
         private string _messageText;
         private int _barMaxValue;
         private int _barMinValue;
+        private double _varianceBarMinValue;
         private bool _showCustomTitle;
         private string _selectedChartView = "Frametimes";
         private EFilterMode _selectedFilterMode;
@@ -116,6 +120,16 @@ namespace CapFrameX.ViewModel
                                                   .ToArray();
 
         public ISubject<Unit> ResetLShapeChart = new Subject<Unit>();
+
+        public Func<double, string> PercentageFormatter
+        {
+            get { return _percentageFormatter; }
+            set
+            {
+                _percentageFormatter = value;
+                RaisePropertyChanged();
+            }
+        }
 
         public ComparisonColorManager ComparisonColorManager
             => _comparisonColorManager;
@@ -235,6 +249,15 @@ namespace CapFrameX.ViewModel
                 RaisePropertyChanged();
             }
         }
+        public SeriesCollection VarianceStatisticCollection
+        {
+            get { return _varianceStatisticCollection; }
+            set
+            {
+                _varianceStatisticCollection = value;
+                RaisePropertyChanged();
+            }
+        }
 
         public string ComparisonLShapeYAxisLabel
         {
@@ -293,6 +316,16 @@ namespace CapFrameX.ViewModel
             set
             {
                 _barChartHeight = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public double VarianceChartHeight
+        {
+            get { return _varianceChartHeight; }
+            set
+            {
+                _varianceChartHeight = value;
                 RaisePropertyChanged();
             }
         }
@@ -376,6 +409,7 @@ namespace CapFrameX.ViewModel
                 _selectedChartItem = value;
                 RaisePropertyChanged();
                 RaisePropertyChanged(nameof(IsBarChartTabActive));
+                RaisePropertyChanged(nameof(IsLineChartTabActive));
                 OnChartItemChanged();
                 UpdateCharts();
             }
@@ -499,6 +533,17 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        public double VarianceBarMinValue
+        {
+            get { return _varianceBarMinValue; }
+            set
+            {
+                _varianceBarMinValue = value;
+                RaisePropertyChanged();
+                RaisePropertyChanged(nameof(VarianceChartSeparators));
+            }
+        }
+
         public bool ShowCustomTitle
         {
             get { return _showCustomTitle; }
@@ -543,12 +588,43 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        public double VarianceChartSeparators
+        {
+            get
+            {
+                double steps;
+
+                if (_varianceBarMinValue >= 0.99)
+                    steps = 0.001;
+                else if (_varianceBarMinValue >= 0.982)
+                    steps = 0.002;
+                else if (_varianceBarMinValue >= 0.96)
+                    steps = 0.005;
+                else if (_varianceBarMinValue >= 0.92)
+                    steps = 0.01;
+                else if (_varianceBarMinValue >= 0.85)
+                    steps = 0.02;
+                else if (_varianceBarMinValue >= 0.6)
+                    steps = 0.05;
+                else if (_varianceBarMinValue >= 0.15)
+                    steps = 0.1;
+                else
+                    steps = 0.2;
+
+                return steps;
+            }
+        }
+
         public TooltipData LShapeTolTipData { get; set; }
 
 
         public bool IsBarChartTabActive
         {
             get { return SelectedChartItem?.Header.ToString().Contains("Bar charts") ?? false; }
+        }
+        public bool IsLineChartTabActive
+        {
+            get { return SelectedChartItem?.Header.ToString().Contains("Line") ?? false; }
         }
 
         public ICommand RemoveAllComparisonsCommand { get; }
@@ -567,6 +643,8 @@ namespace CapFrameX.ViewModel
         public double BarChartMaxRowHeight { get; private set; } = 22;
 
         public Array SortMetricItemsSource => new[] { "First", "Second", "Third" };
+
+
 
         public ComparisonViewModel(IStatisticProvider frametimeStatisticProvider,
             IFrametimeAnalyzer frametimeAnalyzer,
@@ -595,6 +673,7 @@ namespace CapFrameX.ViewModel
 
             ComparisonColumnChartFormatter = value => value.ToString(string.Format("F{0}",
             _appConfiguration.FpsValuesRoundingDigits), CultureInfo.InvariantCulture);
+            PercentageFormatter = value => value.ToString("P");
             SelectedComparisonContext = _appConfiguration.ComparisonContext.ConvertToEnum<EComparisonContext>();
             SelectedSecondComparisonContext = _appConfiguration.SecondComparisonContext.ConvertToEnum<EComparisonContext>();
             SelectedFirstMetric = _appConfiguration.ComparisonFirstMetric.ConvertToEnum<EMetric>();
@@ -602,6 +681,7 @@ namespace CapFrameX.ViewModel
             SelectedThirdMetric = _appConfiguration.ComparisonThirdMetric.ConvertToEnum<EMetric>();
 
             SetRowSeries();
+            SetVarianceSeries();
             SubscribeToSelectRecord();
             SubscribeToUpdateRecordInfos();
             SubscribeToThemeChanged();
@@ -743,7 +823,7 @@ namespace CapFrameX.ViewModel
         }
 
         private void OnChartItemChanged()
-            => ColorPickerVisibility = !SelectedChartItem?.Header.ToString().Contains("Bar charts") ?? false;
+            => ColorPickerVisibility = SelectedChartItem?.Header.ToString().Contains("Line") ?? false;
 
         private void OnSortModeChanged()
             => SortComparisonItems();
@@ -806,6 +886,67 @@ namespace CapFrameX.ViewModel
                     UseRelativeMode = true
                 });
             }
+        }
+
+        private void SetVarianceSeries()
+        {
+                VarianceStatisticCollection = new SeriesCollection
+                {
+                    new StackedRowSeries
+                    {
+                        Title = $"< 2ms",
+                        Values = new ChartValues<double>(),
+                        DataLabels = false,
+                        Fill = new SolidColorBrush(Color.FromRgb(34, 151, 243)), // blue
+                        StrokeThickness = 0,
+                        StackMode = StackMode.Percentage,
+                        MaxRowHeight = 50
+                    },
+
+                    new StackedRowSeries
+                    {
+                        Title = $"< 4ms",
+                        Values = new ChartValues<double>(),
+                        DataLabels = false,
+                        Fill = new SolidColorBrush(Color.FromRgb(28, 95, 138)), // dark blue
+                        StrokeThickness = 0,
+                        StackMode = StackMode.Percentage,
+                        MaxRowHeight = 50
+                    },
+
+                    new StackedRowSeries
+                    {
+                        Title = $"< 8ms",
+                        Values = new ChartValues<double>(),
+                        DataLabels = false,
+                        Fill = new SolidColorBrush(Color.FromRgb(255, 180, 0)), // yellow
+                        StrokeThickness = 0,
+                        StackMode = StackMode.Percentage,
+                        MaxRowHeight = 50
+                    },
+
+                    new StackedRowSeries
+                    {
+                        Title = $"< 12ms",
+                        Values = new ChartValues<double>(),
+                        DataLabels = false,
+                        Fill = new SolidColorBrush(Color.FromRgb(241, 125, 32)), // orange
+                        StrokeThickness = 0,
+                        StackMode = StackMode.Percentage,
+                        MaxRowHeight = 50
+                    },
+
+                    new StackedRowSeries
+                    {
+                        Title = $"> 12ms",
+                        Values = new ChartValues<double>(),
+                        DataLabels = false,
+                        Fill = new SolidColorBrush(Color.FromRgb(200, 0, 0)), // red
+                        StrokeThickness = 0,
+                        StackMode = StackMode.Percentage,
+                        MaxRowHeight = 50
+                    }
+                };
         }
 
         private void OnMetricChanged()
@@ -1135,6 +1276,10 @@ namespace CapFrameX.ViewModel
             => BarChartHeight =
             32.5 + (ComparisonRowChartSeriesCollection.Count * BarChartMaxRowHeight + 12) * ComparisonRecords.Count;
 
+        private void UpdateVarianceChartHeight()
+            => VarianceChartHeight =
+            50 + ( ComparisonRecords.Count * 75);
+
         private void OnRemoveAllComparisons()
             => RemoveAllComparisonItems(true, true);
 
@@ -1188,6 +1333,8 @@ namespace CapFrameX.ViewModel
 
             if (SelectedChartItem?.Header.ToString().Contains("Bar charts") ?? false)
                 SetColumnChart();
+            else if (SelectedChartItem?.Header.ToString().Contains("Variances") ?? false)
+                    SetVarianceChart();
             else
             {
                 SetFrametimeChart();
@@ -1217,9 +1364,24 @@ namespace CapFrameX.ViewModel
                 ComparisonRowChartSeriesCollection[2].Values.Insert(0, wrappedComparisonInfo.WrappedRecordInfo.ThirdMetric);
             }
 
-            SetBarMinMaxValues();
-
+            SetBarMinMaxValues();           
             OnComparisonContextChanged();
+        }
+
+
+        private void AddToVarianceCharts(ComparisonRecordInfoWrapper wrappedComparisonInfo)
+        {
+            var frametimes = wrappedComparisonInfo.WrappedRecordInfo.Session.GetFrametimeTimeWindow(0, double.PositiveInfinity, _appConfiguration);
+            var variances = _frametimeStatisticProvider.GetFrametimeVariancePercentages(frametimes);
+
+            VarianceStatisticCollection[0].Values.Insert(0, variances[0]);
+            VarianceStatisticCollection[1].Values.Insert(0, variances[1]);
+            VarianceStatisticCollection[2].Values.Insert(0, variances[2]);
+            VarianceStatisticCollection[3].Values.Insert(0, variances[3]);
+            VarianceStatisticCollection[4].Values.Insert(0, variances[4]);
+
+            SetVarianceBarMinValues();
+
         }
 
         private void SetBarMinMaxValues()
@@ -1249,6 +1411,32 @@ namespace CapFrameX.ViewModel
             }
 
             BarMaxValue = (int)(new[] { maxFirstMetricBarValue, maxSecondMetricBarValue, maxThirdMetricBarValue }.Max());
+        }
+
+        private void SetVarianceBarMinValues()
+        {
+            if (!VarianceStatisticCollection.Any())
+                return;
+            double lowestFirstBar = (VarianceStatisticCollection[0].Values as IList<double>).Min();
+            double minValue;
+
+
+            if (lowestFirstBar > 0.98)
+                minValue = lowestFirstBar * 0.995;
+            else if (lowestFirstBar > 0.95)
+                minValue = lowestFirstBar * 0.99;
+            else if (lowestFirstBar > 0.90)
+                minValue = lowestFirstBar * 0.98;
+            else if (lowestFirstBar > 0.85)
+                minValue = lowestFirstBar * 0.97;
+            else if (lowestFirstBar > 0.80)
+                minValue = lowestFirstBar * 0.96;
+            else if (lowestFirstBar > 0.70)
+                minValue = lowestFirstBar * 0.95;
+            else
+                minValue = lowestFirstBar * 0.75;
+
+            VarianceBarMinValue = minValue;
         }
 
         private void AddToFrametimeChart(ComparisonRecordInfoWrapper wrappedComparisonInfo)
@@ -1351,6 +1539,20 @@ namespace CapFrameX.ViewModel
                 AddToColumnCharts(ComparisonRecords[i]);
             }
         }
+
+        private void SetVarianceChart()
+        {
+            foreach (var item in VarianceStatisticCollection)
+            {
+                item.Values.Clear();
+            }
+
+            for (int i = 0; i < ComparisonRecords.Count; i++)
+            {
+                AddToVarianceCharts(ComparisonRecords[i]);
+            }
+        }
+
 
         private void SetFrametimeChart()
         {

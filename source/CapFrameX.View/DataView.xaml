@@ -306,7 +306,7 @@
                                     <Label FontSize="12">Variances</Label>
                                 </TabItem.Header>
                                 <Grid>
-                                    <TextBlock Margin="10 3 0 0" Text="Difference between&#xA;successive frametime values"></TextBlock>
+                                    <TextBlock Margin="10 3 0 0" Text="Time differences between two&#xA;consecutive frametime values"></TextBlock>
                                     <lvc:PieChart Margin="10 5 115 5" MaxHeight="250" Hoverable="False" Series="{Binding VarianceStatisticCollection}" 
 								        LegendLocation="Left" DataClick="Chart_OnDataClick" DataTooltip="{x:Null}" StartingRotationAngle="0">
                                         <lvc:PieChart.ChartLegend>

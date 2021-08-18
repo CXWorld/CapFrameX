@@ -36,6 +36,7 @@ namespace CapFrameX.ViewModel
 
 			// Update height of bar chart control here
 			UpdateBarChartHeight();
+			UpdateVarianceChartHeight();
 			UpdateRangeSliderParameter();
 
 			//Draw charts and performance parameter
@@ -176,6 +177,7 @@ namespace CapFrameX.ViewModel
 			UpdateRangeSliderParameter();
 			UpdateCharts();
 			UpdateBarChartHeight();
+			UpdateVarianceChartHeight();
 
 			// Manage game name header		
 			HasUniqueGameNames = GetHasUniqueGameNames();
