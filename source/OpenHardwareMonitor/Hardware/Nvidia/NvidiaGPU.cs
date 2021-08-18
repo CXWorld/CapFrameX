@@ -27,8 +27,11 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
         private readonly ISensorConfig sensorConfig;
         private readonly Stopwatch stopwatch;
         private uint lastpCounter;
+        private int thermalSensorsMaxBit;
 
         private readonly Sensor[] temperatures;
+        private readonly Sensor hotSpotTemperature;
+        private readonly Sensor memoryJunctionTemperature;
         private readonly Sensor fan;
         private readonly Sensor[] clocks;
         private readonly Sensor voltage;
@@ -76,6 +79,31 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
                 temperatures[i] = new Sensor(name, i, SensorType.Temperature, this,
                   new ParameterDescription[0], settings);
                 ActivateSensor(temperatures[i]);
+            }
+
+            hotSpotTemperature = new Sensor("GPU Hot Spot", (int)thermalSettings.Count + 1, SensorType.Temperature, this, settings);
+            memoryJunctionTemperature = new Sensor("GPU Memory Junction", (int)thermalSettings.Count + 2, SensorType.Temperature, this, settings);
+
+            // Set max bit
+            for (; thermalSensorsMaxBit < 32; thermalSensorsMaxBit++)
+            {
+                try
+                {
+                    var thermalSensor = new PrivateThermalSensorsV2()
+                    {
+                        Version = NVAPI.GPU_THERMAL_STATUS_VER,
+                        Mask = 1u << thermalSensorsMaxBit
+                    };
+
+                    var status = NVAPI.NvAPI_GPU_ThermalGetStatus(handle, ref thermalSensor);
+
+                    if (status != NvStatus.OK)
+                        throw new Exception();
+                }
+                catch
+                {
+                    break;
+                }
             }
 
             clocks = new Sensor[3];
@@ -244,6 +272,38 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
                 foreach (Sensor sensor in temperatures)
                     sensor.Value = null;
             }
+
+            if ((sensorConfig.GetSensorEvaluate(hotSpotTemperature.IdentifierString)
+                || sensorConfig.GetSensorEvaluate(memoryJunctionTemperature.IdentifierString))
+                && thermalSensorsMaxBit > 0)
+            {
+                var thermalSensor = new PrivateThermalSensorsV2()
+                {
+                    Version = NVAPI.GPU_THERMAL_STATUS_VER,
+                    Mask = (1u << thermalSensorsMaxBit) - 1
+                };
+
+                if (NVAPI.NvAPI_GPU_ThermalGetStatus != null &&
+                    NVAPI.NvAPI_GPU_ThermalGetStatus(handle, ref thermalSensor) == NvStatus.OK)
+                {
+                    hotSpotTemperature.Value = thermalSensor.Temperatures[1] / 256.0f;
+                    memoryJunctionTemperature.Value = thermalSensor.Temperatures[9] / 256.0f;
+                }
+
+                if (sensorConfig.GetSensorEvaluate(hotSpotTemperature.IdentifierString)
+                    && hotSpotTemperature.Value != 0)
+                    ActivateSensor(hotSpotTemperature);
+
+                if (sensorConfig.GetSensorEvaluate(memoryJunctionTemperature.IdentifierString)
+                    && memoryJunctionTemperature.Value != 0)
+                    ActivateSensor(memoryJunctionTemperature);
+            }
+            else
+            {
+                hotSpotTemperature.Value = null;
+                memoryJunctionTemperature.Value = null;
+            }
+
 
             bool tachReadingOk = false;
             if (sensorConfig.GetSensorEvaluate(fan.IdentifierString))
