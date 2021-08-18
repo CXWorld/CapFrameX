@@ -1165,7 +1165,7 @@ namespace CapFrameX.ViewModel
                 {
                     new PieSeries
                     {
-                        Title = $"< 2ms ({Math.Round(variances[0] *100 , 2)}%)",
+                        Title = $"< 2ms ({Math.Round(variances[0] *100 , 2).ToString(CultureInfo.InvariantCulture) }%)",
                         Values = new ChartValues<double>() { variances[0] },
                         DataLabels = false,
                         Fill = new SolidColorBrush(Color.FromRgb(34, 151, 243)), // blue
@@ -1174,7 +1174,7 @@ namespace CapFrameX.ViewModel
 
                     new PieSeries
                     {
-                        Title = $"< 4ms ({ Math.Round(variances[1] *100, 2) }%)",
+                        Title = $"< 4ms ({ Math.Round(variances[1] *100, 2).ToString(CultureInfo.InvariantCulture) }%)",
                         Values = new ChartValues<double>() { variances[1] },
                         DataLabels = false,
                         Fill = new SolidColorBrush(Color.FromRgb(28, 95, 138)), // dark blue
@@ -1183,7 +1183,7 @@ namespace CapFrameX.ViewModel
 
                     new PieSeries
                     {
-                        Title = $"< 8ms ({ Math.Round(variances[2] *100, 2) }%)",
+                        Title = $"< 8ms ({ Math.Round(variances[2] *100, 2).ToString(CultureInfo.InvariantCulture) }%)",
                         Values = new ChartValues<double>() { variances[2] },
                         DataLabels = false,
                         Fill = new SolidColorBrush(Color.FromRgb(255, 180, 0)), // yellow
@@ -1192,7 +1192,7 @@ namespace CapFrameX.ViewModel
 
                     new PieSeries
                     {
-                        Title = $"< 12ms ({ Math.Round(variances[3] *100, 2) }%)",
+                        Title = $"< 12ms ({ Math.Round(variances[3] *100, 2).ToString(CultureInfo.InvariantCulture) }%)",
                         Values = new ChartValues<double>() { variances[3] },
                         DataLabels = false,
                         Fill = new SolidColorBrush(Color.FromRgb(241, 125, 32)), // orange
@@ -1201,7 +1201,7 @@ namespace CapFrameX.ViewModel
 
                     new PieSeries
                     {
-                        Title = $"> 12ms ({ Math.Round(variances[4] *100, 2) }%)",
+                        Title = $"> 12ms ({ Math.Round(variances[4] *100, 2).ToString(CultureInfo.InvariantCulture) }%)",
                         Values = new ChartValues<double>() { variances[4] },
                         DataLabels = false,
                         Fill = new SolidColorBrush(Color.FromRgb(200, 0, 0)), // red
