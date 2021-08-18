@@ -410,8 +410,12 @@ namespace CapFrameX.ViewModel
                 RaisePropertyChanged();
                 RaisePropertyChanged(nameof(IsBarChartTabActive));
                 RaisePropertyChanged(nameof(IsLineChartTabActive));
+                RaisePropertyChanged(nameof(IsVarianceChartTabActive));
                 OnChartItemChanged();
                 UpdateCharts();
+
+                if (!IsLineChartTabActive)
+                SortComparisonItems();
             }
         }
 
@@ -625,6 +629,10 @@ namespace CapFrameX.ViewModel
         public bool IsLineChartTabActive
         {
             get { return SelectedChartItem?.Header.ToString().Contains("Line") ?? false; }
+        }
+        public bool IsVarianceChartTabActive
+        {
+            get { return SelectedChartItem?.Header.ToString().Contains("Variances") ?? false; }           
         }
 
         public ICommand RemoveAllComparisonsCommand { get; }

@@ -14,6 +14,7 @@ namespace CapFrameX.Data
 		public double FirstMetric { get; set; }
 		public double SecondMetric { get; set; }
 		public double ThirdMetric { get; set; }
+		public double SortingVariances { get; set; }
 		public IFileRecordInfo FileRecordInfo { get; set; }
     }
 }

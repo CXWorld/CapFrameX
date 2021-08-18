@@ -414,19 +414,20 @@
             </StackPanel>
 
             <StackPanel Grid.Column="3" Margin="10 0 0 0" VerticalAlignment="Center" Orientation="Horizontal"
-						Visibility="{Binding IsBarChartTabActive, Converter={StaticResource TrueToVisibleConverter}}">
+						Visibility="{Binding IsLineChartTabActive, Converter={StaticResource TrueToCollapsedConverter}}">
                 <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}">Grouping:</TextBlock>
                 <ToggleButton Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
 							  ToolTip="Sort entries by game first" IsChecked="{Binding UseComparisonGrouping}"/>
             </StackPanel>
 
-            <StackPanel Grid.Column="4" VerticalAlignment="Center" Margin="15 0 0 0" Orientation="Horizontal"
-						Visibility="{Binding IsBarChartTabActive, Converter={StaticResource TrueToVisibleConverter}}">
+            <StackPanel Grid.Column="4" VerticalAlignment="Center" Margin="15 0 0 0" Orientation="Horizontal">
                 <ComboBox Width="80" Height="40" Margin="0 0 0 10" materialDesign:HintAssist.Hint="Sort metric" materialDesign:HintAssist.HintOpacity=".8" materialDesign:HintAssist.IsFloating="True"
-                          ItemsSource="{Binding SortMetricItemsSource}" SelectedItem="{Binding SelectedSortMetric}" Foreground="{DynamicResource MaterialDesignBody}"> 
+                          ItemsSource="{Binding SortMetricItemsSource}" SelectedItem="{Binding SelectedSortMetric}" Foreground="{DynamicResource MaterialDesignBody}"
+                          Visibility="{Binding IsBarChartTabActive, Converter={StaticResource TrueToVisibleConverter}}"> 
                 </ComboBox>
                 <ToggleButton Margin="5 0 0 0" Foreground="{DynamicResource MaterialDesignBody}" BorderThickness="1" Background="Transparent"
-							  Style="{StaticResource MaterialDesignActionAccentToggleButton}" IsChecked="{Binding IsSortModeAscending}">
+							  Style="{StaticResource MaterialDesignActionAccentToggleButton}" IsChecked="{Binding IsSortModeAscending}"
+                              Visibility="{Binding IsLineChartTabActive, Converter={StaticResource TrueToCollapsedConverter}}">
                     <ToggleButton.Content>
                         <materialDesign:PackIcon Kind="SortDescending" />
                     </ToggleButton.Content>
@@ -435,6 +436,7 @@
                     </materialDesign:ToggleButtonAssist.OnContent >
                 </ToggleButton>
             </StackPanel>
+
 
             <StackPanel Grid.Column="4" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="20 0 10 0" Orientation="Horizontal"
 						Visibility="{Binding IsLineChartTabActive, Converter={StaticResource TrueToVisibleConverter}}">
