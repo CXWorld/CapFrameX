@@ -432,13 +432,6 @@ namespace CapFrameX.Statistics.NetStandard
             if (!frametimes.Any())
                 return new List<double>();
 
-            // Get frametime variances
-            var frametimeVariances = new List<double>();
-
-            for (int i = 1; i < frametimes.Count(); i++)
-            {
-                frametimeVariances.Add(Math.Abs(frametimes[i] - frametimes[i - 1]));
-            }
 
             // Create bins for variance thresholds
             int threshold2Count = 0;
@@ -447,10 +440,11 @@ namespace CapFrameX.Statistics.NetStandard
             int threshold12Count = 0;
             int thresholdOver12Count = 0;
 
-            var average = frametimes.Average();
-
-            foreach (var variance in frametimeVariances)
+            // Get frametime variances
+            for (int i = 1; i < frametimes.Count(); i++)
             {
+                double variance = Math.Abs(frametimes[i] - frametimes[i - 1]);
+
                 if (variance < 2)
                     threshold2Count++;
                 else if (variance < 4)
@@ -463,10 +457,11 @@ namespace CapFrameX.Statistics.NetStandard
                     thresholdOver12Count++;
             }
 
+
             // Add percentage of variance bins to List
             IList<double> variancePercentages = new List<double>();
 
-            double varianceCount = frametimeVariances.Count();
+            double varianceCount = frametimes.Count() - 1;
 
             variancePercentages.Add(Math.Round(threshold2Count  / varianceCount, 4));
             variancePercentages.Add(Math.Round(threshold4Count / varianceCount, 4));
