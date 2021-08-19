@@ -1177,7 +1177,7 @@ namespace CapFrameX.ViewModel
                         Title = $"< 4ms ({ Math.Round(variances[1] *100, 2).ToString(CultureInfo.InvariantCulture) }%)",
                         Values = new ChartValues<double>() { variances[1] },
                         DataLabels = false,
-                        Fill = new SolidColorBrush(Color.FromRgb(28, 95, 138)), // dark blue
+                        Fill = new SolidColorBrush(Color.FromRgb(15, 120, 180)), // dark blue
                         StrokeThickness = 0
                     },
 
