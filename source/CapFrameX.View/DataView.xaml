@@ -203,12 +203,12 @@
                         <StackPanel HorizontalAlignment="Right" VerticalAlignment="Bottom" Orientation="Horizontal" Margin="0 0 40 5" Height="20" >
                             <TextBlock Foreground="{DynamicResource MaterialDesignBody}" VerticalAlignment="Center">Cut</TextBlock>
                             <Button Margin="10 0 15 0" Height="20" Width="20" Command="{Binding CutRecordCommand}"  Foreground="White"
-                                    Style="{StaticResource MaterialDesignFloatingActionMiniButton}" ToolTip="Cut and duplicate data inside of range slider position and save it as new file">
+                                    Style="{StaticResource MaterialDesignFloatingActionMiniButton}" ToolTip="Create new file with data outside of range slider position removed">
                                 <materialDesign:PackIcon Kind="ContentCut" Height="15" Width="15" />
                             </Button>
                             <TextBlock Foreground="{DynamicResource MaterialDesignBody}" VerticalAlignment="Center"> Inverse cut</TextBlock>
                             <Button Margin="10 0 0 0" Height="20" Width="20" Command="{Binding CutRecordInverseCommand}"  Foreground="White" Background="OrangeRed" BorderBrush="OrangeRed"
-                                    Style="{StaticResource MaterialDesignFloatingActionMiniButton}" ToolTip="Cut and duplicate data outside of range slider position and save it as new file">
+                                    Style="{StaticResource MaterialDesignFloatingActionMiniButton}" ToolTip="Create new file with data inside of range slider position removed">
                                 <materialDesign:PackIcon Kind="ContentCut" Height="15" Width="15" RenderTransformOrigin=".5,.5">
                                     <materialDesign:PackIcon.RenderTransform>
                                         <RotateTransform Angle="180"/>
