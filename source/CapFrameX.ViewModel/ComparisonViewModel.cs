@@ -373,8 +373,8 @@ namespace CapFrameX.ViewModel
                 _firstSeconds = value;
                 RaisePropertyChanged();
                 UpdateCharts();
-                RemainingRecordingTime = Math.Round(LastSeconds - _firstSeconds, 2)
-                    .ToString(CultureInfo.InvariantCulture) + " s";
+                RemainingRecordingTime = "(" + Math.Round(LastSeconds - _firstSeconds, 2)
+                    .ToString("0.00", CultureInfo.InvariantCulture) + " s)";
             }
         }
 
@@ -386,8 +386,8 @@ namespace CapFrameX.ViewModel
                 _lastSeconds = value;
                 RaisePropertyChanged();
                 UpdateCharts();
-                RemainingRecordingTime = Math.Round(_lastSeconds - FirstSeconds, 2)
-                    .ToString(CultureInfo.InvariantCulture) + " s";
+                RemainingRecordingTime = "(" + Math.Round(_lastSeconds - FirstSeconds, 2)
+                    .ToString("0.00", CultureInfo.InvariantCulture) + " s)";
             }
         }
 
@@ -1126,7 +1126,15 @@ namespace CapFrameX.ViewModel
         private void UpdateRangeSliderParameter()
         {
             if (ComparisonRecords == null || !ComparisonRecords.Any())
+            {
+                FirstSeconds = 0;
+                LastSeconds = 0;
+                MaxRecordingTime = 0;
+                RemainingRecordingTime = "(0.00 s)";
                 return;
+
+            }
+
 
             double longestRecord = 0;
 
@@ -1144,7 +1152,7 @@ namespace CapFrameX.ViewModel
             _doUpdateCharts = true;
 
             RemainingRecordingTime = ComparisonRecords.Any() ?
-                Math.Round(MaxRecordingTime, 2).ToString(CultureInfo.InvariantCulture) + " s" : "0.0 s"; ;
+                "(" + Math.Round(MaxRecordingTime, 2).ToString("0.00", CultureInfo.InvariantCulture) + " s)" : "(0.00 s)"; ;
         }
 
         public void OnRangeSliderValuesChanged()
