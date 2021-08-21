@@ -158,7 +158,7 @@ namespace CapFrameX.Data
                 // Start overlay delay countdown timer
                 _captureStatusChange.OnNext(new CaptureStatus() { Status = ECaptureStatus.StartedDelay });
 
-                _logEntryManager.AddLogEntry($"Capture delay timer of {delay} seconds started", ELogMessageType.BasicInfo, true);
+                _logEntryManager.AddLogEntry($"Capture delay timer of {delay.ToString(CultureInfo.InvariantCulture)} seconds started", ELogMessageType.BasicInfo, true);
 
                 _overlayService.SetDelayCountdown(delay);
 
@@ -171,7 +171,7 @@ namespace CapFrameX.Data
                     _overlayService.SetCaptureServiceStatus("Ready to capture...");
                     _captureStatusChange.OnNext(new CaptureStatus() { Status = ECaptureStatus.Stopped });
                     delayStopwatch.Reset();
-                    _logEntryManager.AddLogEntry("Delay timer canceled", ELogMessageType.BasicInfo, false);
+                    _logEntryManager.AddLogEntry("Capture canceled", ELogMessageType.BasicInfo, false);
                     _cancelDelay?.Dispose();
                     _cancelDelay = new CancellationTokenSource();
                     return;
@@ -257,7 +257,8 @@ namespace CapFrameX.Data
             {
                 //Start overlay countdown timer
                 _overlayService.StartCountdown(options.CaptureTime);
-                _logEntryManager.AddLogEntry($"Capturing of process \"{options.ProcessInfo.Item1}\" started. Set time: {options.CaptureTime} seconds", ELogMessageType.BasicInfo, options.CaptureDelay > 0d ? false : true);
+                _logEntryManager.AddLogEntry($"Capturing of process \"{options.ProcessInfo.Item1}\" started." + Environment.NewLine +
+                    $"Set time in sec: {options.CaptureTime.ToString(CultureInfo.InvariantCulture)}", ELogMessageType.BasicInfo, options.CaptureDelay > 0d ? false : true);
 
                 _autoCompletionDisposableStream = Observable.Timer(TimeSpan.FromSeconds(options.CaptureTime))
                     .Subscribe(async _ => await StopCapture());
@@ -287,6 +288,7 @@ namespace CapFrameX.Data
 
             if (!IsCapturing)
                 throw new Exception("No capture running.");
+
 
             _logEntryManager.AddLogEntry("Capture finished", ELogMessageType.BasicInfo, false);
 
@@ -427,8 +429,7 @@ namespace CapFrameX.Data
                 // Skip first line to compensate the first frametime being one frame before original capture start point.
                 var normalizedAdjustedCaptureData = NormalizeTimes(adjustedCaptureData.Skip(1));
                 var sessionRun = _recordManager.ConvertPresentDataLinesToSessionRun(normalizedAdjustedCaptureData);
-
-                _logEntryManager.AddLogEntry($"Length of adjusted capture data in sec: {GetFinalCaptureLengthFromDataLine(normalizedAdjustedCaptureData?.Last())}", ELogMessageType.AdvancedInfo, false);
+                var finalCaptureTime = GetTimeFromDataLine(normalizedAdjustedCaptureData?.Last());
 
                 //ToDo: data could be adjusted (cutting at end)
                 sessionRun.SensorData2 = _sensorService.GetSensorSessionData();
@@ -452,7 +453,8 @@ namespace CapFrameX.Data
                 if (!checkSave)
                     _logEntryManager.AddLogEntry("Error while saving capture data.", ELogMessageType.Error, false);
                 else
-                    _logEntryManager.AddLogEntry("Capture file successfully written into directory.", ELogMessageType.BasicInfo, false);
+                    _logEntryManager.AddLogEntry("Capture file successfully written into directory." +
+                        Environment.NewLine + $"Length in sec: {finalCaptureTime.ToString(CultureInfo.InvariantCulture)}", ELogMessageType.BasicInfo, false);
 
                 LockCaptureService = false;
             }
@@ -574,8 +576,8 @@ namespace CapFrameX.Data
                 return Enumerable.Empty<string[]>().ToList();
             }
 
-            _logEntryManager.AddLogEntry($"Length captured data + archive ({filteredArchive.Count} frames) in sec: " + $"{ Math.Round(unionCaptureDataEndTime - unionCaptureDataStartTime, 2)}" + Environment.NewLine
-                + $"Length captured data QPCTime start to end with buffer in sec: " + $"{ Math.Round(unionCaptureDataEndTime - startTime, 2)}", ELogMessageType.AdvancedInfo, false);
+            _logEntryManager.AddLogEntry($"Length captured data + archive ({filteredArchive.Count} frames) in sec: " + $"{ Math.Round(unionCaptureDataEndTime - unionCaptureDataStartTime, 2).ToString(CultureInfo.InvariantCulture)}" + Environment.NewLine
+                + $"Length captured data QPCTime start to end with buffer in sec: " + $"{ Math.Round(unionCaptureDataEndTime - startTime, 2).ToString(CultureInfo.InvariantCulture)}", ELogMessageType.AdvancedInfo, false);
 
 
             if (!autoTermination)
@@ -634,7 +636,7 @@ namespace CapFrameX.Data
             return Convert.ToInt64(lineSplit[PresentMonCaptureService.QPCTime_INDEX], CultureInfo.InvariantCulture);
         }
 
-        private double GetFinalCaptureLengthFromDataLine(string line)
+        private double GetTimeFromDataLine(string line)
         {
             var lineSplit = line.Split(',');
             var length = Convert.ToDouble(lineSplit[PresentMonCaptureService.TimeInSeconds_INDEX], CultureInfo.InvariantCulture);
