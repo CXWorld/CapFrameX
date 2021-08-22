@@ -94,6 +94,7 @@ namespace CapFrameX.ViewModel
         private int _barMaxValue;
         private int _barMinValue;
         private double _varianceBarMinValue;
+        private bool _varianceAutoScaling = true;
         private bool _showCustomTitle;
         private string _selectedChartView = "Frametimes";
         private EFilterMode _selectedFilterMode;
@@ -372,8 +373,8 @@ namespace CapFrameX.ViewModel
                 _firstSeconds = value;
                 RaisePropertyChanged();
                 UpdateCharts();
-                RemainingRecordingTime = Math.Round(LastSeconds - _firstSeconds, 2)
-                    .ToString(CultureInfo.InvariantCulture) + " s";
+                RemainingRecordingTime = "(" + Math.Round(LastSeconds - _firstSeconds, 2)
+                    .ToString("0.00", CultureInfo.InvariantCulture) + " s)";
             }
         }
 
@@ -385,8 +386,8 @@ namespace CapFrameX.ViewModel
                 _lastSeconds = value;
                 RaisePropertyChanged();
                 UpdateCharts();
-                RemainingRecordingTime = Math.Round(_lastSeconds - FirstSeconds, 2)
-                    .ToString(CultureInfo.InvariantCulture) + " s";
+                RemainingRecordingTime = "(" + Math.Round(_lastSeconds - FirstSeconds, 2)
+                    .ToString("0.00", CultureInfo.InvariantCulture) + " s)";
             }
         }
 
@@ -415,7 +416,7 @@ namespace CapFrameX.ViewModel
                 UpdateCharts();
 
                 if (!IsLineChartTabActive)
-                SortComparisonItems();
+                    SortComparisonItems();
             }
         }
 
@@ -522,7 +523,7 @@ namespace CapFrameX.ViewModel
             set
             {
                 _barMaxValue = value;
-                BarMinValue = (int)( - value * 0.05);
+                BarMinValue = (int)(-value * 0.05);
                 RaisePropertyChanged();
             }
         }
@@ -545,6 +546,17 @@ namespace CapFrameX.ViewModel
                 _varianceBarMinValue = value;
                 RaisePropertyChanged();
                 RaisePropertyChanged(nameof(VarianceChartSeparators));
+            }
+        }
+
+        public bool VarianceAutoScaling
+        {
+            get { return _varianceAutoScaling; }
+            set
+            {
+                _varianceAutoScaling = value;
+                RaisePropertyChanged();
+                SetVarianceBarMinValues();
             }
         }
 
@@ -632,7 +644,7 @@ namespace CapFrameX.ViewModel
         }
         public bool IsVarianceChartTabActive
         {
-            get { return SelectedChartItem?.Header.ToString().Contains("Variances") ?? false; }           
+            get { return SelectedChartItem?.Header.ToString().Contains("Variances") ?? false; }
         }
 
         public ICommand RemoveAllComparisonsCommand { get; }
@@ -657,7 +669,7 @@ namespace CapFrameX.ViewModel
         public ComparisonViewModel(IStatisticProvider frametimeStatisticProvider,
             IFrametimeAnalyzer frametimeAnalyzer,
             IEventAggregator eventAggregator,
-            IAppConfiguration appConfiguration, 
+            IAppConfiguration appConfiguration,
             RecordManager recordManager,
             ILogger<ComparisonViewModel> logger)
         {
@@ -824,9 +836,9 @@ namespace CapFrameX.ViewModel
         {
             _eventAggregator.GetEvent<PubSubEvent<ViewMessages.ThemeChanged>>()
                               .Subscribe(msg =>
-                              {                               
-                                      InitializePlotModels();
-                                      UpdateCharts();
+                              {
+                                  InitializePlotModels();
+                                  UpdateCharts();
                               });
         }
 
@@ -898,7 +910,7 @@ namespace CapFrameX.ViewModel
 
         private void SetVarianceSeries()
         {
-                VarianceStatisticCollection = new SeriesCollection
+            VarianceStatisticCollection = new SeriesCollection
                 {
                     new StackedRowSeries
                     {
@@ -916,7 +928,7 @@ namespace CapFrameX.ViewModel
                         Title = $"< 4ms",
                         Values = new ChartValues<double>(),
                         DataLabels = false,
-                        Fill = new SolidColorBrush(Color.FromRgb(28, 95, 138)), // dark blue
+                        Fill = new SolidColorBrush(Color.FromRgb(15, 120, 180)), // dark blue
                         StrokeThickness = 0,
                         StackMode = StackMode.Percentage,
                         MaxRowHeight = 50
@@ -930,7 +942,7 @@ namespace CapFrameX.ViewModel
                         Fill = new SolidColorBrush(Color.FromRgb(255, 180, 0)), // yellow
                         StrokeThickness = 0,
                         StackMode = StackMode.Percentage,
-                        MaxRowHeight = 50
+                        MaxRowHeight = 50,
                     },
 
                     new StackedRowSeries
@@ -998,7 +1010,7 @@ namespace CapFrameX.ViewModel
 
                     }
 
-                    (ComparisonRowChartSeriesCollection[j] as RowSeries).Title = GetDescriptionAndFpsUnit(metric); 
+                    (ComparisonRowChartSeriesCollection[j] as RowSeries).Title = GetDescriptionAndFpsUnit(metric);
                     ComparisonRowChartSeriesCollection[j].Values.Insert(0, metricValue);
                 }
             }
@@ -1114,7 +1126,15 @@ namespace CapFrameX.ViewModel
         private void UpdateRangeSliderParameter()
         {
             if (ComparisonRecords == null || !ComparisonRecords.Any())
+            {
+                FirstSeconds = 0;
+                LastSeconds = 0;
+                MaxRecordingTime = 0;
+                RemainingRecordingTime = "(0.00 s)";
                 return;
+
+            }
+
 
             double longestRecord = 0;
 
@@ -1132,7 +1152,7 @@ namespace CapFrameX.ViewModel
             _doUpdateCharts = true;
 
             RemainingRecordingTime = ComparisonRecords.Any() ?
-                Math.Round(MaxRecordingTime, 2).ToString(CultureInfo.InvariantCulture) + " s" : "0.0 s"; ;
+                "(" + Math.Round(MaxRecordingTime, 2).ToString("0.00", CultureInfo.InvariantCulture) + " s)" : "(0.00 s)"; ;
         }
 
         public void OnRangeSliderValuesChanged()
@@ -1286,7 +1306,7 @@ namespace CapFrameX.ViewModel
 
         private void UpdateVarianceChartHeight()
             => VarianceChartHeight =
-            50 + ( ComparisonRecords.Count * 75);
+            50 + (ComparisonRecords.Count * 75);
 
         private void OnRemoveAllComparisons()
             => RemoveAllComparisonItems(true, true);
@@ -1342,7 +1362,7 @@ namespace CapFrameX.ViewModel
             if (SelectedChartItem?.Header.ToString().Contains("Bar charts") ?? false)
                 SetColumnChart();
             else if (SelectedChartItem?.Header.ToString().Contains("Variances") ?? false)
-                    SetVarianceChart();
+                SetVarianceChart();
             else
             {
                 SetFrametimeChart();
@@ -1372,7 +1392,7 @@ namespace CapFrameX.ViewModel
                 ComparisonRowChartSeriesCollection[2].Values.Insert(0, wrappedComparisonInfo.WrappedRecordInfo.ThirdMetric);
             }
 
-            SetBarMinMaxValues();           
+            SetBarMinMaxValues();
             OnComparisonContextChanged();
         }
 
@@ -1425,24 +1445,29 @@ namespace CapFrameX.ViewModel
         {
             if (!VarianceStatisticCollection.Any())
                 return;
-            double lowestFirstBar = (VarianceStatisticCollection[0].Values as IList<double>).Min();
-            double minValue;
 
 
-            if (lowestFirstBar > 0.98)
-                minValue = lowestFirstBar * 0.995;
-            else if (lowestFirstBar > 0.95)
-                minValue = lowestFirstBar * 0.99;
-            else if (lowestFirstBar > 0.90)
-                minValue = lowestFirstBar * 0.98;
-            else if (lowestFirstBar > 0.85)
-                minValue = lowestFirstBar * 0.97;
-            else if (lowestFirstBar > 0.80)
-                minValue = lowestFirstBar * 0.96;
-            else if (lowestFirstBar > 0.70)
-                minValue = lowestFirstBar * 0.95;
-            else
-                minValue = lowestFirstBar * 0.75;
+            double minValue = 0;
+
+            if (VarianceAutoScaling)
+            {
+                double lowestFirstBar = (VarianceStatisticCollection[0].Values as IList<double>).Min();
+
+                if (lowestFirstBar > 0.98)
+                    minValue = lowestFirstBar * 0.995;
+                else if (lowestFirstBar > 0.95)
+                    minValue = lowestFirstBar * 0.99;
+                else if (lowestFirstBar > 0.90)
+                    minValue = lowestFirstBar * 0.98;
+                else if (lowestFirstBar > 0.85)
+                    minValue = lowestFirstBar * 0.97;
+                else if (lowestFirstBar > 0.80)
+                    minValue = lowestFirstBar * 0.96;
+                else if (lowestFirstBar > 0.70)
+                    minValue = lowestFirstBar * 0.95;
+                else
+                    minValue = lowestFirstBar * 0.75;
+            }
 
             VarianceBarMinValue = minValue;
         }
@@ -1496,7 +1521,7 @@ namespace CapFrameX.ViewModel
                 OxyColors.Transparent : OxyColor.FromRgb(color.R, color.G, color.B),
                 InterpolationAlgorithm = SelectedFilterMode == EFilterMode.TimeIntervalAverage ? InterpolationAlgorithms.CanonicalSpline : null,
                 EdgeRenderingMode = SelectedFilterMode == EFilterMode.TimeIntervalAverage ? EdgeRenderingMode.PreferGeometricAccuracy : EdgeRenderingMode.PreferSpeed
-                
+
             };
 
             fpsSeries.Points.AddRange(fpsPoints.Select(pnt => new DataPoint(pnt.X, pnt.Y)));

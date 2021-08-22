@@ -626,8 +626,8 @@ namespace CapFrameX.ViewModel
             _localRecordDataServer.SetTimeWindow(FirstSeconds, LastSeconds - FirstSeconds);
             RealTimeUpdateCharts();
             UpdateSecondaryCharts();
-            RemainingRecordingTime = Math.Round(LastSeconds - FirstSeconds, 2)
-                .ToString(CultureInfo.InvariantCulture) + " s";
+            RemainingRecordingTime = "(" + Math.Round(LastSeconds - FirstSeconds, 2)
+                .ToString("0.00", CultureInfo.InvariantCulture) + " s)";
         }
 
         private void OnCopyStatisticalParameter()
@@ -851,8 +851,8 @@ namespace CapFrameX.ViewModel
             FirstSeconds = 0;
             LastSeconds = MaxRecordingTime;
             _doUpdateCharts = true;
-            RemainingRecordingTime = Math.Round(MaxRecordingTime, 2)
-                .ToString(CultureInfo.InvariantCulture) + " s";
+            RemainingRecordingTime = "(" + Math.Round(MaxRecordingTime, 2)
+                .ToString("0.00", CultureInfo.InvariantCulture) + " s)";
         }
 
         private void SubscribeToAggregatorEvents()
@@ -1177,7 +1177,7 @@ namespace CapFrameX.ViewModel
                         Title = $"< 4ms ({ Math.Round(variances[1] *100, 2).ToString(CultureInfo.InvariantCulture) }%)",
                         Values = new ChartValues<double>() { variances[1] },
                         DataLabels = false,
-                        Fill = new SolidColorBrush(Color.FromRgb(28, 95, 138)), // dark blue
+                        Fill = new SolidColorBrush(Color.FromRgb(15, 120, 180)), // dark blue
                         StrokeThickness = 0
                     },
 

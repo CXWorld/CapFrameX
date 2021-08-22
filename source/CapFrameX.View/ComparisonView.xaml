@@ -206,8 +206,8 @@
 									             TickPlacement="BottomRight" TickFrequency="2.5"
                                                  MinRange="{Binding MinRangeSliderRange}"
 									             Style="{StaticResource CustomRangeSlider}"/>
-                            <StackPanel HorizontalAlignment="Right" VerticalAlignment="Bottom" Orientation="Horizontal" Margin="0 0 10 5" Height="22">
-                                <TextBlock Text="Start and end points:" Margin="0 5 5 0"/>
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Bottom" Orientation="Horizontal" Margin="0 0 10 5" Height="22">
+                                <TextBlock Text="Range:" Margin="0 5 5 0"/>
                                 <TextBox x:Name="FirsSecondsTextbox" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" Grid.Row="1" materialDesign:HintAssist.Hint="Start (s)" HorizontalAlignment="Center" Width="45"
                                          ToolTip="Range Slider start point" PreviewKeyDown="FirstSecondsTextBox_PreviewKeyDown" PreviewTextInput="NumberValidationTextBox" TextAlignment="Center">
                                     <TextBox.Text>
@@ -229,10 +229,7 @@
                                         </Binding>
                                     </TextBox.Text>
                                 </TextBox>
-                            </StackPanel>
-                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Bottom" Orientation="Horizontal" Margin="45 0 0 10" Height="15">
-                                <TextBlock Text="Time window:"/>
-                                <TextBlock Text="{Binding RemainingRecordingTime}" Margin="5 0 0 0"/>
+                                <TextBlock Text="{Binding RemainingRecordingTime}" Margin="10 0 0 0" VerticalAlignment="Center" FontSize="14"></TextBlock>
                             </StackPanel>
                         </Grid>
                         <Grid Grid.Row="3" Margin="0 5 0 0" Background="Transparent">
@@ -259,6 +256,7 @@
                         </Grid>
                     </Grid>
                 </TabItem>
+                <!-- Variances Tab -->
                 <TabItem Width="100">
                     <TabItem.Header>
                         <Label FontSize="12">Variances</Label>
@@ -279,7 +277,7 @@
                                     <lvc:DefaultLegend FontSize="12" Margin="0 0 0 20" FontWeight="Medium"/>
                                 </lvc:CartesianChart.ChartLegend>
                                 <lvc:CartesianChart.AxisX>
-                                    <lvc:Axis Position="RightTop" MinValue="{Binding VarianceBarMinValue}" MaxValue="1.0001" BarUnit="1" LabelFormatter="{Binding PercentageFormatter}" Foreground="{DynamicResource MaterialDesignBody}">
+                                    <lvc:Axis Position="RightTop" MinValue="{Binding VarianceBarMinValue}" MaxValue="1.00001" BarUnit="1" LabelFormatter="{Binding PercentageFormatter}" Foreground="{DynamicResource MaterialDesignBody}">
                                         <lvc:Axis.Separator>
                                             <lvc:Separator Step="{Binding VarianceChartSeparators}" StrokeThickness=".3" Stroke="{DynamicResource MaterialDesignBody}"></lvc:Separator>
                                         </lvc:Axis.Separator>
@@ -429,7 +427,11 @@
 							  Style="{StaticResource MaterialDesignActionAccentToggleButton}" IsChecked="{Binding IsSortModeAscending}"
                               Visibility="{Binding IsLineChartTabActive, Converter={StaticResource TrueToCollapsedConverter}}">
                     <ToggleButton.Content>
-                        <materialDesign:PackIcon Kind="SortDescending" />
+                        <materialDesign:PackIcon Kind="SortDescending" RenderTransformOrigin=".5,.5">
+                            <materialDesign:PackIcon.RenderTransform>
+                                <ScaleTransform ScaleY="-1"/>
+                            </materialDesign:PackIcon.RenderTransform>
+                        </materialDesign:PackIcon>
                     </ToggleButton.Content>
                     <materialDesign:ToggleButtonAssist.OnContent>
                         <materialDesign:PackIcon Kind="SortAscending" />
@@ -444,11 +446,19 @@
                 <ToggleButton Name="ContextLegendActiveToggleButton" Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
 								  ToolTip="Show context legend" IsChecked="{Binding IsContextLegendActive}"/>
             </StackPanel>
+            
             <StackPanel Grid.Column="5" Margin="10 0 0 0" VerticalAlignment="Center" Orientation="Horizontal"
 						Visibility="{Binding IsBarChartTabActive, Converter={StaticResource TrueToVisibleConverter}}">
                 <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}">Relative Mode:</TextBlock>
                 <ToggleButton Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
 							  ToolTip="Toggle fixed relative mode. Target value selectable by mouse click." IsChecked="{Binding UseComparisonRelativeMode}"/>
+            </StackPanel>
+
+            <StackPanel Grid.Column="5" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="20 0 10 0" Orientation="Horizontal"
+						Visibility="{Binding IsVarianceChartTabActive, Converter={StaticResource TrueToVisibleConverter}}">
+                <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}">Auto scale:</TextBlock>
+                <ToggleButton  Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
+							    ToolTip="Auto scale variance bars according to the first variance group" IsChecked="{Binding VarianceAutoScaling}"/>
             </StackPanel>
 
         </Grid>
