@@ -553,7 +553,7 @@ namespace CapFrameX.Data
                         }
                         else
                         {
-                            if (reference[index] <= startTime || reference[index] >= endTime)
+                            if (reference[index] < startTime || reference[index] > endTime)
                             {
                                 indicesToKeep.Add(index);
                             }
@@ -575,21 +575,29 @@ namespace CapFrameX.Data
                         clone.Runs[sessionRunIndex].SensorData2 = new SessionSensorData2(initialAdd: false);
                         foreach (var collection in sourceSessionRun.SensorData2)
                         {
+
                             var clonedSensorEntry = new SessionSensorEntry(collection.Value.Name, collection.Value.Type);
-                            foreach (var indexToKeep in sensorIndicesToKeep)
+
+                            if (collection.Value.Values.Count() >= sensorIndicesToKeep.LastOrDefault())
                             {
-                                clonedSensorEntry.Values.AddLast(collection.Value.Values.ElementAt(indexToKeep));
+                                foreach (var indexToKeep in sensorIndicesToKeep)
+                                {
+                                    clonedSensorEntry.Values.AddLast(collection.Value.Values.ElementAt(indexToKeep));
+                                }
                             }
+
                             clone.Runs[sessionRunIndex].SensorData2.Add(collection.Key, clonedSensorEntry);
                         }
                     }
-                    
+
                     targetSessionRun.Hash = Convert.ToString(targetSessionRun.GetHashCode()); // Dirty Hack weil (weil Alex Hacks mag) Rohdaten nicht mehr vorhanden. Hash ist nicht vergleichbar mit dem Hash, welcher aus den PresentMonLines erstellt wird
                 }
 
                 // remove runs without data
                 clone.Runs = clone.Runs.Where(r => r.CaptureData.TimeInSeconds.Length != 0).ToList();
 
+                if (!clone.Runs.Any())
+                    return;
 
                 clone.Hash = string.Join(",", clone.Runs.Select(r => r.Hash).OrderBy(h => h)).GetSha1();
                 clone.Info.Id = Guid.NewGuid();
