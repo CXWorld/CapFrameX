@@ -201,10 +201,11 @@
                         </Grid>
                         <Grid Grid.Row="2" Margin="0 5 0 0"  Visibility="{Binding ElementName=RangeSliderActiveToggleButton, Path=IsChecked, Converter={StaticResource TrueToVisibleConverter}}"
                               Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
-                            <mahapps:RangeSlider Margin="45 10 10 30" LowerValue="{Binding FirstSeconds}" UpperValue="{Binding LastSeconds}" 
+                            <controls:CustomRangeSlider Margin="45 10 10 30" LowerValue="{Binding FirstSeconds}" UpperValue="{Binding LastSeconds}" 
                                                  Maximum="{Binding MaxRecordingTime}"                                    
 									             TickPlacement="BottomRight" TickFrequency="2.5"
                                                  MinRange="{Binding MinRangeSliderRange}"
+                                                 TrackColor="Gray"
 									             Style="{StaticResource CustomRangeSlider}"/>
                             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Bottom" Orientation="Horizontal" Margin="0 0 10 5" Height="22">
                                 <TextBlock Text="Range:" Margin="0 5 5 0"/>
