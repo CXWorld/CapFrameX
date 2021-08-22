@@ -610,6 +610,11 @@ namespace CapFrameX.Overlay
                 name = "MRR";
             }
 
+            if (name.Contains("GPU Mem Junction"))
+            {
+                name = "VRAM Hot Spot";
+            }
+
             return name;
         }
 

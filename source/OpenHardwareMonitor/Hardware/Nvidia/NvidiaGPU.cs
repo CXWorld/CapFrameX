@@ -84,28 +84,6 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
             hotSpotTemperature = new Sensor("GPU Hot Spot", (int)thermalSettings.Count + 1, SensorType.Temperature, this, settings);
             memoryJunctionTemperature = new Sensor("GPU Memory Junction", (int)thermalSettings.Count + 2, SensorType.Temperature, this, settings);
 
-            // Set max bit
-            for (; thermalSensorsMaxBit < 32; thermalSensorsMaxBit++)
-            {
-                try
-                {
-                    var thermalSensor = new PrivateThermalSensorsV2()
-                    {
-                        Version = NVAPI.GPU_THERMAL_STATUS_VER,
-                        Mask = 1u << thermalSensorsMaxBit
-                    };
-
-                    var status = NVAPI.NvAPI_GPU_ThermalGetStatus(handle, ref thermalSensor);
-
-                    if (status != NvStatus.OK)
-                        throw new Exception();
-                }
-                catch
-                {
-                    break;
-                }
-            }
-
             clocks = new Sensor[3];
             clocks[0] = new Sensor("GPU Core", 0, SensorType.Clock, this, settings);
             clocks[1] = new Sensor("GPU Memory", 1, SensorType.Clock, this, settings);
@@ -135,6 +113,7 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
             voltageLimit = new Sensor("GPU Voltage Limit", 2, SensorType.Factor, this, settings);
             voltage = new Sensor("GPU Voltage", 0, SensorType.Voltage, this, settings);
             power = new Sensor("GPU Power", 0, SensorType.Power, this, settings);
+            monitorRefreshRate = new Sensor("Monitor Refresh Rate", 0, SensorType.Frequency, this, settings);
 
             NvGPUCoolerSettings coolerSettings = GetCoolerSettings();
             if (coolerSettings.Count > 0)
@@ -148,7 +127,28 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
                 control.Control = fanControl;
             }
 
-            monitorRefreshRate = new Sensor("Monitor Refresh Rate", 0, SensorType.Frequency, this, settings);
+            // Set max bit thermal sensor struct mask
+            for (int i = 0; i < 32; i++)
+            {
+                try
+                {
+                    thermalSensorsMaxBit = i;
+                    var thermalSensor = new PrivateThermalSensorsV2()
+                    {
+                        Version = NVAPI.GPU_THERMAL_STATUS_VER,
+                        Mask = 1u << i
+                    };
+
+                    var status = NVAPI.NvAPI_GPU_ThermalGetStatus(handle, ref thermalSensor);
+
+                    if (status != NvStatus.OK)
+                        throw new Exception();
+                }
+                catch
+                {
+                    break;
+                }
+            }
 
             if (NVML.IsInitialized)
             {
@@ -286,24 +286,35 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
                 if (NVAPI.NvAPI_GPU_ThermalGetStatus != null &&
                     NVAPI.NvAPI_GPU_ThermalGetStatus(handle, ref thermalSensor) == NvStatus.OK)
                 {
-                    hotSpotTemperature.Value = thermalSensor.Temperatures[1] / 256.0f;
-                    memoryJunctionTemperature.Value = thermalSensor.Temperatures[9] / 256.0f;
+                    hotSpotTemperature.Value = thermalSensor.Temperatures[1] / 256f;
+                    memoryJunctionTemperature.Value = thermalSensor.Temperatures[9] / 256f;
                 }
 
                 if (sensorConfig.GetSensorEvaluate(hotSpotTemperature.IdentifierString)
-                    && hotSpotTemperature.Value != 0)
+                    && hotSpotTemperature.Value != null && hotSpotTemperature.Value != 0)
+                {
                     ActivateSensor(hotSpotTemperature);
+                }
+                else
+                {
+                    hotSpotTemperature.Value = null;
+                }
 
                 if (sensorConfig.GetSensorEvaluate(memoryJunctionTemperature.IdentifierString)
-                    && memoryJunctionTemperature.Value != 0)
+                    && memoryJunctionTemperature.Value != null && memoryJunctionTemperature.Value != 0)
+                {
                     ActivateSensor(memoryJunctionTemperature);
+                }
+                else
+                {
+                    memoryJunctionTemperature.Value = null;
+                }
             }
             else
             {
                 hotSpotTemperature.Value = null;
                 memoryJunctionTemperature.Value = null;
             }
-
 
             bool tachReadingOk = false;
             if (sensorConfig.GetSensorEvaluate(fan.IdentifierString))
