@@ -1,6 +1,7 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:controls="http://metro.mahapps.com/winfx/xaml/controls">
+                    xmlns:controls="http://metro.mahapps.com/winfx/xaml/controls"
+                    xmlns:customcontrols="clr-namespace:CapFrameX.View.Controls">
 
     <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.Slider.xaml" />
@@ -79,13 +80,13 @@
     </Style>
 
     <ControlTemplate x:Key="MaterialDesignMahAppsRangeSliderHorizontal"
-                     TargetType="controls:RangeSlider">
+                     TargetType="customcontrols:CustomRangeSlider">
         <Grid x:Name="PART_Container"
               VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
               Background="{TemplateBinding Background}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
-                <RowDefinition Height="*" MinHeight="{TemplateBinding controls:RangeSlider.MinHeight}" />
+                <RowDefinition Height="*" MinHeight="{TemplateBinding customcontrols:CustomRangeSlider.MinHeight}" />
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
             <TickBar x:Name="PART_TopTick"
@@ -121,7 +122,7 @@
                         Background="Transparent"
                         Orientation="Horizontal">
                 <RepeatButton x:Name="PART_LeftEdge"
-                              Foreground="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=(controls:SliderHelper.TrackFillBrush)}"
+                              Foreground="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=(customcontrols:CustomRangeSlider.TrackColor)}"
                               Style="{DynamicResource MaterialDesign.RangeSlider.HorizontalTrack}" />
 
                 <controls:MetroThumb x:Name="PART_LeftThumb"
@@ -139,7 +140,7 @@
                                      Style="{DynamicResource MaterialDesign.RangeSlider.Thumb}" />
 
                 <RepeatButton x:Name="PART_RightEdge"
-                              Foreground="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=(controls:SliderHelper.TrackFillBrush)}"
+                              Foreground="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=(customcontrols:CustomRangeSlider.TrackColor)}"
                               Style="{DynamicResource MaterialDesign.RangeSlider.HorizontalTrack}" />
             </StackPanel>
         </Grid>
@@ -194,13 +195,13 @@
     </ControlTemplate>
 
     <ControlTemplate x:Key="MaterialDesignRangeSliderVertical"
-                     TargetType="controls:RangeSlider">
+                     TargetType="customcontrols:CustomRangeSlider">
         <Grid x:Name="PART_Container"
               HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
               Background="{TemplateBinding Background}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="*" MinWidth="{TemplateBinding controls:RangeSlider.MinWidth}" />
+                <ColumnDefinition Width="*" MinWidth="{TemplateBinding customcontrols:CustomRangeSlider.MinWidth}" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
             <TickBar x:Name="PART_TopTick"
@@ -236,7 +237,7 @@
                         Background="Transparent"
                         Orientation="Vertical">
                 <RepeatButton x:Name="PART_RightEdge"
-                              Foreground="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=(controls:SliderHelper.TrackFillBrush)}"
+                              Foreground="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=(customcontrols:CustomRangeSlider.TrackColor)}"
                               Style="{DynamicResource MaterialDesign.RangeSlider.VerticalTrack}" />
 
                 <controls:MetroThumb x:Name="PART_RightThumb"
@@ -254,7 +255,7 @@
                                      Style="{DynamicResource MaterialDesign.RangeSlider.Thumb}" />
 
                 <RepeatButton x:Name="PART_LeftEdge"
-                              Foreground="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=(controls:SliderHelper.TrackFillBrush)}"
+                              Foreground="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=(customcontrols:CustomRangeSlider.TrackColor)}"
                               Style="{DynamicResource MaterialDesign.RangeSlider.VerticalTrack}" />
             </StackPanel>
         </Grid>
@@ -332,5 +333,5 @@
                 <Setter Property="Template" Value="{StaticResource MaterialDesignRangeSliderVertical}" />
             </Trigger>
         </Style.Triggers>
-    </Style>    
+    </Style>
 </ResourceDictionary>
