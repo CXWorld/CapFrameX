@@ -260,6 +260,7 @@ namespace CapFrameX.ViewModel
                     _frametimeStatisticProvider.GetFpsMetricValue(sequence, metric);
             var frameTimes = session.Runs.SelectMany(r => r.CaptureData.MsBetweenPresents).ToList();
             var recordTime = session.Runs.SelectMany(r => r.CaptureData.TimeInSeconds).Last();
+            var inputLagTimes = session.GetApproxInputLagTimes();
 
             var max = GeMetricValue(frameTimes, EMetric.Max);
             var p99_quantile = GeMetricValue(frameTimes, EMetric.P99);
@@ -290,7 +291,7 @@ namespace CapFrameX.ViewModel
             var gpuPower = SensorReport.GetAverageSensorValues(session.Runs.Select(run => run.SensorData2), EReportSensorName.GpuPower, 0, double.PositiveInfinity);
             var gpuClock = SensorReport.GetAverageSensorValues(session.Runs.Select(run => run.SensorData2), EReportSensorName.GpuClock, 0, double.PositiveInfinity);
             var gpuTemp = SensorReport.GetAverageSensorValues(session.Runs.Select(run => run.SensorData2), EReportSensorName.GpuTemp, 0, double.PositiveInfinity);
-            var appLatency = Math.Round(session.GetApproxInputLagTimes().Average(), 1);
+            var appLatency = inputLagTimes.Any() ? Math.Round(inputLagTimes.Average(), 1) : 0;
 
             var reportInfo = new ReportInfo()
             {
