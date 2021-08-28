@@ -54,7 +54,7 @@ namespace CapFrameX.Data
 			_processList.Add(process);
 			_processListUpdate.OnNext(default);
 
-			if (blacklist = true || displayName != null)
+			if (blacklist || displayName != null)
 			UploadProcessInfo(processName, displayName, blacklist);
 		}
 
