@@ -710,6 +710,7 @@ namespace CapFrameX.ViewModel
             _logger.LogInformation(this.GetType().Name + " {initializationTime}s initialization time", Math.Round(stopwatch.ElapsedMilliseconds * 1E-03, 1));
         }
 
+
         private void InitializePlotModels()
         {
             // Frametimes
@@ -799,57 +800,6 @@ namespace CapFrameX.ViewModel
                 MajorTickSize = 0
             });
         }
-
-        private void SubscribeToSelectRecord()
-        {
-            _eventAggregator.GetEvent<PubSubEvent<ViewMessages.SelectSession>>()
-                            .Subscribe(msg =>
-                            {
-                                if (_useEventMessages)
-                                {
-                                    AddComparisonItem(msg.RecordInfo);
-                                }
-                            });
-        }
-
-        private void SubscribeToUpdateRecordInfos()
-        {
-            _eventAggregator.GetEvent<PubSubEvent<ViewMessages.UpdateRecordInfos>>()
-                            .Subscribe(msg =>
-                            {
-                                if (_useEventMessages)
-                                {
-                                    var recordInfoWrapper = ComparisonRecords
-                                        .FirstOrDefault(info => info.WrappedRecordInfo
-                                        .FileRecordInfo.Id == msg.RecordInfo.Id);
-
-                                    if (recordInfoWrapper != null)
-                                    {
-                                        RemoveComparisonItem(recordInfoWrapper);
-                                        AddComparisonItem(msg.RecordInfo);
-                                    }
-                                }
-                            });
-        }
-
-        private void SubscribeToThemeChanged()
-        {
-            _eventAggregator.GetEvent<PubSubEvent<ViewMessages.ThemeChanged>>()
-                              .Subscribe(msg =>
-                              {
-                                  InitializePlotModels();
-                                  UpdateCharts();
-                              });
-        }
-
-        private void OnChartItemChanged()
-            => ColorPickerVisibility = SelectedChartItem?.Header.ToString().Contains("Line") ?? false;
-
-        private void OnSortModeChanged()
-            => SortComparisonItems();
-
-        private void OnComparisonGroupingChanged()
-            => SortComparisonItems();
 
         private void SetRowSeries()
         {
@@ -969,6 +919,42 @@ namespace CapFrameX.ViewModel
                 };
         }
 
+        private void UpdateCharts()
+        {
+            if (!_doUpdateCharts)
+                return;
+
+            ResetBarChartSeriesTitles();
+            ComparisonFrametimesModel.Series.Clear();
+            ComparisonFpsModel.Series.Clear();
+            ComparisonLShapeCollection.Clear();
+
+            if (SelectedChartItem?.Header.ToString().Contains("Bar charts") ?? false)
+                SetColumnChart();
+            else if (SelectedChartItem?.Header.ToString().Contains("Variances") ?? false)
+                SetVarianceChart();
+            else
+            {
+                SetFrametimeChart();
+                SetFpsChart();
+                SetLShapeChart();
+            }
+            OnComparisonContextChanged();
+        }
+
+
+
+        private void OnChartItemChanged()
+            => ColorPickerVisibility = SelectedChartItem?.Header.ToString().Contains("Line") ?? false;
+
+        private void OnSortModeChanged()
+            => SortComparisonItems();
+
+        private void OnComparisonGroupingChanged()
+            => SortComparisonItems();
+
+
+
         private void OnMetricChanged()
         {
             SetRowSeries();
@@ -1019,19 +1005,6 @@ namespace CapFrameX.ViewModel
             UpdateBarChartHeight();
         }
 
-        private string GetDescriptionAndFpsUnit(EMetric metric)
-        {
-            string description;
-            if (metric == EMetric.CpuFpsPerWatt || metric == EMetric.GpuFpsPerWatt)
-            {
-                description = metric.GetDescription();
-            }
-            else
-                description = $"{metric.GetDescription()} FPS";
-
-            return description;
-        }
-
         private void OnFilterModeChanged()
         {
             ComparisonFpsModel.Series.Clear();
@@ -1039,17 +1012,23 @@ namespace CapFrameX.ViewModel
             OnComparisonContextChanged();
         }
 
-        private EMetric GetMetricByIndex(int index)
+        private void OnRangeSliderChanged()
         {
-            if (index == 0)
-                return SelectedFirstMetric;
-            else if (index == 1)
-                return SelectedSecondMetric;
-            else if (index == 2)
-                return SelectedThirdMetric;
-            else
-                return 0;
+            UpdateRangeSliderParameter();
+            UpdateCharts();
         }
+
+        public void OnRangeSliderValuesChanged()
+        {
+            if (FirstSeconds > LastSeconds || FirstSeconds < 0)
+                FirstSeconds = 0;
+
+            if (LastSeconds > MaxRecordingTime || LastSeconds <= 0)
+                LastSeconds = MaxRecordingTime;
+        }
+
+
+
 
         internal class ChartLabel
         {
@@ -1117,11 +1096,6 @@ namespace CapFrameX.ViewModel
             ComparisonFpsModel.InvalidatePlot(true);
         }
 
-        private void OnRangeSliderChanged()
-        {
-            UpdateRangeSliderParameter();
-            UpdateCharts();
-        }
 
         private void UpdateRangeSliderParameter()
         {
@@ -1155,14 +1129,7 @@ namespace CapFrameX.ViewModel
                 "(" + Math.Round(MaxRecordingTime, 2).ToString("0.00", CultureInfo.InvariantCulture) + " s)" : "(0.00 s)"; ;
         }
 
-        public void OnRangeSliderValuesChanged()
-        {
-            if (FirstSeconds > LastSeconds || FirstSeconds < 0)
-                FirstSeconds = 0;
 
-            if (LastSeconds > MaxRecordingTime || LastSeconds <= 0)
-                LastSeconds = MaxRecordingTime;
-        }
 
         private void UpdateAxesMinMaxFrametimeChart()
         {
@@ -1326,91 +1293,6 @@ namespace CapFrameX.ViewModel
             ComparisonRowChartLabels = Array.Empty<string>();
         }
 
-        private ComparisonRecordInfo GetComparisonRecordInfoFromFileRecordInfo(IFileRecordInfo fileRecordInfo)
-        {
-            string infoText = string.Empty;
-            var session = _recordManager.LoadData(fileRecordInfo.FullPath);
-            var frameTimes = session.Runs.SelectMany(r => r.CaptureData.MsBetweenPresents).ToList();
-            var recordTime = session.Runs.SelectMany(r => r.CaptureData.TimeInSeconds).Last();
-            if (session != null)
-            {
-                var newLine = Environment.NewLine;
-                infoText += $"{fileRecordInfo.CreationDate} { fileRecordInfo.CreationTime}" + newLine +
-                            $"{frameTimes.Count()} frames in {Math.Round(recordTime, 2).ToString(CultureInfo.InvariantCulture)}s";
-            }
-
-            return new ComparisonRecordInfo
-            {
-                Game = fileRecordInfo.GameName,
-                InfoText = infoText,
-                DateTime = fileRecordInfo.FileInfo.LastWriteTime.ToString(),
-                Session = session,
-                FileRecordInfo = fileRecordInfo
-            };
-        }
-
-        private void UpdateCharts()
-        {
-            if (!_doUpdateCharts)
-                return;
-
-            ResetBarChartSeriesTitles();
-            ComparisonFrametimesModel.Series.Clear();
-            ComparisonFpsModel.Series.Clear();
-            ComparisonLShapeCollection.Clear();
-
-            if (SelectedChartItem?.Header.ToString().Contains("Bar charts") ?? false)
-                SetColumnChart();
-            else if (SelectedChartItem?.Header.ToString().Contains("Variances") ?? false)
-                SetVarianceChart();
-            else
-            {
-                SetFrametimeChart();
-                SetFpsChart();
-                SetLShapeChart();
-            }
-            OnComparisonContextChanged();
-        }
-
-        private void AddToColumnCharts(ComparisonRecordInfoWrapper wrappedComparisonInfo)
-        {
-            // Update metrics
-            SetMetrics(wrappedComparisonInfo);
-
-            // First metric
-            ComparisonRowChartSeriesCollection[0].Values.Insert(0, wrappedComparisonInfo.WrappedRecordInfo.FirstMetric);
-
-            // Second metric
-            if (ComparisonRowChartSeriesCollection.Count > 1)
-            {
-                ComparisonRowChartSeriesCollection[1].Values.Insert(0, wrappedComparisonInfo.WrappedRecordInfo.SecondMetric);
-            }
-
-            // Second metric
-            if (ComparisonRowChartSeriesCollection.Count > 2)
-            {
-                ComparisonRowChartSeriesCollection[2].Values.Insert(0, wrappedComparisonInfo.WrappedRecordInfo.ThirdMetric);
-            }
-
-            SetBarMinMaxValues();
-            OnComparisonContextChanged();
-        }
-
-
-        private void AddToVarianceCharts(ComparisonRecordInfoWrapper wrappedComparisonInfo)
-        {
-            var frametimes = wrappedComparisonInfo.WrappedRecordInfo.Session.GetFrametimeTimeWindow(0, double.PositiveInfinity, _appConfiguration);
-            var variances = _frametimeStatisticProvider.GetFrametimeVariancePercentages(frametimes);
-
-            VarianceStatisticCollection[0].Values.Insert(0, variances[0]);
-            VarianceStatisticCollection[1].Values.Insert(0, variances[1]);
-            VarianceStatisticCollection[2].Values.Insert(0, variances[2]);
-            VarianceStatisticCollection[3].Values.Insert(0, variances[3]);
-            VarianceStatisticCollection[4].Values.Insert(0, variances[4]);
-
-            SetVarianceBarMinValues();
-
-        }
 
         private void SetBarMinMaxValues()
         {
@@ -1471,6 +1353,74 @@ namespace CapFrameX.ViewModel
 
             VarianceBarMinValue = minValue;
         }
+
+
+
+
+
+
+        private void SetColumnChart()
+        {
+            foreach (var item in ComparisonRowChartSeriesCollection)
+            {
+                item.Values.Clear();
+            }
+
+            for (int i = 0; i < ComparisonRecords.Count; i++)
+            {
+                AddToColumnCharts(ComparisonRecords[i]);
+            }
+        }
+
+        private void SetVarianceChart()
+        {
+            foreach (var item in VarianceStatisticCollection)
+            {
+                item.Values.Clear();
+            }
+
+            for (int i = 0; i < ComparisonRecords.Count; i++)
+            {
+                AddToVarianceCharts(ComparisonRecords[i]);
+            }
+        }
+
+
+        private void SetFrametimeChart()
+        {
+            for (int i = 0; i < ComparisonRecords.Count; i++)
+            {
+                AddToFrametimeChart(ComparisonRecords[i]);
+            }
+
+            UpdateAxesMinMaxFrametimeChart();
+
+        }
+
+        private void SetFpsChart()
+        {
+            for (int i = 0; i < ComparisonRecords.Count; i++)
+            {
+                AddToFpsChart(ComparisonRecords[i]);
+            }
+
+            UpdateAxesMinMaxFpsChart();
+
+        }
+
+        private void SetLShapeChart()
+        {
+            for (int i = 0; i < ComparisonRecords.Count; i++)
+            {
+                AddToLShapeChart(ComparisonRecords[i]);
+            }
+
+            ResetLShapeChart.OnNext(default(Unit));
+        }
+
+
+
+
 
         private void AddToFrametimeChart(ComparisonRecordInfoWrapper wrappedComparisonInfo)
         {
@@ -1560,63 +1510,96 @@ namespace CapFrameX.ViewModel
             });
         }
 
-        private void SetColumnChart()
+        private void AddToColumnCharts(ComparisonRecordInfoWrapper wrappedComparisonInfo)
         {
-            foreach (var item in ComparisonRowChartSeriesCollection)
+            // Update metrics
+            SetMetrics(wrappedComparisonInfo);
+
+            // First metric
+            ComparisonRowChartSeriesCollection[0].Values.Insert(0, wrappedComparisonInfo.WrappedRecordInfo.FirstMetric);
+
+            // Second metric
+            if (ComparisonRowChartSeriesCollection.Count > 1)
             {
-                item.Values.Clear();
+                ComparisonRowChartSeriesCollection[1].Values.Insert(0, wrappedComparisonInfo.WrappedRecordInfo.SecondMetric);
             }
 
-            for (int i = 0; i < ComparisonRecords.Count; i++)
+            // Second metric
+            if (ComparisonRowChartSeriesCollection.Count > 2)
             {
-                AddToColumnCharts(ComparisonRecords[i]);
+                ComparisonRowChartSeriesCollection[2].Values.Insert(0, wrappedComparisonInfo.WrappedRecordInfo.ThirdMetric);
             }
+
+            SetBarMinMaxValues();
+            OnComparisonContextChanged();
         }
 
-        private void SetVarianceChart()
+        private void AddToVarianceCharts(ComparisonRecordInfoWrapper wrappedComparisonInfo)
         {
-            foreach (var item in VarianceStatisticCollection)
-            {
-                item.Values.Clear();
-            }
+            var frametimes = wrappedComparisonInfo.WrappedRecordInfo.Session.GetFrametimeTimeWindow(0, double.PositiveInfinity, _appConfiguration);
+            var variances = _frametimeStatisticProvider.GetFrametimeVariancePercentages(frametimes);
 
-            for (int i = 0; i < ComparisonRecords.Count; i++)
-            {
-                AddToVarianceCharts(ComparisonRecords[i]);
-            }
-        }
+            VarianceStatisticCollection[0].Values.Insert(0, variances[0]);
+            VarianceStatisticCollection[1].Values.Insert(0, variances[1]);
+            VarianceStatisticCollection[2].Values.Insert(0, variances[2]);
+            VarianceStatisticCollection[3].Values.Insert(0, variances[3]);
+            VarianceStatisticCollection[4].Values.Insert(0, variances[4]);
 
-
-        private void SetFrametimeChart()
-        {
-            for (int i = 0; i < ComparisonRecords.Count; i++)
-            {
-                AddToFrametimeChart(ComparisonRecords[i]);
-            }
-
-            UpdateAxesMinMaxFrametimeChart();
-
-        }
-
-        private void SetFpsChart()
-        {
-            for (int i = 0; i < ComparisonRecords.Count; i++)
-            {
-                AddToFpsChart(ComparisonRecords[i]);
-            }
-
-            UpdateAxesMinMaxFpsChart();
+            SetVarianceBarMinValues();
 
         }
 
-        private void SetLShapeChart()
+
+
+
+
+
+        private string GetDescriptionAndFpsUnit(EMetric metric)
         {
-            for (int i = 0; i < ComparisonRecords.Count; i++)
+            string description;
+            if (metric == EMetric.CpuFpsPerWatt || metric == EMetric.GpuFpsPerWatt)
             {
-                AddToLShapeChart(ComparisonRecords[i]);
+                description = metric.GetDescription();
+            }
+            else
+                description = $"{metric.GetDescription()} FPS";
+
+            return description;
+        }
+
+        private EMetric GetMetricByIndex(int index)
+        {
+            if (index == 0)
+                return SelectedFirstMetric;
+            else if (index == 1)
+                return SelectedSecondMetric;
+            else if (index == 2)
+                return SelectedThirdMetric;
+            else
+                return 0;
+        }
+
+        private ComparisonRecordInfo GetComparisonRecordInfoFromFileRecordInfo(IFileRecordInfo fileRecordInfo)
+        {
+            string infoText = string.Empty;
+            var session = _recordManager.LoadData(fileRecordInfo.FullPath);
+            var frameTimes = session.Runs.SelectMany(r => r.CaptureData.MsBetweenPresents).ToList();
+            var recordTime = session.Runs.SelectMany(r => r.CaptureData.TimeInSeconds).Last();
+            if (session != null)
+            {
+                var newLine = Environment.NewLine;
+                infoText += $"{fileRecordInfo.CreationDate} { fileRecordInfo.CreationTime}" + newLine +
+                            $"{frameTimes.Count()} frames in {Math.Round(recordTime, 2).ToString(CultureInfo.InvariantCulture)}s";
             }
 
-            ResetLShapeChart.OnNext(default(Unit));
+            return new ComparisonRecordInfo
+            {
+                Game = fileRecordInfo.GameName,
+                InfoText = infoText,
+                DateTime = fileRecordInfo.FileInfo.LastWriteTime.ToString(),
+                Session = session,
+                FileRecordInfo = fileRecordInfo
+            };
         }
 
         private ComparisonRecordInfoWrapper GetWrappedRecordInfo(ComparisonRecordInfo comparisonRecordInfo)
@@ -1628,6 +1611,52 @@ namespace CapFrameX.ViewModel
             wrappedComparisonRecordInfo.FrametimeGraphColor = color.Color;
 
             return wrappedComparisonRecordInfo;
+        }
+
+
+
+
+
+        private void SubscribeToSelectRecord()
+        {
+            _eventAggregator.GetEvent<PubSubEvent<ViewMessages.SelectSession>>()
+                            .Subscribe(msg =>
+                            {
+                                if (_useEventMessages)
+                                {
+                                    AddComparisonItem(msg.RecordInfo);
+                                }
+                            });
+        }
+
+        private void SubscribeToUpdateRecordInfos()
+        {
+            _eventAggregator.GetEvent<PubSubEvent<ViewMessages.UpdateRecordInfos>>()
+                            .Subscribe(msg =>
+                            {
+                                if (_useEventMessages)
+                                {
+                                    var recordInfoWrapper = ComparisonRecords
+                                        .FirstOrDefault(info => info.WrappedRecordInfo
+                                        .FileRecordInfo.Id == msg.RecordInfo.Id);
+
+                                    if (recordInfoWrapper != null)
+                                    {
+                                        RemoveComparisonItem(recordInfoWrapper);
+                                        AddComparisonItem(msg.RecordInfo);
+                                    }
+                                }
+                            });
+        }
+
+        private void SubscribeToThemeChanged()
+        {
+            _eventAggregator.GetEvent<PubSubEvent<ViewMessages.ThemeChanged>>()
+                              .Subscribe(msg =>
+                              {
+                                  InitializePlotModels();
+                                  UpdateCharts();
+                              });
         }
 
 

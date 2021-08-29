@@ -69,7 +69,7 @@ namespace CapFrameX.ViewModel
         private double _firstSeconds;
         private double _lastSeconds;
         private EChartYAxisSetting _selecetedChartYAxisSetting = EChartYAxisSetting.FullFit;
-        private ContitionalMessageDialog _messageDialogContent;
+        private ConditionalMessageDialog _messageDialogContent;
         private bool _messageDialogContentIsOpen;
         private string _messageText;
         private int _barMaxValue = 100;
@@ -357,7 +357,7 @@ namespace CapFrameX.ViewModel
             }
         }
 
-        public ContitionalMessageDialog MessageDialogContent
+        public ConditionalMessageDialog MessageDialogContent
         {
             get { return _messageDialogContent; }
             set
@@ -548,7 +548,7 @@ namespace CapFrameX.ViewModel
             FpsGraphDataContext = new FpsGraphDataContext(_localRecordDataServer,
                 _appConfiguration, _frametimeStatisticProvider, _eventAggregator);
 
-            MessageDialogContent = new ContitionalMessageDialog();
+            MessageDialogContent = new ConditionalMessageDialog();
 
             SubscribeToAggregatorEvents();
             InitializeStatisticParameter();
