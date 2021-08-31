@@ -80,7 +80,7 @@
                         <materialDesign:PackIcon Kind="Cached" Width="15" Height="15"/>
                     </Button>
                     <ScrollViewer Margin="0 20 0 0" Width="300" Grid.Row="2" Height="{Binding ElementName=ControlViewControl, Path=ActualHeight, Converter={StaticResource AddValueConverterExpander}}" PreviewMouseWheel="ScrollViewer_PreviewMouseWheel" >
-                        <TreeView Name="trvStructure" Padding="0 0 5 0" TreeViewItem.Selected="TreeViewItem_Selected" PreviewMouseRightButtonDown="TreeView_PreviewMouseRightButtonDown"
+                        <TreeView Name="trvStructure" Padding="5" TreeViewItem.Selected="TreeViewItem_Selected" PreviewMouseRightButtonDown="TreeView_PreviewMouseRightButtonDown"
                                   Tag="{Binding ElementName=ControlViewControl, Path=DataContext}" FontSize="12"  
                                   AllowDrop="True" 
                                   DragOver="trvStructure_DragOver" 
