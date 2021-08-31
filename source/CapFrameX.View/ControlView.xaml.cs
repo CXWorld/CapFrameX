@@ -43,7 +43,8 @@ namespace CapFrameX.View
                         (Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
                         @"CapFrameX\Captures\");
 
-
+        private bool IsDragDropActive;
+        private TreeViewItem ObservedTreeViewItem;
 
         public ControlView()
         {
@@ -271,8 +272,14 @@ namespace CapFrameX.View
 
         private void TreeViewItem_Selected(object sender, RoutedEventArgs e)
         {
-            TreeViewItem item = e.Source as TreeViewItem;
-            _viewModel.RecordObserver.ObserveDirectory((item.Tag as DirectoryInfo).FullName);
+            if (!IsDragDropActive) // When using D&D, select items to highlight them, but don't change directory
+            {
+                TreeViewItem item = e.Source as TreeViewItem;               
+                _viewModel.RecordObserver.ObserveDirectory((item.Tag as DirectoryInfo).FullName);
+
+                // Save the TreeviewItem of the observed directory
+                ObservedTreeViewItem = item;
+            }
         }
 
         private string ExtractFullPath(string path)
@@ -447,5 +454,78 @@ namespace CapFrameX.View
             RecordDataGrid.Columns.FirstOrDefault(c => c.Header.ToString() == "GPU").DisplayIndex = indices[5];
             RecordDataGrid.Columns.FirstOrDefault(c => c.Header.ToString() == "RAM").DisplayIndex = indices[6];
         }
+
+
+
+        // TreeView Drag & Drop from record list
+
+        private void trvStructure_DragOver(object sender, DragEventArgs e)
+        {
+            var item = e.Source as TreeViewItem;
+
+            if (item != null)
+            {
+                // select items to highlight them, expand when possible. Set bool to stop directory from changing
+                IsDragDropActive = true;
+                item.IsSelected = true;
+                item.IsExpanded = true;
+            }
+            else
+            {
+                IsDragDropActive = false;
+                ObservedTreeViewItem.IsSelected = true;
+            }
+        }
+
+        private void trvStructure_MouseEnter(object sender, MouseEventArgs e)
+        {
+            // return to default state when canceling D&D
+            IsDragDropActive = false;
+            ObservedTreeViewItem.IsSelected = true;
+        }
+
+
+        private void trvStructure_Drop(object sender, DragEventArgs e)
+        {
+            var item = e.Source as TreeViewItem;
+            var path = GetFullPath(item);
+            _viewModel.OnMoveRecordFile(path);
+            IsDragDropActive = false;
+
+            // Keep the original observed directory after drop
+            ObservedTreeViewItem.IsSelected = true;
+
+            // Switch observed directory after drop
+            //ObservedTreeViewItem = item;
+            //_viewModel.RecordObserver.ObserveDirectory((item.Tag as DirectoryInfo).FullName);
+        }
+
+
+
+        public string GetFullPath(TreeViewItem node)
+        {
+            if (node == null)
+                throw new ArgumentNullException();
+
+            var result = Convert.ToString(node.Header);
+
+            for (var i = GetParentItem(node); i != null; i = GetParentItem(i))
+                result = i.Header + "\\" + result;
+
+            DirectoryInfo parentDir = Directory.GetParent(CaptureRootDirectory);
+
+            return parentDir + "\\" + result;
+        }
+
+        static TreeViewItem GetParentItem(TreeViewItem item)
+        {
+            for (var i = VisualTreeHelper.GetParent(item); i != null; i = VisualTreeHelper.GetParent(i))
+                if (i is TreeViewItem)
+                    return (TreeViewItem)i;
+
+            return null;
+        }
+
+
     }
 }
