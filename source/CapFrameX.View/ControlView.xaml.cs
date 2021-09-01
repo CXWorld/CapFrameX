@@ -15,6 +15,7 @@ using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
 using CapFrameX.View.Controls;
+using System.Threading.Tasks;
 
 namespace CapFrameX.View
 {
@@ -459,7 +460,7 @@ namespace CapFrameX.View
 
         // TreeView Drag & Drop from record list
 
-        private void trvStructure_DragOver(object sender, DragEventArgs e)
+        private async void trvStructure_DragOver(object sender, DragEventArgs e)
         {
             var item = e.Source as TreeViewItem;
 
@@ -468,7 +469,10 @@ namespace CapFrameX.View
                 // select items to highlight them, expand when possible. Set bool to stop directory from changing
                 IsDragDropActive = true;
                 item.IsSelected = true;
-                item.IsExpanded = true;
+
+                await Task.Delay(TimeSpan.FromMilliseconds(500));
+                if (trvStructure.SelectedItem == item)
+                    item.IsExpanded = true;
             }
             else
             {
