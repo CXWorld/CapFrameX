@@ -1,5 +1,6 @@
 ﻿using CapFrameX.Contracts.Logging;
 using CapFrameX.Extensions.NetStandard;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -13,6 +14,8 @@ namespace CapFrameX.Data.Logging
         private bool _showBasicInfo = true;
         private bool _showAdvancedInfo = false;
         private bool _showErrors = true;
+
+        private readonly ILogger<LogEntryManager> _logger;
 
         private List<ILogEntry> _logEntryHistory { get; set; }
            = new List<ILogEntry>();
@@ -49,23 +52,34 @@ namespace CapFrameX.Data.Logging
                 UpdateFilter();
             }
         }
+        public LogEntryManager(ILogger<LogEntryManager> logger)
+        {
+            _logger = logger;
+        }
 
         public void AddLogEntry(string message, ELogMessageType messageType, bool isNewLogGroup)
         {
-            string newLogString = isNewLogGroup && LogEntryOutput.Count > 0 ? new string('=', 55) + "\n" : string.Empty; 
-
-            Application.Current.Dispatcher.Invoke((() =>
+            try
             {
-                var logEntry = new LogEntry()
-                {
-                    MessageType = messageType,
-                    MessageInfo = newLogString + DateTime.Now.ToString("HH:mm:ss") + $" ( Type: {messageType.GetDescription()} )",
-                    Message = message
-                };
+                string newLogString = isNewLogGroup && LogEntryOutput.Count > 0 ? new string('=', 55) + "\n" : string.Empty;
 
-                _logEntryHistory.Add(logEntry);
-                AddLogEntryByFilter(logEntry);
-            }));
+                Application.Current.Dispatcher.Invoke((() =>
+                {
+                    var logEntry = new LogEntry()
+                    {
+                        MessageType = messageType,
+                        MessageInfo = newLogString + DateTime.Now.ToString("HH:mm:ss") + $" ( Type: {messageType.GetDescription()} )",
+                        Message = message
+                    };
+
+                    _logEntryHistory.Add(logEntry);
+                    AddLogEntryByFilter(logEntry);
+                }));
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError(ex, "Error while adding log entry to logger control.");
+            }
         }
 
         public void UpdateFilter()
