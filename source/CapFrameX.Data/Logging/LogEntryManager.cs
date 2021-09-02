@@ -1,5 +1,6 @@
 ﻿using CapFrameX.Contracts.Logging;
 using CapFrameX.Extensions.NetStandard;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -14,13 +15,15 @@ namespace CapFrameX.Data.Logging
         private bool _showAdvancedInfo = false;
         private bool _showErrors = true;
 
+        private readonly ILogger<LogEntryManager> _logger;
+
         private List<ILogEntry> _logEntryHistory { get; set; }
            = new List<ILogEntry>();
 
         public ObservableCollection<ILogEntry> LogEntryOutput { get; set; }
            = new ObservableCollection<ILogEntry>();
 
-        public bool ShowBasicInfo
+        public bool ShowBasicInfo 
         {
             get => _showBasicInfo;
             set
@@ -49,6 +52,10 @@ namespace CapFrameX.Data.Logging
                 UpdateFilter();
             }
         }
+        public LogEntryManager(ILogger<LogEntryManager> logger)
+        {
+            _logger = logger;
+        }
 
         public void AddLogEntry(string message, ELogMessageType messageType, bool isNewLogGroup)
         {
@@ -69,9 +76,9 @@ namespace CapFrameX.Data.Logging
                     AddLogEntryByFilter(logEntry);
                 }));
             }
-            catch (Exception e)
-            { 
-            
+            catch(Exception ex)
+            {
+                _logger.LogError(ex, "Error while adding log entry to logger control.");
             }
         }
 
