@@ -20,7 +20,7 @@ namespace CapFrameX.Data.Logging
         public ObservableCollection<ILogEntry> LogEntryOutput { get; set; }
            = new ObservableCollection<ILogEntry>();
 
-        public bool ShowBasicInfo 
+        public bool ShowBasicInfo
         {
             get => _showBasicInfo;
             set
@@ -52,20 +52,27 @@ namespace CapFrameX.Data.Logging
 
         public void AddLogEntry(string message, ELogMessageType messageType, bool isNewLogGroup)
         {
-            string newLogString = isNewLogGroup && LogEntryOutput.Count > 0 ? new string('=', 55) + "\n" : string.Empty; 
-
-            Application.Current.Dispatcher.Invoke((() =>
+            try
             {
-                var logEntry = new LogEntry()
-                {
-                    MessageType = messageType,
-                    MessageInfo = newLogString + DateTime.Now.ToString("HH:mm:ss") + $" ( Type: {messageType.GetDescription()} )",
-                    Message = message
-                };
+                string newLogString = isNewLogGroup && LogEntryOutput.Count > 0 ? new string('=', 55) + "\n" : string.Empty;
 
-                _logEntryHistory.Add(logEntry);
-                AddLogEntryByFilter(logEntry);
-            }));
+                Application.Current.Dispatcher.Invoke((() =>
+                {
+                    var logEntry = new LogEntry()
+                    {
+                        MessageType = messageType,
+                        MessageInfo = newLogString + DateTime.Now.ToString("HH:mm:ss") + $" ( Type: {messageType.GetDescription()} )",
+                        Message = message
+                    };
+
+                    _logEntryHistory.Add(logEntry);
+                    AddLogEntryByFilter(logEntry);
+                }));
+            }
+            catch (Exception e)
+            { 
+            
+            }
         }
 
         public void UpdateFilter()

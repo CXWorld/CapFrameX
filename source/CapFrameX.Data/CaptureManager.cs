@@ -261,7 +261,17 @@ namespace CapFrameX.Data
                     $"Set time in sec: {options.CaptureTime.ToString(CultureInfo.InvariantCulture)}", ELogMessageType.BasicInfo, options.CaptureDelay > 0d ? false : true);
 
                 _autoCompletionDisposableStream = Observable.Timer(TimeSpan.FromSeconds(options.CaptureTime))
-                    .Subscribe(async _ => await StopCapture());
+                    .Subscribe(async _ =>
+                    {
+                        try
+                        {
+                            await StopCapture();
+                        }
+                        catch (Exception e)
+                        {
+
+                        }
+                    });
             }
             else
             {
@@ -300,7 +310,7 @@ namespace CapFrameX.Data
             _autoCompletionDisposableStream?.Dispose();
             _sensorService.StopSensorLogging();
             _captureStatusChange.OnNext(new CaptureStatus() { Status = ECaptureStatus.Processing });
-          
+
 
             if (_appConfiguration.AutoDisableOverlay && OSDAutoDisabled)
             {
@@ -319,7 +329,7 @@ namespace CapFrameX.Data
             IsCapturing = false;
             _disposableCaptureStream?.Dispose();
 
-            SaveCaptureTime();            
+            SaveCaptureTime();
 
             _logEntryManager.AddLogEntry("Processing captured data", ELogMessageType.BasicInfo, false);
 
@@ -415,7 +425,7 @@ namespace CapFrameX.Data
                 if (string.IsNullOrWhiteSpace(_currentCaptureOptions.ProcessInfo.Item1))
                     throw new InvalidDataException("Invalid process name!");
 
-                var adjustedCaptureData = GetAdjustedCaptureData();              
+                var adjustedCaptureData = GetAdjustedCaptureData();
 
                 if (!adjustedCaptureData.Any())
                 {
