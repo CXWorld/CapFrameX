@@ -69,6 +69,7 @@ namespace CapFrameX.Data
             GraphicCardName = session.Info.GPU;
             SystemRamInfo = session.Info.SystemRam;
             MotherboardName = session.Info.Motherboard;
+            OsVersion = session.Info.OS;
             GPUMemoryClock = session.Info.GpuMemoryClock;
             GPUCoreClock = session.Info.GpuCoreClock;
             DriverPackage = session.Info.DriverPackage;
