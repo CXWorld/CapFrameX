@@ -625,7 +625,7 @@ namespace CapFrameX.Data
                 clone.Info.Id = Guid.NewGuid();
                 NormalizeStartTimesOfSessionRuns(clone.Runs);
                 clone.Info.Comment = $"(Cut) {clone.Info.Comment}";
-                var filePath = await GetOutputFilename(clone.Info.ProcessName, null);
+                var filePath = await GetOutputFilename(clone.Info.ProcessName.StripExeExtension(), null);
                 SaveSessionToFile(filePath, clone);
             }
             catch (Exception e)
