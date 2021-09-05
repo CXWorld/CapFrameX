@@ -22,6 +22,6 @@ namespace CapFrameX.Contracts.Data
 
         string GetSystemRAMInfoName();
 
-        Task SetSystemInfosStatus();
+        void SetSystemInfosStatus();
     }
 }

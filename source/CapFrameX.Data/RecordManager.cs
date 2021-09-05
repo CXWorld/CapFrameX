@@ -478,7 +478,7 @@ namespace CapFrameX.Data
                         apiInfo = runs.First().PresentMonRuntime;
 
 
-                    await _systemInfo.SetSystemInfosStatus();
+                    _systemInfo.SetSystemInfosStatus();
                     _updateSystemInfoEvent.Publish(new ViewMessages.UpdateSystemInfo());
 
                     if (_systemInfo.ResizableBarHardwareStatus != ESystemInfoTertiaryStatus.Error && _systemInfo.ResizableBarSoftwareStatus != ESystemInfoTertiaryStatus.Error)
