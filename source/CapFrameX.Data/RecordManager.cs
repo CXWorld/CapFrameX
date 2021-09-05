@@ -6,12 +6,14 @@ using CapFrameX.Contracts.Sensor;
 using CapFrameX.Data.Session.Classes;
 using CapFrameX.Data.Session.Contracts;
 using CapFrameX.Data.Session.Converters;
+using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Extensions;
 using CapFrameX.Extensions.NetStandard;
 using CapFrameX.PresentMonInterface;
 using CapFrameX.Statistics.NetStandard;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Prism.Events;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -50,6 +52,8 @@ namespace CapFrameX.Data
         private readonly ISystemInfo _systemInfo;
         private readonly ProcessList _processList;
         private readonly IRTSSService _rTSSService;
+        private readonly IEventAggregator _eventAggregator;
+        private PubSubEvent<ViewMessages.UpdateSystemInfo> _updateSystemInfoEvent;
 
         [DllImport("user32.dll", SetLastError = true)]
         static extern bool GetWindowRect(IntPtr hWnd, ref WindowRect Rect);
@@ -61,7 +65,8 @@ namespace CapFrameX.Data
                              ISensorService sensorService,
                              ISystemInfo systemInfo,
                              ProcessList processList,
-                             IRTSSService rTSSService)
+                             IRTSSService rTSSService,
+                             IEventAggregator eventAggregator)
         {
             _logger = logger;
             _appConfiguration = appConfiguration;
@@ -71,6 +76,8 @@ namespace CapFrameX.Data
             _systemInfo = systemInfo;
             _processList = processList;
             _rTSSService = rTSSService;
+            _eventAggregator = eventAggregator;
+            _updateSystemInfoEvent = _eventAggregator.GetEvent<PubSubEvent<ViewMessages.UpdateSystemInfo>>();
         }
 
         public void UpdateCustomData(IFileRecordInfo recordInfo,
@@ -394,7 +401,7 @@ namespace CapFrameX.Data
         }
 
         public async Task<bool> SaveSessionRunsToFile(IEnumerable<ISessionRun> runs, string processName, string recordDirectory = null, List<ISessionInfo> HWInfo = null)
-        {           
+        {
 
             var filePath = await GetOutputFilename(processName, recordDirectory);
 
@@ -470,7 +477,9 @@ namespace CapFrameX.Data
                     if (apiInfo == "unknown")
                         apiInfo = runs.First().PresentMonRuntime;
 
+
                     await _systemInfo.SetSystemInfosStatus();
+                    _updateSystemInfoEvent.Publish(new ViewMessages.UpdateSystemInfo());
 
                     if (_systemInfo.ResizableBarHardwareStatus != ESystemInfoTertiaryStatus.Error && _systemInfo.ResizableBarSoftwareStatus != ESystemInfoTertiaryStatus.Error)
                         resizableBar = (_systemInfo.ResizableBarHardwareStatus == ESystemInfoTertiaryStatus.Enabled && _systemInfo.ResizableBarSoftwareStatus == ESystemInfoTertiaryStatus.Enabled) ? "Enabled" : "Disabled";

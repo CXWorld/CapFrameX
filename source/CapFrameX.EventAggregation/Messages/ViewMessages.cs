@@ -47,6 +47,8 @@ namespace CapFrameX.EventAggregation.Messages
             }
         }
 
+        public class UpdateSystemInfo { }
+
         public class OptionPopupClosed { }
 
         public class CurrentProcessToCapture

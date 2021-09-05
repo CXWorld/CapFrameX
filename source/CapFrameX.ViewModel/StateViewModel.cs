@@ -153,6 +153,11 @@ namespace CapFrameX.ViewModel
                 RaisePropertyChanged(nameof(IsLoggedIn));
             });
 
+            _eventAggregator.GetEvent<PubSubEvent<ViewMessages.UpdateSystemInfo>>().Subscribe(msg =>
+            {
+                UpdateSystemInfoStatus();
+            });
+
 
             Task.Run(async () =>
             {
