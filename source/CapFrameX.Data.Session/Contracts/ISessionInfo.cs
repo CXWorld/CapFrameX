@@ -22,6 +22,9 @@ namespace CapFrameX.Data.Session.Contracts
 		string GpuMemoryClock { get; set; }
 		string Comment { get; set; }
 		string ApiInfo { get; set; }
+		string ResizableBar { get; set; }
+		string WinGameMode { get; set; }
+		string HAGS { get; set; }
 		string PresentationMode { get; set; }
 		string ResolutionInfo { get; set; }
 	}

@@ -206,6 +206,12 @@ namespace CapFrameX.Data
                 systemInfos.Add(new SystemInfoEntry() { Key = "Driver Package", Value = recordInfo.DriverPackage });
             if (!string.IsNullOrWhiteSpace(recordInfo.ApiInfo))
                 systemInfos.Add(new SystemInfoEntry() { Key = "API", Value = recordInfo.ApiInfo });
+            if (!string.IsNullOrWhiteSpace(recordInfo.ResizableBar))
+                systemInfos.Add(new SystemInfoEntry() { Key = "Resizable BAR", Value = recordInfo.ResizableBar });
+            if (!string.IsNullOrWhiteSpace(recordInfo.WinGameMode))
+                systemInfos.Add(new SystemInfoEntry() { Key = "Windows Game Mode", Value = recordInfo.WinGameMode });
+            if (!string.IsNullOrWhiteSpace(recordInfo.HAGS))
+                systemInfos.Add(new SystemInfoEntry() { Key = "HAGS", Value = recordInfo.HAGS });
             if (!string.IsNullOrWhiteSpace(recordInfo.PresentationMode))
                 systemInfos.Add(new SystemInfoEntry() { Key = "Presentation Mode", Value = recordInfo.PresentationMode });
             if (!string.IsNullOrWhiteSpace(recordInfo.Resolution))
@@ -388,7 +394,8 @@ namespace CapFrameX.Data
         }
 
         public async Task<bool> SaveSessionRunsToFile(IEnumerable<ISessionRun> runs, string processName, string recordDirectory = null, List<ISessionInfo> HWInfo = null)
-        {
+        {           
+
             var filePath = await GetOutputFilename(processName, recordDirectory);
 
             try
@@ -411,6 +418,9 @@ namespace CapFrameX.Data
                 string osInfo = string.Empty;
                 string gpuDriverInfo = string.Empty;
                 string apiInfo = string.Empty;
+                string resizableBar = string.Empty;
+                string winGameMode = string.Empty;
+                string hAGS = string.Empty;
                 string resolutionInfo = string.Empty;
                 Version appVersion = new Version();
 
@@ -425,6 +435,9 @@ namespace CapFrameX.Data
                     gpuDriverInfo = HWInfo?.First().GPUDriverVersion;
                     appVersion = HWInfo?.First().AppVersion;
                     apiInfo = HWInfo?.First().ApiInfo;
+                    resizableBar = HWInfo?.First().ResizableBar;
+                    winGameMode = HWInfo?.First().WinGameMode;
+                    hAGS = HWInfo?.First().HAGS;
                     resolutionInfo = HWInfo?.First().ResolutionInfo;
                 }
 
@@ -457,6 +470,12 @@ namespace CapFrameX.Data
                     if (apiInfo == "unknown")
                         apiInfo = runs.First().PresentMonRuntime;
 
+                    await _systemInfo.SetSystemInfosStatus();
+
+                    resizableBar = (_systemInfo.ResizableBarHardwareStatus == ESystemInfoTertiaryStatus.Enabled && _systemInfo.ResizableBarSoftwareStatus == ESystemInfoTertiaryStatus.Enabled) ? "Enabled" : "Disabled";
+                    winGameMode = _systemInfo.GameModeStatus == ESystemInfoTertiaryStatus.Enabled ? "Enabled" : "Disabled";
+                    hAGS = _systemInfo.HardwareAcceleratedGPUSchedulingStatus == ESystemInfoTertiaryStatus.Enabled ? "Enabled" : "Disabled";
+
                     // ToDo: muste be improved, doesn't work in many cases
                     //string resolutionInfo = "unknown";
                     //if (process != null)
@@ -486,6 +505,9 @@ namespace CapFrameX.Data
                         GPUDriverVersion = gpuDriverInfo,
                         AppVersion = appVersion,
                         ApiInfo = apiInfo,
+                        ResizableBar = resizableBar,
+                        WinGameMode = winGameMode,
+                        HAGS = hAGS,
                         PresentationMode = runs.GetPresentationMode()
                         //ResolutionInfo = resolutionInfo
                     }

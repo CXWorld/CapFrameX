@@ -1,4 +1,6 @@
-﻿namespace CapFrameX.Contracts.Data
+﻿using System.Threading.Tasks;
+
+namespace CapFrameX.Contracts.Data
 {
     public interface ISystemInfo
     {
@@ -20,6 +22,6 @@
 
         string GetSystemRAMInfoName();
 
-        void SetSystemInfosStatus();
+        Task SetSystemInfosStatus();
     }
 }

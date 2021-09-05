@@ -32,6 +32,9 @@ namespace CapFrameX.Contracts.Data
 		string Id { get; }
 		string Hash { get; }
 		string ApiInfo { get; }
+		string ResizableBar { get; }
+		string WinGameMode { get; }
+		string HAGS { get; }
 		string PresentationMode { get; }
 		string Resolution { get; }
 	}

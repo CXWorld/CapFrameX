@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Management;
+using System.Threading.Tasks;
 
 namespace CapFrameX.SystemInfo.NetStandard
 {
@@ -37,7 +38,7 @@ namespace CapFrameX.SystemInfo.NetStandard
             SetSystemInfosStatus();
         }
 
-        public void SetSystemInfosStatus()
+        public async Task SetSystemInfosStatus()
         {
             //PCI Resizable BAR HW support
             try

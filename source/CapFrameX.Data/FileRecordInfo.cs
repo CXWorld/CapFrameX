@@ -53,6 +53,9 @@ namespace CapFrameX.Data
         public string Id { get; private set; }
         public string Hash { get; private set; }
         public string ApiInfo { get; private set; }
+        public string ResizableBar { get; private set; }
+        public string WinGameMode { get; private set; }
+        public string HAGS { get; private set; }
         public string PresentationMode { get; private set; }
         public string Resolution { get; private set; }
 
@@ -81,6 +84,9 @@ namespace CapFrameX.Data
             IsValid = true;
             Hash = session.Hash;
             ApiInfo = session.Info.ApiInfo;
+            ResizableBar = session.Info.ResizableBar;
+            WinGameMode = session.Info.WinGameMode;
+            HAGS = session.Info.HAGS;
             PresentationMode = session.Info.PresentationMode;
             Resolution = session.Info.ResolutionInfo;
         }
