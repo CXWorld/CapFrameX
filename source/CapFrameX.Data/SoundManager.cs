@@ -1,5 +1,6 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using CapFrameX.Extensions.NetStandard;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -12,13 +13,11 @@ namespace CapFrameX.Data
     {
         private readonly Dictionary<string, MediaPlayer> _playerDictionary = new Dictionary<string, MediaPlayer>(6);
         private readonly IAppConfiguration _configuration;
+        private readonly ILogger<SoundManager> _logger;
 
         public SoundMode SoundMode
         {
-            get
-            {
-                return Enum.TryParse(_configuration.HotkeySoundMode, out SoundMode soundMode) ? soundMode : SoundMode.Voice;
-            }
+            get => Enum.TryParse(_configuration.HotkeySoundMode, out SoundMode soundMode) ? soundMode : SoundMode.Voice;
             set
             {
                 _configuration.HotkeySoundMode = value.ConvertToString();
@@ -55,23 +54,25 @@ namespace CapFrameX.Data
             }
         }
 
-        public string[] AvailableSoundModes
-        {
-            get
-            {
-                return Enum.GetNames(typeof(SoundMode));
-            }
-        }
+        public string[] AvailableSoundModes => Enum.GetNames(typeof(SoundMode));
 
-        public SoundManager(IAppConfiguration configuration)
+        public SoundManager(IAppConfiguration configuration, ILogger<SoundManager> logger)
         {
             _configuration = configuration;
+            _logger = logger;
             string soundPath;
 
             void addPlayer(string path)
             {
-                _playerDictionary.Add(path, new MediaPlayer());
-                _playerDictionary[path].Open(new Uri(path, UriKind.Relative));
+                try
+                {
+                    _playerDictionary.Add(path, new MediaPlayer());
+                    _playerDictionary[path].Open(new Uri(path, UriKind.Relative));
+                }
+                catch(Exception ex)
+                {
+                    _logger.LogError(ex, $"Error while add player {path}.");
+                }
             }
 
             // capture started (voice)
@@ -106,13 +107,21 @@ namespace CapFrameX.Data
 
             var currentSoundMode = SoundMode;
             double currentVolume = Volume;
+
             Application.Current.Dispatcher.Invoke(() =>
             {
-                var path = Path.Combine("Sounds", currentSoundMode.ConvertToString(), $"{sound.ConvertToString()}.mp3");
-                var player = _playerDictionary[path];
-                player.Volume = currentVolume;
-                player.Play();
-                player.Open(new Uri(path, UriKind.Relative));
+                try
+                {
+                    var path = Path.Combine("Sounds", currentSoundMode.ConvertToString(), $"{sound.ConvertToString()}.mp3");
+                    var player = _playerDictionary[path];
+                    player.Volume = currentVolume;
+                    player.Play();
+                    player.Open(new Uri(path, UriKind.Relative));
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, $"Error while playing sound {sound.ConvertToString()}.");
+                }
             });
         }
     }
