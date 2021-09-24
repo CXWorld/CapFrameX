@@ -256,7 +256,7 @@
                                         </ComboBox>
 
                                         <TextBox Grid.Row="3" Grid.ColumnSpan="2" Margin="18 15 0 0" materialDesign:HintAssist.Hint="CPU" materialDesign:HintAssist.HintOpacity="1"
-												Visibility="{Binding Path=DataContext.HasCustomInfo, ElementName=ColorbarViewName, Converter={StaticResource FalseToCollapsedConverter}}">
+												Visibility="{Binding Path=DataContext.HasCustomInfo, ElementName=ColorbarViewName, Converter={StaticResource FalseToCollapsedConverter}}" PreviewKeyDown="HardwareDescription_PreviewKeyDown">
                                             <TextBox.Text>
                                                 <Binding Path="DataContext.CustomCpuDescription"
 														 ElementName="ColorbarViewName"
@@ -266,7 +266,7 @@
                                             </TextBox.Text>
                                         </TextBox>
                                         <TextBox Grid.Row="4" Grid.ColumnSpan="2" materialDesign:HintAssist.Hint="GPU" Margin="18 10 0 0"
-												Visibility="{Binding Path=DataContext.HasCustomInfo, ElementName=ColorbarViewName, Converter={StaticResource FalseToCollapsedConverter}}">
+												Visibility="{Binding Path=DataContext.HasCustomInfo, ElementName=ColorbarViewName, Converter={StaticResource FalseToCollapsedConverter}}" PreviewKeyDown="HardwareDescription_PreviewKeyDown">
                                             <TextBox.Text>
                                                 <Binding Path="DataContext.CustomGpuDescription"
 														 ElementName="ColorbarViewName"
@@ -276,7 +276,7 @@
                                             </TextBox.Text>
                                         </TextBox>
                                         <TextBox Grid.Row="5" Grid.ColumnSpan="2" materialDesign:HintAssist.Hint="RAM" Margin="18 10 0 0"
-												Visibility="{Binding Path=DataContext.HasCustomInfo, ElementName=ColorbarViewName, Converter={StaticResource FalseToCollapsedConverter}}">
+												Visibility="{Binding Path=DataContext.HasCustomInfo, ElementName=ColorbarViewName, Converter={StaticResource FalseToCollapsedConverter}}" PreviewKeyDown="HardwareDescription_PreviewKeyDown">
                                             <TextBox.Text>
                                                 <Binding Path="DataContext.CustomRamDescription"
 														 ElementName="ColorbarViewName"

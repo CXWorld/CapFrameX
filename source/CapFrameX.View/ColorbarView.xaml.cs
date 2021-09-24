@@ -11,6 +11,7 @@ using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
+using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -263,6 +264,15 @@ namespace CapFrameX.View
         private void ScreenshotPopupBox_Open(object sender, RoutedEventArgs e)
         {
             ScreenshotPopupBox.IsPopupOpen = true;
+        }
+
+        private void HardwareDescription_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            var key = e.Key;
+            if (key == Key.Enter)
+            {
+                Keyboard.ClearFocus();
+            }
         }
     }
 }
