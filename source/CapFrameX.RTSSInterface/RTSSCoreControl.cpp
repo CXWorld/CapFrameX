@@ -475,10 +475,6 @@ void RTSSCoreControl::Refresh()
 		//// CX orange
 		//strOSD += "<C4=F17D20>"; //CX Orange
 		////define color variable C[1] as R=FF,G=FF and B=FF
-		//strOSD += "<S0=-50>";
-		////define size variable S[0] as 50% subscript (positive is superscript, negative is subscript)
-		strOSD += "<S100=50>";
-		////define size variable S[0] as 50% supercript (positive is superscript, negative is subscript)
 
 		//add \r just for this demo to make tagged text more readable in demo preview window, OSD ignores \r anyway
 		strOSD += "\r";
@@ -529,7 +525,7 @@ void RTSSCoreControl::Refresh()
 				{
 					// set graph name
 					if (OverlayEntries[i].GroupName.Find("<APP>") != std::string::npos)
-						strOSD += "<C100><S=50>Framerate\n<S><C>";
+						strOSD += "<C100><S1>Framerate\n<S><C>";
 					else
 						strOSD += OverlayEntries[i].GroupName + "\n";
 					//embed framerate graph object into the buffer
@@ -537,7 +533,7 @@ void RTSSCoreControl::Refresh()
 
 					if (dwObjectSize)
 					{
-						strObj.Format("<C200><OBJ=%08X><A0><S100><FR><A> FPS<S><C>\n", dwObjectOffset);
+						strObj.Format("<C200><OBJ=%08X><A0><S1><FR><A> FPS<S><C>\n", dwObjectOffset);
 						//print embedded object
 						strOSD += strObj;
 						//modify object offset
@@ -548,7 +544,7 @@ void RTSSCoreControl::Refresh()
 				{
 					// set graph name
 					if (OverlayEntries[i].GroupName.Find("<APP>") != std::string::npos)
-						strOSD += "<C100><S=50>Frametime\n<S><C>";
+						strOSD += "<C100><S1>Frametime\n<S><C>";
 					else
 						strOSD += OverlayEntries[i].GroupName + "\n";
 
@@ -557,7 +553,7 @@ void RTSSCoreControl::Refresh()
 
 					if (dwObjectSize)
 					{
-						strObj.Format("<C200><OBJ=%08X><A0><S100><FT><A> ms<S><C>\n", dwObjectOffset);
+						strObj.Format("<C200><OBJ=%08X><A0><S1><FT><A> ms<S><C>\n", dwObjectOffset);
 						//print embedded object
 						strOSD += strObj;
 						//modify object offset

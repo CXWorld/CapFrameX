@@ -44,6 +44,8 @@ namespace CapFrameX.Overlay
             = new TaskCompletionSource<bool>();
         private readonly ConcurrentDictionary<string, int> _colorIndexDictionary
             = new ConcurrentDictionary<string, int>();
+        private readonly ConcurrentDictionary<int, int> _sizeIndexDictionary
+            = new ConcurrentDictionary<int, int>();
         private BlockingCollection<IOverlayEntry> _overlayEntries;
 
         public bool HasHardwareChanged { get; set; }
@@ -58,9 +60,6 @@ namespace CapFrameX.Overlay
             IOverlayEntryCore overlayEntryCore,
             ILogger<OverlayEntryProvider> logger)
         {
-            Stopwatch stopwatch = new Stopwatch();
-            stopwatch.Start();
-
             _sensorService = sensorService;
             _appConfiguration = appConfiguration;
             _eventAggregator = eventAggregator;
@@ -78,9 +77,8 @@ namespace CapFrameX.Overlay
 
             _logger.LogDebug("{componentName} Ready", this.GetType().Name);
 
-            stopwatch.Stop();
-            _logger.LogInformation(this.GetType().Name + " {initializationTime}s initialization time",
-                Math.Round(stopwatch.ElapsedMilliseconds * 1E-03, 1));
+            // Add <S0=50>
+            _sizeIndexDictionary.TryAdd(50, 0);
         }
 
         public async Task<IOverlayEntry[]> GetOverlayEntries(bool updateFormats = true)
@@ -710,8 +708,9 @@ namespace CapFrameX.Overlay
                     var basicGroupFormat = entry.GroupSeparators == 0 ? "{0}"
                         : Enumerable.Repeat("\n", entry.GroupSeparators).Aggregate((i, j) => i + j) + "{0}";
                     var groupNameFormatStringBuilder = new StringBuilder();
-                    groupNameFormatStringBuilder.Append("<S=");
-                    groupNameFormatStringBuilder.Append(entry.GroupFontSize.ToString());
+                    // groupNameFormatStringBuilder.Append("<S=");
+                    AppendSizeFormat(groupNameFormatStringBuilder, entry.GroupFontSize);
+                    // groupNameFormatStringBuilder.Append(entry.GroupFontSize.ToString());
                     AppendColorFormat(groupNameFormatStringBuilder, entry.GroupColor);
                     groupNameFormatStringBuilder.Append(basicGroupFormat);
                     groupNameFormatStringBuilder.Append(" <C><S>");
@@ -720,13 +719,15 @@ namespace CapFrameX.Overlay
                     if (entry.ValueUnitFormat != null && entry.ValueAlignmentAndDigits != null)
                     {
                         var valueFormatStringBuilder = new StringBuilder();
-                        valueFormatStringBuilder.Append("<S=");
-                        valueFormatStringBuilder.Append(entry.ValueFontSize.ToString());
+                        // valueFormatStringBuilder.Append("<S=");
+                        AppendSizeFormat(valueFormatStringBuilder, entry.ValueFontSize);
+                        // valueFormatStringBuilder.Append(entry.ValueFontSize.ToString());
                         AppendColorFormat(valueFormatStringBuilder, entry.Color);
                         valueFormatStringBuilder.Append(entry.ValueAlignmentAndDigits);
                         valueFormatStringBuilder.Append("<C><S>");
-                        valueFormatStringBuilder.Append("<S=");
-                        valueFormatStringBuilder.Append((entry.ValueFontSize / 2).ToString());
+                        // valueFormatStringBuilder.Append("<S=");
+                        AppendSizeFormat(valueFormatStringBuilder, entry.ValueFontSize / 2);
+                        // valueFormatStringBuilder.Append((entry.ValueFontSize / 2).ToString());
                         AppendColorFormat(valueFormatStringBuilder, entry.Color);
                         valueFormatStringBuilder.Append(entry.ValueUnitFormat);
                         valueFormatStringBuilder.Append("<C><S>");
@@ -735,8 +736,9 @@ namespace CapFrameX.Overlay
                     else
                     {
                         var valueFormatStringBuilder = new StringBuilder();
-                        valueFormatStringBuilder.Append("<S=");
-                        valueFormatStringBuilder.Append(entry.ValueFontSize.ToString());
+                        //valueFormatStringBuilder.Append("<S=");
+                        AppendSizeFormat(valueFormatStringBuilder, entry.ValueFontSize);
+                        // valueFormatStringBuilder.Append(entry.ValueFontSize.ToString());
                         AppendColorFormat(valueFormatStringBuilder, entry.Color);
                         valueFormatStringBuilder.Append("{0}<C><S>");
                         entry.ValueFormat = valueFormatStringBuilder.ToString();
@@ -808,13 +810,15 @@ namespace CapFrameX.Overlay
                                 updateVariables = true;
 
                                 var valueFormatStringBuilder = new StringBuilder();
-                                valueFormatStringBuilder.Append("<S=");
-                                valueFormatStringBuilder.Append(entry.ValueFontSize.ToString());
+                                // valueFormatStringBuilder.Append("<S=");
+                                AppendSizeFormat(valueFormatStringBuilder, entry.ValueFontSize);
+                                // valueFormatStringBuilder.Append(entry.ValueFontSize.ToString());
                                 AppendColorFormat(valueFormatStringBuilder, currentColor);
                                 valueFormatStringBuilder.Append(entry.ValueAlignmentAndDigits);
                                 valueFormatStringBuilder.Append("<C><S>");
-                                valueFormatStringBuilder.Append("<S=");
-                                valueFormatStringBuilder.Append((entry.ValueFontSize / 2).ToString());
+                                //valueFormatStringBuilder.Append("<S=");
+                                AppendSizeFormat(valueFormatStringBuilder, entry.ValueFontSize / 2);
+                                // valueFormatStringBuilder.Append((entry.ValueFontSize / 2).ToString());
                                 AppendColorFormat(valueFormatStringBuilder, currentColor);
                                 valueFormatStringBuilder.Append(entry.ValueUnitFormat);
                                 valueFormatStringBuilder.Append("<C><S>");
@@ -825,8 +829,9 @@ namespace CapFrameX.Overlay
                                 updateVariables = true;
 
                                 var valueFormatStringBuilder = new StringBuilder();
-                                valueFormatStringBuilder.Append("<S=");
-                                valueFormatStringBuilder.Append(entry.ValueFontSize.ToString());
+                                //valueFormatStringBuilder.Append("<S=");
+                                AppendSizeFormat(valueFormatStringBuilder, entry.ValueFontSize);
+                                // valueFormatStringBuilder.Append(entry.ValueFontSize.ToString());
                                 AppendColorFormat(valueFormatStringBuilder, currentColor);
                                 valueFormatStringBuilder.Append("{0}<C><S>");
                                 entry.ValueFormat = valueFormatStringBuilder.ToString();
@@ -840,24 +845,40 @@ namespace CapFrameX.Overlay
 
             if (updateVariables)
             {
-                var colorVariablesStringBuilder = new StringBuilder();
-                _colorIndexDictionary.ForEach(pair => colorVariablesStringBuilder.Append($"<C{pair.Value}={pair.Key}>"));
-                _rTSSService.SetFormatVariables(colorVariablesStringBuilder.ToString());
+                var variablesStringBuilder = new StringBuilder();
+                _colorIndexDictionary.ForEach(pair => variablesStringBuilder.Append($"<C{pair.Value}={pair.Key}>"));
+                _sizeIndexDictionary.ForEach(pair => variablesStringBuilder.Append($"<S{pair.Value}={pair.Key}>"));
+                _rTSSService.SetFormatVariables(variablesStringBuilder.ToString());
             }
         }
 
-        private void AppendColorFormat(StringBuilder groupNameFormatStringBuilder, string groupColor)
+        private void AppendColorFormat(StringBuilder formatStringBuilder, string groupColor)
         {
             if (_colorIndexDictionary.TryGetValue(groupColor, out var value))
             {
-                groupNameFormatStringBuilder.Append($"><C{value}>");
+                formatStringBuilder.Append($"><C{value}>");
             }
             else
             {
                 int index = _colorIndexDictionary.Count() + 1;
                 _colorIndexDictionary.TryAdd(groupColor, index);
 
-                groupNameFormatStringBuilder.Append($"><C{index}>");
+                formatStringBuilder.Append($"><C{index}>");
+            }
+        }
+
+        private void AppendSizeFormat(StringBuilder formatStringBuilder, int size)
+        {
+            if (_sizeIndexDictionary.TryGetValue(size, out var value))
+            {
+                formatStringBuilder.Append($"<S{value}");
+            }
+            else
+            {
+                int index = _sizeIndexDictionary.Count() + 1;
+                _sizeIndexDictionary.TryAdd(size, index);
+
+                formatStringBuilder.Append($"<S{index}");
             }
         }
 
