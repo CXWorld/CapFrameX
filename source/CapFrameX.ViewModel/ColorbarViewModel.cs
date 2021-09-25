@@ -23,6 +23,7 @@ using System.Net.Http;
 using System.Configuration;
 using CapFrameX.Extensions;
 using Newtonsoft.Json;
+using CapFrameX.Webservice.Data.DTO;
 
 namespace CapFrameX.ViewModel
 {
@@ -54,6 +55,7 @@ namespace CapFrameX.ViewModel
         private bool _appViewSelected;
         private bool _helpViewSelected;
         private bool _showNotification;
+        private DateTime _notificationTimestamp = DateTime.MinValue;
 
         public string CurrentPageName { get; set; }
 
@@ -379,6 +381,18 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        public bool AppNotificationsActive
+        {
+            get { return _appConfiguration.AppNotificationsActive; }
+            set
+            {
+                _appConfiguration.AppNotificationsActive = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public string AppNotification { get; private set; }
+
         public string HelpText => File.ReadAllText(@"HelpTexts\ChartControls.rtf");
 
         public bool IsCompatibleWithRunningOS => CaptureServiceInfo.IsCompatibleWithRunningOS;
@@ -438,13 +452,10 @@ namespace CapFrameX.ViewModel
             SubscribeToAggregatorEvents();
             SetHardwareInfoDefaultsFromDatabase();
 
-
-            GetAppNotification();
-            // read notification timestamp from server and compare it with config.
-            // If request fails or timestamp is older do nothing, else:
-            ShowNotification = true;
-
-
+            if (AppNotificationsActive)
+            {
+                GetAppNotification();
+            }
 
             stopwatch.Stop();
             _logger.LogInformation(this.GetType().Name + " {initializationTime}s initialization time", Math.Round(stopwatch.ElapsedMilliseconds * 1E-03, 1));
@@ -580,12 +591,13 @@ namespace CapFrameX.ViewModel
         private void OnCloseNotification()
         {
             // save notification timestamp to config and disable notification
-            _appConfiguration.LastAppNotificationTimestamp = DateTime.Now;
+            _appConfiguration.LastAppNotificationTimestamp = _notificationTimestamp;
             ShowNotification = false;
         }
 
         public void OnAutostartChanged()
         {
+            
             const string run = "SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Run";
             const string appName = "CapFrameX";
 
@@ -603,7 +615,6 @@ namespace CapFrameX.ViewModel
                         startKey.DeleteValue(appName);
                 }
             });
-
         }
 
         private void SetAggregatorEvents()
@@ -628,8 +639,10 @@ namespace CapFrameX.ViewModel
                 });
         }
 
-        private async Task GetAppNotification()
+        private async void GetAppNotification()
         {
+            // read notification timestamp from server and compare it with config.
+            // If request fails or timestamp is older do nothing, else show notification
             try
             {
                 using (var client = new HttpClient()
@@ -642,11 +655,16 @@ namespace CapFrameX.ViewModel
 
                     if (response.IsSuccessStatusCode)
                     {
-                        var notification = JsonConvert.DeserializeObject(await response.Content.ReadAsStringAsync());
+                        var notification = JsonConvert.DeserializeObject<SqAppNotificationDataDTO>(await response.Content.ReadAsStringAsync());
+                        if (notification.IsActive && notification.Timestamp > _appConfiguration.LastAppNotificationTimestamp)
+                        {
+                            _notificationTimestamp = notification.Timestamp;
+                            AppNotification = notification.Message;
+                            RaisePropertyChanged(nameof(AppNotification));
+                            ShowNotification = true;
+                        }
                     }
                 }
-
-
             }
             catch
             {

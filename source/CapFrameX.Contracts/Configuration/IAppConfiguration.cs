@@ -193,6 +193,8 @@ namespace CapFrameX.Contracts.Configuration
 		int[] RecordListHeaderOrder { get; set; }
 
 		DateTime LastAppNotificationTimestamp { get; set; }
+
+		bool AppNotificationsActive { get; set; }
 	}
 
 	public interface IReportDataGridColumnSettings

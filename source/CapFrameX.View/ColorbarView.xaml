@@ -21,13 +21,13 @@
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid>
-        <StackPanel Panel.ZIndex="1" Orientation="Horizontal" Visibility="{Binding ShowNotification, Converter={StaticResource FalseToCollapsedConverter}}" Background="OrangeRed">
+        <StackPanel Panel.ZIndex="1" Orientation="Horizontal" Visibility="{Binding ShowNotification, Converter={StaticResource FalseToCollapsedConverter}}" Background="Orange">
             <TextBlock VerticalAlignment="Center" Margin="10" FontWeight="Bold" FontSize="18" Text="Important Message:"></TextBlock>
             <TextBlock VerticalAlignment="Center" Margin="5" FontWeight="Bold" FontSize="14" TextWrapping="Wrap"
                        Width="{Binding ElementName=ColorbarViewName, Path=ActualWidth, Converter={StaticResource AddValueConverter}}"
-                       Text="Psychonauts 2(Psychonauts2-WinGDK-Shipping) was falsely added to our ignore list with version 1.6.5. If you installed that version or had the auto update option active within the last 2 months, check your ignore list and remove it. We apologize for the inconvenience. Have fun benchmarking, your CX Team."></TextBlock>
+                       Text="{Binding AppNotification}"></TextBlock>
             <Button Margin="10" BorderThickness="0" Width="100" Height="25"
-												Command="{Binding CloseNotificationCommand}" Foreground="White" Background="{DynamicResource MaterialDesignToolBackground}">
+					Command="{Binding CloseNotificationCommand}" Foreground="White" Background="LimeGreen" ToolTip="Close this message and not show it again until there's a new one">
                 <TextBlock Text="Close" TextWrapping="Wrap" TextAlignment="Center"/>
             </Button>
         </StackPanel>
@@ -319,12 +319,12 @@
                                         </Grid.ColumnDefinitions>
                                         <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="15 5 0 5">
                                             <TextBlock Text="Dark mode"/>
-                                            <ToggleButton Margin="48 0 0 0" Click="MenuDarkModeButton_Click" IsChecked="{Binding IsDarkModeToggleChecked}"/>
+                                            <ToggleButton Margin="68 0 0 0" Click="MenuDarkModeButton_Click" IsChecked="{Binding IsDarkModeToggleChecked}"/>
                                         </StackPanel>
-                                        <!--<StackPanel Grid.Row="1" Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="15 5 0 5" ToolTip="Sets the GPU acceleration. Needs a restart of CapFrameX.">
-                                            <TextBlock Text="GPU acceleration"/>
-                                            <ToggleButton Margin="15 0 0 0" IsChecked="{Binding IsGpuAccelerationActive, Mode=TwoWay}"/>
-                                        </StackPanel>-->
+                                        <StackPanel Grid.Row="1" Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="15 5 0 5" ToolTip="Allow to recieve important messages from CX Team on app start">
+                                            <TextBlock Text="Recieve notifications"/>
+                                            <ToggleButton Margin="15 0 0 0" IsChecked="{Binding AppNotificationsActive, Mode=TwoWay}"/>
+                                        </StackPanel>
                                         <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" Margin="20 5 0 5">
                                             <TextBlock Margin="0 0 0 0" Text="Start with Windows" TextAlignment="Left" TextWrapping="Wrap" Width="80"/>
                                             <CheckBox Margin="0 0 0 0" IsChecked="{Binding Autostart, Mode=TwoWay}">
