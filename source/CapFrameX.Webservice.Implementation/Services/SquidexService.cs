@@ -208,6 +208,16 @@ namespace CapFrameX.Webservice.Implementation.Services
             }
         }
 
+        public async Task<SqAppNotification> GetAppNotification()
+        {
+            var client = _squidexClientManager.CreateContentsClient<SqAppNotification, SqAppNotificationData>("appnotification");
+            using ((IDisposable)client)
+            {
+                var results = await client.GetAsync();
+                return results.Items.FirstOrDefault();
+            }
+        }
+
         private async Task UpdateMissingModelData(List<SqSessionCollection> sessionCollectionItems)
         {
             var client2 = _squidexClientManager.CreateContentsClient<SqSessionCollection, SqSessionCollectionData>("sessioncollections");
