@@ -8,6 +8,8 @@ using Prism.Events;
 using Prism.Mvvm;
 using Prism.Regions;
 using System;
+using Task = System.Threading.Tasks.Task;
+using Microsoft.Win32.TaskScheduler;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -18,7 +20,6 @@ using Microsoft.Extensions.Logging;
 using CapFrameX.Contracts.Data;
 using CapFrameX.EventAggregation.Messages;
 using Microsoft.Win32;
-using System.Threading.Tasks;
 using System.Net.Http;
 using System.Configuration;
 using CapFrameX.Extensions;
@@ -452,6 +453,8 @@ namespace CapFrameX.ViewModel
             SubscribeToAggregatorEvents();
             SetHardwareInfoDefaultsFromDatabase();
 
+            OnAutostartChanged();
+
             if (AppNotificationsActive)
             {
                 GetAppNotification();
@@ -597,24 +600,54 @@ namespace CapFrameX.ViewModel
 
         public void OnAutostartChanged()
         {
-            
-            const string run = "SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Run";
             const string appName = "CapFrameX";
 
-            Task.Run(() =>
+            using (TaskService ts = new TaskService())
             {
-                string appPath = System.Reflection.Assembly.GetEntryAssembly().Location;
-
-                if (Path.HasExtension(appPath))
+                try
                 {
-                    RegistryKey startKey = Registry.LocalMachine.OpenSubKey(run, true);
+                    var taskExists = ts.RootFolder.GetTasks().Any(t => t.Name == appName);
 
-                    if (Autostart)
-                        startKey.SetValue(appName, appPath);
-                    if (!Autostart)
-                        startKey.DeleteValue(appName);
+                    if (Autostart && !taskExists)
+                    {
+                        string appPath = System.Reflection.Assembly.GetEntryAssembly().Location;
+
+                        // Create a new task definition and assign properties
+                        TaskDefinition td = ts.NewTask();
+                        td.RegistrationInfo.Description = "CapFrameX Autostart";
+
+
+                        // Create a trigger that will fire the task
+                        td.Triggers.Add(new LogonTrigger { });
+
+                        // Create an action that will launch an application
+                        td.Actions.Add(new ExecAction(appPath));
+                        td.Principal.RunLevel = TaskRunLevel.Highest;
+
+                        // Register the task in the root folder
+                        ts.RootFolder.RegisterTaskDefinition(appName, td);
+
+                    }
+                    else if (!Autostart && taskExists)
+                    {
+                        // Remove the task
+                        ts.RootFolder.DeleteTask(appName);
+                    }
                 }
-            });
+                catch(Exception e)
+                {
+                    _logger.LogError("Unable to perform autostart task", e);
+                }
+            }
+
+
+            // delete old registry autostart option(remove in later versions)
+            try
+            {
+                RegistryKey startKey = Registry.LocalMachine.OpenSubKey("SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Run", true);
+                startKey.DeleteValue(appName);
+            }
+            catch (ArgumentException) { };
         }
 
         private void SetAggregatorEvents()
