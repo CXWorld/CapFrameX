@@ -1,4 +1,5 @@
 ﻿using CapFrameX.Statistics.NetStandard.Contracts;
+using System;
 using System.Windows.Forms;
 
 namespace CapFrameX.Contracts.Configuration
@@ -190,6 +191,8 @@ namespace CapFrameX.Contracts.Configuration
 		bool RecordListShowRamName { get; set; }
 
 		int[] RecordListHeaderOrder { get; set; }
+
+		DateTime LastAppNotificationTimestamp { get; set; }
 	}
 
 	public interface IReportDataGridColumnSettings

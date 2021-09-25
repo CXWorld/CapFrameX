@@ -19,6 +19,10 @@ using CapFrameX.Contracts.Data;
 using CapFrameX.EventAggregation.Messages;
 using Microsoft.Win32;
 using System.Threading.Tasks;
+using System.Net.Http;
+using System.Configuration;
+using CapFrameX.Extensions;
+using Newtonsoft.Json;
 
 namespace CapFrameX.ViewModel
 {
@@ -49,6 +53,7 @@ namespace CapFrameX.ViewModel
         private bool _optionsViewSelected = true;
         private bool _appViewSelected;
         private bool _helpViewSelected;
+        private bool _showNotification;
 
         public string CurrentPageName { get; set; }
 
@@ -364,6 +369,16 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        public bool ShowNotification
+        {
+            get { return _showNotification; }
+            set
+            {
+                _showNotification = value;
+                RaisePropertyChanged();
+            }
+        }
+
         public string HelpText => File.ReadAllText(@"HelpTexts\ChartControls.rtf");
 
         public bool IsCompatibleWithRunningOS => CaptureServiceInfo.IsCompatibleWithRunningOS;
@@ -386,6 +401,8 @@ namespace CapFrameX.ViewModel
         public ICommand SelectScreenshotFolderCommand { get; }
 
         public ICommand OpenScreenshotFolderCommand { get; }
+
+        public ICommand CloseNotificationCommand { get; }
 
         public IList<int> RoundingDigits { get; }
 
@@ -413,12 +430,21 @@ namespace CapFrameX.ViewModel
             RoundingDigits = new List<int>(Enumerable.Range(0, 8));
             SelectScreenshotFolderCommand = new DelegateCommand(OnSelectScreenshotFolder);
             OpenScreenshotFolderCommand = new DelegateCommand(OnOpenScreenshotFolder);
+            CloseNotificationCommand = new DelegateCommand(OnCloseNotification);
 
             HasCustomInfo = SelectedHardwareInfoSource == EHardwareInfoSource.Custom;
             IsLoggedIn = _loginManager.State.Token != null;
             SetAggregatorEvents();
             SubscribeToAggregatorEvents();
             SetHardwareInfoDefaultsFromDatabase();
+
+
+            GetAppNotification();
+            // read notification timestamp from server and compare it with config.
+            // If request fails or timestamp is older do nothing, else:
+            ShowNotification = true;
+
+
 
             stopwatch.Stop();
             _logger.LogInformation(this.GetType().Name + " {initializationTime}s initialization time", Math.Round(stopwatch.ElapsedMilliseconds * 1E-03, 1));
@@ -551,10 +577,17 @@ namespace CapFrameX.ViewModel
                 SelectedView = "Help";
         }
 
+        private void OnCloseNotification()
+        {
+            // save notification timestamp to config and disable notification
+            _appConfiguration.LastAppNotificationTimestamp = DateTime.Now;
+            ShowNotification = false;
+        }
+
         public void OnAutostartChanged()
         {
             const string run = "SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Run";
-            const string appName = "CapFrameX";            
+            const string appName = "CapFrameX";
 
             Task.Run(() =>
             {
@@ -576,7 +609,7 @@ namespace CapFrameX.ViewModel
         private void SetAggregatorEvents()
         {
             OptionPopupClosed = _eventAggregator.GetEvent<PubSubEvent<ViewMessages.OptionPopupClosed>>();
-            _openLoginWindow = _eventAggregator.GetEvent<PubSubEvent<AppMessages.OpenLoginWindow>>();     
+            _openLoginWindow = _eventAggregator.GetEvent<PubSubEvent<AppMessages.OpenLoginWindow>>();
             _themeChanged = _eventAggregator.GetEvent<PubSubEvent<ViewMessages.ThemeChanged>>();
         }
         private void SubscribeToAggregatorEvents()
@@ -593,6 +626,32 @@ namespace CapFrameX.ViewModel
                 {
                     RecordInfo = msg.RecordInfo;
                 });
+        }
+
+        private async Task GetAppNotification()
+        {
+            try
+            {
+                using (var client = new HttpClient()
+                {
+                    BaseAddress = new Uri(ConfigurationManager.AppSettings["WebserviceUri"])
+                })
+                {
+                    client.DefaultRequestHeaders.AddCXClientUserAgent();
+                    var response = await client.GetAsync("appnotification");
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var notification = JsonConvert.DeserializeObject(await response.Content.ReadAsStringAsync());
+                    }
+                }
+
+
+            }
+            catch
+            {
+                ShowNotification = false;
+            }
         }
     }
 }

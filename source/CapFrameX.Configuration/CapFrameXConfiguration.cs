@@ -115,6 +115,12 @@ namespace CapFrameX.Configuration
             set => Set(value);
         }
 
+        public DateTime LastAppNotificationTimestamp
+        {
+            get => Get<DateTime>(DateTime.MinValue);
+            set => Set(value);
+        }
+
         // Record List Settings
 
         public bool FixedExpanderPosition

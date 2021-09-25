@@ -14,12 +14,23 @@
     <UserControl.Resources>
         <ResourceDictionary>
             <mvvm:BoolToVisibilityConverter x:Key="FalseToCollapsedConverter" TrueValue="Visible" FalseValue="Collapsed"/>
-			<mvvm:BoolToVisibilityConverter x:Key="FalseToVisibleConverter" TrueValue="Hidden" FalseValue="Visible"/>
-			<mvvm:BoolToVisibilityConverter x:Key="TrueToVisibleConverter" TrueValue="Visible" FalseValue="Collapsed"/>
+            <mvvm:BoolToVisibilityConverter x:Key="FalseToVisibleConverter" TrueValue="Hidden" FalseValue="Visible"/>
+            <mvvm:BoolToVisibilityConverter x:Key="TrueToVisibleConverter" TrueValue="Visible" FalseValue="Collapsed"/>
             <mvvm:EnumDescriptionConverter x:Key="EnumDescriptionConverter"/>
+            <mvvm:AddValueConverter x:Key="AddValueConverter" Offset="-320"/>
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid>
+        <StackPanel Panel.ZIndex="1" Orientation="Horizontal" Visibility="{Binding ShowNotification, Converter={StaticResource FalseToCollapsedConverter}}" Background="OrangeRed">
+            <TextBlock VerticalAlignment="Center" Margin="10" FontWeight="Bold" FontSize="18" Text="Important Message:"></TextBlock>
+            <TextBlock VerticalAlignment="Center" Margin="5" FontWeight="Bold" FontSize="14" TextWrapping="Wrap"
+                       Width="{Binding ElementName=ColorbarViewName, Path=ActualWidth, Converter={StaticResource AddValueConverter}}"
+                       Text="Psychonauts 2(Psychonauts2-WinGDK-Shipping) was falsely added to our ignore list with version 1.6.5. If you installed that version or had the auto update option active within the last 2 months, check your ignore list and remove it. We apologize for the inconvenience. Have fun benchmarking, your CX Team."></TextBlock>
+            <Button Margin="10" BorderThickness="0" Width="100" Height="25"
+												Command="{Binding CloseNotificationCommand}" Foreground="White" Background="{DynamicResource MaterialDesignToolBackground}">
+                <TextBlock Text="Close" TextWrapping="Wrap" TextAlignment="Center"/>
+            </Button>
+        </StackPanel>
         <materialDesign:ColorZone Mode="PrimaryMid" Foreground="White" Background="{DynamicResource MaterialDesignToolBackground}">
             <Grid>
                 <Grid.ColumnDefinitions>
