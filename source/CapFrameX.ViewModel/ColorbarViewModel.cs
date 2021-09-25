@@ -453,7 +453,7 @@ namespace CapFrameX.ViewModel
             SubscribeToAggregatorEvents();
             SetHardwareInfoDefaultsFromDatabase();
 
-            OnAutostartChanged();
+            OnAutostartChanged(true);
 
             if (AppNotificationsActive)
             {
@@ -598,7 +598,7 @@ namespace CapFrameX.ViewModel
             ShowNotification = false;
         }
 
-        public void OnAutostartChanged()
+        public void OnAutostartChanged(bool cleanup = false)
         {
             const string appName = "CapFrameX";
 
@@ -634,20 +634,22 @@ namespace CapFrameX.ViewModel
                         ts.RootFolder.DeleteTask(appName);
                     }
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
                     _logger.LogError("Unable to perform autostart task", e);
                 }
             }
 
-
-            // delete old registry autostart option(remove in later versions)
-            try
+            if (cleanup)
             {
-                RegistryKey startKey = Registry.LocalMachine.OpenSubKey("SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Run", true);
-                startKey.DeleteValue(appName);
+                // delete old registry autostart option(remove in later versions)
+                try
+                {
+                    RegistryKey startKey = Registry.LocalMachine.OpenSubKey("SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Run", true);
+                    startKey.DeleteValue(appName);
+                }
+                catch (ArgumentException) { };
             }
-            catch (ArgumentException) { };
         }
 
         private void SetAggregatorEvents()
