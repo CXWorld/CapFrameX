@@ -3,6 +3,7 @@ using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.RTSS;
 using CapFrameX.Contracts.Sensor;
 using CapFrameX.Data;
+using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Extensions;
 using CapFrameX.Extensions.NetStandard;
 using CapFrameX.Hotkey;
@@ -48,6 +49,7 @@ namespace CapFrameX.ViewModel
         private Subject<object> _configSubject = new Subject<object>();
         private ResetOverlayConfigDialog _resetOverlayConfigContent;
         private bool _resetOverlayConfigContentIsOpen;
+        private PubSubEvent<ViewMessages.OverlayConfigChanged> _overlayConfigChangedEvent;
 
         public bool OverlayItemsOptionsEnabled
         {
@@ -165,106 +167,106 @@ namespace CapFrameX.ViewModel
             }
         }
 
-        public string ResetHistoryHotkeyString
-        {
-            get { return _appConfiguration.ResetHistoryHotkey; }
-            set
-            {
-                if (!CXHotkey.IsValidHotkey(value))
-                    return;
+        //public string ResetHistoryHotkeyString
+        //{
+        //    get { return _appConfiguration.ResetHistoryHotkey; }
+        //    set
+        //    {
+        //        if (!CXHotkey.IsValidHotkey(value))
+        //            return;
 
-                _appConfiguration.ResetHistoryHotkey = value;
-                SetGlobalHookEventResetHistoryHotkey();
-                RaisePropertyChanged();
-            }
-        }
+        //        _appConfiguration.ResetHistoryHotkey = value;
+        //        SetGlobalHookEventResetHistoryHotkey();
+        //        RaisePropertyChanged();
+        //    }
+        //}
 
-        public EMetric SelectedSecondMetric
-        {
-            get
-            {
-                return _appConfiguration
-                  .RunHistorySecondMetric
-                  .ConvertToEnum<EMetric>();
-            }
-            set
-            {
-                _appConfiguration.RunHistorySecondMetric =
-                    value.ConvertToString();
-                _overlayService.SecondMetric = value.ConvertToString();
-                RaisePropertyChanged();
-            }
-        }
+        //public EMetric SelectedSecondMetric
+        //{
+        //    get
+        //    {
+        //        return _appConfiguration
+        //          .RunHistorySecondMetric
+        //          .ConvertToEnum<EMetric>();
+        //    }
+        //    set
+        //    {
+        //        _appConfiguration.RunHistorySecondMetric =
+        //            value.ConvertToString();
+        //        _overlayService.SecondMetric = value.ConvertToString();
+        //        RaisePropertyChanged();
+        //    }
+        //}
 
-        public EMetric SelectedThirdMetric
-        {
-            get
-            {
-                return _appConfiguration
-                  .RunHistoryThirdMetric
-                  .ConvertToEnum<EMetric>();
-            }
-            set
-            {
-                _appConfiguration.RunHistoryThirdMetric =
-                    value.ConvertToString();
-                _overlayService.ThirdMetric = value.ConvertToString();
-                RaisePropertyChanged();
-            }
-        }
+        //public EMetric SelectedThirdMetric
+        //{
+        //    get
+        //    {
+        //        return _appConfiguration
+        //          .RunHistoryThirdMetric
+        //          .ConvertToEnum<EMetric>();
+        //    }
+        //    set
+        //    {
+        //        _appConfiguration.RunHistoryThirdMetric =
+        //            value.ConvertToString();
+        //        _overlayService.ThirdMetric = value.ConvertToString();
+        //        RaisePropertyChanged();
+        //    }
+        //}
 
-        public int SelectedNumberOfRuns
-        {
-            get
-            {
-                return _appConfiguration
-                  .SelectedHistoryRuns;
-            }
-            set
-            {
-                _appConfiguration.SelectedHistoryRuns =
-                    value;
+        //public int SelectedNumberOfRuns
+        //{
+        //    get
+        //    {
+        //        return _appConfiguration
+        //          .SelectedHistoryRuns;
+        //    }
+        //    set
+        //    {
+        //        _appConfiguration.SelectedHistoryRuns =
+        //            value;
 
-                _overlayService.UpdateNumberOfRuns(value);
-                if (value == 1)
-                    UseAggregation = false;
-                RaisePropertyChanged(nameof(AggregationButtonEnabled));
-                RaisePropertyChanged();
-            }
-        }
+        //        _overlayService.UpdateNumberOfRuns(value);
+        //        if (value == 1)
+        //            UseAggregation = false;
+        //        RaisePropertyChanged(nameof(AggregationButtonEnabled));
+        //        RaisePropertyChanged();
+        //    }
+        //}
 
-        public int SelectedOutlierPercentage
-        {
-            get
-            {
-                return _appConfiguration
-                  .OutlierPercentageOverlay;
-            }
-            set
-            {
-                _appConfiguration.OutlierPercentageOverlay =
-                    value;
-                _overlayService.ResetHistory();
-                RaisePropertyChanged();
-            }
-        }
+        //public int SelectedOutlierPercentage
+        //{
+        //    get
+        //    {
+        //        return _appConfiguration
+        //          .OutlierPercentageOverlay;
+        //    }
+        //    set
+        //    {
+        //        _appConfiguration.OutlierPercentageOverlay =
+        //            value;
+        //        _overlayService.ResetHistory();
+        //        RaisePropertyChanged();
+        //    }
+        //}
 
-        public EOutlierHandling SelectedOutlierHandling
-        {
-            get
-            {
-                return _appConfiguration
-                  .OutlierHandling
-                  .ConvertToEnum<EOutlierHandling>();
-            }
-            set
-            {
-                _appConfiguration.OutlierHandling =
-                    value.ConvertToString();
-                _overlayService.ResetHistory();
-                RaisePropertyChanged();
-            }
-        }
+        //public EOutlierHandling SelectedOutlierHandling
+        //{
+        //    get
+        //    {
+        //        return _appConfiguration
+        //          .OutlierHandling
+        //          .ConvertToEnum<EOutlierHandling>();
+        //    }
+        //    set
+        //    {
+        //        _appConfiguration.OutlierHandling =
+        //            value.ConvertToString();
+        //        _overlayService.ResetHistory();
+        //        RaisePropertyChanged();
+        //    }
+        //}
 
         public int OSDRefreshPeriod
         {
@@ -282,61 +284,61 @@ namespace CapFrameX.ViewModel
             }
         }
 
-        public bool UseRunHistory
-        {
-            get
-            {
-                return _appConfiguration
-                  .UseRunHistory;
-            }
-            set
-            {
-                _appConfiguration.UseRunHistory = value;
-                _rTSSService.SetShowRunHistory(value);
-                OnUseRunHistoryChanged();
-                RaisePropertyChanged(nameof(AggregationButtonEnabled));
-                RaisePropertyChanged();
-            }
-        }
+        //public bool UseRunHistory
+        //{
+        //    get
+        //    {
+        //        return _appConfiguration
+        //          .UseRunHistory;
+        //    }
+        //    set
+        //    {
+        //        _appConfiguration.UseRunHistory = value;
+        //        _rTSSService.SetShowRunHistory(value);
+        //        OnUseRunHistoryChanged();
+        //        RaisePropertyChanged(nameof(AggregationButtonEnabled));
+        //        RaisePropertyChanged();
+        //    }
+        //}
 
-        public bool UseAggregation
-        {
-            get
-            {
-                return _appConfiguration
-                  .UseAggregation;
-            }
-            set
-            {
-                _appConfiguration.UseAggregation =
-                    value;
-                RaisePropertyChanged();
-            }
-        }
+        //public bool UseAggregation
+        //{
+        //    get
+        //    {
+        //        return _appConfiguration
+        //          .UseAggregation;
+        //    }
+        //    set
+        //    {
+        //        _appConfiguration.UseAggregation =
+        //            value;
+        //        RaisePropertyChanged();
+        //    }
+        //}
 
 
-        public bool AggregationButtonEnabled
-        {
-            get
-            {
-                return (UseRunHistory && SelectedNumberOfRuns > 1);
-            }
-        }
+        //public bool AggregationButtonEnabled
+        //{
+        //    get
+        //    {
+        //        return (UseRunHistory && SelectedNumberOfRuns > 1);
+        //    }
+        //}
 
-        public bool SaveAggregationOnly
-        {
-            get
-            {
-                return _appConfiguration
-                  .SaveAggregationOnly;
-            }
-            set
-            {
-                _appConfiguration.SaveAggregationOnly =
-                    value;
-                RaisePropertyChanged();
-            }
-        }
+        //public bool SaveAggregationOnly
+        //{
+        //    get
+        //    {
+        //        return _appConfiguration
+        //          .SaveAggregationOnly;
+        //    }
+        //    set
+        //    {
+        //        _appConfiguration.SaveAggregationOnly =
+        //            value;
+        //        RaisePropertyChanged();
+        //    }
+        //}
 
         public int SelectedOverlayEntryIndex
         {
@@ -563,6 +565,8 @@ namespace CapFrameX.ViewModel
             _eventAggregator = eventAggregator;
             _sensorService = sensorService;
             _rTSSService = rTSSService;
+            _eventAggregator = eventAggregator;
+            _overlayConfigChangedEvent = _eventAggregator.GetEvent<PubSubEvent<ViewMessages.OverlayConfigChanged>>();
 
             // define submodels
             OverlaySubModelGroupControl = new OverlayGroupControl(this);
@@ -570,7 +574,7 @@ namespace CapFrameX.ViewModel
 
             ResetOverlayConfigContent = new ResetOverlayConfigDialog();
 
-            _rTSSService.SetShowRunHistory(UseRunHistory);
+            //_rTSSService.SetShowRunHistory(UseRunHistory);
 
             ConfigSwitchCommand = new DelegateCommand<object>(_configSubject.OnNext);
             _configSubject
@@ -593,7 +597,7 @@ namespace CapFrameX.ViewModel
 
                     OverlayEntries.Clear();
                     OverlayEntries.AddRange(entries);
-                    OnUseRunHistoryChanged();
+                    _overlayConfigChangedEvent.Publish(new ViewMessages.OverlayConfigChanged());
 
                     SetSaveButtonIsEnableAction();
                     SaveButtonIsEnable = _overlayEntryProvider.HasHardwareChanged;
@@ -637,7 +641,7 @@ namespace CapFrameX.ViewModel
 
             SetGlobalHookEventOverlayHotkey();
             SetGlobalHookEventOverlayConfigHotkey();
-            SetGlobalHookEventResetHistoryHotkey();
+            //SetGlobalHookEventResetHistoryHotkey();
 
             InitializeOSDCustomPosition();
         }
@@ -658,8 +662,8 @@ namespace CapFrameX.ViewModel
             OverlayEntries.Clear();
             OverlayEntries.AddRange(overlayEntries);
             SetSaveButtonIsEnableAction();
-            OnUseRunHistoryChanged();
             OverlayItemsOptionsEnabled = false;
+            _overlayConfigChangedEvent.Publish(new ViewMessages.OverlayConfigChanged());
 
             await _overlayEntryProvider.SaveOverlayEntriesToJson(_appConfiguration.OverlayEntryConfigurationFile);
             await Task.Run(() => _configSubject.OnNext(_appConfiguration.OverlayEntryConfigurationFile));
@@ -703,30 +707,30 @@ namespace CapFrameX.ViewModel
             p.WaitForExit();
         }
 
-        private void OnUseRunHistoryChanged()
-        {
-            var historyEntry = _overlayEntryProvider.GetOverlayEntry("RunHistory");
+        //private void OnUseRunHistoryChanged()
+        //{
+        //    var historyEntry = _overlayEntryProvider.GetOverlayEntry("RunHistory");
 
-            if (!UseRunHistory)
-            {
-                UseAggregation = false;
+        //    if (!UseRunHistory)
+        //    {
+        //        UseAggregation = false;
 
-                // don't show history on overlay
-                if (historyEntry != null)
-                {
-                    historyEntry.ShowOnOverlay = false;
-                    historyEntry.ShowOnOverlayIsEnabled = false;
-                }
-            }
-            else
-            {
-                if (historyEntry != null)
-                {
-                    historyEntry.ShowOnOverlay = true;
-                    historyEntry.ShowOnOverlayIsEnabled = true;
-                }
-            }
-        }
+        //        // don't show history on overlay
+        //        if (historyEntry != null)
+        //        {
+        //            historyEntry.ShowOnOverlay = false;
+        //            historyEntry.ShowOnOverlayIsEnabled = false;
+        //        }
+        //    }
+        //    else
+        //    {
+        //        if (historyEntry != null)
+        //        {
+        //            historyEntry.ShowOnOverlay = true;
+        //            historyEntry.ShowOnOverlayIsEnabled = true;
+        //        }
+        //    }
+        //}
 
         private void SetGlobalHookEventOverlayHotkey()
         {
@@ -756,13 +760,13 @@ namespace CapFrameX.ViewModel
             });
         }
 
-        private void SetGlobalHookEventResetHistoryHotkey()
-        {
-            if (!CXHotkey.IsValidHotkey(ResetHistoryHotkeyString))
-                return;
+        //private void SetGlobalHookEventResetHistoryHotkey()
+        //{
+        //    if (!CXHotkey.IsValidHotkey(ResetHistoryHotkeyString))
+        //        return;
 
-            HotkeyDictionaryBuilder.SetHotkey(AppConfiguration, HotkeyAction.ResetHistory, () => _overlayService.ResetHistory());
-        }
+        //    HotkeyDictionaryBuilder.SetHotkey(AppConfiguration, HotkeyAction.ResetHistory, () => _overlayService.ResetHistory());
+        //}
 
         private string GetNextConfig()
         {

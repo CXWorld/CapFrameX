@@ -30,9 +30,9 @@ namespace CapFrameX.View
 		DependencyProperty.Register(nameof(OverlayConfigHotkey), typeof(CXHotkey), typeof(OverlayView),
 		new FrameworkPropertyMetadata(default(CXHotkey), FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
-		public static readonly DependencyProperty ResetHistoryHotkeyProperty =
-		DependencyProperty.Register(nameof(ResetHistoryHotkey), typeof(CXHotkey), typeof(OverlayView),
-		 new FrameworkPropertyMetadata(default(CXHotkey), FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+		//public static readonly DependencyProperty ResetHistoryHotkeyProperty =
+		//DependencyProperty.Register(nameof(ResetHistoryHotkey), typeof(CXHotkey), typeof(OverlayView),
+		// new FrameworkPropertyMetadata(default(CXHotkey), FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
 		public CXHotkey OverlayHotkey
 		{
@@ -46,11 +46,11 @@ namespace CapFrameX.View
 			set => SetValue(OverlayConfigHotkeyProperty, value);
 		}
 
-		public CXHotkey ResetHistoryHotkey
-		{
-			get => (CXHotkey)GetValue(ResetHistoryHotkeyProperty);
-			set => SetValue(ResetHistoryHotkeyProperty, value);
-		}
+		//public CXHotkey ResetHistoryHotkey
+		//{
+		//	get => (CXHotkey)GetValue(ResetHistoryHotkeyProperty);
+		//	set => SetValue(ResetHistoryHotkeyProperty, value);
+		//}
 
 		public OverlayView()
 		{
@@ -76,15 +76,15 @@ namespace CapFrameX.View
 			}
 			catch { OverlayConfigHotkey = new CXHotkey(Key.C, ModifierKeys.Alt); }
 
-			// Reset history hotkey
-			try
-			{
-				var resetHistoryHotkeyString = (DataContext as OverlayViewModel).AppConfiguration.ResetHistoryHotkey;
-				var keyStrings = resetHistoryHotkeyString.Split('+');
+			//// Reset history hotkey
+			//try
+			//{
+			//	var resetHistoryHotkeyString = (DataContext as OverlayViewModel).AppConfiguration.ResetHistoryHotkey;
+			//	var keyStrings = resetHistoryHotkeyString.Split('+');
 
-				ResetHistoryHotkey = CXHotkey.Create(keyStrings, Key.R, ModifierKeys.Control);
-			}
-			catch { ResetHistoryHotkey = new CXHotkey(Key.R, ModifierKeys.Control); }
+			//	ResetHistoryHotkey = CXHotkey.Create(keyStrings, Key.R, ModifierKeys.Control);
+			//}
+			//catch { ResetHistoryHotkey = new CXHotkey(Key.R, ModifierKeys.Control); }
 		}
 
 		private void OverlayHotkeyTextBox_PreviewKeyDown(object sender, KeyEventArgs e)
@@ -153,38 +153,39 @@ namespace CapFrameX.View
 			Keyboard.ClearFocus();
 		}
 
-		private void ResetHistoryHotkeyTextBox_PreviewKeyDown(object sender, KeyEventArgs e)
-		{
-			e.Handled = true;
+		//private void ResetHistoryHotkeyTextBox_PreviewKeyDown(object sender, KeyEventArgs e)
+		//{
+		//	e.Handled = true;
 
-			var modifiers = Keyboard.Modifiers;
-			var key = e.Key;
+		//	var modifiers = Keyboard.Modifiers;
+		//	var key = e.Key;
 
-			if (key == Key.System)
-			{
-				key = e.SystemKey;
-			}
+		//	if (key == Key.System)
+		//	{
+		//		key = e.SystemKey;
+		//	}
 
-			if (modifiers == ModifierKeys.None && key.IsEither(Key.Delete, Key.Back, Key.Escape))
-			{
-				ResetHistoryHotkey = null;
-				return;
-			}
+		//	if (modifiers == ModifierKeys.None && key.IsEither(Key.Delete, Key.Back, Key.Escape))
+		//	{
+		//		ResetHistoryHotkey = null;
+		//		return;
+		//	}
 
-			if (key.IsEither(
-				Key.LeftCtrl, Key.RightCtrl, Key.LeftAlt, Key.RightAlt,
-				Key.LeftShift, Key.RightShift, Key.LWin, Key.RWin,
-				Key.Clear, Key.OemClear, Key.Apps))
-			{
-				return;
-			}
+		//	if (key.IsEither(
+		//		Key.LeftCtrl, Key.RightCtrl, Key.LeftAlt, Key.RightAlt,
+		//		Key.LeftShift, Key.RightShift, Key.LWin, Key.RWin,
+		//		Key.Clear, Key.OemClear, Key.Apps))
+		//	{
+		//		return;
+		//	}
 
-			ResetHistoryHotkey = new CXHotkey(key, modifiers);
-			var dataContext = DataContext as OverlayViewModel;
-			dataContext.ResetHistoryHotkeyString = ResetHistoryHotkey.ToString();
+		//	ResetHistoryHotkey = new CXHotkey(key, modifiers);
+		//	var dataContext = DataContext as OverlayViewModel;
+		//	dataContext.ResetHistoryHotkeyString = ResetHistoryHotkey.ToString();
 
-			Keyboard.ClearFocus();
-		}
+		//	Keyboard.ClearFocus();
+		//}
+
 		private void OSDRefreshPeriodComboBox_MouseLeave(object sender, MouseEventArgs e)
 		{
 			Keyboard.ClearFocus();

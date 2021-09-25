@@ -65,5 +65,7 @@ namespace CapFrameX.EventAggregation.Messages
         }
 
         public class ThemeChanged { }
+
+        public class OverlayConfigChanged { }
     }
 }
