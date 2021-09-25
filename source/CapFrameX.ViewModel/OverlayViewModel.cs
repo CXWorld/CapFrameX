@@ -5,7 +5,6 @@ using CapFrameX.Contracts.Sensor;
 using CapFrameX.Data;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Extensions;
-using CapFrameX.Extensions.NetStandard;
 using CapFrameX.Hotkey;
 using CapFrameX.MVVM.Dialogs;
 using CapFrameX.Overlay;
@@ -20,7 +19,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
@@ -167,107 +165,6 @@ namespace CapFrameX.ViewModel
             }
         }
 
-        //public string ResetHistoryHotkeyString
-        //{
-        //    get { return _appConfiguration.ResetHistoryHotkey; }
-        //    set
-        //    {
-        //        if (!CXHotkey.IsValidHotkey(value))
-        //            return;
-
-        //        _appConfiguration.ResetHistoryHotkey = value;
-        //        SetGlobalHookEventResetHistoryHotkey();
-        //        RaisePropertyChanged();
-        //    }
-        //}
-
-        //public EMetric SelectedSecondMetric
-        //{
-        //    get
-        //    {
-        //        return _appConfiguration
-        //          .RunHistorySecondMetric
-        //          .ConvertToEnum<EMetric>();
-        //    }
-        //    set
-        //    {
-        //        _appConfiguration.RunHistorySecondMetric =
-        //            value.ConvertToString();
-        //        _overlayService.SecondMetric = value.ConvertToString();
-        //        RaisePropertyChanged();
-        //    }
-        //}
-
-        //public EMetric SelectedThirdMetric
-        //{
-        //    get
-        //    {
-        //        return _appConfiguration
-        //          .RunHistoryThirdMetric
-        //          .ConvertToEnum<EMetric>();
-        //    }
-        //    set
-        //    {
-        //        _appConfiguration.RunHistoryThirdMetric =
-        //            value.ConvertToString();
-        //        _overlayService.ThirdMetric = value.ConvertToString();
-        //        RaisePropertyChanged();
-        //    }
-        //}
-
-        //public int SelectedNumberOfRuns
-        //{
-        //    get
-        //    {
-        //        return _appConfiguration
-        //          .SelectedHistoryRuns;
-        //    }
-        //    set
-        //    {
-        //        _appConfiguration.SelectedHistoryRuns =
-        //            value;
-
-        //        _overlayService.UpdateNumberOfRuns(value);
-        //        if (value == 1)
-        //            UseAggregation = false;
-        //        RaisePropertyChanged(nameof(AggregationButtonEnabled));
-        //        RaisePropertyChanged();
-        //    }
-        //}
-
-        //public int SelectedOutlierPercentage
-        //{
-        //    get
-        //    {
-        //        return _appConfiguration
-        //          .OutlierPercentageOverlay;
-        //    }
-        //    set
-        //    {
-        //        _appConfiguration.OutlierPercentageOverlay =
-        //            value;
-        //        _overlayService.ResetHistory();
-        //        RaisePropertyChanged();
-        //    }
-        //}
-
-        //public EOutlierHandling SelectedOutlierHandling
-        //{
-        //    get
-        //    {
-        //        return _appConfiguration
-        //          .OutlierHandling
-        //          .ConvertToEnum<EOutlierHandling>();
-        //    }
-        //    set
-        //    {
-        //        _appConfiguration.OutlierHandling =
-        //            value.ConvertToString();
-        //        _overlayService.ResetHistory();
-        //        RaisePropertyChanged();
-        //    }
-        //}
-
         public int OSDRefreshPeriod
         {
             get
@@ -283,62 +180,6 @@ namespace CapFrameX.ViewModel
                 RaisePropertyChanged();
             }
         }
-
-        //public bool UseRunHistory
-        //{
-        //    get
-        //    {
-        //        return _appConfiguration
-        //          .UseRunHistory;
-        //    }
-        //    set
-        //    {
-        //        _appConfiguration.UseRunHistory = value;
-        //        _rTSSService.SetShowRunHistory(value);
-        //        OnUseRunHistoryChanged();
-        //        RaisePropertyChanged(nameof(AggregationButtonEnabled));
-        //        RaisePropertyChanged();
-        //    }
-        //}
-
-        //public bool UseAggregation
-        //{
-        //    get
-        //    {
-        //        return _appConfiguration
-        //          .UseAggregation;
-        //    }
-        //    set
-        //    {
-        //        _appConfiguration.UseAggregation =
-        //            value;
-        //        RaisePropertyChanged();
-        //    }
-        //}
-
-
-        //public bool AggregationButtonEnabled
-        //{
-        //    get
-        //    {
-        //        return (UseRunHistory && SelectedNumberOfRuns > 1);
-        //    }
-        //}
-
-        //public bool SaveAggregationOnly
-        //{
-        //    get
-        //    {
-        //        return _appConfiguration
-        //          .SaveAggregationOnly;
-        //    }
-        //    set
-        //    {
-        //        _appConfiguration.SaveAggregationOnly =
-        //            value;
-        //        RaisePropertyChanged();
-        //    }
-        //}
 
         public int SelectedOverlayEntryIndex
         {
@@ -574,7 +415,6 @@ namespace CapFrameX.ViewModel
 
             ResetOverlayConfigContent = new ResetOverlayConfigDialog();
 
-            //_rTSSService.SetShowRunHistory(UseRunHistory);
 
             ConfigSwitchCommand = new DelegateCommand<object>(_configSubject.OnNext);
             _configSubject
@@ -641,7 +481,6 @@ namespace CapFrameX.ViewModel
 
             SetGlobalHookEventOverlayHotkey();
             SetGlobalHookEventOverlayConfigHotkey();
-            //SetGlobalHookEventResetHistoryHotkey();
 
             InitializeOSDCustomPosition();
         }
@@ -707,31 +546,6 @@ namespace CapFrameX.ViewModel
             p.WaitForExit();
         }
 
-        //private void OnUseRunHistoryChanged()
-        //{
-        //    var historyEntry = _overlayEntryProvider.GetOverlayEntry("RunHistory");
-
-        //    if (!UseRunHistory)
-        //    {
-        //        UseAggregation = false;
-
-        //        // don't show history on overlay
-        //        if (historyEntry != null)
-        //        {
-        //            historyEntry.ShowOnOverlay = false;
-        //            historyEntry.ShowOnOverlayIsEnabled = false;
-        //        }
-        //    }
-        //    else
-        //    {
-        //        if (historyEntry != null)
-        //        {
-        //            historyEntry.ShowOnOverlay = true;
-        //            historyEntry.ShowOnOverlayIsEnabled = true;
-        //        }
-        //    }
-        //}
-
         private void SetGlobalHookEventOverlayHotkey()
         {
             if (!CXHotkey.IsValidHotkey(OverlayHotkeyString))
@@ -759,14 +573,6 @@ namespace CapFrameX.ViewModel
                 Task.Run(() => _configSubject.OnNext(nextConfig));
             });
         }
-
-        //private void SetGlobalHookEventResetHistoryHotkey()
-        //{
-        //    if (!CXHotkey.IsValidHotkey(ResetHistoryHotkeyString))
-        //        return;
-
-        //    HotkeyDictionaryBuilder.SetHotkey(AppConfiguration, HotkeyAction.ResetHistory, () => _overlayService.ResetHistory());
-        //}
 
         private string GetNextConfig()
         {

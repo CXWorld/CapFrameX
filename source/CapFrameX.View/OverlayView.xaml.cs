@@ -17,213 +17,161 @@ using System.Windows.Media;
 
 namespace CapFrameX.View
 {
-	/// <summary>
-	/// Interaction logic for OverlayView.xaml
-	/// </summary>
-	public partial class OverlayView : UserControl
-	{
-		public static readonly DependencyProperty OverlayHotkeyProperty =
-		DependencyProperty.Register(nameof(OverlayHotkey), typeof(CXHotkey), typeof(OverlayView),
-		 new FrameworkPropertyMetadata(default(CXHotkey), FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+    /// <summary>
+    /// Interaction logic for OverlayView.xaml
+    /// </summary>
+    public partial class OverlayView : UserControl
+    {
+        public static readonly DependencyProperty OverlayHotkeyProperty =
+        DependencyProperty.Register(nameof(OverlayHotkey), typeof(CXHotkey), typeof(OverlayView),
+         new FrameworkPropertyMetadata(default(CXHotkey), FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
-		public static readonly DependencyProperty OverlayConfigHotkeyProperty =
-		DependencyProperty.Register(nameof(OverlayConfigHotkey), typeof(CXHotkey), typeof(OverlayView),
-		new FrameworkPropertyMetadata(default(CXHotkey), FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+        public static readonly DependencyProperty OverlayConfigHotkeyProperty =
+        DependencyProperty.Register(nameof(OverlayConfigHotkey), typeof(CXHotkey), typeof(OverlayView),
+        new FrameworkPropertyMetadata(default(CXHotkey), FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
-		//public static readonly DependencyProperty ResetHistoryHotkeyProperty =
-		//DependencyProperty.Register(nameof(ResetHistoryHotkey), typeof(CXHotkey), typeof(OverlayView),
-		// new FrameworkPropertyMetadata(default(CXHotkey), FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+        public CXHotkey OverlayHotkey
+        {
+            get => (CXHotkey)GetValue(OverlayHotkeyProperty);
+            set => SetValue(OverlayHotkeyProperty, value);
+        }
 
-		public CXHotkey OverlayHotkey
-		{
-			get => (CXHotkey)GetValue(OverlayHotkeyProperty);
-			set => SetValue(OverlayHotkeyProperty, value);
-		}
+        public CXHotkey OverlayConfigHotkey
+        {
+            get => (CXHotkey)GetValue(OverlayConfigHotkeyProperty);
+            set => SetValue(OverlayConfigHotkeyProperty, value);
+        }
 
-		public CXHotkey OverlayConfigHotkey
-		{
-			get => (CXHotkey)GetValue(OverlayConfigHotkeyProperty);
-			set => SetValue(OverlayConfigHotkeyProperty, value);
-		}
 
-		//public CXHotkey ResetHistoryHotkey
-		//{
-		//	get => (CXHotkey)GetValue(ResetHistoryHotkeyProperty);
-		//	set => SetValue(ResetHistoryHotkeyProperty, value);
-		//}
+        public OverlayView()
+        {
+            InitializeComponent();
 
-		public OverlayView()
-		{
-			InitializeComponent();
+            // Overlay hotkey
+            try
+            {
+                var overlayHotkeyString = (DataContext as OverlayViewModel).AppConfiguration.OverlayHotKey;
+                var keyStrings = overlayHotkeyString.Split('+');
 
-			// Overlay hotkey
-			try
-			{
-				var overlayHotkeyString = (DataContext as OverlayViewModel).AppConfiguration.OverlayHotKey;
-				var keyStrings = overlayHotkeyString.Split('+');
+                OverlayHotkey = CXHotkey.Create(keyStrings, Key.O, ModifierKeys.Alt);
+            }
+            catch { OverlayHotkey = new CXHotkey(Key.O, ModifierKeys.Alt); }
 
-				OverlayHotkey = CXHotkey.Create(keyStrings, Key.O, ModifierKeys.Alt);
-			}
-			catch { OverlayHotkey = new CXHotkey(Key.O, ModifierKeys.Alt); }
+            // Overlay config hotkey
+            try
+            {
+                var overlayConfigHotkeyString = (DataContext as OverlayViewModel).AppConfiguration.OverlayConfigHotKey;
+                var keyStrings = overlayConfigHotkeyString.Split('+');
 
-			// Overlay config hotkey
-			try
-			{
-				var overlayConfigHotkeyString = (DataContext as OverlayViewModel).AppConfiguration.OverlayConfigHotKey;
-				var keyStrings = overlayConfigHotkeyString.Split('+');
+                OverlayConfigHotkey = CXHotkey.Create(keyStrings, Key.C, ModifierKeys.Alt);
+            }
+            catch { OverlayConfigHotkey = new CXHotkey(Key.C, ModifierKeys.Alt); }
+        }
 
-				OverlayConfigHotkey = CXHotkey.Create(keyStrings, Key.C, ModifierKeys.Alt);
-			}
-			catch { OverlayConfigHotkey = new CXHotkey(Key.C, ModifierKeys.Alt); }
+        private void OverlayHotkeyTextBox_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            e.Handled = true;
 
-			//// Reset history hotkey
-			//try
-			//{
-			//	var resetHistoryHotkeyString = (DataContext as OverlayViewModel).AppConfiguration.ResetHistoryHotkey;
-			//	var keyStrings = resetHistoryHotkeyString.Split('+');
+            var modifiers = Keyboard.Modifiers;
+            var key = e.Key;
 
-			//	ResetHistoryHotkey = CXHotkey.Create(keyStrings, Key.R, ModifierKeys.Control);
-			//}
-			//catch { ResetHistoryHotkey = new CXHotkey(Key.R, ModifierKeys.Control); }
-		}
+            if (key == Key.System)
+            {
+                key = e.SystemKey;
+            }
 
-		private void OverlayHotkeyTextBox_PreviewKeyDown(object sender, KeyEventArgs e)
-		{
-			e.Handled = true;
+            if (modifiers == ModifierKeys.None && key.IsEither(Key.Delete, Key.Back, Key.Escape))
+            {
+                OverlayHotkey = null;
+                return;
+            }
 
-			var modifiers = Keyboard.Modifiers;
-			var key = e.Key;
+            if (key.IsEither(
+                Key.LeftCtrl, Key.RightCtrl, Key.LeftAlt, Key.RightAlt,
+                Key.LeftShift, Key.RightShift, Key.LWin, Key.RWin,
+                Key.Clear, Key.OemClear, Key.Apps))
+            {
+                return;
+            }
 
-			if (key == Key.System)
-			{
-				key = e.SystemKey;
-			}
+            OverlayHotkey = new CXHotkey(key, modifiers);
+            var dataContext = DataContext as OverlayViewModel;
+            dataContext.OverlayHotkeyString = OverlayHotkey.ToString();
 
-			if (modifiers == ModifierKeys.None && key.IsEither(Key.Delete, Key.Back, Key.Escape))
-			{
-				OverlayHotkey = null;
-				return;
-			}
+            Keyboard.ClearFocus();
+        }
 
-			if (key.IsEither(
-				Key.LeftCtrl, Key.RightCtrl, Key.LeftAlt, Key.RightAlt,
-				Key.LeftShift, Key.RightShift, Key.LWin, Key.RWin,
-				Key.Clear, Key.OemClear, Key.Apps))
-			{
-				return;
-			}
+        private void ConfigHotkeyTextBox_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            e.Handled = true;
 
-			OverlayHotkey = new CXHotkey(key, modifiers);
-			var dataContext = DataContext as OverlayViewModel;
-			dataContext.OverlayHotkeyString = OverlayHotkey.ToString();
+            var modifiers = Keyboard.Modifiers;
+            var key = e.Key;
 
-			Keyboard.ClearFocus();
-		}
+            if (key == Key.System)
+            {
+                key = e.SystemKey;
+            }
 
-		private void ConfigHotkeyTextBox_PreviewKeyDown(object sender, KeyEventArgs e)
-		{
-			e.Handled = true;
+            if (modifiers == ModifierKeys.None && key.IsEither(Key.Delete, Key.Back, Key.Escape))
+            {
+                OverlayConfigHotkey = null;
+                return;
+            }
 
-			var modifiers = Keyboard.Modifiers;
-			var key = e.Key;
+            if (key.IsEither(
+                Key.LeftCtrl, Key.RightCtrl, Key.LeftAlt, Key.RightAlt,
+                Key.LeftShift, Key.RightShift, Key.LWin, Key.RWin,
+                Key.Clear, Key.OemClear, Key.Apps))
+            {
+                return;
+            }
 
-			if (key == Key.System)
-			{
-				key = e.SystemKey;
-			}
+            OverlayConfigHotkey = new CXHotkey(key, modifiers);
+            var dataContext = DataContext as OverlayViewModel;
+            dataContext.OverlayConfigHotkeyString = OverlayConfigHotkey.ToString();
 
-			if (modifiers == ModifierKeys.None && key.IsEither(Key.Delete, Key.Back, Key.Escape))
-			{
-				OverlayConfigHotkey = null;
-				return;
-			}
+            Keyboard.ClearFocus();
+        }
 
-			if (key.IsEither(
-				Key.LeftCtrl, Key.RightCtrl, Key.LeftAlt, Key.RightAlt,
-				Key.LeftShift, Key.RightShift, Key.LWin, Key.RWin,
-				Key.Clear, Key.OemClear, Key.Apps))
-			{
-				return;
-			}
+        private void OSDRefreshPeriodComboBox_MouseLeave(object sender, MouseEventArgs e)
+        {
+            Keyboard.ClearFocus();
+        }
 
-			OverlayConfigHotkey = new CXHotkey(key, modifiers);
-			var dataContext = DataContext as OverlayViewModel;
-			dataContext.OverlayConfigHotkeyString = OverlayConfigHotkey.ToString();
+        private void Hyperlink_RequestNavigate(object sender, System.Windows.Navigation.RequestNavigateEventArgs e)
+        {
+            Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri));
+            e.Handled = true;
+        }
 
-			Keyboard.ClearFocus();
-		}
-
-		//private void ResetHistoryHotkeyTextBox_PreviewKeyDown(object sender, KeyEventArgs e)
-		//{
-		//	e.Handled = true;
-
-		//	var modifiers = Keyboard.Modifiers;
-		//	var key = e.Key;
-
-		//	if (key == Key.System)
-		//	{
-		//		key = e.SystemKey;
-		//	}
-
-		//	if (modifiers == ModifierKeys.None && key.IsEither(Key.Delete, Key.Back, Key.Escape))
-		//	{
-		//		ResetHistoryHotkey = null;
-		//		return;
-		//	}
-
-		//	if (key.IsEither(
-		//		Key.LeftCtrl, Key.RightCtrl, Key.LeftAlt, Key.RightAlt,
-		//		Key.LeftShift, Key.RightShift, Key.LWin, Key.RWin,
-		//		Key.Clear, Key.OemClear, Key.Apps))
-		//	{
-		//		return;
-		//	}
-
-		//	ResetHistoryHotkey = new CXHotkey(key, modifiers);
-		//	var dataContext = DataContext as OverlayViewModel;
-		//	dataContext.ResetHistoryHotkeyString = ResetHistoryHotkey.ToString();
-
-		//	Keyboard.ClearFocus();
-		//}
-
-		private void OSDRefreshPeriodComboBox_MouseLeave(object sender, MouseEventArgs e)
-		{
-			Keyboard.ClearFocus();
-		}
-
-		private void Hyperlink_RequestNavigate(object sender, System.Windows.Navigation.RequestNavigateEventArgs e)
-		{
-			Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri));
-			e.Handled = true;
-		}
-
-		private void SelectedColorChanged(object sender, RoutedPropertyChangedEventArgs<Color?> e) { }
+        private void SelectedColorChanged(object sender, RoutedPropertyChangedEventArgs<Color?> e) { }
 
         private void LostFocus_PreviewKeyDown(object sender, KeyEventArgs e)
         {
-			var key = e.Key;
+            var key = e.Key;
 
-			if (key == Key.Enter)
-			{
-				OverlayItemDataGrid.Focus();
-			}
-		}
+            if (key == Key.Enter)
+            {
+                OverlayItemDataGrid.Focus();
+            }
+        }
 
-		private void NumberValidationTextBox(object sender, TextCompositionEventArgs e)
-		{
-			Regex regex = new Regex("[^0-9.-]+");
-			e.Handled = regex.IsMatch(e.Text);
-		}
-
-		private void IntegerNumberValidationTextBox(object sender, TextCompositionEventArgs e)
-		{
-			Regex regex = new Regex("[^0-9]+");
-			e.Handled = regex.IsMatch(e.Text);
-		}
-
-		private void CopyButton_Click(object sender, RoutedEventArgs e)
+        private void NumberValidationTextBox(object sender, TextCompositionEventArgs e)
         {
-			CopyButtonPopup.IsOpen = true;
-		}
+            Regex regex = new Regex("[^0-9.-]+");
+            e.Handled = regex.IsMatch(e.Text);
+        }
+
+        private void IntegerNumberValidationTextBox(object sender, TextCompositionEventArgs e)
+        {
+            Regex regex = new Regex("[^0-9]+");
+            e.Handled = regex.IsMatch(e.Text);
+        }
+
+        private void CopyButton_Click(object sender, RoutedEventArgs e)
+        {
+            CopyButtonPopup.IsOpen = true;
+        }
     }
 }

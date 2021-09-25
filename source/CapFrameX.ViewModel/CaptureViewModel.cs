@@ -6,7 +6,6 @@ using CapFrameX.Contracts.PresentMonInterface;
 using CapFrameX.Contracts.RTSS;
 using CapFrameX.Contracts.Sensor;
 using CapFrameX.Data;
-using CapFrameX.Data.Logging;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Hotkey;
 using CapFrameX.PresentMonInterface;
@@ -120,7 +119,7 @@ namespace CapFrameX.ViewModel
                 _captureTimeString = value;
 
                 if (UseGlobalCaptureTime && double.TryParse(_captureTimeString, out _))
-                        _appConfiguration.CaptureTime = Convert.ToDouble(value, CultureInfo.InvariantCulture);
+                    _appConfiguration.CaptureTime = Convert.ToDouble(value, CultureInfo.InvariantCulture);
 
                 RaisePropertyChanged();
             }
@@ -236,17 +235,13 @@ namespace CapFrameX.ViewModel
                 _appConfiguration.UseGlobalCaptureTime = value;
 
                 if (value)
-                    CaptureTimeString = Convert.ToString(_appConfiguration.CaptureTime, CultureInfo.InvariantCulture);              
+                    CaptureTimeString = Convert.ToString(_appConfiguration.CaptureTime, CultureInfo.InvariantCulture);
                 else
                     UdateCustomCaptureTime(_currentProcessToCapture);
 
                 RaisePropertyChanged();
             }
         }
-
-
-
-
 
 
 
@@ -386,13 +381,8 @@ namespace CapFrameX.ViewModel
             }
         }
 
-        public bool AggregationButtonEnabled
-        {
-            get
-            {
-                return (UseRunHistory && SelectedNumberOfRuns > 1);
-            }
-        }
+        public bool AggregationButtonEnabled => UseRunHistory && SelectedNumberOfRuns > 1;
+
         public bool SaveAggregationOnly
         {
             get
@@ -407,6 +397,7 @@ namespace CapFrameX.ViewModel
                 RaisePropertyChanged();
             }
         }
+
         public string SelectedRelatedMetric
         {
             get
@@ -440,10 +431,7 @@ namespace CapFrameX.ViewModel
 
         public Array RelatedMetricItemsSource => new[] { "Average", "Second", "Third" };
 
-
-
-
-
+        // End of run history and aggregation options
 
 
 
@@ -513,10 +501,11 @@ namespace CapFrameX.ViewModel
             AddToIgonreListCommand = new DelegateCommand(OnAddToIgonreList);
             AddToProcessListCommand = new DelegateCommand(OnAddToProcessList);
             ResetPresentMonCommand = new DelegateCommand(OnResetCaptureProcess);
-            UpdateLogCommand = new DelegateCommand( () => _logEntryManager?.UpdateFilter());
-            ClearLogCommand = new DelegateCommand( () => _logEntryManager?.ClearLog());
+            UpdateLogCommand = new DelegateCommand(() => _logEntryManager?.UpdateFilter());
+            ClearLogCommand = new DelegateCommand(() => _logEntryManager?.ClearLog());
 
-            LoggerOutput.CollectionChanged += (e, x) => {
+            LoggerOutput.CollectionChanged += (e, x) =>
+            {
                 IsLoggerOutputEmpty = (x.NewItems?.Count ?? 0) == 0;
             };
 
@@ -576,6 +565,7 @@ namespace CapFrameX.ViewModel
 
             SubscribeToUpdateProcessIgnoreList();
             SubscribeToGlobalCaptureHookEvent();
+            SetGlobalHookEventResetHistoryHotkey();
 
             bool captureServiceStarted = StartCaptureService();
 
@@ -853,14 +843,14 @@ namespace CapFrameX.ViewModel
 
             GetGameNameFromProcessList(currentProcess);
 
-            if(!UseGlobalCaptureTime &&_currentProcessToCapture != currentProcess)
+            if (!UseGlobalCaptureTime && _currentProcessToCapture != currentProcess)
                 UdateCustomCaptureTime(currentProcess);
 
             _currentProcessToCapture = currentProcess;
 
             var processId = ProcessesInfo.FirstOrDefault(info => info.Item1 == currentProcess).Item2;
             _rTSSService.ProcessIdStream.OnNext(processId);
-         
+
 
             _updateCurrentProcess?.Publish(new ViewMessages.CurrentProcessToCapture(currentProcess, processId));
         }
