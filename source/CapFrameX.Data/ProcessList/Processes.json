@@ -1,8 +1,78 @@
 [
   {
+    "Name": "ME3TweaksModManager",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "CEPHtmlEngine",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "AMS2AVX",
+    "DisplayName": "Automobilista 2 (AVX)",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "LogonUI",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "Siren-Win64-Shipping",
+    "DisplayName": "Life is Strange: True Colors",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "RTX_Showcase-Win64-Shipping",
+    "DisplayName": "Nvidia RTX Showcase Demo",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "Tobii.EyeTracking.Portal.WPF",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "Endeavor-Win64-Shipping",
+    "DisplayName": "Aliens: Fireteam Elite",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "RedAlert",
+    "DisplayName": "Red Alert (OpenRA)",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "Myst-Win64-Shipping",
+    "DisplayName": "Myst (2021)",
+    "IsBlacklisted": false
+  },
+  {
     "Name": "Psychonauts2-WinGDK-Shipping",
     "DisplayName": "Psychonauts 2",
     "IsBlacklisted": false
+  },
+  {
+    "Name": "ScreenClippingHost",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "4KCaptureUtility",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "Action",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "LosslessScaling",
+    "DisplayName": null,
+    "IsBlacklisted": true
   },
   {
     "Name": "HITMAN2",
@@ -93,11 +163,6 @@
     "Name": "SearchHost",
     "DisplayName": null,
     "IsBlacklisted": true
-  },
-  {
-    "Name": "RedAlert.exe",
-    "DisplayName": "Red Alert (OpenRA)",
-    "IsBlacklisted": false
   },
   {
     "Name": "msedgewebview2",
