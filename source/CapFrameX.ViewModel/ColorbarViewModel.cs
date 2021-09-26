@@ -646,7 +646,7 @@ namespace CapFrameX.ViewModel
                 try
                 {
                     RegistryKey startKey = Registry.LocalMachine.OpenSubKey("SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Run", true);
-                    startKey.DeleteValue(appName);
+                    startKey?.DeleteValue(appName);
                 }
                 catch (ArgumentException) { };
             }
