@@ -6,6 +6,7 @@
 			 xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
 			 xmlns:prism="http://prismlibrary.com/"
              xmlns:mvvm="clr-namespace:CapFrameX.MVVM.Converter;assembly=CapFrameX.MVVM"
+             xmlns:controls="clr-namespace:CapFrameX.View.Controls"
 			 xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
              mc:Ignorable="d"
 			 x:Name="ColorbarViewName"
@@ -23,9 +24,10 @@
     <Grid>
         <StackPanel Panel.ZIndex="1" Orientation="Horizontal" Visibility="{Binding ShowNotification, Converter={StaticResource FalseToCollapsedConverter}}" Background="Orange">
             <TextBlock VerticalAlignment="Center" Margin="10" FontWeight="Bold" FontSize="18" Text="Important Message:"></TextBlock>
-            <TextBlock VerticalAlignment="Center" Margin="5" FontWeight="Bold" FontSize="14" TextWrapping="Wrap"
+            <controls:MarkupTextBlock VerticalAlignment="Center" Margin="5" FontWeight="Bold" FontSize="14" TextWrapping="Wrap" TextTrimming="CharacterEllipsis" MaxHeight="60"
                        Width="{Binding ElementName=ColorbarViewName, Path=ActualWidth, Converter={StaticResource AddValueConverter}}"
-                       Text="{Binding AppNotification}"></TextBlock>
+                       MarkupText="{Binding AppNotification}" Hyperlink.RequestNavigate="Hyperlink_RequestNavigate">
+            </controls:MarkupTextBlock>
             <Button Margin="10" BorderThickness="0" Width="100" Height="25"
 					Command="{Binding CloseNotificationCommand}" Foreground="White" Background="LimeGreen" ToolTip="Close this message and not show it again until there's a new one">
                 <TextBlock Text="Close" TextWrapping="Wrap" TextAlignment="Center"/>
