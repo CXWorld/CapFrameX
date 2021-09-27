@@ -3,6 +3,8 @@ using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Microsoft.Win32.TaskScheduler;
+using System.Linq;
 
 namespace CapFrameX.CustomInstallerActions
 {
@@ -24,18 +26,23 @@ namespace CapFrameX.CustomInstallerActions
         {
             session.Log("Begin RemoveAutoStartKey");
 
+            const string appName = "CapFrameX";
+
             try
             {
-                const string run = "SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Run";
-                const string appName = "CapFrameX";
+                using (TaskService ts = new TaskService())
+                {
 
-                RegistryKey startKey = Registry.LocalMachine.OpenSubKey(run, true);
-                var val = startKey.GetValue("appName");
+                    if (ts.RootFolder.GetTasks().Any(t => t.Name == appName))
+                    {
+                        ts.RootFolder.DeleteTask(appName);
+                    }
+                }
 
-                if (val != null)
-                    startKey.DeleteValue(appName);
+                RegistryKey startKey = Registry.LocalMachine.OpenSubKey("SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Run", true);
+                startKey?.DeleteValue(appName);
             }
-            catch { session.Log("Error RemoveAutoStartKey"); }
+            catch { session.Log("Error while cleaning registry or removing autostart!");}
 
             return ActionResult.Success;
         }

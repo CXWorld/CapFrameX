@@ -25,9 +25,8 @@
         NOT Installed
       </Custom>
 		  <Custom Action="CleanRegistry" Before="InstallFinalize">
-			  Installed
-		  </Custom>
-     
+        Installed OR NOT Installed
+      </Custom>
 	  </InstallExecuteSequence>
 
 	  <util:CloseApplication Id="CloseCapFrameX" Target="CapFrameX.exe"
