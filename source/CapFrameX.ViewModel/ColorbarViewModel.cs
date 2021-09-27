@@ -615,13 +615,20 @@ namespace CapFrameX.ViewModel
                         // Create a new task definition and assign properties
                         TaskDefinition td = ts.NewTask();
                         td.RegistrationInfo.Description = "CapFrameX Autostart";
+                        td.Settings.DisallowStartIfOnBatteries = false;
+                        td.Settings.StopIfGoingOnBatteries = false;
+                        td.Principal.RunLevel = TaskRunLevel.Highest;
 
+                        
                         // Create a trigger that will fire the task
-                        td.Triggers.Add(new LogonTrigger { Delay = TimeSpan.FromSeconds(10)});
+                        var trigger = new LogonTrigger();
+                        trigger.UserId = Environment.UserName;
+
+                        td.Triggers.Add(trigger);
+
 
                         // Create an action that will launch an application
                         td.Actions.Add(new ExecAction(appPath));
-                        td.Principal.RunLevel = TaskRunLevel.Highest;
 
                         // Register the task in the root folder
                         ts.RootFolder.RegisterTaskDefinition(appName, td);
