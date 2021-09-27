@@ -616,9 +616,8 @@ namespace CapFrameX.ViewModel
                         TaskDefinition td = ts.NewTask();
                         td.RegistrationInfo.Description = "CapFrameX Autostart";
 
-
                         // Create a trigger that will fire the task
-                        td.Triggers.Add(new LogonTrigger { });
+                        td.Triggers.Add(new LogonTrigger { Delay = TimeSpan.FromSeconds(10)});
 
                         // Create an action that will launch an application
                         td.Actions.Add(new ExecAction(appPath));
