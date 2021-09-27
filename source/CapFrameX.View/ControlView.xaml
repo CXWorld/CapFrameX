@@ -124,7 +124,7 @@
                            Foreground="{DynamicResource MaterialDesignBody}"/>
 
                     <!--Column options & search bar-->
-                    <TextBox Grid.Row="0" Margin="40 10 5 0" Foreground="{DynamicResource MaterialDesignBody}" Name="RecordSearchBox" materialDesign:HintAssist.Hint="{Binding ObservedFolderName}" materialDesign:HintAssist.HintOpacity=".8"/>
+                    <TextBox Grid.Row="0" Margin="40 10 5 0" Foreground="{DynamicResource MaterialDesignBody}" Name="RecordSearchBox" materialDesign:HintAssist.Hint="{Binding SearchBarText}" materialDesign:HintAssist.HintOpacity=".8"/>
                     <materialDesign:PopupBox Grid.Row="0" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="0 10 0 0" Panel.ZIndex="1" StaysOpen="True" ToolTipService.ShowDuration="25000"
                                              Foreground="{DynamicResource MaterialDesignBody}">
                         <materialDesign:PopupBox.ToolTip>
