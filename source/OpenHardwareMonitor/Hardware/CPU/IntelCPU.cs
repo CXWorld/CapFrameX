@@ -409,7 +409,9 @@ namespace OpenHardwareMonitor.Hardware.CPU
                 lastEnergyTime = new DateTime[energyStatusMSRs.Length];
                 lastEnergyConsumed = new uint[energyStatusMSRs.Length];
 
-                if (Ring0.Rdmsr(MSR_RAPL_POWER_UNIT, out uint eax, out uint edx))
+                uint eax, edx;
+
+                if (Ring0.Rdmsr(MSR_RAPL_POWER_UNIT, out eax, out edx))
                 {
                     switch (microarchitecture)
                     {
@@ -436,6 +438,21 @@ namespace OpenHardwareMonitor.Hardware.CPU
                           SensorType.Power, this, settings);
                         ActivateSensor(powerSensors[i]);
                     }
+                }
+
+                // cpu_rdmsr_range(info->handle, MSR_PERF_STATUS, 47, 32, &reg);
+                if (Ring0.Rdmsr(IA32_PERF_STATUS, out  eax, out edx))
+                {
+                    byte highbit = 47;
+                    byte lowbit = 32;
+
+                    var bits = highbit - lowbit + 1;
+
+                    int result = (int) edx;
+                    result >>= lowbit;
+                    result &= (1 << bits) -1;
+
+                    var coreVoltage = (double)result / (1 << 13);
                 }
             }
 

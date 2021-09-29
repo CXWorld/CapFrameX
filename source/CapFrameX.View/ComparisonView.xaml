@@ -83,7 +83,7 @@
                                     </lvc:Axis>
                                 </lvc:CartesianChart.AxisX>
                                 <lvc:CartesianChart.AxisY>
-                                    <lvc:Axis Labels="{Binding ComparisonRowChartLabels}" FontSize="12" Foreground="{DynamicResource MaterialDesignBody}">
+                                    <lvc:Axis Labels="{Binding ComparisonRowChartLabels}" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource MaterialDesignBody}">
                                         <lvc:Axis.Separator>
                                             <!--step 1 forces the axis to display all labels, disabling it makes it invisible-->
                                             <lvc:Separator Step="1" IsEnabled="False"></lvc:Separator>
