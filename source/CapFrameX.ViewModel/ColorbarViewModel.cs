@@ -612,25 +612,31 @@ namespace CapFrameX.ViewModel
                     {
                         string appPath = System.Reflection.Assembly.GetEntryAssembly().Location;
 
-                        // Create a new task definition and assign properties
+
                         TaskDefinition td = ts.NewTask();
-                        td.RegistrationInfo.Description = "CapFrameX Autostart";
-
-
-                        // Create a trigger that will fire the task
-                        td.Triggers.Add(new LogonTrigger { });
-
-                        // Create an action that will launch an application
-                        td.Actions.Add(new ExecAction(appPath));
+                        td.RegistrationInfo.Description = "Autostart";
+                        td.Settings.DisallowStartIfOnBatteries = false;
+                        td.Settings.StopIfGoingOnBatteries = false;
                         td.Principal.RunLevel = TaskRunLevel.Highest;
+                        td.Principal.LogonType = TaskLogonType.InteractiveToken;
 
-                        // Register the task in the root folder
-                        ts.RootFolder.RegisterTaskDefinition(appName, td);
+                        
+                        var trigger = new LogonTrigger();
+                        trigger.UserId = Environment.UserName;
+                        trigger.Delay = TimeSpan.FromSeconds(10);
+
+                        td.Triggers.Add(trigger);
+
+
+                        td.Actions.Add(new ExecAction(appPath));
+
+                        ts.RootFolder.RegisterTaskDefinition(appName, td, TaskCreation.CreateOrUpdate,
+                        Environment.UserDomainName + "\\" + Environment.UserName, null, TaskLogonType.InteractiveToken);
 
                     }
                     else if (!Autostart && taskExists)
                     {
-                        // Remove the task
+
                         ts.RootFolder.DeleteTask(appName);
                     }
                 }
