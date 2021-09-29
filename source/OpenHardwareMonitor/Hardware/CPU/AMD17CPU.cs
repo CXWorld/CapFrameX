@@ -46,6 +46,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
         private const uint MSR_P_STATE_0 = 0xC0010064;
         private const uint MSR_FAMILY_17H_P_STATE = 0xc0010293;
         private const uint FAMILY_17H_PCI_CONTROL_REGISTER = 0x60;
+        private const uint F17H_M01H_SVI = 0x0005A000;
 
         private readonly float energyUnitMultiplier = 0;
         private uint lastEnergyConsumed;
@@ -225,10 +226,6 @@ namespace OpenHardwareMonitor.Hardware.CPU
         {
             base.Update();
 
-            Ring0.ReadPciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER + 4, out uint smuSvi0Tfn);
-            Ring0.ReadPciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER + 4, out uint smuSvi0TelPlane0);
-            Ring0.ReadPciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER + 4, out uint smuSvi0TelPlane1);
-
             if (sensorConfig.GetSensorEvaluate(coreTemperature.IdentifierString))
             {
                 if (ReadSmnRegister(FAMILY_17H_M01H_THM_TCON_TEMP, out uint value))
@@ -295,6 +292,48 @@ namespace OpenHardwareMonitor.Hardware.CPU
                 const double vidStep = 0.00625;
                 double vcc;
                 uint svi0PlaneXVddCor;
+
+                // SVI0_TFN_PLANE0 [0]
+                // SVI0_TFN_PLANE1 [1]
+                Ring0.WritePciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER, F17H_M01H_SVI + 0x8);
+                Ring0.ReadPciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER + 4, out uint smuSvi0Tfn);
+
+                uint sviPlane0Offset;
+                uint sviPlane1Offset;
+
+                switch (model)
+                {
+                    case 0x31: // Threadripper 3000.
+                        {
+                            sviPlane0Offset = F17H_M01H_SVI + 0x14;
+                            sviPlane1Offset = F17H_M01H_SVI + 0x10;
+                            break;
+                        }
+                    case 0x71: // Zen 2.
+                    case 0x21: // Zen 3.
+                        {
+                            sviPlane0Offset = F17H_M01H_SVI + 0x10;
+                            sviPlane1Offset = F17H_M01H_SVI + 0xC;
+
+                            break;
+                        }
+                    default: // Zen and Zen+.
+                        {
+                            sviPlane0Offset = F17H_M01H_SVI + 0xC;
+                            sviPlane1Offset = F17H_M01H_SVI + 0x10;
+                            break;
+                        }
+                }
+
+                // SVI0_PLANE0_VDDCOR [24:16]
+                // SVI0_PLANE0_IDDCOR [7:0]
+                Ring0.WritePciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER, sviPlane0Offset);
+                Ring0.ReadPciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER + 4, out uint smuSvi0TelPlane0);
+
+                // SVI0_PLANE1_VDDCOR [24:16]
+                // SVI0_PLANE1_IDDCOR [7:0]
+                Ring0.WritePciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER, sviPlane1Offset);
+                Ring0.ReadPciConfig(0x00, FAMILY_17H_PCI_CONTROL_REGISTER + 4, out uint smuSvi0TelPlane1);
 
                 // Core (0x01)
                 if ((smuSvi0Tfn & 0x01) == 0)

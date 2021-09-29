@@ -448,17 +448,6 @@ namespace OpenHardwareMonitor.Hardware.CPU
                     if (Ring0.RdmsrTx(IA32_PERF_STATUS, out _, out edx,
                       cpuid[i][0].Affinity))
                     {
-                        //byte highbit = 47;
-                        //byte lowbit = 32;
-
-                        //var bits = highbit - lowbit + 1;
-
-                        //int result = (int)edx;
-                        //result >>= lowbit;
-                        //result &= (1 << bits) - 1;
-
-                        //var coreVoltage = (double)result / (1 << 13);
-
                         coreVoltages[i] = new Sensor(CoreString(i), i,
                           SensorType.Voltage, this, settings);
                         ActivateSensor(coreVoltages[i]);

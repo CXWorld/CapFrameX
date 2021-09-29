@@ -125,18 +125,22 @@ namespace OpenHardwareMonitor.Hardware
             return b;
         }
 
-        public bool DeviceIOControl<T>(IOControlCode ioControlCode, object inBuffer,
-          ref T outBuffer)
+        public bool DeviceIOControl<T>(IOControlCode ioControlCode, object inBuffer, ref T outBuffer)
         {
             if (device == null)
                 return false;
 
             object boxedOutBuffer = outBuffer;
-            uint bytesReturned;
-            bool b = NativeMethods.DeviceIoControl(device, ioControlCode,
-              inBuffer, inBuffer == null ? 0 : (uint)Marshal.SizeOf(inBuffer),
-              boxedOutBuffer, (uint)Marshal.SizeOf(boxedOutBuffer),
-              out bytesReturned, IntPtr.Zero);
+            bool b = NativeMethods.DeviceIoControl(
+                device,
+                ioControlCode,
+                inBuffer,
+                inBuffer == null ? 0 : (uint)Marshal.SizeOf(inBuffer),
+                boxedOutBuffer,
+                (uint)Marshal.SizeOf(boxedOutBuffer),
+                out uint _,
+                IntPtr.Zero);
+
             outBuffer = (T)boxedOutBuffer;
             return b;
         }
@@ -309,12 +313,16 @@ namespace OpenHardwareMonitor.Hardware
               ServiceControl dwControl, ref ServiceStatus lpServiceStatus);
 
             [DllImport(KERNEL, CallingConvention = CallingConvention.Winapi)]
-            public static extern bool DeviceIoControl(SafeFileHandle device,
-              IOControlCode ioControlCode,
-              [MarshalAs(UnmanagedType.AsAny)][In] object inBuffer,
-              uint inBufferSize,
-              [MarshalAs(UnmanagedType.AsAny)][Out] object outBuffer,
-              uint nOutBufferSize, out uint bytesReturned, IntPtr overlapped);
+            internal static extern bool DeviceIoControl
+             (
+                  SafeFileHandle device,
+                  IOControlCode ioControlCode,
+                  [MarshalAs(UnmanagedType.AsAny)][In] object inBuffer,
+                  uint inBufferSize,
+                  [MarshalAs(UnmanagedType.AsAny)][Out] object outBuffer,
+                  uint nOutBufferSize,
+                  out uint bytesReturned,
+                  IntPtr overlapped);
 
             [DllImport(KERNEL, CallingConvention = CallingConvention.Winapi,
               SetLastError = true)]
