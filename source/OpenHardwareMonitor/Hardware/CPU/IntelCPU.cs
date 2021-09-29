@@ -45,6 +45,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
         }
 
         private readonly Sensor[] coreTemperatures;
+        private readonly Sensor[] coreVoltages;
         private readonly Sensor packageTemperature;
         private readonly Sensor[] coreClocks;
         private readonly Sensor coreMaxClock;
@@ -411,7 +412,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
 
                 uint eax, edx;
 
-                if (Ring0.Rdmsr(MSR_RAPL_POWER_UNIT, out eax, out edx))
+                if (Ring0.Rdmsr(MSR_RAPL_POWER_UNIT, out eax, out _))
                 {
                     switch (microarchitecture)
                     {
@@ -429,7 +430,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
                 {
                     for (int i = 0; i < energyStatusMSRs.Length; i++)
                     {
-                        if (!Ring0.Rdmsr(energyStatusMSRs[i], out eax, out edx))
+                        if (!Ring0.Rdmsr(energyStatusMSRs[i], out eax, out _))
                             continue;
 
                         lastEnergyTime[i] = DateTime.UtcNow;
@@ -440,19 +441,28 @@ namespace OpenHardwareMonitor.Hardware.CPU
                     }
                 }
 
-                // cpu_rdmsr_range(info->handle, MSR_PERF_STATUS, 47, 32, &reg);
-                if (Ring0.Rdmsr(IA32_PERF_STATUS, out  eax, out edx))
+                coreVoltages = new Sensor[coreCount];
+                for (int i = 0; i < coreCount; i++)
                 {
-                    byte highbit = 47;
-                    byte lowbit = 32;
+                    System.Threading.Thread.Sleep(1);
+                    if (Ring0.RdmsrTx(IA32_PERF_STATUS, out _, out edx,
+                      cpuid[i][0].Affinity))
+                    {
+                        //byte highbit = 47;
+                        //byte lowbit = 32;
 
-                    var bits = highbit - lowbit + 1;
+                        //var bits = highbit - lowbit + 1;
 
-                    int result = (int) edx;
-                    result >>= lowbit;
-                    result &= (1 << bits) -1;
+                        //int result = (int)edx;
+                        //result >>= lowbit;
+                        //result &= (1 << bits) - 1;
 
-                    var coreVoltage = (double)result / (1 << 13);
+                        //var coreVoltage = (double)result / (1 << 13);
+
+                        coreVoltages[i] = new Sensor(CoreString(i), i,
+                          SensorType.Voltage, this, settings);
+                        ActivateSensor(coreVoltages[i]);
+                    }
                 }
             }
 
@@ -534,12 +544,13 @@ namespace OpenHardwareMonitor.Hardware.CPU
             }
 
             if (coreClocks.Any(sensor => sensorConfig.GetSensorEvaluate(sensor.IdentifierString))
+                || coreVoltages.Any(sensor => sensorConfig.GetSensorEvaluate(sensor.IdentifierString))
                 || sensorConfig.GetSensorEvaluate(coreMaxClock.IdentifierString))
             {
                 if (HasTimeStampCounter && timeStampCounterMultiplier > 0)
                 {
                     double newBusClock = 0;
-                    for (int i = 0; i < coreClocks.Length; i++)
+                    for (int i = 0; i < coreCount; i++)
                     {
                         System.Threading.Thread.Sleep(1);
                         if (Ring0.RdmsrTx(IA32_PERF_STATUS, out uint eax, out uint edx,
@@ -574,6 +585,14 @@ namespace OpenHardwareMonitor.Hardware.CPU
                                     {
                                         uint multiplier = (eax >> 8) & 0xff;
                                         coreClocks[i].Value = (float)(multiplier * newBusClock);
+
+                                        // core voltage: register range 47:32
+                                        var bits = 47 - 32 + 1;
+                                        int result = (int)edx;
+                                        result >>= 32;
+                                        result &= (1 << bits) - 1;
+        
+                                        coreVoltages[i].Value = (float)result / (1 << 13);
                                     }
                                     break;
                                 default:

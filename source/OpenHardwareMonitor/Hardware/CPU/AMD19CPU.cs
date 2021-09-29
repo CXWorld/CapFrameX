@@ -17,6 +17,8 @@ namespace OpenHardwareMonitor.Hardware.CPU
         private readonly Sensor ccdMaxTemperature;
         private readonly Sensor ccdAvgTemperature;
         private readonly Sensor[] ccdTemperatures;
+        private readonly Sensor coreVoltage;
+        private readonly Sensor socVoltage;
         private readonly Sensor packagePowerSensor;
         private readonly Sensor coresPowerSensor;
         private readonly Sensor busClock;
@@ -34,6 +36,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
         private const uint MSR_PKG_ENERGY_STAT = 0xC001029B;
         private const uint MSR_P_STATE_0 = 0xC0010064;
         private const uint MSR_FAMILY_19H_P_STATE = 0xc0010293;
+        private const uint FAMILY_19H_PCI_CONTROL_REGISTER = 0x60;
 
         private readonly float energyUnitMultiplier = 0;
         private uint lastEnergyConsumed;
@@ -80,6 +83,9 @@ namespace OpenHardwareMonitor.Hardware.CPU
             {
                 Log.Logger.Error($"Failed getting 19h family energy unit multiplier.");
             }
+
+            coreVoltage = new Sensor("Core (SVI2 TFN)", 1, SensorType.Voltage, this, settings);
+            socVoltage = new Sensor("SoC (SVI2 TFN)", 2, SensorType.Voltage, this, settings);
 
             if (energyUnitMultiplier != 0)
             {
@@ -197,6 +203,10 @@ namespace OpenHardwareMonitor.Hardware.CPU
         {
             base.Update();
 
+            Ring0.ReadPciConfig(0x00, FAMILY_19H_PCI_CONTROL_REGISTER + 4, out uint smuSvi0Tfn);
+            Ring0.ReadPciConfig(0x00, FAMILY_19H_PCI_CONTROL_REGISTER + 4, out uint smuSvi0TelPlane0);
+            Ring0.ReadPciConfig(0x00, FAMILY_19H_PCI_CONTROL_REGISTER + 4, out uint smuSvi0TelPlane1);
+
             if (sensorConfig.GetSensorEvaluate(coreTemperature.IdentifierString))
             {
                 if (ReadSmnRegister(FAMILY_19H_M20H_THM_TCON_TEMP, out uint value))
@@ -252,6 +262,32 @@ namespace OpenHardwareMonitor.Hardware.CPU
 
                     ccdAvgTemperature.Value = ccdTemperatureSum / ccdCount;
                     ActivateSensor(ccdAvgTemperature);
+                }
+            }
+
+            if(sensorConfig.GetSensorEvaluate(coreVoltage.IdentifierString) 
+                || sensorConfig.GetSensorEvaluate(socVoltage.IdentifierString))
+            {
+                const double vidStep = 0.00625;
+                double vcc;
+                uint svi0PlaneXVddCor;
+
+                // Core (0x01)
+                if ((smuSvi0Tfn & 0x01) == 0)
+                {
+                    svi0PlaneXVddCor = (smuSvi0TelPlane0 >> 16) & 0xff;
+                    vcc = 1.550 - vidStep * svi0PlaneXVddCor;
+                    coreVoltage.Value = (float)vcc;
+                    ActivateSensor(coreVoltage);
+                }
+
+                // SoC (0x02), not every Zen cpu has this voltage.
+                if (model == 0x11 || model == 0x21 || model == 0x71 || model == 0x31 || (smuSvi0Tfn & 0x02) == 0)
+                {
+                    svi0PlaneXVddCor = (smuSvi0TelPlane1 >> 16) & 0xff;
+                    vcc = 1.550 - vidStep * svi0PlaneXVddCor;
+                    socVoltage.Value = (float)vcc;
+                    ActivateSensor(socVoltage);
                 }
             }
 
