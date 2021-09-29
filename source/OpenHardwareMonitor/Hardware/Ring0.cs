@@ -463,13 +463,14 @@ namespace OpenHardwareMonitor.Hardware
                 return false;
             }
 
-            ReadPciConfigInput input = new ReadPciConfigInput();
-            input.PciAddress = pciAddress;
-            input.RegAddress = regAddress;
+            ReadPciConfigInput input = new ReadPciConfigInput
+            {
+                PciAddress = pciAddress,
+                RegAddress = regAddress
+            };
 
             value = 0;
-            return driver.DeviceIOControl(IOCTL_OLS_READ_PCI_CONFIG, input,
-              ref value);
+            return driver.DeviceIOControl(IOCTL_OLS_READ_PCI_CONFIG, input, ref value);
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]

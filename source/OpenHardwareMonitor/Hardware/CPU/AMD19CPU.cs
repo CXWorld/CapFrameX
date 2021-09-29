@@ -203,10 +203,6 @@ namespace OpenHardwareMonitor.Hardware.CPU
         {
             base.Update();
 
-            Ring0.ReadPciConfig(0x00, FAMILY_19H_PCI_CONTROL_REGISTER + 4, out uint smuSvi0Tfn);
-            Ring0.ReadPciConfig(0x00, FAMILY_19H_PCI_CONTROL_REGISTER + 4, out uint smuSvi0TelPlane0);
-            Ring0.ReadPciConfig(0x00, FAMILY_19H_PCI_CONTROL_REGISTER + 4, out uint smuSvi0TelPlane1);
-
             if (sensorConfig.GetSensorEvaluate(coreTemperature.IdentifierString))
             {
                 if (ReadSmnRegister(FAMILY_19H_M20H_THM_TCON_TEMP, out uint value))
@@ -271,6 +267,10 @@ namespace OpenHardwareMonitor.Hardware.CPU
                 const double vidStep = 0.00625;
                 double vcc;
                 uint svi0PlaneXVddCor;
+
+                Ring0.ReadPciConfig(0x00, FAMILY_19H_PCI_CONTROL_REGISTER + 4, out uint smuSvi0Tfn);
+                Ring0.ReadPciConfig(0x00, FAMILY_19H_PCI_CONTROL_REGISTER + 4, out uint smuSvi0TelPlane0);
+                Ring0.ReadPciConfig(0x00, FAMILY_19H_PCI_CONTROL_REGISTER + 4, out uint smuSvi0TelPlane1);
 
                 // Core (0x01)
                 if ((smuSvi0Tfn & 0x01) == 0)
