@@ -4,6 +4,7 @@ using EmbedIO.Routing;
 using EmbedIO.WebApi;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -47,10 +48,25 @@ namespace CapFrameX.ApiInterface
                     double.TryParse(entry.Value.ToString(), out entryValue);
                 }
 
-                return entry.IsNumeric ? string.Format(entry.ValueAlignmentAndDigits, (decimal)entryValue) + entry.ValueUnitFormat.Trim() : entry.Value?.ToString();
+                return entry.IsNumeric ? string.Format(entry.ValueAlignmentAndDigits, (decimal)entryValue) + (entry.Identifier.Contains("temperature") ? GetDegreeCelciusUnitByCulture() : entry.ValueUnitFormat.Trim() ) : entry.Value?.ToString();
             } catch(Exception)
             {
                 return string.Empty;
+            }
+        }
+
+        private static string GetDegreeCelciusUnitByCulture()
+        {
+            try
+            {
+                if (CultureInfo.CurrentCulture.Name == new CultureInfo("en-DE").Name)
+                    return "బC";
+                else
+                    return "°C";
+            }
+            catch
+            {
+                return "°C";
             }
         }
     }
