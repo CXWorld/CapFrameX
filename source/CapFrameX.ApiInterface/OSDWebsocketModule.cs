@@ -12,29 +12,16 @@ namespace CapFrameX.ApiInterface
 {
     public class OSDWebsocketModule : WebSocketModule
     {
-        private readonly IOverlayService _overlayService;
 
         public OSDWebsocketModule(string path, IOverlayService overlayService) : base(path, true)
         {
-            _overlayService = overlayService;
+            overlayService.OSDUpdateNotifier = (_) => BroadcastAsync(JsonConvert.SerializeObject(OSDController.GetEntries(overlayService, false)));
 
-            Observable.Interval(TimeSpan.FromSeconds(1))
-                .SelectMany(async _ =>
-                {
-                    await SendUpdate();
-                    return _;
-                })
-                .Subscribe();
         }
 
         protected override Task OnMessageReceivedAsync(IWebSocketContext context, byte[] buffer, IWebSocketReceiveResult result)
         {
             return SendAsync(context, "Welcome to CXRemote OSD Websocket interface!");
-        }
-
-        private async Task SendUpdate()
-        {
-            await BroadcastAsync(JsonConvert.SerializeObject(OSDController.GetEntries(_overlayService, false)));
         }
     }
 }

@@ -38,5 +38,6 @@ namespace CapFrameX.Contracts.Overlay
 
 		IOverlayEntry GetSensorOverlayEntry(string identifier);
 		IOverlayEntry[] CurrentOverlayEntries { get; }
+		Action<IOverlayEntry[]> OSDUpdateNotifier { get; set; }
 	}
 }
