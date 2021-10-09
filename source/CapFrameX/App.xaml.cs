@@ -49,7 +49,7 @@ namespace CapFrameX
                 Task.Run(async () => {
                     try
                     {
-                        _webServer = WebserverFactory.CreateWebServer(_bootstrapper.Container, "http://localhost", "1337");
+                        _webServer = WebserverFactory.CreateWebServer(_bootstrapper.Container, "http://*", "1337");
                         await _webServer.RunAsync().ConfigureAwait(false);
                     } catch (System.Net.HttpListenerException)
                     {
