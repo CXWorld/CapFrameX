@@ -163,7 +163,7 @@
                                             </Style>
                                             <Style TargetType="TextBox" BasedOn="{StaticResource MaterialDesignTextBox}">
                                                 <Setter Property="materialDesign:HintAssist.IsFloating" Value="True" />
-                                                <Setter Property="Margin" Value="8,8,8,8" />
+                                                <Setter Property="Margin" Value="8" />
                                             </Style>
                                         </Grid.Resources>
                                         <Grid.RowDefinitions>
@@ -181,7 +181,7 @@
                                         </Grid.ColumnDefinitions>
                                         <ComboBox Grid.Row="0" Grid.Column="0" materialDesign:HintAssist.Hint="Graph filter window(ms)" HorizontalAlignment="Left"
                                                   ToolTip="Sets the time window for creating the moving average frametime and average FPS graphs"
-												  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Width="140" Height="40" Margin="20 15 15 15"
+												  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Width="145" Height="40" Margin="20 15 10 15"
 												  ItemsSource="{Binding Path=DataContext.AverageTimeWindows, ElementName=ColorbarViewName}">
                                             <ComboBox.Text>
                                                 <Binding Path="SelectedAverageTimeWindow"
@@ -238,7 +238,7 @@
                                         </StackPanel>
                                                                                
                                         <ComboBox Grid.Row="2" Grid.Column="0" materialDesign:HintAssist.Hint="Hardware info source"
-												  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Margin="0 15 0 0" Width="140" Height="40"
+												  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Margin="0 10 0 0" Width="145" Height="40"
 												  ItemsSource="{Binding Path=DataContext.HardwareInfoSourceItems, ElementName=ColorbarViewName}" 
 												  SelectedItem="{Binding Path=DataContext.SelectedHardwareInfoSource, ElementName=ColorbarViewName}">
                                             <ComboBox.ItemTemplate>
