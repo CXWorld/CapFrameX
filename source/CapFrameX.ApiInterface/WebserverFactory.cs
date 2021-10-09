@@ -35,6 +35,7 @@ namespace CapFrameX.Remote
                     m.WithController(() => new VersionController(iocContainer.Resolve<IAppVersionProvider>()));
                     m.WithController(() => new OSDController(iocContainer.Resolve<IOverlayService>()));
                 })
+                .WithModule(new OSDWebsocketModule("/ws/osd", iocContainer.Resolve<IOverlayService>()))
                 .WithModule(new ActionModule("/", HttpVerbs.Any, ctx => ctx.SendDataAsync(new { Message = "Error" })));
 
             // Listen for state changes.

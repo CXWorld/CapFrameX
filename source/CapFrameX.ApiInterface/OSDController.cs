@@ -4,13 +4,14 @@ using EmbedIO.Routing;
 using EmbedIO.WebApi;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace CapFrameX.ApiInterface
 {
-    public class OSDController : WebApiController
+    public class OSDController: WebApiController
     {
         private readonly IOverlayService _overlayService;
 
@@ -22,20 +23,21 @@ namespace CapFrameX.ApiInterface
         [Route(HttpVerbs.Get, "/osd")]
         public Task<string[]> GetOsd([QueryField] bool showAll)
         {
-
-            return Task.FromResult(GetEntries(showAll));
+            
+            return Task.FromResult(GetEntries(_overlayService, showAll));
         }
 
-        private string[] GetEntries(bool showAll)
+
+        public static string[] GetEntries(IOverlayService overlayService, bool showAll)
         {
-            var entries = _overlayService.CurrentOverlayEntries
+            return overlayService.CurrentOverlayEntries
                 .Where(e => showAll || e.ShowOnOverlay)
                 .GroupBy(e => e.GroupName)
-                .Select(g => $"{g.Key}: {string.Join(" ", g.Select(FormatEntry))}");
-            return entries.ToArray();
+                .Select(g => $"{g.Key}: {string.Join(" ", g.Select(FormatEntry))}")
+                .ToArray();
         }
 
-        private string FormatEntry(IOverlayEntry entry)
+        private static string FormatEntry(IOverlayEntry entry)
         {
             try
             {
@@ -46,11 +48,25 @@ namespace CapFrameX.ApiInterface
                     double.TryParse(entry.Value.ToString(), out entryValue);
                 }
 
-                return entry.IsNumeric ? string.Format(entry.ValueAlignmentAndDigits, (decimal)entryValue) + entry.ValueUnitFormat.Trim() : entry.Value?.ToString();
-            }
-            catch (Exception)
+                return entry.IsNumeric ? string.Format(entry.ValueAlignmentAndDigits, (decimal)entryValue) + (entry.Identifier.Contains("temperature") ? GetDegreeCelciusUnitByCulture() : entry.ValueUnitFormat.Trim() ) : entry.Value?.ToString();
+            } catch(Exception)
             {
                 return string.Empty;
+            }
+        }
+
+        private static string GetDegreeCelciusUnitByCulture()
+        {
+            try
+            {
+                if (CultureInfo.CurrentCulture.Name == new CultureInfo("en-DE").Name)
+                    return "బC";
+                else
+                    return "°C";
+            }
+            catch
+            {
+                return "°C";
             }
         }
     }
