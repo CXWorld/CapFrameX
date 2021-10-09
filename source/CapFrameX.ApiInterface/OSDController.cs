@@ -37,7 +37,7 @@ namespace CapFrameX.ApiInterface
 
         private string FormatEntry(IOverlayEntry entry)
         {
-            return entry.IsNumeric ? string.Format(entry.ValueAlignmentAndDigits, Convert.ToDecimal(entry.Value)) + entry.ValueUnitFormat.Trim() : entry.Value.ToString();
+            return entry.IsNumeric ? string.Format(entry.ValueAlignmentAndDigits, Convert.ToDecimal(entry.Value)) + entry.ValueUnitFormat.Trim() : entry.Value?.ToString();
         }
     }
 }
