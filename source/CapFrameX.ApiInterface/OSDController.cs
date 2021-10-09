@@ -41,32 +41,21 @@ namespace CapFrameX.ApiInterface
         {
             try
             {
-                double entryValue = double.NaN;
+                double entryValue = 0;
 
                 if (entry.Value != null)
                 {
-                    double.TryParse(entry.Value.ToString(), out entryValue);
+                    try 
+                    {
+                        entryValue = Convert.ToDouble(entry.Value, CultureInfo.InvariantCulture);
+                    }
+                    catch { entryValue = double.NaN; }
                 }
 
-                return entry.IsNumeric ? string.Format(entry.ValueAlignmentAndDigits, (decimal)entryValue) + (entry.Identifier.Contains("temperature") ? GetDegreeCelciusUnitByCulture() : entry.ValueUnitFormat.Trim() ) : entry.Value?.ToString();
+                return entry.IsNumeric ? string.Format(CultureInfo.InvariantCulture, entry.ValueAlignmentAndDigits, entryValue) + (entry.Identifier.Contains("temperature") ? "°C" : entry.ValueUnitFormat.Trim() ) : entry.Value?.ToString();
             } catch(Exception)
             {
                 return string.Empty;
-            }
-        }
-
-        private static string GetDegreeCelciusUnitByCulture()
-        {
-            try
-            {
-                if (CultureInfo.CurrentCulture.Name == new CultureInfo("en-DE").Name)
-                    return "బC";
-                else
-                    return "°C";
-            }
-            catch
-            {
-                return "°C";
             }
         }
     }
