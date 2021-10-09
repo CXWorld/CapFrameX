@@ -31,8 +31,13 @@ namespace CapFrameX.ApiInterface
             var entries = _overlayService.CurrentOverlayEntries
                 .Where(e => showAll || e.ShowOnOverlay)
                 .GroupBy(e => e.GroupName)
-                .Select(g => $"{g.Key}: {string.Join(" ", g.Select(e => $"{ e.Value,2:0.00}{e.ValueUnitFormat}".Trim()))}");
+                .Select(g => $"{g.Key}: {string.Join(" ", g.Select(FormatEntry))}");
             return entries.ToArray();
+        }
+
+        private string FormatEntry(IOverlayEntry entry)
+        {
+            return entry.IsNumeric ? string.Format(entry.ValueAlignmentAndDigits, Convert.ToDecimal(entry.Value)) + entry.ValueUnitFormat.Trim() : entry.Value.ToString();
         }
     }
 }

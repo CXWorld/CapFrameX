@@ -58,7 +58,7 @@ namespace CapFrameX.Overlay
 
         public IObservable<IOverlayEntry[]> OnDictionaryUpdated => _onDictionaryUpdated;
 
-        public IOverlayEntry[] CurrentOverlayEntries { get; private set; }
+        public IOverlayEntry[] CurrentOverlayEntries { get; private set; } = Array.Empty<IOverlayEntry>();
 
         public OverlayService(IStatisticProvider statisticProvider,
             ISensorService sensorService,
