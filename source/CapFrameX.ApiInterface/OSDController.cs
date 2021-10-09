@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace CapFrameX.ApiInterface
 {
-    public class OSDController: WebApiController
+    public class OSDController : WebApiController
     {
         private readonly IOverlayService _overlayService;
 
@@ -22,7 +22,7 @@ namespace CapFrameX.ApiInterface
         [Route(HttpVerbs.Get, "/osd")]
         public Task<string[]> GetOsd([QueryField] bool showAll)
         {
-            
+
             return Task.FromResult(GetEntries(showAll));
         }
 
@@ -39,8 +39,16 @@ namespace CapFrameX.ApiInterface
         {
             try
             {
-                return entry.IsNumeric ? string.Format(entry.ValueAlignmentAndDigits, Convert.ToDecimal(entry.Value)) + entry.ValueUnitFormat.Trim() : entry.Value?.ToString();
-            } catch(Exception)
+                double entryValue = double.NaN;
+
+                if (entry.Value != null)
+                {
+                    double.TryParse(entry.Value.ToString(), out entryValue);
+                }
+
+                return entry.IsNumeric ? string.Format(entry.ValueAlignmentAndDigits, (decimal)entryValue) + entry.ValueUnitFormat.Trim() : entry.Value?.ToString();
+            }
+            catch (Exception)
             {
                 return string.Empty;
             }
