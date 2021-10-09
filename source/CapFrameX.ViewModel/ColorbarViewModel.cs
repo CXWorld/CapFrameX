@@ -25,6 +25,7 @@ using System.Configuration;
 using CapFrameX.Extensions;
 using Newtonsoft.Json;
 using CapFrameX.Webservice.Data.DTO;
+using CapFrameX.Remote;
 
 namespace CapFrameX.ViewModel
 {
@@ -54,9 +55,13 @@ namespace CapFrameX.ViewModel
         private string _selectedView = "Options";
         private bool _optionsViewSelected = true;
         private bool _appViewSelected;
+        private bool _remoteViewSelected;
         private bool _helpViewSelected;
         private bool _showNotification;
         private DateTime _notificationTimestamp = DateTime.MinValue;
+
+        public string OsdHttpUrl => WebserverFactory.OsdHttpUrl;
+        public string OsdWSUrl => WebserverFactory.OsdWSUrl;
 
         public string CurrentPageName { get; set; }
 
@@ -329,6 +334,16 @@ namespace CapFrameX.ViewModel
                 RaisePropertyChanged();
             }
         }
+        public bool RemoteViewSelected
+        {
+            get { return _remoteViewSelected; }
+            set
+            {
+                _remoteViewSelected = value;
+                OnViewSelectionChanged();
+                RaisePropertyChanged();
+            }
+        }
 
         public bool HelpViewSelected
         {
@@ -388,6 +403,16 @@ namespace CapFrameX.ViewModel
             set
             {
                 _appConfiguration.AppNotificationsActive = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public string WebservicePort
+        {
+            get { return _appConfiguration.WebservicePort; }
+            set
+            {
+                _appConfiguration.WebservicePort = value.Replace(" ", string.Empty);
                 RaisePropertyChanged();
             }
         }
@@ -586,6 +611,13 @@ namespace CapFrameX.ViewModel
 
             if (AppViewSelected)
                 SelectedView = "App";
+
+            if (RemoteViewSelected)
+            { 
+                SelectedView = "Remote"; 
+                RaisePropertyChanged(nameof(OsdHttpUrl));
+                RaisePropertyChanged(nameof(OsdWSUrl));
+            }
 
             if (HelpViewSelected)
                 SelectedView = "Help";

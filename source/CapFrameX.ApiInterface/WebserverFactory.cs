@@ -1,4 +1,5 @@
 ﻿using CapFrameX.ApiInterface;
+using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.PresentMonInterface;
@@ -19,13 +20,22 @@ namespace CapFrameX.Remote
     public static class WebserverFactory
     {
 
-        public static WebServer CreateWebServer(IContainer iocContainer, string hostname, string port = null)
+        public static string OsdHttpUrl;
+        public static string OsdWSUrl;
+
+        public static WebServer CreateWebServer(IContainer iocContainer, string hostname, bool useRandomPort)
         {
+            var config = iocContainer.Resolve<IAppConfiguration>();
+            var port = useRandomPort ? GetFreeTcpPort().ToString() : config.WebservicePort;
+
+            config.WebservicePort = port;
+
             var options = new WebServerOptions()
             {
                 Mode = HttpListenerMode.Microsoft
             };
-            options.AddUrlPrefix($"{hostname}:{port ?? GetFreeTcpPort().ToString()}");
+
+            options.AddUrlPrefix($"{hostname}:{port}");
 
             var server = new WebServer(options)
                 .WithCors()
@@ -37,6 +47,9 @@ namespace CapFrameX.Remote
                 })
                 .WithModule(new OSDWebsocketModule("/ws/osd", iocContainer.Resolve<IOverlayService>()))
                 .WithModule(new ActionModule("/", HttpVerbs.Any, ctx => ctx.SendDataAsync(new { Message = "Error" })));
+
+            OsdHttpUrl = "http://localhost:" + port + "/api/osd";
+            OsdWSUrl = "ws://localhost:" + port + "/ws/osd";
 
             // Listen for state changes.
             server.StateChanged += (s, e) => Log.Logger.Information($"WebServer ({string.Join(",", options.UrlPrefixes)}) State - {e.NewState}");

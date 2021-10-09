@@ -195,6 +195,8 @@ namespace CapFrameX.Contracts.Configuration
 		DateTime LastAppNotificationTimestamp { get; set; }
 
 		bool AppNotificationsActive { get; set; }
+
+		string WebservicePort { get; set; }
 	}
 
 	public interface IReportDataGridColumnSettings

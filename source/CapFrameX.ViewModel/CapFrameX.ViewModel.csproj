@@ -212,6 +212,10 @@
     <None Include="Properties\packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\CapFrameX.ApiInterface\CapFrameX.Remote.csproj">
+      <Project>{A692A512-627A-4896-9D2D-4412FDD8C78C}</Project>
+      <Name>CapFrameX.Remote</Name>
+    </ProjectReference>
     <ProjectReference Include="..\CapFrameX.Charts\Core40\Core.csproj">
       <Project>{f261c3d7-6194-4625-9516-044081b06028}</Project>
       <Name>Core</Name>

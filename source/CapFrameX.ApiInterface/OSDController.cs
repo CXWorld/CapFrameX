@@ -52,7 +52,7 @@ namespace CapFrameX.ApiInterface
                     catch { entryValue = double.NaN; }
                 }
 
-                return entry.IsNumeric ? string.Format(CultureInfo.InvariantCulture, entry.ValueAlignmentAndDigits, entryValue) + (entry.Identifier.Contains("temperature") ? "°C" : entry.ValueUnitFormat.Trim() ) : entry.Value?.ToString();
+                return entry.IsNumeric ? string.Format(CultureInfo.InvariantCulture, entry.ValueAlignmentAndDigits, entryValue) + (entry.Identifier.Contains("temperature") ? "°C " : entry.ValueUnitFormat ) : entry.Value?.ToString();
             } catch(Exception)
             {
                 return string.Empty;

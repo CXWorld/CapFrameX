@@ -127,6 +127,12 @@ namespace CapFrameX.Configuration
             set => Set(value);
         }
 
+        public string WebservicePort
+        {
+            get => Get<string>("1337");
+            set => Set(value);
+        }
+
         // Record List Settings
 
         public bool FixedExpanderPosition

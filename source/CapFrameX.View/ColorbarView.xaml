@@ -149,6 +149,9 @@
                             <RadioButton Margin="18 0 0 0" Style="{StaticResource MaterialDesignTabRadioButton}"
 										 IsChecked="{Binding AppViewSelected}"
 										 Content="APP" />
+                            <RadioButton Margin="18 0 0 0" Style="{StaticResource MaterialDesignTabRadioButton}"
+										 IsChecked="{Binding RemoteViewSelected}"
+										 Content="REMOTE" />
                             <RadioButton Margin="20 0 0 0" Style="{StaticResource MaterialDesignTabRadioButton}"
 										 IsChecked="{Binding HelpViewSelected}"
 										 Content="HELP" />
@@ -339,6 +342,37 @@
                                         </StackPanel>
                                     </Grid>
                                 </DataTemplate>
+                                <DataTemplate x:Key="RemoteContent">
+                                    <Grid Margin="10">
+                                        <Grid.Resources>
+                                            <Style TargetType="CheckBox" BasedOn="{StaticResource MaterialDesignCheckBox}">
+                                                <Setter Property="Margin" Value="8,8,10,8" />
+                                            </Style>
+                                            <Style TargetType="TextBox" BasedOn="{StaticResource MaterialDesignTextBox}">
+                                                <Setter Property="materialDesign:HintAssist.IsFloating" Value="True" />
+                                                <Setter Property="Margin" Value="8,8,8,8" />
+                                            </Style>
+                                        </Grid.Resources>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="*" />
+                                            <RowDefinition Height="*" />
+                                            <RowDefinition Height="*" />
+                                        </Grid.RowDefinitions>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBox Grid.Row="0" Grid.Column="0" HorizontalAlignment="Left" Margin="15 5 0 5" Text="{Binding OsdHttpUrl, Mode=OneWay}" Width="200" IsReadOnly="True"
+                                                 Foreground="DarkGray" materialDesign:HintAssist.Hint="OSD http URL"></TextBox>
+                                        <TextBox Grid.Row="1" Grid.Column="0" HorizontalAlignment="Left" Margin="15 5 0 5" Text="{Binding OsdWSUrl, Mode=OneWay}" Width="200" IsReadOnly="True"
+                                                 Foreground="DarkGray" materialDesign:HintAssist.Hint="OSD websocket URL"></TextBox>
+                                        <TextBox Grid.Row="2" Grid.Column="0" HorizontalAlignment="Left" Margin="15 5 0 5" Text="https://app.swaggerhub.com/apis/CapFrameX/cx-remote/1.0.0" TextWrapping="Wrap" Width="200" IsReadOnly="True"
+                                                 Foreground="DarkGray" materialDesign:HintAssist.Hint="CX Remote Service info URL"></TextBox>
+
+                                        <TextBox Grid.Row="0" Grid.Column="1" HorizontalAlignment="Left" Margin="15 5 0 5" Text="{Binding WebservicePort, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="175" PreviewTextInput="IntegerValidationTextBox"
+                                                 materialDesign:HintAssist.Hint="Webservice port (restart CX)"></TextBox>
+                                    </Grid>
+                                </DataTemplate>
                                 <DataTemplate x:Key="HelpContent">
                                     <xctk:RichTextBox Margin="10" Width="475" Height="300" IsHitTestVisible="False" IsReadOnly="True"  Foreground="{DynamicResource MaterialDesignBody}"
                                                       Background="{DynamicResource MaterialDesignPaper}"
@@ -353,6 +387,9 @@
                                         </DataTrigger>
                                         <DataTrigger Binding="{Binding DataContext.SelectedView, ElementName=ColorbarViewName}" Value="App">
                                             <Setter Property="ContentTemplate" Value="{StaticResource AppContent}" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding DataContext.SelectedView, ElementName=ColorbarViewName}" Value="Remote">
+                                            <Setter Property="ContentTemplate" Value="{StaticResource RemoteContent}" />
                                         </DataTrigger>
                                         <DataTrigger Binding="{Binding DataContext.SelectedView, ElementName=ColorbarViewName}" Value="Help">
                                             <Setter Property="ContentTemplate" Value="{StaticResource HelpContent}" />

@@ -136,6 +136,10 @@
       <Project>{D328B391-432C-4A0E-9A7E-57A58AA592D4}</Project>
       <Name>CapFrameX.Data</Name>
     </ProjectReference>
+    <ProjectReference Include="..\CapFrameX.Statistics.NetStandard\CapFrameX.Statistics.NetStandard.csproj">
+      <Project>{7D35C9C8-6E9A-4ABB-9042-930BE5E26DC6}</Project>
+      <Name>CapFrameX.Statistics.NetStandard</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
