@@ -58,6 +58,8 @@ namespace CapFrameX.Overlay
 
         public IObservable<IOverlayEntry[]> OnDictionaryUpdated => _onDictionaryUpdated;
 
+        public IOverlayEntry[] CurrentOverlayEntries { get; private set; }
+
         public OverlayService(IStatisticProvider statisticProvider,
             ISensorService sensorService,
             IOverlayEntryProvider overlayEntryProvider,
@@ -114,6 +116,7 @@ namespace CapFrameX.Overlay
                        .Switch()
                        .Subscribe(async entries =>
                        {
+                           CurrentOverlayEntries = entries;
                            _rTSSService.SetOverlayEntries(entries);
                            await _rTSSService.CheckRTSSRunningAndRefresh();
                        });

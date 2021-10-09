@@ -37,5 +37,6 @@ namespace CapFrameX.Contracts.Overlay
 		void AddRunToHistory(ISessionRun captureData, string process, string recordDirectory);
 
 		IOverlayEntry GetSensorOverlayEntry(string identifier);
+		IOverlayEntry[] CurrentOverlayEntries { get; }
 	}
 }

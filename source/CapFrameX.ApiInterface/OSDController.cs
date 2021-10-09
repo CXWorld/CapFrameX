@@ -12,19 +12,27 @@ namespace CapFrameX.ApiInterface
 {
     public class OSDController: WebApiController
     {
-        private readonly IOverlayEntryProvider _overlayEntryProvider;
-        private readonly IOverlayEntryCore _overlayEntryCore;
+        private readonly IOverlayService _overlayService;
 
-        public OSDController(IOverlayEntryProvider overlayEntryProvider, IOverlayEntryCore overlayEntryCore)
+        public OSDController(IOverlayService overlayService)
         {
-            _overlayEntryProvider = overlayEntryProvider;
-            _overlayEntryCore = overlayEntryCore;
+            _overlayService = overlayService;
         }
 
         [Route(HttpVerbs.Get, "/osd")]
         public Task<string[]> GetOsd([QueryField] bool showAll)
         {
-            return Task.FromResult(_overlayEntryCore.OverlayEntryDict.Values.Where(e => showAll || e.ShowOnOverlay).Select(e => $"{e.GroupName}: {e.Value}{e.ValueUnitFormat}".Trim()).ToArray());
+            
+            return Task.FromResult(GetEntries(showAll));
+        }
+
+        private string[] GetEntries(bool showAll)
+        {
+            var entries = _overlayService.CurrentOverlayEntries
+                .Where(e => showAll || e.ShowOnOverlay)
+                .GroupBy(e => e.GroupName)
+                .Select(g => $"{g.Key}: {string.Join(" ", g.Select(e => $"{ e.Value,2:0.00}{e.ValueUnitFormat}".Trim()))}");
+            return entries.ToArray();
         }
     }
 }

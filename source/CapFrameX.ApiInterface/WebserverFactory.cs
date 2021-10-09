@@ -33,7 +33,7 @@ namespace CapFrameX.Remote
                 {
                     m.WithController(() => new CaptureController(iocContainer.Resolve<CaptureManager>()));
                     m.WithController(() => new VersionController(iocContainer.Resolve<IAppVersionProvider>()));
-                    m.WithController(() => new OSDController(iocContainer.Resolve<IOverlayEntryProvider>(), iocContainer.Resolve<IOverlayEntryCore>()));
+                    m.WithController(() => new OSDController(iocContainer.Resolve<IOverlayService>()));
                 })
                 .WithModule(new ActionModule("/", HttpVerbs.Any, ctx => ctx.SendDataAsync(new { Message = "Error" })));
 
