@@ -60,6 +60,8 @@ namespace CapFrameX.Overlay
 
         public IOverlayEntry[] CurrentOverlayEntries { get; private set; } = Array.Empty<IOverlayEntry>();
 
+        public Action<IOverlayEntry[]> OSDUpdateNotifier { get; set; } = (_) => { };
+
         public OverlayService(IStatisticProvider statisticProvider,
             ISensorService sensorService,
             IOverlayEntryProvider overlayEntryProvider,
@@ -117,6 +119,7 @@ namespace CapFrameX.Overlay
                        .Subscribe(async entries =>
                        {
                            CurrentOverlayEntries = entries;
+                           OSDUpdateNotifier(entries);
                            _rTSSService.SetOverlayEntries(entries);
                            await _rTSSService.CheckRTSSRunningAndRefresh();
                        });
