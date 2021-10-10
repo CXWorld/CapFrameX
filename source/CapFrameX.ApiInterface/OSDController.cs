@@ -33,7 +33,7 @@ namespace CapFrameX.ApiInterface
             return overlayService.CurrentOverlayEntries
                 .Where(e => showAll || e.ShowOnOverlay)
                 .GroupBy(e => e.GroupName)
-                .Select(g => $"{g.Key}: {string.Join(" ", g.Select(FormatEntry))}")
+                .Select(g => $"{g.Key}  {string.Join(" ", g.Select(FormatEntry))}")
                 .ToArray();
         }
 
@@ -43,7 +43,7 @@ namespace CapFrameX.ApiInterface
             {
                 double entryValue = 0;
 
-                if (entry.Value != null)
+                if (entry.Value != null && entry.IsNumeric)
                 {
                     try 
                     {
