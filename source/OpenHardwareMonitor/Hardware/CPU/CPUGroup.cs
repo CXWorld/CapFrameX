@@ -140,7 +140,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
                                 hardware.Add(new AMD17CPU(index, coreThreads, settings, sensorConfig));
                                 break;
                             case 0x19:
-                                hardware.Add(new AMD19CPU(index, coreThreads, settings, sensorConfig));
+                                hardware.Add(new AMD17CPU(index, coreThreads, settings, sensorConfig));
                                 break;
                             default:
                                 hardware.Add(new GenericCPU(index, coreThreads, settings, sensorConfig));

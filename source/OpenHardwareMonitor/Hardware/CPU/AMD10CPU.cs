@@ -26,6 +26,10 @@ namespace OpenHardwareMonitor.Hardware.CPU
         private readonly Sensor[] coreClocks;
         private readonly Sensor coreMaxClocks;
         private readonly Sensor busClock;
+        private readonly Sensor coreVoltage;
+        private readonly Sensor northbridgeVoltage;
+
+        private readonly bool isSvi2;
 
         private readonly ISensorConfig sensorConfig;
 
@@ -66,6 +70,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
           : base(processorIndex, cpuid, settings, config)
         {
             this.sensorConfig = config;
+            this.isSvi2 = (family == 0x15 && model >= 0x10) || family == 0x16;
 
             // AMD family 1Xh processors support only one temperature sensor
             coreTemperature = new Sensor(
@@ -74,40 +79,45 @@ namespace OpenHardwareMonitor.Hardware.CPU
             new ParameterDescription("Offset [°C]", "Temperature offset.", 0)
                 }, settings);
 
+            coreVoltage = new Sensor("Cores", 0, SensorType.Voltage, this, settings);
+            ActivateSensor(coreVoltage);
+            northbridgeVoltage = new Sensor("Northbridge", 0, SensorType.Voltage, this, settings);
+            ActivateSensor(northbridgeVoltage);
+
             switch (family)
             {
                 case 0x10:
                     miscellaneousControlDeviceId =
-           FAMILY_10H_MISCELLANEOUS_CONTROL_DEVICE_ID; break;
+                    FAMILY_10H_MISCELLANEOUS_CONTROL_DEVICE_ID; break;
                 case 0x11:
                     miscellaneousControlDeviceId =
-           FAMILY_11H_MISCELLANEOUS_CONTROL_DEVICE_ID; break;
+                    FAMILY_11H_MISCELLANEOUS_CONTROL_DEVICE_ID; break;
                 case 0x12:
                     miscellaneousControlDeviceId =
-           FAMILY_12H_MISCELLANEOUS_CONTROL_DEVICE_ID; break;
+                    FAMILY_12H_MISCELLANEOUS_CONTROL_DEVICE_ID; break;
                 case 0x14:
                     miscellaneousControlDeviceId =
-           FAMILY_14H_MISCELLANEOUS_CONTROL_DEVICE_ID; break;
+                    FAMILY_14H_MISCELLANEOUS_CONTROL_DEVICE_ID; break;
                 case 0x15:
                     switch (model & 0xF0)
                     {
                         case 0x00:
                             miscellaneousControlDeviceId =
-                   FAMILY_15H_MODEL_00_MISC_CONTROL_DEVICE_ID; break;
+                            FAMILY_15H_MODEL_00_MISC_CONTROL_DEVICE_ID; break;
                         case 0x10:
                             miscellaneousControlDeviceId =
-                   FAMILY_15H_MODEL_10_MISC_CONTROL_DEVICE_ID; break;
+                            FAMILY_15H_MODEL_10_MISC_CONTROL_DEVICE_ID; break;
                         case 0x30:
                             miscellaneousControlDeviceId =
-                   FAMILY_15H_MODEL_30_MISC_CONTROL_DEVICE_ID; break;
+                            FAMILY_15H_MODEL_30_MISC_CONTROL_DEVICE_ID; break;
                         case 0x60:
                             miscellaneousControlDeviceId =
-                   FAMILY_15H_MODEL_60_MISC_CONTROL_DEVICE_ID;
+                            FAMILY_15H_MODEL_60_MISC_CONTROL_DEVICE_ID;
                             hasSmuTemperatureRegister = true;
                             break;
                         case 0x70:
                             miscellaneousControlDeviceId =
-                   FAMILY_15H_MODEL_70_MISC_CONTROL_DEVICE_ID;
+                            FAMILY_15H_MODEL_70_MISC_CONTROL_DEVICE_ID;
                             hasSmuTemperatureRegister = true;
                             break;
                         default: miscellaneousControlDeviceId = 0; break;
@@ -118,10 +128,10 @@ namespace OpenHardwareMonitor.Hardware.CPU
                     {
                         case 0x00:
                             miscellaneousControlDeviceId =
-                   FAMILY_16H_MODEL_00_MISC_CONTROL_DEVICE_ID; break;
+                            FAMILY_16H_MODEL_00_MISC_CONTROL_DEVICE_ID; break;
                         case 0x30:
                             miscellaneousControlDeviceId =
-                   FAMILY_16H_MODEL_30_MISC_CONTROL_DEVICE_ID; break;
+                            FAMILY_16H_MODEL_30_MISC_CONTROL_DEVICE_ID; break;
                         default: miscellaneousControlDeviceId = 0; break;
                     }
                     break;
@@ -204,18 +214,18 @@ namespace OpenHardwareMonitor.Hardware.CPU
         private double EstimateTimeStampCounterMultiplier()
         {
             // preload the function
-            estimateTimeStampCounterMultiplier(0);
-            estimateTimeStampCounterMultiplier(0);
+            EstimateTimeStampCounterMultiplier(0);
+            EstimateTimeStampCounterMultiplier(0);
 
             // estimate the multiplier
             List<double> estimate = new List<double>(3);
             for (int i = 0; i < 3; i++)
-                estimate.Add(estimateTimeStampCounterMultiplier(0.025));
+                estimate.Add(EstimateTimeStampCounterMultiplier(0.025));
             estimate.Sort();
             return estimate[1];
         }
 
-        private double estimateTimeStampCounterMultiplier(double timeWindow)
+        private double EstimateTimeStampCounterMultiplier(double timeWindow)
         {
             uint eax, edx;
 
@@ -257,8 +267,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
 
         protected override uint[] GetMSRs()
         {
-            return new uint[] { PERF_CTL_0, PERF_CTR_0, HWCR, P_STATE_0,
-        COFVID_STATUS };
+            return new uint[] { PERF_CTL_0, PERF_CTR_0, HWCR, P_STATE_0, COFVID_STATUS };
         }
 
         public override string GetReport()
@@ -441,11 +450,14 @@ namespace OpenHardwareMonitor.Hardware.CPU
 
             if (coreClocks.Any(clock => sensorConfig.GetSensorEvaluate(clock.IdentifierString))
                 || sensorConfig.GetSensorEvaluate(coreMaxClocks.IdentifierString)
-                || sensorConfig.GetSensorEvaluate(busClock.IdentifierString))
+                || sensorConfig.GetSensorEvaluate(busClock.IdentifierString)
+                || sensorConfig.GetSensorEvaluate(coreVoltage.IdentifierString))
             {
                 if (HasTimeStampCounter)
                 {
                     double newBusClock = 0;
+                    float maxCoreVoltage = 0;
+                    float maxNbVoltage = 0;
 
                     for (int i = 0; i < coreClocks.Length; i++)
                     {
@@ -467,7 +479,35 @@ namespace OpenHardwareMonitor.Hardware.CPU
                         {
                             coreClocks[i].Value = (float)TimeStampCounterFrequency;
                         }
+
+                        float SVI2Volt(uint vid) => vid < 0b1111_1000 ? 1.5500f - 0.00625f * vid : 0;
+                        float SVI1Volt(uint vid) => vid < 0x7C ? 1.550f - 0.0125f * vid : 0;
+
+                        float newCoreVoltage;
+                        float newNbVoltage;
+
+                        uint coreVid60 = (curEax >> 9) & 0x7F;
+
+                        if (this.isSvi2)
+                        {
+                            newCoreVoltage = SVI2Volt(curEax >> 13 & 0x80 | coreVid60);
+                            newNbVoltage = SVI2Volt(curEax >> 24);
+                        }
+                        else
+                        {
+                            newCoreVoltage = SVI1Volt(coreVid60);
+                            newNbVoltage = SVI1Volt(curEax >> 25);
+                        }
+
+                        if (newCoreVoltage > maxCoreVoltage)
+                            maxCoreVoltage = newCoreVoltage;
+
+                        if (newNbVoltage > maxNbVoltage)
+                            maxNbVoltage = newNbVoltage;
                     }
+
+                    coreVoltage.Value = maxCoreVoltage;
+                    northbridgeVoltage.Value = maxNbVoltage;
 
                     coreMaxClocks.Value = coreClocks.Max(clk => clk.Value);
 
