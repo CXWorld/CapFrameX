@@ -371,6 +371,16 @@
 
                                         <TextBox Grid.Row="0" Grid.Column="1" HorizontalAlignment="Left" Margin="15 5 0 5" Text="{Binding WebservicePort, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="175" PreviewTextInput="IntegerValidationTextBox"
                                                  materialDesign:HintAssist.Hint="Webservice port (restart CX)"></TextBox>
+                                        <StackPanel Grid.Row="1" Grid.Column="1" HorizontalAlignment="Left" Margin="15 5 0 5" VerticalAlignment="Center" Orientation="Horizontal">
+                                            <TextBlock Text="OSD only on API"></TextBlock>
+                                            <CheckBox IsChecked="{Binding OverlayOnAPIOnly, Mode=TwoWay}" Margin="10 -3 0 0">
+                                                <CheckBox.ToolTip>
+                                                    <ToolTip StaysOpen="True" MaxWidth="275">
+                                                        <TextBlock Text="If checked, the overlay will not be shown on RTSS but will still be accessible through remote API." TextWrapping="Wrap"/>
+                                                    </ToolTip>
+                                                </CheckBox.ToolTip>
+                                            </CheckBox>
+                                            </StackPanel>
                                     </Grid>
                                 </DataTemplate>
                                 <DataTemplate x:Key="HelpContent">

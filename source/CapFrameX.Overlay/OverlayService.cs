@@ -45,8 +45,10 @@ namespace CapFrameX.Overlay
         private int _numberOfRuns;
         private IList<IMetricAnalysis> _metricAnalysis = new List<IMetricAnalysis>();
         private ISubject<IOverlayEntry[]> _onDictionaryUpdated = new Subject<IOverlayEntry[]>();
+        private bool _overlayOnAPIOnly;
 
         public bool IsOverlayActive => _appConfiguration.IsOverlayActive;
+
 
         public ISubject<bool> IsOverlayActiveStream { get; }
 
@@ -61,6 +63,18 @@ namespace CapFrameX.Overlay
         public IOverlayEntry[] CurrentOverlayEntries { get; private set; } = Array.Empty<IOverlayEntry>();
 
         public Action<IOverlayEntry[]> OSDUpdateNotifier { get; set; } = (_) => { };
+
+        public bool OverlayOnAPIOnly
+        {
+            get { return _overlayOnAPIOnly; }
+            set
+            {
+                _overlayOnAPIOnly = value; 
+                if (value)
+                    _rTSSService.ReleaseOSD();
+            }
+        }
+
 
         public OverlayService(IStatisticProvider statisticProvider,
             ISensorService sensorService,
@@ -88,6 +102,7 @@ namespace CapFrameX.Overlay
             _numberOfRuns = _appConfiguration.SelectedHistoryRuns;
             SecondMetric = _appConfiguration.RunHistorySecondMetric;
             ThirdMetric = _appConfiguration.RunHistoryThirdMetric;
+            OverlayOnAPIOnly = _appConfiguration.OverlayOnAPIOnly;
             IsOverlayActiveStream = new BehaviorSubject<bool>(_appConfiguration.IsOverlayActive);
             _runHistoryOutlierFlags = Enumerable.Repeat(false, _numberOfRuns).ToArray();
 
@@ -120,8 +135,12 @@ namespace CapFrameX.Overlay
                        {
                            CurrentOverlayEntries = entries;
                            OSDUpdateNotifier(entries);
-                           _rTSSService.SetOverlayEntries(entries);
-                           await _rTSSService.CheckRTSSRunningAndRefresh();
+
+                           if(!_overlayOnAPIOnly)
+                           { 
+                                _rTSSService.SetOverlayEntries(entries);
+                                await _rTSSService.CheckRTSSRunningAndRefresh();
+                           }
                        });
                });
 

@@ -525,6 +525,12 @@ namespace CapFrameX.Configuration
             set => Set(value);
         }
 
+        public bool OverlayOnAPIOnly
+        {
+            get => Get<bool>(false);
+            set => Set(value);
+        }
+
 
         // Comparison Settings
         public string ComparisonFirstMetric

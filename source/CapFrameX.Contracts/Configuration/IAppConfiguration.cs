@@ -126,6 +126,8 @@ namespace CapFrameX.Contracts.Configuration
 
 		string RelatedMetricOverlay { get; set; }
 
+		bool OverlayOnAPIOnly { get; set; }
+
 		int InputLagOffset { get; set; }
 
 		string SecondMetricAggregation { get; set; }

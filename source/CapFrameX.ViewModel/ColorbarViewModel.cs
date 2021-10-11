@@ -26,6 +26,7 @@ using CapFrameX.Extensions;
 using Newtonsoft.Json;
 using CapFrameX.Webservice.Data.DTO;
 using CapFrameX.Remote;
+using CapFrameX.Contracts.Overlay;
 
 namespace CapFrameX.ViewModel
 {
@@ -34,6 +35,7 @@ namespace CapFrameX.ViewModel
         private readonly IRegionManager _regionManager;
         private readonly IEventAggregator _eventAggregator;
         private readonly IAppConfiguration _appConfiguration;
+        private readonly IOverlayService _overlayService;
         private readonly ILogger<ColorbarViewModel> _logger;
         private readonly IShell _shell;
         private readonly ISystemInfo _systemInfo;
@@ -407,6 +409,17 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        public bool OverlayOnAPIOnly
+        {
+            get { return _appConfiguration.OverlayOnAPIOnly; }
+            set
+            {
+                _appConfiguration.OverlayOnAPIOnly = value;
+                _overlayService.OverlayOnAPIOnly = value;
+                RaisePropertyChanged();
+            }
+        }
+
         public string WebservicePort
         {
             get { return _appConfiguration.WebservicePort; }
@@ -451,6 +464,7 @@ namespace CapFrameX.ViewModel
         public ColorbarViewModel(IRegionManager regionManager,
                                  IEventAggregator eventAggregator,
                                  IAppConfiguration appConfiguration,
+                                 IOverlayService overlayService,
                                  ILogger<ColorbarViewModel> logger,
                                  IShell shell,
                                  ISystemInfo systemInfo,
@@ -462,6 +476,7 @@ namespace CapFrameX.ViewModel
             _regionManager = regionManager;
             _eventAggregator = eventAggregator;
             _appConfiguration = appConfiguration;
+            _overlayService = overlayService;
             _logger = logger;
             _shell = shell;
             _systemInfo = systemInfo;

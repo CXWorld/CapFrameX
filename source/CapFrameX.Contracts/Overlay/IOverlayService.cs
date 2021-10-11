@@ -16,6 +16,8 @@ namespace CapFrameX.Contracts.Overlay
 
 		int RunHistoryCount { get; }
 
+		bool OverlayOnAPIOnly { get; set; }
+
 		void UpdateNumberOfRuns(int numberOfRuns);
 
 		void SetCaptureTimerValue(int t);
