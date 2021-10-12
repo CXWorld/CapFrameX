@@ -11,6 +11,7 @@
 using CapFrameX.Contracts.Sensor;
 using Serilog;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
@@ -23,6 +24,8 @@ namespace OpenHardwareMonitor.Hardware.CPU
         protected readonly CPUID[][] cpuid;
 
         private readonly ISensorConfig sensorConfig;
+        private readonly Dictionary<int, int> threadCountMap = new Dictionary<int, int>();
+        private readonly Dictionary<int, int> threadCoreMap = new Dictionary<int, int>();
 
         protected readonly uint family;
         protected readonly uint model;
@@ -30,7 +33,6 @@ namespace OpenHardwareMonitor.Hardware.CPU
 
         protected readonly int processorIndex;
         protected readonly int coreCount;
-        protected readonly int coreThreadCount;
         private readonly bool isInvariantTimeStampCounter;
         private readonly double estimatedTimeStampCounterFrequency;
         private readonly double estimatedTimeStampCounterFrequencyError;
@@ -44,27 +46,81 @@ namespace OpenHardwareMonitor.Hardware.CPU
         private readonly Sensor maxLoad;
         private readonly Sensor[] coreLoads;
 
+        private const uint MSR_CORE_MASK_STATUS = 0x1A;
+
+        bool IsBigLittleDesign()
+        {
+            bool isBigLittleDesign = false;
+
+            // Alder Lake (10nm)
+            // Raptor Lake (10nm)?
+            // Zen 5 (3nm)?
+            if (vendor == Vendor.Intel && family == 0x06 && (model == 0x97 || model == 0x9A))
+                isBigLittleDesign = true;
+
+            return isBigLittleDesign;
+        }
+
         protected string CoreString(int i)
         {
+            string coreString;
             if (coreCount == 1)
-                return "CPU Core";
+                coreString = GetCoreLabel(i);
             else
-                return "CPU Core #" + (i + 1);
+                coreString = $"{GetCoreLabel(i)} #" + (i + 1);
+
+            return coreString;
+        }
+
+        // https://github.com/InstLatx64/InstLatX64_Demo/commit/e149a972655aff9c41f3eac66ad51fcfac1262b5
+        protected string GetCoreLabel(int i)
+        {
+            string corelabel = string.Empty;
+            if (!IsBigLittleDesign())
+            {
+                corelabel = "CPU Core";
+            }
+            else
+            {
+                var previousAffinity = ThreadAffinity.Set(cpuid[i][0].Affinity);
+
+                if (Ring0.Rdmsr(MSR_CORE_MASK_STATUS, out uint eax, out _))
+                {
+                    switch (eax >> 24)
+                    {
+                        case 0x20: corelabel = "CPU E Core"; break;
+                        case 0x40: corelabel = "CPU P Core"; break;
+                        default: break;
+                    }
+                }
+
+                ThreadAffinity.Set(previousAffinity);
+            }
+
+            return corelabel;
         }
 
         private string CoreThreadString(int i)
         {
-            if (coreThreadCount == 1)
-                return CoreString(i) + " - Thread #1";
+            int core = threadCoreMap[i];
+            int coreThreadCount = threadCoreMap[core];
 
-            if (coreCount == 1)
-                return "CPU Core - Thread #" + (i + 1);
+            string coreThreadString;
+            if (coreThreadCount == 1)
+                coreThreadString = CoreString(i) + " - Thread #1";
             else
-                return "CPU Core #" + ((i / coreThreadCount) + 1) + " - Thread #" + ((i % coreThreadCount) + 1);
+            {
+                if (coreCount == 1)
+                    coreThreadString = $"{GetCoreLabel(core)} - Thread #" + (i + 1);
+                else
+                    coreThreadString = $"{GetCoreLabel(core)} #" + ((i / coreThreadCount) + 1) + " - Thread #" + ((i % coreThreadCount) + 1);
+            }
+
+            return coreThreadString;
         }
 
         public GenericCPU(int processorIndex, CPUID[][] cpuid, ISettings settings, ISensorConfig config)
-        : base(cpuid[0][0].Name, CreateIdentifier(cpuid[0][0].Vendor, processorIndex), settings)
+            : base(cpuid[0][0].Name, CreateIdentifier(cpuid[0][0].Vendor, processorIndex), settings)
         {
             this.sensorConfig = config;
             this.cpuid = cpuid;
@@ -75,12 +131,29 @@ namespace OpenHardwareMonitor.Hardware.CPU
             this.model = cpuid[0][0].Model;
             this.stepping = cpuid[0][0].Stepping;
 
+            int threadCount = 0;
+            for (int i = 0; i < cpuid.Length; i++)
+            {
+                threadCountMap.Add(i, cpuid[i].Length);
+
+                for (int t = 0; t < cpuid[i].Length; t++)
+                {
+                    threadCoreMap.Add(threadCount, i);
+                    threadCount++;
+                }
+            }
+
+            bool hasGlobalThreadCount = threadCountMap.Values.Distinct().Count() == 1;
+
             Log.Logger.Information("CPUID core count: {coreCount}.", cpuid.Length);
-            Log.Logger.Information("CPUID thread count per core: {coreThreadCount}.", cpuid[0].Length);
+
+            if (hasGlobalThreadCount)
+                Log.Logger.Information("CPUID thread count per core: {coreThreadCount}.", cpuid[0].Length);
+            else
+                Log.Logger.Information("CPU has different thread counts per core.");
 
             this.processorIndex = processorIndex;
             this.coreCount = cpuid.Length;
-            this.coreThreadCount = cpuid[0].Length;
 
             // check if processor has MSRs
             if (cpuid[0][0].Data.GetLength(0) > 1
@@ -103,11 +176,11 @@ namespace OpenHardwareMonitor.Hardware.CPU
             else
                 isInvariantTimeStampCounter = false;
 
-            if (coreCount > 1 || coreThreadCount > 1)
+            if (coreCount > 1 || threadCountMap.Values.Max() > 1)
                 totalLoad = new Sensor("CPU Total", 0, SensorType.Load, this, settings);
             else
                 totalLoad = null;
-            coreLoads = new Sensor[coreCount * coreThreadCount];
+            coreLoads = new Sensor[threadCountMap.Values.Sum()];
             for (int i = 0; i < coreLoads.Length; i++)
                 coreLoads[i] = new Sensor(CoreThreadString(i), i + 1,
                   SensorType.Load, this, settings);
