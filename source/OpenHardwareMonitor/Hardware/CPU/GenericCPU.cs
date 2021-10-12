@@ -103,7 +103,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
         private string CoreThreadString(int i)
         {
             int core = threadCoreMap[i];
-            int coreThreadCount = threadCoreMap[core];
+            int coreThreadCount = threadCountMap[core];
 
             string coreThreadString;
             if (coreThreadCount == 1)
