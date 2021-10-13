@@ -82,9 +82,9 @@ namespace OpenHardwareMonitor.Hardware.CPU
             }
             else
             {
-                var previousAffinity = ThreadAffinity.Set(cpuid[i][0].Affinity);
+                var previousAffinity = ThreadAffinity.Set(cpuid[i][0].Affinity);               
 
-                if (Ring0.Rdmsr(MSR_CORE_MASK_STATUS, out uint eax, out _))
+                if (Opcode.Cpuid(MSR_CORE_MASK_STATUS, 0, out uint eax, out uint ebx, out uint ecx, out uint edx))
                 {
                     switch (eax >> 24)
                     {
@@ -107,7 +107,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
 
             string coreThreadString;
             if (coreThreadCount == 1)
-                coreThreadString = CoreString(i) + " - Thread #1";
+                coreThreadString = CoreString(core) + " - Thread #1";
             else
             {
                 if (coreCount == 1)
