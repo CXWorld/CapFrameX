@@ -101,11 +101,11 @@ namespace OpenHardwareMonitor.Hardware.CPU
             }
             else if (coreCount == 1)
             {
-                return $"{GetCoreLabel(core)} - Thread #" + (i + 1);
+                return $"{CoreString(core)} - Thread #" + (i + 1);
             }
             else
             {
-                return $"{GetCoreLabel(core)} #" + ((i / coreThreadCount) + 1) + " - Thread #" + ((i % coreThreadCount) + 1);
+                return $"{CoreString(core)} - Thread #" + ((i % coreThreadCount) + 1);
             }
         }
 
