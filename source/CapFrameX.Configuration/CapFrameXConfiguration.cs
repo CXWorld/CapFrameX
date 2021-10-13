@@ -525,7 +525,7 @@ namespace CapFrameX.Configuration
             set => Set(value);
         }
 
-        public bool OverlayOnAPIOnly
+        public bool HideOverlay
         {
             get => Get<bool>(false);
             set => Set(value);

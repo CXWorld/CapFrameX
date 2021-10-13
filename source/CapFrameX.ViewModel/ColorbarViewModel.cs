@@ -409,12 +409,12 @@ namespace CapFrameX.ViewModel
             }
         }
 
-        public bool OverlayOnAPIOnly
+        public bool HideOverlay
         {
-            get { return _appConfiguration.OverlayOnAPIOnly; }
+            get { return _appConfiguration.HideOverlay; }
             set
             {
-                _appConfiguration.OverlayOnAPIOnly = value;
+                _appConfiguration.HideOverlay = value;
                 _overlayService.OverlayOnAPIOnly = value;
                 RaisePropertyChanged();
             }
@@ -665,12 +665,11 @@ namespace CapFrameX.ViewModel
                         td.Settings.DisallowStartIfOnBatteries = false;
                         td.Settings.StopIfGoingOnBatteries = false;
                         td.Principal.RunLevel = TaskRunLevel.Highest;
-                        td.Principal.LogonType = TaskLogonType.InteractiveToken;
 
                         
                         var trigger = new LogonTrigger();
                         trigger.UserId = Environment.UserName;
-                        trigger.Delay = TimeSpan.FromSeconds(10);
+                        trigger.Delay = TimeSpan.FromSeconds(20);
 
                         td.Triggers.Add(trigger);
 

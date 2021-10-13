@@ -126,7 +126,7 @@ namespace CapFrameX.Contracts.Configuration
 
 		string RelatedMetricOverlay { get; set; }
 
-		bool OverlayOnAPIOnly { get; set; }
+		bool HideOverlay { get; set; }
 
 		int InputLagOffset { get; set; }
 
