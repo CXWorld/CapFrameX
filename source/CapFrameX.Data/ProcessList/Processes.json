@@ -1,5 +1,50 @@
 [
   {
+    "Name": "Kena-Win64-Shipping",
+    "DisplayName": "Kena: Bridge of Spirits",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "ScreenSketch",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "MiniSearchHost",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "D2R",
+    "DisplayName": "Diablo II Resurrected",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "CalculatorApp",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "FarCry6",
+    "DisplayName": "Far Cry 6",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "Game_f_x64_EOS",
+    "DisplayName": "Alan Wake Remastered",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "NewWorld",
+    "DisplayName": "New World",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "Path of Building",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
     "Name": "ME3TweaksModManager",
     "DisplayName": null,
     "IsBlacklisted": true
