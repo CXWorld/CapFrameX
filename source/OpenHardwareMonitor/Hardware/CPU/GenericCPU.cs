@@ -69,10 +69,11 @@ namespace OpenHardwareMonitor.Hardware.CPU
         // https://github.com/InstLatx64/InstLatX64_Demo/commit/e149a972655aff9c41f3eac66ad51fcfac1262b5
         protected string GetCoreLabel(int i)
         {
+            string corelabel = string.Empty;
+
             if (IsBigLittleDesign())
             {
                 var previousAffinity = ThreadAffinity.Set(cpuid[i][0].Affinity);
-                string corelabel = string.Empty;
                 if (Opcode.Cpuid(MSR_CORE_MASK_STATUS, 0, out uint eax, out uint ebx, out uint ecx, out uint edx))
                 {
                     switch (eax >> 24)
@@ -83,13 +84,10 @@ namespace OpenHardwareMonitor.Hardware.CPU
                     }
                 }
 
-                ThreadAffinity.Set(previousAffinity);
-                return corelabel;
+                ThreadAffinity.Set(previousAffinity);               
             }
-            else
-            {
-                return string.Empty;
-            }
+
+            return corelabel;
         }
 
         private string BuildCoreThreadString(int i)
