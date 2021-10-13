@@ -48,42 +48,31 @@ namespace OpenHardwareMonitor.Hardware.CPU
 
         private const uint MSR_CORE_MASK_STATUS = 0x1A;
 
-        bool IsBigLittleDesign()
+        private bool IsBigLittleDesign()
         {
-            bool isBigLittleDesign = false;
-
             // Alder Lake (10nm)
             // Raptor Lake (10nm)?
             // Zen 5 (3nm)?
-            if (vendor == Vendor.Intel && family == 0x06 && (model == 0x97 || model == 0x9A))
-                isBigLittleDesign = true;
-
-            return isBigLittleDesign;
+            return vendor == Vendor.Intel && family == 0x06 && (model == 0x97 || model == 0x9A);
         }
 
         protected string CoreString(int i)
         {
-            string coreString;
             if (coreCount == 1)
-                coreString = GetCoreLabel(i);
-            else
-                coreString = $"{GetCoreLabel(i)} #" + (i + 1);
-
-            return coreString;
+            {
+                return GetCoreLabel(i);
+            }
+            
+            return $"{GetCoreLabel(i)} #" + (i + 1);
         }
 
         // https://github.com/InstLatx64/InstLatX64_Demo/commit/e149a972655aff9c41f3eac66ad51fcfac1262b5
         protected string GetCoreLabel(int i)
         {
-            string corelabel = string.Empty;
-            if (!IsBigLittleDesign())
+            if (IsBigLittleDesign())
             {
-                corelabel = "CPU Core";
-            }
-            else
-            {
-                var previousAffinity = ThreadAffinity.Set(cpuid[i][0].Affinity);               
-
+                var previousAffinity = ThreadAffinity.Set(cpuid[i][0].Affinity);
+                string corelabel = string.Empty;
                 if (Opcode.Cpuid(MSR_CORE_MASK_STATUS, 0, out uint eax, out uint ebx, out uint ecx, out uint edx))
                 {
                     switch (eax >> 24)
@@ -95,28 +84,31 @@ namespace OpenHardwareMonitor.Hardware.CPU
                 }
 
                 ThreadAffinity.Set(previousAffinity);
+                return corelabel;
             }
-
-            return corelabel;
+            else
+            {
+                return "CPU Core";
+            }
         }
 
-        private string CoreThreadString(int i)
+        private string BuildCoreThreadString(int i)
         {
             int core = threadCoreMap[i];
             int coreThreadCount = threadCountMap[core];
 
-            string coreThreadString;
             if (coreThreadCount == 1)
-                coreThreadString = CoreString(core) + " - Thread #1";
+            {
+                return CoreString(core) + " - Thread #1";
+            }
+            else if (coreCount == 1)
+            {
+                return $"{GetCoreLabel(core)} - Thread #" + (i + 1);
+            }
             else
             {
-                if (coreCount == 1)
-                    coreThreadString = $"{GetCoreLabel(core)} - Thread #" + (i + 1);
-                else
-                    coreThreadString = $"{GetCoreLabel(core)} #" + ((i / coreThreadCount) + 1) + " - Thread #" + ((i % coreThreadCount) + 1);
+                return $"{GetCoreLabel(core)} #" + ((i / coreThreadCount) + 1) + " - Thread #" + ((i % coreThreadCount) + 1);
             }
-
-            return coreThreadString;
         }
 
         public GenericCPU(int processorIndex, CPUID[][] cpuid, ISettings settings, ISensorConfig config)
@@ -130,18 +122,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
             this.family = cpuid[0][0].Family;
             this.model = cpuid[0][0].Model;
             this.stepping = cpuid[0][0].Stepping;
-
-            int threadCount = 0;
-            for (int i = 0; i < cpuid.Length; i++)
-            {
-                threadCountMap.Add(i, cpuid[i].Length);
-
-                for (int t = 0; t < cpuid[i].Length; t++)
-                {
-                    threadCoreMap.Add(threadCount, i);
-                    threadCount++;
-                }
-            }
+            FillThreadMaps(cpuid);
 
             bool hasGlobalThreadCount = threadCountMap.Values.Distinct().Count() == 1;
 
@@ -182,7 +163,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
                 totalLoad = null;
             coreLoads = new Sensor[threadCountMap.Values.Sum()];
             for (int i = 0; i < coreLoads.Length; i++)
-                coreLoads[i] = new Sensor(CoreThreadString(i), i + 1,
+                coreLoads[i] = new Sensor(BuildCoreThreadString(i), i + 1,
                   SensorType.Load, this, settings);
             maxLoad = new Sensor("CPU Max", coreLoads.Length + 1, SensorType.Load, this, settings);
             cpuLoad = new CPULoad(cpuid);
@@ -215,6 +196,19 @@ namespace OpenHardwareMonitor.Hardware.CPU
             TimeStampCounterFrequency = estimatedTimeStampCounterFrequency;
         }
 
+        private void FillThreadMaps(CPUID[][] cpuid)
+        {
+            int threadCount = 0;
+            for (int i = 0; i < cpuid.Length; i++)
+            {
+                threadCountMap.Add(i, cpuid[i].Length);
+
+                for (int t = 0; t < cpuid[i].Length; t++)
+                {
+                    threadCoreMap.Add(threadCount++, i);
+                }
+            }
+        }
 
         private static Identifier CreateIdentifier(Vendor vendor,
           int processorIndex)
