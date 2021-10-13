@@ -568,26 +568,6 @@ namespace CapFrameX.Overlay
             {
                 name = name.Replace("Core #", "");
             }
-            else if (name.Contains("CPU P Core #"))
-            {
-                name = name.Replace("Core #", "");
-
-                if (name.Contains("CPU P"))
-                {
-                    name = name.Replace("CPU P", "");
-                    name = $"CPU{name} P";
-                }
-            }
-            else if (name.Contains("CPU E Core #"))
-            {
-                name = name.Replace("Core #", "");
-
-                if (name.Contains("CPU E"))
-                {
-                    name = name.Replace("CPU E", "");
-                    name = $"CPU{name} E";
-                }
-            }
             else if (name.Contains("CPU Max Clock"))
             {
                 name = name.Replace("CPU Max Clock", "CPU Max");
@@ -626,35 +606,11 @@ namespace CapFrameX.Overlay
             if (name.Contains(" - Thread #1"))
             {
                 name = name.Replace(" - Thread #1", "");
-
-                if (name.Contains("CPU P"))
-                {
-                    name = name.Replace("CPU P", "");
-                    name = $"CPU{name} P";
-
-                }
-                else if (name.Contains("CPU E"))
-                {
-                    name = name.Replace("CPU E", "");
-                    name = $"CPU{name} E";
-                }
             }
 
             if (name.Contains(" - Thread #2"))
             {
                 name = name.Replace(" - Thread #2", "");
-
-                if (name.Contains("CPU P"))
-                {
-                    name = name.Replace("CPU P", "");
-                    name = $"CPU{name} P";
-
-                }
-                else if (name.Contains("CPU E"))
-                {
-                    name = name.Replace("CPU E", "");
-                    name = $"CPU{name} E";
-                }
             }
 
             if (name.Contains("Monitor Refresh Rate"))

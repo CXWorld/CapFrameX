@@ -60,10 +60,10 @@ namespace OpenHardwareMonitor.Hardware.CPU
         {
             if (coreCount == 1)
             {
-                return GetCoreLabel(i);
+                return $"CPU Core{GetCoreLabel(i)}";
             }
             
-            return $"{GetCoreLabel(i)} #" + (i + 1);
+            return "CPU Core #" + (i + 1) + GetCoreLabel(i);
         }
 
         // https://github.com/InstLatx64/InstLatX64_Demo/commit/e149a972655aff9c41f3eac66ad51fcfac1262b5
@@ -77,8 +77,8 @@ namespace OpenHardwareMonitor.Hardware.CPU
                 {
                     switch (eax >> 24)
                     {
-                        case 0x20: corelabel = "CPU E Core"; break;
-                        case 0x40: corelabel = "CPU P Core"; break;
+                        case 0x20: corelabel = " E"; break;
+                        case 0x40: corelabel = " P"; break;
                         default: break;
                     }
                 }
@@ -88,7 +88,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
             }
             else
             {
-                return "CPU Core";
+                return string.Empty;
             }
         }
 
