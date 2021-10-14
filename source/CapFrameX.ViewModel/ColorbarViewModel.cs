@@ -35,7 +35,6 @@ namespace CapFrameX.ViewModel
         private readonly IRegionManager _regionManager;
         private readonly IEventAggregator _eventAggregator;
         private readonly IAppConfiguration _appConfiguration;
-        private readonly IOverlayService _overlayService;
         private readonly ILogger<ColorbarViewModel> _logger;
         private readonly IShell _shell;
         private readonly ISystemInfo _systemInfo;
@@ -415,7 +414,6 @@ namespace CapFrameX.ViewModel
             set
             {
                 _appConfiguration.HideOverlay = value;
-                _overlayService.OverlayOnAPIOnly = value;
                 RaisePropertyChanged();
             }
         }
@@ -464,7 +462,6 @@ namespace CapFrameX.ViewModel
         public ColorbarViewModel(IRegionManager regionManager,
                                  IEventAggregator eventAggregator,
                                  IAppConfiguration appConfiguration,
-                                 IOverlayService overlayService,
                                  ILogger<ColorbarViewModel> logger,
                                  IShell shell,
                                  ISystemInfo systemInfo,
@@ -476,7 +473,6 @@ namespace CapFrameX.ViewModel
             _regionManager = regionManager;
             _eventAggregator = eventAggregator;
             _appConfiguration = appConfiguration;
-            _overlayService = overlayService;
             _logger = logger;
             _shell = shell;
             _systemInfo = systemInfo;
@@ -666,7 +662,6 @@ namespace CapFrameX.ViewModel
                         td.Settings.StopIfGoingOnBatteries = false;
                         td.Principal.RunLevel = TaskRunLevel.Highest;
 
-                        
                         var trigger = new LogonTrigger();
                         trigger.UserId = Environment.UserName;
                         trigger.Delay = TimeSpan.FromSeconds(20);

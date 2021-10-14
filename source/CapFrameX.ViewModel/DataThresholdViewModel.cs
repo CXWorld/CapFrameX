@@ -65,12 +65,12 @@ namespace CapFrameX.ViewModel
             }
         }
 
-        public bool ThresholdPercentageButtonIsChecked
+        public bool ThresholdShowAbsoluteValues
         {
-            get { return _appConfiguration.AreThresholdsPercentage; }
+            get { return _appConfiguration.AreThresholdValuesAbsolute; }
             set
             {
-                _appConfiguration.AreThresholdsPercentage = value;
+                _appConfiguration.AreThresholdValuesAbsolute = value;
                 OnThresholdValuesChanged();
                 RaisePropertyChanged();
             }
@@ -170,7 +170,7 @@ namespace CapFrameX.ViewModel
                             Values = thresholdCountValues,
                             Fill = new SolidColorBrush(Color.FromRgb(34, 151, 243)),
                             DataLabels = true,
-                            LabelPoint = p => ThresholdPercentageButtonIsChecked ? (frametimes.Count* p.Y).ToString() :
+                            LabelPoint = p => ThresholdShowAbsoluteValues ? (frametimes.Count* p.Y).ToString() :
                                 (100 * p.Y).ToString("N1", CultureInfo.InvariantCulture) + "%",
                             MaxColumnWidth = 40
                         }
@@ -186,7 +186,7 @@ namespace CapFrameX.ViewModel
                             Values = thresholdTimesValues,
                             Fill = new SolidColorBrush(Color.FromRgb(34, 151, 243)),
                             DataLabels = true,
-                            LabelPoint = p => ThresholdPercentageButtonIsChecked ? ((frametimes.Sum()* p.Y) * 1E-03).ToString("N1", CultureInfo.InvariantCulture) + "s" :
+                            LabelPoint = p => ThresholdShowAbsoluteValues ? ((frametimes.Sum()* p.Y) * 1E-03).ToString("N1", CultureInfo.InvariantCulture) + "s" :
                                 (100 * p.Y).ToString("N1", CultureInfo.InvariantCulture) + "%",
                             MaxColumnWidth = 40
                         }

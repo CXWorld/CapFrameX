@@ -45,7 +45,6 @@ namespace CapFrameX.Overlay
         private int _numberOfRuns;
         private IList<IMetricAnalysis> _metricAnalysis = new List<IMetricAnalysis>();
         private ISubject<IOverlayEntry[]> _onDictionaryUpdated = new Subject<IOverlayEntry[]>();
-        private bool _overlayOnAPIOnly;
 
         public bool IsOverlayActive => _appConfiguration.IsOverlayActive;
 
@@ -63,17 +62,6 @@ namespace CapFrameX.Overlay
         public IOverlayEntry[] CurrentOverlayEntries { get; private set; } = Array.Empty<IOverlayEntry>();
 
         public Action<IOverlayEntry[]> OSDUpdateNotifier { get; set; } = (_) => { };
-
-        public bool OverlayOnAPIOnly
-        {
-            get { return _overlayOnAPIOnly; }
-            set
-            {
-                _overlayOnAPIOnly = value; 
-                if (value)
-                    _rTSSService.ReleaseOSD();
-            }
-        }
 
 
         public OverlayService(IStatisticProvider statisticProvider,
@@ -102,12 +90,21 @@ namespace CapFrameX.Overlay
             _numberOfRuns = _appConfiguration.SelectedHistoryRuns;
             SecondMetric = _appConfiguration.RunHistorySecondMetric;
             ThirdMetric = _appConfiguration.RunHistoryThirdMetric;
-            OverlayOnAPIOnly = _appConfiguration.HideOverlay;
             IsOverlayActiveStream = new BehaviorSubject<bool>(_appConfiguration.IsOverlayActive);
             _runHistoryOutlierFlags = Enumerable.Repeat(false, _numberOfRuns).ToArray();
 
             _logger.LogDebug("{componentName} Ready", this.GetType().Name);
 
+            var overlayOnAPIOnly = _appConfiguration.HideOverlay;
+            _appConfiguration.OnValueChanged
+                .Where(x => x.key == nameof(IAppConfiguration.HideOverlay))
+                .Select(x => (bool)x.value)
+                .Subscribe(hideOSD =>
+                {
+                    overlayOnAPIOnly = hideOSD;
+                    if (hideOSD) 
+                        _rTSSService.ReleaseOSD();
+                });
 
             Task.Run(async () => await InitializeOverlayEntryDict())
                 .ContinueWith(t =>
@@ -136,7 +133,7 @@ namespace CapFrameX.Overlay
                            CurrentOverlayEntries = entries;
                            OSDUpdateNotifier(entries);
 
-                           if(!_overlayOnAPIOnly)
+                           if(!overlayOnAPIOnly)
                            { 
                                 _rTSSService.SetOverlayEntries(entries);
                                 await _rTSSService.CheckRTSSRunningAndRefresh();

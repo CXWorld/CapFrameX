@@ -2,6 +2,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using System.Runtime.CompilerServices;
 
 namespace CapFrameX.Configuration
@@ -9,6 +11,8 @@ namespace CapFrameX.Configuration
     public class CapFrameXConfiguration : IAppConfiguration
     {
         private readonly ISettingsStorage _settingsStorage;
+        private readonly ISubject<(string key, object value)> _onValueChanged = new Subject<(string key, object value)>();
+        public IObservable<(string key, object value)> OnValueChanged => _onValueChanged.AsObservable();
 
         // Directories
         public string ObservedDirectory
@@ -372,7 +376,7 @@ namespace CapFrameX.Configuration
             set => Set(value);
         }
 
-        public bool AreThresholdsPercentage
+        public bool AreThresholdValuesAbsolute
         {
             get => Get<bool>(false);
             set => Set(value);
@@ -654,6 +658,7 @@ namespace CapFrameX.Configuration
                 throw new ArgumentException(key);
             }
             _settingsStorage.SetValue(key, value);
+            _onValueChanged.OnNext((key, value));
         }
 
         public CapFrameXConfiguration(ISettingsStorage settingsStorage)

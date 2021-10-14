@@ -408,11 +408,11 @@ namespace CapFrameX.ViewModel
             SetFrameDisplayTimesChart(frametimes, displayTimes);
             SetFrameInputLagChart(frametimes, upperBoundInputLagTimes, lowerBoundInputLagTimes);
             Task.Factory.StartNew(() => SetDisplayTimesHistogramChart(displayTimes));
-            Task.Factory.StartNew(() => SetInputLagHistogramChart(inputLagTimes.Where(t => !t.Equals(double.NaN)).ToList()));
+            Task.Factory.StartNew(() => SetInputLagHistogramChart(inputLagTimes.Where(t => !double.IsNaN(t)).ToList()));
             Task.Factory.StartNew(() => SetInputLagStatisticChart(
-                inputLagTimes.Where(t => !t.Equals(double.NaN)).ToList(), 
-                upperBoundInputLagTimes.Where(t => !t.Equals(double.NaN)).ToList(), 
-                lowerBoundInputLagTimes.Where(t => !t.Equals(double.NaN)).ToList())
+                inputLagTimes.Where(t => !double.IsNaN(t)).ToList(),
+                upperBoundInputLagTimes.Where(t => !double.IsNaN(t)).ToList(), 
+                lowerBoundInputLagTimes.Where(t => !double.IsNaN(t)).ToList())
             );
             Task.Factory.StartNew(() => SetDroppedFramesChart(appMissed));
         }
@@ -686,7 +686,9 @@ namespace CapFrameX.ViewModel
         {
             if (frametimes.IsNullOrEmpty() ||
                 upperBoundInputlagtimes.IsNullOrEmpty() ||
-                lowerBoundInputlagtimes.IsNullOrEmpty())
+                lowerBoundInputlagtimes.IsNullOrEmpty() ||
+                upperBoundInputlagtimes.All(t => double.IsNaN(t)) ||
+                lowerBoundInputlagtimes.All(t => double.IsNaN(t)))
             {
 
                 InputLagModel = new PlotModel

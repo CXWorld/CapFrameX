@@ -5,7 +5,25 @@ using System.Windows.Forms;
 namespace CapFrameX.Contracts.Configuration
 {
 	public interface IAppConfiguration : IFrametimeStatisticProviderOptions
-	{
+    {
+		/// <summary>
+		/// Emits an events when a configuration entry has been changes
+		/// </summary>
+		// Example code to add in constructor
+		/*
+            _appConfiguration.OnValueChanged
+                .Where(x => x.key == nameof(IAppConfiguration.*key*))
+                .Select(x => (*type*)x.value)
+                .Subscribe(value =>
+                {
+                    do stuff();
+
+                });
+		*/
+		IObservable<(string key, object value)> OnValueChanged { get; }
+
+
+
 		double StutteringFactor { get; set; }
 
 		double StutteringThreshold { get; set; }
@@ -125,7 +143,9 @@ namespace CapFrameX.Contracts.Configuration
 		int OutlierPercentageOverlay { get; set; }
 
 		string RelatedMetricOverlay { get; set; }
-
+		/// <summary>
+		/// Set to disable RTSS output but keeping the overlay service up and running to pull values via webservice
+		/// </summary>
 		bool HideOverlay { get; set; }
 
 		int InputLagOffset { get; set; }
@@ -147,8 +167,10 @@ namespace CapFrameX.Contracts.Configuration
 		bool AutoUpdateProcessList { get; set; }
 
 		bool UseSensorLogging { get; set; }
-		
-		bool AreThresholdsPercentage { get; set; }
+		/// <summary>
+		/// Toggle between absolute and percentage values for threshold bar charts
+		/// </summary>
+		bool AreThresholdValuesAbsolute { get; set; }
 
 		int OverlayEntryConfigurationFile { get; set; }
 
@@ -193,7 +215,9 @@ namespace CapFrameX.Contracts.Configuration
 		bool RecordListShowRamName { get; set; }
 
 		int[] RecordListHeaderOrder { get; set; }
-
+		/// <summary>
+		/// Time, when the app notification was last closed. When older than the timestamp of current squidex notification, a notification is shown again.
+		/// </summary>
 		DateTime LastAppNotificationTimestamp { get; set; }
 
 		bool AppNotificationsActive { get; set; }
