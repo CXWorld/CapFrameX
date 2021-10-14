@@ -398,9 +398,9 @@ namespace CapFrameX.ViewModel
                 return;
 
             // Do not run on background thread, leads to errors on analysis page
-            var inputLagTimes = _session.GetApproxInputLagTimes().Select(val => val += InputLagOffset).ToList();
-            var upperBoundInputLagTimes = _session.GetUpperBoundInputLagTimes().Select(val => val += InputLagOffset).ToList();
-            var lowerBoundInputLagTimes = _session.GetLowerBoundInputLagTimes().Select(val => val += InputLagOffset).ToList();
+            var inputLagTimes = _session.CalculateInputLagTimes(EInputLagType.Expected).Select(val => val += InputLagOffset).ToList();
+            var upperBoundInputLagTimes = _session.CalculateInputLagTimes(EInputLagType.UpperBound).Select(val => val += InputLagOffset).ToList();
+            var lowerBoundInputLagTimes = _session.CalculateInputLagTimes(EInputLagType.LowerBound).Select(val => val += InputLagOffset).ToList();
             var frametimes = _session.Runs.SelectMany(r => r.CaptureData.MsBetweenPresents).ToList();
             var displayTimes = _session.Runs.SelectMany(r => r.CaptureData.MsUntilDisplayed).ToList();
             var appMissed = _session.Runs.SelectMany(r => r.CaptureData.Dropped).ToList();
@@ -408,8 +408,12 @@ namespace CapFrameX.ViewModel
             SetFrameDisplayTimesChart(frametimes, displayTimes);
             SetFrameInputLagChart(frametimes, upperBoundInputLagTimes, lowerBoundInputLagTimes);
             Task.Factory.StartNew(() => SetDisplayTimesHistogramChart(displayTimes));
-            Task.Factory.StartNew(() => SetInputLagHistogramChart(inputLagTimes));
-            Task.Factory.StartNew(() => SetInputLagStatisticChart(inputLagTimes, upperBoundInputLagTimes, lowerBoundInputLagTimes));
+            Task.Factory.StartNew(() => SetInputLagHistogramChart(inputLagTimes.Where(t => !t.Equals(double.NaN)).ToList()));
+            Task.Factory.StartNew(() => SetInputLagStatisticChart(
+                inputLagTimes.Where(t => !t.Equals(double.NaN)).ToList(), 
+                upperBoundInputLagTimes.Where(t => !t.Equals(double.NaN)).ToList(), 
+                lowerBoundInputLagTimes.Where(t => !t.Equals(double.NaN)).ToList())
+            );
             Task.Factory.StartNew(() => SetDroppedFramesChart(appMissed));
         }
 

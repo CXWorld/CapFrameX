@@ -56,55 +56,37 @@ namespace CapFrameX.Statistics.NetStandard
         /// Formular: LatencyMs =~ MsBetweenPresents + MsUntilDisplayed - previous(MsInPresentAPI)
         /// </summary>
         /// <returns></returns>
-        public static IList<double> GetApproxInputLagTimes(this ISession session)
-        {
-            var frameTimes = session.Runs.SelectMany(r => r.CaptureData.MsBetweenPresents).ToArray();
-            var appMissed = session.Runs.SelectMany(r => r.CaptureData.Dropped).ToArray();
-            var untilDisplayedTimes = session.Runs.SelectMany(r => r.CaptureData.MsUntilDisplayed).ToArray();
-            var inPresentAPITimes = session.Runs.SelectMany(r => r.CaptureData.MsInPresentAPI).ToArray();
-            var inputLagTimes = new List<double>(frameTimes.Count() - 1);
 
-            for (int i = 2; i < frameTimes.Count(); i++)
+        public static IList<double> CalculateInputLagTimes( this ISession session, EInputLagType type)
+        {
+            var inputLagTimes = new List<double>();
+
+            foreach (var run in session.Runs)
             {
-                if (!appMissed[i])
-                    inputLagTimes.Add(frameTimes[i] + untilDisplayedTimes[i] + (0.5 * frameTimes[i - 1]) - (0.5 * inPresentAPITimes[i - 1]) - (0.5 * inPresentAPITimes[i - 2]));
+                var frameTimes = run.CaptureData.MsBetweenPresents.ToArray();
+                var appMissed = run.CaptureData.Dropped.ToArray();
+                var untilDisplayedTimes = run.CaptureData.MsUntilDisplayed.ToArray();
+                var inPresentAPITimes = run.CaptureData.MsInPresentAPI.ToArray();
+                var currentRunInputLagTimes = new List<double>();
+
+                currentRunInputLagTimes.AddRange(Enumerable.Repeat(double.NaN, 2));
+                for (int i = 2; i < frameTimes.Count(); i++)
+                {
+                    if (!appMissed[i]) 
+                    {
+                        if (type == EInputLagType.Expected)
+                            currentRunInputLagTimes.Add(frameTimes[i] + untilDisplayedTimes[i] + (0.5 * frameTimes[i - 1]) - (0.5 * inPresentAPITimes[i - 1]) - (0.5 * inPresentAPITimes[i - 2]));
+                        else if (type == EInputLagType.UpperBound)
+                            currentRunInputLagTimes.Add(frameTimes[i] + untilDisplayedTimes[i] + frameTimes[i - 1] - inPresentAPITimes[i - 2]);
+                        else if (type == EInputLagType.LowerBound)
+                            currentRunInputLagTimes.Add(frameTimes[i] + untilDisplayedTimes[i] - inPresentAPITimes[i - 1]);
+                    }
+                }
+
+                inputLagTimes.AddRange(currentRunInputLagTimes);
             }
 
             return inputLagTimes;
-        }
-
-        public static IList<double> GetUpperBoundInputLagTimes(this ISession session)
-        {
-            var frameTimes = session.Runs.SelectMany(r => r.CaptureData.MsBetweenPresents).ToArray();
-            var appMissed = session.Runs.SelectMany(r => r.CaptureData.Dropped).ToArray();
-            var untilDisplayedTimes = session.Runs.SelectMany(r => r.CaptureData.MsUntilDisplayed).ToArray();
-            var inPresentAPITimes = session.Runs.SelectMany(r => r.CaptureData.MsInPresentAPI).ToArray();
-            var upperBoundInputLagTimes = new List<double>(frameTimes.Count() - 1);
-
-            for (int i = 2; i < frameTimes.Count(); i++)
-            {
-                if (!appMissed[i])
-                    upperBoundInputLagTimes.Add(frameTimes[i] + untilDisplayedTimes[i] + frameTimes[i - 1] - inPresentAPITimes[i - 2]);
-            }
-
-                return upperBoundInputLagTimes;
-        }
-
-        public static IList<double> GetLowerBoundInputLagTimes(this ISession session)
-        {
-            var frameTimes = session.Runs.SelectMany(r => r.CaptureData.MsBetweenPresents).ToArray();
-            var appMissed = session.Runs.SelectMany(r => r.CaptureData.Dropped).ToArray();
-            var untilDisplayedTimes = session.Runs.SelectMany(r => r.CaptureData.MsUntilDisplayed).ToArray();
-            var inPresentAPITimes = session.Runs.SelectMany(r => r.CaptureData.MsInPresentAPI).ToArray();
-            var lowerBoundInputLagTimes = new List<double>(frameTimes.Count() - 1);
-
-            for (int i = 2; i < frameTimes.Count(); i++)
-            {
-                if (!appMissed[i])
-                    lowerBoundInputLagTimes.Add(frameTimes[i] + untilDisplayedTimes[i] - inPresentAPITimes[i - 1]);
-            }
-
-            return lowerBoundInputLagTimes;
         }
 
         public static double GetSyncRangePercentage(this ISession session, int syncRangeLower, int syncRangeUpper)

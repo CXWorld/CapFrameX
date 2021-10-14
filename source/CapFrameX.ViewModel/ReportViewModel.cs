@@ -260,7 +260,7 @@ namespace CapFrameX.ViewModel
                     _frametimeStatisticProvider.GetFpsMetricValue(sequence, metric);
             var frameTimes = session.Runs.SelectMany(r => r.CaptureData.MsBetweenPresents).ToList();
             var recordTime = session.Runs.SelectMany(r => r.CaptureData.TimeInSeconds).Last();
-            var inputLagTimes = session.GetApproxInputLagTimes();
+            var inputLagTimes = session.CalculateInputLagTimes(EInputLagType.Expected);
 
             var max = GeMetricValue(frameTimes, EMetric.Max);
             var p99_quantile = GeMetricValue(frameTimes, EMetric.P99);
