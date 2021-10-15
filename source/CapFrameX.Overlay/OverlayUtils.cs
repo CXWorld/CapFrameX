@@ -9,22 +9,6 @@ namespace CapFrameX.Overlay
         {
             return new List<OverlayEntryWrapper>
                 {
-
-                	// CX 
-					// System time
-                    new OverlayEntryWrapper("SystemTime")
-                    {
-                        OverlayEntryType = EOverlayEntryType.CX,
-                        ShowOnOverlay = false,
-                        ShowOnOverlayIsEnabled = true,
-                        Description = "System time",
-                        GroupName = "Time",
-                        Value = "Time",
-                        ValueFormat = default,
-                        ShowGraph = false,
-                        ShowGraphIsEnabled = false,
-                        Color = string.Empty
-                    },
 					// CX 
 					// CaptureServiceStatus
 					new OverlayEntryWrapper("CaptureServiceStatus")
@@ -50,6 +34,21 @@ namespace CapFrameX.Overlay
                         Description = "Capture timer",
                         GroupName = "Status:",
                         Value = "0",
+                        ValueFormat = default,
+                        ShowGraph = false,
+                        ShowGraphIsEnabled = false,
+                        Color = string.Empty
+                    },
+                    // CX 
+					// System time
+                    new OverlayEntryWrapper("SystemTime")
+                    {
+                        OverlayEntryType = EOverlayEntryType.CX,
+                        ShowOnOverlay = false,
+                        ShowOnOverlayIsEnabled = true,
+                        Description = "System time",
+                        GroupName = "Time",
+                        Value = "Time",
                         ValueFormat = default,
                         ShowGraph = false,
                         ShowGraphIsEnabled = false,

@@ -270,6 +270,14 @@ namespace CapFrameX.Overlay
                     else
                         _overlayEntryCore.RealtimeMetricEntryDict["OnlineApplicationLatency"] = entry;
                 }
+
+                if (entry.Identifier == "SystemTime")
+                {
+                    if (!_overlayEntryCore.RealtimeMetricEntryDict.ContainsKey("SystemTime"))
+                        _overlayEntryCore.RealtimeMetricEntryDict.Add("SystemTime", entry);
+                    else
+                        _overlayEntryCore.RealtimeMetricEntryDict["SystemTime"] = entry;
+                }
             }
 
             CheckCustomSystemInfo();
