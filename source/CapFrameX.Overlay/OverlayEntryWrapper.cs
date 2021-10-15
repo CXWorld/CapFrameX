@@ -453,6 +453,7 @@ namespace CapFrameX.Overlay
             return Identifier == "RunHistory" ? "2297F3"
                 : Identifier == "CaptureServiceStatus" ? "2297F3"
                 : Identifier == "CaptureTimer" ? "F17D20"
+                : Identifier == "SystemTime" ? "2297F3"
                 : Identifier == "Framerate" ? "AEEA00"
                 : Identifier == "Frametime" ? "AEEA00"
                 // all other items

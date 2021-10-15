@@ -252,6 +252,7 @@ namespace CapFrameX.Overlay
             }
         }
 
+
         public void ResetHistory()
         {
             _runHistory = Enumerable.Repeat("N/A", _numberOfRuns).ToList();

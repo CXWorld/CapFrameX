@@ -148,6 +148,8 @@ namespace CapFrameX.Contracts.Configuration
 		/// </summary>
 		bool HideOverlay { get; set; }
 
+		bool ShowSystemTimeSeconds { get; set; }
+
 		int InputLagOffset { get; set; }
 
 		string SecondMetricAggregation { get; set; }

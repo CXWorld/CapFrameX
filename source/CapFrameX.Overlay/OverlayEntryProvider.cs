@@ -49,6 +49,7 @@ namespace CapFrameX.Overlay
         private BlockingCollection<IOverlayEntry> _overlayEntries;
 
         public bool HasHardwareChanged { get; set; }
+        public bool ShowSystemTimeSeconds { get; set; }
 
         public OverlayEntryProvider(ISensorService sensorService,
             IAppConfiguration appConfiguration,
@@ -74,6 +75,12 @@ namespace CapFrameX.Overlay
                 .ContinueWith(task => _taskCompletionSource.SetResult(true));
 
             SubscribeToOptionPopupClosed();
+
+            ShowSystemTimeSeconds = _appConfiguration.ShowSystemTimeSeconds;
+            _appConfiguration.OnValueChanged
+            .Where(x => x.key == nameof(IAppConfiguration.ShowSystemTimeSeconds))
+            .Select(x => x.value)
+            .Subscribe(value => ShowSystemTimeSeconds = (bool)value);
 
             _logger.LogDebug("{componentName} Ready", this.GetType().Name);
 
@@ -531,6 +538,9 @@ namespace CapFrameX.Overlay
                         break;
                     case EOverlayEntryType.CX when entry.Identifier == "Frametime":
                         entry.Value = currentFramerate.Item2;
+                        break;
+                    case EOverlayEntryType.CX when entry.Identifier == "SystemTime":
+                        entry.Value = ShowSystemTimeSeconds ? DateTime.Now.ToString("HH:mm:ss") : DateTime.Now.ToString("HH:mm");
                         break;
                     default:
                         break;

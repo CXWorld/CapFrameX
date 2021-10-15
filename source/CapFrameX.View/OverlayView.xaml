@@ -747,6 +747,11 @@
                                          Text="{Binding SelectedOverlayEntry.ValueFontSize, UpdateSourceTrigger=LostFocus}">
                             </TextBox>
                             <Label Grid.Row="2" Grid.Column="2" VerticalAlignment="Center" Content="%"/>
+                            <StackPanel Grid.Row="3" Grid.ColumnSpan="3" VerticalAlignment="Center" Orientation="Horizontal"
+                                        Visibility="{Binding ShowSystemTimeSecondsOption, Converter={StaticResource TrueToVisibleConverter}}">
+                                <TextBlock Text="Show seconds"/>
+                                <CheckBox Margin="65 -2 0 0"  IsChecked="{Binding EnableSystemTimeSeconds, Mode=TwoWay}"/>
+                            </StackPanel>
                         </Grid>
                     </StackPanel>
                 </Border>

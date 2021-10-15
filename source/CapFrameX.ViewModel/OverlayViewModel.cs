@@ -192,6 +192,7 @@ namespace CapFrameX.ViewModel
                 RaisePropertyChanged(nameof(SelectedOverlayItemName));
                 RaisePropertyChanged(nameof(SelectedOverlayItemGroupName));
                 RaisePropertyChanged(nameof(SelectedOverlayItemSensorType));
+                RaisePropertyChanged(nameof(ShowSystemTimeSecondsOption));
             }
         }
 
@@ -327,6 +328,20 @@ namespace CapFrameX.ViewModel
                 RaisePropertyChanged();
             }
         }
+
+        public bool EnableSystemTimeSeconds
+        {
+            get { return _appConfiguration.ShowSystemTimeSeconds; }
+            set
+            {
+                _appConfiguration.ShowSystemTimeSeconds = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public bool ShowSystemTimeSecondsOption 
+            => SelectedOverlayEntryIndex > -1 ? 
+            (OverlayEntries[SelectedOverlayEntryIndex].Description == "System time" ? true : false) : false;
 
         public string SelectedOverlayItemName
             => SelectedOverlayEntryIndex > -1 ?
