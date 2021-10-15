@@ -445,11 +445,12 @@
                                                             <RowDefinition Height="30" />
                                                             <RowDefinition Height="30" />
                                                             <RowDefinition Height="30" />
+                                                            <RowDefinition Height="30" />
                                                             <RowDefinition Height="Auto" />
                                                         </Grid.RowDefinitions>
                                                         <Grid.ColumnDefinitions>
-                                                            <ColumnDefinition Width="110"/>
-                                                            <ColumnDefinition Width="85"/>
+                                                            <ColumnDefinition Width="130"/>
+                                                            <ColumnDefinition Width="65"/>
                                                         </Grid.ColumnDefinitions>
 
                                                         <TextBlock Margin="5" Grid.Row="0" Grid.Column="0" Text="CX overlay toggle" VerticalAlignment="Center"/>
@@ -482,8 +483,11 @@
                                                             </CheckBox.ToolTip>
                                                         </CheckBox>
 
-                                                        <TextBlock Margin="5" Grid.Row="2" Grid.Column="0" Text="Custom position" VerticalAlignment="Center"/>
-                                                        <CheckBox Margin="5 0 0 0" Grid.Row="2" Grid.Column="1" HorizontalAlignment="Center" IsChecked="{Binding OSDCustomPosition, Mode=TwoWay}" Style="{StaticResource MaterialDesignCheckBox}" ToolTipService.ShowDuration="25000">
+                                                        <TextBlock Margin="5" Grid.Row="2" Grid.Column="0" Text="System time seconds" VerticalAlignment="Center"/>
+                                                        <CheckBox Margin="5 0 0 0" Grid.Row="2" Grid.Column="1" HorizontalAlignment="Center"  IsChecked="{Binding ShowSystemTimeSeconds, Mode=TwoWay}" Style="{StaticResource MaterialDesignCheckBox}" ToolTip="Show seconds for the system time overlay entry"/>
+                                                        
+                                                        <TextBlock Margin="5" Grid.Row="3" Grid.Column="0" Text="Custom position" VerticalAlignment="Center"/>
+                                                        <CheckBox Margin="5 0 0 0" Grid.Row="3" Grid.Column="1" HorizontalAlignment="Center" IsChecked="{Binding OSDCustomPosition, Mode=TwoWay}" Style="{StaticResource MaterialDesignCheckBox}" ToolTipService.ShowDuration="25000">
                                                             <CheckBox.ToolTip>
                                                                 <ToolTip>
                                                                     <TextBlock Width="275" Text="Adds options to manually set the position of the CX overlay items (not of the global OSD)" TextWrapping="Wrap">
@@ -492,8 +496,8 @@
                                                             </CheckBox.ToolTip>
                                                         </CheckBox>
 
-                                                        <TextBlock Grid.Row="3" Grid.Column="0" Margin="5 0 0 0" VerticalAlignment="Center" Text="CX overlay position" Visibility="{Binding OSDCustomPosition, Converter={StaticResource TrueToVisibleConverter}}"></TextBlock>
-                                                        <StackPanel Grid.Row="3" Grid.Column="1" Margin="8 0 0 0" Orientation="Horizontal" ToolTip="Changes position of the CX overlay items (not of the global OSD)" Visibility="{Binding OSDCustomPosition, Converter={StaticResource TrueToVisibleConverter}}">
+                                                        <TextBlock Grid.Row="4" Grid.Column="0" Margin="5 0 0 0" VerticalAlignment="Center" Text="CX overlay position" Visibility="{Binding OSDCustomPosition, Converter={StaticResource TrueToVisibleConverter}}"></TextBlock>
+                                                        <StackPanel Grid.Row="4" Grid.Column="1" Margin="8 0 0 0" Orientation="Horizontal" ToolTip="Changes position of the CX overlay items (not of the global OSD)" Visibility="{Binding OSDCustomPosition, Converter={StaticResource TrueToVisibleConverter}}">
                                                             <TextBox Width="30" Height="25" Text="{Binding OSDPositionX, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" HorizontalContentAlignment="Center" PreviewTextInput="IntegerNumberValidationTextBox"></TextBox>
                                                             <TextBlock VerticalAlignment="Center" Margin="5 0 5 0" Text="x"></TextBlock>
                                                             <TextBox Width="30" Height="25" Text="{Binding OSDPositionY, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" HorizontalContentAlignment="Center" PreviewTextInput="IntegerNumberValidationTextBox"></TextBox>
@@ -747,11 +751,6 @@
                                          Text="{Binding SelectedOverlayEntry.ValueFontSize, UpdateSourceTrigger=LostFocus}">
                             </TextBox>
                             <Label Grid.Row="2" Grid.Column="2" VerticalAlignment="Center" Content="%"/>
-                            <StackPanel Grid.Row="3" Grid.ColumnSpan="3" VerticalAlignment="Center" Orientation="Horizontal"
-                                        Visibility="{Binding ShowSystemTimeSecondsOption, Converter={StaticResource TrueToVisibleConverter}}">
-                                <TextBlock Text="Show seconds"/>
-                                <CheckBox Margin="65 -2 0 0"  IsChecked="{Binding EnableSystemTimeSeconds, Mode=TwoWay}"/>
-                            </StackPanel>
                         </Grid>
                     </StackPanel>
                 </Border>
