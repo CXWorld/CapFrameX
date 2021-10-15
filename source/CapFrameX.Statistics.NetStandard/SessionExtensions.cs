@@ -75,11 +75,11 @@ namespace CapFrameX.Statistics.NetStandard
                     if (!appMissed[i]) 
                     {
                         if (type == EInputLagType.Expected)
-                            currentRunInputLagTimes.Add(frameTimes[i] + untilDisplayedTimes[i] + (0.5 * frameTimes[i - 1]) - (0.5 * inPresentAPITimes[i - 1]) - (0.5 * inPresentAPITimes[i - 2]));
+                            currentRunInputLagTimes.Add(0.5 * frameTimes[i] + untilDisplayedTimes[i] + (0.5 * frameTimes[i - 1]) - (0.5 * inPresentAPITimes[i - 2]));
                         else if (type == EInputLagType.UpperBound)
                             currentRunInputLagTimes.Add(frameTimes[i] + untilDisplayedTimes[i] + frameTimes[i - 1] - inPresentAPITimes[i - 2]);
                         else if (type == EInputLagType.LowerBound)
-                            currentRunInputLagTimes.Add(frameTimes[i] + untilDisplayedTimes[i] - inPresentAPITimes[i - 1]);
+                            currentRunInputLagTimes.Add(untilDisplayedTimes[i]);
                     }
                 }
 
