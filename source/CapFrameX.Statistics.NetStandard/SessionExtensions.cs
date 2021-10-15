@@ -69,17 +69,34 @@ namespace CapFrameX.Statistics.NetStandard
                 var inPresentAPITimes = run.CaptureData.MsInPresentAPI.ToArray();
                 var currentRunInputLagTimes = new List<double>();
 
-                currentRunInputLagTimes.AddRange(Enumerable.Repeat(double.NaN, 2));
-                for (int i = 2; i < frameTimes.Count(); i++)
+                var count = frameTimes.Count();
+                var prevDisplayedFrameInputLagTime = double.NaN;
+                var i = 0;
+                while (i < count)
                 {
-                    if (!appMissed[i]) 
+                    var droppedFramesInputLagTime = 0.0;
+                    while (i < count && appMissed[i])
                     {
+                        droppedFramesInputLagTime += frameTimes[i];
+                        ++i;
+                    }
+
+                    if (i < count)
+                    {
+                        var displayedFrameInputLagTime = frameTimes[i] + untilDisplayedTimes[i];
+
+                        var upperBoundInputLagTime = prevDisplayedFrameInputLagTime + droppedFramesInputLagTime + displayedFrameInputLagTime;
+                        var lowerBoundInputLagTime = untilDisplayedTimes[i];
+
                         if (type == EInputLagType.Expected)
-                            currentRunInputLagTimes.Add(0.5 * frameTimes[i] + untilDisplayedTimes[i] + (0.5 * frameTimes[i - 1]) - (0.5 * inPresentAPITimes[i - 2]));
+                            currentRunInputLagTimes.Add(0.5 * (lowerBoundInputLagTime + upperBoundInputLagTime));
                         else if (type == EInputLagType.UpperBound)
-                            currentRunInputLagTimes.Add(frameTimes[i] + untilDisplayedTimes[i] + frameTimes[i - 1] - inPresentAPITimes[i - 2]);
+                            currentRunInputLagTimes.Add(upperBoundInputLagTime);
                         else if (type == EInputLagType.LowerBound)
-                            currentRunInputLagTimes.Add(untilDisplayedTimes[i]);
+                            currentRunInputLagTimes.Add(lowerBoundInputLagTime);
+
+                        prevDisplayedFrameInputLagTime = i > 0 ? frameTimes[i] - inPresentAPITimes[i - 1] : double.NaN;
+                        ++i;
                     }
                 }
 
