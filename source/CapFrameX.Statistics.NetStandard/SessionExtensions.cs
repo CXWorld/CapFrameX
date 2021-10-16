@@ -86,7 +86,7 @@ namespace CapFrameX.Statistics.NetStandard
                         var displayedFrameInputLagTime = frameTimes[i] + untilDisplayedTimes[i];
 
                         var upperBoundInputLagTime = prevDisplayedFrameInputLagTime + droppedFramesInputLagTime + displayedFrameInputLagTime;
-                        var lowerBoundInputLagTime = untilDisplayedTimes[i];
+                        var lowerBoundInputLagTime = double.IsNaN(upperBoundInputLagTime) ? double.NaN : untilDisplayedTimes[i];
 
                         if (type == EInputLagType.Expected)
                             currentRunInputLagTimes.Add(0.5 * (lowerBoundInputLagTime + upperBoundInputLagTime));
