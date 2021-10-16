@@ -46,7 +46,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
         private readonly Sensor maxLoad;
         private readonly Sensor[] coreLoads;
 
-        private const uint MSR_CORE_MASK_STATUS = 0x1A;
+        private const uint CPUID_CORE_MASK_STATUS = 0x1A;
 
         private bool IsBigLittleDesign()
         {
