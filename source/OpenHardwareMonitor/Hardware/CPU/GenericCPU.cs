@@ -74,7 +74,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
             if (IsBigLittleDesign())
             {
                 var previousAffinity = ThreadAffinity.Set(cpuid[i][0].Affinity);
-                if (Opcode.Cpuid(MSR_CORE_MASK_STATUS, 0, out uint eax, out uint ebx, out uint ecx, out uint edx))
+                if (Opcode.Cpuid(CPUID_CORE_MASK_STATUS, 0, out uint eax, out uint ebx, out uint ecx, out uint edx))
                 {
                     switch (eax >> 24)
                     {
