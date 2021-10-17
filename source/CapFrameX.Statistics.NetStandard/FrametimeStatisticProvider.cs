@@ -6,6 +6,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using CapFrameX.Extensions.NetStandard;
+using CapFrameX.Data.Session.Contracts;
 
 namespace CapFrameX.Statistics.NetStandard
 {
@@ -48,7 +49,7 @@ namespace CapFrameX.Statistics.NetStandard
             var average = sequence.Average();
             var stutteringTime = sequence.Where(element => element > stutteringFactor * average).Sum();
 
-            
+
             return 100 * stutteringTime / sequence.Sum();
         }
 
@@ -426,10 +427,10 @@ namespace CapFrameX.Statistics.NetStandard
             return times;
         }
 
-        public IList<double> GetFrametimeVariancePercentages(IList<double> frametimes)
+        public IList<double> GetFrametimeVariancePercentages(ISession session)
         {
 
-            if (!frametimes.Any())
+            if (!session.Runs.Any())
                 return new List<double>();
 
 
@@ -441,33 +442,39 @@ namespace CapFrameX.Statistics.NetStandard
             int thresholdOver12Count = 0;
 
             // Get frametime variances
-            for (int i = 1; i < frametimes.Count(); i++)
+            double varianceCount = 0.0;
+            foreach (var run in session.Runs)
             {
-                double variance = Math.Abs(frametimes[i] - frametimes[i - 1]);
+                var frametimes = run.CaptureData.MsBetweenPresents.ToArray();
+                for (int i = 1; i < frametimes.Count(); i++)
+                {
+                    double variance = Math.Abs(frametimes[i] - frametimes[i - 1]);
 
-                if (variance < 2)
-                    threshold2Count++;
-                else if (variance < 4)
-                    threshold4Count++;
-                else if (variance < 8)
-                    threshold8Count++;
-                else if (variance < 12)
-                    threshold12Count++;
-                else
-                    thresholdOver12Count++;
+                    if (variance < 2)
+                        threshold2Count++;
+                    else if (variance < 4)
+                        threshold4Count++;
+                    else if (variance < 8)
+                        threshold8Count++;
+                    else if (variance < 12)
+                        threshold12Count++;
+                    else
+                        thresholdOver12Count++;
+
+                    varianceCount++;
+                }
             }
 
 
             // Add percentage of variance bins to List
-            IList<double> variancePercentages = new List<double>();
-
-            double varianceCount = frametimes.Count() - 1;
-
-            variancePercentages.Add(Math.Round(threshold2Count  / varianceCount, 4));
-            variancePercentages.Add(Math.Round(threshold4Count / varianceCount, 4));
-            variancePercentages.Add(Math.Round(threshold8Count  / varianceCount, 4));
-            variancePercentages.Add(Math.Round(threshold12Count / varianceCount, 4));
-            variancePercentages.Add(Math.Round(thresholdOver12Count  / varianceCount, 4));
+            IList<double> variancePercentages = new List<double>
+            {
+                Math.Round(threshold2Count / varianceCount, 4),
+                Math.Round(threshold4Count / varianceCount, 4),
+                Math.Round(threshold8Count / varianceCount, 4),
+                Math.Round(threshold12Count / varianceCount, 4),
+                Math.Round(thresholdOver12Count / varianceCount, 4)
+            };
 
             return variancePercentages;
         }

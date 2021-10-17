@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using CapFrameX.Data.Session.Contracts;
+using System.Collections.Generic;
 
 namespace CapFrameX.Statistics.NetStandard.Contracts
 {
@@ -34,6 +35,6 @@ namespace CapFrameX.Statistics.NetStandard.Contracts
 
         IList<double> GetFpsThresholdTimes(IList<double> frametimes, bool isReversed);
 
-        IList<double> GetFrametimeVariancePercentages(IList<double> frametimes);
+        IList<double> GetFrametimeVariancePercentages(ISession session);
     }
 }

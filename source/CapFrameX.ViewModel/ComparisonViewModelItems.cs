@@ -59,7 +59,7 @@ namespace CapFrameX.ViewModel
             var frametimeTimeWindow = wrappedComparisonRecordInfo.WrappedRecordInfo.Session.GetFrametimeTimeWindow(startTime, endTime, _appConfiguration, ERemoveOutlierMethod.None);
             double GeMetricValue(IList<double> sequence, EMetric metric) =>
                     _frametimeStatisticProvider.GetFpsMetricValue(sequence, metric);
-            var variances = _frametimeStatisticProvider.GetFrametimeVariancePercentages(frametimeTimeWindow);
+            var variances = _frametimeStatisticProvider.GetFrametimeVariancePercentages(wrappedComparisonRecordInfo.WrappedRecordInfo.Session);
 
             if (SelectedFirstMetric == EMetric.CpuFpsPerWatt)
             {

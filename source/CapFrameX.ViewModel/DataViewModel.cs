@@ -924,7 +924,7 @@ namespace CapFrameX.ViewModel
 
                 Task.Factory.StartNew(() => SetStaticChart(subset));
                 Task.Factory.StartNew(() => SetStutteringChart(subset));
-                Task.Factory.StartNew(() => SetVarianceChart(subset));
+                Task.Factory.StartNew(() => SetVarianceChart());
                 Task.Factory.StartNew(() => SetFpsThresholdChart(subset));
             }
         }
@@ -953,7 +953,7 @@ namespace CapFrameX.ViewModel
             {
                 Task.Factory.StartNew(() => SetStaticChart(subset));
                 Task.Factory.StartNew(() => SetStutteringChart(subset));
-                Task.Factory.StartNew(() => SetVarianceChart(subset));
+                Task.Factory.StartNew(() => SetVarianceChart());
                 Task.Factory.StartNew(() => SetFpsThresholdChart(subset));
                 UpdateSensorSessionReport();
             }
@@ -1151,12 +1151,12 @@ namespace CapFrameX.ViewModel
             }));
         }
 
-        private void SetVarianceChart(IList<double> frametimes)
+        private void SetVarianceChart()
         {
-            if (frametimes == null || !frametimes.Any())
+            if (_session == null)
                 return;
 
-            var variances = _frametimeStatisticProvider.GetFrametimeVariancePercentages(frametimes);
+            var variances = _frametimeStatisticProvider.GetFrametimeVariancePercentages(_session);
 
 
             Application.Current.Dispatcher.BeginInvoke(new Action(() =>

@@ -1536,8 +1536,7 @@ namespace CapFrameX.ViewModel
 
         private void AddToVarianceCharts(ComparisonRecordInfoWrapper wrappedComparisonInfo)
         {
-            var frametimes = wrappedComparisonInfo.WrappedRecordInfo.Session.GetFrametimeTimeWindow(0, double.PositiveInfinity, _appConfiguration);
-            var variances = _frametimeStatisticProvider.GetFrametimeVariancePercentages(frametimes);
+            var variances = _frametimeStatisticProvider.GetFrametimeVariancePercentages(wrappedComparisonInfo.WrappedRecordInfo.Session);
 
             VarianceStatisticCollection[0].Values.Insert(0, variances[0]);
             VarianceStatisticCollection[1].Values.Insert(0, variances[1]);
