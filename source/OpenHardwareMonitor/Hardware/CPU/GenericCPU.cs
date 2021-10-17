@@ -46,7 +46,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
         private readonly Sensor maxLoad;
         private readonly Sensor[] coreLoads;
 
-        private const uint MSR_CORE_MASK_STATUS = 0x1A;
+        private const uint CPUID_CORE_MASK_STATUS = 0x1A;
 
         private bool IsBigLittleDesign()
         {
@@ -74,7 +74,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
             if (IsBigLittleDesign())
             {
                 var previousAffinity = ThreadAffinity.Set(cpuid[i][0].Affinity);
-                if (Opcode.Cpuid(MSR_CORE_MASK_STATUS, 0, out uint eax, out uint ebx, out uint ecx, out uint edx))
+                if (Opcode.Cpuid(CPUID_CORE_MASK_STATUS, 0, out uint eax, out uint ebx, out uint ecx, out uint edx))
                 {
                     switch (eax >> 24)
                     {

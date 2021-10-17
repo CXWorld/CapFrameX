@@ -79,6 +79,7 @@ namespace CapFrameX.Data
                 IncludeSubdirectories = false,
                 NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.FileName
             };
+
             _watcher.Created += OnFileCreated;
             _watcher.Changed += OnFileChanged;
             _watcher.Deleted += OnFileDeleted;
@@ -87,7 +88,6 @@ namespace CapFrameX.Data
             _currentFiles = directory.GetFiles("*.*", SearchOption.TopDirectoryOnly).Where(_validFileFilterFunc).ToList();
             _directoryFilesSubject.OnNext(_currentFiles);
             _logger.LogInformation("Now observing directory: {path}", directory.FullName);
-
 
             void OnFileCreated(object sender, FileSystemEventArgs e)
             {
@@ -99,9 +99,7 @@ namespace CapFrameX.Data
                 _fileCreatedSubject.OnNext(fileInfo);
                 _currentFiles.Add(fileInfo);
                 _directoryFilesSubject.OnNext(_currentFiles);
-            }
-
-            
+            }            
 
             void OnFileChanged(object sender, FileSystemEventArgs e)
             {
