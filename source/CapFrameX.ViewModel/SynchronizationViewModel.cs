@@ -494,6 +494,7 @@ namespace CapFrameX.ViewModel
                     MajorGridlineStyle = LineStyle.Solid,
                     MajorGridlineThickness = 1,
                     MajorGridlineColor = _appConfiguration.UseDarkMode ? OxyColor.FromArgb(40, 204, 204, 204) : OxyColor.FromArgb(20, 30, 30, 30),
+                    AbsoluteMinimum = 0,
                     MinorTickSize = 0,
                     MajorTickSize = 0
                 });
@@ -799,6 +800,7 @@ namespace CapFrameX.ViewModel
                     MajorGridlineStyle = LineStyle.Solid,
                     MajorGridlineThickness = 1,
                     MajorGridlineColor = _appConfiguration.UseDarkMode ? OxyColor.FromArgb(40, 204, 204, 204) : OxyColor.FromArgb(20, 30, 30, 30),
+                    AbsoluteMinimum = 0,
                     MinorTickSize = 0,
                     MajorTickSize = 0
                 });

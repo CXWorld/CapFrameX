@@ -67,6 +67,7 @@ namespace CapFrameX.Statistics.PlotBuilder
 					MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
 					MinorTickSize = 0,
 					MajorTickSize = 0,
+					AbsoluteMinimum = 0,
 					AxisTitleDistance = 10
 				}
 			},
@@ -81,6 +82,7 @@ namespace CapFrameX.Statistics.PlotBuilder
 					MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
 					MinorTickSize = 0,
 					MajorTickSize = 0,
+					AbsoluteMinimum = 0,
 					AxisTitleDistance = 10
 				}
 			}
