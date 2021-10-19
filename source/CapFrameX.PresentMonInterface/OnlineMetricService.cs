@@ -33,6 +33,8 @@ namespace CapFrameX.PresentMonInterface
         private List<double> _applicationLatencyValues = new List<double>(LIST_CAPACITY / 10);
         private string _currentProcess;
         private int _currentProcessId;
+        private double _droppedFrametimes = 0.0;
+        private double _prevDisplayedFrameInputLagTime = double.NaN;
         private readonly double _maxOnlineMetricIntervalLength = 20d;
         private readonly double _maxOnlineApplicationLatencyIntervalLength = 2d;
 
@@ -87,17 +89,17 @@ namespace CapFrameX.PresentMonInterface
                 .Skip(1)
                 .ObserveOn(new EventLoopScheduler())
                 .Where(line => EvaluateRealtimeInputLag())
-                .Where(line => IsNotDropped(line))
+                //.Where(line => IsNotDropped(line))
                 .Scan(new List<string[]>(), (acc, current) =>
                 {
-                    if (acc.Count > 2)
+                    if (acc.Count > 1)
                     {
                         acc.RemoveAt(0);
                     }
                     acc.Add(current);
                     return acc;
                 })
-                .Where(acc => acc.Count == 3)
+                .Where(acc => acc.Count == 2)
                 .Subscribe(UpdateOnlineApplicationLatency);
         }
 
@@ -204,7 +206,7 @@ namespace CapFrameX.PresentMonInterface
             string process;
             try
             {
-                process = lineSplits[2][PresentMonCaptureService.ApplicationName_INDEX].Replace(".exe", "");
+                process = lineSplits[1][PresentMonCaptureService.ApplicationName_INDEX].Replace(".exe", "");
             }
             catch { return; }
 
@@ -214,7 +216,7 @@ namespace CapFrameX.PresentMonInterface
                     return;
             }
 
-            if (!int.TryParse(lineSplits[2][PresentMonCaptureService.ProcessID_INDEX], out int processId))
+            if (!int.TryParse(lineSplits[1][PresentMonCaptureService.ProcessID_INDEX], out int processId))
             {
                 ResetApplicationLatency();
                 return;
@@ -226,13 +228,13 @@ namespace CapFrameX.PresentMonInterface
                     return;
             }
 
-            if (!double.TryParse(lineSplits[2][PresentMonCaptureService.TimeInSeconds_INDEX], NumberStyles.Any, CultureInfo.InvariantCulture, out double startTime))
+            if (!double.TryParse(lineSplits[1][PresentMonCaptureService.TimeInSeconds_INDEX], NumberStyles.Any, CultureInfo.InvariantCulture, out double startTime))
             {
                 ResetApplicationLatency();
                 return;
             }
 
-            if (!double.TryParse(lineSplits[2][PresentMonCaptureService.MsBetweenPresents_INDEX], NumberStyles.Any, CultureInfo.InvariantCulture, out double frameTime))
+            if (!double.TryParse(lineSplits[1][PresentMonCaptureService.MsBetweenPresents_INDEX], NumberStyles.Any, CultureInfo.InvariantCulture, out double frameTime))
             {
                 ResetApplicationLatency();
                 return;
@@ -245,16 +247,27 @@ namespace CapFrameX.PresentMonInterface
 
             try
             {
-                var frameTime_a = Convert.ToDouble(lineSplits[2][PresentMonCaptureService.MsBetweenPresents_INDEX], CultureInfo.InvariantCulture);
-                var frameTime_b = Convert.ToDouble(lineSplits[1][PresentMonCaptureService.MsBetweenPresents_INDEX], CultureInfo.InvariantCulture);
-                var untilDisplayedTimes_a = Convert.ToDouble(lineSplits[2][PresentMonCaptureService.UntilDisplayedTimes_INDEX], CultureInfo.InvariantCulture);
-                var inPresentAPITimes_b = Convert.ToDouble(lineSplits[1][PresentMonCaptureService.MsInPresentAPI_INDEX], CultureInfo.InvariantCulture);
-                var inPresentAPITimes_c = Convert.ToDouble(lineSplits[0][PresentMonCaptureService.MsInPresentAPI_INDEX], CultureInfo.InvariantCulture);
+                var frameTime_a = Convert.ToDouble(lineSplits[1][PresentMonCaptureService.MsBetweenPresents_INDEX], CultureInfo.InvariantCulture);
+                var untilDisplayedTimes_a = Convert.ToDouble(lineSplits[1][PresentMonCaptureService.UntilDisplayedTimes_INDEX], CultureInfo.InvariantCulture);
+                var inPresentAPITimes_b = Convert.ToDouble(lineSplits[0][PresentMonCaptureService.MsInPresentAPI_INDEX], CultureInfo.InvariantCulture);
+                var appMissed_a = Convert.ToInt32(lineSplits[1][PresentMonCaptureService.Dropped_INDEX], CultureInfo.InvariantCulture) == 1;
 
                 lock (_lockApplicationLatency)
                 {
                     _measuretimesApplicationLatency.Add(startTime);
-                    _applicationLatencyValues.Add(frameTime_a + untilDisplayedTimes_a + 0.5 * (frameTime_b - inPresentAPITimes_b - inPresentAPITimes_c));
+
+                    if (appMissed_a)
+                        _droppedFrametimes += frameTime_a;
+                    else
+                    {
+                        _applicationLatencyValues.Add(0.5 * frameTime_a + untilDisplayedTimes_a + 0.5 * (_prevDisplayedFrameInputLagTime + _droppedFrametimes));
+                        _droppedFrametimes = 0.0;
+                        _prevDisplayedFrameInputLagTime = frameTime_a - inPresentAPITimes_b;
+                    }
+
+                    // new expectedInputLagTime = untilDisplayedTimes[i] + 0.5 * frameTimes[i] + 0.5 * (frameTimes[i - 1] - inPresentAPITimes[i - 2] + 0.5 * _droppedFrametimes);
+                    // old _applicationLatencyValues.Add(frameTime_a + untilDisplayedTimes_a + 0.5 * (frameTime_b - inPresentAPITimes_b - inPresentAPITimes_c));
+
 
                     if (startTime - _measuretimesApplicationLatency.First() > _maxOnlineApplicationLatencyIntervalLength)
                     {
