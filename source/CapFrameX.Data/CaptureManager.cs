@@ -79,10 +79,6 @@ namespace CapFrameX.Data
 
         public bool DelayCountdownRunning { get; set; }
 
-        public string LastCapturedProcess { get; set; }
-
-        public double LastCaptureTime{ get; set; }
-
         public bool OSDAutoDisabled { get; set; } = false;
 
         public bool IsCapturing
@@ -139,9 +135,6 @@ namespace CapFrameX.Data
                 throw new Exception($"Process {options.ProcessInfo} not found");
             if (options.RecordDirectory != null && !Directory.Exists(options.RecordDirectory))
                 throw new Exception($"RecordDirectory {options.RecordDirectory} does not exist");
-
-            LastCapturedProcess = options.ProcessInfo.Item1;
-            LastCaptureTime = options.CaptureTime;
 
             _ = QueryPerformanceCounter(out long startCounter);
             _qpcTimeStart = startCounter;
@@ -329,8 +322,6 @@ namespace CapFrameX.Data
             IsCapturing = false;
             _disposableCaptureStream?.Dispose();
 
-            SaveCaptureTime();
-
             _logEntryManager.AddLogEntry("Processing captured data", ELogMessageType.BasicInfo, false);
 
             if (_appConfiguration.IsOverlayActive)
@@ -338,26 +329,6 @@ namespace CapFrameX.Data
 
             await WriteExtractedCaptureDataToFileAsync();
             LockCaptureService = false;
-        }
-
-        private void SaveCaptureTime()
-        {
-            if (_appConfiguration.UseGlobalCaptureTime)
-                return;
-
-            var process = _processList.Processes
-            .FirstOrDefault(p => p.Name == LastCapturedProcess);
-
-            if (process is null)
-            {
-                _processList.AddEntry(LastCapturedProcess, null, false, LastCaptureTime);
-            }
-            else if (process is CXProcess)
-            {
-                process.UpdateCaptureTime(LastCaptureTime);
-
-            }
-            _processList.Save();
         }
 
         public void StartFillArchive()

@@ -121,6 +121,7 @@ namespace CapFrameX.ViewModel
                 if (UseGlobalCaptureTime && double.TryParse(_captureTimeString, out _))
                     _appConfiguration.CaptureTime = Convert.ToDouble(value, CultureInfo.InvariantCulture);
 
+                RaisePropertyChanged(nameof(ShowCaptureTimeSave));
                 RaisePropertyChanged();
             }
         }
@@ -383,6 +384,8 @@ namespace CapFrameX.ViewModel
 
         public bool AggregationButtonEnabled => UseRunHistory && SelectedNumberOfRuns > 1;
 
+        public bool ShowCaptureTimeSave => !UseGlobalCaptureTime && CompareLastCaptureTime(_currentProcessToCapture);
+
         public bool SaveAggregationOnly
         {
             get
@@ -461,6 +464,8 @@ namespace CapFrameX.ViewModel
 
         public ICommand ClearLogCommand { get; }
 
+        public ICommand SaveCaptureTimeCommand { get; }
+
         public Array LoggingPeriodItemsSource => new[] { 250, 500 };
 
         public CaptureViewModel(IAppConfiguration appConfiguration,
@@ -503,6 +508,7 @@ namespace CapFrameX.ViewModel
             ResetPresentMonCommand = new DelegateCommand(OnResetCaptureProcess);
             UpdateLogCommand = new DelegateCommand(() => _logEntryManager?.UpdateFilter());
             ClearLogCommand = new DelegateCommand(() => _logEntryManager?.ClearLog());
+            SaveCaptureTimeCommand = new DelegateCommand(() => OnSaveCaptureTime(CaptureTimeString, _currentProcessToCapture));
 
             LoggerOutput.CollectionChanged += (e, x) =>
             {
@@ -777,6 +783,49 @@ namespace CapFrameX.ViewModel
             StartCaptureService();
         }
 
+        public void OnSaveCaptureTime(string captureTimeString, string process)
+        {
+            if (string.IsNullOrWhiteSpace(process))
+                return;
+
+            try
+            {
+                var captureTime = double.TryParse(_captureTimeString, out _) ?
+                    Convert.ToDouble(captureTimeString, CultureInfo.InvariantCulture) : _appConfiguration.CaptureTime;
+
+                var entry = _processList.Processes
+                .FirstOrDefault(p => p.Name == process);
+
+                if (entry is null)
+                {
+                    _processList.AddEntry(process, null, false, captureTime);
+                }
+                else if (entry is CXProcess)
+                {
+                    entry.UpdateCaptureTime(captureTime);
+
+                }
+                _processList.Save();
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "Error saving capture time to process list");
+            }
+
+            RaisePropertyChanged(nameof(ShowCaptureTimeSave));
+        }
+
+        private bool CompareLastCaptureTime(string process)
+        {
+            if (!string.IsNullOrWhiteSpace(process) && CaptureTimeString != string.Empty)
+            {
+                var lastProcessCaptureTime = _processList.FindProcessByName(process)?.LastCaptureTime;
+                return lastProcessCaptureTime?.ToString(CultureInfo.InvariantCulture) != CaptureTimeString;
+            }
+            else
+                return false;
+        }
+
         private IDisposable GetListUpdatHeartBeat()
         {
             return Observable
@@ -844,7 +893,11 @@ namespace CapFrameX.ViewModel
             GetGameNameFromProcessList(currentProcess);
 
             if (!UseGlobalCaptureTime && _currentProcessToCapture != currentProcess)
+            {
                 UdateCustomCaptureTime(currentProcess);
+                _currentProcessToCapture = currentProcess;
+                RaisePropertyChanged(nameof(ShowCaptureTimeSave));
+            }
 
             _currentProcessToCapture = currentProcess;
 
