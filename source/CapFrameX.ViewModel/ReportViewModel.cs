@@ -112,7 +112,9 @@ namespace CapFrameX.ViewModel
             else
             {
                 ReportInfoCollection.Remove(selectedItem);
-                AddAverageReportInfo(ReportInfoCollection);
+
+                if(ReportShowAverageRow)
+                    AddAverageReportInfo(ReportInfoCollection);
             }
         }
 
