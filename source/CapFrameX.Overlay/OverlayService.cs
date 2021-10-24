@@ -589,6 +589,10 @@ namespace CapFrameX.Overlay
             {
                 name = name.Replace("CPU Max Clock", "CPU Max");
             }
+            else if (name.Contains("CPU Max Core Temp"))
+            {
+                name = name.Replace("Max Core Temp", "Max");
+            }
             else if (name.Contains("GPU Core"))
             {
                 name = name.Replace(" Core", "");

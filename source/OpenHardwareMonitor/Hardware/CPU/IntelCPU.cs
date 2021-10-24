@@ -49,6 +49,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
         private readonly Sensor packageTemperature;
         private readonly Sensor[] coreClocks;
         private readonly Sensor coreMaxClock;
+        private readonly Sensor coreMaxTemp;
         private readonly Sensor busClock;
         private readonly Sensor[] powerSensors;
         private readonly ISensorConfig sensorConfig;
@@ -374,6 +375,9 @@ namespace OpenHardwareMonitor.Hardware.CPU
                 "Temperature = TjMax - TSlope * Value.", 1)}, settings);
                 ActivateSensor(packageTemperature);
             }
+            
+            coreMaxTemp = new Sensor("CPU Max Core Temp", coreTemperatures.Length + 1, SensorType.Temperature, this, settings);
+            ActivateSensor(coreMaxTemp);
 
             busClock = new Sensor("Bus Speed", 0, SensorType.Clock, this, settings);
             coreClocks = new Sensor[coreCount];
@@ -493,7 +497,8 @@ namespace OpenHardwareMonitor.Hardware.CPU
         {
             base.Update();
 
-            if (coreTemperatures.Any(sensor => sensorConfig.GetSensorEvaluate(sensor.IdentifierString)))
+            if (coreTemperatures.Any(sensor => sensorConfig.GetSensorEvaluate(sensor.IdentifierString))
+                || sensorConfig.GetSensorEvaluate(coreMaxTemp.IdentifierString))
             {
                 for (int i = 0; i < coreTemperatures.Length; i++)
                 {
@@ -512,6 +517,8 @@ namespace OpenHardwareMonitor.Hardware.CPU
                         coreTemperatures[i].Value = null;
                     }
                 }
+
+                coreMaxTemp.Value = coreTemperatures.Where(temp => temp.Value != null).Max(temp => temp.Value);
             }
 
             if (packageTemperature != null && sensorConfig.GetSensorEvaluate(packageTemperature.IdentifierString))
@@ -576,7 +583,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
                                         coreClocks[i].Value = (float)(multiplier * newBusClock);
 
                                         // core voltage: register range 47:32
-                                        var bits = 47 - 32 + 1;
+                                        int bits = 47 - 32 + 1;
                                         int result = (int)edx;
                                         result >>= 32;
                                         result &= (1 << bits) - 1;
