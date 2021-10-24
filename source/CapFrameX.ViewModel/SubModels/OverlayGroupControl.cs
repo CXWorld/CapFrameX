@@ -17,6 +17,7 @@ namespace CapFrameX.ViewModel.SubModels
         public ICommand CheckCpuClocks { get; }
         public ICommand CheckCpuPowers { get; }
         public ICommand CheckCpuTemps { get; }
+        public ICommand CheckCpuVoltages { get; }
         public ICommand CheckRamItems { get; }
         public ICommand UncheckCaptureItems { get; }
         public ICommand UncheckSystemInfo { get; }
@@ -26,6 +27,7 @@ namespace CapFrameX.ViewModel.SubModels
         public ICommand UncheckCpuClocks { get; }
         public ICommand UncheckCpuPowers { get; }
         public ICommand UncheckCpuTemps { get; }
+        public ICommand UncheckCpuVoltages { get; }
         public ICommand UncheckRamItems { get; }
 
         public OverlayGroupControl(OverlayViewModel overlayViewModel)
@@ -40,6 +42,7 @@ namespace CapFrameX.ViewModel.SubModels
             CheckCpuClocks = new DelegateCommand(() => ManageCPUClockEntries(true));
             CheckCpuPowers = new DelegateCommand(() => ManageCPUPowerEntries(true));
             CheckCpuTemps = new DelegateCommand(() => ManageCPUTemperatureEntries(true));
+            CheckCpuVoltages = new DelegateCommand(() => ManageCPUVoltageEntries(true));
             CheckRamItems = new DelegateCommand(() => ManageRAMEntries(true));
 
             UncheckCaptureItems = new DelegateCommand(() => ManageCXEntries(false));
@@ -50,6 +53,7 @@ namespace CapFrameX.ViewModel.SubModels
             UncheckCpuClocks = new DelegateCommand(() => ManageCPUClockEntries(false));
             UncheckCpuPowers = new DelegateCommand(() => ManageCPUPowerEntries(false));
             UncheckCpuTemps = new DelegateCommand(() => ManageCPUTemperatureEntries(false));
+            UncheckCpuVoltages = new DelegateCommand(() => ManageCPUVoltageEntries(false));
             UncheckRamItems = new DelegateCommand(() => ManageRAMEntries(false));
         }
 
@@ -147,6 +151,17 @@ namespace CapFrameX.ViewModel.SubModels
                    .Where(item => item.OverlayEntryType == Contracts.Overlay.EOverlayEntryType.CPU))
             {
                 if (entry.Identifier.Contains("temperature") && entry.Description.Contains("CPU Core #")
+                    && entry.ShowOnOverlayIsEnabled)
+                    entry.ShowOnOverlay = showEntry;
+            }
+        }
+
+        private void ManageCPUVoltageEntries(bool showEntry)
+        {
+            foreach (var entry in _overlayViewModel.OverlayEntries
+                  .Where(item => item.OverlayEntryType == Contracts.Overlay.EOverlayEntryType.CPU))
+            {
+                if (entry.Identifier.Contains("voltage") && entry.Description.Contains("CPU Core #")
                     && entry.ShowOnOverlayIsEnabled)
                     entry.ShowOnOverlay = showEntry;
             }

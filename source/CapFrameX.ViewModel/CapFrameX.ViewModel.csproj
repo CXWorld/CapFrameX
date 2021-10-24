@@ -285,7 +285,7 @@
       <Name>CapFrameX.Updater</Name>
     </ProjectReference>
     <ProjectReference Include="..\CapFrameX.Webservice.Data\CapFrameX.Webservice.Data.csproj">
-      <Project>{69D694A6-B029-4FE8-8429-F4E70DB8B5E1}</Project>
+      <Project>{69d694a6-b029-4fe8-8429-f4e70db8b5e1}</Project>
       <Name>CapFrameX.Webservice.Data</Name>
     </ProjectReference>
   </ItemGroup>

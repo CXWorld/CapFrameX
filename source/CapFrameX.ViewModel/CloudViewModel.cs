@@ -5,8 +5,6 @@ using CapFrameX.Data;
 using CapFrameX.Data.Session.Contracts;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Extensions;
-using CapFrameX.Statistics;
-using CapFrameX.Statistics.NetStandard;
 using CapFrameX.Webservice.Data.DTO;
 using GongSolutions.Wpf.DragDrop;
 using Microsoft.Extensions.Logging;
@@ -38,7 +36,7 @@ using CapFrameX.Statistics.NetStandard.Contracts;
 
 namespace CapFrameX.ViewModel
 {
-	public class CloudViewModel : BindableBase, INavigationAware, IDropTarget
+    public class CloudViewModel : BindableBase, INavigationAware, IDropTarget
 	{
 		private const int CLOUDUPLOAD_MAX_LENGTH = 32000000;
 		private readonly IStatisticProvider _statisticProvider;

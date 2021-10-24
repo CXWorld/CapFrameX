@@ -320,6 +320,7 @@
                                                         <RowDefinition Height="*" />
                                                         <RowDefinition Height="*" />
                                                         <RowDefinition Height="*" />
+                                                        <RowDefinition Height="*" />
                                                     </Grid.RowDefinitions>
                                                     <Grid.ColumnDefinitions>
                                                         <ColumnDefinition Width="3*"/>
@@ -406,12 +407,24 @@
                                                         <materialDesign:PackIcon Kind="Remove"  Height="15" Width="15" />
                                                     </Button>
 
-                                                    <TextBlock Margin="5" Grid.Row="8" Grid.Column="0" Text="RAM items" VerticalAlignment="Center"/>
-                                                    <Button Margin="5" Grid.Row="8" Grid.Column="1" Command="{Binding Path=OverlaySubModelGroupControl.CheckRamItems}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}"  
+                                                    <!--CPU voltages-->
+                                                    <TextBlock Margin="5" Grid.Row="8" Grid.Column="0" Text="CPU Core voltages" VerticalAlignment="Center"/>
+                                                    <Button Margin="5" Grid.Row="8" Grid.Column="1" Command="{Binding Path=OverlaySubModelGroupControl.CheckCpuVoltages}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}"  
+                                                    Width="20" Height="20" ToolTip="Check CPU Core voltages" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
+                                                        <materialDesign:PackIcon Kind="Done" Height="15" Width="15" />
+                                                    </Button>
+                                                    <Button Margin="5" Grid.Row="8" Grid.Column="2" Command="{Binding Path=OverlaySubModelGroupControl.UncheckCpuVoltages}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}" 
+                                                    Width="20" Height="20" ToolTip="Uncheck CPU Core voltages" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
+                                                        <materialDesign:PackIcon Kind="Remove"  Height="15" Width="15" />
+                                                    </Button>
+
+                                                    <TextBlock Margin="5" Grid.Row="9" Grid.Column="0" Text="RAM items" VerticalAlignment="Center"/>
+                                                    <Button Margin="5" Grid.Row="9" Grid.Column="1" Command="{Binding Path=OverlaySubModelGroupControl.CheckRamItems}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}"  
                                                     Width="20" Height="20" ToolTip="Check RAM items" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
                                                         <materialDesign:PackIcon Kind="Done" Height="15" Width="15" />
                                                     </Button>
-                                                    <Button Margin="5" Grid.Row="8" Grid.Column="2" Command="{Binding Path=OverlaySubModelGroupControl.UncheckRamItems}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}" 
+                                                    
+                                                    <Button Margin="5" Grid.Row="9" Grid.Column="2" Command="{Binding Path=OverlaySubModelGroupControl.UncheckRamItems}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}" 
                                                     Width="20" Height="20" ToolTip="Uncheck RAM items" materialDesign:RippleAssist.Feedback="#DD000000" Foreground="White">
                                                         <materialDesign:PackIcon Kind="Remove"  Height="15" Width="15" />
                                                     </Button>
@@ -423,6 +436,12 @@
                                     <Button Margin="10 0 0 0" Width="20" Height="20" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
                                             Command="{Binding SetToMinOsdCommand}" materialDesign:RippleAssist.Feedback="#DD000000">
                                         <materialDesign:PackIcon Kind="FlipToFront" Height="15" Width="15" />
+                                        <Button.ToolTip>
+                                            <ToolTip>
+                                                <TextBlock Width="275" Text="Set OSD items to minimum. Only framerate and frametime are shown." TextWrapping="Wrap">
+                                                </TextBlock>
+                                            </ToolTip>
+                                        </Button.ToolTip>
                                     </Button>
                                     <TextBlock Margin="10 0 0 0"  VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}">Resync Perfmon</TextBlock>
                                     <Button Margin="10 0 0 0" Width="20" Height="20" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
