@@ -42,6 +42,76 @@ namespace CapFrameX.Statistics.PlotBuilder
 					AxisTitleDistance = 10
 				}
 			},
+			{ EPlotAxis.YAXISPOWER, new LinearAxis()
+				{
+					Key = EPlotAxis.YAXISPOWER.GetDescription(),
+					Position = AxisPosition.Right,
+					Title = "Power [W]",
+					MajorGridlineStyle = LineStyle.None,
+					MajorStep = 25,
+					MinorTickSize = 0,
+					MajorTickSize = 0,
+					Minimum = 0,
+					AbsoluteMinimum = 0,
+					AxisTitleDistance = 10
+				}
+			},
+			{ EPlotAxis.YAXISCLOCK, new LinearAxis()
+				{
+					Key = EPlotAxis.YAXISCLOCK.GetDescription(),
+					Position = AxisPosition.Right,
+					Title = "Clock [MHz]",
+					MajorGridlineStyle = LineStyle.None,
+					MajorStep = 25,
+					MinorTickSize = 0,
+					MajorTickSize = 0,
+					Minimum = 0,
+					AbsoluteMinimum = 0,
+					AxisTitleDistance = 10
+				}
+			},
+			{ EPlotAxis.YAXISTEMPERATURE, new LinearAxis()
+				{
+					Key = EPlotAxis.YAXISTEMPERATURE.GetDescription(),
+					Position = AxisPosition.Right,
+					Title = "Temperature [°C]",
+					MajorGridlineStyle = LineStyle.None,
+					MajorStep = 25,
+					MinorTickSize = 0,
+					MajorTickSize = 0,
+					Minimum = 0,
+					AbsoluteMinimum = 0,
+					AxisTitleDistance = 10
+				}
+			},
+			{ EPlotAxis.YAXISVOLTAGE, new LinearAxis()
+				{
+					Key = EPlotAxis.YAXISVOLTAGE.GetDescription(),
+					Position = AxisPosition.Right,
+					Title = "Data [GB]",
+					MajorGridlineStyle = LineStyle.None,
+					MajorStep = 25,
+					MinorTickSize = 0,
+					MajorTickSize = 0,
+					Minimum = 0,
+					AbsoluteMinimum = 0,
+					AxisTitleDistance = 10
+				}
+			},
+			{ EPlotAxis.YAXISDATA, new LinearAxis()
+				{
+					Key = EPlotAxis.YAXISDATA.GetDescription(),
+					Position = AxisPosition.Right,
+					Title = "Data [GB]",
+					MajorGridlineStyle = LineStyle.None,
+					MajorStep = 25,
+					MinorTickSize = 0,
+					MajorTickSize = 0,
+					Minimum = 0,
+					AbsoluteMinimum = 0,
+					AxisTitleDistance = 10
+				}
+			},
 			{
 				EPlotAxis.XAXIS, new LinearAxis()
 				{
