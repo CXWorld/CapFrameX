@@ -1,5 +1,30 @@
 [
   {
+    "Name": "kodi",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "gotg",
+    "DisplayName": "Marvel's Guardians of the Galaxy",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "RelicCardinal",
+    "DisplayName": "Age of Empires IV",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "SekiroFpsUnlockAndMore_v1.2.5.2",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "ZingangGame-Win64-Shipping",
+    "DisplayName": "F.I.S.T. Forged In Shadow Torch",
+    "IsBlacklisted": false
+  },
+  {
     "Name": "Kena-Win64-Shipping",
     "DisplayName": "Kena: Bridge of Spirits",
     "IsBlacklisted": false
