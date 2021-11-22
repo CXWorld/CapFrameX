@@ -32,7 +32,7 @@ namespace CapFrameX.Statistics.PlotBuilder
 					Position = AxisPosition.Right,
 					Title = "Percentage [%]",
 					MajorGridlineStyle = LineStyle.None,
-					MajorStep = 25,
+					MajorStep = 10,
 					MinorTickSize = 0,
 					MajorTickSize = 0,
 					Minimum = 0,

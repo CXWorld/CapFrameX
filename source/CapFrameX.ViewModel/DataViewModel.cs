@@ -417,8 +417,20 @@ namespace CapFrameX.ViewModel
                     steps = 100;
                 else if (maxValueFracture <= 250)
                     steps = 150;
-                else
+                else if (maxValueFracture <= 350)
                     steps = 200;
+                else if (maxValueFracture <= 500)
+                    steps = 300;
+                else if (maxValueFracture <= 750)
+                    steps = 500;
+                else if (maxValueFracture <= 1000)
+                    steps = 750;
+                else if (maxValueFracture <= 2000)
+                    steps = 1000;
+                else if (maxValueFracture <= 3000)
+                    steps = 2000;
+                else
+                    steps = 3000;
 
                 return steps;
             }
