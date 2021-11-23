@@ -29,7 +29,7 @@ namespace CapFrameX.View
                 .SubscribeOn(context)
                 .Subscribe(dummy => ResetLShapeChart());
 
-            
+
 
             var rowAWidthTracker = new RowHeightTracker(Application.Current.MainWindow);
             var rowBWidthTracker = new RowHeightTracker(Application.Current.MainWindow);
@@ -47,7 +47,7 @@ namespace CapFrameX.View
 
             //clear selected slice
             if (selectedSeries.PushOut == 8)
-            { 
+            {
                 selectedSeries.PushOut = 0;
                 selectedSeries.StrokeThickness = 0;
             }
@@ -55,7 +55,7 @@ namespace CapFrameX.View
             else
             {
                 foreach (PieSeries series in chart.Series)
-                { 
+                {
                     series.PushOut = 0;
                     series.StrokeThickness = 0;
                 }
@@ -144,6 +144,45 @@ namespace CapFrameX.View
         {
             Regex regex = new Regex("[^0-9.-]+");
             e.Handled = regex.IsMatch(e.Text);
+        }
+
+        private void Grid_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            if (ActualWidth >= 2100)
+            {
+                SensorDataTab.Visibility = Visibility.Collapsed;
+                ThresholdTab.Visibility = Visibility.Collapsed;
+
+                SecondSensorTab.Visibility = Visibility.Visible;
+                SecondThresholdTab.Visibility = Visibility.Visible;
+
+                if (StatisticsTabControl.SelectedIndex == 3 )
+                    StatisticsTabControl.SelectedIndex = 0;
+
+            }
+            else if (ActualWidth >= 1650)
+            {
+
+                SensorDataTab.Visibility = Visibility.Visible;
+                ThresholdTab.Visibility = Visibility.Collapsed;
+
+                SecondSensorTab.Visibility = Visibility.Collapsed;
+                SecondThresholdTab.Visibility = Visibility.Visible;
+
+
+                if (StatisticsTabControl.SelectedIndex == 2)
+                    StatisticsTabControl.SelectedIndex = 0;
+
+            }
+            else
+            {
+                SensorDataTab.Visibility = Visibility.Visible;
+                ThresholdTab.Visibility = Visibility.Visible;
+
+                SecondSensorTab.Visibility = Visibility.Collapsed;
+                SecondThresholdTab.Visibility = Visibility.Collapsed;
+            }
+
         }
     }
 }

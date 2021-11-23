@@ -19,6 +19,7 @@ namespace CapFrameX.ViewModel
     {
         private string[] _fPSThresholdLabels;
         private SeriesCollection _fPSThresholdCollection;
+        private SeriesCollection _fPSThresholdCollectionCopy;
 
         /// <summary>
         /// https://docs.microsoft.com/en-us/dotnet/standard/base-types/standard-numeric-format-strings
@@ -50,6 +51,15 @@ namespace CapFrameX.ViewModel
             set
             {
                 _fPSThresholdCollection = value;
+                RaisePropertyChanged();
+            }
+        }
+        public SeriesCollection FPSThresholdCollectionCopy
+        {
+            get { return _fPSThresholdCollectionCopy; }
+            set
+            {
+                _fPSThresholdCollectionCopy = value;
                 RaisePropertyChanged();
             }
         }
@@ -180,6 +190,42 @@ namespace CapFrameX.ViewModel
                 {
                     YAxisLabel = "Time";
                     FPSThresholdCollection = new SeriesCollection
+                    {
+                        new ColumnSeries
+                        {
+                            Values = thresholdTimesValues,
+                            Fill = new SolidColorBrush(Color.FromRgb(34, 151, 243)),
+                            DataLabels = true,
+                            LabelPoint = p => ThresholdShowAbsoluteValues ? ((frametimes.Sum()* p.Y) * 1E-03).ToString("N1", CultureInfo.InvariantCulture) + "s" :
+                                (100 * p.Y).ToString("N1", CultureInfo.InvariantCulture) + "%",
+                            MaxColumnWidth = 40
+                        }
+                    };
+                }
+            }));
+
+            Application.Current.Dispatcher.Invoke(new Action(() =>
+            {
+                if (!ShowThresholdTimes)
+                {
+                    YAxisLabel = "Frames";
+                    FPSThresholdCollectionCopy = new SeriesCollection
+                    {
+                        new ColumnSeries
+                        {
+                            Values = thresholdCountValues,
+                            Fill = new SolidColorBrush(Color.FromRgb(34, 151, 243)),
+                            DataLabels = true,
+                            LabelPoint = p => ThresholdShowAbsoluteValues ? (frametimes.Count* p.Y).ToString() :
+                                (100 * p.Y).ToString("N1", CultureInfo.InvariantCulture) + "%",
+                            MaxColumnWidth = 40
+                        }
+                    };
+                }
+                else
+                {
+                    YAxisLabel = "Time";
+                    FPSThresholdCollectionCopy = new SeriesCollection
                     {
                         new ColumnSeries
                         {

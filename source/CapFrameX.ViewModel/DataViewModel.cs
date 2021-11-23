@@ -1160,6 +1160,7 @@ namespace CapFrameX.ViewModel
                         StrokeThickness = 0
                     }
                 };
+
             }));
         }
 
