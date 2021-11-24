@@ -98,7 +98,7 @@ namespace CapFrameX.ViewModel
         private bool _showCustomTitle;
         private string _selectedChartView = "Frametimes";
         private EFilterMode _selectedFilterMode;
-        private string _lShapeYaxisLabel = "Frametimes (ms)";
+        private string _lShapeYaxisLabel = "Frametimes (ms)" + Environment.NewLine + " ";
 
         public Array FirstMetricItems => Enum.GetValues(typeof(EMetric))
                                              .Cast<EMetric>().Where(metric => metric != EMetric.None)
@@ -577,7 +577,7 @@ namespace CapFrameX.ViewModel
             set
             {
                 _selectedChartView = value;
-                ComparisonLShapeYAxisLabel = value == "Frametimes" ? "Frametimes (ms)" : "FPS";
+                ComparisonLShapeYAxisLabel = value == "Frametimes" ? "Frametimes" + Environment.NewLine + " " : "FPS" + Environment.NewLine + " ";
                 RaisePropertyChanged();
                 UpdateCharts();
             }
@@ -603,6 +603,8 @@ namespace CapFrameX.ViewModel
                 OnSortModeChanged();
             }
         }
+
+        public bool MetricAndLabelOptionsEnabled=> ComparisonRecords.Count > 0;
 
         public double VarianceChartSeparators
         {
@@ -660,7 +662,7 @@ namespace CapFrameX.ViewModel
         public ComparisonCollection ComparisonRecords { get; private set; }
             = new ComparisonCollection();
 
-        public double BarChartMaxRowHeight { get; private set; } = 22;
+        public double BarChartMaxRowHeight { get; private set; } = 28;
 
         public Array SortMetricItemsSource => new[] { "First", "Second", "Third" };
 
@@ -724,7 +726,8 @@ namespace CapFrameX.ViewModel
             ComparisonFrametimesModel.Legends.Add(new Legend()
             {
                 LegendPosition = LegendPosition.TopCenter,
-                LegendOrientation = LegendOrientation.Horizontal
+                LegendOrientation = LegendOrientation.Horizontal,
+                FontSize = 13
             });
 
             //Axes
@@ -734,7 +737,8 @@ namespace CapFrameX.ViewModel
                 Key = "xAxis",
                 Position = OxyPlot.Axes.AxisPosition.Bottom,
                 Title = "Recording time [s]",
-                AxisTitleDistance = 15,
+                AxisTitleDistance = 10,
+                FontSize = 13,
                 MajorGridlineStyle = LineStyle.Solid,
                 MajorGridlineThickness = 1,
                 MajorGridlineColor = _appConfiguration.UseDarkMode ? OxyColor.FromArgb(40, 204, 204, 204) : OxyColor.FromArgb(20, 30, 30, 30),
@@ -750,6 +754,7 @@ namespace CapFrameX.ViewModel
                 Position = OxyPlot.Axes.AxisPosition.Left,
                 Title = "Frametime [ms]",
                 AxisTitleDistance = 10,
+                FontSize = 13,
                 MajorGridlineStyle = LineStyle.Solid,
                 MajorGridlineThickness = 1,
                 MajorGridlineColor = _appConfiguration.UseDarkMode ? OxyColor.FromArgb(40, 204, 204, 204) : OxyColor.FromArgb(20, 30, 30, 30),
@@ -779,7 +784,8 @@ namespace CapFrameX.ViewModel
                 Key = "xAxis",
                 Position = OxyPlot.Axes.AxisPosition.Bottom,
                 Title = "Recording time [s]",
-                AxisTitleDistance = 15,
+                AxisTitleDistance = 10,
+                FontSize = 13,
                 MajorGridlineStyle = LineStyle.Solid,
                 MajorGridlineThickness = 1,
                 MajorGridlineColor = _appConfiguration.UseDarkMode ? OxyColor.FromArgb(40, 204, 204, 204) : OxyColor.FromArgb(20, 30, 30, 30),
@@ -794,6 +800,7 @@ namespace CapFrameX.ViewModel
                 Position = OxyPlot.Axes.AxisPosition.Left,
                 Title = "FPS [1/s]",
                 AxisTitleDistance = 10,
+                FontSize = 13,
                 MajorGridlineStyle = LineStyle.Solid,
                 MajorGridlineThickness = 1,
                 MajorGridlineColor = _appConfiguration.UseDarkMode ? OxyColor.FromArgb(40, 204, 204, 204) : OxyColor.FromArgb(20, 30, 30, 30),
@@ -805,6 +812,7 @@ namespace CapFrameX.ViewModel
 
         private void SetRowSeries()
         {
+
             ComparisonRowChartSeriesCollection = new SeriesCollection()
             {
                 new RowSeries
@@ -813,10 +821,11 @@ namespace CapFrameX.ViewModel
                     Values = new ChartValues<double>(),
                     Fill = new SolidColorBrush(Color.FromRgb(34, 151, 243)),
                     HighlightFill = new SolidColorBrush(Color.FromRgb(122, 192, 247)),
+                    FontSize = 14,
                     Stroke= Brushes.Transparent,
-                    StrokeThickness = 2,
+                    StrokeThickness = 3,
                     DataLabels = true,
-                    MaxRowHeigth = BarChartMaxRowHeight,
+                    MaxRowHeigth = SelectedSecondMetric == EMetric.None && SelectedThirdMetric == EMetric.None ? BarChartMaxRowHeight * 1.5 : BarChartMaxRowHeight,
                     RowPadding = 0,
                     UseRelativeMode = true
                 }
@@ -832,14 +841,16 @@ namespace CapFrameX.ViewModel
                     Values = new ChartValues<double>(),
                     Fill = new SolidColorBrush(Color.FromRgb(241, 125, 32)),
                     HighlightFill = new SolidColorBrush(Color.FromRgb(245, 164, 98)),
+                    FontSize = 14,
                     Stroke = Brushes.Transparent,
-                    StrokeThickness = 2,
+                    StrokeThickness = 3,
                     DataLabels = true,
                     MaxRowHeigth = BarChartMaxRowHeight,
                     RowPadding = 0,
                     UseRelativeMode = true
                 });
             }
+
             if (SelectedThirdMetric != EMetric.None)
             {
                 // third metric
@@ -850,8 +861,9 @@ namespace CapFrameX.ViewModel
                     Values = new ChartValues<double>(),
                     Fill = new SolidColorBrush(Color.FromRgb(255, 180, 0)),
                     HighlightFill = new SolidColorBrush(Color.FromRgb(245, 217, 128)),
+                    FontSize = 14,
                     Stroke = Brushes.Transparent,
-                    StrokeThickness = 2,
+                    StrokeThickness = 3,
                     DataLabels = true,
                     MaxRowHeigth = BarChartMaxRowHeight,
                     RowPadding = 0,
@@ -942,6 +954,8 @@ namespace CapFrameX.ViewModel
                 SetLShapeChart();
             }
             OnComparisonContextChanged();
+
+            RaisePropertyChanged(nameof(MetricAndLabelOptionsEnabled));
         }
 
 
@@ -959,6 +973,7 @@ namespace CapFrameX.ViewModel
 
         private void OnMetricChanged()
         {
+
             SetRowSeries();
 
             double GetMetricValue(IList<double> sequence, EMetric metric) =>
@@ -1270,8 +1285,9 @@ namespace CapFrameX.ViewModel
         }
 
         private void UpdateBarChartHeight()
-            => BarChartHeight =
-            32.5 + (ComparisonRowChartSeriesCollection.Count * BarChartMaxRowHeight + 12) * ComparisonRecords.Count;
+            => BarChartHeight = SelectedSecondMetric == EMetric.None && SelectedThirdMetric == EMetric.None ?
+            32.5 + (ComparisonRowChartSeriesCollection.Count * ( BarChartMaxRowHeight * 1.5 ) + 20) * ComparisonRecords.Count
+            : 32.5 + (ComparisonRowChartSeriesCollection.Count * BarChartMaxRowHeight + 12) * ComparisonRecords.Count;
 
         private void UpdateVarianceChartHeight()
             => VarianceChartHeight =

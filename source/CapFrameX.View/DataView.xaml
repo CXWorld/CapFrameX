@@ -64,12 +64,12 @@
             </Grid.ColumnDefinitions>
             <!--Chart, range slider and statistics grid-->
             <Grid Grid.Row="0">
-                <TextBlock HorizontalAlignment="Center" VerticalAlignment="Bottom" FontWeight="Bold" FontSize="16" Text="{Binding CurrentGameName}" 
+                <TextBlock HorizontalAlignment="Center" VerticalAlignment="Bottom" FontWeight="Bold" FontSize="18" Text="{Binding CurrentGameName}" 
                        Visibility="{Binding IsChecked, Converter={StaticResource TrueToCollapsedConverter}, ElementName=ShowCustomTitleToggleButton}"
 					   Foreground="{DynamicResource MaterialDesignBody}"/>
                 <TextBox HorizontalAlignment="Center" VerticalAlignment="Bottom" Visibility="{Binding IsChecked, Converter={StaticResource TrueToVisibleConverter}, ElementName=ShowCustomTitleToggleButton}"
                                  Text="Type your title here..."  Height="30" MinWidth="50"                                
-                                 FontWeight="Bold" FontSize="16" PreviewKeyDown="CustomTitle_PreviewKeyDown"
+                                 FontWeight="Bold" FontSize="18" PreviewKeyDown="CustomTitle_PreviewKeyDown"
                                  Foreground="{DynamicResource MaterialDesignBody}"/>
             </Grid>
             <Grid Grid.Row="1">
@@ -161,14 +161,14 @@
                                             </ContextMenu>
                                         </lvc:CartesianChart.ContextMenu>
                                         <lvc:CartesianChart.AxisX>
-                                            <lvc:Axis Title="Percentiles (%)" x:Name="LShapeX" Foreground="{DynamicResource MaterialDesignBody}">
+                                            <lvc:Axis Title="&#x0a;Percentiles (%)" x:Name="LShapeX" FontSize="14" Foreground="{DynamicResource MaterialDesignBody}">
                                                 <lvc:Axis.Separator>
                                                     <lvc:Separator StrokeThickness="0" Step="1"/>
                                                 </lvc:Axis.Separator>
                                             </lvc:Axis>
                                         </lvc:CartesianChart.AxisX>
                                         <lvc:CartesianChart.AxisY>
-                                            <lvc:Axis Title="{Binding LShapeYaxisLabel}" x:Name="LShapeY" Foreground="{DynamicResource MaterialDesignBody}">
+                                            <lvc:Axis Title="{Binding LShapeYaxisLabel}" x:Name="LShapeY" FontSize="14" Foreground="{DynamicResource MaterialDesignBody}">
                                                 <lvc:Axis.Separator>
                                                     <lvc:Separator StrokeThickness="0.2" Stroke="{DynamicResource MaterialDesignBody}"/>
                                                 </lvc:Axis.Separator>
@@ -222,7 +222,7 @@
                 <!--Statistics grid-->
                 <Grid Grid.Row="2" Margin="5 0 5 0" SizeChanged="Grid_SizeChanged">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="150*" MaxWidth="800"/>
+                        <ColumnDefinition Width="110*" MaxWidth="800"/>
                         <ColumnDefinition Width="1*" MinWidth="5"/>
                         <ColumnDefinition Width="Auto" MaxWidth="600"/>
                         <ColumnDefinition Width="Auto" MaxWidth="600"/>
@@ -238,7 +238,7 @@
                                 </ContextMenu>
                             </lvc:CartesianChart.ContextMenu>
                             <lvc:CartesianChart.AxisX>
-                                <lvc:Axis Title="FPS" FontSize="11" MinValue="0" MaxValue="{Binding BarMaxValue}" 
+                                <lvc:Axis Title="FPS" FontSize="14" MinValue="0" MaxValue="{Binding BarMaxValue}" 
 								  LabelFormatter="{Binding ParameterFormatter}" Foreground="{DynamicResource MaterialDesignBody}">
                                     <lvc:Axis.Separator>
                                         <lvc:Separator  StrokeThickness=".2" Stroke="{DynamicResource MaterialDesignBody}" IsEnabled="True" Step="{Binding BarChartSeparators}"/>
@@ -246,7 +246,7 @@
                                 </lvc:Axis>
                             </lvc:CartesianChart.AxisX>
                             <lvc:CartesianChart.AxisY>
-                                <lvc:Axis FontSize="11" Labels="{Binding ParameterLabels}" Foreground="{DynamicResource MaterialDesignBody}">
+                                <lvc:Axis FontSize="14" Labels="{Binding ParameterLabels}"  Foreground="{DynamicResource MaterialDesignBody}">
                                     <lvc:Axis.Separator>
                                         <lvc:Separator Step="1" IsEnabled="False"/>
                                     </lvc:Axis.Separator>
@@ -282,7 +282,7 @@
                                                     <RowDefinition Height="*" />
                                                 </Grid.RowDefinitions>
                                                 <TextBox Grid.Row="0" materialDesign:HintAssist.Hint="Low FPS threshold" materialDesign:HintAssist.IsFloating="True" Width="100"
-                                                 HorizontalContentAlignment="Center" Text="{Binding StutteringLowFPSThreshold}" materialDesign:HintAssist.HintOpacity=".8"
+                                                         HorizontalContentAlignment="Center" Text="{Binding StutteringLowFPSThreshold}" materialDesign:HintAssist.HintOpacity=".8"
                                                  PreviewKeyDown="StutteringThreshold_PreviewKeyDown" PreviewTextInput="NumberValidationTextBox" ToolTipService.ShowDuration="25000">
                                                     <TextBox.ToolTip>
                                                         <ToolTip Width="300">
@@ -303,7 +303,7 @@
                                                 </TextBox>
                                             </Grid>
                                         </materialDesign:PopupBox>
-                                        <TextBlock VerticalAlignment="Center" Text="Options"/>
+                                        <TextBlock VerticalAlignment="Center" Text="Options" FontSize="14"/>
                                     </StackPanel>
                                 </Grid>
                             </TabItem>
@@ -392,7 +392,7 @@
                                 <TabItem.Header>
                                     <Label FontSize="12">Sensor data</Label>
                                 </TabItem.Header>
-                                <DataGrid FontSize="11" ItemsSource="{Binding SensorReportItems}" ColumnHeaderHeight="25" SelectionUnit="FullRow"
+                                <DataGrid FontSize="13" ItemsSource="{Binding SensorReportItems}" ColumnHeaderHeight="25" SelectionUnit="FullRow"
 										CanUserSortColumns="False" CanUserAddRows="False" AutoGenerateColumns="False"
 										materialDesign:DataGridAssist.CellPadding="13 3 0 0" materialDesign:DataGridAssist.ColumnHeaderPadding="8 0 0 0" IsSynchronizedWithCurrentItem="False"
 										ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True">
@@ -442,15 +442,15 @@
                                             IsReadOnly="True"/>
                                         <DataGridTextColumn Binding="{Binding MinValue, Mode=OneWay}"
                                             Header="Min"
-                                            Width="75"
+                                            Width="72"
                                             IsReadOnly="True"/>
                                         <DataGridTextColumn Binding="{Binding AverageValue, Mode=OneWay}"
                                             Header="Average"
-                                            Width="75"
+                                            Width="72"
                                             IsReadOnly="True"/>
                                         <DataGridTextColumn Binding="{Binding MaxValue, Mode=OneWay}"
                                             Header="Max"
-                                            Width="75"
+                                            Width="72"
                                             IsReadOnly="True"/>
                                     </DataGrid.Columns>
                                 </DataGrid>

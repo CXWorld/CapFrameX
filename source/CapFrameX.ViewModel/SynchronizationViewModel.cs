@@ -433,6 +433,7 @@ namespace CapFrameX.ViewModel
                 Title = "Frametimes",
                 StrokeThickness = 1,
                 LegendStrokeThickness = 4,
+                FontSize = 13,
                 Color = Constants.FrametimeStroke,
                 EdgeRenderingMode = EdgeRenderingMode.PreferSpeed
             };
@@ -442,6 +443,7 @@ namespace CapFrameX.ViewModel
                 Title = "Until displayed times",
                 StrokeThickness = 1,
                 LegendStrokeThickness = 4,
+                FontSize = 13,
                 Color = OxyColor.FromArgb(150, 241, 125, 32),
                 EdgeRenderingMode = EdgeRenderingMode.PreferSpeed
             };
@@ -474,6 +476,8 @@ namespace CapFrameX.ViewModel
                     Key = "xAxis",
                     Position = OxyPlot.Axes.AxisPosition.Bottom,
                     Title = "Samples",
+                    FontSize = 13,
+                    AxisTitleDistance = 10,
                     Minimum = 0,
                     Maximum = frametimes.Count,
                     MajorGridlineStyle = LineStyle.Solid,
@@ -489,6 +493,8 @@ namespace CapFrameX.ViewModel
                     Key = "yAxis",
                     Position = OxyPlot.Axes.AxisPosition.Left,
                     Title = "Frametime + until displayed time [ms]",
+                    FontSize = 13,
+                    AxisTitleDistance = 10,
                     Minimum = yMin - (yMax - yMin) / 6,
                     Maximum = yMax + (yMax - yMin) / 6,
                     MajorGridlineStyle = LineStyle.Solid,
@@ -535,6 +541,7 @@ namespace CapFrameX.ViewModel
                     new LiveCharts.Wpf.ColumnSeries
                     {
                         Title = "Until displayed time distribution",
+                        FontSize = 13,
                         Values = histogramValues,
                         Fill = new SolidColorBrush(Color.FromRgb(241, 125, 32)),
                         DataLabels = true,
@@ -578,6 +585,7 @@ namespace CapFrameX.ViewModel
                     new LiveCharts.Wpf.ColumnSeries
                     {
                         Title = "Input lag time distribution",
+                        FontSize = 13,
                         Values = histogramValues,
                         Fill = new SolidColorBrush(Color.FromRgb(241, 125, 32)),
                         DataLabels = true,
@@ -619,7 +627,7 @@ namespace CapFrameX.ViewModel
                         Fill = new SolidColorBrush(Color.FromRgb(241, 125, 32)),
                         Values = values,
                         DataLabels = true,
-                        FontSize = 11,
+                        FontSize = 13,
                         MaxRowHeigth = 25
                     }
                 };
@@ -653,7 +661,7 @@ namespace CapFrameX.ViewModel
                         StrokeThickness = 0,
                         LabelPosition = PieLabelPosition.InsideSlice,
                         LabelPoint = PieChartPointLabel,
-                        FontSize = 12
+                        FontSize = 13
                     },
                     new LiveCharts.Wpf.PieSeries
                     {
@@ -663,7 +671,7 @@ namespace CapFrameX.ViewModel
                         StrokeThickness = 0,
                         LabelPosition = PieLabelPosition.InsideSlice,
                         LabelPoint = PieChartPointLabel,
-                        FontSize = 12
+                        FontSize = 13
                     }
                 };
             }));
@@ -780,6 +788,8 @@ namespace CapFrameX.ViewModel
                     Key = "xAxis",
                     Position = OxyPlot.Axes.AxisPosition.Bottom,
                     Title = "Samples",
+                    FontSize = 13,
+                    AxisTitleDistance = 10,
                     Minimum = 0,
                     Maximum = filteredFrametimes.Count(),
                     MajorGridlineStyle = LineStyle.Solid,
@@ -795,6 +805,8 @@ namespace CapFrameX.ViewModel
                     Key = "yAxis",
                     Position = OxyPlot.Axes.AxisPosition.Left,
                     Title = "Frametime + input lag [ms]",
+                    FontSize = 13,
+                    AxisTitleDistance = 10,
                     Minimum = yMin - (yMax - yMin) / 6,
                     Maximum = yMax + (yMax - yMin) / 6,
                     MajorGridlineStyle = LineStyle.Solid,

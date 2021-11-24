@@ -80,7 +80,7 @@ namespace CapFrameX.ViewModel
         private bool _aggregationSeparators;
         private EFilterMode _selectedFilterMode;
         private ELShapeMetrics _lShapeMetric = ELShapeMetrics.Frametimes;
-        private string _lShapeYaxisLabel = "Frametimes (ms)";
+        private string _lShapeYaxisLabel = "Frametimes (ms)" + Environment.NewLine + " ";
 
         private ISubject<Unit> _onUpdateChart = new BehaviorSubject<Unit>(default);
 
@@ -331,7 +331,7 @@ namespace CapFrameX.ViewModel
             set
             {
                 _lShapeMetric = value;
-                LShapeYaxisLabel = value == ELShapeMetrics.Frametimes ? "Frametimes (ms)" : "FPS";
+                LShapeYaxisLabel = value == ELShapeMetrics.Frametimes ? "Frametimes (ms)" + Environment.NewLine + " " : "FPS" + Environment.NewLine + " ";
                 RaisePropertyChanged();
                 UpdateSecondaryCharts();
             }
@@ -1068,7 +1068,7 @@ namespace CapFrameX.ViewModel
                         Fill = new SolidColorBrush(Color.FromRgb(241, 125, 32)),
                         Values = values,
                         DataLabels = true,
-                        FontSize = 11,
+                        FontSize = 14,
                         MaxRowHeigth = 30,
                         Foreground = new SolidColorBrush(_appConfiguration.UseDarkMode ? Colors.White : Colors.Black)
                     }

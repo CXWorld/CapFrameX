@@ -20,7 +20,7 @@ namespace CapFrameX.Statistics.PlotBuilder
 
 		public PlotModel PlotModel { get; protected set; } = new PlotModel
 		{
-			PlotMargins = new OxyThickness(35, 0, 35, 35),
+			PlotMargins = new OxyThickness(50, 0, 50, 35),
 			PlotAreaBorderColor = OxyColor.FromArgb(64, 204, 204, 204)
 		};
 
@@ -31,6 +31,7 @@ namespace CapFrameX.Statistics.PlotBuilder
 					Key = EPlotAxis.YAXISPERCENTAGE.GetDescription(),
 					Position = AxisPosition.Right,
 					Title = "Percentage [%]",
+					FontSize = 13,
 					MajorGridlineStyle = LineStyle.None,
 					MajorStep = 10,
 					MinorTickSize = 0,
@@ -39,7 +40,7 @@ namespace CapFrameX.Statistics.PlotBuilder
 					Maximum = 101,
 					AbsoluteMaximum = 101,
 					AbsoluteMinimum = 0,
-					AxisTitleDistance = 10
+					AxisTitleDistance = 15
 				}
 			},
 			{ EPlotAxis.YAXISPOWER, new LinearAxis()
@@ -47,12 +48,13 @@ namespace CapFrameX.Statistics.PlotBuilder
 					Key = EPlotAxis.YAXISPOWER.GetDescription(),
 					Position = AxisPosition.Right,
 					Title = "Power [W]",
+					FontSize = 13,
 					MajorGridlineStyle = LineStyle.None,
 					MinorTickSize = 0,
 					MajorTickSize = 0,
 					Minimum = 0,
 					AbsoluteMinimum = 0,
-					AxisTitleDistance = 10
+					AxisTitleDistance = 15
 				}
 			},
 			{ EPlotAxis.YAXISCLOCK, new LinearAxis()
@@ -60,12 +62,13 @@ namespace CapFrameX.Statistics.PlotBuilder
 					Key = EPlotAxis.YAXISCLOCK.GetDescription(),
 					Position = AxisPosition.Right,
 					Title = "Clock [MHz]",
+					FontSize = 13,
 					MajorGridlineStyle = LineStyle.None,
 					MinorTickSize = 0,
 					MajorTickSize = 0,
 					Minimum = 0,
 					AbsoluteMinimum = 0,
-					AxisTitleDistance = 10
+					AxisTitleDistance = 20
 				}
 			},
 			{ EPlotAxis.YAXISTEMPERATURE, new LinearAxis()
@@ -73,25 +76,27 @@ namespace CapFrameX.Statistics.PlotBuilder
 					Key = EPlotAxis.YAXISTEMPERATURE.GetDescription(),
 					Position = AxisPosition.Right,
 					Title = "Temperature [°C]",
+					FontSize = 13,
 					MajorGridlineStyle = LineStyle.None,
 					MinorTickSize = 0,
 					MajorTickSize = 0,
 					Minimum = 0,
 					AbsoluteMinimum = 0,
-					AxisTitleDistance = 10
+					AxisTitleDistance = 15
 				}
 			},
 			{ EPlotAxis.YAXISVOLTAGE, new LinearAxis()
 				{
 					Key = EPlotAxis.YAXISVOLTAGE.GetDescription(),
 					Position = AxisPosition.Right,
-					Title = "Data [GB]",
+					Title = "Voltage [V]",
+					FontSize = 13,
 					MajorGridlineStyle = LineStyle.None,
 					MinorTickSize = 0,
 					MajorTickSize = 0,
 					Minimum = 0,
 					AbsoluteMinimum = 0,
-					AxisTitleDistance = 10
+					AxisTitleDistance = 20
 				}
 			},
 			{ EPlotAxis.YAXISDATA, new LinearAxis()
@@ -99,12 +104,13 @@ namespace CapFrameX.Statistics.PlotBuilder
 					Key = EPlotAxis.YAXISDATA.GetDescription(),
 					Position = AxisPosition.Right,
 					Title = "Data [GB]",
+					FontSize = 13,
 					MajorGridlineStyle = LineStyle.None,
 					MinorTickSize = 0,
 					MajorTickSize = 0,
 					Minimum = 0,
 					AbsoluteMinimum = 0,
-					AxisTitleDistance = 10
+					AxisTitleDistance = 20
 				}
 			},
 			{
@@ -113,6 +119,7 @@ namespace CapFrameX.Statistics.PlotBuilder
 					Key = EPlotAxis.XAXIS.GetDescription(),
 					Position = AxisPosition.Bottom,
 					Title = "Recording time [s]",
+					FontSize = 13,
 					MajorGridlineStyle = LineStyle.Solid,
 					MajorGridlineThickness = 1,
 					MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
@@ -127,13 +134,14 @@ namespace CapFrameX.Statistics.PlotBuilder
 					Key = EPlotAxis.YAXISFPS.GetDescription(),
 					Position = AxisPosition.Left,
 					Title = "FPS [1/s]",
+					FontSize = 13,
 					MajorGridlineStyle = LineStyle.Solid,
 					MajorGridlineThickness = 1,
 					MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
 					MinorTickSize = 0,
 					MajorTickSize = 0,
 					AbsoluteMinimum = 0,
-					AxisTitleDistance = 10
+					AxisTitleDistance = 15
 				}
 			},
 			{
@@ -142,13 +150,14 @@ namespace CapFrameX.Statistics.PlotBuilder
 					Key = EPlotAxis.YAXISFRAMETIMES.GetDescription(),
 					Position = AxisPosition.Left,
 					Title = "Frametime [ms]",
+					FontSize = 13,
 					MajorGridlineStyle = LineStyle.Solid,
 					MajorGridlineThickness = 1,
 					MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
 					MinorTickSize = 0,
 					MajorTickSize = 0,
 					AbsoluteMinimum = 0,
-					AxisTitleDistance = 10
+					AxisTitleDistance = 15
 				}
 			}
 		};

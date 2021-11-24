@@ -45,7 +45,7 @@
             <RowDefinition Height="1*"></RowDefinition>
             <RowDefinition Height="65"></RowDefinition>
         </Grid.RowDefinitions>
-        <TextBlock Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Bottom" FontWeight="Bold" FontSize="16" Foreground="{DynamicResource MaterialDesignBody}" Text="{Binding CurrentGameName}"/>
+        <TextBlock Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Bottom" FontWeight="Bold" FontSize="18" Foreground="{DynamicResource MaterialDesignBody}" Text="{Binding CurrentGameName}"/>
         <TabControl Grid.Row="1" Grid.Column="0" Background="{DynamicResource MaterialDesignBackground}">
             <TabItem Width="150" Foreground="{DynamicResource MaterialDesignBody}">
                 <TabItem.Header>
@@ -81,8 +81,8 @@
                     <!--Input lag offset-->
                     <Grid Grid.Row="1" Margin="0 5 0 0" >
                         <StackPanel Margin="20 0 0 0" Orientation="Horizontal" HorizontalAlignment="Left">
-                            <TextBlock VerticalAlignment="Center">Input lag offset (ms):</TextBlock>
-                            <TextBox Height="25" Margin="5 0 0 0" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" TextAlignment="Center" Text="{Binding InputLagOffset, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="Offset" 
+                            <TextBlock VerticalAlignment="Center" FontSize="14">Input lag offset (ms):</TextBlock>
+                            <TextBox FontSize="14" Height="25" Margin="5 0 0 0" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" TextAlignment="Center" Text="{Binding InputLagOffset, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="Offset" 
 									 PreviewKeyDown="InputLagOffsetTextBox_PreviewKeyDown" ToolTip="Offset for display and mouse/keyboard/gamepad latency"/>
                         </StackPanel>
                     </Grid>
@@ -101,14 +101,14 @@
                                     </ContextMenu>
                                 </lvc:CartesianChart.ContextMenu>
                                 <lvc:CartesianChart.AxisX>
-                                    <lvc:Axis Title="Expected input lag (ms)" BarUnit="1" Labels="{Binding InputLagHistogramLabels}" LabelFormatter="{Binding HistogramFormatter}" Foreground="{DynamicResource MaterialDesignBody}">
+                                    <lvc:Axis Title="Expected input lag (ms)" FontSize="13" BarUnit="1" Labels="{Binding InputLagHistogramLabels}" LabelFormatter="{Binding HistogramFormatter}" Foreground="{DynamicResource MaterialDesignBody}">
                                         <lvc:Axis.Separator>
                                             <lvc:Separator Step="1" StrokeThickness="0" IsEnabled="True"></lvc:Separator>
                                         </lvc:Axis.Separator>
                                     </lvc:Axis>
                                 </lvc:CartesianChart.AxisX>
                                 <lvc:CartesianChart.AxisY>
-                                    <lvc:Axis Title="Distribution" Foreground="{DynamicResource MaterialDesignBody}">
+                                    <lvc:Axis Title="Distribution&#x0a;&#x0a;" FontSize="13" Foreground="{DynamicResource MaterialDesignBody}">
                                     <lvc:Axis.Separator>
                                             <lvc:Separator Stroke="{DynamicResource MaterialDesignBody}" StrokeThickness=".3" IsEnabled="True"></lvc:Separator>
                                     </lvc:Axis.Separator>
@@ -125,7 +125,7 @@
                                     </ContextMenu>
                                 </lvc:CartesianChart.ContextMenu>
                                 <lvc:CartesianChart.AxisX>
-                                    <lvc:Axis Title="ms" FontSize="11" MinValue="0" MaxValue="{Binding InputLagBarMaxValue}" 
+                                    <lvc:Axis Title="ms" FontSize="14" MinValue="0" MaxValue="{Binding InputLagBarMaxValue}" 
 								  LabelFormatter="{Binding InputLagParameterFormatter}" Foreground="{DynamicResource MaterialDesignBody}">
                                         <lvc:Axis.Separator>
                                             <lvc:Separator Stroke="{DynamicResource MaterialDesignBody}" StrokeThickness=".3" IsEnabled="True"></lvc:Separator>
@@ -133,7 +133,7 @@
                                     </lvc:Axis>
                                 </lvc:CartesianChart.AxisX>
                                 <lvc:CartesianChart.AxisY>
-                                    <lvc:Axis FontSize="11" Labels="{Binding InputLagParameterLabels}" Foreground="{DynamicResource MaterialDesignBody}">
+                                    <lvc:Axis FontSize="14" Labels="{Binding InputLagParameterLabels}" Foreground="{DynamicResource MaterialDesignBody}">
                                         <lvc:Axis.Separator>
                                             <lvc:Separator Step="1" IsEnabled="False"></lvc:Separator>
                                         </lvc:Axis.Separator>
@@ -204,14 +204,14 @@
                                     </ContextMenu>
                                 </lvc:CartesianChart.ContextMenu>
                                 <lvc:CartesianChart.AxisX>
-                                    <lvc:Axis Title="Until displayed time (ms)" BarUnit="1" Labels="{Binding DisplayTimesHistogramLabels}" LabelFormatter="{Binding HistogramFormatter}" Foreground="{DynamicResource MaterialDesignBody}">
+                                    <lvc:Axis Title="Until displayed time (ms)" FontSize="13" BarUnit="1" Labels="{Binding DisplayTimesHistogramLabels}" LabelFormatter="{Binding HistogramFormatter}" Foreground="{DynamicResource MaterialDesignBody}">
                                         <lvc:Axis.Separator>
                                             <lvc:Separator Step="1" StrokeThickness="0" IsEnabled="True"></lvc:Separator>
                                         </lvc:Axis.Separator>
                                     </lvc:Axis>
                                 </lvc:CartesianChart.AxisX>
                                 <lvc:CartesianChart.AxisY>
-                                    <lvc:Axis Title="Distribution" Foreground="{DynamicResource MaterialDesignBody}">
+                                    <lvc:Axis Title="Distribution&#x0a;&#x0a;" FontSize="13" Foreground="{DynamicResource MaterialDesignBody}">
                                         <lvc:Axis.Separator>
                                             <lvc:Separator Stroke="{DynamicResource MaterialDesignBody}" StrokeThickness=".2" IsEnabled="True"></lvc:Separator>
                                         </lvc:Axis.Separator>
