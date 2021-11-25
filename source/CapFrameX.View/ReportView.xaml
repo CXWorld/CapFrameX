@@ -35,6 +35,7 @@
 				  AutoGeneratingColumn="OnAutoGeneratingColumn"
 				  Tag="{Binding ElementName=ReportViewControl, Path=DataContext}" 
 				  Name ="ReportDataGrid"
+                  FontSize="15"
 				  Height="{Binding ElementName=ReportViewControl, Path=ActualHeight, Converter={StaticResource AddValueConverter}}"
 				  ItemsSource="{Binding ReportInfoCollection}" FocusVisualStyle="{x:Null}"
 				  materialDesign:DataGridAssist.CellPadding="13 8 8 8" materialDesign:DataGridAssist.ColumnHeaderPadding="8" IsSynchronizedWithCurrentItem="False"

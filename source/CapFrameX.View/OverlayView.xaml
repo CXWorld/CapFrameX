@@ -70,7 +70,7 @@
                             <RowDefinition Height="50"></RowDefinition>
                             <RowDefinition Height="60"></RowDefinition>
                         </Grid.RowDefinitions>
-                        <TextBlock Margin="10 0 0 10" HorizontalAlignment="Left" Text="Overlay items" FontSize="14" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}"/>
+                        <TextBlock Margin="15 0 0 10" HorizontalAlignment="Left" Text="Overlay items" FontSize="18" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}"/>
                         <StackPanel Grid.Row="0" Margin="0 0 0 10" Orientation="Horizontal" HorizontalAlignment="Right">
 
                             <Button Width="28" Height="28" Margin="0 0 10 0" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
@@ -147,7 +147,7 @@
                                 <materialDesign:PackIcon Kind="Restore" Height="22" Width="22" />
                             </Button>
                         </StackPanel>
-                        <DataGrid Grid.Row="1" x:Name="OverlayItemDataGrid" FocusVisualStyle="{x:Null}" Height="Auto" Width="440" FontSize="11"
+                        <DataGrid Grid.Row="1" x:Name="OverlayItemDataGrid" FocusVisualStyle="{x:Null}" Height="Auto" Width="440" FontSize="12"
 					          SelectedIndex="{Binding SelectedOverlayEntryIndex}" SelectedItem="{Binding SelectedOverlayEntry}" ItemsSource="{Binding OverlayEntries}"
 					          CanUserSortColumns="False" CanUserAddRows="False" AutoGenerateColumns="False" ColumnHeaderHeight="17"
 					          materialDesign:DataGridAssist.CellPadding="13 5 0 0" materialDesign:DataGridAssist.ColumnHeaderPadding="14 0 0 2" IsSynchronizedWithCurrentItem="False"
@@ -587,7 +587,7 @@
                     <ColumnDefinition Width="220"/>
                     <ColumnDefinition Width="220"/>
                 </Grid.ColumnDefinitions>
-                <TextBlock Grid.Row="0" Grid.ColumnSpan="2"  VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="16" Text="{Binding SelectedOverlayItemName}"/>
+                <TextBlock Grid.Row="0" Grid.ColumnSpan="2"  VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="18" Text="{Binding SelectedOverlayItemName}"/>
                 <Border Grid.Row="1" Grid.Column="0" Margin="5" Background="Transparent" BorderThickness="0.3" BorderBrush="{DynamicResource MaterialDesignBody}">
                     <StackPanel Margin="5" IsEnabled="{Binding OverlayItemsOptionsEnabled}">
                         <Grid>

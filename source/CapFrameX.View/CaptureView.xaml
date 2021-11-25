@@ -59,7 +59,7 @@
                        FontWeight="Bold" FontSize="11"  Margin="5,3,5,0"/>
 
                     <TextBlock Text="{Binding Message}" Grid.Row="1" Grid.ColumnSpan="3" Foreground="{DynamicResource MaterialDesignBody}"
-                       TextWrapping="Wrap" FontSize="11"  Margin="5,0,5,5"/>
+                       TextWrapping="Wrap" FontSize="13"  Margin="5,0,5,5"/>
                 </Grid>
             </DataTemplate>
 
@@ -117,7 +117,7 @@
                                     <Grid Margin="0 20 0 20">
                                         <StackPanel Orientation="Vertical" Width="190">
                                             <StackPanel Orientation="Horizontal">
-                                                <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}">Running processes</TextBlock>
+                                                <TextBlock VerticalAlignment="Center" FontSize="18" Foreground="{DynamicResource MaterialDesignBody}">Running processes</TextBlock>
                                                 <Button Margin="10 0 0 0" Padding="0" Width="25" Height="25" BorderThickness="0" ToolTip="Reset and rescan processes"
                                                         Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}"
                                                         materialDesign:RippleAssist.Feedback="#DD000000"
@@ -132,7 +132,7 @@
                                             <Border Margin="0 10 0 0" BorderThickness="0.1" BorderBrush="{DynamicResource MaterialDesignBody}"
                                                 Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
                                                 <ListView IsSynchronizedWithCurrentItem="False" ItemsSource="{Binding ProcessesToCapture}" SelectedItem="{Binding SelectedProcessToCapture}"
-													  ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True" Height="150" Width="190"
+													  ScrollViewer.VerticalScrollBarVisibility="Auto" FontSize="14" ScrollViewer.CanContentScroll="True" Height="150" Width="190"
 													  IsEnabled="{Binding AreButtonsActive}">
                                                 </ListView>
                                             </Border>
@@ -146,7 +146,7 @@
                                 <Border Grid.Column="1" Margin="20 0 0 0" BorderThickness="0.2" BorderBrush="{DynamicResource MaterialDesignBody}">
                                     <Grid Margin="0 25 0 20">
                                         <StackPanel  Orientation="Vertical" Width="190">
-                                            <TextBlock Margin="0 0 0 5" Foreground="{DynamicResource MaterialDesignBody}">Process ignore list</TextBlock>
+                                            <TextBlock Margin="0 0 0 -3" FontSize="18" Foreground="{DynamicResource MaterialDesignBody}">Process ignore list</TextBlock>
                                             <Border Margin="0 10 0 0" BorderThickness="0.1" BorderBrush="{DynamicResource MaterialDesignBody}"
                                                 Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
                                                 <ListView IsSynchronizedWithCurrentItem="False" ItemsSource="{Binding ProcessesToIgnore}" SelectedItem="{Binding SelectedProcessToIgnore}"
