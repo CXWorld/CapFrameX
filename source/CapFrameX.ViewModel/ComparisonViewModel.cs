@@ -662,7 +662,7 @@ namespace CapFrameX.ViewModel
         public ComparisonCollection ComparisonRecords { get; private set; }
             = new ComparisonCollection();
 
-        public double BarChartMaxRowHeight { get; private set; } = 28;
+        public double BarChartMaxRowHeight { get; private set; } = 26;
 
         public Array SortMetricItemsSource => new[] { "First", "Second", "Third" };
 
@@ -812,6 +812,7 @@ namespace CapFrameX.ViewModel
 
         private void SetRowSeries()
         {
+            const int fontSizeLabels = 12;
 
             ComparisonRowChartSeriesCollection = new SeriesCollection()
             {
@@ -821,7 +822,7 @@ namespace CapFrameX.ViewModel
                     Values = new ChartValues<double>(),
                     Fill = new SolidColorBrush(Color.FromRgb(34, 151, 243)),
                     HighlightFill = new SolidColorBrush(Color.FromRgb(122, 192, 247)),
-                    FontSize = 14,
+                    FontSize = fontSizeLabels,
                     Stroke= Brushes.Transparent,
                     StrokeThickness = 3,
                     DataLabels = true,
@@ -841,7 +842,7 @@ namespace CapFrameX.ViewModel
                     Values = new ChartValues<double>(),
                     Fill = new SolidColorBrush(Color.FromRgb(241, 125, 32)),
                     HighlightFill = new SolidColorBrush(Color.FromRgb(245, 164, 98)),
-                    FontSize = 14,
+                    FontSize = fontSizeLabels,
                     Stroke = Brushes.Transparent,
                     StrokeThickness = 3,
                     DataLabels = true,
@@ -861,7 +862,7 @@ namespace CapFrameX.ViewModel
                     Values = new ChartValues<double>(),
                     Fill = new SolidColorBrush(Color.FromRgb(255, 180, 0)),
                     HighlightFill = new SolidColorBrush(Color.FromRgb(245, 217, 128)),
-                    FontSize = 14,
+                    FontSize = fontSizeLabels,
                     Stroke = Brushes.Transparent,
                     StrokeThickness = 3,
                     DataLabels = true,
