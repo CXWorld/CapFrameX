@@ -50,10 +50,10 @@ namespace OpenHardwareMonitor.Hardware.CPU
 
         private bool IsBigLittleDesign()
         {
-            // Alder Lake (10nm)
-            // Raptor Lake (10nm)?
+            // Alder Lake (Intel 7/ 10nm): 0x97, 0x9A
+            // Raptor Lake (Intel 7/10nm): 0xB7
             // Zen 5 (3nm)?
-            return vendor == Vendor.Intel && family == 0x06 && (model == 0x97 || model == 0x9A);
+            return vendor == Vendor.Intel && family == 0x06 && (model == 0x97 || model == 0x9A || model == 0xB7);
         }
 
         protected string CoreString(int i)

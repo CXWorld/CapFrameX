@@ -41,7 +41,8 @@ namespace OpenHardwareMonitor.Hardware.CPU
             Tremont,
             TigerLake,
             RocketLake,
-            AlderLake
+            AlderLake,
+            RaptorLake
         }
 
         private readonly Sensor[] coreTemperatures;
@@ -254,9 +255,13 @@ namespace OpenHardwareMonitor.Hardware.CPU
                                 microarchitecture = Microarchitecture.RocketLake;
                                 tjMax = GetTjMaxFromMSR();
                                 break;
-                            case 0x97: // Alder Lake (10nm)
+                            case 0x97: // Alder Lake (Intel 7/10nm)
                             case 0x9A:
                                 microarchitecture = Microarchitecture.AlderLake;
+                                tjMax = GetTjMaxFromMSR();
+                                break;
+                            case 0xB7: // Raptor Lake (Intel 7/10nm)
+                                microarchitecture = Microarchitecture.RaptorLake;
                                 tjMax = GetTjMaxFromMSR();
                                 break;
                             default:
@@ -324,6 +329,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
                 case Microarchitecture.TigerLake:
                 case Microarchitecture.RocketLake:
                 case Microarchitecture.AlderLake:
+                case Microarchitecture.RaptorLake:
                     {
                         if (Ring0.Rdmsr(MSR_PLATFORM_INFO, out uint eax, out _))
                         {
@@ -408,7 +414,8 @@ namespace OpenHardwareMonitor.Hardware.CPU
                 microarchitecture == Microarchitecture.Tremont ||
                 microarchitecture == Microarchitecture.TigerLake ||
                 microarchitecture == Microarchitecture.RocketLake ||
-                microarchitecture == Microarchitecture.AlderLake)
+                microarchitecture == Microarchitecture.AlderLake ||
+                 microarchitecture == Microarchitecture.RaptorLake)
             {
                 powerSensors = new Sensor[energyStatusMSRs.Length];
                 lastEnergyTime = new DateTime[energyStatusMSRs.Length];
@@ -578,6 +585,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
                                 case Microarchitecture.TigerLake:
                                 case Microarchitecture.RocketLake:
                                 case Microarchitecture.AlderLake:
+                                case Microarchitecture.RaptorLake:
                                     {
                                         uint multiplier = (eax >> 8) & 0xff;
                                         coreClocks[i].Value = (float)(multiplier * newBusClock);
