@@ -53,6 +53,9 @@ namespace CapFrameX.ViewModel
         private readonly RecordManager _recordManager;
         private readonly ILogger<ComparisonViewModel> _logger;
 
+        private const double BARCHART_FACTOR_ONE_METRIC = 1.6;
+        private const double BARCHART_FACTOR_TWO_METRICS = 1.1;
+
         private PlotModel _comparisonFrametimesModel;
         private PlotModel _comparisonFpsModel;
         private SeriesCollection _comparisonRowChartSeriesCollection;
@@ -604,7 +607,7 @@ namespace CapFrameX.ViewModel
             }
         }
 
-        public bool MetricAndLabelOptionsEnabled=> ComparisonRecords.Count > 0;
+        public bool MetricAndLabelOptionsEnabled => ComparisonRecords.Count > 0;
 
         public double VarianceChartSeparators
         {
@@ -663,6 +666,7 @@ namespace CapFrameX.ViewModel
             = new ComparisonCollection();
 
         public double BarChartMaxRowHeight { get; private set; } = 26;
+
 
         public Array SortMetricItemsSource => new[] { "First", "Second", "Third" };
 
@@ -814,6 +818,20 @@ namespace CapFrameX.ViewModel
         {
             const int fontSizeLabels = 12;
 
+            double firstRowHeight = BarChartMaxRowHeight;
+            double secondRowHeight = BarChartMaxRowHeight;
+            double thirdRowHeight = BarChartMaxRowHeight;
+
+            if (SelectedSecondMetric == EMetric.None && SelectedThirdMetric == EMetric.None)
+            { 
+                firstRowHeight = BarChartMaxRowHeight * BARCHART_FACTOR_ONE_METRIC;
+            }
+            else if (SelectedThirdMetric == EMetric.None || SelectedThirdMetric == EMetric.None)
+            {
+                firstRowHeight = BarChartMaxRowHeight * BARCHART_FACTOR_TWO_METRICS;
+                secondRowHeight = BarChartMaxRowHeight * BARCHART_FACTOR_TWO_METRICS;
+            }
+
             ComparisonRowChartSeriesCollection = new SeriesCollection()
             {
                 new RowSeries
@@ -826,7 +844,7 @@ namespace CapFrameX.ViewModel
                     Stroke= Brushes.Transparent,
                     StrokeThickness = 3,
                     DataLabels = true,
-                    MaxRowHeigth = SelectedSecondMetric == EMetric.None && SelectedThirdMetric == EMetric.None ? BarChartMaxRowHeight * 1.5 : BarChartMaxRowHeight,
+                    MaxRowHeigth = firstRowHeight,
                     RowPadding = 0,
                     UseRelativeMode = true
                 }
@@ -846,7 +864,7 @@ namespace CapFrameX.ViewModel
                     Stroke = Brushes.Transparent,
                     StrokeThickness = 3,
                     DataLabels = true,
-                    MaxRowHeigth = BarChartMaxRowHeight,
+                    MaxRowHeigth = secondRowHeight,
                     RowPadding = 0,
                     UseRelativeMode = true
                 });
@@ -866,7 +884,7 @@ namespace CapFrameX.ViewModel
                     Stroke = Brushes.Transparent,
                     StrokeThickness = 3,
                     DataLabels = true,
-                    MaxRowHeigth = BarChartMaxRowHeight,
+                    MaxRowHeigth = thirdRowHeight,
                     RowPadding = 0,
                     UseRelativeMode = true
                 });
@@ -1286,9 +1304,21 @@ namespace CapFrameX.ViewModel
         }
 
         private void UpdateBarChartHeight()
-            => BarChartHeight = SelectedSecondMetric == EMetric.None && SelectedThirdMetric == EMetric.None ?
-            32.5 + (ComparisonRowChartSeriesCollection.Count * ( BarChartMaxRowHeight * 1.5 ) + 20) * ComparisonRecords.Count
-            : 32.5 + (ComparisonRowChartSeriesCollection.Count * BarChartMaxRowHeight + 12) * ComparisonRecords.Count;
+        {
+            if (SelectedSecondMetric == EMetric.None && SelectedThirdMetric == EMetric.None)
+            {
+                BarChartHeight = 32.5 + (ComparisonRowChartSeriesCollection.Count * (BarChartMaxRowHeight * BARCHART_FACTOR_ONE_METRIC) + 20) * ComparisonRecords.Count;
+            }
+            else if (SelectedSecondMetric == EMetric.None || SelectedThirdMetric == EMetric.None)
+            {
+                BarChartHeight = 32.5 + (ComparisonRowChartSeriesCollection.Count * (BarChartMaxRowHeight * BARCHART_FACTOR_TWO_METRICS) + 16) * ComparisonRecords.Count;
+            }
+            else
+            {
+                BarChartHeight = 32.5 + (ComparisonRowChartSeriesCollection.Count * BarChartMaxRowHeight + 12) * ComparisonRecords.Count;
+            }
+        }
+
 
         private void UpdateVarianceChartHeight()
             => VarianceChartHeight =

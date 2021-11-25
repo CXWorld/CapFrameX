@@ -1068,7 +1068,7 @@ namespace CapFrameX.ViewModel
                         Fill = new SolidColorBrush(Color.FromRgb(241, 125, 32)),
                         Values = values,
                         DataLabels = true,
-                        FontSize = 14,
+                        FontSize = 12,
                         MaxRowHeigth = 30,
                         Foreground = new SolidColorBrush(_appConfiguration.UseDarkMode ? Colors.White : Colors.Black)
                     }

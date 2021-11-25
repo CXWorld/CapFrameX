@@ -152,25 +152,25 @@ namespace CapFrameX.View
             {
                 SensorDataTab.Visibility = Visibility.Collapsed;
                 ThresholdTab.Visibility = Visibility.Collapsed;
-
-                SecondSensorTab.Visibility = Visibility.Visible;
+               
                 SecondThresholdTab.Visibility = Visibility.Visible;
+                SecondSensorTab.Visibility = Visibility.Visible;
 
-                if (StatisticsTabControl.SelectedIndex == 3 )
+                if (StatisticsTabControl.SelectedIndex == 2 )
                     StatisticsTabControl.SelectedIndex = 0;
 
             }
             else if (ActualWidth >= 1650)
             {
 
-                SensorDataTab.Visibility = Visibility.Visible;
-                ThresholdTab.Visibility = Visibility.Collapsed;
+                SensorDataTab.Visibility = Visibility.Collapsed;
+                ThresholdTab.Visibility = Visibility.Visible;
 
-                SecondSensorTab.Visibility = Visibility.Collapsed;
-                SecondThresholdTab.Visibility = Visibility.Visible;
+                SecondSensorTab.Visibility = Visibility.Visible;
+                SecondThresholdTab.Visibility = Visibility.Collapsed;
 
 
-                if (StatisticsTabControl.SelectedIndex == 2)
+                if (StatisticsTabControl.SelectedIndex == 3)
                     StatisticsTabControl.SelectedIndex = 0;
 
             }

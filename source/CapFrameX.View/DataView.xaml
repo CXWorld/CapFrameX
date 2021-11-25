@@ -458,6 +458,79 @@
                         </TabControl>
                     </Grid>
 
+                    <Grid Grid.Column="2" x:Name="SecondSensorTab" Margin="5 0 0 0" Width="450" >
+                        <TabControl Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" FocusVisualStyle="{x:Null}" >
+                            <TabItem Width="75" IsEnabled="{Binding AdditionalGraphsEnabled}">
+                                <TabItem.Header>
+                                    <Label FontSize="12">Sensor data</Label>
+                                </TabItem.Header>
+                                <DataGrid FontSize="13" ItemsSource="{Binding SensorReportItems}" ColumnHeaderHeight="25" SelectionUnit="FullRow"
+										CanUserSortColumns="False" CanUserAddRows="False" AutoGenerateColumns="False"
+										materialDesign:DataGridAssist.CellPadding="13 3 0 0" materialDesign:DataGridAssist.ColumnHeaderPadding="8 0 0 0" IsSynchronizedWithCurrentItem="False"
+										ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True"
+                                        Tag="{Binding DataContext, ElementName=DataViewUserControl}">
+                                    <DataGrid.Resources>
+                                        <Style TargetType="{x:Type DataGridRow}">
+                                            <Setter Property="Height" Value="25" />
+                                            <Setter Property="Background" Value="{DynamicResource MaterialDesignBackground}"/>
+                                        </Style>
+                                        <Style TargetType="{x:Type DataGridCell}">
+                                            <Setter Property="Padding" Value="5 5 5 0" />
+                                            <Setter Property="Background" Value="{DynamicResource MaterialDesignBackground}"/>
+                                            <Setter Property="BorderBrush" Value="Transparent"/>
+                                            <Setter Property="Validation.ErrorTemplate" Value="{x:Null}" />
+                                            <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBody}" />
+                                            <Setter Property="BorderThickness" Value="0"/>
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="{x:Type DataGridCell}">
+                                                        <Grid>
+                                                            <Border
+                                                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                                                    Background="{TemplateBinding Background}"
+                                                                    SnapsToDevicePixels="True" />
+                                                            <ContentPresenter
+                                                                    SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
+                                                                    Margin="{TemplateBinding Padding}" />
+                                                        </Grid>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Style>
+                                    </DataGrid.Resources>
+                                    <DataGrid.Style>
+                                        <StaticResource ResourceKey="MaterialDesignDataGrid"/>
+                                    </DataGrid.Style>
+                                    <DataGrid.ContextMenu>
+                                        <ContextMenu DataContext="{Binding PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
+                                            <MenuItem Header="Copy sensor data(min, avg, max)" Command="{Binding CopySensorInfoCommand}"/>
+                                            <MenuItem Header="Copy raw sensor data" Command="{Binding CopyRawSensorInfoCommand}"/>
+                                        </ContextMenu>
+                                    </DataGrid.ContextMenu>
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Binding="{Binding Name, Mode=OneWay}"                                                           
+                                            Header="Sensor"       
+                                            MinWidth="175"
+                                            IsReadOnly="True"/>
+                                        <DataGridTextColumn Binding="{Binding MinValue, Mode=OneWay}"
+                                            Header="Min"
+                                            Width="72"
+                                            IsReadOnly="True"/>
+                                        <DataGridTextColumn Binding="{Binding AverageValue, Mode=OneWay}"
+                                            Header="Average"
+                                            Width="72"
+                                            IsReadOnly="True"/>
+                                        <DataGridTextColumn Binding="{Binding MaxValue, Mode=OneWay}"
+                                            Header="Max"
+                                            Width="72"
+                                            IsReadOnly="True"/>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </TabItem>
+                        </TabControl>
+                    </Grid>
+
                     <Grid Grid.Column="3" x:Name="SecondThresholdTab" Margin="5 0 0 0" Width="500" >
                         <TabControl Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" FocusVisualStyle="{x:Null}" >
                             <TabItem Width="105">
@@ -529,79 +602,7 @@
                             </TabItem>
                         </TabControl>
                     </Grid>
-
-                    <Grid Grid.Column="2" x:Name="SecondSensorTab" Margin="5 0 0 0" Width="450" >
-                        <TabControl Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" FocusVisualStyle="{x:Null}" >
-                            <TabItem Width="75" IsEnabled="{Binding AdditionalGraphsEnabled}">
-                                <TabItem.Header>
-                                    <Label FontSize="12">Sensor data</Label>
-                                </TabItem.Header>
-                                <DataGrid FontSize="11" ItemsSource="{Binding SensorReportItems}" ColumnHeaderHeight="25" SelectionUnit="FullRow"
-										CanUserSortColumns="False" CanUserAddRows="False" AutoGenerateColumns="False"
-										materialDesign:DataGridAssist.CellPadding="13 3 0 0" materialDesign:DataGridAssist.ColumnHeaderPadding="8 0 0 0" IsSynchronizedWithCurrentItem="False"
-										ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True"
-                                        Tag="{Binding DataContext, ElementName=DataViewUserControl}">
-                                    <DataGrid.Resources>
-                                        <Style TargetType="{x:Type DataGridRow}">
-                                            <Setter Property="Height" Value="25" />
-                                            <Setter Property="Background" Value="{DynamicResource MaterialDesignBackground}"/>
-                                        </Style>
-                                        <Style TargetType="{x:Type DataGridCell}">
-                                            <Setter Property="Padding" Value="5 5 5 0" />
-                                            <Setter Property="Background" Value="{DynamicResource MaterialDesignBackground}"/>
-                                            <Setter Property="BorderBrush" Value="Transparent"/>
-                                            <Setter Property="Validation.ErrorTemplate" Value="{x:Null}" />
-                                            <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBody}" />
-                                            <Setter Property="BorderThickness" Value="0"/>
-                                            <Setter Property="Template">
-                                                <Setter.Value>
-                                                    <ControlTemplate TargetType="{x:Type DataGridCell}">
-                                                        <Grid>
-                                                            <Border
-                                                                    BorderBrush="{TemplateBinding BorderBrush}"
-                                                                    BorderThickness="{TemplateBinding BorderThickness}"
-                                                                    Background="{TemplateBinding Background}"
-                                                                    SnapsToDevicePixels="True" />
-                                                            <ContentPresenter
-                                                                    SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
-                                                                    Margin="{TemplateBinding Padding}" />
-                                                        </Grid>
-                                                    </ControlTemplate>
-                                                </Setter.Value>
-                                            </Setter>
-                                        </Style>
-                                    </DataGrid.Resources>
-                                    <DataGrid.Style>
-                                        <StaticResource ResourceKey="MaterialDesignDataGrid"/>
-                                    </DataGrid.Style>
-                                    <DataGrid.ContextMenu>
-                                        <ContextMenu DataContext="{Binding PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
-                                            <MenuItem Header="Copy sensor data(min, avg, max)" Command="{Binding CopySensorInfoCommand}"/>
-                                            <MenuItem Header="Copy raw sensor data" Command="{Binding CopyRawSensorInfoCommand}"/>
-                                        </ContextMenu>
-                                    </DataGrid.ContextMenu>
-                                    <DataGrid.Columns>
-                                        <DataGridTextColumn Binding="{Binding Name, Mode=OneWay}"                                                           
-                                            Header="Sensor"       
-                                            MinWidth="175"
-                                            IsReadOnly="True"/>
-                                        <DataGridTextColumn Binding="{Binding MinValue, Mode=OneWay}"
-                                            Header="Min"
-                                            Width="75"
-                                            IsReadOnly="True"/>
-                                        <DataGridTextColumn Binding="{Binding AverageValue, Mode=OneWay}"
-                                            Header="Average"
-                                            Width="75"
-                                            IsReadOnly="True"/>
-                                        <DataGridTextColumn Binding="{Binding MaxValue, Mode=OneWay}"
-                                            Header="Max"
-                                            Width="75"
-                                            IsReadOnly="True"/>
-                                    </DataGrid.Columns>
-                                </DataGrid>
-                            </TabItem>
-                        </TabControl>
-                    </Grid>
+                    
                 </Grid>
             </Grid>
 
@@ -765,7 +766,7 @@
                 <Expander Margin="0 -6 0 0" Grid.Row="0" Grid.RowSpan="3" Grid.Column="1" ExpandDirection="Left" materialDesign:ExpanderAssist.VerticalHeaderPadding="5"
                       Foreground="{DynamicResource MaterialDesignBody}" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
                     <Expander.Header>
-                        <TextBlock Text="System Info" RenderTransformOrigin=".5,.5" HorizontalAlignment="Center">
+                    <TextBlock Text="System Info" RenderTransformOrigin=".5,.5" FontSize="14" HorizontalAlignment="Center">
                             <TextBlock.LayoutTransform>
                                 <RotateTransform Angle="90" />
                             </TextBlock.LayoutTransform>
