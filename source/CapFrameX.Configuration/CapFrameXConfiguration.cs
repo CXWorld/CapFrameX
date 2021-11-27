@@ -436,7 +436,7 @@ namespace CapFrameX.Configuration
 
         public bool AutoDisableOverlay
         {
-            get => Get<bool>(false);
+            get => Get<bool>(true);
             set => Set(value);
         }
 
