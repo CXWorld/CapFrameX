@@ -2,9 +2,6 @@
 # CapFrameX
 Frametimes capture and analysis tool based on Intel's [PresentMon](https://github.com/GameTechDev/PresentMon). Overlay provided by [Rivatuner Statistics Server](https://www.guru3d.com/content-page/rivatuner.html).
 
-# Special thanks to
-Sven Bauduin for logo and text design
-
 # Remark in our own intererst
 If you are a reviewer or a youtuber using CapFrameX to get your data, it would be nice to mention us and link to our software.
 If you want to use images of the CapFrameX analysis, you could use the built in screenshot function so that our logo and name gets added to the images.

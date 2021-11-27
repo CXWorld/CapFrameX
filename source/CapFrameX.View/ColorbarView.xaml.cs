@@ -116,7 +116,9 @@ namespace CapFrameX.View
             VisualBrush visualBrush = new VisualBrush(screenShotArea);
 
             // Gets the size of the images (I assume each image has the same size)
-            const int upperRectangleHeight = 5;
+            const int upperRectangleHeight = 3;
+            const int lowerRectangleHeight = 60;
+
             int imageWidth = (int)screenShotArea.ActualWidth;
             int imageHeight = (int)screenShotArea.ActualHeight + upperRectangleHeight;
 
@@ -140,23 +142,21 @@ namespace CapFrameX.View
 
                 bitmap = new Bitmap(stream);
                 System.Drawing.Image logoName = (System.Drawing.Image)Properties.Resources.ResourceManager.GetObject("CX_Screen_Logo_Name");
-                System.Drawing.Image logoDescription = (System.Drawing.Image)Properties.Resources.ResourceManager.GetObject("CX_Screen_Logo_Description");
 
                 // Add upper rectangle
                 AddFillRectangle(bitmap, new System.Drawing.Point(0, 0),
                     new System.Drawing.Size(imageWidth, upperRectangleHeight), new SolidBrush(System.Drawing.Color.FromArgb(255, 32, 141, 228)));
 
                 // Add lower rectangle
-                AddFillRectangle(bitmap, new System.Drawing.Point(0, imageHeight - logoDescription.Height),
-                    new System.Drawing.Size(imageWidth, logoDescription.Height), new SolidBrush(System.Drawing.Color.FromArgb(255, 32, 141, 228)));
+                AddFillRectangle(bitmap, new System.Drawing.Point(0, imageHeight - lowerRectangleHeight),
+                    new System.Drawing.Size(imageWidth, lowerRectangleHeight), new SolidBrush(System.Drawing.Color.FromArgb(255, 32, 141, 228)));
 
                 // Add frame
                 AddRectangle(bitmap, new System.Drawing.Point(1, 1),
                     new System.Drawing.Size(imageWidth - 2, imageHeight), new SolidBrush(System.Drawing.Color.FromArgb(255, 32, 141, 228)));
 
                 // Add CX logos
-                AddLogo(bitmap, logoName, new System.Drawing.Point(0, imageHeight - logoName.Height));
-                AddLogo(bitmap, logoDescription, new System.Drawing.Point(imageWidth - logoDescription.Width, imageHeight - logoDescription.Height));
+                AddLogo(bitmap, logoName, new System.Drawing.Point(10, imageHeight - logoName.Height - (lowerRectangleHeight- logoName.Height)/2));
             }
 
             return bitmap;

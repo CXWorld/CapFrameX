@@ -11,7 +11,7 @@
 					Version="$(var.VersionNumber)"
 			    Manufacturer="DevTechProfile"
 					UpgradeCode="D124F3FF-D15F-4B43-BD0D-CD631DD931DA"
-          IconSourceFile="../CapFrameX/Icons/cx_icon_BUC_icon.ico">
+          IconSourceFile="../CapFrameX/Icons/cx_icon_BUC.ico">
 		<BootstrapperApplicationRef Id="WixStandardBootstrapperApplication.RtfLargeLicense">
 			<bal:WixStandardBootstrapperApplication
 						LicenseFile="license.rtf"

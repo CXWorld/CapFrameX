@@ -78,7 +78,7 @@
 						  Description="CapFrameX Capture and Analysis Tool"
 						  Target="[INSTALLFOLDER]\CapFrameX.exe"
 						  WorkingDirectory="INSTALLFOLDER">
-					<Icon Id="StartMenuShortcutIconID" SourceFile="..\CapFrameX\Icons\cx_icon_BUC_icon.ico"></Icon>
+					<Icon Id="StartMenuShortcutIconID" SourceFile="..\CapFrameX\Icons\cx_icon_BUC.ico"></Icon>
 				</Shortcut>			
 				<RemoveFolder Id="ApplicationProgramsFolder" On="uninstall"/>
 				<RegistryValue Root="HKMU" Key="Software\CapFrameX" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
@@ -89,7 +89,7 @@
 			<Component Id="ApplicationShortcutDesktop" Guid="*">
         <Condition>INSTALLSHORTCUT="1"</Condition>
 				<Shortcut Id="ApplicationDesktopShortcut" Name="CapFrameX" Description="Open Capture and Analytics Tool" Target="[INSTALLFOLDER]\CapFrameX.exe" WorkingDirectory="INSTALLFOLDER">
-					<Icon Id="ShortcutDesktopIconID" SourceFile="..\CapFrameX\Icons\cx_icon_BUC_icon.ico"></Icon>
+					<Icon Id="ShortcutDesktopIconID" SourceFile="..\CapFrameX\Icons\cx_icon_BUC.ico"></Icon>
 				</Shortcut>
 				<RemoveFolder Id="RemoveDesktopFolder" Directory="DesktopFolder" On="uninstall" />
 				<RegistryValue Root="HKCU" Key="Software\CapFrameX" Name="installed" Type="integer" Value="1" KeyPath="yes" />
