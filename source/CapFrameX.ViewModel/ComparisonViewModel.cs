@@ -676,7 +676,7 @@ namespace CapFrameX.ViewModel
         public ComparisonCollection ComparisonRecords { get; private set; }
             = new ComparisonCollection();
 
-        public double BarChartMaxRowHeight { get; private set; } = 26;
+        public double BarChartMaxRowHeight { get; private set; } = 25;
 
 
         public Array SortMetricItemsSource => new[] { "First", "Second", "Third" };
@@ -854,7 +854,7 @@ namespace CapFrameX.ViewModel
                     HighlightFill = new SolidColorBrush(Color.FromRgb(122, 192, 247)),
                     FontSize = fontSizeLabels,
                     Stroke= Brushes.Transparent,
-                    StrokeThickness = 3,
+                    StrokeThickness = 2,
                     DataLabels = true,
                     MaxRowHeigth = firstRowHeight,
                     RowPadding = 0,
@@ -873,7 +873,7 @@ namespace CapFrameX.ViewModel
                     HighlightFill = new SolidColorBrush(Color.FromRgb(245, 164, 98)),
                     FontSize = fontSizeLabels,
                     Stroke = Brushes.Transparent,
-                    StrokeThickness = 3,
+                    StrokeThickness = 2,
                     DataLabels = true,
                     MaxRowHeigth = secondRowHeight,
                     RowPadding = 0,
@@ -892,7 +892,7 @@ namespace CapFrameX.ViewModel
                     HighlightFill = new SolidColorBrush(Color.FromRgb(245, 217, 128)),
                     FontSize = fontSizeLabels,
                     Stroke = Brushes.Transparent,
-                    StrokeThickness = 3,
+                    StrokeThickness = 2,
                     DataLabels = true,
                     MaxRowHeigth = thirdRowHeight,
                     RowPadding = 0,
@@ -1598,7 +1598,7 @@ namespace CapFrameX.ViewModel
                 Values = quantileValues,
                 Stroke = wrappedComparisonInfo.IsHideModeSelected ? Brushes.Transparent : wrappedComparisonInfo.Color,
                 Fill = Brushes.Transparent,
-                StrokeThickness = 1,
+                StrokeThickness = 1.5,
                 LineSmoothness = 1,
                 PointGeometrySize = 5,
                 PointGeometry = DefaultGeometries.Square,

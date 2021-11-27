@@ -258,7 +258,7 @@
                         </Grid>
                         <Grid Grid.Row="3" Margin="0 5 0 0" Background="Transparent">
                             <lvc:CartesianChart Foreground="{DynamicResource MaterialDesignBody}" MouseDoubleClick="ResetLShapeChart_MouseDoubleClick" Series="{Binding ComparisonLShapeCollection}" Zoom="Y"
-                                                Margin="5 5 10 0" ToolTipService.IsEnabled="False">
+                                                Margin="5 5 10 0" ToolTipService.IsEnabled="False" DisableAnimations="True">
                                 <lvc:CartesianChart.DataTooltip>
                                     <lvc:DefaultTooltip BulletSize="20" Background="{DynamicResource MaterialDesignPaper}"/>
                                 </lvc:CartesianChart.DataTooltip>

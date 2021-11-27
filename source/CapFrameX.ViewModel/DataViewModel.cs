@@ -1246,6 +1246,7 @@ namespace CapFrameX.ViewModel
                         Values = chartValues,
                         Stroke = ColorRessource.LShapeStroke,
                         Fill = Brushes.Transparent,
+                        FontSize = 11,
                         StrokeThickness = 2,
                         LineSmoothness= 1,
                         PointGeometrySize = 5,
