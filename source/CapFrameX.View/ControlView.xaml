@@ -38,7 +38,7 @@
         <Expander Name="Expander" Margin="0 0 0 0" MaxWidth="365" Grid.RowSpan="2" Grid.Column="0" Panel.ZIndex="1" ExpandDirection="Right" HorizontalAlignment="Left"
                   Foreground="{DynamicResource MaterialDesignBody}" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" wpf:ExpanderAssist.VerticalHeaderPadding="5">
             <Expander.Header>
-                <TextBlock Text="Observed directory" RenderTransformOrigin=".5,.5" HorizontalAlignment="Center">
+                <TextBlock Text="Observed directory" RenderTransformOrigin=".5,.5" FontSize="14" HorizontalAlignment="Center">
                     <TextBlock.LayoutTransform>
                         <RotateTransform Angle="90"/>
                     </TextBlock.LayoutTransform>
@@ -81,7 +81,7 @@
                     </Button>
                     <ScrollViewer Margin="0 20 0 0" Width="300" Grid.Row="2" Height="{Binding ElementName=ControlViewControl, Path=ActualHeight, Converter={StaticResource AddValueConverterExpander}}" PreviewMouseWheel="ScrollViewer_PreviewMouseWheel" >
                         <TreeView Name="trvStructure" Padding="5" TreeViewItem.Selected="TreeViewItem_Selected" PreviewMouseRightButtonDown="TreeView_PreviewMouseRightButtonDown"
-                                  Tag="{Binding ElementName=ControlViewControl, Path=DataContext}" FontSize="12"  
+                                  Tag="{Binding ElementName=ControlViewControl, Path=DataContext}" FontSize="13"  
                                   AllowDrop="True" 
                                   DragOver="trvStructure_DragOver" 
                                   MouseEnter="trvStructure_MouseEnter"
@@ -350,6 +350,7 @@
                             <DataGridTextColumn Binding="{Binding GameName, Mode=OneWay}"
                                         Width="Auto"
                                         Header="Game"
+                                        FontSize="13"
                                         IsReadOnly="True">
                                 <DataGridTextColumn.ElementStyle>
                                     <Style>
@@ -437,7 +438,7 @@
                       IsExpanded="False" wpf:ExpanderAssist.HorizontalHeaderPadding="5" Expanded="RecordInfoExpander_Change" Collapsed="RecordInfoExpander_Change"
                   Foreground="{DynamicResource MaterialDesignBody}" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
                 <Expander.Header>
-                    <TextBlock Text="Record Info" RenderTransformOrigin=".5,.5" HorizontalAlignment="Center" Margin="35 0 0 0"></TextBlock>
+                    <TextBlock Text="Record Info" RenderTransformOrigin=".5,.5" FontSize="16" HorizontalAlignment="Center" Margin="35 0 0 0"></TextBlock>
                 </Expander.Header>
                 <Grid Grid.Row="1" Grid.Column="1" Margin="0 5 5 0" HorizontalAlignment="Left">
                     <Grid.RowDefinitions>
@@ -453,25 +454,25 @@
                     </Grid.ColumnDefinitions>
                     <!--CPU-->
                     <TextBox Grid.Row="0" Grid.Column="0" wpf:HintAssist.Hint="Custom CPU description" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
-						 Margin="5 -5 5 0" FontSize="12" Text="{Binding CustomCpuDescription, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Stretch"
+						 Margin="5 -5 5 0" FontSize="14" Text="{Binding CustomCpuDescription, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Stretch"
                          KeyDown="TextBox_KeyDown" Foreground="{DynamicResource MaterialDesignBody}" wpf:HintAssist.HintOpacity=".8"/>
                     <!--GPU-->
                     <TextBox Grid.Row="1" Grid.Column="0" wpf:HintAssist.Hint="Custom GPU description" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
-						 Margin="5 0 5 0" FontSize="12" Text="{Binding CustomGpuDescription, UpdateSourceTrigger=PropertyChanged}"
+						 Margin="5 0 5 0" FontSize="14" Text="{Binding CustomGpuDescription, UpdateSourceTrigger=PropertyChanged}"
                          KeyDown="TextBox_KeyDown" Foreground="{DynamicResource MaterialDesignBody}" wpf:HintAssist.HintOpacity=".8"/>
                     <!--RAM-->
                     <TextBox Grid.Row="2" Grid.Column="0" wpf:HintAssist.Hint="Custom RAM description" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
-						 Margin="5 0 5 0" FontSize="12" Text="{Binding CustomRamDescription, UpdateSourceTrigger=PropertyChanged}"
+						 Margin="5 0 5 0" FontSize="14" Text="{Binding CustomRamDescription, UpdateSourceTrigger=PropertyChanged}"
                          KeyDown="TextBox_KeyDown" Foreground="{DynamicResource MaterialDesignBody}" wpf:HintAssist.HintOpacity=".8"/>
 
                     <TextBox Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" wpf:HintAssist.Hint="Game" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
-						 Margin="5 0 5 0" FontSize="12" Text="{Binding CustomGameName, UpdateSourceTrigger=PropertyChanged}"
+						 Margin="5 0 5 0" FontSize="14" Text="{Binding CustomGameName, UpdateSourceTrigger=PropertyChanged}"
                          KeyDown="TextBox_KeyDown" Foreground="{DynamicResource MaterialDesignBody}" wpf:HintAssist.HintOpacity=".8"/>
                     <TextBox Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" wpf:HintAssist.Hint="Comment" Style="{DynamicResource MaterialDesignFloatingHintTextBox}"
-						 Margin="5 0 5 0" FontSize="12" Text="{Binding CustomComment, UpdateSourceTrigger=PropertyChanged}"
+						 Margin="5 0 5 0" FontSize="14" Text="{Binding CustomComment, UpdateSourceTrigger=PropertyChanged}"
                          KeyDown="TextBox_KeyDown" Foreground="{DynamicResource MaterialDesignBody}" wpf:HintAssist.HintOpacity=".8"/>
                     <Button Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2" Margin="0 0 0 0" Width="80" HorizontalAlignment="Center"
-                    Style="{DynamicResource MaterialDesignFlatButton}" Command="{Binding AcceptEditingDialogCommand}">
+                    Style="{DynamicResource MaterialDesignFlatButton}" Command="{Binding AcceptEditingDialogCommand}" FontSize="16">
                         SAVE
                     </Button>
                 </Grid>

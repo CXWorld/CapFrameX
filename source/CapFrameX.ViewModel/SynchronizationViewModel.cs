@@ -541,7 +541,7 @@ namespace CapFrameX.ViewModel
                     new LiveCharts.Wpf.ColumnSeries
                     {
                         Title = "Until displayed time distribution",
-                        FontSize = 13,
+                        FontSize = 12,
                         Values = histogramValues,
                         Fill = new SolidColorBrush(Color.FromRgb(241, 125, 32)),
                         DataLabels = true,
@@ -585,7 +585,7 @@ namespace CapFrameX.ViewModel
                     new LiveCharts.Wpf.ColumnSeries
                     {
                         Title = "Input lag time distribution",
-                        FontSize = 13,
+                        FontSize = 12,
                         Values = histogramValues,
                         Fill = new SolidColorBrush(Color.FromRgb(241, 125, 32)),
                         DataLabels = true,
@@ -627,7 +627,7 @@ namespace CapFrameX.ViewModel
                         Fill = new SolidColorBrush(Color.FromRgb(241, 125, 32)),
                         Values = values,
                         DataLabels = true,
-                        FontSize = 13,
+                        FontSize = 12,
                         MaxRowHeigth = 25
                     }
                 };

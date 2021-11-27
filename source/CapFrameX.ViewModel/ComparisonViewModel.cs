@@ -53,9 +53,13 @@ namespace CapFrameX.ViewModel
         private readonly RecordManager _recordManager;
         private readonly ILogger<ComparisonViewModel> _logger;
 
+        private const double BARCHART_FACTOR_ONE_METRIC = 1.6;
+        private const double BARCHART_FACTOR_TWO_METRICS = 1.1;
+
         private PlotModel _comparisonFrametimesModel;
         private PlotModel _comparisonFpsModel;
         private SeriesCollection _comparisonRowChartSeriesCollection;
+        private SeriesCollection _comparisonRowChartSeriesCollectionLegend;
         private SeriesCollection _varianceStatisticCollection;
         private string[] _comparisonRowChartLabels;
         private Func<double, string> _percentageFormatter;
@@ -237,6 +241,16 @@ namespace CapFrameX.ViewModel
             set
             {
                 _comparisonRowChartSeriesCollection = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public SeriesCollection ComparisonRowChartSeriesCollectionLegend
+        {
+            get { return _comparisonRowChartSeriesCollectionLegend; }
+            set
+            {
+                _comparisonRowChartSeriesCollectionLegend = value;
                 RaisePropertyChanged();
             }
         }
@@ -604,7 +618,7 @@ namespace CapFrameX.ViewModel
             }
         }
 
-        public bool MetricAndLabelOptionsEnabled=> ComparisonRecords.Count > 0;
+        public bool MetricAndLabelOptionsEnabled => ComparisonRecords.Count > 0;
 
         public double VarianceChartSeparators
         {
@@ -662,7 +676,8 @@ namespace CapFrameX.ViewModel
         public ComparisonCollection ComparisonRecords { get; private set; }
             = new ComparisonCollection();
 
-        public double BarChartMaxRowHeight { get; private set; } = 26;
+        public double BarChartMaxRowHeight { get; private set; } = 25;
+
 
         public Array SortMetricItemsSource => new[] { "First", "Second", "Third" };
 
@@ -812,21 +827,36 @@ namespace CapFrameX.ViewModel
 
         private void SetRowSeries()
         {
-            const int fontSizeLabels = 12;
+            double fontSizeLabels = 12;
+
+            double firstRowHeight = BarChartMaxRowHeight;
+            double secondRowHeight = BarChartMaxRowHeight;
+            double thirdRowHeight = BarChartMaxRowHeight;
+
+            if (SelectedSecondMetric == EMetric.None && SelectedThirdMetric == EMetric.None)
+            { 
+                firstRowHeight = BarChartMaxRowHeight * BARCHART_FACTOR_ONE_METRIC;
+                fontSizeLabels = 13;
+            }
+            else if (SelectedThirdMetric == EMetric.None || SelectedThirdMetric == EMetric.None)
+            {
+                firstRowHeight = BarChartMaxRowHeight * BARCHART_FACTOR_TWO_METRICS;
+                secondRowHeight = firstRowHeight;
+                thirdRowHeight = firstRowHeight;
+            }
 
             ComparisonRowChartSeriesCollection = new SeriesCollection()
             {
                 new RowSeries
                 {
-                    Title = GetDescriptionAndFpsUnit(SelectedFirstMetric),
                     Values = new ChartValues<double>(),
                     Fill = new SolidColorBrush(Color.FromRgb(34, 151, 243)),
                     HighlightFill = new SolidColorBrush(Color.FromRgb(122, 192, 247)),
                     FontSize = fontSizeLabels,
                     Stroke= Brushes.Transparent,
-                    StrokeThickness = 3,
+                    StrokeThickness = 2,
                     DataLabels = true,
-                    MaxRowHeigth = SelectedSecondMetric == EMetric.None && SelectedThirdMetric == EMetric.None ? BarChartMaxRowHeight * 1.5 : BarChartMaxRowHeight,
+                    MaxRowHeigth = firstRowHeight,
                     RowPadding = 0,
                     UseRelativeMode = true
                 }
@@ -838,15 +868,14 @@ namespace CapFrameX.ViewModel
                 ComparisonRowChartSeriesCollection.Add(
                 new RowSeries
                 {
-                    Title = GetDescriptionAndFpsUnit(SelectedSecondMetric),
                     Values = new ChartValues<double>(),
                     Fill = new SolidColorBrush(Color.FromRgb(241, 125, 32)),
                     HighlightFill = new SolidColorBrush(Color.FromRgb(245, 164, 98)),
                     FontSize = fontSizeLabels,
                     Stroke = Brushes.Transparent,
-                    StrokeThickness = 3,
+                    StrokeThickness = 2,
                     DataLabels = true,
-                    MaxRowHeigth = BarChartMaxRowHeight,
+                    MaxRowHeigth = secondRowHeight,
                     RowPadding = 0,
                     UseRelativeMode = true
                 });
@@ -858,17 +887,52 @@ namespace CapFrameX.ViewModel
                 ComparisonRowChartSeriesCollection.Add(
                 new RowSeries
                 {
-                    Title = GetDescriptionAndFpsUnit(SelectedThirdMetric),
                     Values = new ChartValues<double>(),
                     Fill = new SolidColorBrush(Color.FromRgb(255, 180, 0)),
                     HighlightFill = new SolidColorBrush(Color.FromRgb(245, 217, 128)),
                     FontSize = fontSizeLabels,
                     Stroke = Brushes.Transparent,
-                    StrokeThickness = 3,
+                    StrokeThickness = 2,
                     DataLabels = true,
-                    MaxRowHeigth = BarChartMaxRowHeight,
+                    MaxRowHeigth = thirdRowHeight,
                     RowPadding = 0,
                     UseRelativeMode = true
+                });
+            }
+
+
+            // Second SeriesCollection to show the legend for the main SeriesCollection
+            ComparisonRowChartSeriesCollectionLegend = new SeriesCollection()
+            {
+                new RowSeries
+                {
+                    Title = GetDescriptionAndFpsUnit(SelectedFirstMetric),
+                    Values = new ChartValues<double>(),
+                    Fill = new SolidColorBrush(Color.FromRgb(34, 151, 243)),
+                }
+            };
+
+            if (SelectedSecondMetric != EMetric.None)
+            {
+                // second metric
+                ComparisonRowChartSeriesCollectionLegend.Add(
+                new RowSeries
+                {
+                    Title = GetDescriptionAndFpsUnit(SelectedSecondMetric),
+                    Values = new ChartValues<double>(),
+                    Fill = new SolidColorBrush(Color.FromRgb(241, 125, 32)),
+                });
+            }
+
+            if (SelectedThirdMetric != EMetric.None)
+            {
+                // third metric
+                ComparisonRowChartSeriesCollectionLegend.Add(
+                new RowSeries
+                {
+                    Title = GetDescriptionAndFpsUnit(SelectedThirdMetric),
+                    Values = new ChartValues<double>(),
+                    Fill = new SolidColorBrush(Color.FromRgb(255, 180, 0)),
                 });
             }
         }
@@ -938,7 +1002,6 @@ namespace CapFrameX.ViewModel
         {
             if (!_doUpdateCharts)
                 return;
-
             ResetBarChartSeriesTitles();
             ComparisonFrametimesModel.Series.Clear();
             ComparisonFpsModel.Series.Clear();
@@ -1286,9 +1349,24 @@ namespace CapFrameX.ViewModel
         }
 
         private void UpdateBarChartHeight()
-            => BarChartHeight = SelectedSecondMetric == EMetric.None && SelectedThirdMetric == EMetric.None ?
-            32.5 + (ComparisonRowChartSeriesCollection.Count * ( BarChartMaxRowHeight * 1.5 ) + 20) * ComparisonRecords.Count
-            : 32.5 + (ComparisonRowChartSeriesCollection.Count * BarChartMaxRowHeight + 12) * ComparisonRecords.Count;
+        {
+            int recordCount = ComparisonRecords.Count;
+
+
+            if (SelectedSecondMetric == EMetric.None && SelectedThirdMetric == EMetric.None)
+            {
+                BarChartHeight = 14 + (ComparisonRowChartSeriesCollection.Count * (BarChartMaxRowHeight * BARCHART_FACTOR_ONE_METRIC) + 20) * recordCount;
+            }
+            else if (SelectedSecondMetric == EMetric.None || SelectedThirdMetric == EMetric.None)
+            {
+                BarChartHeight = 14 + (ComparisonRowChartSeriesCollection.Count * (BarChartMaxRowHeight * BARCHART_FACTOR_TWO_METRICS) + 15) * recordCount;
+            }
+            else
+            {
+                BarChartHeight = 14 + (ComparisonRowChartSeriesCollection.Count * BarChartMaxRowHeight + 10) * recordCount;
+            }
+        }
+
 
         private void UpdateVarianceChartHeight()
             => VarianceChartHeight =
@@ -1520,7 +1598,7 @@ namespace CapFrameX.ViewModel
                 Values = quantileValues,
                 Stroke = wrappedComparisonInfo.IsHideModeSelected ? Brushes.Transparent : wrappedComparisonInfo.Color,
                 Fill = Brushes.Transparent,
-                StrokeThickness = 1,
+                StrokeThickness = 1.5,
                 LineSmoothness = 1,
                 PointGeometrySize = 5,
                 PointGeometry = DefaultGeometries.Square,
@@ -1538,13 +1616,17 @@ namespace CapFrameX.ViewModel
             ComparisonRowChartSeriesCollection[0].Values.Insert(0, wrappedComparisonInfo.WrappedRecordInfo.FirstMetric);
 
             // Second metric
-            if (ComparisonRowChartSeriesCollection.Count > 1)
+            if (ComparisonRowChartSeriesCollection.Count > 1 && SelectedSecondMetric != EMetric.None)
             {
                 ComparisonRowChartSeriesCollection[1].Values.Insert(0, wrappedComparisonInfo.WrappedRecordInfo.SecondMetric);
             }
 
-            // Second metric
-            if (ComparisonRowChartSeriesCollection.Count > 2)
+            // Third metric
+            if (ComparisonRowChartSeriesCollection.Count > 1 && SelectedSecondMetric == EMetric.None)
+            {
+                ComparisonRowChartSeriesCollection[1].Values.Insert(0, wrappedComparisonInfo.WrappedRecordInfo.ThirdMetric);
+            }
+            else if (ComparisonRowChartSeriesCollection.Count > 2)
             {
                 ComparisonRowChartSeriesCollection[2].Values.Insert(0, wrappedComparisonInfo.WrappedRecordInfo.ThirdMetric);
             }
@@ -1589,6 +1671,8 @@ namespace CapFrameX.ViewModel
         {
             if (index == 0)
                 return SelectedFirstMetric;
+            else if (index == 1 && SelectedSecondMetric == EMetric.None)
+                return SelectedThirdMetric;
             else if (index == 1)
                 return SelectedSecondMetric;
             else if (index == 2)

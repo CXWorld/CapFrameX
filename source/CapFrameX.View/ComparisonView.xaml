@@ -66,15 +66,38 @@
                         <Label FontSize="12">Bar charts</Label>
                     </TabItem.Header>
                     <DockPanel>
-                        <TextBlock DockPanel.Dock="Top" Grid.Row="0" Margin="0 10 0 10" FontWeight="Bold" FontSize="18" Text="{Binding CurrentGameName}" HorizontalAlignment="Center"
+                        <TextBlock DockPanel.Dock="Top" Grid.Row="0" Margin="0 10 0 5" FontWeight="Bold" FontSize="18" Text="{Binding CurrentGameName}" HorizontalAlignment="Center"
 							   Visibility="{Binding ShowGameNameTitle, Converter={StaticResource TrueToVisibleConverter}}"/>
-                        <TextBox DockPanel.Dock="Top" Grid.Row="0" HorizontalAlignment="Center" Visibility="{Binding Path=IsChecked, ElementName=ShowCustomTitleToggleButton, Converter={StaticResource TrueToVisibleConverter}}"
+                        <TextBox DockPanel.Dock="Top" Grid.Row="0" Margin="0 5 0 2" HorizontalAlignment="Center" Visibility="{Binding Path=IsChecked, ElementName=ShowCustomTitleToggleButton, Converter={StaticResource TrueToVisibleConverter}}"
                                  Text="Type your title here..." Height="30" MinWidth="50" 
                                  FontSize="18" PreviewKeyDown="CustomTitle_PreviewKeyDown" />
-                        <ScrollViewer VerticalScrollBarVisibility="Auto">
-                            <lvc:CartesianChart Grid.Row="0" VerticalAlignment="Top" MaxWidth="1000" Margin="10" FontSize="14" Series="{Binding ComparisonRowChartSeriesCollection}" Height="{Binding BarChartHeight}"
+
+                        <!--Second bar chart with no values just to display the legend of the main bar chart without being inside the scrollviewer-->
+                        <lvc:CartesianChart DockPanel.Dock="Top" Grid.Row="0" VerticalAlignment="Top" HorizontalAlignment="Center" Width="600" MaxWidth="1000" 
+                                            Margin="0 5 0 -20" FontSize="14" 
+                                            Series="{Binding ComparisonRowChartSeriesCollectionLegend}"
 											Visibility="{Binding HasComparisonItems, Converter={StaticResource TrueToVisibleConverter}}" DisableAnimations="True"
-											Hoverable="False" DataTooltip="{x:Null}" LegendLocation="Top" UseRelativeMode="{Binding UseComparisonRelativeMode, Mode=TwoWay}">
+											Hoverable="False" DataTooltip="{x:Null}" LegendLocation="Top">
+                            <lvc:CartesianChart.AxisX>
+                                <lvc:Axis Foreground="Transparent">
+                                    <lvc:Axis.Separator>
+                                        <lvc:Separator IsEnabled="False"></lvc:Separator>
+                                    </lvc:Axis.Separator>
+                                </lvc:Axis>
+                            </lvc:CartesianChart.AxisX>
+                            <lvc:CartesianChart.AxisY>
+                                <lvc:Axis Foreground="Transparent">
+                                    <lvc:Axis.Separator>
+                                        <lvc:Separator IsEnabled="False"></lvc:Separator>
+                                    </lvc:Axis.Separator>
+                                </lvc:Axis>
+                            </lvc:CartesianChart.AxisY>
+                        </lvc:CartesianChart>
+                        <!--Bar chart scroll viewer-->
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <lvc:CartesianChart Grid.Row="0" VerticalAlignment="Top"  MaxWidth="1000" Margin="10 0 10 0" FontSize="14" Series="{Binding ComparisonRowChartSeriesCollection}" 
+                                                Height="{Binding BarChartHeight}" DisableAnimations="True" Hoverable="False"
+											    DataTooltip="{x:Null}" LegendLocation="None"  UseRelativeMode="{Binding UseComparisonRelativeMode, Mode=TwoWay}">
                                 <lvc:CartesianChart.AxisX>
                                     <lvc:Axis MinValue="{Binding BarMinValue}" MaxValue="{Binding BarMaxValue}" Foreground="Transparent">
                                         <lvc:Axis.Separator>
@@ -83,7 +106,7 @@
                                     </lvc:Axis>
                                 </lvc:CartesianChart.AxisX>
                                 <lvc:CartesianChart.AxisY>
-                                    <lvc:Axis Labels="{Binding ComparisonRowChartLabels}" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource MaterialDesignBody}">
+                                    <lvc:Axis Labels="{Binding ComparisonRowChartLabels}" FontSize="13" FontWeight="Bold"  Foreground="{DynamicResource MaterialDesignBody}">
                                         <lvc:Axis.Separator>
                                             <!--step 1 forces the axis to display all labels, disabling it makes it invisible-->
                                             <lvc:Separator Step="1" IsEnabled="False"></lvc:Separator>
@@ -235,7 +258,7 @@
                         </Grid>
                         <Grid Grid.Row="3" Margin="0 5 0 0" Background="Transparent">
                             <lvc:CartesianChart Foreground="{DynamicResource MaterialDesignBody}" MouseDoubleClick="ResetLShapeChart_MouseDoubleClick" Series="{Binding ComparisonLShapeCollection}" Zoom="Y"
-                                                Margin="5 5 10 0" ToolTipService.IsEnabled="False">
+                                                Margin="5 5 10 0" ToolTipService.IsEnabled="False" DisableAnimations="True">
                                 <lvc:CartesianChart.DataTooltip>
                                     <lvc:DefaultTooltip BulletSize="20" Background="{DynamicResource MaterialDesignPaper}"/>
                                 </lvc:CartesianChart.DataTooltip>
@@ -278,14 +301,14 @@
                                     <lvc:DefaultLegend FontSize="16" Margin="0 0 0 20" FontWeight="Medium"/>
                                 </lvc:CartesianChart.ChartLegend>
                                 <lvc:CartesianChart.AxisX>
-                                    <lvc:Axis Position="RightTop" FontSize="14" FontWeight="Bold" MinValue="{Binding VarianceBarMinValue}" MaxValue="1.00001" BarUnit="1" LabelFormatter="{Binding PercentageFormatter}" Foreground="{DynamicResource MaterialDesignBody}">
+                                    <lvc:Axis Position="RightTop" FontSize="13" FontWeight="Bold" MinValue="{Binding VarianceBarMinValue}" MaxValue="1.00001" BarUnit="1" LabelFormatter="{Binding PercentageFormatter}" Foreground="{DynamicResource MaterialDesignBody}">
                                         <lvc:Axis.Separator>
                                             <lvc:Separator Step="{Binding VarianceChartSeparators}" StrokeThickness=".3" Stroke="{DynamicResource MaterialDesignBody}"></lvc:Separator>
                                         </lvc:Axis.Separator>
                                     </lvc:Axis>
                                 </lvc:CartesianChart.AxisX>
                                 <lvc:CartesianChart.AxisY>
-                                    <lvc:Axis Labels="{Binding ComparisonRowChartLabels}" FontSize="12" Foreground="{DynamicResource MaterialDesignBody}">
+                                    <lvc:Axis Labels="{Binding ComparisonRowChartLabels}" FontSize="13" Foreground="{DynamicResource MaterialDesignBody}">
                                         <lvc:Axis.Separator>
                                             <!--step 1 forces the axis to display all labels, disabling it makes it invisible-->
                                             <lvc:Separator Step="1" IsEnabled="False"></lvc:Separator>
@@ -488,7 +511,7 @@
 										  dragdrop:DragDrop.UseDefaultDragAdorner="True"
 										  dragdrop:DragDrop.DefaultDragAdornerOpacity="0.5"
 										  dragdrop:DragDrop.UseDefaultEffectDataTemplate="False">
-                            <ScrollViewer VerticalScrollBarVisibility="Auto" CanContentScroll="True">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto" CanContentScroll="True" FontSize="13">
                                 <ItemsControl ItemsSource="{Binding ComparisonRecords}" Foreground="{DynamicResource MaterialDesignBody}">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate DataType="{x:Type vm:ComparisonRecordInfoWrapper}">
@@ -528,7 +551,7 @@
                                                     <TextBlock Text="{Binding WrappedRecordInfo.InfoText}" TextWrapping="Wrap"
 																   Width="140" Margin="3 0 0 0" Grid.Row="1" Grid.Column="0"
 																   LineStackingStrategy="BlockLineHeight"
-																   FontSize="12"
+																   FontSize="13"
 																   LineHeight="14"
 																   MaxHeight="52"/>
                                                     <ctrls:CXColorPicker Width="50" Height="25" Grid.Row="1" Grid.Column="1" Margin="0 0 0 0" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" SelectedColor="{Binding FrametimeGraphColor}" 
