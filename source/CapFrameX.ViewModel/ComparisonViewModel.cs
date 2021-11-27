@@ -59,6 +59,7 @@ namespace CapFrameX.ViewModel
         private PlotModel _comparisonFrametimesModel;
         private PlotModel _comparisonFpsModel;
         private SeriesCollection _comparisonRowChartSeriesCollection;
+        private SeriesCollection _comparisonRowChartSeriesCollectionLegend;
         private SeriesCollection _varianceStatisticCollection;
         private string[] _comparisonRowChartLabels;
         private Func<double, string> _percentageFormatter;
@@ -240,6 +241,16 @@ namespace CapFrameX.ViewModel
             set
             {
                 _comparisonRowChartSeriesCollection = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public SeriesCollection ComparisonRowChartSeriesCollectionLegend
+        {
+            get { return _comparisonRowChartSeriesCollectionLegend; }
+            set
+            {
+                _comparisonRowChartSeriesCollectionLegend = value;
                 RaisePropertyChanged();
             }
         }
@@ -816,7 +827,7 @@ namespace CapFrameX.ViewModel
 
         private void SetRowSeries()
         {
-            const int fontSizeLabels = 12;
+            double fontSizeLabels = 12;
 
             double firstRowHeight = BarChartMaxRowHeight;
             double secondRowHeight = BarChartMaxRowHeight;
@@ -825,18 +836,19 @@ namespace CapFrameX.ViewModel
             if (SelectedSecondMetric == EMetric.None && SelectedThirdMetric == EMetric.None)
             { 
                 firstRowHeight = BarChartMaxRowHeight * BARCHART_FACTOR_ONE_METRIC;
+                fontSizeLabels = 13;
             }
             else if (SelectedThirdMetric == EMetric.None || SelectedThirdMetric == EMetric.None)
             {
                 firstRowHeight = BarChartMaxRowHeight * BARCHART_FACTOR_TWO_METRICS;
-                secondRowHeight = BarChartMaxRowHeight * BARCHART_FACTOR_TWO_METRICS;
+                secondRowHeight = firstRowHeight;
+                thirdRowHeight = firstRowHeight;
             }
 
             ComparisonRowChartSeriesCollection = new SeriesCollection()
             {
                 new RowSeries
                 {
-                    Title = GetDescriptionAndFpsUnit(SelectedFirstMetric),
                     Values = new ChartValues<double>(),
                     Fill = new SolidColorBrush(Color.FromRgb(34, 151, 243)),
                     HighlightFill = new SolidColorBrush(Color.FromRgb(122, 192, 247)),
@@ -856,7 +868,6 @@ namespace CapFrameX.ViewModel
                 ComparisonRowChartSeriesCollection.Add(
                 new RowSeries
                 {
-                    Title = GetDescriptionAndFpsUnit(SelectedSecondMetric),
                     Values = new ChartValues<double>(),
                     Fill = new SolidColorBrush(Color.FromRgb(241, 125, 32)),
                     HighlightFill = new SolidColorBrush(Color.FromRgb(245, 164, 98)),
@@ -876,7 +887,6 @@ namespace CapFrameX.ViewModel
                 ComparisonRowChartSeriesCollection.Add(
                 new RowSeries
                 {
-                    Title = GetDescriptionAndFpsUnit(SelectedThirdMetric),
                     Values = new ChartValues<double>(),
                     Fill = new SolidColorBrush(Color.FromRgb(255, 180, 0)),
                     HighlightFill = new SolidColorBrush(Color.FromRgb(245, 217, 128)),
@@ -887,6 +897,42 @@ namespace CapFrameX.ViewModel
                     MaxRowHeigth = thirdRowHeight,
                     RowPadding = 0,
                     UseRelativeMode = true
+                });
+            }
+
+
+            // Second SeriesCollection to show the legend for the main SeriesCollection
+            ComparisonRowChartSeriesCollectionLegend = new SeriesCollection()
+            {
+                new RowSeries
+                {
+                    Title = GetDescriptionAndFpsUnit(SelectedFirstMetric),
+                    Values = new ChartValues<double>(),
+                    Fill = new SolidColorBrush(Color.FromRgb(34, 151, 243)),
+                }
+            };
+
+            if (SelectedSecondMetric != EMetric.None)
+            {
+                // second metric
+                ComparisonRowChartSeriesCollectionLegend.Add(
+                new RowSeries
+                {
+                    Title = GetDescriptionAndFpsUnit(SelectedSecondMetric),
+                    Values = new ChartValues<double>(),
+                    Fill = new SolidColorBrush(Color.FromRgb(241, 125, 32)),
+                });
+            }
+
+            if (SelectedThirdMetric != EMetric.None)
+            {
+                // third metric
+                ComparisonRowChartSeriesCollectionLegend.Add(
+                new RowSeries
+                {
+                    Title = GetDescriptionAndFpsUnit(SelectedThirdMetric),
+                    Values = new ChartValues<double>(),
+                    Fill = new SolidColorBrush(Color.FromRgb(255, 180, 0)),
                 });
             }
         }
@@ -956,7 +1002,6 @@ namespace CapFrameX.ViewModel
         {
             if (!_doUpdateCharts)
                 return;
-
             ResetBarChartSeriesTitles();
             ComparisonFrametimesModel.Series.Clear();
             ComparisonFpsModel.Series.Clear();
@@ -1305,17 +1350,20 @@ namespace CapFrameX.ViewModel
 
         private void UpdateBarChartHeight()
         {
+            int recordCount = ComparisonRecords.Count;
+
+
             if (SelectedSecondMetric == EMetric.None && SelectedThirdMetric == EMetric.None)
             {
-                BarChartHeight = 32.5 + (ComparisonRowChartSeriesCollection.Count * (BarChartMaxRowHeight * BARCHART_FACTOR_ONE_METRIC) + 20) * ComparisonRecords.Count;
+                BarChartHeight = 14 + (ComparisonRowChartSeriesCollection.Count * (BarChartMaxRowHeight * BARCHART_FACTOR_ONE_METRIC) + 20) * recordCount;
             }
             else if (SelectedSecondMetric == EMetric.None || SelectedThirdMetric == EMetric.None)
             {
-                BarChartHeight = 32.5 + (ComparisonRowChartSeriesCollection.Count * (BarChartMaxRowHeight * BARCHART_FACTOR_TWO_METRICS) + 16) * ComparisonRecords.Count;
+                BarChartHeight = 14 + (ComparisonRowChartSeriesCollection.Count * (BarChartMaxRowHeight * BARCHART_FACTOR_TWO_METRICS) + 15) * recordCount;
             }
             else
             {
-                BarChartHeight = 32.5 + (ComparisonRowChartSeriesCollection.Count * BarChartMaxRowHeight + 12) * ComparisonRecords.Count;
+                BarChartHeight = 14 + (ComparisonRowChartSeriesCollection.Count * BarChartMaxRowHeight + 10) * recordCount;
             }
         }
 
@@ -1568,13 +1616,17 @@ namespace CapFrameX.ViewModel
             ComparisonRowChartSeriesCollection[0].Values.Insert(0, wrappedComparisonInfo.WrappedRecordInfo.FirstMetric);
 
             // Second metric
-            if (ComparisonRowChartSeriesCollection.Count > 1)
+            if (ComparisonRowChartSeriesCollection.Count > 1 && SelectedSecondMetric != EMetric.None)
             {
                 ComparisonRowChartSeriesCollection[1].Values.Insert(0, wrappedComparisonInfo.WrappedRecordInfo.SecondMetric);
             }
 
-            // Second metric
-            if (ComparisonRowChartSeriesCollection.Count > 2)
+            // Third metric
+            if (ComparisonRowChartSeriesCollection.Count > 1 && SelectedSecondMetric == EMetric.None)
+            {
+                ComparisonRowChartSeriesCollection[1].Values.Insert(0, wrappedComparisonInfo.WrappedRecordInfo.ThirdMetric);
+            }
+            else if (ComparisonRowChartSeriesCollection.Count > 2)
             {
                 ComparisonRowChartSeriesCollection[2].Values.Insert(0, wrappedComparisonInfo.WrappedRecordInfo.ThirdMetric);
             }
@@ -1619,6 +1671,8 @@ namespace CapFrameX.ViewModel
         {
             if (index == 0)
                 return SelectedFirstMetric;
+            else if (index == 1 && SelectedSecondMetric == EMetric.None)
+                return SelectedThirdMetric;
             else if (index == 1)
                 return SelectedSecondMetric;
             else if (index == 2)
