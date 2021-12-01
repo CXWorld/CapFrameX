@@ -793,14 +793,14 @@
 														Grid.Column="1">
                                             <TextBlock FontWeight="Bold"
 															Text="{Binding Key}" 
-															FontSize="13"
+															FontSize="14"
 															LineHeight="18"/>
                                             <TextBlock Text="{Binding Value}" TextWrapping="Wrap"
 															   Width="220"
 															   LineStackingStrategy="BlockLineHeight"
-															   FontSize="12"
-															   LineHeight="12"
-															   MaxHeight="55"/>
+															   FontSize="13"
+															   LineHeight="15"
+															   MaxHeight="60"/>
                                         </StackPanel>
                                     </Border>
                                     <DataTemplate.Triggers>
