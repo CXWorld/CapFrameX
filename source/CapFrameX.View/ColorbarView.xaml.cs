@@ -156,7 +156,7 @@ namespace CapFrameX.View
                     new System.Drawing.Size(imageWidth - 2, imageHeight), new SolidBrush(System.Drawing.Color.FromArgb(255, 32, 141, 228)));
 
                 // Add CX logos
-                AddLogo(bitmap, logoName, new System.Drawing.Point(10, imageHeight - logoName.Height - (lowerRectangleHeight- logoName.Height)/2));
+                AddLogo(bitmap, logoName, new System.Drawing.Point(20, imageHeight - logoName.Height - (lowerRectangleHeight- logoName.Height)/2));
             }
 
             return bitmap;
