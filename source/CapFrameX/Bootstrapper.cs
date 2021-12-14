@@ -112,10 +112,13 @@ namespace CapFrameX
 			Container.Register<LoginManager>(Reuse.Singleton);
 			Container.Register<ICloudManager, CloudManager>(Reuse.Singleton);
 			Container.Register<LoginWindow>(Reuse.Transient);
+			var loggerFactory = Container.Resolve<ILoggerFactory>();
+			var loggerProcessList = loggerFactory.CreateLogger<ProcessList>();
 			Container.RegisterInstance(ProcessList.Create(
 				filename: "Processes.json",
 				foldername: Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), @"CapFrameX\Configuration"),
-				appConfiguration: Container.Resolve<IAppConfiguration>()));
+				appConfiguration: Container.Resolve<IAppConfiguration>(),
+				logger: loggerProcessList));
 			Container.Register<SoundManager>(Reuse.Singleton);
 			Container.Resolve<IEventAggregator>().GetEvent<PubSubEvent<AppMessages.OpenLoginWindow>>().Subscribe(_ => {
 				var window = Container.Resolve<LoginWindow>();

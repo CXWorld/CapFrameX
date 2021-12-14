@@ -6,10 +6,11 @@ using System.Linq;
 using System.Net.Http;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using CapFrameX.Configuration;
 using CapFrameX.Contracts.Configuration;
 using CapFrameX.Extensions;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
 namespace CapFrameX.Data
@@ -19,16 +20,20 @@ namespace CapFrameX.Data
         private readonly List<CXProcess> _processList = new List<CXProcess>();
         private readonly string _filename;
         private readonly IAppConfiguration _appConfiguration;
+        private readonly ILogger<ProcessList> _logger;
         private readonly ISubject<int> _processListUpdate = new Subject<int>();
         private bool ProcesslistInitialized { get; set; }
         public IObservable<int> ProcessesUpdate => _processListUpdate.AsObservable();
 
         public CXProcess[] Processes => _processList.ToArray();
 
-        private ProcessList(string filename, IAppConfiguration appConfiguration)
+        private ProcessList(string filename,
+            IAppConfiguration appConfiguration,
+            ILogger<ProcessList> logger)
         {
             _filename = filename;
             _appConfiguration = appConfiguration;
+            _logger = logger;
         }
 
         public string[] GetIgnoredProcessNames()
@@ -72,15 +77,22 @@ namespace CapFrameX.Data
                         BaseAddress = new Uri(ConfigurationManager.AppSettings["WebserviceUri"])
                     })
                     {
-                        client.DefaultRequestHeaders.AddCXClientUserAgent();
-                        var content = new StringContent(JsonConvert.SerializeObject(new
+                        try
                         {
-                            Name = processName,
-                            DisplayName = displayName,
-                            IsBlacklisted = blacklist
-                        }));
-                        content.Headers.ContentType.MediaType = "application/json";
-                        var response = await client.PostAsync("ProcessList", content);
+                            client.DefaultRequestHeaders.AddCXClientUserAgent();
+                            var content = new StringContent(JsonConvert.SerializeObject(new
+                            {
+                                Name = processName,
+                                DisplayName = displayName,
+                                IsBlacklisted = blacklist
+                            }));
+                            content.Headers.ContentType.MediaType = "application/json";
+                            var response = await client.PostAsync("ProcessList", content);
+                        }
+                        catch(Exception ex)
+                        {
+                            _logger.LogError(ex, "Error while uploading process info.");
+                        }
                     }
                 });
             }
@@ -93,10 +105,21 @@ namespace CapFrameX.Data
             return process;
         }
 
-        public void Save()
+        public async Task Save()
         {
             var json = JsonConvert.SerializeObject(_processList.OrderBy(p => p.Name), Formatting.Indented);
-            File.WriteAllText(_filename, json);
+
+            try
+            {
+                using (StreamWriter outputFile = new StreamWriter(_filename))
+                {
+                    await outputFile.WriteAsync(json);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error while saving process list.");
+            }
         }
 
         public void ReadFromFile()
@@ -128,16 +151,17 @@ namespace CapFrameX.Data
                 {
                     AddEntry(proc.Name, proc.DisplayName, proc.IsBlacklisted, proc.LastCaptureTime);
                 }
-                Save();
+
+                await Save();
             }
         }
 
-        public static ProcessList Create(string filename, string foldername, IAppConfiguration appConfiguration)
+        public static ProcessList Create(string filename, string foldername, IAppConfiguration appConfiguration, ILogger<ProcessList> logger)
         {
             if (!Directory.Exists(foldername)) Directory.CreateDirectory(foldername);
             var fullpath = Path.Combine(foldername, filename);
-            ProcessList processList = new ProcessList(fullpath, appConfiguration);
-            Task.Run(() =>
+            ProcessList processList = new ProcessList(fullpath, appConfiguration, logger);
+            Task.Run(async () =>
             {
                 try
                 {
@@ -145,7 +169,11 @@ namespace CapFrameX.Data
                     {
                         processList.ReadFromFile();
                     }
-                    catch { }
+                    catch (Exception ex)
+                    {
+                        logger.LogError(ex, "Error while reading from file.");
+                    }
+
                     var defaultProcesslistFileInfo = new FileInfo(Path.Combine("ProcessList", "Processes.json"));
                     if (!defaultProcesslistFileInfo.Exists)
                     {
@@ -157,29 +185,35 @@ namespace CapFrameX.Data
                     {
                         processList.AddEntry(process.Name, process.DisplayName, process.IsBlacklisted, process.LastCaptureTime);
                     }
-                    processList.Save();
+                    await processList.Save();
 
                     if (appConfiguration.AutoUpdateProcessList)
                     {
                         processList.ProcesslistInitialized = false;
-                        Task.Run(() => processList.UpdateProcessListFromWebserviceAsync().ContinueWith(t =>
-                        {
-                            processList.ProcesslistInitialized = true;
-                        }).ConfigureAwait(false));
+                        await UpdateProcessListAsync(processList);
                     }
                     else
                         processList.ProcesslistInitialized = true;
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    //ToDo: logging!
+                    logger.LogError(ex, "Error while creating process list.");
                 }
                 finally
                 {
                     processList.ProcesslistInitialized = true;
                 }
             });
+
             return processList;
+        }
+
+        private static Task<ConfiguredTaskAwaitable> UpdateProcessListAsync(ProcessList processList)
+        {
+            return Task.Run(() => processList.UpdateProcessListFromWebserviceAsync().ContinueWith(t =>
+            {
+                processList.ProcesslistInitialized = true;
+            }).ConfigureAwait(false));
         }
     }
 
