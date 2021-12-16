@@ -436,8 +436,6 @@ namespace CapFrameX.ViewModel
 
         // End of run history and aggregation options
 
-
-
         public string[] SoundModes => _soundManager.AvailableSoundModes;
 
         public IAppConfiguration AppConfiguration => _appConfiguration;
@@ -631,18 +629,19 @@ namespace CapFrameX.ViewModel
             if (!CXHotkey.IsValidHotkey(CaptureHotkeyString))
                 return;
 
-            HotkeyDictionaryBuilder.SetHotkey(AppConfiguration, HotkeyAction.Capture, () =>
-            {
-                if (!_hotkeyLocked)
+            HotkeyDictionaryBuilder.SetHotkey(AppConfiguration, HotkeyAction.Capture, 
+                () =>
                 {
-                    _hotkeyLocked = true;
-                    Task.Run(async () => await Task.Delay(250)).ContinueWith(t => _hotkeyLocked = false);
-                    _logger.LogInformation("Hotkey ({captureHotkeyString}) callback triggered. Lock capture service state is {lockCaptureServiceState}.", CaptureHotkeyString, _captureManager.LockCaptureService);
-                    _logger.LogInformation("IsCapturing state: {isCapturingState}", _captureManager.IsCapturing);
-                    if (!_captureManager.LockCaptureService)
-                        SetCaptureMode();
-                }
-            });
+                    if (!_hotkeyLocked)
+                    {
+                        _hotkeyLocked = true;
+                        Task.Run(async () => await Task.Delay(500)).ContinueWith(t => _hotkeyLocked = false);
+                        _logger.LogInformation("Hotkey ({captureHotkeyString}) callback triggered. Lock capture service state is {lockCaptureServiceState}.", CaptureHotkeyString, _captureManager.LockCaptureService);
+                        _logger.LogInformation("IsCapturing state: {isCapturingState}", _captureManager.IsCapturing);
+                        if (!_captureManager.LockCaptureService)
+                            SetCaptureMode();
+                    }
+                });
         }
 
         private void SetCaptureMode()
