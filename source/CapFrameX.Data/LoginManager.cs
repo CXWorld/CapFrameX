@@ -78,12 +78,19 @@ namespace CapFrameX.Data
 
 				var context = await listener.GetContextAsync();
 
-				string html = string.Format("<html><body></body></html>");
+				string html = string.Format($@"
+<html>
+	<body>
+		<div><h1>Ok. You can now close this Window.</h1></div>
+		<div>Otherwise, click <a href=""{ConfigurationManager.AppSettings["ManageProfilePageUrl"]}"">Here</a> to manage your account.</div>
+	</body>
+</html>"
+);
 				var buffer = Encoding.UTF8.GetBytes(html);
 				context.Response.ContentLength64 = buffer.Length;
 				using (var stream = context.Response.OutputStream)
 				{
-					var responseTask = stream.WriteAsync(buffer, 0, buffer.Length);
+					await stream.WriteAsync(buffer, 0, buffer.Length);
 				}
 
 				string error = context.Request.QueryString["error"];

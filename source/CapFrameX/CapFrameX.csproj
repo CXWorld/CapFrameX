@@ -154,15 +154,8 @@
     </Compile>
     <Compile Include="Bootstrapper.cs" />
     <Compile Include="CapFrameXViewRegion.cs" />
-    <Compile Include="Login.xaml.cs">
-      <DependentUpon>Login.xaml</DependentUpon>
-    </Compile>
     <Compile Include="WindowStateService.cs" />
     <Page Include="Shell.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Login.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -318,9 +311,6 @@
     <WCFMetadata Include="Connected Services\" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="CefSharp.Wpf">
-      <Version>79.1.360</Version>
-    </PackageReference>
     <PackageReference Include="ControlzEx">
       <Version>4.4.0</Version>
     </PackageReference>
