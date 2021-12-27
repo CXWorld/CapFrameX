@@ -272,6 +272,16 @@ public:
 		return gcnew Tuple<double, double>(result[0], result[1]);
 	}
 
+	array<float>^ GetFrameTimesInterval(INT processId, INT milliseconds)
+	{
+		std::vector<float> frameTimes = _coreControl->GetFrameTimesInterval((UINT)processId, (UINT)milliseconds);
+		array<float>^ frameTimesArray = gcnew array<float>(frameTimes.size());
+
+		pin_ptr<float> dest = &frameTimesArray[0];
+		std::memcpy(dest, &frameTimes[0], frameTimes.size() * sizeof(float));
+		return frameTimesArray;
+	}
+
 	void SetShowRunHistory(bool showRunHistory)
 	{
 		{

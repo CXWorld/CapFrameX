@@ -73,6 +73,9 @@ namespace CapFrameX.Data
         private bool _isCapturing;
         private ISubject<CaptureStatus> _captureStatusChange =
             new BehaviorSubject<CaptureStatus>(new CaptureStatus { Status = ECaptureStatus.Stopped });
+        private List<float> _aggregatedRTSSFrameTimes;
+        private IDisposable _rTSSFrameTimesIntervalStream;
+
         public IObservable<CaptureStatus> CaptureStatusChange
             => _captureStatusChange.AsObservable();
         public bool LockCaptureService { get; private set; }
@@ -242,6 +245,9 @@ namespace CapFrameX.Data
                     }
                 });
 
+            // Start capturing RTSS frame times
+            _rTSSFrameTimesIntervalStream = GetRTSSFrameTimesIntervalHeartBeat(options.ProcessInfo.Item2);
+
             _sensorService.StartSensorLogging();
 
             delayStopwatch.Stop();
@@ -262,7 +268,7 @@ namespace CapFrameX.Data
                         }
                         catch (Exception e)
                         {
-
+                            _logger.LogError(e, "Error on capture stop.");
                         }
                     });
             }
@@ -304,6 +310,8 @@ namespace CapFrameX.Data
             _sensorService.StopSensorLogging();
             _captureStatusChange.OnNext(new CaptureStatus() { Status = ECaptureStatus.Processing });
 
+            // Stop capturing RTSS frame times
+            _rTSSFrameTimesIntervalStream?.Dispose();
 
             if (_appConfiguration.AutoDisableOverlay && OSDAutoDisabled)
             {
@@ -329,6 +337,18 @@ namespace CapFrameX.Data
 
             await WriteExtractedCaptureDataToFileAsync();
             LockCaptureService = false;
+        }
+
+        private IDisposable GetRTSSFrameTimesIntervalHeartBeat(int processId)
+        {
+            if (!_appConfiguration.CaptureRTSSFrameTimes)
+                return null;
+
+            _aggregatedRTSSFrameTimes = new List<float>();
+            return Observable
+                .Timer(DateTimeOffset.UtcNow, TimeSpan.FromSeconds(1))
+                .Where(x => IsCapturing)
+                .Subscribe(x => _aggregatedRTSSFrameTimes.AddRange(_rtssService.GetFrameTimesInterval(processId, 1000)));
         }
 
         public void StartFillArchive()
@@ -414,6 +434,7 @@ namespace CapFrameX.Data
 
                 //ToDo: data could be adjusted (cutting at end)
                 sessionRun.SensorData2 = _sensorService.GetSensorSessionData();
+                sessionRun.RTSSFrameTimes = _aggregatedRTSSFrameTimes?.ToArray();
 
                 if (_appConfiguration.UseRunHistory)
                 {
@@ -656,7 +677,6 @@ namespace CapFrameX.Data
         {
             return Convert.ToDouble(lineSplit[PresentMonCaptureService.TimeInSeconds_INDEX], CultureInfo.InvariantCulture);
         }
-
     }
 
     public class CaptureOptions

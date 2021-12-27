@@ -482,9 +482,6 @@ namespace CapFrameX.ViewModel
                                 IRTSSService rTSSService,
                                 ILogEntryManager logEntryManager)
         {
-            Stopwatch stopwatch = new Stopwatch();
-            stopwatch.Start();
-
             _appConfiguration = appConfiguration;
             _eventAggregator = eventAggregator;
             _recordManager = recordManager;
@@ -564,7 +561,7 @@ namespace CapFrameX.ViewModel
             CaptureTimeString = _appConfiguration.CaptureTime.ToString(CultureInfo.InvariantCulture);
             CaptureDelayString = _appConfiguration.CaptureDelay.ToString(CultureInfo.InvariantCulture);
             _disposableHeartBeat?.Dispose();
-            _disposableHeartBeat = GetListUpdatHeartBeat();
+            _disposableHeartBeat = GetListUpdateHeartBeat();
             _updateCurrentProcess = _eventAggregator.GetEvent<PubSubEvent<ViewMessages.CurrentProcessToCapture>>(); ;
 
             SubscribeToUpdateProcessIgnoreList();
@@ -584,9 +581,6 @@ namespace CapFrameX.ViewModel
 
 
             InitializeFrametimeModel();
-
-            stopwatch.Stop();
-            _logger.LogInformation(this.GetType().Name + " {initializationTime}s initialization time", Math.Round(stopwatch.ElapsedMilliseconds * 1E-03, 1));
         }
 
         public bool IsNavigationTarget(NavigationContext navigationContext)
@@ -825,7 +819,7 @@ namespace CapFrameX.ViewModel
                 return false;
         }
 
-        private IDisposable GetListUpdatHeartBeat()
+        private IDisposable GetListUpdateHeartBeat()
         {
             return Observable
                 .Timer(DateTimeOffset.UtcNow, TimeSpan.FromSeconds(1))

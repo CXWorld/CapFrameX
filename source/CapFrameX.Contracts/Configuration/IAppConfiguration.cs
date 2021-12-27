@@ -225,6 +225,8 @@ namespace CapFrameX.Contracts.Configuration
 		bool AppNotificationsActive { get; set; }
 
 		string WebservicePort { get; set; }
+
+		bool CaptureRTSSFrameTimes { get; set; }
 	}
 
 	public interface IReportDataGridColumnSettings

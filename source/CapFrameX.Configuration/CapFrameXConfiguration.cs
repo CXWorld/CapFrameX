@@ -638,6 +638,13 @@ namespace CapFrameX.Configuration
             set => Set(value);
         }
 
+        // RTSS Frametimes
+        public bool CaptureRTSSFrameTimes
+        {
+            get => Get<bool>(false);
+            set => Set(value);
+        }
+
         T Get<T>(T defaultValue, [CallerMemberName] string key = null)
         {
             if (string.IsNullOrWhiteSpace(key))

@@ -111,8 +111,11 @@ std::vector<float> RTSSCoreControl::GetCurrentFramerate(DWORD processId)
 					{
 						if (pEntry->dwProcessID == processId)
 						{
-							currentFrametime = pEntry->dwStatFrameTimeBuf[(pEntry->dwStatFrameTimeBufPos - 1) & 1023] / 1000.0f;
-							currentFramerate = pEntry->dwStatFrameTimeBufFramerate / 10.0f;
+							// & 1023 enforces upper limit = 1023 = max index
+							DWORD frameTimePos = pEntry->dwStatFrameTimeBufPos;
+							currentFrametime = pEntry->dwStatFrameTimeBuf[(frameTimePos - 1) & 1023] / 1000.0f;
+							currentFramerate = pEntry->dwStatFrameTimeBufFramerate / 10.0f;							
+
 							break;
 						}
 					}
@@ -126,6 +129,62 @@ std::vector<float> RTSSCoreControl::GetCurrentFramerate(DWORD processId)
 	result.push_back(currentFramerate);
 	result.push_back(currentFrametime);
 	return result;
+}
+
+std::vector<float> RTSSCoreControl::GetFrameTimesInterval(DWORD processId, DWORD milliSeconds)
+{
+	std::vector<float> frameTimes;
+	DWORD microseconds = 1000 * milliSeconds;
+	LPDWORD lpdwProcessiD = 0;
+	HANDLE hMapFile = OpenFileMapping(FILE_MAP_ALL_ACCESS, FALSE, "RTSSSharedMemoryV2");
+
+	if (hMapFile)
+	{
+		LPVOID pMapAddr = MapViewOfFile(hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, 0);
+		LPRTSS_SHARED_MEMORY pMem = (LPRTSS_SHARED_MEMORY)pMapAddr;
+
+		if (pMem)
+		{
+			if ((pMem->dwSignature == 'RTSS') && (pMem->dwVersion >= 0x00020000))
+			{
+				for (DWORD dwEntry = 0; dwEntry < pMem->dwAppArrSize; dwEntry++)
+				{
+					RTSS_SHARED_MEMORY::LPRTSS_SHARED_MEMORY_APP_ENTRY pEntry = (RTSS_SHARED_MEMORY::LPRTSS_SHARED_MEMORY_APP_ENTRY)((LPBYTE)pMem + pMem->dwAppArrOffset + dwEntry * pMem->dwAppEntrySize);
+
+					if (pEntry->dwProcessID)
+					{
+						if (pEntry->dwProcessID == processId)
+						{
+							// & 1023 enforces upper limit = 1023 = max index
+							DWORD frameTimePos = pEntry->dwStatFrameTimeBufPos;
+							DWORD frametimeSum = 0;
+
+							for (DWORD i = frameTimePos; i >= 0; i--)
+							{
+								frametimeSum += pEntry->dwStatFrameTimeBuf[i & 1023];
+
+								if (frametimeSum < microseconds)
+								{
+									frameTimes.push_back(pEntry->dwStatFrameTimeBuf[i & 1023] / 1000.0f);
+								}
+								else
+								{
+									break;
+								}
+							}
+
+							break;
+						}
+					}
+				}
+			}
+			UnmapViewOfFile(pMapAddr);
+		}
+		CloseHandle(hMapFile);
+	}
+
+	std::reverse(frameTimes.begin(), frameTimes.end());
+	return frameTimes;
 }
 
 DWORD RTSSCoreControl::GetSharedMemoryVersion()
@@ -442,11 +501,11 @@ void RTSSCoreControl::Refresh()
 	{
 		if (OSDCustomPosition)
 		{
-				std::string posString = "<P=" + std::to_string(OverlayPositionX) + "," + std::to_string(OverlayPositionY) + ">";
-				CString posCString(posString.c_str());
-				strOSD += posCString;
+			std::string posString = "<P=" + std::to_string(OverlayPositionX) + "," + std::to_string(OverlayPositionY) + ">";
+			CString posCString(posString.c_str());
+			strOSD += posCString;
 		}
-			
+
 
 		// add format variables
 		if (!m_formatVariables.IsEmpty())

@@ -7,5 +7,6 @@
 		ISessionCaptureData CaptureData { get; set; }
 		ISessionSensorData SensorData { get; set; }
         ISessionSensorData2 SensorData2 { get; set; }
-    }
+		float[] RTSSFrameTimes { get; set; }
+	}
 }
