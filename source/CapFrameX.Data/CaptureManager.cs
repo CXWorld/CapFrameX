@@ -339,18 +339,6 @@ namespace CapFrameX.Data
             LockCaptureService = false;
         }
 
-        private IDisposable GetRTSSFrameTimesIntervalHeartBeat(int processId)
-        {
-            if (!_appConfiguration.CaptureRTSSFrameTimes)
-                return null;
-
-            _aggregatedRTSSFrameTimes = new List<float>();
-            return Observable
-                .Timer(DateTimeOffset.UtcNow, TimeSpan.FromSeconds(1))
-                .Where(x => IsCapturing)
-                .Subscribe(x => _aggregatedRTSSFrameTimes.AddRange(_rtssService.GetFrameTimesInterval(processId, 1000)));
-        }
-
         public void StartFillArchive()
         {
             _disposableArchiveStream?.Dispose();
@@ -676,6 +664,22 @@ namespace CapFrameX.Data
         private double GetStartTimeFromDataLine(string[] lineSplit)
         {
             return Convert.ToDouble(lineSplit[PresentMonCaptureService.TimeInSeconds_INDEX], CultureInfo.InvariantCulture);
+        }
+
+        private IDisposable GetRTSSFrameTimesIntervalHeartBeat(int processId)
+        {
+            if (!_appConfiguration.CaptureRTSSFrameTimes)
+            {
+                return null;
+            }
+
+            const int SAMPLE_INTERVAL_MS = 1000;
+            _aggregatedRTSSFrameTimes = new List<float>();
+            return Observable
+                .Timer(DateTimeOffset.UtcNow, TimeSpan.FromMilliseconds(SAMPLE_INTERVAL_MS))
+                .Where(x => IsCapturing)
+                .Subscribe(x => _aggregatedRTSSFrameTimes
+                    .AddRange(_rtssService.GetFrameTimesInterval(processId, SAMPLE_INTERVAL_MS)));
         }
     }
 
