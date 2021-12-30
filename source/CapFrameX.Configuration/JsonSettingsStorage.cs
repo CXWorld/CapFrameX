@@ -89,7 +89,7 @@ namespace CapFrameX.Configuration
 
                     if (dict is null)
                     {
-                        throw new Exception($"Configurationfile {file.FullName} is corrupted");
+                        throw new Exception($"Configurationfile is corrupted.");
                     }
 
                     foreach (var kvp in dict)
@@ -101,8 +101,9 @@ namespace CapFrameX.Configuration
                 }
             } catch(Exception exc)
             {
-                _logger.LogError(exc, $"Unable to load Configuration from path {_jsonFilePath}");
-                throw;
+                var newException = new JsonSettingsStorageException($"Unable to load Configuration from path {_jsonFilePath}. Please delete and try again.", exc);
+                _logger.LogError(exc, newException.Message);
+                throw newException;
             }
         }
 
@@ -131,6 +132,13 @@ namespace CapFrameX.Configuration
                 _logger.LogError(exc, $"Unable to save Configuration to path {_jsonFilePath}");
                 throw;
             }
+        }
+    }
+
+    internal class JsonSettingsStorageException : Exception
+    {
+        public JsonSettingsStorageException(string message, Exception innerException) : base(message, innerException)
+        {
         }
     }
 }

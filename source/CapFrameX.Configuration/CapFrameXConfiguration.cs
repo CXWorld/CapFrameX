@@ -1,10 +1,12 @@
 ﻿using CapFrameX.Contracts.Configuration;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Runtime.CompilerServices;
+using System.Windows.Forms;
 
 namespace CapFrameX.Configuration
 {
@@ -673,10 +675,18 @@ namespace CapFrameX.Configuration
             _onValueChanged.OnNext((key, value));
         }
 
-        public CapFrameXConfiguration(ISettingsStorage settingsStorage)
+        public CapFrameXConfiguration(ILogger<CapFrameXConfiguration> logger, ISettingsStorage settingsStorage)
         {
             _settingsStorage = settingsStorage;
-            _settingsStorage.Load().Wait();
+            try
+            {
+                _settingsStorage.Load().Wait();
+            } catch(Exception e)
+            {
+                logger.LogError(e, "Error Loading Configuration");
+                MessageBox.Show(e.Message + Environment.NewLine + e.InnerException?.Message, "Error");
+                throw;
+            }
         }
     }
 
