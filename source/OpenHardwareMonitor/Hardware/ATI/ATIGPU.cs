@@ -99,7 +99,7 @@ namespace OpenHardwareMonitor.Hardware.ATI
             this.powerPpt = new Sensor("GPU PPT", 2, SensorType.Power, this, settings);
             this.powerSocket = new Sensor("GPU Socket", 3, SensorType.Power, this, settings);
             this.powerSoc = new Sensor("GPU SOC", 4, SensorType.Power, this, settings);
-            this.powerTotalBoardSimulated = new Sensor("GPU Board Sim", 5, SensorType.Power, this, settings);
+            this.powerTotalBoardSimulated = new Sensor("GPU TBP Sim", 5, SensorType.Power, this, settings);
 
             this.fan = new Sensor("GPU Fan", 0, SensorType.Fan, this, settings);
 
