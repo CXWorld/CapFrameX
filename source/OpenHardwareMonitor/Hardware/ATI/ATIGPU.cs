@@ -38,6 +38,7 @@ namespace OpenHardwareMonitor.Hardware.ATI
         private readonly Sensor powerSocket;
         private readonly Sensor powerTotal;
         private readonly Sensor powerSoc;
+        private readonly Sensor powerTotalBoardSimulated;
         private readonly Sensor fan;
         private readonly Sensor coreClock;
         private readonly Sensor memoryClock;
@@ -98,6 +99,7 @@ namespace OpenHardwareMonitor.Hardware.ATI
             this.powerPpt = new Sensor("GPU PPT", 2, SensorType.Power, this, settings);
             this.powerSocket = new Sensor("GPU Socket", 3, SensorType.Power, this, settings);
             this.powerSoc = new Sensor("GPU SOC", 4, SensorType.Power, this, settings);
+            this.powerTotalBoardSimulated = new Sensor("GPU Board Sim", 5, SensorType.Power, this, settings);
 
             this.fan = new Sensor("GPU Fan", 0, SensorType.Fan, this, settings);
 
@@ -367,6 +369,29 @@ namespace OpenHardwareMonitor.Hardware.ATI
                 GetPMLog(data, ADLSensorType.INFO_ACTIVITY_GFX, coreLoad);
                 GetPMLog(data, ADLSensorType.INFO_ACTIVITY_MEM, memoryControllerLoad);
                 GetPMLog(data, ADLSensorType.FAN_PERCENTAGE, controlSensor);
+
+                // Simulated total board power
+                if (sensorConfig.GetSensorEvaluate(powerTotalBoardSimulated.IdentifierString))
+                {
+                    float powerTotalValue = 0;
+                    if (!sensorConfig.GetSensorEvaluate(powerTotal.IdentifierString))
+                    {
+                        int i = (int)ADLSensorType.ASIC_POWER;
+                        if (i < data.Sensors.Length && data.Sensors[i].Supported)
+                        {
+                            powerTotalValue = data.Sensors[i].Value;
+                            ActivateSensor(powerTotal);
+                        }
+                        else
+                        {
+                            powerTotalValue = powerTotal.Value.Value;
+                        }
+                    }
+
+                    // 15W + 11%
+                    powerTotalBoardSimulated.Value = 15f + 1.11f * powerTotalValue;
+                    ActivateSensor(powerTotal);
+                }
 
                 if (sensorConfig.GetSensorEvaluate(this.memoryUsed.IdentifierString))
                 {

@@ -681,10 +681,13 @@ namespace CapFrameX.Configuration
             try
             {
                 _settingsStorage.Load().Wait();
-            } catch(Exception e)
+            }
+            catch (Exception ex)
             {
-                logger.LogError(e, "Error Loading Configuration");
-                MessageBox.Show(e.Message + Environment.NewLine + e.InnerException?.Message, "Error");
+                logger.LogError(ex, "Error Loading Configuration");
+                MessageBox.Show(ex.Message + Environment.NewLine + ex.InnerException?.Message
+                    + "\n\n" + "Possible solution: delete AppSettings.json under MyDocuments\\CapFrameX\\Configuration" +
+                    " and then restart CapFrameX.", "Error");
                 throw;
             }
         }
@@ -727,7 +730,7 @@ namespace CapFrameX.Configuration
 
         public IReportDataGridColumnSettings Clone()
         {
-            return (ReportDataGridColumnSettings)this.MemberwiseClone();
+            return (ReportDataGridColumnSettings)MemberwiseClone();
         }
     }
 }
