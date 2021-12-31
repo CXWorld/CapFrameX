@@ -380,16 +380,15 @@ namespace OpenHardwareMonitor.Hardware.ATI
                         if (i < data.Sensors.Length && data.Sensors[i].Supported)
                         {
                             powerTotalValue = data.Sensors[i].Value;
-                            ActivateSensor(powerTotal);
                         }
-                        else
-                        {
-                            powerTotalValue = powerTotal.Value.Value;
-                        }
+                    }
+                    else
+                    {
+                        powerTotalValue = powerTotal.Value.Value;
                     }
 
                     // 15W + 11%
-                    powerTotalBoardSimulated.Value = 15f + 1.11f * powerTotalValue;
+                    powerTotalBoardSimulated.Value = powerTotalValue > 0 ? 15f + 1.11f * powerTotalValue : 0;
                     ActivateSensor(powerTotalBoardSimulated);
                 }
 
