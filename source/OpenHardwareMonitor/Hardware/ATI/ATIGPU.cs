@@ -390,7 +390,7 @@ namespace OpenHardwareMonitor.Hardware.ATI
 
                     // 15W + 11%
                     powerTotalBoardSimulated.Value = 15f + 1.11f * powerTotalValue;
-                    ActivateSensor(powerTotal);
+                    ActivateSensor(powerTotalBoardSimulated);
                 }
 
                 if (sensorConfig.GetSensorEvaluate(this.memoryUsed.IdentifierString))
