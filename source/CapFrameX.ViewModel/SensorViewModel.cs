@@ -2,7 +2,6 @@
 using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.Sensor;
 using CapFrameX.Data;
-using CapFrameX.Data.Session.Classes;
 using CapFrameX.Data.Session.Contracts;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Sensor;
@@ -11,7 +10,6 @@ using CapFrameX.Sensor.Reporting.Contracts;
 using CapFrameX.Sensor.Reporting.Data;
 using CapFrameX.ViewModel.SubModels;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Mvvm;
@@ -19,7 +17,6 @@ using Prism.Regions;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -145,6 +142,7 @@ namespace CapFrameX.ViewModel
                 RaisePropertyChanged();
             }
         }
+
         public string SensorStatisticsText
         {
             get { return _sensorStatisticsText; }
@@ -154,7 +152,6 @@ namespace CapFrameX.ViewModel
                 RaisePropertyChanged();
             }
         }
-
 
         public Array LoggingPeriodItemsSource => new[] { 250, 500 };
 
@@ -187,9 +184,6 @@ namespace CapFrameX.ViewModel
             IRecordManager recordManager,
             ApplicationState applicationState)
         {
-            Stopwatch stopwatch = new Stopwatch();
-            stopwatch.Start();
-
             _appConfiguration = appConfiguration;
             _eventAggregator = eventAggregator;
             _sensorService = sensorService;
@@ -214,7 +208,6 @@ namespace CapFrameX.ViewModel
             ResetToDefaultCommand = new DelegateCommand(OnResetToDefault);
             AggregateSensorEntries = new DelegateCommand(() =>
             {
-
                 Task.Run(() =>
                 {
                     if (_applicationState.SelectedRecords != null && _applicationState.SelectedRecords.Count > 1)
@@ -229,7 +222,7 @@ namespace CapFrameX.ViewModel
                         var session = _recordManager.LoadData(ri.FileInfo.FullName);
                         return session;
                     });
-                        if(EvaluationMethod == "Average")
+                        if (EvaluationMethod == "Average")
                             AverageSensorDataOfSessions(sessions);
                         else
                             AggregateSensorDataOfSessions(sessions);
@@ -245,9 +238,6 @@ namespace CapFrameX.ViewModel
             Task.Run(async () => await SetWrappedSensorEntries());
             SubscribeToUpdateSession();
 
-
-
-            stopwatch.Stop();
             _logger.LogInformation(this.GetType().Name + " {initializationTime}s initialization time", Math.Round(stopwatch.ElapsedMilliseconds * 1E-03, 1));
         }
 
@@ -300,19 +290,18 @@ namespace CapFrameX.ViewModel
         private void AggregateSensorDataOfSessions(IEnumerable<ISession> sessions)
         {
             var runs = sessions.SelectMany(s => s.Runs);
-
             var items = SensorReport.GetFullReportFromSessionSensorData(runs.Select(r => r.SensorData2));
 
             if (!_selectedRecordChanged)
             {
                 Application.Current.Dispatcher.Invoke(() =>
-            {
-                SensorReportItems.Clear();
-                foreach (var item in items)
                 {
-                    SensorReportItems.Add(item);
-                };
-            });
+                    SensorReportItems.Clear();
+                    foreach (var item in items)
+                    {
+                        SensorReportItems.Add(item);
+                    };
+                });
             }
         }
 
@@ -365,13 +354,10 @@ namespace CapFrameX.ViewModel
             var data = SensorReport.GetSensorReportEntries(_session.Runs.Select(s => s.SensorData2))
                 .Where(x => x.Name != "BetweenMeasureTime");
 
-
             StringBuilder builder = new StringBuilder();
 
             // Header
             builder.AppendLine(string.Join("\t", data.Select(x => x.DisplayName)));
-
-
 
             for (int i = 0; i < data.First().Values.Count(); i++)
             {
