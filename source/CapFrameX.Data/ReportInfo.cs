@@ -11,9 +11,9 @@ namespace CapFrameX.Data
 		[DisplayName("Creation time")]
 		public string Time { get; set; }
 		[DisplayName("# samples")]
-		public string NumberOfSamples {get; set; }
+		public int NumberOfSamples {get; set; }
 		[DisplayName("Record time (s)")]
-		public string RecordTime { get; set; }
+		public double RecordTime { get; set; }
 		[DisplayName("CPU Name")]
 		public string Cpu { get; set; }
 		[DisplayName("GPU Name")]
