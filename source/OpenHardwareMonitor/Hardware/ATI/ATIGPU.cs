@@ -56,9 +56,9 @@ namespace OpenHardwareMonitor.Hardware.ATI
         private readonly int overdriveVersion;
 
         public ATIGPU(string name, int adapterIndex, int busNumber,
-          int deviceNumber, IntPtr context, ISettings settings, ISensorConfig config, IRTSSService rTSSService)
+          int deviceNumber, IntPtr context, ISettings settings, ISensorConfig config, IProcessService processService)
           : base(name, new Identifier("atigpu",
-            adapterIndex.ToString(CultureInfo.InvariantCulture)), settings, rTSSService)
+            adapterIndex.ToString(CultureInfo.InvariantCulture)), settings, processService)
         {
             this.adapterIndex = adapterIndex;
             this.busNumber = busNumber;

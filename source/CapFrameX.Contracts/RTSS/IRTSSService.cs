@@ -1,13 +1,12 @@
 ﻿using CapFrameX.Contracts.Overlay;
+using CapFrameX.Contracts.Sensor;
 using System;
-using System.Reactive.Subjects;
 using System.Threading.Tasks;
 
 namespace CapFrameX.Contracts.RTSS
 {
-    public interface IRTSSService
+    public interface IRTSSService : IProcessService
     {
-        ISubject<int> ProcessIdStream { get; }
         bool IsRTSSInstalled();
         string GetApiInfo(int processId);
         Tuple<double, double> GetCurrentFramerate(int processId);

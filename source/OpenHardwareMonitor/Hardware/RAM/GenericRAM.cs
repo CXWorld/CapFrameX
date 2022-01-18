@@ -34,7 +34,7 @@ namespace OpenHardwareMonitor.Hardware.RAM
         private PerformanceCounter ramUsageGamePerformanceCounter;
         private PerformanceCounter ramAndCacheUsageGamePerformanceCounter;
 
-        public GenericRAM(string name, ISettings settings, ISensorConfig config, IRTSSService service)
+        public GenericRAM(string name, ISettings settings, ISensorConfig config, IProcessService processService)
           : base(name, new Identifier("ram"), settings)
         {
             sensorConfig = config;
@@ -43,7 +43,7 @@ namespace OpenHardwareMonitor.Hardware.RAM
             {
                 if (PerformanceCounterCategory.Exists("Process"))
                 {
-                    service
+                    processService
                     .ProcessIdStream
                     .DistinctUntilChanged()
                     .Subscribe(id =>

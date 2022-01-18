@@ -25,7 +25,7 @@ namespace OpenHardwareMonitor.Hardware.ATI
 
         private IntPtr context = IntPtr.Zero;
 
-        public ATIGroup(ISettings settings, ISensorConfig sensorConfig, IRTSSService rTSSService)
+        public ATIGroup(ISettings settings, ISensorConfig sensorConfig, IProcessService processService)
         {
             try
             {
@@ -110,7 +110,7 @@ namespace OpenHardwareMonitor.Hardware.ATI
                                           adapterInfo[i].DeviceNumber, 
                                           context, settings,
                                           sensorConfig,
-                                          rTSSService));
+                                          processService));
                                 }
 
                                 report.AppendLine();
