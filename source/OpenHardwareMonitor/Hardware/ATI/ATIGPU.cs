@@ -8,8 +8,7 @@
 	
 */
 
-using CapFrameX.Contracts.RTSS;
-using CapFrameX.Contracts.Sensor;
+using CapFrameX.Monitoring.Contracts;
 using Microsoft.Win32;
 using System;
 using System.Globalization;
@@ -183,6 +182,8 @@ namespace OpenHardwareMonitor.Hardware.ATI
         {
             get { return HardwareType.GpuAti; }
         }
+
+        public override Vendor Vendor => Vendor.AMD;
 
         private void GetODNTemperature(ADLODNTemperatureType type, Sensor sensor)
         {

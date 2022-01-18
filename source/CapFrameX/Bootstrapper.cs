@@ -35,6 +35,7 @@ using CapFrameX.Data.Logging;
 using CapFrameX.Contracts.Logging;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using CapFrameX.Monitoring.Contracts;
 
 namespace CapFrameX
 {
@@ -102,7 +103,9 @@ namespace CapFrameX
             Container.Register<IOverlayService, OverlayService>(Reuse.Singleton);
             Container.Register<IOnlineMetricService, OnlineMetricService>(Reuse.Singleton);
             Container.Register<ISensorService, SensorService>(Reuse.Singleton);
-            Container.Register<ISensorConfig, SensorConfig>(Reuse.Singleton);
+            var sensorConfigFolder = Path.Combine(Environment
+                .GetFolderPath(Environment.SpecialFolder.MyDocuments), @"CapFrameX\Configuration\");
+            Container.RegisterInstance<ISensorConfig>(new SensorConfig(sensorConfigFolder), Reuse.Singleton);
             Container.Register<ISensorEntryProvider, SensorEntryProvider>(Reuse.Singleton);
             Container.Register<IOverlayEntryProvider, OverlayEntryProvider>(Reuse.Singleton);
             Container.Register<IRecordManager, RecordManager>(Reuse.Singleton);

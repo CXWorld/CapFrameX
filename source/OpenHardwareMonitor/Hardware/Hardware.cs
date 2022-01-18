@@ -87,8 +87,9 @@ namespace OpenHardwareMonitor.Hardware
         public event SensorEventHandler SensorRemoved;
 #pragma warning restore 67
 
-
         public abstract HardwareType HardwareType { get; }
+
+        public abstract Vendor Vendor { get; }
 
         public virtual string GetReport()
         {

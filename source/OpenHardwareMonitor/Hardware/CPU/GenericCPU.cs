@@ -8,7 +8,7 @@
 	
 */
 
-using CapFrameX.Contracts.Sensor;
+using CapFrameX.Monitoring.Contracts;
 using Serilog;
 using System;
 using System.Collections.Generic;
@@ -352,6 +352,8 @@ namespace OpenHardwareMonitor.Hardware.CPU
         public bool HasTimeStampCounter { get; }
 
         public double TimeStampCounterFrequency { get; set; }
+
+        public override Vendor Vendor => vendor;
 
         public override void Update()
         {

@@ -1,23 +1,20 @@
-﻿using CapFrameX.Contracts.Sensor;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Serilog;
 using Newtonsoft.Json;
-using CapFrameX.Extensions;
+using CapFrameX.Monitoring.Contracts;
+using System.Text;
 
 namespace OpenHardwareMonitor.Hardware
 {
     public class SensorConfig : ISensorConfig
-    {
-        private static readonly string SENSOR_CONFIG_FOLDER
-            = Path.Combine(Environment
-                .GetFolderPath(Environment.SpecialFolder.MyDocuments),
-                    @"CapFrameX\Configuration\");
-
+    {       
         private static readonly string CONFIG_FILENAME =
             "SensorEntryConfiguration.json";
+
+        private readonly string _sensorConfigFolder;
 
         private Dictionary<string, bool> _activeSensorsDict;
 
@@ -29,13 +26,14 @@ namespace OpenHardwareMonitor.Hardware
         public bool IsCapturing { get; set; } = false;
 
         public bool HasConfigFile
-            => File.Exists(Path.Combine(SENSOR_CONFIG_FOLDER, CONFIG_FILENAME));
+            => File.Exists(Path.Combine(_sensorConfigFolder, CONFIG_FILENAME));
 
         public int SensorEntryCount 
             => _activeSensorsDict == null ? 0 : _activeSensorsDict.Count;
 
-        public SensorConfig()
+        public SensorConfig(string sensorConfigFolder)
         {
+            _sensorConfigFolder = sensorConfigFolder;
             Task.Run(async () => await LoadOrSetDefault());
         }
 
@@ -93,10 +91,10 @@ namespace OpenHardwareMonitor.Hardware
             {
                 var json = JsonConvert.SerializeObject(_activeSensorsDict);
 
-                if (!Directory.Exists(SENSOR_CONFIG_FOLDER))
-                    Directory.CreateDirectory(SENSOR_CONFIG_FOLDER);
+                if (!Directory.Exists(_sensorConfigFolder))
+                    Directory.CreateDirectory(_sensorConfigFolder);
 
-                using (StreamWriter outputFile = new StreamWriter(Path.Combine(SENSOR_CONFIG_FOLDER, CONFIG_FILENAME)))
+                using (StreamWriter outputFile = new StreamWriter(Path.Combine(_sensorConfigFolder, CONFIG_FILENAME)))
                 {
                     await outputFile.WriteAsync(json);
                 }
@@ -131,8 +129,24 @@ namespace OpenHardwareMonitor.Hardware
 
         private async Task<Dictionary<string, bool>> GetInitializedSensorEntryDictionary()
         {
-            string json = await FileExtensions.ReadAllTextAsync(Path.Combine(SENSOR_CONFIG_FOLDER, CONFIG_FILENAME));
+            string json = await ReadAllTextAsync(Path.Combine(_sensorConfigFolder, CONFIG_FILENAME));
             return JsonConvert.DeserializeObject<Dictionary<string, bool>>(json);
+        }
+
+        private async Task<string> ReadAllTextAsync(string filePath)
+        {
+            var stringBuilder = new StringBuilder();
+            using (var fileStream = File.OpenRead(filePath))
+            using (var streamReader = new StreamReader(fileStream))
+            {
+                string line = await streamReader.ReadLineAsync();
+                while (line != null)
+                {
+                    stringBuilder.AppendLine(line);
+                    line = await streamReader.ReadLineAsync();
+                }
+                return stringBuilder.ToString();
+            }
         }
     }
 }

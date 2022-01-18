@@ -20,6 +20,7 @@ using System.Reactive.Subjects;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using CapFrameX.Monitoring.Contracts;
 
 namespace CapFrameX.Data
 {

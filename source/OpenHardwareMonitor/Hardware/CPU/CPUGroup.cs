@@ -8,7 +8,7 @@
 	
 */
 
-using CapFrameX.Contracts.Sensor;
+using CapFrameX.Monitoring.Contracts;
 using Serilog;
 using System;
 using System.Collections.Generic;

@@ -206,6 +206,31 @@ This doesn't affect any processes you already have on your list. If our online l
 * Report: parameter table
 * Synchronization: display changed times(dc), histogram data
 
+# Test application monitoring library
+The hardware monitoring library is based on [OpenHardareMonitor](https://github.com/openhardwaremonitor/openhardwaremonitor). It is customized and extended with many additional sensors. If you want to use it in our own projects note the following points.
+* Import the projects "OpenHardwareMonitorLib" and "CapFrameX.Monitoring.Contracts"
+* Allow unsafe code in the build options of the project "OpenHardwareMonitorLib"
+* Implement "IProcessService" (see sample code)
+* Install all necessary Nuget packages: 
+
+```packages.config
+<packages>
+  <package id="Microsoft.Extensions.Logging.Abstractions" version="5.0.0" targetFramework="net472" />
+  <package id="Newtonsoft.Json" version="12.0.1" targetFramework="net472" />
+  <package id="Serilog" version="2.9.0" targetFramework="net472" />
+  <package id="System.Buffers" version="4.5.1" targetFramework="net472" />
+  <package id="System.ComponentModel.Annotations" version="4.7.0" targetFramework="net472" />
+  <package id="System.Memory" version="4.5.4" targetFramework="net472" />
+  <package id="System.Numerics.Vectors" version="4.5.0" targetFramework="net472" />
+  <package id="System.Reactive" version="4.3.2" targetFramework="net472" />
+  <package id="System.Runtime.CompilerServices.Unsafe" version="5.0.0" targetFramework="net472" />
+  <package id="System.Threading.Tasks.Extensions" version="4.5.4" targetFramework="net472" />
+  <package id="System.ValueTuple" version="4.5.0" targetFramework="net472" />
+</packages>
+```
+
+See "MonitoringLibTestApp" example code how to integrate the customized library.
+
 # Requirements
 * .NET 4.7.2
 * Microsoft Visual C++ Redistributable Package

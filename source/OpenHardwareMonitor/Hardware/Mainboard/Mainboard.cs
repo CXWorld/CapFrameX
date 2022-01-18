@@ -104,6 +104,8 @@ namespace OpenHardwareMonitor.Hardware.Mainboard
             get { return HardwareType.Mainboard; }
         }
 
+        public Vendor Vendor => Vendor.Unknown;
+
         public virtual IHardware Parent
         {
             get { return null; }

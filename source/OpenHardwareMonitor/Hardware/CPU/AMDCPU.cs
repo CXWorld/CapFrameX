@@ -8,7 +8,7 @@
 	
 */
 
-using CapFrameX.Contracts.Sensor;
+using CapFrameX.Monitoring.Contracts;
 
 namespace OpenHardwareMonitor.Hardware.CPU
 {

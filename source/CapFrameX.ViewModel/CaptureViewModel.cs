@@ -21,7 +21,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Reactive.Linq;
@@ -31,6 +30,7 @@ using System.Windows.Input;
 using OxyPlot.Legends;
 using CapFrameX.Overlay;
 using CapFrameX.Extensions.NetStandard;
+using CapFrameX.Monitoring.Contracts;
 
 namespace CapFrameX.ViewModel
 {

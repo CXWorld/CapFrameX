@@ -9,7 +9,7 @@
 
 */
 
-using CapFrameX.Contracts.Sensor;
+using CapFrameX.Monitoring.Contracts;
 using System.Globalization;
 using System.Linq;
 using System.Text;

@@ -1,5 +1,4 @@
-﻿using CapFrameX.Contracts.RTSS;
-using CapFrameX.Contracts.Sensor;
+﻿using CapFrameX.Monitoring.Contracts;
 using Serilog;
 using System;
 using System.Collections.Generic;
@@ -186,6 +185,8 @@ namespace OpenHardwareMonitor.Hardware
                 Log.Logger.Error(ex, "Error while creating GPU process memory performance counter.");
             }
         }
+
+        public override Vendor Vendor => Vendor.Unknown;
 
         private string GetMaximumPid(IEnumerable<string> pids)
         {

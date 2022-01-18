@@ -10,7 +10,6 @@
 
 namespace OpenHardwareMonitor.Hardware
 {
-
     public delegate void SensorEventHandler(ISensor sensor);
 
     public enum HardwareType
@@ -26,12 +25,22 @@ namespace OpenHardwareMonitor.Hardware
         HDD
     }
 
+    public enum Vendor
+    {
+        AMD,
+        Intel,
+        Nvidia,
+        Unknown
+    }
+
     public interface IHardware : IElement
     {
         string Name { get; set; }
         Identifier Identifier { get; }
 
         HardwareType HardwareType { get; }
+
+        Vendor Vendor { get; }
 
         string GetReport();
 

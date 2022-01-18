@@ -12,9 +12,8 @@ using System;
 using System.Globalization;
 using System.Text;
 using System.Linq;
-using CapFrameX.Contracts.Sensor;
-using CapFrameX.Contracts.RTSS;
 using System.Diagnostics;
+using CapFrameX.Monitoring.Contracts;
 
 namespace OpenHardwareMonitor.Hardware.Nvidia
 {
@@ -189,6 +188,8 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
         {
             get { return HardwareType.GpuNvidia; }
         }
+
+        public override Vendor Vendor => Vendor.Nvidia;
 
         private NvGPUThermalSettings GetThermalSettings()
         {

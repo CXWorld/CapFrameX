@@ -129,8 +129,6 @@
     <Compile Include="Overlay\IOverlayService.cs" />
     <Compile Include="RTSS\IRTSSService.cs" />
     <Compile Include="Sensor\EHardwareType.cs" />
-    <Compile Include="Sensor\IProcessService.cs" />
-    <Compile Include="Sensor\ISensorConfig.cs" />
     <Compile Include="Sensor\ISensorEntry.cs" />
     <Compile Include="Sensor\ISensorService.cs" />
     <Compile Include="Sensor\ISensorEntryProvider.cs" />
@@ -140,6 +138,10 @@
     <ProjectReference Include="..\CapFrameX.Data.Session\CapFrameX.Data.Session.csproj">
       <Project>{6BE48CF4-C2F0-44CB-95D8-7500A3CB430E}</Project>
       <Name>CapFrameX.Data.Session</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CapFrameX.Monitoring.Contracts\CapFrameX.Monitoring.Contracts.csproj">
+      <Project>{2F0D1227-BE4F-4501-B3A2-66A753ED742C}</Project>
+      <Name>CapFrameX.Monitoring.Contracts</Name>
     </ProjectReference>
     <ProjectReference Include="..\CapFrameX.Statistics.NetStandard\CapFrameX.Statistics.NetStandard.csproj">
       <Project>{7D35C9C8-6E9A-4ABB-9042-930BE5E26DC6}</Project>

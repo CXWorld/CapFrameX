@@ -128,6 +128,10 @@
       <Project>{a4559b99-7fcb-40ef-bf97-d293a2b7d6d3}</Project>
       <Name>CapFrameX.Extensions</Name>
     </ProjectReference>
+    <ProjectReference Include="..\CapFrameX.Monitoring.Contracts\CapFrameX.Monitoring.Contracts.csproj">
+      <Project>{2F0D1227-BE4F-4501-B3A2-66A753ED742C}</Project>
+      <Name>CapFrameX.Monitoring.Contracts</Name>
+    </ProjectReference>
     <ProjectReference Include="..\CapFrameX.Overlay\CapFrameX.Overlay.csproj">
       <Project>{624777C2-6AF6-46D5-A019-1285F699B8A7}</Project>
       <Name>CapFrameX.Overlay</Name>

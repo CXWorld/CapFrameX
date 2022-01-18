@@ -13,17 +13,8 @@ using System.Text;
 
 namespace OpenHardwareMonitor.Hardware.CPU
 {
-
-    internal enum Vendor
-    {
-        Unknown,
-        Intel,
-        AMD,
-    }
-
     internal class CPUID
     {
-
         private readonly int group;
         private readonly int thread;
         private readonly GroupAffinity affinity;

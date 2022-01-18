@@ -1,6 +1,6 @@
 ﻿using System.Reactive.Subjects;
 
-namespace CapFrameX.Contracts.Sensor
+namespace CapFrameX.Monitoring.Contracts
 {
     public interface IProcessService
     {

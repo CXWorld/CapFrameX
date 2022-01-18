@@ -1,5 +1,6 @@
 ﻿using CapFrameX.Contracts.Sensor;
 using CapFrameX.Extensions;
+using CapFrameX.Monitoring.Contracts;
 using OpenHardwareMonitor.Hardware;
 using System;
 using System.Collections.Generic;

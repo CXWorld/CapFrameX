@@ -105,6 +105,10 @@
       <Project>{4C3B8B5C-54D7-46A1-91A1-32BF82FD42CD}</Project>
       <Name>CapFrameX.Contracts</Name>
     </ProjectReference>
+    <ProjectReference Include="..\CapFrameX.Monitoring.Contracts\CapFrameX.Monitoring.Contracts.csproj">
+      <Project>{2F0D1227-BE4F-4501-B3A2-66A753ED742C}</Project>
+      <Name>CapFrameX.Monitoring.Contracts</Name>
+    </ProjectReference>
     <ProjectReference Include="..\CapFrameX.RTSSInterface\CapFrameX.RTSSInterface.vcxproj">
       <Project>{9c46d3f3-72e0-4e6c-ad3e-54a5ee121475}</Project>
       <Name>CapFrameX.RTSSInterface</Name>

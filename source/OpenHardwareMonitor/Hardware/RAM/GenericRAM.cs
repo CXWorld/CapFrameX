@@ -8,14 +8,13 @@
 	
 */
 
-using CapFrameX.Contracts.RTSS;
-using CapFrameX.Contracts.Sensor;
 using System.Reactive.Linq;
 using System.Runtime.InteropServices;
 using System;
 using System.Diagnostics;
 using Serilog;
 using System.Linq;
+using CapFrameX.Monitoring.Contracts;
 
 namespace OpenHardwareMonitor.Hardware.RAM
 {
@@ -117,6 +116,8 @@ namespace OpenHardwareMonitor.Hardware.RAM
         }
 
         public override HardwareType HardwareType => HardwareType.RAM;
+
+        public override Vendor Vendor => Vendor.Unknown;
 
         public override void Update()
         {

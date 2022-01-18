@@ -2,6 +2,7 @@
 using CapFrameX.Contracts.RTSS;
 using CapFrameX.Contracts.Sensor;
 using CapFrameX.Data.Session.Contracts;
+using CapFrameX.Monitoring.Contracts;
 using Microsoft.Extensions.Logging;
 using OpenHardwareMonitor.Hardware;
 using System;
