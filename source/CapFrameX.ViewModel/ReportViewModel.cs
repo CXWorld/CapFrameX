@@ -203,7 +203,7 @@ namespace CapFrameX.ViewModel
                     (ShowCreationDate ? "\t" + reportInfo.Date?.ToString(cultureInfo) : "") +
                     (ShowCreationTime ? "\t" + reportInfo.Time?.ToString(cultureInfo) : "") +
                     (ShowNumberOfSamples ? "\t" + reportInfo.NumberOfSamples : "") +
-                    (ShowRecordTime ? "\t" + reportInfo.RecordTime?.ToString(cultureInfo) : "") +
+                    (ShowRecordTime ? "\t" + reportInfo.RecordTime : "") +
                     (ShowCpuName ? "\t" + reportInfo.Cpu : "") +
                     (ShowGpuName ? "\t" + reportInfo.GraphicCard : "") +
                     (ShowRamName ? "\t" + reportInfo.Ram : "") +
@@ -300,8 +300,8 @@ namespace CapFrameX.ViewModel
                 Game = recordInfo.GameName,
                 Date = recordInfo.CreationDate,
                 Time = recordInfo.CreationTime,
-                NumberOfSamples = frameTimes.Count.ToString(),
-                RecordTime = Math.Round(recordTime, 2).ToString(),
+                NumberOfSamples = frameTimes.Count,
+                RecordTime = Math.Round(recordTime, 2),
                 Cpu = recordInfo.ProcessorName == null ? "" : recordInfo.ProcessorName.Trim(new char[] { ' ', '"' }),
                 GraphicCard = recordInfo.GraphicCardName == null ? "" : recordInfo.GraphicCardName.Trim(new char[] { ' ', '"' }),
                 Ram = recordInfo.SystemRamInfo == null ? "" : recordInfo.SystemRamInfo.Trim(new char[] { ' ', '"' }),

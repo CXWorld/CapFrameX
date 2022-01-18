@@ -21,7 +21,7 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
         private readonly List<Hardware> hardware = new List<Hardware>();
         private readonly StringBuilder report = new StringBuilder();
 
-        public NvidiaGroup(ISettings settings, ISensorConfig sensorConfig, IRTSSService rTSSService)
+        public NvidiaGroup(ISettings settings, ISensorConfig sensorConfig, IProcessService processService)
         {
             if (!NVAPI.IsAvailable)
                 return;
@@ -101,7 +101,7 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
             for (int i = 0; i < count; i++)
             {
                 displayHandles.TryGetValue(handles[i], out NvDisplayHandle displayHandle);
-                hardware.Add(new NvidiaGPU(i, handles[i], displayHandle, settings, sensorConfig, rTSSService));
+                hardware.Add(new NvidiaGPU(i, handles[i], displayHandle, settings, sensorConfig, processService));
             }
 
             report.AppendLine();

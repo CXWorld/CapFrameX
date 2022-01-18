@@ -56,9 +56,9 @@ namespace OpenHardwareMonitor.Hardware.ATI
         private readonly int overdriveVersion;
 
         public ATIGPU(string name, int adapterIndex, int busNumber,
-          int deviceNumber, IntPtr context, ISettings settings, ISensorConfig config, IRTSSService rTSSService)
+          int deviceNumber, IntPtr context, ISettings settings, ISensorConfig config, IProcessService processService)
           : base(name, new Identifier("atigpu",
-            adapterIndex.ToString(CultureInfo.InvariantCulture)), settings, rTSSService)
+            adapterIndex.ToString(CultureInfo.InvariantCulture)), settings, processService)
         {
             this.adapterIndex = adapterIndex;
             this.busNumber = busNumber;
@@ -388,8 +388,8 @@ namespace OpenHardwareMonitor.Hardware.ATI
                     }
 
                     // Linear fitting function (model)
-                    // TBP = 15W + 1.1 * ASIC Power
-                    powerTotalBoardSimulated.Value = powerTotalValue > 0 ? (float)Math.Round(15f + 1.11f * powerTotalValue, 0) : 0;
+                    // TBP = 5W + 1.155 * ASIC Power
+                    powerTotalBoardSimulated.Value = powerTotalValue > 0 ? (float)Math.Round(5f + 1.155f * powerTotalValue, 0) : 0;
                     ActivateSensor(powerTotalBoardSimulated);
                 }
 

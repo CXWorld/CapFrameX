@@ -18,13 +18,12 @@ using System.Security.Permissions;
 
 namespace OpenHardwareMonitor.Hardware
 {
-
     public class Computer : IComputer
     {
         private readonly List<IGroup> groups = new List<IGroup>();
         private readonly ISettings settings;
         private readonly ISensorConfig sensorConfig;
-        private readonly IRTSSService rTSSService;
+        private readonly IProcessService processService;
 
         private SMBIOS smbios;
 
@@ -38,12 +37,12 @@ namespace OpenHardwareMonitor.Hardware
         private bool hddEnabled;
 
 #pragma warning disable CS3001 // Argumenttyp ist nicht CLS-kompatibel
-        public Computer(ISensorConfig config, IRTSSService service)
+        public Computer(ISensorConfig config, IProcessService processService)
 #pragma warning restore CS3001 // Argumenttyp ist nicht CLS-kompatibel
         {
             this.settings = new Settings();
             sensorConfig = config;
-            rTSSService = service;
+            this.processService = processService;
         }
 
         private void Add(IGroup group)
@@ -100,12 +99,12 @@ namespace OpenHardwareMonitor.Hardware
                 Add(new CPU.CPUGroup(settings, sensorConfig));
 
             if (ramEnabled)
-                Add(new RAM.RAMGroup(settings, sensorConfig, rTSSService));
+                Add(new RAM.RAMGroup(settings, sensorConfig, processService));
 
             if (gpuEnabled)
             {
-                Add(new ATI.ATIGroup(settings, sensorConfig, rTSSService));
-                Add(new Nvidia.NvidiaGroup(settings, sensorConfig, rTSSService));
+                Add(new ATI.ATIGroup(settings, sensorConfig, processService));
+                Add(new Nvidia.NvidiaGroup(settings, sensorConfig, processService));
             }
 
             if (fanControllerEnabled)
@@ -166,7 +165,7 @@ namespace OpenHardwareMonitor.Hardware
                 if (open && value != ramEnabled)
                 {
                     if (value)
-                        Add(new RAM.RAMGroup(settings, sensorConfig, rTSSService));
+                        Add(new RAM.RAMGroup(settings, sensorConfig, processService));
                     else
                         RemoveType<RAM.RAMGroup>();
                 }
@@ -185,8 +184,8 @@ namespace OpenHardwareMonitor.Hardware
                 {
                     if (value)
                     {
-                        Add(new ATI.ATIGroup(settings, sensorConfig, rTSSService));
-                        Add(new Nvidia.NvidiaGroup(settings, sensorConfig, rTSSService));
+                        Add(new ATI.ATIGroup(settings, sensorConfig, processService));
+                        Add(new Nvidia.NvidiaGroup(settings, sensorConfig, processService));
                     }
                     else
                     {

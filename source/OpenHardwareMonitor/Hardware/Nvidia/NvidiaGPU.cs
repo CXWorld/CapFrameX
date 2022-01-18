@@ -51,9 +51,9 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
         private readonly Sensor voltageLimit;
 
         public NvidiaGPU(int adapterIndex, NvPhysicalGpuHandle handle,
-          NvDisplayHandle? displayHandle, ISettings settings, ISensorConfig config, IRTSSService rTSSService)
+          NvDisplayHandle? displayHandle, ISettings settings, ISensorConfig config, IProcessService processService)
           : base(GetName(handle), new Identifier("nvidiagpu",
-              adapterIndex.ToString(CultureInfo.InvariantCulture)), settings, rTSSService)
+              adapterIndex.ToString(CultureInfo.InvariantCulture)), settings, processService)
         {
             this.adapterIndex = adapterIndex;
             this.handle = handle;

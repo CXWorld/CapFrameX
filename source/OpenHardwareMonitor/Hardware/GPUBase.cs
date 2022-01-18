@@ -1,4 +1,5 @@
 ﻿using CapFrameX.Contracts.RTSS;
+using CapFrameX.Contracts.Sensor;
 using Serilog;
 using System;
 using System.Collections.Generic;
@@ -57,7 +58,7 @@ namespace OpenHardwareMonitor.Hardware
         protected float refreshRateCurrentWindowHandle;
         protected RefreshRateBuffer<float> refreshRateBuffer;
 
-        public GPUBase(string name, Identifier identifier, ISettings settings, IRTSSService rTSSService) : base(name, identifier, settings)
+        public GPUBase(string name, Identifier identifier, ISettings settings, IProcessService processService) : base(name, identifier, settings)
         {
             refreshRateBuffer = new RefreshRateBuffer<float>(2);
 
@@ -111,7 +112,7 @@ namespace OpenHardwareMonitor.Hardware
                 {
                     var category = new PerformanceCounterCategory("GPU Process Memory");
 
-                    _ = rTSSService
+                    _ = processService
                     .ProcessIdStream
                     .DistinctUntilChanged()
                     .Subscribe(id =>
