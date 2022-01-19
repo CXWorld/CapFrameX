@@ -229,7 +229,7 @@ The hardware monitoring library is based on [OpenHardareMonitor](https://github.
 </packages>
 ```
 
-See "MonitoringLibTestApp" example code how to integrate the customized library.
+Potential conflicts with the Nuget packages can be solved via Package Manger Console. Just tpye "Update-Package -reinstall". The calling application must run as administrator. See "MonitoringLibTestApp" example code how to integrate the customized library.
 
 # Requirements
 * .NET 4.7.2

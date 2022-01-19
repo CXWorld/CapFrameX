@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.31729.503
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MonitoringLibTestApp", "ConsoleApp1\MonitoringLibTestApp.csproj", "{89EA1324-86F3-48D9-B610-600FCE74CEC3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MonitoringLibTestApp", "source\MonitoringLibTestApp\MonitoringLibTestApp.csproj", "{89EA1324-86F3-48D9-B610-600FCE74CEC3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenHardwareMonitorLib", "..\..\OpenHardwareMonitor\OpenHardwareMonitorLib.csproj", "{B0397530-545A-471D-BB74-027AE456DF1A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenHardwareMonitorLib", "source\OpenHardwareMonitor\OpenHardwareMonitorLib.csproj", "{B0397530-545A-471D-BB74-027AE456DF1A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.Monitoring.Contracts", "..\..\CapFrameX.Monitoring.Contracts\CapFrameX.Monitoring.Contracts.csproj", "{2F0D1227-BE4F-4501-B3A2-66A753ED742C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.Monitoring.Contracts", "source\CapFrameX.Monitoring.Contracts\CapFrameX.Monitoring.Contracts.csproj", "{2F0D1227-BE4F-4501-B3A2-66A753ED742C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

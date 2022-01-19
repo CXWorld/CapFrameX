@@ -25,6 +25,7 @@ namespace MonitoringLibTestApp
             {
                 CPUEnabled = true,
             };
+
             Computer.Open();
         }
 
@@ -52,7 +53,6 @@ namespace MonitoringLibTestApp
                     // loop through the data
                     foreach (var sensor in hardware.Sensors)
                     {
-                        _sensorConfig.SetSensorIsActive(sensor.IdentifierString, true);
                         switch (sensor.SensorType)
                         {
                             case SensorType.Temperature when sensor.Name.Contains("CPU Package"):
@@ -120,6 +120,26 @@ namespace MonitoringLibTestApp
                                 break;
                             }
                         }
+                    }
+                }
+            }
+        }
+
+        public void ActivateAllSensors()
+        {
+            for (int i = 0; i < Computer.Hardware.Length; i++)
+            {
+                IHardware hardware = Computer.Hardware[i];
+                if (hardware.HardwareType == HardwareType.CPU)
+                {
+                    // only fire the update when found
+                    hardware.Update();
+
+                    // loop through the sensors
+                    foreach (var sensor in hardware.Sensors)
+                    {
+                        // activate sensor
+                        _sensorConfig.SetSensorIsActive(sensor.IdentifierString, true);
                     }
                 }
             }

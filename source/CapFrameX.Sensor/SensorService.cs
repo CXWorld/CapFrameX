@@ -211,7 +211,8 @@ namespace CapFrameX.Sensor
 
         public void StopSensorLogging()
         {
-            Observable.Timer(_currentLoggingTimespan).Subscribe(_ =>
+            Observable.Timer(_currentLoggingTimespan)
+                .Subscribe(_ =>
             {
                 _isLoggingActive = false;
             });

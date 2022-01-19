@@ -175,7 +175,6 @@ namespace CapFrameX
                 var processListFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
                         @"CapFrameX\Resources\");
 
-
                 if (!Directory.Exists(configFolder))
                 {
                     Directory.CreateDirectory(configFolder);
