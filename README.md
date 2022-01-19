@@ -207,7 +207,7 @@ This doesn't affect any processes you already have on your list. If our online l
 * Synchronization: display changed times(dc), histogram data
 
 # Test application monitoring library
-The hardware monitoring library is based on [OpenHardareMonitor](https://github.com/openhardwaremonitor/openhardwaremonitor). It is customized and extended with many additional sensors. If you want to use it in our own projects note the following points.
+The hardware monitoring library is based on [OpenHardareMonitor](https://github.com/openhardwaremonitor/openhardwaremonitor). It is customized and extended with many additional sensors. If you want to use it in your own projects note the following points.
 * Import the projects "OpenHardwareMonitorLib" and "CapFrameX.Monitoring.Contracts"
 * Allow unsafe code in the build options of the project "OpenHardwareMonitorLib"
 * Implement "IProcessService" (see sample code)
