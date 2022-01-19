@@ -17,6 +17,7 @@ namespace OpenHardwareMonitor.Hardware
     public enum SensorType
     {
         Voltage, // V
+        Current, // A
         Clock, // MHz
         Temperature, // °C
         Load, // %

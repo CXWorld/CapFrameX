@@ -31,6 +31,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
         private readonly Sensor packagePowerSensor;
         private readonly Sensor coresPowerSensor;
         private readonly Sensor busClock;
+        private readonly RyzenSMU _smu;
 
         private readonly ISensorConfig sensorConfig;
 

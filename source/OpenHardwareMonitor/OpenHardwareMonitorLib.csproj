@@ -231,9 +231,14 @@
     <Compile Include="Collections\ListSet.cs" />
     <Compile Include="Hardware\PInvokeDelegateFactory.cs" />
     <Compile Include="Collections\ReadOnlyArray.cs" />
+    <Compile Include="InpOut.cs" />
+    <Compile Include="Interop\InpOut.cs" />
+    <Compile Include="Interop\Kernel32.cs" />
     <Compile Include="Properties\AssemblyLibInfo.cs" />
     <Compile Include="Properties\AssemblyVersion.cs" />
     <Compile Include="Hardware\ThreadAffinity.cs" />
+    <Compile Include="RyzenSMU.cs" />
+    <Compile Include="Sofware\OperatingSystem.cs" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
