@@ -237,7 +237,7 @@
     <Compile Include="Properties\AssemblyLibInfo.cs" />
     <Compile Include="Properties\AssemblyVersion.cs" />
     <Compile Include="Hardware\ThreadAffinity.cs" />
-    <Compile Include="RyzenSMU.cs" />
+    <Compile Include="Hardware\RyzenSMU.cs" />
     <Compile Include="Sofware\OperatingSystem.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -270,6 +270,10 @@
       <Project>{2F0D1227-BE4F-4501-B3A2-66A753ED742C}</Project>
       <Name>CapFrameX.Monitoring.Contracts</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Hardware\inpout32.dll" />
+    <EmbeddedResource Include="Hardware\inpoutx64.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

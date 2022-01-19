@@ -1,13 +1,12 @@
 ﻿// ported from: https://gitlab.com/leogx9r/ryzen_smu
 // and: https://github.com/irusanov/SMUDebugTool
 
-using OpenHardwareMonitor.Hardware;
 using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 
-namespace OpenHardwareMonitor
+namespace OpenHardwareMonitor.Hardware
 {
     internal class RyzenSMU
     {
