@@ -29,6 +29,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
 
         protected readonly uint family;
         protected readonly uint model;
+        protected readonly uint packageType;
         protected readonly uint stepping;
 
         protected readonly int processorIndex;
@@ -120,6 +121,8 @@ namespace OpenHardwareMonitor.Hardware.CPU
             this.family = cpuid[0][0].Family;
             this.model = cpuid[0][0].Model;
             this.stepping = cpuid[0][0].Stepping;
+            this.packageType = cpuid[0][0].PkgType;
+
             FillThreadMaps(cpuid);
 
             bool hasGlobalThreadCount = threadCountMap.Values.Distinct().Count() == 1;

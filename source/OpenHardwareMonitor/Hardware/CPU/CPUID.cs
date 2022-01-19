@@ -30,6 +30,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
         private readonly uint family;
         private readonly uint model;
         private readonly uint stepping;
+        private readonly uint pkgType;
 
         private readonly uint apicId;
 
@@ -208,6 +209,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
             this.model = ((cpuidData[1, 0] & 0x0F0000) >> 12) +
               ((cpuidData[1, 0] & 0xF0) >> 4);
             this.stepping = (cpuidData[1, 0] & 0x0F);
+            this.pkgType = (cpuidExtData[1, 1] >> 28) & 0xFF;
 
             this.apicId = (cpuidData[1, 1] >> 24) & 0xFF;
 
@@ -305,6 +307,11 @@ namespace OpenHardwareMonitor.Hardware.CPU
         public uint Stepping
         {
             get { return stepping; }
+        }
+
+        public uint PkgType
+        {
+            get { return pkgType; }
         }
 
         public uint ApicId

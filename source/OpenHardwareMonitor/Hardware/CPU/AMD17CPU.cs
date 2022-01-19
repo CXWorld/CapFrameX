@@ -31,7 +31,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
         private readonly Sensor packagePowerSensor;
         private readonly Sensor coresPowerSensor;
         private readonly Sensor busClock;
-        private readonly RyzenSMU _smu;
+        private readonly RyzenSMU smu;
 
         private readonly ISensorConfig sensorConfig;
 
@@ -87,6 +87,8 @@ namespace OpenHardwareMonitor.Hardware.CPU
                     }
                 }
             }
+
+            smu = new RyzenSMU(family, model, packageType);
 
             coreTemperature = new Sensor(
               "CPU Package", 0, SensorType.Temperature, this, new[] {
