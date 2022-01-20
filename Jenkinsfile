@@ -6,7 +6,7 @@ pipeline {
     stages {
         stage('Nuget restore') {
             steps {
-                bat "nuget restore"
+                bat "nuget restore CapFrameX.sln"
             }
         }
 
