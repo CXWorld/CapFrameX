@@ -395,7 +395,7 @@
                                 <DataGrid FontSize="13" ItemsSource="{Binding SensorReportItems}" ColumnHeaderHeight="25" SelectionUnit="FullRow"
 										CanUserSortColumns="False" CanUserAddRows="False" AutoGenerateColumns="False"
 										materialDesign:DataGridAssist.CellPadding="13 3 0 0" materialDesign:DataGridAssist.ColumnHeaderPadding="8 0 0 0" IsSynchronizedWithCurrentItem="False"
-										ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True">
+										ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True" Tag="{Binding DataContext, ElementName=DataViewUserControl}">
                                     <DataGrid.Resources>
                                         <Style TargetType="{x:Type DataGridRow}">
                                             <Setter Property="Height" Value="25" />
@@ -431,8 +431,8 @@
                                     </DataGrid.Style>
                                     <DataGrid.ContextMenu>
                                         <ContextMenu DataContext="{Binding PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
-                                            <MenuItem Header="Copy sensor data(min, avg, max)" Command="{Binding CopySensorInfoCommand}"/>
-                                            <MenuItem Header="Copy raw sensor data" Command="{Binding CopyRawSensorInfoCommand}"/>
+                                            <MenuItem Header="Copy sensor data(min, avg, max)" Command="{Binding Path=CopySensorInfoCommand}" CommandParameter="{Binding Path=SelectedIndex}"/>
+                                            <MenuItem Header="Copy raw sensor data" Command="{Binding Path=CopyRawSensorInfoCommand}" CommandParameter="{Binding Path=SelectedIndex}"/>
                                         </ContextMenu>
                                     </DataGrid.ContextMenu>
                                     <DataGrid.Columns>
@@ -458,7 +458,7 @@
                         </TabControl>
                     </Grid>
 
-                    <Grid Grid.Column="2" x:Name="SecondSensorTab" Margin="5 0 0 0" Width="450" >
+                    <Grid Grid.Column="2" x:Name="SecondSensorTab" Margin="5 0 0 0" Width="450" Tag="{Binding DataContext, ElementName=DataViewUserControl}">
                         <TabControl Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" FocusVisualStyle="{x:Null}" >
                             <TabItem Width="75" IsEnabled="{Binding AdditionalGraphsEnabled}">
                                 <TabItem.Header>
@@ -503,9 +503,9 @@
                                         <StaticResource ResourceKey="MaterialDesignDataGrid"/>
                                     </DataGrid.Style>
                                     <DataGrid.ContextMenu>
-                                        <ContextMenu DataContext="{Binding PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
-                                            <MenuItem Header="Copy sensor data(min, avg, max)" Command="{Binding CopySensorInfoCommand}"/>
-                                            <MenuItem Header="Copy raw sensor data" Command="{Binding CopyRawSensorInfoCommand}"/>
+                                        <ContextMenu DataContext="{Binding RelativeSource={RelativeSource Mode=Self}, Path=PlacementTarget}">
+                                            <MenuItem Header="Copy sensor data(min, avg, max)" Command="{Binding Path=CopySensorInfoCommand}"/>
+                                            <MenuItem Header="Copy raw sensor data" Command="{Binding Path=CopyRawSensorInfoCommand}"/>
                                         </ContextMenu>
                                     </DataGrid.ContextMenu>
                                     <DataGrid.Columns>
