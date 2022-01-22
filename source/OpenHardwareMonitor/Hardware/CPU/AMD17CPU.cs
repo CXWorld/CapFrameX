@@ -32,6 +32,8 @@ namespace OpenHardwareMonitor.Hardware.CPU
         private readonly Sensor coresPowerSensor;
         private readonly Sensor busClock;
         private readonly RyzenSMU smu;
+        private readonly Dictionary<KeyValuePair<uint, RyzenSMU.SmuSensorType>, Sensor> smuSensors
+            = new Dictionary<KeyValuePair<uint, RyzenSMU.SmuSensorType>, Sensor>();
 
         private readonly ISensorConfig sensorConfig;
 
@@ -88,7 +90,12 @@ namespace OpenHardwareMonitor.Hardware.CPU
                 }
             }
 
-            smu = new RyzenSMU(family, model, packageType);
+            // this.smu = new RyzenSMU(family, model, packageType);
+
+            //foreach (KeyValuePair<uint, RyzenSMU.SmuSensorType> sensor in smu.GetPmTableStructure())
+            //{
+            //    //_smuSensors.Add(sensor, new Sensor(sensor.Value.Name, _cpu._sensorTypeIndex[sensor.Value.Type]++, sensor.Value.Type, _cpu, _cpu._settings));
+            //}
 
             coreTemperature = new Sensor(
               "CPU Package", 0, SensorType.Temperature, this, new[] {
@@ -377,6 +384,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
             if (cores.Any(core => sensorConfig.GetSensorEvaluate(core.ClockSensor.IdentifierString))
                 || cores.Any(core => sensorConfig.GetSensorEvaluate(core.PowerSensor.IdentifierString))
                 || sensorConfig.GetSensorEvaluate(coresPowerSensor.IdentifierString)
+                || cores.Any(core => sensorConfig.GetSensorEvaluate(core.VoltageSensor.IdentifierString))
                 || sensorConfig.GetSensorEvaluate(coreMaxClocks.IdentifierString))
             {
                 float? coresPower = 0f;
@@ -402,6 +410,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
             private readonly GroupAffinity affinity;
 
             private readonly Sensor powerSensor;
+            private readonly Sensor voltageSensor;
             private readonly Sensor clockSensor;
 
             private DateTime lastEnergyTime;
@@ -411,6 +420,8 @@ namespace OpenHardwareMonitor.Hardware.CPU
             public float? CoreClock => clockSensor.Value;
 
             public Sensor PowerSensor => powerSensor;
+
+            public Sensor VoltageSensor => voltageSensor;
 
             public Sensor ClockSensor => clockSensor;
 
@@ -422,6 +433,8 @@ namespace OpenHardwareMonitor.Hardware.CPU
                 string coreString = cpu.CoreString(index);
                 this.powerSensor =
                   new Sensor(coreString, index + 2, SensorType.Power, cpu, settings);
+                this.voltageSensor =
+                  new Sensor(coreString, index + 3, SensorType.Voltage, cpu, settings);
                 this.clockSensor =
                   new Sensor(coreString, index + 1, SensorType.Clock, cpu, settings);
 
@@ -432,7 +445,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
                     {
                         lastEnergyTime = DateTime.UtcNow;
                         lastEnergyConsumed = energyConsumed;
-                        cpu.ActivateSensor(powerSensor);
+                        this.cpu.ActivateSensor(powerSensor);
                     }
                 }
             }
@@ -463,6 +476,13 @@ namespace OpenHardwareMonitor.Hardware.CPU
                 }
 
                 double? multiplier = GetMultiplier();
+
+                int curCpuVid = 0;
+                if (Ring0.Rdmsr(MSR_FAMILY_17H_P_STATE, out uint eax, out _))
+                {
+                    curCpuVid = (int)((eax >> 14) & 0xff);
+                }
+
                 ThreadAffinity.Set(previousAffinity);
 
                 if (cpu.energyUnitMultiplier != 0)
@@ -483,10 +503,17 @@ namespace OpenHardwareMonitor.Hardware.CPU
                     float? clock = (float?)(multiplier * cpu.busClock.Value);
                     clockSensor.Value = clock;
                     if (clock.HasValue)
-                        cpu.ActivateSensor(clockSensor);
+                    {
+                        this.cpu.ActivateSensor(clockSensor);
+                    }
                 }
-            }
 
+                // Voltage
+                const double vidStep = 0.00625;
+                double vcc = 1.550 - vidStep * curCpuVid;
+                voltageSensor.Value = (float)vcc;
+                this.cpu.ActivateSensor(voltageSensor);
+            }
         }
     }
 }
