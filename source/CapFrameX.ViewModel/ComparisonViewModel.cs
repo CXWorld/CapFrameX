@@ -1069,7 +1069,7 @@ namespace CapFrameX.ViewModel
                         metricValue =
                             _frametimeStatisticProvider.GetPhysicalMetricValue(frametimeTimeWindow, EMetric.GpuFpsPerWatt,
                                  SensorReport.GetAverageSensorValues(currentWrappedComparisonInfo.WrappedRecordInfo.Session.Runs.Select(run => run.SensorData2), EReportSensorName.GpuPower,
-                                 startTime, endTime));
+                                 startTime, endTime, _appConfiguration.UseTBPSim));
                     }
                     else
                     {

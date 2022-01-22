@@ -361,6 +361,18 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        public bool ShowGpuTBPSim
+        {
+            get { return _settings.ReportShowGpuTBPSim; }
+            set
+            {
+                _settings.ReportShowGpuTBPSim = value;
+                _appConfiguration.ReportDataGridColumnSettings = _settings;
+
+                RaisePropertyChanged();
+            }
+        }
+
         public bool ShowGpuClock
         {
             get { return _settings.ReportShowGpuClock; }

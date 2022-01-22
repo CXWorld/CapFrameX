@@ -27,6 +27,8 @@ namespace CapFrameX.Data.Session.Classes
 		[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
 		public int[] GpuPower { get; set; } = new int[] { };
 		[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+		public int[] GpuTBPSim{ get; set; } = new int[] { };
+		[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
 		public int[] GpuTemp { get; set; } = new int[] { };
 		[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
 		public int[] VRamUsage { get; set; } = new int[] { };

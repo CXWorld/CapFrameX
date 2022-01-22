@@ -62,6 +62,9 @@ namespace CapFrameX.Sensor.Reporting
                         case EReportSensorName.GpuPower when HasValues(sessionsSensorData, session => session.GpuPower, out var values):
                             AddSensorEntry(item, Math.Round(values.Average()), values.Min(), values.Max());
                             break;
+                        case EReportSensorName.GpuTBPSim when HasValues(sessionsSensorData, session => session.GpuTBPSim, out var values):
+                            AddSensorEntry(item, Math.Round(values.Average()), values.Min(), values.Max());
+                            break;
                         case EReportSensorName.GpuTemp when HasValues(sessionsSensorData, session => session.GpuTemp, out var values):
                             AddSensorEntry(item, Math.Round(values.Average()), values.Min(), values.Max());
                             break;
@@ -253,16 +256,22 @@ namespace CapFrameX.Sensor.Reporting
             return sensorDictOrdered;
         }
 
-        public static double GetAverageSensorValues(IEnumerable<ISessionSensorData> sessionsSensorData, EReportSensorName sensorname, double startTime = 0, double endTime = double.PositiveInfinity)
+        public static double GetAverageSensorValues(IEnumerable<ISessionSensorData> sessionsSensorData, EReportSensorName sensorname, double startTime = 0, double endTime = double.PositiveInfinity, bool useTBP = false)
         {
             var reportItems = GetReportFromSessionSensorData(sessionsSensorData, startTime, endTime);
 
             if (reportItems == null || !reportItems.Any())
                 return 0;
 
+            if (useTBP && reportItems.Any(reportItem => reportItem.Name == EReportSensorName.GpuTBPSim.GetAttribute<DescriptionAttribute>().Description))
+                sensorname = EReportSensorName.GpuTBPSim;
+
+
             var item = reportItems.FirstOrDefault(reportItem =>
               reportItem.Name == sensorname
               .GetAttribute<DescriptionAttribute>().Description);
+
+
 
             return item != null ? item.AverageValue : 0;
         }
