@@ -13,7 +13,6 @@ Download link: https://github.com/DevTechProfile/CapFrameX/releases
 ![Screenshot](images/02_capture.png)
 
 # Overlay
-![Screenshot](images/03_overlay_runhistory.png)
 ![Screenshot](images/04_overlay_options.png)
 
 # Analysis
