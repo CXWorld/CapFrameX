@@ -419,6 +419,8 @@ namespace OpenHardwareMonitor.Hardware.CPU
 
             public float? CoreClock => clockSensor.Value;
 
+            public float? Power => power;
+
             public Sensor PowerSensor => powerSensor;
 
             public Sensor VoltageSensor => voltageSensor;
@@ -448,6 +450,8 @@ namespace OpenHardwareMonitor.Hardware.CPU
                         this.cpu.ActivateSensor(powerSensor);
                     }
                 }
+
+                this.cpu.ActivateSensor(voltageSensor);
             }
 
             private double? GetMultiplier()
@@ -463,8 +467,6 @@ namespace OpenHardwareMonitor.Hardware.CPU
                     return null;
                 }
             }
-
-            public float? Power { get { return power; } }
 
             public void Update()
             {
@@ -512,7 +514,6 @@ namespace OpenHardwareMonitor.Hardware.CPU
                 const double vidStep = 0.00625;
                 double vcc = 1.550 - vidStep * curCpuVid;
                 voltageSensor.Value = (float)vcc;
-                this.cpu.ActivateSensor(voltageSensor);
             }
         }
     }
