@@ -22,6 +22,8 @@ namespace CapFrameX.Sensor.Reporting
 		GpuClock,
 		[Description("GPU power (W)")]
 		GpuPower,
+		[Description("GPU TBP Sim (W)")]
+		GpuTBPSim,
 		[Description("GPU temp. (°C)")]
 		GpuTemp,
 		[Description("GPU VRAM usage (MB)")]

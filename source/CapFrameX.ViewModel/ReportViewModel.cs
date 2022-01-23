@@ -156,6 +156,7 @@ namespace CapFrameX.ViewModel
             var displayNameCpuTemp = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.CpuTemp);
             var displayNameGpuUsage = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.GpuUsage);
             var displayNameGpuPower = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.GpuPower);
+            var displayNameGpuTBPSim = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.GpuTBPSim);
             var displayNameGpuClock = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.GpuClock);
             var displayNameGpuTemp = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.GpuTemp);
             var displayNameCustomComment = ReflectionExtensions.GetPropertyDisplayName<ReportInfo>(x => x.CustomComment);
@@ -190,7 +191,8 @@ namespace CapFrameX.ViewModel
                 (ShowCpuMaxClock ? "\t" + displayNameCpuClock : "") + 
                 (ShowCpuTemp ? "\t" + displayNameCpuTemp : "") + 
                 (ShowGpuUsage ? "\t" + displayNameGpuUsage : "") + 
-                (ShowGpuPower ? "\t" + displayNameGpuPower : "") + 
+                (ShowGpuPower ? "\t" + displayNameGpuPower : "") +
+                (ShowGpuTBPSim ? "\t" + displayNameGpuTBPSim : "") +
                 (ShowGpuClock ? "\t" + displayNameGpuClock : "") + 
                 (ShowGpuTemp ? "\t" + displayNameGpuTemp : "") +
                 Environment.NewLine);
@@ -230,6 +232,7 @@ namespace CapFrameX.ViewModel
                     (ShowCpuTemp ? "\t" + reportInfo.CpuTemp.ToString(cultureInfo) : "") +
                     (ShowGpuUsage ? "\t" + reportInfo.GpuUsage.ToString(cultureInfo) : "") +
                     (ShowGpuPower ? "\t" + reportInfo.GpuPower.ToString(cultureInfo) : "") +
+                    (ShowGpuTBPSim ? "\t" + reportInfo.GpuTBPSim.ToString(cultureInfo) : "") +
                     (ShowGpuClock ? "\t" + reportInfo.GpuClock.ToString(cultureInfo) : "") +
                     (ShowGpuTemp ? "\t" + reportInfo.GpuTemp.ToString(cultureInfo) : "") + 
                     Environment.NewLine);
@@ -284,13 +287,14 @@ namespace CapFrameX.ViewModel
             var gpuFpsPerWatt = _frametimeStatisticProvider
                 .GetPhysicalMetricValue(frameTimes, EMetric.GpuFpsPerWatt,
                 SensorReport.GetAverageSensorValues(session.Runs.Select(run => run.SensorData2), EReportSensorName.GpuPower,
-                0, double.PositiveInfinity));
+                0, double.PositiveInfinity, _appConfiguration.UseTBPSim));
             var cpuUsage = SensorReport.GetAverageSensorValues(session.Runs.Select(run => run.SensorData2), EReportSensorName.CpuMaxThreadUsage, 0, double.PositiveInfinity);
             var cpuPower = SensorReport.GetAverageSensorValues(session.Runs.Select(run => run.SensorData2), EReportSensorName.CpuPower, 0, double.PositiveInfinity);
             var cpuClock = SensorReport.GetAverageSensorValues(session.Runs.Select(run => run.SensorData2), EReportSensorName.CpuMaxClock, 0, double.PositiveInfinity);
             var cpuTemp = SensorReport.GetAverageSensorValues(session.Runs.Select(run => run.SensorData2), EReportSensorName.CpuTemp, 0, double.PositiveInfinity);
             var gpuUsage = SensorReport.GetAverageSensorValues(session.Runs.Select(run => run.SensorData2), EReportSensorName.GpuUsage, 0, double.PositiveInfinity);
             var gpuPower = SensorReport.GetAverageSensorValues(session.Runs.Select(run => run.SensorData2), EReportSensorName.GpuPower, 0, double.PositiveInfinity);
+            var gpuTBPSim = SensorReport.GetAverageSensorValues(session.Runs.Select(run => run.SensorData2), EReportSensorName.GpuTBPSim, 0, double.PositiveInfinity);
             var gpuClock = SensorReport.GetAverageSensorValues(session.Runs.Select(run => run.SensorData2), EReportSensorName.GpuClock, 0, double.PositiveInfinity);
             var gpuTemp = SensorReport.GetAverageSensorValues(session.Runs.Select(run => run.SensorData2), EReportSensorName.GpuTemp, 0, double.PositiveInfinity);
             var appLatency = inputLagTimes.Any() ? Math.Round(inputLagTimes.Average(), 1) : 0;
@@ -326,6 +330,7 @@ namespace CapFrameX.ViewModel
                 CpuTemp = cpuTemp,
                 GpuUsage = gpuUsage,
                 GpuPower = gpuPower,
+                GpuTBPSim = gpuTBPSim,
                 GpuClock = gpuClock,
                 GpuTemp = gpuTemp,
                 AppLatency = appLatency,

@@ -671,7 +671,7 @@ namespace CapFrameX.ViewModel
             var gpuFpsPerWatt = _frametimeStatisticProvider
             .GetPhysicalMetricValue(frametimes, EMetric.GpuFpsPerWatt,
             SensorReport.GetAverageSensorValues(_session.Runs.Select(run => run.SensorData2), EReportSensorName.GpuPower,
-            _localRecordDataServer.CurrentTime, _localRecordDataServer.CurrentTime + _localRecordDataServer.WindowLength));
+            _localRecordDataServer.CurrentTime, _localRecordDataServer.CurrentTime + _localRecordDataServer.WindowLength, _appConfiguration.UseTBPSim));
 
             StringBuilder builder = new StringBuilder();
 
@@ -1023,7 +1023,7 @@ namespace CapFrameX.ViewModel
             var gpuFpsPerWatt = _frametimeStatisticProvider
             .GetPhysicalMetricValue(frametimes, EMetric.GpuFpsPerWatt,
             SensorReport.GetAverageSensorValues(_session.Runs.Select(run => run.SensorData2), EReportSensorName.GpuPower,
-            _localRecordDataServer.CurrentTime, _localRecordDataServer.CurrentTime + _localRecordDataServer.WindowLength));
+            _localRecordDataServer.CurrentTime, _localRecordDataServer.CurrentTime + _localRecordDataServer.WindowLength, _appConfiguration.UseTBPSim));
 
             Application.Current.Dispatcher.Invoke(new Action(() =>
             {

@@ -428,6 +428,16 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        public bool UseTBPSim
+        {
+            get { return _appConfiguration.UseTBPSim; }
+            set
+            {
+                _appConfiguration.UseTBPSim = value;
+                RaisePropertyChanged();
+            }
+        }
+
         public string AppNotification { get; private set; }
 
         public string HelpText => File.ReadAllText(@"HelpTexts\ChartControls.rtf");

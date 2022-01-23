@@ -64,6 +64,8 @@ namespace CapFrameX.Data
 		public double GpuUsage { get; set; }
 		[DisplayName("GPU Power (W)")]
 		public double GpuPower { get; set; }
+		[DisplayName("GPU TBP Sim(W)")]
+		public double GpuTBPSim { get; set; }
 		[DisplayName("GPU Clock (MHz)")]
 		public double GpuClock { get; set; }
 		[DisplayName("GPU Temp (°C)")]

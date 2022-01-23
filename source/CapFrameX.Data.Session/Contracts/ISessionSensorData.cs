@@ -22,6 +22,8 @@ namespace CapFrameX.Data.Session.Contracts
 		int[] GpuClock { get; set; }
 		[SensorDataExport("GPU power (W)")]
 		int[] GpuPower { get; set; }
+		[SensorDataExport("GPU TBP Sim (W)")]
+		int[] GpuTBPSim { get; set; }
 		[SensorDataExport("GPU temp(°C)")]
 		int[] GpuTemp { get; set; }
 		[SensorDataExport("RAM usage(GB)")]

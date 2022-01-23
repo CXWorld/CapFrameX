@@ -139,6 +139,12 @@ namespace CapFrameX.Configuration
             set => Set(value);
         }
 
+        public bool UseTBPSim
+        {
+            get => Get<bool>(false);
+            set => Set(value);
+        }
+
         // Record List Settings
 
         public bool FixedExpanderPosition
@@ -725,6 +731,7 @@ namespace CapFrameX.Configuration
         public bool ReportShowCpuTemp { get; set; } = false;
         public bool ReportShowGpuUsage { get; set; } = false;
         public bool ReportShowGpuPower { get; set; } = false;
+        public bool ReportShowGpuTBPSim { get; set; } = false;
         public bool ReportShowGpuClock { get; set; } = false;
         public bool ReportShowGpuTemp { get; set; } = false;
 

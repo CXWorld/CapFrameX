@@ -227,6 +227,10 @@ namespace CapFrameX.Contracts.Configuration
 		string WebservicePort { get; set; }
 
 		bool CaptureRTSSFrameTimes { get; set; }
+		/// <summary>
+		/// When available, use the simulated TBP value instead of the normal "GPU Total" value for analysis like FPS/W
+		/// </summary>
+		bool UseTBPSim { get; set; }
 	}
 
 	public interface IReportDataGridColumnSettings
@@ -290,6 +294,8 @@ namespace CapFrameX.Contracts.Configuration
 		bool ReportShowGpuUsage { get; set; }
 
 		bool ReportShowGpuPower { get; set; }
+
+		bool ReportShowGpuTBPSim { get; set; }
 
 		bool ReportShowGpuClock { get; set; }
 
