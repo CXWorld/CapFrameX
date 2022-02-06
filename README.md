@@ -1,4 +1,4 @@
-![Screenshot](images/CX_Header_Logo_Wide.png)
+![Screenshot](images/CX_Header_Logo_Wide.jpg)
 # CapFrameX
 Frametimes capture and analysis tool based on Intel's [PresentMon](https://github.com/GameTechDev/PresentMon). Overlay provided by [Rivatuner Statistics Server](https://www.guru3d.com/content-page/rivatuner.html).
 
@@ -13,7 +13,6 @@ Download link: https://github.com/DevTechProfile/CapFrameX/releases
 ![Screenshot](images/02_capture.png)
 
 # Overlay
-![Screenshot](images/03_overlay_runhistory.png)
 ![Screenshot](images/04_overlay_options.png)
 
 # Analysis
@@ -62,11 +61,11 @@ Located at the top
 Contains all the different views, a screenshot button, a login button(for additional cloud services), a direct link to the CX website and an options menu. 
 The screenshot button takes a screenshot of the current view excluding the record list.
 
-## Options
+## Options (Options tab)
 ![Screenshot](images/01_global_options.png)
 * Graph filter window size = The time period in which the filtered FPS graphs are being averaged(Analysis & Comparison View)
 * FPS values decimals = The number of decimals for the FPS values
-* Start with windows & Start minimized = Autostart option and starting in tray
+* Use "TBP Sim" sensor values (AMD graphics cards) if available 
 * Screenshot directory = The directory in which your screenshots are saved.
 * Hardware info source = What will be written into the capture file as your CPU, GPU and RAM config.  
   Automatic detection: What's delivered by the system  
@@ -75,7 +74,11 @@ The screenshot button takes a screenshot of the current view excluding the recor
   JSON: Standard JSON file  
   JSON + CSV: Additional CSV file that won't be used by CX but can be opened to get a better view on the raw PresentMon data  
 
-
+## Options (App tab)
+![Screenshot](images/01_global_options_app.png)
+* Start with windows & Start minimized = Autostart option and starting in tray
+* "Dark Mode" UI color mode
+* Recieve notifacations to get important information about the software and the project
 
 ## Capture view
 Here you can set your capture hotkey, the capture time(0=unlimited), choose if and how precise you want to log sensor data(like CPU/GPU load and power) and set the hotkey response sounds.  
@@ -206,7 +209,7 @@ This doesn't affect any processes you already have on your list. If our online l
 * Report: parameter table
 * Synchronization: display changed times(dc), histogram data
 
-# Test application monitoring library
+# Using CX monitoring library in your own projects
 The hardware monitoring library is based on [OpenHardareMonitor](https://github.com/openhardwaremonitor/openhardwaremonitor). It is customized and extended with many additional sensors. If you want to use it in your own projects note the following points.
 * Import the projects "OpenHardwareMonitorLib" and "CapFrameX.Monitoring.Contracts"
 * Allow unsafe code in the build options of the project "OpenHardwareMonitorLib"
