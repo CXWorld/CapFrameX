@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace OpenHardwareMonitor.Hardware.CPU
@@ -38,7 +39,6 @@ namespace OpenHardwareMonitor.Hardware.CPU
         private readonly double estimatedTimeStampCounterFrequency;
         private readonly double estimatedTimeStampCounterFrequencyError;
 
-        private ulong lastTimeStampCount;
         private long lastTime;
         private readonly Vendor vendor;
 
@@ -63,7 +63,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
             {
                 return $"CPU Core{GetCoreLabel(i)}";
             }
-            
+
             return "CPU Core #" + (i + 1) + GetCoreLabel(i);
         }
 
@@ -85,7 +85,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
                     }
                 }
 
-                ThreadAffinity.Set(previousAffinity);               
+                ThreadAffinity.Set(previousAffinity);
             }
 
             return corelabel;
@@ -225,55 +225,14 @@ namespace OpenHardwareMonitor.Hardware.CPU
               processorIndex.ToString(CultureInfo.InvariantCulture));
         }
 
+        [DllImport("CapFrameX.Hwinfo.dll")]
+        public static extern long GetTimeStampCounterFrequency();
+
         private void EstimateTimeStampCounterFrequency(out double frequency,
           out double error)
         {
-            // preload the function
-            EstimateTimeStampCounterFrequency(0, out double f, out double e);
-            EstimateTimeStampCounterFrequency(0, out f, out e);
-
-            // estimate the frequency
-            error = double.MaxValue;
-            frequency = 0;
-            for (int i = 0; i < 5; i++)
-            {
-                EstimateTimeStampCounterFrequency(0.025, out f, out e);
-                if (e < error)
-                {
-                    error = e;
-                    frequency = f;
-                }
-
-                if (error < 1e-4)
-                    break;
-            }
-        }
-
-        private void EstimateTimeStampCounterFrequency(double timeWindow,
-          out double frequency, out double error)
-        {
-            long ticks = (long)(timeWindow * Stopwatch.Frequency);
-            ulong countBegin, countEnd;
-
-            long timeBegin = Stopwatch.GetTimestamp() +
-              (long)Math.Ceiling(0.001 * ticks);
-            long timeEnd = timeBegin + ticks;
-
-            while (Stopwatch.GetTimestamp() < timeBegin) { }
-            countBegin = Opcode.Rdtsc();
-            long afterBegin = Stopwatch.GetTimestamp();
-
-            while (Stopwatch.GetTimestamp() < timeEnd) { }
-            countEnd = Opcode.Rdtsc();
-            long afterEnd = Stopwatch.GetTimestamp();
-
-            double delta = (timeEnd - timeBegin);
-            frequency = 1e-6 *
-              (((double)(countEnd - countBegin)) * Stopwatch.Frequency) / delta;
-
-            double beginError = (afterBegin - timeBegin) / delta;
-            double endError = (afterEnd - timeEnd) / delta;
-            error = beginError + endError;
+            frequency = GetTimeStampCounterFrequency() / 1E06;
+            error = 0;
         }
 
         private static void AppendMSRData(StringBuilder r, uint msr, GroupAffinity affinity)
@@ -388,11 +347,9 @@ namespace OpenHardwareMonitor.Hardware.CPU
                         if (lastTime != 0 && delta > 0.5 && delta < 2)
                         {
                             // update the TSC frequency with the new value
-                            TimeStampCounterFrequency =
-                              (timeStampCount - lastTimeStampCount) / (1e6 * delta);
+                            TimeStampCounterFrequency = GetTimeStampCounterFrequency() / 1E06;
                         }
 
-                        lastTimeStampCount = timeStampCount;
                         lastTime = time;
                     }
                 }

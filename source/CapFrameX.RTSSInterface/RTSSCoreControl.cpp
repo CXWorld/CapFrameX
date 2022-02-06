@@ -37,7 +37,6 @@ RTSSCoreControl::RTSSCoreControl()
 	OSDCustomPosition = FALSE;
 	OverlayPositionX = 0;
 	OverlayPositionY = 0;
-
 }
 
 RTSSCoreControl::~RTSSCoreControl() { }
