@@ -6,7 +6,7 @@
 
 uint64_t GetTimeStampCounterFrequency()
 {
-	long long  frequency = 0;
+	uint64_t  frequency = 0;
 	size_t repeats = 100;
 
 	//get QPC freq
