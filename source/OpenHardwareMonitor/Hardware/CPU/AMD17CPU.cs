@@ -90,8 +90,8 @@ namespace OpenHardwareMonitor.Hardware.CPU
                 }
             }
 
-            this.smu = new RyzenSMU(family, model, packageType);
-            var pmTable = smu.GetPmTable();
+            //this.smu = new RyzenSMU(family, model, packageType);
+            //var pmTable = smu.GetPmTable();
 
             //foreach (KeyValuePair<uint, RyzenSMU.SmuSensorType> sensor in smu.GetPmTableStructure())
             //{
