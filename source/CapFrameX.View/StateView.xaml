@@ -105,6 +105,14 @@
                 <materialDesign:PackIcon Foreground="{DynamicResource MaterialDesignBodyLight}" Margin="0 0 5 0" Height="20" Width="20" Kind="Download" VerticalAlignment="Center" >
                 </materialDesign:PackIcon>
             </Border>
+
+            <TextBlock Margin="5 0 0 0" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}" >Own CPU usage:</TextBlock>
+            <TextBlock Margin="5 0 0 0" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}" >UserTime:</TextBlock>
+            <TextBlock Margin="5 0 0 0" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}"  Text="{Binding OwnCPUTimeUser, Mode=OneWay}"/>
+
+            <TextBlock Margin="5 0 0 0" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}" >PrivilegedTime:</TextBlock>
+            <TextBlock Margin="5 0 10 0" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}"  Text="{Binding OwnCPUTimePrivileged, Mode=OneWay}"/>
+
             <materialDesign:PackIcon Foreground="{DynamicResource MaterialDesignBody}"  Kind="Information" VerticalAlignment="Center">
                 <materialDesign:PackIcon.ToolTip>
                     <TextBlock Text="{Binding InfoToolTipText, UpdateSourceTrigger=Default}" Foreground="{DynamicResource MaterialDesignBody}"/>

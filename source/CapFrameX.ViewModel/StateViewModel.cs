@@ -30,6 +30,7 @@ namespace CapFrameX.ViewModel
         private readonly IUpdateCheck _updateCheck;
         private readonly IAppVersionProvider _appVersionProvider;
         private readonly ISystemInfo _systemInfo;
+        private readonly Process _currentProcess;
         private static ILogger<StateViewModel> _logger;
 
         private bool _isCaptureModeActive;
@@ -108,6 +109,22 @@ namespace CapFrameX.ViewModel
 
         public ICommand UpdateStatusInfoCommand { get; }
 
+        public string OwnCPUTimeUser
+        {
+            get
+            {
+                return _currentProcess.UserProcessorTime.TotalSeconds.ToString("N2")+" sec.";
+            }
+        }
+
+        public string OwnCPUTimePrivileged
+        {
+            get
+            {
+                return _currentProcess.PrivilegedProcessorTime.TotalSeconds.ToString("N2") + " sec.";
+            }
+        }
+
         public StateViewModel(IEventAggregator eventAggregator,
                               IAppConfiguration appConfiguration,
                               ICaptureService captureService,
@@ -158,6 +175,13 @@ namespace CapFrameX.ViewModel
                 UpdateSystemInfoStatus();
             });
 
+            Observable
+                .Timer(DateTimeOffset.UtcNow, TimeSpan.FromSeconds(1))
+                .Subscribe(t =>
+                {
+                    RaisePropertyChanged("OwnCPUTimeUser");
+                    RaisePropertyChanged("OwnCPUTimePrivileged");
+                });
 
             Task.Run(async () =>
             {
@@ -169,6 +193,8 @@ namespace CapFrameX.ViewModel
                     RaisePropertyChanged(nameof(IsUpdateAvailable));
                 });
             });
+
+            _currentProcess = Process.GetCurrentProcess();
 
             stopwatch.Stop();
             _logger.LogInformation(this.GetType().Name + " {initializationTime}s initialization time", Math.Round(stopwatch.ElapsedMilliseconds * 1E-03, 1));
