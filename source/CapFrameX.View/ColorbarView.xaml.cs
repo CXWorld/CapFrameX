@@ -115,12 +115,14 @@ namespace CapFrameX.View
             Bitmap bitmap = null;
             VisualBrush visualBrush = new VisualBrush(screenShotArea);
 
+            double factor = PresentationSource.FromVisual(this).CompositionTarget.TransformToDevice.M11;
+
             // Gets the size of the images (I assume each image has the same size)
             const int upperRectangleHeight = 3;
-            const int lowerRectangleHeight = 60;
+            int lowerRectangleHeight = (int)(60 * factor);
 
-            int imageWidth = (int)screenShotArea.ActualWidth;
-            int imageHeight = (int)screenShotArea.ActualHeight + upperRectangleHeight;
+            int imageWidth = (int)(screenShotArea.ActualWidth * factor);
+            int imageHeight = (int)(screenShotArea.ActualHeight * factor + upperRectangleHeight * factor);
 
             // Draws the images into a DrawingVisual component
             DrawingVisual drawingVisual = new DrawingVisual();
@@ -156,7 +158,7 @@ namespace CapFrameX.View
                     new System.Drawing.Size(imageWidth - 2, imageHeight), new SolidBrush(System.Drawing.Color.FromArgb(255, 32, 141, 228)));
 
                 // Add CX logos
-                AddLogo(bitmap, logoName, new System.Drawing.Point(20, imageHeight - logoName.Height - (lowerRectangleHeight- logoName.Height)/2));
+                AddLogo(bitmap, logoName, new System.Drawing.Point(20, imageHeight - logoName.Height - (lowerRectangleHeight - logoName.Height) / 2));
             }
 
             return bitmap;

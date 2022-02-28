@@ -35,6 +35,7 @@ uint64_t GetTimeStampCounterFrequency()
 			frequency = ticks_ms;
 	}
 
+	// return frequency * 1000;
 	return RoundSmart(frequency, 100000) * 1000;
 }
 
