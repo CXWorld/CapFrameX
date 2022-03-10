@@ -389,8 +389,8 @@ namespace OpenHardwareMonitor.Hardware.ATI
                     }
 
                     // Linear fitting function (model)
-                    // TBP = 5W + 1.155 * ASIC Power
-                    powerTotalBoardSimulated.Value = powerTotalValue > 0 ? (float)Math.Round(5f + 1.155f * powerTotalValue, 0) : 0;
+                    // TBP = 5W + 1.15 * ASIC Power
+                    powerTotalBoardSimulated.Value = powerTotalValue > 0 ? (float)Math.Round(5f + 1.15f * powerTotalValue, 0) : 0;
                     ActivateSensor(powerTotalBoardSimulated);
                 }
 

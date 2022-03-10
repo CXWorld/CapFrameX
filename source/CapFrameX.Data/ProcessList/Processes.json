@@ -1,5 +1,200 @@
 [
   {
+    "Name": "SW3",
+    "DisplayName": "Shadow Warrior 3",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "GridLegends",
+    "DisplayName": "Grid Legends",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "wsl2distromanager",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "PowerToys.FancyZones",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "DataExchangeHost",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "Cinema 4D",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "eldenring",
+    "DisplayName": "Elden Ring",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "LOSTARK",
+    "DisplayName": "Lost Ark",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "DyingLightGame_x64_rwdi",
+    "DisplayName": "Dying Light 2",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "GameTurbo",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "MSI-Kombustor-x64",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "RazerCortex",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "Crysis3Remastered",
+    "DisplayName": "Crysis 3 Remastered",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "GoW",
+    "DisplayName": "God of War",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "SekiroFpsUnlockAndMore_v1.2.5.2-13-1-2-5-2-1604415043",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "BasemarkGPU",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "mspaint",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "setup",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "Paradox Launcher",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "RainbowSix_Vulkan",
+    "DisplayName": "Rainbow Six Siege (Vulkan)",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "Icarus-Win64-Shipping",
+    "DisplayName": "Icarus",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "StarCitizen_Launcher",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "stormworks64",
+    "DisplayName": "Stormworks: Build And Rescue",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "HaloInfinite",
+    "DisplayName": "Halo Infinite",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "AC2-Win64-Shipping",
+    "DisplayName": "Assetto Corsa Competizione",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "PCBS",
+    "DisplayName": "PC Building Simulator",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "RAGE2",
+    "DisplayName": "RAGE 2",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "ForzaHorizon5",
+    "DisplayName": "Forza Horizon 5",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "BF2042",
+    "DisplayName": "Battlefield 2042",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "JWE2",
+    "DisplayName": "Jurassic World Evolution 2",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "Vanguard",
+    "DisplayName": "Call of Duty: Vanguard",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "BNSR",
+    "DisplayName": "Blade & Soul",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "Shipping-ThiefGame",
+    "DisplayName": "Thief",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "DH-Win64-Shipping",
+    "DisplayName": "Destroy All Humans!",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "valheim",
+    "DisplayName": "Valheim",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "kdeconnect-app",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "Audials",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "ffxivlauncher",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "AdCefWebBrowser",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
     "Name": "kodi",
     "DisplayName": null,
     "IsBlacklisted": true
