@@ -10,7 +10,8 @@ namespace CapFrameX.CustomInstallerActions
 {
     public class InstallerCustomActions
     {
-        private static HashSet<string> _validFilenames = new HashSet<string>()
+        private static HashSet<string> _validFilenames = 
+            new HashSet<string>()
         {
             "settings.json",
             "AppSettings.json",
@@ -21,26 +22,44 @@ namespace CapFrameX.CustomInstallerActions
             "SensorEntryConfiguration.json"
         };
 
+        private const string APPNAME = "CapFrameX";
+
+        [CustomAction]
+        public static ActionResult RemoveAppdataConfigFiles(Session session)
+        {
+            session.Log("Begin RemoveAppdataConfigFiles");
+
+            try
+            {
+                var appdataFolder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+                var configFolder = Path.Combine(appdataFolder, APPNAME);
+
+                Directory.Delete(configFolder, true);
+
+            }
+            catch { session.Log("Error while removing AppData config files!"); }
+
+            return ActionResult.Success;
+        }
+
         [CustomAction]
         public static ActionResult RemoveAutoStartKey(Session session)
         {
             session.Log("Begin RemoveAutoStartKey");
-
-            const string appName = "CapFrameX";
 
             try
             {
                 using (TaskService ts = new TaskService())
                 {
 
-                    if (ts.RootFolder.GetTasks().Any(t => t.Name == appName))
+                    if (ts.RootFolder.GetTasks().Any(t => t.Name == APPNAME))
                     {
-                        ts.RootFolder.DeleteTask(appName);
+                        ts.RootFolder.DeleteTask(APPNAME);
                     }
                 }
 
                 RegistryKey startKey = Registry.LocalMachine.OpenSubKey("SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Run", true);
-                startKey?.DeleteValue(appName);
+                startKey?.DeleteValue(APPNAME);
             }
             catch { session.Log("Error while cleaning registry or removing autostart!");}
 

@@ -27,6 +27,9 @@
 		  <Custom Action="CleanRegistry" Before="InstallFinalize">
         Installed OR NOT Installed
       </Custom>
+      <Custom Action="AppdataConfigFiles" Before="InstallFinalize">
+        Installed
+      </Custom>
 	  </InstallExecuteSequence>
 
 	  <util:CloseApplication Id="CloseCapFrameX" Target="CapFrameX.exe"
@@ -35,7 +38,11 @@
 	  </util:CloseApplication>
 	</Product>
 
-	<Fragment>
+  <Fragment>
+    <CustomAction Id="AppdataConfigFiles" BinaryKey="CapFrameX.CustomInstallerActions.CA.dll" DllEntry="RemoveAppdataConfigFiles" Execute="immediate" Return="check"/>
+  </Fragment>
+
+  <Fragment>
     <CustomAction Id="CleanRegistry" BinaryKey="CapFrameX.CustomInstallerActions.CA.dll" DllEntry="RemoveAutoStartKey" Execute="immediate" Return="check"/>		
 	</Fragment>
   
