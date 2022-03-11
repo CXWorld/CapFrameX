@@ -170,7 +170,8 @@ namespace CapFrameX.PresentMonInterface
             // it makes no sense to calculate fps metrics with
             // frame times above the stuttering threshold
             // filtering high frame times caused by focus lost for example
-            if (frameTime > STUTTERING_THRESHOLD * 1E03) return;
+            if (frameTime > STUTTERING_THRESHOLD * 1E03 && !_overlayEntryCore.RealtimeMetricEntryDict["OnlineStutteringPercentage"].ShowOnOverlay) 
+                return;
 
             try
             {
