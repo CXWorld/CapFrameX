@@ -321,6 +321,9 @@ namespace CapFrameX.PresentMonInterface
         {
             lock (_lockMetric)
             {
+                if (!_frametimes.Any())
+                    return 0;
+
                 return _frametimeStatisticProvider
                     .GetStutteringTimePercentage(_frametimes, _appConfiguration.StutteringFactor);
             }
