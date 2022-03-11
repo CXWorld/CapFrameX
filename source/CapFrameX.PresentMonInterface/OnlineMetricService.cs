@@ -1,4 +1,5 @@
-﻿using CapFrameX.Contracts.Overlay;
+﻿using CapFrameX.Contracts.Configuration;
+using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.PresentMonInterface;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Statistics.NetStandard.Contracts;
@@ -25,6 +26,7 @@ namespace CapFrameX.PresentMonInterface
         private readonly IEventAggregator _eventAggregator;
         private readonly IOverlayEntryCore _overlayEntryCore;
         private readonly ILogger<OnlineMetricService> _logger;
+        private readonly IAppConfiguration _appConfiguration;
         private readonly object _lockMetric = new object();
         private readonly object _lockApplicationLatency = new object();
         private List<double> _frametimes = new List<double>(LIST_CAPACITY);
@@ -42,12 +44,14 @@ namespace CapFrameX.PresentMonInterface
             ICaptureService captureServive,
             IEventAggregator eventAggregator,
             IOverlayEntryCore oerlayEntryCore,
-            ILogger<OnlineMetricService> logger)
+            ILogger<OnlineMetricService> logger,
+            IAppConfiguration appConfiguration)
         {
             _captureService = captureServive;
             _eventAggregator = eventAggregator;
             _overlayEntryCore = oerlayEntryCore;
             _logger = logger;
+            _appConfiguration = appConfiguration;
 
             _frametimeStatisticProvider = frametimeStatisticProvider;
 
@@ -57,22 +61,23 @@ namespace CapFrameX.PresentMonInterface
 
         private void SubscribeToUpdateSession()
         {
-            _eventAggregator.GetEvent<PubSubEvent<ViewMessages.CurrentProcessToCapture>>()
-                            .Subscribe(msg =>
-                            {
-                                lock (_currentProcessLock)
-                                {
-                                    if (_currentProcess == null
-                                    || _currentProcess != msg.Process)
-                                    {
-                                        ResetMetrics();
-                                        ResetApplicationLatency();
-                                    }
+            _eventAggregator
+                .GetEvent<PubSubEvent<ViewMessages.CurrentProcessToCapture>>()
+                .Subscribe(msg =>
+                {
+                    lock (_currentProcessLock)
+                    {
+                        if (_currentProcess == null
+                        || _currentProcess != msg.Process)
+                        {
+                            ResetMetrics();
+                            ResetApplicationLatency();
+                        }
 
-                                    _currentProcess = msg.Process;
-                                    _currentProcessId = msg.ProcessId;
-                                }
-                            });
+                        _currentProcess = msg.Process;
+                        _currentProcessId = msg.ProcessId;
+                    }
+                });
         }
 
         private void ConnectOnlineMetricDataStream()
@@ -89,7 +94,6 @@ namespace CapFrameX.PresentMonInterface
                 .Skip(1)
                 .ObserveOn(new EventLoopScheduler())
                 .Where(line => EvaluateRealtimeInputLag())
-                //.Where(line => IsNotDropped(line))
                 .Scan(new List<string[]>(), (acc, current) =>
                 {
                     if (acc.Count > 1)
@@ -103,22 +107,14 @@ namespace CapFrameX.PresentMonInterface
                 .Subscribe(UpdateOnlineApplicationLatency);
         }
 
-        private bool IsNotDropped(string[] line)
-        {
-            try
-            {
-                return Convert.ToInt32(line[PresentMonCaptureService.Dropped_INDEX], CultureInfo.InvariantCulture) == 0;
-            }
-            catch { return false; }
-        }
-
         private bool EvaluateRealtimeMetrics()
         {
             try
             {
                 return _overlayEntryCore.RealtimeMetricEntryDict["OnlineAverage"].ShowOnOverlay
                     || _overlayEntryCore.RealtimeMetricEntryDict["OnlineP1"].ShowOnOverlay
-                    || _overlayEntryCore.RealtimeMetricEntryDict["OnlineP0dot2"].ShowOnOverlay;
+                    || _overlayEntryCore.RealtimeMetricEntryDict["OnlineP0dot2"].ShowOnOverlay
+                    || _overlayEntryCore.RealtimeMetricEntryDict["OnlineStutteringPercentage"].ShowOnOverlay;
             }
             catch { return false; }
         }
@@ -265,10 +261,6 @@ namespace CapFrameX.PresentMonInterface
                         _prevDisplayedFrameInputLagTime = frameTime_a - inPresentAPITimes_b;
                     }
 
-                    // new expectedInputLagTime = untilDisplayedTimes[i] + 0.5 * frameTimes[i] + 0.5 * (frameTimes[i - 1] - inPresentAPITimes[i - 2] + 0.5 * _droppedFrametimes);
-                    // old _applicationLatencyValues.Add(frameTime_a + untilDisplayedTimes_a + 0.5 * (frameTime_b - inPresentAPITimes_b - inPresentAPITimes_c));
-
-
                     if (startTime - _measuretimesApplicationLatency.First() > _maxOnlineApplicationLatencyIntervalLength)
                     {
                         int position = 0;
@@ -322,6 +314,15 @@ namespace CapFrameX.PresentMonInterface
                     return 0;
 
                 return _applicationLatencyValues.Average();
+            }
+        }
+
+        public double GetOnlineStutteringPercentageValue()
+        {
+            lock (_lockMetric)
+            {
+                return _frametimeStatisticProvider
+                    .GetStutteringTimePercentage(_frametimes, _appConfiguration.StutteringFactor);
             }
         }
     }

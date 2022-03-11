@@ -271,6 +271,14 @@ namespace CapFrameX.Overlay
                         _overlayEntryCore.RealtimeMetricEntryDict["OnlineApplicationLatency"] = entry;
                 }
 
+                if (entry.Identifier == "OnlineStutteringPercentage")
+                {
+                    if (!_overlayEntryCore.RealtimeMetricEntryDict.ContainsKey("OnlineStutteringPercentage"))
+                        _overlayEntryCore.RealtimeMetricEntryDict.Add("OnlineStutteringPercentage", entry);
+                    else
+                        _overlayEntryCore.RealtimeMetricEntryDict["OnlineStutteringPercentage"] = entry;
+                }
+
                 if (entry.Identifier == "SystemTime")
                 {
                     if (!_overlayEntryCore.RealtimeMetricEntryDict.ContainsKey("SystemTime"))
@@ -595,6 +603,14 @@ namespace CapFrameX.Overlay
             {
                 renderApplicationLatency.Value = Math.Round(_onlineMetricService.GetOnlineApplicationLatencyValue(), 1);
             }
+
+            // stuttering percentage (time)
+            _identifierOverlayEntryDict.TryGetValue("OnlineStutteringPercentage", out IOverlayEntry stutteringPercentage);
+
+            if (stutteringPercentage != null && stutteringPercentage.ShowOnOverlay)
+            {
+                stutteringPercentage.Value = Math.Round(_onlineMetricService.GetOnlineStutteringPercentageValue(), 1);
+            }
         }
 
         private void SetOnlineMetricsIsNumericState()
@@ -629,6 +645,14 @@ namespace CapFrameX.Overlay
             if (applicationLatency != null)
             {
                 applicationLatency.IsNumeric = true;
+            }
+
+            // stuttering percentage
+            _identifierOverlayEntryDict.TryGetValue("OnlineStutteringPercentage", out IOverlayEntry stutteringPercentage);
+
+            if (stutteringPercentage != null)
+            {
+                stutteringPercentage.IsNumeric = true;
             }
         }
 
@@ -668,6 +692,15 @@ namespace CapFrameX.Overlay
             {
                 applicationLatency.ValueUnitFormat = "ms";
                 applicationLatency.ValueAlignmentAndDigits = "{0,5:F1}";
+            }
+
+            // stuttering percentage
+            _identifierOverlayEntryDict.TryGetValue("OnlineStutteringPercentage", out IOverlayEntry stutteringPercentage);
+
+            if (stutteringPercentage != null)
+            {
+                stutteringPercentage.ValueUnitFormat = "%";
+                stutteringPercentage.ValueAlignmentAndDigits = "{0,5:F1}";
             }
         }
 

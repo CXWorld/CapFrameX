@@ -60,7 +60,6 @@ namespace CapFrameX.ViewModel
 		private bool _showUploadDescriptionTextBox = false;
 		private string _uploadDescription = string.Empty;
 
-
 		public string UploadDescription
 		{
 			get
@@ -242,9 +241,6 @@ namespace CapFrameX.ViewModel
 		public CloudViewModel(IStatisticProvider statisticProvider, IRecordManager recordManager,
 			IEventAggregator eventAggregator, IAppConfiguration appConfiguration, ILogger<CloudViewModel> logger, IAppVersionProvider appVersionProvider, LoginManager loginManager)
 		{
-			Stopwatch stopwatch = new Stopwatch();
-			stopwatch.Start();
-
 			_statisticProvider = statisticProvider;
 			_recordManager = recordManager;
 			_eventAggregator = eventAggregator;
@@ -268,7 +264,6 @@ namespace CapFrameX.ViewModel
 				await DownloadCaptureCollection(DownloadIDString);
 			});
 
-
 			SubscribeToUpdateSession();
 
 			CloudEntries.CollectionChanged += new NotifyCollectionChangedEventHandler
@@ -281,9 +276,6 @@ namespace CapFrameX.ViewModel
 				IsLoggedIn = state.IsLoggedIn;
 				RaisePropertyChanged(nameof(IsLoggedIn));
 			});
-
-			stopwatch.Stop();
-			_logger.LogInformation(this.GetType().Name + " {initializationTime}s initialization time", Math.Round(stopwatch.ElapsedMilliseconds * 1E-03, 1));
 		}
 
 		public void RemoveCloudEntry(ICloudEntry entry)

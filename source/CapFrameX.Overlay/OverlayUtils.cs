@@ -249,6 +249,21 @@ namespace CapFrameX.Overlay
                         ShowGraph = false,
                         ShowGraphIsEnabled = false,
                         Color = string.Empty
+                    },
+
+                    // Stuttering percentage
+                    new OverlayEntryWrapper("OnlineStutteringPercentage")
+                    {
+                        OverlayEntryType = EOverlayEntryType.OnlineMetric,
+                        ShowOnOverlay = false,
+                        ShowOnOverlayIsEnabled = true,
+                        Description = "Stuttering Time (%)",
+                        GroupName = "Stuttering",
+                        Value = "0",
+                        ValueFormat = default,
+                        ShowGraph = false,
+                        ShowGraphIsEnabled = false,
+                        Color = string.Empty
                     }
             };
         }

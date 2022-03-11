@@ -94,7 +94,8 @@ namespace CapFrameX.ViewModel.SubModels
                    .Where(item => item.Identifier == "OnlineAverage"
                        || item.Identifier == "OnlineP1"
                        || item.Identifier == "OnlineP0dot2"
-                       || item.Identifier == "OnlineApplicationLatency"))
+                       || item.Identifier == "OnlineApplicationLatency"
+                       || item.Identifier == "OnlineStutteringPercentage"))
             {
                 if (entry.ShowOnOverlayIsEnabled)
                 {
