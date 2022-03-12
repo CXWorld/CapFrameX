@@ -39,7 +39,7 @@ namespace CapFrameX.Overlay
                         ShowGraphIsEnabled = false,
                         Color = string.Empty
                     },
-                    // CX 
+
 					// System time
                     new OverlayEntryWrapper("SystemTime")
                     {
@@ -64,6 +64,21 @@ namespace CapFrameX.Overlay
                         Description = "Run history",
                         GroupName = string.Empty,
                         Value = default,
+                        ValueFormat = default,
+                        ShowGraph = false,
+                        ShowGraphIsEnabled = false,
+                        Color = string.Empty
+                    },
+
+                    // CX CPU usage
+					new OverlayEntryWrapper("CxAppCpuUsage")
+                    {
+                        OverlayEntryType = EOverlayEntryType.CX,
+                        ShowOnOverlay = false,
+                        ShowOnOverlayIsEnabled = true,
+                        Description = "CapFrameX CPU Usage (%)",
+                        GroupName = "CX CPU",
+                        Value = "0",
                         ValueFormat = default,
                         ShowGraph = false,
                         ShowGraphIsEnabled = false,

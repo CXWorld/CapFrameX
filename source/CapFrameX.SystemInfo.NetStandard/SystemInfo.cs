@@ -10,7 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Management;
-using System.Threading.Tasks;
+using System.Diagnostics;
 
 namespace CapFrameX.SystemInfo.NetStandard
 {
@@ -20,6 +20,13 @@ namespace CapFrameX.SystemInfo.NetStandard
 
         private readonly ISensorService _sensorService;
         private readonly ILogger<SystemInfo> _logger;
+        private readonly double _processorCount = Environment.ProcessorCount;
+
+        private DateTime _lastTime;
+        private TimeSpan _lastTotalProcessorTime;
+        private DateTime _curTime;
+        private TimeSpan _curTotalProcessorTime;
+        private Process _cxProcess;
 
         public ESystemInfoTertiaryStatus ResizableBarHardwareStatus { get; private set; } = ESystemInfoTertiaryStatus.Error;
 
@@ -34,6 +41,10 @@ namespace CapFrameX.SystemInfo.NetStandard
         {
             _sensorService = sensorService;
             _logger = logger;
+
+            _cxProcess = Process.GetProcessesByName("CapFrameX").FirstOrDefault();
+            _lastTime = DateTime.UtcNow;
+            _lastTotalProcessorTime = _cxProcess == null ? new TimeSpan() : _cxProcess.TotalProcessorTime;
 
             SetSystemInfosStatus();
         }
@@ -74,11 +85,11 @@ namespace CapFrameX.SystemInfo.NetStandard
             try
             {
                 var kmtAdapters = new Kmt(_logger).GetAdapters();
-                if(kmtAdapters.Any(x => x.WddmCapabilities_27.HagsEnabled))
+                if (kmtAdapters.Any(x => x.WddmCapabilities_27.HagsEnabled))
                 {
                     HardwareAcceleratedGPUSchedulingStatus = ESystemInfoTertiaryStatus.Enabled;
                 }
-                else if(kmtAdapters.Any(x => x.WddmCapabilities_27.HagsSupported))
+                else if (kmtAdapters.Any(x => x.WddmCapabilities_27.HagsSupported))
                 {
                     HardwareAcceleratedGPUSchedulingStatus = ESystemInfoTertiaryStatus.Disabled;
                 }
@@ -102,7 +113,7 @@ namespace CapFrameX.SystemInfo.NetStandard
                         bool valConverted = Convert.ToBoolean(val);
                         GameModeStatus = valConverted ? ESystemInfoTertiaryStatus.Enabled : ESystemInfoTertiaryStatus.Disabled;
                     }
-                    else 
+                    else
                     {
                         // default enabled
                         GameModeStatus = ESystemInfoTertiaryStatus.Enabled;
@@ -302,6 +313,25 @@ namespace CapFrameX.SystemInfo.NetStandard
 
             //DeviceName
             return propertyDataValue;
+        }
+
+        public double GetCapFrameXAppCpuUsage()
+        {
+            double cpuUsage = 0;
+
+            if (_cxProcess != null)
+            {
+                _curTime = DateTime.UtcNow;
+                _curTotalProcessorTime = _cxProcess.TotalProcessorTime;
+
+                cpuUsage = (_curTotalProcessorTime.TotalMilliseconds - _lastTotalProcessorTime.TotalMilliseconds)
+                    / _curTime.Subtract(_lastTime).TotalMilliseconds / _processorCount;
+
+                _lastTime = _curTime;
+                _lastTotalProcessorTime = _curTotalProcessorTime;
+            }
+
+            return cpuUsage * 100d;
         }
     }
 }

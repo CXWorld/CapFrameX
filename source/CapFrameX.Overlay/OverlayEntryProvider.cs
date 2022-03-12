@@ -93,6 +93,7 @@ namespace CapFrameX.Overlay
             await _taskCompletionSource.Task;
             await UpdateSensorData();
             UpdateOnlineMetrics();
+            UpdateAppInfo();
 
             if (updateFormats)
             {
@@ -314,6 +315,9 @@ namespace CapFrameX.Overlay
             SetRTSSMetricFormats();
             SetRTSSMetricIsNumericState();
             SetHardwareIsNumericState();
+            SetAppInfoFormats();
+            SetAppInfoIsNumericState();
+
             _overlayEntries.ForEach(entry => entry.FormatChanged = true);
         }
 
@@ -613,6 +617,17 @@ namespace CapFrameX.Overlay
             }
         }
 
+        private void UpdateAppInfo()
+        {
+            // CX CPU usage
+            _identifierOverlayEntryDict.TryGetValue("CxAppCpuUsage", out IOverlayEntry cxCpuUsage);
+
+            if (cxCpuUsage != null)
+            {
+                cxCpuUsage.Value = _systemInfo.GetCapFrameXAppCpuUsage();
+            }
+        }
+
         private void SetOnlineMetricsIsNumericState()
         {
             // average
@@ -708,6 +723,26 @@ namespace CapFrameX.Overlay
         {
             foreach (var entry in _overlayEntries.Where(x =>
                 x.Identifier == "Framerate" || x.Identifier == "Frametime"))
+            {
+                entry.IsNumeric = true;
+            }
+        }
+
+        private void SetAppInfoFormats()
+        {
+            // CPU usage
+            _identifierOverlayEntryDict.TryGetValue("CxAppCpuUsage", out IOverlayEntry cxCpuUsage);
+
+            if (cxCpuUsage != null)
+            {
+                cxCpuUsage.ValueUnitFormat = "%";
+                cxCpuUsage.ValueAlignmentAndDigits = "{0,5:F1}";
+            }
+        }
+
+        private void SetAppInfoIsNumericState()
+        {
+            foreach (var entry in _overlayEntries.Where(x => x.Identifier == "CxAppCpuUsage"))
             {
                 entry.IsNumeric = true;
             }
@@ -947,10 +982,10 @@ namespace CapFrameX.Overlay
         private void SubscribeToOptionPopupClosed()
         {
             _eventAggregator.GetEvent<PubSubEvent<ViewMessages.OptionPopupClosed>>()
-                            .Subscribe(_ =>
-                            {
-                                CheckCustomSystemInfo();
-                            });
+                .Subscribe(_ =>
+                {
+                    CheckCustomSystemInfo();
+                });
         }
     }
 }

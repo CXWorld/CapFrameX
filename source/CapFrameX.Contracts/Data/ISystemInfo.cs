@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-
-namespace CapFrameX.Contracts.Data
+﻿namespace CapFrameX.Contracts.Data
 {
     public interface ISystemInfo
     {
@@ -23,5 +21,7 @@ namespace CapFrameX.Contracts.Data
         string GetSystemRAMInfoName();
 
         void SetSystemInfosStatus();
+
+        double GetCapFrameXAppCpuUsage();
     }
 }
