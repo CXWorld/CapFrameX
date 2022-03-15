@@ -319,42 +319,6 @@ namespace OpenHardwareMonitor.Hardware.CPU
 
         public override void Update()
         {
-            if (sensorConfig.GetSensorEvaluate(totalLoad.IdentifierString)
-                || sensorConfig.GetSensorEvaluate(maxLoad.IdentifierString)
-                || coreLoads.Any(sensor => sensorConfig.GetSensorEvaluate(sensor.IdentifierString)))
-            {
-                if (HasTimeStampCounter && isInvariantTimeStampCounter)
-                {
-                    // make sure always the same thread is used
-                    var previousAffinity = ThreadAffinity.Set(cpuid[0][0].Affinity);
-
-                    // read time before and after getting the TSC to estimate the error
-                    long firstTime = Stopwatch.GetTimestamp();
-                    ulong timeStampCount = Opcode.Rdtsc();
-                    long time = Stopwatch.GetTimestamp();
-
-                    // restore the thread affinity mask
-                    ThreadAffinity.Set(previousAffinity);
-
-                    double delta = ((double)(time - lastTime)) / Stopwatch.Frequency;
-                    double error = ((double)(time - firstTime)) / Stopwatch.Frequency;
-
-                    // only use data if they are measured accuarte enough (max 0.1ms delay)
-                    if (error < 1E-04)
-                    {
-                        // ignore the first reading because there are no initial values 
-                        // ignore readings with too large or too small time window
-                        if (lastTime != 0 && delta > 0.5 && delta < 2)
-                        {
-                            // update the TSC frequency with the new value
-                            TimeStampCounterFrequency = GetTimeStampCounterFrequency() / 1E06;
-                        }
-
-                        lastTime = time;
-                    }
-                }
-            }
-
             if (cpuLoad.IsAvailable)
             {
                 cpuLoad.Update();
