@@ -105,7 +105,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
         }
 
         public IntelCPU(int processorIndex, CPUID[][] cpuid, ISettings settings, ISensorConfig config)
-          : base(processorIndex, cpuid, settings, config)
+          : base(processorIndex, cpuid, settings)
         {
             this.sensorConfig = config;
 

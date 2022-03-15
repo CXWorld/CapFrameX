@@ -8,7 +8,6 @@
 	
 */
 
-using CapFrameX.Monitoring.Contracts;
 using Serilog;
 using System;
 using System.Collections.Generic;
@@ -24,7 +23,6 @@ namespace OpenHardwareMonitor.Hardware.CPU
     {
         protected readonly CPUID[][] cpuid;
 
-        private readonly ISensorConfig sensorConfig;
         private readonly Dictionary<int, int> threadCountMap = new Dictionary<int, int>();
         private readonly Dictionary<int, int> threadCoreMap = new Dictionary<int, int>();
 
@@ -39,7 +37,6 @@ namespace OpenHardwareMonitor.Hardware.CPU
         private readonly double estimatedTimeStampCounterFrequency;
         private readonly double estimatedTimeStampCounterFrequencyError;
 
-        private long lastTime;
         private readonly Vendor vendor;
 
         private readonly CPULoad cpuLoad;
@@ -110,10 +107,9 @@ namespace OpenHardwareMonitor.Hardware.CPU
             }
         }
 
-        public GenericCPU(int processorIndex, CPUID[][] cpuid, ISettings settings, ISensorConfig config)
+        public GenericCPU(int processorIndex, CPUID[][] cpuid, ISettings settings)
             : base(cpuid[0][0].Name, CreateIdentifier(cpuid[0][0].Vendor, processorIndex), settings)
         {
-            this.sensorConfig = config;
             this.cpuid = cpuid;
 
             this.vendor = cpuid[0][0].Vendor;

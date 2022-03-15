@@ -143,12 +143,12 @@ namespace OpenHardwareMonitor.Hardware.CPU
                                 hardware.Add(new AMD17CPU(index, coreThreads, settings, sensorConfig));
                                 break;
                             default:
-                                hardware.Add(new GenericCPU(index, coreThreads, settings, sensorConfig));
+                                hardware.Add(new GenericCPU(index, coreThreads, settings));
                                 break;
                         }
                         break;
                     default:
-                        hardware.Add(new GenericCPU(index, coreThreads, settings, sensorConfig));
+                        hardware.Add(new GenericCPU(index, coreThreads, settings));
                         break;
                 }
 
