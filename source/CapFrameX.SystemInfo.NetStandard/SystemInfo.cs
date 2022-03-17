@@ -322,7 +322,12 @@ namespace CapFrameX.SystemInfo.NetStandard
             if (_cxProcess != null)
             {
                 _curTime = DateTime.UtcNow;
-                _curTotalProcessorTime = _cxProcess.TotalProcessorTime;
+
+                try
+                {
+                    _curTotalProcessorTime = _cxProcess.TotalProcessorTime;
+                }
+                catch { }
 
                 cpuUsage = (_curTotalProcessorTime.TotalMilliseconds - _lastTotalProcessorTime.TotalMilliseconds)
                     / _curTime.Subtract(_lastTime).TotalMilliseconds / _processorCount;
