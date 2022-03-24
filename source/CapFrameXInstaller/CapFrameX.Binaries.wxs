@@ -425,6 +425,9 @@
             <Component Id="cmpE722E076AB8486E4A4F24B01268787A2" Guid="*" Win64="yes">
                 <File Id="fil92FE767CE7126933F4E9DEEEBAAE9354" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\System.Diagnostics.DiagnosticSource.dll" />
             </Component>
+            <Component Id="cmp28698F3E40E97D0D04ED87AE917B13C7" Guid="*" Win64="yes">
+                <File Id="fil07DA91370126729501EE3756F11EC693" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\System.Diagnostics.PerformanceCounter.dll" />
+            </Component>
             <Component Id="cmpF88B96E5973E0D28B511DC6371DB06E0" Guid="*" Win64="yes">
                 <File Id="filA72770FDC08B6447ABAA326398A3C786" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\System.IO.Pipelines.dll" />
             </Component>
@@ -705,6 +708,7 @@
             <ComponentRef Id="cmpA748C45814948C0E47F0962CF5A9E2C5" />
             <ComponentRef Id="cmp86FA15ED6758AB64222C7B872722AE2A" />
             <ComponentRef Id="cmpE722E076AB8486E4A4F24B01268787A2" />
+            <ComponentRef Id="cmp28698F3E40E97D0D04ED87AE917B13C7" />
             <ComponentRef Id="cmpF88B96E5973E0D28B511DC6371DB06E0" />
             <ComponentRef Id="cmp642ED5B0D0BD1F16347D1310992C55A0" />
             <ComponentRef Id="cmp89AE5ECEB789ECF60BE6CC568D60B2F9" />
