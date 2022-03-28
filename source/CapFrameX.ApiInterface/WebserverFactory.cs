@@ -23,6 +23,8 @@ namespace CapFrameX.Remote
 
         public static string OsdHttpUrl;
         public static string OsdWSUrl;
+        public static string SensorsWSUrl;
+        public static string ActiveSensorsWSUrl;
 
         public static WebServer CreateWebServer(IContainer iocContainer, string hostname, bool useRandomPort)
         {
@@ -53,6 +55,8 @@ namespace CapFrameX.Remote
 
             OsdHttpUrl = "http://localhost:" + port + "/api/osd";
             OsdWSUrl = "ws://localhost:" + port + "/ws/osd";
+            SensorsWSUrl = "ws://localhost:" + port + "/ws/sensors";
+            ActiveSensorsWSUrl = "ws://localhost:" + port + "/ws/activesensors";
 
             // Listen for state changes.
             server.StateChanged += (s, e) => Log.Logger.Information($"WebServer ({string.Join(",", options.UrlPrefixes)}) State - {e.NewState}");
