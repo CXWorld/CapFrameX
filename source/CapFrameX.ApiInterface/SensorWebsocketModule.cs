@@ -1,7 +1,9 @@
 ﻿using CapFrameX.Contracts.Sensor;
+using CapFrameX.Monitoring.Contracts;
 using EmbedIO.WebSockets;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
@@ -10,7 +12,7 @@ namespace CapFrameX.ApiInterface
 {
     public class SensorWebsocketModule : WebSocketModule
     {
-        public SensorWebsocketModule(string path, ISensorService sensorService) : base(path, true)
+        public SensorWebsocketModule(string path, ISensorService sensorService, ISensorConfig sensorConfig, Func<KeyValuePair<ISensorEntry, float>, ISensorConfig, bool> sensorFilter) : base(path, true)
         {
             sensorService.SensorSnapshotStream
                 .Where(x => ActiveContexts.Count > 0)
@@ -19,7 +21,7 @@ namespace CapFrameX.ApiInterface
                     BroadcastAsync(JsonConvert.SerializeObject(new
                     {
                         Timestamp = sensors.Item1,
-                        Sensors = sensors.Item2.Select(x => new {
+                        Sensors = sensors.Item2.Where(s => sensorFilter(s, sensorConfig)).Select(x => new {
                             x.Key.Name,
                             x.Key.Value,
                             x.Key.SensorType

@@ -5,6 +5,7 @@ using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.PresentMonInterface;
 using CapFrameX.Contracts.Sensor;
 using CapFrameX.Data;
+using CapFrameX.Monitoring.Contracts;
 using DryIoc;
 using EmbedIO;
 using EmbedIO.Actions;
@@ -46,7 +47,8 @@ namespace CapFrameX.Remote
                     m.WithController(() => new OSDController(iocContainer.Resolve<IOverlayService>()));
                 })
                 .WithModule(new OSDWebsocketModule("/ws/osd", iocContainer.Resolve<IOverlayService>()))
-                .WithModule(new SensorWebsocketModule("/ws/sensors", iocContainer.Resolve<ISensorService>()))
+                .WithModule(new SensorWebsocketModule("/ws/sensors", iocContainer.Resolve<ISensorService>(), iocContainer.Resolve<ISensorConfig>(), (_, __) => true))
+                .WithModule(new SensorWebsocketModule("/ws/activesensors", iocContainer.Resolve<ISensorService>(), iocContainer.Resolve<ISensorConfig>(), (sensor, sensorConfig) => sensorConfig.GetSensorIsActive(sensor.Key.Identifier)))
                 .WithModule(new ActionModule("/", HttpVerbs.Any, ctx => ctx.SendDataAsync(new { Message = "Error" })));
 
             OsdHttpUrl = "http://localhost:" + port + "/api/osd";
