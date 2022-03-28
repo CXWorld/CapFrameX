@@ -118,6 +118,7 @@
     <Compile Include="JsonPayload\StartCapturePayload.cs" />
     <Compile Include="OSDController.cs" />
     <Compile Include="OSDWebsocketModule.cs" />
+    <Compile Include="SensorWebsocketModule.cs" />
     <Compile Include="VersionController.cs" />
     <Compile Include="WebserverFactory.cs" />
     <Compile Include="CaptureController.cs" />

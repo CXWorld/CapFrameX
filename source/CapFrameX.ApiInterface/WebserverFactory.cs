@@ -46,6 +46,7 @@ namespace CapFrameX.Remote
                     m.WithController(() => new OSDController(iocContainer.Resolve<IOverlayService>()));
                 })
                 .WithModule(new OSDWebsocketModule("/ws/osd", iocContainer.Resolve<IOverlayService>()))
+                .WithModule(new SensorWebsocketModule("/ws/sensors", iocContainer.Resolve<ISensorService>()))
                 .WithModule(new ActionModule("/", HttpVerbs.Any, ctx => ctx.SendDataAsync(new { Message = "Error" })));
 
             OsdHttpUrl = "http://localhost:" + port + "/api/osd";
