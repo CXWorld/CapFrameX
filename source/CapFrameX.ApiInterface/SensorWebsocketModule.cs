@@ -16,7 +16,15 @@ namespace CapFrameX.ApiInterface
                 .Where(x => ActiveContexts.Count > 0)
                 .Subscribe(sensors =>
                 {
-                    BroadcastAsync(JsonConvert.SerializeObject(sensors.Item2.Select(x => x.Key)));
+                    BroadcastAsync(JsonConvert.SerializeObject(new
+                    {
+                        Timestamp = sensors.Item1,
+                        Sensors = sensors.Item2.Select(x => new {
+                            x.Key.Name,
+                            x.Key.Value,
+                            x.Key.SensorType
+                        })
+                    }));
                 });
 
         }

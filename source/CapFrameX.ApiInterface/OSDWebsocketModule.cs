@@ -15,7 +15,13 @@ namespace CapFrameX.ApiInterface
 
         public OSDWebsocketModule(string path, IOverlayService overlayService) : base(path, true)
         {
-            overlayService.OSDUpdateNotifier = (_) => BroadcastAsync(JsonConvert.SerializeObject(OSDController.GetEntries(overlayService, false)));
+            overlayService.OSDUpdateNotifier = (_) =>
+            {
+                if (ActiveContexts.Count > 0)
+                {
+                    BroadcastAsync(JsonConvert.SerializeObject(OSDController.GetEntries(overlayService, false)));
+                }
+            };
 
         }
 
