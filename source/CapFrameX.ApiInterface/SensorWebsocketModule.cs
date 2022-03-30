@@ -12,9 +12,21 @@ namespace CapFrameX.ApiInterface
 {
     public class SensorWebsocketModule : WebSocketModule
     {
-        public SensorWebsocketModule(string path, ISensorService sensorService, ISensorConfig sensorConfig, Func<KeyValuePair<ISensorEntry, float>, ISensorConfig, bool> sensorFilter) : base(path, true)
+        private readonly ISensorService sensorService;
+        private readonly ISensorConfig sensorConfig;
+        private readonly Action<ISensorConfig, bool> wsActivePropertySetterAction;
+
+        public SensorWebsocketModule(
+            string path, 
+            ISensorService sensorService,
+            ISensorConfig sensorConfig,
+            Func<KeyValuePair<ISensorEntry, float>, ISensorConfig, bool> sensorFilter,
+            Action<ISensorConfig, bool> wsActivePropertySetterAction) : base(path, true)
         {
-            SetupSensorService(sensorService);
+            this.sensorService = sensorService;
+            this.sensorConfig = sensorConfig;
+            this.wsActivePropertySetterAction = wsActivePropertySetterAction;
+            SetupSensorService();
             sensorService.SensorSnapshotStream
                 .Where(x => ActiveContexts.Count > 0)
                 .Subscribe(sensors =>
@@ -29,7 +41,18 @@ namespace CapFrameX.ApiInterface
                         })
                     }));
                 });
+        }
 
+        protected override Task OnClientConnectedAsync(IWebSocketContext context)
+        {
+            wsActivePropertySetterAction(sensorConfig, ActiveContexts.Count > 0);
+            return Task.CompletedTask;
+        }
+
+        protected override Task OnClientDisconnectedAsync(IWebSocketContext context)
+        {
+            wsActivePropertySetterAction(sensorConfig, ActiveContexts.Count > 0);
+            return Task.CompletedTask;
         }
 
         protected override Task OnMessageReceivedAsync(IWebSocketContext context, byte[] buffer, IWebSocketReceiveResult result)
@@ -37,7 +60,7 @@ namespace CapFrameX.ApiInterface
             return SendAsync(context, "Welcome to CXRemote Sensor Websocket interface!");
         }
 
-        private void SetupSensorService(ISensorService sensorService)
+        private void SetupSensorService()
         {
             var originalFunc = sensorService.IsSensorWebsocketActive;
             sensorService.IsSensorWebsocketActive = () => ActiveContexts.Count > 0 || originalFunc();

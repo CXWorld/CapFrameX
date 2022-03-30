@@ -49,8 +49,8 @@ namespace CapFrameX.Remote
                     m.WithController(() => new OSDController(iocContainer.Resolve<IOverlayService>()));
                 })
                 .WithModule(new OSDWebsocketModule("/ws/osd", iocContainer.Resolve<IOverlayService>()))
-                .WithModule(new SensorWebsocketModule("/ws/sensors", iocContainer.Resolve<ISensorService>(), iocContainer.Resolve<ISensorConfig>(), (_, __) => true))
-                .WithModule(new SensorWebsocketModule("/ws/activesensors", iocContainer.Resolve<ISensorService>(), iocContainer.Resolve<ISensorConfig>(), (sensor, sensorConfig) => sensorConfig.GetSensorIsActive(sensor.Key.Identifier)))
+                .WithModule(new SensorWebsocketModule("/ws/sensors", iocContainer.Resolve<ISensorService>(), iocContainer.Resolve<ISensorConfig>(), (_, __) => true, (sensorConfig, isActive) => sensorConfig.WsSensorsEnabled = isActive))
+                .WithModule(new SensorWebsocketModule("/ws/activesensors", iocContainer.Resolve<ISensorService>(), iocContainer.Resolve<ISensorConfig>(), (sensor, sensorConfig) => sensorConfig.GetSensorIsActive(sensor.Key.Identifier), (sensorConfig, isActive) => sensorConfig.WsActiveSensorsEnabled = isActive))
                 .WithModule(new ActionModule("/", HttpVerbs.Any, ctx => ctx.SendDataAsync(new { Message = "Error" })));
 
             OsdHttpUrl = "http://localhost:" + port + "/api/osd";

@@ -31,6 +31,9 @@ namespace OpenHardwareMonitor.Hardware
         public int SensorEntryCount 
             => _activeSensorsDict == null ? 0 : _activeSensorsDict.Count;
 
+        public bool WsSensorsEnabled { get; set; }
+        public bool WsActiveSensorsEnabled { get; set; }
+
         public SensorConfig(string sensorConfigFolder)
         {
             _sensorConfigFolder = sensorConfigFolder;
@@ -72,7 +75,7 @@ namespace OpenHardwareMonitor.Hardware
             if (_evalSensorsDict.ContainsKey(identifier))
                 evaluate = _evalSensorsDict[identifier];
 
-            return (isActive && IsCapturing) || evaluate;
+            return (isActive && (IsCapturing || WsActiveSensorsEnabled)) || evaluate || WsSensorsEnabled;
         }
 
         public void SetSensorEvaluate(string identifier, bool evaluate)
