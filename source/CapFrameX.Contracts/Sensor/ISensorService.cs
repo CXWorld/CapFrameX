@@ -10,6 +10,8 @@ namespace CapFrameX.Contracts.Sensor
         IObservable<(DateTime, Dictionary<ISensorEntry, float>)> SensorSnapshotStream { get; }
         IObservable<TimeSpan> OsdUpdateStream { get; }
         TaskCompletionSource<bool> SensorServiceCompletionSource { get; }
+        Func<bool> IsSensorWebsocketActive { get; set; }
+
         void StartSensorLogging();
         void StopSensorLogging();
         ISessionSensorData2 GetSensorSessionData();

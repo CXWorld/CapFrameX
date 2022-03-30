@@ -55,6 +55,8 @@ namespace CapFrameX.Sensor
 
         public bool IsOverlayActive => _appConfiguration.IsOverlayActive;
 
+        public Func<bool> IsSensorWebsocketActive { get; set; } = () => false;
+
         public TaskCompletionSource<bool> SensorServiceCompletionSource { get; }
            = new TaskCompletionSource<bool>();
 
@@ -86,7 +88,7 @@ namespace CapFrameX.Sensor
             SensorSnapshotStream = _sensorUpdateSubject
                .Select(timespan => Observable.Concat(Observable.Return(-1L), Observable.Interval(timespan)))
                .Switch()
-               .Where((_, idx) => idx == 0 || IsOverlayActive || (_isLoggingActive && UseSensorLogging))
+               .Where((_, idx) => idx == 0 || IsOverlayActive || (_isLoggingActive && UseSensorLogging) || IsSensorWebsocketActive())
                .SelectMany(_ => GetTimeStampedSensorValues())
                .Replay(0)
                .RefCount();

@@ -14,6 +14,7 @@ namespace CapFrameX.ApiInterface
     {
         public SensorWebsocketModule(string path, ISensorService sensorService, ISensorConfig sensorConfig, Func<KeyValuePair<ISensorEntry, float>, ISensorConfig, bool> sensorFilter) : base(path, true)
         {
+            SetupSensorService(sensorService);
             sensorService.SensorSnapshotStream
                 .Where(x => ActiveContexts.Count > 0)
                 .Subscribe(sensors =>
@@ -34,6 +35,12 @@ namespace CapFrameX.ApiInterface
         protected override Task OnMessageReceivedAsync(IWebSocketContext context, byte[] buffer, IWebSocketReceiveResult result)
         {
             return SendAsync(context, "Welcome to CXRemote Sensor Websocket interface!");
+        }
+
+        private void SetupSensorService(ISensorService sensorService)
+        {
+            var originalFunc = sensorService.IsSensorWebsocketActive;
+            sensorService.IsSensorWebsocketActive = () => ActiveContexts.Count > 0 || originalFunc();
         }
     }
 }
