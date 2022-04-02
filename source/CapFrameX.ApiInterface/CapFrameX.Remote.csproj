@@ -116,6 +116,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="JsonPayload\StartCapturePayload.cs" />
+    <Compile Include="MetricsController.cs" />
     <Compile Include="OSDController.cs" />
     <Compile Include="OSDWebsocketModule.cs" />
     <Compile Include="VersionController.cs" />
@@ -135,6 +136,10 @@
     <ProjectReference Include="..\CapFrameX.Data\CapFrameX.Data.csproj">
       <Project>{D328B391-432C-4A0E-9A7E-57A58AA592D4}</Project>
       <Name>CapFrameX.Data</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CapFrameX.PresentMonInterface\CapFrameX.PresentMonInterface.csproj">
+      <Project>{adfbaece-b74f-4a80-87d1-84bc990527b0}</Project>
+      <Name>CapFrameX.PresentMonInterface</Name>
     </ProjectReference>
     <ProjectReference Include="..\CapFrameX.Statistics.NetStandard\CapFrameX.Statistics.NetStandard.csproj">
       <Project>{7D35C9C8-6E9A-4ABB-9042-930BE5E26DC6}</Project>

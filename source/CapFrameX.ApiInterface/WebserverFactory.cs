@@ -5,6 +5,7 @@ using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.PresentMonInterface;
 using CapFrameX.Contracts.Sensor;
 using CapFrameX.Data;
+using CapFrameX.PresentMonInterface;
 using DryIoc;
 using EmbedIO;
 using EmbedIO.Actions;
@@ -42,6 +43,7 @@ namespace CapFrameX.Remote
                 .WithWebApi("/api", m =>
                 {
                     m.WithController(() => new CaptureController(iocContainer.Resolve<CaptureManager>()));
+                    m.WithController(() => new MetricsController(iocContainer.Resolve<IOnlineMetricService>()));
                     m.WithController(() => new VersionController(iocContainer.Resolve<IAppVersionProvider>()));
                     m.WithController(() => new OSDController(iocContainer.Resolve<IOverlayService>()));
                 })
