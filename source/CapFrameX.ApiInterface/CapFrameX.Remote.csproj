@@ -119,6 +119,7 @@
     <Compile Include="MetricsController.cs" />
     <Compile Include="OSDController.cs" />
     <Compile Include="OSDWebsocketModule.cs" />
+    <Compile Include="SensorWebsocketModule.cs" />
     <Compile Include="VersionController.cs" />
     <Compile Include="WebserverFactory.cs" />
     <Compile Include="CaptureController.cs" />
@@ -140,6 +141,9 @@
     <ProjectReference Include="..\CapFrameX.PresentMonInterface\CapFrameX.PresentMonInterface.csproj">
       <Project>{adfbaece-b74f-4a80-87d1-84bc990527b0}</Project>
       <Name>CapFrameX.PresentMonInterface</Name>
+    <ProjectReference Include="..\CapFrameX.Monitoring.Contracts\CapFrameX.Monitoring.Contracts.csproj">
+      <Project>{2F0D1227-BE4F-4501-B3A2-66A753ED742C}</Project>
+      <Name>CapFrameX.Monitoring.Contracts</Name>
     </ProjectReference>
     <ProjectReference Include="..\CapFrameX.Statistics.NetStandard\CapFrameX.Statistics.NetStandard.csproj">
       <Project>{7D35C9C8-6E9A-4ABB-9042-930BE5E26DC6}</Project>

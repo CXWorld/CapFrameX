@@ -6,6 +6,7 @@ using CapFrameX.Contracts.PresentMonInterface;
 using CapFrameX.Contracts.Sensor;
 using CapFrameX.Data;
 using CapFrameX.PresentMonInterface;
+using CapFrameX.Monitoring.Contracts;
 using DryIoc;
 using EmbedIO;
 using EmbedIO.Actions;
@@ -23,6 +24,8 @@ namespace CapFrameX.Remote
 
         public static string OsdHttpUrl;
         public static string OsdWSUrl;
+        public static string SensorsWSUrl;
+        public static string ActiveSensorsWSUrl;
 
         public static WebServer CreateWebServer(IContainer iocContainer, string hostname, bool useRandomPort)
         {
@@ -48,10 +51,14 @@ namespace CapFrameX.Remote
                     m.WithController(() => new OSDController(iocContainer.Resolve<IOverlayService>()));
                 })
                 .WithModule(new OSDWebsocketModule("/ws/osd", iocContainer.Resolve<IOverlayService>()))
+                .WithModule(new SensorWebsocketModule("/ws/sensors", iocContainer.Resolve<ISensorService>(), iocContainer.Resolve<ISensorConfig>(), (_, __) => true, (sensorConfig, isActive) => sensorConfig.WsSensorsEnabled = isActive))
+                .WithModule(new SensorWebsocketModule("/ws/activesensors", iocContainer.Resolve<ISensorService>(), iocContainer.Resolve<ISensorConfig>(), (sensor, sensorConfig) => sensorConfig.GetSensorIsActive(sensor.Key.Identifier), (sensorConfig, isActive) => sensorConfig.WsActiveSensorsEnabled = isActive))
                 .WithModule(new ActionModule("/", HttpVerbs.Any, ctx => ctx.SendDataAsync(new { Message = "Error" })));
 
             OsdHttpUrl = "http://localhost:" + port + "/api/osd";
             OsdWSUrl = "ws://localhost:" + port + "/ws/osd";
+            SensorsWSUrl = "ws://localhost:" + port + "/ws/sensors";
+            ActiveSensorsWSUrl = "ws://localhost:" + port + "/ws/activesensors";
 
             // Listen for state changes.
             server.StateChanged += (s, e) => Log.Logger.Information($"WebServer ({string.Join(",", options.UrlPrefixes)}) State - {e.NewState}");

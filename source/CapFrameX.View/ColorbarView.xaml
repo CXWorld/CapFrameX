@@ -371,16 +371,22 @@
                                             <RowDefinition Height="*" />
                                             <RowDefinition Height="*" />
                                             <RowDefinition Height="*" />
+                                            <RowDefinition Height="*" />
                                         </Grid.RowDefinitions>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*"/>
                                             <ColumnDefinition Width="*"/>
                                         </Grid.ColumnDefinitions>
-                                        <TextBox Grid.Row="0" Grid.Column="0" HorizontalAlignment="Left" Margin="15 5 0 5" Text="{Binding OsdHttpUrl, Mode=OneWay}" Width="200" IsReadOnly="True"
-                                                 Foreground="DarkGray" materialDesign:HintAssist.Hint="OSD http URL"></TextBox>
-                                        <TextBox Grid.Row="1" Grid.Column="0" HorizontalAlignment="Left" Margin="15 5 0 5" Text="{Binding OsdWSUrl, Mode=OneWay}" Width="200" IsReadOnly="True"
-                                                 Foreground="DarkGray" materialDesign:HintAssist.Hint="OSD websocket URL"></TextBox>
-                                        <TextBox Grid.Row="2" Grid.Column="0" HorizontalAlignment="Left" Margin="15 5 0 5" Text="https://app.swaggerhub.com/apis/CapFrameX/cx-remote/1.0.0" TextWrapping="Wrap" Width="200" IsReadOnly="True"
+                                        <TextBox Grid.Row="0" Grid.Column="0" HorizontalAlignment="Left" Margin="15 5 0 5" Text="{Binding OsdHttpUrl, Mode=OneWay}" Width="215" IsReadOnly="True"
+                                                 Foreground="DarkGray" materialDesign:HintAssist.Hint="OSD http URL" ToolTip="http URL to access the current overlay output (Overlay needs to be active)"></TextBox>
+                                        <TextBox Grid.Row="1" Grid.Column="0" HorizontalAlignment="Left" Margin="15 5 0 5" Text="{Binding OsdWSUrl, Mode=OneWay}" Width="215" IsReadOnly="True"
+                                                 Foreground="DarkGray" materialDesign:HintAssist.Hint="OSD websocket URL" ToolTip="Websocket URL to access the current overlay output (Overlay needs to be active)"></TextBox>
+                                        <TextBox Grid.Row="2" Grid.Column="0" HorizontalAlignment="Left" Margin="15 5 0 5" Text="{Binding SensorsWSUrl, Mode=OneWay}" Width="215" Height="45" IsReadOnly="True"
+                                                 Foreground="DarkGray" materialDesign:HintAssist.Hint="Sensor snapshot stream websocket URL" ToolTip="Websocket URL to access the complete sensor stream"></TextBox>
+                                        <TextBox Grid.Row="3" Grid.Column="0" HorizontalAlignment="Left" Margin="15 5 0 5" Text="{Binding ActiveSensorsWSUrl, Mode=OneWay}" Width="215" IsReadOnly="True"
+                                                 Foreground="DarkGray" materialDesign:HintAssist.Hint="Active sensors websocket URL" ToolTip="Websocket URL to access all sensors currently selected in the &quot;Sensors&quot; tab "></TextBox>
+                                        
+                                        <TextBox Grid.Row="2" Grid.Column="1" HorizontalAlignment="Left" Margin="15 5 0 5" Text="https://app.swaggerhub.com/apis/CapFrameX/cx-remote/1.0.0" TextWrapping="Wrap" Width="200" IsReadOnly="True"
                                                  Foreground="DarkGray" materialDesign:HintAssist.Hint="CX Remote Service info URL"></TextBox>
 
                                         <TextBox Grid.Row="0" Grid.Column="1" HorizontalAlignment="Left" Margin="15 5 0 5" Text="{Binding WebservicePort, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="175" PreviewTextInput="IntegerValidationTextBox"

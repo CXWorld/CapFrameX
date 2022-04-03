@@ -63,6 +63,8 @@ namespace CapFrameX.ViewModel
 
         public string OsdHttpUrl => WebserverFactory.OsdHttpUrl;
         public string OsdWSUrl => WebserverFactory.OsdWSUrl;
+        public string SensorsWSUrl => WebserverFactory.SensorsWSUrl;
+        public string ActiveSensorsWSUrl => WebserverFactory.ActiveSensorsWSUrl;
 
         public string CurrentPageName { get; set; }
 
@@ -632,6 +634,8 @@ namespace CapFrameX.ViewModel
                 SelectedView = "Remote"; 
                 RaisePropertyChanged(nameof(OsdHttpUrl));
                 RaisePropertyChanged(nameof(OsdWSUrl));
+                RaisePropertyChanged(nameof(SensorsWSUrl));
+                RaisePropertyChanged(nameof(ActiveSensorsWSUrl));
             }
 
             if (HelpViewSelected)
