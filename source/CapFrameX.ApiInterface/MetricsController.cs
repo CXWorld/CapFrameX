@@ -17,7 +17,7 @@ namespace CapFrameX.ApiInterface
         {
             _metricService = metricService;
         }
-
+        
         [Route(HttpVerbs.Get, "/metrics")]
         public double[] GetOsd([QueryField] string metricNames)
         {
@@ -28,7 +28,10 @@ namespace CapFrameX.ApiInterface
                     .Select(metricName => (EMetric)Enum.Parse(typeof(EMetric), metricName))
                     .Select(metric => _metricService.GetOnlineFpsMetricValue(metric))
                     .ToArray();
-            } catch (ArgumentException)
+
+                // example: http://localhost:1337/api/metrics?metricNames=P95,Average,P5
+            }
+            catch (ArgumentException)
             {
                 Response.StatusCode = 400;
                 return Array.Empty<double>();
