@@ -141,6 +141,7 @@
     <ProjectReference Include="..\CapFrameX.PresentMonInterface\CapFrameX.PresentMonInterface.csproj">
       <Project>{adfbaece-b74f-4a80-87d1-84bc990527b0}</Project>
       <Name>CapFrameX.PresentMonInterface</Name>
+    </ProjectReference>
     <ProjectReference Include="..\CapFrameX.Monitoring.Contracts\CapFrameX.Monitoring.Contracts.csproj">
       <Project>{2F0D1227-BE4F-4501-B3A2-66A753ED742C}</Project>
       <Name>CapFrameX.Monitoring.Contracts</Name>
