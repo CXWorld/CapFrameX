@@ -3,40 +3,49 @@
 #include <intrin.h>
 #include <Windows.h>
 #include "TimeStampCounterFrequency.h"
+#include <iostream>
+#include <vector>
 
 uint64_t GetTimeStampCounterFrequency()
 {
 	uint64_t  frequency = 0;
 	size_t repeats = 100;
 
-	//get QPC freq
-	LARGE_INTEGER Frequency{};
-	QueryPerformanceFrequency(&Frequency);
-
-	for (size_t i = 0; i < repeats; i++)
+	try
 	{
-		LARGE_INTEGER qpc_ts_1{};
-		LARGE_INTEGER qpc_ts_2{};
-		LARGE_INTEGER qpc_ts_target{};
+		//get QPC freq
+		LARGE_INTEGER Frequency{};
+		QueryPerformanceFrequency(&Frequency);
 
-		uint64_t rdtsc_start = Timestamp();
+		for (size_t i = 0; i < repeats; i++)
+		{
+			LARGE_INTEGER qpc_ts_1{};
+			LARGE_INTEGER qpc_ts_2{};
+			LARGE_INTEGER qpc_ts_target{};
 
-		QueryPerformanceCounter(&qpc_ts_1);
-		qpc_ts_target.QuadPart = qpc_ts_1.QuadPart + Frequency.QuadPart / 1000;
+			uint64_t rdtsc_start = Timestamp();
 
-		while (qpc_ts_2.QuadPart < qpc_ts_target.QuadPart) {
-			QueryPerformanceCounter(&qpc_ts_2);
+			QueryPerformanceCounter(&qpc_ts_1);
+			qpc_ts_target.QuadPart = qpc_ts_1.QuadPart + Frequency.QuadPart / 1000;
+
+			while (qpc_ts_2.QuadPart < qpc_ts_target.QuadPart) {
+				QueryPerformanceCounter(&qpc_ts_2);
+			}
+
+			uint64_t qpc_diff = qpc_ts_2.QuadPart - qpc_ts_1.QuadPart;
+			uint64_t rdtsc_stop = Timestamp();
+			uint64_t ticks_ms = rdtsc_stop - rdtsc_start;
+			if (i == 0 || ticks_ms < frequency)
+				frequency = ticks_ms;
 		}
 
-		uint64_t qpc_diff = qpc_ts_2.QuadPart - qpc_ts_1.QuadPart;
-		uint64_t rdtsc_stop = Timestamp();
-		uint64_t ticks_ms = rdtsc_stop - rdtsc_start;
-		if (i == 0 || ticks_ms < frequency)
-			frequency = ticks_ms;
+		// return frequency * 1000;
+		return RoundSmart(frequency, 100000) * 1000;
 	}
-
-	// return frequency * 1000;
-	return RoundSmart(frequency, 100000) * 1000;
+	catch (const std::exception& e)
+	{
+		return 3600000000;
+	}
 }
 
 uint64_t RoundSmart(uint64_t i, uint64_t nearest)
