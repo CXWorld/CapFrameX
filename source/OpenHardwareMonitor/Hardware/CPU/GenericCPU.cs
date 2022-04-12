@@ -227,7 +227,15 @@ namespace OpenHardwareMonitor.Hardware.CPU
         private void EstimateTimeStampCounterFrequency(out double frequency,
           out double error)
         {
-            frequency = GetTimeStampCounterFrequency() / 1E06;
+            try
+            {
+                frequency = GetTimeStampCounterFrequency() / 1E06;
+            }
+            catch
+            {
+                frequency = 3600;
+            }
+
             error = 0;
         }
 
