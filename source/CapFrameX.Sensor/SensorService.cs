@@ -174,8 +174,8 @@ namespace CapFrameX.Sensor
                 {
                     _computer = new Computer(_sensorConfig, _rTSSService);
                     _computer.Open();
-                    _computer.GPUEnabled = true;
                     _computer.CPUEnabled = true;
+                    _computer.GPUEnabled = true;         
                     _computer.RAMEnabled = true;
                     _computer.MainboardEnabled = false;
                     _computer.FanControllerEnabled = false;
