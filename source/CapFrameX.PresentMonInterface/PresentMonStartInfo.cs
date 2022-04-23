@@ -1,4 +1,5 @@
-﻿using CapFrameX.Contracts.PresentMonInterface;
+﻿
+using CapFrameX.Capture.Contracts;
 
 namespace CapFrameX.PresentMonInterface
 {

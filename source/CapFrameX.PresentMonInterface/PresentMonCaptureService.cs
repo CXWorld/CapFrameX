@@ -5,7 +5,7 @@ using System.Linq;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using CapFrameX.Contracts.PresentMonInterface;
+using CapFrameX.Capture.Contracts;
 using CapFrameX.Extensions;
 using Microsoft.Extensions.Logging;
 using Serilog;
@@ -32,16 +32,16 @@ namespace CapFrameX.PresentMonInterface
         private IDisposable _hearBeatDisposable;
         private IDisposable _processNameDisposable;
 
-        public IObservable<string[]> RedirectedOutputDataStream
+        public Dictionary<string, int> ParameterNameIndexMapping { get; }
+
+        public IObservable<string[]> FrameDataStream
             => _outputDataStream.AsObservable();
         public Subject<bool> IsCaptureModeActiveStream { get; }
-        public Subject<bool> IsLoggingActiveStream { get; }
 
         public PresentMonCaptureService(ILogger<PresentMonCaptureService> logger)
         {
             _outputDataStream = new Subject<string[]>();
             IsCaptureModeActiveStream = new Subject<bool>();
-            IsLoggingActiveStream = new Subject<bool>();
             _presentMonProcesses = new HashSet<(string, int)>();
             _logger = logger;
         }

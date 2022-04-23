@@ -78,6 +78,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.Monitoring.Contra
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CapFrameX.Hwinfo", "source\CapFrameX.Hwinfo\CapFrameX.Hwinfo.vcxproj", "{7158F27F-0F57-4216-A6EA-04FA24EFDDDF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.Capture.Contracts", "source\CapFrameX.Capture.Contracts\CapFrameX.Capture.Contracts.csproj", "{4A7A0E23-FF07-43C0-AC8C-9BF629C11E05}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -491,6 +493,18 @@ Global
 		{7158F27F-0F57-4216-A6EA-04FA24EFDDDF}.Release|x64.Build.0 = Release|x64
 		{7158F27F-0F57-4216-A6EA-04FA24EFDDDF}.Release|x86.ActiveCfg = Release|Win32
 		{7158F27F-0F57-4216-A6EA-04FA24EFDDDF}.Release|x86.Build.0 = Release|Win32
+		{4A7A0E23-FF07-43C0-AC8C-9BF629C11E05}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4A7A0E23-FF07-43C0-AC8C-9BF629C11E05}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4A7A0E23-FF07-43C0-AC8C-9BF629C11E05}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{4A7A0E23-FF07-43C0-AC8C-9BF629C11E05}.Debug|x64.Build.0 = Debug|Any CPU
+		{4A7A0E23-FF07-43C0-AC8C-9BF629C11E05}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{4A7A0E23-FF07-43C0-AC8C-9BF629C11E05}.Debug|x86.Build.0 = Debug|Any CPU
+		{4A7A0E23-FF07-43C0-AC8C-9BF629C11E05}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4A7A0E23-FF07-43C0-AC8C-9BF629C11E05}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4A7A0E23-FF07-43C0-AC8C-9BF629C11E05}.Release|x64.ActiveCfg = Release|Any CPU
+		{4A7A0E23-FF07-43C0-AC8C-9BF629C11E05}.Release|x64.Build.0 = Release|Any CPU
+		{4A7A0E23-FF07-43C0-AC8C-9BF629C11E05}.Release|x86.ActiveCfg = Release|Any CPU
+		{4A7A0E23-FF07-43C0-AC8C-9BF629C11E05}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

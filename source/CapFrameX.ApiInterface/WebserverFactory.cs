@@ -2,7 +2,6 @@
 using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.Overlay;
-using CapFrameX.Contracts.PresentMonInterface;
 using CapFrameX.Contracts.Sensor;
 using CapFrameX.Data;
 using CapFrameX.PresentMonInterface;
@@ -12,10 +11,8 @@ using EmbedIO;
 using EmbedIO.Actions;
 using EmbedIO.WebApi;
 using Serilog;
-using Swan.Logging;
 using System.Net;
 using System.Net.Sockets;
-using System.Reactive.Subjects;
 
 namespace CapFrameX.Remote
 {

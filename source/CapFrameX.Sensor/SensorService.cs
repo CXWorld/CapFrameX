@@ -51,6 +51,8 @@ namespace CapFrameX.Sensor
 
         public IObservable<TimeSpan> OsdUpdateStream => _osdUpdateSubject.AsObservable();
 
+        public Subject<bool> IsLoggingActiveStream { get; }
+
         public bool UseSensorLogging => _appConfiguration.UseSensorLogging;
 
         public bool IsOverlayActive => _appConfiguration.IsOverlayActive;
@@ -77,6 +79,7 @@ namespace CapFrameX.Sensor
             _loggingUpdateSubject = new BehaviorSubject<TimeSpan>(_currentLoggingTimespan);
             _osdUpdateSubject = new BehaviorSubject<TimeSpan>(_currentOSDTimespan);
             _sensorUpdateSubject = new BehaviorSubject<TimeSpan>(CurrentSensorTimespan);
+            IsLoggingActiveStream = new Subject<bool>();
 
             Observable.FromAsync(() => StartOpenHardwareMonitor())
                .Delay(TimeSpan.FromMilliseconds(500))

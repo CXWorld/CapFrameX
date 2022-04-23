@@ -5,9 +5,9 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Collections.Generic;
 using CapFrameX.Contracts.Configuration;
-using CapFrameX.Contracts.PresentMonInterface;
 using Microsoft.Extensions.Logging;
 using System.Runtime.InteropServices;
+using CapFrameX.Capture.Contracts;
 
 namespace CapFrameX.Data
 {

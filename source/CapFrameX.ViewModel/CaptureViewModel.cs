@@ -2,7 +2,6 @@
 using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.Overlay;
-using CapFrameX.Contracts.PresentMonInterface;
 using CapFrameX.Contracts.RTSS;
 using CapFrameX.Contracts.Sensor;
 using CapFrameX.Data;
@@ -719,7 +718,7 @@ namespace CapFrameX.ViewModel
             _captureManager.StopFillArchive();
         }
 
-        private ICaptureServiceConfiguration GetRedirectedServiceConfig()
+        private PresentMonServiceConfiguration GetRedirectedServiceConfig()
         {
             return new PresentMonServiceConfiguration
             {

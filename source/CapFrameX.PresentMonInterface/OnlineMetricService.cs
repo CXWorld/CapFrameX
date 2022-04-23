@@ -1,6 +1,6 @@
-﻿using CapFrameX.Contracts.Configuration;
+﻿using CapFrameX.Capture.Contracts;
+using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Overlay;
-using CapFrameX.Contracts.PresentMonInterface;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Statistics.NetStandard.Contracts;
 using Microsoft.Extensions.Logging;
@@ -83,14 +83,14 @@ namespace CapFrameX.PresentMonInterface
         private void ConnectOnlineMetricDataStream()
         {
             _captureService
-                .RedirectedOutputDataStream
+                .FrameDataStream
                 .Skip(1)
                 .ObserveOn(new EventLoopScheduler())
                 .Where(x => EvaluateRealtimeMetrics())
                 .Subscribe(UpdateOnlineMetrics);
 
             _captureService
-                .RedirectedOutputDataStream
+                .FrameDataStream
                 .Skip(1)
                 .ObserveOn(new EventLoopScheduler())
                 .Where(line => EvaluateRealtimeInputLag())

@@ -2,7 +2,6 @@
 using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.Overlay;
-using CapFrameX.Contracts.PresentMonInterface;
 using CapFrameX.Contracts.RTSS;
 using CapFrameX.Contracts.Sensor;
 using CapFrameX.Data.Session.Contracts;
@@ -21,6 +20,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using CapFrameX.Monitoring.Contracts;
+using CapFrameX.Capture.Contracts;
 
 namespace CapFrameX.Data
 {
@@ -205,7 +205,7 @@ namespace CapFrameX.Data
             double captureDataArchiveLastTime = 0;
 
             _disposableCaptureStream = _presentMonCaptureService
-                .RedirectedOutputDataStream
+                .FrameDataStream
                 .Skip(1)
                 .ObserveOn(new EventLoopScheduler())
                 .Subscribe(lineSplit =>
@@ -347,7 +347,7 @@ namespace CapFrameX.Data
             ResetArchive();
 
             _disposableArchiveStream = _presentMonCaptureService
-                .RedirectedOutputDataStream
+                .FrameDataStream
                 .Skip(1)
                 .Where(x => _fillArchive == true)
                 .Subscribe(lineSplit =>
@@ -371,7 +371,7 @@ namespace CapFrameX.Data
 
         public void ToggleSensorLogging(bool enabled)
         {
-            _presentMonCaptureService.IsLoggingActiveStream.OnNext(enabled);
+            _sensorService.IsLoggingActiveStream.OnNext(enabled);
         }
 
         private void AddDataLineToArchive(string[] lineSplit)

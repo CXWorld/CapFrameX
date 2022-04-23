@@ -11,7 +11,6 @@ using System.Reflection;
 using System.Windows;
 using CapFrameX.Contracts.Configuration;
 using CapFrameX.Configuration;
-using CapFrameX.Contracts.PresentMonInterface;
 using CapFrameX.PresentMonInterface;
 using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.MVVM;
@@ -36,6 +35,7 @@ using CapFrameX.Contracts.Logging;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using CapFrameX.Monitoring.Contracts;
+using CapFrameX.Capture.Contracts;
 
 namespace CapFrameX
 {

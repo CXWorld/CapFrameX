@@ -1,8 +1,9 @@
-﻿using CapFrameX.Contracts.Configuration;
+﻿using CapFrameX.Capture.Contracts;
+using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.Overlay;
-using CapFrameX.Contracts.PresentMonInterface;
 using CapFrameX.Contracts.RTSS;
+using CapFrameX.Contracts.Sensor;
 using CapFrameX.Contracts.UpdateCheck;
 using CapFrameX.Data;
 using CapFrameX.EventAggregation.Messages;
@@ -11,7 +12,6 @@ using Prism.Commands;
 using Prism.Events;
 using Prism.Mvvm;
 using System;
-using System.Diagnostics;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reflection;
@@ -117,11 +117,9 @@ namespace CapFrameX.ViewModel
                               LoginManager loginManager,
                               IRTSSService rTSSService,
                               ISystemInfo systemInfo,
+                              ISensorService sensorService,
                               ILogger<StateViewModel> logger)
         {
-            Stopwatch stopwatch = new Stopwatch();
-            stopwatch.Start();
-
             _eventAggregator = eventAggregator;
             _appConfiguration = appConfiguration;
             _captureService = captureService;
@@ -139,7 +137,7 @@ namespace CapFrameX.ViewModel
             _captureService.IsCaptureModeActiveStream
                 .Subscribe(state => IsCaptureModeActive = state);
 
-            _captureService.IsLoggingActiveStream
+            sensorService.IsLoggingActiveStream
                 .Subscribe(state => IsLoggingActive = state);
 
             _overlayService.IsOverlayActiveStream
@@ -169,9 +167,6 @@ namespace CapFrameX.ViewModel
                     RaisePropertyChanged(nameof(IsUpdateAvailable));
                 });
             });
-
-            stopwatch.Stop();
-            _logger.LogInformation(this.GetType().Name + " {initializationTime}s initialization time", Math.Round(stopwatch.ElapsedMilliseconds * 1E-03, 1));
         }
 
         private Assembly GetAssemblyByName(string name)

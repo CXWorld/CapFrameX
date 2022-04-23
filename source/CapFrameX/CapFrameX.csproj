@@ -206,6 +206,10 @@
       <Project>{A692A512-627A-4896-9D2D-4412FDD8C78C}</Project>
       <Name>CapFrameX.Remote</Name>
     </ProjectReference>
+    <ProjectReference Include="..\CapFrameX.Capture.Contracts\CapFrameX.Capture.Contracts.csproj">
+      <Project>{4A7A0E23-FF07-43C0-AC8C-9BF629C11E05}</Project>
+      <Name>CapFrameX.Capture.Contracts</Name>
+    </ProjectReference>
     <ProjectReference Include="..\CapFrameX.Configuration\CapFrameX.Configuration.csproj">
       <Project>{D0A09FA9-D19E-4CCC-BF0E-104893CFE48B}</Project>
       <Name>CapFrameX.Configuration</Name>

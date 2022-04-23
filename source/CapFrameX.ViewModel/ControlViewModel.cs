@@ -16,7 +16,6 @@ using System.Collections.Generic;
 using System.Collections;
 using System.Diagnostics;
 using System.Reactive.Subjects;
-using CapFrameX.Contracts.PresentMonInterface;
 using Microsoft.VisualBasic.FileIO;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using CapFrameX.Extensions;
@@ -24,6 +23,7 @@ using CapFrameX.Data.Session.Contracts;
 using System.Reactive;
 using CapFrameX.MVVM.Dialogs;
 using Microsoft.Extensions.Logging;
+using CapFrameX.Capture.Contracts;
 
 namespace CapFrameX.ViewModel
 {

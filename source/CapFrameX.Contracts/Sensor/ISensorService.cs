@@ -1,6 +1,7 @@
 ﻿using CapFrameX.Data.Session.Contracts;
 using System;
 using System.Collections.Generic;
+using System.Reactive.Subjects;
 using System.Threading.Tasks;
 
 namespace CapFrameX.Contracts.Sensor
@@ -11,6 +12,7 @@ namespace CapFrameX.Contracts.Sensor
         IObservable<TimeSpan> OsdUpdateStream { get; }
         TaskCompletionSource<bool> SensorServiceCompletionSource { get; }
         Func<bool> IsSensorWebsocketActive { get; set; }
+        Subject<bool> IsLoggingActiveStream { get; }
 
         void StartSensorLogging();
         void StopSensorLogging();

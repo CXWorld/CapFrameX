@@ -1,4 +1,4 @@
-﻿using CapFrameX.Contracts.PresentMonInterface;
+﻿using CapFrameX.Capture.Contracts;
 using System;
 using System.IO;
 

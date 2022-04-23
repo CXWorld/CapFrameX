@@ -1,11 +1,10 @@
-﻿using CapFrameX.Contracts.PresentMonInterface;
-using System;
+﻿using System;
 using System.Linq;
 using System.Collections.Generic;
 
 namespace CapFrameX.PresentMonInterface
 {
-    public class PresentMonServiceConfiguration : ICaptureServiceConfiguration
+    public class PresentMonServiceConfiguration
     {
         public string ProcessName { get; set; }
 

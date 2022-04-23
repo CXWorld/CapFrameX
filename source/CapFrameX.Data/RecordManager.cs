@@ -1,6 +1,6 @@
-﻿using CapFrameX.Contracts.Configuration;
+﻿using CapFrameX.Capture.Contracts;
+using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
-using CapFrameX.Contracts.PresentMonInterface;
 using CapFrameX.Contracts.RTSS;
 using CapFrameX.Contracts.Sensor;
 using CapFrameX.Data.Session.Classes;

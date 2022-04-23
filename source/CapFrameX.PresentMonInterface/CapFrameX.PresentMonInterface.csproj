@@ -145,6 +145,10 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\CapFrameX.Capture.Contracts\CapFrameX.Capture.Contracts.csproj">
+      <Project>{4a7a0e23-ff07-43c0-ac8c-9bf629c11e05}</Project>
+      <Name>CapFrameX.Capture.Contracts</Name>
+    </ProjectReference>
     <ProjectReference Include="..\CapFrameX.Contracts\CapFrameX.Contracts.csproj">
       <Project>{4C3B8B5C-54D7-46A1-91A1-32BF82FD42CD}</Project>
       <Name>CapFrameX.Contracts</Name>

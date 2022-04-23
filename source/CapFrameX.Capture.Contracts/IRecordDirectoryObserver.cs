@@ -1,9 +1,8 @@
 ﻿using System;
-using System.IO;
 using System.Collections.Generic;
-using System.Reactive.Subjects;
+using System.IO;
 
-namespace CapFrameX.Contracts.PresentMonInterface
+namespace CapFrameX.Capture.Contracts
 {
     public interface IRecordDirectoryObserver
     {

@@ -1,4 +1,4 @@
-﻿namespace CapFrameX.Contracts.PresentMonInterface
+﻿namespace CapFrameX.Capture.Contracts
 {
 	public interface IServiceStartInfo
 	{
