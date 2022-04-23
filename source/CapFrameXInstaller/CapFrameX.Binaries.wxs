@@ -366,6 +366,9 @@
                 <File Id="filA005E04D6C984A8EF36F9653B3FA4555" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\OpenHardwareMonitorLib.dll" />
             </Component>
             
+            <Component Id="cmp2EF1A0AE8249930F0ED58E05BAC54772" Guid="*" Win64="yes">
+                <File Id="filC3B1ED52EE569F835270CABF688B8D42" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\OpenHardwareMonitorLib.pdb" />
+            </Component>
             <Component Id="cmp9867DD01B906E145D73B1AA12191B24D" Guid="*" Win64="yes">
                 <File Id="filF3C7E1DBD3AD0BE68A0C0D000EC5A7D6" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\OxyPlot.dll" />
             </Component>
@@ -505,6 +508,9 @@
             <Directory Id="dir853772609C50C17748AF70C12E8A0818" Name="PresentMon">
                 <Component Id="cmpA4F6ACC1ED64F9C0B54E2615B754768A" Guid="*" Win64="yes">
                     <File Id="fil383D9183A0F92A32CC71C97E5FAED05B" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\PresentMon\license.txt" />
+                </Component>
+                <Component Id="cmp66ADA062D77BE708D6CA6EB7E8E66E8B" Guid="*" Win64="yes">
+                    <File Id="fil1BCA85D94DB53EFBBE6CA0E7F64D876A" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\PresentMon\PresentMon-1.6.0-x64.exe" />
                 </Component>
                 <Component Id="cmp7B712CFC7933F43D777CB5CFD97E76DD" Guid="*" Win64="yes">
                     <File Id="fil45634F0FFBED7C74FE619FB896F829AB" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\PresentMon\PresentMon-1.7.0-x64.exe" />
@@ -687,6 +693,7 @@
             <ComponentRef Id="cmpBC4FC00A26E7D32479D42D3411317FC5" />
             <ComponentRef Id="cmp36162545506C564646EFF7AED20D4D87" />
             
+            <ComponentRef Id="cmp2EF1A0AE8249930F0ED58E05BAC54772" />
             <ComponentRef Id="cmp9867DD01B906E145D73B1AA12191B24D" />
             <ComponentRef Id="cmp8F4FC608131CDC6A82B59CBB8B203778" />
             <ComponentRef Id="cmp71D47CA7014DC1CFAF214C0EFDFEE866" />
@@ -730,6 +737,7 @@
             <ComponentRef Id="cmpA2349B128022FD9468B4B0472DF8814A" />
             <ComponentRef Id="cmp3A774BB34CD3664183116E92839E312E" />
             <ComponentRef Id="cmpA4F6ACC1ED64F9C0B54E2615B754768A" />
+            <ComponentRef Id="cmp66ADA062D77BE708D6CA6EB7E8E66E8B" />
             <ComponentRef Id="cmp7B712CFC7933F43D777CB5CFD97E76DD" />
             <ComponentRef Id="cmpA6A9ED7D0D14A0EB3F1B6598611EC6CB" />
             <ComponentRef Id="cmpC873D207335D245293F8991C675338F3" />
