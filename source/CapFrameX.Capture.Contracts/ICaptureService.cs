@@ -6,14 +6,15 @@ namespace CapFrameX.Capture.Contracts
 {
     public interface ICaptureService
     {
-        // Application Name
-        // Process ID
-        // Dropped Flag
+        // Keys:
+        // ApplicationName
+        // ProcessID
+        // Dropped
         // TimeInSeconds
         // MsInPresentAPI
         // MsBetweenPresents
         // UntilDisplayedTimes
-        // QPC Time (time stamp)
+        // QPCTime (time stamp)
         Dictionary<string, int> ParameterNameIndexMapping { get; }
 
         IObservable<string[]> FrameDataStream { get; }
