@@ -332,13 +332,13 @@ namespace CapFrameX.Data
             return string.Empty;
         }
 
-        // PresentMon smaller than v1.7.0
+        // PresentMon < v1.7.0
         //private static readonly string COLUMN_HEADER =
         //    $"Application,ProcessID,SwapChainAddress,Runtime,SyncInterval,PresentFlags," +
         //    $"AllowsTearing,PresentMode,WasBatched,DwmNotified,Dropped,TimeInSeconds,MsBetweenPresents," +
         //    $"MsBetweenDisplayChange,MsInPresentAPI,MsUntilRenderComplete,MsUntilDisplayed,QPCTime";
 
-        // PresentMon v1.7.0
+        // PresentMon v1.7.1
         private static readonly string COLUMN_HEADER =
             $"Application,ProcessID,SwapChainAddress,Runtime,SyncInterval,PresentFlags," +
             $"Dropped,TimeInSeconds,msInPresentAPI,msBetweenPresents,AllowsTearing,PresentMode," +
