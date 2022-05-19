@@ -97,6 +97,7 @@ namespace CapFrameX.ViewModel
         private string _messageText;
         private int _barMaxValue;
         private int _barMinValue;
+        private double _legendFontSizeFactor = 1.0;
         private double _varianceBarMinValue;
         private bool _varianceAutoScaling = true;
         private bool _showCustomTitle;
@@ -647,6 +648,18 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        public double LegendFontSizeFactor
+        {
+            get { return _legendFontSizeFactor; }
+            set
+            {
+                _legendFontSizeFactor = value;
+                RaisePropertyChanged();
+                InitializePlotModels();
+                UpdateCharts();
+            }
+        }
+
         public TooltipData LShapeTolTipData { get; set; }
 
 
@@ -680,6 +693,8 @@ namespace CapFrameX.ViewModel
 
 
         public Array SortMetricItemsSource => new[] { "First", "Second", "Third" };
+
+        public Array LegendFontSizeItemsSource => new[] { 1, 1.5, 2 };
 
 
 
@@ -735,14 +750,15 @@ namespace CapFrameX.ViewModel
             {
                 PlotMargins = new OxyThickness(40, 10, 10, 70),
                 PlotAreaBorderColor = _appConfiguration.UseDarkMode ? OxyColor.FromArgb(100, 204, 204, 204) : OxyColor.FromArgb(50, 30, 30, 30),
-                TextColor = _appConfiguration.UseDarkMode ? OxyColors.White : OxyColors.Black
+                TextColor = _appConfiguration.UseDarkMode ? OxyColors.White : OxyColors.Black,
+                DefaultFontSize = 13 * _legendFontSizeFactor
             };
 
             ComparisonFrametimesModel.Legends.Add(new Legend()
             {
                 LegendPosition = LegendPosition.TopCenter,
                 LegendOrientation = LegendOrientation.Horizontal,
-                FontSize = 13
+                SeriesInvisibleTextColor = _appConfiguration.UseDarkMode ? OxyColors.White : OxyColors.Black
             });
 
             //Axes
@@ -783,13 +799,15 @@ namespace CapFrameX.ViewModel
             {
                 PlotMargins = new OxyThickness(40, 10, 10, 70),
                 PlotAreaBorderColor = _appConfiguration.UseDarkMode ? OxyColor.FromArgb(40, 204, 204, 204) : OxyColor.FromArgb(20, 30, 30, 30),
-                TextColor = _appConfiguration.UseDarkMode ? OxyColors.White : OxyColors.Black
+                TextColor = _appConfiguration.UseDarkMode ? OxyColors.White : OxyColors.Black,
+                DefaultFontSize = 13 * _legendFontSizeFactor
             };
 
             ComparisonFpsModel.Legends.Add(new Legend()
             {
                 LegendPosition = LegendPosition.TopCenter,
-                LegendOrientation = LegendOrientation.Horizontal
+                LegendOrientation = LegendOrientation.Horizontal,
+                SeriesInvisibleTextColor = _appConfiguration.UseDarkMode ? OxyColors.White : OxyColors.Black
             });
 
             //Axes
