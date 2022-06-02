@@ -159,7 +159,6 @@ namespace CapFrameX.ViewModel
             if (frametimes == null || !frametimes.Any())
                 return;
 
-
             var thresholdCounts = _frametimeStatisticProvider.GetFpsThresholdCounts(frametimes, ThresholdToggleButtonIsChecked);
             var thresholdCountValues = new ChartValues<double>();
             thresholdCountValues.AddRange(thresholdCounts.Select(val => (double)val / frametimes.Count));

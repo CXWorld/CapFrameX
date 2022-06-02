@@ -705,9 +705,6 @@ namespace CapFrameX.ViewModel
             RecordManager recordManager,
             ILogger<ComparisonViewModel> logger)
         {
-            Stopwatch stopwatch = new Stopwatch();
-            stopwatch.Start();
-
             _frametimeStatisticProvider = frametimeStatisticProvider;
             _frametimeAnalyzer = frametimeAnalyzer;
             _eventAggregator = eventAggregator;
@@ -737,9 +734,6 @@ namespace CapFrameX.ViewModel
             SubscribeToSelectRecord();
             SubscribeToUpdateRecordInfos();
             SubscribeToThemeChanged();
-
-            stopwatch.Stop();
-            _logger.LogInformation(this.GetType().Name + " {initializationTime}s initialization time", Math.Round(stopwatch.ElapsedMilliseconds * 1E-03, 1));
         }
 
 
@@ -1025,6 +1019,11 @@ namespace CapFrameX.ViewModel
             ComparisonFpsModel.Series.Clear();
             ComparisonLShapeCollection.Clear();
 
+            //Reset axes of all charts
+            ResetLShapeChart.OnNext(default);
+            ComparisonFrametimesModel.ResetAllAxes();
+            ComparisonFpsModel.ResetAllAxes();
+
             if (SelectedChartItem?.Header.ToString().Contains("Bar charts") ?? false)
                 SetColumnChart();
             else if (SelectedChartItem?.Header.ToString().Contains("Variances") ?? false)
@@ -1040,8 +1039,6 @@ namespace CapFrameX.ViewModel
             RaisePropertyChanged(nameof(MetricAndLabelOptionsEnabled));
         }
 
-
-
         private void OnChartItemChanged()
             => ColorPickerVisibility = SelectedChartItem?.Header.ToString().Contains("Line") ?? false;
 
@@ -1051,11 +1048,8 @@ namespace CapFrameX.ViewModel
         private void OnComparisonGroupingChanged()
             => SortComparisonItems();
 
-
-
         private void OnMetricChanged()
         {
-
             SetRowSeries();
 
             double GetMetricValue(IList<double> sequence, EMetric metric) =>
@@ -1126,9 +1120,6 @@ namespace CapFrameX.ViewModel
                 LastSeconds = MaxRecordingTime;
         }
 
-
-
-
         internal class ChartLabel
         {
             public string GameName;
@@ -1145,6 +1136,7 @@ namespace CapFrameX.ViewModel
             {
                 return string.Join(Environment.NewLine, labelLines.Select(line => line.PadRight(PART_LENGTH)));
             }).Where(line => !string.IsNullOrWhiteSpace(line)));
+
             return new ChartLabel()
             {
                 GameName = gameName,
@@ -1208,7 +1200,6 @@ namespace CapFrameX.ViewModel
 
             }
 
-
             double longestRecord = 0;
 
             foreach (var record in ComparisonRecords)
@@ -1227,8 +1218,6 @@ namespace CapFrameX.ViewModel
             RemainingRecordingTime = ComparisonRecords.Any() ?
                 "(" + Math.Round(MaxRecordingTime, 2).ToString("0.00", CultureInfo.InvariantCulture) + " s)" : "(0.00 s)"; ;
         }
-
-
 
         private void UpdateAxesMinMaxFrametimeChart()
         {
@@ -1520,7 +1509,6 @@ namespace CapFrameX.ViewModel
             }
 
             UpdateAxesMinMaxFpsChart();
-
         }
 
         private void SetLShapeChart()
@@ -1530,12 +1518,8 @@ namespace CapFrameX.ViewModel
                 AddToLShapeChart(ComparisonRecords[i]);
             }
 
-            ResetLShapeChart.OnNext(default(Unit));
+            ResetLShapeChart.OnNext(default);
         }
-
-
-
-
 
         private void AddToFrametimeChart(ComparisonRecordInfoWrapper wrappedComparisonInfo)
         {
@@ -1546,7 +1530,6 @@ namespace CapFrameX.ViewModel
                                          .Select(pnt => new Point(pnt.X, pnt.Y));
 
             var chartTitle = string.Empty;
-
 
             var color = wrappedComparisonInfo.FrametimeGraphColor.Value;
             var frametimeSeries = new Statistics.PlotBuilder.LineSeries()

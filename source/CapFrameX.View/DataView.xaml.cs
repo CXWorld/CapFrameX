@@ -29,8 +29,6 @@ namespace CapFrameX.View
                 .SubscribeOn(context)
                 .Subscribe(dummy => ResetLShapeChart());
 
-
-
             var rowAWidthTracker = new RowHeightTracker(Application.Current.MainWindow);
             var rowBWidthTracker = new RowHeightTracker(Application.Current.MainWindow);
 
@@ -93,7 +91,6 @@ namespace CapFrameX.View
                 GraphTab.Focus();
                 (DataContext as DataViewModel).OnRangeSliderDragCompleted();
             }
-
         }
 
         private void LastSecondsTextBox_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
@@ -139,7 +136,6 @@ namespace CapFrameX.View
             }
         }
 
-
         private void NumberValidationTextBox(object sender, TextCompositionEventArgs e)
         {
             Regex regex = new Regex("[^0-9.-]+");
@@ -158,21 +154,17 @@ namespace CapFrameX.View
 
                 if (StatisticsTabControl.SelectedIndex == 2 )
                     StatisticsTabControl.SelectedIndex = 0;
-
             }
             else if (ActualWidth >= 1650)
             {
-
                 SensorDataTab.Visibility = Visibility.Collapsed;
                 ThresholdTab.Visibility = Visibility.Visible;
 
                 SecondSensorTab.Visibility = Visibility.Visible;
                 SecondThresholdTab.Visibility = Visibility.Collapsed;
 
-
                 if (StatisticsTabControl.SelectedIndex == 3)
                     StatisticsTabControl.SelectedIndex = 0;
-
             }
             else
             {
@@ -182,7 +174,6 @@ namespace CapFrameX.View
                 SecondSensorTab.Visibility = Visibility.Collapsed;
                 SecondThresholdTab.Visibility = Visibility.Collapsed;
             }
-
         }
     }
 }

@@ -58,7 +58,6 @@ namespace CapFrameX.ViewModel
         private bool _customGameNameChanged = false;
         private bool _customCommentChanged = false;
 
-
         public bool ShowCreationDate
         {
             get { return _appConfiguration.RecordListShowCreationTime; }
@@ -321,9 +320,6 @@ namespace CapFrameX.ViewModel
                                 ILogger<ControlViewModel> logger,
                                 ApplicationState applicationState)
         {
-            Stopwatch stopwatch = new Stopwatch();
-            stopwatch.Start();
-
             _recordObserver = recordObserver;
             _eventAggregator = eventAggregator;
             _appConfiguration = appConfiguration;
@@ -372,11 +368,8 @@ namespace CapFrameX.ViewModel
                 RaisePropertyChanged(nameof(DirectoryIsEmpty));
                 RaisePropertyChanged(nameof(SearchBarText));
             };
-            SetupObservers(SynchronizationContext.Current);
 
-            stopwatch.Stop();
-            _logger.LogInformation(GetType().Name + " {initializationTime}s initialization time",
-                Math.Round(stopwatch.ElapsedMilliseconds * 1E-03, 1));
+            SetupObservers(SynchronizationContext.Current);
         }
 
         private void OnCreateSubFolder()
@@ -393,7 +386,7 @@ namespace CapFrameX.ViewModel
                 CreateFolderdialogIsOpenStream.OnNext(false);
                 CreateFolderDialogIsOpen = false;
             }
-            catch { }
+            catch (Exception ex) { _logger.LogError(ex, "Error while creating subfolder."); }
         }
 
         private void OnDeleteFolder()
@@ -410,7 +403,7 @@ namespace CapFrameX.ViewModel
                 _appConfiguration.ObservedDirectory = parentFolder.FullName;
                 TreeViewUpdateStream.OnNext(default);
             }
-            catch { }
+            catch (Exception ex) { _logger.LogError(ex, "Error while deleting folder."); }
         }
 
         public bool OnSelectRootFolder()
@@ -430,6 +423,7 @@ namespace CapFrameX.ViewModel
             }
             return false;
         }
+
         private void OnOpenObservedFolder()
         {
             try
@@ -442,9 +436,8 @@ namespace CapFrameX.ViewModel
                 }
                 Process.Start(path);
             }
-            catch { }
+            catch (Exception ex) { _logger.LogError(ex, "Error while opening observed folder."); }
         }
-
 
         private void SetupObservers(SynchronizationContext context)
         {
@@ -459,7 +452,6 @@ namespace CapFrameX.ViewModel
                     HasValidSource = directory?.Exists ?? false;
                     RaisePropertyChanged(nameof(HasValidSource));
                 });
-
 
             _recordObserver.DirectoryFilesStream
                 .DistinctUntilChanged()
@@ -551,13 +543,11 @@ namespace CapFrameX.ViewModel
 
                 _updateSessionEvent.Publish(new ViewMessages.UpdateSession(null, null));
             }
-            catch { }
+            catch (Exception ex) { _logger.LogError(ex, "Error while deleting file."); }
         }
 
         public void OnMoveRecordFile(string path)
         {
-            
-
             if (!RecordInfoList.Any())
                 return;
             string destinationfolder = string.Empty;
@@ -578,7 +568,7 @@ namespace CapFrameX.ViewModel
 
                 if (result == CommonFileDialogResult.Ok)
                 {
-                   destinationfolder = dialog.FileName;
+                    destinationfolder = dialog.FileName;
 
                 }
             }
@@ -613,238 +603,238 @@ namespace CapFrameX.ViewModel
                 _updateSessionEvent.Publish(new ViewMessages.UpdateSession(null, null));
 
             }
-            catch { }
+            catch (Exception ex) { _logger.LogError(ex, "Error while moving file."); }
 
             if (!wasDropped)
                 TreeViewUpdateStream.OnNext(default);
         }
 
-    private void OnDuplicateRecordFile()
-    {
-        if (!RecordInfoList.Any())
-            return;
-
-        var dialog = new CommonOpenFileDialog
+        private void OnDuplicateRecordFile()
         {
-            IsFolderPicker = true
-        };
+            if (!RecordInfoList.Any())
+                return;
 
-        CommonFileDialogResult result = dialog.ShowDialog();
+            var dialog = new CommonOpenFileDialog
+            {
+                IsFolderPicker = true
+            };
 
-        if (result == CommonFileDialogResult.Ok)
+            CommonFileDialogResult result = dialog.ShowDialog();
+
+            if (result == CommonFileDialogResult.Ok)
+            {
+                string destinationfolder = dialog.FileName;
+                try
+                {
+
+                    if (_selectedRecordings?.Count > 1)
+                    {
+                        foreach (var item in _selectedRecordings)
+                        {
+                            string destinationFullPath = Path.Combine(destinationfolder, item.FileInfo.Name);
+                            FileSystem.CopyFile(item.FullPath, destinationFullPath);
+                        }
+                    }
+                    else
+                    {
+                        string destinationFullPath = Path.Combine(destinationfolder, SelectedRecordInfo.FileInfo.Name);
+                        FileSystem.CopyFile(SelectedRecordInfo.FullPath, destinationFullPath);
+                    }
+
+                    SelectedRecordInfo = null;
+                    _selectedRecordings = null;
+
+                    _updateSessionEvent.Publish(new ViewMessages.UpdateSession(null, null));
+
+                }
+                catch { }
+            }
+            TreeViewUpdateStream.OnNext(default);
+        }
+
+        private void ResetInfoEditBoxes()
         {
-            string destinationfolder = dialog.FileName;
+            CustomCpuDescription = string.Empty;
+            CustomGpuDescription = string.Empty;
+            CustomRamDescription = string.Empty;
+            CustomGameName = string.Empty;
+            CustomComment = string.Empty;
+        }
+
+        private void ResetDescriptionChangedFlags()
+        {
+            _customCpuDescriptionChanged = false;
+            _customGpuDescriptionChanged = false;
+            _customRamDescriptionChanged = false;
+            _customGameNameChanged = false;
+            _customCommentChanged = false;
+        }
+
+        private void OnAcceptEditingDialog() => SaveDescriptions();
+
+        public void SaveDescriptions()
+        {
+            if (!ObjectExtensions.IsAllNotNull(CustomCpuDescription,
+                CustomGpuDescription, CustomRamDescription, CustomGameName,
+                CustomComment, _selectedRecordInfo, _applicationState.SelectedRecords))
+                return;
+
+            if (_applicationState.SelectedRecords.Count == 1)
+            {
+                _recordManager.UpdateCustomData(_selectedRecordInfo, CustomCpuDescription,
+                    CustomGpuDescription, CustomRamDescription, CustomGameName, CustomComment);
+            }
+            else if (_applicationState.SelectedRecords.Count > 1)
+            {
+                foreach (var recordInfoObject in _applicationState.SelectedRecords)
+                {
+                    var recordInfo = recordInfoObject as IFileRecordInfo;
+                    var session = _recordManager.LoadData(recordInfo.FullPath);
+
+                    _recordManager.UpdateCustomData(recordInfo,
+                            _customCpuDescriptionChanged ? CustomCpuDescription : session.Info.Processor,
+                            _customGpuDescriptionChanged ? CustomGpuDescription : session.Info.GPU,
+                            _customRamDescriptionChanged ? CustomRamDescription : session.Info.SystemRam,
+                            _customGameNameChanged ? CustomGameName : session.Info.GameName,
+                            _customCommentChanged ? CustomComment : session.Info.Comment);
+                }
+            }
+
+            AddOrUpdateProcess(_selectedRecordInfo.ProcessName, CustomGameName);
+            ResetDescriptionChangedFlags();
+        }
+
+        private void AddOrUpdateProcess(string processName, string gameName)
+        {
+            if (string.IsNullOrWhiteSpace(processName) || string.IsNullOrWhiteSpace(gameName)
+                || (processName.Replace(".exe", string.Empty) == gameName))
+            {
+                return;
+            }
+
             try
             {
-
-                if (_selectedRecordings?.Count > 1)
+                var process = _processList.FindProcessByName(processName);
+                if (process is null)
                 {
-                    foreach (var item in _selectedRecordings)
-                    {
-                        string destinationFullPath = Path.Combine(destinationfolder, item.FileInfo.Name);
-                        FileSystem.CopyFile(item.FullPath, destinationFullPath);
-                    }
+                    _processList.AddEntry(processName, gameName);
+                    process = _processList.FindProcessByName(processName);
                 }
                 else
                 {
-                    string destinationFullPath = Path.Combine(destinationfolder, SelectedRecordInfo.FileInfo.Name);
-                    FileSystem.CopyFile(SelectedRecordInfo.FullPath, destinationFullPath);
+                    var isNewDisplayName = process.DisplayName == null;
+                    process.UpdateDisplayName(gameName);
+
+                    if (isNewDisplayName)
+                    {
+                        _processList.UploadProcessInfo(processName, gameName);
+                    }
                 }
+                _processList.Save();
+                RecordInfoList.Where(record => record.ProcessName == processName).ForEach(record =>
+                {
+                    record.GameName = process.DisplayName;
+                    ((FileRecordInfo)record).NotifyPropertyChanged(nameof(record.GameName));
+                });
 
-                SelectedRecordInfo = null;
-                _selectedRecordings = null;
-
-                _updateSessionEvent.Publish(new ViewMessages.UpdateSession(null, null));
-
+                RaisePropertyChanged(nameof(RecordInfoList));
             }
-            catch { }
-        }
-        TreeViewUpdateStream.OnNext(default);
-    }
-
-    private void ResetInfoEditBoxes()
-    {
-        CustomCpuDescription = string.Empty;
-        CustomGpuDescription = string.Empty;
-        CustomRamDescription = string.Empty;
-        CustomGameName = string.Empty;
-        CustomComment = string.Empty;
-    }
-
-    private void ResetDescriptionChangedFlags()
-    {
-        _customCpuDescriptionChanged = false;
-        _customGpuDescriptionChanged = false;
-        _customRamDescriptionChanged = false;
-        _customGameNameChanged = false;
-        _customCommentChanged = false;
-    }
-
-    private void OnAcceptEditingDialog() => SaveDescriptions();
-
-    public void SaveDescriptions()
-    {
-        if (!ObjectExtensions.IsAllNotNull(CustomCpuDescription,
-            CustomGpuDescription, CustomRamDescription, CustomGameName,
-            CustomComment, _selectedRecordInfo, _applicationState.SelectedRecords))
-            return;
-
-        if (_applicationState.SelectedRecords.Count == 1)
-        {
-            _recordManager.UpdateCustomData(_selectedRecordInfo, CustomCpuDescription,
-                CustomGpuDescription, CustomRamDescription, CustomGameName, CustomComment);
-        }
-        else if (_applicationState.SelectedRecords.Count > 1)
-        {
-            foreach (var recordInfoObject in _applicationState.SelectedRecords)
+            catch (Exception e)
             {
-                var recordInfo = recordInfoObject as IFileRecordInfo;
-                var session = _recordManager.LoadData(recordInfo.FullPath);
-
-                _recordManager.UpdateCustomData(recordInfo,
-                        _customCpuDescriptionChanged ? CustomCpuDescription : session.Info.Processor,
-                        _customGpuDescriptionChanged ? CustomGpuDescription : session.Info.GPU,
-                        _customRamDescriptionChanged ? CustomRamDescription : session.Info.SystemRam,
-                        _customGameNameChanged ? CustomGameName : session.Info.GameName,
-                        _customCommentChanged ? CustomComment : session.Info.Comment);
+                _logger.LogError(e, "Error updating ProcessList");
             }
         }
 
-        AddOrUpdateProcess(_selectedRecordInfo.ProcessName, CustomGameName);
-        ResetDescriptionChangedFlags();
-    }
-
-    private void AddOrUpdateProcess(string processName, string gameName)
-    {
-        if (string.IsNullOrWhiteSpace(processName) || string.IsNullOrWhiteSpace(gameName)
-            || (processName.Replace(".exe", string.Empty) == gameName))
+        public void OnRecordSelectByDoubleClick()
         {
-            return;
+            if (SelectedRecordInfo != null && _selectSessionEvent != null)
+            {
+                var session = _recordManager.LoadData(SelectedRecordInfo.FullPath);
+                _selectSessionEvent.Publish(new ViewMessages.SelectSession(session, SelectedRecordInfo));
+            }
         }
 
-        try
+        private void OnSelectedRecordInfoChanged()
         {
-            var process = _processList.FindProcessByName(processName);
-            if (process is null)
+            if (_selectedRecordInfo is null)
             {
-                _processList.AddEntry(processName, gameName);
-                process = _processList.FindProcessByName(processName);
+                ResetInfoEditBoxes();
             }
             else
             {
-                var isNewDisplayName = process.DisplayName == null;
-                process.UpdateDisplayName(gameName);
-
-                if (isNewDisplayName)
+                var session = _recordManager.LoadData(_selectedRecordInfo.FullPath);
+                if (session is ISession)
                 {
-                    _processList.UploadProcessInfo(processName, gameName);
+                    if (_updateSessionEvent != null)
+                    {
+                        _updateSessionEvent.Publish(new ViewMessages.UpdateSession(session, SelectedRecordInfo));
+                    }
+                    CustomCpuDescription = string.Copy(SelectedRecordInfo.ProcessorName ?? string.Empty);
+                    CustomGpuDescription = string.Copy(SelectedRecordInfo.GraphicCardName ?? string.Empty);
+                    CustomRamDescription = string.Copy(SelectedRecordInfo.SystemRamInfo ?? string.Empty);
+                    CustomGameName = string.Copy(SelectedRecordInfo.GameName ?? string.Empty);
+                    CustomComment = string.Copy(SelectedRecordInfo.Comment ?? string.Empty);
                 }
             }
-            _processList.Save();
-            RecordInfoList.Where(record => record.ProcessName == processName).ForEach(record =>
-            {
-                record.GameName = process.DisplayName;
-                ((FileRecordInfo)record).NotifyPropertyChanged(nameof(record.GameName));
-            });
 
-            RaisePropertyChanged(nameof(RecordInfoList));
+            ResetDescriptionChangedFlags();
         }
-        catch (Exception e)
-        {
-            _logger.LogError(e, "Error updating ProcessList");
-        }
-    }
 
-    public void OnRecordSelectByDoubleClick()
-    {
-        if (SelectedRecordInfo != null && _selectSessionEvent != null)
-        {
-            var session = _recordManager.LoadData(SelectedRecordInfo.FullPath);
-            _selectSessionEvent.Publish(new ViewMessages.SelectSession(session, SelectedRecordInfo));
-        }
-    }
+        private void OnPressDeleteKey()
+            => OnDeleteRecordFile();
 
-    private void OnSelectedRecordInfoChanged()
-    {
-        if (_selectedRecordInfo is null)
+        void OnSelectedRecordings(object selectedRecordings)
         {
-            ResetInfoEditBoxes();
+            if (selectedRecordings == null)
+                return;
+
+            _selectedRecordings = new List<IFileRecordInfo>((selectedRecordings as IList).Cast<IFileRecordInfo>());
         }
-        else
+
+        private void SetAggregatorEvents()
         {
-            var session = _recordManager.LoadData(_selectedRecordInfo.FullPath);
-            if (session is ISession)
-            {
-                if (_updateSessionEvent != null)
+            _updateSessionEvent = _eventAggregator.GetEvent<PubSubEvent<ViewMessages.UpdateSession>>();
+            _selectSessionEvent = _eventAggregator.GetEvent<PubSubEvent<ViewMessages.SelectSession>>();
+            _updateRecordInfosEvent = _eventAggregator.GetEvent<PubSubEvent<ViewMessages.UpdateRecordInfos>>();
+        }
+
+        private void SubscribeToResetRecord()
+        {
+            _eventAggregator.GetEvent<PubSubEvent<ViewMessages.ResetRecord>>()
+                            .Subscribe(msg =>
+                            {
+                                SelectedRecordInfo = null;
+                                _selectedRecordings = null;
+                            });
+        }
+
+        private void SubscribeToSetFileRecordInfoExternal()
+        {
+            _eventAggregator.GetEvent<PubSubEvent<ViewMessages.SetFileRecordInfoExternal>>()
+                            .Subscribe(msg =>
+                            {
+                                SelectedRecordInfo = RecordInfoList
+                                    .FirstOrDefault(info => info.Id == msg.RecordInfo.Id);
+                                _selectedRecordings = null;
+                            });
+        }
+
+        private void SubscribeToCloudFolderChanged()
+        {
+            _eventAggregator.GetEvent<PubSubEvent<AppMessages.CloudFolderChanged>>()
+                .Subscribe(msg =>
                 {
-                    _updateSessionEvent.Publish(new ViewMessages.UpdateSession(session, SelectedRecordInfo));
-                }
-                CustomCpuDescription = string.Copy(SelectedRecordInfo.ProcessorName ?? string.Empty);
-                CustomGpuDescription = string.Copy(SelectedRecordInfo.GraphicCardName ?? string.Empty);
-                CustomRamDescription = string.Copy(SelectedRecordInfo.SystemRamInfo ?? string.Empty);
-                CustomGameName = string.Copy(SelectedRecordInfo.GameName ?? string.Empty);
-                CustomComment = string.Copy(SelectedRecordInfo.Comment ?? string.Empty);
-            }
+                    TreeViewUpdateStream.OnNext(default);
+                });
         }
 
-        ResetDescriptionChangedFlags();
+        private void SubscribeToCloudFolderSelected()
+        {
+            _eventAggregator.GetEvent<PubSubEvent<AppMessages.SelectCloudFolder>>()
+                .Subscribe(msg =>
+                {
+                    TreeViewUpdateStream.OnNext(default);
+                });
+        }
     }
-
-    private void OnPressDeleteKey()
-        => OnDeleteRecordFile();
-
-    void OnSelectedRecordings(object selectedRecordings)
-    {
-        if (selectedRecordings == null)
-            return;
-
-        _selectedRecordings = new List<IFileRecordInfo>((selectedRecordings as IList).Cast<IFileRecordInfo>());
-    }
-
-    private void SetAggregatorEvents()
-    {
-        _updateSessionEvent = _eventAggregator.GetEvent<PubSubEvent<ViewMessages.UpdateSession>>();
-        _selectSessionEvent = _eventAggregator.GetEvent<PubSubEvent<ViewMessages.SelectSession>>();
-        _updateRecordInfosEvent = _eventAggregator.GetEvent<PubSubEvent<ViewMessages.UpdateRecordInfos>>();
-    }
-
-    private void SubscribeToResetRecord()
-    {
-        _eventAggregator.GetEvent<PubSubEvent<ViewMessages.ResetRecord>>()
-                        .Subscribe(msg =>
-                        {
-                            SelectedRecordInfo = null;
-                            _selectedRecordings = null;
-                        });
-    }
-
-    private void SubscribeToSetFileRecordInfoExternal()
-    {
-        _eventAggregator.GetEvent<PubSubEvent<ViewMessages.SetFileRecordInfoExternal>>()
-                        .Subscribe(msg =>
-                        {
-                            SelectedRecordInfo = RecordInfoList
-                                .FirstOrDefault(info => info.Id == msg.RecordInfo.Id);
-                            _selectedRecordings = null;
-                        });
-    }
-
-    private void SubscribeToCloudFolderChanged()
-    {
-        _eventAggregator.GetEvent<PubSubEvent<AppMessages.CloudFolderChanged>>()
-            .Subscribe(msg =>
-            {
-                TreeViewUpdateStream.OnNext(default);
-            });
-    }
-
-    private void SubscribeToCloudFolderSelected()
-    {
-        _eventAggregator.GetEvent<PubSubEvent<AppMessages.SelectCloudFolder>>()
-            .Subscribe(msg =>
-            {
-                TreeViewUpdateStream.OnNext(default);
-            });
-    }
-}
 }

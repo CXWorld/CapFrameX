@@ -532,9 +532,6 @@ namespace CapFrameX.ViewModel
                              RecordManager recordManager,
                              ILogger<DataViewModel> logger)
         {
-            Stopwatch stopwatch = new Stopwatch();
-            stopwatch.Start();
-
             _frametimeStatisticProvider = frametimeStatisticProvider;
             _frametimeAnalyzer = frametimeAnalyzer;
             _eventAggregator = eventAggregator;
@@ -566,9 +563,6 @@ namespace CapFrameX.ViewModel
             InitializeStatisticParameter();
             SetThresholdLabels();
             Setup();
-
-            stopwatch.Stop();
-            _logger.LogInformation(this.GetType().Name + " {initializationTime}s initialization time", Math.Round(stopwatch.ElapsedMilliseconds * 1E-03, 1));
         }
 
         private bool GetIsPowerLimitAvailable()

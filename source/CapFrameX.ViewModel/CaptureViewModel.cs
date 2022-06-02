@@ -243,11 +243,7 @@ namespace CapFrameX.ViewModel
             }
         }
 
-
-
-
         // Run history and aggregation options
-
         public string ResetHistoryHotkeyString
         {
             get { return _appConfiguration.ResetHistoryHotkey; }

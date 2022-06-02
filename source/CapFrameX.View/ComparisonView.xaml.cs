@@ -23,10 +23,10 @@ namespace CapFrameX.View
 			(DataContext as ComparisonViewModel)?.ResetLShapeChart
 				.ObserveOn(context)
 				.SubscribeOn(context)
-				.Subscribe(dummy => ResetLShapeChart());
+				.Subscribe(x => ResetLShapeChart());
 		}
 
-		private void ResetLShapeChart_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
+		private void ResetLShapeChart_MouseDoubleClick(object sender, MouseButtonEventArgs e)
 			=> ResetLShapeChart();
 
 		private void ResetLShapeChart()

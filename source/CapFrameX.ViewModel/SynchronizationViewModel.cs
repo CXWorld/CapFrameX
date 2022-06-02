@@ -276,9 +276,6 @@ namespace CapFrameX.ViewModel
                                         IAppConfiguration appConfiguration,
                                         ILogger<SynchronizationViewModel> logger)
         {
-            Stopwatch stopwatch = new Stopwatch();
-            stopwatch.Start();
-
             _frametimeStatisticProvider = frametimeStatisticProvider;
             _eventAggregator = eventAggregator;
             _appConfiguration = appConfiguration;
@@ -312,9 +309,6 @@ namespace CapFrameX.ViewModel
                 PlotMargins = new OxyThickness(40, 10, 0, 40),
                 PlotAreaBorderColor = OxyColor.FromArgb(64, 204, 204, 204),
             };
-
-            stopwatch.Stop();
-            _logger.LogInformation(this.GetType().Name + " {initializationTime}s initialization time", Math.Round(stopwatch.ElapsedMilliseconds * 1E-03, 1));
         }
 
         private void SubscribeToUpdateSession()
@@ -820,8 +814,6 @@ namespace CapFrameX.ViewModel
                 InputLagModel = tmp;
             }));
         }
-
-
 
         protected void OnSavePlotAsImage(string plotType, string fileFormat)
         {
