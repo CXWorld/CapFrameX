@@ -586,6 +586,10 @@ namespace CapFrameX.ViewModel
             {
                 destinationfolder = path;
             }
+
+            if (destinationfolder.IsNullOrEmpty())
+                return;
+
             try
             {
 
