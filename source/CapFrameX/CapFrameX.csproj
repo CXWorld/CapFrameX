@@ -242,6 +242,10 @@
       <Project>{624777C2-6AF6-46D5-A019-1285F699B8A7}</Project>
       <Name>CapFrameX.Overlay</Name>
     </ProjectReference>
+    <ProjectReference Include="..\CapFrameX.PMD\CapFrameX.PMD.csproj">
+      <Project>{8a0eff6f-a7bc-450a-ac29-d0f5ccd96bc3}</Project>
+      <Name>CapFrameX.PMD</Name>
+    </ProjectReference>
     <ProjectReference Include="..\CapFrameX.PresentMonInterface\CapFrameX.PresentMonInterface.csproj">
       <Project>{ADFBAECE-B74F-4A80-87D1-84BC990527B0}</Project>
       <Name>CapFrameX.PresentMonInterface</Name>

@@ -240,6 +240,9 @@
     <Compile Include="Controls\MarkupTextBlock.cs" />
     <Compile Include="Controls\MultiSelectionDataGrid.cs" />
     <Compile Include="Controls\PlotViewCustomZoom.cs" />
+    <Compile Include="PmdView.xaml.cs">
+      <DependentUpon>PmdView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -310,6 +313,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="OverlayView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="PmdView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

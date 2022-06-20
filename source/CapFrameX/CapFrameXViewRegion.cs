@@ -17,6 +17,7 @@ namespace CapFrameX
             RegionManagerWrapper.Singleton.RegisterViewWithRegion("DataRegion", typeof(AggregationView));
             RegionManagerWrapper.Singleton.RegisterViewWithRegion("DataRegion", typeof(ComparisonView));
             RegionManagerWrapper.Singleton.RegisterViewWithRegion("DataRegion", typeof(SensorView));
+            RegionManagerWrapper.Singleton.RegisterViewWithRegion("DataRegion", typeof(PmdView));
             RegionManagerWrapper.Singleton.RegisterViewWithRegion("DataRegion", typeof(ReportView));
             RegionManagerWrapper.Singleton.RegisterViewWithRegion("DataRegion", typeof(SynchronizationView));
             RegionManagerWrapper.Singleton.RegisterViewWithRegion("DataRegion", typeof(CloudView));

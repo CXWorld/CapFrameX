@@ -47,12 +47,12 @@
                              Visibility="{Binding IsCompatibleWithRunningOS, Converter={StaticResource FalseToCollapsedConverter}}"/>
                     <RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
 							 Margin="5"
-							 IsChecked="{Binding OverlayIsChecked}"
-							 Content="OVERLAY" />
-                    <RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
-							 Margin="5"
 							 IsChecked="{Binding SingleRecordIsChecked}"
 							 Content="ANALYSIS" />
+                    <RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
+							 Margin="5"
+							 IsChecked="{Binding OverlayIsChecked}"
+							 Content="OVERLAY" />
                     <RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
 							 Margin="5"
 							 IsChecked="{Binding RecordComparisonIsChecked}"
@@ -65,6 +65,10 @@
                              Margin="5"
                              IsChecked="{Binding SensorIsChecked}"
                              Content="SENSOR" />
+                    <RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
+							 Margin="5"
+							 IsChecked="{Binding PmdIsChecked}"
+							 Content="PMD" />
                     <RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
 							 Margin="5"
 							 IsChecked="{Binding ReportIsChecked}"

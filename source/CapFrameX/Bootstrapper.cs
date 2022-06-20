@@ -36,6 +36,7 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using CapFrameX.Monitoring.Contracts;
 using CapFrameX.Capture.Contracts;
+using CapFrameX.PMD;
 
 namespace CapFrameX
 {
@@ -130,6 +131,7 @@ namespace CapFrameX
                 await loginManager.HandleRedirect(url => Task.FromResult(Process.Start(url)));
             });
             Container.Register<CaptureManager>(Reuse.Singleton);
+            Container.Register<IPmdService, PmdService>(Reuse.Singleton);
         }
 
         /// <summary>

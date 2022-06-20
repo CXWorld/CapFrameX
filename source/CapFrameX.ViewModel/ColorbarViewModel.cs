@@ -49,6 +49,7 @@ namespace CapFrameX.ViewModel
         private bool _recordComparisonIsChecked;
         private bool _reportIsChecked;
         private bool _sensorIsChecked;
+        private bool _pmdIsChecked;
         private bool _synchronizationIsChecked;
         private bool _cloudIsChecked;
         private bool _aggregatioIsChecked;
@@ -144,6 +145,19 @@ namespace CapFrameX.ViewModel
 
                 if (value)
                     OnSensorIsCheckedChanged();
+            }
+        }
+
+        public bool PmdIsChecked
+        {
+            get { return _pmdIsChecked; }
+            set
+            {
+                _pmdIsChecked = value;
+                RaisePropertyChanged();
+
+                if (value)
+                    OnPmdIsCheckedChanged();
             }
         }
 
@@ -592,6 +606,12 @@ namespace CapFrameX.ViewModel
         {
             _regionManager.RequestNavigate("DataRegion", "SensorView");
             CurrentPageName = "Sensor";
+        }
+
+        private void OnPmdIsCheckedChanged()
+        {
+            _regionManager.RequestNavigate("DataRegion", "PmdView");
+            CurrentPageName = "Pmd";
         }
 
         private void OnReportIsCheckedChanged()
