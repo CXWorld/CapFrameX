@@ -186,7 +186,9 @@
     <None Include="app.manifest">
       <SubType>Designer</SubType>
     </None>
-    <Resource Include="Icons\cx_icon_BUC.ico" />
+    <Resource Include="Icons\cx_icon_BUC.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
     <Content Include="HelpTexts\ChartControls.rtf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
