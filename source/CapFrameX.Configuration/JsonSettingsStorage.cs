@@ -14,8 +14,8 @@ namespace CapFrameX.Configuration
     public class JsonSettingsStorage : ISettingsStorage
     {
         private readonly object _iOLock = new object();
-        private readonly string _jsonFilePath 
-            = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), 
+        private readonly string _jsonFilePath
+            = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
                 "CapFrameX", "Configuration", "AppSettings.json");
         private readonly ILogger<JsonSettingsStorage> _logger;
         private readonly Subject<int> _saveFileSubject = new Subject<int>();
@@ -33,14 +33,16 @@ namespace CapFrameX.Configuration
 
         public T GetValue<T>(string key)
         {
-            if (_configDictionary.TryGetValue(key, out var value)) {
+            if (_configDictionary.TryGetValue(key, out var value))
+            {
                 if (value is long) value = Convert.ToInt32(value);
-                if(!(value is T val))
+                if (!(value is T val))
                 {
-                    if(value is JObject jObject)
+                    if (value is JObject jObject)
                     {
                         var convertedObject = jObject.ToObject(typeof(T));
-                        if(convertedObject is T convertedObjectTyped) {
+                        if (convertedObject is T convertedObjectTyped)
+                        {
                             return convertedObjectTyped;
                         }
                     }
@@ -99,7 +101,8 @@ namespace CapFrameX.Configuration
 
                     return Task.FromResult(true);
                 }
-            } catch(Exception exc)
+            }
+            catch (Exception exc)
             {
                 var newException = new JsonSettingsStorageException($"Unable to load Configuration from path {_jsonFilePath}. Please delete and try again.", exc);
                 _logger.LogError(exc, newException.Message);
@@ -137,8 +140,6 @@ namespace CapFrameX.Configuration
 
     internal class JsonSettingsStorageException : Exception
     {
-        public JsonSettingsStorageException(string message, Exception innerException) : base(message, innerException)
-        {
-        }
+        public JsonSettingsStorageException(string message, Exception innerException) : base(message, innerException) { }
     }
 }
