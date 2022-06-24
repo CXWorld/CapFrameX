@@ -1,5 +1,125 @@
 [
   {
+    "Name": "F1_22",
+    "DisplayName": "F1 2022",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "SquadGame",
+    "DisplayName": "Squad",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "sniper5_dx12",
+    "DisplayName": "Sniper Elite 5",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "iRacingSim64DX11",
+    "DisplayName": "iRacing",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "arma2",
+    "DisplayName": "Arma 2",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "arma3_x64",
+    "DisplayName": "Arma 3",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "Teams",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "javaw",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "FarmingSimulator2022Game",
+    "DisplayName": "Farming Simulator 22",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "D4X",
+    "DisplayName": "Dune: Spice Wars",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "AsusMyASUS",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "wallpaper64",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "OpenOSRS",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "SystemMechanic",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "Cinebench",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "CRYENGINE Launcher",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "Photoshop",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "prboom-plus",
+    "DisplayName": "Doom 1 RT Mod",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "Plex",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "Notepad",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "GWT",
+    "DisplayName": "Ghostwire: Tokyo (DX12)",
+    "IsBlacklisted": false
+  },
+  {
+    "Name": "start_protected_game",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "Pandoras_Box",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
+    "Name": "YourPhone",
+    "DisplayName": null,
+    "IsBlacklisted": true
+  },
+  {
     "Name": "SW3",
     "DisplayName": "Shadow Warrior 3",
     "IsBlacklisted": false
@@ -1827,11 +1947,6 @@
   {
     "Name": "Borderlands2",
     "DisplayName": "Borderlands 2",
-    "IsBlacklisted": false
-  },
-  {
-    "Name": "arma2",
-    "DisplayName": "ArmA 2",
     "IsBlacklisted": false
   },
   {
