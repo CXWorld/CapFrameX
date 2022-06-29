@@ -78,6 +78,7 @@
     <Compile Include="Data\FileRecordInfoTest.cs" />
     <Compile Include="Extensions\ObservableExtensionsTest.cs" />
     <Compile Include="Extensions\StringExtensionsTest.cs" />
+    <Compile Include="PMD\OfflineDataProcessingTest.cs" />
     <Compile Include="PresentMonInterface\SystemInfoTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Sensor\ComputerTest.cs" />
@@ -135,6 +136,10 @@
     <ProjectReference Include="..\CapFrameX.Overlay\CapFrameX.Overlay.csproj">
       <Project>{624777C2-6AF6-46D5-A019-1285F699B8A7}</Project>
       <Name>CapFrameX.Overlay</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CapFrameX.PMD\CapFrameX.PMD.csproj">
+      <Project>{8a0eff6f-a7bc-450a-ac29-d0f5ccd96bc3}</Project>
+      <Name>CapFrameX.PMD</Name>
     </ProjectReference>
     <ProjectReference Include="..\CapFrameX.PresentMonInterface\CapFrameX.PresentMonInterface.csproj">
       <Project>{adfbaece-b74f-4a80-87d1-84bc990527b0}</Project>

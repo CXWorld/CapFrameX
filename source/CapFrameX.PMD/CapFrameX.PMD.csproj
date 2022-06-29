@@ -59,6 +59,8 @@
     <Compile Include="IPmdService.cs" />
     <Compile Include="PmdChannel.cs" />
     <Compile Include="PmdChannelType.cs" />
+    <Compile Include="PmdData.cs" />
+    <Compile Include="PmdDataProcessing.cs" />
     <Compile Include="PmdService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
