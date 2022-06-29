@@ -21,7 +21,7 @@
     <Grid>
         <!-- NotifyIcon -->
         <tb:TaskbarIcon x:Name="SystemTray"
-                        IconSource="pack://application:,,,/CapFrameX;component/Icons/cx_icon_BUC.ico"
+                        IconSource="/Icons/cx_icon_BUC.ico"
                         MenuActivation="RightClick"
                         TrayLeftMouseDown="SystemTray_TrayLeftMouseDownClick">
             <tb:TaskbarIcon.TrayToolTip>
