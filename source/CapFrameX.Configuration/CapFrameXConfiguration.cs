@@ -653,6 +653,25 @@ namespace CapFrameX.Configuration
             set => Set(value);
         }
 
+        // PMD Service
+        public bool UseVirtualMode
+        {
+            get => Get<bool>(false);
+            set => Set(value);
+        }
+
+        public int DownSamplingSize
+        {
+            get => Get<int>(10);
+            set => Set(value);
+        }
+
+        public EDownSamplingMode DownSamplingMode
+        {
+            get => Get<EDownSamplingMode>(EDownSamplingMode.Average);
+            set => Set(value);
+        }
+
         T Get<T>(T defaultValue, [CallerMemberName] string key = null)
         {
             if (string.IsNullOrWhiteSpace(key))

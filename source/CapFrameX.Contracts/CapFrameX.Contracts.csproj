@@ -81,6 +81,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Aggregation\IAggregationEntry.cs" />
+    <Compile Include="Configuration\EDownSamplingMode.cs" />
+    <Compile Include="Configuration\IPmdServiceConfiguration.cs" />
     <Compile Include="Logging\ELogMessageType.cs" />
     <Compile Include="Data\ESystemInfoTertiaryStatus.cs" />
     <Compile Include="Data\ICloudManager.cs" />
