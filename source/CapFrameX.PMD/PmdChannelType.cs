@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace CapFrameX.PMD
+﻿namespace CapFrameX.PMD
 {
     public enum PmdChannelType
     {
         EPS,
         PCIe,
-        ATX24Pin,
+        PCIeSlot,
+        ATX,
     }
 }
