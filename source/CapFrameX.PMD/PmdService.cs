@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using CapFrameX.Contracts.Configuration;
 using Microsoft.Extensions.Logging;
 
@@ -6,20 +7,11 @@ namespace CapFrameX.PMD
 {
     public class PmdService : IPmdService
     {
+        private readonly IPmdDriver _pmdDriver;
         private readonly IAppConfiguration _appConfiguration;
         private readonly ILogger<PmdService> _logger;
 
         public IObservable<PmdChannel[]> PmdChannelStream { get; }
-
-        public bool UseVirtualMode
-        {
-            get => _appConfiguration.UseVirtualMode;
-            set 
-            {
-                _appConfiguration.UseVirtualMode = value;
-                OnDataSourceModeChanged();
-            }
-        }
 
         public int DownSamplingSize
         {
@@ -41,27 +33,18 @@ namespace CapFrameX.PMD
             }
         }
 
-        public PmdService(IAppConfiguration appConfiguration,
+        public PmdService(IPmdDriver pmdDriver, IAppConfiguration appConfiguration,
             ILogger<PmdService> logger)
         {
+            _pmdDriver = pmdDriver;
             _appConfiguration = appConfiguration;
             _logger = logger;
         }
 
-        public bool Connect()
-        {
-            throw new NotImplementedException();
-        }
+        public bool StartDriver() => _pmdDriver.Connect();
 
-        public bool Disconnect()
-        {
-            throw new NotImplementedException();
-        }
 
-        private void OnDataSourceModeChanged()
-        {
-            throw new NotImplementedException();
-        }
+        public bool ShutDownDriver() => _pmdDriver.Disconnect();
 
         private void OnDownSamplingSizeChanged()
         {

@@ -7,4 +7,11 @@
         PCIeSlot,
         ATX,
     }
+
+    public enum PmdMeasurand
+    {
+        Current,
+        Voltage,
+        Power
+    }
 }

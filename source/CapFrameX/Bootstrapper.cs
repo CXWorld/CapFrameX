@@ -132,6 +132,7 @@ namespace CapFrameX
             });
             Container.Register<CaptureManager>(Reuse.Singleton);
             Container.Register<IPmdService, PmdService>(Reuse.Singleton);
+            Container.Register<IPmdDriver, PmdUSBDriver>(Reuse.Singleton);
         }
 
         /// <summary>

@@ -6,8 +6,8 @@ namespace CapFrameX.PMD
     {
         IObservable<PmdChannel[]> PmdChannelStream { get; }
 
-        bool Connect();
+        bool StartDriver();
 
-        bool Disconnect();
+        bool ShutDownDriver();
     }
 }
