@@ -62,14 +62,14 @@ namespace CapFrameX.PMD
                     Measurand = ChannelMapping[i].Measurand,
                     PmdChannelType = ChannelMapping[i].PmdChannelType,
                     TimeStamp = timeStamp,
-                    Value = GetVoltageOrCurrentValue(ChannelMapping[i].Measurand, i, channelArray)
+                    Value = GetMeasurandValue(ChannelMapping[i].Measurand, i, channelArray)
                 };
             }
 
             return channelArray;
         }
 
-        private float GetVoltageOrCurrentValue(PmdMeasurand pmdMeasurand, int index, PmdChannel[] channelArray)
+        private float GetMeasurandValue(PmdMeasurand pmdMeasurand, int index, PmdChannel[] channelArray)
         {
             float value = 0;
             switch (pmdMeasurand)
