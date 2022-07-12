@@ -1,57 +1,110 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Runtime.InteropServices;
 
 namespace OpenHardwareMonitor.Hardware.IntelGPU
 {
     [StructLayout(LayoutKind.Sequential)]
-    internal struct IGCLAdapterInfo
+    internal struct IgclDeviceInfo
     {
-        public int AdapterIndex { get; internal set; }
-        public string LUID { get; internal set; }
-        public int VendorID { get; internal set; }
-        public int BusNumber { get; internal set; }
-        public int DeviceNumber { get; internal set; }
-        public string AdapterName { get; internal set; }
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = IGCL.CTL_MAX_DEVICE_NAME_LEN)]
+        public char[] DeviceName;
+        public int AdapterID;
+        public uint Pci_vendor_id;
+        public uint Pci_device_id;
+        public uint Rev_id;
+        public bool Isvalid;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct IgclTelemetryData
+    {
+        // GPU TDP
+        public bool gpuEnergyCounterSupported;
+        public float gpuEnergyCounterValue;
+
+        // GPU Voltage
+        public bool gpuVoltageSupported;
+        public float gpuVoltagValue;
+
+        // GPU Core Frequency
+        public bool gpuCurrentClockFrequencySupported;
+        public float gpuCurrentClockFrequencyValue;
+
+        // GPU Core Temperature
+        public bool gpuCurrentTemperatureSupported;
+        public float gpuCurrentTemperatureValue;
+
+        // GPU Usage
+        public bool globalActivityCounterSupported;
+        public float globalActivityCounterValue;
+
+        // Render Engine Usage
+        public bool renderComputeActivityCounterSupported;
+        public float renderComputeActivityCounterValue;
+
+        // Media Engine Usage
+        public bool mediaActivityCounterSupported;
+        public float mediaActivityCounterValue;
+
+        // VRAM Power Consumption
+        public bool vramEnergyCounterSupported;
+        public float vramEnergyCounterValue;
+
+        // VRAM Voltage
+        public bool vramVoltageSupported;
+        public float vramVoltageValue;
+
+        // VRAM Frequency
+        public bool vramCurrentClockFrequencySupported;
+        public float vramCurrentClockFrequencyValue;
+
+        // VRAM Read Bandwidth
+        public bool vramReadBandwidthCounterSupported;
+        public float vramReadBandwidthCounterValue;
+
+        // VRAM Write Bandwidth
+        public bool vramWriteBandwidthCounterSupported;
+        public float vramWriteBandwidthCounterValue;
+
+        // VRAM Temperature
+        public bool vramCurrentTemperatureSupported;
+        public float vramCurrentTemperatureValue;
+
+        // Fanspeed (n Fans)
+        public bool fanSpeedSupported;
+        public float fanSpeedValue;
     }
 
     internal class IGCL
     {
-        public static int ADL_OK { get; internal set; }
+        public const int CTL_MAX_DEVICE_NAME_LEN = 100;
+
         public static int Intel_VENDOR_ID = 0x8086;
+
         public static bool IsInitialized { get; internal set; }
 
-        internal static int CtlInit()
+        internal static bool IntializeIntelGpuLib()
         {
-            throw new NotImplementedException();
+            return IsInitialized = IntializeIgcl();
         }
 
-        internal static void ADL_Adapter_NumberOfAdapters_Get(ref int numberOfAdapters)
+        internal static void CloseIntelGpuLib()
         {
-            throw new NotImplementedException();
+            CloseIgcl();
         }
 
-        internal static void ADL_Adapter_Active_Get(object adapterIndex, out int isActive)
-        {
-            throw new NotImplementedException();
-        }
+        [DllImport("CapFrameX.IGCL.dll")]
+        public static extern bool IntializeIgcl();
 
-        internal static void ADL_Adapter_ID_Get(object adapterIndex, out int adapterID)
-        {
-            throw new NotImplementedException();
-        }
+        [DllImport("CapFrameX.IGCL.dll")]
+        public static extern void CloseIgcl();
 
-        internal static int ADL_Adapter_AdapterInfo_Get(IGCLAdapterInfo[] adapterInfo)
-        {
-            throw new NotImplementedException();
-        }
+        [DllImport("CapFrameX.IGCL.dll")]
+        public static extern uint GetAdpaterCount();
 
-        internal static void CtlClose()
-        {
-            throw new NotImplementedException();
-        }
+        [DllImport("CapFrameX.IGCL.dll")]
+        public static extern IgclDeviceInfo GetDeviceInfo(uint index);
+
+        [DllImport("CapFrameX.IGCL.dll")]
+        public static extern IgclTelemetryData GetIgclTelemetryData(uint index);
     }
 }
