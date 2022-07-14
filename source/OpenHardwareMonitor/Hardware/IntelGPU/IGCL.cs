@@ -11,6 +11,7 @@ namespace OpenHardwareMonitor.Hardware.IntelGPU
         public uint Pci_vendor_id;
         public uint Pci_device_id;
         public uint Rev_id;
+        public ulong DriverVersion;
         public bool Isvalid;
     }
 

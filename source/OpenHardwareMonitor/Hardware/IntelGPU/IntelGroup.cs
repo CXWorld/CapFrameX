@@ -30,6 +30,7 @@ namespace OpenHardwareMonitor.Hardware.IntelGPU
                                       index,
                                       deviceInfo.AdapterID,
                                       (int)deviceInfo.Pci_device_id,
+                                      deviceInfo.DriverVersion,
                                       settings,
                                       sensorConfig,
                                       processService));

@@ -106,6 +106,7 @@ IgclDeviceInfo GetDeviceInfo(uint32_t index)
 		deviceInfo.Pci_vendor_id = StDeviceAdapterProperties.pci_vendor_id;
 		deviceInfo.Pci_device_id = StDeviceAdapterProperties.pci_device_id;
 		deviceInfo.Rev_id = StDeviceAdapterProperties.rev_id;
+		deviceInfo.DriverVersion = StDeviceAdapterProperties.driver_version;
 	}
 
 	deviceInfo.Isvalid = true;

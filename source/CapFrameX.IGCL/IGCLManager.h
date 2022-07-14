@@ -68,6 +68,7 @@ typedef struct IgclDeviceInfo
 	uint32_t Pci_vendor_id;
 	uint32_t Pci_device_id;
 	uint32_t Rev_id;
+	uint64_t DriverVersion;
 	bool Isvalid = false;
 };
 

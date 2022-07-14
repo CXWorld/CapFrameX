@@ -1,5 +1,6 @@
 ﻿using CapFrameX.Monitoring.Contracts;
 using System.Globalization;
+using System.Text;
 
 namespace OpenHardwareMonitor.Hardware.IntelGPU
 {
@@ -8,6 +9,7 @@ namespace OpenHardwareMonitor.Hardware.IntelGPU
         private readonly int adapterIndex;
         private readonly int busNumber;
         private readonly int deviceNumber;
+        private readonly ulong driverVersion;
         private readonly ISensorConfig sensorConfig;
 
         private readonly Sensor temperatureCore;
@@ -32,14 +34,15 @@ namespace OpenHardwareMonitor.Hardware.IntelGPU
         // ToDo: get all fans info
         private readonly Sensor speedFan;
 
-        public IntelGPU(string name, int adapterIndex, int busNumber,
-          int deviceNumber, ISettings settings, ISensorConfig config, IProcessService processService)
+        public IntelGPU(string name, int adapterIndex, int busNumber, int deviceNumber, ulong driverVersion, 
+            ISettings settings, ISensorConfig config, IProcessService processService)
           : base(name, new Identifier("intelgpu",
             adapterIndex.ToString(CultureInfo.InvariantCulture)), settings, processService)
         {
             this.adapterIndex = adapterIndex;
             this.busNumber = busNumber;
             this.deviceNumber = deviceNumber;
+            this.driverVersion = driverVersion;
             this.sensorConfig = config;
 
             // define alle sensors
@@ -299,6 +302,23 @@ namespace OpenHardwareMonitor.Hardware.IntelGPU
                     processMemoryUsageShared.Value = null;
             }
             catch { processMemoryUsageShared.Value = null; }
+        }
+
+        public override string GetDriverVersion()
+        {
+            StringBuilder r = new StringBuilder();
+
+            if (driverVersion != 0)
+            {
+                r.Append(driverVersion / 100);
+                r.Append(".");
+                r.Append((driverVersion % 100).ToString("00",
+                  CultureInfo.InvariantCulture));
+            }
+            else
+                return base.GetDriverVersion();
+
+            return r.ToString();
         }
     }
 }
