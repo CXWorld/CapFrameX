@@ -237,6 +237,7 @@
     <Compile Include="InpOut.cs" />
     <Compile Include="Interop\InpOut.cs" />
     <Compile Include="Interop\Kernel32.cs" />
+    <Compile Include="Interop\NtDll.cs" />
     <Compile Include="Properties\AssemblyLibInfo.cs" />
     <Compile Include="Properties\AssemblyVersion.cs" />
     <Compile Include="Hardware\ThreadAffinity.cs" />

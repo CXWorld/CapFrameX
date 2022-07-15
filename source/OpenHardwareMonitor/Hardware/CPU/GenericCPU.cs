@@ -39,7 +39,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
         private readonly CPULoad cpuLoad;
         private readonly Sensor totalLoad;
         private readonly Sensor maxLoad;
-        private readonly Sensor[] coreLoads;
+        private readonly Sensor[] threadLoads;
 
         private const uint CPUID_CORE_MASK_STATUS = 0x1A;
 
@@ -155,16 +155,16 @@ namespace OpenHardwareMonitor.Hardware.CPU
                 totalLoad = new Sensor("CPU Total", 0, SensorType.Load, this, settings);
             else
                 totalLoad = null;
-            coreLoads = new Sensor[threadCountMap.Values.Sum()];
-            for (int i = 0; i < coreLoads.Length; i++)
-                coreLoads[i] = new Sensor(BuildCoreThreadString(i), i + 1,
+            threadLoads = new Sensor[threadCountMap.Values.Sum()];
+            for (int i = 0; i < threadLoads.Length; i++)
+                threadLoads[i] = new Sensor(BuildCoreThreadString(i), i + 1,
                   SensorType.Load, this, settings);
-            maxLoad = new Sensor("CPU Max", coreLoads.Length + 1, SensorType.Load, this, settings);
+            maxLoad = new Sensor("CPU Max", threadLoads.Length + 1, SensorType.Load, this, settings);
             cpuLoad = new CPULoad(cpuid);
 
             if (cpuLoad.IsAvailable)
             {
-                foreach (Sensor sensor in coreLoads)
+                foreach (Sensor sensor in threadLoads)
                     ActivateSensor(sensor);
                 if (totalLoad != null)
                     ActivateSensor(totalLoad);
@@ -253,8 +253,8 @@ namespace OpenHardwareMonitor.Hardware.CPU
             if (cpuLoad.IsAvailable)
             {
                 cpuLoad.Update();
-                for (int i = 0; i < coreLoads.Length; i++)
-                    coreLoads[i].Value = cpuLoad.GetCoreLoad(i);
+                for (int i = 0; i < threadLoads.Length; i++)
+                    threadLoads[i].Value = cpuLoad.GetThreadLoad(i);
                 if (totalLoad != null)
                     totalLoad.Value = cpuLoad.GetTotalLoad();
                 if (maxLoad != null)
