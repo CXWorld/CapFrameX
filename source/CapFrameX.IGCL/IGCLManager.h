@@ -2,6 +2,8 @@
 #include <cstdint>
 #include "igcl_api.h"
 
+#define CTL_MAX_DRIVER_VERSION_LEN  25
+
 typedef struct IgclTelemetryData
 {
 	// GPU TDP
@@ -68,7 +70,7 @@ typedef struct IgclDeviceInfo
 	uint32_t Pci_vendor_id;
 	uint32_t Pci_device_id;
 	uint32_t Rev_id;
-	char DriverVersion[25];
+	char DriverVersion[CTL_MAX_DRIVER_VERSION_LEN];
 };
 
 #define IGCL_API __declspec(dllimport)

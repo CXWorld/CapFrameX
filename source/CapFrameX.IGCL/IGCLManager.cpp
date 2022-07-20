@@ -123,11 +123,11 @@ bool GetDeviceInfo(const uint32_t index, IgclDeviceInfo* deviceInfo)
 		deviceInfo->Pci_device_id = StDeviceAdapterProperties.pci_device_id;
 		deviceInfo->Rev_id = StDeviceAdapterProperties.rev_id;
 
-		char driverVersion[25] = "";
+		char driverVersion[CTL_MAX_DRIVER_VERSION_LEN] = "";
 		LARGE_INTEGER LIDriverVersion;
 		LIDriverVersion.QuadPart = StDeviceAdapterProperties.driver_version;
 		sprintf_s(driverVersion, "%d.%d.%d.%d", HIWORD(LIDriverVersion.HighPart), LOWORD(LIDriverVersion.HighPart), HIWORD(LIDriverVersion.LowPart), LOWORD(LIDriverVersion.LowPart));
-		strncpy_s(deviceInfo->DriverVersion, driverVersion, CTL_MAX_DEVICE_NAME_LEN);
+		strncpy_s(deviceInfo->DriverVersion, driverVersion, CTL_MAX_DRIVER_VERSION_LEN);
 	}
 
 	return true;
