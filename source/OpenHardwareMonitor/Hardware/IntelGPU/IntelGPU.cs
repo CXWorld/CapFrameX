@@ -9,7 +9,7 @@ namespace OpenHardwareMonitor.Hardware.IntelGPU
         private readonly int adapterIndex;
         private readonly int busNumber;
         private readonly int deviceNumber;
-        private readonly ulong driverVersion;
+        private readonly string driverVersion;
         private readonly ISensorConfig sensorConfig;
 
         private readonly Sensor temperatureCore;
@@ -34,7 +34,7 @@ namespace OpenHardwareMonitor.Hardware.IntelGPU
         // ToDo: get all fans info
         private readonly Sensor speedFan;
 
-        public IntelGPU(string name, int adapterIndex, int busNumber, int deviceNumber, ulong driverVersion, 
+        public IntelGPU(string name, int adapterIndex, int busNumber, int deviceNumber, string driverVersion, 
             ISettings settings, ISensorConfig config, IProcessService processService)
           : base(name, new Identifier("intelgpu",
             adapterIndex.ToString(CultureInfo.InvariantCulture)), settings, processService)
@@ -311,19 +311,7 @@ namespace OpenHardwareMonitor.Hardware.IntelGPU
 
         public override string GetDriverVersion()
         {
-            StringBuilder r = new StringBuilder();
-
-            if (driverVersion != 0)
-            {
-                r.Append(driverVersion / 100);
-                r.Append(".");
-                r.Append((driverVersion % 100).ToString("00",
-                  CultureInfo.InvariantCulture));
-            }
-            else
-                return base.GetDriverVersion();
-
-            return r.ToString();
+            return !string.IsNullOrWhiteSpace(driverVersion) ? driverVersion.ToString() : base.GetDriverVersion();
         }
     }
 }

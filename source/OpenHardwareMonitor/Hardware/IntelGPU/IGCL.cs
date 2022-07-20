@@ -11,7 +11,8 @@ namespace OpenHardwareMonitor.Hardware.IntelGPU
         public uint Pci_vendor_id;
         public uint Pci_device_id;
         public uint Rev_id;
-        public ulong DriverVersion;
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = IGCL.CTL_MAX_DRIVER_VERSION_LEN)]
+        public string DriverVersion;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -77,6 +78,7 @@ namespace OpenHardwareMonitor.Hardware.IntelGPU
     internal class IGCL
     {
         public const int CTL_MAX_DEVICE_NAME_LEN = 100;
+        public const int CTL_MAX_DRIVER_VERSION_LEN = 25;
 
         public static int Intel_VENDOR_ID = 0x8086;
 
