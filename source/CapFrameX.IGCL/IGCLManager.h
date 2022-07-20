@@ -5,60 +5,60 @@
 typedef struct IgclTelemetryData
 {
 	// GPU TDP
-	bool gpuEnergyCounterSupported = false;
-	float gpuEnergyCounterValue;
+	bool gpuEnergySupported = false;
+	double gpuEnergyValue;
 
 	// GPU Voltage
 	bool gpuVoltageSupported = false;
-	float gpuVoltagValue;
+	double gpuVoltagValue;
 
 	// GPU Core Frequency
 	bool gpuCurrentClockFrequencySupported = false;
-	float gpuCurrentClockFrequencyValue;
+	double gpuCurrentClockFrequencyValue;
 
 	// GPU Core Temperature
 	bool gpuCurrentTemperatureSupported = false;
-	float gpuCurrentTemperatureValue;
+	double gpuCurrentTemperatureValue;
 
 	// GPU Usage
-	bool globalActivityCounterSupported = false;
-	float globalActivityCounterValue;
+	bool globalActivitySupported = false;
+	double globalActivityValue;
 
 	// Render Engine Usage
-	bool renderComputeActivityCounterSupported = false;
-	float renderComputeActivityCounterValue;
+	bool renderComputeActivitySupported = false;
+	double renderComputeActivityValue;
 
 	// Media Engine Usage
-	bool mediaActivityCounterSupported = false;
-	float mediaActivityCounterValue;
+	bool mediaActivitySupported = false;
+	double mediaActivityValue;
 
 	// VRAM Power Consumption
-	bool vramEnergyCounterSupported = false;
-	float vramEnergyCounterValue;
+	bool vramEnergySupported = false;
+	double vramEnergyValue;
 
 	// VRAM Voltage
 	bool vramVoltageSupported = false;
-	float vramVoltageValue;
+	double vramVoltageValue;
 
 	// VRAM Frequency
 	bool vramCurrentClockFrequencySupported = false;
-	float vramCurrentClockFrequencyValue;
+	double vramCurrentClockFrequencyValue;
 
 	// VRAM Read Bandwidth
-	bool vramReadBandwidthCounterSupported = false;
-	float vramReadBandwidthCounterValue;
+	bool vramReadBandwidthSupported = false;
+	double vramReadBandwidthValue;
 
 	// VRAM Write Bandwidth
-	bool vramWriteBandwidthCounterSupported = false;
-	float vramWriteBandwidthCounterValue;
+	bool vramWriteBandwidthSupported = false;
+	double vramWriteBandwidthValue;
 
 	// VRAM Temperature
 	bool vramCurrentTemperatureSupported = false;
-	float vramCurrentTemperatureValue;
+	double vramCurrentTemperatureValue;
 
 	// Fanspeed (n Fans)
 	bool fanSpeedSupported = false;
-	float fanSpeedValue;
+	double fanSpeedValue;
 };
 
 typedef struct IgclDeviceInfo
@@ -69,7 +69,6 @@ typedef struct IgclDeviceInfo
 	uint32_t Pci_device_id;
 	uint32_t Rev_id;
 	uint64_t DriverVersion;
-	bool Isvalid = false;
 };
 
 #define IGCL_API __declspec(dllimport)
@@ -80,7 +79,7 @@ extern "C" IGCL_API void CloseIgcl();
 
 extern "C" IGCL_API uint32_t GetAdpaterCount();
 
-extern "C" IGCL_API IgclDeviceInfo GetDeviceInfo(uint32_t index);
+extern "C" IGCL_API bool GetDeviceInfo(const uint32_t index, IgclDeviceInfo *igclDeviceInfo);
 
-extern "C" IGCL_API IgclTelemetryData GetIgclTelemetryData(uint32_t index);
+extern "C" IGCL_API bool GetIgclTelemetryData(const uint32_t index, IgclTelemetryData *igclTelemetryData);
 

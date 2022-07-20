@@ -1,4 +1,5 @@
 ﻿using CapFrameX.Monitoring.Contracts;
+using Serilog;
 using System;
 using System.Collections.Generic;
 
@@ -20,27 +21,35 @@ namespace OpenHardwareMonitor.Hardware.IntelGPU
                     {
                         for (int index = 0; index < numberOfAdapters; index++)
                         {
-                            var deviceInfo = IGCL.GetDeviceInfo((uint)index);
-
-                            if (deviceInfo.Pci_device_id != 0 &&
-                              deviceInfo.Pci_vendor_id == IGCL.Intel_VENDOR_ID)
+                            var deviceInfo = new IgclDeviceInfo();
+                            if (IGCL.GetDeviceInfo((uint)index, ref deviceInfo))
                             {
-                                hardware.Add(new IntelGPU(
-                                      new string(deviceInfo.DeviceName),
-                                      index,
-                                      deviceInfo.AdapterID,
-                                      (int)deviceInfo.Pci_device_id,
-                                      deviceInfo.DriverVersion,
-                                      settings,
-                                      sensorConfig,
-                                      processService));
+                                if (deviceInfo.Pci_device_id != 0 &&
+                                  deviceInfo.Pci_vendor_id == IGCL.Intel_VENDOR_ID)
+                                {
+                                    var igclTelemetryData = new IgclTelemetryData();
+                                    if (IGCL.GetIgclTelemetryData((uint)index, ref igclTelemetryData))
+                                    {
+                                        hardware.Add(new IntelGPU(
+                                              deviceInfo.DeviceName,
+                                              index,
+                                              deviceInfo.AdapterID,
+                                              (int)deviceInfo.Pci_device_id,
+                                              deviceInfo.DriverVersion,
+                                              settings,
+                                              sensorConfig,
+                                              processService));
+
+                                        Log.Logger.Information($"Intialized Intel GPU device: {deviceInfo.DeviceName}");
+                                    }
+                                }
                             }
                         }
                     }
                 }
             }
-            catch (DllNotFoundException) { }
-            catch (EntryPointNotFoundException) { }
+            catch (DllNotFoundException ex) { Log.Logger.Error(ex, $"Error while loading CapFrameX.IGCL.dll."); }
+            catch (Exception ex) { Log.Logger.Error(ex, $"Error while getting Intel GPU device info."); }
         }
 
         public IHardware[] Hardware => hardware.ToArray();

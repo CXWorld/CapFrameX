@@ -4,6 +4,24 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+double deltatimestamp = 0;
+double prevtimestamp = 0;
+double curtimestamp = 0;
+double prevgpuEnergyCounter = 0;
+double curgpuEnergyCounter = 0;
+double curglobalActivityCounter = 0;
+double prevglobalActivityCounter = 0;
+double currenderComputeActivityCounter = 0;
+double prevrenderComputeActivityCounter = 0;
+double curmediaActivityCounter = 0;
+double prevmediaActivityCounter = 0;
+double curvramEnergyCounter = 0;
+double prevvramEnergyCounter = 0;
+double curvramReadBandwidthCounter = 0;
+double prevvramReadBandwidthCounter = 0;
+double curvramWriteBandwidthCounter = 0;
+double prevvramWriteBandwidthCounter = 0;
+
 ctl_api_handle_t hAPIHandle;
 ctl_device_adapter_handle_t* hDevices;
 
@@ -61,10 +79,8 @@ uint32_t GetAdpaterCount()
 	return adapter_count;
 }
 
-IgclDeviceInfo GetDeviceInfo(uint32_t index)
+bool GetDeviceInfo(const uint32_t index, IgclDeviceInfo* deviceInfo)
 {
-	IgclDeviceInfo deviceInfo;
-
 	if (NULL != hDevices[index])
 	{
 		ctl_result_t result;
@@ -76,14 +92,14 @@ IgclDeviceInfo GetDeviceInfo(uint32_t index)
 
 		if (NULL == StDeviceAdapterProperties.pDeviceID)
 		{
-			return deviceInfo;
+			return false;
 		}
 
 		result = ctlGetDeviceProperties(hDevices[index], &StDeviceAdapterProperties);
 
 		if (result != CTL_RESULT_SUCCESS)
 		{
-			return deviceInfo;
+			return false;
 		}
 
 		if (CTL_DEVICE_TYPE_GRAPHICS != StDeviceAdapterProperties.device_type)
@@ -93,30 +109,28 @@ IgclDeviceInfo GetDeviceInfo(uint32_t index)
 				free(StDeviceAdapterProperties.pDeviceID);
 			}
 
-			return deviceInfo;
+			return false;
 		}
 
 		if (NULL != StDeviceAdapterProperties.pDeviceID)
 		{
-			deviceInfo.AdapterID = (reinterpret_cast<LUID*>(StDeviceAdapterProperties.pDeviceID))->LowPart;
+			deviceInfo->AdapterID = (reinterpret_cast<LUID*>(StDeviceAdapterProperties.pDeviceID))->LowPart;
 		}
 
-		strncpy_s(deviceInfo.DeviceName, StDeviceAdapterProperties.name, CTL_MAX_DEVICE_NAME_LEN);
+		strncpy_s(deviceInfo->DeviceName, StDeviceAdapterProperties.name, CTL_MAX_DEVICE_NAME_LEN);
 
-		deviceInfo.Pci_vendor_id = StDeviceAdapterProperties.pci_vendor_id;
-		deviceInfo.Pci_device_id = StDeviceAdapterProperties.pci_device_id;
-		deviceInfo.Rev_id = StDeviceAdapterProperties.rev_id;
-		deviceInfo.DriverVersion = StDeviceAdapterProperties.driver_version;
+		deviceInfo->Pci_vendor_id = StDeviceAdapterProperties.pci_vendor_id;
+		deviceInfo->Pci_device_id = StDeviceAdapterProperties.pci_device_id;
+		deviceInfo->Rev_id = StDeviceAdapterProperties.rev_id;
+		deviceInfo->DriverVersion = StDeviceAdapterProperties.driver_version;
 	}
 
-	deviceInfo.Isvalid = true;
-	return deviceInfo;
+	return true;
 }
 
-
-IgclTelemetryData GetIgclTelemetryData(uint32_t index)
+bool GetIgclTelemetryData(const uint32_t index, IgclTelemetryData* telemetryData)
 {
-	IgclTelemetryData telemetryData;
+	bool check = true;
 	ctl_power_telemetry_t pPowerTelemetry = {};
 	pPowerTelemetry.Size = sizeof(ctl_power_telemetry_t);
 
@@ -126,49 +140,103 @@ IgclTelemetryData GetIgclTelemetryData(uint32_t index)
 
 		if (status == ctl_result_t::CTL_RESULT_SUCCESS)
 		{
-			telemetryData.gpuEnergyCounterSupported = pPowerTelemetry.gpuEnergyCounter.bSupported;
-			telemetryData.gpuEnergyCounterValue = pPowerTelemetry.gpuEnergyCounter.value.datafloat;
+			prevtimestamp = curtimestamp;
+			curtimestamp = pPowerTelemetry.timeStamp.value.datadouble;
+			deltatimestamp = curtimestamp - prevtimestamp;
 
-			telemetryData.gpuVoltageSupported = pPowerTelemetry.gpuVoltage.bSupported;
-			telemetryData.gpuVoltagValue = pPowerTelemetry.gpuVoltage.value.datafloat;
+			if (pPowerTelemetry.gpuEnergyCounter.bSupported)
+			{
+				telemetryData->gpuEnergySupported = true;
+				prevgpuEnergyCounter = curgpuEnergyCounter;
+				curgpuEnergyCounter = pPowerTelemetry.gpuEnergyCounter.value.datadouble;
 
-			telemetryData.gpuCurrentClockFrequencySupported = pPowerTelemetry.gpuCurrentClockFrequency.bSupported;
-			telemetryData.gpuCurrentClockFrequencyValue = pPowerTelemetry.gpuCurrentClockFrequency.value.datafloat;
+				telemetryData->gpuEnergyValue = (curgpuEnergyCounter - prevgpuEnergyCounter) / deltatimestamp;
+			}
 
-			telemetryData.gpuCurrentTemperatureSupported = pPowerTelemetry.gpuCurrentTemperature.bSupported;
-			telemetryData.gpuCurrentTemperatureValue = pPowerTelemetry.gpuCurrentTemperature.value.datafloat;
+			telemetryData->gpuVoltageSupported = pPowerTelemetry.gpuVoltage.bSupported;
+			telemetryData->gpuVoltagValue = pPowerTelemetry.gpuVoltage.value.datadouble;
 
-			telemetryData.globalActivityCounterSupported = pPowerTelemetry.globalActivityCounter.bSupported;
-			telemetryData.globalActivityCounterValue = pPowerTelemetry.globalActivityCounter.value.datafloat;
+			telemetryData->gpuCurrentClockFrequencySupported = pPowerTelemetry.gpuCurrentClockFrequency.bSupported;
+			telemetryData->gpuCurrentClockFrequencyValue = pPowerTelemetry.gpuCurrentClockFrequency.value.datadouble;
 
-			telemetryData.renderComputeActivityCounterSupported = pPowerTelemetry.renderComputeActivityCounter.bSupported;
-			telemetryData.renderComputeActivityCounterValue = pPowerTelemetry.renderComputeActivityCounter.value.datafloat;
+			telemetryData->gpuCurrentTemperatureSupported = pPowerTelemetry.gpuCurrentTemperature.bSupported;
+			telemetryData->gpuCurrentTemperatureValue = pPowerTelemetry.gpuCurrentTemperature.value.datadouble;
 
-			telemetryData.mediaActivityCounterSupported = pPowerTelemetry.mediaActivityCounter.bSupported;
-			telemetryData.mediaActivityCounterValue = pPowerTelemetry.mediaActivityCounter.value.datafloat;
+			if (pPowerTelemetry.globalActivityCounter.bSupported)
+			{
+				telemetryData->globalActivitySupported = true;
+				prevglobalActivityCounter = curglobalActivityCounter;
+				curglobalActivityCounter = pPowerTelemetry.globalActivityCounter.value.datadouble;
 
-			telemetryData.vramEnergyCounterSupported = pPowerTelemetry.vramEnergyCounter.bSupported;
-			telemetryData.vramEnergyCounterValue = pPowerTelemetry.vramEnergyCounter.value.datafloat;
+				telemetryData->globalActivityValue = 100 * (curglobalActivityCounter - prevglobalActivityCounter) / deltatimestamp;
+			}
 
-			telemetryData.vramVoltageSupported = pPowerTelemetry.vramVoltage.bSupported;
-			telemetryData.vramVoltageValue = pPowerTelemetry.vramVoltage.value.datafloat;
+			if (pPowerTelemetry.renderComputeActivityCounter.bSupported)
+			{
+				telemetryData->renderComputeActivitySupported = true;
+				prevrenderComputeActivityCounter = currenderComputeActivityCounter;
+				currenderComputeActivityCounter = pPowerTelemetry.renderComputeActivityCounter.value.datadouble;
 
-			telemetryData.vramCurrentClockFrequencySupported = pPowerTelemetry.vramCurrentClockFrequency.bSupported;
-			telemetryData.vramCurrentClockFrequencyValue = pPowerTelemetry.vramCurrentClockFrequency.value.datafloat;
+				telemetryData->renderComputeActivityValue = 100 * (currenderComputeActivityCounter - prevrenderComputeActivityCounter) / deltatimestamp;
+			}
 
-			telemetryData.vramReadBandwidthCounterSupported = pPowerTelemetry.vramReadBandwidthCounter.bSupported;
-			telemetryData.vramReadBandwidthCounterValue = pPowerTelemetry.vramReadBandwidthCounter.value.datafloat;
+			if (pPowerTelemetry.mediaActivityCounter.bSupported)
+			{
+				telemetryData->mediaActivitySupported = true;
+				prevmediaActivityCounter = curmediaActivityCounter;
+				curmediaActivityCounter = pPowerTelemetry.mediaActivityCounter.value.datadouble;
 
-			telemetryData.vramWriteBandwidthCounterSupported = pPowerTelemetry.vramWriteBandwidthCounter.bSupported;
-			telemetryData.vramWriteBandwidthCounterValue = pPowerTelemetry.vramWriteBandwidthCounter.value.datafloat;
+				telemetryData->mediaActivityValue = 100 * (curmediaActivityCounter - prevmediaActivityCounter) / deltatimestamp;
+			}
 
-			telemetryData.vramCurrentTemperatureSupported = pPowerTelemetry.vramCurrentTemperature.bSupported;
-			telemetryData.vramCurrentTemperatureValue = pPowerTelemetry.vramCurrentTemperature.value.datafloat;
+			if (pPowerTelemetry.vramEnergyCounter.bSupported)
+			{
+				telemetryData->vramEnergySupported = true;
+				prevvramEnergyCounter = curvramEnergyCounter;
+				curvramEnergyCounter = pPowerTelemetry.vramEnergyCounter.value.datadouble;
 
-			telemetryData.fanSpeedSupported = pPowerTelemetry.fanSpeed[0].bSupported;
-			telemetryData.fanSpeedValue = pPowerTelemetry.fanSpeed[0].value.datafloat;
+				telemetryData->vramEnergyValue = 100 * (curvramEnergyCounter - prevvramEnergyCounter) / deltatimestamp;
+			}
+
+			telemetryData->vramVoltageSupported = pPowerTelemetry.vramVoltage.bSupported;
+			telemetryData->vramVoltageValue = pPowerTelemetry.vramVoltage.value.datadouble;
+
+			telemetryData->vramCurrentClockFrequencySupported = pPowerTelemetry.vramCurrentClockFrequency.bSupported;
+			telemetryData->vramCurrentClockFrequencyValue = pPowerTelemetry.vramCurrentClockFrequency.value.datadouble;
+
+			if (pPowerTelemetry.vramReadBandwidthCounter.bSupported)
+			{
+				telemetryData->vramReadBandwidthSupported = true;
+				prevvramReadBandwidthCounter = curvramReadBandwidthCounter;
+				curvramReadBandwidthCounter = pPowerTelemetry.vramReadBandwidthCounter.value.datadouble;
+
+				telemetryData->vramReadBandwidthValue = (curvramReadBandwidthCounter - prevvramReadBandwidthCounter)/ deltatimestamp;
+			}
+
+			if (pPowerTelemetry.vramWriteBandwidthCounter.bSupported)
+			{
+				telemetryData->vramWriteBandwidthSupported = true;
+				prevvramWriteBandwidthCounter = curvramWriteBandwidthCounter;
+				curvramWriteBandwidthCounter = pPowerTelemetry.vramWriteBandwidthCounter.value.datadouble;
+
+				telemetryData->vramWriteBandwidthValue = (curvramWriteBandwidthCounter - prevvramWriteBandwidthCounter) / deltatimestamp;
+			}
+
+			telemetryData->vramCurrentTemperatureSupported = pPowerTelemetry.vramCurrentTemperature.bSupported;
+			telemetryData->vramCurrentTemperatureValue = pPowerTelemetry.vramCurrentTemperature.value.datadouble;
+
+			telemetryData->fanSpeedSupported = pPowerTelemetry.fanSpeed[0].bSupported;
+			telemetryData->fanSpeedValue = pPowerTelemetry.fanSpeed[0].value.datadouble;
+		}
+		else
+		{
+			check = false;
 		}
 	}
+	else
+	{
+		check = false;
+	}
 
-	return telemetryData;
+	return check;
 }

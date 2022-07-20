@@ -89,6 +89,7 @@ namespace CapFrameX.Sensor
                 case "GPU Power" when hardwareType == HardwareType.GpuNvidia:
                 case "GPU Power Limit" when hardwareType == HardwareType.GpuNvidia:
                 case "GPU Total" when hardwareType == HardwareType.GpuAti:
+                case "GPU TDP" when hardwareType == HardwareType.GpuIntel:
                 case "Used Memory Game" when hardwareType == HardwareType.RAM:
                 case "GPU Memory Dedicated" when sensorType == SensorType.Data:
                     isDefault = true;

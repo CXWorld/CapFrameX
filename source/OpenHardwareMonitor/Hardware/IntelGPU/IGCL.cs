@@ -5,74 +5,73 @@ namespace OpenHardwareMonitor.Hardware.IntelGPU
     [StructLayout(LayoutKind.Sequential)]
     internal struct IgclDeviceInfo
     {
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = IGCL.CTL_MAX_DEVICE_NAME_LEN)]
-        public char[] DeviceName;
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = IGCL.CTL_MAX_DEVICE_NAME_LEN)]
+        public string DeviceName;
         public int AdapterID;
         public uint Pci_vendor_id;
         public uint Pci_device_id;
         public uint Rev_id;
         public ulong DriverVersion;
-        public bool Isvalid;
     }
 
     [StructLayout(LayoutKind.Sequential)]
     internal struct IgclTelemetryData
     {
         // GPU TDP
-        public bool gpuEnergyCounterSupported;
-        public float gpuEnergyCounterValue;
+        public bool gpuEnergySupported;
+        public double gpuEnergyValue;
 
         // GPU Voltage
         public bool gpuVoltageSupported;
-        public float gpuVoltagValue;
+        public double gpuVoltagValue;
 
         // GPU Core Frequency
         public bool gpuCurrentClockFrequencySupported;
-        public float gpuCurrentClockFrequencyValue;
+        public double gpuCurrentClockFrequencyValue;
 
         // GPU Core Temperature
         public bool gpuCurrentTemperatureSupported;
-        public float gpuCurrentTemperatureValue;
+        public double gpuCurrentTemperatureValue;
 
         // GPU Usage
-        public bool globalActivityCounterSupported;
-        public float globalActivityCounterValue;
+        public bool globalActivitySupported;
+        public double globalActivityValue;
 
         // Render Engine Usage
-        public bool renderComputeActivityCounterSupported;
-        public float renderComputeActivityCounterValue;
+        public bool renderComputeActivitySupported;
+        public double renderComputeActivityValue;
 
         // Media Engine Usage
-        public bool mediaActivityCounterSupported;
-        public float mediaActivityCounterValue;
+        public bool mediaActivitySupported;
+        public double mediaActivityValue;
 
         // VRAM Power Consumption
-        public bool vramEnergyCounterSupported;
-        public float vramEnergyCounterValue;
+        public bool vramEnergySupported;
+        public double vramEnergyValue;
 
         // VRAM Voltage
         public bool vramVoltageSupported;
-        public float vramVoltageValue;
+        public double vramVoltageValue;
 
         // VRAM Frequency
         public bool vramCurrentClockFrequencySupported;
-        public float vramCurrentClockFrequencyValue;
+        public double vramCurrentClockFrequencyValue;
 
         // VRAM Read Bandwidth
-        public bool vramReadBandwidthCounterSupported;
-        public float vramReadBandwidthCounterValue;
+        public bool vramReadBandwidthSupported;
+        public double vramReadBandwidthValue;
 
         // VRAM Write Bandwidth
-        public bool vramWriteBandwidthCounterSupported;
-        public float vramWriteBandwidthCounterValue;
+        public bool vramWriteBandwidthSupported;
+        public double vramWriteBandwidthValue;
 
         // VRAM Temperature
         public bool vramCurrentTemperatureSupported;
-        public float vramCurrentTemperatureValue;
+        public double vramCurrentTemperatureValue;
 
         // Fanspeed (n Fans)
         public bool fanSpeedSupported;
-        public float fanSpeedValue;
+        public double fanSpeedValue;
     }
 
     internal class IGCL
@@ -103,9 +102,9 @@ namespace OpenHardwareMonitor.Hardware.IntelGPU
         public static extern uint GetAdpaterCount();
 
         [DllImport("CapFrameX.IGCL.dll")]
-        public static extern IgclDeviceInfo GetDeviceInfo(uint index);
+        public static extern bool GetDeviceInfo(uint index, ref IgclDeviceInfo igclDeviceInfo);
 
         [DllImport("CapFrameX.IGCL.dll")]
-        public static extern IgclTelemetryData GetIgclTelemetryData(uint index);
+        public static extern bool GetIgclTelemetryData(uint index, ref IgclTelemetryData igclTelemetryData);
     }
 }

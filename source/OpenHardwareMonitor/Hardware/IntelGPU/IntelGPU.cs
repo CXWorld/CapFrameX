@@ -59,7 +59,7 @@ namespace OpenHardwareMonitor.Hardware.IntelGPU
             this.voltageVram = new Sensor("GPU Memory", 1, SensorType.Voltage, this, settings);
 
             this.usageCore = new Sensor("GPU Core", 0, SensorType.Load, this, settings);
-            this.usageRenderEngine = new Sensor("GPU Render Engine", 1, SensorType.Load, this, settings);
+            this.usageRenderEngine = new Sensor("GPU Computing", 1, SensorType.Load, this, settings);
             this.usageMediaEngine = new Sensor("GPU Media Engine", 2, SensorType.Load, this, settings);
 
             this.memoryUsageDedicated = new Sensor("GPU Memory Dedicated", 0, SensorType.Data, this, settings);
@@ -82,12 +82,17 @@ namespace OpenHardwareMonitor.Hardware.IntelGPU
         public override void Update()
         {
             // get telemetry data from IGCL
-            IgclTelemetryData igclTelemetryData = IGCL.GetIgclTelemetryData((uint)adapterIndex);
+            var igclTelemetryData = new IgclTelemetryData();
+            try
+            {
+                IGCL.GetIgclTelemetryData((uint)adapterIndex, ref igclTelemetryData);
+            }
+            catch { return; }
 
             // GPU Core Temperature
             if (igclTelemetryData.gpuCurrentTemperatureSupported)
             {
-                temperatureCore.Value = igclTelemetryData.gpuCurrentTemperatureValue;
+                temperatureCore.Value = (float)igclTelemetryData.gpuCurrentTemperatureValue;
                 ActivateSensor(temperatureCore);
             }
             else
@@ -98,7 +103,7 @@ namespace OpenHardwareMonitor.Hardware.IntelGPU
             // VRAM Temperature
             if (igclTelemetryData.vramCurrentTemperatureSupported)
             {
-                temperatureMemory.Value = igclTelemetryData.vramCurrentTemperatureValue;
+                temperatureMemory.Value = (float)igclTelemetryData.vramCurrentTemperatureValue;
                 ActivateSensor(temperatureMemory);
             }
             else
@@ -107,9 +112,9 @@ namespace OpenHardwareMonitor.Hardware.IntelGPU
             }
 
             // GPU Core Temperature
-            if (igclTelemetryData.gpuEnergyCounterSupported)
+            if (igclTelemetryData.gpuEnergySupported)
             {
-                powerTdp.Value = igclTelemetryData.gpuEnergyCounterValue;
+                powerTdp.Value = (float)igclTelemetryData.gpuEnergyValue;
                 ActivateSensor(powerTdp);
             }
             else
@@ -118,9 +123,9 @@ namespace OpenHardwareMonitor.Hardware.IntelGPU
             }
 
             // VRAM Temperature
-            if (igclTelemetryData.vramEnergyCounterSupported)
+            if (igclTelemetryData.vramEnergySupported)
             {
-                powerVram.Value = igclTelemetryData.vramEnergyCounterValue;
+                powerVram.Value = (float)igclTelemetryData.vramEnergyValue;
                 ActivateSensor(powerVram);
             }
             else
@@ -131,7 +136,7 @@ namespace OpenHardwareMonitor.Hardware.IntelGPU
             // GPU Core Frequency
             if (igclTelemetryData.gpuCurrentClockFrequencySupported)
             {
-                clockCore.Value = igclTelemetryData.gpuCurrentClockFrequencyValue;
+                clockCore.Value = (float)igclTelemetryData.gpuCurrentClockFrequencyValue;
                 ActivateSensor(clockCore);
             }
             else
@@ -142,7 +147,7 @@ namespace OpenHardwareMonitor.Hardware.IntelGPU
             // VRAM Frequency
             if (igclTelemetryData.vramCurrentClockFrequencySupported)
             {
-                clockVram.Value = igclTelemetryData.vramCurrentClockFrequencyValue;
+                clockVram.Value = 2f * (float)igclTelemetryData.vramCurrentClockFrequencyValue;
                 ActivateSensor(clockVram);
             }
             else
@@ -153,7 +158,7 @@ namespace OpenHardwareMonitor.Hardware.IntelGPU
             // GPU Core Frequency
             if (igclTelemetryData.gpuVoltageSupported)
             {
-                voltageCore.Value = igclTelemetryData.gpuVoltagValue;
+                voltageCore.Value = (float)igclTelemetryData.gpuVoltagValue;
                 ActivateSensor(voltageCore);
             }
             else
@@ -164,7 +169,7 @@ namespace OpenHardwareMonitor.Hardware.IntelGPU
             // VRAM Voltage
             if (igclTelemetryData.vramVoltageSupported)
             {
-                voltageVram.Value = igclTelemetryData.vramVoltageValue;
+                voltageVram.Value = (float)igclTelemetryData.vramVoltageValue;
                 ActivateSensor(voltageVram);
             }
             else
@@ -173,9 +178,9 @@ namespace OpenHardwareMonitor.Hardware.IntelGPU
             }
 
             // GPU Usage
-            if (igclTelemetryData.globalActivityCounterSupported)
+            if (igclTelemetryData.globalActivitySupported)
             {
-                usageCore.Value = igclTelemetryData.globalActivityCounterValue;
+                usageCore.Value = (float)igclTelemetryData.globalActivityValue;
                 ActivateSensor(usageCore);
             }
             else
@@ -184,9 +189,9 @@ namespace OpenHardwareMonitor.Hardware.IntelGPU
             }
 
             // Render Engine Usage
-            if (igclTelemetryData.renderComputeActivityCounterSupported)
+            if (igclTelemetryData.renderComputeActivitySupported)
             {
-                usageRenderEngine.Value = igclTelemetryData.renderComputeActivityCounterValue;
+                usageRenderEngine.Value = (float)igclTelemetryData.renderComputeActivityValue;
                 ActivateSensor(usageRenderEngine);
             }
             else
@@ -195,9 +200,9 @@ namespace OpenHardwareMonitor.Hardware.IntelGPU
             }
 
             // Media Engine Usage
-            if (igclTelemetryData.mediaActivityCounterSupported)
+            if (igclTelemetryData.mediaActivitySupported)
             {
-                usageMediaEngine.Value = igclTelemetryData.mediaActivityCounterValue;
+                usageMediaEngine.Value = (float)igclTelemetryData.mediaActivityValue;
                 ActivateSensor(usageMediaEngine);
             }
             else
@@ -206,9 +211,9 @@ namespace OpenHardwareMonitor.Hardware.IntelGPU
             }
 
             // VRAM Read Bandwidth
-            if (igclTelemetryData.vramReadBandwidthCounterSupported)
+            if (igclTelemetryData.vramReadBandwidthSupported)
             {
-                bandwidthReadVram.Value = igclTelemetryData.vramReadBandwidthCounterValue;
+                bandwidthReadVram.Value = (float)igclTelemetryData.vramReadBandwidthValue;
                 ActivateSensor(bandwidthReadVram);
             }
             else
@@ -217,9 +222,9 @@ namespace OpenHardwareMonitor.Hardware.IntelGPU
             }
 
             // VRAM Write Bandwidth
-            if (igclTelemetryData.vramWriteBandwidthCounterSupported)
+            if (igclTelemetryData.vramWriteBandwidthSupported)
             {
-                bandwidthWriteVram.Value = igclTelemetryData.vramWriteBandwidthCounterValue;
+                bandwidthWriteVram.Value = (float)igclTelemetryData.vramWriteBandwidthValue;
                 ActivateSensor(bandwidthWriteVram);
             }
             else
@@ -231,7 +236,7 @@ namespace OpenHardwareMonitor.Hardware.IntelGPU
             // Fanspeed (n Fans)
             if (igclTelemetryData.fanSpeedSupported)
             {
-                speedFan.Value = igclTelemetryData.fanSpeedValue;
+                speedFan.Value = (float)igclTelemetryData.fanSpeedValue;
                 ActivateSensor(speedFan);
             }
             else

@@ -333,7 +333,8 @@ namespace CapFrameX.Sensor
             {
                 gpu = _computer?.Hardware
                .FirstOrDefault(hdw => hdw.HardwareType == HardwareType.GpuAti
-                   || hdw.HardwareType == HardwareType.GpuNvidia);
+                   || hdw.HardwareType == HardwareType.GpuNvidia
+                   || hdw.HardwareType == HardwareType.GpuIntel);
             }
 
             return gpu != null ? gpu.GetDriverVersion() : "Unknown";
@@ -358,7 +359,8 @@ namespace CapFrameX.Sensor
             {
                 gpu = _computer?.Hardware
                    .FirstOrDefault(hdw => hdw.HardwareType == HardwareType.GpuAti
-                       || hdw.HardwareType == HardwareType.GpuNvidia);
+                       || hdw.HardwareType == HardwareType.GpuNvidia
+                       || hdw.HardwareType == HardwareType.GpuIntel);
             }
 
             return gpu != null ? gpu.Name : "Unknown";
