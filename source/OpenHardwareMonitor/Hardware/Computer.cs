@@ -104,6 +104,7 @@ namespace OpenHardwareMonitor.Hardware
             {
                 Add(new ATI.ATIGroup(settings, sensorConfig, processService));
                 Add(new Nvidia.NvidiaGroup(settings, sensorConfig, processService));
+                Add(new IntelGPU.IntelGroup(settings, sensorConfig, processService));
             }
 
             if (fanControllerEnabled)
@@ -185,11 +186,13 @@ namespace OpenHardwareMonitor.Hardware
                     {
                         Add(new ATI.ATIGroup(settings, sensorConfig, processService));
                         Add(new Nvidia.NvidiaGroup(settings, sensorConfig, processService));
+                        Add(new IntelGPU.IntelGroup(settings, sensorConfig, processService));
                     }
                     else
                     {
                         RemoveType<ATI.ATIGroup>();
                         RemoveType<Nvidia.NvidiaGroup>();
+                        RemoveType<IntelGPU.IntelGroup>();
                     }
                 }
                 gpuEnabled = value;

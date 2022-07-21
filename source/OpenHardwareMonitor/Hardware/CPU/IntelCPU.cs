@@ -255,8 +255,8 @@ namespace OpenHardwareMonitor.Hardware.CPU
                                 microarchitecture = Microarchitecture.RocketLake;
                                 tjMax = GetTjMaxFromMSR();
                                 break;
-                            case 0x97: // Alder Lake (Intel 7/10nm)
-                            case 0x9A:
+                            case 0x97: // Alder Lake-S (Intel 7/10nm)
+                            case 0x9A: // Alder Lake-H (Intel 7/10nm)
                                 microarchitecture = Microarchitecture.AlderLake;
                                 tjMax = GetTjMaxFromMSR();
                                 break;

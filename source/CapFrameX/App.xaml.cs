@@ -151,10 +151,10 @@ namespace CapFrameX
             var rtssService = _bootstrapper.Container.Resolve(typeof(IRTSSService), true) as IRTSSService;
             rtssService.ClearOSD();
 
-            _webServer.Dispose();
+            _webServer?.Dispose();
         }
 
-        private void Application_Startup(object sender, StartupEventArgs e)
+        private void ApplicationStartup(object sender, StartupEventArgs e)
         {
             if (!IsAdministrator)
             {

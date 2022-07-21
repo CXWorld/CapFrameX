@@ -20,6 +20,7 @@ namespace OpenHardwareMonitor.Hardware
         RAM,
         GpuNvidia,
         GpuAti,
+        GpuIntel,
         TBalancer,
         Heatmaster,
         HDD

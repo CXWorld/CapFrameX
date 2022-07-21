@@ -34,9 +34,11 @@ namespace CapFrameX.View
 
             rowAWidthTracker.Tracker.Track(UpperRow);
             rowBWidthTracker.Tracker.Track(LowerRow);
+            
+            // L-shape chart y axis formatter
+            Func<double, string> formatFunc = (x) => string.Format("{0:0.0}", x);
+            LShapeY.LabelFormatter = formatFunc;
         }
-
-
 
         private void Chart_OnDataClick(object sender, ChartPoint chartpoint)
         {

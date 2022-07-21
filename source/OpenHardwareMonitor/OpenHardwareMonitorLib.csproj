@@ -167,6 +167,9 @@
     <Compile Include="Hardware\HDD\SSDSamsung.cs" />
     <Compile Include="Hardware\HDD\SSDSandforce.cs" />
     <Compile Include="Hardware\IControl.cs" />
+    <Compile Include="Hardware\IntelGPU\IGCL.cs" />
+    <Compile Include="Hardware\IntelGPU\IntelGPU.cs" />
+    <Compile Include="Hardware\IntelGPU\IntelGroup.cs" />
     <Compile Include="Hardware\IOControlCode.cs" />
     <Compile Include="Hardware\Computer.cs" />
     <Compile Include="Hardware\CPU\AMDCPU.cs" />
@@ -234,6 +237,7 @@
     <Compile Include="InpOut.cs" />
     <Compile Include="Interop\InpOut.cs" />
     <Compile Include="Interop\Kernel32.cs" />
+    <Compile Include="Interop\NtDll.cs" />
     <Compile Include="Properties\AssemblyLibInfo.cs" />
     <Compile Include="Properties\AssemblyVersion.cs" />
     <Compile Include="Hardware\ThreadAffinity.cs" />
@@ -275,6 +279,7 @@
     <EmbeddedResource Include="Hardware\inpout32.dll" />
     <EmbeddedResource Include="Hardware\inpoutx64.dll" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

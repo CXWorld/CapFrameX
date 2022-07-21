@@ -1,12 +1,8 @@
-﻿/*
- 
-  This Source Code Form is subject to the terms of the Mozilla Public
-  License, v. 2.0. If a copy of the MPL was not distributed with this
-  file, You can obtain one at http://mozilla.org/MPL/2.0/.
- 
-  Copyright (C) 2009-2011 Michael Möller <mmoeller@openhardwaremonitor.org>
-	
-*/
+﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+// If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// Copyright (C) LibreHardwareMonitor and Contributors.
+// Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
+// All Rights Reserved.
 
 using System;
 using System.Runtime.InteropServices;
@@ -15,61 +11,46 @@ namespace OpenHardwareMonitor.Hardware.CPU
 {
     internal class CPULoad
     {
-        [StructLayout(LayoutKind.Sequential)]
-        protected struct SystemProcessorPerformanceInformation
-        {
-            public long IdleTime;
-            public long KernelTime;
-            public long UserTime;
-            public long Reserved0;
-            public long Reserved1;
-            public ulong Reserved2;
-        }
-
-        protected enum SystemInformationClass
-        {
-            SystemBasicInformation = 0,
-            SystemCpuInformation = 1,
-            SystemPerformanceInformation = 2,
-            SystemTimeOfDayInformation = 3,
-            SystemProcessInformation = 5,
-            SystemProcessorPerformanceInformation = 8
-        }
-
         private readonly CPUID[][] cpuid;
 
         private long[] idleTimes;
         private long[] totalTimes;
 
         private float totalLoad;
-        private readonly float[] coreLoads;
+        private readonly float[] threadLoads;
         private float maxLoad;
 
         private static bool GetTimes(out long[] idle, out long[] total)
         {
-            SystemProcessorPerformanceInformation[] informations = new
-              SystemProcessorPerformanceInformation[128];
-
-            int size = Marshal.SizeOf(typeof(SystemProcessorPerformanceInformation));
-
             idle = null;
             total = null;
 
-            if (NativeMethods.NtQuerySystemInformation(
-              SystemInformationClass.SystemProcessorPerformanceInformation,
-              informations, informations.Length * size, out IntPtr returnLength) != 0)
+            //Query processor idle information
+            Interop.NtDll.SYSTEM_PROCESSOR_IDLE_INFORMATION[] idleInformation = new Interop.NtDll.SYSTEM_PROCESSOR_IDLE_INFORMATION[64];
+            int idleSize = Marshal.SizeOf(typeof(Interop.NtDll.SYSTEM_PROCESSOR_IDLE_INFORMATION));
+            if (Interop.NtDll.NtQuerySystemInformation(Interop.NtDll.SYSTEM_INFORMATION_CLASS.SystemProcessorIdleInformation, idleInformation, idleInformation.Length * idleSize, out int idleReturn) != 0)
+            {
                 return false;
+            }
 
-            idle = new long[(int)returnLength / size];
-            total = new long[(int)returnLength / size];
+            //Query processor performance information
+            Interop.NtDll.SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION[] perfInformation = new Interop.NtDll.SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION[64];
+            int perfSize = Marshal.SizeOf(typeof(Interop.NtDll.SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION));
+            if (Interop.NtDll.NtQuerySystemInformation(Interop.NtDll.SYSTEM_INFORMATION_CLASS.SystemProcessorPerformanceInformation, perfInformation, perfInformation.Length * perfSize, out int perfReturn) != 0)
+            {
+                return false;
+            }
 
+            idle = new long[idleReturn / idleSize];
             for (int i = 0; i < idle.Length; i++)
             {
-                if (i < informations.Length)
-                {
-                    idle[i] = informations[i].IdleTime;
-                    total[i] = informations[i].KernelTime + informations[i].UserTime;
-                }
+                idle[i] = idleInformation[i].IdleTime;
+            }
+
+            total = new long[perfReturn / perfSize];
+            for (int i = 0; i < total.Length; i++)
+            {
+                total[i] = perfInformation[i].KernelTime + perfInformation[i].UserTime;
             }
 
             return true;
@@ -78,7 +59,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
         public CPULoad(CPUID[][] cpuid)
         {
             this.cpuid = cpuid;
-            this.coreLoads = new float[cpuid.Length * cpuid[0].Length];
+            this.threadLoads = new float[cpuid.Length * cpuid[0].Length];
             this.totalLoad = 0;
             try
             {
@@ -105,9 +86,9 @@ namespace OpenHardwareMonitor.Hardware.CPU
             return totalLoad;
         }
 
-        public float GetCoreLoad(int core)
+        public float GetThreadLoad(int thread)
         {
-            return coreLoads[core];
+            return threadLoads[thread];
         }
 
         public void Update()
@@ -115,18 +96,15 @@ namespace OpenHardwareMonitor.Hardware.CPU
             if (this.idleTimes == null)
                 return;
 
-            long[] newIdleTimes;
-            long[] newTotalTimes;
+            if (!GetTimes(out long[] newIdleTimes, out long[] newTotalTimes))
+                return;
 
-            if (!GetTimes(out newIdleTimes, out newTotalTimes))
+            if (newIdleTimes == null || newTotalTimes == null)
                 return;
 
             for (int i = 0; i < Math.Min(newTotalTimes.Length, totalTimes.Length); i++)
                 if (newTotalTimes[i] - this.totalTimes[i] < 100000)
                     return;
-
-            if (newIdleTimes == null || newTotalTimes == null)
-                return;
 
             float total = 0;
             this.maxLoad = 0;
@@ -152,10 +130,10 @@ namespace OpenHardwareMonitor.Hardware.CPU
                     }
                     value = 1.0f - value;
                     value = value < 0 ? 0 : value;
-                    coreLoads[index] = value * 100;
+                    threadLoads[index] = value * 100;
 
-                    if (coreLoads[index] > this.maxLoad)
-                        this.maxLoad = coreLoads[index];
+                    if (threadLoads[index] > this.maxLoad)
+                        this.maxLoad = threadLoads[index];
                 }
             }
 
@@ -168,19 +146,10 @@ namespace OpenHardwareMonitor.Hardware.CPU
             {
                 total = 0;
             }
-            this.totalLoad = total * 100;
 
+            this.totalLoad = total * 100;
             this.totalTimes = newTotalTimes;
             this.idleTimes = newIdleTimes;
-        }
-
-        protected static class NativeMethods
-        {
-            [DllImport("ntdll.dll")]
-            public static extern int NtQuerySystemInformation(
-              SystemInformationClass informationClass,
-              [Out] SystemProcessorPerformanceInformation[] informations,
-              int structSize, out IntPtr returnLength);
         }
     }
 }

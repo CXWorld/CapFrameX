@@ -12,7 +12,6 @@ using CapFrameX.Monitoring.Contracts;
 using Microsoft.Win32;
 using System;
 using System.Globalization;
-using System.Text;
 
 namespace OpenHardwareMonitor.Hardware.ATI
 {
@@ -115,11 +114,11 @@ namespace OpenHardwareMonitor.Hardware.ATI
 
             this.controlSensor = new Sensor("GPU Fan", 0, SensorType.Control, this, settings);
 
-            this.memoryUsed = new Sensor("GPU Memory Used", 4, SensorType.Data, this, settings);
             this.memoryUsageDedicated = new Sensor("GPU Memory Dedicated", 0, SensorType.Data, this, settings);
             this.memoryUsageShared = new Sensor("GPU Memory Shared", 1, SensorType.Data, this, settings);
             this.processMemoryUsageDedicated = new Sensor("GPU Memory Dedicated Game", 2, SensorType.Data, this, settings);
             this.processMemoryUsageShared = new Sensor("GPU Memory Shared Game", 3, SensorType.Data, this, settings);
+            this.memoryUsed = new Sensor("GPU Memory Used", 4, SensorType.Data, this, settings);
 
             ADLFanSpeedInfo afsi = new ADLFanSpeedInfo();
             if (ADL.ADL_Overdrive5_FanSpeedInfo_Get(adapterIndex, 0, ref afsi)
@@ -218,111 +217,6 @@ namespace OpenHardwareMonitor.Hardware.ATI
             {
                 sensor.Value = null;
             }
-        }
-
-        public override string GetReport()
-        {
-            var r = new StringBuilder();
-
-            r.AppendLine("AMD GPU");
-            r.AppendLine();
-
-            r.Append("AdapterIndex: ");
-            r.AppendLine(adapterIndex.ToString(CultureInfo.InvariantCulture));
-            r.AppendLine();
-
-            r.AppendLine("ADL Overdrive");
-            r.AppendLine();
-            int status = ADL.ADL_Overdrive_Caps(adapterIndex,
-              out int supported, out int enabled, out int version);
-
-            r.Append(" Status: ");
-            r.AppendLine(status == ADL.ADL_OK ? "OK" :
-                status.ToString(CultureInfo.InvariantCulture));
-            r.Append(" Supported: ");
-            r.AppendLine(supported.ToString(CultureInfo.InvariantCulture));
-            r.Append(" Enabled: ");
-            r.AppendLine(enabled.ToString(CultureInfo.InvariantCulture));
-            r.Append(" Version: ");
-            r.AppendLine(version.ToString(CultureInfo.InvariantCulture));
-            r.AppendLine();
-
-            if (context != IntPtr.Zero && overdriveVersion >= 6)
-            {
-                r.AppendLine("Overdrive6 CurrentPower:");
-                r.AppendLine();
-                for (int i = 0; i < 4; i++)
-                {
-                    var pt = ((ADLODNCurrentPowerType)i).ToString();
-                    var ps = ADL.ADL2_Overdrive6_CurrentPower_Get(
-                      context, adapterIndex, (ADLODNCurrentPowerType)i,
-                      out int power);
-                    if (ps == ADL.ADL_OK)
-                    {
-                        r.AppendFormat(" Power[{0}].Value: {1}{2}", pt,
-                          power * (1.0f / 0xFF), Environment.NewLine);
-                    }
-                    else
-                    {
-                        r.AppendFormat(" Power[{0}].Status: {1}{2}", pt,
-                          ps, Environment.NewLine);
-                    }
-                }
-                r.AppendLine();
-            }
-
-            if (context != IntPtr.Zero && overdriveVersion >= 7)
-            {
-                r.AppendLine("OverdriveN Temperature:");
-                r.AppendLine();
-                for (int i = 1; i < 8; i++)
-                {
-                    var tt = ((ADLODNTemperatureType)i).ToString();
-                    var ts = ADL.ADL2_OverdriveN_Temperature_Get(
-                      context, adapterIndex, (ADLODNTemperatureType)i,
-                      out int temperature);
-                    if (ts == ADL.ADL_OK)
-                    {
-                        r.AppendFormat(" Temperature[{0}].Value: {1}{2}", tt,
-                          0.001f * temperature, Environment.NewLine);
-                    }
-                    else
-                    {
-                        r.AppendFormat(" Temperature[{0}].Status: {1}{2}", tt,
-                          ts, Environment.NewLine);
-                    }
-                }
-                r.AppendLine();
-            }
-
-            if (context != IntPtr.Zero && overdriveVersion >= 8)
-            {
-                r.AppendLine("Performance Metrics:");
-                r.AppendLine();
-                var ps = ADL.ADL2_New_QueryPMLogData_Get(context, adapterIndex,
-                  out var data);
-
-                if (ps == ADL.ADL_OK)
-                {
-                    for (int i = 0; i < data.Sensors.Length; i++)
-                    {
-                        if (data.Sensors[i].Supported)
-                        {
-                            var st = ((ADLSensorType)i).ToString();
-                            r.AppendFormat(" Sensor[{0}].Value: {1}{2}", st,
-                              data.Sensors[i].Value, Environment.NewLine);
-                        }
-                    }
-                }
-                else
-                {
-                    r.Append(" Status: ");
-                    r.AppendLine(ps.ToString(CultureInfo.InvariantCulture));
-                }
-                r.AppendLine();
-            }
-
-            return r.ToString();
         }
 
         private void GetPMLog(ADLPMLogDataOutput data,

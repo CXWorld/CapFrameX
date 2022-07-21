@@ -24,6 +24,10 @@ namespace CapFrameX.View
 				.ObserveOn(context)
 				.SubscribeOn(context)
 				.Subscribe(x => ResetLShapeChart());
+				
+			// L-shape chart y axis formatter
+			Func<double, string> formatFunc = (x) => string.Format("{0:0.0}", x);
+			LShapeY.LabelFormatter = formatFunc;
 		}
 
 		private void ResetLShapeChart_MouseDoubleClick(object sender, MouseButtonEventArgs e)

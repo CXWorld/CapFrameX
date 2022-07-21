@@ -724,6 +724,9 @@ namespace CapFrameX.Overlay
                 case HardwareType.GpuAti:
                     type = EOverlayEntryType.GPU;
                     break;
+                case HardwareType.GpuIntel:
+                    type = EOverlayEntryType.GPU;
+                    break;
                 case HardwareType.TBalancer:
                     type = EOverlayEntryType.Undefined;
                     break;

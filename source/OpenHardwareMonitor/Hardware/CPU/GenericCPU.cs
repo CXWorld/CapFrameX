@@ -9,13 +9,10 @@
 */
 
 using Serilog;
-using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
 
 namespace OpenHardwareMonitor.Hardware.CPU
 {
@@ -42,13 +39,13 @@ namespace OpenHardwareMonitor.Hardware.CPU
         private readonly CPULoad cpuLoad;
         private readonly Sensor totalLoad;
         private readonly Sensor maxLoad;
-        private readonly Sensor[] coreLoads;
+        private readonly Sensor[] threadLoads;
 
         private const uint CPUID_CORE_MASK_STATUS = 0x1A;
 
         private bool IsBigLittleDesign()
         {
-            // Alder Lake (Intel 7/ 10nm): 0x97, 0x9A
+            // Alder Lake (Intel 7/10nm): 0x97, 0x9A
             // Raptor Lake (Intel 7/10nm): 0xB7
             // Zen 5 (3nm)?
             return vendor == Vendor.Intel && family == 0x06 && (model == 0x97 || model == 0x9A || model == 0xB7);
@@ -61,7 +58,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
                 return $"CPU Core{GetCoreLabel(i)}";
             }
 
-            return "CPU Core #" + (i + 1) + GetCoreLabel(i);
+            return $"CPU Core #{i + 1}{GetCoreLabel(i)}";
         }
 
         // https://github.com/InstLatx64/InstLatX64_Demo/commit/e149a972655aff9c41f3eac66ad51fcfac1262b5
@@ -158,16 +155,16 @@ namespace OpenHardwareMonitor.Hardware.CPU
                 totalLoad = new Sensor("CPU Total", 0, SensorType.Load, this, settings);
             else
                 totalLoad = null;
-            coreLoads = new Sensor[threadCountMap.Values.Sum()];
-            for (int i = 0; i < coreLoads.Length; i++)
-                coreLoads[i] = new Sensor(BuildCoreThreadString(i), i + 1,
+            threadLoads = new Sensor[threadCountMap.Values.Sum()];
+            for (int i = 0; i < threadLoads.Length; i++)
+                threadLoads[i] = new Sensor(BuildCoreThreadString(i), i + 1,
                   SensorType.Load, this, settings);
-            maxLoad = new Sensor("CPU Max", coreLoads.Length + 1, SensorType.Load, this, settings);
+            maxLoad = new Sensor("CPU Max", threadLoads.Length + 1, SensorType.Load, this, settings);
             cpuLoad = new CPULoad(cpuid);
 
             if (cpuLoad.IsAvailable)
             {
-                foreach (Sensor sensor in coreLoads)
+                foreach (Sensor sensor in threadLoads)
                     ActivateSensor(sensor);
                 if (totalLoad != null)
                     ActivateSensor(totalLoad);
@@ -239,79 +236,9 @@ namespace OpenHardwareMonitor.Hardware.CPU
             error = 0;
         }
 
-        private static void AppendMSRData(StringBuilder r, uint msr, GroupAffinity affinity)
-        {
-            if (Ring0.RdmsrTx(msr, out uint eax, out uint edx, affinity))
-            {
-                r.Append(" ");
-                r.Append((msr).ToString("X8", CultureInfo.InvariantCulture));
-                r.Append("  ");
-                r.Append((edx).ToString("X8", CultureInfo.InvariantCulture));
-                r.Append("  ");
-                r.Append((eax).ToString("X8", CultureInfo.InvariantCulture));
-                r.AppendLine();
-            }
-        }
+        protected virtual uint[] GetMSRs() => null;
 
-        protected virtual uint[] GetMSRs()
-        {
-            return null;
-        }
-
-        public override string GetReport()
-        {
-            StringBuilder r = new StringBuilder();
-
-            switch (vendor)
-            {
-                case Vendor.AMD: r.AppendLine("AMD CPU"); break;
-                case Vendor.Intel: r.AppendLine("Intel CPU"); break;
-                default: r.AppendLine("Generic CPU"); break;
-            }
-
-            r.AppendLine();
-            r.AppendFormat("Name: {0}{1}", name, Environment.NewLine);
-            r.AppendFormat("Number of Cores: {0}{1}", coreCount,
-              Environment.NewLine);
-            r.AppendFormat("Threads per Core: {0}{1}", cpuid[0].Length,
-              Environment.NewLine);
-            r.AppendLine(string.Format(CultureInfo.InvariantCulture,
-              "Timer Frequency: {0} MHz", Stopwatch.Frequency * 1e-6));
-            r.AppendLine("Time Stamp Counter: " + (HasTimeStampCounter ? (
-              isInvariantTimeStampCounter ? "Invariant" : "Not Invariant") : "None"));
-            r.AppendLine(string.Format(CultureInfo.InvariantCulture,
-              "Estimated Time Stamp Counter Frequency: {0} MHz",
-              Math.Round(estimatedTimeStampCounterFrequency * 100) * 0.01));
-            r.AppendLine(string.Format(CultureInfo.InvariantCulture,
-              "Estimated Time Stamp Counter Frequency Error: {0} Mhz",
-              Math.Round(estimatedTimeStampCounterFrequency *
-              estimatedTimeStampCounterFrequencyError * 1e5) * 1e-5));
-            r.AppendLine(string.Format(CultureInfo.InvariantCulture,
-              "Time Stamp Counter Frequency: {0} MHz",
-              Math.Round(TimeStampCounterFrequency * 100) * 0.01));
-            r.AppendLine();
-
-            uint[] msrArray = GetMSRs();
-            if (msrArray != null && msrArray.Length > 0)
-            {
-                for (int i = 0; i < cpuid.Length; i++)
-                {
-                    r.AppendLine("MSR Core #" + (i + 1));
-                    r.AppendLine();
-                    r.AppendLine(" MSR       EDX       EAX");
-                    foreach (uint msr in msrArray)
-                        AppendMSRData(r, msr, cpuid[i][0].Affinity);
-                    r.AppendLine();
-                }
-            }
-
-            return r.ToString();
-        }
-
-        public override HardwareType HardwareType
-        {
-            get { return HardwareType.CPU; }
-        }
+        public override HardwareType HardwareType => HardwareType.CPU;
 
         public bool HasModelSpecificRegisters { get; }
 
@@ -326,8 +253,8 @@ namespace OpenHardwareMonitor.Hardware.CPU
             if (cpuLoad.IsAvailable)
             {
                 cpuLoad.Update();
-                for (int i = 0; i < coreLoads.Length; i++)
-                    coreLoads[i].Value = cpuLoad.GetCoreLoad(i);
+                for (int i = 0; i < threadLoads.Length; i++)
+                    threadLoads[i].Value = cpuLoad.GetThreadLoad(i);
                 if (totalLoad != null)
                     totalLoad.Value = cpuLoad.GetTotalLoad();
                 if (maxLoad != null)

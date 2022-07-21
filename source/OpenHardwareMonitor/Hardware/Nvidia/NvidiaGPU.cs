@@ -1038,6 +1038,7 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
                 if (this.fanControl.ControlMode != ControlMode.Undefined)
                     SetDefaultFanSpeed();
             }
+
             base.Close();
         }
 

@@ -18,7 +18,6 @@
             <Component Id="cmpFCC1F35455D5814F6F5D83CFB2CBB5EA" Guid="*" Win64="yes">
                 <File Id="filBF5E6522ABF9B07B4C721A3F08328663" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.Capture.Contracts.dll" />
             </Component>
-            
             <Component Id="cmp367B18F442C629D69A743133694E4034" Guid="*" Win64="yes">
                 <File Id="fil6E3A974E04E9C60370B37DB0E6CC632C" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.Capture.Contracts.pdb" />
             </Component>
@@ -85,6 +84,9 @@
             <Component Id="cmp58A6D9654BB2BC6D1688D3E3B41884A9" Guid="*" Win64="yes">
                 <File Id="fil722BF3ED7108CA65E0196ECD23702B49" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.Hwinfo.dll" />
             </Component>
+            <Component Id="cmp46ECDD0C7AD9D4FBBE09ADEECDCCFDB7" Guid="*" Win64="yes">
+                <File Id="fil85C3B6DBB9E77A4332828A454895E1E1" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.IGCL.dll" />
+            </Component>
             <Component Id="cmp085F019DCFA91EA3CC69ED65224795C3" Guid="*" Win64="yes">
                 <File Id="fil956FF70D2C501EA324FFEF51A7CF20B8" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.Monitoring.Contracts.dll" />
             </Component>
@@ -108,6 +110,13 @@
             </Component>
             <Component Id="cmpD6952B19607ADA3C10FB639F21E3B84B" Guid="*" Win64="yes">
                 <File Id="filE5A830341BEE36630CD73D17C7D87C23" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.pdb" />
+            </Component>
+            <Component Id="cmp82F7A2CA79FB4945DE735525DEA43440" Guid="*" Win64="yes">
+                <File Id="fil61F1AF4F965762967E4DC7203AE4BC52" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.PMD.dll" />
+            </Component>
+            
+            <Component Id="cmp14B77B6AF67D6C1BCC87252B412622A0" Guid="*" Win64="yes">
+                <File Id="fil59146B7CD38A713A22C17DCC307CFF1F" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.PMD.pdb" />
             </Component>
             <Component Id="cmpDAC9A06508E623C2AE90DDABDC991D5D" Guid="*" Win64="yes">
                 <File Id="fil2C243491DA37F20C87730E667020244F" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.PresentMonInterface.dll" />
@@ -566,7 +575,6 @@
             
             <ComponentRef Id="cmp8E6F0A41518F04985A00044A881AFAA3" />
             <ComponentRef Id="cmpFCC1F35455D5814F6F5D83CFB2CBB5EA" />
-            
             <ComponentRef Id="cmp367B18F442C629D69A743133694E4034" />
             <ComponentRef Id="cmp8ACAADD5757BD9E933B8004451F42808" />
             
@@ -593,6 +601,7 @@
             
             <ComponentRef Id="cmp6C8034C8386700B60102EFDA32EE9A7C" />
             <ComponentRef Id="cmp58A6D9654BB2BC6D1688D3E3B41884A9" />
+            <ComponentRef Id="cmp46ECDD0C7AD9D4FBBE09ADEECDCCFDB7" />
             <ComponentRef Id="cmp085F019DCFA91EA3CC69ED65224795C3" />
             
             <ComponentRef Id="cmp0E8115A356A83702410D2B0E3834086E" />
@@ -603,6 +612,9 @@
             
             <ComponentRef Id="cmp7AD1D5C5600756C1FEF250A34500A8B1" />
             <ComponentRef Id="cmpD6952B19607ADA3C10FB639F21E3B84B" />
+            <ComponentRef Id="cmp82F7A2CA79FB4945DE735525DEA43440" />
+            
+            <ComponentRef Id="cmp14B77B6AF67D6C1BCC87252B412622A0" />
             <ComponentRef Id="cmpDAC9A06508E623C2AE90DDABDC991D5D" />
             
             <ComponentRef Id="cmpC5B851C2B64D27369CA432F2572B188D" />

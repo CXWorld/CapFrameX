@@ -10,37 +10,23 @@
 
 using CapFrameX.Monitoring.Contracts;
 using System.Collections.Generic;
-using System.Globalization;
-using System.Text;
 
 namespace OpenHardwareMonitor.Hardware.Nvidia
 {
     internal class NvidiaGroup : IGroup
     {
         private readonly List<Hardware> hardware = new List<Hardware>();
-        private readonly StringBuilder report = new StringBuilder();
 
         public NvidiaGroup(ISettings settings, ISensorConfig sensorConfig, IProcessService processService)
         {
             if (!NVAPI.IsAvailable)
                 return;
 
-            report.AppendLine("NVAPI");
-            report.AppendLine();
-
-            if (NVAPI.NvAPI_GetInterfaceVersionString(out string version) == NvStatus.OK)
-            {
-                report.Append(" Version: ");
-                report.AppendLine(version);
-            }
-
             NvPhysicalGpuHandle[] handles =
               new NvPhysicalGpuHandle[NVAPI.MAX_PHYSICAL_GPUS];
             int count;
             if (NVAPI.NvAPI_EnumPhysicalGPUs == null)
             {
-                report.AppendLine(" Error: NvAPI_EnumPhysicalGPUs not available");
-                report.AppendLine();
                 return;
             }
             else
@@ -48,19 +34,11 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
                 NvStatus status = NVAPI.NvAPI_EnumPhysicalGPUs(handles, out count);
                 if (status != NvStatus.OK)
                 {
-                    report.AppendLine(" Status: " + status);
-                    report.AppendLine();
                     return;
                 }
             }
 
             var result = NVML.NvmlInit();
-
-            report.AppendLine();
-            report.AppendLine("NVML");
-            report.AppendLine();
-            report.AppendLine(" Status: " + result);
-            report.AppendLine();
 
             IDictionary<NvPhysicalGpuHandle, NvDisplayHandle> displayHandles =
               new Dictionary<NvPhysicalGpuHandle, NvDisplayHandle>();
@@ -94,16 +72,12 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
                 }
             }
 
-            report.Append("Number of GPUs: ");
-            report.AppendLine(count.ToString(CultureInfo.InvariantCulture));
-
             for (int i = 0; i < count; i++)
             {
                 displayHandles.TryGetValue(handles[i], out NvDisplayHandle displayHandle);
                 hardware.Add(new NvidiaGPU(i, handles[i], displayHandle, settings, sensorConfig, processService));
             }
 
-            report.AppendLine();
         }
 
         public IHardware[] Hardware
@@ -116,7 +90,7 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
 
         public string GetReport()
         {
-            return report.ToString();
+            return string.Empty;
         }
 
         public void Close()
