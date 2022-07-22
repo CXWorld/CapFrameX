@@ -16,25 +16,31 @@ pipeline {
                     stages {
                         stage('Build CX') {
                             steps {
-                                bat "msbuild source\\CapFrameX\\CapFrameX.csproj /p:Configuration=Release /p:Platform=x64 /p:DeployOnBuild=true /p:VisualStudioVersion=16.0"
+                                bat "msbuild source\\CapFrameX\\CapFrameX.csproj /p:Configuration=Release /p:Platform=x64 /p:DeployOnBuild=true /p:VisualStudioVersion=17.0"
                             }
                         }
 						
 						stage('Build HWInfo') {
 							steps {
-								bat "msbuild source\\CapFrameX.Hwinfo\\CapFrameX.Hwinfo.vcxproj /p:SolutionDir=${pwd()}\\ /p:Configuration=Release /p:Platform=x64 /p:DeployOnBuild=true /p:VisualStudioVersion=16.0"
+								bat "msbuild source\\CapFrameX.Hwinfo\\CapFrameX.Hwinfo.vcxproj /p:SolutionDir=${pwd()}\\ /p:Configuration=Release /p:Platform=x64 /p:DeployOnBuild=true /p:VisualStudioVersion=17.0"
+							}
+						}
+						
+						stage('Build IGCL') {
+							steps {
+								bat "msbuild source\\CapFrameX.IGCL\\CapFrameX.IGCL.vcxproj /p:SolutionDir=${pwd()}\\ /p:Configuration=Release /p:Platform=x64 /p:DeployOnBuild=true /p:VisualStudioVersion=17.0"
 							}
 						}
 
                         stage('Build Installer') {
                             steps {
-                                bat "msbuild source\\CapFrameXInstaller\\CapFrameXInstaller.wixproj /p:SolutionDir=${pwd()}\\ /p:Configuration=Release /p:Platform=x64 /p:DeployOnBuild=true /p:VisualStudioVersion=16.0"
+                                bat "msbuild source\\CapFrameXInstaller\\CapFrameXInstaller.wixproj /p:SolutionDir=${pwd()}\\ /p:Configuration=Release /p:Platform=x64 /p:DeployOnBuild=true /p:VisualStudioVersion=17.0"
                             }
                         }
 
                         stage('Build Bootstrapper') {
                             steps {
-                                bat "msbuild source\\CapFrameXBootstrapper\\CapFrameXBootstrapper.wixproj /p:SolutionDir=${pwd()}\\ /p:Configuration=Release /p:Platform=x64 /p:DeployOnBuild=true /p:VisualStudioVersion=16.0"
+                                bat "msbuild source\\CapFrameXBootstrapper\\CapFrameXBootstrapper.wixproj /p:SolutionDir=${pwd()}\\ /p:Configuration=Release /p:Platform=x64 /p:DeployOnBuild=true /p:VisualStudioVersion=17.0"
                             }
                         }
                     }
