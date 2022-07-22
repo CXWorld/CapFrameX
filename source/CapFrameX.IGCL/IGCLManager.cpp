@@ -200,7 +200,7 @@ bool GetIgclTelemetryData(const uint32_t index, IgclTelemetryData* telemetryData
 				prevvramEnergyCounter = curvramEnergyCounter;
 				curvramEnergyCounter = pPowerTelemetry.vramEnergyCounter.value.datadouble;
 
-				telemetryData->vramEnergyValue = 100 * (curvramEnergyCounter - prevvramEnergyCounter) / deltatimestamp;
+				telemetryData->vramEnergyValue = (curvramEnergyCounter - prevvramEnergyCounter) / deltatimestamp;
 			}
 
 			telemetryData->vramVoltageSupported = pPowerTelemetry.vramVoltage.bSupported;
