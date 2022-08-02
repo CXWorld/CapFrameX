@@ -2,7 +2,6 @@
 using System;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using System.Runtime.InteropServices;
 using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
 using System.Text;
@@ -15,14 +14,12 @@ namespace CapFrameX.PMD
 
         private readonly ILogger<PmdUSBDriver> _logger;
         private SerialPortStream _pmd;
-        private StringBuilder _resultsStringBuilder;
+        private StringBuilder _resultsStringBuilder = new StringBuilder();
         private long _sampleTimeStamp = 0;
-
         private readonly ISubject<PmdChannel[]> _pmdChannelStream = new Subject<PmdChannel[]>();
+        private PmdChannelArrayPosition[] ChannelMapping => PmdChannelExtensions.PmdChannelIndexMapping;
 
         public IObservable<PmdChannel[]> PmdChannelStream => _pmdChannelStream.AsObservable();
-
-        private PmdChannelArrayPosition[] ChannelMapping => PmdChannelExtensions.PmdChannelIndexMapping;
 
         public PmdUSBDriver(ILogger<PmdUSBDriver> logger)
         {
@@ -33,6 +30,7 @@ namespace CapFrameX.PMD
         {
             _pmd = new SerialPortStream(comPort, 921600, 8, Parity.None, StopBits.One);
             _pmd.DataReceived += new EventHandler<SerialDataReceivedEventArgs>(SerialPortDataReceived);
+            _pmd.ErrorReceived += new EventHandler<SerialErrorReceivedEventArgs>(SerialPortErrorReceived);
 
             try
             {
@@ -64,6 +62,11 @@ namespace CapFrameX.PMD
         public EPmdDriverStatus GetPmdDriverStatus()
         {
             return EPmdDriverStatus.Ready;
+        }
+
+        private void SerialPortErrorReceived(object sender, SerialErrorReceivedEventArgs e)
+        {
+            
         }
 
         private void SerialPortDataReceived(object sender, SerialDataReceivedEventArgs e)
@@ -105,7 +108,7 @@ namespace CapFrameX.PMD
                 {
                     if (result.Length == 134)
                     {
-                        var pmdChannels = new PmdChannel[PmdChannelExtensions.PmdChannelIndexMapping.Length];
+                        var pmdChannels = new PmdChannel[ChannelMapping.Length];
 
                         //Channel 1: 3.3V        - 24pin ATX
                         string voltATX33Va = result.Substring(4, 2);
@@ -615,6 +618,7 @@ namespace CapFrameX.PMD
                             Value = voltPCIe_Slot_12_Final * currentPCIe_Slot_12_Final
                         };
 
+                        _pmdChannelStream.OnNext(pmdChannels);
                         _sampleTimeStamp++;
                     }
                 }

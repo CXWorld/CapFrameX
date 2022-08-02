@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using CapFrameX.Contracts.Configuration;
 using Microsoft.Extensions.Logging;
 
@@ -41,7 +40,7 @@ namespace CapFrameX.PMD
             _logger = logger;
         }
 
-        public bool StartDriver() => _pmdDriver.Connect();
+        public bool StartDriver() => _pmdDriver.Connect(string.Empty, false);
 
 
         public bool ShutDownDriver() => _pmdDriver.Disconnect();
