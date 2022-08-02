@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CapFrameX.PMD
 {
@@ -12,7 +8,7 @@ namespace CapFrameX.PMD
 
         EPmdDriverStatus GetPmdDriverStatus();
 
-        bool Connect();
+        bool Connect(string comPort, bool calibrationMode);
 
         bool Disconnect();
     }
