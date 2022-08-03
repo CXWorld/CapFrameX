@@ -6,8 +6,14 @@ namespace CapFrameX.PMD
     {
         IObservable<PmdChannel[]> PmdChannelStream { get; }
 
+        IObservable<EPmdDriverStatus> PmdstatusStream { get; }
+
+        string PortName { get; set; }
+
         bool StartDriver();
 
         bool ShutDownDriver();
+
+        string[] GetPortNames();
     }
 }

@@ -6,7 +6,7 @@ namespace CapFrameX.PMD
     {
         IObservable<PmdChannel[]> PmdChannelStream { get; }
 
-        EPmdDriverStatus GetPmdDriverStatus();
+        IObservable<EPmdDriverStatus> PmdstatusStream { get; }
 
         bool Connect(string comPort, bool calibrationMode);
 

@@ -12,18 +12,24 @@ namespace CapFrameX.PMD
     {
         const char SEPERATOR = '-';
 
-        private readonly ILogger<PmdUSBDriver> _logger;
         private SerialPortStream _pmd;
         private StringBuilder _resultsStringBuilder = new StringBuilder();
         private long _sampleTimeStamp = 0;
+
+        private readonly ILogger<PmdUSBDriver> _logger;
         private readonly ISubject<PmdChannel[]> _pmdChannelStream = new Subject<PmdChannel[]>();
+        private readonly ISubject<EPmdDriverStatus> _pmdstatusStream = new Subject<EPmdDriverStatus>();
+
         private PmdChannelArrayPosition[] ChannelMapping => PmdChannelExtensions.PmdChannelIndexMapping;
 
         public IObservable<PmdChannel[]> PmdChannelStream => _pmdChannelStream.AsObservable();
 
+        public IObservable<EPmdDriverStatus> PmdstatusStream => _pmdstatusStream.AsObservable();
+
         public PmdUSBDriver(ILogger<PmdUSBDriver> logger)
         {
             _logger = logger;
+            _pmdstatusStream.OnNext(EPmdDriverStatus.Ready);
         }
 
         public bool Connect(string comPort, bool calibrationMode)
@@ -40,8 +46,11 @@ namespace CapFrameX.PMD
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error while opening PMD!");
+                _pmdstatusStream.OnNext(EPmdDriverStatus.Error);
                 return false;
             }
+
+            _pmdstatusStream.OnNext(EPmdDriverStatus.Connected);
 
             return true;
         }
@@ -55,18 +64,15 @@ namespace CapFrameX.PMD
             }
 
             _sampleTimeStamp = 0;
+            _pmdstatusStream.OnNext(EPmdDriverStatus.Ready);
 
             return true;
         }
 
-        public EPmdDriverStatus GetPmdDriverStatus()
-        {
-            return EPmdDriverStatus.Ready;
-        }
-
         private void SerialPortErrorReceived(object sender, SerialErrorReceivedEventArgs e)
         {
-            
+            // ToDo: maybe more detailed info later
+            _pmdstatusStream.OnNext(EPmdDriverStatus.Error);
         }
 
         private void SerialPortDataReceived(object sender, SerialDataReceivedEventArgs e)
@@ -85,13 +91,17 @@ namespace CapFrameX.PMD
                 // process the data every 100ms, or when resultCarbinet.Length >=20700
                 if (_resultsStringBuilder.Length >= 20700)
                 {
-                    //Process Data
-                    string resultStringStepA = _resultsStringBuilder.ToString().Replace(SEPERATOR.ToString(), string.Empty);
-                    string resultStringStepB = resultStringStepA.Replace("CAAC", SEPERATOR.ToString());
-                    string[] resultSplit = resultStringStepB.Split(SEPERATOR);
-                    ProcessData(resultSplit);
+                    var resultString = _resultsStringBuilder.ToString();
 
-                    //Init Results
+                    //process data async
+                    Task.Run(() =>
+                    {
+                        string resultStringStepA = resultString.Replace(SEPERATOR.ToString(), string.Empty);
+                        string resultStringStepB = resultStringStepA.Replace("CAAC", SEPERATOR.ToString());
+                        string[] resultSplit = resultStringStepB.Split(SEPERATOR);
+                        ProcessData(resultSplit);
+                    });
+
                     _resultsStringBuilder.Clear();
                 }
             }

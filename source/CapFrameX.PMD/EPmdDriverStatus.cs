@@ -3,6 +3,7 @@
     public enum EPmdDriverStatus
     {
         Ready,
+        Connected,
         Error
     }
 }
