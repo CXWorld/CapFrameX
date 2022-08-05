@@ -1,5 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO.Ports;
+using System.Linq;
+using System.Reactive.Concurrency;
+using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using CapFrameX.Contracts.Configuration;
 using Microsoft.Extensions.Logging;
 
@@ -7,11 +12,15 @@ namespace CapFrameX.PMD
 {
     public class PmdService : IPmdService
     {
+        public const int MAX_DOWNSAMPLING_SIZE = 100;
+
         private readonly IPmdDriver _pmdDriver;
         private readonly IAppConfiguration _appConfiguration;
         private readonly ILogger<PmdService> _logger;
+        private readonly ISubject<PmdChannel[]> _pmdChannelStream = new Subject<PmdChannel[]>();
+        private readonly List<PmdChannel[]> _channelsBuffer = new List<PmdChannel[]>(MAX_DOWNSAMPLING_SIZE + 1);
 
-        public IObservable<PmdChannel[]> PmdChannelStream { get; }
+        public IObservable<PmdChannel[]> PmdChannelStream => _pmdChannelStream.AsObservable();
 
         public IObservable<EPmdDriverStatus> PmdstatusStream { get; }
 
@@ -23,7 +32,6 @@ namespace CapFrameX.PMD
             set
             {
                 _appConfiguration.DownSamplingSize = value;
-                OnDownSamplingSizeChanged();
             }
         }
 
@@ -33,7 +41,6 @@ namespace CapFrameX.PMD
             set
             {
                 _appConfiguration.DownSamplingMode = value;
-                OnDownSamplingModeChanged();
             }
         }
 
@@ -45,7 +52,9 @@ namespace CapFrameX.PMD
             _logger = logger;
 
             PmdstatusStream = _pmdDriver.PmdstatusStream;
-            PmdChannelStream = _pmdDriver.PmdChannelStream;
+            _pmdDriver.PmdChannelStream
+                .ObserveOn(new EventLoopScheduler())
+                .Subscribe(channels => FilterChannels(channels));
         }
 
         public bool StartDriver()
@@ -66,14 +75,63 @@ namespace CapFrameX.PMD
             return comPorts;
         }
 
-        private void OnDownSamplingSizeChanged()
+        private void FilterChannels(PmdChannel[] channel)
         {
-            throw new NotImplementedException();
+            if (DownSamplingSize > 1)
+            {
+                _channelsBuffer.Add(channel);
+
+                if (_channelsBuffer.Count > DownSamplingSize)
+                {
+                    _channelsBuffer.RemoveRange(0, _channelsBuffer.Count - DownSamplingSize);
+                    _pmdChannelStream.OnNext(SetPmdChannelStream(_channelsBuffer));
+                }
+            }
+            else
+            {
+                if (_channelsBuffer.Any())
+                    _channelsBuffer.Clear();
+
+                _pmdChannelStream.OnNext(channel);
+            }
         }
 
-        private void OnDownSamplingModeChanged()
+        private PmdChannel[] SetPmdChannelStream(List<PmdChannel[]> buffer)
         {
-            throw new NotImplementedException();
+            PmdChannel[] channels;
+
+            switch (DownSamplingMode)
+            {
+                case EDownSamplingMode.Single:
+                    channels = buffer.Last();
+                    break;
+                case EDownSamplingMode.Average:
+                    channels = GetAveragePmdChannel(buffer);
+                    break;
+
+                default:
+                    channels = buffer.Last();
+                    break;
+            }
+
+            return channels;
+        }
+
+        private PmdChannel[] GetAveragePmdChannel(IList<PmdChannel[]> buffer)
+        {
+            var avergeSample = buffer.First();
+
+            for (int i = 0; i < avergeSample.Length; i++)
+            {
+                foreach (var sample in buffer.Skip(1))
+                {
+                    avergeSample[i].Value += sample[i].Value;
+                }
+
+                avergeSample[i].Value /= buffer.Count;
+            }
+
+            return avergeSample;
         }
     }
 }

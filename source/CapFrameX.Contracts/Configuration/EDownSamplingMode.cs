@@ -2,9 +2,7 @@
 {
     public enum EDownSamplingMode
     {
-        Median,
         Average,
-        Maximum,
         Single
     }
 }
