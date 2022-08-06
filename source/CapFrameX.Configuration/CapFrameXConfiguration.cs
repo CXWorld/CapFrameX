@@ -666,12 +666,19 @@ namespace CapFrameX.Configuration
             set => Set(value);
         }
 
-        public EDownSamplingMode DownSamplingMode
+        public int PmdChartRefreshPeriod
         {
-            get => Get<EDownSamplingMode>(EDownSamplingMode.Average);
+            get => Get<int>(100);
             set => Set(value);
         }
 
+        public string DownSamplingMode
+        {
+            get => Get<string>("Average");
+            set => Set(value);
+        }
+
+        // General Management
         T Get<T>(T defaultValue, [CallerMemberName] string key = null)
         {
             if (string.IsNullOrWhiteSpace(key))

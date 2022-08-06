@@ -28,7 +28,6 @@ using System.Collections.ObjectModel;
 using System.Reactive.Linq;
 using CapFrameX.Sensor.Reporting.Contracts;
 using CapFrameX.Sensor.Reporting;
-using CapFrameX.Statistics.NetStandard;
 using CapFrameX.Statistics.NetStandard.Contracts;
 using CapFrameX.Statistics.PlotBuilder.Contracts;
 using Microsoft.Extensions.Logging;

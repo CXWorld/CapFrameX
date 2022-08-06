@@ -1,6 +1,6 @@
 ﻿namespace CapFrameX.Contracts.Configuration
 {
-    public enum EDownSamplingMode
+    public enum PmdSampleFilterMode
     {
         Average,
         Single

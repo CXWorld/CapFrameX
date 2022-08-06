@@ -6,6 +6,8 @@
 
         int DownSamplingSize { get; set; }
 
-        EDownSamplingMode DownSamplingMode { get; set; }
+        string DownSamplingMode { get; set; }
+
+        int PmdChartRefreshPeriod { get; set; }
     }
 }

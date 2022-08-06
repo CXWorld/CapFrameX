@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Windows;
 
 namespace CapFrameX.PMD
 {
@@ -15,5 +17,7 @@ namespace CapFrameX.PMD
         bool ShutDownDriver();
 
         string[] GetPortNames();
+
+        IEnumerable<Point> GetEPS12VPowerPmdDataPoints(IList<PmdChannel[]> channelData);
     }
 }

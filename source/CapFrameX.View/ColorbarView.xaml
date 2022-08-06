@@ -65,10 +65,10 @@
                              Margin="5"
                              IsChecked="{Binding SensorIsChecked}"
                              Content="SENSOR" />
-                    <!--<RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
+                    <RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
 							 Margin="5"
 							 IsChecked="{Binding PmdIsChecked}"
-							 Content="PMD" />-->
+							 Content="PMD" />
                     <RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
 							 Margin="5"
 							 IsChecked="{Binding ReportIsChecked}"

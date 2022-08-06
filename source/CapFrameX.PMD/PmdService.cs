@@ -5,8 +5,10 @@ using System.Linq;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using System.Windows;
 using CapFrameX.Contracts.Configuration;
 using Microsoft.Extensions.Logging;
+using CapFrameX.Extensions.NetStandard;
 
 namespace CapFrameX.PMD
 {
@@ -35,12 +37,12 @@ namespace CapFrameX.PMD
             }
         }
 
-        public EDownSamplingMode DownSamplingMode
+        public PmdSampleFilterMode DownSamplingMode
         {
-            get => _appConfiguration.DownSamplingMode;
+            get => _appConfiguration.DownSamplingMode.ConvertToEnum<PmdSampleFilterMode>();
             set
             {
-                _appConfiguration.DownSamplingMode = value;
+                _appConfiguration.DownSamplingMode = value.ConvertToString();
             }
         }
 
@@ -75,6 +77,17 @@ namespace CapFrameX.PMD
             return comPorts;
         }
 
+        public IEnumerable<Point> GetEPS12VPowerPmdDataPoints(IList<PmdChannel[]> channelData)
+        {
+            var minTimeStamp = channelData.First()[0].TimeStamp;
+
+            foreach (var channel in channelData)
+            {
+                var sumPower = PmdChannelExtensions.EPSPowerIndexGroup.Sum(index => channel[index].Value);
+                yield return new Point(channel[0].TimeStamp - minTimeStamp, sumPower);
+            }
+        }
+
         private void FilterChannels(PmdChannel[] channel)
         {
             if (DownSamplingSize > 1)
@@ -102,10 +115,10 @@ namespace CapFrameX.PMD
 
             switch (DownSamplingMode)
             {
-                case EDownSamplingMode.Single:
+                case PmdSampleFilterMode.Single:
                     channels = buffer.Last();
                     break;
-                case EDownSamplingMode.Average:
+                case PmdSampleFilterMode.Average:
                     channels = GetAveragePmdChannel(buffer);
                     break;
 

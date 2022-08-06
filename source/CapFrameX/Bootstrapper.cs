@@ -83,6 +83,9 @@ namespace CapFrameX
         {
             base.ConfigureContainer();
 
+            // Intialize static classes
+            PmdChannelExtensions.Initialize();
+
             // Vertical components
             Container.ConfigureSerilogILogger(Log.Logger);
             Container.Register<IEventAggregator, EventAggregator>(Reuse.Singleton, null, null, IfAlreadyRegistered.Replace, "EventAggregator");

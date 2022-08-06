@@ -20,8 +20,6 @@ namespace CapFrameX.PMD
         private readonly ISubject<PmdChannel[]> _pmdChannelStream = new Subject<PmdChannel[]>();
         private readonly ISubject<EPmdDriverStatus> _pmdstatusStream = new Subject<EPmdDriverStatus>();
 
-        private PmdChannelArrayPosition[] ChannelMapping => PmdChannelExtensions.PmdChannelIndexMapping;
-
         public IObservable<PmdChannel[]> PmdChannelStream => _pmdChannelStream.AsObservable();
 
         public IObservable<EPmdDriverStatus> PmdstatusStream => _pmdstatusStream.AsObservable();
@@ -118,7 +116,7 @@ namespace CapFrameX.PMD
                 {
                     if (result.Length == 134)
                     {
-                        var pmdChannels = new PmdChannel[ChannelMapping.Length];
+                        var pmdChannels = new PmdChannel[PmdChannelExtensions.PmdChannelIndexMapping.Length];
 
                         //Channel 1: 3.3V        - 24pin ATX
                         string voltATX33Va = result.Substring(4, 2);

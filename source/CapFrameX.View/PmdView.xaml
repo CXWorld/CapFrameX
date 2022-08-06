@@ -10,6 +10,8 @@
 			 xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
 			 xmlns:mvvm="clr-namespace:CapFrameX.MVVM.Converter;assembly=CapFrameX.MVVM"
 			 xmlns:proxy="clr-namespace:CapFrameX.MVVM;assembly=CapFrameX.MVVM"
+             xmlns:controls="clr-namespace:CapFrameX.View.Controls"
+             xmlns:oxy="http://oxyplot.org/wpf"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800"
              Background="{DynamicResource MaterialDesignBackground}"
@@ -21,6 +23,29 @@
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid>
-        <Button Width="200">Test</Button>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="1*"/>
+            <RowDefinition Height="1*"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="100"/>
+            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="100"/>
+        </Grid.ColumnDefinitions>
+        <Grid Grid.Row="0" Grid.Column="1">
+            <controls:PlotViewCustomZoom Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" x:Name="EPS12VPlotView" 
+                                         Model="{Binding EPS12VModel}" Tag="{Binding ElementName=PmdView, Path=DataContext}"
+										 MouseDoubleClick="ResetEPS12VChart_MouseDoubleClick">
+                <controls:PlotViewCustomZoom.DefaultTrackerTemplate>
+                    <ControlTemplate>
+                        <oxy:TrackerControl Position="{Binding Position}" Background="{DynamicResource MaterialDesignCardBackground}">
+                            <oxy:TrackerControl.Content>
+                                <TextBlock Text="{Binding}" Margin="5" />
+                            </oxy:TrackerControl.Content>
+                        </oxy:TrackerControl>
+                    </ControlTemplate>
+                </controls:PlotViewCustomZoom.DefaultTrackerTemplate>
+            </controls:PlotViewCustomZoom>
+        </Grid>
     </Grid>
 </UserControl>

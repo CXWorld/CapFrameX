@@ -369,10 +369,7 @@ namespace CapFrameX.ViewModel
             Clipboard.SetDataObject(builder.ToString(), false);
         }
 
-        public bool IsNavigationTarget(NavigationContext navigationContext)
-        {
-            return true;
-        }
+        public bool IsNavigationTarget(NavigationContext navigationContext) => true;
 
         public void OnNavigatedFrom(NavigationContext navigationContext)
         {
