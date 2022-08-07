@@ -678,6 +678,12 @@ namespace CapFrameX.Configuration
             set => Set(value);
         }
 
+        public int ChartDownSamplingSize
+        {
+            get => Get<int>(4);
+            set => Set(value);
+        }
+
         // General Management
         T Get<T>(T defaultValue, [CallerMemberName] string key = null)
         {

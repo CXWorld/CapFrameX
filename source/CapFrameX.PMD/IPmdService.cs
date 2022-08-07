@@ -18,6 +18,6 @@ namespace CapFrameX.PMD
 
         string[] GetPortNames();
 
-        IEnumerable<Point> GetEPS12VPowerPmdDataPoints(IList<PmdChannel[]> channelData);
+        IEnumerable<Point> GetEPS12VPowerPmdDataPoints(IList<PmdChannel[]> channelDat0, int downSamplingSize);
     }
 }

@@ -77,14 +77,16 @@ namespace CapFrameX.PMD
             return comPorts;
         }
 
-        public IEnumerable<Point> GetEPS12VPowerPmdDataPoints(IList<PmdChannel[]> channelData)
+        public IEnumerable<Point> GetEPS12VPowerPmdDataPoints(IList<PmdChannel[]> channelData, int downSamplingSize)
         {
             var minTimeStamp = channelData.First()[0].TimeStamp;
 
+            int i = 0;
             foreach (var channel in channelData)
             {
+                if (++i % downSamplingSize != 0) continue;
                 var sumPower = PmdChannelExtensions.EPSPowerIndexGroup.Sum(index => channel[index].Value);
-                yield return new Point(channel[0].TimeStamp - minTimeStamp, sumPower);
+                yield return new Point((channel[0].TimeStamp - minTimeStamp) * 1E-03, sumPower);
             }
         }
 

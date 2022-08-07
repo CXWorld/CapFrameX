@@ -3,7 +3,6 @@ using CapFrameX.Statistics.NetStandard;
 using CapFrameX.Statistics.NetStandard.Contracts;
 using CapFrameX.Statistics.PlotBuilder.Contracts;
 using OxyPlot;
-using OxyPlot.Annotations;
 using System;
 using System.Collections.Generic;
 using System.Linq;
