@@ -34,7 +34,7 @@
         </Grid.ColumnDefinitions>
         <Grid Grid.Row="0" Grid.Column="1">
             <controls:PlotViewCustomZoom Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" x:Name="EPS12VPlotView" 
-                                         Model="{Binding EPS12VModel}" Tag="{Binding ElementName=PmdView, Path=DataContext}"
+                                         Model="{Binding EPS12VModel}" Tag="{Binding ElementName=PmdView, Path=DataContext}" Margin="0 10 0 0"
 										 MouseDoubleClick="ResetEPS12VChart_MouseDoubleClick">
                 <controls:PlotViewCustomZoom.DefaultTrackerTemplate>
                     <ControlTemplate>

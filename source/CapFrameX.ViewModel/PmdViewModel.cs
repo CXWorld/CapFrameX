@@ -27,12 +27,13 @@ namespace CapFrameX.ViewModel
         private ISubject<TimeSpan> _chartUpdateSubject;
         private int _chartWindowSeconds = 10;
         private List<PmdChannel[]> _chartaDataBuffer = new List<PmdChannel[]>(1000 * 10);
-
-        public PlotModel EPS12VModel = new PlotModel
+        PlotModel _ePS12VModel = new PlotModel
         {
             PlotMargins = new OxyThickness(50, 0, 50, 35),
             PlotAreaBorderColor = OxyColor.FromArgb(64, 204, 204, 204)
         };
+
+        public PlotModel EPS12VModel => _ePS12VModel;
 
         public bool UpdateCharts
         {
@@ -91,7 +92,7 @@ namespace CapFrameX.ViewModel
         private void SubscribePmdDataStreamCharts()
         {
             _pmdService.PmdChannelStream
-                .Buffer(_chartUpdateSubject)
+                .Buffer(/*_chartUpdateSubject*/TimeSpan.FromMilliseconds(PmdChartRefreshPeriod))
                 .Where(_ => UpdateCharts)
                 .SubscribeOn(new EventLoopScheduler())
                 .Subscribe(chartData => DrawPmdData(chartData));
@@ -101,14 +102,17 @@ namespace CapFrameX.ViewModel
         {
             if (!chartData.Any()) return;
 
+            var dataCount = _chartaDataBuffer.Count;
             var lastTimeStamp = chartData.Last()[0].TimeStamp;
             int range = 0;
+
+            IEnumerable<DataPoint> eps12VPowerDrawPoints = null;
             lock (_updateChartBufferLock)
             {
-                while (lastTimeStamp - _chartaDataBuffer[range][0].TimeStamp > ChartWindowSeconds * 1000L) range++;
+                while (range < dataCount && lastTimeStamp - _chartaDataBuffer[range][0].TimeStamp > ChartWindowSeconds * 1000L) range++;
                 _chartaDataBuffer.RemoveRange(0, range);
                 _chartaDataBuffer.AddRange(chartData);
-                var eps12VPowerDrawPoints = _pmdService.GetEPS12VPowerPmdDataPoints(_chartaDataBuffer)
+                eps12VPowerDrawPoints = _pmdService.GetEPS12VPowerPmdDataPoints(_chartaDataBuffer)
                     .Select(p => new DataPoint(p.X, p.Y));
             }
 
@@ -124,6 +128,7 @@ namespace CapFrameX.ViewModel
                     EdgeRenderingMode = EdgeRenderingMode.PreferSpeed
                 };
 
+                eps12VPowerSeries.Points.AddRange(eps12VPowerDrawPoints);
                 EPS12VModel.Series.Add(eps12VPowerSeries);
                 EPS12VModel.InvalidatePlot(true);
             });
