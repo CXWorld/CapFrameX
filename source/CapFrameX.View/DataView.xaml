@@ -305,6 +305,11 @@
                                         </materialDesign:PopupBox>
                                         <TextBlock VerticalAlignment="Center" Text="Options" FontSize="14"/>
                                     </StackPanel>
+                                    <StackPanel Panel.ZIndex="1" Margin="5 0 0 5" HorizontalAlignment="Left" VerticalAlignment="Bottom" Orientation="Horizontal">
+                                        <TextBlock Foreground="{DynamicResource MaterialDesignBody}"><Run Text="Show thresholds in chart"/></TextBlock>
+                                        <ToggleButton VerticalAlignment="Center" Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}" IsChecked="{Binding ShowStutteringThresholds}"
+								        ToolTip="Show threshold lines for stuttering and low FPS in the frametime and FPS charts"/>
+                                    </StackPanel>
                                 </Grid>
                             </TabItem>
                             <TabItem Width="75">

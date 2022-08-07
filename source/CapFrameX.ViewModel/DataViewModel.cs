@@ -78,6 +78,7 @@ namespace CapFrameX.ViewModel
         private bool _cpuMaxThreadLoad;
         private bool _gpuPowerLimit;
         private bool _aggregationSeparators;
+        private bool _showStutteringThresholds;
         private EFilterMode _selectedFilterMode;
         private ELShapeMetrics _lShapeMetric = ELShapeMetrics.Frametimes;
         private string _lShapeYaxisLabel = "Frametimes (ms)" + Environment.NewLine + " ";
@@ -302,6 +303,7 @@ namespace CapFrameX.ViewModel
             {
                 _appConfiguration.StutteringFactor = value;
                 RaisePropertyChanged();
+                _onUpdateChart.OnNext(default);
             }
         }
 
@@ -312,6 +314,7 @@ namespace CapFrameX.ViewModel
             {
                 _appConfiguration.StutteringThreshold = value;
                 RaisePropertyChanged();
+                _onUpdateChart.OnNext(default);
             }
         }
         public EChartYAxisSetting SelecetedChartYAxisSetting
@@ -525,6 +528,17 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        public bool ShowStutteringThresholds
+        {
+            get { return _showStutteringThresholds; }
+            set
+            {
+                _showStutteringThresholds = value;
+                RaisePropertyChanged();
+                _onUpdateChart.OnNext(default);
+            }
+        }
+
         public DataViewModel(IStatisticProvider frametimeStatisticProvider,
                              IFrametimeAnalyzer frametimeAnalyzer,
                              IEventAggregator eventAggregator,
@@ -593,9 +607,9 @@ namespace CapFrameX.ViewModel
         {
             _onUpdateChart.Subscribe(_ =>
             {
-                FpsGraphDataContext.BuildPlotmodel(new VisibleGraphs(GpuLoad, CpuLoad, CpuMaxThreadLoad, GpuPowerLimit, ShowAggregationSeparators));
+                FpsGraphDataContext.BuildPlotmodel(new VisibleGraphs(GpuLoad, CpuLoad, CpuMaxThreadLoad, GpuPowerLimit, ShowAggregationSeparators, ShowStutteringThresholds, StutteringFactor, StutteringLowFPSThreshold));
 
-                FrametimeGraphDataContext.BuildPlotmodel(new VisibleGraphs(GpuLoad, CpuLoad, CpuMaxThreadLoad, GpuPowerLimit, ShowAggregationSeparators), plotModel =>
+                FrametimeGraphDataContext.BuildPlotmodel(new VisibleGraphs(GpuLoad, CpuLoad, CpuMaxThreadLoad, GpuPowerLimit, ShowAggregationSeparators, ShowStutteringThresholds, StutteringFactor, StutteringLowFPSThreshold), plotModel =>
                 {
                     FrametimeGraphDataContext.UpdateAxis(EPlotAxis.YAXISFRAMETIMES, axis =>
                     {
@@ -838,7 +852,7 @@ namespace CapFrameX.ViewModel
         private void OnFilterModeChanged()
         {
             _localRecordDataServer.FilterMode = SelectedFilterMode;
-            FpsGraphDataContext.BuildPlotmodel(new VisibleGraphs(GpuLoad, CpuLoad, CpuMaxThreadLoad, GpuPowerLimit, ShowAggregationSeparators));
+            FpsGraphDataContext.BuildPlotmodel(new VisibleGraphs(GpuLoad, CpuLoad, CpuMaxThreadLoad, GpuPowerLimit, ShowAggregationSeparators, ShowStutteringThresholds, StutteringFactor, StutteringLowFPSThreshold));
         }
 
         private async void OnCutRecord(bool inverse)

@@ -25,7 +25,10 @@ namespace CapFrameX.Statistics.PlotBuilder
             plotModel.Axes.Add(AxisDefinitions[EPlotAxis.XAXIS]);
             plotModel.Axes.Add(AxisDefinitions[EPlotAxis.YAXISFRAMETIMES]);
 
-            SetFrametimeChart(plotModel, session.GetFrametimePointsTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod));
+            var frametimepoints = session.GetFrametimePointsTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod);
+            var frametimes = session.GetFrametimeTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod);
+
+            SetFrametimeChart(plotModel, frametimepoints);
 
             if (plotSettings.IsAnyPercentageGraphVisible && session.HasValidSensorData())
             {
@@ -41,7 +44,11 @@ namespace CapFrameX.Statistics.PlotBuilder
                     SetGpuPowerLimitChart(plotModel, session.GetGpuPowerLimitPointTimeWindow());
             }
 
-            SetAggregationSeparators(session, plotModel, plotSettings.ShowAggregationSeparators);
+            var stutteringValue = frametimes.Average() * plotSettings.StutteringFactor;
+            var lowFPSValue = 1000 / plotSettings.LowFPSThreshold;
+
+
+            SetAnnotations(session, frametimes, plotModel, plotSettings.ShowAggregationSeparators, plotSettings.ShowThresholds, stutteringValue, lowFPSValue);
 
 
             onFinishAction?.Invoke(plotModel);
@@ -78,6 +85,7 @@ namespace CapFrameX.Statistics.PlotBuilder
                 Color = Constants.FrametimeMovingAverageStroke,
                 EdgeRenderingMode = EdgeRenderingMode.PreferSpeed
             };
+
 
             frametimeSeries.Points.AddRange(frametimeDataPoints);
             movingAverageSeries.Points.AddRange(movingAverage.Select((y, i) => new DataPoint(frametimePoints[i].X, y)));

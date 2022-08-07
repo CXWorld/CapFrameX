@@ -64,7 +64,10 @@ namespace CapFrameX.Statistics.PlotBuilder
             }
             UpdateYAxisMinMaxBorders(yMin, yMax, average);
 
-            SetAggregationSeparators(session, plotModel, plotSettings.ShowAggregationSeparators);
+            var stutteringValue = 1000 / (frametimes.Average() * plotSettings.StutteringFactor);
+            var lowFPSValue = plotSettings.LowFPSThreshold;
+
+            SetAnnotations(session, frametimes, plotModel, plotSettings.ShowAggregationSeparators, plotSettings.ShowThresholds, stutteringValue, lowFPSValue);
 
 
             onFinishAction?.Invoke(plotModel);
