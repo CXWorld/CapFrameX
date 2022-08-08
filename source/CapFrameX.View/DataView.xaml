@@ -280,6 +280,7 @@
                                                 <Grid.RowDefinitions>
                                                     <RowDefinition Height="*" />
                                                     <RowDefinition Height="*" />
+                                                    <RowDefinition Height="*" />
                                                 </Grid.RowDefinitions>
                                                 <TextBox Grid.Row="0" materialDesign:HintAssist.Hint="Low FPS threshold" materialDesign:HintAssist.IsFloating="True" Width="100"
                                                          HorizontalContentAlignment="Center" Text="{Binding StutteringLowFPSThreshold}" materialDesign:HintAssist.HintOpacity=".8"
@@ -301,15 +302,16 @@
                                                         </ToolTip>
                                                     </TextBox.ToolTip>
                                                 </TextBox>
+                                                <StackPanel Grid.Row="2" Margin="0 10 0 0" HorizontalAlignment="Center" VerticalAlignment="Bottom" Orientation="Vertical">
+                                                    <TextBlock Foreground="{DynamicResource MaterialDesignBody}"><Run Text="Show in charts"/></TextBlock>
+                                                    <ToggleButton VerticalAlignment="Center" Margin="0 3 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}" IsChecked="{Binding ShowStutteringThresholds}"
+								                                    ToolTip="Show threshold lines for stuttering and low FPS in the frametime and FPS charts"/>
+                                                </StackPanel>
                                             </Grid>
                                         </materialDesign:PopupBox>
                                         <TextBlock VerticalAlignment="Center" Text="Options" FontSize="14"/>
                                     </StackPanel>
-                                    <StackPanel Panel.ZIndex="1" Margin="5 0 0 5" HorizontalAlignment="Left" VerticalAlignment="Bottom" Orientation="Horizontal">
-                                        <TextBlock Foreground="{DynamicResource MaterialDesignBody}"><Run Text="Show thresholds in chart"/></TextBlock>
-                                        <ToggleButton VerticalAlignment="Center" Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}" IsChecked="{Binding ShowStutteringThresholds}"
-								        ToolTip="Show threshold lines for stuttering and low FPS in the frametime and FPS charts"/>
-                                    </StackPanel>
+
                                 </Grid>
                             </TabItem>
                             <TabItem Width="75">

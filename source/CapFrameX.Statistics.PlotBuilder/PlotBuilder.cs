@@ -268,7 +268,7 @@ namespace CapFrameX.Statistics.PlotBuilder
                     Type = LineAnnotationType.Horizontal,
                     Text = "Stuttering",
                     FontWeight = FontWeights.Bold,
-                    FontSize = 14,
+                    FontSize = 11,
                     TextColor = OxyColor.FromRgb(150, 150, 150),
                     TextOrientation = AnnotationTextOrientation.Horizontal,
                     TextVerticalAlignment = VerticalAlignment.Top,
@@ -279,11 +279,11 @@ namespace CapFrameX.Statistics.PlotBuilder
                 LineAnnotation LowFPSLine = new LineAnnotation()
                 {
                     StrokeThickness = 2,
-                    Color = OxyColors.Yellow,
+                    Color = OxyColor.FromRgb(255, 180, 0),
                     Type = LineAnnotationType.Horizontal,
                     Text = "Low FPS",
                     FontWeight = FontWeights.Bold,
-                    FontSize = 14,
+                    FontSize = 11,
                     TextColor = OxyColor.FromRgb(150, 150, 150),
                     TextOrientation = AnnotationTextOrientation.Horizontal,
                     TextVerticalAlignment = VerticalAlignment.Top,
@@ -318,13 +318,14 @@ namespace CapFrameX.Statistics.PlotBuilder
                     StrokeThickness = 2,
                     Color = OxyColors.Gray,
                     Type = LineAnnotationType.Vertical,
-                    Text = sceneNumber < sessionTimes.Count ? $"Scene {sceneNumber}" : string.Empty,
+                    Text = sceneNumber < sessionTimes.Count ? $"Scene {sceneNumber}" + Environment.NewLine + $"({Math.Round(time, 2)}s)" : string.Empty,
                     FontWeight = FontWeights.Bold,
                     FontSize = 14,
                     TextColor = OxyColor.FromRgb(150, 150, 150),
                     TextOrientation = AnnotationTextOrientation.Horizontal,
                     TextVerticalAlignment = VerticalAlignment.Middle,
-                    TextPadding = -60,
+                    TextPadding = -65,
+                    TextMargin = 15,
                     X = time
                 };
 
