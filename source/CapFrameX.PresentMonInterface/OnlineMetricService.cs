@@ -326,7 +326,7 @@ namespace CapFrameX.PresentMonInterface
                     return 0;
 
                 return _frametimeStatisticProvider
-                    .GetStutteringTimePercentage(_frametimes, _appConfiguration.StutteringFactor);
+                    .GetOnlineStutteringTimePercentage(_frametimes, _appConfiguration.StutteringFactor);
             }
         }
     }

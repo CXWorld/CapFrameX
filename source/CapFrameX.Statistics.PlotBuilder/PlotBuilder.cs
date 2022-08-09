@@ -252,51 +252,11 @@ namespace CapFrameX.Statistics.PlotBuilder
             plotModel.Series.Add(series);
         }
 
-        public void SetAnnotations(ISession session, IList<double> frametimes, PlotModel plotModel, bool showSeparators, bool showThreshold, double stutteringValue, double lowFPSValue)
+        public void SetAggregationSeparators(ISession session, PlotModel plotModel, bool showSeparators)
         {
 
             plotModel.Annotations.Clear();
 
-            // Thresholds
-            if (showThreshold)
-            {
-
-                LineAnnotation StutteringLine = new LineAnnotation()
-                {
-                    StrokeThickness = 2,
-                    Color = OxyColors.Red,
-                    Type = LineAnnotationType.Horizontal,
-                    Text = "Stuttering",
-                    FontWeight = FontWeights.Bold,
-                    FontSize = 11,
-                    TextColor = OxyColor.FromRgb(150, 150, 150),
-                    TextOrientation = AnnotationTextOrientation.Horizontal,
-                    TextVerticalAlignment = VerticalAlignment.Top,
-                    TextHorizontalAlignment = HorizontalAlignment.Right,
-                    TextPadding = 0,
-                    Y = stutteringValue
-                };
-                LineAnnotation LowFPSLine = new LineAnnotation()
-                {
-                    StrokeThickness = 2,
-                    Color = OxyColor.FromRgb(255, 180, 0),
-                    Type = LineAnnotationType.Horizontal,
-                    Text = "Low FPS",
-                    FontWeight = FontWeights.Bold,
-                    FontSize = 11,
-                    TextColor = OxyColor.FromRgb(150, 150, 150),
-                    TextOrientation = AnnotationTextOrientation.Horizontal,
-                    TextVerticalAlignment = VerticalAlignment.Top,
-                    TextHorizontalAlignment = HorizontalAlignment.Right,
-                    TextPadding = 0,
-                    Y = lowFPSValue
-                };
-
-                plotModel.Annotations.Add(StutteringLine);
-                plotModel.Annotations.Add(LowFPSLine);
-            }
-
-            // Aggregation separators
             if (!showSeparators || session.Runs.Count < 2)
                 return;
 
