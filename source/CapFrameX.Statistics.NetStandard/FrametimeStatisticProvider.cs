@@ -61,9 +61,9 @@ namespace CapFrameX.Statistics.NetStandard
             for (int i = 0; i < average.Count; i++)
             {
                 if (sequence[i] > stutteringFactor * average[i])
-                stutteringTime =+ sequence[i];
+                stutteringTime += sequence[i];
             }
-
+          
             return 100 * stutteringTime / sequence.Sum();
         }
 
