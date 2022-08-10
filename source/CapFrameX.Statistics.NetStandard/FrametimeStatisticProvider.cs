@@ -85,7 +85,7 @@ namespace CapFrameX.Statistics.NetStandard
         public IList<double> GetMovingAverage(IList<double> sequence)
         {
             var average = sequence.Average();
-            var timeBasedMovingAverageFilter = new TimeBasedMovingAverage(Convert.ToInt32(average / Math.Sqrt(average) * 100));
+            var timeBasedMovingAverageFilter = new TimeBasedMovingAverage(Math.Sqrt(average) * 100);
             return timeBasedMovingAverageFilter.ProcessSamples(sequence);
         }
 
