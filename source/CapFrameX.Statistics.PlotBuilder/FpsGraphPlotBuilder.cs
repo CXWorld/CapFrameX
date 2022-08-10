@@ -166,11 +166,11 @@ namespace CapFrameX.Statistics.PlotBuilder
             var stuttering = new List<double>();
             var lowFPS = new List<double>();
 
-            var movingAverage = _frametimesStatisticProvider.GetMovingAverage(fpspoints.Select(pnt => pnt.Y).ToList());
+            var movingAverage = _frametimesStatisticProvider.GetMovingAverage(fpspoints.Select(pnt => 1000 / pnt.Y).ToList());
 
             for (int i = 0; i < fpspoints.Count; i++)
             {
-                stuttering.Add(movingAverage[i] / plotSettings.StutteringFactor);
+                stuttering.Add(1000 / movingAverage[i] / plotSettings.StutteringFactor);
                 lowFPS.Add(plotSettings.LowFPSThreshold);
             }
 
