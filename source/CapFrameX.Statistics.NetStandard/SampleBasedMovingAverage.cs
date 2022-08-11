@@ -7,9 +7,9 @@ namespace CapFrameX.Statistics.NetStandard
         private readonly int _sampleSize;
 
         /// <summary>
-        /// Time based moving average
+        /// Sample based moving average
         /// </summary>
-        /// <param name="timeWindow">Time window in milliseconds</param>
+        /// <param name="sampleSize">Number of samples to be used</param>
         public SampleBasedMovingAverage(int sampleSize)
         {
             _sampleSize = sampleSize;

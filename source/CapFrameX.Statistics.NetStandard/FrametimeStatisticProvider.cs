@@ -73,7 +73,7 @@ namespace CapFrameX.Statistics.NetStandard
 
             double lowFPSTime = 0.0;
 
-            for (int i = 0; i > average.Count; i++)
+            for (int i = 0; i < average.Count; i++)
             {
                 if (sequence[i] <= stutteringFactor * average[i] && 1000 / sequence[i] < lowFPSThreshold)
                     lowFPSTime += sequence[i];
@@ -86,6 +86,7 @@ namespace CapFrameX.Statistics.NetStandard
         {
             var average = sequence.Average();
             var sampleBasedMovingAverageFilter = new SampleBasedMovingAverage(Convert.ToInt32(Math.Sqrt(average) * 10));
+
             return sampleBasedMovingAverageFilter.ProcessSamples(sequence);
         }
 
