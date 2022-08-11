@@ -28,7 +28,7 @@ namespace CapFrameX.PresentMonInterface
         private readonly ILogger<OnlineMetricService> _logger;
         private readonly IAppConfiguration _appConfiguration;
         private readonly object _lock20SecondsMetric = new object();
-        private readonly object _lock10SecondsMetric = new object();
+        private readonly object _lock5SecondsMetric = new object();
         private readonly object _lockApplicationLatency = new object();
         private List<double> _frametimes20Seconds = new List<double>(LIST_CAPACITY);
         private List<double> _frametimes5Seconds = new List<double>(LIST_CAPACITY / 4);
@@ -200,9 +200,9 @@ namespace CapFrameX.PresentMonInterface
                     }
                 }
 
-                lock (_lock10SecondsMetric)
+                lock (_lock5SecondsMetric)
                 {
-                    // 10 sceconds window
+                    // 5 sceconds window
                     _measuretimes5Seconds.Add(startTime);
                     _frametimes5Seconds.Add(frameTime);
 
@@ -346,7 +346,7 @@ namespace CapFrameX.PresentMonInterface
 
         public double GetOnlineStutteringPercentageValue()
         {
-            lock (_lock10SecondsMetric)
+            lock (_lock5SecondsMetric)
             {
                 if (!_frametimes5Seconds.Any())
                     return 0;
