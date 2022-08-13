@@ -117,5 +117,11 @@ namespace CapFrameX.Webservice.Implementation.Handlers
 		public bool ShowAggregationSeparators { get; set; }
 
 		public bool IsAnyPercentageGraphVisible { get; set; }
+
+		public bool ShowThresholds { get; set; }
+
+		public double StutteringFactor { get; set; }
+
+		public double LowFPSThreshold { get; set; }
 	}
 }

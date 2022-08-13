@@ -10,5 +10,9 @@
 		bool IsAnyPercentageGraphVisible { get; }
 
 		bool ShowAggregationSeparators { get; }
+
+		bool ShowThresholds { get; }
+		double StutteringFactor { get;}
+		double LowFPSThreshold { get; }
 	}
 }

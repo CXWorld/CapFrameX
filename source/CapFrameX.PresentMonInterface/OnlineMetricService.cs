@@ -27,10 +27,13 @@ namespace CapFrameX.PresentMonInterface
         private readonly IOverlayEntryCore _overlayEntryCore;
         private readonly ILogger<OnlineMetricService> _logger;
         private readonly IAppConfiguration _appConfiguration;
-        private readonly object _lockMetric = new object();
+        private readonly object _lock20SecondsMetric = new object();
+        private readonly object _lock5SecondsMetric = new object();
         private readonly object _lockApplicationLatency = new object();
-        private List<double> _frametimes = new List<double>(LIST_CAPACITY);
-        private List<double> _measuretimesMetrics = new List<double>(LIST_CAPACITY);
+        private List<double> _frametimes20Seconds = new List<double>(LIST_CAPACITY);
+        private List<double> _frametimes5Seconds = new List<double>(LIST_CAPACITY / 4);
+        private List<double> _measuretimes20Seconds = new List<double>(LIST_CAPACITY);
+        private List<double> _measuretimes5Seconds = new List<double>(LIST_CAPACITY / 4);
         private List<double> _measuretimesApplicationLatency = new List<double>(LIST_CAPACITY / 10);
         private List<double> _applicationLatencyValues = new List<double>(LIST_CAPACITY / 10);
         private string _currentProcess;
@@ -38,6 +41,7 @@ namespace CapFrameX.PresentMonInterface
         private double _droppedFrametimes = 0.0;
         private double _prevDisplayedFrameInputLagTime = double.NaN;
         private readonly double _maxOnlineMetricIntervalLength = 20d;
+        private readonly double _maxOnlineStutteringIntervalLength = 5d;
         private readonly double _maxOnlineApplicationLatencyIntervalLength = 2d;
 
         public OnlineMetricService(IStatisticProvider frametimeStatisticProvider,
@@ -170,27 +174,49 @@ namespace CapFrameX.PresentMonInterface
             // it makes no sense to calculate fps metrics with
             // frame times above the stuttering threshold
             // filtering high frame times caused by focus lost for example
-            if (frameTime > STUTTERING_THRESHOLD * 1E03 && !_overlayEntryCore.RealtimeMetricEntryDict["OnlineStutteringPercentage"].ShowOnOverlay) 
+            if (frameTime > STUTTERING_THRESHOLD * 1E03 && !_overlayEntryCore.RealtimeMetricEntryDict["OnlineStutteringPercentage"].ShowOnOverlay)
                 return;
 
             try
             {
-                lock (_lockMetric)
+                lock (_lock20SecondsMetric)
                 {
-                    _measuretimesMetrics.Add(startTime);
-                    _frametimes.Add(frameTime);
+                    // 20 sceconds window
+                    _measuretimes20Seconds.Add(startTime);
+                    _frametimes20Seconds.Add(frameTime);
 
-                    if (startTime - _measuretimesMetrics.First() > _maxOnlineMetricIntervalLength)
+                    if (startTime - _measuretimes20Seconds.First() > _maxOnlineMetricIntervalLength)
                     {
                         int position = 0;
-                        while (position < _measuretimesMetrics.Count &&
-                            startTime - _measuretimesMetrics[position] > _maxOnlineMetricIntervalLength)
+                        while (position < _measuretimes20Seconds.Count &&
+                            startTime - _measuretimes20Seconds[position] > _maxOnlineMetricIntervalLength)
                             position++;
 
                         if (position > 0)
                         {
-                            _frametimes.RemoveRange(0, position);
-                            _measuretimesMetrics.RemoveRange(0, position);
+                            _frametimes20Seconds.RemoveRange(0, position);
+                            _measuretimes20Seconds.RemoveRange(0, position);
+                        }
+                    }
+                }
+
+                lock (_lock5SecondsMetric)
+                {
+                    // 5 sceconds window
+                    _measuretimes5Seconds.Add(startTime);
+                    _frametimes5Seconds.Add(frameTime);
+
+                    if (startTime - _measuretimes5Seconds.First() > _maxOnlineStutteringIntervalLength)
+                    {
+                        int position = 0;
+                        while (position < _measuretimes5Seconds.Count &&
+                            startTime - _measuretimes5Seconds[position] > _maxOnlineStutteringIntervalLength)
+                            position++;
+
+                        if (position > 0)
+                        {
+                            _frametimes5Seconds.RemoveRange(0, position);
+                            _measuretimes5Seconds.RemoveRange(0, position);
                         }
                     }
                 }
@@ -282,10 +308,10 @@ namespace CapFrameX.PresentMonInterface
 
         private void ResetMetrics()
         {
-            lock (_lockMetric)
+            lock (_lock20SecondsMetric)
             {
-                _frametimes = new List<double>(LIST_CAPACITY);
-                _measuretimesMetrics = new List<double>(LIST_CAPACITY);
+                _frametimes20Seconds = new List<double>(LIST_CAPACITY);
+                _measuretimes20Seconds = new List<double>(LIST_CAPACITY);
             }
         }
 
@@ -300,10 +326,10 @@ namespace CapFrameX.PresentMonInterface
 
         public double GetOnlineFpsMetricValue(EMetric metric)
         {
-            lock (_lockMetric)
+            lock (_lock20SecondsMetric)
             {
                 return _frametimeStatisticProvider
-                    .GetFpsMetricValue(_frametimes, metric);
+                    .GetFpsMetricValue(_frametimes20Seconds, metric);
             }
         }
 
@@ -320,13 +346,13 @@ namespace CapFrameX.PresentMonInterface
 
         public double GetOnlineStutteringPercentageValue()
         {
-            lock (_lockMetric)
+            lock (_lock5SecondsMetric)
             {
-                if (!_frametimes.Any())
+                if (!_frametimes5Seconds.Any())
                     return 0;
 
                 return _frametimeStatisticProvider
-                    .GetStutteringTimePercentage(_frametimes, _appConfiguration.StutteringFactor);
+                    .GetOnlineStutteringTimePercentage(_frametimes5Seconds, _appConfiguration.StutteringFactor);
             }
         }
     }

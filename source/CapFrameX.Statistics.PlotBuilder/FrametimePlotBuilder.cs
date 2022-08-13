@@ -25,7 +25,10 @@ namespace CapFrameX.Statistics.PlotBuilder
             plotModel.Axes.Add(AxisDefinitions[EPlotAxis.XAXIS]);
             plotModel.Axes.Add(AxisDefinitions[EPlotAxis.YAXISFRAMETIMES]);
 
-            SetFrametimeChart(plotModel, session.GetFrametimePointsTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod));
+            var frametimepoints = session.GetFrametimePointsTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod);
+            var frametimes = session.GetFrametimeTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod);
+
+            SetFrametimeChart(plotModel, frametimepoints, plotSettings);
 
             if (plotSettings.IsAnyPercentageGraphVisible && session.HasValidSensorData())
             {
@@ -41,6 +44,10 @@ namespace CapFrameX.Statistics.PlotBuilder
                     SetGpuPowerLimitChart(plotModel, session.GetGpuPowerLimitPointTimeWindow());
             }
 
+            var stutteringValue = frametimes.Average() * plotSettings.StutteringFactor;
+            var lowFPSValue = 1000 / plotSettings.LowFPSThreshold;
+
+
             SetAggregationSeparators(session, plotModel, plotSettings.ShowAggregationSeparators);
 
 
@@ -48,7 +55,7 @@ namespace CapFrameX.Statistics.PlotBuilder
             plotModel.InvalidatePlot(true);
         }
 
-        private void SetFrametimeChart(PlotModel plotModel, IList<Point> frametimePoints)
+        private void SetFrametimeChart(PlotModel plotModel, IList<Point> frametimePoints, IPlotSettings plotSettings)
         {
             if (frametimePoints == null || !frametimePoints.Any())
                 return;
@@ -58,6 +65,16 @@ namespace CapFrameX.Statistics.PlotBuilder
             var yMin = frametimePoints.Min(pnt => pnt.Y);
             var yMax = frametimePoints.Max(pnt => pnt.Y);
             var movingAverage = _frametimesStatisticProvider.GetMovingAverage(frametimePoints.Select(pnt => pnt.Y).ToList());
+
+            var stuttering = new List<double>();
+            var lowFPS = new List<double>();
+
+            for (int i = 0; i < count; i++)
+            {
+                stuttering.Add(movingAverage[i] * plotSettings.StutteringFactor);
+                lowFPS.Add(1000 / plotSettings.LowFPSThreshold);
+            }
+
 
             plotModel.Series.Clear();
 
@@ -79,8 +96,32 @@ namespace CapFrameX.Statistics.PlotBuilder
                 EdgeRenderingMode = EdgeRenderingMode.PreferSpeed
             };
 
+
+            var stutteringSeries = new LineSeries
+            {
+                Title = "Stuttering",
+                StrokeThickness = 2,
+                LegendStrokeThickness = 4,
+                LineStyle = LineStyle.Dash,
+                Color = OxyColor.FromAColor(180, OxyColors.Red),
+                EdgeRenderingMode = EdgeRenderingMode.PreferSpeed
+            };
+
+            var lowFPSSeries = new LineSeries
+            {
+                Title = "LowFPS",
+                StrokeThickness = 3,
+                LegendStrokeThickness = 4,
+                LineStyle = LineStyle.LongDash,
+                Color = OxyColor.FromAColor(180, OxyColor.FromRgb(255, 180, 0)),
+                EdgeRenderingMode = EdgeRenderingMode.PreferSpeed
+            };
+
+
             frametimeSeries.Points.AddRange(frametimeDataPoints);
             movingAverageSeries.Points.AddRange(movingAverage.Select((y, i) => new DataPoint(frametimePoints[i].X, y)));
+
+
 
             UpdateAxis(EPlotAxis.XAXIS, (axis) =>
             {
@@ -90,6 +131,17 @@ namespace CapFrameX.Statistics.PlotBuilder
 
             plotModel.Series.Add(frametimeSeries);
             plotModel.Series.Add(movingAverageSeries);
+
+
+            if (plotSettings.ShowThresholds)
+            { 
+                stutteringSeries.Points.AddRange(stuttering.Select((y, i) => new DataPoint(frametimePoints[i].X, y)));
+                lowFPSSeries.Points.AddRange(lowFPS.Select((y, i) => new DataPoint(frametimePoints[i].X, y)));
+
+                plotModel.Series.Add(stutteringSeries);
+                plotModel.Series.Add(lowFPSSeries);
+
+            }
 
             plotModel.InvalidatePlot(true);
         }

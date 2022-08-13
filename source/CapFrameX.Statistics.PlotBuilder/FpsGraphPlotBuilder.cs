@@ -61,7 +61,16 @@ namespace CapFrameX.Statistics.PlotBuilder
                 yMin = fpsPoints.Min(pnt => pnt.Y);
                 yMax = fpsPoints.Max(pnt => pnt.Y);
             }
+
+            if (plotSettings.ShowThresholds)
+            {
+                SetThresholdChart(plotModel, plotSettings, rawFpsPoints);
+            }
+
             UpdateYAxisMinMaxBorders(yMin, yMax, average);
+
+            var stutteringValue = 1000 / (frametimes.Average() * plotSettings.StutteringFactor);
+            var lowFPSValue = plotSettings.LowFPSThreshold;
 
             SetAggregationSeparators(session, plotModel, plotSettings.ShowAggregationSeparators);
 
@@ -151,6 +160,47 @@ namespace CapFrameX.Statistics.PlotBuilder
             plotModel.InvalidatePlot(true);
         }
 
+        private void SetThresholdChart(PlotModel plotModel, IPlotSettings plotSettings, IList<Point> fpspoints)
+        {
+            var stuttering = new List<double>();
+            var lowFPS = new List<double>();
+
+            var movingAverage = _frametimesStatisticProvider.GetMovingAverage(fpspoints.Select(pnt => 1000 / pnt.Y).ToList());
+
+            for (int i = 0; i < fpspoints.Count; i++)
+            {
+                stuttering.Add(1000 / movingAverage[i] / plotSettings.StutteringFactor);
+                lowFPS.Add(plotSettings.LowFPSThreshold);
+            }
+
+            var stutteringSeries = new LineSeries
+            {
+                Title = "Stuttering",
+                StrokeThickness = 2,
+                LegendStrokeThickness = 4,
+                LineStyle = LineStyle.Dash,
+                Color = OxyColor.FromAColor(180, OxyColors.Red),
+                EdgeRenderingMode = EdgeRenderingMode.PreferSpeed
+            };
+
+            var lowFPSSeries = new LineSeries
+            {
+                Title = "LowFPS",
+                StrokeThickness = 3,
+                LegendStrokeThickness = 4,
+                LineStyle = LineStyle.LongDash,
+                Color = OxyColor.FromAColor(180, OxyColor.FromRgb(255, 180, 0)),
+                EdgeRenderingMode = EdgeRenderingMode.PreferSpeed
+            };
+
+            stutteringSeries.Points.AddRange(stuttering.Select((y, i) => new DataPoint(fpspoints[i].X, y)));
+            lowFPSSeries.Points.AddRange(lowFPS.Select((y, i) => new DataPoint(fpspoints[i].X, y)));
+
+            plotModel.Series.Add(stutteringSeries);
+            plotModel.Series.Add(lowFPSSeries);
+
+        }
+
         private void UpdateYAxisMinMaxBorders(double yMin, double yMax, double average)
         {
             UpdateAxis(EPlotAxis.YAXISFPS, (axis) =>
@@ -173,5 +223,6 @@ namespace CapFrameX.Statistics.PlotBuilder
                     axis.Maximum = axisMaximum;
             });
         }
+
     }
 }

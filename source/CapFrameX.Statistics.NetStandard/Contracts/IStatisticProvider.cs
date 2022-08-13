@@ -11,6 +11,8 @@ namespace CapFrameX.Statistics.NetStandard.Contracts
 
         double GetStutteringCountPercentage(IList<double> sequence, double stutteringFactor);
 
+        double GetOnlineStutteringTimePercentage(IList<double> sequence, double stutteringFactor);
+
         double GetStutteringTimePercentage(IList<double> sequence, double stutteringFactor);
 
         double GetLowFPSTimePercentage(IList<double> sequence, double stutteringFactor, double lowFPSThreshold);

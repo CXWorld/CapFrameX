@@ -43,8 +43,7 @@ namespace CapFrameX.Statistics.NetStandard
 
             return 100 * (double)stutteringCount / sequence.Count;
         }
-
-        public double GetStutteringTimePercentage(IList<double> sequence, double stutteringFactor)
+        public double GetOnlineStutteringTimePercentage(IList<double> sequence, double stutteringFactor)
         {
             var average = sequence.Average();
             var stutteringTime = sequence.Where(element => element > stutteringFactor * average).Sum();
@@ -53,18 +52,42 @@ namespace CapFrameX.Statistics.NetStandard
             return 100 * stutteringTime / sequence.Sum();
         }
 
+        public double GetStutteringTimePercentage(IList<double> sequence, double stutteringFactor)
+        {
+            var average = GetMovingAverage(sequence);
+
+            double stutteringTime = 0.0;
+
+            for (int i = 0; i < average.Count; i++)
+            {
+                if (sequence[i] > stutteringFactor * average[i])
+                stutteringTime += sequence[i];
+            }
+          
+            return 100 * stutteringTime / sequence.Sum();
+        }
+
         public double GetLowFPSTimePercentage(IList<double> sequence, double stutteringFactor, double lowFPSThreshold)
         {
-            var average = sequence.Average();
-            var LowFPSTime = sequence.Where(element => element <= stutteringFactor * average && 1000 / element < lowFPSThreshold).Sum();
+            var average = GetMovingAverage(sequence);
 
-            return 100 * LowFPSTime / sequence.Sum();
+            double lowFPSTime = 0.0;
+
+            for (int i = 0; i < average.Count; i++)
+            {
+                if (sequence[i] <= stutteringFactor * average[i] && 1000 / sequence[i] < lowFPSThreshold)
+                    lowFPSTime += sequence[i];
+            }
+
+            return 100 * lowFPSTime / sequence.Sum();
         }
 
         public IList<double> GetMovingAverage(IList<double> sequence)
         {
-            var timeBasedMovingAverageFilter = new TimeBasedMovingAverage(_options.IntervalAverageWindowTime);
-            return timeBasedMovingAverageFilter.ProcessSamples(sequence);
+            var average = sequence.Average();
+            var sampleBasedMovingAverageFilter = new SampleBasedMovingAverage(Convert.ToInt32(Math.Sqrt(average) * 10));
+
+            return sampleBasedMovingAverageFilter.ProcessSamples(sequence);
         }
 
         public IList<double> GetOutlierAdjustedSequence(IList<double> sequence, ERemoveOutlierMethod method)

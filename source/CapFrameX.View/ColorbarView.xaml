@@ -187,8 +187,8 @@
                                             <ColumnDefinition Width="*"/>
                                             <ColumnDefinition Width="*"/>
                                         </Grid.ColumnDefinitions>
-                                        <ComboBox Grid.Row="0" Grid.Column="0" materialDesign:HintAssist.Hint="Graph filter window(ms)" HorizontalAlignment="Left"
-                                                  ToolTip="Sets the time window for creating the moving average frametime and average FPS graphs"
+                                        <ComboBox Grid.Row="0" Grid.Column="0" materialDesign:HintAssist.Hint="FPS graph filter(ms)" HorizontalAlignment="Left"
+                                                  ToolTip="Sets the time window for the interval of the average FPS graphs"
 												  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Width="145" Height="40" Margin="20 15 10 15"
 												  ItemsSource="{Binding Path=DataContext.AverageTimeWindows, ElementName=ColorbarViewName}">
                                             <ComboBox.Text>
