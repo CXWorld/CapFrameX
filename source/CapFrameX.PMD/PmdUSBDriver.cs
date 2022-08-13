@@ -61,6 +61,7 @@ namespace CapFrameX.PMD
                 _pmd.Dispose();
             }
 
+            _resultsStringBuilder.Clear();
             _sampleTimeStamp = 0;
             _pmdstatusStream.OnNext(EPmdDriverStatus.Ready);
 
@@ -540,6 +541,62 @@ namespace CapFrameX.PMD
                             PmdChannelType = PmdChannelType.PCIe,
                             TimeStamp = _sampleTimeStamp,
                             Value = voltPCIe3_Final * currentPCIe3_Final
+                        };
+
+                        // Dummy set PCIe_12V_4
+                        pmdChannels[9] = new PmdChannel()
+                        {
+                            Measurand = PmdMeasurand.Voltage,
+                            Name = "PCIe_12V_Voltage4",
+                            PmdChannelType = PmdChannelType.PCIe,
+                            TimeStamp = _sampleTimeStamp,
+                            Value = 0
+                        };
+
+                        pmdChannels[14] = new PmdChannel()
+                        {
+                            Measurand = PmdMeasurand.Current,
+                            Name = "PCIe_12V_Current4",
+                            PmdChannelType = PmdChannelType.PCIe,
+                            TimeStamp = _sampleTimeStamp,
+                            Value = 0
+                        };
+
+                        pmdChannels[19] = new PmdChannel()
+                        {
+                            Measurand = PmdMeasurand.Power,
+                            Name = "PCIe_12V_Power4",
+                            PmdChannelType = PmdChannelType.PCIe,
+                            TimeStamp = _sampleTimeStamp,
+                            Value = 0
+                        };
+
+                        // Dummy set PCIe_12V_5
+                        pmdChannels[10] = new PmdChannel()
+                        {
+                            Measurand = PmdMeasurand.Voltage,
+                            Name = "PCIe_12V_Voltage5",
+                            PmdChannelType = PmdChannelType.PCIe,
+                            TimeStamp = _sampleTimeStamp,
+                            Value = 0
+                        };
+
+                        pmdChannels[15] = new PmdChannel()
+                        {
+                            Measurand = PmdMeasurand.Current,
+                            Name = "PCIe_12V_Current5",
+                            PmdChannelType = PmdChannelType.PCIe,
+                            TimeStamp = _sampleTimeStamp,
+                            Value = 0
+                        };
+
+                        pmdChannels[20] = new PmdChannel()
+                        {
+                            Measurand = PmdMeasurand.Power,
+                            Name = "PCIe_12V_Power5",
+                            PmdChannelType = PmdChannelType.PCIe,
+                            TimeStamp = _sampleTimeStamp,
+                            Value = 0
                         };
 
                         //Channel 11: 3.3V OPTI  - PCIe Expansion Board

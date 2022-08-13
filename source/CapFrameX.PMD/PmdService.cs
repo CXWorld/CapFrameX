@@ -22,9 +22,11 @@ namespace CapFrameX.PMD
         private readonly ISubject<PmdChannel[]> _pmdChannelStream = new Subject<PmdChannel[]>();
         private readonly List<PmdChannel[]> _channelsBuffer = new List<PmdChannel[]>(MAX_DOWNSAMPLING_SIZE + 1);
 
+        private IDisposable _pmdChannelStreamDisposable;
+
         public IObservable<PmdChannel[]> PmdChannelStream => _pmdChannelStream.AsObservable();
 
-        public IObservable<EPmdDriverStatus> PmdstatusStream { get; }
+        public IObservable<EPmdDriverStatus> PmdstatusStream => _pmdDriver.PmdstatusStream;
 
         public string PortName { get; set; }
 
@@ -52,22 +54,28 @@ namespace CapFrameX.PMD
             _pmdDriver = pmdDriver;
             _appConfiguration = appConfiguration;
             _logger = logger;
-
-            PmdstatusStream = _pmdDriver.PmdstatusStream;
-            _pmdDriver.PmdChannelStream
-                .ObserveOn(new EventLoopScheduler())
-                .Subscribe(channels => FilterChannels(channels));
         }
 
         public bool StartDriver()
         {
             if (PortName == null) return false;
 
+            _pmdChannelStreamDisposable?.Dispose();
+            _pmdChannelStreamDisposable = _pmdDriver.PmdChannelStream
+                .ObserveOn(new EventLoopScheduler())
+                .Subscribe(channels => FilterChannels(channels));
+
             // ToDo: manage calibration mode
             return _pmdDriver.Connect(PortName, false);
         }
 
-        public bool ShutDownDriver() => _pmdDriver.Disconnect();
+        public bool ShutDownDriver()
+        {
+            _pmdChannelStreamDisposable?.Dispose();
+            _channelsBuffer.Clear();
+
+            return _pmdDriver.Disconnect();
+        } 
 
         public string[] GetPortNames()
         {
@@ -86,6 +94,19 @@ namespace CapFrameX.PMD
             {
                 if (++i % downSamplingSize != 0) continue;
                 var sumPower = PmdChannelExtensions.EPSPowerIndexGroup.Sum(index => channel[index].Value);
+                yield return new Point((channel[0].TimeStamp - minTimeStamp) * 1E-03, sumPower);
+            }
+        }
+
+        public IEnumerable<Point> GetPciExpressPowerPmdDataPoints(IList<PmdChannel[]> channelData, int downSamplingSize)
+        {
+            var minTimeStamp = channelData.First()[0].TimeStamp;
+
+            int i = 0;
+            foreach (var channel in channelData)
+            {
+                if (++i % downSamplingSize != 0) continue;
+                var sumPower = PmdChannelExtensions.GPUPowerIndexGroup.Sum(index => channel[index].Value);
                 yield return new Point((channel[0].TimeStamp - minTimeStamp) * 1E-03, sumPower);
             }
         }

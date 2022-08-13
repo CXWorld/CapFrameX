@@ -25,9 +25,9 @@ namespace CapFrameX.PMD
         // GPU
         public static int[] GPUCurrentIndexGroup { get; private set; }
 
-        public static int[] GPUSlotVoltageIndexGroup { get; private set; }
+        public static int[] GPUVoltageIndexGroup { get; private set; }
 
-        public static int[] GPUSlotPowerIndexGroup { get; private set; }
+        public static int[] GPUPowerIndexGroup { get; private set; }
 
 
         // PCIeSlot
@@ -226,10 +226,10 @@ namespace CapFrameX.PMD
             GPUCurrentIndexGroup
                 = PCIeSlotCurrentIndexGroup.Concat(PCIeCurrentIndexGroup).ToArray();
 
-            GPUSlotVoltageIndexGroup
+            GPUVoltageIndexGroup
                  = PCIeSlotVoltageIndexGroup.Concat(PCIeVoltageIndexGroup).ToArray();
 
-            GPUSlotPowerIndexGroup
+            GPUPowerIndexGroup
                 = PCIeSlotPowerIndexGroup.Concat(PCIePowerIndexGroup).ToArray();
         }
     }

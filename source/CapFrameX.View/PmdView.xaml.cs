@@ -17,5 +17,10 @@ namespace CapFrameX.View
         {
             EPS12VPlotView.ResetAllAxes();
         }
+
+        private void ResetPciExpressChart_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            PciExpressPlotView.ResetAllAxes();
+        }
     }
 }

@@ -34,7 +34,7 @@
         </Grid.ColumnDefinitions>
         <Grid Grid.Row="0" Grid.Column="1">
             <controls:PlotViewCustomZoom Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" x:Name="EPS12VPlotView" 
-                                         Model="{Binding EPS12VModel}" Tag="{Binding ElementName=PmdView, Path=DataContext}" Margin="0 10 0 0"
+                                         Model="{Binding EPS12VModel}" Tag="{Binding ElementName=PmdView, Path=DataContext}" Margin="0 10 0 10"
 										 MouseDoubleClick="ResetEPS12VChart_MouseDoubleClick">
                 <controls:PlotViewCustomZoom.DefaultTrackerTemplate>
                     <ControlTemplate>
@@ -47,5 +47,21 @@
                 </controls:PlotViewCustomZoom.DefaultTrackerTemplate>
             </controls:PlotViewCustomZoom>
         </Grid>
+
+        <Grid Grid.Row="1" Grid.Column="1">
+        <controls:PlotViewCustomZoom Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" x:Name="PciExpressPlotView" 
+                                         Model="{Binding PciExpressModel}" Tag="{Binding ElementName=PmdView, Path=DataContext}" Margin="0 10 0 10"
+										 MouseDoubleClick="ResetPciExpressChart_MouseDoubleClick">
+            <controls:PlotViewCustomZoom.DefaultTrackerTemplate>
+                <ControlTemplate>
+                    <oxy:TrackerControl Position="{Binding Position}" Background="{DynamicResource MaterialDesignCardBackground}">
+                        <oxy:TrackerControl.Content>
+                            <TextBlock Text="{Binding}" Margin="5" />
+                        </oxy:TrackerControl.Content>
+                    </oxy:TrackerControl>
+                </ControlTemplate>
+            </controls:PlotViewCustomZoom.DefaultTrackerTemplate>
+        </controls:PlotViewCustomZoom>
+    </Grid>
     </Grid>
 </UserControl>
