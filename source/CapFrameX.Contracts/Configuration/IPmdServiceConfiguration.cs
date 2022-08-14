@@ -11,5 +11,7 @@
         string DownSamplingMode { get; set; }
 
         int PmdChartRefreshPeriod { get; set; }
+
+        int PmdMetricRefreshPeriod { get; set; }
     }
 }

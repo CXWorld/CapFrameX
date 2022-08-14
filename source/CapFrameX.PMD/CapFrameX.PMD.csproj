@@ -63,6 +63,11 @@
     <Reference Include="OxyPlot.Wpf.Shared, Version=2.1.0.0, Culture=neutral, PublicKeyToken=75e952ba404cdbb0, processorArchitecture=MSIL">
       <HintPath>..\..\packages\OxyPlot.Wpf.Shared.2.1.0\lib\net45\OxyPlot.Wpf.Shared.dll</HintPath>
     </Reference>
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+    <Reference Include="Prism, Version=7.0.0.396, Culture=neutral, PublicKeyToken=40ee6c3a2184dc59, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Prism.Core.7.0.0.396\lib\net45\Prism.dll</HintPath>
+    </Reference>
     <Reference Include="ReachFramework" />
     <Reference Include="RJCP.SerialPortStream, Version=2.4.0.0, Culture=neutral, PublicKeyToken=5f5e7b70c6a74deb, processorArchitecture=MSIL">
       <HintPath>..\..\packages\SerialPortStream.2.4.0\lib\net45\RJCP.SerialPortStream.dll</HintPath>
@@ -85,6 +90,7 @@
     </Reference>
     <Reference Include="System.Windows" />
     <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xaml" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -102,6 +108,7 @@
     <Compile Include="PmdData.cs" />
     <Compile Include="PmdDataChartManager.cs" />
     <Compile Include="PmdDataProcessing.cs" />
+    <Compile Include="PmdMetricsManager.cs" />
     <Compile Include="PmdService.cs" />
     <Compile Include="PmdUSBDriver.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -672,6 +672,12 @@ namespace CapFrameX.Configuration
             set => Set(value);
         }
 
+        public int PmdMetricRefreshPeriod
+        {
+            get => Get<int>(500);
+            set => Set(value);
+        }
+
         public string DownSamplingMode
         {
             get => Get<string>("Average");

@@ -22,14 +22,20 @@ namespace CapFrameX.ViewModel
         private readonly object _updateChartBufferLock = new object();
 
         private bool _updateCharts = true;
-        private int _chartWindowSeconds = 10;
-        private IDisposable _pmdChannelStreamDisposable;
+        private bool _updateMetrics = true;
+        private int _pmdDataWindowSeconds = 10;
+
+        private IDisposable _pmdChannelStreamChartsDisposable;
+        private IDisposable _pmdChannelStreamMetricsDisposable;
         private List<PmdChannel[]> _chartaDataBuffer = new List<PmdChannel[]>(1000 * 10);
         private PmdDataChartManager _pmdDataChartManager = new PmdDataChartManager();
+        private PmdMetricsManager _pmdDataMetricsManager = new PmdMetricsManager(500, 10);
 
         public PlotModel EPS12VModel => _pmdDataChartManager.Eps12VModel;
 
         public PlotModel PciExpressModel => _pmdDataChartManager.PciExpressModel;
+
+        public PmdMetricsManager PmdMetrics => _pmdDataMetricsManager;
 
         public bool UpdateCharts
         {
@@ -37,6 +43,16 @@ namespace CapFrameX.ViewModel
             set
             {
                 _updateCharts = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public bool UpdateMetrics
+        {
+            get => _updateMetrics;
+            set
+            {
+                _updateMetrics = value;
                 RaisePropertyChanged();
             }
         }
@@ -52,6 +68,18 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        public int PmdMetricRefreshPeriod
+        {
+            get => _appConfiguration.PmdMetricRefreshPeriod;
+            set
+            {
+                _appConfiguration.PmdMetricRefreshPeriod = value;
+                _pmdDataMetricsManager.PmdMetricRefreshPeriod = value;
+                SubscribePmdDataStreamMetrics();
+                RaisePropertyChanged();
+            }
+        }
+
         public int ChartDownSamplingSize
         {
             get => _appConfiguration.ChartDownSamplingSize;
@@ -62,25 +90,26 @@ namespace CapFrameX.ViewModel
             }
         }
 
-        public int ChartWindowSeconds
+        public int PmdDataWindowSeconds
         {
-            get => _chartWindowSeconds;
+            get => _pmdDataWindowSeconds;
             set
             {
-                if (_chartWindowSeconds != value)
+                if (_pmdDataWindowSeconds != value)
                 {
-                    var oldChartWindowSeconds = _chartWindowSeconds;
-                    _chartWindowSeconds = value;
+                    var oldChartWindowSeconds = _pmdDataWindowSeconds;
+                    _pmdDataWindowSeconds = value;
+                    _pmdDataMetricsManager.PmdDataWindowSeconds = value;
                     RaisePropertyChanged();
 
-                    var newChartBuffer = new List<PmdChannel[]>(_chartWindowSeconds * 1000);
+                    var newChartBuffer = new List<PmdChannel[]>(_pmdDataWindowSeconds * 1000);
                     lock (_updateChartBufferLock)
                     {
                         newChartBuffer.AddRange(_chartaDataBuffer.TakeLast(oldChartWindowSeconds * 1000));
                         _chartaDataBuffer = newChartBuffer;
                     }
 
-                    _pmdDataChartManager.AxisDefinitions["X_Axis_Time"].AbsoluteMaximum = _chartWindowSeconds;
+                    _pmdDataChartManager.AxisDefinitions["X_Axis_Time"].AbsoluteMaximum = _pmdDataWindowSeconds;
                     EPS12VModel.InvalidatePlot(false);
                 }
             }
@@ -96,12 +125,22 @@ namespace CapFrameX.ViewModel
 
         private void SubscribePmdDataStreamCharts()
         {
-            _pmdChannelStreamDisposable?.Dispose();
-            _pmdChannelStreamDisposable = _pmdService.PmdChannelStream
+            _pmdChannelStreamChartsDisposable?.Dispose();
+            _pmdChannelStreamChartsDisposable = _pmdService.PmdChannelStream
                 .Buffer(TimeSpan.FromMilliseconds(PmdChartRefreshPeriod))
                 .Where(_ => UpdateCharts)
                 .SubscribeOn(new EventLoopScheduler())
                 .Subscribe(chartData => DrawPmdData(chartData));
+        }
+
+        private void SubscribePmdDataStreamMetrics()
+        {
+            _pmdChannelStreamMetricsDisposable?.Dispose();
+            _pmdChannelStreamMetricsDisposable = _pmdService.PmdChannelStream
+                .Buffer(TimeSpan.FromMilliseconds(PmdMetricRefreshPeriod))
+                .Where(_ => UpdateMetrics)
+                .SubscribeOn(new EventLoopScheduler())
+                .Subscribe(metricsData => _pmdDataMetricsManager.UpdateMetrics(metricsData));
         }
 
         private void DrawPmdData(IList<PmdChannel[]> chartData)
@@ -116,7 +155,7 @@ namespace CapFrameX.ViewModel
             IEnumerable<DataPoint> pciExpressPowerDrawPoints = null;
             lock (_updateChartBufferLock)
             {
-                while (range < dataCount && lastTimeStamp - _chartaDataBuffer[range][0].TimeStamp > ChartWindowSeconds * 1000L) range++;
+                while (range < dataCount && lastTimeStamp - _chartaDataBuffer[range][0].TimeStamp > PmdDataWindowSeconds * 1000L) range++;
                 _chartaDataBuffer.RemoveRange(0, range);
                 _chartaDataBuffer.AddRange(chartData);
 
@@ -134,7 +173,7 @@ namespace CapFrameX.ViewModel
 
         public void OnNavigatedFrom(NavigationContext navigationContext)
         {
-            _pmdChannelStreamDisposable?.Dispose();
+            _pmdChannelStreamChartsDisposable?.Dispose();
             _pmdService.ShutDownDriver();
         }
 
@@ -146,6 +185,7 @@ namespace CapFrameX.ViewModel
             _pmdService.StartDriver();
 
             SubscribePmdDataStreamCharts();
+            SubscribePmdDataStreamMetrics();
         }
     }
 }
