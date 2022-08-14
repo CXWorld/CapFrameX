@@ -384,7 +384,7 @@
                             </Style>
                             <Style TargetType="DataGridCell">
                                 <Setter Property="Padding" Value="5" />
-                                <Setter Property="Margin" Value="10 0 0 0"/>
+                                <Setter Property="Margin" Value="0 0 0 0"/>
                                 <Setter Property="Background" Value="Transparent"/>
                                 <Setter Property="BorderBrush" Value="Transparent"/>
                                 <Setter Property="Validation.ErrorTemplate" Value="{x:Null}" />
@@ -416,15 +416,15 @@
                             </DataGridTextColumn>
                             <DataGridTextColumn Binding="{Binding MinValue, Mode=OneWay}"
                                             Header="Min"
-                                            Width="75"
+                                            MinWidth="75"
                                             IsReadOnly="True"/>
                             <DataGridTextColumn Binding="{Binding AverageValue, Mode=OneWay}"
-                                            Header="Average"
-                                            Width="75"
+                                            Header="Avg"
+                                            MinWidth="75"
                                             IsReadOnly="True"/>
                             <DataGridTextColumn Binding="{Binding MaxValue, Mode=OneWay}"
                                             Header="Max"
-                                            Width="75"
+                                            MinWidth="75"
                                             IsReadOnly="True"/>
                         </DataGrid.Columns>
                     </DataGrid>

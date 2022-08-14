@@ -452,7 +452,7 @@
                                             Width="72"
                                             IsReadOnly="True"/>
                                         <DataGridTextColumn Binding="{Binding AverageValue, Mode=OneWay}"
-                                            Header="Average"
+                                            Header="Avg"
                                             Width="72"
                                             IsReadOnly="True"/>
                                         <DataGridTextColumn Binding="{Binding MaxValue, Mode=OneWay}"
