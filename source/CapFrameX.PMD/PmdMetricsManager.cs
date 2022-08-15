@@ -7,6 +7,13 @@ namespace CapFrameX.PMD
 {
     public class PmdMetricsManager : BindableBase
     {
+        private string _allPowerCur = "0.0W";
+        private string _allGpuPowerCur = "0.0W";
+        private string _allPciExCur = "0.0W";
+        private string _pciExSlotCur = "0.0W";
+        private string _allCpuPowerCur = "0.0W";
+        private string _allAtxPowerCur = "0.0W";
+
         private string _allPowerAvg = "0.0W";
         private string _allGpuPowerAvg = "0.0W";
         private string _allPciExAvg = "0.0W";
@@ -37,6 +44,16 @@ namespace CapFrameX.PMD
 
         private readonly object _resetHistoryLock = new object();
 
+        public string AllGpuPowerCur
+        {
+            get => _allGpuPowerCur;
+            set
+            {
+                _allGpuPowerCur = value;
+                RaisePropertyChanged();
+            }
+        }
+
         public string AllGpuPowerAvg
         {
             get => _allGpuPowerAvg;
@@ -53,6 +70,16 @@ namespace CapFrameX.PMD
             set
             {
                 _allGpuPowerMax = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public string AllPciExCur
+        {
+            get => _allPciExCur;
+            set
+            {
+                _allPciExCur = value;
                 RaisePropertyChanged();
             }
         }
@@ -77,6 +104,16 @@ namespace CapFrameX.PMD
             }
         }
 
+        public string PciExSlotCur
+        {
+            get => _pciExSlotCur;
+            set
+            {
+                _pciExSlotCur = value;
+                RaisePropertyChanged();
+            }
+        }
+
         public string PciExSlotAvg
         {
             get => _pciExSlotAvg;
@@ -93,6 +130,16 @@ namespace CapFrameX.PMD
             set
             {
                 _pciExSlotMax = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public string AllCpuPowerCur
+        {
+            get => _allCpuPowerCur;
+            set
+            {
+                _allCpuPowerCur = value;
                 RaisePropertyChanged();
             }
         }
@@ -117,6 +164,16 @@ namespace CapFrameX.PMD
             }
         }
 
+        public string AllAtxPowerCur
+        {
+            get => _allAtxPowerCur;
+            set
+            {
+                _allAtxPowerCur = value;
+                RaisePropertyChanged();
+            }
+        }
+
         public string AllAtxPowerAvg
         {
             get => _allAtxPowerAvg;
@@ -133,6 +190,16 @@ namespace CapFrameX.PMD
             set
             {
                 _allAtxPowerMax = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public string AllPowerCur
+        {
+            get => _allPowerCur;
+            set
+            {
+                _allPowerCur = value;
                 RaisePropertyChanged();
             }
         }
@@ -178,7 +245,8 @@ namespace CapFrameX.PMD
             {
                 UpdateHistory(pmdMetricSet, _allGpuPowerAvgHistory, historyLength);
                 AllGpuPowerAvg = $"{_allGpuPowerAvgHistory.Average().ToString("F1", CultureInfo.InvariantCulture)} W";
-                if(pmdMetricSet.Max > _allGpuPowerMaxValue)
+                AllGpuPowerCur = $"{pmdMetricSet.Average.ToString("F1", CultureInfo.InvariantCulture)} W";
+                if (pmdMetricSet.Max > _allGpuPowerMaxValue)
                 {
                     _allGpuPowerMaxValue = pmdMetricSet.Max;
                     AllGpuPowerMax = $"{_allGpuPowerMaxValue.ToString("F1", CultureInfo.InvariantCulture)} W";
@@ -191,6 +259,7 @@ namespace CapFrameX.PMD
             {
                 UpdateHistory(pmdMetricSet, _allPciExAvgHistory, historyLength);
                 AllPciExAvg = $"{_allPciExAvgHistory.Average().ToString("F1", CultureInfo.InvariantCulture)} W";
+                AllPciExCur = $"{pmdMetricSet.Average.ToString("F1", CultureInfo.InvariantCulture)} W";
                 if (pmdMetricSet.Max > _allPciExMaxValue)
                 {
                     _allPciExMaxValue = pmdMetricSet.Max;
@@ -204,6 +273,7 @@ namespace CapFrameX.PMD
             {
                 UpdateHistory(pmdMetricSet, _pciExSlotAvgHistory, historyLength);
                 PciExSlotAvg = $"{_pciExSlotAvgHistory.Average().ToString("F1", CultureInfo.InvariantCulture)} W";
+                PciExSlotCur = $"{pmdMetricSet.Average.ToString("F1", CultureInfo.InvariantCulture)} W";
                 if (pmdMetricSet.Max > _pciExSlotMaxValue)
                 {
                     _pciExSlotMaxValue = pmdMetricSet.Max;
@@ -217,6 +287,7 @@ namespace CapFrameX.PMD
             {
                 UpdateHistory(pmdMetricSet, _allCpuPowerAvgHistory, historyLength);
                 AllCpuPowerAvg = $"{_allCpuPowerAvgHistory.Average().ToString("F1", CultureInfo.InvariantCulture)} W";
+                AllCpuPowerCur = $"{pmdMetricSet.Average.ToString("F1", CultureInfo.InvariantCulture)} W";
                 if (pmdMetricSet.Max > _allCpuPowerMaxValue)
                 {
                     _allCpuPowerMaxValue = pmdMetricSet.Max;
@@ -230,6 +301,7 @@ namespace CapFrameX.PMD
             {
                 UpdateHistory(pmdMetricSet, _allAtxPowerAvgHistory, historyLength);
                 AllAtxPowerAvg = $"{_allAtxPowerAvgHistory.Average().ToString("F1", CultureInfo.InvariantCulture)} W";
+                AllAtxPowerCur = $"{pmdMetricSet.Average.ToString("F1", CultureInfo.InvariantCulture)} W";
                 if (pmdMetricSet.Max > _allAtxPowerMaxValue)
                 {
                     _allAtxPowerMaxValue = pmdMetricSet.Max;
@@ -243,6 +315,7 @@ namespace CapFrameX.PMD
             {
                 UpdateHistory(pmdMetricSet, _allPowerAvgHistory, historyLength);
                 AllPowerAvg = $"{_allPowerAvgHistory.Average().ToString("F1", CultureInfo.InvariantCulture)} W";
+                AllPowerCur = $"{pmdMetricSet.Average.ToString("F1", CultureInfo.InvariantCulture)} W";
                 if (pmdMetricSet.Max > _allPowerMaxValue)
                 {
                     _allPowerMaxValue = pmdMetricSet.Max;
