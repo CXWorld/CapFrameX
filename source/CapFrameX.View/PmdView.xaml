@@ -33,9 +33,9 @@
             <ColumnDefinition Width="100"/>
         </Grid.ColumnDefinitions>
         <!--Style="{StaticResource MaterialDesignOutlinedTextBox}"-->
-        <ScrollViewer Grid.Row="0" Grid.Column="0" Margin="5 10 5 5" HorizontalScrollBarVisibility="Disabled">
+        <ScrollViewer Grid.Row="0" Grid.Column="0" Margin="5 10 5 5" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
             <StackPanel>
-                <GroupBox Header="GPU Total Power" Style="{DynamicResource MaterialDesignGroupBox}"
+                <GroupBox Header="GPU Total Power" FontSize="18" Style="{DynamicResource MaterialDesignGroupBox}"
                           materialDesign:ColorZoneAssist.Mode="Custom"
                           materialDesign:ColorZoneAssist.Background="Black"
                           materialDesign:ColorZoneAssist.Foreground="White">
@@ -54,7 +54,7 @@
                         </StackPanel>
                     </StackPanel>
                 </GroupBox>
-                <GroupBox Header="PCI Express Power" Style="{DynamicResource MaterialDesignGroupBox}">
+                <GroupBox Header="PCIe Power" FontSize="17" Style="{DynamicResource MaterialDesignGroupBox}">
                     <StackPanel Orientation="Vertical" Margin="0 -0 0 -0">
                         <StackPanel Orientation="Horizontal">
                             <Label Width="55" Height="30" FontSize="19" Content="Cur"/>
@@ -70,7 +70,7 @@
                         </StackPanel>
                     </StackPanel>
                 </GroupBox>
-                <GroupBox Header="PCI Express Slot Power" Style="{DynamicResource MaterialDesignGroupBox}">
+                <GroupBox Header="PCIe Slot Power" FontSize="18" Style="{DynamicResource MaterialDesignGroupBox}">
                     <StackPanel Orientation="Vertical" Margin="0 -0 0 -0">
                         <StackPanel Orientation="Horizontal">
                             <Label Width="55" Height="30" FontSize="19" Content="Cur"/>
@@ -103,9 +103,9 @@
                 </controls:PlotViewCustomZoom.DefaultTrackerTemplate>
             </controls:PlotViewCustomZoom>
         </Grid>
-        <ScrollViewer Grid.Row="1" Grid.Column="0" Margin="5 10 5 5" HorizontalScrollBarVisibility="Disabled">
+        <ScrollViewer Grid.Row="1" Grid.Column="0" Margin="5 10 5 5" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
             <StackPanel>
-                <GroupBox Header="CPU Total Power" Foreground="White" Style="{DynamicResource MaterialDesignGroupBox}">
+                <GroupBox Header="CPU Total Power" FontSize="18" Foreground="White" Style="{DynamicResource MaterialDesignGroupBox}">
                     <StackPanel Orientation="Vertical" Margin="0 -0 0 -0">
                         <StackPanel Orientation="Horizontal">
                             <Label Width="55" Height="30" FontSize="19" Content="Cur"/>
@@ -121,7 +121,7 @@
                         </StackPanel>
                     </StackPanel>
                 </GroupBox>
-                <GroupBox Header="ATX Power" Style="{DynamicResource MaterialDesignGroupBox}">
+                <GroupBox Header="ATX Power" FontSize="18" Style="{DynamicResource MaterialDesignGroupBox}">
                     <StackPanel Orientation="Vertical" Margin="0 -0 0 -0">
                         <StackPanel Orientation="Horizontal">
                             <Label Width="55" Height="30" FontSize="19" Content="Cur"/>
@@ -137,7 +137,7 @@
                         </StackPanel>
                     </StackPanel>
                 </GroupBox>
-                <GroupBox Header="System Power" Style="{StaticResource MaterialDesignGroupBox}"
+                <GroupBox Header="System Power" FontSize="18" Style="{StaticResource MaterialDesignGroupBox}"
                       materialDesign:ColorZoneAssist.Mode="Custom"
                       materialDesign:ColorZoneAssist.Background="Black"
                       materialDesign:ColorZoneAssist.Foreground="White">
