@@ -13,17 +13,19 @@ namespace CapFrameX.PMD
         private List<double> _ePS12VModelMaxYValueBuffer = new List<double>(10);
         private List<double> _pciExpressModelMaxYValueBuffer = new List<double>(10);
 
+       
+
         PlotModel _eps12VModel = new PlotModel
         {
             PlotMargins = new OxyThickness(50, 0, 50, 60),
-            PlotAreaBorderColor = OxyColor.FromArgb(64, 204, 204, 204)
         };
 
         PlotModel _pciExpressModel = new PlotModel
         {
             PlotMargins = new OxyThickness(50, 0, 50, 60),
-            PlotAreaBorderColor = OxyColor.FromArgb(64, 204, 204, 204)
         };
+
+        public bool UseDarkMode { get; set; }
 
         public PlotModel Eps12VModel => _eps12VModel;
 
@@ -103,8 +105,7 @@ namespace CapFrameX.PMD
                     Title = "Power Consumption CPU [W]",
                     FontSize = 13,
                     MajorGridlineStyle = LineStyle.Solid,
-                    MajorGridlineThickness = 1,
-                    MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
+                    MajorGridlineThickness = 1,                   
                     MajorStep = 20,
                     MinorTickSize = 0,
                     MajorTickSize = 0,
@@ -123,7 +124,6 @@ namespace CapFrameX.PMD
                         FontSize = 13,
                         MajorGridlineStyle = LineStyle.Solid,
                         MajorGridlineThickness = 1,
-                        MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
                         MajorStep = 20,
                         MinorTickSize = 0,
                         MajorTickSize = 0,
@@ -142,7 +142,6 @@ namespace CapFrameX.PMD
                         FontSize = 13,
                         MajorGridlineStyle = LineStyle.Solid,
                         MajorGridlineThickness = 1,
-                        MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
                         MinorTickSize = 0,
                         MajorTickSize = 0,
                         Minimum = 0,
@@ -160,7 +159,6 @@ namespace CapFrameX.PMD
                         FontSize = 13,
                         MajorGridlineStyle = LineStyle.Solid,
                         MajorGridlineThickness = 1,
-                        MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
                         MinorTickSize = 0,
                         MajorTickSize = 0,
                         Minimum = 0,
@@ -189,6 +187,27 @@ namespace CapFrameX.PMD
             PciExpressModel.Series.Clear();
             PciExpressModel.ResetAllAxes();
             PciExpressModel.InvalidatePlot(true);
+        }
+
+        public void UpdateCharts()
+        {
+            var gridAndBorderColor = UseDarkMode ? OxyColor.FromArgb(40, 204, 204, 204) : OxyColor.FromArgb(20, 30, 30, 30);
+            var textColor = UseDarkMode ? OxyColors.White : OxyColors.Black;
+
+            Eps12VModel.TextColor = textColor;
+            Eps12VModel.PlotAreaBorderColor = gridAndBorderColor;
+
+            PciExpressModel.TextColor = textColor;
+            PciExpressModel.PlotAreaBorderColor = gridAndBorderColor;
+
+            AxisDefinitions["Y_Axis_CPU_W"].MajorGridlineColor = gridAndBorderColor;
+            AxisDefinitions["Y_Axis_GPU_W"].MajorGridlineColor = gridAndBorderColor;
+
+            AxisDefinitions["X_Axis_Time_CPU"].MajorGridlineColor = gridAndBorderColor;           
+            AxisDefinitions["X_Axis_Time_GPU"].MajorGridlineColor = gridAndBorderColor;
+
+            Eps12VModel.InvalidatePlot(false);
+            PciExpressModel.InvalidatePlot(false);
         }
     }
 }

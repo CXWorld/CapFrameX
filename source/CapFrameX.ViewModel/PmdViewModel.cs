@@ -1,8 +1,10 @@
 ﻿using CapFrameX.Contracts.Configuration;
+using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Extensions;
 using CapFrameX.PMD;
 using Microsoft.Extensions.Logging;
 using OxyPlot;
+using Prism.Events;
 using Prism.Mvvm;
 using Prism.Regions;
 using System;
@@ -20,7 +22,7 @@ namespace CapFrameX.ViewModel
         private readonly ILogger<PmdViewModel> _logger;
         private readonly IPmdService _pmdService;
         private readonly object _updateChartBufferLock = new object();
-
+        private readonly IEventAggregator _eventAggregator;
         private bool _updateCharts = true;
         private bool _updateMetrics = true;
         private int _pmdDataWindowSeconds = 10;
@@ -116,11 +118,16 @@ namespace CapFrameX.ViewModel
         }
 
         public PmdViewModel(IPmdService pmdService, IAppConfiguration appConfiguration,
-            ILogger<PmdViewModel> logger)
+            ILogger<PmdViewModel> logger, IEventAggregator eventAggregator)
         {
             _pmdService = pmdService;
             _appConfiguration = appConfiguration;
+            _eventAggregator = eventAggregator;
             _logger = logger;
+
+            UpdatePmdChart();
+            SubscribeToThemeChanged();
+
         }
 
         private void SubscribePmdDataStreamCharts()
@@ -186,6 +193,21 @@ namespace CapFrameX.ViewModel
 
             SubscribePmdDataStreamCharts();
             SubscribePmdDataStreamMetrics();
+        }
+
+        private void SubscribeToThemeChanged()
+        {
+            _eventAggregator.GetEvent<PubSubEvent<ViewMessages.ThemeChanged>>()
+                              .Subscribe(msg =>
+                              {
+                                  UpdatePmdChart();
+                              });
+        }
+
+        private void UpdatePmdChart()
+        {
+            _pmdDataChartManager.UseDarkMode = _appConfiguration.UseDarkMode;
+            _pmdDataChartManager.UpdateCharts();
         }
     }
 }
