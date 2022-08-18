@@ -1,9 +1,11 @@
 ﻿using CapFrameX.Contracts.Configuration;
+using CapFrameX.Contracts.Data;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Extensions;
 using CapFrameX.PMD;
 using Microsoft.Extensions.Logging;
 using OxyPlot;
+using Prism.Commands;
 using Prism.Events;
 using Prism.Mvvm;
 using Prism.Regions;
@@ -13,6 +15,7 @@ using System.Linq;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using System.Windows.Input;
 
 namespace CapFrameX.ViewModel
 {
@@ -23,6 +26,8 @@ namespace CapFrameX.ViewModel
         private readonly IPmdService _pmdService;
         private readonly object _updateChartBufferLock = new object();
         private readonly IEventAggregator _eventAggregator;
+        private readonly ISystemInfo _systemInfo;
+
         private bool _updateCharts = true;
         private bool _updateMetrics = true;
         private int _pmdDataWindowSeconds = 10;
@@ -38,6 +43,12 @@ namespace CapFrameX.ViewModel
         public PlotModel PciExpressModel => _pmdDataChartManager.PciExpressModel;
 
         public PmdMetricsManager PmdMetrics => _pmdDataMetricsManager;
+
+        public string CpuName => _systemInfo.GetProcessorName();
+
+        public string GpuName => _systemInfo.GetGraphicCardName();
+
+        public ICommand ResetPmdMetricsCommand { get; }
 
         public bool UpdateCharts
         {
@@ -118,16 +129,18 @@ namespace CapFrameX.ViewModel
         }
 
         public PmdViewModel(IPmdService pmdService, IAppConfiguration appConfiguration,
-            ILogger<PmdViewModel> logger, IEventAggregator eventAggregator)
+            ILogger<PmdViewModel> logger, IEventAggregator eventAggregator, ISystemInfo systemInfo)
         {
             _pmdService = pmdService;
             _appConfiguration = appConfiguration;
             _eventAggregator = eventAggregator;
             _logger = logger;
+            _systemInfo = systemInfo;
+
+            ResetPmdMetricsCommand = new DelegateCommand(() => _pmdDataMetricsManager.ResetHistory());
 
             UpdatePmdChart();
             SubscribeToThemeChanged();
-
         }
 
         private void SubscribePmdDataStreamCharts()

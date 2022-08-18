@@ -11,9 +11,7 @@ namespace CapFrameX.PMD
     public class PmdDataChartManager
     {
         private List<double> _ePS12VModelMaxYValueBuffer = new List<double>(10);
-        private List<double> _pciExpressModelMaxYValueBuffer = new List<double>(10);
-
-       
+        private List<double> _pciExpressModelMaxYValueBuffer = new List<double>(10);       
 
         PlotModel _eps12VModel = new PlotModel
         {

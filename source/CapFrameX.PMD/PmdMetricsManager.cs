@@ -361,16 +361,40 @@ namespace CapFrameX.PMD
                 _allCpuPowerAvgHistory.Clear();
                 _allAtxPowerAvgHistory.Clear();
             }
+
+            AllGpuPowerAvg = "0.0W";
+            AllGpuPowerCur = "0.0W";
+            AllGpuPowerMax = "0.0W";
+            AllPciExAvg = "0.0W";
+            AllPciExCur = "0.0W";
+            AllPciExMax = "0.0W";
+            PciExSlotAvg = "0.0W";
+            PciExSlotCur = "0.0W";
+            PciExSlotMax = "0.0W";
+            AllCpuPowerAvg = "0.0W";
+            AllCpuPowerCur = "0.0W";
+            AllCpuPowerMax = "0.0W";
+            AllAtxPowerAvg = "0.0W";
+            AllAtxPowerCur = "0.0W";
+            AllAtxPowerMax = "0.0W";
+            AllPowerAvg = "0.0W";
+            AllPowerCur = "0.0W";
+            AllPowerMax = "0.0W";
+
+            _allPowerMaxValue = float.MinValue;
+            _allGpuPowerMaxValue = float.MinValue;
+            _allPciExMaxValue = float.MinValue;
+            _pciExSlotMaxValue = float.MinValue;
+            _allCpuPowerMaxValue = float.MinValue;
         }
 
-
-        private void UpdateHistory(PmdMetricSet pmdMetricSet, List<float> allPowerAvgHistory, int historyLength)
+        private void UpdateHistory(PmdMetricSet pmdMetricSet, List<float> historyData, int historyLength)
         {
-            allPowerAvgHistory.Add(pmdMetricSet.Average);
+            historyData.Add(pmdMetricSet.Average);
 
-            int count = allPowerAvgHistory.Count;
+            int count = historyData.Count;
             if (count > historyLength)
-                allPowerAvgHistory.RemoveRange(0, count - historyLength);
+                historyData.RemoveRange(0, count - historyLength);
         }
     }
 
