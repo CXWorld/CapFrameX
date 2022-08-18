@@ -44,6 +44,18 @@ namespace CapFrameX.PMD
 
         private readonly object _resetHistoryLock = new object();
 
+
+        public bool GpuPowerIncomplete
+        {
+            get => PciExSlotCur == "NaN W";
+        }
+
+        public bool SystemPowerIncomplete
+        {
+            get => AllPciExCur == "NaN W" || AllCpuPowerCur == "NaN W" || AllAtxPowerCur == "NaN W";
+        }
+
+
         public string AllGpuPowerCur
         {
             get => _allGpuPowerCur;
@@ -81,6 +93,7 @@ namespace CapFrameX.PMD
             {
                 _allPciExCur = value;
                 RaisePropertyChanged();
+                RaisePropertyChanged(nameof(SystemPowerIncomplete));
             }
         }
 
@@ -111,6 +124,7 @@ namespace CapFrameX.PMD
             {
                 _pciExSlotCur = value;
                 RaisePropertyChanged();
+                RaisePropertyChanged(nameof(GpuPowerIncomplete));
             }
         }
 
@@ -141,6 +155,7 @@ namespace CapFrameX.PMD
             {
                 _allCpuPowerCur = value;
                 RaisePropertyChanged();
+                RaisePropertyChanged(nameof(SystemPowerIncomplete));
             }
         }
 
@@ -171,6 +186,7 @@ namespace CapFrameX.PMD
             {
                 _allAtxPowerCur = value;
                 RaisePropertyChanged();
+                RaisePropertyChanged(nameof(SystemPowerIncomplete));
             }
         }
 
