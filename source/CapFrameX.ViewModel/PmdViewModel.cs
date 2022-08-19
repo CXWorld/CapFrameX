@@ -14,7 +14,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
-using System.Reactive.Subjects;
 using System.Windows.Input;
 
 namespace CapFrameX.ViewModel
@@ -31,6 +30,7 @@ namespace CapFrameX.ViewModel
         private bool _updateCharts = true;
         private bool _updateMetrics = true;
         private int _pmdDataWindowSeconds = 10;
+        private bool _usePmdService;
 
         private IDisposable _pmdChannelStreamChartsDisposable;
         private IDisposable _pmdChannelStreamMetricsDisposable;
@@ -48,7 +48,36 @@ namespace CapFrameX.ViewModel
 
         public string GpuName => _systemInfo.GetGraphicCardName();
 
+        public Array ComPortsItemsSource => _pmdService.GetPortNames();
+
         public ICommand ResetPmdMetricsCommand { get; }
+
+        public bool UsePmdService
+        {
+            get => _usePmdService;
+            set
+            {
+                _usePmdService = value;
+                RaisePropertyChanged();
+                RaisePropertyChanged(nameof(IsComPortEnabled));
+                ManagePmdService();
+            }
+        }
+
+        public bool IsComPortEnabled
+        {
+            get => !_usePmdService;
+        }
+
+        public string SelectedComPort
+        {
+            get => _pmdService.PortName;
+            set
+            {
+                _pmdService.PortName = value;
+                RaisePropertyChanged();
+            }            
+        }
 
         public bool UpdateCharts
         {
@@ -193,34 +222,49 @@ namespace CapFrameX.ViewModel
 
         public void OnNavigatedFrom(NavigationContext navigationContext)
         {
-            _pmdChannelStreamChartsDisposable?.Dispose();
-            _pmdService.ShutDownDriver();
+            _updateCharts = false;
+            _pmdDataChartManager.ResetAllPLotModels();
+            _chartaDataBuffer.Clear();
         }
 
         public void OnNavigatedTo(NavigationContext navigationContext)
         {
-            _chartaDataBuffer.Clear();
-            _pmdDataChartManager.ResetAllPLotModels();
-            _pmdService.PortName = _pmdService.GetPortNames().FirstOrDefault();
-            _pmdService.StartDriver();
-
-            SubscribePmdDataStreamCharts();
-            SubscribePmdDataStreamMetrics();
+            _updateCharts = true;
         }
 
         private void SubscribeToThemeChanged()
         {
             _eventAggregator.GetEvent<PubSubEvent<ViewMessages.ThemeChanged>>()
-                              .Subscribe(msg =>
-                              {
-                                  UpdatePmdChart();
-                              });
+                .Subscribe(msg =>
+                {
+                    UpdatePmdChart();
+                });
         }
 
         private void UpdatePmdChart()
         {
             _pmdDataChartManager.UseDarkMode = _appConfiguration.UseDarkMode;
             _pmdDataChartManager.UpdateCharts();
+        }
+
+        private void ManagePmdService()
+        {
+            if(UsePmdService)
+            {
+                _chartaDataBuffer.Clear();
+                _pmdDataChartManager.ResetAllPLotModels();
+                _pmdDataMetricsManager.ResetHistory();
+                _pmdService.StartDriver();
+
+                SubscribePmdDataStreamCharts();
+                SubscribePmdDataStreamMetrics();
+            }
+            else
+            {
+                _pmdChannelStreamChartsDisposable?.Dispose();
+                _pmdChannelStreamMetricsDisposable?.Dispose();
+                _pmdService.ShutDownDriver();
+            }
         }
     }
 }

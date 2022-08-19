@@ -34,12 +34,9 @@
             <ColumnDefinition Width="100"/>
         </Grid.ColumnDefinitions>
         <!--Style="{StaticResource MaterialDesignOutlinedTextBox}"-->
-        <ScrollViewer Grid.Row="0" Grid.Column="0" Margin="5 10 5 5" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+        <ScrollViewer Grid.Row="0" Grid.Column="0" Margin="5 5 5 5" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
             <StackPanel>
-                <GroupBox Header="GPU Total Power" FontSize="18" Style="{DynamicResource MaterialDesignGroupBox}"
-                          materialDesign:ColorZoneAssist.Mode="Custom"
-                          materialDesign:ColorZoneAssist.Background="Black"
-                          materialDesign:ColorZoneAssist.Foreground="White">
+                <GroupBox Header="GPU Total Power" FontSize="18" Style="{DynamicResource MaterialDesignGroupBox}">
                     <StackPanel Orientation="Vertical" Margin="0 -0 0 -0">
                         <materialDesign:PackIcon Foreground="Red" Margin="140 -55 0 0" Visibility="{Binding PmdMetrics.GpuPowerIncomplete, Converter={StaticResource TrueToVisibleConverter}}" 
                                                  Kind="Information" VerticalAlignment="Center" >
@@ -98,14 +95,16 @@
         <Grid Grid.Row="0" Grid.Column="1">
             <Grid>
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="40"/>
+                    <RowDefinition Height="50"/>
                     <RowDefinition Height="1*"/>
                 </Grid.RowDefinitions>
-                <TextBox Text="{Binding GpuName, Mode=OneWay}" HorizontalAlignment="Center" IsReadOnly="True" IsHitTestVisible="False" 
+                <Grid Margin="0 5 0 0" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
+                    <TextBox Text="{Binding GpuName, Mode=OneWay}" HorizontalAlignment="Center" IsReadOnly="True" IsHitTestVisible="False" 
                          Width="Auto" Height="30" FontWeight="Bold" FontSize="18" Foreground="{DynamicResource MaterialDesignBody}"/>
+                </Grid>
 
                 <controls:PlotViewCustomZoom Grid.Row="1" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" x:Name="PciExpressPlotView" 
-                                         Model="{Binding PciExpressModel}" Tag="{Binding ElementName=PmdView, Path=DataContext}" Margin="0 10 0 10"
+                                         Model="{Binding PciExpressModel}" Tag="{Binding ElementName=PmdView, Path=DataContext}" Margin="0 5 0 0"
 										 MouseDoubleClick="ResetPciExpressChart_MouseDoubleClick">
                     <controls:PlotViewCustomZoom.DefaultTrackerTemplate>
                         <ControlTemplate>
@@ -183,13 +182,15 @@
         <Grid Grid.Row="1" Grid.Column="1">
             <Grid>
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="40"/>
+                    <RowDefinition Height="50"/>
                     <RowDefinition Height="1*"/>
                 </Grid.RowDefinitions>
-                <TextBox Text="{Binding CpuName, Mode=OneWay}" HorizontalAlignment="Center" IsReadOnly="True" IsHitTestVisible="False" 
+                <Grid Margin="0 5 0 0" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
+                    <TextBox Text="{Binding CpuName, Mode=OneWay}" HorizontalAlignment="Center" IsReadOnly="True" IsHitTestVisible="False" 
                          Width="Auto" Height="30" FontWeight="Bold" FontSize="18" Foreground="{DynamicResource MaterialDesignBody}"/>
+                </Grid>
                 <controls:PlotViewCustomZoom Grid.Row="1" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" x:Name="EPS12VPlotView" 
-                                         Model="{Binding EPS12VModel}" Tag="{Binding ElementName=PmdView, Path=DataContext}" Margin="0 10 0 10"
+                                         Model="{Binding EPS12VModel}" Tag="{Binding ElementName=PmdView, Path=DataContext}" Margin="0 5 0 5"
 										 MouseDoubleClick="ResetEPS12VChart_MouseDoubleClick">
                     <controls:PlotViewCustomZoom.DefaultTrackerTemplate>
                         <ControlTemplate>
@@ -203,9 +204,39 @@
                 </controls:PlotViewCustomZoom>
             </Grid>
         </Grid>
-        <Button Grid.Row="2" Width="190" Height="40" Command="{Binding ResetPmdMetricsCommand}"
+        <Button Grid.Row="2" Margin="0 0 0 5" Width="190" Height="40" Command="{Binding ResetPmdMetricsCommand}"
                 Foreground="White" Background="{DynamicResource MaterialDesignToolBackground}">
             Reset PMD Metrics
         </Button>
+        <Grid Grid.Row="2" Grid.Column="1" Margin="0 0 0 5" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="20 0 0 0">
+                <TextBlock Text="Start/Stop PMD" FontSize="14" VerticalAlignment="Center" Margin="0 0 0 0"/>
+                <ToggleButton Margin="10 0 0 0" IsChecked="{Binding UsePmdService}" Style="{StaticResource MaterialDesignSwitchToggleButton}"
+                              ToolTipService.ShowDuration="25000">
+                    <ToggleButton.ToolTip>
+                        <ToolTip MaxWidth="350">
+                            <TextBlock Text="Start or stop the PMD service."
+                                       TextWrapping="Wrap"/>
+                        </ToolTip>
+                    </ToggleButton.ToolTip>
+                </ToggleButton>
+
+                <TextBlock Text="COM Port" FontSize="14" VerticalAlignment="Center" Margin="30 0 0 0"/>
+                <ComboBox Margin="10 -20 0 0" Padding="0 10 0 0" FontSize="14" Style="{StaticResource MaterialDesignComboBox}"
+					                  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="150" Width="80" Height="40" materialDesign:HintAssist.HintOpacity=".8"
+					                  ItemsSource="{Binding ComPortsItemsSource}" SelectedItem="{Binding SelectedComPort}" IsEnabled="{Binding IsComPortEnabled}"
+                                      ToolTipService.ShowDuration="25000" Foreground="{DynamicResource MaterialDesignBody}">
+                    <ComboBox.ToolTip>
+                        <ToolTip MaxWidth="350">
+                            <TextBlock Text="Select the COM Port." 
+                                       TextWrapping="Wrap"/>
+                        </ToolTip>
+                    </ComboBox.ToolTip>
+                </ComboBox>
+            </StackPanel>
+        </Grid>
+        <Grid Grid.RowSpan="3" Grid.Column="2" Margin="5 5 0 5" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
+
+        </Grid>
     </Grid>
 </UserControl>

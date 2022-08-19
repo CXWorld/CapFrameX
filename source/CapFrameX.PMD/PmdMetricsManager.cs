@@ -7,26 +7,28 @@ namespace CapFrameX.PMD
 {
     public class PmdMetricsManager : BindableBase
     {
-        private string _allPowerCur = "0.0W";
-        private string _allGpuPowerCur = "0.0W";
-        private string _allPciExCur = "0.0W";
-        private string _pciExSlotCur = "0.0W";
-        private string _allCpuPowerCur = "0.0W";
-        private string _allAtxPowerCur = "0.0W";
+        const string ZERO_WATT = "0.0 W";
 
-        private string _allPowerAvg = "0.0W";
-        private string _allGpuPowerAvg = "0.0W";
-        private string _allPciExAvg = "0.0W";
-        private string _pciExSlotAvg = "0.0W";
-        private string _allCpuPowerAvg = "0.0W";
-        private string _allAtxPowerAvg = "0.0W";
+        private string _allPowerCur = ZERO_WATT;
+        private string _allGpuPowerCur = ZERO_WATT;
+        private string _allPciExCur = ZERO_WATT;
+        private string _pciExSlotCur = ZERO_WATT;
+        private string _allCpuPowerCur = ZERO_WATT;
+        private string _allAtxPowerCur = ZERO_WATT;
 
-        private string _allPowerMax = "0.0W";
-        private string _allGpuPowerMax = "0.0W";
-        private string _allPciExMax = "0.0W";
-        private string _pciExSlotMax = "0.0W";
-        private string _allCpuPowerMax = "0.0W";
-        private string _allAtxPowerMax = "0.0W";
+        private string _allPowerAvg = ZERO_WATT;
+        private string _allGpuPowerAvg = ZERO_WATT;
+        private string _allPciExAvg = ZERO_WATT;
+        private string _pciExSlotAvg = ZERO_WATT;
+        private string _allCpuPowerAvg = ZERO_WATT;
+        private string _allAtxPowerAvg = ZERO_WATT;
+
+        private string _allPowerMax = ZERO_WATT;
+        private string _allGpuPowerMax = ZERO_WATT;
+        private string _allPciExMax = ZERO_WATT;
+        private string _pciExSlotMax = ZERO_WATT;
+        private string _allCpuPowerMax = ZERO_WATT;
+        private string _allAtxPowerMax = ZERO_WATT;
 
         private float _allPowerMaxValue = float.MinValue;
         private float _allGpuPowerMaxValue = float.MinValue;
@@ -44,15 +46,14 @@ namespace CapFrameX.PMD
 
         private readonly object _resetHistoryLock = new object();
 
-
         public bool GpuPowerIncomplete
         {
-            get => PciExSlotCur == "NaN W";
+            get => PciExSlotCur == ZERO_WATT || AllPciExCur == ZERO_WATT;
         }
 
         public bool SystemPowerIncomplete
         {
-            get => AllPciExCur == "NaN W" || AllCpuPowerCur == "NaN W" || AllAtxPowerCur == "NaN W";
+            get => AllPciExCur == ZERO_WATT || AllCpuPowerCur == ZERO_WATT || AllAtxPowerCur == ZERO_WATT;
         }
 
 
@@ -94,6 +95,7 @@ namespace CapFrameX.PMD
                 _allPciExCur = value;
                 RaisePropertyChanged();
                 RaisePropertyChanged(nameof(SystemPowerIncomplete));
+                RaisePropertyChanged(nameof(GpuPowerIncomplete));
             }
         }
 
@@ -378,30 +380,31 @@ namespace CapFrameX.PMD
                 _allAtxPowerAvgHistory.Clear();
             }
 
-            AllGpuPowerAvg = "0.0W";
-            AllGpuPowerCur = "0.0W";
-            AllGpuPowerMax = "0.0W";
-            AllPciExAvg = "0.0W";
-            AllPciExCur = "0.0W";
-            AllPciExMax = "0.0W";
-            PciExSlotAvg = "0.0W";
-            PciExSlotCur = "0.0W";
-            PciExSlotMax = "0.0W";
-            AllCpuPowerAvg = "0.0W";
-            AllCpuPowerCur = "0.0W";
-            AllCpuPowerMax = "0.0W";
-            AllAtxPowerAvg = "0.0W";
-            AllAtxPowerCur = "0.0W";
-            AllAtxPowerMax = "0.0W";
-            AllPowerAvg = "0.0W";
-            AllPowerCur = "0.0W";
-            AllPowerMax = "0.0W";
+            AllGpuPowerAvg = ZERO_WATT;
+            AllGpuPowerCur = ZERO_WATT;
+            AllGpuPowerMax = ZERO_WATT;
+            AllPciExAvg = ZERO_WATT;
+            AllPciExCur = ZERO_WATT;
+            AllPciExMax = ZERO_WATT;
+            PciExSlotAvg = ZERO_WATT;
+            PciExSlotCur = ZERO_WATT;
+            PciExSlotMax = ZERO_WATT;
+            AllCpuPowerAvg = ZERO_WATT;
+            AllCpuPowerCur = ZERO_WATT;
+            AllCpuPowerMax = ZERO_WATT;
+            AllAtxPowerAvg = ZERO_WATT;
+            AllAtxPowerCur = ZERO_WATT;
+            AllAtxPowerMax = ZERO_WATT;
+            AllPowerAvg = ZERO_WATT; ;
+            AllPowerCur = ZERO_WATT;
+            AllPowerMax = ZERO_WATT;
 
             _allPowerMaxValue = float.MinValue;
             _allGpuPowerMaxValue = float.MinValue;
             _allPciExMaxValue = float.MinValue;
             _pciExSlotMaxValue = float.MinValue;
             _allCpuPowerMaxValue = float.MinValue;
+            _allAtxPowerMaxValue = float.MinValue;
         }
 
         private void UpdateHistory(PmdMetricSet pmdMetricSet, List<float> historyData, int historyLength)
