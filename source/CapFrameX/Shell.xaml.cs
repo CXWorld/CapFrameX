@@ -39,11 +39,11 @@ namespace CapFrameX
             if (source != null)
             {
                 source.AddHook(new HwndSourceHook(HandleMessages));
-                source.CompositionTarget.RenderMode
-                    = /*IsGpuAccelerationActive ? RenderMode.Default :*/ RenderMode.SoftwareOnly;
+                source.CompositionTarget.RenderMode = RenderMode.SoftwareOnly;
             }
 
             base.OnSourceInitialized(e);
+            IconHelper.RemoveIcon(this);
         }
 
         private IntPtr HandleMessages(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
