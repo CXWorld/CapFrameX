@@ -100,7 +100,6 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="EPmdDriverStatus.cs" />
     <Compile Include="IPmdDriver.cs" />
     <Compile Include="IPmdService.cs" />
     <Compile Include="PmdChannel.cs" />

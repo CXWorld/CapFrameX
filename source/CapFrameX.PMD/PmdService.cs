@@ -9,6 +9,7 @@ using System.Windows;
 using CapFrameX.Contracts.Configuration;
 using Microsoft.Extensions.Logging;
 using CapFrameX.Extensions.NetStandard;
+using CapFrameX.Contracts.PMD;
 
 namespace CapFrameX.PMD
 {

@@ -1,5 +1,6 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
+using CapFrameX.Contracts.PMD;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Extensions;
 using CapFrameX.PMD;
@@ -37,6 +38,7 @@ namespace CapFrameX.ViewModel
         private List<PmdChannel[]> _chartaDataBuffer = new List<PmdChannel[]>(1000 * 10);
         private PmdDataChartManager _pmdDataChartManager = new PmdDataChartManager();
         private PmdMetricsManager _pmdDataMetricsManager = new PmdMetricsManager(500, 10);
+        private EPmdDriverStatus _pmdCaptureStatus;
 
         public PlotModel EPS12VModel => _pmdDataChartManager.Eps12VModel;
 
@@ -76,7 +78,7 @@ namespace CapFrameX.ViewModel
             {
                 _pmdService.PortName = value;
                 RaisePropertyChanged();
-            }            
+            }
         }
 
         public bool UpdateCharts
@@ -132,6 +134,16 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        public EPmdDriverStatus PmdCaptureStatus
+        {
+            get => _pmdCaptureStatus;
+            set
+            {
+                _pmdCaptureStatus = value;
+                RaisePropertyChanged();
+            }
+        }
+
         public int PmdDataWindowSeconds
         {
             get => _pmdDataWindowSeconds;
@@ -170,6 +182,9 @@ namespace CapFrameX.ViewModel
 
             UpdatePmdChart();
             SubscribeToThemeChanged();
+            _pmdService.PmdstatusStream
+                .SubscribeOnDispatcher()
+                .Subscribe(status => PmdCaptureStatus = status);
         }
 
         private void SubscribePmdDataStreamCharts()
@@ -249,7 +264,7 @@ namespace CapFrameX.ViewModel
 
         private void ManagePmdService()
         {
-            if(UsePmdService)
+            if (UsePmdService)
             {
                 _chartaDataBuffer.Clear();
                 _pmdDataChartManager.ResetAllPLotModels();

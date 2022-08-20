@@ -20,6 +20,7 @@
         <ResourceDictionary>
             <mvvm:BoolToVisibilityConverter x:Key="TrueToVisibleConverter" FalseValue="Collapsed" TrueValue="Visible"/>
             <mvvm:EnumDescriptionConverter x:Key="EnumDescriptionConverter"/>
+            <mvvm:PmdStatusColorConverter x:Key="PmdStatusColorConverter"/>
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid>
@@ -233,6 +234,11 @@
                         </ToolTip>
                     </ComboBox.ToolTip>
                 </ComboBox>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0 0 20 0">
+                <TextBlock VerticalAlignment="Center" FontSize="14" Foreground="{DynamicResource MaterialDesignBody}">PMD Service Status:</TextBlock>
+                <TextBlock Margin="10 0 0 0" Width="Auto" VerticalAlignment="Center" Text="{Binding PmdCaptureStatus, Converter={StaticResource EnumDescriptionConverter}}" 
+                           FontWeight="Bold" FontSize="14" Foreground="{Binding PmdCaptureStatus, Converter={StaticResource PmdStatusColorConverter}}"/>
             </StackPanel>
         </Grid>
         <Grid Grid.RowSpan="3" Grid.Column="2" Margin="5 5 0 5" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">

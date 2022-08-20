@@ -5,6 +5,7 @@ using System.Reactive.Subjects;
 using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
 using System.Text;
+using CapFrameX.Contracts.PMD;
 
 namespace CapFrameX.PMD
 {
