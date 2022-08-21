@@ -508,11 +508,9 @@ namespace OpenHardwareMonitor.Hardware.ATI
                     if (key != null)
                     {
                         var sv = key.GetValue("RadeonSoftwareVersion");
-                        var se = key.GetValue("RadeonSoftwareEdition");
                         var radeonSoftwareVersion = sv == null ? string.Empty : sv.ToString();
-                        var radeonSoftwareEdition = se == null ? string.Empty : se.ToString();
 
-                        return $"{radeonSoftwareEdition} {radeonSoftwareVersion}";
+                        return $"Adrenalin {radeonSoftwareVersion}";
                     }
                 }
             }
