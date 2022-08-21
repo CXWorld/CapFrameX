@@ -48,7 +48,7 @@ namespace OpenHardwareMonitor.Hardware.CPU
             // Alder Lake (Intel 7/10nm): 0x97, 0x9A
             // Raptor Lake (Intel 7/10nm): 0xB7
             // Zen 5 (3nm)?
-            return vendor == Vendor.Intel && family == 0x06 
+            return vendor == Vendor.Intel && family == 0x06
                 && (model == 0x97 || model == 0x9A || model == 0xB7);
         }
 
@@ -181,11 +181,13 @@ namespace OpenHardwareMonitor.Hardware.CPU
                   out estimatedTimeStampCounterFrequency,
                   out estimatedTimeStampCounterFrequencyError);
 
+                EstimatedTimeStampCounterFrequencyError = estimatedTimeStampCounterFrequencyError;
+
                 ThreadAffinity.Set(previousAffinity);
             }
             else
             {
-                estimatedTimeStampCounterFrequency = 0;
+                EstimatedTimeStampCounterFrequencyError = 0;
             }
 
             TimeStampCounterFrequency = estimatedTimeStampCounterFrequency;
@@ -228,13 +230,13 @@ namespace OpenHardwareMonitor.Hardware.CPU
             try
             {
                 frequency = GetTimeStampCounterFrequency() / 1E06;
+                error = frequency == 0 ? 1 : 0;
             }
             catch
             {
-                frequency = 3600;
+                frequency = 0;
+                error = 1;
             }
-
-            error = 0;
         }
 
         protected virtual uint[] GetMSRs() => null;
@@ -246,6 +248,8 @@ namespace OpenHardwareMonitor.Hardware.CPU
         public bool HasTimeStampCounter { get; }
 
         public double TimeStampCounterFrequency { get; set; }
+
+        public double EstimatedTimeStampCounterFrequencyError { get; set; }
 
         public override Vendor Vendor => vendor;
 

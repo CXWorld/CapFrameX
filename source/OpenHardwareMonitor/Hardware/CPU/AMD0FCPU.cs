@@ -174,14 +174,22 @@ namespace OpenHardwareMonitor.Hardware.CPU
                             // 8-13 hold StartFID, we don't use that here.
                             double curMP = 0.5 * ((eax & 0x3F) + 8);
                             double maxMP = 0.5 * ((eax >> 16 & 0x3F) + 8);
-                            coreClocks[i].Value =
-                              (float)(curMP * TimeStampCounterFrequency / maxMP);
-                            newBusClock = (float)(TimeStampCounterFrequency / maxMP);
+
+                            if (EstimatedTimeStampCounterFrequencyError == 0)
+                            {
+                                coreClocks[i].Value = (float)(curMP * TimeStampCounterFrequency / maxMP);
+                                newBusClock = (float)(TimeStampCounterFrequency / maxMP);
+                            }
+                            else
+                            {
+                                coreClocks[i].Value = 0;
+                                newBusClock = 100;
+                            }
                         }
                         else
                         {
                             // Fail-safe value - if the code above fails, we'll use this instead
-                            coreClocks[i].Value = (float)TimeStampCounterFrequency;
+                            coreClocks[i].Value = EstimatedTimeStampCounterFrequencyError == 0 ? (float)TimeStampCounterFrequency : 0;
                         }
                     }
 

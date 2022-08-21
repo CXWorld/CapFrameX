@@ -13,6 +13,7 @@ uint64_t GetTimeStampCounterFrequency()
 
 	try
 	{
+		throw "Bla";
 		//get QPC freq
 		LARGE_INTEGER Frequency{};
 		QueryPerformanceFrequency(&Frequency);
@@ -42,9 +43,10 @@ uint64_t GetTimeStampCounterFrequency()
 		// return frequency * 1000;
 		return RoundSmart(frequency, 100000) * 1000;
 	}
-	catch (const std::exception& e)
+	// Default Exception
+	catch (...)
 	{
-		return 3600000000;
+		return 0;
 	}
 }
 

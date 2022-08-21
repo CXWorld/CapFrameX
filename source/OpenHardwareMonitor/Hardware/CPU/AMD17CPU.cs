@@ -151,8 +151,16 @@ namespace OpenHardwareMonitor.Hardware.CPU
             timeStampCounterMultiplier = GetTimeStampCounterMultiplier();
             if (timeStampCounterMultiplier > 0)
             {
-                busClock.Value = (float)(TimeStampCounterFrequency /
-                  timeStampCounterMultiplier);
+
+                if (EstimatedTimeStampCounterFrequencyError == 0)
+                {
+                    busClock.Value = (float)(TimeStampCounterFrequency / timeStampCounterMultiplier);
+                }
+                else
+                {
+                    busClock.Value = 100;
+                }
+
                 ActivateSensor(busClock);
             }
 
