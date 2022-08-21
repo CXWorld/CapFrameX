@@ -13,7 +13,6 @@ uint64_t GetTimeStampCounterFrequency()
 
 	try
 	{
-		throw "Bla";
 		//get QPC freq
 		LARGE_INTEGER Frequency{};
 		QueryPerformanceFrequency(&Frequency);
