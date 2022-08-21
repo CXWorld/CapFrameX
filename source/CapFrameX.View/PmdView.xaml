@@ -16,6 +16,7 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800"
              Background="{DynamicResource MaterialDesignBackground}"
+             Foreground="{DynamicResource MaterialDesignBody}"
 			 prism:ViewModelLocator.AutoWireViewModel="True">
     <UserControl.Resources>
         <ResourceDictionary>
@@ -103,7 +104,7 @@
                 </Grid.RowDefinitions>
                 <Grid Margin="0 5 0 0" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
                     <TextBox Text="{Binding GpuName, Mode=OneWay}" HorizontalAlignment="Center" IsReadOnly="True" IsHitTestVisible="False" 
-                         Width="Auto" Height="30" FontWeight="Bold" FontSize="18" Foreground="{DynamicResource MaterialDesignBody}"/>
+                         Width="Auto" Height="30" FontWeight="Bold" FontSize="18"/>
                 </Grid>
 
                 <controls:PlotViewCustomZoom Grid.Row="1" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" x:Name="PciExpressPlotView" 
@@ -190,7 +191,7 @@
                 </Grid.RowDefinitions>
                 <Grid Margin="0 5 0 0" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
                     <TextBox Text="{Binding CpuName, Mode=OneWay}" HorizontalAlignment="Center" IsReadOnly="True" IsHitTestVisible="False" 
-                         Width="Auto" Height="30" FontWeight="Bold" FontSize="18" Foreground="{DynamicResource MaterialDesignBody}"/>
+                         Width="Auto" Height="30" FontWeight="Bold" FontSize="18"/>
                 </Grid>
                 <controls:PlotViewCustomZoom Grid.Row="1" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" x:Name="EPS12VPlotView" 
                                          Model="{Binding EPS12VModel}" Tag="{Binding ElementName=PmdView, Path=DataContext}" Margin="0 5 0 5"
@@ -228,7 +229,7 @@
                 <ComboBox Margin="10 -20 0 0" Padding="0 10 0 0" FontSize="14" Style="{StaticResource MaterialDesignComboBox}"
 					                  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="150" Width="80" Height="40" materialDesign:HintAssist.HintOpacity=".8"
 					                  ItemsSource="{Binding ComPortsItemsSource}" SelectedItem="{Binding SelectedComPort}" IsEnabled="{Binding IsComPortEnabled}"
-                                      ToolTipService.ShowDuration="25000" Foreground="{DynamicResource MaterialDesignBody}">
+                                      ToolTipService.ShowDuration="25000">
                     <ComboBox.ToolTip>
                         <ToolTip MaxWidth="350">
                             <TextBlock Text="Select the COM Port." 
@@ -238,7 +239,7 @@
                 </ComboBox>
             </StackPanel>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0 0 20 0">
-                <TextBlock VerticalAlignment="Center" FontSize="14" Foreground="{DynamicResource MaterialDesignBody}">PMD Service Status:</TextBlock>
+                <TextBlock VerticalAlignment="Center" FontSize="14">PMD Service Status:</TextBlock>
                 <TextBlock Margin="10 0 0 0" Width="Auto" VerticalAlignment="Center" Text="{Binding PmdCaptureStatus, Converter={StaticResource EnumDescriptionConverter}}" 
                            FontWeight="Bold" FontSize="14" Foreground="{Binding PmdCaptureStatus, Converter={StaticResource PmdStatusColorConverter}}"/>
             </StackPanel>
