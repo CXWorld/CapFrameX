@@ -243,8 +243,11 @@
                            FontWeight="Bold" FontSize="14" Foreground="{Binding PmdCaptureStatus, Converter={StaticResource PmdStatusColorConverter}}"/>
             </StackPanel>
         </Grid>
+        <!--PMD Options (right sid)-->
         <Grid Grid.RowSpan="3" Grid.Column="2" Margin="5 5 0 5" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
-
+            <StackPanel Orientation="Vertical">
+                
+            </StackPanel>
         </Grid>
     </Grid>
 </UserControl>
