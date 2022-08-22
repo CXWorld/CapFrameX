@@ -15,13 +15,11 @@ namespace CapFrameX.PMD
 {
     public class PmdService : IPmdService
     {
-        public const int MAX_DOWNSAMPLING_SIZE = 100;
-
         private readonly IPmdDriver _pmdDriver;
         private readonly IAppConfiguration _appConfiguration;
         private readonly ILogger<PmdService> _logger;
         private readonly ISubject<PmdChannel[]> _pmdChannelStream = new Subject<PmdChannel[]>();
-        private readonly List<PmdChannel[]> _channelsBuffer = new List<PmdChannel[]>(MAX_DOWNSAMPLING_SIZE + 1);
+        private readonly List<PmdChannel[]> _channelsBuffer = new List<PmdChannel[]>(1000);
 
         private IDisposable _pmdChannelStreamDisposable;
 
@@ -76,7 +74,7 @@ namespace CapFrameX.PMD
             _channelsBuffer.Clear();
 
             return _pmdDriver.Disconnect();
-        } 
+        }
 
         public string[] GetPortNames()
         {

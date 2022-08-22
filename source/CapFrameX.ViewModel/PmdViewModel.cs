@@ -52,6 +52,18 @@ namespace CapFrameX.ViewModel
 
         public Array ComPortsItemsSource => _pmdService.GetPortNames();
 
+        /// <summary>
+        /// Refresh rates [ms]
+        /// </summary>
+        public Array PmdDataRefreshRates => new[] { 1, 2, 5, 10, 20, 50, 100, 200, 250, 500 };
+
+        public Array ChartDataDownSamplingSizes => Enumerable.Range(1, 10).ToArray();
+
+        /// <summary>
+        /// Chart length [s]
+        /// </summary>
+        public Array PmdDataWindows => new[] { 5, 10, 20, 30, 60, 300, 600 };
+
         public ICommand ResetPmdMetricsCommand { get; }
 
         public bool UsePmdService
@@ -86,7 +98,7 @@ namespace CapFrameX.ViewModel
             get => _updateCharts;
             set
             {
-                _updateCharts = value;
+                ManageChartsUpdate(value);
                 RaisePropertyChanged();
             }
         }
@@ -140,6 +152,16 @@ namespace CapFrameX.ViewModel
             set
             {
                 _pmdCaptureStatus = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public int SelectedPmdDataRefreshRate
+        {
+            get => _pmdService.DownSamplingSize;
+            set
+            {
+                _pmdService.DownSamplingSize = value;
                 RaisePropertyChanged();
             }
         }
@@ -237,14 +259,12 @@ namespace CapFrameX.ViewModel
 
         public void OnNavigatedFrom(NavigationContext navigationContext)
         {
-            _updateCharts = false;
-            _pmdDataChartManager.ResetAllPLotModels();
-            _chartaDataBuffer.Clear();
+            ManageChartsUpdate(false);
         }
 
         public void OnNavigatedTo(NavigationContext navigationContext)
         {
-            _updateCharts = true;
+            ManageChartsUpdate(true);
         }
 
         private void SubscribeToThemeChanged()
@@ -279,6 +299,20 @@ namespace CapFrameX.ViewModel
                 _pmdChannelStreamChartsDisposable?.Dispose();
                 _pmdChannelStreamMetricsDisposable?.Dispose();
                 _pmdService.ShutDownDriver();
+            }
+        }
+
+        private void ManageChartsUpdate(bool show)
+        {
+            if (show)
+            {
+                _updateCharts = true;
+            }
+            else
+            {
+                _updateCharts = false;
+                _pmdDataChartManager.ResetAllPLotModels();
+                _chartaDataBuffer.Clear();
             }
         }
     }

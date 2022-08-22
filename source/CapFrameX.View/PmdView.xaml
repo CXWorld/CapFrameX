@@ -24,6 +24,7 @@
             <mvvm:EnumDescriptionConverter x:Key="EnumDescriptionConverter"/>
             <mvvm:PmdStatusColorConverter x:Key="PmdStatusColorConverter"/>
             <system:Double x:Key="FontSizeMetrics">17</system:Double>
+            <system:Double x:Key="LabelHeight">28</system:Double>
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid>
@@ -35,12 +36,12 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="200"/>
             <ColumnDefinition Width="1*"/>
-            <ColumnDefinition Width="100"/>
+            <ColumnDefinition Width="170"/>
         </Grid.ColumnDefinitions>
         <!--Style="{StaticResource MaterialDesignOutlinedTextBox}"-->
         <ScrollViewer Grid.Row="0" Grid.Column="0" Margin="5 5 5 5" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
             <StackPanel>
-                <GroupBox Header="GPU Total Power" FontSize="18" Style="{DynamicResource MaterialDesignGroupBox}">
+                <GroupBox Header="GPU Total Power" FontSize="17" Style="{DynamicResource MaterialDesignGroupBox}">
                     <StackPanel Orientation="Vertical" Margin="0 -0 0 -0">
                         <materialDesign:PackIcon Foreground="Red" Margin="140 -55 0 0" Visibility="{Binding PmdMetrics.GpuPowerIncomplete, Converter={StaticResource TrueToVisibleConverter}}" 
                                                  Kind="Information" VerticalAlignment="Center" >
@@ -49,48 +50,48 @@
                             </materialDesign:PackIcon.ToolTip>
                         </materialDesign:PackIcon>
                         <StackPanel Orientation="Horizontal">
-                            <Label Width="55" Height="30" FontSize="{StaticResource FontSizeMetrics}" Content="Cur"/>
-                            <Label Width="90" Height="28" FontSize="{StaticResource FontSizeMetrics}" Content="{Binding PmdMetrics.AllGpuPowerCur}"/>
+                            <Label Width="55" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="Cur"/>
+                            <Label Width="90" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="{Binding PmdMetrics.AllGpuPowerCur}"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal">
-                            <Label Width="55" Height="30" FontSize="{StaticResource FontSizeMetrics}" Content="Avg"/>
-                            <Label Width="90" Height="28" FontSize="{StaticResource FontSizeMetrics}" Content="{Binding PmdMetrics.AllGpuPowerAvg}"/>
+                            <Label Width="55" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="Avg"/>
+                            <Label Width="90" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="{Binding PmdMetrics.AllGpuPowerAvg}"/>
                         </StackPanel>
                         <StackPanel Margin="0 0 0 0" Orientation="Horizontal">
-                            <Label Width="55" Height="28" FontSize="{StaticResource FontSizeMetrics}" Content="Max"/>
-                            <Label Width="90" Height="28" FontSize="{StaticResource FontSizeMetrics}" Content="{Binding PmdMetrics.AllGpuPowerMax}"/>
+                            <Label Width="55" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="Max"/>
+                            <Label Width="90" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="{Binding PmdMetrics.AllGpuPowerMax}"/>
                         </StackPanel>
                     </StackPanel>
                 </GroupBox>
                 <GroupBox Header="PCIe Power" FontSize="17" Style="{DynamicResource MaterialDesignGroupBox}">
                     <StackPanel Orientation="Vertical" Margin="0 -0 0 -0">
                         <StackPanel Orientation="Horizontal">
-                            <Label Width="55" Height="30" FontSize="{StaticResource FontSizeMetrics}" Content="Cur"/>
-                            <Label Width="90" Height="28" FontSize="{StaticResource FontSizeMetrics}" Content="{Binding PmdMetrics.AllPciExCur}"/>
+                            <Label Width="55" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="Cur"/>
+                            <Label Width="90" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="{Binding PmdMetrics.AllPciExCur}"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal">
-                            <Label Width="55" Height="30" FontSize="{StaticResource FontSizeMetrics}" Content="Avg"/>
-                            <Label Width="90" Height="28" FontSize="{StaticResource FontSizeMetrics}" Content="{Binding PmdMetrics.AllPciExAvg}"/>
+                            <Label Width="55" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="Avg"/>
+                            <Label Width="90" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="{Binding PmdMetrics.AllPciExAvg}"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal">
-                            <Label Width="55" Height="28" FontSize="{StaticResource FontSizeMetrics}" Content="Max"/>
-                            <Label Width="90" Height="28" FontSize="{StaticResource FontSizeMetrics}" Content="{Binding PmdMetrics.AllPciExMax}"/>
+                            <Label Width="55" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="Max"/>
+                            <Label Width="90" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="{Binding PmdMetrics.AllPciExMax}"/>
                         </StackPanel>
                     </StackPanel>
                 </GroupBox>
-                <GroupBox Header="PCIe Slot Power" FontSize="18" Style="{DynamicResource MaterialDesignGroupBox}">
+                <GroupBox Header="PCIe Slot Power" FontSize="17" Style="{DynamicResource MaterialDesignGroupBox}">
                     <StackPanel Orientation="Vertical" Margin="0 -0 0 -0">
                         <StackPanel Orientation="Horizontal">
-                            <Label Width="55" Height="30" FontSize="{StaticResource FontSizeMetrics}" Content="Cur"/>
-                            <Label Width="90" Height="28" FontSize="{StaticResource FontSizeMetrics}" Content="{Binding PmdMetrics.PciExSlotCur}"/>
+                            <Label Width="55" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="Cur"/>
+                            <Label Width="90" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="{Binding PmdMetrics.PciExSlotCur}"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal">
-                            <Label Width="55" Height="30" FontSize="{StaticResource FontSizeMetrics}" Content="Avg"/>
-                            <Label Width="90" Height="28" FontSize="{StaticResource FontSizeMetrics}" Content="{Binding PmdMetrics.PciExSlotAvg}"/>
+                            <Label Width="55" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="Avg"/>
+                            <Label Width="90" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="{Binding PmdMetrics.PciExSlotAvg}"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal">
-                            <Label Width="55" Height="28" FontSize="{StaticResource FontSizeMetrics}" Content="Max"/>
-                            <Label Width="90" Height="28" FontSize="{StaticResource FontSizeMetrics}" Content="{Binding PmdMetrics.PciExSlotMax}"/>
+                            <Label Width="55" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="Max"/>
+                            <Label Width="90" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="{Binding PmdMetrics.PciExSlotMax}"/>
                         </StackPanel>
                     </StackPanel>
                 </GroupBox>
@@ -108,7 +109,7 @@
                 </Grid>
 
                 <controls:PlotViewCustomZoom Grid.Row="1" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" x:Name="PciExpressPlotView" 
-                                         Model="{Binding PciExpressModel}" Tag="{Binding ElementName=PmdView, Path=DataContext}" Margin="0 5 0 0"
+                                         Model="{Binding PciExpressModel}" Tag="{Binding ElementName=PmdViewControl, Path=DataContext}" Margin="0 5 0 0"
 										 MouseDoubleClick="ResetPciExpressChart_MouseDoubleClick">
                     <controls:PlotViewCustomZoom.DefaultTrackerTemplate>
                         <ControlTemplate>
@@ -122,41 +123,41 @@
                 </controls:PlotViewCustomZoom>
             </Grid>
         </Grid>
-        <ScrollViewer Grid.Row="1" Grid.Column="0" Margin="5 10 5 5" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+        <ScrollViewer Grid.Row="1" Grid.Column="0" Margin="5 5 5 5" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
             <StackPanel>
-                <GroupBox Header="CPU Total Power" FontSize="18" Foreground="White" Style="{DynamicResource MaterialDesignGroupBox}">
+                <GroupBox Header="CPU Total Power" FontSize="17" Foreground="White" Style="{DynamicResource MaterialDesignGroupBox}">
                     <StackPanel Orientation="Vertical" Margin="0 -0 0 -0">
                         <StackPanel Orientation="Horizontal">
-                            <Label Width="55" Height="30" FontSize="{StaticResource FontSizeMetrics}" Content="Cur"/>
-                            <Label Width="90" Height="28" FontSize="{StaticResource FontSizeMetrics}" Content="{Binding PmdMetrics.AllCpuPowerCur}"/>
+                            <Label Width="55" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="Cur"/>
+                            <Label Width="90" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="{Binding PmdMetrics.AllCpuPowerCur}"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal">
-                            <Label Width="55" Height="30" FontSize="{StaticResource FontSizeMetrics}" Content="Avg"/>
-                            <Label Width="90" Height="28" FontSize="{StaticResource FontSizeMetrics}" Content="{Binding PmdMetrics.AllCpuPowerAvg}"/>
+                            <Label Width="55" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="Avg"/>
+                            <Label Width="90" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="{Binding PmdMetrics.AllCpuPowerAvg}"/>
                         </StackPanel>
                         <StackPanel Margin="0 0 0 0" Orientation="Horizontal">
-                            <Label Width="55" Height="28" FontSize="{StaticResource FontSizeMetrics}" Content="Max"/>
-                            <Label Width="90" Height="28" FontSize="{StaticResource FontSizeMetrics}" Content="{Binding PmdMetrics.AllCpuPowerMax}"/>
+                            <Label Width="55" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="Max"/>
+                            <Label Width="90" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="{Binding PmdMetrics.AllCpuPowerMax}"/>
                         </StackPanel>
                     </StackPanel>
                 </GroupBox>
-                <GroupBox Header="ATX Power" FontSize="18" Style="{DynamicResource MaterialDesignGroupBox}">
+                <GroupBox Header="ATX Power" FontSize="17" Style="{DynamicResource MaterialDesignGroupBox}">
                     <StackPanel Orientation="Vertical" Margin="0 -0 0 -0">
                         <StackPanel Orientation="Horizontal">
-                            <Label Width="55" Height="30" FontSize="{StaticResource FontSizeMetrics}" Content="Cur"/>
-                            <Label Width="90" Height="28" FontSize="{StaticResource FontSizeMetrics}" Content="{Binding PmdMetrics.AllAtxPowerCur}"/>
+                            <Label Width="55" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="Cur"/>
+                            <Label Width="90" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="{Binding PmdMetrics.AllAtxPowerCur}"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal">
-                            <Label Width="55" Height="30" FontSize="{StaticResource FontSizeMetrics}" Content="Avg"/>
-                            <Label Width="90" Height="28" FontSize="{StaticResource FontSizeMetrics}" Content="{Binding PmdMetrics.AllAtxPowerAvg}"/>
+                            <Label Width="55" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="Avg"/>
+                            <Label Width="90" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="{Binding PmdMetrics.AllAtxPowerAvg}"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal">
-                            <Label Width="55" Height="28" FontSize="{StaticResource FontSizeMetrics}" Content="Max"/>
-                            <Label Width="90" Height="28" FontSize="{StaticResource FontSizeMetrics}" Content="{Binding PmdMetrics.AllAtxPowerMax}"/>
+                            <Label Width="55" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="Max"/>
+                            <Label Width="90" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="{Binding PmdMetrics.AllAtxPowerMax}"/>
                         </StackPanel>
                     </StackPanel>
                 </GroupBox>
-                <GroupBox Header="System Power" FontSize="18" Style="{StaticResource MaterialDesignGroupBox}"
+                <GroupBox Header="System Power" FontSize="17" Style="{StaticResource MaterialDesignGroupBox}"
                       materialDesign:ColorZoneAssist.Mode="Custom"
                       materialDesign:ColorZoneAssist.Background="Black"
                       materialDesign:ColorZoneAssist.Foreground="White">
@@ -168,16 +169,16 @@
                             </materialDesign:PackIcon.ToolTip>
                         </materialDesign:PackIcon>
                         <StackPanel Orientation="Horizontal">
-                            <Label Width="55" Height="30" FontSize="{StaticResource FontSizeMetrics}" Content="Cur"/>
-                            <Label Width="90" Height="28" FontSize="{StaticResource FontSizeMetrics}" Content="{Binding PmdMetrics.AllPowerCur}"/>
+                            <Label Width="55" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="Cur"/>
+                            <Label Width="90" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="{Binding PmdMetrics.AllPowerCur}"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal">
-                            <Label Width="55" Height="30" FontSize="{StaticResource FontSizeMetrics}" Content="Avg"/>
-                            <Label Width="90" Height="28" FontSize="{StaticResource FontSizeMetrics}" Content="{Binding PmdMetrics.AllPowerAvg}"/>
+                            <Label Width="55" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="Avg"/>
+                            <Label Width="90" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="{Binding PmdMetrics.AllPowerAvg}"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal">
-                            <Label Width="55" Height="28" FontSize="{StaticResource FontSizeMetrics}" Content="Max"/>
-                            <Label Width="90" Height="28" FontSize="{StaticResource FontSizeMetrics}" Content="{Binding PmdMetrics.AllPowerMax}"/>
+                            <Label Width="55" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="Max"/>
+                            <Label Width="90" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="{Binding PmdMetrics.AllPowerMax}"/>
                         </StackPanel>
                     </StackPanel>
                 </GroupBox>
@@ -194,7 +195,7 @@
                          Width="Auto" Height="30" FontWeight="Bold" FontSize="18"/>
                 </Grid>
                 <controls:PlotViewCustomZoom Grid.Row="1" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" x:Name="EPS12VPlotView" 
-                                         Model="{Binding EPS12VModel}" Tag="{Binding ElementName=PmdView, Path=DataContext}" Margin="0 5 0 5"
+                                         Model="{Binding EPS12VModel}" Tag="{Binding ElementName=PmdViewControl, Path=DataContext}" Margin="0 5 0 5"
 										 MouseDoubleClick="ResetEPS12VChart_MouseDoubleClick">
                     <controls:PlotViewCustomZoom.DefaultTrackerTemplate>
                         <ControlTemplate>
@@ -244,10 +245,29 @@
                            FontWeight="Bold" FontSize="14" Foreground="{Binding PmdCaptureStatus, Converter={StaticResource PmdStatusColorConverter}}"/>
             </StackPanel>
         </Grid>
-        <!--PMD Options (right sid)-->
+        <!--PMD Options (right side menu)-->
         <Grid Grid.RowSpan="3" Grid.Column="2" Margin="5 5 0 5" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
             <StackPanel Orientation="Vertical">
-                
+                <Border Height="50" Margin="5 10 5 0" BorderThickness="0.2" BorderBrush="{DynamicResource MaterialDesignBody}" HorizontalAlignment="Stretch">
+                    <CheckBox Margin="5 0 0 0" FontSize="13" Content="Show Charts" IsChecked="{Binding UpdateCharts}"></CheckBox>
+                </Border>
+
+                <Border Height="80" Margin="5 20 5 0" BorderThickness="0.2" BorderBrush="{DynamicResource MaterialDesignBody}" HorizontalAlignment="Stretch">
+                    <Grid>
+                        <TextBlock Text="PMD Refresh Rate [ms]" FontSize="13" HorizontalAlignment="Left" Margin="10 10 0 0"/>
+                        <ComboBox Margin="10 10 0 0" HorizontalAlignment="Left" Padding="0 0 0 0" FontSize="13" Style="{StaticResource MaterialDesignComboBox}"
+					      materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="150" Width="60" Height="30" materialDesign:HintAssist.HintOpacity=".8"
+					      ItemsSource="{Binding PmdDataRefreshRates}" SelectedItem="{Binding SelectedPmdDataRefreshRate}"
+                          ToolTipService.ShowDuration="25000">
+                            <ComboBox.ToolTip>
+                                <ToolTip StaysOpen="True" MaxWidth="275">
+                                    <TextBlock Text="Set the refresh rate [ms] for the PMD device." 
+									   TextWrapping="Wrap"/>
+                                </ToolTip>
+                            </ComboBox.ToolTip>
+                        </ComboBox>
+                    </Grid>
+                </Border>
             </StackPanel>
         </Grid>
     </Grid>
