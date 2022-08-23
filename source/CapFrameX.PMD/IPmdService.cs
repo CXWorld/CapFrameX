@@ -11,6 +11,8 @@ namespace CapFrameX.PMD
         IObservable<PmdChannel[]> PmdChannelStream { get; }
 
         IObservable<EPmdDriverStatus> PmdstatusStream { get; }
+        
+        IObservable<int> PmdThroughput { get; }
 
         string PortName { get; set; }
 
