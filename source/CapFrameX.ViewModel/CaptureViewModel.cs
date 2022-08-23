@@ -423,8 +423,8 @@ namespace CapFrameX.ViewModel
 
         public Array OutlierPercentageItemsSource => Enumerable.Range(1, 9).ToArray();
 
-        public Array OutlierHandlingItems => Enum.GetValues(typeof(PmdSampleFilterMode))
-                                                 .Cast<PmdSampleFilterMode>()
+        public Array OutlierHandlingItems => Enum.GetValues(typeof(EOutlierHandling))
+                                                 .Cast<EOutlierHandling>()
                                                  .ToArray();
 
         public Array RelatedMetricItemsSource => new[] { "Average", "Second", "Third" };

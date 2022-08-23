@@ -88,7 +88,7 @@ namespace CapFrameX.PMD
                 //CA-AC-F8-1B-00-00-00-00-00-13-BB-00-00-09-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-42-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-
                 _resultsStringBuilder.Append(BitConverter.ToString(bget));
 
-                // process the data every 100ms, or when resultCarbinet.Length >=20700
+                // process the data when _resultsStringBuilder.Length >= 100 * 134
                 if (_resultsStringBuilder.Length >= 100 * 134)
                 {
                     var resultString = _resultsStringBuilder.ToString();
