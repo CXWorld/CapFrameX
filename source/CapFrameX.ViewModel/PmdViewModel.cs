@@ -32,9 +32,11 @@ namespace CapFrameX.ViewModel
         private bool _updateMetrics = true;
         private int _pmdDataWindowSeconds = 10;
         private bool _usePmdService;
+        private int _samplesPerSecond;
 
         private IDisposable _pmdChannelStreamChartsDisposable;
         private IDisposable _pmdChannelStreamMetricsDisposable;
+        private IDisposable _pmdThroughputDisposable;
         private List<PmdChannel[]> _chartaDataBuffer = new List<PmdChannel[]>(1000 * 10);
         private PmdDataChartManager _pmdDataChartManager = new PmdDataChartManager();
         private PmdMetricsManager _pmdDataMetricsManager = new PmdMetricsManager(500, 10);
@@ -165,6 +167,16 @@ namespace CapFrameX.ViewModel
                 RaisePropertyChanged();
             }
         }
+        
+        public int SamplesPerSecond
+        {
+            get => _samplesPerSecond;
+            set
+            {
+                _samplesPerSecond = value;
+                 RaisePropertyChanged();
+            }
+        }
 
         public int PmdDataWindowSeconds
         {
@@ -227,6 +239,14 @@ namespace CapFrameX.ViewModel
                 .Where(_ => UpdateMetrics)
                 .SubscribeOn(new EventLoopScheduler())
                 .Subscribe(metricsData => _pmdDataMetricsManager.UpdateMetrics(metricsData));
+        }
+        
+        private void SubscribePmdThroughput()
+        {
+            _pmdThroughputDisposable?.Dispose();
+            _pmdThroughputDisposable = _pmdService.PmdThroughput
+                .SubscribeOnDispatcher()
+                .Subscribe(sampleCount => SamplesPerSecond = (int)(Math.Round(sampleCount / 10) * 10));
         }
 
         private void DrawPmdData(IList<PmdChannel[]> chartData)
@@ -293,11 +313,13 @@ namespace CapFrameX.ViewModel
 
                 SubscribePmdDataStreamCharts();
                 SubscribePmdDataStreamMetrics();
+                SubscribePmdThroughput();
             }
             else
             {
                 _pmdChannelStreamChartsDisposable?.Dispose();
                 _pmdChannelStreamMetricsDisposable?.Dispose();
+                _pmdThroughputDisposable?.Dispose();
                 _pmdService.ShutDownDriver();
             }
         }
