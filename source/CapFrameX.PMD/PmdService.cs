@@ -19,16 +19,16 @@ namespace CapFrameX.PMD
         private readonly IAppConfiguration _appConfiguration;
         private readonly ILogger<PmdService> _logger;
         private readonly ISubject<PmdChannel[]> _pmdChannelStream = new Subject<PmdChannel[]>();
-        private readonly IObservable<int> _pmdThroughput;
         private readonly List<PmdChannel[]> _channelsBuffer = new List<PmdChannel[]>(1000);
 
         private IDisposable _pmdChannelStreamDisposable;
+        private IObservable<int> _pmdThroughput;
 
         public IObservable<PmdChannel[]> PmdChannelStream => _pmdChannelStream.AsObservable();
 
         public IObservable<EPmdDriverStatus> PmdstatusStream => _pmdDriver.PmdstatusStream;
-        
-        public IObservable<int> PmdThroughput => _pmdThroughput
+
+        public IObservable<int> PmdThroughput => _pmdThroughput;
 
         public string PortName { get; set; }
 
@@ -68,9 +68,9 @@ namespace CapFrameX.PMD
                 .Subscribe(channels => FilterChannels(channels));
                 
             _pmdThroughput = _pmdDriver.PmdChannelStream
-                .Select(channels => channels.Length)
-                .Buffer(TimeSpan.FromMilliseconds(1000))
-                .Select(lengthBuffer => lengthBuffer.Sum());
+                .Select(channels => 1)
+                .Buffer(TimeSpan.FromSeconds(2))
+                .Select(buffer => buffer.Count());
 
             // ToDo: manage calibration mode
             return _pmdDriver.Connect(PortName, false);

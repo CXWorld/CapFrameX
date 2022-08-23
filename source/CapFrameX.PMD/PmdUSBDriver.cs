@@ -89,7 +89,7 @@ namespace CapFrameX.PMD
                 _resultsStringBuilder.Append(BitConverter.ToString(bget));
 
                 // process the data every 100ms, or when resultCarbinet.Length >=20700
-                if (_resultsStringBuilder.Length >= 20700)
+                if (_resultsStringBuilder.Length >= 100 * 134)
                 {
                     var resultString = _resultsStringBuilder.ToString();
 

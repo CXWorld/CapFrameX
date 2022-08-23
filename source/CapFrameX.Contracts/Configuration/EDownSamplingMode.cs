@@ -1,8 +1,12 @@
-﻿namespace CapFrameX.Contracts.Configuration
+﻿using System.ComponentModel;
+
+namespace CapFrameX.Contracts.Configuration
 {
     public enum PmdSampleFilterMode
     {
-        Average,
-        Single
+        [Description("Last of N")]
+        Single,
+        [Description("Average of N")]
+        Average
     }
 }

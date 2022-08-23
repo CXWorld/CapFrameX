@@ -32,7 +32,7 @@ namespace CapFrameX.ViewModel
         private bool _updateMetrics = true;
         private int _pmdDataWindowSeconds = 10;
         private bool _usePmdService;
-        private int _samplesPerSecond;
+        private string _sampleRate = "0 [1/s]";
 
         private IDisposable _pmdChannelStreamChartsDisposable;
         private IDisposable _pmdChannelStreamMetricsDisposable;
@@ -60,6 +60,10 @@ namespace CapFrameX.ViewModel
         public Array PmdDataRefreshRates => new[] { 1, 2, 5, 10, 20, 50, 100, 200, 250, 500 };
 
         public Array ChartDataDownSamplingSizes => Enumerable.Range(1, 10).ToArray();
+
+        public Array DownSamlingModes => Enum.GetValues(typeof(PmdSampleFilterMode))
+                                             .Cast<PmdSampleFilterMode>()
+                                             .ToArray();
 
         /// <summary>
         /// Chart length [s]
@@ -168,13 +172,23 @@ namespace CapFrameX.ViewModel
             }
         }
         
-        public int SamplesPerSecond
+        public string SampleRate
         {
-            get => _samplesPerSecond;
+            get => _sampleRate;
             set
             {
-                _samplesPerSecond = value;
+                _sampleRate = value;
                  RaisePropertyChanged();
+            }
+        }
+
+        public PmdSampleFilterMode SelectedDownSamlingMode
+        {
+            get => _pmdService.DownSamplingMode;
+            set
+            {
+                _pmdService.DownSamplingMode = value;
+                RaisePropertyChanged();
             }
         }
 
@@ -233,6 +247,8 @@ namespace CapFrameX.ViewModel
 
         private void SubscribePmdDataStreamMetrics()
         {
+            if (_pmdService.PmdChannelStream == null) return;
+
             _pmdChannelStreamMetricsDisposable?.Dispose();
             _pmdChannelStreamMetricsDisposable = _pmdService.PmdChannelStream
                 .Buffer(TimeSpan.FromMilliseconds(PmdMetricRefreshPeriod))
@@ -240,13 +256,15 @@ namespace CapFrameX.ViewModel
                 .SubscribeOn(new EventLoopScheduler())
                 .Subscribe(metricsData => _pmdDataMetricsManager.UpdateMetrics(metricsData));
         }
-        
+
         private void SubscribePmdThroughput()
         {
+            if (_pmdService.PmdThroughput == null) return;
+
             _pmdThroughputDisposable?.Dispose();
             _pmdThroughputDisposable = _pmdService.PmdThroughput
                 .SubscribeOnDispatcher()
-                .Subscribe(sampleCount => SamplesPerSecond = (int)(Math.Round(sampleCount / 10) * 10));
+                .Subscribe(sampleCount => SampleRate = $"{(int)(Math.Round(sampleCount / (2 * 10d)) * 10)} [1/s]");
         }
 
         private void DrawPmdData(IList<PmdChannel[]> chartData)
