@@ -258,10 +258,10 @@
 
                 <Border Height="160" Margin="5 20 5 0" BorderThickness="0.2" BorderBrush="{DynamicResource MaterialDesignBody}" HorizontalAlignment="Stretch">
                     <StackPanel>
-                        <TextBlock Text="PMD Refresh Rate [ms]" FontSize="13" HorizontalAlignment="Left" Margin="10 10 0 0"/>
+                        <TextBlock Text="Downsampling Factor" FontSize="13" HorizontalAlignment="Left" Margin="10 10 0 0"/>
                         <ComboBox Margin="10 10 0 0" HorizontalAlignment="Left" Padding="0 0 0 0" FontSize="13" Style="{StaticResource MaterialDesignComboBox}"
 					      materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="150" Width="60" Height="30" materialDesign:HintAssist.HintOpacity=".8"
-					      ItemsSource="{Binding PmdDataRefreshRates}" SelectedItem="{Binding SelectedPmdDataRefreshRate}"
+					      ItemsSource="{Binding DownsamplingFactors}" SelectedItem="{Binding SelectedDownSamplingFactor}"
                           ToolTipService.ShowDuration="25000">
                             <ComboBox.ToolTip>
                                 <ToolTip StaysOpen="True" MaxWidth="275">
@@ -272,8 +272,8 @@
                         </ComboBox>
                         <TextBlock Text="Downsampling Mode" FontSize="13" HorizontalAlignment="Left" Margin="10 20 0 0"/>
                         <ComboBox Margin="10 10 0 0" HorizontalAlignment="Left" Padding="0 0 0 0" FontSize="13" Style="{StaticResource MaterialDesignComboBox}"
-					      materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="150" Width="95" Height="30" materialDesign:HintAssist.HintOpacity=".8"
-					      ItemsSource="{Binding DownSamlingModes}" SelectedItem="{Binding SelectedDownSamlingMode}"
+					      materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="150" Width="100" Height="30" materialDesign:HintAssist.HintOpacity=".8"
+					      ItemsSource="{Binding DownsamplingModes}" SelectedItem="{Binding SelectedDownSamlingMode}"
                           ToolTipService.ShowDuration="25000">
                             <ComboBox.ToolTip>
                                 <ToolTip StaysOpen="True" MaxWidth="275">
@@ -286,6 +286,34 @@
                                     <TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}"/>
                                 </DataTemplate>
                             </ComboBox.ItemTemplate>
+                        </ComboBox>
+                    </StackPanel>
+                </Border>
+                <Border Height="160" Margin="5 20 5 0" BorderThickness="0.2" BorderBrush="{DynamicResource MaterialDesignBody}" HorizontalAlignment="Stretch">
+                    <StackPanel>
+                        <TextBlock Text="Chart Length [s]" FontSize="13" HorizontalAlignment="Left" Margin="10 10 0 0"/>
+                        <ComboBox Margin="10 10 0 0" HorizontalAlignment="Left" Padding="0 0 0 0" FontSize="13" Style="{StaticResource MaterialDesignComboBox}"
+					      materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="150" Width="60" Height="30" materialDesign:HintAssist.HintOpacity=".8"
+					      ItemsSource="{Binding PmdDataWindows}" SelectedItem="{Binding SelectedPmdDataWindow}"
+                          ToolTipService.ShowDuration="25000">
+                            <ComboBox.ToolTip>
+                                <ToolTip StaysOpen="True" MaxWidth="275">
+                                    <TextBlock Text="Sets the refresh rate [ms] for the PMD device." 
+									   TextWrapping="Wrap"/>
+                                </ToolTip>
+                            </ComboBox.ToolTip>
+                        </ComboBox>
+                        <TextBlock Text="Downsampling Factor" FontSize="13" HorizontalAlignment="Left" Margin="10 20 0 0"/>
+                        <ComboBox Margin="10 10 0 0" HorizontalAlignment="Left" Padding="0 0 0 0" FontSize="13" Style="{StaticResource MaterialDesignComboBox}"
+					      materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="150" Width="60" Height="30" materialDesign:HintAssist.HintOpacity=".8"
+					      ItemsSource="{Binding ChartDataDownSamplingFactors}" SelectedItem="{Binding SelectedChartDownSamplingFactor}"
+                          ToolTipService.ShowDuration="25000">
+                            <ComboBox.ToolTip>
+                                <ToolTip StaysOpen="True" MaxWidth="275">
+                                    <TextBlock Text="Sets the downsampling mode." 
+									   TextWrapping="Wrap"/>
+                                </ToolTip>
+                            </ComboBox.ToolTip>
                         </ComboBox>
                     </StackPanel>
                 </Border>

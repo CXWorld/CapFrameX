@@ -57,11 +57,11 @@ namespace CapFrameX.ViewModel
         /// <summary>
         /// Refresh rates [ms]
         /// </summary>
-        public Array PmdDataRefreshRates => new[] { 1, 2, 5, 10, 20, 50, 100, 200, 250, 500 };
+        public Array DownsamplingFactors => new[] { 1, 2, 5, 10, 20, 50, 100, 200, 250, 500 };
 
-        public Array ChartDataDownSamplingSizes => Enumerable.Range(1, 10).ToArray();
+        public Array ChartDataDownSamplingFactors => Enumerable.Range(1, 10).ToArray();
 
-        public Array DownSamlingModes => Enum.GetValues(typeof(PmdSampleFilterMode))
+        public Array DownsamplingModes => Enum.GetValues(typeof(PmdSampleFilterMode))
                                              .Cast<PmdSampleFilterMode>()
                                              .ToArray();
 
@@ -142,7 +142,7 @@ namespace CapFrameX.ViewModel
             }
         }
 
-        public int ChartDownSamplingSize
+        public int SelectedChartDownSamplingFactor
         {
             get => _appConfiguration.ChartDownSamplingSize;
             set
@@ -162,7 +162,7 @@ namespace CapFrameX.ViewModel
             }
         }
 
-        public int SelectedPmdDataRefreshRate
+        public int SelectedDownSamplingFactor
         {
             get => _pmdService.DownSamplingSize;
             set
@@ -192,27 +192,26 @@ namespace CapFrameX.ViewModel
             }
         }
 
-        public int PmdDataWindowSeconds
+        public int SelectedPmdDataWindow
         {
             get => _pmdDataWindowSeconds;
             set
             {
                 if (_pmdDataWindowSeconds != value)
                 {
-                    var oldChartWindowSeconds = _pmdDataWindowSeconds;
                     _pmdDataWindowSeconds = value;
                     _pmdDataMetricsManager.PmdDataWindowSeconds = value;
                     RaisePropertyChanged();
 
-                    var newChartBuffer = new List<PmdChannel[]>(_pmdDataWindowSeconds * 1000);
                     lock (_updateChartBufferLock)
                     {
-                        newChartBuffer.AddRange(_chartaDataBuffer.TakeLast(oldChartWindowSeconds * 1000));
-                        _chartaDataBuffer = newChartBuffer;
+                        _chartaDataBuffer = new List<PmdChannel[]>(_pmdDataWindowSeconds * 1000);
                     }
 
-                    _pmdDataChartManager.AxisDefinitions["X_Axis_Time"].AbsoluteMaximum = _pmdDataWindowSeconds;
-                    EPS12VModel.InvalidatePlot(false);
+                    _pmdDataChartManager.AxisDefinitions["X_Axis_Time_GPU"].Maximum = _pmdDataWindowSeconds;
+                    _pmdDataChartManager.AxisDefinitions["X_Axis_Time_GPU"].AbsoluteMaximum = _pmdDataWindowSeconds;
+                    _pmdDataChartManager.AxisDefinitions["X_Axis_Time_CPU"].Maximum = _pmdDataWindowSeconds;
+                    _pmdDataChartManager.AxisDefinitions["X_Axis_Time_CPU"].AbsoluteMaximum = _pmdDataWindowSeconds;
                 }
             }
         }
@@ -279,13 +278,13 @@ namespace CapFrameX.ViewModel
             IEnumerable<DataPoint> pciExpressPowerDrawPoints = null;
             lock (_updateChartBufferLock)
             {
-                while (range < dataCount && lastTimeStamp - _chartaDataBuffer[range][0].TimeStamp > PmdDataWindowSeconds * 1000L) range++;
+                while (range < dataCount && lastTimeStamp - _chartaDataBuffer[range][0].TimeStamp > SelectedPmdDataWindow * 1000L) range++;
                 _chartaDataBuffer.RemoveRange(0, range);
                 _chartaDataBuffer.AddRange(chartData);
 
-                eps12VPowerDrawPoints = _pmdService.GetEPS12VPowerPmdDataPoints(_chartaDataBuffer, ChartDownSamplingSize)
+                eps12VPowerDrawPoints = _pmdService.GetEPS12VPowerPmdDataPoints(_chartaDataBuffer, SelectedChartDownSamplingFactor)
                     .Select(p => new DataPoint(p.X, p.Y));
-                pciExpressPowerDrawPoints = _pmdService.GetPciExpressPowerPmdDataPoints(_chartaDataBuffer, ChartDownSamplingSize)
+                pciExpressPowerDrawPoints = _pmdService.GetPciExpressPowerPmdDataPoints(_chartaDataBuffer, SelectedChartDownSamplingFactor)
                     .Select(p => new DataPoint(p.X, p.Y));
             }
 
