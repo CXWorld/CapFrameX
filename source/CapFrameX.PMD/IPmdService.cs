@@ -26,8 +26,8 @@ namespace CapFrameX.PMD
 
         PmdSampleFilterMode DownSamplingMode { get; set; }
 
-        IEnumerable<Point> GetEPS12VPowerPmdDataPoints(IList<PmdChannel[]> channelDat0, int downSamplingSize);
+        IEnumerable<Point> GetEPS12VPowerPmdDataPoints(IList<PmdChannel[]> channelDat0);
 
-        IEnumerable<Point> GetPciExpressPowerPmdDataPoints(IList<PmdChannel[]> channelDat0, int downSamplingSize);
+        IEnumerable<Point> GetPciExpressPowerPmdDataPoints(IList<PmdChannel[]> channelDat0);
     }
 }

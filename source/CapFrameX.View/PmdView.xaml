@@ -289,7 +289,7 @@
                         </ComboBox>
                     </StackPanel>
                 </Border>
-                <Border Height="160" Margin="5 20 5 0" BorderThickness="0.2" BorderBrush="{DynamicResource MaterialDesignBody}" HorizontalAlignment="Stretch">
+                <Border Height="80" Margin="5 20 5 0" BorderThickness="0.2" BorderBrush="{DynamicResource MaterialDesignBody}" HorizontalAlignment="Stretch">
                     <StackPanel>
                         <TextBlock Text="Chart Length [s]" FontSize="13" HorizontalAlignment="Left" Margin="10 10 0 0"/>
                         <ComboBox Margin="10 10 0 0" HorizontalAlignment="Left" Padding="0 0 0 0" FontSize="13" Style="{StaticResource MaterialDesignComboBox}"
@@ -303,22 +303,9 @@
                                 </ToolTip>
                             </ComboBox.ToolTip>
                         </ComboBox>
-                        <TextBlock Text="Downsampling Factor" FontSize="13" HorizontalAlignment="Left" Margin="10 20 0 0"/>
-                        <ComboBox Margin="10 10 0 0" HorizontalAlignment="Left" Padding="0 0 0 0" FontSize="13" Style="{StaticResource MaterialDesignComboBox}"
-					      materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="150" Width="60" Height="30" materialDesign:HintAssist.HintOpacity=".8"
-					      ItemsSource="{Binding ChartDataDownSamplingFactors}" SelectedItem="{Binding SelectedChartDownSamplingFactor}"
-                          ToolTipService.ShowDuration="25000">
-                            <ComboBox.ToolTip>
-                                <ToolTip StaysOpen="True" MaxWidth="275">
-                                    <TextBlock Text="Sets the downsampling mode." 
-									   TextWrapping="Wrap"/>
-                                </ToolTip>
-                            </ComboBox.ToolTip>
-                        </ComboBox>
                     </StackPanel>
                 </Border>
             </StackPanel>
-
             <StackPanel Grid.Row="1" Margin="5 0 0 0" VerticalAlignment="Center" Orientation="Horizontal">
                 <Label Content="Sample Rate:" FontSize="13"/>
                 <TextBlock Text="{Binding SampleRate}" Width="60" VerticalAlignment="Center" FontSize="13"/>

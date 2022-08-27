@@ -59,8 +59,6 @@ namespace CapFrameX.ViewModel
         /// </summary>
         public Array DownsamplingFactors => new[] { 1, 2, 5, 10, 20, 50, 100, 200, 250, 500 };
 
-        public Array ChartDataDownSamplingFactors => Enumerable.Range(1, 10).ToArray();
-
         public Array DownsamplingModes => Enum.GetValues(typeof(PmdSampleFilterMode))
                                              .Cast<PmdSampleFilterMode>()
                                              .ToArray();
@@ -138,16 +136,6 @@ namespace CapFrameX.ViewModel
                 _appConfiguration.PmdMetricRefreshPeriod = value;
                 _pmdDataMetricsManager.PmdMetricRefreshPeriod = value;
                 SubscribePmdDataStreamMetrics();
-                RaisePropertyChanged();
-            }
-        }
-
-        public int SelectedChartDownSamplingFactor
-        {
-            get => _appConfiguration.ChartDownSamplingSize;
-            set
-            {
-                _appConfiguration.ChartDownSamplingSize = value;
                 RaisePropertyChanged();
             }
         }
@@ -282,9 +270,9 @@ namespace CapFrameX.ViewModel
                 _chartaDataBuffer.RemoveRange(0, range);
                 _chartaDataBuffer.AddRange(chartData);
 
-                eps12VPowerDrawPoints = _pmdService.GetEPS12VPowerPmdDataPoints(_chartaDataBuffer, SelectedChartDownSamplingFactor)
+                eps12VPowerDrawPoints = _pmdService.GetEPS12VPowerPmdDataPoints(_chartaDataBuffer)
                     .Select(p => new DataPoint(p.X, p.Y));
-                pciExpressPowerDrawPoints = _pmdService.GetPciExpressPowerPmdDataPoints(_chartaDataBuffer, SelectedChartDownSamplingFactor)
+                pciExpressPowerDrawPoints = _pmdService.GetPciExpressPowerPmdDataPoints(_chartaDataBuffer)
                     .Select(p => new DataPoint(p.X, p.Y));
             }
 

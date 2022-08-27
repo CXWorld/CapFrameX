@@ -65,7 +65,7 @@ namespace CapFrameX.PMD
             _pmdChannelStreamDisposable?.Dispose();
             _pmdChannelStreamDisposable = _pmdDriver.PmdChannelStream
                 .ObserveOn(new EventLoopScheduler())
-                .Subscribe(channels => FilterChannels(channels));
+                .Subscribe(channels => FillChannelsBuffer(channels));
                 
             _pmdThroughput = _pmdDriver.PmdChannelStream
                 .Select(channels => 1)
@@ -92,33 +92,27 @@ namespace CapFrameX.PMD
             return comPorts;
         }
 
-        public IEnumerable<Point> GetEPS12VPowerPmdDataPoints(IList<PmdChannel[]> channelData, int downSamplingSize)
+        public IEnumerable<Point> GetEPS12VPowerPmdDataPoints(IList<PmdChannel[]> channelData)
         {
             var minTimeStamp = channelData.First()[0].TimeStamp;
-
-            int i = 0;
             foreach (var channel in channelData)
             {
-                if (++i % downSamplingSize != 0) continue;
                 var sumPower = PmdChannelExtensions.EPSPowerIndexGroup.Sum(index => channel[index].Value);
                 yield return new Point((channel[0].TimeStamp - minTimeStamp) * 1E-03, sumPower);
             }
         }
 
-        public IEnumerable<Point> GetPciExpressPowerPmdDataPoints(IList<PmdChannel[]> channelData, int downSamplingSize)
+        public IEnumerable<Point> GetPciExpressPowerPmdDataPoints(IList<PmdChannel[]> channelData)
         {
             var minTimeStamp = channelData.First()[0].TimeStamp;
-
-            int i = 0;
             foreach (var channel in channelData)
             {
-                if (++i % downSamplingSize != 0) continue;
                 var sumPower = PmdChannelExtensions.GPUPowerIndexGroup.Sum(index => channel[index].Value);
                 yield return new Point((channel[0].TimeStamp - minTimeStamp) * 1E-03, sumPower);
             }
         }
 
-        private void FilterChannels(PmdChannel[] channel)
+        private void FillChannelsBuffer(PmdChannel[] channel)
         {
             if (DownSamplingSize > 1)
             {
@@ -127,7 +121,8 @@ namespace CapFrameX.PMD
                 if (_channelsBuffer.Count > DownSamplingSize)
                 {
                     _channelsBuffer.RemoveRange(0, _channelsBuffer.Count - DownSamplingSize);
-                    _pmdChannelStream.OnNext(SetPmdChannelStream(_channelsBuffer));
+                    _pmdChannelStream.OnNext(FilterChannelsBuffer(_channelsBuffer));
+                    _channelsBuffer.Clear();
                 }
             }
             else
@@ -139,7 +134,7 @@ namespace CapFrameX.PMD
             }
         }
 
-        private PmdChannel[] SetPmdChannelStream(List<PmdChannel[]> buffer)
+        private PmdChannel[] FilterChannelsBuffer(List<PmdChannel[]> buffer)
         {
             PmdChannel[] channels;
 
