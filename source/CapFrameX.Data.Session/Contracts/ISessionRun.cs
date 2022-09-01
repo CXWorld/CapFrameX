@@ -8,5 +8,8 @@
 		ISessionSensorData SensorData { get; set; }
         ISessionSensorData2 SensorData2 { get; set; }
 		float[] RTSSFrameTimes { get; set; }
-	}
+        float[] PmdGpuPower { get; set; }
+        float[] PmdCpuPower { get; set; }
+		int SampleTime { get; set; }
+    }
 }

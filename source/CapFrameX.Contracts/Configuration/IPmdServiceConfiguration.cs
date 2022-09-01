@@ -13,5 +13,7 @@
         int PmdChartRefreshPeriod { get; set; }
 
         int PmdMetricRefreshPeriod { get; set; }
+
+        bool UsePmdDataLogging { get; set; }
     }
 }

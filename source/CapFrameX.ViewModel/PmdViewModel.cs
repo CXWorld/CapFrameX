@@ -1,6 +1,8 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.PMD;
+using CapFrameX.Data;
+using CapFrameX.Data.Session.Contracts;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Extensions;
 using CapFrameX.PMD;
@@ -33,6 +35,8 @@ namespace CapFrameX.ViewModel
         private int _pmdDataWindowSeconds = 10;
         private bool _usePmdService;
         private string _sampleRate = "0 [1/s]";
+        private bool _useUpdateSession;
+        private ISession _session;
 
         private IDisposable _pmdChannelStreamChartsDisposable;
         private IDisposable _pmdChannelStreamMetricsDisposable;
@@ -180,6 +184,16 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        public bool UseLogging
+        {
+            get => _appConfiguration.UsePmdDataLogging;
+            set
+            {
+                _appConfiguration.UsePmdDataLogging = value;
+                RaisePropertyChanged();
+            }
+        }
+
         public int SelectedPmdDataWindow
         {
             get => _pmdDataWindowSeconds;
@@ -216,7 +230,8 @@ namespace CapFrameX.ViewModel
             ResetPmdMetricsCommand = new DelegateCommand(() => _pmdDataMetricsManager.ResetHistory());
 
             UpdatePmdChart();
-            SubscribeToThemeChanged();
+            SubscribeToAggregatorEvents();
+
             _pmdService.PmdstatusStream
                 .SubscribeOnDispatcher()
                 .Subscribe(status => PmdCaptureStatus = status);
@@ -292,13 +307,29 @@ namespace CapFrameX.ViewModel
             ManageChartsUpdate(true);
         }
 
-        private void SubscribeToThemeChanged()
+        private void SubscribeToAggregatorEvents()
         {
+            _eventAggregator.GetEvent<PubSubEvent<ViewMessages.UpdateSession>>()
+                .Subscribe(msg =>
+                {
+                    _session = msg.CurrentSession;
+
+                    if (_useUpdateSession)
+                    {
+                        UpdatePowerFramtimesChart();
+                    }
+                });
+
             _eventAggregator.GetEvent<PubSubEvent<ViewMessages.ThemeChanged>>()
                 .Subscribe(msg =>
                 {
                     UpdatePmdChart();
                 });
+        }
+
+        private void UpdatePowerFramtimesChart()
+        {
+
         }
 
         private void UpdatePmdChart()

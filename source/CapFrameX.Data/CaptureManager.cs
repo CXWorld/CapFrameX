@@ -21,6 +21,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using CapFrameX.Monitoring.Contracts;
 using CapFrameX.Capture.Contracts;
+using CapFrameX.PMD;
 
 namespace CapFrameX.Data
 {
@@ -55,6 +56,7 @@ namespace CapFrameX.Data
         private readonly IAppConfiguration _appConfiguration;
         private readonly IRTSSService _rtssService;
         private readonly ISensorConfig _sensorConfig;
+        private readonly IPmdService _pmdService;
         private readonly ILogEntryManager _logEntryManager;
         private readonly List<string[]> _captureDataArchive = new List<string[]>();
         private readonly object _archiveLock = new object();
@@ -64,6 +66,8 @@ namespace CapFrameX.Data
         private IDisposable _disposableCaptureStream;
         private IDisposable _disposableArchiveStream;
         private IDisposable _autoCompletionDisposableStream;
+        private IDisposable _disposablePmdDataStream;
+        private IDisposable _rTSSFrameTimesIntervalStream;
         private List<string[]> _captureData = new List<string[]>();
         private bool _fillArchive;
         private long _qpcTimeStart;
@@ -75,7 +79,8 @@ namespace CapFrameX.Data
         private ISubject<CaptureStatus> _captureStatusChange =
             new BehaviorSubject<CaptureStatus>(new CaptureStatus { Status = ECaptureStatus.Stopped });
         private List<float> _aggregatedRTSSFrameTimes;
-        private IDisposable _rTSSFrameTimesIntervalStream;
+        private LinkedList<float> _pmdDataGpuPower;
+        private LinkedList<float> _pmdDataCpuPower;
 
         public IObservable<CaptureStatus> CaptureStatusChange
             => _captureStatusChange.AsObservable();
@@ -111,6 +116,7 @@ namespace CapFrameX.Data
             IRTSSService rtssService,
             ISensorConfig sensorConfig,
             ProcessList processList,
+            IPmdService pmdService,
             ILogEntryManager logEntryManager)
         {
             _presentMonCaptureService = presentMonCaptureService;
@@ -123,6 +129,7 @@ namespace CapFrameX.Data
             _rtssService = rtssService;
             _sensorConfig = sensorConfig;
             _processList = processList;
+            _pmdService = pmdService;
             _logEntryManager = logEntryManager;
             _presentMonCaptureService.IsCaptureModeActiveStream.OnNext(false);
         }
@@ -204,6 +211,16 @@ namespace CapFrameX.Data
             bool intializedStartTime = false;
             double captureDataArchiveLastTime = 0;
 
+            if (_appConfiguration.UsePmdDataLogging)
+            {
+                _pmdDataGpuPower = new LinkedList<float>();
+                _pmdDataCpuPower = new LinkedList<float>();
+
+                _disposablePmdDataStream = _pmdService.PmdChannelStream
+                    .ObserveOn(new EventLoopScheduler())
+                    .Subscribe(channels => FillPmdDataLists(channels));
+            }
+
             _disposableCaptureStream = _presentMonCaptureService
                 .FrameDataStream
                 .Skip(1)
@@ -237,7 +254,7 @@ namespace CapFrameX.Data
                         {
                             intializedStartTime = true;
 
-                            // stop archive
+                            // stop filling archive
                             _fillArchive = false;
                             _disposableArchiveStream?.Dispose();
 
@@ -313,6 +330,9 @@ namespace CapFrameX.Data
 
             // Stop capturing RTSS frame times
             _rTSSFrameTimesIntervalStream?.Dispose();
+
+            // Stop PMD logging
+            _disposablePmdDataStream?.Dispose();
 
             if (_appConfiguration.AutoDisableOverlay && OSDAutoDisabled)
             {
@@ -398,6 +418,12 @@ namespace CapFrameX.Data
             _logEntryManager.AddLogEntry("Started filling archive.", ELogMessageType.AdvancedInfo, false);
         }
 
+        private void FillPmdDataLists(PmdChannel[] channel)
+        {
+            _pmdDataGpuPower.AddLast(PmdChannelExtensions.GPUPowerIndexGroup.Sum(index => channel[index].Value));
+            _pmdDataCpuPower.AddLast(PmdChannelExtensions.EPSPowerIndexGroup.Sum(index => channel[index].Value));
+        }
+
         private async Task WriteExtractedCaptureDataToFileAsync()
         {
             try
@@ -424,6 +450,17 @@ namespace CapFrameX.Data
                 //ToDo: data could be adjusted (cutting at end)
                 sessionRun.SensorData2 = _sensorService.GetSensorSessionData();
                 sessionRun.RTSSFrameTimes = _aggregatedRTSSFrameTimes?.ToArray();
+
+                if (_appConfiguration.UsePmdDataLogging)
+                {
+                    if(_pmdDataGpuPower.Any())
+                        sessionRun.PmdGpuPower = _pmdDataGpuPower.ToArray();
+
+                    if (_pmdDataCpuPower.Any())
+                        sessionRun.PmdCpuPower = _pmdDataCpuPower.ToArray();
+
+                    sessionRun.SampleTime = _pmdService.DownSamplingSize;
+                }
 
                 if (_appConfiguration.UseRunHistory)
                 {

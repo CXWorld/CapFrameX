@@ -25,9 +25,4 @@ namespace CapFrameX.Data.Logging
             }));
         }
     }
-
-    //public class CollapsibleLogEntry : LogEntry
-    //{
-    //    public List<ILogEntry> Contents { get; set; }
-    //}
 }

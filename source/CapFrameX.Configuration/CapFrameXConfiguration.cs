@@ -1,5 +1,6 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -687,6 +688,12 @@ namespace CapFrameX.Configuration
         public int ChartDownSamplingSize
         {
             get => Get<int>(4);
+            set => Set(value);
+        }
+
+        public bool UsePmdDataLogging
+        {
+            get => Get<bool>(false);
             set => Set(value);
         }
 
