@@ -25,10 +25,17 @@
             <mvvm:PmdStatusColorConverter x:Key="PmdStatusColorConverter"/>
             <system:Double x:Key="FontSizeMetrics">17</system:Double>
             <system:Double x:Key="LabelHeight">28</system:Double>
+            <Style TargetType="{x:Type TabItem}" BasedOn="{StaticResource MaterialDesignNavigationRailTabItem}">
+                <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+                <Setter Property="Background" Value="{DynamicResource MaterialDesignBody}"/>
+                <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBody}"/>
+                <Setter Property="Padding" Value="0"/>
+                <Setter Property="Height" Value="25" />
+            </Style>
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid>
-        <TabControl x:Name="GraphTab" Margin="0 2 0 0" FocusVisualStyle="{x:Null}">
+        <TabControl x:Name="GraphTab" Margin="0 2 0 0" FocusVisualStyle="{x:Null}" Background="{DynamicResource MaterialDesignBackground}">
             <TabItem>
                 <TabItem.Header>
                     <Label FontSize="12">PMD Metrics</Label>
@@ -303,7 +310,7 @@
                           ToolTipService.ShowDuration="25000">
                                         <ComboBox.ToolTip>
                                             <ToolTip StaysOpen="True" MaxWidth="275">
-                                                <TextBlock Text="Sets the refresh rate [ms] for the PMD device." 
+                                                <TextBlock Text="Sets the lenght [s] of the charts." 
 									   TextWrapping="Wrap"/>
                                             </ToolTip>
                                         </ComboBox.ToolTip>
