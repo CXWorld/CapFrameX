@@ -36,7 +36,7 @@
     </UserControl.Resources>
     <Grid>
         <TabControl x:Name="GraphTab" Margin="0 2 0 0" FocusVisualStyle="{x:Null}" Background="{DynamicResource MaterialDesignBackground}">
-            <TabItem>
+            <TabItem Width="100">
                 <TabItem.Header>
                     <Label FontSize="12">PMD Metrics</Label>
                 </TabItem.Header>
@@ -169,10 +169,7 @@
                                     </StackPanel>
                                 </StackPanel>
                             </GroupBox>
-                            <GroupBox Header="System Power" FontSize="17" Style="{StaticResource MaterialDesignGroupBox}"
-                      materialDesign:ColorZoneAssist.Mode="Custom"
-                      materialDesign:ColorZoneAssist.Background="Black"
-                      materialDesign:ColorZoneAssist.Foreground="White">
+                            <GroupBox Header="System Power" FontSize="17" Style="{StaticResource MaterialDesignGroupBox}">
                                 <StackPanel Orientation="Vertical" Margin="0 -0 0 -0">
                                     <materialDesign:PackIcon Foreground="Red" Margin="120 -55 0 0" Visibility="{Binding PmdMetrics.SystemPowerIncomplete, Converter={StaticResource TrueToVisibleConverter}}" 
                                                  Kind="Information" VerticalAlignment="Center" >
@@ -329,7 +326,7 @@
                     </Grid>
                 </Grid>
             </TabItem>
-            <TabItem>
+            <TabItem Width="100">
                 <TabItem.Header>
                     <Label FontSize="12">PMD Analysis</Label>
                 </TabItem.Header>

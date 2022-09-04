@@ -12,7 +12,7 @@ namespace CapFrameX.PMD
     public class PmdDataChartManager
     {
         private List<double> _ePS12VModelMaxYValueBuffer = new List<double>(10);
-        private List<double> _pciExpressModelMaxYValueBuffer = new List<double>(10);       
+        private List<double> _pciExpressModelMaxYValueBuffer = new List<double>(10);
 
         PlotModel _eps12VModel = new PlotModel
         {
@@ -56,13 +56,11 @@ namespace CapFrameX.PMD
             // Analysis
             CpuAnalysisModel.Axes.Add(AxisDefinitions["X_Axis_Time_CPU_Analysis"]);
             CpuAnalysisModel.Axes.Add(AxisDefinitions["Y_Axis_Frame_Time_CPU"]);
-            CpuAnalysisModel.Axes.Add(AxisDefinitions["Y_Axis_PMD_CPU_W"]);
-            CpuAnalysisModel.Axes.Add(AxisDefinitions["Y_Axis_Sensor_CPU_W"]);
+            CpuAnalysisModel.Axes.Add(AxisDefinitions["Y_Axis_Analysis_CPU_W"]);
 
             GpuAnalysisModel.Axes.Add(AxisDefinitions["X_Axis_Time_GPU_Analysis"]);
             GpuAnalysisModel.Axes.Add(AxisDefinitions["Y_Axis_Frame_Time_GPU"]);
-            GpuAnalysisModel.Axes.Add(AxisDefinitions["Y_Axis_PMD_GPU_W"]);
-            GpuAnalysisModel.Axes.Add(AxisDefinitions["Y_Axis_Sensor_GPU_W"]);
+            GpuAnalysisModel.Axes.Add(AxisDefinitions["Y_Axis_Analysis_GPU_W"]);
         }
 
         public void DrawEps12VChart(IEnumerable<DataPoint> powerDrawPoints)
@@ -131,8 +129,8 @@ namespace CapFrameX.PMD
                         Title = "CPU Power [W]",
                         FontSize = 13,
                         MajorGridlineStyle = LineStyle.Solid,
-                        MajorGridlineThickness = 1,                   
-                        MajorStep = 25,
+                        MajorGridlineThickness = 1,
+                        MajorStep = 30,
                         MinorTickSize = 0,
                         MajorTickSize = 0,
                         Minimum = 0,
@@ -150,7 +148,7 @@ namespace CapFrameX.PMD
                         FontSize = 13,
                         MajorGridlineStyle = LineStyle.Solid,
                         MajorGridlineThickness = 1,
-                        MajorStep = 25,
+                        MajorStep = 30,
                         MinorTickSize = 0,
                         MajorTickSize = 0,
                         Minimum = 0,
@@ -205,7 +203,7 @@ namespace CapFrameX.PMD
                         MajorGridlineThickness = 1,
                         MinorTickSize = 0,
                         MajorTickSize = 0,
-						MajorStep = 10,
+                        MajorStep = 10,
                         Minimum = 0,
                         Maximum = 50,
                         AbsoluteMinimum = 0,
@@ -223,7 +221,7 @@ namespace CapFrameX.PMD
                         MajorGridlineThickness = 1,
                         MinorTickSize = 0,
                         MajorTickSize = 0,
-						MajorStep = 10,
+                        MajorStep = 10,
                         Minimum = 0,
                         Maximum = 50,
                         AbsoluteMinimum = 0,
@@ -265,16 +263,15 @@ namespace CapFrameX.PMD
                         AxisTitleDistance = 15
                     }
                  },
-                 // PMD data
-                 { "Y_Axis_PMD_CPU_W", new LinearAxis()
+                 { "Y_Axis_Analysis_CPU_W", new LinearAxis()
                     {
-                        Key = "Y_Axis_PMD_CPU_W",
+                        Key = "Y_Axis_Analysis_CPU_W",
                         Position = AxisPosition.Left,
                         Title = "CPU Power [W]",
                         FontSize = 13,
                         MajorGridlineStyle = LineStyle.Solid,
                         MajorGridlineThickness = 1,
-                        MajorStep = 25,
+                        MajorStep = 30,
                         MinorTickSize = 0,
                         MajorTickSize = 0,
                         Minimum = 0,
@@ -284,15 +281,15 @@ namespace CapFrameX.PMD
                         AxisTitleDistance = 15
                     }
                 },
-                { "Y_Axis_PMD_GPU_W", new LinearAxis()
+                { "Y_Axis_Analysis_GPU_W", new LinearAxis()
                     {
-                        Key = "Y_Axis_PMD_GPU_W",
+                        Key = "Y_Axis_Analysis_GPU_W",
                         Position = AxisPosition.Left,
                         Title = "GPU Power [W]",
                         FontSize = 13,
                         MajorGridlineStyle = LineStyle.Solid,
                         MajorGridlineThickness = 1,
-                        MajorStep = 25,
+                        MajorStep = 30,
                         MinorTickSize = 0,
                         MajorTickSize = 0,
                         Minimum = 0,
@@ -301,44 +298,7 @@ namespace CapFrameX.PMD
                         AbsoluteMaximum = 300,
                         AxisTitleDistance = 15
                     }
-                },
-                // Sensor readings data
-                { "Y_Axis_Sensor_CPU_W", new LinearAxis()
-                    {
-                        Key = "Y_Axis_Sensor_CPU_W",
-                        Position = AxisPosition.Left,
-                        Title = "CPU Power [W]",
-                        FontSize = 13,
-                        MajorGridlineStyle = LineStyle.Solid,
-                        MajorGridlineThickness = 1,
-                        MajorStep = 25,
-                        MinorTickSize = 0,
-                        MajorTickSize = 0,
-                        Minimum = 0,
-                        Maximum = 150,
-                        AbsoluteMinimum = 0,
-                        AbsoluteMaximum = 150,
-                        AxisTitleDistance = 15
-                    }
-                },
-                { "Y_Axis_Sensor_GPU_W", new LinearAxis()
-                    {
-                        Key = "Y_Axis_Sensor_GPU_W",
-                        Position = AxisPosition.Left,
-                        Title = "GPU Power [W]",
-                        FontSize = 13,
-                        MajorGridlineStyle = LineStyle.Solid,
-                        MajorGridlineThickness = 1,
-                        MajorStep = 25,
-                        MinorTickSize = 0,
-                        MajorTickSize = 0,
-                        Minimum = 0,
-                        Maximum = 300,
-                        AbsoluteMinimum = 0,
-                        AbsoluteMaximum = 300,
-                        AxisTitleDistance = 15
-                    }
-                },
+                }
             };
 
         public void ResetAllPLotModels()
@@ -360,25 +320,36 @@ namespace CapFrameX.PMD
             PciExpressModel.InvalidatePlot(true);
         }
 
-        public void UpdateCharts()
+        public void UpdateChartsTheme()
         {
             var gridAndBorderColor = UseDarkMode ? OxyColor.FromArgb(40, 204, 204, 204) : OxyColor.FromArgb(20, 30, 30, 30);
             var textColor = UseDarkMode ? OxyColors.White : OxyColors.Black;
 
             Eps12VModel.TextColor = textColor;
-            Eps12VModel.PlotAreaBorderColor = gridAndBorderColor;
-
+            CpuAnalysisModel.TextColor = textColor;
+            GpuAnalysisModel.TextColor = textColor;
             PciExpressModel.TextColor = textColor;
+
+            Eps12VModel.PlotAreaBorderColor = gridAndBorderColor;
             PciExpressModel.PlotAreaBorderColor = gridAndBorderColor;
+            CpuAnalysisModel.PlotAreaBorderColor = gridAndBorderColor;
+            GpuAnalysisModel.PlotAreaBorderColor = gridAndBorderColor;
 
             AxisDefinitions["Y_Axis_CPU_W"].MajorGridlineColor = gridAndBorderColor;
             AxisDefinitions["Y_Axis_GPU_W"].MajorGridlineColor = gridAndBorderColor;
-
-            AxisDefinitions["X_Axis_Time_CPU"].MajorGridlineColor = gridAndBorderColor;           
+            AxisDefinitions["X_Axis_Time_CPU"].MajorGridlineColor = gridAndBorderColor;
             AxisDefinitions["X_Axis_Time_GPU"].MajorGridlineColor = gridAndBorderColor;
+            AxisDefinitions["X_Axis_Time_CPU_Analysis"].MajorGridlineColor = gridAndBorderColor;
+            AxisDefinitions["Y_Axis_Frame_Time_CPU"].MajorGridlineColor = gridAndBorderColor;
+            AxisDefinitions["Y_Axis_Analysis_CPU_W"].MajorGridlineColor = gridAndBorderColor;
+            AxisDefinitions["X_Axis_Time_GPU_Analysis"].MajorGridlineColor = gridAndBorderColor;
+            AxisDefinitions["Y_Axis_Frame_Time_GPU"].MajorGridlineColor = gridAndBorderColor;
+            AxisDefinitions["Y_Axis_Analysis_GPU_W"].MajorGridlineColor = gridAndBorderColor;
 
             Eps12VModel.InvalidatePlot(false);
             PciExpressModel.InvalidatePlot(false);
+            CpuAnalysisModel.InvalidatePlot(false);
+            GpuAnalysisModel.InvalidatePlot(false);
         }
 
         public void UpdatePowerFramtimesChart(ISession session)

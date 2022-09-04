@@ -233,7 +233,9 @@ namespace CapFrameX.ViewModel
 
             ResetPmdMetricsCommand = new DelegateCommand(() => _pmdDataMetricsManager.ResetHistory());
 
-            UpdatePmdChart();
+            _pmdDataChartManager.UseDarkMode = _appConfiguration.UseDarkMode;
+            _pmdDataChartManager.UpdateChartsTheme();
+
             SubscribeToAggregatorEvents();
 
             _pmdService.PmdstatusStream
@@ -329,19 +331,14 @@ namespace CapFrameX.ViewModel
             _eventAggregator.GetEvent<PubSubEvent<ViewMessages.ThemeChanged>>()
                 .Subscribe(msg =>
                 {
-                    UpdatePmdChart();
+                    _pmdDataChartManager.UseDarkMode = _appConfiguration.UseDarkMode;
+                    _pmdDataChartManager.UpdateChartsTheme();
                 });
         }
 
         private void UpdatePowerFramtimesChart()
         {
             _pmdDataChartManager.UpdatePowerFramtimesChart(_session);
-        }
-
-        private void UpdatePmdChart()
-        {
-            _pmdDataChartManager.UseDarkMode = _appConfiguration.UseDarkMode;
-            _pmdDataChartManager.UpdateCharts();
         }
 
         private void ManagePmdService()
