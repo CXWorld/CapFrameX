@@ -118,12 +118,11 @@
                             </Grid.RowDefinitions>
                             <Grid Margin="0 0 0 0" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
                                 <TextBox Text="{Binding GpuName, Mode=OneWay}" HorizontalAlignment="Center" IsReadOnly="True" IsHitTestVisible="False" 
-                         Width="Auto" Height="30" FontWeight="Bold" FontSize="18"/>
+                                         Width="Auto" Height="30" FontWeight="Bold" FontSize="18"/>
                             </Grid>
-
-                            <controls:PlotViewCustomZoom Grid.Row="1" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" x:Name="PciExpressPlotView" 
+                            <controls:PlotViewCustomZoom Grid.Row="1" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" x:Name="PciExpressPlotViewMetrics" 
                                          Model="{Binding PciExpressModel}" Tag="{Binding ElementName=PmdViewControl, Path=DataContext}" Margin="0 5 0 0"
-										 MouseDoubleClick="ResetPciExpressChart_MouseDoubleClick">
+										 MouseDoubleClick="ResetPciExpressChartMetrics_MouseDoubleClick">
                                 <controls:PlotViewCustomZoom.DefaultTrackerTemplate>
                                     <ControlTemplate>
                                         <oxy:TrackerControl Position="{Binding Position}" Background="{DynamicResource MaterialDesignCardBackground}">
@@ -205,11 +204,11 @@
                             </Grid.RowDefinitions>
                             <Grid Margin="0 5 0 0" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
                                 <TextBox Text="{Binding CpuName, Mode=OneWay}" HorizontalAlignment="Center" IsReadOnly="True" IsHitTestVisible="False" 
-                         Width="Auto" Height="30" FontWeight="Bold" FontSize="18"/>
+                                         Width="Auto" Height="30" FontWeight="Bold" FontSize="18"/>
                             </Grid>
-                            <controls:PlotViewCustomZoom Grid.Row="1" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" x:Name="EPS12VPlotView" 
+                            <controls:PlotViewCustomZoom Grid.Row="1" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" x:Name="EPS12VPlotViewMetrics" 
                                          Model="{Binding EPS12VModel}" Tag="{Binding ElementName=PmdViewControl, Path=DataContext}" Margin="0 5 0 5"
-										 MouseDoubleClick="ResetEPS12VChart_MouseDoubleClick">
+										 MouseDoubleClick="ResetEPS12VChartMetrics_MouseDoubleClick">
                                 <controls:PlotViewCustomZoom.DefaultTrackerTemplate>
                                     <ControlTemplate>
                                         <oxy:TrackerControl Position="{Binding Position}" Background="{DynamicResource MaterialDesignCardBackground}">
@@ -272,9 +271,9 @@
                                 <StackPanel>
                                     <TextBlock Text="Downsampling Factor" FontSize="13" HorizontalAlignment="Left" Margin="10 10 0 0"/>
                                     <ComboBox Margin="10 10 0 0" HorizontalAlignment="Left" Padding="0 0 0 0" FontSize="13" Style="{StaticResource MaterialDesignComboBox}"
-					      materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="150" Width="60" Height="30" materialDesign:HintAssist.HintOpacity=".8"
-					      ItemsSource="{Binding DownsamplingFactors}" SelectedItem="{Binding SelectedDownSamplingFactor}"
-                          ToolTipService.ShowDuration="25000">
+					                          materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="150" Width="60" Height="30" materialDesign:HintAssist.HintOpacity=".8"
+					                          ItemsSource="{Binding DownsamplingFactors}" SelectedItem="{Binding SelectedDownSamplingFactor}"
+                                              ToolTipService.ShowDuration="25000">
                                         <ComboBox.ToolTip>
                                             <ToolTip StaysOpen="True" MaxWidth="275">
                                                 <TextBlock Text="Sets the refresh rate [ms] for the PMD device." 
@@ -284,9 +283,9 @@
                                     </ComboBox>
                                     <TextBlock Text="Downsampling Mode" FontSize="13" HorizontalAlignment="Left" Margin="10 20 0 0"/>
                                     <ComboBox Margin="10 10 0 0" HorizontalAlignment="Left" Padding="0 0 0 0" FontSize="13" Style="{StaticResource MaterialDesignComboBox}"
-					      materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="150" Width="100" Height="30" materialDesign:HintAssist.HintOpacity=".8"
-					      ItemsSource="{Binding DownsamplingModes}" SelectedItem="{Binding SelectedDownSamlingMode}"
-                          ToolTipService.ShowDuration="25000">
+					                          materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="150" Width="100" Height="30" materialDesign:HintAssist.HintOpacity=".8"
+					                          ItemsSource="{Binding DownsamplingModes}" SelectedItem="{Binding SelectedDownSamlingMode}"
+                                              ToolTipService.ShowDuration="25000">
                                         <ComboBox.ToolTip>
                                             <ToolTip StaysOpen="True" MaxWidth="275">
                                                 <TextBlock Text="Sets the downsampling mode." 
@@ -305,9 +304,9 @@
                                 <StackPanel>
                                     <TextBlock Text="Chart Length [s]" FontSize="13" HorizontalAlignment="Left" Margin="10 10 0 0"/>
                                     <ComboBox Margin="10 10 0 0" HorizontalAlignment="Left" Padding="0 0 0 0" FontSize="13" Style="{StaticResource MaterialDesignComboBox}"
-					      materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="150" Width="60" Height="30" materialDesign:HintAssist.HintOpacity=".8"
-					      ItemsSource="{Binding PmdDataWindows}" SelectedItem="{Binding SelectedPmdDataWindow}"
-                          ToolTipService.ShowDuration="25000">
+					                          materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="150" Width="60" Height="30" materialDesign:HintAssist.HintOpacity=".8"
+					                          ItemsSource="{Binding PmdDataWindows}" SelectedItem="{Binding SelectedPmdDataWindow}"
+                                              ToolTipService.ShowDuration="25000">
                                         <ComboBox.ToolTip>
                                             <ToolTip StaysOpen="True" MaxWidth="275">
                                                 <TextBlock Text="Sets the lenght [s] of the charts." 
@@ -332,10 +331,68 @@
             </TabItem>
             <TabItem>
                 <TabItem.Header>
-                    <Label FontSize="12">PMD Charts</Label>
+                    <Label FontSize="12">PMD Analysis</Label>
                 </TabItem.Header>
                 <Grid>
-
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="1*"/>
+                        <RowDefinition Height="1*"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="170"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid Grid.Row="0" Grid.Column="0">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="50"/>
+                                <RowDefinition Height="1*"/>
+                            </Grid.RowDefinitions>
+                            <Grid Margin="0 0 0 0" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
+                                <TextBox Text="{Binding GpuName, Mode=OneWay}" HorizontalAlignment="Center" IsReadOnly="True" IsHitTestVisible="False" 
+                                         Width="Auto" Height="30" FontWeight="Bold" FontSize="18"/>
+                            </Grid>
+                            <controls:PlotViewCustomZoom Grid.Row="1" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" x:Name="PciExpressPlotViewAnalysis" 
+                                         Model="{Binding GpuAnalysisModel}" Tag="{Binding ElementName=PmdViewControl, Path=DataContext}" Margin="0 5 0 0"
+										 MouseDoubleClick="ResetPciExpressChartAnalysis_MouseDoubleClick">
+                                <controls:PlotViewCustomZoom.DefaultTrackerTemplate>
+                                    <ControlTemplate>
+                                        <oxy:TrackerControl Position="{Binding Position}" Background="{DynamicResource MaterialDesignCardBackground}">
+                                            <oxy:TrackerControl.Content>
+                                                <TextBlock Text="{Binding}" Margin="5" />
+                                            </oxy:TrackerControl.Content>
+                                        </oxy:TrackerControl>
+                                    </ControlTemplate>
+                                </controls:PlotViewCustomZoom.DefaultTrackerTemplate>
+                            </controls:PlotViewCustomZoom>
+                        </Grid>
+                    </Grid>
+                    <Grid Grid.Row="1" Grid.Column="0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="50"/>
+                            <RowDefinition Height="1*"/>
+                        </Grid.RowDefinitions>
+                        <Grid Margin="0 5 0 0" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
+                            <TextBox Text="{Binding CpuName, Mode=OneWay}" HorizontalAlignment="Center" IsReadOnly="True" IsHitTestVisible="False" 
+                                         Width="Auto" Height="30" FontWeight="Bold" FontSize="18"/>
+                        </Grid>
+                        <controls:PlotViewCustomZoom Grid.Row="1" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" x:Name="EPS12VPlotViewAnalysis" 
+                                                     Model="{Binding CpuAnalysisModel}" Tag="{Binding ElementName=PmdViewControl, Path=DataContext}" Margin="0 5 0 2"
+										             MouseDoubleClick="ResetEPS12VChartAnalysis_MouseDoubleClick">
+                            <controls:PlotViewCustomZoom.DefaultTrackerTemplate>
+                                <ControlTemplate>
+                                    <oxy:TrackerControl Position="{Binding Position}" Background="{DynamicResource MaterialDesignCardBackground}">
+                                        <oxy:TrackerControl.Content>
+                                            <TextBlock Text="{Binding}" Margin="5" />
+                                        </oxy:TrackerControl.Content>
+                                    </oxy:TrackerControl>
+                                </ControlTemplate>
+                            </controls:PlotViewCustomZoom.DefaultTrackerTemplate>
+                        </controls:PlotViewCustomZoom>
+                    </Grid>
+                    <Grid Grid.RowSpan="2" Grid.Column="1" Margin="5 0 0 2" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
+                        
+                    </Grid>
                 </Grid>
             </TabItem>
         </TabControl>

@@ -13,14 +13,24 @@ namespace CapFrameX.View
             InitializeComponent();
         }
 
-        private void ResetEPS12VChart_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        private void ResetEPS12VChartMetrics_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            EPS12VPlotView.ResetAllAxes();
+            EPS12VPlotViewMetrics.ResetAllAxes();
         }
 
-        private void ResetPciExpressChart_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        private void ResetPciExpressChartMetrics_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            PciExpressPlotView.ResetAllAxes();
+            PciExpressPlotViewMetrics.ResetAllAxes();
+        }
+
+        private void ResetEPS12VChartAnalysis_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            EPS12VPlotViewAnalysis.ResetAllAxes();
+        }
+
+        private void ResetPciExpressChartAnalysis_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            PciExpressPlotViewAnalysis.ResetAllAxes();
         }
     }
 }

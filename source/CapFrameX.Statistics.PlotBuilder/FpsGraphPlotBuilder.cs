@@ -42,7 +42,6 @@ namespace CapFrameX.Statistics.PlotBuilder
                 SetLoadCharts(plotModel, plotSettings, session);
                 SetFpsChart(plotModel, avgFpsPoints, rawFpsPoints, average, 2, OxyColor.FromRgb(241, 125, 32), filterMode);
 
-
                 yMin = rawFpsPoints.Min(pnt => pnt.Y);
                 yMax = rawFpsPoints.Max(pnt => pnt.Y);
             }
@@ -73,7 +72,6 @@ namespace CapFrameX.Statistics.PlotBuilder
             var lowFPSValue = plotSettings.LowFPSThreshold;
 
             SetAggregationSeparators(session, plotModel, plotSettings.ShowAggregationSeparators);
-
 
             onFinishAction?.Invoke(plotModel);
             plotModel.InvalidatePlot(true);

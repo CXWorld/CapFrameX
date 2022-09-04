@@ -35,7 +35,7 @@ namespace CapFrameX.ViewModel
         private int _pmdDataWindowSeconds = 10;
         private bool _usePmdService;
         private string _sampleRate = "0 [1/s]";
-        private bool _useUpdateSession;
+        private bool _useUpdateSession = false;
         private ISession _session;
 
         private IDisposable _pmdChannelStreamChartsDisposable;
@@ -49,6 +49,10 @@ namespace CapFrameX.ViewModel
         public PlotModel EPS12VModel => _pmdDataChartManager.Eps12VModel;
 
         public PlotModel PciExpressModel => _pmdDataChartManager.PciExpressModel;
+
+        public PlotModel CpuAnalysisModel => _pmdDataChartManager.CpuAnalysisModel;
+
+        public PlotModel GpuAnalysisModel => _pmdDataChartManager.GpuAnalysisModel;
 
         public PmdMetricsManager PmdMetrics => _pmdDataMetricsManager;
 
@@ -163,14 +167,14 @@ namespace CapFrameX.ViewModel
                 RaisePropertyChanged();
             }
         }
-        
+
         public string SampleRate
         {
             get => _sampleRate;
             set
             {
                 _sampleRate = value;
-                 RaisePropertyChanged();
+                RaisePropertyChanged();
             }
         }
 
@@ -299,11 +303,13 @@ namespace CapFrameX.ViewModel
 
         public void OnNavigatedFrom(NavigationContext navigationContext)
         {
+            _useUpdateSession = false;
             ManageChartsUpdate(false);
         }
 
         public void OnNavigatedTo(NavigationContext navigationContext)
         {
+            _useUpdateSession = true;
             ManageChartsUpdate(true);
         }
 
@@ -329,7 +335,7 @@ namespace CapFrameX.ViewModel
 
         private void UpdatePowerFramtimesChart()
         {
-
+            _pmdDataChartManager.UpdatePowerFramtimesChart(_session);
         }
 
         private void UpdatePmdChart()
