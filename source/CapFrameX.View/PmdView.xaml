@@ -388,7 +388,28 @@
                         </controls:PlotViewCustomZoom>
                     </Grid>
                     <Grid Grid.RowSpan="2" Grid.Column="1" Margin="5 0 0 2" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
-                        
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="50"/>
+                            <RowDefinition Height="1*"/>
+                            <RowDefinition Height="50"/>
+                            <RowDefinition Height="1*"/>
+                        </Grid.RowDefinitions>
+                        <Border Grid.Row="1" Height="120" Margin="5 5 5 0" BorderThickness="0.2" BorderBrush="{DynamicResource MaterialDesignBody}"
+                                VerticalAlignment="Top" HorizontalAlignment="Stretch">
+                            <StackPanel Orientation="Vertical">
+                                <CheckBox Margin="5 15 0 0" FontSize="13" Content="Frametimes" IsChecked="{Binding DrawFrametimesGpu}"></CheckBox>
+                                <CheckBox Margin="5 15 0 0" FontSize="13" Content="PMD GPU Power" IsChecked="{Binding DrawPmdGpuPower}"></CheckBox>
+                                <CheckBox Margin="5 15 0 0" FontSize="13" Content="Sensor GPU Power" IsChecked="{Binding DrawSensorGpuPower}"></CheckBox>
+                            </StackPanel>
+                        </Border>
+                        <Border Grid.Row="3" Height="120" Margin="5 5 5 0" BorderThickness="0.2" BorderBrush="{DynamicResource MaterialDesignBody}"
+                                VerticalAlignment="Top" HorizontalAlignment="Stretch">
+                            <StackPanel Orientation="Vertical">
+                                <CheckBox Margin="5 15 0 0" FontSize="13" Content="Frametimes" IsChecked="{Binding DrawFrametimesCpu}"></CheckBox>
+                                <CheckBox Margin="5 15 0 0" FontSize="13" Content="PMD CPU Power" IsChecked="{Binding DrawPmdCpuPower}"></CheckBox>
+                                <CheckBox Margin="5 15 0 0" FontSize="13" Content="Sensor CPU Power" IsChecked="{Binding DrawSensorCpuPower}"></CheckBox>
+                            </StackPanel>
+                        </Border>
                     </Grid>
                 </Grid>
             </TabItem>

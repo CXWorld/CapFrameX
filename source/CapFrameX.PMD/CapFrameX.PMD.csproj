@@ -133,6 +133,10 @@
       <Project>{7D35C9C8-6E9A-4ABB-9042-930BE5E26DC6}</Project>
       <Name>CapFrameX.Statistics.NetStandard</Name>
     </ProjectReference>
+    <ProjectReference Include="..\CapFrameX.Statistics.PlotBuilder\CapFrameX.Statistics.PlotBuilder.csproj">
+      <Project>{80A26F08-6AE5-472D-BB13-B6FB9A37FDCB}</Project>
+      <Name>CapFrameX.Statistics.PlotBuilder</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

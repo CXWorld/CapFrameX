@@ -198,6 +198,72 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        public bool DrawFrametimesCpu
+        {
+            get => _pmdDataChartManager.DrawFrametimesCpu;
+            set
+            {
+                _pmdDataChartManager.DrawFrametimesCpu = value;
+                RaisePropertyChanged();
+                _pmdDataChartManager.UpdateCpuPowerFramtimesChart(_session);
+            }
+        }
+
+        public bool DrawFrametimesGpu
+        {
+            get => _pmdDataChartManager.DrawFrametimesGpu;
+            set
+            {
+                _pmdDataChartManager.DrawFrametimesGpu = value;
+                RaisePropertyChanged();
+                _pmdDataChartManager.UpdateGpuPowerFramtimesChart(_session);
+            }
+        }
+
+        public bool DrawPmdCpuPower
+        {
+            get => _pmdDataChartManager.DrawPmdCpuPower;
+            set
+            {
+                _pmdDataChartManager.DrawPmdCpuPower = value;
+                RaisePropertyChanged();
+                _pmdDataChartManager.UpdateCpuPowerFramtimesChart(_session);
+            }
+        }
+
+        public bool DrawPmdGpuPower
+        {
+            get => _pmdDataChartManager.DrawPmdGpuPower;
+            set
+            {
+                _pmdDataChartManager.DrawPmdGpuPower = value;
+                RaisePropertyChanged();
+                _pmdDataChartManager.UpdateGpuPowerFramtimesChart(_session);
+            }
+        }
+
+        public bool DrawSensorCpuPower
+        {
+            get => _pmdDataChartManager.DrawSensorCpuPower;
+            set
+            {
+                _pmdDataChartManager.DrawSensorCpuPower = value;
+                RaisePropertyChanged();
+                _pmdDataChartManager.UpdateCpuPowerFramtimesChart(_session);
+            }
+        }
+
+        public bool DrawSensorGpuPower
+        {
+            get => _pmdDataChartManager.DrawSensorGpuPower;
+            set
+            {
+                _pmdDataChartManager.DrawSensorGpuPower = value;
+                RaisePropertyChanged();
+                _pmdDataChartManager.UpdateGpuPowerFramtimesChart(_session);
+            }
+        }
+
         public int SelectedPmdDataWindow
         {
             get => _pmdDataWindowSeconds;
@@ -324,7 +390,8 @@ namespace CapFrameX.ViewModel
 
                     if (_useUpdateSession)
                     {
-                        UpdatePowerFramtimesChart();
+                        _pmdDataChartManager.UpdateCpuPowerFramtimesChart(_session);
+                        _pmdDataChartManager.UpdateGpuPowerFramtimesChart(_session);
                     }
                 });
 
@@ -334,11 +401,6 @@ namespace CapFrameX.ViewModel
                     _pmdDataChartManager.UseDarkMode = _appConfiguration.UseDarkMode;
                     _pmdDataChartManager.UpdateChartsTheme();
                 });
-        }
-
-        private void UpdatePowerFramtimesChart()
-        {
-            _pmdDataChartManager.UpdatePowerFramtimesChart(_session);
         }
 
         private void ManagePmdService()

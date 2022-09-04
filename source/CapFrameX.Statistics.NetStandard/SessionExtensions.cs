@@ -13,14 +13,14 @@ namespace CapFrameX.Statistics.NetStandard
         {
             IList<double> frametimesTimeWindow = new List<double>();
             var frametimeStatisticProvider = new FrametimeStatisticProvider(options);
-            var frameStarts = session.Runs.SelectMany(r => r.CaptureData.TimeInSeconds).ToArray();
+            var frameStartTimes = session.Runs.SelectMany(r => r.CaptureData.TimeInSeconds).ToArray();
             var frametimes = frametimeStatisticProvider?.GetOutlierAdjustedSequence(session.Runs.SelectMany(r => r.CaptureData.MsBetweenPresents).ToArray(), eRemoveOutlierMethod);
 
-            if (frametimes.Any() && frameStarts.Any())
+            if (frametimes.Any() && frameStartTimes.Any())
             {
                 for (int i = 0; i < frametimes.Count(); i++)
                 {
-                    if (frameStarts[i] >= startTime && frameStarts[i] <= endTime)
+                    if (frameStartTimes[i] >= startTime && frameStartTimes[i] <= endTime)
                     {
                         frametimesTimeWindow.Add(frametimes[i]);
                     }
@@ -36,19 +36,76 @@ namespace CapFrameX.Statistics.NetStandard
             var frametimeStatisticProvider = new FrametimeStatisticProvider(options);
 
             var frametimes = frametimeStatisticProvider?.GetOutlierAdjustedSequence(session.Runs.SelectMany(r => r.CaptureData.MsBetweenPresents).ToArray(), eRemoveOutlierMethod);
-            var frameStarts = session.Runs.SelectMany(r => r.CaptureData.TimeInSeconds).ToArray();
-            if (frametimes.Any() && frameStarts.Any())
+            var frameStartTimes = session.Runs.SelectMany(r => r.CaptureData.TimeInSeconds).ToArray();
+            if (frametimes.Any() && frameStartTimes.Any())
             {
                 for (int i = 0; i < frametimes.Count(); i++)
                 {
-                    if (frameStarts[i] >= startTime && frameStarts[i] <= endTime)
+                    if (frameStartTimes[i] >= startTime && frameStartTimes[i] <= endTime)
                     {
-                        frametimesPointsWindow.Add(new Point(frameStarts[i], frametimes[i]));
+                        frametimesPointsWindow.Add(new Point(frameStartTimes[i], frametimes[i]));
                     }
                 }
             }
 
             return frametimesPointsWindow;
+        }
+
+        public static IList<Point> GetFrametimePoints(this ISession session)
+        {
+            if (!session.Runs.Any())
+                return null;
+
+            var frametimesPointsWindow = new List<Point>();
+            var frametimes = session.Runs.SelectMany(r => r.CaptureData.MsBetweenPresents).ToArray();
+            var frameStartTimes = session.Runs.SelectMany(r => r.CaptureData.TimeInSeconds).ToArray();
+            if (frametimes.Any() && frameStartTimes.Any())
+            {
+                for (int i = 0; i < frametimes.Count(); i++)
+                {
+                    frametimesPointsWindow.Add(new Point(frameStartTimes[i], frametimes[i]));
+                }
+            }
+
+            return frametimesPointsWindow;
+        }
+
+        public static IList<Point> GetPmdCpuPowerPoints(this ISession session)
+        {
+            if (!session.Runs.Any())
+                return null;
+
+            var pmdCpuPowerPoints = new List<Point>();
+            var cpuPowerValues = session.Runs.SelectMany(r => r.PmdCpuPower).ToArray();
+            var startTimes = cpuPowerValues.Select((x, i) => 1E-03 * i * session.Runs.First().SampleTime).ToArray();
+            if (cpuPowerValues.Any() && startTimes.Any())
+            {
+                for (int i = 0; i < cpuPowerValues.Count(); i++)
+                {
+                    pmdCpuPowerPoints.Add(new Point(startTimes[i], cpuPowerValues[i]));
+                }
+            }
+
+            return pmdCpuPowerPoints;
+        }
+
+        public static IList<Point> GetPmdGpuPowerPoints(this ISession session)
+        {
+            if (!session.Runs.Any())
+                return null;
+
+            var pmdGpuPowerPoints = new List<Point>();
+            var gpuPowerValues = session.Runs.SelectMany(r => r.PmdGpuPower).ToArray();
+            var startTimes = gpuPowerValues.Select((x, i) => 1E-03 * i * session.Runs.First().SampleTime).ToArray();
+            if (gpuPowerValues.Any() && startTimes.Any())
+            {
+                for (int i = 0; i < gpuPowerValues.Count(); i++)
+                {
+                    pmdGpuPowerPoints.Add(new Point(startTimes[i], gpuPowerValues[i]));
+                }
+            }
+
+            return pmdGpuPowerPoints;
         }
 
         /// <summary>
@@ -57,7 +114,7 @@ namespace CapFrameX.Statistics.NetStandard
         /// </summary>
         /// <returns></returns>
 
-        public static IList<double> CalculateInputLagTimes( this ISession session, EInputLagType type)
+        public static IList<double> CalculateInputLagTimes(this ISession session, EInputLagType type)
         {
             var inputLagTimes = new List<double>();
 

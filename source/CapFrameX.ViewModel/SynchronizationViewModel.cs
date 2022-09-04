@@ -428,7 +428,7 @@ namespace CapFrameX.ViewModel
                 StrokeThickness = 1,
                 LegendStrokeThickness = 4,
                 FontSize = 13,
-                Color = Constants.FrametimeStroke,
+                Color = Constants.FrametimeColor,
                 EdgeRenderingMode = EdgeRenderingMode.PreferSpeed
             };
 
@@ -720,7 +720,7 @@ namespace CapFrameX.ViewModel
                 Title = "Frametimes",
                 StrokeThickness = 1,
                 LegendStrokeThickness = 4,
-                Color = Constants.FrametimeStroke,
+                Color = Constants.FrametimeColor,
                 EdgeRenderingMode = EdgeRenderingMode.PreferSpeed
             };
 

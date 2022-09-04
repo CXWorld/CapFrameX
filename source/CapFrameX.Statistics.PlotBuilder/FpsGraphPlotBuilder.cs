@@ -52,7 +52,7 @@ namespace CapFrameX.Statistics.PlotBuilder
                 if(filterMode == EFilterMode.TimeIntervalAverage)
                     SetLoadCharts(plotModel, plotSettings, session);
 
-                SetFpsChart(plotModel, fpsPoints, rawFpsPoints, average, filterMode is EFilterMode.None ? 1 : 2, Constants.FpsStroke, filterMode);
+                SetFpsChart(plotModel, fpsPoints, rawFpsPoints, average, filterMode is EFilterMode.None ? 1 : 2, Constants.FpsColor, filterMode);
 
                 if(filterMode is EFilterMode.None)
                     SetLoadCharts(plotModel, plotSettings, session);
@@ -124,7 +124,7 @@ namespace CapFrameX.Statistics.PlotBuilder
                 Title = "Avg FPS",
                 StrokeThickness = 2,
                 LegendStrokeThickness = 4,
-                Color = OxyColor.FromAColor(200, Constants.FpsAverageStroke)
+                Color = OxyColor.FromAColor(200, Constants.FpsAverageColor)
             };
 
             averageSeries.Points.AddRange(averageDataPoints);
@@ -148,7 +148,7 @@ namespace CapFrameX.Statistics.PlotBuilder
                 Title = "Raw FPS",
                 StrokeThickness = 1,
                 LegendStrokeThickness = 4,
-                Color = OxyColor.FromAColor(200, Constants.FpsStroke),
+                Color = OxyColor.FromAColor(200, Constants.FpsColor),
                 EdgeRenderingMode = EdgeRenderingMode.PreferSpeed
             };
             var points = fpsPoints.Select(pnt => new DataPoint(pnt.X, pnt.Y));
