@@ -1,4 +1,5 @@
-﻿using OxyPlot;
+﻿using CapFrameX.Data.Session.Contracts;
+using OxyPlot;
 using OxyPlot.Axes;
 using OxyPlot.Series;
 using System;
@@ -23,19 +24,45 @@ namespace CapFrameX.PMD
             PlotMargins = new OxyThickness(50, 0, 50, 60),
         };
 
+        PlotModel _cpuAnalysisModel = new PlotModel
+        {
+            PlotMargins = new OxyThickness(50, 0, 50, 60),
+        };
+
+        PlotModel _gpuAnalysisModel = new PlotModel
+        {
+            PlotMargins = new OxyThickness(50, 0, 50, 60),
+        };
+
         public bool UseDarkMode { get; set; }
 
         public PlotModel Eps12VModel => _eps12VModel;
 
         public PlotModel PciExpressModel => _pciExpressModel;
 
+        public PlotModel CpuAnalysisModel => _cpuAnalysisModel;
+
+        public PlotModel GpuAnalysisModel => _gpuAnalysisModel;
+
         public PmdDataChartManager()
         {
+            // Metrics
             Eps12VModel.Axes.Add(AxisDefinitions["X_Axis_Time_CPU"]);
             Eps12VModel.Axes.Add(AxisDefinitions["Y_Axis_CPU_W"]);
 
             PciExpressModel.Axes.Add(AxisDefinitions["X_Axis_Time_GPU"]);
             PciExpressModel.Axes.Add(AxisDefinitions["Y_Axis_GPU_W"]);
+
+            // Analysis
+            CpuAnalysisModel.Axes.Add(AxisDefinitions["X_Axis_Time_CPU_Analysis"]);
+            CpuAnalysisModel.Axes.Add(AxisDefinitions["Y_Axis_Frame_Time_CPU"]);
+            CpuAnalysisModel.Axes.Add(AxisDefinitions["Y_Axis_PMD_CPU_W"]);
+            CpuAnalysisModel.Axes.Add(AxisDefinitions["Y_Axis_Sensor_CPU_W"]);
+
+            GpuAnalysisModel.Axes.Add(AxisDefinitions["X_Axis_Time_GPU_Analysis"]);
+            GpuAnalysisModel.Axes.Add(AxisDefinitions["Y_Axis_Frame_Time_GPU"]);
+            GpuAnalysisModel.Axes.Add(AxisDefinitions["Y_Axis_PMD_GPU_W"]);
+            GpuAnalysisModel.Axes.Add(AxisDefinitions["Y_Axis_Sensor_GPU_W"]);
         }
 
         public void DrawEps12VChart(IEnumerable<DataPoint> powerDrawPoints)
@@ -96,23 +123,24 @@ namespace CapFrameX.PMD
 
         public Dictionary<string, LinearAxis> AxisDefinitions { get; }
             = new Dictionary<string, LinearAxis>() {
-            { "Y_Axis_CPU_W", new LinearAxis()
-                {
-                    Key = "Y_Axis_CPU_W",
-                    Position = AxisPosition.Left,
-                    Title = "Power Consumption CPU [W]",
-                    FontSize = 13,
-                    MajorGridlineStyle = LineStyle.Solid,
-                    MajorGridlineThickness = 1,                   
-                    MajorStep = 20,
-                    MinorTickSize = 0,
-                    MajorTickSize = 0,
-                    Minimum = 0,
-                    Maximum = 150,
-                    AbsoluteMinimum = 0,
-                    AbsoluteMaximum = 150,
-                    AxisTitleDistance = 15
-                }
+                // Metrics tab
+                { "Y_Axis_CPU_W", new LinearAxis()
+                    {
+                        Key = "Y_Axis_CPU_W",
+                        Position = AxisPosition.Left,
+                        Title = "Power Consumption CPU [W]",
+                        FontSize = 13,
+                        MajorGridlineStyle = LineStyle.Solid,
+                        MajorGridlineThickness = 1,                   
+                        MajorStep = 20,
+                        MinorTickSize = 0,
+                        MajorTickSize = 0,
+                        Minimum = 0,
+                        Maximum = 150,
+                        AbsoluteMinimum = 0,
+                        AbsoluteMaximum = 150,
+                        AxisTitleDistance = 15
+                    }
                 },
                 { "Y_Axis_GPU_W", new LinearAxis()
                     {
@@ -165,6 +193,149 @@ namespace CapFrameX.PMD
                         AbsoluteMaximum = 10,
                         AxisTitleDistance = 15
                     }
+                 },
+                 // Analysis tab
+                 { "Y_Axis_Frame_Time_CPU", new LinearAxis()
+                    {
+                        Key = "Y_Axis_Frame_Time_CPU",
+                        Position = AxisPosition.Right,
+                        Title = "Frametime [ms]",
+                        FontSize = 13,
+                        MajorGridlineStyle = LineStyle.Solid,
+                        MajorGridlineThickness = 1,
+                        MinorTickSize = 0,
+                        MajorTickSize = 0,
+                        Minimum = 0,
+                        Maximum = 50,
+                        AbsoluteMinimum = 0,
+                        AbsoluteMaximum = 50,
+                        AxisTitleDistance = 15
+                    }
+                 },
+                 { "Y_Axis_Frame_Time_GPU", new LinearAxis()
+                    {
+                        Key = "Y_Axis_Frame_Time_GPU",
+                        Position = AxisPosition.Right,
+                        Title = "Frametime [ms]",
+                        FontSize = 13,
+                        MajorGridlineStyle = LineStyle.Solid,
+                        MajorGridlineThickness = 1,
+                        MinorTickSize = 0,
+                        MajorTickSize = 0,
+                        Minimum = 0,
+                        Maximum = 50,
+                        AbsoluteMinimum = 0,
+                        AbsoluteMaximum = 50,
+                        AxisTitleDistance = 15
+                    }
+                 },
+                 { "X_Axis_Time_CPU_Analysis", new LinearAxis()
+                    {
+                        Key = "X_Axis_Time_CPU_Analysis",
+                        Position = AxisPosition.Bottom,
+                        Title = "Time [s]",
+                        FontSize = 13,
+                        MajorGridlineStyle = LineStyle.Solid,
+                        MajorGridlineThickness = 1,
+                        MinorTickSize = 0,
+                        MajorTickSize = 0,
+                        Minimum = 0,
+                        Maximum = 60,
+                        AbsoluteMinimum = 0,
+                        AbsoluteMaximum = 60,
+                        AxisTitleDistance = 15
+                    }
+                 },
+                 { "X_Axis_Time_GPU_Analysis", new LinearAxis()
+                    {
+                        Key = "X_Axis_Time_GPU_Analysis",
+                        Position = AxisPosition.Bottom,
+                        Title = "Time [s]",
+                        FontSize = 13,
+                        MajorGridlineStyle = LineStyle.Solid,
+                        MajorGridlineThickness = 1,
+                        MinorTickSize = 0,
+                        MajorTickSize = 0,
+                        Minimum = 0,
+                        Maximum = 60,
+                        AbsoluteMinimum = 0,
+                        AbsoluteMaximum = 60,
+                        AxisTitleDistance = 15
+                    }
+                 },
+                 // PMD data
+                 { "Y_Axis_PMD_CPU_W", new LinearAxis()
+                    {
+                        Key = "Y_Axis_PMD_CPU_W",
+                        Position = AxisPosition.Left,
+                        Title = "Power Consumption CPU [W]",
+                        FontSize = 13,
+                        MajorGridlineStyle = LineStyle.Solid,
+                        MajorGridlineThickness = 1,
+                        MajorStep = 20,
+                        MinorTickSize = 0,
+                        MajorTickSize = 0,
+                        Minimum = 0,
+                        Maximum = 150,
+                        AbsoluteMinimum = 0,
+                        AbsoluteMaximum = 150,
+                        AxisTitleDistance = 15
+                    }
+                },
+                { "Y_Axis_PMD_GPU_W", new LinearAxis()
+                    {
+                        Key = "Y_Axis_PMD_GPU_W",
+                        Position = AxisPosition.Left,
+                        Title = "Power Consumption GPU [W]",
+                        FontSize = 13,
+                        MajorGridlineStyle = LineStyle.Solid,
+                        MajorGridlineThickness = 1,
+                        MajorStep = 20,
+                        MinorTickSize = 0,
+                        MajorTickSize = 0,
+                        Minimum = 0,
+                        Maximum = 300,
+                        AbsoluteMinimum = 0,
+                        AbsoluteMaximum = 300,
+                        AxisTitleDistance = 15
+                    }
+                },
+                // Sensor readings data
+                { "Y_Axis_Sensor_CPU_W", new LinearAxis()
+                    {
+                        Key = "Y_Axis_Sensor_CPU_W",
+                        Position = AxisPosition.Left,
+                        Title = "Power Consumption CPU [W]",
+                        FontSize = 13,
+                        MajorGridlineStyle = LineStyle.Solid,
+                        MajorGridlineThickness = 1,
+                        MajorStep = 20,
+                        MinorTickSize = 0,
+                        MajorTickSize = 0,
+                        Minimum = 0,
+                        Maximum = 150,
+                        AbsoluteMinimum = 0,
+                        AbsoluteMaximum = 150,
+                        AxisTitleDistance = 15
+                    }
+                },
+                { "Y_Axis_Sensor_GPU_W", new LinearAxis()
+                    {
+                        Key = "Y_Axis_Sensor_GPU_W",
+                        Position = AxisPosition.Left,
+                        Title = "Power Consumption GPU [W]",
+                        FontSize = 13,
+                        MajorGridlineStyle = LineStyle.Solid,
+                        MajorGridlineThickness = 1,
+                        MajorStep = 20,
+                        MinorTickSize = 0,
+                        MajorTickSize = 0,
+                        Minimum = 0,
+                        Maximum = 300,
+                        AbsoluteMinimum = 0,
+                        AbsoluteMaximum = 300,
+                        AxisTitleDistance = 15
+                    }
                 },
             };
 
@@ -206,6 +377,13 @@ namespace CapFrameX.PMD
 
             Eps12VModel.InvalidatePlot(false);
             PciExpressModel.InvalidatePlot(false);
+        }
+
+        public void UpdatePowerFramtimesChart(ISession session)
+        {
+            if (session == null) return;
+
+
         }
     }
 }

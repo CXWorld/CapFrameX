@@ -42,7 +42,6 @@ namespace CapFrameX.ViewModel.DataContext
 			_fpsPlotBuilder = new FpsGraphPlotBuilder(appConfiguration, frametimesStatisticProvider);
 		}
 
-
 		public void BuildPlotmodel(IPlotSettings plotSettings, Action<PlotModel> onFinishAction = null)
 		{
 			Dispatcher.CurrentDispatcher.Invoke(() => {
