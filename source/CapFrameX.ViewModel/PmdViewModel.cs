@@ -54,6 +54,8 @@ namespace CapFrameX.ViewModel
 
         public PlotModel GpuAnalysisModel => _pmdDataChartManager.GpuAnalysisModel;
 
+        public PlotModel FrametimeModel => _pmdDataChartManager.FrametimeModel;
+
         public PmdMetricsManager PmdMetrics => _pmdDataMetricsManager;
 
         public string CpuName => _systemInfo.GetProcessorName();
@@ -198,25 +200,14 @@ namespace CapFrameX.ViewModel
             }
         }
 
-        public bool DrawFrametimesCpu
+        public bool DrawFrametimes
         {
-            get => _pmdDataChartManager.DrawFrametimesCpu;
+            get => _pmdDataChartManager.DrawFrametimes;
             set
             {
-                _pmdDataChartManager.DrawFrametimesCpu = value;
+                _pmdDataChartManager.DrawFrametimes = value;
                 RaisePropertyChanged();
-                _pmdDataChartManager.UpdateCpuPowerFramtimesChart(_session);
-            }
-        }
-
-        public bool DrawFrametimesGpu
-        {
-            get => _pmdDataChartManager.DrawFrametimesGpu;
-            set
-            {
-                _pmdDataChartManager.DrawFrametimesGpu = value;
-                RaisePropertyChanged();
-                _pmdDataChartManager.UpdateGpuPowerFramtimesChart(_session);
+                _pmdDataChartManager.UpdateFrametimeChart(_session);
             }
         }
 
@@ -227,7 +218,7 @@ namespace CapFrameX.ViewModel
             {
                 _pmdDataChartManager.DrawPmdCpuPower = value;
                 RaisePropertyChanged();
-                _pmdDataChartManager.UpdateCpuPowerFramtimesChart(_session);
+                _pmdDataChartManager.UpdateCpuPowerChart(_session);
             }
         }
 
@@ -238,7 +229,7 @@ namespace CapFrameX.ViewModel
             {
                 _pmdDataChartManager.DrawPmdGpuPower = value;
                 RaisePropertyChanged();
-                _pmdDataChartManager.UpdateGpuPowerFramtimesChart(_session);
+                _pmdDataChartManager.UpdateGpuPowerChart(_session);
             }
         }
 
@@ -249,7 +240,7 @@ namespace CapFrameX.ViewModel
             {
                 _pmdDataChartManager.DrawSensorCpuPower = value;
                 RaisePropertyChanged();
-                _pmdDataChartManager.UpdateCpuPowerFramtimesChart(_session);
+                _pmdDataChartManager.UpdateCpuPowerChart(_session);
             }
         }
 
@@ -260,7 +251,7 @@ namespace CapFrameX.ViewModel
             {
                 _pmdDataChartManager.DrawSensorGpuPower = value;
                 RaisePropertyChanged();
-                _pmdDataChartManager.UpdateGpuPowerFramtimesChart(_session);
+                _pmdDataChartManager.UpdateGpuPowerChart(_session);
             }
         }
 
@@ -390,8 +381,9 @@ namespace CapFrameX.ViewModel
 
                     if (_useUpdateSession)
                     {
-                        _pmdDataChartManager.UpdateCpuPowerFramtimesChart(_session);
-                        _pmdDataChartManager.UpdateGpuPowerFramtimesChart(_session);
+                        _pmdDataChartManager.UpdateCpuPowerChart(_session);
+                        _pmdDataChartManager.UpdateGpuPowerChart(_session);
+                        _pmdDataChartManager.UpdateFrametimeChart(_session);
                     }
                 });
 

@@ -37,6 +37,11 @@ namespace CapFrameX.PMD
             PlotMargins = new OxyThickness(50, 0, 50, 60),
         };
 
+        PlotModel _frametimeModel = new PlotModel
+        {
+            PlotMargins = new OxyThickness(50, 0, 50, 60),
+        };
+
         public bool UseDarkMode { get; set; }
 
         public PlotModel Eps12VModel => _eps12VModel;
@@ -47,9 +52,9 @@ namespace CapFrameX.PMD
 
         public PlotModel GpuAnalysisModel => _gpuAnalysisModel;
 
-        public bool DrawFrametimesCpu { get; set; } = true;
+        public PlotModel FrametimeModel => _frametimeModel;
 
-        public bool DrawFrametimesGpu { get; set; } = true;
+        public bool DrawFrametimes { get; set; } = true;
 
         public bool DrawPmdCpuPower { get; set; } = true;
 
@@ -70,12 +75,13 @@ namespace CapFrameX.PMD
 
             // Analysis
             CpuAnalysisModel.Axes.Add(AxisDefinitions["X_Axis_Time_CPU_Analysis"]);
-            CpuAnalysisModel.Axes.Add(AxisDefinitions["Y_Axis_Frame_Time_CPU"]);
             CpuAnalysisModel.Axes.Add(AxisDefinitions["Y_Axis_Analysis_CPU_W"]);
 
             GpuAnalysisModel.Axes.Add(AxisDefinitions["X_Axis_Time_GPU_Analysis"]);
-            GpuAnalysisModel.Axes.Add(AxisDefinitions["Y_Axis_Frame_Time_GPU"]);
             GpuAnalysisModel.Axes.Add(AxisDefinitions["Y_Axis_Analysis_GPU_W"]);
+
+            FrametimeModel.Axes.Add(AxisDefinitions["X_Axis_Frame_Time"]);
+            FrametimeModel.Axes.Add(AxisDefinitions["Y_Axis_Frame_Time"]);
         }
 
         public void DrawEps12VChart(IEnumerable<DataPoint> powerDrawPoints)
@@ -208,10 +214,10 @@ namespace CapFrameX.PMD
                     }
                  },
                  // Analysis tab
-                 { "Y_Axis_Frame_Time_CPU", new LinearAxis()
+                 { "Y_Axis_Frame_Time", new LinearAxis()
                     {
-                        Key = "Y_Axis_Frame_Time_CPU",
-                        Position = AxisPosition.Right,
+                        Key = "Y_Axis_Frame_Time",
+                        Position = AxisPosition.Left,
                         Title = "Frametime [ms]",
                         FontSize = 13,
                         MajorGridlineStyle = LineStyle.Solid,
@@ -219,20 +225,22 @@ namespace CapFrameX.PMD
                         MinorTickSize = 0,
                         MajorTickSize = 0,
                         MajorStep = 10,
+                        Minimum = 0,
+                        AbsoluteMinimum = 0,
                         AxisTitleDistance = 15
                     }
                  },
-                 { "Y_Axis_Frame_Time_GPU", new LinearAxis()
+                 { "X_Axis_Frame_Time", new LinearAxis()
                     {
-                        Key = "Y_Axis_Frame_Time_GPU",
-                        Position = AxisPosition.Right,
-                        Title = "Frametime [ms]",
+                        Key = "X_Axis_Frame_Time",
+                        Position = AxisPosition.Bottom,
+                        Title = "Time [s]",
                         FontSize = 13,
                         MajorGridlineStyle = LineStyle.Solid,
                         MajorGridlineThickness = 1,
                         MinorTickSize = 0,
                         MajorTickSize = 0,
-                        MajorStep = 10,
+                        Minimum = 0,
                         AxisTitleDistance = 15
                     }
                  },
@@ -247,7 +255,6 @@ namespace CapFrameX.PMD
                         MinorTickSize = 0,
                         MajorTickSize = 0,
                         Minimum = 0,
-                        Maximum = 60,
                         AxisTitleDistance = 15
                     }
                  },
@@ -262,7 +269,6 @@ namespace CapFrameX.PMD
                         MinorTickSize = 0,
                         MajorTickSize = 0,
                         Minimum = 0,
-                        Maximum = 60,
                         AxisTitleDistance = 15
                     }
                  },
@@ -270,7 +276,7 @@ namespace CapFrameX.PMD
                     {
                         Key = "Y_Axis_Analysis_CPU_W",
                         Position = AxisPosition.Left,
-                        Title = "CPU Power [W]",
+                        Title = "Power [W]",
                         FontSize = 13,
                         MajorGridlineStyle = LineStyle.Solid,
                         MajorGridlineThickness = 1,
@@ -278,7 +284,6 @@ namespace CapFrameX.PMD
                         MinorTickSize = 0,
                         MajorTickSize = 0,
                         Minimum = 0,
-                        Maximum = 150,
                         AxisTitleDistance = 15
                     }
                 },
@@ -286,7 +291,7 @@ namespace CapFrameX.PMD
                     {
                         Key = "Y_Axis_Analysis_GPU_W",
                         Position = AxisPosition.Left,
-                        Title = "GPU Power [W]",
+                        Title = "Power [W]",
                         FontSize = 13,
                         MajorGridlineStyle = LineStyle.Solid,
                         MajorGridlineThickness = 1,
@@ -294,7 +299,6 @@ namespace CapFrameX.PMD
                         MinorTickSize = 0,
                         MajorTickSize = 0,
                         Minimum = 0,
-                        Maximum = 300,
                         AxisTitleDistance = 15
                     }
                 }
@@ -328,62 +332,37 @@ namespace CapFrameX.PMD
             CpuAnalysisModel.TextColor = textColor;
             GpuAnalysisModel.TextColor = textColor;
             PciExpressModel.TextColor = textColor;
+            FrametimeModel.TextColor = textColor;
 
             Eps12VModel.PlotAreaBorderColor = gridAndBorderColor;
             PciExpressModel.PlotAreaBorderColor = gridAndBorderColor;
             CpuAnalysisModel.PlotAreaBorderColor = gridAndBorderColor;
             GpuAnalysisModel.PlotAreaBorderColor = gridAndBorderColor;
+            FrametimeModel.PlotAreaBorderColor = gridAndBorderColor;
 
             AxisDefinitions["Y_Axis_CPU_W"].MajorGridlineColor = gridAndBorderColor;
             AxisDefinitions["Y_Axis_GPU_W"].MajorGridlineColor = gridAndBorderColor;
             AxisDefinitions["X_Axis_Time_CPU"].MajorGridlineColor = gridAndBorderColor;
             AxisDefinitions["X_Axis_Time_GPU"].MajorGridlineColor = gridAndBorderColor;
-            AxisDefinitions["X_Axis_Time_CPU_Analysis"].MajorGridlineColor = gridAndBorderColor;
-            AxisDefinitions["Y_Axis_Frame_Time_CPU"].MajorGridlineColor = gridAndBorderColor;
+            AxisDefinitions["X_Axis_Time_CPU_Analysis"].MajorGridlineColor = gridAndBorderColor;            
             AxisDefinitions["Y_Axis_Analysis_CPU_W"].MajorGridlineColor = gridAndBorderColor;
-            AxisDefinitions["X_Axis_Time_GPU_Analysis"].MajorGridlineColor = gridAndBorderColor;
-            AxisDefinitions["Y_Axis_Frame_Time_GPU"].MajorGridlineColor = gridAndBorderColor;
+            AxisDefinitions["X_Axis_Time_GPU_Analysis"].MajorGridlineColor = gridAndBorderColor;            
             AxisDefinitions["Y_Axis_Analysis_GPU_W"].MajorGridlineColor = gridAndBorderColor;
+            AxisDefinitions["Y_Axis_Frame_Time"].MajorGridlineColor = gridAndBorderColor;
+            AxisDefinitions["X_Axis_Frame_Time"].MajorGridlineColor = gridAndBorderColor;
 
             Eps12VModel.InvalidatePlot(false);
             PciExpressModel.InvalidatePlot(false);
             CpuAnalysisModel.InvalidatePlot(false);
             GpuAnalysisModel.InvalidatePlot(false);
+            FrametimeModel.InvalidatePlot(false);
         }
 
-        public void UpdateCpuPowerFramtimesChart(ISession session)
+        public void UpdateCpuPowerChart(ISession session)
         {
             if (session == null) return;
 
             CpuAnalysisModel.Series.Clear();
-
-            if (DrawFrametimesCpu)
-            {
-                var frametimePoints = session.GetFrametimePoints();
-
-                if (frametimePoints != null && frametimePoints.Any())
-                {
-                    var frametimeDataPoints = frametimePoints.Select(pnt => new DataPoint(pnt.X, pnt.Y));
-                    var xMin = frametimePoints.Min(pnt => pnt.X);
-                    var xMax = frametimePoints.Max(pnt => pnt.X);
-
-                    AxisDefinitions["X_Axis_Time_CPU_Analysis"].Minimum = xMin;
-                    AxisDefinitions["X_Axis_Time_CPU_Analysis"].Maximum = xMax;
-
-                    var frametimeSeries = new LineSeries
-                    {
-                        Title = "Frametimes",
-                        YAxisKey = "Y_Axis_Frame_Time_CPU",
-                        StrokeThickness = 1,
-                        LegendStrokeThickness = 4,
-                        Color = Constants.FrametimeColor,
-                        EdgeRenderingMode = EdgeRenderingMode.PreferSpeed
-                    };
-
-                    frametimeSeries.Points.AddRange(frametimeDataPoints);
-                    CpuAnalysisModel.Series.Add(frametimeSeries);
-                }
-            }
 
             if (DrawPmdCpuPower)
             {
@@ -416,40 +395,11 @@ namespace CapFrameX.PMD
             CpuAnalysisModel.InvalidatePlot(true);
         }
 
-        public void UpdateGpuPowerFramtimesChart(ISession session)
+        public void UpdateGpuPowerChart(ISession session)
         {
             if (session == null) return;
 
             GpuAnalysisModel.Series.Clear();
-
-            if (DrawFrametimesGpu)
-            {
-                var frametimePoints = session.GetFrametimePoints();
-
-                if (frametimePoints != null && frametimePoints.Any())
-                {
-                    int count = frametimePoints.Count;
-                    var frametimeDataPoints = frametimePoints.Select(pnt => new DataPoint(pnt.X, pnt.Y));
-                    var xMin = frametimePoints.Min(pnt => pnt.X);
-                    var xMax = frametimePoints.Max(pnt => pnt.X);
-
-                    AxisDefinitions["X_Axis_Time_GPU_Analysis"].Minimum = xMin;
-                    AxisDefinitions["X_Axis_Time_GPU_Analysis"].Maximum = xMax;
-
-                    var frametimeSeries = new LineSeries
-                    {
-                        Title = "Frametimes",
-                        YAxisKey = "Y_Axis_Frame_Time_GPU",
-                        StrokeThickness = 1,
-                        LegendStrokeThickness = 4,
-                        Color = Constants.FrametimeColor,
-                        EdgeRenderingMode = EdgeRenderingMode.PreferSpeed
-                    };
-
-                    frametimeSeries.Points.AddRange(frametimeDataPoints);
-                    GpuAnalysisModel.Series.Add(frametimeSeries);
-                }
-            }
 
             if (DrawPmdGpuPower)
             {
@@ -461,8 +411,8 @@ namespace CapFrameX.PMD
                     //var xMin = frametimeDataPoints.Min(pnt => pnt.X);
                     //var xMax = frametimeDataPoints.Max(pnt => pnt.X);
 
-                    //AxisDefinitions["X_Axis_Time_CPU_Analysis"].Minimum = xMin;
-                    //AxisDefinitions["X_Axis_Time_CPU_Analysis"].Maximum = xMax;
+                    //AxisDefinitions["X_Axis_Time_GPU_Analysis"].Minimum = xMin;
+                    //AxisDefinitions["X_Axis_Time_GPU_Analysis"].Maximum = xMax;
 
                     var pmdGpuPowerSeries = new LineSeries
                     {
@@ -479,6 +429,51 @@ namespace CapFrameX.PMD
                 }
             }
 
+            GpuAnalysisModel.InvalidatePlot(true);
+        }
+
+        public void UpdateFrametimeChart(ISession session)
+        {
+            if (session == null) return;
+
+            FrametimeModel.Series.Clear();
+
+            if (DrawFrametimes)
+            {
+                var frametimePoints = session.GetFrametimePoints();
+
+                if (frametimePoints != null && frametimePoints.Any())
+                {
+                    var frametimeDataPoints = frametimePoints.Select(pnt => new DataPoint(pnt.X, pnt.Y));
+                    var xMin = frametimePoints.Min(pnt => pnt.X);
+                    var xMax = frametimePoints.Max(pnt => pnt.X);
+
+                    AxisDefinitions["X_Axis_Frame_Time"].Minimum = xMin;
+                    AxisDefinitions["X_Axis_Frame_Time"].Maximum = xMax;
+
+                    AxisDefinitions["X_Axis_Time_CPU_Analysis"].Minimum = xMin;
+                    AxisDefinitions["X_Axis_Time_CPU_Analysis"].Maximum = xMax;
+
+                    AxisDefinitions["X_Axis_Time_GPU_Analysis"].Minimum = xMin;
+                    AxisDefinitions["X_Axis_Time_GPU_Analysis"].Maximum = xMax;
+
+                    var frametimeSeries = new LineSeries
+                    {
+                        Title = "Frametimes",
+                        YAxisKey = "Y_Axis_Frame_Time",
+                        StrokeThickness = 1,
+                        LegendStrokeThickness = 4,
+                        Color = Constants.FrametimeColor,
+                        EdgeRenderingMode = EdgeRenderingMode.PreferSpeed
+                    };
+
+                    frametimeSeries.Points.AddRange(frametimeDataPoints);
+                    FrametimeModel.Series.Add(frametimeSeries);                   
+                }
+            }
+
+            FrametimeModel.InvalidatePlot(true);
+            CpuAnalysisModel.InvalidatePlot(true);
             GpuAnalysisModel.InvalidatePlot(true);
         }
     }

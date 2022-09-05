@@ -32,5 +32,26 @@ namespace CapFrameX.View
         {
             PciExpressPlotViewAnalysis.ResetAllAxes();
         }
+
+        private void ResetFrametimeChart_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            FrametimeAnalysis.ResetAllAxes();
+        }
+
+        private void FrametimeCheckBox_Checked(object sender, System.Windows.RoutedEventArgs e)
+        {
+            if (AnalysisChartGrid.RowDefinitions.Count == 2)
+                AnalysisChartGrid.RowDefinitions.Add(new RowDefinition());
+            else
+                return;
+        }
+
+        private void FrametimeCheckBox_Unchecked(object sender, System.Windows.RoutedEventArgs e)
+        {
+            if (AnalysisChartGrid.RowDefinitions.Count == 3)
+                AnalysisChartGrid.RowDefinitions.RemoveAt(2);
+            else
+                return;
+        }
     }
 }

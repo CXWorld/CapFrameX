@@ -326,12 +326,14 @@
                     </Grid>
                 </Grid>
             </TabItem>
+            <!--PMD Analysis-->
             <TabItem Width="100">
                 <TabItem.Header>
                     <Label FontSize="12">PMD Analysis</Label>
                 </TabItem.Header>
-                <Grid>
+                <Grid x:Name="AnalysisChartGrid">
                     <Grid.RowDefinitions>
+                        <RowDefinition Height="1*"/>
                         <RowDefinition Height="1*"/>
                         <RowDefinition Height="1*"/>
                     </Grid.RowDefinitions>
@@ -342,7 +344,7 @@
                     <Grid Grid.Row="0" Grid.Column="0">
                         <Grid>
                             <Grid.RowDefinitions>
-                                <RowDefinition Height="50"/>
+                                <RowDefinition Height="35"/>
                                 <RowDefinition Height="1*"/>
                             </Grid.RowDefinitions>
                             <Grid Margin="0 0 0 0" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
@@ -366,8 +368,8 @@
                     </Grid>
                     <Grid Grid.Row="1" Grid.Column="0">
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="50"/>
-                            <RowDefinition Height="1*"/>
+                            <RowDefinition Height="35"/>
+                            <RowDefinition Height="1*"/> 
                         </Grid.RowDefinitions>
                         <Grid Margin="0 5 0 0" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
                             <TextBox Text="{Binding CpuName, Mode=OneWay}" HorizontalAlignment="Center" IsReadOnly="True" IsHitTestVisible="False" 
@@ -387,17 +389,40 @@
                             </controls:PlotViewCustomZoom.DefaultTrackerTemplate>
                         </controls:PlotViewCustomZoom>
                     </Grid>
-                    <Grid Grid.RowSpan="2" Grid.Column="1" Margin="5 0 0 2" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
+                    <Grid Grid.Row="2" Grid.Column="0" Visibility="{Binding DrawFrametimes, Converter={StaticResource TrueToVisibleConverter}}">
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="50"/>
+                            <RowDefinition Height="35"/>
                             <RowDefinition Height="1*"/>
-                            <RowDefinition Height="50"/>
+                        </Grid.RowDefinitions>
+                        <Grid Margin="0 5 0 0" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
+                            <TextBox Text="Frametimes" HorizontalAlignment="Center" IsReadOnly="True" IsHitTestVisible="False" 
+                                         Width="Auto" Height="30" FontWeight="Bold" FontSize="18"/>
+                        </Grid>
+                        <controls:PlotViewCustomZoom Grid.Row="1" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" x:Name="FrametimeAnalysis"
+                                                     Model="{Binding FrametimeModel}" Tag="{Binding ElementName=PmdViewControl, Path=DataContext}" Margin="0 5 0 2"
+										             MouseDoubleClick="ResetFrametimeChart_MouseDoubleClick">
+                            <controls:PlotViewCustomZoom.DefaultTrackerTemplate>
+                                <ControlTemplate>
+                                    <oxy:TrackerControl Position="{Binding Position}" Background="{DynamicResource MaterialDesignCardBackground}">
+                                        <oxy:TrackerControl.Content>
+                                            <TextBlock Text="{Binding}" Margin="5" />
+                                        </oxy:TrackerControl.Content>
+                                    </oxy:TrackerControl>
+                                </ControlTemplate>
+                            </controls:PlotViewCustomZoom.DefaultTrackerTemplate>
+                        </controls:PlotViewCustomZoom>
+                    </Grid>
+                    <Grid Grid.RowSpan="3" Grid.Column="1" Margin="5 0 0 2" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="35"/>
+                            <RowDefinition Height="1*"/>
+                            <RowDefinition Height="35"/>
                             <RowDefinition Height="1*"/>
                         </Grid.RowDefinitions>
                         <Border Grid.Row="1" Height="120" Margin="5 5 5 0" BorderThickness="0.2" BorderBrush="{DynamicResource MaterialDesignBody}"
                                 VerticalAlignment="Top" HorizontalAlignment="Stretch">
                             <StackPanel Orientation="Vertical">
-                                <CheckBox Margin="5 15 0 0" FontSize="13" Content="Frametimes" IsChecked="{Binding DrawFrametimesGpu}"></CheckBox>
+                                <CheckBox Margin="5 15 0 0" FontSize="13" Content=" Show Frametimes" IsChecked="{Binding DrawFrametimes}" Checked = "FrametimeCheckBox_Checked" Unchecked = "FrametimeCheckBox_Unchecked"></CheckBox>
                                 <CheckBox Margin="5 15 0 0" FontSize="13" Content="PMD GPU Power" IsChecked="{Binding DrawPmdGpuPower}"></CheckBox>
                                 <CheckBox Margin="5 15 0 0" FontSize="13" Content="Sensor GPU Power" IsChecked="{Binding DrawSensorGpuPower}"></CheckBox>
                             </StackPanel>
@@ -405,7 +430,6 @@
                         <Border Grid.Row="3" Height="120" Margin="5 5 5 0" BorderThickness="0.2" BorderBrush="{DynamicResource MaterialDesignBody}"
                                 VerticalAlignment="Top" HorizontalAlignment="Stretch">
                             <StackPanel Orientation="Vertical">
-                                <CheckBox Margin="5 15 0 0" FontSize="13" Content="Frametimes" IsChecked="{Binding DrawFrametimesCpu}"></CheckBox>
                                 <CheckBox Margin="5 15 0 0" FontSize="13" Content="PMD CPU Power" IsChecked="{Binding DrawPmdCpuPower}"></CheckBox>
                                 <CheckBox Margin="5 15 0 0" FontSize="13" Content="Sensor CPU Power" IsChecked="{Binding DrawSensorCpuPower}"></CheckBox>
                             </StackPanel>
