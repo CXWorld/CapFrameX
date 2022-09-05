@@ -19,10 +19,10 @@ namespace CapFrameX.PMD
         private readonly IAppConfiguration _appConfiguration;
         private readonly ILogger<PmdService> _logger;
         private readonly ISubject<PmdChannel[]> _pmdChannelStream = new Subject<PmdChannel[]>();
-        private readonly List<PmdChannel[]> _channelsBuffer = new List<PmdChannel[]>(1000);
 
         private IDisposable _pmdChannelStreamDisposable;
         private IObservable<int> _pmdThroughput;
+        private LinkedList<PmdChannel[]> _channelsBuffer = new LinkedList<PmdChannel[]>();
 
         public IObservable<PmdChannel[]> PmdChannelStream => _pmdChannelStream.AsObservable();
 
@@ -38,6 +38,7 @@ namespace CapFrameX.PMD
             set
             {
                 _appConfiguration.DownSamplingSize = value;
+                SetDownsampledStream();
             }
         }
 
@@ -62,12 +63,11 @@ namespace CapFrameX.PMD
         {
             if (PortName == null) return false;
 
-            _pmdChannelStreamDisposable?.Dispose();
-            _pmdChannelStreamDisposable = _pmdDriver.PmdChannelStream
-                .ObserveOn(new EventLoopScheduler())
-                .Subscribe(channels => FillChannelsBuffer(channels));
+            SetDownsampledStream();
                 
-            _pmdThroughput = _pmdDriver.PmdChannelStream
+            // Troughput after downsampling
+            _pmdThroughput =
+                _pmdChannelStream
                 .Select(channels => 1)
                 .Buffer(TimeSpan.FromSeconds(2))
                 .Select(buffer => buffer.Count());
@@ -76,10 +76,20 @@ namespace CapFrameX.PMD
             return _pmdDriver.Connect(PortName, false);
         }
 
+        private void SetDownsampledStream()
+        {
+            _pmdChannelStreamDisposable?.Dispose();
+            _pmdChannelStreamDisposable = _pmdDriver
+                .PmdChannelStream
+                .ObserveOn(new EventLoopScheduler())
+                .Buffer(DownSamplingSize)
+                .Subscribe(channels => FilterChannelsBuffer(channels));
+        }
+
         public bool ShutDownDriver()
         {
             _pmdChannelStreamDisposable?.Dispose();
-            _channelsBuffer.Clear();
+            _channelsBuffer = new LinkedList<PmdChannel[]>();
 
             return _pmdDriver.Disconnect();
         }
@@ -112,29 +122,7 @@ namespace CapFrameX.PMD
             }
         }
 
-        private void FillChannelsBuffer(PmdChannel[] channel)
-        {
-            if (DownSamplingSize > 1)
-            {
-                _channelsBuffer.Add(channel);
-
-                if (_channelsBuffer.Count > DownSamplingSize)
-                {
-                    _channelsBuffer.RemoveRange(0, _channelsBuffer.Count - DownSamplingSize);
-                    _pmdChannelStream.OnNext(FilterChannelsBuffer(_channelsBuffer));
-                    _channelsBuffer.Clear();
-                }
-            }
-            else
-            {
-                if (_channelsBuffer.Any())
-                    _channelsBuffer.Clear();
-
-                _pmdChannelStream.OnNext(channel);
-            }
-        }
-
-        private PmdChannel[] FilterChannelsBuffer(List<PmdChannel[]> buffer)
+        private void FilterChannelsBuffer(IList<PmdChannel[]> buffer)
         {
             PmdChannel[] channels;
 
@@ -152,7 +140,7 @@ namespace CapFrameX.PMD
                     break;
             }
 
-            return channels;
+            _pmdChannelStream.OnNext(channels);
         }
 
         private PmdChannel[] GetAveragePmdChannel(IList<PmdChannel[]> buffer)

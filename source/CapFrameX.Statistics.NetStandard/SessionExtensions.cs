@@ -9,7 +9,8 @@ namespace CapFrameX.Statistics.NetStandard
 {
     public static class SessionExtensions
     {
-        public static IList<double> GetFrametimeTimeWindow(this ISession session, double startTime, double endTime, IFrametimeStatisticProviderOptions options, ERemoveOutlierMethod eRemoveOutlierMethod = ERemoveOutlierMethod.None)
+        public static IList<double> GetFrametimeTimeWindow(this ISession session, double startTime, double endTime, 
+            IFrametimeStatisticProviderOptions options, ERemoveOutlierMethod eRemoveOutlierMethod = ERemoveOutlierMethod.None)
         {
             IList<double> frametimesTimeWindow = new List<double>();
             var frametimeStatisticProvider = new FrametimeStatisticProvider(options);
@@ -30,7 +31,8 @@ namespace CapFrameX.Statistics.NetStandard
             return frametimesTimeWindow;
         }
 
-        public static IList<Point> GetFrametimePointsTimeWindow(this ISession session, double startTime, double endTime, IFrametimeStatisticProviderOptions options, ERemoveOutlierMethod eRemoveOutlierMethod = ERemoveOutlierMethod.None)
+        public static IList<Point> GetFrametimePointsTimeWindow(this ISession session, double startTime, double endTime, 
+            IFrametimeStatisticProviderOptions options, ERemoveOutlierMethod eRemoveOutlierMethod = ERemoveOutlierMethod.None)
         {
             IList<Point> frametimesPointsWindow = new List<Point>();
             var frametimeStatisticProvider = new FrametimeStatisticProvider(options);
@@ -76,7 +78,12 @@ namespace CapFrameX.Statistics.NetStandard
                 return null;
 
             var pmdCpuPowerPoints = new List<Point>();
-            var cpuPowerValues = session.Runs.SelectMany(r => r.PmdCpuPower).ToArray();
+            var cpuPowerValuesFiltered = session.Runs.Where(r => r.PmdCpuPower != null);
+
+            if (!cpuPowerValuesFiltered.Any())
+                return null;
+
+            var cpuPowerValues = cpuPowerValuesFiltered.SelectMany(r => r.PmdCpuPower).ToArray();
             var startTimes = cpuPowerValues.Select((x, i) => 1E-03 * i * session.Runs.First().SampleTime).ToArray();
             if (cpuPowerValues.Any() && startTimes.Any())
             {
@@ -95,7 +102,13 @@ namespace CapFrameX.Statistics.NetStandard
                 return null;
 
             var pmdGpuPowerPoints = new List<Point>();
-            var gpuPowerValues = session.Runs.SelectMany(r => r.PmdGpuPower).ToArray();
+            var gpuPowerValuesFiltered = session.Runs.Where(r => r.PmdGpuPower != null);
+
+            if (!gpuPowerValuesFiltered.Any())
+                return null;
+
+            var gpuPowerValues = gpuPowerValuesFiltered.SelectMany(r => r.PmdGpuPower).ToArray();
+
             var startTimes = gpuPowerValues.Select((x, i) => 1E-03 * i * session.Runs.First().SampleTime).ToArray();
             if (gpuPowerValues.Any() && startTimes.Any())
             {

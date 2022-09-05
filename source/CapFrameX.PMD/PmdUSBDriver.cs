@@ -62,7 +62,7 @@ namespace CapFrameX.PMD
                 _pmd.Dispose();
             }
 
-            _resultsStringBuilder.Clear();
+            _resultsStringBuilder = new StringBuilder();
             _sampleTimeStamp = 0;
             _pmdstatusStream.OnNext(EPmdDriverStatus.Ready);
 
@@ -88,8 +88,8 @@ namespace CapFrameX.PMD
                 //CA-AC-F8-1B-00-00-00-00-00-13-BB-00-00-09-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-42-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-
                 _resultsStringBuilder.Append(BitConverter.ToString(bget));
 
-                // process the data when _resultsStringBuilder.Length >= 100 * 134
-                if (_resultsStringBuilder.Length >= 100 * 134)
+                // process the data when _resultsStringBuilder.Length >= 10 * 134
+                if (_resultsStringBuilder.Length >= 10 * 134)
                 {
                     var resultString = _resultsStringBuilder.ToString();
 
@@ -102,7 +102,7 @@ namespace CapFrameX.PMD
                         ProcessData(resultSplit);
                     });
 
-                    _resultsStringBuilder.Clear();
+                    _resultsStringBuilder = new StringBuilder();
                 }
             }
             catch { throw; }

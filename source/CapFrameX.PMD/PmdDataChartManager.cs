@@ -96,7 +96,7 @@ namespace CapFrameX.PMD
                 {
                     Title = "CPU (Sum EPS 12V)",
                     StrokeThickness = 1,
-                    Color = OxyColors.Black,
+                    Color = UseDarkMode ? OxyColors.White : OxyColors.Black,
                     EdgeRenderingMode = EdgeRenderingMode.PreferSpeed
                 };
 
@@ -124,7 +124,7 @@ namespace CapFrameX.PMD
                 {
                     Title = "GPU (Sum PCI Express)",
                     StrokeThickness = 1,
-                    Color = OxyColors.Black,
+                    Color = UseDarkMode ? OxyColors.White : OxyColors.Black,
                     EdgeRenderingMode = EdgeRenderingMode.PreferSpeed
                 };
 
