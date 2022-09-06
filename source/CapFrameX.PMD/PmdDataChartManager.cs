@@ -60,13 +60,11 @@ namespace CapFrameX.PMD
 
         public bool DrawFrametimes { get; set; } = true;
 
-        public bool DrawPmdCpuPower { get; set; } = true;
+        public bool DrawPmdPower { get; set; } = true;
 
-        public bool DrawPmdGpuPower { get; set; } = true;
+        public bool DrawAvgPmdPower { get; set; } = true;
 
-        public bool DrawSensorCpuPower { get; set; } = false;
-
-        public bool DrawSensorGpuPower { get; set; } = false;
+        public bool DrawSensorPower { get; set; } = false;
 
 
         public PmdDataChartManager()
@@ -375,7 +373,7 @@ namespace CapFrameX.PMD
 
             CpuAnalysisModel.Series.Clear();
 
-            if (DrawPmdCpuPower)
+            if (DrawPmdPower)
             {
                 var pmdCpuPowerPoints = session.GetPmdCpuPowerPoints();
 
@@ -412,7 +410,7 @@ namespace CapFrameX.PMD
 
             GpuAnalysisModel.Series.Clear();
 
-            if (DrawPmdGpuPower)
+            if (DrawPmdPower)
             {
                 var pmdGpuPowerPoints = session.GetPmdGpuPowerPoints();
 

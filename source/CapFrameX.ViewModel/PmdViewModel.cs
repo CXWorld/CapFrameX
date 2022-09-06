@@ -211,46 +211,26 @@ namespace CapFrameX.ViewModel
             }
         }
 
-        public bool DrawPmdCpuPower
+        public bool DrawPmdPower
         {
-            get => _pmdDataChartManager.DrawPmdCpuPower;
+            get => _pmdDataChartManager.DrawPmdPower;
             set
             {
-                _pmdDataChartManager.DrawPmdCpuPower = value;
+                _pmdDataChartManager.DrawPmdPower = value;
                 RaisePropertyChanged();
                 _pmdDataChartManager.UpdateCpuPowerChart(_session);
-            }
-        }
-
-        public bool DrawPmdGpuPower
-        {
-            get => _pmdDataChartManager.DrawPmdGpuPower;
-            set
-            {
-                _pmdDataChartManager.DrawPmdGpuPower = value;
-                RaisePropertyChanged();
                 _pmdDataChartManager.UpdateGpuPowerChart(_session);
             }
         }
 
         public bool DrawSensorCpuPower
         {
-            get => _pmdDataChartManager.DrawSensorCpuPower;
+            get => _pmdDataChartManager.DrawSensorPower;
             set
             {
-                _pmdDataChartManager.DrawSensorCpuPower = value;
+                _pmdDataChartManager.DrawSensorPower = value;
                 RaisePropertyChanged();
                 _pmdDataChartManager.UpdateCpuPowerChart(_session);
-            }
-        }
-
-        public bool DrawSensorGpuPower
-        {
-            get => _pmdDataChartManager.DrawSensorGpuPower;
-            set
-            {
-                _pmdDataChartManager.DrawSensorGpuPower = value;
-                RaisePropertyChanged();
                 _pmdDataChartManager.UpdateGpuPowerChart(_session);
             }
         }

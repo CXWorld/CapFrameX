@@ -369,7 +369,7 @@
                     <Grid Grid.Row="1" Grid.Column="0">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="35"/>
-                            <RowDefinition Height="1*"/> 
+                            <RowDefinition Height="1*"/>
                         </Grid.RowDefinitions>
                         <Grid Margin="0 5 0 0" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
                             <TextBox Text="{Binding CpuName, Mode=OneWay}" HorizontalAlignment="Center" IsReadOnly="True" IsHitTestVisible="False" 
@@ -414,25 +414,22 @@
                     </Grid>
                     <Grid Grid.RowSpan="3" Grid.Column="1" Margin="5 0 0 2" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="35"/>
-                            <RowDefinition Height="1*"/>
-                            <RowDefinition Height="35"/>
+                            <RowDefinition Height="180"/>
+                            <RowDefinition Height="10"/>
                             <RowDefinition Height="1*"/>
                         </Grid.RowDefinitions>
-                        <Border Grid.Row="1" Height="120" Margin="5 5 5 0" BorderThickness="0.2" BorderBrush="{DynamicResource MaterialDesignBody}"
+                        <Border Grid.Row="0" Height="175" Margin="5 5 5 0" BorderThickness="0.2" BorderBrush="{DynamicResource MaterialDesignBody}"
                                 VerticalAlignment="Top" HorizontalAlignment="Stretch">
                             <StackPanel Orientation="Vertical">
-                                <CheckBox Margin="5 15 0 0" FontSize="13" Content=" Show Frametimes" IsChecked="{Binding DrawFrametimes}" Checked = "FrametimeCheckBox_Checked" Unchecked = "FrametimeCheckBox_Unchecked"></CheckBox>
-                                <CheckBox Margin="5 15 0 0" FontSize="13" Content="PMD GPU Power" IsChecked="{Binding DrawPmdGpuPower}"></CheckBox>
-                                <CheckBox Margin="5 15 0 0" FontSize="13" Content="Sensor GPU Power" IsChecked="{Binding DrawSensorGpuPower}"></CheckBox>
+                                <TextBlock Margin="5 10 0 0" FontSize="15" FontWeight="Bold" Text="Graph selection" ></TextBlock>
+                                <CheckBox Margin="5 15 0 0" FontSize="13" Content="PMD Power" Background="DeepSkyBlue" IsChecked="{Binding DrawPmdPower}"></CheckBox>
+                                <CheckBox Margin="5 15 0 0" FontSize="13" Content="Avg. PMD Power" Background="Orange" IsChecked="{Binding DrawAvgPmdPower}"></CheckBox>
+                                <CheckBox Margin="5 15 0 0" FontSize="13" Content="Sensor Power" Background="Red" IsChecked="{Binding DrawSensorGpuPower}"></CheckBox>
+                                <CheckBox Margin="5 15 0 0" FontSize="13" Content="Frametimes" Background="MediumSeaGreen" IsChecked="{Binding DrawFrametimes}" Checked = "FrametimeCheckBox_Checked" Unchecked = "FrametimeCheckBox_Unchecked"></CheckBox>
                             </StackPanel>
-                        </Border>
-                        <Border Grid.Row="3" Height="120" Margin="5 5 5 0" BorderThickness="0.2" BorderBrush="{DynamicResource MaterialDesignBody}"
+                            </Border>
+                        <Border Grid.Row="2" Height="Auto" Margin="5 5 5 0" BorderThickness="0.2" BorderBrush="{DynamicResource MaterialDesignBody}"
                                 VerticalAlignment="Top" HorizontalAlignment="Stretch">
-                            <StackPanel Orientation="Vertical">
-                                <CheckBox Margin="5 15 0 0" FontSize="13" Content="PMD CPU Power" IsChecked="{Binding DrawPmdCpuPower}"></CheckBox>
-                                <CheckBox Margin="5 15 0 0" FontSize="13" Content="Sensor CPU Power" IsChecked="{Binding DrawSensorCpuPower}"></CheckBox>
-                            </StackPanel>
                         </Border>
                     </Grid>
                 </Grid>
