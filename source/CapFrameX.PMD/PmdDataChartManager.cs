@@ -17,8 +17,9 @@ namespace CapFrameX.PMD
         private List<double> _ePS12VModelMaxYValueBuffer = new List<double>(10);
         private List<double> _pciExpressModelMaxYValueBuffer = new List<double>(10);
 
-        private double _lastMinXAxis;
-        private double _lastMaxXAxis;
+        private bool _gpuAxisChanging;
+        private bool _cpuAxisChanging;
+        private bool _frametimeAxisChanging;
 
         PlotModel _eps12VModel = new PlotModel
         {
@@ -87,38 +88,12 @@ namespace CapFrameX.PMD
             FrametimeModel.Axes.Add(AxisDefinitions["X_Axis_Frame_Time"]);
             FrametimeModel.Axes.Add(AxisDefinitions["Y_Axis_Frame_Time"]);
 
-
-            FrametimeModel.MouseUp += FrametimeModel_MouseUp;
-            GpuAnalysisModel.MouseUp += GpuAnalysisModel_MouseUp;
-            CpuAnalysisModel.MouseUp += CpuAnalysisModel_MouseUp;
-
+            AxisDefinitions["X_Axis_Time_GPU_Analysis"].AxisChanged += GPU_AxisChanged;
+            AxisDefinitions["X_Axis_Time_CPU_Analysis"].AxisChanged += CPU_AxisChanged;
+            AxisDefinitions["X_Axis_Frame_Time"].AxisChanged += Frametime_AxisChanged;
 
         }
 
-
-        private void CpuAnalysisModel_MouseUp(object sender, OxyMouseEventArgs e)
-        {
-            var min = AxisDefinitions["X_Axis_Time_CPU_Analysis"].ActualMinimum;
-            var max = AxisDefinitions["X_Axis_Time_CPU_Analysis"].ActualMaximum;
-
-            SynchronizeXAxes(min, max, "CPU");
-        }
-
-        private void GpuAnalysisModel_MouseUp(object sender, OxyMouseEventArgs e)
-        {
-            var min = AxisDefinitions["X_Axis_Time_GPU_Analysis"].ActualMinimum;
-            var max = AxisDefinitions["X_Axis_Time_GPU_Analysis"].ActualMaximum;
-
-            SynchronizeXAxes(min, max, "GPU");
-        }
-
-        private void FrametimeModel_MouseUp(object sender, OxyMouseEventArgs e)
-        {
-            var min = AxisDefinitions["X_Axis_Frame_Time"].ActualMinimum;
-            var max = AxisDefinitions["X_Axis_Frame_Time"].ActualMaximum;
-
-            SynchronizeXAxes(min, max, "Frametime");
-        }
 
         public void DrawEps12VChart(IEnumerable<DataPoint> powerDrawPoints)
         {
@@ -513,21 +488,59 @@ namespace CapFrameX.PMD
             GpuAnalysisModel.InvalidatePlot(true);
         }
 
-        private void SynchronizeXAxes(double min, double max, string axis)
-        {
-            if (min == _lastMinXAxis && max == _lastMaxXAxis)
-                return;
 
-            AxisDefinitions["X_Axis_Time_GPU_Analysis"].Zoom(min, max);
+        private void GPU_AxisChanged(object sender, AxisChangedEventArgs e)
+        {
+            if (_frametimeAxisChanging || _cpuAxisChanging) return;
+
+            _gpuAxisChanging = true;
+
+            var min = AxisDefinitions["X_Axis_Time_GPU_Analysis"].ActualMinimum;
+            var max = AxisDefinitions["X_Axis_Time_GPU_Analysis"].ActualMaximum;
+
             AxisDefinitions["X_Axis_Time_CPU_Analysis"].Zoom(min, max);
             AxisDefinitions["X_Axis_Frame_Time"].Zoom(min, max);
 
             CpuAnalysisModel.InvalidatePlot(false);
+            FrametimeModel.InvalidatePlot(false);
+
+            _gpuAxisChanging = false;
+        }
+
+        private void CPU_AxisChanged(object sender, AxisChangedEventArgs e)
+        {
+            if (_gpuAxisChanging || _frametimeAxisChanging) return;
+
+            _cpuAxisChanging = true;
+
+            var min = AxisDefinitions["X_Axis_Time_CPU_Analysis"].ActualMinimum;
+            var max = AxisDefinitions["X_Axis_Time_CPU_Analysis"].ActualMaximum;
+
+            AxisDefinitions["X_Axis_Time_GPU_Analysis"].Zoom(min, max);
+            AxisDefinitions["X_Axis_Frame_Time"].Zoom(min, max);
+
             GpuAnalysisModel.InvalidatePlot(false);
             FrametimeModel.InvalidatePlot(false);
 
-            _lastMinXAxis = min;
-            _lastMaxXAxis = max;
+            _cpuAxisChanging = false;
+        }
+
+        private void Frametime_AxisChanged(object sender, AxisChangedEventArgs e)
+        {
+            if (_gpuAxisChanging || _cpuAxisChanging) return;
+
+            _frametimeAxisChanging = true;
+
+            var min = AxisDefinitions["X_Axis_Frame_Time"].ActualMinimum;
+            var max = AxisDefinitions["X_Axis_Frame_Time"].ActualMaximum;
+
+            AxisDefinitions["X_Axis_Time_CPU_Analysis"].Zoom(min, max);
+            AxisDefinitions["X_Axis_Time_GPU_Analysis"].Zoom(min, max);
+
+            CpuAnalysisModel.InvalidatePlot(false);
+            GpuAnalysisModel.InvalidatePlot(false);
+
+            _frametimeAxisChanging = false;
         }
 
     }
