@@ -53,5 +53,9 @@ namespace CapFrameX.View
             else
                 return;
         }
+
+        
+
+
     }
 }

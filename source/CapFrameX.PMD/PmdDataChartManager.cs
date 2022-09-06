@@ -17,6 +17,9 @@ namespace CapFrameX.PMD
         private List<double> _ePS12VModelMaxYValueBuffer = new List<double>(10);
         private List<double> _pciExpressModelMaxYValueBuffer = new List<double>(10);
 
+        private double _lastMinXAxis;
+        private double _lastMaxXAxis;
+
         PlotModel _eps12VModel = new PlotModel
         {
             PlotMargins = new OxyThickness(50, 0, 50, 60),
@@ -64,6 +67,7 @@ namespace CapFrameX.PMD
 
         public bool DrawSensorGpuPower { get; set; } = false;
 
+
         public PmdDataChartManager()
         {
             // Metrics
@@ -82,6 +86,38 @@ namespace CapFrameX.PMD
 
             FrametimeModel.Axes.Add(AxisDefinitions["X_Axis_Frame_Time"]);
             FrametimeModel.Axes.Add(AxisDefinitions["Y_Axis_Frame_Time"]);
+
+
+            FrametimeModel.MouseUp += FrametimeModel_MouseUp;
+            GpuAnalysisModel.MouseUp += GpuAnalysisModel_MouseUp;
+            CpuAnalysisModel.MouseUp += CpuAnalysisModel_MouseUp;
+
+
+        }
+
+
+        private void CpuAnalysisModel_MouseUp(object sender, OxyMouseEventArgs e)
+        {
+            var min = AxisDefinitions["X_Axis_Time_CPU_Analysis"].ActualMinimum;
+            var max = AxisDefinitions["X_Axis_Time_CPU_Analysis"].ActualMaximum;
+
+            SynchronizeXAxes(min, max, "CPU");
+        }
+
+        private void GpuAnalysisModel_MouseUp(object sender, OxyMouseEventArgs e)
+        {
+            var min = AxisDefinitions["X_Axis_Time_GPU_Analysis"].ActualMinimum;
+            var max = AxisDefinitions["X_Axis_Time_GPU_Analysis"].ActualMaximum;
+
+            SynchronizeXAxes(min, max, "GPU");
+        }
+
+        private void FrametimeModel_MouseUp(object sender, OxyMouseEventArgs e)
+        {
+            var min = AxisDefinitions["X_Axis_Frame_Time"].ActualMinimum;
+            var max = AxisDefinitions["X_Axis_Frame_Time"].ActualMaximum;
+
+            SynchronizeXAxes(min, max, "Frametime");
         }
 
         public void DrawEps12VChart(IEnumerable<DataPoint> powerDrawPoints)
@@ -476,5 +512,23 @@ namespace CapFrameX.PMD
             CpuAnalysisModel.InvalidatePlot(true);
             GpuAnalysisModel.InvalidatePlot(true);
         }
+
+        private void SynchronizeXAxes(double min, double max, string axis)
+        {
+            if (min == _lastMinXAxis && max == _lastMaxXAxis)
+                return;
+
+            AxisDefinitions["X_Axis_Time_GPU_Analysis"].Zoom(min, max);
+            AxisDefinitions["X_Axis_Time_CPU_Analysis"].Zoom(min, max);
+            AxisDefinitions["X_Axis_Frame_Time"].Zoom(min, max);
+
+            CpuAnalysisModel.InvalidatePlot(false);
+            GpuAnalysisModel.InvalidatePlot(false);
+            FrametimeModel.InvalidatePlot(false);
+
+            _lastMinXAxis = min;
+            _lastMaxXAxis = max;
+        }
+
     }
 }
