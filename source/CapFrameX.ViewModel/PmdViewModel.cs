@@ -222,6 +222,17 @@ namespace CapFrameX.ViewModel
                 _pmdDataChartManager.UpdateGpuPowerChart(_session);
             }
         }
+        public bool DrawAvgPmdPower
+        {
+            get => _pmdDataChartManager.DrawAvgPmdPower;
+            set
+            {
+                _pmdDataChartManager.DrawAvgPmdPower = value;
+                RaisePropertyChanged();
+                _pmdDataChartManager.UpdateCpuPowerChart(_session);
+                _pmdDataChartManager.UpdateGpuPowerChart(_session);
+            }
+        }
 
         public bool DrawSensorCpuPower
         {
