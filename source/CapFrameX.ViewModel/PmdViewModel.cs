@@ -6,6 +6,8 @@ using CapFrameX.Data.Session.Contracts;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Extensions;
 using CapFrameX.PMD;
+using CapFrameX.Statistics.NetStandard;
+using CapFrameX.Statistics.NetStandard.Contracts;
 using Microsoft.Extensions.Logging;
 using OxyPlot;
 using Prism.Commands;
@@ -29,12 +31,14 @@ namespace CapFrameX.ViewModel
         private readonly object _updateChartBufferLock = new object();
         private readonly IEventAggregator _eventAggregator;
         private readonly ISystemInfo _systemInfo;
+        private readonly IStatisticProvider _frametimeStatisticProvider;
 
         private bool _updateCharts = true;
         private bool _updateMetrics = true;
         private int _pmdDataWindowSeconds = 10;
         private bool _usePmdService;
         private string _sampleRate = "0 [1/s]";
+        private string _selectedChartView = "Frametimes";
         private bool _useUpdateSession = false;
         private ISession _session;
 
@@ -54,13 +58,15 @@ namespace CapFrameX.ViewModel
 
         public PlotModel GpuAnalysisModel => _pmdDataChartManager.GpuAnalysisModel;
 
-        public PlotModel FrametimeModel => _pmdDataChartManager.FrametimeModel;
+        public PlotModel FrametimeModel => _pmdDataChartManager.PerformanceModel;
 
         public PmdMetricsManager PmdMetrics => _pmdDataMetricsManager;
 
         public string CpuName => _systemInfo.GetProcessorName();
+        public string SessionCpuName => _session?.Info.Processor;
 
         public string GpuName => _systemInfo.GetGraphicCardName();
+        public string SessionGpuName => _session?.Info.GPU;
 
         public Array ComPortsItemsSource => _pmdService.GetPortNames();
 
@@ -200,14 +206,14 @@ namespace CapFrameX.ViewModel
             }
         }
 
-        public bool DrawFrametimes
+        public bool DrawPerformanceChart
         {
-            get => _pmdDataChartManager.DrawFrametimes;
+            get => _pmdDataChartManager.DrawPerformanceChart;
             set
             {
-                _pmdDataChartManager.DrawFrametimes = value;
+                _pmdDataChartManager.DrawPerformanceChart = value;
                 RaisePropertyChanged();
-                _pmdDataChartManager.UpdateFrametimeChart(_session);
+                _pmdDataChartManager.UpdatePerformanceChart(_session, _selectedChartView);
             }
         }
 
@@ -234,7 +240,7 @@ namespace CapFrameX.ViewModel
             }
         }
 
-        public bool DrawSensorCpuPower
+        public bool DrawSensorPower
         {
             get => _pmdDataChartManager.DrawSensorPower;
             set
@@ -270,14 +276,26 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        public string SelectedChartView
+        {
+            get { return _selectedChartView; }
+            set
+            {
+                _selectedChartView = value;
+                RaisePropertyChanged();
+                _pmdDataChartManager.UpdatePerformanceChart(_session, value);
+            }
+        }
+
         public PmdViewModel(IPmdService pmdService, IAppConfiguration appConfiguration,
-            ILogger<PmdViewModel> logger, IEventAggregator eventAggregator, ISystemInfo systemInfo)
+            ILogger<PmdViewModel> logger, IEventAggregator eventAggregator, ISystemInfo systemInfo, IStatisticProvider frametimeStatisticProvider)
         {
             _pmdService = pmdService;
             _appConfiguration = appConfiguration;
             _eventAggregator = eventAggregator;
             _logger = logger;
             _systemInfo = systemInfo;
+            _frametimeStatisticProvider = frametimeStatisticProvider;
 
             ResetPmdMetricsCommand = new DelegateCommand(() => _pmdDataMetricsManager.ResetHistory());
 
@@ -374,7 +392,9 @@ namespace CapFrameX.ViewModel
                     {
                         _pmdDataChartManager.UpdateCpuPowerChart(_session);
                         _pmdDataChartManager.UpdateGpuPowerChart(_session);
-                        _pmdDataChartManager.UpdateFrametimeChart(_session);
+                        _pmdDataChartManager.UpdatePerformanceChart(_session, _selectedChartView);
+                        RaisePropertyChanged(nameof(SessionCpuName));
+                        RaisePropertyChanged(nameof(SessionGpuName));
                     }
                 });
 

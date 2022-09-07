@@ -14,6 +14,8 @@ namespace CapFrameX.Statistics.PlotBuilder
 
         public readonly static OxyColor PmdColor = OxyColor.FromRgb(34, 151, 243);
 
-        public readonly static OxyColor SensorColor = OxyColor.FromRgb(241, 125, 32);
+		public readonly static OxyColor PmdMovingAverageColor = OxyColor.FromRgb(126, 0, 131);
+
+		public readonly static OxyColor SensorColor = OxyColor.FromRgb(241, 125, 32);
     }
 }
