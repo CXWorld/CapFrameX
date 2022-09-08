@@ -506,11 +506,11 @@ namespace CapFrameX.ViewModel
             }
 
             // System PMD Power           
-            //var systemPmdPowers = _session.Runs.Where(r => !r.PmdSystemPower.IsNullOrEmpty());
-            //if (systemPmdPowers != null && systemPmdPowers.Any())
-            //{
-            //    systemPmdAverage = Math.Round(systemPmdPowers.SelectMany(x => x.PmdGpuPower).Average(), 0);
-            //}
+            var systemPmdPowers = _session.Runs.Where(r => !r.PmdSystemPower.IsNullOrEmpty());
+            if (systemPmdPowers != null && systemPmdPowers.Any())
+            {
+                systemPmdAverage = Math.Round(systemPmdPowers.SelectMany(x => x.PmdSystemPower).Average(), 0);
+            }
 
             // CPU Sensor Power
             var cpuSensorPowers = _session.Runs.Where(r => !r.SensorData2.CpuPower.IsNullOrEmpty());

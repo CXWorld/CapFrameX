@@ -161,7 +161,7 @@ namespace CapFrameX.Statistics.NetStandard
             var list = new List<Point>();
 
             // Search for Measure Times
-            var filteredTimes = session.Runs.Where(r => r.SensorData2.MeasureTime.Values != null);
+            var filteredTimes = session.Runs.Where(r => !r.SensorData2.MeasureTime.Values.IsNullOrEmpty());
             if (filteredTimes == null || !filteredTimes.Any())
                 return null;
 
@@ -171,18 +171,18 @@ namespace CapFrameX.Statistics.NetStandard
             // Search for Power Values
             IEnumerable<ISessionRun> powerValuesFiltered = null;
             if (hardware == "CPU")
-                powerValuesFiltered = session.Runs.Where(r => r.SensorData2.CpuPower != null);
+                powerValuesFiltered = session.Runs.Where(r => !r.SensorData2.CpuPower.IsNullOrEmpty());
             else if (hardware == "GPU")
             {
                 if (useTBP)
                 {
-                    powerValuesFiltered = session.Runs.Where(r => r.SensorData2.GpuTBPSim != null);
+                    powerValuesFiltered = session.Runs.Where(r => !r.SensorData2.GpuTBPSim.IsNullOrEmpty());
 
                     if (powerValuesFiltered == null || !powerValuesFiltered.Any())
-                        powerValuesFiltered = session.Runs.Where(r => r.SensorData2.GpuPower != null);
+                        powerValuesFiltered = session.Runs.Where(r => !r.SensorData2.GpuPower.IsNullOrEmpty());
                 }
                 else
-                    powerValuesFiltered = session.Runs.Where(r => r.SensorData2.GpuPower != null);
+                    powerValuesFiltered = session.Runs.Where(r => !r.SensorData2.GpuPower.IsNullOrEmpty());
             }
 
 
