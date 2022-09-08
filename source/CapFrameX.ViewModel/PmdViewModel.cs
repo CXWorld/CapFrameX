@@ -29,7 +29,6 @@ namespace CapFrameX.ViewModel
         private readonly object _updateChartBufferLock = new object();
         private readonly IEventAggregator _eventAggregator;
         private readonly ISystemInfo _systemInfo;
-        private readonly IStatisticProvider _frametimeStatisticProvider;
 
         private bool _updateCharts = true;
         private bool _updateMetrics = true;
@@ -298,14 +297,13 @@ namespace CapFrameX.ViewModel
         }
 
         public PmdViewModel(IPmdService pmdService, IAppConfiguration appConfiguration,
-            ILogger<PmdViewModel> logger, IEventAggregator eventAggregator, ISystemInfo systemInfo, IStatisticProvider frametimeStatisticProvider)
+            ILogger<PmdViewModel> logger, IEventAggregator eventAggregator, ISystemInfo systemInfo)
         {
             _pmdService = pmdService;
             _appConfiguration = appConfiguration;
             _eventAggregator = eventAggregator;
             _logger = logger;
             _systemInfo = systemInfo;
-            _frametimeStatisticProvider = frametimeStatisticProvider;
 
             ResetPmdMetricsCommand = new DelegateCommand(() => _pmdDataMetricsManager.ResetHistory());
 
