@@ -460,22 +460,22 @@
                                 <TextBlock Grid.Row="0" Grid.ColumnSpan="2" Margin="0 0 0 15" Text="Average metrics" HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False" FontSize="18"/>
 
                                 <TextBlock Grid.Row="1" Grid.Column="0" Margin="0 0 0 5" Text="PMD GPU : " HorizontalAlignment="Left" VerticalAlignment="Center" IsHitTestVisible="False" FontSize="18"/>
-                                <TextBlock Grid.Row="1" Grid.Column="1" Margin="0 0 0 5" Text="253 W" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False" FontSize="18"/>
+                                <TextBlock Grid.Row="1" Grid.Column="1" Margin="0 0 0 5" Text="{Binding AvgPmdGPUPower}" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False" FontSize="18"/>
 
                                 <TextBlock Grid.Row="2" Grid.Column="0" Margin="0 0 0 20" Text="Sensor GPU : " HorizontalAlignment="Left" VerticalAlignment="Center" IsHitTestVisible="False" FontSize="18"/>
-                                <TextBlock Grid.Row="2" Grid.Column="1" Margin="0 0 0 20" Text="223 W" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False" FontSize="18"/>
+                                <TextBlock Grid.Row="2" Grid.Column="1" Margin="0 0 0 20" Text="{Binding AvgSensorGPUPower}" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False" FontSize="18"/>
 
                                 <TextBlock Grid.Row="3" Grid.Column="0" Margin="0 0 0 5" Text="PMD CPU : " HorizontalAlignment="Left" VerticalAlignment="Center" IsHitTestVisible="False" FontSize="18"/>
-                                <TextBlock Grid.Row="3" Grid.Column="1" Margin="0 0 0 5" Text="112 W" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False" FontSize="18"/>
+                                <TextBlock Grid.Row="3" Grid.Column="1" Margin="0 0 0 5" Text="{Binding AvgPmdCPUPower}" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False" FontSize="18"/>
 
                                 <TextBlock Grid.Row="4" Grid.Column="0" Margin="0 0 0 20" Text="Sensor CPU : " HorizontalAlignment="Left" VerticalAlignment="Center" IsHitTestVisible="False" FontSize="18"/>
-                                <TextBlock Grid.Row="4" Grid.Column="1" Margin="0 0 0 20" Text="95 W" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False" FontSize="18"/>
+                                <TextBlock Grid.Row="4" Grid.Column="1" Margin="0 0 0 20" Text="{Binding AvgSensorCPUPower}" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False" FontSize="18"/>
 
                                 <TextBlock Grid.Row="5" Grid.Column="0" Margin="0 0 0 20" Text="System : " HorizontalAlignment="Left" VerticalAlignment="Center" IsHitTestVisible="False" FontSize="18"/>
-                                <TextBlock Grid.Row="5" Grid.Column="1" Margin="0 0 0 20" Text="395 W" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False" FontSize="18"/>
+                                <TextBlock Grid.Row="5" Grid.Column="1" Margin="0 0 0 20" Text="{Binding AvgPmdSystemPower}" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False" FontSize="18"/>
                                 
                                 <TextBlock Grid.Row="6" Grid.Column="0" Margin="0 0 0 5" Text="FPS : " HorizontalAlignment="Left" VerticalAlignment="Center" IsHitTestVisible="False" FontSize="18"/>
-                                <TextBlock Grid.Row="6" Grid.Column="1" Margin="0 0 0 5" Text="61" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False" FontSize="18"/>
+                                <TextBlock Grid.Row="6" Grid.Column="1" Margin="0 0 0 5" Text="{Binding AvgFPS}" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False" FontSize="18"/>
                             </Grid>
                         </Border>
                         <Border Grid.Row="4" Height="Auto" Margin="5 5 5 0" BorderThickness="0.2" BorderBrush="{DynamicResource MaterialDesignBody}"
@@ -496,13 +496,13 @@
                                 <TextBlock Grid.Row="0" Grid.ColumnSpan="2" Margin="0 0 0 15" Text="Efficiency (FPS/10W)" HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False" FontSize="18"/>
 
                                 <TextBlock Grid.Row="1" Grid.Column="0" Margin="0 0 0 5" Text="GPU : " HorizontalAlignment="Left" VerticalAlignment="Center" IsHitTestVisible="False" FontSize="18"/>
-                                <TextBlock Grid.Row="1" Grid.Column="1" Margin="0 0 0 5" Text="2.41" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False" FontSize="18"/>
+                                <TextBlock Grid.Row="1" Grid.Column="1" Margin="0 0 0 5" Text="{Binding GpuEfficiency}" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False" FontSize="18"/>
                                 
                                 <TextBlock Grid.Row="3" Grid.Column="0" Margin="0 0 0 5" Text="CPU : " HorizontalAlignment="Left" VerticalAlignment="Center" IsHitTestVisible="False" FontSize="18"/>
-                                <TextBlock Grid.Row="3" Grid.Column="1" Margin="0 0 0 5" Text="5.45" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False" FontSize="18"/>
+                                <TextBlock Grid.Row="3" Grid.Column="1" Margin="0 0 0 5" Text="{Binding CpuEfficiency}" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False" FontSize="18"/>
 
                                 <TextBlock Grid.Row="5" Grid.Column="0" Margin="0 0 0 5" Text="System : " HorizontalAlignment="Left" VerticalAlignment="Center" IsHitTestVisible="False" FontSize="18"/>
-                                <TextBlock Grid.Row="5" Grid.Column="1" Margin="0 0 0 5" Text="1.54" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False" FontSize="18"/>
+                                <TextBlock Grid.Row="5" Grid.Column="1" Margin="0 0 0 5" Text="{Binding SystemEfficiency}" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False" FontSize="18"/>
                             </Grid>
                         </Border>
                     </Grid>

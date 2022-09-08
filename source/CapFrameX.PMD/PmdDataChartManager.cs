@@ -287,7 +287,6 @@ namespace CapFrameX.PMD
                         FontSize = 13,
                         MajorGridlineStyle = LineStyle.Solid,
                         MajorGridlineThickness = 1,
-                        MinimumMajorStep = 25,
                         MinorTickSize = 0,
                         MajorTickSize = 0,
                         AxisTitleDistance = 15
@@ -301,7 +300,6 @@ namespace CapFrameX.PMD
                         FontSize = 13,
                         MajorGridlineStyle = LineStyle.Solid,
                         MajorGridlineThickness = 1,
-                        MinimumMajorStep = 25,
                         MinorTickSize = 0,
                         MajorTickSize = 0,
                         AxisTitleDistance = 15
