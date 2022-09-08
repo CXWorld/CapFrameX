@@ -1,12 +1,10 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.PMD;
-using CapFrameX.Data;
 using CapFrameX.Data.Session.Contracts;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Extensions;
 using CapFrameX.PMD;
-using CapFrameX.Statistics.NetStandard;
 using CapFrameX.Statistics.NetStandard.Contracts;
 using Microsoft.Extensions.Logging;
 using OxyPlot;
@@ -469,7 +467,6 @@ namespace CapFrameX.ViewModel
 
         private void GetAverageMetrics()
         {
-
             //Initialize values
             double cpuPmdAverage = double.NaN;
             double gpuPmdAverage = double.NaN;
@@ -480,14 +477,35 @@ namespace CapFrameX.ViewModel
             double gpuEfficiency = double.NaN;
             double systemEfficiency = double.NaN;
             double fpsaverage = double.NaN;
-            
+
+            void UpdateMetrics()
+            {
+                AvgPmdGPUPower = $"{gpuPmdAverage} W";
+                AvgPmdCPUPower = $"{cpuPmdAverage} W";
+                AvgPmdSystemPower = $"{Math.Round(systemPmdAverage, 0)} W";
+                AvgSensorGPUPower = $"{gpuSensorAverage} W";
+                AvgSensorCPUPower = $"{cpuSensorAverage} W";
+                AvgFPS = fpsaverage;
+                GpuEfficiency = Math.Round(gpuEfficiency, 2);
+                CpuEfficiency = Math.Round(cpuEfficiency, 2);
+                SystemEfficiency = Math.Round(systemEfficiency, 2);
+
+                RaisePropertyChanged(nameof(AvgPmdGPUPower));
+                RaisePropertyChanged(nameof(AvgPmdCPUPower));
+                RaisePropertyChanged(nameof(AvgSensorGPUPower));
+                RaisePropertyChanged(nameof(AvgSensorCPUPower));
+                RaisePropertyChanged(nameof(AvgPmdSystemPower));
+                RaisePropertyChanged(nameof(AvgFPS));
+                RaisePropertyChanged(nameof(GpuEfficiency));
+                RaisePropertyChanged(nameof(CpuEfficiency));
+                RaisePropertyChanged(nameof(SystemEfficiency));
+            }
+
             if (_session == null || !_session.Runs.Where(r => r.SensorData2 != null).Any())
             {
                 UpdateMetrics();
                 return;
             }
-               
-
 
             // Power & Performance Metrics
 
@@ -560,34 +578,7 @@ namespace CapFrameX.ViewModel
             if (!double.IsNaN(systemPmdAverage))
                 systemEfficiency = fpsaverage / systemPmdAverage * 10;
 
-
             UpdateMetrics();
-    
-
-            void UpdateMetrics()
-            {
-                AvgPmdGPUPower = $"{gpuPmdAverage} W";
-                AvgPmdCPUPower = $"{cpuPmdAverage} W";
-                AvgPmdSystemPower = $"{Math.Round(systemPmdAverage, 0)} W";
-                AvgSensorGPUPower = $"{gpuSensorAverage} W";
-                AvgSensorCPUPower = $"{cpuSensorAverage} W";
-                AvgFPS = fpsaverage;
-                GpuEfficiency = Math.Round(gpuEfficiency, 2);
-                CpuEfficiency = Math.Round(cpuEfficiency, 2);
-                SystemEfficiency = Math.Round(systemEfficiency, 2);
-
-                RaisePropertyChanged(nameof(AvgPmdGPUPower));
-                RaisePropertyChanged(nameof(AvgPmdCPUPower));
-                RaisePropertyChanged(nameof(AvgSensorGPUPower));
-                RaisePropertyChanged(nameof(AvgSensorCPUPower));
-                RaisePropertyChanged(nameof(AvgPmdSystemPower));
-                RaisePropertyChanged(nameof(AvgFPS));
-                RaisePropertyChanged(nameof(GpuEfficiency));
-                RaisePropertyChanged(nameof(CpuEfficiency));
-                RaisePropertyChanged(nameof(SystemEfficiency));
-            }
-
         }
     }
-
 }

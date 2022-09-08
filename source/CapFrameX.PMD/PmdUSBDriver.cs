@@ -56,7 +56,7 @@ namespace CapFrameX.PMD
 
         public bool Disconnect()
         {
-            if (_pmd != null)
+            if (_pmd != null && !_pmd.IsDisposed)
             {
                 if (_pmd.IsOpen) _pmd.Close();
                 _pmd.Dispose();
