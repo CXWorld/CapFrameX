@@ -10,6 +10,7 @@
 		float[] RTSSFrameTimes { get; set; }
         float[] PmdGpuPower { get; set; }
         float[] PmdCpuPower { get; set; }
-		int SampleTime { get; set; }
+		float[] PmdSystemPower { get; set; }
+        int SampleTime { get; set; }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using CapFrameX.Data.Session.Classes;
 using CapFrameX.Data.Session.Contracts;
 using CapFrameX.Statistics.NetStandard.Contracts;
+using CapFrameX.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -80,9 +81,9 @@ namespace CapFrameX.Statistics.NetStandard
             IEnumerable<ISessionRun> powerValuesFiltered = null;
 
                 if (hardware == "CPU")
-                    powerValuesFiltered = session.Runs.Where(r => r.PmdCpuPower != null);
+                    powerValuesFiltered = session.Runs.Where(r => !r.PmdCpuPower.IsNullOrEmpty());
                 else if (hardware == "GPU")
-                    powerValuesFiltered = session.Runs.Where(r => r.PmdGpuPower != null);
+                    powerValuesFiltered = session.Runs.Where(r => !r.PmdGpuPower.IsNullOrEmpty());
 
 
             if (powerValuesFiltered == null || !powerValuesFiltered.Any())
@@ -120,9 +121,9 @@ namespace CapFrameX.Statistics.NetStandard
             IEnumerable<ISessionRun> powerValuesFiltered = null;
 
             if (hardware == "CPU")
-                powerValuesFiltered = session.Runs.Where(r => r.PmdCpuPower != null);
+                powerValuesFiltered = session.Runs.Where(r => !r.PmdCpuPower.IsNullOrEmpty());
             else if (hardware == "GPU")
-                powerValuesFiltered = session.Runs.Where(r => r.PmdGpuPower != null);
+                powerValuesFiltered = session.Runs.Where(r => !r.PmdGpuPower.IsNullOrEmpty());
 
 
             if (powerValuesFiltered == null || !powerValuesFiltered.Any())

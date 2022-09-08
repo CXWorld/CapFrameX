@@ -314,7 +314,7 @@ namespace CapFrameX.Overlay
                         ShowOnOverlay = false,
                         ShowOnOverlayIsEnabled = true,
                         Description = "PMD System Power (W)",
-                        GroupName = "PMD System Power",
+                        GroupName = "PMD Sys Power",
                         Value = "0",
                         ValueFormat = default,
                         ShowGraph = false,

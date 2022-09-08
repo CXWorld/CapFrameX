@@ -20,6 +20,7 @@ namespace CapFrameX.Data.Session.Classes
 		public float[] RTSSFrameTimes { get; set; }
         public float[] PmdGpuPower { get; set; }
         public float[] PmdCpuPower { get; set; }
+        public float[] PmdSystemPower { get; set; }
         public int SampleTime { get; set; }
 
         [JsonConstructor]

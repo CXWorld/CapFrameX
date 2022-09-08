@@ -81,6 +81,7 @@ namespace CapFrameX.Data
         private List<float> _aggregatedRTSSFrameTimes;
         private LinkedList<float> _pmdDataGpuPower;
         private LinkedList<float> _pmdDataCpuPower;
+        private LinkedList<float> _pmdDataSystemPower;
 
         public IObservable<CaptureStatus> CaptureStatusChange
             => _captureStatusChange.AsObservable();
@@ -215,6 +216,7 @@ namespace CapFrameX.Data
             {
                 _pmdDataGpuPower = new LinkedList<float>();
                 _pmdDataCpuPower = new LinkedList<float>();
+                _pmdDataSystemPower = new LinkedList<float> { };
 
                 _disposablePmdDataStream = _pmdService.PmdChannelStream
                     .ObserveOn(new EventLoopScheduler())
@@ -422,6 +424,7 @@ namespace CapFrameX.Data
         {
             _pmdDataGpuPower.AddLast(PmdChannelExtensions.GPUPowerIndexGroup.Sum(index => channel[index].Value));
             _pmdDataCpuPower.AddLast(PmdChannelExtensions.EPSPowerIndexGroup.Sum(index => channel[index].Value));
+            _pmdDataSystemPower.AddLast(PmdChannelExtensions.SystemPowerIndexGroup.Sum(index => channel[index].Value));
         }
 
         private async Task WriteExtractedCaptureDataToFileAsync()
@@ -458,6 +461,9 @@ namespace CapFrameX.Data
 
                     if (_pmdDataCpuPower.Any())
                         sessionRun.PmdCpuPower = _pmdDataCpuPower.ToArray();
+
+                    if(_pmdDataSystemPower.Any())
+                        sessionRun.PmdSystemPower = _pmdDataSystemPower.ToArray();
 
                     sessionRun.SampleTime = _pmdService.DownSamplingSize;
                 }
