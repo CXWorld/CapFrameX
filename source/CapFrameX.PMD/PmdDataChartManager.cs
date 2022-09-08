@@ -285,6 +285,7 @@ namespace CapFrameX.PMD
                         MajorGridlineThickness = 1,
                         MinorTickSize = 0,
                         MajorTickSize = 0,
+                        AbsoluteMinimum = 0,
                         AxisTitleDistance = 15
                     }
                 },
@@ -298,6 +299,7 @@ namespace CapFrameX.PMD
                         MajorGridlineThickness = 1,
                         MinorTickSize = 0,
                         MajorTickSize = 0,
+                        AbsoluteMinimum = 0,
                         AxisTitleDistance = 15
                     }
                 }
