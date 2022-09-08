@@ -9,5 +9,7 @@ namespace CapFrameX.PresentMonInterface
         double GetOnlineApplicationLatencyValue();
 
         double GetOnlineStutteringPercentageValue();
+
+        OnlinePmdMetrics GetPmdMetricsPowerCurrent();
     }
 }

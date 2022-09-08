@@ -90,6 +90,14 @@ namespace CapFrameX.Statistics.NetStandard
             return sampleBasedMovingAverageFilter.ProcessSamples(sequence);
         }
 
+        public IList<double> GetTimeBasedMovingAverage(IList<double> sequence, double timeWindow)
+        {
+            var average = sequence.Average();
+            var timeBasedMovingAverageFilter = new TimeBasedMovingAverage(timeWindow);
+
+            return timeBasedMovingAverageFilter.ProcessSamples(sequence);
+        }
+
         public IList<double> GetOutlierAdjustedSequence(IList<double> sequence, ERemoveOutlierMethod method)
         {
             IList<double> adjustedSequence = null;

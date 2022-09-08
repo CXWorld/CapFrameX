@@ -117,8 +117,8 @@
                                 <RowDefinition Height="1*"/>
                             </Grid.RowDefinitions>
                             <Grid Margin="0 0 0 0" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
-                                <TextBox Text="{Binding GpuName, Mode=OneWay}" HorizontalAlignment="Center" IsReadOnly="True" IsHitTestVisible="False" 
-                                         Width="Auto" Height="30" FontWeight="Bold" FontSize="18"/>
+                                <TextBlock Text="{Binding GpuName, Mode=OneWay}" HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False" 
+                                           FontWeight="Bold" FontSize="18"/>
                             </Grid>
                             <controls:PlotViewCustomZoom Grid.Row="1" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" x:Name="PciExpressPlotViewMetrics" 
                                          Model="{Binding PciExpressModel}" Tag="{Binding ElementName=PmdViewControl, Path=DataContext}" Margin="0 5 0 0"
@@ -200,8 +200,8 @@
                                 <RowDefinition Height="1*"/>
                             </Grid.RowDefinitions>
                             <Grid Margin="0 5 0 0" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
-                                <TextBox Text="{Binding CpuName, Mode=OneWay}" HorizontalAlignment="Center" IsReadOnly="True" IsHitTestVisible="False" 
-                                         Width="Auto" Height="30" FontWeight="Bold" FontSize="18"/>
+                                <TextBlock Text="{Binding CpuName, Mode=OneWay}" HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False" 
+                                         FontWeight="Bold" FontSize="18"/>
                             </Grid>
                             <controls:PlotViewCustomZoom Grid.Row="1" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" x:Name="EPS12VPlotViewMetrics" 
                                          Model="{Binding EPS12VModel}" Tag="{Binding ElementName=PmdViewControl, Path=DataContext}" Margin="0 5 0 5"
@@ -339,7 +339,7 @@
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="1*"/>
-                        <ColumnDefinition Width="170"/>
+                        <ColumnDefinition Width="210"/>
                     </Grid.ColumnDefinitions>
                     <Grid Grid.Row="0" Grid.Column="0">
                         <Grid>
@@ -348,8 +348,8 @@
                                 <RowDefinition Height="1*"/>
                             </Grid.RowDefinitions>
                             <Grid Margin="0 0 0 0" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
-                                <TextBox Text="{Binding GpuName, Mode=OneWay}" HorizontalAlignment="Center" IsReadOnly="True" IsHitTestVisible="False" 
-                                         Width="Auto" Height="30" FontWeight="Bold" FontSize="18"/>
+                                <TextBlock Text="{Binding SessionGpuName, Mode=OneWay}" HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False" 
+                                         FontWeight="Bold" FontSize="18"/>
                             </Grid>
                             <controls:PlotViewCustomZoom Grid.Row="1" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" x:Name="PciExpressPlotViewAnalysis" 
                                          Model="{Binding GpuAnalysisModel}" Tag="{Binding ElementName=PmdViewControl, Path=DataContext}" Margin="0 5 0 0"
@@ -369,11 +369,11 @@
                     <Grid Grid.Row="1" Grid.Column="0">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="35"/>
-                            <RowDefinition Height="1*"/> 
+                            <RowDefinition Height="1*"/>
                         </Grid.RowDefinitions>
                         <Grid Margin="0 5 0 0" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
-                            <TextBox Text="{Binding CpuName, Mode=OneWay}" HorizontalAlignment="Center" IsReadOnly="True" IsHitTestVisible="False" 
-                                         Width="Auto" Height="30" FontWeight="Bold" FontSize="18"/>
+                            <TextBlock Text="{Binding SessionCpuName, Mode=OneWay}" HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False" 
+                                       FontWeight="Bold" FontSize="18"/>
                         </Grid>
                         <controls:PlotViewCustomZoom Grid.Row="1" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" x:Name="EPS12VPlotViewAnalysis" 
                                                      Model="{Binding CpuAnalysisModel}" Tag="{Binding ElementName=PmdViewControl, Path=DataContext}" Margin="0 5 0 2"
@@ -389,14 +389,14 @@
                             </controls:PlotViewCustomZoom.DefaultTrackerTemplate>
                         </controls:PlotViewCustomZoom>
                     </Grid>
-                    <Grid Grid.Row="2" Grid.Column="0" Visibility="{Binding DrawFrametimes, Converter={StaticResource TrueToVisibleConverter}}">
+                    <Grid Grid.Row="2" Grid.Column="0" Visibility="{Binding DrawPerformanceChart, Converter={StaticResource TrueToVisibleConverter}}">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="35"/>
                             <RowDefinition Height="1*"/>
                         </Grid.RowDefinitions>
                         <Grid Margin="0 5 0 0" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
-                            <TextBox Text="Frametimes" HorizontalAlignment="Center" IsReadOnly="True" IsHitTestVisible="False" 
-                                         Width="Auto" Height="30" FontWeight="Bold" FontSize="18"/>
+                            <TextBlock Text="Performance" HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False" 
+                                       FontWeight="Bold" FontSize="18"/>
                         </Grid>
                         <controls:PlotViewCustomZoom Grid.Row="1" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" x:Name="FrametimeAnalysis"
                                                      Model="{Binding FrametimeModel}" Tag="{Binding ElementName=PmdViewControl, Path=DataContext}" Margin="0 5 0 2"
@@ -411,28 +411,99 @@
                                 </ControlTemplate>
                             </controls:PlotViewCustomZoom.DefaultTrackerTemplate>
                         </controls:PlotViewCustomZoom>
+                        <ComboBox Grid.Row="1" Margin="10 0 0 10" HorizontalAlignment="Left" VerticalAlignment="Bottom" materialDesign:HintAssist.Hint="Values"
+					                    materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Width="80" Height="40">
+                            <ComboBoxItem IsSelected="True">Frametimes</ComboBoxItem>
+                            <ComboBoxItem>FPS</ComboBoxItem>
+                            <ComboBox.Text>
+                                <Binding Path="SelectedChartView"
+						                    Mode="TwoWay"
+						                    UpdateSourceTrigger="PropertyChanged">
+                                </Binding>
+                            </ComboBox.Text>
+                        </ComboBox>
                     </Grid>
                     <Grid Grid.RowSpan="3" Grid.Column="1" Margin="5 0 0 2" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="35"/>
-                            <RowDefinition Height="1*"/>
-                            <RowDefinition Height="35"/>
-                            <RowDefinition Height="1*"/>
+                            <RowDefinition Height="180"/>
+                            <RowDefinition Height="5"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="5"/>
+                            <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
-                        <Border Grid.Row="1" Height="120" Margin="5 5 5 0" BorderThickness="0.2" BorderBrush="{DynamicResource MaterialDesignBody}"
+                        <Border Grid.Row="0" Height="175" Margin="5 5 5 0" BorderThickness="0.2" BorderBrush="{DynamicResource MaterialDesignBody}"
                                 VerticalAlignment="Top" HorizontalAlignment="Stretch">
                             <StackPanel Orientation="Vertical">
-                                <CheckBox Margin="5 15 0 0" FontSize="13" Content=" Show Frametimes" IsChecked="{Binding DrawFrametimes}" Checked = "FrametimeCheckBox_Checked" Unchecked = "FrametimeCheckBox_Unchecked"></CheckBox>
-                                <CheckBox Margin="5 15 0 0" FontSize="13" Content="PMD GPU Power" IsChecked="{Binding DrawPmdGpuPower}"></CheckBox>
-                                <CheckBox Margin="5 15 0 0" FontSize="13" Content="Sensor GPU Power" IsChecked="{Binding DrawSensorGpuPower}"></CheckBox>
+                                <TextBlock Margin="5 10 0 0" FontSize="15" FontWeight="Bold" Text="Graph selection" ></TextBlock>
+                                <CheckBox Margin="5 15 0 0" FontSize="13" Content="PMD Power" Background="DeepSkyBlue" IsChecked="{Binding DrawPmdPower}"></CheckBox>
+                                <CheckBox Margin="5 15 0 0" FontSize="13" Content="Avg. PMD Power" Background="Purple" IsChecked="{Binding DrawAvgPmdPower}"></CheckBox>
+                                <CheckBox Margin="5 15 0 0" FontSize="13" Content="Sensor Power" Background="Orange" IsChecked="{Binding DrawSensorPower}"></CheckBox>
+                                <CheckBox Margin="5 15 0 0" FontSize="13" Content="Performance" Background="MediumSeaGreen" IsChecked="{Binding DrawPerformanceChart}" Checked = "FrametimeCheckBox_Checked" Unchecked = "FrametimeCheckBox_Unchecked"></CheckBox>
                             </StackPanel>
                         </Border>
-                        <Border Grid.Row="3" Height="120" Margin="5 5 5 0" BorderThickness="0.2" BorderBrush="{DynamicResource MaterialDesignBody}"
+                        <Border Grid.Row="2" Height="Auto" Margin="5 5 5 0" BorderThickness="0.2" BorderBrush="{DynamicResource MaterialDesignBody}"
                                 VerticalAlignment="Top" HorizontalAlignment="Stretch">
-                            <StackPanel Orientation="Vertical">
-                                <CheckBox Margin="5 15 0 0" FontSize="13" Content="PMD CPU Power" IsChecked="{Binding DrawPmdCpuPower}"></CheckBox>
-                                <CheckBox Margin="5 15 0 0" FontSize="13" Content="Sensor CPU Power" IsChecked="{Binding DrawSensorCpuPower}"></CheckBox>
-                            </StackPanel>
+                            <Grid Margin="10">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="1*"></RowDefinition>
+                                    <RowDefinition Height="1*"></RowDefinition>
+                                    <RowDefinition Height="1*"></RowDefinition>
+                                    <RowDefinition Height="1*"></RowDefinition>
+                                    <RowDefinition Height="1*"></RowDefinition>
+                                    <RowDefinition Height="1*"></RowDefinition>
+                                    <RowDefinition Height="1*"></RowDefinition>
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="110"/>
+                                    <ColumnDefinition Width="1*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Row="0" Grid.ColumnSpan="2" Margin="0 0 0 15" Text="Average metrics" HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False" FontSize="18"/>
+
+                                <TextBlock Grid.Row="1" Grid.Column="0" Margin="0 0 0 5" Text="PMD GPU : " HorizontalAlignment="Left" VerticalAlignment="Center" IsHitTestVisible="False" FontSize="18"/>
+                                <TextBlock Grid.Row="1" Grid.Column="1" Margin="0 0 0 5" Text="{Binding AvgPmdGPUPower}" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False" FontSize="18"/>
+
+                                <TextBlock Grid.Row="2" Grid.Column="0" Margin="0 0 0 20" Text="Sensor GPU : " HorizontalAlignment="Left" VerticalAlignment="Center" IsHitTestVisible="False" FontSize="18"/>
+                                <TextBlock Grid.Row="2" Grid.Column="1" Margin="0 0 0 20" Text="{Binding AvgSensorGPUPower}" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False" FontSize="18"/>
+
+                                <TextBlock Grid.Row="3" Grid.Column="0" Margin="0 0 0 5" Text="PMD CPU : " HorizontalAlignment="Left" VerticalAlignment="Center" IsHitTestVisible="False" FontSize="18"/>
+                                <TextBlock Grid.Row="3" Grid.Column="1" Margin="0 0 0 5" Text="{Binding AvgPmdCPUPower}" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False" FontSize="18"/>
+
+                                <TextBlock Grid.Row="4" Grid.Column="0" Margin="0 0 0 20" Text="Sensor CPU : " HorizontalAlignment="Left" VerticalAlignment="Center" IsHitTestVisible="False" FontSize="18"/>
+                                <TextBlock Grid.Row="4" Grid.Column="1" Margin="0 0 0 20" Text="{Binding AvgSensorCPUPower}" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False" FontSize="18"/>
+
+                                <TextBlock Grid.Row="5" Grid.Column="0" Margin="0 0 0 20" Text="System : " HorizontalAlignment="Left" VerticalAlignment="Center" IsHitTestVisible="False" FontSize="18"/>
+                                <TextBlock Grid.Row="5" Grid.Column="1" Margin="0 0 0 20" Text="{Binding AvgPmdSystemPower}" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False" FontSize="18"/>
+                                
+                                <TextBlock Grid.Row="6" Grid.Column="0" Margin="0 0 0 5" Text="FPS : " HorizontalAlignment="Left" VerticalAlignment="Center" IsHitTestVisible="False" FontSize="18"/>
+                                <TextBlock Grid.Row="6" Grid.Column="1" Margin="0 0 0 5" Text="{Binding AvgFPS}" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False" FontSize="18"/>
+                            </Grid>
+                        </Border>
+                        <Border Grid.Row="4" Height="Auto" Margin="5 5 5 0" BorderThickness="0.2" BorderBrush="{DynamicResource MaterialDesignBody}"
+                                VerticalAlignment="Top" HorizontalAlignment="Stretch">
+                            <Grid Margin="10">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="1*"></RowDefinition>
+                                    <RowDefinition Height="1*"></RowDefinition>
+                                    <RowDefinition Height="1*"></RowDefinition>
+                                    <RowDefinition Height="1*"></RowDefinition>
+                                    <RowDefinition Height="1*"></RowDefinition>
+                                    <RowDefinition Height="1*"></RowDefinition>
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="120"/>
+                                    <ColumnDefinition Width="1*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Row="0" Grid.ColumnSpan="2" Margin="0 0 0 15" Text="Efficiency (FPS/10W)" HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False" FontSize="18"/>
+
+                                <TextBlock Grid.Row="1" Grid.Column="0" Margin="0 0 0 5" Text="GPU : " HorizontalAlignment="Left" VerticalAlignment="Center" IsHitTestVisible="False" FontSize="18"/>
+                                <TextBlock Grid.Row="1" Grid.Column="1" Margin="0 0 0 5" Text="{Binding GpuEfficiency}" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False" FontSize="18"/>
+                                
+                                <TextBlock Grid.Row="3" Grid.Column="0" Margin="0 0 0 5" Text="CPU : " HorizontalAlignment="Left" VerticalAlignment="Center" IsHitTestVisible="False" FontSize="18"/>
+                                <TextBlock Grid.Row="3" Grid.Column="1" Margin="0 0 0 5" Text="{Binding CpuEfficiency}" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False" FontSize="18"/>
+
+                                <TextBlock Grid.Row="5" Grid.Column="0" Margin="0 0 0 5" Text="System : " HorizontalAlignment="Left" VerticalAlignment="Center" IsHitTestVisible="False" FontSize="18"/>
+                                <TextBlock Grid.Row="5" Grid.Column="1" Margin="0 0 0 5" Text="{Binding SystemEfficiency}" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False" FontSize="18"/>
+                            </Grid>
                         </Border>
                     </Grid>
                 </Grid>

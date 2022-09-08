@@ -112,6 +112,7 @@
     <Compile Include="CaptureServiceInfo.cs" />
     <Compile Include="IOnlineMetricService.cs" />
     <Compile Include="OnlineMetricService.cs" />
+    <Compile Include="OnlinePmdMetrics.cs" />
     <Compile Include="PresentMonCaptureService.cs" />
     <Compile Include="PresentMonServiceConfiguration.cs" />
     <Compile Include="PresentMonStartInfo.cs" />
@@ -160,6 +161,10 @@
     <ProjectReference Include="..\CapFrameX.Extensions\CapFrameX.Extensions.csproj">
       <Project>{a4559b99-7fcb-40ef-bf97-d293a2b7d6d3}</Project>
       <Name>CapFrameX.Extensions</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CapFrameX.PMD\CapFrameX.PMD.csproj">
+      <Project>{8A0EFF6F-A7BC-450A-AC29-D0F5CCD96BC3}</Project>
+      <Name>CapFrameX.PMD</Name>
     </ProjectReference>
     <ProjectReference Include="..\CapFrameX.Statistics.NetStandard\CapFrameX.Statistics.NetStandard.csproj">
       <Project>{7D35C9C8-6E9A-4ABB-9042-930BE5E26DC6}</Project>

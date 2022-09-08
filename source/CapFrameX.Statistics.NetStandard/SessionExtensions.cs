@@ -1,6 +1,5 @@
 ﻿using CapFrameX.Data.Session.Classes;
 using CapFrameX.Data.Session.Contracts;
-using CapFrameX.Extensions;
 using CapFrameX.Statistics.NetStandard.Contracts;
 using System;
 using System.Collections.Generic;
@@ -28,7 +27,6 @@ namespace CapFrameX.Statistics.NetStandard
                     }
                 }
             }
-
             return frametimesTimeWindow;
         }
 
@@ -73,53 +71,113 @@ namespace CapFrameX.Statistics.NetStandard
             return frametimesPointsWindow;
         }
 
-        public static IList<Point> GetPmdCpuPowerPoints(this ISession session)
+        public static IList<Point> GetPmdPowerPoints(this ISession session, string hardware)
         {
             if (!session.Runs.Any())
                 return null;
 
-            var pmdCpuPowerPoints = new List<Point>();
-            var cpuPowerValuesFiltered = session.Runs.Where(r => !r.PmdCpuPower.IsNullOrEmpty());
+            var pmdPowerPoints = new List<Point>();
+            IEnumerable<ISessionRun> powerValuesFiltered = null;
 
-            if (!cpuPowerValuesFiltered.Any())
+                if (hardware == "CPU")
+                    powerValuesFiltered = session.Runs.Where(r => r.PmdCpuPower != null);
+                else if (hardware == "GPU")
+                    powerValuesFiltered = session.Runs.Where(r => r.PmdGpuPower != null);
+
+
+            if (powerValuesFiltered == null || !powerValuesFiltered.Any())
                 return null;
 
-            var cpuPowerValues = cpuPowerValuesFiltered.SelectMany(r => r.PmdCpuPower).ToArray();
-            var startTimes = cpuPowerValues.Select((x, i) => 1E-03 * i * session.Runs.First().SampleTime).ToArray();
-            if (cpuPowerValues.Any() && startTimes.Any())
+            float[] powerValues = null;
+
+            if (hardware == "CPU")
+                powerValues = powerValuesFiltered.SelectMany(r => r.PmdCpuPower).ToArray();
+            else if (hardware == "GPU")
+                powerValues = powerValuesFiltered.SelectMany(r => r.PmdGpuPower).ToArray();
+
+            if (powerValues == null)
+                return null;
+
+            var startTimes = powerValues.Select((x, i) => 1E-03 * i * session.Runs.First().SampleTime).ToArray();
+
+            if (powerValues.Any() && startTimes.Any())
             {
-                for (int i = 0; i < cpuPowerValues.Count(); i++)
+                for (int i = 0; i < Math.Min(powerValues.Length, startTimes.Length); i++)
                 {
-                    pmdCpuPowerPoints.Add(new Point(startTimes[i], cpuPowerValues[i]));
+                    pmdPowerPoints.Add(new Point(startTimes[i], powerValues[i]));
                 }
             }
-
-            return pmdCpuPowerPoints;
+            return pmdPowerPoints;
         }
 
-        public static IList<Point> GetPmdGpuPowerPoints(this ISession session)
+
+        public static IList<Point> GetAveragePmdPowerPoints(this ISession session, string hardware)
         {
             if (!session.Runs.Any())
                 return null;
 
-            var pmdGpuPowerPoints = new List<Point>();
-            var gpuPowerValuesFiltered = session.Runs.Where(r => !r.PmdGpuPower.IsNullOrEmpty());
+            var pmdPowerPoints = new List<Point>();
+            IEnumerable<ISessionRun> powerValuesFiltered = null;
 
-            if (!gpuPowerValuesFiltered.Any())
+            if (hardware == "CPU")
+                powerValuesFiltered = session.Runs.Where(r => r.PmdCpuPower != null);
+            else if (hardware == "GPU")
+                powerValuesFiltered = session.Runs.Where(r => r.PmdGpuPower != null);
+
+
+            if (powerValuesFiltered == null || !powerValuesFiltered.Any())
                 return null;
 
-            var gpuPowerValues = gpuPowerValuesFiltered.SelectMany(r => r.PmdGpuPower).ToArray();
+            float[] powerValues = null;
 
-            var startTimes = gpuPowerValues.Select((x, i) => 1E-03 * i * session.Runs.First().SampleTime).ToArray();
-            if (gpuPowerValues.Any() && startTimes.Any())
+            if (hardware == "CPU")
+                powerValues = powerValuesFiltered.SelectMany(r => r.PmdCpuPower).ToArray();
+            else if (hardware == "GPU")
+                powerValues = powerValuesFiltered.SelectMany(r => r.PmdGpuPower).ToArray();
+
+            if (powerValues == null)
+                return null;
+
+            var startTimes = powerValues.Select((x, i) => 1E-03 * i * session.Runs.First().SampleTime).ToArray();
+            var frametimeStatisticProvider = new FrametimeStatisticProvider(null);
+
+            var avgPowerValues = frametimeStatisticProvider.GetTimeBasedMovingAverage(powerValues.Select(x => (double)x).ToList(), 2000d);
+
+            if (avgPowerValues.Any() && startTimes.Any())
             {
-                for (int i = 0; i < gpuPowerValues.Count(); i++)
+                for (int i = 0; i < Math.Min(avgPowerValues.Count, startTimes.Length); i++)
                 {
-                    pmdGpuPowerPoints.Add(new Point(startTimes[i], gpuPowerValues[i]));
+                    pmdPowerPoints.Add(new Point(startTimes[i], avgPowerValues[i]));
                 }
             }
+            return pmdPowerPoints;
+        }
 
-            return pmdGpuPowerPoints;
+        public static IList<Point> GetSensorPowerPoints(this ISession session, string hardware)
+        {
+            if (!session.Runs.Any())
+                return null;
+
+            var list = new List<Point>();           
+            var times = session.Runs.SelectMany(r => r.SensorData2.MeasureTime.Values).ToArray();
+
+            int[] powers = null;
+            if (hardware == "CPU")
+                powers = session.Runs.SelectMany(r => r.SensorData2.CpuPower).ToArray();
+            else if (hardware == "GPU")
+                powers = session.Runs.SelectMany(r => r.SensorData2.GpuPower).ToArray();
+
+            if (powers == null)
+                return null;
+
+            if (powers.Any())
+            {
+                for (int i = 0; i < Math.Min(times.Length, powers.Length); i++)
+                {
+                    list.Add(new Point(times[i], powers[i]));
+                }
+            }
+            return list;
         }
 
         /// <summary>

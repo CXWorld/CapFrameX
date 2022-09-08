@@ -6,6 +6,8 @@ using CapFrameX.Data.Session.Contracts;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Extensions;
 using CapFrameX.PMD;
+using CapFrameX.Statistics.NetStandard;
+using CapFrameX.Statistics.NetStandard.Contracts;
 using Microsoft.Extensions.Logging;
 using OxyPlot;
 using Prism.Commands;
@@ -29,14 +31,17 @@ namespace CapFrameX.ViewModel
         private readonly object _updateChartBufferLock = new object();
         private readonly IEventAggregator _eventAggregator;
         private readonly ISystemInfo _systemInfo;
+        private readonly IStatisticProvider _frametimeStatisticProvider;
 
         private bool _updateCharts = true;
         private bool _updateMetrics = true;
         private int _pmdDataWindowSeconds = 10;
         private bool _usePmdService;
         private string _sampleRate = "0 [1/s]";
+        private string _selectedChartView = "Frametimes";
         private bool _useUpdateSession = false;
         private ISession _session;
+        private ISession _previousSession;
 
         private IDisposable _pmdChannelStreamChartsDisposable;
         private IDisposable _pmdChannelStreamMetricsDisposable;
@@ -54,13 +59,15 @@ namespace CapFrameX.ViewModel
 
         public PlotModel GpuAnalysisModel => _pmdDataChartManager.GpuAnalysisModel;
 
-        public PlotModel FrametimeModel => _pmdDataChartManager.FrametimeModel;
+        public PlotModel FrametimeModel => _pmdDataChartManager.PerformanceModel;
 
         public PmdMetricsManager PmdMetrics => _pmdDataMetricsManager;
 
         public string CpuName => _systemInfo.GetProcessorName();
+        public string SessionCpuName => _session?.Info.Processor;
 
         public string GpuName => _systemInfo.GetGraphicCardName();
+        public string SessionGpuName => _session?.Info.GPU;
 
         public Array ComPortsItemsSource => _pmdService.GetPortNames();
 
@@ -79,6 +86,17 @@ namespace CapFrameX.ViewModel
         public Array PmdDataWindows => new[] { 5, 10, 20, 30, 60, 300, 600 };
 
         public ICommand ResetPmdMetricsCommand { get; }
+
+        public string AvgPmdGPUPower { get; set; } = "NaN W";
+        public string AvgPmdCPUPower { get; set; } = "NaN W";
+        public string AvgPmdSystemPower { get; set; } = "NaN W";
+        public string AvgSensorGPUPower { get; set; } = "NaN W";
+        public string AvgSensorCPUPower { get; set; } = "NaN W";
+        public double AvgFPS { get; set; } = double.NaN;
+        public double GpuEfficiency { get; set; } = double.NaN;
+        public double CpuEfficiency { get; set; } = double.NaN;
+        public double SystemEfficiency { get; set; } = double.NaN;
+
 
         public bool UsePmdService
         {
@@ -200,57 +218,48 @@ namespace CapFrameX.ViewModel
             }
         }
 
-        public bool DrawFrametimes
+        public bool DrawPerformanceChart
         {
-            get => _pmdDataChartManager.DrawFrametimes;
+            get => _pmdDataChartManager.DrawPerformanceChart;
             set
             {
-                _pmdDataChartManager.DrawFrametimes = value;
+                _pmdDataChartManager.DrawPerformanceChart = value;
                 RaisePropertyChanged();
-                _pmdDataChartManager.UpdateFrametimeChart(_session);
+                _pmdDataChartManager.UpdatePerformanceChart(_session, _selectedChartView);
             }
         }
 
-        public bool DrawPmdCpuPower
+        public bool DrawPmdPower
         {
-            get => _pmdDataChartManager.DrawPmdCpuPower;
+            get => _pmdDataChartManager.DrawPmdPower;
             set
             {
-                _pmdDataChartManager.DrawPmdCpuPower = value;
+                _pmdDataChartManager.DrawPmdPower = value;
                 RaisePropertyChanged();
                 _pmdDataChartManager.UpdateCpuPowerChart(_session);
+                _pmdDataChartManager.UpdateGpuPowerChart(_session);
             }
         }
-
-        public bool DrawPmdGpuPower
+        public bool DrawAvgPmdPower
         {
-            get => _pmdDataChartManager.DrawPmdGpuPower;
+            get => _pmdDataChartManager.DrawAvgPmdPower;
             set
             {
-                _pmdDataChartManager.DrawPmdGpuPower = value;
+                _pmdDataChartManager.DrawAvgPmdPower = value;
                 RaisePropertyChanged();
+                _pmdDataChartManager.UpdateCpuPowerChart(_session);
                 _pmdDataChartManager.UpdateGpuPowerChart(_session);
             }
         }
 
-        public bool DrawSensorCpuPower
+        public bool DrawSensorPower
         {
-            get => _pmdDataChartManager.DrawSensorCpuPower;
+            get => _pmdDataChartManager.DrawSensorPower;
             set
             {
-                _pmdDataChartManager.DrawSensorCpuPower = value;
+                _pmdDataChartManager.DrawSensorPower = value;
                 RaisePropertyChanged();
                 _pmdDataChartManager.UpdateCpuPowerChart(_session);
-            }
-        }
-
-        public bool DrawSensorGpuPower
-        {
-            get => _pmdDataChartManager.DrawSensorGpuPower;
-            set
-            {
-                _pmdDataChartManager.DrawSensorGpuPower = value;
-                RaisePropertyChanged();
                 _pmdDataChartManager.UpdateGpuPowerChart(_session);
             }
         }
@@ -279,14 +288,26 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        public string SelectedChartView
+        {
+            get { return _selectedChartView; }
+            set
+            {
+                _selectedChartView = value;
+                RaisePropertyChanged();
+                _pmdDataChartManager.UpdatePerformanceChart(_session, value);
+            }
+        }
+
         public PmdViewModel(IPmdService pmdService, IAppConfiguration appConfiguration,
-            ILogger<PmdViewModel> logger, IEventAggregator eventAggregator, ISystemInfo systemInfo)
+            ILogger<PmdViewModel> logger, IEventAggregator eventAggregator, ISystemInfo systemInfo, IStatisticProvider frametimeStatisticProvider)
         {
             _pmdService = pmdService;
             _appConfiguration = appConfiguration;
             _eventAggregator = eventAggregator;
             _logger = logger;
             _systemInfo = systemInfo;
+            _frametimeStatisticProvider = frametimeStatisticProvider;
 
             ResetPmdMetricsCommand = new DelegateCommand(() => _pmdDataMetricsManager.ResetHistory());
 
@@ -364,12 +385,18 @@ namespace CapFrameX.ViewModel
         {
             _useUpdateSession = false;
             ManageChartsUpdate(false);
+            _previousSession = _session;
         }
 
         public void OnNavigatedTo(NavigationContext navigationContext)
         {
             _useUpdateSession = true;
             ManageChartsUpdate(true);
+
+            if (_session == null || _session?.Hash != _previousSession?.Hash)
+            {
+                UpdatePMDAnalysis();
+            }
         }
 
         private void SubscribeToAggregatorEvents()
@@ -381,9 +408,7 @@ namespace CapFrameX.ViewModel
 
                     if (_useUpdateSession)
                     {
-                        _pmdDataChartManager.UpdateCpuPowerChart(_session);
-                        _pmdDataChartManager.UpdateGpuPowerChart(_session);
-                        _pmdDataChartManager.UpdateFrametimeChart(_session);
+                        UpdatePMDAnalysis();
                     }
                 });
 
@@ -393,6 +418,16 @@ namespace CapFrameX.ViewModel
                     _pmdDataChartManager.UseDarkMode = _appConfiguration.UseDarkMode;
                     _pmdDataChartManager.UpdateChartsTheme();
                 });
+        }
+
+        private void UpdatePMDAnalysis()
+        {
+            _pmdDataChartManager.UpdateCpuPowerChart(_session);
+            _pmdDataChartManager.UpdateGpuPowerChart(_session);
+            _pmdDataChartManager.UpdatePerformanceChart(_session, _selectedChartView);
+            RaisePropertyChanged(nameof(SessionCpuName));
+            RaisePropertyChanged(nameof(SessionGpuName));
+            GetAverageMetrics();
         }
 
         private void ManagePmdService()
@@ -430,5 +465,97 @@ namespace CapFrameX.ViewModel
                 _chartaDataBuffer.Clear();
             }
         }
+
+        private void GetAverageMetrics()
+        {
+            if (_session == null)
+                return;
+            // Power & Performance Metrics
+
+            // CPU PMD Power
+            double cpuPmdAverage = double.NaN;
+            var cpuPmdPowers = _session.Runs.Where(r => !r.PmdCpuPower.IsNullOrEmpty());
+            if (cpuPmdPowers != null && cpuPmdPowers.Any())
+            {
+                cpuPmdAverage = Math.Round(cpuPmdPowers.SelectMany(x => x.PmdCpuPower).Average(), 0);
+            }
+
+            // GPU PMD Power
+            double gpuPmdAverage = double.NaN;
+            var gpuPmdPowers = _session.Runs.Where(r => !r.PmdGpuPower.IsNullOrEmpty());
+            if (gpuPmdPowers != null && gpuPmdPowers.Any())
+            {
+                gpuPmdAverage = Math.Round(gpuPmdPowers.SelectMany(x => x.PmdGpuPower).Average(), 0);
+            }
+
+            // System PMD Power
+            double systemPmdAverage = double.NaN;
+            //var systemPmdPowers = _session.Runs.Where(r => !r.PmdSystemPower.IsNullOrEmpty());
+            //if (systemPmdPowers != null && systemPmdPowers.Any())
+            //{
+            //    systemPmdAverage = Math.Round(systemPmdPowers.SelectMany(x => x.PmdGpuPower).Average(), 0);
+            //}
+
+            // CPU Sensor Power
+            double cpuSensorAverage = double.NaN;
+            var cpuSensorPowers = _session.Runs.Where(r => !r.SensorData2.CpuPower.IsNullOrEmpty());
+            if (cpuSensorPowers != null && cpuSensorPowers.Any())
+            {
+                cpuSensorAverage = Math.Round(cpuSensorPowers.SelectMany(x => x.SensorData2.CpuPower).Average(), 0);
+            }
+
+            // GPU Sensor Power
+            double gpuSensorAverage = double.NaN;
+            var gpuSensorPowers = _session.Runs.Where(r => !r.SensorData2.GpuPower.IsNullOrEmpty());
+            if (gpuSensorPowers != null && gpuSensorPowers.Any())
+            {
+                gpuSensorAverage = Math.Round(gpuSensorPowers.SelectMany(x => x.SensorData2.GpuPower).Average(), 0);
+            }
+
+            // FPS
+            double frametimes = _session.Runs.SelectMany(r => r.CaptureData.MsBetweenPresents).Average();
+            double fpsaverage = Math.Round(1000 / frametimes, 1);
+
+            AvgPmdGPUPower = $"{gpuPmdAverage} W";
+            AvgPmdCPUPower = $"{cpuPmdAverage} W";
+            AvgPmdSystemPower = $"{Math.Round(systemPmdAverage, 0)} W";
+            AvgSensorGPUPower = $"{gpuSensorAverage} W";
+            AvgSensorCPUPower = $"{cpuSensorAverage} W";
+            AvgFPS = fpsaverage;
+
+            // Efficiency Metrics
+
+            double cpuEfficiency = double.NaN;
+            double gpuEfficiency = double.NaN;
+            double systemEfficiency = double.NaN;
+
+            if(!double.IsNaN(gpuPmdAverage))
+                gpuEfficiency = fpsaverage / gpuPmdAverage * 10;
+            else if (!double.IsNaN(gpuSensorAverage))
+                gpuEfficiency = fpsaverage / gpuSensorAverage * 10;
+
+            if(!double.IsNaN(cpuPmdAverage))
+                cpuEfficiency = fpsaverage / cpuPmdAverage * 10;
+            else if (!double.IsNaN(cpuSensorAverage))
+                cpuEfficiency = fpsaverage / cpuSensorAverage * 10;
+
+            if(!double.IsNaN(systemPmdAverage))
+                systemEfficiency = fpsaverage / systemPmdAverage * 10;
+
+            GpuEfficiency = Math.Round(gpuEfficiency, 2);
+            CpuEfficiency = Math.Round(cpuEfficiency, 2);
+            SystemEfficiency = Math.Round(systemEfficiency, 2);
+
+            RaisePropertyChanged(nameof(AvgPmdGPUPower));
+            RaisePropertyChanged(nameof(AvgPmdCPUPower));
+            RaisePropertyChanged(nameof(AvgSensorGPUPower));
+            RaisePropertyChanged(nameof(AvgSensorCPUPower));
+            RaisePropertyChanged(nameof(AvgPmdSystemPower));
+            RaisePropertyChanged(nameof(AvgFPS));
+            RaisePropertyChanged(nameof(GpuEfficiency));
+            RaisePropertyChanged(nameof(CpuEfficiency));
+            RaisePropertyChanged(nameof(SystemEfficiency));
+        }
     }
+
 }
