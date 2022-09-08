@@ -166,7 +166,6 @@ namespace CapFrameX.PMD
                         Minimum = 0,
                         Maximum = 150,
                         AbsoluteMinimum = 0,
-                        AbsoluteMaximum = 150,
                         AxisTitleDistance = 15
                     }
                 },
@@ -184,7 +183,6 @@ namespace CapFrameX.PMD
                         Minimum = 0,
                         Maximum = 300,
                         AbsoluteMinimum = 0,
-                        AbsoluteMaximum = 300,
                         AxisTitleDistance = 15
                     }
                 },
@@ -307,16 +305,14 @@ namespace CapFrameX.PMD
                 }
             };
 
-        public void ResetAllPLotModels()
+        public void ResetRealTimePlotModels()
         {
             _ePS12VModelMaxYValueBuffer.Clear();
             _pciExpressModelMaxYValueBuffer.Clear();
 
             AxisDefinitions["Y_Axis_GPU_W"].Maximum = 300;
-            AxisDefinitions["Y_Axis_GPU_W"].AbsoluteMaximum = 300;
 
             AxisDefinitions["Y_Axis_CPU_W"].Maximum = 150;
-            AxisDefinitions["Y_Axis_CPU_W"].AbsoluteMaximum = 150;
 
             Eps12VModel.Series.Clear();
             Eps12VModel.ResetAllAxes();
@@ -324,6 +320,13 @@ namespace CapFrameX.PMD
             PciExpressModel.Series.Clear();
             PciExpressModel.ResetAllAxes();
             PciExpressModel.InvalidatePlot(true);
+        }
+
+        public void ResetAnalysisPlotModels()
+        {
+            CpuAnalysisModel.ResetAllAxes();
+            GpuAnalysisModel.ResetAllAxes();
+            PerformanceModel.ResetAllAxes();
         }
 
         public void UpdateChartsTheme()
@@ -454,7 +457,7 @@ namespace CapFrameX.PMD
             CpuAnalysisModel.InvalidatePlot(true);
         }
 
-        public void UpdateGpuPowerChart(ISession session)
+        public void UpdateGpuPowerChart(ISession session, bool useTBP)
         {
             if (session == null) return;
 
@@ -518,7 +521,7 @@ namespace CapFrameX.PMD
 
             if (DrawSensorPower)
             {
-                var sensorGpuPowerPoints = session.GetSensorPowerPoints("GPU");
+                var sensorGpuPowerPoints = session.GetSensorPowerPoints("GPU", useTBP);
 
                 if (sensorGpuPowerPoints != null && sensorGpuPowerPoints.Any())
                 {

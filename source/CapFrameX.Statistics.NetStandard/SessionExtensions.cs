@@ -10,7 +10,7 @@ namespace CapFrameX.Statistics.NetStandard
 {
     public static class SessionExtensions
     {
-        public static IList<double> GetFrametimeTimeWindow(this ISession session, double startTime, double endTime, 
+        public static IList<double> GetFrametimeTimeWindow(this ISession session, double startTime, double endTime,
             IFrametimeStatisticProviderOptions options, ERemoveOutlierMethod eRemoveOutlierMethod = ERemoveOutlierMethod.None)
         {
             IList<double> frametimesTimeWindow = new List<double>();
@@ -31,7 +31,7 @@ namespace CapFrameX.Statistics.NetStandard
             return frametimesTimeWindow;
         }
 
-        public static IList<Point> GetFrametimePointsTimeWindow(this ISession session, double startTime, double endTime, 
+        public static IList<Point> GetFrametimePointsTimeWindow(this ISession session, double startTime, double endTime,
             IFrametimeStatisticProviderOptions options, ERemoveOutlierMethod eRemoveOutlierMethod = ERemoveOutlierMethod.None)
         {
             IList<Point> frametimesPointsWindow = new List<Point>();
@@ -80,11 +80,10 @@ namespace CapFrameX.Statistics.NetStandard
             var pmdPowerPoints = new List<Point>();
             IEnumerable<ISessionRun> powerValuesFiltered = null;
 
-                if (hardware == "CPU")
-                    powerValuesFiltered = session.Runs.Where(r => !r.PmdCpuPower.IsNullOrEmpty());
-                else if (hardware == "GPU")
-                    powerValuesFiltered = session.Runs.Where(r => !r.PmdGpuPower.IsNullOrEmpty());
-
+            if (hardware == "CPU")
+                powerValuesFiltered = session.Runs.Where(r => !r.PmdCpuPower.IsNullOrEmpty());
+            else if (hardware == "GPU")
+                powerValuesFiltered = session.Runs.Where(r => !r.PmdGpuPower.IsNullOrEmpty());
 
             if (powerValuesFiltered == null || !powerValuesFiltered.Any())
                 return null;
@@ -154,21 +153,60 @@ namespace CapFrameX.Statistics.NetStandard
             return pmdPowerPoints;
         }
 
-        public static IList<Point> GetSensorPowerPoints(this ISession session, string hardware)
+        public static IList<Point> GetSensorPowerPoints(this ISession session, string hardware, bool useTBP = false)
         {
-            if (!session.Runs.Any())
+            if (!session.Runs.Any() || !session.Runs.Where(r => r.SensorData2 != null).Any())
                 return null;
 
-            var list = new List<Point>();           
-            var times = session.Runs.SelectMany(r => r.SensorData2.MeasureTime.Values).ToArray();
+            var list = new List<Point>();
 
+            // Search for Measure Times
+            var filteredTimes = session.Runs.Where(r => r.SensorData2.MeasureTime.Values != null);
+            if (filteredTimes == null || !filteredTimes.Any())
+                return null;
+
+            // Get Measure Times
+            var times = filteredTimes.SelectMany(r => r.SensorData2.MeasureTime.Values).ToArray();
+
+            // Search for Power Values
+            IEnumerable<ISessionRun> powerValuesFiltered = null;
+            if (hardware == "CPU")
+                powerValuesFiltered = session.Runs.Where(r => r.SensorData2.CpuPower != null);
+            else if (hardware == "GPU")
+            {
+                if (useTBP)
+                {
+                    powerValuesFiltered = session.Runs.Where(r => r.SensorData2.GpuTBPSim != null);
+
+                    if (powerValuesFiltered == null || !powerValuesFiltered.Any())
+                        powerValuesFiltered = session.Runs.Where(r => r.SensorData2.GpuPower != null);
+                }
+                else
+                    powerValuesFiltered = session.Runs.Where(r => r.SensorData2.GpuPower != null);
+            }
+
+
+            if (powerValuesFiltered == null || !powerValuesFiltered.Any())
+                return null;
+
+            //Get Power Values
             int[] powers = null;
             if (hardware == "CPU")
                 powers = session.Runs.SelectMany(r => r.SensorData2.CpuPower).ToArray();
             else if (hardware == "GPU")
-                powers = session.Runs.SelectMany(r => r.SensorData2.GpuPower).ToArray();
+            {
+                if (useTBP)
+                {
+                    powers = session.Runs.SelectMany(r => r.SensorData2.GpuTBPSim).ToArray();
+                    if (powers == null || !powers.Any())
+                        powers = session.Runs.SelectMany(r => r.SensorData2.GpuPower).ToArray();
+                }
+                else
+                    powers = session.Runs.SelectMany(r => r.SensorData2.GpuPower).ToArray();
+            }
 
-            if (powers == null)
+
+            if (powers == null || !powers.Any())
                 return null;
 
             if (powers.Any())
