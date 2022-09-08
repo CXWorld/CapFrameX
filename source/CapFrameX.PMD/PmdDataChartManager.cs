@@ -66,7 +66,6 @@ namespace CapFrameX.PMD
 
         public bool DrawSensorPower { get; set; } = false;
 
-
         public PmdDataChartManager()
         {
             // Metrics
@@ -89,7 +88,6 @@ namespace CapFrameX.PMD
             AxisDefinitions["X_Axis_Time_GPU_Analysis"].AxisChanged += GPU_AxisChanged;
             AxisDefinitions["X_Axis_Time_CPU_Analysis"].AxisChanged += CPU_AxisChanged;
             AxisDefinitions["X_Axis_Performance"].AxisChanged += Performance_AxisChanged;
-
         }
 
 
