@@ -1,5 +1,6 @@
 ﻿using CapFrameX.Data.Session.Classes;
 using CapFrameX.Data.Session.Contracts;
+using CapFrameX.Extensions;
 using CapFrameX.Statistics.NetStandard.Contracts;
 using System;
 using System.Collections.Generic;
@@ -78,7 +79,7 @@ namespace CapFrameX.Statistics.NetStandard
                 return null;
 
             var pmdCpuPowerPoints = new List<Point>();
-            var cpuPowerValuesFiltered = session.Runs.Where(r => r.PmdCpuPower != null);
+            var cpuPowerValuesFiltered = session.Runs.Where(r => !r.PmdCpuPower.IsNullOrEmpty());
 
             if (!cpuPowerValuesFiltered.Any())
                 return null;
@@ -102,7 +103,7 @@ namespace CapFrameX.Statistics.NetStandard
                 return null;
 
             var pmdGpuPowerPoints = new List<Point>();
-            var gpuPowerValuesFiltered = session.Runs.Where(r => r.PmdGpuPower != null);
+            var gpuPowerValuesFiltered = session.Runs.Where(r => !r.PmdGpuPower.IsNullOrEmpty());
 
             if (!gpuPowerValuesFiltered.Any())
                 return null;

@@ -13,6 +13,7 @@
   <ItemGroup>
     <ProjectReference Include="..\CapFrameX.Data.Session\CapFrameX.Data.Session.csproj" />
     <ProjectReference Include="..\CapFrameX.Extensions.NetStandard\CapFrameX.Extensions.NetStandard.csproj" />
+    <ProjectReference Include="..\CapFrameX.Extensions\CapFrameX.Extensions.csproj" />
   </ItemGroup>
 
 </Project>
