@@ -370,6 +370,11 @@ namespace CapFrameX.PMD
 
             CpuAnalysisModel.Series.Clear();
 
+            double yAxisPmdMin = double.PositiveInfinity;
+            double yAxisPmdMax = double.NegativeInfinity;
+            double yAxisSensorMin = double.PositiveInfinity;
+            double yAxisSensorMax = double.NegativeInfinity;
+
             if (DrawPmdPower)
             {
                 var pmdCpuPowerPoints = session.GetPmdPowerPoints("CPU");
@@ -393,8 +398,13 @@ namespace CapFrameX.PMD
                         EdgeRenderingMode = EdgeRenderingMode.PreferSpeed
                     };
 
+                    yAxisPmdMin = pmdCpuPowerDataPoints.Min(pnt => pnt.Y);
+                    yAxisPmdMax = pmdCpuPowerDataPoints.Max(pnt => pnt.Y);
+
                     pmdCpuPowerSeries.Points.AddRange(pmdCpuPowerDataPoints);
                     CpuAnalysisModel.Series.Add(pmdCpuPowerSeries);
+
+
                 }
             }
 
@@ -432,7 +442,7 @@ namespace CapFrameX.PMD
 
                 if (sensorCpuPowerPoints != null && sensorCpuPowerPoints.Any())
                 {
-                    var pmdCpuPowerDataPoints = sensorCpuPowerPoints.Select(pnt => new DataPoint(pnt.X, pnt.Y));
+                    var sensorCpuPowerDataPoints = sensorCpuPowerPoints.Select(pnt => new DataPoint(pnt.X, pnt.Y));
                     //var xMin = frametimeDataPoints.Min(pnt => pnt.X);
                     //var xMax = frametimeDataPoints.Max(pnt => pnt.X);
 
@@ -447,12 +457,22 @@ namespace CapFrameX.PMD
                         LegendStrokeThickness = 4,
                         Color = Constants.SensorColor,
                         EdgeRenderingMode = EdgeRenderingMode.PreferSpeed
-                    };
+                    };                    
 
-                    sensorCpuPowerSeries.Points.AddRange(pmdCpuPowerDataPoints);
+                    yAxisSensorMin = sensorCpuPowerDataPoints.Min(pnt => pnt.Y);
+                    yAxisSensorMax = sensorCpuPowerDataPoints.Max(pnt => pnt.Y);
+
+
+                    sensorCpuPowerSeries.Points.AddRange(sensorCpuPowerDataPoints);
                     CpuAnalysisModel.Series.Add(sensorCpuPowerSeries);
                 }
             }
+
+            var absoluteYMin = Math.Min(yAxisPmdMin, yAxisSensorMin);
+            var absoluteYMax = Math.Max(yAxisPmdMax, yAxisSensorMax);
+
+            AxisDefinitions["Y_Axis_Analysis_CPU_W"].Maximum = absoluteYMax + (absoluteYMax - absoluteYMin) / 6;
+            AxisDefinitions["Y_Axis_Analysis_CPU_W"].Minimum = absoluteYMin - (absoluteYMax - absoluteYMin) / 6;
 
             CpuAnalysisModel.InvalidatePlot(true);
         }
@@ -462,6 +482,11 @@ namespace CapFrameX.PMD
             if (session == null) return;
 
             GpuAnalysisModel.Series.Clear();
+
+            double yAxisPmdMin = double.PositiveInfinity;
+            double yAxisPmdMax = double.NegativeInfinity;
+            double yAxisSensorMin = double.PositiveInfinity;
+            double yAxisSensorMax = double.NegativeInfinity;
 
             if (DrawPmdPower)
             {
@@ -485,6 +510,9 @@ namespace CapFrameX.PMD
                         Color = Constants.PmdColor,
                         EdgeRenderingMode = EdgeRenderingMode.PreferSpeed
                     };
+
+                    yAxisPmdMin = pmdGpuPowerDataPoints.Min(pnt => pnt.Y);
+                    yAxisPmdMax = pmdGpuPowerDataPoints.Max(pnt => pnt.Y);
 
                     pmdGpuPowerSeries.Points.AddRange(pmdGpuPowerDataPoints);
                     GpuAnalysisModel.Series.Add(pmdGpuPowerSeries);
@@ -542,10 +570,18 @@ namespace CapFrameX.PMD
                         EdgeRenderingMode = EdgeRenderingMode.PreferSpeed
                     };
 
+                    yAxisSensorMin = sensorGpuPowerDataPoints.Min(pnt => pnt.Y);
+                    yAxisSensorMax = sensorGpuPowerDataPoints.Max(pnt => pnt.Y);
+
                     sensorGpuPowerSeries.Points.AddRange(sensorGpuPowerDataPoints);
                     GpuAnalysisModel.Series.Add(sensorGpuPowerSeries);
                 }
             }
+            var absoluteYMin = Math.Min(yAxisPmdMin, yAxisSensorMin);
+            var absoluteYMax = Math.Max(yAxisPmdMax, yAxisSensorMax);
+
+            AxisDefinitions["Y_Axis_Analysis_GPU_W"].Maximum = absoluteYMax + (absoluteYMax - absoluteYMin) / 6;
+            AxisDefinitions["Y_Axis_Analysis_GPU_W"].Minimum = absoluteYMin - (absoluteYMax - absoluteYMin) / 6;
 
             GpuAnalysisModel.InvalidatePlot(true);
         }
@@ -586,7 +622,14 @@ namespace CapFrameX.PMD
                         EdgeRenderingMode = EdgeRenderingMode.PreferSpeed
                     };
 
+                    var yAxisMin = performanceDataPoints.Min(pnt => pnt.Y);
+                    var yAxisMax = performanceDataPoints.Max(pnt => pnt.Y);
+
                     AxisDefinitions["Y_Axis_Performance"].Title = metric == "Frametimes" ? "Frametimes [ms]" : "FPS";
+
+                    AxisDefinitions["Y_Axis_Performance"].Maximum = yAxisMax + (yAxisMax - yAxisMin) / 6;
+                    AxisDefinitions["Y_Axis_Performance"].Minimum = yAxisMin - (yAxisMax - yAxisMin) / 6;
+
                     performanceSeries.Points.AddRange(performanceDataPoints);
                     PerformanceModel.Series.Add(performanceSeries);
                 }
