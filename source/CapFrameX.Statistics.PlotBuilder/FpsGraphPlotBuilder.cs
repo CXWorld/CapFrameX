@@ -3,7 +3,6 @@ using CapFrameX.Statistics.NetStandard;
 using CapFrameX.Statistics.NetStandard.Contracts;
 using CapFrameX.Statistics.PlotBuilder.Contracts;
 using OxyPlot;
-using OxyPlot.Annotations;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -41,8 +40,7 @@ namespace CapFrameX.Statistics.PlotBuilder
 
                 SetRawFPS(plotModel, rawFpsPoints);
                 SetLoadCharts(plotModel, plotSettings, session);
-                SetFpsChart(plotModel, avgFpsPoints, rawFpsPoints, average, 2, OxyColor.FromRgb(241, 125, 32), filterMode);
-
+                SetFpsChart(plotModel, avgFpsPoints, rawFpsPoints, average, 3, OxyColor.FromRgb(241, 125, 32), filterMode);
 
                 yMin = rawFpsPoints.Min(pnt => pnt.Y);
                 yMax = rawFpsPoints.Max(pnt => pnt.Y);
@@ -54,7 +52,7 @@ namespace CapFrameX.Statistics.PlotBuilder
                 if(filterMode == EFilterMode.TimeIntervalAverage)
                     SetLoadCharts(plotModel, plotSettings, session);
 
-                SetFpsChart(plotModel, fpsPoints, rawFpsPoints, average, filterMode is EFilterMode.None ? 1 : 2, Constants.FpsStroke, filterMode);
+                SetFpsChart(plotModel, fpsPoints, rawFpsPoints, average, filterMode is EFilterMode.None ? 1.5 : 3, Constants.FpsColor, filterMode);
 
                 if(filterMode is EFilterMode.None)
                     SetLoadCharts(plotModel, plotSettings, session);
@@ -74,7 +72,6 @@ namespace CapFrameX.Statistics.PlotBuilder
             var lowFPSValue = plotSettings.LowFPSThreshold;
 
             SetAggregationSeparators(session, plotModel, plotSettings.ShowAggregationSeparators);
-
 
             onFinishAction?.Invoke(plotModel);
             plotModel.InvalidatePlot(true);
@@ -97,7 +94,7 @@ namespace CapFrameX.Statistics.PlotBuilder
             }
         }
 
-        private void SetFpsChart(PlotModel plotModel, IList<Point> fpsPoints, IList<Point> rawfpsPoints, double average, int stroke, OxyColor color, EFilterMode filtermode)
+        private void SetFpsChart(PlotModel plotModel, IList<Point> fpsPoints, IList<Point> rawfpsPoints, double average, double stroke, OxyColor color, EFilterMode filtermode)
         {
             if (fpsPoints == null || !fpsPoints.Any())
                 return;
@@ -127,7 +124,7 @@ namespace CapFrameX.Statistics.PlotBuilder
                 Title = "Avg FPS",
                 StrokeThickness = 2,
                 LegendStrokeThickness = 4,
-                Color = OxyColor.FromAColor(200, Constants.FpsAverageStroke)
+                Color = OxyColor.FromAColor(200, Constants.FpsAverageColor)
             };
 
             averageSeries.Points.AddRange(averageDataPoints);
@@ -149,9 +146,9 @@ namespace CapFrameX.Statistics.PlotBuilder
             var fpsSeries = new LineSeries
             { 
                 Title = "Raw FPS",
-                StrokeThickness = 1,
+                StrokeThickness = 1.5,
                 LegendStrokeThickness = 4,
-                Color = OxyColor.FromAColor(200, Constants.FpsStroke),
+                Color = OxyColor.FromAColor(200, Constants.FpsColor),
                 EdgeRenderingMode = EdgeRenderingMode.PreferSpeed
             };
             var points = fpsPoints.Select(pnt => new DataPoint(pnt.X, pnt.Y));
