@@ -83,7 +83,7 @@ namespace CapFrameX.Statistics.PlotBuilder
                 Title = "Frametimes",
                 StrokeThickness = 1.5,
                 LegendStrokeThickness = 4,
-                Color = Constants.FrametimeStroke,
+                Color = Constants.FrametimeColor,
                 EdgeRenderingMode = EdgeRenderingMode.PreferSpeed
             };
 
@@ -92,7 +92,7 @@ namespace CapFrameX.Statistics.PlotBuilder
                 Title = "Moving average",
                 StrokeThickness = 3,
                 LegendStrokeThickness = 4,
-                Color = Constants.FrametimeMovingAverageStroke,
+                Color = Constants.FrametimeMovingAverageColor,
                 EdgeRenderingMode = EdgeRenderingMode.PreferSpeed
             };
 
