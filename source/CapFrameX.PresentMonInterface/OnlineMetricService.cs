@@ -410,7 +410,6 @@ namespace CapFrameX.PresentMonInterface
             return pmdMetrics;
         }
 
-
         private float GetPmdCurrentPowerByIndexGroup(IList<PmdChannel[]> channelData, int[] indexGroup)
         {
             double sum = 0;
