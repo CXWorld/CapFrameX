@@ -76,7 +76,7 @@ namespace CapFrameX.Statistics.PlotBuilder
             var frametimeSeries = new LineSeries
             {
                 Title = "Frametimes",
-                StrokeThickness = 1,
+                StrokeThickness = 1.5,
                 LegendStrokeThickness = 4,
                 Color = Constants.FrametimeColor,
                 EdgeRenderingMode = EdgeRenderingMode.PreferSpeed
@@ -85,7 +85,7 @@ namespace CapFrameX.Statistics.PlotBuilder
             var movingAverageSeries = new LineSeries
             {
                 Title = "Moving average",
-                StrokeThickness = 2,
+                StrokeThickness = 3,
                 LegendStrokeThickness = 4,
                 Color = Constants.FrametimeMovingAverageColor,
                 EdgeRenderingMode = EdgeRenderingMode.PreferSpeed

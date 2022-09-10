@@ -198,10 +198,13 @@ namespace CapFrameX.ViewModel
 					|| fpsChart == null)
 					return;
 
-				frametimesChart.StrokeThickness = 2;
-				fpsChart.StrokeThickness = 2;
+                //frametimesChart.StrokeThickness = 2.5;
+                //fpsChart.StrokeThickness = 5;
 
-				int indexFrametimes = _viewModel.ComparisonFrametimesModel.Series.IndexOf(frametimesChart);
+                frametimesChart.StrokeThickness += 2;
+                fpsChart.StrokeThickness += 2;
+
+                int indexFrametimes = _viewModel.ComparisonFrametimesModel.Series.IndexOf(frametimesChart);
 				int indexFps = _viewModel.ComparisonFpsModel.Series.IndexOf(fpsChart);
 
 				//Move to end
@@ -247,8 +250,11 @@ namespace CapFrameX.ViewModel
 					|| fpsChart == null)
 					return;
 
-				frametimesChart.StrokeThickness = 1;
-				fpsChart.StrokeThickness = 1;
+				//frametimesChart.StrokeThickness = 1.5;
+				//fpsChart.StrokeThickness = 3;
+
+				frametimesChart.StrokeThickness -= 2;
+				fpsChart.StrokeThickness -= 2;
 
 				// Update plot
 				_viewModel.ComparisonFrametimesModel.InvalidatePlot(true);

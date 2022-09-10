@@ -1536,7 +1536,7 @@ namespace CapFrameX.ViewModel
             {
                 Tag = wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.Id,
                 Title = chartTitle,
-                StrokeThickness = 1,
+                StrokeThickness = 1.5,
                 LegendStrokeThickness = 4,
                 Color = wrappedComparisonInfo.IsHideModeSelected ?
                 OxyColors.Transparent : OxyColor.FromRgb(color.R, color.G, color.B),
@@ -1563,7 +1563,7 @@ namespace CapFrameX.ViewModel
             {
                 Tag = wrappedComparisonInfo.WrappedRecordInfo.FileRecordInfo.Id,
                 Title = chartTitle,
-                StrokeThickness = 1,
+                StrokeThickness = SelectedFilterMode == EFilterMode.TimeIntervalAverage ? 3 : 1.5,
                 LegendStrokeThickness = 4,
                 Color = wrappedComparisonInfo.IsHideModeSelected ?
                 OxyColors.Transparent : OxyColor.FromRgb(color.R, color.G, color.B),

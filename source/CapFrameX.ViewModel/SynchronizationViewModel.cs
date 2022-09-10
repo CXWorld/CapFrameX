@@ -425,7 +425,7 @@ namespace CapFrameX.ViewModel
             var frametimeSeries = new Statistics.PlotBuilder.LineSeries
             {
                 Title = "Frametimes",
-                StrokeThickness = 1,
+                StrokeThickness = 1.5,
                 LegendStrokeThickness = 4,
                 FontSize = 13,
                 Color = Constants.FrametimeColor,
@@ -435,7 +435,7 @@ namespace CapFrameX.ViewModel
             var untilDisplayedTimesSeries = new Statistics.PlotBuilder.LineSeries
             {
                 Title = "Until displayed times",
-                StrokeThickness = 1,
+                StrokeThickness = 1.5,
                 LegendStrokeThickness = 4,
                 FontSize = 13,
                 Color = OxyColor.FromArgb(150, 241, 125, 32),
@@ -718,7 +718,7 @@ namespace CapFrameX.ViewModel
             var frametimeSeries = new Statistics.PlotBuilder.LineSeries
             {
                 Title = "Frametimes",
-                StrokeThickness = 1,
+                StrokeThickness = 1.5,
                 LegendStrokeThickness = 4,
                 Color = Constants.FrametimeColor,
                 EdgeRenderingMode = EdgeRenderingMode.PreferSpeed
@@ -727,7 +727,7 @@ namespace CapFrameX.ViewModel
             var upperBoundInputLagSeries = new Statistics.PlotBuilder.LineSeries
             {
                 Title = "Input lag high",
-                StrokeThickness = 1,
+                StrokeThickness = 1.5,
                 LegendStrokeThickness = 4,
                 Color = OxyColor.FromRgb(255, 150, 150),
                 EdgeRenderingMode = EdgeRenderingMode.PreferSpeed
@@ -736,7 +736,7 @@ namespace CapFrameX.ViewModel
             var lowerBoundInputLagSeries = new Statistics.PlotBuilder.LineSeries
             {
                 Title = "Input lag low",
-                StrokeThickness = 1,
+                StrokeThickness = 1.5,
                 LegendStrokeThickness = 4,
                 Color = OxyColor.FromRgb(200, 140, 140),
                 EdgeRenderingMode = EdgeRenderingMode.PreferSpeed
