@@ -99,8 +99,8 @@
     <Reference Include="MathNet.Filtering, Version=0.7.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\MathNet.Filtering.0.7.0\lib\net461\MathNet.Filtering.dll</HintPath>
     </Reference>
-    <Reference Include="MathNet.Numerics, Version=4.9.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\MathNet.Numerics.4.9.1\lib\net461\MathNet.Numerics.dll</HintPath>
+    <Reference Include="MathNet.Numerics, Version=5.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\MathNet.Numerics.5.0.0\lib\net461\MathNet.Numerics.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Extensions.Logging.Abstractions, Version=5.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Microsoft.Extensions.Logging.Abstractions.5.0.0\lib\net461\Microsoft.Extensions.Logging.Abstractions.dll</HintPath>
@@ -268,6 +268,10 @@
     <ProjectReference Include="..\CapFrameX.Overlay\CapFrameX.Overlay.csproj">
       <Project>{624777c2-6af6-46d5-a019-1285f699b8a7}</Project>
       <Name>CapFrameX.Overlay</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CapFrameX.PMD\CapFrameX.PMD.csproj">
+      <Project>{8A0EFF6F-A7BC-450A-AC29-D0F5CCD96BC3}</Project>
+      <Name>CapFrameX.PMD</Name>
     </ProjectReference>
     <ProjectReference Include="..\CapFrameX.PresentMonInterface\CapFrameX.PresentMonInterface.csproj">
       <Project>{ADFBAECE-B74F-4A80-87D1-84BC990527B0}</Project>

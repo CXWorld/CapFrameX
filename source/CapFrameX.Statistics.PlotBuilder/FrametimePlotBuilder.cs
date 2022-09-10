@@ -47,9 +47,7 @@ namespace CapFrameX.Statistics.PlotBuilder
             var stutteringValue = frametimes.Average() * plotSettings.StutteringFactor;
             var lowFPSValue = 1000 / plotSettings.LowFPSThreshold;
 
-
             SetAggregationSeparators(session, plotModel, plotSettings.ShowAggregationSeparators);
-
 
             onFinishAction?.Invoke(plotModel);
             plotModel.InvalidatePlot(true);
@@ -62,8 +60,6 @@ namespace CapFrameX.Statistics.PlotBuilder
 
             int count = frametimePoints.Count;
             var frametimeDataPoints = frametimePoints.Select(pnt => new DataPoint(pnt.X, pnt.Y));
-            var yMin = frametimePoints.Min(pnt => pnt.Y);
-            var yMax = frametimePoints.Max(pnt => pnt.Y);
             var movingAverage = _frametimesStatisticProvider.GetMovingAverage(frametimePoints.Select(pnt => pnt.Y).ToList());
 
             var stuttering = new List<double>();
@@ -74,7 +70,6 @@ namespace CapFrameX.Statistics.PlotBuilder
                 stuttering.Add(movingAverage[i] * plotSettings.StutteringFactor);
                 lowFPS.Add(1000 / plotSettings.LowFPSThreshold);
             }
-
 
             plotModel.Series.Clear();
 
@@ -96,7 +91,6 @@ namespace CapFrameX.Statistics.PlotBuilder
                 EdgeRenderingMode = EdgeRenderingMode.PreferSpeed
             };
 
-
             var stutteringSeries = new LineSeries
             {
                 Title = "Stuttering",
@@ -117,11 +111,8 @@ namespace CapFrameX.Statistics.PlotBuilder
                 EdgeRenderingMode = EdgeRenderingMode.PreferSpeed
             };
 
-
             frametimeSeries.Points.AddRange(frametimeDataPoints);
             movingAverageSeries.Points.AddRange(movingAverage.Select((y, i) => new DataPoint(frametimePoints[i].X, y)));
-
-
 
             UpdateAxis(EPlotAxis.XAXIS, (axis) =>
             {
@@ -132,7 +123,6 @@ namespace CapFrameX.Statistics.PlotBuilder
             plotModel.Series.Add(frametimeSeries);
             plotModel.Series.Add(movingAverageSeries);
 
-
             if (plotSettings.ShowThresholds)
             { 
                 stutteringSeries.Points.AddRange(stuttering.Select((y, i) => new DataPoint(frametimePoints[i].X, y)));
@@ -140,7 +130,6 @@ namespace CapFrameX.Statistics.PlotBuilder
 
                 plotModel.Series.Add(stutteringSeries);
                 plotModel.Series.Add(lowFPSSeries);
-
             }
 
             plotModel.InvalidatePlot(true);

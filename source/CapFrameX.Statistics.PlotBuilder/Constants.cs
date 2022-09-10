@@ -1,7 +1,4 @@
 ﻿using OxyPlot;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace CapFrameX.Statistics.PlotBuilder
 {
@@ -15,7 +12,7 @@ namespace CapFrameX.Statistics.PlotBuilder
 
 		public readonly static OxyColor FpsColor = OxyColor.FromRgb(156, 210, 0);
 
-		public readonly static OxyColor PmdColor = OxyColor.FromRgb(34, 151, 243);
+        public readonly static OxyColor PmdColor = OxyColor.FromRgb(34, 151, 243);
 
 		public readonly static OxyColor PmdMovingAverageColor = OxyColor.FromRgb(126, 0, 131);
 

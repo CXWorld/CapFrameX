@@ -181,6 +181,10 @@
       <Project>{2F0D1227-BE4F-4501-B3A2-66A753ED742C}</Project>
       <Name>CapFrameX.Monitoring.Contracts</Name>
     </ProjectReference>
+    <ProjectReference Include="..\CapFrameX.PMD\CapFrameX.PMD.csproj">
+      <Project>{8A0EFF6F-A7BC-450A-AC29-D0F5CCD96BC3}</Project>
+      <Name>CapFrameX.PMD</Name>
+    </ProjectReference>
     <ProjectReference Include="..\CapFrameX.PresentMonInterface\CapFrameX.PresentMonInterface.csproj">
       <Project>{ADFBAECE-B74F-4A80-87D1-84BC990527B0}</Project>
       <Name>CapFrameX.PresentMonInterface</Name>

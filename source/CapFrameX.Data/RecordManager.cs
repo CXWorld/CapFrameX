@@ -402,7 +402,6 @@ namespace CapFrameX.Data
 
         public async Task<bool> SaveSessionRunsToFile(IEnumerable<ISessionRun> runs, string processName, string recordDirectory = null, List<ISessionInfo> HWInfo = null)
         {
-
             var filePath = await GetOutputFilename(processName, recordDirectory);
 
             try

@@ -336,11 +336,10 @@
                                   ToolTipService.ShowDuration="25000">
                                     <ToggleButton.ToolTip>
                                         <ToolTip MaxWidth="350">
-                                            <TextBlock 
-                             Text="Once the run history is full, combine and save all frametime data into a new single record file.
-                                &#10;&#10;This is NOT the same as calculating average parameters from multiple single record files. It simulates running the same scene multiple times in one single benchmark. 
-                                Performance parameters are calculated once, using all of the frametime data." 
-                             TextWrapping="Wrap"/>
+                                            <TextBlock Text="Once the run history is full, combine and save all frametime data into a new single record file.
+                                                    &#10;&#10;This is NOT the same as calculating average parameters from multiple single record files. It simulates running the same scene multiple times in one single benchmark. 
+                                                    Performance parameters are calculated once, using all of the frametime data." 
+                                                 TextWrapping="Wrap"/>
                                         </ToolTip>
                                     </ToggleButton.ToolTip>
                                 </ToggleButton>

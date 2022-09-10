@@ -148,8 +148,12 @@ namespace OpenHardwareMonitor.Hardware.RAM
             {
                 lock (_performanceCounterLock)
                 {
-                    usedMemoryProcess.Value = ramUsageGamePerformanceCounter != null
-                    ? ramUsageGamePerformanceCounter.NextValue() / SCALE : 0f;
+                    try
+                    {
+                        usedMemoryProcess.Value = ramUsageGamePerformanceCounter != null
+                            ? ramUsageGamePerformanceCounter.NextValue() / SCALE : 0f;
+                    }
+                    catch { usedMemoryProcess.Value = null; }
                 }
             }
 
@@ -157,8 +161,12 @@ namespace OpenHardwareMonitor.Hardware.RAM
             {
                 lock (_performanceCounterLock)
                 {
-                    usedMemoryAndCacheProcess.Value = ramAndCacheUsageGamePerformanceCounter != null
-                    ? ramAndCacheUsageGamePerformanceCounter.NextValue() / SCALE : 0f;
+                    try
+                    {
+                        usedMemoryAndCacheProcess.Value = ramAndCacheUsageGamePerformanceCounter != null
+                            ? ramAndCacheUsageGamePerformanceCounter.NextValue() / SCALE : 0f;
+                    }
+                    catch { usedMemoryAndCacheProcess.Value = null; }
                 }
             }
         }
@@ -181,8 +189,7 @@ namespace OpenHardwareMonitor.Hardware.RAM
 
             [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
             [return: MarshalAs(UnmanagedType.Bool)]
-            internal static extern bool GlobalMemoryStatusEx(
-              ref MemoryStatusEx buffer);
+            internal static extern bool GlobalMemoryStatusEx(ref MemoryStatusEx buffer);
         }
 
         private string GetValidInstanceName(Process process)

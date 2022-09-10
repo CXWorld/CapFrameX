@@ -90,8 +90,6 @@ namespace CapFrameX.View
                 {
                     Expander.IsExpanded = false;
                 });
-
-
         }
 
         private void BuildTreeView()

@@ -95,7 +95,10 @@ namespace CapFrameX.ViewModel.SubModels
                        || item.Identifier == "OnlineP1"
                        || item.Identifier == "OnlineP0dot2"
                        || item.Identifier == "OnlineApplicationLatency"
-                       || item.Identifier == "OnlineStutteringPercentage"))
+                       || item.Identifier == "OnlineStutteringPercentage"
+                       || item.Identifier == "PmdGpuPowerCurrent"
+                       || item.Identifier == "PmdCpuPowerCurrent"
+                       || item.Identifier == "PmdSystemPowerCurrent"))
             {
                 if (entry.ShowOnOverlayIsEnabled)
                 {
@@ -135,6 +138,7 @@ namespace CapFrameX.ViewModel.SubModels
                     entry.ShowOnOverlay = showEntry;
             }
         }
+
         private void ManageCPUPowerEntries(bool showEntry)
         {
             foreach (var entry in _overlayViewModel.OverlayEntries

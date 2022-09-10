@@ -4,8 +4,8 @@ using System.Windows.Forms;
 
 namespace CapFrameX.Contracts.Configuration
 {
-	public interface IAppConfiguration : IFrametimeStatisticProviderOptions
-    {
+	public interface IAppConfiguration : IFrametimeStatisticProviderOptions, IPmdServiceConfiguration
+	{
 		/// <summary>
 		/// Emits an events when a configuration entry has been changes
 		/// </summary>
@@ -21,8 +21,6 @@ namespace CapFrameX.Contracts.Configuration
                 });
 		*/
 		IObservable<(string key, object value)> OnValueChanged { get; }
-
-
 
 		double StutteringFactor { get; set; }
 

@@ -29,7 +29,7 @@ namespace CapFrameX.ViewModel.DataContext
 
         public ICommand SavePlotAsPNG { get; }
 
-        public PlotModel FrametimeModel { get => PlotModel; }
+        public PlotModel FrametimeModel => PlotModel;
 
         private readonly FrametimePlotBuilder _frametimePlotBuilder;
 

@@ -1,5 +1,6 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -653,6 +654,50 @@ namespace CapFrameX.Configuration
             set => Set(value);
         }
 
+        // PMD Service
+        public bool UseVirtualMode
+        {
+            get => Get<bool>(false);
+            set => Set(value);
+        }
+
+        public int DownSamplingSize
+        {
+            get => Get<int>(10);
+            set => Set(value);
+        }
+
+        public int PmdChartRefreshPeriod
+        {
+            get => Get<int>(100);
+            set => Set(value);
+        }
+
+        public int PmdMetricRefreshPeriod
+        {
+            get => Get<int>(500);
+            set => Set(value);
+        }
+
+        public string DownSamplingMode
+        {
+            get => Get<string>("Average");
+            set => Set(value);
+        }
+
+        public int ChartDownSamplingSize
+        {
+            get => Get<int>(4);
+            set => Set(value);
+        }
+
+        public bool UsePmdDataLogging
+        {
+            get => Get<bool>(false);
+            set => Set(value);
+        }
+
+        // General Management
         T Get<T>(T defaultValue, [CallerMemberName] string key = null)
         {
             if (string.IsNullOrWhiteSpace(key))
