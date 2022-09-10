@@ -20,6 +20,7 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace CapFrameX.Overlay
 {
@@ -32,7 +33,7 @@ namespace CapFrameX.Overlay
         private static readonly HashSet<string> ONLINE_METRIC_NAMES = new HashSet<string>()
         {
             "OnlineAverage", "OnlineP1", "OnlineP0dot2", "OnlineApplicationLatency",
-            "OnlineStutteringPercentage", "SystemTime", "PmdGpuPowerCurrent", "PmdCpuPowerCurrent",
+            "OnlineStutteringPercentage", "PmdGpuPowerCurrent", "PmdCpuPowerCurrent",
             "PmdSystemPowerCurrent"
         };
 
@@ -256,6 +257,23 @@ namespace CapFrameX.Overlay
                 }
 
                 ONLINE_METRIC_NAMES.ForEach(UpdateRealtimeMetricEntryDict);
+
+                // System Time
+                if (!_overlayEntryCore.RealtimeMetricEntryDict.ContainsKey("SystemTime"))
+                    _overlayEntryCore.RealtimeMetricEntryDict.Add("SystemTime", entry);
+                else
+                    _overlayEntryCore.RealtimeMetricEntryDict["SystemTime"] = entry;
+
+                // Battery Info
+                if (!_overlayEntryCore.RealtimeMetricEntryDict.ContainsKey("BatteryLifePercent"))
+                    _overlayEntryCore.RealtimeMetricEntryDict.Add("BatteryLifePercent", entry);
+                else
+                    _overlayEntryCore.RealtimeMetricEntryDict["BatteryLifePercent"] = entry;
+
+                if (!_overlayEntryCore.RealtimeMetricEntryDict.ContainsKey("BatteryLifeRemaining"))
+                    _overlayEntryCore.RealtimeMetricEntryDict.Add("BatteryLifeRemaining", entry);
+                else
+                    _overlayEntryCore.RealtimeMetricEntryDict["BatteryLifeRemaining"] = entry;
             }
 
             CheckCustomSystemInfo();
@@ -286,6 +304,8 @@ namespace CapFrameX.Overlay
             SetHardwareIsNumericState();
             SetAppInfoFormats();
             SetAppInfoIsNumericState();
+            SetBatteryInfoFormats();
+            SetBatteryInfoIsNumericState();
 
             _overlayEntries.ForEach(entry => entry.FormatChanged = true);
         }
@@ -531,6 +551,12 @@ namespace CapFrameX.Overlay
                     case EOverlayEntryType.CX when entry.Identifier == "SystemTime":
                         entry.Value = ShowSystemTimeSeconds ? DateTime.Now.ToString("HH:mm:ss") : DateTime.Now.ToString("HH:mm");
                         break;
+                    case EOverlayEntryType.CX when entry.Identifier == "BatteryLifePercent":
+                        entry.Value = SystemInformation.PowerStatus.BatteryLifePercent * 100d;
+                        break;
+                    case EOverlayEntryType.CX when entry.Identifier == "BatteryLifeRemaining":
+                        entry.Value = SystemInformation.PowerStatus.BatteryLifeRemaining / 60d;
+                        break;
                     default:
                         break;
                 }
@@ -631,7 +657,7 @@ namespace CapFrameX.Overlay
 
         private void SetOnlineMetricsIsNumericState()
         {
-            foreach (var metricName in ONLINE_METRIC_NAMES.Where(name => name != "SystemTime"))
+            foreach (var metricName in ONLINE_METRIC_NAMES)
             {
                 _identifierOverlayEntryDict.TryGetValue(metricName, out IOverlayEntry metricEntry);
 
@@ -765,6 +791,36 @@ namespace CapFrameX.Overlay
                 || x.OverlayEntryType == EOverlayEntryType.RAM))
             {
                 entry.IsNumeric = true;
+            }
+        }
+
+        private void SetBatteryInfoIsNumericState()
+        {
+            foreach (var entry in _overlayEntries.Where(x =>
+                x.Identifier == "BatteryLifePercent" || x.Identifier == "BatteryLifeRemaining"))
+            {
+                entry.IsNumeric = true;
+            }
+        }
+
+        private void SetBatteryInfoFormats()
+        {
+            // BatteryLifePercent
+            _identifierOverlayEntryDict.TryGetValue("BatteryLifePercent", out IOverlayEntry batteryLifePercent);
+
+            if (batteryLifePercent != null)
+            {
+                batteryLifePercent.ValueUnitFormat = "%";
+                batteryLifePercent.ValueAlignmentAndDigits = "{0,5:F0}";
+            }
+
+            // BatteryLifeRemaining
+            _identifierOverlayEntryDict.TryGetValue("BatteryLifeRemaining", out IOverlayEntry batteryLifeRemaining);
+
+            if (batteryLifeRemaining != null)
+            {
+                batteryLifeRemaining.ValueUnitFormat = "min ";
+                batteryLifeRemaining.ValueAlignmentAndDigits = "{0,5:F0}";
             }
         }
 
