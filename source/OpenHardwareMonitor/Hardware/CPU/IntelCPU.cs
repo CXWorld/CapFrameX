@@ -566,8 +566,14 @@ namespace OpenHardwareMonitor.Hardware.CPU
                         if (Ring0.RdmsrTx(IA32_PERF_STATUS, out uint eax, out uint edx,
                           cpuid[i][0].Affinity))
                         {
-                            newBusClock =
-                              TimeStampCounterFrequency / timeStampCounterMultiplier;
+                            if (EstimatedTimeStampCounterFrequencyError == 0)
+                            {
+                                newBusClock = TimeStampCounterFrequency / timeStampCounterMultiplier;
+                            }
+                            else
+                            {
+                                newBusClock = 100;
+                            }
                             switch (microarchitecture)
                             {
                                 case Microarchitecture.Nehalem:
@@ -619,7 +625,14 @@ namespace OpenHardwareMonitor.Hardware.CPU
                         else
                         {
                             // if IA32_PERF_STATUS is not available, assume TSC frequency
-                            coreClocks[i].Value = (float)TimeStampCounterFrequency;
+                            if (EstimatedTimeStampCounterFrequencyError == 0)
+                            {
+                                coreClocks[i].Value = (float)TimeStampCounterFrequency;
+                            }
+                            else
+                            {
+                                coreClocks[i].Value = 0;
+                            }
                         }
                     }
 

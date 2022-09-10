@@ -260,9 +260,14 @@ namespace OpenHardwareMonitor.Hardware.CPU
               (((double)(countEnd - countBegin)) * Stopwatch.Frequency) /
               (timeEnd - timeBegin);
 
-            double busFrequency = coreFrequency / coreMultiplier;
 
-            return 0.25 * Math.Round(4 * TimeStampCounterFrequency / busFrequency);
+            if (EstimatedTimeStampCounterFrequencyError == 0)
+            {
+                double busFrequency = coreFrequency / coreMultiplier;
+                return 0.25 * Math.Round(4 * TimeStampCounterFrequency / busFrequency);
+            }
+            else
+                return 0;
         }
 
         protected override uint[] GetMSRs()
@@ -469,11 +474,16 @@ namespace OpenHardwareMonitor.Hardware.CPU
                             double multiplier;
                             multiplier = GetCoreMultiplier(curEax);
 
-                            coreClocks[i].Value =
-                              (float)(multiplier * TimeStampCounterFrequency /
-                              timeStampCounterMultiplier);
-                            newBusClock =
-                              (float)(TimeStampCounterFrequency / timeStampCounterMultiplier);
+                            if (EstimatedTimeStampCounterFrequencyError == 0)
+                            {
+                                coreClocks[i].Value = (float)(multiplier * TimeStampCounterFrequency / timeStampCounterMultiplier);
+                                newBusClock = (float)(TimeStampCounterFrequency / timeStampCounterMultiplier);
+                            }
+                            else
+                            {
+                                coreClocks[i].Value = 0;
+                                newBusClock = 100;
+                            }
                         }
                         else
                         {
