@@ -102,6 +102,5 @@ namespace CapFrameX.ViewModel.DataContext
 			StutteringFactor = stutteringFactor;
 			LowFPSThreshold = lowFPSThreshold;
 		}
-
 	}
 }

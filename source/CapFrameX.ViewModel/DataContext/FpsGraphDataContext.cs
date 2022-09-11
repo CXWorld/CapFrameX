@@ -20,7 +20,7 @@ namespace CapFrameX.ViewModel.DataContext
 {
 	public class FpsGraphDataContext : GraphDataContextBase
 	{
-		public PlotModel FpsModel { get => PlotModel; }
+		public PlotModel FpsModel => PlotModel;
 
 		public ICommand CopyFpsValuesCommand { get; }
 		public ICommand CopyFpsPointsCommand { get; }

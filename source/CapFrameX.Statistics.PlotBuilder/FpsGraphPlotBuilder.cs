@@ -23,7 +23,6 @@ namespace CapFrameX.Statistics.PlotBuilder
             plotModel.Axes.Add(AxisDefinitions[EPlotAxis.XAXIS]);
             plotModel.Axes.Add(AxisDefinitions[EPlotAxis.YAXISFPS]);
 
-
             var frametimes = session.GetFrametimeTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod);
             double average = frametimes.Count * 1000 / frametimes.Sum();
             double yMin, yMax;
@@ -31,8 +30,6 @@ namespace CapFrameX.Statistics.PlotBuilder
             plotModel.Series.Clear();
 
             var rawFpsPoints = session.GetFpsPointsTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod, EFilterMode.None);
-
-
 
             if (filterMode is EFilterMode.RawPlusAverage)
             {
