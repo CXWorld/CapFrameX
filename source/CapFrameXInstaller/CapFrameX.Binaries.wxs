@@ -18,6 +18,7 @@
             <Component Id="cmpFCC1F35455D5814F6F5D83CFB2CBB5EA" Guid="*" Win64="yes">
                 <File Id="filBF5E6522ABF9B07B4C721A3F08328663" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.Capture.Contracts.dll" />
             </Component>
+            
             <Component Id="cmp367B18F442C629D69A743133694E4034" Guid="*" Win64="yes">
                 <File Id="fil6E3A974E04E9C60370B37DB0E6CC632C" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.Capture.Contracts.pdb" />
             </Component>
@@ -405,6 +406,13 @@
             <Component Id="cmpA9A2AB3353E22A8DA16EAAEE63473B2F" Guid="*" Win64="yes">
                 <File Id="fil88EDC55735A4B2968B2469EF3EB5D6E7" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Prism.Wpf.dll" />
             </Component>
+            <Component Id="cmp9CB00B4C0F13DCE7E766423C27121485" Guid="*" Win64="yes">
+                <File Id="filE0A28EB0F634D1DA6030E99CC41A1E23" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\RJCP.SerialPortStream.dll" />
+            </Component>
+            <Component Id="cmpF318EA8E5B5EB7D6CB2BEE591C17796C" Guid="*" Win64="yes">
+                <File Id="fil5EE9E7FCD47C4AC4A5E829A9A51C9D89" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\RJCP.SerialPortStream.pdb" />
+            </Component>
+            
             <Component Id="cmp74A2C73F11C177073B0A672936A0D5EB" Guid="*" Win64="yes">
                 <File Id="fil1CF141D24266A4E5F331DDFE02166A27" KeyPath="yes" Source="$(var.CapFrameXInstaller.BinaryDir)\Serilog.dll" />
             </Component>
@@ -575,6 +583,7 @@
             
             <ComponentRef Id="cmp8E6F0A41518F04985A00044A881AFAA3" />
             <ComponentRef Id="cmpFCC1F35455D5814F6F5D83CFB2CBB5EA" />
+            
             <ComponentRef Id="cmp367B18F442C629D69A743133694E4034" />
             <ComponentRef Id="cmp8ACAADD5757BD9E933B8004451F42808" />
             
@@ -718,6 +727,9 @@
             <ComponentRef Id="cmp59564654D02343646998A8D6A6F0C25F" />
             <ComponentRef Id="cmp1D8C6ABF55C2B2B4242EE9F241074EAC" />
             <ComponentRef Id="cmpA9A2AB3353E22A8DA16EAAEE63473B2F" />
+            <ComponentRef Id="cmp9CB00B4C0F13DCE7E766423C27121485" />
+            <ComponentRef Id="cmpF318EA8E5B5EB7D6CB2BEE591C17796C" />
+            
             <ComponentRef Id="cmp74A2C73F11C177073B0A672936A0D5EB" />
             <ComponentRef Id="cmpA9CD02E2996345805AE749B403FD0E7A" />
             <ComponentRef Id="cmpC08CEB1C24E4A6DA79EE83CFD8BDCD60" />
