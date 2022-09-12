@@ -1,6 +1,6 @@
 ![Screenshot](images/CX_Header_Logo_Wide.jpg)
 # CapFrameX
-Frametimes capture and analysis tool based on Intel's [PresentMon](https://github.com/GameTechDev/PresentMon). Overlay provided by [Rivatuner Statistics Server](https://www.guru3d.com/content-page/rivatuner.html).
+Frametimes capture and analysis tool based on Intel's [PresentMon](https://github.com/GameTechDev/PresentMon). Overlay provided by [Rivatuner Statistics Server](https://www.guru3d.com/content-page/rivatuner.html). 
 
 # Remark in our own intererst
 If you are a reviewer or a youtuber using CapFrameX to get your data, it would be nice to mention us and link to our software.
