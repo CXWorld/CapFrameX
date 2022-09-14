@@ -33,6 +33,7 @@ using CapFrameX.Statistics.PlotBuilder.Contracts;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;
 using CapFrameX.Extensions;
+using CapFrameX.Statistics.NetStandard;
 
 namespace CapFrameX.ViewModel
 {
@@ -187,7 +188,7 @@ namespace CapFrameX.ViewModel
                 RaisePropertyChanged();
             }
         }
-        
+
         public SeriesCollection VarianceStatisticCollection
         {
             get { return _variancetatisticCollection; }
@@ -595,7 +596,7 @@ namespace CapFrameX.ViewModel
                 return false;
 
             if (_localRecordDataServer.CurrentSession.Runs
-                .Any(run => run.SensorData2.GPUPowerLimit == null 
+                .Any(run => run.SensorData2.GPUPowerLimit == null
                 || !run.SensorData2.GPUPowerLimit.Any()))
                 return false;
 
@@ -1303,8 +1304,17 @@ namespace CapFrameX.ViewModel
                     {
                         var frametimes = _localRecordDataServer?
                             .GetFrametimePointTimeWindow().Select(pnt => pnt.Y);
+
                         var yMin = frametimes.Min();
                         var yMax = frametimes.Max();
+
+                        if (ShowStutteringThresholds)
+                        {
+                            var frametimeStatisticProvider = new FrametimeStatisticProvider(null);
+                            var movingAverage = frametimeStatisticProvider.GetMovingAverage(frametimes.ToList());
+
+                            yMax = Math.Max(Math.Max(movingAverage.Max() * _appConfiguration.StutteringFactor, yMax), 1000 / _appConfiguration.StutteringThreshold);
+                        }
 
                         setting = new Tuple<double, double>(yMin - (yMax - yMin) / 6, yMax + (yMax - yMin) / 6);
                     }
