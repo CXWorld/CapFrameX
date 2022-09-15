@@ -11,6 +11,7 @@
 using CapFrameX.Monitoring.Contracts;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace OpenHardwareMonitor.Hardware.ATI
 {
@@ -59,19 +60,15 @@ namespace OpenHardwareMonitor.Hardware.ATI
 
                                     if (!found)
                                     {
-                                        // filter internal GPUs
                                         var adapterName = adapterInfo[i].AdapterName.Trim();
-                                        if ("AMD Radeon(TM) Graphics" != adapterName)
-                                        {
-                                            hardware.Add(new ATIGPU(
-                                              adapterName,
-                                              adapterInfo[i].AdapterIndex,
-                                              adapterInfo[i].BusNumber,
-                                              adapterInfo[i].DeviceNumber,
-                                              context, settings,
-                                              sensorConfig,
-                                              processService));
-                                        }
+                                        hardware.Add(new ATIGPU(
+                                          adapterName,
+                                          adapterInfo[i].AdapterIndex,
+                                          adapterInfo[i].BusNumber,
+                                          adapterInfo[i].DeviceNumber,
+                                          context, settings,
+                                          sensorConfig,
+                                          processService));
                                     }
                                 }
                             }
@@ -80,6 +77,14 @@ namespace OpenHardwareMonitor.Hardware.ATI
             }
             catch (DllNotFoundException) { }
             catch (EntryPointNotFoundException) { }
+        }
+
+        public void RemoveInternalGpu()
+        {
+            var internalGpu = hardware.FirstOrDefault(gpu => gpu.Name == "AMD Radeon(TM) Graphics");
+
+            if (internalGpu != null)
+                hardware.Remove(internalGpu);
         }
 
         public IHardware[] Hardware

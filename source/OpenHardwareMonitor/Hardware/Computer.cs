@@ -9,10 +9,12 @@
 */
 
 using CapFrameX.Monitoring.Contracts;
+using OpenHardwareMonitor.Hardware.ATI;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Security.Permissions;
 
 namespace OpenHardwareMonitor.Hardware
@@ -105,18 +107,38 @@ namespace OpenHardwareMonitor.Hardware
                 Add(new ATI.ATIGroup(settings, sensorConfig, processService));
                 Add(new Nvidia.NvidiaGroup(settings, sensorConfig, processService));
                 Add(new IntelGPU.IntelGroup(settings, sensorConfig, processService));
-            }
 
-            if (fanControllerEnabled)
+                FilterInternalGpus();
+
+                if (fanControllerEnabled)
+                {
+                    Add(new TBalancer.TBalancerGroup(settings));
+                    Add(new Heatmaster.HeatmasterGroup(settings));
+                }
+
+                if (hddEnabled)
+                    Add(new HDD.HarddriveGroup(settings));
+
+                open = true;
+            }
+        }
+
+        private void FilterInternalGpus()
+        {
+            List<IGroup> list = new List<IGroup>();
+            foreach (IGroup group in groups)
+                if (group is ATI.ATIGroup || group is Nvidia.NvidiaGroup || group is IntelGPU.IntelGroup)
+                    list.Add(group);
+
+            if (list.Count > 1)
             {
-                Add(new TBalancer.TBalancerGroup(settings));
-                Add(new Heatmaster.HeatmasterGroup(settings));
+                var atiGroup = list.FirstOrDefault(group => group is ATI.ATIGroup);
+
+                if (atiGroup != null)
+                {
+                    (atiGroup as ATI.ATIGroup)?.RemoveInternalGpu();
+                }
             }
-
-            if (hddEnabled)
-                Add(new HDD.HarddriveGroup(settings));
-
-            open = true;
         }
 
         public bool MainboardEnabled
@@ -187,6 +209,8 @@ namespace OpenHardwareMonitor.Hardware
                         Add(new ATI.ATIGroup(settings, sensorConfig, processService));
                         Add(new Nvidia.NvidiaGroup(settings, sensorConfig, processService));
                         Add(new IntelGPU.IntelGroup(settings, sensorConfig, processService));
+
+                        FilterInternalGpus();
                     }
                     else
                     {
