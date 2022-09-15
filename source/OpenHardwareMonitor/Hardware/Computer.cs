@@ -109,18 +109,19 @@ namespace OpenHardwareMonitor.Hardware
                 Add(new IntelGPU.IntelGroup(settings, sensorConfig, processService));
 
                 FilterInternalGpus();
-
-                if (fanControllerEnabled)
-                {
-                    Add(new TBalancer.TBalancerGroup(settings));
-                    Add(new Heatmaster.HeatmasterGroup(settings));
-                }
-
-                if (hddEnabled)
-                    Add(new HDD.HarddriveGroup(settings));
-
-                open = true;
             }
+
+            if (fanControllerEnabled)
+            {
+                Add(new TBalancer.TBalancerGroup(settings));
+                Add(new Heatmaster.HeatmasterGroup(settings));
+            }
+
+            if (hddEnabled)
+                Add(new HDD.HarddriveGroup(settings));
+
+            open = true;
+
         }
 
         private void FilterInternalGpus()
