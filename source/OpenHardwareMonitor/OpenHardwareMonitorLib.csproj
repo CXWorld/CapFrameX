@@ -242,7 +242,7 @@
     <Compile Include="Properties\AssemblyVersion.cs" />
     <Compile Include="Hardware\ThreadAffinity.cs" />
     <Compile Include="Hardware\RyzenSMU.cs" />
-    <Compile Include="Sofware\OperatingSystem.cs" />
+    <Compile Include="Software\OperatingSystem.cs" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">

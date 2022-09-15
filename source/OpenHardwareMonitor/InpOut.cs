@@ -151,7 +151,7 @@ namespace OpenHardwareMonitor
 
         private static bool Extract(string filePath)
         {
-            string resourceName = $"{nameof(OpenHardwareMonitor)}.Resources.{(Sofware.OperatingSystem.Is64Bit ? "inpoutx64.dll" : "inpout32.dll")}";
+            string resourceName = $"{nameof(OpenHardwareMonitor)}.Resources.{(Software.OperatingSystem.Is64Bit ? "inpoutx64.dll" : "inpout32.dll")}";
 
             Assembly assembly = typeof(Ring0).Assembly;
 

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace OpenHardwareMonitor.Sofware
+namespace OpenHardwareMonitor.Software
 {
     /// <summary>
     /// Contains basic information about the operating system.

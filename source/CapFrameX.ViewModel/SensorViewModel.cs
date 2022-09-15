@@ -278,7 +278,8 @@ namespace CapFrameX.ViewModel
             if (RecordInfo == null || !_isActive)
                 return;
 
-            var items = SensorReport.GetFullReportFromSessionSensorData(session.Runs.Select(run => run.SensorData2));
+            var sessionSensorData = session.Runs.Select(run => run.SensorData2);
+            var items = SensorReport.GetFullReportFromSessionSensorData(sessionSensorData);
             foreach (var item in items)
             {
                 SensorReportItems.Add(item);
