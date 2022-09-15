@@ -59,14 +59,19 @@ namespace OpenHardwareMonitor.Hardware.ATI
 
                                     if (!found)
                                     {
-                                        hardware.Add(new ATIGPU(
-                                          adapterInfo[i].AdapterName.Trim(),
-                                          adapterInfo[i].AdapterIndex,
-                                          adapterInfo[i].BusNumber,
-                                          adapterInfo[i].DeviceNumber,
-                                          context, settings,
-                                          sensorConfig,
-                                          processService));
+                                        // filter internal GPUs
+                                        var adapterName = adapterInfo[i].AdapterName.Trim();
+                                        if ("AMD Radeon(TM) Graphics" != adapterName)
+                                        {
+                                            hardware.Add(new ATIGPU(
+                                              adapterName,
+                                              adapterInfo[i].AdapterIndex,
+                                              adapterInfo[i].BusNumber,
+                                              adapterInfo[i].DeviceNumber,
+                                              context, settings,
+                                              sensorConfig,
+                                              processService));
+                                        }
                                     }
                                 }
                             }
