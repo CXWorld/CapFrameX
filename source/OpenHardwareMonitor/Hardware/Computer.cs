@@ -131,7 +131,7 @@ namespace OpenHardwareMonitor.Hardware
                 if (group is ATI.ATIGroup || group is Nvidia.NvidiaGroup || group is IntelGPU.IntelGroup)
                     list.Add(group);
 
-            if (list.Count > 1)
+            if (list.Sum(group => group.Hardware.Length) > 1)
             {
                 var atiGroup = list.FirstOrDefault(group => group is ATI.ATIGroup);
 
