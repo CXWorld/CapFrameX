@@ -248,32 +248,14 @@ namespace CapFrameX.Overlay
                 _sensorConfig.SetSensorEvaluate(entry.Identifier, entry.ShowOnOverlay);
                 _identifierOverlayEntryDict.TryAdd(entry.Identifier, entry);
 
-                void UpdateRealtimeMetricEntryDict(string onlineMetricName)
+                if (ONLINE_METRIC_NAMES.Contains(entry.Identifier) || entry.Identifier == "SystemTime"
+                    || entry.Identifier == "BatteryLifePercent" || entry.Identifier == "BatteryLifeRemaining")
                 {
-                    if (!_overlayEntryCore.RealtimeMetricEntryDict.ContainsKey(onlineMetricName))
-                        _overlayEntryCore.RealtimeMetricEntryDict.Add(onlineMetricName, entry);
+                    if (!_overlayEntryCore.RealtimeMetricEntryDict.ContainsKey(entry.Identifier))
+                        _overlayEntryCore.RealtimeMetricEntryDict.Add(entry.Identifier, entry);
                     else
-                        _overlayEntryCore.RealtimeMetricEntryDict[onlineMetricName] = entry;
+                        _overlayEntryCore.RealtimeMetricEntryDict[entry.Identifier] = entry;
                 }
-
-                ONLINE_METRIC_NAMES.ForEach(UpdateRealtimeMetricEntryDict);
-
-                // System Time
-                if (!_overlayEntryCore.RealtimeMetricEntryDict.ContainsKey("SystemTime"))
-                    _overlayEntryCore.RealtimeMetricEntryDict.Add("SystemTime", entry);
-                else
-                    _overlayEntryCore.RealtimeMetricEntryDict["SystemTime"] = entry;
-
-                // Battery Info
-                if (!_overlayEntryCore.RealtimeMetricEntryDict.ContainsKey("BatteryLifePercent"))
-                    _overlayEntryCore.RealtimeMetricEntryDict.Add("BatteryLifePercent", entry);
-                else
-                    _overlayEntryCore.RealtimeMetricEntryDict["BatteryLifePercent"] = entry;
-
-                if (!_overlayEntryCore.RealtimeMetricEntryDict.ContainsKey("BatteryLifeRemaining"))
-                    _overlayEntryCore.RealtimeMetricEntryDict.Add("BatteryLifeRemaining", entry);
-                else
-                    _overlayEntryCore.RealtimeMetricEntryDict["BatteryLifeRemaining"] = entry;
             }
 
             CheckCustomSystemInfo();
