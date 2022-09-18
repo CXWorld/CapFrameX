@@ -434,7 +434,7 @@
                         <Border Grid.Row="0" Height="175" Margin="5 5 5 0" BorderThickness="0.2" BorderBrush="{DynamicResource MaterialDesignBody}"
                                 VerticalAlignment="Top" HorizontalAlignment="Stretch">
                             <StackPanel Orientation="Vertical">
-                                <TextBlock Margin="5 10 0 0" FontSize="15" FontWeight="Bold" Text="Graph Selection" ></TextBlock>
+                                <TextBlock Margin="5 10 0 0" FontSize="18" FontWeight="Bold" HorizontalAlignment="Left" Text="Graph Selection" ></TextBlock>
                                 <CheckBox Margin="5 15 0 0" FontSize="13" Content="PMD Power" Background="DeepSkyBlue" IsChecked="{Binding DrawPmdPower}"></CheckBox>
                                 <CheckBox Margin="5 15 0 0" FontSize="13" Content="Avg. PMD Power" Background="Purple" IsChecked="{Binding DrawAvgPmdPower}"></CheckBox>
                                 <CheckBox Margin="5 15 0 0" FontSize="13" Content="Sensor Power" Background="Orange" IsChecked="{Binding DrawSensorPower}"></CheckBox>
@@ -457,7 +457,7 @@
                                     <ColumnDefinition Width="110"/>
                                     <ColumnDefinition Width="1*"/>
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Grid.Row="0" Grid.ColumnSpan="2" Margin="0 0 0 15" Text="Average Metrics" HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False" FontSize="18"/>
+                                <TextBlock Grid.Row="0" Grid.ColumnSpan="2" Margin="0 0 0 15" FontWeight="Bold" Text="Average Metrics" HorizontalAlignment="Left" VerticalAlignment="Center" IsHitTestVisible="False" FontSize="18"/>
 
                                 <TextBlock Grid.Row="1" Grid.Column="0" Margin="0 0 0 5" Text="PMD GPU : " HorizontalAlignment="Left" VerticalAlignment="Center" IsHitTestVisible="False" FontSize="18"/>
                                 <TextBlock Grid.Row="1" Grid.Column="1" Margin="0 0 0 5" Text="{Binding AvgPmdGPUPower}" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False" FontSize="18"/>
@@ -493,7 +493,7 @@
                                     <ColumnDefinition Width="120"/>
                                     <ColumnDefinition Width="1*"/>
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Grid.Row="0" Grid.ColumnSpan="2" Margin="0 0 0 15" Text="Efficiency (FPS/10W)" HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False" FontSize="18"/>
+                                <TextBlock Grid.Row="0" Grid.ColumnSpan="2" Margin="0 0 0 15" FontWeight="Bold" Text="Efficiency (FPS/10W)" HorizontalAlignment="Left" VerticalAlignment="Center" IsHitTestVisible="False" FontSize="18"/>
 
                                 <TextBlock Grid.Row="1" Grid.Column="0" Margin="0 0 0 5" Text="GPU : " HorizontalAlignment="Left" VerticalAlignment="Center" IsHitTestVisible="False" FontSize="18"/>
                                 <TextBlock Grid.Row="1" Grid.Column="1" Margin="0 0 0 5" Text="{Binding GpuEfficiency}" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False" FontSize="18"/>
