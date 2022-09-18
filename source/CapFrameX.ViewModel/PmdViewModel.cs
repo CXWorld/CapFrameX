@@ -127,7 +127,8 @@ namespace CapFrameX.ViewModel
             get => _updateCharts;
             set
             {
-                ManageChartsUpdate(value);
+                _updateCharts = value;
+                ManageChartsUpdate();
                 RaisePropertyChanged();
             }
         }
@@ -380,14 +381,14 @@ namespace CapFrameX.ViewModel
         public void OnNavigatedFrom(NavigationContext navigationContext)
         {
             _useUpdateSession = false;
-            ManageChartsUpdate(false);
+            ManageChartsUpdate();
             _previousSession = _session;
         }
 
         public void OnNavigatedTo(NavigationContext navigationContext)
         {
             _useUpdateSession = true;
-            ManageChartsUpdate(true);
+            ManageChartsUpdate();
 
             if (_session == null || _session?.Hash != _previousSession?.Hash)
             {
@@ -449,15 +450,10 @@ namespace CapFrameX.ViewModel
             }
         }
 
-        private void ManageChartsUpdate(bool show)
+        private void ManageChartsUpdate()
         {
-            if (show)
+            if (!_updateCharts)
             {
-                _updateCharts = true;
-            }
-            else
-            {
-                _updateCharts = false;
                 _pmdDataChartManager.ResetRealTimePlotModels();
                 _chartaDataBuffer.Clear();
             }
