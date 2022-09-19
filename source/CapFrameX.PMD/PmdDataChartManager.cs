@@ -654,7 +654,7 @@ namespace CapFrameX.PMD
 
         private void GPU_AxisChanged(object sender, AxisChangedEventArgs e)
         {
-            if (_frametimeAxisChanging || _cpuAxisChanging) return;
+            if (_frametimeAxisChanging || _cpuAxisChanging || !GpuAnalysisModel.Series.Any()) return;
 
             _gpuAxisChanging = true;
 
@@ -672,7 +672,7 @@ namespace CapFrameX.PMD
 
         private void CPU_AxisChanged(object sender, AxisChangedEventArgs e)
         {
-            if (_gpuAxisChanging || _frametimeAxisChanging) return;
+            if (_gpuAxisChanging || _frametimeAxisChanging || !CpuAnalysisModel.Series.Any()) return;
 
             _cpuAxisChanging = true;
 
