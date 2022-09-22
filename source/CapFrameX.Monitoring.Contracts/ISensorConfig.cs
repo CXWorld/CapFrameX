@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace CapFrameX.Monitoring.Contracts
 {
@@ -29,5 +30,7 @@ namespace CapFrameX.Monitoring.Contracts
         void ResetConfig();
 
         void ResetEvaluate();
+
+        Dictionary<string, bool> GetSensorConfigCopy();
     }
 }

@@ -171,7 +171,7 @@ namespace CapFrameX.ViewModel
 
         public ICommand CopyRawSensorInfoCommand { get; }
 
-        public ICommand AggregateSensorEntries { get; }
+        public ICommand AggregateSensorEntriesCommand { get; }
 
         public SensorGroupControl SensorSubModelGroupControl { get; }
 
@@ -206,7 +206,7 @@ namespace CapFrameX.ViewModel
             CopySensorInfoCommand = new DelegateCommand(OnCopySensorInfo);
             CopyRawSensorInfoCommand = new DelegateCommand(OnCopyRawSensorInfo);
             ResetToDefaultCommand = new DelegateCommand(OnResetToDefault);
-            AggregateSensorEntries = new DelegateCommand(() =>
+            AggregateSensorEntriesCommand = new DelegateCommand(() =>
             {
                 Task.Run(() =>
                 {
