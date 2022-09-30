@@ -588,7 +588,7 @@ namespace CapFrameX.ViewModel
                     foreach (var item in _selectedRecordings)
                     {
                         string sourceFullPath = item.FullPath;
-                        string destinationFullPath = Path.Combine(destinationfolder, item.FileInfo.Name);
+                        string destinationFullPath = Path.Combine(destinationfolder, Path.GetFileName(sourceFullPath));
 
                         FileSystem.CopyFile(sourceFullPath, destinationFullPath, true);
                         if (File.Exists(destinationFullPath))
@@ -600,7 +600,7 @@ namespace CapFrameX.ViewModel
                 else
                 {
                     string sourceFullPath = SelectedRecordInfo.FullPath;
-                    string destinationFullPath = Path.Combine(destinationfolder, SelectedRecordInfo.FileInfo.Name);
+                    string destinationFullPath = Path.Combine(destinationfolder, Path.GetFileName(sourceFullPath));
 
                     FileSystem.CopyFile(sourceFullPath, destinationFullPath, true);
                     if (File.Exists(destinationFullPath))
