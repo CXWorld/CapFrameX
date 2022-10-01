@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
@@ -70,10 +71,10 @@ namespace CapFrameX.PresentMonInterface
                         RedirectStandardInput = true, // is it a MUST??
                         CreateNoWindow = startinfo.CreateNoWindow,
                         Verb = "runas",
-                    }
+                    },
+                    EnableRaisingEvents = true
                 };
 
-                process.EnableRaisingEvents = true;
                 process.OutputDataReceived += (sender, e) =>
                 {
                     if (!string.IsNullOrWhiteSpace(e.Data))
@@ -132,11 +133,19 @@ namespace CapFrameX.PresentMonInterface
         {
             try
             {
-                var proc = Process.GetProcessesByName(CaptureServiceConfiguration.PresentMonAppName);
-                if (proc.Any())
+                Process process = new Process
                 {
-                    proc[0].Kill();
-                }
+                    StartInfo = new ProcessStartInfo
+                    {
+                        FileName = Path.Combine("PresentMon", $"{CaptureServiceConfiguration.PresentMonAppName}.exe"),
+                        Arguments = "-terminate_existing",
+                        UseShellExecute = false,
+                        CreateNoWindow = true,
+                        Verb = "runas",
+                    }
+                };
+
+                process.Start();
             }
             catch (Exception ex)
             {
