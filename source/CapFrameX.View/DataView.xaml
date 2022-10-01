@@ -263,7 +263,7 @@
                                 </TabItem.Header>
                                 <Grid>
                                     <lvc:PieChart Margin="10 5 200 5" MaxHeight="250" Hoverable="False" Series="{Binding StutteringStatisticCollection}" 
-								  LegendLocation="Left" DataClick="Chart_OnDataClick" DataTooltip="{x:Null}" StartingRotationAngle="0">
+								                  LegendLocation="Left" DataClick="Chart_OnDataClick" DataTooltip="{x:Null}" StartingRotationAngle="0">
                                         <lvc:PieChart.ChartLegend>
                                             <lvc:DefaultLegend FontSize="14" FontWeight="Medium"/>
                                         </lvc:PieChart.ChartLegend>
@@ -314,7 +314,7 @@
                                         </materialDesign:PopupBox>
                                         <TextBlock VerticalAlignment="Center" Text="Options" FontSize="14"/>
                                     </StackPanel>
-
+                                    <Label Margin="10 0 0 20" FontSize="16" VerticalAlignment="Bottom" Content="{Binding AvgPcLatency}" Visibility="{Binding IsPcLatencyAvailable, Converter={StaticResource TrueToVisibleConverter}}"/>
                                 </Grid>
                             </TabItem>
                             <TabItem Width="75">
@@ -612,29 +612,109 @@
                             </TabItem>
                         </TabControl>
                     </Grid>
-                    
+
                 </Grid>
             </Grid>
 
-                <!--Toolbar grid-->
-                <Grid Grid.Row="2" Margin="5 5 5 5" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="1*" />
-                    </Grid.ColumnDefinitions>
-                    <StackPanel Grid.Column="0" Margin="15 8 0 8" Orientation="Horizontal">
-                        <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}"><Run Text="Statistic parameter settings:"/></TextBlock>
-                        <materialDesign:PopupBox StaysOpen="True" ToolTipService.ShowDuration="25000"
+            <!--Toolbar grid-->
+            <Grid Grid.Row="2" Margin="5 5 5 5" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="1*" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0" Margin="15 8 0 8" Orientation="Horizontal">
+                    <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}"><Run Text="Statistic parameter settings:"/></TextBlock>
+                    <materialDesign:PopupBox StaysOpen="True" ToolTipService.ShowDuration="25000"
                                              Foreground="{DynamicResource MaterialDesignBody}">
-                            <materialDesign:PopupBox.ToolTip>
-                                <ToolTip MaxWidth="275" Placement="Top">
-                                    <TextBlock Text="Maximum:                                                &#xA;The single highest value                                                &#xA;                                                &#xA;Average:                                                &#xA;The average of all values                                                &#xA;                                                &#xA;Median:                                                &#xA;The middle of all values sorted from low to high                                                &#xA;                                                &#xA;Minimum:                                                &#xA;The single lowest value                                                &#xA;                                                &#xA;X% percentile:                                                &#xA;X% of all values are lower than this                                                &#xA;                                                &#xA;X% low integral:                                                &#xA;For X% of total benchmark time, values are lower than this                                                &#xA;                                                &#xA;Adaptive STDEV:                                                &#xA;The standard deviation of values compared to the moving average                                                          " 
+                        <materialDesign:PopupBox.ToolTip>
+                            <ToolTip MaxWidth="275" Placement="Top">
+                                <TextBlock Text="Maximum:                                                &#xA;The single highest value                                                &#xA;                                                &#xA;Average:                                                &#xA;The average of all values                                                &#xA;                                                &#xA;Median:                                                &#xA;The middle of all values sorted from low to high                                                &#xA;                                                &#xA;Minimum:                                                &#xA;The single lowest value                                                &#xA;                                                &#xA;X% percentile:                                                &#xA;X% of all values are lower than this                                                &#xA;                                                &#xA;X% low integral:                                                &#xA;For X% of total benchmark time, values are lower than this                                                &#xA;                                                &#xA;Adaptive STDEV:                                                &#xA;The standard deviation of values compared to the moving average                                                          " 
 										   TextWrapping="Wrap"/>
-                                </ToolTip>
-                            </materialDesign:PopupBox.ToolTip>
-                            <materialDesign:Card Width="Auto" Margin="0 0 0 -10">
+                            </ToolTip>
+                        </materialDesign:PopupBox.ToolTip>
+                        <materialDesign:Card Width="Auto" Margin="0 0 0 -10">
+                            <Grid Margin="8 8 8 8">
+                                <Grid.Resources>
+                                    <Style TargetType="{x:Type CheckBox}"
+											BasedOn="{StaticResource MaterialDesignCheckBox}">
+                                        <Setter Property="Margin" Value="8,8,10,8" />
+                                    </Style>
+                                    <Style TargetType="{x:Type TextBox}" BasedOn="{StaticResource MaterialDesignTextBox}">
+                                        <Setter Property="materialDesign:HintAssist.IsFloating" Value="True" />
+                                        <Setter Property="Margin" Value="8,8,8,8" />
+                                    </Style>
+                                </Grid.Resources>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*" />
+                                    <RowDefinition Height="*" />
+                                    <RowDefinition Height="*" />
+                                    <RowDefinition Height="*" />
+                                    <RowDefinition Height="*" />
+                                    <RowDefinition Height="*" />
+                                    <RowDefinition Height="*" />
+                                    <RowDefinition Height="*" />
+                                    <RowDefinition Height="*" />
+                                    <RowDefinition Height="*" />
+                                    <RowDefinition Height="*" />
+                                    <RowDefinition Height="*" />
+                                    <RowDefinition Height="*" />
+                                    <RowDefinition Height="*" />
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="50"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Margin="5" Grid.Row="0" Grid.Column="0" Text="Maximum" VerticalAlignment="Center"/>
+                                <ToggleButton Margin="5" Grid.Row="0" Grid.Column="1" IsChecked="{Binding UseMaxStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                                <TextBlock Margin="5" Grid.Row="1" Grid.Column="0" Text="99% percentile" VerticalAlignment="Center"/>
+                                <ToggleButton Margin="5" Grid.Row="1" Grid.Column="1" IsChecked="{Binding UseP99QuantileStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                                <TextBlock Margin="5" Grid.Row="2" Grid.Column="0" Text="95% percentile" VerticalAlignment="Center"/>
+                                <ToggleButton Margin="5" Grid.Row="2" Grid.Column="1" IsChecked="{Binding UseP95QuantileStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}" />
+                                <TextBlock Margin="5" Grid.Row="3" Grid.Column="0" Text="Average" VerticalAlignment="Center"/>
+                                <ToggleButton Margin="5" Grid.Row="3" Grid.Column="1" IsChecked="{Binding UseAverageStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                                <TextBlock Margin="5" Grid.Row="4" Grid.Column="0" Text="Median" VerticalAlignment="Center"/>
+                                <ToggleButton Margin="5" Grid.Row="4" Grid.Column="1" IsChecked="{Binding UseMedianStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                                <TextBlock Margin="5" Grid.Row="5" Grid.Column="0" Text="5% percentile" VerticalAlignment="Center"/>
+                                <ToggleButton Margin="5" Grid.Row="5" Grid.Column="1" IsChecked="{Binding UseP5QuantileStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                                <TextBlock Margin="5" Grid.Row="6" Grid.Column="0" Text="1% percentile" VerticalAlignment="Center"/>
+                                <ToggleButton Margin="5" Grid.Row="6" Grid.Column="1" IsChecked="{Binding UseP1QuantileStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                                <TextBlock Margin="5" Grid.Row="7" Grid.Column="0" Text="0.2% percentile" VerticalAlignment="Center"/>
+                                <ToggleButton Margin="5" Grid.Row="7" Grid.Column="1" IsChecked="{Binding UseP0Dot2QuantileStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                                <TextBlock Margin="5" Grid.Row="0" Grid.Column="3" Text="0.1% percentile" VerticalAlignment="Center"/>
+                                <ToggleButton Margin="5" Grid.Row="0" Grid.Column="4" IsChecked="{Binding UseP0Dot1QuantileStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                                <TextBlock Margin="5" Grid.Row="1" Grid.Column="3" Text="1% low integral" VerticalAlignment="Center"/>
+                                <ToggleButton Margin="5" Grid.Row="1" Grid.Column="4" IsChecked="{Binding UseP1LowAverageStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                                <TextBlock Margin="5" Grid.Row="2" Grid.Column="3" Text="0.1% low integral" VerticalAlignment="Center"/>
+                                <ToggleButton Margin="5" Grid.Row="2" Grid.Column="4" IsChecked="{Binding UseP0Dot1LowAverageStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                                <TextBlock Margin="5" Grid.Row="3" Grid.Column="3" Text="Minimum" VerticalAlignment="Center"/>
+                                <ToggleButton Margin="5" Grid.Row="3" Grid.Column="4" IsChecked="{Binding UseMinStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                                <TextBlock Margin="5" Grid.Row="4" Grid.Column="3" Text="Adaptive STDEV" VerticalAlignment="Center"/>
+                                <ToggleButton Margin="5" Grid.Row="4" Grid.Column="4" IsChecked="{Binding UseAdaptiveSTDStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                                <TextBlock Margin="5" Grid.Row="5" Grid.Column="3" Text="CPU FPS/10W" VerticalAlignment="Center"/>
+                                <ToggleButton Margin="5" Grid.Row="5" Grid.Column="4" IsChecked="{Binding UseCpuFpsPerWattParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                                <TextBlock Margin="5" Grid.Row="6" Grid.Column="3" Text="GPU FPS/10W" VerticalAlignment="Center"/>
+                                <ToggleButton Margin="5" Grid.Row="6" Grid.Column="4" IsChecked="{Binding UseGpuFpsPerWattParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                            </Grid>
+                        </materialDesign:Card>
+                    </materialDesign:PopupBox>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Margin="30 8 0 8" Orientation="Horizontal">
+                    <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}"><Run Text="Additional graphs:"/></TextBlock>
+                    <materialDesign:PopupBox StaysOpen="True" ToolTipService.ShowDuration="25000" IsEnabled= "{Binding AdditionalGraphsEnabled}"
+                                             Foreground="{DynamicResource MaterialDesignBody}">
+                        <materialDesign:PopupBox.ToolTip>
+                            <ToolTip MaxWidth="275" Placement="Top">
+                                <TextBlock Text="Show additional graphs for CPU and GPU load" 
+										   TextWrapping="Wrap"/>
+                            </ToolTip>
+                        </materialDesign:PopupBox.ToolTip>
+                        <materialDesign:Card Width="220" Margin="0 0 0 -10">
+                            <StackPanel>
                                 <Grid Margin="8 8 8 8">
                                     <Grid.Resources>
                                         <Style TargetType="{x:Type CheckBox}"
@@ -652,179 +732,115 @@
                                         <RowDefinition Height="*" />
                                         <RowDefinition Height="*" />
                                         <RowDefinition Height="*" />
-                                        <RowDefinition Height="*" />
-                                        <RowDefinition Height="*" />
-                                        <RowDefinition Height="*" />
-                                        <RowDefinition Height="*" />
-                                        <RowDefinition Height="*" />
-                                        <RowDefinition Height="*" />
-                                        <RowDefinition Height="*" />
-                                        <RowDefinition Height="*" />
-                                        <RowDefinition Height="*" />
                                     </Grid.RowDefinitions>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto"/>
                                         <ColumnDefinition Width="Auto"/>
-                                        <ColumnDefinition Width="50"/>
-                                        <ColumnDefinition Width="Auto"/>
-                                        <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Margin="5" Grid.Row="0" Grid.Column="0" Text="Maximum" VerticalAlignment="Center"/>
-                                    <ToggleButton Margin="5" Grid.Row="0" Grid.Column="1" IsChecked="{Binding UseMaxStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
-                                    <TextBlock Margin="5" Grid.Row="1" Grid.Column="0" Text="99% percentile" VerticalAlignment="Center"/>
-                                    <ToggleButton Margin="5" Grid.Row="1" Grid.Column="1" IsChecked="{Binding UseP99QuantileStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
-                                    <TextBlock Margin="5" Grid.Row="2" Grid.Column="0" Text="95% percentile" VerticalAlignment="Center"/>
-                                    <ToggleButton Margin="5" Grid.Row="2" Grid.Column="1" IsChecked="{Binding UseP95QuantileStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}" />
-                                    <TextBlock Margin="5" Grid.Row="3" Grid.Column="0" Text="Average" VerticalAlignment="Center"/>
-                                    <ToggleButton Margin="5" Grid.Row="3" Grid.Column="1" IsChecked="{Binding UseAverageStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
-                                    <TextBlock Margin="5" Grid.Row="4" Grid.Column="0" Text="Median" VerticalAlignment="Center"/>
-                                    <ToggleButton Margin="5" Grid.Row="4" Grid.Column="1" IsChecked="{Binding UseMedianStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
-                                    <TextBlock Margin="5" Grid.Row="5" Grid.Column="0" Text="5% percentile" VerticalAlignment="Center"/>
-                                    <ToggleButton Margin="5" Grid.Row="5" Grid.Column="1" IsChecked="{Binding UseP5QuantileStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
-                                    <TextBlock Margin="5" Grid.Row="6" Grid.Column="0" Text="1% percentile" VerticalAlignment="Center"/>
-                                    <ToggleButton Margin="5" Grid.Row="6" Grid.Column="1" IsChecked="{Binding UseP1QuantileStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
-                                    <TextBlock Margin="5" Grid.Row="7" Grid.Column="0" Text="0.2% percentile" VerticalAlignment="Center"/>
-                                    <ToggleButton Margin="5" Grid.Row="7" Grid.Column="1" IsChecked="{Binding UseP0Dot2QuantileStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
-                                    <TextBlock Margin="5" Grid.Row="0" Grid.Column="3" Text="0.1% percentile" VerticalAlignment="Center"/>
-                                    <ToggleButton Margin="5" Grid.Row="0" Grid.Column="4" IsChecked="{Binding UseP0Dot1QuantileStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
-                                    <TextBlock Margin="5" Grid.Row="1" Grid.Column="3" Text="1% low integral" VerticalAlignment="Center"/>
-                                    <ToggleButton Margin="5" Grid.Row="1" Grid.Column="4" IsChecked="{Binding UseP1LowAverageStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
-                                    <TextBlock Margin="5" Grid.Row="2" Grid.Column="3" Text="0.1% low integral" VerticalAlignment="Center"/>
-                                    <ToggleButton Margin="5" Grid.Row="2" Grid.Column="4" IsChecked="{Binding UseP0Dot1LowAverageStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
-                                    <TextBlock Margin="5" Grid.Row="3" Grid.Column="3" Text="Minimum" VerticalAlignment="Center"/>
-                                    <ToggleButton Margin="5" Grid.Row="3" Grid.Column="4" IsChecked="{Binding UseMinStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
-                                    <TextBlock Margin="5" Grid.Row="4" Grid.Column="3" Text="Adaptive STDEV" VerticalAlignment="Center"/>
-                                    <ToggleButton Margin="5" Grid.Row="4" Grid.Column="4" IsChecked="{Binding UseAdaptiveSTDStatisticParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
-                                    <TextBlock Margin="5" Grid.Row="5" Grid.Column="3" Text="CPU FPS/10W" VerticalAlignment="Center"/>
-                                    <ToggleButton Margin="5" Grid.Row="5" Grid.Column="4" IsChecked="{Binding UseCpuFpsPerWattParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
-                                    <TextBlock Margin="5" Grid.Row="6" Grid.Column="3" Text="GPU FPS/10W" VerticalAlignment="Center"/>
-                                    <ToggleButton Margin="5" Grid.Row="6" Grid.Column="4" IsChecked="{Binding UseGpuFpsPerWattParameter}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
-                                </Grid>
-                            </materialDesign:Card>
-                        </materialDesign:PopupBox>
-                    </StackPanel>
-                    <StackPanel Grid.Column="1" Margin="30 8 0 8" Orientation="Horizontal">
-                        <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}"><Run Text="Additional graphs:"/></TextBlock>
-                        <materialDesign:PopupBox StaysOpen="True" ToolTipService.ShowDuration="25000" IsEnabled= "{Binding AdditionalGraphsEnabled}"
-                                             Foreground="{DynamicResource MaterialDesignBody}">
-                            <materialDesign:PopupBox.ToolTip>
-                                <ToolTip MaxWidth="275" Placement="Top">
-                                    <TextBlock Text="Show additional graphs for CPU and GPU load" 
-										   TextWrapping="Wrap"/>
-                                </ToolTip>
-                            </materialDesign:PopupBox.ToolTip>
-                            <materialDesign:Card Width="220" Margin="0 0 0 -10">
-                                <StackPanel>
-                                    <Grid Margin="8 8 8 8">
-                                        <Grid.Resources>
-                                            <Style TargetType="{x:Type CheckBox}"
-											BasedOn="{StaticResource MaterialDesignCheckBox}">
-                                                <Setter Property="Margin" Value="8,8,10,8" />
-                                            </Style>
-                                            <Style TargetType="{x:Type TextBox}" BasedOn="{StaticResource MaterialDesignTextBox}">
-                                                <Setter Property="materialDesign:HintAssist.IsFloating" Value="True" />
-                                                <Setter Property="Margin" Value="8,8,8,8" />
-                                            </Style>
-                                        </Grid.Resources>
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition Height="*" />
-                                            <RowDefinition Height="*" />
-                                            <RowDefinition Height="*" />
-                                            <RowDefinition Height="*" />
-                                        </Grid.RowDefinitions>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto"/>
-                                            <ColumnDefinition Width="Auto"/>
-                                        </Grid.ColumnDefinitions>
-                                        <TextBlock Margin="5" Grid.Row="0" Grid.Column="0" Text="Total CPU load" VerticalAlignment="Center"/>
-                                        <ToggleButton Margin="5" Grid.Row="0" Grid.Column="1" IsChecked="{Binding CpuLoad}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show CPU usage graph" />
-                                        <TextBlock Margin="5" Grid.Row="1" Grid.Column="0" Text="Max. CPU thread load" VerticalAlignment="Center"/>
-                                        <ToggleButton Margin="5" Grid.Row="1" Grid.Column="1" IsChecked="{Binding CpuMaxThreadLoad}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show max CPU thread usage graph" />
-                                        <TextBlock Margin="5" Grid.Row="2" Grid.Column="0" Text="GPU load" VerticalAlignment="Center"/>
-                                        <ToggleButton Margin="5" Grid.Row="2" Grid.Column="1" IsChecked="{Binding GpuLoad}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show GPU usage graph" />
-                                        <TextBlock Visibility="{Binding IsGpuPowerLimitAvailable, Converter={StaticResource FalseToCollapsedConverter}}" Margin="5" Grid.Row="3" Grid.Column="0" Text="GPU power limit" VerticalAlignment="Center"/>
-                                        <ToggleButton Visibility="{Binding IsGpuPowerLimitAvailable, Converter={StaticResource FalseToCollapsedConverter}}" Margin="5" Grid.Row="3" Grid.Column="1" IsChecked="{Binding GpuPowerLimit}" 
+                                    
+                                    <TextBlock Margin="5" Grid.Row="0" Grid.Column="0" Text="Total CPU load" VerticalAlignment="Center"
+                                               Visibility="{Binding IsCpuLoadAvailable, Converter={StaticResource FalseToCollapsedConverter}}"/>
+                                    <ToggleButton Margin="5" Grid.Row="0" Grid.Column="1" IsChecked="{Binding ShowCpuLoad}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show CPU usage graph" 
+                                                  Visibility="{Binding IsCpuLoadAvailable, Converter={StaticResource FalseToCollapsedConverter}}"/>
+                                    
+                                    <TextBlock Margin="5" Grid.Row="1" Grid.Column="0" Text="Max. CPU thread load" VerticalAlignment="Center"
+                                               Visibility="{Binding IsCpuMaxLoadAvailable, Converter={StaticResource FalseToCollapsedConverter}}"/>
+                                    <ToggleButton Margin="5" Grid.Row="1" Grid.Column="1" IsChecked="{Binding ShowCpuMaxThreadLoad}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show max CPU thread usage graph" 
+                                                  Visibility="{Binding IsCpuMaxLoadAvailable, Converter={StaticResource FalseToCollapsedConverter}}"/>
+                                    
+                                    <TextBlock Margin="5" Grid.Row="2" Grid.Column="0" Text="GPU load" VerticalAlignment="Center"
+                                               Visibility="{Binding IsGpuLoadAvailable, Converter={StaticResource FalseToCollapsedConverter}}"/>
+                                    <ToggleButton Margin="5" Grid.Row="2" Grid.Column="1" IsChecked="{Binding ShowGpuLoad}" Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show GPU usage graph" 
+                                                  Visibility="{Binding IsGpuLoadAvailable, Converter={StaticResource FalseToCollapsedConverter}}"/>
+                                    
+                                    <TextBlock Visibility="{Binding IsGpuPowerLimitAvailable, Converter={StaticResource FalseToCollapsedConverter}}" Margin="5" Grid.Row="3" Grid.Column="0" Text="GPU power limit" VerticalAlignment="Center"/>
+                                    <ToggleButton Visibility="{Binding IsGpuPowerLimitAvailable, Converter={StaticResource FalseToCollapsedConverter}}" Margin="5" Grid.Row="3" Grid.Column="1" IsChecked="{Binding ShowGpuPowerLimit}" 
                                                   Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show GPU power limit" />
-                                    </Grid>
-                                </StackPanel>
-                            </materialDesign:Card>
-                        </materialDesign:PopupBox>
-                    </StackPanel>
-                    <StackPanel Grid.Column="3" HorizontalAlignment="Right" Orientation="Horizontal">
-                        <StackPanel Margin="10 0 0 0" VerticalAlignment="Center"  Orientation="Horizontal">
-                            <TextBlock Foreground="{DynamicResource MaterialDesignBody}"><Run Text="Show aggregation:"/></TextBlock>
-                            <ToggleButton VerticalAlignment="Center" Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}" IsChecked="{Binding ShowAggregationSeparators}"
+
+                                    <TextBlock Margin="5" Grid.Row="4" Grid.Column="0" Text="PC Latency" VerticalAlignment="Center"
+                                               Visibility="{Binding IsPcLatencyAvailable, Converter={StaticResource FalseToCollapsedConverter}}"/>
+                                    <ToggleButton Margin="5" Grid.Row="4" Grid.Column="1" IsChecked="{Binding ShowPcLatency}" Visibility="{Binding IsPcLatencyAvailable, Converter={StaticResource FalseToCollapsedConverter}}"
+                                                  Style="{StaticResource MaterialDesignSwitchToggleButton}" ToolTip="Show PC latency graph" />
+                                </Grid>
+                            </StackPanel>
+                        </materialDesign:Card>
+                    </materialDesign:PopupBox>
+                </StackPanel>
+                <StackPanel Grid.Column="3" HorizontalAlignment="Right" Orientation="Horizontal">
+                    <StackPanel Margin="10 0 0 0" VerticalAlignment="Center"  Orientation="Horizontal">
+                        <TextBlock Foreground="{DynamicResource MaterialDesignBody}"><Run Text="Show aggregation:"/></TextBlock>
+                        <ToggleButton VerticalAlignment="Center" Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}" IsChecked="{Binding ShowAggregationSeparators}"
 								  ToolTip="Show separator lines for the different runs within the session"/>
-                        </StackPanel>
-                        <StackPanel Margin="10 0 0 0" VerticalAlignment="Center"  Orientation="Horizontal">
-                            <TextBlock Foreground="{DynamicResource MaterialDesignBody}"><Run Text="Custom title:"/></TextBlock>
-                            <ToggleButton x:Name="ShowCustomTitleToggleButton" VerticalAlignment="Center" Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
-								  ToolTip="Show custom title edit box"/>
-                        </StackPanel>
-                        <StackPanel  Margin="10 0 0 0" VerticalAlignment="Center" Orientation="Horizontal">
-                            <TextBlock Foreground="{DynamicResource MaterialDesignBody}"><Run Text="Remove outliers:"/></TextBlock>
-                            <ToggleButton Margin="10 0 0 0" VerticalAlignment="Center" IsChecked="{Binding RemoveOutliers}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
-                        </StackPanel>
-                        <StackPanel Margin="10 0 5 0" VerticalAlignment="Center" Orientation="Horizontal">
-                            <TextBlock Foreground="{DynamicResource MaterialDesignBody}"><Run Text="Range slider:"/></TextBlock>
-                            <ToggleButton x:Name="RangeSliderActiveToggleButton" VerticalAlignment="Center" Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
-									  IsChecked="{Binding IsRangeSliderActive}"/>
-                        </StackPanel>
                     </StackPanel>
-                </Grid>
-                <!--System info expander-->
-                <Expander Margin="0 -6 0 0" Grid.Row="0" Grid.RowSpan="3" Grid.Column="1" ExpandDirection="Left" materialDesign:ExpanderAssist.VerticalHeaderPadding="5"
+                    <StackPanel Margin="10 0 0 0" VerticalAlignment="Center"  Orientation="Horizontal">
+                        <TextBlock Foreground="{DynamicResource MaterialDesignBody}"><Run Text="Custom title:"/></TextBlock>
+                        <ToggleButton x:Name="ShowCustomTitleToggleButton" VerticalAlignment="Center" Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
+								  ToolTip="Show custom title edit box"/>
+                    </StackPanel>
+                    <StackPanel  Margin="10 0 0 0" VerticalAlignment="Center" Orientation="Horizontal">
+                        <TextBlock Foreground="{DynamicResource MaterialDesignBody}"><Run Text="Remove outliers:"/></TextBlock>
+                        <ToggleButton Margin="10 0 0 0" VerticalAlignment="Center" IsChecked="{Binding RemoveOutliers}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                    </StackPanel>
+                    <StackPanel Margin="10 0 5 0" VerticalAlignment="Center" Orientation="Horizontal">
+                        <TextBlock Foreground="{DynamicResource MaterialDesignBody}"><Run Text="Range slider:"/></TextBlock>
+                        <ToggleButton x:Name="RangeSliderActiveToggleButton" VerticalAlignment="Center" Margin="10 0 0 0" Style="{StaticResource MaterialDesignSwitchToggleButton}"
+									  IsChecked="{Binding IsRangeSliderActive}"/>
+                    </StackPanel>
+                </StackPanel>
+            </Grid>
+            <!--System info expander-->
+            <Expander Margin="0 -6 0 0" Grid.Row="0" Grid.RowSpan="3" Grid.Column="1" ExpandDirection="Left" materialDesign:ExpanderAssist.VerticalHeaderPadding="5"
                       Foreground="{DynamicResource MaterialDesignBody}" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}">
-                    <Expander.Header>
+                <Expander.Header>
                     <TextBlock Text="System Info" RenderTransformOrigin=".5,.5" FontSize="14" HorizontalAlignment="Center">
-                            <TextBlock.LayoutTransform>
-                                <RotateTransform Angle="90" />
-                            </TextBlock.LayoutTransform>
-                        </TextBlock>
-                    </Expander.Header>
-                    <ScrollViewer VerticalScrollBarVisibility="Hidden">
-                        <ScrollViewer.Resources>
-                            <sys:Double x:Key="{x:Static SystemParameters.VerticalScrollBarWidthKey}">3</sys:Double>
-                        </ScrollViewer.Resources>
-                        <ItemsControl ItemsSource="{Binding SystemInfos}" Grid.IsSharedSizeScope="True" 
+                        <TextBlock.LayoutTransform>
+                            <RotateTransform Angle="90" />
+                        </TextBlock.LayoutTransform>
+                    </TextBlock>
+                </Expander.Header>
+                <ScrollViewer VerticalScrollBarVisibility="Hidden">
+                    <ScrollViewer.Resources>
+                        <sys:Double x:Key="{x:Static SystemParameters.VerticalScrollBarWidthKey}">3</sys:Double>
+                    </ScrollViewer.Resources>
+                    <ItemsControl ItemsSource="{Binding SystemInfos}" Grid.IsSharedSizeScope="True" 
 										  Tag="{Binding DataContext, ElementName=DataViewUserControl}">
-                            <ItemsControl.ContextMenu>
-                                <ContextMenu DataContext="{Binding PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
-                                    <MenuItem Header="Copy system info" Command="{Binding CopySystemInfoCommand}"/>
-                                </ContextMenu>
-                            </ItemsControl.ContextMenu>
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate DataType="{x:Type data:SystemInfoEntry}">
-                                    <Border x:Name="Border"
+                        <ItemsControl.ContextMenu>
+                            <ContextMenu DataContext="{Binding PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
+                                <MenuItem Header="Copy system info" Command="{Binding CopySystemInfoCommand}"/>
+                            </ContextMenu>
+                        </ItemsControl.ContextMenu>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="{x:Type data:SystemInfoEntry}">
+                                <Border x:Name="Border"
 										Padding="8"
 										BorderThickness="0 0 0 1"
 										BorderBrush="{DynamicResource MaterialDesignDivider}">
-                                        <StackPanel Margin="8 0 0 0"
+                                    <StackPanel Margin="8 0 0 0"
 														Grid.Column="1">
-                                            <TextBlock FontWeight="Bold"
+                                        <TextBlock FontWeight="Bold"
 															Text="{Binding Key}" 
 															FontSize="14"
 															LineHeight="18"/>
-                                            <TextBlock Text="{Binding Value}" TextWrapping="Wrap"
+                                        <TextBlock Text="{Binding Value}" TextWrapping="Wrap"
 															   Width="220"
 															   LineStackingStrategy="BlockLineHeight"
 															   FontSize="13"
 															   LineHeight="15"
 															   MaxHeight="60"/>
-                                        </StackPanel>
-                                    </Border>
-                                    <DataTemplate.Triggers>
-                                        <DataTrigger Binding="{Binding IsSelected}" Value="True">
-                                            <Setter TargetName="Border"
+                                    </StackPanel>
+                                </Border>
+                                <DataTemplate.Triggers>
+                                    <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                        <Setter TargetName="Border"
 													Property="Background"
 													Value="{DynamicResource MaterialDesignSelection}" />
-                                        </DataTrigger>
-                                    </DataTemplate.Triggers>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </ScrollViewer>
-                </Expander>
-            </Grid>
+                                    </DataTrigger>
+                                </DataTemplate.Triggers>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Expander>
         </Grid>
+    </Grid>
 </UserControl>

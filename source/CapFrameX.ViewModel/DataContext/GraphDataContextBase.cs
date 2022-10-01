@@ -2,7 +2,6 @@
 using CapFrameX.Data;
 using CapFrameX.Data.Session.Contracts;
 using CapFrameX.EventAggregation.Messages;
-using CapFrameX.Statistics.NetStandard;
 using CapFrameX.Statistics.NetStandard.Contracts;
 using CapFrameX.Statistics.PlotBuilder.Contracts;
 using OxyPlot;
@@ -83,7 +82,8 @@ namespace CapFrameX.ViewModel.DataContext
 		public bool ShowCpuLoad { get; private set; }
 		public bool ShowCpuMaxThreadLoad { get; private set; }
 		public bool ShowGpuPowerLimit { get; private set; }
-		public bool ShowAggregationSeparators { get; private set; }
+        public bool ShowPcLatency { get; private set; }
+        public bool ShowAggregationSeparators { get; private set; }
 		public bool ShowThresholds { get; private set; }
 		public double StutteringFactor { get; private set; }
 		public double LowFPSThreshold{ get; private set; }
@@ -91,13 +91,15 @@ namespace CapFrameX.ViewModel.DataContext
 
 		public bool IsAnyPercentageGraphVisible => ShowGpuLoad || ShowCpuLoad || ShowCpuMaxThreadLoad || ShowGpuPowerLimit;
 
-		public VisibleGraphs(bool gpuLoad, bool cpuLoad, bool cpuMaxThreadLoad, bool gpuPowerLimit, bool aggregationSeparators, bool showThresholds, double stutteringFactor, double lowFPSThreshold)
+		public VisibleGraphs(bool gpuLoad, bool cpuLoad, bool cpuMaxThreadLoad, bool gpuPowerLimit, bool pcLatency, 
+			bool aggregationSeparators, bool showThresholds, double stutteringFactor, double lowFPSThreshold)
 		{
 			ShowGpuLoad = gpuLoad;
 			ShowCpuLoad = cpuLoad;
 			ShowCpuMaxThreadLoad = cpuMaxThreadLoad;
 			ShowGpuPowerLimit = gpuPowerLimit;
-			ShowAggregationSeparators = aggregationSeparators;
+			ShowPcLatency = pcLatency;
+            ShowAggregationSeparators = aggregationSeparators;
 			ShowThresholds = showThresholds;
 			StutteringFactor = stutteringFactor;
 			LowFPSThreshold = lowFPSThreshold;

@@ -49,7 +49,7 @@ namespace CapFrameX.Data
         public string Comment { get; set; }
         public string IsAggregated { get; private set; }
         public bool IsValid { get; private set; }
-        public bool HasInfoHeader { get; private set; }
+        public bool HasInfoHeader { get; set; }
         public string Id { get; private set; }
         public string Hash { get; private set; }
         public string ApiInfo { get; private set; }

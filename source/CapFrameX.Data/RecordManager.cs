@@ -158,6 +158,7 @@ namespace CapFrameX.Data
                             $"{FileRecordInfo.HEADER_MARKER}Comment{FileRecordInfo.INFO_SEPERATOR}{customComment}"
                         };
 
+                        recordInfo.HasInfoHeader = true;
                         File.WriteAllLines(recordInfo.FullPath, headerLines.Concat(lines));
                     }
                 }
@@ -282,6 +283,10 @@ namespace CapFrameX.Data
 
         private ISession LoadSessionFromCSV(FileInfo csvFile)
         {
+            // Exception: ignore Nv FrameView summary file
+            if (csvFile.Name == "FrameView_Summary.csv")
+                return null;
+
             using (var reader = new StreamReader(csvFile.FullName))
             {
                 var lines = File.ReadAllLines(csvFile.FullName);
@@ -318,7 +323,6 @@ namespace CapFrameX.Data
                         ApiInfo = recordedFileInfo.ApiInfo
                     }
                 };
-
             }
         }
 
@@ -338,7 +342,7 @@ namespace CapFrameX.Data
         //    $"AllowsTearing,PresentMode,WasBatched,DwmNotified,Dropped,TimeInSeconds,MsBetweenPresents," +
         //    $"MsBetweenDisplayChange,MsInPresentAPI,MsUntilRenderComplete,MsUntilDisplayed,QPCTime";
 
-        // PresentMon v1.7.1
+        // PresentMon >= v1.7.1
         private static readonly string COLUMN_HEADER =
             $"Application,ProcessID,SwapChainAddress,Runtime,SyncInterval,PresentFlags," +
             $"Dropped,TimeInSeconds,msInPresentAPI,msBetweenPresents,AllowsTearing,PresentMode," +
@@ -353,9 +357,17 @@ namespace CapFrameX.Data
                     {
                         case ".csv":
                             var sessionFromCSV = LoadSessionFromCSV(fileInfo);
+
+                            if (sessionFromCSV == null)
+                                return Observable.Empty<IFileRecordInfo>();
+
                             return Observable.Return(FileRecordInfo.Create(fileInfo, sessionFromCSV.Hash));
                         case ".json":
                             var sessionFromJSON = LoadSessionFromJSON(fileInfo);
+
+                            if (sessionFromJSON == null)
+                                return Observable.Empty<IFileRecordInfo>();
+
                             return Observable.Return(FileRecordInfo.Create(fileInfo, sessionFromJSON));
                         default:
                             return Observable.Empty<IFileRecordInfo>();
@@ -692,6 +704,7 @@ namespace CapFrameX.Data
                 int indexRuntime = -1;
                 int indexAllowsTearing = -1;
                 int indexSyncInterval = -1;
+                int indexPcLatency = -1;
 
                 string headerLine;
                 if (!presentLines.First().StartsWith("Application"))
@@ -756,6 +769,10 @@ namespace CapFrameX.Data
                     if (string.Compare(metrics[i], "SyncInterval") == 0)
                     {
                         indexSyncInterval = i;
+                    }
+                    if (string.Compare(metrics[i], "MsPCLatency") == 0)
+                    {
+                        indexPcLatency = i;
                     }
                 }
 
@@ -871,6 +888,13 @@ namespace CapFrameX.Data
                         if (int.TryParse(GetStringFromArray(values, indexSyncInterval), NumberStyles.Any, CultureInfo.InvariantCulture, out var syncInterval))
                         {
                             captureData.SyncInterval[lineNo] = syncInterval;
+                        }
+                    }
+                    if (indexPcLatency > 0)
+                    {
+                        if (double.TryParse(GetStringFromArray(values, indexPcLatency), NumberStyles.Any, CultureInfo.InvariantCulture, out var pcLatency))
+                        {
+                            captureData.PcLatency[lineNo] = pcLatency;
                         }
                     }
                 }

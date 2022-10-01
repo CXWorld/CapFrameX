@@ -73,12 +73,18 @@ namespace CapFrameX.ViewModel
         private bool _messageDialogContentIsOpen;
         private string _messageText;
         private int _barMaxValue = 100;
-        private bool _gpuLoad;
-        private bool _cpuLoad;
-        private bool _cpuMaxThreadLoad;
-        private bool _gpuPowerLimit;
+        private bool _showGpuLoad;
+        private bool _showCpuLoad;
+        private bool _showCpuMaxThreadLoad;
+        private bool _showGpuPowerLimit;
+        private bool _showPcLatency;
         private bool _aggregationSeparators;
         private bool _showStutteringThresholds;
+        private string _avgPcLatency;
+        private bool _isPcLatencyAvailable;
+        private bool _isCpuLoadAvailable;
+        private bool _isCpuMaxLoadAvailable;
+        private bool _isGpuLoadAvailable;
         private EFilterMode _selectedFilterMode;
         private ELShapeMetrics _lShapeMetric = ELShapeMetrics.Frametimes;
         private string _lShapeYaxisLabel = "Frametimes (ms)" + Environment.NewLine + " ";
@@ -401,6 +407,56 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        public string AvgPcLatency
+        {
+            get { return _avgPcLatency; }
+            set
+            {
+                _avgPcLatency = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public bool IsPcLatencyAvailable
+        {
+            get { return _isPcLatencyAvailable; }
+            set
+            {
+                _isPcLatencyAvailable = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public bool IsCpuLoadAvailable
+        {
+            get { return _isCpuLoadAvailable; }
+            set
+            {
+                _isCpuLoadAvailable = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public bool IsCpuMaxLoadAvailable
+        {
+            get { return _isCpuMaxLoadAvailable; }
+            set
+            {
+                _isCpuMaxLoadAvailable = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public bool IsGpuLoadAvailable
+        {
+            get { return _isGpuLoadAvailable; }
+            set
+            {
+                _isGpuLoadAvailable = value;
+                RaisePropertyChanged();
+            }
+        }
+
         public int BarChartSeparators
         {
             get
@@ -442,7 +498,9 @@ namespace CapFrameX.ViewModel
         public bool AdditionalGraphsEnabled
         {
             get => _session == null ? false
-                : _session.Runs.Any(r => r.SensorData != null || r.SensorData2 != null);
+                : _session.Runs.Any(r => r.SensorData != null
+                || r.SensorData2 != null
+                || _session.Runs.All(run => !run.CaptureData.PcLatency.IsNullOrEmpty()));
         }
 
         public ICommand CopyStatisticalParameterCommand { get; }
@@ -459,46 +517,61 @@ namespace CapFrameX.ViewModel
 
         public ICommand CutRecordInverseCommand { get; }
 
-        public bool GpuLoad
+        public bool ShowGpuLoad
         {
-            get => _gpuLoad;
+            get => _showGpuLoad;
             set
             {
-                _gpuLoad = value;
+                _showGpuLoad = value;
                 RaisePropertyChanged();
                 _onUpdateChart.OnNext(default);
             }
         }
-        public bool CpuLoad
+
+        public bool ShowCpuLoad
         {
-            get => _cpuLoad;
+            get => _showCpuLoad;
             set
             {
-                _cpuLoad = value;
+                _showCpuLoad = value;
                 RaisePropertyChanged();
                 _onUpdateChart.OnNext(default);
             }
         }
-        public bool CpuMaxThreadLoad
+
+        public bool ShowCpuMaxThreadLoad
         {
-            get => _cpuMaxThreadLoad;
+            get => _showCpuMaxThreadLoad;
             set
             {
-                _cpuMaxThreadLoad = value;
+                _showCpuMaxThreadLoad = value;
                 RaisePropertyChanged();
                 _onUpdateChart.OnNext(default);
             }
         }
-        public bool GpuPowerLimit
+
+        public bool ShowGpuPowerLimit
         {
-            get => _gpuPowerLimit && IsGpuPowerLimitAvailable;
+            get => _showGpuPowerLimit && IsGpuPowerLimitAvailable;
             set
             {
-                _gpuPowerLimit = value;
+                _showGpuPowerLimit = value;
                 RaisePropertyChanged();
                 _onUpdateChart.OnNext(default);
             }
         }
+
+        public bool ShowPcLatency
+        {
+            get => _showPcLatency;
+            set
+            {
+                _showPcLatency = value;
+                RaisePropertyChanged();
+                _onUpdateChart.OnNext(default);
+            }
+        }
+
         public EFilterMode SelectedFilterMode
         {
             get { return _selectedFilterMode; }
@@ -508,13 +581,6 @@ namespace CapFrameX.ViewModel
                 RaisePropertyChanged();
                 OnFilterModeChanged();
             }
-        }
-
-
-
-        public bool IsAnyGraphActive()
-        {
-            return GpuLoad || CpuLoad || CpuMaxThreadLoad;
         }
 
         public bool ShowAggregationSeparators
@@ -607,9 +673,9 @@ namespace CapFrameX.ViewModel
         {
             _onUpdateChart.Subscribe(_ =>
             {
-                FpsGraphDataContext.BuildPlotmodel(new VisibleGraphs(GpuLoad, CpuLoad, CpuMaxThreadLoad, GpuPowerLimit, ShowAggregationSeparators, ShowStutteringThresholds, StutteringFactor, StutteringLowFPSThreshold));
+                FpsGraphDataContext.BuildPlotmodel(new VisibleGraphs(ShowGpuLoad, ShowCpuLoad, ShowCpuMaxThreadLoad, ShowGpuPowerLimit, ShowPcLatency, ShowAggregationSeparators, ShowStutteringThresholds, StutteringFactor, StutteringLowFPSThreshold));
 
-                FrametimeGraphDataContext.BuildPlotmodel(new VisibleGraphs(GpuLoad, CpuLoad, CpuMaxThreadLoad, GpuPowerLimit, ShowAggregationSeparators, ShowStutteringThresholds, StutteringFactor, StutteringLowFPSThreshold), plotModel =>
+                FrametimeGraphDataContext.BuildPlotmodel(new VisibleGraphs(ShowGpuLoad, ShowCpuLoad, ShowCpuMaxThreadLoad, ShowGpuPowerLimit, ShowPcLatency, ShowAggregationSeparators, ShowStutteringThresholds, StutteringFactor, StutteringLowFPSThreshold), plotModel =>
                 {
                     FrametimeGraphDataContext.UpdateAxis(EPlotAxis.YAXISFRAMETIMES, axis =>
                     {
@@ -617,10 +683,6 @@ namespace CapFrameX.ViewModel
                         SetFrametimeChartYAxisSetting(tuple);
                     });
                 });
-
-                // Warum diese Updates der Properties hier?
-                RaisePropertyChanged(nameof(GpuPowerLimit));
-                RaisePropertyChanged(nameof(IsGpuPowerLimitAvailable));
             });
         }
 
@@ -825,7 +887,6 @@ namespace CapFrameX.ViewModel
             UpdateSecondaryCharts();
         }
 
-
         private void OnRemoveOutliersChanged()
         {
             if (RecordInfo == null)
@@ -852,7 +913,7 @@ namespace CapFrameX.ViewModel
         private void OnFilterModeChanged()
         {
             _localRecordDataServer.FilterMode = SelectedFilterMode;
-            FpsGraphDataContext.BuildPlotmodel(new VisibleGraphs(GpuLoad, CpuLoad, CpuMaxThreadLoad, GpuPowerLimit, ShowAggregationSeparators, ShowStutteringThresholds, StutteringFactor, StutteringLowFPSThreshold));
+            FpsGraphDataContext.BuildPlotmodel(new VisibleGraphs(ShowGpuLoad, ShowCpuLoad, ShowCpuMaxThreadLoad, ShowGpuPowerLimit, ShowPcLatency, ShowAggregationSeparators, ShowStutteringThresholds, StutteringFactor, StutteringLowFPSThreshold));
         }
 
         private async void OnCutRecord(bool inverse)
@@ -907,6 +968,19 @@ namespace CapFrameX.ViewModel
                 CurrentGameName = RemoveOutliers ? $"{RecordInfo.GameName} (outlier-cleaned)"
                     : RecordInfo.GameName;
                 SystemInfos = _recordManager.GetSystemInfos(RecordInfo);
+
+                // Update PC latency
+                IsPcLatencyAvailable = _session.Runs.All(run => !run.CaptureData.PcLatency.IsNullOrEmpty());
+                if (IsPcLatencyAvailable)
+                {
+                    AvgPcLatency = $"PC Latency: {Math.Round(_session.Runs.Average(run => run.CaptureData.PcLatency.Average()))}ms";
+                }
+
+                // Check load metrics
+                IsCpuLoadAvailable = _session.Runs.All(run => run.SensorData2 != null && !run.SensorData2.CpuUsage.IsNullOrEmpty());
+                IsCpuMaxLoadAvailable = _session.Runs.All(run => run.SensorData2 != null && !run.SensorData2.CpuMaxThreadUsage.IsNullOrEmpty());
+                IsGpuLoadAvailable = _session.Runs.All(run => run.SensorData2 != null && !run.SensorData2.GpuUsage.IsNullOrEmpty());
+                RaisePropertyChanged(nameof(IsGpuPowerLimitAvailable));
 
                 // Do update actions
                 FrametimeGraphDataContext.RecordSession = _session;

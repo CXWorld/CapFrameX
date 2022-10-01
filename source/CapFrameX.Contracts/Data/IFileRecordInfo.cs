@@ -28,7 +28,7 @@ namespace CapFrameX.Contracts.Data
 		string IsAggregated { get; }
 		string Comment { get; set; }
 		bool IsValid { get; }
-		bool HasInfoHeader { get; }
+		bool HasInfoHeader { get; set; }
 		string Id { get; }
 		string Hash { get; }
 		string ApiInfo { get; }
