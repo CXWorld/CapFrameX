@@ -492,8 +492,21 @@ namespace CapFrameX.Data
                     _systemInfo.SetSystemInfosStatus();
                     _updateSystemInfoEvent.Publish(new ViewMessages.UpdateSystemInfo());
 
-                    if (_systemInfo.ResizableBarHardwareStatus != ESystemInfoTertiaryStatus.Error && _systemInfo.ResizableBarSoftwareStatus != ESystemInfoTertiaryStatus.Error)
-                        resizableBar = (_systemInfo.ResizableBarHardwareStatus == ESystemInfoTertiaryStatus.Enabled && _systemInfo.ResizableBarSoftwareStatus == ESystemInfoTertiaryStatus.Enabled) ? "Enabled" : "Disabled";
+                    if (_systemInfo.ResizableBarHardwareStatus != ESystemInfoTertiaryStatus.Error && (_systemInfo.ResizableBarD3DStatus != ESystemInfoTertiaryStatus.Error || _systemInfo.ResizableBarVulkanStatus != ESystemInfoTertiaryStatus.Error))
+                    {
+                        resizableBar = "Disabled";
+                        if (_systemInfo.ResizableBarHardwareStatus == ESystemInfoTertiaryStatus.Enabled)
+                        {
+                            if (_systemInfo.ResizableBarD3DStatus == ESystemInfoTertiaryStatus.Enabled && _systemInfo.ResizableBarVulkanStatus == ESystemInfoTertiaryStatus.Enabled)
+                            {
+                                resizableBar = "Enabled";
+                            }
+                            else if (_systemInfo.ResizableBarD3DStatus == ESystemInfoTertiaryStatus.Enabled || _systemInfo.ResizableBarVulkanStatus == ESystemInfoTertiaryStatus.Enabled)
+                            {
+                                resizableBar = "Partial";
+                            }
+                        }
+                    }
 
                     if (_systemInfo.GameModeStatus != ESystemInfoTertiaryStatus.Error)
                         winGameMode = _systemInfo.GameModeStatus == ESystemInfoTertiaryStatus.Enabled ? "Enabled" : "Disabled";
