@@ -271,7 +271,7 @@
                                     <StackPanel Panel.ZIndex="1" Margin="2 5 0 0" HorizontalAlignment="Left" VerticalAlignment="Top" Orientation="Horizontal">
                                         <materialDesign:PopupBox  StaysOpen="True" ToolTipService.ShowDuration="25000">
                                             <materialDesign:PopupBox.ToggleContent>
-                                                <materialDesign:PackIcon Margin="10 0 10 0" Kind="Cog" Width="20" Height="20" Foreground="White"/>
+                                                <materialDesign:PackIcon Margin="10 0 10 0" Kind="Cog" Width="20" Height="20" Foreground="{DynamicResource MaterialDesignBody}"/>
                                             </materialDesign:PopupBox.ToggleContent>
                                             <materialDesign:PopupBox.ToolTip>
                                                 <ToolTip MaxWidth="275" Placement="Top">

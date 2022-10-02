@@ -299,6 +299,10 @@ namespace CapFrameX.Statistics.NetStandard
         public static IList<Point> GetGPULoadPointTimeWindow(this ISession session)
         {
             var list = new List<Point>();
+
+            if (session.Runs.Any(r => r.SensorData2 == null))
+                return list;
+
             var times = session.Runs.SelectMany(r => r.SensorData2.MeasureTime.Values).ToArray();
             var loads = session.Runs.SelectMany(r => r.SensorData2.GpuUsage).ToArray();
             int count = Math.Min(times.Count(), loads.Count());
@@ -316,6 +320,10 @@ namespace CapFrameX.Statistics.NetStandard
         public static IList<Point> GetCPULoadPointTimeWindow(this ISession session)
         {
             var list = new List<Point>();
+
+            if (session.Runs.Any(r => r.SensorData2 == null))
+                return list;
+
             var times = session.Runs.SelectMany(r => r.SensorData2.MeasureTime.Values).ToArray();
             var loads = session.Runs.SelectMany(r => r.SensorData2.CpuUsage).ToArray();
             int count = Math.Min(times.Count(), loads.Count());
@@ -333,6 +341,10 @@ namespace CapFrameX.Statistics.NetStandard
         public static IList<Point> GetCPUMaxThreadLoadPointTimeWindow(this ISession session)
         {
             var list = new List<Point>();
+
+            if (session.Runs.Any(r => r.SensorData2 == null))
+                return list;
+
             var times = session.Runs.SelectMany(r => r.SensorData2.MeasureTime.Values).ToArray();
             var loads = session.Runs.SelectMany(r => r.SensorData2.CpuMaxThreadUsage).ToArray();
             int count = Math.Min(times.Count(), loads.Count());
@@ -350,6 +362,10 @@ namespace CapFrameX.Statistics.NetStandard
         public static IList<Point> GetGpuPowerLimitPointTimeWindow(this ISession session)
         {
             var list = new List<Point>();
+
+            if (session.Runs.Any(r => r.SensorData2 == null))
+                return list;
+
             var times = session.Runs.SelectMany(r => r.SensorData2.MeasureTime.Values).ToArray();
             var limits = session.Runs.SelectMany(r => r.SensorData2.GPUPowerLimit).Select(limit => limit * 100).ToArray();
             int count = Math.Min(times.Count(), limits.Count());
@@ -367,6 +383,10 @@ namespace CapFrameX.Statistics.NetStandard
         public static IList<Point> GetPcLatencyPointTimeWindow(this ISession session)
         {
             var list = new List<Point>();
+
+            if (session.Runs.Any(r => r.SensorData2 == null))
+                return list;
+
             var times = session.Runs.SelectMany(r => r.SensorData2.MeasureTime.Values).ToArray();
             var latencies = session.Runs.SelectMany(r => r.CaptureData.PcLatency).ToArray();
             int count = Math.Min(times.Count(), latencies.Count());

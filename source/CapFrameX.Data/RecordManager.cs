@@ -916,6 +916,10 @@ namespace CapFrameX.Data
                 var startTime = captureData.TimeInSeconds[0];
                 captureData.TimeInSeconds = captureData.TimeInSeconds.Select(time => time - startTime).ToArray();
 
+                // Take over sensor data from CSV file
+                sessionRun.SensorData2 = new SessionSensorData2(initialAdd: true);
+                captureData.TimeInSeconds.ForEach(time => sessionRun.SensorData2["MeasureTime"].Values.AddLast(time));
+
                 sessionRun.CaptureData = captureData;
                 return sessionRun;
             }

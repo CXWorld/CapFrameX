@@ -257,10 +257,9 @@ namespace CapFrameX.Statistics.PlotBuilder
             var series = new LineSeries
             {
                 Title = "PC Latency",
-                LineStyle = LineStyle.None,
-                MarkerType = MarkerType.Square,
-                MarkerSize = 3,
-                MarkerFill = OxyColor.FromArgb(255, 152, 175, 199),
+                StrokeThickness = 1,
+                LegendStrokeThickness = 4,
+                Color = OxyColor.FromArgb(255, 128, 128, 128),
                 YAxisKey = EPlotAxis.YAXISFRAMETIMES.GetDescription()
             };
 

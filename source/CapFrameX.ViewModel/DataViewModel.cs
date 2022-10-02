@@ -980,7 +980,11 @@ namespace CapFrameX.ViewModel
 
                 // Update PC latency
                 IsPcLatencyAvailable = _session.Runs.All(run => !run.CaptureData.PcLatency.IsNullOrEmpty());
-                if (!IsPcLatencyAvailable) ShowPcLatency = false;
+                if (!IsPcLatencyAvailable)
+                {
+                    _showPcLatency = false;
+                    RaisePropertyChanged(nameof(ShowPcLatency));
+                }
 
                 if (IsPcLatencyAvailable)
                 {
@@ -989,16 +993,32 @@ namespace CapFrameX.ViewModel
 
                 // Check load metrics
                 IsCpuLoadAvailable = _session.Runs.All(run => run.SensorData2 != null && !run.SensorData2.CpuUsage.IsNullOrEmpty());
-                if (!IsCpuLoadAvailable) ShowCpuLoad = false;
+                if (!IsCpuLoadAvailable)
+                {
+                    _showCpuLoad = false;
+                    RaisePropertyChanged(nameof(ShowCpuLoad));
+                }
 
                 IsCpuMaxLoadAvailable = _session.Runs.All(run => run.SensorData2 != null && !run.SensorData2.CpuMaxThreadUsage.IsNullOrEmpty());
-                if (!IsCpuMaxLoadAvailable) ShowCpuMaxThreadLoad = false;
+                if (!IsCpuMaxLoadAvailable)
+                {
+                    _showCpuMaxThreadLoad = false;
+                    RaisePropertyChanged(nameof(ShowCpuMaxThreadLoad));
+                }
 
                 IsGpuLoadAvailable = _session.Runs.All(run => run.SensorData2 != null && !run.SensorData2.GpuUsage.IsNullOrEmpty());
-                if (!IsGpuLoadAvailable) ShowGpuLoad = false;
+                if (!IsGpuLoadAvailable)
+                {
+                    _showGpuLoad = false;
+                    RaisePropertyChanged(nameof(ShowGpuLoad));
+                }
 
                 IsGpuPowerLimitAvailable = GetIsPowerLimitAvailable();
-                if (!IsGpuPowerLimitAvailable) ShowGpuPowerLimit = false;
+                if (!IsGpuPowerLimitAvailable)
+                {
+                    _showGpuPowerLimit = false;
+                    RaisePropertyChanged(nameof(ShowGpuPowerLimit));
+                }
 
                 // Do update actions
                 FrametimeGraphDataContext.RecordSession = _session;
@@ -1405,7 +1425,13 @@ namespace CapFrameX.ViewModel
                             var frametimeStatisticProvider = new FrametimeStatisticProvider(null);
                             var movingAverage = frametimeStatisticProvider.GetMovingAverage(frametimes.ToList());
 
-                            yMax = Math.Max(Math.Max(movingAverage.Max() * _appConfiguration.StutteringFactor, yMax), 1000 / _appConfiguration.StutteringThreshold);
+                            yMax = Math.Max(Math.Max(movingAverage.Max() * _appConfiguration.StutteringFactor, yMax), 1000 / _appConfiguration.StutteringThreshold);        
+                        }
+
+                        if (IsPcLatencyAvailable && ShowPcLatency)
+                        {
+                            var maxLatency = _localRecordDataServer.CurrentSession.Runs.Max(run => run.CaptureData.PcLatency.Max());
+                            yMax = Math.Max(yMax, maxLatency);
                         }
 
                         setting = new Tuple<double, double>(yMin - (yMax - yMin) / 6, yMax + (yMax - yMin) / 6);
