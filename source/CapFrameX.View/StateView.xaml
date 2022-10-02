@@ -64,7 +64,7 @@
                     <TextBlock  Text="Update system info status" Foreground="{DynamicResource MaterialDesignBody}"/>
                 </Button.ToolTip>
             </Button>
-                     
+
             <Grid Margin="15 0 0 0" Visibility="{Binding IsResizableBarAnyStatusValid, Converter={StaticResource FalseToCollapsedConverter}}"
                   ToolTipService.ShowDuration="120000">
                 <StackPanel Orientation="Horizontal">
@@ -78,6 +78,7 @@
                             <TextBlock Margin="0 0 5 0" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}" >Resizable Bar HW:</TextBlock>
                             <TextBlock Width="Auto" VerticalAlignment="Center" Text="{Binding IsResizableBarHardwareEnabled, Converter={StaticResource ModeDescriptionConverter}, ConverterParameter= On|Off}" 
                            FontWeight="Bold" Foreground="{Binding IsResizableBarHardwareEnabled, Converter={StaticResource ModeColorConverter}}"></TextBlock>
+                            <TextBlock Visibility="{Binding IsResizableBarHardwareStatusValid, Converter={StaticResource FalseToCollapsedConverter}}" Text="{Binding Path=ResizableBarHardwareSize, StringFormat=' (\{0\} MiB)'}" Foreground="{DynamicResource MaterialDesignBody}" ></TextBlock>
                         </StackPanel>
                         <StackPanel Margin="5" Orientation="Horizontal" Visibility="{Binding IsResizableBarD3DStatusValid, Converter={StaticResource FalseToCollapsedConverter}}">
                             <TextBlock Margin="0 0 5 0" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}" >Resizable Bar D3D:</TextBlock>

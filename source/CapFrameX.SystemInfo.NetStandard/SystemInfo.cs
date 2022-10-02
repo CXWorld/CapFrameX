@@ -40,6 +40,8 @@ namespace CapFrameX.SystemInfo.NetStandard
 
         public ulong PciBarSizeD3D { get; private set; } = 0UL;
 
+        public ulong PciBarSizeHardware { get; private set; } = 0UL;
+
         public ulong PciBarSizeVulkan { get; private set; } = 0UL;
 
 
@@ -73,6 +75,7 @@ namespace CapFrameX.SystemInfo.NetStandard
             {
                 using (var displayDevices = new DeviceInfoSet(DeviceClassGuid.Display, _logger))
                 {
+                    PciBarSizeHardware = displayDevices.Devices.Max(x => (x as DeviceInfoPci)?.DeviceResourceMemory.Max(y => y.AddressEnd - y.AddressStart)) ?? 0UL;
                     var largeMemoryStatus = displayDevices.Devices.Any(x => (x as DeviceInfoPci)?.Pci_LargeMemory == true);
                     ResizableBarHardwareStatus = largeMemoryStatus
                         ? ESystemInfoTertiaryStatus.Enabled : ESystemInfoTertiaryStatus.Disabled;

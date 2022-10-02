@@ -10,17 +10,19 @@ namespace CapFrameX.ViewModel
 
         public bool IsResizableBarD3DStatusValid => _systemInfo.ResizableBarD3DStatus != ESystemInfoTertiaryStatus.Error;
 
-        public double ResizableBarD3DSize => Math.Round(_systemInfo.PciBarSizeD3D / 1024.0 / 1024);
-
         public bool IsResizableBarVulkanEnabled => _systemInfo.ResizableBarVulkanStatus == ESystemInfoTertiaryStatus.Enabled;
 
         public bool IsResizableBarVulkanStatusValid => _systemInfo.ResizableBarVulkanStatus != ESystemInfoTertiaryStatus.Error;
 
-        public double ResizableBarVulkanSize => Math.Round(_systemInfo.PciBarSizeVulkan / 1024.0 / 1024);
-
         public bool IsResizableBarHardwareEnabled => _systemInfo.ResizableBarHardwareStatus == ESystemInfoTertiaryStatus.Enabled;
 
         public bool IsResizableBarHardwareStatusValid => _systemInfo.ResizableBarHardwareStatus != ESystemInfoTertiaryStatus.Error;
+
+        public double ResizableBarD3DSize => Math.Round(_systemInfo.PciBarSizeD3D / 1024.0 / 1024);
+
+        public double ResizableBarHardwareSize => Math.Round(_systemInfo.PciBarSizeHardware / 1024.0 / 1024);
+        public double ResizableBarVulkanSize => Math.Round(_systemInfo.PciBarSizeVulkan / 1024.0 / 1024);
+
 
         public bool IsResizableBarEnabled => (IsResizableBarD3DEnabled || IsResizableBarVulkanEnabled) && IsResizableBarHardwareEnabled;
 

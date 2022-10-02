@@ -10,6 +10,8 @@
 
         ulong PciBarSizeD3D { get; }
 
+        ulong PciBarSizeHardware { get; }
+
         ulong PciBarSizeVulkan { get; }
 
         ESystemInfoTertiaryStatus GameModeStatus { get; }
