@@ -492,8 +492,8 @@ namespace CapFrameX.Data
                     _systemInfo.SetSystemInfosStatus();
                     _updateSystemInfoEvent.Publish(new ViewMessages.UpdateSystemInfo());
 
-                    if (_systemInfo.ResizableBarHardwareStatus != ESystemInfoTertiaryStatus.Error && _systemInfo.ResizableBarSoftwareStatus != ESystemInfoTertiaryStatus.Error)
-                        resizableBar = (_systemInfo.ResizableBarHardwareStatus == ESystemInfoTertiaryStatus.Enabled && _systemInfo.ResizableBarSoftwareStatus == ESystemInfoTertiaryStatus.Enabled) ? "Enabled" : "Disabled";
+                    if (_systemInfo.ResizableBarHardwareStatus != ESystemInfoTertiaryStatus.Error && _systemInfo.ResizableBarVulkanStatus != ESystemInfoTertiaryStatus.Error)
+                        resizableBar = (_systemInfo.ResizableBarHardwareStatus == ESystemInfoTertiaryStatus.Enabled && _systemInfo.ResizableBarVulkanStatus == ESystemInfoTertiaryStatus.Enabled) ? "Enabled" : "Disabled";
 
                     if (_systemInfo.GameModeStatus != ESystemInfoTertiaryStatus.Error)
                         winGameMode = _systemInfo.GameModeStatus == ESystemInfoTertiaryStatus.Enabled ? "Enabled" : "Disabled";
