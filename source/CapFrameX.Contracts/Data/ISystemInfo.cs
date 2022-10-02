@@ -2,9 +2,17 @@
 {
     public interface ISystemInfo
     {
-        ESystemInfoTertiaryStatus ResizableBarSoftwareStatus { get; }
+        ESystemInfoTertiaryStatus ResizableBarD3DStatus { get; }
+
+        ESystemInfoTertiaryStatus ResizableBarVulkanStatus { get; }
 
         ESystemInfoTertiaryStatus ResizableBarHardwareStatus { get; }
+
+        ulong PciBarSizeD3D { get; }
+
+        ulong PciBarSizeHardware { get; }
+
+        ulong PciBarSizeVulkan { get; }
 
         ESystemInfoTertiaryStatus GameModeStatus { get; }
 

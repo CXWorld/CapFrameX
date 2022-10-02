@@ -1,7 +1,7 @@
 ﻿using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.Sensor;
 using Microsoft.Extensions.Logging;
-using Mixaill.HwInfo.D3DKMT;
+using Mixaill.HwInfo.D3D;
 using Mixaill.HwInfo.SetupApi;
 using Mixaill.HwInfo.SetupApi.Defines;
 using Mixaill.HwInfo.Vulkan;
@@ -30,11 +30,20 @@ namespace CapFrameX.SystemInfo.NetStandard
 
         public ESystemInfoTertiaryStatus ResizableBarHardwareStatus { get; private set; } = ESystemInfoTertiaryStatus.Error;
 
-        public ESystemInfoTertiaryStatus ResizableBarSoftwareStatus { get; private set; } = ESystemInfoTertiaryStatus.Error;
+        public ESystemInfoTertiaryStatus ResizableBarD3DStatus { get; private set; } = ESystemInfoTertiaryStatus.Error;
+
+        public ESystemInfoTertiaryStatus ResizableBarVulkanStatus { get; private set; } = ESystemInfoTertiaryStatus.Error;
 
         public ESystemInfoTertiaryStatus GameModeStatus { get; private set; } = ESystemInfoTertiaryStatus.Error;
 
         public ESystemInfoTertiaryStatus HardwareAcceleratedGPUSchedulingStatus { get; private set; } = ESystemInfoTertiaryStatus.Error;
+
+        public ulong PciBarSizeD3D { get; private set; } = 0UL;
+
+        public ulong PciBarSizeHardware { get; private set; } = 0UL;
+
+        public ulong PciBarSizeVulkan { get; private set; } = 0UL;
+
 
         public SystemInfo(ISensorService sensorService,
                           ILogger<SystemInfo> logger)
@@ -49,13 +58,24 @@ namespace CapFrameX.SystemInfo.NetStandard
             SetSystemInfosStatus();
         }
 
+        #region System Info
+
         public void SetSystemInfosStatus()
+        {
+            SetSystemInfoSetupApi();
+            SetSystemInfoD3D();
+            SetSystemInfoVulkan();
+            SetSystemInfoRegistry();
+        }
+
+        private void SetSystemInfoSetupApi()
         {
             //PCI Resizable BAR HW support
             try
             {
                 using (var displayDevices = new DeviceInfoSet(DeviceClassGuid.Display, _logger))
                 {
+                    PciBarSizeHardware = displayDevices.Devices.Max(x => (x as DeviceInfoPci)?.DeviceResourceMemory.Max(y => y.AddressEnd - y.AddressStart)) ?? 0UL;
                     var largeMemoryStatus = displayDevices.Devices.Any(x => (x as DeviceInfoPci)?.Pci_LargeMemory == true);
                     ResizableBarHardwareStatus = largeMemoryStatus
                         ? ESystemInfoTertiaryStatus.Enabled : ESystemInfoTertiaryStatus.Disabled;
@@ -65,14 +85,48 @@ namespace CapFrameX.SystemInfo.NetStandard
             {
                 _logger.LogError(ex, "Error while getting Resizable Bar hardware status.");
             }
+        }
 
+        private void SetSystemInfoD3D()
+        {
+            try
+            {
+                var kmt = new Kmt(_logger);
+                var adapters = kmt.GetAdapters();
+
+                //Hardware-Accelerated GPU Scheduling
+                if (adapters.Any(x => x.WddmCapabilities_27.HwSchEnabled))
+                {
+                    HardwareAcceleratedGPUSchedulingStatus = ESystemInfoTertiaryStatus.Enabled;
+                }
+                else if (adapters.Any(x => x.WddmCapabilities_27.HwSchSupported))
+                {
+                    HardwareAcceleratedGPUSchedulingStatus = ESystemInfoTertiaryStatus.Disabled;
+                }
+
+                //Host Visible Memory
+                PciBarSizeD3D = adapters.Max(x => x.HostVisibleMemory);
+                ResizableBarD3DStatus = adapters.Any(dev => dev.ResizableBarInUse)
+                    ? ESystemInfoTertiaryStatus.Enabled : ESystemInfoTertiaryStatus.Disabled;
+
+                adapters.ForEach(x => x.Dispose());
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error while getting D3D KMT info");
+            }
+        }
+
+        private void SetSystemInfoVulkan()
+        {
             //PCI Resizable BAR SW support
             try
             {
                 using (var vk = new Vulkan(_logger))
                 {
                     var devices = vk.GetPhysicalDevices();
-                    ResizableBarSoftwareStatus = devices.Any(dev => dev.DeviceResizableBarInUse)
+                    PciBarSizeVulkan = devices.Max(x => x.DeviceHostVisibleMemory);
+                    ResizableBarVulkanStatus = devices.Any(dev => dev.DeviceResizableBarInUse)
                         ? ESystemInfoTertiaryStatus.Enabled : ESystemInfoTertiaryStatus.Disabled;
                 }
             }
@@ -80,26 +134,10 @@ namespace CapFrameX.SystemInfo.NetStandard
             {
                 _logger.LogError(ex, "Error while getting Resizable Bar software status.");
             }
+        }
 
-            //Hardware-Accelerated GPU Scheduling
-            try
-            {
-                var kmtAdapters = new Kmt(_logger).GetAdapters();
-                if (kmtAdapters.Any(x => x.WddmCapabilities_27.HagsEnabled))
-                {
-                    HardwareAcceleratedGPUSchedulingStatus = ESystemInfoTertiaryStatus.Enabled;
-                }
-                else if (kmtAdapters.Any(x => x.WddmCapabilities_27.HagsSupported))
-                {
-                    HardwareAcceleratedGPUSchedulingStatus = ESystemInfoTertiaryStatus.Disabled;
-                }
-
-                kmtAdapters.ForEach(x => x.Dispose());
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error while getting HAGS status.");
-            }
+        private void SetSystemInfoRegistry()
+        {
 
             //Windows Game Mode
             try
@@ -125,6 +163,8 @@ namespace CapFrameX.SystemInfo.NetStandard
                 _logger.LogError(ex, "Error while getting Windows Game Mode status.");
             }
         }
+
+        #endregion
 
         public string GetProcessorName()
             => _sensorService.GetCpuName();

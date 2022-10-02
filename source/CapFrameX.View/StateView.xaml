@@ -64,13 +64,13 @@
                     <TextBlock  Text="Update system info status" Foreground="{DynamicResource MaterialDesignBody}"/>
                 </Button.ToolTip>
             </Button>
-                     
+
             <Grid Margin="15 0 0 0" Visibility="{Binding IsResizableBarAnyStatusValid, Converter={StaticResource FalseToCollapsedConverter}}"
                   ToolTipService.ShowDuration="120000">
                 <StackPanel Orientation="Horizontal">
                     <TextBlock Margin="0 0 5 0" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}" >Resizable Bar:</TextBlock>
-                    <TextBlock Width="Auto" VerticalAlignment="Center" Text="{Binding IsResizableBarEnabled, Converter={StaticResource ModeDescriptionConverter}, ConverterParameter= On|Off}" 
-                           FontWeight="Bold" Foreground="{Binding IsResizableBarEnabled, Converter={StaticResource ModeColorConverter}}"></TextBlock>
+                    <TextBlock Width="Auto" VerticalAlignment="Center" Text="{Binding ResizableBarStatus}" 
+                           FontWeight="Bold" Foreground="{Binding ResizableBarStatusColor}"></TextBlock>
                 </StackPanel>
                 <Grid.ToolTip>
                     <StackPanel Orientation="Vertical">
@@ -78,11 +78,19 @@
                             <TextBlock Margin="0 0 5 0" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}" >Resizable Bar HW:</TextBlock>
                             <TextBlock Width="Auto" VerticalAlignment="Center" Text="{Binding IsResizableBarHardwareEnabled, Converter={StaticResource ModeDescriptionConverter}, ConverterParameter= On|Off}" 
                            FontWeight="Bold" Foreground="{Binding IsResizableBarHardwareEnabled, Converter={StaticResource ModeColorConverter}}"></TextBlock>
+                            <TextBlock Visibility="{Binding IsResizableBarHardwareStatusValid, Converter={StaticResource FalseToCollapsedConverter}}" Text="{Binding Path=ResizableBarHardwareSize, StringFormat=' (\{0\} MiB)'}" Foreground="{DynamicResource MaterialDesignBody}" ></TextBlock>
                         </StackPanel>
-                        <StackPanel Margin="5" Orientation="Horizontal" Visibility="{Binding IsResizableBarSoftwareStatusValid, Converter={StaticResource FalseToCollapsedConverter}}">
-                            <TextBlock Margin="0 0 5 0" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}" >Resizable Bar SW:</TextBlock>
-                            <TextBlock Width="Auto" VerticalAlignment="Center" Text="{Binding IsResizableBarSoftwareEnabled, Converter={StaticResource ModeDescriptionConverter}, ConverterParameter= On|Off}" 
-                           FontWeight="Bold" Foreground="{Binding IsResizableBarSoftwareEnabled, Converter={StaticResource ModeColorConverter}}"></TextBlock>
+                        <StackPanel Margin="5" Orientation="Horizontal" Visibility="{Binding IsResizableBarD3DStatusValid, Converter={StaticResource FalseToCollapsedConverter}}">
+                            <TextBlock Margin="0 0 5 0" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}" >Resizable Bar D3D:</TextBlock>
+                            <TextBlock Width="Auto" VerticalAlignment="Center" Text="{Binding IsResizableBarD3DEnabled, Converter={StaticResource ModeDescriptionConverter}, ConverterParameter= On|Off}" 
+                           FontWeight="Bold" Foreground="{Binding IsResizableBarD3DEnabled, Converter={StaticResource ModeColorConverter}}"></TextBlock>
+                            <TextBlock Visibility="{Binding IsResizableBarD3DStatusValid, Converter={StaticResource FalseToCollapsedConverter}}" Text="{Binding Path=ResizableBarD3DSize, StringFormat=' (\{0\} MiB)'}" Foreground="{DynamicResource MaterialDesignBody}" ></TextBlock>
+                        </StackPanel>
+                        <StackPanel Margin="5" Orientation="Horizontal" Visibility="{Binding IsResizableBarVulkanStatusValid, Converter={StaticResource FalseToCollapsedConverter}}">
+                            <TextBlock Margin="0 0 5 0" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}" >Resizable Bar Vulkan:</TextBlock>
+                            <TextBlock Width="Auto" VerticalAlignment="Center" Text="{Binding IsResizableBarVulkanEnabled, Converter={StaticResource ModeDescriptionConverter}, ConverterParameter= On|Off}" 
+                           FontWeight="Bold" Foreground="{Binding IsResizableBarVulkanEnabled, Converter={StaticResource ModeColorConverter}}"></TextBlock>
+                            <TextBlock Visibility="{Binding IsResizableBarVulkanStatusValid, Converter={StaticResource FalseToCollapsedConverter}}" Text="{Binding Path=ResizableBarVulkanSize, StringFormat=' (\{0\} MiB)'}" Foreground="{DynamicResource MaterialDesignBody}" ></TextBlock>
                         </StackPanel>
                     </StackPanel>
                 </Grid.ToolTip>
