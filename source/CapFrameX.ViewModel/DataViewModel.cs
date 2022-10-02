@@ -85,6 +85,7 @@ namespace CapFrameX.ViewModel
         private bool _isCpuLoadAvailable;
         private bool _isCpuMaxLoadAvailable;
         private bool _isGpuLoadAvailable;
+        private bool _isGpuPowerLimitAvailable;
         private EFilterMode _selectedFilterMode;
         private ELShapeMetrics _lShapeMetric = ELShapeMetrics.Frametimes;
         private string _lShapeYaxisLabel = "Frametimes (ms)" + Environment.NewLine + " ";
@@ -108,8 +109,6 @@ namespace CapFrameX.ViewModel
         public Array LShapeMetrics => Enum.GetValues(typeof(ELShapeMetrics))
                                   .Cast<ELShapeMetrics>()
                                   .ToArray();
-
-        public bool IsGpuPowerLimitAvailable => GetIsPowerLimitAvailable();
 
         public ObservableCollection<ISensorReportItem> SensorReportItems { get; }
             = new ObservableCollection<ISensorReportItem>();
@@ -457,6 +456,16 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        public bool IsGpuPowerLimitAvailable
+        {
+            get { return _isGpuPowerLimitAvailable; }
+            set
+            {
+                _isGpuPowerLimitAvailable = value;
+                RaisePropertyChanged();
+            }
+        }
+
         public int BarChartSeparators
         {
             get
@@ -647,26 +656,26 @@ namespace CapFrameX.ViewModel
 
         private bool GetIsPowerLimitAvailable()
         {
-            if (_localRecordDataServer == null)
+            if (_session == null)
                 return false;
 
-            if (_localRecordDataServer.CurrentSession == null)
+            if (_session.Runs == null
+                || !_session.Runs.Any())
                 return false;
 
-            if (_localRecordDataServer.CurrentSession.Runs == null
-                || !_localRecordDataServer.CurrentSession.Runs.Any())
-                return false;
+            if (_session.Runs
+                .All(run => run.SensorData != null)
+               && _session.Runs
+                .All(run => !run.SensorData.GPUPowerLimit.IsNullOrEmpty()))
+                return true;
 
-            if (_localRecordDataServer.CurrentSession.Runs
-                .Any(run => run.SensorData2 == null))
-                return false;
+            if (_session.Runs
+                .All(run => run.SensorData2 != null)
+               && _session.Runs
+                .All(run => !run.SensorData2.GPUPowerLimit.IsNullOrEmpty()))
+                return true;
 
-            if (_localRecordDataServer.CurrentSession.Runs
-                .Any(run => run.SensorData2.GPUPowerLimit == null
-                || !run.SensorData2.GPUPowerLimit.Any()))
-                return false;
-
-            return true;
+            return false;
         }
 
         private void Setup()
@@ -971,6 +980,8 @@ namespace CapFrameX.ViewModel
 
                 // Update PC latency
                 IsPcLatencyAvailable = _session.Runs.All(run => !run.CaptureData.PcLatency.IsNullOrEmpty());
+                if (!IsPcLatencyAvailable) ShowPcLatency = false;
+
                 if (IsPcLatencyAvailable)
                 {
                     AvgPcLatency = $"PC Latency: {Math.Round(_session.Runs.Average(run => run.CaptureData.PcLatency.Average()))}ms";
@@ -978,9 +989,16 @@ namespace CapFrameX.ViewModel
 
                 // Check load metrics
                 IsCpuLoadAvailable = _session.Runs.All(run => run.SensorData2 != null && !run.SensorData2.CpuUsage.IsNullOrEmpty());
+                if (!IsCpuLoadAvailable) ShowCpuLoad = false;
+
                 IsCpuMaxLoadAvailable = _session.Runs.All(run => run.SensorData2 != null && !run.SensorData2.CpuMaxThreadUsage.IsNullOrEmpty());
+                if (!IsCpuMaxLoadAvailable) ShowCpuMaxThreadLoad = false;
+
                 IsGpuLoadAvailable = _session.Runs.All(run => run.SensorData2 != null && !run.SensorData2.GpuUsage.IsNullOrEmpty());
-                RaisePropertyChanged(nameof(IsGpuPowerLimitAvailable));
+                if (!IsGpuLoadAvailable) ShowGpuLoad = false;
+
+                IsGpuPowerLimitAvailable = GetIsPowerLimitAvailable();
+                if (!IsGpuPowerLimitAvailable) ShowGpuPowerLimit = false;
 
                 // Do update actions
                 FrametimeGraphDataContext.RecordSession = _session;

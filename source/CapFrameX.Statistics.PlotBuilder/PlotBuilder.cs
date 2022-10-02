@@ -252,6 +252,22 @@ namespace CapFrameX.Statistics.PlotBuilder
             plotModel.Series.Add(series);
         }
 
+        protected void SetPcLatencyChart(PlotModel plotModel, IList<Point> points)
+        {
+            var series = new LineSeries
+            {
+                Title = "PC Latency",
+                LineStyle = LineStyle.None,
+                MarkerType = MarkerType.Square,
+                MarkerSize = 3,
+                MarkerFill = OxyColor.FromArgb(255, 152, 175, 199),
+                YAxisKey = EPlotAxis.YAXISFRAMETIMES.GetDescription()
+            };
+
+            series.Points.AddRange(points.Select(p => new DataPoint(p.X, p.Y)));
+            plotModel.Series.Add(series);
+        }
+
         public void SetAggregationSeparators(ISession session, PlotModel plotModel, bool showSeparators)
         {
 

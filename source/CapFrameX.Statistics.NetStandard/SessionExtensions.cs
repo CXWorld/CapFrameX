@@ -301,10 +301,11 @@ namespace CapFrameX.Statistics.NetStandard
             var list = new List<Point>();
             var times = session.Runs.SelectMany(r => r.SensorData2.MeasureTime.Values).ToArray();
             var loads = session.Runs.SelectMany(r => r.SensorData2.GpuUsage).ToArray();
+            int count = Math.Min(times.Count(), loads.Count());
 
             if (loads.Any())
             {
-                for (int i = 0; i < times.Count(); i++)
+                for (int i = 0; i < count; i++)
                 {
                     list.Add(new Point(times[i], loads[i]));
                 }
@@ -317,10 +318,11 @@ namespace CapFrameX.Statistics.NetStandard
             var list = new List<Point>();
             var times = session.Runs.SelectMany(r => r.SensorData2.MeasureTime.Values).ToArray();
             var loads = session.Runs.SelectMany(r => r.SensorData2.CpuUsage).ToArray();
+            int count = Math.Min(times.Count(), loads.Count());
 
             if (loads.Any())
             {
-                for (int i = 0; i < times.Count(); i++)
+                for (int i = 0; i < count; i++)
                 {
                     list.Add(new Point(times[i], loads[i]));
                 }
@@ -333,10 +335,11 @@ namespace CapFrameX.Statistics.NetStandard
             var list = new List<Point>();
             var times = session.Runs.SelectMany(r => r.SensorData2.MeasureTime.Values).ToArray();
             var loads = session.Runs.SelectMany(r => r.SensorData2.CpuMaxThreadUsage).ToArray();
+            int count = Math.Min(times.Count(), loads.Count());
 
             if (loads.Any())
             {
-                for (int i = 0; i < times.Count(); i++)
+                for (int i = 0; i < count; i++)
                 {
                     list.Add(new Point(times[i], loads[i]));
                 }
@@ -349,12 +352,30 @@ namespace CapFrameX.Statistics.NetStandard
             var list = new List<Point>();
             var times = session.Runs.SelectMany(r => r.SensorData2.MeasureTime.Values).ToArray();
             var limits = session.Runs.SelectMany(r => r.SensorData2.GPUPowerLimit).Select(limit => limit * 100).ToArray();
+            int count = Math.Min(times.Count(), limits.Count());
 
             if (limits.Any())
             {
-                for (int i = 0; i < times.Count(); i++)
+                for (int i = 0; i < count; i++)
                 {
                     list.Add(new Point(times[i], limits[i]));
+                }
+            }
+            return list;
+        }
+
+        public static IList<Point> GetPcLatencyPointTimeWindow(this ISession session)
+        {
+            var list = new List<Point>();
+            var times = session.Runs.SelectMany(r => r.SensorData2.MeasureTime.Values).ToArray();
+            var latencies = session.Runs.SelectMany(r => r.CaptureData.PcLatency).ToArray();
+            int count = Math.Min(times.Count(), latencies.Count());
+
+            if (latencies.Any())
+            {
+                for (int i = 0; i < count; i++)
+                {
+                    list.Add(new Point(times[i], latencies[i]));
                 }
             }
             return list;

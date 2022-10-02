@@ -44,6 +44,10 @@ namespace CapFrameX.Statistics.PlotBuilder
                     SetGpuPowerLimitChart(plotModel, session.GetGpuPowerLimitPointTimeWindow());
             }
 
+            // Draw PC latency graph
+            if (plotSettings.ShowPcLatency)
+                SetPcLatencyChart(plotModel, session.GetPcLatencyPointTimeWindow());
+
             var stutteringValue = frametimes.Average() * plotSettings.StutteringFactor;
             var lowFPSValue = 1000 / plotSettings.LowFPSThreshold;
 
