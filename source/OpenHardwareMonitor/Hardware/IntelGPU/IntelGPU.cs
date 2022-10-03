@@ -66,8 +66,8 @@ namespace OpenHardwareMonitor.Hardware.IntelGPU
             this.memoryUsageShared = new Sensor("GPU Memory Shared", 1, SensorType.Data, this, settings);
             this.processMemoryUsageDedicated = new Sensor("GPU Memory Dedicated Game", 2, SensorType.Data, this, settings);
             this.processMemoryUsageShared = new Sensor("GPU Memory Shared Game", 3, SensorType.Data, this, settings);
-            this.bandwidthReadVram = new Sensor("GPU Memory Bandwidth Read", 4, SensorType.Data, this, settings);
-            this.bandwidthWriteVram = new Sensor("GPU Memory Bandwidth Write", 5, SensorType.Data, this, settings);
+            this.bandwidthReadVram = new Sensor("GPU Memory Read", 4, SensorType.Data, this, settings);
+            this.bandwidthWriteVram = new Sensor("GPU Memory Write", 5, SensorType.Data, this, settings);
 
             this.speedFan = new Sensor("GPU Fan", 0, SensorType.Fan, this, settings);
 
