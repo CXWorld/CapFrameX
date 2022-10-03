@@ -208,24 +208,47 @@ namespace CapFrameX.ViewModel
             }
         }
 
-        public bool ShowP1LowFPS
+        public bool ShowP1LowAverageFPS
         {
-            get { return _settings.ReportShowP1LowFPS; }
+            get { return _settings.ReportShowP1LowAverageFPS; }
             set
             {
-                _settings.ReportShowP1LowFPS = value;
+                _settings.ReportShowP1LowAverageFPS = value;
                 _appConfiguration.ReportDataGridColumnSettings = _settings;
 
                 RaisePropertyChanged();
             }
         }
 
-        public bool ShowP0Dot1LowFPS
+        public bool ShowP0Dot1LowAverageFPS
         {
-            get { return _settings.ReportShowP0Dot1LowFPS; }
+            get { return _settings.ReportShowP0Dot1LowAverageFPS; }
             set
             {
-                _settings.ReportShowP0Dot1LowFPS = value;
+                _settings.ReportShowP0Dot1LowAverageFPS = value;
+                _appConfiguration.ReportDataGridColumnSettings = _settings;
+                RaisePropertyChanged();
+            }
+        }
+
+        public bool ShowP1LowIntegralFPS
+        {
+            get { return _settings.ReportShowP1LowIntegralFPS; }
+            set
+            {
+                _settings.ReportShowP1LowIntegralFPS = value;
+                _appConfiguration.ReportDataGridColumnSettings = _settings;
+
+                RaisePropertyChanged();
+            }
+        }
+
+        public bool ShowP0Dot1LowIntegralFPS
+        {
+            get { return _settings.ReportShowP0Dot1LowIntegralFPS; }
+            set
+            {
+                _settings.ReportShowP0Dot1LowIntegralFPS = value;
                 _appConfiguration.ReportDataGridColumnSettings = _settings;
                 RaisePropertyChanged();
             }

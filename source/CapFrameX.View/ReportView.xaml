@@ -143,10 +143,15 @@
                                             IsReadOnly="True"
                                             Visibility="{Binding DataContext.ShowP1FPS, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
                     <DataGridTextColumn Binding="{Binding OnePercentLowAverageFps, Mode=OneWay}"
+                                            Header="1% low average FPS"
+                                            Width="Auto"
+                                            IsReadOnly="True"
+                                            Visibility="{Binding DataContext.ShowP1LowAverageFPS, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
+                    <DataGridTextColumn Binding="{Binding OnePercentLowIntegralFps, Mode=OneWay}"
                                             Header="1% low integral FPS"
                                             Width="Auto"
                                             IsReadOnly="True"
-                                            Visibility="{Binding DataContext.ShowP1LowFPS, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
+                                            Visibility="{Binding DataContext.ShowP1LowIntegralFPS, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
                     <DataGridTextColumn Binding="{Binding ZeroDotTwoPercentQuantileFps, Mode=OneWay}"
                                             Header="P0.2 FPS"
                                             Width="Auto"
@@ -158,10 +163,15 @@
                                             IsReadOnly="True"
                                             Visibility="{Binding DataContext.ShowP0Dot1FPS, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
                     <DataGridTextColumn Binding="{Binding ZeroDotOnePercentLowAverageFps, Mode=OneWay}"
+                                            Header="0.1% low average FPS"
+                                            Width="Auto"
+                                            IsReadOnly="True"
+                                            Visibility="{Binding DataContext.ShowP0Dot1LowAverageFPS, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
+                    <DataGridTextColumn Binding="{Binding ZeroDotOnePercentLowIntegralFps, Mode=OneWay}"
                                             Header="0.1% low integral FPS"
                                             Width="Auto"
                                             IsReadOnly="True"
-                                            Visibility="{Binding DataContext.ShowP0Dot1LowFPS, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
+                                            Visibility="{Binding DataContext.ShowP0Dot1LowIntegralFPS, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}"/>
                     <DataGridTextColumn Binding="{Binding MinFps, Mode=OneWay}"
                                             Header="Min FPS"
                                             Width="Auto"
@@ -327,20 +337,24 @@
                             <ToggleButton Margin="5" Grid.Row="7" Grid.Column="4" IsChecked="{Binding ShowP0Dot2FPS}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
                             <TextBlock Margin="5" Grid.Row="8" Grid.Column="3" Text="0.1% percentile" VerticalAlignment="Center"/>
                             <ToggleButton Margin="5" Grid.Row="8" Grid.Column="4" IsChecked="{Binding ShowP0Dot1FPS}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
-                            <TextBlock Margin="5" Grid.Row="0" Grid.Column="6" Text="1% low integral" VerticalAlignment="Center"/>
-                            <ToggleButton Margin="5" Grid.Row="0" Grid.Column="7" IsChecked="{Binding ShowP1LowFPS}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
-                            <TextBlock Margin="5" Grid.Row="1" Grid.Column="6" Text="0.1% low integral" VerticalAlignment="Center"/>
-                            <ToggleButton Margin="5" Grid.Row="1" Grid.Column="7" IsChecked="{Binding ShowP0Dot1LowFPS}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
-                            <TextBlock Margin="5" Grid.Row="2" Grid.Column="6" Text="Minimum" VerticalAlignment="Center"/>
-                            <ToggleButton Margin="5" Grid.Row="2" Grid.Column="7" IsChecked="{Binding ShowMinFPS}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
-                            <TextBlock Margin="5" Grid.Row="3" Grid.Column="6" Text="Adaptive STDEV" VerticalAlignment="Center"/>
-                            <ToggleButton Margin="5" Grid.Row="3" Grid.Column="7" IsChecked="{Binding ShowAdaptiveSTD}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
-                            <TextBlock Margin="5" Grid.Row="4" Grid.Column="6" Text="CPU FPS/10W" VerticalAlignment="Center"/>
-                            <ToggleButton Margin="5" Grid.Row="4" Grid.Column="7" IsChecked="{Binding ShowCpuFpsPerWatt}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
-                            <TextBlock Margin="5" Grid.Row="5" Grid.Column="6" Text="GPU FPS/10W" VerticalAlignment="Center"/>
-                            <ToggleButton Margin="5" Grid.Row="5" Grid.Column="7" IsChecked="{Binding ShowGpuFpsPerWatt}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
-                            <TextBlock Margin="5" Grid.Row="6" Grid.Column="6" Text="App latency (ms)" VerticalAlignment="Center"/>
-                            <ToggleButton Margin="5" Grid.Row="6" Grid.Column="7" IsChecked="{Binding ShowAppLatency}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                            <TextBlock Margin="5" Grid.Row="0" Grid.Column="6" Text="1% low average" VerticalAlignment="Center"/>
+                            <ToggleButton Margin="5" Grid.Row="0" Grid.Column="7" IsChecked="{Binding ShowP1LowAverageFPS}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                            <TextBlock Margin="5" Grid.Row="1" Grid.Column="6" Text="0.1% low average" VerticalAlignment="Center"/>
+                            <ToggleButton Margin="5" Grid.Row="1" Grid.Column="7" IsChecked="{Binding ShowP0Dot1LowAverageFPS}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                            <TextBlock Margin="5" Grid.Row="2" Grid.Column="6" Text="1% low integral" VerticalAlignment="Center"/>
+                            <ToggleButton Margin="5" Grid.Row="2" Grid.Column="7" IsChecked="{Binding ShowP1LowIntegralFPS}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                            <TextBlock Margin="5" Grid.Row="3" Grid.Column="6" Text="0.1% low integral" VerticalAlignment="Center"/>
+                            <ToggleButton Margin="5" Grid.Row="3" Grid.Column="7" IsChecked="{Binding ShowP0Dot1LowIntegralFPS}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                            <TextBlock Margin="5" Grid.Row="4" Grid.Column="6" Text="Minimum" VerticalAlignment="Center"/>
+                            <ToggleButton Margin="5" Grid.Row="4" Grid.Column="7" IsChecked="{Binding ShowMinFPS}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                            <TextBlock Margin="5" Grid.Row="5" Grid.Column="6" Text="Adaptive STDEV" VerticalAlignment="Center"/>
+                            <ToggleButton Margin="5" Grid.Row="5" Grid.Column="7" IsChecked="{Binding ShowAdaptiveSTD}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                            <TextBlock Margin="5" Grid.Row="6" Grid.Column="6" Text="CPU FPS/10W" VerticalAlignment="Center"/>
+                            <ToggleButton Margin="5" Grid.Row="6" Grid.Column="7" IsChecked="{Binding ShowCpuFpsPerWatt}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                            <TextBlock Margin="5" Grid.Row="7" Grid.Column="6" Text="GPU FPS/10W" VerticalAlignment="Center"/>
+                            <ToggleButton Margin="5" Grid.Row="7" Grid.Column="7" IsChecked="{Binding ShowGpuFpsPerWatt}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                            <TextBlock Margin="5" Grid.Row="8" Grid.Column="6" Text="App latency (ms)" VerticalAlignment="Center"/>
+                            <ToggleButton Margin="5" Grid.Row="8" Grid.Column="7" IsChecked="{Binding ShowAppLatency}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
                             <TextBlock Margin="5" Grid.Row="0" Grid.Column="9" Text="CPU max thread (%)" VerticalAlignment="Center"/>
                             <ToggleButton Margin="5" Grid.Row="0" Grid.Column="10" IsChecked="{Binding ShowCpuMaxUsage}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
                             <TextBlock Margin="5" Grid.Row="1" Grid.Column="9" Text="CPU power (W)" VerticalAlignment="Center"/>

@@ -305,7 +305,6 @@ namespace CapFrameX.Overlay
 
             if (RunHistoryCount < _numberOfRuns)
             {
-
                 // metric history
                 var currentAnalysis = _statisticProvider.GetMetricAnalysis(frametimes, SecondMetric, ThirdMetric);
                 _metricAnalysis.Add(currentAnalysis);

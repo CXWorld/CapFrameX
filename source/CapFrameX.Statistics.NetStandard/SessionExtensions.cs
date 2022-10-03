@@ -110,7 +110,6 @@ namespace CapFrameX.Statistics.NetStandard
             return pmdPowerPoints;
         }
 
-
         public static IList<Point> GetAveragePmdPowerPoints(this ISession session, string hardware)
         {
             if (!session.Runs.Any())
@@ -387,7 +386,7 @@ namespace CapFrameX.Statistics.NetStandard
             if (session.Runs.Any(r => r.SensorData2 == null))
                 return list;
 
-            var times = session.Runs.SelectMany(r => r.SensorData2.MeasureTime.Values).ToArray();
+            var times = session.Runs.SelectMany(r => r.CaptureData.TimeInSeconds).ToArray();
             var latencies = session.Runs.SelectMany(r => r.CaptureData.PcLatency).ToArray();
             int count = Math.Min(times.Count(), latencies.Count());
 

@@ -739,8 +739,11 @@ namespace CapFrameX.ViewModel
             var p0dot2_quantile = GeMetricValue(frametimes, EMetric.P0dot2);
             var p1_quantile = GeMetricValue(frametimes, EMetric.P1);
             var p5_quantile = GeMetricValue(frametimes, EMetric.P5);
-            var p1_averageLow = GeMetricValue(frametimes, EMetric.OnePercentLow);
-            var p0dot1_averageLow = GeMetricValue(frametimes, EMetric.ZerodotOnePercentLow);
+            var p1_LowAverage = GeMetricValue(frametimes, EMetric.OnePercentLowAverage);
+            var p0dot1_LowAverage = GeMetricValue(frametimes, EMetric.ZerodotOnePercentLowAverage);
+            var p1_LowIntegral = GeMetricValue(frametimes, EMetric.OnePercentLowIntegral);
+            var p0dot1_LowIntegral = GeMetricValue(frametimes, EMetric.ZerodotOnePercentLowIntegral);
+
             var min = GeMetricValue(frametimes, EMetric.Min);
             var adaptiveStandardDeviation = GeMetricValue(frametimes, EMetric.AdaptiveStd);
             var cpuFpsPerWatt = _frametimeStatisticProvider
@@ -755,7 +758,7 @@ namespace CapFrameX.ViewModel
             StringBuilder builder = new StringBuilder();
 
             // Vice versa!
-            // "Adaptive STDEV" ,"Min","0.1% Low" ,"0.1%","0.2%" ,"1% Low", "1%" ,"5%" ,"Average" ,"95%" ,"99%" ,"Max"
+            // "Adaptive STDEV","Min","0.1% Low Integral","0.1% Low Average" ,"0.1%","0.2%" ,"1% Low Integral","1% Low Average", "1%" ,"5%" ,"Average" ,"95%" ,"99%" ,"Max"
             if (_appConfiguration.UseSingleRecordMaxStatisticParameter)
                 builder.Append("Max" + "\t" + max.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
             if (_appConfiguration.UseSingleRecord99QuantileStatisticParameter)
@@ -770,14 +773,18 @@ namespace CapFrameX.ViewModel
                 builder.Append("P5" + "\t" + p5_quantile.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
             if (_appConfiguration.UseSingleRecordP1QuantileStatisticParameter)
                 builder.Append("P1" + "\t" + p1_quantile.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
-            if (_appConfiguration.UseSingleRecordP1LowAverageStatisticParameter && !double.IsNaN(p1_averageLow))
-                builder.Append("1% Low" + "\t" + p1_averageLow.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
+            if (_appConfiguration.UseSingleRecordP1LowAverageStatisticParameter && !double.IsNaN(p1_LowAverage))
+                builder.Append("1% Low Average" + "\t" + p1_LowAverage.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
+            if (_appConfiguration.UseSingleRecordP1LowIntegralStatisticParameter && !double.IsNaN(p1_LowIntegral))
+                builder.Append("1% Low Integral" + "\t" + p1_LowIntegral.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
             if (_appConfiguration.UseSingleRecordP0Dot2QuantileStatisticParameter)
                 builder.Append("P0.2" + "\t" + p0dot2_quantile.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
             if (_appConfiguration.UseSingleRecordP0Dot1QuantileStatisticParameter)
                 builder.Append("P0.1" + "\t" + p0dot1_quantile.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
-            if (_appConfiguration.UseSingleRecordP0Dot1LowAverageStatisticParameter && !double.IsNaN(p0dot1_averageLow))
-                builder.Append("0.1% Low" + "\t" + p0dot1_averageLow.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
+            if (_appConfiguration.UseSingleRecordP0Dot1LowAverageStatisticParameter && !double.IsNaN(p0dot1_LowAverage))
+                builder.Append("0.1% Low Average" + "\t" + p0dot1_LowAverage.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
+            if (_appConfiguration.UseSingleRecordP0Dot1LowIntegralStatisticParameter && !double.IsNaN(p0dot1_LowIntegral))
+                builder.Append("0.1% Low Integral" + "\t" + p0dot1_LowIntegral.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
             if (_appConfiguration.UseSingleRecordMinStatisticParameter)
                 builder.Append("Min" + "\t" + min.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
             if (_appConfiguration.UseSingleRecordAdaptiveSTDStatisticParameter)
@@ -1132,8 +1139,10 @@ namespace CapFrameX.ViewModel
             var p0dot2_quantile = GetMetricValue(frametimes, EMetric.P0dot2);
             var p1_quantile = GetMetricValue(frametimes, EMetric.P1);
             var p5_quantile = GetMetricValue(frametimes, EMetric.P5);
-            var p1_averageLow = GetMetricValue(frametimes, EMetric.OnePercentLow);
-            var p0dot1_averageLow = GetMetricValue(frametimes, EMetric.ZerodotOnePercentLow);
+            var p1_LowAverage = GetMetricValue(frametimes, EMetric.OnePercentLowAverage);
+            var p0dot1_LowAverage = GetMetricValue(frametimes, EMetric.ZerodotOnePercentLowAverage);
+            var p1_LowIntegral = GetMetricValue(frametimes, EMetric.OnePercentLowIntegral);
+            var p0dot1_LowIntegral = GetMetricValue(frametimes, EMetric.ZerodotOnePercentLowIntegral);
             var min = GetMetricValue(frametimes, EMetric.Min);
             var adaptiveStandardDeviation = GetMetricValue(frametimes, EMetric.AdaptiveStd);
             var cpuFpsPerWatt = _frametimeStatisticProvider
@@ -1157,14 +1166,18 @@ namespace CapFrameX.ViewModel
                     values.Add(adaptiveStandardDeviation);
                 if (_appConfiguration.UseSingleRecordMinStatisticParameter)
                     values.Add(min);
-                if (_appConfiguration.UseSingleRecordP0Dot1LowAverageStatisticParameter && !double.IsNaN(p0dot1_averageLow))
-                    values.Add(p0dot1_averageLow);
+                if (_appConfiguration.UseSingleRecordP0Dot1LowIntegralStatisticParameter && !double.IsNaN(p0dot1_LowIntegral))
+                    values.Add(p0dot1_LowIntegral);
+                if (_appConfiguration.UseSingleRecordP0Dot1LowAverageStatisticParameter && !double.IsNaN(p0dot1_LowAverage))
+                    values.Add(p0dot1_LowAverage);
                 if (_appConfiguration.UseSingleRecordP0Dot1QuantileStatisticParameter)
                     values.Add(p0dot1_quantile);
                 if (_appConfiguration.UseSingleRecordP0Dot2QuantileStatisticParameter)
                     values.Add(p0dot2_quantile);
-                if (_appConfiguration.UseSingleRecordP1LowAverageStatisticParameter && !double.IsNaN(p1_averageLow))
-                    values.Add(p1_averageLow);
+                if (_appConfiguration.UseSingleRecordP1LowIntegralStatisticParameter && !double.IsNaN(p1_LowIntegral))
+                    values.Add(p1_LowIntegral);
+                if (_appConfiguration.UseSingleRecordP1LowAverageStatisticParameter && !double.IsNaN(p1_LowAverage))
+                    values.Add(p1_LowAverage);
                 if (_appConfiguration.UseSingleRecordP1QuantileStatisticParameter)
                     values.Add(p1_quantile);
                 if (_appConfiguration.UseSingleRecordP5QuantileStatisticParameter)
@@ -1199,7 +1212,7 @@ namespace CapFrameX.ViewModel
 
                 var parameterLabelList = new List<string>();
 
-                //{ "Adaptive STDEV", "Min", "0.1% Low", "0.1%", "0.2%", "1% Low", "1%", "5%", "Average", "95%", "99%", "Max" }
+                //{ "Adaptive STDEV", "Min", "0.1% Low Integral", "0.1% Low Average", "0.1%", "0.2%", "1% Low Integral", "1% Low Average", "1%", "5%", "Average", "95%", "99%", "Max" }
 
                 if (_appConfiguration.UseSingleRecordGpuFpsPerWattParameter)
                     parameterLabelList.Add("GPU FPS/10W");
@@ -1209,14 +1222,18 @@ namespace CapFrameX.ViewModel
                     parameterLabelList.Add("Adaptive STDEV");
                 if (_appConfiguration.UseSingleRecordMinStatisticParameter)
                     parameterLabelList.Add("Min");
-                if (_appConfiguration.UseSingleRecordP0Dot1LowAverageStatisticParameter && !double.IsNaN(p0dot1_averageLow))
-                    parameterLabelList.Add("0.1% Low");
+                if (_appConfiguration.UseSingleRecordP0Dot1LowIntegralStatisticParameter && !double.IsNaN(p0dot1_LowIntegral))
+                    parameterLabelList.Add("0.1% Low Integral");
+                if (_appConfiguration.UseSingleRecordP0Dot1LowAverageStatisticParameter && !double.IsNaN(p0dot1_LowAverage))
+                    parameterLabelList.Add("0.1% Low Average");
                 if (_appConfiguration.UseSingleRecordP0Dot1QuantileStatisticParameter)
                     parameterLabelList.Add("P0.1");
                 if (_appConfiguration.UseSingleRecordP0Dot2QuantileStatisticParameter)
                     parameterLabelList.Add("P0.2");
-                if (_appConfiguration.UseSingleRecordP1LowAverageStatisticParameter && !double.IsNaN(p1_averageLow))
-                    parameterLabelList.Add("1% Low");
+                if (_appConfiguration.UseSingleRecordP1LowIntegralStatisticParameter && !double.IsNaN(p1_LowIntegral))
+                    parameterLabelList.Add("1% Low Integral");
+                if (_appConfiguration.UseSingleRecordP1LowAverageStatisticParameter && !double.IsNaN(p1_LowAverage))
+                    parameterLabelList.Add("1% Low Average");
                 if (_appConfiguration.UseSingleRecordP1QuantileStatisticParameter)
                     parameterLabelList.Add("P1");
                 if (_appConfiguration.UseSingleRecordP5QuantileStatisticParameter)

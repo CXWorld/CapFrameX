@@ -13,7 +13,11 @@
         private bool _useP0Dot1QuantileStatisticParameter;
 		private bool _useP1LowAverageStatisticParameter;
 		private bool _useP0Dot1LowAverageStatisticParameter;
-		private bool _useMinStatisticParameter;
+
+        private bool _useP1LowIntegralStatisticParameter;
+        private bool _useP0Dot1LowIntegralStatisticParameter;
+
+        private bool _useMinStatisticParameter;
 		private bool _useAdaptiveSTDStatisticParameter;
 		private bool _useSingleRecordCpuFpsPerWattParameter;
 		private bool _useSingleRecordGpuFpsPerWattParameter;
@@ -31,7 +35,11 @@
             UseP0Dot1QuantileStatisticParameter = _appConfiguration.UseSingleRecordP0Dot1QuantileStatisticParameter;
 			UseP1LowAverageStatisticParameter = _appConfiguration.UseSingleRecordP1LowAverageStatisticParameter;
 			UseP0Dot1LowAverageStatisticParameter = _appConfiguration.UseSingleRecordP0Dot1LowAverageStatisticParameter;
-			UseMinStatisticParameter = _appConfiguration.UseSingleRecordMinStatisticParameter;
+
+            UseP1LowIntegralStatisticParameter = _appConfiguration.UseSingleRecordP1LowIntegralStatisticParameter;
+            UseP0Dot1LowIntegralStatisticParameter = _appConfiguration.UseSingleRecordP0Dot1LowIntegralStatisticParameter;
+
+            UseMinStatisticParameter = _appConfiguration.UseSingleRecordMinStatisticParameter;
 			UseAdaptiveSTDStatisticParameter = _appConfiguration.UseSingleRecordAdaptiveSTDStatisticParameter;
 			UseCpuFpsPerWattParameter = _appConfiguration.UseSingleRecordCpuFpsPerWattParameter;
 			UseGpuFpsPerWattParameter = _appConfiguration.UseSingleRecordGpuFpsPerWattParameter;
@@ -168,7 +176,31 @@
 			}
 		}
 
-		public bool UseMinStatisticParameter
+        public bool UseP1LowIntegralStatisticParameter
+        {
+            get { return _useP1LowIntegralStatisticParameter; }
+            set
+            {
+                _useP1LowIntegralStatisticParameter = value;
+                _appConfiguration.UseSingleRecordP1LowIntegralStatisticParameter = value;
+                OnAcceptParameterSettings();
+                RaisePropertyChanged();
+            }
+        }
+
+        public bool UseP0Dot1LowIntegralStatisticParameter
+        {
+            get { return _useP0Dot1LowIntegralStatisticParameter; }
+            set
+            {
+                _useP0Dot1LowIntegralStatisticParameter = value;
+                _appConfiguration.UseSingleRecordP0Dot1LowIntegralStatisticParameter = value;
+                OnAcceptParameterSettings();
+                RaisePropertyChanged();
+            }
+        }
+
+        public bool UseMinStatisticParameter
 		{
 			get { return _useMinStatisticParameter; }
 			set

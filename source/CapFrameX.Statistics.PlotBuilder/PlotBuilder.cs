@@ -269,7 +269,6 @@ namespace CapFrameX.Statistics.PlotBuilder
 
         public void SetAggregationSeparators(ISession session, PlotModel plotModel, bool showSeparators)
         {
-
             plotModel.Annotations.Clear();
 
             if (!showSeparators || session.Runs.Count < 2)

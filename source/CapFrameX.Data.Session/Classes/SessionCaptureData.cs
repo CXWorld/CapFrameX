@@ -31,7 +31,6 @@ namespace CapFrameX.Data.Session.Classes
 			AllowsTearing = new int[numberOfCapturePoints];
 			SyncInterval = new int[numberOfCapturePoints];
 			Dropped = new bool[numberOfCapturePoints];
-			PcLatency = new double[numberOfCapturePoints];
         }
 
 		public IEnumerable<CaptureDataEntry> LineWise()
@@ -51,7 +50,7 @@ namespace CapFrameX.Data.Session.Classes
 					AllowsTearing = AllowsTearing[i],
 					SyncInterval = SyncInterval[i],
 					Dropped = Dropped[i],
-                    PcLatency = PcLatency[i]
+					PcLatency = PcLatency != null ? PcLatency[i] : double.NaN
                 };
 			}
 		}

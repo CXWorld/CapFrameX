@@ -21,7 +21,7 @@ namespace CapFrameX.Statistics.NetStandard.Contracts
 
         double GetPQuantileSequence(IList<double> sequence, double pQuantile);
 
-        double GetPercentageHighSequence(IList<double> sequence, double pQuantile);
+        double GetPercentageHighIntegralSequence(IList<double> sequence, double pQuantile);
 
         double GetFpsMetricValue(IList<double> sequence, EMetric metric);
 

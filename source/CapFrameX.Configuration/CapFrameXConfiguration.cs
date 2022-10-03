@@ -333,11 +333,23 @@ namespace CapFrameX.Configuration
 
         public bool UseSingleRecordP1LowAverageStatisticParameter
         {
-            get => Get<bool>(false);
+            get => Get<bool>(true);
             set => Set(value);
         }
 
         public bool UseSingleRecordP0Dot1LowAverageStatisticParameter
+        {
+            get => Get<bool>(true);
+            set => Set(value);
+        }
+
+        public bool UseSingleRecordP1LowIntegralStatisticParameter
+        {
+            get => Get<bool>(false);
+            set => Set(value);
+        }
+
+        public bool UseSingleRecordP0Dot1LowIntegralStatisticParameter
         {
             get => Get<bool>(false);
             set => Set(value);
@@ -763,8 +775,10 @@ namespace CapFrameX.Configuration
         public bool ReportShowP1FPS { get; set; } = true;
         public bool ReportShowP0Dot2FPS { get; set; } = true;
         public bool ReportShowP0Dot1FPS { get; set; } = true;
-        public bool ReportShowP1LowFPS { get; set; } = true;
-        public bool ReportShowP0Dot1LowFPS { get; set; } = true;
+        public bool ReportShowP1LowAverageFPS { get; set; } = true;
+        public bool ReportShowP0Dot1LowAverageFPS { get; set; } = true;
+        public bool ReportShowP1LowIntegralFPS { get; set; } = true;
+        public bool ReportShowP0Dot1LowIntegralFPS { get; set; } = true;
         public bool ReportShowMinFPS { get; set; } = true;
         public bool ReportShowAdaptiveSTD { get; set; } = true;
         public bool ReportShowCpuFpsPerWatt { get; set; } = true;

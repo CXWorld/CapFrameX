@@ -791,6 +791,12 @@ namespace CapFrameX.Data
 
                 var captureData = new SessionCaptureData(presentLines.Count());
 
+                // When latency data is available initialize array
+                if (indexPcLatency > 0)
+                {
+                    captureData.PcLatency = new double[presentLines.Count()];
+                }
+
                 var dataLines = presentLines.ToArray();
 
                 var presentModeMapping = Enum.GetValues(typeof(EPresentMode)).Cast<EPresentMode>().ToDictionary(e => e.GetDescription(), e => (int)e);

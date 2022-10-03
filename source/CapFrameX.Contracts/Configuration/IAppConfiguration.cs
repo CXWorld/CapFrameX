@@ -52,7 +52,11 @@ namespace CapFrameX.Contracts.Configuration
 
 		bool UseSingleRecordP0Dot1LowAverageStatisticParameter { get; set; }
 
-		bool UseSingleRecordMinStatisticParameter { get; set; }
+        bool UseSingleRecordP1LowIntegralStatisticParameter { get; set; }
+
+        bool UseSingleRecordP0Dot1LowIntegralStatisticParameter { get; set; }
+
+        bool UseSingleRecordMinStatisticParameter { get; set; }
 
 		bool UseSingleRecordAdaptiveSTDStatisticParameter { get; set; }
 
@@ -267,11 +271,15 @@ namespace CapFrameX.Contracts.Configuration
 
 		bool ReportShowP0Dot1FPS { get; set; }
 
-		bool ReportShowP1LowFPS { get; set; }
+		bool ReportShowP1LowAverageFPS { get; set; }
 
-		bool ReportShowP0Dot1LowFPS { get; set; }
+		bool ReportShowP0Dot1LowAverageFPS { get; set; }
 
-		bool ReportShowMinFPS { get; set; }
+        bool ReportShowP1LowIntegralFPS { get; set; }
+
+        bool ReportShowP0Dot1LowIntegralFPS { get; set; }
+
+        bool ReportShowMinFPS { get; set; }
 
 		bool ReportShowAdaptiveSTD { get; set; }
 
