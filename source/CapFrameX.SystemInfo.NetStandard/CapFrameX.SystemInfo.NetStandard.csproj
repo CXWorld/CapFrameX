@@ -6,9 +6,9 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
-    <PackageReference Include="Mixaill.HwInfo.D3D" Version="0.4.0" />
-    <PackageReference Include="Mixaill.HwInfo.SetupApi" Version="0.4.0" />
-    <PackageReference Include="Mixaill.HwInfo.Vulkan" Version="0.4.0" />
+    <PackageReference Include="Mixaill.HwInfo.D3D" Version="0.4.2" />
+    <PackageReference Include="Mixaill.HwInfo.SetupApi" Version="0.4.2" />
+    <PackageReference Include="Mixaill.HwInfo.Vulkan" Version="0.4.2" />
     <PackageReference Include="System.Diagnostics.PerformanceCounter" Version="6.0.1" />
   </ItemGroup>
 
