@@ -104,6 +104,9 @@ namespace OpenHardwareMonitor.Hardware.IntelGPU
         public static extern uint GetAdpaterCount();
 
         [DllImport("CapFrameX.IGCL.dll")]
+        public static extern uint GetBusWidth(uint index);
+
+        [DllImport("CapFrameX.IGCL.dll")]
         public static extern bool GetDeviceInfo(uint index, ref IgclDeviceInfo igclDeviceInfo);
 
         [DllImport("CapFrameX.IGCL.dll")]

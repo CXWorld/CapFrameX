@@ -525,7 +525,7 @@ namespace CapFrameX.Overlay
                     formatString = "MB ";
                     break;
                 case SensorType.Throughput:
-                    formatString = "MB/s";
+                    formatString = "GB/s";
                     break;
                 case SensorType.Frequency:
                     formatString = "Hz ";
@@ -689,7 +689,7 @@ namespace CapFrameX.Overlay
                     description = $"{sensor.Name} (MB)";
                     break;
                 case SensorType.Throughput:
-                    description = $"{sensor.Name} (MB/s)";
+                    description = $"{sensor.Name} (GB/s)";
                     break;
                 case SensorType.Frequency:
                     description = $"{sensor.Name} (Hz)";

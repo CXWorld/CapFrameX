@@ -9,6 +9,7 @@ namespace OpenHardwareMonitor.Hardware.IntelGPU
         private readonly int adapterIndex;
         private readonly int busNumber;
         private readonly int deviceNumber;
+        private readonly int busWidth;
         private readonly string driverVersion;
         private readonly ISensorConfig sensorConfig;
 
@@ -34,7 +35,7 @@ namespace OpenHardwareMonitor.Hardware.IntelGPU
         // ToDo: get all fans info
         private readonly Sensor speedFan;
 
-        public IntelGPU(string name, int adapterIndex, int busNumber, int deviceNumber, string driverVersion, 
+        public IntelGPU(string name, int adapterIndex, int busNumber, int deviceNumber, int busWidth, string driverVersion, 
             ISettings settings, ISensorConfig config, IProcessService processService)
           : base(name, new Identifier("intelgpu",
             adapterIndex.ToString(CultureInfo.InvariantCulture)), settings, processService)
@@ -42,6 +43,7 @@ namespace OpenHardwareMonitor.Hardware.IntelGPU
             this.adapterIndex = adapterIndex;
             this.busNumber = busNumber;
             this.deviceNumber = deviceNumber;
+            this.busWidth = busWidth;
             this.driverVersion = driverVersion;
             this.sensorConfig = config;
 
@@ -66,8 +68,8 @@ namespace OpenHardwareMonitor.Hardware.IntelGPU
             this.memoryUsageShared = new Sensor("GPU Memory Shared", 1, SensorType.Data, this, settings);
             this.processMemoryUsageDedicated = new Sensor("GPU Memory Dedicated Game", 2, SensorType.Data, this, settings);
             this.processMemoryUsageShared = new Sensor("GPU Memory Shared Game", 3, SensorType.Data, this, settings);
-            this.bandwidthReadVram = new Sensor("GPU Memory Read", 4, SensorType.Data, this, settings);
-            this.bandwidthWriteVram = new Sensor("GPU Memory Write", 5, SensorType.Data, this, settings);
+            this.bandwidthReadVram = new Sensor("GPU Memory Read", 4, SensorType.Throughput, this, settings);
+            this.bandwidthWriteVram = new Sensor("GPU Memory Write", 5, SensorType.Throughput, this, settings);
 
             this.speedFan = new Sensor("GPU Fan", 0, SensorType.Fan, this, settings);
 
@@ -213,7 +215,7 @@ namespace OpenHardwareMonitor.Hardware.IntelGPU
             // VRAM Read Bandwidth
             if (igclTelemetryData.vramReadBandwidthSupported)
             {
-                bandwidthReadVram.Value = (float)igclTelemetryData.vramReadBandwidthValue;
+                bandwidthReadVram.Value = (float)(igclTelemetryData.vramReadBandwidthValue * busWidth / 1024);
                 ActivateSensor(bandwidthReadVram);
             }
             else
@@ -224,7 +226,7 @@ namespace OpenHardwareMonitor.Hardware.IntelGPU
             // VRAM Write Bandwidth
             if (igclTelemetryData.vramWriteBandwidthSupported)
             {
-                bandwidthWriteVram.Value = (float)igclTelemetryData.vramWriteBandwidthValue;
+                bandwidthWriteVram.Value = (float)(igclTelemetryData.vramWriteBandwidthValue * busWidth / 1024);
                 ActivateSensor(bandwidthWriteVram);
             }
             else

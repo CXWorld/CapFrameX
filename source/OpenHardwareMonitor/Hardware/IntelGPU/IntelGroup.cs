@@ -35,6 +35,7 @@ namespace OpenHardwareMonitor.Hardware.IntelGPU
                                               index,
                                               deviceInfo.AdapterID,
                                               (int)deviceInfo.Pci_device_id,
+                                              (int)IGCL.GetBusWidth((uint)index),
                                               deviceInfo.DriverVersion,
                                               settings,
                                               sensorConfig,

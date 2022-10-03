@@ -605,7 +605,7 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
                       NVML.NvmlPcieUtilCounter.RxBytes, out uint value)
                       == NVML.NvmlReturn.Success)
                     {
-                        pcieThroughputRx.Value = value / 1024f;
+                        pcieThroughputRx.Value = value / (1024f * 1024f);
                         ActivateSensor(pcieThroughputRx);
                     }
                 }
@@ -623,7 +623,7 @@ namespace OpenHardwareMonitor.Hardware.Nvidia
                       NVML.NvmlPcieUtilCounter.TxBytes, out uint value)
                       == NVML.NvmlReturn.Success)
                     {
-                        pcieThroughputTx.Value = value / 1024f;
+                        pcieThroughputTx.Value = value / (1024f * 1024f);
                         ActivateSensor(pcieThroughputTx);
                     }
                 }

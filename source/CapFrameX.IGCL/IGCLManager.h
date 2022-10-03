@@ -81,6 +81,8 @@ extern "C" IGCL_API void CloseIgcl();
 
 extern "C" IGCL_API uint32_t GetAdpaterCount();
 
+extern "C" IGCL_API uint32_t GetBusWidth(const uint32_t index);
+
 extern "C" IGCL_API bool GetDeviceInfo(const uint32_t index, IgclDeviceInfo *igclDeviceInfo);
 
 extern "C" IGCL_API bool GetIgclTelemetryData(const uint32_t index, IgclTelemetryData *igclTelemetryData);
