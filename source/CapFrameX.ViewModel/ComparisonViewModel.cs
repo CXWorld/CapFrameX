@@ -757,10 +757,8 @@ namespace CapFrameX.ViewModel
             PercentageFormatter = value => value.ToString("P");
             SelectedComparisonContext = _appConfiguration.ComparisonContext.ConvertToEnum<EComparisonContext>();
             SelectedSecondComparisonContext = _appConfiguration.SecondComparisonContext.ConvertToEnum<EComparisonContext>();
-            SelectedFirstMetric = _appConfiguration.ComparisonFirstMetric.ConvertToEnum<EMetric>();
-            SelectedSecondMetric = _appConfiguration.ComparisonSecondMetric.ConvertToEnum<EMetric>();
-            SelectedThirdMetric = _appConfiguration.ComparisonThirdMetric.ConvertToEnum<EMetric>();
 
+            InitializeMetricsFromConfig();
             SetRowSeries();
             SetVarianceSeries();
             SubscribeToSelectRecord();
@@ -878,7 +876,7 @@ namespace CapFrameX.ViewModel
             double thirdRowHeight = BarChartMaxRowHeight;
 
             if (SelectedSecondMetric == EMetric.None && SelectedThirdMetric == EMetric.None)
-            { 
+            {
                 firstRowHeight = BarChartMaxRowHeight * BARCHART_FACTOR_ONE_METRIC;
                 fontSizeLabels = 13;
             }
@@ -1142,27 +1140,27 @@ namespace CapFrameX.ViewModel
                     (ComparisonRowChartSeriesCollection[i] as RowSeries).Fill = new SolidColorBrush(FirstMetricBarColor);
                     (ComparisonRowChartSeriesCollectionLegend[i] as RowSeries).Fill = new SolidColorBrush(FirstMetricBarColor);
                 }
-               
+
                 else if (i == 1 && SelectedSecondMetric == EMetric.None)
                 {
                     (ComparisonRowChartSeriesCollection[i] as RowSeries).Fill = new SolidColorBrush(ThirdMetricBarColor);
                     (ComparisonRowChartSeriesCollectionLegend[i] as RowSeries).Fill = new SolidColorBrush(ThirdMetricBarColor);
                 }
-                    
+
                 else if (i == 1)
                 {
                     (ComparisonRowChartSeriesCollection[i] as RowSeries).Fill = new SolidColorBrush(SecondMetricBarColor);
                     (ComparisonRowChartSeriesCollectionLegend[i] as RowSeries).Fill = new SolidColorBrush(SecondMetricBarColor);
                 }
-                    
+
                 else if (i == 2)
                 {
                     (ComparisonRowChartSeriesCollection[i] as RowSeries).Fill = new SolidColorBrush(ThirdMetricBarColor);
                     (ComparisonRowChartSeriesCollectionLegend[i] as RowSeries).Fill = new SolidColorBrush(ThirdMetricBarColor);
                 }
-                    
+
             }
-            
+
         }
 
         private void OnFilterModeChanged()
@@ -1717,10 +1715,21 @@ namespace CapFrameX.ViewModel
 
         }
 
-
-
-
-
+        private void InitializeMetricsFromConfig()
+        {
+            try
+            {
+                SelectedFirstMetric = _appConfiguration.ComparisonFirstMetric.ConvertToEnum<EMetric>();
+                SelectedSecondMetric = _appConfiguration.ComparisonSecondMetric.ConvertToEnum<EMetric>();
+                SelectedThirdMetric = _appConfiguration.ComparisonThirdMetric.ConvertToEnum<EMetric>();
+            }
+            catch
+            {
+                SelectedFirstMetric = EMetric.Average;
+                SelectedSecondMetric = EMetric.P1;
+                SelectedThirdMetric = EMetric.P0dot2;
+            }
+        }
 
         private string GetDescriptionAndFpsUnit(EMetric metric)
         {
