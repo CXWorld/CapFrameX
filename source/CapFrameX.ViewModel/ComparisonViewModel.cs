@@ -893,7 +893,8 @@ namespace CapFrameX.ViewModel
                 {
                     Values = new ChartValues<double>(),
                     Fill = new SolidColorBrush(FirstMetricBarColor),
-                    HighlightFill = new SolidColorBrush(Color.FromRgb(122, 192, 247)),
+                    HighlightFill = new SolidColorBrush(CreateHighlightColor(FirstMetricBarColor)),
+                    //HighlightFill = new SolidColorBrush(Color.FromRgb(122, 192, 247)),
                     FontSize = fontSizeLabels,
                     Stroke= Brushes.Transparent,
                     StrokeThickness = 2,
@@ -912,7 +913,8 @@ namespace CapFrameX.ViewModel
                 {
                     Values = new ChartValues<double>(),
                     Fill = new SolidColorBrush(SecondMetricBarColor),
-                    HighlightFill = new SolidColorBrush(Color.FromRgb(245, 164, 98)),
+                    HighlightFill = new SolidColorBrush(CreateHighlightColor(SecondMetricBarColor)),
+                    //HighlightFill = new SolidColorBrush(Color.FromRgb(245, 164, 98)),
                     FontSize = fontSizeLabels,
                     Stroke = Brushes.Transparent,
                     StrokeThickness = 2,
@@ -931,7 +933,8 @@ namespace CapFrameX.ViewModel
                 {
                     Values = new ChartValues<double>(),
                     Fill = new SolidColorBrush(ThirdMetricBarColor),
-                    HighlightFill = new SolidColorBrush(Color.FromRgb(245, 217, 128)),
+                    HighlightFill = new SolidColorBrush(CreateHighlightColor(ThirdMetricBarColor)),
+                    //HighlightFill = new SolidColorBrush(Color.FromRgb(245, 217, 128)),
                     FontSize = fontSizeLabels,
                     Stroke = Brushes.Transparent,
                     StrokeThickness = 2,
@@ -1138,24 +1141,28 @@ namespace CapFrameX.ViewModel
                 if (i == 0)
                 {
                     (ComparisonRowChartSeriesCollection[i] as RowSeries).Fill = new SolidColorBrush(FirstMetricBarColor);
+                    (ComparisonRowChartSeriesCollection[i] as RowSeries).HighlightFill = new SolidColorBrush(CreateHighlightColor(FirstMetricBarColor));
                     (ComparisonRowChartSeriesCollectionLegend[i] as RowSeries).Fill = new SolidColorBrush(FirstMetricBarColor);
                 }
 
                 else if (i == 1 && SelectedSecondMetric == EMetric.None)
                 {
                     (ComparisonRowChartSeriesCollection[i] as RowSeries).Fill = new SolidColorBrush(ThirdMetricBarColor);
+                    (ComparisonRowChartSeriesCollection[i] as RowSeries).HighlightFill = new SolidColorBrush(CreateHighlightColor(ThirdMetricBarColor));
                     (ComparisonRowChartSeriesCollectionLegend[i] as RowSeries).Fill = new SolidColorBrush(ThirdMetricBarColor);
                 }
 
                 else if (i == 1)
                 {
                     (ComparisonRowChartSeriesCollection[i] as RowSeries).Fill = new SolidColorBrush(SecondMetricBarColor);
+                    (ComparisonRowChartSeriesCollection[i] as RowSeries).HighlightFill = new SolidColorBrush(CreateHighlightColor(SecondMetricBarColor));
                     (ComparisonRowChartSeriesCollectionLegend[i] as RowSeries).Fill = new SolidColorBrush(SecondMetricBarColor);
                 }
 
                 else if (i == 2)
                 {
                     (ComparisonRowChartSeriesCollection[i] as RowSeries).Fill = new SolidColorBrush(ThirdMetricBarColor);
+                    (ComparisonRowChartSeriesCollection[i] as RowSeries).HighlightFill = new SolidColorBrush(CreateHighlightColor(ThirdMetricBarColor));
                     (ComparisonRowChartSeriesCollectionLegend[i] as RowSeries).Fill = new SolidColorBrush(ThirdMetricBarColor);
                 }
 
@@ -1792,6 +1799,14 @@ namespace CapFrameX.ViewModel
             return wrappedComparisonRecordInfo;
         }
 
+
+        private Color CreateHighlightColor(Color color)
+        {
+            var drawingcolor = System.Drawing.Color.FromArgb(color.A, color.R, color.G, color.B);
+            var highlightColor = ControlPaint.LightLight(drawingcolor);
+
+            return Color.FromArgb(highlightColor.A, highlightColor.R, highlightColor.G, highlightColor.B);
+        }
 
 
 
