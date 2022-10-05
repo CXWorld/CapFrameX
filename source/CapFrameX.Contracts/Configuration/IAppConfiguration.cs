@@ -233,6 +233,11 @@ namespace CapFrameX.Contracts.Configuration
 		/// When available, use the simulated TBP value instead of the normal "GPU Total" value for analysis like FPS/W
 		/// </summary>
 		bool UseTBPSim { get; set; }
+
+		string FirstMetricBarColor { get; set; }
+		string SecondMetricBarColor { get; set; }
+		string ThirdMetricBarColor { get; set; }
+
 	}
 
 	public interface IReportDataGridColumnSettings

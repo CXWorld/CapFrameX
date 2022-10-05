@@ -660,6 +660,37 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        public Color FirstMetricBarColor
+        {
+            get { return (Color)ColorConverter.ConvertFromString(_appConfiguration.FirstMetricBarColor); }
+            set
+            {
+                _appConfiguration.FirstMetricBarColor = value.ToString();
+                OnRowSeriesColorChanged();
+                RaisePropertyChanged();
+            }
+        }
+        public Color SecondMetricBarColor
+        {
+            get { return (Color)ColorConverter.ConvertFromString(_appConfiguration.SecondMetricBarColor); }
+            set
+            {
+                _appConfiguration.SecondMetricBarColor = value.ToString(); ;
+                OnRowSeriesColorChanged();
+                RaisePropertyChanged();
+            }
+        }
+        public Color ThirdMetricBarColor
+        {
+            get { return (Color)ColorConverter.ConvertFromString(_appConfiguration.ThirdMetricBarColor); }
+            set
+            {
+                _appConfiguration.ThirdMetricBarColor = value.ToString();
+                OnRowSeriesColorChanged();
+                RaisePropertyChanged();
+            }
+        }
+
         public TooltipData LShapeTolTipData { get; set; }
 
 
@@ -685,6 +716,7 @@ namespace CapFrameX.ViewModel
         public ICommand SaveFrametimePlotAsPNG { get; }
 
         public ICommand SaveFPSPlotAsPNG { get; }
+
 
         public ComparisonCollection ComparisonRecords { get; private set; }
             = new ComparisonCollection();
@@ -862,7 +894,7 @@ namespace CapFrameX.ViewModel
                 new RowSeries
                 {
                     Values = new ChartValues<double>(),
-                    Fill = new SolidColorBrush(Color.FromRgb(34, 151, 243)),
+                    Fill = new SolidColorBrush(FirstMetricBarColor),
                     HighlightFill = new SolidColorBrush(Color.FromRgb(122, 192, 247)),
                     FontSize = fontSizeLabels,
                     Stroke= Brushes.Transparent,
@@ -881,7 +913,7 @@ namespace CapFrameX.ViewModel
                 new RowSeries
                 {
                     Values = new ChartValues<double>(),
-                    Fill = new SolidColorBrush(Color.FromRgb(241, 125, 32)),
+                    Fill = new SolidColorBrush(SecondMetricBarColor),
                     HighlightFill = new SolidColorBrush(Color.FromRgb(245, 164, 98)),
                     FontSize = fontSizeLabels,
                     Stroke = Brushes.Transparent,
@@ -900,7 +932,7 @@ namespace CapFrameX.ViewModel
                 new RowSeries
                 {
                     Values = new ChartValues<double>(),
-                    Fill = new SolidColorBrush(Color.FromRgb(255, 180, 0)),
+                    Fill = new SolidColorBrush(ThirdMetricBarColor),
                     HighlightFill = new SolidColorBrush(Color.FromRgb(245, 217, 128)),
                     FontSize = fontSizeLabels,
                     Stroke = Brushes.Transparent,
@@ -920,7 +952,8 @@ namespace CapFrameX.ViewModel
                 {
                     Title = GetDescriptionAndFpsUnit(SelectedFirstMetric),
                     Values = new ChartValues<double>(),
-                    Fill = new SolidColorBrush(Color.FromRgb(34, 151, 243)),
+                    Fill = new SolidColorBrush(FirstMetricBarColor)
+                    //Fill = new SolidColorBrush(Color.FromRgb(34, 151, 243)),
                 }
             };
 
@@ -932,7 +965,8 @@ namespace CapFrameX.ViewModel
                 {
                     Title = GetDescriptionAndFpsUnit(SelectedSecondMetric),
                     Values = new ChartValues<double>(),
-                    Fill = new SolidColorBrush(Color.FromRgb(241, 125, 32)),
+                    Fill = new SolidColorBrush(SecondMetricBarColor)
+                    //Fill = new SolidColorBrush(Color.FromRgb(241, 125, 32)),
                 });
             }
 
@@ -944,7 +978,8 @@ namespace CapFrameX.ViewModel
                 {
                     Title = GetDescriptionAndFpsUnit(SelectedThirdMetric),
                     Values = new ChartValues<double>(),
-                    Fill = new SolidColorBrush(Color.FromRgb(255, 180, 0)),
+                    Fill = new SolidColorBrush(ThirdMetricBarColor)
+                    //Fill = new SolidColorBrush(Color.FromRgb(255, 180, 0)),
                 });
             }
         }
@@ -1096,6 +1131,38 @@ namespace CapFrameX.ViewModel
 
             SetBarMinMaxValues();
             UpdateBarChartHeight();
+        }
+
+        private void OnRowSeriesColorChanged()
+        {
+            for (int i = 0; i < ComparisonRowChartSeriesCollection.Count; i++)
+            {
+                if (i == 0)
+                {
+                    (ComparisonRowChartSeriesCollection[i] as RowSeries).Fill = new SolidColorBrush(FirstMetricBarColor);
+                    (ComparisonRowChartSeriesCollectionLegend[i] as RowSeries).Fill = new SolidColorBrush(FirstMetricBarColor);
+                }
+               
+                else if (i == 1 && SelectedSecondMetric == EMetric.None)
+                {
+                    (ComparisonRowChartSeriesCollection[i] as RowSeries).Fill = new SolidColorBrush(ThirdMetricBarColor);
+                    (ComparisonRowChartSeriesCollectionLegend[i] as RowSeries).Fill = new SolidColorBrush(ThirdMetricBarColor);
+                }
+                    
+                else if (i == 1)
+                {
+                    (ComparisonRowChartSeriesCollection[i] as RowSeries).Fill = new SolidColorBrush(SecondMetricBarColor);
+                    (ComparisonRowChartSeriesCollectionLegend[i] as RowSeries).Fill = new SolidColorBrush(SecondMetricBarColor);
+                }
+                    
+                else if (i == 2)
+                {
+                    (ComparisonRowChartSeriesCollection[i] as RowSeries).Fill = new SolidColorBrush(ThirdMetricBarColor);
+                    (ComparisonRowChartSeriesCollectionLegend[i] as RowSeries).Fill = new SolidColorBrush(ThirdMetricBarColor);
+                }
+                    
+            }
+            
         }
 
         private void OnFilterModeChanged()

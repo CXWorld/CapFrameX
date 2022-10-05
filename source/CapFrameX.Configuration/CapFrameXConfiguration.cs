@@ -591,6 +591,21 @@ namespace CapFrameX.Configuration
             set => Set(value);
         }
 
+        public string FirstMetricBarColor
+        {
+            get => Get<string>("#2297F3");
+            set => Set(value);
+        }
+        public string SecondMetricBarColor
+        {
+            get => Get<string>("#F17D20");
+            set => Set(value);
+        }
+        public string ThirdMetricBarColor
+        {
+            get => Get<string>("#FFB400");
+            set => Set(value);
+        }
 
         // Sensor Settings
         public bool UseSensorLogging
