@@ -405,8 +405,8 @@
                                         </DataTemplate>
                                     </ComboBox.ItemTemplate>
                                 </ComboBox>
-                                <ctrls:CXColorPicker Width="50" Height="25" Grid.Row="1" Grid.Column="0" Margin="0 0 0 0" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" SelectedColor="{Binding FirstMetricBarColor}" 
-																      DisplayColorAndName="False" AvailableColorsSortingMode="HueSaturationBrightness" >
+                                <ctrls:CXColorPicker Width="50" Height="25" Grid.Row="1" Grid.Column="0" Margin="0 5 0 0" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" SelectedColor="{Binding FirstMetricBarColor}" 
+													DisplayColorAndName="False" AvailableColorsSortingMode="HueSaturationBrightness" >
                                     <ctrls:CXColorPicker.ButtonStyle>
                                         <Style TargetType="ToggleButton">
                                             <Setter Property="Template">
@@ -415,14 +415,14 @@
                                                         <Grid SnapsToDevicePixels="True">
                                                             <Grid>
                                                                 <Border Background="{TemplateBinding Background}"
-																							BorderBrush="{TemplateBinding BorderBrush}"
-																							BorderThickness="1"																						
-																							SnapsToDevicePixels="True">
+																		BorderBrush="{TemplateBinding BorderBrush}"
+																		BorderThickness="1"																						
+																		SnapsToDevicePixels="True">
                                                                     <ContentPresenter Content="{TemplateBinding Content}"
-																										  ContentTemplate="{TemplateBinding ContentTemplate}"
-																										  ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
-																										  VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-																										  HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"/>
+																					  ContentTemplate="{TemplateBinding ContentTemplate}"
+																					  ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
+																					  VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+																					  HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"/>
                                                                 </Border>
                                                             </Grid>
                                                         </Grid>
@@ -443,7 +443,7 @@
                                         </DataTemplate>
                                     </ComboBox.ItemTemplate>
                                 </ComboBox>
-                                <ctrls:CXColorPicker Width="50" Height="25" Grid.Row="1" Grid.Column="1" Margin="0 0 0 0" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" SelectedColor="{Binding SecondMetricBarColor}" 
+                                <ctrls:CXColorPicker Width="50" Height="25" Grid.Row="1" Grid.Column="1" Margin="0 5 0 0" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" SelectedColor="{Binding SecondMetricBarColor}" 
 																      DisplayColorAndName="False" AvailableColorsSortingMode="HueSaturationBrightness" >
                                     <ctrls:CXColorPicker.ButtonStyle>
                                         <Style TargetType="ToggleButton">
@@ -453,14 +453,14 @@
                                                         <Grid SnapsToDevicePixels="True">
                                                             <Grid>
                                                                 <Border Background="{TemplateBinding Background}"
-																							BorderBrush="{TemplateBinding BorderBrush}"
-																							BorderThickness="1"																						
-																							SnapsToDevicePixels="True">
+																		BorderBrush="{TemplateBinding BorderBrush}"
+																		BorderThickness="1"																						
+																		SnapsToDevicePixels="True">
                                                                     <ContentPresenter Content="{TemplateBinding Content}"
-																										  ContentTemplate="{TemplateBinding ContentTemplate}"
-																										  ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
-																										  VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-																										  HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"/>
+																					ContentTemplate="{TemplateBinding ContentTemplate}"
+																					ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
+																					VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+																					HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"/>
                                                                 </Border>
                                                             </Grid>
                                                         </Grid>
@@ -480,7 +480,7 @@
                                         </DataTemplate>
                                     </ComboBox.ItemTemplate>
                                 </ComboBox>
-                                <ctrls:CXColorPicker Width="50" Height="25" Grid.Row="1" Grid.Column="2" Margin="0 0 0 0" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" SelectedColor="{Binding ThirdMetricBarColor}" 
+                                <ctrls:CXColorPicker Width="50" Height="25" Grid.Row="1" Grid.Column="2" Margin="0 5 0 0" Background="{DynamicResource MaterialDesignTextFieldBoxBackground}" SelectedColor="{Binding ThirdMetricBarColor}" 
 																      DisplayColorAndName="False" AvailableColorsSortingMode="HueSaturationBrightness" >
                                     <ctrls:CXColorPicker.ButtonStyle>
                                         <Style TargetType="ToggleButton">
@@ -490,14 +490,14 @@
                                                         <Grid SnapsToDevicePixels="True">
                                                             <Grid>
                                                                 <Border Background="{TemplateBinding Background}"
-																							BorderBrush="{TemplateBinding BorderBrush}"
-																							BorderThickness="1"																						
-																							SnapsToDevicePixels="True">
+																		BorderBrush="{TemplateBinding BorderBrush}"
+																		BorderThickness="1"																						
+																		SnapsToDevicePixels="True">
                                                                     <ContentPresenter Content="{TemplateBinding Content}"
-																										  ContentTemplate="{TemplateBinding ContentTemplate}"
-																										  ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
-																										  VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-																										  HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"/>
+																						ContentTemplate="{TemplateBinding ContentTemplate}"
+																						ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
+																						VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+																						HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"/>
                                                                 </Border>
                                                             </Grid>
                                                         </Grid>
