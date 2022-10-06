@@ -27,7 +27,11 @@ namespace CapFrameX.Statistics.NetStandard
                 int localCount = 0;
                 while (localIndex >= 0)
                 {
-                    localSum += sequence[localIndex];
+                    if (localIndex > 0 && sequence[localIndex] > sequence[localIndex - 1] * 3)
+                        localSum += sequence[localIndex -1];
+                    else
+                        localSum += sequence[localIndex];
+
                     localCount++;
 
                     if (localCount >= _sampleSize)
