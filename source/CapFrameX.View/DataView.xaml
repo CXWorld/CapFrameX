@@ -441,8 +441,8 @@
                                     </DataGrid.Style>
                                     <DataGrid.ContextMenu>
                                         <ContextMenu DataContext="{Binding PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
-                                            <MenuItem Header="Copy sensor data(min, avg, max)" Command="{Binding Path=CopySensorInfoCommand}" CommandParameter="{Binding Path=SelectedIndex}"/>
-                                            <MenuItem Header="Copy raw sensor data" Command="{Binding Path=CopyRawSensorInfoCommand}" CommandParameter="{Binding Path=SelectedIndex}"/>
+                                            <MenuItem Header="Copy sensor data(min, avg, max)" Command="{Binding CopySensorInfoCommand}"/>
+                                            <MenuItem Header="Copy raw sensor data" Command="{Binding CopyRawSensorInfoCommand}"/>
                                         </ContextMenu>
                                     </DataGrid.ContextMenu>
                                     <DataGrid.Columns>
@@ -517,9 +517,9 @@
                                         <StaticResource ResourceKey="MaterialDesignDataGrid"/>
                                     </DataGrid.Style>
                                     <DataGrid.ContextMenu>
-                                        <ContextMenu DataContext="{Binding RelativeSource={RelativeSource Mode=Self}, Path=PlacementTarget}">
-                                            <MenuItem Header="Copy sensor data(min, avg, max)" Command="{Binding Path=CopySensorInfoCommand}"/>
-                                            <MenuItem Header="Copy raw sensor data" Command="{Binding Path=CopyRawSensorInfoCommand}"/>
+                                        <ContextMenu DataContext="{Binding PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
+                                            <MenuItem Header="Copy sensor data(min, avg, max)" Command="{Binding CopySensorInfoCommand}"/>
+                                            <MenuItem Header="Copy raw sensor data" Command="{Binding CopyRawSensorInfoCommand}"/>
                                         </ContextMenu>
                                     </DataGrid.ContextMenu>
                                     <DataGrid.Columns>
