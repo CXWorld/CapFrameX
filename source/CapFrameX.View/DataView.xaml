@@ -411,7 +411,7 @@
                                             <Setter Property="Height" Value="25" />
                                             <Setter Property="Background" Value="{DynamicResource MaterialDesignBackground}"/>
                                         </Style>
-                                        <Style TargetType="{x:Type DataGridCell}">
+                                        <Style x:Key="CellStyle" TargetType="DataGridCell">
                                             <Setter Property="Padding" Value="5 5 5 0" />
                                             <Setter Property="Background" Value="{DynamicResource MaterialDesignBackground}"/>
                                             <Setter Property="BorderBrush" Value="Transparent"/>
@@ -441,27 +441,31 @@
                                     </DataGrid.Style>
                                     <DataGrid.ContextMenu>
                                         <ContextMenu DataContext="{Binding PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
-                                            <MenuItem Header="Copy sensor data(min, avg, max)" Command="{Binding Path=CopySensorInfoCommand}" CommandParameter="{Binding Path=SelectedIndex}"/>
-                                            <MenuItem Header="Copy raw sensor data" Command="{Binding Path=CopyRawSensorInfoCommand}" CommandParameter="{Binding Path=SelectedIndex}"/>
+                                            <MenuItem Header="Copy sensor data(min, avg, max)" Command="{Binding CopySensorInfoCommand}"/>
+                                            <MenuItem Header="Copy raw sensor data" Command="{Binding CopyRawSensorInfoCommand}"/>
                                         </ContextMenu>
                                     </DataGrid.ContextMenu>
                                     <DataGrid.Columns>
                                         <DataGridTextColumn Binding="{Binding Name, Mode=OneWay}"                                                           
                                             Header="Sensor"       
                                             MinWidth="175"
-                                            IsReadOnly="True"/>
+                                            IsReadOnly="True"
+                                            CellStyle="{StaticResource CellStyle}"/>
                                         <DataGridTextColumn Binding="{Binding MinValue, Mode=OneWay}"
                                             Header="Min"
                                             Width="72"
-                                            IsReadOnly="True"/>
+                                            IsReadOnly="True"
+                                            CellStyle="{StaticResource CellStyle}"/>
                                         <DataGridTextColumn Binding="{Binding AverageValue, Mode=OneWay}"
                                             Header="Avg"
                                             Width="72"
-                                            IsReadOnly="True"/>
+                                            IsReadOnly="True"
+                                            CellStyle="{StaticResource CellStyle}"/>
                                         <DataGridTextColumn Binding="{Binding MaxValue, Mode=OneWay}"
                                             Header="Max"
                                             Width="72"
-                                            IsReadOnly="True"/>
+                                            IsReadOnly="True"
+                                            CellStyle="{StaticResource CellStyle}"/>
                                     </DataGrid.Columns>
                                 </DataGrid>
                             </TabItem>
@@ -484,7 +488,7 @@
                                             <Setter Property="Height" Value="25" />
                                             <Setter Property="Background" Value="{DynamicResource MaterialDesignBackground}"/>
                                         </Style>
-                                        <Style TargetType="{x:Type DataGridCell}">
+                                        <Style x:Key="CellStyle" TargetType="DataGridCell">
                                             <Setter Property="Padding" Value="5 5 5 0" />
                                             <Setter Property="Background" Value="{DynamicResource MaterialDesignBackground}"/>
                                             <Setter Property="BorderBrush" Value="Transparent"/>
@@ -513,28 +517,32 @@
                                         <StaticResource ResourceKey="MaterialDesignDataGrid"/>
                                     </DataGrid.Style>
                                     <DataGrid.ContextMenu>
-                                        <ContextMenu DataContext="{Binding RelativeSource={RelativeSource Mode=Self}, Path=PlacementTarget}">
-                                            <MenuItem Header="Copy sensor data(min, avg, max)" Command="{Binding Path=CopySensorInfoCommand}"/>
-                                            <MenuItem Header="Copy raw sensor data" Command="{Binding Path=CopyRawSensorInfoCommand}"/>
+                                        <ContextMenu DataContext="{Binding PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
+                                            <MenuItem Header="Copy sensor data(min, avg, max)" Command="{Binding CopySensorInfoCommand}"/>
+                                            <MenuItem Header="Copy raw sensor data" Command="{Binding CopyRawSensorInfoCommand}"/>
                                         </ContextMenu>
                                     </DataGrid.ContextMenu>
                                     <DataGrid.Columns>
                                         <DataGridTextColumn Binding="{Binding Name, Mode=OneWay}"                                                           
                                             Header="Sensor"       
                                             MinWidth="175"
-                                            IsReadOnly="True"/>
+                                            IsReadOnly="True"
+                                            CellStyle="{StaticResource CellStyle}"/>
                                         <DataGridTextColumn Binding="{Binding MinValue, Mode=OneWay}"
                                             Header="Min"
                                             Width="72"
-                                            IsReadOnly="True"/>
+                                            IsReadOnly="True"
+                                            CellStyle="{StaticResource CellStyle}"/>
                                         <DataGridTextColumn Binding="{Binding AverageValue, Mode=OneWay}"
                                             Header="Average"
                                             Width="72"
-                                            IsReadOnly="True"/>
+                                            IsReadOnly="True"
+                                            CellStyle="{StaticResource CellStyle}"/>
                                         <DataGridTextColumn Binding="{Binding MaxValue, Mode=OneWay}"
                                             Header="Max"
                                             Width="72"
-                                            IsReadOnly="True"/>
+                                            IsReadOnly="True"
+                                            CellStyle="{StaticResource CellStyle}"/>
                                     </DataGrid.Columns>
                                 </DataGrid>
                             </TabItem>
