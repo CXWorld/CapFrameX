@@ -410,7 +410,6 @@
                                         <Style TargetType="{x:Type DataGridRow}">
                                             <Setter Property="Height" Value="25" />
                                             <Setter Property="Background" Value="{DynamicResource MaterialDesignBackground}"/>
-                                            <Setter Property="Focusable" Value="False"/>
                                         </Style>
                                         <Style x:Key="CellStyle" TargetType="DataGridCell">
                                             <Setter Property="Padding" Value="5 5 5 0" />
